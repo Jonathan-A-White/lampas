@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.71
+_2026-11-02_
+- Fixed: the round tutor button no longer opens the tutor behind the drill, check, Try it and Memorize screens where it did nothing.
+- New: Hebrew letter sheets for ayin, het, resh and tsade now offer the optional lesson on saying that letter, just as the Greek letters do.
+
 ## 0.7.70
 _2026-11-02_
 - New: A setting for reading the Old Testament in the Greek Septuagint with an English line under each verse; no book is ready yet, so the Hebrew still shows with a note.

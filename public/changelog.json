@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.71",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.955",
+    "kind": "fixed",
+    "text": "the round tutor button no longer opens the tutor behind the drill, check, Try it and Memorize screens where it did nothing."
+  },
+  {
+    "version": "0.7.71",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.954",
+    "kind": "new",
+    "text": "Hebrew letter sheets for ayin, het, resh and tsade now offer the optional lesson on saying that letter, just as the Greek letters do."
+  },
+  {
     "version": "0.7.70",
     "date": "2026-11-02",
     "story": "mw-u2w5klk.11",
