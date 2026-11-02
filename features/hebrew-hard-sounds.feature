@@ -1,7 +1,7 @@
 @uc-sound-lessons @hebrew
 Feature: Hebrew hard sounds, optional lessons on the sounds his English makes hard
   The Goal screen (Learn) has a section "Hard sounds of Hebrew (optional)" below the main path while his Hebrew dial is above 0 (mw-5r3p30.912, PROVISIONAL until the Governor confirms),
-  as "Hard sounds (optional)" is Greek's. It lists the Hebrew lessons written for his English accent, each Not yet or Done: one a sound, het, ayin, resh and tsade, taught on the Israeli
+  as "Hard sounds (optional)" is Greek's. It lists the Hebrew lessons written for his English accent, each Not yet or Done: one a sound, chet, ayin, resh and tsade, taught on the Israeli
   pronunciation. A lesson is the Greek one over Hebrew: why it is hard for you, start from a sound you know, hear it, tell them apart (the pair drill "Which did you hear?"), try it
   (hold to say a word, then hear the Hebrew voice) and the same Done. The words are drawn right to left in the Hebrew face and said in the Hebrew voice. Nothing pushes them.
 
@@ -10,7 +10,7 @@ Feature: Hebrew hard sounds, optional lessons on the sounds his English makes ha
     Then the Goal screen has a "Hard sounds of Hebrew (optional)" section below "See the whole path"
     And it lists every Hebrew lesson written for an American ear, each "Not yet"
     And the Greek "Hard sounds (optional)" section lists none of them
-    When he opens the lesson "Saying the het" from the Hebrew section
+    When he opens the lesson "Saying the chet" from the Hebrew section
     Then the lesson shows "Step 1 of 5" and the heading "Why it is hard for you"
     And the lesson shows no IPA
     When he taps "Next" until the last step
@@ -58,7 +58,7 @@ Feature: Hebrew hard sounds, optional lessons on the sounds his English makes ha
     When he goes Back
     Then the sheet "Ayin" is on screen over the Goal screen
 
-  Scenario Outline: The letter sheets of het, resh and tsade open their lessons
+  Scenario Outline: The letter sheets of chet, resh and tsade open their lessons
     Given Hebrew is the only language chosen, his Hebrew dial is at "Learning" and the Goal screen is open
     When he opens the sheet of the Hebrew letter <letter>
     And he taps <link> on the sheet
@@ -66,7 +66,7 @@ Feature: Hebrew hard sounds, optional lessons on the sounds his English makes ha
 
     Examples:
       | letter | link                              | lesson          |
-      | Chet   | Learn to say the het (optional)   | Saying the het   |
+      | Chet   | Learn to say the chet (optional)  | Saying the chet  |
       | Resh   | Learn to say the resh (optional)  | Saying the resh  |
       | Tsade  | Learn to say the tsade (optional) | Saying the tsade |
 
