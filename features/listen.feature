@@ -2,7 +2,7 @@
 Feature: Listen is a player: tap Play and the passage reads on by itself
   The Verse view's Listen action (mw-5r3p30.130) is not a hold: a tap on "Play verses 1-11" starts the passage, no thumb held down, and it reads
   on to the end of the passage and stops, showing "Play again". While it plays or waits the one speaking bar (voice-kit/speech) has Pause or Resume,
-  Restart and Stop. The verse being read is lit in the passage and kept in view. An interruption from inside the app (a word held for its sound,
+  Restart and Stop, and the Listen foot stays where Play was as a plain "Stop" button (a cancel for the listening, mw-5r3p30.950). The verse being read is lit in the passage and kept in view. An interruption from inside the app (a word held for its sound,
   the Hold to ask bar, the reading check's recording) pauses it and it goes on by itself from the same place when the interruption ends; leaving
   the passage, opening another screen or the page going hidden pauses it and the bar offers Resume at the same verse. A long press on a word still
   says that word. speechSynthesis, the recogniser and Postern are fakes (tests/support).
@@ -15,7 +15,7 @@ Feature: Listen is a player: tap Play and the passage reads on by itself
     When he taps "Play verses 1-11"
     Then the phone is reading verse 1 aloud
     And the speaking bar shows Pause, Restart and Stop
-    And the Listen foot is gone
+    And the Listen foot is now a Stop button and there is no hold bar
     And nothing says "Hold to listen"
 
   Scenario: Pause stops the voice and Resume goes on from the same verse
@@ -62,6 +62,30 @@ Feature: Listen is a player: tap Play and the passage reads on by itself
     Then the phone is reading verse 11 aloud
     When the phone finishes speaking
     Then the Listen foot now says "Play again" and there is no hold bar
+
+  Scenario: A cancel button for listening: Stop where Play was ends the reading and Play comes back
+    Given Lampas is opened on Romans 8 in the English view and a phone that speaks
+    When he taps the heading "Walking by the Spirit"
+    And he taps "Play verses 1-11"
+    Then the phone is reading verse 1 aloud
+    And the Listen foot is now a Stop button and there is no hold bar
+    When he taps Stop on the Listen foot
+    Then the phone has stopped reading
+    And the speaking bar is gone
+    And the Listen foot says "Play verses 1-11" and there is no hold bar
+
+  Scenario: The cancel button is there for a single verse too, and while it is paused
+    Given Lampas is opened on Romans 8 in the English view and a phone that speaks
+    When he taps the number of verse 11
+    And he taps "Play verse 11"
+    Then the phone is reading verse 11 aloud
+    And the Listen foot is now a Stop button and there is no hold bar
+    When he taps Pause on the speaking bar
+    Then the Listen foot is now a Stop button and there is no hold bar
+    When he taps Stop on the Listen foot
+    Then the phone has stopped reading
+    And the speaking bar is gone
+    And the Listen foot says "Play verse 11" and there is no hold bar
 
   Scenario: A long press on a word during Listen pauses it and it goes on from the same verse when the word is said
     Given Lampas is opened on Romans 8 in the English view and a phone that speaks

@@ -218,7 +218,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given(phone, openWith);
     And('Play to is <span>', () => chooseSpan(row.span));
     When('he selects verse 5 and taps Read from here', () => selectAndReadFromHere(5));
-    And('he taps Stop', () => user.click(screen.getByRole('button', { name: 'Stop' })));
+    And('he taps Stop', () => user.click(within(screen.getByRole('region', { name: 'Speaking' })).getByRole('button', { name: 'Stop' })));
     Then('the phone is told to stop', () => expect(synth.calls[synth.calls.length - 1]).toBe('cancel'));
     And('the reading bar is gone', () => expect(bar()).toBeNull());
     And('nothing more is spoken', expectNothingMore);
