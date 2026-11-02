@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.80
+_2026-11-02_
+- Fixed: the verse you are reading stays at the top when the tutor changes the text size, the font, the grammar for the weave or the immersive reader.
+
 ## 0.7.78
 _2026-11-02_
 - Fixed: Typing a verse in Memorize now keeps the verse in view, shows a two-line box and the Check button above the keyboard, and has a way back to saying it.

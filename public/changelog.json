@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.80",
+    "date": "2026-11-02",
+    "story": "mw-9ji6ek0.46",
+    "kind": "fixed",
+    "text": "the verse you are reading stays at the top when the tutor changes the text size, the font, the grammar for the weave or the immersive reader."
+  },
+  {
     "version": "0.7.78",
     "date": "2026-11-02",
     "story": "mw-5r3p30.983",
