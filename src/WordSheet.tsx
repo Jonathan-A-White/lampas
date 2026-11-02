@@ -545,11 +545,12 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   // The tutor door (src/tutor/door.ts, the floating ?) on this sheet asks about its word: the first word, its lemma and its parsing
   const first = lookup.words[0];
   const firstVerse = lookup.verse ?? (first ? sheetChapter.verses.find((v) => v.g.includes(first))?.n : undefined);
-  useDoorTarget(
+  // A sheet with nothing to ask about (a word of another chapter, a linked word, one with no help) is a covered door: the ? is not drawn over it, for the Talk sheet it opened would stand under this one (z-35) (mw-5r3p30.953).
+  const askWord =
     help && first && firstVerse !== undefined
       ? () => help(hebrew ? { kind: 'word', form: hebrewPointedForm(first.t), lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse, language: 'he' } : { kind: 'word', form: first.t, lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse })
-      : undefined,
-  );
+      : undefined;
+  useDoorTarget(askWord ?? (() => undefined), askWord === undefined, true);
   const openTerm = (term: string, word: GreekWord, verse: number | undefined): void => {
     setGrammar({ term, word, verse });
     publish({ kind: 'grammar-term-opened', term });

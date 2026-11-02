@@ -178,6 +178,35 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
   });
 
+  Scenario('The ? is not drawn over a picker, whose sheet would hide the tutor (mw-5r3p30.953)', ({ Given, When, Then }) => {
+    Given('Lampas is opened on #/ with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/', goal));
+    Then('the screen has one control named {string}', async (_, name: string) => {
+      expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+    When("he opens the chapter picker from the Reader's title", async () => {
+      await user.click(within(await screen.findByRole('heading', { level: 1 })).getByRole('button'));
+      expect(await screen.findByRole('dialog', { name: 'Choose a chapter' })).toBeInTheDocument();
+    });
+    Then('the screen has no control named {string}', async (_, name: string) => {
+      expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(0));
+    });
+    When('he closes the chapter picker', async () => {
+      await user.click(within(screen.getByRole('dialog', { name: 'Choose a chapter' })).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Choose a chapter' })).toBeNull());
+    });
+    Then('the floating ? is drawn again', async () => {
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+    When('he opens the tutor with the floating ?', taps);
+    Then('the Talk sheet is in front of the Reader', async () => {
+      // nothing is drawn after it: the one dialog open is the Talk sheet
+      const talk = await screen.findByRole('dialog', { name: /^(Ask the tutor: |Talk about )/ });
+      expect(screen.getAllByRole('dialog')).toEqual([talk]);
+    });
+  });
+
   Scenario('From Goal the request carries the goal, the counts, Learn next and the Next words', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on #/goal with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/goal', goal));
     And('the Goal screen shows its counts, Learn next and Next words', async () => {

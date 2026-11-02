@@ -80,6 +80,8 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
           onAsk({ lemma: current.lemma, gloss: current.gloss, verse: askVerse });
         }
       : undefined,
+    false,
+    true,
   );
 
   if (!current || !place) return null;

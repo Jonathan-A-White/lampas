@@ -7,6 +7,7 @@ import { ChipRow } from '../settings/controls/SettingRow';
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { focusOnMount } from '../ui/focus';
+import { useNoDoor } from '../tutor/door';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { ReadAs } from './ReadingSetSheet';
@@ -22,6 +23,7 @@ function Sheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  useNoDoor(); // z-30, above the Talk sheet (z-10): no ? over it (mw-5r3p30.953)
   const variants = useSetting(variantsSetting);
   const witnesses = useSetting(variantWitnessesSetting);
   // the sheet's history entry is taken off as it closes (src/ui/sheetBack.ts): Settings opens once that Back has landed, so it is not undone by it

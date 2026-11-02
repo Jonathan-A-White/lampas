@@ -13,6 +13,8 @@ interface Target {
   open: () => void;
   /** the screen is the immersive reader: the door is not drawn while this is the newest target */
   hidden: boolean;
+  /** a sheet over a screen: it stays above every screen's target, whichever was registered last (a sheet linked at startup mounts before the Reader's chapter has loaded) */
+  sheet: boolean;
 }
 
 const targets: Target[] = [];
@@ -23,21 +25,32 @@ const watch = (listener: () => void): (() => void) => {
   return () => void watchers.delete(listener);
 };
 
-/** Registers what the door asks about; the newest registered is the one asked. Returns how to take it off again. */
-export function registerDoorTarget(open: () => void, hidden = false): () => void {
-  const target: Target = { open, hidden };
-  targets.push(target);
+function addTarget(open: () => void, hidden: boolean, sheet: boolean): Target {
+  const target: Target = { open, hidden, sheet };
+  // a screen's target goes below the sheets already open, a sheet's on top: the newest of the top rank is the one asked
+  const firstSheet = sheet ? -1 : targets.findIndex((t) => t.sheet);
+  if (firstSheet < 0) targets.push(target);
+  else targets.splice(firstSheet, 0, target);
   tellWatchers();
-  return () => {
-    const at = targets.indexOf(target);
-    if (at >= 0) targets.splice(at, 1);
-    tellWatchers();
-  };
+  return target;
+}
+
+function removeTarget(target: Target): void {
+  const at = targets.indexOf(target);
+  if (at >= 0) targets.splice(at, 1);
+  tellWatchers();
+}
+
+/** Registers what the door asks about; the newest registered is the one asked, and a sheet's (`sheet`) is asked before any screen's. Returns how to take it off again. */
+export function registerDoorTarget(open: () => void, hidden = false, sheet = false): () => void {
+  const target = addTarget(open, hidden, sheet);
+  return () => removeTarget(target);
 }
 
 /** A screen or sheet registers what the door opens the tutor about for as long as `open` is given (undefined: nothing to ask, as with no licence); the registration keeps its place in the order
- * while `open` changes from one render to the next. `hidden`: the screen is the immersive reader, where no door is drawn (live: it follows the bars). */
-export function useDoorTarget(open: (() => void) | undefined, hidden = false): void {
+ * while `open` changes from one render to the next. `hidden`: the screen is the immersive reader, where no door is drawn (live: it follows the bars). `sheet`: a sheet drawn over the screen, which a screen's target
+ * registered after it (the Reader, once its chapter has loaded) does not outrank. */
+export function useDoorTarget(open: (() => void) | undefined, hidden = false, sheet = false): void {
   const latest = useRef(open);
   const mine = useRef<Target | null>(null);
   useEffect(() => {
@@ -46,11 +59,11 @@ export function useDoorTarget(open: (() => void) | undefined, hidden = false): v
   const registered = open !== undefined;
   useEffect(() => {
     if (!registered) return undefined;
-    const off = registerDoorTarget(() => latest.current?.(), hidden);
-    mine.current = targets[targets.length - 1];
+    const target = addTarget(() => latest.current?.(), hidden, sheet);
+    mine.current = target;
     return () => {
       mine.current = null;
-      off();
+      removeTarget(target);
     };
     // `hidden` is followed by the effect below, so a change of it does not take the registration off and put it at the end of the order
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,6 +74,14 @@ export function useDoorTarget(open: (() => void) | undefined, hidden = false): v
       tellWatchers();
     }
   }, [hidden, registered]);
+}
+
+const NOTHING = (): void => undefined;
+
+/** A sheet that cannot be asked about, drawn above the Talk sheet (z-10), registers this while it is open: the newest target is then
+ * hidden and the floating ? is not drawn over it. Without it the newest target is the screen's, whose Talk opens UNDER the sheet and the tap looks dead (mw-5r3p30.953, as the Teach sheet was, mw-5r3p30.949). */
+export function useNoDoor(): void {
+  useDoorTarget(NOTHING, true, true);
 }
 
 /** Whether the door is drawn now, live: the floating ? is drawn only where there is something to ask about, and not over the immersive reader (the newest target is hidden). */

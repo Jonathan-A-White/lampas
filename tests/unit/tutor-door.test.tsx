@@ -19,7 +19,7 @@ import { SettingsScreen } from '../../src/SettingsScreen';
 import { showSettingsGroup } from '../support/settings-pages';
 import { setCurrentLicence } from '../../src/services/licenceNow';
 import { setHand } from '../../src/settings/hand';
-import { openDoorTarget, registerDoorTarget, useDoorTarget } from '../../src/tutor/door';
+import { openDoorTarget, registerDoorTarget, useDoorTarget, useNoDoor } from '../../src/tutor/door';
 import { WordSheet, type WordHelp } from '../../src/WordSheet';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
@@ -52,6 +52,12 @@ function Phone({ licence, children }: { licence: LicenceState; children: ReactNo
 function Screen({ ask, hidden }: { ask: (() => void) | undefined; hidden?: boolean }) {
   useDoorTarget(ask, hidden);
   return <p>a screen</p>;
+}
+
+/** A sheet with nothing to ask about (the chapter picker, the RP 2026 sheet, the variant key and filter sheets). */
+function NoDoorSheet() {
+  useNoDoor();
+  return <div role="dialog" aria-modal="true" aria-label="A sheet" />;
 }
 
 /** The events a browser sends for `fingers` fingers landing together and lifting together. */
@@ -92,6 +98,37 @@ describe('what the door asks about', () => {
     expect(openDoorTarget()).toBe(false);
     expect(ask).not.toHaveBeenCalled();
     off();
+  });
+});
+
+describe('a sheet over a screen (mw-5r3p30.953)', () => {
+  it('stays above a screen target registered after it: a sheet linked at startup mounts before the Reader has loaded its chapter', () => {
+    const asked: string[] = [];
+    const sheet = registerDoorTarget(() => asked.push('sheet'), false, true);
+    const screenOff = registerDoorTarget(() => asked.push('screen'));
+    expect(openDoorTarget()).toBe(true);
+    sheet();
+    expect(openDoorTarget()).toBe(true);
+    screenOff();
+    expect(asked).toEqual(['sheet', 'screen']);
+  });
+
+  it('is not drawn when it has nothing to ask about, and the ? is back when it closes', async () => {
+    const { rerender } = render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} />
+        <NoDoorSheet />
+      </Phone>,
+    );
+    await waitFor(() => expect(document.querySelector('[data-floating-tutor]')).toBeNull());
+    rerender(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} />
+      </Phone>,
+    );
+    expect(await screen.findByRole('button', { name: FLOATING })).toBeTruthy();
   });
 });
 
@@ -246,6 +283,18 @@ describe('the word sheet', () => {
     await user.click(await screen.findByRole('button', { name: FLOATING }));
     expect(asked[0]).toMatchObject({ kind: 'word', form: word.t, lemma: word.l, verse: 1 });
     expect(asked[0].parse).toBeTruthy();
+  });
+
+  it('with no help to ask for (a linked word, a word of another chapter) draws no ?: the Talk sheet would open beneath it (mw-5r3p30.953)', async () => {
+    render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} />
+        <WordSheet chapter={chapter} lookup={{ words: [word], fromEnglish: false }} onClose={() => undefined} />
+      </Phone>,
+    );
+    await screen.findByRole('dialog', { name: 'Word' });
+    await waitFor(() => expect(document.querySelector('[data-floating-tutor]')).toBeNull());
   });
 
   it('draws no ? and asks nothing on a phone with no licence', async () => {
