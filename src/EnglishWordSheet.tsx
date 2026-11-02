@@ -11,6 +11,7 @@ import { SpeakButton } from './speech/SpeakButton';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
+import { useNoDoor } from './tutor/door';
 
 const ROW = 'flex min-h-12 items-center justify-center rounded-xl border border-line px-3 text-center text-base font-medium text-accent active:bg-line';
 
@@ -85,6 +86,8 @@ export function EnglishWordSheet({ english, tapped, onClose, listWords = false }
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-35, over the Talk (z-10), and nothing to ask about: the floating ? would open the tutor under this sheet (mw-5r3p30.977)
+  useNoDoor();
   const word = bareEnglish(english);
   const each = listWords ? wordsOf(tapped ?? english) : [];
   const several = each.length > 1;
