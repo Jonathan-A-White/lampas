@@ -4,7 +4,7 @@
 //   npx tsx scripts/render-copywork-examples.ts --check  # draw them to a temp dir and fail if one differs from the committed page
 //
 // A page is the example's request.words written out by hand-ish: the repo's own fonts (Literata, Gentium Plus, Noto Serif Hebrew) on
-// ruled paper (the rule runs below the vowel points, not through them), each word nudged off the line by a fixed pseudo-random amount (and tilted, in Latin and Greek, by up to 1.5 degrees; a Hebrew page is not tilted: it was read wrong less often so, mw-5r3p30.989), drawn at the width the phone sends (TALK_MAX_EDGE, 1600 px
+// ruled paper (the rule runs below the vowel points, not through them), each word nudged off the line by a fixed pseudo-random amount and, in Latin and Greek, tilted by up to 1.5 degrees (a Hebrew page is neither tilted nor nudged by a fraction of a pixel, which blurs its small dots: it was read wrong less often so, mw-5r3p30.989), drawn at the width the phone sends (TALK_MAX_EDGE, 1600 px
 // on the long edge) with type big enough that a vowel point is a blob of 8 px or more, as it is when a page is photographed to fill the
 // frame. A page that holds a mistake says which in PAGES below (the words are replaced or left out); the example's `expect` holds the rest.
 // Running it twice gives the same bytes.
@@ -74,11 +74,12 @@ export function pageHtml(name: string, words: string[], spec: PageSpec): string 
   const rtl = spec.language === 'hbo';
   const rand = generator(name);
   const tilt = rtl ? 0 : 1;
+  const rise = (y: number) => (rtl ? String(Math.round(y)) : y.toFixed(1));
   const faces = font.files
     .map((f) => `@font-face{font-family:'${font.family}';font-weight:${font.weight};src:url(data:font/woff2;base64,${readFileSync(join(FONT_DIR, f)).toString('base64')}) format('woff2');}`)
     .join('\n');
   const spans = words
-    .map((w) => `<span style="transform:translateY(${(rand() * 20 - 10).toFixed(1)}px) rotate(${((rand() * 3 - 1.5) * tilt).toFixed(2)}deg);margin-inline-end:${(52 + rand() * 40).toFixed(0)}px">${w}</span>`)
+    .map((w) => `<span style="transform:translateY(${rise(rand() * 20 - 10)}px) rotate(${((rand() * 3 - 1.5) * tilt).toFixed(2)}deg);margin-inline-end:${(52 + rand() * 40).toFixed(0)}px">${w}</span>`)
     .join('');
   return `<!doctype html><html lang="${spec.language === 'hbo' ? 'he' : spec.language === 'grc' ? 'el' : 'en'}" dir="${rtl ? 'rtl' : 'ltr'}"><meta charset="utf-8"><style>
 ${faces}

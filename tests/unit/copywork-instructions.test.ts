@@ -34,7 +34,8 @@ describe("copywork's Hebrew rule says where each mark of a letter sits", () => {
 
   it('calls a point missing only on bare paper, and a small point he cannot settle is not a fault', () => {
     expect(hebrew).toMatch(/Mark a point missing only when you looked at its place and\s+can see bare paper there/);
-    expect(hebrew).toMatch(/cannot settle either way is not a fault you can name: the word is `right`/);
+    expect(hebrew).toMatch(/small letter \(a yod or a vav\)[^.]*cannot settle either way is not a fault you can name: the word is `right`/);
+    expect(hebrew).toMatch(/a small letter is missing only when its neighbours stand together/);
   });
 
   it('still marks a point wrong when the place was looked at and it is truly not there', () => {

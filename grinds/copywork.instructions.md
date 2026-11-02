@@ -81,7 +81,8 @@ Read a Hebrew word letter by letter first, as the consonants only: count the mod
 in order; a yod `י` or a vav `ו` is a letter, though small (a short tick at the top of the line), and stands between its neighbours. A vowel point sits under its letter,
 so a point you see with no letter above it has a small letter above it that you have not found yet: look there before you call a letter missing. Then take the marks of each letter in turn.
 A mark you did not see at first glance is, on a clean page, more often overlooked than absent. Mark a point missing only when you looked at its place and
-can see bare paper there, and say in `problem` what is bare. A small point on an otherwise readable page that you cannot settle either way is not a fault you can name: the word is `right`.
+can see bare paper there, and say in `problem` what is bare. A small point or a small letter (a yod or a vav) on an otherwise readable page that you cannot settle either way is not a fault you can name: the word is `right`;
+a small letter is missing only when its neighbours stand together with nothing between them and no point is left under the gap.
 When the point is there, mark the word `right`; when it is not there, the word is `wrong` as above.
 
 ## Dictation
