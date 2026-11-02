@@ -2,7 +2,7 @@
 // (src/hardSounds/, #/sounds) and the letter sheet's 'Learn to say it (optional)'. The lessons are the ones shipped (src/data/hardSounds/*.json), read through the
 // same accessors the screen uses. The Greek voice is the honest fake of tests/support/fake-speech.ts.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -11,6 +11,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { LicenceContext } from '../../src/gate/licenceContext';
 import { lessonsFor, saidFor } from '../../src/hardSounds/lessons';
+import { setHand, type Hand } from '../../src/settings/hand';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { accentOf, chooseAccent, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { stopSpeaking } from '../../src/speech/greek';
@@ -249,6 +250,24 @@ describeFeature(feature, ({ Scenario }) => {
     And('the lesson says why in American words', async () => {
       expect((await lesson()).textContent).toContain(saidFor(tappedR.steps[0].text, accentOf('american')));
     });
+  });
+
+  Scenario("The lesson's foot leaves the floating ? its room, on the side of his Hand", ({ Given, When, Then }) => {
+    const roomOn = async (side: string): Promise<void> => {
+      const foot = (await lesson()).querySelector('[data-sound-foot]');
+      expect(foot).not.toBeNull();
+      // the ? is 3.5 rem wide at 0.75 rem from the edge: the foot's padding on that side is wider, and the other side has none
+      const other = side === 'left' ? 'right' : 'left';
+      await waitFor(() => expect(foot!.className).toContain(side === 'left' ? 'pl-[4.5rem]' : 'pr-[4.5rem]'));
+      expect(foot!.className).not.toContain(other === 'left' ? 'pl-[4.5rem]' : 'pr-[4.5rem]');
+    };
+    Given('Lampas is opened on the Goal screen with no goal', () => open());
+    When('he opens the lesson {string} from the section', (_, title: string) => opensLesson(title));
+    Then("the lesson's foot leaves room on the {string} for the floating ?", (_, side: string) => roomOn(side));
+    When('he holds the phone in his {string} hand', async (_, hand: string) => {
+      await act(() => setHand(hand as Hand));
+    });
+    Then("the lesson's foot leaves room on the {string} for the floating ? once more", (_, side: string) => roomOn(side));
   });
 
   Scenario('The Rho sheet links to the lesson, and Back returns to the sheet', ({ Given, When, Then }) => {

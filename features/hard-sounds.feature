@@ -52,6 +52,13 @@ Feature: Hard sounds, optional lessons on the sounds his English makes hard
     Then the lesson shows the sound "/ɾ/"
     And the lesson says why in American words
 
+  Scenario: The lesson's foot leaves the floating ? its room, on the side of his Hand
+    Given Lampas is opened on the Goal screen with no goal
+    When he opens the lesson "Rolling your r" from the section
+    Then the lesson's foot leaves room on the "right" for the floating ?
+    When he holds the phone in his "left" hand
+    Then the lesson's foot leaves room on the "left" for the floating ? once more
+
   Scenario: The Rho sheet links to the lesson, and Back returns to the sheet
     Given Lampas is opened on the Goal screen with the goal "1 John 1:1"
     When he opens the letter sheet of "rho" from the Goal screen
