@@ -43,3 +43,43 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     Given Lampas is opened on Genesis 1 with the Septuagint on and the Weave "solid"
     Then the language switch offers "English" and "Greek"
     And the tip reads "The Septuagint has one line of English a verse, so the Weave is off here"
+
+  # The word card of a Septuagint word (mw-u2w5klk.12): the lemma, parsing and meaning come from the lemma lexicon (public/data-lxx/lexicon-grc-lxx.json; a word of this text has no Strong's number),
+  # the card says how Lampas read the word (the layer and the confidence in words), a word the derivation only guessed is drawn with a mark and told as a guess, never offered to learn, and can be reported.
+  @uc-word-sheet @greek
+  Scenario: A tap on ἐποίησεν opens its card from the lemma lexicon, with no Strong's row and no empty Study tile
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek" and the Strong's resource on
+    When he taps the word "ἐποίησεν" in verse 1
+    Then the card shows the Lemma "ποιέω"
+    And the card shows the Parsing "verb, aorist active indicative, 3rd person singular"
+    And the card shows the Meaning "to do, make"
+    And the card has "Hear it"
+    And the card has no Strong's row and no Study tile without a link
+    And the card reads "How Lampas read this word: From the New Testament's forms (sure)"
+
+  @uc-hear-word @greek
+  Scenario: Hear it on a Septuagint word says the Greek word
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek" on a phone with a Greek voice
+    When he taps the word "ἐποίησεν" in verse 1
+    And he taps "Hear it" on the card
+    Then the phone is told to speak "ἐποίησεν" in Greek
+
+  @uc-word-sheet @greek
+  Scenario: A guessed word is drawn with a mark, its card says it is a guess and cannot be added to his words
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
+    Then the word "Γενηθήτωσαν" in verse 14 is drawn with the mark "a guess"
+    And the word "ἐποίησεν" in verse 1 is drawn without it
+    When he taps the word "Γενηθήτωσαν" in verse 14
+    Then the card begins "A guess: Lampas derived this reading and is not sure"
+    And the card reads "How Lampas read this word: A guess (unsure)"
+    And the card has "Report this reading"
+    And the card has no "Add to my words"
+
+  @uc-word-sheet @greek
+  Scenario: Report this reading asks the tutor about the word in its verse
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek" and a tutor behind a fake Postern
+    When he taps the word "Γενηθήτωσαν" in verse 14
+    And he taps "Report this reading" on the card
+    Then the Talk sheet opens on Genesis 1:14 with the question "Is Γενηθήτωσαν in Genesis 1:14 read right as γίνομαι, verb, aorist passive imperative, 3rd person plural?"
+    And the mill received one bible-talk grist about the word as for any word question
+    And the tutor's answer shows under the question

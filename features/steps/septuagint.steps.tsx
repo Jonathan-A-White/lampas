@@ -2,18 +2,32 @@
 // tests/fixtures/data-lxx (Genesis 1 and Greek Psalm 22, built by scripts/data-build-lxx.ts); Genesis 1 in the Hebrew is tests/fixtures/data/gen/1.json; Isaiah is not in the Septuagint's index.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { usageWritesSettled } from '../../src/tips/usageLog';
+import { stopReading } from '../../src/speech/readAloud';
+import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { asSpoken } from '../../tests/support/lone-word';
+import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+
+const user = userEvent.setup();
+const PHONE_KEY = '00'.repeat(31) + '02';
+let fake: FakePostern | undefined;
+let synth: FakeSynth | undefined;
 
 afterAll(async () => {
   cleanup();
+  stopReading();
   clearBus();
   vi.unstubAllGlobals();
   await usageWritesSettled();
@@ -22,15 +36,34 @@ afterAll(async () => {
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
+/** What else a scenario's phone has: the Strong's study resource on, a Greek voice, a tutor behind a fake Postern (a licensed phone). */
+interface Extras {
+  strongs?: boolean;
+  speech?: boolean;
+  tutor?: boolean;
+}
+
 /** Opens the app on a chapter (the address names it) with the Septuagint set as given and these settings saved. */
-async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<string, string> = {}): Promise<void> {
+async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<string, string> = {}, extras: Extras = {}): Promise<void> {
   cleanup();
+  stopReading();
   clearBus();
   forgetTrail();
   localStorage.clear();
   vi.unstubAllGlobals();
   document.documentElement.removeAttribute('data-theme');
+  synth = extras.speech ? stubSpeech([GREEK_VOICE, ENGLISH_VOICE]) : undefined;
+  fake = undefined;
   stubChapterFetch();
+  if (extras.tutor) {
+    localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
+    tutorTimings.pollMs = 20;
+    const postern = makeFakePostern();
+    postern.autoReply = { status: 'answered', answer: GRAMMAR_HELP_ANSWER };
+    fake = postern;
+    const chapterFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? postern.fetch(input, init) : chapterFetch(input, init)));
+  }
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
   if (!book) throw new Error(`no book ${title}`);
@@ -41,6 +74,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
   await db.settings.put({ key: 'hebrewInterest', value: '5' });
   await db.settings.put({ key: 'septuagint', value: septuagint });
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
+  if (extras.strongs) await setResourceOn('strongs', true);
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
@@ -117,6 +151,102 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the language switch offers {string} and {string}', switchOffers);
     And('the tip reads {string}', async (_: unknown, text: string) => {
       await waitFor(() => expect(squash(document.querySelector('[data-hint-card="septuagint-weave"]')?.textContent)).toContain(text));
+    });
+  });
+
+  // ---- the word card of a Septuagint word (mw-u2w5klk.12)
+  const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Word' });
+  const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
+    await user.click(within(verseEl(verse)).getByRole('button', { name: new RegExp(`^${text}`) }));
+    await screen.findByRole('dialog', { name: 'Word' });
+  };
+  const shows = (testId: string) => async (_: unknown, text: string): Promise<void> => {
+    await waitFor(() => expect(squash(within(sheet()).getByTestId(testId).textContent)).toBe(text));
+  };
+  const cardHas = (_: unknown, name: string): void => {
+    expect(within(sheet()).getByRole('button', { name })).toBeInTheDocument();
+  };
+  const cardLacks = (_: unknown, name: string): void => {
+    expect(within(sheet()).queryByRole('button', { name })).toBeNull();
+  };
+  const cardReads = (_: unknown, text: string): void => {
+    expect(squash(within(sheet()).getByRole('group', { name: 'How Lampas read this word' }).querySelector('[data-reading-line]')?.textContent)).toBe(text);
+  };
+  const tapsOnCard = async (_: unknown, name: string): Promise<void> => {
+    await user.click(within(sheet()).getByRole('button', { name }));
+  };
+
+  Scenario('A tap on ἐποίησεν opens its card from the lemma lexicon, with no Strong\'s row and no empty Study tile', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string} and the Strong\'s resource on', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }, { strongs: true }));
+    When('he taps the word {string} in verse {int}', taps);
+    Then('the card shows the Lemma {string}', shows('sheet-lemma'));
+    And('the card shows the Parsing {string}', shows('sheet-parse'));
+    And('the card shows the Meaning {string}', shows('sheet-gloss'));
+    And('the card has {string}', cardHas);
+    And('the card has no Strong\'s row and no Study tile without a link', () => {
+      expect(within(sheet()).queryByTestId('sheet-strongs')).toBeNull();
+      expect(within(sheet()).queryByText(/^Strong's$/)).toBeNull();
+      const study = within(sheet()).queryByRole('group', { name: 'Study', exact: true });
+      for (const tile of study ? within(study).queryAllByRole('link') : []) {
+        expect(squash(tile.textContent), 'a Study tile with no words').not.toBe('');
+        expect(tile.getAttribute('href') ?? '', 'a Study tile with no address').not.toBe('');
+      }
+      // the Strong's resource has nothing to link for a word with no number, so it draws no tile at all
+      expect(study).toBeNull();
+    });
+    And('the card reads {string}', cardReads);
+  });
+
+  Scenario('Hear it on a Septuagint word says the Greek word', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string} on a phone with a Greek voice', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }, { speech: true }));
+    When('he taps the word {string} in verse {int}', taps);
+    And('he taps {string} on the card', tapsOnCard);
+    Then('the phone is told to speak {string} in Greek', async (_: unknown, text: string) => {
+      await waitFor(() => expect(synth?.spoken.length).toBeGreaterThan(0));
+      const last = synth!.spoken[synth!.spoken.length - 1];
+      expect(last.text).toBe(asSpoken(text));
+      expect(last.lang).toMatch(/^el/);
+    });
+  });
+
+  Scenario('A guessed word is drawn with a mark, its card says it is a guess and cannot be added to his words', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+    Then('the word {string} in verse {int} is drawn with the mark {string}', async (_: unknown, text: string, verse: number, label: string) => {
+      await waitFor(() => expect(within(verseEl(verse)).getByRole('button', { name: new RegExp(`^${text}`) }).querySelector(`[role="img"][aria-label="${label}"]`)).not.toBeNull());
+    });
+    And('the word {string} in verse {int} is drawn without it', (_: unknown, text: string, verse: number) => {
+      expect(within(verseEl(verse)).getByRole('button', { name: new RegExp(`^${text}`) }).querySelector('[role="img"]')).toBeNull();
+    });
+    When('he taps the word {string} in verse {int}', taps);
+    Then('the card begins {string}', async (_: unknown, text: string) => {
+      const first = within(sheet()).getByTestId('sheet-guess');
+      expect(first.parentElement?.firstElementChild).toBe(first);
+      expect(squash(first?.textContent)).toBe(text);
+    });
+    And('the card reads {string}', cardReads);
+    And('the card has {string}', cardHas);
+    And('the card has no {string}', cardLacks);
+  });
+
+  Scenario('Report this reading asks the tutor about the word in its verse', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string} and a tutor behind a fake Postern', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }, { tutor: true }));
+    When('he taps the word {string} in verse {int}', taps);
+    And('he taps {string} on the card', tapsOnCard);
+    Then('the Talk sheet opens on Genesis 1:14 with the question {string}', async (_: unknown, question: string) => {
+      const talk = await screen.findByRole('dialog', { name: 'Talk about Genesis 1:14' });
+      await waitFor(() => expect(squash(talk.querySelector('[data-talk-q]')?.textContent)).toBe(question));
+    });
+    And('the mill received one bible-talk grist about the word as for any word question', async () => {
+      await waitFor(() => expect(fake?.received).toHaveLength(1));
+      const got = fake!.received[0];
+      expect(got.grist).toMatchObject({ app: 'lampas', kind: 'bible-talk', v: '1' });
+      expect(got.input.focus).toMatchObject({ form: 'Γενηθήτωσαν', lemma: 'γίνομαι', parse: 'verb, aorist passive imperative, 3rd person plural', kind: 'word' });
+      expect(got.input.reference).toBe('Genesis 1:14');
+    });
+    And('the tutor\'s answer shows under the question', async () => {
+      const talk = screen.getByRole('dialog', { name: 'Talk about Genesis 1:14' });
+      await waitFor(() => expect(talk.querySelectorAll('[data-turn]')).toHaveLength(1));
+      expect(talk.querySelector('[data-turn]')).toHaveTextContent(GRAMMAR_HELP_ANSWER.answer);
     });
   });
 });

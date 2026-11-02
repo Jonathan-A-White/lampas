@@ -19,6 +19,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [Morpheus, the second method](#morpheus-the-second-method)
 - [The annotation file](#the-annotation-file)
 - [The report](#the-report)
+- [On the word card](#on-the-word-card)
 - [The files](#the-files)
 - [The commands](#the-commands)
 - [The sources](#the-sources)
@@ -339,6 +340,20 @@ The files of `derived/` and `pending/` stay git-ignored; they are working files.
 `npm run lxx:report` writes `docs/lxx-report.md` between its markers: this build's known-answer scores, and one row for each of the 39 books of Swete's Old Testament (the other 21 books of his file are not assessed): its words, the share each layer settled, the words still
 pending, guesses, agreement breaks per 1,000 words, the second pass's disagreement rate (the share of the recheck files' choices that differ from the first pass's on the same word, a dash when there are none), and
 SHIPPABLE or NOT with the failing lines named. It is the build's one place to see a book fall short. A second run on the same inputs changes nothing. No book is SHIPPABLE yet: the model's choices (B4, then the model stories) are what is missing.
+
+## On the word card
+
+A tap on a Septuagint word opens the word card (mw-u2w5klk.12, `features/septuagint.feature`). Its lemma, parsing and Meaning are the derivation's and TBESG's (`public/data-lxx/lexicon-grc-lxx.json`, by lemma); the word has no Strong's number, so the card has no Strong's row. 'How Lampas read this word' says the layer and the confidence in words:
+
+| Layer (`y`) | The card says | Confidence (`c`) | The card says |
+| --- | --- | --- | --- |
+| 1 | From the New Testament's forms | 0.85 and above | sure |
+| 2 | From the paradigm parser | 0.60 up to 0.85 | likely |
+| 2a | By agreement with its neighbours | below 0.60 | unsure |
+| 3 | A model's reading of the verse | | |
+| g (confidence below 0.5) | A guess | | |
+
+A guess is drawn in the text with a dotted line, its card begins 'A guess: Lampas derived this reading and is not sure', and it is never offered to learn, quizzed, drilled or put on his list until a model session or a person has checked it. A guess or an unsure word has Report this reading, which asks the tutor 'Is <form> in <ref> read right as <lemma>, <parsing>?'; the reader-facing words are on Help's Words page.
 
 ## The files
 
