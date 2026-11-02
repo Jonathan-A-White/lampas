@@ -295,12 +295,16 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
               return [...before, { run, node: (bare: boolean) => (
                 <span key={i} data-chunk={String(i)} data-woven="" data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} data-learning={weft.learning ? '' : undefined} {...own} dir={ownDir} className={`${face} text-accent ${isMarked(c) ? MARKED : ''}`}>
                   {weft.learning ? (
-                    <span className="inline-flex flex-col items-center align-top leading-tight">
-                      <span data-greek>{words(bare)}</span>
-                      <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
-                        {c.t}
-                      </Tap>
-                    </span>
+                    <>
+                      <span className="inline-flex flex-col items-center align-top leading-tight">
+                        <span data-greek>{words(true)}</span>
+                        <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
+                          {c.t}
+                        </Tap>
+                      </span>
+                      {/* the space after the chunk stands outside the stack: inside it, at the end of the Greek line, it collapses (mw-5r3p30.991) */}
+                      {bare ? null : ' '}
+                    </>
                   ) : (
                     words(bare)
                   )}
