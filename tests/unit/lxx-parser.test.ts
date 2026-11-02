@@ -518,3 +518,86 @@ describe('a lemma cell with a stray mark, and a lemma that differs by a diaeresi
     expect(readTbesgNames(rows).map((n) => n.lemma)).toEqual(['Μακαλωθ']);
   });
 });
+
+// Esther and Lamentations under the 3% bar on words with no candidate (story mw-u2w5klk.20, B9). The Governor's answer (2026-11-02, "A: Count only words with no
+// candidate"): a name read from its own form is not a guess; the bar counts the words no source gave a candidate. Two causes were left, each a general rule.
+// The rows are the real sources': Esther 1:1 prints `⸂[1] ΕΤΟΥΣ δευτέρου` (the additions carry the editor's verse numbers, `[1]`, 257 tokens of the 39 books, 106 of
+// Esther's 181 words with no candidate) and Lamentations 1:2 opens `Βήθ. Κλαίουσα ἔκλαυσεν` (the acrostic's letter names, 62 words, each a whole sentence).
+describe("the editor's verse numbers are not words, and a letter name that is a sentence of its own is read as a name (B9)", async () => {
+  const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+  const input = (verses: Record<string, string[]>): DeriveInput => {
+    const refs = Object.keys(verses);
+    let line = 0;
+    const starts: string[] = [];
+    const lines: string[] = [];
+    for (const ref of refs) {
+      starts.push(`${line + 1}\t${ref}`);
+      for (const w of verses[ref]) lines.push(`${++line}\t${w}`);
+    }
+    return {
+      versification: starts.join('\n'),
+      words: lines.join('\n'),
+      tagnt: [tagntRow('Mat.1.2#2', 'καὶ', 'G2532', 'CONJ', 'καί')],
+      tbesg: 'G2532\tG2532 =\tG2532\tκαί\tkai\tG:CONJ\tand\t <b>καί</b>',
+    };
+  };
+
+  it('counts a bracketed number as an editor sign: it is left out of the words and not numbered (Esther 1:1)', () => {
+    const est = input({ 'Est.1:1': ['⸂[1]', 'ΕΤΟΥΣ', 'δευτέρου', 'τῆς', 'βασιλείας'], 'Est.1:2': ['καὶ', '[2]', 'ἄνθρωπος'] });
+    const { words, signs } = sweteTokens(est.versification, est.words, 'est');
+    expect(words.map((w) => `${w.ref} ${w.form}`)).toEqual(['Est.1:1#1 ΕΤΟΥΣ', 'Est.1:1#2 δευτέρου', 'Est.1:1#3 τῆς', 'Est.1:1#4 βασιλείας', 'Est.1:2#1 καὶ', 'Est.1:2#2 ἄνθρωπος']);
+    expect(signs.map((s) => `${s.verse} ${s.sign}`)).toEqual(['Est.1:1 ⸂[1]', 'Est.1:2 [2]']);
+    // a word with a digit that is a Greek numeral (ε᾽, Esther 9:19) is a word, and so is one with brackets round letters
+    const odd = input({ 'Est.9:19': ['ε᾽', 'καὶ', 'πληθυ]νέσθωσαν'] });
+    expect(sweteTokens(odd.versification, odd.words, 'est').words.map((w) => w.form)).toEqual(['ε᾽', 'καὶ', 'πληθυνέσθωσαν']);
+  });
+
+  it('leaves no verse number among the words with no candidate, and the other words keep their order', () => {
+    const est = input({ 'Est.1:1': ['⸂[1]', 'Ἰαείρου', '[2]', 'Ἀστὶν'], 'Est.1:2': ['[1]', 'καὶ'] });
+    const got = deriveBook(est, 'est');
+    expect(got.words.map((w) => w.form)).toEqual(['Ἰαείρου', 'Ἀστὶν', 'καὶ']);
+    expect(got.signs).toHaveLength(3);
+    expect([...got.derived, ...got.pending].map((w) => w.ref).sort()).toEqual(['Est.1:1#1', 'Est.1:1#2', 'Est.1:2#1']);
+  });
+
+  const lam = deriveBook(
+    input({
+      'Lam.1:1': ['καὶ', 'Βήθ.', 'Κλαίουσα'],
+      'Lam.1:2': ['Βήθ.', 'Κλαίουσα', 'ἔκλαυσεν'],
+      'Lam.1:3': ['Γίμελ.', 'Μετῳκίσθη'],
+      'Lam.1:4': ['Τιαδή.', 'Δίκαιός', 'ἐστιν'],
+      'Lam.1:5': ['Ἄιν.', 'Ὁ', 'ὀφθαλμὸς'],
+      'Lam.1:6': ['Ῥήχς.', 'Ἴδε'],
+      'Lam.1:7': ['Σελλά', 'καὶ', 'Βήθ'],
+      'Lam.1:8': ['Ὁ', 'Γίμελ', 'καὶ', 'Θόβελ,', 'Ἡ'],
+      'Lam.1:9': ['καὶ', 'βήθ.'],
+    }),
+    'lam',
+  );
+  const out = (ref: string): DerivedWord | PendingWord => outOf(lam, ref);
+  const ALL = ['N', 'G', 'D', 'A', 'V'].flatMap((c) => ['M', 'F', 'N'].map((g) => `N-${c}S${g}`));
+
+  it('takes the form as the lemma of a capitalised word that opens a clause and ends it, where its ending looks indeclinable: Βήθ. Γίμελ. Τιαδή.', () => {
+    for (const [ref, lemma] of [['Lam.1:1#2', 'Βήθ'], ['Lam.1:2#1', 'Βήθ'], ['Lam.1:3#1', 'Γίμελ'], ['Lam.1:4#1', 'Τιαδή']] as const) {
+      const w = out(ref);
+      expect(isDerived(w), ref).toBe(false);
+      expect([...new Set(w.candidates.map((c) => c.lemma))], ref).toEqual([nfc(lemma)]);
+      expect(w.candidates.map((c) => c.morph).sort(), ref).toEqual([...ALL].sort());
+      expect(w.candidates.every((c) => supportOf(c) === 'form'), ref).toBe(true);
+      expect(w.notes, ref).toContain(NOTE_FORM_NAME);
+      expect(w.notes, ref).not.toContain(NOTE_NO_CANDIDATE);
+    }
+  });
+
+  it('holds out what the ending rule holds out (Ἄιν. ends in -ν after ι; Ῥήχς. in -ς), a lower-case word, and a word that opens a clause and does not end it', () => {
+    for (const ref of ['Lam.1:5#1', 'Lam.1:6#1', 'Lam.1:9#2']) {
+      expect(out(ref).candidates, ref).toEqual([]);
+      expect(out(ref).notes, ref).toContain(NOTE_NO_CANDIDATE);
+    }
+    // Σελλά opens its verse and has no full stop of its own (B8 leaves it); 'Ὁ Γίμελ' is a name inside a clause (B8 takes it); Ἡ ends the verse with no mark and is too short
+    expect(out('Lam.1:7#1').candidates).toEqual([]);
+    expect(out('Lam.1:8#2').candidates).not.toEqual([]);
+    expect(out('Lam.1:8#1').candidates).toEqual([]);
+    expect(out('Lam.1:8#5').candidates).toEqual([]);
+  });
+});
