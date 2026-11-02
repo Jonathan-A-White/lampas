@@ -21,10 +21,11 @@ export function topVerseOf(box: HTMLElement): number | null {
 }
 
 /** Keeps the verse on top of `main` on top as `mode` (a string that changes when the view, the weave, its order or the plain English under it does) changes; `mode` is null until the
- * Reader's settings are read. */
-export function useKeepTopVerse(main: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, mode: string | null, paging: boolean): void {
+ * Reader's settings are read, and `place` (the chapter) forgets the verse noted when it changes. The mode also changes with Variants turned on or off, its filter and the reading set (mw-9ji6ek0.45). */
+export function useKeepTopVerse(main: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, mode: string | null, paging: boolean, place: string): void {
   const verse = useRef<number | null>(null);
   const was = useRef(mode);
+  const at = useRef(place);
   useEffect(() => {
     const box = main.current;
     if (!box || paging) return;
@@ -37,8 +38,14 @@ export function useKeepTopVerse(main: RefObject<HTMLElement | null>, inner: RefO
   useLayoutEffect(() => {
     const before = was.current;
     was.current = mode;
+    // another chapter lays its own variants out: the verse noted in the last one is not a place in this one
+    if (at.current !== place) {
+      at.current = place;
+      verse.current = null;
+      return;
+    }
     const box = main.current;
     if (before === null || mode === null || before === mode || !box || paging || verse.current === null) return;
     return settleAtTop(box, inner.current, verse.current);
-  }, [main, inner, mode, paging]);
+  }, [main, inner, mode, paging, place]);
 }
