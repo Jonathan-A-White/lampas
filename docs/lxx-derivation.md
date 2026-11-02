@@ -84,10 +84,27 @@ one-word lemmas. The run prints these counts. Letters are compared without accen
   share. Otherwise the word is pending with every candidate (`several candidates: for the model`), or with none (`no candidate: for the model to guess`).
 - **The order**: most support first, then by lemma and parsing (analogy: by parsing, then lemma), never by the order of the files.
 
+- **Names that do not decline** (`indeclinableNames`, `nameCandidates` in `parser.ts`; `readTbesgNames` in `tbesg.ts`; story mw-u2w5klk.13). A name like Ἀδάμ has one form for every
+  case, and the New Testament prints it in the cases it happened to need (Ἀδάμ: nominative, genitive, dative; never the accusative Genesis needs), so layer 1's
+  analyses and the parser's single guess leave the right case out. A form written with a capital that is such a name takes **every case of its gender in the name's own lemma**
+  (`N-NSM`, `-GSM`, `-DSM`, `-ASM`, `-VSM`, singular), as candidates after the others with the word `name` in the support column and the note `an indeclinable name: every case of
+  its gender: for the agreement check or the model`. The test for a name that does not decline, from the data and in this order: (1) **TAGNT**: a lemma written with a capital, tagged
+  a person or a place, whose every noun row is one spelling (bare letters) in at least two of the nominative, genitive, dative and accusative, and with no plural (a neuter needs the
+  genitive or dative among them): Ἀδάμ, Ἐνώχ, Ἰακώβ; not Ἰησοῦς (Ἰησοῦν), not Ἰούδας (Ἰούδαν), not Μαγδαληνή (no name tag); (2) **TBESG**: a row with a capital lemma, a noun's part
+  of speech or none, and `indecl.` in its text (or the part of speech N-PRI, the names found only in the Septuagint), for what TAGNT has too rarely: a TBESG row that lists two
+  lemmas (`Καϊνάν, Καϊνάμ`) gives a name for each, and a lemma TAGNT shows declined is left out whatever TBESG's text says. The gender is TAGNT's, else the row's (`N:N-M-P`), else the
+  article before `indecl.` in its text (`ὁ, indecl.`: Ἰωβήλ is masculine though its row gives no part of speech); where no source gives one, all three genders are offered (60 of
+  the 209 names, 155 words in the Old Testament). A form that is no spelling of such a name but for which layer 1 or the parser proposed one in one case (Ἰωβέλ read as Ἰωβήλ
+  `N-ASF`, by the rule -ελ for -ηλ) gets the same. A name this applies to is **pending** whatever layer settled it: a single case seen in the New Testament, or the parser's one
+  candidate, says nothing of the case Genesis needs, so 195 Genesis words that were settled (174 in layer 1, 15 in layer 2, 6 by agreement: Ῥαχήλ 42, Ῥουβήν 13, Σήμ 12, Λάμεχ 7, Σήθ 6) now wait for the model; the
+  agreement check settles 28 others that were pending, Ἀδάμ, Ἐνώχ and Ἰωβήλ among them, by their article. The test is `an indeclinable name offers every case of its gender (B6)` in `tests/unit/lxx-parser.test.ts`.
+
 **Known weak spots.** In the probe's sample of the whole of Swete, 27.3% of the words whose form the New Testament lacks got no candidate at all: mostly
 lemmas TBESG lacks, irregular stems the rules cannot reach from the lemma (`Γενηθήτωσαν` has no rule and no sibling with that pair of endings), and
 lexicon entries that refuse the right parsing: TBESG lists `μακρότης` as masculine (`G:N-M`), so the feminine `μακρότητα` (Ps 22:6) gets nothing until the
-lexicon is fixed or a later layer reads it. An ending two genders or cases share is settled by the 90% rule on the New Testament's evidence alone
+lexicon is fixed or a later layer reads it (`ἄσφαλτος` is the same, masculine in TBESG and feminine in Gen 6:14). Names that TBESG and TAGNT lack are the largest of them
+(story mw-u2w5klk.13): of the 17,800 words of the 39 books that have no candidate, 10,849 are names (`npm run lxx:batches -- --all`; 4,296 distinct forms), mostly names found
+only in the Septuagint (`Γαιδάδ`, `Σελλά`, `Θόβελ`), and the rule for names that do not decline cannot reach them for want of a lemma. An ending two genders or cases share is settled by the 90% rule on the New Testament's evidence alone
 (`ἕρπον[τι`, Gen 1:30, masculine where it goes with a neuter noun): the agreement check below demotes such an answer before the model.
 
 ## The agreement check
@@ -229,6 +246,7 @@ one book never touch the same file and different books run in parallel.
 
 ```bash
 npm run lxx:batches -- --book gen     # batch, chapters, pending, no candidate: a row a batch, then the total
+npm run lxx:batches -- --all          # a row a book of the 39: how many of its words have no candidate, so must be a guess, against the bar's 3%, and how many of those are names
 ```
 
 **The Builder**, for its batch `n` of book `b` (`gen`, batch 1; the files are `gen-01`):
@@ -376,7 +394,8 @@ own derived data, and Greek.
 `data/lxx/pending/<book>.tsv`, the words still waiting: `ref`, `candidates`, `notes`, where the notes end with why it waits:
 `several analyses: for the model` (layer 1's), `several candidates: for the model` (the parser's), `no candidate: for the model to guess`, or the agreement
 check's: `a name in the New Testament: lower case here, for the model`, `shared ending: <class>: for the agreement check or the model`,
-`agreement break: <link> with <ref>: for the model`. A candidate the shared-ending rule added has support 0.
+`agreement break: <link> with <ref>: for the model`, or `an indeclinable name: every case of its gender: for the agreement check or the model`. A candidate the shared-ending rule added has support 0.
+A candidate the name rule added has `name` in the support column (and 0 in the counts).
 
 `data/lxx/morpheus/<book>.tsv` (git-ignored, a derived cache), Morpheus's analyses of a book's no-candidate forms and guesses: `form`, `analyses` ('Morpheus, the second method'). A candidate it gave has `morpheus` in the support column.
 
@@ -399,6 +418,7 @@ npm run lxx:derive -- --all                    # every book of the file, trained
 npm run lxx:derive -- --book gen --no-morpheus # the same with the second method off (with no Docker it prints "Morpheus skipped: ..." and does the same)
 npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT ('The known-answer run')
 npm run lxx:batches -- --book gen              # the book's pending words in batches of about 700: the table the model stories are filed from ('A model session')
+npm run lxx:batches -- --all                   # a row for each of the 39 books: words, pending, no candidate (the words forced to be a guess), that as a share of the words, and how many are names
 npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with their verses and candidates: for a model session
 npm run lxx:choose -- --book gen --batch 1 --from <file>  # a model session's choices, checked, as data/lxx/choices/gen-01.tsv
 npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv, only when the book passes the bar ('The bar')
@@ -409,8 +429,8 @@ The run fetches the pinned sources into `data/raw/lxx/<repo>/<commit>/<path>` (g
 the book's words, the editor's signs left out, the parser's triples, rules and lemmas, the words settled in layers 1 and 2, then the agreement check's
 lines (`settled by agreement (layer 2a)`, `demoted by the shared-ending rule`, `a name in the New Testament, lower case here`, `agreement breaks: … breaks
 per 1,000 words`, `pending before the agreement check: …; after it: …`), the words pending (and how many of those have no candidate), and a count of each
-note. On the whole of Genesis: 32,635 words; before the check layer 1 23,148, layer 2 1,531, pending 7,956; after it layer 1 21,822, layer 2 1,486,
-layer 2a 1,470, pending 7,857 (1,017 with no candidate), 1,291 demoted, 38 breaks (1.2 per 1,000). `--all` prints a line a book: book, words, layer 1,
+note. On the whole of Genesis: 32,635 words; before the check layer 1 23,148, layer 2 1,531, pending 7,956 (8,182 with the names that do not decline now waiting);
+after it layer 1 21,626, layer 2 1,470, layer 2a 1,515, pending 8,024 (1,013 with no candidate), 1,291 demoted, 31 breaks (0.9 per 1,000). `--all` prints a line a book: book, words, layer 1,
 layer 2, layer 2a, pending, pending before the check, demoted, breaks per 1,000. A second run writes the same bytes:
 the candidates are ordered by support, then lemma, then parsing, never by the order of the files.
 
