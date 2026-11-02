@@ -90,7 +90,7 @@ export async function openWriteIt(page: Page): Promise<Locator> {
 /** A Drill it run on The noun that left a plan: the run is answered with the first answer each time, so most runs miss something; it runs again until one does. Leaves the
  * result up with 'Start the first drill'. */
 export async function drillToPlan(page: Page): Promise<Locator> {
-  const idea = await openIdea(page, '1 John 1', 'The noun');
+  const idea = await openIdea(page, '1 John', 'The noun');
   for (let run = 0; run < 8; run += 1) {
     await idea.getByRole('button', { name: 'Drill it', exact: true }).click();
     const drill = page.getByRole('dialog', { name: 'Drill it' });

@@ -55,7 +55,7 @@ for (const { name, size } of VIEWPORTS) {
     await openUnlocked(page);
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-    await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
+    await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
     // what The noun builds on (mw-5r3p30.234: the breathings and the iota under a letter as well as the accents)
     await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
     await page.goto('/#/goal');
@@ -120,7 +120,7 @@ async function openIdea(page: Page, name = 'The noun', settleMs = SETTLE_MS) {
   await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(settleMs));
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
   await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
   await page.goto('/#/goal');
   await page.reload();

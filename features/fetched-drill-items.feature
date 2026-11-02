@@ -69,6 +69,12 @@ Feature: More drill items from the mill, in the background
     Then Drill it says it is proved
     And Prove it asked no question he had been asked before
 
+  Scenario: Prove it does not prove an idea whose built top step holds one question
+    Given he has never drilled the conjunction and 1 John 1 has one verse with a single conjunction
+    When he starts Prove it on the conjunction over 1 John 1
+    Then Prove it tells him that fresh questions are not there yet
+    And the conjunction is not proved on the one question it has
+
   Scenario: Misses on the Hebrew article ask the mill for Hebrew items from Hebrew verses
     Given the Hebrew article is due in Review and the mill will answer a drill-items grist
     When he misses the Hebrew article in a Review round

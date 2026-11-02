@@ -147,8 +147,8 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   const reported = useRef(false);
   const result = walk?.result ?? null;
   // a question the mill wrote for this idea is asked in place of the first built one (docs/grammar.md 'More items from the mill'): taken from the phone as the screen opens, never waited for.
-  // With too few built questions he has not been asked to prove the idea on, the kept ones he has not been asked make up the number; with too few of those, nothing is proved: the mill is asked
-  // in the background and the screen says so.
+  // With too few built questions he has not been asked to prove the idea on (or too few built from the start: a short top step would be asked twice), the kept ones he has not been asked make up
+  // the number; with too few of those, nothing is proved: the mill is asked in the background and the screen says so.
   const opened = useRef(false);
   const pending = useRef<string | null>(null);
   useEffect(() => {
@@ -160,7 +160,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
         const seen = new Set(await askedKeys(ideaId).catch(() => []));
         const drawn = begin(ideaId, passage, seed);
         let first = seen.size > 0 ? begin(ideaId, passage, seed, seen) : drawn;
-        if (first && drawn && !enoughToProve(first.steps, drawn.steps) && enoughToProve(drawn.steps)) {
+        if (first && drawn && !enoughToProve(first.steps, drawn.steps)) {
           const top = first.steps[first.steps.length - 1];
           const have = top?.title === drawn.steps[drawn.steps.length - 1].title ? top.questions.length : 0;
           if (have + (await listUnseenFetched(ideaId)).length >= PROVED_STREAK) first = addFetched(first, await takeAllFetched(ideaId), drawn.steps);
