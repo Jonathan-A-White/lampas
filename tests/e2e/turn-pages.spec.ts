@@ -594,7 +594,7 @@ test('with Turn pages a tap in the middle third opens the word, and a verse numb
   await expect(page.getByTestId('sheet-backdrop')).toHaveCount(0);
 });
 
-/** The gap on screen between the bottom of the lowest line of text on the page shown and the top of the place line, and the line height of that line. A
+/** The gap on screen between the bottom of the lowest line of text (or Hear the verse button) on the page shown and the top of the place line, and the line height of that line. A
  * line is its line height tall, centred on its letters, so its bottom is under the letters' box by half of what the line height adds to it. `heading` is
  * the height (with its margins) of a section heading that starts the next page: the browser does not leave a heading at a page's foot with no line of its
  * verse under it, so a page that ends right before one may end that much higher. */
@@ -618,6 +618,13 @@ const footGap = (page: Page) =>
         lowest = bottom;
         lineHeight = height;
       }
+    }
+    // a verse's Hear the verse button (44 px) that wraps onto a line of its own is the lowest thing on the page too: it is a line's worth of the page, though it holds no text
+    for (const hear of Array.from(reader.querySelectorAll<HTMLElement>('[data-pages] button[aria-label="Hear the verse"]'))) {
+      const r = hear.getBoundingClientRect();
+      if (r.width <= 0 || r.left < b.left - 1 || r.right > b.right + 1 || r.top < b.top - 1 || r.bottom > b.bottom + 1 || r.bottom <= lowest) continue;
+      lowest = r.bottom;
+      lineHeight = r.height;
     }
     let heading = 0;
     let nearest = Infinity;
@@ -678,7 +685,7 @@ test('with Turn pages and the Immersive reader, each page fills down to the plac
   await openMark12(page, 'pages', { settings: { immersiveReader: 'on', immersiveHint: 'off' } });
   await page.getByRole('button', { name: 'Put the bars away', exact: true }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('[data-floating-tutor]')).toBeVisible(); // the floating ? stays whole while the bars are away (mw-5r3p30.882)
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0); // the immersive reader is the one screen without the floating ? (mw-5r3p30.934)
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   // the place line is the lowest row now, with the phone's floor under it; the bars' slide is 200 ms
   await expect(place(page)).toHaveAttribute('data-floor', '');
@@ -708,7 +715,7 @@ for (const size of [
     await tapAt(page, 0.85);
     await expect(page.locator('header').first()).toBeHidden();
     await expect(card).toBeHidden();
-    await expect(page.locator('[data-floating-tutor]')).toBeVisible(); // the floating ? stays whole while the bars are away (mw-5r3p30.882)
+    await expect(page.locator('[data-floating-tutor]')).toHaveCount(0); // the immersive reader is the one screen without the floating ? (mw-5r3p30.934)
     // the slide is 200 ms, and the pages are cut afresh for the taller box: fewer of them
     await page.waitForTimeout(400);
     const b = await box(page);
