@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.84
+_2026-11-02_
+- Fixed: the round ? button no longer covers the ends of answer buttons in drills, quizzes and reviews, so a tap there chooses the answer.
+
 ## 0.7.83
 _2026-11-02_
 - Fixed: In the Weave with learning words, two Greek words standing over one English phrase no longer run into the next Greek word.

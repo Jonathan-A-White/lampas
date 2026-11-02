@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.84",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.981",
+    "kind": "fixed",
+    "text": "the round ? button no longer covers the ends of answer buttons in drills, quizzes and reviews, so a tap there chooses the answer."
+  },
+  {
     "version": "0.7.83",
     "date": "2026-11-02",
     "story": "mw-5r3p30.991",
