@@ -316,6 +316,13 @@ describe('an indeclinable name offers every case of its gender (B6)', async () =
     tagntRow('Joh.1.14#2', 'λόγον', 'G3056', 'N-ASM', 'λόγος'),
     // the one pair of forms the rule -ελ for -ηλ is learned from
     tagntRow('Mat.1.12#9', 'Σαλαθιέλ', 'G4528', 'N-ASM-P', 'Σαλαθιήλ'),
+    // Ἰούδας declines (Ἰούδαν), though TBESG's entry says indecl. of the tribe's spelling; a place in the neuter seen once; a woman of Magdala, not tagged a name
+    tagntRow('Mat.1.2#9', 'Ἰούδαν', 'G2455', 'N-ASM-P', 'Ἰούδας'),
+    tagntRow('Mat.1.3#1', 'Ἰούδας', 'G2455', 'N-NSM-P', 'Ἰούδας'),
+    tagntRow('Mat.1.3#9', 'Ἰούδα', 'G2455', 'N-GSM-P', 'Ἰούδας'),
+    tagntRow('Act.28.15#9', 'Φόρου', 'G5410', 'N-GSN-L', 'Φόρον'),
+    tagntRow('Luk.8.2#9', 'Μαγδαληνή', 'G3094', 'N-NSF', 'Μαγδαληνή'),
+    tagntRow('Luk.8.3#9', 'Μαγδαληνή', 'G3094', 'N-ASF', 'Μαγδαληνή'),
   ];
   const tbesgRows = [
     'G0076\tG0076 = the Greek of\tH0121G\tἈδάμ\tAdam\tN:N-M-P\tAdam\t <b>Ἀδάμ</b>, ὁ indecl. (Heb. אָדָם), <BR /> <b>Adam</b>',
@@ -324,6 +331,7 @@ describe('an indeclinable name offers every case of its gender (B6)', async () =
     'G2536\tG2536G =\tG2536G\tΚαϊνάν, Καϊνάμ\tKainan, Kainam\tN:N-M-P\tCainan\t <b>Καινάμ</b> (T, Καϊ-; Rec. Καϊνάν), ό, indecl. (Heb. קֵינָן), <BR /> <b>Cainam, Cainan</b>',
     'G4528\tG4528 =\tG4528\tΣαλαθιήλ\tSalathiēl\tN:N-M-P\tSalathiel\t <b>Σαλαθιήλ</b>, ὁ, indecl.',
     'G7745\tG7745 =\tG7745\tἸωβήλ\tIōbēl\t\ta ram\t Ἰωβήλ, see: Ἰωβήδ.<BR /> <b>Ἰωβήδ</b> (WH, -βήλ, Lk, l.with; Rec., RV, Ὠβήδ), ὁ, indecl., <BR /> <b>Jobed</b>',
+    'G2455\tG2455 =\tG2455\tἸούδας\tIoudas\tN:N-M-P\tJudah\t <b>Ἰούδας</b>, -α, ὁ, <BR /> <b>Judah</b>, <b>Ἰούδα</b>, ὁ, indecl. (Heb. יְהוּדָה), <BR /> the tribe',
     'G3056\tG3056 =\tG3056\tλόγος\tlogos\tG:N-M\tword\t <b>λόγος</b>, ὁ, <BR /> <b>word</b>',
   ];
   const words = ['Ἀδὰμ', 'Ἑνὼχ', 'Καινὰν', 'Ἰωβέλ·', 'Ἰησοῦν', 'λόγον', 'Λόγος', 'ἀδὰμ'];
@@ -406,5 +414,9 @@ describe('an indeclinable name offers every case of its gender (B6)', async () =
     // Ἰησοῦς declines (Ἰησοῦν), whatever one of its spellings does in two cases
     expect(entryOf('Ἰησοῦς')).toBeUndefined();
     expect(entryOf('λόγος')).toBeUndefined();
+    // the New Testament's own declension beats a line of TBESG's text; one case seen once is no evidence; a lemma tagged no name is no name
+    expect(entryOf('Ἰούδας')).toBeUndefined();
+    expect(entryOf('Φόρον')).toBeUndefined();
+    expect(entryOf('Μαγδαληνή')).toBeUndefined();
   });
 });

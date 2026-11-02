@@ -22,8 +22,8 @@ import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fe
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
 import { bareOf, bookOf, hasAccent, hasLower, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
 import { analysesOf, formIndex, readTagnt, settle, type Analysis, type FormIndex } from './tagnt';
-import { byAnalogy, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
-import { TBESG_FILE, lemmaCount, readTbesg } from './tbesg';
+import { byAnalogy, indeclinableNames, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
+import { TBESG_FILE, lemmaCount, readTbesg, readTbesgNames } from './tbesg';
 
 export const OUT_DIR = join('data', 'lxx');
 
@@ -42,12 +42,13 @@ export const NOTE_NOT_IN_NT = 'not in the New Testament: for the parser';
 export const NOTE_ANALOGY = 'analogy: a sibling form in the New Testament';
 export const NOTE_CANDIDATES = 'several candidates: for the model';
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
+export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender: for the agreement check or the model';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
-export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' };
+export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' };
 
-/** What a candidate's support column says: the New Testament's count, or the second method's name (a Morpheus candidate has no count). */
-export const supportOf = (c: WordCandidate): string => (c.source === 'morpheus' ? 'morpheus' : String(c.support));
+/** What a candidate's support column says: the New Testament's count, or the name of what gave it where it has no count (`morpheus`, the second method; `name`, an indeclinable name's other cases). */
+export const supportOf = (c: WordCandidate): string => c.source ?? String(c.support);
 
 /** 1 the New Testament's form, 2 the parser, '2a' the agreement check, 3 the model's choice (choices.ts joins it to the pending words; derive.ts never makes one) */
 export type Layer = 1 | 2 | typeof AGREEMENT_LAYER | 3;
@@ -90,6 +91,22 @@ export function deriveWord(
   parser: Parser,
   cache: ParseCache = new Map(),
   morpheus?: MorpheusCache,
+): DerivedWord | PendingWord {
+  const out = layersOneAndTwo(word, index, parser, cache, morpheus);
+  const owed = nameCandidates(word.form, out.candidates, parser.names);
+  if (owed.length === 0) return out;
+  // An indeclinable name has one form for every case: what the New Testament or the parser settled it on is one case of several, so it waits for the agreement check or the model
+  const via = ['an indeclinable name: every case of its gender (TAGNT shows one spelling in several cases, or TBESG says indecl.)'];
+  const more = owed.map((c) => ({ ...c, support: 0, share: 0, via, source: 'name' as const }));
+  return { ref: word.ref, candidates: [...out.candidates, ...more], notes: [...out.notes.filter((n) => n !== NOTE_NO_CANDIDATE), NOTE_INDECLINABLE] };
+}
+
+function layersOneAndTwo(
+  word: Pick<SweteWord, 'ref' | 'form' | 'display'>,
+  index: FormIndex,
+  parser: Parser,
+  cache: ParseCache,
+  morpheus: MorpheusCache | undefined,
 ): DerivedWord | PendingWord {
   const notes: string[] = [];
   const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
@@ -178,7 +195,7 @@ export interface Trained {
 
 export function train(input: DeriveInput, hide?: string): Trained {
   const rows = readTagnt(input.tagnt, hide);
-  return { index: formIndex(rows), parser: trainParser(rows, readTbesg(input.tbesg)) };
+  return { index: formIndex(rows), parser: trainParser(rows, readTbesg(input.tbesg), indeclinableNames(rows, readTbesgNames(input.tbesg))) };
 }
 
 const split = (outs: ReadonlyArray<DerivedWord | PendingWord>): { derived: DerivedWord[]; pending: PendingWord[] } => ({
@@ -286,7 +303,7 @@ export function wordReport(result: BookResult, ref: string): string[] {
   if (out.notes.length) lines.push(`notes: ${out.notes.join('; ')}`);
   if (out.candidates.length === 0) lines.push('no candidate');
   for (const c of out.candidates) {
-    lines.push(c.source === 'morpheus' ? `  ${c.lemma} ${c.morph}: support morpheus` : `  ${c.lemma} ${c.morph}: support ${c.support} (${(100 * c.share).toFixed(1)}%)`);
+    lines.push(c.source ? `  ${c.lemma} ${c.morph}: support ${c.source}` : `  ${c.lemma} ${c.morph}: support ${c.support} (${(100 * c.share).toFixed(1)}%)`);
     for (const why of c.via ?? ["layer 1: the New Testament's form"]) lines.push(`    ${why}`);
   }
   return lines;
