@@ -18,6 +18,7 @@ import { SelfGrade } from './ui/SelfGrade';
 import { GREEK_LANG, greekLang } from './script/greekLang';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 import { DrillReference } from './markdown/DrillReference';
+import { useDoorRoom } from './tutor/doorRoom';
 
 const LOOK = {
   idle: 'border-line bg-surface',
@@ -84,12 +85,15 @@ const SEE_TABLE = 'mt-3 min-h-12 w-full rounded-xl border border-line px-4 text-
 
 /** 'See the table' under the answer of an ending (mw-svw421.5): the table the form is in, to look at now that he has been asked it. */
 function SeeTable({ question, onSeeTable }: { question: GrammarQuestion; onSeeTable?: (address: ParadigmAddress) => void }) {
+  const room = useDoorRoom();
   const address = seeTableAddress(question);
   if (!onSeeTable || !address) return null;
   return (
-    <button type="button" data-testid="see-table" data-table={address.table} onClick={() => onSeeTable(address)} className={SEE_TABLE}>
-      See the table
-    </button>
+    <div className={room}>
+      <button type="button" data-testid="see-table" data-table={address.table} onClick={() => onSeeTable(address)} className={SEE_TABLE}>
+        See the table
+      </button>
+    </div>
   );
 }
 
@@ -165,6 +169,8 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
   const answered = picked !== null;
   // a tap in the moment after the card appears is the second tap of a double tap on Next (src/ui/settle.ts)
   const settled = useSettled();
+  // the answers leave the floating ? its room on the Hand's side: it floats over the scroll box at one height and any row of buttons passes it (src/tutor/doorRoom.ts)
+  const room = useDoorRoom();
   const tapForm = showsVerse(question);
   const lookOf = (option: string, i: number): keyof typeof LOOK => {
     if (taken?.has(i)) return 'taken';
@@ -207,11 +213,11 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
   const answers = (
     <>
       {tapForm ? (
-        <div data-testid="verse-words" className="mt-4 flex flex-wrap justify-center gap-2">
+        <div data-testid="verse-words" className={`mt-4 flex flex-wrap justify-center gap-2 ${room}`}>
           {buttons}
         </div>
       ) : (
-        <div className={`mt-4 ${sideBySide ? 'short:mt-0' : ''} ${short ? `grid grid-cols-2 ${gap}` : stacked}`}>{buttons}</div>
+        <div className={`mt-4 ${sideBySide ? 'short:mt-0' : ''} ${short ? `grid grid-cols-2 ${gap}` : stacked} ${room}`}>{buttons}</div>
       )}
       <p data-testid="feedback" role="status" className={`mt-4 text-center text-lg ${sideBySide ? 'min-h-12 short:mt-1 short:min-h-8' : 'min-h-12'}`}>
         {!answered ? '' : picked === question.right ? (hint ? HINTED_RIGHT : 'Right.') : `Not quite. ${tapForm ? 'The word is' : 'It is'} ${answerOf(question)}.`}
@@ -251,6 +257,7 @@ const STEP_BASE = 'min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg
  */
 function Parse({ question, picked, onPick, onStep }: Pick<Props, 'question' | 'picked' | 'onPick' | 'onStep'>) {
   const steps = question.steps ?? [];
+  const room = useDoorRoom();
   const [at, setAt] = useState(0);
   // what he tapped at each step so far
   const [taps, setTaps] = useState<string[]>([]);
@@ -282,7 +289,7 @@ function Parse({ question, picked, onPick, onStep }: Pick<Props, 'question' | 'p
       <p data-testid="parse-so-far" className="mt-1 min-h-6 text-center text-base text-muted">
         {steps.slice(0, at).map((s) => s.right).join(' · ')}
       </p>
-      <div className="mt-2 space-y-3">
+      <div className={`mt-2 space-y-3 ${room}`}>
         {step.options.map((option, i) => {
           const look = lookOf(option);
           return (
