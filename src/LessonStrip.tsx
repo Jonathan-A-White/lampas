@@ -2,7 +2,7 @@
 // the idea sheet) and 'Read it, then Check', whose Check button opens the Check (src/CheckSheet.tsx). The view draws it and the verses as ever; it marks nothing.
 import { useState } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
-import { ideaOf } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { IdeaSheet } from './IdeaSheet';
 import { WordSheet, type Lookup } from './WordSheet';
 

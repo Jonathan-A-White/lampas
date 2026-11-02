@@ -88,6 +88,10 @@ export function ReadAloud({ id, text, runs, className, auto = false }: {
       showHelp(noVoiceHelp('greek'));
       say = say.filter((run) => run.language !== 'greek');
     }
+    if (hasVoice('hebrew') === false && say.some((run) => run.language === 'hebrew')) {
+      showHelp(noVoiceHelp('hebrew'));
+      say = say.filter((run) => run.language !== 'hebrew');
+    }
     if (say.length === 0) return;
     startReading({ chapter: 0, plan: [{ n: mine, runs: say }], from: mine, continuous: false, answer: mine });
   };

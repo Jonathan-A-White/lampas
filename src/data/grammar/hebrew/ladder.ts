@@ -4,6 +4,8 @@
 // sin), the sounds (a vowel point each, the shewa, the dagesh, the mappiq, the furtive patach, the syllable) and the marks (the maqaf, the cantillation, the ketiv and qere); and the
 // grammar tiers (mw-gdcyf98.12): nouns, pronouns, prepositions, verbs, joiners and sentences, 26 ideas, each with the parsing terms it covers (terms.ts). Every id starts 'he-' so a grammar
 // level, a review row and a drill plan of a Hebrew idea never collide with a Greek one, and an id, once shipped, is not renamed. Pure: no store and no screen.
+import type { ApproachLesson, Passage } from '../../../approaches/types';
+import { bookOf } from '../../books';
 import type { GrammarIdea, Tier } from '../ladder';
 import { makePath } from '../pathGraph';
 import { HEBREW_LETTERS, POINT, on } from './letters';
@@ -334,6 +336,21 @@ export const HEBREW_SOUND_IDEAS: ReadonlySet<string> = new Set([...HEBREW_LETTER
 
 /** Whether the Hebrew idea with this id is a letter or a vowel, which the scheme's lesson sounds. */
 export const isHebrewSoundIdea = (id: string): boolean => HEBREW_SOUND_IDEAS.has(id);
+
+const readHebrew = (book: string, chapter: number, from: number, to: number, ...ideas: string[]): ApproachLesson => {
+  const passage: Passage = { book, chapter, from, to };
+  const name = bookOf(book)?.name ?? book;
+  return { title: from === to ? `${name} ${chapter}:${from}` : `${name} ${chapter}:${from}-${to}`, ideas, passage };
+};
+
+/**
+ * The passage lessons of the Hebrew ladder (mw-5r3p30.911, the Hebrew side of 'Read 1 John 1:1-4'): a run of verses to read once the lesson's ideas are at least frontier, and a Check
+ * that passes it by reading (src/data/grammar/hebrew/passageCheck.ts). The Greek ones are src/approaches/john-lessons.ts; these are the Hebrew ladder's own and are found by
+ * lessonForRange (src/approaches) beside them. Each idea is one the passage uses again, so a Check can ask it of the verses. Titles are in our own words.
+ */
+export const HEBREW_PASSAGE_LESSONS: readonly ApproachLesson[] = [
+  readHebrew('jon', 1, 1, 3, 'he-prep-inseparable', 'he-construct', 'he-infinitive', 'he-vav-consecutive'),
+];
 
 /** The Hebrew ladder as a path (pathGraph.ts): makePath throws, naming it, on an idea listed twice, a need that is no idea, a need of a higher rung or a cycle. */
 export const HEBREW_PATH = makePath(HEBREW_LADDER);

@@ -1,7 +1,7 @@
 // src/data/grammar/goalProgress.ts — what the strip and the Goal screen (mw-hqd5bz.10) work out from a goal's needs and his words and levels:
 // the word states progressToward reads, Learn next, Next words, the lists behind the bars and when he was placed. Pure: no store, no screen.
 import type { GrammarApproach, LessonPlace, Passage } from '../../approaches';
-import { lessonOf, nextLessonOf, passageLabel, stepsOf } from '../../approaches';
+import { hebrewPassageSteps, lessonOf, nextLessonOf, passageLabel, stepsOf } from '../../approaches';
 import type { GrammarLevel, PassageLessonRow, WordState } from '../db';
 import type { Goal } from '../goal';
 import { unmetNeed } from './drillIt';
@@ -78,11 +78,22 @@ export interface PassageContext {
  * book and chapter; undefined when none is left. A group of the foundation is solid when every one of its items is.
  */
 export function learnNext(needs: Pick<PassageNeeds, 'ideas'>, approach: GrammarApproach, levels: ReadonlyMap<string, Level>, passages?: PassageContext, lang: LadderLang = 'grc'): LearnNext | undefined {
-  // the Hebrew ladder has no approach, no letters in groups and no passage lessons yet: its next is its lowest needed idea that is not yet (the ladder's order)
+  // the Hebrew ladder has no approach and no letters in groups: its next is its lowest needed idea that is not yet (the ladder's order), and a passage lesson (HEBREW_PASSAGE_LESSONS) is offered
+  // right after the last of its ideas in that order, once they are all at least frontier and it is not passed (mw-5r3p30.911); a Hebrew goal names no book, so any of them is offered
   if (lang === 'hbo') {
     const needed = new Set(needs.ideas.map((i) => i.id));
-    const idea = ladderFor(lang).ideas.find((i) => needed.has(i.id) && levelOf(levels, i.id) === 'notYet');
-    return idea && { idea, lesson: undefined };
+    const order = ladderFor(lang).ideas;
+    const lessons = hebrewPassageSteps();
+    for (const [at, idea] of order.entries()) {
+      if (needed.has(idea.id) && levelOf(levels, idea.id) === 'notYet') return { idea, lesson: undefined };
+      for (const step of lessons) {
+        const ids = step.lesson.lesson.ideas;
+        const last = Math.max(...ids.map((id) => order.findIndex((i) => i.id === id)));
+        if (last !== at || passages?.states.get(step.key)?.state === 'passed') continue;
+        if (ids.every((id) => levelOf(levels, id) !== 'notYet')) return { idea: ideaOf(ids[0]), lesson: step.lesson, passage: { key: step.key, passage: step.passage, label: passageLabel(step.passage) } };
+      }
+    }
+    return undefined;
   }
   const gaps = gapsOf(levels);
   if (gaps.length > 0) return { idea: gaps[0], lesson: lessonOf(approach, gaps[0].id), gaps };

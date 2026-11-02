@@ -6,6 +6,7 @@ import type { Random } from '../quiz';
 import type { GradedVerse } from './gradedVerses';
 import { needsOfForm } from './gradedVerses';
 import { ideaOf, type GrammarIdea } from './ladder';
+import { ideaOfAny } from './ladders';
 import { buildMeaning, buildParse, buildRoles, type GrammarQuestion } from './questions';
 
 /** The most questions a Check asks (PROVISIONAL, the Governor to confirm). */
@@ -18,7 +19,7 @@ export const PASS_SHARE = 0.75;
 export const passes = (right: number, total: number): boolean => total > 0 && right / total >= PASS_SHARE;
 
 /** The titles of the ideas he missed, once each, as the end card names them: 'the perfect tense'. */
-export const weakIdeas = (missed: readonly GrammarQuestion[]): string[] => [...new Set(missed.map((q) => ideaOf(q.ideaId).title.replace(/^The /, 'the ')))];
+export const weakIdeas = (missed: readonly GrammarQuestion[]): string[] => [...new Set(missed.map((q) => ideaOfAny(q.ideaId).title.replace(/^The /, 'the ')))];
 
 function ideaIfAny(id: string): GrammarIdea | undefined {
   try {
