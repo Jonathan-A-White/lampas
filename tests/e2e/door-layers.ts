@@ -176,6 +176,49 @@ export async function openAllLexicons(page: Page): Promise<Locator> {
   return sheet;
 }
 
+/**
+ * The sheet 'App not on this phone' (mw-5r3p30.977), over a word sheet. It opens only when a tap on an app's Study link finds no app and the link has no https fallback; every link the app lists has one
+ * (the last that had none, Accordance, was unlisted by mw-5r3p30.738), so the built app is served with the one test that tells a fallback from none (openApp.ts armFallback's `startsWith("https://")`)
+ * changed to a scheme no link has: the phone then behaves as if it had no web fallback. The test fails here, not silently, if the built code no longer holds that text.
+ */
+export async function openAppMissing(page: Page): Promise<Locator> {
+  let changed = 0;
+  await page.route(/\/assets\/index-[^/]*\.js$/, async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    const patched = body.replaceAll('startsWith("https://")', 'startsWith("no-web-fallback://")');
+    if (patched !== body) changed += 1;
+    await route.fulfill({ response, body: patched });
+  });
+  await openUnlocked(page);
+  await openLongLibrary(page);
+  expect(changed, 'the built code names armFallback\'s https test').toBeGreaterThan(0);
+  await page.goto('/#/?c=8&view=greek');
+  await page.locator('[data-verse="1"] [data-word="1"]').click();
+  const word = dialog(page, 'Word');
+  await expect(word).toBeVisible();
+  // the tap hands the page to Logos; nothing takes it, so after 1.5 s the sheet says the app is not here. Chromium would try the logosres: address and leave its input stuck behind that navigation:
+  // the page's own handler still hears the tap, the address is not followed
+  await page.evaluate(() => document.addEventListener('click', (e) => (e.target as Element).closest('a')?.href.startsWith('logos') && e.preventDefault(), true));
+  await word.getByRole('group', { name: 'Study' }).getByRole('group', { name: 'Logos', exact: true }).getByRole('link').first().click();
+  const sheet = dialog(page, 'App not on this phone');
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+/** The small English sheet a tapped English word opens at Just English (a new reader's dial), with no Greek on it: 2 John 1:5, "we love". */
+export async function openEnglishWord(page: Page): Promise<Locator> {
+  // the config starts every phone at the Greek dial's 5; this one starts where a new reader does (src/data/repositories/greekInterest.ts)
+  await page.addInitScript(() => window.localStorage.setItem('lampas.greekInterestStart', '0'));
+  await openUnlocked(page);
+  await page.goto('/#/?b=2jn&c=1');
+  await expect(page.locator('[data-verse="5"]')).toBeVisible();
+  await page.locator('[data-verse="5"]').getByRole('button', { name: 'we love', exact: true }).click();
+  const sheet = dialog(page, 'English word');
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
 /** The chooser behind the Verse view's 'In another book…', with the long library on. */
 export async function openInLogosChooser(page: Page): Promise<Locator> {
   await openUnlocked(page);
