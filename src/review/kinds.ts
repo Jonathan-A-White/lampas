@@ -15,6 +15,7 @@ import { paradigmById } from '../data/paradigms';
 import { PARADIGM_KIND, drawCellQuestions, spokenForm } from '../data/paradigms/cells';
 import { parseReviewId } from '../data/readingDrill';
 import { modeFor, type Grade, type QuestionMode } from '../data/schedule';
+import { modeForQuestion, modeOfQuestion } from './asksToTap';
 import { drawWords, mulberry32, type Question, type Random } from '../data/quiz';
 import { loadForms, questionsOf } from '../data/quizWords';
 import { wordsInPlay } from '../data/studyLanguage';
@@ -240,16 +241,20 @@ export const GRAMMAR: ReviewKind = {
       const idea = ideaIfAny(r.id);
       if (!idea) return [];
       const kept = fetched.get(idea.id);
-      if (kept) return [{ kind: 'grammar', id: idea.id, question: kept, mode: modeFor(r.step) }];
+      if (kept) return [{ kind: 'grammar', id: idea.id, question: kept, mode: modeForQuestion(kept, r.step) }];
       // a Hebrew idea is asked from the Hebrew ladder: a letter by name or glyph, a word idea by tapping a word of the passage's Hebrew chapters (mw-gdcyf98.21)
-      if (ladderLangOf(idea.id) === 'hbo') return [{ kind: 'grammar', id: idea.id, question: buildHebrewIdeaQuestion(idea, hebrewPassage, own, hebrewPronunciationOf()), mode: modeFor(r.step) }];
+      if (ladderLangOf(idea.id) === 'hbo') {
+        const hebrew = buildHebrewIdeaQuestion(idea, hebrewPassage, own, hebrewPronunciationOf());
+        return [{ kind: 'grammar', id: idea.id, question: hebrew, mode: modeForQuestion(hebrew, r.step) }];
+      }
       // an idea at SOLID_STEP or more may also be asked to parse a whole word (mw-emk3xt.3, PROVISIONAL)
       const question = buildIdeaQuestion(idea, passage, own, scheme.respell, scheme, opened, graded, r.step >= SOLID_STEP);
-      // a full parsing is asked step by step, for a strong idea too: it is never a flashcard
-      return [{ kind: 'grammar', id: idea.id, question, mode: question.kind === 'parse' ? 'choice' : modeFor(r.step) }];
+      // a full parsing is asked step by step, and a question to tap is answered by the tap, for a strong idea too: neither is ever a flashcard (src/review/asksToTap.ts)
+      return [{ kind: 'grammar', id: idea.id, question, mode: modeForQuestion(question, r.step) }];
     });
   },
-  isRight: (item, picked) => item.kind === 'grammar' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
+  // a question to tap kept as a flashcard (a round saved before it was never one) is still answered by its tap
+  isRight: (item, picked) => item.kind === 'grammar' && (modeOfQuestion(item.question, item.mode) === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
   hear: (item) => {
     if (item.kind === 'grammar') speakQuestion(item.question);
   },
@@ -288,7 +293,7 @@ export const PARADIGM: ReviewKind = {
       return table ? drawCellQuestions(table, levels, own).map((question): ParadigmItem => ({ kind: 'paradigm', id: table.id, question, mode: modeFor(r.step) })) : [];
     });
   },
-  isRight: (item, picked) => item.kind === 'paradigm' && (item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
+  isRight: (item, picked) => item.kind === 'paradigm' && (modeOfQuestion(item.question, item.mode) === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
   hear: (item) => {
     // said once answered: before, it would give the answer away
     const form = item.kind === 'paradigm' ? spokenForm(item.question.right) : undefined;
@@ -347,10 +352,12 @@ export const SOUNDS: ReviewKind = {
       if (at.lang === 'en') return [{ kind: 'sound', id: r.id, question: null, word: at.unit, mode: 'flashcard' }];
       if (at.lang === 'he') return [{ kind: 'sound', id: r.id, question: null, word: at.unit, lang: 'he', mode: 'flashcard' }];
       const idea = ideaIfAny(at.unit);
-      return idea?.parent ? [{ kind: 'sound', id: r.id, question: buildIdeaQuestion(idea, [], own, respell), word: null, mode: modeFor(r.step) }] : [];
+      if (!idea?.parent) return [];
+      const question = buildIdeaQuestion(idea, [], own, respell);
+      return [{ kind: 'sound', id: r.id, question, word: null, mode: modeForQuestion(question, r.step) }];
     });
   },
-  isRight: (item, picked) => item.kind === 'sound' && (item.question === null || item.mode === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
+  isRight: (item, picked) => item.kind === 'sound' && (item.question === null || modeOfQuestion(item.question, item.mode) === 'flashcard' ? picked === KNEW_IT : picked === item.question.right),
   hear: (item) => {
     if (item.kind !== 'sound') return;
     if (item.question) speakQuestion(item.question);
