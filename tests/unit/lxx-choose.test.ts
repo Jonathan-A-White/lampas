@@ -132,7 +132,7 @@ describe('lxx:pending and lxx:batches', () => {
 
   it('lxx:batches gives one batch for the fixture with the counts the listing has', async () => {
     const lines: string[] = [];
-    const batches = await runBatches(['--book', 'gen'], { input: GEN_1, log: (l) => lines.push(l) });
+    const batches = await runBatches(['--book', 'gen'], { input: GEN_1, outDir: tmp(), log: (l) => lines.push(l) });
     expect(batches).toHaveLength(1);
     expect(batches[0]).toMatchObject({ n: 1, name: 'gen-01', firstChapter: 1, lastChapter: 1 });
     expect(batches[0].words).toHaveLength(161);
@@ -149,7 +149,7 @@ describe('lxx:pending and lxx:batches', () => {
 
   it('lxx:batches --all gives a row for each Old Testament book of the file: its words, its pending words, those with no candidate and how many of those are names', async () => {
     const lines: string[] = [];
-    await runBatches(['--all'], { input: GEN_1, log: (l) => lines.push(l) });
+    await runBatches(['--all'], { input: GEN_1, outDir: tmp(), log: (l) => lines.push(l) });
     expect(lines[0]).toBe(['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name'].join('\t'));
     expect(lines).toHaveLength(3);
     expect(lines[1]).toBe(`gen\t${gen.words.length}\t161\t2\t${((100 * 2) / gen.words.length).toFixed(2)}%\t1`);
@@ -158,7 +158,7 @@ describe('lxx:pending and lxx:batches', () => {
     const w = (ref: string, display: string): { ref: string; verse: string; form: string; display: string } => ({ ref, verse: ref.split('#')[0], form: display.replace(/[.,·]/g, ''), display });
     const verse = [w('Gen.4:20#1', 'καὶ'), w('Gen.4:20#2', 'ἔτεκεν'), w('Gen.4:20#3', 'Ἀδὰ'), w('Gen.4:20#4', 'τὸν'), w('Gen.4:20#5', 'Ἰωβέλ·'), w('Gen.4:20#6', 'Οὗτος'), w('Gen.4:21#1', 'Ἰουβάλ')];
     expect([...nameRefs(verse)]).toEqual(['Gen.4:20#3', 'Gen.4:20#5']);
-    await expect(runBatches(['--all', '--book', 'gen'], { input: GEN_1 })).rejects.toThrow(/usage/);
+    await expect(runBatches(['--all', '--book', 'gen'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/usage/);
   });
 
   it('cuts a fixture of two chapters at the chapter boundary', async () => {
@@ -166,14 +166,14 @@ describe('lxx:pending and lxx:batches', () => {
     const two = deriveBook(input, 'gen');
     expect(two.pending.filter((p) => p.ref.startsWith('Gen.2:'))).toHaveLength(161);
     // a batch size the first chapter falls short of by less than the second would overshoot: two batches, one chapter each
-    const cut = await runBatches(['--book', 'gen', '--size', '200'], { input });
+    const cut = await runBatches(['--book', 'gen', '--size', '200'], { input, outDir: tmp() });
     expect(cut.map((b) => [b.firstChapter, b.lastChapter, b.words.length])).toEqual([
       [1, 1, 161],
       [2, 2, 161],
     ]);
     expect(cut[0].words.every((w) => chapterOf(w.ref) === 1)).toBe(true);
     // a size the second chapter overshoots by less than the first falls short: the two chapters are one batch
-    const whole = await runBatches(['--book', 'gen', '--size', '300'], { input });
+    const whole = await runBatches(['--book', 'gen', '--size', '300'], { input, outDir: tmp() });
     expect(whole.map((b) => [b.firstChapter, b.lastChapter, b.words.length])).toEqual([[1, 2, 322]]);
     // the listing of batch 2 holds chapter 2 and no word of chapter 1
     const out = await runPending(['--book', 'gen', '--batch', '2', '--size', '200'], { input, outDir: tmp() });
@@ -187,7 +187,7 @@ describe('lxx:pending and lxx:batches', () => {
     await expect(runPending(['--book', 'gen', '--batch', '0'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/usage/);
     await expect(runPending(['--batch', '1'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/usage/);
     await expect(runPending(['--book', 'xyz', '--batch', '1'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/no book 'xyz'/);
-    await expect(runBatches([], { input: GEN_1 })).rejects.toThrow(/usage/);
+    await expect(runBatches([], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/usage/);
   });
 });
 
@@ -401,6 +401,7 @@ describe('the blind recheck', () => {
       doc: join(tmp(), 'r.md'),
       choicesDir: join(outDir, 'choices'),
       recheckDir: join(outDir, 'recheck'),
+      morpheusDir: tmp(),
       known: () => [],
       books: [['Gen', 'Genesis']],
     });
