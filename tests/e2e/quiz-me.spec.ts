@@ -1,4 +1,4 @@
-// tests/e2e/quiz-me.spec.ts — Quiz me in the Verse view (mw-5r3p30.74) at phone width, on the passage under a heading: the fifth action fits the row,
+// tests/e2e/quiz-me.spec.ts — Quiz me in the Verse view (mw-5r3p30.74) at phone width, on the passage under a heading: the actions fit the row,
 // the Start the quiz button stands where the hold bar stands, and the quiz opens in the Talk sheet with a stubbed tutor's first question. jsdom has
 // no layout, so every size and place is proven here.
 import { expect, test, type Page } from '@playwright/test';
@@ -28,11 +28,11 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view).toBeVisible();
 
-  // the passage's four actions (no Diagram, mw-5r3p30.895; Copy is a tool under the text, mw-5r3p30.896) in two rows, each inside the phone and a thumb tall
+  // the passage's three actions (no Diagram, mw-5r3p30.895; Copy is a tool under the text, mw-5r3p30.896) in one row, each inside the phone and a thumb tall
   const row = view.getByRole('group', { name: 'Actions', exact: true });
   const tops = new Set<number>();
   const buttons = await row.getByRole('button').all();
-  expect(buttons).toHaveLength(4);
+  expect(buttons).toHaveLength(3);
   for (const button of buttons) {
     const b = await button.boundingBox();
     if (!b) throw new Error('no button box');
@@ -41,7 +41,7 @@ test('Quiz me on a passage: the action fits the row, the button stands at the fo
     expect(b.height).toBeGreaterThanOrEqual(43.5);
     tops.add(Math.round(b.y));
   }
-  expect(tops.size).toBe(2);
+  expect(tops.size).toBe(1);
 
   await view.getByRole('button', { name: 'Practise', exact: true }).click();
   await expect(view.getByRole('button', { name: 'Practise', exact: true })).toHaveAttribute('aria-pressed', 'true');
