@@ -40,6 +40,9 @@
     "words.3.sounds_alike": {
       "equals": true
     },
+    "words.4.mark": {
+      "equals": "right"
+    },
     "words.5.mark": {
       "equals": "right"
     },
