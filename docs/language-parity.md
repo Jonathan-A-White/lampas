@@ -62,7 +62,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `pictures` | Memory pictures on the teach sheet and in the talk | pictures | hebrew-words | gap |
 | `parsing-drill` | The Parsing drill on the open chapter asks a word’s terms with the verse in its language | drill | hebrew-words | gap |
 | `example-words` | The example words a new phone holds (docs/example-words.md), which the offers and the tests draw on | greek-offer | hebrew-words | gap |
-| `grammar-ladder` | The grammar ladder: the Goal, the idea sheet, the terms and their Grammar sheet, levels that turn solid, inference | goal-progress, goal, grammar-ladder, grammar-levels, grammar-terms, hebrew-grammar, hebrew-ladder, idea-sheet, inference, pattern-ideas | hebrew-grammar, hebrew-ladder, hebrew-word-sheet | gap |
+| `grammar-ladder` | The grammar ladder: the Goal, the idea sheet, the terms and their Grammar sheet, levels that turn solid, inference | goal-progress, goal, grammar-ladder, grammar-levels, grammar-terms, hebrew-grammar, hebrew-ladder, idea-sheet, inference, pattern-ideas, septuagint | hebrew-grammar, hebrew-ladder, hebrew-word-sheet | gap |
 | `drill-it` | Drill it on an idea, the grammar drills in Review, more drill items from the mill | drill-it, drill-sound-rule, fetched-drill-items, grammar-drills, sound-alike-miss | hebrew-letters, hebrew-quiz | gap |
 | `placement` | Placement: test me on the grammar and meet me where I am | placement, quick-round | hebrew-ladder | gap |
 | `paradigms` | Paradigms: the tables, a word’s own paradigm, Drill on a table, How much of a table | hebrew-paradigms, own-paradigm, paradigm-drill, paradigms | hebrew-paradigms, hebrew-word-sheet | gap |

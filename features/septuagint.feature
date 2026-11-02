@@ -83,3 +83,11 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     Then the Talk sheet opens on Genesis 1:14 with the question "Is Γενηθήτωσαν in Genesis 1:14 read right as γίνομαι, verb, aorist passive imperative, 3rd person plural?"
     And the mill received one bible-talk grist about the word as for any word question
     And the tutor's answer shows under the question
+
+  # R4 promised a guessed word is never quizzed (mw-5r3p30.963): the grammar questions over a passage are built from the words Lampas read, never from a guess. Genesis 1 has three guesses:
+  # ὤφθη (verse 9), Γενηθήτωσαν (verse 14) and ζωσῶν (verse 20), each the only word of its verse with some parsing, so a builder that did not skip it would ask for it.
+  @uc-grammar-ladder @greek
+  Scenario: A grammar question over the Septuagint chapter never asks for a guessed word
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek" and the chapter's grammar questions built for every idea
+    Then no question has "ὤφθη", "Γενηθήτωσαν" or "ζωσῶν" as its right answer
+    And a read word of Genesis 1 is the right answer of some question

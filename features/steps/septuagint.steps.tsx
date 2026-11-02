@@ -9,6 +9,10 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { loadChapter, type Chapter } from '../../src/data/chapter';
+import { LADDER } from '../../src/data/grammar/ladder';
+import { buildTapForm } from '../../src/data/grammar/questions';
+import { mulberry32 } from '../../src/data/quiz';
 import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -247,6 +251,29 @@ describeFeature(feature, ({ Scenario }) => {
       const talk = screen.getByRole('dialog', { name: 'Talk about Genesis 1:14' });
       await waitFor(() => expect(talk.querySelectorAll('[data-turn]')).toHaveLength(1));
       expect(talk.querySelector('[data-turn]')).toHaveTextContent(GRAMMAR_HELP_ANSWER.answer);
+    });
+  });
+
+  // R4's 'never quizzed' (mw-5r3p30.963): the grammar questions Review and Drill it build over a passage, here over the chapter as the app loads it with the Septuagint on
+  Scenario('A grammar question over the Septuagint chapter never asks for a guessed word', ({ Given, Then, And }) => {
+    let rights: string[] = [];
+    Given("Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string} and the chapter's grammar questions built for every idea", async (_: unknown, view: string) => {
+      await openOn('Genesis 1', 'on', { readerView: view });
+      const chapter: Chapter = await loadChapter('gen', 1);
+      rights = [];
+      for (const idea of LADDER) {
+        for (let seed = 1; seed <= 20; seed += 1) {
+          const q = buildTapForm(idea, [chapter], mulberry32(seed));
+          if (q) rights.push(q.right);
+        }
+      }
+    });
+    Then('no question has {string}, {string} or {string} as its right answer', (_: unknown, a: string, b: string, c: string) => {
+      for (const guess of [a, b, c]) expect(rights, guess).not.toContain(guess);
+    });
+    And('a read word of Genesis 1 is the right answer of some question', () => {
+      expect(rights.length).toBeGreaterThan(0);
+      expect(rights).toContain('ἐποίησεν');
     });
   });
 });

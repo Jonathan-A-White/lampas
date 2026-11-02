@@ -5,7 +5,7 @@
 // the question tests first (mw-i7xe0n.7): a look-alike letter, the same word's other ending, the twin with the other mark, the preposition's other case.
 import { bookOf } from '../books';
 import { OPTION_COUNT, choicesOf, lookAlikesOf, pairMates } from '../choices';
-import { wordLemma, type Chapter, type EnglishChunk, type GreekWord, type Verse } from '../chapter';
+import { isGuess, wordLemma, type Chapter, type EnglishChunk, type GreekWord, type Verse } from '../chapter';
 import { buildSteps, type ParseStep } from '../drill';
 import { decodeParse, parseSegments, splitParse, type ParseFeatureId, type SplitParse } from '../parseCode';
 import { PARADIGMS, tableFor } from '../paradigms';
@@ -86,9 +86,13 @@ interface Place {
   key: string;
 }
 
+/**
+ * The words of the passage a question may be about. A word the Septuagint derivation only guessed (`y: 'g'`, isGuess) is never one: its parsing is not to be taught as right, so it is
+ * never an answer, a form or an ending asked (mw-5r3p30.963, R4's 'never quizzed'). Every builder that reads the passage's words reads them here, or tests isGuess itself.
+ */
 function placesOf(passage: readonly Chapter[]): Place[] {
   return passage.flatMap((c) =>
-    c.verses.flatMap((verse) => verse.g.map((word) => ({ word, verse, ref: `${c.book} ${c.chapter}:${verse.n}`, key: `${c.code}.${c.chapter}.${verse.n}` }))),
+    c.verses.flatMap((verse) => verse.g.filter((word) => !isGuess(word)).map((word) => ({ word, verse, ref: `${c.book} ${c.chapter}:${verse.n}`, key: `${c.code}.${c.chapter}.${verse.n}` }))),
   );
 }
 
@@ -267,12 +271,15 @@ interface Spot {
   verse: Verse;
 }
 
+/** A word 'What does this say?' may be about: it needs the idea, has a usable chunk of English, and was read, not guessed (mw-5r3p30.963). */
+const askableMeaning = (idea: GrammarIdea, verse: Verse, w: GreekWord): boolean => !isGuess(w) && needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1]);
+
 /** The verses that have a form needing the idea in a chunk with English; with `graded`, the easiest third of those at his level (all of them when none is), seeded; `only` is one verse's key. */
 function meaningVerse(idea: GrammarIdea, passage: readonly Chapter[], random: Random, graded?: readonly GradedVerse[], only?: string): Spot | null {
   const keyOf = (s: Spot): string => `${s.chapter.code}.${s.chapter.chapter}.${s.verse.n}`;
   const spots = passage
     .flatMap((chapter) =>
-      chapter.verses.filter((verse) => verse.g.some((w) => needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1]))).map((verse): Spot => ({ chapter, verse })),
+      chapter.verses.filter((verse) => verse.g.some((w) => askableMeaning(idea, verse, w))).map((verse): Spot => ({ chapter, verse })),
     )
     .filter((s) => only === undefined || keyOf(s) === only);
   if (spots.length === 0) return null;
@@ -292,7 +299,7 @@ export function buildMeaning(idea: GrammarIdea, passage: readonly Chapter[], ran
   const spot = meaningVerse(idea, passage, random, graded, only);
   if (!spot) return null;
   const { chapter, verse } = spot;
-  const word = pick(verse.g.filter((w) => needsIdea(w.p, idea.id) && usable(verse.e[w.e ?? -1])), random);
+  const word = pick(verse.g.filter((w) => askableMeaning(idea, verse, w)), random);
   const at = word.e!;
   const clause = verse.e.length - 1 - at >= CLAUSE_MIN + 1 && random() < 0.5;
   const size = clause ? CLAUSE_MIN + Math.floor(random() * (CLAUSE_MAX - CLAUSE_MIN + 1)) : 1;
@@ -436,7 +443,9 @@ function rolesOf(verse: Verse): Roles | null {
   const objects = read.filter((r) => nominal(r, 'accusative'));
   const once = (w: GreekWord) => verse.g.filter((g) => g.t === w.t).length === 1;
   if (subjects.length !== 1 || !once(verbs[0].word) || !once(subjects[0].word)) return null;
-  return { verb: verbs[0].word, subject: subjects[0].word, object: objects.length === 1 && once(objects[0].word) ? objects[0].word : undefined };
+  // a guessed word is counted above (it can make a tap ambiguous) but is never the one asked for (mw-5r3p30.963)
+  if (isGuess(verbs[0].word) || isGuess(subjects[0].word)) return null;
+  return { verb: verbs[0].word, subject: subjects[0].word, object: objects.length === 1 && once(objects[0].word) && !isGuess(objects[0].word) ? objects[0].word : undefined };
 }
 
 /**
@@ -1095,7 +1104,7 @@ function spotsOfUse(idea: GrammarIdea, passage: readonly Chapter[]): UseSpot[] {
   return passage.flatMap((c) =>
     c.verses.flatMap((verse) =>
       usesOf(verse)
-        .filter((use) => use.id === idea.id)
+        .filter((use) => use.id === idea.id && !use.words.some((i) => isGuess(verse.g[i])))
         .map((use): UseSpot => ({ place: { word: verse.g[use.words[0]], verse, ref: `${c.book} ${c.chapter}:${verse.n}`, key: `${c.code}.${c.chapter}.${verse.n}` }, use })),
     ),
   );

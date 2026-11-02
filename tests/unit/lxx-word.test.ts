@@ -11,6 +11,11 @@ import { drawDrill } from '../../src/data/drill';
 import { pickFrontier } from '../../src/data/frontier';
 import { loadSeptuagintChapter } from '../../src/data/lxxChapter';
 import { buildQuestion, mulberry32 } from '../../src/data/quiz';
+import type { GradedVerse } from '../../src/data/grammar/gradedVerses';
+import { grammarExamples } from '../../src/data/grammarExamples';
+import { passageWords } from '../../src/data/grammar/drillItems';
+import { LADDER } from '../../src/data/grammar/ladder';
+import { buildEnding, buildBreathing, buildIdeaQuestion, buildMeaning, buildParse, buildRoles, buildStress, buildSyllables, buildTapForm, buildTapUse, buildUse, type GrammarQuestion } from '../../src/data/grammar/questions';
 import { listWords } from '../../src/data/repositories';
 import { confidenceWord, readingOf } from '../../src/reader/septuagint';
 import { useNewWords } from '../../src/useNewWords';
@@ -151,5 +156,80 @@ describe("Review's scheduler", () => {
     chapter.verses[0] = { ...chapter.verses[0], g: chapter.verses[0].g.map((w) => (w.l === 'θεός' ? { ...w, y: 'g', c: 0.4 } : w)) };
     const result = await addLemmaToLearn({ title: 'Test 1', chapter, verse: null }, 'θεός');
     expect(result.result).toBe('added');
+  });
+});
+
+// a guessed word is never the answer of a grammar question (mw-5r3p30.963; R4 promised "never quizzed", and the builders over a passage had no guard)
+describe('the grammar questions over a Septuagint chapter', () => {
+  const SAMPLED = new Set(['stress', 'syllables', 'breathing']);
+  const GUESSED = ['ὤφθη', 'Γενηθήτωσαν', 'ζωσῶν'];
+  const SEEDS = Array.from({ length: 40 }, (_, i) => i + 1);
+  const guessesOf = (chapter: Chapter): Set<string> => new Set(chapter.verses.flatMap((v) => v.g.filter(isGuess).map((w) => w.t)));
+  const keyOf = (n: number): string => `${gen1.code}.${gen1.chapter}.${n}`;
+  const graded = (chapter: Chapter): GradedVerse[] =>
+    chapter.verses.map((v) => ({ ref: `${chapter.code}.${chapter.chapter}.${v.n}`, code: chapter.code, chapter: chapter.chapter, verse: v.n, forms: { pass: 1, total: 1 }, words: { known: 1, total: 1 }, atLevel: true, missing: [], score: 1 }));
+  /** every word a question names as its answer or shows as its form */
+  const shownOf = (q: GrammarQuestion): string[] => [q.right, q.form, ...(q.marked ?? []), ...(q.words && q.markedAt ? q.markedAt.map((i) => q.words![i]) : [])].filter((s): s is string => typeof s === 'string');
+
+  it('knows the three guessed words of the fixture', () => {
+    expect([...guessesOf(gen1)].sort()).toEqual([...GUESSED].sort());
+  });
+
+  it('never gives a guessed word as the right answer of a tap-the-form question, and still can give a read one', () => {
+    const answers = new Set<string>();
+    for (const idea of LADDER) {
+      for (const seed of SEEDS) {
+        for (const only of [undefined, keyOf(9), keyOf(14), keyOf(20)]) {
+          const q = buildTapForm(idea, [gen1], mulberry32(seed), undefined, only);
+          if (q) answers.add(q.right);
+        }
+      }
+    }
+    for (const word of GUESSED) expect(answers.has(word), `${word} was the right answer`).toBe(false);
+    expect(answers.size).toBeGreaterThan(0);
+  });
+
+  it('never builds any question over a chapter that is all guesses (but the ones made of sample words)', () => {
+    const all: Chapter = { ...gen1, verses: gen1.verses.map((v): Verse => ({ ...v, g: v.g.map((w): GreekWord => ({ ...w, y: 'g', c: 0.4 })) })) };
+    const words = new Set(all.verses.flatMap((v) => v.g.map((w) => w.t)));
+    const list = graded(all);
+    for (const idea of LADDER) {
+      for (const seed of [1, 2, 3]) {
+        const random = () => mulberry32(seed);
+        expect(buildTapForm(idea, [all], random()), `tap-form ${idea.id}`).toBeNull();
+        expect(buildEnding(idea, [all], random()), `ending ${idea.id}`).toBeNull();
+        expect(buildParse(idea, [all], random(), list), `parse ${idea.id}`).toBeNull();
+        expect(buildRoles(idea, [all], random(), list), `roles ${idea.id}`).toBeNull();
+        expect(buildMeaning(idea, [all], random()), `meaning ${idea.id}`).toBeNull();
+        expect(buildUse(idea, [all], random()), `use ${idea.id}`).toBeNull();
+        expect(buildTapUse(idea, [all], random()), `tap-use ${idea.id}`).toBeNull();
+        // the quick round's look-alike letters and the stress, syllable and breathing words of SAMPLE_WORDS are not the chapter's: only the idea's own question is read
+        const q = buildIdeaQuestion(idea, [all], random(), undefined, undefined, undefined, list);
+        if (!idea.parent && !SAMPLED.has(q.kind)) for (const shown of shownOf(q)) expect(words.has(shown), `${idea.id} (${q.kind}) shows ${shown}`).toBe(false);
+        for (const build of [buildStress, buildSyllables, buildBreathing]) expect(words.has(build(idea, [all], random()).form ?? ''), `${idea.id} ${build.name}`).toBe(false);
+      }
+    }
+  });
+
+  it('never shows a guessed word as the form of a question over the chapter, whichever builder makes it', () => {
+    const guesses = guessesOf(gen1);
+    for (const idea of LADDER) {
+      for (const seed of SEEDS) {
+        const random = () => mulberry32(seed);
+        const made = [buildIdeaQuestion(idea, [gen1], random(), undefined, undefined, undefined, graded(gen1)), buildEnding(idea, [gen1], random(), undefined, graded(gen1)), buildParse(idea, [gen1], random(), graded(gen1)), buildRoles(idea, [gen1], random(), graded(gen1)), buildMeaning(idea, [gen1], random(), graded(gen1)), buildStress(idea, [gen1], random()), buildSyllables(idea, [gen1], random()), buildBreathing(idea, [gen1], random())];
+        for (const q of made) if (q) for (const shown of shownOf(q)) expect(guesses.has(shown), `${idea.id} (${q.kind}) shows ${shown}`).toBe(false);
+      }
+    }
+  });
+
+  it("shows no guessed word as an example of a term on a Grammar sheet, nor lends its lemma to a Drill it step (a lemma read nowhere)", () => {
+    const shown = (term: string): string[] => grammarExamples(gen1, term, undefined, 100).map((e) => e.word.t);
+    expect(shown('imperative')).not.toContain('Γενηθήτωσαν');
+    expect(shown('imperative')).toContain('ἔστω');
+    expect(shown('participle')).not.toContain('ζωσῶν');
+    expect(shown('aorist')).toContain('ἐποίησεν');
+    const made: Chapter = { ...gen1, verses: gen1.verses.map((v): Verse => ({ ...v, g: v.g.map((w) => (w.l === 'ποιέω' ? { ...w, y: 'g', c: 0.4 } : w)) })) };
+    expect(passageWords([gen1])).toContain('ποιέω');
+    expect(passageWords([made])).not.toContain('ποιέω');
   });
 });
