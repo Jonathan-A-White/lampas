@@ -85,8 +85,7 @@ import { TeachSheet } from './TeachSheet';
 import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
-import { HintCard } from './tips/HintCard';
-import { SEPTUAGINT_WEAVE } from './tips/hints';
+import { SeptuagintNote } from './reader/SeptuagintNote';
 import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintTitle } from './reader/septuagint';
 import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
@@ -490,7 +489,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           <p data-reader-subtitle className="chrome-small px-2 pb-1 text-center text-muted">
             {SEPTUAGINT_SUBTITLE}
           </p>
-          {weave !== undefined && weave !== 'off' ? <HintCard event={SEPTUAGINT_WEAVE} className="mx-2 mb-1" /> : null}
+          {weave !== undefined && weave !== 'off' ? <SeptuagintNote className="mx-2 mb-1" /> : null}
         </>
       ) : null}
       {septuagintOn && chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo' && !chapterReading ? (

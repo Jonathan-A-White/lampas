@@ -12,9 +12,6 @@ export const CHAPTER_BUTTONS_OFFER = 'chapter-buttons-offer';
 /** The offer's id: dismissing it is answering it (Hide or Keep), for good. */
 export const HIDE_CHAPTER_BUTTONS = 'hide-chapter-buttons';
 
-/** A Septuagint chapter is open while the Weave is on (src/Reader.tsx, mw-u2w5klk.11): its English is one chunk a verse, so the Weave is off there. */
-export const SEPTUAGINT_WEAVE = 'septuagint-weave';
-
 /** The first open of a main screen (mw-5r3p30.824): the screen draws a HintCard of its event, once. The Reader has none: its first visit already has the welcome, the Immersive card and the chapter-button tips. */
 export const GOAL_OPENED = 'goal-opened';
 export const WORDS_OPENED = 'words-opened';
@@ -26,7 +23,6 @@ export const HINTS: readonly tips.Tip[] = [
   { id: 'long-press-word', text: 'Long-press a word to hear it', event: WORD_SHEET_OPENED },
   { id: 'swipe-chapters', text: 'Swipe the text left or right to change chapter', event: CHAPTER_NAV_SHOWN },
   { id: HIDE_CHAPTER_BUTTONS, text: 'You swipe between chapters. Hide these buttons?', event: CHAPTER_BUTTONS_OFFER },
-  { id: 'septuagint-weave', text: 'The Septuagint has one line of English a verse, so the Weave is off here', event: SEPTUAGINT_WEAVE },
   { id: 'goal-screen', text: 'Pick a goal, then Learn next opens the lesson that gets you there', event: GOAL_OPENED },
   { id: 'words-screen', text: 'Your words live here; Test quizzes you on them', event: WORDS_OPENED },
   { id: 'review-screen', text: 'Review asks what is due; say how well you knew each word', event: REVIEW_OPENED },
@@ -34,8 +30,8 @@ export const HINTS: readonly tips.Tip[] = [
   { id: 'paradigms-screen', text: 'Tap a form in a table to open the Reader where it is used', event: PARADIGMS_OPENED },
 ];
 
-/** The hints Help lists under 'Tips' (src/help.ts): all but the offer, which is a question and not a tip, and the Septuagint's note, which comes up only on that chapter (Help's Tips page is held to 400 characters a paragraph). */
-export const LISTED_HINTS: readonly tips.Tip[] = HINTS.filter((h) => h.id !== HIDE_CHAPTER_BUTTONS && h.id !== SEPTUAGINT_WEAVE);
+/** The hints Help lists under 'Tips' (src/help.ts): all but the offer, which is a question and not a tip. */
+export const LISTED_HINTS: readonly tips.Tip[] = HINTS.filter((h) => h.id !== HIDE_CHAPTER_BUTTONS);
 
 /** localStorage, or nothing when the phone refuses it: then the tip shows again, which is harmless. */
 const storage: tips.TipStorage = {
