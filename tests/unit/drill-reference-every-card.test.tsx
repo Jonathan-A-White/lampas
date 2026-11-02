@@ -58,7 +58,8 @@ const KINDS: Kind[] = [
   grammar('GrammarCard choice (an ending)', ENDING, 'choice', click('ος')),
   grammar('GrammarCard parse', PARSE, 'choice', click('verb')),
   // the flashcard is answered by Show: the reference links then, before he grades it
-  grammar('GrammarCard flashcard (tap the form)', TAP, 'flashcard', click('Show')),
+  // a question to tap is never a flashcard (mw-5r3p30.984): one kept as a flashcard is still its word buttons, and a tap answers it
+  grammar('GrammarCard kept as a flashcard (tap the form)', TAP, 'flashcard', click('ἐν')),
   grammar('GrammarCard flashcard (an ending)', ENDING, 'flashcard', click('Show')),
   {
     name: 'WordQuestion (Greek)',
@@ -99,7 +100,7 @@ describe('a reference on a drill or review card', () => {
   });
 
   it('a flashcard shown and not yet graded still has Not yet and I knew it beside the link', async () => {
-    render(<Harness kind={KINDS.find((k) => k.name.startsWith('GrammarCard flashcard (tap'))!} />);
+    render(<Harness kind={KINDS.find((k) => k.name.startsWith('GrammarCard flashcard (an ending'))!} />);
     expect(screen.queryByRole('button', { name: 'I knew it' })).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Show' }));
     expect(screen.getByRole('link', { name: REF })).toBeTruthy();
