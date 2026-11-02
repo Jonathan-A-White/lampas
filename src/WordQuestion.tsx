@@ -12,6 +12,7 @@ import { HeartOfWord } from './HeartOfWord';
 import type { Grade } from './data/schedule';
 import { WORD_GRADES } from './review/kinds';
 import { WordGrades } from './ui/SelfGrade';
+import { useDoorRoom } from './tutor/doorRoom';
 
 const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
 const OPTION_LOOK = {
@@ -41,6 +42,8 @@ export function WordQuestion({ question, index, picked, onPick, onGrade, grade =
   const missed = answered && (!right || grade === 'not');
   // a tap in the moment after the card appears is the second tap of a double tap on Next (src/ui/settle.ts)
   const settled = useSettled(index);
+  // the options leave the floating ? its room on the Hand's side (src/tutor/doorRoom.ts)
+  const room = useDoorRoom();
   const lookOf = (option: string): keyof typeof OPTION_LOOK => {
     if (!answered) return 'idle';
     if (option === question.gloss) return 'right';
@@ -77,7 +80,7 @@ export function WordQuestion({ question, index, picked, onPick, onGrade, grade =
       <div className="mt-4">
         <TapToHear text={question.prompt} />
       </div>
-      <ul className="mt-4 space-y-3">
+      <ul className={`mt-4 space-y-3 ${room}`}>
         {question.options.map((option) => {
           const look = lookOf(option);
           return (

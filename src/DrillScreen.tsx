@@ -19,6 +19,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
+import { useDoorRoom } from './tutor/doorRoom';
 import { faceOf } from './script/greekLang';
 import { DrillReference } from './markdown/DrillReference';
 
@@ -151,6 +152,8 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   // Ask the tutor and Talk about it move up into the place Next stood when the next step is drawn: a second tap of a double tap on Next lands on
   // one of them, so they wait for the step to settle (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(`${s.question}:${s.step}`);
+  // the options leave the floating ? its room on the Hand's side (src/tutor/doorRoom.ts)
+  const room = useDoorRoom();
 
   const header = (
     <ScreenHeader
@@ -308,7 +311,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
           </span>
           ?
         </p>
-        <ul className="mt-3 space-y-3">
+        <ul className={`mt-3 space-y-3 ${room}`}>
           {step.options.map((option) => {
             const look = lookOf(option);
             return (
