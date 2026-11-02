@@ -11,8 +11,10 @@ export const BAR = {
   knownParsing: 98,
   /** no word of the book left pending: a word with no answer is not an annotation, and the build fails while any waits for a choice (probe, check 4) */
   pending: 0,
-  /** guesses (a model's own lemma and parsing where the candidates held none, or none of them fit), at most this share of the book's words: a guessed
-   * lemma is not a dictionary form until checked, and the app draws it with a mark and never quizzes it (probe, check 3) */
+  /** guesses (a model's own lemma and parsing where the candidates held none, or none of them fit, or that it marked a guess: choices.ts isGuess), at most this share of the
+   * book's words: a guessed lemma is not a dictionary form until checked, and the app draws it with a mark and never quizzes it (probe, check 3). The Governor's answer
+   * (2026-11-02, "A: Count only words with no candidate", mw-u2w5klk): a choice among the candidates of a name read from its own form (support `form`) is not a guess unless the
+   * model marks it one, and is not counted; only a word no source gave a candidate is */
   guesses: 3,
   /** agreement breaks (a settled article, adjective or participle that does not agree with its settled noun), at most this many per 1,000 words (probe, check 2a) */
   breaks: 5,

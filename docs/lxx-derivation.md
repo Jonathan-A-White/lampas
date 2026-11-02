@@ -11,6 +11,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [Layer 1 in detail](#layer-1-in-detail)
 - [Layer 2 in detail](#layer-2-in-detail)
   - [Names no lexicon has: the form as its own lemma](#names-no-lexicon-has-the-form-as-its-own-lemma)
+  - [The two books over the bar on words with no candidate](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
 - [The agreement check](#the-agreement-check)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
@@ -134,11 +135,29 @@ the singular (`N-NSM` ... `N-VSN`, 15 candidates: nothing says the gender, and t
 itself as the lemma ...`, and the note `a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model`, in place of `no candidate: for the model to guess`.
 `lxx:batches --all` counts these in a column of their own (`a name from its form alone`) and adds them back in the last (`both % of words`), which is the share the table gave before: the
 guess share of the bar counts the model's choices, so a book can get under 3% when its names are read (7,776 words of the 39 books were given candidates, 3,182 forms; the agreement check settles 755 of them at once; 7,021 stay pending, which with the 10,024 still without a candidate make 17,045, 3.58% of the words, against 17,800, 3.74%, before), and a model that chooses one of these candidates is **not** marked a guess (confidence 0.8, as
-for any candidate); how sure the reading is, is the figures above, and the Governor decides whether the bar should count it. The test is `a capitalised no-candidate form is its own lemma where its ending looks indeclinable (B8)` in `tests/unit/lxx-parser.test.ts`.
+for any candidate); how sure the reading is, is the figures above, and **the Governor has answered whether the bar counts it: it does not** (his tap of 2026-11-02, "A: Count only words with no candidate", on the decision card of mw-u2w5klk; the next section). The test is `a capitalised no-candidate form is its own lemma where its ending looks indeclinable (B8)` in `tests/unit/lxx-parser.test.ts`.
 
 Three small things from the same sweep: a TBESG lemma cell that ends in a stray mark (`Ἄπις;`, `Μακαλωθ·`) loses it in `readTbesg`, as `readTbesgNames` always did; a choice whose lemma differs
 from a candidate's by a diaeresis alone (the file's Καινάν for TBESG's Καϊνάν) is that candidate (`sameLemma` in `choices.ts`; any other difference is a different lemma); and the gender of a name no source
 gives is left to the agreement check (it settles a name whose article is next to it: `τῷ Ἰωναθάν`), where no article says it all three stay.
+
+### The two books over the bar on words with no candidate (B9)
+
+Story mw-u2w5klk.20. His answer above leaves Esther (181 of 5,936 words with no candidate, 3.05%) and Lamentations (74 of 2,463, 3.004%) over 3%, with Morpheus's cache and B8 in. The words, sorted by cause
+(`grep 'no candidate' data/lxx/pending/est.tsv`), were not what the story expected, and two general rules answer them; no list of words, no lower bar.
+
+- **The editor's verse numbers are not words** (`VERSE_NUMBER` in `swete.ts`). The Greek of the additions to Esther prints the editor's own numbering of the verse's parts as a token: `⸂[1] ΕΤΟΥΣ δευτέρου` (Est 1:1), `[2] ἄνθρωπος`. These
+  were words with no candidate, since no lexicon has a number: 106 of Esther's 181, and 257 of the 39 books (1 Kings 57, Proverbs 38, Job 13, 2 Chronicles 12, Joshua 10, Daniel 8 and nine others). A token that is only a bracketed number (with the
+  editor's `⸂`, `⸃` before it) is an **editor's sign**, as `⸆` is: left out of the words, not numbered, counted with the signs. The words after it in its verse are numbered without it (`ΕΤΟΥΣ` is `Est.1:1#1`), and the book's word count falls by the number of them, so the shares of the books that have them move: none rises (`npm run lxx:batches -- --all`, the table in the closing comment of the story). A Greek numeral (`ε᾽`, Est 9:19) has no digits and no brackets, and is a word.
+  No file under `data/lxx/choices` or `known` has a reference after one of these (Genesis has none, and the known-answer chapters are the New Testament's). Test: `counts a bracketed number as an editor sign` in `tests/unit/lxx-parser.test.ts`.
+- **A word that is a whole clause is not held out as a clause's opening** (`isWholeClause` in `derive.ts`, used by `withFormNames`). Swete capitalises the first word of a verse or a clause, so the B8 rule above leaves such a word as it was; but a word that
+  opens a clause and whose own print ends it, with a full stop, a colon or the high point, is a sentence of one word, and in Lamentations it is a letter name of the acrostic: `Βήθ. Κλαίουσα ἔκλαυσεν` (Lam 1:2), `Γίμελ.`, `Δάλεθ.`, `Τιαδή.`, `Κώφ.`
+  (62 of Lamentations' 74 words with no candidate; one other word of the 39 books, in 1 Chronicles). Where its ending is one a Hebrew name has (the table above), it takes its form as its lemma and is pending with every case of every gender, as any such name.
+  49 of the 62 are so; `Ἄιν.` (-ν after ι), `Ῥήχς.` (-ς) and `Χσέν.` (-ν after έ) are not, and stay with no candidate. Test: `takes the form as the lemma of a capitalised word that opens a clause and ends it` in `tests/unit/lxx-parser.test.ts`,
+  with the words it holds out.
+
+With both, Esther has 75 words with no candidate (1.29%) and Lamentations 25 (1.02%); no book of the 39 has a higher share than before in either column of `lxx:batches --all`, and `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8` is byte for byte what it was.
+`BAR.guesses` is unchanged: 3%.
 
 ## The agreement check
 
@@ -209,7 +228,7 @@ above 5 per 1,000 in any book (Susanna 3.4, the Letter of Jeremiah 3.1); read in
 `01-Swete_word_with_punctuations.csv` (`3	ἐποίησεν`: one token a line). A verse runs from its first line to the line before the next verse's.
 
 - **A reference** is the verse and the word's number in it: `Gen.1:20#13`. The editor's signs (`⸆`, `⸂⸆⸃`: a token of nothing but signs and
-  punctuation) are not words: they are left out, not numbered, and counted (Gen 1 has five, in 1:13, 1:14, 1:19, 1:26 and 1:31).
+  punctuation) are not words: they are left out, not numbered, and counted (Gen 1 has five, in 1:13, 1:14, 1:19, 1:26 and 1:31). So is the editor's verse number of an addition (`[1]`, `⸂[1]`; 'The two books over the bar', B9).
 - **Brackets** mark letters Swete supplied where Codex Alexandrinus is damaged (`πληθυ]νέσθωσαν`, `Ἐξαγαγ[έτω`). They are stripped for look-up
   and kept in the token's display text; the word's row notes them. One bracket can open in one word and close several words later.
 - Swete writes accents as oxia (U+1F71), not tonos; the key's NFC makes them one.
@@ -225,7 +244,7 @@ A book's annotation file is written only when the book passes the bar of the pro
 | Known-answer lemma | at least 99% of the words of each known-answer chapter | The probe's John 1 scored 99.9%. A model that misses one word in a hundred makes a mistake a reader meets in every few verses |
 | Known-answer full parsing | at least 98% of the same words (lemma and the whole parsing) | The probe's John 1 scored 99.5%. Parsing is where two cases share an ending, which is where the probe found its errors |
 | Pending | none: no word of the book left without an answer | A word with no answer is not an annotation; the build fails while any waits for a choice (probe, check 4) |
-| Guesses | at most 3% of the book's words | A guess is the model's own lemma and parsing where the candidates held none, or none of them fit. A guessed lemma is not a dictionary form until checked; the app draws it with a mark and never quizzes it (probe, check 3) |
+| Guesses | at most 3% of the book's words | A guess is the model's own lemma and parsing where the candidates held none, or none of them fit, or that it marked a guess (`isGuess`: layer 3 with a note beginning `guess:`). A guessed lemma is not a dictionary form until checked; the app draws it with a mark and never quizzes it (probe, check 3). **The Governor's answer, 2026-11-02: "A: Count only words with no candidate"**: a choice among the candidates of a name read from its own form (support `form`, 'Names no lexicon has') is not marked a guess and does not count, unless the model marks it one; only a word no source gave a candidate counts. The test is `the bar counts only the words with no candidate, or marked a guess: not a choice among form candidates (B9)` in `tests/unit/lxx-bar.test.ts` |
 | Agreement breaks | at most 5 per 1,000 words of the book | The agreement check finds a settled article, adjective or participle that does not agree with its settled noun. Genesis has 1.2 (probe, check 2) |
 
 **The known-answer chapters of a build** are two: John 1, and one other New Testament chapter that changes with the build. The other chapter is taken from `SECOND_CHAPTERS` in
