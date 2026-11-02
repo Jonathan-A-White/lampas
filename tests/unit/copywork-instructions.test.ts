@@ -2,11 +2,11 @@
 // calling the dagesh "missing" from the bet or the shin: mw-5r3p30.959 worked the shin's two dots, so the model read the shin dot for the dagesh and the
 // dagesh for nothing. The Hebrew section now says where each mark of a pointed letter sits (the dagesh inside the body, the shin dot above, the vowel below)
 // and works the two words that flaked, each mark found one by one; the live proof is `mw grist eval lampas copywork --example hbo-perfect-genesis-1-1`.
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { instructionsOf } from '../../scripts/grind-parts';
 import '../support/grinds-in-graph';
 
-const text = readFileSync('grinds/copywork.instructions.md', 'utf8');
+const text = instructionsOf('copywork');
 const from = text.indexOf('### Hebrew (`hbo`)');
 const hebrew = text.slice(from, text.indexOf('\n## ', from));
 
