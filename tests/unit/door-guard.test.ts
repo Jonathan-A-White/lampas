@@ -20,7 +20,6 @@ const ALLOWED: Record<string, string> = {
   'Talk.tsx': 'the Talk sheet itself: it calls useDoorBusy, and the ? is put away while it is open',
   'VerseView.tsx': 'the Verse view (z-5, under the Talk): the Reader registers the verse it shows as the target (Reader.tsx), and the Verse view is a row of OVERLAYS in tutor-door.spec.ts',
   'GrammarSheet.tsx': 'drawn by the word sheet, which registers the target (WordSheet.tsx); a row of OVERLAYS in tutor-door.spec.ts',
-  'EnglishWordSheet.tsx': 'drawn by the word sheet, which registers or withholds the target (WordSheet.tsx useNoDoor)',
   'reader/VariantSheet.tsx': 'the brace sheet: the Reader registers the unit as the target (Reader.tsx); a row of OVERLAYS in tutor-door.spec.ts',
 };
 

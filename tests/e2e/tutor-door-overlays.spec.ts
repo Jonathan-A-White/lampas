@@ -7,9 +7,11 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import {
   openAllLexicons,
+  openAppMissing,
   openAskApproachFromSettings,
   openAskForBook,
   openConversationAlert,
+  openEnglishWord,
   openDropConfirm,
   openInLogosChooser,
   openMapsFrame,
@@ -141,6 +143,8 @@ OVERLAYS.push(
     },
   },
   { name: 'All lexicons', door: 'hidden', open: openAllLexicons, close: button('Done') },
+  { name: 'the English word sheet', door: 'hidden', open: openEnglishWord, close: button('Done') },
+  { name: 'App not on this phone', door: 'hidden', open: openAppMissing, close: button('Done') },
   { name: 'the Logos chooser (In another book…)', door: 'hidden', open: openInLogosChooser, close: escape },
   { name: 'a map of the Maps sheet', door: 'hidden', open: openMapsFrame, close: escape },
   { name: 'Ask for another approach', door: 'talk', open: openAskApproachFromSettings, close: button('Done') },

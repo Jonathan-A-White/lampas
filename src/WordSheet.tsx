@@ -13,7 +13,7 @@ import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
 import { useAiAllowed } from './gate/licenceContext';
-import { useDoorTarget } from './tutor/door';
+import { useDoorTarget, useNoDoor } from './tutor/door';
 import { EnglishDictionaryRow, EnglishWordList, EnglishWordSheet, TurnOnLogos } from './EnglishWordSheet';
 import { useLogosOn } from './useLogosOn';
 import { GrammarSheet } from './GrammarSheet';
@@ -237,6 +237,8 @@ function StudyRow({ groups, onMissing, onAll }: { groups: StudyGroup[]; onMissin
 export function AppMissingSheet({ app, onClose, onTurnOff }: { app: string; onClose: () => void; onTurnOff: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-30, over the Talk (z-10): the floating ? would open the tutor under this sheet (mw-5r3p30.977)
+  useNoDoor();
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="app-missing-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
