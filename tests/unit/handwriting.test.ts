@@ -310,11 +310,11 @@ describe('speed and the network', () => {
       vi.unstubAllGlobals();
     }
     expect(fetch).not.toHaveBeenCalled();
-    for (const file of ['recognizer.ts', 'templates.ts']) {
+    for (const file of ['recognizer.ts', 'templates.ts', 'glyphs.ts', 'hebrewTemplates.ts']) {
       const source = readFileSync(`src/handwriting/${file}`, 'utf8');
       expect(source, file).not.toMatch(/\bfetch\s*\(|XMLHttpRequest|WebSocket|sendBeacon|navigator\.onLine/);
       for (const line of source.split('\n').filter((l) => /^import\b/.test(l))) {
-        expect(line, `${file}: ${line}`).toMatch(/from '\.\/(recognizer|templates)'/);
+        expect(line, `${file}: ${line}`).toMatch(/from '\.\/(recognizer|templates|glyphs|hebrewTemplates)'/);
       }
     }
   });
