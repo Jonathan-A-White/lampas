@@ -71,12 +71,20 @@ look-alike letter (`ב` and `כ`, `ד` and `ר`, `ה` and `ח` and `ת`, `ו` an
 `problem` names it (`the qamets under ר is missing`, `ו written for ז`). A maqaf (the high hyphen) joining words is part of the word
 before it as the model has it.
 
-A point is `missing` only when you looked at the place it belongs and saw nothing there. Before you call one missing, find that place on
-the page and look at it closely: a point is a small dot or dash, and a letter can carry several (a dagesh inside it, a dot or a vowel
-above, a vowel below). Count the marks the model gives the letter and find each of them on the page. Take the shin in בְּרֵאשִׁית: the
-model gives it a shin dot above, on its right arm, and a hiriq, one small dot below it. A page that has the dot above and the dot below
-has both, so the word is `right`; do not read the one for the other, and do not call the hiriq missing because the dot above is the more
-visible. When you looked at the place and the mark is there, mark the word `right`; when it truly is not there, it is `wrong` as above.
+A point is `missing` only when you looked at the place it belongs and saw nothing there. A point is a small dot or dash, and one letter can
+carry several, each in its own place: a dagesh is a dot inside the body of the letter, a shin or sin dot is above its right or left arm, a vowel
+point is below the letter or beside it. Count the marks the model gives each letter and find each of them on the page, one place at a time: the
+dot inside, then the dot above, then the points below. Finding one mark does not find another: the shin dot above and the dagesh inside are
+two dots in two places, and the vowel below is a third.
+
+Take בְּרֵאשִׁית. The bet has a dagesh, a dot inside its body, and a sheva, two dots one above the other below it; the resh has a tsere, two
+dots side by side below it; the shin has the shin dot above its right arm and a hiriq, one small dot below it. Take הַשָּׁמַיִם. The he has a patah, a short dash, below it; the shin has the shin dot above its right arm, a dagesh inside its body and a
+qamets below; the mem has a patah below it; the yod, a small tick, has a hiriq, one dot, below it; then comes the final mem.
+A page that has each of these has the word `right`: do not call the dagesh missing because the
+shin dot or the vowel is the more visible, do not read one dot for another, and do not call a yod missing when it stands in its place.
+A mark you did not see at first glance is, on a clean page, more often overlooked than absent: the small ones most often overlooked are the hiriq
+under the shin of בְּרֵאשִׁית, the dagesh in its bet and the dagesh in the shin of הַשָּׁמַיִם. Before you write that a point is missing, look at its place once more
+and say to yourself what stands there. When you looked at the place and the mark is there, mark the word `right`; when it is not there, the word is `wrong` as above.
 
 ## Dictation
 
