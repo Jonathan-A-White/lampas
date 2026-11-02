@@ -266,3 +266,74 @@ test('the layout changed under an open Reader keeps the verse that is on top', a
   await expect(page.locator('main[data-reader]')).toHaveAttribute('data-layout', 'verse');
   await expect.poll(firstVerse).toBe(12);
 });
+
+// Text size and Font reach an open Reader at the root (src/appearance/appearanceSync.ts: html's --lp-scale and --lp-font-english), a change by the tutor or in Settings in another window,
+// and every line is laid again at its new size: the verse on top stays on top (mw-9ji6ek0.46). A number of pixels is not a place.
+test.describe('Text size, Font, the weave’s Grammar and the Immersive reader changed under an open Reader keep the verse that is on top', () => {
+  const firstVerse = (page: Page) =>
+    page.evaluate(() => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const top = box.getBoundingClientRect().top;
+      const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top - 1);
+      return Number(el?.dataset.verse);
+    });
+  async function openAt12(page: Page, hash = '/#/?b=rom&c=16') {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openUnlocked(page);
+    await page.goto(hash);
+    await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
+    await page.evaluate(() => {
+      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+      const el = document.querySelector('[data-verse="12"]')!;
+      box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+    });
+    await expect.poll(() => firstVerse(page)).toBe(12);
+  }
+
+  test('Text size', async ({ page }) => {
+    await openAt12(page);
+    // what the tutor's change does to the page: applyTextSize writes --lp-scale on html and nothing else reaches the Reader
+    for (const scale of ['1.6', '0.85', '1']) {
+      await page.evaluate((s) => document.documentElement.style.setProperty('--lp-scale', s), scale);
+      await page.waitForTimeout(300);
+      await expect.poll(() => firstVerse(page)).toBe(12);
+    }
+    await shot(page, 'weave-switch-text-size');
+  });
+
+  test('Font', async ({ page }) => {
+    await openAt12(page);
+    // what the tutor's change does to the page: applyFont writes --lp-font-english on html (the English faces follow it) and nothing else reaches the Reader
+    const stacks = [
+      '"Atkinson Hyperlegible", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+      '"Lexend", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+      '"Literata", Georgia, "Noto Serif", "Times New Roman", serif',
+    ];
+    for (const stack of stacks) {
+      await page.evaluate((s) => document.documentElement.style.setProperty('--lp-font-english', s), stack);
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForTimeout(500);
+      await expect.poll(() => firstVerse(page)).toBe(12);
+    }
+    await shot(page, 'weave-switch-font');
+  });
+
+  // the rest of what the tutor can change under an open Reader and that lays its lines again: the weave's grammar dial and the Immersive reader, changed in Settings in another window
+  for (const { key, group, buttons } of [
+    { key: 'weaveGrammar', group: 'Grammar', buttons: ['Solid', 'Any'] },
+    { key: 'immersiveReader', group: 'Immersive reader', buttons: ['On', 'Off'] },
+  ]) {
+    test(group, async ({ page, context }) => {
+      await openAt12(page, '/#/?b=rom&c=16&weave=solid');
+      const other = await context.newPage();
+      await other.goto(`/#/settings?setting=${key}`);
+      const row = other.getByRole('group', { name: group, exact: true });
+      for (const name of buttons) {
+        await row.getByRole('button', { name, exact: true }).click();
+        await expect(row.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await page.waitForTimeout(1500);
+        await expect.poll(() => firstVerse(page)).toBe(12);
+      }
+    });
+  }
+});
