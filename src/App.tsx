@@ -29,6 +29,7 @@ import { MemorizeScreen } from './memorize/MemorizeScreen';
 import { watchForPen } from './handwriting/penWatch';
 import { IdeaReturn } from './IdeaReturn';
 import { WordReturn } from './WordReturn';
+import { TalkReturn } from './TalkReturn';
 import { ParadigmsScreen } from './ParadigmsScreen';
 import { WhereDidYouGetTo } from './plan/WhereDidYouGetTo';
 import { RequestsScreen } from './RequestsScreen';
@@ -181,6 +182,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       <MapsHost />
       {/* the word sheet he left for the word's table comes back on Back (mw-irpgqi.1) */}
       <WordReturn />
+      {/* the Talk sheet he left for a table the tutor linked comes back on Back (mw-5r3p30.990) */}
+      <TalkReturn />
       {/* the Talk sheet of every screen but the Reader and the Share screen (its sheets are talks); the floating ? below opens it */}
       {route === 'home' || route === 'share' || route === 'unlock' ? null : <AskTutor route={route} />}
       {/* the one door to the tutor (src/tutor/door.ts): the floating ? at the Hand side, on every screen; none without a licence */}

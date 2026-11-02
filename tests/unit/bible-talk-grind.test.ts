@@ -1040,7 +1040,8 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     for (const key of ['greek', 'hebrew', 'english']) expect(flatText(items[key]?.description), `held_passages ${key}`).toContain("ends in ' …'");
     for (const key of ['greek', 'hebrew', 'english']) expect(flatText(input.properties[key].description), key).toContain("ends in ' …'");
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(bytes).toBeLessThanOrEqual(99_500);
+    // the old 99,500 cap is the ceiling before mw-5r3p30.938 raised it to BIBLE_TALK_CEILING (the two tests above and below hold the bytes and the room); mw-5r3p30.990 needed 823 bytes for the paradigm link
+    expect(bytes).toBeLessThanOrEqual(BIBLE_TALK_CEILING);
   });
 
   it('has an example whose held passage is clipped and whose question needs a verse past the clip (mw-5r3p30.827)', () => {

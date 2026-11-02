@@ -44,6 +44,7 @@ import { ExtentChips } from './settings/controls/grammarExtent';
 import { useParadigmExtent } from './settings/useExtent';
 import { bringIntoScrollBox } from './ui/reveal';
 import { heldWord, leaveToWord } from './wordReturn';
+import { leaveToTalk, tableIsFromTalk } from './talkReturn';
 import { oneTap } from './ui/settle';
 import { Chips } from './ui/Chips';
 import { Grades } from './ui/SelfGrade';
@@ -722,8 +723,12 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
   const toWord = word !== undefined && heldWord() !== undefined;
   // the word's cell, when the table has a cell by that name (an address kept from an older table may not)
   const lit = cell !== undefined && table.rows.some((row) => row.cells.some((_, c) => cellName(table, row, c) === cell)) ? cell : undefined;
+  // from a table the tutor linked in a talk the way back is to the talk's sheet (src/talkReturn.ts, mw-5r3p30.990)
+  const toTalk = !toWord && tableIsFromTalk();
   const back = toWord ? (
     <HeaderButton onClick={() => leaveToWord(() => backTo('paradigms'))}>‹ Word</HeaderButton>
+  ) : toTalk ? (
+    <HeaderButton onClick={() => leaveToTalk(() => backTo('paradigms'))}>‹ Talk</HeaderButton>
   ) : (
     <HeaderButton onClick={() => backTo('paradigms')}>‹ Paradigms</HeaderButton>
   );

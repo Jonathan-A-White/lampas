@@ -1,0 +1,86 @@
+{
+  "description": "He finished a short Drill it on The feminine gender (Finding it in a verse, 2 of 4 right) and asks to see the forms: the answer names the table of the feminine forms he drilled in a line and carries ONE paradigm link, to a table the instructions list that holds them (the article or the noun endings), whatever his resources.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Drill it",
+    "question": "Can I see the feminine forms laid out?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "resources": [],
+    "screen": {
+      "name": "Drill it",
+      "facts": [
+        {
+          "label": "Idea",
+          "value": "The feminine gender"
+        },
+        {
+          "label": "Kind",
+          "value": "A short drill on Finding it in a verse"
+        },
+        {
+          "label": "Result",
+          "value": "2 of 4 right"
+        }
+      ],
+      "drill": [
+        {
+          "idea": "The feminine gender",
+          "asked": "Which word in 1 John 1:2 is feminine? ζωή",
+          "answer": "ζωή",
+          "right_answer": "ζωή",
+          "right": true
+        },
+        {
+          "idea": "The feminine gender",
+          "asked": "Which word in 1 John 1:1 is feminine? ἀρχῆς",
+          "answer": "λόγου",
+          "right_answer": "ἀρχῆς",
+          "right": false
+        },
+        {
+          "idea": "The feminine gender",
+          "asked": "Which word in 1 John 1:2 is feminine? ἡ",
+          "answer": "ἡ",
+          "right_answer": "ἡ",
+          "right": true
+        },
+        {
+          "idea": "The feminine gender",
+          "asked": "Which word in 1 John 1:3 is feminine? κοινωνίαν",
+          "answer": "πατρός",
+          "right_answer": "κοινωνίαν",
+          "right": false
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "present": true
+    },
+    "links.0.kind": {
+      "equals": "paradigm"
+    },
+    "links.0.table": {
+      "one_of": [
+        "article",
+        "noun-endings"
+      ]
+    },
+    "links.1": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

@@ -7,10 +7,12 @@ import { useEffect, useState } from 'react';
 import type { AnswerLink } from './data/db';
 import { lookupLemma } from './data/lexicon';
 import { getLogosBibles, getStudyResources, getWorks, setResourceOn, shelfOf } from './data/repositories';
-import { openReader } from './nav/route';
+import { openParadigm, openReader, paradigmHash } from './nav/route';
+import { paradigmById } from './data/paradigms';
+import { holdTalk } from './talkReturn';
 import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
-import { MAX_LINKS } from './services/talk';
+import { MAX_LINKS, type TalkScope } from './services/talk';
 import { bibleFor } from './resources/logosBible';
 import { armFallback } from './resources/openApp';
 import { hebrewLinkLemma, mapChip, placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
@@ -57,13 +59,15 @@ interface Group {
   place?: { book: string; chapter: number; verse?: number };
   /** the key of a setting link: its chip opens Settings at that row */
   setting?: string;
+  /** a paradigm link: its chip opens that table (openParadigm) and holds the talk, so Back brings the sheet back */
+  paradigm?: { id: string; name: string };
   /** a map link: its chip opens that map in the app (openMaps), or, for a card of a link-only source (`open`), is a link to it */
   map?: { id: string; label: string; open?: { url: string; fallback?: string } };
   chips: LinkChip[];
 }
 
-/** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `onWord` opens the word sheet of a Hebrew lemma over the Talk sheet (the Word chip is drawn only with it). `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. */
-export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef }) {
+/** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `onWord` opens the word sheet of a Hebrew lemma over the Talk sheet (the Word chip is drawn only with it). `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. `scope` is the talk the links are under: a `paradigm` link holds it, so the sheet comes back when Back returns from the table (src/talkReturn.ts); without it the table opens and Back finds the screen. */
+export function TutorLinks({ links, onLeave, onWord, place, scope }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef; scope?: TalkScope }) {
   const chosen = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
   const works = useLiveQuery(getWorks, []);
@@ -86,6 +90,10 @@ export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLin
     } else if (link.kind === 'setting') {
       const row = settingLink(link.key) ? rowOf(link.key) : undefined;
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
+    } else if (link.kind === 'paradigm') {
+      // a table the Paradigms screen lacks draws nothing (the tutor was given the ids, but an id can be wrong)
+      const table = paradigmById(link.table);
+      if (table) groups.push({ key: `${i}`, name: table.name, greek: false, paradigm: { id: table.id, name: table.name }, chips: [] });
     } else if (link.kind === 'map') {
       const found = place && mapCards ? mapChip(link.map, mapCards) : null;
       if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
@@ -98,7 +106,7 @@ export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLin
       if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bibleFor(place.book, bibles), level) });
     }
   }
-  const drawn = groups.filter((g) => g.reader || g.setting || g.map || (g.hebrew && onWord) || g.chips.length > 0);
+  const drawn = groups.filter((g) => g.reader || g.setting || g.paradigm || g.map || (g.hebrew && onWord) || g.chips.length > 0);
   if (drawn.length === 0) return null;
 
   return (
@@ -146,6 +154,21 @@ export function TutorLinks({ links, onLeave, onWord, place }: { links: AnswerLin
                 className={CHIP}
               >
                 Settings
+              </button>
+            ) : null}
+            {group.paradigm ? (
+              <button
+                type="button"
+                aria-label={`Table: ${group.paradigm.name}`}
+                onClick={() => {
+                  const address = { table: (group.paradigm as NonNullable<Group['paradigm']>).id };
+                  if (scope) holdTalk(scope, paradigmHash(address));
+                  onLeave();
+                  openParadigm(address);
+                }}
+                className={CHIP}
+              >
+                Table
               </button>
             ) : null}
             {group.map?.open ? (

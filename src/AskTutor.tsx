@@ -41,14 +41,14 @@ function contextOf(name: string, reported: ScreenContext | null): ScreenContext 
  * (an answer is spoken only then); `onClosed` is what closing the sheet does besides stopping the voice. */
 function useScreenTalk(scope: TalkScope | null, open: boolean, onClosed: () => void) {
   const openRef = useRef<string | null>(null);
-  const { states, say, resume } = useTalk('', 0, (ref, id, answer) => {
+  const { states, say, resume } = useTalk(scope?.chapter.code ?? '', scope?.chapter.chapter ?? 0, (ref, id, answer) => {
     if (openRef.current !== ref || isHolding()) return;
     speakTutor(id, answerRuns(answer), () => openRef.current === ref);
   }, {
     // the tutor takes him to a chapter or another place (the answer's `go`) while this screen's sheet is open: the place opens as a new Back step, and Back returns to this screen
     allowed: (ref) => openRef.current === ref,
   });
-  const ref = scope ? scopeRef('', 0, scope) : null;
+  const ref = scope ? scopeRef(scope.chapter.code, scope.chapter.chapter, scope) : null;
   useEffect(() => {
     openRef.current = open ? ref : null;
   });
@@ -106,6 +106,29 @@ export function AskTutor({ route }: { route: Route }) {
         />
       ) : null}
     </>
+  );
+}
+
+/**
+ * The Talk sheet he left for a table the tutor linked, opened again by Back (src/TalkReturn.tsx, src/talkReturn.ts, mw-5r3p30.990): the held talk's `scope` names its conversation (a screen's, a drill's or a
+ * chapter's), whose turns are kept, so the sheet is the one he left. Drawn only where a licence allows the tutor.
+ */
+export function ReturnedTalk({ scope, onClose }: { scope: TalkScope; onClose: () => void }) {
+  const ai = useAiAllowed();
+  const talk = useScreenTalk(scope, true, onClose);
+  if (!ai || !talk.ref) return null;
+  return (
+    <TalkSheet
+      scope={scope}
+      talkRef={talk.ref}
+      state={talk.state}
+      suggestions={scope.screen ? suggestionsFor(scope.screen.name) : undefined}
+      onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
+      onResume={() => talk.resume(scope)}
+      onHelp={() => {}}
+      onAskTerm={() => {}}
+      onClose={talk.close}
+    />
   );
 }
 
