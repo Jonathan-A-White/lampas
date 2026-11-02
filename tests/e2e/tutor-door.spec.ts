@@ -9,6 +9,7 @@ import { leaveSettings, openGroup } from './settings-group';
 import { shot } from './shot';
 import { TALK_SHEET, twoFingers } from './open-tutor';
 import { keepHand } from './tutor-door';
+import { openDrillIt, openShortDrill } from './large-text-titles';
 import { openUnlicensed, openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
 
@@ -340,3 +341,96 @@ for (const overlay of OVERLAYS) {
     await expectTalkInFront(page);
   });
 }
+
+// Drill it and the short drill (mw-5r3p30.985): the ? asks about the drill on every step, not only on the results. Before, the dialog drew its Talk only once there was a result, so on a step the newest
+// door target was the idea sheet or the screen under the z-40 drill: the Talk opened beneath it and the ? hid, a tap that did nothing. The rule (docs/layout/tutor.md): at every state of a full-screen dialog
+// either the ? is drawn and opens a Talk in front, or no ? is drawn; never a ? that is gone with no Talk visible.
+
+/** At this moment the tutor is reachable: the ? is drawn, or a Talk is open. */
+async function expectNotLost(page: Page, where: string): Promise<void> {
+  const open = await page.getByRole('dialog', { name: TALK_SHEET }).count();
+  expect(open + (await floating(page).count()), `${where}: no ? and no Talk on screen`).toBeGreaterThan(0);
+}
+
+/** A tap on the ? opens a Talk in front of the dialog; its first suggestion is asked when `ask` is given, and the request the mill got is returned. Done puts the Talk away again (Escape is not used: every open sheet listens for it). */
+async function tapThroughDoor(page: Page, where: string, fake: ReturnType<typeof makeFakePostern>, ask: boolean): Promise<{ name: string; facts: { label: string; value: string }[] } | null> {
+  await expectNotLost(page, where);
+  await expect(floating(page), `${where}: the ? is drawn`).toBeVisible();
+  await floating(page).click();
+  await expectTalkInFront(page);
+  let screen: { name: string; facts: { label: string; value: string }[] } | null = null;
+  if (ask) {
+    const before = fake.received.length;
+    const talk = page.getByRole('dialog', { name: TALK_SHEET });
+    await talk.locator('[data-suggestion]').first().click();
+    await expect.poll(() => fake.received.length, { message: `${where}: the question reached the mill` }).toBe(before + 1);
+    screen = (fake.received[before].input as { screen: { name: string; facts: { label: string; value: string }[] } }).screen;
+  }
+  await page.getByRole('dialog', { name: TALK_SHEET }).getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: TALK_SHEET })).toHaveCount(0);
+  await expectNotLost(page, `${where} (Talk put away)`);
+  return screen;
+}
+
+for (const hand of ['right', 'left'] as const) {
+  test(`Floating ?: on every step of Drill it the ? opens the Talk in front of the drill, about its question (${hand} Hand) (mw-5r3p30.985)`, async ({ page }) => {
+    const fake = makeFakePostern();
+    fake.autoReply = { status: 'answered', answer: GRAMMAR_HELP_ANSWER };
+    await routePostern(page, fake);
+    await openUnlocked(page);
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    await keepHand(page, hand);
+    const drill = await openDrillIt(page, 'The noun');
+    await expect(drill.getByTestId('drill-step')).toBeVisible();
+    for (let step = 1; ; step += 1) {
+      const prompt = ((await drill.getByTestId('grammar-prompt').textContent()) ?? '').trim();
+      // unanswered
+      const unanswered = await tapThroughDoor(page, `step ${step}, unanswered`, fake, step === 1);
+      if (unanswered) {
+        expect(unanswered.facts, 'the Talk is told the idea').toContainEqual({ label: 'Idea', value: 'The noun' });
+        expect(unanswered.facts.find((f) => f.label === 'Question on screen')?.value, 'the Talk is told the question').toContain(prompt.slice(0, 20));
+      }
+      await expect(drill.getByTestId('grammar-prompt'), 'closed, the same step is there').toHaveText(prompt);
+      if (step === 1) await shot(page, `tutor-door-drill-it-${hand}`);
+      // answered: the answer, the Next and the ? are all there
+      await drill.locator('[data-option]:not(:disabled)').first().click();
+      await expect(drill.getByTestId('drill-next')).toBeVisible();
+      const answered = await tapThroughDoor(page, `step ${step}, answered`, fake, step === 1);
+      if (answered) expect(answered.facts.find((f) => f.label === 'Question on screen')?.value).toContain(prompt.slice(0, 20));
+      await expect(drill.locator('[data-option][data-result="right"]'), 'closed, the answer is still shown').toBeVisible();
+      await expect(drill.getByTestId('drill-next')).toBeVisible();
+      const last = (await drill.getByTestId('drill-next').textContent()) === 'Finish';
+      await drill.getByTestId('drill-next').click();
+      if (last) break;
+    }
+    await expect(drill.getByTestId('drill-result')).toBeVisible();
+    await tapThroughDoor(page, 'the results', fake, false);
+  });
+}
+
+test('Floating ?: on every step of the short drill the ? opens the Talk in front of it, about its question (mw-5r3p30.985)', async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: GRAMMAR_HELP_ANSWER };
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await keepHand(page, 'left');
+  const short = await openShortDrill(page);
+  for (let step = 1; ; step += 1) {
+    const prompt = ((await short.getByTestId('grammar-prompt').textContent()) ?? '').trim();
+    const unanswered = await tapThroughDoor(page, `short drill question ${step}, unanswered`, fake, step === 1);
+    if (unanswered) expect(unanswered.facts.find((f) => f.label === 'Question on screen')?.value).toContain(prompt.slice(0, 20));
+    await expect(short.getByTestId('grammar-prompt')).toHaveText(prompt);
+    await short.locator('[data-option]:not(:disabled)').first().click();
+    await expect(short.getByTestId('plan-drill-next')).toBeVisible();
+    await tapThroughDoor(page, `short drill question ${step}, answered`, fake, false);
+    await expect(short.getByTestId('plan-drill-next')).toBeVisible();
+    const last = (await short.getByTestId('plan-drill-next').textContent()) === 'Finish';
+    await short.getByTestId('plan-drill-next').click();
+    if (last) break;
+  }
+  await expect(short.getByTestId('plan-drill-result')).toBeVisible();
+  await tapThroughDoor(page, 'the short drill result', fake, false);
+});

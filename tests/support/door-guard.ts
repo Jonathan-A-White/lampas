@@ -17,6 +17,42 @@ export interface Found {
   z: string;
   /** the file makes a choice */
   chooses: boolean;
+  /** the components of the file that draw a layer and make no choice themselves (a layer's own component is what is mounted while it is up: a choice made by another component of the file is not made for it) */
+  bare: string[];
+  /** the places a Talk (<DialogAskTutor>, <LessonTalk>) is drawn only under a condition (`x ? <DialogAskTutor`, `x && <LessonTalk`), so in some states of the layer there is no target and the ? opens the tutor under it (mw-5r3p30.985) */
+  conditional: string[];
+}
+
+/** A top-level declaration of a component: `function Name`, `export function Name`, `const Name =` at the start of a line. */
+const COMPONENT = /^(?:export\s+)?(?:default\s+)?(?:function|const)\s+([A-Z]\w*)/;
+
+/** The Talk drawn under a condition: the line, or the line before it when that one only opens the branch, holds `? <`, `&& <`, `? (` or `&& (` before the tag. */
+const CONDITIONAL_TALK = /(?:\?|&&)\s*\(?\s*<(?:DialogAskTutor|LessonTalk)\b/;
+const BRANCH_OPENS = /(?:\?|&&)\s*\(\s*$/;
+
+/** Splits a source into its top-level components, each with the lines of its body. */
+function componentsOf(lines: string[]): Array<{ name: string; body: string[] }> {
+  const parts: Array<{ name: string; body: string[] }> = [];
+  for (const line of lines) {
+    const named = COMPONENT.exec(line);
+    if (named || parts.length === 0) parts.push({ name: named?.[1] ?? '', body: [] });
+    parts[parts.length - 1].body.push(line);
+  }
+  return parts;
+}
+
+/** What a source gives the guard besides its layer: the components that draw one and choose nothing, and the Talks drawn under a condition. */
+export function inspect(source: string): { bare: string[]; conditional: string[] } {
+  const lines = source.split('\n');
+  const bare = componentsOf(lines)
+    .filter((part) => part.name !== '' && LAYER.test(part.body.join('\n')) && !CHOICE.test(part.body.join('\n')))
+    .map((part) => part.name);
+  const conditional: string[] = [];
+  lines.forEach((line, i) => {
+    const opens = /<(?:DialogAskTutor|LessonTalk)\b/.test(line) && ((i > 0 && BRANCH_OPENS.test(lines[i - 1]) && /^\s*<(?:DialogAskTutor|LessonTalk)\b/.test(line)) || CONDITIONAL_TALK.test(line));
+    if (opens) conditional.push(line.trim().slice(0, 80));
+  });
+  return { bare, conditional };
 }
 
 /** Every .tsx file under `dir` that draws a fixed full-screen layer. */
@@ -31,7 +67,7 @@ export function layersIn(dir: string, root: string = dir): Found[] {
         .split('\n')
         .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
         .join('\n');
-      if (LAYER.test(source)) found.push({ file: path.slice(root.length + 1), z: zOf(source), chooses: CHOICE.test(source) });
+      if (LAYER.test(source)) found.push({ file: path.slice(root.length + 1), z: zOf(source), chooses: CHOICE.test(source), ...inspect(source) });
     }
   }
   return found;

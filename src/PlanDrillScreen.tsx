@@ -12,6 +12,8 @@ import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
 import { FacetLabel } from './FacetLabel';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
+import { DRILL_SCREEN } from './tutor/screen';
+import { questionFact, workScreen, workSuggestions } from './tutor/workTalk';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
@@ -70,9 +72,10 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
     void confirmAnswer(question, option === question.right);
     if (option === question.right) setRight((n) => n + 1);
   };
+  // the dialog always draws its Talk, so the floating ? always asks about it, in front of it: on a question it is told the idea, the facet, the question number and the question on screen
   const talkScreen = over
     ? drillScreen({ idea: ideaOf(ideaId).title, headline: `Short drill on ${facetLabel}: ${right} of ${questions.length} right`, tries })
-    : null;
+    : workScreen(DRILL_SCREEN, [{ label: 'Idea', value: ideaOf(ideaId).title }, { label: 'Facet', value: facetLabel }, { label: 'Step', value: `Question ${index + 1} of ${questions.length}` }, ...questionFact(question)]);
   const next = () => {
     setIndex((n) => n + 1);
     setPicked(null);
@@ -117,7 +120,7 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
           </button>
         ) : null}
       </FootBar>
-      {talkScreen ? <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={drillSuggestions(talkScreen)} /> : null}
+      <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={over ? drillSuggestions(talkScreen) : workSuggestions('this short drill')} />
     </div>
   );
 }
