@@ -82,7 +82,9 @@ async function prepare(page: Page, size: { width: number; height: number }) {
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
   await routePostern(page, fake);
-  await honestMic(page);
+  // The recogniser stays open after the clip's last word (the default ends it 1.5 s on, and the app opens a new one that plays the clip again, its final
+  // result landing over the words fed by hand when a loaded host takes longer than that to feed them).
+  await honestMic(page, { silenceMs: 600_000 });
   return fake;
 }
 
