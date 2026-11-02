@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
+import { PRINTED_SMALL } from '../support/lxx-printed-small';
 import {
   AGREEMENT_CONFIDENCE,
   LINKS,
@@ -26,7 +27,7 @@ const tagnt = [fixture('tagnt-slice.tsv')];
 const tbesg = fixture('tbesg-slice.txt');
 function swete(file: string, input: Partial<DeriveInput> = {}): DeriveInput {
   const [versification, words] = fixture(file).split('\n\n');
-  return { versification, words, tagnt, tbesg, ...input };
+  return { versification, words, tagnt, tbesg, printedSmall: PRINTED_SMALL, ...input };
 }
 /** A verse of our own in the shape of Swete's two files: 'Tst.1:1', its words one a line. */
 const built = (...words: string[]): DeriveInput => ({ versification: '1\tTst.1:1', words: words.map((w, i) => `${i + 1}\t${w}`).join('\n'), tagnt, tbesg });

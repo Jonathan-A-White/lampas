@@ -6,6 +6,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { PRINTED_SMALL } from '../support/lxx-printed-small';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { runDerive, type BookResult, type DeriveInput } from '../../scripts/lxx/derive';
@@ -38,7 +39,7 @@ const tagnt = [readFileSync(join(FIXTURES, 'tagnt-slice.tsv'), 'utf8')];
 const tbesg = readFileSync(join(FIXTURES, 'tbesg-slice.txt'), 'utf8');
 function swete(file: string): DeriveInput {
   const [versification, words] = readFileSync(join(FIXTURES, file), 'utf8').split('\n\n');
-  return { versification, words, tagnt, tbesg };
+  return { versification, words, tagnt, tbesg, printedSmall: PRINTED_SMALL };
 }
 const GEN_1 = swete('swete-gen-1.csv');
 const PSA_22 = swete('swete-psa-22.csv');
@@ -64,6 +65,8 @@ const SAMPLE = new Map(
     }),
 );
 const SEVEN = ['Γενηθήτωσαν', 'ζωσῶν', 'ἐξέθρεψεν', 'αὐταί', 'ἐλίπανας', 'καταδιώξεται', 'μακρότητα'];
+// Gen 1:20 and 1:24 open what God says, with a capital in the middle of a clause that Swete prints small nowhere: layers 1 and 2 leave Ἐξαγαγέτω no lemma (mw-u2w5klk.22). The sample does not hold it.
+const CAPITALS = ['Ἐξαγαγέτω', 'Ἐξαγαγέτω'];
 
 /** Morpheus as the sample file has it: for each beta-code line, the line and the segments (none for a form the file does not give). */
 function fakeEngine(calls: string[][] = []): MorpheusEngine {
@@ -295,7 +298,7 @@ describe('derive.ts with the cache of the sample file (the seven forms with no c
   it('has no candidate for the seven forms without Morpheus (the guard for the rest)', async () => {
     const gen = await runDerive(['--book', 'gen'], { input: GEN_1, outDir: tmp() });
     const psa = await runDerive(['--book', 'psa'], { input: PSA_22, outDir: tmp() });
-    expect([...forms(gen), ...forms(psa)].map(nfc).sort()).toEqual(SEVEN.map((f) => keyOf(f)).map(nfc).sort());
+    expect([...forms(gen), ...forms(psa)].map(nfc).sort()).toEqual([...SEVEN, ...CAPITALS].map((f) => keyOf(f)).map(nfc).sort());
   });
 
   async function withMorpheus(book: 'gen' | 'psa'): Promise<{ result: BookResult; outDir: string; log: string[] }> {
@@ -328,7 +331,7 @@ describe('derive.ts with the cache of the sample file (the seven forms with no c
     expect(wordOf(psa, 'ἐλίπανας').candidates).toEqual([]);
     expect(wordOf(psa, 'αὐταί').candidates).toEqual([]);
     expect(pairs(wordOf(gen, 'ζωσῶν'))).toEqual([nfc('ζάω/V-PAP-GPF')]);
-    expect([...forms(gen), ...forms(psa)].map(nfc).sort()).toEqual([nfc('ἐλίπανας'), nfc('αὐταί')].sort());
+    expect([...forms(gen), ...forms(psa)].map(nfc).sort()).toEqual([nfc('ἐλίπανας'), nfc('αὐταί'), ...CAPITALS.map((f) => nfc(keyOf(f)))].sort());
   });
 
   it('settles nothing by itself: a word given candidates is still waiting for a choice', async () => {

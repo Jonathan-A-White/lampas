@@ -16,6 +16,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
+import { PRINTED_SMALL } from '../support/lxx-printed-small';
 import {
   DERIVED_HEADER,
   NOTE_ANALOGY,
@@ -47,7 +48,7 @@ const tagnt = [fixture('tagnt-slice.tsv')];
 const tbesg = fixture('tbesg-slice.txt');
 function swete(file: string, input: Partial<DeriveInput> = {}): DeriveInput {
   const [versification, words] = fixture(file).split('\n\n');
-  return { versification, words, tagnt, tbesg, ...input };
+  return { versification, words, tagnt, tbesg, printedSmall: PRINTED_SMALL, ...input };
 }
 const GEN_1 = swete('swete-gen-1.csv');
 const PSA_22 = swete('swete-psa-22.csv');
@@ -599,5 +600,112 @@ describe("the editor's verse numbers are not words, and a letter name that is a 
     expect(out('Lam.1:8#2').candidates).not.toEqual([]);
     expect(out('Lam.1:8#1').candidates).toEqual([]);
     expect(out('Lam.1:8#5').candidates).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------- B10 (mw-u2w5klk.22): a name Swete writes with a capital is not read as a common word
+// The lxx-morph probe (mw-u2w5klk.21) found layers 1 and 2 reading names as the common words their letters spell: Σειών (Zion) as a participle of σείω (129 words),
+// Εἰού (Jehu) as εἴλω (51), Ἁμάν (Haman) as ἀμάω (48), Γάζης (of Gaza) as γάζα, a treasure. The input is made for the test, TAGNT's and TBESG's rows being the real ones
+// the parser learns these from (περιβαλοῦ for -ου/-λω, ἀγαπᾶν for -ν/-ω, λέγων for -ων/-ω, γάζης).
+describe('a capital in the middle of a clause takes no lower-case lemma unless Swete also prints the form in lower case (B10)', async () => {
+  const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+  const tbesgRow = (strong: string, lemma: string, pos: string): string => `${strong}\t${strong} =\t${strong}\t${lemma}\tx\tG:${pos}\tgloss\t <b>${lemma}</b>`;
+  const rows = [
+    tagntRow('Act.12.8#19', 'περιβαλοῦ', 'G4016', 'V-2AMM-2S', 'περιβάλλω'),
+    tagntRow('Rom.13.8#8', 'ἀγαπᾶν', 'G0025', 'V-PAN', 'ἀγαπάω'),
+    tagntRow('Mat.2.2#3', 'λέγων', 'G3004', 'V-PAP-NSM', 'λέγω'),
+    tagntRow('Act.8.27#5', 'γάζης', 'G1047', 'N-GSF', 'γάζα'),
+    tagntRow('Mat.1.1#2', 'κύριος', 'G2962', 'N-NSM', 'κύριος'),
+    tagntRow('Mat.1.3#1', 'Ἰησοῦς', 'G2424', 'N-NSM-P', 'Ἰησοῦς'),
+    tagntRow('Mat.1.4#1', 'Ἰησοῦν', 'G2424', 'N-ASM-P', 'Ἰησοῦς'),
+    tagntRow('Mat.1.5#1', 'καὶ', 'G2532', 'CONJ', 'καί'),
+  ];
+  const tbesg = [
+    tbesgRow('G4016', 'περιβάλλω', 'V'),
+    tbesgRow('G0025', 'ἀγαπάω', 'V'),
+    tbesgRow('G3004', 'λέγω', 'V'),
+    tbesgRow('G20289', 'εἴλω', 'V'),
+    tbesgRow('G20290', 'ἀμάω', 'V'),
+    tbesgRow('G4579', 'σείω', 'V'),
+    tbesgRow('G1047', 'γάζα', 'N:N-F'),
+    tbesgRow('G2962', 'κύριος', 'N:N-M'),
+    tbesgRow('G2424', 'Ἰησοῦς', 'N:N-M-P'),
+    tbesgRow('G2532', 'καί', 'CONJ'),
+  ].join('\n');
+  const KAI = 'καὶ';
+  /** Gen 4:18 holds the words in the middle of a clause; Gen 4:19 opens with Σειών (a capital that is only the capital) and Gen 4:20 with a full stop before one */
+  const make = (extra: string[] = []): DeriveInput => {
+    const verses: Record<string, string[]> = {
+      'Gen.4:18': [KAI, 'Σειών', KAI, 'Εἰού', KAI, 'Ἁμάν', KAI, 'Γάζης', KAI, 'Κύριος', KAI, 'Ἰησοῦν', KAI, 'Ἰησοῦς', ...extra],
+      'Gen.4:19': ['Σειών', KAI, 'τοῦτο.', 'Εἰού'],
+    };
+    let line = 0;
+    const starts: string[] = [];
+    const lines: string[] = [];
+    for (const [ref, ws] of Object.entries(verses)) {
+      starts.push(`${line + 1}\t${ref}`);
+      for (const w of ws) lines.push(`${++line}\t${w}`);
+    }
+    return { versification: starts.join('\n'), words: lines.join('\n'), tagnt: [rows.join('\n')], tbesg };
+  };
+  const at = (n: number): string => `Gen.4:18#${n}`;
+  const [ZION, JEHU, HAMAN, GAZA, LORD, IESOUN, IESOUS] = [2, 4, 6, 8, 10, 12, 14].map(at);
+  const input = make();
+  const got = deriveBook(input, 'gen');
+  const lemmasOf = (w: DerivedWord | PendingWord): string[] => [...new Set(w.candidates.map((c) => c.lemma))];
+  const isCapitalLemma = (lemma: string): boolean => lemma !== lemma.toLowerCase();
+
+  it('shows the fault on the code before it: the parser reads Σειών as σείω, Εἰού as εἴλω and Ἁμάν as ἀμάω, and layer 1 reads Γάζης as γάζα', () => {
+    const trained = train(input);
+    expect(lemmasOf({ ref: 'x', notes: [], candidates: parse('Σειών', trained.parser).map((c) => ({ ...c })) })).toContain('σείω');
+    expect(lemmasOf({ ref: 'x', notes: [], candidates: parse('Εἰού', trained.parser).map((c) => ({ ...c })) })).toContain('εἴλω');
+    expect(lemmasOf({ ref: 'x', notes: [], candidates: parse('Ἁμάν', trained.parser).map((c) => ({ ...c })) })).toContain('ἀμάω');
+  });
+
+  it('gives Σειών, Εἰού and Ἁμάν in the middle of a clause no lower-case lemma from layer 1 or 2, and not Γάζης either', () => {
+    for (const ref of [ZION, JEHU, HAMAN, GAZA]) {
+      const w = outOf(got, ref);
+      expect(isDerived(w) ? [w.lemma] : [], ref).toEqual([]);
+      expect(lemmasOf(w).every(isCapitalLemma), `${ref} ${lemmasOf(w)}`).toBe(true);
+      const before = [...got.beforeCheck.derived, ...got.beforeCheck.pending].find((x) => x.ref === ref)!;
+      expect(lemmasOf(before).every(isCapitalLemma), `${ref} before the check`).toBe(true);
+    }
+  });
+
+  it('leaves them pending with their form as the lemma where its ending is a Hebrew name’s, and with no candidate where it is not (Γάζης ends in -ς)', () => {
+    for (const [ref, lemma] of [[ZION, 'Σειών'], [JEHU, 'Εἰού'], [HAMAN, 'Ἁμάν']] as const) {
+      const w = outOf(got, ref);
+      expect(isDerived(w), ref).toBe(false);
+      expect(lemmasOf(w), ref).toEqual([nfc(lemma)]);
+      expect(w.notes, ref).toContain(NOTE_FORM_NAME);
+    }
+    const gaza = outOf(got, GAZA);
+    expect(isDerived(gaza)).toBe(false);
+    expect(gaza.candidates).toEqual([]);
+    expect(gaza.notes).toContain(NOTE_NO_CANDIDATE);
+  });
+
+  it('still reads a capital that is only the capital: Σειών opening a verse, Εἰού after a full stop, as the parser reads them', () => {
+    const verseStart = outOf(got, 'Gen.4:19#1');
+    expect(isDerived(verseStart) ? verseStart.lemma : undefined).toBe('σείω');
+    const afterStop = outOf(got, 'Gen.4:19#4');
+    expect(isDerived(afterStop) ? afterStop.lemma : undefined).toBe('εἴλω');
+  });
+
+  it('still reads a lower-case lemma where Swete prints the form in lower case too (a capital that is a speech’s first word, or a divine title), and a name with a capital lemma', () => {
+    const lord = outOf(got, LORD);
+    expect(isDerived(lord)).toBe(false);
+    // Κύριος has no lower-case witness in this text, so it waits too; with one it is layer 1's κύριος
+    const withWitness = deriveBook(make(['καὶ', 'κύριος', 'καὶ', 'ἁμάν']), 'gen');
+    const lordAgain = outOf(withWitness, LORD);
+    expect(isDerived(lordAgain) ? lordAgain.lemma : undefined).toBe('κύριος');
+    expect(isDerived(lordAgain) ? lordAgain.layer : undefined).toBe(1);
+    const haman = outOf(withWitness, HAMAN);
+    expect(isDerived(haman) ? haman.lemma : undefined).toBe('ἀμάω');
+    // a name the New Testament gives a capital lemma is untouched
+    for (const ref of [IESOUN, IESOUS]) {
+      const w = outOf(got, ref);
+      expect(isDerived(w) ? w.lemma : undefined, ref).toBe('Ἰησοῦς');
+    }
   });
 });
