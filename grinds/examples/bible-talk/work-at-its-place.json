@@ -1,11 +1,11 @@
 {
-  "description": "He ticked the Institutes and asks what Calvin says about Romans 8:28: the answer carries a link of kind work to the Institutes with a place in it, not the book's start.",
+  "description": "He ticked the Institutes and asks where Calvin treats God's providence: the answer carries a link of kind work to the Institutes with a place in it (book 1, chapter 16 or 17), not the book's start. A place the tutor is unsure of is no place (a question on one verse, as Romans 8:28, has none it can be sure of).",
   "schemaVersion": "1",
   "request": {
     "reference": "Romans 8:28",
     "greek": "καὶ οἴδαμεν ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν, τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν.",
     "english": "And we know that all things work together for good to those who love God, to those who are the called according to His purpose.",
-    "question": "What does Calvin say about verse 28 in his Institutes? I would like to read it in my own copy.",
+    "question": "Where in his Institutes does Calvin write about God's providence? I would like to read it in my own copy.",
     "history": [],
     "solid_words": [],
     "settings": {

@@ -1061,6 +1061,22 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(chapter).toContain('"args"');
   });
 
+  it('has a go carry its `said` ("Opened Colossians 1."), because the app tells him but a Builder reading "the app tells him" left `said` out (mw-5r3p30.980)', () => {
+    const chapter = flat(text.slice(text.indexOf('## Taking him to a chapter'), text.indexOf('## Adding words')));
+    expect(chapter).toMatch(/`said`[^.]*Opened Colossians 1/);
+    expect(chapter).not.toContain('tells him "Opened');
+    expect(text).toMatch(/'Take me to X' is `go` with the place[^.]*`said`/);
+  });
+
+  it('asks the work-at-its-place example for a place the tutor can be sure of, and still never teaches a guess (mw-5r3p30.980)', () => {
+    const ex = readJson('grinds/examples/bible-talk/work-at-its-place.json') as unknown as { request: { question: string }; expect: Record<string, unknown> };
+    expect(ex.request.question).toMatch(/providence/i);
+    expect(ex.request.question).not.toMatch(/verse 28/);
+    expect(ex.expect['links.0.place']).toEqual({ matches: '^[1-4][.][0-9]+([.][0-9]+)?$' });
+    expect(flat(text)).toMatch(/never a guess/);
+    expect(flat(text)).toMatch(/if you know no chapter, give no link/);
+  });
+
   it('has the four examples of the tutor client, each meeting what the kit’s answer examples show', () => {
     const read = (name: string) => readJson(`grinds/examples/bible-talk/${name}.json`) as unknown as { request: Record<string, unknown>; expect: Record<string, Record<string, unknown>> };
     const back = read('ask-back-works');
