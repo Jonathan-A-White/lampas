@@ -22,6 +22,7 @@ import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { WordPicture } from './WordPicture';
 import { faceOf } from './script/greekLang';
 import { HeartOfWord } from './HeartOfWord';
+import { WordCognate } from './WordCognate';
 
 const BUTTON = 'min-h-12 min-w-0 rounded-xl border px-3 text-base font-medium disabled:opacity-50';
 
@@ -148,6 +149,8 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
           </div>
           {/* the thread behind the word, under the gloss it explains (mw-bsf54t.14) */}
           <HeartOfWord lemma={current.lemma} className="mt-3" />
+          {/* the English word that comes from it, if one really does (mw-5r3p30.988) */}
+          <WordCognate lemma={current.lemma} className="mt-3" />
           {parse ? (
             <p data-testid="teach-form" className="mt-3 text-base">
               <span className="text-sm text-muted">As it first stands in the chapter: </span>

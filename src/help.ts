@@ -69,7 +69,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Words',
     line: 'New words, Quick test, Parsing drill.',
     body: [
-      'Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have yet; its sheet shows the word large with how it sounds, its meaning and an easy verse, and Got it puts it in Words. A Hebrew word is shown right to left.',
+      'Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have yet; its sheet shows the word large with how it sounds, its meaning, an English word that comes from it when one does, and an easy verse, and Got it puts it in Words. A Hebrew word is shown right to left.',
       'Where both languages are chosen, Words and Review show a Greek | Hebrew switch. The Quick test asks words of both together; the Parsing drill reads the chapter of the language you are in.',
       'A Septuagint word’s card says how Lampas read it (sure, likely, unsure). A dotted guess is never learned.',
     ],
