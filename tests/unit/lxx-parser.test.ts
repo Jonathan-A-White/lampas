@@ -19,18 +19,23 @@ import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import {
   DERIVED_HEADER,
   NOTE_ANALOGY,
+  NOTE_INDECLINABLE,
   NOTE_NOT_IN_NT,
   NOTE_NO_CANDIDATE,
   PENDING_HEADER,
+  deriveBook,
   isDerived,
   runDerive,
+  supportOf,
+  train,
+  tsvOf,
   type BookResult,
   type DeriveInput,
   type DerivedWord,
   type Layer,
   type PendingWord,
 } from '../../scripts/lxx/derive';
-import { PARSER_DOMINANT, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
+import { NO_NAMES, PARSER_DOMINANT, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
 import { sweteTokens } from '../../scripts/lxx/swete';
 import { readTagnt } from '../../scripts/lxx/tagnt';
 import { fits, readTbesg } from '../../scripts/lxx/tbesg';
@@ -288,5 +293,130 @@ describe('--word and the files', async () => {
     for (const kind of ['derived', 'pending']) {
       expect(readFileSync(join(b, kind, 'gen.tsv'), 'utf8')).toBe(readFileSync(join(a, kind, 'gen.tsv'), 'utf8'));
     }
+  });
+});
+
+// ---------------------------------------------------------------- B6 (mw-u2w5klk.13): an indeclinable name gets every case of its gender
+// The names of Gen 2-5 that M1 (mw-u2w5klk.8) had to guess for want of a case: Ἀδάμ (no accusative), Ἐνώχ (no dative), Καινάν (listed under καινός and
+// Κάϊν only), Ἰωβέλ (one candidate, a feminine accusative). The input is small and made for the test: TAGNT's rows are the ones the real file gives these
+// names (Luke 3, Heb 11, Matt 1) in the shape of the real file, TBESG's rows are the real ones with their text; a declined name (Ἰησοῦς) and a common noun stand beside them.
+describe('an indeclinable name offers every case of its gender (B6)', async () => {
+  const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+  const rows = [
+    tagntRow('Luk.3.38#10', 'Ἀδάμ', 'G0076', 'N-GSM-P', 'Ἀδάμ'),
+    tagntRow('Rom.5.14#3', 'Ἀδάμ', 'G0076', 'N-GSM-P', 'Ἀδάμ'),
+    tagntRow('1Co.15.22#6', 'Ἀδὰμ', 'G0076', 'N-DSM-P', 'Ἀδάμ'),
+    tagntRow('1Co.15.45#9', 'Ἀδάμ', 'G0076', 'N-NSM-P', 'Ἀδάμ'),
+    tagntRow('Luk.3.37#5', 'Ἑνώχ', 'G1802', 'N-GSM-P', 'Ἐνώχ'),
+    tagntRow('Heb.11.5#2', 'Ἑνώχ', 'G1802', 'N-NSM-P', 'Ἐνώχ'),
+    tagntRow('Mat.1.1#4', 'Ἰησοῦ', 'G2424', 'N-GSM-P', 'Ἰησοῦς'),
+    tagntRow('Mat.1.16#9', 'Ἰησοῦς', 'G2424', 'N-NSM-P', 'Ἰησοῦς'),
+    tagntRow('Mat.1.25#7', 'Ἰησοῦν', 'G2424', 'N-ASM-P', 'Ἰησοῦς'),
+    tagntRow('Joh.1.1#4', 'λόγος', 'G3056', 'N-NSM', 'λόγος'),
+    tagntRow('Joh.1.14#2', 'λόγον', 'G3056', 'N-ASM', 'λόγος'),
+    // the one pair of forms the rule -ελ for -ηλ is learned from
+    tagntRow('Mat.1.12#9', 'Σαλαθιέλ', 'G4528', 'N-ASM-P', 'Σαλαθιήλ'),
+    // Ἰούδας declines (Ἰούδαν), though TBESG's entry says indecl. of the tribe's spelling; a place in the neuter seen once; a woman of Magdala, not tagged a name
+    tagntRow('Mat.1.2#9', 'Ἰούδαν', 'G2455', 'N-ASM-P', 'Ἰούδας'),
+    tagntRow('Mat.1.3#1', 'Ἰούδας', 'G2455', 'N-NSM-P', 'Ἰούδας'),
+    tagntRow('Mat.1.3#9', 'Ἰούδα', 'G2455', 'N-GSM-P', 'Ἰούδας'),
+    tagntRow('Act.28.15#9', 'Φόρου', 'G5410', 'N-GSN-L', 'Φόρον'),
+    tagntRow('Luk.8.2#9', 'Μαγδαληνή', 'G3094', 'N-NSF', 'Μαγδαληνή'),
+    tagntRow('Luk.8.3#9', 'Μαγδαληνή', 'G3094', 'N-ASF', 'Μαγδαληνή'),
+  ];
+  const tbesgRows = [
+    'G0076\tG0076 = the Greek of\tH0121G\tἈδάμ\tAdam\tN:N-M-P\tAdam\t <b>Ἀδάμ</b>, ὁ indecl. (Heb. אָדָם), <BR /> <b>Adam</b>',
+    'G1802\tG1802 =\tG1802\tἘνώχ\tEnōch\tN:N-M-P\tEnoch\t <b>Ἐνώχ</b>, ὁ, indecl. (Heb. חֲנוֹךְ), <BR /> <b>Enoch</b>',
+    'G2424\tG2424 =\tG2424\tἸησοῦς\tIēsous\tN:N-M-P\tJesus\t <b>Ἰησοῦς</b>, -οῦ, ὁ, <BR /> <b>Jesus</b>',
+    'G2536\tG2536G =\tG2536G\tΚαϊνάν, Καϊνάμ\tKainan, Kainam\tN:N-M-P\tCainan\t <b>Καινάμ</b> (T, Καϊ-; Rec. Καϊνάν), ό, indecl. (Heb. קֵינָן), <BR /> <b>Cainam, Cainan</b>',
+    'G4528\tG4528 =\tG4528\tΣαλαθιήλ\tSalathiēl\tN:N-M-P\tSalathiel\t <b>Σαλαθιήλ</b>, ὁ, indecl.',
+    'G7745\tG7745 =\tG7745\tἸωβήλ\tIōbēl\t\ta ram\t Ἰωβήλ, see: Ἰωβήδ.<BR /> <b>Ἰωβήδ</b> (WH, -βήλ, Lk, l.with; Rec., RV, Ὠβήδ), ὁ, indecl., <BR /> <b>Jobed</b>',
+    'G2455\tG2455 =\tG2455\tἸούδας\tIoudas\tN:N-M-P\tJudah\t <b>Ἰούδας</b>, -α, ὁ, <BR /> <b>Judah</b>, <b>Ἰούδα</b>, ὁ, indecl. (Heb. יְהוּדָה), <BR /> the tribe',
+    'G3056\tG3056 =\tG3056\tλόγος\tlogos\tG:N-M\tword\t <b>λόγος</b>, ὁ, <BR /> <b>word</b>',
+  ];
+  const words = ['Ἀδὰμ', 'Ἑνὼχ', 'Καινὰν', 'Ἰωβέλ·', 'Ἰησοῦν', 'λόγον', 'Λόγος', 'ἀδὰμ'];
+  const [ADAM, ENOCH, KAINAN, IOBEL, IESOUN, LOGON, LOGOS_CAPITAL, ADAM_LOWER] = words.map((_, i) => `Gen.2:19#${i + 1}`);
+  const input: DeriveInput = {
+    versification: '1\tGen.2:19',
+    words: words.map((w, i) => `${i + 1}\t${w}`).join('\n'),
+    tagnt: [rows.join('\n')],
+    tbesg: tbesgRows.join('\n'),
+  };
+  const trained = train(input);
+  const got = deriveBook(input, 'gen', undefined, trained);
+  const without = deriveBook(input, 'gen', undefined, { ...trained, parser: { ...trained.parser, names: NO_NAMES } });
+  const cases = (w: DerivedWord | PendingWord, lemma: string): string[] => w.candidates.filter((c) => c.lemma === lemma).map((c) => c.morph);
+  const ALL_MASCULINE = ['N-NSM', 'N-GSM', 'N-DSM', 'N-ASM', 'N-VSM'];
+
+  it('gives Ἀδάμ its accusative and vocative, which the New Testament never prints (Gen 2:19, 2:21, 3:9)', () => {
+    const out = outOf(got, ADAM);
+    expect(isDerived(out)).toBe(false);
+    expect(cases(out, 'Ἀδάμ').sort()).toEqual([...ALL_MASCULINE].sort());
+    // what TAGNT has stays first, with its counts; the new ones come after, counted apart
+    expect(out.candidates.slice(0, 3).map((c) => supportOf(c))).toEqual(['2', '1', '1']);
+    expect(out.candidates.slice(0, 3).every((c) => c.support > 0)).toBe(true);
+    const added = out.candidates.slice(3);
+    expect(added.map((c) => c.morph).sort()).toEqual(['N-ASM', 'N-VSM']);
+    expect(added.every((c) => supportOf(c) === 'name')).toBe(true);
+  });
+
+  it('gives Ἐνώχ its dative, accusative and vocative (Gen 4:18)', () => {
+    expect(cases(outOf(got, ENOCH), 'Ἐνώχ').sort()).toEqual([...ALL_MASCULINE].sort());
+  });
+
+  it('gives the name Καϊνάν to Καινάν, which TBESG lists under a pair of lemmas and the parser read as καινός or Κάϊν (Gen 5:12)', () => {
+    const out = outOf(got, KAINAN);
+    expect(isDerived(out)).toBe(false);
+    expect(cases(out, 'Καϊνάν').sort()).toEqual([...ALL_MASCULINE].sort());
+    expect(out.candidates.every((c) => c.lemma === 'Καϊνάν' || c.lemma !== 'Καϊνάμ')).toBe(true);
+  });
+
+  it('gives Ἰωβήλ the masculine, which TBESG’s text says (ὁ, indecl.), beside the parser’s accusative (Gen 4:20)', () => {
+    const out = outOf(got, IOBEL);
+    expect(isDerived(out)).toBe(false);
+    expect(cases(out, 'Ἰωβήλ').sort()).toEqual([...ALL_MASCULINE].sort());
+    expect(out.candidates.some((c) => c.morph.endsWith('F'))).toBe(false);
+  });
+
+  it('changes no other word: a declined name, a common noun, a capital that is no name and a name in lower case keep their candidates', () => {
+    const changed = got.words.map((w) => w.ref).filter((ref) => JSON.stringify(outOf(got, ref)) !== JSON.stringify(outOf(without, ref)));
+    expect(changed.sort()).toEqual([ADAM, ENOCH, KAINAN, IOBEL].sort());
+    for (const ref of [IESOUN, LOGON, LOGOS_CAPITAL, ADAM_LOWER]) expect(outOf(got, ref)).toEqual(outOf(without, ref));
+    expect(outOf(got, IESOUN).candidates.some((c) => supportOf(c) === 'name')).toBe(false);
+  });
+
+  it('notes why a name waits, and leaves the word for the model: pending, not settled by the parser’s one candidate', () => {
+    for (const ref of [ADAM, ENOCH, KAINAN, IOBEL]) {
+      const out = outOf(got, ref);
+      expect(isDerived(out)).toBe(false);
+      expect(out.notes).toContain(NOTE_INDECLINABLE);
+      expect(out.notes).not.toContain(NOTE_NO_CANDIDATE);
+    }
+    // before the rule the parser had settled Ἰωβέλ on its single candidate, in layer 2
+    expect(layerOf(outOf(without, IOBEL))).toBe(2);
+  });
+
+  it('writes the new candidates’ support as the word name, in the pending file', () => {
+    const text = tsvOf(got).pending;
+    expect(text).toContain('Ἀδάμ/N-ASM/name');
+    expect(text).toContain('Ἰωβήλ/N-VSM/name');
+  });
+
+  it('finds an indeclinable name by the New Testament’s one spelling in several cases, or by TBESG saying indecl.', () => {
+    const { names } = trained.parser;
+    const entryOf = (lemma: string): { genders: readonly string[] } | undefined => names.lemma.get(nfc(lemma));
+    expect(entryOf('Ἀδάμ')?.genders).toEqual(['M']);
+    expect(entryOf('Ἐνώχ')?.genders).toEqual(['M']);
+    expect(entryOf('Σαλαθιήλ')?.genders).toEqual(['M']);
+    expect(entryOf('Καϊνάν')?.genders).toEqual(['M']);
+    expect(entryOf('Καϊνάμ')?.genders).toEqual(['M']);
+    expect(entryOf('Ἰωβήλ')?.genders).toEqual(['M']);
+    // Ἰησοῦς declines (Ἰησοῦν), whatever one of its spellings does in two cases
+    expect(entryOf('Ἰησοῦς')).toBeUndefined();
+    expect(entryOf('λόγος')).toBeUndefined();
+    // the New Testament's own declension beats a line of TBESG's text; one case seen once is no evidence; a lemma tagged no name is no name
+    expect(entryOf('Ἰούδας')).toBeUndefined();
+    expect(entryOf('Φόρον')).toBeUndefined();
+    expect(entryOf('Μαγδαληνή')).toBeUndefined();
   });
 });

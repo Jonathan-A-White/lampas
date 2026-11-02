@@ -6,7 +6,7 @@
 // (Γενηθήτωσαν beside γενηθήτω) gives its lemma, and the ending pair, as other lemmas show it, gives the parsing.
 // Everything is compared on bareOf's letters (no accents or breathings, lower case, final sigma as sigma).
 import { bareOf, keyOf } from './swete';
-import { fits, posKey, type Lexicon } from './tbesg';
+import { fits, posKey, type Lexicon, type TbesgName } from './tbesg';
 import type { Analysis, TagntRow } from './tagnt';
 
 /** One of a form's candidates from the parser: an analysis, and what produced it, the most support first. */
@@ -189,9 +189,108 @@ export function trainAnalogy(triples: readonly Triple[]): Analogy {
   return { pairs, byPrefix };
 }
 
+// ---------------------------------------------------------------- names that do not decline (story mw-u2w5klk.13)
+
+/** A name that does not decline, by its lemma, and the gender(s) it takes ('M', 'F', 'N'; none known means all three). */
+export interface NameEntry {
+  lemma: string;
+  genders: readonly string[];
+}
+
+export interface NameIndex {
+  /** bareOf(a spelling of the name) -> the names written so: TAGNT's one spelling, or TBESG's lemma */
+  spelling: Map<string, NameEntry[]>;
+  /** the lemma -> the name, for a lemma the parser or layer 1 proposed in one case only */
+  lemma: Map<string, NameEntry>;
+}
+
+export const NO_NAMES: NameIndex = { spelling: new Map(), lemma: new Map() };
+
+/** The cases a name is offered in, in the order TAGNT lists them; a name that does not decline is singular. */
+export const NAME_CASES = ['N', 'G', 'D', 'A', 'V'] as const;
+const GENDERS = ['M', 'F', 'N'] as const;
+const isCapital = (s: string): boolean => {
+  const first = [...s.normalize('NFC')][0] ?? '';
+  return first !== first.toLowerCase();
+};
+
+/**
+ * The names that do not decline, from the two sources, TAGNT first.
+ * TAGNT: a lemma written with a capital, tagged a person or a place (Μαγδαληνή, a woman of Magdala, is not), whose every New Testament noun row (any case, singular or plural) is one spelling, bare letters, in at least two of the
+ * nominative, genitive, dative and accusative: Ἀδάμ is ἀδάμ in the nominative, genitive and dative; Ἰησοῦς has Ἰησοῦ, Ἰησοῦς, Ἰησοῦν. A neuter in the nominative and
+ * accusative alone shares one form whatever its class, so it is not enough; a name with a plural is declined. The vocative is not counted: Ἰούδα is genitive and vocative.
+ * TBESG (readTbesgNames): the rest, a name whose text says `indecl.` that the New Testament has too rarely or not at all (Καϊνάν, Ἰωβήλ).
+ * TAGNT's lemma stands where both give the same one. A TAGNT lemma that lists spellings ('Δαυείδ, Δαυίδ, Δαβίδ') is kept as TAGNT writes it, as layer 1 does.
+ */
+export function indeclinableNames(rows: readonly TagntRow[], tbesg: readonly TbesgName[] = []): NameIndex {
+  const seen = new Map<string, { spellings: Set<string>; cases: Set<string>; genders: Set<string>; plural: boolean; name: boolean }>();
+  for (const r of rows) {
+    const m = /^N-([NGDAV])([SP])([MFN])$/.exec(r.morph);
+    if (!m || !isCapital(r.lemma)) continue;
+    let s = seen.get(r.lemma);
+    if (!s) seen.set(r.lemma, (s = { spellings: new Set(), cases: new Set(), genders: new Set(), plural: false, name: false }));
+    if (r.name) s.name = true;
+    s.spellings.add(bareOf(r.form));
+    s.cases.add(m[1]);
+    s.genders.add(m[3]);
+    if (m[2] === 'P') s.plural = true;
+  }
+  const names: NameIndex = { spelling: new Map(), lemma: new Map() };
+  const add = (spelling: string, entry: NameEntry): void => {
+    let list = names.spelling.get(spelling);
+    if (!list) names.spelling.set(spelling, (list = []));
+    if (!list.some((e) => e.lemma === entry.lemma)) list.push(entry);
+    names.lemma.set(entry.lemma, entry);
+  };
+  for (const [lemma, s] of [...seen].sort(([a], [b]) => byCode(a, b))) {
+    const shown = [...s.cases].filter((c) => 'NGDA'.includes(c));
+    const neuterOnly = s.genders.size === 1 && s.genders.has('N');
+    const enough = shown.length >= 2 && (!neuterOnly || shown.some((c) => c === 'G' || c === 'D'));
+    if (!s.name || s.plural || s.spellings.size !== 1 || !enough) continue;
+    add([...s.spellings][0], { lemma, genders: GENDERS.filter((g) => s.genders.has(g)) });
+  }
+  // TAGNT's evidence of declining beats a line of TBESG's text: Ἰούδας has Ἰούδα, Ἰούδαν and Ἰούδᾳ in the New Testament, and TBESG's entry also says indecl. of its tribe's spelling
+  const declined = new Set([...seen].filter(([, s]) => s.spellings.size > 1).map(([lemma]) => lemma));
+  for (const t of tbesg) {
+    if (names.lemma.has(t.lemma) || declined.has(t.lemma)) continue;
+    add(bareOf(t.lemma), { lemma: t.lemma, genders: t.genders });
+  }
+  return names;
+}
+
+/**
+ * The candidates an indeclinable name is owed that the word does not have: for a form written with a capital that is a spelling of such a name, or, when it is
+ * none, for which layer 1 or the parser proposed such a lemma (Ἰωβέλ, proposed as Ἰωβήλ in one case; Καινάν also gets Κάϊν from the parser, which it is not), every case of the name's gender in the lemma's own name. A name
+ * with no gender known is offered in all three. Only the readings the word lacks, in the order of the cases.
+ */
+export function nameCandidates(form: string, have: ReadonlyArray<{ lemma: string; morph: string }>, names: NameIndex): Array<{ lemma: string; morph: string }> {
+  if (!isCapital(form)) return [];
+  const found = new Map<string, NameEntry>();
+  for (const e of names.spelling.get(bareOf(form)) ?? []) found.set(e.lemma, e);
+  if (found.size === 0) {
+    for (const c of have) {
+      const e = names.lemma.get(c.lemma);
+      if (e) found.set(e.lemma, e);
+    }
+  }
+  const owned = new Set(have.map((c) => `${c.lemma}|${c.morph}`));
+  const out: Array<{ lemma: string; morph: string }> = [];
+  for (const e of found.values()) {
+    for (const g of e.genders.length ? e.genders : GENDERS) {
+      for (const c of NAME_CASES) {
+        const morph = `N-${c}S${g}`;
+        if (!owned.has(`${e.lemma}|${morph}`)) out.push({ lemma: e.lemma, morph });
+      }
+    }
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------- the trained parser
 
 export interface Parser {
+  /** the names that do not decline (indeclinableNames): a word that is one gets every case of its gender as a candidate */
+  names: NameIndex;
   rules: Rules;
   analogy: Analogy;
   lexicon: Lexicon;
@@ -201,8 +300,8 @@ export interface Parser {
   triples: number;
 }
 
-/** Trains the parser on TAGNT's rows (a hidden book already left out) with TBESG's lemmas. */
-export function trainParser(rows: readonly TagntRow[], lexicon: Lexicon): Parser {
+/** Trains the parser on TAGNT's rows (a hidden book already left out) with TBESG's lemmas, and the names that do not decline (none when not given). */
+export function trainParser(rows: readonly TagntRow[], lexicon: Lexicon, names: NameIndex = NO_NAMES): Parser {
   const ntPos = new Map<string, Set<string>>();
   for (const r of rows) {
     let s = ntPos.get(r.lemma);
@@ -210,7 +309,7 @@ export function trainParser(rows: readonly TagntRow[], lexicon: Lexicon): Parser
     s.add(posKey(r.morph));
   }
   const triples = triplesOf(rows);
-  return { rules: trainRules(triples), analogy: trainAnalogy(triples), lexicon, ntPos, triples: triples.length };
+  return { names, rules: trainRules(triples), analogy: trainAnalogy(triples), lexicon, ntPos, triples: triples.length };
 }
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);

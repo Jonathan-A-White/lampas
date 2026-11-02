@@ -36,6 +36,54 @@ export function readTbesg(text: string): Lexicon {
   return byBare;
 }
 
+/** One of TBESG's names that does not decline: its lemma as TBESG writes it, and its gender(s) when the row or its text give one. */
+export interface TbesgName {
+  /** NFC; a row that lists two lemmas ('Καϊνάν, Καϊνάμ') gives one name for each */
+  lemma: string;
+  /** 'M', 'F', 'N' in that order; empty when neither the row's part of speech nor its text says */
+  genders: string[];
+}
+
+const ARTICLE_GENDER: Readonly<Record<string, string>> = { ὁ: 'M', ό: 'M', ἡ: 'F', ή: 'F', τό: 'N', τὸ: 'N' };
+const GENDER_ORDER = ['M', 'F', 'N'];
+
+/** The genders a row's text names just before `indecl.` ('ὁ, indecl.', 'ὁ, ἡ, indecl.'), through the article it writes. */
+function genderBeforeIndecl(description: string): string[] {
+  const at = description.search(/(?<!be )indecl/);
+  if (at < 0) return [];
+  const window = description.slice(Math.max(0, at - 40), at).normalize('NFC');
+  const found = new Set([...window.matchAll(/(?<![\p{L}])(ὁ|ό|ἡ|ή|τό|τὸ)(?![\p{L}])/gu)].map((m) => ARTICLE_GENDER[m[1]]));
+  return GENDER_ORDER.filter((g) => found.has(g));
+}
+
+/**
+ * The names TBESG says do not decline (story mw-u2w5klk.13): a row with a capital lemma, a part of speech of a noun (or none), and either `indecl.` in its text
+ * (STEPBible's LSJ-derived entry: `Ἀδάμ, ὁ indecl.`) or the part of speech N-PRI, the indeclinable proper noun of the extra numbers of names found only in the Septuagint.
+ * A row's lemma column may list several lemmas ('Καϊνάν, Καϊνάμ'), each a name; a trailing mark is dropped ('Μακαλωθ·'). The gender is the row's own ('N:N-M-P'),
+ * else the article before `indecl.` in its text, else none.
+ */
+export function readTbesgNames(text: string): TbesgName[] {
+  const out: TbesgName[] = [];
+  for (const line of text.split(/\r?\n/)) {
+    if (!ROW.test(line)) continue;
+    const c = line.split('\t');
+    const pos = (c[5] ?? '').trim();
+    const description = c[7] ?? '';
+    if (!(pos === '' || /^[NG]:N/.test(pos))) continue;
+    if (!(pos === 'G:N-PRI' || /(?<!be )indecl/.test(description))) continue;
+    const given = /^[NG]:N-([MFN](?:\/[MFN])*)/.exec(pos)?.[1].split('/') ?? [];
+    const genders = given.length ? GENDER_ORDER.filter((g) => given.includes(g)) : genderBeforeIndecl(description);
+    for (const alt of (c[3] ?? '').split(',')) {
+      const lemma = alt.trim().replace(/[\p{P}]+$/u, '').normalize('NFD').replaceAll('\u0300', '\u0301').normalize('NFC');
+      if (!lemma || /\s/.test(lemma)) continue;
+      const first = [...lemma][0];
+      if (first === first.toLowerCase()) continue;
+      out.push({ lemma, genders });
+    }
+  }
+  return out;
+}
+
 /** How many lemmas the lexicon holds (a lemma on two rows counts twice, as the probe counted it). */
 export const lemmaCount = (lexicon: Lexicon): number => [...lexicon.values()].reduce((n, es) => n + es.length, 0);
 

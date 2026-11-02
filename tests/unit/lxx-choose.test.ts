@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
-import { BATCH_SIZE, batchName, batchesOf, chapterOf, cutBatches, runBatches } from '../../scripts/lxx/batches';
+import { BATCH_SIZE, batchName, batchesOf, chapterOf, cutBatches, nameRefs, runBatches } from '../../scripts/lxx/batches';
 import { ChooseRefused, checkChoices, parseModelLines, runChoose } from '../../scripts/lxx/choose';
 import { CONFIDENCE_CHOSEN, CONFIDENCE_GUESS, CONFIDENCE_UNSURE, NOTE_GUESS_NO_CANDIDATE, NOTE_UNSURE, applyChoices, readChoiceDir, readChoices } from '../../scripts/lxx/choices';
 import { deriveBook, type DeriveInput, type PendingWord } from '../../scripts/lxx/derive';
@@ -145,6 +145,20 @@ describe('lxx:pending and lxx:batches', () => {
     expect(text).toMatch(/^1\t1\t161\t2$/m);
     expect(text).toMatch(/^total\t\t161\t2$/m);
     expect(batchesOf('gen', gen.pending)[0].words).toEqual(gen.pending);
+  });
+
+  it('lxx:batches --all gives a row for each Old Testament book of the file: its words, its pending words, those with no candidate and how many of those are names', async () => {
+    const lines: string[] = [];
+    await runBatches(['--all'], { input: GEN_1, log: (l) => lines.push(l) });
+    expect(lines[0]).toBe(['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name'].join('\t'));
+    expect(lines).toHaveLength(3);
+    expect(lines[1]).toBe(`gen\t${gen.words.length}\t161\t2\t${((100 * 2) / gen.words.length).toFixed(2)}%\t1`);
+    expect(lines[2]).toBe(lines[1].replace('gen', 'total'));
+    // the one capital among Gen 1's two words with no candidate is Γενηθήτωσαν, which opens what God says (Gen 1:14) and follows no mark: counted, so the count is an upper bound
+    const w = (ref: string, display: string): { ref: string; verse: string; form: string; display: string } => ({ ref, verse: ref.split('#')[0], form: display.replace(/[.,·]/g, ''), display });
+    const verse = [w('Gen.4:20#1', 'καὶ'), w('Gen.4:20#2', 'ἔτεκεν'), w('Gen.4:20#3', 'Ἀδὰ'), w('Gen.4:20#4', 'τὸν'), w('Gen.4:20#5', 'Ἰωβέλ·'), w('Gen.4:20#6', 'Οὗτος'), w('Gen.4:21#1', 'Ἰουβάλ')];
+    expect([...nameRefs(verse)]).toEqual(['Gen.4:20#3', 'Gen.4:20#5']);
+    await expect(runBatches(['--all', '--book', 'gen'], { input: GEN_1 })).rejects.toThrow(/usage/);
   });
 
   it('cuts a fixture of two chapters at the chapter boundary', async () => {
