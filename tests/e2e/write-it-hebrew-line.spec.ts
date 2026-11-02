@@ -29,8 +29,8 @@ async function putSetting(page: Page, row: { key: string; value: string }) {
 }
 
 /** The vav's Write it card, at the Trace stage. */
-async function openVav(page: Page, width: number) {
-  await page.setViewportSize({ width, height: 844 });
+async function openVav(page: Page, width: number, height = 844) {
+  await page.setViewportSize({ width, height });
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
@@ -64,24 +64,28 @@ async function ink(page: Page, strokes: Stroke[]) {
   }
 }
 
-for (const width of [390, 820]) {
-  test(`at ${width} px wide, tracing the faint vav is Right, and a long ן on the ו card is Not quite`, async ({ page }) => {
-    const card = await openVav(page, width);
+const SIZES: [number, number][] = [[390, 844], [820, 1180], [1280, 800], [360, 640], [844, 390]];
+for (const [width, height] of SIZES) {
+  test(`at ${width}x${height}, tracing the faint vav is Right, and a long ן on the ו card is Not quite`, async ({ page }) => {
+    const card = await openVav(page, width, height);
     const pad = card.getByTestId('writing-pad');
-    await pad.scrollIntoViewIfNeeded();
+    // the model's own strokes, where the browser draws them now (page pixels): measured again after the card changes, for a short screen scrolls
+    const modelNow = async (): Promise<Stroke[]> => {
+      await pad.scrollIntoViewIfNeeded();
+      return card.getByTestId('write-model').evaluate((svg) =>
+        [...svg.querySelectorAll<SVGPathElement>('path.glyph-stroke')].map((path) => {
+          const to = path.getScreenCTM()!;
+          const length = path.getTotalLength();
+          return Array.from({ length: 41 }, (_, i) => {
+            const at = path.getPointAtLength((length * i) / 40);
+            const p = new DOMPoint(at.x, at.y).matrixTransform(to);
+            return [p.x, p.y] as [number, number];
+          });
+        }),
+      );
+    };
+    const model = await modelNow();
     const box = (await pad.boundingBox())!;
-    // the model's own strokes, where the browser draws them (page pixels)
-    const model: Stroke[] = await card.getByTestId('write-model').evaluate((svg) =>
-      [...svg.querySelectorAll<SVGPathElement>('path.glyph-stroke')].map((path) => {
-        const to = path.getScreenCTM()!;
-        const length = path.getTotalLength();
-        return Array.from({ length: 41 }, (_, i) => {
-          const at = path.getPointAtLength((length * i) / 40);
-          const p = new DOMPoint(at.x, at.y).matrixTransform(to);
-          return [p.x, p.y] as [number, number];
-        });
-      }),
-    );
     expect(model.length).toBeGreaterThan(0);
 
     // a ן: a stem from the top of a letter to well below the line
@@ -96,8 +100,8 @@ for (const width of [390, 820]) {
 
     // tracing the model is Right
     await expect(card.getByTestId('writing-pad')).toHaveAttribute('data-strokes', '0');
-    await ink(page, model);
-    await shot(page, `write-it-hebrew-line-${width}`);
+    await ink(page, await modelNow());
+    await shot(page, `write-it-hebrew-line-${width}x${height}`);
     await card.getByRole('button', { name: 'Check', exact: true }).click();
     await expect(card.getByTestId('write-verdict')).toHaveText('Right');
   });

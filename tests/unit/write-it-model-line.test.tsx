@@ -14,6 +14,10 @@ afterEach(cleanup);
 const PADS: readonly [string, number, number][] = [
   ['390 x 844', 390 - 2 * 16 - 4, 256],
   ['820 wide', 820 - 2 * 16 - 4, 256],
+  // the other screens of mw-5r3p30.976: a small phone, a laptop and a phone on its side (the pad is as tall, as wide as the card leaves it)
+  ['360 x 640', 360 - 2 * 16 - 4, 256],
+  ['1280 x 800', 1280 - 2 * 16 - 4, 256],
+  ['844 x 390', 844 - 2 * 16 - 4, 256],
 ];
 
 /** Points along 'M x y L x y ...', a point about every 0.02 design units. */
