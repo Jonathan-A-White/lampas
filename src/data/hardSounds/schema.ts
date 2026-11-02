@@ -60,9 +60,9 @@ export interface HardSoundLesson {
 }
 
 const GREEK_WORD = /^[\p{Script=Greek}\p{M}’']+$/u;
-/** A Hebrew word of a lesson: letters and points, with no cantillation (the Hebrew voice is handed the word without it anyway). */
-const HEBREW_WORD = /^[\u05D0-\u05EA\u05B0-\u05BC\u05C1\u05C2\u05C7]+$/u;
-const wordPattern = (language: PronunciationLanguage): RegExp => (language === 'he' ? HEBREW_WORD : GREEK_WORD);
+/** A Hebrew word of a lesson: Hebrew letters and points, with no cantillation (the Hebrew voice is handed the word without it anyway). */
+const HEBREW_WORD = { test: (w: string): boolean => /^\p{Script=Hebrew}+$/u.test(w) && !/[\u0591-\u05AF\u05BE\u05C3]/u.test(w) };
+const wordPattern = (language: PronunciationLanguage): { test(w: string): boolean } => (language === 'he' ? HEBREW_WORD : GREEK_WORD);
 /** What IPA writes that plain text does not (as tests/unit/no-ipa-shown.test.tsx); θ is Greek's own. */
 const IPA_ONLY = /[ɣʝðɛɔʃːçŋɾɡ]/u;
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

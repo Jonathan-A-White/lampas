@@ -7,7 +7,8 @@ import { greekWordSpeech, hebrewWordSpeech, speakText, speakWord, stopSpeaking }
 import type { SpeechLanguage } from '../speech/languages';
 import { Icon } from '../speech/SpeakButton';
 import { answerRound, drawRounds, missesOf, pairSeed, ROUNDS, type PairAnswer, type Round } from './pairDrill';
-import { Word, wordFace } from './Word';
+import { wordFace } from './face';
+import { Word } from './Word';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line';
 const PRIMARY = 'min-h-12 w-full rounded-xl bg-accent px-4 text-lg font-medium text-accent-fg active:opacity-80';
