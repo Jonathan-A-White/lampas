@@ -1,6 +1,6 @@
 // features/steps/memorize-type.steps.tsx — runs features/memorize-type.feature: typing a recall in the Memorize session (src/memorize/TypeIt.tsx) over fake-indexeddb; the chapters are the committed ones.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { forgetChapters } from '../../src/data/chapter';
@@ -17,7 +17,7 @@ import { greekKeyboardSetting } from '../../src/settings/definitions';
 import { setSetting } from '../../src/settings/store';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { stubRecognizer } from '../../tests/support/fake-recognizer';
+import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { stubRecorder } from '../../tests/support/fake-recorder';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 
@@ -116,6 +116,44 @@ describeFeature(feature, ({ Scenario }) => {
     checks(And);
     says(And);
     kept(And);
+  });
+
+  Scenario('I go back to saying it while the box is open', ({ Given, When, Then, And }) => {
+    const offers = (name: string) => expect(screen.getByRole('button', { name: new RegExp(name) })).toBeTruthy();
+    Given('the verse {string} is new in English', (_, v: string) => begin(v, 'en'));
+    opens(When);
+    Then('the session offers {string}', (_, name: string) => offers(name));
+    When('I tap {string}', async (_, name: string) => {
+      fireEvent.click(await screen.findByRole('button', { name }));
+    });
+    Then('the session no longer offers {string}', (_, name: string) => {
+      expect(screen.queryByRole('button', { name: new RegExp(name) })).toBeNull();
+    });
+    And('the foot offers {string}', (_, name: string) => offers(name));
+    When('I choose {string} to go back', async (_, name: string) => {
+      fireEvent.click(await screen.findByRole('button', { name }));
+    });
+    Then('there is no box to type in', () => {
+      expect(screen.queryByRole('textbox', { name: /Type the verse/ })).toBeNull();
+    });
+    And('the session shows {string} again', (_, name: string) => offers(name));
+    And('the session also offers {string}', (_, name: string) => offers(name));
+    When('I hold the bar and say the verse', async () => {
+      fireEvent.pointerDown(await screen.findByRole('button', { name: /Hold to say it/ }), { pointerId: 1, clientX: 10, clientY: 10 });
+      await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
+      const recogniser = FakeRecognizer.last();
+      recogniser.open();
+      recogniser.say([result('from his fullness we have all received grace upon grace', false)]);
+      fireEvent.pointerUp(await screen.findByRole('button', { name: /Release|Say it|Hold to say it|talk/i }), { pointerId: 1, clientX: 10, clientY: 10 });
+    });
+    Then('the session says {string}', async (_, words: string) => {
+      expect(await screen.findByText(new RegExp(words))).toBeTruthy();
+    });
+    And('the recall is kept as said with a score of {number}', async (_, score: unknown) => {
+      const [recall] = await recallsOf(ref, lang);
+      expect(recall.how).toBe('said');
+      expect(recall.score).toBeCloseTo(score as number);
+    });
   });
 
   Scenario('Weave is only spoken', ({ Given, When, Then, And }) => {

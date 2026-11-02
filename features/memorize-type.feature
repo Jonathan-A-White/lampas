@@ -29,3 +29,18 @@ Feature: I can type a verse from memory
     When I open its Memorize session
     Then there is no way to type
     And the session offers "Hold to say it"
+
+  Scenario: I go back to saying it while the box is open
+    Given the verse "John.1.16" is new in English
+    When I open its Memorize session
+    Then the session offers "Hold to say it"
+    When I tap "Type it"
+    Then the session no longer offers "Hold to say it"
+    And the foot offers "Say it instead"
+    When I choose "Say it instead" to go back
+    Then there is no box to type in
+    And the session shows "Hold to say it" again
+    And the session also offers "Type it"
+    When I hold the bar and say the verse
+    Then the session says "Got it: 10 of 10 words"
+    And the recall is kept as said with a score of 1
