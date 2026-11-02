@@ -3,7 +3,11 @@
 // are the same for every source language. Screens read a chapter through loadChapter and the word helpers below, never through the short keys.
 
 import { CANON_INDEX, greekBooks } from './bookIndex';
+import { isHebrewBook } from './books';
+import { forgetLxxIndex, loadSeptuagintChapter } from './lxxChapter';
 import { within } from './within';
+import { getSetting } from '../settings/store';
+import { septuagintSetting } from '../settings/definitions/septuagint';
 
 /** The language a chapter's words are in: Koine Greek ('grc') or Biblical Hebrew ('hbo', whose Aramaic verses are words of the same chapter). */
 export type SourceLanguage = 'grc' | 'hbo';
@@ -282,17 +286,26 @@ export function ladderUrl(lang: 'el' | 'en' | 'he'): string {
   return `/data/ladder/${lang}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
 }
 
-/** Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. */
-export function loadChapter(book: string, n: number): Promise<Chapter> {
-  const key = `${book}/${n}`;
+/** The key a chapter is kept under in memory: the Septuagint's is its own, since the same book and chapter is the Hebrew or the Greek by the setting. */
+const keyOf = (book: string, n: number, septuagint: boolean): string => `${septuagint ? 'lxx:' : ''}${book}/${n}`;
+
+/**
+ * Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. An Old Testament book while Settings > Old Testament in Greek (Septuagint) is On is the Septuagint's chapter
+ * of public/data-lxx that holds Lampas's chapter `n` (src/data/lxxChapter.ts; its `chapter` is the Greek number, `lang` 'grc'), when the book is shipped there, else the Hebrew as ever.
+ */
+export async function loadChapter(book: string, n: number): Promise<Chapter> {
+  const septuagint = isHebrewBook(book) && (await getSetting(septuagintSetting)) === 'on';
+  const key = keyOf(book, n, septuagint);
   const known = chapters.get(key);
   if (known) return known;
   // A fetch the worker never answers (a half-written cache entry) is given up on, so the Reader can say so rather than load for ever (mw-5r3p30.846).
-  const request = within(async (signal) => {
-    const response = await fetch(chapterUrl(book, n), { signal });
-    if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
-    return fillChapter((await response.json()) as Chapter);
-  });
+  const hebrew = (): Promise<Chapter> =>
+    within(async (signal) => {
+      const response = await fetch(chapterUrl(book, n), { signal });
+      if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
+      return fillChapter((await response.json()) as Chapter);
+    });
+  const request = septuagint ? loadSeptuagintChapter(book, n).then((greek) => (greek ? fillChapter(greek) : hebrew())) : hebrew();
   chapters.set(key, request);
   // A failure is not kept: the next call asks again.
   request.catch(() => {
@@ -303,7 +316,8 @@ export function loadChapter(book: string, n: number): Promise<Chapter> {
 
 /** Forgets a chapter's request still in flight, so the next loadChapter asks afresh (the Reader's Try again). */
 export function forgetChapter(book: string, n: number): void {
-  chapters.delete(`${book}/${n}`);
+  chapters.delete(keyOf(book, n, false));
+  chapters.delete(keyOf(book, n, true));
 }
 
 let index: Promise<BookIndex> | null = null;
@@ -335,4 +349,5 @@ export function forgetCanonIndex(): void {
 export function forgetChapters(): void {
   chapters.clear();
   index = null;
+  forgetLxxIndex();
 }
