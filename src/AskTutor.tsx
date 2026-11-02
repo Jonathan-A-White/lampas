@@ -124,8 +124,9 @@ export function DialogAskTutor({ screen, kept, suggestions }: { screen: ScreenCo
     stopReading();
     setOpen(true);
   };
-  // the dialog is on top of its screen: the tutor door asks about the dialog (the results of a drill)
-  useDoorTarget(ai && talk.ref ? openSheet : undefined);
+  // the dialog is on top of its screen: the tutor door asks about the dialog (the results of a drill, a Check). It is a sheet: over an idea sheet (itself a sheet target) it is the newest of the top rank,
+  // so the ? does not ask about the lesson under it, whose Talk would open beneath the dialog (mw-5r3p30.955)
+  useDoorTarget(ai && talk.ref ? openSheet : undefined, false, true);
   if (!ai || !talk.ref) return null;
   return (
     <>

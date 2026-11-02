@@ -10,6 +10,7 @@ import { CHECK_QUESTIONS, PASS_SHARE, passes, weakIdeas } from './data/grammar/p
 import type { GrammarQuestion } from './data/grammar/questions';
 import { mulberry32 } from './data/quiz';
 import { lessonCheckPassed, markPassed, markRead, noteAnswer, recordDrillStep, recordGrammarAnswer, tryAgainTomorrow } from './data/repositories';
+import { DialogAskTutor } from './AskTutor';
 import { GrammarCard } from './GrammarCard';
 import { drawCheck } from './review/lessonCheck';
 import { focusOnMount } from './ui/focus';
@@ -17,6 +18,7 @@ import { FootBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose } from './ui/sheetDrag';
+import { CHECK_SCREEN, questionFact, workKept, workScreen, workSuggestions } from './tutor/workTalk';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
@@ -35,6 +37,8 @@ type Drawn = GrammarQuestion[] | 'none' | null;
 export function CheckSheet({ lesson, onClose, onQuiz }: { lesson: CheckLesson; onClose: () => void; onQuiz?: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // the key this Check's talk is kept under: the floating ? asks about the Check, in front of it (DialogAskTutor)
+  const [talkKey] = useState(() => workKept(CHECK_SCREEN));
   const [drawn, setDrawn] = useState<Drawn>(null);
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -166,6 +170,16 @@ export function CheckSheet({ lesson, onClose, onQuiz }: { lesson: CheckLesson; o
           <GrammarCard key={index} question={question} mode="choice" picked={picked} onPick={pick} onStep={step} sideBySide />
         ) : null}
       </div>
+      <DialogAskTutor
+        kept={talkKey}
+        screen={workScreen(CHECK_SCREEN, [
+          { label: 'Passage lesson', value: lesson.label },
+          { label: 'Step', value: over ? `${passed ? 'Passed' : 'Read'}: ${right} of ${total}` : questions ? `Question ${index + 1} of ${total}` : '' },
+          ...(over && weak.length > 0 ? [{ label: 'Weak', value: weak.join(', ') }] : []),
+          ...questionFact(question),
+        ])}
+        suggestions={workSuggestions('this Check')}
+      />
       <FootBar>
         {over ? (
           <div className="flex flex-col gap-2">

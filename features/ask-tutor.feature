@@ -29,6 +29,21 @@ Feature: Ask the tutor from any screen
     When he opens the tutor with the floating ?
     Then the Talk sheet is in front of the Reader
 
+  Scenario: A screen he works in keeps the ?, and its Talk opens in front of it (mw-5r3p30.955)
+    Given Lampas is opened on #/?b=1jn&c=1&p=1&pt=4&view=english&weave=off with the goal "1 John 1:1" behind a fake Postern
+    When he starts the Check of the passage lesson
+    Then the screen has one control named "Ask the tutor about what is on screen"
+    When he opens the tutor with the floating ?
+    Then the Talk sheet is drawn inside the Check, in front of it
+    And the control is hidden while the sheet is open
+
+  Scenario: A sheet with nothing to ask about draws no ?, and it is back when the sheet is closed (mw-5r3p30.955)
+    Given Lampas is opened on #/?b=rom&c=8&view=english&weave=off&v=28 with the goal "1 John 1:1" behind a fake Postern
+    When he memorizes the verse and opens its language sheet
+    Then the screen has no control named "Ask the tutor about what is on screen"
+    When he closes the language sheet
+    Then the floating ? is drawn again
+
   Scenario: From Goal the request carries the goal, the counts, Learn next and the Next words
     Given Lampas is opened on #/goal with the goal "1 John 1:1" behind a fake Postern
     And the Goal screen shows its counts, Learn next and Next words

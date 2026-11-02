@@ -2,6 +2,7 @@
 // After a right he writes it again, or goes on to the next stage when the right moved him there, or is done; Skip and Done close it with nothing lost.
 import { useState } from 'react';
 import type { GrammarIdea } from '../data/grammar/ladder';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { isWrittenFromMemory, type WriteProgress, type WriteStage } from './progression';
@@ -16,6 +17,8 @@ function goOnLabel(before: WriteStage, after: WriteProgress): string {
 
 export function WriteItScreen({ idea, onClose }: { idea: GrammarIdea; onClose: () => void }) {
   useSheetBack(onClose);
+  // z-40, over the Talk sheet (z-10), with the pen's canvas the ? would float over: no ? here, for a Talk would open under the card (mw-5r3p30.955)
+  useNoDoor();
   // each card is a new attempt, at the stage he is at as it opens
   const [card, setCard] = useState(0);
   return (

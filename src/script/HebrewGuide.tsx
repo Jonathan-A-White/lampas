@@ -8,6 +8,7 @@ import { SpeakButton } from '../speech/SpeakButton';
 import { speak } from '../speech/greek';
 import { BarSlot } from '../speech/SpeakingBarSlot';
 import { HebrewAskContext, hebrewKey, noHebrewVoice } from './hebrewSpeech';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -27,6 +28,8 @@ export function HebrewGuide({ word, noVoice, onClose }: { word: string; noVoice:
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-40, drawn into document.body over the Talk sheet it was opened from: no ? over it, whether or not that Talk is open (mw-5r3p30.955)
+  useNoDoor();
   return createPortal(
     <div className="fixed inset-0 z-40 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />

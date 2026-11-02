@@ -8,6 +8,7 @@ import { useInterestLevels } from '../settings/useInterestLevels';
 import { announce } from '../ui/live';
 import { useEscapeToClose } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
+import { useNoDoor } from '../tutor/door';
 import { memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
 import { languagesFor, langName, MEMORIZE_LANGS, type MemorizeLang } from './languages';
 import { openMemorizeSession } from '../nav/route';
@@ -23,6 +24,8 @@ const tell = (done: Promise<CommandResult>): void => void done.then(({ said }) =
 function LanguageSheet({ canonical, offered, memorized, onClose }: { canonical: string; offered: readonly MemorizeLang[]; memorized: readonly MemorizeLang[]; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-40, over the Talk sheet (z-10) and nothing on it to ask about, switches only: no ? here (mw-5r3p30.955)
+  useNoDoor();
   // a language he memorized it in stays on the sheet to be switched off, though the dial has since gone down
   const shown = MEMORIZE_LANGS.filter((lang) => offered.includes(lang) || memorized.includes(lang));
   return (
