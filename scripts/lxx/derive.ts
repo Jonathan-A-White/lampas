@@ -219,7 +219,7 @@ export function opensClause(words: ReadonlyArray<Pick<SweteWord, 'verse' | 'disp
 /**
  * Whether word `i` is a whole clause of its own: it opens a verse or a clause (opensClause) and its own print ends one (a full stop, a colon, the high point). Swete
  * capitalises the first word of a clause whatever it is, but a word that is all of its sentence is not a Greek clause's opening: in Lamentations it is a letter name of the
- * acrostic (`Βήθ. Κλαίουσα ἔκλαυσεν`, Lam 1:2; 62 words of the 39 books, 49 of them with an ending a Hebrew name has) and elsewhere a name set apart (story mw-u2w5klk.20).
+ * acrostic (`Βήθ. Κλαίουσα ἔκλαυσεν`, Lam 1:2; 62 of Lamentations' words, 49 of them with an ending a Hebrew name has) and elsewhere a name set apart (story mw-u2w5klk.20).
  */
 export function isWholeClause(words: ReadonlyArray<Pick<SweteWord, 'verse' | 'display'>>, i: number): boolean {
   return opensClause(words, i) && ENDS_CLAUSE.test(words[i].display.normalize('NFC').trim());

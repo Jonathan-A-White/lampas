@@ -54,7 +54,7 @@ export function spellings(form: string): Array<[string, string]> {
 }
 
 /**
- * A verse number the editor prints in the Greek of the additions (`[1]`, `⸂[1]`: Esther's, Daniel's, Proverbs' and others, 257 tokens of the 39 books): his own numbering of the
+ * A verse number the editor prints in the Greek of the additions (`[1]`, `⸂[1]`: Esther's, Daniel's, Proverbs' and others, 257 tokens in Swete's file): his own numbering of the
  * verse's parts, not a word of the Septuagint. It is an editor's sign, left out of the words and counted with the signs (story mw-u2w5klk.20), where it was a word with no
  * candidate that no lexicon could have (106 of Esther's 181). A Greek numeral (`ε᾽`) is a word, and has no brackets and no digits.
  */

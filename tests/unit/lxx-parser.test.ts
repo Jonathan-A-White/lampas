@@ -521,7 +521,7 @@ describe('a lemma cell with a stray mark, and a lemma that differs by a diaeresi
 
 // Esther and Lamentations under the 3% bar on words with no candidate (story mw-u2w5klk.20, B9). The Governor's answer (2026-11-02, "A: Count only words with no
 // candidate"): a name read from its own form is not a guess; the bar counts the words no source gave a candidate. Two causes were left, each a general rule.
-// The rows are the real sources': Esther 1:1 prints `⸂[1] ΕΤΟΥΣ δευτέρου` (the additions carry the editor's verse numbers, `[1]`, 257 tokens of the 39 books, 106 of
+// The rows are the real sources': Esther 1:1 prints `⸂[1] ΕΤΟΥΣ δευτέρου` (the additions carry the editor's verse numbers, `[1]`, 257 tokens in Swete's file, 106 of
 // Esther's 181 words with no candidate) and Lamentations 1:2 opens `Βήθ. Κλαίουσα ἔκλαυσεν` (the acrostic's letter names, 62 words, each a whole sentence).
 describe("the editor's verse numbers are not words, and a letter name that is a sentence of its own is read as a name (B9)", async () => {
   const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
