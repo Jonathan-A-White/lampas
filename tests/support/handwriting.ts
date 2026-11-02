@@ -132,3 +132,33 @@ export function drawing(design: Variant, step = 0.03): InkStroke[] {
     });
   });
 }
+
+/** What a pad tells the checker: how tall a letter is on it (one design unit) and the y of the line the letters stand on, in the pad's own pixels. */
+export interface Pad {
+  capHeight: number;
+  baseline: number;
+}
+
+/** How a hand sits on a pad: the size it writes at (1 = the pad's letter height), and how far it drifts across and along the line, in letter heights. */
+export interface Hand {
+  scale?: number;
+  shiftX?: number;
+  shiftY?: number;
+}
+
+/**
+ * A writing from `writing` set on a real pad: its foot (design y 1) on the pad's line, its size a share of the pad's letter height, its
+ * middle across the pad's `width`. `writing` itself puts a letter in the middle of an imagined pad and sizes it by its own scale; this is for a
+ * pad whose line and letter height are fixed by the card, which is what a hand meets.
+ */
+export function onPad(strokes: readonly InkStroke[], pad: Pad, width: number, hand: Hand = {}): InkStroke[] {
+  const k = (pad.capHeight / CAP_HEIGHT) * (hand.scale ?? 1);
+  const foot = MIDDLE.y + CAP_HEIGHT / 2;
+  return strokes.map((stroke) =>
+    stroke.map((p): InkPoint => ({
+      x: width / 2 + (p.x - MIDDLE.x) * k + (hand.shiftX ?? 0) * pad.capHeight,
+      y: pad.baseline + (p.y - foot) * k + (hand.shiftY ?? 0) * pad.capHeight,
+      t: p.t,
+    })),
+  );
+}

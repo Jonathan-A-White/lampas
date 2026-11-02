@@ -25,7 +25,10 @@ import type { Languages } from '../../src/settings/definitions/interest';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
-import { WRITERS, writing } from '../../tests/support/handwriting';
+import { WRITERS, onPad, writing, type Pad } from '../../tests/support/handwriting';
+import { WriteIt } from '../../src/handwriting/WriteIt';
+import { ideaOfAny } from '../../src/data/grammar/ladders';
+import { frameOfPad } from '../../src/handwriting/padFrame';
 
 const realLetterSeed = letterDrillSeed.next;
 const realDrillSeed = drillSeed.next;
@@ -182,7 +185,7 @@ async function writesAndChecks(letter: string): Promise<void> {
 
 const feature = await loadFeature('features/hebrew-letters.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   const hebrewGoal = async () => {
     await fresh('hebrew');
     await openGoal();
@@ -439,6 +442,37 @@ describeFeature(feature, ({ Scenario }) => {
       expect(said[0].text).toBe(letter);
       expect(said[0].lang).toBe('he-IL');
       expect(writeDialog()).toBeInTheDocument();
+    });
+  });
+
+  ScenarioOutline('Write it tells a vav from a final nun by how far the stroke reaches below the line', ({ Given, When, Then }, row) => {
+    let pad: Pad;
+    Given('a pen has been seen and the Hebrew Write it card for "<card>" is open on a pad 256 pixels tall', async () => {
+      await fresh('hebrew');
+      await db.settings.put({ key: 'penSeen', value: 'yes' });
+      const final = row.card.endsWith('final form');
+      render(<WriteIt idea={ideaOfAny(final ? 'he-letter-nun' : 'he-letter-vav')} form={final ? 'final' : undefined} onSkip={() => {}} afterRight={() => null} />);
+      const element = await within(await screen.findByTestId('write-it')).findByTestId('writing-pad');
+      // jsdom has no layout: the pad is 320 by 256, where the card puts it
+      element.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, right: 320, bottom: 256, width: 320, height: 256, toJSON: () => ({}) });
+      pad = frameOfPad(256)!;
+    });
+    When('he writes "<written>" standing on the line and taps Check', async () => {
+      const element = within(writeCard()).getByTestId('writing-pad');
+      for (const stroke of onPad(writing(row.written, WRITERS[0]), pad, 320)) {
+        const pointerId = (pointer += 1);
+        const at = (i: number) => ({ pointerId, pointerType: 'pen', isPrimary: true, button: 0, buttons: 1, clientX: stroke[i].x, clientY: stroke[i].y });
+        fireEvent.pointerDown(element, at(0));
+        for (let i = 1; i < stroke.length; i += 1) fireEvent.pointerMove(element, at(i));
+        fireEvent.pointerUp(element, { ...at(stroke.length - 1), buttons: 0 });
+      }
+      await user.click(within(writeCard()).getByRole('button', { name: 'Check' }));
+      await within(writeCard()).findByTestId('write-verdict');
+    });
+    Then('the Write it card says "<verdict>"', () => {
+      const verdict = within(writeCard()).getByTestId('write-verdict');
+      expect(verdict).toHaveTextContent(row.verdict);
+      expect(verdict).toHaveAttribute('data-right', String(row.verdict === 'Right'));
     });
   });
 });
