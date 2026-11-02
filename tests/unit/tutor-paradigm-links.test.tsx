@@ -6,6 +6,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
+import '../support/grinds-in-graph';
 import { NO_CHAPTER } from '../../src/data/chapter';
 import { db, type AnswerLink } from '../../src/data/db';
 import { PARADIGMS, paradigmById } from '../../src/data/paradigms';
