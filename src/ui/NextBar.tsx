@@ -3,6 +3,7 @@
 // the card and its feedback run past it: 'what next' is never below the fold. FootBar is the same bar for a full-screen dialog (Drill it) whose card scrolls
 // above a footer of its own.
 import type { ReactNode } from 'react';
+import { useDoorRoom } from '../tutor/doorRoom';
 
 /** The bar's look, shared: a hairline above, the screen's own background, a thumb's room at the sides. */
 const LOOK = 'border-t border-line bg-canvas';
@@ -18,17 +19,19 @@ const BELOW_PHONE_BAR = 'pb-[calc(0.5rem+var(--lp-bar-inset))]';
  * pinned under it) and 'sheet', a bottom sheet's (px-4, pb-3), as the Reading drill's.
  */
 export function NextBar({ children, grid, where }: { children: ReactNode; grid?: boolean; where?: 'view' | 'sheet' }) {
+  // the bar sits right under a short card, at any height, so its buttons end where the floating ? begins (src/tutor/doorRoom.ts)
+  const room = useDoorRoom();
   if (where) {
     // a sheet's box pads its end (pb-3), which a sticky bar stops short of: the bar reaches down over it
     const place = where === 'view' ? 'bottom-0 -mx-3 px-3' : '-bottom-3 -mx-4 px-4 pb-3';
     return (
-      <div data-next-bar className={`sticky z-1 mt-2 border-t border-line bg-surface py-2 ${place}`}>
+      <div data-next-bar className={`sticky z-1 mt-2 border-t border-line bg-surface py-2 ${place} ${room}`}>
         {children}
       </div>
     );
   }
   return (
-    <div data-next-bar className={`sticky bottom-0 z-1 -mx-4 mt-2 pt-2 ${LOOK} px-4 ${BELOW_PHONE_BAR}${grid ? ' grid grid-cols-2 gap-3' : ''}`}>
+    <div data-next-bar className={`sticky bottom-0 z-1 -mx-4 mt-2 pt-2 ${LOOK} px-4 ${room} ${BELOW_PHONE_BAR}${grid ? ' grid grid-cols-2 gap-3' : ''}`}>
       {children}
     </div>
   );

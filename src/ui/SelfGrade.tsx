@@ -6,6 +6,7 @@ import { KNEW_IT, NOT_YET, WORD_GRADES } from '../review/kinds';
 import { useEffect, useRef } from 'react';
 import { revealAboveStack } from './reveal';
 import { useSettled } from './settle';
+import { useDoorRoom } from '../tutor/doorRoom';
 
 const GRADE_BASE = 'min-h-14 rounded-xl border px-4 py-3 text-lg font-medium disabled:opacity-100';
 
@@ -35,12 +36,14 @@ interface GradesProps {
 export function Grades({ right, wrong, picked, onPick, settleKey = 0, className = 'mt-4' }: GradesProps) {
   const graded = picked !== null;
   const settled = useSettled(settleKey);
+  // the buttons leave the floating ? its room on the Hand's side (src/tutor/doorRoom.ts)
+  const room = useDoorRoom();
   const grades = [
     { label: right, look: 'border-good bg-good/20', result: 'right' },
     { label: wrong, look: 'border-bad bg-bad/20', result: 'wrong' },
   ];
   return (
-    <div className={`${className} grid grid-cols-2 gap-3`}>
+    <div className={`${className} grid grid-cols-2 gap-3 ${room}`}>
       {grades.map(({ label, look, result }) => (
         <button
           key={label}
@@ -73,13 +76,14 @@ interface WordGradesProps {
 export function WordGrades({ picked, onPick, settleKey = 0, className = 'mt-4' }: WordGradesProps) {
   const graded = picked !== null;
   const settled = useSettled(settleKey);
+  const room = useDoorRoom();
   // the buttons come in under the options, where the Next bar that a pick brings may cover them: they scroll into view above it
   const row = useRef<HTMLDivElement>(null);
   useEffect(() => {
     revealAboveStack(row.current);
   }, []);
   return (
-    <div ref={row} data-testid="word-grades" className={`${className} grid grid-cols-3 gap-2`}>
+    <div ref={row} data-testid="word-grades" className={`${className} grid grid-cols-3 gap-2 ${room}`}>
       {WORD_GRADES.map(({ label, grade }) => (
         <button
           key={label}
@@ -100,11 +104,14 @@ export function WordGrades({ picked, onPick, settleKey = 0, className = 'mt-4' }
 export function SelfGrade({ shown, onShow, picked, onPick, threeWay }: Props) {
   // Show ignores the tap that comes in the moment after it appears: the second tap of a double tap on Next (src/ui/settle.ts); the grades the one after Show
   const settled = useSettled(shown);
+  const room = useDoorRoom();
   if (!shown) {
     return (
-      <button type="button" onClick={() => settled() && onShow()} className="mt-4 min-h-14 w-full rounded-xl border border-line bg-surface text-lg font-medium">
-        Show
-      </button>
+      <div className={`mt-4 ${room}`}>
+        <button type="button" onClick={() => settled() && onShow()} className="min-h-14 w-full rounded-xl border border-line bg-surface text-lg font-medium">
+          Show
+        </button>
+      </div>
     );
   }
   if (threeWay) return <WordGrades picked={picked} onPick={onPick} settleKey={shown} />;

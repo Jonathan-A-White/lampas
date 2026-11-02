@@ -4,11 +4,14 @@
 import { TapToHear } from '../TapToHear';
 import type { SoundId } from '../speech/sounds';
 import type { IpaQuestion } from './drill';
+import { useDoorRoom } from '../tutor/doorRoom';
 
 const CHOICE = 'min-h-14 w-full rounded-xl border px-4 py-2 text-left active:bg-line disabled:opacity-100';
 
 export function QuestionCard({ question, picked, onPick, tell }: { question: IpaQuestion; picked: SoundId | null; onPick: (id: SoundId) => void; tell: boolean }) {
   const answered = picked !== null;
+  // the choices leave the floating ? its room on the Hand's side (src/tutor/doorRoom.ts)
+  const room = useDoorRoom();
   return (
     <div data-testid="ipa-question" data-direction={question.direction}>
       <p data-testid="ipa-prompt" className="text-xl font-medium">
@@ -24,7 +27,7 @@ export function QuestionCard({ question, picked, onPick, tell }: { question: Ipa
           <TapToHear text={question.say} />
         </div>
       ) : null}
-      <ul className="mt-4 space-y-2">
+      <ul className={`mt-4 space-y-2 ${room}`}>
         {question.options.map((option) => {
           const isRight = tell && answered && option.id === question.right;
           const isWrong = tell && answered && option.id === picked && option.id !== question.right;
