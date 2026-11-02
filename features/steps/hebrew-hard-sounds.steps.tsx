@@ -280,7 +280,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  ScenarioOutline('The letter sheets of het, resh and tsade open their lessons', ({ Given, When, Then, And }, row) => {
+  ScenarioOutline('The letter sheets of chet, resh and tsade open their lessons', ({ Given, When, Then, And }, row) => {
     givenHebrewGoal(Given);
     When('he opens the sheet of the Hebrew letter <letter>', () => opensHebrewLetterSheet(row.letter));
     And('he taps <link> on the sheet', async () => {
