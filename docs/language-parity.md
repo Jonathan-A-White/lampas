@@ -53,7 +53,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `ipa-course` | The IPA course: the optional lesson on the symbols of the sounds, behind a setting | ipa-course | hebrew-ipa-course | gap |
 | `sound-lessons` | Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill | hard-sounds, pair-drill, roll-r, try-it | hebrew-hard-sounds | gap |
 | `letter-drill` | The letters: each taught from its sheet with Hear it, the letter drill and Say it | hebrew-letters, letter-drill, say-it | hebrew-letters | gap |
-| `handwriting` | Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills | handwriting-drills | gap | gap |
+| `handwriting` | Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills | handwriting-drills | hebrew-letters | gap |
 | `words` | Words he knows: the list under its language, a segment where two languages are chosen | words | hebrew-words | gap |
 | `quick-test` | The Quick test on his words, asked in the dictionary form among words of the same language | quick-test-after-answer, quick-test-hear, quick-test-lemma, quick-test | hebrew-words | gap |
 | `review` | Review brings back the words and ideas due, on the schedule, each asked in its language | review, schedule | hebrew-verse-view, hebrew-words | gap |
@@ -88,7 +88,6 @@ The table names, for each use case and language, the feature files with a scenar
 Each line is one backfill story: its acceptance criterion is the named `@hebrew` scenario passing (and the registry row turned to `has`). Sizes: XS a scenario over code that already does it, S a scenario and one module, M new content or a new module.
 
 <!-- hebrew-gaps -->
-- `handwriting` (Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills): scenario "Write it on Alef traces its strokes" in features/hebrew-letters.feature; stroke data for the 27 glyphs beside the Greek ones in src/handwriting/, the Write it part of a Hebrew letter sheet and the drill’s Write it questions (src/data/grammar/hebrew/letterQuestions.ts), Settings > Handwriting drills shown by either dial (src/settings/registry.ts); M
 - `grammar-approach` (Grammar approach: the order and voice the ladder is taught in): scenario "A Hebrew approach orders the Hebrew ladder" in features/hebrew-grammar.feature; an approach for the Hebrew ladder in src/approaches/, src/settings/registry.ts Grammar approach shown by either dial (today greekFrom, docs/layout/settings.md), and the Hebrew ladder’s path reads it; M
 <!-- /hebrew-gaps -->
 
