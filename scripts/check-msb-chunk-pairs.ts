@@ -7,7 +7,7 @@
 // With --tsv it also counts, in the published table itself, the '. . .' rows by the part of speech and by whether the English of
 // the chunk before them (in English order) holds an English pronoun (him, her, it, them, ...).
 // Docs: docs/sources/msb-chunk-pairs.md.
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 interface Word { t: string; p: string; e?: number }
@@ -57,7 +57,7 @@ if (list) console.log(rows.join('\n'));
 else console.log('(--list prints every hit; the first 40:)\n' + rows.slice(0, 40).join('\n'));
 
 if (tsvAt) {
-  const lines = readFileSync(tsvAt, 'utf8').replace(/^﻿/, '').split(/\r?\n/).slice(1);
+  const lines = readFileSync(tsvAt, 'utf8').replace(/^\uFEFF/, '').split(/\r?\n/).slice(1);
   const byGroup = new Map<string, string[][]>();
   for (const line of lines) {
     const f = line.split('\t');
