@@ -34,8 +34,8 @@ export const HINTS: readonly tips.Tip[] = [
   { id: 'paradigms-screen', text: 'Tap a form in a table to open the Reader where it is used', event: PARADIGMS_OPENED },
 ];
 
-/** The hints Help lists under 'Tips' (src/help.ts): all but the offer, which is a question and not a tip. */
-export const LISTED_HINTS: readonly tips.Tip[] = HINTS.filter((h) => h.id !== HIDE_CHAPTER_BUTTONS);
+/** The hints Help lists under 'Tips' (src/help.ts): all but the offer, which is a question and not a tip, and the Septuagint's note, which comes up only on that chapter (Help's Tips page is held to 400 characters a paragraph). */
+export const LISTED_HINTS: readonly tips.Tip[] = HINTS.filter((h) => h.id !== HIDE_CHAPTER_BUTTONS && h.id !== SEPTUAGINT_WEAVE);
 
 /** localStorage, or nothing when the phone refuses it: then the tip shows again, which is harmless. */
 const storage: tips.TipStorage = {
