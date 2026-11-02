@@ -72,6 +72,7 @@ import { VariantKeyBar, VariantKeySheet } from './reader/VariantKey';
 import { VariantKeyContext } from './reader/variantKeyContext';
 import { sharingKeys, unitKey } from './reader/readingSets';
 import { readDraft, talkDraftKey, writeDraft } from './ui/unsentDraft';
+import { useAppearanceKey } from './ui/useAppearanceKey';
 import { askAboutVariant, clearVariantAsked, VARIANT_QUESTION } from './tutor/variantFacts';
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
@@ -150,7 +151,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const ownLang: InterestLang | null = isHebrewBook(BOOK) ? (fetched ? (sourceLanguage(fetched) as InterestLang) : null) : 'grc';
   const hbo = ownLang === 'hbo';
   const settings = useReaderSettings(ownLang) ?? NO_SETTINGS;
-  const { level, view, weave, weaveShown, weaveOrder, solid, layout, headings, readSpan } = settings;
+  const { level, view, weave, weaveShown, weaveOrder, weaveGrammar, solid, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   // English from the 2026 Greek (mw-9ji6ek0.33): with it On, the places where the 2026 Greek changes the English read in Lampas's own words, marked; the chapter waits for the setting, as it waits for the others
   const rp2026 = useSetting(rp2026EnglishSetting);
@@ -280,7 +281,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const variants = useReaderVariants(chapter);
   const variantsOf = useCallback((n: number) => variants.byVerse?.get(n), [variants]);
   // the same for the layout and the section headings (the tutor changes them under an open Reader) and for Variants turned on or off, the filter, the reading set: the braces come into the text and leave it and every line reflows (mw-9ji6ek0.45); Turn pages keeps its own anchor
-  useKeepTopVerse(main, inner, view ? `${view}|${weave}|${weaveShown}|${weaveOrder}|${layout}|${headings}|${variantsLayoutKey(variants)}` : null, paging, `${BOOK}/${CHAPTER}`);
+  // and for the Text size and the Font, which the tutor changes at the root under an open Reader and which the Reader does not read, the weave's grammar dial and the Immersive reader (mw-9ji6ek0.46)
+  const appearance = useAppearanceKey();
+  useKeepTopVerse(main, inner, view ? `${view}|${weave}|${weaveShown}|${weaveOrder}|${layout}|${headings}|${variantsLayoutKey(variants)}|${appearance}|${weaveGrammar}|${immersive}` : null, paging, `${BOOK}/${CHAPTER}`);
   // the reading set in force lays its readings into the text in place, with Variants Off too (src/reader/chosenReading.ts, mw-9ji6ek0.24)
   const chosenOf = useCallback((n: number) => variants.chosenByVerse.get(n), [variants]);
   // the unit whose brace he tapped: its sheet (src/reader/VariantSheet.tsx, mw-9ji6ek0.6)
