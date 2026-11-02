@@ -64,7 +64,11 @@ test('a learning word stands in Greek with its English in small grey beneath, th
     copy.querySelectorAll('[data-beside]').forEach((b) => b.remove());
     return copy.textContent ?? '';
   })).replace(/\s+/g, ' ');
-  expect(text).toContain('our present sufferings are not comparable');
+  // 'are not' is οὐκ woven (mw-5r3p30.947: a one-word chunk with English of its own is woven though the translators supplied words in it); the rest of the English stays
+  expect(text).toContain('I consider');
+  expect(text).toContain('our present sufferings');
+  expect(text).toContain('comparable');
+  expect(text).toContain('that will be revealed in');
   const vbox = await verse.boundingBox();
   expect(vbox!.x).toBeGreaterThanOrEqual(0);
   expect(vbox!.x + vbox!.width).toBeLessThanOrEqual(390);
