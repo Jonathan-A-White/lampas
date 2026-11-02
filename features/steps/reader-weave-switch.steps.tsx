@@ -86,7 +86,10 @@ const MODE_HEIGHT: Record<string, number> = { English: 30, Weave: 60, Greek: 90,
 const HEADING = 40;
 const GAP = 8;
 const modeNow = (): string => within(switchEl()).getAllByRole('button').find((b) => b.getAttribute('aria-pressed') === 'true')?.textContent ?? 'English';
-const heightOf = (n: number): number => MODE_HEIGHT[modeNow()] + ((n * 7) % 5) * 10;
+/** with Variants On the braces are in the text and each verse is 20 px taller (mw-9ji6ek0.45) */
+const variantsChip = (): HTMLElement | null => screen.queryByRole('button', { name: /^Variants,/ });
+const variantsNow = (): boolean => variantsChip()?.getAttribute('aria-pressed') === 'true';
+const heightOf = (n: number): number => MODE_HEIGHT[modeNow()] + ((n * 7) % 5) * 10 + (variantsNow() ? 20 : 0);
 const offsetOf = (n: number): number => {
   let top = HEADING;
   for (let k = 1; k < n; k++) top += heightOf(k);
@@ -320,6 +323,24 @@ describeFeature(feature, ({ Scenario }) => {
       for (const name of [a, b, c]) {
         await user.click(choice(name));
         await waitFor(() => expect(choice(name)).toHaveAttribute('aria-pressed', 'true'));
+        await verseIsAtTop(kept);
+      }
+    });
+    s.Then('verse {int} was at the top of the reading box after each', (_, n: number) => {
+      expect(kept).toBe(n);
+    });
+  });
+
+  Scenario('Turning Variants on and off keeps the verse that is on top', (s) => {
+    given(s);
+    s.And('the Reader lays each mode out at a height of its own', layOutModes);
+    s.And('he has scrolled so verse {int} is the first verse at the top', (_, n: number) => scrollSoTopIs(n));
+    let kept = 0;
+    s.When('he turns Variants on, off and on again with its chip', async () => {
+      kept = topVerse();
+      for (const on of ['true', 'false', 'true']) {
+        await user.click(variantsChip()!);
+        await waitFor(() => expect(variantsChip()).toHaveAttribute('aria-pressed', on));
         await verseIsAtTop(kept);
       }
     });
