@@ -50,6 +50,7 @@ describe('the lines dropped for a small point are back', () => {
   const holds = (name: string, path: string, value: unknown) => expect(read(name).expect[path], `${name} ${path}`).toEqual(value);
 
   it('hbo-dictation-sounds-alike-genesis-1-1 holds הַשָּׁמַיִם right (725acbae)', () => holds('hbo-dictation-sounds-alike-genesis-1-1', 'words.4.mark', { equals: 'right' }));
+  it('hbo-perfect-genesis-1-1 holds הַשָּׁמַיִם right (mw-5r3p30.989)', () => holds('hbo-perfect-genesis-1-1', 'words.4.mark', { equals: 'right' }));
   it('hbo-dictation-perfect-genesis-1-3 holds וַיֹּאמֶר right (4f2f20db)', () => holds('hbo-dictation-perfect-genesis-1-3', 'words.0.mark', { equals: 'right' }));
   it('hbo-dictation-perfect-genesis-1-3 holds word 0 sounds_alike absent (4e2be1f4)', () => holds('hbo-dictation-perfect-genesis-1-3', 'words.0.sounds_alike', { present: false }));
   it('grc-dictation-sounds-alike-john-1-5 holds τῇ right (0924d166)', () => holds('grc-dictation-sounds-alike-john-1-5', 'words.4.mark', { equals: 'right' }));
