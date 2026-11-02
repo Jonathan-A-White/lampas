@@ -1,4 +1,4 @@
-// Revelation 10:2 at 390x844: βιβλαρίδιον, the NA reading's word that the text never has (no lemma, no Strong's number), opens a word sheet whose Study row has no empty tile
+// Revelation 10:2 at 390x844: βιβλαρίδιον, the NA reading's word that the text never has (STEPBible's TAGNT gives it G0974, mw-9ji6ek0.44; it once had no Strong's number), opens a word sheet whose Study row has no empty tile
 // (mw-5r3p30.926: it drew an empty STEP tile that opened STEP at Genesis 1). Shot: shots/study-tiles-whole.png.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
@@ -44,7 +44,7 @@ test('Revelation 10:2, Weave: the word sheet of βιβλαρίδιον (NA) has 
   const card = page.getByRole('dialog', { name: 'Word', exact: true });
   await expect(card).toBeVisible();
   const study = card.getByRole('group', { name: 'Study', exact: true });
-  // the chunk 'little scroll opened' is two Greek words, both left untagged: a Study row for each
+  // the chunk 'little scroll opened' is two Greek words: a Study row for each
   await expect(study.first()).toBeVisible();
   const tiles = study.locator('a, button');
   expect(await tiles.count()).toBeGreaterThan(0);
@@ -53,6 +53,9 @@ test('Revelation 10:2, Weave: the word sheet of βιβλαρίδιον (NA) has 
     const href = await tile.getAttribute('href');
     if (href) expect(href).not.toMatch(/strong=(\||$)/);
   }
-  await expect(study.locator('a[href*="stepbible.org"]')).toHaveCount(0);
+  // STEPBible's TAGNT tags both words now (mw-9ji6ek0.44: G0974 and G0455), so each has its STEP tile, and each one carries its number
+  const step = study.locator('a[href*="stepbible.org"]');
+  await expect(step).toHaveCount(2);
+  for (const href of await step.evaluateAll((links) => links.map((a) => a.getAttribute('href') ?? ''))) expect(href).toMatch(/strong=G\d+$/);
   await shot(page, 'study-tiles-whole');
 });

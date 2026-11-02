@@ -40,7 +40,8 @@ test('Order Greek puts the Reader\'s first words in the Greek order, one line of
 
   await leaveSettings(page);
   // Οὐδὲν ἄρα νῦν κατάκριμα: 'no' first, as the Greek has it
-  await expect(verse1).toHaveText(/^no Therefore there is now condemnation (τοῖς )?for those who are ἐν χριστῷ Ἰησοῦ/);
+  // 'for those who are' is τοῖς woven now (mw-5r3p30.947: a one-word chunk with English of its own is woven though the translators supplied words in it)
+  await expect(verse1).toHaveText(/^no Therefore there is now condemnation τοῖς ἐν χριστῷ Ἰησοῦ/);
   const woven = page.locator('[data-verse="1"] [data-woven]').first();
   await woven.click();
   await expect(page.getByRole('dialog')).toBeVisible();

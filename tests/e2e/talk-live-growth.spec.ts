@@ -137,8 +137,8 @@ for (const size of SIZES) {
     expect(await holdLost(page), 'the hold was never broken by the growth').toEqual([]);
     await page.mouse.up();
     // the whole dictation is what was sent
-    await expect.poll(() => fake.received.length).toBeGreaterThan(0);
-    expect(JSON.stringify(fake.received)).toContain('word240');
+    // wait for the request that holds the end of it, not for any request: another can reach the fake before the dictation does
+    await expect.poll(() => JSON.stringify(fake.received)).toContain('word240');
     expect(JSON.stringify(fake.received)).toContain('word1 ');
   });
 }

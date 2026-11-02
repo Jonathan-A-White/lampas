@@ -1,6 +1,6 @@
 // tests/e2e/sentence-diagram.spec.ts — the Verse view's Diagram action (mw-souyao.3) at phone width, against the fake mill: Colossians 3:1 is drawn as a Reed-Kellogg
 // diagram in a box that scrolls sideways (the chapter does not change), a tapped word opens the word sheet, and a second visit of the verse asks the tutor nothing.
-// jsdom has no layout, so the row of actions (five actions, Copy link and Share fit two rows of three) and the picture's width are proven here.
+// jsdom has no layout, so the row of actions (the four actions fit two rows, three over one) and the picture's width are proven here.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, type FakePostern } from '../support/fake-postern';
@@ -48,9 +48,9 @@ test('Diagram draws Colossians 3:1 in a box that scrolls sideways, a word opens 
   const view = await openVerseView(page, 1);
   await expect(view.getByRole('heading', { name: 'Colossians 3:1' })).toBeVisible();
 
-  // the five actions: three over two
+  // the four actions: three over one
   const row = await rowTops(page);
-  expect(row.count).toBe(5);
+  expect(row.count).toBe(4);
   expect(row.tops.size).toBe(2);
 
   await view.getByRole('button', { name: 'Diagram', exact: true }).click();
@@ -100,12 +100,12 @@ test('Diagram draws Colossians 3:1 in a box that scrolls sideways, a word opens 
   await expect(again.getByRole('button', { name: 'Redraw', exact: true })).toBeEnabled();
 });
 
-test('On a phone with Share, the five actions are still three over two, and Share is a tool under the text', async ({ page }) => {
+test('On a phone with Share, the four actions are still three over one, and Share is a tool under the text', async ({ page }) => {
   await start(page, { share: true });
   const view = await openVerseView(page, 1);
   await expect(view.getByRole('group', { name: 'Tools', exact: true }).getByRole('button', { name: 'Share', exact: true })).toBeVisible();
   const row = await rowTops(page);
-  expect(row.count).toBe(5);
+  expect(row.count).toBe(4);
   expect(row.tops.size).toBe(2);
   await shot(page, 'sentence-diagram-share-row');
 });
