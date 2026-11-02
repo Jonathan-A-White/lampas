@@ -13,7 +13,7 @@
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
 // Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
-// A letter or pair with a Hard sounds lesson for his accent (src/hardSounds/, mw-5r3p30.361) has 'Learn to say it (optional)' (or the label the lesson gives, 'Learn to roll your r (optional)' on Rho) under How it sounds; Back from it brings the sheet back.
+// A letter or pair with a Hard sounds lesson for his accent (src/hardSounds/, mw-5r3p30.361) has 'Learn to say it (optional)' (or the label the lesson gives, 'Learn to roll your r (optional)' on Rho) under How it sounds, Greek's and Hebrew's (Ayin, Chet, Resh, Tsade: mw-5r3p30.954) by the one lookup lessonsForSheet; Back from it brings the sheet back.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { loadChapter, loadIndex, type Chapter, type GreekWord } from './data/chapter';
@@ -37,7 +37,7 @@ import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
 import { LetterDrillScreen } from './LetterDrillScreen';
-import { learnLabel, lessonsForLetter } from './hardSounds/lessons';
+import { learnLabel, lessonsForSheet } from './hardSounds/lessons';
 import { openParadigm, openSoundLesson } from './nav/route';
 import { GRAMMAR_BOOKS, readMoreFor, shelvedBooks } from './resources/grammarBooks';
 import { armFallback } from './resources/openApp';
@@ -623,8 +623,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     openParadigm({ table });
   };
   // the Hard sounds lessons on this letter or pair for his accent (mw-5r3p30.361): optional, a tap opens one, and Back brings this sheet back as from a table
-  const letter = hebrew ? undefined : (idea.glyphs?.[0] ?? idea.pair);
-  const soundLessons = letter ? lessonsForLetter(letter, scheme.id, accent) : [];
+  const soundLessons = lessonsForSheet(idea, scheme.id, accent);
   const learnToSay = (lesson: string): void => {
     holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
     openSoundLesson(lesson);

@@ -48,3 +48,30 @@ Feature: Hebrew hard sounds, optional lessons on the sounds his English makes ha
     And he goes on to the end and taps "Done"
     Then the Goal screen shows again
     And the Hebrew lesson "Saying the ayin" is "Done" in the section
+
+  Scenario: A Hebrew letter sheet links to its lesson, and Back returns to the sheet
+    Given Hebrew is the only language chosen, his Hebrew dial is at "Learning" and the Goal screen is open
+    When he opens the sheet of the Hebrew letter "Ayin"
+    Then the sheet shows "Learn to say the ayin (optional)"
+    When he taps "Learn to say the ayin (optional)" on the sheet
+    Then the Hebrew lesson "Saying the ayin" shows "Step 1 of 5"
+    When he goes Back
+    Then the sheet "Ayin" is on screen over the Goal screen
+
+  Scenario Outline: The letter sheets of het, resh and tsade open their lessons
+    Given Hebrew is the only language chosen, his Hebrew dial is at "Learning" and the Goal screen is open
+    When he opens the sheet of the Hebrew letter <letter>
+    And he taps <link> on the sheet
+    Then the Hebrew lesson <lesson> shows "Step 1 of 5"
+
+    Examples:
+      | letter | link                              | lesson          |
+      | Chet   | Learn to say the het (optional)   | Saying the het   |
+      | Resh   | Learn to say the resh (optional)  | Saying the resh  |
+      | Tsade  | Learn to say the tsade (optional) | Saying the tsade |
+
+  Scenario: A Hebrew letter sheet with no lesson has no link
+    Given Hebrew is the only language chosen, his Hebrew dial is at "Learning" and the Goal screen is open
+    When he opens the sheet of the Hebrew letter "Alef"
+    Then the sheet does not show "Learn to say it (optional)"
+    And the sheet shows no link to a lesson

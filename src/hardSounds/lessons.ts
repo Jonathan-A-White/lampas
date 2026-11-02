@@ -2,6 +2,8 @@
 // Goal screen's section, a letter sheet and the lesson screen read them through. A lesson is written for one or more English accents; IPA reads the American
 // ones, as src/ipa/course.ts courseAccent does. A file that fails the check is left out and named in the console (the
 // unit test tests/unit/hard-sounds-engine.test.tsx fails on it first).
+import type { GrammarIdea } from '../data/grammar/ladder';
+import { hebrewLetterOf } from '../data/grammar/hebrew/letters';
 import { lessonProblems, type HardSoundLesson, type Said } from '../data/hardSounds/schema';
 import { AMERICAN_ID, type EnglishAccent } from '../speech/accents';
 import type { SpeechLanguage } from '../speech/languages';
@@ -34,6 +36,15 @@ export const lessonsFor = (schemeId: string, accent: EnglishAccent, lessons: rea
 /** Of those, the ones that teach `letter` (a letter's small form, or a pair as it is written): what its sheet links to. */
 export const lessonsForLetter = (letter: string, schemeId: string, accent: EnglishAccent, lessons: readonly HardSoundLesson[] = LESSONS): HardSoundLesson[] =>
   lessonsFor(schemeId, accent, lessons).filter((l) => l.letters.includes(letter));
+
+/**
+ * The lessons an idea sheet links to (mw-5r3p30.361, Hebrew's mw-5r3p30.954), Greek's and Hebrew's by the same lookup: those of the pronunciation `schemeId` for his accent that teach the sheet's
+ * letter: a Greek letter's small form, a pair as it is written, or a Hebrew letter's idea (its lessons list the letter and, for the five, its final form). Any other idea has none.
+ */
+export const lessonsForSheet = (idea: Pick<GrammarIdea, 'id' | 'glyphs' | 'pair'>, schemeId: string, accent: EnglishAccent, lessons: readonly HardSoundLesson[] = LESSONS): HardSoundLesson[] => {
+  const letter = hebrewLetterOf(idea.id)?.letter ?? idea.glyphs?.[0] ?? idea.pair;
+  return letter ? lessonsForLetter(letter, schemeId, accent, lessons) : [];
+};
 
 export const lessonById = (id: string | undefined, lessons: readonly HardSoundLesson[] = LESSONS): HardSoundLesson | undefined => lessons.find((l) => l.id === id);
 

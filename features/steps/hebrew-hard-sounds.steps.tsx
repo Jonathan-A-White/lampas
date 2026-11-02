@@ -7,6 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { setLanguages } from '../../src/data/repositories';
 import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/random';
 import { clearBus } from '../../src/events/bus';
@@ -15,6 +16,7 @@ import { pairSeed } from '../../src/hardSounds/pairDrill';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { accentOf, chooseAccent, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { stopSpeaking } from '../../src/speech/greek';
+import { usageWritesSettled } from '../../src/tips/usageLog';
 import { SOUND_IDS } from '../../src/speech/sounds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -26,8 +28,9 @@ const DIALS: Record<string, string> = { 'Just English': '0', Curious: '1', Learn
 
 let synth: FakeSynth;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
+  await usageWritesSettled();
   stopSpeaking();
   chooseAccent(DEFAULT_ACCENT);
   vi.unstubAllGlobals();
@@ -55,6 +58,23 @@ async function open(dial: string, accent = DEFAULT_ACCENT): Promise<void> {
   render(<App />);
   await screen.findByRole('heading', { name: 'Goal', level: 1 });
 }
+
+/** Opens the app on the Goal of a reader of Hebrew only, his Hebrew dial at `dial`, with every store emptied. */
+async function openHebrewGoal(dial: string): Promise<void> {
+  await open(dial);
+  cleanup();
+  await setLanguages('hebrew');
+  render(<App />);
+  await screen.findByTestId('hebrew-ideas');
+}
+
+/** The sheet of a Hebrew letter, from the Hebrew ideas list. */
+async function opensHebrewLetterSheet(title: string): Promise<void> {
+  const row = within(await screen.findByTestId('hebrew-ideas')).getByText(title).closest('li') as HTMLElement;
+  await user.click(within(row).getByRole('button'));
+  await screen.findByRole('dialog', { name: 'Idea' });
+}
+const letterSheet = () => screen.getByRole('dialog', { name: 'Idea' });
 
 const hebrewSection = () => screen.findByRole('region', { name: SECTION });
 const lesson = () => screen.findByTestId('sound-lesson');
@@ -96,7 +116,7 @@ const stepWords = (id: string, kind: string): string[] => {
 
 const feature = await loadFeature('features/hebrew-hard-sounds.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('The Goal lists the Hebrew hard sounds for his accent and opens one', ({ Given, Then, And, When }) => {
     let seen: string[] = [];
     Given('Lampas is opened on the Goal screen with his Hebrew dial at {string}', (_, dial: string) => open(dial));
@@ -227,6 +247,59 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the Hebrew lesson {string} is {string} in the section', async (_, title: string, state: string) => {
       await waitFor(async () => expect(rowsOf(await hebrewSection())).toContain(`${title}|${state}`));
+    });
+  });
+
+  const givenHebrewGoal = (Given: (text: string, fn: (...args: string[]) => Promise<void>) => void) =>
+    Given('Hebrew is the only language chosen, his Hebrew dial is at {string} and the Goal screen is open', (_, dial: string) => openHebrewGoal(dial));
+  const sheetShows = (Then: (text: string, fn: (...args: string[]) => void) => void) =>
+    Then('the sheet shows {string}', (_, name: string) => {
+      expect(within(letterSheet()).getByRole('button', { name })).toBeInTheDocument();
+    });
+  const tapsOnSheet = (When: (text: string, fn: (...args: string[]) => Promise<void>) => void) =>
+    When('he taps {string} on the sheet', async (_, name: string) => {
+      await user.click(within(letterSheet()).getByRole('button', { name }));
+    });
+  const lessonShows = (Then: (text: string, fn: (...args: string[]) => Promise<void>) => void) =>
+    Then('the Hebrew lesson {string} shows {string}', async (_, title: string, step: string) => {
+      expect(await screen.findByRole('heading', { level: 1, name: title })).toBeInTheDocument();
+      expect(screen.getByTestId('sound-step')).toHaveTextContent(step);
+    });
+
+  Scenario('A Hebrew letter sheet links to its lesson, and Back returns to the sheet', ({ Given, When, Then }) => {
+    givenHebrewGoal(Given);
+    When('he opens the sheet of the Hebrew letter {string}', (_, title: string) => opensHebrewLetterSheet(title));
+    sheetShows(Then);
+    tapsOnSheet(When);
+    lessonShows(Then);
+    When('he goes Back', () => window.history.back());
+    Then('the sheet {string} is on screen over the Goal screen', async (_, title: string) => {
+      const sheet = await screen.findByRole('dialog', { name: 'Idea' });
+      expect(within(sheet).getByRole('heading', { name: title })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/goal');
+    });
+  });
+
+  ScenarioOutline('The letter sheets of het, resh and tsade open their lessons', ({ Given, When, Then, And }, row) => {
+    givenHebrewGoal(Given);
+    When('he opens the sheet of the Hebrew letter <letter>', () => opensHebrewLetterSheet(row.letter));
+    And('he taps <link> on the sheet', async () => {
+      await user.click(await within(letterSheet()).findByRole('button', { name: row.link }));
+    });
+    Then('the Hebrew lesson <lesson> shows "Step 1 of 5"', async () => {
+      expect(await screen.findByRole('heading', { level: 1, name: row.lesson })).toBeInTheDocument();
+      expect(screen.getByTestId('sound-step')).toHaveTextContent('Step 1 of 5');
+    });
+  });
+
+  Scenario('A Hebrew letter sheet with no lesson has no link', ({ Given, When, Then, And }) => {
+    givenHebrewGoal(Given);
+    When('he opens the sheet of the Hebrew letter {string}', (_, title: string) => opensHebrewLetterSheet(title));
+    Then('the sheet does not show {string}', (_, name: string) => {
+      expect(within(letterSheet()).queryByRole('button', { name })).toBeNull();
+    });
+    And('the sheet shows no link to a lesson', () => {
+      expect(letterSheet().querySelectorAll('[data-sound-lesson]')).toHaveLength(0);
     });
   });
 });

@@ -3,7 +3,7 @@
 // brought back. Back then closes it, as it closes any sheet.
 import { useEffect, useState } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
-import { ideaOf } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { dropHeldIdea, heldScrollTop, holdStillWanted, useReturnedIdea } from './ideaReturn';
 import { IdeaSheet } from './IdeaSheet';
 import { useAddress } from './nav/route';
