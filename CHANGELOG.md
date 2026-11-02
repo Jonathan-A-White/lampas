@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.75
+_2026-11-02_
+- Fixed: Write it no longer tells you a vav or a final nun is "Not quite" just because you wrote it higher or lower on the pad than the line; "Not quite" is kept for a writing that is clearly the other letter.
+- Fixed: the Hebrew letter chet is now called chet on its sheet and on the button for its sound lesson, where the button used to say het.
+
 ## 0.7.74
 _2026-11-02_
 - Fixed: In a Hard sounds lesson the round ? button no longer sits over the end of the Next button.

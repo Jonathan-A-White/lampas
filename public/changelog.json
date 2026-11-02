@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.75",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.976",
+    "kind": "fixed",
+    "text": "Write it no longer tells you a vav or a final nun is \"Not quite\" just because you wrote it higher or lower on the pad than the line; \"Not quite\" is kept for a writing that is clearly the other letter."
+  },
+  {
+    "version": "0.7.75",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.962",
+    "kind": "fixed",
+    "text": "the Hebrew letter chet is now called chet on its sheet and on the button for its sound lesson, where the button used to say het."
+  },
+  {
     "version": "0.7.74",
     "date": "2026-11-02",
     "story": "mw-5r3p30.961",
