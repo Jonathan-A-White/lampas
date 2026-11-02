@@ -1,37 +1,27 @@
 // tests/unit/door-guard.test.ts — the guard of mw-5r3p30.955 (the third sighting of one class: a fixed layer drawn over the screen it opens from, mw-t49ebj.2, mw-5r3p30.949, mw-5r3p30.953). The Talk sheet is
 // z-10, so over a full-screen layer that registers nothing with the tutor door (src/tutor/door.ts) a tap on the floating ? opens the tutor UNDER the layer and, to him, does nothing. Every component of src/ that
 // draws a fixed full-screen layer (`fixed` and `inset-0`) must choose: useNoDoor() (the ? is not drawn), useDoorTarget / registerDoorTarget (a target of its own) or a DialogAskTutor / LessonTalk drawn inside it (a Talk
-// in front); or it is on ALLOWED with a reason. A new overlay is one more hook, never a new mechanism (tests/e2e/tutor-door-overlays.spec.ts and the OVERLAYS table of tutor-door.spec.ts run them on the built app).
+// in front); or it is on ALLOWED with a reason. A new overlay is one more hook, never a new mechanism (tests/e2e/tutor-door-overlays.spec.ts and the OVERLAYS table of tutor-door.spec.ts run them on the built app; mw-5r3p30.956 settled the z-30, z-10 and z-50 layers).
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { layersIn } from '../support/door-guard';
 
-/** Files that draw a layer and register nothing themselves, each with the reason. 'mw-5r3p30.956' is the sweep of the z-30, z-10 and z-50 layers, which follows this story. */
+/** Files that draw a layer and register nothing themselves, each with the reason. Each reason is a row of tests/e2e/tutor-door-overlays.spec.ts, which runs the layer on the built app (mw-5r3p30.956). */
 const ALLOWED: Record<string, string> = {
-  'AskApproachSheet.tsx': 'mw-5r3p30.956',
-  'Conversations.tsx': 'mw-5r3p30.956',
-  'ReadingDrill.tsx': 'mw-5r3p30.956',
-  'WordsScreen.tsx': 'mw-5r3p30.956',
-  'library/AllLexiconsSheet.tsx': 'mw-5r3p30.956',
-  'library/AskForBook.tsx': 'mw-5r3p30.956',
-  'library/InLogosChooser.tsx': 'mw-5r3p30.956',
-  'maps/MapsFrame.tsx': 'mw-5r3p30.956',
-  'plan/ScreenshotRead.tsx': 'mw-5r3p30.956',
-  'plan/SendOff.tsx': 'mw-5r3p30.956',
-  'plan/StartPlan.tsx': 'mw-5r3p30.956',
-  'plan/WhereDidYouGetTo.tsx': 'mw-5r3p30.956',
-  'gate/MyDevices.tsx': 'mw-5r3p30.956',
-  'share/ShareScreen.tsx': 'mw-5r3p30.956',
-  'talk/KeyPointsLine.tsx': 'mw-5r3p30.956',
+  'ReadingDrill.tsx': 'drawn inside the Verse view (ReadCheck), a z-5 stacking context, so the Talk (z-10) is in front of it and the ? asks about the verse; a row of tutor-door-overlays.spec.ts',
+  'AskApproachSheet.tsx': "z-10 in Settings, drawn before the route's Talk (App.tsx AskTutor, z-10), so the Talk is in front of it; a row of tutor-door-overlays.spec.ts",
+  'Conversations.tsx': "the z-10 alert of a conversation that cannot be opened, drawn before the route's Talk, so the Talk is in front of it; a row of tutor-door-overlays.spec.ts",
+  'WordsScreen.tsx': "the z-10 Drop this word? confirm, drawn before the route's Talk, so the Talk is in front of it; a row of tutor-door-overlays.spec.ts",
+  'gate/MyDevices.tsx': 'the remove-a-device confirm on the Licence page, which draws no Talk and registers no target, so no ? is drawn there at all; a row of tutor-door-overlays.spec.ts',
+  'share/ShareScreen.tsx': 'the Share to Lampas route draws no Talk and registers no target, so no ? is drawn over it (closed, it goes back to the Reader and its ?); a row of tutor-door-overlays.spec.ts',
   // not overlays that cover a screen the ? asks about
   'Talk.tsx': 'the Talk sheet itself: it calls useDoorBusy, and the ? is put away while it is open',
   'VerseView.tsx': 'the Verse view (z-5, under the Talk): the Reader registers the verse it shows as the target (Reader.tsx), and the Verse view is a row of OVERLAYS in tutor-door.spec.ts',
   'GrammarSheet.tsx': 'drawn by the word sheet, which registers the target (WordSheet.tsx); a row of OVERLAYS in tutor-door.spec.ts',
   'EnglishWordSheet.tsx': 'drawn by the word sheet, which registers or withholds the target (WordSheet.tsx useNoDoor)',
   'reader/VariantSheet.tsx': 'the brace sheet: the Reader registers the unit as the target (Reader.tsx); a row of OVERLAYS in tutor-door.spec.ts',
-  'plan/PlacePicker.tsx': 'mw-5r3p30.956 for its z-30 sheets; its z-40 Set your place sheet calls useNoDoor',
 };
 
 const SRC = join(__dirname, '..', '..', 'src');

@@ -8,6 +8,7 @@ import { openLibrary } from '../nav/route';
 import type { CatalogueEntry } from '../resources/catalogue';
 import { armFallback } from '../resources/openApp';
 import type { StudyPlace } from '../resources/types';
+import { useNoDoor } from '../tutor/door';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { detailOf, inLogosGroups, SHOWN_ROWS } from './inLogos';
@@ -32,6 +33,8 @@ export function InLogosChooser({ place, name, onClose, entries }: InLogosChooser
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-50, over the Talk sheet (z-10): a list of links to other books, nothing to ask about, so no ? over it (mw-5r3p30.956)
+  useNoDoor();
   const searching = query.trim() !== '';
   const groups = rows ? inLogosGroups(rows, place, query) : [];
   const title = `${name} in Logos`;

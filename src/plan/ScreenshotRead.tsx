@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import type { PlanChapter } from '../data/plans';
 import type { Heard } from '../data/repositories/readingPlan';
 import { failedLine } from '../share/findRefs';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -64,6 +65,8 @@ export function ScreenshotRead({
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-10, drawn over the return sheet (itself without a ?, WhereDidYouGetTo): nothing on it to ask about (mw-5r3p30.956)
+  useNoDoor();
   const back = (
     <button type="button" ref={focusOnMount} onClick={onClose} className={`${buttonClass} border-line bg-surface`}>
       Back to the choices
