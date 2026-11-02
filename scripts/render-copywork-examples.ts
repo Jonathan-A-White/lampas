@@ -47,7 +47,7 @@ export const COPYWORK_PAGES: Record<string, PageSpec> = {
 const FONTS: Record<Language, { family: string; size: number; files: string[]; weight: number }> = {
   en: { family: 'Literata', size: 88, weight: 400, files: ['literata-latin-400-normal.woff2'] },
   grc: { family: 'Gentium Plus', size: 96, weight: 400, files: ['gentium-plus-greek-400-normal.woff2', 'gentium-plus-greek-ext-400-normal.woff2'] },
-  hbo: { family: 'Noto Serif Hebrew', size: 104, weight: 400, files: ['noto-serif-hebrew-hebrew-400-normal.woff2'] },
+  hbo: { family: 'Noto Serif Hebrew', size: 124, weight: 400, files: ['noto-serif-hebrew-hebrew-400-normal.woff2'] },
 };
 
 /** A small fixed-seed generator, so the nudges are the same on every run. */
