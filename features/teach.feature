@@ -54,3 +54,9 @@ Feature: Teaching a new word on the spot
     And he opens the teach sheet again
     Then the teach sheet shows "εἰς" and never "αὐτός" again
 
+  Scenario: The floating ? on the teach sheet closes it and opens the Talk sheet on that word
+    When he taps New words
+    And he taps the floating ? on the teach sheet
+    Then the teach sheet is gone and the Talk sheet is titled "Talk about Romans 8:9"
+    And the Talk sheet is on top of the screen
+    And the grist carries a question that names "αὐτός"

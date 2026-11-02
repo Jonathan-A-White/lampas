@@ -2,7 +2,7 @@
 // try to work it out himself with the tools around him. The Greek lemma large with a speaker, how it sounds, what it means, the form
 // of its first occurrence in plain words, its picture if it has one, and the easiest verse of the chapter (src/data/frontier.ts
 // easiestVerse) woven (src/data/weave.ts) with the new word in Greek as well and its English in small grey beneath it. At the foot Got it,
-// I know this, Not now (skipped for today only). The sheet's own Ask the tutor is gone (mw-5r3p30.882): the floating ? is the one door. Each answer moves on to the next new word; the sheet closes when none is left.
+// I know this, Not now (skipped for today only). The sheet's own Ask the tutor is gone (mw-5r3p30.882): the floating ? is the one door, and the sheet registers its word as the door's target (mw-5r3p30.949). Each answer moves on to the next new word; the sheet closes when none is left.
 import { useEffect, useMemo, useState } from 'react';
 import { type Chapter, sourceLanguage, wordParse } from './data/chapter';
 import { type Candidate, easiestVerse } from './data/frontier';
@@ -16,6 +16,7 @@ import { LessonReadAloud } from './speech/ReadAloud';
 import { SpeakButton } from './speech/SpeakButton';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { focusOnMount } from './ui/focus';
+import { useDoorTarget } from './tutor/door';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { WordPicture } from './WordPicture';
@@ -24,7 +25,14 @@ import { HeartOfWord } from './HeartOfWord';
 
 const BUTTON = 'min-h-12 min-w-0 rounded-xl border px-3 text-base font-medium disabled:opacity-50';
 
-export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowVerse }: {
+/** What the floating ? asks for on this sheet: the word, its meaning and the verse it is met in. */
+export interface NewWordAsk {
+  lemma: string;
+  gloss: string;
+  verse: number;
+}
+
+export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowVerse, onAsk }: {
   chapter: Chapter;
   /** 'Romans 8' */
   title: string;
@@ -34,6 +42,8 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
   onClose: () => void;
   /** the verse number was tapped: the Reader shows that verse (the sheet closes itself first) */
   onShowVerse: (verse: number) => void;
+  /** the floating ? over this sheet asks the tutor about the word (the sheet closes itself first); no button: the ? is the one door. Left out without a licence. */
+  onAsk?: (ask: NewWordAsk) => void;
 }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
@@ -59,6 +69,18 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
     const first = chapter.verses.flatMap((v) => v.g).find((w) => w.l.normalize('NFC') === current.lemma);
     return { verse, woven, forms, first };
   }, [current, chapter, solid]);
+
+  // The tutor door (src/tutor/door.ts, the floating ?) on this sheet asks about its word. Without its own target the newest would be the Reader's, whose Talk sheet (z-10) opens under this sheet (z-20) (mw-5r3p30.949).
+  // Close first, ask second: the Talk opens in the commit the sheet closes in.
+  const askVerse = place?.verse.n;
+  useDoorTarget(
+    onAsk && current && askVerse !== undefined
+      ? () => {
+          onClose();
+          onAsk({ lemma: current.lemma, gloss: current.gloss, verse: askVerse });
+        }
+      : undefined,
+  );
 
   if (!current || !place) return null;
   const { verse, woven, forms, first } = place;

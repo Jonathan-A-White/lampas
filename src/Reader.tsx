@@ -595,6 +595,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           solid={solid ?? EMPTY_LEMMAS}
           onClose={closeTeach}
           onShowVerse={showVerse}
+          onAsk={ai ? tutor.askAboutNewWord : undefined}
         />
       ) : null}
       {chapter && viewUnit && sheetView ? (
