@@ -311,6 +311,15 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   form; the imperfect, the augment; the perfect, reduplication. The ladder's `needs` say what a card rests on: the noun on the breathings, the
   accents and the iota under a letter; the iota under a letter on the breathings and accents; punctuation on the breathings; the nominative on
   the plural; the neuter on the feminine; the passive on the aorist.
+- **How a word is built from its parts (mw-5r3p30.986, PROVISIONAL, his feedback on 'The negative': "this breakdown ... should be part of the lesson").** One shared
+  table, `src/data/wordParts.ts` (`WORD_PARTS`, read through `partsOf(word)`), keyed by the word as a lesson shows it, each entry its parts in order (`text`, plain
+  `gloss`), its `source` (`PARTS_SOURCES`: Abbott-Smith's brief lexicon in TBESG, where the headword is written with a hyphen (ἐκ-βάλλω), names the two words it is
+  made of (μηκέτι: μή, ἔτι) or is a STEPBible combination (οὐκέτι: G3756+G2089); Lampas's own note in `wordHeart.ts` (οὐδείς is οὐδέ and εἷς); or the `COMPOUND_VERBS`
+  list) and the `forms` of it a lesson shows (ἀπαγγέλλομεν for ἀπαγγέλλω). Never an invented etymology: a word no source takes apart has no entry and shows nothing.
+  The idea sheet draws it under the worked word ('Built from: οὐ “not” + κ “before a smooth breathing”', `worked-parts`) and, under a Greek table, one row for each
+  word of the table that has parts ('How these words are built', `table-parts`: οὐδεμία = οὐδέ “and not” + μία “one”). `cardWords(teach)` and `tableWords(table)`
+  (`teach/index.ts`) are the words a card shows; `cardTexts` includes the parts' lines, so they hold to the card's taught terms (tests/unit/teach-cards.test.ts).
+  `tests/unit/wordParts.test.ts` prints how many of the lessons' words have parts. Greek only; Hebrew follows, and so do the drills (the parts show there only after the answer).
 - `ideaExamples(id, chapters, verse?)`: up to three words the card can explain, one for each lemma (the article: one per form, up to
   `MAX_FORM_EXAMPLES` 4), in text order, each with its chapter and verse ('1 John 1:1'). A word is explained (`cardExplains`) when its parsing
   needs the idea (`ideasOfWord`), its part of speech is taught at or below the card (or named in the card's `examplesAs`: the persons read a

@@ -12,7 +12,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. The Byzantine Greek aligned to English: the text you read. Changes: per chapter.
 - **[Berean Standard Bible tables](https://berean.bible/licensing.htm).** Public domain. The Old Testament: Westminster Leningrad Codex Hebrew aligned to English. Changes: split by chapter.
 - **[Tyndale House's TBESG, TBESH, TIPNR and TVTMS, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House,
-  Cambridge. Greek and Hebrew words, variant numbers (TAGNT), the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 characters.
+  Cambridge. Greek and Hebrew words and parts, TAGNT's variants, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 letters.
 - **[TAGNT and TBESG, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The
   [Septuagint derivation](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md) learns from them. Changes: applied to the Septuagint by Lampas's derivation.
 - **[Swete's Septuagint, from eliranwong's LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930)**: the Greek Old Testament. Public domain; packaging

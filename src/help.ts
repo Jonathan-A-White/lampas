@@ -61,7 +61,7 @@ export const HELP_PAGES: HelpPage[] = [
     body: [
       'Grammar is a ladder of ideas, each with a lesson card. Drill it proves an idea only on questions you have not been asked before; when too few are left it says More questions are on their way, and proves nothing meanwhile.',
       'An idea you missed and then answer right is marked to confirm, and counts as known only when a new question on it is right; a miss returns it to missed.',
-      'On a lesson’s sheet, the floating ? opens a talk about that lesson. When a drill ends, the tutor is told every question and answer.',
+      'A lesson shows how a word is built, where a source says so. On a lesson’s sheet, the floating ? opens a talk about that lesson. When a drill ends, the tutor is told every question and answer.',
     ],
   },
   {
