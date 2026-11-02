@@ -26,6 +26,14 @@
           }
         }
       }
+    },
+    "apart": {
+      "description": "Subordinate clauses kept out of the nesting, for a sentence whose tree is deep: the clause modifier that hangs one names its place here (`apart`) in place of carrying `clause`. A clause here may hang another in the same way. Each is placed exactly once. Left out when none is.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/clause"
+      }
     }
   },
   "$defs": {
@@ -154,11 +162,11 @@
       }
     },
     "clauseModifier": {
+      "description": "A subordinate clause: written here as `clause`, or, in a deep sentence, held in the answer's `apart` list and named by `apart`. Never both.",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "kind",
-        "clause"
+        "kind"
       ],
       "properties": {
         "kind": {
@@ -172,6 +180,12 @@
         },
         "clause": {
           "$ref": "#/$defs/clause"
+        },
+        "apart": {
+          "description": "In place of `clause`: the place, from 0, of the clause in the answer's `apart` list.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 99
         }
       }
     },
