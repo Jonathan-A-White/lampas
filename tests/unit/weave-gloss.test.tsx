@@ -110,6 +110,31 @@ describe('a chunk that stands for two Greek words', () => {
   });
 });
 
+describe('Luke 20:20 in Weave, a learning pair (mw-5r3p30.991)', () => {
+  const luke = chapterOf('luk', 20);
+  const verse20 = luke.verses.find((v) => v.n === 20) as Verse;
+  const i = luke.verses.indexOf(verse20);
+  const drawn = (learning: string[], solid: string[] = []) => {
+    const woven = wovenOf(luke, settings(['ἀρχή', ...solid], { weave: 'solid+learning', learning: new Set(learning) }));
+    return render(createElement(VerseText, { verse: verse20, view: 'english', woven: woven?.[i] ?? null, onLook: () => {} })).container;
+  };
+
+  it('puts the space after the two-word stack outside it, where it cannot collapse', () => {
+    const pair = drawn(['αὐτός', 'ὁ']).querySelector('[data-chunk="13"]') as HTMLElement;
+    expect(pair.querySelector('[data-greek]')?.textContent).toBe('αὐτὸν τῇ');
+    const stack = pair.firstElementChild as HTMLElement;
+    expect(stack.className).toContain('inline-flex');
+    expect(stack.nextSibling?.textContent).toBe(' ');
+    expect(stack.querySelector('[data-greek]')?.lastElementChild?.textContent).toBe('τῇ');
+  });
+
+  it('keeps the pair when it is not learning as it was: the words apart, the space after the last', () => {
+    const pair = drawn([], ['αὐτός', 'ὁ']).querySelector('[data-chunk="13"]') as HTMLElement;
+    expect(pair.hasAttribute('data-learning')).toBe(false);
+    expect(pair.textContent).toBe('αὐτὸν τῇ ');
+  });
+});
+
 describe('the same in Hebrew Weave (Genesis 1:11, "plants" = עֵשֶׂב + זֶרַע)', () => {
   const gen = chapterOf('gen', 1);
   const plants = gen.verses.find((v) => v.n === 11) as Verse;
