@@ -1,12 +1,14 @@
-// Every grind's instructions stay under 100,000 bytes (mw-5r3p30.728): the mill warns on a prompt past that (mw-gq6.690), every ask of the grind
+// Every grind's instructions stay under 100,000 bytes (mw-5r3p30.728; bible-talk's ceiling is BIBLE_TALK_CEILING since mw-5r3p30.938): the mill warns on a prompt past that (mw-gq6.690), every ask of the grind
 // pays for all of them, and at 131,254 bytes the bible-talk instructions once broke every grind (Linux's 131,072-byte argv limit). The size is
 // what `cat grinds/<kind>.instructions/*.md | wc -c` prints: the bytes of its parts (or of its one file), read as the mill reads them.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { instructionParts } from '../../scripts/grind-parts';
+import { BIBLE_TALK_CEILING, instructionParts } from '../../scripts/grind-parts';
 import '../support/grinds-in-graph';
 
 const CEILING = 100_000;
+/** Bible-talk alone holds more (mw-5r3p30.938): the settings, the learner's facts and the links make it the one big grind. */
+const ceilingOf = (kind: string): number => (kind === 'bible-talk' ? BIBLE_TALK_CEILING : CEILING);
 
 const kinds = readdirSync('grinds')
   .filter((name) => /^[a-z0-9-]+\.json$/.test(name) && !name.includes('.schema.'))
@@ -20,8 +22,9 @@ describe('the size of every grind\'s instructions', () => {
     expect(kinds).toEqual(expect.arrayContaining(['bible-talk', 'tips']));
   });
 
-  it.each(kinds)('%s: its instructions total under 100,000 bytes', (kind) => {
+  it.each(kinds)('%s: its instructions total under 100,000 bytes (bible-talk: under BIBLE_TALK_CEILING)', (kind) => {
     const bytes = bytesOf(kind);
-    expect(bytes, `${kind}'s instructions are ${bytes} bytes; say each rule once and drop repetition to bring them under ${CEILING}`).toBeLessThan(CEILING);
+    const ceiling = ceilingOf(kind);
+    expect(bytes, `${kind}'s instructions are ${bytes} bytes; say each rule once and drop repetition to bring them under ${ceiling}`).toBeLessThan(ceiling);
   });
 });
