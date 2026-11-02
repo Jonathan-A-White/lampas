@@ -87,7 +87,7 @@ const HEADING = 40;
 const GAP = 8;
 const modeNow = (): string => within(switchEl()).getAllByRole('button').find((b) => b.getAttribute('aria-pressed') === 'true')?.textContent ?? 'English';
 /** with Variants On the braces are in the text and each verse is 20 px taller (mw-9ji6ek0.45) */
-const variantsChip = (): HTMLElement | null => screen.queryByRole('button', { name: /^Variants,/ });
+const variantsChip = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-testid="variants-chip"]');
 const variantsNow = (): boolean => variantsChip()?.getAttribute('aria-pressed') === 'true';
 const heightOf = (n: number): number => MODE_HEIGHT[modeNow()] + ((n * 7) % 5) * 10 + (variantsNow() ? 20 : 0);
 const offsetOf = (n: number): number => {
