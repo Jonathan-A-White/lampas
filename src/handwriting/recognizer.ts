@@ -481,8 +481,10 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
     likeliest.sort((a, b) => a.d - b.d);
     likeliest.length = Math.min(likeliest.length, CANDIDATES);
   }
+  // the asked-for letter, and for Hebrew its twins, are always measured: the shape is the second witness to the place (below)
+  const measured = script === 'hbo' ? [target, ...caseTwins(target, script)] : [target];
   for (const template of all) {
-    if (template.letter === target && !likeliest.some((l) => l.template === template)) likeliest.push({ template, d: Infinity });
+    if (measured.includes(template.letter) && !likeliest.some((l) => l.template === template)) likeliest.push({ template, d: Infinity });
   }
   // at full size each is compared in every turn; one that cannot beat the best so far is dropped early (the asked-for letter never is)
   const best = new Map<string, { d: number; template: Template; view: Turned }>();
@@ -496,7 +498,10 @@ export function recognize(strokes: readonly InkStroke[], target: string, options
 
   // a small and a capital letter of the same shape: the size or place of the writing tells them apart, when the pad says enough
   const group = [closest, ...caseTwins(closest, script)];
-  const bySize = group.length > 1 ? byCase(group, points, options) : null;
+  let bySize = group.length > 1 ? byCase(group, points, options) : null;
+  // Hebrew twins differ only by length, so the place on the pad is a hand's to ignore (mw-5r3p30.976): a hand that ignores the line has written its own letter in the twin's place. The place is believed only when the
+  // shape (the nearer template, which is the writing's own and not the hand's) leans the same way; else the writing counts as the card's own letter, an ambiguous false Right being the lesser price.
+  if (bySize && script === 'hbo' && bySize !== closest) bySize = null;
   if (bySize) closest = bySize;
   const caseChecked = bySize !== null;
 

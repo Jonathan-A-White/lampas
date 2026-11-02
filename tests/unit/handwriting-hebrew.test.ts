@@ -172,6 +172,99 @@ describe('a vav and a final nun on the pad that knows its line (mw-5r3p30.958)',
   });
 });
 
+describe('a hand that ignores the line is not told Not quite on its own card (mw-5r3p30.976)', () => {
+  // the Deputy's check of 0.7.73: an honest ן written mid-pad and a ו written low were Not quite on their own cards. Not quite is for a writing that is clearly the twin.
+  const pad = frameOfPad(256)!;
+  const HEIGHT = 256;
+  /** A writing of `letter` on the pad, its foot (design y 1) `shiftY` letter heights below the line, or with the middle of its ink at `middle` of the pad's height. */
+  const written = (letter: string, writer: number, jitter: number, hand: { scale?: number; shiftY?: number; middle?: number }) => {
+    const strokes = onPad(writing(letter, WRITERS[writer], { jitter }), pad, 320, { scale: hand.scale, shiftY: hand.shiftY });
+    if (hand.middle === undefined) return strokes;
+    const ys = strokes.flat().map((p) => p.y);
+    const by = hand.middle * HEIGHT - (Math.min(...ys) + Math.max(...ys)) / 2;
+    return strokes.map((stroke) => stroke.map((p) => ({ ...p, y: p.y + by })));
+  };
+  const verdictOn = (card: string, strokes: InkStroke[]) => recognize(strokes, card, { script: 'hbo', ...pad }).match;
+
+  const CELLS: [string, string, { scale?: number; shiftY?: number; middle?: number }][] = [
+    ['ן', 'ן middle at the pad centre, scale 0.7', { middle: 0.5, scale: 0.7 }],
+    ['ן', 'ן middle at the pad centre, scale 1.0', { middle: 0.5, scale: 1 }],
+    ['ו', 'ו centred low (0.65), scale 1.0', { middle: 0.65, scale: 1 }],
+    ['ו', 'ו centred low (0.65), scale 1.4', { middle: 0.65, scale: 1.4 }],
+    ['ו', 'ו written 0.35 below the line', { shiftY: 0.35 }],
+    ['ו', 'ו written 0.5 below the line', { shiftY: 0.5 }],
+    ['ן', 'ן written 0.15 high', { shiftY: -0.15 }],
+    ['ן', 'ן written 0.25 high', { shiftY: -0.25 }],
+  ];
+  for (const [letter, name, hand] of CELLS) {
+    it(`takes ${name} for its own letter: Right on the ${letter} card, all 6 writings`, () => {
+      const results: boolean[] = [];
+      for (const jitter of [0.004, 0.012]) for (let writer = 0; writer < WRITERS.length; writer += 1) results.push(verdictOn(letter, written(letter, writer, jitter, hand)));
+      expect(results).toEqual([true, true, true, true, true, true]);
+    });
+  }
+
+  it('still says Not quite to a writing that is clearly the twin: a ן drawn long, half a letter below the line, on the ו card, and a plain ו standing on the line on the ן card', () => {
+    for (const jitter of [0.004, 0.012]) {
+      for (let writer = 0; writer < WRITERS.length; writer += 1) {
+        expect(verdictOn('ו', written('ן', writer, jitter, {})), `ן hand ${writer} jitter ${jitter} on the ו card`).toBe(false);
+        expect(verdictOn('ן', written('ו', writer, jitter, {})), `ו hand ${writer} jitter ${jitter} on the ן card`).toBe(false);
+      }
+    }
+  });
+});
+
+describe('the wide sweep of a vav and a final nun on the pad (mw-5r3p30.976)', () => {
+  // each letter, on both cards: its foot from 0.5 letter heights above the line to 0.75 below it, scale 0.6 to 1.4, turned -10, 0, 10, in the 3 hands
+  const pad = frameOfPad(256)!;
+  const SHIFTS = Array.from({ length: 13 }, (_, i) => Math.round((-0.5 + 0.1 * i) * 100) / 100).concat([0.75]);
+  const SCALES = [0.6, 0.8, 1, 1.25, 1.4];
+  const TURNS = [-10, 0, 10];
+  interface Cell { scale: number; shiftY: number; own: number; twin: number; inside: boolean }
+  const sweep = (letter: string, other: string): Cell[] => {
+    const cells: Cell[] = [];
+    for (const scale of SCALES) {
+      for (const shiftY of SHIFTS) {
+        const cell: Cell = { scale, shiftY, own: 0, twin: 0, inside: true };
+        for (const rotate of TURNS) {
+          for (let writer = 0; writer < WRITERS.length; writer += 1) {
+            const strokes = onPad(writing(letter, WRITERS[writer], { rotate, jitter: 0.008 }), pad, 320, { scale, shiftY });
+            const ys = strokes.flat().map((p) => p.y);
+            if (Math.min(...ys) < 0 || Math.max(...ys) > 256) cell.inside = false;
+            if (recognize(strokes, letter, { script: 'hbo', ...pad }).match) cell.own += 1;
+            if (recognize(strokes, other, { script: 'hbo', ...pad }).match) cell.twin += 1;
+          }
+        }
+        cells.push(cell);
+      }
+    }
+    return cells;
+  };
+  for (const [letter, other] of [['ו', 'ן'], ['ן', 'ו']]) {
+    it(`never tells a ${letter} written anywhere inside the pad Not quite on its own card; its ${other} twin, where Right on the ${letter} card, is listed`, () => {
+      const cells = sweep(letter, other);
+      const show = (pick: (c: Cell) => number): string =>
+        SCALES.map((scale) => `scale ${scale}: ` + cells.filter((c) => c.scale === scale).map((c) => `${c.shiftY >= 0 ? '+' : ''}${c.shiftY.toFixed(2)}:${pick(c)}${c.inside ? '' : '*'}`).join(' ')).join('\n');
+      console.info(`a ${letter} written at each foot (letter heights below the line) and scale, 9 writings a cell, * the ink leaves the pad\nRight on the ${letter} card (its own):\n${show((c) => c.own)}\nRight on the ${other} card (its twin's, the price):\n${show((c) => c.twin)}`);
+      const cellsFalse = cells.filter((c) => c.inside && c.own < 9);
+      expect(cellsFalse.map((c) => `scale ${c.scale} foot ${c.shiftY}: ${c.own} of 9 Right`)).toEqual([]);
+    });
+  }
+});
+
+describe('the other checks that judge by place on the pad (mw-5r3p30.976)', () => {
+  // recognizer.ts byCase is the only one: a small and a capital Greek letter of one shape (ο Ο, ι Ι, ρ Ρ) told by size and place when the pad gives a capHeight and a baseline. Write it gives them to a Hebrew
+  // card only (WriteIt.tsx check), so a hand that ignores the line on a Greek card is never told Not quite; framed, it would be (the same sweep as the vav's), which no pad asks of it today.
+  const pad = frameOfPad(256)!;
+  it('leaves a Greek letter written anywhere on the pad Right on its own card, as the Greek card asks with no frame', () => {
+    for (const letter of ['ο', 'Ο', 'ι', 'Ι', 'ρ', 'Ρ']) {
+      for (const hand of [{}, { scale: 0.7, shiftY: 0.3 }, { scale: 1.4 }, { shiftY: -0.4 }, { shiftY: 0.5 }]) {
+        expect(recognize(onPad(writing(letter, WRITERS[0]), pad, 320, hand), letter).match, `${letter} ${JSON.stringify(hand)}`).toBe(true);
+      }
+    }
+  });
+});
+
 describe('which strokes were off', () => {
   it('names nothing off in a good writing and a stroke that is no part of the letter in a bad one', () => {
     for (const glyph of HEBREW_GLYPHS) {
