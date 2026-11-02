@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.74",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.961",
+    "kind": "fixed",
+    "text": "In a Hard sounds lesson the round ? button no longer sits over the end of the Next button."
+  },
+  {
+    "version": "0.7.74",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.959",
+    "kind": "fixed",
+    "text": "A perfect copy of Genesis 1:1 in Hebrew is no longer marked wrong on its first word about one time in four."
+  },
+  {
+    "version": "0.7.74",
+    "date": "2026-11-02",
+    "story": "mw-5r3p30.960",
+    "kind": "fixed",
+    "text": "A summary whose points are in the wrong order is now told so more reliably."
+  },
+  {
     "version": "0.7.73",
     "date": "2026-11-02",
     "story": "mw-5r3p30.956",

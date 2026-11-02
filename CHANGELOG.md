@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.74
+_2026-11-02_
+- Fixed: In a Hard sounds lesson the round ? button no longer sits over the end of the Next button.
+- Fixed: A perfect copy of Genesis 1:1 in Hebrew is no longer marked wrong on its first word about one time in four.
+- Fixed: A summary whose points are in the wrong order is now told so more reliably.
+
 ## 0.7.73
 _2026-11-02_
 - Fixed: the round ? button no longer opens the tutor out of sight behind the sheets of the listening plan, Ask for a book, the lexicon list, the Logos chooser and the maps; it is put away while they are open and comes back when you close them.
