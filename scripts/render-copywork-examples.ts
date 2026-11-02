@@ -8,7 +8,7 @@
 // on the long edge) with type big enough that a vowel point is a blob of 8 px or more, as it is when a page is photographed to fill the
 // frame. A page that holds a mistake says which in PAGES below (the words are replaced or left out); the example's `expect` holds the rest.
 // Running it twice gives the same bytes.
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { TALK_MAX_EDGE } from '../src/talk/pictures';
