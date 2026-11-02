@@ -14,7 +14,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Tyndale House's TBESG, TBESH, TIPNR and TVTMS, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House,
   Cambridge. Greek and Hebrew words, variant numbers (TAGNT), the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 characters.
 - **[TAGNT and TBESG, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The
-  [Septuagint derivation](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md) learns from them. Changes: applied to the Septuagint by Lampas's derivation; TBESG's gloss of a lemma is the Meaning on a Septuagint word's card.
+  [Septuagint derivation](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md) learns from them. Changes: applied to the Septuagint by Lampas's derivation.
 - **[Swete's Septuagint, from eliranwong's LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930)**: the Greek Old Testament. Public domain; packaging
   [GPL-3.0](https://github.com/eliranwong/LXX-Swete-1930/blob/1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33/LICENSE). Changes: split by chapter.
 - **[LXX2012, from eBible](https://ebible.org/eng-lxx2012/)**: Brenton's Septuagint in English (1851), American spelling by M. P. Johnson. Public domain. Changes: footnotes dropped.
