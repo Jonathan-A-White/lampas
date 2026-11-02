@@ -109,8 +109,20 @@ async function openReview(): Promise<void> {
   await screen.findByRole('heading', { name: 'Review', level: 1 });
 }
 
-/** Plays the round on screen to its end card. A question on the idea `miss` is missed (a flashcard graded Not yet); every other is answered right when it is a flashcard and with its first
- * choice when it is a choice. Records what was asked of the second declension. */
+/** The right answer of the question on screen: the one of the round Review keeps in the tab's session storage (src/review/keptRound.ts) whose options are the buttons shown. The round is kept after the card is drawn, so this waits for it. */
+async function rightOfShown(options: readonly (string | null)[]): Promise<string> {
+  const shown = JSON.stringify(options);
+  let right: string | undefined;
+  await waitFor(() => {
+    const kept = JSON.parse(sessionStorage.getItem('lampas.reviewRound') ?? 'null') as { round?: { items: { question?: { right?: string; options?: string[] } | null }[] } } | null;
+    right = kept?.round?.items.find((i) => JSON.stringify(i.question?.options) === shown)?.question?.right;
+    expect(right, 'the round in the tab holds the question on screen').toBeDefined();
+  });
+  return right as string;
+}
+
+/** Plays the round on screen to its end card. A question on the idea `miss` is missed (a flashcard graded Not yet, a choice answered with a wrong option); every other is answered right (a flashcard graded I knew it, a choice
+ * with its right option). Records what was asked of the second declension. */
 async function playRound(miss?: string): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Start' }));
   for (;;) {
@@ -125,7 +137,11 @@ async function playRound(miss?: string): Promise<void> {
     } else {
       const options = [...document.querySelectorAll<HTMLElement>('[data-option]')];
       expect(options.length, 'a question with choices is on screen').toBeGreaterThan(0);
-      await user.click(options[0]);
+      // a grammar question the app keeps in the tab's round says its right answer: the missed idea is answered wrong, every other right (a question to tap is never a flashcard, mw-5r3p30.984)
+      const right = idea ? await rightOfShown(options.map((o) => o.textContent)) : undefined;
+      const pick = right === undefined ? options[0] : options.find((o) => (idea === miss ? o.textContent !== right : o.textContent === right));
+      expect(pick, `an option to tap on ${idea}`).toBeDefined();
+      await user.click(pick as HTMLElement);
     }
     const next = await screen.findByTestId('next');
     const last = next.textContent === 'Finish';
@@ -413,8 +429,8 @@ describeFeature(feature, ({ Scenario }) => {
       await playRound();
     });
     Then('the round asks the genitive case with an item the mill wrote', () => {
-      // not the question he saw: the one the mill wrote, as a flashcard (the row is still on its step)
-      expect(asked).toEqual([{ prompt: MILL_PROMPT, kind: 'tap-form', mode: 'flashcard' }]);
+      // not the question he saw: the one the mill wrote, as the word buttons of a tap (the row is on a flashcard step, but a question to tap is never a flashcard, mw-5r3p30.984)
+      expect(asked).toEqual([{ prompt: MILL_PROMPT, kind: 'tap-form', mode: 'choice' }]);
       expect(MILL_PROMPT).not.toBe(builtPrompt);
     });
     And('the genitive case is known: it is no longer to confirm and its row has moved up', async () => {
