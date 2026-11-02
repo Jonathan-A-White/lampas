@@ -11,7 +11,7 @@ import { lampasRegistry } from '../../src/tutor/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
 import { answerFragment, instructionsPart } from 'voice-kit/talks/grind';
-import { KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart } from '../../scripts/grind-parts';
+import { BIBLE_TALK_CEILING, BIBLE_TALK_ROOM, KIT_END, instructionParts, instructionsOf, withKitFragment, withKitPart } from '../../scripts/grind-parts';
 
 // vitest related follows the import graph, and the fs reads below are not in it: these imports put the grind's file, its schemas,
 // its instruction parts and its scenarios in this file's graph, so the gate's `vitest related` runs this test for a change to any of them (mw-5r3p30.860).
@@ -1008,14 +1008,16 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(none.expect.links).toEqual({ present: false });
   });
 
-  it('keeps the whole of the instructions under the 99,500 bytes the ceiling test holds', () => {
+  it('keeps the whole of the instructions under the 110,000 bytes of BIBLE_TALK_CEILING (mw-5r3p30.938; it was 99,500 and every story trimmed old rules to fit)', () => {
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(bytes).toBeLessThanOrEqual(99_500);
+    expect(BIBLE_TALK_CEILING).toBe(110_000);
+    expect(bytes).toBeLessThanOrEqual(BIBLE_TALK_CEILING);
   });
 
-  it('leaves 500 bytes of room under that ceiling, now the Hebrew verse part is in (mw-gdcyf98.29; 2,500 were kept for it by mw-gdcyf98.28)', () => {
+  it('leaves at least 10,000 bytes of room under that ceiling, so a story adds a rule without trimming another (mw-5r3p30.938)', () => {
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
-    expect(bytes).toBeLessThanOrEqual(99_000);
+    expect(BIBLE_TALK_ROOM).toBe(10_000);
+    expect(BIBLE_TALK_CEILING - bytes, `${bytes} bytes used of ${BIBLE_TALK_CEILING}`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
   });
 
   it('says a run of settings that differ only in their language once, and still names every key (mw-gdcyf98.28)', () => {
