@@ -70,7 +70,7 @@ async function walk(page: Page, name: string): Promise<void> {
   for (let state = 0; state < STATES; state += 1) {
     // the first state must have buttons; a later one is the round's end card (its Done and Another round are not answers) when none comes
     if (state === 0) await expect(buttonsOf(page).first()).toBeVisible();
-    else if (!(await buttonsOf(page).first().waitFor({ timeout: 3000 }).then(() => true, () => false))) break;
+    else if (!(await expect(buttonsOf(page).first()).toBeVisible().then(() => true, () => false))) break;
     checked += await expectAllClear(page, `${name} state ${state + 1}`);
     if (!(await advance(page))) break;
     // the next state is drawn after the tap; a moment for the card that settles (lampas.settleMs is 0 in openUnlocked)
