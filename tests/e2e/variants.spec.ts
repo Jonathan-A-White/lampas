@@ -107,8 +107,8 @@ test('Revelation 3:1-3 with Variants Off and On, in English, Weave and Greek, an
 });
 
 // A tap on a brace opens the unit's sheet (mw-9ji6ek0.6, src/reader/VariantSheet.tsx): the text's reading and the other reading(s), each in Greek and English, the witness of
-// each spelled out, Ask the tutor, and Back closes it. Shot: shots/variants-brace-sheet.png.
-test('a tap on the siglum of the brace at Revelation 3:2 opens the sheet with both readings and the witness lines; Ask the tutor opens the verse talk; Back closes it', async ({ page }) => {
+// each spelled out, the floating ? for the tutor, and Back closes it. Shot: shots/variants-brace-sheet.png.
+test('a tap on the siglum of the brace at Revelation 3:2 opens the sheet with both readings and the witness lines; the floating ? opens the verse talk; Back closes it', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/?b=rev&c=3');
   await expect(page.locator('[data-verse="2"] [data-text]')).toBeVisible();
@@ -136,7 +136,8 @@ test('a tap on the siglum of the brace at Revelation 3:2 opens the sheet with bo
   for (const line of await lines.allTextContents()) {
     expect(line).toMatch(/^(B: the Byzantine text is split here|NA27\/NA28: Nestle-Aland reads this|NA27: Nestle-Aland \(27th edition\) reads this|NA28: Nestle-Aland \(28th edition\) reads this|ECM: the Editio Critica Maior reads this)$/);
   }
-  await expect(sheet.getByRole('button', { name: 'Ask the tutor' })).toBeVisible();
+  // the sheet has no Ask the tutor of its own (mw-5r3p30.882): the floating ? is the door
+  await expect(sheet.getByRole('button', { name: 'Ask the tutor' })).toHaveCount(0);
   // the sheet and its backdrop have finished coming in (src/index.css lp-sheet-in, lp-fade-in)
   await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   await shot(page, 'variants-brace-sheet');
@@ -146,7 +147,7 @@ test('a tap on the siglum of the brace at Revelation 3:2 opens the sheet with bo
   await expect(sheet).toHaveCount(0);
   await expect(page.locator('[data-verse="2"] [data-brace]').first()).toBeVisible();
 
-  // Ask the tutor opens the verse's talk, as the Verse view's Ask does
+  // the floating ? over the sheet opens the verse's talk about this unit
   await brace.locator('[data-witness]').first().click();
   await expect(sheet).toBeVisible();
   await openTutor(page, { sheet: 'Talk about Revelation 3:2' });
@@ -440,7 +441,7 @@ test.describe('a variant unit is opened by its siglum, and its words open the wo
     await expect(wordSheet(page).getByTestId('sheet-variant')).toHaveText('in variant B');
   });
 
-  test('Greek: a word the verse carries opens its card with lemma and parsing; a form it does not carry opens the form and Ask the tutor, nothing invented', async ({ page }) => {
+  test('Greek: a word the verse carries opens its card with lemma and parsing; a form it does not carry opens the form, nothing invented', async ({ page }) => {
     await open(page, 'Greek');
     // 3:1's other reading "καὶ ζῇς": both forms stand in the verse
     await unit(page).locator('[data-brace-word]', { hasText: 'ζῇς' }).click();
@@ -455,7 +456,7 @@ test.describe('a variant unit is opened by its siglum, and its words open the wo
     await expect(wordSheet(page).getByTestId('sheet-word')).toHaveText('ἔγχρισον');
     await expect(wordSheet(page).getByTestId('sheet-lemma')).toHaveText('ἐγχρίω');
     await expect(wordSheet(page).getByRole('button', { name: 'guess' })).toHaveCount(0);
-    await expect(wordSheet(page).getByRole('button', { name: 'Ask the tutor' })).toBeVisible();
+    await expect(wordSheet(page).getByRole('button', { name: 'Ask the tutor' })).toHaveCount(0);
     await wordSheet(page).getByRole('button', { name: 'Done' }).click();
     // a form the verse does not carry but the build tagged (mw-9ji6ek0.22): "ἀποθανεῖν" in the NA reading opens its card, which says "die"; the siglum still opens the sheet
     const die = page.locator('[data-verse="2"] [data-brace]').filter({ hasText: 'ἀποθανεῖν' }).first();
@@ -666,7 +667,7 @@ test('1 Corinthians 16:7 dots the English the changed δὲ is folded into, and 
 });
 
 // A word-order-only unit is not a change of the English (mw-9ji6ek0.31): Matthew 3:4 αὐτοῦ ἦν / ἦν αὐτοῦ ('his was' / 'was his', NA) has no brace under Those that change the English;
-// under All it has one, and its sheet says 'Word order only: emphasis, not meaning' above Ask the tutor. Shot: shots/variants-word-order-sheet.png.
+// under All it has one, and its sheet says 'Word order only: emphasis, not meaning' at the foot, with no Ask the tutor of its own (mw-5r3p30.882). Shot: shots/variants-word-order-sheet.png.
 test('Matthew 3:4: a word-order-only unit shows under All and not under Those that change the English, and its sheet says so', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/?b=mat&c=3');
@@ -692,9 +693,7 @@ test('Matthew 3:4: a word-order-only unit shows under All and not under Those th
   await expect(sheet).toBeVisible();
   const line = sheet.locator('[data-word-order-only]');
   await expect(line).toHaveText('Word order only: emphasis, not meaning');
-  const ask = sheet.getByRole('button', { name: 'Ask the tutor' });
-  await expect(ask).toBeVisible();
-  expect((await line.boundingBox())!.y).toBeLessThan((await ask.boundingBox())!.y);
+  await expect(sheet.getByRole('button', { name: 'Ask the tutor' })).toHaveCount(0);
   await shot(page, 'variants-word-order-sheet');
 });
 

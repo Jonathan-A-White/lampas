@@ -105,10 +105,12 @@ test("the teach sheet shows αὐτός's note under its gloss and the buttons s
   expect((note?.y ?? 0)).toBeGreaterThan((gloss?.y ?? 0) + (gloss?.height ?? 0) - 1);
   const panel = await sheet.boundingBox();
   expect((panel?.y ?? 0) + (panel?.height ?? 0)).toBeLessThanOrEqual(VIEWPORT.height);
-  for (const name of ['Got it', 'I know this', 'Not now', 'Ask the tutor']) {
+  for (const name of ['Got it', 'I know this', 'Not now']) {
     const b = await sheet.getByRole('button', { name, exact: true }).boundingBox();
     expect((b?.y ?? 0) + (b?.height ?? 0), name).toBeLessThanOrEqual(VIEWPORT.height);
   }
+  // the sheet has no Ask the tutor of its own (mw-5r3p30.882): the floating ? is the door
+  await expect(sheet.getByRole('button', { name: 'Ask the tutor', exact: true })).toHaveCount(0);
   await shot(page, 'word-heart-teach');
   // εἰς, the next word, has no note
   await sheet.getByRole('button', { name: 'Not now', exact: true }).click();

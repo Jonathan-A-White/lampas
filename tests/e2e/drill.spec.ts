@@ -81,11 +81,16 @@ test('Ask the tutor leaves for the Reader with the question in the box, and Back
   const verse = await word.getAttribute('data-verse');
   const form = (await word.textContent()) ?? '';
   await page.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
-  const field = page.getByRole('textbox', { name: 'Your question' });
+  const field = page.getByRole('textbox', { name: 'Your message' });
   await expect(field).toBeVisible();
   await expect(field).toHaveValue(new RegExp(`^Parse ${form} in Romans 8:${verse}: why is it .+\\?$`));
   await expect(field).toBeInViewport();
   await expectFitsPhone(page);
+  // the question waits in the Talk sheet the Reader opens (mw-5r3p30.882): the first Back puts the sheet away, the second leaves the Reader for the drill
+  const talk = page.getByRole('dialog', { name: /^Talk about / });
+  await expect(talk).toBeVisible();
+  await page.goBack();
+  await expect(talk).toHaveCount(0);
   await page.goBack();
   await expect(page.getByTestId('drill-word')).toHaveAttribute('data-verse', verse ?? '');
   await expect(page.getByTestId('drill-step')).toHaveAttribute('data-step-id', 'pos');
@@ -131,7 +136,7 @@ test('a double tap near the top of Next step stays in the drill, though Ask the 
     await expect(page.getByTestId('next'), `step ${k + 1}`).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 }), `step ${k + 1}`).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 }).locator('xpath=..')).not.toHaveText(subtitle ?? '');
-    await expect(page.getByRole('textbox', { name: 'Your question' })).toHaveCount(0);
+    await expect(page.getByRole('textbox', { name: 'Your message' })).toHaveCount(0);
     await expect(page.getByRole('dialog')).toHaveCount(0);
   }
   // the second tap did land on a link at least once, so the guard was tried
