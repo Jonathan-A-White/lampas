@@ -10,6 +10,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [The layers](#the-layers)
 - [Layer 1 in detail](#layer-1-in-detail)
 - [Layer 2 in detail](#layer-2-in-detail)
+  - [Names no lexicon has: the form as its own lemma](#names-no-lexicon-has-the-form-as-its-own-lemma)
 - [The agreement check](#the-agreement-check)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
@@ -105,8 +106,39 @@ lemmas TBESG lacks, irregular stems the rules cannot reach from the lemma (`Γε
 lexicon entries that refuse the right parsing: TBESG lists `μακρότης` as masculine (`G:N-M`), so the feminine `μακρότητα` (Ps 22:6) gets nothing until the
 lexicon is fixed or a later layer reads it (`ἄσφαλτος` is the same, masculine in TBESG and feminine in Gen 6:14). Names that TBESG and TAGNT lack are the largest of them
 (story mw-u2w5klk.13): of the 17,800 words of the 39 books that have no candidate, 10,849 are names (`npm run lxx:batches -- --all`; 4,296 distinct forms), mostly names found
-only in the Septuagint (`Γαιδάδ`, `Σελλά`, `Θόβελ`), and the rule for names that do not decline cannot reach them for want of a lemma. An ending two genders or cases share is settled by the 90% rule on the New Testament's evidence alone
+only in the Septuagint (`Γαιδάδ`, `Σελλά`, `Θόβελ`), and the rule for names that do not decline cannot reach them for want of a lemma (story mw-u2w5klk.19 gives those whose ending looks indeclinable their own form as the lemma: the next section). An ending two genders or cases share is settled by the 90% rule on the New Testament's evidence alone
 (`ἕρπον[τι`, Gen 1:30, masculine where it goes with a neuter noun): the agreement check below demotes such an answer before the model.
+
+### Names no lexicon has: the form as its own lemma
+
+Story mw-u2w5klk.19 (B8). Of the 17,800 words of the 39 books with no candidate, 10,849 were names in neither TAGNT nor TBESG, every one a forced guess at the cost of a model's
+reading for no information. **A capitalised word that still has no candidate after layers 1 and 2, that opens no verse or clause, and whose form ends as a Hebrew name does, takes
+its own form as its lemma**: `formNameLemma` and `formNameCandidates` in `parser.ts`, applied in `derive.ts` (`withFormNames`) to the words layers 1 and 2 left without a candidate
+(Morpheus's candidates, when its cache is there, come first: a word it knows is not touched). Γαιδάδ (Gen 4:18), Σελλά (Gen 4:19), Θόβελ (Gen 4:22) and Εὑειλάτ (Gen 2:11) are such words.
+
+| The form ends in | Taken | Why (the numbers are on the New Testament's own names: rows of TAGNT that are a noun tagged a person or a place, capitalised, that this rule takes; the form's letters equal the lemma's) |
+| --- | --- | --- |
+| a consonant other than ς and ν (Γαιδάδ, Θόβελ, Ἰεροβοάμ) | yes: 4,563 words (1,669 forms) | the indeclinable look; Greek has no other word ending so but ρ, ξ, ψ (a capital name in them is a Hebrew one in the Septuagint) |
+| ν, the vowel before it an α or ω with an acute or grave (Ἰωναθάν, Δάν, Χεβρών) | yes: 1,059 words (314 forms) | a Greek name's accusative is -ον, -ην, -ιν, -υν, or has its accent earlier (Ἰούδαν), or a circumflex (-ῶν, -ᾶν); of the New Testament's -ών with an acute 37 of 43 are their own lemma, of -άν 4 of 10 (few: where the Septuagint's already settled -άν names are their own lemma 44%, the rest being Greek words that end so; the model chooses) |
+| α, ι, η, ω or υ with the acute or grave on that last vowel (Σελλά, Νεφθαλεί, Ἰερειχώ, Βαναιού) | yes: 2,154 words (1,199 forms) | a Greek name's nominative is not accented on its last syllable; the New Testament's -ά 73%, -ί 75%, -ώ 100%, -ή 100% |
+| ς | **no**: 1,119 words | Greek declines it: the nominative, but also the genitive of -ις and -ων names (Βαβυλῶνος) and the accusative plural (Ἀσσυρίους); the New Testament: -ας 50%, -ης 57%, -ις 13%, -ως 24% |
+| ν otherwise (-ον, -ην, -ιν, -εν, -υν, an accent earlier or a circumflex) | **no**: 751 words | the accusative of a Greek name (Ἀμορραῖον, Γοδολίαν, Μωσῆν): the New Testament: -ον 1%, with no accent on the vowel 9%, with a circumflex 1% |
+| a vowel with no accent on it, or a circumflex (Μειχαία, Γάλγαλα, Μωσῇ), ε or ο | **no**: 1,144 words | a nominative or a dative or genitive of Greek (-ου, -ῳ, -ῃ), a vocative or a verb |
+| a word of fewer than three letters (Ὤ, Ἦ), or of a letter that is not Greek | **no**: 59 words | an interjection |
+
+A word that opens a verse or follows a full stop, a colon, the high point or the question mark (`opensClause`, the rule `lxx:batches --all` has counted names by) is **left as it was**: Swete capitalises it
+whatever it is (391 words), and a lower-case word is never taken (6,560 words have no candidate, 0 of them taken). The lemma is the form in NFC with its grave an acute (Σελλὰ is Σελλά), so
+its accent and breathing are the print's own, and a dictionary may write them otherwise (Ζοροβαβέλ for Ζοροβάβελ); the New Testament's lemma is the same letters for 86.1% of 779 such rows
+and the same spelling, accent and breathing for 68.0% (the rest: Μαριάμ for Μαρία, Καφαρναούμ for Καπερναούμ, the spellings of one name). **The word is pending**, with every case of every gender in
+the singular (`N-NSM` ... `N-VSN`, 15 candidates: nothing says the gender, and the agreement check settles the case and gender where an article says them), the support column `form` (and 0 in the counts), the via note `a name no lexicon has: the form
+itself as the lemma ...`, and the note `a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model`, in place of `no candidate: for the model to guess`.
+`lxx:batches --all` counts these in a column of their own (`a name from its form alone`) and adds them back in the last (`both % of words`), which is the share the table gave before: the
+guess share of the bar counts the model's choices, so a book can get under 3% when its names are read (7,776 words of the 39 books were given candidates, 3,182 forms; the agreement check settles 755 of them at once; 7,021 stay pending, which with the 10,024 still without a candidate make 17,045, 3.58% of the words, against 17,800, 3.74%, before), and a model that chooses one of these candidates is **not** marked a guess (confidence 0.8, as
+for any candidate); how sure the reading is, is the figures above, and the Governor decides whether the bar should count it. The test is `a capitalised no-candidate form is its own lemma where its ending looks indeclinable (B8)` in `tests/unit/lxx-parser.test.ts`.
+
+Three small things from the same sweep: a TBESG lemma cell that ends in a stray mark (`Ἄπις;`, `Μακαλωθ·`) loses it in `readTbesg`, as `readTbesgNames` always did; a choice whose lemma differs
+from a candidate's by a diaeresis alone (the file's Καινάν for TBESG's Καϊνάν) is that candidate (`sameLemma` in `choices.ts`; any other difference is a different lemma); and the gender of a name no source
+gives is left to the agreement check (it settles a name whose article is next to it: `τῷ Ἰωναθάν`), where no article says it all three stay.
 
 ## The agreement check
 
@@ -252,7 +284,7 @@ without the cache, 12,541 with it, 'The sweep'). Until a later story moves the c
 
 ```bash
 npm run lxx:batches -- --book gen     # batch, chapters, pending, no candidate: a row a batch, then the total
-npm run lxx:batches -- --all          # a row a book of the 39: how many of its words have no candidate, so must be a guess, against the bar's 3%, and how many of those are names
+npm run lxx:batches -- --all          # a row a book of the 39: how many of its words have no candidate, so must be a guess, against the bar's 3%, how many of those are names, how many more are a name read from its own form, and both as a share
 ```
 
 **The Builder**, for its batch `n` of book `b` (`gen`, batch 1; the files are `gen-01`):
@@ -427,7 +459,7 @@ own derived data, and Greek.
 `several analyses: for the model` (layer 1's), `several candidates: for the model` (the parser's), `no candidate: for the model to guess`, or the agreement
 check's: `a name in the New Testament: lower case here, for the model`, `shared ending: <class>: for the agreement check or the model`,
 `agreement break: <link> with <ref>: for the model`, or `an indeclinable name: every case of its gender: for the agreement check or the model`. A candidate the shared-ending rule added has support 0.
-A candidate the name rule added has `name` in the support column (and 0 in the counts).
+A candidate the name rule added has `name` in the support column (and 0 in the counts). A candidate a name no lexicon has was given from its own form (`withFormNames`) has `form` there (and the note `a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model`); a word settled by agreement keeps it in its candidates column, which is how an audit tells such a reading from a lexicon's.
 
 `data/lxx/morpheus/<book>.tsv` (git-ignored, a derived cache), Morpheus's analyses of a book's no-candidate forms and guesses: `form`, `analyses` ('Morpheus, the second method'). A candidate it gave has `morpheus` in the support column.
 
