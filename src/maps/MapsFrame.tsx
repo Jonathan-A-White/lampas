@@ -2,6 +2,7 @@
 // (useSheetBack), Escape and a swipe down on the handle as every sheet does; a map opened over the sheet is a second frame, one Back deeper.
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useNoDoor } from '../tutor/door';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 
@@ -9,6 +10,8 @@ export function MapsFrame({ label, onClose, children, heading, escape = true }: 
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, escape);
   useSheetBack(onClose);
+  // z-50, over the Talk sheet (z-10): the Maps sheet and a map, nothing to ask about, so no ? over it (mw-5r3p30.956)
+  useNoDoor();
   return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <div data-testid="maps-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />

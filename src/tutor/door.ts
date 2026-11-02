@@ -78,10 +78,10 @@ export function useDoorTarget(open: (() => void) | undefined, hidden = false, sh
 
 const NOTHING = (): void => undefined;
 
-/** A sheet that cannot be asked about, drawn above the Talk sheet (z-10), registers this while it is open: the newest target is then
+/** A sheet that cannot be asked about, drawn above the Talk sheet (z-10), registers this while it is open (`when`: a sheet that stays mounted while it is put away gives false then): the newest target is then
  * hidden and the floating ? is not drawn over it. Without it the newest target is the screen's, whose Talk opens UNDER the sheet and the tap looks dead (mw-5r3p30.953, as the Teach sheet was, mw-5r3p30.949). */
-export function useNoDoor(): void {
-  useDoorTarget(NOTHING, true, true);
+export function useNoDoor(when = true): void {
+  useDoorTarget(when ? NOTHING : undefined, true, true);
 }
 
 /** Whether the door is drawn now, live: the floating ? is drawn only where there is something to ask about, and not over the immersive reader (the newest target is hidden). */

@@ -2,6 +2,7 @@
 // on (useSendOff.ts go: the start time is recorded, then Audible opens); Back, Escape, a swipe down or a tap outside close it and begin nothing.
 import { createPortal } from 'react-dom';
 import { bookOf } from '../data/books';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -11,6 +12,8 @@ function Sheet({ title, onGo, onClose }: { title: string; onGo: () => void; onCl
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-30, over the Talk sheet (z-10), with nothing on it to ask about: no ? over it, for a Talk would open under it (mw-5r3p30.956)
+  useNoDoor();
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sendoff-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />

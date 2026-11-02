@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 import { ChapterPicker } from '../ChapterPicker';
 import { listPlans } from '../data/plans';
 import { startPlan } from '../data/repositories/readingPlan';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -19,6 +20,8 @@ function Sheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, planId === null);
   useSheetBack(onClose);
+  // z-30, over the Talk sheet (z-10), with nothing on it to ask about: no ? over it, for a Talk would open under it (mw-5r3p30.956)
+  useNoDoor();
   const start = usePlan()?.started?.next ?? GENESIS_1;
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">

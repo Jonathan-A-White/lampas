@@ -17,6 +17,7 @@ import { FormHelper } from '../formHelper/FormHelper';
 import { bookSending, sendWaitingBooks, startBookRequests, subscribeBookSending } from '../services/bookRequests';
 import { MAX_BOOK_CHARS, MAX_FEEDBACK_CHARS } from '../services/feedback';
 import { FAILURE_TITLES } from '../services/tutor';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { isTooLong } from '../ui/lengthLimit';
 import { LengthNote } from '../ui/LengthNote';
@@ -44,6 +45,8 @@ function kindWord(row: ExportedRow): string {
 export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-30, over the Talk sheet (z-10), a form that sends a request and has nothing to ask about: no ? over it, for a Talk would open under it (mw-5r3p30.956)
+  useNoDoor();
   const ids = { query: useId(), title: useId(), why: useId(), whyCount: useId(), kind: useId() };
   const rows = useLiveQuery(unmatchedRows, []);
   const waiting = useLiveQuery(listWaitingBooks, []);

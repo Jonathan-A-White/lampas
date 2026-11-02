@@ -90,6 +90,8 @@ function Confirm({ chapter, onSet, onBack }: { chapter: PlanChapter; onSet: () =
 }
 
 function Places({ next, onMove, onClose }: { next: PlanChapter | undefined; onMove: (move: PlaceMove) => void; onClose: () => void }) {
+  // z-30, over the Talk sheet (z-10): Where are you? and the picker over it have nothing to ask about, so no ? over them (the Set your place sheet says so for itself, mw-5r3p30.955; mw-5r3p30.956)
+  useNoDoor();
   const [picking, setPicking] = useState(false);
   const [chosen, setChosen] = useState<PlanChapter | null>(null);
   const open = getOpenChapter();

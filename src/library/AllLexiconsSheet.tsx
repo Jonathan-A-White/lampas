@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { faceOf } from '../script/greekLang';
 import { armFallback } from '../resources/openApp';
+import { useNoDoor } from '../tutor/door';
 import type { LexiconEntry } from '../resources/logos';
 import { focusOnMount } from '../ui/focus';
 import { matching } from '../ui/listFilter';
@@ -28,6 +29,8 @@ export function AllLexiconsSheet({ word, hebrew = false, entries, onClose, onMis
   const [query, setQuery] = useState('');
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-30, over the word sheet (a door target whose Talk is z-10, under this): a list of links, nothing to ask about, so no ? over it (mw-5r3p30.956)
+  useNoDoor();
   const shown = matching(
     entries.map((e) => ({ id: e.id, name: e.link.tile ?? e.name, also: e.name })),
     query,

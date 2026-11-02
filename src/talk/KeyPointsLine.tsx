@@ -2,6 +2,7 @@
 // the tutor wrote down the key points of the talk so far; a tap shows them in a sheet. 'resumed' and 'fresh' answers show nothing.
 import { useState } from 'react';
 import { focusOnMount } from '../ui/focus';
+import { useNoDoor } from '../tutor/door';
 import { useEscapeToClose } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
 
@@ -12,6 +13,8 @@ export const KEY_POINTS_LINE = 'The tutor wrote down the key points of this talk
 function KeyPointsSheet({ keyPoints, onClose }: { keyPoints: string; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
+  // z-50, opened from inside a Talk sheet (where the ? is put away already): it says so for itself, so a Talk elsewhere can never leave a ? over it (mw-5r3p30.956)
+  useNoDoor();
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <div data-testid="key-points-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />

@@ -14,6 +14,7 @@ import type { Heard } from '../data/repositories/readingPlan';
 import { useAiAllowed } from '../gate/licenceContext';
 import { openLicence } from '../nav/route';
 import { TALK_PICTURE_MIMES } from '../talk/pictures';
+import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -34,6 +35,8 @@ function Sheet({ proposal, hidden, onAnswer, onClose }: { proposal: ReturnPropos
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, !picking && !screenshot && !hidden);
   useSheetBack(onClose);
+  // z-10, drawn after the Reader's Talk sheet (z-10) so over it: nothing on it to ask about, so no ? over it, unless it is put away (the Licence page) (mw-5r3p30.956)
+  useNoDoor(!hidden);
   const { session, elapsedMs, estimate } = proposal;
   return (
     <div hidden={hidden} className="fixed inset-0 z-10 flex flex-col justify-end">
