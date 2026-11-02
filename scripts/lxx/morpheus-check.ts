@@ -203,7 +203,8 @@ async function main(argv: readonly string[]): Promise<void> {
       const cache = readMorpheusCache(dir, code);
       const result = deriveBook(input, code, undefined, trained, tokens, cache);
       const formOfRef = new Map(result.words.map((w) => [w.ref, morpheusKey(w.form).normalize('NFC')]));
-      for (const w of result.pending.filter((p) => p.candidates.length === 0)) {
+      // a name read from its own form (support `form`) has no lexicon's candidate: still counted here, as before the form was read as a lemma
+      for (const w of result.pending.filter((p) => p.candidates.every((c) => c.source === 'form'))) {
         left++;
         const entry = entries.get(formOfRef.get(w.ref) ?? '');
         const reasons = new Set((entry?.raws ?? []).filter((r) => r.pos !== 'E').map((r) => unmappedWhy(r) ?? 'unknown'));

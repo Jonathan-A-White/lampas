@@ -22,7 +22,7 @@ import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fe
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
 import { bareOf, bookOf, hasAccent, hasLower, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
 import { analysesOf, formIndex, readTagnt, settle, type Analysis, type FormIndex } from './tagnt';
-import { byAnalogy, indeclinableNames, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
+import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
 import { TBESG_FILE, lemmaCount, readTbesg, readTbesgNames } from './tbesg';
 
 export const OUT_DIR = join('data', 'lxx');
@@ -42,12 +42,13 @@ export const NOTE_NOT_IN_NT = 'not in the New Testament: for the parser';
 export const NOTE_ANALOGY = 'analogy: a sibling form in the New Testament';
 export const NOTE_CANDIDATES = 'several candidates: for the model';
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
+export const NOTE_FORM_NAME = 'a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model';
 export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender: for the agreement check or the model';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
-export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' };
+export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form' };
 
-/** What a candidate's support column says: the New Testament's count, or the name of what gave it where it has no count (`morpheus`, the second method; `name`, an indeclinable name's other cases). */
+/** What a candidate's support column says: the New Testament's count, or the name of what gave it where it has no count (`morpheus`, the second method; `name`, an indeclinable name's other cases; `form`, a name no lexicon has, read as its own lemma). */
 export const supportOf = (c: WordCandidate): string => c.source ?? String(c.support);
 
 /** 1 the New Testament's form, 2 the parser, '2a' the agreement check, 3 the model's choice (choices.ts joins it to the pending words; derive.ts never makes one) */
@@ -203,6 +204,34 @@ const split = (outs: ReadonlyArray<DerivedWord | PendingWord>): { derived: Deriv
   pending: outs.filter((w): w is PendingWord => !isDerived(w)),
 });
 
+/** A mark that ends a sentence or a clause in Swete's print: a full stop, a colon, the high point, the Greek question mark. */
+const ENDS_CLAUSE = /[.:;\u00B7\u0387\u037E][\])]*$/;
+
+/**
+ * Whether word `i` opens a verse or a clause: the first of its verse, or after a word whose print ends in a full stop, a colon, the high point or the question
+ * mark. Swete capitalises such a word whatever it is, so a capital there says nothing of a name; the first word of what someone says, which follows no mark, is not seen.
+ */
+export function opensClause(words: ReadonlyArray<Pick<SweteWord, 'verse' | 'display'>>, i: number): boolean {
+  const before = words[i - 1];
+  return !before || before.verse !== words[i].verse || ENDS_CLAUSE.test(before.display.normalize('NFC').trim());
+}
+
+/**
+ * A word still without a candidate that is written with a capital, does not open a verse or a clause and ends as a Hebrew name does (formNameLemma) takes its form as
+ * its lemma, in every case of every gender, support `form`, and is pending with the note NOTE_FORM_NAME: a reading from the form alone, no lexicon's, for the agreement
+ * check or the model. Every other word is as layers 1 and 2 left it.
+ */
+function withFormNames(words: readonly SweteWord[], outs: ReadonlyArray<DerivedWord | PendingWord>): Array<DerivedWord | PendingWord> {
+  return outs.map((out, i) => {
+    if (isDerived(out) || out.candidates.length > 0 || opensClause(words, i)) return out;
+    const lemma = formNameLemma(words[i].form);
+    if (!lemma) return out;
+    const via = ['a name no lexicon has: the form itself as the lemma (an ending a Hebrew name has, no reading of the New Testament or of TBESG)'];
+    const candidates = formNameCandidates(lemma).map((c) => ({ ...c, support: 0, share: 0, via, source: 'form' as const }));
+    return { ref: out.ref, candidates, notes: [...out.notes.filter((n) => n !== NOTE_NO_CANDIDATE), NOTE_FORM_NAME] };
+  });
+}
+
 /** One book's words through layers 1 and 2, then the agreement check. `tokens` are the book's, when the caller has read them already. */
 export function deriveBook(
   input: DeriveInput,
@@ -216,7 +245,7 @@ export function deriveBook(
   if (words.length === 0) throw new Error(`no book '${book}' in Swete's file`);
   const { index, parser } = trained;
   const cache: ParseCache = new Map();
-  const layers = words.map((word) => deriveWord(word, index, parser, cache, morpheus));
+  const layers = withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus)));
   const checked = checkAgreement(words, layers, { names: index.names, parse: (form) => parsedOnce(form, parser, cache) });
   return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.includes(NOTE_MORPHEUS)).length } : {}) };
 }
@@ -380,7 +409,8 @@ interface MorpheusStep extends MorpheusState {
 function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookResult, outDir: string, step: MorpheusStep | undefined, log: (line: string) => void): BookResult {
   if (!step) return result;
   const formOf = new Map(result.words.map((w) => [w.ref, w.form]));
-  const noCandidate = result.pending.filter((w) => w.candidates.length === 0).map((w) => w.ref);
+  // a word given a name from its form alone is asked of Morpheus too: a reading from a lexicon outranks it
+  const noCandidate = result.pending.filter((w) => w.candidates.every((c) => c.source === 'form')).map((w) => w.ref);
   const guessed = [...readChoiceDir(step.choicesDir, `${result.book}-`).choices.values()].filter((c) => c.mark === 'guess').map((c) => c.ref);
   const forms = [...noCandidate, ...guessed].flatMap((ref) => (formOf.has(ref) ? [morpheusKey(formOf.get(ref)!)] : []));
   const cache = ensureCache(step.engine, join(outDir, 'morpheus', `${result.book}.tsv`), forms, log, step);

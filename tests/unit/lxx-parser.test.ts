@@ -19,6 +19,7 @@ import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import {
   DERIVED_HEADER,
   NOTE_ANALOGY,
+  NOTE_FORM_NAME,
   NOTE_INDECLINABLE,
   NOTE_NOT_IN_NT,
   NOTE_NO_CANDIDATE,
@@ -35,10 +36,10 @@ import {
   type Layer,
   type PendingWord,
 } from '../../scripts/lxx/derive';
-import { NO_NAMES, PARSER_DOMINANT, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
+import { NO_NAMES, PARSER_DOMINANT, formNameLemma, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
 import { sweteTokens } from '../../scripts/lxx/swete';
 import { readTagnt } from '../../scripts/lxx/tagnt';
-import { fits, readTbesg } from '../../scripts/lxx/tbesg';
+import { fits, readTbesg, readTbesgNames } from '../../scripts/lxx/tbesg';
 
 const FIXTURES = 'tests/fixtures/lxx';
 const fixture = (file: string): string => readFileSync(join(FIXTURES, file), 'utf8');
@@ -418,5 +419,102 @@ describe('an indeclinable name offers every case of its gender (B6)', async () =
     expect(entryOf('Ἰούδας')).toBeUndefined();
     expect(entryOf('Φόρον')).toBeUndefined();
     expect(entryOf('Μαγδαληνή')).toBeUndefined();
+  });
+});
+
+// A capitalised form that no lexicon has (story mw-u2w5klk.19, B8): 10,849 words of the 39 books are names in neither TAGNT nor TBESG (Γαιδάδ Gen 4:18, Σελλά
+// Gen 4:19, Θόβελ Gen 4:22, Εὑειλάτ Gen 2:11), each a forced guess. The form is read as its own lemma where its ending looks indeclinable. The input is made for
+// the test, in the shape of the real files, with the words in the order and the marks Swete prints around them.
+describe('a capitalised no-candidate form is its own lemma where its ending looks indeclinable (B8)', async () => {
+  const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+  const kai = 'καὶ';
+  const words = [
+    kai, 'Γαιδάδ,', kai, 'Σελλά.', kai, 'Θόβελ·', 'Θόβελ', kai, 'Εὑειλάτ,', kai, 'γαιδὰδ', kai, 'Ἰωναθὰν', kai, 'Βαναίας', kai, 'Γοδολίαν', kai, 'Μειχαία', kai, 'Μωσῇ', kai, 'Ὤ',
+    // Gen 4:19: a name that opens its verse
+    'Θόβελ',
+  ];
+  const at = (display: string, nth = 1): string => {
+    const i = words.map((w, j) => [w, j] as const).filter(([w]) => nfc(w) === nfc(display))[nth - 1][1];
+    return i < words.length - 1 ? `Gen.4:18#${i + 1}` : 'Gen.4:19#1';
+  };
+  const input: DeriveInput = {
+    versification: `1\tGen.4:18\n${words.length}\tGen.4:19`,
+    words: words.map((w, i) => `${i + 1}\t${w}`).join('\n'),
+    tagnt: [tagntRow('Mat.1.2#2', 'καὶ', 'G2532', 'CONJ', 'καί')],
+    tbesg: 'G2532\tG2532 =\tG2532\tκαί\tkai\tG:CONJ\tand\t <b>καί</b>',
+  };
+  const got = deriveBook(input, 'gen');
+  const lemmaCases = (w: DerivedWord | PendingWord): string[] => [...new Set(w.candidates.map((c) => `${c.lemma}`))];
+  const ALL = ['N', 'G', 'D', 'A', 'V'].flatMap((c) => ['M', 'F', 'N'].map((g) => `N-${c}S${g}`));
+
+  it('gives Γαιδάδ, Σελλά, Θόβελ, Εὑειλάτ and Ἰωναθάν a candidate in every case of every gender, the form being the lemma', () => {
+    for (const [display, lemma] of [['Γαιδάδ,', 'Γαιδάδ'], ['Σελλά.', 'Σελλά'], ['Θόβελ·', 'Θόβελ'], ['Εὑειλάτ,', 'Εὑειλάτ'], ['Ἰωναθὰν', 'Ἰωναθάν']] as const) {
+      const out = outOf(got, at(display));
+      expect(isDerived(out), lemma).toBe(false);
+      expect(lemmaCases(out), lemma).toEqual([nfc(lemma)]);
+      expect(out.candidates.map((c) => c.morph).sort(), lemma).toEqual([...ALL].sort());
+      expect(out.candidates.every((c) => supportOf(c) === 'form'), lemma).toBe(true);
+      expect(out.notes, lemma).toContain(NOTE_FORM_NAME);
+      expect(out.notes, lemma).not.toContain(NOTE_NO_CANDIDATE);
+    }
+  });
+
+  it('writes a Σελλὰ with its grave as the acute lemma, and the support as the word form, in the pending file', () => {
+    expect(lemmaCases(outOf(got, at('Σελλά.')))).toEqual(['Σελλά']);
+    const text = tsvOf(got).pending;
+    expect(text).toContain('Γαιδάδ/N-NSM/form');
+    expect(text).toContain('Εὑειλάτ/N-VSN/form');
+  });
+
+  it('holds out a word in lower case, and a name that opens a clause or a verse', () => {
+    expect(outOf(got, at('γαιδὰδ')).candidates).toEqual([]);
+    // Θόβελ after the high point of 'Θόβελ·', and Θόβελ first in Gen 4:19
+    expect(at('Θόβελ', 1)).toBe('Gen.4:18#7');
+    expect(at('Θόβελ', 2)).toBe('Gen.4:19#1');
+    for (const nth of [1, 2]) {
+      expect(outOf(got, at('Θόβελ', nth)).candidates).toEqual([]);
+      expect(outOf(got, at('Θόβελ', nth)).notes).toContain(NOTE_NO_CANDIDATE);
+    }
+  });
+
+  it('holds out the endings Greek declines: -ς, -ν after a vowel with no acute on it, a vowel with no acute, a circumflex, a word of two letters', () => {
+    for (const display of ['Βαναίας', 'Γοδολίαν', 'Μειχαία', 'Μωσῇ', 'Ὤ']) expect(outOf(got, at(display)).candidates, display).toEqual([]);
+  });
+
+  it('takes the ending rule on the form alone', () => {
+    const lemmas: Array<[string, string | undefined]> = [
+      ['Γαιδάδ', 'Γαιδάδ'], // a consonant other than ς and ν
+      ['Ἰεροβοὰμ', 'Ἰεροβοάμ'], // the grave is the acute
+      ['Δὰν', 'Δάν'], // -ν after an acute or grave on α or ω: Hebrew names (Ἰωναθάν, Χεβρών)
+      ['Χεβρὼν', 'Χεβρών'],
+      ['Σελλά', 'Σελλά'], // an acute or grave on a final vowel
+      ['Νεφθαλεί', 'Νεφθαλεί'],
+      ['Ἰερειχὼ', 'Ἰερειχώ'],
+      ['Μανασσή', 'Μανασσή'],
+      ['Βαναιού', 'Βαναιού'],
+      ['Βαναίας', undefined], // -ς
+      ['Μωσῆς', undefined],
+      ['Ἀμορραίων', undefined], // -ν after a circumflex, or with the accent earlier
+      ['Χαναναῖον', undefined],
+      ['Γοδολίαν', undefined],
+      ['Μειχαία', undefined], // no accent on the vowel
+      ['Μωσῇ', undefined],
+      ['Ὤ', undefined],
+      ['Ἀπελθέ', undefined], // -έ: a vocative or a verb with its enclitic
+      ['γαιδάδ', undefined], // lower case
+    ];
+    for (const [form, lemma] of lemmas) expect(formNameLemma(nfc(form)), form).toBe(lemma === undefined ? undefined : nfc(lemma));
+  });
+});
+
+describe('a lemma cell with a stray mark, and a lemma that differs by a diaeresis (B8)', () => {
+  it('drops the mark that ends a TBESG lemma, as the name reader does (Ἆπις;, Μακαλωθ·)', () => {
+    const rows = [
+      'G0001\tG0001 =\tG0001\tἌπις;\tApis\tG:N-F\tApis\t <b>Ἄπις</b>',
+      'G0002\tG0002 =\tG0002\tΜακαλωθ·\tMakaloth\tN:N-F-P\tMakaloth\t <b>Μακαλωθ</b>, indecl.',
+    ].join('\n');
+    const lexicon = readTbesg(rows);
+    expect([...lexicon.values()].flat().map((e) => e.lemma).sort()).toEqual(['Μακαλωθ', 'Ἄπις'].sort());
+    expect(readTbesgNames(rows).map((n) => n.lemma)).toEqual(['Μακαλωθ']);
   });
 });

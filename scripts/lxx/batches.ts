@@ -5,7 +5,8 @@
 // fetch the pinned sources into data/raw (skipped when present).
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { OUT_DIR, deriveBook, loadInput, splitBooks, train, type BookResult, type DeriveInput, type PendingWord } from './derive';
+import { OUT_DIR, deriveBook, loadInput, opensClause, splitBooks, train, type BookResult, type DeriveInput, type PendingWord } from './derive';
+import { isCapital } from './parser';
 import type { SweteWord } from './swete';
 import { readMorpheusCache } from './morpheus';
 import { OLD_TESTAMENT } from './report';
@@ -133,14 +134,7 @@ export async function derivedBook(book: string, options: RunOptions): Promise<Bo
 
 export const BATCHES_USAGE = 'usage: npm run lxx:batches -- --book <code> | --all';
 
-export const ALL_BOOKS_HEADER = ['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name'];
-
-const isCapital = (form: string): boolean => {
-  const first = [...form.normalize('NFC')][0] ?? '';
-  return first !== first.toLowerCase();
-};
-/** A mark that ends a sentence or a clause in Swete's print: a full stop, a colon, the high point, the Greek question mark. */
-const ENDS_CLAUSE = /[.:;\u00B7\u0387\u037E][\])]*$/;
+export const ALL_BOOKS_HEADER = ['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name', 'a name from its form alone', 'both % of words'];
 
 /**
  * The words that are names, by a rule of the print and not of any lexicon: written with a capital, and not the first word of a verse or of a clause (Swete
@@ -150,22 +144,26 @@ const ENDS_CLAUSE = /[.:;\u00B7\u0387\u037E][\])]*$/;
 export function nameRefs(words: ReadonlyArray<Pick<SweteWord, 'ref' | 'verse' | 'form' | 'display'>>): Set<string> {
   const out = new Set<string>();
   words.forEach((w, i) => {
-    const before = words[i - 1];
-    if (!isCapital(w.form) || !before || before.verse !== w.verse || ENDS_CLAUSE.test(before.display.normalize('NFC').trim())) return;
-    out.add(w.ref);
+    if (isCapital(w.form) && !opensClause(words, i)) out.add(w.ref);
   });
   return out;
 }
 
-/** What `--all` counts for a book: its words, its pending words, those with no candidate, and the no-candidate words that are names (nameRefs). */
-export function bookCounts(result: Pick<BookResult, 'book' | 'words' | 'pending'>): { words: number; pending: number; none: number; names: number } {
+/**
+ * What `--all` counts for a book: its words, its pending words, those with no candidate, the no-candidate words that are names (nameRefs), and the words whose only
+ * candidates are a name read from its own form (derive.ts withFormNames, support `form`). Those are not forced guesses any more, but no lexicon vouches for them, so the
+ * last column of the row adds them back: it is the share the table gave before the form was read as a lemma (docs/lxx-derivation.md, 'Names no lexicon has').
+ */
+export function bookCounts(result: Pick<BookResult, 'book' | 'words' | 'pending'>): { words: number; pending: number; none: number; names: number; form: number } {
   const names = nameRefs(result.words);
   const none = result.pending.filter((w) => w.candidates.length === 0);
-  return { words: result.words.length, pending: result.pending.length, none: none.length, names: none.filter((w) => names.has(w.ref)).length };
+  const form = result.pending.filter((w) => w.candidates.length > 0 && w.candidates.every((c) => c.source === 'form'));
+  return { words: result.words.length, pending: result.pending.length, none: none.length, names: none.filter((w) => names.has(w.ref)).length, form: form.length };
 }
 
-const rowOf = (name: string, c: { words: number; pending: number; none: number; names: number }): string =>
-  [name, c.words, c.pending, c.none, `${((100 * c.none) / c.words).toFixed(2)}%`, c.names].join('\t');
+type Counts = ReturnType<typeof bookCounts>;
+const rowOf = (name: string, c: Counts): string =>
+  [name, c.words, c.pending, c.none, `${((100 * c.none) / c.words).toFixed(2)}%`, c.names, c.form, `${((100 * (c.none + c.form)) / c.words).toFixed(2)}%`].join('\t');
 
 /** One book's row of `--all`. */
 export const bookRow = (result: Pick<BookResult, 'book' | 'words' | 'pending'>): string => rowOf(result.book, bookCounts(result));
@@ -187,7 +185,7 @@ export async function runAllBooks(options: RunOptions = {}): Promise<BookResult[
     log(bookRow(result));
     results.push(result);
   }
-  const sum = results.map(bookCounts).reduce((t, c) => ({ words: t.words + c.words, pending: t.pending + c.pending, none: t.none + c.none, names: t.names + c.names }), { words: 0, pending: 0, none: 0, names: 0 });
+  const sum = results.map(bookCounts).reduce<Counts>((t, c) => ({ words: t.words + c.words, pending: t.pending + c.pending, none: t.none + c.none, names: t.names + c.names, form: t.form + c.form }), { words: 0, pending: 0, none: 0, names: 0, form: 0 });
   log(rowOf('total', sum));
   return results;
 }

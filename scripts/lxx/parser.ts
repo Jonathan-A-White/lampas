@@ -209,7 +209,7 @@ export const NO_NAMES: NameIndex = { spelling: new Map(), lemma: new Map() };
 /** The cases a name is offered in, in the order TAGNT lists them; a name that does not decline is singular. */
 export const NAME_CASES = ['N', 'G', 'D', 'A', 'V'] as const;
 const GENDERS = ['M', 'F', 'N'] as const;
-const isCapital = (s: string): boolean => {
+export const isCapital = (s: string): boolean => {
   const first = [...s.normalize('NFC')][0] ?? '';
   return first !== first.toLowerCase();
 };
@@ -285,6 +285,40 @@ export function nameCandidates(form: string, have: ReadonlyArray<{ lemma: string
   }
   return out;
 }
+
+// ---------------------------------------------------------------- names no lexicon has: the form as its own lemma (story mw-u2w5klk.19)
+
+/** The case, number and gender of the readings a form name is offered in: every case of every gender, singular (nothing says which gender; the article may, in the agreement check). */
+export const FORM_NAME_MORPHS: readonly string[] = GENDERS.flatMap((g) => NAME_CASES.map((c) => `N-${c}S${g}`));
+
+/**
+ * The lemma a capitalised form is read as when no lexicon has it, or undefined when its ending is one Greek declines. A name that neither TAGNT nor TBESG has
+ * (10,849 words of the 39 books, 4,296 forms: Γαιδάδ, Σελλά, Θόβελ, Εὑειλάτ) is a Hebrew name, and a Hebrew name's form is its lemma where it does not look declined:
+ * (1) it ends in a consonant other than ς and ν (Γαιδάδ, Θόβελ, Ἰεροβοάμ); (2) it ends in -ν with the acute or grave on the α or ω before it (Ἰωναθάν, Χεβρών), which the
+ * accusative of a Greek name (-ον, -ην, -ιν; Ἰούδαν with the accent earlier; the circumflex -ῶν, -ᾶν) does not; (3) it ends in α, ι, η, ω or υ with the acute or grave on that
+ * last vowel (Σελλά, Νεφθαλεί, Ἰερειχώ, Βαναιού), a Greek name's nominative never being accented on its last syllable. Not -ς (Greek's nominative and so many other
+ * cases), not -ε or -ο (a vocative, a verb with its enclitic), not an unaccented or circumflex vowel (Μειχαία, Μωσῇ), not a word of fewer than three letters (Ὤ, Ἦ). The lemma is the
+ * form in NFC, its grave an acute (a word's grave in the running text). The accent and breathing are the form's own, which a dictionary may write otherwise (Ζοροβαβέλ for Ζοροβάβελ).
+ * Measured on the New Testament's own names (docs/lxx-derivation.md, 'Names no lexicon has').
+ */
+export function formNameLemma(form: string): string | undefined {
+  const f = form.normalize('NFC');
+  if (!isCapital(f) || !/^[\p{Script=Greek}]+$/u.test(f) || [...f].length < 3) return undefined;
+  const d = f.normalize('NFD').toLowerCase();
+  const m = /([αεηιουω])([\u0300-\u036f]*)(ν?)$/.exec(d);
+  const last = [...d.replace(/[\u0300-\u036f]/g, '')].at(-1) ?? '';
+  const lemma = f.normalize('NFD').replaceAll('\u0300', '\u0301').normalize('NFC');
+  if (last === 'ς') return undefined;
+  if (!/[αεηιουω]/.test(last) && last !== 'ν') return lemma;
+  if (!m) return undefined;
+  const marks = m[2].replaceAll('\u0300', '\u0301');
+  const acute = marks.includes('\u0301') && !marks.includes('\u0342') && !marks.includes('\u0345');
+  if (m[3] === 'ν') return acute && 'αω'.includes(m[1]) ? lemma : undefined;
+  return acute && 'αιηωυ'.includes(m[1]) ? lemma : undefined;
+}
+
+/** The readings a name from its form alone is offered: its form as the lemma, in every case of every gender (FORM_NAME_MORPHS). */
+export const formNameCandidates = (lemma: string): Array<{ lemma: string; morph: string }> => FORM_NAME_MORPHS.map((morph) => ({ lemma, morph }));
 
 // ---------------------------------------------------------------- the trained parser
 
