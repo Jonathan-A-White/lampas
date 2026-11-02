@@ -4,6 +4,7 @@
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { PRINTED_SMALL } from '../support/lxx-printed-small';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { BATCH_SIZE, batchName, batchesOf, chapterOf, cutBatches, nameRefs, runBatches } from '../../scripts/lxx/batches';
@@ -19,7 +20,7 @@ const tagnt = [fixture('tagnt-slice.tsv')];
 const tbesg = fixture('tbesg-slice.txt');
 function swete(file: string): DeriveInput {
   const [versification, words] = fixture(file).split('\n\n');
-  return { versification, words, tagnt, tbesg };
+  return { versification, words, tagnt, tbesg, printedSmall: PRINTED_SMALL };
 }
 const GEN_1 = swete('swete-gen-1.csv');
 const CHOICES = fixture('choices-gen-1.txt');
@@ -72,7 +73,7 @@ describe('lxx:pending and lxx:batches', () => {
     const lines: string[] = [];
     const out = await runPending(['--book', 'gen', '--batch', '1'], { input: GEN_1, outDir, log: (l) => lines.push(l) });
     expect(out.words.map((w) => w.ref)).toEqual(gen.pending.map((p) => p.ref));
-    expect(out.words).toHaveLength(161);
+    expect(out.words).toHaveLength(163);
     // stdout and data/lxx/pending/gen-01.md carry the same listing
     expect(lines.join('\n')).toContain(out.text.trimEnd());
     expect(out.path).toBe(join(outDir, 'pending', 'gen-01.md'));
@@ -135,15 +136,15 @@ describe('lxx:pending and lxx:batches', () => {
     const batches = await runBatches(['--book', 'gen'], { input: GEN_1, outDir: tmp(), log: (l) => lines.push(l) });
     expect(batches).toHaveLength(1);
     expect(batches[0]).toMatchObject({ n: 1, name: 'gen-01', firstChapter: 1, lastChapter: 1 });
-    expect(batches[0].words).toHaveLength(161);
-    expect(batches[0].noCandidate).toBe(2);
+    expect(batches[0].words).toHaveLength(163);
+    expect(batches[0].noCandidate).toBe(4);
     const listing = await pending(tmp());
     expect(listing.words).toHaveLength(batches[0].words.length);
     expect(listing.text.match(/no candidate/g)!.length).toBeGreaterThanOrEqual(2);
     const text = lines.join('\n');
     expect(text).toMatch(/^batch\tchapters\tpending\tno candidate$/m);
-    expect(text).toMatch(/^1\t1\t161\t2$/m);
-    expect(text).toMatch(/^total\t\t161\t2$/m);
+    expect(text).toMatch(/^1\t1\t163\t4$/m);
+    expect(text).toMatch(/^total\t\t163\t4$/m);
     expect(batchesOf('gen', gen.pending)[0].words).toEqual(gen.pending);
   });
 
@@ -152,9 +153,9 @@ describe('lxx:pending and lxx:batches', () => {
     await runBatches(['--all'], { input: GEN_1, outDir: tmp(), log: (l) => lines.push(l) });
     expect(lines[0]).toBe(['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name', 'a name from its form alone', 'both % of words'].join('\t'));
     expect(lines).toHaveLength(3);
-    expect(lines[1]).toBe(`gen\t${gen.words.length}\t161\t2\t${((100 * 2) / gen.words.length).toFixed(2)}%\t1\t0\t${((100 * 2) / gen.words.length).toFixed(2)}%`);
+    expect(lines[1]).toBe(`gen\t${gen.words.length}\t163\t4\t${((100 * 4) / gen.words.length).toFixed(2)}%\t3\t0\t${((100 * 4) / gen.words.length).toFixed(2)}%`);
     expect(lines[2]).toBe(lines[1].replace('gen', 'total'));
-    // the one capital among Gen 1's two words with no candidate is Γενηθήτωσαν, which opens what God says (Gen 1:14) and follows no mark: counted, so the count is an upper bound
+    // two of the capitals among Gen 1's four words with no candidate are Ἐξαγαγέτω, which opens what God says (Gen 1:20, 1:24) and follows no mark, and which Swete prints nowhere with a small letter, so a capital in the middle of a clause leaves it no lemma (mw-u2w5klk.22): counted as a name, so the count is an upper bound
     const w = (ref: string, display: string): { ref: string; verse: string; form: string; display: string } => ({ ref, verse: ref.split('#')[0], form: display.replace(/[.,·]/g, ''), display });
     const verse = [w('Gen.4:20#1', 'καὶ'), w('Gen.4:20#2', 'ἔτεκεν'), w('Gen.4:20#3', 'Ἀδὰ'), w('Gen.4:20#4', 'τὸν'), w('Gen.4:20#5', 'Ἰωβέλ·'), w('Gen.4:20#6', 'Οὗτος'), w('Gen.4:21#1', 'Ἰουβάλ')];
     expect([...nameRefs(verse)]).toEqual(['Gen.4:20#3', 'Gen.4:20#5']);
@@ -164,20 +165,20 @@ describe('lxx:pending and lxx:batches', () => {
   it('cuts a fixture of two chapters at the chapter boundary', async () => {
     const input = twoChapters();
     const two = deriveBook(input, 'gen');
-    expect(two.pending.filter((p) => p.ref.startsWith('Gen.2:'))).toHaveLength(161);
+    expect(two.pending.filter((p) => p.ref.startsWith('Gen.2:'))).toHaveLength(163);
     // a batch size the first chapter falls short of by less than the second would overshoot: two batches, one chapter each
     const cut = await runBatches(['--book', 'gen', '--size', '200'], { input, outDir: tmp() });
     expect(cut.map((b) => [b.firstChapter, b.lastChapter, b.words.length])).toEqual([
-      [1, 1, 161],
-      [2, 2, 161],
+      [1, 1, 163],
+      [2, 2, 163],
     ]);
     expect(cut[0].words.every((w) => chapterOf(w.ref) === 1)).toBe(true);
     // a size the second chapter overshoots by less than the first falls short: the two chapters are one batch
     const whole = await runBatches(['--book', 'gen', '--size', '300'], { input, outDir: tmp() });
-    expect(whole.map((b) => [b.firstChapter, b.lastChapter, b.words.length])).toEqual([[1, 2, 322]]);
+    expect(whole.map((b) => [b.firstChapter, b.lastChapter, b.words.length])).toEqual([[1, 2, 326]]);
     // the listing of batch 2 holds chapter 2 and no word of chapter 1
     const out = await runPending(['--book', 'gen', '--batch', '2', '--size', '200'], { input, outDir: tmp() });
-    expect(out.words).toHaveLength(161);
+    expect(out.words).toHaveLength(163);
     expect(out.words.every((w) => w.ref.startsWith('Gen.2:'))).toBe(true);
     expect(out.path.endsWith('gen-02.md')).toBe(true);
     await expect(runPending(['--book', 'gen', '--batch', '3', '--size', '200'], { input, outDir: tmp() })).rejects.toThrow(/gen has 2 batches/);
@@ -196,7 +197,7 @@ describe('lxx:choose', () => {
     const outDir = tmp();
     const written = await choose(outDir, choicesFile());
     expect(written.path).toBe(join(outDir, 'choices', 'gen-01.tsv'));
-    expect(written.rows).toHaveLength(161);
+    expect(written.rows).toHaveLength(163);
     const rows = fileLines(written.path).map((l) => l.split('\t'));
     expect(rows[0]).toEqual(['ref', 'parsing', 'lemma', 'mark', 'confidence', 'note']);
     const row = (ref: string): string[] => rows.find((r) => r[0] === ref)!;
@@ -218,8 +219,8 @@ describe('lxx:choose', () => {
       expect(w.confidence.toFixed(2), w.ref).toBe(r[4]);
       expect([CONFIDENCE_CHOSEN, CONFIDENCE_UNSURE, CONFIDENCE_GUESS]).toContain(w.confidence);
     }
-    expect(rows.slice(1).filter((r) => r[4] === '0.80').length + rows.slice(1).filter((r) => r[4] === '0.50').length + rows.slice(1).filter((r) => r[4] === '0.40').length).toBe(161);
-    expect(rows.slice(1).filter((r) => r[4] === '0.40')).toHaveLength(3);
+    expect(rows.slice(1).filter((r) => r[4] === '0.80').length + rows.slice(1).filter((r) => r[4] === '0.50').length + rows.slice(1).filter((r) => r[4] === '0.40').length).toBe(163);
+    expect(rows.slice(1).filter((r) => r[4] === '0.40')).toHaveLength(5);
     // the batches’ files are found by the readers of release and report
     expect(readChoiceDir(join(outDir, 'choices'), 'gen-').files).toEqual(['gen-01.tsv']);
     // Swete’s Greek is not in the file: only the lemma is
@@ -359,7 +360,7 @@ describe('the blind recheck', () => {
     expect(RECHECK_FRACTION).toBe(0.05);
     const outDir = await firstPass();
     const a = await recheck(outDir);
-    expect(a.words).toHaveLength(Math.max(1, Math.round(0.05 * 161)));
+    expect(a.words).toHaveLength(Math.max(1, Math.round(0.05 * 163)));
     expect(a.path).toBe(join(outDir, 'pending', 'gen-recheck.md'));
     const b = await recheck(outDir);
     expect(b.words.map((w) => w.ref)).toEqual(a.words.map((w) => w.ref));

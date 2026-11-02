@@ -2,7 +2,8 @@
 // The Septuagint derivation (docs/lxx-derivation.md): a lemma and a parsing for each word of a book of Swete's Greek, in layers. Layer 1: the word's
 // form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis or one with at least 95% of 20 or more words.
 // Layer 2, for a form the New Testament lacks: the paradigm parser (parser.ts), then Swete's other spellings, then analogy; taken when it leaves one
-// candidate or one with 90% of the support. Then the agreement check (agreement.ts): a settled answer whose ending two cases or genders share is demoted,
+// candidate or one with 90% of the support. Neither layer gives a name a common word's lemma: a capital in the middle of a clause that Swete prints small nowhere takes
+// no lemma written with a small letter (properNames, story mw-u2w5klk.22). Then the agreement check (agreement.ts): a settled answer whose ending two cases or genders share is demoted,
 // a name the New Testament has written here in lower case goes to the model, settled words that break agreement go to the model, and a word left with
 // exactly one candidate that agrees with its settled neighbours takes it (layer 2a). Every other word is pending, with its candidates, for the model's
 // choice (layer 3, to come). `--all` runs every book of the file, one line each.
@@ -22,7 +23,7 @@ import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fe
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
 import { bareOf, bookOf, hasAccent, hasLower, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
 import { analysesOf, formIndex, readTagnt, settle, type Analysis, type FormIndex } from './tagnt';
-import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
+import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, isCapital, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
 import { TBESG_FILE, lemmaCount, readTbesg, readTbesgNames } from './tbesg';
 
 export const OUT_DIR = join('data', 'lxx');
@@ -92,8 +93,9 @@ export function deriveWord(
   parser: Parser,
   cache: ParseCache = new Map(),
   morpheus?: MorpheusCache,
+  properName = false,
 ): DerivedWord | PendingWord {
-  const out = layersOneAndTwo(word, index, parser, cache, morpheus);
+  const out = layersOneAndTwo(word, index, parser, cache, morpheus, properName);
   const owed = nameCandidates(word.form, out.candidates, parser.names);
   if (owed.length === 0) return out;
   // An indeclinable name has one form for every case: what the New Testament or the parser settled it on is one case of several, so it waits for the agreement check or the model
@@ -102,18 +104,37 @@ export function deriveWord(
   return { ref: word.ref, candidates: [...out.candidates, ...more], notes: [...out.notes.filter((n) => n !== NOTE_NO_CANDIDATE), NOTE_INDECLINABLE] };
 }
 
+/** A form's New Testament analyses, 'lemma|morph' -> count (FormIndex.byKey's values). */
+type FormCounts = Map<string, number>;
+
+/** What a name in the middle of a clause may be read as: an analysis whose lemma is written with a capital, a name's. Undefined when none is. */
+function capitalCounts(counts: FormCounts): FormCounts | undefined {
+  const kept: FormCounts = new Map([...counts].filter(([analysis]) => isCapital(analysis.split('|')[0])));
+  return kept.size ? kept : undefined;
+}
+
+/** The parser's candidates whose lemma is written with a capital, their shares counted again over what is left (the 90% rule reads the share). */
+function capitalCandidates(candidates: Candidate[]): Candidate[] {
+  const kept = candidates.filter((c) => isCapital(c.lemma));
+  if (kept.length === candidates.length) return candidates;
+  const total = kept.reduce((s, c) => s + c.support, 0);
+  return kept.map((c) => ({ ...c, share: c.support / total }));
+}
+
 function layersOneAndTwo(
   word: Pick<SweteWord, 'ref' | 'form' | 'display'>,
   index: FormIndex,
   parser: Parser,
   cache: ParseCache,
   morpheus: MorpheusCache | undefined,
+  properName: boolean,
 ): DerivedWord | PendingWord {
   const notes: string[] = [];
-  const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
-  let counts = index.byKey.get(keyOf(word.form));
+  const parsed = (form: string): Candidate[] => (properName ? capitalCandidates(parsedOnce(form, parser, cache)) : parsedOnce(form, parser, cache));
+  const found = (counts: FormCounts | undefined): FormCounts | undefined => (properName && counts ? capitalCounts(counts) : counts);
+  let counts = found(index.byKey.get(keyOf(word.form)));
   if (!counts && !hasAccent(word.form)) {
-    counts = index.byBare.get(bareOf(word.form));
+    counts = found(index.byBare.get(bareOf(word.form)));
     if (counts) notes.push(NOTE_UNACCENTED);
   }
   if (!hasLower(word.form) && word.form.length > 1) notes.push(NOTE_CAPITALS);
@@ -123,7 +144,7 @@ function layersOneAndTwo(
     fromParser = parsed(word.form);
     if (fromParser.length === 0) {
       for (const [why, alt] of spellings(word.form)) {
-        counts = index.byBare.get(bareOf(alt));
+        counts = found(index.byBare.get(bareOf(alt)));
         if (!counts) fromParser = parsed(alt);
         if (counts || fromParser.length) {
           notes.push(SPELLING_NOTE[why]);
@@ -140,7 +161,7 @@ function layersOneAndTwo(
   }
   notes.push(NOTE_NOT_IN_NT);
   if (fromParser.length === 0) {
-    fromParser = byAnalogy(word.form, parser);
+    fromParser = properName ? capitalCandidates(byAnalogy(word.form, parser)) : byAnalogy(word.form, parser);
     if (fromParser.length) notes.push(NOTE_ANALOGY);
   }
   const settled = settleParsed(fromParser);
@@ -169,6 +190,8 @@ export interface DeriveInput {
   tagnt: readonly string[];
   /** the TBESG file */
   tbesg: string;
+  /** forms Swete prints with a small letter in the part of the text not given, when what is given is a slice of it (a test's fixture); a whole run leaves it out */
+  printedSmall?: readonly string[];
 }
 
 export interface BookResult {
@@ -192,11 +215,14 @@ export interface BookResult {
 export interface Trained {
   index: FormIndex;
   parser: Parser;
+  /** keyOf of every form Swete prints with no capital at the front, in the whole text given: a form that is never seen so is a name's, when it is capitalised in the middle of a clause (properNames) */
+  lower: ReadonlySet<string>;
 }
 
 export function train(input: DeriveInput, hide?: string): Trained {
   const rows = readTagnt(input.tagnt, hide);
-  return { index: formIndex(rows), parser: trainParser(rows, readTbesg(input.tbesg), indeclinableNames(rows, readTbesgNames(input.tbesg))) };
+  const lower = new Set([...sweteTokens(input.versification, input.words).words.filter((w) => !isCapital(w.form)).map((w) => w.form), ...(input.printedSmall ?? [])].map(keyOf));
+  return { index: formIndex(rows), parser: trainParser(rows, readTbesg(input.tbesg), indeclinableNames(rows, readTbesgNames(input.tbesg))), lower };
 }
 
 const split = (outs: ReadonlyArray<DerivedWord | PendingWord>): { derived: DerivedWord[]; pending: PendingWord[] } => ({
@@ -223,6 +249,23 @@ export function opensClause(words: ReadonlyArray<Pick<SweteWord, 'verse' | 'disp
  */
 export function isWholeClause(words: ReadonlyArray<Pick<SweteWord, 'verse' | 'display'>>, i: number): boolean {
   return opensClause(words, i) && ENDS_CLAUSE.test(words[i].display.normalize('NFC').trim());
+}
+
+/**
+ * The words that are a name by Swete's print alone (story mw-u2w5klk.22): written with a capital that is more than the first letter of a one-letter word or a heading in
+ * capitals, in the middle of a clause (not opening a verse or a clause, unless it is all of its clause: opensClause, isWholeClause), and a form Swete prints nowhere
+ * else with a small letter (`lower`, Trained.lower). Swete capitalises a divine title (Κύριος, Παντοκράτωρ) and the first word of what someone says (Ἰδού, Ἀνάβηθι) too,
+ * but those are also printed small elsewhere; Σειών, Εἰού, Ἁμάν, Γάζης never are. Layers 1 and 2 give such a word no lemma of a small letter: the New Testament has σείων and
+ * the parser reads Σειών as its participle, and a name is not that (the lxx-morph probe, 129 + 51 + 48 words, mw-u2w5klk.21). Indexes into `words`.
+ */
+export function properNames(words: readonly SweteWord[], lower: ReadonlySet<string>): Set<number> {
+  const names = new Set<number>();
+  words.forEach((w, i) => {
+    if (w.form.length < 2 || !isCapital(w.form) || !hasLower(w.form) || lower.has(keyOf(w.form))) return;
+    if (opensClause(words, i) && !isWholeClause(words, i)) return;
+    names.add(i);
+  });
+  return names;
 }
 
 /**
@@ -254,7 +297,8 @@ export function deriveBook(
   if (words.length === 0) throw new Error(`no book '${book}' in Swete's file`);
   const { index, parser } = trained;
   const cache: ParseCache = new Map();
-  const layers = withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus)));
+  const names = properNames(words, trained.lower);
+  const layers = withFormNames(words, words.map((word, i) => deriveWord(word, index, parser, cache, morpheus, names.has(i))));
   const checked = checkAgreement(words, layers, { names: index.names, parse: (form) => parsedOnce(form, parser, cache) });
   return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.includes(NOTE_MORPHEUS)).length } : {}) };
 }

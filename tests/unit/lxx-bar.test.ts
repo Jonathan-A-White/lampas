@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
+import { PRINTED_SMALL } from '../support/lxx-printed-small';
 import { ALWAYS_CHAPTER, BAR, SECOND_CHAPTERS, buildNumber, chaptersOf, secondChapter, verdict, type BookFigures } from '../../scripts/lxx/bar';
 import { applyChoices, readChoices, readChoiceFiles, CONFIDENCE_CHOSEN, CONFIDENCE_GUESS, CONFIDENCE_UNSURE, isGuess } from '../../scripts/lxx/choices';
 import { deriveBook, type DeriveInput, type PendingWord } from '../../scripts/lxx/derive';
@@ -21,7 +22,7 @@ const tbesg = fixture('tbesg-slice.txt');
 const tagnt = [slice];
 function swete(file: string, input: Partial<DeriveInput> = {}): DeriveInput {
   const [versification, words] = fixture(file).split('\n\n');
-  return { versification, words, tagnt, tbesg, ...input };
+  return { versification, words, tagnt, tbesg, printedSmall: PRINTED_SMALL, ...input };
 }
 const GEN_1 = swete('swete-gen-1.csv');
 // John's own rows go in as in the parser test: the chapter's words are read from them, and the book is hidden from the training
