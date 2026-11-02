@@ -56,11 +56,12 @@ export interface ReaderSettings {
   levels: ReadonlyMap<string, GrammarLevel>;
 }
 
-/** The Reader's settings for a chapter in `source`, or undefined until every value has loaded. */
-export function useReaderSettings(source: InterestLang = 'grc'): ReaderSettings | undefined {
+/** The Reader's settings for a chapter in `source`, or undefined until every value has loaded. `source` null is a chapter whose language is not known yet (an Old Testament book, Hebrew or, with the
+ * Septuagint On, Greek, until its file has loaded): nothing is settled and no setting acts until it is. */
+export function useReaderSettings(source: InterestLang | null = 'grc'): ReaderSettings | undefined {
   // the dial of the chapter's language (mw-3ased2.2, mw-gdcyf98.3): what it hides does not act, whatever is saved or an address asks for
   const dials = useInterestLevels();
-  const level = dials && levelOf(source, dials);
+  const level = dials && source ? levelOf(source, dials) : undefined;
   const savedView = useLiveQuery(getReaderView, []);
   const savedWeave = useLiveQuery(getWeave, []);
   const view = savedView && level !== undefined ? viewAt(level, savedView) : undefined;
