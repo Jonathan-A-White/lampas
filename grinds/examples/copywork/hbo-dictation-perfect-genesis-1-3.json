@@ -21,6 +21,9 @@
     "readable": {
       "equals": true
     },
+    "words.0.mark": {
+      "equals": "right"
+    },
     "words.1.mark": {
       "equals": "right"
     },
@@ -31,6 +34,9 @@
       "equals": "right"
     },
     "words.6": {
+      "present": false
+    },
+    "words.0.sounds_alike": {
       "present": false
     },
     "fix_first": {
