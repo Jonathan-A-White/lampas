@@ -1,0 +1,71 @@
+{
+  "id": "hebrew-tsade",
+  "title": "Saying the tsade",
+  "learn": "Learn to say the tsade",
+  "language": "he",
+  "scheme": "israeli",
+  "for": [
+    "american",
+    "british"
+  ],
+  "sounds": [
+    "/ts/"
+  ],
+  "letters": [
+    "צ",
+    "ץ"
+  ],
+  "steps": [
+    {
+      "kind": "why",
+      "text": "English has the ts sound, in “cats” and “pizza”, but only after a vowel, never at the start of a word. So when you meet the צ you may split it into a t and an s, or drop the t. Hebrew has it at the start of words, as in צֶדֶק and צִיּוֹן, and it is one quick sound, not two. At the end of a word the letter is written ץ, and says the same. None of this is needed to read Hebrew, so leave it whenever you like."
+    },
+    {
+      "kind": "from-known",
+      "text": "You already make it. Say “cats”, then “pizza”: the ts in the middle is the sound. Say it alone a few times, ts ts ts, then put a vowel after it: tsa, tsee, tsoo. The t and the s are so close together that they are one sound, the tongue tip touching for the t and flowing straight into the s. Then say it at the start of a word, as English does in “tsunami”."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen for the one quick sound: at the start of צֶדֶק and צִיּוֹן, in the middle of מִצְוָה, and at the end of אֶרֶץ, where the letter is written ץ.",
+      "words": [
+        "צֶדֶק",
+        "צִיּוֹן",
+        "אֶרֶץ",
+        "מִצְוָה",
+        "צוּר"
+      ]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs only in צ and ס, or in צ and ז. ס is a plain s and ז a z; the צ begins with a t that the other word does not have. Hear both words, then say both.",
+      "pairs": [
+        [
+          "צַר",
+          "סַר"
+        ],
+        [
+          "צָלַח",
+          "סָלַח"
+        ],
+        [
+          "יָצַר",
+          "יָסַר"
+        ],
+        [
+          "נָצַל",
+          "נָזַל"
+        ]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. Make the t and the s one sound: do not stop between them, and do not drop the t, even at the start of the word.",
+      "words": [
+        "צֶדֶק",
+        "צִיּוֹן",
+        "אֶרֶץ",
+        "מִצְוָה"
+      ]
+    }
+  ]
+}

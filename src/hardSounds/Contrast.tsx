@@ -1,43 +1,44 @@
-// src/hardSounds/Contrast.tsx — 'Which did you hear?' (mw-5r3p30.362, PROVISIONAL, the Governor to confirm): the drill under a lesson's contrast step. The Greek voice says one word
+// src/hardSounds/Contrast.tsx — 'Which did you hear?' (mw-5r3p30.362, PROVISIONAL, the Governor to confirm): the drill under a lesson's contrast step. The voice says one word
 // of one of the lesson's pairs, he taps which of the two it was; a miss shows the pair side by side and says both words; after ten rounds the score shows, with every missed pair
 // side by side to hear again. The run is kept on the device when the last round is answered (data/repositories/pairDrills.ts). The rounds and the score are ./pairDrill.ts.
 import { useEffect, useState } from 'react';
 import { recordPairRun } from '../data/repositories';
-import { greekWordSpeech, speakText, speakWord, stopSpeaking } from '../speech/greek';
+import { greekWordSpeech, hebrewWordSpeech, speakText, speakWord, stopSpeaking } from '../speech/greek';
+import type { SpeechLanguage } from '../speech/languages';
 import { Icon } from '../speech/SpeakButton';
 import { answerRound, drawRounds, missesOf, pairSeed, ROUNDS, type PairAnswer, type Round } from './pairDrill';
-import { Word } from './Word';
-import { GREEK_LANG } from '../script/greekLang';
+import { Word, wordFace } from './Word';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border border-line px-4 text-lg font-medium text-accent active:bg-line';
 const PRIMARY = 'min-h-12 w-full rounded-xl bg-accent px-4 text-lg font-medium text-accent-fg active:opacity-80';
 const PAIR_KEY = 'pair-drill';
 
 /** Says the two words one after the other. */
-function sayPair(a: string, b: string): void {
-  speakText(`${greekWordSpeech(a).text}\n${greekWordSpeech(b).text}`, PAIR_KEY, { language: 'greek' });
+function sayPair(a: string, b: string, language: SpeechLanguage): void {
+  const speech = language === 'hebrew' ? hebrewWordSpeech : greekWordSpeech;
+  speakText(`${speech(a).text}\n${speech(b).text}`, PAIR_KEY, { language });
 }
 
 /** A pair side by side, each word to hear, the letters of the lesson marked, and a button that says both. `said` is the word the voice said, when it is known. */
-function SideBySide({ a, b, said, letters, at }: { a: string; b: string; said?: string; letters: readonly string[]; at: string }) {
+function SideBySide({ a, b, said, letters, at, language }: { a: string; b: string; said?: string; letters: readonly string[]; at: string; language: SpeechLanguage }) {
   return (
     <div data-testid="pair-replay" className="rounded-xl border border-line px-3 py-3">
       <div className="grid grid-cols-2 gap-3">
         {[a, b].map((word, i) => (
           <div key={word} data-word={word} className="flex flex-col items-start gap-1">
-            <Word word={word} letters={letters} id={`${at}-${i}`} />
+            <Word word={word} letters={letters} id={`${at}-${i}`} language={language} />
             {word === said ? <span className="text-sm text-muted">The voice said this one</span> : null}
           </div>
         ))}
       </div>
-      <button type="button" onClick={() => sayPair(a, b)} className={`${BUTTON} mt-3`}>
+      <button type="button" onClick={() => sayPair(a, b, language)} className={`${BUTTON} mt-3`}>
         {`Hear both: ${a}, ${b}`}
       </button>
     </div>
   );
 }
 
-function Score({ answers, letters, onAgain, at }: { answers: readonly PairAnswer[]; letters: readonly string[]; onAgain: () => void; at: string }) {
+function Score({ answers, letters, onAgain, at, language }: { answers: readonly PairAnswer[]; letters: readonly string[]; onAgain: () => void; at: string; language: SpeechLanguage }) {
   const score = answers.filter((a) => a.right).length;
   const misses = missesOf(answers);
   return (
@@ -49,7 +50,7 @@ function Score({ answers, letters, onAgain, at }: { answers: readonly PairAnswer
           <ul className="space-y-3">
             {misses.map((m) => (
               <li key={`${m.said}-${m.other}`}>
-                <SideBySide a={m.said} b={m.other} said={m.said} letters={letters} at={`${at}-miss-${m.said}`} />
+                <SideBySide a={m.said} b={m.other} said={m.said} letters={letters} at={`${at}-miss-${m.said}`} language={language} />
               </li>
             ))}
           </ul>
@@ -71,7 +72,7 @@ type Phase =
   | { name: 'done'; answers: PairAnswer[] };
 
 /** The drill of `pairs`, for the lesson `lessonId`; `letters` are the lesson's, marked in a replayed pair. */
-export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; pairs: readonly (readonly [string, string])[]; letters: readonly string[]; at: string }) {
+export function Contrast({ lessonId, pairs, letters, at, language = 'greek' }: { lessonId: string; pairs: readonly (readonly [string, string])[]; letters: readonly string[]; at: string; language?: SpeechLanguage }) {
   const [phase, setPhase] = useState<Phase>({ name: 'idle' });
   const asking = phase.name === 'asking' ? phase : null;
   const round = asking ? asking.rounds[asking.index] : null;
@@ -79,8 +80,8 @@ export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; p
   // each round begins with the voice saying its word
   const said = asking && !asking.picked ? round?.said : undefined;
   useEffect(() => {
-    if (said) speakWord(said, 'greek');
-  }, [said, asking?.rounds, asking?.index]);
+    if (said) speakWord(said, language);
+  }, [said, asking?.rounds, asking?.index, language]);
   useEffect(() => () => stopSpeaking(), []);
 
   const start = (): void => {
@@ -92,7 +93,7 @@ export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; p
     if (!asking || !round || asking.picked) return;
     const picked = answerRound(round, chose);
     setPhase({ ...asking, picked });
-    if (!picked.right) sayPair(round.choices[0], round.choices[1]);
+    if (!picked.right) sayPair(round.choices[0], round.choices[1], language);
     if (asking.index === asking.rounds.length - 1) {
       void recordPairRun(lessonId, [...asking.answers, picked]).catch((error: unknown) => console.error('could not keep the run', error));
     }
@@ -107,7 +108,7 @@ export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; p
     } else setPhase({ ...asking, index: asking.index + 1, answers, picked: null });
   };
 
-  if (phase.name === 'done') return <Score answers={phase.answers} letters={letters} onAgain={start} at={at} />;
+  if (phase.name === 'done') return <Score answers={phase.answers} letters={letters} onAgain={start} at={at} language={language} />;
   if (!asking || !round) {
     return (
       <div className="mt-4">
@@ -119,10 +120,11 @@ export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; p
     );
   }
   const { picked } = asking;
+  const face = wordFace(language);
   return (
     <div data-testid="pair-round" className="mt-4 space-y-3">
       <p data-testid="pair-count" className="text-sm text-muted">{`Round ${asking.index + 1} of ${asking.rounds.length}`}</p>
-      <button type="button" aria-label="Hear it again" onClick={() => speakWord(round.said, 'greek')} className={`${BUTTON} inline-flex items-center justify-center gap-2`}>
+      <button type="button" aria-label="Hear it again" onClick={() => speakWord(round.said, language)} className={`${BUTTON} inline-flex items-center justify-center gap-2`}>
         <Icon kind="speaker" />
         Hear it again
       </button>
@@ -131,11 +133,13 @@ export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; p
           <button
             key={word}
             type="button"
-            {...GREEK_LANG}
+            lang={face.lang}
+            data-lang={face['data-lang']}
+            dir={face.dir}
             disabled={picked !== null}
             aria-label={`Choose ${word}`}
             onClick={() => pick(word)}
-            className={`min-h-16 rounded-xl border px-3 font-greek text-3xl active:bg-line ${picked && word === round.said ? 'border-accent bg-line' : 'border-line'}`}
+            className={`min-h-16 rounded-xl border px-3 active:bg-line ${face.className} ${picked && word === round.said ? 'border-accent bg-line' : 'border-line'}`}
           >
             {word}
           </button>
@@ -146,7 +150,7 @@ export function Contrast({ lessonId, pairs, letters, at }: { lessonId: string; p
           <p role="status" className="text-xl font-semibold">
             {picked.right ? 'Right' : `Not quite. The voice said ${round.said}.`}
           </p>
-          {picked.right ? null : <SideBySide a={round.choices[0]} b={round.choices[1]} said={round.said} letters={letters} at={`${at}-${asking.index}`} />}
+          {picked.right ? null : <SideBySide a={round.choices[0]} b={round.choices[1]} said={round.said} letters={letters} at={`${at}-${asking.index}`} language={language} />}
           <button type="button" onClick={next} className={PRIMARY}>
             {asking.index === asking.rounds.length - 1 ? 'See my score' : 'Next round'}
           </button>

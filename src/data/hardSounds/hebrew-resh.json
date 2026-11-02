@@ -1,0 +1,76 @@
+{
+  "id": "hebrew-resh",
+  "title": "Saying the resh",
+  "learn": "Learn to say the resh",
+  "language": "he",
+  "scheme": "israeli",
+  "for": [
+    "american",
+    "british"
+  ],
+  "sounds": [
+    "/ʁ/"
+  ],
+  "letters": [
+    "ר"
+  ],
+  "steps": [
+    {
+      "kind": "why",
+      "text": {
+        "american": "Your English r is made with the tongue pulled back or bunched in the middle, and the lips round a little. The Hebrew ר, as Israelis say it today, is made much further back: the back of the tongue lifts toward the soft flap that hangs at the back of your mouth, and the air buzzes there, like the French r. Your English r will be understood, so this is only for the ear that wants the real sound. None of this is needed to read Hebrew, so leave it whenever you like.",
+        "british": "Your English r is made with the tongue touching nothing, and before a consonant or at the end of a word you do not say it at all, as in “car”, “hard” and “father”. The Hebrew ר is always said, wherever it stands, and as Israelis say it today it is made much further back: the back of the tongue lifts toward the soft flap that hangs at the back of your mouth, and the air buzzes there, like the French r. None of this is needed to read Hebrew, so leave it whenever you like."
+      }
+    },
+    {
+      "kind": "from-known",
+      "text": "You can find it by gargling. Take a sip of water, tip your head back and gargle, then do the same with no water: the buzz at the back of your throat is the place. Now say it softly, with a little voice, keeping the tip of your tongue down behind your bottom teeth so that the front of the tongue plays no part. If you know the r of the French “rouge”, it is that one."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen for the soft buzz at the back of the throat: at the start of רֹאשׁ, in the middle of דֶּרֶךְ and תּוֹרָה, and at the end of אָמַר. It is one light buzz, with no tongue tip, no rolling and no English r.",
+      "words": [
+        "רֹאשׁ",
+        "דֶּרֶךְ",
+        "אֶרֶץ",
+        "תּוֹרָה",
+        "אָמַר"
+      ]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs only in ר and ל, ז or ד. For ל the tongue tip rests on the ridge behind your top teeth; for ד it taps the ridge; for ז the front of the tongue buzzes. For ר the front of the tongue does nothing: the buzz is at the back. Hear both words, then say both.",
+      "pairs": [
+        [
+          "יָרַד",
+          "יָלַד"
+        ],
+        [
+          "רָהָב",
+          "זָהָב"
+        ],
+        [
+          "דּוֹר",
+          "דּוֹד"
+        ],
+        [
+          "עָרָה",
+          "עָלָה"
+        ]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": {
+        "american": "Say each word after the voice. Keep the tip of your tongue down and let the buzz come from the back, and do not curl your tongue back as you do for your English r.",
+        "british": "Say each word after the voice. Say every ר, even at the end of אָמַר, where your English would drop it, and let the buzz come from the back."
+      },
+      "words": [
+        "רֹאשׁ",
+        "דֶּרֶךְ",
+        "אֶרֶץ",
+        "אָמַר"
+      ]
+    }
+  ]
+}

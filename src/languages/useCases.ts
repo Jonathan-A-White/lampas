@@ -149,7 +149,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: "Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill",
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "The Goal lists the Hebrew hard sounds for his accent and opens one" in a new features/hebrew-hard-sounds.feature; a lesson file per sound (het, ayin, resh, tsade) in src/hardSounds/lessons.ts keyed by the Israeli scheme’s sound ids, src/hardSounds/ and the Goal’s Optional section by the Hebrew dial (src/GoalScreen.tsx); M' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },

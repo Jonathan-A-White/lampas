@@ -4,6 +4,7 @@
 // unit test tests/unit/hard-sounds-engine.test.tsx fails on it first).
 import { lessonProblems, type HardSoundLesson, type Said } from '../data/hardSounds/schema';
 import { AMERICAN_ID, type EnglishAccent } from '../speech/accents';
+import type { SpeechLanguage } from '../speech/languages';
 
 const FILES = import.meta.glob<unknown>('../data/hardSounds/*.json', { eager: true, import: 'default' });
 
@@ -16,6 +17,12 @@ export const LESSONS: readonly HardSoundLesson[] = Object.entries(FILES)
   })
   .map(([, raw]) => raw as HardSoundLesson)
   .sort((a, b) => a.title.localeCompare(b.title));
+
+/** The language a lesson teaches: Greek's unless it says Hebrew. */
+export const lessonLanguage = (lesson: Pick<HardSoundLesson, 'language'>): 'grc' | 'he' => lesson.language ?? 'grc';
+
+/** The speech language its words are said in. */
+export const speechLanguageOf = (lesson: Pick<HardSoundLesson, 'language'>): SpeechLanguage => (lessonLanguage(lesson) === 'he' ? 'hebrew' : 'greek');
 
 /** The accent a lesson is read in for a reader of `accent`: his own, or American's when he chose IPA. */
 export const lessonAccent = (accent: EnglishAccent): string => (accent.id === 'ipa' ? AMERICAN_ID : accent.id);

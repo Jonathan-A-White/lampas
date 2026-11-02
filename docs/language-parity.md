@@ -51,7 +51,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `voice-test` | Hear and switch the voice from Settings: the name of the voice in use and Test | greek-voice-test | hebrew-voice-test | gap |
 | `pronunciation` | The respelling of a word in the chosen pronunciation, the one family setting and each language on its own | pronunciation-progress, pronunciation, voice-respelling-agree | pronunciation | gap |
 | `ipa-course` | The IPA course: the optional lesson on the symbols of the sounds, behind a setting | ipa-course | hebrew-ipa-course | gap |
-| `sound-lessons` | Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill | hard-sounds, pair-drill, roll-r, try-it | gap | gap |
+| `sound-lessons` | Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill | hard-sounds, pair-drill, roll-r, try-it | hebrew-hard-sounds | gap |
 | `letter-drill` | The letters: each taught from its sheet with Hear it, the letter drill and Say it | hebrew-letters, letter-drill, say-it | hebrew-letters | gap |
 | `handwriting` | Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills | handwriting-drills | gap | gap |
 | `words` | Words he knows: the list under its language, a segment where two languages are chosen | words | hebrew-words | gap |
@@ -88,7 +88,6 @@ The table names, for each use case and language, the feature files with a scenar
 Each line is one backfill story: its acceptance criterion is the named `@hebrew` scenario passing (and the registry row turned to `has`). Sizes: XS a scenario over code that already does it, S a scenario and one module, M new content or a new module.
 
 <!-- hebrew-gaps -->
-- `sound-lessons` (Hard sounds: optional lessons on the sounds his English makes hard, with Try it and the pair drill): scenario "The Goal lists the Hebrew hard sounds for his accent and opens one" in a new features/hebrew-hard-sounds.feature; a lesson file per sound (het, ayin, resh, tsade) in src/hardSounds/lessons.ts keyed by the Israeli scheme’s sound ids, src/hardSounds/ and the Goal’s Optional section by the Hebrew dial (src/GoalScreen.tsx); M
 - `handwriting` (Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills): scenario "Write it on Alef traces its strokes" in features/hebrew-letters.feature; stroke data for the 27 glyphs beside the Greek ones in src/handwriting/, the Write it part of a Hebrew letter sheet and the drill’s Write it questions (src/data/grammar/hebrew/letterQuestions.ts), Settings > Handwriting drills shown by either dial (src/settings/registry.ts); M
 - `grammar-approach` (Grammar approach: the order and voice the ladder is taught in): scenario "A Hebrew approach orders the Hebrew ladder" in features/hebrew-grammar.feature; an approach for the Hebrew ladder in src/approaches/, src/settings/registry.ts Grammar approach shown by either dial (today greekFrom, docs/layout/settings.md), and the Hebrew ladder’s path reads it; M
 <!-- /hebrew-gaps -->
@@ -187,7 +186,8 @@ Found by search (`'grc' | 'hbo'`, `'el' | 'he'`, `'greek' | 'hebrew'`, `=== 'hbo
 | `src/markdown/scriptRuns.ts:4`, `src/markdown/Markdown.tsx` | a Greek stretch is `lang="grc" class="font-greek"`; Hebrew through `SCRIPTS` | fine as is for Latin (no script); make generic when Greek joins the scripts table |
 | `src/nav/links.ts:202` | `isHebrewText`: a Strong's `H` or Hebrew letters | fine as is (Strong's); a Latin word link needs its own form (docs/links.md) |
 | `src/data/grammar/hebrew/`, `src/data/paradigms/hebrew/`, `src/speech/schemes/hebrew-israeli.ts`, `src/data/seed-words-hbo.ts` | the Hebrew content trees beside the Greek ones | table-like: a Latin tree of the same shapes; fine as is |
-| `src/handwriting/`, `src/hardSounds/`, `src/reader/variants*.ts`, `src/reader/VariantBrace.tsx` | Greek letter strokes, Greek hard-sound lessons, the Greek apparatus | fine as is: Greek-only content with no Latin counterpart (Latin has no strokes to learn; its hard sounds are a lesson file, not code) |
+| `src/handwriting/`, `src/reader/variants*.ts`, `src/reader/VariantBrace.tsx` | Greek letter strokes, the Greek apparatus | fine as is: Greek-only content with no Latin counterpart (Latin has no strokes to learn) |
+| `src/hardSounds/`, `src/data/hardSounds/` | a lesson file carries `language` ('grc' by default, 'he' for Hebrew: mw-5r3p30.912), its scheme and its Greek or Hebrew words; `Word`, `Contrast`, `TryIt` and the Goal's `HardSoundsSection language=` take the speech language from it | fine as is for Latin: its hard sounds are a lesson file with `language: 'la'` and a Latin scheme, plus one more `HardSoundsSection` on the Goal (`wordFace` and `lessonLanguage` gain a Latin branch) |
 
 The survey's method and the fuller list of sites (every `=== 'hbo'` test, about fifty) are in the closing comment of mw-5r3p30.903. The refactor that pays most is one `LANGUAGE_INFO: Record<SourceLanguage, {...}>` table (lang attrs, face, dir, speech language, English translation, dial key, ladder, label) that `faceOf`, `sourceText`, `translationOf`, `sourceSpeech`, `languageFact`, `dialOf` and the Settings controls all read: with it, most rows above become "add an entry".
 

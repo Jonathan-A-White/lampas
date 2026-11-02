@@ -3,6 +3,7 @@
 // Again to hear both once more. Nothing leaves the phone: the clip is kept in memory by useTry and dropped when the step closes. With the microphone
 // refused the step says so and still plays the Greek voice.
 import { useState, type ReactNode } from 'react';
+import type { SpeechLanguage } from '../speech/languages';
 import { RecordBar } from '../talk/Bars';
 import { useTry, type TryPhase } from './useTry';
 
@@ -16,20 +17,22 @@ const SAYING: Record<TryPhase, string> = {
   try: 'Your try',
   voice: 'The Greek voice',
 };
+const HEBREW_SAYING: Record<TryPhase, string> = { ...SAYING, voice: 'The Hebrew voice' };
 
 /** The hold bar for one word, its status and Again. It is keyed by the picked word, so a new word starts clean and the old try is dropped. */
-function TryBar({ word }: { word: string }) {
-  const { phase, detail, press, release, drop, again } = useTry(word);
+function TryBar({ word, language }: { word: string; language: SpeechLanguage }) {
+  const { phase, detail, press, release, drop, again } = useTry(word, language);
+  const saying = language === 'hebrew' ? HEBREW_SAYING : SAYING;
   return (
     <>
       <RecordBar label={phase === 'recording' ? 'Say it…' : `Hold to say ${word}`} listening={phase === 'recording'} onPress={press} onRelease={release} onAbort={drop} />
       {phase === 'denied' ? (
         <p role="alert" className="text-base">
-          {detail} Here is the Greek voice instead.
+          {detail} Here is the {language === 'hebrew' ? 'Hebrew' : 'Greek'} voice instead.
         </p>
       ) : null}
       <p data-testid="try-status" role="status" className="min-h-6 text-base text-muted">
-        {SAYING[phase]}
+        {saying[phase]}
       </p>
       {phase === 'try' || phase === 'voice' || phase === 'denied' ? (
         <button type="button" onClick={again} className={BUTTON}>
@@ -41,7 +44,7 @@ function TryBar({ word }: { word: string }) {
 }
 
 /** `words` are the step's words, drawn by `renderWord` (the lesson's own word with its speaker and marked letters). */
-export function TryIt({ words, renderWord }: { words: readonly string[]; renderWord: (word: string, index: number) => ReactNode }) {
+export function TryIt({ words, renderWord, language = 'greek' }: { words: readonly string[]; renderWord: (word: string, index: number) => ReactNode; language?: SpeechLanguage }) {
   const [picked, setPicked] = useState(0);
   const at = Math.min(picked, words.length - 1);
   return (
@@ -62,7 +65,7 @@ export function TryIt({ words, renderWord }: { words: readonly string[]; renderW
           </li>
         ))}
       </ul>
-      <TryBar key={`${words[at]}-${at}`} word={words[at]} />
+      <TryBar key={`${words[at]}-${at}`} word={words[at]} language={language} />
     </div>
   );
 }

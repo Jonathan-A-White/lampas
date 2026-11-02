@@ -1,10 +1,11 @@
-// src/hardSounds/useTry.ts — the Try it step's recording (mw-5r3p30.363): he holds, says the word, lets go, and hears his try and then the Greek voice. It
+// src/hardSounds/useTry.ts — the Try it step's recording (mw-5r3p30.363): he holds, says the word, lets go, and hears his try and then the voice of the lesson's language (Greek, or Hebrew: mw-5r3p30.912). It
 // records with the one recorder Read it aloud uses (src/audio/recorder.ts, through recorderSeam, so a test hands it a fake); this file makes no recorder of its
 // own (tests/unit/try-it.test.ts counts them). The clip lives only here, in memory, as a Blob and an object URL: it is never written to the phone's store and never
 // sent, and it is let go when he says another word, picks another (the caller keys this hook's component by the word) or the step closes.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MicUnavailable, recorderSeam, type HoldRecorder, type Recording } from '../audio/recorder';
 import { speakWord, stopSpeaking, stopWordSaid } from '../speech/greek';
+import type { SpeechLanguage } from '../speech/languages';
 
 /** A hold shorter than this is a tap, not a try. */
 export const MIN_TRY_MS = 500;
@@ -27,7 +28,7 @@ interface Kept {
   playing: boolean;
 }
 
-export function useTry(word: string): {
+export function useTry(word: string, language: SpeechLanguage = 'greek'): {
   phase: TryPhase;
   detail: string;
   press(): void;
@@ -44,9 +45,9 @@ export function useTry(word: string): {
   const sayVoice = useCallback(
     (next: TryPhase = 'voice'): void => {
       setPhase(next);
-      speakWord(word, 'greek');
+      speakWord(word, language);
     },
-    [word],
+    [word, language],
   );
 
   /** His try is dropped: its sound stopped and its address let go. */

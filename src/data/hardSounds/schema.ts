@@ -5,8 +5,9 @@
 // it may add a stretch (a harder form of the sound, to hear and say, whose own IPA the screen shows under IPA only) and end with a verse.
 // src/hardSounds/HardSoundLesson.tsx draws any lesson that passes, so a new lesson is a new file and no code.
 // A text is one string for every accent, or one per accent the lesson is for. A text names no IPA: the screen alone shows the sound's id, under IPA.
+// A lesson is Greek's unless it says `language: 'he'` (mw-5r3p30.912): then its scheme is a Hebrew one, its words and letters are Hebrew (drawn right to left, said in the Hebrew voice) and it has no verse step.
 import { ACCENTS } from '../../speech/accents';
-import { PRONUNCIATIONS } from '../../speech/pronunciation';
+import { HEBREW_PRONUNCIATIONS, PRONUNCIATIONS, type PronunciationLanguage } from '../../speech/pronunciation';
 import { SOUND_IDS, type SoundId } from '../../speech/sounds';
 
 /** The accents a lesson is written for: every English accent but IPA, which reads the American lessons (src/hardSounds/lessons.ts lessonAccent). */
@@ -45,7 +46,9 @@ export interface HardSoundLesson {
   title: string;
   /** what a letter sheet's link to it says before '(optional)': 'Learn to roll your r'; 'Learn to say it' when a lesson gives none */
   learn?: string;
-  /** the Greek pronunciation it teaches: 'modern' */
+  /** the language it teaches: 'grc' (Greek), or 'he' (Hebrew); a lesson that leaves it out is Greek's */
+  language?: PronunciationLanguage;
+  /** the pronunciation it teaches: 'modern' for Greek, 'israeli' for Hebrew */
   scheme: string;
   /** the accents it is written for: ['american', 'british'] */
   for: string[];
@@ -57,6 +60,9 @@ export interface HardSoundLesson {
 }
 
 const GREEK_WORD = /^[\p{Script=Greek}\p{M}’']+$/u;
+/** A Hebrew word of a lesson: letters and points, with no cantillation (the Hebrew voice is handed the word without it anyway). */
+const HEBREW_WORD = /^[\u05D0-\u05EA\u05B0-\u05BC\u05C1\u05C2\u05C7]+$/u;
+const wordPattern = (language: PronunciationLanguage): RegExp => (language === 'he' ? HEBREW_WORD : GREEK_WORD);
 /** What IPA writes that plain text does not (as tests/unit/no-ipa-shown.test.tsx); θ is Greek's own. */
 const IPA_ONLY = /[ɣʝðɛɔʃːçŋɾɡ]/u;
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -74,30 +80,32 @@ function saidProblems(said: unknown, accents: readonly string[], at: string): st
   });
 }
 
-const wordsProblems = (words: unknown, at: string, required: boolean): string[] => {
+const wordsProblems = (words: unknown, at: string, required: boolean, language: PronunciationLanguage): string[] => {
+  const name = language === 'he' ? 'Hebrew' : 'Greek';
   if (words === undefined && !required) return [];
-  if (!Array.isArray(words) || words.length === 0) return [`${at}: a list of Greek words`];
-  return words.flatMap((w, i) => (typeof w === 'string' && GREEK_WORD.test(w) ? [] : [`${at}[${i}]: ${JSON.stringify(w)} is not a Greek word`]));
+  if (!Array.isArray(words) || words.length === 0) return [`${at}: a list of ${name} words`];
+  return words.flatMap((w, i) => (typeof w === 'string' && wordPattern(language).test(w) ? [] : [`${at}[${i}]: ${JSON.stringify(w)} is not a ${name} word`]));
 };
 
-function stepProblems(step: unknown, i: number, accents: readonly string[]): string[] {
+function stepProblems(step: unknown, i: number, accents: readonly string[], language: PronunciationLanguage): string[] {
   const at = `steps[${i}]`;
   if (!isObject(step)) return [`${at}: a step is an object`];
   const kind = step.kind;
   if (!(STEP_KINDS as readonly unknown[]).includes(kind)) return [`${at}: no kind of step ${JSON.stringify(kind)} (${STEP_KINDS.join(', ')})`];
   const problems = saidProblems(step.text, accents, `${at}.text`);
-  if (kind === 'from-known') problems.push(...wordsProblems(step.words, `${at}.words`, false));
-  if (kind === 'hear' || kind === 'try' || kind === 'stretch') problems.push(...wordsProblems(step.words, `${at}.words`, true));
+  if (kind === 'from-known') problems.push(...wordsProblems(step.words, `${at}.words`, false, language));
+  if (kind === 'hear' || kind === 'try' || kind === 'stretch') problems.push(...wordsProblems(step.words, `${at}.words`, true, language));
   if (kind === 'contrast') {
     const pairs = step.pairs;
-    if (!Array.isArray(pairs) || pairs.length === 0) problems.push(`${at}.pairs: a list of pairs of Greek words`);
+    if (!Array.isArray(pairs) || pairs.length === 0) problems.push(`${at}.pairs: a list of pairs of ${language === 'he' ? 'Hebrew' : 'Greek'} words`);
     else
       pairs.forEach((pair, p) => {
         if (!Array.isArray(pair) || pair.length !== 2) problems.push(`${at}.pairs[${p}]: a pair is two Greek words`);
-        else problems.push(...wordsProblems(pair, `${at}.pairs[${p}]`, true));
+        else problems.push(...wordsProblems(pair, `${at}.pairs[${p}]`, true, language));
       });
   }
   if (kind === 'stretch' && step.ipa !== undefined && (typeof step.ipa !== 'string' || !/^\/[^/\s]+\/$/.test(step.ipa))) problems.push(`${at}.ipa: a sound between slashes, such as '/r/'`);
+  if (kind === 'verse' && language === 'he') problems.push(`${at}: a Hebrew lesson has no verse step`);
   if (kind === 'verse' && (typeof step.ref !== 'string' || !/^[0-9a-z]+\.\d+\.\d+$/.test(step.ref))) problems.push(`${at}.ref: a verse such as '1jn.1.2'`);
   return problems;
 }
@@ -109,14 +117,17 @@ export function lessonProblems(raw: unknown): string[] {
   if (typeof raw.id !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(raw.id)) problems.push("id: kebab case, the file's name ('tapped-r')");
   if (!isText(raw.title)) problems.push('title: a title');
   if (raw.learn !== undefined && (!isText(raw.learn) || IPA_ONLY.test(raw.learn) || SOUND_IDS.some((id) => (raw.learn as string).includes(id)))) problems.push('learn: a plain label, with no IPA');
-  if (!PRONUNCIATIONS.some((p) => p.id === raw.scheme)) problems.push(`scheme: one of ${PRONUNCIATIONS.map((p) => p.id).join(', ')}`);
+  if (raw.language !== undefined && raw.language !== 'grc' && raw.language !== 'he') problems.push("language: 'grc' or 'he'");
+  const language: PronunciationLanguage = raw.language === 'he' ? 'he' : 'grc';
+  const schemes = language === 'he' ? HEBREW_PRONUNCIATIONS : PRONUNCIATIONS;
+  if (!schemes.some((p) => p.id === raw.scheme)) problems.push(`scheme: one of ${schemes.map((p) => p.id).join(', ')}`);
   const accents = Array.isArray(raw.for) ? raw.for : [];
   if (accents.length === 0 || accents.some((a) => !LESSON_ACCENTS.includes(a as string))) problems.push(`for: one or more of ${LESSON_ACCENTS.join(', ')}`);
   if (!Array.isArray(raw.sounds) || raw.sounds.length === 0 || raw.sounds.some((s) => !(SOUND_IDS as readonly unknown[]).includes(s))) problems.push('sounds: one or more standard sound ids');
-  if (!Array.isArray(raw.letters) || raw.letters.some((l) => typeof l !== 'string' || !GREEK_WORD.test(l))) problems.push('letters: Greek letters or pairs');
+  if (!Array.isArray(raw.letters) || raw.letters.some((l) => typeof l !== 'string' || !wordPattern(language).test(l))) problems.push(`letters: ${language === 'he' ? 'Hebrew' : 'Greek'} letters or pairs`);
   const steps = Array.isArray(raw.steps) ? raw.steps : [];
   if (steps.length === 0) return [...problems, 'steps: a list of steps'];
-  steps.forEach((step, i) => problems.push(...stepProblems(step, i, accents as string[])));
+  steps.forEach((step, i) => problems.push(...stepProblems(step, i, accents as string[], language)));
   const kinds = steps.map((s) => (isObject(s) ? s.kind : undefined));
   if (kinds[0] !== 'why') problems.push('steps: a lesson starts with why it is hard');
   for (const kind of REQUIRED_KINDS) if (!kinds.includes(kind)) problems.push(`steps: no ${kind} step`);

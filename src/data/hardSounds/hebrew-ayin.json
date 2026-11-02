@@ -1,0 +1,70 @@
+{
+  "id": "hebrew-ayin",
+  "title": "Saying the ayin",
+  "learn": "Learn to say the ayin",
+  "language": "he",
+  "scheme": "israeli",
+  "for": [
+    "american",
+    "british"
+  ],
+  "sounds": [
+    "/a/"
+  ],
+  "letters": [
+    "ע"
+  ],
+  "steps": [
+    {
+      "kind": "why",
+      "text": "English has no letter that is written and says nothing in front of its vowel, so you may try to make a sound for the ע: a deep squeeze of the throat, as some books describe it, or a hard g. Lampas says Hebrew as Israelis do today, and the Israeli voice does not say the ayin at all. What it leaves is the vowel, clean, with no consonant before it. None of this is needed to read Hebrew, so leave it whenever you like."
+    },
+    {
+      "kind": "from-known",
+      "text": "You already leave letters silent in English: the k of “knee” and the gh of “night”. Treat the ע that way. Say עַל as “al”, straight onto the a, with no breath, no g and no w before it. Between two vowels, as in מַעֲשֶׂה, say each vowel as its own beat with the smallest pause between them, as in “co-op”: ma-a-seh."
+    },
+    {
+      "kind": "hear",
+      "text": "Listen to how each word begins and ends on its vowel. עַם and עַל start straight on the a, and in מַעֲשֶׂה the two a sounds are separate beats. In יָדַע the last sound you hear is the a.",
+      "words": [
+        "עַם",
+        "עַל",
+        "עֵץ",
+        "מַעֲשֶׂה",
+        "יָדַע"
+      ]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs where one word has an ע and the other has a letter that says something. The ע adds nothing: שָׁמַע ends on its a, and שָׁמַר ends with an r. Hear both words, then say both.",
+      "pairs": [
+        [
+          "שָׁמַע",
+          "שָׁמַר"
+        ],
+        [
+          "עָמַד",
+          "לָמַד"
+        ],
+        [
+          "עָבַר",
+          "דָבַר"
+        ],
+        [
+          "נָעַל",
+          "נָפַל"
+        ]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. Start straight on the vowel, with nothing before it, and end שָׁמַע and יָדַע on the a with nothing after it.",
+      "words": [
+        "שָׁמַע",
+        "עַל",
+        "מַעֲשֶׂה",
+        "יָדַע"
+      ]
+    }
+  ]
+}

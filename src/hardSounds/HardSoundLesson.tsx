@@ -16,10 +16,11 @@ import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { useAccent } from '../speech/accents/useAccent';
 import { SpeakButton } from '../speech/SpeakButton';
 import { useReportScreen } from '../tutor/screenContext';
-import { greekMarked } from '../ui/GreekMarked';
+import { greekMarked, hebrewMarked } from '../ui/GreekMarked';
 import { setVerseAction } from '../verse/action';
 import { Contrast } from './Contrast';
-import { lessonById, saidFor } from './lessons';
+import type { SpeechLanguage } from '../speech/languages';
+import { lessonById, lessonLanguage, saidFor, speechLanguageOf } from './lessons';
 import { markLetters } from './markLetters';
 import { Word } from './Word';
 import { TryIt } from './TryIt';
@@ -46,12 +47,12 @@ function goBack(): void {
   else navigate('goal', { replace: true });
 }
 
-function Words({ words, letters, at }: { words: readonly string[]; letters: readonly string[]; at: string }) {
+function Words({ words, letters, at, language }: { words: readonly string[]; letters: readonly string[]; at: string; language: SpeechLanguage }) {
   return (
     <ul className="mt-3 space-y-2">
       {words.map((word, i) => (
         <li key={`${word}-${i}`}>
-          <Word word={word} letters={letters} id={`${at}-${i}`} />
+          <Word word={word} letters={letters} id={`${at}-${i}`} language={language} />
         </li>
       ))}
     </ul>
@@ -115,31 +116,32 @@ function VerseStep({ reference, letters, at }: { reference: string; letters: rea
 
 /** What a step has beyond its text. */
 function StepBody({ step, lesson, at }: { step: HardSoundStep; lesson: Lesson; at: string }) {
+  const language = speechLanguageOf(lesson);
   switch (step.kind) {
     case 'why':
       return null;
     case 'from-known':
-      return step.words ? <Words words={step.words} letters={lesson.letters} at={at} /> : null;
+      return step.words ? <Words words={step.words} letters={lesson.letters} at={at} language={language} /> : null;
     case 'try':
     case 'stretch':
-      return <TryIt words={step.words} renderWord={(word, i) => <Word word={word} letters={lesson.letters} id={`${at}-${i}`} />} />;
+      return <TryIt words={step.words} language={language} renderWord={(word, i) => <Word word={word} letters={lesson.letters} id={`${at}-${i}`} language={language} />} />;
     case 'hear':
-      return <Words words={step.words} letters={lesson.letters} at={at} />;
+      return <Words words={step.words} letters={lesson.letters} at={at} language={language} />;
     case 'contrast':
       return (
         <>
           <ul className="mt-3 space-y-3">
             {step.pairs.map(([a, b], i) => (
               <li key={`${a}-${b}`} data-pair className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line px-3 py-2">
-                <Word word={a} letters={lesson.letters} id={`${at}-${i}-a`} />
+                <Word word={a} letters={lesson.letters} id={`${at}-${i}-a`} language={language} />
                 <span aria-hidden="true" className="text-muted">
                   ·
                 </span>
-                <Word word={b} letters={lesson.letters} id={`${at}-${i}-b`} />
+                <Word word={b} letters={lesson.letters} id={`${at}-${i}-b`} language={language} />
               </li>
             ))}
           </ul>
-          <Contrast lessonId={lesson.id} pairs={step.pairs} letters={lesson.letters} at={at} />
+          <Contrast lessonId={lesson.id} pairs={step.pairs} letters={lesson.letters} at={at} language={language} />
         </>
       );
     case 'verse':
@@ -165,7 +167,7 @@ export function LessonSteps({ lesson, step, onStep, onDone }: { lesson: Lesson; 
         Step {at + 1} of {lesson.steps.length}
       </p>
       <h2 className="mt-1 text-2xl font-semibold">{STEP_HEADINGS[shown.kind]}</h2>
-      <p className="mt-2 text-lg">{greekMarked(saidFor(shown.text, accent))}</p>
+      <p className="mt-2 text-lg">{(lessonLanguage(lesson) === 'he' ? hebrewMarked : greekMarked)(saidFor(shown.text, accent))}</p>
       <StepBody key={key} step={shown} lesson={lesson} at={key} />
       <div className="mt-6 grid grid-cols-2 gap-3 pb-[var(--lp-end-inset)]">
         {at > 0 ? (
@@ -191,7 +193,7 @@ export function HardSoundLesson() {
     name: 'Hard sounds',
     facts: lesson
       ? [
-          { label: 'About', value: 'An optional lesson on a Greek sound his English makes hard; never needed for anything else in Lampas' },
+          { label: 'About', value: `An optional lesson on a ${lessonLanguage(lesson) === 'he' ? 'Hebrew' : 'Greek'} sound his English makes hard; never needed for anything else in Lampas` },
           { label: 'Lesson', value: lesson.title },
           { label: 'Step', value: `${STEP_HEADINGS[lesson.steps[Math.min(address.step, lesson.steps.length - 1)].kind]} (${Math.min(address.step, lesson.steps.length - 1) + 1} of ${lesson.steps.length})` },
         ]
