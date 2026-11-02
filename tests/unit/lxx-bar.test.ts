@@ -323,7 +323,7 @@ describe('lxx:report', async () => {
   };
 
   const report = async (build: number, known: (chapters: readonly string[]) => KnownScore[], doc = join(tmp(), 'lxx-report.md')) => {
-    const out = await runReport(['--build', String(build)], { input: thirtyNine, doc, choicesDir: tmp(), recheckDir: tmp(), known });
+    const out = await runReport(['--build', String(build)], { input: thirtyNine, doc, choicesDir: tmp(), recheckDir: tmp(), morpheusDir: tmp(), known });
     return { ...out, doc };
   };
 
@@ -365,7 +365,7 @@ describe('lxx:report', async () => {
     expect(out.rows.every((r) => !r.shippable)).toBe(true);
     // a book with words pending is named by its pending count
     const withPending: DeriveInput = { ...GEN_1, versification: GEN_1.versification, words: GEN_1.words };
-    const genOnly = await runReport(['--build', '55'], { input: withPending, doc: join(tmp(), 'r.md'), choicesDir: tmp(), recheckDir: tmp(), known: passing([]), books: [['Gen', 'Genesis']] });
+    const genOnly = await runReport(['--build', '55'], { input: withPending, doc: join(tmp(), 'r.md'), choicesDir: tmp(), recheckDir: tmp(), morpheusDir: tmp(), known: passing([]), books: [['Gen', 'Genesis']] });
     expect(genOnly.text).toContain(`NOT: pending: ${deriveBook(GEN_1, 'gen').pending.length}`);
     expect(genOnly.rows[0].failures.map((f) => f.key)).toEqual(['pending']);
   });
@@ -396,7 +396,7 @@ describe('lxx:report', async () => {
     const rows = (pick: (p: PendingWord, i: number) => string): string => ['ref\tparsing\tlemma\tmark', ...first.map((p, i) => `${p.ref}\t${pick(p, i)}\t${p.candidates[0].lemma}\t`)].join('\n') + '\n';
     writeFileSync(join(choicesDir, 'gen-01.tsv'), rows((p) => p.candidates[0].morph));
     writeFileSync(join(recheckDir, 'gen-01.tsv'), rows((p, i) => (i < 3 ? p.candidates[1].morph : p.candidates[0].morph)));
-    const out = await runReport(['--build', '55'], { input: GEN_1, doc: join(tmp(), 'r.md'), choicesDir, recheckDir, known: passing([]), books: [['Gen', 'Genesis']] });
+    const out = await runReport(['--build', '55'], { input: GEN_1, doc: join(tmp(), 'r.md'), choicesDir, recheckDir, morpheusDir: tmp(), known: passing([]), books: [['Gen', 'Genesis']] });
     expect(out.rows[0].secondPass).toEqual({ sample: 10, differ: 3 });
     expect(out.text).toContain('30.0% of 10');
   });

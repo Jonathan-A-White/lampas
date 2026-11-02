@@ -17,6 +17,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [The choices file](#the-choices-file)
 - [A model session](#a-model-session)
 - [Morpheus, the second method](#morpheus-the-second-method)
+  - [The sweep: what the first real run found](#the-sweep-what-the-first-real-run-found)
 - [The annotation file](#the-annotation-file)
 - [The report](#the-report)
 - [On the word card](#on-the-word-card)
@@ -242,6 +243,11 @@ A model story gives a Builder one batch of one book. **The Builder's own session
 boundary (a chapter that would take a batch past 700 is taken in when it overshoots by less than the batch falls short without it; a chapter of 700 or more is a batch alone). A batch has one choices file, so the stories of
 one book never touch the same file and different books run in parallel.
 
+**Model stories are pathed `host=laptop`.** `lxx:batches`, `lxx:pending` and `lxx:choose` read the Morpheus cache (`data/lxx/morpheus/<book>.tsv`, 'Morpheus, the second method'), which is git-ignored and is made on the Laptop (where Docker is, and where the image
+was built for story mw-u2w5klk.14). A host without the cache lists fewer candidates (a form Morpheus knows has `no candidate` there) and accepts fewer choices, so a batch listed on one host cannot be checked on the other: its counts differ (the sweep's: 17,800 words with no candidate
+without the cache, 12,541 with it, 'The sweep'). Until a later story moves the cache into the repo, or a host builds its own with `npm run lxx:derive -- --all`, a Builder session for a model story runs on the Laptop and builds the cache first when `data/lxx/morpheus/` is missing
+(a fresh worktree has none: `npm run lxx:derive -- --book <code>` with Docker makes the book's file in a minute; without Docker the step prints `Morpheus skipped:` and the session lists what the other host would not).
+
 **The Mayor**, to file the stories:
 
 ```bash
@@ -326,24 +332,50 @@ the analyzer prints about a word (the probe's reading). What reaches Lampas's da
 
 | Part of speech | Morpheus prints | TAGNT code | Left unmapped |
 | --- | --- | --- | --- |
-| verb, finite | tense, mood, voice, person, number (`pres ind mp 3rd pl`) | `V-` tense (`P` present, `I` imperfect, `F` future, `A` aorist) voice (`A`, `M`, `P`, `E` for `mp`) mood (`I`, `S`, `O`, `M` imperative), `-3P` | a perfect, pluperfect or future perfect; an imperfect that is not indicative; the dual |
+| verb, finite | tense, mood, voice, person, number (`pres ind mp 3rd pl`) | `V-` tense (`P` present, `I` imperfect, `F` future, `A` aorist) voice (below) mood (`I`, `S`, `O`, `M` imperative), `-3P` | a perfect, pluperfect or future perfect; an imperfect that is not indicative; the dual |
 | verb, aorist | the same | `A` for the ending table `aor1` or `aor_pass`, `2A` for `aor2` or `aor2_pass` (`V-2AAI-3S`) | any other table (`ath_secondary`) |
 | infinitive | `pres inf act` | `V-PAN` | |
 | participle | `pres part act fem gen pl` | `V-PAP-GPF` (case, number, gender) | |
-| noun | gender, case, number (`fem acc sg`) | `N-ASF` | the dual; a comparative; a form with a flag beyond `contr` and `enclitic` (`irreg_comp`, `indeclform`) |
+| noun | gender, case, number (`fem acc sg`) | `N-ASF` | the dual; a comparative or superlative (`irreg_comp`, `irreg_superl`); a form with a flag beyond `contr`, `enclitic`, `nu_movable`, `a_priv` and `poetic` |
+| noun or adjective Morpheus lists form by form | `indeclform`, class `irreg_decl3` or `irreg_adj3` (`do/rati`, `pa=s`) | `N-DSN`, `A-ASM` | |
 | adjective | the same, from an adjective's ending table (`os_h_on`, `hs_es`, …: `ADJECTIVE_TABLES`) | `A-GSM` | |
 | article | `indeclform`, class `article` | `T-GSM`, `T-GSN` | |
-| indeclinable | `indeclform`, class `conj`, `particle`, `adverb`, `prep` | `CONJ`, `PRT`, `ADV`, `PREP` | a pronoun, a numeral, any other class |
+| indeclinable | `indeclform`, class `conj`, `particle`, `adverb`, `prep` | `CONJ`; `PRT` and `CONJ` for a `particle` (TAGNT writes δέ, οὖν, γάρ, ἄρα CONJ and μέν PRT, where Morpheus says particle for all); `ADV`; `PREP` | a pronoun, a numeral, any other class |
 
-Always unmapped: a reading in a dialect without Attic (`doric aeolic`, `epic`), an unaugmented form, an English gloss (`E`, which is not another reading and is not counted). A Morpheus lemma is Morpheus's headword in beta code read back as Greek
-(`gi/gnomai` is `γίγνομαι`, where TAGNT writes `γίνομαι`): lemmas are compared by their letters without accents, not by spelling, and a spelling difference shows as 'differed'. Deponents are not told apart: the passive of a deponent verb maps to `P`
-where TAGNT writes `O` (`γενηθήτωσαν`), and that too shows as 'differed'. These are the mapping's known weak spots, and the count below is how to see their size.
+**Voice.** Morpheus says `act`, `mid`, `pass` and `mp` (middle or passive), and for a deponent verb says `mp` in every tense; TAGNT says what the form is. `voicesOf` gives each reading the letters TAGNT uses (a deponent is told by its lemma ending in -μαι):
+`act` `A`; `mid` `M` (and `D` for a deponent); `pass` `P` (and `O` for a deponent's aorist or future); `mp` of a deponent `N` in the present and imperfect, `D` and `O` in the aorist and future; `mp` of any other verb `P` and `M`.
+TAGNT's `E` (middle or passive, not told) is rare in its text (about 40 of the New Testament's verb words), so it is no longer offered. Several voices make several readings, which is why a form can have two codes where it had one.
+
+Always unmapped: a reading in a dialect without Attic (`doric aeolic`, `epic`: a reading whose dialects list `attic` is kept), an unaugmented form, a pronoun (the pronoun classes, and the lemmas Morpheus declines as an adjective where TAGNT has a pronoun's code: αὐτός, ἐκεῖνος, ἐμός, σός, ἡμός, ὑμός, ὅσος, … `PRONOUN_LEMMAS`), an English gloss (`E`, which is not another reading and is not counted). A Morpheus lemma is Morpheus's headword in beta code read back as Greek
+(`gi/gnomai` is `γίγνομαι`, where TAGNT writes `γίνομαι`): lemmas are compared by their letters without accents, not by spelling, and a spelling difference shows as 'differed'. A deponent verb is told by its lemma ending in -μαι ('Voice'), so its passive is offered as `P` and `O`; a verb Morpheus gives an active lemma but TAGNT treats as deponent (ἀποκρίνω, whose `ἀπεκρίθη` TAGNT writes `V-ADI-3S`) still shows as 'differed'. These are the mapping's known weak spots, and the count below is how to see their size.
 
 **The count.** `lxx:release` and `lxx:report` read the cache and count, for each book, its guesses (layer 3 rows marked `guess:`) that Morpheus **agreed with** (a reading has the guess's parsing and the lemma's letters), **differed from**
 (it has mapped readings and none is the guess) or **did not know** (no cache row, or no reading the mapping covers). `lxx:release` prints `Morpheus: A agreed, D disagreed, U unknown (the guesses)`; the report has a column, `Morpheus agreed / differed / unknown`, with a dash for a book that has no cache. A guess it differs from is looked at, in the second pass's way.
 
 **Checking it.** The tests give Morpheus's output as a fixture (`tests/fixtures/lxx/morpheus-sample.tsv`, for the 7 forms of Gen 1 and Ps 22 that layers 1 and 2 leave with no candidate: `Γενηθήτωσαν`, `ζωσῶν`, `ἐξέθρεψεν`, `αὐταί`, `ἐλίπανας`, `καταδιώξεται`, `μακρότητα`), never the image or the network.
-The fixture is written in the shape of Morpheus's own `test/fixture.json`, not captured from a run: the builder's host had no Docker. To see the real thing, build the image and run `npm run lxx:derive -- --book gen`, then `cat data/lxx/morpheus/gen.tsv`.
+The fixture is **captured from the real image** (story mw-u2w5klk.14; its header says how): the first version was written by hand in the shape of Morpheus's own `test/fixture.json`, and the first real run found it wrong in five places (below).
+
+### The sweep: what the first real run found
+
+On the Laptop, with the image built from the pinned commit (`docker build -t lampas-morpheus https://github.com/perseids-tools/morpheus.git#ab6898ffed335fc6169fa02c9940657a9b5a78e0`, 1 minute 34 seconds, 199,582,456 bytes) and `npm run lxx:derive -- --all`
+(60 books, 10,954 forms asked, 1 minute 51 seconds). Where the real output differed from what the code and the doc had taken it to be:
+
+- **A form Morpheus does not know has no line on standard output** (it is said on standard error, with `:longtime` timings): the reader had taken an echo line with no analyses, so a book with one unknown form failed with `Morpheus answered 228 forms for 566`. `parseCruncher` now matches the echoes to the forms asked, in order, and the others are unknown.
+- **The echo line is there for a known form, as the input** (every echo of the sweep was one of the forms asked, in order).
+- **The aorist tables are named as taken** (`aor1`, `aor2`, `aor_pass`, `aor2_pass`), and so are the participle's `P` and the finite verb's `V`; an athematic aorist (`emi_aor`, `ami_aor`, `ath_secondary`) has no table that says first or second and stays unmapped (193 readings).
+- **The dialect column** lists every dialect a form can be in, `attic` among them (`attic epic doric ionic`); the mapping already took a reading with `attic` in the list.
+- **`mp` is a deponent's voice in every tense** and TAGNT's `E` is rare: 'Voice' above (the hand-written fixture had `pres ind mp` mapped `E`).
+- **`indeclform` is also set on a noun listed form by form** (`irreg_decl3`), not only on an indeclinable; and `nu_movable`, `a_priv` and `poetic` are flags that change nothing.
+- **A pronoun is not always a pronoun class**: αὐτός is `art_adj`, an adjective's table, so every form of it came as an `A-` candidate where TAGNT writes `P-`.
+
+The count of what the mapping covers, and the known-answer check, are `npm run lxx:morpheus-check -- --coverage` and `-- --known Jhn.1 Rom.8` (`scripts/lxx/morpheus-check.ts`; they need the image and write nothing). On the sweep's 10,954 forms: 5,927 known to Morpheus, 10,011 readings, 6,568
+of them mapped (65.6%); the words that still have no candidate after Morpheus are 12,541 of the 39 books' 476,380 words (2.63%; 17,800, 3.74%, before), and 10,905 of them are forms Morpheus does not know (names, nearly all). `lxx:batches --all` gives the per-book figures with and without the cache.
+In the known-answer check over the NA28 words of Jhn.1 and Rom.8 (1,481 words), Morpheus's mapped readings held TAGNT's lemma (by its letters, accents off) and parsing for 1,063 of the 1,255 words it offered readings for, 84.7% (74.9% before the fixes above); 71.8% of all the words. The misses are mostly the spelling of a lemma
+(LSJ's γίγνομαι, εἶδον, εἶπον, Μωυσῆς for TAGNT's γίνομαι, εἴδω, ἔπω, Μωϋσῆς), TAGNT's `CONJ`, `PRT` and `ADV` where Morpheus has another of the three, and a deponent Morpheus gives an active lemma.
+
+**What the readings left out would add** (`--coverage`, over the 12,541 words that still have no candidate; a word counts under each reason among its form's readings, then 'only' where that is its one reason): a perfect, 821 words (666 only), a pluperfect or future perfect, 55 more (44); a dialect without Attic, 659 (418);
+an athematic aorist, 123 (78); a form listed by itself on an irregular table (`irreg_decl3`), 53; a comparative or superlative, 44 (44); a pronoun, 70 (46); a numeral, none (no word of the 39 books is left without a candidate for that reason). So mapping the perfects (TAGNT's `R`, `L`
+and their second forms, which Morpheus's table does not tell apart) is the one change that would take more than 5% of the no-candidate words, 666 of them, about 0.14% of the books' words; every other reading left out is under 3.4% of them.
 
 ## The annotation file
 
@@ -417,6 +449,8 @@ npm run lxx:derive -- --word Gen.1:20#13       # one word: its candidates, their
 npm run lxx:derive -- --all                    # every book of the file, trained once: each book's two files, and one line a book
 npm run lxx:derive -- --book gen --no-morpheus # the same with the second method off (with no Docker it prints "Morpheus skipped: ..." and does the same)
 npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT ('The known-answer run')
+npm run lxx:morpheus-check -- --known Jhn.1 Rom.8   # Morpheus's mapped readings against TAGNT's answers; needs Docker and the image ('The sweep')
+npm run lxx:morpheus-check -- --coverage            # the mapping's coverage over the sweep's forms, and the words still with no candidate, by reason
 npm run lxx:batches -- --book gen              # the book's pending words in batches of about 700: the table the model stories are filed from ('A model session')
 npm run lxx:batches -- --all                   # a row for each of the 39 books: words, pending, no candidate (the words forced to be a guess), that as a share of the words, and how many are names
 npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with their verses and candidates: for a model session

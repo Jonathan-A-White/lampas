@@ -8,7 +8,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { hasLower, keyOf, PUNCT } from './swete';
+import { bareOf, hasLower, keyOf, PUNCT } from './swete';
 
 export const MORPHEUS = {
   repo: 'https://github.com/perseids-tools/morpheus',
@@ -124,30 +124,33 @@ export interface CrunchEntry {
 }
 
 /**
- * Cruncher's output: for each form an echo line, then its `<NL>…</NL>` segments (none when it does not know the form). With `inputs`, the echoes must be those
- * forms in that order.
+ * Cruncher's output: for each form it KNOWS an echo line, then its `<NL>…</NL>` segments. A form it does not know has no line on standard output at all (cruncher
+ * says it on standard error, which `crunch` does not return), so with `inputs` an input without an echo is an entry with no readings, and the echoes must be
+ * inputs, in that order. Without `inputs` the entries are the echoes (an unknown form is not seen).
  */
 export function parseCruncher(output: string, inputs?: readonly string[]): CrunchEntry[] {
-  const entries: CrunchEntry[] = [];
+  const echoed: CrunchEntry[] = [];
   for (const line of output.split('\n')) {
     if (!line.trim()) continue;
     if (!line.startsWith('<NL>')) {
-      entries.push({ input: line.trim(), raws: [] });
+      echoed.push({ input: line.trim(), raws: [] });
       continue;
     }
-    const entry = entries.at(-1);
+    const entry = echoed.at(-1);
     if (!entry) throw new Error(`Morpheus: an analysis before any form: ${line}`);
     for (const m of line.matchAll(/<NL>(.*?)<\/NL>/g)) {
       const raw = parseAnalysis(m[1]);
       if (raw) entry.raws.push(raw);
     }
   }
-  if (inputs) {
-    if (entries.length !== inputs.length) throw new Error(`Morpheus answered ${entries.length} forms for ${inputs.length}`);
-    entries.forEach((e, i) => {
-      if (e.input !== inputs[i]) throw new Error(`Morpheus answered '${e.input}' where '${inputs[i]}' was asked`);
-    });
+  if (!inputs) return echoed;
+  const entries: CrunchEntry[] = [];
+  let next = 0;
+  for (const input of inputs) {
+    if (echoed[next]?.input === input) entries.push(echoed[next++]);
+    else entries.push({ input, raws: [] });
   }
+  if (next !== echoed.length) throw new Error(`Morpheus answered '${echoed[next].input}' where it was not asked, or out of order (${echoed.length} echoes for ${inputs.length} forms)`);
   return entries;
 }
 
@@ -165,17 +168,31 @@ const GENDERS: Readonly<Record<string, string>> = { masc: 'M', fem: 'F', neut: '
 const NUMBERS: Readonly<Record<string, string>> = { sg: 'S', pl: 'P' };
 const PERSONS: Readonly<Record<string, string>> = { '1st': '1', '2nd': '2', '3rd': '3' };
 const TENSES: Readonly<Record<string, string>> = { pres: 'P', imperf: 'I', fut: 'F' };
-const VOICES: Readonly<Record<string, string>> = { act: 'A', mid: 'M', pass: 'P', mp: 'E' };
+const VOICES: ReadonlySet<string> = new Set(['act', 'mid', 'pass', 'mp']);
 const MOODS: Readonly<Record<string, string>> = { ind: 'I', subj: 'S', opt: 'O', imperat: 'M', inf: 'N', part: 'P' };
 /** Morpheus's ending tables of adjectives (stemlib/Greek/endtables); every other table that holds a case and number is a noun's. */
 const ADJECTIVE_TABLES: ReadonlySet<string> = new Set([
   'os_h_on', 'os_a_on', 'os_on', 'oos_oh_oon', 'oos_oon', 'us_eia_u', 'hs_es', 'wn_on', 'wn_on_comp', 'wn_ousa_on', 'ws_wn', 'ws_wn_long', 'as_asa_an', 'eis_essa',
-  'hn_eina_en', 'heis_hessa', 'oeis_oessa', 'ous_ontos', 'is_idos_adj', 'is_itos_adj', 'n_nos_adj', 'art_adj',
+  'hn_eina_en', 'heis_hessa', 'oeis_oessa', 'ous_ontos', 'is_idos_adj', 'is_itos_adj', 'n_nos_adj', 'art_adj', 'irreg_adj3',
 ]);
 /** The class after `indeclform`: the indeclinable words the mapping covers. */
-const INDECLINABLE: Readonly<Record<string, string>> = { conj: 'CONJ', particle: 'PRT', adverb: 'ADV', prep: 'PREP' };
+const INDECLINABLE: Readonly<Record<string, readonly string[]>> = { conj: ['CONJ'], particle: ['PRT', 'CONJ'], adverb: ['ADV'], prep: ['PREP'] };
+/** The ending tables and classes of Morpheus's pronouns (personal, reflexive, demonstrative, relative, indefinite, interrogative): not mapped, TAGNT's codes for them are of their own kinds. */
+const PRONOUN_CLASSES: ReadonlySet<string> = new Set(['pron1', 'pron_adj1', 'pron_adj3', 'demonstr', 'relative', 'indef', 'interrog', 'reflex']);
+/**
+ * Lemmas Morpheus declines as a noun or an adjective (αὐτός is `fem nom pl`, class art_adj) where TAGNT gives every form a pronoun's code of its own (P-, D-, S-, F-, C-,
+ * K-, Q-, I-): a candidate with N- or A- would be false. Found as the cache's mapped lemmas that TAGNT never writes with that kind of code, in the sweep's 11,091 readings, and
+ * in the known-answer chapters (Jhn.1, Rom.8): the personal, demonstrative, possessive, reflexive, reciprocal, correlative and interrogative pronouns and adjectives. By bare letters.
+ */
+const PRONOUN_LEMMAS: ReadonlySet<string> = new Set(
+  ['αὐτός', 'ἐκεῖνος', 'οὗτος', 'ὅδε', 'ἐμός', 'σός', 'ἡμός', 'ὑμός', 'ὅσος', 'πόσος', 'οἷος', 'τοσοῦτος', 'ποῖος', 'ἀλλήλων', 'ἑαυτοῦ', 'σαυτοῦ', 'ἐμαυτοῦ'].map(bareOf),
+);
 /** More readings than this from one segment (every gender and case it lists) are too loose to be candidates. */
 const MAX_READINGS = 6;
+/** The flags of a noun or adjective reading that leave it one reading to one code: a contracted form, an enclitic, a movable nu, an alpha privative. */
+const NOUN_FLAGS: ReadonlySet<string> = new Set(['contr', 'enclitic', 'nu_movable', 'a_priv', 'poetic']);
+/** The tables of a noun or adjective whose forms Morpheus lists one by one and flags `indeclform` (class `irreg_decl3`, `irreg_adj3`). */
+const IRREGULAR_TABLES: ReadonlySet<string> = new Set(['irreg_decl3', 'irreg_adj3']);
 
 const words = (s: string): string[] => s.split(/[\s,]+/).filter(Boolean);
 /** `masc/fem` as ['M', 'F']; undefined when a part is not in the table (the dual). */
@@ -210,23 +227,52 @@ function declined(tokens: readonly string[]): Declined | undefined {
 const ordered = (d: Declined): string[] => d.genders.flatMap((g) => d.cases.flatMap((c) => d.numbers.map((n) => `${c}${n}${g}`)));
 
 /**
- * One reading of Morpheus as TAGNT's codes, or undefined when the mapping is not one reading to one code. Mapped: a finite verb, an infinitive and a participle
+ * One reading of Morpheus as TAGNT's codes, or the reason it is not one reading to one code (`unmappedWhy`). Mapped: a finite verb, an infinitive and a participle
  * of the present, imperfect, future and aorist (first or second by the ending table, passive by `aor_pass`); a noun; an adjective (by the ending table); the
- * article; a conjunction, a particle, an adverb and a preposition. A list of genders or cases in one reading is a code each (at most MAX_READINGS). Not mapped:
+ * article; a conjunction, a particle, an adverb and a preposition; a noun or adjective whose forms Morpheus lists one by one (`indeclform`, class `irreg_decl3`). A list of genders or cases in one reading is a code each (at most MAX_READINGS). Not mapped:
  * the dual, a comparative or superlative, a dialect without Attic, an unaugmented form, a perfect or pluperfect (TAGNT's second perfect is not told by its
  * table), a pronoun, a numeral, an English gloss, anything else. Deponents are not told either: the passive of a deponent verb maps to P where TAGNT writes O
  * (the report's 'differed' shows it).
  */
 export function mapAnalysis(raw: RawAnalysis): Mapped[] | undefined {
+  const r = mapReading(raw);
+  return typeof r === 'string' ? undefined : r;
+}
+
+/** Why a reading is left out, in a word or two (a class of `unmappedWhy`); undefined when the mapping covers it. */
+export function unmappedWhy(raw: RawAnalysis): string | undefined {
+  const r = mapReading(raw);
+  return typeof r === 'string' ? r : undefined;
+}
+
+/** The tenses of Morpheus that no TAGNT code is made for, by the name the report uses. */
+const LEFT_OUT_TENSES: Readonly<Record<string, string>> = { perf: 'perfect', plup: 'pluperfect', futperf: 'future perfect' };
+
+/**
+ * TAGNT's voice letters for Morpheus's voice (one reading to each). Morpheus prints `mp` for a form that is middle or passive, and for a deponent verb in every tense;
+ * TAGNT, which says what the form is, writes `N` for a deponent's present and imperfect, `D` (middle deponent) or `O` (passive deponent) for its aorist and future,
+ * and `P` or `M` for any other verb: its `E` (the form is middle or passive) is rare, so it is not offered. A deponent is told by its lemma ending in -μαι.
+ */
+export function voicesOf(voice: string, tense: string, lemma: string): string[] {
+  const deponent = /μαι$/.test(lemma);
+  const later = tense !== 'P' && tense !== 'I';
+  if (voice === 'act') return ['A'];
+  if (voice === 'mid') return deponent ? ['M', 'D'] : ['M'];
+  if (voice === 'pass') return deponent && later ? ['P', 'O'] : ['P'];
+  return deponent ? (later ? ['D', 'O'] : ['N']) : ['P', 'M'];
+}
+
+function mapReading(raw: RawAnalysis): Mapped[] | string {
   const dialects = words(raw.dialects);
-  if (dialects.length && !dialects.includes('attic')) return undefined;
+  if (dialects.length && !dialects.includes('attic')) return 'a dialect without Attic';
   const flags = words(raw.flags);
-  if (flags.includes('unaugmented')) return undefined;
+  if (flags.includes('unaugmented')) return 'an unaugmented form';
   const lemma = fromBeta(raw.lemma);
-  if (!lemma) return undefined;
+  if (!lemma) return 'no lemma';
+  if (PRONOUN_LEMMAS.has(bareOf(lemma))) return 'a pronoun';
   const tokens = words(raw.features);
   const classes = words(raw.classes);
-  const done = (codes: string[]): Mapped[] | undefined => (codes.length > 0 && codes.length <= MAX_READINGS ? codes.map((code) => ({ lemma, code })) : undefined);
+  const done = (codes: string[], why: string): Mapped[] | string => (codes.length > 0 && codes.length <= MAX_READINGS ? codes.map((code) => ({ lemma, code })) : why);
 
   if (raw.pos === 'V' || raw.pos === 'P') {
     const [tenseWord, ...rest] = tokens;
@@ -234,44 +280,53 @@ export function mapAnalysis(raw: RawAnalysis): Mapped[] | undefined {
     if (tenseWord === 'aor') {
       const second = classes.some((c) => c === 'aor2' || c === 'aor2_pass');
       const first = classes.some((c) => c === 'aor1' || c === 'aor_pass');
-      if (second === first) return undefined;
+      if (second === first) return 'an aorist whose table does not say first or second';
       tense = second ? '2A' : 'A';
     }
-    if (!tense) return undefined;
+    if (!tense) return LEFT_OUT_TENSES[tenseWord] ?? 'a tense TAGNT has no code for here';
     // Morpheus prints the mood, then the voice, then a finite verb's person and number or a participle's gender, case and number
     const moodWord = rest.find((t) => Object.hasOwn(MOODS, t));
-    const voice = VOICES[rest.find((t) => Object.hasOwn(VOICES, t)) ?? ''];
+    const voiceWord = rest.find((t) => VOICES.has(t));
+    const voices = voiceWord ? voicesOf(voiceWord, tense, lemma) : [];
     const mood = MOODS[moodWord ?? ''];
-    if (!mood || !voice) return undefined;
-    const tail = rest.filter((t) => !Object.hasOwn(MOODS, t) && !Object.hasOwn(VOICES, t));
+    if (!mood || voices.length === 0) return 'no mood or voice the table knows';
+    const tail = rest.filter((t) => !Object.hasOwn(MOODS, t) && !VOICES.has(t));
     if (moodWord === 'part') {
       const d = declined(tail);
-      return d ? done(ordered(d).map((x) => `V-${tense}${voice}P-${x}`)) : undefined;
+      return d ? done(voices.flatMap((voice) => ordered(d).map((x) => `V-${tense}${voice}P-${x}`)), 'too many readings') : 'a participle with no case, number and gender the table knows';
     }
-    if (moodWord === 'inf') return tail.length === 0 ? done([`V-${tense}${voice}N`]) : undefined;
+    if (moodWord === 'inf') return tail.length === 0 ? done(voices.map((voice) => `V-${tense}${voice}N`), 'too many readings') : 'an infinitive with more than a tense and voice';
     const [person, number] = tail;
     const p = PERSONS[person ?? ''];
     const n = NUMBERS[number ?? ''];
-    if (tail.length !== 2 || !p || !n) return undefined;
-    if (tense === 'I' && mood !== 'I') return undefined;
-    return done([`V-${tense}${voice}${mood}-${p}${n}`]);
+    if (tail.length !== 2 || !p || !n) return 'the dual or no person and number';
+    if (tense === 'I' && mood !== 'I') return 'an imperfect that is not indicative';
+    return done(voices.map((voice) => `V-${tense}${voice}${mood}-${p}${n}`), 'too many readings');
   }
 
-  if (raw.pos !== 'N') return undefined;
+  if (raw.pos !== 'N') return 'not a noun, verb or participle';
+  if (classes.some((c) => PRONOUN_CLASSES.has(c))) return 'a pronoun';
   if (flags.includes('indeclform')) {
     const kind = classes.at(-1) ?? '';
     if (kind === 'article') {
       const d = declined(tokens);
-      return d ? done(ordered(d).map((x) => `T-${x}`)) : undefined;
+      return d ? done(ordered(d).map((x) => `T-${x}`), 'too many readings') : 'an article with no case, number and gender the table knows';
     }
-    const code = INDECLINABLE[kind];
-    return code && tokens.length === 0 ? done([code]) : undefined;
+    const codes = INDECLINABLE[kind];
+    if (codes && tokens.length === 0) return done([...codes], 'too many readings');
+    if (codes) return 'an indeclinable with features';
+    if (kind === 'numeral') return 'a numeral';
+    if (PRONOUN_CLASSES.has(kind)) return 'a pronoun';
+    // `indeclform` on an irregular noun's table (irreg_decl3: δόρατι, κυνός) says only that the form is listed by itself: its case, number and gender are a noun's
+    const listed = declined(tokens);
+    if (!(IRREGULAR_TABLES.has(kind) && listed)) return `an indeclinable of the class ${kind || 'none'}`;
+    return done(ordered(listed).map((x) => `${ADJECTIVE_TABLES.has(kind) ? 'A' : 'N'}-${x}`), 'too many readings');
   }
-  if (flags.length && !flags.every((f) => f === 'contr' || f === 'enclitic')) return undefined;
+  if (flags.length && !flags.every((f) => NOUN_FLAGS.has(f))) return flags.some((f) => f === 'irreg_comp' || f === 'irreg_superl') ? 'a comparative or superlative' : `a noun flag: ${flags.find((f) => !NOUN_FLAGS.has(f))}`;
   const d = declined(tokens);
-  if (!d) return undefined;
+  if (!d) return tokens.includes('comp') || tokens.includes('superl') ? 'a comparative or superlative' : tokens.includes('dual') ? 'the dual' : tokens.includes('adverbial') ? 'an adverb made from an adjective' : 'no case, number and gender the table knows';
   const adjective = classes.some((c) => ADJECTIVE_TABLES.has(c));
-  return done(ordered(d).map((x) => `${adjective ? 'A' : 'N'}-${x}`));
+  return done(ordered(d).map((x) => `${adjective ? 'A' : 'N'}-${x}`), 'too many readings');
 }
 
 /** What Morpheus knows of a form: the readings it maps (once each, in order) and how many it could not. */
