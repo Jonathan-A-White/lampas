@@ -42,7 +42,7 @@ export interface GreekWord {
   /** position in this verse's `e` array of the English chunk this word is part of; absent: no English */
   e?: number;
   /**
-   * PROVISIONAL, the Septuagint only (public/data-lxx, docs/data.md 'The Septuagint data'; nothing reads it yet): the layer of Lampas's derivation that gave this word its lemma
+   * PROVISIONAL, the Septuagint only (public/data-lxx, docs/data.md 'The Septuagint data'; src/data/lxxChapter.ts, src/reader/septuagint.ts): the layer of Lampas's derivation that gave this word its lemma
    * and parsing: '1' (the word's form in the New Testament), '2' (the parser), '2a' (the agreement check), '3' (a model session's choice), or 'g' when the confidence is below 0.5
    * (a guess). Absent in the New Testament and the Old Testament.
    */
@@ -151,7 +151,7 @@ export interface VerseRef {
 export interface Verse {
   n: number;
   /**
-   * PROVISIONAL, the Septuagint only (nothing reads it yet): the verse of Lampas's Old Testament this Greek verse is, from STEPBible's TVTMS, since the Septuagint's chapters and verses
+   * PROVISIONAL, the Septuagint only (the Reader's verse number, src/reader/septuagint.ts): the verse of Lampas's Old Testament this Greek verse is, from STEPBible's TVTMS, since the Septuagint's chapters and verses
    * are not always the Hebrew's (the Psalms one number lower from Ps 10). 'none' when Lampas has no verse for it (an Addition, a Psalm's extra title). When it is several Lampas
    * verses this is the first and `refs` lists them all. Absent in the New Testament and the Old Testament.
    */
@@ -186,7 +186,7 @@ export interface Chapter {
   lang?: SourceLanguage;
   /** the translation the English chunks are from: 'msb', the Majority Standard Bible (its Old Testament is the Berean Standard Bible's); absent means 'msb'; 'lxx2012' in the Septuagint (Brenton's, one chunk a verse) */
   translation?: string;
-  /** PROVISIONAL, the Septuagint only (nothing reads it yet): the edition of the Greek the words are from, 'swete' (Swete's The Old Testament in Greek); absent in the New Testament and the Old Testament */
+  /** PROVISIONAL, the Septuagint only (isSeptuagint reads it, src/reader/septuagint.ts): the edition of the Greek the words are from, 'swete' (Swete's The Old Testament in Greek); absent in the New Testament and the Old Testament */
   edition?: string;
   /** every Strong's number used in this file -> its gloss and definition, once */
   lex: Record<string, LexEntry>;
