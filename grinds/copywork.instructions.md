@@ -78,9 +78,9 @@ dot inside, then the dot above, then the points below. Finding one mark does not
 two dots in two places, and the vowel below is a third.
 
 Take בְּרֵאשִׁית. The bet has a dagesh, a dot inside its body, and a sheva, two dots one above the other below it; the resh has a tsere, two
-dots side by side below it; the shin has the shin dot above its right arm and a hiriq, one small dot below it. Take הַשָּׁמַיִם. The he has a
-patah below it; the shin has the shin dot above, a dagesh inside its body and a qamets below; the mem has a patah and a hiriq below it, and a
-yod stands between the hiriq and the final mem. A page that has each of these has the word `right`: do not call the dagesh missing because the
+dots side by side below it; the shin has the shin dot above its right arm and a hiriq, one small dot below it. Take הַשָּׁמַיִם. The he has a patah, a short dash, below it; the shin has the shin dot above its right arm, a dagesh inside its body and a
+qamets below; the mem has a patah below it; the yod, a small tick, has a hiriq, one dot, below it; then comes the final mem.
+A page that has each of these has the word `right`: do not call the dagesh missing because the
 shin dot or the vowel is the more visible, do not read one dot for another, and do not call a yod missing when it stands in its place.
 When you looked at the place and the mark is there, mark the word `right`; when it is not there, the word is `wrong` as above.
 
