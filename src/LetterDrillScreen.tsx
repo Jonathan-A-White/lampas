@@ -8,7 +8,7 @@
 // the phone's speech recognition writes what it heard and src/data/grammar/sayIt.ts checks it; a miss says the right sound and shows the answer. A phone with no recognition, or with
 // the microphone refused, is never asked; a refusal found at the bar leaves every Say it question out of the drill, and a Say it that is skipped costs him nothing.
 // The drill is of the ladder in hand (mw-gdcyf98.11, `lang`): Got it on The Hebrew alphabet drills the Hebrew 27 glyphs (the 22 letters and the 5 final forms, one target each), drawn right to left in the
-// Hebrew face and heard in the Hebrew voice, their sounds the Israeli scheme's lessons. Hebrew has no Say it, no Write it and keeps no evidence of its answers yet.
+// Hebrew face and heard in the Hebrew voice, their sounds the Israeli scheme's lessons. Hebrew has no Say it and keeps no evidence of its answers yet; it has Write it (mw-5r3p30.913), the final forms written in their own shape.
 import { useEffect, useState } from 'react';
 import { answerTarget, drawRound, isComplete, letterSetOf, newDrillRandom, rightCount, startLetterDrill, withWriting, type DrillStep, type LetterDrillState, type RoundItem } from './data/grammar/letterDrill';
 import { ideaOf } from './data/grammar/ladder';
@@ -56,7 +56,7 @@ export function LetterDrillScreen({ onClose, lang = 'grc' }: { onClose: () => vo
   const [random] = useState(newDrillRandom);
   // Write it is mixed in from the round drawn after it is known to be on (mw-86e9r1.51); the first round waits for it, which takes a moment
   const handwriting = useHandwritingOn();
-  const writing = hebrew ? false : handwriting;
+  const writing = handwriting;
   // Say it is in the rounds drawn once the phone is known to be able to hear him, and until a refusal is found at the bar (mw-86e9r1.12)
   const heard = useCanHear();
   const canHear = hebrew ? false : heard;
@@ -142,7 +142,8 @@ export function LetterDrillScreen({ onClose, lang = 'grc' }: { onClose: () => vo
         {step?.kind === 'write' ? (
           <WriteIt
             key={`${sitting.number}:${at}`}
-            idea={ideaOf(step.letter)}
+            idea={ideaOfAny(step.letter)}
+            form={step.form}
             onSkip={next}
             afterRight={() => (
               <button type="button" data-testid="write-next" ref={focusOnMount} onClick={next} className={WRITE_PRIMARY}>

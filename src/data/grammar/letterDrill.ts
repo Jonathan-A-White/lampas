@@ -4,7 +4,7 @@
 // target answered wrong again later is not right any more. The drill is over when every target is right. Nothing here touches the store or the screen
 // (src/LetterDrillScreen.tsx draws it; src/data/repositories/inference.ts noteDrillAnswer keeps what each answer shows, and never makes a letter solid).
 // The drill takes the letters of the ladder in hand (mw-gdcyf98.11, `LetterSet`): Greek's 24 letters, small and capital, as above, or Hebrew's 27 glyphs (the 22 letters and the 5 final forms, one target each),
-// asked from the Israeli scheme's lessons (hebrew/letterQuestions.ts); every function takes the set last and means the Greek one when it is left out. Hebrew has no Say it and no Write it yet.
+// asked from the Israeli scheme's lessons (hebrew/letterQuestions.ts); every function takes the set last and means the Greek one when it is left out. Hebrew has no Say it; it has Write it (mw-5r3p30.913), a final form written in its own shape.
 import { mulberry32, shuffle, type Random } from '../random';
 import { chosenPronunciation } from '../../speech/greek';
 import type { Pronunciation } from '../../speech/pronunciation';
@@ -142,7 +142,7 @@ export function drawRound(state: LetterDrillState, random: Random, scheme?: Pron
 export const WRITE_PER_ROUND = 2;
 
 /** What the screen asks next: a question of the round, or Write it on a letter (its ladder id) the round has just asked. */
-export type DrillStep = { kind: 'choice'; item: RoundItem } | { kind: 'write'; letter: string };
+export type DrillStep = { kind: 'choice'; item: RoundItem } | { kind: 'write'; letter: string; form?: 'final' };
 
 /**
  * The round as it is asked: with `writing`, a Write it after every third question, on the letter that question asked, WRITE_PER_ROUND at most; without
@@ -154,6 +154,7 @@ export function withWriting(round: readonly RoundItem[], writing: boolean): Dril
     const choice: DrillStep = { kind: 'choice', item };
     if (!writing || written >= WRITE_PER_ROUND || (i + 1) % 3 !== 0) return [choice];
     written += 1;
-    return [choice, { kind: 'write', letter: item.target.letter }];
+    // a Hebrew final form is written in its own shape; every other target writes the letter's ordinary one
+    return [choice, { kind: 'write', letter: item.target.letter, ...(item.target.form === 'final' ? { form: 'final' as const } : {}) }];
   });
 }

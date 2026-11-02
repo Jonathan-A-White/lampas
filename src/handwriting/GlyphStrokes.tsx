@@ -3,14 +3,15 @@
 // order and the direction show (index.css .glyph-stroke). The design frame is fitted to the box whatever the letter's height.
 // It teaches the form (mw-86e9r1.56): each stroke has a numbered start point and an arrowhead along it, both drawn in the SVG and kept when the animation is
 // over, and StrokeLine is the plain line under the model that says how many strokes there are.
-import { GLYPHS, type Variant } from './templates';
+import { variantsOf } from './glyphs';
+import type { Variant } from './templates';
 import { strokeLineOf } from './writeText';
 
 /** Each stroke takes this long to draw, and the next starts when it ends. */
 const STROKE_MS = 700;
 
 /** The way the letter is shown: its first variant. */
-const modelOf = (letter: string): Variant => GLYPHS[letter]?.[0] ?? [];
+const modelOf = (letter: string): Variant => variantsOf(letter)?.[0] ?? [];
 
 function boxOf(variant: Variant): { x: number; y: number; side: number } {
   const points = variant.flat();
