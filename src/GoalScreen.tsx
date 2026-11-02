@@ -2,7 +2,7 @@
 // (Learn next, a lesson to take) and "the next low hanging fruit to frontier" (Next words, three words to add). Two bars, words and grammar ideas, each cut
 // into solid, frontier and not yet with the counts written in them; a tap on a bar opens the list behind it. Place me opens the placement, Read it the Reader
 // on the goal. The numbers are progressToward's (src/data/grammar/needs.ts), worked out in src/useGoalProgress.ts. Below the main path, the optional
-// 'Hard sounds (optional)' (src/hardSounds/HardSoundsSection.tsx) and 'Learn the IPA sounds' (src/ipa/OptionalEntry.tsx).
+// 'Hard sounds (optional)' and, for a reader of Hebrew, 'Hard sounds of Hebrew (optional)' (src/hardSounds/HardSoundsSection.tsx) and 'Learn the IPA sounds' (src/ipa/OptionalEntry.tsx).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
@@ -137,6 +137,7 @@ function NoGoalBody({ levels }: { levels: ReadonlyMap<string, Level> }) {
           <ReadingLadderSection />
         </div>
         <HardSoundsSection />
+        <HardSoundsSection language="he" />
         <OptionalEntry />
         <div className="pb-[var(--lp-end-inset)]" />
       </main>
@@ -554,6 +555,7 @@ function GoalBody({ progress }: { progress: Extract<GoalProgress, { status: 'rea
           </button>
         </section>
         <HardSoundsSection />
+        <HardSoundsSection language="he" />
         <OptionalEntry />
         <div className="pb-[var(--lp-end-inset)]" />
       </main>

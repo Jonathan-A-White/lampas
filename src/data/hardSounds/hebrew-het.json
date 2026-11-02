@@ -1,0 +1,75 @@
+{
+  "id": "hebrew-het",
+  "title": "Saying the het",
+  "learn": "Learn to say the het",
+  "language": "he",
+  "scheme": "israeli",
+  "for": [
+    "american",
+    "british"
+  ],
+  "sounds": [
+    "/x/"
+  ],
+  "letters": [
+    "ח"
+  ],
+  "steps": [
+    {
+      "kind": "why",
+      "text": {
+        "american": "English has no word that starts with the sound of the Hebrew ח, so you will want to say it as an h, and חַי comes out as “hi”, or push it back into a k. The ח is a rasp: breath pushed through a narrow gap at the back of the mouth, with no voice, the sound in the middle of “chutzpah”. The letter כ without its dot says the same sound. None of this is needed to read Hebrew, so leave it whenever you like.",
+        "british": "English has no word that starts with the sound of the Hebrew ח, so you will want to say it as an h, and חַי comes out as “hi”, or push it back into a k. The ח is a rasp: breath pushed through a narrow gap at the back of the mouth, with no voice, the sound at the end of the Scottish “loch”. The letter כ without its dot says the same sound. None of this is needed to read Hebrew, so leave it whenever you like."
+      }
+    },
+    {
+      "kind": "from-known",
+      "text": {
+        "american": "You can find it from a sound you know. Start with a long whisper, as if you were fogging a mirror: hhh. Now lift the back of your tongue toward the soft part of the roof of your mouth, and keep breathing until the air scrapes. Or say “chutzpah” and stay on its first sound. That scrape, with no voice and no k at the end, is the ח.",
+        "british": "You can find it from a sound you know. Say “loch” the Scottish way and stay on the last sound. Or start with a long whisper, as if you were fogging a mirror: hhh. Now lift the back of your tongue toward the soft part of the roof of your mouth, and keep breathing until the air scrapes. That scrape, with no voice and no k, is the ח."
+      }
+    },
+    {
+      "kind": "hear",
+      "text": "Listen for the rasp at the start of חֶסֶד and חַיִּים, in the middle of לֶחֶם, and at the end of רוּחַ, where the a is said before the rasp: ru-akh. It is a breath with a scrape, never a plain h and never a k.",
+      "words": [
+        "חֶסֶד",
+        "חַיִּים",
+        "לֶחֶם",
+        "רוּחַ"
+      ]
+    },
+    {
+      "kind": "contrast",
+      "text": "Each pair differs only in ח and ה, or in ח and ק. For ה the breath is soft and goes through the open mouth; for ק the back of the tongue stops the air, as in “cake”; for ח it narrows the gap and the air scrapes. Hear both words, then say both.",
+      "pairs": [
+        [
+          "חָיָה",
+          "הָיָה"
+        ],
+        [
+          "חוֹל",
+          "קוֹל"
+        ],
+        [
+          "פָּחַד",
+          "פָּקַד"
+        ],
+        [
+          "חָרָה",
+          "הָרָה"
+        ]
+      ]
+    },
+    {
+      "kind": "try",
+      "text": "Say each word after the voice. Keep the scrape light and steady: not an h, and no k at the end of it. The ח at the end of רוּחַ comes after the a.",
+      "words": [
+        "חֶסֶד",
+        "לֶחֶם",
+        "רוּחַ",
+        "חַיִּים"
+      ]
+    }
+  ]
+}

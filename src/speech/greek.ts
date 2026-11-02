@@ -518,6 +518,9 @@ export function greekWordSpeech(text: string): { text: string; language: SpeechL
   return { text: scheme.wordForm ? scheme.wordForm(word) : scheme.voiceForm(word), language: 'greek' };
 }
 
+/** What the Hebrew voice is handed for a Hebrew word held alone (mw-5r3p30.912): the chosen Hebrew pronunciation's voiceForm, the cantillation marks taken off. */
+export const hebrewWordSpeech = (text: string): { text: string; language: SpeechLanguage } => ({ text: hebrewVoiceForm(text), language: 'hebrew' });
+
 /** What Settings > Reading voices' Test says, one after the other (mw-5r3p30.357): a word stressed on its last syllable, then one stressed before it, so he
  * hears whether his Greek voice puts the stress where the respelling does. */
 export const VOICE_TEST_WORDS: readonly string[] = ['πατήρ', 'ἀγάπη'];
