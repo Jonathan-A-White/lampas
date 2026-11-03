@@ -3,10 +3,15 @@
 // and its box must not meet the ?'s. The card of Drill it, the short drill, Check and Try it (GrammarCard) has its own rows, with taps, in tests/e2e/door-overlap.spec.ts. A screen that fails here is named in the story's
 // closing comment, not skipped: it is left out of SCREENS only with a reason in a comment.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { honestMic } from '../support/honest-fakes';
+import { GREEK_READING_ANSWER, makeFakePostern, PARTIAL_ANSWER, QUIZ_ANSWER, WELL_READ_ANSWER } from '../support/fake-postern';
+import { holdFor } from '../support/hold';
+import { routePostern } from '../support/playwright-postern';
 import { FLOATING } from './open-tutor';
 import { openLetterDrill } from './large-text-titles';
 import { keepHand } from './tutor-door';
 import { openUnlocked } from './unlocked';
+import { chooseAction } from './verse-view';
 
 test.use({ hasTouch: true });
 
@@ -221,6 +226,216 @@ for (const size of SIZES) {
       await blank.click();
       await expect(page.getByTestId('grade-row')).toBeVisible();
       await expectAllClear(page, 'the paradigm drill');
+    });
+  }
+}
+
+// --- the screens the first sweep did not walk (mw-5r3p30.998): Memorize's answers, the Reading check (ReadCheck, with its walk of the words to fix), the Reading ladder and the Reading drill ---------------------
+// These sit in the Verse view or a screen of their own, in rows whose buttons are as wide as their words or as the box (NextBar's 'view' and 'sheet' branches), so the ? at the Hand's side can be over one at whatever
+// height its box has scrolled to, not only the one a short screen leaves it at. Here the claim is the stronger one that no button of the screen has any part in the ?'s column (its width, from the window's edge), at every state.
+
+/** Every button in `within` that is on screen has no part in the ?'s column: it ends before the ? begins (right hand) or begins after the ? ends (left hand), whatever height the ? stands at. Returns how many it checked.
+ * The hold bar (.lp-bar) is not counted: it is pinned at the foot, under the ?'s height at both sizes (as NextBar's FootBar), and the header's Done of a sheet is checked by checkDone. */
+async function expectClearOfDoorColumn(page: Page, where: string, within: Locator): Promise<number> {
+  await expect(page.locator(FLOATING)).toBeVisible();
+  let checked = 0;
+  // a screen that has just mounted reads the Hand for itself and keeps the right side clear until it has (useHand: Right until it is read): the check waits for it to settle, and a clash that stays fails
+  await expect(async () => {
+    const door = (await page.locator(FLOATING).boundingBox())!;
+    const buttons = within.locator('button:not(.lp-bar)');
+    const count = await buttons.count();
+    checked = 0;
+    for (let i = 0; i < count; i += 1) {
+      const button = buttons.nth(i);
+      if (!(await button.isVisible())) continue;
+      const at = (await button.boundingBox())!;
+      const label = ((await button.textContent()) ?? (await button.getAttribute('aria-label')) ?? '').trim().slice(0, 40);
+      expect(overlaps({ ...door, y: 0, height: 10_000 }, { ...at, y: 0, height: 1 }), `${where}: the ? column ${JSON.stringify([door.x, door.x + door.width])} has "${label}" ${JSON.stringify(at)}`).toBe(false);
+      checked += 1;
+    }
+  }).toPass({ timeout: 10_000 });
+  expect(checked, `${where}: some buttons were checked`).toBeGreaterThan(0);
+  return checked;
+}
+
+/** Same rows for a phone each size and hand: `run` is given a page at the size, the Hand kept, on the Greek Romans 8. */
+function sweepForEach(name: string, run: (page: Page) => Promise<void>, { mic = true }: { mic?: boolean } = {}): void {
+  for (const size of SIZES) {
+    for (const hand of ['right', 'left'] as const) {
+      test.describe(`${name} at ${size.name}, ${hand}-handed`, () => {
+        // holdFor times each hold on the page's clock, so it is installed before the page opens
+        test.beforeEach(async ({ page }) => {
+          await page.clock.install();
+        });
+        test(`keeps its buttons out of the ?'s column`, async ({ page }) => {
+          test.setTimeout(120_000);
+          await page.setViewportSize(size);
+          if (mic) await honestMic(page);
+          await openUnlocked(page);
+          await page.goto('/');
+          await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+          await keepHand(page, hand);
+          await run(page);
+        });
+      });
+    }
+  }
+}
+
+const HOLD_MS = 2800;
+const OU_WORD_ANSWER = {
+  verdict: 'some-to-fix',
+  focus_words: [{ word: 'οὐρανοῦ', index: 0, chunks: ['οὐ', 'ρα', 'νοῦ'], tip: 'The ου is one sound, oo.' }],
+  note: 'Nearly there: one word to say again.',
+};
+
+/** Puts Romans 8:28 on the schedule at step 2, due, as Memorize wrote it (tests/e2e/memorize-session.spec.ts). */
+async function seedMemorizeVerse(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction(['reviews'], 'readwrite');
+          const now = Date.now();
+          tx.objectStore('reviews').put({ kind: 'verse', id: 'el:Rom.8.28', step: 2, due: now - 1000, lastWhen: now - 86_400_000, lapses: 0, rights: 0 });
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+}
+
+sweepForEach('Memorize, its questions and its judgement', async (page) => {
+  await seedMemorizeVerse(page);
+  await page.goto('/#/memorize/Rom.8.28/el');
+  await expect(page.getByRole('heading', { name: 'Romans 8:28', level: 1 })).toBeVisible();
+  const screen = page.locator('main');
+  // the verse, Hear it and Type it
+  await expectClearOfDoorColumn(page, 'Memorize at the verse', screen);
+  // the hold says it from memory (the honest recogniser hears it as Greek and judges it): the judgement's Hear it and Done. The note's I had it and Not yet (a phone that cannot take dictation) stand in the row of Hear it above.
+  await holdFor(page, page.getByRole('button', { name: 'Hold to say it' }), HOLD_MS);
+  await page.getByTestId('judgement').waitFor();
+  await expectClearOfDoorColumn(page, 'Memorize at the judgement', screen);
+});
+
+sweepForEach('the Reading check, its words to fix and its walk', async (page) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: GREEK_READING_ANSWER };
+  await routePostern(page, fake);
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  await expectClearOfDoorColumn(page, 'the Reading check before a reading', panel);
+  await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 28', exact: true }), HOLD_MS);
+  await expect(panel).toContainText('Words to fix');
+  await expectClearOfDoorColumn(page, 'the Reading check with words to fix', panel);
+  await panel.getByRole('button', { name: 'Read these again', exact: true }).click();
+  const walk = panel.getByRole('group', { name: 'Read these again' });
+  await expect(walk).toContainText('Word 1 of 2');
+  // NextBar's 'view' branch: Next word, then On to the whole verse, and Done
+  await expectClearOfDoorColumn(page, 'the walk at Next word', walk);
+  await walk.getByRole('button', { name: 'Next word', exact: true }).click();
+  await expect(walk).toContainText('Word 2 of 2');
+  await expectClearOfDoorColumn(page, 'the walk at On to the whole verse', walk);
+  await walk.getByRole('button', { name: 'On to the whole verse', exact: true }).click();
+  await expect(walk.locator('[data-walk-verse]')).toBeVisible();
+  await expectClearOfDoorColumn(page, 'the walk at the whole verse', walk);
+});
+
+sweepForEach('the Reading ladder, Skip for now, Try again and Next verse', async (page) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: PARTIAL_ANSWER };
+  await routePostern(page, fake);
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  await panel.getByRole('button', { name: 'Reading ladder', exact: true }).click();
+  await expect(panel).toContainText('Number 1 of');
+  // NextBar's 'view' branch: Skip for now alone
+  await expectClearOfDoorColumn(page, 'the ladder at Skip for now', panel);
+  await holdFor(page, page.getByRole('button', { name: /^Hold to read verse/ }), HOLD_MS);
+  await expect(panel.getByRole('button', { name: 'Try again', exact: true })).toBeVisible();
+  // Try again beside Skip for now
+  await expectClearOfDoorColumn(page, 'the ladder at Try again', panel);
+  await panel.getByRole('button', { name: 'Try again', exact: true }).click();
+  fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
+  await holdFor(page, page.getByRole('button', { name: /^Hold to read verse/ }), HOLD_MS);
+  await expect(panel.getByRole('button', { name: 'Next verse', exact: true })).toBeVisible();
+  await expectClearOfDoorColumn(page, 'the ladder at Next verse', panel);
+});
+
+/** The header's Done of the Reading drill sheet stands at the sheet's top, not in its scroll box: the sheet is as tall as its card, so it meets the ? when the card is tall (390x844, right-handed, the rule's card: the ? at y 468-524, Done at 504-548): it stands on the side away from the Hand. Its box must be clear of the ?'s. */
+async function expectDoneClear(page: Page, drill: Locator, where: string): Promise<void> {
+  // the sheet reads the Hand for itself when it mounts (Right until it is read): the check waits for that
+  await expect(async () => {
+    const done = (await drill.getByRole('button', { name: 'Done', exact: true }).boundingBox())!;
+    const door = (await page.locator(FLOATING).boundingBox())!;
+    expect(overlaps(door, done), `${where}: the ? ${JSON.stringify(door)} is over Done ${JSON.stringify(done)}`).toBe(false);
+  }).toPass({ timeout: 10_000 });
+}
+
+sweepForEach('the Reading drill, its card and its Next word', async (page) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: OU_WORD_ANSWER };
+  await routePostern(page, fake);
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await chooseAction(page, 28, 'Read it aloud');
+  const panel = page.getByRole('region', { name: 'Reading check' });
+  const bar = page.getByRole('button', { name: 'Hold to read verse 28', exact: true });
+  // two misses of ου offer the drill
+  await holdFor(page, bar, HOLD_MS);
+  await expect(panel).toContainText('Words to fix');
+  await holdFor(page, bar, HOLD_MS);
+  await panel.getByRole('button', { name: 'Drill this sound', exact: true }).click();
+  const drill = page.getByRole('dialog', { name: 'Reading drill' });
+  // its scroll box (the card and NextBar's 'sheet' bar); the header's Done is not in it
+  const card = drill.locator('.overflow-y-auto');
+  await expectClearOfDoorColumn(page, 'the Reading drill at its rule', card);
+  await expectDoneClear(page, drill, 'the Reading drill at its rule');
+  await drill.getByRole('button', { name: 'Start the drill', exact: true }).click();
+  // NextBar's 'sheet' branch: Skip this word, then Next word once the word is read
+  await expect(drill).toContainText('Word 1 of 5');
+  await expectClearOfDoorColumn(page, 'the Reading drill at Skip this word', card);
+  await expectDoneClear(page, drill, 'the Reading drill at Skip this word');
+  fake.autoReply = { status: 'answered', answer: WELL_READ_ANSWER };
+  await holdFor(page, drill.getByRole('button', { name: /^Hold to read / }), HOLD_MS);
+  await expect(drill).toContainText('Well read');
+  await expectClearOfDoorColumn(page, 'the Reading drill at Next word', card);
+  await expectDoneClear(page, drill, 'the Reading drill at Next word');
+});
+
+/** Quiz me (Practise > Quiz > Start the quiz) opens in the Talk sheet, which has its own composer at the foot and is a screen the ? is not drawn over (src/AskTutor.tsx FloatingTutor: not while a Talk sheet is open, src/tutor/door.ts useTalkOpen), so
+ * its answers are never under it (mw-5r3p30.998). The ? is on the Verse view before the quiz and comes back when the sheet is done. */
+for (const size of SIZES) {
+  for (const hand of ['right', 'left'] as const) {
+    test(`Quiz me in the Talk sheet draws no ? over its answers at ${size.name}, ${hand}-handed`, async ({ page }) => {
+      test.setTimeout(120_000);
+      await page.setViewportSize(size);
+      const fake = makeFakePostern();
+      fake.autoReply = { status: 'answered', answer: QUIZ_ANSWER };
+      await routePostern(page, fake);
+      await openUnlocked(page);
+      await page.goto('/#/?c=8&view=english&weave=off');
+      await expect(page.locator('[data-heading]', { hasText: 'Walking by the Spirit' })).toBeVisible();
+      await keepHand(page, hand);
+      await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
+      const view = page.getByRole('region', { name: 'Verse view' });
+      await view.getByRole('button', { name: 'Practise', exact: true }).click();
+      await view.getByRole('button', { name: 'Quiz', exact: true }).click();
+      await expect(page.locator(FLOATING)).toBeVisible();
+      await view.getByRole('button', { name: 'Start the quiz', exact: true }).click();
+      const sheet = page.getByRole('dialog', { name: 'Quiz on Romans 8:1-11' });
+      await expect(sheet).toContainText(QUIZ_ANSWER.answer);
+      await expect(page.locator(FLOATING)).toHaveCount(0);
+      await sheet.getByRole('button', { name: 'Done', exact: true }).click();
+      await expect(sheet).toHaveCount(0);
+      await expect(page.locator(FLOATING)).toBeVisible();
     });
   }
 }
