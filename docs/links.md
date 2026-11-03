@@ -11,6 +11,7 @@ Lampas takes links in, as Logos does (logos4:, ref.ly). The https form always wo
 - [Share to Lampas: what the share sheet accepts](#share-to-lampas-what-the-share-sheet-accepts)
 - [web+lampas:](#weblampas)
 - [How it is wired](#how-it-is-wired)
+  - [Every way in to a ref= link](#every-way-in-to-a-ref-link)
 
 <!-- /toc -->
 
