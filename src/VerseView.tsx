@@ -54,6 +54,7 @@ import { freshPractice, type PracticeState } from './practise/practiceState';
 import { copyAttrs, copyLanguagesOf, copyTextOf as modelTextOf, type CopyLanguage } from './practise/copywork';
 import { cellSpan } from './verse/cells';
 import { useAiAllowed } from './gate/licenceContext';
+import { useDoorColumn } from './tutor/doorRoom';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
 import { SendOff } from './plan/SendOff';
 import { useSendOff } from './plan/useSendOff';
@@ -135,6 +136,8 @@ export function VerseView(props: VerseViewProps) {
   const action = !oneVerse && chosen === 'diagram' ? 'listen' : chosen;
   // Read it aloud, Practise and Diagram are the AI: not offered, and nothing of theirs drawn, without a licence (mw-8m9dyu.2).
   const ai = useAiAllowed();
+  // the floating ? is over the text's box (src/index.css [data-verse-text][data-door-room], mw-5r3p30.992)
+  const doorRoom = useDoorColumn(ai);
   const hebrewOn = useHebrewOn();
   const reference = unitReference(title, verse);
   // The Practise door that is open (src/practise/PractisePane.tsx): kept for the verse or passage it was opened on, so the next one opens at the door.
@@ -261,6 +264,7 @@ export function VerseView(props: VerseViewProps) {
             sideways it is its content, at most 40 % of the window, and the screen scrolls. */}
         <div
           data-verse-text
+          data-door-room={doorRoom}
           {...(passage ? { 'data-passage-box': '' } : {})}
           className={narrow ? 'max-h-[40dvh] shrink-0 overflow-y-auto overscroll-contain px-2' : 'min-h-[8rem] flex-1 overflow-y-auto overscroll-contain px-2 short:max-h-[40dvh] short:min-h-0 short:flex-none'}
         >

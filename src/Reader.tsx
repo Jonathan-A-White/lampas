@@ -76,6 +76,7 @@ import { useAppearanceKey } from './ui/useAppearanceKey';
 import { askAboutVariant, clearVariantAsked, VARIANT_QUESTION } from './tutor/variantFacts';
 import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
+import { useDoorColumn } from './tutor/doorRoom';
 import { useDoorTarget } from './tutor/door';
 import { useTalk } from './useTalk';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
@@ -402,6 +403,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     // the immersive reader (the bars away, no sheet over it) is the one screen with no tutor door
     away && viewUnit === undefined,
   );
+  // the floating ? is over the reading box wherever it is drawn: the box keeps a column clear on the Hand's side (src/index.css [data-door-room], mw-5r3p30.992). It keeps it in the immersive reader too, where
+  // the ? is away: the bars come and go with a two-finger tap, and a column that came and went with them would re-flow the text (and re-cut every page of Turn pages) each time (mw-5r3p30.472).
+  const doorRoom = useDoorColumn(ai && !!chapter && !failed);
   useDoorTarget(ai && variantShown ? askVariant : undefined);
   // The foot of the screen keeps the phone's bottom floor on its lowest row (mw-5r3p30.473): the place line of the Immersive reader (under everything), else the
   // speaking bar's slot or the Turn pages line above it. No bar of the tutor's sits under them any more (the Talk bar is gone, mw-5r3p30.882), licensed or not.
@@ -536,7 +540,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} mode={paging ? 'pages' : 'scroll'} /> : null}
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} data-door-room={doorRoom} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
         <div ref={inner} data-reader-text data-pages={paging ? '' : undefined}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
