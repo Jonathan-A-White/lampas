@@ -46,7 +46,7 @@ export const dailyPsalmsSetting = piece(
   'dailyPsalms',
   'Psalms and Proverbs',
   "Today holds the day's Psalms and Proverbs.",
-  "Whether Today holds the day's Psalms and Proverbs: on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N, each read in Lampas.",
+  "Whether Today holds, on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N, read in Lampas.",
 );
 
 export const dailyDevotionalSetting = piece(
