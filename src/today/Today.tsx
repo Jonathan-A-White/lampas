@@ -1,5 +1,5 @@
 // src/today/Today.tsx — Today (#/today, mw-1fwagb.5, the grilling mw-6ww.126): the day's pieces in one list, each a tap into its drill or Logos: Review (n due, opens Review), Memorize (n verses due, a tap starts the longest overdue verse's session; pick verses in a list while none is memorized), the
-// reading plan's next chapter (Read in Logos, Read in Lampas, Listen in Audible), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each opens Logos), and today's
+// reading plan's next chapter (Read in Logos, Read in Lampas, Listen in Audible), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each Read in Lampas where Lampas holds the chapter, which is every one; a chapter it did not hold would keep Open in Logos), and today's
 // devotional (opens Logos at the day). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Read in Logos needs Logos On, Listen in Audible an
 // Audio Bible). A tap on the plan's place opens src/plan/PlacePicker.tsx, where he says where he is (I'm at the Reader's chapter, or Pick a place), with Undo for a few seconds. With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
 // 'opened' for the local date (dailyStore.ts). With nothing On, Today explains what it could hold, each with a link to the Settings row that turns it on; once he changes a Daily row
@@ -8,7 +8,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
 import { RANDOM, devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
 import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnotherDevotional } from '../data/daily/dailyStore';
-import { dailyReadings } from '../data/daily/psalmsProverbs';
+import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
 import { countDue, getLogosBibles, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
@@ -252,8 +252,10 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   );
 }
 
+/** The day's Psalms and Proverbs (mw-5r3p30.1007): a chapter Lampas holds is one button, Read in Lampas, that opens it in the Reader (a tap is kept as 'opened', like the plan's, and never ticks the box); a chapter it does not hold keeps Open in Logos and In another book…. */
 function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   const bibles = useLiveQuery(getLogosBibles, []);
+  const logosOn = useLogosOn();
   if (bibles === undefined) return null;
   return (
     <section aria-label="Psalms and Proverbs">
@@ -262,7 +264,17 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
         {dailyReadings(today).map((reading) => {
           const id = `${reading.code}.${reading.chapter}`;
           const name = passageName(reading.code, reading.chapter);
-          const link = chapterLink(reading.code, reading.chapter, bibleFor(reading.code, bibles));
+          if (heldInLampas(reading)) {
+            return (
+              <Piece key={id} id={id} label={name} ticks={ticks}>
+                <button type="button" onClick={() => { void markOpened(ticks.date, id); openReader({ book: reading.code, chapter: reading.chapter }); }} className={LINK}>
+                  <span className="text-lg font-medium text-accent">{name}</span>
+                  <span className="text-sm text-muted">Read in Lampas</span>
+                </button>
+              </Piece>
+            );
+          }
+          const link = logosOn ? chapterLink(reading.code, reading.chapter, bibleFor(reading.code, bibles)) : undefined;
           return (
             <Piece key={id} id={id} label={name} ticks={ticks}>
               {link ? (
@@ -319,12 +331,12 @@ const COULD_HOLD: readonly { key: string; name: string; text: string }[] = [
   { key: 'dailyReview', name: 'Review', text: 'the words and ideas that are due' },
   { key: 'dailyMemorize', name: 'Memorize', text: 'the verses you are memorizing that are due' },
   { key: 'dailyPlan', name: 'Reading plan', text: "the reading plan's chapter for the day" },
-  { key: 'dailyPsalms', name: 'Psalms and Proverbs', text: "the day's Psalms and Proverbs, opened in Logos" },
+  { key: 'dailyPsalms', name: 'Psalms and Proverbs', text: "the day's Psalms and Proverbs, read in Lampas" },
   { key: 'dailyDevotional', name: 'Devotional', text: 'one devotional for the day, opened in Logos' },
 ];
 
-/** The pieces that exist to open Logos: drawn only while it is On. */
-const LOGOS_PIECES: readonly string[] = ['dailyPsalms', 'dailyDevotional'];
+/** The pieces that exist to open Logos: drawn only while it is On. (The Psalms and Proverbs read in Lampas since mw-5r3p30.1007.) */
+const LOGOS_PIECES: readonly string[] = ['dailyDevotional'];
 
 /** With nothing switched on: the first time, a kind explanation of what Today could hold; once he has changed a Daily row, only where to choose. */
 function Nothing({ logosOn }: { logosOn: boolean }) {
@@ -370,8 +382,8 @@ export function Today() {
   const plan = useSetting(dailyPlanSetting);
   const kept = { psalms: useSetting(dailyPsalmsSetting), devotional: useSetting(dailyDevotionalSetting) };
   const logosOn = useLogosOn();
-  // the Psalms and the devotional exist to open Logos: while it is Off they are not drawn and not told to the tutor (what he set is kept; mw-rfjjzd.23)
-  const psalms = kept.psalms === undefined || logosOn === undefined ? undefined : logosOn ? kept.psalms : 'off';
+  // the devotional exists to open Logos: while it is Off it is not drawn and not told to the tutor (what he set is kept; mw-rfjjzd.23). The Psalms and Proverbs read in Lampas, so Logos does not govern them
+  const psalms = kept.psalms;
   const devotional = kept.devotional === undefined || logosOn === undefined ? undefined : logosOn ? kept.devotional : 'off';
   const tickBoxes = useSetting(dailyTicksSetting);
   const day = useLiveQuery(() => getDay(date), [date]);

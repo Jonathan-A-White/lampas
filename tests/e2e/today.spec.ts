@@ -148,7 +148,7 @@ test('Today lists the five pieces by default, and the Psalms and Proverbs are th
   for (const name of ['Review', 'Memorize', 'Reading plan', 'Psalms and Proverbs', 'Devotional']) await expect(piece(page, name)).toBeVisible();
 
   const psalms = piece(page, 'Psalms and Proverbs');
-  await expect(psalms.locator('[data-piece]')).toHaveText(readingsOn(TODAY.day).map((name) => `${name}Open in Logos`));
+  await expect(psalms.locator('[data-piece]')).toHaveText(readingsOn(TODAY.day).map((name) => `${name}Read in Lampas`));
   await expect(piece(page, 'Reading plan').getByRole('button', { name: 'Start a plan' })).toBeVisible();
   await expect(piece(page, 'Devotional')).toContainText('Morning and Evening');
   await expect(piece(page, 'Review')).toContainText(/\d+ due|Nothing due/);
@@ -167,7 +167,9 @@ test('a tick is his alone: opening a link does not tick, and a tick survives a r
   const first = piece(page, 'Psalms and Proverbs').getByRole('checkbox', { name: `Done: Psalm ${TODAY.day}`, exact: true });
   await expect(first).toHaveAttribute('aria-checked', 'false');
 
-  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
+  await piece(page, 'Psalms and Proverbs').getByRole('button', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
+  await expect(page.getByRole('heading', { name: `Psalms ${TODAY.day}`, level: 1 })).toBeVisible();
+  await page.goBack();
   await expect(first).toHaveAttribute('aria-checked', 'false');
   expect(await kept(page, 'dailyDone')).toEqual({ [TODAY.iso]: { ticked: [], opened: [`psa.${TODAY.day}`] } });
 
@@ -185,11 +187,19 @@ test('a tick is his alone: opening a link does not tick, and a tick survives a r
   await expect(piece(page, 'Psalms and Proverbs').getByRole('checkbox', { checked: true })).toHaveCount(0);
 });
 
-test('a tap on a passage hands Logos a logosres: link', async ({ page }) => {
+test('a tap on a passage opens it in the Reader, with no Logos door or In another book beside it; the devotional hands Logos a logosres: link', async ({ page }) => {
   await openToday(page);
-  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: startsWith(`Proverbs ${TODAY.day}`) }).click();
+  const psalms = piece(page, 'Psalms and Proverbs');
+  await expect(psalms.getByRole('link')).toHaveCount(0);
+  await expect(psalms.getByText('Open in Logos')).toHaveCount(0);
+  await expect(psalms.getByRole('button', { name: /In another book/ })).toHaveCount(0);
+  await psalms.getByRole('button', { name: startsWith(`Proverbs ${TODAY.day}`) }).click();
+  await expect(page.getByRole('heading', { name: `Proverbs ${TODAY.day}`, level: 1 })).toBeVisible();
+  // Back returns to Today, as the plan's Read in Lampas does
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true, level: 1 })).toBeVisible();
   await piece(page, 'Devotional').getByRole('link', { name: /Morning and Evening/ }).click();
-  expect(await opened(page)).toEqual([`logosres:lgcystndrdbblsb;ref=Bible.Pr${TODAY.day}`, `logosres:LLS:20.10.1;ref=DayOfYear.${TODAY.month}_${TODAY.day}`]);
+  expect(await opened(page)).toEqual([`logosres:LLS:20.10.1;ref=DayOfYear.${TODAY.month}_${TODAY.day}`]);
   expect(await kept(page, 'dailyDone')).toEqual({ [TODAY.iso]: { ticked: [], opened: [`pro.${TODAY.day}`, 'devotional'] } });
 });
 
@@ -214,7 +224,7 @@ test('with Tick boxes off Today has no boxes, only a plain list of links', async
   await openToday(page, [{ key: 'dailyTicks', value: 'off' }]);
   await expect(piece(page, 'Psalms and Proverbs')).toBeVisible();
   await expect(boxes(page)).toHaveCount(0);
-  await expect(piece(page, 'Psalms and Proverbs').getByRole('link')).toHaveCount(readingsOn(TODAY.day).length);
+  await expect(piece(page, 'Psalms and Proverbs').getByRole('button', { name: /Read in Lampas/ })).toHaveCount(readingsOn(TODAY.day).length);
 });
 
 test('each piece rests on its own switch: Devotional off and Review off take them away', async ({ page }) => {
@@ -254,6 +264,15 @@ test('the plan row offers Read in Logos only with Logos on and Listen in Audible
   await shot(page, 'today-plan');
 });
 
+test('with Logos Off the Psalms and Proverbs are still drawn, each Read in Lampas, and the devotional is not', async ({ page }) => {
+  await openToday(page, [{ key: 'resource.logos', value: 'off' }]);
+  const psalms = piece(page, 'Psalms and Proverbs');
+  await expect(psalms.getByRole('button', { name: /Read in Lampas/ })).toHaveCount(readingsOn(TODAY.day).length);
+  await expect(piece(page, 'Devotional')).toHaveCount(0);
+  await psalms.getByRole('button', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
+  await expect(page.getByRole('heading', { name: `Psalms ${TODAY.day}`, level: 1 })).toBeVisible();
+});
+
 test('with everything off Today explains what it could hold, with a link to each row, and says it once', async ({ page }) => {
   const off = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'].map((key) => ({ key, value: 'off' }));
   await openToday(page, off);
@@ -285,8 +304,9 @@ test('the tutor from Today knows the psalm he opened, and a screenshot is one ta
   fake.autoReply = { status: 'answered', answer: TALK_ANSWER };
   await routePostern(page, fake);
   await openToday(page);
-  await piece(page, 'Psalms and Proverbs').getByRole('link', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
-  expect(await opened(page)).toHaveLength(1);
+  await piece(page, 'Psalms and Proverbs').getByRole('button', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Today', exact: true, level: 1 })).toBeVisible();
 
   await openTutor(page);
   const sheet = page.getByRole('dialog', { name: 'Ask the tutor: Today' });
