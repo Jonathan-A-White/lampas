@@ -92,10 +92,17 @@ describe('paradigmOfWord', () => {
   });
 
   it('lights no cell, but still names the table, for a form the table does not hold', () => {
-    const word = first('μένουσαν'); // an accusative participle; the table holds the nominative and genitive
+    const word = { t: 'πεπωρωμένε', l: 'πωρόω', p: 'V-RPP-VSM' }; // a vocative participle; the table holds four cases, not the vocative
     const found = paradigmOfWord(word);
     expect(found?.table.id).toBe('participle');
     expect(found?.cell).toBeUndefined();
+  });
+
+  it('lights the accusative participle of 2 John 1 in the participle table (mw-5r3p30.1003)', () => {
+    const found = paradigmOfWord(first('μένουσαν'));
+    expect(found?.table.id).toBe('participle');
+    expect(found?.cell).toBe('Present active Accusative singular Feminine');
+    expect(formAt('participle', found?.cell)).toBe('λύουσαν');
   });
 
   it('every cell it names is a cell of its table, and every table it names is in the list', () => {
@@ -148,5 +155,53 @@ describe('the Paradigms address of a word', () => {
 
   it('drops a cell, a word or a parse named with no table', () => {
     expect(paradigmOf('#/paradigms?cell=x&w=y&p=V-PAI-1S')).toEqual({});
+  });
+});
+
+// mw-5r3p30.1003: a form opens its table on a cell of its own whenever the table is meant to hold it.
+describe('paradigmOfWord for the forms .996 left on a table with no cell', () => {
+  const at = (t: string, l: string, p: string): { table: string | undefined; cell: string | undefined; form: string | undefined } => {
+    const found = paradigmOfWord({ t, l, p });
+    return { table: found?.table.id, cell: found?.cell, form: found?.cell ? formAt(found.table.id, found.cell) : undefined };
+  };
+
+  it('sends an infinitive to The infinitive, on its own cell: a deponent one on the middle or passive', () => {
+    expect(at('δύνασθαι', 'δύναμαι', 'V-PNN')).toEqual({ table: 'infinitive', cell: 'Present Middle', form: 'λύεσθαι' });
+    expect(at('ἀπογράφεσθαι', 'ἀπογράφω', 'V-PEN').table).toBe('infinitive');
+    expect(at('ἀπογράφεσθαι', 'ἀπογράφω', 'V-PEN').cell).toBeDefined();
+    expect(at('ἀναστήσειν', 'ἀνίστημι', 'V-FAN')).toEqual({ table: 'infinitive', cell: 'Future Active', form: 'λύσειν' });
+    expect(at('εἰσελεύσεσθαι', 'εἰσέρχομαι', 'V-FDN')).toEqual({ table: 'infinitive', cell: 'Future Middle', form: 'λύσεσθαι' });
+  });
+
+  it('gives the vocative a cell in Noun endings, The third declension and Adjective endings', () => {
+    expect(at('κύριε', 'κύριος', 'N-VSM')).toEqual({ table: 'noun-endings', cell: 'Second declension, masculine (λόγος) Vocative Singular', form: '-ε' });
+    expect(at('ἀδελφοί', 'ἀδελφός', 'N-VPM')).toMatchObject({ table: 'noun-endings', cell: 'Second declension, masculine (λόγος) Vocative Plural', form: '-οι' });
+    expect(at('γύναι', 'γυνή', 'N-VSF').cell).toBeDefined();
+    expect(at('πάτερ', 'πατήρ', 'N-VSM')).toMatchObject({ table: 'third-declension', form: 'πάτερ' });
+    expect(at('ἀγαθέ', 'ἀγαθός', 'A-VSM')).toEqual({ table: 'adjective-endings', cell: 'ἀγαθός -ή -όν Vocative Singular Masculine', form: 'ἀγαθέ' });
+    expect(at('ὀλιγόπιστοι', 'ὀλιγόπιστος', 'A-VPM').table).toBe('adjective-endings');
+    expect(at('ὀλιγόπιστοι', 'ὀλιγόπιστος', 'A-VPM').cell).toBeDefined();
+  });
+
+  it('lays the participle in every case and number, and the aorist middle and the perfect middle or passive', () => {
+    expect(at('λέγοντες', 'λέγω', 'V-PAP-NPM')).toEqual({ table: 'participle', cell: 'Present active Nominative plural Masculine', form: 'λύοντες' });
+    expect(at('ἰδόντες', 'ὁράω', 'V-2AAP-NPM')).toMatchObject({ table: 'participle', cell: 'Aorist active Nominative plural Masculine' });
+    expect(at('ἀπεκρίθη', 'ἀποκρίνομαι', 'V-ADI-3S').table).not.toBe('participle');
+    expect(at('ἐνδεδυμένον', 'ἐνδύω', 'V-RMP-ASM')).toMatchObject({ table: 'participle', cell: 'Perfect middle or passive Accusative singular Masculine', form: 'λελυμένον' });
+    expect(at('ἀρξαμένου', 'ἄρχω', 'V-AMP-GSM')).toMatchObject({ table: 'participle', cell: 'Aorist middle Genitive singular Masculine', form: 'λυσαμένου' });
+    expect(at('δοθέντα', 'δίδωμι', 'V-APP-APN')).toMatchObject({ table: 'participle', cell: 'Aorist passive Accusative plural Neuter', form: 'λυθέντα' });
+  });
+
+  it('leaves no infinitive, vocative noun or adjective, or participle of the table’s tenses on a table with no cell, in the chapters it reads', () => {
+    const kinds = /^(V-2?[PAR][AMPDNEO]N|[NA]-V[SP][MFN]|V-2?[PAR][AMPDNEO]P-[NGDA][SP][MFN])/;
+    const missing: string[] = [];
+    for (const [book, chapter] of [['mat', 5], ['mrk', 1], ['jhn', 1], ['act', 2], ['rom', 8], ['heb', 11], ['rev', 1]] as const) {
+      const ch = JSON.parse(readFileSync(`public/data/${book}/${chapter}.json`, 'utf8')) as Chapter;
+      for (const word of ch.verses.flatMap((v) => v.g)) {
+        const found = paradigmOfWord(word);
+        if (kinds.test(word.p) && found && !found.cell) missing.push(`${book} ${chapter} ${word.t} ${word.p} -> ${found.table.id}`);
+      }
+    }
+    expect(missing).toEqual([]);
   });
 });

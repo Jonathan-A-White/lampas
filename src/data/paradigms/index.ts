@@ -213,7 +213,9 @@ const plain = (id: string): string => id.replace(/-deponent$/, '');
 /** The parsing as the tables name it: a middle or a passive verb is a form of the table's middle or passive voice. */
 const asTablesSay = (wanted: readonly string[]): string[] => {
   const ids = wanted.map(plain);
-  return ids.some((id) => id === 'voice-middle' || id === 'voice-passive') ? [...ids, 'voice-middle-or-passive'] : ids;
+  if (ids.some((id) => id === 'voice-middle' || id === 'voice-passive')) return [...ids, 'voice-middle-or-passive'];
+  // a verb that is middle or passive (V-PNN, a deponent present) is in the tables' middle cells and their passive cells alike: the infinitive has both, with one form (mw-5r3p30.1003)
+  return ids.includes('voice-middle-or-passive') ? [...ids, 'voice-middle', 'voice-passive'] : ids;
 };
 
 // the ideas of a table that holds the forms of particular verbs: a cell with one is for a word of those verbs alone
