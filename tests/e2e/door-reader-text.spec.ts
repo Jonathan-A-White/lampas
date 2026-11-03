@@ -7,6 +7,7 @@ import { shot } from './shot';
 import { keepHand } from './tutor-door';
 import { keepSettings } from './keep-settings';
 import { openUnlocked } from './unlocked';
+import { openVerseView } from './verse-view';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -164,3 +165,53 @@ test('the immersive reader keeps the column when the ? goes away, so the text do
   await expect(page.locator(FLOATING)).toBeVisible();
   expect(await textUnderTheDoor(page), 'text under the ?').toEqual([]);
 });
+
+/** Every line of text and every button in the Verse view, outside its text box, that meets the ?'s box at rest (mw-5r3p30.1002: the 'Maps · 4' button and a help line, on Luke 20:47 at text size 160, were under it). */
+async function viewUnderTheDoor(page: Page): Promise<string[]> {
+  return page.evaluate((sel) => {
+    const door = document.querySelector(sel)!.getBoundingClientRect();
+    const view = document.querySelector('[data-verse-view]')!;
+    const text = view.querySelector('[data-verse-text]');
+    const hits: string[] = [];
+    const meets = (r: DOMRect) => r.width > 0 && r.left < door.right && door.left < r.right && r.top < door.bottom && door.top < r.bottom;
+    const walker = document.createTreeWalker(view, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const words = (node.textContent ?? '').trim();
+      if (words === '' || text?.contains(node)) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const r of Array.from(range.getClientRects())) if (meets(r)) hits.push(`${words.slice(0, 30)} ${Math.round(r.left)}-${Math.round(r.right)}`);
+    }
+    for (const b of Array.from(view.querySelectorAll('button, a'))) {
+      if (text?.contains(b)) continue;
+      const r = b.getBoundingClientRect();
+      if (meets(r)) hits.push(`[${(b.textContent ?? '').trim().slice(0, 30)}] ${Math.round(r.left)}-${Math.round(r.right)}`);
+    }
+    return hits;
+  }, FLOATING);
+}
+
+for (const hand of ['right', 'left'] as const) {
+  test(`the Verse view of Luke 20:47 at text size 160, ${hand}-handed: no button or help line is under the ? at rest`, async ({ page }) => {
+    await openUnlocked(page, { empty: true });
+    await page.goto('/');
+    await expect(page.locator('[data-reader]')).toBeVisible();
+    await keepSettings(page, { textSize: '160' });
+    await keepHand(page, hand);
+    await page.goto('/#/?b=luk&c=20&view=english&weave=off');
+    await page.reload();
+    await expect(page.locator('[data-verse="47"]')).toBeAttached();
+    const view = await openVerseView(page, 47);
+    await expect(view.getByRole('button', { name: /^Maps · \d+$/ })).toBeVisible();
+    await expect(page.locator(FLOATING)).toBeVisible();
+    expect(await viewUnderTheDoor(page), 'controls and help under the ?').toEqual([]);
+    // the help line of each action, too
+    for (const action of ['Listen', 'Read it aloud', 'Practise', 'Diagram']) {
+      const button = view.getByRole('button', { name: action, exact: true });
+      if ((await button.count()) === 0) continue;
+      await button.click();
+      expect(await viewUnderTheDoor(page), `${action}: controls and help under the ?`).toEqual([]);
+    }
+    await shot(page, `door-verse-view-160-${hand}`);
+  });
+}
