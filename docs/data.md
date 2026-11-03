@@ -16,6 +16,7 @@ The reader, the word sheet, the voices and the drills read the chapter's `lang` 
 - [`index.json`](#indexjson)
 - [`lexicon.json`](#lexiconjson)
 - [Drill answers (`q` of `lexicon.json`, mw-5r3p30.1000)](#drill-answers-q-of-lexiconjson-mw-5r3p301000)
+  - [Hand corrections (`scripts/data/drill-corrections.ts`)](#hand-corrections-scriptsdatadrill-correctionsts)
 - [`lemma-forms/<lemma>.json` (outside `public/data`)](#lemma-formslemmajson-outside-publicdata)
 - [`frequency.json`](#frequencyjson)
 - [`<book>/<chapter>.json`](#bookchapterjson)
