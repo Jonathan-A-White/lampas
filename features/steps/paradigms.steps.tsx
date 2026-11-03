@@ -280,7 +280,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     And('the cell {string} likewise shows {string}', (_, place: string, form: string) => shows(place, form));
   });
 
-  Scenario('Opening The third declension shows its 48 cells, every one locked while its idea is not yet', ({ When, And, Then }) => {
+  Scenario('Opening The third declension shows its 60 cells, every one locked while its idea is not yet', ({ When, And, Then }) => {
     When('he opens the Paradigms screen', () => openAt('#/paradigms'));
     And('he taps {string} in the list', async (_, name: string) => {
       await waitFor(() => listRow(name));

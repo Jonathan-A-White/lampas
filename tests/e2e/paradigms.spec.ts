@@ -110,18 +110,18 @@ test('Paradigms: the list, a table in Study and Review mode, locked cells, at ph
 
   // the other tables fit the phone, and Ask the tutor is a 48 px button inside the screen
   for (const [id, name, count] of [
-    ['noun-endings', 'Noun endings', 40],
+    ['noun-endings', 'Noun endings', 50],
     ['eimi', 'εἰμί', 70],
     ['verb-endings', 'Verb endings', 24],
-    ['third-declension', 'The third declension', 48],
-    ['adjective-endings', 'Adjective endings', 48],
+    ['third-declension', 'The third declension', 60],
+    ['adjective-endings', 'Adjective endings', 60],
     ['pronouns-personal', 'Personal pronouns', 40],
     ['pronouns-demonstrative-relative', 'Demonstrative and relative pronouns', 48],
     ['pronouns-interrogative-indefinite', 'Interrogative and indefinite pronouns', 32],
     ['subjunctive', 'The subjunctive', 30],
     ['imperative', 'The imperative', 20],
-    ['infinitive', 'The infinitive', 9],
-    ['participle', 'The participle', 30],
+    ['infinitive', 'The infinitive', 12],
+    ['participle', 'The participle', 168],
   ] as const) {
     await page.goto(`/#/paradigms?t=${id}&mode=learn`);
     await expect(page.getByRole('heading', { name, level: 1 })).toBeVisible();
@@ -141,7 +141,7 @@ test('Paradigms: every form of the mood tables fits its cell at phone width, wit
   await putLevels(page, Object.fromEntries(LADDER.map((idea) => [idea.id, 'solid' as const])));
   await page.reload();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  for (const [id, count] of [['subjunctive', 30], ['imperative', 20], ['infinitive', 9], ['participle', 30]] as const) {
+  for (const [id, count] of [['subjunctive', 30], ['imperative', 20], ['infinitive', 12], ['participle', 168]] as const) {
     await page.goto(`/#/paradigms?t=${id}&mode=learn`);
     await expect(page.locator('[data-cell][data-state="shown"]')).toHaveCount(count);
     await expectFitsPhone(page);

@@ -8,11 +8,11 @@ import { needsOf, needsText } from '../../src/data/paradigms/needs';
 const IDEA_IDS = new Set(LADDER.map((idea) => idea.id));
 const COUNTS: Record<string, number> = {
   article: 24,
-  'noun-endings': 40,
+  'noun-endings': 50,
   eimi: 70,
   'verb-endings': 24,
-  'third-declension': 48,
-  'adjective-endings': 48,
+  'third-declension': 60,
+  'adjective-endings': 60,
   'pronouns-personal': 40,
   'pronouns-demonstrative-relative': 48,
   'pronouns-interrogative-indefinite': 32,
@@ -25,8 +25,8 @@ const COUNTS: Record<string, number> = {
   oida: 12,
   subjunctive: 30,
   imperative: 20,
-  infinitive: 9,
-  participle: 30,
+  infinitive: 12,
+  participle: 168,
 };
 
 // the Greek tables: the Hebrew ones (mw-gdcyf98.13) are proven in tests/unit/hebrew-paradigms.test.ts
@@ -413,12 +413,14 @@ describe('the verb tables of the other moods', () => {
     for (const cell of cellsOf(table('participle'))) {
       expect(cell.ideas.filter((i) => i.startsWith('case-')), cell.form).toHaveLength(1);
       expect(cell.ideas.filter((i) => i.startsWith('gender-')), cell.form).toHaveLength(1);
-      expect(cell.ideas, cell.form).toContain('number-singular');
+      expect(cell.ideas.filter((i) => i.startsWith('number-')), cell.form).toHaveLength(1);
       expect(cell.ideas.filter((i) => i.startsWith('voice-')), cell.form).toHaveLength(1);
       expect(cell.ideas.filter((i) => i.startsWith('declension-')), cell.form).toHaveLength(1);
     }
+    // seven participles x four cases x two numbers x three genders (mw-5r3p30.1003); no vocative
+    expect(cellsOf(table('participle')).filter((c) => c.ideas.includes('case-vocative'))).toHaveLength(0);
     const perfect = cellsOf(table('participle')).filter((c) => c.ideas.includes('tense-perfect'));
-    expect(perfect).toHaveLength(6);
+    expect(perfect).toHaveLength(48);
     for (const cell of perfect) expect(cell.ideas, cell.form).toContain('reduplication');
   });
 

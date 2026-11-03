@@ -17,7 +17,7 @@ Feature: Paradigms
 
   Scenario: The list shows each table with how many of its forms are available
     When he opens the Paradigms screen
-    Then the list reads "The article: Available forms: 4 of 24", "Noun endings: Available forms: 8 of 40", "εἰμί: Available forms: 0 of 70" and "Verb endings: Available forms: 0 of 24"
+    Then the list reads "The article: Available forms: 4 of 24", "Noun endings: Available forms: 8 of 50", "εἰμί: Available forms: 0 of 70" and "Verb endings: Available forms: 0 of 24"
     And the progress bar of "The article" is at 4 of 24
 
   # mw-svw421.5: the list is grouped by the ladder's tiers, and opening a table is kept: Review asks the endings of a form only once its table has been opened.
@@ -36,12 +36,12 @@ Feature: Paradigms
 
   Scenario: The list shows the five tables of the nouns and pronouns, each with how many of its forms are available
     When he opens the Paradigms screen
-    Then the list also reads "The third declension: Available forms: 0 of 48", "Adjective endings: Available forms: 0 of 48", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 0 of 32"
+    Then the list also reads "The third declension: Available forms: 0 of 60", "Adjective endings: Available forms: 0 of 60", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 0 of 32"
 
   Scenario: The count follows the ideas he has, and the interrogative table stays shut while its idea is not yet
     Given the ideas "declension-3" and "pronoun-interrogative" are at the frontier
     When he opens the Paradigms screen
-    Then the list also reads "The third declension: Available forms: 8 of 48", "Adjective endings: Available forms: 0 of 48", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 2 of 32"
+    Then the list also reads "The third declension: Available forms: 8 of 60", "Adjective endings: Available forms: 0 of 60", "Personal pronouns: Available forms: 0 of 40", "Demonstrative and relative pronouns: Available forms: 0 of 48" and "Interrogative and indefinite pronouns: Available forms: 2 of 32"
 
   Scenario: The list shows the seven tables of the verb, with the tenses he has not met still locked
     Given the ideas "tense-aorist, voice-active, voice-middle, mood-indicative, person-1st, person-2nd, person-3rd, number-plural, verb, augment, tense-signs" are at the frontier
@@ -59,21 +59,21 @@ Feature: Paradigms
   Scenario: The participle table stays shut while the participle idea is not yet, and opens with it
     Given every idea of the table "participle" except "mood-participle" is at the frontier
     And the table "participle" is open to Learn
-    Then the table says "Available forms: 0 of 30"
-    And all 30 cells of the table are locked
+    Then the table says "Available forms: 0 of 168"
+    And all 168 cells of the table are locked
     And every lock names "The participle"
     When the idea "mood-participle" moves to frontier
-    Then the table now says "Available forms: 30 of 30"
+    Then the table now says "Available forms: 168 of 168"
     And the cell "Present active Nominative singular Masculine" now shows "λύων"
     And the cell "Present active Nominative singular Feminine" also shows "λύουσα"
     And the cell "Present active Nominative singular Neuter" likewise shows "λῦον"
 
-  Scenario: Opening The third declension shows its 48 cells, every one locked while its idea is not yet
+  Scenario: Opening The third declension shows its 60 cells, every one locked while its idea is not yet
     When he opens the Paradigms screen
     And he taps "The third declension" in the list
-    Then the table "The third declension" is on screen with 48 cells
+    Then the table "The third declension" is on screen with 60 cells
     And the address is for the table "third-declension"
-    And all 48 cells of the table are locked
+    And all 60 cells of the table are locked
 
   Scenario: A third declension form opens with its ideas and stays locked without them
     Given the table "third-declension" is open to Learn
@@ -83,7 +83,7 @@ Feature: Paradigms
     And the cell "πατήρ, masculine Genitive Singular" also shows "πατρός"
     And the cell "σάρξ, feminine Dative Singular" is locked and shows no form
     And the cell "γένος, neuter Nominative Singular" is also locked and shows no form
-    And the table still has 48 cells
+    And the table still has 60 cells
 
   Scenario: Settings reaches the Paradigms screen and a table opens from the list
     Given Lampas is open on Settings
@@ -136,7 +136,7 @@ Feature: Paradigms
 
   Scenario: With every cell locked, the Drill line does not tell him to tap a cell
     Given the table "participle" is open to Drill
-    Then the table says "Available forms: 0 of 30"
+    Then the table says "Available forms: 0 of 168"
     And the mode line does not say "tap a blank cell"
     And the mode line says "Every form is locked. Mark the grammar ideas a form needs to open it."
 
@@ -196,12 +196,12 @@ Feature: Paradigms
   Scenario: The Paradigms list follows How much of a table at Solid only
     Given How much of a table is "solid"
     When he opens the Paradigms screen
-    Then the list reads "The article: Solid forms: 1 of 24", "Noun endings: Solid forms: 2 of 40", "εἰμί: Solid forms: 0 of 70" and "Verb endings: Solid forms: 0 of 24"
+    Then the list reads "The article: Solid forms: 1 of 24", "Noun endings: Solid forms: 2 of 50", "εἰμί: Solid forms: 0 of 70" and "Verb endings: Solid forms: 0 of 24"
 
   Scenario: The Paradigms list follows How much of a table at Any
     Given How much of a table is "any"
     When he opens the Paradigms screen
-    Then the list reads "The article: All 24 forms shown, 4 available", "Noun endings: All 40 forms shown, 8 available", "εἰμί: All 70 forms shown, 0 available" and "Verb endings: All 24 forms shown, 0 available"
+    Then the list reads "The article: All 24 forms shown, 4 available", "Noun endings: All 50 forms shown, 8 available", "εἰμί: All 70 forms shown, 0 available" and "Verb endings: All 24 forms shown, 0 available"
 
   Scenario: The setting shows in Settings and in the table's header switch, and a change in one shows in the other
     Given Lampas is open on Settings
