@@ -207,11 +207,13 @@ describe('a chapter file', () => {
     expect(englishOf(v)).toBe('In the beginning was the Word, and the Word was with God, and the Word was God.');
   });
 
-  it('joins a word shown as ". . ." to the chunk that completes it', () => {
+  it('joins a word shown as ". . ." to the chunk before it in English order (mw-5r3p30.1001: it was the chunk after)', () => {
     const v = verse('mat/1.json', 17);
-    const generations = v.e.filter((c) => c.t.includes('generations'));
-    expect(generations.length).toBeGreaterThan(0);
-    expect(generations.some((c) => c.g.length >= 3)).toBe(true);
+    const fourteen = v.e.filter((c) => c.t.includes('fourteen'));
+    expect(fourteen.length).toBeGreaterThan(0);
+    expect(fourteen.some((c) => c.g.length >= 3)).toBe(true);
+    const exile = v.e.filter((c) => c.t === 'the exile' || c.t === 'exile');
+    expect(exile.some((c) => c.g.map((i) => v.g[i].t).includes('Βαβυλῶνος'))).toBe(true);
     expect(englishOf(v)).not.toContain('. . .');
     expect(englishOf(v)).not.toContain('vvv');
   });
