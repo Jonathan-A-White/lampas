@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.90
+_2026-11-03_
+- Fixed: The round ? button no longer covers the ends of buttons in Read it aloud, the Reading ladder, the Reading drill and Memorize.
+
 ## 0.7.89
 _2026-11-03_
 - Fixed: The Quick test and Review now ask a Greek word with its two or three real meanings, such as "woman, wife", instead of one thin word or a long list.

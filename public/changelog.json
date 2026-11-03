@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.90",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.998",
+    "kind": "fixed",
+    "text": "The round ? button no longer covers the ends of buttons in Read it aloud, the Reading ladder, the Reading drill and Memorize."
+  },
+  {
     "version": "0.7.89",
     "date": "2026-11-03",
     "story": "mw-5r3p30.1000",
