@@ -54,7 +54,7 @@ import { freshPractice, type PracticeState } from './practise/practiceState';
 import { copyAttrs, copyLanguagesOf, copyTextOf as modelTextOf, type CopyLanguage } from './practise/copywork';
 import { cellSpan } from './verse/cells';
 import { useAiAllowed } from './gate/licenceContext';
-import { useDoorColumn } from './tutor/doorRoom';
+import { useDoorColumn, useDoorRoom } from './tutor/doorRoom';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
 import { SendOff } from './plan/SendOff';
 import { useSendOff } from './plan/useSendOff';
@@ -138,6 +138,9 @@ export function VerseView(props: VerseViewProps) {
   const ai = useAiAllowed();
   // the floating ? is over the text's box (src/index.css [data-verse-text][data-door-room], mw-5r3p30.992)
   const doorRoom = useDoorColumn(ai);
+  // and over the full-width controls under it: the tools (Maps · 4 ...) and what the action shows (its help line) keep the ?'s side clear too (mw-5r3p30.1002)
+  const doorPad = useDoorRoom();
+  const controlsRoom = doorRoom ? doorPad : '';
   const hebrewOn = useHebrewOn();
   const reference = unitReference(title, verse);
   // The Practise door that is open (src/practise/PractisePane.tsx): kept for the verse or passage it was opened on, so the next one opens at the door.
@@ -192,7 +195,7 @@ export function VerseView(props: VerseViewProps) {
           takes a line of its own), Memorize (mw-fu7dqf.5: the verse, or the passage's range as one reference; an Old Testament verse is learned in the languages its Hebrew dial allows, no licence),
           his Bible in Logos at the verse (a passage: at its first verse) and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6), and the Maps door
           (mw-zbjgn3r.2: the maps of the verse, or of the passage's range). The Audio Bible row of Listen is in the scroll box above, so the line is under it at every size (mw-5r3p30.746, .775). */}
-      <div role="group" aria-label="Tools" data-verse-tools className="relative mt-0.5 flex shrink-0 flex-wrap items-center gap-x-1 short:min-w-0 short:max-w-[40%]">
+      <div role="group" aria-label="Tools" data-verse-tools className={`relative mt-0.5 flex shrink-0 flex-wrap items-center gap-x-1 short:min-w-0 short:max-w-[40%] ${controlsRoom}`}>
         <LinkActions
           url={copyLink(copyUnit)}
           title={reference}
@@ -293,7 +296,7 @@ export function VerseView(props: VerseViewProps) {
         {/* What the chosen action shows, under the text it is about (the reading check marks its words, the diagram draws them, Listen's help line, the verse's talk door): nothing at all
             (no room taken) when it shows nothing. It comes before the tools and the row, so what arrives in it (a reading's result, a drawn diagram) only shortens the text's box: the
             controls under it keep their place above the foot and never move under his finger (mw-5r3p30.896). */}
-        <div className="mt-1 shrink-0 empty:hidden">
+        <div className={`mt-1 shrink-0 empty:hidden ${controlsRoom}`}>
           {action === 'listen' ? (
             // sideways the Play bar says it, and the line's room goes to the Audio Bible row under it (mw-5r3p30.468)
             <p data-action-help className={`px-1 text-sm text-muted ${audioListen ? 'short:hidden' : ''}`}>
