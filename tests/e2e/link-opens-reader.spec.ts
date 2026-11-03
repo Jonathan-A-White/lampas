@@ -1,4 +1,4 @@
-// A ref= link to a verse or a range opens the normal Reader, not the Verse view and not immersive, with the first verse at the top (mw-5r3p30.1025; his words, 2026-11-03:
+// A ref= link to a verse or a range opens the normal Reader, not the Verse view, with the first verse at the top and Immersive left as it was (mw-5r3p30.1025, .1028; his words, 2026-11-03:
 // "https://lampas.allmymind.org/#/?ref=John.5.25 should bring you here and #/?ref=John.5.16-30 should bring you here. Essentially, it should bring you to the non-immersive
 // reader with the first verse at the top (if possible). John 5:47 would bring you here."). Cold open (the page loads on the link) and with the app already open (the address changes
 // under a running Reader). 390x844.
@@ -140,19 +140,51 @@ for (const how of HOWS) {
   });
 }
 
-test('Immersive On beforehand: the link opens the Reader with it off and the bars shown', async ({ page }) => {
+/** The Immersive reader setting as the store holds it. */
+const storedImmersive = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<string | undefined>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const get = open.result.transaction('settings', 'readonly').objectStore('settings').get('immersiveReader');
+          get.onsuccess = () => resolve(get.result?.value);
+          get.onerror = () => reject(get.error);
+        };
+      }),
+  );
+
+// his words, 2026-11-03 (mw-5r3p30.1028): "clicking a link shouldn't affect your immersive reader settings"
+test('Immersive On beforehand, cold: the link leaves it On, with the verse first at the top', async ({ page }) => {
   await openLink(page, '#/?ref=John.5.25', 'cold', { immersive: true });
-  await expectPlainReader(page, 'John 5');
-  await expect(page.getByTestId('reader-chips')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'John 5', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '25');
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  await expect(page.locator('[data-selected="true"]')).toHaveCount(0);
+  expect(await storedImmersive(page)).toBe('on');
   await expect.poll(() => below(page, '[data-verse="25"]')).toBeLessThan(20);
   expect(await below(page, '[data-verse="25"]')).toBeGreaterThanOrEqual(-1);
+  expect(await below(page, '[data-verse="24"]')).toBeLessThan(0);
+  await shot(page, 'link-opens-reader-immersive-cold');
 });
 
-test('Immersive On beforehand, with the app open and the bars away: the link opens it off, bars shown', async ({ page }) => {
+test('Immersive On beforehand, with the app open: the link leaves it On, with the range first at the top', async ({ page }) => {
   await openLink(page, '#/?ref=John.5.16-30', 'open', { immersive: true });
-  await expectPlainReader(page, 'John 5');
-  await expect(page.getByTestId('reader-chips')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'John 5', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '16');
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  expect(await storedImmersive(page)).toBe('on');
   await expect.poll(() => topOfVerse(page, 16)).toBeLessThan(20);
+  expect(await topOfVerse(page, 16)).toBeGreaterThanOrEqual(-1);
+});
+
+test('Immersive Off beforehand: the link leaves it Off', async ({ page }) => {
+  await openLink(page, '#/?ref=John.5.25', 'cold');
+  await expectPlainReader(page, 'John 5');
+  expect(await storedImmersive(page)).not.toBe('on');
 });
 
 for (const how of HOWS) {

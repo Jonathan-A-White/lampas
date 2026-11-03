@@ -114,13 +114,6 @@ export function resetImmersive(): void {
   onNow = false;
 }
 
-/** Immersive has just been switched Off by the app (a ref= link, src/nav/LinkOpener.tsx) while a Reader that had it On is going away: the Reader that replaces it must not start as that one
- * had it (the bars away, the setting On). The full-screen exit is left to its timer. */
-export function immersiveSwitchedOff(): void {
-  awayNow = false;
-  onNow = false;
-}
-
 /** Whether the Immersive reader setting is On: what the store says, and until it answers (a new Reader's first draw) what the Reader it replaces had. */
 export function useImmersiveSetting(): boolean {
   const stored = useLiveQuery(getImmersive, []);
@@ -366,7 +359,7 @@ export function scrolledPercent(top: number, scrollHeight: number, clientHeight:
   return Math.max(0, Math.min(100, Math.floor((top / range) * 100)));
 }
 
-/** The percent of `box` scrolled through, up to the end of its last verse, kept current while `enabled` (it follows the scrolling and any change of size of the box or its text). */
+/** The percent of `box` scrolled through, up to the end of its last verse, kept current while `enabled` (the place line's, in Scroll, Immersive On or Off; it follows the scrolling and any change of size of the box or its text). */
 export function useScrolledPercent(enabled: boolean, box: RefObject<HTMLElement | null>): number {
   const [percent, setPercent] = useState(0);
   useEffect(() => {

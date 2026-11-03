@@ -5,8 +5,6 @@ import { useEffect } from 'react';
 import { loadCanonIndex } from '../data/chapter';
 import { loadLexicon } from '../data/lexicon';
 import { getOpenChapter } from '../data/readerChapter';
-import { getImmersive, setImmersive } from '../data/repositories';
-import { immersiveSwitchedOff } from '../immersive';
 import { announceLink } from './linkRequest';
 import { findWord, isHebrewText, notHeld, resolveReference, type Link } from './links';
 import { bringVerse } from './readerRequest';
@@ -25,19 +23,10 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
     if (!current()) return;
     const opened = resolveReference(link.text, index, there, link.printed);
     announceLink({ book: opened.book, chapter: opened.chapter, verse: opened.verse, notice: opened.notice, word: null });
-    // a verse or a range ('Heb 7:1-3') opens the normal Reader on the chapter (mw-5r3p30.1025): not the Verse view, not immersive (a tap on Immersive would turn it off too), nothing
-    // selected, the verse (a range's first) brought to the top with the section heading above it (src/reader/useBringVerse.ts), as far as the text allows: the chapter's last verses
-    // stand where the box ends. A chapter alone opens the chapter.
-    if (opened.verse !== null) {
-      const immersive = await getImmersive().catch(() => 'off');
-      if (!current()) return;
-      if (immersive === 'on') {
-        await setImmersive('off').catch(() => undefined);
-        immersiveSwitchedOff();
-        if (!current()) return;
-      }
-      bringVerse(opened.book, opened.chapter, opened.verse, { heading: true });
-    }
+    // a verse or a range ('Heb 7:1-3') opens the normal Reader on the chapter (mw-5r3p30.1025): not the Verse view, nothing selected, the verse (a range's first) brought to the top with
+    // the section heading above it (src/reader/useBringVerse.ts), as far as the text allows: the chapter's last verses stand where the box ends. A chapter alone opens the chapter.
+    // The Immersive reader setting is left as it is, On or Off (mw-5r3p30.1028): a link never changes a setting.
+    if (opened.verse !== null) bringVerse(opened.book, opened.chapter, opened.verse, { heading: true });
     replaceHash(plainAddress(kept, { book: opened.book, chapter: opened.chapter }));
     return;
   }

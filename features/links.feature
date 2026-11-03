@@ -1,7 +1,7 @@
 @uc-links @greek
 Feature: Lampas takes links in
   A verse or a word can be named in a link, the way Logos names one: https://lampas.allmymind.org/#/?ref=Rom.8.28 opens the
-  reader on that chapter with the verse at the top (not the Verse view, not immersive, nothing selected; a range starts at its
+  reader on that chapter with the verse at the top (not the Verse view, nothing selected, Immersive left as it is; a range starts at its
   first verse), and #/?word=G3551 opens the word sheet of νόμος. A reference may be written as OSIS or in English
   ('Rom 8:28', 'Romans 8:28', '1 John 1:9'), in any case, or as a chapter alone. A reference Lampas does not hold opens the
   nearest place it does hold, with a one-line notice saying what was asked for, never a blank screen. The Verse view and the
@@ -25,11 +25,17 @@ Feature: Lampas takes links in
     And no Verse view is open
     And there is no notice
 
-  Scenario: Immersive On beforehand is turned off by a verse link
+  Scenario: Immersive On beforehand stays On after a verse link (mw-5r3p30.1028)
     Given Immersive reader is On
     And a link "#/?ref=Rom.8.28" is opened
     Then the reader is headed "Romans 8"
-    And Immersive reader is Off
+    And Immersive reader is still On
+    And verse 28 is brought to the top
+
+  Scenario: Immersive Off beforehand stays Off after a verse link
+    Given a link "#/?ref=Rom.8.28" is opened
+    Then the reader is headed "Romans 8"
+    And Immersive reader is still Off
     And verse 28 is brought to the top
 
   Scenario: An OSIS reference to another book opens it
