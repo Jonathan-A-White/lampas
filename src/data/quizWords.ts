@@ -3,6 +3,7 @@
 // a phone that cannot load one shows no form, and the lemma is asked either way.
 import { loadChapter, type Chapter, type SourceLanguage } from './chapter';
 import type { Word } from './db';
+import { loadLexicon, type LemmaLexicon } from './lexicon';
 import { buildQuestion, distractorsFor, type Question, type Random } from './quiz';
 import { getStudyChapter } from './readerChapter';
 
@@ -24,6 +25,8 @@ export async function questionsOf(
 ): Promise<Question[]> {
   const languages = [...new Set(drawn.map((w): SourceLanguage => w.lang ?? 'grc'))];
   const chapters = new Map(await Promise.all(languages.map(async (lang) => [lang, await (asked[lang] ?? loadForms(lang))] as const)));
-  const pools = new Map(languages.map((lang) => [lang, distractorsFor(lang, all)]));
-  return drawn.map((w) => buildQuestion(w, pools.get(w.lang ?? 'grc') ?? [], chapters.get(w.lang ?? 'grc') ?? null, random));
+  // a Greek word is asked with its drill answer (mw-5r3p30.1000); a lexicon that cannot be loaded asks it with the gloss he has kept
+  const lexicon: LemmaLexicon | undefined = languages.includes('grc') ? await loadLexicon('grc').catch(() => undefined) : undefined;
+  const pools = new Map(languages.map((lang) => [lang, distractorsFor(lang, all, lexicon)]));
+  return drawn.map((w) => buildQuestion(w, pools.get(w.lang ?? 'grc') ?? [], chapters.get(w.lang ?? 'grc') ?? null, random, lexicon));
 }

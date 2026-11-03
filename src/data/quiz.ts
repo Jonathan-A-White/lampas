@@ -6,6 +6,8 @@ import { normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
 import { SEED_WORDS_HBO } from './seed-words-hbo';
 import { choicesOf } from './choices';
+import type { LemmaLexicon } from './lexicon';
+import { meaningsOf, shareMeaning } from './meanings';
 import { shuffle, type Random } from './random';
 
 export { mulberry32, shuffle, type Random } from './random';
@@ -56,8 +58,9 @@ export function seedDistractors(lang: SourceLanguage = 'grc'): Distractor[] {
  * The wrong glosses a word of `lang` can be asked among (mw-gdcyf98.19): the Greek seed for Greek, as it was; for Hebrew the Hebrew seed and his Hebrew words (the ones he has not dropped and that
  * have a gloss), never a Greek word, so a choice is always another word of the language asked.
  */
-export function distractorsFor(lang: SourceLanguage, words: readonly Word[]): Distractor[] {
-  if (lang !== 'hbo') return seedDistractors();
+export function distractorsFor(lang: SourceLanguage, words: readonly Word[], lexicon?: LemmaLexicon): Distractor[] {
+  // a Greek word's wrong choices are answers of the same shape as the right one (a seed word's drill answer, not its five meanings)
+  if (lang !== 'hbo') return lexicon ? seedDistractors().map((d) => ({ ...d, gloss: drillGloss({ lemma: d.lemma, lang: 'grc', gloss: d.gloss }, lexicon) })) : seedDistractors();
   const own = words
     .filter((w) => w.lang === 'hbo' && w.state !== 'dropped' && w.gloss.trim() !== '')
     .map((w): Distractor => ({ lemma: nfc(w.lemma), gloss: w.gloss, pos: w.pos ?? '' }));
@@ -65,7 +68,26 @@ export function distractorsFor(lang: SourceLanguage, words: readonly Word[]): Di
   return [...own, ...seedDistractors('hbo').filter((d) => !seeded.has(nfc(d.lemma)))];
 }
 
-/** The right gloss and three others, shuffled (choices.ts): the glosses of seed words of the same part of speech first, its near misses, then any. */
+/**
+ * The answer a drill gives for a Greek word (mw-5r3p30.1000): the lexicon's `q`, at most three meanings, in place of the gloss he has kept for the word when that is TBESG's own or his
+ * seed list's. A gloss he typed himself (Import, his own edit) is his and stays; so does a word the lexicon has no answer for (a Septuagint word, a Hebrew one, a lexicon not loaded).
+ */
+export function drillGloss(word: Pick<Word, 'lemma' | 'lang' | 'gloss'>, lexicon: LemmaLexicon | undefined): string {
+  if (!lexicon || word.lang === 'hbo') return word.gloss;
+  const key = nfc(word.lemma);
+  const entry = Object.hasOwn(lexicon, key) ? lexicon[key] : undefined;
+  if (!entry?.q) return word.gloss;
+  const seed = seedDistractors().find((s) => nfc(s.lemma) === key)?.gloss;
+  return word.gloss === entry.g || word.gloss === seed ? entry.q : word.gloss;
+}
+
+/** Whether a wrong choice carries a meaning the right answer has ('man' in 'man, husband' and in 'man, human being'): then it would be right too, and is never offered. */
+export function sharesMeaning(a: string, b: string): boolean {
+  const mine = new Set(meaningsOf(a).map(shareMeaning));
+  return meaningsOf(b).some((m) => mine.has(shareMeaning(m)));
+}
+
+/** The right gloss and three others, shuffled (choices.ts): the glosses of seed words of the same part of speech first, its near misses, then any. A wrong one never carries a meaning of the right one. */
 export function buildOptions(
   gloss: string,
   pos: string | undefined,
@@ -73,7 +95,7 @@ export function buildOptions(
   candidates: readonly Distractor[],
   random: Random,
 ): string[] {
-  const others = candidates.filter((c) => c.lemma !== lemma && c.gloss !== gloss);
+  const others = candidates.filter((c) => c.lemma !== lemma && c.gloss !== gloss && !sharesMeaning(gloss, c.gloss));
   const near = shuffle(others.filter((o) => o.pos === pos), random).map((o) => o.gloss);
   return choicesOf({ right: gloss, near, fillers: others.filter((o) => o.pos !== pos).map((o) => o.gloss) }, random).options;
 }
@@ -137,13 +159,15 @@ export interface Question {
   options: string[];
 }
 
-export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: Chapter | null, random: Random): Question {
+/** The question of a word; `lexicon` (the Greek lexicon, loadLexicon) gives a Greek word's drill answer, absent it the question is asked with the gloss he has kept. */
+export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: Chapter | null, random: Random, lexicon?: LemmaLexicon): Question {
   const others = new Set(pool.filter((p) => p.lemma !== word.lemma).map((p) => nfc(p.lemma)));
   const hebrew = word.lang === 'hbo';
   // a form is shown only from a chapter in the word's own language
   const forms = chapter && sourceLanguage(chapter) === (hebrew ? 'hbo' : 'grc') ? formsOf(chapter, word, others) : [];
   const occurrence = forms.length > 0 ? forms[Math.floor(random() * forms.length)] : undefined;
   const pos = pool.find((p) => p.lemma === word.lemma)?.pos ?? (hebrew ? word.pos : undefined);
+  const gloss = drillGloss(word, lexicon);
   return {
     lemma: word.lemma,
     ...(hebrew ? { lang: 'hbo' as const } : {}),
@@ -153,8 +177,8 @@ export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: 
     book: occurrence?.book,
     chapter: occurrence?.chapter,
     verse: occurrence?.verse,
-    gloss: word.gloss,
-    options: buildOptions(word.gloss, pos, word.lemma, pool, random),
+    gloss,
+    options: buildOptions(gloss, pos, word.lemma, pool, random),
   };
 }
 
