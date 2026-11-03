@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.93
+_2026-11-03_
+- New: On Today, the day's Psalms and Proverbs now open straight in Lampas, even with Logos turned off.
+
 ## 0.7.92
 _2026-11-03_
 - Fixed: When you ask the tutor what is left today, it no longer calls the next reading-plan chapter done after you have read the one before it, and it offers to open Today in plain words.
