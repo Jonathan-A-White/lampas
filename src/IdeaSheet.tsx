@@ -24,7 +24,8 @@ import { IDEA_KIND, type GrammarIdea } from './data/grammar/ladder';
 import { ideaOfAny as ideaOf, ladderFor, ladderLangOf, type LadderLang } from './data/grammar/ladders';
 import { soundLesson } from './data/grammar/lessons';
 import { stepsOf, tableWords, workedFor, type CardDiagram, type Teach, type TeachTable } from './data/grammar/teach';
-import { partsLine, partsOf, type WordParts } from './data/wordParts';
+import { partsOf } from './data/wordParts';
+import { WordParts } from './WordParts';
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getStudyChapter } from './data/readerChapter';
@@ -193,7 +194,7 @@ function TableView({ table, lang = 'grc' }: { table: TeachTable; lang?: LadderLa
   // (a Hebrew card's table draws its Hebrew in the Hebrew face, mw-gdcyf98.11)
   const inTable = (text: string) => (lang === 'hbo' ? markedFor(lang, text) : greekMarked(text, 'font-greek'));
   // the words of a Greek table that are built from parts (a Hebrew card has none yet)
-  const built = lang === 'hbo' ? [] : tableWords(table).flatMap((word) => { const entry = partsOf(word); return entry ? [{ word, entry }] : []; });
+  const built = lang === 'hbo' ? [] : tableWords(table).filter((word) => partsOf(word));
   return (
     <div data-testid="idea-table" className="mt-3">
       <table className="w-full table-fixed border-collapse text-center">
@@ -233,14 +234,14 @@ function TableView({ table, lang = 'grc' }: { table: TeachTable; lang?: LadderLa
 }
 
 /** The words of a card's table that have parts (src/data/wordParts.ts), each with the parts it is built from, under the table (mw-5r3p30.986): a word with no entry has no row, so no empty line. */
-function WordsBuilt({ words }: { words: { word: string; entry: WordParts }[] }) {
+function WordsBuilt({ words }: { words: string[] }) {
   return (
     <div data-testid="table-parts" className="mt-3 text-left">
       <p className="text-sm text-muted">How these words are built</p>
       <ul className="space-y-1">
-        {words.map(({ word, entry }) => (
-          <li key={word} data-testid="table-part" data-word={word} className="break-words text-base">
-            {greekMarked(word, 'font-greek text-xl')} = {greekMarked(partsLine(entry), 'font-greek text-lg')}
+        {words.map((word) => (
+          <li key={word}>
+            <WordParts word={word} look="equals" testId="table-part" />
           </li>
         ))}
       </ul>
@@ -254,7 +255,6 @@ const Part = ({ children, className = 'mt-4' }: { children: string; className?: 
 function Worked({ teach, passage, scheme, lang }: { teach: Teach; passage: IdeaPassage | undefined; scheme: Pronunciation; lang: LadderLang }) {
   const { worked, inPassage } = workedFor(teach, passage ? passageForms(passage) : new Set());
   const said = worked.say ?? worked.word;
-  const parts = lang === 'hbo' ? undefined : partsOf(said); // the parts the word is built from, when the table has them (mw-5r3p30.986)
   return (
     <section data-testid="idea-worked">
       <Part>Worked example</Part>
@@ -283,11 +283,7 @@ function Worked({ teach, passage, scheme, lang }: { teach: Teach; passage: IdeaP
           Say it: {scheme.respell(said)}
         </p>
       )}
-      {parts ? (
-        <p data-testid="worked-parts" className="text-base">
-          Built from: {greekMarked(partsLine(parts), 'font-greek text-lg')}
-        </p>
-      ) : null}
+      {lang === 'hbo' ? null : <WordParts word={said} testId="worked-parts" />}
       <ol className="mt-2 list-decimal space-y-1 pl-6 text-lg">
         {stepsOf(worked, scheme).map((step) => (
           <li key={step}>{markedFor(lang, step)}</li>
