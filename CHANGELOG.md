@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.89
+_2026-11-03_
+- Fixed: The Quick test and Review now ask a Greek word with its two or three real meanings, such as "woman, wife", instead of one thin word or a long list.
+
 ## 0.7.88
 _2026-11-03_
 - Fixed: tapping a possessive pronoun such as ἡμετέρα no longer offers The article's table, which had no place for it.
