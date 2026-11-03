@@ -10,6 +10,7 @@ import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPs
 import { getSetting } from '../settings/store';
 import { memorizeLine, memorizeToday } from '../today/memorizeLine';
 import { todayPieces } from '../today/pieces';
+import { readRanges } from '../today/readToday';
 import { passageName } from '../today/tutorFacts';
 
 /** The most items the field carries: more than Today can hold (review, plan, six passages, devotional). */
@@ -19,7 +20,7 @@ export type TodayKind = 'review' | 'memorize' | 'plan' | 'psalm' | 'proverb' | '
 
 export interface TodayItem {
   kind: TodayKind;
-  /** what Today calls it: 'Review: 17 due', 'Memorize: 2 verses due', 'Reading plan: 3 John 1', 'Psalm 5', the devotional's title */
+  /** what Today calls it: 'Review: 17 due', 'Memorize: 2 verses due', 'Reading plan: 3 John 1', 'Reading plan: Revelation 12 read today, next Revelation 13', 'Psalm 5', the devotional's title */
   title: string;
   /** whether he ticked it today; missing while Tick boxes is Off */
   done?: boolean;
@@ -64,9 +65,12 @@ export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[]
       kind = 'memorize';
       title = memorizeLine(await memorizeToday(now.getTime()));
     } else if (id === 'plan') {
-      const next = (await readPlan()).started?.next;
+      const started = (await readPlan()).started;
+      const next = started?.next;
+      const read = readRanges(started?.readOn(localDate(now)) ?? []);
       kind = 'plan';
-      title = next ? `Reading plan: ${chapterName(next)}` : 'Reading plan';
+      // The chapter marked read today and the one still next are two chapters: a title naming only the next one, beside a ticked box, reads as 'Revelation 13 is done' (mw-t3xu9a.11).
+      title = read.length > 0 ? `Reading plan: ${read.join(', ')} read today${next ? `, next ${chapterName(next)}` : ''}` : next ? `Reading plan: ${chapterName(next)}` : 'Reading plan';
     } else if (id === 'devotional') {
       kind = 'devotional';
       title = devotionalForDay(choice, tickedDevotionals(draw), now, day.devotional).title;

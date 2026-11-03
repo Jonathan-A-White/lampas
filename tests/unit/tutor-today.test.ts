@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { localDate, setTicked } from '../../src/data/daily/dailyStore';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalSetting } from '../../src/settings/definitions';
+import { markChapterRead, startPlan } from '../../src/data/repositories';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalSetting, readingPlanSetting } from '../../src/settings/definitions';
 import { setSetting } from '../../src/settings/store';
 import { db } from '../../src/data/db';
 import { dailyReadings } from '../../src/data/daily/psalmsProverbs';
@@ -63,6 +64,35 @@ describe('todayNow: the items behind the chip', () => {
     expect((await todayNow(NOW))!.filter((i) => i.done).map((i) => i.kind)).toEqual(['devotional']);
     await setSetting(dailyTicksSetting, 'off');
     expect((await todayNow(NOW))!.every((i) => !('done' in i))).toBe(true);
+  });
+
+  describe('the reading plan item pairs its title with its own done flag (mw-t3xu9a.11)', () => {
+    const REV_12 = { code: 'rev', chapter: 12 };
+    const planItem = async () => (await todayNow(NOW))!.find((i) => i.kind === 'plan')!;
+
+    it('with Revelation 12 read today, ticked, and Revelation 13 next: names 12 as read and 13 as next, never 13 as done', async () => {
+      await setSetting(readingPlanSetting, 'on');
+      await startPlan('whole-bible', REV_12);
+      await markChapterRead(REV_12, localDate(NOW));
+      await setTicked(localDate(NOW), 'plan', true);
+      const item = await planItem();
+      expect(item.done).toBe(true);
+      expect(item.title).toBe('Reading plan: Revelation 12 read today, next Revelation 13');
+      expect(item.title).not.toMatch(/^Reading plan: Revelation 13$/);
+    });
+
+    it('with Revelation 12 read today and the box not ticked: the same title, not done', async () => {
+      await setSetting(readingPlanSetting, 'on');
+      await startPlan('whole-bible', REV_12);
+      await markChapterRead(REV_12, localDate(NOW));
+      expect(await planItem()).toEqual({ kind: 'plan', title: 'Reading plan: Revelation 12 read today, next Revelation 13', done: false });
+    });
+
+    it('with nothing read today the title is the chapter to read, and done is the box', async () => {
+      await setSetting(readingPlanSetting, 'on');
+      await startPlan('whole-bible', REV_12);
+      expect(await planItem()).toEqual({ kind: 'plan', title: 'Reading plan: Revelation 12', done: false });
+    });
   });
 
   it('leaves out a piece that is Off, and is undefined when Today holds nothing', async () => {
