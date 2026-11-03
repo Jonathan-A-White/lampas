@@ -47,7 +47,7 @@ async function start(page: Page, speaks = false, hears = false): Promise<void> {
   };
   await routePostern(page, fake);
   await openUnlocked(page);
-  await page.goto('/#/?ref=John.1.1&view=greek&weave=off');
+  await page.goto('/#/?b=jhn&c=1&view=greek&weave=off&v=1');
   await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
 }
 

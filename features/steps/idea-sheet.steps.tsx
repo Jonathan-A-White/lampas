@@ -312,7 +312,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario("Learn this idea on the Grammar sheet of preposition opens the tapped preposition's own idea", ({ Given, And, When, Then }) => {
     Given('Lampas is opened on 1 John 1 in Greek with no goal, no idea level and a fake Postern', async () => {
-      await open(undefined, undefined, false, undefined, '#/?ref=1John.1.1&view=greek');
+      await open(undefined, undefined, false, undefined, '#/?b=1jn&c=1&view=greek&v=1');
       await waitFor(() => expect(within(verseEl(1)).getByRole('button', { name: 'περὶ' })).toBeInTheDocument());
     });
     And('he taps {string} in verse {int} and the term {string} on the word sheet', (_, text: string, verse: number, term: string) => tapsWordAndTerm(text, verse, term));

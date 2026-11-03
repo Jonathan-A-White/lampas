@@ -56,7 +56,7 @@ const asked = (): { ref: string; lang: string; words: { i: number; verse?: numbe
 
 describe('Diagram draws the sentence', () => {
   it('Diagram on Ephesians 1:5 draws 1:3-14 as one, named by its range, asked for once under that range', async () => {
-    const pane = await open('/#/?ref=Eph.1.5');
+    const pane = await open('/#/?b=eph&c=1&v=5');
     expect(await within(pane).findByText('Ephesians 1:3-14, one sentence')).toBeInTheDocument();
     expect(await within(pane).findByRole('img', { name: 'Sentence diagram of Ephesians 1:3-14, one sentence, Greek' })).toBeInTheDocument();
     expect(within(pane).getAllByRole('img')).toHaveLength(1);
@@ -69,24 +69,24 @@ describe('Diagram draws the sentence', () => {
   });
 
   it('the same sentence from another of its verses is the one kept diagram, no second ask', async () => {
-    let pane = await open('/#/?ref=Eph.1.5');
+    let pane = await open('/#/?b=eph&c=1&v=5');
     await within(pane).findByRole('img');
     cleanup();
-    pane = await open('/#/?ref=Eph.1.11');
+    pane = await open('/#/?b=eph&c=1&v=11');
     expect(await within(pane).findByText('Ephesians 1:3-14, one sentence')).toBeInTheDocument();
     await within(pane).findByRole('img');
     expect(asked()).toHaveLength(1);
   });
 
   it('a verse of one sentence has no caption and draws as it always did, John 11:35', async () => {
-    const pane = await open('/#/?ref=Jhn.11.35');
+    const pane = await open('/#/?b=jhn&c=11&v=35');
     expect(await within(pane).findByRole('img', { name: 'Sentence diagram of John 11:35, Greek' })).toBeInTheDocument();
     expect(pane.querySelector('[data-diagram-caption]')).toBeNull();
     expect(asked().map((a) => a.ref)).toEqual(['John 11:35']);
   });
 
   it('a verse of two sentences, John 2:4, draws two diagrams stacked, each named, each asked for', async () => {
-    const pane = await open('/#/?ref=Jhn.2.4');
+    const pane = await open('/#/?b=jhn&c=2&v=4');
     expect(await within(pane).findByText('John 2:4, one sentence (1 of 2 in verse 4)')).toBeInTheDocument();
     expect(within(pane).getByText('John 2:4, one sentence (2 of 2 in verse 4)')).toBeInTheDocument();
     await waitFor(() => expect(within(pane).getAllByRole('img')).toHaveLength(2));

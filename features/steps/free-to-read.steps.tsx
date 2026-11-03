@@ -123,10 +123,11 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the reader is headed {string}', async (_, title: string) => {
       await screen.findByRole('heading', { name: title, level: 1 });
     });
-    And('the Verse view shows verse {int}', async (_, verse: number) => {
-      const view = await screen.findByRole('region', { name: 'Verse view' });
-      await waitFor(() => expect(view.querySelector('[data-sheet-verse]')).not.toBeNull());
-      expect(document.querySelector(`[data-verse="${verse}"]`)).toHaveAttribute('data-selected', 'true');
+    And('verse {int} is brought to the top of the reader', async (_, verse: number) => {
+      await waitFor(() => expect(document.querySelector('[data-reader]')).toHaveAttribute('data-brought-verse', String(verse)));
+    });
+    And('no Verse view is open', () => {
+      expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull();
     });
   });
 

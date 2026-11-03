@@ -1,24 +1,42 @@
 @uc-links @greek
 Feature: Lampas takes links in
   A verse or a word can be named in a link, the way Logos names one: https://lampas.allmymind.org/#/?ref=Rom.8.28 opens the
-  reader on that verse, and #/?word=G3551 opens the word sheet of νόμος. A reference may be written as OSIS or in English
+  reader on that chapter with the verse at the top (not the Verse view, not immersive, nothing selected; a range starts at its
+  first verse), and #/?word=G3551 opens the word sheet of νόμος. A reference may be written as OSIS or in English
   ('Rom 8:28', 'Romans 8:28', '1 John 1:9'), in any case, or as a chapter alone. A reference Lampas does not hold opens the
   nearest place it does hold, with a one-line notice saying what was asked for, never a blank screen. The Verse view and the
   word sheet each give back a link: Copy link, and Share where the phone has it. The browser's web+lampas: scheme reaches the
   same addresses (docs/links.md).
 
-  Scenario: A reference opens the reader with the verse selected
+  Scenario: A reference opens the reader with the verse at the top and no Verse view
     Given a link "#/?ref=Romans%208:28" is opened
     Then the reader is headed "Romans 8"
-    And verse 28 is selected
+    And verse 28 is brought to the top
+    And no verse is selected
+    And no Verse view is open
     And there is no notice
-    And the address names book "rom", chapter 8 and verse 28
+    And the address names book "rom" and chapter 8 and nothing else of the link
+
+  Scenario: A range opens the reader at its first verse
+    Given a link "#/?ref=Rom.8.28-30" is opened
+    Then the reader is headed "Romans 8"
+    And verse 28 is brought to the top
+    And no verse is selected
+    And no Verse view is open
+    And there is no notice
+
+  Scenario: Immersive On beforehand is turned off by a verse link
+    Given Immersive reader is On
+    And a link "#/?ref=Rom.8.28" is opened
+    Then the reader is headed "Romans 8"
+    And Immersive reader is Off
+    And verse 28 is brought to the top
 
   Scenario: An OSIS reference to another book opens it
     Given a link "#/?ref=1Jn.1.9" is opened
     Then the reader is headed "1 John 1"
-    And verse 9 is selected
-    And the address names book "1jn", chapter 1 and verse 9
+    And verse 9 is brought to the top
+    And the address names book "1jn" and chapter 1 and nothing else of the link
 
   Scenario: A chapter alone opens the chapter with no verse selected
     Given a link "#/?ref=Rom%208" is opened
@@ -26,11 +44,18 @@ Feature: Lampas takes links in
     And no verse is selected
     And there is no notice
 
-  Scenario: A verse past the end of the chapter opens the last verse and says what was asked for
+  Scenario: A verse past the end of the chapter brings the last verse to the top and says what was asked for
     Given a link "#/?ref=Rom.8.99" is opened
     Then the reader is headed "Romans 8"
-    And verse 39 is selected
+    And verse 39 is brought to the top
+    And no Verse view is open
     And the notice reads "“Romans 8:99” is not in Lampas; showing Romans 8:39."
+
+  Scenario: Verse 0 brings verse 1 to the top
+    Given a link "#/?ref=Rom.8.0" is opened
+    Then the reader is headed "Romans 8"
+    And verse 1 is brought to the top
+    And no Verse view is open
 
   Scenario: A chapter past the end of the book opens the last chapter and says what was asked for
     Given a link "#/?ref=Romans%2099:1" is opened
@@ -43,24 +68,26 @@ Feature: Lampas takes links in
     Then the reader is headed "Romans 8"
     And the notice reads "“Tobit.3.1” is not in Lampas; showing Romans 8."
 
-  Scenario: An Old Testament reference opens the chapter in English with the verse selected
+  Scenario: An Old Testament reference opens the chapter in English with the verse at the top and no Verse view
     Given a link "#/?ref=Jon.1.10" is opened
     Then the reader is headed "Jonah 1"
-    And verse 10 is selected
+    And verse 10 is brought to the top
+    And no verse is selected
+    And no Verse view is open
     And there is no notice
-    And the address names book "jon", chapter 1 and verse 10
+    And the address names book "jon" and chapter 1 and nothing else of the link
 
   Scenario: A numbered Old Testament book opens by its OSIS code
     Given a link "#/?ref=2Kgs.14.25" is opened
     Then the reader is headed "2 Kings 14"
-    And verse 25 is selected
+    And verse 25 is brought to the top
     And there is no notice
-    And the address names book "2ki", chapter 14 and verse 25
+    And the address names book "2ki" and chapter 14 and nothing else of the link
 
-  Scenario: An Old Testament verse past the end of its chapter opens the last verse and says what was asked for
+  Scenario: An Old Testament verse past the end of its chapter brings the last verse to the top and says what was asked for
     Given a link "#/?ref=Gen.1.99" is opened
     Then the reader is headed "Genesis 1"
-    And verse 31 is selected
+    And verse 31 is brought to the top
     And the notice reads "“Genesis 1:99” is not in Lampas; showing Genesis 1:31."
 
   Scenario: The notice can be dismissed
@@ -71,7 +98,7 @@ Feature: Lampas takes links in
   Scenario: The web+lampas: form reaches the same verse
     Given a link "#/?ref=web%2Blampas%3ARom.8.28" is opened
     Then the reader is headed "Romans 8"
-    And verse 28 is selected
+    And verse 28 is brought to the top
 
   Scenario: A Strong's number opens the word sheet of its word
     Given a link "#/?word=G3551" is opened
@@ -89,23 +116,23 @@ Feature: Lampas takes links in
     And no word sheet is open
 
   Scenario: The Verse view of an Old Testament verse copies its text ending in the https link
-    Given a link "#/?ref=Jon.1.10" is opened
+    Given the address "#/?b=jon&c=1&v=10" is opened
     When he taps Copy on the Verse view
     Then the clipboard text ends with "https://lampas.allmymind.org/#/?ref=Jonah.1.10"
 
   Scenario: The Verse view copies its text ending in the https link
-    Given a link "#/?ref=Rom.8.28" is opened
+    Given the address "#/?b=rom&c=8&v=28" is opened
     When he taps Copy on the Verse view
     Then the clipboard text ends with "https://lampas.allmymind.org/#/?ref=Rom.8.28"
     And the Verse view says "Copied"
 
   Scenario: The Verse view has no Share button where the phone cannot share
-    Given a link "#/?ref=Rom.8.28" is opened
+    Given the address "#/?b=rom&c=8&v=28" is opened
     Then the Verse view has no Share button
 
   Scenario: The Verse view shares the https link of its verse where the phone can share
     Given the phone can share
-    And a link "#/?ref=Rom.8.28" is opened
+    And the address "#/?b=rom&c=8&v=28" is opened
     When he taps Share on the Verse view
     Then the phone is asked to share "https://lampas.allmymind.org/#/?ref=Rom.8.28"
 
@@ -115,7 +142,7 @@ Feature: Lampas takes links in
     Then the clipboard holds "https://lampas.allmymind.org/#/?word=G3551"
 
   Scenario: A phone that refuses the clipboard shows the text to copy by hand
-    Given a link "#/?ref=Rom.8.28" is opened
+    Given the address "#/?b=rom&c=8&v=28" is opened
     And the clipboard refuses
     When he taps Copy on the Verse view
     Then the Verse view shows the text ending in "https://lampas.allmymind.org/#/?ref=Rom.8.28" to copy by hand

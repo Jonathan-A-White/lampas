@@ -128,7 +128,7 @@ test('Jonah 1:10 > In another book… lists the commentaries on Jonah from his l
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await shelfOn(page, [['commentary', 'Commentaries']]);
-  await page.goto('/#/?ref=Jonah.1.10');
+  await page.goto('/#/?b=jon&c=1&v=10');
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view).toBeVisible();
 
@@ -190,7 +190,7 @@ test('a Bible in Logos for each part: the Old Testament one picked, Jonah opens 
   await expect(picker('New Testament')).toHaveValue('LLS:LGCYSTNDRDBBLSB');
 
   // Jonah opens in the Old Testament Bible, Romans in the New Testament one
-  await page.goto('/#/?ref=Jonah.1.10');
+  await page.goto('/#/?b=jon&c=1&v=10');
   const psalm = page.getByRole('region', { name: 'Verse view' });
   await expect(psalm.getByRole('group', { name: 'Jonah 1:10 in Logos' }).getByRole('link', { name: 'In Logos' })).toHaveAttribute('href', 'logosres:1.0.710;ref=Bible.Jon1.10');
   await page.goto('/#/?b=rom&c=8');

@@ -275,7 +275,8 @@ describeFeature(feature, ({ Scenario }) => {
       noteVisit(at);
       expect(visit).toBe(1);
       await draw(hash);
-      await screen.findByRole('region', { name: 'Verse view' });
+      await waitFor(() => expect(document.querySelector('[data-verse]')).not.toBeNull());
+      expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull();
     });
     Then('no licence tip is shown', () => expect(tip()).toBeNull());
   });

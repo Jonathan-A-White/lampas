@@ -28,12 +28,12 @@ const boxOf = async (target: Locator): Promise<Box> => {
 };
 
 /** Opens the Verse view on `ref` with a licence, a phone that can share and a recogniser (so the composer shows its Hold to ask bar). */
-async function open(page: Page, ref: string): Promise<Locator> {
+async function open(page: Page, place: string): Promise<Locator> {
   await page.addInitScript(() => Object.defineProperty(navigator, 'share', { value: () => Promise.resolve(), configurable: true }));
   await routePostern(page, makeFakePostern());
   await honestMic(page);
   await openUnlocked(page);
-  await page.goto(`/#/?ref=${ref}`);
+  await page.goto(`/#/?${place}`);
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view).toBeVisible();
   await expect(view.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
@@ -133,13 +133,13 @@ base.describe('at the phone\'s own text size', () => {
   base.use({ viewport: VIEWPORT });
 
   base('Revelation 10:1-11: one primary, every action in reach, six lines of the passage with the foot bar up', async ({ page }) => {
-    const view = await open(page, 'Rev.10.1-11');
+    const view = await open(page, 'b=rev&c=10&p=1&pt=11');
     await expect(view.getByRole('heading', { name: 'Revelation 10, Revelation 10:1-11' })).toBeVisible();
     await checkView(page, view, 'passage-360', VIEWPORT, 6);
   });
 
   base('Revelation 10:1: the same for one verse', async ({ page }) => {
-    const view = await open(page, 'Rev.10.1');
+    const view = await open(page, 'b=rev&c=10&v=1');
     await expect(view.getByRole('heading', { name: 'Revelation 10:1' })).toBeVisible();
     await checkView(page, view, 'verse-360', VIEWPORT, 6);
   });
@@ -164,13 +164,13 @@ const large = base.extend({
 
 large.describe('at 200% text', () => {
   large('Revelation 10:1-11 at 200%: one primary, every action in reach, the text still has lines in view with the foot bar up', async ({ page }) => {
-    const view = await open(page, 'Rev.10.1-11');
+    const view = await open(page, 'b=rev&c=10&p=1&pt=11');
     expect(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize)).toBe(`${LARGE_PX}px`);
     await checkView(page, view, 'passage-200', VIEWPORT, 3, true);
   });
 
   large('Revelation 10:1 at 200%: the same for one verse', async ({ page }) => {
-    const view = await open(page, 'Rev.10.1');
+    const view = await open(page, 'b=rev&c=10&v=1');
     await checkView(page, view, 'verse-200', VIEWPORT, 3, true);
   });
 });

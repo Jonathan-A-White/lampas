@@ -19,8 +19,10 @@ test('a shared verse link opens that verse for a phone with no licence', async (
   await openUnlicensed(page);
   await page.goto('/#/?ref=Rom.8.28');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
-  await expect(page.locator('[data-verse="28"]').first()).toHaveAttribute('data-selected', 'true');
+  // the Reader on the chapter, no Verse view over it, the verse brought to the top (mw-5r3p30.1025)
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  await expect(page.locator('[data-verse="28"]').first()).toBeVisible();
 });
 
 test('the Licence page, #/unlock, shows the phone’s key and says it is not licensed', async ({ page }) => {
@@ -60,7 +62,7 @@ for (const [name, size] of [['upright', { width: 390, height: 844 }], ['sideways
     await page.setViewportSize(size);
     await openUnlicensed(page);
     await page.addInitScript(() => window.localStorage.setItem('lampas.verseAction', 'read'));
-    await page.goto('/#/?ref=Rom.8.28');
+    await page.goto('/#/?b=rom&c=8&v=28');
     const view = page.getByRole('region', { name: 'Verse view' });
     await expect(view).toBeVisible();
     const actions = view.getByRole('group', { name: 'Actions', exact: true });
