@@ -21,6 +21,7 @@ import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { findButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
+import { drillAnswer } from '../../tests/support/drill-answer';
 
 afterAll(async () => {
   cleanup();
@@ -109,7 +110,7 @@ async function answerCurrent(right: boolean): Promise<string> {
     await user.click(await screen.findByRole('button', { name: right ? 'Kind of' : "Don't know" }));
     return lemma;
   }
-  const gloss = (await db.words.get(lemma))?.gloss;
+  const gloss = drillAnswer(await db.words.get(lemma));
   const target = options().find((o) => (o.textContent === gloss) === right);
   if (!target) throw new Error('no such option');
   await user.click(target);
@@ -120,7 +121,7 @@ async function answerCurrent(right: boolean): Promise<string> {
 
 /** Picks the gloss of the word on screen (or another one), without grading it. */
 async function pick(right: boolean): Promise<void> {
-  const gloss = (await db.words.get(promptLemma()))?.gloss;
+  const gloss = drillAnswer(await db.words.get(promptLemma()));
   const target = options().find((o) => (o.textContent === gloss) === right);
   if (!target) throw new Error('no such option');
   await user.click(target);
@@ -403,7 +404,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(showButton()).toBeVisible();
     });
     And('the flashcard does not show the gloss yet', async () => {
-      const gloss = (await db.words.get(promptLemma()))?.gloss ?? '';
+      const gloss = drillAnswer(await db.words.get(promptLemma())) ?? '';
       expect(gloss).not.toBe('');
       expect(document.body.textContent).not.toContain(gloss);
       expect(screen.queryByTestId('picture')).toBeNull();
@@ -420,7 +421,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he starts the review', start);
     And('he taps Show', async () => user.click(await screen.findByRole('button', { name: 'Show' })));
     Then('the flashcard shows the gloss of {string} with {string}, {string} and {string}', async (_, lemma: string, a: string, b: string, c: string) => {
-      const gloss = (await db.words.get(lemma))?.gloss ?? '';
+      const gloss = drillAnswer(await db.words.get(lemma)) ?? '';
       expect(await screen.findByTestId('flash-gloss')).toHaveTextContent(gloss);
       for (const name of [a, b, c]) expect(screen.getByRole('button', { name })).toBeVisible();
       expect(showButton()).toBeNull();

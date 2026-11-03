@@ -17,6 +17,7 @@ import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../te
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { hearing } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
+import { drillAnswer } from '../../tests/support/drill-answer';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -82,7 +83,7 @@ async function rightGloss(): Promise<string> {
   if (fromRound) return fromRound.gloss;
   const word = await db.words.get(lemma);
   if (!word) throw new Error(`no word ${lemma}`);
-  return word.gloss;
+  return drillAnswer(word) ?? word.gloss;
 }
 
 async function tapGloss(right: boolean): Promise<void> {
