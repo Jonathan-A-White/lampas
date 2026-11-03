@@ -12,6 +12,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [Layer 2 in detail](#layer-2-in-detail)
   - [Names no lexicon has: the form as its own lemma](#names-no-lexicon-has-the-form-as-its-own-lemma)
   - [The two books over the bar on words with no candidate (B9)](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
+  - [A name written with a capital mid-clause is not the common word its letters spell](#a-name-written-with-a-capital-mid-clause-is-not-the-common-word-its-letters-spell)
 - [The agreement check](#the-agreement-check)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
@@ -158,6 +159,45 @@ Story mw-u2w5klk.20. His answer above leaves Esther (181 of 5,936 words with no 
 
 With both, Esther has 75 words with no candidate (1.29%) and Lamentations 25 (1.02%); no book of the 39 has a higher share than before in either column of `lxx:batches --all`, and `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8` is byte for byte what it was.
 `BAR.guesses` is unchanged: 3%.
+
+### A name written with a capital mid-clause is not the common word its letters spell
+
+Story mw-u2w5klk.25. Layers 1 and 2 read a form's letters with its capital lowered, so a name that is spelled as a common Greek word settled as that word: Σειών (Zion, 138
+words of the 39 books) as σείω, a participle; Ἀμμών (102) as ἄμμος, sand; Εἰού (Jehu, 51) as εἴλω; Ἁμάν (50) as ἀμάω; Ἠλεί (Eli, 35) as ἀλέω; Σηών (34) as σής, a moth; Ἀμνών
+(29) as ἀμνός, a lamb; Γάζης (Gaza, 10) as the treasury of Acts 8:27, which the New Testament has and layer 1 took whole. **The capital rule** (`withCapitalNames` in
+`derive.ts`, run after the layers and the rule above, before the agreement check) reads three things and nothing else: Swete's own capitals and small letters, TAGNT's
+lemmas and TBESG's. A word written with a capital that does not open a verse or a clause (`opensClause`, or is all of its clause, `isWholeClause`: Swete capitalises
+such a word whatever it is, so its capital says nothing), which the layers settled on a lemma written in lower case, or left pending with only such candidates of
+their own, is read again, and is a name when either of two things says so:
+
+1. **A lexicon has a name spelled so.** The parser is run on the form whether the New Testament has it or not, and a candidate whose lemma is written with a capital
+   in TBESG or TAGNT (as the rule for indeclinable names reads a name, by its capital; TBESG also marks a name with `N:` before its part of speech, 781 rows, but writes
+   `N:` on common words too, γέεννα, ζηλωτής, κέδρος, and some capitalised names without it, ᾍδης, Τιτάν, so the capital is read) is added to the word's candidates, or is already
+   among them: Γάζα `N-GSF` for Γάζης, Σύρος for Σύρων (Gen 22:21, settled as σύρω), Φοῖνιξ for Φοίνικες (Deu 3:9). The `via` of such a candidate begins `a capital mid-clause: a
+   lexicon has a name spelled so`. 26 words of the 39 books; Ἡλίου (Gen 41:45, Heliopolis) and Πέτρας (Jdg 1:36) get a name they are not (Ἡλίας, Πέτρος) beside the common
+   word they may be: the model chooses.
+2. **Swete's own print.** Where no lexicon has a name, the form is read as its own lemma, in every case of every gender (support `form`, as in 'Names no lexicon has'), when
+   the file never writes the form in lower case anywhere in its 60 books (`lowerCaseForms`, kept on the trained run as `lowerCase`), the word carries one accent (Κέχρικά σε,
+   Ἠγάπηκά σε carry an enclitic's: `hasTwoAccents` in `swete.ts`), and its ending is one a Hebrew name has (`formNameLemma`, the table of 'Names no lexicon has'). The first
+   word of what someone says follows no mark and is capitalised too (`εἶπεν ὁ θεός Ἰδοὺ δέδωκα`, Gen 1:29, 284 words; `Μὴ` 163, `Οὐκ` 137, `Ἐγὼ` 77), and nearly every such
+   word is written in lower case somewhere else in the file; what is left is a Greek word that only ever opens a speech, and its ending tells it from a Hebrew name
+   (`Ἀνάβηθι`, `Λάλησον`, `Πορευθῶμεν`, `Στήσατε`). 817 words of the 39 books.
+
+The word is **pending** with the common candidates kept and the name's added, the note `a capital mid-clause: a name beside the common word its letters spell: for the
+agreement check or the model`, so the agreement check settles it where an article says the case (`τῇ Μαὰν`, 1 Sam 23:24: Μαάν `N-DSF`; 55 words) and the model reads
+the rest. A word settled on a lemma with a capital, pending with a name among its candidates already (an indeclinable name, a name from its form alone), with no candidate
+(the rule above), or with Morpheus's candidates alone, is not touched. On the 39 books the rule touches 843 words (188 forms): 580 that were settled (39 in layer 1, 541
+in layer 2) and 263 that were pending with common candidates; of a seeded random sample of 30 of them read in their verses, 30 were names (the story's closing comment lists
+them). `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8` is byte for byte what it was.
+
+**What the rule cannot see.** A name that opens a verse or a clause and spells a common word (its capital says nothing, and the layers' answer stands). A name the file
+also writes in lower case as the common word, that no lexicon has as a name: Ὤν (On: Exo 1:11, Hos 4:15, 5:8, 10:5, 10:8, 12:4, Amos 1:5, Jer 50:13, and Gen 41:48, 9 words) is ὤν, being, in the New Testament and in TBESG;
+Ζωή (Gen 3:20) is ζωή. A name declined in Greek that no lexicon has, whose ending Greek declines (Λείας, Gen 29:17, read as λεῖος; Καδής; Κῦρος, read as κυρόω; Σείν):
+its form is not its lemma, and nothing says which name it is. And the other way, a Greek word that only ever opens a speech and ends as a Hebrew name does goes to the
+model with its right reading kept: Παρελθὼν (Exo 3:3), Στενά (2 Sam 24:14), Ἡδύ (Isa 44:16), about ten forms of the 188. Κύριος written with a capital is the Lord and
+keeps the lemma κύριος, as Παντοκράτωρ keeps its own: a title is not another word. The test is `a name written with a capital mid-clause is not settled on the common
+word its letters spell (mw-u2w5klk.25)` in `tests/unit/lxx-parser.test.ts`: Σηών and Ἀμμών (Num 21:21, 21:24), Γάζης (Deu 2:23), and the capitals that are no name, Ἰδοὺ
+(Gen 1:29), Ἠγάπηκά σε (Jdg 16:15), Ἐγώ opening a verse and a sentence, and in the real Gen 1 fixture ΕΝ, Γενηθήτω and Ἰδοὺ.
 
 ## The agreement check
 
@@ -525,7 +565,7 @@ the candidates are ordered by support, then lemma, then parsing, never by the or
 | --- | --- | --- | --- |
 | Swete's Septuagint, eliranwong/LXX-Swete-1930: `00-Swete_versification.csv`, `01-Swete_word_with_punctuations.csv`, `LICENSE`, `README.md` | https://github.com/eliranwong/LXX-Swete-1930 commit `1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33` | text public domain; packaging GPL-3.0 | the words and their references |
 | TAGNT, `Translators Amalgamated OT+NT/TAGNT Mat-Jhn …` and `… Act-Rev …` | https://github.com/STEPBible/STEPBible-Data commit `be4191f0082aeedddb0eff0c02c966292b2bd641` | CC BY 4.0 | layer 1; the parser's rules |
-| TBESG, `Lexicons/TBESG - Translators Brief lexicon of Extended Strongs for Greek …` | same commit | CC BY 4.0 | the parser's lemmas, a lemma's part of speech and a noun's gender |
+| TBESG, `Lexicons/TBESG - Translators Brief lexicon of Extended Strongs for Greek …` | same commit | CC BY 4.0 | the parser's lemmas, a lemma's part of speech and a noun's gender; a name by its capital and `indecl.` ('Names that do not decline', 'A name written with a capital mid-clause') |
 | TVTMS (fetched, not read here) | same commit | CC BY 4.0 | English Ps 23 = Greek Ps 22 (`npm run lxx:english`) |
 | Morpheus, a build tool run from its Docker image (not fetched by the scripts) | https://github.com/perseids-tools/morpheus commit `ab6898ffed335fc6169fa02c9940657a9b5a78e0` | MPL-2.0 | its analyses of the forms with no candidate, as candidates ('Morpheus, the second method') |
 

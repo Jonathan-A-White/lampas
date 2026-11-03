@@ -19,6 +19,7 @@ import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import {
   DERIVED_HEADER,
   NOTE_ANALOGY,
+  NOTE_CAPITAL_NAME,
   NOTE_FORM_NAME,
   NOTE_INDECLINABLE,
   NOTE_NOT_IN_NT,
@@ -36,7 +37,7 @@ import {
   type Layer,
   type PendingWord,
 } from '../../scripts/lxx/derive';
-import { NO_NAMES, PARSER_DOMINANT, formNameLemma, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
+import { NO_NAMES, PARSER_DOMINANT, formNameLemma, isCapital, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
 import { sweteTokens } from '../../scripts/lxx/swete';
 import { readTagnt } from '../../scripts/lxx/tagnt';
 import { fits, readTbesg, readTbesgNames } from '../../scripts/lxx/tbesg';
@@ -599,5 +600,111 @@ describe("the editor's verse numbers are not words, and a letter name that is a 
     expect(out('Lam.1:8#2').candidates).not.toEqual([]);
     expect(out('Lam.1:8#1').candidates).toEqual([]);
     expect(out('Lam.1:8#5').candidates).toEqual([]);
+  });
+});
+
+describe('a name written with a capital mid-clause is not settled on the common word its letters spell (mw-u2w5klk.25)', async () => {
+  const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+  // the rules the parser learns: -ων for -ς N-GPM (ἰχθύων), -ων for -ος N-GPF (ὁδῶν), -ης for -α N-GSF (γάζης, which layer 1 also has, Acts 8:27)
+  const rows = [
+    tagntRow('Luk.5.9#9', 'ἰχθύων', 'G2486', 'N-GPM', 'ἰχθύς'),
+    tagntRow('Mat.3.3#9', 'ὁδῶν', 'G3598', 'N-GPF', 'ὁδός'),
+    tagntRow('Act.8.27#20', 'γάζης', 'G1047', 'N-GSF', 'γάζα'),
+    tagntRow('Mat.1.20#05', 'ἰδοὺ', 'G2400', 'INJ', 'ἰδού'),
+    tagntRow('Joh.15.9#5', 'ἠγάπηκα', 'G0025', 'V-RAI-1S', 'ἀγαπάω'),
+    tagntRow('Mat.5.22#1', 'ἐγὼ', 'G1473', 'P-1NS', 'ἐγώ'),
+    tagntRow('Mat.1.2#2', 'καὶ', 'G2532', 'CONJ', 'καί'),
+  ];
+  const tbesgRows = [
+    'G2486\tG2486 =\tG2486\tἰχθύς\tichthus\tG:N-M\tfish\t <b>ἰχθύς</b>',
+    'G3598\tG3598 =\tG3598\tὁδός\thodos\tG:N-F\tway\t <b>ὁδός</b>',
+    'G4597\tG4597 =\tG4597\tσής\tsēs\tG:N-M\tmoth\t <b>σής</b>',
+    'G0285\tG0285 =\tG0285\tἄμμος\tammos\tG:N-F\tsand\t <b>ἄμμος</b>',
+    'G1047\tG1047 =\tG1047\tγάζα\tgaza\tG:N-F\ttreasury\t <b>γάζα</b>',
+    'G1048\tG1048 =\tG1048\tΓάζα\tGaza\tN:N-F-L\tGaza\t <b>Γάζα</b>, -ης, ἡ',
+    'G2400\tG2400 =\tG2400\tἰδού\tidou\tG:INJ\tbehold\t <b>ἰδού</b>',
+    'G0025\tG0025 =\tG0025\tἀγαπάω\tagapaō\tG:V\tto love\t <b>ἀγαπάω</b>',
+    'G1473\tG1473 =\tG1473\tἐγώ\tegō\tG:P-1\tI\t <b>ἐγώ</b>',
+    'G2532\tG2532 =\tG2532\tκαί\tkai\tG:CONJ\tand\t <b>καί</b>',
+  ];
+  // Swete's own verses: Sihon (Num 21:21) and Ammon (Num 21:24), names the New Testament lacks that the parser read as σής and ἄμμος; Gaza (Deu 2:23), whose
+  // form the New Testament has as the treasury; and the capitals that are no name: what someone says (Gen 1:29, Jdg 16:15), a verse's first word (Exo 20:2), the word after a full stop (Num 21:24)
+  const verses: Array<[string, string[]]> = [
+    ['Num.21:21', ['ἀπέστειλεν', 'Μωυσῆς', 'πρέσβεις', 'πρὸς', 'Σηὼν', 'βασιλέα', 'Ἀμορραίων']],
+    ['Num.21:24', ['ὅτι', 'Ἰαζὴρ', 'ὅρια', 'υἱῶν', 'Ἀμμών', 'ἐστιν.', 'Ἐγὼ', 'Κύριος']],
+    ['Deu.2:23', ['κατοικοῦντες', 'ἐν', 'Ἁσηδὼθ', 'ἕως', 'Γάζης,', 'καὶ']],
+    ['Exo.20:2', ['Ἐγώ', 'εἰμι', 'Κύριος']],
+    ['Gen.1:29', ['καὶ', 'εἶπεν', 'ὁ', 'θεός', 'Ἰδοὺ', 'δέδωκα', 'ὑμῖν']],
+    ['Gen.1:31', ['καὶ', 'ἰδοὺ', 'καλὰ', 'λίαν.']],
+    ['Jdg.16:15', ['Πῶς', 'λέγεις', 'Ἠγάπηκά', 'σε,']],
+  ];
+  const versification: string[] = [];
+  const lines: string[] = [];
+  for (const [verse, words] of verses) {
+    versification.push(`${lines.length + 1}\t${verse}`);
+    for (const w of words) lines.push(`${lines.length + 1}\t${w}`);
+  }
+  const input: DeriveInput = { versification: versification.join('\n'), words: lines.join('\n'), tagnt: [rows.join('\n')], tbesg: tbesgRows.join('\n') };
+  const trained = train(input);
+  const results = new Map(['num', 'deu', 'exo', 'gen', 'jdg'].map((book) => [book, deriveBook(input, book, undefined, trained)]));
+  const at = (verse: string, display: string): { ref: string; out: DerivedWord | PendingWord } => {
+    const result = results.get(verse.split('.')[0].toLowerCase())!;
+    const word = result.words.find((w) => w.verse === verse && nfc(w.display) === nfc(display));
+    if (!word) throw new Error(`no word ${display} in ${verse}`);
+    return { ref: word.ref, out: outOf(result, word.ref) };
+  };
+  const ALL = ['N', 'G', 'D', 'A', 'V'].flatMap((c) => ['M', 'F', 'N'].map((g) => `N-${c}S${g}`));
+
+  it('leaves Σηών and Ἀμμών (Num 21:21, 21:24) pending with their form as a name beside the parser’s σής and ἄμμος: Swete never writes them in lower case and they end as a Hebrew name does', () => {
+    for (const [verse, display, lemma, common, morph] of [
+      ['Num.21:21', 'Σηὼν', 'Σηών', 'σής', 'N-GPM'],
+      ['Num.21:24', 'Ἀμμών', 'Ἀμμών', 'ἄμμος', 'N-GPF'],
+    ] as const) {
+      const { out } = at(verse, display);
+      expect(isDerived(out), display).toBe(false);
+      expect(has(out.candidates, common, morph), display).toBe(true);
+      expect(out.candidates.filter((c) => c.lemma === lemma).map((c) => c.morph).sort(), display).toEqual([...ALL].sort());
+      expect(out.candidates.filter((c) => c.lemma === lemma).every((c) => supportOf(c) === 'form'), display).toBe(true);
+      expect(out.notes, display).toContain(NOTE_CAPITAL_NAME);
+      expect(out.notes, display).toContain(NOTE_NOT_IN_NT);
+    }
+  });
+
+  it('leaves Γάζης (Deu 2:23) pending with TBESG’s Γάζα from the parser beside layer 1’s γάζα, the treasury of Acts 8:27', () => {
+    const { out } = at('Deu.2:23', 'Γάζης,');
+    expect(isDerived(out)).toBe(false);
+    expect(has(out.candidates, 'γάζα', 'N-GSF')).toBe(true);
+    expect(has(out.candidates, 'Γάζα', 'N-GSF')).toBe(true);
+    expect(out.candidates.some((c) => c.lemma === 'Γάζα' && c.source === undefined && c.support > 0)).toBe(true);
+    expect(out.notes).toContain(NOTE_CAPITAL_NAME);
+  });
+
+  it('keeps a common word that is capitalised because it opens what someone says, a verse or a sentence: Ἰδοὺ, Ἠγάπηκά σε, Ἐγώ, Ἐγὼ after a full stop', () => {
+    for (const [verse, display, lemma, morph, layer] of [
+      ['Gen.1:29', 'Ἰδοὺ', 'ἰδού', 'INJ', 1],
+      ['Jdg.16:15', 'Ἠγάπηκά', 'ἀγαπάω', 'V-RAI-1S', 1],
+      ['Exo.20:2', 'Ἐγώ', 'ἐγώ', 'P-1NS', 1],
+      ['Num.21:24', 'Ἐγὼ', 'ἐγώ', 'P-1NS', 1],
+    ] as const) {
+      const { out } = at(verse, display);
+      expect(isDerived(out), display).toBe(true);
+      if (!isDerived(out)) continue;
+      expect([out.lemma, out.morph, out.layer], display).toEqual([lemma, morph, layer]);
+      expect(out.notes, display).not.toContain(NOTE_CAPITAL_NAME);
+      expect(out.candidates.every((c) => !isCapital(c.lemma)), display).toBe(true);
+    }
+  });
+
+  it('keeps the real chapter’s openings: ΕΝ (Gen 1:1), Γενηθήτω (Gen 1:3, what God says) and Ἰδοὺ (Gen 1:29) are layer 1’s common words', async () => {
+    const gen = await run(GEN_1, ['--book', 'gen']);
+    for (const [display, lemma] of [
+      ['ΕΝ', 'ἐν'],
+      ['Γενηθήτω', 'γίνομαι'],
+      ['Ἰδοὺ', 'ἰδού'],
+    ] as const) {
+      const { out } = wordOf(gen, display);
+      expect(isDerived(out) && out.lemma, display).toBe(lemma);
+      expect(isDerived(out) && out.layer, display).toBe(1);
+    }
   });
 });
