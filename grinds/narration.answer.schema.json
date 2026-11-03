@@ -22,10 +22,11 @@
       "type": "boolean"
     },
     "question": {
-      "description": "One gentle question, a single sentence ending in a question mark, that leads him toward the first point he missed without telling it; when he missed nothing, one question that takes him a little deeper into the passage.",
+      "description": "One gentle question, a single sentence of words ending in a question mark (never a number or a code), that leads him toward the first point he missed without telling it; when he missed nothing, one question that takes him a little deeper into the passage.",
       "type": "string",
       "minLength": 1,
-      "maxLength": 200
+      "maxLength": 200,
+      "pattern": "^[^?]*[A-Za-z][^?]*\\?$"
     }
   }
 }

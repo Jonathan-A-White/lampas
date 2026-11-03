@@ -57,7 +57,7 @@ of them in a different order. Telling the points out of order is not an error to
 
 ## `question`
 
-One gentle question, one sentence ending with a question mark, in plain English.
+One gentle question, one sentence ending with a question mark, in plain English: words, never a bare number, code or label, whatever else the passage or his narration holds.
 
 - When he missed something: ask about the **first** point in `missed`, so that thinking about the question brings it back to him, without
   saying the point or quoting the passage (`What happened to the light after God saw it?`, not `Did God separate the light from the

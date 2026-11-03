@@ -11,6 +11,8 @@ export interface Schema {
   enum?: unknown[];
   minLength?: number;
   maxLength?: number;
+  /** a regular expression the whole string must match somewhere (JSON Schema `pattern`; the narration question is one sentence ending in a question mark) */
+  pattern?: string;
   anyOf?: Schema[];
   /** `if` a value fits this schema, it must also fit `then` (the bible-talk answer: a quiz_goal_offer only beside a quiz_goal_state of none) */
   if?: Schema;
@@ -22,7 +24,7 @@ export interface Schema {
   $ref?: string;
   $defs?: Record<string, Schema>;
 }
-const KEYWORDS = new Set(['$schema', 'title', 'description', 'type', 'properties', 'required', 'additionalProperties', 'items', 'maxItems', 'minItems', 'minLength', 'maxLength', 'anyOf', 'if', 'then', 'const', 'enum', 'minimum', 'maximum', '$ref', '$defs']);
+const KEYWORDS = new Set(['$schema', 'title', 'description', 'type', 'properties', 'required', 'additionalProperties', 'items', 'maxItems', 'minItems', 'minLength', 'maxLength', 'pattern', 'anyOf', 'if', 'then', 'const', 'enum', 'minimum', 'maximum', '$ref', '$defs']);
 
 /** The schema a `$ref` names, in the root's `$defs`; a schema with no `$ref` is itself. */
 export function resolveRef(s: Schema, root: Schema): Schema {
@@ -50,6 +52,7 @@ export function validate(value: unknown, schema: Schema, path = '$', root: Schem
   if (typeof value === 'string') {
     if (s.minLength !== undefined && value.length < s.minLength) problems.push(`${path}: too short`);
     if (s.maxLength !== undefined && value.length > s.maxLength) problems.push(`${path}: too long`);
+    if (s.pattern !== undefined && !new RegExp(s.pattern, 'u').test(value)) problems.push(`${path}: does not match ${s.pattern}`);
   }
   if (Array.isArray(value)) {
     if (s.minItems !== undefined && value.length < s.minItems) problems.push(`${path}: too few items`);
