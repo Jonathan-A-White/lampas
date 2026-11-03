@@ -379,3 +379,17 @@ describe('the committed Romans 8', () => {
     expect(rom8.verses.every((v) => v.e.length > 0 && v.e.every((c) => c.t.length > 0))).toBe(true);
   });
 });
+
+describe('the drill answers (mw-5r3p30.1000)', () => {
+  it('are made by the build: a report for every lemma, `q` only where the answer is not the gloss, the word card gloss unchanged', () => {
+    expect(Object.keys(built.drill.lemmas).sort()).toEqual(Object.keys(built.lexicon).sort());
+    for (const [lemma, r] of Object.entries(built.drill.lemmas)) {
+      const entry = built.lexicon[lemma];
+      expect(entry.q === undefined ? entry.g : entry.q, lemma).toBe(r.answer);
+      if (entry.q !== undefined) expect(entry.q, lemma).not.toBe(entry.g);
+    }
+    // a slice of the text has too few uses to settle a word: TBESG's gloss stays, as the report says
+    expect(built.drill.lemmas['ἄρα'].source).toBe('tbesg');
+    expect(built.drill.lemmas['ἄρα'].reason).toBe('few uses');
+  });
+});

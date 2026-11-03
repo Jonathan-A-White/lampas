@@ -4,8 +4,10 @@
 import type { SourceLanguage } from './chapter';
 
 export interface LemmaEntry {
-  /** TBESG gloss: 'flesh' */
+  /** TBESG gloss: 'flesh' (the word card's gloss) */
   g: string;
+  /** The answer a drill gives for the word when it is not `g` (mw-5r3p30.1000): at most three meanings, each one the MSB's English uses for a share of the word's uses, 'woman, wife'; absent: `g` is the answer. Greek only. */
+  q?: string;
   /** Strong's number, no padding: 'G4561', 'H7225' */
   s: string;
   /** part of speech: 'noun', 'verb' ... (parseCode.ts splitParse) */

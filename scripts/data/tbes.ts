@@ -21,6 +21,8 @@ export interface Lexicon {
   get(strongs: string): LexiconEntry | undefined;
   /** Every entry, by its number ('G686'); absent on a lexicon made by hand in a test. The variant words are matched to the lemmas by it (scripts/data/variantWords.ts). */
   entries?(): Iterable<[string, LexiconEntry]>;
+  /** TBESG (Greek) only: the meanings the lexicon's other lines of a number give ('G5590H = a Meaning of' 'soul: life' gives 'life'), the chosen part of each, not the number's own gloss. Absent on a lexicon made by hand in a test. */
+  senses?(strongs: string): string[];
 }
 
 /** Removes markup, scripture references, daggers and source tags; cuts at a word boundary near 300 characters. */
@@ -183,5 +185,9 @@ export function parseTbes(text: string, { letter, gloss }: TbesOptions): Lexicon
     }
     entries.set(key, entry);
   }
-  return { get: (strongs) => entries.get(strongs), entries: () => entries.entries() };
+  const senses = (strongs: string): string[] =>
+    letter === 'H'
+      ? []
+      : (lines.get(strongs) ?? []).slice(1).map((f) => f[6].trim().normalize('NFC').split(':').pop()!.trim()).filter((g) => g !== '');
+  return { get: (strongs) => entries.get(strongs), entries: () => entries.entries(), senses };
 }
