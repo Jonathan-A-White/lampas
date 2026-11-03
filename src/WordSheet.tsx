@@ -50,6 +50,7 @@ import { WORD_SHEET_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
 import { GuessedNumber } from './GuessedNumber';
 import { HeartOfWord } from './HeartOfWord';
+import { WordCognate } from './WordCognate';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 import { hebrewPointedForm } from './speech/hebrewPronunciation';
 
@@ -494,6 +495,8 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
       ) : null}
       {/* the note kept for a word that earns one: the thread behind its senses, always here to go back to (mw-bsf54t.14) */}
       <HeartOfWord lemma={wordLemma(word)} className="mt-3" />
+      {/* the English word that comes from it, if one really does (mw-5r3p30.988) */}
+      <WordCognate lemma={wordLemma(word)} className="mt-3" />
       <StudyRow groups={studyGroupsOf(chapter, word, study, levels)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
       {onHelp && verse !== undefined ? (
         <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
