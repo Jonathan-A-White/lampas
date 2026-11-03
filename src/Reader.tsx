@@ -227,7 +227,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const dismissSwipeNote = useCallback(() => setSwipeEnd(null), []);
   // Turn pages (Settings > Reading, src/reader/usePages.ts): the chapter in pages, turned by a tap on the outer thirds or a swipe; past the first or last
   // page they open the previous or next chapter, the chapter swipe being off. The page he is on is kept per chapter, so he comes back to it from any screen the Reader gives way to (mw-5r3p30.608).
-  const paging = useSetting(readingModeSetting) === 'pages';
+  const readingMode = useSetting(readingModeSetting);
+  const paging = readingMode === 'pages';
   // how far through the chapter he is, for the place line (Scroll only: Turn pages says the page)
   const percent = useScrolledPercent(!paging, main);
   useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen || paging, setSwipeEnd);
@@ -604,7 +605,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       </main>
       {paging && placeShown ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
       {/* Scroll with the Immersive reader Off: the line is there all the time, how far through the chapter he is (mw-5r3p30.1028); with it On it comes with the bars away, below */}
-      {!paging && !immersive && placeShown ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
+      {readingMode !== undefined && !paging && !immersive && placeShown ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
       <BarSlot level={1} inset={!(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} visible={away} floor /> : null}

@@ -927,7 +927,8 @@ test('with Scroll nothing changes: the text scrolls, a tap on the right third tu
   const before = await versesInView(page);
   await tapAt(page, 0.85);
   await page.waitForTimeout(300);
-  await expect(place(page)).toHaveCount(0);
+  // the place line is there in Scroll (Immersive Off, mw-5r3p30.1028) and a tap leaves it a percent, not a page
+  await expect(place(page)).toHaveText(/^Mark 12 · \d+%$/);
   if (await page.getByTestId('sheet-backdrop').count()) await page.keyboard.press('Escape');
   await expect(page.getByTestId('sheet-backdrop')).toHaveCount(0);
   expect(await versesInView(page)).toEqual(before);
