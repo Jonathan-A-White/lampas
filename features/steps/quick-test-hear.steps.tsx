@@ -16,6 +16,7 @@ import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth, type FakeVoice 
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { hearing, type Hearing } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
+import { drillAnswer } from '../../tests/support/drill-answer';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -106,7 +107,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps the right gloss', async () => {
       const lemma = screen.getByTestId('prompt').getAttribute('data-lemma') ?? '';
       const word = await db.words.get(lemma);
-      const target = [...document.querySelectorAll<HTMLElement>('[data-option]')].find((o) => o.textContent === word?.gloss);
+      const target = [...document.querySelectorAll<HTMLElement>('[data-option]')].find((o) => o.textContent === drillAnswer(word));
       if (!target) throw new Error('no right option');
       await user.click(target);
     });

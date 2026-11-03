@@ -24,6 +24,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { storedId } from '../../src/data/grammar/soundScope';
+import { drillAnswer } from '../../tests/support/drill-answer';
 
 afterAll(() => {
   cleanup();
@@ -170,7 +171,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he answers {int} questions right', async (_, n: number) => {
       for (let i = 0; i < n; i += 1) {
         const lemma = screen.getByTestId('prompt').getAttribute('data-lemma') ?? '';
-        const gloss = (await db.words.get(lemma))?.gloss;
+        const gloss = drillAnswer(await db.words.get(lemma));
         const target = [...document.querySelectorAll<HTMLElement>('[data-option]')].find((o) => o.textContent === gloss);
         if (!target) throw new Error(`no right option for ${lemma}`);
         await user.click(target);

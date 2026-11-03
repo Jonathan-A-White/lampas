@@ -8,6 +8,8 @@ import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { withAoristNote } from '../src/data/irregular-aorists';
 import { decodeParse, splitParse } from '../src/data/parseCode';
+import { normaliseLemma } from '../src/data/lemma';
+import { SEED_WORDS } from '../src/data/seed-words';
 import { CANON } from '../src/data/canon';
 import { OT_BOOKS } from '../src/data/books';
 import type { BookIndex, Chapter, LexEntry, VariantUnit } from '../src/data/chapter';
@@ -16,6 +18,8 @@ import type { FrequencyEntry } from '../src/data/frequency';
 import { COLUMNS, addRow, checkHeader, splitReference, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
 import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { parseTbes, type Lexicon } from './data/tbes';
+import { drillAnswers, type DrillReport } from './data/drillAnswers';
+import { CORRECTIONS } from './data/drill-corrections';
 import { OVERLAY_FILE, applyOverlay, diffEdition, loadRp2026, overlayReport, type OverlayEntry, type OverlayResult, type PlacedUnit } from './data/rp2026';
 import { RP2026_ENGLISH_FILE, checkRp2026English, readRp2026English, rp2026EnglishReport } from './data/rp2026English';
 import { layAlign } from './data/variantAlign';
@@ -32,6 +36,14 @@ export { cleanDefinition, type Lexicon } from './data/tbes';
 export const UNTAGGED_FILE = 'data/variant-untagged.txt';
 /** The forms whose Strong's number is a guess, committed for review beside it. */
 export const GUESSED_FILE = 'data/variant-guessed.txt';
+
+/** Where the build reports, for every lemma, the meanings of its drill answer and their shares (mw-5r3p30.1000, docs/data.md 'Drill answers'); committed for review. */
+export const DRILL_REPORT_FILE = 'data/drill-report.json';
+/** The report as text: one lemma to a line, so a change to one answer is one line of the diff. */
+export function drillReportText(report: DrillReport): string {
+  const lines = Object.entries(report.lemmas).map(([lemma, r]) => `${JSON.stringify(lemma)}:${JSON.stringify(r)}`);
+  return `{"line":${report.line},"cap":${report.cap},"lemmas":{\n${lines.join(',\n')}\n}}\n`;
+}
 
 export const MSB_URL = 'https://majoritybible.com/msb_nt_tables.tsv';
 export const TBESG_URL =
@@ -196,6 +208,8 @@ export interface BuiltData {
   lexicon: LemmaLexicon;
   /** every Strong's number of the text with its count: public/data/frequency.json */
   frequency: FrequencyEntry[];
+  /** how each lemma's drill answer (`q` of its lexicon entry) was made: data/drill-report.json */
+  drill: DrillReport;
   /** the apparatus's units by code, how many were aligned, and those that were not; absent when the build was given no apparatus */
   variants?: VariantStats;
   /** the units with no English (only when the build was not strict: `npm run variants:english` renders them) */
@@ -365,7 +379,11 @@ export function buildData(
   // the words of each reading's English are paired with its tagged Greek (scripts/data/variantAlign.ts, mw-9ji6ek0.37), which needs the tags
   if (apparatus) for (const { chapter } of chapters) layAlign(chapter);
   for (const { fingerprints, at, chapter } of unfingerprinted) fingerprints[at] = chapterFingerprint(chapter);
-  return { index, chapters, lexicon: sortedKeys(lexicon), frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}), ...(tagged ? { tagged } : {}) };
+  // the drill answers are measured on the whole text's alignment, so after the last chapter; a lemma whose answer is not its gloss says so as `q`
+  const seeds = new Map(SEED_WORDS.map((w) => [normaliseLemma(w.lemma).headword.normalize('NFC'), w.gloss] as const));
+  const drill = drillAnswers({ chapters: chapters.map((c) => c.chapter), lexicon, senses: lex.senses, seeds, corrections: CORRECTIONS });
+  for (const [lemma, r] of Object.entries(drill.lemmas)) if (r.answer !== lexicon[lemma].g) lexicon[lemma].q = r.answer;
+  return { index, chapters, lexicon: sortedKeys(lexicon), drill, frequency: countWords(chapters, lex), missingEnglish, lampasUsed, ...(apparatus ? { variants } : {}), ...(overlay ? { overlay: laid } : {}), ...(tagged ? { tagged } : {}) };
 }
 
 // ---------------------------------------------------------------- files
@@ -392,6 +410,8 @@ export interface BuildOptions {
   rp2026EnglishFile?: string;
   /** where the forms of the readings that stay untagged are listed; default UNTAGGED_FILE */
   untaggedFile?: string;
+  /** where the report of the drill answers is written; default DRILL_REPORT_FILE when the build writes public/data, else beside the raw downloads (a test's build must not rewrite the committed report) */
+  drillReportFile?: string;
   /** where the forms given a guessed number are listed; default GUESSED_FILE, or variant-guessed.txt beside `untaggedFile` when that is given */
   guessedFile?: string;
   /** read STEPBible's TAGNT (fetched into rawDir/tagnt) for the number of a variant word; default: when `variants` is on */
@@ -441,6 +461,8 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
     writeIfChanged(options.untaggedFile ?? UNTAGGED_FILE, untaggedText(built.tagged));
     writeIfChanged(options.guessedFile ?? (options.untaggedFile ? join(dirname(options.untaggedFile), 'variant-guessed.txt') : GUESSED_FILE), guessedText(built.tagged));
   }
+
+  writeIfChanged(options.drillReportFile ?? (resolve(outDir) === resolve('public/data') ? DRILL_REPORT_FILE : join(options.rawDir, 'drill-report.json')), drillReportText(built.drill));
 
   // index.json lists the 66 books: this build writes the 27 read in Greek and keeps the Old Testament's from the index on disk (scripts/data-build-ot.ts writes those)
   const index = mergeIndex(readIndex(outDir), built.index.books, 'grc');
