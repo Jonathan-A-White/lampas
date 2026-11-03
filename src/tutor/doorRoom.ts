@@ -8,3 +8,11 @@ import { useHand } from '../settings/hand';
 export function useDoorRoom(): string {
   return useHand() === 'left' ? 'pl-[4.5rem]' : 'pr-[4.5rem]';
 }
+
+/** The side of the reading box that keeps a column clear for the ?, or undefined: `drawn` is whether the ? can be drawn over the box (a licensed phone; the immersive reader keeps the column too, so a two-finger tap that brings the ? back does not re-flow the text). The Reader
+ * sets it as `data-door-room` on its box and src/index.css pads that side 4.5 rem (mw-5r3p30.992): the ? floats over the text at one height and every line of a chapter passes it as it scrolls, so a line can
+ * be under it anywhere. It stays while the Talk sheet is open (the ? is put away then) for the same reason. tests/e2e/door-reader-text.spec.ts holds the proof. */
+export function useDoorColumn(drawn: boolean): 'left' | 'right' | undefined {
+  const hand = useHand();
+  return drawn && hand ? hand : undefined;
+}
