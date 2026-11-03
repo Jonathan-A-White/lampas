@@ -106,7 +106,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('the Talk sheet is closed', sheetGone);
     And('the Reader says {string}', async (_, line: string) => {
       expect(await findStatusLine()).toHaveTextContent(line);
-      expect(await screen.findByRole('button', { name: /Colossians 1/ })).toBeInTheDocument();
+      // the chapter's button in the header, not the place line ('Colossians 1 · 0%') under the text
+      expect(await screen.findByRole('button', { name: /Colossians 1(?! ·)/ })).toBeInTheDocument();
     });
     When("he taps the phone's Back", async () => {
       window.history.back();
