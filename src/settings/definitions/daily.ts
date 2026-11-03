@@ -15,7 +15,7 @@ const ON_OFF = {
   ],
 } as const;
 
-/** A piece that exists only to open Logos (the day's Psalms and Proverbs, the devotional) is drawn, and shown on Today, only while Logos is On (mw-rfjjzd.23). */
+/** A piece that exists only to open Logos (the devotional) is drawn, and shown on Today, only while Logos is On (mw-rfjjzd.23). The day's Psalms and Proverbs read in Lampas (mw-5r3p30.1007), so Logos does not govern them. */
 const LOGOS_ON: Dependency = { key: 'resource.logos', shown: (value) => value === 'on' };
 
 const piece = (key: string, label: string, hint: string, help: string, dependsOn?: Dependency) =>
@@ -46,8 +46,7 @@ export const dailyPsalmsSetting = piece(
   'dailyPsalms',
   'Psalms and Proverbs',
   "Today holds the day's Psalms and Proverbs.",
-  "Whether Today holds the day's Psalms and Proverbs: on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N.",
-  LOGOS_ON,
+  "Whether Today holds the day's Psalms and Proverbs: on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N, each read in Lampas.",
 );
 
 export const dailyDevotionalSetting = piece(

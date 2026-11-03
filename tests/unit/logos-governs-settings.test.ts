@@ -41,12 +41,12 @@ describe('Study resources with Logos On', () => {
 });
 
 describe('the Daily rows that exist only to open Logos', () => {
-  const DAILY = ['dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'request.devotional'];
+  const DAILY = ['dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'request.devotional'];
 
   it('are hidden while Logos is Off, the rest of Daily is not', () => {
     const off = keysOf({ 'resource.logos': 'off', devotional: 'random' });
     for (const key of DAILY) expect(off).not.toContain(key);
-    expect(off).toEqual(expect.arrayContaining(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyTicks']));
+    expect(off).toEqual(expect.arrayContaining(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyTicks']));
   });
 
   it('are drawn while Logos is On', () => {
