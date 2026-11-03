@@ -25,17 +25,18 @@ const ordered = (w: GreekWord): GreekWord => {
  * One verse: the source words in source order, the English chunks in English order, and each word's `e` and each chunk's `g` pointing at the other.
  * `source` gives a table word its keys (the NT build looks the lemma up in TBESG, the OT build in TBESH).
  */
-export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) => SourceWord): Verse {
+export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) => SourceWord, options: { dotsBefore?: boolean } = {}): Verse {
   const inSourceOrder = [...v.words].sort((a, b) => a.sourceSort - b.sourceSort);
   const g: GreekWord[] = inSourceOrder.map((w) => source(w, v));
   const sourceIndex = new Map(inSourceOrder.map((w, i) => [w, i]));
 
-  // English order: a word with '-' or 'vvv' has no English of its own; one with '. . .' is rendered by the
-  // chunk that completes it, which comes later in English order. Quotes and punctuation they carry move to
+  // English order: a word with '-' or 'vvv' has no English of its own; one with '. . .' is rendered by a chunk next to it in English order. Quotes and punctuation they carry move to
   // the chunk before (punctuation) or after (opening quotes).
-  // The exception is a personal or reflexive pronoun (P-, F-): its '. . .' means the English is already inside the chunk BEFORE it ('to hand Him over' holds αὐτὸν; 'replied' holds
-  // αὐτοῖς), so it joins that chunk, unless that chunk is only function words ('and', 'while': then the pronoun waits for the chunk after it, as any other
-  // '. . .' word does). mw-5r3p30.997; docs/sources/msb-chunk-pairs.md.
+  // Which chunk: in the Majority Standard Bible's table (options.dotsBefore, the New Testament build) a '. . .' word's English is already inside the chunk BEFORE it ('to hand Him over'
+  // holds αὐτὸν; 'will be with child' holds ἐν γαστρὶ; 'Sabbath' holds ἡμέρᾳ), so it joins that chunk; at the head of a verse there is none and it waits for the first chunk with English.
+  // Without the option (the Old Testament's table, whose '. . .' nobody has read) only a personal or reflexive pronoun (P-, F-) goes before, and every other '. . .' word joins the NEXT chunk.
+  // A pronoun after a chunk of function words only ('and', 'while') waits for the chunk after it (Luke 12:37); the other kinds take the chunk before whatever it is ('except' holds εἰ μὴ,
+  // 'how' holds ἐν τίνι: a read of 25 such rows found 22 right). mw-5r3p30.997 (pronouns), mw-5r3p30.1001 (the rest); docs/sources/msb-chunk-pairs.md.
   const e: Array<{ t: string; g: number[] }> = [];
   let ellipsis: number[] = [];
   let opening = '';
@@ -46,7 +47,8 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
     if (raw === '' || raw === '-' || raw === 'vvv' || raw === '. . .') {
       if (raw === '. . .') {
         const last = e[e.length - 1];
-        if (last && /^[PF]-/.test(w.parse) && last.g.some((i) => !FUNCTION_PARSE.test(g[i].p))) last.g.push(gi);
+        const pronoun = /^[PF]-/.test(w.parse);
+        if (last && (pronoun ? last.g.some((i) => !FUNCTION_PARSE.test(g[i].p)) : options.dotsBefore)) last.g.push(gi);
         else ellipsis.push(gi);
       }
       opening += tidy(w.begQ);

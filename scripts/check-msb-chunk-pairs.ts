@@ -3,8 +3,8 @@
 // Greek word is a pronoun (parse P-...) and whose next is an article (T-...): the shape of Luke 20:20's 'to the' holding αὐτὸν τῇ
 // while 'to hand Him over' holds παραδοῦναι alone (mw-5r3p30.993). The cause was the build's reading of the table's '. . .' English
 // (a word with '. . .' joins the NEXT chunk in English order) when the table meant the chunk BEFORE (its English is already inside the
-// previous chunk: 'to hand Him over'). mw-5r3p30.997 fixed it for P- and F- words (scripts/data/chapterWriter.ts buildVerse); what this
-// finds in a built tree now is the 'other way round' shape (an article or noun joined to the chunk after a pronoun) and the rare right one.
+// previous chunk: 'to hand Him over'). mw-5r3p30.997 fixed it for P- and F- words and mw-5r3p30.1001 for every other kind (scripts/data/chapterWriter.ts buildVerse); what this
+// finds in a built tree now is a handful of the shape that are right (a pronoun with its own English before an article that is) or still joined the other way.
 // With --tsv it also counts, in the published table itself, the '. . .' rows by the part of speech and by whether the English of
 // the chunk before them (in English order) holds an English pronoun (him, her, it, them, ...).
 // Docs: docs/sources/msb-chunk-pairs.md.
