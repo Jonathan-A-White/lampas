@@ -319,6 +319,8 @@ function findWordParadigm(word: { t: string; l: string; p: string }): WordParadi
   if (own) return { table: own.table, cell: own.place };
   const table = tableFor(word.p, word);
   if (!table) return undefined;
+  // tableFor weighs a parsing's case, number and gender with the rest, so the article wins for a possessive pronoun; a table that is not of the word's kind is no table of it (mw-5r3p30.996)
+  if (!isOfItsKind(table, wanted)) return undefined;
   const here = best(hitsOf(table));
   if (here) return { table, cell: here.place };
   // tableFor weighs the ideas a parsing names and not the voice (a middle verb's table is εἰμί's): another table that holds the word's parse is its table
@@ -331,5 +333,16 @@ function findWordParadigm(word: { t: string; l: string; p: string }): WordParadi
   const near = (other: Paradigm): number =>
     Math.max(0, ...cellsOf(other).filter((cell) => !cell.ideas.some((id) => OF_ITS_OWN_VERBS.includes(id))).map((cell) => cell.ideas.filter((id) => mine.includes(id)).length));
   const closest = paradigmsIn('grc').reduce<Paradigm | undefined>((top, other) => (near(other) > (top ? near(top) : 0) ? other : top), undefined);
-  return { table: closest ?? table };
+  const named = closest ?? table;
+  return isOfItsKind(named, wanted) ? { table: named } : undefined;
+}
+
+/**
+ * Whether a table is a table of the word's kind of word (a verb's, a noun's, the article's, a personal pronoun's): some cell of it names an idea of the word that is not a case, number,
+ * gender, person, tense, voice or mood, as `lands` asks of a cell. The article holds every case, number and gender of a possessive pronoun and is not its table; a table that shares
+ * only those is not named for the word (a word with no table of its kind has none, mw-5r3p30.996).
+ */
+function isOfItsKind(table: Paradigm, wanted: readonly string[]): boolean {
+  const mine = asTablesSay(wanted);
+  return table.ideas.some((id) => kindOf(id) === undefined && mine.includes(id)) || cellsOf(table).some((cell) => cell.ideas.some((id) => kindOf(id) === undefined && mine.includes(id)));
 }

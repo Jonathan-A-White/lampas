@@ -107,6 +107,33 @@ describe('paradigmOfWord', () => {
   });
 });
 
+// mw-5r3p30.996: a table is only named for a word it is a table of. The article shares a word's case, number and gender, and no more, with a possessive pronoun.
+describe('paradigmOfWord for a pronoun no table holds', () => {
+  const pronoun = (t: string, l: string, p: string): { t: string; l: string; p: string } => ({ t, l, p });
+
+  it('names no table for ἡμετέρα, a possessive pronoun, rather than The article', () => {
+    expect(paradigmOfWord(pronoun('ἡμετέρα', 'ἡμέτερος', 'S-1PNSF'))).toBeUndefined();
+    expect(paradigmOfWord(pronoun('ἐμὸν', 'ἐμός', 'S-1SASN'))).toBeUndefined();
+  });
+
+  it('names no table for a reciprocal, a correlative or a correlative interrogative pronoun, whose case, number and gender the article also has', () => {
+    expect(paradigmOfWord(pronoun('ἀλλήλους', 'ἀλλήλων', 'C-APM'))).toBeUndefined();
+    expect(paradigmOfWord(pronoun('οἷος', 'οἷος', 'K-NSM'))).toBeUndefined();
+    expect(paradigmOfWord(pronoun('ὅσον', 'ὅσος', 'K-ASM'))).toBeUndefined();
+    expect(paradigmOfWord(pronoun('ποῖος', 'ποῖος', 'Q-NSM'))).toBeUndefined();
+  });
+
+  it('still names The article for the article, and not for a reflexive pronoun', () => {
+    expect(paradigmOfWord(first('τῶν'))?.table.id).toBe('article');
+    expect(paradigmOfWord(pronoun('ἑαυτοῦ', 'ἑαυτοῦ', 'F-3GSM'))?.table.id).not.toBe('article');
+    expect(paradigmOfWord(pronoun('ἐμαυτοῦ', 'ἐμαυτοῦ', 'F-1GSM'))?.table.id).not.toBe('article');
+  });
+
+  it('never names The article for a word that is not the article (the words of 2 John 1)', () => {
+    for (const word of words) if (word.p.split('-')[0] !== 'T') expect(paradigmOfWord(word)?.table.id).not.toBe('article');
+  });
+});
+
 describe('the Paradigms address of a word', () => {
   it('carries the cell, the word and its parse, and reads them back', () => {
     const hash = paradigmHash({ table: 'contract-verbs', cell: 'ἀγαπάω “I love” 1st person singular Present Active', word: 'ἀγαπῶ', parse: 'V-PAI-1S' });
