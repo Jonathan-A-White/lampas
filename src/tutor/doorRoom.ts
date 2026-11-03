@@ -2,6 +2,7 @@
 // foot buttons that runs the full width can be under it (the Hard sounds lesson's Next, found on 0.7.71). A foot row adds this class: padding on the ?'s side as wide as the ? (size-14) and its
 // 0.75 rem margin from the edge, plus a little air, so its buttons end where the ? begins. Right until the Hand is read, as the Hand is. tests/e2e/door-overlap.spec.ts holds the proof. The answers of a question card
 // take it too (mw-5r3p30.981: GrammarCard, WordQuestion, DrillScreen, the IPA card, SelfGrade, NextBar): the ? floats over the scroll box at one height and any row of buttons passes it as the box scrolls.
+// So do the wrappers of buttons of every width (mw-5r3p30.998): the Reading check's parts, the Reading drill's scroll box (NextBar's 'sheet' bar stands in it and adds none) and Memorize's rows.
 import { useHand } from '../settings/hand';
 
 /** The padding class that keeps a foot row out from under the ?: the Hand's side, 4.5 rem. */

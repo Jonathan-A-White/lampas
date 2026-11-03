@@ -23,9 +23,10 @@ export function NextBar({ children, grid, where }: { children: ReactNode; grid?:
   const room = useDoorRoom();
   if (where) {
     // a sheet's box pads its end (pb-3), which a sticky bar stops short of: the bar reaches down over it
+    // (the Reading drill's scroll box keeps the ?'s column clear for the whole card, mw-5r3p30.998, so its 'sheet' bar adds none)
     const place = where === 'view' ? 'bottom-0 -mx-3 px-3' : '-bottom-3 -mx-4 px-4 pb-3';
     return (
-      <div data-next-bar className={`sticky z-1 mt-2 border-t border-line bg-surface py-2 ${place} ${room}`}>
+      <div data-next-bar className={`sticky z-1 mt-2 border-t border-line bg-surface py-2 ${place} ${where === 'view' ? room : ''}`}>
         {children}
       </div>
     );

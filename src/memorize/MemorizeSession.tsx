@@ -19,6 +19,7 @@ import { rungName } from './rung';
 import { runsOfTokens } from './runs';
 import type { Token } from './target';
 import { TypeIt } from './TypeIt';
+import { useDoorRoom } from '../tutor/doorRoom';
 import { STEPS, useSession, type Kept } from './useSession';
 
 /** The id the reading of a verse carries (readAloud.ts startAnswer): below zero, so it is never a tutor answer's, a verdict's or the passage player's. */
@@ -43,6 +44,8 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
   const greekKeyboard = useSetting(greekKeyboardSetting);
   const hebrewKeyboard = useSetting(hebrewKeyboardSetting);
   const [typing, setTyping] = useState(false);
+  // the buttons are as wide as their words and start at the left edge: a left-handed ? at the edge can be over one at any height as the screen scrolls (src/tutor/doorRoom.ts, mw-5r3p30.998)
+  const room = useDoorRoom();
 
   useEffect(() => {
     void warmVoices();
@@ -117,7 +120,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
             <p data-testid="due" className="text-base text-muted">
               {kept.due}
             </p>
-            <div className="flex flex-wrap gap-2 pb-[var(--lp-end-inset)]">
+            <div className={`flex flex-wrap gap-2 pb-[var(--lp-end-inset)] ${room}`}>
               {hearIt}
               {next ? (
                 <button type="button" onClick={() => openMemorizeSession(next.ref, next.lang, { replace: true })} className={PRIMARY}>
@@ -144,7 +147,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
             ) : null}
             {/* with the box open only a note's buttons stay up here: the verse, the box and the foot take the window (Hear it and Hold to say it are back with Say it instead) */}
             {typingOpen && !note ? null : (
-            <div className="flex flex-wrap gap-2">
+            <div className={`flex flex-wrap gap-2 ${room}`}>
               {hearIt}
               {canType && !typing ? (
                 <button type="button" onClick={() => setTyping(true)} className={ACTION}>
@@ -164,14 +167,18 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
             </div>
             )}
             {lang === 'el' && greekKeyboard === 'off' ? (
-              <button type="button" onClick={() => openSetting('greekKeyboard')} className="min-h-12 text-left text-base text-accent underline">
-                Turn on Greek keyboard in Settings to type Greek
-              </button>
+              <div className={room}>
+                <button type="button" onClick={() => openSetting('greekKeyboard')} className="min-h-12 text-left text-base text-accent underline">
+                  Turn on Greek keyboard in Settings to type Greek
+                </button>
+              </div>
             ) : null}
             {lang === 'he' && hebrewKeyboard === 'off' ? (
-              <button type="button" onClick={() => openSetting('hebrewKeyboard')} className="min-h-12 text-left text-base text-accent underline">
-                Turn on Hebrew keyboard in Settings to type Hebrew
-              </button>
+              <div className={room}>
+                <button type="button" onClick={() => openSetting('hebrewKeyboard')} className="min-h-12 text-left text-base text-accent underline">
+                  Turn on Hebrew keyboard in Settings to type Hebrew
+                </button>
+              </div>
             ) : null}
             {lang !== 'weave' && canType && typing ? <TypeIt lang={lang} disabled={phase === 'sending'} onTyped={session.typed} onSayIt={() => setTyping(false)} /> : null}
           </div>

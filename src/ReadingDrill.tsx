@@ -15,6 +15,8 @@ import { SpeakButton } from './speech/SpeakButton';
 import { focusOnMount } from './ui/focus';
 import { RecordBar } from './talk/Bars';
 import { NextBar } from './ui/NextBar';
+import { useDoorRoom } from './tutor/doorRoom';
+import { useHand } from './settings/hand';
 import { useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -148,6 +150,10 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
   // the next word's Skip this word is the button Next word was, in the same place: a second tap of a double tap on Next word waits for the new word to
   // settle (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(at);
+  // the ? floats over the drill's sheet (z-50 over its z-30): its scroll box keeps the Hand's side clear, NextBar's 'sheet' bar inside it too (mw-5r3p30.998)
+  const room = useDoorRoom();
+  // the header's Done stands at the sheet's top, which is as high as its card is tall: on the side away from the ?, so a tall card never puts the ? over it
+  const hand = useHand();
   const look = lookOf(view);
   const idea = offer.kind === 'sound' ? ideaOfSound(offer.unit) : undefined;
   const title = offer.kind === 'sound' ? `Drill: ${offer.glyphs}` : 'Drill: words you keep missing';
@@ -164,11 +170,11 @@ export function ReadingDrill({ offer, pronunciation, onClose }: { offer: DrillOf
       >
         <div {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
-          <button type="button" ref={focusOnMount} onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
+          <button type="button" ref={focusOnMount} onClick={onClose} className={`absolute ${hand === 'left' ? 'right-2' : 'left-2'} top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent`}>
             Done
           </button>
         </div>
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 pb-3 pt-1">
+        <div className={`min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 ${room}`}>
           <h2 className="pr-14 text-2xl font-bold">{title}</h2>
           {found.status === 'loading' ? <p role="status" className="text-base text-muted">Finding words…</p> : null}
           {found.status === 'failed' ? <p role="alert" className="text-base text-bad">Could not find words for this drill. Try again later.</p> : null}

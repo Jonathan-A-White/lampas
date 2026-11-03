@@ -24,6 +24,7 @@ import { isLadderLang, LADDER_NAMES } from './data/readingLadder';
 import { ReadingDrill } from './ReadingDrill';
 import { LadderActions, LadderPosition, LadderStart } from './ReadingLadder';
 import { NextBar } from './ui/NextBar';
+import { useDoorRoom } from './tutor/doorRoom';
 import { useLadder } from './useLadder';
 import { stopSpeaking } from './speech/greek';
 import { stopAnswer, stopAnswerSpeech, stopReading } from './speech/readAloud';
@@ -58,6 +59,7 @@ function ReadBar({ hold, label, recording }: { hold: ReadHold; label: string; re
 
 /** What the reading is doing, in words: recording, the tap hint, dropped, sending, waiting, or failed with Retry. */
 function Status({ state, onRetry }: { state: ReadState | undefined; onRetry: () => void }) {
+  const room = useDoorRoom();
   if (!state) return null;
   if (state.phase === 'recording') {
     return (
@@ -77,9 +79,11 @@ function Status({ state, onRetry }: { state: ReadState | undefined; onRetry: () 
       <p className="text-base font-semibold text-bad">{title}</p>
       <p className="break-words text-sm text-muted">{state.detail}</p>
       {canRetry ? (
-        <button type="button" onClick={onRetry} className="min-h-12 rounded-xl border border-line px-5 text-base font-medium">
-          Retry
-        </button>
+        <div className={room}>
+          <button type="button" onClick={onRetry} className="min-h-12 rounded-xl border border-line px-5 text-base font-medium">
+            Retry
+          </button>
+        </div>
       ) : null}
     </div>
   );
@@ -177,6 +181,8 @@ const WORD_PARTS = /^([^\p{L}\p{N}\p{M}]*)(.*?)([^\p{L}\p{N}\p{M}]*)$/u;
  * word right after it (the one he stopped at, the Next word) is a button marked like a word to fix; `onStopped` is its tap (mw-neuq78.14). */
 function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached, onStopped }: { text: string; view: ReadingView; passage?: boolean; marks: Marks; open: string | null; onOpen: (key: string | null) => void; player?: ClipPlayer; reached?: number; onStopped?: () => void }) {
   const type = typeOf(view);
+  // the ? floats over the verse at one height and a marked word (a button in running text) can be under it anywhere as the Verse view scrolls: the whole strip on the Hand's side is kept
+  const room = useDoorRoom();
   const tokens = useMemo(() => wordsOfText(text), [text]);
   // each flagged word has its speaker right after it (a sibling of the word's button): it says only how the word should sound; with times and a clip,
   // 'Me' follows the speaker and plays his own clip of the word. The word's own punctuation (`after`: 'Levites,') stays with the word, right after its
@@ -200,7 +206,7 @@ function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached
   );
   return (
     <>
-      <p data-reading-verse {...passageText(passage)} {...type.attrs} className={`break-words ${type.face} leading-(--lp-leading)`}>
+      <p data-reading-verse {...passageText(passage)} {...type.attrs} className={`break-words ${type.face} leading-(--lp-leading) ${room}`}>
         {tokens.map((token, i) => {
           const [, before, core, after] = WORD_PARTS.exec(token) ?? ['', '', token, ''];
           const mark = marks.marked.get(i);
@@ -235,7 +241,7 @@ function MarkedVerse({ text, view, passage, marks, open, onOpen, player, reached
         })}
       </p>
       {marks.lost.length > 0 ? (
-        <p className="text-base text-muted">
+        <p className={`text-base text-muted ${room}`}>
           Also to fix:{' '}
           {marks.lost.map((w, i) => (
             <span key={i} className="mr-2">
@@ -266,10 +272,11 @@ const isOneChunk = (fix: FixWord): boolean => fix.chunks.length <= 1 && normalWo
  * drawn once, big, with its tip under it: a second line of the same word would be a repeat (mw-neuq78.13). */
 const NextWord = forwardRef<HTMLDivElement, { fix: FixWord; view: ReadingView }>(function NextWord({ fix, view }, ref) {
   const type = typeOf(viewOfWord(view, fix.word));
+  const room = useDoorRoom();
   return (
     <div ref={ref} tabIndex={-1} data-next-word className="space-y-1 rounded-xl border border-line bg-surface p-3 outline-none">
       {/* the speaker sits in the heading's row, not under the tip: the card is a row shorter, so it fits above the bar at the biggest text on a small phone */}
-      <div className="flex items-center justify-between gap-2">
+      <div className={`flex items-center justify-between gap-2 ${room}`}>
         <h4 className="text-sm font-semibold text-muted">Next word</h4>
         <SayWord fix={fix} view={view} id={`fix-${view}-${fix.word}`} label="Hear it" className="align-middle" />
       </div>
@@ -304,8 +311,9 @@ function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; p
   const developer = useLiveQuery(getDeveloper, []);
   const playing = usePlaying(player);
   const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
+  const room = useDoorRoom();
   return (
-    <div className="space-y-2">
+    <div className={`space-y-2 ${room}`}>
       <button type="button" onClick={() => oneTap('play-my-reading', () => player.toggleVoice(ALL))} className={button}>
         {playing === ALL ? 'Stop my reading' : 'Play my reading'}
       </button>
@@ -344,6 +352,7 @@ function MeButton({ fix, word, id, player, className }: { fix: FixWord; word: st
 /** The result of a reading: how it went, the verse with its marked words, a tap shows their chunks, and the walk starts here. */
 function Result({ reading, text, view, passage, fileName, onWalk }: { reading: VerseReading; text: string; view: ReadingView; passage?: boolean; fileName: string; onWalk: () => void }) {
   const [open, setOpen] = useState<string | null>(null);
+  const room = useDoorRoom();
   const marks = useMemo(() => markWords(text, reading.words), [text, reading.words]);
   const fix = open === null ? undefined : open.startsWith('l') ? marks.lost[Number(open.slice(1))] : marks.marked.get(Number(open));
   const times = useMemo(() => speechTimesOf(reading.words, reading.reached), [reading.words, reading.reached]);
@@ -372,7 +381,7 @@ function Result({ reading, text, view, passage, fileName, onWalk }: { reading: V
         <>
           <MarkedVerse text={text} view={view} passage={passage} marks={marks} open={open} onOpen={setOpen} player={reading.clip ? player : undefined} reached={partial ? reading.reached : undefined} onStopped={partial && reading.next ? showNext : undefined} />
           {fix ? (
-            <div data-fix-detail className="rounded-xl border border-line bg-surface p-3">
+            <div data-fix-detail className={`rounded-xl border border-line bg-surface p-3 ${room}`}>
               <Fix fix={fix} view={view} player={reading.clip ? player : undefined} />
             </div>
           ) : reading.words.length > 0 ? (
@@ -381,9 +390,11 @@ function Result({ reading, text, view, passage, fileName, onWalk }: { reading: V
           {partial && reading.next ? <NextWord ref={nextBox} fix={reading.next} view={view} /> : null}
           {partial ? <p className="text-base">Read it again from the start and go further.</p> : null}
           {walkable ? (
-            <button type="button" onClick={onWalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium">
-              Read these again
-            </button>
+            <div className={room}>
+              <button type="button" onClick={onWalk} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium">
+                Read these again
+              </button>
+            </div>
           ) : null}
         </>
       ) : null}
@@ -397,6 +408,7 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
   const last = step >= words.length;
   const word = words[step];
   const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
+  const room = useDoorRoom();
   return (
     <div role="group" aria-label="Read these again" data-walk className="space-y-3">
       {last || !word ? (
@@ -414,7 +426,9 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
           <p data-walk-word {...typeOf(viewOfWord(view, word.word)).attrs} className={`break-words text-4xl font-semibold ${typeOf(viewOfWord(view, word.word)).chunks}`}>
             {word.word}
           </p>
-          <Fix fix={word} view={view} large />
+          <div className={room}>
+            <Fix fix={word} view={view} large />
+          </div>
           <p className="text-sm text-muted">Say it out loud, then go on.</p>
           <NextBar where="view">
             <button type="button" onClick={() => onStep(step + 1)} className={button}>
@@ -423,9 +437,11 @@ function Walk({ words, text, view, passage, step, onStep, onDone }: { words: Fix
           </NextBar>
         </>
       )}
-      <button type="button" onClick={onDone} className="min-h-11 rounded-lg px-3 text-base text-muted underline">
-        Done
-      </button>
+      <div className={room}>
+        <button type="button" onClick={onDone} className="min-h-11 rounded-lg px-3 text-base text-muted underline">
+          Done
+        </button>
+      </div>
     </div>
   );
 }
@@ -493,7 +509,7 @@ export function ReadCheckPanel({ verse, view: shown, book, chapter, checks, hold
   const wholeVerse = walking && reading !== undefined && walkStep >= walkWordsOf(reading).length;
   const idle = wholeVerse ? `Hold to read the whole ${verse.to === undefined ? 'verse' : 'passage'} again` : `Hold to read ${unitName(verse)}`;
   const recording = state?.phase === 'recording';
-
+  const room = useDoorRoom();
   // The verdict that comes back from a reading he sent is read aloud (the setting, src/speech/tutorVoice.ts): the heading, the note and every word
   // to fix with its tip, not the verse. `awaiting` is the language a reading is out for; a result that was already there when the panel opened,
   // or that comes for a reading sent in the other language, is not read. Leaving the panel stops the speech.
@@ -581,7 +597,7 @@ export function ReadCheckPanel({ verse, view: shown, book, chapter, checks, hold
           />
         ) : null}
         {offer && !walking && !out ? (
-          <div className="space-y-1">
+          <div className={`space-y-1 ${room}`}>
             <button type="button" data-drill-start onClick={() => setDrilling(offer)} className="min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium">
               {drillButtonLabel(offer)}
             </button>

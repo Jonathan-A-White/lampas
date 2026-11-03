@@ -8,6 +8,7 @@ import { setLadderShowing, setReaderView, skipLadderVerse, type ReaderView, type
 import { moveVerse, openVerseAt } from './nav/route';
 import { NextBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
+import { useDoorRoom } from './tutor/doorRoom';
 import type { LadderHere } from './useLadder';
 import { setVerseAction } from './verse/action';
 
@@ -35,6 +36,8 @@ export function LadderStart({ lang, how, label = 'Reading ladder' }: { lang: Lad
   const [problem, setProblem] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  // the button runs the full width and the ? floats over the screen at one height (src/tutor/doorRoom.ts, mw-5r3p30.998)
+  const room = useDoorRoom();
   const start = async (): Promise<void> => {
     setProblem(null);
     setDone(false);
@@ -58,7 +61,7 @@ export function LadderStart({ lang, how, label = 'Reading ladder' }: { lang: Lad
     }
   };
   return (
-    <div className="space-y-1">
+    <div className={`space-y-1 ${room}`}>
       <button type="button" data-ladder-start={lang} onClick={() => void start()} disabled={loading} aria-busy={loading} className={`${BUTTON} disabled:text-muted`}>
         {loading ? LOADING : label}
       </button>
