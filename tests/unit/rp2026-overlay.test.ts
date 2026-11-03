@@ -341,6 +341,7 @@ describe('the build lays the overlay on the chapters', () => {
         tagnt: false,
         log: (line) => log.push(line),
         variantsSha256: apparatusSha,
+        pinSources: false,
         rp2026Sha256: sha([zip]),
         download: async (url, dest) => {
           mkdirSync(join(dest, '..'), { recursive: true });

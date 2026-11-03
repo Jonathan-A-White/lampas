@@ -63,7 +63,7 @@ describe('TAGNT', () => {
     expect(TAGNT_SHA256).toMatch(/^[0-9a-f]{64}$/);
     expect(TAGNT_RAW_DIR).toBe('tagnt');
     expect(tagntUrl(TAGNT_FILES[0].remote)).toBe(
-      'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Translators%20Amalgamated%20OT%2BNT/TAGNT%20Mat-Jhn%20-%20Translators%20Amalgamated%20Greek%20NT%20-%20STEPBible.org%20CC-BY.txt',
+      'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/051e2bcabd2b5f32d19e5d21c2cd7580ae6cf890/Translators%20Amalgamated%20OT%2BNT/TAGNT%20Mat-Jhn%20-%20Translators%20Amalgamated%20Greek%20NT%20-%20STEPBible.org%20CC-BY.txt',
     );
     const base = mkdtempSync(join(tmpdir(), 'lampas-tagnt-'));
     try {

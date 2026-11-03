@@ -233,6 +233,7 @@ describe('the build', () => {
         outDir: join(base, 'out'),
         log: (line) => log.push(line),
         variantsSha256: checksum,
+        pinSources: false,
         rp2026: false,
         englishFile: join(base, 'variant-english.json'),
         untaggedFile: join(base, 'variant-untagged.txt'),

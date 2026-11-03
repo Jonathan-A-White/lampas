@@ -13,6 +13,7 @@ The reader, the word sheet, the voices and the drills read the chapter's `lang` 
 
 - [Building](#building)
 - [Sources and licences](#sources-and-licences)
+- [Pinned sources](#pinned-sources)
 - [`index.json`](#indexjson)
 - [`lexicon.json`](#lexiconjson)
 - [Drill answers (`q` of `lexicon.json`, mw-5r3p30.1000)](#drill-answers-q-of-lexiconjson-mw-5r3p301000)
@@ -54,6 +55,8 @@ npm run data:build     # downloads data/raw/msb_nt_tables.tsv, data/raw/tbesg.tx
 `data/raw` is git-ignored and the download is skipped for a file already there. A second run changes no file:
 the output is deterministic and a file is rewritten only when its bytes differ. Files in `public/data` that the
 build no longer produces are deleted. Tests use the small slices in `tests/fixtures/data/` and never the network.
+A fresh checkout or host needs nothing copied in: `npm run data:build` on an empty `data/raw` fetches every source at its pinned bytes ('Pinned sources'), and on a clean tree
+ends `260 chapters, 0 files written`. It rewrites `data/drill-report.json` in another line order, so run `npm run drill:build` after it (it restores that file and `lexicon.json`'s `q`).
 
 ## Sources and licences
 
@@ -67,6 +70,28 @@ build no longer produces are deleted. Tests use the small slices in `tests/fixtu
 The table's Greek is the Robinson-Pierpont 2005 edition, not 2018: `docs/greek-edition.md` (`npm run greek:edition`) has the word-by-word comparison.
 
 `ATTRIBUTION.md` names both. TBESG's definitions are Abbott-Smith's; the build changes them (see Changes).
+
+## Pinned sources (mw-5r3p30.1004)
+
+The committed data is built from these bytes, and the build stops, naming the file, on any other (`delete data/raw/<file>` fetches it again). Nothing lives only in `/tmp`.
+
+| Source | Where it lives | The pin | In `scripts/` |
+| --- | --- | --- | --- |
+| TAGNT, the two files | STEPBible-Data at two commits, `051e2bca` (Mat-Jhn) and `5af03266` (Act-Rev): a commit's URL always serves the same bytes | `TAGNT_SHA256`, both files one after another | `data/tagnt.ts` `TAGNT_FILES` |
+| TBESG | STEPBible-Data at commit `805360e4` (2025-04-16) | `TBESG_SHA256` | `data-build.ts` `TBESG_URL`, `data/pins.ts` |
+| MSB NT table | majoritybible.com, which has no versioned URL | `MSB_SHA256` after `MSB_EDITS` | `data/pins.ts` |
+| Apparatus (byztxt) | the repository at tag `v3.3.2` | `VARIANTS_SHA256` | `data/variants.ts` |
+| RP 2026 | the zip at `RP2026_URL` | `RP2026_SHA256` | `data/rp2026.ts` |
+
+STEPBible changed only the licence header of TAGNT and TBESG on 2026-11-02 (after the pin); the data rows are the same, so the commits are the last before it.
+The MSB table has changed one thing since the pin: Matthew 15:30's "Jesus'" now has a typographic apostrophe. `MSB_EDITS` names the line and puts it back, and the file in
+`data/raw` is then written with the pinned bytes, so the committed data stays as it is (a re-pin to the curly one would rewrite `public/data/mat/15.json` and the ladder,
+`npm run ladder`). If upstream changes anything else of the MSB table, the build stops at its sha256 and nothing else keeps the pinned bytes: hand back to the Mayor to choose between a reviewed
+re-pin (read the diff of the new file against what the committed chapters say) and keeping the pinned file somewhere durable (a release asset of the repository).
+
+**To change a pin** (a reviewed re-pin, never to make a failing build pass): fetch the new bytes into an empty directory, `diff` them against `data/raw`'s and read every difference;
+put the new commit URL or edit in the table's file above and the new sha256 beside it (`sha256sum`; TAGNT's is of the two files one after another in `TAGNT_FILES` order);
+delete `data/raw/<file>`; run `npm run data:build` and `npm run drill:build`; commit the data in its own commit and say in the story what changed in it.
 
 ## `index.json`
 
