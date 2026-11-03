@@ -154,15 +154,15 @@ Feature: The diglot weave
     Then verse 1 still begins "no Therefore there is now condemnation"
 
   Scenario: Tapping one Greek word of a two-word woven chunk shows only that word
-    Given Lampas is opened on 2 Peter 3 with the Weave on and the words "γράφω" and "σύ" solid
+    Given Lampas is opened on 2 Peter 3 with the Weave on and the words "γράφω" and "ἐπιστολή" solid
     When he taps the woven Greek word "γράφω" in verse 1
     Then the word sheet shows only the Greek word "γράφω"
     When he closes the word sheet
-    And he taps the other woven Greek word "ὑμῖν" in verse 1
-    Then the word sheet then shows only the Greek word "ὑμῖν"
+    And he taps the other woven Greek word "ἐπιστολήν" in verse 1
+    Then the word sheet then shows only the Greek word "ἐπιστολήν"
 
   Scenario: A long press on one Greek word of a two-word woven chunk speaks only that word
-    Given Lampas is opened on 2 Peter 3 with the Weave on and the words "γράφω" and "σύ" solid
+    Given Lampas is opened on 2 Peter 3 with the Weave on and the words "γράφω" and "ἐπιστολή" solid
     And the phone has a Greek voice
     When he long presses the woven Greek word "γράφω" in verse 1
     Then the phone is told to speak only "γράφω"

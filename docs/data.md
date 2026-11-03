@@ -287,10 +287,12 @@ The Weave's Order Greek (mw-5r3p30.250, `chunkOrder` in `src/data/weave.ts`) lay
 Links are mutual: `e[g[i].e].g` contains `i`, and every `g[e[j].g[k]].e` is `j`.
 
 In the MSB table a word whose English is `-` or `vvv` has no English (no `e`, no chunk). A word whose English is
-`. . .` is rendered by the chunk that completes it later in the English ("In all, then, there were fourteen
-. . . generations"): its index joins that chunk's `g` array. The exception is a personal or reflexive pronoun (parse `P-`, `F-`): its English is
-already inside the chunk BEFORE it (Luke 20:20 'to hand Him over' holds αὐτὸν), so it joins that chunk, unless that chunk is only conjunctions, articles,
-prepositions and particles ('and'), when it waits for the chunk after as any `. . .` word does (mw-5r3p30.997; `docs/sources/msb-chunk-pairs.md`). Quotation marks and punctuation that sit on a word
+`. . .` means its English is already inside a chunk beside it, and in the MSB table (the New Testament) that is the chunk BEFORE it in English order
+("[and] went out" holds the dotted καὶ ἀπῆλθεν; Luke 20:20 'to hand Him over' holds αὐτὸν; Luke 4:8 'answered' holds εἶπεν; Acts 16:13 'Sabbath' holds ἡμέρᾳ): its index joins that chunk's `g` array.
+At the head of a verse there is no chunk before, and it joins the first chunk with English. A personal or reflexive pronoun (parse `P-`, `F-`) after a chunk of only conjunctions, articles,
+prepositions, particles or conditionals ('and', 'while') waits for the chunk after instead (Luke 12:37); every other kind joins the chunk before whatever it holds ('except' holds εἰ μὴ).
+The Old Testament's build does not turn this on (`buildVerse`'s `dotsBefore`): there only a pronoun goes before and every other `. . .` word still joins the chunk that completes it later in the English
+(mw-5r3p30.997, mw-5r3p30.1001; `docs/sources/msb-chunk-pairs.md`). Quotation marks and punctuation that sit on a word
 with no English of its own move to the neighbouring chunk. Footnotes in the table (column 21, `footnotes`) are not carried into the chapters' words; the 'CT …' ones give the English of the New Testament's variant units ('Variant English' below).
 
 Headings and paragraphs come from two columns of the table. `Hdg` (`<p class=|hdg|>Walking by the Spirit`) is on

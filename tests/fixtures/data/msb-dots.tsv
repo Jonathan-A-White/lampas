@@ -76,3 +76,146 @@ Heb Sort	Greek Sort	MSB Sort	Verse	Language	MT Greek	MT Greek	Translit	Parsing	P
 0	168562	168563	29292	Greek	107102	ἀκαθαρσίας	akaqarsiav	N-GSF	N-GSF		167							 of impurity 	,			
 0	168564	168564	29292	Greek	107104	ἐν	en	PREP	PREP		1722							 with 				
 0	168565	168565	29292	Greek	107105	πλεονεξίᾳ	pleonexia	N-DSF	N-DSF		4124							 a craving for more 	.			
+0	606	606	23168	Greek	386	Ἰδού	idou	V-2AMM-2S	V-2AMM-2S		3708	Matthew 1:23			<p class=|indent1stline|>		“	 Behold 	,			
+0	607	607	23168	Greek	387	ἡ	h	T-NSF	T-NSF		3588							 the 				
+0	608	608	23168	Greek	388	παρθένος	parqenov	N-NSF	N-NSF		3933							 virgin 				
+0	611	609	23168	Greek	391	ἕξει	exei	V-FAI-3S	V-FAI-3S		2192							 will be with child 				
+0	609	610	23168	Greek	389	ἐν	en	PREP	PREP		1722							 . . . 				
+0	610	611	23168	Greek	390	γαστρὶ	gastri	N-DSF	N-DSF		1064							 . . . 				
+0	612	612	23168	Greek	392	καὶ	kai	CONJ	CONJ		2532				<p class=|indent2|>			 and 				
+0	613	613	23168	Greek	393	τέξεται	texetai	V-FDI-3S	V-FDI-3S		5088							 will give birth to 				
+0	614	614	23168	Greek	394	υἱόν	uion	N-ASM	N-ASM		5207							 a son 	,			
+0	615	615	23168	Greek	395	καὶ	kai	CONJ	CONJ		2532				<p class=|indent1|>			 and 				
+0	616	616	23168	Greek	396	καλέσουσιν	kalesousin	V-FAI-3P	V-FAI-3P		2564							 they will call 				
+0	617	617	23168	Greek	397	τὸ	to	T-ASN	T-ASN		3588							 - 				
+0	619	618	23168	Greek	399	αὐτοῦ	autou	P-GSM	P-GSM		846							 Him 				
+0	618	619	23168	Greek	398	ὄνομα	onoma	N-ASN	N-ASN		3686							 . . . 				
+0	620	620	23168	Greek	400	Ἐμμανουήλ	emmanouhl	N-PRI	N-PRI		1694							 Immanuel 	”		Literally <i>they will call His name Immanuel</i>; Isaiah 7:14 (see also DSS)	
+0	621	621	23168	Greek	401	ὅ	o	R-NSN	R-NSN		3739				<p class=|indent2|>			 ( which 				
+0	622	622	23168	Greek	402	ἐστιν	estin	V-PAI-3S	V-PAI-3S		1510							 means 				
+0	623	623	23168	Greek	403	μεθερμηνευόμενον	meqermhneuomenon	V-PPP-NSN	V-PPP-NSN		3177							 . . . 	,			
+0	626	624	23168	Greek	406	ὁ	o	T-NSM	T-NSM		3588							 - 				
+0	627	625	23168	Greek	407	θεός	qeov	N-NSM	N-NSM		2316						“	 God 				
+0	624	626	23168	Greek	404	Μεθ'	meq	PREP	PREP		3326							 with 				
+0	625	627	23168	Greek	405	ἡμῶν	hmwn	P-1GP	P-1GP		1473							 us 	”		See Isaiah 7:14, Isaiah 8:8, and Isaiah 8:10.	).
+0	628	628	23168	Greek														 				
+0	629	629	23168	Greek														 				
+0	630	630	23168	Greek														 				
+0	631	631	23168	Greek														 				
+0	632	632	23168	Greek														 				
+0	633	633	23168	Greek														 				
+0	634	634	23168	Greek														 				
+0	635	635	23168	Greek														 				
+0	636	636	23168	Greek														 				
+0	637	637	23168	Greek														 				
+0	52402	52402	25072	Greek	33142	Καὶ	kai	CONJ	CONJ		2532	Luke 4:8			<p class=|reg|>			 But 				
+0	52406	52403	25072	Greek	33146	ὁ	o	T-NSM	T-NSM		3588							 - 				
+0	52407	52404	25072	Greek	33147	Ἰησοῦς	ihsouv	N-NSM	N-NSM		2424							 Jesus 				
+0	52403	52405	25072	Greek	33143	ἀποκριθεὶς	apokriqeiv	V-AOP-NSM	V-AOP-NSM		611							 answered 				
+0	52405	52406	25072	Greek	33145	εἶπεν	eipen	V-2AAI-3S	V-2AAI-3S		3004							 . . . 				
+0	52404	52407	25072	Greek	33144	αὐτῷ	autw	P-DSM	P-DSM		846							 . . . 	,			
+0	52408	52408	25072	Greek	33148	Ὕπαγε	upage	V-PAM-2S	V-PAM-2S		5217				<span class=|red|>		“	 Get 				
+0	52409	52409	25072	Greek	33149	ὀπίσω	opisw	ADV	ADV		3694							 behind 				
+0	52410	52410	25072	Greek	33150	μου	mou	P-1GS	P-1GS		1473							 Me 	,			
+0	52411	52411	25072	Greek	33151	Σατανᾶ	satana	N-VSM	N-VSM		4567							 Satan 	!		CT does not include <i>Get behind Me, Satan!</i>	
+0	52412	52412	25072	Greek	33152	γέγραπται	gegraptai	V-RPI-3S	V-RPI-3S		1125							 It is written 	:		TR and GOC <i>For it is written</i>	
+0	52413	52413	25072	Greek	33153	Προσκυνήσεις	proskunhseiv	V-FAI-2S	V-FAI-2S		4352						‘	 Worship 				
+0	52414	52414	25072	Greek	33154	κύριον	kurion	N-ASM	N-ASM		2962							 [the] Lord 				
+0	52417	52415	25072	Greek	33157	σου	sou	P-2GS	P-2GS		4771							 your 				
+0	52415	52416	25072	Greek	33155	τὸν	ton	T-ASM	T-ASM		3588							 - 				
+0	52416	52417	25072	Greek	33156	θεόν	qeon	N-ASM	N-ASM		2316							 God 				
+0	52418	52418	25072	Greek	33158	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	52421	52419	25072	Greek	33161	λατρεύσεις	latreuseiv	V-FAI-2S	V-FAI-2S		3000							 serve 				
+0	52419	52420	25072	Greek	33159	αὐτῷ	autw	P-DSM	P-DSM		846							 Him 				
+0	52420	52421	25072	Greek	33160	μόνῳ	monw	A-DSM	A-DSM		3441							 only 	.’		Deuteronomy 6:13	”</span>
+0	52422	52422	25072	Greek														 				
+0	52423	52423	25072	Greek														 				
+0	52424	52424	25072	Greek														 				
+0	52425	52425	25072	Greek														 				
+0	52426	52426	25072	Greek														 				
+0	52427	52427	25072	Greek														 				
+0	52428	52428	25072	Greek														 				
+0	52429	52429	25072	Greek														 				
+0	52430	52430	25072	Greek														 				
+0	52431	52431	25072	Greek														 				
+0	120097	120096	27497	Greek	76587	τε	te	PRT	PRT		5037	Acts 16:13			<p class=|reg|>			 - 				
+0	120096	120097	27497	Greek	76586	Τῇ	th	T-DSF	T-DSF		3588							 On the 				
+0	120099	120098	27497	Greek	76589	τῶν	twn	T-GPN	T-GPN		3588							 - 				
+0	120100	120099	27497	Greek	76590	σαββάτων	sabbatwn	N-GPN	N-GPN		4521							 Sabbath 				
+0	120098	120100	27497	Greek	76588	ἡμέρᾳ	hmera	N-DSF	N-DSF		2250							 . . . 				
+0	120101	120101	27497	Greek	76591	ἐξήλθομεν	exhlqomen	V-2AAI-1P	V-2AAI-1P		1831							 we went 				
+0	120102	120102	27497	Greek	76592	ἔξω	exw	ADV	ADV		1854							 outside 				
+0	120103	120103	27497	Greek	76593	τῆς	thv	T-GSF	T-GSF		3588							 the 				
+0	120104	120104	27497	Greek	76594	πόλεως	polewv	N-GSF	N-GSF		4172							 city 			CT <i>the city gate</i>	
+0	120105	120105	27497	Greek	76595	παρὰ	para	PREP	PREP		3844							 along 				
+0	120106	120106	27497	Greek	76596	ποταμόν	potamon	N-ASM	N-ASM		4215							 [the] river 	,			
+0	120107	120107	27497	Greek	76597	οὗ	ou	ADV	ADV		3757							 where [it] 				
+0	120108	120108	27497	Greek	76598	ἐνομίζετο	enomizeto	V-IPI-3S	V-IPI-3S		3543							 was customary 				
+0	120110	120109	27497	Greek	76600	εἶναι	einai	V-PAN	V-PAN		1510							 to find 				
+0	120109	120110	27497	Greek	76599	προσευχὴ	proseuch	N-NSF	N-NSF		4335							 [a place of] prayer 	.			
+0	120111	120111	27497	Greek	76601	καὶ	kai	CONJ	CONJ		2532							 [After] 				
+0	120112	120112	27497	Greek	76602	καθίσαντες	kaqisantev	V-AAP-NPM	V-AAP-NPM		2523							 sitting down 	,			
+0	120113	120113	27497	Greek	76603	ἐλαλοῦμεν	elaloumen	V-IAI-1P	V-IAI-1P		2980							 we spoke 				
+0	120114	120114	27497	Greek	76604	ταῖς	taiv	T-DPF	T-DPF		3588							 to the 				
+0	120116	120115	27497	Greek	76606	γυναιξίν	gunaixin	N-DPF	N-DPF		1135							 women 				
+0	120115	120116	27497	Greek	76605	συνελθούσαις	sunelqousaiv	V-2AAP-DPF	V-2AAP-DPF		4905							 who had gathered [there] 	.			
+0	120117	120117	27497	Greek														 				
+0	120118	120118	27497	Greek														 				
+0	120119	120119	27497	Greek														 				
+0	120120	120120	27497	Greek														 				
+0	120121	120121	27497	Greek														 				
+0	120122	120122	27497	Greek														 				
+0	120123	120123	27497	Greek														 				
+0	120124	120124	27497	Greek														 				
+0	120125	120125	27497	Greek														 				
+0	120126	120126	27497	Greek														 				
+0	165575	165574	29177	Greek	105265	γὰρ	gar	CONJ	CONJ		1063	Galatians 5:14						 - 				
+0	165574	165575	29177	Greek	105264	Ὁ	o	T-NSM	T-NSM		3588							 The 				
+0	165576	165576	29177	Greek	105266	πᾶς	pav	A-NSM	A-NSM		3956							 entire 				
+0	165577	165577	29177	Greek	105267	νόμος	nomov	N-NSM	N-NSM		3551							 law 				
+0	165581	165578	29177	Greek	105271	πληροῦται	plhroutai	V-PPI-3S	V-PPI-3S		4137							 is fulfilled 				
+0	165578	165579	29177	Greek	105268	ἐν	en	PREP	PREP		1722							 in 				
+0	165582	165580	29177	Greek	105272	ἐν	en	PREP	PREP		1722							 . . . 				
+0	165583	165581	29177	Greek	105273	τῷ	tw	T-DSM	T-DSM		3588							 - 				
+0	165579	165582	29177	Greek	105269	ἑνὶ	eni	A-DSM	A-DSM		1520							 a single 				
+0	165580	165583	29177	Greek	105270	λόγῳ	logw	N-DSM	N-DSM		3056							 decree 	:			
+0	165584	165584	29177	Greek	105274	Ἀγαπήσεις	agaphseiv	V-FAI-2S	V-FAI-2S		25						“	 Love 				
+0	165587	165585	29177	Greek	105277	σου	sou	P-2GS	P-2GS		4771							 your 				
+0	165585	165586	29177	Greek	105275	τὸν	ton	T-ASM	T-ASM		3588							 - 				
+0	165586	165587	29177	Greek	105276	πλησίον	plhsion	ADV	ADV		4139							 neighbor 				
+0	165588	165588	29177	Greek	105278	ὡς	wv	ADV	ADV		5613							 as 				
+0	165589	165589	29177	Greek	105279	ἑαυτόν	eauton	F-3ASM	F-3ASM		1438							 yourself 	.”		Leviticus 19:18	
+0	165590	165590	29177	Greek														 				
+0	165591	165591	29177	Greek														 				
+0	165592	165592	29177	Greek														 				
+0	165593	165593	29177	Greek														 				
+0	165594	165594	29177	Greek														 				
+0	165595	165595	29177	Greek														 				
+0	165596	165596	29177	Greek														 				
+0	165597	165597	29177	Greek														 				
+0	165598	165598	29177	Greek														 				
+0	165599	165599	29177	Greek														 				
+0	208206	208206	30772	Greek	131946	ὅμοιος	omoiov	A-NSM	A-NSM		3664	Revelation 4:3						 [He] 				
+0	208207	208207	30772	Greek	131947	ὁράσει	orasei	N-DSF	N-DSF		3706							 looked like 			CT <i>And the One seated there looked like</i>	
+0	208209	208208	30772	Greek	131949	ἰάσπιδι	iaspidi	N-DSF	N-DSF		2393							 jasper 				
+0	208210	208209	30772	Greek	131950	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	208211	208210	30772	Greek	131951	σαρδίῳ	sardiw	N-DSN	N-DSN		4556							 carnelian 				
+0	208208	208211	30772	Greek	131948	λίθῳ	liqw	N-DSM	N-DSM		3037							 . . . 	,			
+0	208212	208212	30772	Greek	131952	καὶ	kai	CONJ	CONJ		2532							 and 				
+0	208213	208213	30772	Greek	131953	ἶρις	iriv	N-NSF	N-NSF		2463							 a rainbow 				
+0	208218	208214	30772	Greek	131958	ὅρασις	orasiv	N-NSF	N-NSF		3706							 that gleamed 				
+0	208217	208215	30772	Greek	131957	ὁμοίως	omoiwv	ADV	ADV		3668							 like 				
+0	208219	208216	30772	Greek	131959	σμαραγδίνων	smaragdinwn	A-GPM	A-GPM		4664							 an emerald 				
+0	208214	208217	30772	Greek	131954	κυκλόθεν	kukloqen	ADV	ADV		2943							 encircled 				
+0	208215	208218	30772	Greek	131955	τοῦ	tou	T-GSM	T-GSM		3588							 the 				
+0	208216	208219	30772	Greek	131956	θρόνου	qronou	N-GSM	N-GSM		2362							 throne 	.			
+0	208220	208220	30772	Greek														 				
+0	208221	208221	30772	Greek														 				
+0	208222	208222	30772	Greek														 				
+0	208223	208223	30772	Greek														 				
+0	208224	208224	30772	Greek														 				
+0	208225	208225	30772	Greek														 				
+0	208226	208226	30772	Greek														 				
+0	208227	208227	30772	Greek														 				
+0	208228	208228	30772	Greek														 				
+0	208229	208229	30772	Greek														 				

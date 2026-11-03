@@ -141,7 +141,7 @@ const hintOf = (el: HTMLElement): HTMLElement | null => el.querySelector<HTMLEle
 const countLine = (): HTMLElement | null => screen.queryByTestId('weave-count');
 
 
-/** 2 Peter 3:1 puts ὑμῖν γράφω in one English chunk, "to you." (mw-5r3p30.614). */
+/** 2 Peter 3:1 puts γράφω ἐπιστολήν in one English chunk, "letter" (mw-5r3p30.614 had ὑμῖν γράφω in "to you."; the table's dotted γράφω follows the chunk before it, mw-5r3p30.1001). */
 const openSecondPeter = (solid: string[]): Promise<void> => openChapter('2pe', 3, '2 Peter 3', solid);
 
 /** A chapter of the Reader with the Weave on and the words `solid` solid (a word the seed lacks is put in). */

@@ -1,6 +1,6 @@
 # The MSB's '. . .' rows and the chunks they join (mw-5r3p30.993)
 
-FIXED by mw-5r3p30.997 (see 'What was done' at the end); the report below is mw-5r3p30.993's, as written. Luke 20:20's English chunk 'to the' holds αὐτὸν τῇ while 'to hand Him over' holds παραδοῦναι alone
+FIXED by mw-5r3p30.997 for pronouns and mw-5r3p30.1001 for every other kind (see 'What was done' at the end); the report below is mw-5r3p30.993's, as written. Luke 20:20's English chunk 'to the' holds αὐτὸν τῇ while 'to hand Him over' holds παραδοῦναι alone
 (public/data/luk/20.json, verse 20, `e[12]` and `e[13]`). Is that the Majority Standard Bible's table as published, or our build?
 
 <!-- toc -->
@@ -10,6 +10,7 @@ FIXED by mw-5r3p30.997 (see 'What was done' at the end); the report below is mw-
 - [The count (`node scripts/check-msb-chunk-pairs.ts [--list] [--tsv <msb_nt_tables.tsv>]`, run on this tree, 117,385 chunks)](#the-count-node-scriptscheck-msb-chunk-pairsts---list---tsv-msb_nt_tablestsv-run-on-this-tree-117385-chunks)
 - [What a fix would need (not done here: it changes data)](#what-a-fix-would-need-not-done-here-it-changes-data)
 - [What was done (mw-5r3p30.997)](#what-was-done-mw-5r3p30997)
+- [What was done for the rest (mw-5r3p30.1001)](#what-was-done-for-the-rest-mw-5r3p301001)
 
 <!-- /toc -->
 
@@ -74,3 +75,15 @@ in the chunk before) was not kept: a read of 44 of the 'both', 'neither' and 'on
 5 of 6, wrong mostly where the chunk before was a bare 'and' or 'while' (Luke 2:6, 12:37). Tests: `tests/unit/msb-dots-pronoun.test.ts` (rows in `tests/fixtures/data/msb-dots.tsv`).
 After `npm run data:build`, `node scripts/check-msb-chunk-pairs.ts` finds 7 chunks (the detector's 31 before): 6 are the 'other way round' shape (articles and nouns, not pronouns) and Luke 21:34 is right.
 Not changed: `. . .` demonstratives (`D-`, 120 rows), relatives (`R-`, 80) and every non-pronoun `. . .` row still join the NEXT chunk.
+
+## What was done for the rest (mw-5r3p30.1001)
+
+mw-5r3p30.997 read 30 of the other 3,175 `. . .` rows: 25 had their English in the chunk before. `buildVerse(v, source, { dotsBefore: true })` (the New Testament build; the Old Testament's does not
+pass it, its table not being read) now joins EVERY `. . .` word to the chunk before it in English order; at the head of a verse it waits for the first chunk. Only a pronoun (`P-`, `F-`) after a
+chunk of function words alone still waits for the chunk after (`and` + αὐτούς, Luke 12:37). For the other kinds the exception was tried and dropped: of 25 rows read after a function-word chunk
+(`how` + ἐν τίνι, `except` + εἰ μὴ, `unless` + ἐὰν μὴ, `Why` + διὰ τί) 22 had the English in that chunk, 1 in the next ('because' + οὐκ, whose 'not' is in 'he does not accompany') and 2 were open.
+A fresh read of 30 other rows (every 106th of the 3,174 from the 51st) after the fix found 0 wrong and 2 open (Mark 1:35 κἀκεῖ, Luke 1:59 ὀνόματι, whose English is in neither chunk).
+Tests: `tests/unit/msb-dots-pronoun.test.ts` (Matthew 1:23, Luke 4:8, Acts 16:13, Galatians 5:14, Revelation 4:3; rows in `tests/fixtures/data/msb-dots.tsv`). After `npm run data:build` and
+`npm run drill:build`, `node scripts/check-msb-chunk-pairs.ts` finds 4 chunks in 4 verses (Mark 1:5, Luke 2:48, 12:35, Acts 5:17; was 7): a run of `. . .` words (αὐτὸν ἡ εἶπεν 'asked', αἱ ὀσφύες περιεζωσμέναι) whose English the table gives no better home, not the Luke 20:20 shape. 256 chapters changed (2,010 verses' chunks, 2,991 words moved), and
+six lemmas' drill answers, because the aligned uses changed (καταλύω, πειρασμός, στρατηγός, συλλαμβάνω, χωρίζω, ἀναβλέπω).
+Not read: the Old Testament's BSB table (its `. . .` may mean either way), and any other table the build reads: the TBESG, the byz text and the TAGNT carry no such marker.

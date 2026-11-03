@@ -187,7 +187,7 @@ const greekVerse = (v: TableVerse, lex: Lexicon) =>
     const entry = lex.get(w.strongs);
     if (!entry) throw new Error(`${v.book} ${v.chapter}:${v.n}: ${w.text} has Strong number ${w.strongs}, which the lexicon lacks`);
     return { t: w.text, tr: w.translit, s: w.strongs, l: entry.lemma, p: w.parse };
-  });
+  }, { dotsBefore: true });
 
 // ---------------------------------------------------------------- the whole build
 
