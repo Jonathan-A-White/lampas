@@ -164,7 +164,12 @@ describe('the grammar questions over a Septuagint chapter', () => {
   const SAMPLED = new Set(['stress', 'syllables', 'breathing']);
   const GUESSED = ['ὤφθη', 'Γενηθήτωσαν', 'ζωσῶν'];
   const SEEDS = Array.from({ length: 40 }, (_, i) => i + 1);
-  const guessesOf = (chapter: Chapter): Set<string> => new Set(chapter.verses.flatMap((v) => v.g.filter(isGuess).map((w) => w.t)));
+  /** the forms the chapter has only as a guess: a form read at one place and guessed at another is rightly shown, from the place it is read */
+  const guessesOf = (chapter: Chapter): Set<string> => {
+    const words = chapter.verses.flatMap((v) => v.g);
+    const read = new Set(words.filter((w) => !isGuess(w)).map((w) => w.t));
+    return new Set(words.filter((w) => isGuess(w) && !read.has(w.t)).map((w) => w.t));
+  };
   const keyOf = (n: number): string => `${gen1.code}.${gen1.chapter}.${n}`;
   const graded = (chapter: Chapter): GradedVerse[] =>
     chapter.verses.map((v) => ({ ref: `${chapter.code}.${chapter.chapter}.${v.n}`, code: chapter.code, chapter: chapter.chapter, verse: v.n, forms: { pass: 1, total: 1 }, words: { known: 1, total: 1 }, atLevel: true, missing: [], score: 1 }));
@@ -211,13 +216,24 @@ describe('the grammar questions over a Septuagint chapter', () => {
     }
   });
 
+  // Every builder reads the chapter's words and picks one by its seed. The fixture holds three guesses, so a leak showed only on the seeds that landed on one of them
+  // (40 seeds x every idea x eight builders ran 15 s, mw-5r3p30.1009). Here the words of every second English chunk are guesses (a chunk's words go together: a question
+  // over a chunk that mixes a read word with a guess names both, which is a finding of its own), so about half of what a builder can pick is a guess and a few seeds
+  // find a leak; the fixture's own three guesses are still tried, on two seeds. The guess set is read from the chapter.
+  const halfGuessed: Chapter = { ...gen1, verses: gen1.verses.map((v): Verse => ({ ...v, g: v.g.map((w, i): GreekWord => ((w.e ?? i) % 2 ? { ...w, y: 'g', c: 0.4 } : w)) })) };
+  const FEW_SEEDS = SEEDS.slice(0, 6);
+
   it('never shows a guessed word as the form of a question over the chapter, whichever builder makes it', () => {
-    const guesses = guessesOf(gen1);
-    for (const idea of LADDER) {
-      for (const seed of SEEDS) {
-        const random = () => mulberry32(seed);
-        const made = [buildIdeaQuestion(idea, [gen1], random(), undefined, undefined, undefined, graded(gen1)), buildEnding(idea, [gen1], random(), undefined, graded(gen1)), buildParse(idea, [gen1], random(), graded(gen1)), buildRoles(idea, [gen1], random(), graded(gen1)), buildMeaning(idea, [gen1], random(), graded(gen1)), buildStress(idea, [gen1], random()), buildSyllables(idea, [gen1], random()), buildBreathing(idea, [gen1], random())];
-        for (const q of made) if (q) for (const shown of shownOf(q)) expect(guesses.has(shown), `${idea.id} (${q.kind}) shows ${shown}`).toBe(false);
+    for (const chapter of [gen1, halfGuessed]) {
+      const guesses = guessesOf(chapter);
+      expect(guesses.size, 'the chapter has guesses to leak').toBeGreaterThan(0);
+      const list = graded(chapter);
+      for (const idea of LADDER) {
+        for (const seed of chapter === gen1 ? SEEDS.slice(0, 2) : FEW_SEEDS) {
+          const random = () => mulberry32(seed);
+          const made = [buildIdeaQuestion(idea, [chapter], random(), undefined, undefined, undefined, list), buildEnding(idea, [chapter], random(), undefined, list), buildParse(idea, [chapter], random(), list), buildRoles(idea, [chapter], random(), list), buildMeaning(idea, [chapter], random(), list), buildStress(idea, [chapter], random()), buildSyllables(idea, [chapter], random()), buildBreathing(idea, [chapter], random())];
+          for (const q of made) if (q) for (const shown of shownOf(q)) expect(guesses.has(shown), `${idea.id} (${q.kind}) shows ${shown}`).toBe(false);
+        }
       }
     }
   });
