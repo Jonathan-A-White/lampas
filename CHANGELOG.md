@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.87
+_2026-11-03_
+- Fixed: In Weave mode a pronoun such as 'him' now sits with the English it belongs to, e.g. Luke 20:20 'to hand Him over'.
+- New: Drills now show how a word is built from its parts, such as οὐδεμία from οὐδέ and μία, after you answer.
+
 ## 0.7.86
 _2026-11-03_
 - New: A new Greek word now comes with a real English word that comes from it, like perimeter for περί, to help you remember it.

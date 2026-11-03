@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.87",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.997",
+    "kind": "fixed",
+    "text": "In Weave mode a pronoun such as 'him' now sits with the English it belongs to, e.g. Luke 20:20 'to hand Him over'."
+  },
+  {
+    "version": "0.7.87",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.987",
+    "kind": "new",
+    "text": "Drills now show how a word is built from its parts, such as οὐδεμία from οὐδέ and μία, after you answer."
+  },
+  {
     "version": "0.7.86",
     "date": "2026-11-03",
     "story": "mw-5r3p30.988",
