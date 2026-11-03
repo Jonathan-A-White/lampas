@@ -12,10 +12,13 @@ const ELISION = /[\u1FBD\u2019\u02BC'\u1FBF\u2018]/g;
 /** Punctuation, brackets and the editor's signs (U+2E00-2E7F): never part of a look-up. */
 export const PUNCT = /[.,;:!?()[\]{}"\u00B7\u0387\u037E\u201C\u201D\u00AB\u00BB\u2014\u2013\-\u2E00-\u2E7F\u00B6\u00A7*+\u2020\u2021]/g;
 
+/** How many accents a word carries, its grave read as acute: two is a word with an enclitic after it (ἐξέθρεψέν με, Κέχρικά σε). */
+const accentsOf = (nfd: string): number => [...nfd].filter((c) => c === ACUTE || c === CIRC).length;
+
 /** The look-up key: no punctuation or brackets, lower case, grave as acute, an enclitic's second accent dropped (ἐξέθρεψέν -> ἐξέθρεψεν), elision as ’, NFC. */
 export function keyOf(word: string): string {
   let d = word.replace(PUNCT, '').replace(ELISION, '\u2019').normalize('NFD').toLowerCase().replaceAll(GRAVE, ACUTE);
-  const accents = [...d].filter((c) => c === ACUTE || c === CIRC).length;
+  const accents = accentsOf(d);
   if (accents >= 2) {
     const i = Math.max(d.lastIndexOf(ACUTE), d.lastIndexOf(CIRC));
     d = d.slice(0, i) + d.slice(i + 1);
@@ -35,6 +38,8 @@ export function bareOf(word: string): string {
 }
 
 export const hasAccent = (word: string): boolean => /[\u0300\u0301\u0342]/.test(word.normalize('NFD'));
+/** Whether the word carries two accents, the second an enclitic's (Κέχρικά σε, 2 Kings 9:3): a Greek word, never a name's spelling. */
+export const hasTwoAccents = (word: string): boolean => accentsOf(word.replace(PUNCT, '').normalize('NFD').replaceAll(GRAVE, ACUTE)) >= 2;
 export const hasLower = (word: string): boolean => word !== word.toUpperCase();
 
 /**

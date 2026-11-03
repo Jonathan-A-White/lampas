@@ -20,9 +20,9 @@ import { readChoiceDir } from './choices';
 import { NOTE_MORPHEUS, dockerEngine, ensureCache, morpheusKey, type MorpheusCache, type MorpheusEngine, type MorpheusState } from './morpheus';
 import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fetchPinned, readPinned, type Fetcher } from './sources';
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
-import { bareOf, bookOf, hasAccent, hasLower, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
+import { bareOf, bookOf, hasAccent, hasLower, hasTwoAccents, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
 import { analysesOf, formIndex, readTagnt, settle, type Analysis, type FormIndex } from './tagnt';
-import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
+import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, isCapital, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
 import { TBESG_FILE, lemmaCount, readTbesg, readTbesgNames } from './tbesg';
 
 export const OUT_DIR = join('data', 'lxx');
@@ -44,6 +44,7 @@ export const NOTE_CANDIDATES = 'several candidates: for the model';
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
 export const NOTE_FORM_NAME = 'a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model';
 export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender: for the agreement check or the model';
+export const NOTE_CAPITAL_NAME = 'a capital mid-clause: a name beside the common word its letters spell: for the agreement check or the model';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
 export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form' };
@@ -188,15 +189,24 @@ export interface BookResult {
   morpheusWords?: number;
 }
 
-/** The form index and the parser, trained once for a run (a hidden book left out of both). */
+/** The form index and the parser, trained once for a run (a hidden book left out of both), and what Swete's own print says of its forms. */
 export interface Trained {
   index: FormIndex;
   parser: Parser;
+  /** every form the whole file writes in lower case somewhere, as keyOf writes it (lowerCaseForms): a capital on any other form is a name's, not a sentence's */
+  lowerCase: ReadonlySet<string>;
 }
 
 export function train(input: DeriveInput, hide?: string): Trained {
   const rows = readTagnt(input.tagnt, hide);
-  return { index: formIndex(rows), parser: trainParser(rows, readTbesg(input.tbesg), indeclinableNames(rows, readTbesgNames(input.tbesg))) };
+  return { index: formIndex(rows), parser: trainParser(rows, readTbesg(input.tbesg), indeclinableNames(rows, readTbesgNames(input.tbesg))), lowerCase: lowerCaseForms(input) };
+}
+
+/** The forms Swete writes in lower case anywhere in the file (all 60 books), as keyOf writes them, for the capital rule (withCapitalNames). */
+export function lowerCaseForms(input: Pick<DeriveInput, 'versification' | 'words'>): Set<string> {
+  const out = new Set<string>();
+  for (const w of sweteTokens(input.versification, input.words).words) if (!isCapital(w.form)) out.add(keyOf(w.form));
+  return out;
 }
 
 const split = (outs: ReadonlyArray<DerivedWord | PendingWord>): { derived: DerivedWord[]; pending: PendingWord[] } => ({
@@ -241,6 +251,43 @@ function withFormNames(words: readonly SweteWord[], outs: ReadonlyArray<DerivedW
   });
 }
 
+const VIA_CAPITAL_LEXICON = 'a capital mid-clause: a lexicon has a name spelled so, the parser reading the form in it';
+const VIA_CAPITAL_FORM = 'a capital mid-clause: the form itself as the lemma (Swete never writes it in lower case; an ending a Hebrew name has)';
+
+/**
+ * The capital rule (story mw-u2w5klk.25). Layers 1 and 2 read a form's letters with its capital lowered, so a name spelled as a common word settles as that word: Σηών
+ * as σής, Ἀμμών as ἄμμος, Γάζης as the treasury of Acts 8:27. A word written with a capital that does not open a verse or a clause (opensClause, or all of its clause:
+ * isWholeClause), which the layers settled on a lemma in lower case or left pending with only such candidates of their own, is not left so when either of two things
+ * says the capital is a name's: (1) **a lexicon has a name spelled so**: the parser, run on the form whether the New Testament has it or not, reaches a lemma written
+ * with a capital in TBESG or TAGNT (Γάζα for Γάζης, Σύρος for Σύρων), or such a lemma is already among the word's candidates; (2) **Swete's own print**: the file never
+ * writes the form in lower case anywhere (trained.lowerCase; Ἰδοὺ, Μὴ, Ἐγὼ open what someone says and are written ἰδού, μή, ἐγώ elsewhere), the word carries one accent
+ * (Κέχρικά σε carries an enclitic's), and its ending is one a Hebrew name has (formNameLemma, the rule of 'Names no lexicon has'), so the form is its own lemma in every
+ * case of every gender (support `form`). The word is pending with the common candidates kept and the name's added, the note NOTE_CAPITAL_NAME, for the agreement check or
+ * the model. A word that opens a verse or a clause is left as it was: Swete capitalises it whatever it is. A word settled on a name, pending with a name among its
+ * candidates (an indeclinable name, a name from its form alone), with no candidate, or with Morpheus's alone, is not touched.
+ */
+function withCapitalNames(words: readonly SweteWord[], outs: ReadonlyArray<DerivedWord | PendingWord>, trained: Trained, parsed: (form: string) => Candidate[]): Array<DerivedWord | PendingWord> {
+  return outs.map((out, i) => {
+    const word = words[i];
+    if (!isCapital(word.form) || (opensClause(words, i) && !isWholeClause(words, i))) return out;
+    if (isDerived(out) ? isCapital(out.lemma) : out.candidates.some((c) => isCapital(c.lemma))) return out;
+    if (!out.candidates.some((c) => !c.source)) return out;
+    const owned = new Set(out.candidates.map((c) => `${c.lemma}|${c.morph}`));
+    const own = out.candidates.filter((c) => isCapital(c.lemma));
+    const named = own.length ? [] : parsed(word.form).filter((c) => isCapital(c.lemma) && !owned.has(`${c.lemma}|${c.morph}`));
+    let more: WordCandidate[];
+    if (own.length || named.length) {
+      more = named.map((c) => ({ ...c, via: [VIA_CAPITAL_LEXICON, ...c.via] }));
+    } else {
+      if (trained.lowerCase.has(keyOf(word.form)) || hasTwoAccents(word.form)) return out;
+      const lemma = formNameLemma(word.form);
+      if (!lemma) return out;
+      more = formNameCandidates(lemma).map((c) => ({ ...c, support: 0, share: 0, via: [VIA_CAPITAL_FORM], source: 'form' as const }));
+    }
+    return { ref: out.ref, candidates: [...out.candidates, ...more], notes: [...out.notes, NOTE_CAPITAL_NAME] };
+  });
+}
+
 /** One book's words through layers 1 and 2, then the agreement check. `tokens` are the book's, when the caller has read them already. */
 export function deriveBook(
   input: DeriveInput,
@@ -254,8 +301,9 @@ export function deriveBook(
   if (words.length === 0) throw new Error(`no book '${book}' in Swete's file`);
   const { index, parser } = trained;
   const cache: ParseCache = new Map();
-  const layers = withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus)));
-  const checked = checkAgreement(words, layers, { names: index.names, parse: (form) => parsedOnce(form, parser, cache) });
+  const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
+  const layers = withCapitalNames(words, withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus))), trained, parsed);
+  const checked = checkAgreement(words, layers, { names: index.names, parse: parsed });
   return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.includes(NOTE_MORPHEUS)).length } : {}) };
 }
 
