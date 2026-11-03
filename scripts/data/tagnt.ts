@@ -9,13 +9,20 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export const TAGNT_RAW_DIR = 'tagnt';
-const TAGNT_BASE = 'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Translators%20Amalgamated%20OT%2BNT/';
-/** The two files, in canon order, and the name each is kept under in rawDir/tagnt. */
-export const TAGNT_FILES: ReadonlyArray<{ remote: string; local: string }> = [
-  { remote: 'TAGNT Mat-Jhn - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt', local: 'tagnt-mat-jhn.txt' },
-  { remote: 'TAGNT Act-Rev - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt', local: 'tagnt-act-rev.txt' },
+const TAGNT_BASE = 'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/';
+/**
+ * The two files, in canon order, the name each is kept under in rawDir/tagnt, and the commit of STEPBible-Data whose bytes the pin is of (mw-5r3p30.1004): the last
+ * commit before STEPBible's 2026-11-02 change of the licence header, which only the file's header rows differ by. A commit's URL always serves the same bytes; master does not.
+ */
+export const TAGNT_FILES: ReadonlyArray<{ remote: string; local: string; commit: string }> = [
+  { remote: 'TAGNT Mat-Jhn - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt', local: 'tagnt-mat-jhn.txt', commit: '051e2bcabd2b5f32d19e5d21c2cd7580ae6cf890' },
+  { remote: 'TAGNT Act-Rev - Translators Amalgamated Greek NT - STEPBible.org CC-BY.txt', local: 'tagnt-act-rev.txt', commit: '5af032662c1dfe89cfc00a1dfa35104e72d0df00' },
 ];
-export const tagntUrl = (remote: string): string => TAGNT_BASE + encodeURIComponent(remote);
+export const tagntUrl = (remote: string): string => {
+  const file = TAGNT_FILES.find((f) => f.remote === remote);
+  if (!file) throw new Error(`TAGNT: ${remote} is not one of the pinned files`);
+  return `${TAGNT_BASE}${file.commit}/Translators%20Amalgamated%20OT%2BNT/${encodeURIComponent(remote)}`;
+};
 /** The two files' bytes one after another (2026-10-31): the build stops on any other, as it does for the apparatus, and says to delete rawDir/tagnt to fetch them again. */
 export const TAGNT_SHA256 = 'ebf7d752faf67dc62883e54b8e82038eef5b48f54453849f872be2450c90005f';
 

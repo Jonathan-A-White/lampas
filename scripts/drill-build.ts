@@ -1,7 +1,7 @@
 // scripts/drill-build.ts — npm run drill:build (mw-5r3p30.1000, docs/data.md 'Drill answers'). Sets the drill answer (`q`) of every lemma of public/data/lexicon.json from the
 // Greek-English alignment in the committed chapters and writes data/drill-report.json: the last step of `npm run data:build` on the data as it stands, for when only the
 // answers change (the corrections, the line) and the text does not. TBESG (data/raw/tbesg.txt, fetched when absent) gives the other meanings of a number. A second run changes nothing.
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { normaliseLemma } from '../src/data/lemma';
 import { SEED_WORDS } from '../src/data/seed-words';
@@ -11,6 +11,7 @@ import { DRILL_REPORT_FILE, TBESG_URL, drillReportText } from './data-build';
 import { drillAnswers } from './data/drillAnswers';
 import { CORRECTIONS } from './data/drill-corrections';
 import { fetchTo, writeIfChanged } from './data/chapterWriter';
+import { TBESG_SHA256, loadPinned } from './data/pins';
 import { parseTbes } from './data/tbes';
 import { withAoristNote } from '../src/data/irregular-aorists';
 
@@ -18,8 +19,7 @@ const DATA = 'public/data';
 const TBESG = 'data/raw/tbesg.txt';
 
 async function main(): Promise<void> {
-  if (!existsSync(TBESG)) await fetchTo(TBESG_URL, TBESG);
-  const lex = parseTbes(readFileSync(TBESG, 'utf8'), { letter: 'G', gloss: withAoristNote });
+  const lex = parseTbes(await loadPinned({ path: TBESG, url: TBESG_URL, sha256: TBESG_SHA256, download: fetchTo, log: console.log }), { letter: 'G', gloss: withAoristNote });
   const read = <T>(path: string): T => JSON.parse(readFileSync(join(DATA, path), 'utf8')) as T;
   const lexicon = read<LemmaLexicon>('lexicon.json');
   const index = read<BookIndex>('index.json');

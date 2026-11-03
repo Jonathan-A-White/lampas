@@ -27,6 +27,7 @@ import { VARIANT_ENGLISH_FILE, englishReport, englishStats, finishUnit, layEngli
 import { addCounts, alignChapter, loadApparatus, variantsReport, type CodeCounts, type VariantStats } from './data/variants';
 import { formIndex, tagVariants, taggedLine, tagntIndex, guessedText, untaggedText, type TagTally } from './data/variantWords';
 import { loadTagnt, type TagntWord } from './data/tagnt';
+import { MSB_EDITS, MSB_SHA256, TBESG_SHA256, loadPinned } from './data/pins';
 
 export { suppliedWords } from './data/bereanTable';
 export { chapterFingerprint } from './data/chapterWriter';
@@ -46,8 +47,9 @@ export function drillReportText(report: DrillReport): string {
 }
 
 export const MSB_URL = 'https://majoritybible.com/msb_nt_tables.tsv';
+/** At a commit of STEPBible-Data, not master, so the URL serves the pinned bytes (scripts/data/pins.ts TBESG_SHA256, docs/data.md 'Pinned sources'). */
 export const TBESG_URL =
-  'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Lexicons/TBESG%20-%20Translators%20Brief%20lexicon%20of%20Extended%20Strongs%20for%20Greek%20-%20STEPBible.org%20CC%20BY.txt';
+  'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/805360e477f2668119806241fb2eea07544b765e/Lexicons/TBESG%20-%20Translators%20Brief%20lexicon%20of%20Extended%20Strongs%20for%20Greek%20-%20STEPBible.org%20CC%20BY.txt';
 const MSB_FILE = 'msb_nt_tables.tsv';
 const TBESG_FILE = 'tbesg.txt';
 
@@ -418,19 +420,35 @@ export interface BuildOptions {
   tagnt?: boolean;
   /** the sha256 the two TAGNT files must have together; default TAGNT_SHA256 (a test's own files have their own) */
   tagntSha256?: string;
+  /** check the MSB table and TBESG against their pinned sha256 (scripts/data/pins.ts); default: when `variants` is on, as for TAGNT. Tests with their own small files pass false */
+  pinSources?: boolean;
+  /** the sha256 the MSB table must have (after MSB_EDITS); default MSB_SHA256 */
+  msbSha256?: string;
+  /** the sha256 TBESG must have; default TBESG_SHA256 */
+  tbesgSha256?: string;
 }
 
 /** What a build reads: the MSB table and TBESG (fetched into rawDir unless they are there), the apparatus and the RP 2026 overlay (written to overlayFile). Also read by `npm run variants:english`. */
 export async function loadInputs(
-  options: Pick<BuildOptions, 'rawDir' | 'download' | 'log' | 'variants' | 'variantsSha256' | 'rp2026' | 'rp2026Sha256' | 'overlayFile' | 'tagnt' | 'tagntSha256'>,
+  options: Pick<BuildOptions, 'rawDir' | 'download' | 'log' | 'variants' | 'variantsSha256' | 'rp2026' | 'rp2026Sha256' | 'overlayFile' | 'tagnt' | 'tagntSha256' | 'pinSources' | 'msbSha256' | 'tbesgSha256'>,
 ): Promise<{ msbTsv: string; lex: Lexicon; apparatus?: Map<string, Map<string, string>>; overlay?: OverlayEntry[]; tagnt?: TagntWord[] }> {
   const { rawDir, download = fetchTo, log = () => undefined, variants = true, rp2026 = variants, tagnt = variants, overlayFile = OVERLAY_FILE } = options;
+  const { pinSources = variants } = options;
   const msbPath = join(rawDir, MSB_FILE);
   const tbesgPath = join(rawDir, TBESG_FILE);
-  for (const [url, path] of [[MSB_URL, msbPath], [TBESG_URL, tbesgPath]] as const) {
-    if (existsSync(path)) continue;
-    log(`downloading ${url}`);
-    await download(url, path);
+  let msbTsv: string;
+  let tbesgText: string;
+  if (pinSources) {
+    msbTsv = await loadPinned({ path: msbPath, url: MSB_URL, sha256: options.msbSha256 ?? MSB_SHA256, edits: MSB_EDITS, download, log });
+    tbesgText = await loadPinned({ path: tbesgPath, url: TBESG_URL, sha256: options.tbesgSha256 ?? TBESG_SHA256, download, log });
+  } else {
+    for (const [url, path] of [[MSB_URL, msbPath], [TBESG_URL, tbesgPath]] as const) {
+      if (existsSync(path)) continue;
+      log(`downloading ${url}`);
+      await download(url, path);
+    }
+    msbTsv = readFileSync(msbPath, 'utf8');
+    tbesgText = readFileSync(tbesgPath, 'utf8');
   }
   const apparatus = variants ? await loadApparatus(rawDir, download, log, options.variantsSha256) : undefined;
   let overlay: OverlayEntry[] | undefined;
@@ -440,7 +458,7 @@ export async function loadInputs(
     writeIfChanged(overlayFile, `${JSON.stringify(overlay, null, 1)}\n`);
   }
   const tagntWords = tagnt ? await loadTagnt(rawDir, download, log, options.tagntSha256) : undefined;
-  return { msbTsv: readFileSync(msbPath, 'utf8'), lex: parseLexicon(readFileSync(tbesgPath, 'utf8')), apparatus, overlay, tagnt: tagntWords };
+  return { msbTsv, lex: parseLexicon(tbesgText), apparatus, overlay, tagnt: tagntWords };
 }
 
 export async function runBuild(options: BuildOptions): Promise<{ chapters: number; written: number; bytes: number }> {
