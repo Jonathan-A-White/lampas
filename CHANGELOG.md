@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.91
+_2026-11-03_
+- Fixed: at the largest text size, the Maps button and the help line in the verse screen no longer slide under the round ask-the-tutor button.
+- Fixed: In Weave mode, a Greek word whose English is in the words before it (such as 'answered' with εἶπεν in Luke 4:8) now sits under that English instead of the next phrase.
+
 ## 0.7.90
 _2026-11-03_
 - Fixed: The round ? button no longer covers the ends of buttons in Read it aloud, the Reading ladder, the Reading drill and Memorize.

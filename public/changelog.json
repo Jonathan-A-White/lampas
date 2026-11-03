@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.91",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.1002",
+    "kind": "fixed",
+    "text": "at the largest text size, the Maps button and the help line in the verse screen no longer slide under the round ask-the-tutor button."
+  },
+  {
+    "version": "0.7.91",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.1001",
+    "kind": "fixed",
+    "text": "In Weave mode, a Greek word whose English is in the words before it (such as 'answered' with εἶπεν in Luke 4:8) now sits under that English instead of the next phrase."
+  },
+  {
     "version": "0.7.90",
     "date": "2026-11-03",
     "story": "mw-5r3p30.998",
