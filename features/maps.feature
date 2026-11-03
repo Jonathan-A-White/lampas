@@ -1,6 +1,6 @@
 Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
-  A quiet door "Maps · N" opens the maps of the place he reads: on the Verse view (a verse, and a passage opened from a heading) and at the foot of every chapter, Old and New Testament.
-  It is never in the verse text, and with the Immersive reader On the Reader has none (the Verse view keeps it). The sheet groups the maps as Events, Regions and Videos, each with its period;
+  A quiet door "Maps · N" opens the maps of the place he reads: on the Verse view only (a verse, a passage opened from a section heading, or the whole chapter opened from the place line).
+  It is never in the verse text and never at the foot of a chapter, with the Immersive reader On or Off (mw-5r3p30.1028; his words, 2026-11-03: "the maps shouldn't show at the bottom"). The sheet groups the maps as Events, Regions and Videos, each with its period;
   a map opens in the app with the credit Bible Mapper asks and a link back. These scenarios use a map source of the tests' own: no data file is read and no picture is fetched.
 
   Scenario: A verse with maps has the door on the Verse view
@@ -15,15 +15,29 @@ Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
     When he taps verse 1
     Then the Verse view has no Maps door
 
-  Scenario: Every chapter foot has the door, the New Testament's too
+  Scenario: No chapter foot has the door, the New Testament's too
     Given Lampas is opened on "Romans 8"
-    Then the chapter foot has a button "Maps · 1"
+    Then the chapter foot has no Maps door
+    When he taps verse 1
+    Then the Verse view has a button "Maps · 1"
 
-  Scenario: The Immersive reader has no door in the Reader, and the Verse view keeps it
+  Scenario: A chapter that has maps has no door at its foot with the Immersive reader Off
+    Given Lampas is opened on "Genesis 10"
+    Then the chapter foot has no Maps door
+
+  Scenario: Nor with the Immersive reader On, and the Verse view keeps the door
     Given Lampas is opened on "Genesis 10" with the Immersive reader On
     Then the chapter foot has no Maps door
     When he taps verse 19
     Then the Verse view has a button "Maps · 6"
+
+  Scenario: The place line opens the whole chapter, and its Verse view has the door
+    Given Lampas is opened on "Genesis 10"
+    When he taps the place line
+    Then the Verse view has a button "Maps · 6"
+    When he taps "Maps · 6"
+    Then the sheet is headed "Maps for Genesis 10:1-32"
+    And the groups read "Events, Regions, Videos"
 
   Scenario: The sheet groups the maps and gives each its period
     Given Lampas is opened on "Genesis 10"
@@ -61,19 +75,6 @@ Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
     And he taps "Maps · 6"
     Then the sheet has no part for the verse
     And the groups read "Events, Regions, Videos"
-
-  Scenario: The chapter foot's door opens the sheet for the chapter
-    Given Lampas is opened on "Genesis 10"
-    When he taps the foot's door "Maps · 6"
-    Then the sheet is headed "Maps for Genesis 10"
-
-  Scenario: A whole chapter's sheet has no part for a verse and keeps Bible Mapper's order
-    Given Lampas is opened on "Genesis 10"
-    When he taps the foot's door "Maps · 6"
-    Then the sheet is headed "Maps for Genesis 10"
-    And the sheet has no part for the verse
-    And the groups read "Events, Regions, Videos"
-    And "Regions" holds "Mesopotamia", "Ararat" and "Table of Nations: Ham’s Descendants"
 
   Scenario: A map opens in the app with its credit and the way back to the site
     Given Lampas is opened on "Genesis 10"
@@ -140,9 +141,10 @@ Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
 
   Scenario: Where Bible Mapper has no map for the chapter the other source's block is the sheet
     Given Lampas is opened on "Genesis 11" with the test atlas On
-    Then the chapter foot has a button "Maps · 1"
-    When he taps the foot's door "Maps · 1"
-    Then the sheet is headed "Maps for Genesis 11"
+    Then the chapter foot has no Maps door
+    When he taps the place line
+    And he taps "Maps · 1"
+    Then the sheet is headed "Maps for Genesis 11:1-32"
     And the groups read "Test Atlas"
     And the "Test Atlas" block holds "Test Atlas at Babel, Opens on the web"
 

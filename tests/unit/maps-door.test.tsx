@@ -1,10 +1,9 @@
-// The Maps door (src/maps/MapsDoor.tsx, mw-zbjgn3r.2): a 44 px button 'Maps · N', drawn only when N is above 0; the chapter foot (src/reader/ChapterActions.tsx) draws it for the
-// Old and the New Testament and, with the Immersive reader On, nowhere in the Reader.
+// The Maps door (src/maps/MapsDoor.tsx, mw-zbjgn3r.2): a 44 px button 'Maps · N', drawn only when N is above 0; a chapter's foot draws none (src/reader/ChapterActions.tsx is gone), the Verse
+// view's tools line is where it is (mw-5r3p30.1028).
 import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MapsDoor } from '../../src/maps/MapsDoor';
-import { ChapterActions } from '../../src/reader/ChapterActions';
 import { db } from '../../src/data/db';
 import { forgetTestMaps, registerTestMaps } from '../support/test-maps';
 
@@ -50,23 +49,5 @@ describe('the door with two sources (mw-zbjgn3r.6)', () => {
     await db.settings.put({ key: 'maps.biblemapper', value: 'off' });
     render(<MapsDoor mapRef={{ book: 'gen', chapter: 10 }} />);
     expect(await screen.findByRole('button', { name: 'Maps · 2' })).toBeInTheDocument();
-  });
-});
-
-describe('the chapter foot', () => {
-  it('draws the door at the foot of an Old Testament chapter and of a New Testament one', async () => {
-    render(<ChapterActions code="gen" chapter={10} immersive={false} />);
-    expect(await screen.findByRole('button', { name: 'Maps · 6' })).toBeInTheDocument();
-    cleanup();
-    render(<ChapterActions code="rom" chapter={8} immersive={false} />);
-    expect(await screen.findByRole('button', { name: 'Maps · 1' })).toBeInTheDocument();
-    // the Logos and Audible actions are the Old Testament's only
-    expect(screen.queryByRole('group', { name: /read or listen/ })).toBeNull();
-  });
-
-  it('draws no door anywhere in the Reader with the Immersive reader On', async () => {
-    render(<ChapterActions code="gen" chapter={10} immersive />);
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(screen.queryByRole('button', { name: /^Maps/ })).toBeNull();
   });
 });

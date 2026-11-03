@@ -1,4 +1,4 @@
-// tests/e2e/maps.spec.ts — Lampas maps on the screen (mw-zbjgn3r.2, docs/maps.md) at 390x844: the quiet 'Maps · N' door on the Verse view of Genesis 10:19 and at the foot of a chapter, the Maps sheet
+// tests/e2e/maps.spec.ts — Lampas maps on the screen (mw-zbjgn3r.2, docs/maps.md) at 390x844: the quiet 'Maps · N' door on the Verse view of Genesis 10:19 and never at the foot of a chapter (mw-5r3p30.1028), the Maps sheet
 // (Events, Regions, Videos, each row 44 px with its period) and the map opened in the app with its credit and links. The picture is Playwright's own (a route on biblemapper.com): no live fetch.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
@@ -93,23 +93,27 @@ test('a failed picture says the map needs the internet and keeps its links', asy
   await expect(map.getByRole('link', { name: 'biblemapper.com' })).toBeVisible();
 });
 
-test('the foot of a chapter has the door, the New Testament too', async ({ page }) => {
+test('the foot of a chapter has no door, Old Testament or New, and the place line opens the chapter with one (mw-5r3p30.1028)', async ({ page }) => {
   await openUnlocked(page);
   await stubPictures(page);
   await page.goto('/#/?b=gen&c=10');
-  const door = page.locator('[data-reader]').getByRole('button', { name: 'Maps · 6', exact: true });
-  await door.scrollIntoViewIfNeeded();
-  await expect(door).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeAttached();
+  await page.getByRole('navigation', { name: 'Chapters', exact: true }).scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await expect(page.getByRole('button', { name: /^Maps/ })).toHaveCount(0);
   await shot(page, 'maps-chapter-foot');
-  await door.click();
-  await expect(page.getByRole('dialog', { name: 'Maps for Genesis 10' })).toBeVisible();
+  // the place line is a way in: the whole chapter in the Verse view, which has the door
+  await page.locator('button[data-place-line]').click();
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await view.getByRole('button', { name: 'Maps · 6', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Maps for Genesis 10:1-32' })).toBeVisible();
   await page.goBack();
 
   await page.goto('/#/?b=act&c=27');
-  const nt = page.locator('[data-reader]').getByRole('button', { name: /^Maps · \d+$/ });
-  await nt.scrollIntoViewIfNeeded();
-  await expect(nt).toBeVisible();
-  await expect(page.locator('[data-verse] button', { hasText: /^Maps/ })).toHaveCount(0);
+  await expect(page.getByRole('navigation', { name: 'Chapters', exact: true })).toBeAttached();
+  await page.getByRole('navigation', { name: 'Chapters', exact: true }).scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await expect(page.getByRole('button', { name: /^Maps/ })).toHaveCount(0);
 });
 
 /** Puts a row in one of the app's own stores through raw IndexedDB, as the app wrote it. */
