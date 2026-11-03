@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.94
+_2026-11-03_
+- New: A link to a verse or a passage now opens the chapter in the normal reader with that verse at the top, instead of the verse view.
+
 ## 0.7.93
 _2026-11-03_
 - New: On Today, the day's Psalms and Proverbs now open straight in Lampas, even with Logos turned off.

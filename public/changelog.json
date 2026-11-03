@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.94",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.1025",
+    "kind": "new",
+    "text": "A link to a verse or a passage now opens the chapter in the normal reader with that verse at the top, instead of the verse view."
+  },
+  {
     "version": "0.7.93",
     "date": "2026-11-03",
     "story": "mw-5r3p30.1007",
