@@ -20,9 +20,10 @@ export type ReaderEvent =
   | { kind: 'reader-requested'; id: number; action: 'word'; book: string; chapter: number; verse: number; question: string; focus: TalkFocus }
   /** the tutor took him to `chapter` of `book` (mw-5r3p30.172, the answer's `go`): the Reader shows the one-line notice 'Opened <title>' as it opens */
   | { kind: 'reader-requested'; id: number; action: 'opened'; book: string; chapter: number }
-  /** Choose a book's Go to took him to `verse` of `chapter` of `book` (mw-5r3p30.678): the Reader opens on the chapter with that verse brought to the top of the reading area, no Verse view */
-  | { kind: 'reader-requested'; id: number; action: 'verse'; book: string; chapter: number; verse: number }
-  /** a link in the address was resolved (src/nav/linkRequest.ts): the reader opens on `chapter` of `book`, with `verse` selected (null: none), the one-line
+  /** Choose a book's Go to, or a ref= link to a verse or range (mw-5r3p30.1025), took him to `verse` of `chapter` of `book` (mw-5r3p30.678): the Reader opens on the chapter with that verse brought to the top of
+   * the reading area, no Verse view. `heading`: a section heading directly above the verse is brought to the top with it (a link; Go to brings the verse alone) */
+  | { kind: 'reader-requested'; id: number; action: 'verse'; book: string; chapter: number; verse: number; heading?: true }
+  /** a link in the address was resolved (src/nav/linkRequest.ts): the reader opens on `chapter` of `book` (`verse` is the verse the link named, null: none; it is brought to the top, not selected), the one-line
    * `notice` that says what was asked for when it is not what is shown, and, for a word link, the `word` whose sheet opens over it; `id` counts up, so the
    * Reader can tell a link it has not met */
   | {

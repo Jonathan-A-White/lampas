@@ -72,10 +72,10 @@ async function openReader(licensed: boolean): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-async function openVerseView(licensed: boolean, action: VerseAction, ref = 'Rom.8.28'): Promise<void> {
+async function openVerseView(licensed: boolean, action: VerseAction, place = 'b=rom&c=8&v=28'): Promise<void> {
   await fresh();
   setVerseAction(action);
-  await openApp(`#/?ref=${ref}`, licensed);
+  await openApp(`#/?${place}`, licensed);
   await screen.findByRole('region', { name: 'Verse view' });
 }
 
@@ -154,7 +154,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('With no licence the Verse view of a Hebrew verse offers neither Ask the tutor nor Practise, even if Ask the tutor was the action he left it on', ({ Given, Then, And }) => {
-    Given('this phone has no licence and the Verse view of Genesis 1:1 is open, last left on Ask the tutor', () => openVerseView(false, 'ask', 'Gen.1.1'));
+    Given('this phone has no licence and the Verse view of Genesis 1:1 is open, last left on Ask the tutor', () => openVerseView(false, 'ask', 'b=gen&c=1&v=1'));
     Then('the Verse view offers only the action {string}, with Copy', offersOnlyListen);
     And('the Verse view has no Hold to ask', () => {
       expect(within(verseView()).queryByTestId('composer')).toBeNull();

@@ -15,11 +15,22 @@ const SETTLE_MS = 1000;
 /** The gap between the top of the box and the verse's top, as showVerse leaves it (src/Reader.tsx). */
 export const GAP = 8;
 
+/** What a verse is brought to the top as: the verse's own element, or with `heading` the section heading directly above it when it begins its block (in a paragraph the verse is the
+ * paragraph's first span, so the block is the paragraph). */
+export function topOf(box: HTMLElement, verse: number, heading: boolean): HTMLElement | null {
+  const target = box.querySelector<HTMLElement>(`[data-verse="${verse}"]`);
+  if (!target || !heading) return target;
+  const parent = target.parentElement;
+  const block = parent?.hasAttribute('data-paragraph') && parent.firstElementChild === target ? parent : target;
+  const above = block.previousElementSibling;
+  return above?.hasAttribute('data-heading') ? (above as HTMLElement) : target;
+}
+
 /** Puts `verse` at the top of `box` and keeps it there while the text above it settles (a font arriving, a late row), until his own hand is on the box or SETTLE_MS is up.
- * Returns the function that ends it. */
-export function settleAtTop(box: HTMLElement, inner: HTMLElement | null, verse: number): () => void {
+ * With `heading` the section heading directly above the verse is what stands at the top. Returns the function that ends it. */
+export function settleAtTop(box: HTMLElement, inner: HTMLElement | null, verse: number, heading = false): () => void {
   const bring = () => {
-    const target = box.querySelector<HTMLElement>(`[data-verse="${verse}"]`);
+    const target = topOf(box, verse, heading);
     if (target) moveBox(box, box.scrollTop + target.getBoundingClientRect().top - box.getBoundingClientRect().top - GAP);
   };
   bring();
@@ -72,8 +83,9 @@ export function useBringVerse(
       watcher?.disconnect();
       takeRequest(request);
       box.setAttribute('data-brought-verse', String(request.verse));
+      // Turn pages shows the page the verse is on (its heading, a line above it, may be at the foot of the page before)
       if (paging) show(el);
-      else stop = settleAtTop(box, inner.current, request.verse);
+      else stop = settleAtTop(box, inner.current, request.verse, request.heading === true);
       return true;
     };
     if (!start()) {

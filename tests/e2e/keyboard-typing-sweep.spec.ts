@@ -60,7 +60,7 @@ const SCREENS: Screen[] = [
   {
     name: 'Summary (Verse view, Practise)',
     open: async (page) => {
-      await page.goto('/#/?ref=John.1.1&view=greek&weave=off');
+      await page.goto('/#/?b=jhn&c=1&view=greek&weave=off&v=1');
       const view = page.getByRole('region', { name: 'Verse view' });
       await expect(view).toBeVisible();
       await view.getByRole('button', { name: 'Practise', exact: true }).click();

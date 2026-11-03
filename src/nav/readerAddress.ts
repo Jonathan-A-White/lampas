@@ -4,11 +4,14 @@
 import { subscribe } from '../events/bus';
 import { weaveSetting } from '../settings/definitions';
 import { onSetting } from '../settings/store';
+import { linkOf } from './links';
 import { readerHash, readerOf, replaceHash, routeOf, type ReaderAddress } from './route';
 
 function update(patch: ReaderAddress, without: (keyof ReaderAddress)[] = []): void {
   // Only the reader's own entry carries its state; an event heard while another screen is open is not written there.
   if (routeOf(window.location.hash) !== 'home') return;
+  // A link in the address (#/?ref=…) is not the reader's state: the Reader that gives way to it (a link opened under a running app) must not write over it before LinkOpener has read it
+  if (linkOf(window.location.hash)) return;
   const next = { ...readerOf(window.location.hash), ...patch };
   for (const key of without) delete next[key];
   replaceHash(readerHash(next));

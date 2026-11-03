@@ -11,26 +11,27 @@ Lampas takes links in, as Logos does (logos4:, ref.ly). The https form always wo
 - [Share to Lampas: what the share sheet accepts](#share-to-lampas-what-the-share-sheet-accepts)
 - [web+lampas:](#weblampas)
 - [How it is wired](#how-it-is-wired)
+  - [Every way in to a ref= link](#every-way-in-to-a-ref-link)
 
 <!-- /toc -->
 
 ## The https form
 
-`https://lampas.allmymind.org/#/?ref=<reference>` opens the reader on a verse. `https://lampas.allmymind.org/#/?word=<word>` opens a word's sheet.
+`https://lampas.allmymind.org/#/?ref=<reference>` opens the reader on a verse: the chapter, with the verse at the top. `https://lampas.allmymind.org/#/?word=<word>` opens a word's sheet.
 The word sheet has **Copy link**, and **Share** where the phone has `navigator.share`; they give this form. The Verse view has **Copy** and **Share**: the verse, passage
 or chapter in the format of Settings > Reading > When you copy (docs/layout/reader.md), the link on its last line while Link is On. A phone that refuses the clipboard shows the
 link (the word sheet) or the text (the Verse view) in a box to copy by hand.
 
 ### `ref=` — a verse, a chapter or a book
 
-Case does not matter; spaces, dots and colons are all accepted between the parts; a verse range ("Heb 7:1-3", "1John.1.1-4") opens the Verse view on those verses (mw-z370x5.2); a one-verse range is the verse.
+Case does not matter; spaces, dots and colons are all accepted between the parts; a verse range ("Heb 7:1-3", "1John.1.1-4") opens the chapter at its first verse (it names where to start, nothing is selected or highlighted; mw-z370x5.2, changed by mw-5r3p30.1025); a one-verse range is the verse.
 
 | Written | Opens |
 | --- | --- |
-| `#/?ref=Rom.8.28` (OSIS) | Romans 8, verse 28 selected |
+| `#/?ref=Rom.8.28` (OSIS) | the Reader on Romans 8, verse 28 at the top, nothing selected |
 | `#/?ref=Rom 8:28`, `#/?ref=Romans%208:28`, `#/?ref=romans+8:28` | the same |
-| `#/?ref=1John.1.9`, `#/?ref=1Jn.1.9`, `#/?ref=1 John 1:9` | 1 John 1, verse 9 selected |
-| `#/?ref=Rom.8.28-30` | the Verse view on Romans 8:28-30 |
+| `#/?ref=1John.1.9`, `#/?ref=1Jn.1.9`, `#/?ref=1 John 1:9` | 1 John 1, verse 9 at the top |
+| `#/?ref=Rom.8.28-30` | Romans 8, verse 28 at the top (a range only names where to start) |
 | `#/?ref=Rom 8`, `#/?ref=Rom.8` | Romans 8, no verse selected |
 | `#/?ref=Jude` | Jude 1 |
 
@@ -38,16 +39,18 @@ The books are the 27 of `public/data/index.json`, named by their OSIS code (`Mat
 (`Romans`, `1 Corinthians`), or by a common short form (`Mt`, `Jn`, `1Jn`, `Phlm`, `Re` …; the list is `src/nav/links.ts`). `view=greek` and `weave=…` may ride along
 (`#/?ref=Rom.8.28&view=greek`). `as=<words>` (`#/?ref=Gen.1.28&as=Gen.%201%3A28`) carries the words the reference was printed in, which Share to Lampas adds when a listed reference is tapped; a notice then names the reference so ("Gen. 1:28"), not by its code.
 
+**What a verse link opens (mw-5r3p30.1025, his words of 2026-11-03: "it should bring you to the non-immersive reader with the first verse at the top (if possible)").** The normal Reader on the chapter, in the view and weave he has (a `view=` or `weave=` in the link wins): no Verse view, no sheet, nothing selected or highlighted. Immersive reader On beforehand is turned off (as a tap on it would), so the bars show. The verse stands at the top of the reading box, and when a section heading sits directly above it (it is the first verse of its heading's block) the heading is the first thing below the bars and the verse follows it (`#/?ref=John.5.16-30`: "The Father and the Son", then 16). Where the chapter's end is too near to scroll that far (`#/?ref=John.5.47`) the box is scrolled to its end with the verse in view. With Turn pages the page holding the verse opens (the page is cut by the columns, so the verse stands wherever they put it: 8 px below the top at 390x844, normal text, John 5:25). An Old Testament link does the same (`#/?ref=Jon.1.10`, `#/?ref=Jon.1.4-9`), in the Reader's English unless the view says otherwise. A chapter alone (`ref=Rom 8`) and a book open the chapter at its top as before. The address is replaced by the chapter's plain reader address (`#/?b=jhn&c=5`): the link is not kept, and the verse is not in it.
+
 A reference Lampas does not hold never gives a blank screen. It opens the nearest place it does hold, with a one-line notice (Dismiss closes it) that says what was asked for:
 
 | Asked for | Opens |
 | --- | --- |
-| a verse past the end of the chapter (`Rom.8.99`) | the chapter's last verse, selected |
-| verse 0 | verse 1 |
+| a verse past the end of the chapter (`Rom.8.99`) | the chapter's last verse at the top |
+| verse 0 | verse 1 at the top |
 | a chapter past the end of the book (`Romans 99:1`) | the book's last chapter, no verse |
 | chapter 0 | the book's first chapter |
 | a book not in the index (`Tobit 3:1`) | the chapter he last had open |
-| a book of the Old Testament (`Jon.1.10`, `Jonah.1.10`, `2Kgs.14.25`, `Genesis 1:1`) | the chapter in the Reader, in English, with the verse's Verse view open (mw-uqlxea.3); a chapter or verse past the end opens the nearest, with the notice `“Genesis 1:99” is not in Lampas; showing Genesis 1:31.` Copy link and Share write the OSIS code of the book (`#/?ref=Jonah.1.10`) |
+| a book of the Old Testament (`Jon.1.10`, `Jonah.1.10`, `2Kgs.14.25`, `Genesis 1:1`) | the chapter in the Reader, in English, with the verse at the top and no Verse view (mw-uqlxea.3, mw-5r3p30.1025); a chapter or verse past the end opens the nearest, with the notice `“Genesis 1:99” is not in Lampas; showing Genesis 1:31.` Copy link and Share write the OSIS code of the book (`#/?ref=Jonah.1.10`) |
 
 A notice names what was asked for in words (`“Romans 8:99”`, never the code `Rom.8.99`); on Share to Lampas a tap on a reference, of either testament, opens a card over the list with the verse in English (src/share/ShareReferences.tsx), not the Reader; the card of an Old Testament reference the tutor names is the same card, with Open (the Reader) and, with Logos on, Open in Logos: it says `Not in Lampas yet` only for a book Lampas holds no data for (`books.ts` `isHeld`).
 
@@ -86,4 +89,15 @@ The manifest declares `protocol_handlers` for `web+lampas` (url `/#/?ref=%s`). W
 ## How it is wired
 
 `src/nav/links.ts` is the pure part (parse, resolve against the index, find a word, write the https form). `src/nav/LinkOpener.tsx` shows while a link in the address is resolved, announces the
-result on the bus (`link-opened`, docs/events.md) and replaces the address with the chapter's reader address (`#/?b=rom&c=8`), so the link itself is never kept in the trail, and a verse or range opens the Verse view on top of it as its own Back step (route.ts `openVerseAt`, `openVerseRange`): Back closes the view and shows the Reader, not the screen the link was tapped on (mw-s1dc0n.11); Back and a reload keep the place. The Reader meets the announcement once, as it opens (`src/nav/linkRequest.ts`).
+result on the bus (`link-opened`, docs/events.md) and replaces the address with the chapter's reader address (`#/?b=rom&c=8`), so the link itself is never kept in the trail. For a verse or range it first turns Immersive off and sends the Reader the request of Choose a book's Go to (`bringVerse`, `src/nav/readerRequest.ts`, with `heading`), which the Reader meets as the chapter is on screen (`src/reader/useBringVerse.ts`); nothing opens over the Reader. `src/nav/readerAddress.ts` does not write while the address is a link, so a link opened under a running Reader is not overwritten by the Reader going away. The Reader meets the announcement once, as it opens (`src/nav/linkRequest.ts`).
+
+### Every way in to a ref= link
+
+| Way in | Opens now | Changed |
+| --- | --- | --- |
+| the https form typed or tapped (a message, a page), `web+lampas:` (manifest `protocol_handlers`) | the Reader, verse at the top | yes |
+| Copy link / Share in the Verse view | write the same https form | no (what they write opens as above) |
+| a tutor answer's verse link, a lesson's, Share to Lampas's reference | the card over the screen (`ReferenceLink` stops the link), whose Open is `openAtVerse` (the Reader, verse at the top) | no; a long press or a new tab has the https form, which opens as above |
+| Choose a book's Go to, the Paradigms' own-verse button | `openAtVerse` | no |
+| Today's and the plan's Read in Lampas | `openReader` on the chapter (no ref= address) | no |
+| the Verse view's doors (a verse number, a heading, the place line, Review, Goal, Try it, the hard sounds lesson, the Reading ladder) | `openVerse`, `openPassage`, `openVerseRange`, `openVerseAt`: the Verse view | no |

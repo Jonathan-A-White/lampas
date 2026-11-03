@@ -113,6 +113,13 @@ export function resetImmersive(): void {
   onNow = false;
 }
 
+/** Immersive has just been switched Off by the app (a ref= link, src/nav/LinkOpener.tsx) while a Reader that had it On is going away: the Reader that replaces it must not start as that one
+ * had it (the bars away, the setting On). The full-screen exit is left to its timer. */
+export function immersiveSwitchedOff(): void {
+  awayNow = false;
+  onNow = false;
+}
+
 /** Whether the Immersive reader setting is On: what the store says, and until it answers (a new Reader's first draw) what the Reader it replaces had. */
 export function useImmersiveSetting(): boolean {
   const stored = useLiveQuery(getImmersive, []);

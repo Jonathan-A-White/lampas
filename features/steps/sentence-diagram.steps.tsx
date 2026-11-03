@@ -115,7 +115,7 @@ async function openVerse(how: 'slow' | 'at once' | 'unable', weave: Weave | null
   if (weave) await seedHisWords();
   await setWeave(weave ?? 'off');
   setVerseAction('listen');
-  window.history.replaceState(null, '', '/#/?ref=Col.3.1');
+  window.history.replaceState(null, '', '/#/?b=col&c=3&v=1');
   render(<App />);
   await screen.findByRole('region', { name: 'Verse view' });
 }

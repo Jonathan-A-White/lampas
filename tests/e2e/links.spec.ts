@@ -10,14 +10,15 @@ async function open(page: Page, hash: string): Promise<void> {
   await page.goto(`/${hash}`);
 }
 
-test('a reference link opens Romans 8 with verse 28 selected', async ({ page }) => {
+test('a reference link opens the Reader on Romans 8 with verse 28 brought to the top, no Verse view', async ({ page }) => {
   await open(page, '#/?ref=Romans%208:28');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-verse="28"]')).toHaveAttribute('data-selected', 'true');
-  await expect(page.getByRole('region', { name: 'Verse view' }).getByRole('heading', { name: 'Romans 8:28' })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
+  await expect(page.locator('[data-verse="28"]')).not.toHaveAttribute('data-selected', 'true');
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   await expect(page.locator('[data-link-notice]')).toHaveCount(0);
-  // the address is the plain reader address now, so Back and a reload keep the place
-  await expect.poll(() => page.evaluate(() => window.location.hash)).toMatch(/^#\/\?b=rom&c=8(&view=\w+)?(&weave=[\w+]+)?&v=28$/);
+  // the address is the plain reader address now (the chapter, no verse): a reload keeps the place the way the Reader keeps any
+  await expect.poll(() => page.evaluate(() => window.location.hash)).toMatch(/^#\/\?b=rom&c=8(&view=\w+)?(&weave=[\w+]+)?$/);
   expect(await page.evaluate(() => window.location.hash)).not.toContain('ref=');
   await shot(page, 'links-reference');
 });
@@ -43,12 +44,13 @@ test('a Strong’s link opens the word sheet of νόμος', async ({ page }) =>
 test('the web+lampas: form the browser hands over opens the same verse', async ({ page }) => {
   await open(page, `#/?ref=${encodeURIComponent('web+lampas:Rom.8.28')}`);
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-verse="28"]')).toHaveAttribute('data-selected', 'true');
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
 });
 
 test('Copy in the Verse view puts the verse, its reference and the https link on the clipboard', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await open(page, '#/?ref=Rom.8.28');
+  await open(page, '#/?b=rom&c=8&v=28');
   const panel = page.getByRole('region', { name: 'Verse view' });
   await panel.getByRole('button', { name: 'Copy', exact: true }).click();
   await expect(panel.getByText('Copied', { exact: true })).toBeVisible();

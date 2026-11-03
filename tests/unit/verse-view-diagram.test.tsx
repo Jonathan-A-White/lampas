@@ -50,27 +50,27 @@ const labels = (region: HTMLElement): string[] => within(region.querySelector<HT
 
 describe('the Diagram action is of one verse', () => {
   it('is not in the row of a passage, Revelation 10:1-11', async () => {
-    const region = await open('/#/?ref=Rev.10.1-11');
+    const region = await open('/#/?b=rev&c=10&p=1&pt=11');
     expect(region.getAttribute('data-verse-view')).toBe('1-11');
     expect(labels(region)).toEqual(expect.arrayContaining(['Listen', 'Read it aloud', 'Practise']));
     expect(within(region).queryByRole('button', { name: 'Diagram' })).toBeNull();
   });
 
   it('is not in the row of a range of two verses either', async () => {
-    const region = await open('/#/?ref=Rev.10.1-2');
+    const region = await open('/#/?b=rev&c=10&p=1&pt=2');
     expect(within(region).queryByRole('button', { name: 'Diagram' })).toBeNull();
   });
 
   it('opens a passage on Listen, not on the Diagram a verse left chosen, and draws no pane', async () => {
     setVerseAction('diagram');
-    const region = await open('/#/?ref=Rev.10.1-11');
+    const region = await open('/#/?b=rev&c=10&p=1&pt=11');
     expect(within(region).getByRole('button', { name: 'Listen' })).toHaveAttribute('aria-pressed', 'true');
     expect(within(region).queryByRole('region', { name: 'Diagram' })).toBeNull();
     expect(getVerseAction()).toBe('diagram');
   });
 
   it('is in the row of one verse, Revelation 10:1, and its pane opens', async () => {
-    const region = await open('/#/?ref=Rev.10.1');
+    const region = await open('/#/?b=rev&c=10&v=1');
     expect(region.getAttribute('data-verse-view')).toBe('1');
     await userEvent.click(within(region).getByRole('button', { name: 'Diagram' }));
     expect(await within(region).findByRole('region', { name: 'Diagram' })).toBeInTheDocument();

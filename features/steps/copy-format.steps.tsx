@@ -91,7 +91,7 @@ describeFeature(feature, ({ Scenario }) => {
   const defaults = () => open({});
   const chosen = (_: unknown, reference: string, numbers: string, link: string) => open({ copyReference: reference, copyNumbers: numbers, copyLink: link });
   const woven = async () => {
-    await open({}, '#/?ref=Col.3.1', { view: 'english', weave: 'solid' });
+    await open({}, '#/?b=col&c=3&v=1', { view: 'english', weave: 'solid' });
     await screen.findByRole('region', { name: 'Verse view' });
     // the Verse view copies by the defaults (As you read it) until its four settings have been read from the store: let the choice of Text reach it
     await act(async () => {
@@ -198,7 +198,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('In the Greek view, Copy pastes the Greek', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Colossians 3:1 in the Greek view with When you copy at its defaults', () => open({}, '#/?ref=Col.3.1', { view: 'greek', weave: 'off' }));
+    Given('Lampas is opened on Colossians 3:1 in the Greek view with When you copy at its defaults', () => open({}, '#/?b=col&c=3&v=1', { view: 'greek', weave: 'off' }));
     When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
   });
@@ -388,7 +388,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("The Verse view's Copy with Variants shown copies the braces", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and When you copy at its defaults', async () => {
-      await open(VARIANTS, '#/?ref=1Pet.4.1');
+      await open(VARIANTS, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
       // the Verse view copies by the defaults until its settings have been read from the store
       await act(async () => {
@@ -409,7 +409,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A phone that stored Text "english" copies as it reads, braces and all', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "english" stored', async () => {
-      await open({ ...VARIANTS, copyText: 'english' }, '#/?ref=1Pet.4.1');
+      await open({ ...VARIANTS, copyText: 'english' }, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
       // the Verse view copies by the defaults until its settings have been read from the store
       await act(async () => {
@@ -423,7 +423,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A phone that stored Text "original" copies as it reads, braces and all', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "original" stored', async () => {
-      await open({ ...VARIANTS, copyText: 'original' }, '#/?ref=1Pet.4.1');
+      await open({ ...VARIANTS, copyText: 'original' }, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
       // the Verse view copies by the defaults until its settings have been read from the store
       await act(async () => {
@@ -437,7 +437,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A phone that stored Text "both" copies as it reads, braces and all', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "both" stored', async () => {
-      await open({ ...VARIANTS, copyText: 'both' }, '#/?ref=1Pet.4.1');
+      await open({ ...VARIANTS, copyText: 'both' }, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
       // the Verse view copies by the defaults until its settings have been read from the store
       await act(async () => {

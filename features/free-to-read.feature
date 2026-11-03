@@ -16,7 +16,8 @@ Feature: Lampas is free to read
   Scenario: With no licence a shared verse link opens that verse
     Given this phone has no licence and the link "#/?ref=Rom.8.28" is opened
     Then the reader is headed "Romans 8"
-    And the Verse view shows verse 28
+    And verse 28 is brought to the top of the reader
+    And no Verse view is open
 
   Scenario: useLicence reports licensed when the chain says the key holds a licence
     Given the issuer minted a licence to this phone's key on a stub chain

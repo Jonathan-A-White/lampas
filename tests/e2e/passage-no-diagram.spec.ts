@@ -8,15 +8,15 @@ import { openUnlocked } from './unlocked';
 
 const VIEWPORT = { width: 360, height: 740 };
 
-async function open(page: Page, ref: string): Promise<void> {
+async function open(page: Page, place: string): Promise<void> {
   await page.setViewportSize(VIEWPORT);
   await routePostern(page, makeFakePostern());
   await openUnlocked(page);
-  await page.goto(`/#/?ref=${ref}`);
+  await page.goto(`/#/?${place}`);
 }
 
 test('a passage has no Diagram in its row, and the row has no empty cell', async ({ page }) => {
-  await open(page, 'Rev.10.1-11');
+  await open(page, 'b=rev&c=10&p=1&pt=11');
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view.locator('[data-verse-view="1-11"]').or(view)).toBeVisible();
   const row = view.getByRole('group', { name: 'Actions', exact: true });
@@ -41,7 +41,7 @@ test('a passage has no Diagram in its row, and the row has no empty cell', async
 });
 
 test('one verse keeps Diagram in its row', async ({ page }) => {
-  await open(page, 'Rev.10.1');
+  await open(page, 'b=rev&c=10&v=1');
   const view = page.getByRole('region', { name: 'Verse view' });
   const row = view.getByRole('group', { name: 'Actions', exact: true });
   await expect(row.getByRole('button', { name: 'Diagram', exact: true })).toBeVisible();
