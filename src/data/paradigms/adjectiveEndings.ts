@@ -1,5 +1,5 @@
 // src/data/paradigms/adjectiveEndings.ts — the adjective in three genders: ἀγαθός -ή -όν (first and second declension) and πᾶς πᾶσα πᾶν
-// (third declension in the masculine and neuter, first in the feminine); 4 cases x 3 genders x singular and plural, 24 each = 48 forms
+// (third declension in the masculine and neuter, first in the feminine); 5 cases (the vocative since mw-5r3p30.1003) x 3 genders x singular and plural, 30 each = 60 forms
 // (mw-svw421.2). PROVISIONAL (the Governor to confirm which adjectives the table holds). Full forms, so the accent shows.
 import type { Paradigm, ParadigmCell } from './types';
 
@@ -8,6 +8,7 @@ const CASES = [
   ['Genitive', 'case-genitive'],
   ['Dative', 'case-dative'],
   ['Accusative', 'case-accusative'],
+  ['Vocative', 'case-vocative'],
 ] as const;
 
 // [number, number idea, gender, gender idea]; the order of the six columns.
@@ -22,7 +23,7 @@ const COLUMNS = [
 
 const SHORT: Record<string, string> = { Masculine: 'Masc.', Feminine: 'Fem.', Neuter: 'Neut.' };
 
-// [group heading, the declension idea of each of the six columns, four rows of six forms in column order]
+// [group heading, the declension idea of each of the six columns, five rows of six forms in column order]
 const ADJECTIVES: [string, string[], string[][]][] = [
   [
     'ἀγαθός -ή -όν',
@@ -32,6 +33,7 @@ const ADJECTIVES: [string, string[], string[][]][] = [
       ['ἀγαθοῦ', 'ἀγαθῆς', 'ἀγαθοῦ', 'ἀγαθῶν', 'ἀγαθῶν', 'ἀγαθῶν'],
       ['ἀγαθῷ', 'ἀγαθῇ', 'ἀγαθῷ', 'ἀγαθοῖς', 'ἀγαθαῖς', 'ἀγαθοῖς'],
       ['ἀγαθόν', 'ἀγαθήν', 'ἀγαθόν', 'ἀγαθούς', 'ἀγαθάς', 'ἀγαθά'],
+      ['ἀγαθέ', 'ἀγαθή', 'ἀγαθόν', 'ἀγαθοί', 'ἀγαθαί', 'ἀγαθά'],
     ],
   ],
   [
@@ -42,6 +44,7 @@ const ADJECTIVES: [string, string[], string[][]][] = [
       ['παντός', 'πάσης', 'παντός', 'πάντων', 'πασῶν', 'πάντων'],
       ['παντί', 'πάσῃ', 'παντί', 'πᾶσι(ν)', 'πάσαις', 'πᾶσι(ν)'],
       ['πάντα', 'πᾶσαν', 'πᾶν', 'πάντας', 'πάσας', 'πάντα'],
+      ['πᾶς', 'πᾶσα', 'πᾶν', 'πάντες', 'πᾶσαι', 'πάντα'],
     ],
   ],
 ];
