@@ -38,10 +38,11 @@ export function openedByTutor(book: string, chapter: number): void {
 }
 
 /** Asks the Reader to bring `verse` of `chapter` of `book` to the top of its reading area (mw-5r3p30.678: Choose a book's Go to John 18:2): the whole chapter is there above and
- * below it and no verse is selected, so no Verse view opens. A place the Reader remembered for that chapter is forgotten, so this one wins. For the chapter the Reader is on. */
-export function bringVerse(book: string, chapter: number, verse: number): void {
+ * below it and no verse is selected, so no Verse view opens. A place the Reader remembered for that chapter is forgotten, so this one wins. For the chapter the Reader is on.
+ * With `heading` a section heading directly above the verse comes to the top with it (a ref= link, src/nav/LinkOpener.tsx); Go to puts the verse itself there. */
+export function bringVerse(book: string, chapter: number, verse: number, options: { heading?: boolean } = {}): void {
   forgetScroll(readerHash({ book, chapter }), 'reader');
-  publish({ kind: 'reader-requested', id: ++lastId, action: 'verse', book, chapter, verse });
+  publish({ kind: 'reader-requested', id: ++lastId, action: 'verse', book, chapter, verse, ...(options.heading ? { heading: true as const } : {}) });
 }
 
 /** Opens the Reader on `chapter` of `book` as a new Back step with `verse` brought to the top (see `bringVerse`). With `replacing` the Reader takes the place of the entry he is on
