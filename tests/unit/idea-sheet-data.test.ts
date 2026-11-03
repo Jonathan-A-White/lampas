@@ -237,13 +237,13 @@ describe('the meaning an example shows (mw-5r3p30.237)', () => {
     expect(exampleMeaning(johnTwo, 6, wordAt(johnTwo, 6, 'περιπατεῖν'))).toBe('walk');
   });
 
-  it('has one colon only when the lexicon gloss holds a colon: τηρῇ in 1 John 2:5 is "τηρέω: to keep, observe", not "τηρέω: to keep: observe" (mw-5r3p30.335)', () => {
-    const word = wordAt(johnTwo, 5, 'τηρῇ');
+  it('has one colon only when the lexicon gloss holds a colon: τὸν in 1 John 2:5, a word with no English, is "ὁ: the, article", not "ὁ: the: article" (mw-5r3p30.335; τηρῇ was this word until mw-5r3p30.1001 gave it \'keeps\')', () => {
+    const word = wordAt(johnTwo, 5, 'τὸν');
     expect(wordEnglish(johnTwo, 5, word)).toBe('');
-    const coloned: Chapter = { ...johnTwo, lex: { ...johnTwo.lex, [word.s]: { ...johnTwo.lex[word.s], g: 'to keep: observe' } } };
+    const coloned: Chapter = { ...johnTwo, lex: { ...johnTwo.lex, [word.s]: { ...johnTwo.lex[word.s], g: 'the: article' } } };
     const meaning = exampleMeaning(coloned, 5, word);
     expect(meaning.split(':')).toHaveLength(2);
-    expect(meaning).toBe('τηρέω: to keep, observe');
+    expect(meaning).toBe('ὁ: the, article');
   });
 
   it('reads a chapter kept before the supplied-word list (`s: 1`) without throwing', () => {
