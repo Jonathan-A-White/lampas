@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.88",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.996",
+    "kind": "fixed",
+    "text": "tapping a possessive pronoun such as ἡμετέρα no longer offers The article's table, which had no place for it."
+  },
+  {
+    "version": "0.7.88",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.992",
+    "kind": "fixed",
+    "text": "the round ? no longer sits on top of the words you are reading; the text keeps a clear column beside it."
+  },
+  {
     "version": "0.7.87",
     "date": "2026-11-03",
     "story": "mw-5r3p30.997",

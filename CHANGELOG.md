@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.88
+_2026-11-03_
+- Fixed: tapping a possessive pronoun such as ἡμετέρα no longer offers The article's table, which had no place for it.
+- Fixed: the round ? no longer sits on top of the words you are reading; the text keeps a clear column beside it.
+
 ## 0.7.87
 _2026-11-03_
 - Fixed: In Weave mode a pronoun such as 'him' now sits with the English it belongs to, e.g. Luke 20:20 'to hand Him over'.
