@@ -73,7 +73,7 @@ export function distractorsFor(lang: SourceLanguage, words: readonly Word[], lex
  * seed list's. A gloss he typed himself (Import, his own edit) is his and stays; so does a word the lexicon has no answer for (a Septuagint word, a Hebrew one, a lexicon not loaded).
  */
 export function drillGloss(word: Pick<Word, 'lemma' | 'lang' | 'gloss'>, lexicon: LemmaLexicon | undefined): string {
-  if (!lexicon || word.lang === 'hbo') return word.gloss;
+  if (!lexicon || typeof lexicon !== 'object' || word.lang === 'hbo') return word.gloss;
   const key = nfc(word.lemma);
   const entry = Object.hasOwn(lexicon, key) ? lexicon[key] : undefined;
   if (!entry?.q) return word.gloss;
