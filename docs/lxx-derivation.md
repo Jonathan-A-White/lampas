@@ -12,7 +12,6 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [Layer 2 in detail](#layer-2-in-detail)
   - [Names no lexicon has: the form as its own lemma](#names-no-lexicon-has-the-form-as-its-own-lemma)
   - [The two books over the bar on words with no candidate (B9)](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
-  - [A capital in the middle of a clause is a name, unless Swete prints the form small elsewhere (B10)](#a-capital-in-the-middle-of-a-clause-is-a-name-unless-swete-prints-the-form-small-elsewhere-b10)
 - [The agreement check](#the-agreement-check)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
@@ -159,30 +158,6 @@ Story mw-u2w5klk.20. His answer above leaves Esther (181 of 5,936 words with no 
 
 With both, Esther has 75 words with no candidate (1.29%) and Lamentations 25 (1.02%); no book of the 39 has a higher share than before in either column of `lxx:batches --all`, and `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8` is byte for byte what it was.
 `BAR.guesses` is unchanged: 3%.
-
-### A capital in the middle of a clause is a name, unless Swete prints the form small elsewhere (B10)
-
-Story mw-u2w5klk.22, from the lxx-morph probe (`docs/sources/lxx-morph-probe.md`, mw-u2w5klk.21). Layers 1 and 2 read a form's letters, and lower the capital: so Swete's
-`Σειών` (Zion) was the participle of σείω (129 words), `Εἰού` (Jehu) the imperative of εἴλω (51), `Ἁμάν` (Haman) the infinitive of ἀμάω (48), `Ἀμμών` ἄμμος (the sand), `Ἠλεί` ἀλέω, `Σηών` σής,
-`Κῦρος` κυρόω, `Γάζης` γάζα (a treasure): 924 settled words of the 39 books were a name read as a common word, 604 of them on the probe's list of 4,627 words where lxx-morph contradicts a settled answer.
-The known-answer runs could not see it: the New Testament prints a capital for a name and little else, and its names are in TAGNT with a capital lemma.
-
-**A word written with a capital in the middle of a clause, whose form Swete prints nowhere with a small letter, takes no lemma that is written with a small letter** (`properNames` in `derive.ts`; `Trained.lower`,
-every form of the text given that has no capital at the front). "In the middle of a clause" is `opensClause` and `isWholeClause` again: a capital that opens a verse or a clause says nothing (Swete capitalises the first word whatever it is), so a
-`Σειών.` at the start of a verse is read as before. In layer 1 the analyses with a small-letter lemma are taken out of the form's counts before the 95% rule reads them; in layer 2 (the rules, analogy and the spelling fallbacks) the candidates
-with a small-letter lemma are taken out and the shares counted again over what is left. What is left may be a name's own lemma (Ἰησοῦς), one candidate or several, and settles by the same rules; if nothing is left the word is pending with no candidate,
-and B8 gives it its form as the lemma where the ending is a Hebrew name's (`Σειών`, `Εἰού`, `Ἁμάν` all are), or leaves it for the model (`Γάζης` ends in -ς).
-What the second method does for a word with no candidate (Morpheus looks a capitalised form up as a name) is unchanged.
-
-What it costs: a capital that is only the capital but follows no mark (the first word of what someone says: `Ἀνάβηθι`, `Λάλησον`, `Ἡμάρτηκα`, `Ἐξαγαγέτω`), when Swete prints the form small nowhere, is pending too. A divine title (`Κύριος`) and
-the usual words that open a speech (`Ἰδού`, `Μή`, `Οὐκ`) are printed small elsewhere and stay as they were. The count over the 39 books (`npm run lxx:derive -- --all --no-morpheus` before and after): 462,473 words settled, 461,711 after; 924 moved from settled to pending
-(855 of layer 2, 58 of layer 1, 11 of layer 2a), 162 from pending to settled (the agreement check settles a name's case; the form-name candidates give it a reading), 29 settled again on another reading; 371 of the 924 now have their form as the lemma.
-Of the 924, 604 were on the probe's list; the other 320 were not (some are names the probe did not flag, `σείω` 11 and `ἄμμος` 10 among them, the rest speech-opening imperatives and the like: read by lemma, not one by one). Pending rises from 112,382 to 113,066 and the words with no candidate from 9,715 to 10,178 of 476,129
-(`lxx:batches --all`, no Morpheus cache), about a batch. The probe's union of contradictions and lemma differences falls from 4,627 to 4,030. `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8` is byte for byte what it was.
-A fixture of one chapter has no other part of the text to print a form small in, so a test gives it the forms (`DeriveInput.printedSmall`, `tests/support/lxx-printed-small.ts`).
-Tests: `a capital in the middle of a clause takes no lower-case lemma unless Swete also prints the form in lower case (B10)` in `tests/unit/lxx-parser.test.ts`.
-
-Not changed: a form that Swete prints small elsewhere with a name's reading (`Λιβάνου`, Lebanon, with λίβανος, frankincense, small) is still the common word; a small-letter word that is a name (`ἔπλησεν`, the probe's πλέω) is not a capital's matter.
 
 ## The agreement check
 
