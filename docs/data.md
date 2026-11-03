@@ -13,7 +13,7 @@ The reader, the word sheet, the voices and the drills read the chapter's `lang` 
 
 - [Building](#building)
 - [Sources and licences](#sources-and-licences)
-- [Pinned sources](#pinned-sources)
+- [Pinned sources (mw-5r3p30.1004)](#pinned-sources-mw-5r3p301004)
 - [`index.json`](#indexjson)
 - [`lexicon.json`](#lexiconjson)
 - [Drill answers (`q` of `lexicon.json`, mw-5r3p30.1000)](#drill-answers-q-of-lexiconjson-mw-5r3p301000)
