@@ -7,6 +7,9 @@ import { CANON } from '../../src/data/canon';
 import type { BookIndex, BookInfo, Chapter, EnglishChunk, GreekWord, SourceLanguage, Verse } from '../../src/data/chapter';
 import { PARAGRAPH_OPENER, marked, suppliedWords, tidy, unmarked, type TableVerse, type TableWord } from './bereanTable';
 
+/** A part of speech that is only a function word: a conjunction, article, preposition, particle, conditional or interjection (RP codes). */
+const FUNCTION_PARSE = /^(CONJ|T-|PREP|PRT|COND|INJ)/;
+
 /** A word of a verse as the chapter file keeps it, before the English is aligned to it. */
 export type SourceWord = Omit<GreekWord, 'e'>;
 
@@ -30,6 +33,9 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
   // English order: a word with '-' or 'vvv' has no English of its own; one with '. . .' is rendered by the
   // chunk that completes it, which comes later in English order. Quotes and punctuation they carry move to
   // the chunk before (punctuation) or after (opening quotes).
+  // The exception is a personal or reflexive pronoun (P-, F-): its '. . .' means the English is already inside the chunk BEFORE it ('to hand Him over' holds αὐτὸν; 'replied' holds
+  // αὐτοῖς), so it joins that chunk, unless that chunk is only function words ('and', 'while': then the pronoun waits for the chunk after it, as any other
+  // '. . .' word does). mw-5r3p30.997; docs/sources/msb-chunk-pairs.md.
   const e: Array<{ t: string; g: number[] }> = [];
   let ellipsis: number[] = [];
   let opening = '';
@@ -38,7 +44,11 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
     const gi = sourceIndex.get(w)!;
     const tail = marked(w.tail);
     if (raw === '' || raw === '-' || raw === 'vvv' || raw === '. . .') {
-      if (raw === '. . .') ellipsis.push(gi);
+      if (raw === '. . .') {
+        const last = e[e.length - 1];
+        if (last && /^[PF]-/.test(w.parse) && last.g.some((i) => !FUNCTION_PARSE.test(g[i].p))) last.g.push(gi);
+        else ellipsis.push(gi);
+      }
       opening += tidy(w.begQ);
       if (tail) {
         if (e.length) e[e.length - 1].t += tail;

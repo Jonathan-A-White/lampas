@@ -1,6 +1,6 @@
 # The MSB's '. . .' rows and the chunks they join (mw-5r3p30.993)
 
-A report, not a change: no data was touched. Luke 20:20's English chunk 'to the' holds αὐτὸν τῇ while 'to hand Him over' holds παραδοῦναι alone
+FIXED by mw-5r3p30.997 (see 'What was done' at the end); the report below is mw-5r3p30.993's, as written. Luke 20:20's English chunk 'to the' holds αὐτὸν τῇ while 'to hand Him over' holds παραδοῦναι alone
 (public/data/luk/20.json, verse 20, `e[12]` and `e[13]`). Is that the Majority Standard Bible's table as published, or our build?
 
 <!-- toc -->
@@ -9,6 +9,7 @@ A report, not a change: no data was touched. Luke 20:20's English chunk 'to the'
 - [Answer: both. The source says nothing wrong; our build reads the marker the wrong way for these words](#answer-both-the-source-says-nothing-wrong-our-build-reads-the-marker-the-wrong-way-for-these-words)
 - [The count (`node scripts/check-msb-chunk-pairs.ts [--list] [--tsv <msb_nt_tables.tsv>]`, run on this tree, 117,385 chunks)](#the-count-node-scriptscheck-msb-chunk-pairsts---list---tsv-msb_nt_tablestsv-run-on-this-tree-117385-chunks)
 - [What a fix would need (not done here: it changes data)](#what-a-fix-would-need-not-done-here-it-changes-data)
+- [What was done (mw-5r3p30.997)](#what-was-done-mw-5r3p30997)
 
 <!-- /toc -->
 
@@ -64,3 +65,12 @@ This heuristic's false rate is therefore known only from that sample of 12 (0 fa
 - What reads `e`/`g` and could change: the weave (Memorize), the verse's Quiz me, English-to-Greek highlights; tests pinned to a verse's chunks (grep `'to the'`, `luk/20`).
 - ALIGNMENT_FIXES in scripts/data-build.ts is for a verse where the table pairs the wrong word (1 John 2:6); this is not that case, it is the general `. . .` rule.
 - Side finding, not counted: in Matthew 5:25 the table's parsing column is out of step with its Greek text for the words μετ' αὐτοῦ ἐν τῇ ὁδῷ (ἐν is `N-DSF`, τῇ `PREP`), so the built `p` of those words is wrong in the source. Worth its own check.
+
+## What was done (mw-5r3p30.997)
+
+`buildVerse` now joins a `. . .` word whose parsing is `P-` or `F-` (personal, reflexive pronoun) to the chunk BEFORE it in English order, unless that chunk holds only
+conjunctions, articles, prepositions, particles, conditionals or interjections (then it waits for the next chunk as before). The doc's heuristic (an English pronoun only
+in the chunk before) was not kept: a read of 44 of the 'both', 'neither' and 'only after' personal pronouns and 27 of the reflexives found the chunk before right in about
+5 of 6, wrong mostly where the chunk before was a bare 'and' or 'while' (Luke 2:6, 12:37). Tests: `tests/unit/msb-dots-pronoun.test.ts` (rows in `tests/fixtures/data/msb-dots.tsv`).
+After `npm run data:build`, `node scripts/check-msb-chunk-pairs.ts` finds 7 chunks (the detector's 31 before): 6 are the 'other way round' shape (articles and nouns, not pronouns) and Luke 21:34 is right.
+Not changed: `. . .` demonstratives (`D-`, 120 rows), relatives (`R-`, 80) and every non-pronoun `. . .` row still join the NEXT chunk.

@@ -2,8 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
-// Luke 20:20 in Weave: 'to the' stands for αὐτὸν τῇ, and ἀρχῇ (the next chunk, 'rule') follows. With the pair learning, the chunk is a stack (the two Greek words over
-// the English), and the space after its last word was drawn inside that stack, where it collapses: 'αὐτὸν τῇἀρχῇ' (mw-5r3p30.991).
+// Luke 20:20 in Weave: 'to hand Him over' stands for παραδοῦναι αὐτὸν, and 'to the' (τῇ) follows. With the pair learning, the chunk is a stack (the two Greek words over
+// the English), and the space after its last word was drawn inside that stack, where it collapses: 'παραδοῦναι αὐτὸντῇ' (mw-5r3p30.991). The chunk was αὐτὸν τῇ
+// until mw-5r3p30.997 put the pronoun with the English it is in.
 test.use({ viewport: { width: 390, height: 844 } });
 
 type Row = { lemma: string; gloss: string; state: 'solid' | 'learning' };
@@ -36,9 +37,9 @@ async function openLuke(page: Page, learning: boolean) {
   await page.goto('/');
   await expect(page.locator('[data-reader]')).toBeVisible();
   await putWords(page, [
-    { lemma: 'ἀρχή', gloss: 'rule', state: 'solid' },
+    { lemma: 'ὁ', gloss: 'the', state: 'solid' },
+    { lemma: 'παραδίδωμι', gloss: 'hand over', state: learning ? 'learning' : 'solid' },
     { lemma: 'αὐτός', gloss: 'he', state: learning ? 'learning' : 'solid' },
-    { lemma: 'ὁ', gloss: 'the', state: learning ? 'learning' : 'solid' },
   ]);
   await page.goto('/#/?b=luk&c=20&weave=solid%2Blearning');
   await page.reload();
@@ -48,14 +49,14 @@ async function openLuke(page: Page, learning: boolean) {
   return verse;
 }
 
-test("Luke 20:20 in Weave, αὐτὸν and τῇ learning: a visible gap between τῇ and ἀρχῇ", async ({ page }) => {
+test("Luke 20:20 in Weave, παραδοῦναι and αὐτὸν learning: a visible gap between αὐτὸν and τῇ", async ({ page }) => {
   const verse = await openLuke(page, true);
-  const pair = verse.locator('[data-chunk="13"]');
+  const pair = verse.locator('[data-chunk="12"]');
   await expect(pair).toHaveAttribute('data-learning', '');
-  await expect(pair.locator('[data-greek]')).toHaveText('αὐτὸν τῇ');
-  await expect(pair.locator('[data-hint]')).toHaveText('to the');
-  const next = verse.locator('[data-chunk="14"]');
-  await expect(next).toContainText('ἀρχῇ');
+  await expect(pair.locator('[data-greek]')).toHaveText('παραδοῦναι αὐτὸν');
+  await expect(pair.locator('[data-hint]')).toHaveText('to hand Him over');
+  const next = verse.locator('[data-chunk="13"]');
+  await expect(next).toContainText('τῇ');
   const stack = (await pair.locator('[data-greek]').locator('xpath=..').boundingBox())!;
   const after = (await next.boundingBox())!;
   // a gap between the boxes, not only a space in the DOM: more than the 1 px a rounding could hide
@@ -70,14 +71,14 @@ test("Luke 20:20 in Weave, αὐτὸν and τῇ learning: a visible gap betwee
 
 test('Luke 20:20 in Weave, the pair solid: the same gap as before', async ({ page }) => {
   const verse = await openLuke(page, false);
-  const pair = verse.locator('[data-chunk="13"]');
+  const pair = verse.locator('[data-chunk="12"]');
   await expect(pair).not.toHaveAttribute('data-learning', '');
-  await expect(pair).toContainText('αὐτὸν τῇ');
-  const next = verse.locator('[data-chunk="14"]');
-  await expect(next).toContainText('ἀρχῇ');
+  await expect(pair).toContainText('παραδοῦναι αὐτὸν');
+  const next = verse.locator('[data-chunk="13"]');
+  await expect(next).toContainText('τῇ');
   const last = (await pair.locator('[role="button"]').last().boundingBox())!;
   const after = (await next.boundingBox())!;
   expect(after.x - (last.x + last.width)).toBeGreaterThanOrEqual(0);
   const text = (await verse.locator('[data-text]').innerText()).replace(/\s+/g, ' ');
-  expect(text).toContain('αὐτὸν τῇ ἀρχῇ');
+  expect(text).toContain('παραδοῦναι αὐτὸν τῇ');
 });

@@ -1,9 +1,10 @@
 // scripts/check-msb-chunk-pairs.ts — run by hand: node scripts/check-msb-chunk-pairs.ts [--list] [--tsv <msb_nt_tables.tsv>]
 // Not part of the gate. Counts, over the built New Testament (public/data/<book>/<chapter>.json), the English chunks whose first
 // Greek word is a pronoun (parse P-...) and whose next is an article (T-...): the shape of Luke 20:20's 'to the' holding αὐτὸν τῇ
-// while 'to hand Him over' holds παραδοῦναι alone (mw-5r3p30.993). The cause is the build's reading of the table's '. . .' English
-// (scripts/data/chapterWriter.ts buildVerse: a word with '. . .' joins the NEXT chunk in English order), when the table meant the chunk
-// BEFORE (its English is already inside the previous chunk: 'to hand Him over').
+// while 'to hand Him over' holds παραδοῦναι alone (mw-5r3p30.993). The cause was the build's reading of the table's '. . .' English
+// (a word with '. . .' joins the NEXT chunk in English order) when the table meant the chunk BEFORE (its English is already inside the
+// previous chunk: 'to hand Him over'). mw-5r3p30.997 fixed it for P- and F- words (scripts/data/chapterWriter.ts buildVerse); what this
+// finds in a built tree now is the 'other way round' shape (an article or noun joined to the chunk after a pronoun) and the rare right one.
 // With --tsv it also counts, in the published table itself, the '. . .' rows by the part of speech and by whether the English of
 // the chunk before them (in English order) holds an English pronoun (him, her, it, them, ...).
 // Docs: docs/sources/msb-chunk-pairs.md.
@@ -100,7 +101,7 @@ if (tsvAt) {
   console.log(`\nIn the published table (${tsvAt}):`);
   console.log(`  rows whose English is '. . .': ${dots}`);
   console.log(`  of them pronouns (P-...): ${pronounRows}`);
-  console.log(`  pronoun '. . .' rows, by where an English pronoun stands in the nearest chunk with English before and after (the build joins the row to the one AFTER):`);
-  console.log(`    only before: ${onlyBefore} in ${wrongVerses.size} verses (the build joins them to the wrong chunk)  only after: ${onlyAfter}  both: ${bothSides}  neither: ${neitherSide}`);
+  console.log(`  pronoun '. . .' rows, by where an English pronoun stands in the nearest chunk with English before and after (before mw-5r3p30.997 the build joined the row to the one AFTER; the counts are of the table, so a fix does not change them):`);
+  console.log(`    only before: ${onlyBefore} in ${wrongVerses.size} verses (the rows the old rule put with the wrong chunk)  only after: ${onlyAfter}  both: ${bothSides}  neither: ${neitherSide}`);
   console.log(`  pronoun '. . .' rows whose nearest chunk after is an article row: ${pronounThenArticle}`);
 }

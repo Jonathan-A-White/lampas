@@ -174,7 +174,7 @@ docs/research/logos-exegetical-guide.md # the Exegetical Guide
 docs/research/letter-sounds.md # lone vowels and letter sounds on the phone
 docs/sources/latin-bible.md # Latin Bible sources: licences, word data, versification, audio
 docs/sources/tagnt.md # STEPBible's TAGNT: variant words' Strong's numbers and the guess
-docs/sources/msb-chunk-pairs.md # MSB '. . .' rows: the chunks they join
+docs/sources/msb-chunk-pairs.md # MSB '. . .' rows, the chunks
 docs/sources/public-domain-works.md # Spurgeon and other public-domain works: sources, terms, coverage
 docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # the bible-talk rules before the 100,000-byte trim, where each lives
