@@ -2,6 +2,7 @@
 // The live smoke of 2026-11-03 16:07Z got the question field "04" from a model, with the rest of the answer right: the schema had no pattern, so nothing refused it.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import '../support/grinds-in-graph';
 import { validate, type Schema } from '../support/schema-validate';
 
 const schema = JSON.parse(readFileSync('grinds/narration.answer.schema.json', 'utf8')) as Schema;
