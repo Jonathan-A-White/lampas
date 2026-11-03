@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.92
+_2026-11-03_
+- Fixed: When you ask the tutor what is left today, it no longer calls the next reading-plan chapter done after you have read the one before it, and it offers to open Today in plain words.
+
 ## 0.7.91
 _2026-11-03_
 - Fixed: at the largest text size, the Maps button and the help line in the verse screen no longer slide under the round ask-the-tutor button.
