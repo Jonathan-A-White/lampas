@@ -44,7 +44,7 @@ Every licence below is quoted from the file named, at the commit or URL and date
 ## Licences, candidate by candidate
 
 "Free public web app" means Lampas as it is: free to read, served at https://lampas.allmymind.org. "Commercial too" means the same
-data in a paid or monetised app (Lampas's licence gate unlocks the AI, so the Governor may want the answer for that case).
+data in a paid or monetised app. The Governor has ruled that out: Lampas will never be commercial ("I have zero intention of making lampus commercial ever", 2026-11-03 00:24Z, direct:d9252ba05136ff6ba14a8485e57b8aa5e09f209180d02cbc100edd63ca5033ad; see VISION.md 'Never commercial'). The "Commercial too" column is kept as the record of each licence.
 
 | Candidate | Licence as stated | Free public web app | Commercial too |
 | --- | --- | --- | --- |

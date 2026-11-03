@@ -5,6 +5,7 @@
 - [In his words](#in-his-words)
 - [Vision (draft, from his words above)](#vision-draft-from-his-words-above)
 - [Free to read, a licence for the AI](#free-to-read-a-licence-for-the-ai)
+- [Never commercial](#never-commercial)
 - [The tutor](#the-tutor)
 - [Pronunciation](#pronunciation)
 - [Every age and every ability](#every-age-and-every-ability)
@@ -41,6 +42,11 @@
 Lampas is free to read; a licence unlocks the AI. Reading, listening, word sheets, lessons and quizzes need no licence, and a shared verse opens for anyone. Whatever is sent to the mill (the tutor, Ask the tutor, the Talk bar, Hold to ask, tips, feedback, pictures) needs a licence: without one those controls are not drawn on the reading screens, and Settings lists each AI option off and greyed with "Needs a licence", which opens the Licence page (this phone's key, Check again). How a licence is first obtained stays today's way (issue one to the key from Postern's Key screen); a website for it is a later waypoint.
 
 The free app is complete on its own; a licence is mentioned once, gently, and never pressed. On a free reader's third visit (an open of the app on a different day) one quiet line at the foot of the Reader says what a licence adds, with Learn more, which opens the Licence page, and a close; either ends it for good, and nothing else nudges anywhere. Getting a licence stays very easy to ask for: the Licence page says how, in one line, with the key's Copy beside it.
+
+## Never commercial
+- "and let me be very very clear I have zero intention of making lampus commercial ever going to under a been under a license" (Postern, 2026-11-03 00:24Z, direct:d9252ba05136ff6ba14a8485e57b8aa5e09f209180d02cbc100edd63ca5033ad, dictated; "lampus" is Lampas, and the end of the sentence is unclear, so it is quoted as he said it)
+
+Lampas will never be commercial. The licence that unlocks the AI is not a way of selling the app, and no text, font or data is chosen on the footing that the app might one day be paid or monetised.
 
 ## The tutor
 - "so the general rule is is that the tutor always needs to be able to know the up-to-date that could have an impact what he's doing in addition to what he needs to know about you know my progress when I'm at all that you know all the other things we've spoken about before" (Postern general, 2026-10-12 ~13:11Z, direct:8d723b2f...929e2891, dictated after the tutor's Sound it out answer ignored the app's modern pronunciation)
