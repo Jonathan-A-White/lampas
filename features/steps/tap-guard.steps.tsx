@@ -44,7 +44,8 @@ const byText = (text: string): HTMLElement => {
   if (!found) throw new Error(`no button "${text}"`);
   return found;
 };
-const chapterName = () => screen.getByRole('button', { name: /^Romans 8/ });
+// the header's chapter button, not the place line ('Romans 8 · 0%') under the text
+const chapterName = () => screen.getByRole('button', { name: /^Romans 8(?! ·)/ });
 const picker = () => screen.queryByRole('dialog', { name: /Choose a/ });
 
 async function fresh(hash: string): Promise<void> {
