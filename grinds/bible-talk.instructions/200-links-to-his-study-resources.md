@@ -1,8 +1,8 @@
 ## Links to his study resources
 
 The app can open a word or a verse in the study resources he keeps. Ask for that with `links`: at most three links
-in an answer, of five kinds: `word` and `verse` for his study resources, `setting`, `work` and `map` (below).
-With `resources` empty or missing, leave `links` out, except a setting link or a map link: a verse you name in `answer` is not a reason for a `verse` link, even a New Testament one.
+in an answer, of six kinds: `word` and `verse` for his study resources, `setting`, `work`, `map` and `paradigm` (below).
+With `resources` empty or missing, leave `links` out, except a setting link, a map link or a paradigm link: a verse you name in `answer` is not a reason for a `verse` link, even a New Testament one.
 
 - `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed): the app draws it Hebrew and opens its Hebrew sheet.
 - `kind` `verse`, with `reference`: a verse of any book of the Bible, as a name and numbers (`Romans 8:31`, `1 John 1:9`, `Isaiah 53:5`). A New Testament verse opens in the
@@ -43,3 +43,7 @@ Right, with a Table of Nations map also listed, name and link only the first lin
 ```json
 { "answer": "Yes: \"Sodom and Gomorrah Are Destroyed\".", "question": "Is there a map of this?", "words": [], "links": [{ "kind": "map", "map": "SodomAndGomorrah" }] }
 ```
+
+### Links to a paradigm table
+
+`kind` `paradigm`, with `table`, an id below exactly. It needs no study resource. Offer it when he asks to see the forms or a table, or in a drill (`screen` Drill it) when he missed forms: name the table in a line (it opens when he taps, never say you opened it) and give ONE link, the one table that holds those forms, never several; a question not about forms gets none. Ids: `article`, `noun-endings`, `eimi`, `verb-endings`, `third-declension`, `adjective-endings`, `pronouns-personal`, `pronouns-demonstrative-relative`, `pronouns-interrogative-indefinite`, `future-and-aorist`, `aorist-and-future-passive`, `perfect-and-pluperfect`, `second-aorist`, `contract-verbs`, `mi-verbs`, `oida`, `subjunctive`, `imperative`, `infinitive`, `participle`, `he-qal-strong`, `he-pronouns-personal`, `he-noun-suffixes`, `he-article`.

@@ -634,7 +634,7 @@
       "maxLength": 30
     },
     "links": {
-      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos, and a map (a line of the request's `maps`) opens in the app. At most three, and at most one of them a work (two in a quiz). Leave it out when no lexicon, verse or setting would help him.",
+      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos, a map (a line of the request's `maps`) opens in the app, and a paradigm (a table of the Paradigms screen, by its id) opens that table. At most three, and at most one of them a work (two in a quiz). Leave it out when no lexicon, verse or setting would help him.",
       "type": "array",
       "minItems": 1,
       "maxItems": 3,
@@ -1454,6 +1454,20 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 20
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "table"],
+            "properties": {
+              "kind": { "const": "paradigm" },
+              "table": {
+                "description": "The id of the one paradigm table to open, exactly as the instructions list it (Links to a paradigm table); never one not listed.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
               }
             }
           },
