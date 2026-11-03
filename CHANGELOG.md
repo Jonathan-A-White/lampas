@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.86
+_2026-11-03_
+- New: A new Greek word now comes with a real English word that comes from it, like perimeter for περί, to help you remember it.
+- New: The tutor can open the right grammar table for you right from a conversation, and Back brings you straight back to the talk.
+
 ## 0.7.84
 _2026-11-02_
 - Fixed: the round ? button no longer covers the ends of answer buttons in drills, quizzes and reviews, so a tap there chooses the answer.

@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.86",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.988",
+    "kind": "new",
+    "text": "A new Greek word now comes with a real English word that comes from it, like perimeter for περί, to help you remember it."
+  },
+  {
+    "version": "0.7.86",
+    "date": "2026-11-03",
+    "story": "mw-5r3p30.990",
+    "kind": "new",
+    "text": "The tutor can open the right grammar table for you right from a conversation, and Back brings you straight back to the talk."
+  },
+  {
     "version": "0.7.84",
     "date": "2026-11-02",
     "story": "mw-5r3p30.981",
