@@ -1,0 +1,43 @@
+{
+  "description": "He asks, in a talk on Romans 8:1, to be drilled on today's words. Today shows Revelation 12 read and ticked and Revelation 13 next (the plan item's title carries both). The answer says Revelation 12 is done and Revelation 13 is next (the check cannot ban 'Revelation 13 is done': RE2 has no lookaround, so it requires Revelation 12 and a word for still-to-do, and the run is read for the rest), and offers to open Today's drill with today_offer, in plain words (not 'on offer').",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Romans 8:1",
+    "greek": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν Χριστῷ Ἰησοῦ.",
+    "english": "There is therefore now no condemnation for those who are in Christ Jesus.",
+    "question": "Drill me on today's words.",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {},
+    "reader_view": "english",
+    "learner": "solid 3 words; learning: ἀγάπη; new today: ; due now: 0",
+    "today": [
+      { "kind": "review", "title": "Review: nothing due", "done": true },
+      { "kind": "memorize", "title": "Memorize: 1 verse due", "done": false },
+      { "kind": "plan", "title": "Reading plan: Revelation 12 read today, next Revelation 13", "done": true },
+      { "kind": "psalm", "title": "Psalm 2", "done": false },
+      { "kind": "psalm", "title": "Psalm 32", "done": false },
+      { "kind": "proverb", "title": "Proverbs 2", "done": false },
+      { "kind": "devotional", "title": "The Interpreter, Spurgeon's devotional", "done": false }
+    ]
+  },
+  "expect": {
+    "answer": {
+      "all": [
+        { "matches": "Revelation 12" },
+        { "matches": "next|still|yet|tomorrow|to read" },
+        { "matches": "[Oo]pen|drill" }
+      ]
+    },
+    "today_offer": {
+      "equals": true
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
