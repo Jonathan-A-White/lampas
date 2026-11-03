@@ -12,7 +12,6 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { PRINTED_SMALL } from '../support/lxx-printed-small';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { DERIVED_HEADER, PENDING_HEADER, runDerive, type BookResult, type DeriveInput, type DerivedWord, type PendingWord } from '../../scripts/lxx/derive';
@@ -25,7 +24,7 @@ const tagnt = [readFileSync(join(FIXTURES, 'tagnt-slice.tsv'), 'utf8')];
 const tbesg = readFileSync(join(FIXTURES, 'tbesg-slice.txt'), 'utf8');
 function swete(file: string): DeriveInput {
   const [versification, words] = readFileSync(join(FIXTURES, file), 'utf8').split('\n\n');
-  return { versification, words, tagnt, tbesg, printedSmall: PRINTED_SMALL };
+  return { versification, words, tagnt, tbesg };
 }
 const GEN_1 = swete('swete-gen-1.csv');
 const PSA_22 = swete('swete-psa-22.csv');

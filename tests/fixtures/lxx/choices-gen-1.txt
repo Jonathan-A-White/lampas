@@ -1,5 +1,5 @@
 # A model session's choices for the Gen 1 fixture (tests/unit/lxx-choose.test.ts): the first candidate of each pending word, so every line is among the candidates,
-# except the four words with no candidate (guess, with the lemma; two of them are Ἐξαγαγέτω, a capital in the middle of a clause that Swete prints small nowhere) and two marks the test needs: Gen.1:9#35 guess (a candidate, marked) and a `?` on some lines.
+# except the two words with no candidate (guess, with the lemma) and two marks the test needs: Gen.1:9#35 guess (a candidate, marked) and a `?` on some lines.
 # Not a reading of the verses: the fixture only shows the shape (ref parsing [lemma] [?|guess]) and the confidences it gives.
 Gen.1:1#2 N-DSF
 Gen.1:2#5 A-NSM
@@ -84,7 +84,6 @@ Gen.1:19#8 A-NSF
 Gen.1:20#6 T-APN
 Gen.1:20#7 N-APN
 Gen.1:20#8 N-APN
-Gen.1:20#5 V-2AAM-3S ἐξάγω guess
 Gen.1:20#10 V-PAP-GPF ζάω guess
 Gen.1:20#12 N-APN
 Gen.1:20#13 V-PNP-APN ?
@@ -113,7 +112,6 @@ Gen.1:22#18 T-APN
 Gen.1:22#19 N-APN
 Gen.1:23#6 ADV
 Gen.1:23#8 A-NSF
-Gen.1:24#5 V-2AAM-3S ἐξάγω guess
 Gen.1:24#11 N-NSN
 Gen.1:24#12 A-APN
 Gen.1:24#14 N-APN
