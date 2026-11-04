@@ -21,7 +21,7 @@ export interface Candidate extends Analysis {
   /** Analogy's candidates only (byAnalogy; story mw-u2w5klk.30): what produced the candidate, for isThinLone, which reads its support (the pairs of forms behind it) where a rule's candidate is read by stemSupport. */
   analogy?: true;
   /**
-   * A reading offered by analogy beside an ending rule's lone candidate on thin support (derive.ts; story mw-u2w5klk.31), for the model to weigh. In memory only, like
+   * A reading offered by analogy (story mw-u2w5klk.31), or by Morpheus (story mw-u2w5klk.32, weighMorpheus, whose `source` is `morpheus`), beside a lone candidate on thin support (derive.ts), for the model to weigh. In memory only, like
    * `analogy`. The agreement check and the address rule never read it (agreement.ts ownReadings): a pending imperative stays an imperative, and agreement settles on
    * a reading the rules or layer 1 gave. Not counted by isThinLone.
    */

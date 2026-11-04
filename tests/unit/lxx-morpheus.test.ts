@@ -27,6 +27,7 @@ import {
   MAPPING_VERSION,
   type MorpheusEngine,
 } from '../../scripts/lxx/morpheus';
+import { isThinLone } from '../../scripts/lxx/parser';
 import { readChoices } from '../../scripts/lxx/choices';
 import { morpheusCounts, runRelease } from '../../scripts/lxx/release';
 import { runReport } from '../../scripts/lxx/report';
@@ -612,7 +613,9 @@ describe('Morpheus’s perfects, and Morpheus asked about a form with one thin c
       ]) {
         const got = weighMorpheus(lone, form)!;
         expect(got.note).toBe(NOTE_MORPHEUS_BESIDE);
-        expect(shown(got.candidates)).toEqual(['γίνομαι V-AMI-3S', ...form.analyses.map((a) => `${a.lemma} ${a.code}/morpheus`)]);
+        // Morpheus's readings are marked beside, as analogy's are: the check and the address rule do not read them, and the word is still a thin lone one
+        expect(shown(got.candidates)).toEqual(['γίνομαι V-AMI-3S', ...form.analyses.map((a) => `${a.lemma} ${a.code}/morpheus+`)]);
+        expect(isThinLone(got.candidates)).toBe(true);
       }
     });
   });
