@@ -2,7 +2,7 @@
 // foot bars slide away while he scrolls the text down, as a browser's address bar does (not when the Reader puts his saved place back). After that the bars change ONLY on a two-finger tap
 // on the text: shown if away, away if shown (mw-5r3p30.255, his words: "2 fingers on, 2 fingers off"). Nothing else brings them back: not
 // scrolling up (mw-5r3p30.227), not the end of the chapter or scrolling past it, not a sheet closing, not reading aloud stopping. A three-finger tap
-// does nothing. With the setting Off the same tap goes INTO immersive reading: it switches the setting On and the bars go away (mw-5r3p30.934, his words: "the two finger tap bringing you into immersive
+// does nothing. (Elsewhere the same tap puts the ? away and brings it back: src/tutor/doorTap.ts; here it also brings back a ? put away that way.) With the setting Off the same tap goes INTO immersive reading: it switches the setting On and the bars go away (mw-5r3p30.934, his words: "the two finger tap bringing you into immersive
 // reading, bringing you out"). The two-finger tap opens no tutor (mw-5r3p30.882: the floating ? is the one door, src/tutor/door.ts, and it is not drawn while the bars are away). No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //
@@ -31,6 +31,7 @@ import { getImmersive, setImmersive } from './data/repositories';
 import { isRestoringScroll } from './nav/scrollMemory';
 import type { ReadingMode } from './settings/definitions/readingMode';
 import { holdAwake, releaseAwake } from './speech/wakeLock';
+import { bringDoorBack } from './tutor/doorHidden';
 
 /** What the card above the text says (src/ImmersiveHint.tsx), per reading mode: only the gestures that mode has (tests/unit/immersive-hint-lines.test.ts). */
 export const IMMERSIVE_HINT_LINES: Record<ReadingMode, readonly string[]> = {
@@ -133,7 +134,7 @@ export function useImmersiveSetting(): boolean {
  * Listens on `el` for a two-finger tap: the fingers land together (a touchstart each), go up again soon, none moved. `onTap` is called for each; a click the phone sends after one is dropped (a
  * two-finger tap never taps a word). `onOther` is called for a one-finger tap and for a click that is not that stray one (the gestures that may ask for full screen). Returns how to stop listening.
  */
-function watchTwoFingerTaps(el: HTMLElement, onTap: () => void, onOther: () => void): () => void {
+export function watchTwoFingerTaps(el: HTMLElement, onTap: () => void, onOther: () => void, skip?: (target: EventTarget | null) => boolean): () => void {
   // two fingers have been down since the last time all were up
   let multi = false;
   let tap: { at: number; from: Array<{ x: number; y: number }> } | null = null;
@@ -142,6 +143,11 @@ function watchTwoFingerTaps(el: HTMLElement, onTap: () => void, onOther: () => v
     const n = e.touches.length;
     if (n < 2) return;
     multi = true;
+    // a finger on something with a two-finger use of its own (a map, the ladder graph): not ours, and no stray click of it is dropped
+    if (skip && (skip(e.target) || Array.from(e.touches).some((t) => skip((t as Touch).target ?? null)))) {
+      tap = null;
+      return;
+    }
     if (n > 2) {
       // a third finger makes it a gesture of its own
       tap = null;
@@ -220,7 +226,11 @@ export function useImmersive(
     awayNow = value;
     setAway(value);
   }, []);
-  const toggle = useCallback(() => set(!awayRef.current), [set]);
+  // the Reader's tap is about the bars: it brings back a ? he put away by hand (src/tutor/doorHidden.ts)
+  const toggle = useCallback(() => {
+    bringDoorBack();
+    set(!awayRef.current);
+  }, [set]);
   const hide = useCallback(() => {
     if (enabled && !awayRef.current) set(true);
   }, [enabled, set]);
@@ -232,6 +242,7 @@ export function useImmersive(
     return watchTwoFingerTaps(
       el,
       () => {
+        bringDoorBack();
         awayNow = true;
         setImmersive('on').catch(() => {
           awayNow = false;
@@ -277,6 +288,7 @@ export function useImmersive(
     };
     // a two-finger tap goes in and out of immersive reading; it never opens the tutor (the floating ? is the one door, src/tutor/door.ts)
     const toggle = () => {
+      bringDoorBack();
       set(!awayRef.current);
     };
     const onScroll = () => {

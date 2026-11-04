@@ -1,6 +1,6 @@
 // src/tutor/door.ts — the one door to the tutor (mw-5r3p30.880, part B of mw-5r3p30.843; his words are on that bead: one door, never both): a round ? floating at the Hand side's edge (src/AskTutor.tsx
-// FloatingTutor), drawn on a phone with a licence and nowhere else (without one no tutor door exists: nothing is drawn). A two-finger tap is not a door: it goes in and out of immersive reading
-// (src/immersive.ts), his 2026-10-31 post on mw-5r3p30.882 and .934. The immersive reader (the Reader with its bars away) is the one screen with no tutor: its target is `hidden` and the ? is not drawn there; a
+// FloatingTutor), drawn on a phone with a licence and nowhere else (without one no tutor door exists: nothing is drawn). A two-finger tap is not a door: in the Reader's text it goes in and out of immersive reading
+// (src/immersive.ts), his 2026-10-31 post on mw-5r3p30.882 and .934; elsewhere it puts the ? away and brings it back (src/tutor/doorHidden.ts, mw-5r3p30.1006). The immersive reader (the Reader with its bars away) is the one screen with no tutor: its target is `hidden` and the ? is not drawn there; a
 // two-finger tap brings the bars back and the ? with them, and a sheet over it (a word, a lesson) is not the immersive reader, so its target is not hidden. What the door opens the tutor ABOUT is the newest target a screen registered: the Reader registers its chapter or verse, AskTutor
 // its screen, the word and idea sheets their word or lesson. A sheet mounts after the screen under it, so the newest target is the one on top; a target lives while its screen or sheet does.
 import { useEffect, useRef, useSyncExternalStore } from 'react';

@@ -264,6 +264,7 @@ export function LadderGraph() {
       <div
         ref={frame}
         data-testid="ladder-graph"
+        data-two-finger
         role="group"
         aria-label="The grammar ladder as a graph: each idea with the ideas it needs above it"
         aria-describedby="graph-keys"
