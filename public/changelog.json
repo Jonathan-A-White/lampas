@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.105",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1040",
+    "kind": "fixed",
+    "text": "An Old Testament chapter no longer waits on Lampas's saved settings before it is fetched, and the screen that says a chapter is still loading now says what it is waiting for."
+  },
+  {
     "version": "0.7.104",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1037",

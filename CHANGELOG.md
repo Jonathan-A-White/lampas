@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.105
+_2026-11-04_
+- Fixed: An Old Testament chapter no longer waits on Lampas's saved settings before it is fetched, and the screen that says a chapter is still loading now says what it is waiting for.
+
 ## 0.7.104
 _2026-11-04_
 - Fixed: after a partly read verse on a small phone, the Next word card shows whole above the buttons instead of running under them.
