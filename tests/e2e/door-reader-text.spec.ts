@@ -1,6 +1,8 @@
-// tests/e2e/door-reader-text.spec.ts — the floating ? does not sit over the Reader's text (mw-5r3p30.992, the Mayor's screenshots of Luke 20 on 0.7.86: the ? hid the end of αὐτῶν and the 'du-' of 'duplicity' in
-// Weave, so the next line began 'plicity', and the end of δοῦναι in Greek). The ? floats at the Hand side's edge over the reading box, so the box keeps a column clear on that side while the ? is drawn
-// (src/Reader.tsx data-door-room). Each case opens Luke 20 at 390x844 on a licensed phone, once for each hand, scrolls through the chapter and compares every line of text with the ?'s box.
+// tests/e2e/door-reader-text.spec.ts — the Reader's text uses the whole width, and its foot is not held back for the ? or for buttons that are off (mw-5r3p30.1005). mw-5r3p30.992 had kept a 4.5 rem column
+// clear of the floating ? on the Hand's side so no word was under it; the Governor did not like the column (Postern general, 2026-11-03: "Always use full like before and it is okay for question to cover as long
+// as 2 finger tap can hide it and bring it back"), so a word may now sit under the ? and the two-finger tap hides it. What stays under the ?: the Verse view's tools line and the help line under its text
+// (mw-5r3p30.1002; they are rows of buttons) and every foot row (mw-5r3p30.961, .981, .998), tested here and in door-overlap.spec.ts.
+// Each case opens Luke 20 or John 5 at 390x844 on a licensed phone.
 import { expect, test, type Page } from '@playwright/test';
 import { FLOATING, twoFingers } from './open-tutor';
 import { shot } from './shot';
@@ -36,37 +38,40 @@ async function putWords(page: Page, rows: Row[]) {
   );
 }
 
-/** Every line of text in the reading box that is on screen and meets the ?'s box: [] when the ? hides nothing. */
-async function textUnderTheDoor(page: Page, rootSel = '[data-reader-text]', boxSel = '[data-reader]'): Promise<string[]> {
-  return page.evaluate(([sel, rootSel, boxSel]) => {
-    const door = document.querySelector(sel)!.getBoundingClientRect();
+/** The left and right edges, in px, that the lines of text in `rootSel` reach on the screen: [leftmost, rightmost]. */
+async function reach(page: Page, rootSel = '[data-reader-text]', boxSel = '[data-reader]'): Promise<[number, number]> {
+  return page.evaluate(([rootSel, boxSel]) => {
     const box = document.querySelector(boxSel)!.getBoundingClientRect();
-    const hits: string[] = [];
+    let left = Infinity;
+    let right = -Infinity;
     const walker = document.createTreeWalker(document.querySelector(rootSel)!, NodeFilter.SHOW_TEXT);
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      const text = node.textContent ?? '';
-      if (text.trim() === '') continue;
+      if ((node.textContent ?? '').trim() === '') continue;
       const range = document.createRange();
       range.selectNodeContents(node);
       for (const r of Array.from(range.getClientRects())) {
         if (r.width === 0 || r.bottom < box.top || r.top > box.bottom || r.right < box.left || r.left > box.right) continue;
-        if (r.left < door.right && door.left < r.right && r.top < door.bottom && door.top < r.bottom) hits.push(`${text.trim().slice(0, 30)} ${Math.round(r.left)}-${Math.round(r.right)}`);
+        left = Math.min(left, r.left);
+        right = Math.max(right, r.right);
       }
     }
-    return hits;
-  }, [FLOATING, rootSel, boxSel] as const);
+    return [left, right] as [number, number];
+  }, [rootSel, boxSel] as const);
 }
 
-/** Scrolls the reading box a step at a time from top to foot and reports the text under the ? at each stop. */
-async function walkTheChapter(page: Page): Promise<string[]> {
-  const found: string[] = [];
+/** Scrolls the reading box a step at a time from top to foot and reports how far across the lines reach, over the whole chapter. */
+async function reachOfTheChapter(page: Page): Promise<[number, number]> {
+  let left = Infinity;
+  let right = -Infinity;
   const box = page.locator('[data-reader]');
   const [height, total] = await box.evaluate((el) => [el.clientHeight, el.scrollHeight]);
   for (let top = 0; top < total; top += height / 3) {
     await box.evaluate((el, to) => void (el.scrollTop = to), top);
-    found.push(...(await textUnderTheDoor(page)));
+    const [l, r] = await reach(page);
+    left = Math.min(left, l);
+    right = Math.max(right, r);
   }
-  return found;
+  return [left, right];
 }
 
 const VIEWS = [
@@ -76,33 +81,46 @@ const VIEWS = [
 
 for (const { name, query } of VIEWS) {
   for (const hand of ['right', 'left'] as const) {
-    test(`Luke 20 in ${name}, ${hand}-handed: no line of the text is under the ?, scrolling through the chapter`, async ({ page }) => {
-      test.setTimeout(120_000);
-      await openUnlocked(page, { empty: true });
-      await page.goto('/');
-      await expect(page.locator('[data-reader]')).toBeVisible();
-      await putWords(page, [
-        { lemma: 'ἀρχή', gloss: 'rule', state: 'solid' },
-        { lemma: 'αὐτός', gloss: 'he', state: 'learning' },
-        { lemma: 'ὁ', gloss: 'the', state: 'learning' },
-        { lemma: 'δίδωμι', gloss: 'give', state: 'solid' },
-      ]);
-      await keepHand(page, hand);
-      await page.goto(`/#/?b=luk&c=20&${query}`);
-      await page.reload();
-      await expect(page.locator('[data-verse="23"]')).toBeVisible();
-      await expect(page.locator(FLOATING)).toBeVisible();
-      expect(await walkTheChapter(page), 'text under the ?').toEqual([]);
-      await page.locator('[data-reader]').evaluate((el) => void (el.scrollTop = 0));
-      await page.locator('[data-verse="23"]').scrollIntoViewIfNeeded();
-      await shot(page, `door-reader-text-${name.toLowerCase()}-${hand}`);
-    });
+    for (const immersive of ['off', 'on'] as const) {
+      test(`Luke 20 in ${name}, ${hand}-handed, Immersive reader ${immersive}: the text uses the full width, with no column kept for the ?`, async ({ page }) => {
+        test.setTimeout(120_000);
+        await openUnlocked(page, { empty: true });
+        await page.goto('/');
+        await expect(page.locator('[data-reader]')).toBeVisible();
+        await putWords(page, [
+          { lemma: 'ἀρχή', gloss: 'rule', state: 'solid' },
+          { lemma: 'αὐτός', gloss: 'he', state: 'learning' },
+          { lemma: 'ὁ', gloss: 'the', state: 'learning' },
+          { lemma: 'δίδωμι', gloss: 'give', state: 'solid' },
+        ]);
+        await keepHand(page, hand);
+        await keepSettings(page, { immersiveReader: immersive, immersiveHint: 'off' });
+        await page.goto(`/#/?b=luk&c=20&${query}`);
+        await page.reload();
+        await expect(page.locator('[data-verse="23"]')).toBeVisible();
+        await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', immersive);
+        // the box pads 0.25 rem (4 px) a side and no more: the line is 382 px of the 390
+        const sides = await page.locator('[data-reader]').evaluate((el) => {
+          const s = getComputedStyle(el);
+          return [parseFloat(s.paddingLeft), parseFloat(s.paddingRight)];
+        });
+        expect(sides, 'the box pads its two sides alike, a quarter rem each').toEqual([4, 4]);
+        await expect(page.locator('[data-reader]')).not.toHaveAttribute('data-door-room', /.+/);
+        expect((await page.locator('[data-reader-text]').boundingBox())!.width, 'the text is the box wide').toBeGreaterThanOrEqual(381);
+        const [left, right] = await reachOfTheChapter(page);
+        expect(right, 'a line reaches the Hand side that was kept clear').toBeGreaterThanOrEqual(350);
+        expect(left, 'a line starts at the other edge').toBeLessThanOrEqual(12);
+        await page.locator('[data-reader]').evaluate((el) => void (el.scrollTop = 0));
+        await page.locator('[data-verse="23"]').scrollIntoViewIfNeeded();
+        await shot(page, `door-reader-text-${name.toLowerCase()}-${hand}-${immersive}`);
+      });
+    }
   }
 }
 
-// Turn pages: the pages are columns a box wide, so the box's padding is the column kept clear on every page (src/index.css [data-door-room]).
+// Turn pages: the pages are columns a box wide with the gap of Turn pages (2 rem, as before the column), and a page shows only its own lines.
 for (const hand of ['right', 'left'] as const) {
-  test(`Luke 20 with Turn pages, ${hand}-handed: no line of any page is under the ?, and the last page is reached`, async ({ page }) => {
+  test(`Luke 20 with Turn pages, ${hand}-handed: the page is the full width, no line of the next page shows, and the last page is reached`, async ({ page }) => {
     test.setTimeout(120_000);
     await openUnlocked(page, { empty: true });
     await page.goto('/');
@@ -114,15 +132,22 @@ for (const hand of ['right', 'left'] as const) {
     await expect(page.locator('[data-verse="23"]')).toBeAttached();
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
     const box = page.locator('[data-reader]');
-    const step = await page.locator('[data-pages]').evaluate((el) => el.clientWidth + parseFloat(getComputedStyle(el).columnGap));
+    const [pageWidth, gap] = await page.locator('[data-pages]').evaluate((el) => [el.clientWidth, parseFloat(getComputedStyle(el).columnGap)]);
+    expect(pageWidth, 'a page is the full width of the box').toBeGreaterThanOrEqual(381);
+    expect(gap, 'the gap between pages is Turn pages\' own 2 rem').toBe(32);
+    const step = pageWidth + gap;
     const width = await page.locator('[data-pages]').evaluate((el) => el.scrollWidth);
     expect(width, 'the chapter is more than one page').toBeGreaterThan(step * 2);
-    const found: string[] = [];
+    let farthest = -Infinity;
     for (let at = 0; at < width - step / 2; at += step) {
       await box.evaluate((el, to) => void (el.scrollLeft = to), at);
-      found.push(...(await textUnderTheDoor(page)));
+      const [l, r] = await reach(page);
+      // every line that shows is inside the box: nothing of a neighbouring page is in view
+      expect(l, `page at ${at}: a line starts left of the box`).toBeGreaterThanOrEqual(0);
+      expect(r, `page at ${at}: a line runs past the box`).toBeLessThanOrEqual(390);
+      farthest = Math.max(farthest, r);
     }
-    expect(found, 'text under the ?').toEqual([]);
+    expect(farthest, 'a page\'s lines reach the Hand side that was kept clear').toBeGreaterThanOrEqual(350);
     // the last page is reachable: the box scrolls as far as the text goes
     await box.evaluate((el) => void (el.scrollLeft = el.scrollWidth));
     const last = await page.locator('[data-pages] > :last-child').evaluate((el) => el.getBoundingClientRect().left);
@@ -130,7 +155,7 @@ for (const hand of ['right', 'left'] as const) {
   });
 }
 
-test('the Verse view of a passage keeps its text clear of the ?, scrolling the passage, at text size 160', async ({ page }) => {
+test('the Verse view of a passage uses the full width of its text box, at text size 160', async ({ page }) => {
   await openUnlocked(page, { empty: true });
   await page.goto('/');
   await expect(page.locator('[data-reader]')).toBeVisible();
@@ -141,17 +166,17 @@ test('the Verse view of a passage keeps its text clear of the ?, scrolling the p
   const box = page.locator('[data-passage-box]');
   await expect(box).toBeVisible();
   await expect(page.locator(FLOATING)).toBeVisible();
-  const [height, total] = await box.evaluate((el) => [el.clientHeight, el.scrollHeight]);
-  expect(total, 'the passage scrolls').toBeGreaterThan(height);
-  const found: string[] = [];
-  for (let top = 0; top < total; top += height / 3) {
-    await box.evaluate((el, to) => void (el.scrollTop = to), top);
-    found.push(...(await textUnderTheDoor(page, '[data-passage-box]', '[data-passage-box]')));
-  }
-  expect(found, 'text under the ?').toEqual([]);
+  await expect(box).not.toHaveAttribute('data-door-room', /.+/);
+  const sides = await box.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return [parseFloat(s.paddingLeft), parseFloat(s.paddingRight)];
+  });
+  expect(sides, 'the box pads 0.5 rem a side and no more').toEqual([8, 8]);
+  const [, right] = await reach(page, '[data-passage-box]', '[data-passage-box]');
+  expect(right, 'a line reaches the Hand side that was kept clear').toBeGreaterThanOrEqual(340);
 });
 
-test('the immersive reader keeps the column when the ? goes away, so the text does not re-flow as the bars come and go', async ({ page }) => {
+test('the immersive reader is as wide with the ? away as with it back, so the text does not re-flow as the bars come and go', async ({ page }) => {
   await openUnlocked(page, { empty: true });
   await page.goto('/#/?b=luk&c=20&view=english&weave=off');
   await expect(page.locator('[data-verse="23"]')).toBeVisible();
@@ -163,7 +188,59 @@ test('the immersive reader keeps the column when the ? goes away, so the text do
   expect(away.width, 'the text is as wide with the ? away').toBe(before.width);
   await twoFingers(page, { x: away.x + 40, y: away.y + 120 });
   await expect(page.locator(FLOATING)).toBeVisible();
-  expect(await textUnderTheDoor(page), 'text under the ?').toEqual([]);
+  expect((await text.boundingBox())!.width, 'and as wide with it back').toBe(before.width);
+});
+
+// The foot of the chapter (mw-5r3p30.1005; picture -3 of the Governor's 2026-11-03 message ended 'John 5 · 100%' with a blank band above the phone's bar). The Chapter buttons setting Hide
+// draws no buttons and keeps no room for them; the immersive reader's place line is the lowest row and carries the phone's bar floor, so the box above it keeps none of its own.
+async function openJohnFoot(page: Page, settings: Record<string, string>) {
+  await openUnlocked(page, { empty: true });
+  await page.goto('/');
+  await expect(page.locator('[data-reader]')).toBeVisible();
+  await keepSettings(page, { immersiveHint: 'off', ...settings });
+  await page.goto('/#/?b=jhn&c=5&view=english&weave=off');
+  await page.reload();
+  await expect(page.locator('[data-verse="47"]')).toBeAttached();
+  const box = page.locator('[data-reader]');
+  // scrolling down well short of the end puts the bars away in the immersive reader (nearer the end it does not); the place line then stands under the text, and he scrolls on to the foot
+  if (settings.immersiveReader === 'on') {
+    await box.evaluate((el) => void (el.scrollTop += 600));
+    await expect(page.locator('[data-place-line]')).toBeVisible();
+  }
+  await box.evaluate((el) => void (el.scrollTop = el.scrollHeight));
+  await page.waitForTimeout(500);
+}
+
+/** How far the last line of John 5:47 ends above the place line's top, in px. */
+const gapAbovePlaceLine = (page: Page) =>
+  page.evaluate(() => {
+    const verse = document.querySelector('[data-verse="47"]')!;
+    const walker = document.createTreeWalker(verse, NodeFilter.SHOW_TEXT);
+    let bottom = -Infinity;
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if ((node.textContent ?? '').trim() === '') continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const r of Array.from(range.getClientRects())) bottom = Math.max(bottom, r.bottom);
+    }
+    return document.querySelector('[data-place-line]')!.getBoundingClientRect().top - bottom;
+  });
+
+test('immersive, Chapter buttons Hide: no room is held at the foot of the chapter above the place line', async ({ page }) => {
+  await openJohnFoot(page, { immersiveReader: 'on', chapterButtons: 'hide' });
+  await expect(page.getByRole('navigation', { name: 'Chapters' })).toHaveCount(0);
+  const gap = await gapAbovePlaceLine(page);
+  // the last line's own leading (a 44 px line) and a little air: well under the 64 px the box held before
+  expect(gap, 'the blank between the last line and the place line').toBeLessThanOrEqual(24);
+  await shot(page, 'door-reader-foot-hide');
+});
+
+test('immersive, Chapter buttons Show: the buttons keep their room above the place line', async ({ page }) => {
+  await openJohnFoot(page, { immersiveReader: 'on', chapterButtons: 'show' });
+  const nav = page.getByRole('navigation', { name: 'Chapters' });
+  await expect(nav).toBeVisible();
+  const [navBottom, placeTop] = await Promise.all([nav.evaluate((el) => el.getBoundingClientRect().bottom), page.locator('[data-place-line]').evaluate((el) => el.getBoundingClientRect().top)]);
+  expect(navBottom, 'the buttons end above the place line').toBeLessThanOrEqual(placeTop - 8);
 });
 
 /** Every line of text and every button in the Verse view, outside its text box, that meets the ?'s box at rest (mw-5r3p30.1002: the 'Maps · 4' button and a help line, on Luke 20:47 at text size 160, were under it). */
