@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.108
+_2026-11-04_
+- Fixed: a chapter now appears after a couple of seconds even when the phone's saved settings are slow to open, instead of staying on Loading.
+
 ## 0.7.106
 _2026-11-04_
 - Fixed: At the largest phone text size, the grade buttons in Review, the Type it buttons in Memorize and the sound answers in the IPA lessons no longer run out of their boxes.

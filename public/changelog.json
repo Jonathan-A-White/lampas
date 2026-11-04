@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.108",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1042",
+    "kind": "fixed",
+    "text": "a chapter now appears after a couple of seconds even when the phone's saved settings are slow to open, instead of staying on Loading."
+  },
+  {
     "version": "0.7.106",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1039",
