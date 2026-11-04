@@ -15,6 +15,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [A name written with a capital mid-clause is not the common word its letters spell](#a-name-written-with-a-capital-mid-clause-is-not-the-common-word-its-letters-spell)
 - [The agreement check](#the-agreement-check)
   - [An address: the vocative read from the verse](#an-address-the-vocative-read-from-the-verse)
+  - [A preposition's case: the word it governs](#a-prepositions-case-the-word-it-governs)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
 - [The known-answer run](#the-known-answer-run)
@@ -41,7 +42,7 @@ Each word is looked up in three layers, in order. A word keeps the layer that ga
 | --- | --- | --- |
 | Layer 1, TAGNT form | The word's form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis, or one with at least 95% of 20 or more words | built (`scripts/lxx/tagnt.ts`, `derive.ts`) |
 | Layer 2, parser | For a form the New Testament lacks: ending rules learned from TAGNT's (form, lemma, parsing) triples, proposing only lemmas in TBESG; then Swete's other spellings; then analogy. Taken when one candidate is left, or one with 90% of the support | built (`scripts/lxx/parser.ts`, `tbesg.ts`, `derive.ts`) |
-| The agreement check, layer 2a | Before the model: a settled nominative in an address becomes the vocative, as TAGNT tags one ('An address'); an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
+| The agreement check, layer 2a | Before the model: a settled nominative in an address becomes the vocative, as TAGNT tags one ('An address'); a settled word right after a preposition, in a case the preposition does not take, takes the one reading of its own that is in a case it takes, or goes to the model ('A preposition's case'); an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
 | Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none; where Morpheus (below) knows a form that has no candidate, its analyses are the candidates | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches and takes the choices back is built (`scripts/lxx/batches.ts`, `pending.ts`, `choose.ts`, 'A model session'); no paid API: a Builder's own session |
 
 A word that layers 1 and 2 and the agreement check do not settle, and that no choice has settled, is **pending**, with its candidates. A book's annotation file is written only when none is pending and the rest of the bar is met ('The bar').
@@ -204,11 +205,16 @@ word its letters spell (mw-u2w5klk.25)` in `tests/unit/lxx-parser.test.ts`: Ση
 
 `scripts/lxx/agreement.ts` runs after layers 1 and 2 and before the files are written (`checkAgreement`, called by `deriveBook`), from the probe's
 'Error checks for the full run', 2(a) and 2(b). It reads one book's words verse by verse, and its rules are data (`SHARED_ENDINGS`, `TAGNT_EVIDENCE`,
-`LINKS`, `ADDRESS`), each with the comment this section copies. Its tests are `tests/unit/lxx-agreement.test.ts`; each rule below names its test there. In order:
+`LINKS`, `ADDRESS`, `PREPOSITION`), each with the comment this section copies. Its tests are `tests/unit/lxx-agreement.test.ts`; each rule below names its test there. In order:
 
 0. **An address** (`readAddresses`, `ADDRESS`; story mw-u2w5klk.26; the tests under 'an address is tagged vocative'). A settled nominative in a phrase spoken to
    someone becomes the vocative, layer 2a, confidence 0.85, the note `an address: the vocative, as TAGNT tags one, read from the verse`; a pending word of
    the phrase is offered the vocative. The next section gives the rule and its numbers.
+
+0b. **A preposition's case** (`readPrepositions`, `PREPOSITION`; story mw-u2w5klk.27; the tests under 'a preposition's case checks the word it governs'). A settled
+   word right after a settled preposition, in a case the preposition does not take, takes the one reading of its own candidates in a case it takes, layer 2a,
+   confidence 0.85, the note `a preposition's case: <preposition> (<ref>) takes <cases>`; with several such readings, or none, it goes to the model. The section
+   after the next gives the rule and its numbers.
 
 1. **A name written in lower case** (test: 'sends χλόης (Ps 22:2) to the model'; 'keeps a name the text writes with a capital'). A form whose every New
    Testament word TAGNT tags a person or a place (`-P`, `-L`), or a title whose lemma it writes with a capital (`Χριστός`, `-T`), and which the text writes
@@ -311,6 +317,57 @@ words were settled (`Dan 3:63 ἄστρα`, `Hab 1:5 οἱ καταφρονητ�
 `οὐ ποιήσετε`, the subject named, not spoken to). `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8`:
 John 1 as it was; Rom 8 from 644 to 646 of 652 words with the lemma and the whole parsing (`αββα ὁ πατήρ`, Rom 8:15). An address it misses is left as it was: one not set
 off by marks (`ἐξεγέρθητι ἡ δόξα μου`, the verb in the phrase), one whose first word is pending, one beside an indicative.
+
+### A preposition's case: the word it governs
+
+Story mw-u2w5klk.27, problem B of the hand audit (`docs/sources/lxx-settled-audit.md`, mw-u2w5klk.24): `ἐπὶ τρίβων` (Job 18:10#12) was settled as `τρίβω V-PAP-NSM` (the
+parser's support 123 of 133) and `ἐν ῥινὶ ὑός` (Prov 11:22#4) as `ῥίν N-NPF` (42 of 45), though the right reading (`τρίβος N-GPF`, `ῥίν N-DSF`) was among the candidates both
+times. Layer 2's 90% rule (`settleParsed`) weighs rules learned from other lemmas, none of it from the verse, and nothing checked that a preposition's word is in a case the
+preposition takes. Layer 1's 95%-of-20 rule (`settle`) has the same blind spot: it reads the New Testament's analyses of the form, not the verse.
+
+**The cases each preposition takes come from TAGNT** (`prepositionCases`, `scripts/lxx/parser.ts`, learned with the parser, `Parser.governs`): in each verse, NA28's words in
+TAGNT's order, the case of the word right after a word tagged `PREP`, where it has one (a conjunction, adverb, infinitive or verb after it is passed over). A preposition is
+checked when the New Testament shows at least 20 such words (`GOVERN_MIN_WORDS`) and at most 1 in 100 of them nominative or vocative (`GOVERN_MAX_NOMINATIVE`); a case is one
+it takes when 2 words and 1 in 200 show it (`GOVERN_MIN_CASE`, `GOVERN_MIN_SHARE`); the nominative and vocative never are. Of the pinned TAGNT that is 20 prepositions:
+
+| Preposition | Cases it takes | The New Testament's words after it (declined) |
+| --- | --- | --- |
+| ἐν | dative | 2,705 dative, 1 genitive (2,706) |
+| εἰς | accusative | 1,746 accusative, 2 genitive (1,748) |
+| ἐκ | genitive | 898 |
+| ἐπί | genitive, dative, accusative | 220, 180, 470 (870) |
+| πρός | dative, accusative | 7, 686, 1 genitive (694) |
+| διά, μετά, περί, ὑπό, ὑπέρ, κατά | genitive, accusative | διά 379 and 275; μετά 357, 77; περί 277, 36; ὑπό 168, 51; ὑπέρ 126, 19 and 1 nominative; κατά 74, 381 and 2 nominatives (καθ’ εἷς) |
+| παρά | genitive, dative, accusative | 80, 51, 59 |
+| ἀπό | genitive | 600, 1 nominative (`ἀπὸ ὁ ὢν`, Rev 1:4) |
+| σύν | dative | 127 |
+| ἐνώπιον, πρό, ἄχρι, ὀπίσω, ἕνεκα, ἀντί | genitive | 94, 42, 38, 26, 23, 22 |
+
+Not checked: `ἕως` (3 nominatives in 83: `ἕως ἡμέρα ἐστίν`, John 9:4, a conjunction there), `ἔμπροσθεν`, `χωρίς`, `ἔξω`, `ἐγγύς`, `ὡσεί`, `ὅπου` and every preposition with
+fewer than 20 words after it.
+
+**The rule** (`readPrepositions`, run by `checkAgreement` after the address rule and before the others): a settled word right after a settled preposition of the table (in
+its verse, no mark of punctuation after the preposition), whose case the preposition does not take, is read again among its own candidates. A reading layer 1 has from one
+New Testament word only is a slip of tagging, as in `TAGNT_EVIDENCE`, and is not taken (`σὺν τὸν δίκαιον`, Eccl 3:17: the New Testament tags `τόν` `T-DSF` once).
+
+- **Exactly one reading in a case the preposition takes**: it is settled, layer 2a, confidence 0.85, first among the candidates, with the note `a preposition's case: ἐπί
+  (Job.18:10#11) takes the genitive, dative or accusative`. Job 18:10 reads `τρίβος N-GPF`, Prov 11:22 `ῥίν N-DSF`.
+- **Several** (a preposition that takes more than one case, with a word that may be either): nothing is settled. The word goes to the model with the fitting readings first
+  and the note `…; several readings fit: for the model`, and the agreement links do not settle it. In the 39 books this happened to no word.
+- **None**: the word goes to the model, its candidates as they were, with the note `…; no reading fits: for the model`, and the links do not settle it. Either the
+  preposition does not govern it (`οὗ εἵνεκεν ὁ υἱὸς τοῦ βασιλέως ἀπέθανεν`, 2 Sam 18:20; `εἰς ἀγροῦ σκοπιάν`, a genitive before its noun; `πρὸς κεφαλῆς`, a genitive the New
+  Testament has once after πρός; Ecclesiastes' `σύν` with the accusative) or the reading is wrong and its right one is not among our candidates (`κατὰ Μωυσῆ` as a dative,
+  `ἐν Καδής` as `κάδος N-NSM`, `εἰς ἀριστερά` as `A-NSF`, `μετὰ τραυματιῶν` as `τραυματίζω V-PAP-NSM`). Left settled, about two in three of these were wrong.
+- A word in a case the preposition takes is never changed, whichever of its cases is right.
+
+**What it did** (`npm run lxx:derive -- --all --no-morpheus`, before and after, the derived and pending files compared word by word over the 39 books, 2026-11-04): settled
+363,244 and pending 112,885 before; 363,138 and 112,991 after (106 more pending, about one batch). 113 words changed: 7 settled words were settled again in a case their preposition takes (`τρίβων`
+Job 18:10 and Judg 5:20, `ῥινί` Job 27:3 and Prov 11:22, `ἅλωνι` Gen 50:11 and Dan 2:35, and `ἐν βολίσι`, 1 Sam 14:14, read `N-DSF` where it is `N-DPF`: the case right,
+the number the parser's wrong), 105 went to the model with no reading fitting (65 of layer 1, 40 of layer 2), and 1 more, `δίκαιον` (Eccl 3:17), went with its article.
+None went with several. By preposition: πρός 26, εἰς 26, ἐν 17, ἐκ 11, σύν 8, μετά 8, ἐπί 5, κατά 3, and 2 each for ὑπό, ἕνεκα, ἀπό and διά. Read by hand, 20 of the 113
+drawn at random (seed 20261106, `mulberry32`): 15 right (14 wrong answers sent to the model, and `ῥινί`, Prov 11:22, settled right), 5 wrong, each a right answer sent to the model
+(`εἰς ἀγροῦ σκοπιάν`, `εἰς γῆς βάθος`, `πρὸς κεφαλῆς` twice, `οὗ εἵνεκεν ὁ υἱός`), none a wrong answer settled. `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8` is
+byte for byte what it was.
 
 ## Swete's tokens
 
