@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.101
+_2026-11-04_
+- New: when the tutor names a book of the Apocrypha (Sirach, Wisdom, Tobit and the rest) the reference is now a link that opens it in your Apocrypha Bible in Logos.
+
 ## 0.7.100
 _2026-11-04_
 - Fixed: tapping a form of "which?" (ποῖος) now opens the table of adjective endings with its own form outlined, and a word no table holds no longer opens a table with nothing lit.

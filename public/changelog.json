@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.101",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1034",
+    "kind": "new",
+    "text": "when the tutor names a book of the Apocrypha (Sirach, Wisdom, Tobit and the rest) the reference is now a link that opens it in your Apocrypha Bible in Logos."
+  },
+  {
     "version": "0.7.100",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1033",
