@@ -1,6 +1,6 @@
 # A model session's choices for the Gen 1 fixture (tests/unit/lxx-choose.test.ts): the first candidate of each pending word, so every line is among the candidates,
 # except the two words with no candidate (guess, with the lemma) and two marks the test needs: Gen.1:9#35 guess (a candidate, marked) and a `?` on some lines.
-# Two lines are not the first candidate but a blind reader's choice (marked '# blind subagent, mw-u2w5klk.28' above each): the words the rule of that story leaves pending.
+# Two lines are not the first candidate but a blind reader's choice (marked '# blind subagent, mw-u2w5klk.28' above each): the words the rule of that story leaves pending; five more, marked '.30', are analogy's thin lone candidates.
 # Not a reading of the verses: the fixture only shows the shape (ref parsing [lemma] [?|guess]) and the confidences it gives.
 Gen.1:1#2 N-DSF
 Gen.1:2#5 A-NSM
@@ -34,9 +34,13 @@ Gen.1:8#5 T-ASN
 Gen.1:8#6 N-ASN
 Gen.1:8#13 A-ASM
 Gen.1:8#19 ADV
+# blind subagent, mw-u2w5klk.30
+Gen.1:9#5 V-APM-3S
 Gen.1:9#6 T-ASN
 Gen.1:9#7 N-ASN
 Gen.1:9#8 T-ASN
+# blind subagent, mw-u2w5klk.30
+Gen.1:9#16 V-APM-3S
 Gen.1:9#24 T-ASN ?
 Gen.1:9#25 N-ASN
 Gen.1:9#26 T-ASN
@@ -46,6 +50,8 @@ Gen.1:10#9 T-APN
 Gen.1:10#10 N-APN
 Gen.1:10#14 N-GSF
 Gen.1:10#20 A-ASM
+# blind subagent, mw-u2w5klk.30
+Gen.1:11#5 V-AAM-3S
 Gen.1:11#10 V-PAP-NSN
 Gen.1:11#11 N-NSN ?
 Gen.1:11#13 N-NSN
@@ -82,6 +88,8 @@ Gen.1:18#16 A-ASN
 Gen.1:18#24 A-ASM
 Gen.1:19#6 ADV
 Gen.1:19#8 A-NSF
+# blind subagent, mw-u2w5klk.30
+Gen.1:20#5 V-2AAM-3S
 Gen.1:20#6 T-APN
 Gen.1:20#7 N-APN
 Gen.1:20#8 N-APN
@@ -115,6 +123,8 @@ Gen.1:22#19 N-APN
 Gen.1:22#20 V-APM-3P πληθύνω guess
 Gen.1:23#6 ADV
 Gen.1:23#8 A-NSF
+# blind subagent, mw-u2w5klk.30
+Gen.1:24#5 V-2AAM-3S
 Gen.1:24#11 N-NSN
 Gen.1:24#12 A-APN
 Gen.1:24#14 N-APN
