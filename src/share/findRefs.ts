@@ -4,7 +4,7 @@
 // is not one of the Bible's 66 or its chapter or verse cannot be, and what is left is the same FoundReference the shared words give, so ShareReferences draws both.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { chaptersOf, findReferences, type FoundReference } from '../nav/refsInText';
-import { osisOf, parseCanonReference } from '../nav/links';
+import { osisOf, parseHeldReference } from '../nav/links';
 import { getDeviceKeyBytes } from '../services/deviceKey';
 import { askGrind, OFFLINE_MESSAGE, TUTOR_OFFLINE_MESSAGE, TutorError } from '../services/tutor';
 import { isTalkPicture, filesOf, preparePicture } from '../talk/pictures';
@@ -42,7 +42,7 @@ export function isFindRefsAnswer(value: unknown): value is FindRefsAnswer {
 export function checkedReferences(answered: readonly AnsweredReference[]): FoundReference[] {
   const found: FoundReference[] = [];
   for (const { printed, ref } of answered) {
-    const named = parseCanonReference(ref);
+    const named = parseHeldReference(ref);
     if (!named || named.chapter === undefined) continue;
     const { book, testament, chapter, verse } = named;
     const limit = chaptersOf(book, testament);

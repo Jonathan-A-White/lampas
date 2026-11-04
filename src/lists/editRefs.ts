@@ -1,5 +1,5 @@
 // src/lists/editRefs.ts — the pure parts of editing a verse list (mw-9q8wp1.3): the references typed text names, the list with them added, and the list in Bible order.
-import { osisOf, parseCanonReference } from '../nav/links';
+import { osisOf, parseHeldReference } from '../nav/links';
 import { chaptersOf, findReferences, listReferences, type FoundReference } from '../nav/refsInText';
 import { canonicalOf, listedOf } from './canonical';
 
@@ -7,7 +7,7 @@ import { canonicalOf, listedOf } from './canonical';
 export function referencesTyped(text: string): FoundReference[] {
   const found = findReferences(text);
   if (found.length > 0) return found;
-  const named = parseCanonReference(text);
+  const named = parseHeldReference(text);
   const limit = named && named.chapter !== undefined && chaptersOf(named.book, named.testament);
   if (!named || named.chapter === undefined || !limit || named.chapter < 1 || named.chapter > limit) return [];
   return [

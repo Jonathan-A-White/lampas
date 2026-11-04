@@ -4,7 +4,7 @@ Feature: A Bible reference in the tutor's answer opens a card first
   it and nothing moves. A whole chapter shows its first verse. Whether Lampas holds a passage is read from the data it has, not from the testament: an Old Testament
   reference (Daniel 2:28-29) opens in the Reader like a New Testament one, and with Logos linked in Settings its card also has Open in Logos, in the Bible he chose there, second to Open.
   A book Lampas holds no data for says 'Not in Lampas yet', with Open in Logos or a link to Settings where Logos is linked, and no Open
-  (tests/unit/reference-card-unheld.test.tsx: every book the tutor can name is held today, so no feature reaches that card).
+  (tests/unit/reference-card-unheld.test.tsx; the books of the Apocrypha are the books the tutor can name that Lampas does not hold: tests/unit/apocrypha-references.test.tsx).
 
   Scenario: Each reference in an answer is a link and the words around them are unchanged
     Given a tutor answer says "Compare Ps. 110 with Heb 7:1-3 and Romans 8:28 today."
@@ -81,3 +81,16 @@ Feature: A Bible reference in the tutor's answer opens a card first
     When he taps the link "Romans 8:28"
     Then the card has an Open button
     And the card has no Open in Logos link
+
+  Scenario: A book of the Apocrypha has no Open, only Open in Logos in his Apocrypha Bible
+    Given a tutor answer says "The book begins with Sirach 1:1 and its praise of wisdom."
+    And Logos is linked and his Bible is the LSB
+    When he taps the link "Sirach 1:1"
+    Then the card says "Not in Lampas yet"
+    And the card has an Open in Logos link to "logosres:1.0.50;ref=Bible.Sir1.1"
+    And the card has no Open button
+
+  Scenario: A word that only looks like an Apocrypha book is not a link
+    Given a tutor answer says "Yes Sir 5 times, and Wisdom 3 or Bar 2 of the chart."
+    Then the answer has no links
+

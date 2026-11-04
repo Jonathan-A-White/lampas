@@ -139,7 +139,9 @@ export function ChapterPicker({
     if (list && row) list.scrollTop = Math.max(0, row.offsetTop - list.clientHeight / 2 + row.offsetHeight / 2);
   }, [current.book]);
 
-  const typed = readPlace(query);
+  // a place in the Apocrypha is read (readPlace) but Lampas holds no text of it and the picker lists 66 books: it is no place here, only the tutor's link takes him there
+  const read = readPlace(query);
+  const typed: PlaceRead = read.kind === 'place' && read.testament === 'ap' ? { kind: 'none' } : read;
   // a name filters by its letters in order, names that start with it first; a start that fits more than one book ('J 3') is no place and lists the books it fits
   const shown = matchingInOrder(ITEMS, typed.kind === 'none' ? bookPart(query) : query);
   const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;

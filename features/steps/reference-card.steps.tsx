@@ -222,4 +222,29 @@ describeFeature(feature, ({ Scenario }) => {
       expect(within(card() as HTMLElement).queryByRole('link', { name: 'Open in Logos' })).toBeNull();
     });
   });
+
+  Scenario('A book of the Apocrypha has no Open, only Open in Logos in his Apocrypha Bible', ({ Given, When, Then, And }) => {
+    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    And('Logos is linked and his Bible is the LSB', linkLogos);
+    When('he taps the link {string}', async (_, name: string) => {
+      await user.click(screen.getByRole('link', { name }));
+    });
+    Then('the card says {string}', async (_, text: string) => {
+      expect(await within(await screen.findByRole('dialog')).findByText(text, { exact: false })).toBeInTheDocument();
+    });
+    And('the card has an Open in Logos link to {string}', async (_, url: string) => {
+      const link = await within(card() as HTMLElement).findByRole('link', { name: 'Open in Logos' });
+      expect(link.getAttribute('href')).toBe(url);
+    });
+    And('the card has no Open button', () => {
+      expect(within(card() as HTMLElement).queryByRole('button', { name: 'Open' })).toBeNull();
+    });
+  });
+
+  Scenario('A word that only looks like an Apocrypha book is not a link', ({ Given, Then }) => {
+    Given('a tutor answer says {string}', async (_, text: string) => answerSays(text));
+    Then('the answer has no links', () => {
+      expect(screen.queryAllByRole('link')).toEqual([]);
+    });
+  });
 });

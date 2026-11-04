@@ -53,7 +53,7 @@ describe('readPlace', () => {
   });
 
   it('does not take words that name no book for a reference', () => {
-    for (const text of ['Hezekiah 3:1', 'hello 5', 'Tobit 3:1']) expect(readPlace(text).kind).toBe('none');
+    for (const text of ['Hezekiah 3:1', 'hello 5']) expect(readPlace(text).kind).toBe('none');
   });
 
   it('says how many chapters a book has when the chapter is past its end', () => {

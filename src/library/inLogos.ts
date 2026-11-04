@@ -1,6 +1,7 @@
 // src/library/inLogos.ts — what the chooser behind "In another book…" holds for one place (docs/library-at-scale.md 3.6, mw-rfjjzd.9): the books of his shelf that open at a verse, as rows
 // with their Logos links, and the rows as groups (Pinned, Commentaries on <book>, Greek texts, Interlinears; for an Old Testament place, Bibles, the commentaries that cover the book and Interlinears). Pure: the sheet reads
 // the shelf and hands the states here, and a test hands its own entries.
+import { apocryphaBookOf } from '../data/apocrypha';
 import { bookOf, otBookOf } from '../data/books';
 import type { ShelfState } from '../data/repositories';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
@@ -39,7 +40,7 @@ export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.boo
 /** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book); a Bible holds the part of the canon the book is in
  *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one. */
 const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
-  entry.kind === 'bible' ? entry.parts === undefined || entry.parts.includes(partOf(place.book)) : entry.covers ? entry.covers.includes(place.book) : !isOldTestament(place);
+  entry.kind === 'bible' ? entry.parts === undefined || entry.parts.includes(partOf(place.book)) : entry.covers ? entry.covers.includes(place.book) : partOf(place.book) === 'nt';
 
 /** The link that opens `entry` at the place: a Bible as the Old Testament chapter links are made (logosBible.ts), any other book at the Bible reference, the way a work is (works.ts). */
 function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefined {
@@ -51,7 +52,7 @@ function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefine
 /** The books of `entries` that are On or Pinned on the shelf (`states`, by Resource ID), cover the place and open at a verse, each with its link, in the entries' order as the dial shows them
  *  (resourcesForLevel: Greek books are hidden at Just English). */
 export function inLogosRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, level: GreekLevel = GREEK_TOP): InLogosRow[] {
-  const kinds = isOldTestament(place) ? OT_KINDS : NT_KINDS;
+  const kinds = partOf(place.book) === 'nt' ? NT_KINDS : OT_KINDS;
   return resourcesForLevel(entries, level).flatMap((entry): InLogosRow[] => {
     const state = states.get(entry.resource);
     if (!state || state === 'off' || !kinds.includes(entry.kind) || (entry.kind !== 'bible' && entry.opens !== 'verse') || !covers(entry, place)) return [];
@@ -81,8 +82,8 @@ const TITLES: Record<Kind, (book: string) => string> = {
 
 /** The groups the sheet draws for `rows`: Pinned first (a book once, not again in its kind), then the kinds in order; a group with no rows is left out. `query` keeps only the rows it matches. */
 export function inLogosGroups(rows: readonly InLogosRow[], place: StudyPlace, query = ''): InLogosGroup[] {
-  const kinds = isOldTestament(place) ? OT_KINDS : NT_KINDS;
-  const book = bookOf(place.book)?.name ?? place.book;
+  const kinds = partOf(place.book) === 'nt' ? NT_KINDS : OT_KINDS;
+  const book = (bookOf(place.book) ?? apocryphaBookOf(place.book))?.name ?? place.book;
   const kept = rows.filter((r) => answers(r.entry, query));
   const pinned = kept.filter((r) => r.state === 'pinned' && r.entry.kind !== 'bible');
   const groups: InLogosGroup[] = [{ key: 'pinned', title: 'Pinned', rows: pinned }];

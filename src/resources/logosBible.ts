@@ -1,6 +1,7 @@
 // src/resources/logosBible.ts — an Old Testament chapter in Logos, in the Bible he chose (Settings > Bible in Logos). Lampas has no Old Testament
 // text, so the chapter picker opens the chapter in his own Logos library: the Logos app's own scheme first (`logosres:<Bible>;ref=Bible.<book><chapter>`),
 // with the https ref.ly address as the fallback, opened only when the phone cannot open the scheme (openApp.ts armFallback). docs/resources.md has the sources.
+import { APOCRYPHA } from '../data/apocrypha';
 import { CANON } from '../data/canon';
 import { otBookOf } from '../data/books';
 import { entriesOf } from './catalogue';
@@ -52,20 +53,9 @@ export function chapterLink(code: string, chapter: number, resourceId: string): 
   return resourceLink(bible, `ref=${ref}`);
 }
 
-/** The books of the Apocrypha by our code (three characters, never a code of the canon's 66), with the abbreviation Logos' list gives each in a reference (UNVERIFIED on a device, docs/resources.md).
- *  Lampas holds no text of them and parses no reference to them yet; a link to one opens in his Apocrypha Bible (partOf, bibleFor). */
-const APOCRYPHA_LOGOS: Readonly<Record<string, string>> = {
-  tob: 'Tob',
-  jdt: 'Jdt',
-  wis: 'Wis',
-  sir: 'Sir',
-  bar: 'Bar',
-  '1ma': '1Ma',
-  '2ma': '2Ma',
-  '1es': '1Es',
-  '2es': '2Es',
-  man: 'PrMan',
-};
+/** The books of the Apocrypha by our code (three characters, never a code of the canon's 66), with the abbreviation Logos' list gives each in a reference (UNVERIFIED on a device, docs/resources.md):
+ *  data/apocrypha.ts holds them. Lampas holds no text of them; the reference to one is read (nav/links.ts) and opens in his Apocrypha Bible (partOf, bibleFor). */
+const APOCRYPHA_LOGOS: Readonly<Record<string, string>> = Object.fromEntries(APOCRYPHA.map((b) => [b.code, b.logos]));
 
 /** His Bible in Logos for each part (Settings > Bible in Logos). */
 export type LogosBibles = Record<LogosPart, string>;

@@ -66,7 +66,7 @@ Feature: Lampas takes links in
   Scenario: A book Lampas does not hold opens the chapter he had open and says what was asked for
     Given a link "#/?ref=Tobit.3.1" is opened
     Then the reader is headed "Romans 8"
-    And the notice reads "“Tobit.3.1” is not in Lampas; showing Romans 8."
+    And the notice reads "“Tobit 3:1” is not in Lampas; showing Romans 8."
 
   Scenario: An Old Testament reference opens the chapter in English with the verse at the top and no Verse view
     Given a link "#/?ref=Jon.1.10" is opened

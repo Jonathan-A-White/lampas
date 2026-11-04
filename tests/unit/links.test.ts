@@ -86,8 +86,8 @@ describe('parseCanonReference', () => {
     }
   });
 
-  it('is null for a book neither Testament has, and for text that is not a reference', () => {
-    for (const text of ['Tobit 3:1', 'Sirach 1:1', '', '53:5', 'Isaiah 53:5:1']) expect(parseCanonReference(text), text).toBeNull();
+  it('is null for a book of no list and for text that is not a reference', () => {
+    for (const text of ['Hezekiah 3:1', '', '53:5', 'Isaiah 53:5:1']) expect(parseCanonReference(text), text).toBeNull();
   });
 });
 
