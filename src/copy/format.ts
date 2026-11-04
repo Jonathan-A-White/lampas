@@ -121,9 +121,12 @@ function paragraph(unit: CopyUnit, numbers: OnOffChoice): string {
     .trim();
 }
 
+/** The reference as Copy writes it: 'Colossians 3:1 (MSB)'. */
+export const copyReferenceLine = (unit: CopyUnit): string => `${copyReference(unit)} (${TRANSLATION})`;
+
 /** The text to copy for `unit` in `format`: the words as he reads them, their reference before or after, and the link on a last line of its own. */
 export function copyText(unit: CopyUnit, format: CopyFormat): string {
-  const reference = `${copyReference(unit)} (${TRANSLATION})`;
+  const reference = copyReferenceLine(unit);
   const lines = [
     ...(format.reference === 'before' ? [reference] : []),
     paragraph(unit, format.numbers),
@@ -131,4 +134,57 @@ export function copyText(unit: CopyUnit, format: CopyFormat): string {
     ...(format.link === 'on' ? [copyLink(unit)] : []),
   ];
   return lines.join('\n');
+}
+
+/** What the Share sheet's row shows of a long piece: its first words, a gap and its last words, so a passage's row is short and still ends at its reference. */
+const SHOWN_HEAD = 72;
+const SHOWN_TAIL = 36;
+export function cutShort(text: string): string {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  if (flat.length <= SHOWN_HEAD + SHOWN_TAIL + 8) return flat;
+  // the cuts fall between words
+  const head = flat.slice(0, SHOWN_HEAD).replace(/\s+\S*$/, '');
+  const tail = flat.slice(-SHOWN_TAIL).replace(/^\S*\s+/, '');
+  return `${head} … ${tail}`;
+}
+
+export type SharePieceId = 'whole' | 'link' | 'text' | 'reference';
+
+/** What the phone's share is handed: the parts of the Web Share data a piece fills. */
+export interface ShareData {
+  title?: string;
+  text?: string;
+  url?: string;
+}
+
+/** One row of the Verse view's Share sheet (mw-5r3p30.1026): `shown` is what the row says it will send (cut short when long), `data` is what is sent, whole, and `hand` is the same
+ * piece as one text, for a phone that has no share or refuses it (shown to copy by hand). */
+export interface SharePiece {
+  id: SharePieceId;
+  label: string;
+  shown: string;
+  data: ShareData;
+  hand: string;
+}
+
+/** The four pieces of `unit` in `format`: the whole as Share has always sent it (the words and the reference by Reference and Verse numbers, the link as the share's url while Link is On);
+ * just the link (whatever Link says, he asks for it by name); just the text (the words as he reads them, numbered by Verse numbers, no reference, no link); just the reference. */
+export function sharePieces(unit: CopyUnit, format: CopyFormat): SharePiece[] {
+  const link = copyLink(unit);
+  const words = copyText(unit, { ...format, link: 'off' });
+  const plain = paragraph(unit, format.numbers);
+  const reference = copyReferenceLine(unit);
+  const linked = format.link === 'on';
+  return [
+    {
+      id: 'whole',
+      label: 'The whole',
+      shown: linked ? `${cutShort(words)}\n${link}` : cutShort(words),
+      data: { title: copyReference(unit), text: words, ...(linked ? { url: link } : {}) },
+      hand: copyText(unit, format),
+    },
+    { id: 'link', label: 'Just the link', shown: link, data: { url: link }, hand: link },
+    { id: 'text', label: 'Just the text', shown: cutShort(plain), data: { text: plain }, hand: plain },
+    { id: 'reference', label: 'Just the reference', shown: reference, data: { text: reference }, hand: reference },
+  ];
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { copyUnitOf, copyText, COPY_DEFAULTS, type CopyFormat, type CopyUnit } from '../../src/copy/format';
+import { copyUnitOf, copyText, cutShort, sharePieces, COPY_DEFAULTS, type CopyFormat, type CopyUnit } from '../../src/copy/format';
 import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
 import { weaveVerse, wovenInOrder } from '../../src/data/weave';
 
@@ -170,5 +170,43 @@ describe('copyText: As you read it', () => {
     expect(copyText(copyUnitOf(chapter, gen, { view: 'greek', woven: null }), fmt({ link: 'off', reference: 'off' }))).toBe('בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים');
     const woven = [wovenInOrder(gen, weaveVerse(gen, { solid: new Set(['בָּרָא']) }), 'english')];
     expect(copyText(copyUnitOf(chapter, gen, { view: 'english', woven }), fmt({ link: 'off', reference: 'off' }))).toBe('In the beginning בָּרָ֣א God');
+  });
+});
+
+describe('sharePieces: what the Verse view\'s Share sheet offers (mw-5r3p30.1026)', () => {
+  const link = 'https://lampas.allmymind.org/#/?ref=Col.3.1';
+  const pieceOf = (unit: CopyUnit, format: CopyFormat, id: string) => {
+    const piece = sharePieces(unit, format).find((p) => p.id === id);
+    if (!piece) throw new Error(`no ${id}`);
+    return piece;
+  };
+  it('has four rows, in the order The whole, Just the link, Just the text, Just the reference', () => {
+    expect(sharePieces(COL[0], COPY_DEFAULTS).map((p) => p.label)).toEqual(['The whole', 'Just the link', 'Just the text', 'Just the reference']);
+  });
+  it('the whole is what Share has always sent: the text without the link line, the link as the url', () => {
+    expect(pieceOf(COL[0], COPY_DEFAULTS, 'whole').data).toEqual({
+      title: 'Colossians 3:1',
+      text: 'Since, then, you have been raised with Christ,\n— Colossians 3:1 (MSB)',
+      url: link,
+    });
+    expect(pieceOf(COL[0], fmt({ link: 'off' }), 'whole').data.url).toBeUndefined();
+  });
+  it('just the link is the link alone, whatever Link says', () => {
+    expect(pieceOf(COL[0], fmt({ link: 'off' }), 'link').data).toEqual({ url: link });
+  });
+  it('just the text is the words alone, numbered only by Verse numbers', () => {
+    expect(pieceOf(COL[0], COPY_DEFAULTS, 'text').data).toEqual({ text: 'Since, then, you have been raised with Christ,' });
+    expect(pieceOf(COL[1], COPY_DEFAULTS, 'text').data.text).toBe('1 Since, then, you have been raised with Christ, 2 Set your minds on things above.');
+    expect(pieceOf(COL[1], fmt({ numbers: 'off' }), 'text').data.text).toBe('Since, then, you have been raised with Christ, Set your minds on things above.');
+  });
+  it('just the reference is the reference alone, whatever Reference says', () => {
+    expect(pieceOf(COL[0], fmt({ reference: 'off' }), 'reference').data).toEqual({ text: 'Colossians 3:1 (MSB)' });
+  });
+  it('a long piece is cut short in the row and sent whole', () => {
+    const long: CopyUnit = { ...COL[1], verses: [{ n: 1, english: 'word '.repeat(200).trim() }] };
+    const text = pieceOf(long, COPY_DEFAULTS, 'text');
+    expect(text.shown.length).toBeLessThan(140);
+    expect(text.data.text).toBe('word '.repeat(200).trim());
+    expect(cutShort('short')).toBe('short');
   });
 });
