@@ -5,11 +5,11 @@
 // parsing). It prints, by the candidate's stem support (Candidate.stemSupport), how many such words there are and how many are right, and the least support at which
 // the lone candidates taken are right at least LONE_MIN_SHARE of the time together. The same for analogy (story .30): of the words whose form the other books lack and
 // for which the rules leave nothing, those to which byAnalogy gives one candidate, by that candidate's support (the pairs of forms of one lemma behind it), at
-// LONE_ANALOGY_MIN_SHARE and at LONE_MIN_SHARE. Nothing is written; it reads the pinned files as lxx:derive does.
+// LONE_ANALOGY_MIN_SHARE and at LONE_MIN_SHARE. And (story .31) what analogy's readings offered beside a thin lone rule candidate hold (besideCounts). Nothing is written; it reads the pinned files as lxx:derive does.
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { loadInput } from './derive';
-import { byAnalogy, parse, trainParser } from './parser';
+import { byAnalogy, isThinLone, parse, trainParser } from './parser';
 import { keyOf } from './swete';
 import { inNa28, readTagnt, type TagntRow } from './tagnt';
 import { readTbesg, type Lexicon } from './tbesg';
@@ -75,6 +75,54 @@ export function leastSupport(table: readonly LoneRow[], share: number = LONE_MIN
   return undefined;
 }
 
+export interface BesideCounts {
+  /** the words whose form the other books lack and for which the rules leave one candidate on thin support (isThinLone) */
+  thin: number;
+  /** of those, the lone candidate is TAGNT's answer */
+  right: number;
+  /** thin and wrong, and analogy gives some reading beside it, and one of them is TAGNT's answer */
+  wrongMended: number;
+  /** thin and wrong, and analogy gives a reading beside it but none is TAGNT's answer */
+  wrongNotHeld: number;
+  /** thin and wrong, and analogy gives nothing */
+  wrongNone: number;
+  /** thin and right, and analogy gives readings beside it: the model has the right one and others to weigh */
+  rightWithBeside: number;
+  /** thin and right, and analogy gives nothing */
+  rightAlone: number;
+}
+
+/**
+ * What analogy's readings beside a thin lone rule candidate (derive.ts analogyBeside: byAnalogy's candidates other than the rule's own) hold, each New Testament book
+ * hidden in turn: of the thin lone candidates that are wrong, those for which analogy offers TAGNT's answer (for the model to choose; the check does not read them), and
+ * of the right ones, those with readings beside them (a cost to the model's choice, a settled answer made wrong by none: the check does not read them).
+ */
+export function besideCounts(rows: readonly TagntRow[], lexicon: Lexicon): BesideCounts {
+  const n: BesideCounts = { thin: 0, right: 0, wrongMended: 0, wrongNotHeld: 0, wrongNone: 0, rightWithBeside: 0, rightAlone: 0 };
+  for (const book of [...new Set(rows.map((r) => r.book))]) {
+    const rest = rows.filter((r) => r.book !== book);
+    const known = new Set(rest.map((r) => keyOf(r.form)));
+    const parser = trainParser(rest, lexicon);
+    for (const r of rows) {
+      if (r.book !== book || !inNa28(r) || known.has(keyOf(r.form))) continue;
+      const ruled = parse(r.form, parser);
+      if (!isThinLone(ruled)) continue;
+      const [lone] = ruled;
+      const beside = byAnalogy(r.form, parser).filter((c) => !(c.lemma === lone.lemma && c.morph === lone.morph));
+      const right = lone.lemma === r.lemma && lone.morph === r.morph;
+      n.thin++;
+      if (right) {
+        n.right++;
+        if (beside.length) n.rightWithBeside++;
+        else n.rightAlone++;
+      } else if (!beside.length) n.wrongNone++;
+      else if (beside.some((c) => c.lemma === r.lemma && c.morph === r.morph)) n.wrongMended++;
+      else n.wrongNotHeld++;
+    }
+  }
+  return n;
+}
+
 const pct = (k: number, n: number): string => `${((100 * k) / n).toFixed(1)}%`;
 
 function report(label: string, column: string, lone: ReadonlyArray<{ stem: number; right: boolean }>, shares: readonly number[] = [LONE_MIN_SHARE]): void {
@@ -104,6 +152,12 @@ async function main(): Promise<void> {
   report('the rules', 'stem support', loneCandidates(rows, lexicon, 'rules'));
   console.log('');
   report('analogy (where the rules give nothing)', 'support', loneCandidates(rows, lexicon, 'analogy'), [LONE_ANALOGY_MIN_SHARE, LONE_MIN_SHARE]);
+  console.log('');
+  const b = besideCounts(rows, lexicon);
+  const wrong = b.thin - b.right;
+  console.log(`analogy's readings beside a thin lone rule candidate, each New Testament book hidden in turn: ${b.thin} words`);
+  console.log(`wrong ${wrong}: analogy offers TAGNT's answer for ${b.wrongMended} (${pct(b.wrongMended, wrong)}); readings beside it but not TAGNT's ${b.wrongNotHeld}; nothing beside it ${b.wrongNone}`);
+  console.log(`right ${b.right}: readings beside it ${b.rightWithBeside}; alone ${b.rightAlone}; settled answers changed: none, since the check does not read them (npm run lxx:derive compares)`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
