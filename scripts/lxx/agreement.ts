@@ -10,7 +10,7 @@
 // that agrees with its settled neighbours takes it, as layer '2a'; where two agree it stays pending: the check never guesses.
 import { keyOf } from './swete';
 import type { Analysis } from './tagnt';
-import { caseOf as caseOfMorph, type Candidate } from './parser';
+import { caseOf as caseOfMorph, isThinLone, type Candidate } from './parser';
 import type { DerivedWord, PendingWord, WordCandidate } from './derive';
 
 /** A word settled by agreement: below layer 1's 0.90 and above the parser's 0.75, since the check reads one neighbour and no syntax. */
@@ -525,10 +525,13 @@ export function readAddresses(words: ReadonlyArray<{ ref: string; verse: string;
   const calls = (p: number[]): string | undefined => (p.some((i) => lemmaOf(i) === 'ὦ') ? 'any' : calledCng(p).length ? 'S' : undefined);
   /**
    * The number of the imperative of the second person a phrase holds (a word every reading of which is one of that number), when it holds no settled
-   * finite verb of another person: φωνὴ ἀδελφιδοῦ μου, κρούει ἐπὶ τὴν θύραν Ἄνοιξόν μοι (Song 5:2) is a cry and then his words, not an address.
+   * finite verb of another person: φωνὴ ἀδελφιδοῦ μου, κρούει ἐπὶ τὴν θύραν Ἄνοιξόν μοι (Song 5:2) is a cry and then his words, not an address. A word
+   * left with one candidate on thin support (isThinLone, story mw-u2w5klk.28) counts as settled here, as it was before that rule: ὦπταί (Exo 3:16, ὀπτάω
+   * V-IAI-3S) keeps θεὸς Ἀβραάμ a nominative.
    */
+  const settledHere = (i: number): boolean => isSettled(outs[i]) || isThinLone(outs[i].candidates);
   const speaksTo = (p: number[]): string | undefined => {
-    if (p.some((i) => isSettled(outs[i]) && partOf(outs[i].morph) === 'V' && !/^2[SP]$/.test(outs[i].morph.split('-')[2] ?? ''))) return undefined;
+    if (p.some((i) => settledHere(i) && readings(i).every((r) => partOf(r.morph) === 'V' && !/^2[SP]$/.test(r.morph.split('-')[2] ?? '')))) return undefined;
     for (const i of p) {
       const rs = readings(i);
       const ns = new Set(rs.map(secondPerson));

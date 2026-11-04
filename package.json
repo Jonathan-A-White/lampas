@@ -32,6 +32,7 @@
     "variants:english": "tsx scripts/variants-english.ts",
     "lxx:english": "tsx scripts/lxx/english.ts",
     "lxx:known": "tsx scripts/lxx/known.ts",
+    "lxx:lone-support": "tsx scripts/lxx/lone-support.ts",
     "lxx:morpheus-check": "tsx scripts/lxx/morpheus-check.ts",
     "lxx:pending": "tsx scripts/lxx/pending.ts",
     "lxx:release": "tsx scripts/lxx/release.ts",
