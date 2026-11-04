@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.104
+_2026-11-04_
+- Fixed: after a partly read verse on a small phone, the Next word card shows whole above the buttons instead of running under them.
+
 ## 0.7.103
 _2026-11-04_
 - Fixed: The Maps button no longer sits at the bottom of a chapter, the place line at the bottom shows whether or not the Immersive reader is on, and opening a link no longer changes your Immersive reader setting.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.104",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1037",
+    "kind": "fixed",
+    "text": "after a partly read verse on a small phone, the Next word card shows whole above the buttons instead of running under them."
+  },
+  {
     "version": "0.7.103",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1028",
