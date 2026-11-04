@@ -62,11 +62,14 @@ function Screen({ name, onTap }: { name: string; onTap: (what: string) => void }
 function touch(type: 'touchstart' | 'touchend' | 'touchmove', points: ReadonlyArray<{ x: number; y: number }>, target: EventTarget): void {
   const event = new Event(type, { bubbles: true, cancelable: true });
   Object.defineProperty(event, 'touches', { value: points.map((p) => ({ clientX: p.x, clientY: p.y })) });
-  act(() => void target.dispatchEvent(event));
+  target.dispatchEvent(event);
 }
+// both events in one act: the tap is timed with the real clock (TAP_MS), so a loaded host must not get a render between the fingers going down and up
 const twoFingerTap = (on: EventTarget = document.body): void => {
-  touch('touchstart', TWO_FINGERS, on);
-  touch('touchend', [], on);
+  act(() => {
+    touch('touchstart', TWO_FINGERS, on);
+    touch('touchend', [], on);
+  });
 };
 const door = () => document.querySelector('[data-floating-tutor]');
 
