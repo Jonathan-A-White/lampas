@@ -8,13 +8,17 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import {
+  ADDRESS,
   AGREEMENT_CONFIDENCE,
   LINKS,
+  NOTE_ADDRESS,
   NOTE_NAME,
   SHARED_ENDINGS,
   TAGNT_EVIDENCE,
   agree,
+  checkAgreement,
   pauseAfter,
+  readAddresses,
   sharedEnding,
   type AgreementWord,
 } from '../../scripts/lxx/agreement';
@@ -332,5 +336,147 @@ describe('the derive report', async () => {
     const table: string[] = [];
     await run(two, ['--all'], (line) => table.push(line));
     expect(table.filter((l) => /^(tst|tsu)\t2\t/.test(l))).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------- an address (story mw-u2w5klk.26)
+
+/**
+ * A stretch of a verse as layers 1 and 2 left it, copied from the full run (`npm run lxx:derive -- --all`): each token is Swete's print, then ' = ', then
+ * the settled 'lemma MORPH', or '? ' and the pending word's candidates 'lemma MORPH; lemma MORPH'. `first` is the number of its first word in the verse.
+ */
+function asLeft(verse: string, first: number, tokens: readonly string[]): { words: Array<{ ref: string; verse: string; form: string; display: string }>; outs: Array<DerivedWord | PendingWord> } {
+  const words = tokens.map((t, i) => {
+    const display = t.split(' = ')[0];
+    return { ref: `${verse}#${first + i}`, verse, display, form: display.replace(/[,.;:··;]+$/u, '') };
+  });
+  const outs = tokens.map((t, i): DerivedWord | PendingWord => {
+    const ref = words[i].ref;
+    const reading = t.split(' = ')[1];
+    if (reading.startsWith('? ')) {
+      const candidates = reading
+        .slice(2)
+        .split('; ')
+        .map((c) => ({ lemma: c.split(' ')[0], morph: c.split(' ')[1], support: 1, share: 0 }));
+      return { ref, candidates, notes: [] };
+    }
+    const [lemma, morph] = reading.split(' ');
+    return { ref, lemma, morph, layer: 1, confidence: 0.97, candidates: [{ lemma, morph, support: 3, share: 1 }], notes: [] };
+  });
+  return { words, outs };
+}
+const checked = (verse: string, first: number, tokens: readonly string[]): Map<string, DerivedWord | PendingWord> => {
+  const { words, outs } = asLeft(verse, first, tokens);
+  return new Map(checkAgreement(words, outs, { names: new Set(), parse: () => [] }).outs.map((o) => [o.ref, o]));
+};
+const answer = (m: Map<string, DerivedWord | PendingWord>, ref: string): string | undefined => {
+  const o = m.get(ref);
+  return o && isDerived(o) ? `${o.lemma} ${o.morph}` : undefined;
+};
+
+describe('an address is tagged vocative, as the New Testament data tags it (mw-u2w5klk.26: the hand audit of mw-u2w5klk.24, problem A)', () => {
+  it('reads 2Sa.13:20#19 ἀδελφή as N-VSF: καὶ νῦν, ἀδελφή μου, κώφευσον', () => {
+    const v = checked('2Sa.13:20', 17, ['καὶ = καί CONJ', 'νῦν, = νῦν ADV', 'ἀδελφή = ἀδελφή N-NSF', 'μου, = ἐγώ P-1GS', 'κώφευσον, = κωφεύω V-AAM-2S', 'ὅτι = ὅτι CONJ', 'ἀδελφός = ἀδελφός N-NSM', 'σού = σύ P-2GS', 'ἐστιν· = εἰμί V-PAI-3S']);
+    expect(answer(v, '2Sa.13:20#19')).toBe('ἀδελφή N-VSF');
+    // the subject of ἐστιν after ὅτι is no address
+    expect(answer(v, '2Sa.13:20#23')).toBe('ἀδελφός N-NSM');
+  });
+
+  it('reads Psa.148:2#5 ἄγγελοι as N-VPM, with πάντες and οἱ: αἰνεῖτε αὐτόν, πάντες οἱ ἄγγελοι αὐτοῦ', () => {
+    const v = checked('Psa.148:2', 1, [
+      'αἰνεῖτε = αἰνέω V-PAM-2P',
+      'αὐτόν, = αὐτός P-ASM',
+      'πάντες = πᾶς A-NPM',
+      'οἱ = ὁ T-NPM',
+      'ἄγγελοι = ἄγγελος N-NPM',
+      'αὐτοῦ· = αὐτός P-GSM',
+      'αἰνεῖτε = αἰνέω V-PAM-2P',
+      'αὐτόν, = αὐτός P-ASM',
+      'πᾶσαι = πᾶς A-NPF',
+      'αἱ = ὁ T-NPF',
+      'δυνάμεις = ? δύναμις N-NPF; δύναμις N-APF',
+      'αὐτοῦ. = αὐτός P-GSM',
+    ]);
+    expect(answer(v, 'Psa.148:2#5')).toBe('ἄγγελος N-VPM');
+    expect([3, 4, 9, 10, 11].map((n) => answer(v, `Psa.148:2#${n}`))).toEqual(['πᾶς A-VPM', 'ὁ T-VPM', 'πᾶς A-VPF', 'ὁ T-VPF', 'δύναμις N-VPF']);
+  });
+
+  it('reads Joe.1:5#10 πάντες as A-VPM: θρηνήσατε, πάντες οἱ πίνοντες οἶνον', () => {
+    const v = checked('Joe.1:5', 1, [
+      'Ἐκνήψατε, = ἐκνήφω V-AAM-2P',
+      'οἱ = ὁ T-NPM',
+      'μεθύοντες, = μεθύω V-PAP-NPM',
+      'ἐξ = ἐκ PREP',
+      'οἴνου = οἶνος N-GSM',
+      'αὐτῶν = ? αὐτός P-GPM; αὐτός P-GPN; αὐτός P-GPF',
+      'καὶ = καί CONJ',
+      'κλαύσατε· = κλαίω V-AAM-2P',
+      'θρηνήσατε, = θρηνέω V-AAM-2P',
+      'πάντες = πᾶς A-NPM',
+      'οἱ = ὁ T-NPM',
+      'πίνοντες = πίνω V-PAP-NPM',
+      'οἶνον, = οἶνος N-ASM',
+      'εἰς = εἰς PREP',
+      'μέθην, = μέθη N-ASF',
+      'ὅτι = ὅτι CONJ',
+      'ἐξήρθη = ἐξαίρω V-API-3S',
+      'ἐκ = ἐκ PREP',
+      'στόματος = στόμα N-GSN',
+      'ὑμῶν = σύ P-2GP',
+      'εὐφροσύνη = ? εὐφροσύνη N-NSF; εὐφροσύνη N-DSF; εὐφροσύνη N-VSF; εὐφροσύνη N-ASF; εὐφροσύνη N-GSF; εὐφροσύνη N-APF',
+      'καὶ = καί CONJ',
+      'χαρά. = ? χαρά N-NSF; χαρά N-VSF',
+    ]);
+    expect(answer(v, 'Joe.1:5#10')).toBe('πᾶς A-VPM');
+    expect([2, 3, 11, 12].map((n) => answer(v, `Joe.1:5#${n}`))).toEqual(['ὁ T-VPM', 'μεθύω V-PAP-VPM', 'ὁ T-VPM', 'πίνω V-PAP-VPM']);
+    expect(answer(v, 'Joe.1:5#13')).toBe('οἶνος N-ASM');
+  });
+
+  it('marks a word it changes as layer 2a with the note, and counts it', () => {
+    const { words, outs } = asLeft('Psa.7:2', 1, ['Κύριε = κύριος N-VSM', 'ὁ = ὁ T-NSM', 'θεός = θεός N-NSM']);
+    const result = checkAgreement(words, outs, { names: new Set(), parse: () => [] });
+    expect(result.outs.map((o) => (isDerived(o) ? `${o.morph} ${o.layer}` : 'pending'))).toEqual(['N-VSM 1', 'T-VSM 2a', 'N-VSM 2a']);
+    expect(result.outs[2].notes).toEqual([NOTE_ADDRESS]);
+    expect(result.stats.addressed).toBe(2);
+    expect(readAddresses(words, outs).addressed).toBe(2);
+  });
+
+  it('offers a pending word of an address the vocative, and agreement settles it: ἐπάρθητε, πύλαι αἰώνιοι (Ps 23:7)', () => {
+    const v = checked('Psa.23:7', 5, [
+      'ὑμῶν, = σύ P-2GP',
+      'καὶ = καί CONJ',
+      'ἐπάρθητε, = ἐπαίρω V-APM-2P',
+      'πύλαι = πύλη N-NPF',
+      'αἰώνιοι, = ? αἰώνιος A-NPM; αἰώνιος A-VPM; αἰώνιος A-NPF; αἰώνιος A-NPM-LG',
+      'καὶ = καί CONJ',
+    ]);
+    expect(answer(v, 'Psa.23:7#8')).toBe('πύλη N-VPF');
+    expect(answer(v, 'Psa.23:7#9')).toBe('αἰώνιος A-VPF');
+  });
+
+  it('reads no address beside an indicative, or where σύ is named: ὅτι σύ, Κύριε, ἡ ἐλπίς μου· τὸν ὕψιστον ἔθου (Ps 90:9)', () => {
+    const v = checked('Psa.90:9', 1, ['ὅτι = ὅτι CONJ', 'σύ, = σύ P-2NS', 'Κύριε, = κύριος N-VSM', 'ἡ = ὁ T-NSF', 'ἐλπίς = ἐλπίς N-NSF', 'μου· = ἐγώ P-1GS', 'τὸν = ὁ T-ASM', 'ἔθου = τίθημι V-2AMI-2S', 'καταφυγήν = καταφυγή N-ASF', 'σου. = σύ P-2GS']);
+    expect([4, 5].map((n) => answer(v, `Psa.90:9#${n}`))).toEqual(['ὁ T-NSF', 'ἐλπίς N-NSF']);
+  });
+
+  it('reads no address beside a phrase with a verb of another person: φωνὴ ἀδελφιδοῦ μου, κρούει … Ἄνοιξόν μοι (Song 5:2)', () => {
+    const v = checked('Sol.5:2', 8, ['φωνὴ = φωνή N-NSF', 'ἀδελφιδοῦ = ἀδελφιδός N-GSM', 'μου, = ἐγώ P-1GS', 'κρούει = κρούω V-PAI-3S', 'ἐπὶ = ἐπί PREP', 'τὴν = ὁ T-ASF', 'θύραν = θύρα N-ASF', 'Ἄνοιξόν = ἀνοίγω V-AAM-2S', 'μοι, = ἐγώ P-1DS']);
+    expect(answer(v, 'Sol.5:2#8')).toBe('φωνή N-NSF');
+  });
+
+  it('takes no participle that layer 1 settled vocative as a call: ὁ οἰκοδομῶν (Amos 9:6)', () => {
+    const v = checked('Amo.9:6', 1, ['ὁ = ὁ T-NSM', 'οἰκοδομῶν = οἰκοδομέω V-PAP-VSM', 'εἰς = εἰς PREP', 'τὸν = ὁ T-ASM', 'οὐρανὸν = οὐρανός N-ASM', 'ἀνάβασιν = ἀνάβασις N-ASF', 'αὐτοῦ, = αὐτός P-GSM']);
+    expect(answer(v, 'Amo.9:6#1')).not.toBe('ὁ T-VSM');
+  });
+
+  it('reads a call forward across a comma only: Κύριε· καιρὸς εὐδοκίας, ὁ θεός· … ἐπάκουσον (Ps 68:14)', () => {
+    const v = checked('Psa.68:14', 7, ['σέ, = σύ P-2AS', 'Κύριε· = κύριος N-VSM', 'καιρὸς = καιρός N-NSM', 'εὐδοκίας, = εὐδοκία N-GSF', 'ὁ = ὁ T-NSM', 'θεός· = θεός N-NSM', 'ἐν = ἐν PREP', 'τῷ = ? ὁ T-DSM; ὁ T-DSN', 'πλήθει = πλῆθος N-DSN', 'ἐπάκουσον, = ἐπακούω V-AAM-2S']);
+    expect(answer(v, 'Psa.68:14#9')).toBe('καιρός N-NSM');
+    expect([11, 12].map((n) => answer(v, `Psa.68:14#${n}`))).toEqual(['ὁ T-VSM', 'θεός N-VSM']);
+  });
+
+  it('has a comment a reader can check, copied in docs/lxx-derivation.md', () => {
+    expect(ADDRESS.comment).toContain('Heb 1:8');
+    expect(readFileSync('docs/lxx-derivation.md', 'utf8')).toContain(ADDRESS.name);
   });
 });
