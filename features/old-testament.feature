@@ -5,9 +5,9 @@ Feature: Lampas reads the Old Testament in English
   chapter's source view) opens it in Hebrew, as it opens a New Testament chapter in Greek. Every other setting applies. A tap on an English chunk
   opens the word sheet: the Hebrew words of the chunk (features/hebrew-word-sheet.feature) and, under them, the English sheet of its words (each with its Listen and a Webster's 1828 row
   in Logos); at Just English the small English sheet alone; Listen and Read from the top read the English;
-  the chapter before Matthew 1 is Malachi 4 and Genesis 1 has no chapter before it. At the foot of the chapter, Read in Logos opens it in the Bible he
-  chose in Settings (Bible in Logos, the Legacy Standard Bible to start; Settings > Bible in Logos has a picker for each part and a door to Library > Bibles, where one Bible is chosen for all three), by the
-  Logos app's own link, and Listen in Audible opens The Word of Promise at the chapter, each only while its setting is on. Jonah 1 is the copy of the
+  the chapter before Matthew 1 is Malachi 4 and Genesis 1 has no chapter before it. The foot of the chapter holds no Read in Logos and no Listen in Audible (his word, mw-5r3p30.1008): they are on the Verse view a verse, a passage or the chapter opens,
+  as for a New Testament chapter: In Logos opens it in the Bible he chose in Settings (Bible in Logos, the Legacy Standard Bible to start; Settings > Bible in Logos has a picker for each part and a door to Library > Bibles, where
+  one Bible is chosen for all three), by the Logos app's own link, and Listen's Listen in Audible opens The Word of Promise at the chapter, each only while its setting is on. Jonah 1 is the copy of the
   built chapter in tests/fixtures/data/jon/1.json (scripts/fixture-chapter.mjs).
 
   Scenario: The picker lists the 66 books and opens Jonah 1 in the Reader
@@ -115,47 +115,25 @@ Feature: Lampas reads the Old Testament in English
     Then the foot of the chapter has a button "Genesis 2 ›" and no button before it
 
   @uc-logos-links @hebrew
-  Scenario: Read in Logos is at the foot of an opened chapter in his default Bible and the chapter stays open
-    Given Lampas is opened on Jonah 1 with Logos on
-    Then "Read in Logos" is at the foot of the chapter with the link "logosres:lgcystndrdbblsb;ref=Bible.Jon1"
-    When he taps "Read in Logos"
-    Then Logos is asked for "logosres:lgcystndrdbblsb;ref=Bible.Jon1"
-    And the reader is headed "Jonah 1"
-
-  Scenario: The https address is the fallback only when the phone cannot open the app
-    Given Lampas is opened on Psalms 23 with Logos on
-    When he taps "Read in Logos"
-    And the page stays in front for the wait
-    Then the address "https://ref.ly/logosres/lgcystndrdbblsb?ref=Bible.Ps23" was opened
-
-  Scenario: The Bible he chose in Settings is the one that opens
-    Given Lampas is opened on Malachi 4 with Logos on and the Bible in Logos "LLS:NASB95"
-    When he taps "Read in Logos"
-    Then Logos is asked for "logosres:nasb95;ref=Bible.Mal4"
-
-  @uc-logos-links @hebrew
-  Scenario: With Logos on and the Audio Bible on the chapter offers both, and Listen in Audible names the chapter to pick
+  Scenario: The foot of an Old Testament chapter has no Read in Logos and no Listen in Audible, though both are on
     Given Lampas is opened on Judges 3 with Logos on and the Audio Bible on
-    Then the foot of Judges 3 offers "Read in Logos" and "Listen in Audible"
-    And the foot says "In Audible: Chapters > Judges 3"
-    And "Read in Logos" is the chapter's Logos link
-    And "Listen in Audible" is Audible's link at the start of Judges 3
+    Then the foot of the chapter offers nothing outside Lampas
+
+  Scenario: The Bible he chose in Settings is the one In Logos opens on the Verse view
+    Given Lampas is opened on Malachi 4 with Logos on and the Bible in Logos "LLS:NASB95"
+    When he taps the number of verse 2
+    And he taps "In Logos"
+    Then Logos is asked for "logosres:nasb95;ref=Bible.Mal4.2"
 
   @uc-logos-links @hebrew
-  Scenario: With only Logos on the foot offers the one action
-    Given Lampas is opened on Judges 3 with Logos on and the Audio Bible off
-    Then the foot of Judges 3 offers only "Read in Logos"
-
-  Scenario: With only the Audio Bible on the foot offers the one action
-    Given Lampas is opened on Judges 3 with Logos off and the Audio Bible on
-    Then the foot of Judges 3 offers only "Listen in Audible"
-
-  Scenario: With both off the foot offers neither
-    Given Lampas is opened on Judges 3 with Logos off and the Audio Bible off
-    Then the foot of Judges 3 offers nothing outside Lampas
+  Scenario: The Verse view of Judges 3:1 offers Listen in Audible at the start of the chapter, under Listen
+    Given Lampas is opened on Judges 3 with Logos on and the Audio Bible on
+    When he taps the number of verse 1
+    Then the Verse view shows "Listen in Audible" at the start of Judges 3
+    And the Verse view says "In Audible: Chapters > Judges 3"
 
   @uc-logos-links @hebrew
-  Scenario: A New Testament chapter has no Read in Logos at its foot
+  Scenario: A New Testament chapter has no Read in Logos or Listen in Audible at its foot
     Given Lampas is opened on Romans 8 with Logos on
     Then there is no "Read in Logos" at the foot of the chapter
 

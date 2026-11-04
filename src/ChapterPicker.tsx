@@ -1,8 +1,8 @@
 // src/ChapterPicker.tsx — the bottom sheet the Reader's title opens (mw-5r3p30.60): the 66 books of the Bible in canonical order (Genesis to Revelation) in a box of their own with a
 // search field (a long list is a widget, docs/pwa-best-practices.md section 8), then, for the book he taps, a grid of its chapters (the counts of the New Testament come from
 // data/index.json, those of the Old from src/data/books.ts). A tap on a chapter, of either testament, opens it in the Reader as a new Back step; the phone's Back, Done, Escape, a swipe down
-// or a tap outside closes the picker (src/ui/sheetBack.ts). An Old Testament chapter is read in English (mw-uqlxea.2, docs/layout/reader.md 'An Old Testament chapter (English only)'); its
-// two ways out, Read in Logos and Listen in Audible, are actions on the opened chapter (src/reader/ChapterActions.tsx), not here.
+// or a tap outside closes the picker (src/ui/sheetBack.ts). An Old Testament chapter is read in English (mw-uqlxea.2, docs/layout/reader.md 'An Old Testament chapter (English only)'); Read in Logos and Listen in Audible
+// are on the Verse view a verse, a passage or the chapter opens (In Logos, Listen), not here and not at the chapter's foot (mw-5r3p30.1008).
 // In choose mode (mw-umv8sp.3: the return sheet's Pick it myself, src/plan/WhereDidYouGetTo.tsx) a tap on any chapter, of either testament, hands it to `onChoose` and
 // opens nothing. `heading` names the sheet in that mode ('Where are you starting?', src/plan/StartPlan.tsx).
 // With the Reading plan on and a plan started (mw-umv8sp.5) every grid outlines the next chapter (an accent outline, data-next); a chapter done looks like any other, with no ✓ and

@@ -55,17 +55,17 @@ describe('the door with two sources (mw-zbjgn3r.6)', () => {
 
 describe('the chapter foot', () => {
   it('draws the door at the foot of an Old Testament chapter and of a New Testament one', async () => {
-    render(<ChapterActions name="Genesis" code="gen" chapter={10} immersive={false} />);
+    render(<ChapterActions code="gen" chapter={10} immersive={false} />);
     expect(await screen.findByRole('button', { name: 'Maps · 6' })).toBeInTheDocument();
     cleanup();
-    render(<ChapterActions name="Romans" code="rom" chapter={8} immersive={false} />);
+    render(<ChapterActions code="rom" chapter={8} immersive={false} />);
     expect(await screen.findByRole('button', { name: 'Maps · 1' })).toBeInTheDocument();
     // the Logos and Audible actions are the Old Testament's only
     expect(screen.queryByRole('group', { name: /read or listen/ })).toBeNull();
   });
 
   it('draws no door anywhere in the Reader with the Immersive reader On', async () => {
-    render(<ChapterActions name="Genesis" code="gen" chapter={10} immersive />);
+    render(<ChapterActions code="gen" chapter={10} immersive />);
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(screen.queryByRole('button', { name: /^Maps/ })).toBeNull();
   });

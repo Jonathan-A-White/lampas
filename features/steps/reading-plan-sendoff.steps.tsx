@@ -184,14 +184,9 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('An Old Testament chapter in the picker goes through the same sheet', ({ Given, When, And, Then }) => {
+  Scenario('The Verse view of an Old Testament chapter goes through the same sheet', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with a reading plan started at Leviticus 3', () => openWith({}, { code: 'lev', chapter: 3 }));
-    When('he chooses Leviticus 3 in the chapter picker', async () => {
-      await user.click(screen.getByRole('heading', { name: 'Romans 8', level: 1 }).querySelector('button') as HTMLElement);
-      const picker = await screen.findByRole('dialog', { name: 'Choose a chapter' });
-      await user.click(await within(picker).findByRole('button', { name: /^Leviticus/ }));
-      await user.click(await within(picker).findByRole('button', { name: 'Chapter 3' }));
-    });
+    When('he opens the Verse view of Leviticus 3:1', () => openVerse('/#/?b=lev&c=3&v=1'));
     And('he taps the Listen in Audible link', tapListen);
     Then('the send-off sheet {string} is shown', async (_, title: string) => {
       expect(await screen.findByRole('dialog', { name: title })).toBeTruthy();
