@@ -538,7 +538,7 @@ export const PARSER_CONFIDENCE = 0.75;
  */
 export const LONE_MIN_STEM_SUPPORT = 4;
 
-/** Whether the candidates are one ending rule's candidate on thin support (LONE_MIN_STEM_SUPPORT): left for the model, with analogy's candidates beside it. */
+/** Whether the candidates are one ending rule's candidate on thin support (LONE_MIN_STEM_SUPPORT): pending with that one candidate, for the agreement check or the model. */
 export const isThinLone = (candidates: ReadonlyArray<Pick<Candidate, 'stemSupport'>>): boolean =>
   candidates.length === 1 && candidates[0].stemSupport !== undefined && candidates[0].stemSupport < LONE_MIN_STEM_SUPPORT;
 
