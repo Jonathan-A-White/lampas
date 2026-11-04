@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.109
+_2026-11-04_
+- New: A verse named in plain words on the blog now opens in Lampas when you tap it.
+
 ## 0.7.108
 _2026-11-04_
 - Fixed: a chapter now appears after a couple of seconds even when the phone's saved settings are slow to open, instead of staying on Loading.
