@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.112",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1050",
+    "kind": "fixed",
+    "text": "\"Open in the app\" now opens the installed Lampas at the verse you were reading, not at the start of the chapter."
+  },
+  {
     "version": "0.7.111",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1045",

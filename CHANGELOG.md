@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.112
+_2026-11-04_
+- Fixed: "Open in the app" now opens the installed Lampas at the verse you were reading, not at the start of the chapter.
+
 ## 0.7.111
 _2026-11-04_
 - Fixed: A verse written after a comma and a numbered book, like 'Romans 8:1, 2 Corinthians 5:17', now links to the right book, and 'First John' or 'I John' links to 1 John.
