@@ -277,7 +277,7 @@ Jas 2:5, Mark 12:29); Rev 19:5 is `πάντες/A-VPM οἱ/T-VPM δοῦλοι/
 `πάντες` is `A-NPM` 172 times of 179, so the 95%-of-20 rule takes the nominative. Layer 1 still does (`tests/unit/lxx-layer1.test.ts`).
 
 **The means, by the numbers.** Counting the vocative as TAGNT's evidence (the shared-ending rule) would demote 19,895 words of layer 1 in the 39 books (`ὁ` 14,051, `κύριος`
-3,366, `θεός` 1,494, `πᾶς` 518), about 28 batches, and still settle none of the three: it mends only `πάντες`, to pending. **Reading the address from the verse** changes 416
+3,366, `θεός` 1,494, `πᾶς` 518), about 28 batches, and still settle none of the three: it mends only `πάντες`, to pending. **Reading the address from the verse** changes 414
 words and adds none to pending. Run on the New Testament itself (TAGNT's NA28 words, each as layer 1 would leave it, Swete's place taken by NA28's punctuation, every word
 the rule changes judged by TAGNT's own row), the rule as built changes 33 settled words: 28 are TAGNT's tag, and of the 5 others 3 are `υἱὸς Δαυίδ` after `κύριε`, which
 TAGNT leaves nominative, 1 is `Ἰουδαῖοι` (Acts 2:14), the vocative TAGNT writes but of an adjective, and 2 are `ὁ βασιλεὺς τῶν Ἰουδαίων` after `μὴ γράφε·` (John 19:21),
@@ -291,7 +291,8 @@ The rule (`readAddresses`): a verse is cut into phrases at Swete's marks of punc
   (`μακάριοι οἱ πεινῶντες`, `μεγάλη σου ἡ πίστις`: a predicate); a pending first word may be the verb's object (`δότε τύμπανον, ψαλτήριον τερπνόν`, Ps 80:3);
 - it holds a nominative noun or article;
 - and either it **calls** (it holds `ὦ`, or a vocative by its form: a noun or adjective in the singular, `Κύριε ὁ θεός μου`; not an article, participle or plural, whose
-  vocative is the nominative's form: layer 1 settles `οἰκοδομῶν`, Amos 9:6, `V-PAP-VSM` only because its two New Testament words were addresses), or the phrase before or
+  vocative is the nominative's form: layer 1 settles `οἰκοδομῶν`, Amos 9:6, `V-PAP-VSM` only because its two New Testament words were addresses; and layer 1's only, since
+  the parser's vocative of a name is a guess: `υἱὸς Ἀδά`, Gen 36:10, is a list of Esau's sons), or the phrase before or
   after it in its sentence holds an **imperative of the second person** of its number and no settled verb of another person (`φωνὴ ἀδελφιδοῦ μου, κρούει … Ἄνοιξόν μοι`,
   Song 5:2, is a cry and his words), or the phrase **before** it, across a **comma**, calls or is an address whose head has its gender and number (`Κύριε, ὁ θεὸς τῆς
   σωτηρίας μου`; not `Κύριε· καιρὸς εὐδοκίας`, Ps 68:14). A singular imperative takes a singular phrase, a plural one a plural or a phrase joined by `καί` (`ἥλιος καὶ σελήνη`).
@@ -304,10 +305,10 @@ article link sees `οἱ/T-VPM ἄγγελοι/N-VPM` agree; a pending word that
 may settle it (`πύλαι αἰώνιοι`, Ps 23:7: `A-VPF`).
 
 **What it did** (`npm run lxx:derive -- --all --no-morpheus`, before and after, the derived and pending files compared word by word over the 39 books, 2026-11-04): settled
-363,241 and pending 112,888 before; 363,244 and 112,885 after. 416 words changed: 403 settled words took the vocative (`ὁ` 171, `θεός` 95, `πᾶς` 14 and the rest), 3 pending
+363,241 and pending 112,888 before; 363,244 and 112,885 after. 414 words changed: 401 settled words took the vocative (`ὁ` 171, `θεός` 95, `πᾶς` 14 and the rest), 3 pending
 words were settled (`Dan 3:63 ἄστρα`, `Hab 1:5 οἱ καταφρονηταί`), 10 pending words were offered the vocative, and none went to pending. The three words of the audit read
-`N-VSF`, `N-VPM` and `A-VPM`. Read by hand, 20 of the 416 drawn at random (seed 20261105, `mulberry32`): 18 right, 1 wrong (Lev 16:29, `ὁ αὐτόχθων καὶ ὁ προσήλυτος` after
-`οὐ ποιήσετε`, the subject named, not spoken to), 1 unsure (Gen 49:22, `υἱός μου νεώτατος· πρὸς μὲ ἀνάστρεψον`). `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8`:
+`N-VSF`, `N-VPM` and `A-VPM`. Read by hand, 20 of the 414 drawn at random (seed 20261105, `mulberry32`): 19 right, 1 wrong (Lev 16:29, `ὁ αὐτόχθων καὶ ὁ προσήλυτος` after
+`οὐ ποιήσετε`, the subject named, not spoken to). `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8`:
 John 1 as it was; Rom 8 from 644 to 646 of 652 words with the lemma and the whole parsing (`αββα ὁ πατήρ`, Rom 8:15). An address it misses is left as it was: one not set
 off by marks (`ἐξεγέρθητι ἡ δόξα μου`, the verb in the phrase), one whose first word is pending, one beside an indicative.
 

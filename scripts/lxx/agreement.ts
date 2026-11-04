@@ -510,14 +510,15 @@ export function readAddresses(words: ReadonlyArray<{ ref: string; verse: string;
   const lemmaOf = (i: number): string | undefined => (isSettled(outs[i]) ? (outs[i] as DerivedWord).lemma : undefined);
   /**
    * A settled vocative that is a call by its form: a noun or adjective in the singular (κύριε, βασιλεῦ, θύγατερ), which layer 1 settles vocative only where
-   * the New Testament writes it so and never as a nominative.
+   * the New Testament writes it so and never as a nominative. Layer 1's only: the parser's vocative of a name is a guess (υἱὸς Ἀδά, Gen 36:10, a list of
+   * Esau's sons).
    * Not an article, a participle or a plural, whose vocative is written as the nominative: layer 1 settles such a form vocative only because the few New
    * Testament words that have it were addresses (οἰκοδομῶν, Amos 9:6, is V-PAP-VSM in Matt 27:40 and Mark 15:29 alone).
    */
   const calledCng = (q: number[]): string[] =>
     q
       .map((i) => outs[i])
-      .filter((o): o is DerivedWord => isSettled(o) && (partOf(o.morph) === 'N' || partOf(o.morph) === 'A') && /^VS/.test(cngOf(o.morph) ?? ''))
+      .filter((o): o is DerivedWord => isSettled(o) && o.layer === 1 && (partOf(o.morph) === 'N' || partOf(o.morph) === 'A') && /^VS/.test(cngOf(o.morph) ?? ''))
       .map((o) => cngOf(o.morph)!.slice(1));
   /** a phrase's number when it is a call: it holds ὦ or a vocative by its form (calledCng) */
   const calls = (p: number[]): string | undefined => (p.some((i) => lemmaOf(i) === 'ὦ') ? 'any' : calledCng(p).length ? 'S' : undefined);
