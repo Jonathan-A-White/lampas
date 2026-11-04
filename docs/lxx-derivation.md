@@ -14,6 +14,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [The two books over the bar on words with no candidate (B9)](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
   - [A name written with a capital mid-clause is not the common word its letters spell](#a-name-written-with-a-capital-mid-clause-is-not-the-common-word-its-letters-spell)
 - [The agreement check](#the-agreement-check)
+  - [An address: the vocative read from the verse](#an-address-the-vocative-read-from-the-verse)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
 - [The known-answer run](#the-known-answer-run)
@@ -40,7 +41,7 @@ Each word is looked up in three layers, in order. A word keeps the layer that ga
 | --- | --- | --- |
 | Layer 1, TAGNT form | The word's form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis, or one with at least 95% of 20 or more words | built (`scripts/lxx/tagnt.ts`, `derive.ts`) |
 | Layer 2, parser | For a form the New Testament lacks: ending rules learned from TAGNT's (form, lemma, parsing) triples, proposing only lemmas in TBESG; then Swete's other spellings; then analogy. Taken when one candidate is left, or one with 90% of the support | built (`scripts/lxx/parser.ts`, `tbesg.ts`, `derive.ts`) |
-| The agreement check, layer 2a | Before the model: an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
+| The agreement check, layer 2a | Before the model: a settled nominative in an address becomes the vocative, as TAGNT tags one ('An address'); an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
 | Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none; where Morpheus (below) knows a form that has no candidate, its analyses are the candidates | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches and takes the choices back is built (`scripts/lxx/batches.ts`, `pending.ts`, `choose.ts`, 'A model session'); no paid API: a Builder's own session |
 
 A word that layers 1 and 2 and the agreement check do not settle, and that no choice has settled, is **pending**, with its candidates. A book's annotation file is written only when none is pending and the rest of the bar is met ('The bar').
@@ -203,7 +204,11 @@ word its letters spell (mw-u2w5klk.25)` in `tests/unit/lxx-parser.test.ts`: Ση
 
 `scripts/lxx/agreement.ts` runs after layers 1 and 2 and before the files are written (`checkAgreement`, called by `deriveBook`), from the probe's
 'Error checks for the full run', 2(a) and 2(b). It reads one book's words verse by verse, and its rules are data (`SHARED_ENDINGS`, `TAGNT_EVIDENCE`,
-`LINKS`), each with the comment this section copies. Its tests are `tests/unit/lxx-agreement.test.ts`; each rule below names its test there. In order:
+`LINKS`, `ADDRESS`), each with the comment this section copies. Its tests are `tests/unit/lxx-agreement.test.ts`; each rule below names its test there. In order:
+
+0. **An address** (`readAddresses`, `ADDRESS`; story mw-u2w5klk.26; the tests under 'an address is tagged vocative'). A settled nominative in a phrase spoken to
+   someone becomes the vocative, layer 2a, confidence 0.85, the note `an address: the vocative, as TAGNT tags one, read from the verse`; a pending word of
+   the phrase is offered the vocative. The next section gives the rule and its numbers.
 
 1. **A name written in lower case** (test: 'sends χλόης (Ps 22:2) to the model'; 'keeps a name the text writes with a capital'). A form whose every New
    Testament word TAGNT tags a person or a place (`-P`, `-L`), or a title whose lemma it writes with a capital (`Χριστός`, `-T`), and which the text writes
@@ -234,7 +239,7 @@ The shared-ending classes (`SHARED_ENDINGS`, then `TAGNT_EVIDENCE`), each with i
 | every gender in the genitive plural | the article, pronouns, an adjective whose lemma ends in -ος | GPM, GPF, GPN | `τῶν`, `αὐτῶν`, `τούτων`, `ὧν`, `ἁγίων` (Gen 1:9, `αὐτῶν`) | 'every gender in the genitive plural: …' |
 | masculine and neuter genitive plural | any other adjective, a participle | GPM, GPN | `πάντων`, `ποιούντων` (the feminine is `πασῶν`, `ποιουσῶν`) | the same test |
 | masculine and neuter dative plural | every part with a gender | DPM, DPN | `τοῖς`, `αὐτοῖς`, `πᾶσι`, `ποιοῦσι` (Gen 1:30, `πᾶσι` with `θηρίοις`) | 'masculine and neuter dative plural: …' |
-| the New Testament's analyses differ only in case or gender | any, layer 1 only | the New Testament's analyses of the same lemma, part of speech and number | the ending is shared whatever the rows above say (`ἀόρατος`, masculine and feminine). A vocative is not counted (`ὁ θεός` as an address); an analysis seen in one New Testament word only is a slip of tagging, not evidence (`τόν` is `T-ASM` 1,628 times, `T-DSF` once) | "the New Testament's analyses differ only in case or gender: …" |
+| the New Testament's analyses differ only in case or gender | any, layer 1 only | the New Testament's analyses of the same lemma, part of speech and number | the ending is shared whatever the rows above say (`ἀόρατος`, masculine and feminine). A vocative is not counted: TAGNT tags an address vocative (`ὁ θεός` is `T-VSM N-VSM` in each of its 11 addresses), so a vocative among a form's analyses says the form was once spoken to, not that its ending is shared; counted, it would demote 19,895 words of layer 1 in the 39 books. The address rule reads it from the verse ('An address'). An analysis seen in one New Testament word only is a slip of tagging, not evidence (`τόν` is `T-ASM` 1,628 times, `T-DSF` once) | "the New Testament's analyses differ only in case or gender: …" |
 
 The links (`LINKS`):
 
@@ -261,6 +266,51 @@ name the New Testament shows in another case (`τῷ Ἰωσήφ`), which needs 
 above 5 per 1,000 in any book (Susanna 3.4, the Letter of Jeremiah 3.1); read in Genesis and Isaiah they are layer-1 answers the article shows wrong:
 `οἱ παῖδες` given feminine, `τὴν ἵππον` (the cavalry) masculine, `τῆς ὑδρίας` accusative plural, `τὴν Ῥαχήλ` nominative, `οἱ ψευδεῖς` accusative,
 `ὁ αἰώνιος` feminine, `ὁ δεσπότης` vocative.
+
+### An address: the vocative read from the verse
+
+Story mw-u2w5klk.26, problem A of the hand audit (`docs/sources/lxx-settled-audit.md`, mw-u2w5klk.24): `ἀδελφή μου, κώφευσον` (2Sa 13:20#19), `αἰνεῖτε αὐτόν, πάντες οἱ
+ἄγγελοι αὐτοῦ` (Psa 148:2#5) and `θρηνήσατε, πάντες οἱ πίνοντες` (Joe 1:5#10) were settled as nominatives. **The rule is what TAGNT would write**, and TAGNT tags an
+address vocative whatever its ending, with its article and the words that go with it: `ὁ θεός` is `T-VSM N-VSM` in each of the 11 rows where it is an address (Heb 1:8,
+Heb 10:7, Mark 15:34 twice, Luke 18:11, 18:13, John 20:28, Rev 4:11, 11:17, 15:3, 16:7), and no θεός after a vocative is tagged `N-NSM` but as a subject (Acts 7:2,
+Jas 2:5, Mark 12:29); Rev 19:5 is `πάντες/A-VPM οἱ/T-VPM δοῦλοι/N-VPM`. Layer 1 cannot see it: the New Testament has no vocative of `ἀδελφή` or `ἄγγελοι`, and
+`πάντες` is `A-NPM` 172 times of 179, so the 95%-of-20 rule takes the nominative. Layer 1 still does (`tests/unit/lxx-layer1.test.ts`).
+
+**The means, by the numbers.** Counting the vocative as TAGNT's evidence (the shared-ending rule) would demote 19,895 words of layer 1 in the 39 books (`ὁ` 14,051, `κύριος`
+3,366, `θεός` 1,494, `πᾶς` 518), about 28 batches, and still settle none of the three: it mends only `πάντες`, to pending. **Reading the address from the verse** changes 414
+words and adds none to pending. Run on the New Testament itself (TAGNT's NA28 words, each as layer 1 would leave it, Swete's place taken by NA28's punctuation, every word
+the rule changes judged by TAGNT's own row), the rule as built changes 33 settled words: 28 are TAGNT's tag, and of the 5 others 3 are `υἱὸς Δαυίδ` after `κύριε`, which
+TAGNT leaves nominative, 1 is `Ἰουδαῖοι` (Acts 2:14), the vocative TAGNT writes but of an adjective, and 2 are `ὁ βασιλεὺς τῶν Ἰουδαίων` after `μὴ γράφε·` (John 19:21),
+a title quoted. The first draft (any second person, any mood) was 55 right and 99 wrong there; each limit below is one of those wrongs.
+
+The rule (`readAddresses`): a verse is cut into phrases at Swete's marks of punctuation. A phrase is an address when
+
+- it holds no word that may be a finite verb or an infinitive, and none that opens a clause (`NOT_IN_ADDRESS`: `γάρ`, `δέ`, `τε`, `μέν`, `ὅτι`, `ὡς`, `εἰ`, `ἵνα`, `οὖν`,
+  `ἀλλά`, `ἰδού` and the like: `ὁ γὰρ θεὸς μεθ’ ὑμῶν` is a clause with its verb left out);
+- its first word (after `ὦ`) is a **settled** nominative article, noun, adjective or participle, not a participle alone (`λέγων·`, `νήφοντες`) nor an adjective but `πᾶς`
+  (`μακάριοι οἱ πεινῶντες`, `μεγάλη σου ἡ πίστις`: a predicate); a pending first word may be the verb's object (`δότε τύμπανον, ψαλτήριον τερπνόν`, Ps 80:3);
+- it holds a nominative noun or article;
+- and either it **calls** (it holds `ὦ`, or a vocative by its form: a noun or adjective in the singular, `Κύριε ὁ θεός μου`; not an article, participle or plural, whose
+  vocative is the nominative's form: layer 1 settles `οἰκοδομῶν`, Amos 9:6, `V-PAP-VSM` only because its two New Testament words were addresses; and layer 1's only, since
+  the parser's vocative of a name is a guess: `υἱὸς Ἀδά`, Gen 36:10, is a list of Esau's sons), or the phrase before or
+  after it in its sentence holds an **imperative of the second person** of its number and no settled verb of another person (`φωνὴ ἀδελφιδοῦ μου, κρούει … Ἄνοιξόν μοι`,
+  Song 5:2, is a cry and his words), or the phrase **before** it, across a **comma**, calls or is an address whose head has its gender and number (`Κύριε, ὁ θεὸς τῆς
+  σωτηρίας μου`; not `Κύριε· καιρὸς εὐδοκίας`, Ps 68:14). A singular imperative takes a singular phrase, a plural one a plural or a phrase joined by `καί` (`ἥλιος καὶ σελήνη`).
+  Not the indicative: beside it a nominative is as often its subject's predicate (`ὅτι σύ, Κύριε, ἡ ἐλπίς μου· τὸν ὕψιστον ἔθου`, Ps 90:9) or the law's future (`Οὐ θύσεις …,
+  πᾶν ῥῆμα πονηρόν`, Deut 17:1); not `εἰμί` or `γίνομαι`, whose nominative is a predicate.
+- A sentence (up to a full stop or question mark) that names `σύ` or `ὑμεῖς` in the nominative has no address but a phrase that calls itself (`ὑμεῖς, κλητοὶ Ἰησοῦ Χριστοῦ`).
+
+In an address each settled nominative of the head's gender and number (any, where `καί` joins) becomes the vocative, layer 2a, before the other rules of the check, so the
+article link sees `οἱ/T-VPM ἄγγελοι/N-VPM` agree; a pending word that is mostly a nominative (by support) is offered the vocative beside each such nominative, and the links
+may settle it (`πύλαι αἰώνιοι`, Ps 23:7: `A-VPF`).
+
+**What it did** (`npm run lxx:derive -- --all --no-morpheus`, before and after, the derived and pending files compared word by word over the 39 books, 2026-11-04): settled
+363,241 and pending 112,888 before; 363,244 and 112,885 after. 414 words changed: 401 settled words took the vocative (`ὁ` 171, `θεός` 95, `πᾶς` 14 and the rest), 3 pending
+words were settled (`Dan 3:63 ἄστρα`, `Hab 1:5 οἱ καταφρονηταί`), 10 pending words were offered the vocative, and none went to pending. The three words of the audit read
+`N-VSF`, `N-VPM` and `A-VPM`. Read by hand, 20 of the 414 drawn at random (seed 20261105, `mulberry32`): 19 right, 1 wrong (Lev 16:29, `ὁ αὐτόχθων καὶ ὁ προσήλυτος` after
+`οὐ ποιήσετε`, the subject named, not spoken to). `npm run lxx:known -- --chapter Jhn.1 --chapter Rom.8`:
+John 1 as it was; Rom 8 from 644 to 646 of 652 words with the lemma and the whole parsing (`αββα ὁ πατήρ`, Rom 8:15). An address it misses is left as it was: one not set
+off by marks (`ἐξεγέρθητι ἡ δόξα μου`, the verb in the phrase), one whose first word is pending, one beside an indicative.
 
 ## Swete's tokens
 

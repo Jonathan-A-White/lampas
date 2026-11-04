@@ -136,7 +136,9 @@ export const TAGNT_EVIDENCE = {
   name: "the New Testament's analyses differ only in case or gender",
   comment:
     'Any form layer 1 settled that TAGNT also gives, for the same lemma, part of speech and number, in another case or gender (ἀόρατος, masculine and ' +
-    'feminine): the ending is shared whatever the tables above say. A vocative is not counted: ὁ θεός as an address is the nominative put to that use. ' +
+    'feminine): the ending is shared whatever the tables above say. A vocative is not counted: TAGNT tags an address vocative, its article too (ὁ θεός ' +
+    'is T-VSM N-VSM in each of its 11 addresses, Heb 1:8), so a vocative among a form’s analyses says the form was once spoken to, not that its ending is ' +
+    'shared; counted, it would demote 19,895 words of layer 1 in the 39 books (ὁ 14,051, κύριος 3,366, θεός 1,494). The address rule (ADDRESS) reads it from the verse. ' +
     'An analysis seen in one New Testament word only is taken as a slip of tagging, not evidence: τόν is T-ASM 1,628 times and T-DSF once.',
 } as const;
 
@@ -437,6 +439,203 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
   return { outs: items.map((w) => w.out), settled, breaks, brokenWords };
 }
 
+// ---------------------------------------------------------------- the address rule
+
+/** The address rule's words and its comment; docs/lxx-derivation.md copies the comment. */
+export const ADDRESS = {
+  name: 'an address',
+  comment:
+    'TAGNT tags a word put to the one spoken to as a vocative, whatever its ending, and the article and words that go with it too: ὁ θεός as an address ' +
+    'is T-VSM N-VSM in all 11 of its rows (Heb 1:8, Heb 10:7, Mark 15:34 twice, Luke 18:11, 18:13, John 20:28, Rev 4:11, 11:17, 15:3, 16:7), and πάντες οἱ ' +
+    'δοῦλοι αὐτοῦ (Rev 19:5) is A-VPM T-VPM N-VPM. Layer 1 takes the form’s nominative (ἀδελφή, ἄγγελοι: the New Testament has no vocative of them; ' +
+    'πάντες: A-NPM 172 times of 179), so the address is read from the verse. A phrase between two marks of punctuation (or a verse’s edge) is an address ' +
+    'when it holds no word that may be a finite verb or an infinitive and none that opens a clause (NOT_IN_ADDRESS), its first word (after ὦ) is a settled ' +
+    'nominative article, noun, adjective or participle (not a participle alone, nor an adjective but πᾶς: μακάριοι οἱ πεινῶντες is a predicate), it holds ' +
+    'a nominative noun or article, and either it holds ὦ or a vocative by its form (a noun or adjective in the singular: Κύριε ὁ θεός μου), or the phrase ' +
+    'before or after it in its sentence holds an imperative of the second person of its number and no settled verb of another person (καὶ νῦν, ἀδελφή μου, ' +
+    'κώφευσον; αἰνεῖτε αὐτόν, πάντες οἱ ἄγγελοι αὐτοῦ), or the phrase before it, across a comma, is a call or an address its head agrees with (Κύριε, ' +
+    'ὁ θεὸς τῆς σωτηρίας μου). A singular imperative takes a singular phrase, a plural one a plural, or a phrase joined by καί (ἥλιος καὶ σελήνη). A ' +
+    'sentence that names σύ or ὑμεῖς in the nominative has no address but a phrase that calls itself. In an address, each settled nominative of the head’s ' +
+    'gender and number (any, where καί joins) becomes the vocative, layer 2a; a pending word that is mostly a nominative is offered the vocative beside ' +
+    'each such nominative it has, for the agreement links or the model.',
+} as const;
+export const NOTE_ADDRESS = 'an address: the vocative, as TAGNT tags one, read from the verse';
+export const VIA_ADDRESS = 'an address: the vocative beside the nominative, read from the verse';
+
+/** Words an address does not hold: each opens or joins a clause of its own (ὁ γὰρ θεὸς μεθ’ ὑμῶν is a clause with its verb left out, not an address). */
+export const NOT_IN_ADDRESS: ReadonlySet<string> = new Set(['γάρ', 'δέ', 'τε', 'μέν', 'ὅτι', 'ὡς', 'ὥσπερ', 'καθώς', 'εἰ', 'ἐάν', 'ἵνα', 'ὅπως', 'οὖν', 'διό', 'ἀλλά', 'ἰδού']);
+
+/** A full stop or a question mark: no address is read across it (a comma, a colon and the high point are read across). */
+const ENDS_SENTENCE = /[.;\u037E][\])]*$/;
+const COMMA = /,[\])]*$/;
+
+const NOMINAL_PARTS = ['N', 'A', 'T', 'ptc'];
+const caseOf = (morph: string): string | undefined => cngOf(morph)?.[0];
+const isNominal = (r: { morph: string }): boolean => NOMINAL_PARTS.includes(partOf(r.morph)) && (caseOf(r.morph) === 'N' || caseOf(r.morph) === 'V');
+/**
+ * The moods of a verb of the second person that say who is spoken to: the imperative only (TAGNT's last letter of the tense-voice-mood). An indicative
+ * beside a nominative is as often its subject's predicate (ὅτι σύ, Κύριε, ἡ ἐλπίς μου· τὸν ὕψιστον ἔθου, Ps 90:9) or the law's future (Οὐ θύσεις …, πᾶν ῥῆμα
+ * πονηρόν, Deut 17:1).
+ */
+export const ADDRESS_MOODS = ['M'];
+/** Verbs whose nominative beside them is their predicate, not an address (γίνεσθε …, ἀμετακίνητοι, 1 Cor 15:58). */
+export const COPULAS: ReadonlySet<string> = new Set(['εἰμί', 'γίνομαι']);
+/** A finite verb of the second person in a mood of ADDRESS_MOODS, not a copula: its number, 'S' or 'P'. */
+const secondPerson = (r: Reading): string | undefined => {
+  const p = r.morph.split('-');
+  if (COPULAS.has(r.lemma)) return undefined;
+  return partOf(r.morph) === 'V' && /^2[SP]$/.test(p[2] ?? '') && ADDRESS_MOODS.includes(p[1]?.at(-1) ?? '') ? p[2][1] : undefined;
+};
+const vocative = (morph: string): string => {
+  const cng = cngOf(morph);
+  return cng ? withCng(morph, `V${cng.slice(1)}`) : morph;
+};
+
+/**
+ * The address rule (ADDRESS), run by checkAgreement before its other rules, over words in the text's order: each settled nominative of an address
+ * becomes the vocative, layer 2a, and a pending word of an address is offered the vocative beside each nominative it has. Returns the words after it.
+ */
+export function readAddresses(words: ReadonlyArray<{ ref: string; verse: string; display: string }>, outs: readonly Out[]): { outs: Out[]; addressed: number } {
+  const next = [...outs];
+  const phrases: number[][] = [];
+  words.forEach((w, i) => {
+    const last = phrases.at(-1);
+    if (last && words[last.at(-1)!].verse === w.verse && !pauseAfter(words[last.at(-1)!].display)) last.push(i);
+    else phrases.push([i]);
+  });
+  const readings = (i: number): Reading[] => {
+    const o = outs[i];
+    return isSettled(o) ? [{ lemma: o.lemma, morph: o.morph, support: 1, share: 1 }] : o.candidates;
+  };
+  const lemmaOf = (i: number): string | undefined => (isSettled(outs[i]) ? (outs[i] as DerivedWord).lemma : undefined);
+  /**
+   * A settled vocative that is a call by its form: a noun or adjective in the singular (κύριε, βασιλεῦ, θύγατερ), which layer 1 settles vocative only where
+   * the New Testament writes it so and never as a nominative. Layer 1's only: the parser's vocative of a name is a guess (υἱὸς Ἀδά, Gen 36:10, a list of
+   * Esau's sons).
+   * Not an article, a participle or a plural, whose vocative is written as the nominative: layer 1 settles such a form vocative only because the few New
+   * Testament words that have it were addresses (οἰκοδομῶν, Amos 9:6, is V-PAP-VSM in Matt 27:40 and Mark 15:29 alone).
+   */
+  const calledCng = (q: number[]): string[] =>
+    q
+      .map((i) => outs[i])
+      .filter((o): o is DerivedWord => isSettled(o) && o.layer === 1 && (partOf(o.morph) === 'N' || partOf(o.morph) === 'A') && /^VS/.test(cngOf(o.morph) ?? ''))
+      .map((o) => cngOf(o.morph)!.slice(1));
+  /** a phrase's number when it is a call: it holds ὦ or a vocative by its form (calledCng) */
+  const calls = (p: number[]): string | undefined => (p.some((i) => lemmaOf(i) === 'ὦ') ? 'any' : calledCng(p).length ? 'S' : undefined);
+  /**
+   * The number of the imperative of the second person a phrase holds (a word every reading of which is one of that number), when it holds no settled
+   * finite verb of another person: φωνὴ ἀδελφιδοῦ μου, κρούει ἐπὶ τὴν θύραν Ἄνοιξόν μοι (Song 5:2) is a cry and then his words, not an address.
+   */
+  const speaksTo = (p: number[]): string | undefined => {
+    if (p.some((i) => isSettled(outs[i]) && partOf(outs[i].morph) === 'V' && !/^2[SP]$/.test(outs[i].morph.split('-')[2] ?? ''))) return undefined;
+    for (const i of p) {
+      const rs = readings(i);
+      const ns = new Set(rs.map(secondPerson));
+      if (rs.length && ns.size === 1 && !ns.has(undefined)) return [...ns][0];
+    }
+    return undefined;
+  };
+  const headOf = (p: number[]): number | undefined => p.find((i) => lemmaOf(i) !== 'ὦ');
+  const nominal = (i: number): Reading[] => readings(i).filter(isNominal);
+  /** gender and number ('SM') a phrase's head may have */
+  const headCng = (p: number[]): Set<string> => new Set(nominal(headOf(p)!).map((r) => cngOf(r.morph)!.slice(1)));
+  /**
+   * Whether a phrase could be an address: no word that may be a finite verb or an infinitive, none that opens a clause; its first word (after ὦ) a
+   * nominative, not a participle alone (λέγων·, νήφοντες) nor an adjective other than πᾶς (μακάριοι οἱ πεινῶντες, μεγάλη σου ἡ πίστις: a predicate);
+   * and a nominative noun or article in it.
+   */
+  const couldAddress = (p: number[]): boolean => {
+    if (p.some((i) => readings(i).some((r) => partOf(r.morph) === 'V' || partOf(r.morph) === 'inf') || NOT_IN_ADDRESS.has(lemmaOf(i) ?? ''))) return false;
+    const head = headOf(p);
+    if (head === undefined) return false;
+    const o = outs[head];
+    // a pending head may be the verb's object (δότε τύμπανον, ψαλτήριον τερπνόν, Ps 80:3)
+    if (!isSettled(o) || !isNominal(o)) return false;
+    if (nominal(head).every((r) => partOf(r.morph) === 'ptc' || (partOf(r.morph) === 'A' && r.lemma !== 'πᾶς'))) return false;
+    return p.some((i) => nominal(i).some((r) => partOf(r.morph) === 'N' || partOf(r.morph) === 'T'));
+  };
+  const fits = (p: number[], number: string | undefined): boolean => {
+    if (!number) return false;
+    if (number === 'any') return true;
+    return [...headCng(p)].some((c) => c[0] === number) || (number === 'P' && p.some((i) => lemmaOf(i) === 'καί'));
+  };
+  /** a phrase beside a call or an address whose head has the phrase's head's gender and number (Κύριε, ὁ θεός μου) */
+  const agreesWith = (p: number[], cngs: Iterable<string>): boolean => {
+    const mine = headCng(p);
+    return [...cngs].some((c) => mine.has(c));
+  };
+  /**
+   * σύ or ὑμεῖς in the nominative anywhere in the phrase's sentence (up to a full stop or a question mark): a nominative beside it is in apposition to it
+   * or its predicate (ὑμεῖς, κλητοὶ Ἰησοῦ Χριστοῦ, Rom 1:6; ὅτι σύ, Κύριε, ἡ ἐλπίς μου, Ps 90:9), not an address, unless the phrase calls itself.
+   */
+  const namesYou = (q: number[]): boolean => q.some((i) => readings(i).some((r) => /^P-2N[SP]$/.test(r.morph)));
+  const endsSentence = (q: number[]): boolean => ENDS_SENTENCE.test(words[q.at(-1)!].display.normalize('NFC').trim());
+  const sentenceOf = (k: number): number[] => {
+    let a = k;
+    while (a > 0 && words[phrases[a - 1][0]].verse === words[phrases[k][0]].verse && !endsSentence(phrases[a - 1])) a--;
+    let b = k;
+    while (b + 1 < phrases.length && words[phrases[b + 1][0]].verse === words[phrases[k][0]].verse && !endsSentence(phrases[b])) b++;
+    return Array.from({ length: b - a + 1 }, (_, j) => a + j);
+  };
+  const addressed = new Set<number>();
+  for (let changed = true; changed; ) {
+    changed = false;
+    phrases.forEach((p, k) => {
+      if (addressed.has(k) || !couldAddress(p)) return;
+      const verse = words[p[0]].verse;
+      const near = [k - 1, k + 1].filter((q) => {
+        const n = phrases[q];
+        return n && words[n[0]].verse === verse && !endsSentence(q < k ? n : p);
+      });
+      /**
+       * A call or an address is read forward only (the phrase after it is in apposition: Κύριε, ὁ θεός μου), and across a comma only: in Κύριε· καιρὸς
+       * εὐδοκίας, ὁ θεός· (Ps 68:14) καιρὸς begins a clause of its own, and ὁ θεός after it does not make it an address.
+       */
+      const byComma = (q: number): boolean => q < k && COMMA.test(words[phrases[q].at(-1)!].display.normalize('NFC').trim());
+      const ok =
+        fits(p, calls(p)) ||
+        (!sentenceOf(k).some((q) => namesYou(phrases[q])) &&
+          near.some(
+            (q) =>
+              fits(p, speaksTo(phrases[q])) ||
+              (byComma(q) && (agreesWith(p, calledCng(phrases[q])) || (addressed.has(q) && agreesWith(p, headCng(phrases[q]))))),
+          ));
+      if (!ok) return;
+      addressed.add(k);
+      changed = true;
+    });
+  }
+  let count = 0;
+  for (const k of addressed) {
+    const p = phrases[k];
+    const heads = headCng(p);
+    const joined = p.some((i) => lemmaOf(i) === 'καί');
+    /** a nominative of the address: of the head's gender and number, any where καί joins two (ἥλιος καὶ σελήνη) */
+    const ofAddress = (r: { morph: string }): boolean => isNominal(r) && caseOf(r.morph) === 'N' && (joined || heads.has(cngOf(r.morph)!.slice(1)));
+    for (const i of p) {
+      const o = next[i];
+      if (isSettled(o)) {
+        if (!ofAddress(o)) continue;
+        const morph = vocative(o.morph);
+        const reading: WordCandidate = { lemma: o.lemma, morph, support: 0, share: 0, via: [VIA_ADDRESS] };
+        const same = (c: WordCandidate): boolean => c.lemma === o.lemma && c.morph === morph;
+        next[i] = { ...o, morph, layer: AGREEMENT_LAYER, confidence: AGREEMENT_CONFIDENCE, candidates: [reading, ...o.candidates.filter((c) => !same(c))], notes: [...o.notes, NOTE_ADDRESS] };
+        count++;
+      } else {
+        // only a word that is mostly a nominative (βασιλεῦ τῶν θεῶν, Esth 4:17: not θεῶν for its stray θέλω V-2AAP-NSM; πύλαι αἰώνιοι, Ps 23:7, is offered
+        // A-VPF though the parser's αἰώνιοι is mostly masculine), and then the vocative of its nominatives of the address
+        const nominative = o.candidates.filter((c) => isNominal(c) && caseOf(c.morph) === 'N');
+        const weight = (cs: readonly WordCandidate[]): number => cs.reduce((n, c) => n + c.support, 0);
+        if (weight(o.candidates) > 0 ? 2 * weight(nominative) < weight(o.candidates) : 2 * nominative.length < o.candidates.length) continue;
+        const more = nominative.filter(ofAddress).map((c) => ({ lemma: c.lemma, morph: vocative(c.morph), support: 0, share: 0, via: [VIA_ADDRESS] }));
+        const merged = mergeCandidates(o.candidates, more);
+        if (merged.length > o.candidates.length) next[i] = { ...o, candidates: merged, notes: [...o.notes, NOTE_ADDRESS] };
+      }
+    }
+  }
+  return { outs: next, addressed: count };
+}
+
 // ---------------------------------------------------------------- the whole check
 
 export interface CheckContext {
@@ -449,6 +648,8 @@ export interface CheckContext {
 export interface AgreementStats {
   /** pending after layers 1 and 2, before the check */
   pendingBefore: number;
+  /** settled nominatives read as the vocative of an address (readAddresses) */
+  addressed: number;
   /** settled words sent to the model as a name written in lower case */
   names: number;
   /** settled words demoted by the shared-ending rule */
@@ -481,14 +682,17 @@ function mergeCandidates(first: readonly WordCandidate[], ...more: ReadonlyArray
 }
 
 /**
- * The check on one book's words (in the text's order) and what layers 1 and 2 made of each: the name rule, the shared-ending rule, then `agree`.
+ * The check on one book's words (in the text's order) and what layers 1 and 2 made of each: the address rule (readAddresses), the name rule, the shared-ending rule, then `agree`.
  * A demoted word's candidates are its own (layer 1's analyses or layer 2's) and the ending's other readings; not the parser's for a form the New
  * Testament has, whose rules, learned from other lemmas, offer tagged and stray readings (ἁγίῳ as A-DSN-LG and A-DSF) that only blur the choice. A name
  * written in lower case does take the parser's, since the word it is may be another lemma (χλόης, grass).
  * Returns each word's answer after the check, in the same order, and its counts.
  */
-export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string; form: string; display: string }>, outs: readonly Out[], ctx: CheckContext): { outs: Out[]; stats: AgreementStats } {
-  const stats: AgreementStats = { pendingBefore: outs.filter((o) => !isSettled(o)).length, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0 };
+export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string; form: string; display: string }>, given: readonly Out[], ctx: CheckContext): { outs: Out[]; stats: AgreementStats } {
+  const stats: AgreementStats = { pendingBefore: given.filter((o) => !isSettled(o)).length, addressed: 0, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0 };
+  const read = readAddresses(words, given);
+  stats.addressed = read.addressed;
+  const outs = read.outs;
   const demoted = new Set<string>();
   const items: AgreementWord[] = words.map((word, i) => {
     const out = outs[i];

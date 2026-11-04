@@ -162,6 +162,15 @@ describe('the 95%-of-20 rule', () => {
     expect(settle(analyses(94, 6))).toBeUndefined();
     expect(settle(analyses(95, 5))?.analysis.lemma).toBe('l0');
   });
+  it('still takes the nominative of a form the New Testament also has as an address: the address is read from the verse (agreement.ts ADDRESS)', () => {
+    // θεός: N-NSM 311 times, N-VSM 11 (the addresses); πάντες: A-NPM 172, A-VPM 7 (story mw-u2w5klk.26)
+    const of = (lemma: string, ...pairs: Array<[string, number]>): Analysis[] => {
+      const total = pairs.reduce((s, [, n]) => s + n, 0);
+      return pairs.map(([morph, support]) => ({ lemma, morph, support, share: support / total }));
+    };
+    expect(settle(of('θεός', ['N-NSM', 311], ['N-VSM', 11]))?.analysis.morph).toBe('N-NSM');
+    expect(settle(of('πᾶς', ['A-NPM', 172], ['A-VPM', 7]))?.analysis.morph).toBe('A-NPM');
+  });
 });
 
 describe('--hide jhn: a known-answer run', async () => {
