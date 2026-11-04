@@ -1,6 +1,5 @@
 Feature: The Audible send-off
-  With the Reading plan on and a plan started, Listen in Audible on the plan's next chapter (the Verse view of a New Testament chapter, and an Old
-  Testament chapter in the chapter picker) does not fire and forget. A short sheet comes up first: "Off to Audible: Luke 15", one line of what
+  With the Reading plan on and a plan started, Listen in Audible on the plan's next chapter (the Verse view of a chapter of either Testament) does not fire and forget. A short sheet comes up first: "Off to Audible: Luke 15", one line of what
   happens next, and one big Go. Go records the start time of the listening session (src/data/repositories/readingPlan.ts beginSession) and only then
   opens Audible, with the fallback armed. Back, Escape or a tap outside closes the sheet and begins nothing. With the Reading plan off, or on with no
   plan started, or on a chapter that is not the plan's next one (mw-umv8sp.8: tracking what he listens to outside the plan is no use to him),
@@ -35,9 +34,9 @@ Feature: The Audible send-off
     And Audible was not opened
     And no listening session is open
 
-  Scenario: An Old Testament chapter in the picker goes through the same sheet
+  Scenario: The Verse view of an Old Testament chapter goes through the same sheet
     Given Lampas is opened with a reading plan started at Leviticus 3
-    When he chooses Leviticus 3 in the chapter picker
+    When he opens the Verse view of Leviticus 3:1
     And he taps the Listen in Audible link
     Then the send-off sheet "Off to Audible: Leviticus 3" is shown
     When he taps Go
