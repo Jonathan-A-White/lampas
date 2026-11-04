@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.98
+_2026-11-04_
+- Fixed: Tapping τίς or τις and then Paradigm now outlines the form's own cell in the Interrogative and indefinite pronouns table instead of leaving the table lit on nothing.
+
 ## 0.7.97
 _2026-11-04_
 - Fixed: The reading text uses the full width of the screen again, and the blank band at the foot of a chapter in the immersive reader is gone.

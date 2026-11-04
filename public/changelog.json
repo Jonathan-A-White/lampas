@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.98",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1031",
+    "kind": "fixed",
+    "text": "Tapping τίς or τις and then Paradigm now outlines the form's own cell in the Interrogative and indefinite pronouns table instead of leaving the table lit on nothing."
+  },
+  {
     "version": "0.7.97",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1005",
