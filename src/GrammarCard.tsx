@@ -202,7 +202,7 @@ function Choice({ question, picked, onPick, taken, sideBySide, onSeeTable }: Omi
         className={`${LOOK[look]} rounded-xl border ${look === 'taken' ? 'disabled:opacity-40' : 'disabled:opacity-100'} ${
           tapForm
             ? `min-h-12 min-w-12 px-3 ${hebrew ? 'script-he hebrew-choice' : 'font-greek text-2xl'}`
-            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : hebrew ? 'script-he hebrew-choice' : 'break-words text-left text-lg'}`
+            : `${sideBySide ? 'min-h-14 short:min-h-12 short:py-1' : 'min-h-14 py-3'} w-full px-4 ${greek ? `break-words font-greek ${sideBySide ? 'text-3xl short:text-2xl' : 'text-3xl'}` : hebrew ? 'script-he hebrew-choice' : 'break-words text-left text-lg'}`
         }`}
       >
         {option}
