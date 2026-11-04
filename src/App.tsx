@@ -51,6 +51,7 @@ import { startUsageLog } from './tips/usageLog';
 import { HearAnyWord } from './ui/HearAnyWord';
 import { useAlertsInView } from './ui/alertInView';
 import { useTapGuard } from './ui/tapGuard';
+import { OpenInApp } from './OpenInApp';
 import { ShellBars } from './ShellBars';
 import { TutorWaitingBar } from './speech/TutorWaitingBar';
 import { UpdateBanner } from './UpdateBanner';
@@ -100,6 +101,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">
       <ShellBars>
+        {/* in a Chrome tab on Android with the app installed: one tap hands this address to the app (mw-5r3p30.1041) */}
+        <OpenInApp />
         <UpdateBanner />
         <TutorWaitingBar />
         {/* after a break of a week or more: a short refresher of the solid items most overdue (mw-1vuvq6.6) */}

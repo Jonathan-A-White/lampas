@@ -32,6 +32,12 @@ describe('pwaManifest', () => {
     expect(pwaManifest.protocol_handlers).toEqual([{ protocol: 'web+lampas', url: '/#/?ref=%s' }]);
   });
 
+  it('names Lampas itself in related_applications, so getInstalledRelatedApps sees the installed app from a browser tab (mw-5r3p30.1041)', () => {
+    // Chrome's own page: https://developer.chrome.com/docs/capabilities/get-installed-related-apps ('webapp' with the manifest's url)
+    expect(pwaManifest.related_applications).toEqual([{ platform: 'webapp', url: 'https://lampas.allmymind.org/manifest.webmanifest' }]);
+    expect(pwaManifest.prefer_related_applications).not.toBe(true);
+  });
+
   it('is a share target: a POST of multipart/form-data with the pictures, title, text and link', () => {
     expect(pwaManifest.share_target).toEqual({
       action: SHARE_TARGET_PATH,
