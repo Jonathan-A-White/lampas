@@ -130,7 +130,7 @@ describe('an Old Testament verse link', () => {
   });
 
   it('drops a place the canon lacks: a chapter past the end, a verse 0, an unknown book', () => {
-    for (const text of ['Isaiah 67:1', 'Isaiah 53:0', 'Tobit 3:1', 'Obadiah 2:1', 'Romans 17:1']) expect(placeOf(text), text).toBeNull();
+    for (const text of ['Isaiah 67:1', 'Isaiah 53:0', 'Tobit 15:1', 'Obadiah 2:1', 'Romans 17:1']) expect(placeOf(text), text).toBeNull();
   });
 
   it('gives Logos\' chip in his Bible, no Reader chip, and nothing when Logos is off', () => {

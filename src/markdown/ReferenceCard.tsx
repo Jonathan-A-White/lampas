@@ -9,6 +9,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalS
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, sourceLanguage, type Chapter, type Verse } from '../data/chapter';
+import { apocryphaBookOf } from '../data/apocrypha';
 import { isHebrewBook, otBookOf } from '../data/books';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { getLogosBibles, getStudyResources } from '../data/repositories';
@@ -121,7 +122,7 @@ export function ElsewhereLine({ place, said = true, onSettings }: { place: Elsew
         {place ? (
           <AnotherBookButton
             place={{ book: place.book, chapter: place.chapter, verse: place.verse ?? 1 }}
-            name={`${otBookOf(place.book)?.name ?? place.book} ${place.chapter}:${place.verse ?? 1}`}
+            name={`${(otBookOf(place.book) ?? apocryphaBookOf(place.book))?.name ?? place.book} ${place.chapter}:${place.verse ?? 1}`}
             className="inline-flex min-h-11 items-center rounded-lg border border-line px-4 text-base font-medium text-accent active:bg-line"
           />
         ) : null}

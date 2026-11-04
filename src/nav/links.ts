@@ -2,6 +2,7 @@
 // verse, #/?word=G3551 (or the lemma) opens a word's sheet, and the browser's web+lampas: scheme (the manifest's protocol_handlers) lands on the
 // same ref. This file is the pure part: reading the text of a link, finding the place or the word it names (against the book index and the
 // lexicon, handed in), and writing the https form of a link. docs/links.md lists every form it accepts.
+import { APOCRYPHA, apocryphaBookOf } from '../data/apocrypha';
 import { NT_BOOKS, OT_BOOKS, bookOf, titleOf } from '../data/books';
 import type { BookIndex, Chapter } from '../data/chapter';
 import type { Lookup } from '../WordSheet';
@@ -86,10 +87,20 @@ const OT_BY_NAME: ReadonlyMap<string, string> = new Map(
   OT_BOOKS.flatMap(({ code, name, logos }) => [code, name, logos, ...(EXTRA_OT_NAMES[code] ?? [])].map((n): [string, string] => [squash(n), code])),
 );
 
-/** A reference to any book of the Bible: `testament` says which list names the book (data/books.ts for the New, data/otBooks.ts for the Old). Lampas holds the text of
- *  both (the Old in English), so a reference of either opens the Reader. */
+/** The Apocrypha's names, as the matcher compares them (data/apocrypha.ts): the name, the Logos abbreviation and the other names, never the code ('man' is a plain word).
+ *  A name the New or Old Testament already uses stays theirs (asked first). */
+const AP_BY_NAME: ReadonlyMap<string, string> = new Map(
+  APOCRYPHA.flatMap(({ code, name, logos, names }) => [name, logos, ...names].map((n): [string, string] => [squash(n), code])),
+);
+
+/** Whether a name is one the Apocrypha writes that is also a plain English word ('Sir', 'Bar', 'Wisdom'), so it is a book only with a verse after it. */
+const PLAIN_AP: ReadonlySet<string> = new Set(APOCRYPHA.flatMap((b) => b.plain ?? []));
+
+/** A reference to any book Lampas can name: `testament` says which list names the book (data/books.ts for the New, data/canon.ts for the Old, data/apocrypha.ts for the
+ *  Apocrypha). Lampas holds the text of the first two (the Old in English), so a reference of either opens the Reader; of the Apocrypha ('ap') it holds none, and the
+ *  reference opens in his Apocrypha Bible in Logos (resources/logosBible.ts). */
 export interface CanonReference extends Reference {
-  testament: 'nt' | 'ot';
+  testament: 'nt' | 'ot' | 'ap';
 }
 
 /** `parseReference`, and the 39 books of the Old Testament as well ('Isaiah 53:5', 'Gen 15:6', 'Psalm 23', '1 Samuel 3:4', 'Song of Solomon 2:1'); null for a
@@ -100,13 +111,31 @@ export function parseCanonReference(text: string): CanonReference | null {
   const named = /^((?:[1-3]\s*)?[a-z][a-z .]*?)\s*((?:\d.*)?)$/i.exec(text.trim().replace(SCHEME, '').replace(/\+/g, ' '));
   const book = named && OT_BY_NAME.get(squash(named[1]));
   const numbers = book && numbersOf(book, named[2].trim());
-  return numbers ? { testament: 'ot', ...numbers } : null;
+  if (numbers) return { testament: 'ot', ...numbers };
+  return apocryphaReference(named?.[1], named?.[2]);
 }
 
-/** The books whose names (in either table) start with what he typed, squashed: the New Testament's codes and the Old's. */
-function booksStartingWith(typed: string): { nt: string[]; ot: string[] } {
+/** A reference to a book of the Apocrypha ('Sir 1:1', 'Wisdom of Solomon 3:1', '1 Macc. 2:3'), or null. A name that is also a plain English word ('Sir', 'Bar', 'Wisdom') is a book
+ *  only with a verse after it. */
+function apocryphaReference(name: string | undefined, rest: string | undefined): CanonReference | null {
+  const squashed = name === undefined ? '' : squash(name);
+  const book = AP_BY_NAME.get(squashed);
+  const numbers = book && numbersOf(book, (rest ?? '').trim());
+  if (!numbers || (PLAIN_AP.has(squashed) && numbers.verse === undefined)) return null;
+  return { testament: 'ap', ...numbers };
+}
+
+/** A reference to a book Lampas can list and open (the 66): `parseCanonReference` without the Apocrypha, for what saves or lists a reference (a verse list, Share to Lampas' cards,
+ *  the Review of an answer's references), which are all of verses Lampas can open or hold. */
+export function parseHeldReference(text: string): (Reference & { testament: 'nt' | 'ot' }) | null {
+  const read = parseCanonReference(text);
+  return read && read.testament !== 'ap' ? { ...read, testament: read.testament } : null;
+}
+
+/** The books whose names (in the three tables) start with what he typed, squashed: the New Testament's codes, the Old's and the Apocrypha's. */
+function booksStartingWith(typed: string): { nt: string[]; ot: string[]; ap: string[] } {
   const starting = (table: ReadonlyMap<string, string>): string[] => [...new Set([...table].filter(([name]) => name.startsWith(typed)).map(([, code]) => code))];
-  return { nt: starting(BOOK_BY_NAME), ot: starting(OT_BY_NAME) };
+  return { nt: starting(BOOK_BY_NAME), ot: starting(OT_BY_NAME), ap: starting(AP_BY_NAME) };
 }
 
 /** `parseCanonReference`, and where the book is only a start of a name too ('ep 4:15', 'Ephe 4 15', 'Jo 3:16'): what he types into a field that takes a place
@@ -120,8 +149,15 @@ export function parseTypedReference(text: string): CanonReference | null {
   if (!named) return null;
   const typed = squash(named[1]);
   if (typed === '') return null;
-  const { nt, ot } = booksStartingWith(typed);
-  const [testament, book] = nt.length === 1 ? (['nt', nt[0]] as const) : nt.length === 0 && ot.length === 1 ? (['ot', ot[0]] as const) : [undefined, undefined];
+  const { nt, ot, ap } = booksStartingWith(typed);
+  const [testament, book] =
+    nt.length === 1
+      ? (['nt', nt[0]] as const)
+      : nt.length === 0 && ot.length === 1
+        ? (['ot', ot[0]] as const)
+        : nt.length === 0 && ot.length === 0 && ap.length === 1
+          ? (['ap', ap[0]] as const)
+          : [undefined, undefined];
   const numbers = book && numbersOf(book, named[2].trim());
   return testament && numbers ? { testament, ...numbers } : null;
 }
@@ -142,7 +178,7 @@ export interface Opened {
 export function inWords(asked: string): string {
   const parsed = parseCanonReference(asked);
   if (!parsed) return asked;
-  const name = bookOf(parsed.book)?.name ?? parsed.book;
+  const name = (parsed.testament === 'ap' ? apocryphaBookOf(parsed.book)?.name : bookOf(parsed.book)?.name) ?? parsed.book;
   if (parsed.chapter === undefined) return name;
   return `${name} ${parsed.chapter}${parsed.verse === undefined ? '' : `:${parsed.verse}`}`;
 }
@@ -159,7 +195,8 @@ export const notHeld = (asked: string, shown: string, printed?: string): string 
 export function resolveReference(text: string, index: BookIndex | null, fallback: OpenChapter, printed?: string): Opened {
   const asked = text.trim().replace(SCHEME, '');
   const parsed = parseCanonReference(asked);
-  const info = parsed && (index === null ? { chapters: Infinity, verses: [] as number[] } : index.books.find((b) => b.code === parsed.book));
+  // a book of the Apocrypha is never held: it opens the chapter he had open, with the notice (its place is the tutor's link to Logos)
+  const info = parsed && parsed.testament !== 'ap' && (index === null ? { chapters: Infinity, verses: [] as number[] } : index.books.find((b) => b.code === parsed.book));
   if (!parsed || !info) return { book: fallback.book, chapter: fallback.chapter, verse: null, notice: notHeld(asked, fallback.title, printed) };
   const { book } = parsed;
   const wanted = parsed.chapter ?? 1;
@@ -241,7 +278,7 @@ export function linkOf(hash: string): Link | null {
 }
 
 /** A book's OSIS code, from our own code ('1jn' -> '1John', 'psa' -> 'Ps'). */
-export const osisOf = (book: string): string => OSIS[book] ?? OT_OSIS[book] ?? book;
+export const osisOf = (book: string): string => OSIS[book] ?? OT_OSIS[book] ?? apocryphaBookOf(book)?.logos ?? book;
 
 /** The https link of a verse, a chapter (no verse) or a book's chapter, as Copy link gives it. `printed` adds the words it was printed in (`as=`). */
 export function referenceUrl(book: string, chapter: number, verse?: number, printed?: string): string {

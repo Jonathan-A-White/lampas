@@ -4,6 +4,7 @@
 // Bible in Logos). A verse may be in any book of the Bible (placeOf, one canon list: data/books.ts and data/otBooks.ts); the Old Testament has the resources'
 // chips and a Reader chip, as Lampas holds its text. Lampas's own Reader is not a resource: the verse chip that opens it is drawn by src/TutorLinks.tsx. Pure: the Strong's number and
 // his Bible are looked up by the caller. Links only, no text of any lexicon (docs/resources.md).
+import { apocryphaBookOf } from '../data/apocrypha';
 import { BOOK_INDEX } from '../data/bookIndex';
 import { titleOf, otBookOf, isHeld } from '../data/books';
 import type { StudyResources } from '../data/repositories';
@@ -38,7 +39,7 @@ export interface TutorPlace extends StudyPlace {
   reader: boolean;
 }
 
-/** The place a verse link's reference names, in any book of the Bible; null for a book of neither Testament, a chapter past the book's end, or a verse below 1 (or,
+/** The place a verse link's reference names, in any book of the Bible or of the Apocrypha (read, never held: `reader` false, so it opens in his Apocrypha Bible in Logos); null for a book of neither Testament, a chapter past the book's end, or a verse below 1 (or,
  *  in a New Testament chapter, past its last: Lampas holds those counts). A whole chapter has no `verse`. */
 export function placeOf(reference: string): TutorPlace | null {
   const parsed = parseCanonReference(reference);
@@ -51,7 +52,7 @@ export function placeOf(reference: string): TutorPlace | null {
     if (!info || chapter > info.chapters || (verse !== undefined && verse > (info.verses[chapter - 1] ?? 0))) return null;
     title = titleOf(book, chapter);
   } else {
-    const info = otBookOf(book);
+    const info = parsed.testament === 'ap' ? apocryphaBookOf(book) : otBookOf(book);
     if (!info || chapter > info.chapters) return null;
     title = `${info.name} ${chapter}`;
   }

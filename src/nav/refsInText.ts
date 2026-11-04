@@ -2,7 +2,7 @@
 // Pure. The book names are links.ts's (parseCanonReference, never a second table); a translation tag after a reference (ESV, NIV, KJV) is not part of it. Each
 // reference keeps the words as printed and its OSIS ref; the list can be kept in the order of the page or in Bible order.
 import { BOOKS, bookOf, ntBookOf, otBookOf } from '../data/books';
-import { inWords, osisOf, parseCanonReference } from './links';
+import { inWords, osisOf, parseHeldReference } from './links';
 
 /** One reference found in the text. A list ('Rom 8:28, 31') is one reference for each verse; a range keeps its first verse and `lastVerse`. */
 export interface FoundReference {
@@ -48,7 +48,9 @@ export function findReferences(text: string): FoundReference[] {
   FIND.lastIndex = 0;
   for (let m = FIND.exec(text); m; m = FIND.exec(text)) {
     const [whole, name, chapterText, verseText, range, rangeEnd, more] = m;
-    const named = parseCanonReference(name);
+    // A book of the Apocrypha is read by the tutor's links (verseLinks.ts, tutorLinks.ts), not listed here: Lampas holds no text of it, and a saved list, Share's cards and the
+    // Memorize list are of verses it can open (mw-5r3p30.1034).
+    const named = parseHeldReference(name);
     const chapter = Number(chapterText);
     const limit = named && chaptersOf(named.book, named.testament);
     if (!named || named.chapter !== undefined || !limit || chapter < 1 || chapter > limit || !NOT_ENGLISH(name, verseText === undefined)) {
