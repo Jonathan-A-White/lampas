@@ -12,7 +12,8 @@ test.describe.configure({ retries: 0 });
 
 interface Screen {
   name: string;
-  /** A finding this sweep made and left for the Mayor (the closing comment of mw-5r3p30.983): the test is expected to fail until it is fixed, and fails when it passes by itself so the note is taken off. */
+  /** A finding this sweep made and left for the Mayor (the closing comment of mw-5r3p30.983): the test passes while something still sits on the field, and fails once nothing does, so the note is taken off.
+   * Not test.fail(): a test that fails as expected prints a ✘ line, which mw suite reads as a failing test (mw-5r3p30.1016). */
   open_finding?: string;
   open: (page: Page) => Promise<void>;
   fields: (page: Page) => Locator[];
@@ -85,12 +86,12 @@ const clear = (target: Locator): Promise<string[]> =>
 
 for (const screen of SCREENS) {
   test(`${screen.name}: with the keyboard up its field and its submit can be reached and nothing sits on them`, async ({ page }) => {
-    test.fail(screen.open_finding !== undefined, screen.open_finding);
     await page.clock.install();
     await routePostern(page, makeFakePostern());
     await openUnlocked(page);
     await page.goto('/');
     await screen.open(page);
+    const sitting: string[][] = [];
     for (const field of screen.fields(page)) {
       await expect(field).toBeVisible();
       await field.fill('A few words.');
@@ -100,8 +101,13 @@ for (const screen of SCREENS) {
       await expect(field).toBeInViewport({ ratio: 0.9 });
       const box = (await field.boundingBox())!;
       expect(box.y + box.height, `${screen.name}: the field ends above the keyboard`).toBeLessThanOrEqual(480);
-      expect(await clear(field), `${screen.name}: something sits on the field`).toEqual(['', '', '', '', '']);
+      const onField = await clear(field);
+      sitting.push(onField);
+      if (screen.open_finding === undefined) expect(onField, `${screen.name}: something sits on the field`).toEqual(['', '', '', '', '']);
       await page.setViewportSize({ width: 390, height: 844 });
+    }
+    if (screen.open_finding !== undefined) {
+      expect(sitting.flat().some((hit) => hit !== ''), `${screen.name}: nothing sits on the field any more; take its open_finding off (${screen.open_finding})`).toBe(true);
     }
     if (screen.submit) {
       const submit = screen.submit(page);
