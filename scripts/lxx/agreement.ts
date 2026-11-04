@@ -647,8 +647,8 @@ export const PREPOSITION = {
     'ἐν the dative, εἰς the accusative, ἐπί the genitive, dative and accusative). Layer 2 settles a form on the support of rules learned from other lemmas, ' +
     'none of it from the verse: ἐπὶ τρίβων (Job 18:10) took τρίβω V-PAP-NSM (123 of 133) and ἐν ῥινὶ ὑός (Prov 11:22) N-NPF (42 of 45). So a settled word ' +
     'right after a settled preposition (in its verse, no mark of punctuation between) whose case the preposition does not take is read again among its own ' +
-    'candidates (not a reading layer 1 has from one New Testament word, a slip of tagging as in TAGNT_EVIDENCE: σὺν τὸν δίκαιον, Eccl 3:17, keeps τόν T-ASM, ' +
-    'though the New Testament once tags τόν T-DSF): where exactly one is in a case it takes, that one is settled, layer 2a (τρίβος N-GPF, ῥίν N-DSF); where several are (a preposition that takes ' +
+    'candidates (not a reading layer 1 has from one New Testament word, a slip of tagging as in TAGNT_EVIDENCE: σὺν τὸν δίκαιον, Eccl 3:17, is not made τόν T-DSF, ' +
+    'which the New Testament tags once): where exactly one is in a case it takes, that one is settled, layer 2a (τρίβος N-GPF, ῥίν N-DSF); where several are (a preposition that takes ' +
     'more than one case), the word waits for the model, the fitting readings first; where none is, it waits for the model too, since either the ' +
     'preposition does not govern it (οὗ εἵνεκεν ὁ υἱὸς τοῦ βασιλέως ἀπέθανεν, 2 Sam 18:20; πρὸς κεφαλῆς, a genitive the New Testament has once) or no ' +
     'reading of ours is the one (κατὰ Μωυσῆ as a dative, ἐν Καδής as κάδος N-NSM); the agreement links do not settle either. A word in a case the ' +
@@ -718,7 +718,7 @@ export interface AgreementStats {
   addressed: number;
   /** settled words read again in a case the preposition before them takes (readPrepositions), layer 2a */
   governed: number;
-  /** settled words the preposition rule sent to the model, several of their readings fitting */
+  /** settled words the preposition rule sent to the model: several of their readings fit, or none */
   governedPending: number;
   /** settled words sent to the model as a name written in lower case */
   names: number;
