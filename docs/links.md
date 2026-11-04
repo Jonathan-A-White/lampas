@@ -49,7 +49,7 @@ A reference Lampas does not hold never gives a blank screen. It opens the neares
 | verse 0 | verse 1 at the top |
 | a chapter past the end of the book (`Romans 99:1`) | the book's last chapter, no verse |
 | chapter 0 | the book's first chapter |
-| a book not in the index (`Tobit 3:1`) | the chapter he last had open |
+| a book not in the index (`Tobit 3:1`, a book of the Apocrypha: it is read, but Lampas holds no text of it) | the chapter he last had open, with the notice `“Tobit 3:1” is not in Lampas; showing Romans 8.`; the tutor's answer links it to his Apocrypha Bible in Logos (docs/resources.md) |
 | a book of the Old Testament (`Jon.1.10`, `Jonah.1.10`, `2Kgs.14.25`, `Genesis 1:1`) | the chapter in the Reader, in English, with the verse at the top and no Verse view (mw-uqlxea.3, mw-5r3p30.1025); a chapter or verse past the end opens the nearest, with the notice `“Genesis 1:99” is not in Lampas; showing Genesis 1:31.` Copy link and Share write the OSIS code of the book (`#/?ref=Jonah.1.10`) |
 
 A notice names what was asked for in words (`“Romans 8:99”`, never the code `Rom.8.99`); on Share to Lampas a tap on a reference, of either testament, opens a card over the list with the verse in English (src/share/ShareReferences.tsx), not the Reader; the card of an Old Testament reference the tutor names is the same card, with Open (the Reader) and, with Logos on, Open in Logos: it says `Not in Lampas yet` only for a book Lampas holds no data for (`books.ts` `isHeld`).
