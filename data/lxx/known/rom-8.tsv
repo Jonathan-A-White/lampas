@@ -63,10 +63,14 @@ Rom.8:16#4	V-PAI-3S
 Rom.8:16#10	N-NPN		
 Rom.8:17#3	N-NPN		
 Rom.8:17#9	A-NPM		
+# blind subagent, mw-u2w5klk.28
+Rom.8:17#16	V-APS-1P	συνδοξάζω	
 Rom.8:18#5	A-NPN		
 Rom.8:18#6	T-NPN		
 Rom.8:18#7	N-NPN		
 Rom.8:18#8	T-GSM		
+# blind subagent, mw-u2w5klk.28
+Rom.8:20#6	V-2API-3S	ὑποτάσσω	
 Rom.8:20#8	A-NSF	ἑκών	guess
 Rom.8:22#1	V-RAI-1P		
 Rom.8:22#11	T-GSN		
@@ -105,6 +109,10 @@ Rom.8:29#6	A-APM
 Rom.8:29#11	P-GSM		
 Rom.8:29#13	T-ASN		
 Rom.8:29#16	A-ASM		
+# blind subagent, mw-u2w5klk.28
+Rom.8:30#12	V-AAI-3S	δικαιόω	
+# blind subagent, mw-u2w5klk.28
+Rom.8:30#15	V-AAI-3S	δικαιόω	
 Rom.8:31#1	I-ASN		
 Rom.8:31#5	D-APN		
 Rom.8:31#11	I-NSM		
@@ -112,7 +120,11 @@ Rom.8:32#11	A-GPM
 Rom.8:32#18	P-DSM		
 Rom.8:32#19	T-APN		
 Rom.8:32#20	A-APN		
+# blind subagent, mw-u2w5klk.28
+Rom.8:32#22	V-FDI-3S	χαρίζομαι	guess
 Rom.8:33#1	I-NSM		
+# blind subagent, mw-u2w5klk.28
+Rom.8:33#2	V-FAI-3S	ἐγκαλέω	
 Rom.8:33#4	A-GPM		
 Rom.8:34#1	I-NSM		
 Rom.8:35#1	I-NSM		
@@ -120,6 +132,8 @@ Rom.8:35#11	N-NSF
 Rom.8:35#15	N-NSM		
 Rom.8:35#17	N-NSF		
 Rom.8:35#19	N-NSM		
+# blind subagent, mw-u2w5klk.28
+Rom.8:36#6	V-PPI-1P	θανατόω	
 Rom.8:36#10	V-API-1P		
 Rom.8:36#12	N-NPN		unsure
 Rom.8:37#3	D-DPN		

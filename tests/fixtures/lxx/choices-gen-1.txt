@@ -1,5 +1,6 @@
 # A model session's choices for the Gen 1 fixture (tests/unit/lxx-choose.test.ts): the first candidate of each pending word, so every line is among the candidates,
 # except the two words with no candidate (guess, with the lemma) and two marks the test needs: Gen.1:9#35 guess (a candidate, marked) and a `?` on some lines.
+# Two lines are not the first candidate but a blind reader's choice (marked '# blind subagent, mw-u2w5klk.28' above each): the words the rule of that story leaves pending.
 # Not a reading of the verses: the fixture only shows the shape (ref parsing [lemma] [?|guess]) and the confidences it gives.
 Gen.1:1#2 N-DSF
 Gen.1:2#5 A-NSM
@@ -110,6 +111,8 @@ Gen.1:22#12 T-APN ?
 Gen.1:22#13 N-APN
 Gen.1:22#18 T-APN
 Gen.1:22#19 N-APN
+# blind subagent, mw-u2w5klk.28
+Gen.1:22#20 V-APM-3P πληθύνω guess
 Gen.1:23#6 ADV
 Gen.1:23#8 A-NSF
 Gen.1:24#11 N-NSN
@@ -129,6 +132,8 @@ Gen.1:25#19 N-APN
 Gen.1:25#23 N-NSN ?
 Gen.1:25#24 P-GPM
 Gen.1:25#30 A-APN
+# blind subagent, mw-u2w5klk.28
+Gen.1:26#14 V-PAM-3P ἄρχω
 Gen.1:26#32 A-GPM
 Gen.1:27#12 A-ASN
 Gen.1:27#14 A-ASN

@@ -7,10 +7,13 @@ import { BAR } from '../../scripts/lxx/bar';
 import { readChoices } from '../../scripts/lxx/choices';
 import { knownFileOf, KNOWN_DIR } from '../../scripts/lxx/known';
 
-/** The chapter's words in TAGNT's NA28 rows (829 and 652): the share the guess limit is counted over. */
+/**
+ * The chapter's words in TAGNT's NA28 rows (829 and 652): the share the guess limit is counted over. The pending counts include the 5 and 7 words the rule of
+ * mw-u2w5klk.28 leaves pending (a lone candidate on thin support), chosen by a blind reader and marked so in each file.
+ */
 const CHAPTERS = [
-  { chapter: 'Jhn.1', words: 829, pending: 149 },
-  { chapter: 'Rom.8', words: 652, pending: 135 },
+  { chapter: 'Jhn.1', words: 829, pending: 154 },
+  { chapter: 'Rom.8', words: 652, pending: 142 },
 ];
 
 describe.each(CHAPTERS)('the known-answer choices of $chapter', ({ chapter, words, pending }) => {

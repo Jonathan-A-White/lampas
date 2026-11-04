@@ -2,6 +2,7 @@
 // docs/lxx-derivation.md 'The bar'; story mw-u2w5klk.4), on the fixtures of tests/unit/lxx-parser.test.ts (its header says how they were cut), never the network.
 // tests/fixtures/lxx/choices-jhn-1.tsv is the probe's John 1 choices (MODEL_CHOICES_JOHN of scripts/lxx-derivation-probe.mjs) in the choices file shape.
 // The probe made them before the agreement check, so 48 words the check now demotes have no choice in it: --keep-demoted scores those as the probe did.
+// Six lines at its end are a blind reader's choices (a fresh subagent given only the verse, the word and its candidates, story mw-u2w5klk.28), each marked so.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -143,19 +144,20 @@ describe('lxx:known on John 1, John hidden (the probe’s known-answer run)', as
   // an empty directory stands for a chapter with no choices file (data/lxx/known/jhn-1.tsv is committed now, mw-u2w5klk.7)
   const [bare] = await runKnown(['--chapter', 'Jhn.1', '--choices-dir', tmp()], { input: JHN });
 
-  it('scores layers 1 and 2 as the probe did, within one word: 672 of 673 on the lemma and 670 on full parsing for layer 1, 25 of 25 for layer 2', () => {
+  it('scores layers 1 and 2 as the probe did, within one word: 672 of 673 on the lemma and 670 on full parsing for layer 1, 19 of 19 for layer 2 (25 before mw-u2w5klk.28 left six lone candidates on thin support pending)', () => {
     expect(kept.words).toBe(829);
     expect(kept.hidden).toBe('jhn');
     expect(kept.before[1].words).toBe(673);
     expect(Math.abs(kept.before[1].lemma - 672)).toBeLessThanOrEqual(1);
     expect(Math.abs(kept.before[1].full - 670)).toBeLessThanOrEqual(1);
-    expect(kept.before[2]).toEqual({ words: 25, lemma: 25, full: 25 });
+    expect(kept.before[2]).toEqual({ words: 19, lemma: 19, full: 19 });
   });
 
   it('given the probe’s John choices scores the whole chapter at 828 of 829 on the lemma and 825 on full parsing', () => {
     expect(kept.all).toEqual({ words: 829, lemma: 828, full: 825 });
     expect(kept.unanswered).toBe(0);
-    expect(kept.choices).toMatchObject({ given: 138, refused: 0 });
+    // 138 of the probe's choices and six of a blind reader's, for the words mw-u2w5klk.28 leaves pending
+    expect(kept.choices).toMatchObject({ given: 144, refused: 0 });
     expect(kept.guesses).toBe(3);
     // the three guesses the probe made were right
     expect(kept.by['3'].lemma).toBe(kept.by['3'].words);

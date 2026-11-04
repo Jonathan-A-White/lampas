@@ -256,9 +256,10 @@ describe('the known answer: John 1 with John hidden (npm run lxx:derive -- --boo
     expect(Math.abs((100 * full) / analysed - 69.2)).toBeLessThanOrEqual(3);
   });
 
-  it('settles 25 words in layer 2, every one right', () => {
+  it('settles 19 words in layer 2, every one right (25 before mw-u2w5klk.28 left six lone candidates on thin support pending)', () => {
     const layer2 = jhn.beforeCheck.derived.filter((w) => w.layer === 2);
-    expect(layer2).toHaveLength(25);
+    expect(layer2).toHaveLength(19);
+    expect(jhn.beforeCheck.pending.filter((w) => w.notes.includes(NOTE_THIN))).toHaveLength(6);
     for (const w of layer2) expect([w.lemma, w.morph]).toEqual([answer.get(w.ref)!.lemma, answer.get(w.ref)!.morph]);
     expect(jhn.beforeCheck.derived.filter((w) => w.layer === 1)).toHaveLength(673);
   });
@@ -413,8 +414,13 @@ describe('an indeclinable name offers every case of its gender (B6)', async () =
       expect(out.notes).toContain(NOTE_INDECLINABLE);
       expect(out.notes).not.toContain(NOTE_NO_CANDIDATE);
     }
-    // before the rule the parser had settled Ἰωβέλ on its single candidate, in layer 2
-    expect(layerOf(outOf(without, IOBEL))).toBe(2);
+    // before the rule the parser had settled Ἰωβέλ on its single candidate, in layer 2; since mw-u2w5klk.28 that candidate, on thin stem support, waits too,
+    // so without the rule the word is the parser's one reading for the model, and with it every case of its gender
+    const alone = outOf(without, IOBEL);
+    expect(isDerived(alone)).toBe(false);
+    expect(alone.notes).toContain(NOTE_THIN);
+    expect(alone.candidates).toHaveLength(1);
+    expect(outOf(got, IOBEL).candidates.length).toBeGreaterThan(1);
   });
 
   it('writes the new candidates’ support as the word name, in the pending file', () => {
