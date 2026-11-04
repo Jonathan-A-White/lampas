@@ -19,6 +19,10 @@ the sources `docs/lxx-derivation.md` names ('The sources', 'Morpheus, the second
 - [The pools](#the-pools)
 - [The words](#the-words)
 - [The re-count after the three fixes](#the-re-count-after-the-three-fixes)
+  - [The batches, before and after](#the-batches-before-and-after)
+  - [The seven wrong words, each now](#the-seven-wrong-words-each-now)
+  - [The audit's 468 words, each now](#the-audits-468-words-each-now)
+  - [A fresh sample](#a-fresh-sample)
 - [The re-count: the words](#the-re-count-the-words)
 
 <!-- /toc -->
@@ -733,15 +737,6 @@ the batches and to the first audit's words, and reads a fresh sample. It measure
 Morpheus was **not** run this time (the host's Docker refuses the socket: `permission denied`), so no word below has Morpheus's reading beside it, as the first audit's had.
 
 **The number of batches is over 178: 193, against 178, and 121,137 pending words against 112,991.**
-
-<!-- toc -->
-
-- [The batches, before and after](#the-batches-before-and-after)
-- [The seven wrong words, each now](#the-seven-wrong-words-each-now)
-- [The audit's 468 words, each now](#the-audits-468-words-each-now)
-- [A fresh sample](#a-fresh-sample)
-
-<!-- /toc -->
 
 ### The batches, before and after
 
