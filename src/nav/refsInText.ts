@@ -42,9 +42,19 @@ const NOT_ENGLISH = (name: string, chapterOnly: boolean): boolean => {
 
 export const chaptersOf = (book: string, testament: 'nt' | 'ot'): number | undefined => (testament === 'nt' ? ntBookOf(book)?.chapters : otBookOf(book)?.chapters);
 
-/** Every reference in `text`, in the order the text has them (a reference named twice is found twice). */
-export function findReferences(text: string): FoundReference[] {
-  const found: FoundReference[] = [];
+/** A reference found in the text and the characters of the text it was read from (`start` to `end`): for what links each reference where it stands (src/reftagger/reftagger.ts). */
+export interface ReferenceSpan extends FoundReference {
+  start: number;
+  end: number;
+}
+
+// A verse list's next chapter after a ';' ('Romans 8:1; 10:9-10'): the same book, a new chapter and verse, a range and a list of more verses.
+const AFTER_SEMICOLON = /\s*;\s*(\d+)\s*:\s*(\d+)(\s*[-–]\s*(\d+))?((?:\s*,\s*\d+(?!\s*[:\d])(?:\s*[-–]\s*\d+)?)*)/y;
+
+/** Every reference in `text`, in the order the text has them (a reference named twice is found twice), each with where it stands. With `semicolons` a ';' goes on a list into the
+ *  next chapter of the same book ('Romans 8:1; 10:9-10' is Romans 8:1 and Romans 10:9-10); the Share list does not read that. */
+export function referenceSpans(text: string, { semicolons = false }: { semicolons?: boolean } = {}): ReferenceSpan[] {
+  const found: ReferenceSpan[] = [];
   FIND.lastIndex = 0;
   for (let m = FIND.exec(text); m; m = FIND.exec(text)) {
     const [whole, name, chapterText, verseText, range, rangeEnd, more] = m;
@@ -58,25 +68,59 @@ export function findReferences(text: string): FoundReference[] {
       continue;
     }
     const { book, testament } = named;
-    const head = `${name.trim()} ${chapterText}`;
-    const make = (printed: string, verse: number | undefined, lastVerse?: number): FoundReference => ({
+    const make = (printed: string, chapterOf: number, verse: number | undefined, at: number, to: number, lastVerse?: number): ReferenceSpan => ({
       printed,
-      ref: `${osisOf(book)}.${chapter}${verse === undefined ? '' : `.${verse}`}`,
+      ref: `${osisOf(book)}.${chapterOf}${verse === undefined ? '' : `.${verse}`}`,
       book,
       testament,
-      chapter,
+      chapter: chapterOf,
       ...(verse === undefined ? {} : { verse }),
       ...(lastVerse === undefined || lastVerse === verse ? {} : { lastVerse }),
+      start: at,
+      end: to,
     });
     if (verseText === undefined) {
-      found.push(make(whole.trim(), undefined));
+      found.push(make(whole.trim(), chapter, undefined, m.index, m.index + whole.trimEnd().length));
       continue;
     }
+    // the verses after the first: a list ('Rom 8:28, 31') is one reference for each verse, written with the book as printed ('Rom 8:31')
+    const listed = (at: number, tail: string, head: string, chapterOf: number): void => {
+      for (const item of tail.matchAll(/(\d+)(?:\s*[-–]\s*(\d+))?/g)) {
+        const itemAt = at + (item.index as number);
+        found.push(make(`${head}:${item[1]}`, chapterOf, Number(item[1]), itemAt, itemAt + item[0].length, item[2] === undefined ? undefined : Number(item[2])));
+      }
+    };
+    const head = `${name.trim()} ${chapterText}`;
     const first = Number(verseText);
-    found.push(make(`${head}:${verseText}${range ?? ''}`, first, rangeEnd === undefined ? undefined : Number(rangeEnd)));
-    for (const item of more ? more.matchAll(/(\d+)(?:\s*[-–]\s*(\d+))?/g) : []) found.push(make(`${head}:${item[1]}`, Number(item[1]), item[2] === undefined ? undefined : Number(item[2])));
+    found.push(make(`${head}:${verseText}${range ?? ''}`, chapter, first, m.index, m.index + whole.length - (more ?? '').length, rangeEnd === undefined ? undefined : Number(rangeEnd)));
+    listed(m.index + whole.length - (more ?? '').length, more ?? '', head, chapter);
+    let end = m.index + whole.length;
+    while (semicolons) {
+      AFTER_SEMICOLON.lastIndex = end;
+      const next = AFTER_SEMICOLON.exec(text);
+      const nextChapter = next && Number(next[1]);
+      if (!next || !nextChapter || nextChapter > limit) break;
+      const nextHead = `${name.trim()} ${next[1]}`;
+      const tail = next[5] ?? '';
+      const itemAt = end + next[0].indexOf(next[1]);
+      const verseEnd = end + next[0].length - tail.length;
+      found.push(make(`${nextHead}:${next[2]}${next[3] ?? ''}`, nextChapter, Number(next[2]), itemAt, verseEnd, next[4] === undefined ? undefined : Number(next[4])));
+      listed(verseEnd, tail, nextHead, nextChapter);
+      end += next[0].length;
+    }
+    FIND.lastIndex = end;
   }
   return found;
+}
+
+/** Every reference in `text`, in the order the text has them (a reference named twice is found twice). */
+export function findReferences(text: string): FoundReference[] {
+  return referenceSpans(text).map((span) => {
+    const reference: Partial<ReferenceSpan> = { ...span };
+    delete reference.start;
+    delete reference.end;
+    return reference as FoundReference;
+  });
 }
 
 /** Where a book stands in the Bible: canon order, the Old Testament's books first, then the New's. */

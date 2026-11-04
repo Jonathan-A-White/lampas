@@ -12,6 +12,7 @@ import type { ReaderView, Weave } from '../data/repositories';
 import type { CourseLanguage } from '../ipa/course';
 import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
+import { pathOf } from './path';
 
 export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'help' | 'about' | 'preface' | 'essay' | 'lessons' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
 
@@ -58,11 +59,7 @@ export function watchAddress(listener: () => void): () => void {
   };
 }
 
-/** The part of an address before its '?': '#/words', '#/' or ''. */
-export function pathOf(hash: string): string {
-  const q = hash.indexOf('?');
-  return q < 0 ? hash : hash.slice(0, q);
-}
+export { pathOf };
 
 export function routeOf(hash: string): Route {
   const path = pathOf(hash);

@@ -8,6 +8,7 @@ Lampas takes links in, as Logos does (logos4:, ref.ly). The https form always wo
   - [`ref=` — a verse, a chapter or a book](#ref--a-verse-a-chapter-or-a-book)
   - [`word=` — a word](#word--a-word)
   - [`setting=` — a setting (Settings)](#setting--a-setting-settings)
+- [The blog's tagger](#the-blogs-tagger)
 - [Share to Lampas: what the share sheet accepts](#share-to-lampas-what-the-share-sheet-accepts)
 - [web+lampas:](#weblampas)
 - [How it is wired](#how-it-is-wired)
@@ -71,6 +72,12 @@ with a notice, as a reference does.
 `https://lampas.allmymind.org/#/settings?setting=<key>` opens Settings at one setting (mw-5r3p30.502). The key is a setting of the registry (`src/settings/registry.ts` SETTINGS: `textSize`, `theme`, `greekRate`, `resource.logos` …); `src/settings/link.ts` `settingLink(key)` writes the address and gives nothing for a key that is not one (so a mistyped or invented key opens plain Settings, nothing marked). Settings scrolls to that row and marks it (`data-highlighted`, an outline and a tint) until his next tap; the page of the row's group opens (Settings is a home and pages, mw-3ased2.1: `#/settings?group=reading` is one page, `#/settings` the home that lists them), the row is drawn though its dependency would hide it, and when it is a detail of a setting that is off (Bible in Logos while Logos is Off) a line says `“Bible in Logos” is shown once “Logos” is on. Turn “Logos” on first.` and the setting it needs is drawn beside it. Nothing is changed by opening it. `#/settings?section=resources` (a whole section, not marked) opens the page holding that section, scrolled to it, not where Settings was last scrolled: `openSettingsSection(id)` (`src/settings/link.ts`) forgets the offset kept for that address, and `scrollAddress` (`src/nav/scrollMemory.ts`) keeps a section address apart from the plain Settings one (mw-5r3p30.427).
 
 Where Lampas makes one: a `{kind: 'setting', key}` link in a tutor answer (docs/ask-tutor.md) is a chip, `Open Text size in Settings`. The settings-search sheet that once made these (a magnifier in each header, mw-5r3p30.502) is gone (mw-5r3p30.617): Settings keeps its own search field, pinned at the top.
+
+## The blog's tagger
+
+`https://lampas.allmymind.org/reftagger.js` (mw-5r3p30.1043, the Governor's word of 2026-11-04: "make all links use lampus") is a script the blog loads with one `<script>` tag; it replaces Logos RefTagger, whose tap opened a NET popover. It turns each bare reference in the text of a post (Ghost's `.gh-content`) into a link to that passage in Lampas: `John 5:25` is `https://lampas.allmymind.org/#/?ref=John.5.25`, `John 5:24-29` is `ref=John.5.24-29`, `1 Kings 17:17-24` is `ref=1Kgs.17.17-24`, `John 11` is `ref=John.11`; `Romans 8:1; 10:9-10` and `John 5:24, 28` link each part. A tap goes straight to Lampas in a new tab (`target="_blank"`, `rel="noopener"`); there is no preview. Text in a link, `code`, `pre`, a heading, a script or a style, and everything outside `.gh-content` (title, menus, footer, comments), is left as it is; an existing link is never changed, and the text a reader sees is the same.
+
+It reads a reference as the Reader does: `findReferences`'s reading (src/nav/refsInText.ts `referenceSpans`, over the book names of src/nav/links.ts), so 'Nov 2026', 'May 5', 'Johnson 5:3' and 'Acts' alone are no reference. `vite.config.ts` builds it as a second, plain build (src/reftagger/reftagger.ts, no framework, no hash in its name, about 18 KB gzip; the spec holds it under 40 KB), and it is not in the worker's precache. It makes no network call and sets no cookie. tests/e2e/reftagger.spec.ts holds it against tests/fixtures/reftagger.html. The swap in the blog's header (Ghost code injection) is the Mayor's step.
 
 ## Share to Lampas: what the share sheet accepts
 

@@ -9,7 +9,7 @@ import type { Lookup } from '../WordSheet';
 import type { LemmaEntry, LemmaLexicon } from '../data/lexicon';
 import type { OpenChapter } from '../data/readerChapter';
 import { LINK_ORIGIN } from '../config';
-import { pathOf } from './route';
+import { pathOf } from './path';
 
 /** Each book's OSIS code, which the links Lampas writes use: 'Rom', '1John'. */
 export const OSIS: Readonly<Record<string, string>> = {

@@ -1,6 +1,6 @@
 // The finder of Bible references in free text (src/nav/refsInText.ts, mw-s1dc0n.1): what Share to Lampas lists as links.
 import { describe, expect, it } from 'vitest';
-import { findReferences, groupedByBook, listReferences } from '../../src/nav/refsInText';
+import { findReferences, groupedByBook, listReferences, referenceSpans } from '../../src/nav/refsInText';
 import { referenceUrl } from '../../src/nav/links';
 
 const refs = (text: string) => findReferences(text).map((r) => [r.printed, r.ref, r.lastVerse]);
@@ -65,5 +65,33 @@ describe('listReferences', () => {
   it('links a range at its first verse', () => {
     const [one] = findReferences('Rom 8:28-30');
     expect(referenceUrl(one.book, one.chapter, one.verse)).toBe('https://lampas.allmymind.org/#/?ref=Rom.8.28');
+  });
+});
+
+describe('referenceSpans (the blog tagger, mw-5r3p30.1043)', () => {
+  const spans = (text: string, semicolons = true) => referenceSpans(text, { semicolons }).map((r) => [text.slice(r.start, r.end), r.ref, r.lastVerse]);
+
+  it('says where each reference stands, a list item and a range included', () => {
+    expect(spans('Read John 5:24-29, 31 and Rom 8.')).toEqual([
+      ['John 5:24-29', 'John.5.24', 29],
+      ['31', 'John.5.31', undefined],
+      ['Rom 8', 'Rom.8', undefined],
+    ]);
+  });
+
+  it("goes on with the same book after a ';' only when asked", () => {
+    expect(spans('Romans 8:1; 10:9-10, 13')).toEqual([
+      ['Romans 8:1', 'Rom.8.1', undefined],
+      ['10:9-10', 'Rom.10.9', 10],
+      ['13', 'Rom.10.13', undefined],
+    ]);
+    expect(spans('Romans 8:1; 10:9-10', false)).toEqual([['Romans 8:1', 'Rom.8.1', undefined]]);
+    expect(spans('Romans 8:1; 99:9')).toEqual([['Romans 8:1', 'Rom.8.1', undefined]]);
+  });
+
+  it('finds what findReferences finds, as before', () => {
+    const text = 'Gen. 1:28 ESV, Rom 8:28, 31 and Ps 23';
+    expect(findReferences(text).map((r) => Object.keys(r).sort())).toEqual(referenceSpans(text).map((r) => Object.keys(r).filter((k) => k !== 'start' && k !== 'end').sort()));
+    expect(findReferences(text).map((r) => r.ref)).toEqual(referenceSpans(text).map((r) => r.ref));
   });
 });
