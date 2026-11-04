@@ -294,7 +294,7 @@ export function VerseView(props: VerseViewProps) {
         {/* What the chosen action shows, under the text it is about (the reading check marks its words, the diagram draws them, Listen's help line, the verse's talk door): nothing at all
             (no room taken) when it shows nothing. It comes before the tools and the row, so what arrives in it (a reading's result, a drawn diagram) only shortens the text's box: the
             controls under it keep their place above the foot and never move under his finger (mw-5r3p30.896). */}
-        <div className={`mt-1 shrink-0 empty:hidden ${controlsRoom}`}>
+        <div className={`mt-1 shrink-0 empty:hidden ${action === 'diagram' ? '' : controlsRoom}`}>
           {action === 'listen' ? (
             // sideways the Play bar says it, and the line's room goes to the Audio Bible row under it (mw-5r3p30.468)
             <p data-action-help className={`px-1 text-sm text-muted ${audioListen ? 'short:hidden' : ''}`}>

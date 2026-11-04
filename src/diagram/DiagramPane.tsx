@@ -14,6 +14,7 @@ import { getStudyResources } from '../data/repositories';
 import type { WovenVerse } from '../data/weave';
 import type { Lookup } from '../WordSheet';
 import { navigate } from '../nav/route';
+import { useDoorRoom } from '../tutor/doorRoom';
 import { armFallback } from '../resources/openApp';
 import { TutorError } from '../services/tutor';
 import { useElapsed } from '../ui/useElapsed';
@@ -84,8 +85,9 @@ function SeeItInLogos({ chapter, n }: { chapter: Chapter; n: number }) {
 function Working() {
   const [since] = useState(() => Date.now());
   const seconds = useElapsed(since);
+  const room = useDoorRoom();
   return (
-    <p role="status" className="px-1 text-base text-muted">
+    <p role="status" className={`px-1 text-base text-muted ${room}`}>
       {WORKING_LINE}
       <span className="pl-2">{seconds} s</span>
     </p>
@@ -170,6 +172,8 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
   const [working, setWorking] = useState(true);
   // the invitation to the lesson (mw-q6t5tvn.2): shown above a drawn diagram until he has finished the lesson or tapped Not now
   const [invited, setInvited] = useState(lessonInvited);
+  // the sideways box takes the full width (it scrolls); the rows of buttons around it keep the floating ?'s side clear (mw-5r3p30.1002, .1036)
+  const room = useDoorRoom();
   const again = (redraw: boolean): void => {
     setWorking(true);
     setProblem(null);
@@ -201,10 +205,10 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
 
   return (
     <div data-diagram-sentence className="flex flex-col gap-2">
-      {caption ? <p className="px-1 text-sm text-muted" data-diagram-caption>{caption}</p> : null}
+      {caption ? <p className={`px-1 text-sm text-muted ${room}`} data-diagram-caption>{caption}</p> : null}
       {working ? <Working /> : null}
       {drawn && words && problem === null && invited && first ? (
-        <div className="flex flex-col gap-2 rounded-xl border border-line p-3" data-testid="diagram-invitation">
+        <div className={`flex flex-col gap-2 rounded-xl border border-line p-3 ${room}`} data-testid="diagram-invitation">
           <p className="text-base">{INVITATION_LINE}</p>
           <div className="grid grid-cols-2 gap-3">
             <button type="button" onClick={() => navigate('diagram-lesson')} className={INVITE_BUTTON}>
@@ -238,7 +242,7 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
         </div>
       ) : null}
       {problem !== null ? (
-        <div role="alert" className="rounded-xl border border-line p-3">
+        <div role="alert" className={`rounded-xl border border-line p-3 ${room}`}>
           <p className="text-base font-medium">{FAILED_LINE}</p>
           <p className="pt-1 text-sm text-muted">{problem}</p>
           <button
@@ -251,7 +255,7 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
         </div>
       ) : null}
       {drawn && problem === null ? (
-        <>
+        <div className={`flex flex-col gap-2 ${room}`}>
           <button
             type="button"
             disabled={working}
@@ -267,7 +271,7 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
             </button>
           </div>
           <SeeItInLogos chapter={chapter} n={n} />
-        </>
+        </div>
       ) : null}
     </div>
   );

@@ -164,6 +164,7 @@ test('The invitation and How to read this fit the phone and leave the diagram it
   for (const button of [learn, notNow]) {
     const b = await boxed(button);
     expect(b.height).toBeGreaterThanOrEqual(43.5);
+    expect(b.x + b.width, 'Learn and Not now end where the floating ? begins').toBeLessThanOrEqual(VIEWPORT.width - 72);
     expect(b.y).toBeGreaterThanOrEqual(lineBox.y);
     expect(b.y + b.height).toBeLessThanOrEqual(diagramBox.y);
   }
@@ -172,6 +173,7 @@ test('The invitation and How to read this fit the phone and leave the diagram it
   // the link sits under the diagram, a thumb tall, inside the phone
   const linkBox = await boxed(link);
   expect(linkBox.height).toBeGreaterThanOrEqual(43.5);
+  expect(linkBox.x + linkBox.width, 'the link ends where the floating ? begins').toBeLessThanOrEqual(VIEWPORT.width - 72);
   expect(linkBox.y).toBeGreaterThanOrEqual(diagramBox.y + diagramBox.height);
 
   // the box still scrolls sideways and the page does not
