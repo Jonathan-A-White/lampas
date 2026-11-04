@@ -156,29 +156,6 @@ const MORE_SCREENS: readonly Screen[] = [
     },
   },
   {
-    name: 'Share sheet of the Verse view',
-    shot: 'large-text-share-sheet',
-    top: true,
-    open: async (page) => {
-      // a phone that can share: the Verse view's Share opens the sheet of pieces (mw-5r3p30.1026)
-      await page.addInitScript(() => Object.defineProperty(navigator, 'share', { value: () => Promise.resolve(), configurable: true }));
-      await openUnlocked(page);
-      await page.goto('/#/?c=8&view=english&weave=solid');
-      await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
-      const view = page.getByRole('region', { name: 'Verse view' });
-      await expect(view).toBeVisible();
-      await view.getByRole('group', { name: 'Tools', exact: true }).getByRole('button', { name: 'Share', exact: true }).click();
-      const sheet = page.getByRole('dialog', { name: /^Share / });
-      await expect(sheet).toBeVisible();
-      // each row holds its own words (a row squeezed under its words would draw them over the next row) and is 48 px or more
-      for (const row of await sheet.locator('[data-share-piece]').all()) {
-        const fit = await row.evaluate((el) => ({ inside: el.scrollHeight <= el.clientHeight + 1, height: el.getBoundingClientRect().height }));
-        expect(fit.inside).toBe(true);
-        expect(fit.height).toBeGreaterThanOrEqual(47.5);
-      }
-    },
-  },
-  {
     name: 'Words',
     shot: 'large-text-words',
     open: async (page) => {
@@ -300,6 +277,29 @@ const MORE_SCREENS: readonly Screen[] = [
   { name: 'Reading check with words to fix', shot: 'large-text-reading-check', open: async (page) => openReadingCheck(page) },
   { name: 'Reading check, Read these again', shot: 'large-text-reading-walk', open: async (page) => openReadingCheck(page, true) },
   { name: 'Hard sounds lesson foot', shot: 'large-text-sound-lesson', open: openSoundLessonFoot },
+  {
+    name: 'Share sheet of the Verse view',
+    shot: 'large-text-share-sheet',
+    top: true,
+    open: async (page) => {
+      // a phone that can share: the Verse view's Share opens the sheet of pieces (mw-5r3p30.1026)
+      await page.addInitScript(() => Object.defineProperty(navigator, 'share', { value: () => Promise.resolve(), configurable: true }));
+      await openUnlocked(page);
+      await page.goto('/#/?c=8&view=english&weave=solid');
+      await page.locator('[data-heading]', { hasText: 'Walking by the Spirit' }).getByRole('button').click();
+      const view = page.getByRole('region', { name: 'Verse view' });
+      await expect(view).toBeVisible();
+      await view.getByRole('group', { name: 'Tools', exact: true }).getByRole('button', { name: 'Share', exact: true }).click();
+      const sheet = page.getByRole('dialog', { name: /^Share / });
+      await expect(sheet).toBeVisible();
+      // each row holds its own words (a row squeezed under its words would draw them over the next row) and is 48 px or more
+      for (const row of await sheet.locator('[data-share-piece]').all()) {
+        const fit = await row.evaluate((el) => ({ inside: el.scrollHeight <= el.clientHeight + 1, height: el.getBoundingClientRect().height }));
+        expect(fit.inside).toBe(true);
+        expect(fit.height).toBeGreaterThanOrEqual(47.5);
+      }
+    },
+  },
 ];
 
 /** Every control, heading and label on the open screen whose text is cut off, squeezed out or which sticks out of the window, one line each. A row that scrolls sideways
@@ -471,6 +471,7 @@ test('the screens are the ones the stories name', () => {
     'Reading check with words to fix',
     'Reading check, Read these again',
     'Hard sounds lesson foot',
+    'Share sheet of the Verse view',
   ]);
 });
 
