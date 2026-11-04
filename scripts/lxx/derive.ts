@@ -193,7 +193,7 @@ function morpheusCandidates(form: string, morpheus: MorpheusCache | undefined): 
  *   is not one of its readings (ἐξῆρται: ἐξαίρω V-RPI-3S, where the rule read ἐξαρτάω V-IAI-3S). The rule's candidate (and analogy's readings beside it) is set aside
  *   (NOTE_MORPHEUS_OVER) and Morpheus's readings are the candidates, as for a word with none: for the agreement check or the model. Only perfects: of the 351 words on which Morpheus
  *   knew the form whole and shared nothing with the rule, 20 were perfects, and those read right (ὦπταί as ὁράω, not ὀπτάω); the rest were mostly a spelling Morpheus reads as another
- *   word (Swete's δουλίαν as the adjective δούλιος for the noun δουλεία, λατρίαν, αἰγεῖα as αἴξ), which made five settled words wrong;
+ *   word (Swete's δουλίαν as the adjective δούλιος for the noun δουλεία, λατρίαν, αἰγῶν as αἴξ), which made five settled words wrong;
  * - otherwise (Morpheus left a reading out, which may be the right one, or shares the lemma or the parsing, as when it writes a lemma another way, γίγνομαι for γίνομαι) its
  *   readings are put beside the rule's candidate (NOTE_MORPHEUS_BESIDE), marked `beside` as analogy's are (parser.ts Candidate): for the model only, so the word stays a thin lone
  *   one for the agreement check and the address rule, which may still settle it on the rule's candidate as before.
