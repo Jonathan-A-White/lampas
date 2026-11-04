@@ -4,6 +4,7 @@ import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LinkActions } from '../../src/ui/LinkActions';
+import { COPY_DEFAULTS, sharePieces } from '../../src/copy/format';
 import { db } from '../../src/data/db';
 import { setGreekInterest, setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -126,12 +127,29 @@ describe('LinkActions given the text to copy', () => {
     expect(box).toHaveValue('Words\n— Colossians 3:1 (MSB)\nhttps://example.org/u');
   });
 
-  it('shares the text without the link and the link as the share\'s url', async () => {
+  it('Share opens the sheet of pieces, and a row hands the share that piece alone', async () => {
     const share = vi.fn(() => Promise.resolve());
     Object.defineProperty(window.navigator, 'share', { configurable: true, value: share });
-    render(<LinkActions url="https://example.org/u" title="Colossians 3:1" text="Words\nhttps://example.org/u" shareText="Words" shareUrl="https://example.org/u" />);
+    const unit = { kind: 'verse' as const, book: 'Colossians', code: 'col', chapter: 3, language: 'grc' as const, verses: [{ n: 1, english: 'Words here' }] };
+    const pieces = sharePieces(unit, COPY_DEFAULTS);
+    render(<LinkActions url="https://example.org/u" title="Colossians 3:1" text="Words" pieces={pieces} />);
     fireEvent.click(screen.getByRole('button', { name: 'Share' }));
-    await waitFor(() => expect(share).toHaveBeenCalledWith({ title: 'Colossians 3:1', text: 'Words', url: 'https://example.org/u' }));
+    expect(share).not.toHaveBeenCalled();
+    const sheet = await screen.findByRole('dialog', { name: 'Share Colossians 3:1' });
+    fireEvent.click(within(sheet).getByRole('button', { name: /^Just the link/ }));
+    await waitFor(() => expect(share).toHaveBeenCalledWith({ url: 'https://lampas.allmymind.org/#/?ref=Col.3.1' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    Object.defineProperty(window.navigator, 'share', { configurable: true, value: undefined });
+  });
+
+  it('a share the phone refuses shows the piece that was picked, to copy by hand', async () => {
+    const share = vi.fn(() => Promise.reject(new Error('no')));
+    Object.defineProperty(window.navigator, 'share', { configurable: true, value: share });
+    const unit = { kind: 'verse' as const, book: 'Colossians', code: 'col', chapter: 3, language: 'grc' as const, verses: [{ n: 1, english: 'Words here' }] };
+    render(<LinkActions url="https://example.org/u" title="Colossians 3:1" text="Words" pieces={sharePieces(unit, COPY_DEFAULTS)} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /^Just the reference/ }));
+    expect(await screen.findByRole('textbox', { name: 'Text to copy' })).toHaveValue('Colossians 3:1 (MSB)');
     Object.defineProperty(window.navigator, 'share', { configurable: true, value: undefined });
   });
 });

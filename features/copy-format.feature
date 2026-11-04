@@ -1,6 +1,6 @@
 @uc-copy @greek
 Feature: When you copy
-  The Verse view's Copy and Share always give the words as he reads them (English, Greek, Hebrew or the Weave, the view on now, with the variants and readings
+  The Verse view's Copy and Share (Share first opens a sheet of The whole, Just the link, Just the text and Just the reference, mw-5r3p30.1026) always give the words as he reads them (English, Greek, Hebrew or the Weave, the view on now, with the variants and readings
   he has on); there is no choice of text (mw-5r3p30.873). Settings > Reading > When you copy chooses Reference (after, before or off), Verse numbers (on or off)
   and Link (on or off), and says what Copy gives. With the defaults it is the words, then the reference, then the link on a last line of its own.
 
@@ -168,3 +168,36 @@ Feature: When you copy
     When he taps "Copy"
     Then the phone's clipboard starts with "Therefore, since Christ suffered for us {left out NA} in His body,"
     And the phone's clipboard holds "{left out NA}"
+
+  Scenario: Share opens a sheet of pieces and Just the link sends the link alone
+    Given Lampas is opened on Romans 8 with When you copy at its defaults
+    And the phone can share
+    When he taps the number of verse 11
+    And he taps Share on the Verse view
+    Then the Share sheet offers, in order, "The whole", "Just the link", "Just the text" and "Just the reference"
+    And he taps "Just the link" on the Share sheet
+    Then the phone's share was handed only the link of Romans 8:11
+
+  Scenario: Share's Just the text has no reference and no link, and follows Verse numbers
+    Given Lampas is opened on Romans 8 with When you copy set to Reference "after", Verse numbers "off" and Link "on"
+    And the phone can share
+    When he taps the heading "Walking by the Spirit"
+    And he taps Share on the Verse view
+    And he taps "Just the text" on the Share sheet
+    Then the phone's share was handed only text that starts "Therefore there is now no condemnation", with no reference and no link
+
+  Scenario: Share's Just the reference sends the reference alone
+    Given Lampas is opened on Romans 8 with When you copy at its defaults
+    And the phone can share
+    When he taps the number of verse 11
+    And he taps Share on the Verse view
+    And he taps "Just the reference" on the Share sheet
+    Then the phone's share was handed only the text "Romans 8:11 (MSB)"
+
+  Scenario: Share's Just the link is there with Link off
+    Given Lampas is opened on Romans 8 with When you copy set to Reference "after", Verse numbers "on" and Link "off"
+    And the phone can share
+    When he taps the number of verse 11
+    And he taps Share on the Verse view
+    And he taps "Just the link" on the Share sheet
+    Then the phone's share was handed only the link of Romans 8:11

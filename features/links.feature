@@ -140,6 +140,7 @@ Feature: Lampas takes links in
     Given the phone can share
     And the address "#/?b=rom&c=8&v=28" is opened
     When he taps Share on the Verse view
+    And he taps "Just the link" on the Share sheet
     Then the phone is asked to share "https://lampas.allmymind.org/#/?ref=Rom.8.28"
 
   Scenario: The word sheet copies the https link of its word

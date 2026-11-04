@@ -43,7 +43,7 @@ import { Icon as PlayIcon } from './speech/ReadControls';
 import { stopReading } from './speech/readAloud';
 import { oneTap } from './ui/settle';
 import { LinkActions } from './ui/LinkActions';
-import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf } from './copy/format';
+import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf, sharePieces } from './copy/format';
 import { useCopyFormat } from './copy/useCopyFormat';
 import { takeByHand } from './copy/useCopyHold';
 import type { UseReadChecks } from './useReadChecks';
@@ -164,6 +164,8 @@ export function VerseView(props: VerseViewProps) {
   // 'As you read it' is the view the Reader draws this verse in: its view, in the Weave its woven chunks, and the variant units and readings in place it shows (mw-5r3p30.866)
   const variants = useReaderVariants(chapterText);
   const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null, variants }), [chapterText, verse, view, wovenChapter, variants]);
+  // what Share offers on its sheet: the whole, just the link, just the text, just the reference (mw-5r3p30.1026)
+  const pieces = useMemo(() => sharePieces(copyUnit, copyFormat), [copyUnit, copyFormat]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   // A Hebrew verse is set as big as the Greek one, in the app's Hebrew face (.script-he, whose .reader-hebrew gives the Greek size and the Reader's leading), right to left; the English view is English whatever the chapter.
@@ -200,8 +202,7 @@ export function VerseView(props: VerseViewProps) {
           title={reference}
           text={copyText(copyUnit, copyFormat)}
           startByHand={startByHand}
-          shareText={copyText(copyUnit, { ...copyFormat, link: 'off' })}
-          shareUrl={copyFormat.link === 'on' ? copyLink(copyUnit) : undefined}
+          pieces={pieces}
           className="contents [&_button]:min-h-11 [&_button]:px-2.5 [&_button]:text-sm [&_:is(input,textarea)]:basis-full"
           statusClassName="absolute right-0 bottom-full mb-1 rounded-lg border border-line bg-surface px-2 py-0.5 text-sm text-muted"
         />

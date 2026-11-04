@@ -34,6 +34,8 @@ const ROMANS_8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as {
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 let copied: string[] = [];
+/** what the phone's share was handed (navigator.share), when the scenario says the phone can share */
+let shared: { title?: string; text?: string; url?: string }[] = [];
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 const english = (n: number): string => ROMANS_8.verses.find((v) => v.n === n)!.e.map((c) => c.t.trim()).join(' ').replace(/\s+/g, ' ').trim();
@@ -59,6 +61,8 @@ async function open(
   window.history.replaceState(null, '', `/${hash}`);
   stubChapterFetch();
   copied = [];
+  shared = [];
+  Object.defineProperty(window.navigator, 'share', { configurable: true, value: undefined });
   Object.defineProperty(window.navigator, 'clipboard', {
     configurable: true,
     value: { writeText: (text: string) => (options.refuses ? Promise.reject(new Error('refused')) : (copied.push(text), Promise.resolve())) },
@@ -447,5 +451,77 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
     And("the phone's clipboard holds {string}", holds);
+  });
+
+  // Share opens a sheet of pieces (mw-5r3p30.1026)
+  const canShare = () => {
+    Object.defineProperty(window.navigator, 'share', {
+      configurable: true,
+      value: (data: { title?: string; text?: string; url?: string }) => (shared.push(data), Promise.resolve()),
+    });
+  };
+  const tapShare = async () => {
+    await user.click(within(viewEl()).getByRole('button', { name: 'Share', exact: true }));
+  };
+  const sheet = () => screen.findByRole('dialog', { name: /^Share / });
+  const tapPiece = async (_: unknown, row: string) => {
+    await user.click(within(await sheet()).getByRole('button', { name: new RegExp(`^${row}`) }));
+    await waitFor(() => expect(shared).toHaveLength(1));
+  };
+  const handed = (): { title?: string; text?: string; url?: string } => {
+    expect(shared).toHaveLength(1);
+    return shared[0];
+  };
+
+  Scenario('Share opens a sheet of pieces and Just the link sends the link alone', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with When you copy at its defaults', defaults);
+    And('the phone can share', canShare);
+    When('he taps the number of verse {int}', tapNumber);
+    And('he taps Share on the Verse view', tapShare);
+    Then('the Share sheet offers, in order, {string}, {string}, {string} and {string}', async (_, a: string, b: string, c: string, d: string) => {
+      const names = within(await sheet()).getAllByRole('button').map((button) => squash(button.textContent));
+      expect(names.filter((name) => name !== 'Close').map((name) => [a, b, c, d].find((row) => name.startsWith(row)))).toEqual([a, b, c, d]);
+    });
+    And('he taps {string} on the Share sheet', tapPiece);
+    Then("the phone's share was handed only the link of Romans 8:11", () => {
+      expect(handed()).toEqual({ url: referenceUrl('rom', 8, 11) });
+    });
+  });
+
+  Scenario("Share's Just the text has no reference and no link, and follows Verse numbers", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with When you copy set to Reference {string}, Verse numbers {string} and Link {string}', chosen);
+    And('the phone can share', canShare);
+    When('he taps the heading {string}', tapHeading);
+    And('he taps Share on the Verse view', tapShare);
+    And('he taps {string} on the Share sheet', tapPiece);
+    Then("the phone's share was handed only text that starts {string}, with no reference and no link", (_, words: string) => {
+      const data = handed();
+      expect(Object.keys(data)).toEqual(['text']);
+      expect(data.text?.startsWith(words)).toBe(true);
+      expect(data.text).not.toContain('MSB');
+      expect(data.text).not.toContain('http');
+    });
+  });
+
+  Scenario("Share's Just the reference sends the reference alone", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with When you copy at its defaults', defaults);
+    And('the phone can share', canShare);
+    When('he taps the number of verse {int}', tapNumber);
+    And('he taps Share on the Verse view', tapShare);
+    And('he taps {string} on the Share sheet', tapPiece);
+    Then("the phone's share was handed only the text {string}", (_, text: string) => {
+      expect(handed()).toEqual({ text });
+    });
+  });
+
+  Scenario("Share's Just the link is there with Link off", ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on Romans 8 with When you copy set to Reference {string}, Verse numbers {string} and Link {string}', chosen);
+    And('the phone can share', canShare);
+    When('he taps the number of verse {int}', tapNumber);
+    And('he taps Share on the Verse view', tapShare);
+    And('he taps {string} on the Share sheet', tapPiece);
+    Then("the phone's share was handed only the link of Romans 8:11", () => {
+      expect(handed()).toEqual({ url: referenceUrl('rom', 8, 11) });
+    });
   });
 });
