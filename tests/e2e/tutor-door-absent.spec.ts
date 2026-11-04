@@ -128,6 +128,11 @@ test('the Verse view has no Ask the tutor action, no Talk about verse line and n
   await twoFingers(page);
   await page.waitForTimeout(800);
   await expect(page.getByRole('dialog', { name: /^Talk about / })).toHaveCount(0);
+  // the tap opens no tutor; on the Verse view it puts the ? away (mw-5r3p30.1006), and a second brings it back
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  await twoFingers(page);
+  await expectOneDoor(page);
+  await page.waitForTimeout(700); // the click guard of the tap (600 ms) drops a click on the ? sooner than this
   await shot(page, 'tutor-door-absent-verse');
   await openTutor(page, { sheet: 'Talk about Revelation 1:1' });
 });

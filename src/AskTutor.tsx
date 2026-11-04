@@ -18,6 +18,8 @@ import { type Route } from './nav/route';
 import { useTalk } from './useTalk';
 import { isHolding } from './talk/holding';
 import { openDoorTarget, useDoorTarget, useHasDoorTarget, useTalkOpen } from './tutor/door';
+import { DOOR_BACK_LINE, bringDoorBack, useDoorAwayByHand, useDoorAwayNote } from './tutor/doorHidden';
+import { useDoorTwoFingerTap } from './tutor/doorTap';
 import { useHand } from './settings/hand';
 import { focusQuietly } from './ui/focus';
 
@@ -220,7 +222,29 @@ export function FloatingTutor() {
   const hand = useHand();
   const anything = useHasDoorTarget();
   const talking = useTalkOpen();
-  if (!licensed || !hand || !anything || talking) return null;
+  const away = useDoorAwayByHand();
+  const note = useDoorAwayNote();
+  // a two-finger tap anywhere it has no use of its own takes the ? away and brings it back (mw-5r3p30.1006): only while the ? is the screen's to show
+  const shown = licensed && !!hand && anything && !talking;
+  useDoorTwoFingerTap(shown);
+  if (!shown) return null;
+  if (away) {
+    return (
+      <>
+        {note ? (
+          <p role="status" data-door-away-note className="pointer-events-none fixed inset-x-3 toast-top z-50 rounded-xl border border-line bg-surface px-4 py-3 text-base text-fg shadow-lg">
+            {DOOR_BACK_LINE}
+          </p>
+        ) : null}
+        {/* the way back without a touch: out of sight until the keyboard or a screen reader's focus reaches it */}
+        <div role="group" aria-label="The tutor button" data-door-back className="reveal-on-focus">
+          <button type="button" onClick={bringDoorBack} className="min-h-11 rounded-xl border border-line bg-surface px-4 text-base font-medium text-accent active:bg-line">
+            Bring back the tutor button
+          </button>
+        </div>
+      </>
+    );
+  }
   return (
     <button
       type="button"

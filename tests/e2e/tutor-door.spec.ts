@@ -134,6 +134,54 @@ test('A two-finger tap opens nothing tutor-ish: it goes into immersive reading, 
   await expect(floating(page)).toBeVisible();
 });
 
+// mw-5r3p30.1006 (his words, Postern general 2026-11-03: "can two finger tap remove it and bring it back in every screen (on main screen so enters/ exits immersive reader)"): off the Reader's text the tap puts the ? away
+// and brings it back (src/tutor/doorHidden.ts), it stays away from one screen to the next, and the first time a line says how to bring it back.
+test('A two-finger tap takes the ? away on Today, Settings and a word sheet, brings it back, and taps nothing under the fingers', async ({ page }) => {
+  await openReader(page);
+  await page.evaluate(() => { location.hash = '#/today'; });
+  await expect(floating(page)).toBeVisible();
+  await twoFingers(page);
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  // the first time, a line says how to bring it back
+  await expect(page.locator('[data-door-away-note]')).toContainText('two fingers');
+  await shot(page, 'tutor-door-hidden-by-hand-today');
+  // it stays away on the next screen
+  await page.evaluate(() => { location.hash = '#/settings'; });
+  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  await twoFingers(page);
+  await expect(floating(page)).toBeVisible();
+  // away again on a word sheet over the Reader, and back
+  await page.evaluate(() => { location.hash = '#/'; }); // a hash change, not a reload: a reload would bring the ? back by itself
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet).toBeVisible();
+  await expect(floating(page)).toBeVisible();
+  await twoFingers(page, { x: 100, y: 700 });
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  await expect(sheet).toBeVisible();
+  await afterTap(page);
+  await twoFingers(page, { x: 100, y: 700 });
+  await expect(floating(page)).toBeVisible();
+  await expect(sheet).toBeVisible();
+});
+
+test('In the Reader\'s text the two-finger tap still goes in and out of immersive reading, and brings back a ? put away on another screen', async ({ page }) => {
+  await openReader(page);
+  await page.evaluate(() => { location.hash = '#/today'; });
+  await twoFingers(page);
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  await page.evaluate(() => { location.hash = '#/'; }); // a hash change, not a reload: a reload would bring the ? back by itself
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  await twoFingers(page);
+  await afterTap(page);
+  await twoFingers(page);
+  await afterTap(page);
+  await expect(floating(page)).toBeVisible();
+});
+
 test('With no licence there is no tutor door: no ?, a two-finger tap opens no tutor, and Settings hides the Hand row', async ({ page }) => {
   await openReader(page, 'unlicensed');
   await keepHand(page, 'left');

@@ -64,7 +64,7 @@ export function MapView({ card, mapRef, onClose }: { card: MapCard; mapRef: MapR
         </p>
       ) : (
         // a box that scrolls both ways; the picture inside is the box's width, or twice it
-        <div data-map-box className="max-h-[55dvh] overflow-auto overscroll-contain rounded-xl border border-line [touch-action:pan-x_pan-y_pinch-zoom]">
+        <div data-map-box data-two-finger className="max-h-[55dvh] overflow-auto overscroll-contain rounded-xl border border-line [touch-action:pan-x_pan-y_pinch-zoom]">
           <button
             type="button"
             data-map-zoom={zoomed ? 'in' : 'fit'}
