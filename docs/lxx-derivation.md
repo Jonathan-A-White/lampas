@@ -15,6 +15,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [The two books over the bar on words with no candidate (B9)](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
   - [A name written with a capital mid-clause is not the common word its letters spell](#a-name-written-with-a-capital-mid-clause-is-not-the-common-word-its-letters-spell)
 - [The agreement check](#the-agreement-check)
+  - [Analogy's readings beside a thin lone candidate](#analogys-readings-beside-a-thin-lone-candidate)
   - [An address: the vocative read from the verse](#an-address-the-vocative-read-from-the-verse)
   - [A preposition's case: the word it governs](#a-prepositions-case-the-word-it-governs)
 - [Swete's tokens](#swetes-tokens)
@@ -127,8 +128,8 @@ A rule's weight counts the lemmas that show it, whatever their stems; for a lone
   `εξαρτα-`, which a rule's endings leave out), else one class for every consonant. Every letter apart was tried and left `ἀκολουθοῦντας` with none, for no `-εω` stem the New
   Testament shows ends in `θ`. Analogy's candidates have no stem support; they are read by their own support, below.
 - **The rule** (`isThinLone`, `settleParsed`): an ending rule's only candidate is taken only when its stem support is at least `LONE_MIN_STEM_SUPPORT` (4). Below that the
-  word is pending with that one candidate and the note `one candidate on thin support: for the agreement check or the model`. Analogy's readings are not put beside it: they
-  blurred pending imperatives the address rule reads (Ps 23:7 `πύλαι αἰώνιοι` turned nominative) and offered agreement readings the form cannot be (`ἄφρονος` as `A-NSF`).
+  word is pending with that one candidate and the note `one candidate on thin support: for the agreement check or the model`. Analogy's readings are put beside it for the
+  model only, and the check does not read them ('Analogy's readings beside a thin lone candidate', below).
 - **The threshold, measured** (`npm run lxx:lone-support`, `scripts/lxx/lone-support.ts`): each of the New Testament's 27 books hidden in turn from the form index and the
   parser, over the 4,438 words whose form the other books lack and which the rules leave with one candidate, scored against TAGNT on lemma and full parsing. By stem support:
   0: 308 of 388 right (79.4%); 1: 625 of 795 (78.6%); 2: 291 of 336 (86.6%); 3: 238 of 257 (92.6%); 4: 191 of 195 (97.9%); 4 and above together 2,610 of 2,662 (98.0%), the bar's
@@ -137,7 +138,7 @@ A rule's weight counts the lemmas that show it, whatever their stems; for a lone
   too, so `ὦπταί` (Exo 3:16, its one candidate ὀπτάω `V-IAI-3S`) keeps `θεὸς Ἀβραάμ` a nominative.
 - **What it does on the 39 books** (`npm run lxx:derive -- --all --no-morpheus`, before and after): about 8,100 more words pending, nearly all from layer 2; none moves from one
   settled answer to another. `ἐξῆρται` is pending (its stem support 0); `ἄφρονος` (Ecc 2:16) is pending with its one candidate `A-GSF-C`, and its article `τοῦ` is left pending, not
-  counted a break. Its right reading, `A-GSM`, is no candidate: the model reads it. Gen 1 has 163 pending words (161 before), John 1 with John hidden settles 19 in layer 2 (25
+  counted a break. Its right reading, `A-GSM`, was no candidate then (story .31 offers it beside). Gen 1 has 163 pending words (161 before), John 1 with John hidden settles 19 in layer 2 (25
   before). The words newly pending in the fixtures and the known-answer chapters were chosen by a blind reader (a fresh subagent given only the verse, the word and its
   candidates), each line marked `# blind subagent, mw-u2w5klk.28` in its file.
 - **Analogy's lone candidate** (story mw-u2w5klk.30; `isThinLone`, `LONE_MIN_ANALOGY_SUPPORT`, `Candidate.analogy`): the same fault, found by the same sweep: analogy's one candidate was settled on any support, and is
@@ -318,6 +319,28 @@ name the New Testament shows in another case (`τῷ Ἰωσήφ`), which needs 
 above 5 per 1,000 in any book (Susanna 3.4, the Letter of Jeremiah 3.1); read in Genesis and Isaiah they are layer-1 answers the article shows wrong:
 `οἱ παῖδες` given feminine, `τὴν ἵππον` (the cavalry) masculine, `τῆς ὑδρίας` accusative plural, `τὴν Ῥαχήλ` nominative, `οἱ ψευδεῖς` accusative,
 `ὁ αἰώνιος` feminine, `ὁ δεσπότης` vocative.
+
+### Analogy's readings beside a thin lone candidate
+
+Story mw-u2w5klk.31. Analogy holds the right reading for many of the thin lone candidates that are wrong, and the model can only choose among the candidates it is given (`ἄφρονος`,
+Ecc 2:16, `A-GSF-C` from one comparative: analogy has `A-GSM`). A first version put analogy's readings among the candidates and let the check read them. That did harm in two places:
+twelve true addresses turned nominative, because a pending imperative with a reading beside it (`ἐπάρθητε` `V-APM-2P` beside `V-APS-2P`) no longer read as one imperative of the second person (Ps 23:7 and 23:9
+`πύλαι αἰώνιοι`, Ps 79:15 and 114:7 `ἐπίστρεψον`, Isa 13:2 `ἀνοίξατε`, Isa 40:9 `ὕψωσον`); and agreement settled `ἄφρονος` as `A-NSF` three times, beside a `καρδία` or a `φωνή` (Pro 17:21, Ecc 5:2, Ecc 10:2).
+
+- **The rule** (`derive.ts` `analogyBeside`, the note `analogy's readings beside it: for the model`): where an ending rule's one candidate is thin (`isThinLone`), `byAnalogy` is asked for the form too, and
+  every reading of it that is not the rule's own is added after the rule's, marked `beside` (`Candidate.beside`, `WordCandidate.beside`, in memory only, as `analogy` is; the files show them as any
+  candidate). The rule's candidate stays first. A word that analogy gave its own lone candidate has them already; several rule candidates are weighed as before.
+- **Who reads them**: only the model. `agreement.ts` `ownReadings` drops them where the address rule reads a pending word (`readings`, the vocative offered by weight) and where the agreement links read one
+  (`readingsOf`, `plays`, `agree`), so a pending imperative is still an imperative, no link settles a word on a reading analogy alone gave, and `isThinLone` does not count them. A word settled by
+  agreement takes its reading from the rules' candidates and carries no `beside` reading. The sweep of readers: `readAddresses` (changed), `agree` and its roles (changed), `readPrepositions` (clear: it reads a settled word's
+  candidates, which carry none), `sharedEnding` (clear: settled words), `derive.ts` `withCapitalNames`, `withFormNames` and `withMorpheus` (clear: they read a candidate's `source` or capital, which analogy's has not
+  for these words), the batches, the pending list and the choices (they offer every candidate, so the model sees them).
+- **Measured on the New Testament** (`npm run lxx:lone-support`, each book hidden in turn): 1,776 thin lone candidates; 314 wrong, 126 of them (40.1%) with TAGNT's answer among analogy's readings, 12 with readings none of which is
+  it and 176 with none; 1,462 right, 307 of them with readings beside them (a cost to the model's choice) and 1,155 alone. No settled answer is made wrong: the check does not read them.
+- **On the 39 books** (`npm run lxx:derive -- --all --no-morpheus`, before and after): settled 353,535 and pending 122,594 both times, and no word changes its answer; 2,432 pending words have readings beside their
+  candidate. `ἄφρονος` stays pending at Pro 17:21, Ecc 5:2, Ecc 10:2 and Ecc 2:16, each with `A-GSM` among its candidates. Read by hand, 20 of the 2,432 (seed 20261104): 13 confirmed (the rule's reading right, analogy's extra only),
+  5 mended (the right reading is now a candidate: `ἔπιδεν` ἐπεῖδον `V-2AAI-3S`, `ἄφρονος` `A-GSM`, three `παῖδες` as masculine), 1 unsure, 1 neither (`ἀποθανῇ`, Jer 41:5, a future), none made wrong.
+  The known-answer chapters are as before (Jhn.1 827 of 829 on the lemma, 823 on full parsing; Rom.8 650 and 645), and no word is newly pending, so no blind reader was needed.
 
 ### An address: the vocative read from the verse
 
@@ -706,7 +729,7 @@ npm run lxx:derive -- --word Gen.1:20#13       # one word: its candidates, their
 npm run lxx:derive -- --all                    # every book of the file, trained once: each book's two files, and one line a book
 npm run lxx:derive -- --book gen --no-morpheus # the same with the second method off (with no Docker it prints "Morpheus skipped: ..." and does the same)
 npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT ('The known-answer run')
-npm run lxx:lone-support                       # the New Testament measure behind LONE_MIN_STEM_SUPPORT and LONE_MIN_ANALOGY_SUPPORT, each book hidden in turn ('A lone candidate on thin support')
+npm run lxx:lone-support                       # the New Testament measure behind LONE_MIN_STEM_SUPPORT and LONE_MIN_ANALOGY_SUPPORT, and what analogy's readings beside a thin lone candidate hold, each book hidden in turn ('A lone candidate on thin support')
 npm run lxx:morpheus-check -- --known Jhn.1 Rom.8   # Morpheus's mapped readings against TAGNT's answers; needs Docker and the image ('The sweep')
 npm run lxx:morpheus-check -- --coverage            # the mapping's coverage over the sweep's forms, and the words still with no candidate, by reason
 npm run lxx:batches -- --book gen              # the book's pending words in batches of about 700: the table the model stories are filed from ('A model session')
