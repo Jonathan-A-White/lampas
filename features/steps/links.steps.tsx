@@ -334,6 +334,10 @@ describeFeature(feature, ({ Scenario }) => {
       await headed('Romans 8');
       await user.click(within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('button', { name: 'Share' }));
     });
+    And('he taps {string} on the Share sheet', async (_, row: string) => {
+      const sheet = await screen.findByRole('dialog', { name: /^Share / });
+      await user.click(within(sheet).getByRole('button', { name: new RegExp(`^${row}`) }));
+    });
     Then('the phone is asked to share {string}', async (_, url: string) => {
       await waitFor(() => expect(shared).toHaveLength(1));
       expect(shared[0].url).toBe(url);
