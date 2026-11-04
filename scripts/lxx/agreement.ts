@@ -265,8 +265,14 @@ const PAUSE = /[,.;:!?\u00B7\u0387\u037E][\])]*$/;
 /** Whether Swete's token, as he prints it, ends with a mark of punctuation (τῇ ἐρήμῳ, χεῖρα: no link from ἐρήμῳ to χεῖρα). */
 export const pauseAfter = (display: string): boolean => PAUSE.test(display.normalize('NFC').trim());
 
+/**
+ * A pending word's candidates without those analogy offered beside an ending rule's thin lone candidate (WordCandidate.beside, story mw-u2w5klk.31): they are for the
+ * model. The address rule, agreement's roles and links and its choosing never read them.
+ */
+export const ownReadings = (cs: readonly WordCandidate[]): WordCandidate[] => cs.filter((c) => !c.beside);
+
 const readingsOf = (w: AgreementWord): Reading[] =>
-  isSettled(w.out) ? [{ lemma: w.out.lemma, morph: w.out.morph, support: 1, share: 1 }] : w.out.candidates;
+  isSettled(w.out) ? [{ lemma: w.out.lemma, morph: w.out.morph, support: 1, share: 1 }] : ownReadings(w.out.candidates);
 const inRole = (r: Reading, role: Role): boolean => ROLE_PARTS[role].includes(partOf(r.morph)) && (partOf(r.morph) === 'inf' || Boolean(cngOf(r.morph)));
 const roleReadings = (w: AgreementWord, role: Role): Reading[] => readingsOf(w).filter((r) => inRole(r, role));
 
@@ -429,7 +435,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
           morph: reading.morph,
           layer: AGREEMENT_LAYER,
           confidence: AGREEMENT_CONFIDENCE,
-          candidates: [reading as WordCandidate, ...w.out.candidates.filter((c) => !same(c))],
+          candidates: [reading as WordCandidate, ...ownReadings(w.out.candidates).filter((c) => !same(c))],
           notes: [...w.out.notes, ...new Set(notes)],
         };
         settled++;
@@ -506,7 +512,7 @@ export function readAddresses(words: ReadonlyArray<{ ref: string; verse: string;
   });
   const readings = (i: number): Reading[] => {
     const o = outs[i];
-    return isSettled(o) ? [{ lemma: o.lemma, morph: o.morph, support: 1, share: 1 }] : o.candidates;
+    return isSettled(o) ? [{ lemma: o.lemma, morph: o.morph, support: 1, share: 1 }] : ownReadings(o.candidates);
   };
   const lemmaOf = (i: number): string | undefined => (isSettled(outs[i]) ? (outs[i] as DerivedWord).lemma : undefined);
   /**
@@ -628,9 +634,10 @@ export function readAddresses(words: ReadonlyArray<{ ref: string; verse: string;
       } else {
         // only a word that is mostly a nominative (βασιλεῦ τῶν θεῶν, Esth 4:17: not θεῶν for its stray θέλω V-2AAP-NSM; πύλαι αἰώνιοι, Ps 23:7, is offered
         // A-VPF though the parser's αἰώνιοι is mostly masculine), and then the vocative of its nominatives of the address
-        const nominative = o.candidates.filter((c) => isNominal(c) && caseOf(c.morph) === 'N');
+        const own = ownReadings(o.candidates);
+        const nominative = own.filter((c) => isNominal(c) && caseOf(c.morph) === 'N');
         const weight = (cs: readonly WordCandidate[]): number => cs.reduce((n, c) => n + c.support, 0);
-        if (weight(o.candidates) > 0 ? 2 * weight(nominative) < weight(o.candidates) : 2 * nominative.length < o.candidates.length) continue;
+        if (weight(own) > 0 ? 2 * weight(nominative) < weight(own) : 2 * nominative.length < own.length) continue;
         const more = nominative.filter(ofAddress).map((c) => ({ lemma: c.lemma, morph: vocative(c.morph), support: 0, share: 0, via: [VIA_ADDRESS] }));
         const merged = mergeCandidates(o.candidates, more);
         if (merged.length > o.candidates.length) next[i] = { ...o, candidates: merged, notes: [...o.notes, NOTE_ADDRESS] };

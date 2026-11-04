@@ -42,14 +42,15 @@ export const NOTE_NOT_IN_NT = 'not in the New Testament: for the parser';
 export const NOTE_ANALOGY = 'analogy: a sibling form in the New Testament';
 export const NOTE_CANDIDATES = 'several candidates: for the model';
 export const NOTE_THIN = 'one candidate on thin support: for the agreement check or the model';
+export const NOTE_BESIDE = "analogy's readings beside it: for the model";
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
 export const NOTE_FORM_NAME = 'a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model';
 export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender: for the agreement check or the model';
 export const NOTE_CAPITAL_NAME = 'a capital mid-clause: a name beside the common word its letters spell: for the agreement check or the model';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
-/** `stemSupport`: an ending rule's candidate only, and `analogy`: analogy's only (parser.ts Candidate), kept in memory for the agreement check (isThinLone), never written to the files. */
-export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form'; stemSupport?: number; analogy?: true };
+/** `stemSupport`: an ending rule's candidate only, and `analogy`: analogy's only, and `beside`: analogy's readings offered beside a thin lone rule candidate (parser.ts Candidate), kept in memory for the agreement check (isThinLone, ownReadings), never written to the files. */
+export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form'; stemSupport?: number; analogy?: true; beside?: true };
 
 /** What a candidate's support column says: the New Testament's count, or the name of what gave it where it has no count (`morpheus`, the second method; `name`, an indeclinable name's other cases; `form`, a name no lexicon has, read as its own lemma). */
 export const supportOf = (c: WordCandidate): string => c.source ?? String(c.support);
@@ -146,9 +147,13 @@ function layersOneAndTwo(
     fromParser = byAnalogy(word.form, parser);
     if (fromParser.length) notes.push(NOTE_ANALOGY);
   }
-  // one ending rule's candidate on thin support (story mw-u2w5klk.28): not settled, but left alone for the agreement check or the model. Analogy's readings
-  // are not put beside it: they blur a pending imperative the address rule reads, and offer the agreement links readings the form cannot be (ἄφρονος as A-NSF)
-  if (isThinLone(fromParser)) return { ref: word.ref, candidates: fromParser, notes: [...notes, NOTE_THIN] };
+  // one ending rule's candidate on thin support (story mw-u2w5klk.28): not settled, but left for the agreement check or the model. Analogy's readings are offered beside it
+  // (story mw-u2w5klk.31, `beside`) for the model only: the agreement check and the address rule do not read them (agreement.ts ownReadings), since they blur a pending
+  // imperative the address rule reads and let agreement settle ἄφρονος as A-NSF. Analogy's own lone candidate has them already.
+  if (isThinLone(fromParser)) {
+    const beside = fromParser[0].analogy ? [] : analogyBeside(word.form, fromParser, parser);
+    return { ref: word.ref, candidates: [...fromParser, ...beside], notes: [...notes, NOTE_THIN, ...(beside.length ? [NOTE_BESIDE] : [])] };
+  }
   const settled = settleParsed(fromParser);
   if (!settled) {
     const given = fromParser.length === 0 ? morpheusCandidates(word.form, morpheus) : [];
@@ -156,6 +161,14 @@ function layersOneAndTwo(
     return { ref: word.ref, candidates: fromParser, notes: [...notes, fromParser.length ? NOTE_CANDIDATES : NOTE_NO_CANDIDATE] };
   }
   return { ref: word.ref, lemma: settled.analysis.lemma, morph: settled.analysis.morph, layer: 2, confidence: settled.confidence, candidates: fromParser, notes };
+}
+
+/** Analogy's readings of a form that the rules' candidates do not already hold, marked `beside` (parser.ts Candidate). */
+function analogyBeside(form: string, rules: readonly Candidate[], parser: Parser): Candidate[] {
+  const held = new Set(rules.map((c) => `${c.lemma}|${c.morph}`));
+  return byAnalogy(form, parser)
+    .filter((c) => !held.has(`${c.lemma}|${c.morph}`))
+    .map((c) => ({ ...c, beside: true as const }));
 }
 
 /** Morpheus's analyses of a form, as candidates with no count: a second method's, for the model to choose among. */
