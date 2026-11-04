@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
-import { runDerive, type BookResult, type DeriveInput } from '../../scripts/lxx/derive';
+import { NOTE_BESIDE, NOTE_MORPHEUS_BESIDE, NOTE_MORPHEUS_OVER, NOTE_THIN, isDerived, runDerive, weighMorpheus, type BookResult, type DeriveInput, type WordCandidate } from '../../scripts/lxx/derive';
 import {
   MORPHEUS,
   dockerEngine,
@@ -24,6 +24,7 @@ import {
   unmappedWhy,
   voicesOf,
   cacheText,
+  MAPPING_VERSION,
   type MorpheusEngine,
 } from '../../scripts/lxx/morpheus';
 import { readChoices } from '../../scripts/lxx/choices';
@@ -215,14 +216,14 @@ describe('the mapping to TAGNT’s codes: one reading to one code, or unmapped',
     expect(codes('N o(  masc/neut gen sg⇥⇥indeclform⇥article')).toEqual(['ὁ/T-GSM', 'ὁ/T-GSN']);
   });
 
-  it('leaves unmapped what TAGNT has no code for or the mapping cannot tell: the dual, a comparative, a dialect without Attic, an unaugmented form, a pronoun, a perfect', () => {
+  it('leaves unmapped what TAGNT has no code for or the mapping cannot tell: the dual, a comparative, a dialect without Attic, an unaugmented form, a pronoun, a pluperfect', () => {
     expect(codes('N a)mfo/teros  masc/neut nom/voc/acc dual⇥⇥⇥os_h_on')).toBe('unmapped');
     expect(codes('N ne/os  masc nom comp sg⇥⇥⇥os_h_on')).toBe('unmapped');
     expect(codes('N a)mfo/teros  masc/neut gen sg⇥doric aeolic⇥⇥os_h_on')).toBe('unmapped');
     expect(codes('V teleuta/w  imperf ind act 3rd pl⇥epic doric aeolic⇥unaugmented⇥ath_primary,aw_denom')).toBe('unmapped');
     expect(codes('V bio/w  imperf ind mp 2nd sg⇥attic epic doric⇥contr unaugmented⇥w_stem')).toBe('unmapped');
     expect(codes('N au)to/s  fem nom pl⇥⇥indeclform⇥demonstr')).toBe('unmapped');
-    expect(codes('V lu/w  perf ind act 3rd sg⇥⇥⇥perf_act')).toBe('unmapped');
+    expect(codes('V lu/w  plup ind act 3rd sg⇥attic epic⇥contr⇥perf_act,reg_conj')).toBe('unmapped');
     expect(codes('V lu/w  pres ind act 3rd dual⇥⇥⇥w_stem')).toBe('unmapped');
     expect(codes('E *ku=ros,Cyrus  masc nom sg⇥⇥⇥os_ou')).toBe('unmapped');
   });
@@ -256,7 +257,8 @@ describe('the mapping to TAGNT’s codes: one reading to one code, or unmapped',
 
   it('says why a reading is left out, in the words the coverage count groups them by', () => {
     const why = (segment: string): string | undefined => unmappedWhy(parseAnalysis(segment.replaceAll('⇥', '\t'))!);
-    expect(why('V lu/w  perf ind act 3rd sg⇥⇥⇥perf_act')).toBe('perfect');
+    expect(why('V lu/w  futperf ind mp 3rd sg⇥⇥⇥perfp_vow')).toBe('future perfect');
+    expect(why('V lu/w  perf ind act 3rd sg⇥⇥⇥perf_act')).toBeUndefined();
     expect(why('V e)pakou/w  plup ind act 3rd pl⇥attic epic doric aeolic⇥attic_redupl⇥perf_act')).toBe('pluperfect');
     expect(why('N da/ra  fem nom/voc/acc dual⇥⇥⇥a_hs')).toBe('the dual');
     expect(why('N du/o ⇥⇥indeclform⇥numeral')).toBe('a numeral');
@@ -282,6 +284,7 @@ describe('the mapping to TAGNT’s codes: one reading to one code, or unmapped',
     ]);
     const text = cacheText(cache);
     expect(text.split('\n')[0]).toBe('form\tanalyses');
+    expect(text.split('\n')[1]).toBe(`# mapping ${MAPPING_VERSION}`);
     expect(text).toContain('καταδιώξεται\tκαταδιώκω/V-FMI-3S | unmapped\n');
     expect(text.endsWith('\n')).toBe(true);
     expect(parseCache(text)).toEqual(cache);
@@ -510,5 +513,193 @@ describe('where the step is written down', () => {
     expect(read('docs/lxx-derivation.md')).toMatch(/never its code/);
     expect(read('ATTRIBUTION.md')).toMatch(/build tool/);
     expect(read('.gitignore')).toContain('data/lxx/morpheus');
+  });
+});
+
+describe('Morpheus’s perfects, and Morpheus asked about a form with one thin candidate (mw-u2w5klk.32)', () => {
+  // Morpheus's output as the real image printed it (story mw-u2w5klk.32, the Laptop, `docker run … bin/cruncher -S` on ἐξῆρται, Συντετέλεσται, λέλυκα, γέγονεν, κέκληται, πέπτωκε)
+  const segment = (s: string) => parseAnalysis(s.replaceAll('⇥', '\t'))!;
+  const codesOf = (s: string, form?: string): string[] | 'unmapped' => mapAnalysis(segment(s), form)?.map((m) => `${m.lemma}/${m.code}`) ?? 'unmapped';
+  const EXAIRO = 'V e)cai/rw  perf ind mp 3rd sg⇥⇥⇥perfp_r,airw';
+  const LELYKA = 'V lu/w  perf ind act 1st sg⇥⇥⇥perf_act,reg_conj';
+  const GEGONEN = 'V gi/gnomai  perf ind act 3rd sg⇥⇥nu_movable⇥perf_act';
+
+  it('maps a perfect: TAGNT’s R, with the voice letters of a middle or passive; ἐξῆρται (Nah 2:1) is ἐξαίρω V-RPI-3S', () => {
+    expect(codesOf(EXAIRO, 'ἐξῆρται')).toEqual([nfc('ἐξαίρω/V-RPI-3S'), nfc('ἐξαίρω/V-RMI-3S')]);
+    expect(codesOf('P lu/w  perf part mp masc nom sg⇥⇥⇥perfp_vow,reg_conj')).toEqual([nfc('λύω/V-RPP-NSM'), nfc('λύω/V-RMP-NSM')]);
+    expect(codesOf('V lu/w  perf inf mp⇥⇥⇥perfp_vow,reg_conj')).toEqual([nfc('λύω/V-RPN'), nfc('λύω/V-RMN')]);
+    expect(codesOf('V pi/ptw  perf imperat act 2nd sg⇥⇥⇥perf_act,o_stem', 'πέπτωκε')).toEqual([nfc('πίπτω/V-RAM-2S')]);
+  });
+
+  it('tells a first perfect from a second by the form: with a κ before its ending it is R, without one R and 2R (Morpheus’s perf_act holds both)', () => {
+    expect(codesOf(LELYKA, 'λέλυκα')).toEqual([nfc('λύω/V-RAI-1S')]);
+    expect(codesOf(GEGONEN, 'γέγονεν')).toEqual([nfc('γίγνομαι/V-RAI-3S'), nfc('γίγνομαι/V-2RAI-3S')]);
+    expect(codesOf(GEGONEN)).toEqual([nfc('γίγνομαι/V-RAI-3S'), nfc('γίγνομαι/V-2RAI-3S')]);
+    expect(codesOf('P a)kou/w  perf part act masc nom sg⇥⇥⇥perf_act', 'ἀκηκοώς')).toEqual([nfc('ἀκούω/V-RAP-NSM'), nfc('ἀκούω/V-2RAP-NSM')]);
+    // a middle or passive perfect is R only: TAGNT's second perfect passive is six words
+    expect(codesOf('V gra/fw  perf ind mp 3rd sg⇥⇥⇥perfp_f', 'γέγραπται')).toEqual([nfc('γράφω/V-RPI-3S'), nfc('γράφω/V-RMI-3S')]);
+  });
+
+  it('gives a deponent’s perfect mp TAGNT’s N or P, not the D and O of its aorist and future', () => {
+    expect(voicesOf('mp', 'R', 'δέχομαι')).toEqual(['N', 'P']);
+    expect(voicesOf('mp', 'R', 'λύω')).toEqual(['P', 'M']);
+    expect(voicesOf('act', 'R', 'λύω')).toEqual(['A']);
+    expect(voicesOf('mp', 'A', 'δέχομαι')).toEqual(['D', 'O']);
+    expect(codesOf('V de/xomai  perf ind mp 3rd sg⇥⇥⇥perfp_c', 'δέδεκται')).toEqual([nfc('δέχομαι/V-RNI-3S'), nfc('δέχομαι/V-RPI-3S')]);
+  });
+
+  it('still leaves out a pluperfect and a future perfect, and a perfect in a dialect without Attic or unaugmented', () => {
+    expect(codesOf('V lu/w  plup ind act 3rd sg⇥attic epic⇥contr⇥perf_act,reg_conj')).toBe('unmapped');
+    expect(codesOf('V lu/w  futperf ind mp 3rd sg⇥⇥⇥perfp_vow')).toBe('unmapped');
+    expect(codesOf('V gi/gnomai  perf ind act 3rd pl⇥epic doric aeolic⇥unaugmented⇥perf_act')).toBe('unmapped');
+    expect(unmappedWhy(segment('V lu/w  plup ind act 3rd sg⇥attic epic⇥contr⇥perf_act,reg_conj'))).toBe('pluperfect');
+  });
+
+  it('gives formOf the form it was asked about: λέλυκα is R, γέγονεν R and 2R', () => {
+    const entry = (beta: string, seg: string) => parseCruncher(`${beta}\n<NL>${seg.replaceAll('⇥', '\t')}</NL>\n`)[0];
+    expect(formOf(entry('le/luka', LELYKA))).toEqual({ analyses: [{ lemma: nfc('λύω'), code: 'V-RAI-1S' }], unmapped: 0 });
+    expect(formOf(entry('ge/gonen', GEGONEN)).analyses.map((m) => m.code)).toEqual(['V-2RAI-3S', 'V-RAI-3S']);
+  });
+
+  it('keeps a cache made by an older mapping out of the way: a file with no current mapping marker is asked again, whole', () => {
+    const dir = tmp();
+    const file = join(dir, 'nah.tsv');
+    writeFileSync(file, 'form\tanalyses\nἐξῆρται\tunmapped\n');
+    const calls: string[][] = [];
+    const engine: MorpheusEngine = { unavailable: () => undefined, crunch: (forms) => (calls.push([...forms]), `${forms[0]}\n<NL>${EXAIRO.replaceAll('⇥', '\t')}</NL>\n`) };
+    const cache = ensureCache(engine, file, ['ἐξῆρται'], () => {}, { said: false });
+    expect(calls).toHaveLength(1);
+    expect(cache.get(nfc('ἐξῆρται'))!.analyses.map((m) => m.code)).toEqual(['V-RMI-3S', 'V-RPI-3S']);
+    expect(readFileSync(file, 'utf8')).toContain(`# mapping ${MAPPING_VERSION}`);
+    ensureCache(engine, file, ['ἐξῆρται'], () => {}, { said: false });
+    expect(calls).toHaveLength(1);
+    // and with Morpheus out of reach the older cache is still what is read
+    const old = join(dir, 'old.tsv');
+    writeFileSync(old, 'form\tanalyses\nἐξῆρται\tunmapped\n');
+    const off: MorpheusEngine = { unavailable: () => 'no docker', crunch: () => '' };
+    expect(ensureCache(off, old, ['ἀλλο'], () => {}, { said: false }).get(nfc('ἐξῆρται'))).toEqual({ analyses: [], unmapped: 1 });
+  });
+
+  describe('weighing Morpheus’s readings against the one thin candidate of the rules', () => {
+    const rule = (lemma: string, morph: string, extra: Partial<WordCandidate> = {}): WordCandidate => ({ lemma: nfc(lemma), morph, support: 33, share: 1, via: ['a rule'], stemSupport: 0, ...extra });
+    const m = (lemma: string, code: string) => ({ lemma: nfc(lemma), code });
+    const shown = (cs: readonly WordCandidate[] | undefined) => cs?.map((c) => `${c.lemma} ${c.morph}${c.source ? `/${c.source}` : ''}${c.beside ? '+' : ''}`);
+
+    it('leaves the word as it is when Morpheus does not know the form, gave no reading the mapping covers, or reads what the rule reads', () => {
+      const lone = [rule('ἐξαρτάω', 'V-IAI-3S')];
+      expect(weighMorpheus(lone, undefined)).toBeUndefined();
+      expect(weighMorpheus(lone, { analyses: [], unmapped: 0 })).toBeUndefined();
+      expect(weighMorpheus(lone, { analyses: [], unmapped: 2 })).toBeUndefined();
+      expect(weighMorpheus(lone, { analyses: [m('ἐξαρτάω', 'V-IAI-3S'), m('ἐξαρτάω', 'V-IMI-3S')], unmapped: 0 })).toBeUndefined();
+      // the lemma by its letters, accents off
+      expect(weighMorpheus(lone, { analyses: [m('εξαρτάω', 'V-IAI-3S')], unmapped: 1 })).toBeUndefined();
+    });
+
+    it('sets the rule’s candidate aside for Morpheus’s readings when Morpheus knows the form whole and shares neither its lemma nor its parsing (ἐξῆρται)', () => {
+      const lone = [rule('ἐξαρτάω', 'V-IAI-3S'), rule('ἐξαρτάω', 'V-IAI-3S', { beside: true })];
+      const got = weighMorpheus(lone, { analyses: [m('ἐξαίρω', 'V-RMI-3S'), m('ἐξαίρω', 'V-RPI-3S')], unmapped: 0 })!;
+      expect(shown(got.candidates)).toEqual(['ἐξαίρω V-RMI-3S/morpheus', 'ἐξαίρω V-RPI-3S/morpheus']);
+      expect(got.note).toBe(NOTE_MORPHEUS_OVER);
+      expect(got.candidates.every((c) => c.support === 0 && c.share === 0)).toBe(true);
+    });
+
+    it('puts Morpheus’s readings beside the rule’s when it left a reading out, or shares the rule’s lemma (a spelling it writes otherwise) or its parsing', () => {
+      const lone = [rule('γίνομαι', 'V-AMI-3S')];
+      for (const form of [
+        { analyses: [m('ἐξαίρω', 'V-RPI-3S')], unmapped: 1 },
+        { analyses: [m('γίγνομαι', 'V-AMI-3S')], unmapped: 0 },
+        { analyses: [m('γίνομαι', 'V-FMI-3S')], unmapped: 0 },
+      ]) {
+        const got = weighMorpheus(lone, form)!;
+        expect(got.note).toBe(NOTE_MORPHEUS_BESIDE);
+        expect(shown(got.candidates)).toEqual(['γίνομαι V-AMI-3S', ...form.analyses.map((a) => `${a.lemma} ${a.code}/morpheus`)]);
+      }
+    });
+  });
+
+  describe('through derive.ts, as the Laptop runs it (Nah 2:1, a perfect the rules read as ἐξαρτάω V-IAI-3S)', () => {
+    const row = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+    // the rule -ι for -ω V-IAI-3S, augment undone, from the imperfects of four verbs in -εω (stems in ε), none in -α: the thin lone candidate ἐξαρτάω has stem support 0
+    const rows = [
+      row('Mrk.6.20#14', 'ἐποίει', 'G4160', 'V-IAI-3S', 'ποιέω'),
+      row('Mrk.2.2#20', 'ἐλάλει', 'G2980', 'V-IAI-3S', 'λαλέω'),
+      row('Mrk.12.41#9', 'ἐθεώρει', 'G2334', 'V-IAI-3S', 'θεωρέω'),
+      row('Mrk.14.11#9', 'ἐζήτει', 'G2212', 'V-IAI-3S', 'ζητέω'),
+      row('Mat.1.1#5', 'τοῦ', 'G3588', 'T-GSM', 'ὁ'),
+    ];
+    const lexicon = [
+      'G5368\tG5368 =\tG5368\tφιλέω\tphileō\tG:V\tto love',
+      'G1821\tG1821G =\tG1821G\tἐξαρτάω\texartaō\tG:V\tto hang',
+      'G1808\tG1808 =\tG1808\tἐξαίρω\texairō\tG:V\tto remove',
+      'G4160\tG4160 =\tG4160\tποιέω\tpoieō\tG:V\tto do',
+      'G2980\tG2980 =\tG2980\tλαλέω\tlaleō\tG:V\tto speak',
+      'G2334\tG2334 =\tG2334\tθεωρέω\ttheōreō\tG:V\tto watch',
+      'G2212\tG2212 =\tG2212\tζητέω\tzēteō\tG:V\tto seek',
+      'G3588\tG3588 =\tG3588\tὁ\tho\tG:T\tthe',
+    ];
+    const verses: Array<[string, string[]]> = [
+      ['Nah.2:1', ['ἐξῆρται.']],
+      ['Gen.37:4', ['ὁ', 'πατὴρ', 'ἐφίλει']],
+    ];
+    const starts: string[] = [];
+    const lines: string[] = [];
+    for (const [verse, ws] of verses) {
+      starts.push(`${lines.length + 1}\t${verse}`);
+      for (const w of ws) lines.push(`${lines.length + 1}\t${w}`);
+    }
+    const input: DeriveInput = { versification: starts.join('\n'), words: lines.join('\n'), tagnt: [rows.join('\n')], tbesg: lexicon.join('\n') };
+    // what the image printed for it (the same bytes, captured): cruncher echoes the form, then its segments
+    const engine = (calls: string[][] = []): MorpheusEngine => ({
+      unavailable: () => undefined,
+      crunch(forms) {
+        calls.push([...forms]);
+        return forms.map((f) => (f === toBeta('ἐξῆρται') ? `${f}\n<NL>${EXAIRO.replaceAll('⇥', '\t')}</NL>\n` : '')).join('');
+      },
+    });
+    const wordOf = (result: BookResult, display: string) => {
+      const w = result.words.find((x) => nfc(x.display) === nfc(display))!;
+      return [...result.derived, ...result.pending].find((x) => x.ref === w.ref)!;
+    };
+
+    it('is pending on ἐξαρτάω V-IAI-3S, the thin lone candidate, with Morpheus off (the guard)', async () => {
+      const off = await runDerive(['--book', 'nah', '--no-morpheus'], { input, outDir: tmp(), morpheus: engine() });
+      const w = wordOf(off, 'ἐξῆρται.');
+      expect(isDerived(w)).toBe(false);
+      expect(w.candidates.map((c) => `${c.lemma} ${c.morph}`)).toEqual([nfc('ἐξαρτάω V-IAI-3S')]);
+      expect(w.notes).toContain(NOTE_THIN);
+      const gen = await runDerive(['--book', 'gen', '--no-morpheus'], { input, outDir: tmp() });
+      expect(isDerived(wordOf(gen, 'ἐφίλει'))).toBe(true);
+    });
+
+    it('asks Morpheus about ἐξῆρται and reads it ἐξαίρω V-RPI-3S, never ἐξαρτάω; a word the rules settled is not asked', async () => {
+      const calls: string[][] = [];
+      const outDir = tmp();
+      const result = await runDerive(['--book', 'nah'], { input, outDir, morpheus: engine(calls) });
+      expect(calls).toHaveLength(1);
+      expect(calls[0].map(fromBeta).map(nfc)).toEqual([nfc('ἐξῆρται')]);
+      const w = wordOf(result, 'ἐξῆρται.');
+      expect(isDerived(w)).toBe(false);
+      expect(w.candidates.map((c) => `${c.lemma} ${c.morph}`)).toEqual([nfc('ἐξαίρω V-RMI-3S'), nfc('ἐξαίρω V-RPI-3S')]);
+      expect(w.candidates.every((c) => c.source === 'morpheus')).toBe(true);
+      expect(w.notes).toContain(NOTE_MORPHEUS_OVER);
+      expect(w.notes).not.toContain(NOTE_THIN);
+      expect(w.notes).not.toContain(NOTE_BESIDE);
+      expect(readFileSync(join(outDir, 'pending', 'nah.tsv'), 'utf8')).toMatch(/ἐξαίρω\/V-RPI-3S\/morpheus/);
+      expect(readFileSync(join(outDir, 'pending', 'nah.tsv'), 'utf8')).not.toMatch(/ἐξαρτάω/);
+      // ἐφίλει is settled by the rules, with a stem support of 4 (Gen 37:4): nothing of it is asked
+      const gen = await runDerive(['--book', 'gen'], { input, outDir, morpheus: engine(calls) });
+      expect(isDerived(wordOf(gen, 'ἐφίλει'))).toBe(true);
+      expect(calls.flat().map(fromBeta).map(nfc)).not.toContain(nfc('ἐφίλει'));
+      // cached: the next run of Nahum asks nothing
+      const asked = calls.length;
+      await runDerive(['--book', 'nah'], { input, outDir, morpheus: engine(calls) });
+      expect(calls).toHaveLength(asked);
+    });
+
+    it('counts the words that took Morpheus’s readings, the thin lone ones with the rest', async () => {
+      const log: string[] = [];
+      await runDerive(['--book', 'nah'], { input, outDir: tmp(), morpheus: engine(), log: (l) => log.push(l) });
+      expect(log).toContain('Morpheus gave 1 words candidates');
+    });
   });
 });

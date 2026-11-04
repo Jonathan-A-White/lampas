@@ -17,7 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readChoiceDir } from './choices';
-import { NOTE_MORPHEUS, dockerEngine, ensureCache, morpheusKey, type MorpheusCache, type MorpheusEngine, type MorpheusState } from './morpheus';
+import { NOTE_MORPHEUS, dockerEngine, ensureCache, morpheusKey, type MorpheusCache, type MorpheusEngine, type MorpheusForm, type MorpheusState } from './morpheus';
 import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fetchPinned, readPinned, type Fetcher } from './sources';
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
 import { bareOf, bookOf, hasAccent, hasLower, hasTwoAccents, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
@@ -43,6 +43,8 @@ export const NOTE_ANALOGY = 'analogy: a sibling form in the New Testament';
 export const NOTE_CANDIDATES = 'several candidates: for the model';
 export const NOTE_THIN = 'one candidate on thin support: for the agreement check or the model';
 export const NOTE_BESIDE = "analogy's readings beside it: for the model";
+export const NOTE_MORPHEUS_OVER = "one candidate on thin support, set aside: Morpheus knows the form and reads it otherwise: for the model";
+export const NOTE_MORPHEUS_BESIDE = "one candidate on thin support, and Morpheus's readings beside it: for the model";
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
 export const NOTE_FORM_NAME = 'a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model';
 export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender: for the agreement check or the model';
@@ -151,6 +153,9 @@ function layersOneAndTwo(
   // (story mw-u2w5klk.31, `beside`) for the model only: the agreement check and the address rule do not read them (agreement.ts ownReadings), since they blur a pending
   // imperative the address rule reads and let agreement settle ἄφρονος as A-NSF. Analogy's own lone candidate has them already.
   if (isThinLone(fromParser)) {
+    // Morpheus is asked about such a form too (withMorpheus); its answer is weighed with the rule's (weighMorpheus)
+    const weighed = weighMorpheus(fromParser, morpheus?.get(morpheusKey(word.form)));
+    if (weighed) return { ref: word.ref, candidates: weighed.candidates, notes: [...notes, weighed.note] };
     const beside = fromParser[0].analogy ? [] : analogyBeside(word.form, fromParser, parser);
     return { ref: word.ref, candidates: [...fromParser, ...beside], notes: [...notes, NOTE_THIN, ...(beside.length ? [NOTE_BESIDE] : [])] };
   }
@@ -175,6 +180,28 @@ function analogyBeside(form: string, rules: readonly Candidate[], parser: Parser
 function morpheusCandidates(form: string, morpheus: MorpheusCache | undefined): WordCandidate[] {
   const known = morpheus?.get(morpheusKey(form));
   return (known?.analyses ?? []).map((m) => ({ lemma: m.lemma, morph: m.code, support: 0, share: 0, via: ['Morpheus: the second method, a build tool'], source: 'morpheus' as const }));
+}
+
+/**
+ * A form whose only candidate is the rules' (or analogy's) on thin support, weighed with Morpheus's readings of it (story mw-u2w5klk.32). A thin lone candidate is right 79 to 93%
+ * of the time, a lexicon's analysis of the form itself is not a guess at a stem, so Morpheus's answer is not left out:
+ * - Morpheus does not know the form, has no reading the mapping covers, or reads what the rule reads (the same lemma by its letters, accents off, and the same parsing): the word is
+ *   as it was (undefined), the thin lone candidate for the agreement check or the model;
+ * - Morpheus has mapped readings and none shares the rule's lemma or its parsing, and it left no reading out (`unmapped` is 0): it knows the form whole and the rule's candidate is
+ *   not one of its readings (ἐξῆρται: ἐξαίρω V-RPI-3S, where the rule read ἐξαρτάω V-IAI-3S). The rule's candidate is set aside (NOTE_MORPHEUS_OVER) and Morpheus's readings are the candidates, for the model;
+ * - otherwise (Morpheus left a reading out, which may be the right one, or shares the lemma or the parsing, as when it writes a lemma another way, γίγνομαι for γίνομαι) its
+ *   readings are put beside the rule's candidate (NOTE_MORPHEUS_BESIDE), for the model.
+ * It settles nothing: a word with Morpheus's readings is pending.
+ */
+export function weighMorpheus(rules: readonly WordCandidate[], known: MorpheusForm | undefined): { candidates: WordCandidate[]; note: string } | undefined {
+  if (!known || known.analyses.length === 0) return undefined;
+  const own = rules.filter((c) => !c.beside);
+  const same = (m: { lemma: string; code: string }, c: WordCandidate): boolean => bareOf(m.lemma) === bareOf(c.lemma) && m.code === c.morph;
+  if (known.analyses.some((m) => own.some((c) => same(m, c)))) return undefined;
+  const kin = known.analyses.some((m) => own.some((c) => bareOf(m.lemma) === bareOf(c.lemma) || m.code === c.morph));
+  const more: WordCandidate[] = known.analyses.map((m) => ({ lemma: m.lemma, morph: m.code, support: 0, share: 0, via: ['Morpheus: the second method, a build tool'], source: 'morpheus' as const }));
+  if (known.unmapped === 0 && !kin) return { candidates: more, note: NOTE_MORPHEUS_OVER };
+  return { candidates: [...rules, ...more], note: NOTE_MORPHEUS_BESIDE };
 }
 
 export const isDerived = (w: DerivedWord | PendingWord): w is DerivedWord => 'layer' in w;
@@ -322,7 +349,7 @@ export function deriveBook(
   const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
   const layers = withCapitalNames(words, withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus))), trained, parsed);
   const checked = checkAgreement(words, layers, { names: index.names, parse: parsed, governs: parser.governs });
-  return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.includes(NOTE_MORPHEUS)).length } : {}) };
+  return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.some((n) => n === NOTE_MORPHEUS || n === NOTE_MORPHEUS_OVER || n === NOTE_MORPHEUS_BESIDE)).length } : {}) };
 }
 
 /** 'ἀρχή/N-NSF/8 | ἀρχή/N-DSF/5': a lemma may hold spaces and commas ('ὅς, ἥ') but never '/' or '|'. */
@@ -478,7 +505,7 @@ interface MorpheusStep extends MorpheusState {
 }
 
 /**
- * A book with Morpheus's analyses: its forms with no candidate and its guessed words (the choices files' `guess` marks) are asked of Morpheus unless the cache
+ * A book with Morpheus's analyses: its forms with no candidate, its forms with one candidate on thin support, and its guessed words (the choices files' `guess` marks) are asked of Morpheus unless the cache
  * under <outDir>/morpheus has them, and the book is derived again with the cache. A step that is skipped, or a cache with nothing in it, leaves `result` as it was.
  */
 function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookResult, outDir: string, step: MorpheusStep | undefined, log: (line: string) => void): BookResult {
@@ -487,7 +514,9 @@ function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookR
   // a word given a name from its form alone is asked of Morpheus too: a reading from a lexicon outranks it
   const noCandidate = result.pending.filter((w) => w.candidates.every((c) => c.source === 'form')).map((w) => w.ref);
   const guessed = [...readChoiceDir(step.choicesDir, `${result.book}-`).choices.values()].filter((c) => c.mark === 'guess').map((c) => c.ref);
-  const forms = [...noCandidate, ...guessed].flatMap((ref) => (formOf.has(ref) ? [morpheusKey(formOf.get(ref)!)] : []));
+  // a form whose one candidate is thin (isThinLone) is asked too, as the first pass left it, before the agreement check (which may settle it)
+  const thin = result.beforeCheck.pending.filter((w) => isThinLone(w.candidates)).map((w) => w.ref);
+  const forms = [...noCandidate, ...thin, ...guessed].flatMap((ref) => (formOf.has(ref) ? [morpheusKey(formOf.get(ref)!)] : []));
   const cache = ensureCache(step.engine, join(outDir, 'morpheus', `${result.book}.tsv`), forms, log, step);
   return cache.size === 0 ? result : again(cache);
 }
