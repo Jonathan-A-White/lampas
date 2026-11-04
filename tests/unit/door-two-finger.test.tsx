@@ -72,6 +72,14 @@ const twoFingerTap = (on: EventTarget = document.body): void => {
   });
 };
 const door = () => document.querySelector('[data-floating-tutor]');
+// The ? is in the page before the tap's listener is: FloatingTutor adds it in a passive effect (useDoorTwoFingerTap), which React flushes in a later task once the ? has come from the settings
+// store; findByRole can answer in between, and a tap sent then is heard by no one. A loaded host shows it (mw-5r3p30.1038), so every test waits for the ? and then lets the effects run.
+async function theDoorIsReady(): Promise<void> {
+  await screen.findByRole('button', { name: FLOATING });
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 0));
+  });
+}
 
 // the screens named in the story: Today, Settings, a drill and a word sheet are all a screen that registers a door target; the ? is the app shell's
 const SCREENS = ['Today', 'Settings', 'A drill', 'A word sheet'];
@@ -85,7 +93,7 @@ describe.each(SCREENS)('on %s', (name) => {
         <Screen name={name} onTap={tapped} />
       </Phone>,
     );
-    await screen.findByRole('button', { name: FLOATING });
+    await theDoorIsReady();
     const button = screen.getByRole('button', { name: 'A button' });
     twoFingerTap(button);
     await waitFor(() => expect(door()).toBeNull());
@@ -106,7 +114,7 @@ describe('the rule', () => {
         <Screen name="Today" onTap={() => undefined} />
       </Phone>,
     );
-    await screen.findByRole('button', { name: FLOATING });
+    await theDoorIsReady();
     twoFingerTap();
     await waitFor(() => expect(door()).toBeNull());
     rerender(
@@ -128,7 +136,7 @@ describe('the rule', () => {
         <Screen name="Today" onTap={() => undefined} />
       </Phone>,
     );
-    await screen.findByRole('button', { name: FLOATING });
+    await theDoorIsReady();
     twoFingerTap();
     await waitFor(() => expect(door()).toBeNull());
     cleanup();
@@ -150,7 +158,7 @@ describe('the rule', () => {
         <Screen name="Path" onTap={() => undefined} />
       </Phone>,
     );
-    await screen.findByRole('button', { name: FLOATING });
+    await theDoorIsReady();
     twoFingerTap(screen.getByTestId('own'));
     await new Promise((r) => setTimeout(r, 30));
     expect(door()).not.toBeNull();
@@ -166,7 +174,7 @@ describe('the rule', () => {
         </main>
       </Phone>,
     );
-    await screen.findByRole('button', { name: FLOATING });
+    await theDoorIsReady();
     twoFingerTap(screen.getByText('text'));
     await new Promise((r) => setTimeout(r, 30));
     expect(door()).not.toBeNull();
@@ -179,7 +187,7 @@ describe('the rule', () => {
         <Screen name="Today" onTap={() => undefined} />
       </Phone>,
     );
-    await screen.findByRole('button', { name: FLOATING });
+    await theDoorIsReady();
     twoFingerTap();
     expect((await screen.findByRole('status')).textContent).toBe(DOOR_BACK_LINE);
     twoFingerTap();
@@ -197,7 +205,7 @@ describe('the rule', () => {
         <Screen name="Today" onTap={() => undefined} />
       </Phone>,
     );
-    await screen.findByRole('button', { name: FLOATING });
+    await theDoorIsReady();
     twoFingerTap();
     await waitFor(() => expect(door()).toBeNull());
     // the click guard of the tap (600 ms) is over by the time a keyboard reaches the button
