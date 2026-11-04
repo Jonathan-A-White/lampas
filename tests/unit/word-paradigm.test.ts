@@ -205,3 +205,48 @@ describe('paradigmOfWord for the forms .996 left on a table with no cell', () =>
     expect(missing).toEqual([]);
   });
 });
+
+// mw-5r3p30.1031: a cell that names two genders ('Masc. or fem.') is the cell of a masculine word and of a feminine one.
+describe('paradigmOfWord for the interrogative and indefinite pronouns', () => {
+  const at = (t: string, l: string, p: string): { table: string | undefined; cell: string | undefined; form: string | undefined } => {
+    const found = paradigmOfWord({ t, l, p });
+    return { table: found?.table.id, cell: found?.cell, form: found?.cell ? formAt(found.table.id, found.cell) : undefined };
+  };
+
+  it('lights τίς (I-NSM) and a feminine and a neuter form of the table on their own cell', () => {
+    expect(at('τίς', 'τίς', 'I-NSM')).toMatchObject({ table: 'pronouns-interrogative-indefinite', form: 'τίς' });
+    expect(at('τίς', 'τίς', 'I-NSM').cell).toContain('Nominative');
+    expect(at('τίς', 'τίς', 'I-NSM').cell).toContain('Masc. or fem.');
+    expect(at('τίνα', 'τίς', 'I-ASF')).toMatchObject({ table: 'pronouns-interrogative-indefinite', form: 'τίνα' });
+    expect(at('τίνα', 'τίς', 'I-ASF').cell).toContain('Masc. or fem.');
+    expect(at('τίνα', 'τίς', 'I-APN')).toMatchObject({ table: 'pronouns-interrogative-indefinite', form: 'τίνα' });
+    expect(at('τίνα', 'τίς', 'I-APN').cell).toContain('Neuter');
+    expect(at('τί', 'τίς', 'I-NSN').cell).toContain('Neuter');
+    expect(at('τινές', 'τις', 'X-NPM')).toMatchObject({ table: 'pronouns-interrogative-indefinite', form: 'τινές' });
+    expect(at('τινάς', 'τις', 'X-APF')).toMatchObject({ table: 'pronouns-interrogative-indefinite', form: 'τινάς' });
+    expect(at('τινάς', 'τις', 'X-APF').cell).toContain('Masc. or fem.');
+  });
+
+  it('keeps the interrogative and the indefinite apart, and the cell to the word’s case and number', () => {
+    const interrogative = at('τίς', 'τίς', 'I-NSM').cell;
+    const indefinite = at('τις', 'τις', 'X-NSM').cell;
+    expect(interrogative).not.toBe(indefinite);
+    expect(at('τινός', 'τις', 'X-GSM').cell).toContain('Genitive');
+    expect(at('τινῶν', 'τις', 'X-GPF').cell).toContain('Plural');
+  });
+
+  it('does not land a word on a cell whose genders are not its own', () => {
+    // a neuter word is not on 'Masc. or fem.', nor a masculine or feminine word on 'Neuter'
+    expect((at('τί', 'τίς', 'I-NSN').cell ?? '')).not.toContain('Masc. or fem.');
+    expect((at('τίς', 'τίς', 'I-NSM').cell ?? '')).not.toContain('Neuter');
+    expect((at('τίς', 'τίς', 'I-NSF').cell ?? '')).not.toContain('Neuter');
+    // and a word of a case the cell does not name still lands on no cell
+    expect(at('τίς', 'τίς', 'I-VSM').cell).toBeUndefined();
+  });
+
+  it('opens the table with no cell for ποῖος and δεῖνα, whose forms it does not hold', () => {
+    expect(at('ποία', 'ποῖος', 'I-NSF')).toEqual({ table: 'pronouns-interrogative-indefinite', cell: undefined, form: undefined });
+    expect(at('ποῖον', 'ποῖος', 'I-ASN').cell).toBeUndefined();
+    expect(at('δεῖνα', 'δεῖνα', 'X-ASM').cell).toBeUndefined();
+  });
+});

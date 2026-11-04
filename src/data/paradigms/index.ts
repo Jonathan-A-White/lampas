@@ -220,6 +220,8 @@ const asTablesSay = (wanted: readonly string[]): string[] => {
 
 // the ideas of a table that holds the forms of particular verbs: a cell with one is for a word of those verbs alone
 const OF_ITS_OWN_VERBS = ['eimi', 'contract-verbs', 'mi-verbs', 'oida'];
+// the tables whose forms are those of particular words and the model of no other: a cell is the word's only when the form is the cell's own
+const OF_ITS_OWN_WORDS = ['pronouns-interrogative-indefinite'];
 
 /**
  * Whether a cell is where the parsing `wanted` (ideasOfWord) lands: it shares an idea of the word that is not one of those kinds (verb, noun, the article), it names nothing of case, number, gender, person, tense, voice or mood that the word has otherwise,
@@ -232,7 +234,8 @@ function lands(cell: ParadigmCell, wanted: readonly string[]): boolean {
   const wantedKinds = new Set(mine.map(kindOf));
   // it is a cell of the word's own kind of word (a verb's, a noun's, a personal pronoun's)
   if (!cell.ideas.some((id) => kindOf(id) === undefined && mine.includes(id))) return false;
-  if (named.some((id) => wantedKinds.has(kindOf(id)) && !mine.includes(id))) return false;
+  // a cell may name several of a kind as alternatives ('Masc. or fem.' names both genders): it is the word's when it names one the word has, and not when it names the kind and none of the word's
+  if ([...wantedKinds].some((kind) => kind !== undefined && named.some((id) => kindOf(id) === kind) && !named.some((id) => kindOf(id) === kind && mine.includes(id)))) return false;
   if (cell.ideas.some((id) => OF_ITS_OWN_VERBS.includes(id) && !mine.includes(id))) return false;
   const kinds = new Set(named.map(kindOf));
   // a voice the word has is any of the cell's when the cell's is the middle or passive (the word's own voice and the table's are the same kind)
@@ -323,7 +326,8 @@ function findWordParadigm(word: { t: string; l: string; p: string }): WordParadi
   if (!table) return undefined;
   // tableFor weighs a parsing's case, number and gender with the rest, so the article wins for a possessive pronoun; a table that is not of the word's kind is no table of it (mw-5r3p30.996)
   if (!isOfItsKind(table, wanted)) return undefined;
-  const here = best(hitsOf(table));
+  // a table of two words alone (τίς and τις) holds no model for another word: ποῖος has the interrogative's case, number and gender and is no form of τίς, so it opens the table with no cell (mw-5r3p30.1031)
+  const here = best(hitsOf(table).filter((hit) => !OF_ITS_OWN_WORDS.includes(table.id) || hit.whole));
   if (here) return { table, cell: here.place };
   // tableFor weighs the ideas a parsing names and not the voice (a middle verb's table is εἰμί's): another table that holds the word's parse is its table
   const elsewhere = best(paradigmsIn('grc').filter((other) => other !== table).flatMap(hitsOf));
