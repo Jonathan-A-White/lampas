@@ -6,7 +6,7 @@ import type { SoundId } from '../speech/sounds';
 import type { IpaQuestion } from './drill';
 import { useDoorRoom } from '../tutor/doorRoom';
 
-const CHOICE = 'min-h-14 w-full rounded-xl border px-4 py-2 text-left active:bg-line disabled:opacity-100';
+const CHOICE = 'min-h-14 w-full break-words rounded-xl border px-4 py-2 text-left active:bg-line disabled:opacity-100';
 
 export function QuestionCard({ question, picked, onPick, tell }: { question: IpaQuestion; picked: SoundId | null; onPick: (id: SoundId) => void; tell: boolean }) {
   const answered = picked !== null;

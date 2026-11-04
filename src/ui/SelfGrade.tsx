@@ -8,7 +8,7 @@ import { revealAboveStack } from './reveal';
 import { useSettled } from './settle';
 import { useDoorRoom } from '../tutor/doorRoom';
 
-const GRADE_BASE = 'min-h-14 rounded-xl border px-4 py-3 text-lg font-medium disabled:opacity-100';
+const GRADE_BASE = 'min-h-14 break-words rounded-xl border px-4 py-3 text-lg font-medium disabled:opacity-100';
 
 interface Props {
   shown: boolean;
@@ -43,7 +43,7 @@ export function Grades({ right, wrong, picked, onPick, settleKey = 0, className 
     { label: wrong, look: 'border-bad bg-bad/20', result: 'wrong' },
   ];
   return (
-    <div className={`${className} grid grid-cols-2 gap-3 ${room}`}>
+    <div className={`${className} grid grid-cols-[repeat(auto-fit,minmax(calc(4rem_+_32px),1fr))] gap-3 ${room}`}>
       {grades.map(({ label, look, result }) => (
         <button
           key={label}
@@ -60,7 +60,7 @@ export function Grades({ right, wrong, picked, onPick, settleKey = 0, className 
   );
 }
 
-const WORD_GRADE_BASE = 'min-h-14 rounded-xl border px-2 py-2 text-base font-medium leading-tight disabled:opacity-100';
+const WORD_GRADE_BASE = 'min-h-14 break-words rounded-xl border px-2 py-2 text-base font-medium leading-tight disabled:opacity-100';
 const WORD_GRADE_LOOK = { well: 'border-good bg-good/20', some: 'border-accent bg-accent/10', not: 'border-bad bg-bad/20' };
 
 interface WordGradesProps {
@@ -83,7 +83,7 @@ export function WordGrades({ picked, onPick, settleKey = 0, className = 'mt-4' }
     revealAboveStack(row.current);
   }, []);
   return (
-    <div ref={row} data-testid="word-grades" className={`${className} grid grid-cols-3 gap-2 ${room}`}>
+    <div ref={row} data-testid="word-grades" className={`${className} grid grid-cols-[repeat(auto-fit,minmax(calc(3rem_+_16px),1fr))] gap-2 ${room}`}>
       {WORD_GRADES.map(({ label, grade }) => (
         <button
           key={label}

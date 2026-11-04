@@ -171,7 +171,7 @@ export function LessonSteps({ lesson, step, onStep, onDone }: { lesson: Lesson; 
       <h2 className="mt-1 text-2xl font-semibold">{STEP_HEADINGS[shown.kind]}</h2>
       <p className="mt-2 text-lg">{(lessonLanguage(lesson) === 'he' ? hebrewMarked : greekMarked)(saidFor(shown.text, accent))}</p>
       <StepBody key={key} step={shown} lesson={lesson} at={key} />
-      <div data-sound-foot className={`mt-6 grid grid-cols-2 gap-3 pb-[var(--lp-end-inset)] ${room}`}>
+      <div data-sound-foot className={`mt-6 grid grid-cols-[repeat(auto-fit,minmax(calc(4.9rem_+_34px),1fr))] gap-3 pb-[var(--lp-end-inset)] ${room}`}>
         {at > 0 ? (
           <button type="button" onClick={() => onStep(at - 1)} className={BUTTON}>
             Previous
