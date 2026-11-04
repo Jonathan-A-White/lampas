@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { playwrightTimeouts, playwrightTimingFilter } from 'pwa-kit/test-preset';
 import { browserEnv } from './tests/support/browser-env';
 import { PHONE_WIDTH_SPECS } from './tests/support/e2e-projects';
-import { previewPort, reuseExistingPreview } from './tests/support/preview-port';
+import { resolvePreviewPort, reuseExistingPreview } from './tests/support/preview-port';
 
-// One preview server per worktree: see tests/support/preview-port.ts.
-const PREVIEW_PORT = previewPort(process.cwd());
+// One preview server per worktree, on its hashed port or the next free one: see tests/support/preview-port.ts.
+const PREVIEW_PORT = resolvePreviewPort(process.cwd());
 const PREVIEW_BASE_URL = `http://localhost:${PREVIEW_PORT}`;
 
 // Specs import src/config.ts, whose __APP_SEMVER__ is a Vite define that Playwright's loader lacks: give it the
