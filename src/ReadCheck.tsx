@@ -542,15 +542,15 @@ export function ReadCheckPanel({ verse, view: shown, book, chapter, checks, hold
       <section ref={section} aria-label="Reading check" data-readcheck={unitId(verse)} className="mb-3 space-y-3 px-1">
         {walking && reading ? null : (
           <>
-            <p className="text-sm text-muted">Read {unitName(verse)} aloud{view === 'greek' ? ' in Greek' : view === 'hebrew' ? ' in Hebrew' : ''}</p>
-            <p className="text-sm text-muted">Hold the bar below and read the verse aloud. Let go to send.</p>
+            <p className={`text-sm text-muted ${room}`}>Read {unitName(verse)} aloud{view === 'greek' ? ' in Greek' : view === 'hebrew' ? ' in Hebrew' : ''}</p>
+            <p className={`text-sm text-muted ${room}`}>Hold the bar below and read the verse aloud. Let go to send.</p>
             {view === 'greek' ? (
-              <p className="text-sm text-muted">
+              <p className={`text-sm text-muted ${room}`}>
                 It listens for {pronunciationOf(pronunciation).label} ({pronunciationOf(pronunciation).lang}), the way you chose to hear Greek in Settings.
               </p>
             ) : null}
             {view === 'hebrew' ? (
-              <p className="text-sm text-muted">
+              <p className={`text-sm text-muted ${room}`}>
                 It listens for {chosenHebrewPronunciation().label} ({chosenHebrewPronunciation().lang}), the way you chose to hear Hebrew in Settings.
               </p>
             ) : null}

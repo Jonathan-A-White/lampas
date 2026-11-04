@@ -294,7 +294,9 @@ export function VerseView(props: VerseViewProps) {
         {/* What the chosen action shows, under the text it is about (the reading check marks its words, the diagram draws them, Listen's help line, the verse's talk door): nothing at all
             (no room taken) when it shows nothing. It comes before the tools and the row, so what arrives in it (a reading's result, a drawn diagram) only shortens the text's box: the
             controls under it keep their place above the foot and never move under his finger (mw-5r3p30.896). */}
-        <div className={`mt-1 shrink-0 empty:hidden ${controlsRoom}`}>
+        {/* The reading check keeps the ?'s side clear part by part (src/ReadCheck.tsx, mw-5r3p30.1002 and its sweep): its Next word card takes the full width, a column narrower
+            makes its tip a line taller and the card no longer fits above the bar at 360x740 (mw-5r3p30.1037). Every other action's block keeps the room. */}
+        <div className={`mt-1 shrink-0 empty:hidden ${action === 'read' ? '' : controlsRoom}`}>
           {action === 'listen' ? (
             // sideways the Play bar says it, and the line's room goes to the Audio Bible row under it (mw-5r3p30.468)
             <p data-action-help className={`px-1 text-sm text-muted ${audioListen ? 'short:hidden' : ''}`}>
