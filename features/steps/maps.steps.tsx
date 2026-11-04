@@ -87,12 +87,18 @@ describeFeature(feature, ({ Scenario }) => {
     await sleep(100);
     expect(doorsIn(viewEl())).toHaveLength(0);
   };
-  const footHas = async (_: unknown, label: string) => {
-    await waitFor(() => expect(doorsIn(readerEl()).map((b) => squash(b.textContent))).toEqual([label]));
-  };
   const footHasNone = async () => {
-    await sleep(100);
+    // the door was drawn as soon as its count came back
+    await sleep(300);
     expect(doorsIn(readerEl())).toHaveLength(0);
+  };
+  const tapPlaceLine = async () => {
+    await user.click(await waitFor(() => {
+      const line = document.querySelector<HTMLElement>('button[data-place-line]');
+      if (!line) throw new Error('no place line');
+      return line;
+    }));
+    await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapDoor = async (_: unknown, label: string) => {
     await user.click(await within(viewEl()).findByRole('button', { name: label }));
@@ -152,13 +158,8 @@ describeFeature(feature, ({ Scenario }) => {
     expect([...box.querySelectorAll('h3')].map((h) => squash(h.textContent))).toEqual(['Events', 'Regions', 'Videos']);
   };
   const groupsRead = async (_: unknown, names: string) => {
-    expect(within(await sheetEl()).getAllByRole('group').map((g) => g.getAttribute('aria-label'))).toEqual(names.split(', '));
-  };
-  const tapFootDoor = async (_: unknown, label: string) => {
-    await waitFor(() => expect(doorsIn(readerEl())).toHaveLength(1));
-    const door = doorsIn(readerEl()).find((b) => squash(b.textContent) === label);
-    if (!door) throw new Error(`no door ${label} at the foot`);
-    await user.click(door);
+    // the sheet's groups come when the maps are read: wait for them, as a loaded host answers late
+    await waitFor(async () => expect(within(await sheetEl()).queryAllByRole('group').map((g) => g.getAttribute('aria-label'))).toEqual(names.split(', ')));
   };
 
   const blockEl = async (name: string) => within(await sheetEl()).findByRole('group', { name });
@@ -219,12 +220,19 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view has no Maps door', viewHasNone);
   });
 
-  Scenario("Every chapter foot has the door, the New Testament's too", ({ Given, Then }) => {
+  Scenario("No chapter foot has the door, the New Testament's too", ({ Given, When, Then }) => {
     Given('Lampas is opened on {string}', opened);
-    Then('the chapter foot has a button {string}', footHas);
+    Then('the chapter foot has no Maps door', footHasNone);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', viewHas);
   });
 
-  Scenario('The Immersive reader has no door in the Reader, and the Verse view keeps it', ({ Given, When, Then }) => {
+  Scenario('A chapter that has maps has no door at its foot with the Immersive reader Off', ({ Given, Then }) => {
+    Given('Lampas is opened on {string}', opened);
+    Then('the chapter foot has no Maps door', footHasNone);
+  });
+
+  Scenario('Nor with the Immersive reader On, and the Verse view keeps the door', ({ Given, When, Then }) => {
     Given('Lampas is opened on {string} with the Immersive reader On', openedImmersive);
     Then('the chapter foot has no Maps door', footHasNone);
     When('he taps verse {int}', tapVerse);
@@ -279,34 +287,21 @@ describeFeature(feature, ({ Scenario }) => {
     And('the part {string} holds {string}', holdsOne);
   });
 
+  Scenario('The place line opens the whole chapter, and its Verse view has the door', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string}', opened);
+    When('he taps the place line', tapPlaceLine);
+    Then('the Verse view has a button {string}', viewHas);
+    When('he taps {string}', tapDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the groups read {string}', groupsRead);
+  });
+
   Scenario('A verse that names no place the maps show has the sheet as before', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string}', opened);
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('the sheet has no part for the verse', noPart);
     And('the groups read {string}', groupsRead);
-  });
-
-  Scenario("A whole chapter's sheet has no part for a verse and keeps Bible Mapper's order", ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on {string}', opened);
-    When("he taps the foot's door {string}", tapFootDoor);
-    Then('the sheet is headed {string}', headed);
-    And('the sheet has no part for the verse', noPart);
-    And('the groups read {string}', groupsRead);
-    And('{string} holds {string}, {string} and {string}', async (_, group: string, a: string, b: string, c: string) => {
-      expect(rowsOf(await groupEl(group))).toEqual([a, b, c]);
-    });
-  });
-
-  Scenario("The chapter foot's door opens the sheet for the chapter", ({ Given, When, Then }) => {
-    Given('Lampas is opened on {string}', opened);
-    When("he taps the foot's door {string}", async (_, label: string) => {
-      await waitFor(() => expect(doorsIn(readerEl())).toHaveLength(1));
-      const door = doorsIn(readerEl()).find((b) => squash(b.textContent) === label);
-      if (!door) throw new Error(`no door ${label} at the foot`);
-      await user.click(door);
-    });
-    Then('the sheet is headed {string}', headed);
   });
 
   Scenario('A map opens in the app with its credit and the way back to the site', ({ Given, When, Then, And }) => {
@@ -402,8 +397,9 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("Where Bible Mapper has no map for the chapter the other source's block is the sheet", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with the test atlas On', openedWithAtlas);
-    Then('the chapter foot has a button {string}', footHas);
-    When("he taps the foot's door {string}", tapFootDoor);
+    Then('the chapter foot has no Maps door', footHasNone);
+    When('he taps the place line', tapPlaceLine);
+    And('he taps {string}', tapDoor);
     Then('the sheet is headed {string}', headed);
     And('the groups read {string}', groupsRead);
     And('the {string} block holds {string}', (_, name: string, a: string) => blockHolds(_, name, a));

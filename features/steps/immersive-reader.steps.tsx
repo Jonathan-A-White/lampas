@@ -629,12 +629,14 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} out of view`, outOfView);
   });
 
-  Scenario('With Immersive reader Off there is no place line', ({ Given, When, Then }) => {
+  Scenario('With Immersive reader Off the place line is there all the time (mw-5r3p30.1028)', ({ Given, When, Then, And }) => {
+    const reads = async (_: unknown, text: string) => {
+      await waitFor(() => expect(document.querySelector('[data-place-line]')).toHaveTextContent(text));
+    };
     Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));
+    Then('the place line reads {string}', reads);
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
-    Then('there is no place line', async () => {
-      await sleep(50);
-      expect(document.querySelector('[data-place-line]')).toBeNull();
-    });
+    Then('the place line now reads {string}', reads);
+    And(`${bars} in view`, inView);
   });
 });

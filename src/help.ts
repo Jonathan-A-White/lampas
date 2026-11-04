@@ -118,7 +118,7 @@ export const HELP_PAGES: HelpPage[] = [
     line: 'Books you own, and maps.',
     body: [
       'If you own Logos, Your Logos library (the first row of Settings) lists the books Lampas can open, by kind, each Off, On or Pinned, with a search; Import reads the list Logos saves. Lampas keeps only that list and your choices, and sends nothing of your library unless you ask. On a verse, In Logos opens it in your own Bible.',
-      'A Maps · N button on a verse and at the foot of a chapter opens the maps of that place from Bible Mapper; Settings > Study resources > Maps turns each source on or off.',
+      'Tap a verse, a section heading or the line at the foot of the text, and its Maps · N button opens the maps of that place from Bible Mapper; Settings > Study resources > Maps turns each source on or off.',
     ],
   },
   {

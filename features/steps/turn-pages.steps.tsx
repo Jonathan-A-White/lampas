@@ -104,15 +104,15 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the chapter is still laid out in pages', paged);
   });
 
-  Scenario('With Scroll the chapter scrolls and there is no page line', ({ Given, Then, And }) => {
+  Scenario('With Scroll the chapter scrolls and the place line says how far, not a page', ({ Given, Then, And }) => {
     Given('Lampas is opened on Romans 8 with nothing chosen', open);
     Then('the chapter scrolls as one long text', async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(reader()).toHaveAttribute('data-paging', 'scroll');
       expect(reader()?.querySelector('[data-pages]')).toBeNull();
     });
-    And('there is no place line', () => {
-      expect(placeLine()).toBeNull();
+    And('the place line says how far through the chapter he is', async () => {
+      await waitFor(() => expect(placeLine()).toHaveTextContent(/^Romans 8 · \d+%$/));
     });
   });
 });

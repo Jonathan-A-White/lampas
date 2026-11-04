@@ -1,5 +1,5 @@
 // features/steps/links.steps.tsx — runs features/links.feature: a link in the address (#/?ref=… or #/?word=…) opens the reader on a chapter with the verse
-// at the top (no Verse view, Immersive off, nothing selected: mw-5r3p30.1025) or the word sheet of a word, a reference Lampas does not hold opens the nearest place it does with a notice, and the Verse view and the
+// at the top (no Verse view, nothing selected, Immersive left as it was: mw-5r3p30.1025, .1028) or the word sheet of a word, a reference Lampas does not hold opens the nearest place it does with a notice, and the Verse view and the
 // word sheet copy (or share) the https form of their link. fetch is stubbed with the committed public/data files; the clipboard and
 // navigator.share are replaced here with recorders.
 import '@testing-library/react/dont-cleanup-after-each';
@@ -121,15 +121,25 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Immersive On beforehand is turned off by a verse link', ({ Given, And, Then }) => {
+  Scenario('Immersive On beforehand stays On after a verse link (mw-5r3p30.1028)', ({ Given, And, Then }) => {
     Given('Immersive reader is On', () => {
       immersiveBefore = true;
     });
     And('a link {string} is opened', (_, hash: string) => openLink(hash));
     Then('the reader is headed {string}', (_, title: string) => headed(title));
-    And('Immersive reader is Off', async () => {
+    And('Immersive reader is still On', async () => {
+      await waitFor(() => expect(document.querySelector('[data-reader]')).toHaveAttribute('data-immersive', 'on'));
+      expect((await db.settings.get('immersiveReader'))?.value).toBe('on');
+    });
+    And('verse {int} is brought to the top', (_, n: number) => broughtToTop(n));
+  });
+
+  Scenario('Immersive Off beforehand stays Off after a verse link', ({ Given, Then, And }) => {
+    Given('a link {string} is opened', (_, hash: string) => openLink(hash));
+    Then('the reader is headed {string}', (_, title: string) => headed(title));
+    And('Immersive reader is still Off', async () => {
       await waitFor(() => expect(document.querySelector('[data-reader]')).toHaveAttribute('data-immersive', 'off'));
-      expect((await db.settings.get('immersiveReader'))?.value).toBe('off');
+      expect((await db.settings.get('immersiveReader'))?.value ?? 'off').toBe('off');
     });
     And('verse {int} is brought to the top', (_, n: number) => broughtToTop(n));
   });

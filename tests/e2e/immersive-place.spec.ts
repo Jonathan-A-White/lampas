@@ -4,7 +4,7 @@ import { shot } from './shot';
 import { openUnlicensed, openUnlocked } from './unlocked';
 
 // With Immersive reader On and the bars away, one quiet line at the foot says where he is: the book and chapter and how far through the chapter's
-// text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). It is not there with the setting Off or with the bars brought
+// text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). With the setting Off it is there all the time (mw-5r3p30.1028); with it On it is not there with the bars brought
 // back, it is smaller and dimmer than the text, and it takes a row of its own, so it covers none of the text. A phone-width layout claim: it runs
 // under --project=shots (390x844).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
@@ -95,11 +95,14 @@ test('the place line is there only with Immersive reader On and the bars away', 
   await expect(place(page)).toBeVisible();
 });
 
-test('with Immersive reader Off there is no place line', async ({ page }) => {
+// mw-5r3p30.1028: with the setting Off the same line is there all the time in Scroll (tests/e2e/place-line-always.spec.ts), under the bars that stay
+test('with Immersive reader Off the place line is there, and the bars stay', async ({ page }) => {
   await openMark12(page, 'off');
+  await expect(place(page)).toBeVisible();
   await scrollText(page, 600);
   await page.waitForTimeout(400);
-  await expect(place(page)).toHaveCount(0);
+  await expect(place(page)).toHaveText(/^Mark 12 · \d+%$/);
+  await expect(page.getByTestId('reader-chips')).toBeVisible();
 });
 
 test('it reads the book and chapter and a percent that rises as the text is scrolled', async ({ page }) => {

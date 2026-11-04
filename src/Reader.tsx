@@ -94,7 +94,6 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { useBarShown } from './speech/barShown';
 import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
-import { ChapterActions } from './reader/ChapterActions';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText } from './reader/VerseText';
 import { isHolding } from './talk/holding';
@@ -189,7 +188,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     setImmersiveReader(immersive);
     return () => setImmersiveReader(false);
   }, [immersive]);
-  const percent = useScrolledPercent(immersive, main);
   const reading = useReading();
   const address = useAddress();
   const current = useRef({ view });
@@ -229,7 +227,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const dismissSwipeNote = useCallback(() => setSwipeEnd(null), []);
   // Turn pages (Settings > Reading, src/reader/usePages.ts): the chapter in pages, turned by a tap on the outer thirds or a swipe; past the first or last
   // page they open the previous or next chapter, the chapter swipe being off. The page he is on is kept per chapter, so he comes back to it from any screen the Reader gives way to (mw-5r3p30.608).
-  const paging = useSetting(readingModeSetting) === 'pages';
+  const readingMode = useSetting(readingModeSetting);
+  const paging = readingMode === 'pages';
+  // how far through the chapter he is, for the place line (Scroll only: Turn pages says the page)
+  const percent = useScrolledPercent(!paging, main);
   useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen || paging, setSwipeEnd);
   // with the Immersive reader On, turning to the next page puts the bars away, as scrolling down does (src/immersive.ts, mw-5r3p30.611)
   const hideBars = bars.hide;
@@ -406,7 +407,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The foot of the screen keeps the phone's bottom floor on its lowest row (mw-5r3p30.473): the place line of the Immersive reader (under everything), else the
   // speaking bar's slot or the Turn pages line above it. No bar of the tutor's sits under them any more (the Talk bar is gone, mw-5r3p30.882), licensed or not.
   const barUp = useBarShown();
-  const percentLine = !paging && immersive && chapter && !failed && !viewUnit;
+  const placeShown = chapter && !failed && !viewUnit;
+  const percentLine = !paging && immersive && placeShown;
   const passages = useMemo(() => (chapter ? passagesOf(chapter.verses) : []), [chapter]);
   const blocks = useMemo(() => (chapter && layout ? blocksOf(chapter.verses, layout) : []), [chapter, layout]);
   const wovenCount = woven ? woven.reduce((n, w) => n + w.filter(Boolean).length, 0) : 0;
@@ -588,7 +590,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 </Fragment>
               );
             })}
-            <ChapterActions code={BOOK} chapter={CHAPTER} immersive={immersive} />
             <ChapterNav book={BOOK} chapter={CHAPTER} />
           </>
         ) : (
@@ -602,7 +603,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
-      {paging && chapter && !failed && !viewUnit ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
+      {paging && placeShown ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
+      {/* Scroll with the Immersive reader Off: the line is there all the time, how far through the chapter he is (mw-5r3p30.1028); with it On it comes with the bars away, below */}
+      {readingMode !== undefined && !paging && !immersive && placeShown ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
       <BarSlot level={1} inset={!(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} visible={away} floor /> : null}

@@ -167,10 +167,12 @@ Feature: Immersive reader
     When he taps the text with two fingers again
     Then the place line is back and reads "Romans 8 · 50%"
 
-  Scenario: With Immersive reader Off there is no place line
+  Scenario: With Immersive reader Off the place line is there all the time (mw-5r3p30.1028)
     Given Lampas is opened on Romans 8 with Immersive reader Off
+    Then the place line reads "Romans 8 · 0%"
     When he scrolls the text down 700 px
-    Then there is no place line
+    Then the place line now reads "Romans 8 · 16%"
+    And the header and the chips are both in view
 
   Scenario: The screen stays awake while the Reader is open with Immersive reader On, and sleeps again when he leaves
     Given Lampas is opened on Romans 8 with Immersive reader On and a phone with a screen wake lock

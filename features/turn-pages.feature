@@ -20,7 +20,7 @@ Feature: Turn pages in the Reader
     When Lampas is closed and opened again on Romans 8
     Then the chapter is still laid out in pages
 
-  Scenario: With Scroll the chapter scrolls and there is no page line
+  Scenario: With Scroll the chapter scrolls and the place line says how far, not a page
     Given Lampas is opened on Romans 8 with nothing chosen
     Then the chapter scrolls as one long text
-    And there is no place line
+    And the place line says how far through the chapter he is
