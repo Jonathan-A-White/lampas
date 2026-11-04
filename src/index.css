@@ -503,27 +503,11 @@ textarea,
   bottom: 0.5rem;
 }
 
-/* The floating ? floats over the Reader's text (mw-5r3p30.992: it hid the end of a word and the start of the next line in Luke 20): while it is drawn the reading box keeps a column clear on the Hand's side,
- * as wide as the ? and its margin from the edge (useDoorRoom's 4.5 rem; the box's own 0.25 rem of padding is part of it), so no line runs under it as the chapter scrolls. A line is that much shorter on the
- * Hand's side; the immersive reader, where the ? is away, keeps the full width. */
-[data-reader][data-door-room='right'] {
-  padding-right: 4.5rem;
-}
-[data-reader][data-door-room='left'] {
-  padding-left: 4.5rem;
-}
-/* With Turn pages the box clips its columns at its edge, padding included, so a neighbouring page would show in the clear column: the gap between pages grows by the column, which keeps the next (or
- * previous) page wholly outside the box. usePages reads the gap, so a page turn moves the width and the gap. */
-[data-reader][data-paging='pages'][data-door-room] > [data-pages] {
-  column-gap: 6.5rem;
-}
-
-/* The same for the Verse view's text box (a verse, or a passage that scrolls past the ?): its screen already pads 0.75 rem, so the box adds the rest of the 4.5 rem. */
-[data-verse-text][data-door-room='right'] {
-  padding-right: 3.75rem;
-}
-[data-verse-text][data-door-room='left'] {
-  padding-left: 3.75rem;
+/* The Immersive reader's place line under a scrolling chapter (src/Reader.tsx data-place-below) is the lowest row and carries the phone's bar floor itself (`.place-line[data-floor]`), so the
+ * box above it keeps a little air and not its own floor on top of it: the blank band under the last line was 64 px of box and 52 px of line (mw-5r3p30.1005, 'even at the bottom'). With Turn pages the
+ * box already keeps none (below). With the bars up the box keeps its floor, as nothing under it carries one. */
+[data-reader][data-place-below] {
+  padding-bottom: 0.5rem;
 }
 
 .place-box {

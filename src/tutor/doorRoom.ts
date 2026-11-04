@@ -3,6 +3,8 @@
 // 0.75 rem margin from the edge, plus a little air, so its buttons end where the ? begins. Right until the Hand is read, as the Hand is. tests/e2e/door-overlap.spec.ts holds the proof. The answers of a question card
 // take it too (mw-5r3p30.981: GrammarCard, WordQuestion, DrillScreen, the IPA card, SelfGrade, NextBar): the ? floats over the scroll box at one height and any row of buttons passes it as the box scrolls.
 // So do the wrappers of buttons of every width (mw-5r3p30.998): the Reading check's parts, the Reading drill's scroll box (NextBar's 'sheet' bar stands in it and adds none) and Memorize's rows. The Verse view's tools line and its action block take it too (mw-5r3p30.1002).
+// Reading text takes none (mw-5r3p30.1005, the Governor's word: 'Always use full like before'): a column kept clear for the ? beside the Reader's and the Verse view's text (mw-5r3p30.992) cost a fifth of the line, and a word under the ? is
+// his choice, a two-finger tap hides the ? and brings it back.
 import { useHand } from '../settings/hand';
 
 /** The padding class that keeps a foot row out from under the ?: the Hand's side, 4.5 rem. */
@@ -10,10 +12,3 @@ export function useDoorRoom(): string {
   return useHand() === 'left' ? 'pl-[4.5rem]' : 'pr-[4.5rem]';
 }
 
-/** The side of the reading box that keeps a column clear for the ?, or undefined: `drawn` is whether the ? can be drawn over the box (a licensed phone; the immersive reader keeps the column too, so a two-finger tap that brings the ? back does not re-flow the text). The Reader
- * sets it as `data-door-room` on its box and src/index.css pads that side 4.5 rem (mw-5r3p30.992): the ? floats over the text at one height and every line of a chapter passes it as it scrolls, so a line can
- * be under it anywhere. It stays while the Talk sheet is open (the ? is put away then) for the same reason. tests/e2e/door-reader-text.spec.ts holds the proof. */
-export function useDoorColumn(drawn: boolean): 'left' | 'right' | undefined {
-  const hand = useHand();
-  return drawn && hand ? hand : undefined;
-}
