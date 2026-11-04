@@ -8,7 +8,6 @@ import { App } from '../../src/App';
 import { forgetChapters } from '../../src/data/chapter';
 import { chapterWait } from '../../src/data/chapterWait';
 import { db } from '../../src/data/db';
-import { setDbBlocked } from '../../src/data/dbBlocked';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
 // 8 s and 30 s on a phone (src/reader/chapterWait.ts); the test shortens them rather than fake the clock the library's waits run on
@@ -84,6 +83,8 @@ describe('a blocked upgrade', () => {
     });
     try {
       void db.open().catch(() => undefined);
+      // the chapter does not come either (with it here the defaults draw it, and no Still screen is wanted)
+      hangOn(/\/data\/mat\/7\.json/);
       render(<App />);
       expect(await screen.findByText('Lampas is open in another tab: close it')).toBeInTheDocument();
     } finally {
@@ -118,33 +119,7 @@ describe('an Old Testament chapter while the settings database is held up (mw-5r
     }
   });
 
-  it('says what blocks the screen when the chapter is here but the saved settings do not open', async () => {
-    stubChapterFetch();
-    window.location.hash = '#/?b=gen&c=15';
-    const old = await holdDatabaseAsOlderTab();
-    try {
-      render(<App />);
-      expect(await screen.findByText('Lampas is open in another tab: close it')).toBeInTheDocument();
-      expect(screen.getByText('Still loading Genesis 15')).toBeInTheDocument();
-    } finally {
-      old.close();
-    }
-  });
-
-  it('says the chapter is here when only the saved settings are missing and no other tab is flagged', async () => {
-    stubChapterFetch();
-    window.location.hash = '#/?b=gen&c=15';
-    const old = await holdDatabaseAsOlderTab();
-    try {
-      render(<App />);
-      // the older tab is flagged once, when the database's open waits on it; here it is taken as not flagged (a hold the 'blocked' event did not name)
-      await screen.findByText('Lampas is open in another tab: close it');
-      act(() => setDbBlocked(false));
-      expect(await screen.findByText('The chapter is here but your saved settings are not opening: close your other Lampas tabs, then tap Try again')).toBeInTheDocument();
-    } finally {
-      old.close();
-    }
-  });
+  // the chapter that is here with the settings database held is drawn with the defaults after chapterWait.settingMs, no Still screen (tests/unit/reader-no-settings.test.tsx, mw-5r3p30.1042)
 });
 
 describe('the other Loading states', () => {

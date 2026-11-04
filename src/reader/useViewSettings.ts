@@ -10,7 +10,7 @@ import { viewAt, weaveAt } from '../settings/definitions/greekInterest';
 import { levelOf, type InterestLevels } from '../settings/definitions/interest';
 import { getSetting, useSetting } from '../settings/store';
 import { useInterestLevels } from '../settings/useInterestLevels';
-import type { ReaderSettings } from './useReaderSettings';
+import { DEFAULT_DIALS, NO_LEMMAS, NO_LEVELS, useSettingsLate, type ReaderSettings } from './useReaderSettings';
 
 /** The settings a verse is drawn by once the dial of its chapter's language has had its say. */
 type ViewSettings = Pick<ReaderSettings, 'view' | 'weave' | 'weaveShown' | 'weaveGrammar' | 'weaveOrder' | 'solid' | 'learning' | 'levels'>;
@@ -30,15 +30,26 @@ export function settingsFor(saved: SavedViewSettings, chapter: Pick<Chapter, 'la
 
 /** The saved view and weave settings, or undefined until every one has loaded. */
 export function useViewSettings(): SavedViewSettings | undefined {
-  const interest = useInterestLevels();
-  const view = useLiveQuery(getReaderView, []);
-  const weave = useLiveQuery(getWeave, []);
-  const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
-  const weaveOrder = useSetting(weaveOrderSetting);
-  const plainUnder = useLiveQuery(getPlainEnglishUnder, []);
-  const levels = useLiveQuery(listLevels, []);
-  const solid = useLiveQuery(listSolidLemmas, []);
-  const learning = useLiveQuery(listLearningLemmas, []);
+  const savedInterest = useInterestLevels();
+  const savedView = useLiveQuery(getReaderView, []);
+  const savedWeave = useLiveQuery(getWeave, []);
+  const savedGrammar = useLiveQuery(getWeaveGrammar, []);
+  const savedOrder = useSetting(weaveOrderSetting);
+  const savedPlain = useLiveQuery(getPlainEnglishUnder, []);
+  const savedLevels = useLiveQuery(listLevels, []);
+  const savedSolid = useLiveQuery(listSolidLemmas, []);
+  const savedLearning = useLiveQuery(listLearningLemmas, []);
+  // a database that has not answered by chapterWait.settingMs is not waited for (mw-5r3p30.1042): the defaults are drawn until the saved values come, and nothing is saved
+  const late = useSettingsLate([savedInterest, savedView, savedWeave, savedGrammar, savedOrder, savedPlain, savedLevels, savedSolid, savedLearning].every((value) => value !== undefined));
+  const interest = savedInterest ?? (late ? DEFAULT_DIALS : undefined);
+  const view = savedView ?? (late ? 'english' : undefined);
+  const weave = savedWeave ?? (late ? 'off' : undefined);
+  const weaveGrammar = savedGrammar ?? (late ? 'any' : undefined);
+  const weaveOrder = savedOrder ?? (late ? weaveOrderSetting.default : undefined);
+  const plainUnder = savedPlain !== undefined ? savedPlain : late ? null : undefined;
+  const levels = savedLevels ?? (late ? NO_LEVELS : undefined);
+  const solid = savedSolid ?? (late ? NO_LEMMAS : undefined);
+  const learning = savedLearning ?? (late ? NO_LEMMAS : undefined);
   return useMemo(
     () => (interest && view && weave && weaveGrammar && weaveOrder && plainUnder !== undefined && levels && solid && learning ? { view, weave, plainUnder, interest, weaveGrammar, weaveOrder, solid, learning, levels } : undefined),
     [interest, view, weave, plainUnder, weaveGrammar, weaveOrder, levels, solid, learning],
