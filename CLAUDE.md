@@ -39,7 +39,7 @@ npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (bu
 npm run icons        # re-render public/icon-192.png, icon-512.png from icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts and seed-words-hbo.ts from docs/example-words.md (node 22.18+)
 npm run check:licence -- <pubkey>  # live testnet licence check, opt-in
-npx playwright test  # (npm run test:e2e) all e2e (use --workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
+npx playwright test  # (npm run test:e2e) all e2e (--workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
 npm run e2e:live     # live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
 npm run ladder:docs  # writes the ladder table of docs/grammar.md, rows of docs/card-audit.md
@@ -67,10 +67,10 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
   takes `150 + 60 x words` ms and fires start, boundaries and end, `cancel()` interrupts the one being spoken, a recogniser sends interim words as a clip
   plays). Feature steps use `tests/support/fake-speech.ts` (`stubSpeech`: `finish()`, `finishAll()`, `advance(ms)`, `calls`, `spoken`, on a manual clock,
   `tests/support/manual-clock.ts`) and `tests/support/fake-mic.ts` (`stubMic()`, `advance(ms)`); Playwright specs use `tests/support/honest-fakes.ts`
-  (`honestSpeech(page, {langs, msPerWord})`, `spoken(page)`, `honestMic(page)`). A screen that holds on a verse being spoken or a clip being recorded needs a slow reader
-  (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip (and gives the recorded PCM a WAV header).
+  (`honestSpeech(page, {langs, msPerWord})`, `honestMic(page)`). A screen that holds on a verse being spoken or a clip being recorded needs a slow reader
+  (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip.
 - Every jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS` (`tests/support/timeouts.ts`, 10 s, set in `tests/setup.ts`; a loaded host outruns the library's 1 s): never pass a shorter `timeout:` and give `vi.waitFor` one (`tests/unit/async-wait.test.ts` greps for both).
-- A step that checks what the bus heard waits for it (`tests/support/published.ts`: `expectPublished(() => list, expected)` for a list a step file fills, `expectLatest(kind, check)` for the newest event of a kind): a screen writes, publishes, awaits and publishes again, so the write a step waited for can come before the event (mw-5r3p30.389; `tests/unit/published-wait.test.ts` fails on an `expect(list)` or `expect(latest(...))` with no wait).
+- A step that checks what the bus heard waits for it (`tests/support/published.ts`: `expectPublished(() => list, expected)` for a list a step file fills, `expectLatest(kind, check)` for the newest event of a kind): a screen can write before it publishes (mw-5r3p30.389; `tests/unit/published-wait.test.ts` fails on an `expect(list)` or `expect(latest(...))` with no wait).
 - Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
   service worker registration; `fake-postern.ts` is a Postern backend with a mill that opens the grist and answers it,
   used by features/tutor.feature and, through `playwright-postern.ts`, by tests/e2e/tutor.spec.ts). Tests run in jsdom, `fake-indexeddb`, `TZ=UTC`.
@@ -79,6 +79,7 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
 - esbuild will not run in jsdom: a test that needs a real build runs
   `node node_modules/vite/bin/vite.js build --outDir <tmp>` in a child process (see `features/steps/install.steps.tsx`).
 - Playwright is pinned to 1.63.0, the Laptop's Chromium build.
+- After a `while setting up` timeout read the gate log's `page-setup-watch:` line first (`tests/support/page-setup-watch.ts`).
 
 ## Layout
 

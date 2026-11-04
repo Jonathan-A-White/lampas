@@ -4,11 +4,16 @@ import { join } from 'node:path';
 import { playwrightTimeouts, playwrightTimingFilter } from 'pwa-kit/test-preset';
 import { browserEnv } from './tests/support/browser-env';
 import { PHONE_WIDTH_SPECS } from './tests/support/e2e-projects';
+import { startPageSetupWatch } from './tests/support/page-setup-watch';
 import { resolvePreviewPort, reuseExistingPreview } from './tests/support/preview-port';
 
 // One preview server per worktree, on its hashed port or the next free one: see tests/support/preview-port.ts.
 const PREVIEW_PORT = resolvePreviewPort(process.cwd());
 const PREVIEW_BASE_URL = `http://localhost:${PREVIEW_PORT}`;
+
+// A context or page still not set up at 30 s puts a page-setup-watch: line in the run's output saying what it waits on (mw-5r3p30.1029).
+// Workers load this config too and are where the browsers are, so it starts there, for every project.
+if (process.env.TEST_WORKER_INDEX !== undefined) startPageSetupWatch();
 
 // Specs import src/config.ts, whose __APP_SEMVER__ is a Vite define that Playwright's loader lacks: give it the
 // package's version, as vite.config.ts does. Workers load this config too, so the global is set in each.
