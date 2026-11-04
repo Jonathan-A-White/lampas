@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.96",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1003",
+    "kind": "fixed",
+    "text": "A word's Paradigm link now lands on its own form for infinitives, participles in every case, and vocatives, instead of a table with nothing outlined."
+  },
+  {
     "version": "0.7.94",
     "date": "2026-11-03",
     "story": "mw-5r3p30.1025",

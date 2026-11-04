@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.96
+_2026-11-04_
+- Fixed: A word's Paradigm link now lands on its own form for infinitives, participles in every case, and vocatives, instead of a table with nothing outlined.
+
 ## 0.7.94
 _2026-11-03_
 - New: A link to a verse or a passage now opens the chapter in the normal reader with that verse at the top, instead of the verse view.
