@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.102
+_2026-11-04_
+- Fixed: At the largest text size, a long word in a quiz answer now wraps inside its button instead of running out of it.
+
 ## 0.7.101
 _2026-11-04_
 - New: when the tutor names a book of the Apocrypha (Sirach, Wisdom, Tobit and the rest) the reference is now a link that opens it in your Apocrypha Bible in Logos.

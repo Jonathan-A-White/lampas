@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.102",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1017",
+    "kind": "fixed",
+    "text": "At the largest text size, a long word in a quiz answer now wraps inside its button instead of running out of it."
+  },
+  {
     "version": "0.7.101",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1034",
