@@ -12,6 +12,12 @@ import { inNa28, type Analysis, type TagntRow } from './tagnt';
 /** One of a form's candidates from the parser: an analysis, and what produced it, the most support first. */
 export interface Candidate extends Analysis {
   via: string[];
+  /**
+   * The ending rules' candidates only (parse): of the New Testament lemmas behind the rules that give it, those whose stem ends as its own stem does (stemClass:
+   * the same vowel, or a consonant), summed as support is. A rule learned from ἐποίει (stem ποιε-) put on ἐξῆρται read as εξαρτα-ι has 33 lemmas and none of them
+   * here. Analogy's candidates have none.
+   */
+  stemSupport?: number;
 }
 
 export interface Triple {
@@ -122,8 +128,21 @@ const commonPrefix = (a: string, b: string): number => {
 /** `${type}|${the form's ending}` -> `${the lemma's ending}|${parsing}` -> the lemmas that show it */
 export type Rules = Map<string, Map<string, Set<string>>>;
 
-/** A triple's rule: the reading of the form that shares most letters with its lemma (two at least), and what is left on each side. */
-export function ruleOf(t: Triple): { key: string; rk: string } | undefined {
+/** `${key}#${rk}` of a rule -> how the stem it was seen on ends (stemClass) -> the lemmas that show it so (story mw-u2w5klk.28) */
+export type RuleStems = Map<string, Map<string, Set<string>>>;
+
+/**
+ * How a stem ends, for a rule's stem support: its last letter when that is a vowel (the vowel of a contract verb, ποιε- or εξαρτα-, which the rule's endings leave
+ * out), else 'C' for any consonant. Measured both ways on the New Testament (docs/lxx-derivation.md, 'A lone candidate on thin support'): every letter apart left
+ * ἀκολουθοῦντας (ακολουθ-ουντασ as ακολουθ-εω, 22 lemmas) with none, for no -εω verb's stem the New Testament shows ends in θ.
+ */
+export const stemClass = (stem: string): string => {
+  const last = stem.at(-1) ?? '';
+  return VOWELS.includes(last) ? last : 'C';
+};
+
+/** A triple's rule and the stem it leaves: the reading of the form that shares most letters with its lemma (two at least), and what is left on each side. */
+function matchRule(t: Triple): { key: string; rk: string; stem: string } | undefined {
   const f = bareOf(t.form);
   const l = bareOf(t.lemma);
   let best: (Variant & { cp: number }) | undefined;
@@ -132,21 +151,35 @@ export function ruleOf(t: Triple): { key: string; rk: string } | undefined {
     if (!best || cp > best.cp) best = { ...v, cp };
   }
   if (!best || best.cp < 2) return undefined;
-  return { key: `${best.type}|${best.g.slice(best.cp)}`, rk: `${l.slice(best.cp)}|${t.morph}` };
+  return { key: `${best.type}|${best.g.slice(best.cp)}`, rk: `${l.slice(best.cp)}|${t.morph}`, stem: l.slice(0, best.cp) };
+}
+
+/** A triple's rule: the reading of the form that shares most letters with its lemma (two at least), and what is left on each side. */
+export function ruleOf(t: Triple): { key: string; rk: string } | undefined {
+  const rule = matchRule(t);
+  return rule && { key: rule.key, rk: rule.rk };
 }
 
 export function trainRules(triples: readonly Triple[]): Rules {
+  return trainRulesAndStems(triples).rules;
+}
+
+/** The rules, and for each the last letters of the stems the New Testament shows it on (RuleStems). */
+export function trainRulesAndStems(triples: readonly Triple[]): { rules: Rules; stems: RuleStems } {
   const rules: Rules = new Map();
+  const stems: RuleStems = new Map();
+  const add = <K, V>(m: Map<K, V>, k: K, make: () => V): V => {
+    let v = m.get(k);
+    if (v === undefined) m.set(k, (v = make()));
+    return v;
+  };
   for (const t of triples) {
-    const rule = ruleOf(t);
+    const rule = matchRule(t);
     if (!rule) continue;
-    let r = rules.get(rule.key);
-    if (!r) rules.set(rule.key, (r = new Map()));
-    let lemmas = r.get(rule.rk);
-    if (!lemmas) r.set(rule.rk, (lemmas = new Set()));
-    lemmas.add(t.lemma);
+    add(add(rules, rule.key, () => new Map<string, Set<string>>()), rule.rk, () => new Set<string>()).add(t.lemma);
+    add(add(stems, `${rule.key}#${rule.rk}`, () => new Map<string, Set<string>>()), stemClass(rule.stem), () => new Set<string>()).add(t.lemma);
   }
-  return rules;
+  return { rules, stems };
 }
 
 // ---------------------------------------------------------------- analogy
@@ -381,6 +414,8 @@ export interface Parser {
   /** the names that do not decline (indeclinableNames): a word that is one gets every case of its gender as a candidate */
   names: NameIndex;
   rules: Rules;
+  /** the last letters of the stems each rule was seen on, for a candidate's stem support (Candidate.stemSupport) */
+  ruleStems: RuleStems;
   analogy: Analogy;
   lexicon: Lexicon;
   /** lemma -> what the New Testament shows it as (posKey) */
@@ -400,7 +435,8 @@ export function trainParser(rows: readonly TagntRow[], lexicon: Lexicon, names: 
     s.add(posKey(r.morph));
   }
   const triples = triplesOf(rows);
-  return { names, rules: trainRules(triples), analogy: trainAnalogy(triples), lexicon, ntPos, triples: triples.length, governs: prepositionCases(rows) };
+  const { rules, stems } = trainRulesAndStems(triples);
+  return { names, rules, ruleStems: stems, analogy: trainAnalogy(triples), lexicon, ntPos, triples: triples.length, governs: prepositionCases(rows) };
 }
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
@@ -411,10 +447,13 @@ const UNDONE_NOTE: Readonly<Record<Undone, string>> = { none: '', aug: ', augmen
 /** Accumulates support and descriptions per 'lemma|parsing', and gives the candidates most support first, then by lemma and parsing. */
 class Found {
   private readonly support = new Map<string, number>();
+  private readonly stemSupport = new Map<string, number>();
   private readonly via = new Map<string, Map<string, number>>();
-  add(lemma: string, morph: string, n: number, why: string): void {
+  /** `stem`: how many of the n lemmas show the rule on a stem that ends as this one does; given by the ending rules, never by analogy */
+  add(lemma: string, morph: string, n: number, why: string, stem?: number): void {
     const k = `${lemma}|${morph}`;
     this.support.set(k, (this.support.get(k) ?? 0) + n);
+    if (stem !== undefined) this.stemSupport.set(k, (this.stemSupport.get(k) ?? 0) + stem);
     let v = this.via.get(k);
     if (!v) this.via.set(k, (v = new Map()));
     v.set(why, (v.get(why) ?? 0) + n);
@@ -428,7 +467,8 @@ class Found {
       .map(([k, support]) => {
         const [lemma, morph] = k.split('|');
         const via = [...this.via.get(k)!].sort(([a, n], [b, m]) => m - n || byCode(a, b)).map(([why]) => why);
-        return { lemma, morph, support, share: support / total, via };
+        const stemSupport = this.stemSupport.get(k);
+        return { lemma, morph, support, share: support / total, via, ...(stemSupport === undefined ? {} : { stemSupport }) };
       })
       .sort((a, b) => b.support - a.support || order(a, b));
   }
@@ -454,7 +494,8 @@ export function parse(form: string, parser: Parser): Candidate[] {
         if (!entries) continue;
         for (const { lemma } of entries) {
           if (!fits(morph, entries.filter((e) => e.lemma === lemma), parser.ntPos.get(lemma))) continue;
-          found.add(lemma, morph, lemmas.size, `rule: ${stem}${end(gs)} as ${stem}${end(ls)}${UNDONE_NOTE[v.type]} (${lemmas.size} ${lemmas.size === 1 ? 'lemma' : 'lemmas'})`);
+          const sameStem = parser.ruleStems.get(`${v.type}|${gs}#${rk}`)?.get(stemClass(stem))?.size ?? 0;
+          found.add(lemma, morph, lemmas.size, `rule: ${stem}${end(gs)} as ${stem}${end(ls)}${UNDONE_NOTE[v.type]} (${lemmas.size} ${lemmas.size === 1 ? 'lemma' : 'lemmas'})`, sameStem);
         }
       }
     }
@@ -488,10 +529,23 @@ export const PARSER_DOMINANT = 0.9;
 /** The parser is less sure than a form the New Testament has: confidence is 0.75 x the candidate's share. */
 export const PARSER_CONFIDENCE = 0.75;
 
-/** Whether layer 2 settles a word with these candidates, and how sure it is; undefined when they stay for the model. */
+/**
+ * An ending rule's lone candidate is taken only when at least this many New Testament lemmas show its rules on a stem that ends as its own does
+ * (Candidate.stemSupport, stemClass; story mw-u2w5klk.28). Measured on the New Testament itself, each of its 27 books hidden in turn from the form index and
+ * the parser, over the 4,438 words whose form the other books lack and for which the rules leave one candidate (`npm run lxx:lone-support`; docs/lxx-derivation.md,
+ * 'A lone candidate on thin support'): right on lemma and full parsing for 79.4% of those with a stem support of 0, 78.6% of 1, 86.6% of 2, 92.6% of 3 and
+ * 97.9% of 4. 4 is the least at which the lone candidates taken are right at least 98% of the time together (98.0%), the bar's line for full parsing.
+ */
+export const LONE_MIN_STEM_SUPPORT = 4;
+
+/** Whether the candidates are one ending rule's candidate on thin support (LONE_MIN_STEM_SUPPORT): pending with that one candidate, for the agreement check or the model. */
+export const isThinLone = (candidates: ReadonlyArray<Pick<Candidate, 'stemSupport'>>): boolean =>
+  candidates.length === 1 && candidates[0].stemSupport !== undefined && candidates[0].stemSupport < LONE_MIN_STEM_SUPPORT;
+
+/** Whether layer 2 settles a word with these candidates, and how sure it is; undefined when they stay for the model. A lone candidate on thin support is not settled. */
 export function settleParsed(candidates: readonly Candidate[]): { analysis: Candidate; confidence: number } | undefined {
   const top = candidates[0];
-  if (!top) return undefined;
+  if (!top || isThinLone(candidates)) return undefined;
   if (candidates.length === 1 || top.share >= PARSER_DOMINANT) return { analysis: top, confidence: Math.round(PARSER_CONFIDENCE * top.share * 100) / 100 };
   return undefined;
 }

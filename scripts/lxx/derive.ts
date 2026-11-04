@@ -22,7 +22,7 @@ import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fe
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
 import { bareOf, bookOf, hasAccent, hasLower, hasTwoAccents, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
 import { analysesOf, formIndex, readTagnt, settle, type Analysis, type FormIndex } from './tagnt';
-import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, isCapital, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
+import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, isCapital, isThinLone, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
 import { TBESG_FILE, lemmaCount, readTbesg, readTbesgNames } from './tbesg';
 
 export const OUT_DIR = join('data', 'lxx');
@@ -41,13 +41,15 @@ export const NOTE_SEVERAL = 'several analyses: for the model';
 export const NOTE_NOT_IN_NT = 'not in the New Testament: for the parser';
 export const NOTE_ANALOGY = 'analogy: a sibling form in the New Testament';
 export const NOTE_CANDIDATES = 'several candidates: for the model';
+export const NOTE_THIN = 'one candidate on thin support: for the agreement check or the model';
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
 export const NOTE_FORM_NAME = 'a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model';
 export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender: for the agreement check or the model';
 export const NOTE_CAPITAL_NAME = 'a capital mid-clause: a name beside the common word its letters spell: for the agreement check or the model';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
-export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form' };
+/** `stemSupport`: an ending rule's candidate only (parser.ts Candidate.stemSupport), kept in memory for the agreement check (isThinLone), never written to the files. */
+export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form'; stemSupport?: number };
 
 /** What a candidate's support column says: the New Testament's count, or the name of what gave it where it has no count (`morpheus`, the second method; `name`, an indeclinable name's other cases; `form`, a name no lexicon has, read as its own lemma). */
 export const supportOf = (c: WordCandidate): string => c.source ?? String(c.support);
@@ -144,6 +146,9 @@ function layersOneAndTwo(
     fromParser = byAnalogy(word.form, parser);
     if (fromParser.length) notes.push(NOTE_ANALOGY);
   }
+  // one ending rule's candidate on thin support (story mw-u2w5klk.28): not settled, but left alone for the agreement check or the model. Analogy's readings
+  // are not put beside it: they blur a pending imperative the address rule reads, and offer the agreement links readings the form cannot be (ἄφρονος as A-NSF)
+  if (isThinLone(fromParser)) return { ref: word.ref, candidates: fromParser, notes: [...notes, NOTE_THIN] };
   const settled = settleParsed(fromParser);
   if (!settled) {
     const given = fromParser.length === 0 ? morpheusCandidates(word.form, morpheus) : [];

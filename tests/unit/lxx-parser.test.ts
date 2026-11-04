@@ -24,6 +24,7 @@ import {
   NOTE_INDECLINABLE,
   NOTE_NOT_IN_NT,
   NOTE_NO_CANDIDATE,
+  NOTE_THIN,
   PENDING_HEADER,
   deriveBook,
   isDerived,
@@ -41,11 +42,13 @@ import {
   GOVERN_MAX_NOMINATIVE,
   GOVERN_MIN_SHARE,
   GOVERN_MIN_WORDS,
+  LONE_MIN_STEM_SUPPORT,
   NO_NAMES,
   PARSER_DOMINANT,
   caseOf,
   formNameLemma,
   isCapital,
+  isThinLone,
   parse,
   prepositionCases,
   ruleOf,
@@ -253,9 +256,10 @@ describe('the known answer: John 1 with John hidden (npm run lxx:derive -- --boo
     expect(Math.abs((100 * full) / analysed - 69.2)).toBeLessThanOrEqual(3);
   });
 
-  it('settles 25 words in layer 2, every one right', () => {
+  it('settles 19 words in layer 2, every one right (25 before mw-u2w5klk.28 left six lone candidates on thin support pending)', () => {
     const layer2 = jhn.beforeCheck.derived.filter((w) => w.layer === 2);
-    expect(layer2).toHaveLength(25);
+    expect(layer2).toHaveLength(19);
+    expect(jhn.beforeCheck.pending.filter((w) => w.notes.includes(NOTE_THIN))).toHaveLength(6);
     for (const w of layer2) expect([w.lemma, w.morph]).toEqual([answer.get(w.ref)!.lemma, answer.get(w.ref)!.morph]);
     expect(jhn.beforeCheck.derived.filter((w) => w.layer === 1)).toHaveLength(673);
   });
@@ -410,8 +414,13 @@ describe('an indeclinable name offers every case of its gender (B6)', async () =
       expect(out.notes).toContain(NOTE_INDECLINABLE);
       expect(out.notes).not.toContain(NOTE_NO_CANDIDATE);
     }
-    // before the rule the parser had settled Ἰωβέλ on its single candidate, in layer 2
-    expect(layerOf(outOf(without, IOBEL))).toBe(2);
+    // before the rule the parser had settled Ἰωβέλ on its single candidate, in layer 2; since mw-u2w5klk.28 that candidate, on thin stem support, waits too,
+    // so without the rule the word is the parser's one reading for the model, and with it every case of its gender
+    const alone = outOf(without, IOBEL);
+    expect(isDerived(alone)).toBe(false);
+    expect(alone.notes).toContain(NOTE_THIN);
+    expect(alone.candidates).toHaveLength(1);
+    expect(outOf(got, IOBEL).candidates.length).toBeGreaterThan(1);
   });
 
   it('writes the new candidates’ support as the word name, in the pending file', () => {
@@ -786,5 +795,94 @@ describe("the cases a preposition governs, learned from TAGNT's next word (mw-u2
   it('is learned with the parser, from the rows it is trained on (the fixture slice, cut word by word, has no preposition with enough words after it)', () => {
     expect(trainParser(times(GOVERN_MIN_WORDS, 'ἐν ἐν PREP', 'ἀρχῇ ἀρχή N-DSF'), readTbesg(tbesg)).governs.get('ἐν')).toEqual(['D']);
     expect(trainParser(readTagnt(tagnt), readTbesg(tbesg)).governs.size).toBe(0);
+  });
+});
+
+describe('a lone candidate on thin support is not settled (mw-u2w5klk.28)', async () => {
+  const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+  // the rules as the pinned TAGNT teaches them: -ονος for -ων A-GSF-C from one comparative (χείρονος, Heb 10:29), and -ι for -ω V-IAI-3S, augment
+  // undone, from the imperfects of verbs in -εω, whose stems all end in ε (ἐποίει); ἄφρων's own forms and πᾶς's, from which analogy would read ἄφρονος
+  const rows = [
+    tagntRow('Heb.10.29#2', 'χείρονος', 'G5501', 'A-GSF-C', 'χείρων'),
+    tagntRow('2Co.11.16#9', 'ἄφρονα', 'G0878', 'A-ASM', 'ἄφρων'),
+    tagntRow('Luk.11.40#1', 'ἄφρονες', 'G0878', 'A-VPM', 'ἄφρων'),
+    tagntRow('Mrk.12.44#4', 'πάντα', 'G3956', 'A-ASM', 'πᾶς'),
+    tagntRow('Mat.13.19#1', 'παντὸς', 'G3956', 'A-GSM', 'πᾶς'),
+    tagntRow('Mrk.6.20#14', 'ἐποίει', 'G4160', 'V-IAI-3S', 'ποιέω'),
+    tagntRow('Mrk.2.2#20', 'ἐλάλει', 'G2980', 'V-IAI-3S', 'λαλέω'),
+    tagntRow('Mrk.12.41#9', 'ἐθεώρει', 'G2334', 'V-IAI-3S', 'θεωρέω'),
+    tagntRow('Mrk.14.11#9', 'ἐζήτει', 'G2212', 'V-IAI-3S', 'ζητέω'),
+    tagntRow('Mat.1.1#5', 'τοῦ', 'G3588', 'T-GSM', 'ὁ'),
+    tagntRow('Mat.2.13#5', 'τοῦ', 'G3588', 'T-GSN', 'ὁ'),
+  ];
+  const tbesgRows = [
+    'G5501\tG5501 =\tG5501\tχείρων\tcheirōn\tG:A\tworse',
+    'G0878\tG0878 =\tG0878\tἄφρων\taphrōn\tG:A\tfoolish',
+    'G3956\tG3956 =\tG3956\tπᾶς\tpas\tG:A\tall',
+    'G4160\tG4160 =\tG4160\tποιέω\tpoieō\tG:V\tto do',
+    'G2980\tG2980 =\tG2980\tλαλέω\tlaleō\tG:V\tto speak',
+    'G2334\tG2334 =\tG2334\tθεωρέω\ttheōreō\tG:V\tto watch',
+    'G2212\tG2212 =\tG2212\tζητέω\tzēteō\tG:V\tto seek',
+    'G5368\tG5368 =\tG5368\tφιλέω\tphileō\tG:V\tto love',
+    'G1821\tG1821G =\tG1821G\tἐξαρτάω\texartaō\tG:V\tto hang',
+    'G1808\tG1808 =\tG1808\tἐξαίρω\texairō\tG:V\tto remove',
+    'G3588\tG3588 =\tG3588\tὁ\tho\tG:T\tthe',
+  ];
+  // Swete's verses: 'there is no memory of the wise with the fool' (Ecc 2:16), 'it is all over, he has been removed' (Nah 2:1), and an imperfect of a verb in -εω (Gen 37:4)
+  const verses: Array<[string, string[]]> = [
+    ['Ecc.2:16', ['ὅτι', 'οὐκ', 'ἔστιν', 'μνήμη', 'τοῦ', 'σοφοῦ', 'μετὰ', 'τοῦ', 'ἄφρονος', 'εἰς', 'αἰῶνα']],
+    ['Nah.2:1', ['Συντετέλεσται,', 'ἐξῆρται.']],
+    ['Gen.37:4', ['ὁ', 'πατὴρ', 'αὐτὸν', 'ἐφίλει']],
+  ];
+  const versification: string[] = [];
+  const lines: string[] = [];
+  for (const [verse, words] of verses) {
+    versification.push(`${lines.length + 1}\t${verse}`);
+    for (const w of words) lines.push(`${lines.length + 1}\t${w}`);
+  }
+  const input: DeriveInput = { versification: versification.join('\n'), words: lines.join('\n'), tagnt: [rows.join('\n')], tbesg: tbesgRows.join('\n') };
+  const trained = train(input);
+  const results = new Map(['ecc', 'nah', 'gen'].map((book) => [book, deriveBook(input, book, undefined, trained)]));
+  const at = (ref: string): DerivedWord | PendingWord => outOf(results.get(ref.split('.')[0].toLowerCase())!, ref);
+
+  it('leaves ἄφρονος (Ecc 2:16) pending, not A-GSF-C: its one candidate, a comparative’s ending seen on one lemma, is thin; the model reads the masculine', () => {
+    const [only, ...more] = parse('ἄφρονος', trained.parser);
+    expect(more).toEqual([]);
+    expect([only.lemma, only.morph, only.support, only.stemSupport]).toEqual(['ἄφρων', 'A-GSF-C', 1, 1]);
+    const w = at('Ecc.2:16#9');
+    expect(isDerived(w)).toBe(false);
+    expect(w.notes).toContain(NOTE_THIN);
+    // left alone: analogy, which would offer A-GSM beside stray readings the form cannot be (A-NSM, A-NSF), is not asked
+    expect(w.candidates.map((c) => `${c.lemma} ${c.morph}`)).toEqual(['ἄφρων A-GSF-C']);
+    // its article is masculine or neuter: left pending, and no break is counted, for nothing settled stands beside it
+    expect(isDerived(at('Ecc.2:16#8'))).toBe(false);
+    expect(results.get('ecc')!.agreement.breaks).toBe(0);
+  });
+
+  it('leaves ἐξῆρται (Nah 2:1) pending, not ἐξαρτάω V-IAI-3S: the rule has lemmas enough, but none with a stem in -α', () => {
+    const [only, ...more] = parse('ἐξῆρται', trained.parser);
+    expect(more).toEqual([]);
+    expect([only.lemma, only.morph, only.support, only.stemSupport]).toEqual(['ἐξαρτάω', 'V-IAI-3S', 4, 0]);
+    expect(only.support).toBeGreaterThanOrEqual(LONE_MIN_STEM_SUPPORT);
+    const w = at('Nah.2:1#2');
+    expect(isDerived(w)).toBe(false);
+    expect(w.notes).toContain(NOTE_THIN);
+  });
+
+  it('settles a lone candidate whose rule the New Testament shows on stems that end as its own does (ἐφίλει, Gen 37:4)', () => {
+    const w = at('Gen.37:4#4');
+    expect(isDerived(w) && [w.lemma, w.morph, w.layer]).toEqual(['φιλέω', 'V-IAI-3S', 2]);
+    expect((w.candidates[0] as Candidate).stemSupport).toBe(4);
+    expect(w.notes).not.toContain(NOTE_THIN);
+  });
+
+  it('takes a lone candidate only at LONE_MIN_STEM_SUPPORT lemmas whose stem ends as its own; analogy’s, which has no stem, as before', () => {
+    const one = (stemSupport?: number): Candidate[] => [{ lemma: 'l', morph: 'X', support: 40, share: 1, via: [], ...(stemSupport === undefined ? {} : { stemSupport }) }];
+    expect(settleParsed(one(LONE_MIN_STEM_SUPPORT - 1))).toBeUndefined();
+    expect(isThinLone(one(LONE_MIN_STEM_SUPPORT - 1))).toBe(true);
+    expect(settleParsed(one(LONE_MIN_STEM_SUPPORT))?.confidence).toBe(0.75);
+    expect(isThinLone(one(LONE_MIN_STEM_SUPPORT))).toBe(false);
+    expect(settleParsed(one())?.confidence).toBe(0.75);
+    expect(isThinLone(one())).toBe(false);
   });
 });
