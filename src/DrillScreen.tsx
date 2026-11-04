@@ -69,7 +69,7 @@ async function drawRound(random: Random): Promise<DrillQuestion[]> {
   return drawDrill(chapter, words, random);
 }
 
-const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg first-letter:uppercase disabled:opacity-100';
+const OPTION_BASE = 'block min-h-14 w-full break-words rounded-xl border px-4 py-3 text-left text-lg first-letter:uppercase disabled:opacity-100';
 const OPTION_LOOK = {
   idle: 'border-line bg-surface',
   right: 'border-good bg-good/20 font-medium',

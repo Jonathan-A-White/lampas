@@ -15,7 +15,7 @@ import { WORD_GRADES } from './review/kinds';
 import { WordGrades } from './ui/SelfGrade';
 import { useDoorRoom } from './tutor/doorRoom';
 
-const OPTION_BASE = 'block min-h-14 w-full rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
+const OPTION_BASE = 'block min-h-14 w-full break-words rounded-xl border px-4 py-3 text-left text-lg disabled:opacity-100';
 const OPTION_LOOK = {
   idle: 'border-line bg-surface',
   right: 'border-good bg-good/20 font-medium',
