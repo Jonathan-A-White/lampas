@@ -94,7 +94,6 @@ import { BarSlot } from './speech/SpeakingBarSlot';
 import { useBarShown } from './speech/barShown';
 import { warmVoices } from './speech/greek';
 import { WordSheet, type Lookup } from './WordSheet';
-import { ChapterActions } from './reader/ChapterActions';
 import { PassageText, ParagraphView, SectionHeading, VerseLine } from './reader/ChapterText';
 import { VerseText } from './reader/VerseText';
 import { isHolding } from './talk/holding';
@@ -588,7 +587,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 </Fragment>
               );
             })}
-            <ChapterActions code={BOOK} chapter={CHAPTER} immersive={immersive} />
             <ChapterNav book={BOOK} chapter={CHAPTER} />
           </>
         ) : (
