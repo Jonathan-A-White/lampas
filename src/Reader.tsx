@@ -594,7 +594,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           </>
         ) : (
           stillLoading ? (
-            <ChapterStill title={TITLE} blocked={dbBlocked} onRetry={retry} onPick={() => setPicking(true)} />
+            <ChapterStill title={TITLE} blocked={dbBlocked} chapterHere={fetched !== null} onRetry={retry} onPick={() => setPicking(true)} />
           ) : (
             <p role="status" className="px-4 pt-6 text-center text-muted">
               Loading {TITLE}…
