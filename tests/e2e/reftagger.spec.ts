@@ -35,6 +35,16 @@ test('a bare reference in a post is a link to that passage in Lampas', async ({ 
   await shot(page, 'reftagger');
 });
 
+test('a numbered book after a verse and a comma is one link to that book, not a verse of the first (mw-5r3p30.1045)', async ({ page }) => {
+  await openPost(page);
+  expect(await hrefs(page, 'numbered')).toEqual([
+    `${REF}Rom.8.1`, `${REF}2Cor.5.17`, `${REF}John.3.16`, `${REF}1John.4.8`, `${REF}Gen.1.1`, `${REF}2Kgs.2.11`,
+  ]);
+  expect(await texts(page, 'numbered')).toEqual(['Rom 8:1', '2 Cor 5:17', 'John 3:16', '1 John 4:8', 'Gen 1:1', '2 Kings 2:11']);
+  expect(await hrefs(page, 'first')).toEqual([`${REF}1John.5.25`, `${REF}1John.5.25`]);
+  expect(await texts(page, 'first')).toEqual(['First John 5:25', 'I John 5:25']);
+});
+
 test('text in a link, code, a heading or outside the post is left as it is, and no false link is made', async ({ page }) => {
   await openPost(page);
   expect(await hrefs(page, 'existing')).toEqual(['https://example.com/x']);

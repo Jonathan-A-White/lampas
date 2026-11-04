@@ -45,6 +45,57 @@ describe('findReferences', () => {
   });
 });
 
+describe('a numbered book after a verse and a comma (mw-5r3p30.1045)', () => {
+  const pairs = (text: string, semicolons = false) => referenceSpans(text, { semicolons }).map((r) => [text.slice(r.start, r.end), r.ref]);
+
+  it('reads the second reference whole, not as a verse of the first book', () => {
+    expect(refs('Rom 8:1, 2 Cor 5:17')).toEqual([['Rom 8:1', 'Rom.8.1', undefined], ['2 Cor 5:17', '2Cor.5.17', undefined]]);
+    expect(refs('See John 3:16, 1 John 4:8')).toEqual([['John 3:16', 'John.3.16', undefined], ['1 John 4:8', '1John.4.8', undefined]]);
+    expect(refs('Gen 1:1, 2 Kings 2:11')).toEqual([['Gen 1:1', 'Gen.1.1', undefined], ['2 Kings 2:11', '2Kgs.2.11', undefined]]);
+    // 3 John has one chapter, so '3 John 4' is no reference we list, but it is no verse of John and no 'John 4' either
+    expect(refs('John 3:16, 3 John 4')).toEqual([['John 3:16', 'John.3.16', undefined]]);
+    expect(refs('Song of Solomon 2:4, 2 Tim 3:16-17')).toEqual([['Song of Solomon 2:4', 'Song.2.4', undefined], ['2 Tim 3:16-17', '2Tim.3.16', 17]]);
+  });
+
+  it('keeps the verses of the list before the book, and a plain list as it was', () => {
+    expect(pairs('Rom 8:1, 3, 2 Cor 5:17')).toEqual([['Rom 8:1', 'Rom.8.1'], ['3', 'Rom.8.3'], ['2 Cor 5:17', '2Cor.5.17']]);
+    expect(pairs('John 5:24, 28')).toEqual([['John 5:24', 'John.5.24'], ['28', 'John.5.28']]);
+    expect(pairs('John 5:24, 2 are good')).toEqual([['John 5:24', 'John.5.24'], ['2', 'John.5.2']]);
+    expect(pairs('Romans 8:1; 10:9, 2 Cor 5:17', true)).toEqual([['Romans 8:1', 'Rom.8.1'], ['10:9', 'Rom.10.9'], ['2 Cor 5:17', '2Cor.5.17']]);
+  });
+
+  it('reads First, Second, Third and I, II, III as the number of the book', () => {
+    expect(refs('First John 5:25')).toEqual([['First John 5:25', '1John.5.25', undefined]]);
+    expect(refs('I John 5:25')).toEqual([['I John 5:25', '1John.5.25', undefined]]);
+    expect(refs('II Cor 5:17 and Second Peter 1:4')).toEqual([['II Cor 5:17', '2Cor.5.17', undefined], ['Second Peter 1:4', '2Pet.1.4', undefined]]);
+    expect(refs('John 5:25')).toEqual([['John 5:25', 'John.5.25', undefined]]);
+  });
+
+  it("lists the same on the Share screen (findReferences and listReferences, which ShareReferences draws), with no ';' reading", () => {
+    const shared = (text: string) => listReferences(findReferences(text), 'page').map((r) => r.ref);
+    expect(shared('Rom 8:1, 2 Cor 5:17')).toEqual(['Rom.8.1', '2Cor.5.17']);
+    expect(shared('See John 3:16, 1 John 4:8')).toEqual(['John.3.16', '1John.4.8']);
+    expect(shared('Gen 1:1, 2 Kings 2:11')).toEqual(['Gen.1.1', '2Kgs.2.11']);
+    expect(shared('John 5:24, 28')).toEqual(['John.5.24', 'John.5.28']);
+    expect(shared('First John 5:25, I John 5:25')).toEqual(['1John.5.25']);
+  });
+
+  // every numbered book, after ', ' following a verse of another book, is read whole (a sweep, so a book left out of the check shows)
+  const NUMBERED: [string, string, string][] = [
+    ['1 Sam', '1Sam', '1 Samuel'], ['2 Sam', '2Sam', '2 Samuel'], ['1 Kings', '1Kgs', '1 Kgs'], ['2 Kings', '2Kgs', '2 Kgs'], ['1 Chr', '1Chr', '1 Chronicles'],
+    ['2 Chr', '2Chr', '2 Chronicles'], ['1 Cor', '1Cor', '1 Corinthians'], ['2 Cor', '2Cor', '2 Corinthians'], ['1 Thess', '1Thess', '1 Thessalonians'],
+    ['2 Thess', '2Thess', '2 Thessalonians'], ['1 Tim', '1Tim', '1 Timothy'], ['2 Tim', '2Tim', '2 Timothy'], ['1 Pet', '1Pet', '1 Peter'], ['2 Pet', '2Pet', '2 Peter'],
+    ['1 John', '1John', '1 Jn'], ['2 John', '2John', '2 Jn'], ['3 John', '3John', '3 Jn'],
+  ];
+  it.each(NUMBERED)('%s after ", " following a verse is that book, by either name', (short, code, long) => {
+    for (const name of [short, long]) {
+      const text = `Rom 8:1, ${name} 1:2`;
+      const found = referenceSpans(text).map((r) => [text.slice(r.start, r.end), r.ref]);
+      expect(found, text).toEqual([['Rom 8:1', 'Rom.8.1'], [`${name} 1:2`, `${code}.1.2`]]);
+    }
+  });
+});
+
 describe('listReferences', () => {
   const text = 'Rom 8:28 ... Gen 1:28 ... Rom 8:28 ... Rom 1:16';
   const shown = (order: 'page' | 'bible') => listReferences(findReferences(text), order).map((r) => `${r.printed}${r.count > 1 ? ` ×${r.count}` : ''}`);

@@ -28,9 +28,25 @@ export type RefsOrder = 'page' | 'bible';
 // A book (a number, a word, or 'Song of Solomon', and a dot), then a chapter, then ':' verse, a range and a list of more verses. Tried at the start of each word
 // (a start that turns out to be no book is skipped, one character on, so '2 Cor' is found in 'In 2 Cor 5:17').
 const FIND = new RegExp(
-  String.raw`(?<![\p{L}\p{N}])((?:[1-3]\s?)?\p{L}+(?:\s+of\s+\p{L}+)?\.?)\s*(\d+)(?::\s*(\d+)(\s*[-–]\s*(\d+))?((?:\s*,\s*\d+(?!\s*[:\d])(?:\s*[-–]\s*\d+)?)*))?`,
+  String.raw`(?<![\p{L}\p{N}])((?:(?:[1-3]\s?|(?:First|Second|Third|III|II|I)\.?\s+))?\p{L}+(?:\s+of\s+\p{L}+)?\.?)\s*(\d+)(?::\s*(\d+)(\s*[-–]\s*(\d+))?((?:\s*,\s*\d+(?!\s*[:\d])(?:\s*[-–]\s*\d+)?)*))?`,
   'giu',
 );
+
+// 'First John', 'II Cor': the number of a book written as a word or a Roman numeral, as the digit the book table reads ('1 John'). A lowercase 'i' is the word, not a numeral.
+const PREFIXES: Readonly<Record<string, string>> = { first: '1', second: '2', third: '3', i: '1', ii: '2', iii: '3' };
+const numbered = (name: string): string | null => {
+  const prefix = /^(First|Second|Third|III|II|I|first|second|third)\.?\s+/.exec(name);
+  return prefix ? name.replace(prefix[0], `${PREFIXES[prefix[1].toLowerCase()]} `) : /^(?:i{1,3})\.?\s/i.test(name) ? null : name;
+};
+
+/** Where a verse list stops at a numbered book that follows a comma ('Rom 8:1, 2 Cor 5:17': the '2' begins '2 Cor', it is no verse of Romans): the tail cut before that comma. */
+const beforeBook = (text: string, tailAt: number, tail: string): string => {
+  for (const comma of tail.matchAll(/\s*,\s*/g)) {
+    const next = /^([1-3]\s?\p{L}+\.?)\s*\d/u.exec(text.slice(tailAt + comma.index + comma[0].length));
+    if (next && parseHeldReference(next[1])) return tail.slice(0, comma.index);
+  }
+  return tail;
+};
 
 /** Words of one or two letters, and a book alone with a chapter, that are far likelier to be plain English than a book unless they are written as a book is. */
 const NOT_ENGLISH = (name: string, chapterOnly: boolean): boolean => {
@@ -57,16 +73,20 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
   const found: ReferenceSpan[] = [];
   FIND.lastIndex = 0;
   for (let m = FIND.exec(text); m; m = FIND.exec(text)) {
-    const [whole, name, chapterText, verseText, range, rangeEnd, more] = m;
+    const [matched, name, chapterText, verseText, range, rangeEnd, listTail] = m;
     // A book of the Apocrypha is read by the tutor's links (verseLinks.ts, tutorLinks.ts), not listed here: Lampas holds no text of it, and a saved list, Share's cards and the
     // Memorize list are of verses it can open (mw-5r3p30.1034).
-    const named = parseHeldReference(name);
+    const read = numbered(name);
+    const named = read === null ? null : parseHeldReference(read);
     const chapter = Number(chapterText);
     const limit = named && chaptersOf(named.book, named.testament);
-    if (!named || named.chapter !== undefined || !limit || chapter < 1 || chapter > limit || !NOT_ENGLISH(name, verseText === undefined)) {
-      FIND.lastIndex = m.index + 1;
+    if (!named || named.chapter !== undefined || !limit || chapter < 1 || chapter > limit || !NOT_ENGLISH(read as string, verseText === undefined)) {
+      // a numbered book with no such chapter ('3 John 4') is read through, or its 'John 4' would be taken for John
+      FIND.lastIndex = named && limit && chapter > limit && /^(?:\d|first|second|third|i{1,3}\b)/i.test(name) ? m.index + matched.length : m.index + 1;
       continue;
     }
+    const more = beforeBook(text, m.index + matched.length - (listTail ?? '').length, listTail ?? '');
+    const whole = matched.slice(0, matched.length - ((listTail ?? '').length - more.length));
     const { book, testament } = named;
     const make = (printed: string, chapterOf: number, verse: number | undefined, at: number, to: number, lastVerse?: number): ReferenceSpan => ({
       printed,
@@ -92,8 +112,8 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
     };
     const head = `${name.trim()} ${chapterText}`;
     const first = Number(verseText);
-    found.push(make(`${head}:${verseText}${range ?? ''}`, chapter, first, m.index, m.index + whole.length - (more ?? '').length, rangeEnd === undefined ? undefined : Number(rangeEnd)));
-    listed(m.index + whole.length - (more ?? '').length, more ?? '', head, chapter);
+    found.push(make(`${head}:${verseText}${range ?? ''}`, chapter, first, m.index, m.index + whole.length - more.length, rangeEnd === undefined ? undefined : Number(rangeEnd)));
+    listed(m.index + whole.length - more.length, more, head, chapter);
     let end = m.index + whole.length;
     while (semicolons) {
       AFTER_SEMICOLON.lastIndex = end;
@@ -101,12 +121,13 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
       const nextChapter = next && Number(next[1]);
       if (!next || !nextChapter || nextChapter > limit) break;
       const nextHead = `${name.trim()} ${next[1]}`;
-      const tail = next[5] ?? '';
+      const rawTail = next[5] ?? '';
+      const verseEnd = end + next[0].length - rawTail.length;
+      const tail = beforeBook(text, verseEnd, rawTail);
       const itemAt = end + next[0].indexOf(next[1]);
-      const verseEnd = end + next[0].length - tail.length;
       found.push(make(`${nextHead}:${next[2]}${next[3] ?? ''}`, nextChapter, Number(next[2]), itemAt, verseEnd, next[4] === undefined ? undefined : Number(next[4])));
       listed(verseEnd, tail, nextHead, nextChapter);
-      end += next[0].length;
+      end += next[0].length - (rawTail.length - tail.length);
     }
     FIND.lastIndex = end;
   }
