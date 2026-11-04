@@ -158,7 +158,8 @@ describeFeature(feature, ({ Scenario }) => {
     expect([...box.querySelectorAll('h3')].map((h) => squash(h.textContent))).toEqual(['Events', 'Regions', 'Videos']);
   };
   const groupsRead = async (_: unknown, names: string) => {
-    expect(within(await sheetEl()).getAllByRole('group').map((g) => g.getAttribute('aria-label'))).toEqual(names.split(', '));
+    // the sheet's groups come when the maps are read: wait for them, as a loaded host answers late
+    await waitFor(async () => expect(within(await sheetEl()).queryAllByRole('group').map((g) => g.getAttribute('aria-label'))).toEqual(names.split(', ')));
   };
 
   const blockEl = async (name: string) => within(await sheetEl()).findByRole('group', { name });
