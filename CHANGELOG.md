@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.110
+_2026-11-04_
+- New: In a Chrome tab on Android with Lampas installed, an "Open in the app" button now offers to carry the page you are on into the installed app.
+
 ## 0.7.109
 _2026-11-04_
 - New: A verse named in plain words on the blog now opens in Lampas when you tap it.

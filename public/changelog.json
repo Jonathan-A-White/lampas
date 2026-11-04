@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.110",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1041",
+    "kind": "new",
+    "text": "In a Chrome tab on Android with Lampas installed, an \"Open in the app\" button now offers to carry the page you are on into the installed app."
+  },
+  {
     "version": "0.7.109",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1043",
