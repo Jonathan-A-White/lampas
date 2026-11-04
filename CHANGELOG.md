@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.100
+_2026-11-04_
+- Fixed: tapping a form of "which?" (ποῖος) now opens the table of adjective endings with its own form outlined, and a word no table holds no longer opens a table with nothing lit.
+
 ## 0.7.99
 _2026-11-04_
 - Fixed: Read in Logos and Listen in Audible are gone from the foot of an Old Testament chapter; they are on the verse, passage or chapter view you open, for both Testaments.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.100",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1033",
+    "kind": "fixed",
+    "text": "tapping a form of \"which?\" (ποῖος) now opens the table of adjective endings with its own form outlined, and a word no table holds no longer opens a table with nothing lit."
+  },
+  {
     "version": "0.7.99",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1008",
