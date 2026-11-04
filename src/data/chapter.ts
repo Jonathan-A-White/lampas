@@ -5,6 +5,7 @@
 import { CANON_INDEX, greekBooks } from './bookIndex';
 import { isHebrewBook } from './books';
 import { forgetLxxIndex, loadSeptuagintChapter } from './lxxChapter';
+import { chapterWait } from './chapterWait';
 import { within } from './within';
 import { getSetting } from '../settings/store';
 import { septuagintSetting } from '../settings/definitions/septuagint';
@@ -295,12 +296,26 @@ export function ladderUrl(lang: 'el' | 'en' | 'he'): string {
 /** The key a chapter is kept under in memory: the Septuagint's is its own, since the same book and chapter is the Hebrew or the Greek by the setting. */
 const keyOf = (book: string, n: number, septuagint: boolean): string => `${septuagint ? 'lxx:' : ''}${book}/${n}`;
 
+/** Whether Settings > Old Testament in Greek (Septuagint) is On. The chapter's fetch must not wait on the settings database for ever (an older Lampas tab can hold it, mw-5r3p30.1040): past
+ * chapterWait.settingMs it is taken as Off, the Hebrew is asked for, and useChapter asks again when the setting does arrive and says On. */
+function septuagintIsOn(): Promise<boolean> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<boolean>((resolve) => {
+    timer = setTimeout(() => resolve(false), chapterWait.settingMs);
+  });
+  const read = getSetting(septuagintSetting).then(
+    (value) => value === 'on',
+    () => false,
+  );
+  return Promise.race([read, late]).finally(() => clearTimeout(timer));
+}
+
 /**
  * Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. An Old Testament book while Settings > Old Testament in Greek (Septuagint) is On is the Septuagint's chapter
  * of public/data-lxx that holds Lampas's chapter `n` (src/data/lxxChapter.ts; its `chapter` is the Greek number, `lang` 'grc'), when the book is shipped there, else the Hebrew as ever.
  */
 export async function loadChapter(book: string, n: number): Promise<Chapter> {
-  const septuagint = isHebrewBook(book) && (await getSetting(septuagintSetting)) === 'on';
+  const septuagint = isHebrewBook(book) && (await septuagintIsOn());
   const key = keyOf(book, n, septuagint);
   const known = chapters.get(key);
   if (known) return known;

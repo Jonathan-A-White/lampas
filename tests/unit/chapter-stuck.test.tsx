@@ -8,6 +8,7 @@ import { App } from '../../src/App';
 import { forgetChapters } from '../../src/data/chapter';
 import { chapterWait } from '../../src/data/chapterWait';
 import { db } from '../../src/data/db';
+import { setDbBlocked } from '../../src/data/dbBlocked';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
 // 8 s and 30 s on a phone (src/reader/chapterWait.ts); the test shortens them rather than fake the clock the library's waits run on
@@ -34,6 +35,7 @@ beforeEach(async () => {
   window.location.hash = '#/?b=mat&c=7';
   chapterWait.stillMs = STILL_MS;
   chapterWait.giveUpMs = GIVE_UP_MS;
+  chapterWait.settingMs = 100;
 });
 
 afterEach(() => {
@@ -42,6 +44,7 @@ afterEach(() => {
   forgetChapters();
   chapterWait.stillMs = 8000;
   chapterWait.giveUpMs = 30000;
+  chapterWait.settingMs = 2000;
 });
 
 describe('a chapter that does not load', () => {
@@ -51,6 +54,7 @@ describe('a chapter that does not load', () => {
     expect(await screen.findByText('Loading Matthew 7…')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
     expect(await screen.findByText('Still loading Matthew 7')).toBeInTheDocument();
+    expect(screen.getByText('The chapter has not come yet: check your connection, then tap Try again')).toBeInTheDocument();
     // the hung request is dropped, so Try again does not wait on it: this time the chapter comes
     stubChapterFetch();
     await act(async () => {
@@ -82,6 +86,61 @@ describe('a blocked upgrade', () => {
       void db.open().catch(() => undefined);
       render(<App />);
       expect(await screen.findByText('Lampas is open in another tab: close it')).toBeInTheDocument();
+    } finally {
+      old.close();
+    }
+  });
+});
+
+/** An older Lampas tab: the same database, an older version, holding its connection and ignoring the versionchange; the caller closes it. */
+async function holdDatabaseAsOlderTab(): Promise<IDBDatabase> {
+  await db.delete();
+  const old = await new Promise<IDBDatabase>((resolve, reject) => {
+    const open = indexedDB.open('lampas', 100);
+    open.onupgradeneeded = () => open.result.createObjectStore('words', { keyPath: 'lemma' });
+    open.onsuccess = () => resolve(open.result);
+    open.onerror = () => reject(open.error);
+  });
+  void db.open().catch(() => undefined);
+  return old;
+}
+
+describe('an Old Testament chapter while the settings database is held up (mw-5r3p30.1040, his ref=Gen.15.6 link)', () => {
+  it('asks for the chapter file at once: it does not wait on the settings database to learn whether the Septuagint is On', async () => {
+    const asked = stubChapterFetch();
+    window.location.hash = '#/?b=gen&c=15';
+    const old = await holdDatabaseAsOlderTab();
+    try {
+      render(<App />);
+      await waitFor(() => expect(asked.requests.some((url) => /^\/data\/gen\/15\.json/.test(url))).toBe(true));
+    } finally {
+      old.close();
+    }
+  });
+
+  it('says what blocks the screen when the chapter is here but the saved settings do not open', async () => {
+    stubChapterFetch();
+    window.location.hash = '#/?b=gen&c=15';
+    const old = await holdDatabaseAsOlderTab();
+    try {
+      render(<App />);
+      expect(await screen.findByText('Lampas is open in another tab: close it')).toBeInTheDocument();
+      expect(screen.getByText('Still loading Genesis 15')).toBeInTheDocument();
+    } finally {
+      old.close();
+    }
+  });
+
+  it('says the chapter is here when only the saved settings are missing and no other tab is flagged', async () => {
+    stubChapterFetch();
+    window.location.hash = '#/?b=gen&c=15';
+    const old = await holdDatabaseAsOlderTab();
+    try {
+      render(<App />);
+      // the older tab is flagged once, when the database's open waits on it; here it is taken as not flagged (a hold the 'blocked' event did not name)
+      await screen.findByText('Lampas is open in another tab: close it');
+      act(() => setDbBlocked(false));
+      expect(await screen.findByText('The chapter is here but your saved settings are not opening: close your other Lampas tabs, then tap Try again')).toBeInTheDocument();
     } finally {
       old.close();
     }
