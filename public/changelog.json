@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.97",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1005",
+    "kind": "fixed",
+    "text": "The reading text uses the full width of the screen again, and the blank band at the foot of a chapter in the immersive reader is gone."
+  },
+  {
     "version": "0.7.96",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1003",

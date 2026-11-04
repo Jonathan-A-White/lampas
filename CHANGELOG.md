@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.97
+_2026-11-04_
+- Fixed: The reading text uses the full width of the screen again, and the blank band at the foot of a chapter in the immersive reader is gone.
+
 ## 0.7.96
 _2026-11-04_
 - Fixed: A word's Paradigm link now lands on its own form for infinitives, participles in every case, and vocatives, instead of a table with nothing outlined.
