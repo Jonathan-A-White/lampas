@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.111
+_2026-11-04_
+- Fixed: A verse written after a comma and a numbered book, like 'Romans 8:1, 2 Corinthians 5:17', now links to the right book, and 'First John' or 'I John' links to 1 John.
+- New: Share now asks first whether to send the whole verse, just the link, just the text or just the reference.
+
 ## 0.7.110
 _2026-11-04_
 - New: In a Chrome tab on Android with Lampas installed, an "Open in the app" button now offers to carry the page you are on into the installed app.

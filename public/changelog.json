@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.111",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1045",
+    "kind": "fixed",
+    "text": "A verse written after a comma and a numbered book, like 'Romans 8:1, 2 Corinthians 5:17', now links to the right book, and 'First John' or 'I John' links to 1 John."
+  },
+  {
+    "version": "0.7.111",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1026",
+    "kind": "new",
+    "text": "Share now asks first whether to send the whole verse, just the link, just the text or just the reference."
+  },
+  {
     "version": "0.7.110",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1041",
