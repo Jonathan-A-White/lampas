@@ -6,8 +6,11 @@
 // place): the settings follow the address, then the address follows the settings. The weave is switched in Settings, so a Reader reached by Back
 // from there must not put an older address's weave back: once the bus has told a weave, the saved setting is the truth, and so it is when the page was loaded on another screen
 // (Settings, reloaded there) and the Reader is reached by Back to an entry written before he chose the weave (mw-5r3p30.658).
+// A database that has not answered by chapterWait.settingMs (an older Lampas tab holds it) does not block the chapter (mw-5r3p30.1042): the value is then the setting's default, drawn but never
+// saved and never told to the bus (the effects below act only on a value that was read), and the saved value replaces it when it comes.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { chapterWait } from '../data/chapterWait';
 import {
   getLayout,
   getPlainEnglishUnder,
@@ -33,8 +36,12 @@ import { latestSetting, publish } from '../events/bus';
 import { openedOnReader, readerOf, routeOf } from '../nav/route';
 import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
-import { GREEK_VIEW_FROM, GREEK_WEAVE_FROM, viewAt, weaveAt, type GreekLevel } from '../settings/definitions/greekInterest';
-import { levelOf, type InterestLang } from '../settings/definitions/interest';
+import { GREEK_VIEW_FROM, GREEK_WEAVE_FROM, greekLevelOf, viewAt, weaveAt, type GreekLevel } from '../settings/definitions/greekInterest';
+import { levelOf, type InterestLang, type InterestLevels } from '../settings/definitions/interest';
+import { greekInterestSetting, hebrewInterestSetting } from '../settings/definitions';
+import { hebrewLevelOf } from '../settings/definitions/hebrewInterest';
+import { DEFAULT_LAYOUT } from '../layout/layouts';
+import { playToOf } from '../speech/readSpan';
 import { announceSetting, toldSetting, useSetting } from '../settings/store';
 import { useInterestLevels } from '../settings/useInterestLevels';
 
@@ -56,25 +63,57 @@ export interface ReaderSettings {
   levels: ReadonlyMap<string, GrammarLevel>;
 }
 
+export const DEFAULT_DIALS: InterestLevels = { grc: greekLevelOf(greekInterestSetting.default), he: hebrewLevelOf(hebrewInterestSetting.default) };
+const DEFAULT_READ_SPAN = playToOf(undefined);
+export const NO_LEMMAS: ReadonlySet<string> = new Set();
+export const NO_LEVELS: ReadonlyMap<string, GrammarLevel> = new Map();
+
+/** True once the settings database has taken chapterWait.settingMs (from the first draw) without every value of the Reader loading: the defaults are drawn from then on. `loaded` is true once they have. */
+export function useSettingsLate(loaded: boolean): boolean {
+  const [late, setLate] = useState(false);
+  useEffect(() => {
+    if (loaded || late) return;
+    const timer = setTimeout(() => setLate(true), chapterWait.settingMs);
+    return () => clearTimeout(timer);
+  }, [loaded, late]);
+  return late;
+}
+
 /** The Reader's settings for a chapter in `source`, or undefined until every value has loaded. `source` null is a chapter whose language is not known yet (an Old Testament book, Hebrew or, with the
  * Septuagint On, Greek, until its file has loaded): nothing is settled and no setting acts until it is. */
 export function useReaderSettings(source: InterestLang | null = 'grc'): ReaderSettings | undefined {
   // the dial of the chapter's language (mw-3ased2.2, mw-gdcyf98.3): what it hides does not act, whatever is saved or an address asks for
-  const dials = useInterestLevels();
-  const level = dials && source ? levelOf(source, dials) : undefined;
+  const savedDials = useInterestLevels();
   const savedView = useLiveQuery(getReaderView, []);
   const savedWeave = useLiveQuery(getWeave, []);
-  const view = savedView && level !== undefined ? viewAt(level, savedView) : undefined;
-  const weave = savedWeave && level !== undefined ? weaveAt(level, savedWeave) : undefined;
-  const weaveGrammar = useLiveQuery(getWeaveGrammar, []);
-  const weaveOrder = useSetting(weaveOrderSetting);
-  const plainUnder = useLiveQuery(getPlainEnglishUnder, []);
-  const levels = useLiveQuery(listLevels, []);
-  const solid = useLiveQuery(listSolidLemmas, []);
-  const learning = useLiveQuery(listLearningLemmas, []);
-  const layout = useLiveQuery(getLayout, []);
-  const headings = useLiveQuery(getSectionHeadings, []);
-  const readSpan = useLiveQuery(getReadSpan, []);
+  const savedGrammar = useLiveQuery(getWeaveGrammar, []);
+  const savedOrder = useSetting(weaveOrderSetting);
+  const savedPlain = useLiveQuery(getPlainEnglishUnder, []);
+  const savedLevels = useLiveQuery(listLevels, []);
+  const savedSolid = useLiveQuery(listSolidLemmas, []);
+  const savedLearning = useLiveQuery(listLearningLemmas, []);
+  const savedLayout = useLiveQuery(getLayout, []);
+  const savedHeadings = useLiveQuery(getSectionHeadings, []);
+  const savedSpan = useLiveQuery(getReadSpan, []);
+  const late = useSettingsLate(
+    [savedDials, savedView, savedWeave, savedGrammar, savedOrder, savedPlain, savedLevels, savedSolid, savedLearning, savedLayout, savedHeadings, savedSpan].every((value) => value !== undefined),
+  );
+  // what is drawn: the saved value, or once the database is late its default; the effects below read only the saved ones
+  const dials = savedDials ?? (late ? DEFAULT_DIALS : undefined);
+  const level = dials && source ? levelOf(source, dials) : undefined;
+  const shownView = savedView ?? (late ? 'english' : undefined);
+  const shownWeave = savedWeave ?? (late ? 'off' : undefined);
+  const view = shownView && level !== undefined ? viewAt(level, shownView) : undefined;
+  const weave = shownWeave && level !== undefined ? weaveAt(level, shownWeave) : undefined;
+  const weaveGrammar = savedGrammar ?? (late ? 'any' : undefined);
+  const weaveOrder = savedOrder ?? (late ? weaveOrderSetting.default : undefined);
+  const plainUnder = savedPlain !== undefined ? savedPlain : late ? null : undefined;
+  const levels = savedLevels ?? (late ? NO_LEVELS : undefined);
+  const solid = savedSolid ?? (late ? NO_LEMMAS : undefined);
+  const learning = savedLearning ?? (late ? NO_LEMMAS : undefined);
+  const layout = savedLayout ?? (late ? DEFAULT_LAYOUT : undefined);
+  const headings = savedHeadings ?? (late ? 'on' : undefined);
+  const readSpan = savedSpan ?? (late ? DEFAULT_READ_SPAN : undefined);
   // What the address said when the reader opened: the view and weave to put back in the settings.
   const [opened] = useState(() => readerOf(window.location.hash));
   // the Greek dial can set the view while he is in Settings (Reading in Greek opens the Reader in Greek): it tells the bus, and then the saved view is the truth, as the Weave's is
@@ -106,11 +145,11 @@ export function useReaderSettings(source: InterestLang | null = 'grc'): ReaderSe
     announceSetting(weaveSetting, weave);
   }, [weave, savedWeave, level]);
   useEffect(() => {
-    if (layout) publish({ kind: 'layout-changed', layout });
-  }, [layout]);
+    if (savedLayout) publish({ kind: 'layout-changed', layout: savedLayout });
+  }, [savedLayout]);
   useEffect(() => {
-    if (headings) publish({ kind: 'headings-changed', headings });
-  }, [headings]);
+    if (savedHeadings) publish({ kind: 'headings-changed', headings: savedHeadings });
+  }, [savedHeadings]);
   return useMemo(
     () =>
       level !== undefined && view && weave && weaveGrammar && weaveOrder && plainUnder !== undefined && levels && solid && learning && layout && headings && readSpan

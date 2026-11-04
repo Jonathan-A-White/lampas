@@ -65,7 +65,7 @@ import { wovenReading } from './services/reading';
 import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciation';
 import { GREEK_VIEW_FROM } from './settings/definitions/greekInterest';
 import { ReaderHeader } from './reader/ReaderHeader';
-import { useReaderSettings, type ReaderSettings } from './reader/useReaderSettings';
+import { useReaderSettings, useSettingsLate, type ReaderSettings } from './reader/useReaderSettings';
 import { useReaderVariants, variantsLayoutKey, type ShownUnit } from './reader/variants';
 import { VariantSheet } from './reader/VariantSheet';
 import { VariantKeyBar, VariantKeySheet } from './reader/VariantKey';
@@ -153,7 +153,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { level, view, weave, weaveShown, weaveOrder, weaveGrammar, solid, learning, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();
   // English from the 2026 Greek (mw-9ji6ek0.33): with it On, the places where the 2026 Greek changes the English read in Lampas's own words, marked; the chapter waits for the setting, as it waits for the others
-  const rp2026 = useSetting(rp2026EnglishSetting);
+  // (a database that is late is not waited for: the default, Off, is read until the saved value comes, mw-5r3p30.1042)
+  const savedRp2026 = useSetting(rp2026EnglishSetting);
+  const settingsLate = useSettingsLate(savedRp2026 !== undefined);
+  const rp2026 = savedRp2026 ?? (settingsLate ? rp2026EnglishSetting.default : undefined);
   const chapter = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
   // The Septuagint chapter: its English is one chunk a verse, so the Weave has nothing to lay a Greek word over and is off here (a note says so, once); a book that is not shipped says so and stays Hebrew
   const septuagint = isSeptuagint(chapter);
@@ -594,7 +597,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           </>
         ) : (
           stillLoading ? (
-            <ChapterStill title={TITLE} blocked={dbBlocked} chapterHere={fetched !== null} onRetry={retry} onPick={() => setPicking(true)} />
+            <ChapterStill title={TITLE} blocked={dbBlocked} onRetry={retry} onPick={() => setPicking(true)} />
           ) : (
             <p role="status" className="px-4 pt-6 text-center text-muted">
               Loading {TITLE}…
