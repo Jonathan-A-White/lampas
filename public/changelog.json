@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.106",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1039",
+    "kind": "fixed",
+    "text": "At the largest phone text size, the grade buttons in Review, the Type it buttons in Memorize and the sound answers in the IPA lessons no longer run out of their boxes."
+  },
+  {
     "version": "0.7.105",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1040",

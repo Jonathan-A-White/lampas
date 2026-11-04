@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.106
+_2026-11-04_
+- Fixed: At the largest phone text size, the grade buttons in Review, the Type it buttons in Memorize and the sound answers in the IPA lessons no longer run out of their boxes.
+
 ## 0.7.105
 _2026-11-04_
 - Fixed: An Old Testament chapter no longer waits on Lampas's saved settings before it is fetched, and the screen that says a chapter is still loading now says what it is waiting for.
