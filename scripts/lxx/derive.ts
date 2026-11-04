@@ -303,7 +303,7 @@ export function deriveBook(
   const cache: ParseCache = new Map();
   const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
   const layers = withCapitalNames(words, withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus))), trained, parsed);
-  const checked = checkAgreement(words, layers, { names: index.names, parse: parsed });
+  const checked = checkAgreement(words, layers, { names: index.names, parse: parsed, governs: parser.governs });
   return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.includes(NOTE_MORPHEUS)).length } : {}) };
 }
 
