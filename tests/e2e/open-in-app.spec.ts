@@ -1,7 +1,8 @@
 // tests/e2e/open-in-app.spec.ts — 'Open in the app' (mw-5r3p30.1041): in a Chrome tab on Android where navigator.getInstalledRelatedApps (stubbed here: a real install
 // cannot be made in a test) reports the app, one labelled control shows at 360x740 and 390x844, at 100 % and at larger text. It is clear of the floating ? and of the Reader's
 // heading and text, no wider than the phone, and 'Not now' puts it away for the session. Nothing leaves the page by itself: the address is as it was opened. The tap's intent: URL is
-// proven in tests/unit/open-in-app.test.tsx (a desktop Chromium cannot follow an intent: address). Ends with a shot.
+// proven in tests/unit/open-in-app.test.tsx (a desktop Chromium cannot follow an intent: address); the last test reads the address the tap requests (CDP Page.frameRequestedNavigation) and opens it
+// in a fresh context, to prove the verse survives the hand-over (mw-5r3p30.1050). Ends with a shot.
 import { expect, test, type Page } from '@playwright/test';
 import { openWithTextSize, PHONES } from './next-in-view';
 import { FLOATING } from './open-tutor';
@@ -91,3 +92,57 @@ test('never shows inside the installed app (display-mode standalone)', async ({ 
   await expect(page.locator('[data-open-in-app]')).toHaveCount(0);
   expect(page.url()).toMatch(/^http:\/\/localhost/);
 });
+
+/** The http address inside an intent: URL (`intent://host/path#hash#Intent;scheme=http;...;end`): what Android hands to the app. */
+function addressOfIntent(intent: string): string {
+  const body = intent.slice('intent://'.length);
+  const at = body.lastIndexOf('#Intent;');
+  const scheme = /;scheme=(https?);/.exec(body.slice(at))?.[1] ?? 'https';
+  return `${scheme}://${body.slice(0, at)}`;
+}
+
+/** Taps 'Open in the app' on the page and returns the address inside the intent: URL the tap requested (read off Chromium's own navigation request, which is not followed). */
+async function tapAndRead(page: Page): Promise<string> {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Page.enable');
+  const requested: string[] = [];
+  cdp.on('Page.frameRequestedNavigation', (event: { url: string }) => requested.push(event.url));
+  await page.locator('[data-open-in-app]').getByRole('button', { name: 'Open in the app' }).click();
+  await expect.poll(() => requested.find((url) => url.startsWith('intent://')), 'the tap requests an intent: URL').toBeTruthy();
+  return addressOfIntent(requested.find((url) => url.startsWith('intent://'))!);
+}
+
+for (const opened of ['/#/?ref=Rom.8.28', '/#/?ref=Rom.8.28&view=greek', '/#/?b=rom&c=8&v=28']) {
+  test(`${opened}: the address the tap hands over opens verse 28 in a fresh install, on screen`, async ({ page, browser }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await stubApi(page, WEBAPP);
+    await openUnlocked(page);
+    await page.goto(opened);
+    await expect(page.locator('[data-open-in-app]')).toBeVisible();
+    await expect(page.locator('[data-verse="28"]').first()).toBeVisible();
+    if (!opened.includes('v=28')) await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
+    await page.waitForTimeout(1500); // the verse has settled at the top
+    const handed = await tapAndRead(page);
+
+    // the installed app: another context, no saved reading place, no scroll memory
+    const fresh = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: ANDROID, hasTouch: true, baseURL: new URL(page.url()).origin });
+    try {
+      const app = await fresh.newPage();
+      await openUnlocked(app);
+      await app.goto(handed);
+      const reader = app.locator('[data-reader]');
+      await expect(reader).toHaveAttribute('data-brought-verse', '28');
+      await app.waitForTimeout(1500);
+      const verse = app.locator('[data-reader] [data-verse="28"]').first();
+      await expect(verse).toBeAttached();
+      const box = (await reader.boundingBox())!;
+      const at = (await verse.boundingBox())!;
+      expect(at.y, 'verse 28 is not scrolled away above the Reader box').toBeGreaterThanOrEqual(box.y - 1);
+      expect(at.y, 'verse 28 is not scrolled away below the Reader box').toBeLessThan(box.y + box.height);
+      expect(app.url()).toContain('c=8');
+      await shot(app, 'open-in-app-fresh-verse-28');
+    } finally {
+      await fresh.close();
+    }
+  });
+}
