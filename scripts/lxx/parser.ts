@@ -7,7 +7,7 @@
 // Everything is compared on bareOf's letters (no accents or breathings, lower case, final sigma as sigma).
 import { bareOf, keyOf } from './swete';
 import { fits, posKey, type Lexicon, type TbesgName } from './tbesg';
-import type { Analysis, TagntRow } from './tagnt';
+import { inNa28, type Analysis, type TagntRow } from './tagnt';
 
 /** One of a form's candidates from the parser: an analysis, and what produced it, the most support first. */
 export interface Candidate extends Analysis {
@@ -320,6 +320,61 @@ export function formNameLemma(form: string): string | undefined {
 /** The readings a name from its form alone is offered: its form as the lemma, in every case of every gender (FORM_NAME_MORPHS). */
 export const formNameCandidates = (lemma: string): Array<{ lemma: string; morph: string }> => FORM_NAME_MORPHS.map((morph) => ({ lemma, morph }));
 
+// ---------------------------------------------------------------- the cases a preposition governs (story mw-u2w5klk.27)
+
+const PARTICIPLE_CASE = /^V-[^-]*P-([NGDAV])[SP][MFN]/;
+const DECLINED_CASE = /^[A-Z]-\d?(?:[SP](?=[NGDAV][SP][MFN]))?([NGDAV])[SP]/;
+/** The case of a TAGNT code that has one ('N-DSF', 'P-1GS', 'F-3GSM', 'S-1SDSM', 'V-PAP-NSM'): 'N', 'G', 'D', 'A' or 'V'; undefined for any other (PREP, V-PAN, A-NUI, N-PRI). */
+export const caseOf = (morph: string): string | undefined => (morph.startsWith('V-') ? PARTICIPLE_CASE : DECLINED_CASE).exec(morph)?.[1];
+
+/** A preposition is checked only when the New Testament shows at least this many declined words right after it. */
+export const GOVERN_MIN_WORDS = 20;
+/** ... and at most this share of them in the nominative or vocative: more says the word is often not a preposition there (ἕως ἡμέρα ἐστίν, John 9:4). */
+export const GOVERN_MAX_NOMINATIVE = 0.01;
+/** A case is one the preposition takes when at least this share of its words, and two of them, show it: one is a slip of tagging, as in TAGNT_EVIDENCE. */
+export const GOVERN_MIN_SHARE = 0.005;
+export const GOVERN_MIN_CASE = 2;
+const GOVERNED_CASES = ['G', 'D', 'A'] as const;
+
+/**
+ * The cases each preposition governs, as the New Testament shows them: in each verse, NA28's words in TAGNT's order, the case of the word right after a word
+ * tagged PREP, where that word has one (an article, noun, adjective, pronoun or participle; a conjunction, adverb, infinitive or verb is passed over, and
+ * nothing is read across a verse). Of the pinned TAGNT, 20 prepositions pass GOVERN_MIN_WORDS and GOVERN_MAX_NOMINATIVE (docs/lxx-derivation.md, 'A
+ * preposition's case'): ἐν takes the dative (2,705 of 2,706), εἰς the accusative, ἐπί the genitive, dative and accusative. The nominative and vocative are never
+ * taken. The cases in the order genitive, dative, accusative.
+ */
+export function prepositionCases(rows: readonly TagntRow[]): Map<string, string[]> {
+  const verses = new Map<string, TagntRow[]>();
+  for (const r of rows) {
+    if (!inNa28(r)) continue;
+    const k = `${r.book}.${r.chapter}.${r.verse}`;
+    let v = verses.get(k);
+    if (!v) verses.set(k, (v = []));
+    v.push(r);
+  }
+  const seen = new Map<string, Map<string, number>>();
+  for (const v of verses.values()) {
+    v.sort((a, b) => a.word - b.word);
+    for (let i = 0; i + 1 < v.length; i++) {
+      if (v[i].morph !== 'PREP') continue;
+      const c = caseOf(v[i + 1].morph);
+      if (!c) continue;
+      let m = seen.get(v[i].lemma);
+      if (!m) seen.set(v[i].lemma, (m = new Map()));
+      m.set(c, (m.get(c) ?? 0) + 1);
+    }
+  }
+  const out = new Map<string, string[]>();
+  for (const [lemma, m] of [...seen].sort(([a], [b]) => byCode(a, b))) {
+    const total = [...m.values()].reduce((s, n) => s + n, 0);
+    const nominative = (m.get('N') ?? 0) + (m.get('V') ?? 0);
+    if (total < GOVERN_MIN_WORDS || nominative > GOVERN_MAX_NOMINATIVE * total) continue;
+    const cases = GOVERNED_CASES.filter((c) => (m.get(c) ?? 0) >= GOVERN_MIN_CASE && (m.get(c) ?? 0) >= GOVERN_MIN_SHARE * total);
+    if (cases.length) out.set(lemma, cases);
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------- the trained parser
 
 export interface Parser {
@@ -332,6 +387,8 @@ export interface Parser {
   ntPos: Map<string, Set<string>>;
   /** how many distinct triples it learned from */
   triples: number;
+  /** a preposition's lemma -> the cases it governs (prepositionCases), for the agreement check */
+  governs: Map<string, string[]>;
 }
 
 /** Trains the parser on TAGNT's rows (a hidden book already left out) with TBESG's lemmas, and the names that do not decline (none when not given). */
@@ -343,7 +400,7 @@ export function trainParser(rows: readonly TagntRow[], lexicon: Lexicon, names: 
     s.add(posKey(r.morph));
   }
   const triples = triplesOf(rows);
-  return { names, rules: trainRules(triples), analogy: trainAnalogy(triples), lexicon, ntPos, triples: triples.length };
+  return { names, rules: trainRules(triples), analogy: trainAnalogy(triples), lexicon, ntPos, triples: triples.length, governs: prepositionCases(rows) };
 }
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);

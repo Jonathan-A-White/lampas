@@ -37,9 +37,25 @@ import {
   type Layer,
   type PendingWord,
 } from '../../scripts/lxx/derive';
-import { NO_NAMES, PARSER_DOMINANT, formNameLemma, isCapital, parse, ruleOf, settleParsed, unaugment, type Candidate } from '../../scripts/lxx/parser';
+import {
+  GOVERN_MAX_NOMINATIVE,
+  GOVERN_MIN_SHARE,
+  GOVERN_MIN_WORDS,
+  NO_NAMES,
+  PARSER_DOMINANT,
+  caseOf,
+  formNameLemma,
+  isCapital,
+  parse,
+  prepositionCases,
+  ruleOf,
+  settleParsed,
+  trainParser,
+  unaugment,
+  type Candidate,
+} from '../../scripts/lxx/parser';
 import { sweteTokens } from '../../scripts/lxx/swete';
-import { readTagnt } from '../../scripts/lxx/tagnt';
+import { readTagnt, type TagntRow } from '../../scripts/lxx/tagnt';
 import { fits, readTbesg, readTbesgNames } from '../../scripts/lxx/tbesg';
 
 const FIXTURES = 'tests/fixtures/lxx';
@@ -706,5 +722,69 @@ describe('a name written with a capital mid-clause is not settled on the common 
       expect(isDerived(out) && out.lemma, display).toBe(lemma);
       expect(isDerived(out) && out.layer, display).toBe(1);
     }
+  });
+});
+
+describe("the cases a preposition governs, learned from TAGNT's next word (mw-u2w5klk.27)", () => {
+  /** One verse of TAGNT rows: 'form lemma MORPH' each, in order, NA28 words. */
+  let verseNo = 0;
+  const verse = (...words: string[]): TagntRow[] => {
+    verseNo++;
+    return words.map((w, i) => {
+      const [form, lemma, morph] = w.split(' ');
+      return { book: 'Tst', chapter: 1, verse: verseNo, word: i + 1, editions: 'NKO', form, lemma, morph, name: false };
+    });
+  };
+  const times = (n: number, ...words: string[]): TagntRow[] => Array.from({ length: n }, () => verse(...words)).flat();
+
+  it('reads the case of every declined code TAGNT writes, and none of a word without one', () => {
+    expect(['N-DSF', 'T-GPM', 'A-ASN-C', 'P-1GS', 'P-2DP', 'P-ASM', 'F-3GSM', 'S-1SDSM', 'R-NSN', 'V-PAP-NSM', 'V-2AAP-GPF'].map(caseOf)).toEqual(['D', 'G', 'A', 'G', 'D', 'A', 'G', 'D', 'N', 'N', 'G']);
+    expect(['PREP', 'ADV', 'CONJ', 'V-PAN', 'V-AAI-3S', 'A-NUI', 'N-PRI'].map(caseOf)).toEqual([undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
+  });
+
+  it('takes each case the word after the preposition shows often enough, never the nominative or vocative', () => {
+    const rows = [
+      ...times(500, 'ἐν ἐν PREP', 'ῥινί ῥίς N-DSF'),
+      ...times(2, 'ἐν ἐν PREP', 'ἀρχῆς ἀρχή N-GSF'),
+      ...times(10, 'ἐπὶ ἐπί PREP', 'τῆς ὁ T-GSF'),
+      ...times(10, 'ἐπὶ ἐπί PREP', 'τὴν ὁ T-ASF'),
+      ...times(5, 'ἐπὶ ἐπί PREP', 'αὐτῷ αὐτός P-DSM'),
+      ...times(10, 'ἐπὶ ἐπί PREP', 'δὲ δέ CONJ'),
+    ];
+    const cases = prepositionCases(rows);
+    // ἐν's two genitives are under GOVERN_MIN_SHARE of its words, and ἐπί's datives over it
+    expect(2 / 502).toBeLessThan(GOVERN_MIN_SHARE);
+    expect(cases.get('ἐν')).toEqual(['D']);
+    expect(cases.get('ἐπί')).toEqual(['G', 'D', 'A']);
+    // a case seen once is a slip of tagging, however few words the preposition has
+    expect(prepositionCases([...times(30, 'σὺν σύν PREP', 'αὐτῷ αὐτός P-DSM'), ...verse('σὺν σύν PREP', 'αὐτὸν αὐτός P-ASM')]).get('σύν')).toEqual(['D']);
+  });
+
+  it('checks no preposition with too few words after it, or too many nominatives (ἕως ἡμέρα ἐστίν, John 9:4: a conjunction there)', () => {
+    const rows = [
+      ...times(GOVERN_MIN_WORDS - 1, 'σὺν σύν PREP', 'αὐτῷ αὐτός P-DSM'),
+      ...times(40, 'ἕως ἕως PREP', 'τοῦ ὁ T-GSM'),
+      ...times(2, 'ἕως ἕως PREP', 'ἡμέρα ἡμέρα N-NSF'),
+      ...times(150, 'ἀπὸ ἀπό PREP', 'τοῦ ὁ T-GSM'),
+      ...verse('ἀπὸ ἀπό PREP', 'ὁ ὁ T-NSM'),
+    ];
+    const cases = prepositionCases(rows);
+    expect(cases.has('σύν')).toBe(false);
+    expect(2 / 42).toBeGreaterThan(GOVERN_MAX_NOMINATIVE);
+    expect(cases.has('ἕως')).toBe(false);
+    // Rev 1:4's ἀπὸ ὁ ὢν is one in 151
+    expect(cases.get('ἀπό')).toEqual(['G']);
+  });
+
+  it('reads the next word in TAGNT’s order of NA28 words only, and never across verses', () => {
+    const rows = [...times(25, 'ἐκ ἐκ PREP', 'τοῦ ὁ T-GSM'), ...verse('λέγει λέγω V-PAI-3S', 'ἐκ ἐκ PREP'), ...verse('ὁ ὁ T-NSM', 'θεὸς θεός N-NSM')];
+    const odd = verse('ἐκ ἐκ PREP', 'καὶ καί CONJ', 'ὁ ὁ T-NSM');
+    odd[2] = { ...odd[2], editions: 'k' };
+    expect(prepositionCases([...rows, ...odd, ...times(3, 'ἐκ ἐκ PREP', 'οἱ ὁ T-NPM').map((r) => ({ ...r, editions: 'K' }))]).get('ἐκ')).toEqual(['G']);
+  });
+
+  it('is learned with the parser, from the rows it is trained on (the fixture slice, cut word by word, has no preposition with enough words after it)', () => {
+    expect(trainParser(times(GOVERN_MIN_WORDS, 'ἐν ἐν PREP', 'ἀρχῇ ἀρχή N-DSF'), readTbesg(tbesg)).governs.get('ἐν')).toEqual(['D']);
+    expect(trainParser(readTagnt(tagnt), readTbesg(tbesg)).governs.size).toBe(0);
   });
 });
