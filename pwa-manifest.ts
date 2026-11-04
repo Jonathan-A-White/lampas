@@ -24,6 +24,9 @@ export const pwaManifest: Partial<ManifestOptions> = {
     enctype: 'multipart/form-data',
     params: { title: 'title', text: 'text', url: 'url', files: [{ name: 'files', accept: ['image/*', 'text/csv', '.csv'] }] },
   },
+  // Lampas itself, so navigator.getInstalledRelatedApps() sees the installed app from a Chrome tab (Android, Chrome 84+) and src/OpenInApp.tsx can offer 'Open in the app'
+  // (mw-5r3p30.1041): platform 'webapp' with the manifest's own url, https://developer.chrome.com/docs/capabilities/get-installed-related-apps. NOT prefer_related_applications.
+  related_applications: [{ platform: 'webapp', url: 'https://lampas.allmymind.org/manifest.webmanifest' }],
   icons: [
     { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
     { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
