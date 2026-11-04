@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.99",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1008",
+    "kind": "fixed",
+    "text": "Read in Logos and Listen in Audible are gone from the foot of an Old Testament chapter; they are on the verse, passage or chapter view you open, for both Testaments."
+  },
+  {
+    "version": "0.7.99",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1006",
+    "kind": "new",
+    "text": "A two-finger tap now puts the tutor's ? button away on any screen and brings it back; in the Reader it still goes in and out of immersive reading."
+  },
+  {
     "version": "0.7.98",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1031",

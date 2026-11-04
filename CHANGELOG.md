@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.99
+_2026-11-04_
+- Fixed: Read in Logos and Listen in Audible are gone from the foot of an Old Testament chapter; they are on the verse, passage or chapter view you open, for both Testaments.
+- New: A two-finger tap now puts the tutor's ? button away on any screen and brings it back; in the Reader it still goes in and out of immersive reading.
+
 ## 0.7.98
 _2026-11-04_
 - Fixed: Tapping τίς or τις and then Paradigm now outlines the form's own cell in the Interrogative and indefinite pronouns table instead of leaving the table lit on nothing.
