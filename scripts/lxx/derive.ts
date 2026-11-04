@@ -43,7 +43,7 @@ export const NOTE_ANALOGY = 'analogy: a sibling form in the New Testament';
 export const NOTE_CANDIDATES = 'several candidates: for the model';
 export const NOTE_THIN = 'one candidate on thin support: for the agreement check or the model';
 export const NOTE_BESIDE = "analogy's readings beside it: for the model";
-export const NOTE_MORPHEUS_OVER = "one candidate on thin support, set aside: Morpheus knows the form and reads it otherwise: for the model";
+export const NOTE_MORPHEUS_OVER = "one candidate on thin support, set aside: Morpheus knows the form as a perfect: for the agreement check or the model";
 export const NOTE_MORPHEUS_BESIDE = "one candidate on thin support, and Morpheus's readings beside it: for the model";
 export const NOTE_NO_CANDIDATE = 'no candidate: for the model to guess';
 export const NOTE_FORM_NAME = 'a name no lexicon has: its form read as its own lemma, every case of every gender: for the agreement check or the model';
@@ -51,8 +51,8 @@ export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender
 export const NOTE_CAPITAL_NAME = 'a capital mid-clause: a name beside the common word its letters spell: for the agreement check or the model';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
-/** `stemSupport`: an ending rule's candidate only, and `analogy`: analogy's only, and `beside`: the readings of analogy and of Morpheus offered beside a thin lone candidate (parser.ts Candidate), kept in memory for the agreement check (isThinLone, ownReadings), never written to the files. */
-export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form'; stemSupport?: number; analogy?: true; beside?: true };
+/** `stemSupport`: an ending rule's candidate only, and `analogy`: analogy's only, and `beside`: the readings of analogy and of Morpheus offered beside a thin lone candidate (parser.ts Candidate), and `replaces`: Morpheus's perfect readings that took a thin lone candidate's place (weighMorpheus; the address rule's guard counts such a word as settled, agreement.ts settledHere), kept in memory for the agreement check (isThinLone, ownReadings), never written to the files. */
+export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form'; stemSupport?: number; analogy?: true; beside?: true; replaces?: true };
 
 /** What a candidate's support column says: the New Testament's count, or the name of what gave it where it has no count (`morpheus`, the second method; `name`, an indeclinable name's other cases; `form`, a name no lexicon has, read as its own lemma). */
 export const supportOf = (c: WordCandidate): string => c.source ?? String(c.support);
@@ -188,9 +188,12 @@ function morpheusCandidates(form: string, morpheus: MorpheusCache | undefined): 
  * guess at a stem, so Morpheus's answer is not left out:
  * - Morpheus does not know the form, has no reading the mapping covers, or reads what the rule reads (the same lemma by its letters, accents off, and the same parsing): the word is
  *   as it was (undefined), the thin lone candidate for the agreement check or the model;
- * - Morpheus has mapped readings and none shares the rule's lemma or its parsing, and it left no reading out (`unmapped` is 0): it knows the form whole and the rule's candidate is
- *   not one of its readings (ἐξῆρται: ἐξαίρω V-RPI-3S, where the rule read ἐξαρτάω V-IAI-3S). The rule's candidate (and analogy's readings beside it) is set aside
- *   (NOTE_MORPHEUS_OVER) and Morpheus's readings are the candidates, as for a word with none: for the agreement check or the model;
+ * - Morpheus has mapped readings, every one a perfect (TAGNT's R and 2R), none shares the rule's lemma or its parsing, and it left no reading out (`unmapped` is 0): it knows the form
+ *   whole as a tense the ending rules do not make (they are learned from stems and endings, and a perfect's reduplication and its own endings are not theirs), and the rule's candidate
+ *   is not one of its readings (ἐξῆρται: ἐξαίρω V-RPI-3S, where the rule read ἐξαρτάω V-IAI-3S). The rule's candidate (and analogy's readings beside it) is set aside
+ *   (NOTE_MORPHEUS_OVER) and Morpheus's readings are the candidates, as for a word with none: for the agreement check or the model. Only perfects: of the 351 words on which Morpheus
+ *   knew the form whole and shared nothing with the rule, 20 were perfects, and those read right (ὦπταί as ὁράω, not ὀπτάω); the rest were mostly a spelling Morpheus reads as another
+ *   word (Swete's δουλίαν as the adjective δούλιος for the noun δουλεία, λατρίαν, αἰγεῖα as αἴξ), which made five settled words wrong;
  * - otherwise (Morpheus left a reading out, which may be the right one, or shares the lemma or the parsing, as when it writes a lemma another way, γίγνομαι for γίνομαι) its
  *   readings are put beside the rule's candidate (NOTE_MORPHEUS_BESIDE), marked `beside` as analogy's are (parser.ts Candidate): for the model only, so the word stays a thin lone
  *   one for the agreement check and the address rule, which may still settle it on the rule's candidate as before.
@@ -203,7 +206,9 @@ export function weighMorpheus(rules: readonly WordCandidate[], known: MorpheusFo
   if (known.analyses.some((m) => own.some((c) => same(m, c)))) return undefined;
   const kin = known.analyses.some((m) => own.some((c) => bareOf(m.lemma) === bareOf(c.lemma) || m.code === c.morph));
   const more: WordCandidate[] = known.analyses.map((m) => ({ lemma: m.lemma, morph: m.code, support: 0, share: 0, via: ['Morpheus: the second method, a build tool'], source: 'morpheus' as const }));
-  if (known.unmapped === 0 && !kin) return { candidates: more, note: NOTE_MORPHEUS_OVER, kept: false };
+  if (known.unmapped === 0 && !kin && known.analyses.every((m) => /^V-2?R/.test(m.code))) {
+    return { candidates: more.map((c) => ({ ...c, replaces: true as const })), note: NOTE_MORPHEUS_OVER, kept: false };
+  }
   return { candidates: [...rules, ...more.map((c) => ({ ...c, beside: true as const }))], note: NOTE_MORPHEUS_BESIDE, kept: true };
 }
 

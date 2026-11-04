@@ -533,9 +533,9 @@ export function readAddresses(words: ReadonlyArray<{ ref: string; verse: string;
    * The number of the imperative of the second person a phrase holds (a word every reading of which is one of that number), when it holds no settled
    * finite verb of another person: φωνὴ ἀδελφιδοῦ μου, κρούει ἐπὶ τὴν θύραν Ἄνοιξόν μοι (Song 5:2) is a cry and then his words, not an address. A word
    * left with one candidate on thin support (isThinLone, story mw-u2w5klk.28) counts as settled here, as it was before that rule: ὦπταί (Exo 3:16, ὀπτάω
-   * V-IAI-3S) keeps θεὸς Ἀβραάμ a nominative.
+   * V-IAI-3S) keeps θεὸς Ἀβραάμ a nominative; so does a word whose thin lone candidate Morpheus's perfect took the place of (`replaces`, story mw-u2w5klk.32: ὦπταί as ὁράω V-RPI-3S).
    */
-  const settledHere = (i: number): boolean => isSettled(outs[i]) || isThinLone(outs[i].candidates);
+  const settledHere = (i: number): boolean => isSettled(outs[i]) || isThinLone(outs[i].candidates) || outs[i].candidates.some((c) => c.replaces);
   const speaksTo = (p: number[]): string | undefined => {
     if (p.some((i) => settledHere(i) && readings(i).every((r) => partOf(r.morph) === 'V' && !/^2[SP]$/.test(r.morph.split('-')[2] ?? '')))) return undefined;
     for (const i of p) {

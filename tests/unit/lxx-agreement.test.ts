@@ -347,7 +347,7 @@ describe('the derive report', async () => {
 /**
  * A stretch of a verse as layers 1 and 2 left it, copied from the full run (`npm run lxx:derive -- --all`): each token is Swete's print, then ' = ', then
  * the settled 'lemma MORPH', or '? ' and the pending word's candidates 'lemma MORPH; lemma MORPH'; a candidate written 'lemma MORPH+' is one analogy offered beside a thin lone
- * candidate (WordCandidate.beside). `first` is the number of its first word in the verse.
+ * candidate (WordCandidate.beside), and 'lemma MORPH*' one of Morpheus's perfect readings that took a thin lone candidate's place (WordCandidate.replaces), and 'lemma MORPH^' a rule's lone candidate on a stem support of 0 (isThinLone). `first` is the number of its first word in the verse.
  */
 function asLeft(verse: string, first: number, tokens: readonly string[]): { words: Array<{ ref: string; verse: string; form: string; display: string }>; outs: Array<DerivedWord | PendingWord> } {
   const words = tokens.map((t, i) => {
@@ -361,7 +361,7 @@ function asLeft(verse: string, first: number, tokens: readonly string[]): { word
       const candidates = reading
         .slice(2)
         .split('; ')
-        .map((c) => ({ lemma: c.split(' ')[0], morph: c.split(' ')[1].replace(/\+$/, ''), support: 1, share: 0, ...(c.endsWith('+') ? { beside: true as const } : {}) }));
+        .map((c) => ({ lemma: c.split(' ')[0], morph: c.split(' ')[1].replace(/[+*^]$/, ''), support: 1, share: 0, ...(c.endsWith('+') ? { beside: true as const } : {}), ...(c.endsWith('*') ? { replaces: true as const } : {}), ...(c.endsWith('^') ? { stemSupport: 0 } : {}) }));
       return { ref, candidates, notes: [] };
     }
     const [lemma, morph] = reading.split(' ');
@@ -477,6 +477,23 @@ describe('an address is tagged vocative, as the New Testament data tags it (mw-u
     const v = checked('Psa.68:14', 7, ['σέ, = σύ P-2AS', 'Κύριε· = κύριος N-VSM', 'καιρὸς = καιρός N-NSM', 'εὐδοκίας, = εὐδοκία N-GSF', 'ὁ = ὁ T-NSM', 'θεός· = θεός N-NSM', 'ἐν = ἐν PREP', 'τῷ = ? ὁ T-DSM; ὁ T-DSN', 'πλήθει = πλῆθος N-DSN', 'ἐπάκουσον, = ἐπακούω V-AAM-2S']);
     expect(answer(v, 'Psa.68:14#9')).toBe('καιρός N-NSM');
     expect([11, 12].map((n) => answer(v, `Psa.68:14#${n}`))).toEqual(['ὁ T-VSM', 'θεός N-VSM']);
+  });
+
+  it("keeps θεὸς Ἀβραάμ a nominative after ὦπταί, whether its one candidate is the rule's thin lone ὀπτάω V-IAI-3S or Morpheus's perfect in its place (Exo 3:16, mw-u2w5klk.32)", () => {
+    // the verse as layers 1 and 2 leave it in the full run; ὦπταί's candidates are the one word that changes
+    const verse = (verb: string): string[] => [
+      'ἐλθὼν = ἔρχομαι V-2AAP-NSM', 'οὖν = οὖν CONJ', 'συνάγαγε = συνάγω V-2AAM-2S', 'τὴν = ὁ T-ASF', 'γερουσίαν = γερουσία N-ASF', 'τῶν = ὁ T-GPM', 'υἱῶν = υἱός N-GPM',
+      'Ἰσραὴλ = ? Ἰσραήλ N-GSM; Ἰσραήλ N-DSM; Ἰσραήλ N-ASM; Ἰσραήλ N-NSM; Ἰσραήλ N-VSM', 'καὶ = καί CONJ', 'ἐρεῖς = ἔπω V-FAI-2S', 'πρὸς = πρός PREP', 'αὐτούς = αὐτός P-APM',
+      'Κύριος = κύριος N-NSM', 'ὁ = ὁ T-NSM', 'θεὸς = θεός N-NSM', 'τῶν = ὁ T-GPM', 'πατέρων = πατήρ N-GPM', 'ὑμῶν = σύ P-2GP', verb, 'μοι, = ἐγώ P-1DS', 'θεὸς = θεός N-NSM',
+      'Ἀβραὰμ = ? Ἀβραάμ N-GSM; Ἀβραάμ N-NSM; Ἀβραάμ N-DSM; Ἀβραάμ N-ASM; Ἀβραάμ N-VSM', 'καὶ = καί CONJ', 'θεὸς = θεός N-NSM', 'Ἰσαὰκ = ? Ἰσαάκ N-GSM; Ἰσαάκ N-ASM; Ἰσαάκ N-NSM; Ἰσαάκ N-DSM; Ἰσαάκ N-VSM',
+      'καὶ = καί CONJ', 'θεὸς = θεός N-NSM', 'Ἰακώβ, = ? Ἰακώβ N-GSM; Ἰακώβ N-ASM; Ἰακώβ N-NSM; Ἰακώβ N-DSM; Ἰακώβ N-VSM', 'λέγων = λέγω V-PAP-NSM',
+    ];
+    for (const verb of ['ὦπταί = ? ὀπτάω V-IAI-3S^', 'ὦπταί = ? ὁράω V-RMI-3S*; ὁράω V-RPI-3S*']) {
+      const v = checked('Exo.3:16', 1, verse(verb));
+      for (const n of [21, 24, 27]) expect(answer(v, `Exo.3:16#${n}`), `${verb} #${n}`).toBe('θεός N-NSM');
+    }
+    // the guard is what holds it: with Morpheus's two readings as plain candidates the pending verb is not a settled one and the phrase is read as a call
+    expect(answer(checked('Exo.3:16', 1, verse('ὦπταί = ? ὁράω V-RMI-3S; ὁράω V-RPI-3S')), 'Exo.3:16#21')).toBe('θεός N-VSM');
   });
 
   describe("analogy's readings beside a thin lone candidate do not turn an address (mw-u2w5klk.31)", () => {

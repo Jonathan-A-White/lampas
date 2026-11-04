@@ -601,7 +601,15 @@ describe('Morpheus’s perfects, and Morpheus asked about a form with one thin c
       const got = weighMorpheus(lone, { analyses: [m('ἐξαίρω', 'V-RMI-3S'), m('ἐξαίρω', 'V-RPI-3S')], unmapped: 0 })!;
       expect(shown(got.candidates)).toEqual(['ἐξαίρω V-RMI-3S/morpheus', 'ἐξαίρω V-RPI-3S/morpheus']);
       expect(got.note).toBe(NOTE_MORPHEUS_OVER);
-      expect(got.candidates.every((c) => c.support === 0 && c.share === 0)).toBe(true);
+      expect(got.candidates.every((c) => c.support === 0 && c.share === 0 && c.replaces === true)).toBe(true);
+    });
+
+    it('does not set the rule’s candidate aside for a reading that is not a perfect, though Morpheus knows the form whole: Swete’s δουλίαν is the noun, and Morpheus reads the adjective δούλιος', () => {
+      const got = weighMorpheus([rule('δουλεία', 'N-ASF')], { analyses: [m('δούλιος', 'A-ASF')], unmapped: 0 })!;
+      expect(got.note).toBe(NOTE_MORPHEUS_BESIDE);
+      expect(shown(got.candidates)).toEqual(['δουλεία N-ASF', 'δούλιος A-ASF/morpheus+']);
+      // nor for a perfect beside readings of other tenses
+      expect(weighMorpheus([rule('ἐξαρτάω', 'V-IAI-3S')], { analyses: [m('ἐξαίρω', 'V-RPI-3S'), m('ἐξαίρω', 'V-FPI-3S')], unmapped: 0 })!.note).toBe(NOTE_MORPHEUS_BESIDE);
     });
 
     it('puts Morpheus’s readings beside the rule’s when it left a reading out, or shares the rule’s lemma (a spelling it writes otherwise) or its parsing', () => {
