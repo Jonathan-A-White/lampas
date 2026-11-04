@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.103
+_2026-11-04_
+- Fixed: The Maps button no longer sits at the bottom of a chapter, the place line at the bottom shows whether or not the Immersive reader is on, and opening a link no longer changes your Immersive reader setting.
+
 ## 0.7.102
 _2026-11-04_
 - Fixed: At the largest text size, a long word in a quiz answer now wraps inside its button instead of running out of it.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.103",
+    "date": "2026-11-04",
+    "story": "mw-5r3p30.1028",
+    "kind": "fixed",
+    "text": "The Maps button no longer sits at the bottom of a chapter, the place line at the bottom shows whether or not the Immersive reader is on, and opening a link no longer changes your Immersive reader setting."
+  },
+  {
     "version": "0.7.102",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1017",
