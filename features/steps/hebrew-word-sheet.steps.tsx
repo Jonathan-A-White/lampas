@@ -306,7 +306,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the English word {string} has a {string} link', async (_, word: string, name: string) => {
       const item = within(await sheet()).getAllByRole('listitem').find((li) => squash(li.querySelector('[lang="en"]')?.textContent) === word);
-      expect(item && within(item).getByRole('link', { name })).toBeTruthy();
+      // the row is drawn once the study resources have been read (a Logos link is its setting's); the chapter's foot once warmed that read (mw-5r3p30.1008)
+      expect(item && (await within(item).findByRole('link', { name }))).toBeTruthy();
     });
   });
 
