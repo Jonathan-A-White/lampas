@@ -25,10 +25,13 @@ export interface ListedReference extends FoundReference {
 
 export type RefsOrder = 'page' | 'bible';
 
+// The end of a range is a verse, not a chapter: '16-4' in 'John 3:16-4:3' is no range of verses (the reference ends at '3:16', for a range into the next chapter is not one we hold).
+const ENDS_VERSE = String.raw`(?!\d|\s*:\s*\d)`;
+
 // A book (a number, a word, or 'Song of Solomon', and a dot), then a chapter, then ':' verse, a range and a list of more verses. Tried at the start of each word
 // (a start that turns out to be no book is skipped, one character on, so '2 Cor' is found in 'In 2 Cor 5:17').
 const FIND = new RegExp(
-  String.raw`(?<![\p{L}\p{N}])((?:(?:[1-3]\s?|(?:First|Second|Third|III|II|I)\.?\s+))?\p{L}+(?:\s+of\s+\p{L}+)?\.?)\s*(\d+)(?::\s*(\d+)(\s*[-–]\s*(\d+))?((?:\s*,\s*\d+(?!\s*[:\d])(?:\s*[-–]\s*\d+)?)*))?`,
+  String.raw`(?<![\p{L}\p{N}])((?:(?:[1-3]\s?|(?:First|Second|Third|III|II|I)\.?\s+))?\p{L}+(?:\s+of\s+\p{L}+)?\.?)\s*(\d+)(?::\s*(\d+)(\s*[-–]\s*(\d+)${ENDS_VERSE})?((?:\s*,\s*\d+(?!\s*[:\d])(?:\s*[-–]\s*\d+${ENDS_VERSE})?)*))?`,
   'giu',
 );
 
@@ -65,7 +68,10 @@ export interface ReferenceSpan extends FoundReference {
 }
 
 // A verse list's next chapter after a ';' ('Romans 8:1; 10:9-10'): the same book, a new chapter and verse, a range and a list of more verses.
-const AFTER_SEMICOLON = /\s*;\s*(\d+)\s*:\s*(\d+)(\s*[-–]\s*(\d+))?((?:\s*,\s*\d+(?!\s*[:\d])(?:\s*[-–]\s*\d+)?)*)/y;
+const AFTER_SEMICOLON = new RegExp(
+  String.raw`\s*;\s*(\d+)\s*:\s*(\d+)(\s*[-–]\s*(\d+)${ENDS_VERSE})?((?:\s*,\s*\d+(?!\s*[:\d])(?:\s*[-–]\s*\d+${ENDS_VERSE})?)*)`,
+  'y',
+);
 
 /** Every reference in `text`, in the order the text has them (a reference named twice is found twice), each with where it stands. With `semicolons` a ';' goes on a list into the
  *  next chapter of the same book ('Romans 8:1; 10:9-10' is Romans 8:1 and Romans 10:9-10); the Share list does not read that. */
@@ -73,7 +79,8 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
   const found: ReferenceSpan[] = [];
   FIND.lastIndex = 0;
   for (let m = FIND.exec(text); m; m = FIND.exec(text)) {
-    const [matched, name, chapterText, verseText, range, rangeEnd, listTail] = m;
+    const [matched, name, chapterText, verseText, , , listTail] = m;
+    let [, , , , range, rangeEnd]: (string | undefined)[] = m;
     // A book of the Apocrypha is read by the tutor's links (verseLinks.ts, tutorLinks.ts), not listed here: Lampas holds no text of it, and a saved list, Share's cards and the
     // Memorize list are of verses it can open (mw-5r3p30.1034).
     const read = numbered(name);
@@ -85,8 +92,16 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
       FIND.lastIndex = named && limit && chapter > limit && /^(?:\d|first|second|third|i{1,3}\b)/i.test(name) ? m.index + matched.length : m.index + 1;
       continue;
     }
-    const more = beforeBook(text, m.index + matched.length - (listTail ?? '').length, listTail ?? '');
-    const whole = matched.slice(0, matched.length - ((listTail ?? '').length - more.length));
+    // there is no verse 0, and a range that does not end after its first verse is no range: the reference ends at the first verse ('John 5:25-24' is John 5:25)
+    if (verseText !== undefined && Number(verseText) < 1) {
+      FIND.lastIndex = m.index + matched.length;
+      continue;
+    }
+    const backwards = rangeEnd !== undefined && Number(rangeEnd) <= Number(verseText);
+    if (backwards) [range, rangeEnd] = [undefined, undefined];
+    const tailText = backwards ? '' : (listTail ?? '');
+    const more = beforeBook(text, m.index + matched.length - (listTail ?? '').length, tailText);
+    const whole = matched.slice(0, matched.length - (backwards ? (m[4] as string).length + (listTail ?? '').length : tailText.length - more.length));
     const { book, testament } = named;
     const make = (printed: string, chapterOf: number, verse: number | undefined, at: number, to: number, lastVerse?: number): ReferenceSpan => ({
       printed,
@@ -107,7 +122,10 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
     const listed = (at: number, tail: string, head: string, chapterOf: number): void => {
       for (const item of tail.matchAll(/(\d+)(?:\s*[-–]\s*(\d+))?/g)) {
         const itemAt = at + (item.index as number);
-        found.push(make(`${head}:${item[1]}`, chapterOf, Number(item[1]), itemAt, itemAt + item[0].length, item[2] === undefined ? undefined : Number(item[2])));
+        const verse = Number(item[1]);
+        if (verse < 1) continue;
+        const last = item[2] === undefined || Number(item[2]) <= verse ? undefined : Number(item[2]);
+        found.push(make(`${head}:${item[1]}`, chapterOf, verse, itemAt, itemAt + (last === undefined ? item[1].length : item[0].length), last));
       }
     };
     const head = `${name.trim()} ${chapterText}`;
@@ -119,15 +137,17 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
       AFTER_SEMICOLON.lastIndex = end;
       const next = AFTER_SEMICOLON.exec(text);
       const nextChapter = next && Number(next[1]);
-      if (!next || !nextChapter || nextChapter > limit) break;
+      if (!next || !nextChapter || nextChapter > limit || Number(next[2]) < 1) break;
       const nextHead = `${name.trim()} ${next[1]}`;
-      const rawTail = next[5] ?? '';
-      const verseEnd = end + next[0].length - rawTail.length;
+      const nextLast = next[4] === undefined || Number(next[4]) <= Number(next[2]) ? undefined : Number(next[4]);
+      // a range that is no range is left out, with the list after it
+      const rawTail = nextLast === undefined && next[4] !== undefined ? '' : (next[5] ?? '');
+      const verseEnd = end + (nextLast === undefined && next[4] !== undefined ? next[0].indexOf(next[2]) + next[2].length : next[0].length - rawTail.length);
       const tail = beforeBook(text, verseEnd, rawTail);
       const itemAt = end + next[0].indexOf(next[1]);
-      found.push(make(`${nextHead}:${next[2]}${next[3] ?? ''}`, nextChapter, Number(next[2]), itemAt, verseEnd, next[4] === undefined ? undefined : Number(next[4])));
+      found.push(make(`${nextHead}:${next[2]}${nextLast === undefined ? '' : next[3]}`, nextChapter, Number(next[2]), itemAt, verseEnd, nextLast));
       listed(verseEnd, tail, nextHead, nextChapter);
-      end += next[0].length - (rawTail.length - tail.length);
+      end = verseEnd + tail.length;
     }
     FIND.lastIndex = end;
   }
