@@ -2,7 +2,7 @@
 // the second tap of the pair must not stop what the first started, or close what it opened. Each control goes through oneTap (src/ui/settle.ts).
 // The moment is as on his phone (SETTLE_MS), and both taps are timed on the page's clock (tests/support/gesture.ts), which is installed before the page opens.
 // The verse number is not here: a tap on it opens the Verse view (a change of screen), whose second tap the app-wide guard swallows (src/ui/tapGuard.ts).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { holdFor } from '../support/hold';
 import { pageTime, tapTwice } from '../support/gesture';
@@ -25,6 +25,12 @@ const LONG_WORD_ANSWER = {
 /** The moment is put back after openUnlocked's '0' (init scripts run in order). */
 async function settleAsOnHisPhone(page: Page): Promise<void> {
   await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+}
+
+/** Brings `target` to the middle of its scroll box, clear of the Verse view's pinned stack (Tools, Actions, the speaking bar, the Hold bar). A finger sent to a
+ * point (page.touchscreen.tap) never scrolls, and the stack now covers the foot of the result, so a control left there takes the tap of whatever is pinned over it. */
+async function clearOfTheStack(target: Locator): Promise<void> {
+  await target.evaluate((el) => el.scrollIntoView({ block: 'center' }));
 }
 
 /** Romans 8:28 read through the fake mill; returns once the words to fix ('together', 'purpose') are marked. */
@@ -74,7 +80,9 @@ test.describe('a double tap on a play or open toggle', () => {
 
   test("ReadCheck: a double tap on 'Me' ends recording-playing, as one tap does", async ({ page }) => {
     const panel = await readVerse28(page);
-    await tapTwice(page, panel.getByRole('button', { name: 'Hear me say together', exact: true }), GAP_MS, { touch: true });
+    const me = panel.getByRole('button', { name: 'Hear me say together', exact: true });
+    await clearOfTheStack(me);
+    await tapTwice(page, me, GAP_MS, { touch: true });
     await expect(panel.getByRole('button', { name: 'Stop hearing me say together', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(panel.getByRole('button', { name: 'Stop hearing me say together', exact: true })).toHaveText('Stop');
   });
@@ -82,6 +90,7 @@ test.describe('a double tap on a play or open toggle', () => {
   test("ReadCheck: a double tap on a word to fix leaves its chunks open, as one tap does", async ({ page }) => {
     const panel = await readVerse28(page);
     const word = panel.locator('[data-fix="together"]');
+    await clearOfTheStack(word);
     await tapTwice(page, word, GAP_MS, { touch: true });
     await pageTime(page, SETTLE_MS + 100);
     await expect(word).toHaveAttribute('aria-pressed', 'true');
