@@ -244,9 +244,24 @@ describe('paradigmOfWord for the interrogative and indefinite pronouns', () => {
     expect(at('τίς', 'τίς', 'I-VSM').cell).toBeUndefined();
   });
 
-  it('opens the table with no cell for ποῖος and δεῖνα, whose forms it does not hold', () => {
-    expect(at('ποία', 'ποῖος', 'I-NSF')).toEqual({ table: 'pronouns-interrogative-indefinite', cell: undefined, form: undefined });
-    expect(at('ποῖον', 'ποῖος', 'I-ASN').cell).toBeUndefined();
-    expect(at('δεῖνα', 'δεῖνα', 'X-ASM').cell).toBeUndefined();
+  // mw-5r3p30.1033: ποῖος is declined like ἀγαθός, so its table is Adjective endings; δεῖνα is indeclinable here and has no table
+  it('opens Adjective endings on the cell of ποῖος, as ἀγαθός’s form of the same case, number and gender', () => {
+    const pairs: [string, string, string, string, string][] = [
+      ['ποίᾳ', 'ποῖος', 'I-DSF', 'ἀγαθῇ', 'A-DSF'],
+      ['ποία', 'ποῖος', 'I-NSF', 'ἀγαθή', 'A-NSF'],
+      ['ποῖον', 'ποῖος', 'I-ASN', 'ἀγαθόν', 'A-ASN'],
+      ['ποίου', 'ποῖος', 'I-GSM', 'ἀγαθοῦ', 'A-GSM'],
+      ['ποίας', 'ποῖος', 'I-GSF', 'ἀγαθῆς', 'A-GSF'],
+    ];
+    for (const [t, l, p, good, goodCode] of pairs) {
+      const mine = at(t, l, p);
+      expect(mine.table).toBe('adjective-endings');
+      expect(mine.cell).toBeDefined();
+      expect(mine.cell).toBe(at(good, 'ἀγαθός', goodCode).cell);
+    }
+  });
+
+  it('opens no table for δεῖνα, which no table holds', () => {
+    expect(paradigmOfWord({ t: 'δεῖνα', l: 'δεῖνα', p: 'X-ASM' })).toBeUndefined();
   });
 });
