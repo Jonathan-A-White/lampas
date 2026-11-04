@@ -42,9 +42,11 @@ import {
   GOVERN_MAX_NOMINATIVE,
   GOVERN_MIN_SHARE,
   GOVERN_MIN_WORDS,
+  LONE_MIN_ANALOGY_SUPPORT,
   LONE_MIN_STEM_SUPPORT,
   NO_NAMES,
   PARSER_DOMINANT,
+  byAnalogy,
   caseOf,
   formNameLemma,
   isCapital,
@@ -98,10 +100,12 @@ describe("layer 2 on Swete's Gen 1 and Ps 22 (npm run lxx:derive -- --book gen)"
   const gen = await run(GEN_1, ['--book', 'gen']);
   const psa = await run(PSA_22, ['--book', 'psa']);
 
-  it('settles 28 words in layer 2 and leaves 178 pending, each within two of the probe', () => {
+  it('settles 21 words in layer 2 and leaves 185 pending (the probe had 28 and 178; mw-u2w5klk.28 and .30 leave the lone candidates on thin support pending: 5 of them here are analogy’s, Συναχθήτω and four more imperatives)', () => {
     expect(gen.beforeCheck.derived.filter((w) => w.layer === 1)).toHaveLength(545);
-    expect(Math.abs(gen.beforeCheck.derived.filter((w) => w.layer === 2).length - 28)).toBeLessThanOrEqual(2);
-    expect(Math.abs(gen.beforeCheck.pending.length - 178)).toBeLessThanOrEqual(2);
+    expect(gen.beforeCheck.derived.filter((w) => w.layer === 2)).toHaveLength(21);
+    expect(gen.beforeCheck.pending).toHaveLength(185);
+    const thinByAnalogy = gen.beforeCheck.pending.filter((w) => w.notes.includes(NOTE_ANALOGY) && w.notes.includes(NOTE_THIN));
+    expect(thinByAnalogy.map((w) => w.ref)).toEqual(['Gen.1:9#5', 'Gen.1:9#16', 'Gen.1:11#5', 'Gen.1:20#5', 'Gen.1:24#5']);
     expect(psa.beforeCheck.derived.filter((w) => w.layer === 2)).toHaveLength(2);
     expect(psa.beforeCheck.pending).toHaveLength(24);
   });
@@ -256,10 +260,11 @@ describe('the known answer: John 1 with John hidden (npm run lxx:derive -- --boo
     expect(Math.abs((100 * full) / analysed - 69.2)).toBeLessThanOrEqual(3);
   });
 
-  it('settles 19 words in layer 2, every one right (25 before mw-u2w5klk.28 left six lone candidates on thin support pending)', () => {
+  it('settles 16 words in layer 2, every one right (25 before mw-u2w5klk.28 left six rule candidates, and .30 three of analogy’s, on thin support pending)', () => {
     const layer2 = jhn.beforeCheck.derived.filter((w) => w.layer === 2);
-    expect(layer2).toHaveLength(19);
-    expect(jhn.beforeCheck.pending.filter((w) => w.notes.includes(NOTE_THIN))).toHaveLength(6);
+    expect(layer2).toHaveLength(16);
+    expect(jhn.beforeCheck.pending.filter((w) => w.notes.includes(NOTE_THIN))).toHaveLength(9);
+    expect(jhn.beforeCheck.pending.filter((w) => w.notes.includes(NOTE_THIN) && w.notes.includes(NOTE_ANALOGY)).map((w) => w.ref)).toEqual(['Jhn.1:22#10', 'Jhn.1:32#6', 'Jhn.1:51#11']);
     for (const w of layer2) expect([w.lemma, w.morph]).toEqual([answer.get(w.ref)!.lemma, answer.get(w.ref)!.morph]);
     expect(jhn.beforeCheck.derived.filter((w) => w.layer === 1)).toHaveLength(673);
   });
@@ -884,5 +889,64 @@ describe('a lone candidate on thin support is not settled (mw-u2w5klk.28)', asyn
     expect(isThinLone(one(LONE_MIN_STEM_SUPPORT))).toBe(false);
     expect(settleParsed(one())?.confidence).toBe(0.75);
     expect(isThinLone(one())).toBe(false);
+  });
+});
+
+describe("analogy's lone candidate on thin support is not settled (mw-u2w5klk.30)", () => {
+  // The New Testament's own case: ἐφάγετε (Jhn 6:26, φαγεῖν V-AAI-2P) reads by analogy from ἔφαγεν (V-AAI-3S): -ν beside -τε, and the only pair of forms of one lemma
+  // that shows that ending pair says V-FAI-2P (the measure, `npm run lxx:lone-support`: analogy's lone candidate on a support of 1 is right 73.3% of the time). The pair
+  // is made of `n` lemmas here, each with an aorist in -εν and a form in -ετε, so n is the support. The lexicon holds no verb: the ending rules find nothing, as for the 700 such words.
+  const tagntRow = (ref: string, form: string, strong: string, morph: string, lemma: string): string => `${ref}=NKO\t${form} (x)\tgloss\t${strong}=${morph}\t${lemma}=gloss\tNA28+`;
+  const PAIR_LEMMAS = [['κρίνω', 'ἔκρινεν', 'ἔκρινετε'], ['κωλύω', 'ἐκώλυεν', 'ἐκώλυετε'], ['βάλλω', 'ἔβαλλεν', 'ἔβαλλετε'], ['πέμπω', 'ἔπεμπεν', 'ἔπεμπετε'], ['γράφω', 'ἔγραφεν', 'ἔγραφετε']];
+  const world = (pairs: number): { input: DeriveInput; result: BookResult } => {
+    const rows = [tagntRow('Jhn.6.5#1', 'ἔφαγεν', 'G5315', 'V-AAI-3S', 'φαγεῖν'), tagntRow('Mat.1.1#5', 'τοῦ', 'G3588', 'T-GSM', 'ὁ')];
+    PAIR_LEMMAS.slice(0, pairs).forEach(([lemma, a, b], i) => rows.push(tagntRow(`Mrk.1.${i}#1`, a, `G${4000 + i}`, 'V-AAI-3S', lemma), tagntRow(`Mrk.1.${i}#2`, b, `G${4000 + i}`, 'V-FAI-2P', lemma)));
+    const input: DeriveInput = {
+      versification: '1\tJhn.6:26',
+      words: '1\tἐφάγετε',
+      tagnt: [rows.join('\n')],
+      tbesg: 'G3588\tG3588 =\tG3588\tὁ\tho\tG:T\tthe',
+    };
+    return { input, result: deriveBook(input, 'jhn', undefined, train(input)) };
+  };
+
+  it('leaves ἐφάγετε pending with its one candidate when one pair of forms shows the ending pair: a support of 1 is thin', () => {
+    const { input, result } = world(1);
+    const parser = train(input).parser;
+    expect(parse('ἐφάγετε', parser)).toEqual([]);
+    const [only, ...more] = byAnalogy('ἐφάγετε', parser);
+    expect(more).toEqual([]);
+    expect([only.lemma, only.morph, only.support]).toEqual(['φαγεῖν', 'V-FAI-2P', 1]);
+    expect(only.support).toBeLessThan(LONE_MIN_ANALOGY_SUPPORT);
+    const w = outOf(result, 'Jhn.6:26#1');
+    expect(isDerived(w)).toBe(false);
+    expect(w.notes).toEqual(expect.arrayContaining([NOTE_ANALOGY, NOTE_THIN]));
+    expect(w.candidates.map((c) => `${c.lemma} ${c.morph}`)).toEqual(['φαγεῖν V-FAI-2P']);
+  });
+
+  it('settles the same word in layer 2 once LONE_MIN_ANALOGY_SUPPORT pairs of forms show the ending pair', () => {
+    const { result } = world(LONE_MIN_ANALOGY_SUPPORT);
+    const w = outOf(result, 'Jhn.6:26#1');
+    expect(isDerived(w) && [w.lemma, w.morph, w.layer, w.confidence]).toEqual(['φαγεῖν', 'V-FAI-2P', 2, 0.75]);
+    expect(w.notes).not.toContain(NOTE_THIN);
+    expect(outOf(world(LONE_MIN_ANALOGY_SUPPORT - 1).result, 'Jhn.6:26#1').notes).toContain(NOTE_THIN);
+  });
+
+  it('takes analogy’s lone candidate only at LONE_MIN_ANALOGY_SUPPORT pairs; several candidates, or a rule’s candidate, are weighed as before', () => {
+    const one = (support: number, more: Partial<Candidate> = { analogy: true }): Candidate[] => [{ lemma: 'l', morph: 'X', support, share: 1, via: [], ...more }];
+    expect(isThinLone(one(LONE_MIN_ANALOGY_SUPPORT - 1))).toBe(true);
+    expect(settleParsed(one(LONE_MIN_ANALOGY_SUPPORT - 1))).toBeUndefined();
+    expect(isThinLone(one(LONE_MIN_ANALOGY_SUPPORT))).toBe(false);
+    expect(settleParsed(one(LONE_MIN_ANALOGY_SUPPORT))?.confidence).toBe(0.75);
+    // a rule's candidate is read by its stem support, whatever its support: 1 pair of forms is thin only for analogy
+    expect(isThinLone(one(1, { stemSupport: LONE_MIN_STEM_SUPPORT }))).toBe(false);
+    expect(isThinLone(one(40, { stemSupport: LONE_MIN_STEM_SUPPORT - 1 }))).toBe(true);
+    // the 90% rule is not this story's: two analogy candidates, one with 9 of 10 pairs, still settle
+    const two: Candidate[] = [
+      { lemma: 'a', morph: 'X', support: 9, share: 0.9, via: [], analogy: true },
+      { lemma: 'b', morph: 'X', support: 1, share: 0.1, via: [], analogy: true },
+    ];
+    expect(isThinLone(two)).toBe(false);
+    expect(settleParsed(two)?.analysis.lemma).toBe('a');
   });
 });

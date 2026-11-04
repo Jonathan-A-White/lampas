@@ -48,8 +48,8 @@ export const NOTE_INDECLINABLE = 'an indeclinable name: every case of its gender
 export const NOTE_CAPITAL_NAME = 'a capital mid-clause: a name beside the common word its letters spell: for the agreement check or the model';
 
 /** A candidate of layer 1 (an analysis TAGNT gives the form) or of layer 2 (the parser's, with what produced it). */
-/** `stemSupport`: an ending rule's candidate only (parser.ts Candidate.stemSupport), kept in memory for the agreement check (isThinLone), never written to the files. */
-export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form'; stemSupport?: number };
+/** `stemSupport`: an ending rule's candidate only, and `analogy`: analogy's only (parser.ts Candidate), kept in memory for the agreement check (isThinLone), never written to the files. */
+export type WordCandidate = Analysis & { via?: string[]; source?: 'morpheus' | 'name' | 'form'; stemSupport?: number; analogy?: true };
 
 /** What a candidate's support column says: the New Testament's count, or the name of what gave it where it has no count (`morpheus`, the second method; `name`, an indeclinable name's other cases; `form`, a name no lexicon has, read as its own lemma). */
 export const supportOf = (c: WordCandidate): string => c.source ?? String(c.support);
