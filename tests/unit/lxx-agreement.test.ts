@@ -13,12 +13,15 @@ import {
   LINKS,
   NOTE_ADDRESS,
   NOTE_NAME,
+  NOTE_PREPOSITION_NONE,
+  PREPOSITION,
   SHARED_ENDINGS,
   TAGNT_EVIDENCE,
   agree,
   checkAgreement,
   pauseAfter,
   readAddresses,
+  readPrepositions,
   sharedEnding,
   type AgreementWord,
 } from '../../scripts/lxx/agreement';
@@ -478,5 +481,137 @@ describe('an address is tagged vocative, as the New Testament data tags it (mw-u
   it('has a comment a reader can check, copied in docs/lxx-derivation.md', () => {
     expect(ADDRESS.comment).toContain('Heb 1:8');
     expect(readFileSync('docs/lxx-derivation.md', 'utf8')).toContain(ADDRESS.name);
+  });
+});
+
+// ---------------------------------------------------------------- a preposition's case (story mw-u2w5klk.27)
+
+/**
+ * The cases each preposition of these verses governs, as prepositionCases (scripts/lxx/parser.ts) learns them from the pinned TAGNT: the full file is not
+ * in a fresh worktree, so the tests name them. ἕως is not among them: one in 28 of the declined words after it in the New Testament is a nominative.
+ */
+const GOVERNS: ReadonlyMap<string, readonly string[]> = new Map([
+  ['ἐν', ['D']],
+  ['ἐπί', ['G', 'D', 'A']],
+  ['εἰς', ['A']],
+  ['ἐκ', ['G']],
+  ['σύν', ['D']],
+  ['ἕνεκα, εἵνεκεν', ['G']],
+]);
+/**
+ * As asLeft, and a settled word may name the layer that settled it and its other candidates: 'τρίβων = τρίβω V-PAP-NSM 2 | τρίβος N-GPF; τρίβω V-PAN' is
+ * layer 2 with τρίβω V-PAP-NSM its first candidate and the two after it.
+ */
+function asParsed(verse: string, first: number, tokens: readonly string[]): ReturnType<typeof asLeft> {
+  const plain = tokens.map((t) => t.replace(/ \d?a? ?\| .*$/, '').replace(/ 2$/, ''));
+  const { words, outs } = asLeft(verse, first, plain);
+  return {
+    words,
+    outs: outs.map((o, i) => {
+      const m = / (\d?a?) ?\| (.*)$/.exec(tokens[i]) ?? / (2)$/.exec(tokens[i]);
+      if (!m || !isDerived(o)) return o;
+      const more = (m[2] ?? '').split('; ').filter(Boolean).map((c) => ({ lemma: c.split(' ')[0], morph: c.split(' ')[1], support: 1, share: 0 }));
+      const layer = m[1] === '2' ? 2 : 1;
+      return { ...o, layer, confidence: layer === 2 ? 0.7 : o.confidence, candidates: [...o.candidates, ...more] };
+    }),
+  };
+}
+const governed = (verse: string, first: number, tokens: readonly string[]): Map<string, DerivedWord | PendingWord> => {
+  const { words, outs } = asParsed(verse, first, tokens);
+  return new Map(checkAgreement(words, outs, { names: new Set(), parse: () => [], governs: GOVERNS }).outs.map((o) => [o.ref, o]));
+};
+const layerOf = (m: Map<string, DerivedWord | PendingWord>, ref: string): string => {
+  const o = m.get(ref);
+  return o && isDerived(o) ? String(o.layer) : 'pending';
+};
+
+describe("a preposition's case checks the word it governs (mw-u2w5klk.27: the hand audit of mw-u2w5klk.24, problem B)", () => {
+  it('reads Job.18:10#12 τρίβων as τρίβος N-GPF: ἐπὶ τρίβων, the parser’s participle being a nominative', () => {
+    const v = governed('Job.18:10', 7, [
+      'καὶ = καί CONJ',
+      'ἡ = ὁ T-NSF',
+      'σύλληψις = σύλληψις N-NSF 2 |',
+      'αὐτοῦ = ? αὐτός P-GSM; αὐτός P-GSN',
+      'ἐπὶ = ἐπί PREP',
+      'τρίβων. = τρίβω V-PAP-NSM 2 | τρίβω V-PAP-VSM; τρίβος N-GPF; τρίβω V-PAN',
+    ]);
+    expect(answer(v, 'Job.18:10#12')).toBe('τρίβος N-GPF');
+    expect(layerOf(v, 'Job.18:10#12')).toBe('2a');
+  });
+
+  it('reads Pro.11:22#4 ῥινί as N-DSF: ἐν ῥινὶ ὑός', () => {
+    const v = governed('Pro.11:22', 1, ['ὥσπερ = ὥσπερ CONJ', 'ἐνώτιον = ? ἐνώτιον N-ASN; ἐνώτιον N-NSN', 'ἐν = ἐν PREP', 'ῥινὶ = ῥίν N-NPF 2 | ῥίν N-DSF']);
+    expect(answer(v, 'Pro.11:22#4')).toBe('ῥίν N-DSF');
+    expect(layerOf(v, 'Pro.11:22#4')).toBe('2a');
+  });
+
+  it('marks the word it changes with the note naming the preposition, and counts it', () => {
+    const { words, outs } = asParsed('Pro.11:22', 3, ['ἐν = ἐν PREP', 'ῥινὶ = ῥίν N-NPF 2 | ῥίν N-DSF']);
+    const result = checkAgreement(words, outs, { names: new Set(), parse: () => [], governs: GOVERNS });
+    expect(result.outs[1].notes).toEqual([`${PREPOSITION.name}: ἐν (Pro.11:22#3) takes the dative`]);
+    expect(result.stats.governed).toBe(1);
+    expect(result.stats.governedPending).toBe(0);
+    expect(readPrepositions(words, outs, GOVERNS).governed).toBe(1);
+  });
+
+  it('leaves a word in a case the preposition takes as it is, though another of its readings fits too (ἐπί takes three)', () => {
+    const v = governed('Tst.1:1', 1, ['ἐπὶ = ἐπί PREP', 'τὴν = ὁ T-ASF', 'γῆν = γῆ N-ASF 2 | γῆ N-GSF; γῆ N-DSF']);
+    expect(answer(v, 'Tst.1:1#3')).toBe('γῆ N-ASF');
+    expect(layerOf(v, 'Tst.1:1#3')).toBe('2');
+  });
+
+  it('settles no case where a preposition that takes more than one leaves two readings: the word waits for the model, and agreement does not choose', () => {
+    const v = governed('Tst.1:1', 1, ['ἐπὶ = ἐπί PREP', 'λίθου = λίθος N-NSM 2 | λίθος N-GSM; λίθος N-ASM', 'μεγάλου = ? μέγας A-GSM; μέγας A-NSM']);
+    const w = v.get('Tst.1:1#2');
+    expect(w && isDerived(w)).toBe(false);
+    expect(w?.candidates.slice(0, 2).map((c) => c.morph)).toEqual(['N-GSM', 'N-ASM']);
+    expect(w?.notes).toEqual([`${PREPOSITION.name}: ἐπί (Tst.1:1#1) takes the genitive, dative or accusative; several readings fit: for the model`]);
+    expect(answer(v, 'Tst.1:1#3')).toBeUndefined();
+  });
+
+  it('sends to the model a word no reading of which the preposition takes: it may be wrong (ἐν Καδής as κάδος N-NSM), or not governed (οὗ εἵνεκεν ὁ υἱὸς, 2 Sam 18:20)', () => {
+    const v = governed('Num.20:1', 21, ['ἐν = ἐν PREP', 'Καδής, = κάδος N-NSM 2 |']);
+    const w = v.get('Num.20:1#22');
+    expect(w && isDerived(w)).toBe(false);
+    expect(w?.candidates.map((c) => `${c.lemma} ${c.morph}`)).toEqual(['κάδος N-NSM']);
+    expect(w?.notes).toEqual([`${PREPOSITION.name}: ἐν (Num.20:1#21) takes the dative; ${NOTE_PREPOSITION_NONE}`]);
+    // TAGNT's lemma holds a comma and a space, which the tokens above cannot say
+    const { words, outs } = asParsed('2Sa.18:20', 25, ['εἵνεκεν = ἕνεκα PREP', 'ὁ = ὁ T-NSM', 'υἱὸς = υἱός N-NSM']);
+    const ἕνεκα = outs[0] as DerivedWord;
+    outs[0] = { ...ἕνεκα, lemma: 'ἕνεκα, εἵνεκεν', candidates: [{ lemma: 'ἕνεκα, εἵνεκεν', morph: 'PREP', support: 3, share: 1 }] };
+    const after = new Map(checkAgreement(words, outs, { names: new Set(), parse: () => [], governs: GOVERNS }).outs.map((o) => [o.ref, o]));
+    expect(answer(after, '2Sa.18:20#26')).toBeUndefined();
+    expect(answer(after, '2Sa.18:20#27')).toBe('υἱός N-NSM');
+  });
+
+  it('reads nothing after a preposition it does not know (ἕως), after a mark of punctuation, or after a preposition still pending', () => {
+    const word = 'ἡμέρα = ἡμέρα N-NSF 2 | ἡμέρα N-GSF';
+    expect(answer(governed('Tst.1:1', 1, ['ἕως = ἕως PREP', word]), 'Tst.1:1#2')).toBe('ἡμέρα N-NSF');
+    expect(answer(governed('Tst.1:1', 1, ['ἐκ, = ἐκ PREP', word]), 'Tst.1:1#2')).toBe('ἡμέρα N-NSF');
+    expect(answer(governed('Tst.1:1', 1, ['ἐκ = ? ἐκ PREP; ἐκ ADV', word]), 'Tst.1:1#2')).toBe('ἡμέρα N-NSF');
+  });
+
+  it('takes no reading layer 1 has from one New Testament word: σὺν τὸν δίκαιον (Eccl 3:17) is not made τόν T-DSF, its stray reading; it waits for the model', () => {
+    const v = governed('Ecc.3:17', 7, ['Σὺν = σύν PREP', 'τὸν = ὁ T-ASM | ὁ T-DSF', 'δίκαιον = δίκαιος A-ASM']);
+    expect(layerOf(v, 'Ecc.3:17#8')).toBe('pending');
+    expect(v.get('Ecc.3:17#8')?.notes.at(-1)).toContain(NOTE_PREPOSITION_NONE);
+  });
+
+  it('reads a layer-1 word again where its reading in the case is seen twice or more in the New Testament', () => {
+    const { words, outs } = asParsed('Tst.1:1', 1, ['εἰς = εἰς PREP', 'ὥρας = ὥρα N-GSF | ὥρα N-APF']);
+    const twice = outs.map((o) => ({ ...o, candidates: o.candidates.map((c) => ({ ...c, support: 2 })) }));
+    const out = checkAgreement(words, twice, { names: new Set(), parse: () => [], governs: GOVERNS }).outs[1];
+    expect(isDerived(out) ? `${out.morph} ${out.layer}` : 'pending').toBe('N-APF 2a');
+    expect(layerOf(governed('Tst.1:1', 1, ['εἰς = εἰς PREP', 'ὥρας = ὥρα N-GSF | ὥρα N-APF']), 'Tst.1:1#2')).toBe('pending');
+  });
+
+  it('runs without a table of cases, as the check did before (a context with no governs)', () => {
+    const { words, outs } = asParsed('Pro.11:22', 3, ['ἐν = ἐν PREP', 'ῥινὶ = ῥίν N-NPF 2 | ῥίν N-DSF']);
+    expect(answer(new Map(checkAgreement(words, outs, { names: new Set(), parse: () => [] }).outs.map((o) => [o.ref, o])), 'Pro.11:22#4')).toBe('ῥίν N-NPF');
+  });
+
+  it('has a comment a reader can check, copied in docs/lxx-derivation.md', () => {
+    expect(PREPOSITION.comment).toContain('ἐπὶ τρίβων');
+    expect(readFileSync('docs/lxx-derivation.md', 'utf8')).toContain(PREPOSITION.name);
   });
 });

@@ -1,6 +1,7 @@
 // scripts/lxx/agreement.ts — the agreement check and the shared-ending rule, run by derive.ts after layers 1 and 2 and before the pending list is written
 // (docs/lxx-derivation.md, 'The agreement check'; the probe's 'Error checks for the full run', 2(a) and 2(b); story mw-u2w5klk.3).
-// Three rules, in order. (1) A form the New Testament has only as a proper name, which Swete writes in lower case (χλόης, grass, beside the name Chloe),
+// Before them, two rules that read the verse: the address rule (ADDRESS, story mw-u2w5klk.26) and the preposition rule (PREPOSITION, story mw-u2w5klk.27: a settled
+// word after a preposition, in a case it does not take, is read again among its own candidates). Then three rules, in order. (1) A form the New Testament has only as a proper name, which Swete writes in lower case (χλόης, grass, beside the name Chloe),
 // goes to the model. (2) The shared-ending rule: an answer of layer 1 or 2 whose ending two cases or genders share (SHARED_ENDINGS, TAGNT_EVIDENCE) is not
 // settled on the New Testament's evidence alone; it is demoted to a candidate set, its analyses, the parser's and the ending's other readings. (3) The
 // agreement check (`agree`, LINKS): within a verse, and never past a mark of punctuation, an article must agree in gender, number and case with the word
@@ -9,7 +10,7 @@
 // that agrees with its settled neighbours takes it, as layer '2a'; where two agree it stays pending: the check never guesses.
 import { keyOf } from './swete';
 import type { Analysis } from './tagnt';
-import type { Candidate } from './parser';
+import { caseOf as caseOfMorph, type Candidate } from './parser';
 import type { DerivedWord, PendingWord, WordCandidate } from './derive';
 
 /** A word settled by agreement: below layer 1's 0.90 and above the parser's 0.75, since the check reads one neighbour and no syntax. */
@@ -636,6 +637,69 @@ export function readAddresses(words: ReadonlyArray<{ ref: string; verse: string;
   return { outs: next, addressed: count };
 }
 
+// ---------------------------------------------------------------- a preposition's case (story mw-u2w5klk.27)
+
+/** The preposition rule's name and its comment; docs/lxx-derivation.md copies the comment. */
+export const PREPOSITION = {
+  name: "a preposition's case",
+  comment:
+    'A preposition governs the case of the word after it, and the New Testament says which cases each one takes (prepositionCases, scripts/lxx/parser.ts: ' +
+    'ἐν the dative, εἰς the accusative, ἐπί the genitive, dative and accusative). Layer 2 settles a form on the support of rules learned from other lemmas, ' +
+    'none of it from the verse: ἐπὶ τρίβων (Job 18:10) took τρίβω V-PAP-NSM (123 of 133) and ἐν ῥινὶ ὑός (Prov 11:22) N-NPF (42 of 45). So a settled word ' +
+    'right after a settled preposition (in its verse, no mark of punctuation between) whose case the preposition does not take is read again among its own ' +
+    'candidates (not a reading layer 1 has from one New Testament word, a slip of tagging as in TAGNT_EVIDENCE: σὺν τὸν δίκαιον, Eccl 3:17, keeps τόν T-ASM, ' +
+    'though the New Testament once tags τόν T-DSF): where exactly one is in a case it takes, that one is settled, layer 2a (τρίβος N-GPF, ῥίν N-DSF); where several are (a preposition that takes ' +
+    'more than one case), the word waits for the model, the fitting readings first; where none is, it waits for the model too, since either the ' +
+    'preposition does not govern it (οὗ εἵνεκεν ὁ υἱὸς τοῦ βασιλέως ἀπέθανεν, 2 Sam 18:20; πρὸς κεφαλῆς, a genitive the New Testament has once) or no ' +
+    'reading of ours is the one (κατὰ Μωυσῆ as a dative, ἐν Καδής as κάδος N-NSM); the agreement links do not settle either. A word in a case the ' +
+    'preposition takes is never changed, whichever of the cases it takes is right.',
+} as const;
+export const NOTE_PREPOSITION_SEVERAL = 'several readings fit: for the model';
+export const NOTE_PREPOSITION_NONE = 'no reading fits: for the model';
+
+const CASE_NAMES: Readonly<Record<string, string>> = { G: 'genitive', D: 'dative', A: 'accusative' };
+const casesNamed = (cases: readonly string[]): string => {
+  const names = cases.map((c) => CASE_NAMES[c] ?? c);
+  return `the ${names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names.at(-1)}` : names[0]}`;
+};
+
+/**
+ * The preposition rule (PREPOSITION), run by checkAgreement after the address rule, over words in the text's order. `governs` is a preposition's lemma ->
+ * the cases it takes. Returns the words after it, how many it settled again and how many it sent to the model, and the refs of those (which the agreement
+ * links must not settle).
+ */
+export function readPrepositions(
+  words: ReadonlyArray<{ ref: string; verse: string; display: string }>,
+  outs: readonly Out[],
+  governs: ReadonlyMap<string, readonly string[]>,
+): { outs: Out[]; governed: number; pending: number; held: Set<string> } {
+  const next = [...outs];
+  let governed = 0;
+  const held = new Set<string>();
+  for (let i = 0; i + 1 < next.length; i++) {
+    const p = next[i];
+    const w = next[i + 1];
+    if (!isSettled(p) || p.morph !== 'PREP' || !isSettled(w)) continue;
+    const takes = governs.get(p.lemma);
+    if (!takes || words[i + 1].verse !== words[i].verse || pauseAfter(words[i].display)) continue;
+    const own = caseOfMorph(w.morph);
+    if (!own || takes.includes(own)) continue;
+    // a reading layer 1 has from one New Testament word only is a slip of tagging, as in TAGNT_EVIDENCE (τόν T-DSF beside T-ASM 1,634 times)
+    const seen = (c: WordCandidate): boolean => w.layer !== 1 || c.support >= EVIDENCE_MIN;
+    const fit = w.candidates.filter((c, k, all) => takes.includes(caseOfMorph(c.morph) ?? '') && seen(c) && all.findIndex((d) => d.lemma === c.lemma && d.morph === c.morph) === k);
+    const rest = w.candidates.filter((c) => !fit.includes(c));
+    const note = `${PREPOSITION.name}: ${p.lemma} (${p.ref}) takes ${casesNamed(takes)}`;
+    if (fit.length === 1) {
+      next[i + 1] = { ...w, lemma: fit[0].lemma, morph: fit[0].morph, layer: AGREEMENT_LAYER, confidence: AGREEMENT_CONFIDENCE, candidates: [...fit, ...rest], notes: [...w.notes, note] };
+      governed++;
+    } else {
+      next[i + 1] = { ref: w.ref, candidates: [...fit, ...rest], notes: [...w.notes, `${note}; ${fit.length ? NOTE_PREPOSITION_SEVERAL : NOTE_PREPOSITION_NONE}`] };
+      held.add(w.ref);
+    }
+  }
+  return { outs: next, governed, pending: held.size, held };
+}
+
 // ---------------------------------------------------------------- the whole check
 
 export interface CheckContext {
@@ -643,6 +707,8 @@ export interface CheckContext {
   names: ReadonlySet<string>;
   /** the parser's candidates for a form (layer 2's, cached by the caller) */
   parse: (form: string) => Candidate[];
+  /** a preposition's lemma -> the cases it governs (Parser.governs); none given, the preposition rule reads nothing */
+  governs?: ReadonlyMap<string, readonly string[]>;
 }
 
 export interface AgreementStats {
@@ -650,6 +716,10 @@ export interface AgreementStats {
   pendingBefore: number;
   /** settled nominatives read as the vocative of an address (readAddresses) */
   addressed: number;
+  /** settled words read again in a case the preposition before them takes (readPrepositions), layer 2a */
+  governed: number;
+  /** settled words the preposition rule sent to the model, several of their readings fitting */
+  governedPending: number;
   /** settled words sent to the model as a name written in lower case */
   names: number;
   /** settled words demoted by the shared-ending rule */
@@ -682,22 +752,26 @@ function mergeCandidates(first: readonly WordCandidate[], ...more: ReadonlyArray
 }
 
 /**
- * The check on one book's words (in the text's order) and what layers 1 and 2 made of each: the address rule (readAddresses), the name rule, the shared-ending rule, then `agree`.
+ * The check on one book's words (in the text's order) and what layers 1 and 2 made of each: the address rule (readAddresses), the preposition rule (readPrepositions), the name rule, the shared-ending rule, then `agree`.
  * A demoted word's candidates are its own (layer 1's analyses or layer 2's) and the ending's other readings; not the parser's for a form the New
  * Testament has, whose rules, learned from other lemmas, offer tagged and stray readings (ἁγίῳ as A-DSN-LG and A-DSF) that only blur the choice. A name
  * written in lower case does take the parser's, since the word it is may be another lemma (χλόης, grass).
  * Returns each word's answer after the check, in the same order, and its counts.
  */
 export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string; form: string; display: string }>, given: readonly Out[], ctx: CheckContext): { outs: Out[]; stats: AgreementStats } {
-  const stats: AgreementStats = { pendingBefore: given.filter((o) => !isSettled(o)).length, addressed: 0, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0 };
+  const stats: AgreementStats = { pendingBefore: given.filter((o) => !isSettled(o)).length, addressed: 0, governed: 0, governedPending: 0, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0 };
   const read = readAddresses(words, given);
   stats.addressed = read.addressed;
-  const outs = read.outs;
+  const prep = readPrepositions(words, read.outs, ctx.governs ?? new Map());
+  stats.governed = prep.governed;
+  stats.governedPending = prep.pending;
+  const outs = prep.outs;
   const demoted = new Set<string>();
   const items: AgreementWord[] = words.map((word, i) => {
     const out = outs[i];
     const item: AgreementWord = { ref: word.ref, verse: word.verse, out, pause: pauseAfter(word.display) };
     if (!isSettled(out)) {
+      if (prep.held.has(out.ref)) item.held = true;
       if (ctx.names.has(keyOf(word.form)) && isLowerCase(word.form)) {
         item.out = { ...out, notes: [...out.notes, NOTE_NAME] };
         item.held = true;
