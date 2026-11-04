@@ -43,7 +43,7 @@ Each word is looked up in three layers, in order. A word keeps the layer that ga
 | Layer | What it does | State |
 | --- | --- | --- |
 | Layer 1, TAGNT form | The word's form as STEPBible's TAGNT has it anywhere in the New Testament, taken when TAGNT gives it one analysis, or one with at least 95% of 20 or more words | built (`scripts/lxx/tagnt.ts`, `derive.ts`) |
-| Layer 2, parser | For a form the New Testament lacks: ending rules learned from TAGNT's (form, lemma, parsing) triples, proposing only lemmas in TBESG; then Swete's other spellings; then analogy. Taken when one candidate is left on enough stem support ('A lone candidate on thin support'), or one with 90% of the support | built (`scripts/lxx/parser.ts`, `tbesg.ts`, `derive.ts`) |
+| Layer 2, parser | For a form the New Testament lacks: ending rules learned from TAGNT's (form, lemma, parsing) triples, proposing only lemmas in TBESG; then Swete's other spellings; then analogy. Taken when one candidate is left on enough support (a rule's stem support, analogy's pairs; 'A lone candidate on thin support'), or one with 90% of the support | built (`scripts/lxx/parser.ts`, `tbesg.ts`, `derive.ts`) |
 | The agreement check, layer 2a | Before the model: a settled nominative in an address becomes the vocative, as TAGNT tags one ('An address'); a settled word right after a preposition, in a case the preposition does not take, takes the one reading of its own that is in a case it takes, or goes to the model ('A preposition's case'); an answer whose ending two cases or genders share is demoted to its candidates; a name the New Testament has, written here in lower case, goes to the model; within a verse an article, adjective or participle must agree with its noun, a settled pair that does not is a break (both to the model), and a word left with exactly one candidate that agrees with its settled neighbours takes it as layer 2a | built (`scripts/lxx/agreement.ts`, `derive.ts`) |
 | Layer 3, model choice | A model reads the verse and chooses among the candidates, or guesses (marked) when there are none; where Morpheus (below) knows a form that has no candidate, its analyses are the candidates | the choices file is read, scored and joined (`scripts/lxx/choices.ts`, 'The choices file'); the runner that lists a book's pending words in batches and takes the choices back is built (`scripts/lxx/batches.ts`, `pending.ts`, `choose.ts`, 'A model session'); no paid API: a Builder's own session |
 
@@ -125,7 +125,7 @@ A rule's weight counts the lemmas that show it, whatever their stems; for a lone
 - **Stem support** (`Candidate.stemSupport`, `parse`; `trainRulesAndStems` keeps `RuleStems`): of the New Testament lemmas behind the rules that give a candidate, those whose
   stem ends as the candidate's own stem does, summed as support is. How a stem ends (`stemClass`): its last letter when that is a vowel (the vowel of a contract verb, `ποιε-` or
   `εξαρτα-`, which a rule's endings leave out), else one class for every consonant. Every letter apart was tried and left `ἀκολουθοῦντας` with none, for no `-εω` stem the New
-  Testament shows ends in `θ`. Analogy's candidates have no stem support and are not touched.
+  Testament shows ends in `θ`. Analogy's candidates have no stem support; they are read by their own support, below.
 - **The rule** (`isThinLone`, `settleParsed`): an ending rule's only candidate is taken only when its stem support is at least `LONE_MIN_STEM_SUPPORT` (4). Below that the
   word is pending with that one candidate and the note `one candidate on thin support: for the agreement check or the model`. Analogy's readings are not put beside it: they
   blurred pending imperatives the address rule reads (Ps 23:7 `πύλαι αἰώνιοι` turned nominative) and offered agreement readings the form cannot be (`ἄφρονος` as `A-NSF`).
@@ -140,9 +140,24 @@ A rule's weight counts the lemmas that show it, whatever their stems; for a lone
   counted a break. Its right reading, `A-GSM`, is no candidate: the model reads it. Gen 1 has 163 pending words (161 before), John 1 with John hidden settles 19 in layer 2 (25
   before). The words newly pending in the fixtures and the known-answer chapters were chosen by a blind reader (a fresh subagent given only the verse, the word and its
   candidates), each line marked `# blind subagent, mw-u2w5klk.28` in its file.
-- **Not changed, the same fault elsewhere**: the 90% rule's dominant candidate (93.1% right on the same New Testament measure, 1,223 of 1,314); analogy's lone candidate (no stem;
-  88.9% right, 73.3% at a support of 1, and no threshold reaches 98%); Morpheus's mapping (`mapAnalysis` leaves perfects unmapped, and Morpheus is asked only of forms with no
-  candidate). Layer 1 is clear: its support is New Testament words of the form itself.
+- **Analogy's lone candidate** (story mw-u2w5klk.30; `isThinLone`, `LONE_MIN_ANALOGY_SUPPORT`, `Candidate.analogy`): the same fault, found by the same sweep: analogy's one candidate was settled on any support, and is
+  88.9% right on the New Testament, 73.3% at a support of 1. Analogy's support is the number of pairs of forms of one lemma that show the ending pair (`c pairs` in the note), not a stem's, so it is
+  read as it stands. Measured as the rules' was (`npm run lxx:lone-support`, the rules left nothing, analogy gave one candidate: 700 words, 622 right, scored on lemma and full parsing; 698 are right on the lemma, so what
+  analogy gets wrong is the parsing, a participle's or a perfect's shared ending, the second-aorist `2` and voice): support 1: 129 of 176 right (73.3%); 2: 91 of 104 (87.5%); 3: 65 of 69 (94.2%);
+  4: 42 of 45 (93.3%); 5: 45 of 45; 6: 36 of 38; 7: 22 of 24; 8: 25 of 26; 9 to 15 100% bar one of 11 at 11. By *this support and above*: 1: 88.9%, 2: 94.1% (493 of 524), 3: 95.7%, **4: 96.0% (337 of 351)**,
+  5: 96.4%, 8 and 9: 96.5%, the most any support gives. **No support reaches the bar's 98% but 63, on 6 words**, so unlike the rules' it cannot be had; 4 is the least from which they are right at least 96%
+  together, and above it no support adds half a point, so **4**. This is two points short of the rules' line, and that line is the Governor's to confirm (`LONE_ANALOGY_MIN_SHARE`). Below it the word is pending with that one candidate and the same
+  note (`one candidate on thin support: ...`), with the analogy note beside it. Several analogy candidates are weighed as before (the 90% rule is not touched).
+  On the 39 books (`npm run lxx:derive -- --all --no-morpheus`, before and after): settled 354,992 and pending 121,137 before, 353,535 and 122,594 after: 1,463 settled words pending (1,378 analogy's thin words, mostly
+  verbs, 1,203 of them, and 151 `Μωϋσῆς` in the dative or genitive, whose `-ῆ` ending one lemma shows; 85 neighbours, 83 of them an article whose noun went pending), 6 pending words settled by agreement (an article beside the thin `φύλαξ`),
+  and 90 settled again by agreement under the same answer (layer 2 to 2a); no answer changed. The 12,000-word limit that would have called for a narrower form is far off; the wider forms would add 1,602 at a support below 5, and the
+  narrower 973 below 3 and 634 below 2. Read by hand, 20 of the 1,559 words it touched (seed 20261104): 15 sent to the model that were right (a cost), 4 sent that were wrong (`Μωυσῆ` read as the dative
+  where Exo 18:5 and Num 4:45 are genitive, `δύνησθε` as an aorist, `ἀπώσῃ` as a future after `μή`), 1 confirmed (settled again by agreement), none mended and none made wrong. Gen 1 has 168 pending words (163 before), John 1 with John hidden
+  settles 16 in layer 2 (19 before; 25 before .28), and the two known-answer chapters score as before (Jhn.1 827 of 829 on the lemma, 823 on full parsing; Rom.8 650 and 645). The words newly pending in the fixtures and the known-answer
+  chapters (seven; Jhn.1:22#10 for the fixture's own choices) were chosen by a blind reader (a fresh subagent given only the verse, the word and its candidates), each line marked `# blind subagent, mw-u2w5klk.30`.
+- **Not changed, the same fault elsewhere**: the 90% rule's dominant candidate (93.1% right on the same New Testament measure, 1,223 of 1,314); Morpheus's mapping (`mapAnalysis` leaves perfects unmapped, and Morpheus is asked only of
+  forms with no candidate); the agreement check's settling of a thin word whose one reading agrees with its settled neighbours (layer 2a: right for all 32 and 34 words of John 1 and Romans 8 after the check, not measured over the
+  whole New Testament). Layer 1 is clear: its support is New Testament words of the form itself.
 
 ### Names no lexicon has: the form as its own lemma
 
@@ -438,7 +453,7 @@ known-answer lines, and no book is SHIPPABLE until it has one. Adding a chapter 
 and scores the result against TAGNT's own rows for the same words. The words are TAGNT's NA28 words of the chapter (an `N` in the row's edition code), read as a book of Swete's would be, so the references are
 the derivation's own (`Jhn.1:33#23`). **Lemma** is right when it equals TAGNT's exactly, in NFC, so accents count; **full** is right when the lemma and the whole parsing are, a noun's semantic tags (`-T`, `-P`, `-L`) dropped.
 
-The run prints, for each chapter: layers 1 and 2 alone before the agreement check (the probe's table: on John 1 layer 1 settles 673 words, 672 right on the lemma and 670 on full parsing, layer 2 25 of 25; 19 of 19 since 'A lone candidate on thin support'); then the
+The run prints, for each chapter: layers 1 and 2 alone before the agreement check (the probe's table: on John 1 layer 1 settles 673 words, 672 right on the lemma and 670 on full parsing, layer 2 25 of 25; 16 of 16 since 'A lone candidate on thin support'); then the
 words each layer answers after the check (1, 2, 2a); then layer 3, the words a choices file settled; and the whole chapter. A word still pending with no choice has no answer and is counted wrong. Flags:
 
 ```bash
@@ -691,7 +706,7 @@ npm run lxx:derive -- --word Gen.1:20#13       # one word: its candidates, their
 npm run lxx:derive -- --all                    # every book of the file, trained once: each book's two files, and one line a book
 npm run lxx:derive -- --book gen --no-morpheus # the same with the second method off (with no Docker it prints "Morpheus skipped: ..." and does the same)
 npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT ('The known-answer run')
-npm run lxx:lone-support                       # the New Testament measure behind LONE_MIN_STEM_SUPPORT, each book hidden in turn ('A lone candidate on thin support')
+npm run lxx:lone-support                       # the New Testament measure behind LONE_MIN_STEM_SUPPORT and LONE_MIN_ANALOGY_SUPPORT, each book hidden in turn ('A lone candidate on thin support')
 npm run lxx:morpheus-check -- --known Jhn.1 Rom.8   # Morpheus's mapped readings against TAGNT's answers; needs Docker and the image ('The sweep')
 npm run lxx:morpheus-check -- --coverage            # the mapping's coverage over the sweep's forms, and the words still with no candidate, by reason
 npm run lxx:batches -- --book gen              # the book's pending words in batches of about 700: the table the model stories are filed from ('A model session')

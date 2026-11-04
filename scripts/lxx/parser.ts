@@ -18,6 +18,8 @@ export interface Candidate extends Analysis {
    * here. Analogy's candidates have none.
    */
   stemSupport?: number;
+  /** Analogy's candidates only (byAnalogy; story mw-u2w5klk.30): what produced the candidate, for isThinLone, which reads its support (the pairs of forms behind it) where a rule's candidate is read by stemSupport. */
+  analogy?: true;
 }
 
 export interface Triple {
@@ -519,7 +521,7 @@ export function byAnalogy(form: string, parser: Parser): Candidate[] {
       if (!m) continue;
       for (const [morph, c] of m) found.add(n.lemma, morph, c, `analogy: ${n.f} (${n.lemma} ${n.morph}), ${end(n.f.slice(k))} beside ${end(f.slice(k))} (${c} pairs)`);
     }
-    if (found.size) return found.candidates((a, b) => byCode(a.morph, b.morph) || byCode(a.lemma, b.lemma));
+    if (found.size) return found.candidates((a, b) => byCode(a.morph, b.morph) || byCode(a.lemma, b.lemma)).map((c) => ({ ...c, analogy: true as const }));
   }
   return [];
 }
@@ -538,9 +540,22 @@ export const PARSER_CONFIDENCE = 0.75;
  */
 export const LONE_MIN_STEM_SUPPORT = 4;
 
-/** Whether the candidates are one ending rule's candidate on thin support (LONE_MIN_STEM_SUPPORT): pending with that one candidate, for the agreement check or the model. */
-export const isThinLone = (candidates: ReadonlyArray<Pick<Candidate, 'stemSupport'>>): boolean =>
-  candidates.length === 1 && candidates[0].stemSupport !== undefined && candidates[0].stemSupport < LONE_MIN_STEM_SUPPORT;
+/**
+ * Analogy's lone candidate is taken only when at least this many pairs of forms of one lemma show its ending pair (Candidate.support; story mw-u2w5klk.30). Measured
+ * as the rules' is, each New Testament book hidden in turn (`npm run lxx:lone-support`; docs/lxx-derivation.md, 'A lone candidate on thin support'), over the 700 words
+ * whose form the other books lack, for which the rules leave nothing and analogy one candidate: right on lemma and full parsing for 73.3% of those on a support of 1,
+ * 87.5% of 2, 94.2% of 3, 93.3% of 4 and 100% of 5. No support reaches the bar's 98% but 63, on 6 words; 4 is the least from which they are right at least 96% together
+ * (96.0%, 337 of 351), and no support above adds half a point (the best, at 8 and 9, is 96.5%). A shortfall of two points against the rules' 98%, named for the Governor.
+ */
+export const LONE_MIN_ANALOGY_SUPPORT = 4;
+
+/** Whether the candidates are one candidate on thin support (LONE_MIN_STEM_SUPPORT for an ending rule's, LONE_MIN_ANALOGY_SUPPORT for analogy's): pending with that one candidate, for the agreement check or the model. */
+export const isThinLone = (candidates: ReadonlyArray<Pick<Candidate, 'support' | 'stemSupport' | 'analogy'>>): boolean => {
+  if (candidates.length !== 1) return false;
+  const [c] = candidates;
+  if (c.analogy) return c.support < LONE_MIN_ANALOGY_SUPPORT;
+  return c.stemSupport !== undefined && c.stemSupport < LONE_MIN_STEM_SUPPORT;
+};
 
 /** Whether layer 2 settles a word with these candidates, and how sure it is; undefined when they stay for the model. A lone candidate on thin support is not settled. */
 export function settleParsed(candidates: readonly Candidate[]): { analysis: Candidate; confidence: number } | undefined {

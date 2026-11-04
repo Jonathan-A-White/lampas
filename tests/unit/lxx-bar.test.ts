@@ -144,26 +144,27 @@ describe('lxx:known on John 1, John hidden (the probe’s known-answer run)', as
   // an empty directory stands for a chapter with no choices file (data/lxx/known/jhn-1.tsv is committed now, mw-u2w5klk.7)
   const [bare] = await runKnown(['--chapter', 'Jhn.1', '--choices-dir', tmp()], { input: JHN });
 
-  it('scores layers 1 and 2 as the probe did, within one word: 672 of 673 on the lemma and 670 on full parsing for layer 1, 19 of 19 for layer 2 (25 before mw-u2w5klk.28 left six lone candidates on thin support pending)', () => {
+  it('scores layers 1 and 2 as the probe did, within one word: 672 of 673 on the lemma and 670 on full parsing for layer 1, 16 of 16 for layer 2 (25 before mw-u2w5klk.28 and .30 left nine lone candidates on thin support pending)', () => {
     expect(kept.words).toBe(829);
     expect(kept.hidden).toBe('jhn');
     expect(kept.before[1].words).toBe(673);
     expect(Math.abs(kept.before[1].lemma - 672)).toBeLessThanOrEqual(1);
     expect(Math.abs(kept.before[1].full - 670)).toBeLessThanOrEqual(1);
-    expect(kept.before[2]).toEqual({ words: 19, lemma: 19, full: 19 });
+    expect(kept.before[2]).toEqual({ words: 16, lemma: 16, full: 16 });
   });
 
   it('given the probe’s John choices scores the whole chapter at 828 of 829 on the lemma and 825 on full parsing', () => {
     expect(kept.all).toEqual({ words: 829, lemma: 828, full: 825 });
     expect(kept.unanswered).toBe(0);
-    // 138 of the probe's choices and six of a blind reader's, for the words mw-u2w5klk.28 leaves pending
-    expect(kept.choices).toMatchObject({ given: 144, refused: 0 });
-    expect(kept.guesses).toBe(3);
-    // the three guesses the probe made were right
+    // 138 of the probe's choices and seven of a blind reader's, for the words mw-u2w5klk.28 and .30 leave pending
+    expect(kept.choices).toMatchObject({ given: 145, refused: 0 });
+    // the probe's marks: three, and Jhn.1:32#6, which a candidate now covers and the probe had marked a guess (mw-u2w5klk.30 leaves it pending)
+    expect(kept.guesses).toBe(4);
+    // the guesses the probe made were right
     expect(kept.by['3'].lemma).toBe(kept.by['3'].words);
     const text = lines.join('\n');
     expect(text).toContain('all: 829 words, lemma 828 (99.9%), lemma and full parsing 825 (99.5%)');
-    expect(text).toContain('layer 2a: 31 words');
+    expect(text).toContain('layer 2a: 32 words');
   });
 
   it('counts a pending word with no choice wrong unless --keep-demoted asks for the probe’s reading, and with no choices file counts every pending word wrong', () => {
