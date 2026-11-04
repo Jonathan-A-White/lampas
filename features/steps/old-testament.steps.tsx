@@ -18,7 +18,6 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { audibleStartOf } from '../../src/resources/audioBible';
 import { englishDictionaryLink } from '../../src/resources/logos';
-import { chapterLink } from '../../src/resources/logosBible';
 import { browserEnv } from '../../src/resources/openApp';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
@@ -126,11 +125,6 @@ const chunkEl = (verse: number, text: string): HTMLElement => {
 };
 const reader = (): HTMLElement => document.querySelector<HTMLElement>('[data-reader]') as HTMLElement;
 const foot = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-chapter-actions]');
-/** The foot's actions are drawn when the settings they rest on have loaded. */
-const footDrawn = async (): Promise<HTMLElement> => {
-  await waitFor(() => expect(foot()).not.toBeNull());
-  return foot() as HTMLElement;
-};
 const nav = (): Promise<HTMLElement> => screen.findByRole('navigation', { name: 'Chapters' });
 /** The word sheet an English chunk of an Old Testament chapter opens (mw-5vvlay.2): the Hebrew words of the chunk, and the English words under them */
 const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Word' });
@@ -163,10 +157,6 @@ const chapters = (): number[] => [...picker().querySelectorAll('[data-chapter]')
 const pickChapter = (n: number) => async (): Promise<void> => {
   await user.click(await within(picker()).findByRole('button', { name: `Chapter ${n}` }));
 };
-const headed = (_: unknown, title: string): void => {
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(title);
-};
-const link = async (name: string): Promise<HTMLElement> => within(await footDrawn()).getByRole('link', { name: new RegExp(name) });
 
 const openSettings = async (): Promise<void> => {
   await user.click(screen.getByRole('button', { name: 'Settings' }));
@@ -424,94 +414,58 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Read in Logos is at the foot of an opened chapter in his default Bible and the chapter stays open', ({ Given, Then, When, And }) => {
-    Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
-    Then('{string} is at the foot of the chapter with the link {string}', async (_, name: string, url: string) => {
-      expect((await link(name)).getAttribute('href')).toBe(url);
-    });
-    When('he taps {string}', async (_, name: string) => {
-      const a = await link(name);
-      asked.push(a.getAttribute('href') ?? '');
-      await user.click(a);
-    });
-    Then('Logos is asked for {string}', (_, url: string) => {
-      expect(asked).toEqual([url]);
-    });
-    And('the reader is headed {string}', headed);
-  });
-
-  Scenario('The https address is the fallback only when the phone cannot open the app', ({ Given, When, And, Then }) => {
-    Given('Lampas is opened on Psalms 23 with Logos on', () => openOn('Psalms 23', withLogos(true)));
-    When('he taps {string}', async (_, name: string) => user.click(await link(name)));
-    And('the page stays in front for the wait', () => {
-      for (const t of [...timers]) t();
-    });
-    Then('the address {string} was opened', (_, url: string) => {
-      expect(opened).toEqual([url]);
-    });
-  });
-
-  Scenario('The Bible he chose in Settings is the one that opens', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Malachi 4 with Logos on and the Bible in Logos {string}', (_, id: string) =>
-      openOn('Malachi 4', { ...withLogos(true), logosBible: id }),
-    );
-    When('he taps {string}', async (_, name: string) => {
-      const a = await link(name);
-      asked.push(a.getAttribute('href') ?? '');
-      await user.click(a);
-    });
-    Then('Logos is asked for {string}', (_, url: string) => {
-      expect(asked).toEqual([url]);
-    });
-  });
-
+  const viewEl = (): HTMLElement => screen.getByRole('region', { name: 'Verse view' });
+  const tapVerseNumber = async (_: unknown, n: number): Promise<void> => {
+    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    await screen.findByRole('region', { name: 'Verse view' });
+  };
   const judges = (logos: boolean, audio: boolean) => () => openOn('Judges 3', { ...withLogos(logos), ...withAudio(audio) });
-  const offers = async (_: unknown, title: string, ...names: string[]): Promise<void> => {
-    const actions = await footDrawn();
-    expect(actions).toHaveAccessibleName(`${title}: read or listen`);
-    expect([...actions.querySelectorAll('a')].map((l) => l.textContent)).toEqual(names);
+  const footBare = async (): Promise<void> => {
+    await nav();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(foot()).toBeNull();
+    expect(screen.queryByRole('link', { name: /Read in Logos|Listen in Audible/ })).toBeNull();
   };
 
-  Scenario('With Logos on and the Audio Bible on the chapter offers both, and Listen in Audible names the chapter to pick', ({ Given, Then, And }) => {
+  Scenario('The foot of an Old Testament chapter has no Read in Logos and no Listen in Audible, though both are on', ({ Given, Then }) => {
     Given('Lampas is opened on Judges 3 with Logos on and the Audio Bible on', judges(true, true));
-    Then('the foot of Judges 3 offers {string} and {string}', (_, a: string, b: string) => offers(null, 'Judges 3', a, b));
-    And('the foot says {string}', async (_, text: string) => {
-      expect(await footDrawn()).toHaveTextContent(text);
-    });
-    And("{string} is the chapter's Logos link", async (_, name: string) => {
-      expect((await link(name)).getAttribute('href')).toBe(chapterLink('jdg', 3, 'LLS:LGCYSTNDRDBBLSB')?.url);
-    });
-    And("{string} is Audible's link at the start of Judges 3", async (_, name: string) => {
-      expect(new URL((await link(name)).getAttribute('href') ?? '').searchParams.get('position_from_start')).toBe(String(audibleStartOf('jdg', 3)));
-    });
-  });
-
-  Scenario('With only Logos on the foot offers the one action', ({ Given, Then }) => {
-    Given('Lampas is opened on Judges 3 with Logos on and the Audio Bible off', judges(true, false));
-    Then('the foot of Judges 3 offers only {string}', (_, only: string) => offers(null, 'Judges 3', only));
-  });
-
-  Scenario('With only the Audio Bible on the foot offers the one action', ({ Given, Then }) => {
-    Given('Lampas is opened on Judges 3 with Logos off and the Audio Bible on', judges(false, true));
-    Then('the foot of Judges 3 offers only {string}', (_, only: string) => offers(null, 'Judges 3', only));
-  });
-
-  Scenario('With both off the foot offers neither', ({ Given, Then }) => {
-    Given('Lampas is opened on Judges 3 with Logos off and the Audio Bible off', judges(false, false));
-    Then('the foot of Judges 3 offers nothing outside Lampas', async () => {
-      await nav();
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(foot()).toBeNull();
+    Then('the foot of the chapter offers nothing outside Lampas', async () => {
+      await footBare();
       expect(bookOf('jdg')?.name).toBe('Judges');
     });
   });
 
-  Scenario('A New Testament chapter has no Read in Logos at its foot', ({ Given, Then }) => {
+  Scenario('The Bible he chose in Settings is the one In Logos opens on the Verse view', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Malachi 4 with Logos on and the Bible in Logos {string}', (_, id: string) =>
+      openOn('Malachi 4', { ...withLogos(true), logosBible: id }),
+    );
+    When('he taps the number of verse {int}', tapVerseNumber);
+    And('he taps {string}', async (_, name: string) => {
+      const a = await within(viewEl()).findByRole('link', { name: new RegExp(`^${name}`) });
+      asked.push(a.getAttribute('href') ?? '');
+      await user.click(a);
+    });
+    Then('Logos is asked for {string}', (_, url: string) => {
+      expect(asked).toEqual([url]);
+    });
+  });
+
+  Scenario('The Verse view of Judges 3:1 offers Listen in Audible at the start of the chapter, under Listen', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Judges 3 with Logos on and the Audio Bible on', judges(true, true));
+    When('he taps the number of verse {int}', tapVerseNumber);
+    Then('the Verse view shows {string} at the start of Judges 3', async (_, name: string) => {
+      const a = await within(viewEl()).findByRole('link', { name: new RegExp(`^${name}`) });
+      expect(new URL(a.getAttribute('href') ?? '').searchParams.get('position_from_start')).toBe(String(audibleStartOf('jdg', 3)));
+    });
+    And('the Verse view says {string}', (_, text: string) => {
+      expect(viewEl()).toHaveTextContent(text);
+    });
+  });
+
+  Scenario('A New Testament chapter has no Read in Logos or Listen in Audible at its foot', ({ Given, Then }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
     Then('there is no {string} at the foot of the chapter', async (_, name: string) => {
-      await nav();
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(foot()).toBeNull();
+      await footBare();
       expect(screen.queryByRole('link', { name })).toBeNull();
     });
   });
@@ -584,11 +538,6 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  const viewEl = (): HTMLElement => screen.getByRole('region', { name: 'Verse view' });
-  const tapVerseNumber = async (_: unknown, n: number): Promise<void> => {
-    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
-    await screen.findByRole('region', { name: 'Verse view' });
-  };
   const phoneLicensed = 'Lampas is opened on Jonah 1 with a licence';
 
   Scenario('Diagram kept from a New Testament verse opens an Old Testament verse on Diagram and is kept', ({ Given, When, Then, And }) => {

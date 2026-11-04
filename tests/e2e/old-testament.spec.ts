@@ -80,8 +80,8 @@ test('Malachi 4 runs into Matthew 1 and back, and an Old Testament chapter offer
   await expect(page.getByRole('group', { name: 'Language' }).getByRole('button')).toHaveText(['English', 'Hebrew']);
 });
 
-/** Turns Logos on in the app's store through raw IndexedDB, as the app wrote it (Settings > Study resources does the same). */
-async function turnLogosOn(page: Page) {
+/** Turns Logos and the Audio Bible on in the app's store through raw IndexedDB, as the app wrote them (Settings > Study resources and Audio Bible do the same). */
+async function turnLogosAndAudioOn(page: Page) {
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
@@ -91,6 +91,7 @@ async function turnLogosOn(page: Page) {
           const db = open.result;
           const tx = db.transaction('settings', 'readwrite');
           tx.objectStore('settings').put({ key: 'resource.logos', value: 'on' });
+          tx.objectStore('settings').put({ key: 'audioBible', value: 'word-of-promise' });
           tx.oncomplete = () => {
             db.close();
             resolve();
@@ -101,17 +102,63 @@ async function turnLogosOn(page: Page) {
   );
 }
 
-test('Read in Logos stands at the foot of an Old Testament chapter, a full-height tap target, once Logos is on', async ({ page }) => {
+test('the foot of an Old Testament chapter has no Read in Logos and no Listen in Audible, though both are on; the Maps door stays and the verse has both (mw-5r3p30.1008)', async ({ page }) => {
   await routePostern(page, makeFakePostern());
   await openUnlocked(page);
   await page.goto('/#/?b=psa&c=23');
   await expect(page.getByRole('heading', { name: 'Psalms 23', level: 1 })).toBeVisible();
-  await turnLogosOn(page);
+  await turnLogosAndAudioOn(page);
   await page.reload();
-  const actions = page.locator('[data-chapter-actions]');
-  await actions.scrollIntoViewIfNeeded();
-  const link = actions.getByRole('link', { name: 'Read in Logos' });
-  await expect(link).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ps23');
-  expect(await link.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(TAP);
+  await expect(page.getByRole('heading', { name: 'Psalms 23', level: 1 })).toBeVisible();
+  const foot = page.getByRole('navigation', { name: 'Chapters' });
+  await foot.scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-chapter-actions]')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Read in Logos' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /Listen in Audible/ })).toHaveCount(0);
+
+  // the Maps door stays at a chapter's foot (Genesis 10 has maps, Psalms 23 has none)
+  await page.goto('/#/?b=gen&c=10');
+  await expect(page.getByRole('heading', { name: 'Genesis 10', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]').getByRole('button', { name: /^Maps · \d+$/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Read in Logos|Listen in Audible/ })).toHaveCount(0);
+
+  // what the foot once had is on the verse: tap its number, and the Verse view has In Logos (the Tools line) and, under Listen, Listen in Audible
+  await page.goto('/#/?b=psa&c=23');
+  await page.getByRole('button', { name: 'Verse 1', exact: true }).click();
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view.getByRole('link', { name: 'In Logos' })).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ps23.1');
+  await expect(view.getByRole('link', { name: /^Listen in Audible/ })).toBeVisible();
   await shot(page, 'old-testament-psalms');
 });
+
+// The view a verse, a passage and the whole chapter open is one Verse view: In Logos (its Tools line) and Listen in Audible (under Listen, the kept action's default) are on it for each
+// unit, in both Testaments; the original-language view carries In Logos and no English audio (his word, mw-5r3p30.653).
+const UNITS = [
+  { name: 'a verse', ot: 'v=1', nt: 'v=1' },
+  { name: 'a passage', ot: 'p=1&pt=3', nt: 'p=1&pt=4' },
+  { name: 'the whole chapter', ot: 'p=1&pt=6', nt: 'p=1&pt=39' },
+];
+for (const [testament, book, code, chapter] of [
+  ['Old Testament', 'Psalms 23', 'psa', 23],
+  ['New Testament', 'Romans 8', 'rom', 8],
+] as const) {
+  for (const unit of UNITS) {
+    for (const view of ['english', 'greek'] as const) {
+      test(`${unit.name} of ${book} (${testament}) opens a view with In Logos${view === 'english' ? ' and Listen in Audible' : ' and no English audio'}, ${view} view`, async ({ page }) => {
+        await routePostern(page, makeFakePostern());
+        await openUnlocked(page);
+        await page.goto('/');
+        await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+        await turnLogosAndAudioOn(page);
+        await page.goto(`/#/?b=${code}&c=${chapter}&${testament === 'Old Testament' ? unit.ot : unit.nt}&view=${view}&weave=off`);
+        await page.reload();
+        const region = page.getByRole('region', { name: 'Verse view' });
+        await expect(region).toBeVisible();
+        await expect(region.getByRole('button', { name: 'Listen', exact: true })).toBeVisible();
+        await expect(region.getByRole('link', { name: 'In Logos' })).toBeVisible();
+        const audible = region.getByRole('link', { name: /^Listen in Audible/ });
+        await (view === 'english' ? expect(audible).toBeVisible() : expect(audible).toHaveCount(0));
+      });
+    }
+  }
+}
