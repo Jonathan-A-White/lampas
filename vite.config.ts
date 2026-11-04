@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { build, defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -24,6 +24,30 @@ const versionGlobals = () => ({
   ],
 });
 
+// https://lampas.allmymind.org/reftagger.js: the blog's tagger (src/reftagger/, mw-5r3p30.1043), built on its own as one plain script at a name with no hash, because the blog's page
+// loads it by that address. A second, nested build (no config, no plugins: not part of the app's chunks, and not in the worker's precache, pwa-precache.ts).
+const reftagger = (): Plugin => ({
+  name: 'lampas-reftagger',
+  apply: 'build',
+  async generateBundle() {
+    const built = await build({
+      configFile: false,
+      publicDir: false,
+      logLevel: 'warn',
+      define: { __APP_SEMVER__: JSON.stringify(pkg.version) },
+      build: {
+        write: false,
+        target: 'es2019',
+        rollupOptions: { input: 'src/reftagger/reftagger.ts', output: { format: 'iife', entryFileNames: 'reftagger.js' } },
+      },
+    });
+    const { output } = (Array.isArray(built) ? built[0] : built) as { output: { type: string; code?: string }[] };
+    const entry = output.find((o) => o.type === 'chunk');
+    if (!entry?.code) throw new Error('the tagger build made no script');
+    this.emitFile({ type: 'asset', fileName: 'reftagger.js', source: entry.code });
+  },
+});
+
 // Libraries from node_modules sit in one chunk of their own, so a build that changes only app code keeps its name.
 function manualChunks(id: string): string | undefined {
   return id.includes('/node_modules/') ? 'vendor' : undefined;
@@ -36,6 +60,7 @@ export default defineConfig({
   plugins: [
     react(),
     versionGlobals(),
+    reftagger(),
     tailwindcss(),
     VitePWA({
       // 'prompt': a new build waits until he taps the Update banner (docs/pwa-best-practices.md section 10).
