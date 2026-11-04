@@ -27,6 +27,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [The annotation file](#the-annotation-file)
 - [The report](#the-report)
 - [On the word card](#on-the-word-card)
+- [The re-count after the three fixes](#the-re-count-after-the-three-fixes)
 - [The files](#the-files)
 - [The commands](#the-commands)
 - [The sources](#the-sources)
@@ -633,6 +634,19 @@ A tap on a Septuagint word opens the word card (mw-u2w5klk.12, `features/septuag
 
 A guess is drawn in the text with a dotted line, its card begins 'A guess: Lampas derived this reading and is not sure', and it is never offered to learn, quizzed, drilled or put on his list until a model session or a person has checked it. A guess or an unsure word has Report this reading, which asks the tutor 'Is <form> in <ref> read right as <lemma>, <parsing>?'; the reader-facing words are on Help's Words page.
 
+## The re-count after the three fixes
+
+Story mw-u2w5klk.29, 2026-11-04, after the three fixes of the hand audit's causes (mw-u2w5klk.26 the vocative, .27 a preposition's case, .28 a lone candidate on thin support). The Governor's word: fix the three, re-count,
+then the model batches. The count is in `docs/sources/lxx-settled-audit.md` ('The re-count after the three fixes'); this is what it found, for whoever files the model stories.
+
+- **Batches: 193, against 178 before F3** (177 when the audit was drawn), over the 39 books by `npm run lxx:batches -- --book <code>`; **121,137 pending words** against 112,991 (112,888), of which 9,715 have no candidate, as before. F3 added all but 103 of the
+  increase; the model stories are filed from the new table, not the old one. The 39 recheck lists (`lxx:pending --recheck`, 5% of a book's chosen words) stay 39, with 6,058 words if every pending word is chosen.
+- **The seven words the first audit judged wrong:** five settled right (the three addresses by F1, `ῥινὶ` and `τρίβων` by F2); two (`ἄφρονος`, `ἐξῆρται`) pending with **only a wrong candidate**, so a model choosing among the candidates cannot be right on them.
+- **The first audit's 468 words:** 422 read as before; 46 differently (5 repaired, 2 pending with no right candidate, 1 unsure now pending, 38 right now pending: a thin lone candidate or a neighbour made pending).
+- **A fresh sample** (`npx tsx scripts/lxx/audit-sample.ts --seed 20261104`, 6 a pool a book): the whole word 456 of 463 judged, 98.5% (Wilson 96.9% to 99.3%), the lemma 99.4% (98.1% to 99.8%). **It cannot settle the 98 bar** (the interval holds 98;
+  about 2,300 words read by hand would be needed). Layer 2 alone is 95.0% (89.6% to 97.7%): four of its six wrong words are analogy's lone candidate on one sibling form (`mw-u2w5klk.30`, deferred), two a rule's winner over the reading the verse needs.
+- The audit file's count reads a section: `--count <file> [--section <heading>]` (`## The words`, the first audit's, unless one is named).
+
 ## The files
 
 Written under `data/lxx/` (`derived/` and `pending/` are git-ignored working files; `.gitignore`). Tab-separated, a header row, one row a word in the
@@ -686,6 +700,7 @@ npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with th
 npm run lxx:choose -- --book gen --batch 1 --from <file>  # a model session's choices, checked, as data/lxx/choices/gen-01.tsv
 npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv, only when the book passes the bar ('The bar')
 npm run lxx:report                             # docs/lxx-report.md: where every book of the Old Testament stands
+npx tsx scripts/lxx/audit-sample.ts [--seed <n>]    # the hand audit's sample of settled words (6 a pool a book; seed 20261103 unless given), each with its verses; --count <file> [--section <heading>] counts the verdicts
 ```
 
 The run fetches the pinned sources into `data/raw/lxx/<repo>/<commit>/<path>` (git-ignored) unless they are there (`scripts/lxx/sources.ts`), and prints

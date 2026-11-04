@@ -5,7 +5,8 @@
 //                                                         Swete's Greek (the word marked) and Brenton's English (LXX2012)
 //   npx tsx scripts/lxx/audit-sample.ts --book Gen        the same sample, only that book's words printed (the draw is the same: every book is drawn in order)
 //   npx tsx scripts/lxx/audit-sample.ts --morpheus        with Morpheus's readings of each sampled form (needs Docker and the image: docs/lxx-derivation.md 'Morpheus')
-//   npx tsx scripts/lxx/audit-sample.ts --count <file.md> the counts of the audit file's verdicts: per book and per layer, with the 95% (Wilson) interval
+//   npx tsx scripts/lxx/audit-sample.ts --seed 20261104   a fresh sample: the same draw from another seed (default SEED, the first audit's)
+//   npx tsx scripts/lxx/audit-sample.ts --count <file.md> [--section <heading>]  (the rows of '## The words' unless a section is named) the counts of the audit file's verdicts: per book and per layer, with the 95% (Wilson) interval
 //
 // The draw is seeded (SEED), so every run prints the same sample. The books are derived as a fresh checkout derives them: layers 1 and 2 and the agreement
 // check, with no Morpheus cache (data/lxx/morpheus is git-ignored, so a word settled through it would not be the same on every checkout) and no choices file
@@ -72,11 +73,11 @@ export interface BookDraw {
 }
 
 /** The whole sample, every book in OLD_TESTAMENT's order and each book's pools in POOLS' order, from one generator. */
-export async function sample(rawDir: string = RAW_DIR): Promise<BookDraw[]> {
+export async function sample(rawDir: string = RAW_DIR, seed: number = SEED): Promise<BookDraw[]> {
   const input = await loadInput(rawDir);
   const trained = train(input);
   const books = splitBooks(input);
-  const rand = mulberry32(SEED);
+  const rand = mulberry32(seed);
   const out: BookDraw[] = [];
   for (const [code] of OLD_TESTAMENT) {
     const tokens = books.get(code);
@@ -154,8 +155,8 @@ function morpheusReadings(forms: readonly string[]): Map<string, string> {
   return out;
 }
 
-export function printSample(draws: readonly BookDraw[], rawDir: string, only?: string, morpheus?: Map<string, string>): string[] {
-  const lines: string[] = [`seed ${SEED}; ${PER_POOL} words from each pool of each book; derived with no Morpheus cache and no choices`];
+export function printSample(draws: readonly BookDraw[], rawDir: string, only?: string, morpheus?: Map<string, string>, seed: number = SEED): string[] {
+  const lines: string[] = [`seed ${seed}; ${PER_POOL} words from each pool of each book; derived with no Morpheus cache and no choices`];
   for (const d of draws) {
     if (only && d.book.toLowerCase() !== only.toLowerCase()) continue;
     const brenton = brentonOf(rawDir, d.book);
@@ -206,6 +207,17 @@ export function readRows(markdown: string): Row[] {
     rows.push({ ref: cells[1], pool: layer === '1' ? 'layer 1' : 'layer 2 or 2a', layer, lemma: verdict(cells[6]), parsing: verdict(cells[7]) });
   }
   return rows;
+}
+
+/** The audit file's section the count reads: the first audit's words by default, or `## <heading>` up to the next `## ` heading (story mw-u2w5klk.29 adds a second sample). */
+export const FIRST_SECTION = 'The words';
+export function rowsOf(markdown: string, heading: string = FIRST_SECTION): Row[] {
+  const lines = markdown.split('\n');
+  const from = lines.findIndex((l) => l.trim() === `## ${heading}`);
+  if (from < 0) throw new Error(`no section '## ${heading}' in the file`);
+  let to = lines.findIndex((l, i) => i > from && l.startsWith('## '));
+  if (to < 0) to = lines.length;
+  return readRows(lines.slice(from + 1, to).join('\n'));
 }
 
 /** Wilson's 95% interval for k of n. */
@@ -266,6 +278,15 @@ export function countLines(rows: readonly Row[]): string[] {
   return lines;
 }
 
+/** The seed of a run: `--seed <n>` (a whole number, story mw-u2w5klk.29's fresh sample), else the first audit's SEED. */
+export function seedOf(argv: readonly string[]): number {
+  const i = argv.indexOf('--seed');
+  if (i < 0) return SEED;
+  const v = argv[i + 1];
+  if (!v || !/^\d+$/.test(v)) throw new Error('--seed takes a whole number, as in --seed 20261104');
+  return Number(v);
+}
+
 async function main(argv: readonly string[]): Promise<void> {
   const at = (flag: string): string | undefined => {
     const i = argv.indexOf(flag);
@@ -273,12 +294,13 @@ async function main(argv: readonly string[]): Promise<void> {
   };
   const countFile = at('--count');
   if (countFile) {
-    for (const line of countLines(readRows(readFileSync(countFile, 'utf8')))) console.log(line);
+    for (const line of countLines(rowsOf(readFileSync(countFile, 'utf8'), at('--section')))) console.log(line);
     return;
   }
-  const draws = await sample();
+  const seed = seedOf(argv);
+  const draws = await sample(RAW_DIR, seed);
   const morpheus = argv.includes('--morpheus') ? morpheusReadings(draws.flatMap((d) => d.picked.map((s) => s.word.form))) : undefined;
-  for (const line of printSample(draws, RAW_DIR, at('--book'), morpheus)) console.log(line);
+  for (const line of printSample(draws, RAW_DIR, at('--book'), morpheus, seed)) console.log(line);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
