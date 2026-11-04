@@ -346,7 +346,8 @@ describe('the derive report', async () => {
 
 /**
  * A stretch of a verse as layers 1 and 2 left it, copied from the full run (`npm run lxx:derive -- --all`): each token is Swete's print, then ' = ', then
- * the settled 'lemma MORPH', or '? ' and the pending word's candidates 'lemma MORPH; lemma MORPH'. `first` is the number of its first word in the verse.
+ * the settled 'lemma MORPH', or '? ' and the pending word's candidates 'lemma MORPH; lemma MORPH'; a candidate written 'lemma MORPH+' is one analogy offered beside a thin lone
+ * candidate (WordCandidate.beside). `first` is the number of its first word in the verse.
  */
 function asLeft(verse: string, first: number, tokens: readonly string[]): { words: Array<{ ref: string; verse: string; form: string; display: string }>; outs: Array<DerivedWord | PendingWord> } {
   const words = tokens.map((t, i) => {
@@ -360,7 +361,7 @@ function asLeft(verse: string, first: number, tokens: readonly string[]): { word
       const candidates = reading
         .slice(2)
         .split('; ')
-        .map((c) => ({ lemma: c.split(' ')[0], morph: c.split(' ')[1], support: 1, share: 0 }));
+        .map((c) => ({ lemma: c.split(' ')[0], morph: c.split(' ')[1].replace(/\+$/, ''), support: 1, share: 0, ...(c.endsWith('+') ? { beside: true as const } : {}) }));
       return { ref, candidates, notes: [] };
     }
     const [lemma, morph] = reading.split(' ');
@@ -476,6 +477,82 @@ describe('an address is tagged vocative, as the New Testament data tags it (mw-u
     const v = checked('Psa.68:14', 7, ['σέ, = σύ P-2AS', 'Κύριε· = κύριος N-VSM', 'καιρὸς = καιρός N-NSM', 'εὐδοκίας, = εὐδοκία N-GSF', 'ὁ = ὁ T-NSM', 'θεός· = θεός N-NSM', 'ἐν = ἐν PREP', 'τῷ = ? ὁ T-DSM; ὁ T-DSN', 'πλήθει = πλῆθος N-DSN', 'ἐπάκουσον, = ἐπακούω V-AAM-2S']);
     expect(answer(v, 'Psa.68:14#9')).toBe('καιρός N-NSM');
     expect([11, 12].map((n) => answer(v, `Psa.68:14#${n}`))).toEqual(['ὁ T-VSM', 'θεός N-VSM']);
+  });
+
+  describe("analogy's readings beside a thin lone candidate do not turn an address (mw-u2w5klk.31)", () => {
+    // The six verses of the first version's twelve words, as layers 1 and 2 leave them in the full run (`npm run lxx:derive -- --all`) with analogy's readings beside the
+    // thin imperatives (ἐπάρθητε V-APM-2P beside V-APS-2P, ἐπίστρεψον beside two participles, ἀνοίξατε beside V-AAI-2P, ὕψωσον beside four others): '+' marks them.
+    const PS_23 = (name: string): string[] => ['ἄρατε = αἴρω V-AAM-2P', 'πύλας, = πύλη N-APF', 'οἱ = ὁ T-NPM', 'ἄρχοντες = ? ἄρχων N-NPM; ἄρχων N-VPM', 'ὑμῶν, = σύ P-2GP', 'καὶ = καί CONJ', name, 'πύλαι = πύλη N-NPF', 'αἰώνιοι, = ? αἰώνιος A-NPM; αἰώνιος A-VPM; αἰώνιος A-NPF; αἰώνιος A-NPM-LG; αἰώνιος A-VPM-LG; αἰώνιος A-NPM-PG; αἰώνιος A-VPM-PG', 'καὶ = καί CONJ', 'εἰσελεύσεται = εἰσέρχομαι V-FDI-3S', 'ὁ = ὁ T-NSM', 'βασιλεὺς = βασιλεύς N-NSM', 'τῆς = ὁ T-GSF', 'δόξης. = δόξα N-GSF'];
+    const VERSES: ReadonlyArray<{ verse: string; tokens: string[]; says: Record<number, string> }> = [
+      { verse: 'Psa.23:7', tokens: PS_23('ἐπάρθητε, = ? ἐπαίρω V-APM-2P; ἐπαίρω V-APS-2P+'), says: { 3: 'ὁ T-VPM', 4: 'ἄρχων N-VPM', 8: 'πύλη N-VPF', 9: 'αἰώνιος A-VPF' } },
+      { verse: 'Psa.23:9', tokens: PS_23('ἐπάρθητε, = ? ἐπαίρω V-APM-2P; ἐπαίρω V-APS-2P+'), says: { 3: 'ὁ T-VPM', 4: 'ἄρχων N-VPM', 8: 'πύλη N-VPF', 9: 'αἰώνιος A-VPF' } },
+      {
+        verse: 'Psa.79:15',
+        tokens: ['ὁ = ὁ T-NSM', 'θεὸς = θεός N-NSM', 'τῶν = ? ὁ T-GPM; ὁ T-GPN; ὁ T-GPF', 'δυνάμεων, = δύναμις N-GPF', 'ἐπίστρεψον = ? ἐπιστρέφω V-AAM-2S; ἐπιστρέφω V-PAP-ASN+; ἐπιστρέφω V-PAP-NSN+', 'δή, = δή PRT', 'ἐπίβλεψον = ? ἐπιβλέπω V-AAM-2S', 'ἐξ = ἐκ PREP', 'οὐρανοῦ = οὐρανός N-GSM', 'καὶ = καί CONJ', 'ἴδε, = ? ἴδε INJ; εἴδω V-2AAM-2S', 'καὶ = καί CONJ', 'ἐπίσκεψαι = ἐπισκέπτομαι V-ADM-2S', 'τὴν = ὁ T-ASF', 'ἄμπελον = ἄμπελος N-ASF', 'ταύτην· = οὗτος D-ASF'],
+        says: { 1: 'ὁ T-VSM', 2: 'θεός N-VSM', 3: 'ὁ T-GPF' },
+      },
+      {
+        verse: 'Psa.114:7',
+        tokens: ['ἐπίστρεψον, = ? ἐπιστρέφω V-AAM-2S; ἐπιστρέφω V-PAP-ASN+; ἐπιστρέφω V-PAP-NSN+', 'ἡ = ὁ T-NSF', 'ψυχή = ? ψυχή N-NSF; ψυχή N-VSF', 'μου, = ἐγώ P-1GS', 'εἰς = εἰς PREP', 'τὴν = ὁ T-ASF', 'ἀνάπαυσίν = ἀνάπαυσις N-ASF', 'σου, = σύ P-2GS', 'ὅτι = ὅτι CONJ', 'Κύριος = κύριος N-NSM', 'εὐηργέτησέν = ? εὐεργετέω V-AAI-3S', 'σε· = σύ P-2AS'],
+        says: { 2: 'ὁ T-VSF', 3: 'ψυχή N-VSF' },
+      },
+      {
+        verse: 'Isa.13:2',
+        tokens: ['Ἐπ᾽ = ἐπί PREP', 'ὄρους = ὄρος N-GSN', 'πεδινοῦ = πεδινός A-GSM', 'ἄρατε = αἴρω V-AAM-2P', 'σημεῖον, = ? σημεῖον N-ASN; σημεῖον N-NSN', 'ὑψώσατε = ὑψόω V-AAM-2P', 'τὴν = ὁ T-ASF', 'φωνὴν = φωνή N-ASF', 'αὐτοῖς, = αὐτός P-DPM', 'παρακαλεῖτε = παρακαλέω V-PAM-2P', 'τῇ = ὁ T-DSF', 'χειρί· = χείρ N-DSF', 'ἀνοίξατε, = ? ἀνοίγω V-AAM-2P; ἀνοίγω V-AAI-2P+', 'οἱ = ὁ T-NPM', 'ἄρχοντες. = ? ἄρχων N-NPM; ἄρχων N-VPM'],
+        says: { 14: 'ὁ T-VPM', 15: 'ἄρχων N-VPM' },
+      },
+      {
+        verse: 'Isa.40:9',
+        tokens: ['Ἐπ᾽ = ἐπί PREP', 'ὄρος = ? ὄρος N-ASN; ὄρος N-NSN', 'ὑψηλὸν = ? ὑψηλός A-ASN; ὑψηλός A-NSN', 'ἀνάβηθι, = ? ἀναβαίνω V-2AAM-2S', 'ὁ = ὁ T-NSM', 'εὐαγγελιζόμενος = εὐαγγελίζομαι V-PMP-NSM', 'Σειών· = ? σείω V-PAP-NSM; σείω V-PAP-VSM; Σειών N-NSM; Σειών N-VSM', 'ὕψωσον = ? ὑψόω V-AAM-2S; ὑψόω V-AAI-1S+; ὑψόω V-AAI-3P+; ὑψόω V-PAP-ASN+; ὑψόω V-PAP-NSN+', 'τῇ = ὁ T-DSF', 'ἰσχύι = ? ἰσχύω V-PAI-3S; ἰσχύω V-PAM-2S; ἰσχύς N-DSF; ἰσχύς N-NPF; ἰσχύω V-FAI-3S; ἰσχύω V-IAI-3S', 'τὴν = ὁ T-ASF', 'φωνήν = φωνή N-ASF', 'σου, = σύ P-2GS', 'ὁ = ὁ T-NSM', 'εὐαγγελιζόμενος = εὐαγγελίζομαι V-PMP-NSM', 'Ἰερουσαλήμ· = ? Ἱερουσαλήμ N-ASF; Ἱερουσαλήμ N-VSF; Ἱερουσαλήμ N-NSF', 'ὑψώσατε, = ὑψόω V-AAM-2P'],
+        says: { 14: 'ὁ T-VSM', 15: 'εὐαγγελίζομαι V-PMP-VSM' },
+      },
+    ];
+    const WITHOUT = (tokens: readonly string[]): string[] => tokens.map((t) => t.split('; ').filter((c) => !c.endsWith('+')).join('; '));
+
+    for (const { verse, tokens, says } of VERSES) {
+      it(`${verse}: the address is read as before, each word of it named`, () => {
+        const v = checked(verse, 1, tokens);
+        for (const [n, reading] of Object.entries(says)) expect(answer(v, `${verse}#${n}`), `${verse}#${n}`).toBe(reading);
+        // the pending imperative keeps analogy's readings for the model, and is not settled by the check
+        const imperative = tokens.findIndex((t) => t.includes('+'));
+        expect(isDerived(v.get(`${verse}#${imperative + 1}`)!)).toBe(false);
+        expect(v.get(`${verse}#${imperative + 1}`)!.candidates.some((c) => c.beside)).toBe(true);
+        // and the same words, with no reading beside them, are read the same
+        const plain = checked(verse, 1, WITHOUT(tokens));
+        expect(tokens.map((_, i) => answer(v, `${verse}#${i + 1}`))).toEqual(tokens.map((_, i) => answer(plain, `${verse}#${i + 1}`)));
+      });
+    }
+
+    it('readAddresses offers the vocative to a pending word only by its own readings, never by what analogy offered beside them', () => {
+      const { words, outs } = asLeft('Psa.7:2', 1, ['Κύριε = κύριος N-VSM', 'ὁ = ὁ T-NSM', 'θεός = ? θεός N-NSM; θεός N-VSM+']);
+      const read = readAddresses(words, outs).outs[2];
+      expect(isDerived(read)).toBe(false);
+      expect(read.candidates.map((c) => `${c.morph}${c.beside ? '+' : ''}`)).toEqual(['N-NSM', 'N-VSM+']);
+      // a pending word whose own readings are not mostly nominative is not offered it, whatever analogy offers beside them
+      const accusative = asLeft('Psa.7:2', 1, ['Κύριε = κύριος N-VSM', 'ὁ = ὁ T-NSM', 'θεός = ? θεός N-ASM; θεός N-NSM+; θεός N-NPM+']);
+      expect(readAddresses(accusative.words, accusative.outs).outs[2].candidates.map((c) => c.morph)).toEqual(['N-ASM', 'N-NSM', 'N-NPM']);
+    });
+
+    // ἄφρονος: the rules' one candidate, a comparative's, A-GSF-C, on a support of 1; analogy offers six more, A-GSM among them and A-NSF, which καρδία (N-NSF) and a link that
+    // only chooses would take (Pro 17:21, Ecc 5:2 with φωνή, Ecc 10:2) if the check read it. It does not: the word stays pending, the model has A-GSM.
+    const FOOL = 'ἄφρων A-GSF-C; ἄφρων A-NSM+; ἄφρων A-GSN+; ἄφρων A-GSM+; ἄφρων A-NSF+; ἄφρων A-NSM-S+; ἄφρων A-VSF+; ἄφρων A-VSM+';
+    const FOOLS: ReadonlyArray<{ verse: string; n: number; tokens: string[] }> = [
+      { verse: 'Pro.17:21', n: 3, tokens: ['καρδία = καρδία N-NSF', 'δὲ = δέ CONJ', `ἄφρονος = ? ${FOOL}`, 'ὀδύνη = ὀδύνη N-NSF', 'τῷ = ? ὁ T-DSM; ὁ T-DSN', 'κεκτημένῳ = ? κτάομαι V-RMP-DSM', 'αὐτήν. = αὐτός P-ASF'] },
+      { verse: 'Ecc.5:2', n: 9, tokens: ['ὅτι = ὅτι CONJ', 'παραγίνεται = παραγίνομαι V-PNI-3S', 'ἐνύπνιον = ? ἐνύπνιον N-ASN; ἐνύπνιον N-NSN', 'ἐν = ἐν PREP', 'πλήθει = πλῆθος N-DSN', 'πειρασμοῦ, = πειρασμός N-GSM', 'καὶ = καί CONJ', 'φωνὴ = φωνή N-NSF', `ἄφρονος = ? ${FOOL}`, 'ἐν = ἐν PREP', 'πλήθει = πλῆθος N-DSN', 'λόγων. = λόγος N-GPM'] },
+      { verse: 'Ecc.10:2', n: 8, tokens: ['καρδία = καρδία N-NSF', 'σοφοῦ = ? σοφός A-GSM; σοφός A-GSN; σοφός A-GSF', 'εἰς = εἰς PREP', 'δεξιὸν = ? δεξιός A-ASN; δεξιός A-ASM', 'αὐτοῦ. = αὐτός P-GSM', 'καὶ = καί CONJ', 'καρδία = καρδία N-NSF', `ἄφρονος = ? ${FOOL}`, 'εἰς = εἰς PREP', 'ἀριστερὸν = ? ἀριστερός A-ASM; ἀριστερός A-ASN', 'αὐτοῦ. = αὐτός P-GSM'] },
+      { verse: 'Ecc.2:16', n: 9, tokens: ['ὅτι = ὅτι CONJ', 'οὐκ = οὐ PRT-N', 'ἔστιν = εἰμί V-PAI-3S', 'μνήμη = ? μνήμη N-NSF; μνήμη N-DSF; μνήμη N-GSF', 'τοῦ = ? ὁ T-GSM; ὁ T-GSN; αὐτός P-GSN', 'σοφοῦ = ? σοφός A-GSM; σοφός A-GSN; σοφός A-GSF', 'μετὰ = μετά PREP', 'τοῦ = ? ὁ T-GSM; ὁ T-GSN; αὐτός P-GSN', `ἄφρονος = ? ${FOOL}`, 'εἰς = εἰς PREP', 'τὸν = ὁ T-ASM', 'αἰῶνα, = αἰών N-ASM'] },
+    ];
+    for (const { verse, n, tokens } of FOOLS) {
+      it(`${verse}#${n} ἄφρονος stays pending, not A-NSF (nor, at Ecc 2:16, A-GSF-C): the model has A-GSM beside the rules’ reading`, () => {
+        const { words, outs } = asLeft(verse, 1, tokens);
+        const result = checkAgreement(words, outs, { names: new Set(), parse: () => [] });
+        const w = result.outs[n - 1];
+        expect(isDerived(w) ? `${w.lemma} ${w.morph}` : 'pending').toBe('pending');
+        expect(w.candidates.map((c) => c.morph)).toEqual(expect.arrayContaining(['A-GSF-C', 'A-GSM']));
+        expect(w.candidates[0].morph).toBe('A-GSF-C');
+        expect(result.stats.breaks).toBe(0);
+      });
+    }
   });
 
   it('has a comment a reader can check, copied in docs/lxx-derivation.md', () => {

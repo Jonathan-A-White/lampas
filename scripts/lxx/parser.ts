@@ -20,6 +20,12 @@ export interface Candidate extends Analysis {
   stemSupport?: number;
   /** Analogy's candidates only (byAnalogy; story mw-u2w5klk.30): what produced the candidate, for isThinLone, which reads its support (the pairs of forms behind it) where a rule's candidate is read by stemSupport. */
   analogy?: true;
+  /**
+   * A reading offered by analogy beside an ending rule's lone candidate on thin support (derive.ts; story mw-u2w5klk.31), for the model to weigh. In memory only, like
+   * `analogy`. The agreement check and the address rule never read it (agreement.ts ownReadings): a pending imperative stays an imperative, and agreement settles on
+   * a reading the rules or layer 1 gave. Not counted by isThinLone.
+   */
+  beside?: true;
 }
 
 export interface Triple {
@@ -550,7 +556,8 @@ export const LONE_MIN_STEM_SUPPORT = 4;
 export const LONE_MIN_ANALOGY_SUPPORT = 4;
 
 /** Whether the candidates are one candidate on thin support (LONE_MIN_STEM_SUPPORT for an ending rule's, LONE_MIN_ANALOGY_SUPPORT for analogy's): pending with that one candidate, for the agreement check or the model. */
-export const isThinLone = (candidates: ReadonlyArray<Pick<Candidate, 'support' | 'stemSupport' | 'analogy'>>): boolean => {
+export const isThinLone = (all: ReadonlyArray<Pick<Candidate, 'support' | 'stemSupport' | 'analogy' | 'beside'>>): boolean => {
+  const candidates = all.filter((c) => !c.beside);
   if (candidates.length !== 1) return false;
   const [c] = candidates;
   if (c.analogy) return c.support < LONE_MIN_ANALOGY_SUPPORT;

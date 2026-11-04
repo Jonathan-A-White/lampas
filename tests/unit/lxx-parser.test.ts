@@ -24,6 +24,7 @@ import {
   NOTE_INDECLINABLE,
   NOTE_NOT_IN_NT,
   NOTE_NO_CANDIDATE,
+  NOTE_BESIDE,
   NOTE_THIN,
   PENDING_HEADER,
   deriveBook,
@@ -857,8 +858,9 @@ describe('a lone candidate on thin support is not settled (mw-u2w5klk.28)', asyn
     const w = at('Ecc.2:16#9');
     expect(isDerived(w)).toBe(false);
     expect(w.notes).toContain(NOTE_THIN);
-    // left alone: analogy, which would offer A-GSM beside stray readings the form cannot be (A-NSM, A-NSF), is not asked
-    expect(w.candidates.map((c) => `${c.lemma} ${c.morph}`)).toEqual(['ἄφρων A-GSF-C']);
+    // analogy's reading is offered beside it (mw-u2w5klk.31), marked for the check to leave alone; the rules' candidate stays first
+    expect(w.candidates.map((c) => `${c.lemma} ${c.morph}${c.beside ? '+' : ''}`)).toEqual(['ἄφρων A-GSF-C', 'ἄφρων A-GSM+']);
+    expect(w.notes).toContain(NOTE_BESIDE);
     // its article is masculine or neuter: left pending, and no break is counted, for nothing settled stands beside it
     expect(isDerived(at('Ecc.2:16#8'))).toBe(false);
     expect(results.get('ecc')!.agreement.breaks).toBe(0);
@@ -889,6 +891,34 @@ describe('a lone candidate on thin support is not settled (mw-u2w5klk.28)', asyn
     expect(isThinLone(one(LONE_MIN_STEM_SUPPORT))).toBe(false);
     expect(settleParsed(one())?.confidence).toBe(0.75);
     expect(isThinLone(one())).toBe(false);
+  });
+
+  // analogy's readings beside it (mw-u2w5klk.31)
+  const cand = (lemma: string, morph: string, more: Partial<Candidate> = {}): Candidate => ({ lemma, morph, support: 1, share: 1, via: [], ...more });
+
+  it('does not count a reading beside a candidate: isThinLone reads the rules’ or analogy’s candidates alone', () => {
+    const lone = cand('l', 'V-AAM-2S', { stemSupport: LONE_MIN_STEM_SUPPORT - 1 });
+    expect(isThinLone([lone, cand('l', 'V-PAP-ASN', { analogy: true, beside: true })])).toBe(true);
+    expect(isThinLone([cand('l', 'X', { stemSupport: LONE_MIN_STEM_SUPPORT }), cand('l', 'Y', { analogy: true, beside: true })])).toBe(false);
+    // two candidates of its own are weighed as before
+    expect(isThinLone([lone, cand('l', 'Z', { stemSupport: 0 }), cand('l', 'Y', { analogy: true, beside: true })])).toBe(false);
+  });
+
+  it('puts analogy’s readings after the rules’ one, each once, marked beside, with the note; settles nothing the thin rule did not settle', () => {
+    const w = at('Ecc.2:16#9');
+    expect(isDerived(w)).toBe(false);
+    const [rule, ...beside] = w.candidates;
+    expect(rule.morph).toBe('A-GSF-C');
+    expect(rule.beside).toBeUndefined();
+    expect(beside.length).toBeGreaterThan(0);
+    expect(beside.every((c) => c.beside === true && c.analogy === true)).toBe(true);
+    expect(new Set(w.candidates.map((c) => `${c.lemma}|${c.morph}`)).size).toBe(w.candidates.length);
+    // a word whose rule has stems enough (ἐφίλει) is settled as before, with no reading beside it
+    const settled = at('Gen.37:4#4');
+    expect(isDerived(settled)).toBe(true);
+    expect(settled.candidates.some((c) => c.beside)).toBe(false);
+    // and the check settled none of the beside readings: no word of the verse is settled on one
+    expect(results.get('ecc')!.derived.every((d) => d.candidates.filter((c) => c.beside).length === 0)).toBe(true);
   });
 });
 
