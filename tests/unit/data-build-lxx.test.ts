@@ -379,6 +379,30 @@ describe('a book shipped chapter by chapter (mw-u2w5klk.265)', () => {
   });
 });
 
+describe('Brenton\u2019s English at a Greek chapter not shipped (mw-u2w5klk.273)', () => {
+  const genesis = syntheticGenesis(10);
+  const gen = sweteBooks(genesis.versification, genesis.words).get('gen') ?? [];
+  const chapterOf = (ref: string): number => Number(/^[^.]+\.(\d+):/.exec(ref)![1]);
+  const annotations =
+    ['# shipped chapters: 1-3 of 10', ANNOTATION_HEADER.join('\t'), ...gen.filter((w) => chapterOf(w.ref) <= 3).map((w) => [w.ref, 'λόγος', 'N-NSM', '2', '0.90', ''].join('\t'))].join('\n') + '\n';
+  // Brenton's chapters 2 (shipped), 8 (a Greek chapter of Swete's that is not shipped) and 11 (a chapter Swete's Genesis does not have)
+  const usfm = ['\\id GEN', '\\c 2', '\\p', '\\v 1 First of two.', '\\c 8', '\\p', '\\v 1 First of eight.', '\\c 11', '\\p', '\\v 1 First of eleven.'].join('\n') + '\n';
+  const book = (): string[] => {
+    const notes = buildLxx(input({ versification: genesis.versification, words: genesis.words, translit: genesis.translit, annotations: { gen: annotations }, usfm: { gen: usfm } })).notes;
+    return notes.filter((n) => n.includes('no Greek verse'));
+  };
+
+  it('does not call a Brenton verse unplaced because its Greek chapter is held back: it is Swete\u2019s verse, shipped later', () => {
+    const lines = book();
+    expect(lines.join('\n')).not.toContain('gen 8:1');
+    expect(lines.join('\n')).not.toContain('gen 2:1');
+  });
+
+  it('still names a Brenton verse whose Greek verse is in no chapter of Swete\u2019s book', () => {
+    expect(book()).toEqual(['gen: LXX2012 verses with no Greek verse to stand at: gen 11:1']);
+  });
+});
+
 describe('the shipped notice', () => {
   const dir = 'public/data-lxx';
 

@@ -249,7 +249,6 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
   const english = src.english ? englishByGreekVerse(src.english, maps) : undefined;
   const usfm = usfmCodeOf(src.code);
   const lemmas = new Set<string>();
-  const used = new Set<string>();
 
   // chapter -> verse -> words, in Swete's order
   const chapters = new Map<number, Map<number, SweteWord[]>>();
@@ -297,7 +296,6 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
     const lampasHere = new Set<number>();
     for (const [v, words] of [...verseMap].sort(([a], [b]) => a - b)) {
       const greekRef = refOf(usfm, n, v);
-      used.add(greekRef);
       const chunk = english ? oneChunk(english.byGreek.get(greekRef) ?? [], words.length) : undefined;
       const g: GreekWord[] = words.map((w) => {
         const row = src.annotations.get(w.ref)!;
@@ -345,7 +343,9 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
     info.fingerprints[i] ??= '';
     info.lampasChapters[i] ??= [];
   }
-  const unplaced = english ? [...english.placedAt].filter(([, greek]) => !used.has(greek)).map(([usfmRef]) => usfmRef) : [];
+  // unplaced is a Brenton verse whose Greek verse is in no chapter of Swete's book; one in a chapter not shipped (yet) is placed, and its English is woven in when the chapter ships (mw-u2w5klk.273)
+  const swete = new Set(src.words.map((w) => { const m = /^[^.]+\.(\d+):(\d+)$/.exec(w.verse)!; return refOf(usfm, Number(m[1]), Number(m[2])); }));
+  const unplaced = english ? [...english.placedAt].filter(([, greek]) => !swete.has(greek)).map(([usfmRef]) => usfmRef) : [];
   return { chapters: built, info, lemmas: [...lemmas], unplaced };
 }
 
