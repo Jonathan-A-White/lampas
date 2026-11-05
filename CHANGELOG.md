@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.125
+_2026-11-05_
+- Fixed: The blog's Bible links now link "1 John 4" to 1 John, no longer treat "2 Timothy is..." after a verse as a verse number, and skip a chapter before words like "more times" or "people".
+- Fixed: the "Open in the app" button now tries a different way of handing the page to the installed Lampas, because the old way stayed in Chrome.
+
 ## 0.7.123
 _2026-11-05_
 - Fixed: The first words of the Greek Genesis, ἐν ἀρχῇ, are now read as the dative 'in the beginning', not as a nominative.
