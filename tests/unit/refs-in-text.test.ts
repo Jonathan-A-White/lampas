@@ -226,3 +226,107 @@ describe('a book and a bare number in plain English (mw-5r3p30.1047)', () => {
     expect(spans('Matthew 5-7:3')).toEqual([['Matthew 5', 'Matt.5']]);
   });
 });
+
+// mw-5r3p30.1064: a numbered book is read with its number, a number that begins a numbered book's name is no verse, and a chapter before a count or quantity word is plain English.
+describe('a numbered book with a chapter alone (mw-5r3p30.1061)', () => {
+  const spans = (text: string) => referenceSpans(text, { semicolons: true }).map((r) => [text.slice(r.start, r.end), r.ref]);
+  const shared = (text: string) => findReferences(text).map((r) => [r.printed, r.ref]);
+
+  it('links "1 John 4" whole to 1 John, alone, in a range and after a verse and a comma', () => {
+    expect(spans('See 1 John 4 for it.')).toEqual([['1 John 4', '1John.4']]);
+    expect(spans('1 John 4-5')).toEqual([['1 John 4-5', '1John.4']]);
+    expect(spans('Rom 8:1, 1 John 4-5')).toEqual([['Rom 8:1', 'Rom.8.1'], ['1 John 4-5', '1John.4']]);
+    expect(spans('John 3:16, 1 John 4')).toEqual([['John 3:16', 'John.3.16'], ['1 John 4', '1John.4']]);
+    expect(spans('See 2 Cor 5 now')).toEqual([['2 Cor 5', '2Cor.5']]);
+    expect(shared('See 1 John 4 for it.')).toEqual([['1 John 4', '1John.4']]);
+    expect(shared('John 3:16, 1 John 4')).toEqual([['John 3:16', 'John.3.16'], ['1 John 4', '1John.4']]);
+  });
+
+  // every numbered book with a chapter alone: in a sentence, at the start, and after ', ' following a verse; never read as the book without its number
+  const BOOKS: [string, string, number][] = [
+    ['1 Sam', '1Sam', 3], ['2 Sam', '2Sam', 3], ['1 Kings', '1Kgs', 3], ['2 Kings', '2Kgs', 3], ['1 Chr', '1Chr', 3], ['2 Chr', '2Chr', 3], ['1 Cor', '1Cor', 3],
+    ['2 Cor', '2Cor', 3], ['1 Thess', '1Thess', 3], ['2 Thess', '2Thess', 2], ['1 Tim', '1Tim', 3], ['2 Tim', '2Tim', 3], ['1 Pet', '1Pet', 3], ['2 Pet', '2Pet', 3],
+    ['1 John', '1John', 3], ['2 John', '2John', 1], ['3 John', '3John', 1],
+  ];
+  it.each(BOOKS)('%s with a chapter alone is that book, never the book without its number', (short, code, chapter) => {
+    const long = short.replace('Sam', 'Samuel').replace('Chr', 'Chronicles').replace('Cor', 'Corinthians').replace('Thess', 'Thessalonians').replace('Tim', 'Timothy').replace('Pet', 'Peter');
+    for (const name of [short, long]) {
+      // 2 John and 3 John have one chapter: their 'chapter alone' is chapter 1
+      for (const text of [`See ${name} ${chapter} for it.`, `${name} ${chapter}`, `Rom 8:1, ${name} ${chapter}`, `Rom 8:1, ${name} ${chapter}-${chapter + 1}`]) {
+        const found = spans(text);
+        const own = found.filter(([, ref]) => ref.startsWith(code));
+        expect(own.length, text).toBe(1);
+        expect(own[0][0], text).toMatch(new RegExp(`^${name} ${chapter}`));
+        expect(found.every(([printed, ref]) => ref.startsWith(code) || ref.startsWith('Rom.') || printed === ''), text).toBe(true);
+        // the Share list reads the same
+        expect(shared(text).map(([, ref]) => ref).filter((ref) => !ref.startsWith(code) && !ref.startsWith('Rom.')), text).toEqual([]);
+      }
+    }
+  });
+});
+
+describe('a number that begins a numbered book is no verse of the book before it (mw-5r3p30.1062)', () => {
+  const spans = (text: string) => referenceSpans(text, { semicolons: true }).map((r) => [text.slice(r.start, r.end), r.ref]);
+  const shared = (text: string) => findReferences(text).map((r) => [r.printed, r.ref]);
+
+  it('finds only the verse before ", 2 Timothy is a letter"', () => {
+    expect(spans('See Romans 8:1, 2 Timothy is a letter.')).toEqual([['Romans 8:1', 'Rom.8.1']]);
+    expect(spans('John 3:16, 1 John is about love.')).toEqual([['John 3:16', 'John.3.16']]);
+    expect(spans('John 3:16, 1 Corinthians and 2 Corinthians')).toEqual([['John 3:16', 'John.3.16']]);
+    expect(shared('See Romans 8:1, 2 Timothy is a letter.')).toEqual([['Romans 8:1', 'Rom.8.1']]);
+    expect(shared('John 3:16, 1 Corinthians and 2 Corinthians')).toEqual([['John 3:16', 'John.3.16']]);
+  });
+
+  it('still reads a plain verse list, and a verse before a book in the list', () => {
+    expect(spans('John 5:24, 28')).toEqual([['John 5:24', 'John.5.24'], ['28', 'John.5.28']]);
+    expect(shared('John 5:24, 28')).toEqual([['John 5:24', 'John.5.24'], ['John 5:28', 'John.5.28']]);
+    expect(spans('John 5:24, 2 are good')).toEqual([['John 5:24', 'John.5.24'], ['2', 'John.5.2']]);
+    expect(spans('Rom 8:1, 3, 2 Timothy is')).toEqual([['Rom 8:1', 'Rom.8.1'], ['3', 'Rom.8.3']]);
+    expect(spans('Romans 8:1; 10:9, 2 Timothy is a letter')).toEqual([['Romans 8:1', 'Rom.8.1'], ['10:9', 'Rom.10.9']]);
+  });
+
+  const NAMES = ['1 Sam', '2 Sam', '1 Samuel', '2 Samuel', '1 Kings', '2 Kings', '1 Chr', '2 Chr', '1 Chronicles', '2 Chronicles', '1 Cor', '2 Cor', '1 Corinthians', '2 Corinthians',
+    '1 Thess', '2 Thess', '1 Thessalonians', '2 Thessalonians', '1 Tim', '2 Tim', '1 Timothy', '2 Timothy', '1 Pet', '2 Pet', '1 Peter', '2 Peter', '1 John', '2 John', '3 John', '1 Jn'];
+  it.each(NAMES)('%s by name with no chapter after ", " following a verse is not read as a verse of the first book', (name) => {
+    for (const text of [`John 3:16, ${name} is a book.`, `Rom 8:28, 31, ${name} and more`, `See John 3:16, ${name}`]) {
+      expect(spans(text).filter(([, ref]) => /^(?:John|Rom)\.\d+\.\d+$/.test(ref) && !/^(?:John\.3\.16|Rom\.8\.28|Rom\.8\.31)$/.test(ref)), text).toEqual([]);
+      expect(shared(text).map(([, ref]) => ref).filter((ref) => !/^(?:John\.3\.16|Rom\.8\.28|Rom\.8\.31)$/.test(ref)), text).toEqual([]);
+    }
+  });
+});
+
+describe('a chapter alone before a count or quantity word is plain English (mw-5r3p30.1063)', () => {
+  const spans = (text: string) => referenceSpans(text, { semicolons: true }).map((r) => [text.slice(r.start, r.end), r.ref]);
+  const shared = (text: string) => findReferences(text).map((r) => r.ref);
+
+  it('makes no link of the words he saw', () => {
+    expect(spans('Job 3 more times, Mark 5 percent, John 3 people, Mark 5 or 6 times')).toEqual([]);
+    expect(spans('Mark 5 time')).toEqual([]);
+    expect(spans('Job 3 hour')).toEqual([]);
+    expect(shared('Job 3 more times, Mark 5 percent, John 3 people, Mark 5 or 6 times')).toEqual([]);
+  });
+
+  // The list chosen: every count word of COUNTED (singular and plural), and 'more', 'percent', 'people', 'or N times'.
+  const COUNT_WORDS = ['time', 'times', 'second', 'seconds', 'minute', 'minutes', 'hour', 'hours', 'day', 'days', 'week', 'weeks', 'month', 'months', 'year', 'years', 'decade', 'decades',
+    'century', 'centuries', 'more', 'percent', 'people'];
+  const BOOKS: [string, string][] = [['Mark', 'Mark.5'], ['Job', 'Job.3'], ['1 John', '1John.3'], ['2 Cor', '2Cor.3']];
+  it.each(COUNT_WORDS)('"%s" after a chapter alone, one-word or numbered book, makes no link; the same books before ordinary prose still link', (word) => {
+    for (const [name] of BOOKS) {
+      const chapter = name === 'Mark' ? 5 : 3;
+      for (const text of [`${name} ${chapter} ${word}`, `I did ${name} ${chapter} ${word} ago`, `${name} ${chapter} or 6 ${word}`]) {
+        expect(spans(text), text).toEqual([]);
+        expect(shared(text), text).toEqual([]);
+      }
+    }
+  });
+
+  it('still links the same books before ordinary prose', () => {
+    expect(spans('Mark 5 says')).toEqual([['Mark 5', 'Mark.5']]);
+    expect(spans('Job 3.')).toEqual([['Job 3', 'Job.3']]);
+    expect(spans('1 John 3 says')).toEqual([['1 John 3', '1John.3']]);
+    expect(spans('See 2 Cor 3.')).toEqual([['2 Cor 3', '2Cor.3']]);
+    expect(spans('Mark 5 or Job 3 say')).toEqual([['Mark 5', 'Mark.5'], ['Job 3', 'Job.3']]);
+    expect(spans('Mark 5 timesheet')).toEqual([['Mark 5', 'Mark.5']]);
+    expect(shared('Mark 5 says')).toEqual(['Mark.5']);
+  });
+});
