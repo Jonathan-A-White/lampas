@@ -37,6 +37,31 @@ describe('the Greek chapter of a Lampas chapter', () => {
 describe('loadChapter with the Septuagint On', () => {
   beforeEach(() => setSetting(septuagintSetting, 'on'));
 
+  it('with Genesis shipped for chapters 1 to 6 only (mw-u2w5klk.265, scripts/lxx/ship.ts) opens Genesis 3 from the Septuagint and Genesis 7 as the Hebrew', async () => {
+    const fill = <T,>(n: number, v: T): T[] => Array.from({ length: n }, () => v);
+    const six = {
+      sources: {},
+      books: [{ code: 'gen', name: 'Genesis', lampas: 'gen', lang: 'grc', chapters: 50, shipped: [1, 2, 3, 4, 5, 6], verses: [31, 25, 24, 26, 32, 22, ...fill(44, 0)], fingerprints: fill(50, ''), lampasChapters: [[1], [2], [3], [4], [5], [6], ...fill<number[]>(44, [])] }],
+    };
+    const three = { book: 'Genesis', code: 'gen', chapter: 3, lang: 'grc', translation: 'lxx2012', edition: 'swete', lex: {}, parse: {}, verses: [] };
+    const json = (body: unknown): Response => new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    const base = globalThis.fetch;
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      asked.push(url);
+      if (url === '/data-lxx/index.json') return json(six);
+      if (url === '/data-lxx/gen/3.json') return json(three);
+      return base(input);
+    }));
+    expect(await loadChapter('gen', 3)).toMatchObject({ code: 'gen', chapter: 3, lang: 'grc' });
+    expect(asked).toContain('/data-lxx/gen/3.json');
+    const hebrew = await loadChapter('gen', 7);
+    expect(hebrew).toMatchObject({ code: 'gen', chapter: 7, lang: 'hbo' });
+    expect(asked.filter((u) => u.startsWith('/data/gen/7.json'))).toHaveLength(1);
+    expect(asked.some((u) => u.startsWith('/data-lxx/gen/7'))).toBe(false);
+  });
+
   it('loads Psalm 23 from public/data-lxx/psa/22.json: Greek, Brenton, Greek chapter 22, the book under Lampas\'s code', async () => {
     const chapter = await loadChapter('psa', 23);
     expect(lxxRequests()).toEqual(['/data-lxx/index.json', '/data-lxx/psa/22.json?v=7098b55d4464', '/data-lxx/lexicon-grc-lxx.json']);

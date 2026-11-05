@@ -1,8 +1,8 @@
 // scripts/data-build-lxx.ts — npm run data:build:lxx (story mw-u2w5klk.10, the Septuagint epic's R2; docs/data.md 'The Septuagint data').
 // Writes the Septuagint into public/data-lxx/ in the shape of the Old Testament's build (scripts/data-build-ot.ts): for each book whose annotation file exists
-// (data/lxx/annotations/<book>.tsv, written by `npm run lxx:release` only for a book above the bar), one <book>/<n>.json per GREEK chapter (lang 'grc', translation 'lxx2012',
+// (data/lxx/annotations/<book>.tsv, written by `npm run lxx:release` with the rows of the Greek chapters above the chapter bar, mw-u2w5klk.265), one <book>/<n>.json per SHIPPED GREEK chapter (lang 'grc', translation 'lxx2012',
 // edition 'swete'; each word Swete's own form with its lemma, parsing, layer and confidence; the English of a verse Brenton's, one chunk), index.json (the shipped books
-// with their chapters, verses and the chapter(s) of Lampas's Old Testament each is in), lexicon-grc-lxx.json (every lemma with TBESG's gloss and definition), and
+// with their chapters, verses, the chapter(s) of Lampas's Old Testament each is in (empty for a chapter not shipped) and `shipped`, the Greek chapters shipped), lexicon-grc-lxx.json (every lemma with TBESG's gloss and definition), and
 // beside them eliranwong's LICENSE (GPL-3.0) and README for Swete's text, byte for byte (LICENSE-swete.txt, README-swete.md). public/data-lxx/README.md is written by hand.
 // Deterministic: a second run writes the same bytes. The raw downloads go to data/raw (git-ignored, skipped when present); the JSON is committed.
 // No paid API is called; network only to fetch the pinned sources.
@@ -12,7 +12,7 @@ import { pathToFileURL } from 'node:url';
 import { parseLexicon } from './data-build';
 import { removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { LXX2012_RELEASE, ensureLxx2012, parseUsfm, usfmFileOf, type UsfmBook } from './data/lxx2012';
-import { buildLxxBook, parseAnnotations, parseTranslit, sweteBooks, usfmCodeOf, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
+import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
 import { TVTMS_COMMIT, buildMaps, ensureTvtms, parseTvtms, type TvtmsMaps } from './data/tvtms';
 import { ANNOTATIONS_DIR } from './lxx/release';
 import {
@@ -120,6 +120,15 @@ export function buildLxx(input: LxxInput): BuiltLxx {
     const english: UsfmBook | undefined = usfmText === undefined ? undefined : parseUsfm(usfmText);
     if (!english) notes.push(`${code}: no LXX2012 file, so no English`);
     const book = buildLxxBook({ code, words, translit, annotations: parseAnnotations(annotationText, code), english }, maps, input.lampasVerses);
+    // the line lxx:release writes first (`# shipped chapters: 1-6 of 50`) must name the chapters the rows hold: a hand-edited file stops the build
+    const line = shippedChaptersLine(annotationText);
+    if (line) {
+      const present = [...new Set(words.map((w) => Number(/^[^.]+\.(\d+):/.exec(w.verse)![1])))].sort((a, b) => a - b);
+      const named = line.chapters === 'all' ? present : line.chapters;
+      if (chapterRanges(named) !== chapterRanges(book.info.shipped) || line.of !== book.info.chapters) {
+        throw new Error(`${code}: the annotation file's line names chapters ${chapterRanges(named)} of ${line.of}, its rows hold ${chapterRanges(book.info.shipped)} of ${book.info.chapters}`);
+      }
+    }
     for (const { path, chapter } of book.chapters) files.set(path, JSON.stringify(chapter));
     for (const lemma of book.lemmas) lemmas.add(lemma);
     if (book.unplaced.length) notes.push(`${code}: LXX2012 verses with no Greek verse to stand at: ${book.unplaced.join(', ')}`);
