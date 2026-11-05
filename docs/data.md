@@ -43,6 +43,7 @@ The reader, the word sheet, the voices and the drills read the chapter's `lang` 
 - [Offline](#offline)
   - [The offline copy (`src/data/offlineCopy.ts`, mw-lcv9z3g.1)](#the-offline-copy-srcdataofflinecopyts-mw-lcv9z3g1)
 - [The places of each book (not in `public/data`)](#the-places-of-each-book-not-in-publicdata)
+- [The sermon index (`public/sermons`, not in `public/data`)](#the-sermon-index-publicsermons-not-in-publicdata)
 
 <!-- /toc -->
 
@@ -721,3 +722,7 @@ A run asks the cache from the page (`caches.open(DATA_CACHE).match(url)`, no HEA
 
 `src/maps/data/places/<book>.json` (62 files, the largest about 67 KB, committed) is STEPBible's TIPNR cut into the places each book names, with their verses, Strong's numbers, positions and regions, by `npm run places:build` (`scripts/places-build.ts`).
 It reads the committed chapter files (`public/data`) only to note where in a verse a place stands. It is not Bible text; the app loads a book's file as its own chunk, on the first ask for a verse's maps. Its shape, refresh and the matching of names are in `docs/maps.md`; `ATTRIBUTION.md` credits TIPNR.
+
+## The sermon index (`public/sermons`, not in `public/data`)
+
+`public/sermons/index.json` and `public/sermons/<source>/<book>.json` (65 book files for Spurgeon, about 1 MB in all, committed) are the free sermon index: each sermon's title, the passage it was preached on and the address where it is read, by book, built by `npm run sermons:build` (`scripts/sermons-build.ts`) from the sermon-index repository at a pinned commit (`data/sermons/sources.json`). It is not Bible text and not under `public/data`. It is **not precached** (fetched on first use), and the offline copy keeps it: `'nt'` the files of the 27 New Testament books, `'all'` every file, each asked for as `/sermons/<source>/<book>.json?v=<fingerprint>` and kept by the worker's own route (`isVersionedSermons`). Its shape, the build and the sources are in `docs/sermons.md`; `ATTRIBUTION.md` credits each source.
