@@ -13,13 +13,14 @@ export interface TaggedPassage {
   last?: number;
 }
 
-const BY_OSIS: ReadonlyMap<string, string> = new Map([...Object.entries(OSIS), ...Object.entries(OT_OSIS)].map(([code, osis]) => [osis, code]));
+/** The code of the book an OSIS name ('1Kgs') is, read back out of links.ts's own two tables (the one place book names are kept). */
+const codeOfOsis = (osis: string): string | undefined => [...Object.entries(OSIS), ...Object.entries(OT_OSIS)].find(([, name]) => name === osis)?.[0];
 
 /** The passage a tagged link's address names ('https://lampas.allmymind.org/#/?ref=John.5.24-29'), or null for an address that names none the app holds. */
 export function passageOf(href: string): TaggedPassage | null {
   const ref = /[?&]ref=([^&#]+)/.exec(href)?.[1];
   const m = ref ? /^([0-9A-Za-z]+)\.(\d+)(?:\.(\d+)(?:-(\d+))?)?$/.exec(decodeURIComponent(ref)) : null;
-  const code = m ? BY_OSIS.get(m[1]) : undefined;
+  const code = m ? codeOfOsis(m[1]) : undefined;
   if (!m || !code) return null;
   const first = m[3] === undefined ? undefined : Number(m[3]);
   const last = first === undefined ? undefined : Math.max(first, m[4] === undefined ? first : Number(m[4]));
