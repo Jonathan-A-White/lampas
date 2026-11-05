@@ -117,7 +117,7 @@ describe('the looser book match reaches only what he types', () => {
   });
 
   it('turns no ordinary word of a text into a reference', () => {
-    const text = 'We met at ep 4 times, jo 3 of them, the Ephe 2 and Revel 5 of Gene 1 in a Matt 4 hour wait.';
+    const text = 'We met at ep 4 times, jo 3 of them, the Ephe 2 and Revel 5 of Gene 1 in a Matt 4 says.';
     expect(findReferences(text).map((r) => r.printed)).toEqual(['Matt 4']);
   });
 });
