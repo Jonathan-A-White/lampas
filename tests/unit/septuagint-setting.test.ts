@@ -6,6 +6,7 @@ import { septuagintSetting } from '../../src/settings/definitions';
 import { settingOf } from '../../src/settings/registry';
 import { ROWS, visibleRows, readValues } from '../../src/settings/rows';
 import { getSetting, setSetting } from '../../src/settings/store';
+import { septuagintView, septuagintWeaveNoted } from '../../src/reader/septuagint';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -51,5 +52,27 @@ describe('where Settings shows it', () => {
   it('is found by the search for Septuagint', async () => {
     expect(await shown('Septuagint')).toBe(true);
     expect(await shown('septuagint')).toBe(true);
+  });
+});
+
+describe('the view a Septuagint chapter is drawn in (mw-u2w5klk.275)', () => {
+  it('draws the Greek alone in the Greek position, whatever the Weave', () => {
+    expect(septuagintView('greek', false)).toBe('greek');
+    expect(septuagintView('greek', true)).toBe('greek');
+  });
+
+  it("draws Brenton's English as prose in the English position", () => {
+    expect(septuagintView('english', false)).toBe('english');
+  });
+
+  it('draws the Greek verse, with no English under it, in the Weave position: there is nothing to weave', () => {
+    expect(septuagintView('english', true)).toBe('greek');
+  });
+
+  it('notes that the Weave is off in the Weave position only', () => {
+    expect(septuagintWeaveNoted('english', true)).toBe(true);
+    expect(septuagintWeaveNoted('english', false)).toBe(false);
+    expect(septuagintWeaveNoted('greek', true)).toBe(false);
+    expect(septuagintWeaveNoted('greek', false)).toBe(false);
   });
 });

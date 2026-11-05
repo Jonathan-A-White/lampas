@@ -11,7 +11,7 @@ import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps } from './VerseText';
 import { isOrdered, rowAttrs } from './sourceText';
-import { englishOfVerse, septuagintNumber } from './septuagint';
+import { septuagintNumber } from './septuagint';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { ChosenUnit } from './chosenReading';
 import type { ShownUnit } from './variants';
@@ -33,16 +33,6 @@ function ShownNumber({ verse, septuagint }: { verse: Verse; septuagint?: number 
       ) : null}
     </>
   );
-}
-
-/** Brenton's English of a verse of a Septuagint chapter, under its Greek (the source view draws the Greek words, the English view draws this chunk in their place). */
-function EnglishUnder({ verse }: { verse: Verse }) {
-  const text = englishOfVerse(verse);
-  return text ? (
-    <span data-lxx-english lang="en" dir="ltr" className="block pb-1 font-sans text-base font-normal leading-snug text-muted">
-      {text}
-    </span>
-  ) : null;
 }
 
 /** Verse by verse: one verse per line, its number a button before it (a tap opens the Verse view, src/VerseView.tsx). */
@@ -68,7 +58,6 @@ export function VerseLine(props: VerseProps) {
         <ShownNumber verse={verse} septuagint={props.septuagint} />
       </VerseNumber>
       <VerseText {...props} />
-      {props.septuagint !== undefined && view === 'greek' ? <EnglishUnder verse={verse} /> : null}
       <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
     </p>
   );
@@ -115,7 +104,6 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, woven,
             </sup>
           </VerseNumber>
           <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} />
-          {septuagint !== undefined && view === 'greek' ? <EnglishUnder verse={verse} /> : null}
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}

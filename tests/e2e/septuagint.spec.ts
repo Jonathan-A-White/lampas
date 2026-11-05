@@ -1,4 +1,4 @@
-// Settings > Old Testament in Greek (Septuagint) and the Reader on Genesis 1 (mw-u2w5klk.11) at 390x844: turn the setting on, open Genesis 1, and the Greek stands with Brenton's English under verse 1,
+// Settings > Old Testament in Greek (Septuagint) and the Reader on Genesis 1 (mw-u2w5klk.11) at 390x844: turn the setting on, open Genesis 1, and the Greek stands alone (Brenton's English is the English view),
 // the title is still Genesis 1 with its edition under it, the chips row is there and Back returns to Settings. public/data-lxx ships no book yet, so the Septuagint's files are the fixtures in
 // tests/fixtures/data-lxx, answered to the page by route (the chapters are built from tests/fixtures/lxx by scripts/data-build-lxx.ts).
 import { expect, test, type Page } from '@playwright/test';
@@ -28,7 +28,7 @@ async function turnOn(page: Page): Promise<void> {
   await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
 }
 
-test('the setting is under How much Greek?, found by a search, and turned on it opens Genesis 1 in the Greek with Brenton under it', async ({ page }) => {
+test('the setting is under How much Greek?, found by a search, and turned on it opens Genesis 1 in the Greek alone', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');
   await expect(page.getByText('Swete’s Greek with Brenton’s English; the Hebrew when off.')).toBeVisible();
@@ -44,7 +44,8 @@ test('the setting is under How much Greek?, found by a search, and turned on it 
 
   const verse = page.locator('[data-verse="1"]');
   await expect(verse.locator('[data-word="0"]')).toHaveText('ΕΝ');
-  await expect(verse.locator('[data-lxx-english]')).toHaveText('In the beginning God made the heaven and the earth.');
+  await expect(verse.locator('[data-lxx-english]')).toHaveCount(0);
+  await expect(verse).not.toContainText('In the beginning God made');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Genesis 1');
   await expect(page.locator('[data-reader-subtitle]')).toHaveText('Septuagint (Swete) · Brenton (LXX2012)');
   await expect(page.getByTestId('reader-chips')).toBeVisible();
@@ -58,7 +59,7 @@ test('the setting is under How much Greek?, found by a search, and turned on it 
   await openSettings(page);
   await expect(settingsHeading(page)).toBeVisible();
   await page.goBack();
-  await expect(page.locator('[data-verse="1"] [data-lxx-english]')).toBeVisible();
+  await expect(page.locator('[data-verse="1"] [data-word="0"]')).toHaveText('ΕΝ');
 });
 
 test('Psalms 23 names both numberings and a book that is not shipped says so', async ({ page }) => {

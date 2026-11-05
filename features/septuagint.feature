@@ -1,8 +1,9 @@
 Feature: The Reader reads an Old Testament book in the Septuagint
   Settings > Old Testament in Greek (Septuagint) (under How much Greek?, off to start) opens a shipped Old Testament book in Swete's Greek instead of the Hebrew, with Brenton's English
-  as the one chunk of each verse. The header names the edition under the title and, where the Septuagint numbers a chapter differently, both numberings ('Psalms 23 (Greek 22)'); a verse
+  as the one chunk of each verse. The Greek view draws Swete's Greek alone, as the New Testament's does (mw-u2w5klk.275); Brenton's English is the English view. The header names the edition under the title and, where the Septuagint numbers a chapter differently, both numberings ('Psalms 23 (Greek 22)'); a verse
   that is numbered differently says both ('1 (22:1)'). A book not yet in public/data-lxx stays Hebrew and says so. The weave needs a Greek word to lay over an English chunk, and the
-  Septuagint's English is one chunk a verse, so the Weave is off there. The chapters are the fixtures in tests/fixtures/data-lxx (a shipped Genesis 1 and Greek Psalm 22; Isaiah is not shipped).
+  Septuagint's English is one chunk a verse, so there is nothing to weave: with the Weave on, the switch's Weave position draws the Greek verse alone and says so once, and its English
+  position is Brenton's prose. The chapters are the fixtures in tests/fixtures/data-lxx (a shipped Genesis 1 and Greek Psalm 22; Isaiah is not shipped).
 
   @uc-septuagint @greek
   Scenario: With the setting off Genesis 1 is the Hebrew
@@ -11,11 +12,11 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     And no header subtitle is shown
 
   @uc-septuagint @greek
-  Scenario: With the setting on Genesis 1 is the Greek with Brenton's English under verse 1
+  Scenario: With the setting on Genesis 1 in the Greek view is Swete's Greek alone
     Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
     Then the language switch offers "English" and "Greek"
     And verse 1 begins with the Greek "ΕΝ"
-    And the English under verse 1 is "In the beginning God made the heaven and the earth."
+    And no English is under verse 1
     And the header subtitle reads "Septuagint (Swete) · Brenton (LXX2012)"
     And the title reads "Genesis 1"
 
@@ -39,10 +40,29 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     And no header subtitle is shown
 
   @uc-septuagint @greek
-  Scenario: The Weave is off on a Septuagint chapter and a hint says why once
+  Scenario: With the Weave on the switch has a Weave position that draws the Greek alone and says why once
     Given Lampas is opened on Genesis 1 with the Septuagint on and the Weave "solid"
-    Then the language switch offers "English" and "Greek"
+    Then the language switch offers "English", "Weave" and "Greek"
+    And the Weave position is chosen
+    And verse 1 begins with the Greek "ΕΝ"
+    And no English is under verse 1
     And the tip reads "The Septuagint has one line of English a verse, so the Weave is off here"
+
+  @uc-septuagint @greek
+  Scenario: With the Weave on the English position is Brenton's prose and the tip is not shown
+    Given Lampas is opened on Genesis 1 with the Septuagint on, the Weave "solid" and plain English under it
+    Then the language switch offers "English", "Weave" and "Greek"
+    And the English position is chosen
+    And verse 1 reads "In the beginning God made the heaven and the earth."
+    And no tip is shown
+
+  @uc-septuagint @greek
+  Scenario: With the Weave on the Greek position is the Greek alone and the tip is not shown
+    Given Lampas is opened on Genesis 1 with the Septuagint on, the Weave "solid" and the saved view "greek"
+    Then the Greek position is chosen
+    And verse 1 begins with the Greek "ΕΝ"
+    And no English is under verse 1
+    And no tip is shown
 
   # The word card of a Septuagint word (mw-u2w5klk.12): the lemma, parsing and meaning come from the lemma lexicon (public/data-lxx/lexicon-grc-lxx.json; a word of this text has no Strong's number),
   # the card says how Lampas read the word (the layer and the confidence in words), a word the derivation only guessed is drawn with a mark and told as a guess, never offered to learn, and can be reported.

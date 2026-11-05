@@ -93,6 +93,10 @@ const switchEl = (): HTMLElement => screen.getByRole('group', { name: 'Language'
 const feature = await loadFeature('features/septuagint.feature');
 
 describeFeature(feature, ({ Scenario }) => {
+  const noEnglishUnder = (): void => {
+    expect(verseEl(1).querySelector('[data-lxx-english]')).toBeNull();
+    expect(squash(verseEl(1).textContent)).not.toContain('In the beginning God made');
+  };
   const switchOffers = async (_: unknown, a: string, b: string): Promise<void> => {
     await waitFor(() => expect(within(switchEl()).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b]));
   };
@@ -112,15 +116,13 @@ describeFeature(feature, ({ Scenario }) => {
     And('no header subtitle is shown', noSubtitle);
   });
 
-  Scenario("With the setting on Genesis 1 is the Greek with Brenton's English under verse 1", ({ Given, Then, And }) => {
+  Scenario("With the setting on Genesis 1 in the Greek view is Swete's Greek alone", ({ Given, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
     Then('the language switch offers {string} and {string}', switchOffers);
     And('verse 1 begins with the Greek {string}', async (_: unknown, word: string) => {
       await waitFor(() => expect(squash(verseEl(1).querySelector('[data-word="0"]')?.textContent)).toBe(word));
     });
-    And('the English under verse 1 is {string}', (_: unknown, text: string) => {
-      expect(squash(verseEl(1).querySelector('[data-lxx-english]')?.textContent)).toBe(text);
-    });
+    And('no English is under verse 1', noEnglishUnder);
     And('the header subtitle reads {string}', subtitleReads);
     And('the title reads {string}', titleReads);
   });
@@ -150,12 +152,51 @@ describeFeature(feature, ({ Scenario }) => {
     And('no header subtitle is shown', noSubtitle);
   });
 
-  Scenario('The Weave is off on a Septuagint chapter and a hint says why once', ({ Given, Then, And }) => {
+  const switchOffers3 = async (_: unknown, a: string, b: string, c: string): Promise<void> => {
+    await waitFor(() => expect(within(switchEl()).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b, c]));
+  };
+  const chosenIs = (name: string) => async (): Promise<void> => {
+    await waitFor(() => expect(within(switchEl()).getByRole('button', { name }).getAttribute('aria-pressed')).toBe('true'));
+  };
+  const noTip = (): void => {
+    expect(document.querySelector('[data-hint-card="septuagint-weave"]')).toBeNull();
+  };
+  const versesBegin = async (_: unknown, word: string): Promise<void> => {
+    await waitFor(() => expect(squash(verseEl(1).querySelector('[data-word="0"]')?.textContent)).toBe(word));
+  };
+  const versesRead = async (_: unknown, text: string): Promise<void> => {
+    await waitFor(() => expect(squash(verseEl(1).querySelector('[data-text]')?.textContent)).toBe(text));
+  };
+
+  Scenario('With the Weave on the switch has a Weave position that draws the Greek alone and says why once', ({ Given, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with the Septuagint on and the Weave {string}', (_: unknown, weave: string) => openOn('Genesis 1', 'on', { weave }));
-    Then('the language switch offers {string} and {string}', switchOffers);
+    Then('the language switch offers {string}, {string} and {string}', switchOffers3);
+    And('the Weave position is chosen', chosenIs('Weave'));
+    And('verse 1 begins with the Greek {string}', versesBegin);
+    And('no English is under verse 1', noEnglishUnder);
     And('the tip reads {string}', async (_: unknown, text: string) => {
       await waitFor(() => expect(squash(document.querySelector('[data-hint-card="septuagint-weave"]')?.textContent)).toContain(text));
     });
+  });
+
+  Scenario("With the Weave on the English position is Brenton's prose and the tip is not shown", ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, the Weave {string} and plain English under it', (_: unknown, weave: string) =>
+      openOn('Genesis 1', 'on', { weave, readerPlain: weave }),
+    );
+    Then('the language switch offers {string}, {string} and {string}', switchOffers3);
+    And('the English position is chosen', chosenIs('English'));
+    And('verse 1 reads {string}', versesRead);
+    And('no tip is shown', noTip);
+  });
+
+  Scenario('With the Weave on the Greek position is the Greek alone and the tip is not shown', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, the Weave {string} and the saved view {string}', (_: unknown, weave: string, view: string) =>
+      openOn('Genesis 1', 'on', { weave, readerView: view }),
+    );
+    Then('the Greek position is chosen', chosenIs('Greek'));
+    And('verse 1 begins with the Greek {string}', versesBegin);
+    And('no English is under verse 1', noEnglishUnder);
+    And('no tip is shown', noTip);
   });
 
   // ---- the word card of a Septuagint word (mw-u2w5klk.12)
