@@ -60,6 +60,27 @@ test('plain English with a number after a book is no chapter link; a chapter alo
   expect(await texts(page, 'alone')).toEqual(['Mark 5', 'Job 3', 'Matthew 5-7']);
 });
 
+test('a numbered book with a chapter alone is linked whole to its own book, not to the book without its number (mw-5r3p30.1061)', async ({ page }) => {
+  await openPost(page);
+  expect(await texts(page, 'numchapter')).toEqual(['1 John 4', '2 Cor 5', '1 John 4-5', 'John 3:16', '1 John 4']);
+  expect(await hrefs(page, 'numchapter')).toEqual([`${REF}1John.4`, `${REF}2Cor.5`, `${REF}1John.4`, `${REF}John.3.16`, `${REF}1John.4`]);
+});
+
+test('a number that begins a numbered book after a verse and a comma is no verse of the first book (mw-5r3p30.1062)', async ({ page }) => {
+  await openPost(page);
+  expect(await texts(page, 'nobook')).toEqual(['Romans 8:1', 'John 3:16', 'John 3:16']);
+  expect(await hrefs(page, 'nobook')).toEqual([`${REF}Rom.8.1`, `${REF}John.3.16`, `${REF}John.3.16`]);
+  // a plain list is still read: 'John 5:24, 28' links 28, and 'Rom 8:1, 2 Cor 5:17' links 2 Cor 5:17 whole
+  expect(await texts(page, 'comma')).toEqual(['John 5:24', '28']);
+  expect(await texts(page, 'numbered')).toContain('2 Cor 5:17');
+});
+
+test('a chapter before a count or quantity word is no link; a chapter alone still is (mw-5r3p30.1063)', async ({ page }) => {
+  await openPost(page);
+  expect(await page.locator('#counts a').count()).toBe(0);
+  expect(await texts(page, 'alone')).toEqual(['Mark 5', 'Job 3', 'Matthew 5-7']);
+});
+
 test('text in a link, code, a heading or outside the post is left as it is, and no false link is made', async ({ page }) => {
   await openPost(page);
   expect(await hrefs(page, 'existing')).toEqual(['https://example.com/x']);
