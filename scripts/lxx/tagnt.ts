@@ -22,9 +22,13 @@ export interface TagntRow {
   name: boolean;
 }
 
-/** Strips TAGNT's semantic tags from a noun (N-NSM-T -> N-NSM, N-GSF-L -> N-GSF): they say what a name refers to, not how it is inflected. */
+/**
+ * Strips TAGNT's semantic tags from a word (N-NSM-T -> N-NSM, N-GSF-L -> N-GSF, A-NPM-LG -> A-NPM): they say what a name refers to (-L a place, -LG a group of places, -PG a people, -T a title),
+ * not how it is inflected. TAGNT puts them on an adjective that names a people (Αἰγύπτιοι, Ἀθηναῖοι) and on an adverb (Ἑβραϊστί) as on a noun (story mw-u2w5klk.270: Gen.12:12#8's
+ * A-NPM-LG was a parsing the app cannot put in words, and no Greek chapter could ship). An adjective's own last part (-C, -S, -P poetic) is a suffix decodeParse knows and stays.
+ */
 export function normMorph(morph: string): string {
-  return morph.startsWith('N-') ? morph.split('-').slice(0, 2).join('-') : morph;
+  return morph.startsWith('N-') ? morph.split('-').slice(0, 2).join('-') : morph.replace(/^((?:A|ADV)(?:-[A-Z]+)?)-(?:LG|PG|L|T)$/, '$1');
 }
 
 /**

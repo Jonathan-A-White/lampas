@@ -18,6 +18,7 @@ import { DERIVED_HEADER, PENDING_HEADER, runDerive, type BookResult, type Derive
 import { RAW_DIR, STEP, SWETE, fetchPinned, pinnedPath } from '../../scripts/lxx/sources';
 import { keyOf, spellings, sweteTokens } from '../../scripts/lxx/swete';
 import { DOMINANT, DOMINANT_MIN, readTagnt, settle, type Analysis } from '../../scripts/lxx/tagnt';
+import { decodeParse } from '../../src/data/parseCode';
 
 const FIXTURES = 'tests/fixtures/lxx';
 const tagnt = [readFileSync(join(FIXTURES, 'tagnt-slice.tsv'), 'utf8')];
@@ -305,5 +306,34 @@ describe("Lampas's derived data: its licence, README and documentation", () => {
     expect(existsSync(join(FIXTURES, 'LICENSE-LXX-Swete-1930'))).toBe(true);
     expect(readFileSync(join(FIXTURES, 'LICENSE-LXX-Swete-1930'), 'utf8')).toContain('GNU GENERAL PUBLIC LICENSE');
     expect(existsSync(join(FIXTURES, 'README-LXX-Swete-1930.md'))).toBe(true);
+  });
+});
+
+describe('TAGNT\'s own last part on an adjective (mw-u2w5klk.270)', () => {
+  // the real rows: TAGNT tags a people's name written as an adjective -LG (a group of places), as it tags a noun; Gen 12:12's Αἰγύπτιοι (word 8) is read from the second
+  const rows = [
+    'Act.17.21#01=NKO\tἈθηναῖοι (Athēnaioi)\t[The] Athenians\tG0117=A-NPM-LG\tἈθηναῖος=Athenian\tNA28+NA27+Tyn+SBL+WH+Treg+TR+Byz\t\t\tAtenienses\tAthenian»Athenian|Athens@Act.17.15\t#01\tG0117',
+    'Heb.11.29#14=NKO\tΑἰγύπτιοι (Aiguptioi)\tEgyptians\tG0124=A-NPM-LG\tΑἰγύπτιος=Egyptian\tNA28+NA27+Tyn+SBL+WH+Treg+TR+Byz\t\t\tegipcios\tEgypt»Egypt|Egypt@Gen.12.10\t#14\tG0124',
+  ].join('\n');
+
+  it('drops the tag from an adjective as it does from a noun: A-NPM-LG is A-NPM, a code Lampas can put in words', () => {
+    const [athenians, egyptians] = readTagnt([rows]);
+    expect(athenians.morph).toBe('A-NPM');
+    expect(egyptians.morph).toBe('A-NPM');
+    expect(decodeParse(egyptians.morph)).toBe('adjective, nominative plural masculine');
+    expect(() => decodeParse('A-NPM-LG')).toThrow(/Unknown parsing code/);
+  });
+
+  it('keeps an adjective\'s own last part (a comparative, a superlative) and every other kind of word whole', () => {
+    const one = (grammar: string): string =>
+      readTagnt([`Mat.1.1#01=NKO\tλόγος (logos)\tx\tG0001=${grammar}\tλόγος=word\tNA28\t\t\t\t\t#01\tG0001`])[0].morph;
+    expect(one('A-NSM-C')).toBe('A-NSM-C');
+    expect(one('A-NSM-S')).toBe('A-NSM-S');
+    expect(one('V-PAI-3S')).toBe('V-PAI-3S');
+    expect(one('A-GPM-PG')).toBe('A-GPM');
+    expect(one('A-NSM-T')).toBe('A-NSM');
+    expect(one('A-NSM-L')).toBe('A-NSM');
+    expect(one('ADV-T')).toBe('ADV');
+    expect(one('N-NSM-T')).toBe('N-NSM');
   });
 });
