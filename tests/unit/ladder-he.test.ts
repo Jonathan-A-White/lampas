@@ -79,7 +79,7 @@ describe('the ladder of the whole Old Testament', () => {
       expect(e.ref).toMatch(/^[0-9a-z]{3}\.\d+\.\d+$/);
       expect(isGreekBook(e.ref.slice(0, 3)), e.ref).toBe(false);
     }
-  });
+  }, 60_000); // builds the whole Old Testament twice: 20 s (the global testTimeout) is too near on a loaded host
 
   it('starts with these ten verses, the easiest', () => {
     const ladder = JSON.parse(readFileSync(first, 'utf8')) as LadderEntry[];
