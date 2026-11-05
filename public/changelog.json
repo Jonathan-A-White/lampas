@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.131",
+    "date": "2026-11-05",
+    "story": "mw-5r3p30.1090",
+    "kind": "fixed",
+    "text": "the 'Open in the app' strip now also shows when a Lampas link tapped in another app opens in a small Chrome window."
+  },
+  {
     "version": "0.7.128",
     "date": "2026-11-05",
     "story": "mw-5r3p30.1088",

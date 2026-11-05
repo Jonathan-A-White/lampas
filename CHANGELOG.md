@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.131
+_2026-11-05_
+- Fixed: the 'Open in the app' strip now also shows when a Lampas link tapped in another app opens in a small Chrome window.
+
 ## 0.7.128
 _2026-11-05_
 - Fixed: The verse card on the blog names the right Bible translation for Old Testament verses, loads much faster, and says when a chapter link shows only its first verse.
