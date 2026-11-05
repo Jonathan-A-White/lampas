@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.113",
+    "date": "2026-11-05",
+    "story": "mw-5r3p30.1046",
+    "kind": "fixed",
+    "text": "A Bible reference across a chapter, such as John 3:16-4:3, now links to its first verse instead of a broken range."
+  },
+  {
     "version": "0.7.112",
     "date": "2026-11-04",
     "story": "mw-5r3p30.1050",

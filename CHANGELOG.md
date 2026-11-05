@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.113
+_2026-11-05_
+- Fixed: A Bible reference across a chapter, such as John 3:16-4:3, now links to its first verse instead of a broken range.
+
 ## 0.7.112
 _2026-11-04_
 - Fixed: "Open in the app" now opens the installed Lampas at the verse you were reading, not at the start of the chapter.
