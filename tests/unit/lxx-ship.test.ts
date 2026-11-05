@@ -203,6 +203,21 @@ describe('a word whose parsing cannot be put in words', () => {
   });
 });
 
+// mw-u2w5klk.272: a crasis or a joined particle (κἀγώ 'P-1NS + G2532', οὐκέτι 'PRT-N + G2089') is put in words, so its chapter ships and the reader shows both parts.
+describe('a word whose parsing joins two parts with " + "', () => {
+  it('ships its chapter, and writes the parsing in words', async () => {
+    const out = tmp();
+    const word = result.pending.find((p) => chapterOf(p.ref) === 2)!;
+    const lines = choicesTo(6).split('\n').map((l) => (l.startsWith(`${word.ref}\t`) ? `${word.ref}\tP-1NS + G2532\tἐγώ\tguess` : l));
+    const o = options({ 'gen-01.tsv': lines.join('\n') });
+    const done = await runShip(['--out', out, '--no-morpheus'], o);
+    expect(done.books[0].shipped).toContain(2);
+    expect(o.lines.join('\n')).not.toContain('cannot put in words');
+    const chapter = JSON.parse(readFileSync(join(out, 'gen', '2.json'), 'utf8')) as { parse: Record<string, string> };
+    expect(chapter.parse['P-1NS + G2532']).toBe('personal pronoun, 1st person nominative singular, joined to "and"');
+  });
+});
+
 describe('a chapter lxx:ship writes loads in the reader', () => {
   const written: { out: string } = { out: '' };
   beforeEach(async () => {

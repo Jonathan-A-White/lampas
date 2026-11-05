@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeParse, parseSegments } from '../../src/data/parseCode';
+import { decodeParse, parseSegments, splitParse } from '../../src/data/parseCode';
 
 describe('decodeParse: Robinson RP codes in plain words', () => {
   it.each([
@@ -68,6 +68,32 @@ describe('decodeParse: Robinson RP codes in plain words', () => {
     expect(() => decodeParse('Z-NSM')).toThrow(/Z-NSM/);
     expect(() => decodeParse('V-XYZ-3S')).toThrow(/V-XYZ-3S/);
     expect(() => decodeParse('')).toThrow();
+  });
+});
+
+// mw-u2w5klk.272: TAGNT writes a crasis (κἀγώ, 'and I') and a joined particle (οὐκέτι, 'not still') as two parts, 'P-1NS + G2532', and readTagnt keeps the second as a bare Strong's number.
+describe('a parsing of two parts joined by " + "', () => {
+  it('puts both parts in words: the form\'s parsing, then the word joined to it', () => {
+    expect(decodeParse('P-1NS + G2532')).toBe('personal pronoun, 1st person nominative singular, joined to "and"');
+    expect(decodeParse('P-1AS + G2532')).toBe('personal pronoun, 1st person accusative singular, joined to "and"');
+    expect(decodeParse('PRT-N + G2089')).toBe('particle, negative, joined to "still"');
+  });
+
+  it('puts every ' + "' + '" + ' class of the New Testament in words (the sweep of mw-u2w5klk.272)', () => {
+    for (const code of ['P-1DS + G2532', 'D-NPM + G2532', 'PRT-N + G4218', 'CONJ + G1565', 'CONJ + G1437', 'CONJ + G1564', 'CONJ + G1563', 'COND + G4007', 'CONJ + G5101', 'CONJ + G5104', 'PREP + G1537', 'PREP + G4057', 'PREP + G3029', 'PRT-N + G4452', 'A-NUI + G3638', 'A-NUI + G5064', 'PRT + G4225', 'PREP + G4521', 'PREP + G4155', 'PREP + G2955', 'PREP + G0826', 'ADV + G3461']) {
+      expect(decodeParse(code), code).toMatch(/, joined to "[^"]+"$/);
+    }
+  });
+
+  it('refuses a joined word it does not know, and a part that is not a Strong\'s number', () => {
+    expect(() => decodeParse('P-1NS + G9999')).toThrow(/G9999/);
+    expect(() => decodeParse('P-1NS + CONJ')).toThrow(/CONJ/);
+    expect(() => decodeParse('Z-1NS + G2532')).toThrow(/Z-1NS/);
+  });
+
+  it('is split for the drill by its first part', () => {
+    expect(splitParse('P-1NS + G2532')).toEqual(splitParse('P-1NS'));
+    expect(splitParse('PRT-N + G2089')).toEqual(splitParse('PRT-N'));
   });
 });
 
