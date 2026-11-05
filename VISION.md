@@ -7,6 +7,7 @@
 - [Free to read, a licence for the AI](#free-to-read-a-licence-for-the-ai)
 - [Never commercial](#never-commercial)
 - [The tutor](#the-tutor)
+- [Sermons, one click from the reading](#sermons-one-click-from-the-reading)
 - [Pronunciation](#pronunciation)
 - [Every age and every ability](#every-age-and-every-ability)
 - [The Preface](#the-preface)
@@ -54,6 +55,15 @@ Lampas will never be commercial. The licence that unlocks the AI is not a way of
 The tutor is told, on every ask, each app setting and each part of his progress that could change its answer.
 
 (src/tutor/knows.ts is the table of what each grind is sent; a test holds it.)
+
+## Sermons, one click from the reading
+- "A: Yes, the line as drafted: index first, pointing outward; our server hosts only as the fallback; whole works read inside Lampas come later, under this line" (his tap on the card of the sermon-index grilling mw-6ww.150, 2026-11-05T13:30:14Z, txid direct:512cc39fbba8af773b5870789c4ce245471d9457623c60406017e3d46e39f848, answering the card direct:a5e9c18053c363e4c5074c044fbeef37f8f9c2a74a0dc0f20901ae38693c541a)
+
+The line he said yes to, as drafted on that card:
+
+"Sermons, one click from the reading: an index on the server, added to over time, points to high quality sermons on the verse, pericope or chapter you are reading, older preachers and modern ones (YouTube, Logos sermon collections), by Bible passage first and by theme second; the app chooses which collections are on, as it chooses Logos books; our server hosts a sermon only where no high quality source is in the public domain or licensed for the app."
+
+This line is confirmed by him. (The probe behind it is docs/sources/sermon-index.md.)
 
 ## Pronunciation
 - "Is there a standard modern Greek way of reading the Bible If so we should use that everywhere" (Postern, 2026-10-12 22:08Z, channel mw-5r3p30.264, direct:d14699a68c257adabde9341f850bd1e06ee39c93fe4ed6f2ac43580f8e6e9601)
