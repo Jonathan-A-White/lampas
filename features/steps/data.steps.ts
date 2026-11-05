@@ -1,6 +1,5 @@
 // features/steps/data.steps.ts — runs features/data.feature against the committed public/data, the
 // source slices in tests/fixtures/data/, and a real build of the service worker.
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -14,10 +13,11 @@ import { sourceLanguage, type BookIndex, type Chapter } from '../../src/data/cha
 import type { LemmaLexicon } from '../../src/data/lexicon';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import { serveChapter } from '../../src/dataCache';
+import { childBuildTestMs, viteBuild } from '../../tests/support/child-build';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 
 // A real vite build takes a few seconds.
-vi.setConfig({ testTimeout: 90_000 });
+vi.setConfig({ testTimeout: childBuildTestMs(1) });
 
 const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
 const chapterPath = (code: string, n: number) => `public/data/${code}/${n}.json`;
@@ -405,7 +405,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Only the index, the lemma lexicon, the frequency table and Romans 8 are precached', ({ Given, Then, And }) => {
     Given('the app is built', () => {
       outDir = tmp();
-      execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', outDir, '--emptyOutDir', '--logLevel', 'error'], { stdio: 'inherit' });
+      viteBuild(outDir);
       swText = readFileSync(join(outDir, 'sw.js'), 'utf8');
     });
     Then('the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter or Old Testament file', () => {
