@@ -4,13 +4,17 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { syntheticGenesis } from '../support/lxx-genesis';
 import type { LxxInput, LxxIndex } from '../../scripts/data-build-lxx';
 import { deriveBook, type DeriveInput } from '../../scripts/lxx/derive';
 import type { KnownScore } from '../../scripts/lxx/known';
 import { parseArgs, runShip, type ShipOptions } from '../../scripts/lxx/ship';
+import { db } from '../../src/data/db';
+import { forgetChapters, loadChapter } from '../../src/data/chapter';
+import { septuagintSetting } from '../../src/settings/definitions';
+import { setSetting } from '../../src/settings/store';
 
 const FIXTURES = 'tests/fixtures/lxx';
 const fixture = (file: string): string => readFileSync(join(FIXTURES, file), 'utf8');
@@ -145,5 +149,53 @@ describe('npm run lxx:ship -- --out <dir>', () => {
     await runShip(['--out', out], options({ 'gen-01.tsv': choicesTo(6) }));
     expect(readFileSync(join(out, 'gen', '6.json'), 'utf8')).toBe(first);
     expect(readFileSync(join(out, 'index.json'), 'utf8')).toBe(index);
+  });
+});
+
+// mw-u2w5klk.270: Gen.12:12#8 (Αἰγύπτιοι) had the parsing A-NPM-LG, which the app cannot put in words, and the real run stopped there. The cause is fixed where the code is made (tagnt.ts normMorph);
+// a word that still comes with such a parsing (a model's guess may write any) holds its chapter back, and the run goes on.
+describe('a word whose parsing cannot be put in words', () => {
+  /** choicesTo(6), with the first pending word of chapter 2 chosen as a guess with the parsing A-NPM-LG */
+  const unsayable = (): { text: string; ref: string } => {
+    const word = result.pending.find((p) => chapterOf(p.ref) === 2)!;
+    const lines = choicesTo(6).split('\n').map((l) => (l.startsWith(`${word.ref}\t`) ? `${word.ref}\tA-NPM-LG\tΑἰγύπτιος\tguess` : l));
+    return { text: lines.join('\n'), ref: word.ref };
+  };
+
+  it('holds its chapter back as not shippable, names why, and the run goes on and exits clean', async () => {
+    const out = tmp();
+    const { text, ref } = unsayable();
+    const o = options({ 'gen-01.tsv': text });
+    const done = await runShip(['--out', out, '--no-morpheus'], o);
+    expect(done.books).toEqual([{ code: 'gen', shipped: [1, 3, 4, 5, 6], chapters: 50 }]);
+    expect(o.lines.find((l) => l.startsWith('gen: shipped'))).toMatch(/^gen: shipped 1, 3-6 of 50/);
+    expect(o.lines.join('\n')).toContain(`${ref} has the parsing "A-NPM-LG"`);
+    expect(readdirSync(join(out, 'gen')).sort()).toEqual(['1.json', '3.json', '4.json', '5.json', '6.json']);
+  });
+});
+
+describe('a chapter lxx:ship writes loads in the reader', () => {
+  const written: { out: string } = { out: '' };
+  beforeEach(async () => {
+    written.out = tmp();
+    await runShip(['--out', written.out, '--no-morpheus'], options({ 'gen-01.tsv': choicesTo(6) }));
+    await db.open();
+    await db.settings.clear();
+    forgetChapters();
+    await setSetting(septuagintSetting, 'on');
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input).replace(/\?v=[0-9a-f]{12}$/, '');
+      const file = join(written.out, url.replace(/^\/data-lxx\//, ''));
+      return url.startsWith('/data-lxx/') && existsSync(file) ? new Response(readFileSync(file, 'utf8'), { status: 200, headers: { 'Content-Type': 'application/json' } }) : new Response('not found', { status: 404 });
+    }));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('opens Genesis 3 from the Septuagint with each word’s parsing put in words', async () => {
+    const chapter = await loadChapter('gen', 3);
+    expect(chapter).toMatchObject({ code: 'gen', chapter: 3, lang: 'grc', translation: 'lxx2012', edition: 'swete' });
+    const codes = new Set(chapter.verses.flatMap((v) => v.g.map((w) => w.p)));
+    expect(codes.size).toBeGreaterThan(0);
+    for (const code of codes) expect(chapter.parse[code]).toBeTruthy();
   });
 });
