@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.122",
+    "date": "2026-11-05",
+    "story": "mw-5r3p30.1048",
+    "kind": "new",
+    "text": "On the blog, tapping a Bible reference now opens a small popup with the verse and an \"Open in Lampas\" button, instead of jumping straight to the app."
+  },
+  {
+    "version": "0.7.122",
+    "date": "2026-11-05",
+    "story": "mw-5r3p30.1051",
+    "kind": "fixed",
+    "text": "The \"Open in the app\" bar no longer pushes the text down when it appears a moment after the page opens."
+  },
+  {
     "version": "0.7.116",
     "date": "2026-11-05",
     "story": "mw-5r3p30.726",

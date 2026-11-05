@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.122
+_2026-11-05_
+- New: On the blog, tapping a Bible reference now opens a small popup with the verse and an "Open in Lampas" button, instead of jumping straight to the app.
+- Fixed: The "Open in the app" bar no longer pushes the text down when it appears a moment after the page opens.
+
 ## 0.7.116
 _2026-11-05_
 - New: Asking the makers for something new now goes only through the tutor; the forms under Ask for more are gone.
