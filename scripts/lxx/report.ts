@@ -1,20 +1,20 @@
 // scripts/lxx/report.ts — npm run lxx:report [-- --build <n>]
 // Writes docs/lxx-report.md between its markers (docs/lxx-derivation.md, 'The report'; story mw-u2w5klk.4): this build's known-answer scores, then one row for
 // each of the 39 books of Swete's Old Testament: its words, the share each layer settled, the words still pending, guesses, agreement breaks per 1,000
-// words, the second pass's disagreement rate (from B4's recheck files, when there are any), and SHIPPABLE or NOT with the failing bar lines named
-// (bar.ts). It is the build's one place to see a book fall short. A second run on the same inputs writes the same bytes.
+// words, the second pass's disagreement rate (from B4's recheck files, when there are any), the Greek chapters that would ship (the chapter bar, bar.ts chapterVerdict;
+// mw-u2w5klk.265), and SHIPPABLE or NOT with the failing bar lines named (bar.ts: the whole book's). It is the build's one place to see a book fall short. A second run on the same inputs writes the same bytes.
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
 // A book with a Morpheus cache (data/lxx/morpheus/<book>.tsv, morpheus.ts) also shows how many of its guesses Morpheus agreed with, differed from and did not
 // know (release.ts, morpheusCounts); a book with none shows a dash.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { BAR, chaptersOf, verdict, type Failure } from './bar';
+import { BAR, verdict, type Failure } from './bar';
 import { readChoiceDir, readRecheckDir, type Choice } from './choices';
 import { deriveBook, loadInput, splitBooks, train, type DeriveInput } from './derive';
 import { KNOWN_DIR, knownScores, type KnownScore } from './known';
 import { readMorpheusCache } from './morpheus';
-import { RECHECK_DIR, CHOICES_DIR, currentBuild, figuresOf, joinChoices, morpheusOf, type MorpheusCounts } from './release';
+import { RECHECK_DIR, CHOICES_DIR, currentBuild, figuresOf, joinChoices, knownChaptersOf, morpheusOf, planBook, shippedWords, type MorpheusCounts } from './release';
 import { RAW_DIR, type Fetcher } from './sources';
 import { OUT_DIR } from './derive';
 
@@ -90,6 +90,9 @@ export interface BookRow {
   secondPass: { sample: number; differ: number };
   /** the guesses against Morpheus; undefined when the book has no cache */
   morpheus?: MorpheusCounts;
+  /** the Greek chapters that would ship (the chapter bar, under the build's known-answer lines and the book's guess line), and every Greek chapter of the book */
+  shipped: number[];
+  all: number[];
   shippable: boolean;
   failures: Failure[];
 }
@@ -102,10 +105,12 @@ const shortLines = (failures: readonly Failure[]): string =>
 const num = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 /** The block between the markers: the build's known-answer scores, the bar, and the table of books. */
-export function reportBlock(build: number, known: readonly KnownScore[], rows: readonly BookRow[]): string {
+export function reportBlock(build: number, known: readonly KnownScore[], rows: readonly BookRow[], knownNote?: string): string {
   const out: string[] = [REPORT_START, ''];
   out.push(`Build ${build}. The bar (\`scripts/lxx/bar.ts\`): known-answer lemma at least ${BAR.knownLemma}% and full parsing at least ${BAR.knownParsing}% on each chapter below; no word pending; guesses at most ${BAR.guesses}% of the book's words; agreement breaks at most ${BAR.breaks} per 1,000 words.`);
+  out.push('', `The chapter is what ships: a Greek chapter with no word pending and breaks at most ${BAR.breaks} per 1,000 of its words, under the known-answer lines and the book's guess line, goes into the annotation file and the app (\`npm run lxx:ship\`). Shipped chapters shows which.`);
   out.push('', '### The known-answer chapters of this build', '');
+  if (knownNote) out.push(`${knownNote} (the known-answer lines are held against the chapters that have a choices file in \`data/lxx/known\`).`, '');
   out.push('| Chapter | Book hidden | Words | Lemma right | Full parsing right | Pending, no choice | Choices |', '| --- | --- | --- | --- | --- | --- | --- |');
   for (const s of known) {
     const choices = s.choices.file ? `\`${s.choices.file.split(/[\\/]/).slice(-3).join('/')}\`: ${s.choices.given}` : 'none';
@@ -113,20 +118,28 @@ export function reportBlock(build: number, known: readonly KnownScore[], rows: r
   }
   out.push('', '### The books', '');
   out.push(
-    '| Book | Words | Layer 1 | Layer 2 | Layer 2a | Layer 3 | Pending | Guesses | Breaks per 1,000 | Second pass differs | Morpheus agreed / differed / unknown | Bar |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Book | Words | Layer 1 | Layer 2 | Layer 2a | Layer 3 | Pending | Guesses | Breaks per 1,000 | Second pass differs | Morpheus agreed / differed / unknown | Shipped chapters | Bar |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   for (const r of rows) {
     const second = r.secondPass.sample ? `${pct(r.secondPass.differ, r.secondPass.sample)} of ${r.secondPass.sample}` : '—';
     const morpheus = r.morpheus ? `${r.morpheus.agreed} / ${r.morpheus.disagreed} / ${r.morpheus.unknown}` : '—';
     const ships = r.shippable ? 'SHIPPABLE' : `NOT: ${shortLines(r.failures)}`;
+    // `1-6 of 50`, `all 50` or `none of 50` in words: the report says `none` and `all` by themselves where they say it all
+    const chapters = r.shipped.length === 0 ? 'none' : r.shipped.length === r.all.length ? 'all' : shippedWords(r.shipped, r.all);
     out.push(
-      `| ${r.name} (${r.code}) | ${num(r.words)} | ${pct(r.layers['1'], r.words)} | ${pct(r.layers['2'], r.words)} | ${pct(r.layers['2a'], r.words)} | ${pct(r.layers['3'], r.words)} | ${num(r.pending)} | ${pct(r.guesses, r.words)} | ${per1000(r.breaks, r.words)} | ${second} | ${morpheus} | ${ships} |`,
+      `| ${r.name} (${r.code}) | ${num(r.words)} | ${pct(r.layers['1'], r.words)} | ${pct(r.layers['2'], r.words)} | ${pct(r.layers['2a'], r.words)} | ${pct(r.layers['3'], r.words)} | ${num(r.pending)} | ${pct(r.guesses, r.words)} | ${per1000(r.breaks, r.words)} | ${second} | ${morpheus} | ${chapters} | ${ships} |`,
     );
   }
   const total = rows.reduce((s, r) => s + r.words, 0);
   const shippable = rows.filter((r) => r.shippable).length;
-  out.push('', `${num(total)} words in ${rows.length} books; ${shippable} SHIPPABLE. A book is SHIPPABLE when it fails none of the bar's lines, and then \`npm run lxx:release -- --book <code>\` writes its annotation file.`, '', REPORT_END);
+  const partly = rows.filter((r) => r.shipped.length > 0).length;
+  out.push(
+    '',
+    `${num(total)} words in ${rows.length} books; ${shippable} SHIPPABLE, ${partly} with at least one chapter that ships. A book is SHIPPABLE when it fails none of the bar's lines, as a whole; \`npm run lxx:release -- --book <code>\` writes the rows of its shippable chapters.`,
+    '',
+    REPORT_END,
+  );
   return out.join('\n');
 }
 
@@ -182,7 +195,8 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
   const args = parseArgs(argv);
   const input = options.input ?? (await loadInput(rawDir, fetcher, log));
   const build = args.build ?? currentBuild();
-  const known = (options.known ?? ((chapters) => knownScores(input, chapters, knownDir)))(chaptersOf(build));
+  const asked = knownChaptersOf(build, knownDir);
+  const known = (options.known ?? ((chapters) => knownScores(input, chapters, knownDir)))(asked.chapters);
   const trained = train(input);
   const tokens = splitBooks(input);
   const rows: BookRow[] = [];
@@ -195,6 +209,7 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
     const joined = joinChoices(result, choices);
     const figures = figuresOf(result, joined);
     const v = verdict(figures, known);
+    const plan = planBook(result, joined, known);
     const count = (layer: string): number => joined.rows.filter((w) => String(w.layer) === layer).length;
     rows.push({
       code,
@@ -206,12 +221,14 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
       breaks: figures.breaks,
       secondPass: disagreement(choices, readRecheckDir(recheckDir, result.book).choices),
       morpheus: morpheusOf(result, joined, cache),
+      shipped: plan.shipped,
+      all: plan.all,
       shippable: v.shippable,
       failures: v.failures,
     });
-    log(`${code}: ${figures.words} words, ${v.shippable ? 'SHIPPABLE' : `NOT: ${shortLines(v.failures)}`}`);
+    log(`${code}: ${figures.words} words, chapters shipped: ${shippedWords(plan.shipped, plan.all)}, ${v.shippable ? 'SHIPPABLE' : `NOT: ${shortLines(v.failures)}`}`);
   }
-  const block = reportBlock(build, known, rows);
+  const block = reportBlock(build, known, rows, asked.note);
   const text = withReport(existsSync(doc) ? readFileSync(doc, 'utf8') : `${REPORT_INTRO}${REPORT_START}\n${REPORT_END}\n`, block);
   writeFileSync(doc, text);
   log(`wrote ${doc}`);

@@ -3,9 +3,10 @@
 // checks what it can without them: each file reads, holds only its own chapter's references, and keeps to the bar's guess limit.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BAR } from '../../scripts/lxx/bar';
+import { ALWAYS_CHAPTER, BAR, SECOND_CHAPTERS, secondChapter } from '../../scripts/lxx/bar';
 import { readChoices } from '../../scripts/lxx/choices';
 import { knownFileOf, KNOWN_DIR } from '../../scripts/lxx/known';
+import { knownChaptersOf } from '../../scripts/lxx/release';
 
 /**
  * The chapter's words in TAGNT's NA28 rows (829 and 652): the share the guess limit is counted over. The pending counts include the 5 and 7 words the rule of
@@ -30,5 +31,18 @@ describe.each(CHAPTERS)('the known-answer choices of $chapter', ({ chapter, word
     const guesses = [...choices.values()].filter((c) => c.mark === 'guess');
     for (const g of guesses) expect(g.lemma, g.ref).not.toBe('');
     expect(100 * guesses.length).toBeLessThanOrEqual(BAR.guesses * words);
+  });
+});
+
+describe('the chapters a build is held to, with the files data/lxx/known holds (mw-u2w5klk.265)', () => {
+  it('holds every build to John 1 and to a second chapter that has a file: Romans 8 for the ten builds whose own chapter has none, and a build whose own chapter has one to it', () => {
+    for (let build = 0; build < 2 * SECOND_CHAPTERS.length; build++) {
+      const { chapters, note } = knownChaptersOf(build, KNOWN_DIR);
+      expect(chapters).toEqual([ALWAYS_CHAPTER, 'Rom.8']);
+      // each chapter held has its file, and a build that rotates to a chapter with no file says which was used
+      for (const c of chapters) expect(CHAPTERS.some((k) => k.chapter === c)).toBe(true);
+      if (secondChapter(build) === 'Rom.8') expect(note).toBeUndefined();
+      else expect(note).toBe(`second chapter ${secondChapter(build)}: no choices file; Rom.8 used`);
+    }
   });
 });

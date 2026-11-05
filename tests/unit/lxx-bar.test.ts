@@ -8,10 +8,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
-import { ALWAYS_CHAPTER, BAR, SECOND_CHAPTERS, buildNumber, chaptersOf, secondChapter, verdict, type BookFigures } from '../../scripts/lxx/bar';
+import { ALWAYS_CHAPTER, BAR, SECOND_CHAPTERS, buildNumber, chapterVerdict, chaptersOf, knownChaptersFor, secondChapter, verdict, type BookFigures, type ChapterFigures } from '../../scripts/lxx/bar';
 import { applyChoices, readChoices, readChoiceFiles, CONFIDENCE_CHOSEN, CONFIDENCE_GUESS, CONFIDENCE_UNSURE, isGuess } from '../../scripts/lxx/choices';
 import { deriveBook, type DeriveInput, type PendingWord } from '../../scripts/lxx/derive';
-import { chapterRows, knownLines, knownRun, parseChapter, runKnown, type KnownScore } from '../../scripts/lxx/known';
+import { chapterRows, knownFileOf, knownLines, knownRun, parseChapter, runKnown, type KnownScore } from '../../scripts/lxx/known';
 import { ANNOTATION_HEADER, ReleaseRefused, annotationsTsv, currentBuild, runRelease } from '../../scripts/lxx/release';
 import { OLD_TESTAMENT, REPORT_END, REPORT_START, disagreement, runReport } from '../../scripts/lxx/report';
 
@@ -74,6 +74,71 @@ describe('the bar: the probe’s numbers, as data', () => {
     expect(new Set(SECOND_CHAPTERS).size).toBe(SECOND_CHAPTERS.length);
     SECOND_CHAPTERS.forEach((c) => expect(parseChapter(c).chapter).toBeGreaterThan(0));
     expect(currentBuild()).toBe(buildNumber(JSON.parse(readFileSync('package.json', 'utf8')).version));
+  });
+});
+
+describe('the chapter bar (mw-u2w5klk.265): a Greek chapter ships on its own', () => {
+  const chapter = (over: Partial<ChapterFigures> = {}): ChapterFigures => ({ words: 1000, pending: 0, guesses: 0, breaks: 0, ...over });
+
+  it('is SHIPPABLE with no word pending and breaks at most 5 per 1,000 words, exactly', () => {
+    expect(chapterVerdict(chapter())).toMatchObject({ shippable: true, failures: [] });
+    expect(chapterVerdict(chapter({ breaks: 5 })).shippable).toBe(true);
+    expect(chapterVerdict(chapter({ words: 200, breaks: 1 })).shippable).toBe(true);
+    expect(chapterVerdict(chapter({ words: 199, breaks: 1 })).shippable).toBe(false);
+  });
+
+  it('names each failing line: pending: N, breaks: N per 1,000', () => {
+    const pending = chapterVerdict(chapter({ pending: 2 }));
+    expect(pending.shippable).toBe(false);
+    expect(pending.failures.map((f) => [f.key, f.short])).toEqual([['pending', 'pending: 2']]);
+    expect(pending.failures[0].line).toContain('pending: 2 words left without an answer');
+    const breaks = chapterVerdict(chapter({ breaks: 6 }));
+    expect(breaks.failures.map((f) => [f.key, f.short])).toEqual([['breaks', 'breaks: 6.0 per 1,000']]);
+    expect(breaks.failures[0].line).toContain('breaks: 6.0 per 1,000 words, 6 in 1000 (the bar: at most 5)');
+    expect(chapterVerdict(chapter({ pending: 1, breaks: 6 })).failures.map((f) => f.key)).toEqual(['pending', 'breaks']);
+  });
+
+  it('counts its guesses as a figure and a share, never a failure', () => {
+    const many = chapterVerdict(chapter({ guesses: 400 }));
+    expect(many).toMatchObject({ shippable: true, failures: [], guesses: 400, guessShare: 40 });
+    expect(chapterVerdict(chapter({ words: 0 })).guessShare).toBe(0);
+  });
+
+  it('leaves the book’s verdict as it was: the guess line is still the book’s', () => {
+    const known = { chapter: 'Jhn.1', hidden: 'jhn', words: 10, before: { 1: { words: 0, lemma: 0, full: 0 }, 2: { words: 0, lemma: 0, full: 0 } }, by: {} as KnownScore['by'], all: { words: 10, lemma: 10, full: 10 }, guesses: 0, unanswered: 0, choices: { given: 0, refused: 0, notPending: 0 } } as KnownScore;
+    expect(verdict({ words: 1000, pending: 0, guesses: 31, breaks: 0 }, [known]).failures.map((f) => f.key)).toEqual(['guesses']);
+  });
+});
+
+describe('the known-answer chapters of a build (mw-u2w5klk.265)', () => {
+  const files = (...chapters: string[]) => (c: string): boolean => chapters.includes(c);
+
+  it('holds John 1 and the build’s own second chapter when it has a file, and says nothing more', () => {
+    const luke = SECOND_CHAPTERS.indexOf('Luk.15');
+    const out = knownChaptersFor(luke, files('Jhn.1', 'Rom.8', 'Luk.15'));
+    expect(out).toEqual({ chapters: ['Jhn.1', 'Luk.15'] });
+  });
+
+  it('takes the newest other second chapter that has a file when the build’s own has none, and names both', () => {
+    const luke = SECOND_CHAPTERS.indexOf('Luk.15');
+    const out = knownChaptersFor(luke, files('Jhn.1', 'Rom.8'));
+    expect(out.chapters).toEqual(['Jhn.1', 'Rom.8']);
+    expect(out.note).toBe('second chapter Luk.15: no choices file; Rom.8 used');
+    // with more files, the newest in the list (the last one the list holds that has a file) is used
+    expect(knownChaptersFor(luke, files('Jhn.1', 'Rom.8', 'Mat.5', 'Act.2')).chapters).toEqual(['Jhn.1', 'Act.2']);
+  });
+
+  it('holds John 1 alone, with the reason, when no second chapter has a file: a missing file alone fails no build', () => {
+    const out = knownChaptersFor(3, files('Jhn.1'));
+    expect(out.chapters).toEqual(['Jhn.1']);
+    expect(out.note).toBe('second chapter Luk.15: no choices file; no other second chapter has one');
+  });
+
+  it('never picks a chapter of John, and the file of John 1 is not asked for', () => {
+    const asked: string[] = [];
+    knownChaptersFor(5, (c) => (asked.push(c), false));
+    expect(asked).not.toContain('Jhn.1');
+    expect(asked.every((c) => SECOND_CHAPTERS.includes(c))).toBe(true);
   });
 });
 
@@ -281,9 +346,14 @@ describe('lxx:release', async () => {
     const done = await r.run();
     expect(done.verdict).toEqual({ shippable: true, failures: [] });
     expect(done.path).toBe(r.path);
-    expect(asked).toEqual(chaptersOf(56));
+    // build 56's own second chapter (Heb.11) has no choices file: Romans 8, the one other file there is, is used (mw-u2w5klk.265)
+    expect(chaptersOf(56)[1]).toBe('Heb.11');
+    expect(asked).toEqual(['Jhn.1', 'Rom.8']);
     const text = readFileSync(r.path, 'utf8');
-    const rows = text.trimEnd().split('\n').map((l) => l.split('\t'));
+    const lines = text.trimEnd().split('\n');
+    // the first line says which chapters the file holds: the fixture's one chapter is all of Genesis
+    expect(lines[0]).toBe('# shipped chapters: all 1');
+    const rows = lines.slice(1).map((l) => l.split('\t'));
     expect(rows[0]).toEqual(ANNOTATION_HEADER);
     expect(rows[0]).toEqual(['ref', 'lemma', 'parsing', 'layer', 'confidence', 'notes']);
     expect(rows.slice(1).map((r) => r[0])).toEqual(gen.words.map((w) => w.ref));
@@ -325,8 +395,15 @@ describe('lxx:report', async () => {
     tbesg,
   };
 
-  const report = async (build: number, known: (chapters: readonly string[]) => KnownScore[], doc = join(tmp(), 'lxx-report.md')) => {
-    const out = await runReport(['--build', String(build)], { input: thirtyNine, doc, choicesDir: tmp(), recheckDir: tmp(), morpheusDir: tmp(), known });
+  /** A directory of known-answer choices files for John 1 and every chapter of the rotation (their text does not matter where the scores are given): each build is held to its own second chapter. */
+  const everyKnownFile = (): string => {
+    const dir = tmp();
+    for (const chapter of [ALWAYS_CHAPTER, ...SECOND_CHAPTERS]) writeFileSync(join(dir, knownFileOf(chapter)), 'ref\tparsing\tlemma\tmark\n');
+    return dir;
+  };
+
+  const report = async (build: number, known: (chapters: readonly string[]) => KnownScore[], doc = join(tmp(), 'lxx-report.md'), knownDir = everyKnownFile()) => {
+    const out = await runReport(['--build', String(build)], { input: thirtyNine, doc, choicesDir: tmp(), recheckDir: tmp(), morpheusDir: tmp(), known, knownDir });
     return { ...out, doc };
   };
 
@@ -353,6 +430,24 @@ describe('lxx:report', async () => {
     const again = await report(55, passing([]), a.doc);
     expect(again.text).toBe(a.text);
     expect(readFileSync(a.doc, 'utf8')).toBe(text);
+  });
+
+  it('shows a Shipped chapters column: all for a book whose every chapter ships, none for one with a word pending, and says which second chapter was used when the build’s own has no file', async () => {
+    const full = await report(55, passing([]));
+    expect(full.text).toContain('Morpheus agreed / differed / unknown | Shipped chapters | Bar |');
+    expect(full.text).toContain('| Genesis (Gen) | 1 | 100.0% | 0.0% | 0.0% | 0.0% | 0 | 0.0% | 0.0 | — | — | all | SHIPPABLE |');
+    expect(full.rows[0]).toMatchObject({ shipped: [1], all: [1] });
+    expect(full.text).not.toContain('no choices file;');
+    // Build 55's own second chapter (Php.2) has no file here, Romans 8 does: Romans 8 is used and the report says so
+    const onlyRom = tmp();
+    for (const chapter of [ALWAYS_CHAPTER, 'Rom.8']) writeFileSync(join(onlyRom, knownFileOf(chapter)), 'ref\tparsing\tlemma\tmark\n');
+    const asked: string[] = [];
+    const noted = await report(55, passing(asked), join(tmp(), 'r.md'), onlyRom);
+    expect(asked).toEqual(['Jhn.1', 'Rom.8']);
+    expect(noted.text).toContain('second chapter Php.2: no choices file; Rom.8 used');
+    const withPending = await runReport(['--build', '55'], { input: GEN_1, doc: join(tmp(), 'r.md'), choicesDir: tmp(), recheckDir: tmp(), morpheusDir: tmp(), knownDir: onlyRom, known: passing([]), books: [['Gen', 'Genesis']] });
+    expect(withPending.text).toContain('| none | NOT: pending:');
+    expect(withPending.rows[0]).toMatchObject({ shipped: [], all: [1] });
   });
 
   it('writes NOT, with the failing bar line named, for a book that falls short, and keeps what is outside the markers', async () => {

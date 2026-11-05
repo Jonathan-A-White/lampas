@@ -52,6 +52,20 @@ export function secondChapter(build: number): string {
 /** The chapters a build is held to: John 1 and the build's second chapter. */
 export const chaptersOf = (build: number): string[] => [ALWAYS_CHAPTER, secondChapter(build)];
 
+/**
+ * The known-answer chapters of a build, by which chapters have a choices file (data/lxx/known, `hasFile`): John 1 always, and the build's own second chapter when it has a file, else the
+ * newest OTHER chapter of SECOND_CHAPTERS that has one (the last the list holds), and `note` says so; with no second chapter having a file, John 1 alone and the note says that. A missing
+ * choices file alone fails no build (mw-u2w5klk.265: with two files of twelve, holding each build to its own second chapter would fail ten builds of twelve and nothing could ship).
+ * The rotation stays the aim: once a chapter has its file, the builds that rotate to it are held to it.
+ */
+export function knownChaptersFor(build: number, hasFile: (chapter: string) => boolean): { chapters: string[]; note?: string } {
+  const own = secondChapter(build);
+  if (hasFile(own)) return { chapters: [ALWAYS_CHAPTER, own] };
+  const used = [...SECOND_CHAPTERS].reverse().find((c) => c !== own && hasFile(c));
+  const note = `second chapter ${own}: no choices file; ${used ? `${used} used` : 'no other second chapter has one'}`;
+  return { chapters: used ? [ALWAYS_CHAPTER, used] : [ALWAYS_CHAPTER], note };
+}
+
 /** The build number: the patch of package.json's version ('0.7.55' is build 55), which each landed batch raises by one. */
 export function buildNumber(version: string): number {
   const m = /^\d+\.\d+\.(\d+)/.exec(version);
@@ -69,6 +83,9 @@ export interface BookFigures {
   /** agreement breaks the check found in the settled words */
   breaks: number;
 }
+
+/** What a Greek chapter is held to: the figures of its own words (a book's, BookFigures, over all of them). */
+export type ChapterFigures = BookFigures;
 
 export type BarKey = 'known' | 'pending' | 'guesses' | 'breaks';
 
@@ -134,4 +151,35 @@ export function verdict(book: BookFigures, known: readonly KnownScore[]): Verdic
     });
   }
   return { shippable: failures.length === 0, failures };
+}
+
+export interface ChapterVerdict extends Verdict {
+  /** the chapter's guesses, a figure: never a failure (the guess line is the book's) */
+  guesses: number;
+  /** their share of the chapter's words, in percent */
+  guessShare: number;
+}
+
+/**
+ * One Greek chapter held against the chapter bar (docs/lxx-derivation.md, 'The chapter bar'; mw-u2w5klk.265): SHIPPABLE when no word of it is pending and its agreement breaks are at most BAR.breaks per
+ * 1,000 of its words. Its guesses are counted and shown and never fail it: the line on guesses is the book's (`verdict`), as the Governor's answer of 2026-11-02 counts it. The known-answer lines are the
+ * build's, not a chapter's: lxx:release holds them once for the whole run.
+ */
+export function chapterVerdict(chapter: ChapterFigures): ChapterVerdict {
+  const failures: Failure[] = [];
+  if (chapter.pending > BAR.pending) {
+    failures.push({
+      key: 'pending',
+      line: `pending: ${chapter.pending} word${chapter.pending === 1 ? '' : 's'} left without an answer (the bar: none)`,
+      short: `pending: ${chapter.pending}`,
+    });
+  }
+  if (1000 * chapter.breaks > BAR.breaks * chapter.words) {
+    failures.push({
+      key: 'breaks',
+      line: `breaks: ${perThousand(chapter.breaks, chapter.words)} per 1,000 words, ${chapter.breaks} in ${chapter.words} (the bar: at most ${BAR.breaks})`,
+      short: `breaks: ${perThousand(chapter.breaks, chapter.words)} per 1,000`,
+    });
+  }
+  return { shippable: failures.length === 0, failures, guesses: chapter.guesses, guessShare: chapter.words === 0 ? 0 : (100 * chapter.guesses) / chapter.words };
 }

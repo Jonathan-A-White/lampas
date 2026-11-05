@@ -283,6 +283,12 @@ describe('the agreement links, on verses built for the test', () => {
     expect(out.outs[1].notes).toContain(`agreement break: ${LINKS.article.name} with Tst.1:1#1: for the model`);
   });
 
+  it('names the verse of each break, once a break, so a chapter can count its own (the chapter bar, mw-u2w5klk.265)', () => {
+    const out = agree([settledWord('Tst.1:1#1', 'ὁ', 'T-ASM'), settledWord('Tst.1:1#2', 'γῆ', 'N-NSF')]);
+    expect(out.breakVerses).toEqual(['Tst.1:1']);
+    expect(agree([settledWord('Tst.1:1#1', 'ὁ', 'T-NSF'), settledWord('Tst.1:1#2', 'γῆ', 'N-NSF')]).breakVerses).toEqual([]);
+  });
+
   it('never counts a break from a link that only chooses: ὁ θεὸς τὸ ξηρὸν, a noun before a substantive in another case', () => {
     const out = agree([
       settledWord('Tst.1:1#1', 'ὁ', 'T-NSM'),
