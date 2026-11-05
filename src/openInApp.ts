@@ -15,10 +15,14 @@ interface RelatedApp {
 }
 type RelatedAppsApi = () => Promise<RelatedApp[]>;
 
-/** The installed app's own window: display-mode standalone (the manifest's), or a bigger one. A Chrome tab is display-mode browser. */
+/**
+ * The installed app's own window: display-mode standalone (the manifest's display), or a bigger one. NOT minimal-ui (mw-5r3p30.1090): the manifest never asks for it, and a page opened from
+ * another app (a link tapped in Postern) is a Chrome Custom Tab, a browser tab with a minimal toolbar that Chrome can present as minimal-ui; it is no installed app and wants the strip.
+ * A Custom Tab has the same user agent and the same getInstalledRelatedApps as a Chrome tab, so display-mode is the one thing that told them apart; unproven on a phone.
+ */
 export function inInstalledApp(): boolean {
   if (typeof window.matchMedia !== 'function') return false;
-  return ['standalone', 'minimal-ui', 'fullscreen', 'window-controls-overlay'].some((mode) => window.matchMedia(`(display-mode: ${mode})`).matches);
+  return ['standalone', 'fullscreen', 'window-controls-overlay'].some((mode) => window.matchMedia(`(display-mode: ${mode})`).matches);
 }
 
 /** The hand-over is Android Chrome's (it launches the installed web app); any other browser would only open a second tab. */
