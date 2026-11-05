@@ -17,9 +17,9 @@ import { readerOf } from '../../src/nav/route';
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
 const DESKTOP = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
 
-function setup({ ua = ANDROID, standalone = false, apps }: { ua?: string; standalone?: boolean; apps?: unknown[] | 'absent' } = {}) {
+function setup({ ua = ANDROID, standalone = false, modes = [], apps }: { ua?: string; standalone?: boolean; modes?: string[]; apps?: unknown[] | 'absent' } = {}) {
   vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(ua);
-  vi.stubGlobal('matchMedia', (query: string) => ({ matches: standalone && /standalone/.test(query), media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+  vi.stubGlobal('matchMedia', (query: string) => ({ matches: (standalone && /standalone/.test(query)) || modes.some((mode) => query.includes(`display-mode: ${mode}`)), media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
   const asked = vi.fn(async () => apps ?? [{ platform: 'webapp', url: 'https://lampas.allmymind.org/manifest.webmanifest' }]);
   if (apps === 'absent') delete (navigator as unknown as Record<string, unknown>).getInstalledRelatedApps;
   else Object.defineProperty(navigator, 'getInstalledRelatedApps', { value: asked, configurable: true, writable: true });
@@ -188,6 +188,17 @@ describe('OpenInApp', () => {
     await Promise.resolve();
     expect(control()).toBeNull();
     expect(asked).not.toHaveBeenCalled();
+  });
+
+  // mw-5r3p30.1090: a page tapped in another app (Postern) opens in a Chrome Custom Tab, which has its own minimal toolbar (header, X, three dots) and is no installed app. Chrome can
+  // present it as display-mode minimal-ui (not found on a phone: the story's closing comment); the manifest's own display is standalone, so only that is the installed app's window.
+  it('shows in a Chrome Custom Tab, which presents display-mode minimal-ui and is not the installed app', async () => {
+    const asked = setup({ modes: ['minimal-ui'] });
+    render(<OpenInApp />);
+    const button = await screen.findByRole('button', { name: 'Open in the app' });
+    expect(asked).toHaveBeenCalledTimes(1);
+    fireEvent.click(button);
+    expect(goTo).toHaveBeenCalledWith(handedHref(window.location.href)); // the same hand-over as in a Chrome tab
   });
 
   it('shows nothing off Android: an intent: URL is Android Chrome\'s', async () => {
