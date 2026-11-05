@@ -2,24 +2,21 @@
 // not in a chunk, and node_modules libraries sit in a chunk of their own, so two builds of the same commit made at
 // different times give every chunk the same file name (and so the same bytes).
 import { afterAll, describe, expect, it } from 'vitest';
-import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { childBuildTestMs, viteBuild } from '../support/child-build';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const dirs: string[] = [];
 // A loaded host takes longer than vitest's 10 s hook limit to delete two vite builds (mw-5r3p30.420).
 afterAll(() => dirs.forEach((dir) => rmSync(dir, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
-// vite's own CLI in a child process: esbuild refuses to run inside the jsdom test environment.
+// vite's own CLI in a child process (tests/support/child-build.ts): esbuild refuses to run inside the jsdom test environment.
 function build(time: string): string {
   const outDir = mkdtempSync(join(tmpdir(), 'lampas-chunks-'));
   dirs.push(outDir);
-  execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', outDir, '--emptyOutDir', '--logLevel', 'error'], {
-    env: { ...process.env, LAMPAS_BUILD_TIME: time },
-    stdio: 'inherit',
-  });
+  viteBuild(outDir, { LAMPAS_BUILD_TIME: time });
   return outDir;
 }
 
@@ -47,5 +44,5 @@ describe('the build’s chunk names', () => {
     for (const name of names) {
       expect(readFileSync(join(first, 'assets', name), 'utf-8')).not.toContain('2026-10-13 10:00Z');
     }
-  }, 180_000);
+  }, childBuildTestMs(2));
 });

@@ -3,7 +3,6 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,10 +11,11 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { UpdateBanner } from '../../src/UpdateBanner';
 import { startAppUpdates, type AppUpdates } from 'pwa-kit/app-update';
 import { fakeSetup, fakeWorker, type FakeSetup, type FakeWorker } from '../../tests/support/fake-registration';
+import { childBuildTestMs, viteBuild } from '../../tests/support/child-build';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 
 // A real vite build takes a few seconds.
-vi.setConfig({ testTimeout: 90_000 });
+vi.setConfig({ testTimeout: childBuildTestMs(1) });
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
 
@@ -39,7 +39,7 @@ afterAll(() => rmSync(outDir, { recursive: true, force: true }), HOOK_TIMEOUT_MS
 // vite's own CLI in a child process: esbuild refuses to run inside this jsdom test environment.
 function buildOnce(): void {
   if (built) return;
-  execFileSync(process.execPath, ['node_modules/vite/bin/vite.js', 'build', '--outDir', outDir, '--emptyOutDir', '--logLevel', 'error'], { stdio: 'inherit' });
+  viteBuild(outDir);
   built = true;
 }
 
