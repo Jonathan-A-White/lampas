@@ -16,7 +16,6 @@ Gen.1:5#5	T-ASN	ὁ		0.80
 Gen.1:5#6	N-ASN	φῶς		0.80	
 Gen.1:5#9	T-ASN	ὁ		0.80	
 Gen.1:5#10	N-ASN	σκότος		0.80	
-Gen.1:5#18	ADV	πρωΐ		0.80	
 Gen.1:6#6	N-NSN	στερέωμα	unsure	0.50	model: unsure
 Gen.1:6#8	A-DSN	μέσος		0.80	
 Gen.1:6#13	V-PAP-NSN	διαχωρίζω		0.80	
@@ -30,7 +29,6 @@ Gen.1:7#25	T-GSN	ὁ		0.80
 Gen.1:8#5	T-ASN	ὁ		0.80	
 Gen.1:8#6	N-ASN	στερέωμα		0.80	
 Gen.1:8#13	A-NSN	καλός	unsure	0.50	model: unsure
-Gen.1:8#19	ADV	πρωΐ		0.80	
 Gen.1:9#5	V-APM-3S	συνάγω		0.80	
 Gen.1:9#6	T-NSN	ὁ		0.80	
 Gen.1:9#7	N-NSN	ὕδωρ, ὕδατος		0.80	
@@ -71,7 +69,6 @@ Gen.1:12#22	P-GSN	αὐτός		0.80
 Gen.1:12#24	P-DSN	αὐτός		0.80	
 Gen.1:12#26	N-ASN	γένος		0.80	
 Gen.1:12#35	A-NSN	καλός	unsure	0.50	model: unsure
-Gen.1:13#6	ADV	πρωΐ		0.80	
 Gen.1:14#5	V-AOM-3P	γίγνομαι	unsure	0.50	model: unsure
 Gen.1:14#26	A-ASN	μέσος		0.80	
 Gen.1:14#31	A-ASN	μέσος		0.80	
@@ -80,7 +77,6 @@ Gen.1:14#43	N-APF	ἡμέρα		0.80
 Gen.1:18#11	A-ASN	μέσος		0.80	
 Gen.1:18#16	A-ASN	μέσος		0.80	
 Gen.1:18#24	A-NSN	καλός	unsure	0.50	model: unsure
-Gen.1:19#6	ADV	πρωΐ		0.80	
 Gen.1:19#8	A-NSF	τέταρτος		0.80	
 Gen.1:20#5	V-2AAM-3S	ἐξάγω		0.80	
 Gen.1:20#6	T-NPN	ὁ		0.80	
@@ -112,7 +108,6 @@ Gen.1:22#13	N-APN	ὕδωρ, ὕδατος		0.80
 Gen.1:22#18	T-NPN	ὁ		0.80	
 Gen.1:22#19	N-NPN	πετεινός		0.80	
 Gen.1:22#20	V-PPM-3P	πληθύνω		0.80	
-Gen.1:23#6	ADV	πρωΐ		0.80	
 Gen.1:23#8	A-NSF	πέμπτος		0.80	
 Gen.1:24#5	V-2AAM-3S	ἐξάγω		0.80	
 Gen.1:24#11	N-ASN	γένος		0.80	
@@ -165,10 +160,8 @@ Gen.1:31#5	T-APN	ὁ		0.80
 Gen.1:31#6	A-APN	πᾶς		0.80	
 Gen.1:31#7	K-APN	ὅσος		0.80	
 Gen.1:31#11	A-NPN	καλός	unsure	0.50	model: unsure
-Gen.1:31#18	ADV	πρωΐ		0.80	
 Gen.2:1#2	V-API-3P	συντελέω		0.80	
 Gen.2:1#12	P-GPM	αὐτός		0.80	
-Gen.2:2#9	A-DSF	ἕκτος		0.80	
 Gen.2:2#10	T-APN	ὁ		0.80	
 Gen.2:2#11	N-APN	ἔργον		0.80	
 Gen.2:2#12	P-GSM	αὐτός		0.80	
@@ -373,7 +366,6 @@ Gen.3:20#14	V-PAP-GPM	ζάω		0.80
 Gen.3:21#6	T-DSM	ὁ		0.80	
 Gen.3:21#7	N-DSM	Ἀδάμ		0.80	
 Gen.3:21#11	P-GSM	αὐτός		0.80	
-Gen.3:21#13	A-APM	δερμάτινος		0.80	
 Gen.3:22#7	N-NSM	Ἀδάμ		0.80	
 Gen.3:22#15	A-ASN	καλός		0.80	
 Gen.3:22#17	A-ASN	πονηρός		0.80	
@@ -666,7 +658,6 @@ Gen.6:13#11	PREP	ἐναντίον		0.80
 Gen.6:13#19	P-GPM	αὐτός		0.80	
 Gen.6:13#23	V-PAI-1S	καταφθείρω		0.80	
 Gen.6:14#3	F-2DSM	σεαυτοῦ		0.80	
-Gen.6:14#7	A-GPN	τετράγωνος		0.80	
 Gen.6:14#8	N-APF	νοσσιά		0.80	
 Gen.6:14#13	V-FAI-2S	ἀσφαλτόω		0.80	
 Gen.6:14#18	T-DSF	ὁ		0.80	

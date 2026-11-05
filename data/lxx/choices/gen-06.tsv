@@ -176,7 +176,6 @@ Gen.26:29#14	V-INI-1P	χράομαι	guess	0.40	guess: the model answered with n
 Gen.26:30#3	P-DPM	αὐτός		0.80	
 Gen.26:30#6	V-AAI-3P	φαγεῖν		0.80	
 Gen.26:31#3	T-ASN	ὁ		0.80	
-Gen.26:31#4	ADV	πρωΐ		0.80	
 Gen.26:31#5	V-AAI-3P	ὄμνυμι	guess	0.40	guess: the model chose outside the candidates
 Gen.26:31#7	T-DSM	ὁ		0.80	
 Gen.26:31#8	ADV	πλησίον		0.80	
@@ -246,7 +245,6 @@ Gen.27:7#12	PREP	ἐναντίον		0.80
 Gen.27:9#4	T-APN	ὁ		0.80	
 Gen.27:9#5	N-APN	πρόβατον		0.80	
 Gen.27:9#11	A-APM	ἁπαλός		0.80	
-Gen.27:9#13	A-APM	καλός		0.80	
 Gen.27:9#15	V-FAI-1S	ποιέω		0.80	
 Gen.27:9#17	N-APN	ἔδεσμα		0.80	
 Gen.27:10#2	V-FAI-2S	εἰσφέρω		0.80	
@@ -504,7 +502,6 @@ Gen.28:17#12	D-NSN	οὗτος		0.80
 Gen.28:17#15	N-NSM	οἶκος		0.80	
 Gen.28:18#3	N-NSM	Ἰακώβ		0.80	
 Gen.28:18#4	T-ASN	ὁ		0.80	
-Gen.28:18#5	ADV	πρωΐ		0.80	
 Gen.28:18#14	N-GSF	κεφαλή		0.80	
 Gen.28:18#15	P-GSM	αὐτός		0.80	
 Gen.28:18#21	V-IAI-3S	ἐπιχέω	unsure	0.50	model: unsure
@@ -675,7 +672,6 @@ Gen.29:24#4	N-ASF	Ζέλφα	guess	0.40	guess: the model answered with no candid
 Gen.29:24#5	N-DSF	Λεία	guess	0.40	guess: the model chose outside the candidates
 Gen.29:24#8	P-GSM	αὐτός		0.80	
 Gen.29:24#11	P-GSM	αὐτός		0.80	
-Gen.29:25#3	ADV	πρωΐ		0.80	
 Gen.29:25#7	N-NSF	Λεία	guess	0.40	guess: the model chose outside the candidates
 Gen.29:25#10	N-NSM	Ἰακώβ		0.80	
 Gen.29:25#11	N-DSM	Λαβάν	unsure	0.50	model: unsure

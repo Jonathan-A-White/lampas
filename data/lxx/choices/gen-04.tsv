@@ -272,7 +272,6 @@ Gen.19:26#11	N-NSF	στήλη		0.80
 Gen.19:26#12	N-GSM	ἅλς		0.80	
 Gen.19:27#3	N-NSM	Ἀβραάμ		0.80	
 Gen.19:27#4	T-ASN	ὁ		0.80	
-Gen.19:27#5	ADV	πρωΐ		0.80	
 Gen.19:27#9	ADV	οὗ		0.80	
 Gen.19:27#10	V-LAI-3S	ἵστημι	guess	0.40	guess: the model answered with no candidates
 Gen.19:27#11	PREP	ἐναντίον		0.80	
@@ -367,7 +366,6 @@ Gen.20:7#27	T-NPN	ὁ		0.80
 Gen.20:7#28	S-2SNPN	σός		0.80	
 Gen.20:8#3	N-NSM	Ἀβιμέλεχ		0.80	
 Gen.20:8#4	T-ASN	ὁ		0.80	
-Gen.20:8#5	ADV	πρωΐ		0.80	
 Gen.20:8#11	P-GSM	αὐτός		0.80	
 Gen.20:8#14	A-APN	πᾶς		0.80	
 Gen.20:8#15	T-APN	ὁ		0.80	
@@ -455,7 +453,6 @@ Gen.21:8#9	N-NSM	Ἀβραάμ		0.80
 Gen.21:8#15	N-NSM	Ἰσαάκ		0.80	
 Gen.21:8#18	P-GSM	αὐτός		0.80	
 Gen.21:9#6	N-GSF	Ἄγαρ		0.80	
-Gen.21:9#8	A-GSF	Αἰγύπτιος		0.80	
 Gen.21:9#11	T-DSM	ὁ		0.80	
 Gen.21:9#12	N-DSM	Ἀβραάμ		0.80	
 Gen.21:9#13	V-PAP-ASM	παίζω		0.80	
@@ -487,7 +484,6 @@ Gen.21:13#14	N-NSN	σπέρμα		0.80
 Gen.21:13#15	S-2SNSN	σός		0.80	
 Gen.21:14#3	N-NSM	Ἀβραάμ		0.80	
 Gen.21:14#4	T-ASN	ὁ		0.80	
-Gen.21:14#5	ADV	πρωΐ		0.80	
 Gen.21:14#14	N-DSF	Ἄγαρ		0.80	
 Gen.21:14#16	V-2AAI-3S	ἐπιτίθημι	unsure	0.50	model: unsure
 Gen.21:14#19	N-ASM	ὦμος		0.80	
@@ -611,7 +607,6 @@ Gen.22:2#27	A-ASN	εἷς		0.80
 Gen.22:2#30	R-GPN	ὅς, ἥ		0.80	
 Gen.22:3#3	N-NSM	Ἀβραάμ		0.80	
 Gen.22:3#4	T-ASN	ὁ		0.80	
-Gen.22:3#5	ADV	πρωΐ		0.80	
 Gen.22:3#6	V-AAI-3S	ἐπισάττω		0.80	
 Gen.22:3#9	P-GSM	αὐτός		0.80	
 Gen.22:3#13	F-3GSM	ἑαυτοῦ		0.80	

@@ -1,7 +1,7 @@
 ref	parsing	lemma	mark	confidence	note
 Gen.32:1#2	N-NSM	Ἰακώβ		0.80	
 Gen.32:1#6	F-3GSM	ἑαυτοῦ		0.80	
-Gen.32:1#15	V-RAP-ASF	παρεμβάλλω	guess	0.40	guess: the model answered with no candidates
+Gen.32:1#15	V-RAP-ASF	παρεμβάλλω		0.80	
 Gen.32:1#18	P-DSM	αὐτός		0.80	
 Gen.32:2#3	N-NSM	Ἰακώβ		0.80	
 Gen.32:2#7	N-NSF	παρεμβολή		0.80	
@@ -45,7 +45,7 @@ Gen.32:9#3	N-NSM	Ἰακώβ		0.80
 Gen.32:9#9	N-GSM	Ἀβραάμ		0.80	
 Gen.32:9#16	N-GSM	Ἰσαάκ		0.80	
 Gen.32:9#31	V-FAI-1S	ποιέω		0.80	
-Gen.32:10#1	V-PAP-NPF	ἱκανόω	guess	0.40	guess: the model chose outside the candidates
+Gen.32:10#1	V-PAP-NPF	ἱκανόω		0.80	
 Gen.32:10#12	T-DSM	ὁ		0.80	
 Gen.32:10#20	V-2AAI-1S	διαβαίνω		0.80	
 Gen.32:11#1	V-2AMM-2S	ἐξαιρέω		0.80	
@@ -59,7 +59,7 @@ Gen.32:13#9	R-GPN	ὅς, ἥ	unsure	0.50	model: unsure
 Gen.32:13#11	N-APN	δῶρον		0.80	
 Gen.32:13#14	N-DSM	Ἠσαῦ		0.80	
 Gen.32:13#17	P-GSM	αὐτός		0.80	
-Gen.32:14#1	N-APF	αἴξ	guess	0.40	guess: the model chose outside the candidates
+Gen.32:14#1	N-APF	αἴξ		0.80	
 Gen.32:14#5	N-APN	πρόβατον		0.80	
 Gen.32:14#6	A-APN	διακόσιοι		0.80	
 Gen.32:15#4	T-APN	ὁ		0.80	
@@ -106,7 +106,7 @@ Gen.32:19#25	T-DSM	ὁ		0.80
 Gen.32:19#26	N-DSM	Ἠσαῦ		0.80	
 Gen.32:20#7	N-NSM	Ἰακώβ		0.80	
 Gen.32:20#9	PREP	ὀπίσω		0.80	
-Gen.32:20#13	V-FDI-1S	ἐξιλάσκομαι	guess	0.40	guess: the model answered with no candidates
+Gen.32:20#13	V-FDI-1S	ἐξιλάσκομαι		0.80	
 Gen.32:20#14	T-ASN	ὁ		0.80	
 Gen.32:20#15	N-ASN	πρόσωπον		0.80	
 Gen.32:20#16	P-GSM	αὐτός		0.80	
@@ -135,7 +135,6 @@ Gen.32:24#1	V-API-3S	ὑπολείπω		0.80
 Gen.32:24#3	N-NSM	Ἰακώβ		0.80	
 Gen.32:24#6	V-IAI-3S	παλαίω		0.80	
 Gen.32:24#8	P-GSM	αὐτός		0.80	
-Gen.32:24#11	ADV	πρωΐ		0.80	
 Gen.32:25#14	P-GSM	αὐτός		0.80	
 Gen.32:25#17	T-NSN	ὁ		0.80	
 Gen.32:25#18	N-NSN	πλάτος		0.80	
@@ -188,7 +187,7 @@ Gen.33:1#10	P-GSM	αὐτός		0.80
 Gen.33:1#14	A-NPM	τετρακόσιοι		0.80	
 Gen.33:1#15	N-NPM	ἀνήρ		0.80	
 Gen.33:1#17	P-GSM	αὐτός		0.80	
-Gen.33:1#19	V-2AAI-3S	ἐπιδιαιρέω	guess	0.40	guess: the model answered with no candidates
+Gen.33:1#19	V-2AAI-3S	ἐπιδιαιρέω		0.80	
 Gen.33:1#20	N-NSM	Ἰακώβ		0.80	
 Gen.33:1#21	T-APN	ὁ		0.80	
 Gen.33:1#22	N-APN	παιδίον		0.80	
@@ -250,7 +249,6 @@ Gen.33:11#16	A-NPN	πᾶς		0.80
 Gen.33:11#18	V-ADI-3S	βιάζω	unsure	0.50	model: unsure
 Gen.33:12#3	V-AAP-NPM	ἀπαίρω		0.80	
 Gen.33:12#4	V-AOS-1P	πορεύω		0.80	
-Gen.33:12#6	A-ASF	εὐθύς		0.80	
 Gen.33:13#3	P-DSM	αὐτός		0.80	
 Gen.33:13#9	T-NPN	ὁ		0.80	
 Gen.33:13#10	N-NPN	παιδίον		0.80	
@@ -259,7 +257,7 @@ Gen.33:13#13	T-NPN	ὁ		0.80
 Gen.33:13#14	N-NPN	πρόβατον		0.80	
 Gen.33:13#17	N-NPF	βοῦς	guess	0.40	guess: the model chose outside the candidates
 Gen.33:13#18	V-PPI-3P	λοχεύω	unsure	0.50	model: unsure
-Gen.33:13#23	V-AAS-1S	καταδιώκω	guess	0.40	guess: the model answered with no candidates
+Gen.33:13#23	V-AAS-1S	καταδιώκω		0.80	
 Gen.33:13#27	V-FNI-3P	ἀποθνήσκω		0.80	
 Gen.33:13#28	A-NPN	πᾶς		0.80	
 Gen.33:13#29	T-NPN	ὁ		0.80	
@@ -299,7 +297,7 @@ Gen.33:18#7	N-GPN	σίκιμα	unsure	0.50	model: unsure
 Gen.33:18#8	R-NSF	ὅς, ἥ		0.80	
 Gen.33:18#12	N-GSF	Χαναάν		0.80	
 Gen.33:18#13	CONJ	ὅτε		0.80	
-Gen.33:18#20	V-2AAI-3S	παρεμβάλλω	guess	0.40	guess: the model answered with no candidates
+Gen.33:18#20	V-2AAI-3S	παρεμβάλλω		0.80	
 Gen.33:18#22	N-ASN	πρόσωπον		0.80	
 Gen.33:19#7	ADV	οὗ		0.80	
 Gen.33:19#12	P-GSM	αὐτός		0.80	
@@ -353,9 +351,9 @@ Gen.34:9#1	V-AAM-2P	ἐπιγαμβρεύω		0.80
 Gen.34:10#9	A-NSF	πλατύς		0.80	
 Gen.34:10#10	PREP	ἐναντίον		0.80	
 Gen.34:10#14	V-PNM-2P	ἐμπορεύομαι		0.80	
-Gen.34:10#18	V-PNM-2P	ἐγκτάομαι	guess	0.40	guess: the model answered with no candidates
+Gen.34:10#18	V-PNM-2P	ἐγκτάομαι		0.80	
 Gen.34:11#3	N-NSF	Συχέμ	unsure	0.50	model: unsure
-Gen.34:11#13	V-2AAO-1S	εὑρίσκω	guess	0.40	guess: the model answered with no candidates
+Gen.34:11#13	V-2AAO-1S	εὑρίσκω		0.80	
 Gen.34:11#14	N-ASF	χάρις		0.80	
 Gen.34:11#15	PREP	ἐναντίον		0.80	
 Gen.34:11#18	R-ASN	ὅς, ἥ		0.80	
@@ -435,7 +433,7 @@ Gen.34:24#3	N-GSM	Ἐμμόρ		0.80
 Gen.34:24#5	N-GSF	Συχέμ	unsure	0.50	model: unsure
 Gen.34:24#8	P-GSM	αὐτός		0.80	
 Gen.34:24#16	P-GPM	αὐτός		0.80	
-Gen.34:24#18	V-IMI-3P	περιτέμνω	guess	0.40	guess: the model answered with no candidates
+Gen.34:24#18	V-IMI-3P	περιτέμνω	guess	0.40	guess: the model chose outside the candidates
 Gen.34:24#23	P-GPM	αὐτός		0.80	
 Gen.34:24#25	N-NSM	ἄρσην		0.80	
 Gen.34:25#8	CONJ	ὅτε		0.80	
@@ -489,7 +487,7 @@ Gen.34:30#11	A-ASM	πονηρός		0.80
 Gen.34:30#14	T-DPM	ὁ		0.80	
 Gen.34:30#15	V-PAP-DPM	κατοικέω		0.80	
 Gen.34:30#20	T-DPM	ὁ		0.80	
-Gen.34:30#21	N-DPM	Χαναναῖος	guess	0.40	guess: the model answered with no candidates
+Gen.34:30#21	A-DPM	Χανααναῖος		0.80	
 Gen.34:30#23	T-DPM	ὁ		0.80	
 Gen.34:30#24	N-DPM	Φερεζαῖος	guess	0.40	guess: the model answered with no candidates
 Gen.34:30#27	A-NSM	ὀλιγοστός		0.80	
@@ -507,7 +505,6 @@ Gen.35:2#6	P-GSM	αὐτός		0.80
 Gen.35:2#8	A-DPM	πᾶς		0.80	
 Gen.35:2#9	T-DPM	ὁ		0.80	
 Gen.35:2#11	P-GSM	αὐτός		0.80	
-Gen.35:2#16	A-APM	ἀλλότριος		0.80	
 Gen.35:2#18	A-GSN	μέσος		0.80	
 Gen.35:2#21	V-AMM-2P	καθαρίζω		0.80	
 Gen.35:2#23	V-AAM-2P	ἀλλάσσω		0.80	
@@ -517,7 +514,6 @@ Gen.35:3#9	N-ASN	θυσιαστήριον		0.80
 Gen.35:3#21	S-1SGSN	ἐγώ		0.80	
 Gen.35:4#3	T-DSM	ὁ		0.80	
 Gen.35:4#4	N-DSM	Ἰακώβ		0.80	
-Gen.35:4#8	A-APM	ἀλλότριος		0.80	
 Gen.35:4#9	R-NPM	ὅς, ἥ		0.80	
 Gen.35:4#14	P-GPM	αὐτός		0.80	
 Gen.35:4#16	T-APN	ὁ		0.80	
@@ -584,7 +580,7 @@ Gen.35:13#13	P-GSM	αὐτός		0.80
 Gen.35:14#3	N-NSM	Ἰακώβ		0.80	
 Gen.35:14#8	R-DSM	ὅς, ἥ		0.80	
 Gen.35:14#11	P-GSM	αὐτός		0.80	
-Gen.35:14#15	V-AAI-3S	σπένδω	guess	0.40	guess: the model answered with no candidates
+Gen.35:14#15	V-AAI-3S	σπένδω		0.80	
 Gen.35:14#20	V-AAI-3S	ἐπιχέω	unsure	0.50	model: unsure
 Gen.35:14#23	N-ASN	ἔλαιον		0.80	
 Gen.35:15#3	N-NSM	Ἰακώβ		0.80	
@@ -602,7 +598,6 @@ Gen.35:16#18	N-ASF	χαβραθά	guess	0.40	guess: the model answered with no c
 Gen.35:16#22	N-ASF	Ἐφράθα	guess	0.40	guess: the model answered with no candidates
 Gen.35:16#24	N-NSF	Ῥαχήλ		0.80	
 Gen.35:17#4	T-DSN	ὁ		0.80	
-Gen.35:17#5	ADV	σκληρῶς		0.80	
 Gen.35:18#9	V-IAI-3S	ἀποθνήσκω		0.80	
 Gen.35:18#12	T-ASN	ὁ		0.80	
 Gen.35:18#13	N-ASN	ὄνομα		0.80	
@@ -648,7 +643,7 @@ Gen.35:27#3	N-NSM	Ἰακώβ		0.80
 Gen.35:27#5	N-ASM	Ἰσαάκ		0.80	
 Gen.35:27#8	P-GSM	αὐτός		0.80	
 Gen.35:27#10	N-ASM	Μαμβρή		0.80	
-Gen.35:27#17	N-NSF	Χεβρών		0.80	
+Gen.35:27#17	N-NSF	Χεβρών	guess	0.40	guess: the model chose outside the candidates
 Gen.35:27#20	N-GSF	Χαναάν		0.80	
 Gen.35:27#21	ADV	οὗ		0.80	
 Gen.35:27#23	N-NSM	Ἀβραάμ		0.80	

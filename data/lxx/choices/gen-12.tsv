@@ -150,7 +150,7 @@ Gen.47:19#26	N-GSM	Φαραώ		0.80
 Gen.47:19#28	N-ASN	σπέρμα		0.80	
 Gen.47:20#3	N-NSM	Ἰωσήφ		0.80	
 Gen.47:20#7	T-GPM	ὁ		0.80	
-Gen.47:20#8	A-GPM-LG	Αἰγύπτιος		0.80	
+Gen.47:20#8	A-GPM	Αἰγύπτιος		0.80	
 Gen.47:20#9	T-DSM	ὁ		0.80	
 Gen.47:20#10	N-DSM	Φαραώ		0.80	
 Gen.47:20#17	P-GPM	αὐτός		0.80	
@@ -478,7 +478,6 @@ Gen.49:24#18	N-GSM	Ἰακώβ		0.80
 Gen.49:24#22	N-ASM	Ἰσραήλ		0.80	
 Gen.49:25#18	A-APN	πᾶς		0.80	
 Gen.49:26#7	V-AAI-3S	ὑπερισχύω		0.80	
-Gen.49:26#11	A-GPN	μόνιμος		0.80	
 Gen.49:26#15	N-GPM	θίς	guess	0.40	guess: the model chose outside the candidates
 Gen.49:26#16	A-GPM	ἀέναος		0.80	
 Gen.49:26#20	N-GSM	Ἰωσήφ		0.80	
