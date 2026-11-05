@@ -9,6 +9,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalS
 import { createPortal } from 'react-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { loadChapter, sourceLanguage, type Chapter, type Verse } from '../data/chapter';
+import { TRANSLATION_NAME } from '../reader/englishSource';
 import { apocryphaBookOf } from '../data/apocrypha';
 import { isHebrewBook, otBookOf } from '../data/books';
 import { AnotherBookButton } from '../library/InLogosDoors';
@@ -30,8 +31,7 @@ import { useOnline } from '../ui/online';
 import { KeepOnPhoneLink } from '../ui/KeepOnPhoneLink';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
 
-/** The translation the reader's English is, and the edition its Greek follows. */
-const TRANSLATION = 'Majority Standard Bible';
+/** The edition its Greek follows; the translation the reader's English is depends on the testament (the Old Testament's is the Berean Standard Bible, the New's the Majority Standard Bible; mw-5r3p30.1088). */
 const GREEK_TEXT = 'Robinson-Pierpont Greek';
 const HEBREW_TEXT = 'Westminster Leningrad Codex';
 
@@ -266,7 +266,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
           )}
         </div>
         <div ref={foot} className="flex flex-col gap-1 border-t border-line px-4 py-2">
-          {held ? <span className="text-sm text-muted">{view === 'greek' ? (passage !== null && passage !== 'failed' && sourceLanguage(passage) === 'hbo' ? HEBREW_TEXT : GREEK_TEXT) : TRANSLATION}</span> : null}
+          {held ? <span className="text-sm text-muted">{view === 'greek' ? (passage !== null && passage !== 'failed' && sourceLanguage(passage) === 'hbo' ? HEBREW_TEXT : GREEK_TEXT) : TRANSLATION_NAME[otBookOf(held.book) ? 'bsb' : 'msb']}</span> : null}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <PlayControls card={card} />

@@ -10,6 +10,15 @@ const LEAVE = /^(?:A|CODE|PRE|KBD|SAMP|VAR|BUTTON|SELECT|OPTION|TEXTAREA|INPUT|L
 /** The mark on a link the tagger made, which also keeps a second run from tagging again. */
 export const MARK = 'data-lampas-ref';
 
+/** The mark on a link to a chapter range ('Matthew 5-7') holding the range's last chapter: the address goes to the first chapter only, and the popup heads the card with the range. */
+export const TO_CHAPTER = 'data-lampas-to';
+
+/** Where a chapter range ends ('Matthew 5-7' is 7), read from the words as printed; undefined for a verse, a chapter alone or a range that does not end after its first chapter. */
+const chapterRangeEnd = (span: { printed: string; verse?: number; chapter: number }): number | undefined => {
+  const end = span.verse === undefined ? /[-–]\s*(\d+)$/.exec(span.printed)?.[1] : undefined;
+  return end !== undefined && Number(end) > span.chapter ? Number(end) : undefined;
+};
+
 /** The address of a reference's link: the https form Lampas takes in, `ref=John.5.24-29` (a verse range names where to start). */
 const addressOf = (ref: string, lastVerse: number | undefined): string => {
   const [book, chapter, verse] = ref.split('.');
@@ -46,6 +55,8 @@ export function tagReferences(root: Element): number {
       link.target = '_blank';
       link.rel = 'noopener';
       link.setAttribute(MARK, '');
+      const to = chapterRangeEnd(span);
+      if (to !== undefined) link.setAttribute(TO_CHAPTER, String(to));
       link.textContent = text.slice(span.start, span.end);
       pieces.append(link);
       at = span.end;
