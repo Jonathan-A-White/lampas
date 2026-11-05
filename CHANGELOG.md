@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.123
+_2026-11-05_
+- Fixed: The first words of the Greek Genesis, ἐν ἀρχῇ, are now read as the dative 'in the beginning', not as a nominative.
+
 ## 0.7.122
 _2026-11-05_
 - New: On the blog, tapping a Bible reference now opens a small popup with the verse and an "Open in Lampas" button, instead of jumping straight to the app.
