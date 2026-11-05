@@ -51,6 +51,13 @@ test('a range across a chapter, a backwards range and verse 0 never make a ref t
   expect(await texts(page, 'crossing')).toEqual(['John 3:16', 'John 5:25', 'John 5:25']);
 });
 
+test('plain English with a number after a book is no chapter link; a chapter alone and a chapter range still are (mw-5r3p30.1047)', async ({ page }) => {
+  await openPost(page);
+  expect(await page.locator('#english a').count()).toBe(0);
+  expect(await hrefs(page, 'alone')).toEqual([`${REF}Mark.5`, `${REF}Job.3`, `${REF}Matt.5`]);
+  expect(await texts(page, 'alone')).toEqual(['Mark 5', 'Job 3', 'Matthew 5-7']);
+});
+
 test('text in a link, code, a heading or outside the post is left as it is, and no false link is made', async ({ page }) => {
   await openPost(page);
   expect(await hrefs(page, 'existing')).toEqual(['https://example.com/x']);

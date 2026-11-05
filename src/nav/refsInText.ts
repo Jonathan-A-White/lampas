@@ -51,6 +51,11 @@ const beforeBook = (text: string, tailAt: number, tail: string): string => {
   return tail;
 };
 
+// A chapter alone is plain English when a count follows it: 'Mark 5 times', 'Job 3 months', 'Acts 2 of them' (mw-5r3p30.1047).
+const COUNTED = /^\s+(?:times|seconds|minutes|hours|days|weeks|months|years|decades|centuries|of\s+(?:them|us|you|these|those|it)\b)/i;
+// A chapter range 'Matthew 5-7' (not into a verse: 'Matthew 5-7:3'); the link goes to its first chapter.
+const CHAPTER_RANGE = /^\s*[-–]\s*(\d+)(?!\d|\s*:\s*\d)/;
+
 /** Words of one or two letters, and a book alone with a chapter, that are far likelier to be plain English than a book unless they are written as a book is. */
 const NOT_ENGLISH = (name: string, chapterOnly: boolean): boolean => {
   const word = name.replace(/\.$/, '');
@@ -115,7 +120,17 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
       end: to,
     });
     if (verseText === undefined) {
-      found.push(make(whole.trim(), chapter, undefined, m.index, m.index + whole.trimEnd().length));
+      const after = text.slice(m.index + matched.length);
+      const toChapter = CHAPTER_RANGE.exec(after);
+      const rangeLast = toChapter && Number(toChapter[1]) > chapter && Number(toChapter[1]) <= limit ? toChapter : null;
+      const reached = m.index + matched.length + (rangeLast ? rangeLast[0].length : 0);
+      if (COUNTED.test(text.slice(reached))) {
+        FIND.lastIndex = reached;
+        continue;
+      }
+      const printed = whole.trim() + (rangeLast ? rangeLast[0] : '');
+      found.push(make(printed, chapter, undefined, m.index, m.index + printed.length));
+      if (rangeLast) FIND.lastIndex = reached;
       continue;
     }
     // the verses after the first: a list ('Rom 8:28, 31') is one reference for each verse, written with the book as printed ('Rom 8:31')

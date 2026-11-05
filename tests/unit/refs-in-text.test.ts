@@ -190,3 +190,39 @@ describe('a range that crosses a chapter, runs backwards or names verse 0 (mw-5r
     }
   });
 });
+
+describe('a book and a bare number in plain English (mw-5r3p30.1047)', () => {
+  const spans = (text: string) => referenceSpans(text, { semicolons: true }).map((r) => [text.slice(r.start, r.end), r.ref]);
+
+  it('makes no chapter of a number that a plural time word or "of them" follows', () => {
+    expect(spans('I waited Mark 5 times')).toEqual([]);
+    expect(spans('about Job 3 months ago')).toEqual([]);
+    expect(spans('Acts 2 of them')).toEqual([]);
+    expect(spans('Am 5 minutes late')).toEqual([]);
+    expect(spans('Job 3 days, Mark 5 years, John 3 hours, Luke 2 weeks, Ruth 2 seconds')).toEqual([]);
+    expect(spans('Job 3-4 months')).toEqual([]);
+  });
+
+  it('still links a chapter alone, at the end of a sentence or before other words', () => {
+    expect(spans('Mark 5')).toEqual([['Mark 5', 'Mark.5']]);
+    expect(spans('Job 3.')).toEqual([['Job 3', 'Job.3']]);
+    expect(spans('Job 3 is long; Mark 5 is a story')).toEqual([['Job 3', 'Job.3'], ['Mark 5', 'Mark.5']]);
+    expect(spans('Mark 5 and Job 3 alone')).toEqual([['Mark 5', 'Mark.5'], ['Job 3', 'Job.3']]);
+  });
+
+  it('keeps a verse reference even when a time word follows it', () => {
+    expect(spans('Mark 5:3 times')).toEqual([['Mark 5:3', 'Mark.5.3']]);
+  });
+
+  it('reads a chapter range whole, at its first chapter', () => {
+    expect(spans('Matthew 5-7')).toEqual([['Matthew 5-7', 'Matt.5']]);
+    expect(spans('Read Matthew 5–7, then more')).toEqual([['Matthew 5–7', 'Matt.5']]);
+    expect(spans('Psalms 23 - 24.')).toEqual([['Psalms 23 - 24', 'Ps.23']]);
+  });
+
+  it('reads no chapter range that runs backwards, past the book or into a verse', () => {
+    expect(spans('Matthew 7-5')).toEqual([['Matthew 7', 'Matt.7']]);
+    expect(spans('Matthew 5-99')).toEqual([['Matthew 5', 'Matt.5']]);
+    expect(spans('Matthew 5-7:3')).toEqual([['Matthew 5', 'Matt.5']]);
+  });
+});
