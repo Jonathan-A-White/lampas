@@ -50,8 +50,8 @@ describe('ATTRIBUTION.md credits Biblical Mastery Academy for the ladder', () =>
 // lines on a phone (about 200 characters). Only a notice a licence requires whole may run longer, and is named here with the most it may take.
 describe('About is short credits, not a tutorial', () => {
   const ENTRY_MAX = 150; // about 36 characters a line at 390 px, so four lines; the story's own guide is 200
-  // the credit and licence wording a licence asks to be kept whole: CC BY 4.0 (credit, link, changes) for STEPBible's three tables, the maps' required citation and the three OFL notices
-  const LICENCE_NOTICES: [string, number][] = [['Tyndale House', 300], ['TIPNR', 260], ['Bible Mapper', 200], ['Literata', 340]];
+  // the credit and licence wording a licence asks to be kept whole: CC BY 4.0 (credit, link, changes) for STEPBible's three tables, the maps' required citation and the three OFL notices; and the line of CCEL's terms the Spurgeon index is used under, quoted as the sermon-index source.toml has it
+  const LICENCE_NOTICES: [string, number][] = [['Tyndale House', 300], ['TIPNR', 260], ['Bible Mapper', 200], ['Literata', 340], ['Spurgeon', 260]];
   const plain = attribution.entries.map(plainText);
   const maxFor = (entry: string): number => LICENCE_NOTICES.find(([start]) => entry.startsWith(start))?.[1] ?? ENTRY_MAX;
 

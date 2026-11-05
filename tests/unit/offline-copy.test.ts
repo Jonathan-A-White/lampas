@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CANON_INDEX, BOOK_INDEX } from '../../src/data/bookIndex';
 import { chapterUrl } from '../../src/data/chapter';
+import { SERMON_INDEX, sermonBookUrl, type SermonIndex } from '../../src/data/sermonIndex';
 import { db } from '../../src/data/db';
 import { DATA_CACHE } from '../../src/dataCache';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
@@ -14,6 +15,7 @@ import {
   setOfflineScope,
   startOfflineCopy,
   type OfflineProgress,
+  type OfflineScope,
 } from '../../src/data/offlineCopy';
 
 // The offline copy (mw-lcv9z3g.1): every chapter of a scope is fetched through the reader's own versioned address, so the worker's serveChapter
@@ -54,7 +56,10 @@ function setup(behave: (url: string, call: number) => Promise<void> | void = () 
   return { cache, caches, opened, events: new EventTarget(), calls, fetcher };
 }
 
-const deps = (s: Setup) => ({ caches: s.caches, fetcher: s.fetcher, events: s.events, isOnline: () => true });
+/** The sermon files are tried on their own below; the tests about chapters give no sermons, so their counts stay the chapters'. */
+const NO_SERMONS: SermonIndex = { sources: [] };
+const chaptersOnly = (scope: OfflineScope, index = CANON_INDEX) => offlineUrls(scope, index, NO_SERMONS);
+const deps = (s: Setup) => ({ caches: s.caches, fetcher: s.fetcher, events: s.events, isOnline: () => true, sermons: NO_SERMONS });
 
 const timeout = ASYNC_WAIT_MS;
 const tick = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -65,11 +70,11 @@ beforeEach(async () => {
 
 describe('offlineUrls', () => {
   it('lists nothing for none', () => {
-    expect(offlineUrls('none')).toEqual([]);
+    expect(chaptersOnly('none')).toEqual([]);
   });
 
   it('lists exactly the 260 chapters of the New Testament by the reader\'s own address, each with its fingerprint', () => {
-    const urls = offlineUrls('nt');
+    const urls = chaptersOnly('nt');
     expect(urls).toHaveLength(260);
     expect(urls).toEqual(BOOK_INDEX.books.flatMap((b) => Array.from({ length: b.chapters }, (_, i) => chapterUrl(b.code, i + 1))));
     for (const url of urls) expect(url).toMatch(/^\/data\/[0-9a-z]+\/\d+\.json\?v=[0-9a-f]{12}$/);
@@ -77,7 +82,7 @@ describe('offlineUrls', () => {
   });
 
   it('lists every chapter of all 66 books and the two Hebrew word lists for the whole Bible', () => {
-    const urls = offlineUrls('all');
+    const urls = chaptersOnly('all');
     const chapters = CANON_INDEX.books.reduce((n, b) => n + b.chapters, 0);
     expect(urls).toHaveLength(chapters + 2);
     expect(urls.slice(0, chapters)).toEqual(CANON_INDEX.books.flatMap((b) => Array.from({ length: b.chapters }, (_, i) => chapterUrl(b.code, i + 1))));
@@ -87,14 +92,61 @@ describe('offlineUrls', () => {
 
   it('takes the fingerprints from the index it is given', () => {
     const index = { books: [{ code: 'phm', name: 'Philemon', chapters: 1, verses: [25], fingerprints: ['0123456789ab'] }] };
-    expect(offlineUrls('nt', index)).toEqual(['/data/phm/1.json?v=0123456789ab']);
+    expect(chaptersOnly('nt', index)).toEqual(['/data/phm/1.json?v=0123456789ab']);
+  });
+});
+
+const source = (id: string, books: string[], fingerprint: string) => ({ id, name: id, kind: 'sermons', licence: 'L', credit: 'C', homepage: 'https://x', rows: 1, books, fingerprint });
+const SERMONS: SermonIndex = { sources: [source('spurgeon-ccel', ['gen', 'psa', 'mat', 'rom'], '0123456789ab'), source('other', ['jhn'], 'ba9876543210')] };
+
+describe('the sermon files in the offline copy (mw-qtu3zvz.1)', () => {
+  it('asks for a book file of each source by its source\'s fingerprint, as the worker keeps it', () => {
+    expect(sermonBookUrl('spurgeon-ccel', 'rom', SERMONS)).toBe('/sermons/spurgeon-ccel/rom.json?v=0123456789ab');
+    expect(sermonBookUrl('other', 'jhn', SERMONS)).toBe('/sermons/other/jhn.json?v=ba9876543210');
+  });
+
+  it('adds the books of the New Testament to nt and every book to all, after the chapters and the Hebrew lists, in source order', () => {
+    expect(offlineUrls('none', CANON_INDEX, SERMONS)).toEqual([]);
+    const nt = offlineUrls('nt', CANON_INDEX, SERMONS);
+    expect(nt.slice(0, 260)).toEqual(chaptersOnly('nt'));
+    expect(nt.slice(260)).toEqual(['/sermons/spurgeon-ccel/mat.json?v=0123456789ab', '/sermons/spurgeon-ccel/rom.json?v=0123456789ab', '/sermons/other/jhn.json?v=ba9876543210']);
+    const all = offlineUrls('all', CANON_INDEX, SERMONS);
+    const chapters = chaptersOnly('all');
+    expect(all.slice(0, chapters.length)).toEqual(chapters);
+    expect(all.slice(chapters.length)).toEqual([
+      '/sermons/spurgeon-ccel/gen.json?v=0123456789ab',
+      '/sermons/spurgeon-ccel/psa.json?v=0123456789ab',
+      '/sermons/spurgeon-ccel/mat.json?v=0123456789ab',
+      '/sermons/spurgeon-ccel/rom.json?v=0123456789ab',
+      '/sermons/other/jhn.json?v=ba9876543210',
+    ]);
+  });
+
+  it('takes the bundled index unless one is given: the files public/sermons/index.json lists', () => {
+    expect(SERMON_INDEX.sources.length).toBeGreaterThan(0);
+    const urls = offlineUrls('all');
+    for (const s of SERMON_INDEX.sources) for (const book of s.books) expect(urls).toContain(`/sermons/${s.id}/${book}.json?v=${s.fingerprint}`);
+    expect(new Set(urls).size).toBe(urls.length);
+  });
+
+  it('fetches a changed fingerprint\'s files and no others: the fingerprint is the address\'s check', async () => {
+    const s = setup();
+    await runOfflineCopy('nt', { ...deps(s), index: { books: [] }, sermons: SERMONS });
+    expect(s.calls).toEqual(offlineUrls('nt', { books: [] }, SERMONS));
+    expect(s.calls).toHaveLength(3);
+    s.calls.length = 0;
+    expect(await runOfflineCopy('nt', { ...deps(s), index: { books: [] }, sermons: SERMONS })).toMatchObject({ done: 3, total: 3 });
+    expect(s.calls).toEqual([]);
+    const changed: SermonIndex = { sources: [source('spurgeon-ccel', ['gen', 'psa', 'mat', 'rom'], 'ffffffffffff'), SERMONS.sources[1]] };
+    await runOfflineCopy('nt', { ...deps(s), index: { books: [] }, sermons: changed });
+    expect(s.calls).toEqual(['/sermons/spurgeon-ccel/mat.json?v=ffffffffffff', '/sermons/spurgeon-ccel/rom.json?v=ffffffffffff']);
   });
 });
 
 describe('runOfflineCopy', () => {
   it('fetches only what the data cache lacks and reports progress ending at done === total', async () => {
     const s = setup();
-    const urls = offlineUrls('nt');
+    const urls = chaptersOnly('nt');
     for (const url of urls.slice(0, 10)) s.cache.entries.set(url, 'kept');
     const seen: OfflineProgress[] = [];
     const stop = onOfflineProgress((p) => seen.push(p));
@@ -174,7 +226,7 @@ describe('runOfflineCopy', () => {
   });
 
   it('does not count a fetch that failed because the phone went offline against its retry', async () => {
-    const urls = offlineUrls('nt');
+    const urls = chaptersOnly('nt');
     const s = setup((url, call) => {
       if (url === urls[0] && call === 1) {
         s.events.dispatchEvent(new Event('offline'));
@@ -204,7 +256,7 @@ describe('runOfflineCopy', () => {
   });
 
   it('retries a failed fetch once, and counts and reports one that fails twice, never throwing', async () => {
-    const urls = offlineUrls('nt');
+    const urls = chaptersOnly('nt');
     const flaky = urls[5];
     const broken = urls[9];
     const s = setup((url, call) => {

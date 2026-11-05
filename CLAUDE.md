@@ -35,10 +35,10 @@ npm run typecheck    # tsc -b --noEmit, strict
 npm run lint         # eslint (no explicit any)
 npm test             # vitest run: unit tests and feature specs
 npm run test:bdd     # vitest run, features/steps only
-npm run shots        # Playwright at 390x844 against `vite preview` of dist/ (build first, or `npm run gate:shots`); writes shots/
-npm run icons        # re-render public/icon-192.png, icon-512.png from icon.svg
+npm run shots        # Playwright at 390x844 on `vite preview` of dist/ (build first, or `npm run gate:shots`); writes shots/
+npm run icons        # re-render the public/ icons from icon.svg
 npm run seed:build   # rebuild src/data/seed-words.ts and seed-words-hbo.ts from docs/example-words.md (node 22.18+)
-npm run check:licence -- <pubkey>  # live testnet licence check, opt-in
+npm run check:licence -- <pubkey>  # live testnet licence check
 npx playwright test  # (npm run test:e2e) all e2e (--workers=2; `npm run build` first): projects 'chromium' and 'shots' (docs/commands.md)
 npm run e2e:live     # live tests against the DEPLOYED app; not in the gate (docs/commands.md)
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
@@ -109,7 +109,7 @@ VISION.md 'The tutor': the tutor is told, on every ask, each app setting and eac
 One line per file under `docs/`: open the ones your story touches. `tests/unit/claude-md.test.ts` fails when a docs/ file is missing here.
 
 ```
-docs/layout/app.md # Layout: the shell, build, manifest, worker, updates and What's new, bus, appearance, src/ui/, public/
+docs/layout/app.md # Layout: the shell, build, manifest, worker, updates, What's new, bus, appearance, src/ui/, public/
 docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/ and links in, chips, Immersive, weave, Old Testament
 docs/layout/word-sheet.md # Layout: the word sheet, Greek and Hebrew, and a word by link
 docs/layout/chapter-picker.md # Layout: the chapter picker, 66 books
@@ -127,13 +127,13 @@ docs/layout/data.md # Layout: Dexie and its versions, repositories, books, chapt
 docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
 docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
 docs/overview.md # the one-screen overview
-docs/PREFACE.md # the Preface rule: the texts, not the app
-docs/accessibility.md # the axe check over the eight main screens, what a screen must meet, rules left out
+docs/PREFACE.md # the Preface rule: texts, not the app
+docs/accessibility.md # the axe check over the eight main screens, what a screen must meet
 docs/commands.md # long notes of the Quick reference: Playwright projects, e2e:live, grind:build, the data tools
 docs/grinds.md # grinds' examples and the bible-talk instruction parts: how to change one
 docs/pwa-best-practices.md # copied verbatim from the vault; the law for every screen
 docs/example-words.md # the owner's own BMA word list (public, an example template); the seed's source
-docs/testing.md # the gate's test seam: where the device key lives and how a test seeds it
+docs/testing.md # the gate's test seam: where the device key lives, how a test seeds it
 docs/events.md # every event kind on the bus, its payload, who publishes and who listens
 docs/pronunciation.md # the respelling schemes: Modern Greek's rules and how to add Erasmian
 docs/resources.md # the study resources: what ships, where each URL form is documented, how to add one
@@ -141,6 +141,7 @@ docs/pictures.md # the memory pictures: the rules for one, how to add one, which
 docs/links.md # every link form Lampas takes in, with an example; where web+lampas: fails
 docs/data.md # the data's JSON shape, its two sources and licences, build changes
 docs/maps.md # the maps: src/maps/, Bible Mapper's data and terms, adding an atlas
+docs/sermons.md # the free sermon index: build, files, sources
 docs/hebrew.md # Hebrew in the tutor: the depth setting, the font, how a Hebrew word is drawn
 docs/language-parity.md # the golden list of use cases per language, the Hebrew gaps, what a new language plugs in
 docs/ask-tutor.md # the tutor: what it is told, offers, bridge, profile, memory, welcome, pictures, sharing, requests

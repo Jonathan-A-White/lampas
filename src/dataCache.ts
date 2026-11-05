@@ -23,8 +23,12 @@ export const isVersionedChapter = (url: URL): boolean =>
 export const isVersionedLadder = (url: URL): boolean =>
   /^\/data\/ladder\/[a-z]{2}\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
 
+/** A sermon index book file asked for by its source's fingerprint: /sermons/spurgeon-ccel/rom.json?v=0123456789ab (src/data/sermonIndex.ts sermonBookUrl); kept and replaced as a chapter is (mw-qtu3zvz.1). The unversioned address is not matched. */
+export const isVersionedSermons = (url: URL): boolean =>
+  /^\/sermons\/[0-9a-z-]+\/[0-9a-z]+\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
+
 /**
- * Answers a versioned chapter request (or a versioned ladder list: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
+ * Answers a versioned chapter request (or a versioned ladder list or sermon book file: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
  * and every other copy of the same chapter (an older fingerprint) is removed. A refusal is passed on and nothing is kept or removed; with no
  * network the older copy of the chapter is read in the new one's place, rather than nothing.
  */
