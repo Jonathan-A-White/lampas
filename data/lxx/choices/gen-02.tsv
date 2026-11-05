@@ -3,7 +3,6 @@ Gen.7:1#7	N-ASM	Νῶε		0.80
 Gen.7:1#20	V-2AAI-1S	εἴδω		0.80	
 Gen.7:1#21	A-ASM	δίκαιος		0.80	
 Gen.7:1#22	PREP	ἐναντίον		0.80	
-Gen.7:2#6	A-GPN	καθαρός		0.80	
 Gen.7:2#12	A-ASN	ἄρρην, ἄρσην		0.80	
 Gen.7:2#14	A-ASN	θῆλυς		0.80	
 Gen.7:2#19	T-GPN	ὁ		0.80	
@@ -19,7 +18,7 @@ Gen.7:3#19	T-GPN	ὁ		0.80
 Gen.7:3#21	A-GPN	καθαρός		0.80	
 Gen.7:3#24	A-ASN	ἄρρην, ἄρσην		0.80	
 Gen.7:3#26	A-ASN	θῆλυς		0.80	
-Gen.7:3#27	V-AAN	διατρέφω	guess	0.40	guess: the model answered with no candidates
+Gen.7:3#27	V-AAN	διατρέφω		0.80	
 Gen.7:3#28	N-ASN	σπέρμα		0.80	
 Gen.7:4#6	V-PAI-1S	ἐπάγω		0.80	
 Gen.7:4#12	N-APF	ἡμέρα		0.80	
@@ -39,7 +38,6 @@ Gen.7:7#17	P-GSM	αὐτός		0.80
 Gen.7:7#19	P-GSM	αὐτός		0.80	
 Gen.7:7#24	T-ASN	ὁ		0.80	
 Gen.7:7#25	N-ASN	ὕδωρ, ὕδατος		0.80	
-Gen.7:8#10	A-GPN	καθαρός		0.80	
 Gen.7:8#15	T-GPN	ὁ		0.80	
 Gen.7:8#17	A-GPN	καθαρός		0.80	
 Gen.7:8#24	A-GPN	πᾶς		0.80	
@@ -52,12 +50,10 @@ Gen.7:9#14	P-DSM	αὐτός		0.80
 Gen.7:10#6	N-APF	ἡμέρα		0.80	
 Gen.7:10#8	T-NSN	ὁ		0.80	
 Gen.7:10#9	N-NSN	ὕδωρ, ὕδατος		0.80	
-Gen.7:11#3	A-DSN	ἑξακοσιοστός		0.80	
 Gen.7:11#8	T-GSM	ὁ		0.80	
 Gen.7:11#9	N-GSM	Νῶε		0.80	
 Gen.7:11#15	N-DSF	εἰκάς		0.80	
 Gen.7:11#21	V-2API-3P	ῥάσσω	unsure	0.50	model: unsure
-Gen.7:11#29	N-NPM	καταρράκτης	guess	0.40	guess: the model answered with no candidates
 Gen.7:12#9	N-APF	ἡμέρα		0.80	
 Gen.7:13#6	N-NSM	Νῶε		0.80	
 Gen.7:13#7	N-NSM	Σήμ		0.80	
@@ -147,7 +143,6 @@ Gen.8:1#34	N-ASN	πνεῦμα		0.80
 Gen.8:1#40	T-NSN	ὁ		0.80	
 Gen.8:1#41	N-NSN	ὕδωρ, ὕδατος		0.80	
 Gen.8:2#2	V-API-3P	ἀποκαλύπτω		0.80	
-Gen.8:2#9	N-NPM	καταρράκτης	guess	0.40	guess: the model answered with no candidates
 Gen.8:2#13	V-API-3S	συνέχω		0.80	
 Gen.8:3#2	V-IAI-3S	ἐνδίδωμι		0.80	
 Gen.8:3#3	T-NSN	ὁ		0.80	
@@ -158,7 +153,6 @@ Gen.8:3#10	T-NSN	ὁ		0.80
 Gen.8:3#11	N-NSN	ὕδωρ, ὕδατος		0.80	
 Gen.8:3#13	V-IPI-3S	ἐλαττονόω		0.80	
 Gen.8:3#18	N-APF	ἡμέρα		0.80	
-Gen.8:4#8	A-DSM	ἕβδομος		0.80	
 Gen.8:4#11	N-DSF	εἰκάς		0.80	
 Gen.8:4#15	T-APN	ὁ		0.80	
 Gen.8:4#16	N-APN	ὄρος		0.80	
@@ -169,7 +163,6 @@ Gen.8:5#3	N-NSN	ὕδωρ, ὕδατος		0.80
 Gen.8:5#4	V-PNP-NSN	πορεύω		0.80	
 Gen.8:5#5	V-IPI-3S	ἐλαττονόω		0.80	
 Gen.8:5#8	A-GSM	δέκατος		0.80	
-Gen.8:5#13	A-DSM	ἑνδέκατος		0.80	
 Gen.8:6#5	N-APF	ἡμέρα		0.80	
 Gen.8:6#7	N-NSM	Νῶε		0.80	
 Gen.8:7#8	V-RAI-3S	κοπάζω		0.80	
@@ -187,7 +180,7 @@ Gen.8:8#11	N-NSN	ὕδωρ, ὕδατος		0.80
 Gen.8:9#10	V-AAI-3S	ἀναστρέφω		0.80	
 Gen.8:9#17	N-NSN	ὕδωρ, ὕδατος		0.80	
 Gen.8:9#29	P-GSM	αὐτός		0.80	
-Gen.8:10#2	V-2AAP-NSM	ἐπέχω	guess	0.40	guess: the model answered with no candidates
+Gen.8:10#2	V-2AAP-NSM	ἐπέχω	guess	0.40	guess: the model chose outside the candidates
 Gen.8:10#4	N-APF	ἡμέρα		0.80	
 Gen.8:11#2	V-AAI-3S	ἀναστρέφω		0.80	
 Gen.8:11#7	T-ASN	ὁ		0.80	
@@ -198,11 +191,10 @@ Gen.8:11#21	N-NSM	Νῶε		0.80
 Gen.8:11#23	V-RAI-3S	κοπάζω		0.80	
 Gen.8:11#24	T-NSN	ὁ		0.80	
 Gen.8:11#25	N-NSN	ὕδωρ, ὕδατος		0.80	
-Gen.8:12#2	V-2AAP-NSM	ἐπέχω	guess	0.40	guess: the model answered with no candidates
+Gen.8:12#2	V-2AAP-NSM	ἐπέχω	guess	0.40	guess: the model chose outside the candidates
 Gen.8:12#4	N-APF	ἡμέρα		0.80	
 Gen.8:13#4	T-DSN	ὁ		0.80	
 Gen.8:13#5	A-DSN	εἷς		0.80	
-Gen.8:13#7	A-DSN	ἑξακοσιοστός		0.80	
 Gen.8:13#12	T-GSM	ὁ		0.80	
 Gen.8:13#13	N-GSM	Νῶε		0.80	
 Gen.8:13#21	V-IAI-3S	ἐκλείπω		0.80	
@@ -245,9 +237,7 @@ Gen.8:19#21	P-GPN	αὐτός		0.80
 Gen.8:20#3	N-NSM	Νῶε		0.80	
 Gen.8:20#4	N-ASN	θυσιαστήριον		0.80	
 Gen.8:20#10	A-GPN	πᾶς		0.80	
-Gen.8:20#14	A-GPN	καθαρός		0.80	
 Gen.8:20#17	A-GPN	πᾶς		0.80	
-Gen.8:20#21	A-GPN	καθαρός		0.80	
 Gen.8:20#26	T-ASN	ὁ		0.80	
 Gen.8:20#27	N-ASN	θυσιαστήριον		0.80	
 Gen.8:21#2	V-AOI-3S	ὀσφραίνομαι	guess	0.40	guess: the model answered with no candidates
@@ -305,7 +295,7 @@ Gen.9:8#6	N-DSM	Νῶε		0.80
 Gen.9:8#10	P-GSM	αὐτός		0.80	
 Gen.9:8#12	P-GSM	αὐτός		0.80	
 Gen.9:9#3	V-PAI-1S	ἀνίστημι		0.80	
-Gen.9:10#4	V-PAP-DSF	ζάω	guess	0.40	guess: the model answered with no candidates
+Gen.9:10#4	V-PAP-DSF	ζάω		0.80	
 Gen.9:10#8	N-GPN	ὄρνεον		0.80	
 Gen.9:10#13	A-DPN	πᾶς		0.80	
 Gen.9:10#18	K-NPN	ὅσος		0.80	
@@ -321,7 +311,6 @@ Gen.9:12#13	R-ASN	ὅς, ἥ		0.80
 Gen.9:12#17	A-ASN	μέσος		0.80	
 Gen.9:12#18	S-1SGSN	ἐγώ		0.80	
 Gen.9:12#23	A-ASN	μέσος		0.80	
-Gen.9:12#26	V-PAP-GSF	ζάω	guess	0.40	guess: the model answered with no candidates
 Gen.9:12#27	R-NSF	ὅς, ἥ		0.80	
 Gen.9:13#1	T-ASN	ὁ		0.80	
 Gen.9:13#2	N-ASN	τόξον		0.80	
@@ -334,7 +323,6 @@ Gen.9:15#6	R-NSF	ὅς, ἥ		0.80
 Gen.9:15#9	A-ASN	μέσος		0.80	
 Gen.9:15#10	S-1SGSN	ἐγώ		0.80	
 Gen.9:15#15	A-ASN	μέσος		0.80	
-Gen.9:15#18	V-PAP-GSF	ζάω	guess	0.40	guess: the model answered with no candidates
 Gen.9:15#26	T-NSN	ὁ		0.80	
 Gen.9:15#27	N-NSN	ὕδωρ, ὕδατος		0.80	
 Gen.9:15#31	V-AAN	ἐξαλείφω		0.80	
@@ -344,7 +332,6 @@ Gen.9:16#11	T-GSN	ὁ		0.80
 Gen.9:16#16	A-ASN	μέσος		0.80	
 Gen.9:16#17	S-1SGSN	ἐγώ		0.80	
 Gen.9:16#20	A-ASN	μέσος		0.80	
-Gen.9:16#23	V-PAP-GSF	ζάω	guess	0.40	guess: the model answered with no candidates
 Gen.9:16#27	R-NSF	ὅς, ἥ		0.80	
 Gen.9:17#5	T-DSM	ὁ		0.80	
 Gen.9:17#6	N-DSM	Νῶε		0.80	
@@ -377,15 +364,14 @@ Gen.9:23#5	N-NSM	Ἰάφεθ		0.80
 Gen.9:23#6	T-ASN	ὁ		0.80	
 Gen.9:23#7	N-ASN	ἱμάτιον		0.80	
 Gen.9:23#10	T-APN	ὁ		0.80	
-Gen.9:23#12	N-APN	νῶτον	guess	0.40	guess: the model answered with no candidates
+Gen.9:23#12	N-APN	νῶτον		0.80	
 Gen.9:23#13	P-GPM	αὐτός		0.80	
-Gen.9:23#16	ADV	ὀπισθοφανῶς		0.80	
 Gen.9:23#18	V-AAI-3P	συγκαλύπτω		0.80	
 Gen.9:23#23	P-GPM	αὐτός		0.80	
 Gen.9:23#25	T-NSN	ὁ		0.80	
 Gen.9:23#26	N-NSN	πρόσωπον		0.80	
 Gen.9:23#27	P-GPM	αὐτός		0.80	
-Gen.9:23#28	A-NSN	ὀπισθοφανής	guess	0.40	guess: the model answered with no candidates
+Gen.9:23#28	A-NSN	ὀπισθοφανής		0.80	
 Gen.9:23#34	P-GPM	αὐτός		0.80	
 Gen.9:23#36	V-2AAI-3P	εἴδω		0.80	
 Gen.9:24#1	V-AAI-3S	ἐκνήφω		0.80	
@@ -437,7 +423,7 @@ Gen.10:4#3	N-GSM	Ἰωυάν		0.80
 Gen.10:4#4	N-NSM	Ἐλισά	guess	0.40	guess: the model answered with no candidates
 Gen.10:4#6	N-NSM	Θαρσίς	guess	0.40	guess: the model chose outside the candidates
 Gen.10:4#7	N-NPM	Κήτιος	guess	0.40	guess: the model answered with no candidates
-Gen.10:4#8	N-NPM	Ῥόδιος	guess	0.40	guess: the model answered with no candidates
+Gen.10:4#8	A-NPM	Ῥόδιος		0.80	
 Gen.10:5#2	D-GPM	οὗτος		0.80	
 Gen.10:5#4	N-NPF	νῆσος		0.80	
 Gen.10:5#10	P-GPM	αὐτός		0.80	
@@ -494,21 +480,16 @@ Gen.10:15#1	N-NSF	Χαναάν		0.80
 Gen.10:15#4	T-ASM	ὁ		0.80	
 Gen.10:15#5	N-ASF	Σιδών		0.80	
 Gen.10:15#6	A-ASM	πρωτότοκος		0.80	
-Gen.10:15#9	N-ASM	Χετταῖος	guess	0.40	guess: the model answered with no candidates
-Gen.10:16#3	N-ASM	Ἰεβουσαῖος	guess	0.40	guess: the model answered with no candidates
-Gen.10:16#6	N-ASM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
 Gen.10:16#9	N-ASM	Γεργεσαῖος	guess	0.40	guess: the model answered with no candidates
 Gen.10:17#3	N-ASM	Εὑαῖος	guess	0.40	guess: the model answered with no candidates
-Gen.10:17#6	N-ASM	Ἀρουκαῖος	guess	0.40	guess: the model answered with no candidates
 Gen.10:17#9	N-ASM	Ἁσενναῖος	guess	0.40	guess: the model answered with no candidates
-Gen.10:18#3	N-ASM	Ἀράδιος	guess	0.40	guess: the model answered with no candidates
 Gen.10:18#6	N-ASM	Σαμαραῖος	guess	0.40	guess: the model answered with no candidates
 Gen.10:18#12	D-ASN	οὗτος		0.80	
 Gen.10:18#16	T-GPM	ὁ		0.80	
-Gen.10:18#17	N-GPM	Χαναναῖος	guess	0.40	guess: the model answered with no candidates
+Gen.10:18#17	A-GPM	Χανααναῖος		0.80	
 Gen.10:19#3	T-NPN	ὁ		0.80	
 Gen.10:19#4	N-NPN	ὅριον		0.80	
-Gen.10:19#5	N-GPM	Χαναναῖος	guess	0.40	guess: the model answered with no candidates
+Gen.10:19#5	A-GPM	Χανααναῖος		0.80	
 Gen.10:19#11	N-APN	Γέραρα	guess	0.40	guess: the model chose outside the candidates
 Gen.10:19#20	N-GSF	Ἀδαμά	guess	0.40	guess: the model chose outside the candidates
 Gen.10:19#22	N-GSF	Σεβωίμ		0.80	
@@ -595,7 +576,7 @@ Gen.11:4#9	R-GSM	ὅς, ἥ		0.80
 Gen.11:4#18	F-1GPM	ἑαυτοῦ		0.80	
 Gen.11:4#19	N-ASN	ὄνομα		0.80	
 Gen.11:4#21	T-GSN	ὁ		0.80	
-Gen.11:4#22	V-2APN	διασπείρω	guess	0.40	guess: the model answered with no candidates
+Gen.11:4#22	V-2APN	διασπείρω		0.80	
 Gen.11:6#5	N-NSN	γένος		0.80	
 Gen.11:6#6	A-NSN	εἷς		0.80	
 Gen.11:6#8	N-NSN	χεῖλος		0.80	
@@ -605,7 +586,7 @@ Gen.11:6#12	D-ASN	οὗτος		0.80
 Gen.11:6#20	P-GPM	αὐτός		0.80	
 Gen.11:6#21	A-NPN	πᾶς		0.80	
 Gen.11:6#22	K-APN	ὅσος		0.80	
-Gen.11:6#24	V-2AMS-3P	ἐπιτίθημι	guess	0.40	guess: the model answered with no candidates
+Gen.11:6#24	V-2AMS-3P	ἐπιτίθημι	guess	0.40	guess: the model chose outside the candidates
 Gen.11:7#6	P-GPM	αὐτός		0.80	
 Gen.11:7#15	T-GSM	ὁ		0.80	
 Gen.11:7#16	ADV	πλησίον		0.80	
@@ -699,7 +680,7 @@ Gen.11:29#5	N-NSM	Ναχώρ		0.80
 Gen.11:29#6	F-3DPM	ἑαυτοῦ		0.80	
 Gen.11:29#8	N-NSN	ὄνομα		0.80	
 Gen.11:29#11	N-GSM	Ἀβράμ		0.80	
-Gen.11:29#12	N-NSF	Σάρρα	guess	0.40	guess: the model answered with no candidates
+Gen.11:29#12	N-NSF	Σάρρα	guess	0.40	guess: the model chose outside the candidates
 Gen.11:29#14	N-NSN	ὄνομα		0.80	
 Gen.11:29#17	N-GSM	Ναχώρ		0.80	
 Gen.11:29#18	N-NSF	Μελχά		0.80	
@@ -707,7 +688,7 @@ Gen.11:29#19	N-NSF	θυγάτηρ		0.80
 Gen.11:29#20	N-GSM	Ἁρράν		0.80	
 Gen.11:29#23	N-GSF	Μελχά		0.80	
 Gen.11:29#26	N-GSF	Ἰεσχά		0.80	
-Gen.11:30#3	N-NSF	Σάρρα	guess	0.40	guess: the model answered with no candidates
+Gen.11:30#3	N-NSF	Σάρρα	guess	0.40	guess: the model chose outside the candidates
 Gen.11:30#4	N-NSF	στεῖρα		0.80	
 Gen.11:31#3	N-NSM	Θάρα		0.80	
 Gen.11:31#8	P-GSM	αὐτός		0.80	

@@ -144,7 +144,6 @@ Gen.24:2#17	V-2AAM-2S	τίθημι	guess	0.40	guess: the model answered with no 
 Gen.24:3#2	V-FAI-1S	ἐξορκίζω		0.80	
 Gen.24:3#14	V-2AAS-2S	λαμβάνω	guess	0.40	guess: the model chose outside the candidates
 Gen.24:3#19	N-DSM	Ἰσαάκ		0.80	
-Gen.24:3#24	A-GPF	Χαναναῖος	unsure	0.50	model: unsure
 Gen.24:3#26	R-GPM	ὅς, ἥ	unsure	0.50	model: unsure
 Gen.24:3#28	V-PAI-1S	οἰκέω		0.80	
 Gen.24:3#30	P-GPM	αὐτός		0.80	
@@ -294,7 +293,6 @@ Gen.24:36#20	P-DSM	αὐτός		0.80
 Gen.24:36#21	K-APN	ὅσος		0.80	
 Gen.24:36#23	P-DSM	αὐτός		0.80	
 Gen.24:37#9	V-FDI-2S	λαμβάνω		0.80	
-Gen.24:37#18	A-GPF	Χαναναῖος	unsure	0.50	model: unsure
 Gen.24:37#20	R-DPM	ὅς, ἥ		0.80	
 Gen.24:37#22	V-PAI-1S	παροικέω		0.80	
 Gen.24:37#26	P-GPM	αὐτός		0.80	
@@ -364,7 +362,6 @@ Gen.24:53#12	N-DSF	Ῥεβέκκα		0.80
 Gen.24:53#14	N-APN	δῶρον		0.80	
 Gen.24:54#2	V-AAI-3P	φαγεῖν		0.80	
 Gen.24:54#11	P-GSM	αὐτός		0.80	
-Gen.24:54#17	ADV	πρωΐ		0.80	
 Gen.24:54#19	V-AAM-2P	ἐκπέμπω		0.80	
 Gen.24:55#14	N-APF	ἡμέρα		0.80	
 Gen.24:55#19	D-APN	οὗτος		0.80	
