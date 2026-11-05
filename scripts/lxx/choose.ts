@@ -9,7 +9,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { batchName, batchesOf, derivedBook, parseBookArgs, type RunOptions } from './batches';
+import { batchName, batchesOf, derivedBook, parseBookArgs, warnNoMorpheus, type RunOptions } from './batches';
 import {
   CHOICES_HEADER,
   CONFIDENCE_CHOSEN,
@@ -163,6 +163,7 @@ export async function runChoose(argv: readonly string[], options: RunOptions = {
   } catch (error) {
     throw new Error(`lxx:choose: cannot read ${args.from}: ${error instanceof Error ? error.message : String(error)}`);
   }
+  warnNoMorpheus(args.book, outDir, log);
   const result = await derivedBook(args.book, options);
   let words: PendingWord[];
   let path: string;

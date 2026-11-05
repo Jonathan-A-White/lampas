@@ -7,7 +7,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { batchName, batchesOf, derivedBook, parseBookArgs, type RunOptions } from './batches';
+import { batchName, batchesOf, derivedBook, parseBookArgs, requireMorpheusCache, type RunOptions } from './batches';
 import { applyChoices, readChoiceDir } from './choices';
 import { OUT_DIR, supportOf, type BookResult, type PendingWord } from './derive';
 import type { SweteWord } from './swete';
@@ -95,11 +95,12 @@ export interface Listing {
   words: PendingWord[];
 }
 
-export const PENDING_USAGE = 'usage: npm run lxx:pending -- --book <code> --batch <n>   |   npm run lxx:pending -- --recheck --book <code>';
+export const PENDING_USAGE = 'usage: npm run lxx:pending -- --book <code> --batch <n> [--no-morpheus]   |   npm run lxx:pending -- --recheck --book <code> [--no-morpheus]';
 
 export async function runPending(argv: readonly string[], options: RunOptions = {}): Promise<Listing> {
   const { outDir = OUT_DIR, log = () => {} } = options;
   const args = parseBookArgs(argv, PENDING_USAGE, { batch: true });
+  requireMorpheusCache(args.book, outDir, args.noMorpheus);
   const result = await derivedBook(args.book, options);
   let name: string;
   let words: PendingWord[];

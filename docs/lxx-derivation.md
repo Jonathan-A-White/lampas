@@ -544,8 +544,10 @@ one book never touch the same file and different books run in parallel.
 
 **Model stories are pathed `host=laptop`.** `lxx:batches`, `lxx:pending` and `lxx:choose` read the Morpheus cache (`data/lxx/morpheus/<book>.tsv`, 'Morpheus, the second method'), which is git-ignored and is made on the Laptop (where Docker is, and where the image
 was built for story mw-u2w5klk.14). A host without the cache lists fewer candidates (a form Morpheus knows has `no candidate` there) and accepts fewer choices, so a batch listed on one host cannot be checked on the other: its counts differ (the sweep's: 17,800 words with no candidate
-without the cache, 12,541 with it, 'The sweep'). Until a later story moves the cache into the repo, or a host builds its own with `npm run lxx:derive -- --all`, a Builder session for a model story runs on the Laptop and builds the cache first when `data/lxx/morpheus/` is missing
-(a fresh worktree has none: `npm run lxx:derive -- --book <code>` with Docker makes the book's file in a minute; without Docker the step prints `Morpheus skipped:` and the session lists what the other host would not).
+without the cache, 12,541 with it, 'The sweep'). Until a later story moves the cache into the repo, or a host builds its own with `npm run lxx:derive -- --all`, a Builder session for a model story runs on the Laptop and **builds the cache first** (a fresh worktree has none).
+`lxx:pending` enforces it (story mw-u2w5klk.268): for a batch or a `--recheck` with no `data/lxx/morpheus/<book>.tsv` it exits non-zero, writes no listing and prints the command, `sg docker -c 'npm run lxx:derive -- --book <code>'`.
+`--no-morpheus` is the way past it for a host that truly cannot run Docker: it lists as the other host would, with fewer candidates, and the closing comment says so. `lxx:batches` and `lxx:choose` go on without the cache and print one `warning: no Morpheus cache` line (`lxx:batches --all` one line
+after its total row, naming the books); `lxx:report` shows a dash in the Morpheus column; `lxx:known` and `lxx:release` read no cache for a hidden chapter or take what they find.
 
 **The Mayor**, to file the stories:
 
@@ -561,6 +563,7 @@ npm run lxx:pending -- --book gen --batch 1                 # prints the batch a
 npm run lxx:choose -- --book gen --batch 1 --from <file>    # checks the choices and writes data/lxx/choices/gen-01.tsv
 ```
 
+0. Build the book's Morpheus cache first, when `data/lxx/morpheus/<book>.tsv` is not there (a fresh worktree has none; `lxx:pending` refuses without it): `sg docker -c 'npm run lxx:derive -- --book gen'` makes it in a minute and prints `Morpheus gave N words candidates`.
 1. Run `lxx:pending` and read it. Each verse is printed whole with the words to choose marked ⟦like this⟧; under it, a line for each of them: its reference, its form, and its candidates as `lemma parsing (support)`, most frequent first, or `no candidate`.
 2. Write the choices in a file outside the repo (`/tmp/gen-01.txt`), one line a word, in the order of the listing: `ref parsing`, then the lemma when two candidates share that parsing, then `?` when unsure or `guess`:
    `Gen.1:2#16 V-IPI-3S ?` · `Gen.1:7#15 R-ASN ὅς, ἥ` · `Gen.1:14#5 V-APM-3P γίνομαι guess`. A line starting `#` is a comment.
@@ -584,6 +587,14 @@ npm run lxx:choose -- --book gen --batch 1 --from <file>    # checks the choices
 - **A candidate list can lack the right word** (`Rom.8:13#5` ζῆτε listed only ζητέω readings; `Jhn.1:44#6` Βηθσαϊδά after ἀπό listed only vocative and accusative). Read the lemma column as well as the parsing: when no candidate can be right, mark `guess`, name the lemma and parse it yourself. Five of the six guesses of the two chapters were right in the lemma (the sixth is the convention below).
 - **TAGNT's conventions are the answer key, not the grammar books.** A comparative is lemmatised under the positive (`Jhn.1:50#16` μείζω is μέγας, not μείζων, which is the TBESG headword); a second perfect or second aorist carries the `2` (`Jhn.1:15#6` κέκραγεν is `V-2RAI-3S`, not `V-RAI-3S`); `οὐ μόνον` is the adjective μόνος `A-ASN`, which the 50-to-2 support counts show. When two candidates differ only in such a convention, follow the support counts.
 - A known-answer chapter's pending words have no `lxx:pending` listing (`lxx:known` has no `--pending` or `--from`; its flag is `--choices`). M0's listing came from a throwaway script that ran `deriveBook` on the chapter as `known.ts` does and printed each pending word's verse and candidates, never TAGNT's answers; the next such story rebuilds it the same way.
+
+**Tips from the model stories** (mw-u2w5klk.33 to .36):
+
+- **Read case from the sentence, never from a candidate's count**, above all on capitals (`Gen.1:1#2`): the support is a New Testament count and the verse decides.
+- **A word with no lexicon entry lists junk candidates**, and `ἐμοῦ` offers only the possessive (mw-u2w5klk.33): read the lemma column and mark `guess` when no candidate can be right.
+- **A long name line runs to kilobytes**: read it with `cut -c1-260`. A name with a grave accent can have no candidate at all (mw-u2w5klk.34).
+- **A parsing that two lemmas share needs the lemma named** (mw-u2w5klk.35). A throwaway script outside the repo that groups each word's candidates by lemma makes the listing readable.
+- **Choose in the order `ref parsing lemma guess`**, and `lxx:report` rewrites `docs/lxx-report.md`: `git checkout docs/lxx-report.md` before committing, for a model story's diff is its choices file only (mw-u2w5klk.36).
 
 **The recheck**, one story a book after its batches are in: a second session, which must not read `data/lxx/choices/`, lists a blind 5% of the book's chosen words (at least one; seeded by the book, so it is the same words each time, in the text's order, with nothing of the first choices)
 and chooses them again the same way:

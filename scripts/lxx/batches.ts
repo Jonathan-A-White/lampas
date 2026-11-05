@@ -9,6 +9,7 @@ import { OUT_DIR, deriveBook, loadInput, opensClause, splitBooks, train, type Bo
 import { isCapital } from './parser';
 import type { SweteWord } from './swete';
 import { readMorpheusCache } from './morpheus';
+import { existsSync } from 'node:fs';
 import { OLD_TESTAMENT } from './report';
 import { RAW_DIR, type Fetcher } from './sources';
 
@@ -92,6 +93,8 @@ export interface BookArgs {
   size: number;
   recheck: boolean;
   from?: string;
+  /** `--no-morpheus`: the Builder says the host cannot run Morpheus and the listing may do without its cache (lxx:pending) */
+  noMorpheus: boolean;
 }
 
 /** The flags every command of the runner shares. `--size` is for a test or an unusual book; the stories use the default. */
@@ -113,7 +116,7 @@ export function parseBookArgs(argv: readonly string[], usage: string, flags: { b
   if (flags.batch && !recheck && batch === undefined) throw new Error(usage);
   const from = value('--from');
   if (flags.from && !from) throw new Error(usage);
-  return { book: book.toLowerCase(), batch, size: whole('--size') ?? BATCH_SIZE, recheck, from };
+  return { book: book.toLowerCase(), batch, size: whole('--size') ?? BATCH_SIZE, recheck, from, noMorpheus: argv.includes('--no-morpheus') };
 }
 
 export interface RunOptions {
@@ -130,6 +133,35 @@ export interface RunOptions {
 export async function derivedBook(book: string, options: RunOptions): Promise<BookResult> {
   const { rawDir = RAW_DIR, log = () => {}, fetcher } = options;
   return deriveBook(options.input ?? (await loadInput(rawDir, fetcher, log)), book, undefined, undefined, undefined, readMorpheusCache(join(options.outDir ?? OUT_DIR, 'morpheus'), book));
+}
+
+/** Where a book's Morpheus cache is under `outDir` (data/lxx/morpheus/<book>.tsv). */
+export const morpheusFile = (outDir: string, book: string): string => join(outDir, 'morpheus', `${book.toLowerCase()}.tsv`);
+
+/** The command that builds a book's cache, as it is run on the Laptop (Docker is in its docker group). */
+export const morpheusBuildCommand = (book: string): string => `sg docker -c 'npm run lxx:derive -- --book ${book.toLowerCase()}'`;
+
+/**
+ * A listing for a model session is read for its candidates, and without the book's Morpheus cache a form Morpheus knows has 'no candidate' and the guess share
+ * is overstated (story mw-u2w5klk.268: 42 words with no candidate against 15 with the cache). So a batch or a recheck listing is refused here, naming the command that builds it,
+ * unless `--no-morpheus` says the host truly cannot run it. Docker is never run by the listing: a listing that silently ran it would hide the failure this fixes.
+ */
+export function requireMorpheusCache(book: string, outDir: string, noMorpheus: boolean): void {
+  const file = morpheusFile(outDir, book);
+  if (noMorpheus || existsSync(file)) return;
+  throw new Error(
+    [
+      `lxx:pending: no Morpheus cache for ${book} (${file}): without it a form Morpheus knows lists with no candidate, and the guess share is too high.`,
+      `Build it first: ${morpheusBuildCommand(book)}`,
+      'On a host that cannot run Docker, add --no-morpheus to list without it (and say so on the story).',
+    ].join('\n'),
+  );
+}
+
+/** One line for a command that goes on without the cache (lxx:batches, lxx:choose): its counts differ from a host that has it. */
+export function warnNoMorpheus(book: string, outDir: string, log: (line: string) => void): void {
+  if (existsSync(morpheusFile(outDir, book))) return;
+  log(`warning: no Morpheus cache for ${book} (${morpheusFile(outDir, book)}): counts and candidates are those of a host without it. Build it: ${morpheusBuildCommand(book)}`);
 }
 
 export const BATCHES_USAGE = 'usage: npm run lxx:batches -- --book <code> | --all';
@@ -187,6 +219,8 @@ export async function runAllBooks(options: RunOptions = {}): Promise<BookResult[
   }
   const sum = results.map(bookCounts).reduce<Counts>((t, c) => ({ words: t.words + c.words, pending: t.pending + c.pending, none: t.none + c.none, names: t.names + c.names, form: t.form + c.form }), { words: 0, pending: 0, none: 0, names: 0, form: 0 });
   log(rowOf('total', sum));
+  const bare = results.filter((r) => !existsSync(morpheusFile(options.outDir ?? OUT_DIR, r.book))).map((r) => r.book);
+  if (bare.length > 0) log(`warning: no Morpheus cache for ${bare.length} of ${results.length} books (${bare.join(', ')}): their no-candidate counts are those of a host without it. Build a book's: ${morpheusBuildCommand('<code>')}`);
   return results;
 }
 
@@ -198,6 +232,7 @@ export async function runBatches(argv: readonly string[], options: RunOptions = 
     return [];
   }
   const args = parseBookArgs(argv, BATCHES_USAGE);
+  warnNoMorpheus(args.book, options.outDir ?? OUT_DIR, log);
   const result = await derivedBook(args.book, options);
   const batches = batchesOf(result.book, result.pending, args.size);
   for (const line of batchesTable(batches)) log(line);

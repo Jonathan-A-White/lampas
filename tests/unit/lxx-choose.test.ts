@@ -1,7 +1,7 @@
 // The Septuagint derivation's model-choice runner (scripts/lxx/batches.ts, pending.ts, choose.ts; docs/lxx-derivation.md 'A model session'; story mw-u2w5klk.5), on
 // the fixtures of tests/unit/lxx-parser.test.ts (its header says how they were cut), never the network and never a paid API.
 // tests/fixtures/lxx/choices-gen-1.txt is a choices file for Gen 1's pending words in the shape a model session writes (ref parsing [lemma] [?|guess]).
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -63,14 +63,14 @@ function choicesFile(edit: (lines: string[]) => string[] = (l) => l): string {
 const without = (ref: string) => (lines: string[]): string[] => lines.filter((l) => !l.startsWith(`${ref} `));
 const fileLines = (path: string): string[] => readFileSync(path, 'utf8').split('\n').filter((l) => l && !l.startsWith('#'));
 
-const pending = (outDir: string, argv: string[] = ['--book', 'gen', '--batch', '1']) => runPending(argv, { input: GEN_1, outDir });
+const pending = (outDir: string, argv: string[] = ['--book', 'gen', '--batch', '1', '--no-morpheus']) => runPending(argv, { input: GEN_1, outDir });
 const choose = (outDir: string, from: string, argv: string[] = ['--book', 'gen', '--batch', '1']) => runChoose([...argv, '--from', from], { input: GEN_1, outDir });
 
 describe('lxx:pending and lxx:batches', () => {
   it('lists every pending word of the chapter under its verse, with its candidates, in the text’s order', async () => {
     const outDir = tmp();
     const lines: string[] = [];
-    const out = await runPending(['--book', 'gen', '--batch', '1'], { input: GEN_1, outDir, log: (l) => lines.push(l) });
+    const out = await runPending(['--book', 'gen', '--batch', '1', '--no-morpheus'], { input: GEN_1, outDir, log: (l) => lines.push(l) });
     expect(out.words.map((w) => w.ref)).toEqual(gen.pending.map((p) => p.ref));
     expect(out.words).toHaveLength(168);
     // stdout and data/lxx/pending/gen-01.md carry the same listing
@@ -151,7 +151,9 @@ describe('lxx:pending and lxx:batches', () => {
     const lines: string[] = [];
     await runBatches(['--all'], { input: GEN_1, outDir: tmp(), log: (l) => lines.push(l) });
     expect(lines[0]).toBe(['book', 'words', 'pending', 'no candidate', 'no candidate % of words', 'of those, a name', 'a name from its form alone', 'both % of words'].join('\t'));
-    expect(lines).toHaveLength(3);
+    // the cache is absent in the temporary outDir: a last line says so (story mw-u2w5klk.268)
+    expect(lines).toHaveLength(4);
+    expect(lines[3]).toMatch(/^warning: no Morpheus cache for 1 of 1 books \(gen\)/);
     expect(lines[1]).toBe(`gen\t${gen.words.length}\t168\t2\t${((100 * 2) / gen.words.length).toFixed(2)}%\t1\t0\t${((100 * 2) / gen.words.length).toFixed(2)}%`);
     expect(lines[2]).toBe(lines[1].replace('gen', 'total'));
     // the one capital among Gen 1's two words with no candidate is Γενηθήτωσαν, which opens what God says (Gen 1:14) and follows no mark: counted, so the count is an upper bound
@@ -176,17 +178,17 @@ describe('lxx:pending and lxx:batches', () => {
     const whole = await runBatches(['--book', 'gen', '--size', '300'], { input, outDir: tmp() });
     expect(whole.map((b) => [b.firstChapter, b.lastChapter, b.words.length])).toEqual([[1, 2, 336]]);
     // the listing of batch 2 holds chapter 2 and no word of chapter 1
-    const out = await runPending(['--book', 'gen', '--batch', '2', '--size', '200'], { input, outDir: tmp() });
+    const out = await runPending(['--book', 'gen', '--batch', '2', '--size', '200', '--no-morpheus'], { input, outDir: tmp() });
     expect(out.words).toHaveLength(168);
     expect(out.words.every((w) => w.ref.startsWith('Gen.2:'))).toBe(true);
     expect(out.path.endsWith('gen-02.md')).toBe(true);
-    await expect(runPending(['--book', 'gen', '--batch', '3', '--size', '200'], { input, outDir: tmp() })).rejects.toThrow(/gen has 2 batches/);
+    await expect(runPending(['--book', 'gen', '--batch', '3', '--size', '200', '--no-morpheus'], { input, outDir: tmp() })).rejects.toThrow(/gen has 2 batches/);
   });
 
   it('names the batch and the book when they are wrong', async () => {
     await expect(runPending(['--book', 'gen', '--batch', '0'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/usage/);
     await expect(runPending(['--batch', '1'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/usage/);
-    await expect(runPending(['--book', 'xyz', '--batch', '1'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/no book 'xyz'/);
+    await expect(runPending(['--book', 'xyz', '--batch', '1', '--no-morpheus'], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/no book 'xyz'/);
     await expect(runBatches([], { input: GEN_1, outDir: tmp() })).rejects.toThrow(/usage/);
   });
 });
@@ -346,6 +348,66 @@ describe('lxx:choose', () => {
   });
 });
 
+describe('lxx:pending without the book’s Morpheus cache (story mw-u2w5klk.268)', () => {
+  /** An output directory with the fixture’s Morpheus cache for Gen under morpheus/. */
+  function withCache(): string {
+    const outDir = tmp();
+    mkdirSync(join(outDir, 'morpheus'));
+    writeFileSync(join(outDir, 'morpheus', 'gen.tsv'), fixture('morpheus-sample.tsv'));
+    return outDir;
+  }
+
+  it('refuses a batch, naming the command that builds the cache, and writes no listing', async () => {
+    const outDir = tmp();
+    const error = await runPending(['--book', 'gen', '--batch', '1'], { input: GEN_1, outDir }).then(
+      () => '',
+      (e: unknown) => String(e instanceof Error ? e.message : e),
+    );
+    expect(error).toContain("sg docker -c 'npm run lxx:derive -- --book gen'");
+    expect(error).toContain(join(outDir, 'morpheus', 'gen.tsv'));
+    expect(error).toContain('--no-morpheus');
+    expect(existsSync(join(outDir, 'pending'))).toBe(false);
+  });
+
+  it('refuses a recheck the same way, whatever the choices say', async () => {
+    const outDir = tmp();
+    await choose(outDir, choicesFile());
+    const error = await runPending(['--recheck', '--book', 'gen'], { input: GEN_1, outDir }).then(
+      () => '',
+      (e: unknown) => String(e instanceof Error ? e.message : e),
+    );
+    expect(error).toContain("sg docker -c 'npm run lxx:derive -- --book gen'");
+    expect(existsSync(join(outDir, 'pending'))).toBe(false);
+  });
+
+  it('lists as before with --no-morpheus, and with no flag when the cache is there', async () => {
+    const bare = await runPending(['--book', 'gen', '--batch', '1', '--no-morpheus'], { input: GEN_1, outDir: tmp() });
+    expect(bare.words).toHaveLength(168);
+    const cached = await runPending(['--book', 'gen', '--batch', '1'], { input: GEN_1, outDir: withCache() });
+    expect(cached.words).toHaveLength(168);
+    const recheck = await runPending(['--recheck', '--book', 'gen'], { input: GEN_1, outDir: await firstPassWithCache() });
+    expect(recheck.words.length).toBeGreaterThan(0);
+  });
+
+  async function firstPassWithCache(): Promise<string> {
+    const outDir = withCache();
+    await choose(outDir, choicesFile());
+    return outDir;
+  }
+
+  it('lxx:batches and lxx:choose carry on without the cache and say so in one line', async () => {
+    const lines: string[] = [];
+    await runBatches(['--book', 'gen'], { input: GEN_1, outDir: tmp(), log: (l) => lines.push(l) });
+    expect(lines.filter((l) => l.startsWith('warning: no Morpheus cache'))).toHaveLength(1);
+    const quiet: string[] = [];
+    await runBatches(['--book', 'gen'], { input: GEN_1, outDir: withCache(), log: (l) => quiet.push(l) });
+    expect(quiet.some((l) => l.includes('Morpheus cache'))).toBe(false);
+    const said: string[] = [];
+    await runChoose(['--book', 'gen', '--batch', '1', '--from', choicesFile()], { input: GEN_1, outDir: tmp(), log: (l) => said.push(l) });
+    expect(said.filter((l) => l.startsWith('warning: no Morpheus cache'))).toHaveLength(1);
+  });
+});
+
 describe('the blind recheck', () => {
   /** A book whose first pass is done: the fixture’s choices in outDir. */
   async function firstPass(): Promise<string> {
@@ -353,7 +415,7 @@ describe('the blind recheck', () => {
     await choose(outDir, choicesFile());
     return outDir;
   }
-  const recheck = (outDir: string) => runPending(['--recheck', '--book', 'gen'], { input: GEN_1, outDir });
+  const recheck = (outDir: string) => runPending(['--recheck', '--book', 'gen', '--no-morpheus'], { input: GEN_1, outDir });
 
   it('lists 5% of the chosen words, at least one, the same words on a second run', async () => {
     expect(RECHECK_FRACTION).toBe(0.05);
