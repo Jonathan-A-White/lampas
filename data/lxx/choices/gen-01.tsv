@@ -1,5 +1,5 @@
 ref	parsing	lemma	mark	confidence	note
-Gen.1:1#2	N-NSF	ἀρχή	unsure	0.50	model: unsure
+Gen.1:1#2	N-DSF	ἀρχή		0.80	
 Gen.1:2#5	A-NSF	ἀόρατος		0.80	
 Gen.1:2#7	A-NSF	ἀκατασκεύαστος		0.80	
 Gen.1:2#9	N-NSN	σκότος		0.80	
