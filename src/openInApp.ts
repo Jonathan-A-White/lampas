@@ -1,6 +1,6 @@
 // src/openInApp.ts — 'Open in the app' (mw-5r3p30.1041): what the control needs, apart from drawing it. A page cannot force the installed app open, so in a Chrome tab on
 // Android where navigator.getInstalledRelatedApps() (https://developer.chrome.com/docs/capabilities/get-installed-related-apps) names Lampas, his tap hands the SAME address
-// to Android as an intent: URL; nothing here ever leaves the page by itself. The manifest names Lampas in related_applications (pwa-manifest.ts) so the API can see it.
+// to Android in a new tab with no referrer (goTo; not an intent: URL, which Chrome keeps in the tab for its own host); nothing here ever leaves the page by itself. The manifest names Lampas in related_applications (pwa-manifest.ts) so the API can see it.
 
 import { topVerseOf } from './reader/useKeepTopVerse';
 import { linkOf, osisOf } from './nav/links';
@@ -21,7 +21,7 @@ export function inInstalledApp(): boolean {
   return ['standalone', 'minimal-ui', 'fullscreen', 'window-controls-overlay'].some((mode) => window.matchMedia(`(display-mode: ${mode})`).matches);
 }
 
-/** An intent: URL is Android Chrome's; any other browser would show a dead address. */
+/** The hand-over is Android Chrome's (it launches the installed web app); any other browser would only open a second tab. */
 export const onAndroid = (): boolean => /Android/i.test(navigator.userAgent);
 
 /** True where the page is in a browser tab on Android and the installed Lampas is reported by getInstalledRelatedApps; false for every other case, an absent or failing API too. */
@@ -75,18 +75,26 @@ export function verseOnTop(): number | null {
 }
 
 /**
- * The intent: URL for an http(s) address: `intent://host/path#/hash#Intent;scheme=https;S.browser_fallback_url=<the address>;end`. Android reads everything before the last '#Intent;'
- * as the address, so the hash and the verse in it go across whole (handedHref says which hash). Without a package, the app that has the address in its scope takes it (the installed
- * Lampas). The fallback keeps the page where it is if nothing takes it. Not proven on a real install: that is his phone's to say (the story's HOW TO CHECK IT).
+ * Leaves the page for the address, in a NEW tab with no opener and no referrer (his tap only; mw-5r3p30.1082). A seam: the tests stand in for it, a jsdom window cannot navigate.
+ *
+ * Why this form, from Chromium's own source (components/external_intents, ExternalNavigationHandler.java; the story's closing comment has the walk through): an intent: URL for the
+ * app's own address (the form here until mw-5r3p30.1082, scheme=https and no package) is a 'navigation to self': the default handler of an https address is the browser itself (an
+ * installed web app is not a verified app link), so isNavigationToSelf loads it in the same tab, which is what he saw. A link to the address from a page of the same host is held in
+ * Chrome by shouldStayWithinHost ('same host, no new resolvers'). A navigation that starts in a new tab with no referrer has no earlier page of that host to compare with, so that rule
+ * does not hold it, and the app that is the sole handler of the address (the installed web app, where Android's link handling for it is on) is launched. Needs his user gesture (this is
+ * called from his tap), a visible tab, and no wait. Not proven on a real install: that is his phone's to say (the story's HOW TO CHECK IT).
  */
-export function intentUrl(href: string, onTop: number | null = null): string {
-  const handed = handedHref(href, onTop);
-  const url = new URL(handed);
-  const scheme = url.protocol.replace(':', '');
-  return `intent://${handed.slice(url.protocol.length + 2)}#Intent;scheme=${scheme};S.browser_fallback_url=${encodeURIComponent(handed)};end`;
-}
-
-/** Leaves the page for the address (his tap only). A seam: the tests stand in for it, a jsdom window cannot navigate. */
 export function goTo(url: string): void {
-  window.location.assign(url);
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.referrerPolicy = 'no-referrer';
+  link.hidden = true;
+  document.body.appendChild(link);
+  try {
+    link.click();
+  } finally {
+    link.remove();
+  }
 }

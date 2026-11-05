@@ -1,14 +1,16 @@
-// tests/unit/open-in-app.test.tsx — 'Open in the app' (mw-5r3p30.1041): in a Chrome tab on Android where navigator.getInstalledRelatedApps names the installed
-// Lampas, one labelled control hands the same address to Android through an intent: URL. Not where the API is absent or reports nothing, not in the installed app,
-// not once dismissed for the session, and nothing leaves the page but his tap.
+// tests/unit/open-in-app.test.tsx — 'Open in the app' (mw-5r3p30.1041, mw-5r3p30.1082): in a Chrome tab on Android where navigator.getInstalledRelatedApps names the installed
+// Lampas, one labelled control hands the same address (a plain https address, not an intent: URL: Chromium keeps an intent: URL for the browser's own host in Chrome, as a
+// 'navigation to self') to Android in a new tab with no referrer. Not where the API is absent or reports nothing, not in the installed app, not once dismissed for the
+// session, and nothing leaves the page but his tap.
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const goTo = vi.hoisted(() => vi.fn());
 vi.mock('../../src/openInApp', async (importOriginal) => ({ ...(await importOriginal<typeof import('../../src/openInApp')>()), goTo }));
+const realGoTo = async () => (await vi.importActual<typeof import('../../src/openInApp')>('../../src/openInApp')).goTo;
 
 import { OpenInApp } from '../../src/OpenInApp';
-import { DISMISSED_KEY, handedHref, intentUrl, verseOnTop } from '../../src/openInApp';
+import { DISMISSED_KEY, handedHref, verseOnTop } from '../../src/openInApp';
 import { linkOf } from '../../src/nav/links';
 import { readerOf } from '../../src/nav/route';
 
@@ -39,20 +41,31 @@ afterEach(() => {
 
 const ORIGIN = 'https://lampas.allmymind.org';
 
-describe('intentUrl', () => {
-  it('hands the address, with the verse in a form a fresh app opens at, to Android', () => {
-    const url = intentUrl(`${ORIGIN}/#/?b=rom&c=8&v=28`);
-    expect(url.startsWith('intent://lampas.allmymind.org/#/?ref=Rom.8.28#Intent;')).toBe(true);
-    expect(url).toContain(';scheme=https;');
-    expect(url.endsWith(';end')).toBe(true);
-    // a tab that stays open when the app does not take it
-    expect(url).toContain(`S.browser_fallback_url=${encodeURIComponent(`${ORIGIN}/#/?ref=Rom.8.28`)}`);
+describe('the address the tap hands over', () => {
+  it('is the same address, with the verse in a form a fresh app opens at, and no intent: wrapper', () => {
+    expect(handedHref(`${ORIGIN}/#/?b=rom&c=8&v=28`)).toBe(`${ORIGIN}/#/?ref=Rom.8.28`);
   });
   it('puts the verse at the top of the box in an address that has none', () => {
-    expect(intentUrl(`${ORIGIN}/#/?b=rom&c=8&view=english&weave=off`, 28)).toContain('/#/?ref=Rom.8.28&view=english&weave=off#Intent;');
+    expect(handedHref(`${ORIGIN}/#/?b=rom&c=8&view=english&weave=off`, 28)).toBe(`${ORIGIN}/#/?ref=Rom.8.28&view=english&weave=off`);
   });
   it('keeps a port and a plain http scheme, for a preview', () => {
-    expect(intentUrl('http://localhost:4173/#/words')).toMatch(/^intent:\/\/localhost:4173\/#\/words#Intent;scheme=http;/);
+    expect(handedHref('http://localhost:4173/#/words')).toBe('http://localhost:4173/#/words');
+  });
+});
+
+// mw-5r3p30.1082: on his phone the intent: URL stayed in Chrome (Chromium's isNavigationToSelf: the default handler of an https address of the app is the browser). goTo opens the address
+// in a NEW tab with no opener and no referrer, so that Chromium's same-host rule (shouldStayWithinHost) has no earlier same-host page to compare it with.
+describe('goTo', () => {
+  afterEach(() => void (document.body.innerHTML = ''));
+  it('opens the address in a new tab, with no opener and no referrer, from his tap', async () => {
+    const goToReal = await realGoTo();
+    const seen: { href: string; target: string; rel: string; referrerPolicy: string }[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      seen.push({ href: this.href, target: this.target, rel: this.rel, referrerPolicy: this.referrerPolicy });
+    });
+    goToReal(`${ORIGIN}/#/?ref=John.5.25`);
+    expect(seen).toEqual([{ href: `${ORIGIN}/#/?ref=John.5.25`, target: '_blank', rel: 'noopener noreferrer', referrerPolicy: 'no-referrer' }]);
+    expect(document.querySelector('a'), 'the link is taken away again').toBeNull();
   });
 });
 
@@ -84,8 +97,6 @@ describe('handedHref: one case per form of the Reader\'s address', () => {
       expect(link.text).toBe(new URLSearchParams(hash.slice(hash.indexOf('?'))).get('ref'));
       const at = readerOf(address);
       if (at.chapter !== undefined) expect(link.text.split('.')[1]).toBe(String(at.chapter));
-      // and through the intent: URL itself
-      expect(intentUrl(`${ORIGIN}/${address}`, onTop).startsWith(`intent://lampas.allmymind.org/${hash}#Intent;`)).toBe(true);
     });
   }
   it.each(['#/words', '#/settings?setting=x', '#/?word=G3551', '#/', '#/memorize/Rom.8.28/en'])('hands %s as it is: it is no place in a chapter, or already a link', (address) => {
@@ -124,7 +135,7 @@ describe('verseOnTop', () => {
 });
 
 describe('OpenInApp', () => {
-  it('shows one labelled control in a Android browser tab where the API reports the app, and a tap goes to the same address through an intent: URL', async () => {
+  it('shows one labelled control in a Android browser tab where the API reports the app, and a tap goes to the same address, as a plain address and not an intent: URL', async () => {
     const asked = setup();
     render(<OpenInApp />);
     const button = await screen.findByRole('button', { name: 'Open in the app' });
@@ -133,8 +144,9 @@ describe('OpenInApp', () => {
     window.history.replaceState(null, '', '/#/?b=jhn&c=3&v=16'); // he read on before he tapped: the address at the tap is the one handed over
     fireEvent.click(button);
     expect(goTo).toHaveBeenCalledTimes(1);
-    expect(goTo).toHaveBeenCalledWith(intentUrl(window.location.href));
-    expect(goTo.mock.calls[0]![0]).toContain('#/?ref=John.3.16#Intent;');
+    expect(goTo).toHaveBeenCalledWith(handedHref(window.location.href));
+    expect(goTo.mock.calls[0]![0]).toBe(`${window.location.origin}/#/?ref=John.3.16`);
+    expect(goTo.mock.calls[0]![0]).not.toMatch(/^intent:/);
   });
 
   it('shows nothing where the API reports nothing', async () => {
