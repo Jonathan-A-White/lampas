@@ -10,7 +10,8 @@ vi.mock('../../src/openInApp', async (importOriginal) => ({ ...(await importOrig
 const realGoTo = async () => (await vi.importActual<typeof import('../../src/openInApp')>('../../src/openInApp')).goTo;
 
 import { OpenInApp } from '../../src/OpenInApp';
-import { DISMISSED_KEY, handedHref, verseOnTop } from '../../src/openInApp';
+import { DISMISSED_KEY, handedHref, handOverHref, verseOnTop } from '../../src/openInApp';
+import { bringVerse, pendingRequest, takeRequest } from '../../src/nav/readerRequest';
 import { linkOf } from '../../src/nav/links';
 import { readerOf } from '../../src/nav/route';
 
@@ -101,6 +102,76 @@ describe('handedHref: one case per form of the Reader\'s address', () => {
   }
   it.each(['#/words', '#/settings?setting=x', '#/?word=G3551', '#/', '#/memorize/Rom.8.28/en'])('hands %s as it is: it is no place in a chapter, or already a link', (address) => {
     expect(handedHref(`${ORIGIN}/${address}`, 5)).toBe(`${ORIGIN}/${address}`);
+  });
+});
+
+// mw-5r3p30.1066: the verse a ref= link names is not in the Reader's address (LinkOpener rewrote it to the plain chapter) and the box cannot answer verseOnTop until the chapter's
+// verses are drawn. The request LinkOpener made (bringVerse) is still waiting then, and it names the verse: one case per moment the box cannot answer.
+describe('handOverHref: the verse the link named, before the box can say', () => {
+  afterEach(() => {
+    const waiting = pendingRequest();
+    if (waiting) takeRequest(waiting);
+    document.body.innerHTML = '';
+  });
+  const at = (hash: string) => window.history.replaceState(null, '', `/${hash}`);
+  const READER = '#/?b=rom&c=8&view=english&weave=off';
+  const drawn = (verses: number[], tops: Record<number, number> = {}) => {
+    document.body.innerHTML = `<main data-reader data-paging="scroll">${verses.map((n) => `<span data-verse="${n}">v${n}</span>`).join('')}</main>`;
+    const box = document.querySelector('main') as HTMLElement;
+    box.scrollTop = 500;
+    box.getBoundingClientRect = () => ({ top: 100, left: 0, right: 390, bottom: 800 }) as DOMRect;
+    box.querySelectorAll('span').forEach((el) => (el.getBoundingClientRect = () => ({ top: tops[Number((el as HTMLElement).dataset.verse)] ?? 0 }) as DOMRect));
+  };
+  const handed = () => new URL(handOverHref()).hash;
+
+  it('while the chapter is loading (no box yet)', () => {
+    at(READER);
+    bringVerse('rom', 8, 28, { heading: true });
+    expect(handed()).toBe('#/?ref=Rom.8.28&view=english&weave=off');
+  });
+  it('while the box is drawn but empty (the chapter is here, its verses are not)', () => {
+    at(READER);
+    document.body.innerHTML = '<main data-reader data-paging="scroll"></main>';
+    bringVerse('rom', 8, 28);
+    expect(handed()).toBe('#/?ref=Rom.8.28&view=english&weave=off');
+  });
+  it('at a chapter swap, when the box still holds the chapter before it', () => {
+    at(READER);
+    drawn([1, 2, 3, 4], { 3: 100 }); // the old chapter, scrolled to its verse 3
+    bringVerse('rom', 8, 28);
+    expect(handed()).toBe('#/?ref=Rom.8.28&view=english&weave=off');
+  });
+  it('when the chapter arrives after the strip was drawn (the request is met, verse 28 on top)', () => {
+    at(READER);
+    bringVerse('rom', 8, 28);
+    drawn([27, 28, 29], { 27: 60, 28: 108, 29: 400 });
+    takeRequest(pendingRequest()!);
+    expect(handed()).toBe('#/?ref=Rom.8.28&view=english&weave=off');
+  });
+  it('once he has read on after it was met, the verse on top is what is handed', () => {
+    at(READER);
+    bringVerse('rom', 8, 28);
+    takeRequest(pendingRequest()!);
+    drawn([35, 36], { 35: 108, 36: 300 });
+    expect(handed()).toBe('#/?ref=Rom.8.35&view=english&weave=off');
+  });
+  it('ignores a request for another chapter than the address', () => {
+    at(READER);
+    bringVerse('jhn', 3, 16);
+    expect(handed()).toBe('#/?ref=Rom.8&view=english&weave=off');
+  });
+  it('lets a verse selected in the address win', () => {
+    at('#/?b=rom&c=8&v=5');
+    bringVerse('rom', 8, 28);
+    expect(handed()).toBe('#/?ref=Rom.8.5');
+  });
+  it('OpenInApp hands the verse over when tapped while the chapter loads', async () => {
+    setup();
+    at(READER);
+    bringVerse('rom', 8, 28, { heading: true });
+    render(<OpenInApp />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Open in the app' }));
+    expect(goTo).toHaveBeenCalledWith(`${window.location.origin}/#/?ref=Rom.8.28&view=english&weave=off`);
   });
 });
 

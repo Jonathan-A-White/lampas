@@ -191,3 +191,44 @@ for (const opened of ['/#/?ref=Rom.8.28', '/#/?ref=Rom.8.28&view=greek', '/#/?b=
     }
   });
 }
+
+// mw-5r3p30.1066: the tap while Romans 8 is still loading. The verse the link named is in neither the address (the plain chapter replaced it) nor the box (no text yet), but the request
+// that is bringing it still is; the hand-over keeps it, and a fresh install opens at verse 28.
+test('tapped while Romans 8 is still loading, the hand-over still names verse 28, and a fresh install opens there', async ({ page, browser }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await stubApi(page, WEBAPP);
+  await openUnlocked(page);
+  let release: () => void = () => undefined;
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route(/\/data\/rom\/8\.json/, async (route) => {
+    await held;
+    await route.continue();
+  });
+  try {
+    await page.goto('/#/?ref=Rom.8.28');
+    await expect(page.getByText('Loading Romans 8')).toBeVisible();
+    const strip = page.locator('[data-open-in-app]');
+    await expect(strip).toBeVisible();
+    await expect(page).toHaveURL(/#\/\?b=rom&c=8/); // LinkOpener has made the address the plain chapter
+    const { address: handed } = await tapAndRead(page);
+    expect(new URL(handed).hash, 'the verse the link named is handed over').toContain('ref=Rom.8.28');
+    await shot(page, 'open-in-app-tap-while-loading');
+
+    const fresh = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: ANDROID, hasTouch: true, baseURL: new URL(page.url()).origin });
+    try {
+      const app = await fresh.newPage();
+      await openUnlocked(app);
+      await app.goto(handed);
+      await expect(app.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
+      await app.waitForTimeout(1500);
+      const box = (await app.locator('[data-reader]').boundingBox())!;
+      const at = (await app.locator('[data-reader] [data-verse="28"]').first().boundingBox())!;
+      expect(at.y, 'verse 28 is not scrolled away above the Reader box').toBeGreaterThanOrEqual(box.y - 1);
+      expect(at.y, 'verse 28 is not scrolled away below the Reader box').toBeLessThan(box.y + box.height);
+    } finally {
+      await fresh.close();
+    }
+  } finally {
+    release();
+  }
+});

@@ -5,6 +5,7 @@
 import { topVerseOf } from './reader/useKeepTopVerse';
 import { linkOf, osisOf } from './nav/links';
 import { pathOf } from './nav/path';
+import { pendingRequest } from './nav/readerRequest';
 import { readerOf } from './nav/route';
 
 /** In sessionStorage: 'Not now' put the control away for the rest of the tab's session. */
@@ -60,6 +61,18 @@ export function handedHref(href: string, onTop: number | null = null): string {
   if (at.weave) params.set('weave', at.weave);
   url.hash = `#/?${params.toString()}`;
   return url.toString();
+}
+
+/**
+ * The address to hand over now (mw-5r3p30.1066). The verse a `ref=` link named is no longer in the address (src/nav/LinkOpener.tsx replaced it with the plain chapter) and the box cannot
+ * say a verse until the chapter's verses are drawn (loading, a chapter swap that still shows the chapter before, a chapter arriving after the strip), but the request LinkOpener made
+ * (bringVerse) is still waiting then and names it: for the address's own chapter it is the verse until the Reader has met it, then the box answers.
+ */
+export function handOverHref(href: string = window.location.href): string {
+  const at = readerOf(new URL(href).hash);
+  const asked = pendingRequest();
+  const named = asked?.action === 'verse' && asked.book === (at.book ?? 'rom') && asked.chapter === at.chapter ? asked.verse : null;
+  return handedHref(href, named ?? verseOnTop());
 }
 
 /** The verse at the top of the Reader's reading box now (Turn pages: the first verse that begins on the page showing), or null where the box is at the chapter's top or no Reader is drawn. */
