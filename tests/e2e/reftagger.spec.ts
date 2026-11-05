@@ -1,5 +1,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { createServer, type Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { gzipSync } from 'node:zlib';
 import { shot } from './shot';
 
@@ -141,7 +143,7 @@ test.describe('on a phone', () => {
     await page.locator('#range a').tap();
     const popup = page.locator(POPUP);
     await expect(popup).toContainText('John 5:24-29');
-    await expect(popup).toContainText('has passed out of death into life');
+    await expect(popup).toContainText('he has crossed over from death to life');
     await expect(popup).toContainText('the hour is coming');
     await expect(popup).toContainText('resurrection of judgment');
     for (const n of [24, 25, 26, 27, 28, 29]) await expect(popup.locator(`[data-verse="${n}"]`)).toHaveCount(1);
@@ -180,9 +182,10 @@ test.describe('on a phone', () => {
     await expect(popup).toHaveCount(0);
     await page.locator('#plain a').tap();
     await expect(popup).toContainText('John 5:25');
-    await page.locator('#kings a').tap();
+    // a link the card does not cover: its own card replaces the first
+    await page.locator('#alone a').first().tap();
     await expect(page.locator(POPUP)).toHaveCount(1);
-    await expect(popup).toContainText('1 Kings 17:17-24');
+    await expect(popup).toContainText('Mark 5');
     await expect(popup).not.toContainText('John 5:25');
   });
 
@@ -222,29 +225,81 @@ test.describe('on a phone', () => {
     });
   }
 
-  for (const [name, headers] of [['the host sends no Access-Control-Allow-Origin (a cross-origin fetch the browser refuses)', {}], ['the host answers 404', null]] as const) {
-    test(`when the text cannot be fetched, ${name}, the popup still has the reference and the button`, async ({ page }) => {
-      const failed: string[] = [];
-      page.on('pageerror', (e) => failed.push(e.message));
-      if (headers === null) await page.route(DATA, (route) => route.fulfill({ status: 404, headers: CORS, body: 'no' }));
-      else await serveData(page, headers);
-      await page.route(/^https:\/\/lampas\.allmymind\.org\/(?:#.*)?$/, (route) => route.fulfill({ contentType: 'text/html', body: '<title>Lampas</title>' }));
-      await openPost(page);
+  test('when the text cannot be fetched (the host answers 404), the popup still has the reference and the button', async ({ page }) => {
+    const failed: string[] = [];
+    page.on('pageerror', (e) => failed.push(e.message));
+    await page.route(DATA, (route) => route.fulfill({ status: 404, headers: CORS, body: 'no' }));
+    await openPost(page);
+    await page.locator('#plain a').tap();
+    await expectBare(page);
+    expect(failed).toEqual([]);
+  });
+
+  // A route's answer is not held to CORS (Playwright hands the browser the response as if it had passed), so these two run a real cross-origin fetch: the blog on one local server,
+  // the script and the chapter files on another, as on the web. The page is http://localhost:<blog>, the data http://127.0.0.1:<host>: two origins, and the browser decides.
+  test('a host that sends Access-Control-Allow-Origin gives the verse across origins', async ({ page }) => {
+    const { blog, close } = await realOrigins(true);
+    try {
+      await page.goto(blog);
       await page.locator('#plain a').tap();
-      const popup = page.locator(POPUP);
-      await expect(popup).toContainText('John 5:25');
-      await expect(popup.locator('a', { hasText: 'Open in Lampas' })).toHaveAttribute('href', `${REF}John.5.25`);
-      await expect(popup.locator('[data-verse]')).toHaveCount(0);
-      await expect(popup).not.toContainText(/undefined|null|NET|Logos|error/i);
-      const box = await popup.boundingBox();
-      expect(box!.height).toBeGreaterThan(40);
-      // the page's own text and the links are as they were
+      await expect(page.locator(POPUP)).toContainText('the dead will hear the voice of the Son of God');
+    } finally {
+      await close();
+    }
+  });
+
+  test('a host that sends no Access-Control-Allow-Origin is refused by the browser, and the popup still has the reference and the button', async ({ page }) => {
+    const { blog, close } = await realOrigins(false);
+    const refused: string[] = [];
+    const failed: string[] = [];
+    page.on('requestfailed', (r) => refused.push(r.url()));
+    page.on('pageerror', (e) => failed.push(e.message));
+    try {
+      await page.goto(blog);
+      await page.locator('#plain a').tap();
+      await expectBare(page);
+      expect(refused.filter((u) => u.includes('/data/jhn/5.json'))).toHaveLength(1);
       expect(failed).toEqual([]);
-      expect(await page.locator('#plain').textContent()).toBe('Read John 5:25 today.');
-      expect(await hrefs(page, 'plain')).toEqual([`${REF}John.5.25`]);
-    });
-  }
+    } finally {
+      await close();
+    }
+  });
 });
+
+/** The popup with no text: the reference, the button, no verse, and none of the words a broken card would show; the page's own text and links untouched. */
+async function expectBare(page: Page) {
+  const popup = page.locator(POPUP);
+  await expect(popup).toContainText('John 5:25');
+  await expect(popup.locator('a', { hasText: 'Open in Lampas' })).toHaveAttribute('href', `${REF}John.5.25`);
+  await expect(popup).not.toContainText('Loading');
+  await expect(popup.locator('[data-verse]')).toHaveCount(0);
+  await expect(popup).not.toContainText(/undefined|null|NET|Logos|error/i);
+  expect((await popup.boundingBox())!.height).toBeGreaterThan(40);
+  expect(await page.locator('#plain').textContent()).toBe('Read John 5:25 today.');
+  expect(await hrefs(page, 'plain')).toEqual([`${REF}John.5.25`]);
+}
+
+/** Two real servers on two origins: `blog` is the fixture page (localhost), whose script tag names the other (127.0.0.1), which serves dist/reftagger.js and public/data. */
+async function realOrigins(cors: boolean): Promise<{ blog: string; close: () => Promise<void> }> {
+  const listen = (server: Server, host: string) => new Promise<number>((done) => server.listen(0, host, () => done((server.address() as AddressInfo).port)));
+  const host = createServer((req, res) => {
+    const path = (req.url ?? '').split('?')[0];
+    try {
+      const file = path === '/reftagger.js' ? 'dist/reftagger.js' : path.startsWith('/data/') ? `public${path}` : null;
+      if (!file || path.includes('..')) throw new Error('no');
+      res.writeHead(200, { 'content-type': path.endsWith('.js') ? 'text/javascript' : 'application/json', ...(cors ? CORS : {}) });
+      res.end(readFileSync(file));
+    } catch {
+      res.writeHead(404).end();
+    }
+  });
+  const hostPort = await listen(host, '127.0.0.1');
+  const html = readFileSync('tests/fixtures/reftagger.html', 'utf8').replace(SCRIPT, `http://127.0.0.1:${hostPort}/reftagger.js`);
+  const blog = createServer((_req, res) => res.writeHead(200, { 'content-type': 'text/html' }).end(html));
+  const blogPort = await listen(blog, 'localhost');
+  const stop = (server: Server) => new Promise<void>((done) => { server.closeAllConnections(); server.close(() => done()); });
+  return { blog: `http://localhost:${blogPort}/post.html`, close: async () => { await stop(host); await stop(blog); } };
+}
 
 test.describe('with a mouse', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
@@ -271,15 +326,15 @@ test.describe('with a mouse', () => {
     expect(page.url()).toBe(BLOG);
   });
 
-  test('Esc and a click outside close it; one popup at a time', async ({ page }) => {
+  test('Esc closes it; one popup at a time', async ({ page }) => {
     await serveData(page);
     await openPost(page);
     const popup = page.locator(POPUP);
     await page.locator('#plain a').hover();
     await expect(popup).toBeVisible();
-    await page.locator('#kings a').hover();
+    await page.locator('#alone a').first().hover();
+    await expect(popup).toContainText('Mark 5');
     await expect(page.locator(POPUP)).toHaveCount(1);
-    await expect(popup).toContainText('1 Kings 17:17-24');
     await page.keyboard.press('Escape');
     await expect(popup).toHaveCount(0);
     await shot(page, 'reftagger-popup-mouse');
