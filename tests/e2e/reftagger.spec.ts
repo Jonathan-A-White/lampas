@@ -279,8 +279,91 @@ test.describe('on a phone', () => {
       await page.goto(blog);
       await page.locator('#plain a').tap();
       await expectBare(page);
-      expect(refused.filter((u) => u.includes('/data/jhn/5.json'))).toHaveLength(1);
+      expect(refused.filter((u) => u.includes('/data/verses-jhn-5.json'))).toHaveLength(1);
       expect(failed).toEqual([]);
+    } finally {
+      await close();
+    }
+  });
+
+  // mw-5r3p30.1085, .1086 (its weight), .1087: on two real origins, as on the blog.
+  test('an Old Testament verse is labelled the Berean Standard Bible and a New Testament one the Majority Standard Bible (mw-5r3p30.1085)', async ({ page }) => {
+    const { blog, close } = await realOrigins(true);
+    try {
+      await page.goto(blog);
+      const popup = page.locator(POPUP);
+      await page.locator('#numbered a', { hasText: 'Gen 1:1' }).tap();
+      await expect(popup).toContainText('In the beginning');
+      await expect(popup).toContainText('Genesis 1:1');
+      await expect(popup).toContainText('Berean Standard Bible');
+      await expect(popup).not.toContainText('Majority');
+      await shot(page, 'reftagger-popup-ot');
+      await page.keyboard.press('Escape');
+      await page.locator('#numbered a', { hasText: '2 Kings 2:11' }).tap();
+      await expect(popup).toContainText('2 Kings 2:11');
+      await expect(popup).toContainText('Berean Standard Bible');
+      await expect(popup).not.toContainText('Majority');
+      await page.keyboard.press('Escape');
+      await page.locator('#plain a').tap();
+      await expect(popup).toContainText('the dead will hear the voice of the Son of God');
+      await expect(popup).toContainText('Majority Standard Bible');
+      await expect(popup).not.toContainText('Berean');
+    } finally {
+      await close();
+    }
+  });
+
+  test('the card for one verse fetches a few KB, not the 177 KB chapter file (mw-5r3p30.1086)', async ({ page }) => {
+    const { blog, served, close } = await realOrigins(true);
+    try {
+      const chapterBytes = readFileSync('public/data/jhn/5.json').length;
+      expect(chapterBytes).toBeGreaterThan(170_000);
+      await page.goto(blog);
+      await page.locator('#plain a').tap();
+      await expect(page.locator(POPUP)).toContainText('the dead will hear the voice of the Son of God');
+      const data = served.filter((r) => r.path.startsWith('/data/'));
+      expect(data.map((r) => r.path)).toEqual(['/data/verses-jhn-5.json']);
+      const bytes = data.reduce((sum, r) => sum + r.bytes, 0);
+      console.log(`bytes the card fetched for John 5:25: ${bytes} (the chapter file is ${chapterBytes})`);
+      expect(bytes).toBeLessThan(10_000);
+      expect(bytes).toBeLessThan(chapterBytes / 15);
+    } finally {
+      await close();
+    }
+  });
+
+  test('a chapter alone and a chapter range show verse 1 and say it is only the start; the range is in the heading (mw-5r3p30.1087)', async ({ page }) => {
+    const { blog, close } = await realOrigins(true);
+    try {
+      await page.goto(blog);
+      const popup = page.locator(POPUP);
+      await page.locator('#alone a', { hasText: 'Matthew 5-7' }).tap();
+      await expect(popup).toContainText('When Jesus saw the crowds');
+      await expect(popup.locator('.head')).toContainText('Matthew 5-7');
+      await expect(popup).toContainText('Only the first verse. Read on in Lampas.');
+      await expect(popup).toContainText('Majority Standard Bible');
+      await expect(popup.locator('a', { hasText: 'Open in Lampas' })).toHaveAttribute('href', `${REF}Matt.5`);
+      await inView(page);
+      await shot(page, 'reftagger-popup-range');
+      await page.keyboard.press('Escape');
+      await page.locator('#chapter a').tap();
+      await expect(popup).toContainText('Lazarus');
+      await expect(popup.locator('.head')).toContainText(/^John 11\s*Majority/);
+      await expect(popup).toContainText('Only the first verse. Read on in Lampas.');
+      await page.keyboard.press('Escape');
+      // a single verse and a verse range are the whole of what they name: no such sign
+      await page.locator('#range a').tap();
+      await expect(popup).toContainText('resurrection of judgment');
+      await expect(popup).not.toContainText('Read on in Lampas');
+      await page.keyboard.press('Escape');
+      await page.locator('#plain a').tap();
+      await expect(popup).toContainText('the dead will hear');
+      await expect(popup).not.toContainText('Read on in Lampas');
+      // an Old Testament chapter alone says it too, with the honest name
+      await page.keyboard.press('Escape');
+      await page.locator('#alone a', { hasText: 'Job 3' }).tap();
+      await expect(popup).toContainText('Berean Standard Bible');
+      await expect(popup).toContainText('Only the first verse. Read on in Lampas.');
     } finally {
       await close();
     }
@@ -301,15 +384,18 @@ async function expectBare(page: Page) {
 }
 
 /** Two real servers on two origins: `blog` is the fixture page (localhost), whose script tag names the other (127.0.0.1), which serves dist/reftagger.js and public/data. */
-async function realOrigins(cors: boolean): Promise<{ blog: string; close: () => Promise<void> }> {
+async function realOrigins(cors: boolean): Promise<{ blog: string; served: { path: string; bytes: number }[]; close: () => Promise<void> }> {
+  const served: { path: string; bytes: number }[] = [];
   const listen = (server: Server, host: string) => new Promise<number>((done) => server.listen(0, host, () => done((server.address() as AddressInfo).port)));
   const host = createServer((req, res) => {
     const path = (req.url ?? '').split('?')[0];
     try {
       const file = path === '/reftagger.js' ? 'dist/reftagger.js' : path.startsWith('/data/') ? `public${path}` : null;
       if (!file || path.includes('..')) throw new Error('no');
+      const body = readFileSync(file);
+      served.push({ path, bytes: body.length });
       res.writeHead(200, { 'content-type': path.endsWith('.js') ? 'text/javascript' : 'application/json', ...(cors ? CORS : {}) });
-      res.end(readFileSync(file));
+      res.end(body);
     } catch {
       res.writeHead(404).end();
     }
@@ -319,7 +405,7 @@ async function realOrigins(cors: boolean): Promise<{ blog: string; close: () => 
   const blog = createServer((_req, res) => res.writeHead(200, { 'content-type': 'text/html' }).end(html));
   const blogPort = await listen(blog, 'localhost');
   const stop = (server: Server) => new Promise<void>((done) => { server.closeAllConnections(); server.close(() => done()); });
-  return { blog: `http://localhost:${blogPort}/post.html`, close: async () => { await stop(host); await stop(blog); } };
+  return { blog: `http://localhost:${blogPort}/post.html`, served, close: async () => { await stop(host); await stop(blog); } };
 }
 
 test.describe('with a mouse', () => {

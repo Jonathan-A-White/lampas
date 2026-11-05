@@ -73,6 +73,8 @@ function creditFor(path: string): string | null | undefined {
   if (path === 'public/data/lexicon-hbo.json') return 'TBESH'; // the Hebrew lemmas, with TBESH's glosses (scripts/data-build-ot.ts)
   if (OT_BOOKS.some((b) => path.startsWith(`public/data/${b.code}/`))) return 'Berean Standard Bible'; // the Old Testament: the Berean tables, whose English the Majority Standard Bible's Old Testament is
   if (path === 'public/data/frequency-hbo.json') return 'Berean Standard Bible';
+  // the blog popup's small file of a chapter's English (scripts/verses-build.ts): the Old Testament's is the Berean Standard Bible's, the New Testament's the Majority Standard Bible's (the last rule below)
+  if (OT_BOOKS.some((b) => path.startsWith(`public/data/verses-${b.code}-`))) return 'Berean Standard Bible';
   // the Septuagint (mw-u2w5klk.10, scripts/data-build-lxx.ts): Swete's Greek with its licence and README beside it; the lemmas' glosses are TBESG's; the notes are ours
   if (path === 'public/data-lxx/lexicon-grc-lxx.json') return 'TBESG';
   if (path === 'public/data-lxx/README.md' || path === 'public/data-lxx/LICENSE-swete.txt' || path === 'public/data-lxx/README-swete.md') return null; // notices, not data (the last two are eliranwong's own)
