@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.128
+_2026-11-05_
+- Fixed: The verse card on the blog names the right Bible translation for Old Testament verses, loads much faster, and says when a chapter link shows only its first verse.
+- Fixed: A question you miss in a short drill now counts as missed, so getting it right the next time asks you a new question to be sure you really know it.
+
 ## 0.7.125
 _2026-11-05_
 - Fixed: The blog's Bible links now link "1 John 4" to 1 John, no longer treat "2 Timothy is..." after a verse as a verse number, and skip a chapter before words like "more times" or "people".

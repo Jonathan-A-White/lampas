@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.128",
+    "date": "2026-11-05",
+    "story": "mw-5r3p30.1088",
+    "kind": "fixed",
+    "text": "The verse card on the blog names the right Bible translation for Old Testament verses, loads much faster, and says when a chapter link shows only its first verse."
+  },
+  {
+    "version": "0.7.128",
+    "date": "2026-11-05",
+    "story": "mw-74h98vg.3",
+    "kind": "fixed",
+    "text": "A question you miss in a short drill now counts as missed, so getting it right the next time asks you a new question to be sure you really know it."
+  },
+  {
     "version": "0.7.125",
     "date": "2026-11-05",
     "story": "mw-5r3p30.1064",
