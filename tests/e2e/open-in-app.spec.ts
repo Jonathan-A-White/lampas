@@ -1,8 +1,8 @@
 // tests/e2e/open-in-app.spec.ts — 'Open in the app' (mw-5r3p30.1041): in a Chrome tab on Android where navigator.getInstalledRelatedApps (stubbed here: a real install
 // cannot be made in a test) reports the app, one labelled control shows at 360x740 and 390x844, at 100 % and at larger text. It is clear of the floating ? and floats over the top edge (mw-5r3p30.1051: arriving late it moves neither the Reader's
-// verse nor its box, at 390x844 and 844x390), no wider than the phone, and 'Not now' puts it away for the session. Nothing leaves the page by itself: the address is as it was opened. The tap's intent: URL is
-// proven in tests/unit/open-in-app.test.tsx (a desktop Chromium cannot follow an intent: address); the last test reads the address the tap requests (CDP Page.frameRequestedNavigation) and opens it
-// in a fresh context, to prove the verse survives the hand-over (mw-5r3p30.1050). Ends with a shot.
+// verse nor its box, at 390x844 and 844x390), no wider than the phone, and 'Not now' puts it away for the session. Nothing leaves the page by itself: the address is as it was opened. The tap
+// opens the plain address in a new tab with no opener and no referrer (mw-5r3p30.1082; the form, and why not an intent: URL, are in src/openInApp.ts goTo); the last test reads that tab's address
+// and Referer and opens the address in a fresh context, to prove the verse survives the hand-over (mw-5r3p30.1050). Whether Android's installed app takes it is not provable in a test. Ends with a shot.
 import { expect, test, type Page } from '@playwright/test';
 import { openWithTextSize, PHONES } from './next-in-view';
 import { FLOATING } from './open-tutor';
@@ -38,6 +38,8 @@ for (const phone of PHONES.filter((p) => p.size.width < 400)) {
     test(`${phone.name} at ${percent} % text: the control is clear of the ? and the reading text, fits, and Not now puts it away`, async ({ page }) => {
       const navigations: string[] = [];
       page.on('framenavigated', (frame) => frame.parentFrame() === null && navigations.push(frame.url()));
+      const tabs: string[] = [];
+      page.context().on('page', (tab) => tabs.push(tab.url()));
       await page.setViewportSize(phone.size);
       await stubApi(page, WEBAPP);
       await openUnlocked(page);
@@ -61,9 +63,10 @@ for (const phone of PHONES.filter((p) => p.size.width < 400)) {
       }
       // the strip floats over the top of the screen and takes no room from the reading box (mw-5r3p30.1051): it sits at the top edge, under the phone's own inset
       expect(stripBox.y, 'the strip is at the top of the screen').toBeLessThan(view.height / 4);
-      // nothing left the page by itself: no top-level navigation to another document or an intent: address, still the app's own origin
+      // nothing left the page by itself: no top-level navigation to another document or an intent: address, still the app's own origin, and no new tab
       await page.waitForTimeout(500); // a short hold so an automatic hand-over would have happened
       expect(navigations.filter((url) => !url.startsWith(origin)), 'left the app').toEqual([]);
+      expect(tabs, 'no tab opened by itself').toEqual([]);
       await shot(page, `open-in-app-${phone.name}-${percent}`);
 
       await strip.getByRole('button', { name: 'Not now' }).click();
@@ -130,23 +133,25 @@ test('never shows inside the installed app (display-mode standalone)', async ({ 
   expect(page.url()).toMatch(/^http:\/\/localhost/);
 });
 
-/** The http address inside an intent: URL (`intent://host/path#hash#Intent;scheme=http;...;end`): what Android hands to the app. */
-function addressOfIntent(intent: string): string {
-  const body = intent.slice('intent://'.length);
-  const at = body.lastIndexOf('#Intent;');
-  const scheme = /;scheme=(https?);/.exec(body.slice(at))?.[1] ?? 'https';
-  return `${scheme}://${body.slice(0, at)}`;
-}
-
-/** Taps 'Open in the app' on the page and returns the address inside the intent: URL the tap requested (read off Chromium's own navigation request, which is not followed). */
-async function tapAndRead(page: Page): Promise<string> {
-  const cdp = await page.context().newCDPSession(page);
-  await cdp.send('Page.enable');
-  const requested: string[] = [];
-  cdp.on('Page.frameRequestedNavigation', (event: { url: string }) => requested.push(event.url));
+/**
+ * Taps 'Open in the app' on the page and returns what the tap asked for: the address of the new tab it opens, and the Referer that tab's request carried (mw-5r3p30.1082: Chromium keeps
+ * an intent: URL for the app's own host in Chrome, so the tap opens the plain address in a new tab with no opener and no referrer, which Chromium's same-host rule does not hold in
+ * Chrome). A desktop Chromium has no installed app to take it, so the new tab is read, not followed to an app; the page that was tapped has not moved.
+ */
+async function tapAndRead(page: Page): Promise<{ address: string; referer: string | undefined; opener: boolean }> {
+  const before = page.url();
+  const requests: { url: string; referer: string | undefined }[] = [];
+  page.context().on('request', (request) => request.isNavigationRequest() && requests.push({ url: request.url(), referer: request.headers()['referer'] }));
+  const popup = page.context().waitForEvent('page');
   await page.locator('[data-open-in-app]').getByRole('button', { name: 'Open in the app' }).click();
-  await expect.poll(() => requested.find((url) => url.startsWith('intent://')), 'the tap requests an intent: URL').toBeTruthy();
-  return addressOfIntent(requested.find((url) => url.startsWith('intent://'))!);
+  const opened = await popup;
+  await opened.waitForLoadState('domcontentloaded');
+  const address = opened.url();
+  const opener = await opened.evaluate(() => window.opener !== null);
+  expect(page.url(), 'the tapped page stayed where it was').toBe(before);
+  const asked = requests.find((r) => r.url.split('#')[0] === address.split('#')[0]);
+  await opened.close();
+  return { address, referer: asked?.referer, opener };
 }
 
 for (const opened of ['/#/?ref=Rom.8.28', '/#/?ref=Rom.8.28&view=greek', '/#/?b=rom&c=8&v=28']) {
@@ -159,7 +164,10 @@ for (const opened of ['/#/?ref=Rom.8.28', '/#/?ref=Rom.8.28&view=greek', '/#/?b=
     await expect(page.locator('[data-verse="28"]').first()).toBeVisible();
     if (!opened.includes('v=28')) await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
     await page.waitForTimeout(1500); // the verse has settled at the top
-    const handed = await tapAndRead(page);
+    const { address: handed, referer, opener } = await tapAndRead(page);
+    expect(handed.startsWith('intent:'), 'a plain address, not an intent: URL').toBe(false);
+    expect(referer, 'no Referer: the page the tap came from is not named').toBeUndefined();
+    expect(opener, 'no window.opener').toBe(false);
 
     // the installed app: another context, no saved reading place, no scroll memory
     const fresh = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: ANDROID, hasTouch: true, baseURL: new URL(page.url()).origin });
