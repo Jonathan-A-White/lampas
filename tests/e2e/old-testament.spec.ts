@@ -102,7 +102,7 @@ async function turnLogosAndAudioOn(page: Page) {
   );
 }
 
-test('the foot of an Old Testament chapter has no Read in Logos and no Listen in Audible, though both are on; the Maps door stays and the verse has both (mw-5r3p30.1008)', async ({ page }) => {
+test('the foot of an Old Testament chapter has no Read in Logos and no Listen in Audible, though both are on; no Maps door either (the Verse view keeps it) and the verse has both (mw-5r3p30.1008, mw-5r3p30.1028)', async ({ page }) => {
   await routePostern(page, makeFakePostern());
   await openUnlocked(page);
   await page.goto('/#/?b=psa&c=23');
@@ -116,11 +116,14 @@ test('the foot of an Old Testament chapter has no Read in Logos and no Listen in
   await expect(page.getByRole('link', { name: 'Read in Logos' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /Listen in Audible/ })).toHaveCount(0);
 
-  // the Maps door stays at a chapter's foot (Genesis 10 has maps, Psalms 23 has none)
+  // no Maps door at a chapter's foot (mw-5r3p30.1028; Genesis 10 has maps, Psalms 23 has none): the Verse view keeps it
   await page.goto('/#/?b=gen&c=10');
   await expect(page.getByRole('heading', { name: 'Genesis 10', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-reader]').getByRole('button', { name: /^Maps · \d+$/ })).toBeVisible();
+  await page.getByRole('navigation', { name: 'Chapters' }).scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-reader]').getByRole('button', { name: /^Maps/ })).toHaveCount(0);
   await expect(page.getByRole('link', { name: /Read in Logos|Listen in Audible/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Verse 19', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Verse view' }).getByRole('button', { name: /^Maps · \d+$/ })).toBeVisible();
 
   // what the foot once had is on the verse: tap its number, and the Verse view has In Logos (the Tools line) and, under Listen, Listen in Audible
   await page.goto('/#/?b=psa&c=23');
