@@ -42,17 +42,25 @@ const numbered = (name: string): string | null => {
   return prefix ? name.replace(prefix[0], `${PREFIXES[prefix[1].toLowerCase()]} `) : /^(?:i{1,3})\.?\s/i.test(name) ? null : name;
 };
 
-/** Where a verse list stops at a numbered book that follows a comma ('Rom 8:1, 2 Cor 5:17': the '2' begins '2 Cor', it is no verse of Romans): the tail cut before that comma. */
+/** Where a numbered book's name begins: the name ('2 Timothy', '1 Cor.') when a digit 1-3 and a book of the table begin at `at` in `text`, whether or not a chapter follows, else null.
+ *  The one place that decides it (mw-5r3p30.1064): a verse list stops before it ('Rom 8:1, 2 Timothy is a letter': the '2' begins '2 Timothy', it is no verse of Romans) and a chapter
+ *  alone is read with its number ('See 1 John 4': 1 John, not John). */
+const numberedBookAt = (text: string, at: number): string | null => {
+  const name = /^[1-3]\s?\p{L}+\.?/u.exec(text.slice(at))?.[0];
+  const named = name === undefined ? null : parseHeldReference(name);
+  return name !== undefined && named && named.chapter === undefined ? name : null;
+};
+
+/** Where a verse list stops at a numbered book that follows a comma ('Rom 8:1, 2 Cor 5:17', '..., 2 Timothy is'): the tail cut before that comma. */
 const beforeBook = (text: string, tailAt: number, tail: string): string => {
-  for (const comma of tail.matchAll(/\s*,\s*/g)) {
-    const next = /^([1-3]\s?\p{L}+\.?)\s*\d/u.exec(text.slice(tailAt + comma.index + comma[0].length));
-    if (next && parseHeldReference(next[1])) return tail.slice(0, comma.index);
-  }
+  for (const comma of tail.matchAll(/\s*,\s*/g)) if (numberedBookAt(text, tailAt + comma.index + comma[0].length)) return tail.slice(0, comma.index);
   return tail;
 };
 
-// A chapter alone is plain English when a count follows it: 'Mark 5 times', 'Job 3 months', 'Acts 2 of them' (mw-5r3p30.1047).
-const COUNTED = /^\s+(?:times|seconds|minutes|hours|days|weeks|months|years|decades|centuries|of\s+(?:them|us|you|these|those|it)\b)/i;
+// A chapter alone is plain English when a count or a quantity follows it: 'Mark 5 times', 'Job 3 months', 'Acts 2 of them', 'Job 3 more times', 'John 3 people', 'Mark 5 or 6 times'
+// (mw-5r3p30.1047, .1063). The words: a count word, singular or plural, and 'more', 'percent', 'people'; or a second number before a count word ('5 or 6 times').
+const COUNT_WORD = String.raw`(?:times?|seconds?|minutes?|hours?|days?|weeks?|months?|years?|decades?|centuries|century|more|percent|people)\b`;
+const COUNTED = new RegExp(String.raw`^\s+(?:${COUNT_WORD}|(?:or\s+\d+\s+)${COUNT_WORD}|of\s+(?:them|us|you|these|those|it)\b)`, 'i');
 // A chapter range 'Matthew 5-7' (not into a verse: 'Matthew 5-7:3'); the link goes to its first chapter.
 const CHAPTER_RANGE = /^\s*[-–]\s*(\d+)(?!\d|\s*:\s*\d)/;
 
@@ -60,7 +68,8 @@ const CHAPTER_RANGE = /^\s*[-–]\s*(\d+)(?!\d|\s*:\s*\d)/;
 const NOT_ENGLISH = (name: string, chapterOnly: boolean): boolean => {
   const word = name.replace(/\.$/, '');
   const capital = /^\p{Lu}/u.test(word);
-  if (chapterOnly) return capital && !/^(?:is|re)$/i.test(word);
+  // a numbered book with a chapter alone ('1 John 4') is a book: its word is a capital as a one-word book's is
+  if (chapterOnly) return (capital || (numberedBookAt(word, 0) !== null && /^\p{Lu}/u.test(word.replace(/^[1-3]\s?/, '')))) && !/^(?:is|re)$/i.test(word);
   return word.length > 2 || /^\d/.test(word) || capital;
 };
 
