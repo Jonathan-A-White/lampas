@@ -26,6 +26,7 @@
     "drill:build": "tsx scripts/drill-build.ts",
     "data:build:lxx": "tsx scripts/data-build-lxx.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
+    "data:verses": "tsx scripts/verses-build.ts",
     "lxx:batches": "tsx scripts/lxx/batches.ts",
     "lxx:choose": "tsx scripts/lxx/choose.ts",
     "lxx:derive": "tsx scripts/lxx/derive.ts",
