@@ -94,7 +94,7 @@ export interface LibraryRequest {
   app_version: string;
 }
 
-/** The kinds of ask on Settings > Ask for more, each a short form (the input schema's last branch): an approach or programme, a text, a translation. A study resource is asked for as a book. */
+/** The kinds of ask that were once short forms on Settings > Ask for more (the input schema's last branch): an approach or programme, a text, a translation. The page has no form now (mw-5r3p30.726); the kinds stay for the grind's schema and for requests already kept. */
 export const MORE_KINDS = ['approach', 'text', 'translation'] as const;
 export type MoreKind = (typeof MORE_KINDS)[number];
 

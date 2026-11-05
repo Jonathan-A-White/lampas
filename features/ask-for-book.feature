@@ -1,7 +1,6 @@
 Feature: Ask for a book
   One sheet, Ask for a book, replaces the four boxes that asked the makers for a book (mw-rfjjzd.14, PROVISIONAL; docs/design/library-at-scale.md
-  section 6). It opens from the Library, the idea sheet (Ask for a grammar), Settings > Daily (Ask for a devotional) and Ask for more (A study
-  resource), with the kind of book preset where the place has one. With a Logos list kept, he searches the books Lampas cannot use and a pick fills
+  section 6). It opens from the Library, the idea sheet (Ask for a grammar) and Settings > Daily (Ask for a devotional), with the kind of book preset where the place has one. With a Logos list kept, he searches the books Lampas cannot use and a pick fills
   the request with the row's Resource ID, Type, Series and ReferenceSupersets; without one he types the title. Send posts one feedback grist of the
   kind book. A book already asked, or already in the catalogue, is refused with a line. After an import, Ask the makers about these sends one grist
   of the kind library with the counts by Logos type and the usable rows as library.csv, and no second one until the catalogue changes or 30 days pass.
@@ -16,7 +15,6 @@ Feature: Ask for a book
       | the Library            | Ask for a book       | Any kind   |
       | an idea sheet          | Ask for a grammar    | Grammar    |
       | Settings > Daily       | Ask for a devotional | Devotional |
-      | the Ask for more page  | A study resource     | Any kind   |
 
   Scenario: Without a list kept the title is typed, the sheet says what is sent, and one book request goes
     Given the app is open at the Library behind a fake Postern with no list kept
@@ -111,8 +109,3 @@ Feature: Ask for a book
     Then asking the makers about these is allowed again
     When the library request was sent 5 days ago under another catalogue version
     Then asking the makers about these is allowed under the new catalogue
-
-  Scenario: Ask for more keeps its other forms and has no study-resource box
-    Given the app is open at the Ask for more page behind a fake Postern
-    Then it offers the forms "An approach or programme", "A text" and "A translation" and the button "A study resource"
-    And "A study resource" opens no form of its own

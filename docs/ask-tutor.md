@@ -218,15 +218,17 @@ grist's id, status `'sent'`; `src/data/repositories/requests.ts` `keepRequest`, 
 so a status that comes back can be matched to it. A tutor-ask keeps the tutor's `summary` and his `words`, a grammar approach his `text`; a Retry is a new grist and a new row.
 Settings > Ask for more (mw-hqd5bz.37, `src/settings/AskMoreScreen.tsx`, #/askmore) leads him here for asks that would grow the app (an approach or programme, a study
 resource, a text, a translation): its first button, **Ask the tutor**, opens the talk of the screen 'Ask for more' with "I'd like Lampas to have " in the composer
-(TalkHost's `shared`, not sent), and the instructions' part 270 has the tutor offer `feedback_offer` for such an ask. Under it, **Or fill in a form**: one short
-form for an approach or programme, a text and a translation, whose Send is a `feedback` grist of kind `approach`, `text` or `translation` (`buildMoreRequest`: `name`, `text?` (why), `url?`);
-its request row keeps `name: why` as its `text`. **A study resource** between them has no form of its own: it opens Ask for a book (below).
+(TalkHost's `shared`, not sent), and the instructions' part 270 has the tutor offer `feedback_offer` for such an ask. It is the page's only button: the page has no form
+(mw-5r3p30.726; the Governor dropped the forms that were under it, **Or fill in a form** with its approach or programme, text and translation forms and the **A study resource** button, so every
+request to the makers goes through the tutor and he asks every app the same way, the PWA sheet's rule 33). With no licence it says asking needs one and offers **Needs a licence**. A book is still asked for
+through Ask for a book (below), from the Library, the idea sheet and Settings > Daily. `buildMoreRequest` and `MORE_KINDS` (`src/services/feedback.ts`) and the `feedback` grind's `approach`, `text` and `translation` branch
+stay for requests already kept and sent by an older app.
 
 ### Ask for a book (mw-rfjjzd.14, PROVISIONAL; docs/design/library-at-scale.md section 6)
 
 One sheet, `src/library/AskForBook.tsx` (a `useSheetBack` dialog, drawn in the body), replaced the four boxes that asked for a book (Settings > Grammar books > Ask for another book, Settings > Daily > Request
-a devotional, Ask for more's study-resource form). It opens from the Library card (**Ask for a book**), the idea sheet (**Ask for a grammar ›**, with Logos On: kind Grammar), Settings > Daily (**Ask for a devotional**, the
-row `request.devotional`, a door not a setting: kind Devotional) and Ask for more (**A study resource**): the place presets the **Kind of book** select (`KINDS`; Any kind for the rest). None of them is drawn without a licence.
+a devotional, Ask for more's study-resource form, since removed). It opens from the Library card (**Ask for a book**), the idea sheet (**Ask for a grammar ›**, with Logos On: kind Grammar), Settings > Daily (**Ask for a devotional**, the
+row `request.devotional`, a door not a setting: kind Devotional): the place presets the **Kind of book** select (`KINDS`; Any kind for the rest). None of them is drawn without a licence.
 With a Logos list kept (Dexie `exportRows`, `unmatchedRows()`: the rows the catalogue did not list) a search over their title, series and Resource ID shows at most 30; a pick fills the request with the row's Resource ID, Type, Series
 and ReferenceSupersets; without one, or by "or type a title", the title is typed (at most `MAX_BOOK_CHARS` 200). **Why would it help?** is optional (`MAX_FEEDBACK_CHARS`, counted not cut). One line (`ask-sends`) says what is sent.
 
@@ -318,7 +320,7 @@ His words (Postern general, 2026-10-28): "I feel like send to the makers you sho
 | Word help (the word sheet's Grammar, Sound it out; `useReaderTutor.ts` helpWithWord / askAboutTerm) | opens the Talk sheet: as the Talk sheet | as the Talk sheet | as the Talk sheet | as the Talk sheet |
 | Drill and quiz results (`QuizScreen` Ask the tutor, Drill it, the Plan drill, the Parsing drill's link) | open the Talk sheet: as that surface | same | same | same |
 | Welcome interview (`Welcome.tsx`) | the Talk sheet's, so yes | yes | yes | the tutor's offer, as the Talk sheet |
-| The FormHelper (`src/formHelper/FormHelper.tsx`: Ask for another approach, Ask for more, Ask for a book, Save as list) | no (mw-5r3p30.761, the door epic) | no (mw-5r3p30.761) | yes: its own field | the forms are themselves requests to the makers; the helper itself has no action (mw-5r3p30.761) |
+| The FormHelper (`src/formHelper/FormHelper.tsx`: Ask for another approach, Ask for a book, Save as list) | no (mw-5r3p30.761, the door epic) | no (mw-5r3p30.761) | yes: its own field | the forms are themselves requests to the makers; the helper itself has no action (mw-5r3p30.761) |
 | Reading check (`ReadCheck.tsx`, Read it aloud) and Memorize (`MemorizeSession.tsx`) | no | yes: it records or listens | Memorize: yes (Type it) | no: they are not a talk with the tutor; nothing to say to the makers there |
 | Background asks (tips, the Audible position, finding references in a picture, more drill items, the nightly weights) | none: no composer | none | none | none: the app asks, not he |
 
@@ -416,11 +418,10 @@ PROVISIONAL). The forms that have the door, each with the command its Send runs 
 | Form | Where | Command | Its FormSpec |
 | --- | --- | --- | --- |
 | Ask for another approach | Settings > Grammar approach | `ask-for-approach` (`src/services/formCommands.ts` `askForApproachCommand`) | `APPROACH_FORM` (`approachForm.ts`): `approach`, `pictures`, `credit`, `link` |
-| An approach or programme, A text, A translation | Settings > More > Ask for more | `ask-for-more` (`askForMoreCommand(kind)`; its args carry `kind`, one of `MORE_KINDS`, beside the fields) | `MORE_FORMS[kind]` (`moreForms.ts`): `name`, `why`, `link` |
-| Ask for a book | the Library card, the idea sheet, Settings > Daily, Ask for more | `ask-for-book` (`src/library/bookCommand.ts`) | `BOOK_FORM` (`bookForm.ts`): `title`, `kind`, `why` |
+| Ask for a book | the Library card, the idea sheet, Settings > Daily | `ask-for-book` (`src/library/bookCommand.ts`) | `BOOK_FORM` (`bookForm.ts`): `title`, `kind`, `why` |
 | Save as a list | the Share sheet, under Bible references (N) | `save-as-list` (`src/services/formCommands.ts` `saveAsListCommand(refs, names)`) | `saveListForm(names)` (`src/share/saveListForm.ts`; `SAVE_LIST_FORM` is it with no lists): `where` (a choice: `New list` and the names of his lists, read when the form opens), `name` (at most `LIST_NAME_MAX`, 60) |
 
-(A study resource is asked for as a book.) It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
+(Settings > Ask for more had forms with this door until mw-5r3p30.726 dropped them.) It opens a panel (region `The tutor is helping with this form`, above the form's fields) where the tutor
 asks ONE question at a time in plain words (`What approach would you like to suggest, and how does it teach?`), he answers in the panel's Composer (voice-kit's, the one the Talk sheet and the Verse view's Ask use: the `Hold to answer` bar, `Type an answer`,
 `Attach a picture` and `Take a photo`) and `Reply`, and the matching field of the form fills and is ringed and scrolled into view, so he sees it fill. When the tutor asks for a photo the panel
 offers `No photo`, and a photo he attaches or takes in the Composer goes to the form as its own picker's would (`onPictures`: shrunk and listed in the form; a form with no pictures field refuses a picture with `This form has no place for a picture.`); a photo he adds meanwhile is told to the tutor. A **choice** field
@@ -439,16 +440,14 @@ It is one reusable piece in `src/formHelper/`, on voice-kit's `@voice-kit/forms`
 `requiredFilled`, `oneQuestion`, `argsOf` and `formCommand`, re-exported by `formHelper.ts` under the names Lampas uses; Lampas keeps only
 `buildFormRequest`). A form describes itself as a `FormSpec` (name, and per field its `name`, `label`, `hint`, `required`, `kind` text | link | choice | pictures,
 `maxLength`, a choice's `options`; the approach form is `approachForm.ts`, Ask for a book's is `src/library/bookForm.ts` `BOOK_FORM`) and adds the door with one
-element: `<FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => ...} onReady={...} command={COMMAND} commandArgs={{ kind }} />` (`commandArgs`: what the command takes beside the fields).
+element: `<FormHelper form={SPEC} values={{ field: 'what it holds now' }} onFill={(field, value) => ...} onPicker={(field) => ...} onReady={...} command={COMMAND} />`.
 
-**Ask for another approach and Ask for more** (mw-o7cts8.3): each form's own Send and the panel's Send are one path, the sheet's `sendWith(args)` (sending, sent, failed with Retry), which
-runs the command, and the command posts one `feedback` grist through `submitFeedback` (`buildFeedbackRequest` for `ask-for-approach`, `buildMoreRequest` for `ask-for-more`): what is sent is
-what each form sent before. A value over its limit (the args schema's, `checkArgs`) is refused before anything is posted. The pictures are never the tutor's: the approach sheet hands the command
-the pictures it holds (`approachCommand({ pictures })`) and the picker stays the form's own. `ask-for-more` takes `kind` beside the fields, so one name serves the three forms; the panel gives it
-through `FormHelper`'s `commandArgs`. His memorizing evidence goes with an Ask for more ask only when its switch is On when he taps Send, from either Send. The page keeps its Ask the tutor over
-`ASK_BEGUN`, and with no licence draws no form and no door. `submitFeedback(` is called only in `formCommands.ts`, `bookRequests.ts`, `feedback.ts` and `talk/offers.ts` (`tests/unit/feedback-shared.test.ts`).
-The panel's offer lines: `Send this approach, credit Anna Example?`, `Send A text: The Septuagint?`. Checks: `tests/unit/form-commands.test.ts`, `features/ask-approach.feature` (the form's Send and the door's post the same body),
-`features/ask-for-more.feature` (A text through the door).
+**Ask for another approach** (mw-o7cts8.3): the form's own Send and the panel's Send are one path, the sheet's `sendWith(args)` (sending, sent, failed with Retry), which
+runs the command, and the command posts one `feedback` grist through `submitFeedback` (`buildFeedbackRequest` for `ask-for-approach`): what is sent is
+what the form sent before. A value over its limit (the args schema's, `checkArgs`) is refused before anything is posted. The pictures are never the tutor's: the approach sheet hands the command
+the pictures it holds (`approachCommand({ pictures })`) and the picker stays the form's own. `submitFeedback(` is called only in `formCommands.ts`, `bookRequests.ts`, `feedback.ts` and `talk/offers.ts` (`tests/unit/feedback-shared.test.ts`).
+The panel's offer line: `Send this approach, credit Anna Example?`. Checks: `tests/unit/form-commands.test.ts`, `features/ask-approach.feature` (the form's Send and the door's post the same body),
+`tests/unit/ask-more-screen.test.tsx` and `features/ask-for-more.feature` (Ask for more has no form).
 
 **Ask for a book** (`src/library/AskForBook.tsx`): fields `title` (`Which book?`), `kind` (a choice over the kinds' singular names: Lexicon, Grammar, ...) and `why`.
 `src/library/bookCommand.ts` is the command `ask-for-book` (`formCommand(BOOK_FORM, ...)`; `askForBook(` is called only there): `bookRefusal`'s line when the

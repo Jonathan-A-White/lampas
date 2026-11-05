@@ -3,7 +3,7 @@ Feature: Let the tutor do it
   question at a time in plain words, asks for a photo at the moment it is needed (he attaches or takes it in the panel's Composer, the one the Talk sheet uses, and the form lists it), and after each answer the
   matching field of the form fills, where he sees it. When every required field is filled the tutor says so; he reads the form, changes
   anything and taps Send himself: the tutor never sends. The first form to offer it is Ask for another approach. A form that has a command its own
-  Send runs (Ask for another approach: ask-for-approach, Ask for a book: ask-for-book, Ask for more: ask-for-more) ends the panel with the command's offer line and a Send button; his tap on it runs the very command
+  Send runs (Ask for another approach: ask-for-approach, Ask for a book: ask-for-book) ends the panel with the command's offer line and a Send button; his tap on it runs the very command
   the form's Send runs. The tutor is the bible-talk grind; here the grist is faked.
 
   Scenario: The tutor takes him through the Ask for another approach form, one question at a time

@@ -40,16 +40,6 @@ const SCREENS: Screen[] = [
     submit: (page) => page.getByRole('button', { name: 'Send', exact: true }),
   },
   {
-    name: 'Ask for more (Settings)',
-    open_finding: "the floating ? sits on the top right corner of the field with the keyboard up (it stands 17 rem above the window's foot, src/index.css [data-floating-tutor]); not fixed in mw-5r3p30.983",
-    open: async (page) => {
-      await page.goto('/#/settings?group=account');
-      await page.getByRole('button', { name: 'Ask for more' }).click();
-      await page.getByRole('button', { name: 'A translation' }).click();
-    },
-    fields: (page) => [page.getByRole('main').getByRole('textbox').first()],
-  },
-  {
     name: 'About you (Settings)',
     open_finding: "the floating ? sits on the top right corner of the field with the keyboard up (it stands 17 rem above the window's foot, src/index.css [data-floating-tutor]); not fixed in mw-5r3p30.983",
     open: async (page) => {

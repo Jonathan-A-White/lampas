@@ -1,5 +1,5 @@
-// features/steps/ask-for-book.steps.tsx — runs features/ask-for-book.feature: the one sheet, Ask for a book (src/library/AskForBook.tsx), opened from the Library, the idea sheet, Settings > Daily and
-// Ask for more, and Ask the makers about these on the import screen, each sending a 'feedback' grist (grinds/feedback.json) of the kind book or library, proven against the fake Postern.
+// features/steps/ask-for-book.steps.tsx — runs features/ask-for-book.feature: the one sheet, Ask for a book (src/library/AskForBook.tsx), opened from the Library, the idea sheet, Settings > Daily,
+// and Ask the makers about these on the import screen, each sending a 'feedback' grist (grinds/feedback.json) of the kind book or library, proven against the fake Postern.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -118,7 +118,7 @@ async function openPlace(place: string): Promise<void> {
     await waitFor(() => expect(within(screen.getByRole('dialog', { name: 'Idea' })).queryByTestId('idea-loading')).toBeNull());
     return;
   }
-  const addresses: Record<string, string> = { 'the Library': '#/library', 'Settings > Daily': '#/settings?group=daily', 'the Ask for more page': '#/askmore' };
+  const addresses: Record<string, string> = { 'the Library': '#/library', 'Settings > Daily': '#/settings?group=daily' };
   await openAt(addresses[place]);
 }
 
@@ -440,21 +440,4 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(await libraryRefusal()).toBeUndefined();
     });
   });
-
-  Scenario('Ask for more keeps its other forms and has no study-resource box', ({ Given, Then, And }) => {
-    Given('the app is open at the Ask for more page behind a fake Postern', async () => {
-      await openAt('#/askmore');
-      await screen.findByRole('heading', { name: 'Ask for more', level: 1 });
-    });
-    Then('it offers the forms {string}, {string} and {string} and the button {string}', (_, a: string, b: string, c: string, d: string) => {
-      const main = screen.getByRole('main');
-      for (const name of [a, b, c, d]) expect(within(main).getByRole('button', { name })).toBeInTheDocument();
-    });
-    And('{string} opens no form of its own', async (_, name: string) => {
-      await user.click(screen.getByRole('button', { name }));
-      expect(screen.queryByRole('form', { name })).toBeNull();
-      expect(await screen.findByRole('dialog', { name: 'Ask for a book' })).toBeInTheDocument();
-    });
-  });
 });
-

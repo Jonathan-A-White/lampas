@@ -1,6 +1,6 @@
 // src/library/AskForBook.tsx — Ask for a book (docs/design/library-at-scale.md 6.1, mw-rfjjzd.14, PROVISIONAL): the one sheet that asks the makers for a book, in place of the four boxes (Ask for another book,
-// Request a devotional, Ask for more's study-resource form and the idea sheet's). It opens from the Library card, the idea sheet ('Ask for a grammar'), Settings > Daily ('Ask for a devotional') and Ask for
-// more ('A study resource'), with the kind of book preset where the place has one. With a Logos list kept he searches the books Lampas does not open and a pick fills the request with the row's Resource ID,
+// Request a devotional, Ask for more's study-resource form and the idea sheet's). It opens from the Library card, the idea sheet ('Ask for a grammar') and Settings > Daily ('Ask for a devotional'; Ask for more has no
+// study-resource button now, mw-5r3p30.726: that ask goes through the tutor), with the kind of book preset where the place has one. With a Logos list kept he searches the books Lampas does not open and a pick fills the request with the row's Resource ID,
 // Type, Series and ReferenceSupersets, so the makers add it without research; without one he types the title. One line says what is sent. Send keeps the request on the phone and sends it
 // (src/services/bookRequests.ts): offline it waits and goes by itself; a book already in the catalogue or already asked is refused with its line. Your requests follows it from there. Sent to the mill, so
 // the places that open it are not drawn without a licence. At its top, 'Let the tutor do it' (src/formHelper/): the tutor asks which book, what kind and why in a talk, fills the fields he sees

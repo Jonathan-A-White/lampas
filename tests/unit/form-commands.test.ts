@@ -1,4 +1,4 @@
-// The ask-for-approach and ask-for-more commands (src/services/formCommands.ts, mw-o7cts8.3): the one path a form's own Send and the tutor's Send both run.
+// The ask-for-approach command (src/services/formCommands.ts, mw-o7cts8.3): the one path a form's own Send and the tutor's Send both run.
 // Each posts through submitFeedback with the body the builders give; a value over its limit is refused before anything is posted.
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -9,20 +9,16 @@ vi.mock('../../src/services/feedback', async (importOriginal) => ({
 }));
 
 import { argsOf } from '../../src/formHelper/formHelper';
-import { MORE_FORMS } from '../../src/formHelper/moreForms';
 import { APPROACH_FORM } from '../../src/formHelper/approachForm';
 import { db } from '../../src/data/db';
 import { createVerseList, getVerseList, listVerseLists } from '../../src/data/repositories';
 import { LIST_NAME_MAX } from '../../src/share/listName';
-import { askForApproachCommand, askForMoreCommand, approachCommand, saveAsListCommand } from '../../src/services/formCommands';
+import { askForApproachCommand, approachCommand, saveAsListCommand } from '../../src/services/formCommands';
 import {
   buildFeedbackRequest,
-  buildMoreRequest,
   MAX_CREDIT_NAME,
   MAX_CREDIT_URL,
   MAX_FEEDBACK_CHARS,
-  MAX_MORE_NAME,
-  MORE_KINDS,
   submitFeedback,
 } from '../../src/services/feedback';
 
@@ -99,86 +95,6 @@ describe('the ask-for-approach command', () => {
   });
 });
 
-describe('the ask-for-more command', () => {
-  it('is one name for the three forms: it requires the name and the kind, the kind one of MORE_KINDS', () => {
-    const command = askForMoreCommand('text');
-    expect(command.name).toBe('ask-for-more');
-    expect(command.kind).toBe('confirm');
-    const args = command.args!;
-    expect(args.required).toEqual(expect.arrayContaining(['name', 'kind']));
-    expect(args.required).not.toContain('why');
-    expect(args.additionalProperties).toBe(false);
-    expect(args.properties?.kind).toMatchObject({
-      type: 'string',
-      enum: [...MORE_KINDS],
-    });
-    expect(args.properties?.name).toMatchObject({
-      type: 'string',
-      maxLength: MAX_MORE_NAME,
-    });
-    expect(args.properties?.why).toMatchObject({
-      type: 'string',
-      maxLength: MAX_FEEDBACK_CHARS,
-    });
-    expect(args.properties?.link).toMatchObject({
-      type: 'string',
-      maxLength: MAX_CREDIT_URL,
-    });
-    for (const kind of MORE_KINDS) expect(askForMoreCommand(kind).name).toBe('ask-for-more');
-    expect(command.offer?.({ kind: 'text', name: 'The Septuagint' })).toBe('Send A text: The Septuagint?');
-  });
-
-  it('posts buildMoreRequest of the args, for each kind', async () => {
-    for (const kind of MORE_KINDS) {
-      posted.mockClear();
-      await askForMoreCommand(kind).run({
-        kind,
-        name: 'The Septuagint',
-        why: 'To read it in Greek.',
-        link: 'example.org/lxx',
-      });
-      expect(posted).toHaveBeenCalledTimes(1);
-      expect(posted.mock.calls[0][0]).toEqual(buildMoreRequest(kind, 'The Septuagint', 'To read it in Greek.', 'example.org/lxx'));
-    }
-  });
-
-  it('sends the name alone, and his memorizing evidence only when the form hands it over', async () => {
-    await askForMoreCommand('translation').run({
-      kind: 'translation',
-      name: 'The NASB',
-    });
-    expect(posted.mock.calls[0][0]).toEqual(buildMoreRequest('translation', 'The NASB'));
-    const evidence = { summary: '1 verse, 3 recalls', evidence: [] };
-    await askForMoreCommand('translation', {
-      memorizing: async () => evidence,
-    }).run({ kind: 'translation', name: 'The NASB' });
-    expect(posted.mock.calls[1][0]).toEqual(buildMoreRequest('translation', 'The NASB', '', '', evidence));
-  });
-
-  it('refuses an over-long name before anything is posted', async () => {
-    await expect(
-      askForMoreCommand('text').run({
-        kind: 'text',
-        name: 'x'.repeat(MAX_MORE_NAME + 1),
-      }),
-    ).rejects.toThrow(/at most/i);
-    expect(posted).not.toHaveBeenCalled();
-  });
-
-  it('has a form per kind whose fields are name, why and link, titled as the page lists them', () => {
-    expect(MORE_FORMS.text.name).toBe('A text');
-    expect(MORE_FORMS.approach.name).toBe('An approach or programme');
-    expect(MORE_FORMS.translation.name).toBe('A translation');
-    for (const kind of MORE_KINDS) {
-      const [name, why, link] = MORE_FORMS[kind].fields;
-      expect([name.name, name.kind, name.required, name.maxLength]).toEqual(['name', 'text', true, MAX_MORE_NAME]);
-      expect([why.name, why.kind, why.required, why.maxLength]).toEqual(['why', 'text', false, MAX_FEEDBACK_CHARS]);
-      expect([link.name, link.kind, link.required, link.maxLength, link.label]).toEqual(['link', 'link', false, MAX_CREDIT_URL, 'Link']);
-    }
-    expect(MORE_FORMS.text.fields[0].label).toBe('Which text?');
-  });
-});
-
 describe('what the form’s own Send passes', () => {
   it('is argsOf the form: trimmed, an empty field left out, pictures never', () => {
     expect(
@@ -189,7 +105,6 @@ describe('what the form’s own Send passes', () => {
         link: ' ',
       }),
     ).toEqual({ approach: 'A', credit: 'B' });
-    expect(argsOf(MORE_FORMS.text, { name: ' The LXX ', why: '', link: 'x.org' })).toEqual({ name: 'The LXX', link: 'x.org' });
   });
 });
 
