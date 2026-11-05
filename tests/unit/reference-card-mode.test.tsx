@@ -93,6 +93,12 @@ describe('a held Old Testament reference', () => {
     return card;
   }
 
+  it('names the Berean Standard Bible under English the Old Testament has, the Majority Standard Bible under the New Testament\'s (mw-5r3p30.1088)', async () => {
+    const card = await openDaniel();
+    expect(within(card).getByText('Berean Standard Bible')).toBeInTheDocument();
+    expect(within(card).queryByText('Majority Standard Bible')).toBeNull();
+  });
+
   it('has Open, which opens the Reader at Daniel 2:28, and not "Not in Lampas yet"', async () => {
     const card = await openDaniel();
     expect(within(card).queryByText(/Not in Lampas yet/)).toBeNull();

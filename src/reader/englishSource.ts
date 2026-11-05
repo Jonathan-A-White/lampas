@@ -9,6 +9,9 @@ export type EnglishSource = 'msb' | 'bsb' | 'lampas';
 /** The caption of each source. PROVISIONAL wording (the Governor confirms it). */
 export const SOURCE_CAPTION: Record<EnglishSource, string> = { msb: 'MSB', bsb: 'BSB', lampas: 'Lampas (AI)' };
 
+/** The two translations by name, as a label for the English they are (the blog's popup, src/reftagger/passage.ts, holds the same two). */
+export const TRANSLATION_NAME: Record<'msb' | 'bsb', string> = { msb: 'Majority Standard Bible', bsb: 'Berean Standard Bible' };
+
 /** What a tap on a caption says: one line. */
 export const SOURCE_SAYS: Record<EnglishSource, string> = {
   msb: 'The Majority Standard Bible, the English beside the Greek (public domain); its footnotes give the critical text’s reading.',

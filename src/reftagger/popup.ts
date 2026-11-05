@@ -1,10 +1,11 @@
 // src/reftagger/popup.ts — the blog's verse popup (mw-5r3p30.1048): a tap on a tagged reference (tagger.ts) opens a small card beside it with the verse in the Majority Standard Bible and
 // an Open in Lampas button, as RefTagger's did; a mouse opens it by hovering and closes it by leaving, and a click on the link with a mouse still goes straight to Lampas (PROVISIONAL, the
-// Governor to confirm). The text is the app's own chapter file, fetched from the page that loaded the script: a cross-origin fetch, so it needs the host to send Access-Control-Allow-Origin
+// Governor to confirm). The text is a small file of the chapter's English (public/data/verses-<book>-<chapter>.json, a few KB, not the chapter file), fetched from the page that loaded the script: a cross-origin fetch, so it needs the host to send Access-Control-Allow-Origin
 // (docs/links.md 'The blog's popup'); when it cannot be had the card is still the reference and the button. The card lives in a shadow root, so the blog's styles never reach it and its
 // own never reach the blog. One card at a time. It sets no cookie and sends no header of its own.
-import { MARK } from './tagger';
-import { chapterUrl, headingOf, passageOf, versesOf, type ShownVerse, type TaggedPassage } from './passage';
+import { MARK, TO_CHAPTER } from './tagger';
+import { headingOf, isOnlyTheStart, passageOf, versesOf, versesUrl, type TaggedPassage } from './passage';
+import { translationName, type ShownVerse } from './verses';
 
 const HOST = 'data-lampas-popup';
 const GAP = 6;
@@ -27,6 +28,7 @@ const css = (c: typeof LIGHT): string => `
   .body p { margin: 0 0 8px; }
   .body sup { color: ${c.muted}; font-size: 11px; margin-right: 3px; }
   .wait { color: ${c.muted}; }
+  .start { margin: 0 14px; font-size: 13px; color: ${c.muted}; }
   .open { display: block; box-sizing: border-box; margin: 8px 14px 12px; padding: 10px 14px; min-height: 44px; text-align: center; text-decoration: none; font-weight: 600;
     background: ${c.button}; color: ${c.buttonText}; border-radius: 8px; flex: none; }
   .open:focus-visible { outline: 3px solid ${c.fg}; outline-offset: 2px; }
@@ -43,9 +45,9 @@ function isDark(from: Element): boolean {
 
 const chapters = new Map<string, Promise<unknown>>();
 
-/** The chapter file, once per page; null when it cannot be had (CORS refused, offline, a 404, too slow): never a throw. */
+/** The chapter's small file of English, once per page; null when it cannot be had (CORS refused, offline, a 404, too slow): never a throw. */
 function fetchChapter(p: TaggedPassage): Promise<unknown> {
-  const url = chapterUrl(p, dataOrigin);
+  const url = versesUrl(p, dataOrigin);
   let held = chapters.get(url);
   if (!held) {
     const stop = new AbortController();
@@ -97,15 +99,15 @@ function place({ link, card }: Open): void {
   card.style.top = `${top + window.scrollY}px`;
 }
 
-function fill(open: Open, p: TaggedPassage, verses: ShownVerse[] | null, href: string): void {
+function fill(open: Open, p: TaggedPassage, verses: ShownVerse[] | null, href: string, translation: string | null = null): void {
   const { card } = open;
   card.replaceChildren();
   const head = document.createElement('div');
   head.className = 'head';
   head.textContent = headingOf(p);
-  if (verses && verses.length > 0) {
+  if (verses && verses.length > 0 && translation) {
     const small = document.createElement('small');
-    small.textContent = 'Majority Standard Bible';
+    small.textContent = translation;
     head.append(small);
   }
   card.append(head);
@@ -130,6 +132,14 @@ function fill(open: Open, p: TaggedPassage, verses: ShownVerse[] | null, href: s
       }
     }
     card.append(body);
+    // a chapter alone or a range of chapters shows its first verse: say so, with the way on
+    if (verses !== null && isOnlyTheStart(p)) {
+      const start = document.createElement('p');
+      start.className = 'start';
+      start.setAttribute('data-start-only', '');
+      start.textContent = 'Only the first verse. Read on in Lampas.';
+      card.append(start);
+    }
   }
   const go = document.createElement('a');
   go.className = 'open';
@@ -144,7 +154,8 @@ function fill(open: Open, p: TaggedPassage, verses: ShownVerse[] | null, href: s
 export function openPopup(link: HTMLAnchorElement, focus = false): void {
   closePopup();
   const href = link.getAttribute('href') ?? '';
-  const p = passageOf(href);
+  const to = Number(link.getAttribute(TO_CHAPTER));
+  const p = passageOf(href, Number.isInteger(to) && to > 0 ? to : undefined);
   if (!p) return;
   const host = document.createElement('div');
   host.setAttribute(HOST, '');
@@ -170,7 +181,7 @@ export function openPopup(link: HTMLAnchorElement, focus = false): void {
   void fetchChapter(p).then((file) => {
     if (current !== open) return;
     const verses = file === null ? [] : versesOf(file, p);
-    fill(open, p, verses, href);
+    fill(open, p, verses, href, translationName(file));
     place(open);
     if (focus) card.querySelector<HTMLElement>('.open')?.focus({ preventScroll: true });
   });

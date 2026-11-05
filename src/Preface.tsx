@@ -10,7 +10,7 @@ import { useReportScreen } from './tutor/screenContext';
 const FACTS = [
   { label: 'Greek text', value: 'Byzantine Textform, Robinson and Pierpont, the 2005 edition, its 2018 changes not applied (public domain)' },
   { label: 'Variant readings', value: 'Robinson-Pierpont 2018 with its apparatus, the 2026 changes applied' },
-  { label: 'English text', value: 'Majority Standard Bible (public domain)' },
+  { label: 'English text', value: 'Majority Standard Bible for the New Testament, Berean Standard Bible for the Old (public domain)' },
   { label: 'Sources linked', value: PREFACE_LINKS.map((l) => l.name).join('; ') },
 ];
 
