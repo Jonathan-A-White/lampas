@@ -552,7 +552,7 @@ was built for story mw-u2w5klk.14). A host without the cache lists fewer candida
 without the cache, 12,541 with it, 'The sweep'). Until a later story moves the cache into the repo, or a host builds its own with `npm run lxx:derive -- --all`, a Builder session for a model story runs on the Laptop and **builds the cache first** (a fresh worktree has none).
 `lxx:pending` enforces it (story mw-u2w5klk.268): for a batch or a `--recheck` with no `data/lxx/morpheus/<book>.tsv` it exits non-zero, writes no listing and prints the command, `sg docker -c 'npm run lxx:derive -- --book <code>'`.
 `--no-morpheus` is the way past it for a host that truly cannot run Docker: it lists as the other host would, with fewer candidates, and the closing comment says so. `lxx:batches` and `lxx:choose` go on without the cache and print one `warning: no Morpheus cache` line (`lxx:batches --all` one line
-after its total row, naming the books); `lxx:report` shows a dash in the Morpheus column; `lxx:known` and `lxx:release` read no cache for a hidden chapter or take what they find.
+after its total row, naming the books); `lxx:report` shows a dash in the Morpheus column; `lxx:release` and `lxx:ship` (story mw-u2w5klk.271) also go on, and print the same `warning: no Morpheus cache for <book>` line once for each book they run without it (not with `lxx:ship --no-morpheus`, which asked for that); `lxx:ship`'s last line ends `without Morpheus: gen` (the books, or `none`) so a deploy log says it. Neither refuses: the deploy must not stop on it. `lxx:known` reads no cache for a hidden chapter or takes what it finds.
 
 **The Mayor**, to file the stories:
 

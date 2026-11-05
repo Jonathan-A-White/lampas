@@ -4,6 +4,7 @@
 // build's known-answer lines and the book's guess line) to a temporary annotation set, and builds the chapter files, index.json, the lexicon and the notice files (LICENSE-swete.txt, README-swete.md, README.md)
 // into <dir>. It is the Laptop's deploy step, after `npm run build`: `npm run lxx:ship -- --out dist/data-lxx`. It writes nothing under data/, public/ or docs/ (a repo with no choices file has `books: []`
 // in public/data-lxx/index.json and keeps it). One line a book (`gen: shipped 1-6 of 50`); a derive or build error fails the run, and nothing shippable does not.
+// A book derived with no Morpheus cache is warned (one line, naming the sg docker line that builds it) and named in the last summary line ('without Morpheus: gen', or 'none'); the run is not refused (mw-u2w5klk.271).
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -14,7 +15,7 @@ import { writeIfChanged } from '../data/chapterWriter';
 import { readChoiceDir } from './choices';
 import { OUT_DIR, deriveBook, loadInput, splitBooks, train, type DeriveInput } from './derive';
 import { KNOWN_DIR, knownScores, type KnownScore } from './known';
-import { readMorpheusCache } from './morpheus';
+import { noMorpheusWarning, readMorpheusCache } from './morpheus';
 import { CHOICES_DIR, chapterOfRef, currentBuild, joinChoices, knownChaptersOf, planBook, shippedWords } from './release';
 import { OLD_TESTAMENT } from './report';
 import { RAW_DIR, type Fetcher } from './sources';
@@ -76,6 +77,8 @@ export interface Shipped {
   /** the books that had a choices file: their lower-case code, the Greek chapters shipped, and the book's chapter count */
   books: Array<{ code: string; shipped: number[]; chapters: number }>;
   written: Written;
+  /** the books derived with no Morpheus cache (all of them with --no-morpheus), their lower-case code: the summary line names them */
+  withoutMorpheus: string[];
 }
 
 /** Whether the choices directory holds a file for the book: `<book>-<anything>.tsv`. */
@@ -87,6 +90,7 @@ export async function runShip(argv: readonly string[], options: ShipOptions = {}
   const started = Date.now();
   const named = books.filter(([code]) => hasChoices(choicesDir, code));
   const out: Shipped['books'] = [];
+  const withoutMorpheus: string[] = [];
   const work = mkdtempSync(join(scratch, 'lampas-lxx-ship-'));
   const annotations = join(work, 'annotations');
   try {
@@ -104,6 +108,12 @@ export async function runShip(argv: readonly string[], options: ShipOptions = {}
         const book = tokens.get(code);
         if (!book || book.words.length === 0) throw new Error(`no book '${code.toLowerCase()}' in Swete's file`);
         const cache = args.morpheus ? readMorpheusCache(morpheusDir, code) : undefined;
+        // a book with no cache has its guess share read high by the chapter bar: warned once, and named in the summary; the run goes on (mw-u2w5klk.271)
+        if (!cache) {
+          withoutMorpheus.push(code.toLowerCase());
+          const missing = args.morpheus ? noMorpheusWarning(morpheusDir, code.toLowerCase()) : undefined;
+          if (missing) log(missing);
+        }
         const result = deriveBook(input, code, undefined, trained, book, cache);
         const joined = joinChoices(result, readChoiceDir(choicesDir, `${result.book}-`).choices);
         const plan = planBook(result, joined, known);
@@ -121,8 +131,8 @@ export async function runShip(argv: readonly string[], options: ShipOptions = {}
     const written = writeLxx(lxx, args.out, log);
     if (!existsSync(notice)) throw new Error(`the notice ${notice} is not there`);
     if (writeIfChanged(join(args.out, 'README.md'), readFileSync(notice, 'utf8'))) written.written++;
-    log(`lxx:ship: ${out.length} book${out.length === 1 ? '' : 's'} with a choices file, ${((Date.now() - started) / 1000).toFixed(1)} s, into ${args.out}`);
-    return { books: out, written };
+    log(`lxx:ship: ${out.length} book${out.length === 1 ? '' : 's'} with a choices file, ${((Date.now() - started) / 1000).toFixed(1)} s, into ${args.out}; without Morpheus: ${withoutMorpheus.length > 0 ? withoutMorpheus.join(', ') : 'none'}`);
+    return { books: out, written, withoutMorpheus };
   } finally {
     rmSync(work, { recursive: true, force: true });
   }

@@ -130,6 +130,35 @@ describe('npm run lxx:ship -- --out <dir>', () => {
     expect((JSON.parse(readFileSync(join(out, 'index.json'), 'utf8')) as LxxIndex).books).toEqual([]);
   });
 
+  it('warns once a book with no Morpheus cache, naming the build line, and ends on a summary that names it; the exit is the same', async () => {
+    const o = options({ 'gen-01.tsv': choicesTo(6) });
+    const done = await runShip(['--out', tmp()], o);
+    const warned = o.lines.filter((l) => l.startsWith('warning: no Morpheus cache for gen'));
+    expect(warned).toHaveLength(1);
+    expect(warned[0]).toContain("sg docker -c 'npm run lxx:derive -- --book gen'");
+    expect(o.lines[o.lines.length - 1]).toMatch(/^lxx:ship: .*; without Morpheus: gen$/);
+    expect(done.withoutMorpheus).toEqual(['gen']);
+    expect(done.books).toEqual([{ code: 'gen', shipped: [1, 2, 3, 4, 5, 6], chapters: 50 }]);
+  });
+
+  it('with --no-morpheus names the books built without it in the summary the same way, with no per-book warning', async () => {
+    const o = options({ 'gen-01.tsv': choicesTo(6) });
+    const done = await runShip(['--out', tmp(), '--no-morpheus'], o);
+    expect(o.lines.some((l) => l.startsWith('warning: no Morpheus cache'))).toBe(false);
+    expect(o.lines[o.lines.length - 1]).toMatch(/; without Morpheus: gen$/);
+    expect(done.withoutMorpheus).toEqual(['gen']);
+  });
+
+  it('says "without Morpheus: none" when every book has its cache', async () => {
+    const morpheusDir = tmp();
+    writeFileSync(join(morpheusDir, 'gen.tsv'), '');
+    const o = options({ 'gen-01.tsv': choicesTo(6) }, { morpheusDir });
+    const done = await runShip(['--out', tmp()], o);
+    expect(o.lines.some((l) => l.includes('no Morpheus cache'))).toBe(false);
+    expect(o.lines[o.lines.length - 1]).toMatch(/; without Morpheus: none$/);
+    expect(done.withoutMorpheus).toEqual([]);
+  });
+
   it('says "all" for a whole book', async () => {
     const o = options({ 'gen-01.tsv': choicesTo(50) });
     await runShip(['--out', tmp()], o);

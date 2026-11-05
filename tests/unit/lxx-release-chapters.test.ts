@@ -116,6 +116,41 @@ describe('lxx:release writes the shippable chapters of a book', () => {
   });
 });
 
+describe('lxx:release with no Morpheus cache (mw-u2w5klk.271)', () => {
+  it('warns once, naming the book and the sg docker line that builds the cache, and still writes the chapters', async () => {
+    const r = await release(choicesFor(range(1, 6)));
+    const lines: string[] = [];
+    const done = await runRelease(['--book', 'gen'], { input, outDir: r.outDir, choicesDir: join(r.outDir, '..', 'none'), known: passing, morpheusDir: tmp(), log: (l) => lines.push(l) }).catch((e: unknown) => e);
+    // no choices file here: the run is refused, but the warning came first and the exit is the same as without it
+    expect(done).toBeInstanceOf(ReleaseRefused);
+    const warned = lines.filter((l) => l.includes('no Morpheus cache'));
+    expect(warned).toHaveLength(1);
+    expect(warned[0]).toContain('gen');
+    expect(warned[0]).toContain("sg docker -c 'npm run lxx:derive -- --book gen'");
+  });
+
+  it('warns, and does not refuse, for a book whose chapters ship', async () => {
+    const outDir = tmp();
+    const choicesDir = tmp();
+    writeFileSync(join(choicesDir, 'gen-01.tsv'), choicesFor(range(1, 6)));
+    const lines: string[] = [];
+    const done = await runRelease(['--book', 'gen'], { input, outDir, choicesDir, known: passing, morpheusDir: tmp(), log: (l) => lines.push(l) });
+    expect(done.shipped).toEqual(range(1, 6));
+    expect(lines.filter((l) => l.startsWith('warning: no Morpheus cache for gen'))).toHaveLength(1);
+  });
+
+  it('says nothing of it when the book has a cache', async () => {
+    const outDir = tmp();
+    const choicesDir = tmp();
+    const morpheusDir = tmp();
+    writeFileSync(join(morpheusDir, 'gen.tsv'), '');
+    writeFileSync(join(choicesDir, 'gen-01.tsv'), choicesFor(range(1, 6)));
+    const lines: string[] = [];
+    await runRelease(['--book', 'gen'], { input, outDir, choicesDir, known: passing, morpheusDir, log: (l) => lines.push(l) });
+    expect(lines.some((l) => l.includes('no Morpheus cache'))).toBe(false);
+  });
+});
+
 describe('a chapter on its own figures', () => {
   const joined = joinChoices(result, new Map());
 
