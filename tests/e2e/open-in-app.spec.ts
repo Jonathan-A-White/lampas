@@ -1,6 +1,6 @@
 // tests/e2e/open-in-app.spec.ts — 'Open in the app' (mw-5r3p30.1041): in a Chrome tab on Android where navigator.getInstalledRelatedApps (stubbed here: a real install
-// cannot be made in a test) reports the app, one labelled control shows at 360x740 and 390x844, at 100 % and at larger text. It is clear of the floating ? and of the Reader's
-// heading and text, no wider than the phone, and 'Not now' puts it away for the session. Nothing leaves the page by itself: the address is as it was opened. The tap's intent: URL is
+// cannot be made in a test) reports the app, one labelled control shows at 360x740 and 390x844, at 100 % and at larger text. It is clear of the floating ? and floats over the top edge (mw-5r3p30.1051: arriving late it moves neither the Reader's
+// verse nor its box, at 390x844 and 844x390), no wider than the phone, and 'Not now' puts it away for the session. Nothing leaves the page by itself: the address is as it was opened. The tap's intent: URL is
 // proven in tests/unit/open-in-app.test.tsx (a desktop Chromium cannot follow an intent: address); the last test reads the address the tap requests (CDP Page.frameRequestedNavigation) and opens it
 // in a fresh context, to prove the verse survives the hand-over (mw-5r3p30.1050). Ends with a shot.
 import { expect, test, type Page } from '@playwright/test';
@@ -19,6 +19,16 @@ async function stubApi(page: Page, apps: unknown[]): Promise<void> {
   await page.addInitScript((list) => {
     Object.defineProperty(navigator, 'getInstalledRelatedApps', { value: () => Promise.resolve(list), configurable: true });
   }, apps);
+}
+
+/** The API answering late, as the real one does: after `ms`. */
+async function stubSlowApi(page: Page, apps: unknown[], ms: number): Promise<void> {
+  await page.addInitScript(
+    ([list, wait]) => {
+      Object.defineProperty(navigator, 'getInstalledRelatedApps', { value: () => new Promise((resolve) => setTimeout(() => resolve(list), wait as number)), configurable: true });
+    },
+    [apps, ms] as const,
+  );
 }
 
 const WEBAPP = [{ platform: 'webapp', url: 'https://lampas.allmymind.org/manifest.webmanifest' }];
@@ -49,11 +59,8 @@ for (const phone of PHONES.filter((p) => p.size.width < 400)) {
         const door = page.locator(FLOATING);
         if (await door.isVisible()) expect(meets(box, (await door.boundingBox())!), 'the ? is over it').toBe(false);
       }
-      // the reading text starts below the strip: the strip is in the flow, not over it
-      const heading = (await page.getByRole('heading', { name: 'Romans 8', level: 1 }).boundingBox())!;
-      expect(meets(stripBox, heading), `the strip ${JSON.stringify(stripBox)} covers the heading ${JSON.stringify(heading)}`).toBe(false);
-      const text = (await page.locator('[data-shell] .screen, [data-shell] main').first().boundingBox())!;
-      expect(text.y, 'the reading box starts below the strip').toBeGreaterThanOrEqual(stripBox.y + stripBox.height - 1);
+      // the strip floats over the top of the screen and takes no room from the reading box (mw-5r3p30.1051): it sits at the top edge, under the phone's own inset
+      expect(stripBox.y, 'the strip is at the top of the screen').toBeLessThan(view.height / 4);
       // nothing left the page by itself: no top-level navigation to another document or an intent: address, still the app's own origin
       await page.waitForTimeout(500); // a short hold so an automatic hand-over would have happened
       expect(navigations.filter((url) => !url.startsWith(origin)), 'left the app').toEqual([]);
@@ -66,6 +73,36 @@ for (const phone of PHONES.filter((p) => p.size.width < 400)) {
       await expect(strip).toHaveCount(0);
     });
   }
+}
+
+// mw-5r3p30.1051: the strip arrives when the API answers, seconds after he has started reading: it floats over the top and moves nothing.
+for (const size of [
+  { width: 390, height: 844 },
+  { width: 844, height: 390 },
+]) {
+  test(`${size.width}x${size.height}: the strip arriving after 3 s moves neither verse 28 nor the reading box`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await stubSlowApi(page, WEBAPP, 3000);
+    await openUnlocked(page);
+    await page.goto('/#/?ref=Rom.8.28');
+    const strip = page.locator('[data-open-in-app]');
+    const verse = page.locator('[data-reader] [data-verse="28"]').first();
+    const reader = page.locator('[data-reader]');
+    await expect(verse).toBeVisible();
+    await expect(reader).toHaveAttribute('data-brought-verse', '28');
+    await page.waitForTimeout(1000); // the verse has settled at the top, and the API has not answered yet
+    await expect(strip, 'the strip is not here yet').toHaveCount(0);
+    const before = { verse: (await verse.boundingBox())!, reader: (await reader.boundingBox())!, scroll: await reader.evaluate((el) => el.scrollTop) };
+    await expect(strip).toBeVisible({ timeout: 10_000 });
+    await page.waitForTimeout(500); // anything the strip would push has moved by now
+    const after = { verse: (await verse.boundingBox())!, reader: (await reader.boundingBox())!, scroll: await reader.evaluate((el) => el.scrollTop) };
+    expect(Math.abs(after.verse.y - before.verse.y), `verse 28 top ${before.verse.y} -> ${after.verse.y}`).toBeLessThanOrEqual(1);
+    expect(Math.abs(after.reader.height - before.reader.height), `reading box height ${before.reader.height} -> ${after.reader.height}`).toBeLessThanOrEqual(1);
+    expect(Math.abs(after.reader.y - before.reader.y), `reading box top ${before.reader.y} -> ${after.reader.y}`).toBeLessThanOrEqual(1);
+    expect(after.scroll, 'the reading box was not scrolled by it').toBeCloseTo(before.scroll, 0);
+    await expect(strip.getByRole('button', { name: 'Open in the app' })).toBeVisible();
+    await shot(page, `open-in-app-late-${size.width}x${size.height}`);
+  });
 }
 
 test('shows nothing where the API reports nothing, or is absent', async ({ page }) => {
