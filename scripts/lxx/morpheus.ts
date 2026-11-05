@@ -229,32 +229,45 @@ const ordered = (d: Declined): string[] => d.genders.flatMap((g) => d.cases.flat
 /**
  * One reading of Morpheus as TAGNT's codes, or the reason it is not one reading to one code (`unmappedWhy`). Mapped: a finite verb, an infinitive and a participle
  * of the present, imperfect, future and aorist (first or second by the ending table, passive by `aor_pass`); a noun; an adjective (by the ending table); the
- * article; a conjunction, a particle, an adverb and a preposition; a noun or adjective whose forms Morpheus lists one by one (`indeclform`, class `irreg_decl3`). A list of genders or cases in one reading is a code each (at most MAX_READINGS). Not mapped:
- * the dual, a comparative or superlative, a dialect without Attic, an unaugmented form, a perfect or pluperfect (TAGNT's second perfect is not told by its
- * table), a pronoun, a numeral, an English gloss, anything else. Deponents are not told either: the passive of a deponent verb maps to P where TAGNT writes O
- * (the report's 'differed' shows it).
+ * article; a conjunction, a particle, an adverb and a preposition; a noun or adjective whose forms Morpheus lists one by one (`indeclform`, class `irreg_decl3`). A list of genders or cases in one reading is a code each (at most MAX_READINGS). The perfect
+ * (story mw-u2w5klk.32) is TAGNT's R: an active one is R when `form` (the Greek form asked, NFC) has a κ before its ending (firstPerfect) and R and 2R otherwise, for Morpheus's
+ * perf_act table holds both and without the form it cannot be told; a middle or passive one is R. Not mapped: the dual, a comparative or superlative, a dialect without
+ * Attic, an unaugmented form, a pluperfect or future perfect (TAGNT's L and 2L, and the future perfect it has no code for; the tenses still left out), a pronoun, a numeral, an English gloss, anything else.
+ * Deponents are not told either: the passive of a deponent verb maps to P where TAGNT writes O (the report's 'differed' shows it).
  */
-export function mapAnalysis(raw: RawAnalysis): Mapped[] | undefined {
-  const r = mapReading(raw);
+export function mapAnalysis(raw: RawAnalysis, form?: string): Mapped[] | undefined {
+  const r = mapReading(raw, form);
   return typeof r === 'string' ? undefined : r;
 }
 
 /** Why a reading is left out, in a word or two (a class of `unmappedWhy`); undefined when the mapping covers it. */
-export function unmappedWhy(raw: RawAnalysis): string | undefined {
-  const r = mapReading(raw);
+export function unmappedWhy(raw: RawAnalysis, form?: string): string | undefined {
+  const r = mapReading(raw, form);
   return typeof r === 'string' ? r : undefined;
 }
 
 /** The tenses of Morpheus that no TAGNT code is made for, by the name the report uses. */
-const LEFT_OUT_TENSES: Readonly<Record<string, string>> = { perf: 'perfect', plup: 'pluperfect', futperf: 'future perfect' };
+const LEFT_OUT_TENSES: Readonly<Record<string, string>> = { plup: 'pluperfect', futperf: 'future perfect' };
+
+/**
+ * Whether an active perfect's form is a first perfect, TAGNT's R: a κ stands before its ending (λέλυκα, πεποίηκεν, λελυκώς, ἐγνωκέναι). The second perfect (γέγονα, πέποιθα,
+ * ἀκήκοα) has none. Morpheus's `perf_act` is one table for both. 13 of TAGNT's 163 second perfects have a κ (ἀκηκόαμεν); 302 of its 681 first perfects have none (οἶδα, ἕστηκα),
+ * which is why a form without one is offered as both.
+ */
+export function firstPerfect(form: string): boolean {
+  const bare = form.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  return /κ(?:α|ας|ε|εν|αμεν|ατε|ασιν?|εναι|ως|ος|ο|οτ[^κ]*|υι[^κ]*)$/u.test(bare);
+}
 
 /**
  * TAGNT's voice letters for Morpheus's voice (one reading to each). Morpheus prints `mp` for a form that is middle or passive, and for a deponent verb in every tense;
  * TAGNT, which says what the form is, writes `N` for a deponent's present and imperfect, `D` (middle deponent) or `O` (passive deponent) for its aorist and future,
  * and `P` or `M` for any other verb: its `E` (the form is middle or passive) is rare, so it is not offered. A deponent is told by its lemma ending in -μαι.
+ * A deponent's perfect (tense `R`, story mw-u2w5klk.32) is `N` or `P` in TAGNT (13 and 11 of its words, `D` and `M` one each), never the `D` and `O` of its aorist and future.
  */
 export function voicesOf(voice: string, tense: string, lemma: string): string[] {
   const deponent = /μαι$/.test(lemma);
+  if (voice === 'mp' && deponent && /R$/.test(tense)) return ['N', 'P'];
   const later = tense !== 'P' && tense !== 'I';
   if (voice === 'act') return ['A'];
   if (voice === 'mid') return deponent ? ['M', 'D'] : ['M'];
@@ -262,7 +275,7 @@ export function voicesOf(voice: string, tense: string, lemma: string): string[] 
   return deponent ? (later ? ['D', 'O'] : ['N']) : ['P', 'M'];
 }
 
-function mapReading(raw: RawAnalysis): Mapped[] | string {
+function mapReading(raw: RawAnalysis, form?: string): Mapped[] | string {
   const dialects = words(raw.dialects);
   if (dialects.length && !dialects.includes('attic')) return 'a dialect without Attic';
   const flags = words(raw.flags);
@@ -283,25 +296,28 @@ function mapReading(raw: RawAnalysis): Mapped[] | string {
       if (second === first) return 'an aorist whose table does not say first or second';
       tense = second ? '2A' : 'A';
     }
+    if (tenseWord === 'perf') tense = 'R';
     if (!tense) return LEFT_OUT_TENSES[tenseWord] ?? 'a tense TAGNT has no code for here';
     // Morpheus prints the mood, then the voice, then a finite verb's person and number or a participle's gender, case and number
     const moodWord = rest.find((t) => Object.hasOwn(MOODS, t));
     const voiceWord = rest.find((t) => VOICES.has(t));
-    const voices = voiceWord ? voicesOf(voiceWord, tense, lemma) : [];
     const mood = MOODS[moodWord ?? ''];
-    if (!mood || voices.length === 0) return 'no mood or voice the table knows';
+    if (!mood || !voiceWord) return 'no mood or voice the table knows';
+    // an active perfect is R, or R and 2R when the form has no κ before its ending: perf_act is one table for TAGNT's first and second perfect
+    const tenses = tense === 'R' && voiceWord === 'act' && !(form && firstPerfect(form)) ? ['R', '2R'] : [tense];
+    const voices = tenses.flatMap((t) => voicesOf(voiceWord, t, lemma).map((voice) => `${t}${voice}`));
     const tail = rest.filter((t) => !Object.hasOwn(MOODS, t) && !VOICES.has(t));
     if (moodWord === 'part') {
       const d = declined(tail);
-      return d ? done(voices.flatMap((voice) => ordered(d).map((x) => `V-${tense}${voice}P-${x}`)), 'too many readings') : 'a participle with no case, number and gender the table knows';
+      return d ? done(voices.flatMap((voice) => ordered(d).map((x) => `V-${voice}P-${x}`)), 'too many readings') : 'a participle with no case, number and gender the table knows';
     }
-    if (moodWord === 'inf') return tail.length === 0 ? done(voices.map((voice) => `V-${tense}${voice}N`), 'too many readings') : 'an infinitive with more than a tense and voice';
+    if (moodWord === 'inf') return tail.length === 0 ? done(voices.map((voice) => `V-${voice}N`), 'too many readings') : 'an infinitive with more than a tense and voice';
     const [person, number] = tail;
     const p = PERSONS[person ?? ''];
     const n = NUMBERS[number ?? ''];
     if (tail.length !== 2 || !p || !n) return 'the dual or no person and number';
     if (tense === 'I' && mood !== 'I') return 'an imperfect that is not indicative';
-    return done(voices.map((voice) => `V-${tense}${voice}${mood}-${p}${n}`), 'too many readings');
+    return done(voices.map((voice) => `V-${voice}${mood}-${p}${n}`), 'too many readings');
   }
 
   if (raw.pos !== 'N') return 'not a noun, verb or participle';
@@ -339,11 +355,12 @@ const byText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 /** A cruncher entry as a form's readings. An `E` segment is Morpheus's English gloss of the `N` beside it, not another reading, and is left out. */
 export function formOf(entry: CrunchEntry): MorpheusForm {
+  const form = fromBeta(entry.input);
   const seen = new Map<string, Mapped>();
   let unmapped = 0;
   for (const raw of entry.raws) {
     if (raw.pos === 'E') continue;
-    const mapped = mapAnalysis(raw);
+    const mapped = mapAnalysis(raw, form);
     if (!mapped) unmapped++;
     for (const m of mapped ?? []) seen.set(`${m.lemma}/${m.code}`, m);
   }
@@ -357,11 +374,22 @@ export type MorpheusCache = Map<string, MorpheusForm>;
 
 export const CACHE_HEADER = ['form', 'analyses'];
 
-/** The file's text: tab-separated, a header row, one row a form in order, `lemma/code` readings joined by ` | ` and one `unmapped` for each reading left out. */
+/**
+ * Which mapping made a cache file. The cache holds the mapped readings, not Morpheus's own output, so a change to the mapping leaves every file made before it with
+ * the old readings (a perfect `unmapped`): raise this when mapAnalysis changes what it returns for a form, and `ensureCache` asks the forms again. 1 is every file made
+ * before the marker existed; 2 maps the perfects (story mw-u2w5klk.32).
+ */
+export const MAPPING_VERSION = 2;
+const MARKER = /^# mapping (\d+)$/m;
+
+/** The file's text: tab-separated, a header row, a line `# mapping N`, one row a form in order, `lemma/code` readings joined by ` | ` and one `unmapped` for each reading left out. */
 export function cacheText(cache: ReadonlyMap<string, MorpheusForm>): string {
   const rows = [...cache].sort(([a], [b]) => byText(a, b)).map(([form, f]) => [form, [...f.analyses.map((m) => `${m.lemma}/${m.code}`), ...Array<string>(f.unmapped).fill('unmapped')].join(' | ')]);
-  return [CACHE_HEADER, ...rows].map((r) => r.join('\t')).join('\n') + '\n';
+  return [CACHE_HEADER.join('\t'), `# mapping ${MAPPING_VERSION}`, ...rows.map((r) => r.join('\t'))].join('\n') + '\n';
 }
+
+/** Whether a cache file's text was made by the mapping as it is now. */
+export const cacheIsCurrent = (text: string): boolean => Number(MARKER.exec(text)?.[1] ?? 1) === MAPPING_VERSION;
 
 export function parseCache(text: string): MorpheusCache {
   const cache: MorpheusCache = new Map();
@@ -441,18 +469,22 @@ export interface MorpheusState {
  * there are forms to ask, the step says so once (`state`) and the cache is what it was. A form with a character beta code cannot write is not asked.
  */
 export function ensureCache(engine: MorpheusEngine, file: string, forms: readonly string[], log: (line: string) => void, state: MorpheusState): MorpheusCache {
-  const cache = existsSync(file) ? parseCache(readFileSync(file, 'utf8')) : new Map<string, MorpheusForm>();
+  const text = existsSync(file) ? readFileSync(file, 'utf8') : undefined;
+  const found = text === undefined ? new Map<string, MorpheusForm>() : parseCache(text);
+  // a file made by an earlier mapping is read as it is while Morpheus cannot run, and asked again whole once it can
+  const stale = text !== undefined && !cacheIsCurrent(text);
+  const cache = stale ? new Map<string, MorpheusForm>() : found;
   const asked = [...new Set(forms.map((f) => f.normalize('NFC')))].filter((f) => !cache.has(f));
   const sent = asked.flatMap((form) => {
     const beta = toBeta(form);
     return beta ? [[form, beta] as const] : [];
   });
-  if (sent.length === 0) return cache;
+  if (sent.length === 0) return found;
   const why = engine.unavailable();
   if (why) {
     if (!state.said) log(`Morpheus skipped: ${why}`);
     state.said = true;
-    return cache;
+    return found;
   }
   const entries = parseCruncher(engine.crunch(sent.map(([, beta]) => beta)), sent.map(([, beta]) => beta));
   sent.forEach(([form], i) => cache.set(form, formOf(entries[i])));
