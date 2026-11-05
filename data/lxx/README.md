@@ -14,7 +14,7 @@ these files is Lampas's own derived data: the lemma and the candidate analyses.
 | --- | --- | --- |
 | `LICENSE` | MIT, for Lampas's derived data in this directory | yes |
 | `README.md` | this file | yes |
-| `annotations/<book>.tsv` | **the release**: the words of a book that passed the bar, `ref`, `lemma`, `parsing`, `layer`, `confidence`, `notes`, one row a word; written by `npm run lxx:release -- --book <code>` only when the book meets the bar | yes, a book at a time (none yet) |
+| `annotations/<book>.tsv` | **the release**: the words of the Greek chapters of a book that passed the chapter bar, `ref`, `lemma`, `parsing`, `layer`, `confidence`, `notes`, one row a word, under a first line naming the chapters (`# shipped chapters: 1-6 of 50`, or `all 50`); written by `npm run lxx:release -- --book <code>` | yes, a book at a time (none yet) |
 | `choices/<book>-<batch>.tsv`, `known/<book>-<chapter>.tsv`, `recheck/<book>-<batch>.tsv` | the model's choices (layer 3): for a book's pending words, for a New Testament chapter's known-answer run, and the second pass on a sample; `ref`, `parsing`, `lemma`, `mark` | yes |
 | `morpheus/<book>.tsv` | Morpheus's analyses (mapped to TAGNT's codes) of the book's forms with no candidate and of its guesses: `form`, `analyses`; made by `npm run lxx:derive` when Docker and the Morpheus image are there | no (git-ignored cache; it holds the forms, so it is never released) |
 | `derived/<book>.tsv` | the words of a book that are settled: `ref`, `lemma`, `parsing`, `layer`, `confidence`, `candidates`, `notes` | no (git-ignored working file) |
@@ -25,9 +25,9 @@ these files is Lampas's own derived data: the lemma and the candidate analyses.
 **What there is so far, and what is to come.** Layers 1 and 2: a word whose form the New Testament has with one analysis (or one with at least 95% of 20
 or more words) is settled in layer 1; a form it lacks is parsed by ending rules learned from the New Testament, with lemmas only from TBESG, and settled in
 layer 2 when one candidate has at least 90% of the support; every other word is pending with its candidates. The model's choice among them (layer 3) is
-read from a choices file (docs/lxx-derivation.md, 'The choices file'). A book's `annotations/<book>.tsv` is committed once the book meets the bar in
-docs/lxx-derivation.md, 'The bar' (the probe's numbers): known-answer lemma at least 99% and full parsing at least 98% on John 1 and one other New Testament chapter that changes with the build,
-no word pending, guesses at most 3% of the book's words, agreement breaks at most 5 per 1,000. `docs/lxx-report.md` says where every book stands.
+read from a choices file (docs/lxx-derivation.md, 'The choices file'). A book's `annotations/<book>.tsv` is committed with the rows of the Greek chapters that meet the chapter bar in
+docs/lxx-derivation.md, 'The chapter bar' (the probe's numbers, read per chapter): no word of the chapter pending and its agreement breaks at most 5 per 1,000 words, under the known-answer lines (lemma at least 99% and full parsing at least 98% on John 1 and one other New Testament chapter that changes with the build)
+and the book's guess line (guesses at most 3% of the book's words). **A partly shipped book's file is partial**: it holds only the chapters its first line names, and every row in it passed the bar. `docs/lxx-report.md` says where every book stands.
 
 ## How they are made
 
@@ -36,7 +36,8 @@ npm ci
 npm run lxx:derive -- --book gen               # writes data/lxx/derived/gen.tsv and data/lxx/pending/gen.tsv
 npm run lxx:derive -- --book gen --hide jhn    # the same with John left out of the New Testament's forms, for a known-answer run
 npm run lxx:known -- --chapter Jhn.1           # a New Testament chapter with its book hidden, scored against TAGNT
-npm run lxx:release -- --book gen              # annotations/gen.tsv, only if the book meets the bar; otherwise it names each failing line and writes nothing
+npm run lxx:release -- --book gen              # annotations/gen.tsv with the chapters that meet the chapter bar; with none it names each failing line and writes nothing
+npm run lxx:ship -- --out <dir>                # the Septuagint's chapters into <dir> for a deploy: derive, release and build for every book with a choices file; changes no tracked file
 npm run lxx:report                             # docs/lxx-report.md
 ```
 

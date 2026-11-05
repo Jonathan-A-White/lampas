@@ -50,9 +50,9 @@ export interface AnnotationRow {
 
 const ANNOTATION_COLUMNS = ['ref', 'lemma', 'parsing', 'layer', 'confidence'];
 
-/** A book's annotation file (docs/lxx-derivation.md 'The annotation file'): a header row, then `ref lemma parsing layer confidence notes`. A row given twice, or a header that is not the file's, stops the build. */
+/** A book's annotation file (docs/lxx-derivation.md 'The annotation file'): comment lines (`# shipped chapters: 1-6 of 50`), a header row, then `ref lemma parsing layer confidence notes`. A row given twice, or a header that is not the file's, stops the build. */
 export function parseAnnotations(text: string, book: string): Map<string, AnnotationRow> {
-  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((l) => l !== '');
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((l) => l !== '' && !l.startsWith('#'));
   const header = (lines.shift() ?? '').split('\t');
   if (ANNOTATION_COLUMNS.some((name, i) => header[i] !== name)) throw new Error(`${book}: the annotation file's header row is not ${ANNOTATION_COLUMNS.join(', ')}, ...`);
   const rows = new Map<string, AnnotationRow>();
@@ -67,6 +67,32 @@ export function parseAnnotations(text: string, book: string): Map<string, Annota
     rows.set(ref, { ref, lemma: lemma.normalize('NFC'), parsing, layer, confidence: c });
   });
   return rows;
+}
+
+const SHIPPED_LINE = /^# shipped chapters: (?:all (\d+)|(\d+(?:-\d+)?(?:, \d+(?:-\d+)?)*) of (\d+))$/m;
+
+/** Chapter numbers as ranges: [1, 2, 3, 5] is '1-3, 5' (ascending numbers). */
+export function chapterRanges(chapters: readonly number[]): string {
+  const out: string[] = [];
+  for (let i = 0; i < chapters.length; ) {
+    let j = i;
+    while (j + 1 < chapters.length && chapters[j + 1] === chapters[j] + 1) j++;
+    out.push(j > i ? `${chapters[i]}-${chapters[j]}` : String(chapters[i]));
+    i = j + 1;
+  }
+  return out.join(', ');
+}
+
+/** The Greek chapters a partly shipped book's file names in its `# shipped chapters:` line (`1-2, 4-6 of 50` is 1, 2, 4, 5, 6; `all 50` is 'all') and the book's chapter count; undefined where the file has no such line. */
+export function shippedChaptersLine(text: string): { chapters: number[] | 'all'; of: number } | undefined {
+  const m = SHIPPED_LINE.exec(text);
+  if (!m) return undefined;
+  if (m[1]) return { chapters: 'all', of: Number(m[1]) };
+  const chapters = m[2].split(', ').flatMap((part) => {
+    const [from, to = from] = part.split('-').map(Number);
+    return Array.from({ length: to - from + 1 }, (_, i) => from + i);
+  });
+  return { chapters, of: Number(m[3]) };
 }
 
 /** Below this confidence the word is a guess, whatever layer found it. */
@@ -195,8 +221,10 @@ export interface BuiltLxxChapter {
 export interface LxxBookInfo extends BookInfo {
   /** the code of the book in Lampas's own Old Testament (`sng` for Swete's `sol`); absent for a book Lampas has none of */
   lampas?: string;
-  /** per Greek chapter, the chapter(s) of Lampas's Old Testament its verses are in, ascending; empty where none of them is a Lampas verse */
+  /** per Greek chapter, the chapter(s) of Lampas's Old Testament its verses are in, ascending; empty where none of them is a Lampas verse, and for a chapter not shipped, and for a Lampas chapter some of whose verses are in a Greek chapter not shipped */
   lampasChapters: number[][];
+  /** the Greek chapters shipped, ascending (mw-u2w5klk.265: a book ships chapter by chapter); `chapters` is the book's count, shipped or not */
+  shipped: number[];
 }
 
 export interface BuiltLxxBook {
@@ -217,8 +245,6 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
   if (!name) throw new Error(`${src.code}: no book name for this Swete book in scripts/data/lxxChapter.ts`);
   const here = new Set(src.words.map((w) => w.ref));
   for (const ref of src.annotations.keys()) if (!here.has(ref)) throw new Error(`${src.code}: the annotation file has a row for ${ref}, which Swete's text lacks`);
-  const unannotated = src.words.find((w) => !src.annotations.has(w.ref));
-  if (unannotated) throw new Error(`${src.code}: ${unannotated.ref} has no row in the annotation file`);
 
   const english = src.english ? englishByGreekVerse(src.english, maps) : undefined;
   const usfm = usfmCodeOf(src.code);
@@ -235,12 +261,37 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
     chapter.set(Number(m[2]), [...(chapter.get(Number(m[2])) ?? []), w]);
   }
 
-  const built: BuiltLxxChapter[] = [];
-  const info: LxxBookInfo = { code: src.code, name, chapters: 0, verses: [], fingerprints: [], lang: 'grc', lampasChapters: [] };
+  // A Greek chapter ships when the annotation file has rows for it (lxx:release writes the rows of the shippable chapters only, mw-u2w5klk.265); a chapter with some of its rows only stops the build
+  const rowChapters = new Set([...src.annotations.keys()].map((ref) => Number(/^[^.]+\.(\d+):/.exec(ref)![1])));
+  const shipped = new Set([...chapters.keys()].filter((n) => rowChapters.has(n)));
+  for (const w of src.words) {
+    if (shipped.has(Number(/^[^.]+\.(\d+):/.exec(w.ref)![1])) && !src.annotations.has(w.ref)) throw new Error(`${src.code}: ${w.ref} has no row in the annotation file`);
+  }
+  if (shipped.size === 0) throw new Error(`${src.code}: ${src.words[0]?.ref} has no row in the annotation file`);
+
   const lampas = lampasCodeOf(src.code);
+  const refsOf = new Map<string, VerseRef[]>();
+  // which Greek chapters each Lampas chapter's verses are in, over the whole book: a Lampas chapter is opened from the Septuagint only when every one of them is shipped
+  const insideGreek = new Map<number, Set<number>>();
+  for (const [n, verseMap] of chapters) {
+    for (const v of verseMap.keys()) {
+      const refs = lampasRefs(src.code, n, v, maps, counts);
+      refsOf.set(`${n}:${v}`, refs);
+      for (const r of refs) {
+        if (r.book !== lampas) continue;
+        const set = insideGreek.get(r.chapter) ?? new Set<number>();
+        insideGreek.set(r.chapter, set.add(n));
+      }
+    }
+  }
+  const ready = (lampasChapter: number): boolean => [...(insideGreek.get(lampasChapter) ?? [])].every((n) => shipped.has(n));
+
+  const built: BuiltLxxChapter[] = [];
+  const info: LxxBookInfo = { code: src.code, name, chapters: Math.max(...chapters.keys()), verses: [], fingerprints: [], lang: 'grc', lampasChapters: [], shipped: [...shipped].sort((a, b) => a - b) };
   if (lampas) info.lampas = lampas;
 
   for (const [n, verseMap] of [...chapters].sort(([a], [b]) => a - b)) {
+    if (!shipped.has(n)) continue;
     const parses = new Map<string, string>();
     const verses: Verse[] = [];
     const lampasHere = new Set<number>();
@@ -262,8 +313,8 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
         lemmas.add(row.lemma);
         return { t: w.display.normalize('NFC'), tr: translit.normalize('NFC'), s: '', l: row.lemma, p: row.parsing, y: layerKey(row), c: row.confidence, ...(chunk ? { e: 0 } : {}) };
       });
-      const refs = lampasRefs(src.code, n, v, maps, counts);
-      refs.forEach((r) => r.book === lampas && lampasHere.add(r.chapter));
+      const refs = refsOf.get(`${n}:${v}`) ?? [];
+      refs.forEach((r) => r.book === lampas && ready(r.chapter) && lampasHere.add(r.chapter));
       verses.push({
         n: v,
         ref: refs.length === 0 ? 'none' : refs[0],
@@ -284,12 +335,11 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
       verses,
     };
     built.push({ path: `${src.code}/${n}.json`, chapter });
-    info.chapters = Math.max(info.chapters, n);
     info.verses[n - 1] = verses.length;
     info.fingerprints[n - 1] = chapterFingerprint(chapter);
     info.lampasChapters[n - 1] = [...lampasHere].sort((a, b) => a - b);
   }
-  // a chapter number Swete's text does not have (a gap) is 0 verses with no fingerprint
+  // a chapter number Swete's text does not have (a gap), and a chapter not shipped (yet), is 0 verses with no fingerprint and no Lampas chapter
   for (let i = 0; i < info.chapters; i++) {
     info.verses[i] ??= 0;
     info.fingerprints[i] ??= '';

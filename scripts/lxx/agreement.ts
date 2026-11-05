@@ -349,6 +349,8 @@ export interface AgreementOutcome {
   breaks: number;
   /** words sent pending by a break */
   brokenWords: number;
+  /** the verse of each break (`Gen.1:20`, once a break), in the text's order: a chapter counts its own (the chapter bar, bar.ts chapterVerdict) */
+  breakVerses: string[];
 }
 
 /**
@@ -368,6 +370,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
   let breaks = 0;
   let brokenWords = 0;
   let settled = 0;
+  const breakVerses: string[] = [];
   const perVerse = [...verses.values()].map((v) => ({ v, links: linksOf(v) }));
   for (const { v, links } of perVerse) {
     const broken = new Map<number, string[]>();
@@ -375,6 +378,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
       if (!l.kind.breaks || !settledIn(v[l.a]) || !settledIn(v[l.b])) continue;
       if (agrees(readingsOf(v[l.a])[0], readingsOf(v[l.b])[0])) continue;
       breaks++;
+      breakVerses.push(v[l.a].verse);
       for (const [x, y] of [
         [l.a, l.b],
         [l.b, l.a],
@@ -443,7 +447,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
       });
     }
   }
-  return { outs: items.map((w) => w.out), settled, breaks, brokenWords };
+  return { outs: items.map((w) => w.out), settled, breaks, brokenWords, breakVerses };
 }
 
 // ---------------------------------------------------------------- the address rule
@@ -740,6 +744,8 @@ export interface AgreementStats {
   settled: number;
   breaks: number;
   brokenWords: number;
+  /** the verse of each break (AgreementOutcome.breakVerses) */
+  breakVerses: string[];
 }
 
 const isLowerCase = (form: string): boolean => {
@@ -769,7 +775,7 @@ function mergeCandidates(first: readonly WordCandidate[], ...more: ReadonlyArray
  * Returns each word's answer after the check, in the same order, and its counts.
  */
 export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string; form: string; display: string }>, given: readonly Out[], ctx: CheckContext): { outs: Out[]; stats: AgreementStats } {
-  const stats: AgreementStats = { pendingBefore: given.filter((o) => !isSettled(o)).length, addressed: 0, governed: 0, governedPending: 0, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0 };
+  const stats: AgreementStats = { pendingBefore: given.filter((o) => !isSettled(o)).length, addressed: 0, governed: 0, governedPending: 0, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0, breakVerses: [] };
   const read = readAddresses(words, given);
   stats.addressed = read.addressed;
   const prep = readPrepositions(words, read.outs, ctx.governs ?? new Map());
@@ -811,6 +817,7 @@ export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string
   stats.settled = outcome.settled;
   stats.breaks = outcome.breaks;
   stats.brokenWords = outcome.brokenWords;
+  stats.breakVerses = outcome.breakVerses;
   stats.demotedSettled = outcome.outs.filter((o) => isSettled(o) && demoted.has(o.ref)).length;
   return { outs: outcome.outs, stats };
 }

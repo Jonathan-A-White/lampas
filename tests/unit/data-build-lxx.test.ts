@@ -11,6 +11,8 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import type { Chapter } from '../../src/data/chapter';
+import { syntheticGenesis } from '../support/lxx-genesis';
+import { greekChapterOf, type LxxIndex as AppLxxIndex } from '../../src/data/lxxChapter';
 import { LEXICON_FILE, buildLxx, lexiconEntry, writeLxx, type LxxIndex, type LxxInput, type LxxLexiconEntry } from '../../scripts/data-build-lxx';
 import { GUESS_BELOW, layerKey, parseAnnotations, parseTranslit, sweteBooks } from '../../scripts/data/lxxChapter';
 import { ANNOTATION_HEADER } from '../../scripts/lxx/release';
@@ -282,6 +284,98 @@ describe('the files', () => {
     expect(t.get(1)).toBe('en');
     expect(t.get(2)).toBe('');
     expect(t.get(3)).toBe('archē');
+  });
+});
+
+describe('a book shipped chapter by chapter (mw-u2w5klk.265)', () => {
+  const genesis = syntheticGenesis(10);
+  const gen = sweteBooks(genesis.versification, genesis.words).get('gen') ?? [];
+  const chapterOf = (ref: string): number => Number(/^[^.]+\.(\d+):/.exec(ref)![1]);
+  /** The annotation file of the first chapters of the synthetic Genesis, with the line lxx:release writes first; every word one lemma and parsing. */
+  const annotations = (shipped: readonly number[], line = `# shipped chapters: ${shipped[0]}-${shipped[shipped.length - 1]} of 10`): string =>
+    [line, ANNOTATION_HEADER.join('\t'), ...gen.filter((w) => shipped.includes(chapterOf(w.ref))).map((w) => [w.ref, 'λόγος', 'N-NSM', '2', '0.90', ''].join('\t'))].join('\n') + '\n';
+  const partInput = (text: string): LxxInput => input({ versification: genesis.versification, words: genesis.words, translit: genesis.translit, annotations: { gen: text }, usfm: {} });
+  const part = buildLxx(partInput(annotations([1, 2, 3, 4, 5, 6])));
+  const partIndex = JSON.parse(part.files.get('index.json')!) as LxxIndex;
+
+  it('writes a chapter file for each shipped chapter and none for the rest', () => {
+    const chapters = [...part.files.keys()].filter((p) => p.includes('/')).sort();
+    expect(chapters).toEqual([1, 2, 3, 4, 5, 6].map((n) => `gen/${n}.json`));
+    expect(part.shipped).toEqual(['gen']);
+    expect((JSON.parse(part.files.get('gen/6.json')!) as Chapter).verses.flatMap((v) => v.g)).toHaveLength(genesis.wordsPerChapter);
+  });
+
+  it('keeps the index entry’s shape: lampasChapters EMPTY for an unshipped Greek chapter, and gains shipped and the book’s chapter count', () => {
+    const [book] = partIndex.books;
+    expect(book).toMatchObject({ code: 'gen', name: 'Genesis', lampas: 'gen', chapters: 10, lang: 'grc', shipped: [1, 2, 3, 4, 5, 6] });
+    expect(book.lampasChapters).toEqual([[1], [2], [3], [4], [5], [6], [], [], [], []]);
+    expect(book.verses.slice(0, 6)).toEqual([5, 5, 5, 5, 5, 5]);
+    expect(book.verses).toHaveLength(10);
+    expect(book.fingerprints).toHaveLength(10);
+    expect(book.fingerprints.slice(0, 6).every((f) => /^[0-9a-f]{12}$/.test(f))).toBe(true);
+    expect(book.fingerprints.slice(6)).toEqual(['', '', '', '']);
+    expect(Object.keys(book)).toEqual(expect.arrayContaining(['code', 'name', 'chapters', 'verses', 'fingerprints', 'lang', 'lampas', 'lampasChapters', 'shipped']));
+  });
+
+  it('is read by today’s greekChapterOf: a shipped chapter answers, an unshipped one answers null', () => {
+    const from = partIndex as unknown as AppLxxIndex;
+    expect(greekChapterOf(from, 'gen', 3)).toMatchObject({ code: 'gen', chapter: 3 });
+    expect(greekChapterOf(from, 'gen', 7)).toBeNull();
+    expect(greekChapterOf(from, 'gen', 10)).toBeNull();
+  });
+
+  it('puts the lemmas of the shipped chapters in the lexicon, and a second run writes the same bytes', () => {
+    const lexicon = JSON.parse(part.files.get(LEXICON_FILE)!) as Record<string, LxxLexiconEntry>;
+    expect(Object.keys(lexicon)).toEqual(['λόγος']);
+    const again = buildLxx(partInput(annotations([1, 2, 3, 4, 5, 6])));
+    expect([...again.files.keys()]).toEqual([...part.files.keys()]);
+    for (const [path, text] of part.files) expect(again.files.get(path)).toBe(text);
+  });
+
+  it('ships a book with every chapter as it did, shipped holding them all', () => {
+    const all = buildLxx(partInput(annotations(Array.from({ length: 10 }, (_, i) => i + 1), '# shipped chapters: all 10')));
+    const [book] = (JSON.parse(all.files.get('index.json')!) as LxxIndex).books;
+    expect(book.shipped).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(book.lampasChapters.every((c) => c.length > 0)).toBe(true);
+  });
+
+  it('writes the chapters of one run into a directory and removes the chapter a later run no longer ships', () => {
+    const dir = tmp();
+    writeLxx(partInput(annotations([1, 2, 3, 4, 5, 6])), dir);
+    expect(existsSync(join(dir, 'gen', '6.json'))).toBe(true);
+    writeLxx(partInput(annotations([1, 2, 3])), dir);
+    expect(existsSync(join(dir, 'gen', '6.json'))).toBe(false);
+    expect(existsSync(join(dir, 'gen', '3.json'))).toBe(true);
+  });
+
+  it('stops where the line says chapters the rows do not hold, and where a chapter has some of its rows only', () => {
+    expect(() => buildLxx(partInput(annotations([1, 2, 3], '# shipped chapters: 1-4 of 10')))).toThrow(/names chapters 1-4.*rows hold 1-3/);
+    const lines = annotations([1, 2]).split('\n').filter((l) => !l.startsWith('Gen.2:3#2\t'));
+    expect(() => buildLxx(partInput(lines.join('\n')))).toThrow(/Gen\.2:3#2 has no row/);
+  });
+
+  it('reads a file with no line of its own, as before: the chapters its rows hold are shipped', () => {
+    const [book] = (JSON.parse(buildLxx(partInput(annotations([1, 2], ''))).files.get('index.json')!) as LxxIndex).books;
+    expect(book.shipped).toEqual([1, 2]);
+  });
+
+  it('does not hand out a Lampas chapter whose verses are in a Greek chapter that is not shipped (Psalm 116 is Greek Psalms 114 and 115)', () => {
+    const section = '$Psa.116:1-116:19\tEnglish KJV\tHebrew\tLatin\tGreek\nOneToOne\tPsa.116:1-9\tPsa.116:1-9\tPsa.114:1-9\tPsa.114:1-9\nOneToOne\tPsa.116:10-19\tPsa.116:10-19\tPsa.115:1-10\tPsa.115:1-10\n';
+    const tvtms = fixture('tvtms-slice.txt').replace('#DataEnd(Condensed)', `${section}#DataEnd(Condensed)`);
+    const versification = ['1\tPsa.114:1', '3\tPsa.115:1'].join('\n');
+    const words = ['1\tἐν', '2\tἐν', '3\tἐν', '4\tἐν'].join('\n');
+    const translit = ['1\ten', '2\ten', '3\ten', '4\ten'].join('\n');
+    const rows = (refs: string[]): string => [ANNOTATION_HEADER.join('\t'), ...refs.map((r) => `${r}\tἐν\tPREP\t1\t0.95\t`)].join('\n') + '\n';
+    const g114 = ['Psa.114:1#1', 'Psa.114:1#2'];
+    const g115 = ['Psa.115:1#1', 'Psa.115:1#2'];
+    const build = (refs: string[]): LxxIndex['books'][number] =>
+      (JSON.parse(buildLxx(input({ versification, words, translit, tvtms, annotations: { psa: rows(refs) }, usfm: {} })).files.get('index.json')!) as LxxIndex).books[0];
+    // half of Lampas's Psalm 116 is in each: with one of them not shipped, Psalm 116 is not offered (greekChapterOf would open half a Psalm)
+    expect(build(g114).lampasChapters.slice(113)).toEqual([[], []]);
+    expect(build(g115).lampasChapters.slice(113)).toEqual([[], []]);
+    expect(build([...g114, ...g115]).lampasChapters.slice(113)).toEqual([[116], [116]]);
+    expect(build(g114).chapters).toBe(115);
+    expect(build(g114).shipped).toEqual([114]);
   });
 });
 
