@@ -83,6 +83,8 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/lemma-forms/')) return 'Majority Standard Bible'; // the forms of each lemma the text uses, made from the chapters (scripts/build-lemma-forms.mjs)
   if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)
   if (path.startsWith('public/sounds-trial/')) return null; // trial clips of other voices, credited on the listening page itself (public/sounds-trial.html), not on About: no screen uses them
+  if (path.startsWith('public/sermons/spurgeon-ccel/')) return 'Spurgeon'; // the sermon index's book files (scripts/sermons-build.ts): rows of CCEL's Spurgeon source, facts only; one rule for each bundled source
+  if (path === 'public/sermons/index.json') return 'Spurgeon'; // the index of the sources: each one's licence and credit, so it needs the credit of every source it lists
   if (path.startsWith('public/pictures/')) return 'Claude Code'; // the memory pictures: drawn by Claude Code, credited as a tool
   // the app's own: the lamp icon (also Claude Code's drawing), the changelog mw next writes, and the letter-sounds listening page (its clips are credited above)
   if (/^public\/(icon\.svg|icon-\d+\.png|changelog\.json|sounds-trial\.html)$/.test(path)) return null;
