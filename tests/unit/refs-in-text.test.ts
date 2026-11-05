@@ -146,3 +146,47 @@ describe('referenceSpans (the blog tagger, mw-5r3p30.1043)', () => {
     expect(findReferences(text).map((r) => r.ref)).toEqual(referenceSpans(text).map((r) => r.ref));
   });
 });
+
+describe('a range that crosses a chapter, runs backwards or names verse 0 (mw-5r3p30.1046)', () => {
+  const spans = (text: string, semicolons = true) => referenceSpans(text, { semicolons }).map((r) => [text.slice(r.start, r.end), r.ref, r.lastVerse]);
+
+  it("ends 'John 3:16-4:3' after '3:16', with no range 'John 3:16-4'", () => {
+    expect(spans('See John 3:16-4:3 today')).toEqual([['John 3:16', 'John.3.16', undefined]]);
+    expect(spans('John 5:25-6:2')).toEqual([['John 5:25', 'John.5.25', undefined]]);
+    expect(spans('John 5:25–6:2')).toEqual([['John 5:25', 'John.5.25', undefined]]);
+    expect(spans('Romans 8:1; 10:9-11:2')).toEqual([['Romans 8:1', 'Rom.8.1', undefined], ['10:9', 'Rom.10.9', undefined]]);
+    expect(spans('John 5:24, 28-6:2')).toEqual([['John 5:24', 'John.5.24', undefined], ['28', 'John.5.28', undefined]]);
+  });
+
+  it('makes no reversed range', () => {
+    expect(spans('John 5:25-24')).toEqual([['John 5:25', 'John.5.25', undefined]]);
+    expect(spans('John 5:25-25')).toEqual([['John 5:25', 'John.5.25', undefined]]);
+    expect(spans('John 5:24, 29-28')).toEqual([['John 5:24', 'John.5.24', undefined], ['29', 'John.5.29', undefined]]);
+  });
+
+  it('makes no reference of verse 0', () => {
+    expect(spans('John 5:0')).toEqual([]);
+    expect(spans('John 5:0-3')).toEqual([]);
+    expect(spans('John 5:24, 0')).toEqual([['John 5:24', 'John.5.24', undefined]]);
+    expect(spans('Romans 8:1; 10:0')).toEqual([['Romans 8:1', 'Rom.8.1', undefined]]);
+  });
+
+  it('still reads an honest range', () => {
+    expect(spans('John 3:16-18')).toEqual([['John 3:16-18', 'John.3.16', 18]]);
+  });
+
+  // a sweep: whatever the text, no span has a verse below 1 or a range that does not end after its start
+  const TEXTS = [
+    'John 3:16-4:3', 'John 5:25-6:2', 'John 5:25-24', 'John 5:25-25', 'John 5:0', 'John 5:0-3', 'Rom 8:0, 0-2, 3-1', 'Romans 8:1; 10:0; 10:9-8', 'Gen 1:1-2:3, 5',
+    'Ps 23:1-24:2', 'John 3:16–4:3', 'John 3:16 - 4 : 3', 'Rom 8:1, 3-4:2', 'Rom 8:28-30, 31-32', 'John 5:24-29, 31', '1 Kings 17:17-24; 18:1-2', 'John 11',
+  ];
+  it.each(TEXTS)('%s: every span has a verse of at least 1 and a lastVerse after it', (text) => {
+    for (const semicolons of [false, true]) {
+      for (const r of referenceSpans(text, { semicolons })) {
+        if (r.verse !== undefined) expect(r.verse, `${text} -> ${r.printed}`).toBeGreaterThanOrEqual(1);
+        if (r.lastVerse !== undefined) expect(r.lastVerse, `${text} -> ${r.printed}`).toBeGreaterThan(r.verse as number);
+        expect(text.slice(r.start, r.end), text).not.toMatch(/[-–]\s*$/);
+      }
+    }
+  });
+});

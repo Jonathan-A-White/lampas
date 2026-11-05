@@ -45,6 +45,12 @@ test('a numbered book after a verse and a comma is one link to that book, not a 
   expect(await texts(page, 'first')).toEqual(['First John 5:25', 'I John 5:25']);
 });
 
+test('a range across a chapter, a backwards range and verse 0 never make a ref that is no passage (mw-5r3p30.1046)', async ({ page }) => {
+  await openPost(page);
+  expect(await hrefs(page, 'crossing')).toEqual([`${REF}John.3.16`, `${REF}John.5.25`, `${REF}John.5.25`]);
+  expect(await texts(page, 'crossing')).toEqual(['John 3:16', 'John 5:25', 'John 5:25']);
+});
+
 test('text in a link, code, a heading or outside the post is left as it is, and no false link is made', async ({ page }) => {
   await openPost(page);
   expect(await hrefs(page, 'existing')).toEqual(['https://example.com/x']);
