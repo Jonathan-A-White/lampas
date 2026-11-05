@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.116
+_2026-11-05_
+- New: Asking the makers for something new now goes only through the tutor; the forms under Ask for more are gone.
+
 ## 0.7.115
 _2026-11-05_
 - Fixed: The blog no longer turns plain English like 'Mark 5 times' or 'Job 3 months' into Bible links, and 'Matthew 5-7' is now one link.
