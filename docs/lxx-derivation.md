@@ -20,6 +20,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [A preposition's case: the word it governs](#a-prepositions-case-the-word-it-governs)
 - [Swete's tokens](#swetes-tokens)
 - [The bar](#the-bar)
+  - [The chapter bar](#the-chapter-bar)
 - [The known-answer run](#the-known-answer-run)
 - [The choices file](#the-choices-file)
 - [A model session](#a-model-session)
@@ -31,6 +32,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [The re-count after the three fixes](#the-re-count-after-the-three-fixes)
 - [The files](#the-files)
 - [The commands](#the-commands)
+  - [The deploy](#the-deploy)
 - [The sources](#the-sources)
 - [Checking it](#checking-it)
 - [What the move from the probe changed](#what-the-move-from-the-probe-changed)
@@ -467,9 +469,9 @@ byte for byte what it was.
 
 ## The bar
 
-A book's annotation file is written only when the book passes the bar of the probe (`docs/sources/lxx-derivation-probe.md`, 'Error checks for the full run', 1). The bar is data in
-`scripts/lxx/bar.ts` (`BAR`), and `verdict` in the same file is the one place a book is held against it, for `npm run lxx:release` (which writes the file or refuses) and
-`npm run lxx:report` (which says where every book stands). Five lines, each with its number and why:
+A book's annotation file holds only what passes the bar of the probe (`docs/sources/lxx-derivation-probe.md`, 'Error checks for the full run', 1), and since mw-u2w5klk.265 the unit that passes is the Greek chapter (below, 'The chapter bar'); the bar is
+read whole for a book by `verdict`, which `npm run lxx:report` shows and the second pass counts. The bar is data in
+`scripts/lxx/bar.ts` (`BAR`). Five lines, each with its number and why:
 
 | Line | The number | Why |
 | --- | --- | --- |
@@ -483,8 +485,22 @@ A book's annotation file is written only when the book passes the bar of the pro
 `bar.ts` by the build number (`secondChapter(build)`: the build number counts round the list), so no build is held to the same second chapter as the last and a model cannot be tuned to it.
 The list is Rom.8 (the chapter the first model story, M0, measures), Mat.5, Mrk.4, Luk.15, Act.2, 1Co.13, Eph.2, Php.2, Heb.11, Jas.2, 1Pe.1 and Rev.21: none of John. The build number is the patch of
 `package.json`'s version (0.7.55 is build 55), which each landed batch raises by one; `--build <n>` names another. Each chapter's book is hidden from layers 1 and 2 as John is, and each
-needs a choices file of its own in `data/lxx/known/` made by a model session without TAGNT's answers: a chapter with none scores its pending words as wrong, the build falls short on the
-known-answer lines, and no book is SHIPPABLE until it has one. Adding a chapter to the list means someone has to make that file.
+needs a choices file of its own in `data/lxx/known/` made by a model session without TAGNT's answers: a chapter with none scores its pending words as wrong. Adding a chapter to the list means someone has to make that file.
+
+**Only the chapters that have a file are held** (mw-u2w5klk.265; `knownChaptersFor` in `bar.ts`). John 1 always; the build's own second chapter when `data/lxx/known/` has its file; otherwise the newest OTHER chapter of the list that has one (the last in the list), and
+the run says so: `second chapter Luk.15: no choices file; Rom.8 used`. With two files of twelve, holding each build to its own second chapter would fail ten builds of twelve and nothing could ship; no build fails for a missing file alone, and with no second chapter
+having a file the run holds John 1 alone and says that. The rotation stays the aim: once a chapter has its file, the builds that rotate to it are held to it. `npm run lxx:report` prints the note under the known-answer table.
+
+### The chapter bar
+
+The chapter is what ships. A Greek chapter (Swete's numbering, which is not always Lampas's: Greek Ps 22 is Psalm 23) is held against the chapter bar by `chapterVerdict` in `bar.ts`: it is **SHIPPABLE** when no word of it is pending and its agreement breaks are at most
+5 per 1,000 of its words (`BAR.breaks`, the number a book is held to, read per chapter; a break is counted in the chapter of its verse, `AgreementOutcome.breakVerses`). A chapter that fails names each line (`pending: N`, `breaks: N per 1,000`). Its guesses are counted and shown,
+a figure and a share of the chapter's words, and never a hold on the chapter.
+
+Three lines are held once for the whole run, not by the chapter: the known-answer lines of the build (the chapters above), and **the guess line, which stays the book's** (at most 3% of the book's words, the Governor's answer of 2026-11-02): when one fails, nothing of the book is written. The Governor's word of
+2026-11-05 replaced 'a book ships only above its bar' with 'a chapter ships above the same bar, read per chapter'; the numbers did not change. A book is SHIPPABLE as a whole (`verdict`, the report's Bar column) when every line holds for all of it.
+
+PROVISIONAL (the Mayor's calls of 2026-11-05, to be confirmed by the Governor): the chapter bar's two lines and the choice of known-answer chapters above.
 
 ## The known-answer run
 
@@ -664,17 +680,19 @@ an athematic aorist, 123 (78); a form listed by itself on an irregular table (`i
 
 ## The annotation file
 
-`npm run lxx:release -- --book gen` derives the book, joins its rows with every choices file of the book, runs the known-answer chapters of the build, and holds the book against the bar. If it passes, it writes
-`data/lxx/annotations/gen.tsv`; otherwise it refuses, names each failing line (`pending: 1 word left without an answer (the bar: none)`), and writes nothing. **The annotation file is the MIT release**
-(`data/lxx/LICENSE`) and is committed: a header row and one row a word in the text's order, tab-separated, with `ref`, `lemma`, `parsing`, `layer` (1, 2, 2a or 3), `confidence` (two decimals) and `notes` (in words, `; `-separated).
+`npm run lxx:release -- --book gen` derives the book, joins its rows with every choices file of the book, runs the known-answer chapters of the build, and holds each Greek chapter against the chapter bar ('The chapter bar'). It writes
+`data/lxx/annotations/gen.tsv` with the rows of the shippable chapters only; with none shippable, or when a line held for the whole run fails (the known-answer lines, the book's guess line), it refuses, names each failing line (`chapter 1: pending: 7 words left without an answer (the bar: none)`), and writes nothing.
+**A partly shipped book's file is partial, and says so**: its first line names the Greek chapters it holds, `# shipped chapters: 1-6 of 50` (ranges, `1-2, 4-6 of 50`; `# shipped chapters: all 50` when every chapter is in it), and `data/lxx/README.md` says a partial book is partial.
+The build (`npm run data:build:lxx`) reads that line, skips it as a comment, and stops where it names chapters the rows do not hold. **The annotation file is the MIT release**
+(`data/lxx/LICENSE`) and is committed: every row in it passed the bar. After the comment line, a header row and one row a word in the text's order, tab-separated, with `ref`, `lemma`, `parsing`, `layer` (1, 2, 2a or 3), `confidence` (two decimals) and `notes` (in words, `; `-separated).
 **It never holds Swete's own words**: a word is named by its reference, and the only Greek in it is the lemma, which is Lampas's own derived data. A second run writes the same bytes.
 The files of `derived/` and `pending/` stay git-ignored; they are working files.
 
 ## The report
 
 `npm run lxx:report` writes `docs/lxx-report.md` between its markers: this build's known-answer scores, and one row for each of the 39 books of Swete's Old Testament (the other 21 books of his file are not assessed): its words, the share each layer settled, the words still
-pending, guesses, agreement breaks per 1,000 words, the second pass's disagreement rate (the share of the recheck files' choices that differ from the first pass's on the same word, a dash when there are none), and
-SHIPPABLE or NOT with the failing lines named. It is the build's one place to see a book fall short. A second run on the same inputs changes nothing. No book is SHIPPABLE yet: the model's choices (B4, then the model stories) are what is missing.
+pending, guesses, agreement breaks per 1,000 words, the second pass's disagreement rate (the share of the recheck files' choices that differ from the first pass's on the same word, a dash when there are none), the Greek chapters that ship (**Shipped chapters**: `1-6 of 50`, `none` or `all`), and
+SHIPPABLE or NOT with the failing lines named (the whole book's). It is the build's one place to see a book fall short. A second run on the same inputs changes nothing. No book is SHIPPABLE as a whole yet: the model's choices (B4, then the model stories) are what is missing.
 
 ## On the word card
 
@@ -754,7 +772,8 @@ npm run lxx:batches -- --book gen              # the book's pending words in bat
 npm run lxx:batches -- --all                   # a row for each of the 39 books: words, pending, no candidate (the words forced to be a guess), that as a share of the words, and how many are names
 npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with their verses and candidates: for a model session
 npm run lxx:choose -- --book gen --batch 1 --from <file>  # a model session's choices, checked, as data/lxx/choices/gen-01.tsv
-npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv, only when the book passes the bar ('The bar')
+npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv: the rows of the chapters that pass the chapter bar ('The chapter bar'), under `# shipped chapters: 1-6 of 50`
+npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>]   # for each book with a choices file: derive, release its shippable chapters and build the chapter files, index.json, lexicon and notices into <dir>; no tracked file changes ('The deploy')
 npm run lxx:report                             # docs/lxx-report.md: where every book of the Old Testament stands
 npx tsx scripts/lxx/audit-sample.ts [--seed <n>]    # the hand audit's sample of settled words (6 a pool a book; seed 20261103 unless given), each with its verses; --count <file> [--section <heading>] counts the verdicts
 ```
@@ -767,6 +786,13 @@ note. On the whole of Genesis: 32,635 words; before the check layer 1 23,148, la
 after it layer 1 21,626, layer 2 1,470, layer 2a 1,515, pending 8,024 (1,013 with no candidate), 1,291 demoted, 31 breaks (0.9 per 1,000). `--all` prints a line a book: book, words, layer 1,
 layer 2, layer 2a, pending, pending before the check, demoted, breaks per 1,000. A second run writes the same bytes:
 the candidates are ordered by support, then lemma, then parsing, never by the order of the files.
+
+### The deploy
+
+The live site's Septuagint is written at deploy, not in the batch stories (mw-u2w5klk.265). `npm run lxx:ship -- --out <dir>` takes every book of Swete's 39 that has at least one `data/lxx/choices/<book>-*.tsv` file and derives it (the Morpheus cache is read when present, `--no-morpheus`
+leaves it off; Docker is never needed), holds the known-answer lines once, releases the book's shippable chapters to a temporary annotation set, and builds the chapter files, `index.json`, `lexicon-grc-lxx.json` and the three notice files (`LICENSE-swete.txt`, `README-swete.md`, `README.md`) into `<dir>`.
+It writes nothing under `data/`, `public/` or `docs/`, prints one line a book (`gen: shipped 1-6 of 50`, `shipped all 50`, `shipped none of 50`) and exits non-zero only on a derive or build error, never on nothing shippable. So every landed batch ships its chapters on the next deploy.
+The Laptop's deploy runs it after `npm run build`, into the built folder: `npm run lxx:ship -- --out dist/data-lxx`. The repo's own `public/data-lxx/index.json` stays `books: []`.
 
 ## The sources
 

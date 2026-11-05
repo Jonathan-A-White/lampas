@@ -2,8 +2,9 @@
 
 The Greek Old Testament as the app reads it: Swete's Septuagint, one JSON file per Greek chapter (`<book>/<n>.json`), an `index.json` of the books shipped here, and
 `lexicon-grc-lxx.json` (every lemma of those books with its gloss and definition). It is written by `npm run data:build:lxx`
-(`scripts/data-build-lxx.ts`) and described in `docs/data.md`, 'The Septuagint data'. A book is here only when it passed the bar of the derivation
-(`docs/lxx-derivation.md`, 'The bar'); until one has, there are no chapters.
+(`scripts/data-build-lxx.ts`) and, for the live site, at deploy by `npm run lxx:ship` (`scripts/lxx/ship.ts`), and described in `docs/data.md`, 'The Septuagint data'.
+A chapter is here only when it passed the chapter bar of the derivation (`docs/lxx-derivation.md`, 'The chapter bar'); a book ships chapter by chapter, so a book here may be partial
+(`shipped` in `index.json` names its chapters). In the repository's own copy there are no chapters yet.
 
 ## What is under which licence
 
