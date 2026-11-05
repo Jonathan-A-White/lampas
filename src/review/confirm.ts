@@ -6,7 +6,7 @@ import { isFresh, recordAnswer, type FreshStore } from 'learn-kit/fresh';
 import { isFetchable } from '../data/grammar/fetchedItems';
 import { ideaOfAny as ideaOf } from '../data/grammar/ladders';
 import type { GrammarQuestion } from '../data/grammar/questions';
-import { fetchedStock, freshStore, isFreshQuestion, isToConfirm, markConfirmed, missedBefore, noteSeen, questionKey, recordGrammarAnswer } from '../data/repositories';
+import { fetchedStock, freshStore, isFreshQuestion, isToConfirm, markConfirmed, missedBefore, noteDrillMiss, noteSeen, questionKey, recordGrammarAnswer } from '../data/repositories';
 
 export interface ConfirmOptions {
   /** the answer is on the idea's schedule row already (Review writes it); a drill's is not, and a fresh answer on an idea to confirm is written here */
@@ -32,7 +32,7 @@ const asSeen = (store: FreshStore, key: string): FreshStore => ({ ...store, getA
  * What one answer on a question does to the idea's 'to confirm' mark. A fresh question (one the mill wrote, not asked before) on an idea he missed before or that is marked: right clears the mark and the idea counts as
  * known (its row takes the right answer), wrong clears it and the row takes a miss, so the idea is missed again. Any other right answer on an idea he missed before marks it and asks the mill, in the
  * background, for fresh questions; a wrong one takes the mark off. An idea he never missed, and one the mill is not asked about (a letter, a sound), is left alone. The question is noted as asked
- * (the ledger), the hinted ones too. Never throws.
+ * (the ledger), the hinted ones too. A wrong answer in a drill is noted as a miss before (noteDrillMiss). Never throws.
  */
 export async function confirmAnswer(question: GrammarQuestion, right: boolean, options: ConfirmOptions = {}): Promise<void> {
   try {
@@ -44,6 +44,8 @@ export async function confirmAnswer(question: GrammarQuestion, right: boolean, o
     }
     const marked = await isToConfirm(id);
     const missed = options.wasMissed ?? (await missedBefore(id));
+    // a miss in a drill is written to no row of the idea (the short drill's goes to its plan at Done): it is noted now, after the read above, so the idea is a miss before for the next answer, in this drill or the next
+    if (!right && !options.rowWritten) await noteDrillMiss(id);
     // only a question the mill wrote can confirm: a built one may be one he has met before, so it is read as seen
     const key = questionKey(question);
     const writes = isFreshQuestion(question) && question.ref ? freshStore : asSeen(freshStore, key);

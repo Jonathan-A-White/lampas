@@ -200,6 +200,47 @@ describe('the confirm: a fresh question decides', () => {
   });
 });
 
+describe('a miss in a drill (mw-74h98vg.3)', () => {
+  it('is a miss before though the idea has no row: Drill it, Prove it and the short drill write none, so the answer notes it', async () => {
+    expect(await reviewsOf([{ kind: 'grammar', id: IDEA }])).toEqual([]);
+    expect(await missedBefore(IDEA)).toBe(false);
+    await confirmAnswer(BUILT, false);
+    expect(await reviewsOf([{ kind: 'grammar', id: IDEA }])).toEqual([]);
+    expect(await missedBefore(IDEA)).toBe(true);
+    await confirmAnswer(BUILT, true);
+    expect(await isToConfirm(IDEA)).toBe(true);
+  });
+
+  it('is made good by a confirm like a miss in the row: a fresh right answer ends it, and a later miss is a new one', async () => {
+    await confirmAnswer(BUILT, false);
+    await confirmAnswer(BUILT, true);
+    await whenIdle();
+    await confirmAnswer(await freshQuestion(), true);
+    expect(await isToConfirm(IDEA)).toBe(false);
+    expect(await missedBefore(IDEA)).toBe(false);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await confirmAnswer(BUILT, false);
+    expect(await missedBefore(IDEA)).toBe(true);
+  });
+
+  it('is noted for no idea the mill is not asked about, and not when Review has written the miss in the row itself', async () => {
+    await confirmAnswer({ ...BUILT, ideaId: 'letter-alpha' }, false);
+    expect(await missedBefore('letter-alpha')).toBe(false);
+    await confirmAnswer(BUILT, false, { rowWritten: true });
+    expect(await missedBefore(IDEA)).toBe(false);
+  });
+
+  it('is a miss before even offline: the note is the phone\'s own, nothing waits', async () => {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false });
+    await confirmAnswer(BUILT, false);
+    expect(await missedBefore(IDEA)).toBe(true);
+    await confirmAnswer(BUILT, true);
+    await whenIdle();
+    expect(await isToConfirm(IDEA)).toBe(true);
+    expect(postern.calls).toEqual([]);
+  });
+});
+
 describe('nothing is asked when the phone cannot ask', () => {
   const marked = async () => {
     await rowWith(1);

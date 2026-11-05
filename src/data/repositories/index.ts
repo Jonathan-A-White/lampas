@@ -115,7 +115,7 @@ export { answerPlanItem, closeDrillPlan, drillPlanCounts, getDrillPlan, listDril
 export type { PlanAnswer } from './drillPlans';
 export { connectMill, countFetchedItems, fetchedStock, isFreshQuestion, listFetchedIdeas, listUnseenFetched, saveFetchedItems, takeAllFetched, takeFetchedItems } from './fetchedItems';
 export { askedKeys, freshStore, isToConfirm, keptStore, listSeen, listSeenOf, listToConfirm, noteAsked, noteSeen, questionKey } from './freshStore';
-export { markConfirmed, missedBefore } from './missedBefore';
+export { markConfirmed, missedBefore, noteDrillMiss } from './missedBefore';
 export { getLevel, levelFromStep, listLevels, otherFrontier, recordDrill, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel, SOLID_STEP, teachIdea } from './grammarLevels';
 export type { DrillMode, FrontierChoice, GrammarLevel, GrammarLevelHow, GrammarLevelName, IdeaOutcome, TeachResult } from './grammarLevels';
 export { getEvidence, noteAnswer, noteDrillAnswer, noteWordRead } from './inference';
