@@ -15,6 +15,7 @@ import { BAR, buildNumber, chapterVerdict, knownChaptersFor, verdict, type BookF
 import { applyChoices, isGuess, readChoiceDir, type Choice, type Chosen } from './choices';
 import { OUT_DIR, deriveBook, loadInput, type BookResult, type DeriveInput, type DerivedWord, type PendingWord } from './derive';
 import { chapterRanges } from '../data/lxxChapter';
+import { decodeParse } from '../../src/data/parseCode';
 import { morpheusKey, readMorpheusCache, type MorpheusCache } from './morpheus';
 import { KNOWN_DIR, knownFileOf, knownScores, type KnownScore } from './known';
 import { RAW_DIR, type Fetcher } from './sources';
@@ -108,19 +109,33 @@ export interface ChapterRow extends ChapterFigures {
   verdict: ChapterVerdict;
 }
 
-/** Each Greek chapter of a book (in order) with its words, pending words, guesses and agreement breaks, and the chapter bar's verdict on them. */
+/** Whether Lampas can put a parsing in words (decodeParse): the build of a chapter stops at a row it cannot, so the bar holds the chapter back before (mw-u2w5klk.270). */
+export function sayable(parsing: string): boolean {
+  try {
+    decodeParse(parsing);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** The joined rows whose parsing Lampas cannot put in words, in the text's order. */
+export const unsayableRows = (joined: Joined): DerivedWord[] => joined.rows.filter((w) => !sayable(w.morph));
+
+/** Each Greek chapter of a book (in order) with its words, pending words, guesses, agreement breaks and words with a parsing it cannot put in words, and the chapter bar's verdict on them. */
 export function chapterRows(result: BookResult, joined: Joined): ChapterRow[] {
   const by = new Map<number, ChapterFigures>();
   const at = (ref: string): ChapterFigures => {
     const n = chapterOfRef(ref);
     let f = by.get(n);
-    if (!f) by.set(n, (f = { words: 0, pending: 0, guesses: 0, breaks: 0 }));
+    if (!f) by.set(n, (f = { words: 0, pending: 0, guesses: 0, breaks: 0, unsayable: 0 }));
     return f;
   };
   for (const w of result.words) at(w.ref).words++;
   for (const w of joined.left) at(w.ref).pending++;
   for (const w of joined.rows) if (isGuess(w)) at(w.ref).guesses++;
   for (const verse of result.agreement.breakVerses) at(verse).breaks++;
+  for (const w of unsayableRows(joined)) at(w.ref).unsayable!++;
   return [...by].sort(([a], [b]) => a - b).map(([chapter, f]) => ({ chapter, ...f, verdict: chapterVerdict(f) }));
 }
 
@@ -146,6 +161,8 @@ export interface BookPlan {
   holds: Failure[];
   /** what refuses the run (a hold, or no shippable chapter); undefined when something ships */
   refusal?: Verdict;
+  /** the words whose parsing Lampas cannot put in words (their chapters are not shippable) */
+  unsayable: DerivedWord[];
   /** the annotation file: the rows of the shipped chapters under their line; undefined when the run is refused */
   text?: string;
 }
@@ -162,10 +179,10 @@ export function planBook(result: BookResult, joined: Joined, known: readonly Kno
   const holds = verdict({ ...figuresOf(result, joined), pending: 0, breaks: 0 }, known).failures;
   const stuck = shipped.length === 0 ? chapters.flatMap((c) => c.verdict.failures.map((f) => ({ ...f, line: `chapter ${c.chapter}: ${f.line}` }))) : [];
   if (holds.length > 0 || shipped.length === 0) {
-    return { chapters, shipped: [], all, holds, refusal: { shippable: false, failures: [...holds, ...stuck] } };
+    return { chapters, shipped: [], all, holds, unsayable: unsayableRows(joined), refusal: { shippable: false, failures: [...holds, ...stuck] } };
   }
   const keep = new Set(shipped);
-  return { chapters, shipped, all, holds, text: annotationsTsv(joined.rows.filter((w) => keep.has(chapterOfRef(w.ref))), shippedLine(shipped, all)) };
+  return { chapters, shipped, all, holds, unsayable: unsayableRows(joined), text: annotationsTsv(joined.rows.filter((w) => keep.has(chapterOfRef(w.ref))), shippedLine(shipped, all)) };
 }
 
 /** The build number of this checkout: the patch of package.json's version. */

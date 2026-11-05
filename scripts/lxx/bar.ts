@@ -84,10 +84,13 @@ export interface BookFigures {
   breaks: number;
 }
 
-/** What a Greek chapter is held to: the figures of its own words (a book's, BookFigures, over all of them). */
-export type ChapterFigures = BookFigures;
+/**
+ * What a Greek chapter is held to: the figures of its own words (a book's, BookFigures, over all of them), and the words whose parsing Lampas cannot put in words (mw-u2w5klk.270;
+ * left out, none): the chapter's file could not be built with one, so the chapter is not shippable and the run goes on.
+ */
+export type ChapterFigures = BookFigures & { unsayable?: number };
 
-export type BarKey = 'known' | 'pending' | 'guesses' | 'breaks';
+export type BarKey = 'known' | 'pending' | 'guesses' | 'breaks' | 'parsing';
 
 export interface Failure {
   key: BarKey;
@@ -179,6 +182,14 @@ export function chapterVerdict(chapter: ChapterFigures): ChapterVerdict {
       key: 'breaks',
       line: `breaks: ${perThousand(chapter.breaks, chapter.words)} per 1,000 words, ${chapter.breaks} in ${chapter.words} (the bar: at most ${BAR.breaks})`,
       short: `breaks: ${perThousand(chapter.breaks, chapter.words)} per 1,000`,
+    });
+  }
+  const unsayable = chapter.unsayable ?? 0;
+  if (unsayable > 0) {
+    failures.push({
+      key: 'parsing',
+      line: `parsing: ${unsayable} word${unsayable === 1 ? '' : 's'} with a parsing Lampas cannot put in words (the bar: none)`,
+      short: `parsing: ${unsayable}`,
     });
   }
   return { shippable: failures.length === 0, failures, guesses: chapter.guesses, guessShare: chapter.words === 0 ? 0 : (100 * chapter.guesses) / chapter.words };

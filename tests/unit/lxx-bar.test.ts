@@ -96,6 +96,10 @@ describe('the chapter bar (mw-u2w5klk.265): a Greek chapter ships on its own', (
     expect(breaks.failures.map((f) => [f.key, f.short])).toEqual([['breaks', 'breaks: 6.0 per 1,000']]);
     expect(breaks.failures[0].line).toContain('breaks: 6.0 per 1,000 words, 6 in 1000 (the bar: at most 5)');
     expect(chapterVerdict(chapter({ pending: 1, breaks: 6 })).failures.map((f) => f.key)).toEqual(['pending', 'breaks']);
+    const parsing = chapterVerdict(chapter({ unsayable: 1 }));
+    expect(parsing.shippable).toBe(false);
+    expect(parsing.failures.map((f) => f.short)).toEqual(['parsing: 1']);
+    expect(chapterVerdict(chapter({ unsayable: 0 })).shippable).toBe(true);
   });
 
   it('counts its guesses as a figure and a share, never a failure', () => {
@@ -229,7 +233,8 @@ describe('lxx:known on John 1, John hidden (the probe’s known-answer run)', as
     expect(kept.by['3'].lemma).toBe(kept.by['3'].words);
     const text = lines.join('\n');
     expect(text).toContain('all: 829 words, lemma 828 (99.9%), lemma and full parsing 825 (99.5%)');
-    expect(text).toContain('layer 2a: 32 words');
+    // 33 since mw-u2w5klk.270: an adjective TAGNT tags -L, -LG, -PG or -T is read as the plain adjective the rules learn from, so one more word is settled by layer 2a (the scores above are as they were)
+    expect(text).toContain('layer 2a: 33 words');
   });
 
   it('counts a pending word with no choice wrong unless --keep-demoted asks for the probe’s reading, and with no choices file counts every pending word wrong', () => {

@@ -15,7 +15,7 @@ import { readChoiceDir } from './choices';
 import { OUT_DIR, deriveBook, loadInput, splitBooks, train, type DeriveInput } from './derive';
 import { KNOWN_DIR, knownScores, type KnownScore } from './known';
 import { readMorpheusCache } from './morpheus';
-import { CHOICES_DIR, currentBuild, joinChoices, knownChaptersOf, planBook, shippedWords } from './release';
+import { CHOICES_DIR, chapterOfRef, currentBuild, joinChoices, knownChaptersOf, planBook, shippedWords } from './release';
 import { OLD_TESTAMENT } from './report';
 import { RAW_DIR, type Fetcher } from './sources';
 
@@ -112,6 +112,8 @@ export async function runShip(argv: readonly string[], options: ShipOptions = {}
         // a line held once for the whole run (the known-answer lines, the guess line) is named; a chapter's own failures are in `lxx:report`
         const why = plan.holds.length > 0 ? ` (held: ${plan.holds.map((f) => f.short).join('; ')})` : '';
         log(`${result.book}: shipped ${shippedWords(plan.shipped, plan.all)}${why}`);
+        // a word with a parsing Lampas cannot put in words holds its chapter back and does not stop the run (mw-u2w5klk.270): the word is named, so it can be fixed
+        for (const w of plan.unsayable) log(`${result.book}: ${w.ref} has the parsing ${JSON.stringify(w.morph)}, which Lampas cannot put in words: chapter ${chapterOfRef(w.ref)} is not shipped`);
         out.push({ code: result.book, shipped: plan.shipped, chapters });
       }
     }
