@@ -27,6 +27,7 @@ import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } fr
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -158,9 +159,8 @@ const pickChapter = (n: number) => async (): Promise<void> => {
   await user.click(await within(picker()).findByRole('button', { name: `Chapter ${n}` }));
 };
 
-const openSettings = async (): Promise<void> => {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+const openSettingsPage = async (): Promise<void> => {
+  await openSettings(user);
   await openSettingsGroup(user, 'study');
 };
 
@@ -482,7 +482,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Settings has a Bible in Logos for each part, the Legacy Standard Bible to start (the NRSV for the Apocrypha), and a door to Library > Bibles', ({ Given, When, Then, And }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     Then('the New Testament and Old Testament pickers say {string} and the Apocrypha picker says {string}', async (_, text: string, apocrypha: string) => {
       for (const part of ['New Testament', 'Old Testament']) {
         expect(await screen.findByRole('combobox', { name: `${part} Bible in Logos` })).toHaveDisplayValue(text);
@@ -498,7 +498,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A Bible chosen on the Bibles page is kept across a close', ({ Given, When, And, Then }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he opens the Bible in Logos row', opensRow);
     And('he chooses the Bible {string} on the Bibles page', async (_, short: string) => {
       await user.click(within(await screen.findByRole('radiogroup', { name: short })).getByRole('radio', { name: 'Chosen' }));
@@ -512,7 +512,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A typed Resource ID is kept across a close, and a malformed one is not', ({ Given, When, And, Then }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he opens the Bible in Logos row', opensRow);
     And('he types the Resource ID {string}', async (_, id: string) => {
       await user.clear(resourceId());

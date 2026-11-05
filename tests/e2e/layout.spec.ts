@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 // 44 px is the floor; a word must clear it by a pixel so one font's metrics can shave a little and it still holds.
 const TAP_WITH_MARGIN = 45;
@@ -24,7 +25,7 @@ async function openReader(page: Page) {
 }
 
 async function setInSettings(page: Page, group: string, label: string) {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   await page.getByRole('group', { name: group }).getByRole('button', { name: label, exact: true }).click();
   await leaveSettings(page);
@@ -33,7 +34,7 @@ async function setInSettings(page: Page, group: string, label: string) {
 
 test('Settings offers Layout and Section headings with 44 px choices, Verse by verse and On to begin with', async ({ page }) => {
   await openReader(page);
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   const layout = page.getByRole('group', { name: 'Layout', exact: true });
   const headings = page.getByRole('group', { name: 'Section headings' });

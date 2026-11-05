@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 // Makes the first `n` listed words due, through raw IndexedDB, as the app wrote its reviews.
 async function makeDue(page: Page, n: number) {
@@ -42,7 +43,7 @@ test('Settings > New words: New words a day is one line of 48 px chips, and says
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await expect(page.getByTestId('new-words')).toHaveCount(0);
 
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Learning');
   const group = page.getByRole('group', { name: 'New words a day', exact: true });
   await group.scrollIntoViewIfNeeded();

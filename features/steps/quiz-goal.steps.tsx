@@ -20,6 +20,7 @@ import { instructionsOf } from '../../tests/support/learner';
 import { offerSettled } from '../../tests/support/settled-offer';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 import '../../tests/support/grinds-in-graph';
 
 afterAll(() => {
@@ -124,9 +125,8 @@ describeFeature(feature, ({ Scenario }) => {
     await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), said);
     await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
   };
-  const openSettings = async () => {
-    await user.click(screen.getByRole('button', { name: 'Settings' }));
-    await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  const openSettingsPage = async () => {
+    await openSettings(user);
     await openSettingsGroup(user, 'tutor');
   };
   const goalShown = async (_: unknown, goal: string) => {
@@ -220,7 +220,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he closes the quiz sheet and opens Settings', async () => {
       await waitFor(() => expect(turns()).toHaveLength(2));
       await user.click(within(sheet()).getByRole('button', { name: 'Done' }));
-      await openSettings();
+      await openSettingsPage();
     });
     Then('Settings shows the Quiz goal {string}', goalShown);
   });
@@ -246,7 +246,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A kept goal is changed or cleared in Settings', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
     And('the phone was given the quiz goal {string}', given);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Settings shows the Quiz goal {string}', goalShown);
     When('he changes the Quiz goal to {string}', async (_, goal: string) => {
       const field = await goalField();
@@ -273,12 +273,12 @@ describeFeature(feature, ({ Scenario }) => {
   const backAndAgain = async () => {
     await leaveSettings(user);
     await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
-    await openSettings();
+    await openSettingsPage();
   };
 
   Scenario('Words typed in the Quiz goal and not saved are still there when he comes back to Settings', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     And('he types {string} in the Quiz goal', typeDraft);
     And('he goes back to the Reader and opens Settings again', backAndAgain);
     Then('Settings shows the Quiz goal {string}', goalShown);
@@ -306,7 +306,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('After Save the kept draft is gone', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
     And('the phone was given the quiz goal {string}', given);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     And('he types {string} in the Quiz goal', typeDraft);
     And('he saves the Quiz goal', savesGoal);
     And('he goes back to the Reader and opens Settings again', backAndAgain);
@@ -317,7 +317,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('After Clear the kept draft is gone', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
     And('the phone was given the quiz goal {string}', given);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     And('he types {string} in the Quiz goal', typeDraft);
     And('he clears the Quiz goal', clearsGoal);
     And('he goes back to the Reader and opens Settings again', backAndAgain);
@@ -331,7 +331,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The Quiz goal row has a visible label and says which goal is kept without repeating the label', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
     And('the phone was given the quiz goal {string}', given);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('the Quiz goal row shows the visible text {string}', async (_, text: string) => {
       await goalField();
       expect(within(goalRow()).getByText(text, { exact: true })).toBeVisible();
@@ -350,7 +350,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Save is off for a field of only spaces and Clear still clears', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with a quiz behind a fake Postern that offers the quiz goal {string}', openWith);
     And('the phone was given the quiz goal {string}', given);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     And('he types only spaces in the Quiz goal', async () => {
       const field = await goalField();
       await user.clear(field);

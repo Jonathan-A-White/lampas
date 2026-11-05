@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -11,7 +12,7 @@ test('Order Greek puts the Reader\'s first words in the Greek order, one line of
   await page.goto('/');
   const verse1 = page.locator('[data-verse="1"] [data-text]');
   await expect(verse1).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   // like Grammar, the Order row is drawn only while the Weave is not Off
   await expect(page.getByRole('group', { name: 'Order', exact: true })).toHaveCount(0);
@@ -20,7 +21,7 @@ test('Order Greek puts the Reader\'s first words in the Greek order, one line of
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-weave', 'solid');
   await expect(verse1).toHaveText(/^Therefore there is now no condemnation/);
 
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   const order = page.getByRole('group', { name: 'Order', exact: true });
   await expect(order).toBeVisible();

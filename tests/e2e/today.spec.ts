@@ -8,6 +8,7 @@ import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openSettings } from './openSettings';
 
 // Today (#/today, mw-1fwagb.5): the day's pieces in one list, each a tap into the drill or Logos, with a box he ticks himself, and every piece shown only while the settings it rests on are On.
 test.use({ viewport: { width: 390, height: 844 } });
@@ -519,7 +520,7 @@ test("Settings > Daily shows Today's devotional with Another only while Which de
   ]);
   const title = async () => (await page.getByRole('region', { name: 'Devotional', exact: true }).getByRole('link').innerText()).split('\n')[0];
   const before = await title();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   const row = page.getByRole('group', { name: "Today's devotional" });
   await expect(row).toBeVisible();
   await expect(row).toContainText(before);

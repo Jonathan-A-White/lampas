@@ -13,6 +13,7 @@ import { clearBus, latest } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseData = (n: number): Verse => {
@@ -55,9 +56,8 @@ const verseEl = (n: number): HTMLElement => {
 const headings = () => [...document.querySelectorAll<HTMLElement>('[data-heading]')];
 const paragraphOf = (n: number) => verseEl(n).closest('[data-paragraph]');
 
-async function openSettings(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+async function openSettingsPage(): Promise<void> {
+  await openSettings(user);
   await openSettingsGroup(user, 'reading');
 }
 async function goBack(): Promise<void> {
@@ -66,7 +66,7 @@ async function goBack(): Promise<void> {
   await waitForVerses();
 }
 async function choose(group: 'Layout' | 'Section headings', label: string): Promise<void> {
-  if (!onSettingsPage()) await openSettings();
+  if (!onSettingsPage()) await openSettingsPage();
   // the control draws once its saved value is read, which can be after the Settings heading
   await user.click(await within(await screen.findByRole('group', { name: group })).findByRole('button', { name: label }));
 }

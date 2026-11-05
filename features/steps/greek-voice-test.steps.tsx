@@ -17,6 +17,7 @@ import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/
 import { asSpoken } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
 import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -54,9 +55,8 @@ afterAll(() => {
 });
 
 const inUse = () => screen.findByTestId('greek-voice-in-use');
-const openSettings = async () => {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+const openSettingsPage = async () => {
+  await openSettings(user);
   await openSettingsGroup(user, 'listening');
 };
 const tapTest = async () => {
@@ -78,7 +78,7 @@ const feature = await loadFeature('features/greek-voice-test.feature');
 describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings names the Greek voice in use, and Test says πατήρ, then ἀγάπη in it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with two Greek voices', () => openWith([ENGLISH, GREEK, CYPRIOT]));
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Reading voices says the Greek voice in use is {string}', saysInUse);
     When('he taps Test under the Greek voice', tapTest);
     Then('the voice {string} says {string}, then {string}, in lang {string}', saysBoth);
@@ -90,7 +90,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A second tap on Test stops it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with two Greek voices', () => openWith([ENGLISH, GREEK, CYPRIOT]));
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     And('he taps Test under the Greek voice', tapTest);
     And('he taps Stop under the Greek voice', async () => {
       await user.click(await within(await inUse()).findByRole('button', { name: 'Stop the test' }));
@@ -106,7 +106,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Another Greek voice picked there is kept and said everywhere', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with two Greek voices', () => openWith([ENGLISH, GREEK, CYPRIOT]));
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     And('he picks the Greek voice {string}', async (_, name: string) => {
       await user.selectOptions(await screen.findByRole('combobox', { name: 'Greek voice' }), name);
       await waitFor(async () => expect((await db.settings.get('voice.greek'))?.value).toBe(name));
@@ -145,7 +145,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A phone with no Greek voice is told where to get one, and has no Test', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with only an English voice', () => openWith([ENGLISH]));
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Reading voices says there is no Greek voice and where to get one', async () => {
       await waitFor(async () => expect((await inUse()).querySelector('[role=status]')?.textContent).toBe(noVoiceHelp()));
     });

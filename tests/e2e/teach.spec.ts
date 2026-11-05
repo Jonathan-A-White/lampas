@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -15,7 +16,7 @@ test('Words lists a word taken on the teach sheet under From my reading', async 
   await sheet.getByRole('button', { name: 'Got it', exact: true }).click();
   await expect(sheet.getByTestId('teach-lemma')).toHaveText('εἰς');
   await sheet.getByRole('button', { name: 'Done', exact: true }).click();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Account');
   await page.getByRole('button', { name: 'Words', exact: true }).click();
   const group = page.locator('section', { has: page.getByRole('heading', { name: 'From my reading' }) });

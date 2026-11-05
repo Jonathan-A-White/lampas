@@ -19,6 +19,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const feature = await loadFeature('features/read-lessons.feature');
 const user = userEvent.setup();
@@ -90,9 +91,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     render(<App />);
     await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   }
-  async function openSettings(): Promise<void> {
-    await user.click(screen.getByRole('button', { name: 'Settings' }));
-    await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  async function openSettingsPage(): Promise<void> {
+    await openSettings(user);
     await openSettingsGroup(user, 'listening');
   }
   const readLessonsGroup = async (): Promise<HTMLElement> => screen.findByRole('group', { name: 'Read lessons to me' });
@@ -109,14 +109,14 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
 
   Scenario('Settings offers Read lessons to me, Off to start, and keeps On across a reload', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with Read lessons to me untouched', openApp);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Read lessons to me shows {string} as the one chosen', (_, name: string) => chosenIn(name));
     When('he chooses {string} for Read lessons to me', async (_, name: string) => {
       await user.click(within(await readLessonsGroup()).getByRole('button', { name }));
       await waitFor(async () => expect((await db.settings.get('readLessons'))?.value).toBe('on'));
     });
     And('Lampas is opened again', openApp);
-    And('he opens Settings again', openSettings);
+    And('he opens Settings again', openSettingsPage);
     Then('Read lessons to me still shows {string} as the one chosen', (_, name: string) => chosenIn(name));
   });
 

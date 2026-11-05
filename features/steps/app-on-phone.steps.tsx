@@ -12,6 +12,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 // No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
 vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
@@ -42,7 +43,7 @@ afterAll(() => {
   db.close();
 });
 
-async function openSettings(agent: string, ons: string[] = []): Promise<void> {
+async function openSettingsPage(agent: string, ons: string[] = []): Promise<void> {
   cleanup();
   clearBus();
   forgetTrail();
@@ -67,8 +68,7 @@ async function openSettings(agent: string, ons: string[] = []): Promise<void> {
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBe(63));
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   await openSettingsGroup(user, 'study');
 }
 
@@ -82,8 +82,8 @@ const verseEl = (n: number): HTMLElement => {
 const feature = await loadFeature('features/app-on-phone.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  const android = (): Promise<void> => openSettings(ANDROID);
-  const androidWithLexapp = (): Promise<void> => openSettings(ANDROID, ['sampleapp']);
+  const android = (): Promise<void> => openSettingsPage(ANDROID);
+  const androidWithLexapp = (): Promise<void> => openSettingsPage(ANDROID, ['sampleapp']);
   const turnsOn = async (_: unknown, name: string): Promise<void> => {
     await user.click(await switchOf(name));
   };

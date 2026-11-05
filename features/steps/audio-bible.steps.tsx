@@ -14,6 +14,7 @@ import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ISSUER_PUB } from '../../tests/support/licence-chain';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -104,8 +105,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings offers an Audio Bible, Off to start', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with the Audio Bible Off', () => openWith({}));
     When('he opens Settings', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'study');
     });
     Then('the Audio Bible shows the choices {string} and {string}', async (_, off: string, promise: string) => {
@@ -121,8 +121,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings writes the name Audio Bible above the choices', ({ Given, When, Then }) => {
     Given('Lampas is opened with the Audio Bible Off', () => openWith({}));
     When('he opens Settings', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'study');
     });
     Then('the Audio Bible row writes its name {string} in its own text', async (_, name: string) => {
@@ -136,8 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Choosing The Word of Promise in Settings keeps it', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Audio Bible Off', () => openWith({}));
     When('he opens Settings', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'study');
     });
     And('he chooses {string} for the Audio Bible', async (_, name: string) => {

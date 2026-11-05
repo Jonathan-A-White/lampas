@@ -17,6 +17,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -52,8 +53,8 @@ async function openReader(): Promise<void> {
 
 const group = (name: string): HTMLElement => screen.getByRole('group', { name });
 const pressed = (chip: string) => within(group('New words a day')).getByRole('button', { name: chip, exact: true });
-const openSettings = async () => {
-  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+const openSettingsPage = async () => {
+  await openSettings(user);
   await openSettingsGroup(user, 'greek');
   await screen.findByRole('group', { name: 'New words a day' });
 };
@@ -66,7 +67,7 @@ describeFeature(feature, ({ Scenario }) => {
       await freshStore();
       await seedHisWords();
       render(<App />);
-      await openSettings();
+      await openSettingsPage();
     });
     Then('New words a day offers {string}, {string}, {string} and {string}, and {string} is chosen', async (_, a: string, b: string, c: string, d: string, chosen: string) => {
       expect(within(group('New words a day')).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b, c, d]);
@@ -91,7 +92,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Reader shows no New words strip for pace', async () => {
       await waitFor(() => expect(screen.queryByTestId('new-words')).toBeNull());
     });
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Settings says {string} under New words a day', async (_, text: string) => {
       await waitFor(() => expect(screen.getByTestId('pace-note')).toHaveTextContent(text));
     });
@@ -103,7 +104,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(screen.getByTestId('new-words')).toHaveTextContent(text));
     });
     When('he turns New words a day Off', async () => {
-      await openSettings();
+      await openSettingsPage();
       await user.click(pressed('Off'));
       await waitFor(() => expect(pressed('Off')).toHaveAttribute('aria-pressed', 'true'));
       await leaveSettings(user);

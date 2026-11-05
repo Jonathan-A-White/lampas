@@ -15,6 +15,7 @@ import { forgetScrolls } from '../../src/nav/scrollMemory';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -63,8 +64,7 @@ const switchEl = (): HTMLElement => screen.getByRole('group', { name: 'Language'
 const choice = (name: string): HTMLElement => within(switchEl()).getByRole('button', { name, exact: true });
 
 async function setWeaveSolid(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   await openSettingsGroup(user, 'reading');
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
   await leaveSettings(user);

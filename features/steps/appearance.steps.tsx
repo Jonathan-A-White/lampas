@@ -16,6 +16,7 @@ import { setSpeechRate, speak, stopSpeaking } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { ensureSettingsGroup, openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const GREEK: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH: FakeVoice = { lang: 'en-US', name: 'English (US)' };
@@ -69,7 +70,7 @@ async function openOnPhone(dark: boolean, slowMs = 0): Promise<void> {
   render(<App />);
   await waitForReader();
   if (slowMs > 0) slowSettingsReads(slowMs);
-  await openSettings();
+  await openSettingsPage();
 }
 
 /** Every read of the settings table answers `ms` late until the next openOnPhone. */
@@ -88,15 +89,14 @@ afterAll(() => {
   db.close();
 });
 
-async function openSettings(): Promise<void> {
+async function openSettingsPage(): Promise<void> {
   // the gear in the Reader's header, not through the whole chapter: a role query on `screen` for buttons walks every word of it (3 s, mw-5r3p30.555)
   const header = await waitFor(() => {
     const found = document.querySelector<HTMLElement>('[data-reader-top]');
     if (!found) throw new Error('the Reader header is not drawn yet');
     return found;
   });
-  await user.click(await within(header).findByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user, within(header));
   await openSettingsGroup(user, 'reading');
 }
 async function backToReader(): Promise<void> {
@@ -166,7 +166,7 @@ async function greekRateOfAButton(): Promise<number> {
   const rate = synth.spoken[before].rate;
   expect(synth.spoken[before].lang).toBe('el-GR');
   stopSpeaking();
-  await openSettings();
+  await openSettingsPage();
   return rate;
 }
 function englishRate(): number {

@@ -15,6 +15,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings, querySettingsHeading } from '../../tests/unit/openSettings';
 
 const fileOf = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
 const CHAPTERS: Record<string, Chapter> = { 'rom/8': fileOf('rom/8'), 'rom/9': fileOf('rom/9'), 'rev/22': fileOf('rev/22'), '2jn/1': fileOf('2jn/1'), '3jn/1': fileOf('3jn/1') };
@@ -66,16 +67,15 @@ const lastSpoken = () => synth.spoken[synth.spoken.length - 1];
 const SPANS = ['End of the book', 'End of the Bible'];
 const VALUE_OF: Record<string, string> = { 'End of the book': 'book', 'End of the Bible': 'bible' };
 
-async function openSettings(): Promise<void> {
+async function openSettingsPage(): Promise<void> {
   if (onSettingsPage()) return;
-  if (!screen.queryByRole('heading', { name: 'Settings', level: 1 })) await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  if (!querySettingsHeading()) await openSettings(user);
   await openSettingsGroup(user, 'listening');
 }
 const spanGroup = () => screen.findByRole('group', { name: 'Play to' });
 
 async function chooseSpan(label: string): Promise<void> {
-  await openSettings();
+  await openSettingsPage();
   const group = await spanGroup();
   await user.click(within(group).getByRole('button', { name: label, exact: true }));
   await leaveSettings(user);
@@ -108,7 +108,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   Scenario('Play to is End of the book until he chooses End of the Bible, and the choice survives a close', ({ Given, When, Then, And }) => {
     Given(phone, openWith);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Play to shows End of the book chosen', () => chosen('End of the book'));
     And('Play to offers End of the book and End of the Bible', async () => {
       expect(within(await spanGroup()).getAllByRole('button').map((b) => b.textContent)).toEqual(SPANS);
@@ -122,7 +122,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       stopReading();
       render(<App />);
     });
-    And('he opens Settings', openSettings);
+    And('he opens Settings', openSettingsPage);
     Then('Play to shows End of the Bible chosen', () => chosen('End of the Bible'));
   });
 
@@ -131,7 +131,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('Chapter was saved as the span by an earlier Lampas', async () => {
       await db.settings.put({ key: 'readSpan', value: 'chapter' });
     });
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Play to shows End of the book chosen', () => chosen('End of the book'));
   });
 

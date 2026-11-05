@@ -19,6 +19,7 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { seedHisWords } from '../../tests/support/his-words';
 import { findStatusLine } from '../../tests/support/status';
 import { openTutor } from './open-tutor';
+import { findSettingsHeading } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -242,7 +243,7 @@ describeFeature(feature, ({ Scenario }) => {
       await act(async () => {
         window.location.hash = '#/settings';
       });
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await findSettingsHeading();
       await openTutor();
       await screen.findByRole('dialog', { name: 'Ask the tutor: Settings' });
     });
@@ -259,7 +260,7 @@ describeFeature(feature, ({ Scenario }) => {
       window.history.back();
     });
     Then('Settings is open', async () => {
-      expect(await screen.findByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument();
+      expect(await findSettingsHeading()).toBeInTheDocument();
     });
   });
 });

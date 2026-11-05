@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -12,7 +13,7 @@ test('Settings no longer lists the works; Library > Commentaries does, each Off 
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();

@@ -3,6 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 // The English font (Settings > Appearance > Font, mw-5r3p30.311): the computed font-family of English verse text changes with the choice, the Greek's
 // does not, the type size is the same, the choice survives a reload, the face really loads, and every woff2 is in the built worker's precache list.
@@ -21,7 +22,7 @@ async function openReader(page: Page, hash = '') {
 }
 
 async function chooseFont(page: Page, name: RegExp) {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Font', exact: true });
   await group.getByRole('button', { name }).click();

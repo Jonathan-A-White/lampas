@@ -4,11 +4,12 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 async function turnOnLogos(page: Page) {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   await page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true }).click();
   await leaveSettings(page);

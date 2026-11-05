@@ -12,6 +12,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { registerPronunciation } from '../../src/speech/pronunciation';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ensureSettingsGroup, openSettingsGroup, leaveSettings, setEachOnItsOwn } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 let unregister: (() => void) | undefined;
@@ -55,8 +56,7 @@ const sheet = () => screen.getByRole('dialog');
 
 /** Opens Settings and its Listening group from the Reader. */
 const openSettingsListening = async (): Promise<void> => {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   await openSettingsGroup(user, 'listening');
 };
 /** A pronunciation row of Listening: the radio group of the scheme list, by its name. */
@@ -200,8 +200,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("Neither language's voice, speed or keyboard rows show at English only", ({ Given, When, Then, And }) => {
     Given(OPENED_PLAIN, openedPlain);
     When("he taps the gear in the reader's header", async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
     });
     Then('Listening has neither the Hebrew nor the Greek voice or speed, nor a Pronunciation row', async () => {
       await ensureListening();

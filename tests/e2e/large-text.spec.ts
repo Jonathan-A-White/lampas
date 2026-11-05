@@ -34,6 +34,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openIpaDrill, openMemorizeKeyboardOff, openMemorizeTyping, openParadigmDrill, openReadingCheck, openReviewAnswered, openReviewCard, openReviewShown, openReviewSoundWord, openSoundLessonFoot } from './large-text-answers';
 import { talkField } from './talk-field';
+import { settingsHeading } from './openSettings';
 
 /** The browser's default font size at 200%: 2 x 16 px. */
 const TEXT_PX = 32;
@@ -118,7 +119,7 @@ const SCREENS: readonly Screen[] = [
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/#/settings');
-      await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeAttached();
+      await expect(settingsHeading(page)).toBeAttached();
     },
   },
   {
@@ -524,7 +525,7 @@ test('the IPA drill: every question of the round, asked and answered, fits at 20
 test('the check fails on a label that is cut off', async ({ page }) => {
   await SCREENS[3].open(page);
   expect(await clipped(page)).toEqual([]);
-  await page.getByRole('heading', { name: 'Settings', exact: true, level: 1 }).evaluate((el) => {
+  await settingsHeading(page).evaluate((el) => {
     el.setAttribute('style', 'display:block;width:20px;overflow:hidden;white-space:nowrap');
   });
   expect((await clipped(page)).some((line) => line.includes('Settings') && line.includes('cut off'))).toBe(true);

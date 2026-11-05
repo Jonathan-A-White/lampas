@@ -2,22 +2,23 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 const heading = (page: Page, name: string) => page.getByRole('heading', { name, exact: true, level: 1 });
 const group = (page: Page, name: string) => page.getByRole('list', { name: 'Settings groups' }).getByRole('button', { name: new RegExp(`^${name}`) });
 
-async function openSettings(page: Page) {
+async function openSettingsPage(page: Page) {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await expect(heading(page, 'Settings')).toBeVisible();
 }
 
 test('Settings opens on a home that lists the groups and no setting; Developer waits until it is found', async ({ page }) => {
-  await openSettings(page);
+  await openSettingsPage(page);
   for (const name of ['Reading', 'Learning', 'The tutor', 'Listening', 'Daily', 'Study resources', 'Account']) {
     const button = group(page, name);
     await expect(button).toBeVisible();
@@ -32,7 +33,7 @@ test('Settings opens on a home that lists the groups and no setting; Developer w
 });
 
 test('a group opens as a page with only its sections; ‹ Settings returns to the home and the phone Back leaves Settings', async ({ page }) => {
-  await openSettings(page);
+  await openSettingsPage(page);
   await group(page, 'Reading').click();
   await expect(heading(page, 'Reading')).toBeVisible();
   expect(new URL(page.url()).hash).toBe('#/settings?group=reading');
@@ -63,7 +64,7 @@ test('a group page opened by a link goes to the home from its arrow, and the pho
 });
 
 test('search on the home lists the rows that match with their group; choosing one opens its page at the row', async ({ page }) => {
-  await openSettings(page);
+  await openSettingsPage(page);
   const search = page.getByRole('searchbox', { name: 'Search settings' });
   await search.fill('text size');
   const found = page.getByRole('list', { name: 'Matching settings' });
@@ -86,7 +87,7 @@ test('search on the home lists the rows that match with their group; choosing on
 });
 
 test('search finds a row that is not a setting of the registry (Words) and opens its page at its section', async ({ page }) => {
-  await openSettings(page);
+  await openSettingsPage(page);
   await page.getByRole('searchbox', { name: 'Search settings' }).fill('words you are learning');
   await page.locator('[data-found="link.words"]').click();
   await expect(heading(page, 'Account')).toBeVisible();

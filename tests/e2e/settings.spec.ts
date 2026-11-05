@@ -2,6 +2,7 @@ import { expect, test, type Locator } from '@playwright/test';
 import { shot } from './shot';
 import { leaveSettings, openGroup, turnLogosOn } from './settings-group';
 import { openUnlocked } from './unlocked';
+import { openSettings, settingsDoor, settingsHeading } from './openSettings';
 
 // These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
 // `npx playwright test <file>`) they would otherwise get Desktop Chrome's 1280 px and fail every width check.
@@ -15,7 +16,7 @@ test('the reader header holds the chapter, English | Greek and the gear, in one 
   const header = page.locator('header').first();
   const title = await header.getByRole('heading', { name: 'Romans 8', level: 1 }).boundingBox();
   const language = await header.getByRole('group', { name: 'Language', exact: true }).boundingBox();
-  const gear = await header.getByRole('button', { name: 'Settings', exact: true }).boundingBox();
+  const gear = await settingsDoor(header).boundingBox();
   const head = await header.boundingBox();
   if (!title || !language || !gear || !head) throw new Error('the header is missing a part');
 
@@ -38,8 +39,8 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, W
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   expect(new URL(page.url()).hash).toBe('#/settings');
 
   const tappable = async (controls: Locator[]) => {

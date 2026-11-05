@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openUnlocked } from './unlocked';
+import { openSettings, settingsHeading } from './openSettings';
 
 // The Immersive reader keeps the screen awake while the Reader is open (mw-5r3p30.309): it holds a screen wake lock, lets it go on leaving the Reader
 // and when the setting goes Off, and asks again when the page is visible again (the browser drops the lock whenever the page hides). Where the API is
@@ -87,8 +88,8 @@ test('with Immersive reader On the Reader holds a screen wake lock, and leaving 
   await openReader(page, 'on');
   await expect.poll(async () => (await wake(page)).held).toBe(1);
 
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   await expect.poll(async () => (await wake(page)).held).toBe(0);
   expect((await wake(page)).requests).toBe(1);
 });

@@ -15,6 +15,7 @@ import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -57,9 +58,8 @@ async function openFresh(): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBe(63));
 }
 
-const openSettings = async (): Promise<void> => {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+const openSettingsPage = async (): Promise<void> => {
+  await openSettings(user);
   await openSettingsGroup(user, 'study');
 };
 const goBack = async (): Promise<void> => {
@@ -126,7 +126,7 @@ const feature = await loadFeature('features/study-resources.feature');
 describeFeature(feature, ({ Scenario }) => {
   Scenario("Settings lists Strong's and Logos, all switched off", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     Then("the Study resources section lists Strong's and Logos", async () => {
       const section = await screen.findByRole('region', { name: 'Study resources' });
       // The switches are drawn once the resources are read (a liveQuery answers later): wait for them.
@@ -143,7 +143,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("With Strong's on, the word sheet shows the word's G-number as a link to its entry", ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
@@ -152,7 +152,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('With Logos on, BDAG is ticked and the word sheet shows Open in Logos: BDAG and Bible Word Study in Logos', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     Then('the Logos lexicon {string} is on in his library', isOn);
     And('the Logos lexicon {string} is not on in his library', isNotOn);
@@ -165,7 +165,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Each ticked Logos lexicon gives its own Open link', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     And('he turns on the Logos lexicon {string}', turnsOn);
     And('he taps Back on the Settings screen', goBack);
@@ -177,7 +177,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('With EDNT ticked, Open in Logos: EDNT carries the Resource ID Logos prints for EDNT', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     And('he turns on the Logos lexicon {string}', turnsOn);
     And('he taps Back on the Settings screen', goBack);
@@ -190,7 +190,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Bible Word Study in Logos names Jesus by his Logos lemma, and the BDAG link is unchanged', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
@@ -203,7 +203,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A Logos link carries its https address for the case the app cannot be opened', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
@@ -214,7 +214,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("With Strong's on, the Strong's number shows once on the word sheet", ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     And('he taps Back on the Settings screen', goBack);
     And('he taps the word {string} in verse {int}', taps);
@@ -232,12 +232,12 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The switches survive a reload', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with no study resources on', openFresh);
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he switches on the study resource {string}', switchOn);
     And('he also switches on the study resource {string}', switchOn);
     And('he turns on the Logos lexicon {string}', turnsOn);
     And('Lampas is opened again', mount);
-    And('he opens Settings again', openSettings);
+    And('he opens Settings again', openSettingsPage);
     Then('the study resource {string} is switched on', async (_, name: string) => {
       expect(await switchOf(name)).toHaveAttribute('aria-checked', 'true');
     });

@@ -3,6 +3,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { waitForDue } from './today-chip';
 import { openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 // These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
 // `npx playwright test <file>`) they would otherwise get Desktop Chrome's 1280 px and fail every width check.
@@ -42,7 +43,7 @@ test('Settings > New words: New words at and Move it are one line of 48 px chips
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Learning');
   const rows = [
     { group: page.getByRole('group', { name: 'New words at', exact: true }), chips: ['Solid grammar', 'Frontier grammar'], pressed: 'Frontier grammar' },

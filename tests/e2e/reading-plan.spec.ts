@@ -4,6 +4,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openToday, todayChip } from './today-chip';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings, settingsHeading } from './openSettings';
 
 // The listening plan in the Bible view (mw-umv8sp.5): the reading plan piece of Today (opened by the Reader's Today chip, which replaced the Plan chip in mw-1fwagb.6), Start a listening plan from Today and from Settings, and the marks in the chapter picker.
 test.use({ viewport: { width: 390, height: 844 } });
@@ -104,7 +105,7 @@ test('with the plan off Today invites her to start one, and so does Settings', a
   await expect(sheet).toHaveCount(0);
 
   await backToReader(page);
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const entry = page.getByRole('button', { name: 'Start a listening plan' });
   await entry.scrollIntoViewIfNeeded();
@@ -169,7 +170,7 @@ test('the Developer row resets the plan, and Start a listening plan runs again',
   await expect(plan(page)).toContainText('Next: Leviticus 4');
   await backToReader(page);
 
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Developer');
   const reset = page.getByRole('button', { name: 'Reset the listening plan, for the demo' });
   await reset.scrollIntoViewIfNeeded();
@@ -179,7 +180,7 @@ test('the Developer row resets the plan, and Start a listening plan runs again',
 
   // the group's page, then the Settings home, then the Reader
   await page.goBack();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(settingsHeading(page)).toBeVisible();
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await openToday(page);

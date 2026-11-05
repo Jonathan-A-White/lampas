@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 // The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
 test.use({ viewport: { width: 390, height: 844 } });
@@ -15,7 +16,7 @@ async function openReader(page: Page) {
 
 test('a learning word stands in Greek with its English in small grey beneath, the verse flow intact', async ({ page }) => {
   await openReader(page);
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Weave', exact: true });
   const option = group.getByRole('button', { name: '+ Learning', exact: true });

@@ -18,6 +18,7 @@ import { asSpoken } from '../../tests/support/lone-word';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 // Each step renders the whole App and several take 5-7 s alone; a loaded host (a full-suite run) outruns the 20 s default.
 vi.setConfig({ testTimeout: 90_000 });
@@ -85,14 +86,13 @@ async function solidLemmas(): Promise<Set<string>> {
 type WeaveLabel = 'Off' | 'Solid words' | 'Solid and learning words';
 const WEAVE_VALUE: Record<WeaveLabel, string> = { Off: 'off', 'Solid words': 'solid', 'Solid and learning words': 'solid+learning' };
 const WEAVE_CHIP: Record<WeaveLabel, string> = { Off: 'Off', 'Solid words': 'Solid', 'Solid and learning words': '+ Learning' };
-async function openSettings(): Promise<void> {
+async function openSettingsPage(): Promise<void> {
   if (onSettingsPage()) return;
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   await openSettingsGroup(user, 'reading');
 }
 async function setWeave(label: WeaveLabel): Promise<void> {
-  await openSettings();
+  await openSettingsPage();
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: WEAVE_CHIP[label] }));
   await leaveSettings(user);
   await waitForReader();
@@ -102,7 +102,7 @@ async function setWeave(label: WeaveLabel): Promise<void> {
 
 /** The Weave grammar dial is in Settings too: set it there and come back to the reader. */
 async function setGrammar(chip: string): Promise<void> {
-  await openSettings();
+  await openSettingsPage();
   await user.click(within(await screen.findByRole('group', { name: 'Grammar' })).getByRole('button', { name: chip }));
   await leaveSettings(user);
   await waitForReader();
@@ -111,7 +111,7 @@ async function setGrammar(chip: string): Promise<void> {
 /** The Weave's Order (mw-5r3p30.250) is in Settings too: set it there and come back to the reader. */
 async function setOrder(order: 'English' | 'Greek'): Promise<void> {
   const chip = order === 'Greek' ? 'Original' : order;
-  await openSettings();
+  await openSettingsPage();
   await user.click(within(await screen.findByRole('group', { name: 'Order' })).getByRole('button', { name: chip }));
   await waitFor(async () => expect((await db.settings.get('weaveOrder'))?.value).toBe(order.toLowerCase()));
   await leaveSettings(user);
@@ -211,7 +211,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     And('he sets Weave to Solid words', async () => setWeave('Solid words'));
     When('he drops the word {string} on the Words screen', async (_, lemma: string) => {
-      await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
       await screen.findByRole('heading', { name: 'Words', level: 1 });
@@ -372,8 +372,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The Weave setting offers Off, Solid, Solid and learning', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     When('he opens Settings', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'reading');
     });
     Then('the Weave setting offers {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
@@ -387,7 +386,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
   Scenario('Settings > Weave has a Words row and a Grammar row', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with nothing saved', openFresh);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('the Words row is labelled {string} and offers {string}, {string} and {string}', async (_, label: string, a: string, b: string, c: string) => {
       const group = await screen.findByRole('group', { name: 'Weave' });
       expect(group.parentElement).toHaveTextContent(label);
@@ -471,7 +470,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The four combinations are each one tap', ({ Given, When, Then }) => {
     Given('Lampas is opened with nothing saved', openFresh);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('each of Solid words, + Learning words, with Solid grammar, + Frontier grammar is set by one tap on each row', async () => {
       const words = within(await screen.findByRole('group', { name: 'Weave' }));
       // the Grammar row is drawn only while the Weave is not Off (mw-5r3p30.106)
@@ -501,7 +500,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
   Scenario('Settings > Weave has an Order row under Grammar, English by default', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with nothing saved', openFresh);
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('there is no Order row', async () => {
       await screen.findByRole('group', { name: 'Weave' });
       expect(screen.queryByRole('group', { name: 'Order' })).toBeNull();

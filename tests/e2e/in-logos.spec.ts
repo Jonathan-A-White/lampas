@@ -6,6 +6,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
 import { openVerseView } from './verse-view';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -21,7 +22,7 @@ const holdAppLinks = async (page: Page): Promise<void> => {
 
 /** Logos On (Settings > Study resources), then every book of the kinds On from the Library's own pages. */
 async function shelfOn(page: Page, kinds: readonly (readonly [string, string])[]): Promise<void> {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const logos = page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true });
   if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
@@ -111,7 +112,7 @@ test('with no Greek text, interlinear or commentary On the second door is not dr
   await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const logos = page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true });
   if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
@@ -164,7 +165,7 @@ test('a Bible in Logos for each part: the Old Testament one picked, Jonah opens 
   await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   const logos = section.getByRole('switch', { name: 'Logos', exact: true });

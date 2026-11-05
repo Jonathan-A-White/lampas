@@ -5,6 +5,7 @@ import { pauseNow } from '../support/hold';
 import { afterLastVerse } from './reader-foot';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openSettings, settingsHeading } from './openSettings';
 
 // Settings > Reading, Turn pages (mw-5r3p30.299): the chapter is laid out in pages the size of the reading box; a tap on the right third of the
 // text or a swipe to the left turns forward a page, a tap on the left third or a swipe to the right turns back; past the last page the next chapter
@@ -959,13 +960,13 @@ test('with Turn pages, Settings and back by ‹ Reader or by Back keeps the page
   await openMark12(page, 'pages');
   const verses = await turnTo(page, 6);
 
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await backOnPage(page, 6, verses);
 
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   await page.goBack();
   await backOnPage(page, 6, verses);
   await shot(page, 'turn-pages-back-from-settings');

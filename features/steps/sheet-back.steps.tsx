@@ -15,6 +15,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTutor } from './open-tutor';
+import { findSettingsHeading } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -41,7 +42,7 @@ async function open(start: string, thenReader: boolean, select = true): Promise<
   await seedHisWords();
   render(<App />);
   if (thenReader) {
-    await screen.findByRole('heading', { name: 'Settings' });
+    await findSettingsHeading();
     act(() => navigate('home'));
   }
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -125,7 +126,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings' });
+      await findSettingsHeading();
       expect(window.location.hash).toBe('#/settings');
     });
   });
@@ -265,7 +266,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings' });
+      await findSettingsHeading();
       expect(window.location.hash).toBe('#/settings');
     });
   });
@@ -293,7 +294,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings' });
+      await findSettingsHeading();
       expect(window.location.hash).toBe('#/settings');
     });
   });
@@ -373,7 +374,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings' });
+      await findSettingsHeading();
     });
   });
 
@@ -420,7 +421,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('he taps Done on the Grammar sheet', () => dismiss('grammar', 'Done'));
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings' });
+      await findSettingsHeading();
       expect(window.location.hash).toBe('#/settings');
     });
     And('no sheet is open', noSheetOpen);
@@ -440,7 +441,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('he taps Done on the idea sheet', () => dismiss('idea', 'Done'));
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
-      await screen.findByRole('heading', { name: 'Settings' });
+      await findSettingsHeading();
       expect(window.location.hash).toBe('#/settings');
     });
     And('no sheet is open', noSheetOpen);

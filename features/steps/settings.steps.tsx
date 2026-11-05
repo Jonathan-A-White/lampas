@@ -14,6 +14,7 @@ import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/
 import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
 import { ensureSettingsGroup, leaveSettings, setEachOnItsOwn } from '../../tests/support/settings-pages';
+import { openSettings, querySettingsHeading } from '../../tests/unit/openSettings';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -80,8 +81,8 @@ const verseEl = (n: number): HTMLElement => {
   return el;
 };
 
-async function openSettings(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
+async function openSettingsPage(): Promise<void> {
+  await openSettings(user);
   await settingsHeading();
 }
 const goBack = async () => {
@@ -99,7 +100,7 @@ const feature = await loadFeature('features/settings.feature');
 describeFeature(feature, ({ Scenario }) => {
   Scenario('The gear opens Settings and Back returns to the reader', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     Then('the Settings screen is shown', async () => {
       await settingsHeading();
     });
@@ -107,13 +108,13 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps Back on the Settings screen', goBack);
     Then('the reader is shown again', () => {
       expect(screen.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-      expect(screen.queryByRole('heading', { name: 'Settings', level: 1 })).toBeNull();
+      expect(querySettingsHeading()).toBeNull();
     });
   });
 
   Scenario('Turning the weave on in Settings weaves the reader', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he sets Weave to Solid words in Settings', () => setWeaveInSettings('Solid'));
     Then('the bus has heard the weave is solid', () => expectLatest('weave-changed', (e) => expect(e?.weave).toBe('solid')));
     When('he taps Back on the Settings screen', goBack);
@@ -127,7 +128,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A chosen Greek voice is used by the speaker buttons', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone with two Greek voices', () => openWith([ENGLISH, GREEK, CYPRIOT]));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he chooses the Greek voice {string} in Settings', async (_, name: string) => {
       await user.selectOptions(await greekPicker(), name);
     });
@@ -146,7 +147,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("The voice pickers list the phone's voices by language, with Phone default first", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with two Greek voices', () => openWith([ENGLISH, GREEK, CYPRIOT, FRENCH]));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     Then('the Greek voice picker offers {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
       expect(optionsOf(await greekPicker())).toEqual([a, b, c]);
     });
@@ -157,7 +158,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Greek pronunciation shows Modern Greek, selected', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he sets each language on its own', () => setEachOnItsOwn(user, true));
     Then('Greek pronunciation lists only {string}', async (_, label: string) => {
       await ensureSettingsGroup('listening');
@@ -172,7 +173,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Settings survive a reload', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on a phone with two Greek voices', () => openWith([ENGLISH, GREEK, CYPRIOT]));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he sets Weave to Solid words in Settings', () => setWeaveInSettings('Solid'));
     And('he chooses the Greek voice {string} in Settings', async (_, name: string) => {
       await user.selectOptions(await greekPicker(), name);
@@ -212,7 +213,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Words and About are reachable from Settings', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
-    When("he taps the gear in the reader's header", openSettings);
+    When("he taps the gear in the reader's header", openSettingsPage);
     And('he taps {string} on the Settings screen', async (_, label: string) => {
       await ensureSettingsGroup('account');
       await user.click(screen.getByRole('button', { name: label }));

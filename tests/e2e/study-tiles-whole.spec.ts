@@ -4,6 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -19,7 +20,7 @@ test('Revelation 10:2, Weave: the word sheet of βιβλαρίδιον (NA) has 
   await page.goto('/#/?b=rev&c=10&weave=solid');
   await expect(page.locator('[data-verse="2"] [data-text]')).toBeVisible();
   // both resources on: Strong's (the tile that was empty) and Logos
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const resources = page.getByRole('region', { name: 'Study resources' });
   for (const name of ["Strong's", 'Logos']) {

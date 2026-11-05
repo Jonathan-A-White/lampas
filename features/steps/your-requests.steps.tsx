@@ -17,6 +17,7 @@ import { useRoute } from '../../src/nav/route';
 import { requestTimings } from '../../src/services/requestStatus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { findSettingsHeading } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
@@ -587,7 +588,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       await user.click(await headerButton());
     });
     Then('Settings is open again', async () => {
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await findSettingsHeading();
       expect(window.location.hash).toBe('#/settings');
     });
   });
@@ -623,11 +624,11 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('he double taps the header button', async () => {
       // the first tap leaves for Settings; the second lands on whatever Settings draws at the same spot (its own back button)
       fireEvent.click(await headerButton(), { detail: 1 });
-      const settingsBack = (await screen.findByRole('heading', { name: 'Settings', level: 1 })).closest('header')!.querySelector('button') as HTMLElement;
+      const settingsBack = (await findSettingsHeading()).closest('header')!.querySelector('button') as HTMLElement;
       fireEvent.click(settingsBack, { detail: 2 });
     });
     Then('Settings is open again', async () => {
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await findSettingsHeading();
       expect(window.location.hash).toBe('#/settings');
     });
   });

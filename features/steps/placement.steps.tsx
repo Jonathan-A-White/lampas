@@ -25,6 +25,7 @@ import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { storedId } from '../../src/data/grammar/soundScope';
 import { expectLatest } from '../../tests/support/published';
+import { findSettingsHeading } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -286,7 +287,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', tapped);
     Then('Settings is open', async () => {
       // a reopened placement has no Settings page behind it, so the way out lands on the home (a Back from the page it was started on returns to that page)
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await findSettingsHeading();
     });
   });
 

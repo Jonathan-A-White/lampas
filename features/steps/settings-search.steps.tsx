@@ -10,6 +10,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -23,7 +24,7 @@ afterAll(() => {
   db.close();
 });
 
-async function openSettings(seed: Record<string, string> = {}): Promise<void> {
+async function openSettingsPage(seed: Record<string, string> = {}): Promise<void> {
   cleanup();
   clearBus();
   forgetTrail();
@@ -39,8 +40,7 @@ async function openSettings(seed: Record<string, string> = {}): Promise<void> {
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBe(63));
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   // the home draws its groups from a live query: wait for the last one before searching
   await groupButton('Account');
 }
@@ -56,7 +56,7 @@ const groups = (): HTMLElement | null => document.querySelector<HTMLElement>('[a
 const feature = await loadFeature('features/settings-search.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  const openNothing = () => openSettings();
+  const openNothing = () => openSettingsPage();
   const typed = async (_: unknown, text: string): Promise<void> => {
     await user.type(await searchField(), text);
   };
@@ -88,7 +88,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Typing logos lists the Logos settings with their group', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings with Logos On', () => openSettings({ 'resource.logos': 'on' }));
+    Given('Lampas is opened on Settings with Logos On', () => openSettingsPage({ 'resource.logos': 'on' }));
     When('he types {string} in the Settings search', typed);
     Then('Settings finds {string} in {string}', findsIn);
     And('Settings finds {string} in {string}', findsIn);
@@ -97,7 +97,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Clearing the search lists the groups again', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings with Logos On', () => openSettings({ 'resource.logos': 'on' }));
+    Given('Lampas is opened on Settings with Logos On', () => openSettingsPage({ 'resource.logos': 'on' }));
     When('he types {string} in the Settings search', typed);
     And('he clears the Settings search', async () => {
       await user.clear(await searchField());

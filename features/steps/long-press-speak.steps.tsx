@@ -19,6 +19,7 @@ import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -82,8 +83,7 @@ async function switchToGreek(): Promise<void> {
 }
 
 async function setWeaveSolid(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   await openSettingsGroup(user, 'reading');
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
   await leaveSettings(user);

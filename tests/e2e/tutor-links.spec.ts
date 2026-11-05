@@ -6,6 +6,7 @@ import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
 import { talkField } from './talk-field';
+import { openSettings } from './openSettings';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -37,7 +38,7 @@ test('the tutor\'s links at phone width: chips for the resources he switched on,
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
   // Strong's and Logos on in Settings (turning an app On only turns it On).
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();
@@ -93,7 +94,7 @@ test('an Old Testament verse link opens in his Bible in Logos (LSB today) and in
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();

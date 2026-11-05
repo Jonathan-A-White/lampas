@@ -11,6 +11,7 @@ import { leaveSettings, openGroup } from './settings-group';
 import { talkField } from './talk-field';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -31,7 +32,7 @@ const openReader = async (page: Page): Promise<void> => {
 
 /** From the Reader: Settings, the dial moved to `name` (Just English is "English only" of Which languages?, never a button of the dial; any other step brings the dial back with "Greek"), back to the Reader. */
 async function setStep(page: Page, name: string): Promise<void> {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   const languages = page.getByRole('group', { name: 'Which languages?', exact: true });
   if (name === 'Just English') {
     await languages.getByRole('button', { name: 'English only', exact: true }).click();
@@ -49,7 +50,7 @@ async function setStep(page: Page, name: string): Promise<void> {
 }
 
 const studySection = async (page: Page): Promise<Locator> => {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.scrollIntoViewIfNeeded();
@@ -100,7 +101,7 @@ test('a phone that reads Hebrew alone lists no Greek resource, and Greek brings 
   await holdAppLinks(page);
   await openReader(page);
   // Which languages? = Hebrew puts the Greek dial at Just English: Strong's (a Greek resource) is hidden, Logos (both) stays
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   const languages = page.getByRole('group', { name: 'Which languages?', exact: true });
   await languages.getByRole('button', { name: 'Hebrew', exact: true }).click();
   await expect(languages.getByRole('button', { name: 'Hebrew', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -112,7 +113,7 @@ test('a phone that reads Hebrew alone lists no Greek resource, and Greek brings 
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
   await leaveSettings(page);
   // Greek and Hebrew: the Greek dial comes back at the All in it was left at, and the list is as it was at All in
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await languages.getByRole('button', { name: 'Greek and Hebrew', exact: true }).click();
   await expect(languages.getByRole('button', { name: 'Greek and Hebrew', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();

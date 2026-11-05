@@ -12,6 +12,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import type { GroupId } from '../../src/settings/rows';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 // No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
 vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
@@ -30,7 +31,7 @@ afterAll(() => {
 /** The Settings page the scenario is on, so `settled` waits for what that page draws. */
 let page: GroupId = 'study';
 
-async function openSettings(group: GroupId, seed: Record<string, string> = {}): Promise<void> {
+async function openSettingsPage(group: GroupId, seed: Record<string, string> = {}): Promise<void> {
   page = group;
   cleanup();
   clearBus();
@@ -48,8 +49,7 @@ async function openSettings(group: GroupId, seed: Record<string, string> = {}): 
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBe(63));
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   await openSettingsGroup(user, group);
 }
 
@@ -94,7 +94,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
 
   Scenario('Lexapp Off is its row and nothing else', ({ Given, Then, And }) => {
-    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('study'));
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettingsPage('study'));
     Then('Settings shows the switch {string} Off with its help {string}', async (_, name: string, help: string) => {
       await waitFor(async () => expect(await switchOf(name)).toHaveAttribute('aria-checked', 'false'));
       expect(screen.getByText(help)).toBeInTheDocument();
@@ -106,7 +106,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Turning Lexapp On shows its details and Off hides them, keeping what was typed', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Settings with Lexapp On and the Lexapp resource {string}', async (_, typed: string) => {
-      await openSettings('study', { 'resource.sampleapp': 'on', 'resourceOption.sampleapp': typed });
+      await openSettingsPage('study', { 'resource.sampleapp': 'on', 'resourceOption.sampleapp': typed });
     });
     Then('Settings has a field {string} holding {string}', field);
     When('he turns the switch {string} Off', turnsOn);
@@ -118,7 +118,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Bible in Logos is shown only while Logos is On', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('study'));
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettingsPage('study'));
     Then('Settings has no row {string}', async (_, name: string) => {
       await settled();
       noGroup(name);
@@ -135,7 +135,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("The Weave's Grammar row is shown only while the Weave is not Off", ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('reading'));
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettingsPage('reading'));
     Then('Settings has the group {string} and no group {string}', async (_, shown: string, hidden: string) => {
       await settled();
       await waitFor(() => noGroup(hidden));
@@ -153,7 +153,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('New words at and Move it are shown only while New words a day is not Off', ({ Given, When, Then }) => {
-    Given('Lampas is opened on Settings with nothing chosen', () => openSettings('greek'));
+    Given('Lampas is opened on Settings with nothing chosen', () => openSettingsPage('greek'));
     Then('Settings has the groups {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
       for (const name of [a, b, c]) expect(await screen.findByRole('group', { name })).toBeInTheDocument();
     });

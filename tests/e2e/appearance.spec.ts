@@ -6,6 +6,7 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings, settingsDoor } from './openSettings';
 
 // 44 px is the floor; a word must clear it by a pixel so one font's metrics can shave a little and it still holds.
 const TAP_WITH_MARGIN = 45;
@@ -25,8 +26,8 @@ async function openReader(page: Page) {
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
-async function openSettings(page: Page, group = 'Reading') {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+async function openSettingsPage(page: Page, group = 'Reading') {
+  await openSettings(page);
   await openGroup(page, group);
 }
 /** From a group's page to another group's, by the Settings home. */
@@ -59,7 +60,7 @@ test('Theme Phone follows a dark colour scheme and a light one', async ({ page }
   await page.emulateMedia({ colorScheme: 'light' });
   await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
   await expect.poll(() => barOf(page)).toBe('#f3f5f9');
-  await openSettings(page);
+  await openSettingsPage(page);
   await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Phone', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'settings-light');
 });
@@ -68,7 +69,7 @@ test('Theme Dark makes the reader dark whatever the phone says', async ({ page }
   await page.emulateMedia({ colorScheme: 'light' });
   await openReader(page);
   expect(await canvasOf(page)).toBe(LIGHT_CANVAS);
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Theme', 'Dark');
   await expect.poll(() => canvasOf(page)).toBe(DARK_CANVAS);
   expect(await barOf(page)).toBe('#0a0e17');
@@ -83,7 +84,7 @@ test('Theme Dark makes the reader dark whatever the phone says', async ({ page }
 
   // Light is light, on a phone that says dark
   await page.emulateMedia({ colorScheme: 'dark' });
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Theme', 'Light');
   await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
 });
@@ -91,7 +92,7 @@ test('Theme Dark makes the reader dark whatever the phone says', async ({ page }
 test('Theme Sepia gives warm paper and dark brown text on a dark phone, and Light and Dark still come back', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await openReader(page);
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Theme', 'Sepia');
   await expect.poll(() => themeOf(page)).toBe('sepia');
   await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'Sepia', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -106,7 +107,7 @@ test('Theme Sepia gives warm paper and dark brown text on a dark phone, and Ligh
   expect(colour).toBe('rgb(59, 47, 32)');
   await shot(page, 'reader-sepia');
 
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Theme', 'Light');
   await expect.poll(() => themeOf(page)).toBe('light');
   await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
@@ -120,7 +121,7 @@ test('Theme Sepia gives warm paper and dark brown text on a dark phone, and Ligh
 test('Theme High contrast gives pure white on black with a thick focus ring on a light phone, and Light comes back', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await openReader(page);
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Theme', 'High contrast');
   await expect.poll(() => themeOf(page)).toBe('contrast');
   await expect(page.getByRole('group', { name: 'Theme', exact: true }).getByRole('button', { name: 'High contrast', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -143,7 +144,7 @@ test('Theme High contrast gives pure white on black with a thick focus ring on a
   expect(await page.locator('[data-verse="1"]').evaluate((el) => getComputedStyle(el).color)).toBe(WHITE);
   await shot(page, 'reader-high-contrast');
 
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Theme', 'Light');
   await expect.poll(() => themeOf(page)).toBe('light');
   await expect.poll(() => canvasOf(page)).toBe(LIGHT_CANVAS);
@@ -160,14 +161,14 @@ test('Text size Large makes the verse text larger and every tap target stays at 
       await page.locator('[data-verse="1"] [data-chunk="0"]').boundingBox(),
       await page.getByRole('button', { name: 'Verse 1', exact: true }).boundingBox(),
       await page.getByRole('button', { name: 'Greek', exact: true }).boundingBox(),
-      await page.getByRole('button', { name: 'Settings', exact: true }).boundingBox(),
+      await settingsDoor(page).boundingBox(),
       await page.locator('[data-verse="1"]').getByRole('button', { name: 'Hear the verse' }).boundingBox(),
     ];
     return boxes.map((b) => b?.height ?? 0);
   };
 
   for (const label of ['Small', 'Large', 'Largest']) {
-    await openSettings(page);
+    await openSettingsPage(page);
     await choose(page, 'Text size', label);
     // the Settings choices themselves keep their height at this size
     for (const button of await page.getByRole('group', { name: 'Text size' }).getByRole('button').all()) {
@@ -215,7 +216,7 @@ test('a slower Greek rate slows a Greek speaker button and leaves English at its
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
   };
 
-  await openSettings(page, 'Listening');
+  await openSettingsPage(page, 'Listening');
   const english = page.getByRole('slider', { name: 'English speed' });
   const greek = page.getByRole('slider', { name: 'Greek speed' });
   await expect(english).toHaveValue('1');
@@ -244,7 +245,7 @@ test('Theme, Text size and both rates survive a reload', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await withVoices(page);
   await openReader(page);
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Theme', 'Dark');
   await choose(page, 'Text size', 'Largest');
   await toGroup(page, 'Listening');

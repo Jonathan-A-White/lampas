@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -24,7 +25,7 @@ const holdAppLinks = async (page: Page): Promise<void> => {
 
 /** Logos On (Settings > Study resources), then every Greek text On from the Library's page. */
 async function shelfHoldsGreekTexts(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const logos = page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true });
   if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();

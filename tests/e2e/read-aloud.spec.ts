@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { settingsDoor } from './openSettings';
 
 // The 390 bound below is the phone's screen, so the spec sets it (the chromium project is 1280 wide).
 test.use({ viewport: { width: 390, height: 844 } });
@@ -47,7 +48,7 @@ test('Read from the top reads the chapter on, with a bar, a highlight kept in vi
   const hb = await header.boundingBox();
   expect(hb?.width).toBeGreaterThanOrEqual(43.5);
   expect(hb?.height).toBeGreaterThanOrEqual(43.5);
-  const gear = await page.getByRole('button', { name: 'Settings', exact: true }).boundingBox();
+  const gear = await settingsDoor(page).boundingBox();
   expect(hb && gear && hb.x + hb.width <= gear.x + 0.5).toBe(true);
   await expectFitsPhone(page);
   // the title still fits beside the new button
@@ -119,7 +120,7 @@ test('at 360 x 740 the speaking bar fits the phone and the header keeps the titl
   expect(boxes[1] && boxes[2] && boxes[1].x + boxes[1].width <= boxes[2].x + 0.5).toBe(true);
   // the header is as it is when nothing is read: the title is a button the Governor can see
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  const gear = await head.getByRole('button', { name: 'Settings', exact: true }).boundingBox();
+  const gear = await settingsDoor(head).boundingBox();
   expect(gear && gear.x >= 0 && gear.x + gear.width <= 360).toBe(true);
   await expectFitsPhone(page);
   await shot(page, 'read-aloud-pause-stop');

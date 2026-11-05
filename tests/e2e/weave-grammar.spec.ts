@@ -2,12 +2,13 @@ import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 test('Settings > Weave: a Words row and a Grammar row, each one line of three chips at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   // the Grammar row is drawn only while the Weave is not Off (mw-5r3p30.106)
   await expect(page.getByRole('group', { name: 'Grammar', exact: true })).toHaveCount(0);

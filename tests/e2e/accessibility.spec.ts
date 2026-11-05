@@ -9,6 +9,7 @@ import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
 import { chooseAction } from './verse-view';
 import { talkField } from './talk-field';
+import { settingsDoor, settingsHeading } from './openSettings';
 
 // An automated accessibility check over every main screen (mw-cwf538.2, the epic 'Lampas for every age and every ability'): axe runs with
 // the WCAG 2.1 A and AA rules on each screen below, opened as a thumb opens it, and the spec fails on any violation (a missing name or role,
@@ -135,7 +136,7 @@ const SCREENS: readonly Screen[] = [
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/#/settings');
-      await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+      await expect(settingsHeading(page)).toBeVisible();
     },
   },
   {
@@ -248,7 +249,7 @@ for (const screen of SCREENS) {
 test('the check fails when a button loses its accessible name', async ({ page }) => {
   await SCREENS[0].open(page);
   expect(await violationsOn(page)).toEqual([]);
-  await page.getByRole('button', { name: 'Settings', exact: true }).evaluate((el) => {
+  await settingsDoor(page).evaluate((el) => {
     el.removeAttribute('aria-label');
     el.removeAttribute('title');
     el.replaceChildren();

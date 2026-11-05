@@ -12,6 +12,7 @@ import { routePostern } from '../support/playwright-postern';
 import { fakeMedia } from './fake-media';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 /** A thumb's gap between the two taps: well inside SETTLE_MS. */
 const GAP_MS = 120;
@@ -103,7 +104,7 @@ test.describe('a double tap on a play or open toggle', () => {
     await page.goto('/');
     await expect(page.locator('[data-verse="1"]')).toBeVisible();
     await pageTime(page, SETTLE_MS + 100);
-    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await openSettings(page);
     // the screen ignores taps for a moment after it changes: the group's button waits it out
     await pageTime(page, SETTLE_MS + 100);
     await openGroup(page, 'Study resources');

@@ -18,6 +18,7 @@ import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openTutor } from './open-tutor';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -161,8 +162,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with a quiz whose first answer proposes the line {string}', openWith);
     And('the phone was given the study way lines {string}', givenKept);
     When('he opens Settings and then {string}', async (_, name: string) => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'tutor');
       await user.click(screen.getByRole('button', { name }));
       await screen.findByRole('heading', { name, level: 1 });

@@ -20,6 +20,7 @@ import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recogni
 import { ENGLISH_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages';
+import { getSettingsDoor, openSettings, querySettingsDoor } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -183,12 +184,12 @@ const firstWord = () => document.querySelector<HTMLElement>('[data-verse="1"] [r
 const chips = () => screen.getByTestId('reader-chips');
 const barsAway = () => {
   expect(chips().closest('[data-away]')).not.toBeNull();
-  expect(screen.queryByRole('button', { name: 'Settings' })).toBeNull();
+  expect(querySettingsDoor()).toBeNull();
 };
 const barsShown = () => {
   expect(document.querySelectorAll('[data-away]')).toHaveLength(0);
   expect(chips()).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+  expect(getSettingsDoor()).toBeInTheDocument();
   // the Talk bar and the round Ask button are gone (mw-5r3p30.882)
   expect(screen.queryByRole('button', { name: 'Talk', exact: true })).toBeNull();
 };
@@ -390,7 +391,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings switches it On and the choice survives a reload', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));
     When('he opens Settings and sets Immersive reader to On', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'reading');
       const group = await screen.findByRole('group', { name: 'Immersive reader' });
       expect(within(group).getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
@@ -512,7 +513,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(fs).toEqual({ requests: 1, exits: 0 });
     });
     When('he opens Settings from the Reader', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettings(user);
     });
     Then('the page has left full screen', async () => {
       await waitFor(() => expect(fs.exits).toBe(1));
@@ -572,7 +573,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(held()).toBe(1));
     });
     When('he opens Settings from the Reader', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettings(user);
     });
     Then('the page has let the screen sleep', async () => {
       await waitFor(() => expect(held()).toBe(0));

@@ -22,6 +22,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const chapter8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 
@@ -202,7 +203,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     And('Words lists {string} under From my reading', async (_, lemma: string) => {
       await user.click(within(sheet()).getByRole('button', { name: 'Done' }));
-      await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
       const heading = await screen.findByRole('heading', { name: 'From my reading' });

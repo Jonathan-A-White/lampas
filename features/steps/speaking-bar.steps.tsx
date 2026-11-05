@@ -14,6 +14,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { pairsAsConsonant } from '../../tests/support/lone-word';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -154,7 +155,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Leaving the screen pauses the reading and coming back offers Resume', ({ Given, And, When, Then }) => {
     Given(phone, open);
     And('he taps the play button of verse {int}', tapPlay);
-    When('he opens Settings', () => user.click(screen.getByRole('button', { name: 'Settings' })));
+    When('he opens Settings', () => openSettings(user));
     Then('the phone is told to stop', () => expect(synth.calls[synth.calls.length - 1]).toBe('cancel'));
     And(paused, showsPaused);
     When('he goes back to the reader', async () => {

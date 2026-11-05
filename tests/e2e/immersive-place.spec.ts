@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlicensed, openUnlocked } from './unlocked';
+import { openSettings, settingsHeading } from './openSettings';
 
 // With Immersive reader On and the bars away, one quiet line at the foot says where he is: the book and chapter and how far through the chapter's
 // text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). With the setting Off it is there all the time (mw-5r3p30.1028); with it On it is not there with the bars brought
@@ -320,8 +321,8 @@ for (const licensed of [true, false]) {
     const at = await top();
     expect(at).toBeGreaterThan(500);
 
-    await page.getByRole('button', { name: 'Settings', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+    await openSettings(page);
+    await expect(settingsHeading(page)).toBeVisible();
     await page.getByRole('button', { name: '‹ Reader' }).click();
     await expect.poll(top).toBeGreaterThan(at - 50);
     // the saved place is back; the restore waits for the text to stay still before it lets go

@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openSettings, settingsHeading } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -54,8 +55,8 @@ test('the setting is under How much Greek?, found by a search, and turned on it 
   await shot(page, 'septuagint-reader');
 
   // Back: the gear opens Settings and Back returns to the chapter
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   await page.goBack();
   await expect(page.locator('[data-verse="1"] [data-lxx-english]')).toBeVisible();
 });

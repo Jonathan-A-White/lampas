@@ -13,6 +13,7 @@ import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setTermKnown } from '../../src/data/repositories/grammar';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { findSettingsDoor, openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -50,12 +51,12 @@ async function settle(): Promise<void> {
 async function openFresh(): Promise<void> {
   await wipe();
   render(<App />);
-  await screen.findByRole('button', { name: 'Settings' });
+  await findSettingsDoor();
   await settle();
 }
 
 async function openWords(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettings(user);
   await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
@@ -101,7 +102,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Review on a new install has nothing due', ({ Given, When, Then }) => {
     Given('Lampas is opened on a phone with nothing on it', openFresh);
     When('he opens Review', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Review' }));
       await screen.findByRole('heading', { name: 'Review', level: 1 });
@@ -130,7 +131,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened', async () => {
       render(<App />);
-      await screen.findByRole('button', { name: 'Settings' });
+      await findSettingsDoor();
       await settle();
     });
     Then('every row of the words, the schedule, the grammar levels, the settings and the flags is as it was', async () => {
@@ -146,7 +147,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened', async () => {
       render(<App />);
-      await screen.findByRole('button', { name: 'Settings' });
+      await findSettingsDoor();
       await settle();
     });
     Then('every word, review and level row is as it was', async () => {

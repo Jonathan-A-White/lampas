@@ -12,6 +12,7 @@ import { openUnlocked, SEED_PUBLIC_KEY } from './unlocked';
 import { openGroup } from './settings-group';
 import { openVerseView } from './verse-view';
 import { CATALOGUE } from '../../src/resources/catalogue';
+import { openSettings } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -52,7 +53,7 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
   // 1. Settings > Study resources > Logos On, then Settings > Your Logos library > Import: choose the file
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const resources = page.getByRole('region', { name: 'Study resources' });
   await resources.getByRole('switch', { name: 'Logos', exact: true }).click();

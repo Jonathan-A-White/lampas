@@ -12,6 +12,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -138,7 +139,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(async () => expect((await db.settings.get('immersiveHint'))?.value).toBe('off'));
     });
     And('he opens Settings and sets Immersive reader card to On', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'reading');
       const group = await screen.findByRole('group', { name: 'Immersive reader card' });
       expect(within(group).getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');

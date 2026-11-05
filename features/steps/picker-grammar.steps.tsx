@@ -31,6 +31,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FIXTURE_CHAPTER, FIXTURE_FREQUENCY } from '../../tests/fixtures/frontier';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -87,7 +88,7 @@ async function finishRound(rightAnswer: boolean): Promise<void> {
   moves = [];
   const off = subscribe('picker-level-moved', (e) => void moves.push(e));
   render(<App newRandom={() => mulberry32(7)} />);
-  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettings(user);
   await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Review' }));
   await user.click(await screen.findByRole('button', { name: 'Start' }));
@@ -119,8 +120,7 @@ describeFeature(feature, ({ Scenario }) => {
       await freshStore();
       window.history.replaceState(null, '', '/');
       render(<App />);
-      await user.click(await screen.findByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'greek');
     });
     Then('New words at offers {string} and {string}, and {string} is chosen', async (_, a: string, b: string, chosen: string) => {

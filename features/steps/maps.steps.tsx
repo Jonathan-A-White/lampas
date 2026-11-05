@@ -15,6 +15,7 @@ import { setResourceOn, setState } from '../../src/data/repositories';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -194,8 +195,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
 
   const openAbout = async () => {
-    await user.click(screen.getByRole('button', { name: 'Settings', exact: true }));
-    await screen.findByRole('heading', { name: 'Settings', level: 1 });
+    await openSettings(user);
     await openSettingsGroup(user, 'account');
     await user.click(screen.getByRole('button', { name: 'About', exact: true }));
     await screen.findByRole('heading', { name: 'About', level: 1 });

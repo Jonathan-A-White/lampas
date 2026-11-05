@@ -15,6 +15,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const HEBREW = voice('he-IL', 'Hebrew (Israel)');
@@ -54,9 +55,8 @@ afterAll(() => {
 });
 
 const inUse = () => screen.findByTestId('hebrew-voice-in-use');
-const openSettings = async () => {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+const openSettingsPage = async () => {
+  await openSettings(user);
   await openSettingsGroup(user, 'listening');
 };
 const tapTest = async () => {
@@ -75,7 +75,7 @@ const feature = await loadFeature('features/hebrew-voice-test.feature');
 describeFeature(feature, ({ Scenario }) => {
   Scenario('Test under the Hebrew voice says a Hebrew word in the voice in use', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with the Hebrew dial at All in on a phone with two Hebrew voices', () => openWith([ENGLISH, HEBREW, ALTERNATE]));
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Listening says the Hebrew voice in use is {string}', saysInUse);
     When('he taps Test under the Hebrew voice', tapTest);
     Then('the voice {string} says {string}, in lang {string}', saysWord);
@@ -94,7 +94,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Another Hebrew voice picked there is kept and Test says the word in it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with the Hebrew dial at All in on a phone with two Hebrew voices', () => openWith([ENGLISH, HEBREW, ALTERNATE]));
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     And('he picks the Hebrew voice {string}', async (_, name: string) => {
       await user.selectOptions(await screen.findByRole('combobox', { name: 'Hebrew voice' }), name);
       await waitFor(async () => expect((await db.settings.get('voice.hebrew'))?.value).toBe(name));
@@ -106,7 +106,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A phone with no Hebrew voice is told so, and has no Test', ({ Given, When, Then, And }) => {
     Given('Lampas is opened with the Hebrew dial at All in on a phone with only an English voice', () => openWith([ENGLISH]));
-    When('he opens Settings', openSettings);
+    When('he opens Settings', openSettingsPage);
     Then('Listening says there is no Hebrew voice on this phone', async () => {
       await waitFor(async () => expect((await inUse()).querySelector('[role=status]')?.textContent).toBe('No Hebrew voice on this phone'));
     });

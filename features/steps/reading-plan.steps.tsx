@@ -17,6 +17,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { seedHisWords } from '../../tests/support/his-words';
 import { ensureSettingsGroup, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -150,8 +151,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Settings has the same entry', ({ Given, When, And, Then }) => {
     Given('Lampas is opened with the Reading plan off', () => openWith({ off: true }));
     When('he opens Settings', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'study');
     });
     And('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));
@@ -296,8 +296,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with a reading plan started at Leviticus 4', lev4);
     When('he turns Developer mode on and opens Settings', async () => {
       await setDeveloper('on');
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'developer');
     });
     And('he taps {string} in Settings', async (_, name: string) => user.click(await screen.findByRole('button', { name })));

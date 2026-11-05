@@ -22,6 +22,7 @@ import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type 
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -307,7 +308,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the heading {string}', tapHeading);
     And('he taps {string}', tapPlay);
     And('the phone finishes speaking until verse {int} is being read', untilVerse);
-    And('he opens Settings', () => user.click(screen.getByRole('button', { name: 'Settings' })));
+    And('he opens Settings', () => openSettings(user));
     Then('the passage is paused at verse {int}', pausedAt);
     When('he goes back to the reader', async () => {
       await leaveSettings(user);

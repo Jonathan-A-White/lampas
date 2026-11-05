@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 async function openReader(page: Page) {
   await openUnlocked(page);
@@ -12,7 +13,7 @@ async function openReader(page: Page) {
 
 test('the Weave switch swaps his solid words for Greek, big and tappable, at phone width', async ({ page }) => {
   await openReader(page);
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Weave', exact: true });
   await expect(group).toBeVisible();

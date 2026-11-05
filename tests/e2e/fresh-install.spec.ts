@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { settingsHeading } from './openSettings';
 
 // A new install starts with none of the Governor's progress (mw-5r3p30.385): a fresh browser context, licensed, welcome done.
 
@@ -55,7 +56,7 @@ test('a fresh install shows nothing of his on Words, Review, the grammar ladder 
   for (const bar of await bars.all()) await expect(bar).toHaveAttribute('aria-valuenow', '0');
 
   await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await expect(settingsHeading(page)).toBeVisible();
 
   // and nothing was written for him behind the screens
   await page.waitForTimeout(500);

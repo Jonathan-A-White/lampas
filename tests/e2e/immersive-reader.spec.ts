@@ -5,6 +5,7 @@ import { openUnlocked } from './unlocked';
 import { openTutor } from './open-tutor';
 import { openVerseView } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings, settingsDoor, settingsHeading } from './openSettings';
 
 // The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header and the chips away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
@@ -102,7 +103,7 @@ test('scrolling down slides the bars away, scrolling up leaves them away', async
   await scrollText(page, 400);
   await expectAll(page, 'hidden');
   // out of the tab order too
-  await expect(page.getByRole('button', { name: 'Settings', exact: true })).toHaveCount(0);
+  await expect(settingsDoor(page)).toHaveCount(0);
   expect(await textHeight(page)).toBeGreaterThan(before + 150);
   // the text has the whole screen: its box ends in the foot's last 100 px of the window, above the place line and the phone's 48 px floor under it (mw-5r3p30.473)
   const box = await page.locator('[data-reader]').boundingBox();
@@ -209,7 +210,7 @@ test('with Immersive reader Off scrolling leaves the bars where they are', async
 
 test('the setting is kept across a reload', async ({ page }) => {
   await openReader(page, 'off');
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
   await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -244,15 +245,15 @@ async function expectStillShown(page: Page, at: number, what: string) {
 
 test('with the bars shown, Settings and then ‹ Reader leaves them shown', async ({ page }) => {
   const at = await shownAtAScrolledPlace(page);
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   await leaveSettings(page);
   await expectStillShown(page, at, 'Settings');
 });
 
 test('with the bars shown, Immersive reader Off and On again in Settings and then ‹ Reader leaves them shown', async ({ page }) => {
   const at = await shownAtAScrolledPlace(page);
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Reading');
   const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
   await group.getByRole('button', { name: 'Off', exact: true }).click();

@@ -5,6 +5,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
 import { honestSpeech } from '../support/honest-fakes';
+import { openSettings } from './openSettings';
 
 const LOVE = 'logosres:AMDICTENLANG;hw=love';
 
@@ -29,7 +30,7 @@ async function holdAppLinks(page: Page) {
 }
 
 async function turnOnLogos(page: Page) {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   await page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true }).click();
   await leaveSettings(page);

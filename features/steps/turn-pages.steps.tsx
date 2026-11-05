@@ -12,6 +12,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -56,8 +57,8 @@ async function reopen(): Promise<void> {
 const reader = () => document.querySelector<HTMLElement>('[data-reader]');
 const placeLine = () => document.querySelector<HTMLElement>('[data-place-line]');
 
-async function openSettings(): Promise<HTMLElement> {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
+async function openSettingsPage(): Promise<HTMLElement> {
+  await openSettings(user);
   await openSettingsGroup(user, 'reading');
   return screen.findByRole('group', { name: 'Reading' });
 }
@@ -74,7 +75,7 @@ describeFeature(feature, ({ Scenario }) => {
     let group: HTMLElement | undefined;
     Given('Lampas is opened on Romans 8 with nothing chosen', open);
     When('he opens Settings', async () => {
-      group = await openSettings();
+      group = await openSettingsPage();
     });
     Then('the Reading row offers Scroll and Turn pages, with Scroll chosen', async () => {
       const g = group as HTMLElement;
@@ -87,7 +88,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Choosing Turn pages lays the chapter out in pages, and it is kept', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 with nothing chosen', open);
     When('he opens Settings and chooses Turn pages', async () => {
-      const group = await openSettings();
+      const group = await openSettingsPage();
       await user.click(within(group).getByRole('button', { name: 'Turn pages' }));
       await waitFor(async () => expect((await db.settings.get('readingMode'))?.value).toBe('pages'));
       await waitFor(() => expect(within(group).getByRole('button', { name: 'Turn pages' })).toHaveAttribute('aria-pressed', 'true'));

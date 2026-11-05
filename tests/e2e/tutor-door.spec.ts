@@ -12,6 +12,7 @@ import { keepHand } from './tutor-door';
 import { openDrillIt, openShortDrill } from './large-text-titles';
 import { openUnlicensed, openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
+import { settingsHeading } from './openSettings';
 
 const VIEWPORT = { width: 390, height: 844 };
 test.use({ viewport: VIEWPORT, hasTouch: true });
@@ -147,7 +148,7 @@ test('A two-finger tap takes the ? away on Today, Settings and a word sheet, bri
   await shot(page, 'tutor-door-hidden-by-hand-today');
   // it stays away on the next screen
   await page.evaluate(() => { location.hash = '#/settings'; });
-  await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+  await expect(settingsHeading(page)).toBeVisible();
   await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
   await twoFingers(page);
   await expect(floating(page)).toBeVisible();

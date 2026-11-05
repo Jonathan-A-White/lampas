@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openGroup, leaveSettings } from './settings-group';
 import { openUnlocked } from './unlocked';
+import { openSettings, settingsHeading } from './openSettings';
 
 // a new phone: the specs before the dial start at 5, All in (playwright.config.ts); this one starts where a new reader does
 test.use({ viewport: { width: 390, height: 844 }, storageState: { cookies: [], origins: [] } });
@@ -24,14 +25,14 @@ async function openReader(page: Page) {
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
 
-async function openSettings(page: Page) {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+async function openSettingsPage(page: Page) {
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
 }
 
 /** From the Reader: Settings, Greek chosen (when it is not), the dial moved to `name`, back to the Reader. */
 async function setStep(page: Page, name: string) {
-  await openSettings(page);
+  await openSettingsPage(page);
   if ((await dial(page).count()) === 0) await choose(page, 'Greek').click();
   await step(page, name).click();
   await expect(step(page, name)).toHaveAttribute('aria-pressed', 'true');
@@ -61,7 +62,7 @@ test('a new phone starts at English only: Which languages? on top, no dial, no G
   await english.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(english).toHaveCount(0);
 
-  await openSettings(page);
+  await openSettingsPage(page);
   // Which languages? is the first control, under the search field (the library door is in Study resources, mw-5r3p30.837): four choices, English only chosen, and no dial under it
   await expect(languages(page)).toBeVisible();
   const box = await languages(page).boundingBox();
@@ -92,7 +93,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
   await openReader(page);
 
   // choosing Greek puts the dial at Curious
-  await openSettings(page);
+  await openSettingsPage(page);
   await choose(page, 'Greek').click();
   await expect(step(page, 'Curious')).toHaveAttribute('aria-pressed', 'true');
   await expect(dial(page).locator('[data-step]')).toHaveCount(5);
@@ -106,7 +107,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
   await expect(sheet.getByTestId('sheet-word')).toHaveText('ἄρα');
   await expect(sheet.getByTestId('sheet-strongs')).toHaveText('G686');
   await sheet.getByRole('button', { name: 'Done' }).click();
-  await openSettings(page);
+  await openSettingsPage(page);
   await expect(page.getByTestId('greek-line')).toContainText('Strong');
   const listening = await pageText(page, 'Listening');
   expect(listening).toMatch(/Greek voice/);
@@ -118,7 +119,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
 
   // 2 Dipping a toe: the Weave, with its Order and Grammar
   await setStep(page, 'Dipping a toe');
-  await openSettings(page);
+  await openSettingsPage(page);
   await openGroup(page, 'Reading');
   await expect(page.getByRole('heading', { name: 'Weave', exact: true, level: 2 })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Weave', exact: true })).toBeVisible();
@@ -129,7 +130,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
 
   // 3 Learning: the daily path
   await setStep(page, 'Learning');
-  await openSettings(page);
+  await openSettingsPage(page);
   await openGroup(page, 'Learning');
   await expect(page.getByRole('group', { name: 'New words a day', exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Handwriting drills', exact: true })).toBeVisible();
@@ -144,7 +145,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
   await page.reload();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await expect(language(page).getByRole('button', { name: 'Greek', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await openSettings(page);
+  await openSettingsPage(page);
   await openGroup(page, 'Learning');
   await expect(page.getByRole('group', { name: 'Goal', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
@@ -153,7 +154,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
 
   // 5 All in: everything Greek, the paradigms included (Hebrew in the tutor is the Hebrew dial's, from Curious up)
   await setStep(page, 'All in');
-  await openSettings(page);
+  await openSettingsPage(page);
   expect(await pageText(page, 'Account')).toMatch(/Paradigms/);
   expect(await pageText(page, 'Learning')).not.toMatch(/Hebrew in the tutor/);
   await shot(page, 'greek-dial-5');
@@ -162,7 +163,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
 test('down and up again gives him back his own values', async ({ page }) => {
   await openReader(page);
   await setStep(page, 'Learning');
-  await openSettings(page);
+  await openSettingsPage(page);
   await openGroup(page, 'Learning');
   await page.getByRole('group', { name: 'New words a day', exact: true }).getByRole('button', { name: '10', exact: true }).click();
   await expect(page.getByRole('group', { name: 'New words a day', exact: true }).getByRole('button', { name: '10', exact: true })).toHaveAttribute('aria-pressed', 'true');

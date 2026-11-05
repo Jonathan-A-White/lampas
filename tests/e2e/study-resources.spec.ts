@@ -3,6 +3,7 @@ import { pageTime } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -27,7 +28,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
 
   const section = page.getByRole('region', { name: 'Study resources' });
@@ -110,7 +111,7 @@ test('Settings home at 360 px opens with Which languages?, and Your Logos librar
   await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
 
   // the home: Which languages? is the first row, and no library row is on it
   await expect(page.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
@@ -150,7 +151,7 @@ test('The Study links are equal tiles in two columns at 360 px', async ({ page }
   await holdAppLinks(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await turnsOnWithApp(page, section, 'Logos');
@@ -206,7 +207,7 @@ test('Settings at 412 px: Logos On opens nothing, stays On and offers Get Logos'
   });
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   const logos = section.getByRole('switch', { name: 'Logos', exact: true });

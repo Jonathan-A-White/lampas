@@ -6,6 +6,7 @@ import { makeFakePostern, TALK_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { settingsHeading } from './openSettings';
 
 const VIEWPORT = { width: 390, height: 844 };
 test.use({ viewport: VIEWPORT });
@@ -85,7 +86,7 @@ const SCREENS: { name: string; path: string; ready: (page: Page) => Locator }[] 
   { name: 'Parsing drill', path: '/#/drill', ready: (p) => p.getByRole('heading', { name: 'Parsing drill', level: 1 }) },
   { name: 'Paradigms', path: '/#/paradigms', ready: (p) => p.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 }) },
   { name: 'Placement', path: '/#/placement', ready: (p) => p.getByRole('heading', { name: 'Placement', exact: true, level: 1 }) },
-  { name: 'Settings', path: '/#/settings', ready: (p) => p.getByRole('heading', { name: 'Settings', exact: true, level: 1 }) },
+  { name: 'Settings', path: '/#/settings', ready: (p) => settingsHeading(p) },
   { name: 'My study way', path: '/#/studyway', ready: (p) => p.getByRole('heading', { name: 'My study way', level: 1 }) },
   { name: 'Preface', path: '/#/preface', ready: (p) => p.getByRole('heading', { name: 'Preface', exact: true, level: 1 }) },
   { name: 'Import', path: '/#/import', ready: (p) => p.getByRole('heading', { name: 'Import', exact: true, level: 1 }) },

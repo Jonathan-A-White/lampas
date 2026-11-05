@@ -4,6 +4,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
+import { settingsHeading } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 }, storageState: { cookies: [], origins: [] } });
 
@@ -15,7 +16,7 @@ const hebrew = (page: Page) => page.getByRole('group', { name: 'How much Hebrew?
 test.beforeEach(async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings');
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await expect(settingsHeading(page)).toBeVisible();
 });
 
 test('a new phone is English only: the four choices on top and no dial', async ({ page }) => {

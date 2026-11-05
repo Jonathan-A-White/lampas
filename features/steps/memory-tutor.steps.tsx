@@ -19,6 +19,7 @@ import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openTutor } from './open-tutor';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -145,7 +146,7 @@ describeFeature(feature, ({ Scenario }) => {
         await waitFor(async () => expect(await db.talks.count()).toBeGreaterThan(0));
         await user.click(within(sheet).getByRole('button', { name: 'Done' }));
       }
-      await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name, exact: true }));
       await screen.findByRole('heading', { name, level: 1 });

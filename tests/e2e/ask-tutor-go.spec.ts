@@ -7,6 +7,7 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { talkField } from './talk-field';
+import { settingsHeading } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -47,6 +48,6 @@ test('from Settings: a go for Psalm 151 moves nothing and the answer says it cou
   const sheet = await askFrom(page, '/#/settings', 'Settings', { book: 'Psalms', chapter: 151 }, 'take me to Psalm 151');
   await expect(sheet.locator('[data-turn]')).toHaveCount(1);
   await expect(sheet.getByText('Could not open Psalms 151')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await expect(settingsHeading(page)).toBeVisible();
   expect(page.url()).toContain('#/settings');
 });

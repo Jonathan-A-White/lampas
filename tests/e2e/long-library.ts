@@ -3,10 +3,11 @@
 // number: 6 tiles, a long sheet.
 import { expect, type Page } from '@playwright/test';
 import { leaveSettings, openGroup } from './settings-group';
+import { openSettings } from './openSettings';
 
 /** On the Reader: Logos and Strong's switched on (Settings > Study resources), then back to the Reader. */
 export async function switchOnResources(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   for (const name of ['Logos', "Strong's"]) await section.getByRole('switch', { name, exact: true }).click();

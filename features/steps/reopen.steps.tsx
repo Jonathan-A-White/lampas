@@ -12,6 +12,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { findSettingsHeading, openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -71,14 +72,14 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Back to an earlier place of the reader puts its verse back', ({ Given, When, Then }) => {
     Given('Lampas is opened at the address {string}', (_, hash: string) => openAt(hash));
     When('he goes to the Words screen and then back', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
       await screen.findByRole('heading', { name: 'Words', level: 1 });
       window.history.back(); // the Account page
       await screen.findByRole('heading', { name: 'Account', level: 1 });
       window.history.back(); // Settings
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await findSettingsHeading();
       window.history.back();
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -92,7 +93,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("Leaving the reader for another screen keeps that screen's address", ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8', () => openAt(''));
     When('he goes to the Words screen', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
+      await openSettings(user);
       await openSettingsGroup(user, 'account');
       await user.click(await screen.findByRole('button', { name: 'Words' }));
     });

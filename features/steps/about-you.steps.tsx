@@ -17,6 +17,7 @@ import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openTutor } from './open-tutor';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -82,7 +83,7 @@ async function open(hash: string): Promise<void> {
   await setWeave('off');
 }
 
-async function openSettings(profile: Kept): Promise<void> {
+async function openSettingsPage(profile: Kept): Promise<void> {
   await open('/#/settings?group=account');
   await keep(profile);
   await seedHisWords();
@@ -106,7 +107,7 @@ const tutorLearns = (update: Record<string, unknown>): void => {
 const openAboutYouFromReader = async (): Promise<void> => {
   const sheet = screen.queryByRole('dialog', { name: 'Talk about Romans 8:11' });
   if (sheet) await user.click(within(sheet).getByRole('button', { name: 'Done' }));
-  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettings(user);
   await openSettingsGroup(user, 'account');
   await openAboutYou();
 };
@@ -161,7 +162,7 @@ describeFeature(feature, ({ Scenario }) => {
   const millGot = (_: unknown, n: number) => waitFor(() => expect(fake.received).toHaveLength(n));
 
   Scenario("About you keeps the student's profile", ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings with nothing kept about him', () => openSettings({}));
+    Given('Lampas is opened on Settings with nothing kept about him', () => openSettingsPage({}));
     When('he opens {string} in Settings', openAboutYou);
     And('he fills in his age {string}, chooses the pace {string} and the ways {string} and {string}', async (_, age: string, pace: string, a: string, b: string) => {
       await user.type(screen.getByRole('textbox', { name: 'Age' }), age);
@@ -202,7 +203,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Background and why are kept in his own words', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Settings with nothing kept about him', () => openSettings({}));
+    Given('Lampas is opened on Settings with nothing kept about him', () => openSettingsPage({}));
     When('he opens {string} in Settings', openAboutYou);
     And('he writes the background {string} and the why {string}', async (_, background: string, why: string) => {
       await user.type(screen.getByRole('textbox', { name: 'Background' }), background);
@@ -219,7 +220,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A note the tutor learned can be edited or removed', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Settings with the notes kept about him {string}', (_, text: string) =>
-      openSettings({ notes: linesOf(text).map((t, i) => ({ text: t, when: Date.UTC(2026, 9, 12, 9, i) })) }),
+      openSettingsPage({ notes: linesOf(text).map((t, i) => ({ text: t, when: Date.UTC(2026, 9, 12, 9, i) })) }),
     );
     When('he opens {string} in Settings', openAboutYou);
     Then('the page shows the notes {string}', (_, text: string) => waitFor(() => expect(notes().map((r) => r.querySelector('[data-note-text]')?.textContent)).toEqual(linesOf(text))));

@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openSettings, settingsHeading } from './openSettings';
 
 // With Immersive reader On the Reader's text reads like a book (mw-5r3p30.297): tight lines (line-height about 1.4) wherever no line sits under a
 // word, the Font he chose, justified and hyphenated in the text's language, pure black behind it in the dark theme, and small dim verse numbers.
@@ -227,8 +228,8 @@ test('Mark 12 in Dark with Immersive reader On: the phone\'s bar is black; Setti
   await expect.poll(() => barColour(page)).toBe('000000');
   await shot(page, 'immersive-black-bars');
   // Settings keeps its usual dark blue, bar included
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   await expect.poll(() => barColour(page)).toBe('0a0e17');
   await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();

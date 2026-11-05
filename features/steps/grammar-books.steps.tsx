@@ -21,6 +21,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { fixturePath } from '../../tests/support/fixture-path';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -207,8 +208,7 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
     });
     When('he turns Logos on in Settings', async () => {
-      await user.click(screen.getByRole('button', { name: 'Settings' }));
-      await screen.findByRole('heading', { name: 'Settings', level: 1 });
+      await openSettings(user);
       await openSettingsGroup(user, 'study');
       const logos = await screen.findByRole('switch', { name: 'Logos' });
       await user.click(logos);

@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, isSpeaking, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { openSettings, settingsHeading } from './openSettings';
 
 // The bounds below are the phone's screen, so the spec sets it (the chromium project is 1280 wide).
 const PHONE = { width: 390, height: 844 };
@@ -78,8 +79,8 @@ test('Leaving the reader pauses the reading; the bar offers Resume on Settings a
   await openRomans8(page);
   await page.locator('[data-verse="3"]').getByRole('button', { name: 'Hear the verse', exact: true }).click();
   await expect(bar(page)).toBeVisible();
-  await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await openSettings(page);
+  await expect(settingsHeading(page)).toBeVisible();
   await expect(bar(page).getByRole('button')).toHaveText(['Resume', 'Restart', 'Stop']);
   expect(await isSpeaking(page)).toBe(false);
   const box = await bar(page).boundingBox();

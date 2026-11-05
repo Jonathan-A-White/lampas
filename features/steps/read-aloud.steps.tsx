@@ -18,6 +18,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { queryStatusLine, statusLine } from '../../tests/support/status';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -87,8 +88,7 @@ async function switchToGreek(): Promise<void> {
 }
 
 async function setWeaveSolid(): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Settings' }));
-  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  await openSettings(user);
   await openSettingsGroup(user, 'reading');
   await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));
   await leaveSettings(user);
@@ -252,7 +252,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Leaving the reader pauses the reading', ({ Given, And, When, Then }) => {
     Given(phoneBoth, bothVoices);
     And('he taps Read from the top', () => user.click(screen.getByRole('button', { name: 'Read from the top' })));
-    When('he opens Settings', () => user.click(screen.getByRole('button', { name: 'Settings' })));
+    When('he opens Settings', () => openSettings(user));
     Then('the phone is told to stop', () => expect(synth.calls[synth.calls.length - 1]).toBe('cancel'));
     And('nothing more is spoken', () => {
       const count = synth.spoken.length;

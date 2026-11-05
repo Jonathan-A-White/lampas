@@ -11,6 +11,7 @@ import { normaliseLemma, type NormalisedLemma } from '../../src/data/lemma';
 import { SEED_WORDS } from '../../src/data/seed-words';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -29,7 +30,7 @@ async function openLampasFresh(): Promise<void> {
 }
 
 async function openWords(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Settings' }));
+  await openSettings(user);
   await openSettingsGroup(user, 'account');
   await user.click(await screen.findByRole('button', { name: 'Words' }));
   await screen.findByRole('heading', { name: 'Words' });
