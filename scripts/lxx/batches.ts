@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { OUT_DIR, deriveBook, loadInput, opensClause, splitBooks, train, type BookResult, type DeriveInput, type PendingWord } from './derive';
 import { isCapital } from './parser';
 import type { SweteWord } from './swete';
-import { readMorpheusCache } from './morpheus';
+import { morpheusBuildCommand, noMorpheusWarning, readMorpheusCache } from './morpheus';
 import { existsSync } from 'node:fs';
 import { OLD_TESTAMENT } from './report';
 import { RAW_DIR, type Fetcher } from './sources';
@@ -138,8 +138,7 @@ export async function derivedBook(book: string, options: RunOptions): Promise<Bo
 /** Where a book's Morpheus cache is under `outDir` (data/lxx/morpheus/<book>.tsv). */
 export const morpheusFile = (outDir: string, book: string): string => join(outDir, 'morpheus', `${book.toLowerCase()}.tsv`);
 
-/** The command that builds a book's cache, as it is run on the Laptop (Docker is in its docker group). */
-export const morpheusBuildCommand = (book: string): string => `sg docker -c 'npm run lxx:derive -- --book ${book.toLowerCase()}'`;
+export { morpheusBuildCommand };
 
 /**
  * A listing for a model session is read for its candidates, and without the book's Morpheus cache a form Morpheus knows has 'no candidate' and the guess share
@@ -160,8 +159,8 @@ export function requireMorpheusCache(book: string, outDir: string, noMorpheus: b
 
 /** One line for a command that goes on without the cache (lxx:batches, lxx:choose): its counts differ from a host that has it. */
 export function warnNoMorpheus(book: string, outDir: string, log: (line: string) => void): void {
-  if (existsSync(morpheusFile(outDir, book))) return;
-  log(`warning: no Morpheus cache for ${book} (${morpheusFile(outDir, book)}): counts and candidates are those of a host without it. Build it: ${morpheusBuildCommand(book)}`);
+  const line = noMorpheusWarning(join(outDir, 'morpheus'), book);
+  if (line) log(line);
 }
 
 export const BATCHES_USAGE = 'usage: npm run lxx:batches -- --book <code> | --all';

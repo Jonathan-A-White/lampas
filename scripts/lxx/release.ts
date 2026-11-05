@@ -16,7 +16,7 @@ import { applyChoices, isGuess, readChoiceDir, type Choice, type Chosen } from '
 import { OUT_DIR, deriveBook, loadInput, type BookResult, type DeriveInput, type DerivedWord, type PendingWord } from './derive';
 import { chapterRanges } from '../data/lxxChapter';
 import { decodeParse } from '../../src/data/parseCode';
-import { morpheusKey, readMorpheusCache, type MorpheusCache } from './morpheus';
+import { morpheusKey, noMorpheusWarning, readMorpheusCache, type MorpheusCache } from './morpheus';
 import { KNOWN_DIR, knownFileOf, knownScores, type KnownScore } from './known';
 import { RAW_DIR, type Fetcher } from './sources';
 import { bareOf } from './swete';
@@ -283,7 +283,11 @@ export async function runRelease(argv: readonly string[], options: ReleaseOption
   const { rawDir = RAW_DIR, outDir = OUT_DIR, choicesDir = CHOICES_DIR, knownDir = KNOWN_DIR, log = () => {}, fetcher } = options;
   const args = parseArgs(argv);
   const input = options.input ?? (await loadInput(rawDir, fetcher, log));
-  const cache = readMorpheusCache(options.morpheusDir ?? join(outDir, 'morpheus'), args.book);
+  const morpheusDir = options.morpheusDir ?? join(outDir, 'morpheus');
+  const cache = readMorpheusCache(morpheusDir, args.book);
+  // the guess line of the chapter bar reads high without the cache: warned, not refused (mw-u2w5klk.271)
+  const missing = noMorpheusWarning(morpheusDir, args.book);
+  if (missing) log(missing);
   const result = deriveBook(input, args.book, undefined, undefined, undefined, cache);
   const { files, choices } = readChoiceDir(choicesDir, `${args.book}-`);
   const joined = joinChoices(result, choices);

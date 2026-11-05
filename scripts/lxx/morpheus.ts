@@ -411,6 +411,19 @@ export function parseCache(text: string): MorpheusCache {
   return cache;
 }
 
+/** The command that builds a book's cache, as it is run on the Laptop (Docker is in its docker group). */
+export const morpheusBuildCommand = (book: string): string => `sg docker -c 'npm run lxx:derive -- --book ${book.toLowerCase()}'`;
+
+/**
+ * The one warning line for a book run with no cache in `dir` (data/lxx/morpheus), or undefined when there is one: a command that goes on without it counts guesses and
+ * no-candidate words as a host without Morpheus does (mw-u2w5klk.268, .271), so the chapter bar's guess share reads high.
+ */
+export function noMorpheusWarning(dir: string, book: string): string | undefined {
+  const file = join(dir, `${book.toLowerCase()}.tsv`);
+  if (existsSync(file)) return undefined;
+  return `warning: no Morpheus cache for ${book} (${file}): counts and candidates are those of a host without it. Build it: ${morpheusBuildCommand(book)}`;
+}
+
 /** The cache of a book under `dir` (data/lxx/morpheus); undefined when the book has none. */
 export function readMorpheusCache(dir: string, book: string): MorpheusCache | undefined {
   const file = join(dir, `${book.toLowerCase()}.tsv`);
