@@ -500,7 +500,12 @@ a figure and a share of the chapter's words, and never a hold on the chapter.
 Three lines are held once for the whole run, not by the chapter: the known-answer lines of the build (the chapters above), and **the guess line, which stays the book's** (at most 3% of the book's words, the Governor's answer of 2026-11-02): when one fails, nothing of the book is written. The Governor's word of
 2026-11-05 replaced 'a book ships only above its bar' with 'a chapter ships above the same bar, read per chapter'; the numbers did not change. A book is SHIPPABLE as a whole (`verdict`, the report's Bar column) when every line holds for all of it.
 
-PROVISIONAL (the Mayor's calls of 2026-11-05, to be confirmed by the Governor): the chapter bar's two lines and the choice of known-answer chapters above.
+A third line is the parsing: a chapter with a word whose parsing Lampas cannot put in words (`decodeParse`, `src/data/parseCode.ts`) is not shippable (`parsing: N`), because the build of its file stops at such a row. The
+run does not stop: `lxx:ship` names each such word (`gen: Gen.20:6#8 has the parsing "P-1NS + G2532", which Lampas cannot put in words: chapter 20 is not shipped`) and goes on, so one word never stops the deploy of every
+Lampas landing (mw-u2w5klk.270). The first real cause was TAGNT's own last part on an adjective: TAGNT tags a people's name written as an adjective as it tags a noun (`A-NPM-LG` for Αἰγύπτιοι, Gen.12:12#8; -L a place, -LG a group
+of places, -PG a people, -T a title), and `normMorph` in `tagnt.ts` dropped the tag from a noun only; it now drops it from an adjective and an adverb too (an adjective's own -C, -S and -P stay).
+
+PROVISIONAL (the Mayor's calls of 2026-11-05, to be confirmed by the Governor): the chapter bar's three lines and the choice of known-answer chapters above; that a word with an unsayable parsing holds only its chapter back.
 
 ## The known-answer run
 
@@ -802,7 +807,7 @@ the candidates are ordered by support, then lemma, then parsing, never by the or
 
 The live site's Septuagint is written at deploy, not in the batch stories (mw-u2w5klk.265). `npm run lxx:ship -- --out <dir>` takes every book of Swete's 39 that has at least one `data/lxx/choices/<book>-*.tsv` file and derives it (the Morpheus cache is read when present, `--no-morpheus`
 leaves it off; Docker is never needed), holds the known-answer lines once, releases the book's shippable chapters to a temporary annotation set, and builds the chapter files, `index.json`, `lexicon-grc-lxx.json` and the three notice files (`LICENSE-swete.txt`, `README-swete.md`, `README.md`) into `<dir>`.
-It writes nothing under `data/`, `public/` or `docs/`, prints one line a book (`gen: shipped 1-6 of 50`, `shipped all 50`, `shipped none of 50`) and exits non-zero only on a derive or build error, never on nothing shippable. So every landed batch ships its chapters on the next deploy.
+It writes nothing under `data/`, `public/` or `docs/`, prints one line a book (`gen: shipped 1-6 of 50`, `shipped all 50`, `shipped none of 50`) and exits non-zero only on a derive or build error, never on nothing shippable or on a word with a parsing it cannot put in words (that chapter is held back and the word named, 'The chapter bar'). So every landed batch ships its chapters on the next deploy.
 The Laptop's deploy runs it after `npm run build`, into the built folder: `npm run lxx:ship -- --out dist/data-lxx`. The repo's own `public/data-lxx/index.json` stays `books: []`.
 
 ## The sources
