@@ -6,7 +6,7 @@
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
-import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedLadder, serveChapter } from './dataCache';
+import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedLadder, isVersionedSermons, serveChapter } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 import { isShareRequest, receiveShare } from './share/target';
 
@@ -49,6 +49,11 @@ registerRoute(
 // A reading ladder list is asked for the same way (/data/ladder/<lang>.json?v=<fingerprint>, the fingerprint in index.json), so a rescored list replaces its old copy (mw-9ji6ek0.10).
 registerRoute(
   ({ url, request }) => request.method === 'GET' && isVersionedLadder(url),
+  ({ request }) => serveChapter(request, self.caches),
+);
+// A sermon index book file (/sermons/<source>/<book>.json?v=<fingerprint>, the fingerprint in public/sermons/index.json) is kept the same way. It is not in the precache: it is fetched on first use or by the offline copy.
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isVersionedSermons(url),
   ({ request }) => serveChapter(request, self.caches),
 );
 // Everything else under /data/ (a list asked for plain) is kept as it first came.

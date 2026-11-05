@@ -56,6 +56,16 @@ describe('the chapter route (mw-5r3p30.276)', () => {
   });
 });
 
+describe('the sermon files route (mw-qtu3zvz.1)', () => {
+  it('takes a sermon book file asked for by its fingerprint, as a chapter is kept, and not an unversioned address', () => {
+    const route = registered.find((r) => typeof r.match === 'function' && !(r.handler instanceof CacheFirst) && r.match(ctx('/sermons/spurgeon-ccel/rom.json?v=0123456789ab')));
+    expect(route).toBeDefined();
+    expect(route?.match(ctx('/sermons/spurgeon-ccel/rom.json'))).toBe(false);
+    expect(route?.match(ctx('/data/jhn/1.json?v=0123456789ab'))).toBe(false);
+    expect(route?.match(ctx('/sermons/spurgeon-ccel/rom.json?v=0123456789ab', 'POST'))).toBe(false);
+  });
+});
+
 describe('the precache', () => {
   it('lists data/index.json and data/rom/8.json, and no glob that would take another chapter', () => {
     expect(injectManifestOptions.globPatterns).toContain('data/index.json');
@@ -66,5 +76,7 @@ describe('the precache', () => {
       if (pattern.includes('data')) expect(pattern).not.toContain('*');
       else expect(pattern).not.toMatch(/json/);
     }
+    // the sermon index (public/sermons) is loaded on first use, as the maps' data files are, and kept by the offline copy
+    for (const pattern of injectManifestOptions.globPatterns) expect(pattern).not.toContain('sermons');
   });
 });

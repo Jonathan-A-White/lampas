@@ -1,14 +1,16 @@
 // src/data/offlineCopy.ts — keeps every chapter of a scope on the phone (mw-lcv9z3g.1; docs/data.md 'Offline'). The scope is 'nt' (the 27 books read in Greek),
 // 'all' (the 66 books and the Hebrew word lists, which the worker does not precache) or 'none'. Each file is asked for by the address the Reader asks for it
 // (chapterUrl, ?v=<fingerprint> from index.json), so the worker's serveChapter keeps it in the data cache (src/dataCache.ts) and drops an older copy of the chapter;
-// nothing here writes the cache. What the cache already holds under the very address is not fetched again: the check is `caches.match` from the page, no HEAD.
+// nothing here writes the cache. The free sermon index's book files (public/sermons, mw-qtu3zvz.1) go with the chapters, by their source's fingerprint, through the worker's sermon route. What the cache already holds under the very address is not fetched again: the check is `caches.match` from the page, no HEAD.
 // A run has at most OFFLINE_CONCURRENCY fetches in flight, pauses on the window's 'offline' event (no new fetch starts) and goes on at 'online'. No screen yet.
 // The copy stays current (mw-lcv9z3g.3): refreshOfflineCopy runs at app start (src/main.tsx, after the first render) and after each update check (updateChecked), and keeps the time of the check.
 import type { UpdateRegistration } from 'pwa-kit/app-update';
 import { CANON_INDEX, greekBooks } from './bookIndex';
 import { chapterUrl, type BookIndex } from './chapter';
+import { CANON } from './canon';
 import { db } from './db';
 import { DATA_CACHE } from '../dataCache';
+import { SERMON_INDEX, sermonBookUrl, type SermonIndex } from './sermonIndex';
 import { within } from './within';
 
 export type OfflineScope = 'none' | 'nt' | 'all';
@@ -33,11 +35,20 @@ export interface OfflineProgress {
 
 const chaptersOf = (index: BookIndex): string[] => index.books.flatMap((b) => Array.from({ length: b.chapters }, (_, i) => chapterUrl(b.code, i + 1, index)));
 
-/** The addresses a scope keeps, in reading order: the New Testament's chapters, or every book's and then the Hebrew lists. `index` is the one in the bundle unless a test gives one. */
-export function offlineUrls(scope: OfflineScope, index: BookIndex = CANON_INDEX): string[] {
+/** The sermon index's book files of a scope (public/sermons, docs/sermons.md): each source's files for the New Testament's books, or for every book, each by its source's fingerprint. */
+function sermonsOf(scope: 'nt' | 'all', sermons: SermonIndex): string[] {
+  const read = new Set(CANON.filter((b) => b.lang === 'grc').map((b) => b.code));
+  return sermons.sources.flatMap((s) => s.books.filter((book) => scope === 'all' || read.has(book)).map((book) => sermonBookUrl(s.id, book, sermons)));
+}
+
+/**
+ * The addresses a scope keeps, in reading order: the New Testament's chapters, or every book's and then the Hebrew lists; then the sermon index's book files of the same books.
+ * `index` and `sermons` are the ones in the bundle unless a test gives one.
+ */
+export function offlineUrls(scope: OfflineScope, index: BookIndex = CANON_INDEX, sermons: SermonIndex = SERMON_INDEX): string[] {
   if (scope === 'none') return [];
-  if (scope === 'nt') return chaptersOf(greekBooks(index));
-  return [...chaptersOf(index), ...HEBREW_LISTS];
+  if (scope === 'nt') return [...chaptersOf(greekBooks(index)), ...sermonsOf('nt', sermons)];
+  return [...chaptersOf(index), ...HEBREW_LISTS, ...sermonsOf('all', sermons)];
 }
 
 // The chosen scope: one text in the settings store under 'offlineCopy', outside the settings registry (like dailyStore.ts); no Dexie version.
@@ -74,6 +85,8 @@ function report(next: OfflineProgress): void {
 export interface OfflineDeps {
   /** the index the chapter list and fingerprints come from (the bundle's copy of index.json) */
   index?: BookIndex;
+  /** the sermon index the book files and their fingerprints come from (the bundle's copy of public/sermons/index.json) */
+  sermons?: SermonIndex;
   caches?: Pick<CacheStorage, 'open'>;
   fetcher?: typeof fetch;
   /** where 'offline' and 'online' arrive (the window) */
@@ -89,12 +102,12 @@ export interface OfflineDeps {
  * Progress goes to onOfflineProgress listeners: first with what was already kept, then after each file.
  */
 export async function runOfflineCopy(scope: OfflineScope, deps: OfflineDeps = {}): Promise<OfflineProgress> {
-  const { index = CANON_INDEX, signal } = deps;
+  const { index = CANON_INDEX, sermons = SERMON_INDEX, signal } = deps;
   const caches = deps.caches ?? globalThis.caches;
   const fetcher = deps.fetcher ?? ((input, init) => fetch(input, init));
   const events = deps.events ?? globalThis;
   const isOnline = deps.isOnline ?? (() => globalThis.navigator?.onLine !== false);
-  const urls = offlineUrls(scope, index);
+  const urls = offlineUrls(scope, index, sermons);
   const state: OfflineProgress = { done: 0, total: urls.length, bytes: 0, failed: [], paused: !isOnline() };
   const waiting: Array<() => void> = [];
   const wake = () => waiting.splice(0).forEach((resume) => resume());

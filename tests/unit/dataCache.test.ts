@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, serveChapter } from '../../src/dataCache';
+import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedSermons, serveChapter } from '../../src/dataCache';
 
 function fakeCaches(names: string[]) {
   const held = new Set(names);
@@ -62,6 +62,18 @@ describe('isVersionedChapter', () => {
     expect(is('/data/jhn/1.json?v=xyz')).toBe(false);
     expect(is('/data/index.json?v=aaaaaaaaaaaa')).toBe(false);
     expect(is('/data/ladder/el.json?v=aaaaaaaaaaaa')).toBe(false);
+  });
+});
+
+describe('isVersionedSermons', () => {
+  it('is a sermon book file with a 12-hex ?v=, and nothing else', () => {
+    const is = (path: string) => isVersionedSermons(new URL(path, 'http://localhost'));
+    expect(is('/sermons/spurgeon-ccel/rom.json?v=0123456789ab')).toBe(true);
+    expect(is('/sermons/spurgeon-ccel/1co.json?v=0123456789ab')).toBe(true);
+    expect(is('/sermons/spurgeon-ccel/rom.json')).toBe(false);
+    expect(is('/sermons/spurgeon-ccel/rom.json?v=xyz')).toBe(false);
+    expect(is('/sermons/index.json?v=0123456789ab')).toBe(false);
+    expect(is('/data/jhn/1.json?v=0123456789ab')).toBe(false);
   });
 });
 
