@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.115",
+    "date": "2026-11-05",
+    "story": "mw-5r3p30.1047",
+    "kind": "fixed",
+    "text": "The blog no longer turns plain English like 'Mark 5 times' or 'Job 3 months' into Bible links, and 'Matthew 5-7' is now one link."
+  },
+  {
     "version": "0.7.113",
     "date": "2026-11-05",
     "story": "mw-5r3p30.1046",
