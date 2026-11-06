@@ -7,12 +7,14 @@
 //   { t, g: [], s?, y: 'align?' }                                              a run of English words the aligner could not pair, for the model pass; the Greek words with no `e` are the ones it has to place
 // The chunks, joined by a space, are Brenton's whole verse, and no Greek word is dropped: one with no `e` has no English yet. `lxx:ship` aligns every chapter it ships (ship.ts);
 // `lxx:align` runs that ship into a directory (default a temporary one) and writes the aligned share of each chapter between the markers of docs/lxx-align.md. PROVISIONAL, Governor to confirm: the shape, `c`, `y`.
+// The model pass (align-choose.ts, mw-u2w5klk.274.2) then replaces each remainder by chunks `{ t, g, s?, c, y: 'model' }` where a Builder session has cut it (data/lxx/align); alignChapter applies its rows.
 // No network beyond what the ship fetches; no paid API is called.
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
+import { applyModel, type ModelRow } from './align-choose';
 import type { ShipOptions } from './ship';
 
 export const ALIGN_DOC = join('docs', 'lxx-align.md');
@@ -371,15 +373,19 @@ export interface AlignShare {
   sure: number;
   tokens: number;
   pairedTokens: number;
+  /** the Greek words whose chunk the model pass cut (y 'model') */
+  model: number;
 }
 
 /** Where a build puts the share of each chapter it aligned; passing one to buildLxx is what asks it to align. */
 export interface AlignSink {
   shares: AlignShare[];
+  /** the model pass's rows by `<book>/<chapter>` (align-choose.ts readModelDir); absent: no model pass */
+  model?: ReadonlyMap<string, readonly ModelRow[]>;
 }
 
-export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string): { chapter: Chapter; share: AlignShare } {
-  const share: AlignShare = { code: chapter.code, book: chapter.book, chapter: chapter.chapter, verses: chapter.verses.length, words: 0, paired: 0, sure: 0, tokens: 0, pairedTokens: 0 };
+export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string, model: readonly ModelRow[] = []): { chapter: Chapter; share: AlignShare; stale: string[] } {
+  const share: AlignShare = { code: chapter.code, book: chapter.book, chapter: chapter.chapter, verses: chapter.verses.length, words: 0, paired: 0, sure: 0, tokens: 0, pairedTokens: 0, model: 0 };
   const verses = chapter.verses.map((verse) => {
     const out = alignVerse(verse, gloss);
     share.words += out.share.words;
@@ -389,7 +395,23 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string)
     share.pairedTokens += out.share.pairedTokens;
     return out.verse;
   });
-  return { chapter: { ...chapter, verses }, share };
+  const modelled = applyModel({ ...chapter, verses }, model);
+  if (model.length > 0) {
+    // the share of a chapter the model cut is read from the chapter itself
+    share.paired = 0;
+    share.sure = 0;
+    share.pairedTokens = 0;
+    for (const verse of modelled.chapter.verses) {
+      for (const chunk of verse.e) {
+        if (chunk.g.length === 0) continue;
+        share.paired += chunk.g.length;
+        if (round2(chunk.c ?? 0) >= SURE) share.sure += chunk.g.length;
+        if (chunk.y === 'model') share.model += chunk.g.length;
+        share.pairedTokens += chunk.t.split(/\s+/).filter(Boolean).length;
+      }
+    }
+  }
+  return { chapter: modelled.chapter, share, stale: modelled.stale };
 }
 
 const pct = (part: number, whole: number): string => (whole === 0 ? '—' : `${((100 * part) / whole).toFixed(1)}%`);
@@ -398,18 +420,19 @@ const num = (n: number): string => n.toLocaleString('en-US');
 /** The report's text between the markers: one row for each chapter shipped, and one for each book. */
 export function renderAlignReport(shares: readonly AlignShare[]): string {
   const rows = [...shares].sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : a.chapter - b.chapter));
-  const header = ['| Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more |', '| --- | --- | --- | --- | --- | --- |'];
-  const line = (name: string, s: { verses: number; words: number; paired: number; sure: number }): string => `| ${name} | ${num(s.verses)} | ${num(s.words)} | ${num(s.paired)} | ${pct(s.paired, s.words)} | ${pct(s.sure, s.words)} |`;
+  const header = ['| Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |', '| --- | --- | --- | --- | --- | --- | --- |'];
+  const line = (name: string, s: { verses: number; words: number; paired: number; sure: number; model: number }): string =>
+    `| ${name} | ${num(s.verses)} | ${num(s.words)} | ${num(s.paired)} | ${pct(s.paired, s.words)} | ${pct(s.sure, s.words)} | ${s.model === 0 ? '—' : `${num(s.model)} (${pct(s.model, s.words)})`} |`;
   const out = ['### Each chapter shipped', '', ...header, ...rows.map((s) => line(`${s.book} ${s.chapter}`, s))];
   const books = new Map<string, AlignShare[]>();
   for (const s of rows) books.set(s.code, [...(books.get(s.code) ?? []), s]);
   out.push('', '### Each book', '', ...header.map((h, i) => (i === 0 ? h.replace('Chapter', 'Book') : h)));
   for (const list of books.values()) {
-    const sum = list.reduce((a, s) => ({ verses: a.verses + s.verses, words: a.words + s.words, paired: a.paired + s.paired, sure: a.sure + s.sure }), { verses: 0, words: 0, paired: 0, sure: 0 });
+    const sum = list.reduce((a, s) => ({ verses: a.verses + s.verses, words: a.words + s.words, paired: a.paired + s.paired, sure: a.sure + s.sure, model: a.model + s.model }), { verses: 0, words: 0, paired: 0, sure: 0, model: 0 });
     out.push(line(list[0].book, sum));
   }
-  const total = rows.reduce((a, s) => ({ verses: a.verses + s.verses, words: a.words + s.words, paired: a.paired + s.paired, sure: a.sure + s.sure, tokens: a.tokens + s.tokens, pairedTokens: a.pairedTokens + s.pairedTokens }), { verses: 0, words: 0, paired: 0, sure: 0, tokens: 0, pairedTokens: 0 });
-  out.push('', `${rows.length} chapter${rows.length === 1 ? '' : 's'}: ${num(total.paired)} of ${num(total.words)} Greek words aligned (${pct(total.paired, total.words)}); ${num(total.pairedTokens)} of ${num(total.tokens)} English words are in a chunk of Greek (${pct(total.pairedTokens, total.tokens)}), the rest are in remainder chunks (y \`align?\`).`);
+  const total = rows.reduce((a, s) => ({ verses: a.verses + s.verses, words: a.words + s.words, paired: a.paired + s.paired, sure: a.sure + s.sure, tokens: a.tokens + s.tokens, pairedTokens: a.pairedTokens + s.pairedTokens, model: a.model + s.model }), { verses: 0, words: 0, paired: 0, sure: 0, tokens: 0, pairedTokens: 0, model: 0 });
+  out.push('', `${rows.length} chapter${rows.length === 1 ? '' : 's'}: ${num(total.paired)} of ${num(total.words)} Greek words aligned (${pct(total.paired, total.words)}), ${num(total.model)} of them by the model pass (y \`model\`); ${num(total.pairedTokens)} of ${num(total.tokens)} English words are in a chunk of Greek (${pct(total.pairedTokens, total.tokens)}), the rest are in remainder chunks (y \`align?\`, waiting for the model pass) or in English the model found no Greek for.`);
   return out.join('\n');
 }
 

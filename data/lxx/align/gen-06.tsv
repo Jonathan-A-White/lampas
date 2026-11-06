@@ -1,0 +1,141 @@
+ref	run	text	g	mark	confidence
+Gen.6:1	1	five	-		0.80
+Gen.6:1	2	old,	-		0.80
+Gen.6:1	3	he	7	unsure	0.50
+Gen.6:1	4	and	-		0.80
+Gen.6:1	5	it came	-		0.80
+Gen.6:1	6	pass	-		0.80
+Gen.6:1	7	to	-		0.80
+Gen.6:1	8	numerous	-		0.80
+Gen.6:1	9	were born	-		0.80
+Gen.6:2	1	that	-		0.80
+Gen.6:2	2	of	4	unsure	0.50
+Gen.6:2	3	having	-		0.80
+Gen.6:2	4	of	8	unsure	0.50
+Gen.6:2	5	they	-		0.80
+Gen.6:2	6	beautiful,	11		0.80
+Gen.6:2	7	to	-		0.80
+Gen.6:2	8	they	-		0.80
+Gen.6:3	1	the	3	unsure	0.50
+Gen.6:3	2	shall certainly	5	unsure	0.50
+Gen.6:3	3	remain	7		0.80
+Gen.6:3	4	shall	-		0.80
+Gen.6:3	5	one	-		0.80
+Gen.6:3	6	and	-		0.80
+Gen.6:4	1	of	19	unsure	0.50
+Gen.6:4	2	were wont to go in	15,16		0.80
+Gen.6:4	3	of	24	unsure	0.50
+Gen.6:4	4	they	-		0.80
+Gen.6:4	5	children	-		0.80
+Gen.6:4	5	to them,	28		0.80
+Gen.6:4	6	of	38	unsure	0.50
+Gen.6:5	1	the	3	unsure	0.50
+Gen.6:5	2	having	-		0.80
+Gen.6:5	3	wicked actions	8		0.80
+Gen.6:5	3	of	9	unsure	0.50
+Gen.6:5	4	were	-		0.80
+Gen.6:5	5	that	-		0.80
+Gen.6:5	6	was	-		0.80
+Gen.6:5	6	intently	22		0.80
+Gen.6:5	6	brooding	17		0.80
+Gen.6:5	7	continually,	26,27,28		0.80
+Gen.6:6	1	then	0	unsure	0.50
+Gen.6:6	2	laid it to heart	1		0.80
+Gen.6:6	3	he had	-		0.80
+Gen.6:6	4	he pondered it deeply.	12		0.80
+Gen.6:7	1	I will	-		0.80
+Gen.6:7	2	out	-		0.80
+Gen.6:7	3	I have	-		0.80
+Gen.6:7	4	the	-		0.80
+Gen.6:7	5	even	15	unsure	0.50
+Gen.6:7	6	with	-		0.80
+Gen.6:7	7	with	20	unsure	0.50
+Gen.6:7	7	flying creatures	22		0.80
+Gen.6:7	8	sky,	24		0.80
+Gen.6:7	9	I am	-		0.80
+Gen.6:7	10	I have	-		0.80
+Gen.6:8	1	before	4		0.80
+Gen.6:8	1	the	6	unsure	0.50
+Gen.6:9	1	are	-		0.80
+Gen.6:9	2	of	-		0.80
+Gen.6:9	3	a	-		0.80
+Gen.6:9	4	being	-		0.80
+Gen.6:9	5	was well-pleasing	-		0.80
+Gen.6:9	5	to	14	unsure	0.50
+Gen.6:11	1	was corrupted	0		0.80
+Gen.6:11	1	before	4		0.80
+Gen.6:11	2	was filled	8		0.80
+Gen.6:11	2	with iniquity.	11		0.80
+Gen.6:12	1	the	3	unsure	0.50
+Gen.6:12	2	it	-		0.80
+Gen.6:12	3	had	-		0.80
+Gen.6:12	4	way	-		0.80
+Gen.6:13	1	Lord	-		0.80
+Gen.6:13	2	A	-		0.80
+Gen.6:13	3	is	-		0.80
+Gen.6:13	4	before	10		0.80
+Gen.6:13	5	has been filled	13		0.80
+Gen.6:13	5	with iniquity	16		0.80
+Gen.6:13	5	by	-		0.80
+Gen.6:14	1	for	-		0.80
+Gen.6:14	2	an	-		0.80
+Gen.6:14	3	you shall	-		0.80
+Gen.6:14	4	in compartments,	-		0.80
+Gen.6:14	5	you shall	-		0.80
+Gen.6:14	6	without	16		0.80
+Gen.6:14	6	with	17		0.80
+Gen.6:14	6	pitch.	18		0.80
+Gen.6:15	1	shall you	-		0.80
+Gen.6:15	2	hundred	-		0.80
+Gen.6:15	3	of	-		0.80
+Gen.6:15	4	of	-		0.80
+Gen.6:16	1	You shall	-		0.80
+Gen.6:16	2	in	-		0.80
+Gen.6:16	3	it,	-		0.80
+Gen.6:16	4	a	-		0.80
+Gen.6:16	5	you shall finish	7		0.80
+Gen.6:16	6	you shall	-		0.80
+Gen.6:16	7	on	-		0.80
+Gen.6:16	8	side;	17		0.80
+Gen.6:16	8	with lower,	-		0.80
+Gen.6:16	9	third	-		0.80
+Gen.6:16	10	you shall	-		0.80
+Gen.6:17	1	a	-		0.80
+Gen.6:17	2	of	-		0.80
+Gen.6:17	3	to	-		0.80
+Gen.6:17	4	the	-		0.80
+Gen.6:17	5	of	-		0.80
+Gen.6:17	6	whatever things	24,25		0.80
+Gen.6:17	7	shall	-		0.80
+Gen.6:18	1	will	-		0.80
+Gen.6:18	2	my	-		0.80
+Gen.6:18	3	shall	-		0.80
+Gen.6:18	4	wife,	19		0.80
+Gen.6:18	5	wives	23		0.80
+Gen.6:19	1	beasts,	-		0.80
+Gen.6:19	1	even	15		0.80
+Gen.6:19	2	you shall	-		0.80
+Gen.6:19	3	by pairs	19,20		0.80
+Gen.6:19	4	you may	-		0.80
+Gen.6:19	5	them	-		0.80
+Gen.6:19	6	they shall	-		0.80
+Gen.6:20	1	winged	5		0.80
+Gen.6:20	2	their	-		0.80
+Gen.6:20	3	their	-		0.80
+Gen.6:20	4	shall	-		0.80
+Gen.6:20	5	in	-		0.80
+Gen.6:20	6	to be	-		0.80
+Gen.6:21	1	shall	-		0.80
+Gen.6:21	2	to	-		0.80
+Gen.6:21	3	kinds of	-		0.80
+Gen.6:21	4	you⌃	-		0.80
+Gen.6:21	5	you shall	-		0.80
+Gen.6:21	6	them	-		0.80
+Gen.6:21	7	it shall	-		0.80
+Gen.6:21	8	for	-		0.80
+Gen.6:21	9	them	18		0.80
+Gen.6:21	9	to	-		0.80
+Gen.6:22	1	things	-		0.80
+Gen.6:22	1	whatever	4		0.80
+Gen.6:22	1	the	8	unsure	0.50
+Gen.6:22	2	commanded him,	5		0.80

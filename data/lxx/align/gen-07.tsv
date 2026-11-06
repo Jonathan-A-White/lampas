@@ -1,0 +1,115 @@
+ref	run	text	g	mark	confidence
+Gen.7:1	1	the	3	unsure	0.50
+Gen.7:1	2	family	12		0.80
+Gen.7:1	3	have I	-		0.80
+Gen.7:1	4	before	21		0.80
+Gen.7:2	1	cattle	3		0.80
+Gen.7:2	1	take in	6		0.80
+Gen.7:3	1	flying creatures	3		0.80
+Gen.7:3	1	of the	4	unsure	0.50
+Gen.7:3	1	sky	5		0.80
+Gen.7:3	2	unclean	19,20		0.80
+Gen.7:3	2	flying creatures	17		0.80
+Gen.7:3	2	pairs,	21,22		0.80
+Gen.7:3	3	to	-		0.80
+Gen.7:4	1	yet	0		0.80
+Gen.7:4	2	having passed	-		0.80
+Gen.7:4	3	I will blot	-		0.80
+Gen.7:4	4	every	-		0.80
+Gen.7:4	4	offspring	18,19		0.80
+Gen.7:4	5	I have	-		0.80
+Gen.7:4	6	the	-		0.80
+Gen.7:4	7	of	-		0.80
+Gen.7:5	1	things	-		0.80
+Gen.7:5	1	whatever	4		0.80
+Gen.7:5	1	the	8	unsure	0.50
+Gen.7:5	2	commanded	5		0.80
+Gen.7:6	1	six	-		0.80
+Gen.7:6	2	old when	-		0.80
+Gen.7:6	3	of water	-		0.80
+Gen.7:7	1	And	-		0.80
+Gen.7:7	2	in	-		0.80
+Gen.7:7	3	wife,	9		0.80
+Gen.7:7	4	wives	13		0.80
+Gen.7:7	5	of	-		0.80
+Gen.7:7	6	of	-		0.80
+Gen.7:8	1	flying creatures	3		0.80
+Gen.7:8	2	unclean	-		0.80
+Gen.7:8	2	flying creatures,	20		0.80
+Gen.7:8	3	cattle	7		0.80
+Gen.7:8	4	unclean	15	unsure	0.50
+Gen.7:8	4	cattle,	13		0.80
+Gen.7:8	5	things that creep	25		0.80
+Gen.7:9	1	pairs	0,1		0.80
+Gen.7:9	2	in	-		0.80
+Gen.7:9	3	commanded	12		0.80
+Gen.7:9	3	Noe.	13	unsure	0.50
+Gen.7:10	1	it came	-		0.80
+Gen.7:10	2	pass	-		0.80
+Gen.7:10	3	that	6	unsure	0.50
+Gen.7:10	4	of	-		0.80
+Gen.7:11	1	six	-		0.80
+Gen.7:11	2	of	7	unsure	0.50
+Gen.7:11	3	of	-		0.80
+Gen.7:11	4	month,	11		0.80
+Gen.7:11	4	on	-		0.80
+Gen.7:11	5	of the	15		0.80
+Gen.7:11	5	month, on	-		0.80
+Gen.7:11	6	of	-		0.80
+Gen.7:11	7	were broken up,	-		0.80
+Gen.7:11	8	of	29	unsure	0.50
+Gen.7:11	9	were	-		0.80
+Gen.7:13	1	that very	3	unsure	0.50
+Gen.7:13	2	the	-		0.80
+Gen.7:13	3	of	-		0.80
+Gen.7:13	4	of	-		0.80
+Gen.7:13	5	of	19	unsure	0.50
+Gen.7:14	1	beasts	-		0.80
+Gen.7:14	2	their	-		0.80
+Gen.7:14	3	their	-		0.80
+Gen.7:14	4	itself	-		0.80
+Gen.7:14	5	its	-		0.80
+Gen.7:14	6	every	22		0.80
+Gen.7:14	6	flying	-		0.80
+Gen.7:14	7	its	-		0.80
+Gen.7:15	1	in	-		0.80
+Gen.7:15	2	pairs,	6,7		0.80
+Gen.7:15	3	the	-		0.80
+Gen.7:15	4	of	-		0.80
+Gen.7:16	1	they that	1		0.80
+Gen.7:16	2	in	-		0.80
+Gen.7:16	3	commanded	11		0.80
+Gen.7:16	4	the	19	unsure	0.50
+Gen.7:16	5	of	-		0.80
+Gen.7:17	1	abounded greatly	16		0.80
+Gen.7:17	2	bore	-		0.80
+Gen.7:17	3	it was	-		0.80
+Gen.7:17	4	high	-		0.80
+Gen.7:17	5	off	-		0.80
+Gen.7:18	1	was borne	11		0.80
+Gen.7:19	1	exceedingly	4,5		0.80
+Gen.7:20	1	Fifteen	0,1		0.80
+Gen.7:20	2	was	-		0.80
+Gen.7:20	3	raised,	-		0.80
+Gen.7:20	4	it	-		0.80
+Gen.7:21	1	there	-		0.80
+Gen.7:21	2	that	-		0.80
+Gen.7:21	3	of	8	unsure	0.50
+Gen.7:21	3	flying creatures	9		0.80
+Gen.7:21	4	of	14	unsure	0.50
+Gen.7:21	5	beasts,	-		0.80
+Gen.7:22	1	things	2	unsure	0.50
+Gen.7:22	2	the	-		0.80
+Gen.7:22	3	of	-		0.80
+Gen.7:22	4	land,	-		0.80
+Gen.7:23	1	God blotted	-		0.80
+Gen.7:23	2	the	3	unsure	0.50
+Gen.7:23	3	both	-		0.80
+Gen.7:23	4	and	-		0.80
+Gen.7:23	5	of	19	unsure	0.50
+Gen.7:23	6	they were blotted	-		0.80
+Gen.7:23	7	was	-		0.80
+Gen.7:23	8	those	33	unsure	0.50
+Gen.7:24	1	was raised	1		0.80
+Gen.7:24	2	one	-		0.80
+Gen.7:24	3	and	-		0.80

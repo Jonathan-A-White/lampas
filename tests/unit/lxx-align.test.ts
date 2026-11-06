@@ -219,15 +219,15 @@ describe('the Genesis 1 fixture', () => {
 
 describe('the report', () => {
   const shares: AlignShare[] = [
-    { code: 'gen', book: 'Genesis', chapter: 1, verses: 31, words: 751, paired: 600, sure: 500, tokens: 800, pairedTokens: 600 },
-    { code: 'gen', book: 'Genesis', chapter: 2, verses: 25, words: 500, paired: 250, sure: 200, tokens: 600, pairedTokens: 250 },
+    { code: 'gen', book: 'Genesis', chapter: 1, verses: 31, words: 751, paired: 600, sure: 500, tokens: 800, pairedTokens: 600, model: 0 },
+    { code: 'gen', book: 'Genesis', chapter: 2, verses: 25, words: 500, paired: 250, sure: 200, tokens: 600, pairedTokens: 250, model: 0 },
   ];
 
   it('gives the aligned share of each chapter between the markers, and the book\'s', () => {
     const text = renderAlignReport(shares);
-    expect(text).toContain('| Genesis 1 | 31 | 751 | 600 | 79.9% | 66.6% |');
-    expect(text).toContain('| Genesis 2 | 25 | 500 | 250 | 50.0% | 40.0% |');
-    expect(text).toContain('| Genesis | 56 | 1,251 | 850 | 67.9% | 56.0% |');
+    expect(text).toContain('| Genesis 1 | 31 | 751 | 600 | 79.9% | 66.6% | — |');
+    expect(text).toContain('| Genesis 2 | 25 | 500 | 250 | 50.0% | 40.0% | — |');
+    expect(text).toContain('| Genesis | 56 | 1,251 | 850 | 67.9% | 56.0% | — |');
   });
 
   it('the docs file has its markers, and what lxx:align writes there is what renderAlignReport gives', () => {
@@ -266,7 +266,7 @@ describe('npm run lxx:ship carries the chunks to the directory', () => {
   const options = (): ShipOptions => {
     const choicesDir = tmp();
     writeFileSync(join(choicesDir, 'gen-01.tsv'), choices);
-    return { input: derive, load, choicesDir, morpheusDir: tmp(), known: passing, books: [['Gen', 'Genesis']], log: () => undefined };
+    return { input: derive, load, choicesDir, alignDir: tmp(), morpheusDir: tmp(), known: passing, books: [['Gen', 'Genesis']], log: () => undefined };
   };
 
   it('writes the aligned chunks into the shipped chapters, reports the share of each chapter, and changes no other file of the chapter bar', async () => {

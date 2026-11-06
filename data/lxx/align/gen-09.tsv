@@ -1,0 +1,150 @@
+ref	run	text	g	mark	confidence
+Gen.9:1	1	to	-		0.80
+Gen.9:1	2	have	-		0.80
+Gen.9:1	3	over	-		0.80
+Gen.9:2	1	of	-		0.80
+Gen.9:2	2	shall	-		0.80
+Gen.9:2	3	beasts of	-		0.80
+Gen.9:2	4	of	-		0.80
+Gen.9:2	5	things	24	unsure	0.50
+Gen.9:2	6	upon	-		0.80
+Gen.9:2	7	of	-		0.80
+Gen.9:2	8	I have placed them	-		0.80
+Gen.9:3	1	shall be	-		0.80
+Gen.9:3	2	meat,	9		0.80
+Gen.9:3	2	I have	-		0.80
+Gen.9:3	3	things to	-		0.80
+Gen.9:3	4	green herbs.	11,12		0.80
+Gen.9:4	1	of	-		0.80
+Gen.9:4	2	you⌃ shall	-		0.80
+Gen.9:5	1	of	-		0.80
+Gen.9:5	2	lives	6		0.80
+Gen.9:5	2	will I require	8		0.80
+Gen.9:5	2	at	-		0.80
+Gen.9:5	3	I will require	21		0.80
+Gen.9:5	3	the life	22,23		0.80
+Gen.9:5	4	at the	-		0.80
+Gen.9:5	5	of	-		0.80
+Gen.9:6	1	He that	0		0.80
+Gen.9:6	2	of that	5	unsure	0.50
+Gen.9:6	3	shall	-		0.80
+Gen.9:6	4	own	-		0.80
+Gen.9:6	4	be shed,	8		0.80
+Gen.9:6	5	the	-		0.80
+Gen.9:6	6	of	-		0.80
+Gen.9:6	7	I	-		0.80
+Gen.9:7	1	do	-		0.80
+Gen.9:7	2	have	-		0.80
+Gen.9:7	3	it.	12,13		0.80
+Gen.9:8	1	to	4	unsure	0.50
+Gen.9:8	2	to	7	unsure	0.50
+Gen.9:9	1	And	-		0.80
+Gen.9:9	2	with	-		0.80
+Gen.9:9	3	with	-		0.80
+Gen.9:10	1	with	-		0.80
+Gen.9:10	1	every	1		0.80
+Gen.9:10	2	creature	2		0.80
+Gen.9:10	3	with	-		0.80
+Gen.9:10	4	beasts of	-		0.80
+Gen.9:10	5	as many	-		0.80
+Gen.9:10	6	are	-		0.80
+Gen.9:10	7	that	22	unsure	0.50
+Gen.9:10	8	of	-		0.80
+Gen.9:11	1	will	-		0.80
+Gen.9:11	2	my	-		0.80
+Gen.9:11	3	shall	-		0.80
+Gen.9:11	4	any more	12		0.80
+Gen.9:11	5	by	-		0.80
+Gen.9:11	6	there shall	-		0.80
+Gen.9:11	7	more	21		0.80
+Gen.9:11	8	a	-		0.80
+Gen.9:11	9	of	24	unsure	0.50
+Gen.9:11	10	to	-		0.80
+Gen.9:12	1	the	3	unsure	0.50
+Gen.9:12	2	is	-		0.80
+Gen.9:12	3	of	-		0.80
+Gen.9:12	4	every	23		0.80
+Gen.9:12	5	creature	24		0.80
+Gen.9:12	6	perpetual	32		0.80
+Gen.9:13	1	my	-		0.80
+Gen.9:13	2	it shall	-		0.80
+Gen.9:13	3	a	-		0.80
+Gen.9:13	4	of	-		0.80
+Gen.9:14	1	it shall	-		0.80
+Gen.9:14	2	gather	-		0.80
+Gen.9:14	3	that	-		0.80
+Gen.9:14	4	shall be	-		0.80
+Gen.9:15	1	will	-		0.80
+Gen.9:15	2	my	-		0.80
+Gen.9:15	3	there shall	-		0.80
+Gen.9:15	4	longer	24		0.80
+Gen.9:15	5	a	-		0.80
+Gen.9:15	6	as to blot	-		0.80
+Gen.9:16	1	my	-		0.80
+Gen.9:16	2	shall	-		0.80
+Gen.9:16	3	will	-		0.80
+Gen.9:16	4	to	10	unsure	0.50
+Gen.9:16	5	the	-		0.80
+Gen.9:16	5	everlasting	13		0.80
+Gen.9:16	6	the earth, and	-		0.80
+Gen.9:17	1	to	4	unsure	0.50
+Gen.9:17	2	is	-		0.80
+Gen.9:17	3	of	-		0.80
+Gen.9:17	4	I have	-		0.80
+Gen.9:18	1	of	-		0.80
+Gen.9:18	2	which	5	unsure	0.50
+Gen.9:18	3	of	-		0.80
+Gen.9:18	4	And	-		0.80
+Gen.9:18	5	of	-		0.80
+Gen.9:19	1	of	-		0.80
+Gen.9:19	2	were men	-		0.80
+Gen.9:20	1	began to be a	1,3	unsure	0.50
+Gen.9:20	1	husbandman,	4,5		0.80
+Gen.9:20	2	he	-		0.80
+Gen.9:20	3	a	-		0.80
+Gen.9:21	1	was	-		0.80
+Gen.9:21	2	was	-		0.80
+Gen.9:21	3	his	-		0.80
+Gen.9:22	1	of	-		0.80
+Gen.9:22	2	of	8	unsure	0.50
+Gen.9:22	2	his	-		0.80
+Gen.9:22	3	and	-		0.80
+Gen.9:22	4	without.	-		0.80
+Gen.9:23	1	having	-		0.80
+Gen.9:23	2	a garment,	5,6		0.80
+Gen.9:23	3	their	-		0.80
+Gen.9:23	4	of	20	unsure	0.50
+Gen.9:23	5	was	-		0.80
+Gen.9:23	6	they	-		0.80
+Gen.9:23	7	of	31	unsure	0.50
+Gen.9:24	1	recovered	0		0.80
+Gen.9:24	2	all that	8		0.80
+Gen.9:24	3	younger	15		0.80
+Gen.9:24	4	had	-		0.80
+Gen.9:24	5	to	-		0.80
+Gen.9:25	1	he	-		0.80
+Gen.9:25	2	be	-		0.80
+Gen.9:25	2	the servant	4		0.80
+Gen.9:25	3	a	-		0.80
+Gen.9:25	4	shall he	-		0.80
+Gen.9:25	5	to	7	unsure	0.50
+Gen.9:25	6	brethren.	8		0.80
+Gen.9:26	1	he	-		0.80
+Gen.9:26	2	be	-		0.80
+Gen.9:26	2	the	4	unsure	0.50
+Gen.9:26	3	of	6	unsure	0.50
+Gen.9:26	4	shall	-		0.80
+Gen.9:26	5	bond-servant.	11		0.80
+Gen.9:27	1	May	-		0.80
+Gen.9:27	2	make room	0		0.80
+Gen.9:27	2	for	3	unsure	0.50
+Gen.9:27	3	let him	-		0.80
+Gen.9:27	4	of	10	unsure	0.50
+Gen.9:27	5	let	-		0.80
+Gen.9:27	6	servant.	15		0.80
+Gen.9:28	1	three	-		0.80
+Gen.9:28	2	and	-		0.80
+Gen.9:29	1	of	-		0.80
+Gen.9:29	2	nine	-		0.80
+Gen.9:29	3	and	-		0.80
+Gen.9:29	4	he	-		0.80

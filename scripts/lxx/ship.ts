@@ -4,15 +4,16 @@
 // build's known-answer lines and the book's guess line) to a temporary annotation set, and builds the chapter files, index.json, the lexicon and the notice files (LICENSE-swete.txt, README-swete.md, README.md)
 // into <dir>. It is the Laptop's deploy step, after `npm run build`: `npm run lxx:ship -- --out dist/data-lxx`. It writes nothing under data/, public/ or docs/ (a repo with no choices file has `books: []`
 // in public/data-lxx/index.json and keeps it). One line a book (`gen: shipped 1-6 of 50`); a derive or build error fails the run, and nothing shippable does not.
-// Each shipped chapter's English is cut into chunks aligned to its Greek words (align.ts, mw-u2w5klk.274.1); `npm run lxx:align` is this ship with the aligned share of each chapter written to docs/lxx-align.md.
+// Each shipped chapter's English is cut into chunks aligned to its Greek words (align.ts, mw-u2w5klk.274.1; the model pass's cuts of what the aligner left, data/lxx/align, align-choose.ts, mw-u2w5klk.274.2); `npm run lxx:align` is this ship with the aligned share of each chapter written to docs/lxx-align.md.
 // A book derived with no Morpheus cache is warned (one line, naming the sg docker line that builds it) and named in the last summary line ('without Morpheus: gen', or 'none'); the run is not refused (mw-u2w5klk.271).
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { loadLxxInput, writeLxx, type LxxInput, type Written } from '../data-build-lxx';
 import type { AlignShare } from './align';
+import { readModelDir } from './align-choose';
 import { writeIfChanged } from '../data/chapterWriter';
 import { readChoiceDir } from './choices';
 import { OUT_DIR, deriveBook, loadInput, splitBooks, train, type DeriveInput } from './derive';
@@ -55,6 +56,8 @@ export interface ShipOptions {
   rawDir?: string;
   /** where the books' choices files are; default data/lxx/choices */
   choicesDir?: string;
+  /** where the model pass's files are (align-choose.ts); default `align` beside the choices directory (data/lxx/align); '' applies none */
+  alignDir?: string;
   /** where the known-answer chapters' choices files are; default data/lxx/known */
   knownDir?: string;
   /** where the Morpheus caches are; default data/lxx/morpheus */
@@ -91,6 +94,7 @@ const hasChoices = (dir: string, code: string): boolean => existsSync(dir) && re
 export async function runShip(argv: readonly string[], options: ShipOptions = {}): Promise<Shipped> {
   const { rawDir = RAW_DIR, choicesDir = CHOICES_DIR, knownDir = KNOWN_DIR, morpheusDir = join(OUT_DIR, 'morpheus'), notice = NOTICE, scratch = tmpdir(), log = () => {}, fetcher, books = OLD_TESTAMENT } = options;
   const args = parseArgs(argv);
+  const alignDir = options.alignDir ?? join(dirname(choicesDir), 'align');
   const started = Date.now();
   const named = books.filter(([code]) => hasChoices(choicesDir, code));
   const out: Shipped['books'] = [];
@@ -133,7 +137,7 @@ export async function runShip(argv: readonly string[], options: ShipOptions = {}
     }
     const lxx = await (options.load ?? ((dir) => loadLxxInput({ rawDir, annotationsDir: dir, log })))(annotations);
     const aligned: AlignShare[] = [];
-    const written = writeLxx(lxx, args.out, log, { shares: aligned });
+    const written = writeLxx(lxx, args.out, log, { shares: aligned, model: readModelDir(alignDir) });
     if (!existsSync(notice)) throw new Error(`the notice ${notice} is not there`);
     if (writeIfChanged(join(args.out, 'README.md'), readFileSync(notice, 'utf8'))) written.written++;
     log(`lxx:ship: ${out.length} book${out.length === 1 ? '' : 's'} with a choices file, ${((Date.now() - started) / 1000).toFixed(1)} s, into ${args.out}; without Morpheus: ${withoutMorpheus.length > 0 ? withoutMorpheus.join(', ') : 'none'}`);
