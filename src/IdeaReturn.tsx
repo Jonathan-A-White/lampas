@@ -6,7 +6,7 @@ import type { Chapter, GreekWord } from './data/chapter';
 import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { dropHeldIdea, heldScrollTop, holdStillWanted, useReturnedIdea } from './ideaReturn';
 import { IdeaSheet } from './IdeaSheet';
-import { useAddress } from './nav/route';
+import { routeOf, useAddress } from './nav/route';
 import { WordSheet, type Lookup } from './WordSheet';
 
 export function IdeaReturn() {
@@ -16,8 +16,11 @@ export function IdeaReturn() {
   const [ideaId, setIdeaId] = useState<string | null>(null);
   // how far its text was scrolled when he left it, read before the hold is let go
   const [scrollTop, setScrollTop] = useState(0);
+  // the screen it came back over: the returned sheet is not the screen's, so it is not taken away with the screen (mw-5r3p30.1114)
+  const [overRoute, setOverRoute] = useState('');
   if (returned && returned !== ideaId) {
     setIdeaId(returned);
+    setOverRoute(routeOf(window.location.hash));
     setScrollTop(heldScrollTop());
   }
   useEffect(() => {
@@ -28,6 +31,13 @@ export function IdeaReturn() {
   useEffect(() => {
     if (!holdStillWanted()) dropHeldIdea();
   }, [address]);
+  // he went from it to another screen (its table again): it is closed here, or it would stay over that page, and so would the word sheet over it
+  useEffect(() => {
+    if (ideaId && routeOf(address) !== overRoute) {
+      setIdeaId(null);
+      setWord(null);
+    }
+  }, [address, ideaId, overRoute]);
   if (!ideaId) return null;
   return (
     <>
