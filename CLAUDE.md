@@ -161,11 +161,11 @@ docs/best-practices-audit.md # the 2026-10-10 PWA best-practices audit
 docs/demo-free-ai-licensed.md # free to read, a licence for the AI
 docs/demo-lampas-share.md # share a screenshot into a tutor talk
 docs/demo-module-splits.md # the Reader and Settings splits
-docs/demo-shared-composer.md # Postern composer shared with Lampas
+docs/demo-shared-composer.md # the Postern composer, shared
 docs/demo-shared-speech.md # one read-aloud bar in three apps
 docs/demo-reading-plan.md # the listening plan
 docs/demo-english-first-memory.md # English first, welcome
-docs/demo-library-at-scale.md # Logos library at scale, Import
+docs/demo-library-at-scale.md # Logos library at scale
 docs/research/audible-addon-seek.md # an add-on that seeks his Audible Bible
 docs/research/greek-speech-libraries.md # libraries for Greek sound
 docs/research/kjv-tr.md # the KJV and the Greek behind it as a text pair
