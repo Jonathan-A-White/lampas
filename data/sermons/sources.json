@@ -1,5 +1,5 @@
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
-  "commit": "08484ad3fec810dd72ac95acd3d222d19b25e6dd",
-  "sources": ["spurgeon-ccel"]
+  "commit": "efac7003bfef04bbcfc68e50c97fafda8fecdbc7",
+  "sources": ["spurgeon-ccel", "henry-sermons"]
 }

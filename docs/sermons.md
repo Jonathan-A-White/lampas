@@ -75,11 +75,14 @@ with no fetch; the book files are fetched, never bundled. A new source or a chan
 
 | id | Name | Rows | Books | Licence and credit | Pinned at |
 | --- | --- | --- | --- | --- | --- |
-| `spurgeon-ccel` | Spurgeon's sermons (CCEL) | 3,467 listed of 3,543 read (76 have no preaching text) | 65 | CCEL's copyright policy, quoted in `index.json`; the words are public domain, the pages are CCEL's. Credit: Christian Classics Ethereal Library, Calvin University | sermon-index `08484ad3` |
+| `spurgeon-ccel` | Spurgeon's sermons (CCEL) | 3,467 listed of 3,543 read (76 have no preaching text) | 65 | CCEL's copyright policy, quoted in `index.json`; the words are public domain, the pages are CCEL's. Credit: Christian Classics Ethereal Library, Calvin University | sermon-index `efac7003` |
+| `henry-sermons` | Matthew Henry's sermons (Internet Archive scans) | 46 listed of 52 read (6 have no preaching text) | 20 | The Archive's terms of use, quoted in `index.json`; the words are public domain. Credit: Matthew Henry; Internet Archive | sermon-index `efac7003` |
 
 Size at that commit: about 997 KB of JSON in 65 book files, 126 KB gzipped as one stream (148 KB when each file is gzipped on its own, as a server serves them).
 
-`henry-sermons` (Matthew Henry's sermons) is named by the story that began this file and **is not in the sermon-index repository yet**, so it is not bundled; add its id to `sources.json` once the repository has it.
+`henry-sermons` (Matthew Henry's sermons) is bundled since mw-qtu3zvz.8: 52 rows read by hand from the Internet Archive's scans of the 1830 Miscellaneous Works and the 1847 Complete Works (sermon-index `sources/henry-sermons`, first in `efac7003`); 46 are listed under 20 books, 6 have no preaching text (the Archive's page prints none) and are left out. About 13 KB of JSON, under 3 KB gzipped. Its licence line is the Archive's terms of use, quoted in `index.json`; the words are public domain. A Henry text beyond these 52 rows would be a story on the sermon-index repository.
+
+The sermon-index repository's other sources (`themes-tcr1934`, `themes-torrey`) are theme sources (`kind` is not `sermons`), which this build refuses, so they are not in `sources.json`.
 
 Each bundled source needs the four credits (CLAUDE.md 'Conventions'): an entry in `ATTRIBUTION.md` quoting the licence line from `source.toml`, a line in `src/preface.ts`, a `CREDITS` entry in `src/tutor/credits.ts` and a rule in
 `tests/support/credits.ts` for `public/sermons/<id>/`. `tests/unit/credits.test.ts` fails until each exists.

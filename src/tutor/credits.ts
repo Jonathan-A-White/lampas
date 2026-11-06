@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 6500;
+export const MAX_CREDITS_BYTES = 6700;
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The New Testament\'s Greek, aligned to the English', licence: 'Public domain', link: 'https://majoritybible.com' },
@@ -20,6 +20,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Biblical Hebrew Step by Step', use: 'Lesson titles, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ' },
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
   { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
+  { name: 'Matthew Henry\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org' },
   { name: 'eSpeak NG', use: 'The sound of ὁ and of δ\'', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
   { name: 'IPA', use: 'The symbols of the IPA course', licence: 'none needed; a standard', link: 'https://www.internationalphoneticassociation.org' },
   { name: 'Biblical Mastery Academy', use: 'Inspired the path and its order; nothing of theirs is copied', licence: 'none taken; nothing copied', link: 'https://biblicalmastery.academy/' },

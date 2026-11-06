@@ -23,7 +23,7 @@ export const PREFACE_PARAGRAPHS: string[] = [
   'Robinson makes the case that this form of the text goes back to the earliest centuries and should be read as the original line of transmission, not as a late revision. Other scholars, who give most weight to the oldest manuscripts, read the evidence differently, and most modern Bibles follow them. Lampas does not settle that question. It tells you which text it uses and points you to the people who wrote about it. Robinson’s essay, The Case for Byzantine Priority, is carried here as it is printed in the appendix of the 2005 edition, and the older article it grew from is linked beneath it.',
   'The English beside the Greek is the Majority Standard Bible, whose New Testament is translated from the same Robinson and Pierpont text. Its footnotes note where the modern critical texts read differently. The Robinson and Pierpont text and the Majority Standard Bible are both public domain. When a Greek word is asked for its meaning, the answer gives the meanings this English uses for it most, counted by Lampas; where the count cannot say, the STEPBible lexicon’s gloss stays.',
   'The Old Testament is read in the English of the Majority Standard Bible, which there is the Berean Standard Bible, and in the pointed Hebrew and Aramaic of the Westminster Leningrad Codex, word-aligned to it. Both are public domain. The gloss and definition of a Hebrew word are from the STEPBible lexicon. The parts a Greek word is built from, where we show them, are those the Abbott-Smith lexicon in STEPBible gives, or Lampas’s own notes on the word; a word whose parts no source states is shown with none.',
-  'Sermons are listed against the passage each was preached on. The list holds only facts: a title, the passage, the preacher, the date where it is known, and the address of the page where the sermon is read; no sermon’s words are copied. Charles Haddon Spurgeon’s come from the Christian Classics Ethereal Library’s edition of his sermons (sermons 1 to 3563, preached 1855 to 1892 and printed to 1917), so his words are public domain; the Library asks that its pages be used for personal, educational or non-profit purposes, and each sermon is read there, on its own page.',
+  'Sermons are listed against the passage each was preached on. The list holds only facts: a title, the passage, the preacher, the date where it is known, and the address of the page where the sermon is read; no sermon’s words are copied. Charles Haddon Spurgeon’s come from the Christian Classics Ethereal Library’s edition of his sermons (sermons 1 to 3563, preached 1855 to 1892 and printed to 1917), so his words are public domain; the Library asks that its pages be used for personal, educational or non-profit purposes, and each sermon is read there, on its own page. Matthew Henry’s sermons (he died in 1714) are listed from the Internet Archive’s scans of the 1830 Miscellaneous Works and the 1847 Complete Works, each linked to the Archive’s reader page where the sermon begins; the Archive asks that its collections be used for noninfringing purposes.',
 ];
 
 export interface PrefaceLink {
@@ -95,5 +95,10 @@ export const PREFACE_LINKS: PrefaceLink[] = [
     name: 'Spurgeon’s sermons, at the Christian Classics Ethereal Library (ccel.org)',
     about: 'The edition of C. H. Spurgeon’s sermons that the sermon list links to, in sixty-three volumes, with the Library’s terms of use.',
     url: 'https://ccel.org/ccel/spurgeon',
+  },
+  {
+    name: 'Matthew Henry’s sermons, at the Internet Archive (archive.org)',
+    about: 'The scans of the 1830 Miscellaneous Works and the 1847 Complete Works that the sermon list links to, with the Archive’s terms of use.',
+    url: 'https://archive.org/about/terms.php',
   },
 ];
