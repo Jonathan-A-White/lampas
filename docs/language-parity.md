@@ -66,7 +66,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `grammar-ladder` | The grammar ladder: the Goal, the idea sheet, the terms and their Grammar sheet, levels that turn solid, inference | goal-progress, goal, grammar-ladder, grammar-levels, grammar-terms, hebrew-grammar, hebrew-ladder, idea-sheet, inference, pattern-ideas, septuagint | hebrew-grammar, hebrew-ladder, hebrew-word-sheet | gap |
 | `drill-it` | Drill it on an idea, the grammar drills in Review, more drill items from the mill | drill-it, drill-sound-rule, fetched-drill-items, grammar-drills, sound-alike-miss | hebrew-letters, hebrew-quiz | gap |
 | `placement` | Placement: test me on the grammar and meet me where I am | placement, quick-round | hebrew-ladder | gap |
-| `paradigms` | Paradigms: the tables, a word’s own paradigm, Drill on a table, How much of a table | hebrew-paradigms, own-paradigm, paradigm-drill, paradigms | hebrew-paradigms, hebrew-word-sheet | gap |
+| `paradigms` | Paradigms: the tables, a word’s own paradigm, Drill on a table, How much of a table | hebrew-paradigms, own-paradigm, paradigm-drill, paradigms, septuagint-own-paradigm | hebrew-paradigms, hebrew-word-sheet | gap |
 | `grammar-approach` | Grammar approach: the order and voice the ladder is taught in | grammar-approach | gap | gap |
 | `lessons` | Lessons read to him: Read lessons to me, a passage lesson that opens its verses and Check passes it by reading | passage-lesson, read-lessons | hebrew-ladder | gap |
 | `reading-ladder` | The reading ladder: verses by how hard they are to say, Read it aloud, the reading check, drills on what he missed, his readings kept | my-reading, reading-check, reading-drill, reading-history, reading-ladder | hebrew-reading-ladder | gap |
