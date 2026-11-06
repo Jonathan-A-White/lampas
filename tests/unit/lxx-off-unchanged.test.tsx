@@ -80,17 +80,55 @@ async function open(address: string, hebrewDial: string): Promise<void> {
   render(<App />);
 }
 
+/** The two chapters the pages are taken of: the Hebrew one and the New Testament one. */
+const PLACES = [['gen', 'gen', 1, 'Gen.1.1', 'he'], ['rom', 'rom', 8, 'Rom.8.1', 'el']] as const;
+const EVERY_PAGE = PLACES.flatMap(([place, , , ref, lang]) => [`memorize ${ref} ${lang}`, `memorize ${ref} en`, `diagram ${ref}`, `test with ${place} open`, `review with ${place} open`]);
+
+/** The pages of one screen are what the recording holds (or, with RECORD_PAGES=1, are written into it once every screen has been taken). */
+function expectAsRecorded(names: string[]): void {
+  if (RECORD) return;
+  expect(existsSync(FILE), `${FILE} is recorded by RECORD_PAGES=1 on code that has not changed those pages`).toBe(true);
+  const before = JSON.parse(readFileSync(FILE, 'utf8')) as typeof pages;
+  for (const name of names) {
+    expect(pages[name], `${name}: taken`).toBeDefined();
+    expect(before[name], `${name}: recorded`).toBeDefined();
+    expect(pages[name].text, `${name}: text`).toBe(before[name].text);
+    expect(pages[name].html, `${name}: html`).toBe(before[name].html);
+  }
+}
+
+/** The Quick test or Review with this chapter open. */
+async function openRoute(route: 'test' | 'review', book: string, chapter: number, place: string): Promise<void> {
+  await open(`/#/?b=${book}&c=${chapter}`, '5');
+  await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  window.history.replaceState(null, '', `/#/${route}`);
+  window.dispatchEvent(new HashChangeEvent('hashchange'));
+  await (route === 'test' ? screen.findByText(/Quick test/) : screen.findByText(/Review/));
+  // the Parsing drill link names the chapter once the study language is read (a live query): the page is taken after it
+  if (route === 'test') await screen.findByRole('button', { name: `Parsing drill: ${book === 'gen' ? 'Genesis 1' : 'Romans 8'}` });
+  await stillScreen();
+  take(`${route} with ${place} open`);
+}
+
 describe('with the Septuagint Off the Hebrew and the New Testament pages are as they were', () => {
-  it('draws Memorize, Diagram, the Quick test and Review of Genesis 1 and Romans 8:1 exactly as before', async () => {
-    for (const [place, book, chapter, ref, lang] of [['gen', 'gen', 1, 'Gen.1.1', 'he'], ['rom', 'rom', 8, 'Rom.8.1', 'el']] as const) {
-      // Memorize: the session of the verse in its own language, and in English
+  it('draws Memorize of Genesis 1:1 and Romans 8:1 in their own language and in English exactly as before', async () => {
+    const names: string[] = [];
+    for (const [, , , ref, lang] of PLACES) {
       for (const memorizeLang of [lang, 'en']) {
         await open(`/#/memorize/${ref}/${memorizeLang}`, '5');
         await screen.findByTestId('memorize-verse');
         await waitFor(() => expect(document.querySelectorAll('[data-token]').length).toBeGreaterThan(2));
         take(`memorize ${ref} ${memorizeLang}`);
+        names.push(`memorize ${ref} ${memorizeLang}`);
       }
-      // Diagram: the Verse view of verse 1 with the tutor answering nothing yet (the pane's own state is what is drawn)
+    }
+    expectAsRecorded(names);
+  });
+
+  it('draws the Diagram pane of Genesis 1:1 and Romans 8:1 exactly as before', async () => {
+    const names: string[] = [];
+    for (const [, book, chapter, ref] of PLACES) {
+      // the Verse view of verse 1 with the tutor answering nothing yet (the pane's own state is what is drawn)
       await open(`/#/?b=${book}&c=${chapter}`, '5');
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
       await user.click(await screen.findByRole('button', { name: 'Verse 1' }));
@@ -98,29 +136,35 @@ describe('with the Septuagint Off the Hebrew and the New Testament pages are as 
       await user.click(within(view).getByRole('button', { name: 'Diagram' }));
       await within(view).findByRole('region', { name: 'Diagram' });
       take(`diagram ${ref}`);
-      // the Quick test and Review with this chapter open
-      for (const [route, ready] of [['test', () => screen.findByText(/Quick test/)], ['review', () => screen.findByText(/Review/)]] as const) {
-        await open(`/#/?b=${book}&c=${chapter}`, '5');
-        await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-        window.history.replaceState(null, '', `/#/${route}`);
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-        await ready();
-        // the Parsing drill link names the chapter once the study language is read (a live query): the page is taken after it
-        if (route === 'test') await screen.findByRole('button', { name: `Parsing drill: ${book === 'gen' ? 'Genesis 1' : 'Romans 8'}` });
-        await stillScreen();
-        take(`${route} with ${place} open`);
-      }
+      names.push(`diagram ${ref}`);
     }
+    expectAsRecorded(names);
+  });
+
+  it('draws the Quick test with Genesis 1 and with Romans 8 open exactly as before', async () => {
+    const names: string[] = [];
+    for (const [place, book, chapter] of PLACES) {
+      await openRoute('test', book, chapter, place);
+      names.push(`test with ${place} open`);
+    }
+    expectAsRecorded(names);
+  });
+
+  it('draws Review with Genesis 1 and with Romans 8 open exactly as before', async () => {
+    const names: string[] = [];
+    for (const [place, book, chapter] of PLACES) {
+      await openRoute('review', book, chapter, place);
+      names.push(`review with ${place} open`);
+    }
+    expectAsRecorded(names);
+  });
+
+  it('holds a recording of just these pages', () => {
     if (RECORD) {
-      writeFileSync(FILE, `${JSON.stringify(pages, null, 1)}\n`);
+      // each screen's it() ran first in this file's order: the recording is the pages they took, in the order of EVERY_PAGE
+      writeFileSync(FILE, `${JSON.stringify(Object.fromEntries(EVERY_PAGE.map((name) => [name, pages[name]])), null, 1)}\n`);
       return;
     }
-    expect(existsSync(FILE), `${FILE} is recorded by RECORD_PAGES=1 on code that has not changed those pages`).toBe(true);
-    const before = JSON.parse(readFileSync(FILE, 'utf8')) as typeof pages;
-    expect(Object.keys(pages)).toEqual(Object.keys(before));
-    for (const name of Object.keys(before)) {
-      expect(pages[name].text, `${name}: text`).toBe(before[name].text);
-      expect(pages[name].html, `${name}: html`).toBe(before[name].html);
-    }
+    expect(Object.keys(JSON.parse(readFileSync(FILE, 'utf8')) as typeof pages).sort()).toEqual([...EVERY_PAGE].sort());
   });
 });
