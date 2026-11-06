@@ -209,4 +209,12 @@ describe('sharePieces: what the Verse view\'s Share sheet offers (mw-5r3p30.1026
     expect(text.data.text).toBe('word '.repeat(200).trim());
     expect(cutShort('short')).toBe('short');
   });
+  it('a single long verse is shown whole in its rows, a longer piece is cut with a gap', () => {
+    const verse = 'And if the Spirit of Him who raised Jesus from the dead is living in you, He who raised Christ from the dead will also give life to your mortal bodies through His Spirit, who lives in you.';
+    const one: CopyUnit = { ...COL[0], verses: [{ n: 11, english: verse }] };
+    expect(pieceOf(one, COPY_DEFAULTS, 'text').shown).toBe(verse);
+    expect(pieceOf(one, COPY_DEFAULTS, 'whole').shown).toContain(verse);
+    expect(cutShort(verse)).not.toContain('…');
+    expect(cutShort('word '.repeat(100).trim())).toContain(' … ');
+  });
 });
