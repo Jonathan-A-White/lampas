@@ -100,19 +100,39 @@ export function verseOnTop(): number | null {
 /**
  * Where the strip stands, in px from the top of the shell's bars (mw-5r3p30.1093): under the bars the shell holds (Update ready, the tutor's bar, Welcome back; the strip floats, so it
  * is not one of them and they never sit under it) and under the screen's own top bar, a `header` that starts where the bars end (the Reader's, a screen's ScreenHeader, the Verse
- * view's), whichever ends lowest. It floats over the text below, which does not move. Null where the bars are not drawn.
+ * view's) and under the Reader's chips row (`data-reader-chips`, src/ReaderChips.tsx: Today, Variants; a row under the header, no header itself, mw-5r3p30.1099), whichever ends lowest. It floats over the text below, which does not move. Null where the bars are not drawn.
  */
 export function stripTop(): number | null {
   const bars = document.querySelector<HTMLElement>('[data-shell-bars]');
   if (!bars) return null;
   const room = bars.getBoundingClientRect();
   let foot = room.bottom;
+  const drawn = (el: HTMLElement): boolean => !bars.contains(el) && el.getClientRects().length > 0 && el.getBoundingClientRect().height > 0;
   for (const header of document.querySelectorAll<HTMLElement>('header')) {
-    if (bars.contains(header) || header.getClientRects().length === 0) continue;
+    if (!drawn(header)) continue;
     const at = header.getBoundingClientRect();
-    if (at.height > 0 && at.top <= room.bottom + 4 && at.bottom > foot) foot = at.bottom;
+    if (at.top <= room.bottom + 4 && at.bottom > foot) foot = at.bottom;
+  }
+  // the chips row starts where the header ends (or inside it, on a wide screen), so it is measured after the header
+  for (const row of document.querySelectorAll<HTMLElement>('[data-reader-chips]')) {
+    if (!drawn(row)) continue;
+    const at = row.getBoundingClientRect();
+    if (at.top <= foot + 4 && at.bottom > foot) foot = at.bottom;
   }
   return Math.round(foot - room.top);
+}
+
+/** The CSS variable (on the root) that makes room for the strip at the top of a screen's scroll box (src/index.css, `main.screen`). */
+export const STRIP_ROOM_VAR = '--lp-strip-room';
+
+/**
+ * How many px a screen's own scroll box (not the Reader's, whose text the strip floats over: mw-5r3p30.1051) stands lower for the strip, so that the first row of the screen (Settings'
+ * search field, the Words screen's Greek and Hebrew buttons, Today's first heading) is not under it with no way to scroll it out (mw-5r3p30.1099). 0 where the Reader is drawn (the
+ * reading box is `main[data-reader]`) or no strip is.
+ */
+export function stripRoom(strip: HTMLElement | null): number {
+  if (!strip || document.querySelector('main[data-reader]')) return 0;
+  return Math.ceil(strip.getBoundingClientRect().height);
 }
 
 /**

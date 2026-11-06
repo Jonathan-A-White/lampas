@@ -2,7 +2,7 @@
 // the reading text does not slide down when the API answers late; it floats UNDER the shell's other bars and the screen's own top bar (mw-5r3p30.1093, stripTop), so none is covered, until he taps 'Not now', clear of the floating ?) shown only in a Chrome tab (or a Custom Tab, a link tapped in another app) on Android where the installed Lampas is reported (src/openInApp.ts). The tap opens the address as it is NOW in a new tab with no referrer, with the verse at the top of the box in it (src/openInApp.ts handOverHref, goTo), which Chrome hands to the installed app; 'Not now' puts
 // it away for the session; a second tap of a double tap does nothing (oneTap, mw-5r3p30.1093). Never shown in the installed app, and nothing leaves the page unless he taps. It keeps the phone's own text size and wraps at large text.
 import { useEffect, useRef, useState } from 'react';
-import { DISMISSED_KEY, HAND_OVER_WAIT_MS, NOT_OPENED_HINT, goTo, handOverHref, installedAppSeen, stripTop } from './openInApp';
+import { DISMISSED_KEY, HAND_OVER_WAIT_MS, NOT_OPENED_HINT, goTo, handOverHref, installedAppSeen, STRIP_ROOM_VAR, stripRoom, stripTop } from './openInApp';
 import { oneTap } from './ui/settle';
 
 const dismissedBefore = (): boolean => {
@@ -18,6 +18,7 @@ export function OpenInApp() {
   const [top, setTop] = useState<number | null>(null);
   const [stayed, setStayed] = useState(false);
   const watching = useRef<(() => void) | null>(null);
+  const section = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (dismissedBefore()) return;
     let live = true;
@@ -33,6 +34,7 @@ export function OpenInApp() {
     const place = (): void => {
       frame = 0;
       setTop(stripTop());
+      document.documentElement.style.setProperty(STRIP_ROOM_VAR, `${stripRoom(section.current)}px`);
     };
     const soon = (): void => {
       if (frame === 0) frame = window.requestAnimationFrame(place);
@@ -44,6 +46,7 @@ export function OpenInApp() {
     window.addEventListener('hashchange', soon);
     return () => {
       watch.disconnect();
+      document.documentElement.style.removeProperty(STRIP_ROOM_VAR);
       window.removeEventListener('resize', soon);
       window.removeEventListener('hashchange', soon);
       if (frame !== 0) window.cancelAnimationFrame(frame);
@@ -82,7 +85,7 @@ export function OpenInApp() {
     setShown(false);
   };
   return (
-    <section aria-label="Open in the app" data-open-in-app style={{ top: top ?? '100%' }} className="absolute inset-x-0 flex flex-wrap items-center justify-center gap-2 border-b border-line bg-surface px-3 py-2 shadow-md">
+    <section ref={section} aria-label="Open in the app" data-open-in-app style={{ top: top ?? '100%' }} className="absolute inset-x-0 flex flex-wrap items-center justify-center gap-2 border-b border-line bg-surface px-3 py-2 shadow-md">
       {stayed ? (
         <p className="chrome-text min-w-0 flex-1 basis-60">{NOT_OPENED_HINT}</p>
       ) : (
