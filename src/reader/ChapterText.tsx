@@ -90,14 +90,17 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, woven,
 }) {
   return (
     <p data-paragraph {...rowAttrs(view, source, isOrdered(woven))} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view, source)}`}>
-      {verses.map((verse, i) => (
+      {verses.map((verse, i) => {
+        // a label with the Greek number beside it ('1 (22:1)') is wider than the 44 px box the -mx-3 pull-in is made for (a bare number leaves slack on each side): pulled in, the verse's words would start under it (mw-u2w5klk.279)
+        const wide = septuagint !== undefined && septuagintNumber(verse, septuagint).greek !== undefined;
+        return (
         <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
           <VerseNumber
             n={verse.n}
             selected={selected === verse.n}
             onSelect={() => onSelect(verse.n)}
             onCopy={onCopy ? () => onCopy(verse.n) : undefined}
-            className="-mx-3 inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)"
+            className={`${wide ? 'me-1 whitespace-nowrap px-1' : '-mx-3'} inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)`}
           >
             <sup className="text-xs font-semibold text-muted">
               <ShownNumber verse={verse} septuagint={septuagint} />
@@ -108,7 +111,8 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, woven,
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}
         </span>
-      ))}
+        );
+      })}
     </p>
   );
 }
