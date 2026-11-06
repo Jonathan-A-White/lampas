@@ -18,6 +18,12 @@ export function IdeaReturn() {
   const [scrollTop, setScrollTop] = useState(0);
   // the screen it came back over: the returned sheet is not the screen's, so it is not taken away with the screen (mw-5r3p30.1114)
   const [overRoute, setOverRoute] = useState('');
+  const [word, setWord] = useState<{ chapter: Chapter; lookup: Lookup } | null>(null);
+  // he went from it to another screen (its table again): it is closed here, or it would stay over that page, and so would the word sheet over it
+  if (ideaId && routeOf(address) !== overRoute) {
+    setIdeaId(null);
+    setWord(null);
+  }
   if (returned && returned !== ideaId) {
     setIdeaId(returned);
     setOverRoute(routeOf(window.location.hash));
@@ -26,18 +32,10 @@ export function IdeaReturn() {
   useEffect(() => {
     if (returned) dropHeldIdea();
   }, [returned]);
-  const [word, setWord] = useState<{ chapter: Chapter; lookup: Lookup } | null>(null);
   // he went somewhere that is neither the table nor the screen the sheet was over: the hold is no longer his
   useEffect(() => {
     if (!holdStillWanted()) dropHeldIdea();
   }, [address]);
-  // he went from it to another screen (its table again): it is closed here, or it would stay over that page, and so would the word sheet over it
-  useEffect(() => {
-    if (ideaId && routeOf(address) !== overRoute) {
-      setIdeaId(null);
-      setWord(null);
-    }
-  }, [address, ideaId, overRoute]);
   if (!ideaId) return null;
   return (
     <>
