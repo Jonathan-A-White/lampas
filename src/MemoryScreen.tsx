@@ -25,6 +25,7 @@ import { backTo } from './nav/route';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { LimitedTextarea } from './ui/LimitedField';
 import { readText } from './ui/readText';
+import { oneTap } from './ui/settle';
 
 const BUTTON = 'min-h-12 min-w-12 rounded-lg px-3 text-base font-medium text-accent active:bg-line';
 const PRIMARY = 'min-h-12 min-w-12 rounded-xl bg-accent px-5 text-base font-medium text-accent-fg';
@@ -169,10 +170,18 @@ function Transfer({ onReplaced }: { onReplaced: () => void }) {
   const [saved, setSaved] = useState<string | null>(null);
   // a file read or written after he has left the screen changes nothing on it (the download itself is what he asked for)
   const alive = useAlive();
+  // one file for a double tap (mw-5r3p30.1101): oneTap holds the second tap of the moment, and `exporting` holds any tap while the file is still being made
+  const exporting = useRef(false);
   const exportFile = async (): Promise<void> => {
-    const name = fileName();
-    downloadSeam.save(name, new Blob([await exportMemory()], { type: 'application/json' }));
-    if (alive()) setSaved(name);
+    if (exporting.current) return;
+    exporting.current = true;
+    try {
+      const name = fileName();
+      downloadSeam.save(name, new Blob([await exportMemory()], { type: 'application/json' }));
+      if (alive()) setSaved(name);
+    } finally {
+      exporting.current = false;
+    }
   };
   const pick = async (file: File | undefined): Promise<void> => {
     if (input.current) input.current.value = '';
@@ -191,7 +200,7 @@ function Transfer({ onReplaced }: { onReplaced: () => void }) {
       <p className="pb-1 text-lg font-medium">Keep a copy</p>
       <p className="pb-2 text-base text-muted">Export saves the index and all the notes as one file. Import puts a file like that back, in place of what is here now.</p>
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => void exportFile()} className={OUTLINE}>
+        <button type="button" onClick={() => oneTap('memory-export', () => void exportFile())} className={OUTLINE}>
           Export
         </button>
         <button type="button" onClick={() => input.current?.click()} className={OUTLINE}>
