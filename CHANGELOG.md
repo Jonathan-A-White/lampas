@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.144
+_2026-11-06_
+- New: On Library > Bibles each Bible shows which parts (NT, OT, Apocrypha) it is set for, and choosing one asks which part, so it always agrees with Settings.
+- Fixed: Your Logos library now lists the two Hebrew Bibles you own, the Lexham Hebrew Bible and its interlinear, and no longer six you don't.
+
 ## 0.7.143
 _2026-11-06_
 - Fixed: A Septuagint word's own paradigm now fills the cell of the form found in the Septuagint (Genesis 1:2 ἀόρατος).
