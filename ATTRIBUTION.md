@@ -25,6 +25,8 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Bible Mapper](https://biblemapper.com)**, maps by David P. Barrett. Free for non-commercial use with a credit: "Map by David P. Barrett, biblemapper.com". Shown from his site, not copied.
 - **[Spurgeon's sermons, from CCEL](https://ccel.org/ccel/spurgeon)** (Christian Classics Ethereal Library, Calvin University): titles, passages and links for the Sermons sheet. Public domain; CCEL's [terms](https://ccel.org/about/copyright.html): "may be used for personal, educational, or non-profit purposes." Changes: split by book.
 - **[Matthew Henry's sermons](https://archive.org)**, from the Internet Archive's scans: titles, passages and links for the Sermons sheet. Public domain; the Archive's [terms](https://archive.org/about/terms.php).
+- **[Thompson Chain Topics](https://crosswire.org/study/fulllibrary.jsp?show=TCR)** (Frank Charles Thompson, 1934; CrossWire): themes of a verse. Public domain. Changes: split by book.
+- **[Torrey's New Topical Textbook](https://crosswire.org/study/fulllibrary.jsp?show=Torrey)** (R. A. Torrey, 1897; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/)** inspired the grammar ladder, ordered beside the sequence of their Greek path; no course text, image or exercise is copied.
 

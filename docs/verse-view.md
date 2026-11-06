@@ -109,7 +109,7 @@ The door wraps with the rest of the tools line, as a word of it; it is not a cel
 ## Sermons (mw-qtu3zvz.2)
 
 After the Maps door the tools line has a quiet **Sermons · N** (`src/sermons/SermonsDoor.tsx`, 44 px): N is the number of sermons listed for the verse's chapter by the free index (`sermonsFor`, docs/sermons.md), and the button is not drawn at 0. A verse, a passage opened from a heading and the whole chapter the place line opens each carry their own place. It opens the Sermons sheet
-('Sermons for Romans 5:8', grouped On this verse and In this chapter; each row a link to the sermon where it lives). docs/sermons.md 'The door' and 'The sheet' are the detail, with the table of what the door does in each Verse view state.
+('Sermons for Romans 5:8', grouped On this verse and In this chapter; each row a link to the sermon where it lives). docs/sermons.md 'The door' and 'The sheet' are the detail, with the table of what the door does in each Verse view state. For a verse or a passage the sheet also has a **Themes** line under its title and, after In this chapter, **On the same theme** (mw-qtu3zvz.4, docs/sermons.md 'The themes').
 
 ## In Logos and In another book… (mw-rfjjzd.9)
 
