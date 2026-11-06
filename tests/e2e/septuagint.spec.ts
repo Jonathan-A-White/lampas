@@ -3,9 +3,14 @@
 // tests/fixtures/data-lxx, answered to the page by route (the chapters are built from tests/fixtures/lxx by scripts/data-build-lxx.ts).
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { clips, honestMic, honestSpeech } from '../support/honest-fakes';
+import { holdFor } from '../support/hold';
+import { makeFakePostern } from '../support/fake-postern';
+import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
+import { openVerseView } from './verse-view';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -112,4 +117,87 @@ test('a tap on a Septuagint word opens its card from the lemma lexicon, and a gu
   await expect(sheet.getByTestId('sheet-guess')).toHaveText('A guess: Lampas derived this reading and is not sure');
   await expect(sheet.locator('[data-reading-line]')).toHaveText('How Lampas read this word: A guess (unsure)');
   await expect(sheet.getByRole('button', { name: 'Add to my words' })).toHaveCount(0);
+});
+
+// R5 (mw-u2w5klk.15): Memorize and the Diagram read Genesis 1:1 as Swete's Greek while the setting is On (the study tools follow the chapter's language, not the book's name)
+const GENESIS_1 = JSON.parse(readFileSync('tests/fixtures/data-lxx/gen/1.json', 'utf8')) as { verses: { n: number; g: { t: string }[] }[] };
+const GREEK_WORDS = GENESIS_1.verses.find((v) => v.n === 1)!.g.map((w) => w.t);
+const GREEK_DIAGRAM = (JSON.parse(readFileSync('tests/fixtures/diagrams/gen-1-1-septuagint.json', 'utf8')) as { diagram: unknown }).diagram;
+
+test.describe('Memorize and the Diagram on a Septuagint chapter', () => {
+  test.use({ hasTouch: true });
+
+  test('Genesis 1:1 at step 2 hides half its Greek words, left to right, is said from memory and judged in Greek', async ({ page }) => {
+    await page.clock.install();
+    await honestSpeech(page, { langs: ['en-US', 'el-GR'] });
+    await honestMic(page, { clip: { ...clips.english, transcript: GREEK_WORDS.join(' ') } });
+    await openUnlocked(page);
+    await turnOn(page);
+    await page.goto('/#/?b=gen&c=1');
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          const open = indexedDB.open('lampas');
+          open.onerror = () => reject(open.error);
+          open.onsuccess = () => {
+            const db = open.result;
+            const tx = db.transaction(['reviews'], 'readwrite');
+            const now = Date.now();
+            tx.objectStore('reviews').put({ kind: 'verse', id: 'el:Gen.1.1', step: 2, due: now - 1000, lastWhen: now - 86_400_000, lapses: 0, rights: 0 });
+            tx.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+          };
+        }),
+    );
+
+    await page.goto('/#/memorize/Gen.1.1/el');
+    await expect(page.getByRole('heading', { name: 'Genesis 1:1', level: 1 })).toBeVisible();
+    await expect(page.getByText('Greek · Half the words gone · step 3 of 7')).toBeVisible();
+    const verse = page.getByTestId('memorize-verse');
+    await expect(verse).toBeVisible();
+    await expect(verse).not.toHaveAttribute('dir', 'rtl');
+    await expect(verse.locator('[data-token]')).toHaveCount(GREEK_WORDS.length);
+    await expect(verse.locator('[data-blank]')).toHaveCount(GREEK_WORDS.length / 2);
+    await expect(verse.locator('[data-token]:not([data-blank])').first()).toHaveAttribute('lang', 'el');
+    const wide = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
+    expect(wide.scroll).toBeLessThanOrEqual(wide.client);
+    await shot(page, 'septuagint-memorize');
+
+    // hidden, recalled, checked: the hold says the verse and is judged against the Greek
+    const bar = page.getByRole('button', { name: 'Hold to say it' });
+    await expect(bar).toBeInViewport();
+    await holdFor(page, bar, 2800);
+    await expect(page.getByTestId('judgement')).toHaveText(`Got it: ${GREEK_WORDS.length} of ${GREEK_WORDS.length} words`);
+    await expect(verse.locator('[data-blank]')).toHaveCount(0);
+    await expect(verse.locator('[data-token]').first()).toContainText('ΕΝ');
+  });
+
+  test('the Diagram of Genesis 1:1 is the Greek words in a Reed-Kellogg picture, the tutor asked once, in Greek', async ({ page }) => {
+    const fake = makeFakePostern();
+    fake.kindReplies['sentence-diagram'] = { status: 'answered', answer: GREEK_DIAGRAM };
+    await routePostern(page, fake);
+    await openUnlocked(page);
+    await turnOn(page);
+    await page.goto('/#/?b=gen&c=1');
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
+    await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Greek', exact: true }).click();
+    const view = await openVerseView(page, 1);
+    await view.getByRole('button', { name: 'Diagram', exact: true }).click();
+    const pane = view.getByRole('region', { name: 'Diagram' });
+    const picture = pane.getByRole('img', { name: 'Sentence diagram of Genesis 1:1, Greek' });
+    await expect(picture).toBeVisible();
+    expect(await picture.locator('line').count()).toBeGreaterThan(5);
+    await expect(pane.getByRole('button', { name: 'ΕΝ', exact: true })).toBeVisible();
+    await expect(pane.getByRole('button', { name: 'Redraw', exact: true })).toBeVisible();
+    const asks = fake.received.filter((r) => r.grist.kind === 'sentence-diagram');
+    expect(asks).toHaveLength(1);
+    expect(asks[0].input.lang).toBe('greek');
+    expect((asks[0].input.words as { text: string }[]).map((w) => w.text)).toEqual(GREEK_WORDS.map((w) => w.replace(/[.,;·]+$/u, '')));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+    await shot(page, 'septuagint-diagram');
+  });
 });

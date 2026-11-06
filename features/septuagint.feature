@@ -118,3 +118,18 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek" and the chapter's grammar questions built for every idea
     Then no question has "ὤφθη", "Γενηθήτωσαν" or "ζωσῶν" as its right answer
     And a read word of Genesis 1 is the right answer of some question
+
+  # R5 (mw-u2w5klk.15): the tools that read a chapter follow the chapter's language, not the book's name. Genesis 1:1 is Swete's Greek in Memorize and in the Diagram while the setting is On.
+  @uc-memorize @greek
+  Scenario: With the setting on Memorize learns Genesis 1:1 in the Greek
+    Given Lampas is opened on Genesis 1 with the Septuagint on and Genesis 1:1 memorized in Greek at step 2
+    When he opens its Memorize session
+    Then the session says "Greek · Half the words gone · step 3 of 7"
+    And the verse is drawn left to right in Greek with 5 of its 10 words blank
+
+  @uc-diagram @greek
+  Scenario: With the setting on the Diagram of Genesis 1:1 is drawn from Swete's Greek
+    Given Lampas is opened on Genesis 1 with the Septuagint on and a tutor that draws Genesis 1:1
+    When he opens the Verse view of verse 1 and taps Diagram
+    Then the pane draws the Greek diagram of Genesis 1:1
+    And the tutor was asked once, in Greek, for the 10 words of the verse beginning "ΕΝ ΑΡΧΗ"

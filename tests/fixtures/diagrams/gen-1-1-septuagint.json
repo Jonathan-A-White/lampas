@@ -1,0 +1,129 @@
+{
+  "reference": "Genesis 1:1",
+  "mode": "greek",
+  "words": [
+    {
+      "text": "ΕΝ",
+      "word": 0
+    },
+    {
+      "text": "ΑΡΧΗ",
+      "word": 1
+    },
+    {
+      "text": "ἐποίησεν",
+      "word": 2
+    },
+    {
+      "text": "ὁ",
+      "word": 3
+    },
+    {
+      "text": "θεὸς",
+      "word": 4
+    },
+    {
+      "text": "τὸν",
+      "word": 5
+    },
+    {
+      "text": "οὐρανὸν",
+      "word": 6
+    },
+    {
+      "text": "καὶ",
+      "word": 7
+    },
+    {
+      "text": "τὴν",
+      "word": 8
+    },
+    {
+      "text": "γῆν",
+      "word": 9
+    }
+  ],
+  "diagram": {
+    "clauses": [
+      {
+        "clause": {
+          "subject": {
+            "words": [
+              {
+                "i": 4
+              }
+            ],
+            "modifiers": [
+              {
+                "kind": "word",
+                "word": {
+                  "i": 3
+                },
+                "modifiers": []
+              }
+            ]
+          },
+          "verb": {
+            "words": [
+              {
+                "i": 2
+              }
+            ],
+            "modifiers": [
+              {
+                "kind": "prepositional",
+                "preposition": {
+                  "i": 0
+                },
+                "object": {
+                  "words": [
+                    {
+                      "i": 1
+                    }
+                  ],
+                  "modifiers": []
+                }
+              }
+            ]
+          },
+          "complement": {
+            "kind": "direct-object",
+            "slot": {
+              "words": [
+                {
+                  "i": 6
+                },
+                {
+                  "i": 9
+                }
+              ],
+              "modifiers": [
+                {
+                  "kind": "word",
+                  "word": {
+                    "i": 5
+                  },
+                  "modifiers": []
+                },
+                {
+                  "kind": "word",
+                  "word": {
+                    "i": 7
+                  },
+                  "modifiers": []
+                },
+                {
+                  "kind": "word",
+                  "word": {
+                    "i": 8
+                  },
+                  "modifiers": []
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

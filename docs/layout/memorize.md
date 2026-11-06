@@ -89,3 +89,6 @@ src/today/memorizeLine.ts # (mw-fu7dqf.10) memorizeToday(now) -> {due, first?, a
 #   'Memorize: 2 verses due' / '1 verse due' / 'Memorize: nothing due' / 'Memorize: pick verses in a list' (nothing memorized). Today's Memorize piece (src/today/Today.tsx MemorizePiece, id 'memorize', after Review, behind Settings > Daily > Memorize,
 #   On to start; todayPieces, TodayChip's 'of N', tutorFacts' 'On Today' / 'Opened today' and learnerToday's item kind 'memorize' all read it): a tap marks it opened and starts the longest overdue session (openMemorizeSession), or opens #/memorize when none is due, or #/lists while none is memorized.
 #   The Review piece is unchanged: listDue() with no kind still leaves the verses out
+src/memorize/source.ts # (mw-u2w5klk.15) sourceOf(canonical) is the testament's language ('hbo' for the Old Testament); sourceNow(canonical) (async) and useSource(canonical) (the hook, which also follows Settings > Old Testament in Greek)
+#   are the language its words are in NOW: 'grc' for an Old Testament verse while the Septuagint is On and its book shipped (chapterLanguage, src/data/chapter.ts), so the Greek dial offers 'el' and the Weave, the progress mark is not rtl and weaveSettingsNow takes the Greek dial.
+#   features/septuagint.feature and tests/e2e/septuagint.spec.ts walk Genesis 1:1 in Greek on the data-lxx fixtures
