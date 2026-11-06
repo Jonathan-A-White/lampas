@@ -103,7 +103,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the address is {string}', addressIs);
   });
 
-  Scenario("A second tap on Settings' Paradigms row does not open a table", ({ Given, When, Then }) => {
+  Scenario("A second tap on Tools' Paradigms row does not open a table", ({ Given, When, Then }) => {
     Given('he is on {string} and a screen ignores taps for a moment', given);
     When('he taps {string} and at once taps {string}', tapsTwo);
     Then('the address is {string}', addressIs);
