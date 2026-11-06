@@ -101,7 +101,7 @@ VISION.md 'The tutor': the tutor is told, on every ask, each app setting and eac
   Android Chrome does not always report the navigation bar). tests/e2e/bottom-reach.spec.ts holds the proof.
 - Raw text downloads (`data/raw`) stay out of git; the generated JSON per chapter is committed.
   `ATTRIBUTION.md` names every text and licence.
-- Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence with a link, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks, on a package named in backticks in the Libraries section that is no longer a dependency (credits follow removals), and on a font file (`src/fonts`) or data file (`public/data`, `public/pictures`) with no credit; a new bundled dir needs a rule in `tests/support/credits.ts`.
+- Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks, on a Libraries entry whose package is no longer a dependency, and on a font file (`src/fonts`) or data file (`public/data`, `public/pictures`) with no credit; a new bundled dir needs a rule in `tests/support/credits.ts`.
 - The tutor on About is told each credit as a short `{name, use, licence, link}` (`src/tutor/credits.ts` CREDITS, docs/ask-tutor.md): a new bullet needs its credit there too, and `tests/unit/credits-for-tutor.test.tsx` fails until it has one.
 
 ## Read by need
@@ -181,6 +181,7 @@ docs/sources/public-domain-works.md # Spurgeon and other public-domain works: so
 docs/sources/sermon-index.md # a sermon index: Henry, Logos, preachers, themes
 docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # bible-talk rules before the 100,000-byte trim
+docs/design/reader-split.md # the Reader split: design, mockups, decisions
 docs/sources/septuagint-and-webster.md # Septuagint and Webster 1828 sources and licences
 docs/sources/lxx-derivation-probe.md # the LXX derivation probe
 docs/sources/lxx-morph-probe.md # lxx-morph: verdict
