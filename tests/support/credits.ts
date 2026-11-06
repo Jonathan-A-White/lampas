@@ -85,6 +85,9 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sounds-trial/')) return null; // trial clips of other voices, credited on the listening page itself (public/sounds-trial.html), not on About: no screen uses them
   if (path.startsWith('public/sermons/spurgeon-ccel/')) return 'Spurgeon'; // the sermon index's book files (scripts/sermons-build.ts): rows of CCEL's Spurgeon source, facts only; one rule for each bundled source
   if (path.startsWith('public/sermons/henry-sermons/')) return 'Matthew Henry'; // rows of the Internet Archive's scans of Henry's sermons (sermon-index sources/henry-sermons), facts only
+  if (path.startsWith('public/themes/themes-tcr1934/')) return 'Thompson'; // the theme index's book files (scripts/sermons-build.ts): topics, part labels and passages of CrossWire's TCR module (Thompson's 1934 subject index), facts only
+  if (path.startsWith('public/themes/themes-torrey/')) return 'Torrey'; // the same of CrossWire's Torrey module (R. A. Torrey's New Topical Textbook, 1897)
+  if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)
   if (path === 'public/sermons/index.json') return 'Spurgeon'; // the index of the sources: each one's licence and credit, so it needs the credit of every source it lists (each source has its own rule above; the Spurgeon credit is the one it is checked against)
   if (path.startsWith('public/pictures/')) return 'Claude Code'; // the memory pictures: drawn by Claude Code, credited as a tool
   // the app's own: the lamp icon (also Claude Code's drawing), the changelog mw next writes, and the letter-sounds listening page (its clips are credited above)

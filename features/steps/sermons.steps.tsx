@@ -15,11 +15,13 @@ import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter-fetch';
 import { forgetTestMaps, registerTestMaps, TEST_CARDS, testSource as testMapSource } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
+import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 
 afterAll(() => {
   cleanup();
   closeSermons();
   forgetTestSermons();
+  forgetTestThemes();
   forgetTestMaps();
   vi.unstubAllGlobals();
   db.close();
@@ -48,6 +50,8 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   localStorage.clear();
   vi.unstubAllGlobals();
   registerTestSermons(phone.sermons);
+  // these scenarios are about the sermons of the passage: the theme lists are none (features/themes.feature has them)
+  registerTestThemes({ none: true });
   registerTestMaps();
   if (phone.maps) setMapSources([{ ...testMapSource, mapsFor: async () => TEST_CARDS['rom.8'] }]);
   fetched = stubChapterFetch();

@@ -64,6 +64,13 @@ describe('the sermon files route (mw-qtu3zvz.1)', () => {
     expect(route?.match(ctx('/data/jhn/1.json?v=0123456789ab'))).toBe(false);
     expect(route?.match(ctx('/sermons/spurgeon-ccel/rom.json?v=0123456789ab', 'POST'))).toBe(false);
   });
+
+  it('takes a theme book file (public/themes, mw-qtu3zvz.4) the same way: by its fingerprint only', () => {
+    const route = registered.find((r) => typeof r.match === 'function' && !(r.handler instanceof CacheFirst) && r.match(ctx('/themes/themes-torrey/rom.json?v=0123456789ab')));
+    expect(route).toBeDefined();
+    expect(route?.match(ctx('/themes/themes-torrey/rom.json'))).toBe(false);
+    expect(route?.match(ctx('/themes/index.json?v=0123456789ab'))).toBe(false);
+  });
 });
 
 describe('the precache', () => {
@@ -76,7 +83,8 @@ describe('the precache', () => {
       if (pattern.includes('data')) expect(pattern).not.toContain('*');
       else expect(pattern).not.toMatch(/json/);
     }
-    // the sermon index (public/sermons) is loaded on first use, as the maps' data files are, and kept by the offline copy
+    // the sermon index (public/sermons) is loaded on first use, as the maps' data files are, and kept by the offline copy; the theme index (public/themes) on first use
     for (const pattern of injectManifestOptions.globPatterns) expect(pattern).not.toContain('sermons');
+    for (const pattern of injectManifestOptions.globPatterns) expect(pattern).not.toContain('themes');
   });
 });

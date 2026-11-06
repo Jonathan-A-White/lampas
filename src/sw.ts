@@ -51,7 +51,7 @@ registerRoute(
   ({ url, request }) => request.method === 'GET' && isVersionedLadder(url),
   ({ request }) => serveChapter(request, self.caches),
 );
-// A sermon index book file (/sermons/<source>/<book>.json?v=<fingerprint>, the fingerprint in public/sermons/index.json) is kept the same way. It is not in the precache: it is fetched on first use or by the offline copy.
+// A sermon index book file (/sermons/<source>/<book>.json?v=<fingerprint>, the fingerprint in public/sermons/index.json) and a theme index's (/themes/..., public/themes/index.json) are kept the same way. It is not in the precache: it is fetched on first use or by the offline copy.
 registerRoute(
   ({ url, request }) => request.method === 'GET' && isVersionedSermons(url),
   ({ request }) => serveChapter(request, self.caches),

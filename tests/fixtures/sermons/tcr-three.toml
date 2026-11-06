@@ -1,0 +1,19 @@
+# A test fixture, not a source that is loaded: three topics in the shape of the
+# sermon-index repository's themes-tcr1934 (topics.jsonl, links.jsonl),
+# written for the tests of scripts/sermons-build.ts. Atonement runs over three
+# books, Love-Hatred has a reference Lampas cannot hold (Romans 16:25) and
+# Shepherd has no parts and a whole chapter.
+
+id = "themes-three"
+name = "Three topics (a fixture)"
+kind = "themes"
+
+licence = '''
+DistributionLicense=Public Domain
+About=Written for the tests of Lampas; no text of any book.'''
+
+credit = "The tests of Lampas"
+homepage = "https://themes-three.test"
+terms_url = "https://themes-three.test/terms"
+added = 2026-11-05
+on_by_default = true

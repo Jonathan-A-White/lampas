@@ -109,7 +109,7 @@ The door wraps with the rest of the tools line, as a word of it; it is not a cel
 ## Sermons (mw-qtu3zvz.2)
 
 After the Maps door the tools line has a quiet **Sermons · N** (`src/sermons/SermonsDoor.tsx`, 44 px): N is the number of sermons listed for the verse's chapter by the free index (`sermonsFor`, docs/sermons.md), and the button is not drawn at 0. A verse, a passage opened from a heading and the whole chapter the place line opens each carry their own place. It opens the Sermons sheet
-('Sermons for Romans 5:8', grouped On this verse and In this chapter; each row a link to the sermon where it lives). docs/sermons.md 'The door' and 'The sheet' are the detail, with the table of what the door does in each Verse view state.
+('Sermons for Romans 5:8', grouped On this verse and In this chapter; each row a link to the sermon where it lives). docs/sermons.md 'The door' and 'The sheet' are the detail, with the table of what the door does in each Verse view state. For a verse or a passage the sheet also has a **Themes** line under its title and, after In this chapter, **On the same theme** (mw-qtu3zvz.4, docs/sermons.md 'The themes').
 
 ## In Logos and In another book… (mw-rfjjzd.9)
 
@@ -151,7 +151,7 @@ the whole passage.
 * **PROVISIONAL, the Governor to confirm:** the button's names (`Start the quiz`, `Continue the quiz`), that Quiz me has no hold bar (the answers are
   given in the Talk sheet, which has one), the sheet's title `Quiz on …`, the opening message `Quiz me on …`, and the short turns (about 60 words) the
   instructions ask for.
-* **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (9400) and only the history is trimmed to fit, so a very long passage may be refused
+* **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (9500) and only the history is trimmed to fit, so a very long passage may be refused
   with 'Could not send the question'; Romans 8:1-11 fits. There is no way to start the same quiz over except to say so in the sheet. Links to study
   resources come with the words the tutor cites (each opens its word sheet and Study row).
 

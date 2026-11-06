@@ -9,7 +9,8 @@ import { CANON } from '../../src/data/canon';
 import { parseOsisRef } from '../../scripts/sermons/osis';
 import { parseToml } from '../../scripts/sermons/toml';
 import type { SermonBookFile, SermonIndex } from '../../src/data/sermonIndex';
-import { rawUrl, runSermonsBuild, sourceFingerprint } from '../../scripts/sermons-build';
+import type { ThemeBookFile, ThemeIndex } from '../../src/data/themeIndex';
+import { rawUrl, runSermonsBuild, sourceFingerprint, themeLicence } from '../../scripts/sermons-build';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: Array<{ code: string; verses: number[] }> };
 const verses = (code: string): readonly number[] | undefined => index.books.find((b) => b.code === code)?.verses;
@@ -254,5 +255,134 @@ describe('sourceFingerprint', () => {
     const two = rows('A');
     two.set('mat', two.get('rom')!);
     expect(sourceFingerprint(two)).not.toBe(sourceFingerprint(rows('A')));
+  });
+});
+
+// The theme sources (mw-qtu3zvz.4): three topics in the sermon-index repo's themes-tcr1934 shape, built into public/themes by the same run.
+const themeFile = (suffix: string): string => readFileSync(`tests/fixtures/sermons/tcr-three${suffix}`, 'utf8');
+const THEME_FILES: Record<string, string> = { 'source.toml': themeFile('.toml'), 'topics.jsonl': themeFile('.topics.jsonl'), 'links.jsonl': themeFile('.jsonl') };
+
+function themeWorkspace() {
+  const w = workspace();
+  writeFileSync(w.options.configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['spurgeon-20'], themes: ['themes-three'] }));
+  const asked: string[] = [];
+  const download = async (url: string, dest: string): Promise<void> => {
+    asked.push(url);
+    const { mkdirSync, writeFileSync: write } = await import('node:fs');
+    const { dirname } = await import('node:path');
+    mkdirSync(dirname(dest), { recursive: true });
+    const file = url.slice(url.lastIndexOf('/') + 1);
+    write(dest, url.includes('/themes-three/') ? THEME_FILES[file] : file === 'source.toml' ? fixtureToml : fixtureRows);
+  };
+  return { ...w, asked, options: { ...w.options, download, themesOutDir: join(w.dir, 'themes') } };
+}
+
+describe('runSermonsBuild: the theme sources', () => {
+  it('asks for the three files of a theme source at the pinned commit, once, and writes nothing to themes when none is listed', async () => {
+    const w = themeWorkspace();
+    await runSermonsBuild(w.options);
+    for (const file of ['source.toml', 'topics.jsonl', 'links.jsonl'] as const) expect(w.asked).toContain(rawUrl('https://github.com/Jonathan-A-White/sermon-index', SHA, 'themes-three', file));
+    expect(w.asked).toContain(`https://raw.githubusercontent.com/Jonathan-A-White/sermon-index/${SHA}/sources/themes-three/topics.jsonl`);
+    const count = w.asked.length;
+    await runSermonsBuild(w.options);
+    expect(w.asked).toHaveLength(count);
+    const bare = workspace();
+    await runSermonsBuild({ ...bare.options, themesOutDir: join(bare.dir, 'themes') });
+    expect(existsSync(join(bare.dir, 'themes'))).toBe(false);
+  });
+
+  it('writes index.json {sources: [{id, name, licence, credit, homepage, topics, links, books, fingerprint}]}', async () => {
+    const w = themeWorkspace();
+    const result = await runSermonsBuild(w.options);
+    const out = readJson<ThemeIndex>(join(w.options.themesOutDir, 'index.json'));
+    expect(Object.keys(out)).toEqual(['sources']);
+    expect(out.sources).toHaveLength(1);
+    const [s] = out.sources;
+    expect(Object.keys(s)).toEqual(['id', 'name', 'licence', 'credit', 'homepage', 'topics', 'links', 'books', 'fingerprint']);
+    expect(s).toMatchObject({ id: 'themes-three', name: 'Three topics (a fixture)', credit: 'The tests of Lampas', homepage: 'https://themes-three.test', topics: 3, links: 10 });
+    expect(s.licence).toBe('DistributionLicense=Public Domain');
+    expect(s.books).toEqual(['psa', 'jhn', 'rom', 'heb', '1jn', 'lev'].sort((a, b) => CANON.findIndex((c) => c.code === a) - CANON.findIndex((c) => c.code === b)));
+    expect(s.fingerprint).toMatch(/^[0-9a-f]{12}$/);
+    expect(result.themes[0]).toMatchObject({ id: 'themes-three', read: 4, listed: 3 });
+    expect(result.themes[0].omitted).toEqual([
+      { topic: 'love-hatred', ref: 'Rom.16.25', reason: expect.stringContaining('verse') },
+      { topic: 'shepherd', ref: 'Tob.3.1', reason: "unknown book 'Tob'" },
+    ]);
+  });
+
+  it('writes a book file of {topics: [{id, label, parts, verses, books}], links: [{topic, part, ref}]} for that book\'s links', async () => {
+    const w = themeWorkspace();
+    await runSermonsBuild(w.options);
+    const rom = readJson<ThemeBookFile>(join(w.options.themesOutDir, 'themes-three', 'rom.json'));
+    expect(Object.keys(rom)).toEqual(['topics', 'links']);
+    // the topics with a link in Romans, in the source's order; a topic's parts are the ones Romans uses; `verses` is the topic's whole (all books, a verse once); `books` where its links are
+    expect(rom.topics).toEqual([
+      { id: 'atonement', label: 'Atonement', parts: [{ n: 1, label: 'Doctrine of' }], verses: 8, books: ['lev', 'rom', 'heb'] },
+      { id: 'love-hatred', label: 'Love-Hatred', parts: [{ n: 4, label: 'Of God' }], verses: 3, books: ['jhn', 'rom', '1jn'] },
+      { id: 'shepherd', label: 'Shepherd', parts: [], verses: 26, books: ['psa', 'jhn', 'rom'] },
+    ]);
+    expect(Object.keys(rom.topics[0])).toEqual(['id', 'label', 'parts', 'verses', 'books']);
+    // a range over chapters keeps its chapters; a link to the whole topic has no part; a repeated link is written once
+    expect(rom.links).toEqual([
+      { topic: 'atonement', part: 1, ref: '5.11' },
+      { topic: 'atonement', part: 1, ref: '5.9' },
+      { topic: 'love-hatred', part: 4, ref: '5.8' },
+      { topic: 'shepherd', ref: '5.12-6.4' },
+    ]);
+    const heb = readJson<ThemeBookFile>(join(w.options.themesOutDir, 'themes-three', 'heb.json'));
+    expect(heb.links).toEqual([{ topic: 'atonement', part: 1, ref: '9.12' }]);
+    const psa = readJson<ThemeBookFile>(join(w.options.themesOutDir, 'themes-three', 'psa.json'));
+    expect(psa.links).toEqual([{ topic: 'shepherd', ref: '23.1-6' }]);
+    expect(existsSync(join(w.options.themesOutDir, 'themes-three', 'tob.json'))).toBe(false);
+  });
+
+  it('carries `books` only for a topic of at most 300 verses, since the sheet joins no other', async () => {
+    const w = themeWorkspace();
+    const wide = THEME_FILES['links.jsonl'] + '{"topic":"empty-topic","ref":"Gen.1-Gen.12"}\n{"topic":"empty-topic","ref":"Exod.1-Exod.40"}\n{"topic":"empty-topic","ref":"Lev.1-Lev.27"}\n{"topic":"empty-topic","ref":"Rom.5.8"}\n';
+    const { mkdirSync } = await import('node:fs');
+    const { dirname } = await import('node:path');
+    const download = async (url: string, dest: string) => {
+      mkdirSync(dirname(dest), { recursive: true });
+      const file = url.slice(url.lastIndexOf('/') + 1);
+      writeFileSync(dest, url.includes('/themes-three/') ? (file === 'links.jsonl' ? wide : THEME_FILES[file]) : file === 'source.toml' ? fixtureToml : fixtureRows);
+    };
+    await runSermonsBuild({ ...w.options, download });
+    const rom = readJson<ThemeBookFile>(join(w.options.themesOutDir, 'themes-three', 'rom.json'));
+    const topic = rom.topics.find((t) => t.id === 'empty-topic')!;
+    expect(topic.verses).toBeGreaterThan(300);
+    expect('books' in topic).toBe(false);
+  });
+
+  it('writes the same bytes on a second run, and removes a file an earlier run left', async () => {
+    const w = themeWorkspace();
+    const first = await runSermonsBuild(w.options);
+    expect(first.written).toBeGreaterThan(0);
+    const before = filesUnder(w.options.themesOutDir).map((f) => [f, readFileSync(join(w.options.themesOutDir, f), 'utf8')]);
+    expect(before.map(([f]) => f)).toContain('index.json');
+    writeFileSync(join(w.options.themesOutDir, 'themes-three', 'gen.json'), '{"topics":[],"links":[]}');
+    const second = await runSermonsBuild(w.options);
+    expect(second.written).toBe(1);
+    expect((await runSermonsBuild(w.options)).written).toBe(0);
+    expect(filesUnder(w.options.themesOutDir).map((f) => [f, readFileSync(join(w.options.themesOutDir, f), 'utf8')])).toEqual(before);
+  });
+
+  it('refuses a theme source whose kind is not themes, and a sermon source listed as a theme', async () => {
+    const w = themeWorkspace();
+    writeFileSync(w.options.configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['spurgeon-20'], themes: ['spurgeon-20'] }));
+    await expect(runSermonsBuild(w.options)).rejects.toThrow(/spurgeon-20.*themes/);
+  });
+
+  it('fingerprints the theme source\'s book files, and changes with a link', () => {
+    const files = (ref: string): Map<string, ThemeBookFile> => new Map([['rom', { topics: [{ id: 'a', label: 'A', parts: [], verses: 1 }], links: [{ topic: 'a', ref }] }]]);
+    expect(sourceFingerprint(files('5.8'))).toMatch(/^[0-9a-f]{12}$/);
+    expect(sourceFingerprint(files('5.8'))).toBe(sourceFingerprint(files('5.8')));
+    expect(sourceFingerprint(files('5.8'))).not.toBe(sourceFingerprint(files('5.9')));
+  });
+});
+
+describe('themeLicence: the licence line index.json keeps', () => {
+  it('is the module\'s DistributionLicense line alone, so the About line\'s trademark stays out of the files the app reads', () => {
+    expect(themeLicence('DistributionLicense=Public Domain\nAbout=A history, under the trademark of "X".')).toBe('DistributionLicense=Public Domain');
+    expect(themeLicence('Public domain, said in a sentence.')).toBe('Public domain, said in a sentence.');
   });
 });

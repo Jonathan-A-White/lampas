@@ -4,29 +4,35 @@
 // (git-ignored, skipped when present; no other network) and written as public/sermons/index.json (the sources, with licence, credit, counts and a fingerprint) and
 // public/sermons/<id>/<book>.json (that book's rows), committed as public/data is. A sermon is listed under every book its preaching text touches, in Lampas's book codes;
 // a cited reference is not built yet; a row with no preaching text, or one in a book the canon lacks, is left out and counted in the report. Only facts are copied: never a sermon's words.
+// The theme sources (kind 'themes', listed under "themes" in sources.json: Thompson's 1934 subject index, Torrey's New Topical Textbook) are built by the same run from sources/<id>/source.toml, topics.jsonl and
+// links.jsonl into public/themes/index.json and public/themes/<id>/<book>.json (scripts/sermons/themes.ts; docs/sermons.md 'The themes'): a topic's name and part labels and the passages it links, never a sentence of a book.
 // A second run on an unchanged commit writes the same bytes (and removes nothing it should keep).
-import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { CANON } from '../src/data/canon';
 import type { SermonBookFile, SermonIndex, SermonRow, SermonSource } from '../src/data/sermonIndex';
+import type { ThemeIndex, ThemeSourceEntry } from '../src/data/themeIndex';
 import { writeIfChanged } from './data/chapterWriter';
 import { parseOsisRef, type VerseCounts } from './sermons/osis';
 import { parseToml } from './sermons/toml';
+import { sourceFingerprint } from './sermons/fingerprint';
+import { buildTheme, type ThemeReport } from './sermons/themes';
 
 export interface SermonsConfig {
   /** the sermon-index repo's address on GitHub */
   repo: string;
   /** the full sha the sources are read at */
   commit: string;
-  /** the source ids to bundle, in the order index.json lists them */
+  /** the sermon source ids to bundle, in the order index.json lists them */
   sources: string[];
+  /** the theme source ids to bundle (public/themes), in the order its index.json lists them; none when absent */
+  themes?: string[];
 }
 
 /** Where raw GitHub serves `file` of `source` at `commit`: the one address the build fetches by. */
-export function rawUrl(repo: string, commit: string, source: string, file: 'source.toml' | 'rows.jsonl'): string {
+export function rawUrl(repo: string, commit: string, source: string, file: 'source.toml' | 'rows.jsonl' | 'topics.jsonl' | 'links.jsonl'): string {
   const match = /^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/.exec(repo);
   if (!match) throw new Error(`data/sermons/sources.json: repo '${repo}' is not https://github.com/<owner>/<name>`);
   return `https://raw.githubusercontent.com/${match[1]}/${match[2]}/${commit}/sources/${source}/${file}`;
@@ -41,15 +47,7 @@ export async function downloadTo(url: string, dest: string): Promise<void> {
   renameSync(part, dest);
 }
 
-/** The first 12 hex of a SHA-256 over a source's book files, in canon order (each as `<book>\n<its JSON>\n`): index.json keeps it, and a book file is asked for as ?v=<it>. */
-export function sourceFingerprint(books: ReadonlyMap<string, SermonBookFile>): string {
-  const hash = createHash('sha256');
-  for (const canon of CANON) {
-    const file = books.get(canon.code);
-    if (file) hash.update(`${canon.code}\n${JSON.stringify(file)}\n`);
-  }
-  return hash.digest('hex').slice(0, 12);
-}
+export { sourceFingerprint };
 
 interface SourceRow {
   id: string;
@@ -68,6 +66,8 @@ export interface SermonsBuildOptions {
   rawDir: string;
   /** public/sermons */
   outDir: string;
+  /** public/themes, written when sources.json lists theme sources (the default) */
+  themesOutDir?: string;
   /** fetches url into dest; the default uses fetch */
   download?: (url: string, dest: string) => Promise<void>;
   /** the verse count of each chapter of a book (public/data/index.json); the default reads that file */
@@ -93,9 +93,10 @@ export interface SourceReport {
 }
 
 export interface SermonsBuildResult {
-  /** files whose bytes changed (written or removed) */
+  /** files whose bytes changed (written or removed), in public/sermons and public/themes */
   written: number;
   sources: SourceReport[];
+  themes: ThemeReport[];
 }
 
 /** public/data/index.json's verse counts: the numbering Lampas's chapters have. */
@@ -110,6 +111,7 @@ function readConfig(file: string): SermonsConfig {
   if (!config.repo || !/^[0-9a-f]{40}$/.test(config.commit ?? '') || !Array.isArray(config.sources) || config.sources.length === 0) {
     throw new Error(`${file}: needs "repo", a full 40-hex "commit" and a non-empty "sources" list`);
   }
+  if (config.themes !== undefined && !Array.isArray(config.themes)) throw new Error(`${file}: "themes" is a list of theme source ids`);
   return config as SermonsConfig;
 }
 
@@ -118,9 +120,12 @@ const text = (v: unknown, key: string, source: string): string => {
   return v;
 };
 
-async function buildSource(id: string, config: SermonsConfig, o: Required<Pick<SermonsBuildOptions, 'rawDir' | 'download' | 'verses' | 'log'>>) {
+type BuildEnv = Required<Pick<SermonsBuildOptions, 'rawDir' | 'download' | 'verses' | 'log'>>;
+
+/** Reads a source's files of the pinned commit into the cache, fetching what is not there, and gives the directory and the source.toml it holds. */
+async function fetchSource(id: string, kind: 'sermons' | 'themes', files: readonly ('source.toml' | 'rows.jsonl' | 'topics.jsonl' | 'links.jsonl')[], config: SermonsConfig, o: BuildEnv) {
   const dir = join(o.rawDir, config.commit, id);
-  for (const file of ['source.toml', 'rows.jsonl'] as const) {
+  for (const file of files) {
     const path = join(dir, file);
     if (existsSync(path)) continue;
     const url = rawUrl(config.repo, config.commit, id, file);
@@ -133,9 +138,13 @@ async function buildSource(id: string, config: SermonsConfig, o: Required<Pick<S
   }
   const toml = parseToml(readFileSync(join(dir, 'source.toml'), 'utf8'));
   if (toml.id !== id) throw new Error(`${id}: source.toml says id '${String(toml.id)}'`);
-  const kind = text(toml.kind, 'kind', id);
-  if (kind !== 'sermons') throw new Error(`${id}: kind '${kind}' is not 'sermons' (a theme source is not built here)`);
+  const found = text(toml.kind, 'kind', id);
+  if (found !== kind) throw new Error(`${id}: kind '${found}' is not '${kind}' (${kind === 'sermons' ? 'a theme source goes under "themes" in sources.json' : 'a sermon source goes under "sources"'})`);
+  return { dir, toml, kind };
+}
 
+async function buildSource(id: string, config: SermonsConfig, o: BuildEnv) {
+  const { dir, toml, kind } = await fetchSource(id, 'sermons', ['source.toml', 'rows.jsonl'], config, o);
   const report: SourceReport = { id, read: 0, listed: 0, withoutRef: 0, omitted: [], missingBooks: {}, gzipBytes: 0, rawBytes: 0 };
   const books = new Map<string, Array<{ order: number; row: SermonRow }>>();
   const lines = readFileSync(join(dir, 'rows.jsonl'), 'utf8').split('\n');
@@ -193,7 +202,7 @@ async function buildSource(id: string, config: SermonsConfig, o: Required<Pick<S
 }
 
 export async function runSermonsBuild(options: SermonsBuildOptions): Promise<SermonsBuildResult> {
-  const { configFile, rawDir, outDir, download = downloadTo, verses = canonVerses(), log = () => undefined } = options;
+  const { configFile, rawDir, outDir, themesOutDir = 'public/themes', download = downloadTo, verses = canonVerses(), log = () => undefined } = options;
   const config = readConfig(configFile);
   const sources: SermonSource[] = [];
   const reports: SourceReport[] = [];
@@ -215,24 +224,66 @@ export async function runSermonsBuild(options: SermonsBuildOptions): Promise<Ser
   }
   made.set('index.json', JSON.stringify({ sources } satisfies SermonIndex));
 
+  let written = writeTree(outDir, made);
+  log(`${sources.length} source(s), ${made.size} files, ${written ? `${written} changed` : 'unchanged'}`);
+
+  // the theme sources, into public/themes
+  const themeReports: ThemeReport[] = [];
+  if (config.themes && config.themes.length > 0) {
+    const entries: ThemeSourceEntry[] = [];
+    const themeMade = new Map<string, string>();
+    for (const id of config.themes) {
+      const { toml, dir } = await fetchSource(id, 'themes', ['source.toml', 'topics.jsonl', 'links.jsonl'], config, { rawDir, download, verses, log });
+      const { files, entry, report } = buildTheme(id, readFileSync(join(dir, 'topics.jsonl'), 'utf8'), readFileSync(join(dir, 'links.jsonl'), 'utf8'), verses);
+      const joined: Buffer[] = [];
+      for (const [book, file] of files) {
+        const body = JSON.stringify(file);
+        themeMade.set(`${id}/${book}.json`, body);
+        joined.push(Buffer.from(body));
+      }
+      report.rawBytes = joined.reduce((n, b) => n + b.length, 0);
+      report.gzipBytes = gzipSync(Buffer.concat(joined)).length;
+      // a fixed key order, so the bytes never depend on the order keys were set in
+      entries.push({ id, name: text(toml.name, 'name', id), licence: themeLicence(text(toml.licence, 'licence', id)), credit: text(toml.credit, 'credit', id), homepage: text(toml.homepage, 'homepage', id), topics: entry.topics, links: entry.links, books: entry.books, fingerprint: entry.fingerprint });
+      themeReports.push(report);
+      const missing = Object.entries(report.missingBooks).map(([book, n]) => `${book} ${n}`).join(', ');
+      log(`${id}: ${report.read} topics read, ${report.listed} listed with ${entry.links} links under ${entry.books.length} books (${report.linksRead} links read, ${report.omitted.length} left out${missing ? `; books the canon lacks: ${missing}` : ''}), ${(report.rawBytes / 1024).toFixed(1)} KB, ${(report.gzipBytes / 1024).toFixed(1)} KB gzipped`);
+    }
+    themeMade.set('index.json', JSON.stringify({ sources: entries } satisfies ThemeIndex));
+    const changed = writeTree(themesOutDir, themeMade);
+    written += changed;
+    log(`${entries.length} theme source(s), ${themeMade.size} files, ${changed ? `${changed} changed` : 'unchanged'}`);
+  }
+  return { written, sources: reports, themes: themeReports };
+}
+
+/**
+ * A theme source's licence as index.json keeps it: the module's own `DistributionLicense=` line, quoted as it is. The `About=` line after it (the book's history, and for Thompson the publisher's trademark) stays in
+ * the source's source.toml and, as far as the credit needs it, in ATTRIBUTION.md, so that no trademark is in a file the app reads (tests/unit/no-trademark.test.ts). A licence with no such line is kept whole.
+ */
+export function themeLicence(licence: string): string {
+  const lines = licence.split('\n').filter((line) => line.startsWith('DistributionLicense='));
+  return lines.length > 0 ? lines.join('\n') : licence;
+}
+
+/** Writes `made` (path under `dir` to its bytes) where it differs and removes what an earlier build left: a book file a source no longer lists, a source no longer bundled. Gives the files changed. */
+function writeTree(dir: string, made: ReadonlyMap<string, string>): number {
   let written = 0;
-  for (const [path, body] of made) if (writeIfChanged(join(outDir, path), body)) written++;
-  // what an earlier build left: a book file the source no longer lists, a source no longer bundled
-  if (existsSync(outDir)) {
-    for (const entry of readdirSync(outDir, { recursive: true, withFileTypes: true })) {
+  for (const [path, body] of made) if (writeIfChanged(join(dir, path), body)) written++;
+  if (existsSync(dir)) {
+    for (const entry of readdirSync(dir, { recursive: true, withFileTypes: true })) {
       if (!entry.isFile()) continue;
-      const path = join(entry.parentPath, entry.name).slice(outDir.length + 1).split('\\').join('/');
+      const path = join(entry.parentPath, entry.name).slice(dir.length + 1).split('\\').join('/');
       if (!made.has(path)) {
-        rmSync(join(outDir, path));
+        rmSync(join(dir, path));
         written++;
       }
     }
-    for (const entry of readdirSync(outDir, { withFileTypes: true })) {
-      if (entry.isDirectory() && readdirSync(join(outDir, entry.name)).length === 0) rmSync(join(outDir, entry.name), { recursive: true });
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory() && readdirSync(join(dir, entry.name)).length === 0) rmSync(join(dir, entry.name), { recursive: true });
     }
   }
-  log(`${sources.length} source(s), ${made.size} files, ${written ? `${written} changed` : 'unchanged'}`);
-  return { written, sources: reports };
+  return written;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
@@ -240,6 +291,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     .then((result) => {
       for (const r of result.sources) {
         for (const o of r.omitted) console.log(`left out: ${r.id} row ${o.id} (${o.ref}): ${o.reason}`);
+      }
+      for (const r of result.themes) {
+        for (const o of r.omitted) console.log(`left out: ${r.id} link of ${o.topic} (${o.ref}): ${o.reason}`);
       }
     })
     .catch((error: unknown) => {

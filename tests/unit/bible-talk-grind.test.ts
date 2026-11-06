@@ -617,7 +617,7 @@ describe('the screen credits (mw-vtjxh4.2)', () => {
   it('the request schema takes a screen with credits, each a name, a use, a licence and a link, and refuses a bad one', () => {
     expect(validate({ ...base, screen: { name: 'About', facts: [], credits } }, input)).toEqual([]);
     expect(validate({ ...base, screen: { name: 'About', facts: [] } }, input)).toEqual([]);
-    const many = Array.from({ length: 46 }, (_, i) => ({ ...credits[0], name: `C${i}` }));
+    const many = Array.from({ length: 48 }, (_, i) => ({ ...credits[0], name: `C${i}` }));
     for (const bad of [
       [{ name: 'TBESG', use: 'u', licence: 'CC BY 4.0' }],
       [{ ...credits[0], name: '' }],

@@ -67,7 +67,7 @@ export const devotionalSetting = defineSetting<string>({
   section: 'daily',
   label: 'Which devotional',
   hint: 'The one Today shows, or Random: a different one each day.',
-  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, named by its Logos resource id; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start. Random shows a different one each day, drawn from those On in Your Logos library; the same one all day.`,
+  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, Morning and Evening (${DEFAULT_DEVOTIONAL}) to start. Random draws a different one each day from those On in Your Logos library.`,
   dependsOn: LOGOS_ON,
 });
 
@@ -78,7 +78,7 @@ export const devotionalDrawSetting = defineSetting<string>({
     kind: 'text',
     valid: (value) => value === ALL_TICKED || value === NONE_TICKED || value.split(',').every((id) => tickedDevotionals(id).length === 1),
     example: `${DEFAULT_DEVOTIONAL},LLS:20.10.2`,
-    note: `'${ALL_TICKED}' for every devotional, '${NONE_TICKED}' for none, or the Logos resource ids of the ones in the draw joined by commas (at most 80 characters, so a talked change can name only a few)`,
+    note: `'${ALL_TICKED}' for every devotional, '${NONE_TICKED}' for none, or Logos resource ids joined by commas (at most 80 characters)`,
   },
   parse: (raw) => (typeof raw === 'string' && raw !== '' ? tickedText(tickedDevotionals(raw)) : ALL_TICKED),
   // the draw is the devotionals on his shelf (library.ts)
@@ -86,7 +86,7 @@ export const devotionalDrawSetting = defineSetting<string>({
   section: 'daily',
   label: 'In the draw',
   hint: 'The devotionals Random draws from.',
-  help: 'Random draws from the devotionals On in Your Logos library, all to start. With none On, it shows Morning and Evening. It shows only while Which devotional is Random.',
+  help: 'Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening. Shown only while Which devotional is Random.',
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
 });
 
