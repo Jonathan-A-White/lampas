@@ -1,0 +1,214 @@
+<!doctype html>
+<!-- docs/design/reader-split/mockup.html (mw-5r3p30.1131): a static mockup of the Reader split, no app code. Rendered by render.mjs at 390x844 (and 844x390 sideways)
+     into the PNGs beside it; ?state= map | linked | unlinked | closing | chooser | sideways. The chrome copies src/index.css's light tokens and sizes by hand; the verses
+     are Genesis 14 from public/data/gen/14.json (Hebrew and the BSB English) and Swete's Greek with Brenton's English typed in for the mockup (the Septuagint files are not in git).
+     The map is a stand-in drawing, not Bible Mapper's picture (the picture is shown from the site, never copied). -->
+<html lang="en" style="color-scheme: light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lampas Reader split: mockup</title>
+<style>
+@font-face { font-family: "Gentium Plus"; font-weight: 400; src: url("../../../src/fonts/gentium-plus-greek-400-normal.woff2") format("woff2"); unicode-range: U+0370-03FF; }
+@font-face { font-family: "Gentium Plus"; font-weight: 400; src: url("../../../src/fonts/gentium-plus-greek-ext-400-normal.woff2") format("woff2"); unicode-range: U+1F00-1FFF; }
+@font-face { font-family: "Noto Serif Hebrew"; font-weight: 400; src: url("../../../src/fonts/noto-serif-hebrew-hebrew-400-normal.woff2") format("woff2"); }
+:root {
+  --canvas: #f3f5f9; --surface: #ffffff; --line: #dde2ec; --fg: #111827; --muted: #525c70; --accent: #8a5706; --accent-fg: #ffffff;
+  --tap: 44px; --greek: 1.75rem; --english: 1.25rem; --leading: 44px; --bar-inset: 48px;
+  --font-greek: "Gentium Plus", "Noto Serif", serif; --font-hebrew: "Noto Serif Hebrew", serif;
+  --dock: 374px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: clip; background: var(--canvas); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
+
+/* the Reader's own top: header and chips row (src/reader/ReaderHeader.tsx, src/ReaderChips.tsx) */
+header { display: flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-height: 56px; padding: 0 4px; border-bottom: 1px solid var(--line); }
+.title { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); padding: 0 6px; font-size: 1.125rem; font-weight: 600; flex: 1 1 0; min-width: 0; white-space: nowrap; }
+.switch { display: flex; flex-shrink: 0; border: 1px solid var(--line); border-radius: 12px; padding: 2px; }
+.switch button { min-height: var(--tap); min-width: var(--tap); padding: 0 6px; border-radius: 8px; font-weight: 500; }
+.switch button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.icon { display: inline-flex; align-items: center; justify-content: center; min-height: var(--tap); min-width: var(--tap); }
+.chips { display: flex; align-items: stretch; gap: 6px; height: 40px; padding: 0 8px; border-bottom: 1px solid var(--line); overflow: hidden; }
+.chip { display: flex; align-items: center; height: 100%; padding: 0 12px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.chip.on { background: rgb(138 87 6 / 0.1); }
+.chip.plain { border: 1px solid var(--line); }
+
+/* the area under the chips: the passage above, the docked sheet below */
+#area { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.pane { min-height: 0; overflow-y: auto; }
+.passage { flex: 1 1 auto; padding: 8px 4px 0; }
+.dock { flex: 0 0 var(--dock); height: var(--dock); display: flex; flex-direction: column; border-top: 1px solid var(--line); background: var(--surface); box-shadow: 0 -6px 16px rgb(17 24 39 / 0.08); border-radius: 16px 16px 0 0; }
+.handle { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--tap); padding: 6px 8px 0; flex-shrink: 0; touch-action: none; }
+.handle .pill { position: absolute; left: 50%; top: 8px; width: 40px; height: 6px; margin-left: -20px; border-radius: 999px; background: var(--line); }
+.handle .name { display: inline-flex; align-items: center; gap: 4px; min-height: var(--tap); padding: 0 8px; font-weight: 500; color: var(--accent); white-space: nowrap; min-width: 0; }
+.handle .name .label { overflow: hidden; text-overflow: ellipsis; }
+.handle .name.quiet { color: var(--muted); font-weight: 400; }
+.handle .right { display: flex; align-items: center; gap: 2px; }
+.handle .link { min-height: var(--tap); min-width: var(--tap); padding: 0 10px; border-radius: 8px; font-weight: 500; border: 1px solid var(--line); }
+.handle .link[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.handle .close { min-height: var(--tap); min-width: var(--tap); padding: 0 12px; border-radius: 8px; font-weight: 500; color: var(--accent); }
+.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0 4px calc(8px + var(--bar-inset)); }
+
+/* verses as the Reader draws them: the number small and dim, every word a 44 px line */
+.verse { margin: 0; padding: 0 8px; line-height: var(--leading); }
+.verse .n { font-size: 0.75rem; color: var(--muted); font-weight: 600; margin-right: 6px; vertical-align: 0.35em; }
+.verse .lx { font-size: 0.7rem; color: var(--muted); margin-right: 6px; vertical-align: 0.35em; white-space: nowrap; }
+.en { font-size: var(--english); }
+.grc { font-family: var(--font-greek); font-size: var(--greek); }
+.he { font-family: var(--font-hebrew); font-size: var(--greek); direction: rtl; text-align: right; }
+.heading { padding: 12px 8px 0; font-size: 1rem; font-weight: 600; color: var(--muted); }
+.caption { padding: 4px 8px; font-size: 0.875rem; color: var(--muted); }
+
+/* the map pane: title, the picture at the box's width, the credit (src/maps/MapView.tsx) */
+.map h2 { margin: 0; padding: 2px 8px 4px; font-size: 1.25rem; font-weight: 600; }
+.map .box { margin: 0 8px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.map svg { display: block; width: 100%; height: auto; }
+.map .credit { padding: 6px 8px 0; font-size: 0.875rem; color: var(--muted); }
+.map .credit u { text-decoration: underline; text-underline-offset: 4px; color: var(--accent); }
+
+/* closing: the dock pulled down past the smallest size, its words fading, the row saying what letting go does */
+[data-state="closing"] { --dock: 92px; }
+[data-state="closing"] .dock .body { opacity: 0.45; }
+[data-state="closing"] .dock { box-shadow: 0 -10px 24px rgb(17 24 39 / 0.16); }
+
+/* the chooser: a bottom sheet over everything (the same frame every sheet has) */
+.backdrop { position: absolute; inset: 0; background: rgb(0 0 0 / 0.6); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; padding-bottom: calc(8px + var(--bar-inset)); }
+.sheet .handle { justify-content: center; }
+.sheet h2 { margin: 0; padding: 0 16px 8px; font-size: 1.25rem; font-weight: 600; }
+.sheet .rows { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; }
+.sheet .row { display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 8px 16px; border: 1px solid var(--line); border-radius: 12px; text-align: left; font-weight: 500; color: var(--accent); }
+.sheet .row .sub { display: block; font-size: 0.875rem; font-weight: 400; color: var(--muted); }
+.sheet .row .main { flex: 1 1 auto; min-width: 0; }
+.sheet .row.now { border-color: var(--accent); }
+.sheet .row .tick { color: var(--accent); }
+.sheet .row .go { color: var(--muted); }
+
+/* sideways (844x390): the chips join the header's row; the dock stands at the right, its divider a vertical pill */
+[data-state="sideways"] header { min-height: 56px; }
+[data-state="sideways"] .chips { display: none; }
+[data-state="sideways"] #area { flex-direction: row; }
+[data-state="sideways"] .dock { flex: 0 0 50%; height: auto; width: 50%; border-top: 0; border-left: 1px solid var(--line); border-radius: 0; box-shadow: -6px 0 16px rgb(17 24 39 / 0.08); }
+[data-state="sideways"] .handle { padding-left: 20px; }
+[data-state="sideways"] .handle .pill { left: 8px; top: 50%; width: 6px; height: 40px; margin: -20px 0 0; }
+</style>
+</head>
+<body>
+<div id="app" data-state="map">
+  <header>
+    <button class="title"><span id="title">Genesis 14</span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="switch" role="group" aria-label="Language">
+      <button id="sw-en" aria-pressed="true">English</button>
+      <button id="sw-src" aria-pressed="false">Hebrew</button>
+    </div>
+    <button class="icon" aria-label="Read aloud"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg></button>
+    <button class="icon" aria-label="Settings"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
+  </header>
+  <div class="chips"><span class="chip on">Today · 3 of 7</span><span class="chip plain">Goal 6/16</span><span class="chip plain">New 3</span></div>
+  <div id="area">
+    <main class="pane passage" id="passage"></main>
+    <section class="dock" id="dock" aria-label="Beside the passage">
+      <div class="handle" id="handle">
+        <button class="name" id="name"></button>
+        <span class="pill" aria-hidden="true"></span>
+        <span class="right">
+          <button class="link" id="link" aria-pressed="true">Link</button>
+          <button class="close">Close</button>
+        </span>
+      </div>
+      <div class="body" id="body"></div>
+    </section>
+  </div>
+  <div id="over" hidden>
+    <div class="backdrop"></div>
+    <div class="sheet" role="dialog" aria-label="Beside Genesis 14">
+      <div class="handle"><span class="pill" aria-hidden="true"></span><button class="close" style="position:absolute;right:8px;top:4px">Close</button></div>
+      <h2>Beside Genesis 14</h2>
+      <div class="rows">
+        <button class="row"><span class="main">Hebrew<span class="sub">The Old Testament's own words</span></span></button>
+        <button class="row"><span class="main">English<span class="sub">Berean Standard Bible</span></span></button>
+        <button class="row now"><span class="main">Septuagint · Greek<span class="sub">Swete's edition</span></span><span class="tick">✓</span></button>
+        <button class="row"><span class="main">Septuagint · English<span class="sub">Brenton's translation</span></span></button>
+        <button class="row"><span class="main">A map<span class="sub">Maps for Genesis 14 · 6</span></span><span class="go">›</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const EN = {
+  14: 'And when Abram heard that his relative had been captured, he mobilized the 318 trained men born in his household, and they set out in pursuit as far as Dan.',
+  15: 'During the night, Abram divided his forces and routed Chedorlaomer’s army, pursuing them as far as Hobah, north of Damascus.',
+  16: 'He retrieved all the goods, as well as his relative Lot and his possessions, together with the women and the rest of the people.',
+  17: 'After Abram returned from defeating Chedorlaomer and the kings allied with him, the king of Sodom went out to meet him in the Valley of Shaveh (that is, the King’s Valley).',
+  18: 'Then Melchizedek king of Salem brought out bread and wine — since he was priest of God Most High —',
+  19: 'and he blessed Abram and said: “Blessed be Abram by God Most High, Creator of heaven and earth,',
+  20: 'and blessed be God Most High, who has delivered your enemies into your hand.” Then Abram gave Melchizedek a tenth of everything.',
+};
+const HE = {
+  14: 'וַיִּשְׁמַ֣ע אַבְרָ֔ם כִּ֥י נִשְׁבָּ֖ה אָחִ֑יו וַיָּ֨רֶק אֶת־ חֲנִיכָ֜יו יְלִידֵ֣י בֵית֗וֹ שְׁמֹנָ֤ה עָשָׂר֙ וּשְׁלֹ֣שׁ מֵא֔וֹת וַיִּרְדֹּ֖ף עַד־ דָּֽן׃',
+  15: 'וַיֵּחָלֵ֨ק עֲלֵיהֶ֧ם׀ לַ֛יְלָה ה֥וּא וַעֲבָדָ֖יו וַיַּכֵּ֑ם וַֽיִּרְדְּפֵם֙ עַד־ חוֹבָ֔ה אֲשֶׁ֥ר מִשְּׂמֹ֖אל לְדַמָּֽשֶׂק׃',
+  16: 'וַיָּ֕שֶׁב אֵ֖ת כָּל־ הָרְכֻ֑שׁ וְגַם֩ אֶת־ ל֨וֹט אָחִ֤יו וּרְכֻשׁוֹ֙ הֵשִׁ֔יב וְגַ֥ם אֶת־ הַנָּשִׁ֖ים וְאֶת־ הָעָֽם׃',
+  17: 'וַיֵּצֵ֣א מֶֽלֶךְ־ סְדֹם֮ לִקְרָאתוֹ֒ אַחֲרֵ֣י שׁוּב֗וֹ מֵֽהַכּוֹת֙ אֶת־ כְּדָר־ לָעֹ֔מֶר וְאֶת־ הַמְּלָכִ֖ים אֲשֶׁ֣ר אִתּ֑וֹ אֶל־ עֵ֣מֶק שָׁוֵ֔ה ה֖וּא עֵ֥מֶק הַמֶּֽלֶךְ׃',
+  18: 'וּמַלְכִּי־ צֶ֙דֶק֙ מֶ֣לֶךְ שָׁלֵ֔ם הוֹצִ֖יא לֶ֣חֶם וָיָ֑יִן וְה֥וּא כֹהֵ֖ן לְאֵ֥ל עֶלְיֽוֹן׃',
+  19: 'וַֽיְבָרְכֵ֖הוּ וַיֹּאמַ֑ר בָּר֤וּךְ אַבְרָם֙ לְאֵ֣ל עֶלְי֔וֹן קֹנֵ֖ה שָׁמַ֥יִם וָאָֽרֶץ׃',
+};
+const GRC = {
+  14: 'ἀκούσας δὲ Ἀβρὰμ ὅτι ᾐχμαλώτευται Λὼτ ὁ ἀδελφὸς αὐτοῦ, ἠρίθμησεν τοὺς ἰδίους οἰκογενεῖς αὐτοῦ, τριακοσίους δέκα καὶ ὀκτώ, καὶ κατεδίωξεν ὀπίσω αὐτῶν ἕως Δάν.',
+  15: 'καὶ ἐπέπεσεν ἐπ’ αὐτοὺς τὴν νύκτα αὐτὸς καὶ οἱ παῖδες αὐτοῦ, καὶ ἐπάταξεν αὐτοὺς καὶ ἐδίωξεν αὐτοὺς ἕως Χωβά, ἥ ἐστιν ἐν ἀριστερᾷ Δαμασκοῦ.',
+  16: 'καὶ ἀπέστρεψεν πᾶσαν τὴν ἵππον Σοδόμων, καὶ Λὼτ τὸν ἀδελφὸν αὐτοῦ ἀπέστρεψεν καὶ τὰ ὑπάρχοντα αὐτοῦ καὶ τὰς γυναῖκας καὶ τὸν λαόν.',
+  17: 'ἐξῆλθεν δὲ βασιλεὺς Σοδόμων εἰς συνάντησιν αὐτῷ μετὰ τὸ ἀναστρέψαι αὐτὸν ἀπὸ τῆς κοπῆς τοῦ Χοδολλογόμορ καὶ τῶν βασιλέων τῶν μετ’ αὐτοῦ εἰς τὴν κοιλάδα τὴν Σαυή· τοῦτο ἦν τὸ πεδίον βασιλέως.',
+  18: 'καὶ Μελχισέδεκ βασιλεὺς Σαλὴμ ἐξήνεγκεν ἄρτους καὶ οἶνον· ἦν δὲ ἱερεὺς τοῦ θεοῦ τοῦ ὑψίστου.',
+  19: 'καὶ ηὐλόγησεν τὸν Ἀβράμ, καὶ εἶπεν Εὐλογημένος Ἀβρὰμ τῷ θεῷ τῷ ὑψίστῳ, ὃς ἔκτισεν τὸν οὐρανὸν καὶ τὴν γῆν.',
+};
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const verses = (text, cls, from, to, attrs = '') => {
+  let out = '';
+  for (let n = from; n <= to && text[n]; n++) out += `<p class="verse ${cls}" ${attrs}><span class="n">${n}</span>${esc(text[n])}</p>`;
+  return out;
+};
+const MAP = `<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map: The Battle at the Valley of Siddim (a stand-in drawing)">
+  <rect width="800" height="500" fill="#efe4c8"/>
+  <path d="M0 0 H150 C120 120 170 260 110 420 L90 500 H0 Z" fill="#b9d3e6"/>
+  <path d="M120 0 C110 90 140 160 128 240" stroke="#6f93b8" stroke-width="4" fill="none"/>
+  <ellipse cx="300" cy="420" rx="42" ry="70" fill="#9fc0dc"/>
+  <path d="M250 450 C330 420 360 330 450 300 C540 270 600 180 700 120" stroke="#8a5706" stroke-width="5" stroke-dasharray="14 10" fill="none"/>
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="26" fill="#3b2f14">
+    <text x="520" y="120">Dan</text><text x="700" y="90">Damascus</text><text x="690" y="40">Hobah</text>
+    <text x="330" y="310">Salem</text><text x="250" y="470">Sodom</text><text x="150" y="400" font-size="20" font-style="italic">Valley of Siddim</text>
+    <text x="30" y="470" font-size="20" font-style="italic">Great Sea</text>
+  </g>
+  <g fill="#8a5706"><circle cx="500" cy="110" r="7"/><circle cx="690" cy="80" r="7"/><circle cx="330" cy="320" r="7"/><circle cx="260" cy="455" r="7"/></g>
+</svg>`;
+const state = new URLSearchParams(location.search).get('state') || 'map';
+const app = document.getElementById('app');
+app.dataset.state = state;
+const passage = document.getElementById('passage');
+const body = document.getElementById('body');
+const name = document.getElementById('name');
+const link = document.getElementById('link');
+const chevron = ' <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+const hebrewView = () => {
+  document.getElementById('sw-en').setAttribute('aria-pressed', 'false');
+  document.getElementById('sw-src').setAttribute('aria-pressed', 'true');
+};
+if (state === 'map' || state === 'closing') {
+  passage.innerHTML = verses(EN, 'en', 14, 20, 'lang="en"');
+  name.innerHTML = state === 'closing' ? 'Let go to close' : '<span class="label">The Battle at the Valley of Siddim</span>' + chevron;
+  if (state === 'closing') name.classList.add('quiet');
+  link.hidden = true;
+  body.innerHTML = `<div class="map"><div class="box">${MAP}</div><p class="credit">Map by David P. Barrett, <u>biblemapper.com</u></p></div>`;
+  body.classList.add('map');
+} else {
+  hebrewView();
+  passage.innerHTML = verses(HE, 'he', 15, 19, 'lang="he" dir="rtl"');
+  name.innerHTML = '<span class="label">Septuagint · Greek</span>' + chevron;
+  const from = state === 'unlinked' ? 18 : 15;
+  link.setAttribute('aria-pressed', state === 'unlinked' ? 'false' : 'true');
+  body.innerHTML = verses(GRC, 'grc', from, 19, 'lang="grc"');
+  if (state === 'chooser') document.getElementById('over').hidden = false;
+}
+</script>
+</body>
+</html>
