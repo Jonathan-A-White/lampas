@@ -17,6 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readChoiceDir } from './choices';
+import { completeReadings, unattested } from './complete';
 import { NOTE_MORPHEUS, dockerEngine, ensureCache, morpheusKey, type MorpheusCache, type MorpheusEngine, type MorpheusForm, type MorpheusState } from './morpheus';
 import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fetchPinned, readPinned, type Fetcher } from './sources';
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
@@ -357,7 +358,10 @@ export function deriveBook(
   const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
   const layers = withCapitalNames(words, withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus))), trained, parsed);
   const checked = checkAgreement(words, layers, { names: index.names, parse: parsed, governs: parser.governs });
-  return { book: book.toLowerCase(), words, signs, ...split(checked.outs), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.some((n) => n === NOTE_MORPHEUS || n === NOTE_MORPHEUS_OVER || n === NOTE_MORPHEUS_BESIDE)).length } : {}) };
+  // readings a rule can add to a word still waiting (complete.ts): after the check, so no word's answer changes
+  const formOfRef = new Map(words.map((w) => [w.ref, w.form]));
+  const completed = completeReadings(checked.outs, (ref) => formOfRef.get(ref) ?? '', morpheus, parser);
+  return { book: book.toLowerCase(), words, signs, ...split(completed), beforeCheck: split(layers), agreement: checked.stats, parser, ...(morpheus ? { morpheusWords: layers.filter((w) => w.notes.some((n) => n === NOTE_MORPHEUS || n === NOTE_MORPHEUS_OVER || n === NOTE_MORPHEUS_BESIDE)).length } : {}) };
 }
 
 /** 'ἀρχή/N-NSF/8 | ἀρχή/N-DSF/5': a lemma may hold spaces and commas ('ὅς, ἥ') but never '/' or '|'. */
@@ -513,7 +517,7 @@ interface MorpheusStep extends MorpheusState {
 }
 
 /**
- * A book with Morpheus's analyses: its forms with no candidate, its forms with one candidate on thin support, and its guessed words (the choices files' `guess` marks) are asked of Morpheus unless the cache
+ * A book with Morpheus's analyses: its forms with no candidate, its forms with one candidate on thin support, its pending words the New Testament does not show, and its guessed words (the choices files' `guess` marks) are asked of Morpheus unless the cache
  * under <outDir>/morpheus has them, and the book is derived again with the cache. A step that is skipped, or a cache with nothing in it, leaves `result` as it was.
  */
 function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookResult, outDir: string, step: MorpheusStep | undefined, log: (line: string) => void): BookResult {
@@ -524,7 +528,9 @@ function withMorpheus(result: BookResult, again: (cache: MorpheusCache) => BookR
   const guessed = [...readChoiceDir(step.choicesDir, `${result.book}-`).choices.values()].filter((c) => c.mark === 'guess').map((c) => c.ref);
   // a form whose one candidate is thin (isThinLone) is asked too, as the first pass left it, before the agreement check (which may settle it)
   const thin = result.beforeCheck.pending.filter((w) => isThinLone(w.candidates)).map((w) => w.ref);
-  const forms = [...noCandidate, ...thin, ...guessed].flatMap((ref) => (formOf.has(ref) ? [morpheusKey(formOf.get(ref)!)] : []));
+  // and so is a pending word the New Testament does not show (complete.ts): its candidates are the rules' guess at a stem, and Morpheus's readings of the form go beside them
+  const unshown = result.pending.filter(unattested).map((w) => w.ref);
+  const forms = [...noCandidate, ...thin, ...guessed, ...unshown].flatMap((ref) => (formOf.has(ref) ? [morpheusKey(formOf.get(ref)!)] : []));
   const cache = ensureCache(step.engine, join(outDir, 'morpheus', `${result.book}.tsv`), forms, log, step);
   return cache.size === 0 ? result : again(cache);
 }

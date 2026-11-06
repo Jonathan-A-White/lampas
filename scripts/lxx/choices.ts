@@ -140,7 +140,10 @@ export function applyChoices(pending: readonly PendingWord[], choices: ReadonlyM
       left.push(word);
       continue;
     }
-    const only = new Set(word.candidates.map((c) => c.lemma));
+    // the lemma a guess takes when it names none: the one lemma of the word's own candidates; readings added beside them (Morpheus's, the vocative's: complete.ts) are not counted, so a
+    // guess written before they were offered keeps its row (story mw-u2w5klk.287)
+    const own = word.candidates.filter((c) => !c.beside);
+    const only = new Set((own.length ? own : word.candidates).map((c) => c.lemma));
     const lemma = pick.lemma || hit?.lemma || (only.size === 1 ? [...only][0] : undefined);
     if (!lemma) {
       refused.push({ ref: word.ref, why: 'a guess names its lemma' });
