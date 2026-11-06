@@ -843,6 +843,25 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
+  Scenario('The idea sheet that came back leaves no sheet over the table the second time', ({ Given, When, And, Then }) => {
+    Given(GIVEN_GOAL, opensWithGoal);
+    When('he opens the idea sheet of {string} from the Goal screen', opensIdeaOfGoal);
+    And('he follows {string} from the idea sheet', async (_, name: string) => user.click(within(ideaSheet()).getByRole('button', { name })));
+    And('he goes Back', async () => {
+      window.history.back();
+    });
+    And('the idea sheet is back over the Goal screen', async () => {
+      expect(await screen.findByRole('dialog', { name: 'Idea' })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/goal');
+    });
+    And('the table {string} is tapped again on the sheet', async (_, name: string) => user.click(within(ideaSheet()).getByRole('button', { name })));
+    Then('the table {string} is open with no idea sheet over it', async (_, name: string) => {
+      expect(await screen.findByRole('heading', { name, level: 1 })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/paradigms?t=future-and-aorist');
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Idea' })).toBeNull());
+    });
+  });
+
   Scenario('The Chi sheet draws its first three examples and folds the rest under Show N more', ({ Given, When, Then }) => {
     // a folded row stays in the page, hidden, so every example is still one tap away
     const drawn = (): HTMLElement[] => shownRows().filter((row) => !row.closest('li')?.hidden);
