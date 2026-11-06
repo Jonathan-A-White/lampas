@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.133
+_2026-11-06_
+- Fixed: In the Septuagint, the Greek view now shows the Greek alone; Brenton's English is the English view.
+- Fixed: Tapping "Open in the app" while the chapter is still loading now opens the installed app at the verse you were sent to, not at the start of the chapter.
+
 ## 0.7.131
 _2026-11-05_
 - Fixed: the 'Open in the app' strip now also shows when a Lampas link tapped in another app opens in a small Chrome window.

@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.133",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.275",
+    "kind": "fixed",
+    "text": "In the Septuagint, the Greek view now shows the Greek alone; Brenton's English is the English view."
+  },
+  {
+    "version": "0.7.133",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1066",
+    "kind": "fixed",
+    "text": "Tapping \"Open in the app\" while the chapter is still loading now opens the installed app at the verse you were sent to, not at the start of the chapter."
+  },
+  {
     "version": "0.7.131",
     "date": "2026-11-05",
     "story": "mw-5r3p30.1090",
