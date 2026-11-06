@@ -3,7 +3,7 @@
 // The vault's rule: 'A long list is a widget, not a page of rows' (pwa-best-practices 08). Use it for any list longer than about seven.
 // Grown for the Library (mw-rfjjzd.4): `row` draws a row with a state control in place of the tick, `rankOf` orders more than two groups (pinned, on, off), `status` is the count
 // line, `flat` lets the list be as long as the page's own box (the field then stays at the box's top) and `focus` marks one book and brings it into view.
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react';
 import { oneTap } from './settle';
 import { matching, pluralOf, ranked, type ListItem } from './listFilter';
 
@@ -26,11 +26,13 @@ type Props = {
   flat?: boolean;
   /** An item to bring into view and mark (aria-current) when the list opens. */
   focus?: string;
+  /** The heading an item stands under; the rows are shown in the order of `rankOf`, so put one group's items together there. A heading shows above the first shown row of its group, so a search that empties a group hides its heading. None for no headings. */
+  groupOf?: (id: string) => string | undefined;
 };
 
 /** The ticked items lead the list. They are put first when the list opens and when the search changes, not as he ticks: a row that jumps
  *  from under his thumb makes the next tap land on the wrong one. */
-export function SearchableList({ label, hint, noun, items, ticked = [], onToggle, row, rankOf, status, flat, focus }: Props) {
+export function SearchableList({ label, hint, noun, items, ticked = [], onToggle, row, rankOf, status, flat, focus, groupOf }: Props) {
   const [query, setQuery] = useState('');
   const rankNow = (): Map<string, number> => new Map(items.map((i) => [i.id, rankOf ? rankOf(i.id) : ticked.includes(i.id) ? 0 : 1]));
   const [rank, setRank] = useState(rankNow);
@@ -72,17 +74,26 @@ export function SearchableList({ label, hint, noun, items, ticked = [], onToggle
       </div>
       <div data-testid="searchable-list-box" className={`mt-1 rounded-lg border border-line ${flat ? '' : 'max-h-64 overflow-y-auto overscroll-contain'}`}>
         {shown.length === 0 ? <p className="px-3 py-3 text-base text-muted">No {noun} matches</p> : null}
-        {shown.map((item) => {
+        {shown.map((item, at) => {
+          const group = groupOf?.(item.id);
+          const heading =
+            group !== undefined && group !== (at > 0 ? groupOf?.(shown[at - 1].id) : undefined) ? (
+              <h2 className="border-t border-line bg-surface px-3 py-1 text-sm font-medium text-muted first:border-t-0">
+                {group}
+              </h2>
+            ) : null;
           if (row) {
             return (
-              <div
-                key={item.id}
-                ref={item.id === focus ? (el) => void (marked.current = el) : undefined}
-                aria-current={item.id === focus ? 'true' : undefined}
-                className="border-t border-line first:border-t-0"
-              >
-                {row(item)}
-              </div>
+              <Fragment key={item.id}>
+                {heading}
+                <div
+                  ref={item.id === focus ? (el) => void (marked.current = el) : undefined}
+                  aria-current={item.id === focus ? 'true' : undefined}
+                  className="border-t border-line first:border-t-0"
+                >
+                  {row(item)}
+                </div>
+              </Fragment>
             );
           }
           const on = ticked.includes(item.id);
