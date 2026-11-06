@@ -1,6 +1,6 @@
 // src/reader/septuagint.ts — what the Reader says of a Septuagint chapter (mw-u2w5klk.11, docs/data.md 'The Septuagint data'): the chapter is Swete's Greek with Brenton's English, one chunk a verse, in the Septuagint's
 // own chapters and verses, which are not always Lampas's (Greek Ps 22:1 is Psalm 23:1). The Reader is opened on a Lampas chapter; its title, its verse numbers and its English under the Greek say both.
-import type { Chapter, GreekWord, Verse } from '../data/chapter';
+import type { Chapter, EnglishChunk, GreekWord, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 
 export { withoutGaps } from '../data/lxxChapter';
@@ -36,6 +36,13 @@ export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref'>, greekChapter: 
  * a word in `g`). Such a chapter is woven as the New Testament's is. The chapter `data:build:lxx` writes, one chunk a verse holding every word, and a chapter the aligner paired nothing in, have nothing to weave.
  */
 export const septuagintAligned = (chapter: Pick<Chapter, 'verses'> | null | undefined): boolean => chapter?.verses.some((v) => v.e.some((c) => c.y === 'align' && c.g.length > 0)) ?? false;
+
+/**
+ * Whether an English chunk of a Septuagint verse is paired to the Greek words it renders (mw-u2w5klk.278): the aligner or the model pass paired it (`y` 'align' or 'model') and named a word in `g`. The chunk
+ * `data:build:lxx` writes (one a verse, `g` holding every word of the verse, no `y`) and one the aligner could not pair (`g` empty) name no particular word, so a tap on its English has no word to open
+ * and the Reader opens the verse instead of a wrong one.
+ */
+export const septuagintChunkLinked = (chunk: Pick<EnglishChunk, 'g' | 'y'>): boolean => (chunk.y === 'align' || chunk.y === 'model') && chunk.g.length > 0;
 
 /**
  * The settings a Septuagint chapter is woven by (mw-u2w5klk.274.3): the reader's own where its verses carry aligned chunks (`weaveShown` follows them as for the New Testament), the Weave off where they do not.

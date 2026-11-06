@@ -26,6 +26,7 @@ import { keepInviteDismissed, lessonInvited } from './lesson';
 import { diagramLogosLinks } from './logosLinks';
 import type { DiagramMode, DiagramWord } from './types';
 import { weaveDiagramWords } from './weave';
+import { isSeptuagint, septuagintChunkLinked } from '../reader/septuagint';
 
 // the table of sentence ends is fetched as the app starts, so the first Diagram does not wait for it
 void loadSentenceTable();
@@ -43,12 +44,14 @@ const unitVerses = (chapter: Chapter, unit: Pick<Verse, 'n' | 'to'>): Verse[] =>
 
 /** What the Reader's WordSheet opens for a tapped word of the diagram: English, its chunk (the chunk's Greek words, its English); Greek, that Greek word (and the chunk it is in); an English word
  * the Weave shows in Greek, the Greek word(s) drawn there, as a tap on the woven text gives (VerseText). */
-function lookupOfWord(verses: readonly Verse[], word: DiagramWord): Lookup | undefined {
+function lookupOfWord(verses: readonly Verse[], word: DiagramWord, septuagint: boolean): Lookup | undefined {
   const verse = verses.find((v) => v.n === (word.verse ?? verses[0].n));
   if (!verse) return undefined;
   if ('chunk' in word) {
     const chunk = verse.e[word.chunk];
     if (word.weft && chunk) return { words: word.weft.map((i) => verse.g[i]), english: chunk.t, fromEnglish: false };
+    // a Septuagint chunk paired to no Greek word names none to open (septuagintChunkLinked, mw-u2w5klk.278)
+    if (chunk && septuagint && !septuagintChunkLinked(chunk)) return undefined;
     return chunk ? { words: chunk.g.map((i) => verse.g[i]), english: chunk.t, fromEnglish: true } : undefined;
   }
   const greek = verse.g[word.word];
@@ -235,7 +238,7 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
             mode={mode}
             reference={reference}
             onWord={(index) => {
-              const look = lookupOfWord(verses, words[index]);
+              const look = lookupOfWord(verses, words[index], isSeptuagint(chapter));
               if (look) onLook(look);
             }}
           />

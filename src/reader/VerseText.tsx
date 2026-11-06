@@ -17,7 +17,7 @@ import { sayWord } from './sayWord';
 import { variantLabel, variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
-import { gapText } from './septuagint';
+import { gapText, septuagintChunkLinked } from './septuagint';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
 function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
   return (
@@ -91,6 +91,8 @@ export interface VerseProps {
   onRp?: (key: string) => void;
   /** Settings > Show manuscript gaps is On: the Greek view draws a Septuagint word as Swete printed it, with his lacuna brackets (`d`, src/reader/septuagint.ts gapText); absent or false, the bare `t` (mw-u2w5klk.280) */
   gaps?: boolean;
+  /** given for a verse of the Septuagint only (mw-u2w5klk.278): what a tap on an English chunk paired to no Greek word does (septuagintChunkLinked), in place of opening a word sheet; the Reader opens the verse, the Verse view does nothing */
+  onUnlinked?: () => void;
 }
 
 /** How a variant unit's words are drawn (mw-9ji6ek0.5): a dotted line under them in the accent, which reads in the light and the dark themes and leaves the word's own colour.
@@ -155,7 +157,7 @@ const GUESS = 'underline decoration-dotted decoration-1 underline-offset-4';
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
  * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
  * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
-export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps, onUnlinked }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps' | 'onUnlinked'> & { marked?: ReadonlySet<number>; still?: boolean }) {
   const hebrew = source === 'hbo';
   const own = sourceAttrs(source);
   const face = sourceFace(source);
@@ -168,8 +170,11 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
   const lookWord = (w: GreekWord, c: EnglishChunk) => onLook({ words: [w], english: c.t, fromEnglish: false });
   // `tapped` is the one English word of the chunk his finger was on, when the chunk is drawn in English and holds more than one (the sheet then looks up that word alone, mw-5r3p30.782)
-  const lookEnglish = (c: EnglishChunk, e?: MouseEvent<HTMLElement>) =>
+  // A Septuagint chunk paired to no Greek word (septuagintChunkLinked) names no word to open: `onUnlinked`, given for a Septuagint verse only, is what the tap does instead (mw-u2w5klk.278)
+  const lookEnglish = (c: EnglishChunk, e?: MouseEvent<HTMLElement>) => {
+    if (onUnlinked && !septuagintChunkLinked(c)) return onUnlinked();
     onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true, tapped: e ? wordAtPoint(e.currentTarget, e.clientX, e.clientY) : undefined });
+  };
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
   const say = (text: string, language: SpeechLanguage) => sayWord(text, language, verse.n);

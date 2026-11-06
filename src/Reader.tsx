@@ -101,6 +101,8 @@ import { isHolding } from './talk/holding';
 
 const NO_SETTINGS: Partial<ReaderSettings> = {};
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
+/** What a tap on a Septuagint English chunk paired to no Greek word does in the Verse view, whose verse is already open (VerseProps.onUnlinked, mw-u2w5klk.278) */
+const stay = (): void => undefined;
 
 /** The chapter the Reader shows: the one the address names (a book and chapter; a chapter alone is Romans), else the one last open. */
 function openFrom(address: string): OpenChapter {
@@ -671,9 +673,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 reading={readingVerse}
                 onLook={setLookup}
                 onRp={setRpShown}
+                onUnlinked={septuagint ? stay : undefined}
               />
             ) : (
-              <VerseText verse={viewUnit} view={sheetView} source={source} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} onRp={setRpShown} />
+              <VerseText verse={viewUnit} view={sheetView} source={source} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} onRp={setRpShown} onUnlinked={septuagint ? stay : undefined} />
             )
           }
           previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
