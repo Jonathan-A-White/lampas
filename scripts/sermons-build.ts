@@ -194,6 +194,7 @@ async function buildSource(id: string, config: SermonsConfig, o: BuildEnv) {
     licence: text(toml.licence, 'licence', id),
     credit: text(toml.credit, 'credit', id),
     homepage: text(toml.homepage, 'homepage', id),
+    ...(toml.on_by_default === false ? { onByDefault: false as const } : {}),
     rows: report.listed,
     books: [...files.keys()],
     fingerprint: sourceFingerprint(files),

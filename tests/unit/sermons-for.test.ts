@@ -93,8 +93,8 @@ describe('enabledSources (pure)', () => {
 describe('the registry', () => {
   afterEach(forgetTestSermons);
 
-  it('registers the bundled sources, which are all on', async () => {
-    expect(SOURCES.map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons']);
+  it('registers the bundled sources, the free ones On and his Logos archives Off', async () => {
+    expect(SOURCES.map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos']);
     expect((await enabledSources()).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons']);
   });
 

@@ -1,7 +1,7 @@
 # Sermons
 
 Lampas lists sermons against the passage each was preached on, and links out to them: nothing of a sermon's words is held. This file is for the free, offline **index** (the epic mw-qtu3zvz,
-story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them, the Sermons door beside Maps on the Verse view and its sheet, is story B2 (mw-qtu3zvz.2): see 'The door' and 'The sheet'. A switch per source in Settings is a later story. The index by **theme** second, story B4 (mw-qtu3zvz.4): the Themes line and 'On the same theme' on the sheet, and a Settings switch for each theme list, is 'The themes' below.
+story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them, the Sermons door beside Maps on the Verse view and its sheet, is story B2 (mw-qtu3zvz.2): see 'The door' and 'The sheet'. A switch per source in Settings is a later story (B3). The index by **theme** second, story B4 (mw-qtu3zvz.4): the Themes line and 'On the same theme' on the sheet, and a Settings switch for each theme list, is 'The themes' below.
 Why the index is shaped this way (a static file per book, no server of our own) is in `docs/sources/sermon-index.md` section 5; what a Logos sermon book would need is in section 2 of the same file.
 Reading needs no licence.
 
@@ -44,7 +44,7 @@ Only what a reader can use without a connection is bundled: the rows, by book. A
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
   "commit": "<the full 40-hex sha>",
-  "sources": ["spurgeon-ccel"]
+  "sources": ["spurgeon-ccel", "henry-sermons", "greg-laurie-logos", "jd-greear-logos", "skip-heitzig-logos"]
 }
 ```
 
@@ -88,7 +88,7 @@ with no fetch; the book files are fetched, never bundled. A new source or a chan
 `SermonPlace` {book, chapter, from?, to?}), `sources/bundled.ts` (one `SermonSource` for each source of `public/sermons/index.json`; it reads `<book>.json` the first time a place in that book is asked, by `sermonBookUrl`, once: the promise is kept, and a file
 that failed is asked for again; a book the source has no file for is no request), `sources/index.ts` (`SOURCES`), `sermonsFor.ts` (`sermonsForSources`, the pure ordering below), `enabled.ts` (`enabledSources(sources, read)`, switch key `sermons.<id>`, Logos for a source that `needs` it),
 `index.ts` (`sermonsFor(place)` over the sources in use, `setSermonSources` for the tests, `sourceOf(row)`), `useSermons.ts`, `openSermons.ts`, `SermonsDoor.tsx`, `SermonsSheet.tsx` and `place.ts`. A second source (a modern preacher's catalogue, a Logos sermon book) is one file in
-`sources/` and a line in `SOURCES`. Every bundled source is read as On until Settings has a switch for it (the next story): `index.ts enabledSources` is where those values will be read. Tests use `tests/support/test-sermons.ts`, sources of their own with rows held in the file.
+`sources/` and a line in `SOURCES`. A source is On or Off by its saved switch `sermons.<id>`, else its `default`: `index.ts enabledSources` reads the saved rows (`savedSettings`), and the Settings row that writes them is the next story (B3, mw-qtu3zvz.3). `default` is 'off' for a source whose index entry says `onByDefault: false` (his Logos archives), 'on' for the rest; a row whose address is a `ref.ly` link is `opensIn: 'logos'`. Tests use `tests/support/test-sermons.ts`, sources of their own with rows held in the file.
 
 ## Which sermons are for this verse
 
@@ -130,10 +130,15 @@ Under the rows each source that answered has its credit line with a link to its 
 | --- | --- | --- | --- | --- | --- |
 | `spurgeon-ccel` | Spurgeon's sermons (CCEL) | 3,467 listed of 3,543 read (76 have no preaching text) | 65 | CCEL's copyright policy, quoted in `index.json`; the words are public domain, the pages are CCEL's. Credit: Christian Classics Ethereal Library, Calvin University | sermon-index `efac7003` |
 | `henry-sermons` | Matthew Henry's sermons (Internet Archive scans) | 46 listed of 52 read (6 have no preaching text) | 20 | The Archive's terms of use, quoted in `index.json`; the words are public domain. Credit: Matthew Henry; Internet Archive | sermon-index `efac7003` |
+| `greg-laurie-logos` | Greg Laurie's sermons (his Logos archive) | 1,091 listed of 1,196 read (105 have no preaching text) | 40 | The Governor's own library at his word (below). Credit: Greg Laurie Sermon Archive (Harvest Ministries), in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
+| `jd-greear-logos` | J. D. Greear's sermons (his Logos archive) | 207 listed of 248 read (39 have no preaching text, 2 left out) | 35 | As above. Credit: J. D. Greear Sermon Archive, in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
+| `skip-heitzig-logos` | Skip Heitzig's sermons (his Logos archive) | 158 listed of 334 read (176 have no preaching text) | 18 | As above. Credit: Skip Heitzig Sermon Archive, in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
 
 Size at that commit: about 997 KB of JSON in 65 book files, 126 KB gzipped as one stream (148 KB when each file is gzipped on its own, as a server serves them).
 
 `henry-sermons` (Matthew Henry's sermons) is bundled since mw-qtu3zvz.8: 52 rows read by hand from the Internet Archive's scans of the 1830 Miscellaneous Works and the 1847 Complete Works (sermon-index `sources/henry-sermons`, first in `efac7003`); 46 are listed under 20 books, 6 have no preaching text (the Archive's page prints none) and are left out. About 13 KB of JSON, under 3 KB gzipped. Its licence line is the Archive's terms of use, quoted in `index.json`; the words are public domain. A Henry text beyond these 52 rows would be a story on the sermon-index repository.
+
+**His Logos archives** (mw-qtu3zvz.12; the sermon-index repository's `tools/logos-import` made the rows, mw-qtu3zvz.11). Each row is a sermon of an archive in the Governor's own Logos library: a title, the passage, the preacher, a date where the archive has one and the `ref.ly` address of the sermon (`https://ref.ly/logosres/LLS:<resource>?art=<id>`), which opens it in Logos for an owner of the archive and for no one else. No Logos text is kept. The three start **Off** (`on_by_default = false` in their `source.toml`, carried by the build into `index.json` as `onByDefault: false` and read by `bundled.ts`), and a row says **Opens in Logos**. Their licence line in `index.json` is the Governor's own words (2026-11-06), since no terms page was read; the `source.toml` `licence_note` carries the footing. Until the Settings shelf (B3, mw-qtu3zvz.3) lands there is no row to turn one On: the switch is the saved setting `sermons.<id>` = `on` (`tests/e2e/keep-settings.ts` writes it). Rows left out: two J. D. Greear rows (CH20, CH165) end at Acts 8:40, a verse past the end of Lampas's Acts 8 (the same slip as the theme sources', below). Skip Heitzig's 176 rows with no passage are mostly verse-by-verse studies whose titles name it (the sermon-index follow-up).
 
 The sermon-index repository's other two sources (`themes-tcr1934`, `themes-torrey`) are theme sources (`kind = "themes"`): they are listed under `themes` in `sources.json` and built into `public/themes` (next section). A theme source listed under `sources`, or a sermon source under `themes`, stops the build, naming it.
 

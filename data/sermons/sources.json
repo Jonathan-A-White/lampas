@@ -1,9 +1,12 @@
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
-  "commit": "efac7003bfef04bbcfc68e50c97fafda8fecdbc7",
+  "commit": "64f9469ab73e6945c17b698be5eb908445f6bc6c",
   "sources": [
     "spurgeon-ccel",
-    "henry-sermons"
+    "henry-sermons",
+    "greg-laurie-logos",
+    "jd-greear-logos",
+    "skip-heitzig-logos"
   ],
   "themes": [
     "themes-tcr1934",

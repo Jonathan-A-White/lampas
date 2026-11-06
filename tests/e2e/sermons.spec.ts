@@ -1,9 +1,10 @@
 // tests/e2e/sermons.spec.ts — Lampas sermons on the screen (mw-qtu3zvz.2, docs/sermons.md) at 390x844: the quiet 'Sermons · N' door in the tools line of the Verse view of Romans 5:8, the Sermons sheet (On this verse,
 // In this chapter, each row 44 px with the preacher, the date and where it opens) and a row that is a plain link out. The data is the committed index (public/sermons): no sermon's page is fetched, and the spec
 // holds that no request is made to the sites the rows point at.
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { keepSettings } from './keep-settings';
 import { openVerseView } from './verse-view';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -142,4 +143,44 @@ test('a theme list turned Off in Settings leaves no Themes line', async ({ page 
   await page.waitForTimeout(500);
   await expect(sheet.locator('[data-sermons-themes]')).toHaveCount(0);
   await expect(sheet.locator('[data-sermons-part="theme"]')).toHaveCount(0);
+});
+
+/** Genesis 1's Sermons sheet, opened from the place line (the whole chapter). */
+async function openGenesisOne(page: Page) {
+  await page.locator('button[data-place-line]').click();
+  await page.getByRole('region', { name: 'Verse view' }).getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Genesis 1' });
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+test('his Logos sermon archives start Off: Genesis 1 lists none of them (mw-qtu3zvz.12)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  const sheet = await openGenesisOne(page);
+  // the free sources answer, his archives do not
+  await expect(sheet.locator('a[data-sermon-row]').first()).toBeVisible();
+  await page.waitForTimeout(500);
+  await expect(sheet.getByText('Who Is Man')).toHaveCount(0);
+  await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: /Greg Laurie|Greear|Heitzig/ })).toHaveCount(0);
+});
+
+test('with Greg Laurie On, Genesis 1 lists \'Who Is Man\', a link that opens in Logos (mw-qtu3zvz.12)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  // the saved switch of the source (Settings > Study resources > Sermons is the next story)
+  await keepSettings(page, { 'sermons.greg-laurie-logos': 'on' });
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  const sheet = await openGenesisOne(page);
+  const row = sheet.locator('a[data-sermon-row]').filter({ hasText: 'Who Is Man' });
+  await expect(row).toHaveCount(1);
+  await expect(row.locator('[data-sermon-meta]')).toContainText('Greg Laurie');
+  await expect(row.locator('[data-sermon-meta]')).toContainText('Opens in Logos');
+  await expect(row).toHaveAttribute('href', /^https:\/\/ref\.ly\/logosres\/LLS:GRGLRSRMNRCH\?art=YEAR\.1996\.6$/);
+  await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'Greg Laurie Sermon Archive' })).toBeVisible();
+  // J. D. Greear and Skip Heitzig stay Off
+  await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: /Greear|Heitzig/ })).toHaveCount(0);
+  await shot(page, 'sermons-logos');
 });

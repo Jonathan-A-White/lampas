@@ -10,6 +10,9 @@ const files = new Map<string, Promise<SermonRow[]>>();
 /** Forgets the files read (a test starts over). */
 export const forgetSermonFiles = (): void => files.clear();
 
+/** A ref.ly address is a link into his Logos library: the app opens the sermon there, for an owner of the archive. */
+const opensInLogos = (url: string): boolean => /^https:\/\/ref\.ly\//.test(url);
+
 const rowOf = (source: string, row: FileRow): SermonRow => ({
   id: row.id,
   source,
@@ -19,7 +22,7 @@ const rowOf = (source: string, row: FileRow): SermonRow => ({
   ref: row.ref,
   role: row.role,
   open: { url: row.url },
-  opensIn: 'web',
+  opensIn: opensInLogos(row.url) ? 'logos' : 'web',
 });
 
 async function readBook(source: string, book: string): Promise<SermonRow[]> {
@@ -48,7 +51,7 @@ function sourceOf(entry: IndexSource): SermonSource {
     homepage: entry.homepage,
     credit: entry.credit,
     describe: `${entry.rows.toLocaleString('en-US')} sermons listed by the passage each was preached on, each read on its own page at ${entry.credit}.`,
-    default: 'on',
+    default: entry.onByDefault === false ? 'off' : 'on',
     async sermonsFor(place: SermonPlace): Promise<SermonRow[]> {
       // a book the source has no file for is no request
       if (!entry.books.includes(place.book)) return [];
