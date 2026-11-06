@@ -10,7 +10,7 @@ import { getStudyChapter } from './readerChapter';
 /** The chapter whose forms show beneath a word of `lang` after the answer (getStudyChapter); null when it cannot be loaded, or is in another language (a Hebrew word's forms are not Septuagint Greek, mw-u2w5klk.15). */
 export const loadForms = (lang: SourceLanguage): Promise<Chapter | null> => {
   const open = getStudyChapter(lang);
-  return loadChapter(open.book, open.chapter).then((chapter) => (sourceLanguage(chapter) === lang ? chapter : null), () => null);
+  return loadChapter(open.book, open.chapter).then((chapter) => (chapter && sourceLanguage(chapter) !== lang ? null : chapter), () => null);
 };
 
 /**
