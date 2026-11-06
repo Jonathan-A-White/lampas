@@ -1,6 +1,6 @@
 # Paradigms (mw-5r3p30.82)
 
-The Paradigms screen (`#/paradigms`, Settings > More > Paradigms, beside Review) holds the tables he learns by heart. The names
+The Paradigms screen (`#/paradigms`, Menu > Tools > Paradigms, beside Review) holds the tables he learns by heart. The names
 (Paradigms, Learn, Drill, Available forms) and which tenses, declensions and pronouns the tables hold are
 PROVISIONAL, the Governor to confirm. The parts this screen shares with the rest of the app, and what the epic's later stories reuse, are in docs/paradigm-components.md.
 
