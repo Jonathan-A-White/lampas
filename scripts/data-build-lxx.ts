@@ -10,7 +10,8 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseLexicon } from './data-build';
-import { removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
+import { alignChapter, type AlignSink } from './lxx/align';
+import { chapterFingerprint, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { LXX2012_RELEASE, ensureLxx2012, parseUsfm, usfmFileOf, type UsfmBook } from './data/lxx2012';
 import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
 import { TVTMS_COMMIT, buildMaps, ensureTvtms, parseTvtms, type TvtmsMaps } from './data/tvtms';
@@ -97,8 +98,11 @@ export function lexiconEntry(table: ReadonlyMap<string, LxxLexiconEntry>, lemma:
   return table.get(lemma) ?? lemma.split(',').map((part) => table.get(part.trim())).find((entry) => entry !== undefined);
 }
 
-/** Builds the Septuagint data of the books that have an annotation file. Throws, naming the reference, where an annotation row and Swete's text do not match. */
-export function buildLxx(input: LxxInput): BuiltLxx {
+/**
+ * Builds the Septuagint data of the books that have an annotation file. Throws, naming the reference, where an annotation row and Swete's text do not match.
+ * Given an `align` sink, each chapter's English is cut into chunks aligned to its Greek words (scripts/lxx/align.ts) and the share of each chapter is put in the sink; without one a verse's English is one chunk.
+ */
+export function buildLxx(input: LxxInput, align?: AlignSink): BuiltLxx {
   const maps: TvtmsMaps = buildMaps(parseTvtms(input.tvtms));
   const translit = parseTranslit(input.translit);
   const swete = sweteBooks(input.versification, input.words);
@@ -129,7 +133,17 @@ export function buildLxx(input: LxxInput): BuiltLxx {
         throw new Error(`${code}: the annotation file's line names chapters ${chapterRanges(named)} of ${line.of}, its rows hold ${chapterRanges(book.info.shipped)} of ${book.info.chapters}`);
       }
     }
-    for (const { path, chapter } of book.chapters) files.set(path, JSON.stringify(chapter));
+    for (const { path, chapter } of book.chapters) {
+      if (!align) {
+        files.set(path, JSON.stringify(chapter));
+        continue;
+      }
+      const done = alignChapter(chapter, (lemma) => lexiconEntry(lexicon, lemma)?.g ?? '');
+      align.shares.push({ ...done.share, code });
+      // the Reader asks for a chapter as ?v=<fingerprint> and keeps what it was given: an aligned chapter is a different file, so it has its own fingerprint
+      book.info.fingerprints[done.chapter.chapter - 1] = chapterFingerprint(done.chapter);
+      files.set(path, JSON.stringify(done.chapter));
+    }
     for (const lemma of book.lemmas) lemmas.add(lemma);
     if (book.unplaced.length) notes.push(`${code}: LXX2012 verses with no Greek verse to stand at: ${book.unplaced.join(', ')}`);
     infos.push(book.info);
@@ -216,8 +230,8 @@ export interface Written {
 }
 
 /** Builds the data from the sources given and writes it under outDir: only files whose bytes changed, and a .json an earlier build wrote that this one does not is removed. */
-export function writeLxx(input: LxxInput, outDir: string, log: (line: string) => void = () => undefined): Written {
-  const built = buildLxx(input);
+export function writeLxx(input: LxxInput, outDir: string, log: (line: string) => void = () => undefined, align?: AlignSink): Written {
+  const built = buildLxx(input, align);
   for (const note of built.notes) log(note);
   const made = new Set<string>();
   let written = 0;

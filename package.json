@@ -27,6 +27,7 @@
     "data:build:lxx": "tsx scripts/data-build-lxx.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
     "data:verses": "tsx scripts/verses-build.ts",
+    "lxx:align": "tsx scripts/lxx/align.ts",
     "lxx:batches": "tsx scripts/lxx/batches.ts",
     "lxx:choose": "tsx scripts/lxx/choose.ts",
     "lxx:derive": "tsx scripts/lxx/derive.ts",

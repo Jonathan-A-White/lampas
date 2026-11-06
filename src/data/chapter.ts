@@ -68,6 +68,16 @@ export interface EnglishChunk {
    * holds in place of the MSB's. The Reader marks the chunk and a tap on the mark opens the entry's sheet.
    */
   rp?: string;
+  /**
+   * PROVISIONAL, the Septuagint only (scripts/lxx/align.ts, docs/lxx-align.md): the aligner's confidence that this chunk renders the Greek words in `g`, 0 to 1 with two decimals; absent on a chunk the aligner did not pair
+   * and in the New Testament and the Old Testament.
+   */
+  c?: number;
+  /**
+   * PROVISIONAL, the Septuagint only: what cut this chunk, 'align' (the aligner paired it to the Greek words of `g`) or 'align?' (English the aligner could not pair: `g` is empty, and the chunk waits for the model pass).
+   * Absent in the New Testament and the Old Testament.
+   */
+  y?: 'align' | 'align?';
 }
 
 /** A run of a chunk's words that are all supplied, or all not. */
