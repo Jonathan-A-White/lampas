@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.139",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.274.3",
+    "kind": "new",
+    "text": "In the Septuagint, the Weave now lays the Greek words you know into Brenton's English, as it does in the New Testament."
+  },
+  {
+    "version": "0.7.139",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1099",
+    "kind": "fixed",
+    "text": "the bar that offers to open Lampas in the app no longer covers the Today and Variants buttons or the first row of Settings and Words."
+  },
+  {
     "version": "0.7.137",
     "date": "2026-11-06",
     "story": "mw-qtu3zvz.2",

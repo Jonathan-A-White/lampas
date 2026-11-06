@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.139
+_2026-11-06_
+- New: In the Septuagint, the Weave now lays the Greek words you know into Brenton's English, as it does in the New Testament.
+- Fixed: the bar that offers to open Lampas in the app no longer covers the Today and Variants buttons or the first row of Settings and Words.
+
 ## 0.7.137
 _2026-11-06_
 - New: A Sermons button beside Maps on a verse lists Spurgeon's and Matthew Henry's sermons preached on that verse and on its chapter, each opening on its own page.
