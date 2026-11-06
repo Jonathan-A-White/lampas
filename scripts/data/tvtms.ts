@@ -294,12 +294,17 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
 ];
 
 /**
- * Rows for LXX2012's own numbering of the Psalms where no column of TVTMS follows it (mw-u2w5klk.283), read by `lxx2012ToGreek` only; their `Brenton (LXX2012)` cell is
+ * Rows for LXX2012's own numbering where no column of TVTMS follows it (mw-u2w5klk.283 the Psalms, mw-u2w5klk.286 Genesis and Psalm 149), read by `lxx2012ToGreek` only; their `Brenton (LXX2012)` cell is
  * LXX2012's verse, their `Greek` cell Swete's. Each stands in for the table's section named in LXX2012_REPLACED or for one the table has no Brenton column for.
  * - Ps 10: LXX2012 has 8 verses and the title out of verse 1; it splits the Greek verse 1 ("In the Lord I have put my trust ... Flee to the mountains as a sparrow?")
  *   in two, so its 1 and 2 are the Greek's 1 and its 3-8 the Greek's 2-7 (TVTMS's BrentonSeparate has 7 verses, BrentonSeparate2 has 8 but counts the title as 1).
  * - Ps 113-115: LXX2012 numbers them in the Hebrew order. Its 113 (the Hebrew 114) is the Greek's 113:1-8, which the table's rows already give as the same; its 114
  *   (the Hebrew 115, 18 verses) is the Greek 113:9-26, its 115 (the Hebrew 116, 19 verses) the Greek 114:1-9 and 115:1-10 (LXX2012 115:10 is "I believed, therefore I have spoken").
+ * mw-u2w5klk.286, from a sweep of every chapter the map answered 'same' for, read against Swete's verses (a Brenton verse that answers two Greek verses stands at the first):
+ * - Gen 22: LXX2012 22:15 holds the Greek 15-16 ("... called Abraam the second time out of heaven, saying, I have sworn by myself"), so its 16-23 are the Greek 17-24.
+ * - Gen 37: LXX2012 37:32 holds the Greek 32-33 ("... know if it be your son's coat ... It is my son's coat"), so its 33-35 are the Greek 34-36 (TVTMS's section for 36:43--37:2
+ *   already carries Brenton's 36:44 = Greek 37:1 and 37:1 = Greek 37:2).
+ * - Ps 149: LXX2012 has 8 verses; its 8 holds the Greek 8-9 ("... to execute on them the judgment written: this honor have all his saints").
  */
 export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.10:Title', 'Absent [=Psa.10:1]'],
@@ -308,6 +313,11 @@ export const LXX2012_ROWS: readonly TvtmsRow[] = [
   ['Psa.114:1-18', 'Psa.113:9-26'],
   ['Psa.115:1-9', 'Psa.114:1-9'],
   ['Psa.115:10-19', 'Psa.115:1-10'],
+  ['Gen.22:15', 'Gen.22:15-16'],
+  ['Gen.22:16-23', 'Gen.22:17-24'],
+  ['Gen.37:32', 'Gen.37:32-33'],
+  ['Gen.37:33-35', 'Gen.37:34-36'],
+  ['Psa.149:8', 'Psa.149:8-9'],
 ].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
 
 /** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows). */

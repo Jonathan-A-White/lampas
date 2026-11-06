@@ -158,6 +158,22 @@ export function englishByGreekVerse(book: UsfmBook, maps: TvtmsMaps): { byGreek:
   return { byGreek, placedAt };
 }
 
+/** The Brenton verses (`placedAt`: USFM reference to Greek reference) whose Greek verse is not one of Swete's `swete` verses (`gen 31:51`, a number Swete's file has with no word under it, is not). */
+export function unplacedVerses(placedAt: ReadonlyMap<string, string>, swete: ReadonlySet<string> | readonly string[]): string[] {
+  const has = swete instanceof Set ? swete : new Set(swete);
+  return [...placedAt].filter(([, greek]) => !has.has(greek)).map(([usfmRef]) => usfmRef);
+}
+
+/** The Greek verses of `swete` (references like `psa 149:9`, in the order given) that no Brenton verse stands at: their words carry no English chunk. */
+export function versesWithoutEnglish(byGreek: ReadonlyMap<string, unknown>, swete: Iterable<string>): string[] {
+  return [...swete].filter((ref) => !byGreek.has(ref));
+}
+
+/** The log line naming a book's Greek verses with no English. A verse of Brenton's that answers two Greek verses stands at the first, so the second is named here with the text in the first's English. */
+export function withoutEnglishNote(code: string, refs: readonly string[]): string {
+  return `${code}: Greek verses with no English (their text, if Brenton has it, stands in the English of the verse before): ${refs.join(', ')}`;
+}
+
 /** The segments of one Greek verse as one chunk: their texts joined by a space, the supplied positions moved on by the words before. */
 function oneChunk(segments: readonly Segment[], wordCount: number): EnglishChunk | undefined {
   const parts = segments.filter((s) => s.text !== '');
@@ -234,6 +250,8 @@ export interface BuiltLxxBook {
   lemmas: string[];
   /** the verses of LXX2012 with no Greek verse of the book to stand at */
   unplaced: string[];
+  /** the Greek verses of the shipped chapters that no Brenton verse stands at: they carry no English (mw-u2w5klk.286) */
+  noEnglish: string[];
 }
 
 /**
@@ -345,8 +363,11 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
   }
   // unplaced is a Brenton verse whose Greek verse is in no chapter of Swete's book; one in a chapter not shipped (yet) is placed, and its English is woven in when the chapter ships (mw-u2w5klk.273)
   const swete = new Set(src.words.map((w) => { const m = /^[^.]+\.(\d+):(\d+)$/.exec(w.verse)!; return refOf(usfm, Number(m[1]), Number(m[2])); }));
-  const unplaced = english ? [...english.placedAt].filter(([, greek]) => !swete.has(greek)).map(([usfmRef]) => usfmRef) : [];
-  return { chapters: built, info, lemmas: [...lemmas], unplaced };
+  const unplaced = english ? unplacedVerses(english.placedAt, swete) : [];
+  // a Greek verse of a chapter shipped that no Brenton verse stands at (mw-u2w5klk.286): the Greek verse has no English chunk, which the note names
+  const shippedVerses = [...swete].filter((ref) => shipped.has(Number(/^[^ ]+ (\d+):/.exec(ref)![1])));
+  const noEnglish = english ? versesWithoutEnglish(english.byGreek, shippedVerses) : [];
+  return { chapters: built, info, lemmas: [...lemmas], unplaced, noEnglish };
 }
 
 /** The books of Swete's file by code (lower case), each with its tokens; the text a run reads is all of it once. */

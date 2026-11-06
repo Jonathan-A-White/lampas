@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { carriedAsGreek, parseUsfm } from '../../scripts/data/lxx2012';
 import { buildMaps, parseTvtms, type TvtmsMaps } from '../../scripts/data/tvtms';
 import { bookReport, formatLine } from '../../scripts/lxx/english';
-import { englishByGreekVerse } from '../../scripts/data/lxxChapter';
+import { sweteVerses, verseSetGaps, formatGap } from '../../scripts/lxx/versesets';
+import { englishByGreekVerse, unplacedVerses, versesWithoutEnglish, withoutEnglishNote } from '../../scripts/data/lxxChapter';
 
 const fixture = (name: string): string => readFileSync(`tests/fixtures/lxx/${name}`, 'utf8');
 const gen = parseUsfm(fixture('lxx2012-gen-1.usfm'));
@@ -252,5 +253,103 @@ describe("LXX2012's Psalms 10, 114 and 115 stand at the Greek verses their text 
     expect(maps.lxx2012ToGreek('psa 22:1')).toEqual({ state: 'same', refs: ['psa 22:1'] });
     expect(psalmMaps.lxx2012ToGreek('psa 113:1')).toEqual({ state: 'same', refs: ['psa 113:1'] });
     expect(psalmMaps.lxx2012ToGreek('psa 116:2')).toEqual({ state: 'same', refs: ['psa 116:2'] });
+  });
+});
+
+// mw-u2w5klk.286: the sweep of every chapter LXX2012 numbers as the Greek does (the map answers 'same') found Genesis 22 and 37 a verse out from where Brenton's text is,
+// and Psalm 149's Greek verse 9 with Brenton's text in verse 8. Fixtures are the real LXX2012 chapters.
+describe("LXX2012's Genesis 22, 31 and 37 and Psalm 149 stand at the Greek verses their text is", () => {
+  const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+  const refs = (book: string, chapter: number, from: number, to: number, except: number[] = []): string[] =>
+    range(from, to).filter((v) => !except.includes(v)).map((v) => `${book} ${chapter}:${v}`);
+  const genesis = parseUsfm(fixture('lxx2012-gen-22-31-37.usfm'));
+  const genesisMaps = buildMaps(parseTvtms(fixture('tvtms-genesis-slice.txt')));
+  const psalm149 = parseUsfm(fixture('lxx2012-psa-149.usfm'));
+  const psalmMaps = buildMaps(parseTvtms(fixture('tvtms-psalms-slice.txt')));
+  // the fixture holds three chapters of Genesis, so what a test asks about one chapter is cut from the answer for all three
+  const swete = [...refs('gen', 22, 1, 24), ...refs('gen', 31, 1, 55, [51]), ...refs('gen', 37, 1, 36)];
+  const inChapter = (list: string[], chapter: number): string[] => list.filter((ref) => ref.startsWith(`gen ${chapter}:`));
+  const textAt = (byGreek: ReturnType<typeof englishByGreekVerse>['byGreek'], ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' | ');
+
+  it("puts Brenton's Genesis 22:15 at the Greek 22:15-16 and his 22:16-23 at the Greek 22:17-24", () => {
+    expect(genesisMaps.lxx2012ToGreek('gen 22:14')).toEqual({ state: 'same', refs: ['gen 22:14'] });
+    expect(genesisMaps.lxx2012ToGreek('gen 22:15')).toEqual({ state: 'range', refs: ['gen 22:15', 'gen 22:16'] });
+    for (const v of range(16, 23)) expect(genesisMaps.lxx2012ToGreek(`gen 22:${v}`)).toEqual({ state: 'one', refs: [`gen 22:${v + 1}`] });
+    const { byGreek } = englishByGreekVerse(genesis, genesisMaps);
+    expect(textAt(byGreek, 'gen 22:15')).toMatch(/^And an angel of the Lord called Abraam the second time out of heaven, saying, I have sworn by myself/);
+    expect(textAt(byGreek, 'gen 22:17')).toMatch(/^surely blessing I will bless you/);
+    expect(textAt(byGreek, 'gen 22:18')).toMatch(/^And in your seed shall all the nations of the earth be blessed/);
+    expect(textAt(byGreek, 'gen 22:19')).toMatch(/^And Abraam returned to his servants/);
+    expect(textAt(byGreek, 'gen 22:24')).toMatch(/^And his concubine whose name was Rheuma/);
+  });
+
+  it('names the one Greek verse of Genesis 22 whose text is in the English of the verse before it, and nothing unplaced', () => {
+    const { byGreek, placedAt } = englishByGreekVerse(genesis, genesisMaps);
+    expect(inChapter(versesWithoutEnglish(byGreek, swete), 22)).toEqual(['gen 22:16']);
+    expect(inChapter(unplacedVerses(placedAt, swete), 22)).toEqual([]);
+  });
+
+  it("leaves Genesis 31 as it is: Brenton's verse 51 is the one with no Greek verse, and his 52-55 stand at the Greek 52-55", () => {
+    for (const v of [47, 50, 52, 53, 54, 55]) expect(genesisMaps.lxx2012ToGreek(`gen 31:${v}`)).toEqual({ state: 'same', refs: [`gen 31:${v}`] });
+    const { byGreek, placedAt } = englishByGreekVerse(genesis, genesisMaps);
+    // Swete's file numbers a verse 51 and puts no word under it (mw-u2w5klk.282)
+    expect(inChapter(unplacedVerses(placedAt, swete), 31)).toEqual(['gen 31:51']);
+    expect(inChapter(versesWithoutEnglish(byGreek, swete), 31)).toEqual([]);
+    expect(textAt(byGreek, 'gen 31:52')).toMatch(/^For if I should not cross over to you/);
+    expect(textAt(byGreek, 'gen 31:55')).toMatch(/^And Laban rose up in the morning/);
+  });
+
+  it("puts Brenton's Genesis 37:1-2 at the Greek 37:2 (his 36:44 is the Greek 37:1), his 37:32 at the Greek 37:32-33 and his 37:33-35 at the Greek 37:34-36", () => {
+    expect(genesisMaps.lxx2012ToGreek('gen 37:1')).toEqual({ state: 'one', refs: ['gen 37:2'] });
+    expect(genesisMaps.lxx2012ToGreek('gen 37:31')).toEqual({ state: 'same', refs: ['gen 37:31'] });
+    expect(genesisMaps.lxx2012ToGreek('gen 37:32')).toEqual({ state: 'range', refs: ['gen 37:32', 'gen 37:33'] });
+    for (const v of range(33, 35)) expect(genesisMaps.lxx2012ToGreek(`gen 37:${v}`)).toEqual({ state: 'one', refs: [`gen 37:${v + 1}`] });
+    const { byGreek, placedAt } = englishByGreekVerse(genesis, genesisMaps);
+    expect(textAt(byGreek, 'gen 37:2')).toMatch(/^And these are the generations of Jacob/);
+    expect(textAt(byGreek, 'gen 37:34')).toMatch(/^And Jacob tore his clothes/);
+    expect(textAt(byGreek, 'gen 37:36')).toMatch(/^And the Madianites sold Joseph into Egypt/);
+    // the Greek 37:1 is Brenton's 36:44 (not in this fixture), the Greek 37:33 is in the English of 37:32
+    expect(inChapter(versesWithoutEnglish(byGreek, swete), 37)).toEqual(['gen 37:1', 'gen 37:33']);
+    expect(inChapter(unplacedVerses(placedAt, swete), 37)).toEqual([]);
+  });
+
+  it("names Psalm 149's Greek verse 9, which Brenton's 149 (eight verses) has inside his verse 8, as a verse with no English", () => {
+    expect(psalmMaps.lxx2012ToGreek('psa 149:7')).toEqual({ state: 'same', refs: ['psa 149:7'] });
+    expect(psalmMaps.lxx2012ToGreek('psa 149:8')).toEqual({ state: 'range', refs: ['psa 149:8', 'psa 149:9'] });
+    expect(psalmMaps.lxx2012ToGreek('psa 149:9').refs).toEqual(['psa 149:9']);
+    const { byGreek, placedAt } = englishByGreekVerse(psalm149, psalmMaps);
+    const swete149 = refs('psa', 149, 1, 9);
+    expect(textAt(byGreek, 'psa 149:8')).toMatch(/^to bind their kings with fetters.*to execute on them the judgment written: this honor have all his saints\.$/);
+    expect(versesWithoutEnglish(byGreek, swete149)).toEqual(['psa 149:9']);
+    expect(unplacedVerses(placedAt, swete149)).toEqual([]);
+    expect(withoutEnglishNote('psa', ['psa 149:9'])).toBe('psa: Greek verses with no English (their text, if Brenton has it, stands in the English of the verse before): psa 149:9');
+  });
+
+  it('runs the verse-set sweep: after the rows, Genesis 22 and Psalm 149 reach every verse of the verses of Swete, Genesis 37 all but its 1 (the 36:44 of Brenton), and Genesis 31:51 is the numbered verse with no word', () => {
+    // Swete's versification and word files in miniature: a line number, the verse, and one word under every numbered verse but Gen 31:51
+    const verses = [...refs('gen', 22, 1, 24), ...refs('gen', 31, 1, 55), ...refs('gen', 37, 1, 36), ...refs('psa', 149, 1, 9)].map((r) => r.replace(/^(\w+) /, (_a, b: string) => `${b === 'gen' ? 'Gen' : 'Psa'}.`));
+    const versification = verses.map((v, i) => `${i * 2 + 1}\t${v}`).join('\n');
+    const words = verses.flatMap((v, i) => (v === 'Gen.31:51' ? [] : [`${i * 2 + 1}\tλόγος`])).join('\n');
+    const swete = sweteVerses(versification, words);
+    expect(swete.numbered.get('gen 31')?.has(51)).toBe(true);
+    expect(swete.withWords.get('gen 31')?.has(51)).toBe(false);
+    expect(verseSetGaps(genesis, genesisMaps, swete).map(formatGap)).toEqual([
+      'gen 31: Brenton lands where Swete has no verse [], at a numbered verse with no word [51], Swete verses with no English []',
+      // the Greek 37:1 is Brenton's 36:44, which the fixture does not hold
+      'gen 37: Brenton lands where Swete has no verse [], at a numbered verse with no word [], Swete verses with no English [1]',
+    ]);
+    expect(verseSetGaps(psalm149, psalmMaps, swete)).toEqual([]);
+  });
+
+  it('names a Greek verse no Brenton verse reaches and a Brenton verse that reaches a number Swete lacks', () => {
+    const book = { code: 'gen', chapters: [
+      { chapter: 98, verses: [1, 2, 3].map((verse) => ({ chapter: 98, verse, text: 'x', supplied: [], bracketed: false })) },
+      { chapter: 99, verses: [1, 2, 3].map((verse) => ({ chapter: 99, verse, text: 'x', supplied: [], bracketed: false })) },
+    ] };
+    const swete = sweteVerses('1\tGen.98:1\n3\tGen.98:2\n5\tGen.99:1\n7\tGen.99:2\n9\tGen.99:3\n11\tGen.99:4', '1\ta\n3\ta\n5\ta\n7\ta\n9\ta\n11\ta');
+    expect(verseSetGaps(book, genesisMaps, swete).map(formatGap)).toEqual([
+      'gen 98: Brenton lands where Swete has no verse [3], at a numbered verse with no word [], Swete verses with no English []',
+      'gen 99: Brenton lands where Swete has no verse [], at a numbered verse with no word [], Swete verses with no English [4]',
+    ]);
   });
 });

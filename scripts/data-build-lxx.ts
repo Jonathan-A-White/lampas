@@ -12,7 +12,7 @@ import { pathToFileURL } from 'node:url';
 import { parseLexicon } from './data-build';
 import { removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { LXX2012_RELEASE, ensureLxx2012, parseUsfm, usfmFileOf, type UsfmBook } from './data/lxx2012';
-import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
+import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, withoutEnglishNote, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
 import { TVTMS_COMMIT, buildMaps, ensureTvtms, parseTvtms, type TvtmsMaps } from './data/tvtms';
 import { ANNOTATIONS_DIR } from './lxx/release';
 import {
@@ -132,6 +132,7 @@ export function buildLxx(input: LxxInput): BuiltLxx {
     for (const { path, chapter } of book.chapters) files.set(path, JSON.stringify(chapter));
     for (const lemma of book.lemmas) lemmas.add(lemma);
     if (book.unplaced.length) notes.push(`${code}: LXX2012 verses with no Greek verse to stand at: ${book.unplaced.join(', ')}`);
+    if (book.noEnglish.length) notes.push(withoutEnglishNote(code, book.noEnglish));
     infos.push(book.info);
     shipped.push(code);
   }
