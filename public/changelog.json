@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.140",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.289",
+    "kind": "new",
+    "text": "A word of the Greek Old Testament opens its own table of endings with the forms the Septuagint uses as well as the New Testament's, each saying where it was found."
+  },
+  {
+    "version": "0.7.140",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1059",
+    "kind": "fixed",
+    "text": "sharing one verse now shows the whole verse in the Share sheet, not a cut-short version with a gap in the middle."
+  },
+  {
     "version": "0.7.139",
     "date": "2026-11-06",
     "story": "mw-u2w5klk.274.3",

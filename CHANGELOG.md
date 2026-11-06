@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.140
+_2026-11-06_
+- New: A word of the Greek Old Testament opens its own table of endings with the forms the Septuagint uses as well as the New Testament's, each saying where it was found.
+- Fixed: sharing one verse now shows the whole verse in the Share sheet, not a cut-short version with a gap in the middle.
+
 ## 0.7.139
 _2026-11-06_
 - New: In the Septuagint, the Weave now lays the Greek words you know into Brenton's English, as it does in the New Testament.
