@@ -306,8 +306,8 @@ function useClipPlayer(clip: Clip | undefined, times: SpeechTimes): [ClipPlayer,
 
 /** 'Play my reading': the clip he recorded, from just before his voice starts to just after it ends (mw-5r3p30.396: the silence before his first word
  * is skipped; the clip itself stays whole). 'Download my recording' is there only in Developer mode (a debugging option, found on About),
- * and saves the clip as it was recorded, named for the verse and the UTC time it was read. */
-function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; player: ClipPlayer }) {
+ * and saves the clip as it was recorded, named for the verse and the UTC time it was read (one file for a double tap, mw-5r3p30.1101). */
+export function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; player: ClipPlayer }) {
   const developer = useLiveQuery(getDeveloper, []);
   const playing = usePlaying(player);
   const button = 'min-h-12 w-full rounded-xl border border-line px-5 text-lg font-medium';
@@ -318,7 +318,7 @@ function MyReading({ clip, fileName, player }: { clip: Clip; fileName: string; p
         {playing === ALL ? 'Stop my reading' : 'Play my reading'}
       </button>
       {developer === 'on' ? (
-        <button type="button" onClick={() => downloadSeam.save(fileName, blobOf(clip))} className={button}>
+        <button type="button" onClick={() => oneTap('download-my-recording', () => downloadSeam.save(fileName, blobOf(clip)))} className={button}>
           Download my recording
         </button>
       ) : null}
