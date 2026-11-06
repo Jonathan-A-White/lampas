@@ -76,7 +76,7 @@ Psa.30:12#9	T-DPM	ὁ		0.80
 Psa.30:12#10	N-DPM	γείτων		0.80	
 Psa.30:12#15	T-DPM	ὁ		0.80	
 Psa.30:12#16	A-DPM	γνωστός, γνώριμος		0.80	
-Psa.30:12#24	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.30:12#24	S-1SGSN	ἐγώ		0.80	
 Psa.30:13#1	V-AOI-1S	ἐπιλανθάνομαι		0.80	
 Psa.30:13#5	N-GSF	καρδία		0.80	
 Psa.30:13#8	N-NSN	σκεῦος		0.80	
@@ -147,7 +147,7 @@ Psa.31:4#16	V-2APN	ἐμπήγνυμι		0.80
 Psa.31:4#18	N-NSN	διάψαλμα	unsure	0.50	model: unsure
 Psa.31:5#10	V-AAI-1S	καλύπτω		0.80	
 Psa.31:5#12	V-FAI-1S	ἐξαγορεύω		0.80	
-Psa.31:5#14	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.31:5#14	S-1SGSN	ἐγώ		0.80	
 Psa.31:5#28	N-NSN	διάψαλμα	unsure	0.50	model: unsure
 Psa.31:6#5	A-NSM	ὅσιος		0.80	
 Psa.31:6#10	A-DSM	εὔθετος		0.80	
@@ -362,7 +362,7 @@ Psa.34:14#5	S-1PASM	ἡμέτερος	guess	0.40	guess: the model chose outside 
 Psa.34:14#7	V-IAI-1S	εὐαρεστέω	guess	0.40	guess: the model answered with no candidates
 Psa.34:14#9	V-PAP-NSM	πενθέω		0.80	
 Psa.34:14#13	V-IMI-1S	ταπεινόω	unsure	0.50	model: unsure
-Psa.34:15#3	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.34:15#3	S-1SGSN	ἐγώ		0.80	
 Psa.34:15#4	V-API-3P	εὐφραίνω		0.80	
 Psa.34:15#10	N-NPF	μάστιξ		0.80	
 Psa.34:16#6	V-AAI-3P	βρύκω		0.80	
@@ -383,7 +383,7 @@ Psa.34:21#6	N-ASN	στόμα		0.80
 Psa.34:21#7	P-GPM	αὐτός		0.80	
 Psa.34:22#4	V-AAS-2S	παρασιωπάω		0.80	
 Psa.34:22#7	V-2AAS-2S	ἀφίστημι		0.80	
-Psa.34:22#9	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.34:22#9	S-1SGSN	ἐγώ		0.80	
 Psa.34:23#1	V-APM-2S	ἐξεγείρω		0.80	
 Psa.34:23#4	V-2AAM-2S	προσέχω	guess	0.40	guess: the model chose outside the candidates
 Psa.34:24#1	V-AAM-2S	κρίνω		0.80	
@@ -617,7 +617,7 @@ Psa.37:10#2	PREP	ἐναντίον		0.80
 Psa.37:11#5	V-2AAI-3S	ἐγκαταλείπω	guess	0.40	guess: the model answered with no candidates
 Psa.37:11#11	T-NSN	ὁ		0.80	
 Psa.37:11#12	N-NSN	φῶς		0.80	
-Psa.37:11#19	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.37:11#19	S-1SGSN	ἐγώ		0.80	
 Psa.37:12#6	ADV	πλησίον		0.80	
 Psa.37:12#16	ADV-S	ἐγγύς	guess	0.40	guess: the model chose outside the candidates
 Psa.37:13#2	V-AMI-3P	ἐκβιάζω		0.80	
@@ -645,7 +645,7 @@ Psa.37:21#6	V-IAI-3P	ἐνδιαβάλλω		0.80
 Psa.37:21#9	V-IAI-3P	καταδιώκω		0.80	
 Psa.37:22#2	V-2AAS-2S	ἐγκαταλείπω	guess	0.40	guess: the model answered with no candidates
 Psa.37:22#9	V-2AAS-2S	ἀφίστημι		0.80	
-Psa.37:22#11	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.37:22#11	S-1SGSN	ἐγώ		0.80	
 Psa.37:23#1	V-2AAM-2S	προσέχω	guess	0.40	guess: the model chose outside the candidates
 Psa.38:1#2	T-ASN	ὁ		0.80	
 Psa.38:1#3	N-ASN	τέλος		0.80	
@@ -692,7 +692,7 @@ Psa.38:10#4	V-2AAI-1S	ἀνοίγω	unsure	0.50	model: unsure
 Psa.38:10#5	T-ASN	ὁ		0.80	
 Psa.38:10#6	N-ASN	στόμα		0.80	
 Psa.38:11#1	V-AAM-2S	ἀφίστημι	guess	0.40	guess: the model chose outside the candidates
-Psa.38:11#3	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.38:11#3	S-1SGSN	ἐγώ		0.80	
 Psa.38:11#14	V-2AAI-1S	ἐκλείπω		0.80	
 Psa.38:12#8	V-AAI-2S	ἐκτήκω		0.80	
 Psa.38:12#13	P-GSM	αὐτός		0.80	
