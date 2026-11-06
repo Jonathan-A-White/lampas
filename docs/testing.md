@@ -16,6 +16,7 @@ the one place the key lives and how a test seeds it.
 - [The tutor's tests](#the-tutors-tests)
 - [Settings (`src/config.ts`)](#settings-srcconfigts)
 - [The Greek dial's start level (the test seam, mw-3ased2.2)](#the-greek-dials-start-level-the-test-seam-mw-3ased22)
+- [Speech and the microphone fakes](#speech-and-the-microphone-fakes)
 
 <!-- /toc -->
 
