@@ -127,6 +127,22 @@ describeFeature(feature, ({ Scenario }) => {
     And('the title reads {string}', titleReads);
   });
 
+  Scenario('A tap on the header line opens the sheet of whose texts these are', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+    When('the header subtitle is tapped', async () => {
+      await user.click(await waitFor(() => document.querySelector('[data-reader-subtitle]') as HTMLElement));
+    });
+    Then("the sheet {string} shows the Greek, the English, the words' lemma and parsing, and the versification", async (_: unknown, title: string) => {
+      const sheet = await screen.findByRole('dialog', { name: title });
+      expect([...sheet.querySelectorAll('[data-lxx-source]')].map((s) => s.getAttribute('data-lxx-source'))).toEqual(['Greek', 'English', "The words' lemma and parsing", 'Versification']);
+      expect(within(sheet).getByRole('link', { name: 'docs/lxx-derivation.md' })).toHaveAttribute('href', 'https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md');
+    });
+    And('Done closes the sheet', async () => {
+      await user.click(screen.getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Whose texts these are' })).toBeNull());
+    });
+  });
+
   Scenario("In the English view the verse is Brenton's English", ({ Given, Then }) => {
     Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
     Then('verse 1 reads {string}', async (_: unknown, text: string) => {

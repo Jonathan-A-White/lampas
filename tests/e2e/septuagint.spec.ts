@@ -47,7 +47,16 @@ test('the setting is under How much Greek?, found by a search, and turned on it 
   await expect(verse.locator('[data-lxx-english]')).toHaveCount(0);
   await expect(verse).not.toContainText('In the beginning God made');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Genesis 1');
-  await expect(page.locator('[data-reader-subtitle]')).toHaveText('Septuagint (Swete) · Brenton (LXX2012)');
+  await expect(page.locator('[data-reader-subtitle]')).toHaveText("Greek: Swete's edition · English: Brenton's translation");
+  // a tap on the line opens the sheet of whose texts these are
+  await page.locator('[data-reader-subtitle]').click();
+  const sources = page.getByRole('dialog', { name: 'Whose texts these are' });
+  await expect(sources).toContainText('Henry Barclay Swete');
+  await expect(sources).toContainText('eng-lxx2012');
+  await expect(sources.getByRole('link', { name: 'docs/lxx-derivation.md' })).toBeVisible();
+  await shot(page, 'septuagint-sources');
+  await sources.getByRole('button', { name: 'Done' }).click();
+  await expect(sources).toHaveCount(0);
   await expect(page.getByTestId('reader-chips')).toBeVisible();
 
   // nothing runs off the side of the phone

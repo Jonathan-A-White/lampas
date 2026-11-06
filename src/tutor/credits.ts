@@ -8,6 +8,24 @@ import type { ScreenCredit } from './screen';
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
 export const MAX_CREDITS_BYTES = 6700;
 
+/** One line of the sheet a Septuagint chapter's header opens (mw-u2w5klk.276): what is credited, in plain words, and a link where there is one. The one place the sheet's text is written. */
+export interface SeptuagintSource {
+  label: string;
+  text: string;
+  link?: { href: string; name: string };
+}
+
+export const SEPTUAGINT_SOURCES: SeptuagintSource[] = [
+  { label: 'Greek', text: 'Henry Barclay Swete, The Old Testament in Greek (Cambridge, 1887 to 1894; the 1909 to 1912 printing), following Codex Vaticanus, public domain.' },
+  { label: 'English', text: "Sir Lancelot Brenton's 1844 translation of the Septuagint, in eBible's 2012 edition with modernised spelling (eng-lxx2012), public domain." },
+  {
+    label: "The words' lemma and parsing",
+    text: "Lampas's own, MIT. The method:",
+    link: { href: 'https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md', name: 'docs/lxx-derivation.md' },
+  },
+  { label: 'Versification', text: "The Greek chapters and verses laid on Lampas's: STEPBible TVTMS, CC BY 4.0." },
+];
+
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The New Testament\'s Greek, aligned to the English', licence: 'Public domain', link: 'https://majoritybible.com' },
   { name: 'Berean Standard Bible', use: 'The Old Testament\'s Hebrew aligned to the English', licence: 'Public domain', link: 'https://berean.bible/licensing.htm' },
