@@ -32,7 +32,7 @@ async function putWords(page: Page, rows: Row[]) {
   );
 }
 
-async function openLuke(page: Page, learning: boolean) {
+async function openLuke(page: Page, learning: boolean, pauseMs = 0) {
   await openUnlocked(page, { empty: true });
   await page.goto('/');
   await expect(page.locator('[data-reader]')).toBeVisible();
@@ -41,8 +41,10 @@ async function openLuke(page: Page, learning: boolean) {
     { lemma: 'παραδίδωμι', gloss: 'hand over', state: learning ? 'learning' : 'solid' },
     { lemma: 'αὐτός', gloss: 'he', state: learning ? 'learning' : 'solid' },
   ]);
+  // a fresh load of the address, not a hash change on the running page: that page writes its saved Weave (off) back into the address (src/nav/readerAddress.ts)
+  await page.goto('about:blank');
   await page.goto('/#/?b=luk&c=20&weave=solid%2Blearning');
-  await page.reload();
+  await page.waitForTimeout(pauseMs);
   const verse = page.locator('[data-verse="20"]');
   await expect(verse).toBeVisible();
   await verse.scrollIntoViewIfNeeded();
@@ -67,6 +69,13 @@ test("Luke 20:20 in Weave, παραδοῦναι and αὐτὸν learning: a vi
   const last = (await words.nth(1).boundingBox())!;
   expect(last.x - (first.x + first.width)).toBeGreaterThanOrEqual(0);
   await shot(page, 'weave-space-learning');
+});
+
+// mw-5r3p30.1109: the address used to be set by a hash change on the page that was already running, which writes its saved Weave (off) back into the address within a few
+// tenths of a second; a reload that came after that read weave=off and the Weave was never on, so the first test failed on a slow host. The pause here is the slow host.
+test('Luke 20:20 in Weave, the page left to settle after the address is set: the Weave the address asked for is still on', async ({ page }) => {
+  const verse = await openLuke(page, true, 600);
+  await expect(verse.locator('[data-chunk="12"]')).toHaveAttribute('data-learning', '');
 });
 
 test('Luke 20:20 in Weave, the pair solid: the same gap as before', async ({ page }) => {
