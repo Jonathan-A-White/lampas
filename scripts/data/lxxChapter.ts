@@ -220,6 +220,8 @@ export interface LxxBookSource {
   /** Swete's code, lower case: `gen` */
   code: string;
   words: readonly SweteWord[];
+  /** the verses Swete's file numbers and puts no word under (`Gen.31:51`, the `verse` of a SweteWord): each is a Greek verse row with no words, so Brenton's English for it has a verse to stand at (mw-u2w5klk.282) */
+  emptyVerses?: readonly string[];
   /** the SBL transliteration by line of the word file */
   translit: ReadonlyMap<number, string>;
   annotations: ReadonlyMap<string, AnnotationRow>;
@@ -264,6 +266,7 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
   const here = new Set(src.words.map((w) => w.ref));
   for (const ref of src.annotations.keys()) if (!here.has(ref)) throw new Error(`${src.code}: the annotation file has a row for ${ref}, which Swete's text lacks`);
 
+  const emptyVerses = src.emptyVerses ?? [];
   const english = src.english ? englishByGreekVerse(src.english, maps) : undefined;
   const usfm = usfmCodeOf(src.code);
   const lemmas = new Set<string>();
@@ -276,6 +279,14 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
     const chapter = chapters.get(Number(m[1])) ?? new Map<number, SweteWord[]>();
     chapters.set(Number(m[1]), chapter);
     chapter.set(Number(m[2]), [...(chapter.get(Number(m[2])) ?? []), w]);
+  }
+
+  // a numbered verse with no word is a verse of a chapter that has words, with none of its own (a chapter of nothing but such verses is not a chapter)
+  for (const verse of emptyVerses) {
+    const m = /^[^.]+\.(\d+):(\d+)$/.exec(verse);
+    if (!m) throw new Error(`${src.code}: ${verse} is not a reference like Gen.1:20`);
+    const chapter = chapters.get(Number(m[1]));
+    if (chapter && !chapter.has(Number(m[2]))) chapter.set(Number(m[2]), []);
   }
 
   // A Greek chapter ships when the annotation file has rows for it (lxx:release writes the rows of the shippable chapters only, mw-u2w5klk.265); a chapter with some of its rows only stops the build
@@ -362,12 +373,25 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
     info.lampasChapters[i] ??= [];
   }
   // unplaced is a Brenton verse whose Greek verse is in no chapter of Swete's book; one in a chapter not shipped (yet) is placed, and its English is woven in when the chapter ships (mw-u2w5klk.273)
-  const swete = new Set(src.words.map((w) => { const m = /^[^.]+\.(\d+):(\d+)$/.exec(w.verse)!; return refOf(usfm, Number(m[1]), Number(m[2])); }));
+  const swete = new Set([...src.words.map((w) => w.verse), ...emptyVerses].map((verse) => { const m = /^[^.]+\.(\d+):(\d+)$/.exec(verse)!; return refOf(usfm, Number(m[1]), Number(m[2])); }));
   const unplaced = english ? unplacedVerses(english.placedAt, swete) : [];
   // a Greek verse of a chapter shipped that no Brenton verse stands at (mw-u2w5klk.286): the Greek verse has no English chunk, which the note names
   const shippedVerses = [...swete].filter((ref) => shipped.has(Number(/^[^ ]+ (\d+):/.exec(ref)![1])));
   const noEnglish = english ? versesWithoutEnglish(english.byGreek, shippedVerses) : [];
   return { chapters: built, info, lemmas: [...lemmas], unplaced, noEnglish };
+}
+
+/** The verses Swete's versification numbers that have no word under them in the word file, by book code (lower case): `Gen.31:51`, in the form of a SweteWord's `verse` (mw-u2w5klk.282). */
+export function sweteEmptyVerses(versification: string, wordFile: string): Map<string, string[]> {
+  const withWords = new Set(sweteTokens(versification, wordFile).words.map((w) => w.verse));
+  const out = new Map<string, string[]>();
+  for (const line of versification.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+    const m = /^\d+\t(\S+)$/.exec(line.trim());
+    if (!m || withWords.has(m[1])) continue;
+    const code = bookOf(m[1]).toLowerCase();
+    out.set(code, [...(out.get(code) ?? []), m[1]]);
+  }
+  return out;
 }
 
 /** The books of Swete's file by code (lower case), each with its tokens; the text a run reads is all of it once. */
