@@ -68,12 +68,12 @@ Feature: Themes on the Sermons sheet (mw-qtu3zvz.4, docs/sermons.md 'The themes'
   @uc-sermons @greek
   Scenario: Settings has an On or Off row for each theme list, both On to start
     Given Settings is open at Study resources
-    Then the Themes section shows "Thompson Chain Topics (1934 subject index)" On
-    And the Themes section shows "Torrey's New Topical Textbook (1897)" On
+    Then the Themes section shows "Thompson Chain Topics" On
+    And the Themes section shows "Torrey's New Topical Textbook" On
 
   @uc-sermons @greek
   Scenario: Turning a theme list Off is kept
     Given Settings is open at Study resources
-    When he turns "Torrey's New Topical Textbook (1897)" Off in the Themes section
-    Then the Themes section shows "Torrey's New Topical Textbook (1897)" Off
+    When he turns "Torrey's New Topical Textbook" Off in the Themes section
+    Then the Themes section shows "Torrey's New Topical Textbook" Off
     And the setting "themes.themes-torrey" is kept as "off"

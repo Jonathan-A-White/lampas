@@ -17,6 +17,7 @@ export const themeSourceSetting = (source: Pick<ThemeSource, 'id' | 'name' | 'de
       ],
     },
     section: 'themes',
-    label: source.name,
+    // the name without its qualifier in brackets: the tutor is told a setting's name in 40 characters (SETTING_NAME_MAX)
+    label: source.name.replace(/ \([^)]*\)$/, ''),
     hint: source.describe,
   });

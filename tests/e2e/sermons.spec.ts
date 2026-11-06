@@ -127,7 +127,7 @@ test('a theme list turned Off in Settings leaves no Themes line', async ({ page 
   await page.goto('/#/settings?group=study');
   const section = page.locator('[data-section="themes"]');
   await expect(section).toBeVisible();
-  for (const name of ['Thompson Chain Topics (1934 subject index)', 'Torrey\'s New Topical Textbook (1897)']) {
+  for (const name of ['Thompson Chain Topics', 'Torrey\'s New Topical Textbook']) {
     const group = section.getByRole('group', { name });
     await expect(group.getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true');
     await group.getByRole('button', { name: 'Off' }).click();
