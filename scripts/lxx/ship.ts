@@ -6,11 +6,14 @@
 // in public/data-lxx/index.json and keeps it). One line a book (`gen: shipped 1-6 of 50`); a derive or build error fails the run, and nothing shippable does not.
 // Each shipped chapter's English is cut into chunks aligned to its Greek words (align.ts, mw-u2w5klk.274.1; the model pass's cuts of what the aligner left, data/lxx/align, align-choose.ts, mw-u2w5klk.274.2); `npm run lxx:align` is this ship with the aligned share of each chapter written to docs/lxx-align.md.
 // A book derived with no Morpheus cache is warned (one line, naming the sg docker line that builds it) and named in the last summary line ('without Morpheus: gen', or 'none'); the run is not refused (mw-u2w5klk.271).
+// The lemma files of a word's own paradigm carry the Septuagint's forms under "lxx" (scripts/build-lemma-forms.mjs, mw-u2w5klk.289), but `npm run build` makes them while public/data-lxx has no chapter, so this ship makes them again from the
+// chapters it has just written (mw-u2w5klk.295): into `--lemma-forms <dir>`, or, with no flag, into the `lemma-forms` folder beside an output named `data-lxx` when there is one (dist/data-lxx and dist/lemma-forms).
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { writeLemmaForms } from '../build-lemma-forms.mjs';
 import { loadLxxInput, writeLxx, type LxxInput, type Written } from '../data-build-lxx';
 import type { AlignShare } from './align';
 import { readModelDir } from './align-choose';
@@ -31,19 +34,22 @@ export interface ShipArgs {
   /** read the Morpheus caches (default); `--no-morpheus` leaves them off */
   morpheus: boolean;
   build?: number;
+  /** where the lemma files are rewritten with the shipped chapters' forms (`--lemma-forms`); none: the `lemma-forms` beside a `data-lxx` output, when it is there */
+  lemmaForms?: string;
 }
 
-const USAGE = 'usage: npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>]';
+const USAGE = 'usage: npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>] [--lemma-forms <dir>]';
 
 export function parseArgs(argv: readonly string[]): ShipArgs {
   const args: ShipArgs = { out: '', morpheus: true };
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
     if (flag === '--no-morpheus') args.morpheus = false;
-    else if (flag === '--out' || flag === '--build') {
+    else if (flag === '--out' || flag === '--build' || flag === '--lemma-forms') {
       const value = argv[++i];
       if (!value || value.startsWith('--')) throw new Error(USAGE);
       if (flag === '--out') args.out = value;
+      else if (flag === '--lemma-forms') args.lemmaForms = value;
       else if (/^\d+$/.test(value)) args.build = Number(value);
       else throw new Error(USAGE);
     } else throw new Error(USAGE);
@@ -62,6 +68,8 @@ export interface ShipOptions {
   knownDir?: string;
   /** where the Morpheus caches are; default data/lxx/morpheus */
   morpheusDir?: string;
+  /** the New Testament's and Hebrew's chapters the lemma files are made from; default public/data */
+  dataDir?: string;
   /** the notice copied to <dir>/README.md; default public/data-lxx/README.md */
   notice?: string;
   /** where the temporary annotation set is made; default the system's temporary directory */
@@ -92,7 +100,7 @@ export interface Shipped {
 const hasChoices = (dir: string, code: string): boolean => existsSync(dir) && readdirSync(dir).some((f) => f.startsWith(`${code.toLowerCase()}-`) && f.endsWith('.tsv'));
 
 export async function runShip(argv: readonly string[], options: ShipOptions = {}): Promise<Shipped> {
-  const { rawDir = RAW_DIR, choicesDir = CHOICES_DIR, knownDir = KNOWN_DIR, morpheusDir = join(OUT_DIR, 'morpheus'), notice = NOTICE, scratch = tmpdir(), log = () => {}, fetcher, books = OLD_TESTAMENT } = options;
+  const { rawDir = RAW_DIR, choicesDir = CHOICES_DIR, knownDir = KNOWN_DIR, morpheusDir = join(OUT_DIR, 'morpheus'), notice = NOTICE, dataDir = join('public', 'data'), scratch = tmpdir(), log = () => {}, fetcher, books = OLD_TESTAMENT } = options;
   const args = parseArgs(argv);
   const alignDir = options.alignDir ?? join(dirname(choicesDir), 'align');
   const started = Date.now();
@@ -140,6 +148,11 @@ export async function runShip(argv: readonly string[], options: ShipOptions = {}
     const written = writeLxx(lxx, args.out, log, { shares: aligned, model: readModelDir(alignDir) });
     if (!existsSync(notice)) throw new Error(`the notice ${notice} is not there`);
     if (writeIfChanged(join(args.out, 'README.md'), readFileSync(notice, 'utf8'))) written.written++;
+    const formsDir = args.lemmaForms ?? (basename(resolve(args.out)) === 'data-lxx' && existsSync(join(dirname(resolve(args.out)), 'lemma-forms')) ? join(dirname(args.out), 'lemma-forms') : undefined);
+    if (formsDir) {
+      const forms = writeLemmaForms(dataDir, formsDir, args.out);
+      log(`lxx:ship: ${forms.lemmas} lemma files with the Septuagint's forms, into ${formsDir}`);
+    }
     log(`lxx:ship: ${out.length} book${out.length === 1 ? '' : 's'} with a choices file, ${((Date.now() - started) / 1000).toFixed(1)} s, into ${args.out}; without Morpheus: ${withoutMorpheus.length > 0 ? withoutMorpheus.join(', ') : 'none'}`);
     return { books: out, written, withoutMorpheus, aligned };
   } finally {

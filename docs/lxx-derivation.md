@@ -794,7 +794,7 @@ npm run lxx:batches -- --all                   # a row for each of the 39 books:
 npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with their verses and candidates: for a model session
 npm run lxx:choose -- --book gen --batch 1 --from <file>  # a model session's choices, checked, as data/lxx/choices/gen-01.tsv
 npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv: the rows of the chapters that pass the chapter bar ('The chapter bar'), under `# shipped chapters: 1-6 of 50`
-npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>]   # for each book with a choices file: derive, release its shippable chapters and build the chapter files, index.json, lexicon and notices into <dir>; no tracked file changes ('The deploy')
+npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>] [--lemma-forms <dir>]   # for each book with a choices file: derive, release its shippable chapters and build the chapter files, index.json, lexicon and notices into <dir>; no tracked file changes ('The deploy')
 npm run lxx:report                             # docs/lxx-report.md: where every book of the Old Testament stands
 npx tsx scripts/lxx/audit-sample.ts [--seed <n>]    # the hand audit's sample of settled words (6 a pool a book; seed 20261103 unless given), each with its verses; --count <file> [--section <heading>] counts the verdicts
 ```
@@ -814,6 +814,7 @@ The live site's Septuagint is written at deploy, not in the batch stories (mw-u2
 leaves it off; Docker is never needed), holds the known-answer lines once, releases the book's shippable chapters to a temporary annotation set, and builds the chapter files, `index.json`, `lexicon-grc-lxx.json` and the three notice files (`LICENSE-swete.txt`, `README-swete.md`, `README.md`) into `<dir>`.
 It writes nothing under `data/`, `public/` or `docs/`, prints one line a book (`gen: shipped 1-6 of 50`, `shipped all 50`, `shipped none of 50`) and exits non-zero only on a derive or build error, never on nothing shippable or on a word with a parsing it cannot put in words (that chapter is held back and the word named, 'The chapter bar'). So every landed batch ships its chapters on the next deploy.
 The Laptop's deploy runs it after `npm run build`, into the built folder: `npm run lxx:ship -- --out dist/data-lxx`. The repo's own `public/data-lxx/index.json` stays `books: []`.
+Because `npm run build` made `dist/lemma-forms` while `public/data-lxx` held no chapter, the same run makes those files again from the chapters it has written (mw-u2w5klk.295): into `dist/lemma-forms`, the `lemma-forms` folder beside an output named `data-lxx` when there is one, or into `--lemma-forms <dir>`, so a word's own paradigm finds its Septuagint forms on the live site (docs/data.md 'lemma-forms').
 
 ## The sources
 
