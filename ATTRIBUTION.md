@@ -15,8 +15,8 @@ Lampas stands on others' work and names every text, font, library, service and i
   Cambridge. Greek and Hebrew words and parts, TAGNT's variants, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 letters.
 - **[TAGNT and TBESG, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The
   [Septuagint derivation](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md) learns from them. Changes: applied to the Septuagint by Lampas's derivation.
-- **[Swete's Septuagint, from eliranwong's LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930)**: the Greek Old Testament. Public domain; packaging
-  [GPL-3.0](https://github.com/eliranwong/LXX-Swete-1930/blob/1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33/LICENSE). Changes: split by chapter.
+- **[Swete's Septuagint, from eliranwong's LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930)**: Greek Old Testament. Public domain; packaging
+  [GPL-3.0](https://github.com/eliranwong/LXX-Swete-1930/blob/1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33/LICENSE). Changes: by chapter; brackets hidden.
 - **[LXX2012, from eBible](https://ebible.org/eng-lxx2012/)**: Brenton's Septuagint in English (1851), American spelling by M. P. Johnson. Public domain. Changes: footnotes dropped.
 - **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Variant readings and sentence ends. Changes: laid on the words.
 - **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The 2005 appendix, read on the Preface. Changes: Greek in Greek letters.

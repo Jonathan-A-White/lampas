@@ -1485,6 +1485,7 @@
                   "greekInterest",
                   "hebrewInterest",
                   "septuagint",
+                  "septuagintGaps",
                   "theme",
                   "font",
                   "textSize",
@@ -1603,6 +1604,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "septuagint" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "septuagintGaps" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
