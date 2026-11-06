@@ -78,7 +78,7 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
   which ends with `shot(page, name)`. Service workers are blocked in e2e (tests/e2e/share-target.spec.ts lets the built worker run, to POST a share).
 - esbuild will not run in jsdom: a test that needs a real build runs
   `node node_modules/vite/bin/vite.js build --outDir <tmp>` in a child process (see `features/steps/install.steps.tsx`).
-- Playwright is pinned to 1.63.0, the Laptop's Chromium build.
+- Playwright is pinned to 1.63.0 (the Laptop's Chromium).
 - After a `while setting up` timeout read the gate log's `page-setup-watch:` line first (`tests/support/page-setup-watch.ts`).
 
 ## Layout
