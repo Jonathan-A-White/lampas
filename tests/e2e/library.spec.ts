@@ -80,6 +80,27 @@ test('Lexicons with 27 on: All on, two off, each of the three hit areas selects,
   await expect(page.getByRole('radiogroup', { name: 'EDNT', exact: true }).getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
 });
 
+test('Lexicons are grouped Hebrew then Greek, a search narrows within the groups and hides an empty group (mw-5r3p30.1117)', async ({ page }) => {
+  await open(page, 'library?kind=lexicon', 'Lexicons');
+  const top = async (name: string | RegExp, role: 'heading' | 'radiogroup'): Promise<number> => (await page.getByRole(role, { name, exact: typeof name === 'string' }).first().boundingBox())!.y;
+  const hebrew = await top('Hebrew', 'heading');
+  const bdb = await top('BDB', 'radiogroup');
+  const greek = await top('Greek', 'heading');
+  const bdag = await top('BDAG', 'radiogroup');
+  expect(hebrew).toBeLessThan(greek);
+  expect(bdag).toBeGreaterThan(greek);
+  expect(bdb).toBeGreaterThan(hebrew);
+  expect(bdb).toBeLessThan(greek);
+  await shot(page, 'library-lexicons-grouped');
+
+  const search = page.getByRole('searchbox', { name: 'Search Lexicons' });
+  await search.fill('BDAG');
+  await expect(page.getByRole('heading', { name: 'Greek', level: 2 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hebrew', level: 2 })).toHaveCount(0);
+  await search.fill('');
+  await expect(page.getByRole('heading', { name: 'Hebrew', level: 2 })).toBeVisible();
+});
+
 test('Commentaries, several hundred of them: All on, a search narrows them, the box scrolls to the last, pinned lead (mw-vb8krt)', async ({ page }) => {
   await open(page, 'library?kind=commentary', 'Commentaries');
   const field = page.getByRole('searchbox', { name: 'Search Commentaries' });

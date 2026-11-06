@@ -24,12 +24,12 @@ Feature: Your Logos library, a screen of its own
     When he opens the Library at the kind "lexicon"
     Then the page "Lexicons" is open
     And the page says "2 on"
-    And the books are listed with "DBL Greek" first, then "Louw-Nida", then those that are off
+    And the Greek books are listed with "DBL Greek" first, then "Louw-Nida", then those that are off
     And "DBL Greek" is set to "Pin" and "Louw-Nida" is set to "On" and "BDAG" is set to "Off"
     When he sets "BDAG" to "On"
     Then "BDAG" is set to "On"
     And the count now reads "3 on"
-    And the books are still where they were, "DBL Greek" first, then "Louw-Nida"
+    And the Greek books are still where they were, "DBL Greek" first, then "Louw-Nida"
 
   Scenario: All on turns a kind On and All off turns it Off
     Given his shelf holds the lexicons "BDAG" On with "BDAG" pinned
