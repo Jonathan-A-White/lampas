@@ -5,6 +5,7 @@ import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
 import { turnLogosOn } from './settings-group';
+import { TOOL_SCREENS } from '../../src/tools';
 
 // Tapping a row the Settings search found takes him to it: the page of its group, the row scrolled into view and marked (mw-5r3p30.877; the link of mw-5r3p30.502).
 // The rows that are no setting of the registry (Keep on this phone, the link rows, the devotional) were opened at the top of their section, not marked.
@@ -29,7 +30,7 @@ for (const key of ['textSize', 'greekRate', 'offlineCopy', 'request.devotional',
   });
 }
 
-// every result, not only these: none opens a page without its row marked and in view
+// every result, not only these: none opens a page without its row marked and in view; a row that moved to Tools (mw-5r3p30.754) opens its tool's screen instead
 test('every result of a search lands on its row', async ({ page }) => {
   test.setTimeout(240_000);
   await openUnlocked(page);
@@ -45,6 +46,10 @@ test('every result of a search lands on its row', async ({ page }) => {
     await page.locator(`[data-found="${key}"]`).scrollIntoViewIfNeeded();
     await page.locator(`[data-found="${key}"]`).tap();
     await page.waitForTimeout(500);
+    if (Object.hasOwn(TOOL_SCREENS, key)) {
+      if (new URL(page.url()).hash.split('?')[0] !== `#/${TOOL_SCREENS[key]}`) missed.push(key);
+      continue;
+    }
     const lands = await page.evaluate((k) => {
       const el = document.querySelector(`[data-setting="${CSS.escape(k)}"]`);
       if (!el) return false;
