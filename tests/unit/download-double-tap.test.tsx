@@ -19,6 +19,7 @@ vi.mock('../../src/data/repositories/memory', async (original) => {
 });
 
 const FILE_LINE = /Saved lampas-memory-\d{4}-\d{2}-\d{2}\.json\./;
+const timeout = ASYNC_WAIT_MS;
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const clip: Clip = { bytes: new Uint8Array([1, 2, 3]).buffer, mime: 'audio/webm' };
 const NAME = 'lampas-rom.8.28-20261009T120000Z.webm';
@@ -110,7 +111,7 @@ describe('Export', () => {
     await screen.findByText(FILE_LINE);
     await wait(SETTLE_MS + 50);
     await act(async () => fireEvent.click(button));
-    await vi.waitFor(() => expect(saved).toHaveLength(2), { timeout: ASYNC_WAIT_MS });
+    await vi.waitFor(() => expect(saved).toHaveLength(2), { timeout });
     expect(saved[1]).toMatch(FILE);
   });
 });
