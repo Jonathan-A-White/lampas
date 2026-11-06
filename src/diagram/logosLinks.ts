@@ -17,9 +17,11 @@ const HEBREW_SYNTAX = 'LLS:46.20.9';
 const STUDENTS_GUIDE = 'LLS:46.20.3';
 const DIAGRAMMATICAL_ANALYSIS = 'PDF:DIAGANALYSIS';
 
-/** The links of the row, in the order drawn: by `language` ('hbo' the Old Testament's, else Greek), then the how-to. A Greek verse of a book with no Logos abbreviation has only the how-to. */
-export function diagramLogosLinks(place: StudyPlace, language: 'grc' | 'hbo'): DiagramLogosLink[] {
+/** The links of the row, in the order drawn: by `language` ('hbo' the Old Testament's, else Greek), then the how-to. A Greek verse of a book with no Logos abbreviation has only the how-to,
+ * and so has an Old Testament verse read as the Septuagint's Greek ('lxx', mw-u2w5klk.15): the Lexham SGNT is the New Testament's, so its link at Genesis 1:1 would open nothing. */
+export function diagramLogosLinks(place: StudyPlace, language: 'grc' | 'hbo' | 'lxx'): DiagramLogosLink[] {
   const how: DiagramLogosLink = { label: 'How to diagram', ...resourceStart(DIAGRAMMATICAL_ANALYSIS) };
+  if (language === 'lxx') return [how];
   if (language === 'hbo') {
     return [
       { label: 'Hebrew Syntax', ...resourceStart(HEBREW_SYNTAX) },

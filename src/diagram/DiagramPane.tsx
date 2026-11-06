@@ -12,6 +12,7 @@ import { isOneVerse } from '../data/passage';
 import type { Chapter, Verse } from '../data/chapter';
 import { getStudyResources } from '../data/repositories';
 import type { WovenVerse } from '../data/weave';
+import { isSeptuagint } from '../reader/septuagint';
 import type { Lookup } from '../WordSheet';
 import { navigate } from '../nav/route';
 import { useDoorRoom } from '../tutor/doorRoom';
@@ -67,7 +68,7 @@ const LOGOS_LINK = 'inline-flex min-h-12 items-center rounded-lg border border-l
 function SeeItInLogos({ chapter, n }: { chapter: Chapter; n: number }) {
   const logos = useLiveQuery(async () => (await getStudyResources()).on.includes('logos'), []);
   if (!logos) return null;
-  const links = diagramLogosLinks({ book: chapter.code, chapter: chapter.chapter, verse: n }, chapter.lang === 'hbo' ? 'hbo' : 'grc');
+  const links = diagramLogosLinks({ book: chapter.code, chapter: chapter.chapter, verse: n }, chapter.lang === 'hbo' ? 'hbo' : isSeptuagint(chapter) ? 'lxx' : 'grc');
   return (
     <div role="group" aria-label="See it in Logos" data-diagram-logos className="flex flex-col gap-1 px-1">
       <p className="text-sm text-muted">See it in Logos</p>
