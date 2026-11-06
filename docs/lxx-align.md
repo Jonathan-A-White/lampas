@@ -6,6 +6,18 @@ The Septuagint chapters are Swete's Greek with Brenton's English (LXX2012), and 
 `scripts/lxx/align.ts` cuts Brenton's verse into English chunks and pairs each to the Greek word it renders, in the shape the Old Testament's Weave already reads (`EnglishChunk` and `GreekWord.e` in
 `src/data/chapter.ts`, `weaveVerse` in `src/data/weave.ts`). It is deterministic and calls no model; a second run on the same inputs writes the same bytes.
 
+<!-- toc -->
+
+- [The commands](#the-commands)
+- [The shape](#the-shape)
+- [How a pair is made](#how-a-pair-is-made)
+- [What reads the chunks](#what-reads-the-chunks)
+- [The report](#the-report)
+  - [Each chapter shipped](#each-chapter-shipped)
+  - [Each book](#each-book)
+
+<!-- /toc -->
+
 ## The commands
 
 - `npm run lxx:ship -- --out dist/data-lxx` aligns every chapter it ships (the Laptop's deploy step, docs/lxx-derivation.md 'The commands'). `npm run data:build:lxx` (public/data-lxx) is unchanged: one chunk a verse.
