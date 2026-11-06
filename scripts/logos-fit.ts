@@ -1,6 +1,6 @@
 // scripts/logos-fit.ts — the fit report (`npm run logos:fit -- <csv>`; mw-rfjjzd.2, docs/design/library-at-scale.md 3.1 and 5.4): the rows of a Logos export that the catalogue's
 // rules do not take, by the kind each would be, with the Logos type and the data types of its ReferenceSupersets (`ltrntg`, `bdf`, `bible+esv`: the names a section link could use,
-// docs/research/logos-section-refs.md). It is the Mayor's reading of a list a reader sent: what could join with a rule, and what is outside the vision. Rows that look like none of the seven
+// docs/research/logos-section-refs.md). It is the Mayor's reading of a list a reader sent: what could join with a rule, and what is outside the vision. Rows that look like none of the eight
 // kinds are counted by type, not listed. Nothing is written.
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -10,14 +10,14 @@ import { KIND_LIST, buildCatalogue, coversNewTestament, loadRules, readExport, t
 
 export type FitKind = Kind | 'other';
 
-/** The kind a row would be if the rules took it, by its Logos type and language. A Bible in English is a Bible, in Greek a Greek text; anything else is 'other'. */
+/** The kind a row would be if the rules took it, by its Logos type and language. A Bible in English is a Bible, in Greek a Greek text, in Hebrew a Hebrew text; anything else is 'other'. */
 export function guessKind(row: Pick<ExportRow, 'type' | 'languages'>): FitKind {
   const { type, languages } = row;
   if (type === 'text.monograph.lexicon') return 'lexicon';
   if (type === 'text.monograph.grammar') return 'grammar';
   if (type.startsWith('text.monograph.commentary')) return 'commentary';
   if (type === 'text.monograph.critical-apparatus.bible') return 'greek-text';
-  if (type === 'text.monograph.bible') return languages === 'el' ? 'greek-text' : languages === 'en' ? 'bible' : 'other';
+  if (type === 'text.monograph.bible') return languages === 'el' ? 'greek-text' : languages === 'he' ? 'hebrew-text' : languages === 'en' ? 'bible' : 'other';
   if (type === 'lbx.reverse-interlinear') return 'interlinear';
   if (type === 'lbx.calendar-devotional') return 'devotional';
   return 'other';
@@ -54,7 +54,7 @@ export interface Fit {
   unmatchedRules: string[];
 }
 
-/** What the rules take of the export and what they leave, by kind (the seven, then 'other'). */
+/** What the rules take of the export and what they leave, by kind (the eight, then 'other'). */
 export function fitReport(rules: Rules, rows: readonly ExportRow[]): Fit {
   const { files, unmatched } = buildCatalogue(rules, rows);
   const taken = new Set(KIND_LIST.flatMap((k) => files[k].entries.map((e) => e.resource)));

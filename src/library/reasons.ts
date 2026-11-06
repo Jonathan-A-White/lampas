@@ -45,7 +45,7 @@ export const REASONS: readonly Reason[] = [
   {
     key: 'bibles',
     label: 'Bibles in another language',
-    why: 'Lampas opens English Bibles and the Greek texts it lists.',
+    why: 'Lampas opens English Bibles and the Greek and Hebrew texts it lists.',
     fits: (row) => isType(row, 'text.monograph.bible'),
   },
   {

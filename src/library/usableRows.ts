@@ -1,5 +1,5 @@
 // src/library/usableRows.ts — the rows of his Logos list that Lampas could use and does not open yet (docs/design/library-at-scale.md 6.2): what 'Ask the makers about these' attaches as library.csv. They
-// are commentaries on a book of the Bible, lexicons and grammars of Greek, Greek texts, interlinears of the New Testament and devotionals; never a manuscript, a Bible in English, a book of the Old Testament
+// are commentaries on a book of the Bible, lexicons and grammars of Greek, Greek texts, Hebrew texts, interlinears of the New Testament and devotionals; never a manuscript, a Bible in English, a book of the Old Testament
 // that is not a commentary, or a tool. The Mayor judges each against the vision (npm run logos:fit prints the same reading); this is only what is worth sending. Pure.
 import type { Kind } from '../resources/catalogue';
 import { coversNewTestament, coversOfSupersets } from './parseExport';
@@ -23,6 +23,7 @@ const isGreek = (languages: string): boolean => languages.split(/[\s,;|]+/).some
 /** A lexicon or grammar whose Languages name a language that is not Greek and not Greek as well is not for Greek. A list that names none is given the benefit of the doubt. */
 const forGreek = (languages: string): boolean => isGreek(languages) || !languages.split(/[\s,;|]+/).some((l) => OTHER_LANGUAGES.has(l));
 
+const isHebrew = (languages: string): boolean => languages.split(/[\s,;|]+/).some((l) => l === 'he' || l === 'hbo' || l === 'heb');
 const isType = (row: ListedRow, prefix: string): boolean => row.type === prefix || row.type.startsWith(`${prefix}.`);
 
 /** The kind of book a row would be if Lampas opened it, or undefined when it is not one Lampas could use. */
@@ -33,7 +34,7 @@ export function usableKind(row: ListedRow): Kind | undefined {
   if (isType(row, 'text.monograph.lexicon')) return forGreek(row.languages) ? 'lexicon' : undefined;
   if (isType(row, 'text.monograph.grammar')) return forGreek(row.languages) ? 'grammar' : undefined;
   if (isType(row, 'text.monograph.critical-apparatus')) return 'greek-text';
-  if (isType(row, 'text.monograph.bible')) return isGreek(row.languages) ? 'greek-text' : undefined;
+  if (isType(row, 'text.monograph.bible')) return isGreek(row.languages) ? 'greek-text' : isHebrew(row.languages) ? 'hebrew-text' : undefined;
   if (isType(row, 'lbx.reverse-interlinear') || isType(row, 'lbx.interlinear')) return nt ? 'interlinear' : undefined;
   if (isType(row, 'lbx.calendar-devotional')) return 'devotional';
   return undefined;

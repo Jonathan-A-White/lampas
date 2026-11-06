@@ -30,6 +30,7 @@ const NOUNS: Record<Kind, readonly [string, string]> = {
   lexicon: ['lexicon', 'lexicons'],
   grammar: ['grammar', 'grammars'],
   'greek-text': ['Greek text', 'Greek texts'],
+  'hebrew-text': ['Hebrew text', 'Hebrew texts'],
   interlinear: ['interlinear', 'interlinears'],
   commentary: ['commentary', 'commentaries'],
   bible: ['Bible', 'Bibles'],

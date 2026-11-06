@@ -35,7 +35,7 @@ describe('logos:fit', () => {
     expect(report.rows).toBe(60);
     expect(report.matched).toBe(22);
     expect(report.unmatched).toBe(38);
-    expect(Object.fromEntries(report.byKind.map((k) => [k.kind, k.rows.length]))).toEqual({ lexicon: 0, grammar: 0, 'greek-text': 0, interlinear: 0, commentary: 0, bible: 0, devotional: 0, other: 38 });
+    expect(Object.fromEntries(report.byKind.map((k) => [k.kind, k.rows.length]))).toEqual({ lexicon: 0, grammar: 0, 'greek-text': 0, 'hebrew-text': 0, interlinear: 0, commentary: 0, bible: 0, devotional: 0, other: 38 });
     expect(report.byKind.find((k) => k.kind === 'other')?.types).toEqual({
       'lbx.interactive': 22, 'lbx.crossreferences': 3, 'lbx.biblecrossreferences': 1, 'lbx.biblicalevents': 1, 'lbx.biblicalpeople': 1, 'lbx.biblicalpeoplediagrams': 1,
       'lbx.biblicalplaces': 1, 'lbx.biblicalplacesmaps': 1, 'lbx.biblicalreferents': 1, 'lbx.biblicalthings': 1, 'lbx.biographies': 1, 'lbx.churchhistoryontology': 1,
