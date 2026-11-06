@@ -11,6 +11,12 @@ import { readerOf } from './nav/route';
 /** In sessionStorage: 'Not now' put the control away for the rest of the tab's session. */
 export const DISMISSED_KEY = 'lampas.openInAppDismissed';
 
+/** How long a page may stay showing after his tap before the strip says the app did not open (mw-5r3p30.1091). */
+export const HAND_OVER_WAIT_MS = 2000;
+
+/** What the strip says when the page is still showing then: on his phone the hand-over stayed in Chrome while this Android switch was off (mw-5r3p30.1082). */
+export const NOT_OPENED_HINT = "Lampas didn't open? On Android: Settings > Apps > Lampas > Set as default > Supported web addresses: turn on lampas.allmymind.org.";
+
 interface RelatedApp {
   platform?: string;
 }

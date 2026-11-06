@@ -2,7 +2,7 @@
 // Lampas, one labelled control hands the same address (a plain https address, not an intent: URL: Chromium keeps an intent: URL for the browser's own host in Chrome, as a
 // 'navigation to self') to Android in a new tab with no referrer. Not where the API is absent or reports nothing, not in the installed app, not once dismissed for the
 // session, and nothing leaves the page but his tap.
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const goTo = vi.hoisted(() => vi.fn());
@@ -252,6 +252,56 @@ describe('OpenInApp', () => {
       now.mockReturnValue(epoch + SETTLE_MS + 1);
       fireEvent.click(button);
       expect(goTo).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  // mw-5r3p30.1091: on his phone the hand-over stayed in Chrome while Android's Supported web addresses switch for Lampas was off, and nothing told him. A tap the app took over from hides the
+  // page (pagehide, visibilitychange to hidden); a page still showing 2 s after the tap was not taken over, and the strip says which switch to turn on.
+  describe('a hand-over that does not leave the browser', () => {
+    const HINT = "Lampas didn't open? On Android: Settings > Apps > Lampas > Set as default > Supported web addresses: turn on lampas.allmymind.org.";
+    const hidden = (state: DocumentVisibilityState) => {
+      vi.spyOn(document, 'visibilityState', 'get').mockReturnValue(state);
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    afterEach(() => void vi.useRealTimers());
+    const tapped = async () => {
+      setup();
+      render(<OpenInApp />);
+      const button = await screen.findByRole('button', { name: 'Open in the app' });
+      vi.useFakeTimers();
+      fireEvent.click(button);
+      return button;
+    };
+    it('says which switch to turn on when the page is still showing 2 s after the tap, and keeps Not now', async () => {
+      await tapped();
+      act(() => void vi.advanceTimersByTime(1999));
+      expect(screen.queryByText(HINT)).toBeNull();
+      act(() => void vi.advanceTimersByTime(1));
+      expect(screen.getByText(HINT)).toBeTruthy();
+      expect(control(), 'the hint stands in place of the control').toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
+      expect(screen.queryByText(HINT)).toBeNull();
+    });
+    it('says nothing when the page was hidden within 2 s (the app took over)', async () => {
+      await tapped();
+      act(() => void vi.advanceTimersByTime(500));
+      act(() => hidden('hidden'));
+      act(() => void vi.advanceTimersByTime(5000));
+      expect(screen.queryByText(HINT)).toBeNull();
+    });
+    it('says nothing when the page was left (pagehide) within 2 s', async () => {
+      await tapped();
+      act(() => void window.dispatchEvent(new Event('pagehide')));
+      act(() => void vi.advanceTimersByTime(5000));
+      expect(screen.queryByText(HINT)).toBeNull();
+    });
+    it('says nothing before any tap', async () => {
+      setup();
+      render(<OpenInApp />);
+      await screen.findByRole('button', { name: 'Open in the app' });
+      vi.useFakeTimers();
+      act(() => void vi.advanceTimersByTime(10_000));
+      expect(screen.queryByText(HINT)).toBeNull();
     });
   });
 
