@@ -43,7 +43,7 @@ function sourceOf(entry: ThemeSourceEntry): ThemeSource {
     name: entry.name,
     homepage: entry.homepage,
     credit: entry.credit,
-    describe: `Topics of a verse, from ${entry.topics.toLocaleString('en-US')}.`,
+    describe: 'Verse topics.',
     default: 'on',
     async book(book: string): Promise<ThemeBook> {
       // a book the source has no file for is no request

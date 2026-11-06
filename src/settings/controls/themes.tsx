@@ -2,10 +2,15 @@
 // (src/settings/definitions/themes.ts declares it) and saved through the settings store. The rows are made from the registry of sources (src/themes/sources/index.ts SOURCES).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { settingOf } from '../registry';
-import { OnOff, SettingRow } from './SettingRow';
+import { OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 export const ThemesControl: Control = ({ row }) => {
   const current = useLiveQuery(async () => String(await settingOf(row.key)?.read()), [row.key]);
-  return <SettingRow row={row}>{current === 'on' || current === 'off' ? <OnOff name={row.label} current={current} settingKey={row.key as `themes.${string}`} /> : null}</SettingRow>;
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {current === 'on' || current === 'off' ? <OnOff name={row.label} current={current} settingKey={row.key as `themes.${string}`} /> : null}
+    </SettingRow>
+  );
 };
