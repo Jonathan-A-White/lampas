@@ -24,6 +24,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Biblical Hebrew Step by Step](https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ)** by Menahem Mansoor. Only lesson titles and pages, so a link finds the lesson.
 - **[Bible Mapper](https://biblemapper.com)**, maps by David P. Barrett. Free for non-commercial use with a credit: "Map by David P. Barrett, biblemapper.com". Shown from his site, not copied.
 - **[Spurgeon's sermons, from CCEL](https://ccel.org/ccel/spurgeon)** (Christian Classics Ethereal Library, Calvin University): titles, passages and links only. Public domain; CCEL's [terms](https://ccel.org/about/copyright.html): "may be used for personal, educational, or non-profit purposes." Changes: split by book.
+- **[Matthew Henry's sermons](https://archive.org)**, from the Internet Archive's scans: titles, passages, links. Public domain; the Archive's [terms](https://archive.org/about/terms.php).
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/)** inspired the grammar ladder, ordered beside the sequence of their Greek path; no course text, image or exercise is copied.
 
