@@ -26,6 +26,7 @@ settings registry (`src/settings/registry.ts`), so the Bible talk cannot change 
 - [How to add a resource](#how-to-add-a-resource)
 - [The tutor's links (mw-5r3p30.75, PROVISIONAL, Governor to confirm)](#the-tutors-links-mw-5r3p3075-provisional-governor-to-confirm)
 - [Audio Bible: Listen in Audible (mw-5r3p30.390, mw-5r3p30.451)](#audio-bible-listen-in-audible-mw-5r3p30390-mw-5r3p30451)
+- [Hebrew texts (mw-5r3p30.1115)](#hebrew-texts-mw-5r3p301115)
 
 <!-- /toc -->
 
