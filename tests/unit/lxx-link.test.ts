@@ -3,6 +3,7 @@ import { existsSync, lstatSync, readFileSync, mkdirSync, mkdtempSync, readlinkSy
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { LINKS, SOURCE_CHECKOUT, runLink } from '../../scripts/lxx/link';
 
 let root: string;
@@ -22,7 +23,7 @@ beforeEach(() => {
   for (const rel of LINKS) mkdirSync(join(source, rel), { recursive: true });
   mkdirSync(join(tree, 'data', 'lxx'), { recursive: true });
 });
-afterEach(() => rmSync(root, { recursive: true, force: true }));
+afterEach(() => rmSync(root, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
 
 function isLink(p: string): boolean {
   try {
