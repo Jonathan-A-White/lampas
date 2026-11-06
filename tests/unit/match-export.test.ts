@@ -134,13 +134,19 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('matchExport on his whole export (mw-
     ({ matched, unmatched } = matchExport(readExport(readFileSync(VAULT_EXPORT, 'utf8'))));
   });
 
-  it('opens every book of the catalogue and lists them all: nothing waits for an update', () => {
-    expect(matched).toHaveLength(CATALOGUE.length);
+  // The Hebrew texts (mw-5r3p30.1115) are Hebrew Bibles Logos sells that his export does not hold; every other kind is a book he owns. So the catalogue's entries
+  // missing from the export must all be Hebrew texts, and every other entry is opened and listed.
+  const heldIds = () => new Set(matched.map((m) => m.row.resource));
+  const sold = () => CATALOGUE.filter((e) => !heldIds().has(e.resource));
+
+  it('opens every book of the catalogue he owns and lists them all: nothing waits for an update', () => {
+    expect(sold().filter((e) => e.kind !== 'hebrew-text').map((e) => e.resource)).toEqual([]);
+    expect(matched).toHaveLength(CATALOGUE.length - sold().length);
     expect(matched.every(isListed)).toBe(true);
   });
 
   it('leaves the rest of the 4,795 books, and no commentary on a book of the Bible', () => {
-    expect(unmatched).toHaveLength(4795 - CATALOGUE.length);
+    expect(unmatched).toHaveLength(4795 - (CATALOGUE.length - sold().length));
     for (const u of unmatched.filter((x) => x.row.type === 'text.monograph.commentary.bible')) expect(coversOfSupersets(u.row.supersets), u.row.title).toEqual([]);
   });
 });
