@@ -46,9 +46,9 @@ async function tapMiddle(page: Page, target: Locator): Promise<void> {
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 
-test('the home has seven rows with counts, thumb-sized controls and no sideways scroll', async ({ page }) => {
+test('the home has eight rows with counts, thumb-sized controls and no sideways scroll', async ({ page }) => {
   await open(page, 'library', 'Your Logos library');
-  await expect(page.getByTestId('kind-row')).toHaveCount(7);
+  await expect(page.getByTestId('kind-row')).toHaveCount(8);
   await expect(page.getByTestId('library-card')).toContainText('books Lampas can open are on.');
   await expectThumbSized(page);
   await shot(page, 'library-home');

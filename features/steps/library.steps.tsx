@@ -113,7 +113,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const resultTitles = (): string[] => screen.queryAllByTestId('result-title').map((e) => e.textContent ?? '');
 
-  Scenario('The home shows the card and the seven kinds with counts from the shelf', ({ Given, When, Then, And }) => {
+  Scenario('The home shows the card and the eight kinds with counts from the shelf', ({ Given, When, Then, And }) => {
     Given(
       'his shelf holds the lexicons {string} On with {string} pinned, the grammar {string} On and the Bible {string} chosen',
       async (_, lexicons: string, pinned: string, grammar: string, bible: string) => {

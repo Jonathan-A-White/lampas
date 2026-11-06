@@ -17,8 +17,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const RULES_FILE = join(ROOT, 'data/logos/catalogue-rules.json');
 export const CATALOGUE_DIR = join(ROOT, 'src/resources/catalogue');
 
-/** The seven kinds, as src/resources/catalogue.ts lists them (repeated here: this tool must not import the files it writes). */
-export const KIND_LIST: readonly Kind[] = ['lexicon', 'grammar', 'greek-text', 'interlinear', 'commentary', 'bible', 'devotional'];
+/** The eight kinds, as src/resources/catalogue.ts lists them (repeated here: this tool must not import the files it writes). */
+export const KIND_LIST: readonly Kind[] = ['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional'];
 
 // ---- The rules file ----
 
@@ -82,8 +82,8 @@ export { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, read
 
 // ---- The catalogue ----
 
-const DEFAULT_LANG: Record<Kind, ResourceLang> = { lexicon: 'grc', grammar: 'grc', 'greek-text': 'grc', interlinear: 'both', commentary: 'en', bible: 'en', devotional: 'en' };
-const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing', 'greek-text': 'verse', interlinear: 'verse', commentary: 'verse', bible: 'chapter', devotional: 'day' };
+const DEFAULT_LANG: Record<Kind, ResourceLang> = { lexicon: 'grc', grammar: 'grc', 'greek-text': 'grc', 'hebrew-text': 'he', interlinear: 'both', commentary: 'en', bible: 'en', devotional: 'en' };
+const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing', 'greek-text': 'verse', 'hebrew-text': 'verse', interlinear: 'verse', commentary: 'verse', bible: 'chapter', devotional: 'day' };
 
 /** The entry with its fields in the one order, and none that is undefined, so the bytes written depend on the data alone. */
 function ordered(e: CatalogueEntry): CatalogueEntry {
@@ -91,7 +91,7 @@ function ordered(e: CatalogueEntry): CatalogueEntry {
   return Object.fromEntries(order.filter((k) => e[k] !== undefined).map((k) => [k, e[k]])) as unknown as CatalogueEntry;
 }
 
-/** The version stamp: a hash of every entry and work of the seven kinds, so a file left behind by an edit shows. */
+/** The version stamp: a hash of every entry and work of the eight kinds, so a file left behind by an edit shows. */
 export function versionOf(files: Record<Kind, Pick<KindFile, 'entries' | 'works'>>): string {
   const body = KIND_LIST.map((k) => ({ kind: k, works: files[k].works ?? null, entries: files[k].entries.map(ordered) }));
   return createHash('sha256').update(JSON.stringify(body)).digest('hex').slice(0, 12);
@@ -129,7 +129,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
   for (const rule of rules.ids) {
     if (!KIND_LIST.includes(rule.kind)) throw new Error(`${rule.resource}: ${rule.kind} is not a kind`);
     if (taken.has(rule.resource)) throw new Error(`${rule.resource} is named twice in the rules`);
-    if (rule.kind === 'bible' && !rule.parts?.length) throw new Error(`${rule.resource} is a Bible with no "parts": say which of nt, ot and apocrypha it holds`);
+    if ((rule.kind === 'bible' || rule.kind === 'hebrew-text') && !rule.parts?.length) throw new Error(`${rule.resource} is a Bible with no "parts": say which of nt, ot and apocrypha it holds`);
     for (const code of rule.covers ?? []) if (!known.has(code)) throw new Error(`${rule.resource} covers ${code}, which is no book`);
     if (rule.work !== undefined && !workIds.has(rule.work)) throw new Error(`${rule.resource} is a volume of ${rule.work}, which the rules do not list under "works"`);
     taken.add(rule.resource);
@@ -165,7 +165,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
       resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, series: row.series || undefined,
       lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
       covers: covers.length > 0 && (covers.length < NT_BOOKS.length || kind === 'commentary') ? covers : undefined,
-      parts: kind === 'bible' ? partsOfSupersets(row.supersets) : undefined, starts: rule.starts ?? 'on', via,
+      parts: kind === 'bible' || kind === 'hebrew-text' ? partsOfSupersets(row.supersets) : undefined, starts: rule.starts ?? 'on', via,
       dayOfYear: kind === 'devotional' ? row.supersets.split('\t').some((t) => t.startsWith('dayofyear')) : undefined,
     });
     taken.add(row.resource);
@@ -201,7 +201,7 @@ export function loadRules(file = RULES_FILE): Rules {
   return JSON.parse(readFileSync(file, 'utf8')) as Rules;
 }
 
-/** Writes the seven files into `dir`; returns the notes. */
+/** Writes the eight files into `dir`; returns the notes. */
 export function writeCatalogue(csvPath: string, dir = CATALOGUE_DIR, rulesFile = RULES_FILE): string[] {
   const { files, notes } = buildCatalogue(loadRules(rulesFile), readExport(readFileSync(csvPath, 'utf8')));
   mkdirSync(dir, { recursive: true });
@@ -220,7 +220,7 @@ function main(argv: string[]): void {
   }
   const notes = writeCatalogue(resolve(csv), out);
   for (const n of notes) console.log(`note: ${n}`);
-  console.log(`wrote the seven kinds to ${out}`);
+  console.log(`wrote the eight kinds to ${out}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main(process.argv);

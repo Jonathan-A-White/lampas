@@ -6,11 +6,12 @@ import bible from './catalogue/bible.json' with { type: 'json' };
 import devotional from './catalogue/devotional.json' with { type: 'json' };
 import grammar from './catalogue/grammar.json' with { type: 'json' };
 import greekText from './catalogue/greek-text.json' with { type: 'json' };
+import hebrewText from './catalogue/hebrew-text.json' with { type: 'json' };
 import interlinear from './catalogue/interlinear.json' with { type: 'json' };
 import lexicon from './catalogue/lexicon.json' with { type: 'json' };
 import type { BookSection, LogosPart, ResourceLang } from './types';
 
-export const KINDS = ['lexicon', 'grammar', 'greek-text', 'interlinear', 'commentary', 'bible', 'devotional'] as const;
+export const KINDS = ['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional'] as const;
 export type Kind = (typeof KINDS)[number];
 
 /** Where Lampas opens an entry: a word (the lexicon's headword), a parsing (a grammar's section for a ladder idea), a verse, a chapter (a Bible's Old Testament chapter), a day (a devotional), the
@@ -38,7 +39,7 @@ export interface CatalogueEntry {
   value: string;
   /** a commentary volume or an interlinear: our book codes (src/data/books.ts), read from the export's ReferenceSupersets; absent means the whole New Testament */
   covers?: string[];
-  /** a Bible only: the parts of the canon it holds (New Testament, Old Testament, Apocrypha), from the export's ReferenceSupersets or, where those cannot say, from the rules (scripts/logos-catalogue.ts) */
+  /** a Bible or a Hebrew text: the parts of the canon it holds (New Testament, Old Testament, Apocrypha), from the export's ReferenceSupersets or, where those cannot say, from the rules (scripts/logos-catalogue.ts) */
   parts?: LogosPart[];
   /** a grammar only: its parts and the ladder ideas each teaches (today's GrammarBook.sections) */
   sections?: BookSection[];
@@ -85,7 +86,7 @@ export interface WorkGroup {
   index?: WorkIndex;
 }
 
-/** One generated file: `version` is the same in all seven (a hash of every entry), `works` is only in the commentary file. */
+/** One generated file: `version` is the same in all eight (a hash of every entry), `works` is only in the commentary file. */
 export interface KindFile {
   kind: Kind;
   version: string;
@@ -97,6 +98,7 @@ const FILES: Record<Kind, KindFile> = {
   lexicon: lexicon as unknown as KindFile,
   grammar: grammar as unknown as KindFile,
   'greek-text': greekText as unknown as KindFile,
+  'hebrew-text': hebrewText as unknown as KindFile,
   interlinear: interlinear as unknown as KindFile,
   commentary: commentary as unknown as KindFile,
   bible: bible as unknown as KindFile,
