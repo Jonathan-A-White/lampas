@@ -24,7 +24,7 @@ import { TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
 import { chooseReading, getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
-import { chapterOf, getOpenChapter, setOpenChapter, type OpenChapter } from './data/readerChapter';
+import { chapterOf, getOpenChapter, setOpenChapter, setOpenReadLanguage, type OpenChapter } from './data/readerChapter';
 import { neighbours, verseNeighbours } from './data/neighbours';
 import { passageAt, passageVerse, passagesOf, rangeOf, unitId, type Passage } from './data/passage';
 import { approachOf, DEFAULT_APPROACH, lessonForRange, passageLabel } from './approaches';
@@ -150,6 +150,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { chapter: fetched, failed, retry: retryChapter } = useChapter(BOOK, CHAPTER);
   const ownLang: InterestLang | null = isHebrewBook(BOOK) ? (fetched ? (sourceLanguage(fetched) as InterestLang) : null) : 'grc';
   const hbo = ownLang === 'hbo';
+  // The Greek tools (Quick test, Parsing drill, Review, Memorize) take the open Old Testament chapter as Greek while this is the Septuagint's (mw-u2w5klk.15)
+  useEffect(() => {
+    if (ownLang) setOpenReadLanguage(BOOK, CHAPTER, ownLang);
+  }, [BOOK, CHAPTER, ownLang]);
   const settings = useReaderSettings(ownLang) ?? NO_SETTINGS;
   const { level, view, weave, weaveShown, weaveOrder, weaveGrammar, solid, learning, layout, headings, readSpan } = settings;
   const immersive = useImmersiveSetting();

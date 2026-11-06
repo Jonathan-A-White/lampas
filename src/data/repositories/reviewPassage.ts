@@ -39,7 +39,8 @@ export async function loadHebrewPassage(chooser: Random): Promise<Chapter[]> {
   if (hebrew.length > 0) return hebrew;
   const study = getStudyChapter('hbo');
   const fallback = await loadChapter(study.book, study.chapter).catch(() => null);
-  return fallback ? [fallback] : [];
+  // the Old Testament chapter last open, shown as the Septuagint's Greek while the setting is On, is no Hebrew passage (mw-u2w5klk.15)
+  return fallback?.lang === 'hbo' ? [fallback] : [];
 }
 
 /** The questions of a facet's short drill over a fixed passage and seed: none when the idea never asks about that facet. */

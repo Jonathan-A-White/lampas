@@ -2,8 +2,7 @@
 // The words in play follow the languages he chose (Settings, 'Which languages?'): Greek words unless he chose Hebrew alone, Hebrew words when he chose Hebrew or both. The language a
 // drill reads its chapter in is languageInHand's: the open chapter's when he chose it, else the one language he chose, else the Greek | Hebrew segment. Review asks the segment's words
 // where both are chosen. Pure but for the reads of the languages and the open chapter.
-import { isHebrewBook } from './books';
-import type { SourceLanguage } from './chapter';
+import { chapterLanguage, type SourceLanguage } from './chapter';
 import type { Word } from './db';
 import { languageInHand } from './grammar/languageInHand';
 import { getOpenChapter } from './readerChapter';
@@ -35,7 +34,8 @@ export async function reviewLanguages(): Promise<SourceLanguage[]> {
 /** The language a drill reads in, from what he chose, the open chapter and the segment: Greek where no ladder is in hand (English only). */
 export const drillLanguage = (languages: Languages, open: SourceLanguage, segment: SourceLanguage): SourceLanguage => languageInHand({ chapter: open, languages, segment }) ?? 'grc';
 
-/** The language the Parsing drill reads in now. */
+/** The language the Parsing drill reads in now. The open chapter's language is the language of the chapter itself: an Old Testament book shown as the Septuagint's Greek (mw-u2w5klk.15) is 'grc'. */
 export async function studyLanguage(): Promise<SourceLanguage> {
-  return drillLanguage(await getLanguages(), isHebrewBook(getOpenChapter().book) ? 'hbo' : 'grc', readSourceSegment());
+  const open = getOpenChapter();
+  return drillLanguage(await getLanguages(), await chapterLanguage(open.book, open.chapter), readSourceSegment());
 }

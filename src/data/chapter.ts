@@ -345,6 +345,16 @@ export async function loadChapter(book: string, n: number): Promise<Chapter> {
   return request;
 }
 
+/**
+ * The language the study tools (Memorize, Diagram, the Quick test, the Parsing drill, Review) read chapter `n` of `book` in (mw-u2w5klk.15): the language of the chapter loadChapter gives, not the book's name. A New
+ * Testament book is 'grc'; an Old Testament book is 'hbo' unless Settings > Old Testament in Greek (Septuagint) is On and the book is shipped there, when its chapter is Swete's Greek ('grc'). A chapter that cannot be
+ * loaded is the book's own language, as before.
+ */
+export async function chapterLanguage(book: string, n: number): Promise<SourceLanguage> {
+  if (!isHebrewBook(book) || !(await septuagintIsOn())) return isHebrewBook(book) ? 'hbo' : 'grc';
+  return loadChapter(book, n).then(sourceLanguage, () => 'hbo');
+}
+
 /** Forgets a chapter's request still in flight, so the next loadChapter asks afresh (the Reader's Try again). */
 export function forgetChapter(book: string, n: number): void {
   chapters.delete(keyOf(book, n, false));
