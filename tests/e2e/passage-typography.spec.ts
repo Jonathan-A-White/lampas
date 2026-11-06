@@ -73,9 +73,7 @@ const look = (el: Locator): Promise<Look> =>
 /** a verse's type in the Reader, then the same verse in the passage view of its heading */
 async function readerAndPassage(page: Page): Promise<{ reader: Look; passage: Look }> {
   const reader = await look(page.locator('[data-reader] [data-verse="25"]'));
-  await page.locator('[data-heading]', { hasText: HEADING }).getByRole('button').click();
-  const view = page.getByRole('region', { name: 'Verse view' });
-  await expect(view).toBeVisible();
+  const view = await tapHeading(page, page.locator('[data-heading]', { hasText: HEADING }));
   await expect(view.locator('[data-passage-verse]')).toHaveCount(13);
   const passage = await look(view.locator('[data-passage-verse="25"]'));
   return { reader, passage };
@@ -127,11 +125,23 @@ async function lineHeights(page: Page, view: Locator, verses: string[]): Promise
   return { reader, passage };
 }
 
+/** A tap on a heading's button that opens the Verse view. A heading is a long-press target (a hold of half a second copies the passage instead, src/ui/longPress.ts),
+ * and on a loaded host the browser can take longer than that between Playwright's press and its release: that press is a hold, the click is dropped and the view
+ * never opens. So a tap that did not open the view is made again (a hold only copied, which leaves the Reader as it was). */
+async function tapHeading(page: Page, heading: Locator, firstPressMs = 0): Promise<Locator> {
+  let pressMs = firstPressMs;
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(async () => {
+    if (!(await view.isVisible())) await heading.getByRole('button').click({ delay: pressMs });
+    pressMs = 0;
+    await expect(view).toBeVisible({ timeout: 2_000 }); // short on purpose: a press taken for a hold opens nothing, and the next try is the cure
+  }).toPass({ timeout: 20_000 });
+  return view;
+}
+
 /** Opens the passage under the heading `index` of the chapter; its verses' numbers, in order, and its view. */
 async function openHeading(page: Page, index: number): Promise<{ view: Locator; verses: string[] }> {
-  await page.locator('[data-heading]').nth(index).getByRole('button').click();
-  const view = page.getByRole('region', { name: 'Verse view' });
-  await expect(view).toBeVisible();
+  const view = await tapHeading(page, page.locator('[data-heading]').nth(index));
   const verses = await view.locator('[data-passage-verse]').evaluateAll((els) => els.map((el) => el.getAttribute('data-passage-verse') ?? ''));
   expect(verses.length).toBeGreaterThan(0);
   return { view, verses };
@@ -162,6 +172,19 @@ test('Weave + Learning, Verse by verse: a verse in the passage keeps the line he
   expect(passage['22']).toBe('28px');
   // the hints are real: a verse with a line under a word keeps the roomy 44 px, and not every line is roomy
   expect(new Set(Object.values(passage)).size).toBeGreaterThan(1);
+});
+
+test('a heading pressed for longer than the half second only copies, and a second tap opens the passage (the nightly sweep saw the first press outlast it on a loaded host)', async ({ page }) => {
+  await openPassage(page, { immersive: 'on', view: 'english', layout: 'paragraph' });
+  const heading = page.locator('[data-heading]', { hasText: HEADING });
+  const view = page.getByRole('region', { name: 'Verse view' });
+  // the hold the host made by accident: the press is released 800 ms after it went down, and the app takes it for a hold (it copies the passage), not a tap
+  await heading.getByRole('button').click({ delay: 800 });
+  await page.waitForTimeout(300);
+  await expect(view).toBeHidden();
+  // tapHeading opens it all the same, even when its first press is such a hold
+  await tapHeading(page, heading, 800);
+  await expect(view.locator('[data-passage-verse]')).toHaveCount(13);
 });
 
 async function headingIndex(page: Page, text: string): Promise<number> {
