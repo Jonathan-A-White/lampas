@@ -22,7 +22,7 @@ tap to reload"), a licence (the AI is part of what is checked) and a connection 
 
 ## Start as a new reader
 
-1. Clean start: open **Settings** (the gear), then **About**, and tap the version number seven times: a note says
+1. Clean start: open **Settings** (the Menu, three lines), then **About**, and tap the version number seven times: a note says
    **Developer mode is on**. Back in **Settings**, under **Developer mode** make sure it is **On**, then tap **Show the welcome
    again**. This forgets the welcome talk, puts the English defaults back and makes Lampas welcome you the next time it opens.
    (Do this again to run the demo from the top. It does not clear **Memory**: for a bare index, open **Settings > Memory** and

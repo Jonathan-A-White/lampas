@@ -10,7 +10,7 @@ says "Update ready, tap to reload").
 
 ## The steps
 
-1. Clean start: open **Settings** (the gear), then **About**, and tap the version number seven times: a note says **Developer
+1. Clean start: open **Settings** (the Menu, three lines), then **About**, and tap the version number seven times: a note says **Developer
    mode is on**. Back in **Settings**, under **Developer** tap **Reset the listening plan, for the demo**: **Reading plan**
    goes **Off**. (Do this again to run the demo from the top.)
 2. Open the Reader and tap the **Today** chip in the row under the title. **Reading plan** says **No reading plan is started.**
