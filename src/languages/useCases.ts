@@ -105,6 +105,11 @@ export const USE_CASES: readonly UseCase[] = [
     status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
   },
   {
+    id: 'sermons',
+    title: 'The Sermons door on the Verse view: the sermons preached on the verse, passage or chapter, each a link out',
+    status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
+  },
+  {
     id: 'listen',
     title: 'Hearing a verse: Listen in the Verse view says the verse in its voice',
     status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
