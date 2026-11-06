@@ -78,14 +78,23 @@ describe('the Tools screen as a place', () => {
     expect(suggestionsFor('Tools').length).toBeGreaterThanOrEqual(2);
   });
 
-  it('is a place the tutor opens, as are the screens of the tools it holds', async () => {
+  it('is a place the tutor opens', async () => {
+    window.location.hash = '#/';
+    expect(await lampasRegistry().open(placeNameOf('tools'), {})).toEqual({ ok: true });
+    expect(routeOf(window.location.hash)).toBe('tools');
+    expect(window.history.state).toEqual({ tutorGo: true });
+  });
+});
+
+describe('the tutor\'s place for each tool (mw-5r3p30.1111)', () => {
+  const moved = Object.entries(TOOL_SCREENS).map(([key, route]) => ({ key, route: route as keyof typeof SCREEN_NAMES }));
+
+  it.each(moved)('opens $key at its screen, $route, as a tutor go Back returns from', async ({ route }) => {
     const registry = lampasRegistry();
-    for (const route of ['tools', ...Object.values(TOOL_SCREENS)] as (keyof typeof SCREEN_NAMES)[]) {
-      window.location.hash = '#/';
-      expect(registry.place(placeNameOf(route))?.tell, route).toContain(SCREEN_NAMES[route]);
-      expect(await registry.open(placeNameOf(route), {}), route).toEqual({ ok: true });
-      expect(routeOf(window.location.hash), route).toBe(route);
-      expect(window.history.state).toEqual({ tutorGo: true });
-    }
+    window.location.hash = '#/';
+    expect(registry.place(placeNameOf(route))?.tell, route).toContain(SCREEN_NAMES[route]);
+    expect(await registry.open(placeNameOf(route), {}), route).toEqual({ ok: true });
+    expect(routeOf(window.location.hash), route).toBe(route);
+    expect(window.history.state).toEqual({ tutorGo: true });
   });
 });
