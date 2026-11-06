@@ -9,6 +9,7 @@ import { setDeveloper } from '../../src/data/repositories';
 import { MemoryScreen } from '../../src/MemoryScreen';
 import { MyReading } from '../../src/ReadCheck';
 import { SETTLE_MS, settle } from '../../src/ui/settle';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 /** The Export's file: made when `release` is called, if a test holds it. */
 const made = vi.hoisted(() => ({ hold: null as Promise<string> | null }));
@@ -109,7 +110,7 @@ describe('Export', () => {
     await screen.findByText(FILE_LINE);
     await wait(SETTLE_MS + 50);
     await act(async () => fireEvent.click(button));
-    await vi.waitFor(() => expect(saved).toHaveLength(2));
+    await vi.waitFor(() => expect(saved).toHaveLength(2), { timeout: ASYNC_WAIT_MS });
     expect(saved[1]).toMatch(FILE);
   });
 });
