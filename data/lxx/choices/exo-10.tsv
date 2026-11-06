@@ -1,0 +1,522 @@
+ref	parsing	lemma	mark	confidence	note
+Exo.37:1#6	N-APF	αὐλαία		0.80	
+Exo.37:2#4	N-GPM	πῆχυς		0.80	
+Exo.37:2#5	N-NSN	μῆκος	unsure	0.50	model: unsure
+Exo.37:2#7	N-GSF	αὐλαία		0.80	
+Exo.37:2#10	T-NSN	ὁ		0.80	
+Exo.37:2#11	P-NSN	αὐτός	unsure	0.50	model: unsure
+Exo.37:2#17	T-NSN	ὁ		0.80	
+Exo.37:2#18	N-NSN	εὖρος		0.80	
+Exo.37:2#20	N-GSF	αὐλαία		0.80	
+Exo.37:3#3	T-ASN	ὁ		0.80	
+Exo.37:3#4	N-ASN	καταπέτασμα		0.80	
+Exo.37:3#10	A-GSN	κόκκινος		0.80	
+Exo.37:3#11	V-RPP-GSN	νέω		0.80	
+Exo.37:3#14	V-RPP-GSF	κλώθω		0.80	
+Exo.37:3#15	N-ASN	ἔργον	unsure	0.50	model: unsure
+Exo.37:3#16	N-GSM	ὑφάντης	unsure	0.50	model: unsure
+Exo.37:3#17	N-APN	χερουβίμ	unsure	0.50	model: unsure
+Exo.37:4#3	P-ASN	αὐτός		0.80	
+Exo.37:4#5	A-APM	τέσσαρες	guess	0.40	guess: the model chose outside the candidates
+Exo.37:4#8	V-RPP-APM	καταχρυσόω		0.80	
+Exo.37:4#14	P-GPM	αὐτός		0.80	
+Exo.37:4#15	A-NPF	χρύσεος		0.80	
+Exo.37:4#19	P-GPM	αὐτός		0.80	
+Exo.37:4#20	A-NPF	τέσσαρες		0.80	
+Exo.37:5#3	T-ASN	ὁ		0.80	
+Exo.37:5#4	N-ASN	καταπέτασμα		0.80	
+Exo.37:5#16	A-GSN	κόκκινος		0.80	
+Exo.37:5#17	V-RPP-GSN	νέω		0.80	
+Exo.37:5#20	V-RPP-GSF	κλώθω		0.80	
+Exo.37:5#21	N-ASN	ἔργον	unsure	0.50	model: unsure
+Exo.37:5#22	A-ASN	ὑφαντός		0.80	
+Exo.37:5#23	T-GSM	ὁ	unsure	0.50	model: unsure
+Exo.37:5#24	N-GSM	χερουβίμ	unsure	0.50	model: unsure
+Exo.37:6#4	P-GPM	αὐτός	unsure	0.50	model: unsure
+Exo.37:6#12	P-GPM	αὐτός		0.80	
+Exo.37:7#5	T-NPN	ὁ	unsure	0.50	model: unsure
+Exo.37:7#8	N-NPN	ἱστίον	unsure	0.50	model: unsure
+Exo.37:7#13	V-RPP-GSF	κλώθω		0.80	
+Exo.37:8#4	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:8#9	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:9#2	T-NSN	ὁ		0.80	
+Exo.37:9#3	N-NSN	κλίτος		0.80	
+Exo.37:9#4	T-NSN	ὁ		0.80	
+Exo.37:9#11	T-NSN	ὁ		0.80	
+Exo.37:9#12	N-NSN	κλίτος		0.80	
+Exo.37:9#13	T-NSN	ὁ		0.80	
+Exo.37:9#22	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:9#27	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:10#2	T-NSN	ὁ		0.80	
+Exo.37:10#3	N-NSN	κλίτος		0.80	
+Exo.37:10#4	T-NSN	ὁ		0.80	
+Exo.37:10#7	N-NPF	αὐλαία		0.80	
+Exo.37:10#9	N-GPM	πῆχυς		0.80	
+Exo.37:10#10	N-NPM	στῦλος		0.80	
+Exo.37:10#11	P-GPF	αὐτός	unsure	0.50	model: unsure
+Exo.37:10#16	P-GPF	αὐτός	unsure	0.50	model: unsure
+Exo.37:11#2	T-NSN	ὁ		0.80	
+Exo.37:11#3	N-NSN	κλίτος		0.80	
+Exo.37:11#4	T-NSN	ὁ		0.80	
+Exo.37:11#6	N-APF	ἀνατολή		0.80	
+Exo.37:11#8	N-GPM	πῆχυς		0.80	
+Exo.37:11#9	T-NSN	ὁ		0.80	
+Exo.37:12#4	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:12#5	A-NPM	τρεῖς, τρία		0.80	
+Exo.37:12#9	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:12#10	A-NPF	τρεῖς, τρία		0.80	
+Exo.37:13#15	N-NPF	αὐλαία		0.80	
+Exo.37:13#18	N-GPM	πῆχυς		0.80	
+Exo.37:13#19	N-NPM	στῦλος		0.80	
+Exo.37:13#20	P-GPF	αὐτός	unsure	0.50	model: unsure
+Exo.37:13#21	A-NPM	τρεῖς, τρία		0.80	
+Exo.37:13#25	P-GPF	αὐτός	unsure	0.50	model: unsure
+Exo.37:13#26	A-NPF	τρεῖς, τρία		0.80	
+Exo.37:14#3	N-NPF	αὐλαία		0.80	
+Exo.37:14#8	V-RPP-GSF	κλώθω		0.80	
+Exo.37:15#6	P-GPM	αὐτός		0.80	
+Exo.37:15#11	P-GPM	αὐτός		0.80	
+Exo.37:15#16	P-GPM	αὐτός		0.80	
+Exo.37:15#17	V-RPP-NPF	περί-ἀργυρόω		0.80	
+Exo.37:15#22	V-RPP-NPM	περιαργυρόω		0.80	
+Exo.37:16#2	T-NSN	ὁ		0.80	
+Exo.37:16#3	N-NSN	καταπέτασμα		0.80	
+Exo.37:16#8	N-NSN	ἔργον	unsure	0.50	model: unsure
+Exo.37:16#9	N-GSM	ποικιλτής		0.80	
+Exo.37:16#15	A-GSN	κόκκινος		0.80	
+Exo.37:16#16	V-RPP-GSN	νέω		0.80	
+Exo.37:16#19	V-RPP-GSF	κλώθω		0.80	
+Exo.37:16#21	N-GPM	πῆχυς		0.80	
+Exo.37:16#22	T-NSN	ὁ		0.80	
+Exo.37:16#23	N-NSN	μῆκος		0.80	
+Exo.37:16#25	T-NSN	ὁ		0.80	
+Exo.37:16#26	N-NSN	ὕψος		0.80	
+Exo.37:16#28	T-NSN	ὁ		0.80	
+Exo.37:16#29	N-NSN	εὖρος		0.80	
+Exo.37:16#31	N-GPM	πῆχυς		0.80	
+Exo.37:16#32	V-PPP-NSN	ἐξισόω		0.80	
+Exo.37:17#4	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:17#5	A-NPM	τέσσαρες		0.80	
+Exo.37:17#9	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:17#10	A-NPF	τέσσαρες		0.80	
+Exo.37:17#14	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:17#19	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.37:17#20	V-RPP-NPF	περί-ἀργυρόω		0.80	
+Exo.37:18#3	V-RPP-NPM	περιαργυρόω		0.80	
+Exo.37:18#12	N-NPM	χαλκός		0.80	
+Exo.37:19#10	V-2API-3S	συντάσσω		0.80	
+Exo.37:19#11	N-DSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.37:19#15	T-GPM	ὁ		0.80	
+Exo.37:19#16	N-GPM	Λευΐτης		0.80	
+Exo.37:19#18	N-GSM	Ἰθαμάρ		0.80	
+Exo.37:19#21	N-GSM	Ἀαρών		0.80	
+Exo.37:20#2	N-NSM	Βεσελεήλ		0.80	
+Exo.37:20#8	N-GSM	Ἰούδας		0.80	
+Exo.37:20#13	T-DSM	ὁ		0.80	
+Exo.37:20#14	N-DSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.37:21#2	N-NSM	Ἐλιάβ		0.80	
+Exo.37:21#4	T-GSM	ὁ		0.80	
+Exo.37:21#5	N-GSM	Ἀχισαμάκ		0.80	
+Exo.37:21#9	N-GSM	Δάν		0.80	
+Exo.37:21#12	T-APN	ὁ		0.80	
+Exo.37:21#13	A-APN	ὑφαντός		0.80	
+Exo.37:21#15	T-APN	ὁ		0.80	
+Exo.37:21#16	A-APN	ῥαφιδευτός		0.80	
+Exo.37:21#18	N-APN	ποικιλτικός		0.80	
+Exo.37:21#19	V-AAN	ὑφαίνω		0.80	
+Exo.37:21#20	T-DSN	ὁ		0.80	
+Exo.37:21#21	A-DSN	κόκκινος		0.80	
+Exo.38:1#3	N-NSM	Βεσελεήλ		0.80	
+Exo.38:3#4	A-APM	τέσσαρες	guess	0.40	guess: the model chose outside the candidates
+Exo.38:3#9	T-ASN	ὁ		0.80	
+Exo.38:3#10	N-ASN	κλίτος		0.80	
+Exo.38:3#11	T-ASN	ὁ		0.80	
+Exo.38:3#12	A-ASN	εἷς		0.80	
+Exo.38:3#16	T-ASN	ὁ		0.80	
+Exo.38:3#17	N-ASN	κλίτος		0.80	
+Exo.38:3#18	T-ASN	ὁ		0.80	
+Exo.38:3#19	A-ASN	δεύτερος		0.80	
+Exo.38:4#1	A-APM	εὐρύς		0.80	
+Exo.38:4#2	T-DPM	ὁ		0.80	
+Exo.38:4#3	N-DPM	διωστήρ		0.80	
+Exo.38:4#5	V-PAN	αἴρω		0.80	
+Exo.38:4#8	P-DPM	αὐτός		0.80	
+Exo.38:5#3	T-ASN	ὁ		0.80	
+Exo.38:5#4	N-ASN	ἱλαστήριος		0.80	
+Exo.38:6#4	N-APN	χερουβίμ	unsure	0.50	model: unsure
+Exo.38:7#1	N-ASM	χερούβ		0.80	
+Exo.38:7#4	T-ASN	ὁ		0.80	
+Exo.38:7#5	N-ASN	ἄκρον		0.80	
+Exo.38:7#6	T-GSN	ὁ		0.80	
+Exo.38:7#7	N-GSN	ἱλαστήριος		0.80	
+Exo.38:7#9	N-ASM	χερούβ		0.80	
+Exo.38:7#12	T-ASN	ὁ		0.80	
+Exo.38:7#13	N-ASN	ἄκρον		0.80	
+Exo.38:7#14	T-GSN	ὁ		0.80	
+Exo.38:7#15	N-GSN	ἱλαστήριος		0.80	
+Exo.38:7#17	A-ASM	δεύτερος	guess	0.40	guess: the model chose outside the candidates
+Exo.38:8#1	V-PAP-APN	σκιάζω	unsure	0.50	model: unsure
+Exo.38:8#4	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.38:8#6	T-ASN	ὁ		0.80	
+Exo.38:8#7	N-ASN	ἱλαστήριος		0.80	
+Exo.38:10#4	A-APM	τέσσαρες	guess	0.40	guess: the model chose outside the candidates
+Exo.38:10#19	A-APM	εὐρύς		0.80	
+Exo.38:10#21	V-PAN	αἴρω		0.80	
+Exo.38:10#22	T-DPM	ὁ		0.80	
+Exo.38:10#23	N-DPM	διωστήρ		0.80	
+Exo.38:10#25	P-DPM	αὐτός		0.80	
+Exo.38:12#3	T-APN	ὁ		0.80	
+Exo.38:12#4	N-APN	σκεῦος		0.80	
+Exo.38:12#7	T-APN	ὁ		0.80	
+Exo.38:12#9	N-APN	τρύβλιον		0.80	
+Exo.38:12#17	T-APN	ὁ		0.80	
+Exo.38:12#18	N-APN	σπονδεῖον		0.80	
+Exo.38:12#20	R-DPN	ὅς, ἥ		0.80	
+Exo.38:12#21	V-FAI-3S	σπένδω		0.80	
+Exo.38:12#23	P-DPN	αὐτός		0.80	
+Exo.38:12#24	A-APN	χρύσεος		0.80	
+Exo.38:13#5	R-NSF	ὅς, ἥ		0.80	
+Exo.38:14#1	A-ASF	στερεός		0.80	
+Exo.38:14#8	A-GPN	ἀμφότερος		0.80	
+Exo.38:15#6	N-NPM	βλαστός		0.80	
+Exo.38:15#8	A-NPM	τρεῖς, τρία		0.80	
+Exo.38:15#10	D-GSM	οὗτος	unsure	0.50	model: unsure
+Exo.38:15#12	A-NPM	τρεῖς, τρία		0.80	
+Exo.38:15#14	D-GSM	οὗτος	unsure	0.50	model: unsure
+Exo.38:15#16	C-DPM	ἀλλήλων		0.80	
+Exo.38:16#2	T-APN	ὁ	unsure	0.50	model: unsure
+Exo.38:16#3	N-APN	λαμπάδιον	unsure	0.50	model: unsure
+Exo.38:16#4	P-GPM	αὐτός		0.80	
+Exo.38:16#5	R-NPN	ὅς, ἥ		0.80	
+Exo.38:16#10	A-APN	καρυωτός	guess	0.40	guess: the model chose outside the candidates
+Exo.38:16#12	P-GPM	αὐτός		0.80	
+Exo.38:16#14	T-APN	ὁ	unsure	0.50	model: unsure
+Exo.38:16#15	N-APN	ἐνθέμιον	unsure	0.50	model: unsure
+Exo.38:16#17	P-GPM	αὐτός		0.80	
+Exo.38:16#21	P-GPM	αὐτός		0.80	
+Exo.38:16#25	T-ASN	ὁ	unsure	0.50	model: unsure
+Exo.38:16#26	N-ASN	ἐνθέμιον	unsure	0.50	model: unsure
+Exo.38:16#27	T-ASN	ὁ		0.80	
+Exo.38:16#28	A-ASN	ἕβδομος		0.80	
+Exo.38:16#34	N-GSF	κορυφή		0.80	
+Exo.38:16#36	A-ASN	στερεός		0.80	
+Exo.38:16#37	A-ASN	ὅλος		0.80	
+Exo.38:16#38	A-ASN	χρύσεος		0.80	
+Exo.38:17#15	P-GPM	αὐτός		0.80	
+Exo.38:19#17	T-ASN	ὁ		0.80	
+Exo.38:19#19	T-ASN	ὁ		0.80	
+Exo.38:19#20	N-ASN	κατακάλυμμα		0.80	
+Exo.38:20#28	A-APF	ἀργύρεος		0.80	
+Exo.38:22#3	T-ASN	ὁ		0.80	
+Exo.38:22#4	N-ASN	θυσιαστήριον		0.80	
+Exo.38:22#5	T-ASN	ὁ		0.80	
+Exo.38:22#6	A-ASN	χάλκεος		0.80	
+Exo.38:22#12	R-NPN	ὅς, ἥ		0.80	
+Exo.38:22#20	N-GSM	Κορέ		0.80	
+Exo.38:23#3	A-APN	πᾶς		0.80	
+Exo.38:23#4	T-APN	ὁ		0.80	
+Exo.38:23#5	N-APN	σκεῦος		0.80	
+Exo.38:23#9	T-ASN	ὁ		0.80	
+Exo.38:23#10	N-ASN	πυρεῖον		0.80	
+Exo.38:23#11	P-GSN	αὐτός		0.80	
+Exo.38:23#21	A-APF	χάλκεος		0.80	
+Exo.38:24#5	N-ASN	παράθεμα		0.80	
+Exo.38:24#6	N-ASN	ἔργον	unsure	0.50	model: unsure
+Exo.38:24#7	A-ASN	δικτυωτός		0.80	
+Exo.38:24#8	ADV	κάτωθεν		0.80	
+Exo.38:24#12	P-ASN	αὐτός		0.80	
+Exo.38:24#14	T-GSN	ὁ		0.80	
+Exo.38:24#15	A-GSN	ἥμισυς		0.80	
+Exo.38:24#16	P-GSN	αὐτός		0.80	
+Exo.38:24#18	V-2AAI-3S	ἐπιτίθημι		0.80	
+Exo.38:24#19	P-DSN	αὐτός	unsure	0.50	model: unsure
+Exo.38:24#20	A-APM	τέσσαρες	guess	0.40	guess: the model chose outside the candidates
+Exo.38:24#33	A-APM	εὐρύς		0.80	
+Exo.38:24#35	V-PAN	αἴρω		0.80	
+Exo.38:24#37	P-DPM	αὐτός		0.80	
+Exo.38:24#38	T-ASN	ὁ		0.80	
+Exo.38:24#39	N-ASN	θυσιαστήριον		0.80	
+Exo.38:25#3	T-ASN	ὁ		0.80	
+Exo.38:25#4	N-ASN	ἔλαιον		0.80	
+Exo.38:25#7	T-ASN	ὁ		0.80	
+Exo.38:25#8	A-ASN	ἅγιος		0.80	
+Exo.38:25#14	A-ASN	καθαρός		0.80	
+Exo.38:25#15	N-ASN	ἔργον	unsure	0.50	model: unsure
+Exo.38:26#9	P-GSM	αὐτός		0.80	
+Exo.38:26#10	A-ASF	χάλκεος		0.80	
+Exo.38:26#15	V-AAP-GPF	νηστεύω		0.80	
+Exo.38:26#16	R-NPF	ὅς, ἥ		0.80	
+Exo.38:27#6	V-PMS-3P	νίζω	unsure	0.50	model: unsure
+Exo.38:27#8	P-GSM	αὐτός		0.80	
+Exo.38:27#9	N-NSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.38:27#11	N-NSM	Ἀαρών		0.80	
+Exo.38:27#15	P-GSM	αὐτός		0.80	
+Exo.38:27#18	P-GPM	αὐτός		0.80	
+Exo.38:27#22	V-PNP-GPM	εἰσπορεύω		0.80	
+Exo.38:27#23	P-GPM	αὐτός		0.80	
+Exo.38:27#30	CONJ	ὅταν		0.80	
+Exo.38:27#31	V-PNS-3P	προσπορεύομαι		0.80	
+Exo.38:27#33	T-ASN	ὁ		0.80	
+Exo.38:27#34	N-ASN	θυσιαστήριον		0.80	
+Exo.38:27#36	V-IMI-3P	νίπτω		0.80	
+Exo.38:27#38	P-GSM	αὐτός		0.80	
+Exo.38:27#42	T-DSM	ὁ		0.80	
+Exo.38:27#43	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.39:1#1	A-NSN	πᾶς		0.80	
+Exo.39:1#2	T-NSN	ὁ		0.80	
+Exo.39:1#3	N-NSN	χρυσίον		0.80	
+Exo.39:1#4	R-NSN	ὅς, ἥ		0.80	
+Exo.39:1#7	T-APN	ὁ		0.80	
+Exo.39:1#8	N-APN	ἔργον		0.80	
+Exo.39:1#13	T-GPN	ὁ		0.80	
+Exo.39:1#14	A-GPN	ἅγιος		0.80	
+Exo.39:1#17	T-GSN	ὁ		0.80	
+Exo.39:1#23	N-NPN	τάλαντον	unsure	0.50	model: unsure
+Exo.39:1#25	A-NPM	ἑπτακόσιοι		0.80	
+Exo.39:1#27	N-NPM	σίκλος		0.80	
+Exo.39:2#3	N-NSN	ἀφαίρεμα	unsure	0.50	model: unsure
+Exo.39:2#5	T-GPM	ὁ		0.80	
+Exo.39:2#6	V-RPP-GPM	ἐπισκέπτομαι	unsure	0.50	model: unsure
+Exo.39:2#11	N-NPN	τάλαντον	unsure	0.50	model: unsure
+Exo.39:2#13	A-NPM	χίλιος		0.80	
+Exo.39:2#14	A-NPM	ἑπτακόσιοι		0.80	
+Exo.39:2#17	N-NPM	σίκλος		0.80	
+Exo.39:2#18	N-NSF	δραχμή		0.80	
+Exo.39:2#22	T-NSN	ὁ		0.80	
+Exo.39:2#23	A-NSN	ἥμισυς	unsure	0.50	model: unsure
+Exo.39:3#7	A-GSM	εἰκοσαετής		0.80	
+Exo.39:3#15	A-NPM	τρισχίλιοι		0.80	
+Exo.39:3#16	A-NPM	πεντακόσιοι		0.80	
+Exo.39:4#3	T-NPN	ὁ		0.80	
+Exo.39:4#5	N-NPN	τάλαντον		0.80	
+Exo.39:4#11	T-GPF	ὁ		0.80	
+Exo.39:5#2	N-NPF	κεφαλίς		0.80	
+Exo.39:5#4	T-APN	ὁ		0.80	
+Exo.39:5#6	N-APN	τάλαντον		0.80	
+Exo.39:5#7	N-NSN	τάλαντον	unsure	0.50	model: unsure
+Exo.39:6#3	A-APM	χίλιος		0.80	
+Exo.39:6#18	P-GPM	αὐτός		0.80	
+Exo.39:7#7	N-NPN	τάλαντον	unsure	0.50	model: unsure
+Exo.39:7#9	A-NPM	χίλιος		0.80	
+Exo.39:7#10	A-NPM	πεντακόσιοι		0.80	
+Exo.39:7#11	N-NPM	σίκλος		0.80	
+Exo.39:8#4	P-GPN	αὐτός	unsure	0.50	model: unsure
+Exo.39:8#5	T-APF	ὁ		0.80	
+Exo.39:8#6	N-APF	βάσις	guess	0.40	guess: the model chose outside the candidates
+Exo.39:9#2	T-APF	ὁ		0.80	
+Exo.39:9#3	N-APF	βάσις	guess	0.40	guess: the model chose outside the candidates
+Exo.39:9#8	T-APF	ὁ		0.80	
+Exo.39:9#9	N-APF	βάσις	guess	0.40	guess: the model chose outside the candidates
+Exo.39:10#2	T-ASN	ὁ		0.80	
+Exo.39:10#3	N-ASN	παράθεμα		0.80	
+Exo.39:10#4	T-ASN	ὁ		0.80	
+Exo.39:10#5	A-ASN	χάλκεος		0.80	
+Exo.39:10#9	A-APN	πᾶς		0.80	
+Exo.39:10#10	T-APN	ὁ		0.80	
+Exo.39:10#11	N-APN	σκεῦος		0.80	
+Exo.39:10#15	A-APN	πᾶς		0.80	
+Exo.39:10#16	T-APN	ὁ		0.80	
+Exo.39:10#17	N-APN	ἐργαλεῖον		0.80	
+Exo.39:11#5	N-GSM	Ἰσραήλ		0.80	
+Exo.39:11#9	T-DSM	ὁ		0.80	
+Exo.39:11#10	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.39:12#1	T-ASN	ὁ		0.80	
+Exo.39:12#3	A-ASN	λοιπόν		0.80	
+Exo.39:12#4	N-ASN	χρυσίον		0.80	
+Exo.39:12#8	N-APN	σκεῦος		0.80	
+Exo.39:12#10	T-ASN	ὁ		0.80	
+Exo.39:12#13	P-DPN	αὐτός		0.80	
+Exo.39:13#8	T-ASN	ὁ		0.80	
+Exo.39:13#9	A-ASN	κόκκινος		0.80	
+Exo.39:13#13	N-GSM	Ἀαρών	unsure	0.50	model: unsure
+Exo.39:13#19	T-DSN	ὁ		0.80	
+Exo.39:13#20	A-DSN	ἅγιος		0.80	
+Exo.39:14#6	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.39:14#11	T-APN	ὁ		0.80	
+Exo.39:14#12	N-APN	σκεῦος		0.80	
+Exo.39:14#15	T-APF	ὁ		0.80	
+Exo.39:14#16	N-APF	βάσις	guess	0.40	guess: the model chose outside the candidates
+Exo.39:16#2	T-ASN	ὁ		0.80	
+Exo.39:16#3	N-ASN	θυσιαστήριον		0.80	
+Exo.39:16#5	A-APN	πᾶς		0.80	
+Exo.39:16#6	T-APN	ὁ		0.80	
+Exo.39:16#7	N-APN	σκεῦος		0.80	
+Exo.39:16#8	P-GSN	αὐτός		0.80	
+Exo.39:16#10	T-ASN	ὁ		0.80	
+Exo.39:16#11	N-ASN	ἔλαιον		0.80	
+Exo.39:16#15	T-ASN	ὁ		0.80	
+Exo.39:16#16	N-ASN	θυμίαμα		0.80	
+Exo.39:16#23	A-ASF	καθαρός		0.80	
+Exo.39:17#9	T-ASN	ὁ		0.80	
+Exo.39:17#10	N-ASN	ἔλαιον		0.80	
+Exo.39:18#7	A-APN	πᾶς		0.80	
+Exo.39:18#8	T-APN	ὁ		0.80	
+Exo.39:18#10	N-APN	σκεῦος		0.80	
+Exo.39:19#4	T-GSN	ὁ		0.80	
+Exo.39:19#5	A-GSN	ἅγιος		0.80	
+Exo.39:19#6	R-NPF	ὅς, ἥ		0.80	
+Exo.39:19#8	N-GSM	Ἀαρών		0.80	
+Exo.39:19#14	P-GSM	αὐτός		0.80	
+Exo.39:20#2	T-APN	ὁ		0.80	
+Exo.39:20#3	N-APN	ἱστίον		0.80	
+Exo.39:20#10	T-ASN	ὁ		0.80	
+Exo.39:20#11	N-ASN	καταπέτασμα		0.80	
+Exo.39:21#2	A-APN	πᾶς		0.80	
+Exo.39:21#3	T-APN	ὁ		0.80	
+Exo.39:21#4	N-APN	σκεῦος		0.80	
+Exo.39:21#8	A-APN	πᾶς		0.80	
+Exo.39:21#9	T-APN	ὁ		0.80	
+Exo.39:21#10	N-APN	ἐργαλεῖον		0.80	
+Exo.39:21#15	N-APN	δέρμα		0.80	
+Exo.39:21#17	V-RPP-APN	ἐρυθροδανόω		0.80	
+Exo.39:21#19	T-APN	ὁ		0.80	
+Exo.39:21#20	N-APN	κάλυμμα		0.80	
+Exo.39:21#21	N-APN	δέρμα		0.80	
+Exo.39:21#22	A-APN	ὑακίνθινος		0.80	
+Exo.39:21#24	T-GPN	ὁ	unsure	0.50	model: unsure
+Exo.39:21#25	A-GPN	λοιπός	unsure	0.50	model: unsure
+Exo.39:21#26	T-APN	ὁ		0.80	
+Exo.39:21#27	N-APN	ἐπικάλυμμα		0.80	
+Exo.39:21#32	A-APN	πᾶς		0.80	
+Exo.39:21#33	T-APN	ὁ		0.80	
+Exo.39:21#34	N-APN	ἐργαλεῖον		0.80	
+Exo.39:21#35	T-APN	ὁ		0.80	
+Exo.39:21#37	T-APN	ὁ		0.80	
+Exo.39:21#38	N-APN	ἔργον		0.80	
+Exo.39:22#1	R-ASN	ὅς, ἥ		0.80	
+Exo.39:22#4	N-DSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.39:22#9	N-GSM	Ἰσραήλ		0.80	
+Exo.39:23#3	N-NSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.39:23#4	A-APN	πᾶς		0.80	
+Exo.39:23#5	T-APN	ὁ		0.80	
+Exo.39:23#6	N-APN	ἔργον		0.80	
+Exo.39:23#10	P-APN	αὐτός		0.80	
+Exo.39:23#15	T-DSM	ὁ		0.80	
+Exo.39:23#16	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.39:23#19	P-APN	αὐτός		0.80	
+Exo.40:1#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.40:2#8	N-DSF	νουμηνία		0.80	
+Exo.40:2#9	V-FAI-2S	ἵστημι		0.80	
+Exo.40:3#2	V-FAI-2S	σκεπάζω		0.80	
+Exo.40:4#2	V-FAI-2S	εἰσφέρω		0.80	
+Exo.40:4#6	V-FAI-2S	προτίθημι		0.80	
+Exo.40:4#11	V-FAI-2S	εἰσφέρω		0.80	
+Exo.40:4#15	V-FAI-2S	ἐπιτίθημι		0.80	
+Exo.40:5#3	T-ASN	ὁ		0.80	
+Exo.40:5#4	N-ASN	θυσιαστήριον		0.80	
+Exo.40:5#5	T-ASN	ὁ		0.80	
+Exo.40:5#6	A-ASN	χρύσεος		0.80	
+Exo.40:5#8	T-ASN	ὁ		0.80	
+Exo.40:5#10	PREP	ἐναντίον		0.80	
+Exo.40:5#14	V-FAI-2S	ἐπιτίθημι		0.80	
+Exo.40:5#15	N-ASN	κάλυμμα		0.80	
+Exo.40:6#2	T-ASN	ὁ		0.80	
+Exo.40:6#3	N-ASN	θυσιαστήριον		0.80	
+Exo.40:6#15	V-FAI-2S	περιτίθημι		0.80	
+Exo.40:6#19	A-APN	πᾶς		0.80	
+Exo.40:6#20	T-APN	ὁ		0.80	
+Exo.40:6#22	V-FAI-2S	ἁγιάζω		0.80	
+Exo.40:7#2	V-FDI-2S	λαμβάνω		0.80	
+Exo.40:7#3	T-ASN	ὁ		0.80	
+Exo.40:7#4	N-ASN	ἔλαιον		0.80	
+Exo.40:7#8	V-FAI-2S	χρίω		0.80	
+Exo.40:7#12	A-APN	πᾶς		0.80	
+Exo.40:7#13	T-APN	ὁ		0.80	
+Exo.40:7#17	V-FAI-2S	ἁγιάζω		0.80	
+Exo.40:7#20	A-APN	πᾶς		0.80	
+Exo.40:7#21	T-APN	ὁ		0.80	
+Exo.40:7#22	N-APN	σκεῦος		0.80	
+Exo.40:8#2	V-FAI-2S	χρίω		0.80	
+Exo.40:8#3	T-ASN	ὁ		0.80	
+Exo.40:8#4	N-ASN	θυσιαστήριον		0.80	
+Exo.40:8#8	A-APN	πᾶς		0.80	
+Exo.40:8#9	P-GSN	αὐτός		0.80	
+Exo.40:8#10	T-APN	ὁ		0.80	
+Exo.40:8#11	N-APN	σκεῦος		0.80	
+Exo.40:9#2	V-FAI-2S	ἁγιάζω		0.80	
+Exo.40:9#3	T-ASN	ὁ		0.80	
+Exo.40:9#4	N-ASN	θυσιαστήριον		0.80	
+Exo.40:9#7	A-NSN	ἅγιος		0.80	
+Exo.40:9#8	T-GPN	ὁ		0.80	
+Exo.40:9#9	A-GPN	ἅγιος		0.80	
+Exo.40:10#2	V-FAI-2S	προσάγω		0.80	
+Exo.40:10#3	N-ASM	Ἀαρών		0.80	
+Exo.40:10#7	P-GSM	αὐτός		0.80	
+Exo.40:11#2	V-FAI-2S	ἐνδύω		0.80	
+Exo.40:11#3	N-ASM	Ἀαρών		0.80	
+Exo.40:11#9	V-FAI-2S	χρίω		0.80	
+Exo.40:11#12	V-FAI-2S	ἁγιάζω		0.80	
+Exo.40:12#4	P-GSM	αὐτός		0.80	
+Exo.40:12#5	V-FAI-2S	προσάγω		0.80	
+Exo.40:12#7	V-FAI-2S	ἐνδύω		0.80	
+Exo.40:13#9	P-GPM	αὐτός		0.80	
+Exo.40:13#17	P-DPM	αὐτός		0.80	
+Exo.40:13#18	N-NSN	χρῖσμα	unsure	0.50	model: unsure
+Exo.40:13#19	N-GSF	ἱερατεία		0.80	
+Exo.40:13#26	P-GPM	αὐτός		0.80	
+Exo.40:14#3	N-NSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.40:14#4	A-APN	πᾶς		0.80	
+Exo.40:14#5	K-APN	ὅσος		0.80	
+Exo.40:14#7	P-DSM	αὐτός		0.80	
+Exo.40:15#11	V-PNP-GPM	ἐκπορεύω		0.80	
+Exo.40:15#12	P-GPM	αὐτός		0.80	
+Exo.40:15#15	N-DSF	νουμηνία		0.80	
+Exo.40:16#3	N-NSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.40:16#7	V-2AAI-3S	ἐπιτίθημι		0.80	
+Exo.40:16#11	V-2AAI-3S	διά-ἐμβάλλω		0.80	
+Exo.40:17#4	N-APF	αὐλαία		0.80	
+Exo.40:17#9	V-2AAI-3S	ἐπιτίθημι		0.80	
+Exo.40:17#10	T-ASN	ὁ		0.80	
+Exo.40:17#11	N-ASN	κατακάλυμμα		0.80	
+Exo.40:17#20	T-DSM	ὁ		0.80	
+Exo.40:17#21	N-DSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.40:18#3	T-APN	ὁ		0.80	
+Exo.40:18#4	N-APN	μαρτύριον		0.80	
+Exo.40:18#5	V-2AAI-3S	ἐμβάλλω		0.80	
+Exo.40:18#10	V-AAI-3S	ὑποτίθημι		0.80	
+Exo.40:19#2	V-AAI-3S	εἰσφέρω		0.80	
+Exo.40:19#9	V-2AAI-3S	ἐπιτίθημι		0.80	
+Exo.40:19#10	T-ASN	ὁ		0.80	
+Exo.40:19#11	N-ASN	κατακάλυμμα		0.80	
+Exo.40:19#24	T-DSM	ὁ		0.80	
+Exo.40:19#25	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.40:20#2	V-2AAI-3S	ἐπιτίθημι		0.80	
+Exo.40:20#11	T-ASN	ὁ		0.80	
+Exo.40:20#12	N-ASN	κλίτος		0.80	
+Exo.40:20#17	T-ASN	ὁ		0.80	
+Exo.40:21#2	V-AAI-3S	προτίθημι		0.80	
+Exo.40:21#14	T-DSM	ὁ		0.80	
+Exo.40:21#15	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.40:22#11	T-ASN	ὁ		0.80	
+Exo.40:22#12	N-ASN	κλίτος		0.80	
+Exo.40:22#15	T-ASN	ὁ		0.80	
+Exo.40:23#2	V-2AAI-3S	ἐπιτίθημι		0.80	
+Exo.40:23#12	T-DSM	ὁ		0.80	
+Exo.40:23#13	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.40:24#3	T-ASN	ὁ		0.80	
+Exo.40:24#4	N-ASN	θυσιαστήριον		0.80	
+Exo.40:24#5	T-ASN	ὁ		0.80	
+Exo.40:24#6	A-ASN	χρύσεος		0.80	
+Exo.40:25#4	P-GSN	αὐτός		0.80	
+Exo.40:25#5	T-ASN	ὁ		0.80	
+Exo.40:25#6	N-ASN	θυμίαμα		0.80	
+Exo.40:25#12	T-DSM	ὁ		0.80	
+Exo.40:25#13	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Exo.40:26#2	T-ASN	ὁ		0.80	
+Exo.40:26#3	N-ASN	θυσιαστήριον		0.80	
+Exo.40:27#14	A-APN	πᾶς		0.80	
+Exo.40:27#15	T-APN	ὁ		0.80	
+Exo.40:27#16	N-APN	ἔργον		0.80	
+Exo.40:29#3	V-AOI-3S	δύναμαι	guess	0.40	guess: the model answered with no candidates
+Exo.40:29#4	N-NSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model answered with no candidates
+Exo.40:30#10	V-IAI-3P	ἀναζεύγνυμι		0.80	
+Exo.40:30#13	N-GSM	Ἰσραήλ		0.80	
+Exo.40:30#17	P-GPM	αὐτός		0.80	
+Exo.40:31#8	V-IAI-3P	ἀναζεύγνυμι		0.80	
+Exo.40:31#10	N-GSF	ἡμέρα		0.80	
+Exo.40:32#7	N-GSF	ἡμέρα		0.80	
+Exo.40:32#9	N-NSN	πῦρ		0.80	
+Exo.40:32#14	PREP	ἐναντίον		0.80	
+Exo.40:32#15	A-GSM	πᾶς		0.80	
+Exo.40:32#16	N-GSM	Ἰσραήλ		0.80	
+Exo.40:32#21	P-GPM	αὐτός		0.80	
