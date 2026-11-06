@@ -70,8 +70,9 @@ export function justTapped(key: string): boolean {
   return lastTap !== null && lastTap.key === key && performance.now() - lastTap.at < settle.ms;
 }
 
-/** What a swallowed tap never reaches the app as: its click, and the press that starts it (a hold-to-talk bar begins on the press, voice-kit's useBarPress). */
-const SWALLOWED = ['pointerdown', 'click'] as const;
+/** What a swallowed tap never reaches the app as: its click, the press that starts it (a hold-to-talk bar begins on the press, voice-kit's useBarPress) and the mouse press a touch
+ * ends in, whose default is to focus the field under the thumb (the phone's keyboard opens; mw-5r3p30.1100). */
+const SWALLOWED = ['pointerdown', 'mousedown', 'click'] as const;
 
 /**
  * Drops every tap for `settle.ms` from now, wherever it lands. The app-wide guard calls it as a screen changes and as a sheet comes or goes
@@ -88,7 +89,7 @@ export function swallowTaps(): void {
   const drop = (event: Event) => {
     // a test that turns the moment off (settle.ms 0) takes every tap from then on, though a moment it started earlier has not run out on its held clock
     if (settle.ms <= 0 || performance.now() >= until) return off();
-    if (event.type === 'click') event.preventDefault();
+    if (event.type !== 'pointerdown') event.preventDefault();
     event.stopImmediatePropagation();
   };
   SWALLOWED.forEach((type) => window.addEventListener(type, drop, true));

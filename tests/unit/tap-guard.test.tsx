@@ -123,6 +123,20 @@ describe('a sheet takes no tap in the moment it opens or closes, with no code of
     expect(pressed).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the mouse press of a swallowed tap from focusing the field under it (mw-5r3p30.1100)', async () => {
+    render(
+      <>
+        <Shell beneath={vi.fn()} act={vi.fn()} />
+        <input aria-label="Field" />
+      </>,
+    );
+    tap('Open');
+    await wait(120);
+    expect(fireEvent.mouseDown(screen.getByLabelText('Field'))).toBe(false);
+    await wait(SETTLE_MS);
+    expect(fireEvent.mouseDown(screen.getByLabelText('Field'))).toBe(true);
+  });
+
   it('takes every tap at once while the moment is 0, as the other tests do', async () => {
     settle.ms = 0;
     const beneath = vi.fn();
