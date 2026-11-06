@@ -56,11 +56,18 @@ export function ownFormOf(text: string, lemma: string): string {
 /** Swete's marks on a printed token: punctuation, brackets and the editor's signs (the same as the build's SWETE_MARKS; tests/unit/own-forms.test.ts holds them equal). */
 const SWETE_MARKS = /[.,;:!?()[\]{}"\u00B7\u0387\u037E\u201C\u201D\u00AB\u00BB\u2014\u2013\-\u2E00-\u2E7F\u00B6\u00A7*+\u2020\u2021]/g;
 
-/** The form a Septuagint token is indexed under: Swete's marks off, then ownFormOf; undefined for a word printed wholly in capitals, which the index leaves out (the build's septuagintFormOf). */
-export function septuagintFormOf(text: string, lemma: string): string | undefined {
+/** A word's letters with every mark dropped, lower case and final sigma as sigma (the build's bareOf): what a word printed in capitals can be matched on. */
+export const bareOf = (text: string): string => text.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase().replace(/\u03C2/g, '\u03C3');
+
+/**
+ * The form a Septuagint token is indexed under: Swete's marks off, then ownFormOf (the build's septuagintFormOf). A word printed wholly in capitals has no accent to read, so it is the
+ * form among `accented` (the forms of its lemma with its parsing, accents kept) that has its letters, and undefined when there is none: ΑΡΧΗ with N-DSF is ἀρχῇ, not ἀρχή.
+ */
+export function septuagintFormOf(text: string, lemma: string, accented: readonly string[] = []): string | undefined {
   const bare = text.replace(SWETE_MARKS, '');
-  if (bare.length > 1 && bare === bare.toUpperCase() && bare !== bare.toLowerCase()) return undefined;
-  return bare === '' ? undefined : ownFormOf(bare, lemma);
+  if (bare === '') return undefined;
+  if (bare.length > 1 && bare === bare.toUpperCase() && bare !== bare.toLowerCase()) return accented.find((form) => bareOf(form) === bareOf(bare));
+  return ownFormOf(bare, lemma);
 }
 
 /** 'John 14:31', 'Genesis 1:2': the canon's names, the Old Testament's too, since a Septuagint use is in it. */

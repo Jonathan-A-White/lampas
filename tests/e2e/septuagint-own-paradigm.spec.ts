@@ -9,6 +9,7 @@ import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
+const NOUN_IDEAS = ['noun', 'declension-1', 'declension-2', 'case-nominative', 'gender-masculine', 'gender-feminine', 'gender-neuter', 'number-singular', 'number-plural', 'case-genitive', 'case-dative', 'case-accusative', 'case-vocative'];
 const ADJECTIVE_IDEAS = ['adjective', 'declension-2', 'case-nominative', 'gender-masculine', 'number-singular', 'declension-1', 'gender-feminine', 'gender-neuter', 'number-plural', 'case-genitive', 'case-dative', 'case-accusative', 'case-vocative', 'declension-3'];
 
 /** Puts his grammar levels in the app's own store through raw IndexedDB, as the app wrote them. */
@@ -58,20 +59,20 @@ test.beforeEach(async ({ page }) => {
 
 const forms = (page: Page) => page.getByRole('group', { name: 'Forms', exact: true });
 
-async function openTable(page: Page) {
+async function openTable(page: Page, verse = 2, word = 'ἀόρατος', ideas = ADJECTIVE_IDEAS, heading = 'Adjective endings') {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await putLevels(page, ADJECTIVE_IDEAS);
+  await putLevels(page, ideas);
   await page.goto('/#/settings');
   const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
   await row.getByRole('button', { name: 'On', exact: true }).click();
   await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.goto('/#/?b=gen&c=1&view=greek');
   await page.reload();
-  await page.locator('[data-verse="2"]').getByRole('button', { name: 'ἀόρατος', exact: true }).first().click();
+  await page.locator(`[data-verse="${verse}"]`).getByRole('button', { name: word, exact: true }).first().click();
   await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-paradigm').getByRole('button').click();
-  await expect(page.getByRole('heading', { name: 'Adjective endings', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible();
 }
 
 test('Genesis 1:2 ἀόρατος: This word lays the Septuagint’s form and the New Testament’s, each saying where, the tapped form outlined', async ({ page }) => {
@@ -100,4 +101,21 @@ test('Genesis 1:2 ἀόρατος: This word lays the Septuagint’s form and th
   const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
   expect(fits.w).toBeLessThanOrEqual(fits.c);
   await shot(page, 'septuagint-own-paradigm');
+});
+
+test('Genesis 1:1 ΑΡΧΗ, a word Swete prints in capitals: This word outlines the dative singular cell ἀρχῇ, never "no cell for this form yet"', async ({ page }) => {
+  await openTable(page, 1, 'ΑΡΧΗ', NOUN_IDEAS, 'Noun endings');
+  await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+  await forms(page).getByRole('button', { name: 'This word' }).click();
+  await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
+
+  // the capitals have no accent: the form is matched to the one the lemma's file has for the same parsing, ἀρχῇ
+  await expect(page.getByTestId('word-lit')).toHaveText('Its form is outlined in the table.');
+  const lit = page.locator('[data-lit]');
+  await expect(lit).toHaveCount(1);
+  await expect(lit).toContainText('ἀρχῇ');
+  await expect(page.getByText('The table has no cell for this form yet.')).toHaveCount(0);
+  const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+  expect(fits.w).toBeLessThanOrEqual(fits.c);
+  await shot(page, 'septuagint-own-paradigm-capitals');
 });

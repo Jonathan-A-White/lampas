@@ -2,7 +2,7 @@
 // (src/data/paradigms/ownForms.ts, scripts/build-lemma-forms.mjs, docs/paradigms.md 'This word'). Over the real chapters in public/data.
 // @vitest-environment node
 import { beforeAll, describe, expect, it } from 'vitest';
-import { fileText, lemmaForms, ownFormOf, readChapters, readSeptuagintChapters, septuagintFormOf, septuagintForms, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
+import { fileText, lemmaForms, ownFormOf, readChapters, readSeptuagintChapters, septuagintCapitals, septuagintFormOf, septuagintForms, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import { cellName, cellsOf, paradigmById, paradigmOfWord, tableFor } from '../../src/data/paradigms';
 import { absentText, fitsNoTable, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, septuagintFormOf as appSeptuagintFormOf, type OwnForm } from '../../src/data/paradigms/ownForms';
@@ -208,6 +208,50 @@ describe('the index takes the Septuagint’s forms of a lemma, apart from the Ne
     // the app's reading of a tapped word is the build's
     expect(appSeptuagintFormOf('ἀκατασκεύαστος,', 'ἀκατασκεύαστος')).toBe('ἀκατασκεύαστος');
     expect(appSeptuagintFormOf('ΕΝ', 'ἐν')).toBeUndefined();
+  });
+
+  it('a word in capitals (Genesis 1:1 ΑΡΧΗ) is matched to the accented form of its lemma with its parsing, in the build and in the app', () => {
+    // ἀρχή (nominative) and ἀρχῇ (dative) are the same letters without marks: the parsing picks the one
+    expect(septuagintFormOf('ΑΡΧΗ', 'ἀρχή', ['ἀρχῇ'])).toBe('ἀρχῇ');
+    expect(septuagintFormOf('ΑΡΧΗ,', 'ἀρχή', ['ἀρχῇ'])).toBe('ἀρχῇ');
+    expect(septuagintFormOf('ΑΡΧΗ', 'ἀρχή', [])).toBeUndefined();
+    expect(septuagintFormOf('ΑΡΧΗ', 'ἀρχή', ['ἀρχήν'])).toBeUndefined();
+    expect(septuagintFormOf('ΙΑΚΩΒ', 'Ἰακώβ', ['Ἰακώβ'])).toBe('Ἰακώβ');
+    expect(septuagintFormOf('ΛΟΓΟΣ', 'λόγος', ['λόγος'])).toBe('λόγος');
+    for (const [token, lemma, accented] of [['ΑΡΧΗ', 'ἀρχή', ['ἀρχῇ']], ['ΑΡΧΗ', 'ἀρχή', []], ['ΙΑΚΩΒ', 'Ἰακώβ', ['Ἰακώβ']], ['ΕΝ', 'ἐν', []], ['ἀρχῇ', 'ἀρχή', []]] as [string, string, string[]][]) {
+      expect(appSeptuagintFormOf(token, lemma, accented)).toBe(septuagintFormOf(token, lemma, accented));
+    }
+  });
+
+  it('a capitals token is indexed under the accented form the New Testament or the Septuagint has for the lemma and the parsing, at its own place; with none it is left out', () => {
+    const capitals = (): Chapter =>
+      ({
+        book: 'Genesis', code: 'gen', chapter: 1, lang: 'grc', translation: 'lxx2012', edition: 'swete', lex: {}, parse: {},
+        verses: [
+          { n: 1, ref: { book: 'gen', chapter: 1, verse: 1 }, g: [lxxWord('ΕΝ', 'ἐν', 'PREP'), lxxWord('ΑΡΧΗ', 'ἀρχή', 'N-DSF'), lxxWord('ΣΚΟΤΟΣ', 'σκότος', 'N-NSN')], e: [] },
+          { n: 2, ref: { book: 'gen', chapter: 1, verse: 2 }, g: [lxxWord('ἀρχῇ', 'ἀρχή', 'N-DSF'), lxxWord('σκότος', 'σκότος', 'N-NSN')], e: [] },
+        ],
+      }) as Chapter;
+    // the New Testament has ἀρχῇ (John 1:1); the Septuagint's own lowercase σκότος comes after the capitals
+    const withNt = septuagintForms([capitals()], index);
+    expect(withNt.get('ἀρχή')).toEqual([['ἀρχῇ', 'N-DSF', 2, 'gen', 1, 1]]);
+    expect(withNt.get('σκότος')).toEqual([['σκότος', 'N-NSN', 2, 'gen', 1, 1]]);
+    // ΕΝ is the New Testament's ἐν; the Septuagint here has no small-letter ἐν of its own
+    expect(withNt.get('ἐν')).toEqual([['ἐν', 'PREP', 1, 'gen', 1, 1]]);
+    // with no New Testament to take the accent from, the Septuagint's own is enough; with neither, the capitals stay out
+    const alone = septuagintForms([capitals()]);
+    expect(alone.get('ἀρχή')).toEqual([['ἀρχῇ', 'N-DSF', 2, 'gen', 1, 1]]);
+    expect(alone.has('ἐν')).toBe(false);
+    const only = capitals();
+    only.verses.pop();
+    expect(septuagintForms([only]).has('ἀρχή')).toBe(false);
+  });
+
+  it('every capitals token of the fixture chapters is told, with the form it is matched to or none', () => {
+    const told = septuagintCapitals(readSeptuagintChapters('tests/fixtures/data-lxx'), index);
+    const arche = told.find((c) => c.token === 'ΑΡΧΗ')!;
+    expect(arche).toMatchObject({ lemma: 'ἀρχή', code: 'N-DSF', form: 'ἀρχῇ', place: 'gen 1:1' });
+    for (const c of told) expect(c.token).toBe(c.token.toUpperCase());
   });
 
   it('a lemma with no Septuagint form has a file that is byte for byte the New Testament’s; one with some has them under lxx, and one only the Septuagint has has no New Testament forms', () => {
