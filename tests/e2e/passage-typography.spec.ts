@@ -134,7 +134,7 @@ async function tapHeading(page: Page, heading: Locator, firstPressMs = 0): Promi
   await expect(async () => {
     if (!(await view.isVisible())) await heading.getByRole('button').click({ delay: pressMs });
     pressMs = 0;
-    await expect(view).toBeVisible({ timeout: 2_000 });
+    await expect(view).toBeVisible({ timeout: 2_000 }); // short on purpose: a press taken for a hold opens nothing, and the next try is the cure
   }).toPass({ timeout: 20_000 });
   return view;
 }
