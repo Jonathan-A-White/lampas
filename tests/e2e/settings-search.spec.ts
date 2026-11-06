@@ -37,19 +37,17 @@ test('Settings search at phone width: a 48 px field at the top, "logos" lists th
   await shot(page, 'settings-search-cleared');
 });
 
-test('a search for "library" finds Your Logos library under Study resources, and opens that page at the row (mw-5r3p30.837)', async ({ page }) => {
+test('a search for "library" finds Your Logos library in Tools, and opens the Library (mw-5r3p30.754)', async ({ page }) => {
   await openUnlocked(page);
   await turnLogosOn(page);
   await page.goto('/#/settings');
   await page.getByRole('searchbox', { name: 'Search settings' }).fill('library');
-  const answer = page.getByRole('button', { name: /^Your Logos library/ }).first();
+  const answer = page.getByRole('list', { name: 'Matching tools' }).getByRole('button', { name: /^Your Logos library/ });
   await expect(answer).toBeVisible();
-  await expect(answer).toContainText('Study resources');
+  await expect(answer).toContainText('in Tools');
   await answer.click();
-  await expect(page.getByRole('heading', { name: 'Study resources', level: 1 })).toBeVisible();
-  const row = page.getByRole('region', { name: 'Study resources' }).getByRole('button', { name: /^Your Logos library · \d+ books? on$/ });
-  await expect(row).toBeInViewport();
-  await expect(page.locator('[data-setting="library"]')).toHaveAttribute('data-highlighted', /.*/);
+  await expect(page.getByRole('heading', { name: 'Your Logos library', exact: true, level: 1 })).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('#/library');
 });
 
 test('a book\'s title answers a row "BDAG · Your Logos library" that opens its kind page at the book (mw-rfjjzd.5)', async ({ page }) => {

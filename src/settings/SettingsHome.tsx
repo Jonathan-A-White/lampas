@@ -3,6 +3,7 @@
 // where a tap goes, and the books of his library the search finds beside the settings. src/SettingsScreen.tsx draws them; docs/layout/settings.md.
 import { Found as FoundRows, GroupButton as KitGroupButton, SettingsSearch } from 'pwa-kit/settings';
 import { openLibrary } from '../nav/route';
+import { openTool } from '../tools';
 import { detailOf, infoOf } from '../library/kinds';
 import { openFoundRow, openSettingsGroup } from './link';
 import type { searchLibrary } from './librarySearch';
@@ -21,15 +22,34 @@ function openFound(row: SettingsRow): void {
   openFoundRow(row.key);
 }
 
-/** What the search found among the settings and the books of his library: each setting with the group it is in; choosing one opens its page at that row, and a book opens its kind page at it. */
-export function Found({ rows, books, query }: { rows: readonly SettingsRow[]; books: ReturnType<typeof searchLibrary>; query: string }) {
-  // with nothing found among either, the kit's list says so
-  if (rows.length === 0 && books.total === 0) return <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} />;
+/** What the search found among the settings, the Tools and the books of his library: each setting with the group it is in; choosing one opens its page at that row. A tool (Words, Verse lists, Your Logos library…
+ *  moved out of Settings to the Tools screen, mw-5r3p30.754) is listed 'in Tools' and opens its own screen; a book opens its kind page at it. */
+export function Found({ rows, tools, books, query }: { rows: readonly SettingsRow[]; tools: readonly SettingsRow[]; books: ReturnType<typeof searchLibrary>; query: string }) {
+  // with nothing found among any, the kit's list says so
+  if (rows.length === 0 && tools.length === 0 && books.total === 0) return <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} />;
   return (
     <>
       {rows.length > 0 ? <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} /> : null}
+      {tools.length > 0 ? <FoundTools tools={tools} /> : null}
       {books.total > 0 ? <FoundBooks books={books} /> : null}
     </>
+  );
+}
+
+/** The Tools that hold the search, drawn as the kit draws a found setting (its classes, themed in src/index.css) but saying 'in Tools'; a tap opens the tool's screen. */
+function FoundTools({ tools }: { tools: readonly SettingsRow[] }) {
+  return (
+    <ul aria-label="Matching tools" className="bk-settings__list">
+      {tools.map((row) => (
+        <li key={row.key}>
+          <button type="button" data-found={row.key} onClick={() => openTool(row.key)} className="bk-settings__found">
+            <span className="bk-settings__found-label">{row.label}</span>
+            <span className="bk-settings__found-hint">{row.hint}</span>
+            <span className="bk-settings__found-where">in Tools</span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

@@ -5,7 +5,7 @@ import { openUnlocked } from './unlocked';
 import { openTutor } from './open-tutor';
 import { openVerseView } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
-import { openSettings, settingsDoor, settingsHeading } from './openSettings';
+import { openSettings, menuButton, settingsHeading } from './openSettings';
 
 // The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header and the chips away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
@@ -103,7 +103,7 @@ test('scrolling down slides the bars away, scrolling up leaves them away', async
   await scrollText(page, 400);
   await expectAll(page, 'hidden');
   // out of the tab order too
-  await expect(settingsDoor(page)).toHaveCount(0);
+  await expect(menuButton(page)).toHaveCount(0);
   expect(await textHeight(page)).toBeGreaterThan(before + 150);
   // the text has the whole screen: its box ends in the foot's last 100 px of the window, above the place line and the phone's 48 px floor under it (mw-5r3p30.473)
   const box = await page.locator('[data-reader]').boundingBox();

@@ -8,13 +8,13 @@ Feature: Study resources
 
   Scenario: Settings lists Strong's and Logos, all switched off
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     Then the Study resources section lists Strong's and Logos
     And every study resource is switched off
 
   Scenario: With Strong's on, the word sheet shows the word's G-number as a link to its entry
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Strong's"
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
@@ -22,7 +22,7 @@ Feature: Study resources
 
   Scenario: With Logos on, BDAG is ticked and the word sheet shows Open in Logos: BDAG and Bible Word Study in Logos
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Logos"
     Then the Logos lexicon "BDAG" is on in his library
     And the Logos lexicon "Louw-Nida" is not on in his library
@@ -34,7 +34,7 @@ Feature: Study resources
 
   Scenario: Each ticked Logos lexicon gives its own Open link
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Logos"
     And he turns on the Logos lexicon "Louw-Nida"
     And he taps Back on the Settings screen
@@ -45,7 +45,7 @@ Feature: Study resources
 
   Scenario: With EDNT ticked, Open in Logos: EDNT carries the Resource ID Logos prints for EDNT
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Logos"
     And he turns on the Logos lexicon "EDNT"
     And he taps Back on the Settings screen
@@ -55,7 +55,7 @@ Feature: Study resources
 
   Scenario: Bible Word Study in Logos names Jesus by his Logos lemma, and the BDAG link is unchanged
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Logos"
     And he taps Back on the Settings screen
     And he taps the word "Jesus," in verse 1
@@ -65,7 +65,7 @@ Feature: Study resources
 
   Scenario: A Logos link carries its https address for the case the app cannot be opened
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Logos"
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
@@ -73,7 +73,7 @@ Feature: Study resources
 
   Scenario: With Strong's on, the Strong's number shows once on the word sheet
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Strong's"
     And he taps Back on the Settings screen
     And he taps the word "work together" in verse 28
@@ -86,7 +86,7 @@ Feature: Study resources
 
   Scenario: The switches survive a reload
     Given Lampas is opened on Romans 8 with no study resources on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he switches on the study resource "Strong's"
     And he also switches on the study resource "Logos"
     And he turns on the Logos lexicon "Louw-Nida"

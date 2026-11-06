@@ -105,7 +105,8 @@ describe('the catalogue and the screen key', () => {
     // then 5,900 on main; the fact verse-lists and the id of the place lists (mw-t3xu9a.10) add about 240 bytes; then the place diagram-lesson (mw-q6t5tvn.1), about 75
     // then the fact variants (mw-9ji6ek0.7), about 150
     // then the command save-answer-references (mw-5r3p30.929), about 260
-    expect(JSON.stringify(catalogue).length).toBeLessThan(6800);
+    // then the place tools (mw-5r3p30.754), about 70
+    expect(JSON.stringify(catalogue).length).toBeLessThan(6900);
   });
 
   it('keys the up-front list by the screen name, the Reader for the plain address', () => {

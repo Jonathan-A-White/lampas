@@ -140,7 +140,7 @@ Feature: Lampas reads the Old Testament in English
   @uc-logos-links @hebrew
   Scenario: Settings has a Bible in Logos for each part, the Legacy Standard Bible to start (the NRSV for the Apocrypha), and a door to Library > Bibles
     Given Lampas is opened on Romans 8 with Logos on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     Then the New Testament and Old Testament pickers say "LSB (Legacy Standard Bible)" and the Apocrypha picker says "NRSV (The New Revised Standard Version)"
     When he opens the Bible in Logos row
     Then the Bibles page says "New Testament verses open in LSB."
@@ -149,7 +149,7 @@ Feature: Lampas reads the Old Testament in English
   @uc-logos-links @hebrew
   Scenario: A Bible chosen on the Bibles page is kept across a close
     Given Lampas is opened on Romans 8 with Logos on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he opens the Bible in Logos row
     And he chooses the Bible "ESV" on the Bibles page
     And the app is closed and opened again
@@ -158,7 +158,7 @@ Feature: Lampas reads the Old Testament in English
   @uc-logos-links @hebrew
   Scenario: A typed Resource ID is kept across a close, and a malformed one is not
     Given Lampas is opened on Romans 8 with Logos on
-    When he taps the gear in the reader's header
+    When he opens Settings from the reader's Menu
     And he opens the Bible in Logos row
     And he types the Resource ID "esv"
     Then the Resource ID field says "That is not a Resource ID. It looks like LLS:LGCYSTNDRDBBLSB."

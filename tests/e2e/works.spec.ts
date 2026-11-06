@@ -17,8 +17,8 @@ test('Settings no longer lists the works; Library > Commentaries does, each Off 
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await section.getByRole('switch', { name: 'Logos', exact: true }).click();
-  // the door to the library is the first row of Study resources (mw-5r3p30.837)
-  await expect(section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ })).toBeVisible();
+  // the door to the library is a door of Tools now (mw-5r3p30.754), no row of Study resources
+  await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
   await expect(page.getByRole('list', { name: 'Works in your Logos library' })).toHaveCount(0);
   await expect(page.getByRole('switch', { name: "Calvin's Commentaries", exact: true })).toHaveCount(0);
 

@@ -4,9 +4,10 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import type { SourceLanguage } from './data/chapter';
 import { listWords, setWordState, type Word, type WordState } from './data/repositories';
-import { backTo, navigate, openPlacement } from './nav/route';
+import { navigate, openPlacement } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { ToolBack } from './ToolBack';
 import { HintCard } from './tips/HintCard';
 import { WORDS_OPENED } from './tips/hints';
 import { speakWord } from './speech/greek';
@@ -103,7 +104,7 @@ export function WordsScreen() {
       <ScreenHeader
         title="Words"
         subtitle={words ? <span data-testid="word-counts">{countLine(words)}</span> : null}
-        back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>}
+        back={<ToolBack fallback="home" label="‹ Reader" />}
         action={
           <>
             <HeaderButton onClick={() => navigate('test')}>Test</HeaderButton>

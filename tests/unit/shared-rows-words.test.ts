@@ -2,7 +2,10 @@
 // never Greek alone (mw-gdcyf98.26). Rows tied to the Greek dial only (greekKeyboard, grammarApproach) are not listed.
 import { describe, expect, it } from 'vitest';
 import { SETTINGS } from '../../src/settings/registry';
-import { ROWS } from '../../src/settings/rows';
+import { ROWS, TOOL_ROWS } from '../../src/settings/rows';
+
+// Words, Review and Paradigms are doors of the Tools screen (mw-5r3p30.754), rows beside Settings'
+const EVERY_ROW = [...ROWS, ...TOOL_ROWS];
 
 const SHARED = [
   'weave',
@@ -26,7 +29,7 @@ const ALLOWED = /Greek (or|and) Hebrew/g;
 
 /** Every word a shared row draws or tells the tutor: its label, hint, help and the labels of its choices. */
 function wordsOf(key: string): string[] {
-  const row = ROWS.find((r) => r.key === key);
+  const row = EVERY_ROW.find((r) => r.key === key);
   if (!row) throw new Error(`no row ${key}`);
   const setting = SETTINGS.find((s) => s.key === key);
   const choices = setting?.allowed.kind === 'choice' ? setting.allowed.values.map((v) => v.label) : [];
@@ -35,7 +38,7 @@ function wordsOf(key: string): string[] {
 
 describe('the words of the rows both languages share', () => {
   it('lists only rows the registry has', () => {
-    for (const key of SHARED) expect(ROWS.some((r) => r.key === key), key).toBe(true);
+    for (const key of SHARED) expect(EVERY_ROW.some((r) => r.key === key), key).toBe(true);
   });
 
   it.each(SHARED)('%s says nothing of Greek alone', (key) => {

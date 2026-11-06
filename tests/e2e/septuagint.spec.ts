@@ -64,7 +64,7 @@ test('the setting is under How much Greek?, found by a search, and turned on it 
   expect(wide.scroll).toBeLessThanOrEqual(wide.client);
   await shot(page, 'septuagint-reader');
 
-  // Back: the gear opens Settings and Back returns to the chapter
+  // Back: the Menu opens Settings and Back returns to the chapter
   await openSettings(page);
   await expect(settingsHeading(page)).toBeVisible();
   await page.goBack();

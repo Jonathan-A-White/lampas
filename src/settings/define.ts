@@ -38,7 +38,8 @@ export type SectionId =
   | 'aboutYou'
   | 'memory'
   | 'studyWay'
-  | 'more';
+  | 'more'
+  | 'tools';
 
 export interface SettingStore {
   /** where the value is kept when it is not a row of the settings store (the devotional draw is on his shelf, src/data/repositories/library.ts): read gives the text, write keeps it */

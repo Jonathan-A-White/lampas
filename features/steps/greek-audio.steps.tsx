@@ -13,10 +13,9 @@ import { chosenPronunciation } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { asSpoken, pairsAsConsonant } from '../../tests/support/lone-word';
 import { queryStatusLine, statusLine } from '../../tests/support/status';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openTool } from '../../tests/unit/openSettings';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseGreek = (n: number): string => {
@@ -64,9 +63,7 @@ const playButton = (n: number) => within(verseEl(n)).getByRole('button', { name:
 const tapPlay = async (n: number) => user.click(playButton(n));
 
 async function openWords(): Promise<void> {
-  await openSettings(user);
-  await openSettingsGroup(user, 'account');
-  await user.click(await screen.findByRole('button', { name: 'Words' }));
+  await openTool(user, 'Words');
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));
 }

@@ -1,7 +1,7 @@
 // features/steps/settings-library.steps.tsx — runs features/settings-library.feature: Settings after the library (mw-rfjjzd.5): the Your Logos library row, Bible in Logos opening Library > Bibles,
 // Daily's devotional picker and In the draw reading the shelf, and the Settings search finding a book by its title.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -12,7 +12,6 @@ import { setState, shelfOf } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { libraryOf } from '../../src/nav/route';
-import { openSetting } from '../../src/settings/link';
 import { CATALOGUE } from '../../src/resources/catalogue';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -77,22 +76,6 @@ describeFeature(feature, ({ Scenario }) => {
     await openAt('#/settings?group=study');
     await region();
   };
-  const noBookLists = async () => {
-    const section = await region();
-    expect(within(section).queryByRole('group', { name: 'Logos lexicons' })).toBeNull();
-    expect(within(section).queryByRole('group', { name: 'Grammar books' })).toBeNull();
-    expect(within(section).queryByRole('list', { name: 'Works in your Logos library' })).toBeNull();
-    expect(within(section).queryAllByRole('checkbox')).toHaveLength(0);
-  };
-  const markedRow = async (_: unknown, name: string) => {
-    await region();
-    await waitFor(() => {
-      const row = document.querySelector<HTMLElement>('[data-setting="library"]');
-      expect(row).not.toBeNull();
-      expect(row).toHaveAttribute('data-highlighted');
-      expect(within(row as HTMLElement).getByRole('button', { name: new RegExp(`^${name}`) })).toBeInTheDocument();
-    });
-  };
   const rowButton = (name: string) => screen.findByRole('button', { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`) });
   const tapsRow = async (_: unknown, name: string) => {
     await user.click(await rowButton(name));
@@ -113,23 +96,6 @@ describeFeature(feature, ({ Scenario }) => {
     await openAt('#/settings');
     await screen.findByRole('searchbox', { name: 'Search settings' });
   };
-  const libraryRow = async () => {
-    const found = await waitFor(() => {
-      const el = document.querySelector<HTMLElement>('[data-setting="library"]');
-      expect(el).not.toBeNull();
-      return el as HTMLElement;
-    });
-    return found;
-  };
-  const underLogosSays = async (_: unknown, name: string) => {
-    await region();
-    const row = await libraryRow();
-    await waitFor(() => expect(within(row).getByRole('button', { name: new RegExp(`^${name}`) })).toBeInTheDocument());
-    // indented, and the row drawn just after the Logos switch's own row
-    const indent = row.closest<HTMLElement>('[data-under-logos]');
-    expect(indent).not.toBeNull();
-    expect(indent?.previousElementSibling).toHaveAttribute('data-setting', 'resource.logos');
-  };
 
   Scenario('The Settings home has no Your Logos library row; Which languages? is first', ({ Given, Then, And }) => {
     Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
@@ -149,17 +115,28 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('With Logos On, Study resources show Your Logos library directly under the Logos switch', ({ Given, Then, When }) => {
-    Given('the shelf holds the books {string} and Settings is open at Study resources with Logos On', studyWith('on'));
-    Then('the row under the Logos switch is {string}', underLogosSays);
-    When('he taps the row {string}', tapsRow);
+  const toolsWithLogos = async (_: unknown, shelf: string) => {
+    await shelfHolds(list(shelf), { 'resource.logos': 'on' });
+    await openAt('#/tools');
+    await screen.findByRole('list', { name: 'Tools' });
+  };
+  const toolDoor = async (name: string) => within(await screen.findByRole('list', { name: 'Tools' })).findByRole('button', { name: new RegExp(`^${name}`) });
+  const doorSays = async (_: unknown, name: string, says: string) => {
+    await waitFor(async () => expect(await toolDoor(name)).toHaveTextContent(says));
+  };
+
+  Scenario('With Logos On, Tools lists Your Logos library with its count and opens the Library', ({ Given, Then, When }) => {
+    Given('the shelf holds the books {string} and Tools is open with Logos On', toolsWithLogos);
+    Then('the Tools door {string} says {string}', doorSays);
+    When('he taps the Tools door {string}', async (_, name: string) => {
+      await user.click(await toolDoor(name));
+    });
     Then('the Library home opens', libraryHome);
   });
 
-  Scenario('The count follows the shelf', ({ Given, Then, And }) => {
-    Given('the shelf holds the books {string} and Settings is open at Study resources with Logos On', studyWith('on'));
-    Then('the row under the Logos switch is {string}', underLogosSays);
-    And('Study resources show no Logos lexicons, no Grammar books and no Works list', noBookLists);
+  Scenario('The count follows the shelf', ({ Given, Then }) => {
+    Given('the shelf holds the books {string} and Tools is open with Logos On', toolsWithLogos);
+    Then('the Tools door {string} says {string}', doorSays);
   });
 
   Scenario('With Logos Off, Study resources show nothing of Logos under the switch', ({ Given, Then, And }) => {
@@ -190,15 +167,17 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A link to the library setting opens Study resources at the row, marked', ({ Given, When, Then }) => {
+  Scenario('An old link to the library setting opens the Library', ({ Given, When, Then }) => {
     Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
-    When('a link opens the setting {string}', async (_, key: string) => {
-      openSetting(key);
+    When('the old address {string} is opened', async (_, address: string) => {
+      await act(async () => {
+        window.location.hash = address;
+      });
     });
-    Then('the Study resources show the row {string} marked', markedRow);
+    Then('the Library home opens', libraryHome);
   });
 
-  Scenario('The Settings search finds Your Logos library under Study resources', ({ Given, When, Then }) => {
+  Scenario('The Settings search finds Your Logos library in Tools', ({ Given, When, Then }) => {
     Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
     When('he searches Settings for {string}', async (_, text: string) => {
       await user.type(await screen.findByRole('searchbox', { name: 'Search settings' }), text);
@@ -210,7 +189,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the answer {string}', async (_, title: string) => {
       await user.click(await screen.findByRole('button', { name: new RegExp(`^${title}`) }));
     });
-    Then('the Study resources show the row {string} marked', markedRow);
+    Then('the Library home opens', libraryHome);
   });
 
   Scenario('Bible in Logos opens Library > Bibles, where the Resource ID can be typed', ({ Given, When, Then }) => {

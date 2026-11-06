@@ -54,7 +54,7 @@ function LibraryHome() {
   });
   return (
     <>
-      <ScreenHeader title={SCREEN_NAMES.library} back={<HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>} />
+      <ScreenHeader title={SCREEN_NAMES.library} back={<HeaderButton onClick={() => backTo('tools')}>‹ Tools</HeaderButton>} />
       <main className="screen min-h-0 flex-1 px-4">
         <section data-testid="library-card" className="mt-3 rounded-xl border border-line bg-surface p-3">
           {states === undefined ? null : on > 0 || note ? (
