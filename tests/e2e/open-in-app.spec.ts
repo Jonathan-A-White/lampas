@@ -6,6 +6,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openWithTextSize, PHONES } from './next-in-view';
 import { FLOATING } from './open-tutor';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -471,17 +472,14 @@ for (const hash of ['#/?ref=Rom.8.28', '#/settings', '#/words', '#/about', '#/to
     await stubApi(page, WEBAPP);
     await openUnlocked(page);
     await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+    // tapTwice times the two taps, and the guard its moment, on the page's clock (tests/support/gesture.ts)
+    await page.clock.install();
     await page.goto(`/${hash}`);
     const notNow = page.locator('[data-open-in-app]').getByRole('button', { name: 'Not now' });
     await expect(notNow).toBeVisible();
-    await page.waitForTimeout(500);
-    const at = (await notNow.boundingBox())!;
-    const x = at.x + at.width / 2;
-    const y = at.y + at.height / 2;
-    await page.touchscreen.tap(x, y);
-    await page.waitForTimeout(100);
-    await page.touchscreen.tap(x, y);
-    await page.waitForTimeout(500);
+    await pageTime(page, 500);
+    await tapTwice(page, notNow, 100, { touch: true });
+    await pageTime(page, 500);
     await expect(page.locator('[data-open-in-app]')).toHaveCount(0);
     expect(await page.evaluate(() => document.activeElement?.tagName), 'the second tap focused no field or button').toBe('BODY');
     await shot(page, `open-in-app-not-now-double-${hash.replace(/[^a-z]/gi, '')}`);
