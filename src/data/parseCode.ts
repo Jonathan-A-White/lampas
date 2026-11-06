@@ -123,7 +123,48 @@ function pronoun(code: string, kind: string, parts: string[]): string {
   return [label, detail, ...suffixes(code, parts.slice(2))].join(', ');
 }
 
+// TAGNT writes a crasis or a joined particle as two words, 'G1473=P-1NS + G2532=CONJ' (κἀγώ, 'and I'), and the layer-1 index keeps the parsing of the first with only the Strong's
+// number of the other ('P-1NS + G2532', tagnt.ts readTagnt; mw-u2w5klk.272). The joined word is put in words by what TAGNT calls it; a number not here is refused, as an unknown code is.
+const JOINED: Record<string, string> = {
+  G0826: 'to see',
+  G1437: 'if',
+  G1537: 'out of',
+  G1563: 'there',
+  G1564: 'from there',
+  G1565: 'that',
+  G2089: 'still',
+  G2532: 'and',
+  G2955: 'to stoop',
+  G3029: 'greatly',
+  G3461: 'myriad',
+  G3638: 'eight',
+  G4007: 'fully',
+  G4155: 'to choke',
+  G4218: 'when',
+  G4225: 'somewhere',
+  G4452: 'somehow',
+  G4521: 'Sabbath',
+  G5064: 'four',
+  G5101: 'who or what',
+  G5104: 'yet',
+  G4057: 'more abundantly',
+};
+
+const JOIN = ' + ';
+
+/** A parsing of two parts joined by ' + ' as the form's own parsing and the word joined to it, or undefined for a code with no ' + '. */
+function joined(code: string): { first: string; word: string } | undefined {
+  const at = code.indexOf(JOIN);
+  if (at < 0) return undefined;
+  const number = code.slice(at + JOIN.length);
+  const word = JOINED[number];
+  if (!word) return bad(code);
+  return { first: code.slice(0, at), word };
+}
+
 export function decodeParse(code: string): string {
+  const two = joined(code);
+  if (two) return `${decodeParse(two.first)}, joined to "${two.word}"`;
   const parts = code.split('-');
   const head = parts[0];
   if (WORDS[head]) {
@@ -227,6 +268,9 @@ function pronounFeatures(code: string, kind: string, parts: string[]): ParseFeat
 }
 
 export function splitParse(code: string): SplitParse {
+  // a parsing of two parts is asked by its first, the word joined to it is not a thing to parse
+  const two = joined(code);
+  if (two) return splitParse(two.first);
   const parts = code.split('-');
   const head = parts[0];
   if (WORDS[head]) {
