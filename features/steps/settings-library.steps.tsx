@@ -213,7 +213,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Study resources show the row {string} marked', markedRow);
   });
 
-  Scenario('Bible in Logos opens Library > Bibles, where the Resource ID can be typed', ({ Given, When, Then }) => {
+  Scenario('Bible in Logos opens Library > Bibles, where the Resource ID can be typed', ({ Given, When, Then, And }) => {
     Given('the shelf holds the books {string} and Settings is open at Study resources with Logos On', studyWith('on'));
     When('he taps the row {string}', tapsRow);
     Then('the Library opens at Bibles', async () => {
@@ -225,17 +225,26 @@ describeFeature(feature, ({ Scenario }) => {
       await user.clear(field);
       await user.type(field, id);
     });
+    Then('the setting {string} holds nothing', async (_, key: string) => {
+      expect(await kept(key)).toBeUndefined();
+    });
+    When('he sets the typed Resource ID for {string}', async (_, part: string) => {
+      await user.click(within(await screen.findByRole('group', { name: /^Set LLS:/ })).getByRole('button', { name: part }));
+    });
     Then('the setting {string} holds {string}', async (_, key: string, value: string) => {
       await waitFor(async () => expect(await kept(key)).toBe(value));
     });
+    And('the New Testament key {string} still holds {string}', async (_, key: string, value: string) => {
+      expect(await kept(key)).toBe(value);
+    });
   });
 
-  Scenario('Choosing a Bible in the Library is the Bible in Logos', ({ Given, When, And, Then }) => {
+  Scenario('Choosing a Bible in the Library sets the part he names, as Settings does', ({ Given, When, And, Then }) => {
     Given('the shelf holds the books {string} and Settings is open at Study resources with Logos On', studyWith('on'));
     When('he taps the row {string}', tapsRow);
-    And('he chooses the Bible {string} on the Bibles page', async (_, short: string) => {
-      const group = await screen.findByRole('radiogroup', { name: short });
-      await user.click(within(group).getByRole('radio', { name: 'Chosen' }));
+    And('he chooses the Bible {string} for {string} on the Bibles page', async (_, short: string, part: string) => {
+      await user.click(await screen.findByRole('button', { name: `Set for… ${short}` }));
+      await user.click(within(await screen.findByRole('group', { name: `Set ${short} for` })).getByRole('button', { name: part }));
     });
     Then('the setting {string} holds {string}', async (_, key: string, value: string) => {
       await waitFor(async () => expect(await kept(key)).toBe(value));

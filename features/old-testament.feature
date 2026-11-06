@@ -143,20 +143,22 @@ Feature: Lampas reads the Old Testament in English
     When he taps the gear in the reader's header
     Then the New Testament and Old Testament pickers say "LSB (Legacy Standard Bible)" and the Apocrypha picker says "NRSV (The New Revised Standard Version)"
     When he opens the Bible in Logos row
-    Then the Bibles page says "New Testament verses open in LSB."
-    And the Resource ID field holds "LLS:LGCYSTNDRDBBLSB"
+    Then the Bibles page marks "LSB" "Set for NT · OT"
+    And the Bibles page also marks "NRSV" "Set for Apocrypha"
+    And the Resource ID field is empty
 
   @uc-logos-links @hebrew
-  Scenario: A Bible chosen on the Bibles page is kept across a close
+  Scenario: A Bible set for a part on the Bibles page is kept across a close
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
     And he opens the Bible in Logos row
-    And he chooses the Bible "ESV" on the Bibles page
+    And he sets the Bible "ESV" for "New Testament" on the Bibles page
     And the app is closed and opened again
-    Then the Bibles page says "New Testament verses open in ESV."
+    Then the Bibles page marks "ESV" "Set for NT"
+    And the Bibles page also marks "LSB" "Set for OT"
 
   @uc-logos-links @hebrew
-  Scenario: A typed Resource ID is kept across a close, and a malformed one is not
+  Scenario: A typed Resource ID is kept for the part he names, and a malformed one is not
     Given Lampas is opened on Romans 8 with Logos on
     When he taps the gear in the reader's header
     And he opens the Bible in Logos row
@@ -164,9 +166,11 @@ Feature: Lampas reads the Old Testament in English
     Then the Resource ID field says "That is not a Resource ID. It looks like LLS:LGCYSTNDRDBBLSB."
     And the setting "logosBible" holds nothing
     When he types the Resource ID "LLS:1.0.9991"
+    Then the key "logosBible" is still empty
+    When he sets the typed Resource ID for "New Testament"
     And the app is closed and opened again
-    Then the Bibles page says "New Testament verses open in LLS:1.0.9991."
-    And the Resource ID field holds "LLS:1.0.9991"
+    Then the setting "logosBible" holds "LLS:1.0.9991"
+    And the Old Testament key "logosBibleOt" still holds "LLS:LGCYSTNDRDBBLSB"
 
   Scenario: Diagram kept from a New Testament verse opens an Old Testament verse on Diagram and is kept
     Given Lampas is opened on Jonah 1 with a licence and the kept action "diagram"

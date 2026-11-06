@@ -2,9 +2,11 @@
 // them, and the count line a row reads ('19 on · 2 pinned'). Pure: the screens read the shelf and hand the rows here.
 import { MAX_PINS, type LibraryRow, type ShelfState } from '../data/repositories';
 import { entriesOf, entryOf, KINDS, type CatalogueEntry, type Kind } from '../resources/catalogue';
+import type { LogosBibles } from '../resources/logosBible';
+import { bibleLine } from './bibleParts';
 
-/** How a kind's rows are set: Off | On | Pin; Off | On (Devotionals have no Pin, the Daily page chooses among them); Off | Chosen (Bibles, one at a time). */
-export type Steps = 'pin' | 'on' | 'chosen';
+/** How a kind's rows are set: Off | On | Pin; Off | On (Devotionals have no Pin, the Daily page chooses among them); 'parts' (Bibles: each is set for the New Testament, the Old Testament, the Apocrypha, or all three). */
+export type Steps = 'pin' | 'on' | 'parts';
 
 export interface KindInfo {
   kind: Kind;
@@ -56,8 +58,8 @@ const INFO: Record<Kind, Omit<KindInfo, 'kind'>> = {
   bible: {
     plural: 'Bibles',
     singular: 'Bible',
-    help: 'Opens an Old Testament chapter in the Bible you choose. One at a time: choosing another puts the first back.',
-    steps: 'chosen',
+    help: 'Opens a chapter or a verse in the Bible you set for its part. Each Bible shows the parts it is set for; choose one and say which part: the New Testament, the Old Testament, the Apocrypha, or all three. Settings > Study resources sets the same three.',
+    steps: 'parts',
   },
   devotional: {
     plural: 'Devotionals',
@@ -96,23 +98,25 @@ export function shelfStates(rows: readonly LibraryRow[] | undefined): Map<string
 }
 
 /** How many books of `kind` are on (Pinned ones count) and how many are pinned. */
-export function countsOf(kind: Kind, states: ReadonlyMap<string, ShelfState>): { on: number; pinned: number; chosen?: string } {
+export function countsOf(kind: Kind, states: ReadonlyMap<string, ShelfState>): { on: number; pinned: number } {
   const own = [...states].filter(([id, state]) => state !== 'off' && entryOf(id)?.kind === kind);
-  const chosen = kind === 'bible' ? entryOf(own[0]?.[0] ?? '')?.short : undefined;
-  return { on: own.length, pinned: own.filter(([, state]) => state === 'pinned').length, chosen };
+  return { on: own.length, pinned: own.filter(([, state]) => state === 'pinned').length };
 }
 
-/** The count a row of the home reads: '19 on · 2 pinned', 'none on', '1 chosen: LSB'. */
-export function countLine(kind: Kind, states: ReadonlyMap<string, ShelfState>): string {
-  const { on, pinned, chosen } = countsOf(kind, states);
-  if (kind === 'bible') return chosen ? `1 chosen: ${chosen}` : 'none chosen';
+/** How many books are on across the shelf: the Bibles are left out, because Settings sets them (three parts, never none) and a phone with nothing on its shelf must not count two. */
+export const booksOn = (states: ReadonlyMap<string, ShelfState>): number => KINDS.filter((k) => k !== 'bible').reduce((sum, kind) => sum + countsOf(kind, states).on, 0);
+
+/** The count a row of the home reads: '19 on · 2 pinned', 'none on', 'LSB for all three'. */
+export function countLine(kind: Kind, states: ReadonlyMap<string, ShelfState>, bibles?: LogosBibles): string {
+  const { on, pinned } = countsOf(kind, states);
+  if (kind === 'bible') return bibles ? bibleLine(bibles) : 'set in Settings';
   if (on === 0) return 'none on';
   return pinned > 0 ? `${on} on · ${pinned} pinned` : `${on} on`;
 }
 
-/** The count a kind's page shows in its header: '19 on', 'none on', '1 chosen'. */
+/** The count a kind's page shows in its header: '19 on', 'none on', '2 in use' (the Bibles set for some part). */
 export function headerCount(kind: Kind, states: ReadonlyMap<string, ShelfState>): string {
   const { on } = countsOf(kind, states);
-  if (kind === 'bible') return on === 0 ? 'none chosen' : '1 chosen';
+  if (kind === 'bible') return `${on} in use`;
   return on === 0 ? 'none on' : `${on} on`;
 }

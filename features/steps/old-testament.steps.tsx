@@ -471,13 +471,16 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   const opensRow = async () => {
-    await user.click(await screen.findByRole('button', { name: /^One Bible for all three/ }));
+    await user.click(await screen.findByRole('button', { name: /^Choose from all your Bibles/ }));
     await screen.findByRole('heading', { name: 'Bibles', level: 1 });
     // the field is drawn once it holds the saved Bible
     await screen.findByRole('textbox', { name: 'Resource ID' });
   };
-  const pageSays = async (_: unknown, text: string) => {
-    await waitFor(() => expect(screen.getByRole('main')).toHaveTextContent(text));
+  const marks = async (_: unknown, short: string, mark: string) => {
+    await waitFor(() => {
+      const title = screen.getAllByText(short, { selector: 'p' }).find((p) => p.className.includes('font-medium'));
+      expect(title?.parentElement?.querySelector('[data-testid="bible-marks"]')?.textContent).toBe(mark);
+    });
   };
 
   Scenario('Settings has a Bible in Logos for each part, the Legacy Standard Bible to start (the NRSV for the Apocrypha), and a door to Library > Bibles', ({ Given, When, Then, And }) => {
@@ -490,27 +493,30 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await screen.findByRole('combobox', { name: 'Apocrypha Bible in Logos' })).toHaveDisplayValue(apocrypha);
     });
     When('he opens the Bible in Logos row', opensRow);
-    Then('the Bibles page says {string}', pageSays);
-    And('the Resource ID field holds {string}', async (_, id: string) => {
-      await waitFor(() => expect(resourceId().value).toBe(id));
+    Then('the Bibles page marks {string} {string}', marks);
+    And('the Bibles page also marks {string} {string}', marks);
+    And('the Resource ID field is empty', async () => {
+      await waitFor(() => expect(resourceId().value).toBe(''));
     });
   });
 
-  Scenario('A Bible chosen on the Bibles page is kept across a close', ({ Given, When, And, Then }) => {
+  Scenario('A Bible set for a part on the Bibles page is kept across a close', ({ Given, When, And, Then }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
     When("he taps the gear in the reader's header", openSettingsPage);
     And('he opens the Bible in Logos row', opensRow);
-    And('he chooses the Bible {string} on the Bibles page', async (_, short: string) => {
-      await user.click(within(await screen.findByRole('radiogroup', { name: short })).getByRole('radio', { name: 'Chosen' }));
+    And('he sets the Bible {string} for {string} on the Bibles page', async (_, short: string, part: string) => {
+      await user.click(await screen.findByRole('button', { name: `Set for… ${short}` }));
+      await user.click(within(await screen.findByRole('group', { name: `Set ${short} for` })).getByRole('button', { name: part }));
     });
     And('the app is closed and opened again', async () => {
       await waitFor(async () => expect((await db.settings.get('logosBible'))?.value).toBe('LLS:1.0.710'));
       await reopen();
     });
-    Then('the Bibles page says {string}', pageSays);
+    Then('the Bibles page marks {string} {string}', marks);
+    And('the Bibles page also marks {string} {string}', marks);
   });
 
-  Scenario('A typed Resource ID is kept across a close, and a malformed one is not', ({ Given, When, And, Then }) => {
+  Scenario('A typed Resource ID is kept for the part he names, and a malformed one is not', ({ Given, When, And, Then }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
     When("he taps the gear in the reader's header", openSettingsPage);
     And('he opens the Bible in Logos row', opensRow);
@@ -528,13 +534,21 @@ describeFeature(feature, ({ Scenario }) => {
       await user.clear(resourceId());
       await user.type(resourceId(), id);
     });
+    Then('the key {string} is still empty', async (_, key: string) => {
+      expect((await db.settings.get(key))?.value).toBeUndefined();
+    });
+    When('he sets the typed Resource ID for {string}', async (_, part: string) => {
+      await user.click(within(await screen.findByRole('group', { name: /^Set LLS:/ })).getByRole('button', { name: part }));
+    });
     And('the app is closed and opened again', async () => {
       await waitFor(async () => expect((await db.settings.get('logosBible'))?.value).toBe('LLS:1.0.9991'));
       await reopen();
     });
-    Then('the Bibles page says {string}', pageSays);
-    And('the Resource ID field holds {string}', async (_, id: string) => {
-      await waitFor(() => expect(resourceId().value).toBe(id));
+    Then('the setting {string} holds {string}', async (_, key: string, value: string) => {
+      expect((await db.settings.get(key))?.value).toBe(value);
+    });
+    And('the Old Testament key {string} still holds {string}', async (_, key: string, value: string) => {
+      expect((await db.settings.get(key))?.value).toBe(value);
     });
   });
 

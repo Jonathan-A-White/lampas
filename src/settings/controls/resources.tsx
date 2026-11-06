@@ -1,14 +1,14 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { getApocryphaMovedFrom, getLogosBible, getStudyResources, moveApocryphaBible, setLogosBibleFor, setResourceOn, setResourceOption } from '../../data/repositories';
-import { countsOf } from '../../library/kinds';
+import { booksOn } from '../../library/kinds';
 import { useShelf } from '../../library/useShelf';
 import { openLibrary } from '../../nav/route';
 import { StartPlan } from '../../plan/StartPlan';
 import { resourceOf, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
-import { KINDS, entryOf } from '../../resources/catalogue';
+import { entryOf } from '../../resources/catalogue';
 import { DEFAULT_APOCRYPHA_BIBLE, LOGOS_PARTS, biblesFor } from '../../resources/logosBible';
 import { oneTap } from '../../ui/settle';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
@@ -102,7 +102,7 @@ export const ResourceControl: Control = ({ row }) => {
 /** Your Logos library (mw-rfjjzd.5): how many books of his shelf are on, and a door to the Library (#/library) where they are chosen. */
 export const LibraryControl: Control = ({ row }) => {
   const states = useShelf();
-  const on = states === undefined ? undefined : KINDS.reduce((sum, kind) => sum + countsOf(kind, states).on, 0);
+  const on = states === undefined ? undefined : booksOn(states);
   return (
     <SettingRow row={row} className="border-b border-line py-2">
       {on !== undefined ? (
@@ -161,7 +161,7 @@ export const LogosBibleControl: Control = ({ row }) => {
             onClick={() => openLibrary({ kind: 'bible' })}
             className="mt-1 flex min-h-12 w-full items-center justify-between gap-3 text-left text-base font-medium text-accent"
           >
-            <span className="title-wrap min-w-0 flex-1">One Bible for all three, or type a Resource ID</span>
+            <span className="title-wrap min-w-0 flex-1">Choose from all your Bibles, or type a Resource ID</span>
             <span aria-hidden="true" className="shrink-0 text-muted">
               ›
             </span>
