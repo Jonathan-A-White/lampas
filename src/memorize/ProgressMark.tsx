@@ -2,7 +2,7 @@
 // ('Step 3 of 7 · last 9 of 10 · due Tue'), which is also its accessible name. Drawn by the Memorize screen, a verse list's row and the Verse view.
 import { langName, type MemorizeLang } from './languages';
 import { progressLine, type Progress } from './progress';
-import { sourceOf } from './source';
+import { useSource } from './source';
 import { useProgress } from './useProgress';
 
 /** One mark. `lang` names the language before the line, for a verse memorized in more than one; `rtl` fills the ladder from the right, for a verse of Hebrew words. */
@@ -25,11 +25,12 @@ export function ProgressMark({ progress, lang, rtl = false, className = '' }: { 
 /** The marks of one reference, a mark for each language it is memorized in (the language named when there are several); nothing for a reference that is not memorized. */
 export function ProgressMarks({ canonical, className = '' }: { canonical: string; className?: string }) {
   const found = useProgress([canonical]);
+  const source = useSource(canonical);
   if (!found || found.length === 0) return null;
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       {found.map(({ lang, progress }) => (
-        <ProgressMark key={lang} progress={progress} lang={found.length > 1 ? lang : undefined} rtl={sourceOf(canonical) === 'hbo'} />
+        <ProgressMark key={lang} progress={progress} lang={found.length > 1 ? lang : undefined} rtl={source === 'hbo'} />
       ))}
     </div>
   );
