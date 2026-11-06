@@ -2,8 +2,10 @@
 // filters as he types, the ticked items first, and a bounded box that scrolls on its own, so the rest of the screen stays in reach.
 // The vault's rule: 'A long list is a widget, not a page of rows' (pwa-best-practices 08). Use it for any list longer than about seven.
 // Grown for the Library (mw-rfjjzd.4): `row` draws a row with a state control in place of the tick, `rankOf` orders more than two groups (pinned, on, off), `status` is the count
-// line, `flat` lets the list be as long as the page's own box (the field then stays at the box's top) and `focus` marks one book and brings it into view.
+// line, `flat` lets the list be as long as the page's own box (the field then stays at the box's top) and `focus` marks one book and brings it into view
+// (typing then scrolls back to the top, mw-5r3p30.1118).
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { scrollBoxOf } from './reveal';
 import { oneTap } from './settle';
 import { matching, pluralOf, ranked, type ListItem } from './listFilter';
 
@@ -36,6 +38,7 @@ export function SearchableList({ label, hint, noun, items, ticked = [], onToggle
   const [rank, setRank] = useState(rankNow);
   const shown = ranked(matching(items, query), rank);
   const marked = useRef<HTMLElement | null>(null);
+  const listBox = useRef<HTMLDivElement>(null);
   useEffect(() => {
     marked.current?.scrollIntoView?.({ block: 'center' });
   }, [focus]);
@@ -62,6 +65,9 @@ export function SearchableList({ label, hint, noun, items, ticked = [], onToggle
           onChange={(e) => {
             setQuery(e.target.value);
             setRank(rankNow());
+            // the list may have opened scrolled to a marked row: typing shows the first matches, not the middle (mw-5r3p30.1118)
+            const box = flat ? scrollBoxOf(listBox.current) : listBox.current;
+            if (box) box.scrollTop = 0;
           }}
           className="min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
         />
@@ -70,7 +76,7 @@ export function SearchableList({ label, hint, noun, items, ticked = [], onToggle
           {query.trim() !== '' ? ` · ${shown.length} of ${items.length} shown` : ''}
         </p>
       </div>
-      <div data-testid="searchable-list-box" className={`mt-1 rounded-lg border border-line ${flat ? '' : 'max-h-64 overflow-y-auto overscroll-contain'}`}>
+      <div ref={listBox} data-testid="searchable-list-box" className={`mt-1 rounded-lg border border-line ${flat ? '' : 'max-h-64 overflow-y-auto overscroll-contain'}`}>
         {shown.length === 0 ? <p className="px-3 py-3 text-base text-muted">No {noun} matches</p> : null}
         {shown.map((item) => {
           if (row) {
