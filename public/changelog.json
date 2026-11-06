@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.141",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1118",
+    "kind": "fixed",
+    "text": "typing in Choose a book now shows the first matches at the top of the list, right under the search field."
+  },
+  {
+    "version": "0.7.141",
+    "date": "2026-11-06",
+    "story": "mw-qtu3zvz.4",
+    "kind": "new",
+    "text": "A verse's sermon list now names its Bible themes and lists sermons on the same theme, with a switch for each theme list in Settings."
+  },
+  {
+    "version": "0.7.141",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1100",
+    "kind": "fixed",
+    "text": "Tapping \"Not now\" twice quickly on the Open in the app bar no longer opens the keyboard on the box underneath."
+  },
+  {
     "version": "0.7.140",
     "date": "2026-11-06",
     "story": "mw-u2w5klk.289",

@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.141
+_2026-11-06_
+- Fixed: typing in Choose a book now shows the first matches at the top of the list, right under the search field.
+- New: A verse's sermon list now names its Bible themes and lists sermons on the same theme, with a switch for each theme list in Settings.
+- Fixed: Tapping "Not now" twice quickly on the Open in the app bar no longer opens the keyboard on the box underneath.
+
 ## 0.7.140
 _2026-11-06_
 - New: A word of the Greek Old Testament opens its own table of endings with the forms the Septuagint uses as well as the New Testament's, each saying where it was found.
