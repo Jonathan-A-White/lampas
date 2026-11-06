@@ -12,7 +12,7 @@ export function useSermons(place: SermonPlace | null): SermonsFound | undefined 
     sermonsFor(place).then(
       (answer) => alive && setFound({ key, found: answer }),
       (error: unknown) => {
-        console.warn('could not read the sermons of the place', error);
+        console.warn(`could not read the sermons of the place: ${error instanceof Error ? error.message : String(error)}`);
         if (alive) setFound({ key, found: { here: [], chapter: [] } });
       },
     );

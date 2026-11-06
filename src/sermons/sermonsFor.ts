@@ -22,7 +22,7 @@ async function rowsOf(source: SermonSource, place: SermonPlace): Promise<SermonR
   try {
     return (await source.sermonsFor(place)).filter((row) => touches(row.ref, place.chapter));
   } catch (error) {
-    console.warn(`could not read the sermons of ${source.id}`, error);
+    console.warn(`could not read the sermons of ${source.id}: ${error instanceof Error ? error.message : String(error)}`);
     return [];
   }
 }
