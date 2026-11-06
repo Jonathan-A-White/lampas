@@ -6,6 +6,8 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { SETTLE_MS } from '../../src/ui/settle';
+import { pageTime, settledBox, tapTwice } from '../support/gesture';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -207,4 +209,38 @@ test('sideways at 844x390: the sheet fits, nothing is clipped, each row is 48 px
   await openSheet(page);
   await expectFits(page, 844, 390);
   await shot(page, 'share-pieces-landscape');
+});
+
+// mw-5r3p30.1058: a double tap on Share put the second tap on the "Just the link" row (the sheet rises under the button), which sent the link by itself. The
+// sheet takes no tap in its first moment (src/ui/settle.ts, the app-wide guard src/ui/tapGuard.ts), as on his phone: the moment is put back to SETTLE_MS.
+test.describe('a double tap on Share', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install();
+  });
+  for (const gap of [0, 120, 400]) {
+    test(`${gap} ms apart sends nothing`, async ({ page }) => {
+      await start(page, 'rom', 8, 'Romans 8');
+      await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+      await page.reload();
+      await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+      await page.getByRole('button', { name: 'Verse 11', exact: true }).click();
+      await expect(view(page)).toBeVisible();
+      await pageTime(page, SETTLE_MS + 100);
+      const button = view(page).getByRole('group', { name: 'Tools', exact: true }).getByRole('button', { name: 'Share', exact: true });
+      await expect(button).toBeVisible();
+      const where = await settledBox(button);
+      // the second tap lands where the Share button was: that spot is what the first tap's sheet drew there
+      await tapTwice(page, where, gap, {
+        touch: true,
+        between: async () => {
+          await expect(sheet(page)).toBeVisible();
+          const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('[data-share-piece]')?.getAttribute('data-share-piece') ?? null, [where.x + where.width / 2, where.y + where.height / 2] as const);
+          expect(hit, 'the sheet draws a row under the Share button').toBe('link');
+        },
+      });
+      await pageTime(page, SETTLE_MS + 100);
+      expect(await shared(page)).toEqual([]);
+      await shot(page, `share-double-tap-${gap}`);
+    });
+  }
 });
