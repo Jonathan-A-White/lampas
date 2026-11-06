@@ -103,12 +103,12 @@ export const PREFACE_LINKS: PrefaceLink[] = [
   },
   {
     name: 'Thompson Chain Topics, at CrossWire (crosswire.org)',
-    about: 'The SWORD module of the subject index of Frank Charles Thompson’s 1934 Bible, with its licence line and the keyer’s notes.',
+    about: 'The SWORD module of the subject index of Frank Charles Thompson’s 1934 Bible, with its terms and the keyer’s notes.',
     url: 'https://crosswire.org/study/fulllibrary.jsp?show=TCR',
   },
   {
     name: 'Torrey’s New Topical Textbook, at CrossWire (crosswire.org)',
-    about: 'The SWORD module of R. A. Torrey’s 1897 topical textbook, with its licence line.',
+    about: 'The SWORD module of R. A. Torrey’s 1897 topical textbook, with its terms.',
     url: 'https://crosswire.org/study/fulllibrary.jsp?show=Torrey',
   },
 ];

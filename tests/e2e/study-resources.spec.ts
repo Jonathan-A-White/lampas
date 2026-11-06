@@ -118,7 +118,7 @@ test('Settings home at 360 px opens with Which languages?, and Your Logos librar
   const order = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
   expect(order[0]).toBe('languages');
   expect(order).not.toContain('library');
-  await expect(page.getByRole('button', { name: /^Study resources/ })).toContainText('Your Logos library, links to the tools you own, Bible in Logos and maps.');
+  await expect(page.getByRole('button', { name: /^Study resources/ })).toContainText('Your Logos library, links to the tools you own, Bible in Logos, maps and themes.');
 
   // with Logos Off (its start) there is no library row in Study resources
   await openGroup(page, 'Study resources');

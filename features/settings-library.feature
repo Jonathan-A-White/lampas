@@ -27,7 +27,7 @@ Feature: Settings after the library
 
   Scenario: The Study resources group hint names the library
     Given the shelf holds the books "BDAG" and Settings is open at its home
-    Then the Study resources group hint is "Your Logos library, links to the tools you own, Bible in Logos and maps"
+    Then the Study resources group hint is "Your Logos library, links to the tools you own, Bible in Logos, maps and themes"
 
   Scenario: A link to the library setting opens Study resources at the row, marked
     Given the shelf holds the books "BDAG" and Settings is open at its home
