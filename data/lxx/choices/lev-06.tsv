@@ -1,0 +1,614 @@
+ref	parsing	lemma	mark	confidence	note
+Lev.19:1#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Lev.19:2#6	N-GSM	Ἰσραήλ		0.80	
+Lev.19:2#11	A-NPM	ἅγιος		0.80	
+Lev.19:3#3	P-GSM	αὐτός		0.80	
+Lev.19:3#6	P-GSM	αὐτός		0.80	
+Lev.19:3#7	V-PNM-3S	φοβέω		0.80	
+Lev.19:3#9	T-APN	ὁ		0.80	
+Lev.19:3#10	N-APN	σάββατον		0.80	
+Lev.19:3#12	V-FDI-2P	φυλάσσω	unsure	0.50	model: unsure
+Lev.19:5#10	V-FAI-2P	θύω		0.80	
+Lev.19:6#5	V-FPI-3S	βιβρώσκω		0.80	
+Lev.19:6#11	V-APS-3S	καταλείπω		0.80	
+Lev.19:6#13	N-GSF	ἡμέρα		0.80	
+Lev.19:7#4	V-APS-3S	βιβρώσκω		0.80	
+Lev.19:7#9	A-NSN	ἄθυτος		0.80	
+Lev.19:7#12	V-FPI-3S	δέχομαι	unsure	0.50	model: unsure
+Lev.19:8#4	P-ASN	αὐτός		0.80	
+Lev.19:8#8	T-APN	ὁ		0.80	
+Lev.19:8#9	A-APN	ἅγιος		0.80	
+Lev.19:8#13	V-FPI-3P	ἐξολεθρεύω		0.80	
+Lev.19:8#21	P-GPM	αὐτός		0.80	
+Lev.19:9#2	V-PAP-GPM	ἐκθερίζω		0.80	
+Lev.19:9#10	V-FAI-2P	συντελέω		0.80	
+Lev.19:9#19	T-APN	ὁ		0.80	
+Lev.19:9#20	V-PAP-APN	ἀποπίπτω		0.80	
+Lev.19:9#25	V-FAI-2S	συλλέγω		0.80	
+Lev.19:10#6	V-FAI-2S	ἐπανατρυγάω		0.80	
+Lev.19:10#9	N-APF	ῥώξ		0.80	
+Lev.19:10#13	V-FAI-2S	συλλέγω		0.80	
+Lev.19:10#19	V-FAI-2S	καταλείπω		0.80	
+Lev.19:10#20	P-APN	αὐτός		0.80	
+Lev.19:11#4	V-FMI-2P	ψεύδω		0.80	
+Lev.19:11#9	ADV	πλησίον		0.80	
+Lev.19:12#3	V-FMI-2P	ὄμνυμι		0.80	
+Lev.19:12#8	A-DSN	ἄδικος	unsure	0.50	model: unsure
+Lev.19:12#11	V-FAI-2P	βεβηλόω		0.80	
+Lev.19:12#12	T-ASN	ὁ		0.80	
+Lev.19:12#13	N-ASN	ὄνομα		0.80	
+Lev.19:13#4	ADV	πλησίον		0.80	
+Lev.19:13#7	V-FAI-2S	ἁρπάζω	guess	0.40	guess: the model answered with no candidates
+Lev.19:13#11	V-FPI-3S	κοιμάω		0.80	
+Lev.19:14#4	A-ASM	κωφός		0.80	
+Lev.19:14#7	A-GSM	τυφλός		0.80	
+Lev.19:14#9	V-FAI-2S	προστίθημι		0.80	
+Lev.19:14#10	N-ASN	σκάνδαλον		0.80	
+Lev.19:14#12	V-FPI-2S	φοβέω		0.80	
+Lev.19:15#3	A-ASN	ἄδικος		0.80	
+Lev.19:15#7	V-FDI-2S	λαμβάνω		0.80	
+Lev.19:15#8	N-ASN	πρόσωπον		0.80	
+Lev.19:15#9	N-GSM	πτωχός		0.80	
+Lev.19:15#11	V-FAI-2S	θαυμάζω		0.80	
+Lev.19:15#12	N-ASN	πρόσωπον		0.80	
+Lev.19:15#18	ADV	πλησίον		0.80	
+Lev.19:16#9	V-FDI-2S	ἐφίστημι		0.80	
+Lev.19:16#11	N-ASN	αἷμα		0.80	
+Lev.19:16#12	T-GSM	ὁ		0.80	
+Lev.19:16#13	ADV	πλησίον		0.80	
+Lev.19:17#10	V-FAI-2S	ἐλέγχω	guess	0.40	guess: the model chose outside the candidates
+Lev.19:17#12	ADV	πλησίον		0.80	
+Lev.19:17#16	V-FDI-2S	λαμβάνω		0.80	
+Lev.19:18#3	V-FMI-3S	ἐκδικάζω		0.80	
+Lev.19:18#9	V-FAI-2S	μηνίζω		0.80	
+Lev.19:18#18	ADV	πλησίον		0.80	
+Lev.19:19#4	V-FDI-2P	φυλάσσω	unsure	0.50	model: unsure
+Lev.19:19#5	T-APN	ὁ		0.80	
+Lev.19:19#6	N-APN	κτῆνος		0.80	
+Lev.19:19#10	A-DSN	ἑτερόζυγος	unsure	0.50	model: unsure
+Lev.19:19#16	V-FAI-2S	κατασπείρω		0.80	
+Lev.19:19#17	A-ASN	διάφορος	unsure	0.50	model: unsure
+Lev.19:19#19	N-ASN	ἱμάτιον		0.80	
+Lev.19:19#22	V-RPP-ASN	ὑφαίνω		0.80	
+Lev.19:19#23	A-ASN	κίβδηλος		0.80	
+Lev.19:19#25	V-FAI-2S	ἐπιβάλλω		0.80	
+Lev.19:19#26	F-2DSM	σεαυτοῦ		0.80	
+Lev.19:20#3	X-NSM	τις		0.80	
+Lev.19:20#11	N-NSF	οἰκέτις		0.80	
+Lev.19:20#12	V-RPP-NSF	διαφυλάσσω		0.80	
+Lev.19:20#16	N-DPN	λύτρον		0.80	
+Lev.19:20#24	N-NSF	ἐπισκοπή		0.80	
+Lev.19:20#26	P-DPM	αὐτός		0.80	
+Lev.19:20#28	V-FNI-3P	ἀποθνήσκω		0.80	
+Lev.19:21#2	V-FAI-3S	προσάγω		0.80	
+Lev.19:21#5	P-GSM	αὐτός		0.80	
+Lev.19:21#16	N-GSF	πλημμέλεια		0.80	
+Lev.19:22#2	V-FDI-3S	ἐξιλάσκομαι		0.80	
+Lev.19:22#4	P-GSM	αὐτός		0.80	
+Lev.19:22#21	P-DSM	αὐτός		0.80	
+Lev.19:23#1	CONJ	ὅταν		0.80	
+Lev.19:23#14	V-FAI-2P	καταφυτεύω		0.80	
+Lev.19:23#15	A-ASN	πᾶς		0.80	
+Lev.19:23#16	N-ASN	ξύλον		0.80	
+Lev.19:23#17	A-ASN	βρώσιμος		0.80	
+Lev.19:23#19	V-FAI-2P	περικαθαρίζω		0.80	
+Lev.19:23#22	P-GSN	αὐτός		0.80	
+Lev.19:23#25	P-GSN	αὐτός		0.80	
+Lev.19:23#26	A-APN	τρεῖς, τρία		0.80	
+Lev.19:23#27	N-APN	ἔτος		0.80	
+Lev.19:23#30	A-NSM	ἀπερικάθαρτος		0.80	
+Lev.19:23#32	V-FPI-3S	βιβρώσκω		0.80	
+Lev.19:24#10	P-GSN	αὐτός		0.80	
+Lev.19:24#11	A-NSM	ἅγιος		0.80	
+Lev.19:24#12	A-NSM	αἰνετός		0.80	
+Lev.19:25#7	V-FDI-2P	φαγεῖν		0.80	
+Lev.19:25#10	N-NSN	πρόσθεμα		0.80	
+Lev.19:25#12	T-NPN	ὁ		0.80	
+Lev.19:25#13	N-NPN	γένημα		0.80	
+Lev.19:25#14	P-GSN	αὐτός	unsure	0.50	model: unsure
+Lev.19:26#2	V-PAM-2P	ἔσθω		0.80	
+Lev.19:26#8	V-FDI-2P	οἰωνίζομαι		0.80	
+Lev.19:26#10	V-FDI-2P	ὀρνιθοσκοπέομαι		0.80	
+Lev.19:27#11	V-FAI-2P	φθείρω		0.80	
+Lev.19:28#12	N-APN	γράμμα		0.80	
+Lev.19:28#13	A-APN	στικτός		0.80	
+Lev.19:29#2	V-FAI-2S	βεβηλόω		0.80	
+Lev.19:29#6	V-AAN	ἐκπορνεύω		0.80	
+Lev.19:30#1	T-APN	ὁ		0.80	
+Lev.19:30#2	N-APN	σάββατον		0.80	
+Lev.19:30#4	V-FDI-2P	φυλάσσω	unsure	0.50	model: unsure
+Lev.19:30#7	T-GPN	ὁ		0.80	
+Lev.19:30#8	A-GPN	ἅγιος		0.80	
+Lev.19:30#10	V-FPI-2P	φοβέω		0.80	
+Lev.19:31#3	N-DPM	ἐγγαστρίμυθος	guess	0.40	guess: the model answered with no candidates
+Lev.19:31#8	V-FPI-2P	προσκολλάω		0.80	
+Lev.19:31#9	V-APN	ἐκμιαίνω		0.80	
+Lev.19:31#11	P-DPM	αὐτός		0.80	
+Lev.19:32#6	V-FAI-2S	τιμάω		0.80	
+Lev.19:32#7	N-ASN	πρόσωπον		0.80	
+Lev.19:32#10	V-FPI-2S	φοβέω		0.80	
+Lev.19:33#3	X-NSM	τις		0.80	
+Lev.19:33#5	N-NSM	προσήλυτος		0.80	
+Lev.19:33#12	V-FAI-2P	θλίβω		0.80	
+Lev.19:34#19	N-NPM	προσήλυτος		0.80	
+Lev.19:34#20	V-2AOI-2P	γίνομαι		0.80	
+Lev.19:35#3	A-ASN	ἄδικος		0.80	
+Lev.19:35#13	N-DPM	ζυγός		0.80	
+Lev.19:36#1	N-NPN	ζυγόν		0.80	
+Lev.19:36#2	A-NPN	δίκαιος		0.80	
+Lev.19:36#4	N-NPN	στάθμιον		0.80	
+Lev.19:36#5	A-NPN	δίκαιος		0.80	
+Lev.19:36#7	N-NSM	χοῦς		0.80	
+Lev.19:37#2	V-FDI-2P	φυλάσσω	unsure	0.50	model: unsure
+Lev.19:37#3	A-ASM	πᾶς		0.80	
+Lev.19:37#8	A-APN	πᾶς		0.80	
+Lev.19:37#9	T-APN	ὁ		0.80	
+Lev.19:37#10	N-APN	πρόσταγμα		0.80	
+Lev.19:37#14	P-APN	αὐτός		0.80	
+Lev.20:1#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Lev.20:2#4	N-GSM	Ἰσραήλ		0.80	
+Lev.20:2#7	X-NSM	τις		0.80	
+Lev.20:2#11	N-GSM	Ἰσραήλ		0.80	
+Lev.20:2#18	N-DSM	Ἰσραήλ		0.80	
+Lev.20:2#24	P-GSM	αὐτός		0.80	
+Lev.20:2#27	V-PPM-3S	θανατόω		0.80	
+Lev.20:2#28	T-NSN	ὁ		0.80	
+Lev.20:2#29	N-NSN	ἔθνος		0.80	
+Lev.20:2#30	T-NSN	ὁ		0.80	
+Lev.20:3#3	V-FAI-1S	ἐφίστημι		0.80	
+Lev.20:3#4	T-ASN	ὁ		0.80	
+Lev.20:3#5	N-ASN	πρόσωπον		0.80	
+Lev.20:3#17	P-GSM	αὐτός		0.80	
+Lev.20:3#21	P-GSM	αὐτός		0.80	
+Lev.20:3#25	V-2AAS-3S	μιαίνω		0.80	
+Lev.20:3#26	T-APN	ὁ		0.80	
+Lev.20:3#27	A-APN	ἅγιος		0.80	
+Lev.20:3#30	V-AAS-3S	βεβηλόω		0.80	
+Lev.20:3#31	T-ASN	ὁ		0.80	
+Lev.20:3#32	N-ASN	ὄνομα		0.80	
+Lev.20:3#33	T-GPN	ὁ	unsure	0.50	model: unsure
+Lev.20:3#34	V-RPP-GPN	ἁγιάζω	unsure	0.50	model: unsure
+Lev.20:4#11	P-GPM	αὐτός		0.80	
+Lev.20:4#15	D-GSM	ἐκεῖνος		0.80	
+Lev.20:4#22	P-GSM	αὐτός		0.80	
+Lev.20:4#24	T-GSN	ὁ		0.80	
+Lev.20:5#2	V-FAI-1S	ἐφίστημι		0.80	
+Lev.20:5#3	T-ASN	ὁ		0.80	
+Lev.20:5#4	N-ASN	πρόσωπον		0.80	
+Lev.20:5#13	P-GSM	αὐτός		0.80	
+Lev.20:5#21	P-DSM	αὐτός		0.80	
+Lev.20:5#31	P-GPM	αὐτός		0.80	
+Lev.20:6#2	N-NSF	ψυχή		0.80	
+Lev.20:6#3	R-NSF	ὅς, ἥ		0.80	
+Lev.20:6#6	N-DPM	ἐγγαστρίμυθος	guess	0.40	guess: the model answered with no candidates
+Lev.20:6#10	V-AAN	ἐκπορνεύω		0.80	
+Lev.20:6#11	PREP	ὀπίσω		0.80	
+Lev.20:6#12	P-GPM	αὐτός		0.80	
+Lev.20:6#13	V-FAI-1S	ἐφίστημι		0.80	
+Lev.20:6#14	T-ASN	ὁ		0.80	
+Lev.20:6#15	N-ASN	πρόσωπον		0.80	
+Lev.20:7#3	A-NPM	ἅγιος		0.80	
+Lev.20:7#5	A-NSM	ἅγιος		0.80	
+Lev.20:8#2	V-FDI-2P	φυλάσσω	unsure	0.50	model: unsure
+Lev.20:8#3	T-APN	ὁ		0.80	
+Lev.20:8#4	N-APN	πρόσταγμα		0.80	
+Lev.20:8#8	P-APN	αὐτός		0.80	
+Lev.20:9#9	P-GSM	αὐτός		0.80	
+Lev.20:9#13	P-GSM	αὐτός		0.80	
+Lev.20:9#15	V-PPM-3S	θανατόω		0.80	
+Lev.20:9#17	P-GSM	αὐτός		0.80	
+Lev.20:9#20	P-GSM	αὐτός		0.80	
+Lev.20:10#4	V-AMS-3S	μοιχεύω	unsure	0.50	model: unsure
+Lev.20:10#10	V-AMS-3S	μοιχεύω	unsure	0.50	model: unsure
+Lev.20:10#12	T-GSM	ὁ		0.80	
+Lev.20:10#13	ADV	πλησίον		0.80	
+Lev.20:10#15	V-PPM-3P	θανατόω		0.80	
+Lev.20:11#2	X-NSM	τις		0.80	
+Lev.20:11#8	P-GSM	αὐτός		0.80	
+Lev.20:11#12	P-GSM	αὐτός		0.80	
+Lev.20:11#14	V-PPM-3S	θανατόω		0.80	
+Lev.20:12#3	X-NSM	τις		0.80	
+Lev.20:12#7	P-GSM	αὐτός		0.80	
+Lev.20:12#9	V-PPM-3P	θανατόω		0.80	
+Lev.20:12#11	V-RAI-3P	ἀσεβέω		0.80	
+Lev.20:13#6	N-GSM	ἄρσην		0.80	
+Lev.20:13#9	N-ASN	βδέλυγμα		0.80	
+Lev.20:13#12	V-PPM-3P	θανατόω		0.80	
+Lev.20:14#9	N-NSN	ἀνόμημα		0.80	
+Lev.20:15#6	P-GSM	αὐτός		0.80	
+Lev.20:15#8	A-DSN	τετράπους		0.80	
+Lev.20:15#10	V-PPM-3S	θανατόω		0.80	
+Lev.20:15#12	T-ASN	ὁ		0.80	
+Lev.20:15#13	A-ASN	τετράπους		0.80	
+Lev.20:16#4	V-FDI-3S	προσέρχομαι		0.80	
+Lev.20:16#6	A-ASN	πᾶς		0.80	
+Lev.20:16#7	N-ASN	κτῆνος		0.80	
+Lev.20:16#11	P-GSN	αὐτός		0.80	
+Lev.20:16#16	T-ASN	ὁ		0.80	
+Lev.20:16#17	N-ASN	κτῆνος		0.80	
+Lev.20:16#19	V-PPM-3S	θανατόω		0.80	
+Lev.20:17#6	P-GSM	αὐτός		0.80	
+Lev.20:17#9	P-GSM	αὐτός		0.80	
+Lev.20:17#13	P-GSM	αὐτός		0.80	
+Lev.20:17#24	P-GSM	αὐτός		0.80	
+Lev.20:17#25	N-NSN	ὄνειδος		0.80	
+Lev.20:17#27	V-FPI-3P	ἐξολεθρεύω		0.80	
+Lev.20:17#31	P-GPM	αὐτός		0.80	
+Lev.20:17#34	P-GSM	αὐτός		0.80	
+Lev.20:17#37	V-FMI-3P	κομίζω		0.80	
+Lev.20:18#10	V-AAS-3S	ἀποκαλύπτω		0.80	
+Lev.20:18#22	N-ASF	ῥύσις		0.80	
+Lev.20:18#26	V-FPI-3P	ἐξολεθρεύω		0.80	
+Lev.20:18#31	P-GPM	αὐτός		0.80	
+Lev.20:19#17	V-FMI-3P	ἀποφέρω		0.80	
+Lev.20:20#7	P-GSM	αὐτός		0.80	
+Lev.20:20#11	P-GSM	αὐτός		0.80	
+Lev.20:20#13	A-NPM	ἄτεκνος		0.80	
+Lev.20:20#14	V-FNI-3P	ἀποθνήσκω		0.80	
+Lev.20:21#8	P-GSM	αὐτός		0.80	
+Lev.20:21#10	P-GSM	αὐτός		0.80	
+Lev.20:21#14	P-GSM	αὐτός		0.80	
+Lev.20:21#16	A-NPM	ἄτεκνος		0.80	
+Lev.20:21#17	V-FNI-3P	ἀποθνήσκω		0.80	
+Lev.20:22#2	V-AMM-2P	φυλάσσω		0.80	
+Lev.20:22#3	A-APN	πᾶς		0.80	
+Lev.20:22#4	T-APN	ὁ		0.80	
+Lev.20:22#5	N-APN	πρόσταγμα		0.80	
+Lev.20:22#8	T-APN	ὁ		0.80	
+Lev.20:22#9	N-APN	κρίμα		0.80	
+Lev.20:22#13	P-APN	αὐτός		0.80	
+Lev.20:22#24	V-PAI-1S	εἰσάγω		0.80	
+Lev.20:23#4	T-DPN	ὁ		0.80	
+Lev.20:23#5	A-DPN	νόμιμος		0.80	
+Lev.20:23#9	V-PAI-1S	ἐξαποστέλλω		0.80	
+Lev.20:23#13	D-APN	οὗτος		0.80	
+Lev.20:23#14	A-APN	πᾶς		0.80	
+Lev.20:23#17	V-ADI-1S	βδελύσσομαι		0.80	
+Lev.20:24#8	P-GPM	αὐτός		0.80	
+Lev.20:24#18	N-ASN	γάλα		0.80	
+Lev.20:24#20	N-ASN	μέλι		0.80	
+Lev.20:24#30	A-GPN	πᾶς		0.80	
+Lev.20:25#2	V-FAI-2P	ἀφορίζω		0.80	
+Lev.20:25#5	A-ASN	μέσος		0.80	
+Lev.20:25#12	A-ASN	μέσος		0.80	
+Lev.20:25#19	A-ASN	μέσος		0.80	
+Lev.20:25#25	T-GPN	ὁ		0.80	
+Lev.20:25#26	A-GPN	ἀκάθαρτος		0.80	
+Lev.20:25#29	V-FAI-2P	βδελύσσω	guess	0.40	guess: the model answered with no candidates
+Lev.20:25#38	T-DPN	ὁ		0.80	
+Lev.20:25#39	N-DPN	πετεινός		0.80	
+Lev.20:25#42	A-DPN	πᾶς		0.80	
+Lev.20:25#47	R-APN	ὅς, ἥ		0.80	
+Lev.20:26#4	A-NPM	ἅγιος		0.80	
+Lev.20:26#7	A-NSM	ἅγιος		0.80	
+Lev.20:26#16	A-GPN	πᾶς		0.80	
+Lev.20:27#8	P-GPM	αὐτός		0.80	
+Lev.20:27#9	N-NSM	ἐγγαστρίμυθος	guess	0.40	guess: the model answered with no candidates
+Lev.20:27#11	N-NSM	ἐπαοιδός		0.80	
+Lev.20:27#13	V-PPM-3P	θανατόω		0.80	
+Lev.21:1#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Lev.21:1#12	N-GSM	Ἀαρών		0.80	
+Lev.21:1#21	V-FPI-3P	μιαίνω		0.80	
+Lev.21:1#25	P-GPM	αὐτός		0.80	
+Lev.21:2#4	T-DSM	ὁ		0.80	
+Lev.21:2#5	A-DSM	οἰκεῖος		0.80	
+Lev.21:2#6	T-DSM	ὁ		0.80	
+Lev.21:2#7	ADV-S	ἐγγύς	guess	0.40	guess: the model chose outside the candidates
+Lev.21:2#8	P-GPM	αὐτός		0.80	
+Lev.21:2#16	N-DPF	θυγάτηρ		0.80	
+Lev.21:3#3	N-DSF	παρθένος		0.80	
+Lev.21:3#6	P-DSM	αὐτός		0.80	
+Lev.21:3#9	V-RPP-DSF	ἐκδίδωμι		0.80	
+Lev.21:3#12	D-DPM	οὗτος	unsure	0.50	model: unsure
+Lev.21:3#13	V-FPI-3S	μιαίνω		0.80	
+Lev.21:4#2	V-FPI-3S	μιαίνω		0.80	
+Lev.21:4#7	P-GSM	αὐτός		0.80	
+Lev.21:4#10	P-GSM	αὐτός		0.80	
+Lev.21:5#2	N-ASN	φαλάκρωμα		0.80	
+Lev.21:5#4	V-FPI-2P	ξυράω		0.80	
+Lev.21:5#8	A-DSM	νεκρός		0.80	
+Lev.21:5#20	P-GPM	αὐτός		0.80	
+Lev.21:5#22	V-FAI-3P	κατατέμνω		0.80	
+Lev.21:6#1	A-NPM	ἅγιος		0.80	
+Lev.21:6#5	P-GPM	αὐτός		0.80	
+Lev.21:6#9	T-ASN	ὁ		0.80	
+Lev.21:6#10	N-ASN	ὄνομα		0.80	
+Lev.21:6#13	P-GPM	αὐτός		0.80	
+Lev.21:6#18	N-APN	δῶρον		0.80	
+Lev.21:6#21	P-GPM	αὐτός		0.80	
+Lev.21:6#26	A-NPM	ἅγιος		0.80	
+Lev.21:7#4	V-RPP-ASF	βεβηλόω	guess	0.40	guess: the model answered with no candidates
+Lev.21:7#9	V-RPP-ASF	ἐκβάλλω		0.80	
+Lev.21:7#13	A-NSM	ἅγιος		0.80	
+Lev.21:7#18	P-GSM	αὐτός		0.80	
+Lev.21:8#4	T-APN	ὁ		0.80	
+Lev.21:8#5	N-APN	δῶρον		0.80	
+Lev.21:8#11	A-NSM	ἅγιος		0.80	
+Lev.21:8#14	A-NSM	ἅγιος		0.80	
+Lev.21:9#2	N-NSF	θυγάτηρ		0.80	
+Lev.21:9#7	T-GSN	ὁ		0.80	
+Lev.21:9#8	V-AAN	ἐκπορνεύω		0.80	
+Lev.21:9#9	T-ASN	ὁ		0.80	
+Lev.21:9#10	N-ASN	ὄνομα		0.80	
+Lev.21:9#15	V-PAI-3S	βεβηλόω		0.80	
+Lev.21:10#9	P-GSM	αὐτός		0.80	
+Lev.21:10#10	T-GSM	ὁ		0.80	
+Lev.21:10#11	V-RPP-GSM	ἐπιχέω		0.80	
+Lev.21:10#17	T-GSN	ὁ		0.80	
+Lev.21:10#18	N-GSN	Χριστός	unsure	0.50	model: unsure
+Lev.21:10#20	V-RPP-GSM	τελειόω		0.80	
+Lev.21:10#22	T-APN	ὁ		0.80	
+Lev.21:10#23	N-APN	ἱμάτιον		0.80	
+Lev.21:10#29	T-APN	ὁ		0.80	
+Lev.21:10#30	N-APN	ἱμάτιον		0.80	
+Lev.21:10#32	V-FAI-3S	διαρρήγνυμι		0.80	
+Lev.21:11#10	P-GSM	αὐτός		0.80	
+Lev.21:11#14	P-GSM	αὐτός		0.80	
+Lev.21:11#16	V-FPI-3S	μιαίνω		0.80	
+Lev.21:12#3	T-GPN	ὁ		0.80	
+Lev.21:12#4	A-GPN	ἅγιος		0.80	
+Lev.21:12#9	V-FAI-3S	βεβηλόω		0.80	
+Lev.21:12#10	T-ASN	ὁ		0.80	
+Lev.21:12#11	V-RPP-ASN	ἁγιάζω		0.80	
+Lev.21:12#14	P-GSM	αὐτός		0.80	
+Lev.21:12#16	T-NSN	ὁ		0.80	
+Lev.21:12#17	A-NSN	ἅγιος		0.80	
+Lev.21:12#18	N-NSN	ἔλαιον		0.80	
+Lev.21:12#19	T-NSN	ὁ		0.80	
+Lev.21:12#20	N-NSN	Χριστός		0.80	
+Lev.21:12#24	P-DSM	αὐτός		0.80	
+Lev.21:13#6	P-GSM	αὐτός		0.80	
+Lev.21:14#4	V-RPP-ASF	ἐκβάλλω		0.80	
+Lev.21:14#6	V-RPP-ASF	βεβηλόω	guess	0.40	guess: the model answered with no candidates
+Lev.21:14#18	P-GSM	αὐτός		0.80	
+Lev.21:15#3	V-FAI-3S	βεβηλόω		0.80	
+Lev.21:15#4	T-ASN	ὁ		0.80	
+Lev.21:15#5	N-ASN	σπέρμα		0.80	
+Lev.21:15#6	P-GSM	αὐτός		0.80	
+Lev.21:15#10	P-GSM	αὐτός		0.80	
+Lev.21:16#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Lev.21:17#2	N-DSM	Ἀαρών		0.80	
+Lev.21:17#12	I-DSM	τίς	unsure	0.50	model: unsure
+Lev.21:17#16	P-DSM	αὐτός		0.80	
+Lev.21:17#17	N-NSM	μῶμος		0.80	
+Lev.21:17#19	V-FDI-3S	προσέρχομαι		0.80	
+Lev.21:17#21	T-APN	ὁ		0.80	
+Lev.21:17#22	N-APN	δῶρον		0.80	
+Lev.21:17#25	P-GSM	αὐτός		0.80	
+Lev.21:18#3	R-DSM	ὅς, ἥ		0.80	
+Lev.21:18#7	P-DSM	αὐτός		0.80	
+Lev.21:18#8	N-NSM	μῶμος		0.80	
+Lev.21:18#10	V-FDI-3S	προσέρχομαι		0.80	
+Lev.21:18#16	A-NSM	κολοβόρρις	guess	0.40	guess: the model answered with no candidates
+Lev.21:18#18	A-NSM	ὠτότμητος		0.80	
+Lev.21:19#2	R-DSM	ὅς, ἥ		0.80	
+Lev.21:19#5	P-DSM	αὐτός		0.80	
+Lev.21:19#6	N-NSN	σύντριμμα		0.80	
+Lev.21:19#9	N-NSN	σύντριμμα		0.80	
+Lev.21:20#2	N-NSM	κυρτός		0.80	
+Lev.21:20#4	A-NSM	ἔφηλος		0.80	
+Lev.21:20#6	A-NSM	πτίλος		0.80	
+Lev.21:20#11	R-DSM	ὅς, ἥ		0.80	
+Lev.21:20#15	P-DSM	αὐτός		0.80	
+Lev.21:20#16	N-NSF	ψώρα		0.80	
+Lev.21:20#17	A-NSF	ἄγριος		0.80	
+Lev.21:20#19	N-NSM	λειχήν		0.80	
+Lev.21:20#21	N-NSM	μόνορχις		0.80	
+Lev.21:21#2	R-DSM	ὅς, ἥ		0.80	
+Lev.21:21#5	P-DSM	αὐτός		0.80	
+Lev.21:21#6	N-NSM	μῶμος		0.80	
+Lev.21:21#10	N-GSM	Ἀαρών		0.80	
+Lev.21:21#14	V-FAI-3S	προσεγγίζω		0.80	
+Lev.21:21#15	T-GSN	ὁ		0.80	
+Lev.21:21#16	V-2AAN	προσφέρω		0.80	
+Lev.21:21#23	N-NSM	μῶμος		0.80	
+Lev.21:21#25	P-DSM	αὐτός		0.80	
+Lev.21:21#26	T-APN	ὁ		0.80	
+Lev.21:21#27	N-APN	δῶρον		0.80	
+Lev.21:21#31	V-FDI-3S	προσέρχομαι		0.80	
+Lev.21:21#32	V-2AAN	προσφέρω		0.80	
+Lev.21:22#1	T-APN	ὁ		0.80	
+Lev.21:22#2	N-APN	δῶρον		0.80	
+Lev.21:22#5	T-APN	ὁ		0.80	
+Lev.21:22#6	A-APN	ἅγιος		0.80	
+Lev.21:22#7	T-GPN	ὁ		0.80	
+Lev.21:22#8	A-GPN	ἅγιος		0.80	
+Lev.21:22#11	T-GPN	ὁ		0.80	
+Lev.21:22#12	A-GPN	ἅγιος		0.80	
+Lev.21:23#1	CONJ	πλήν		0.80	
+Lev.21:23#3	T-ASN	ὁ		0.80	
+Lev.21:23#4	N-ASN	καταπέτασμα		0.80	
+Lev.21:23#6	V-FDI-3S	προσέρχομαι		0.80	
+Lev.21:23#9	T-ASN	ὁ		0.80	
+Lev.21:23#10	N-ASN	θυσιαστήριον		0.80	
+Lev.21:23#18	V-FAI-3S	βεβηλόω		0.80	
+Lev.21:23#19	T-ASN	ὁ		0.80	
+Lev.21:23#20	A-ASN	ἅγιος		0.80	
+Lev.21:23#23	P-GSM	αὐτός		0.80	
+Lev.21:24#5	N-ASM	Ἀαρών		0.80	
+Lev.21:24#9	P-GSM	αὐτός		0.80	
+Lev.21:24#14	N-GSM	Ἰσραήλ		0.80	
+Lev.22:1#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Lev.22:2#2	N-DSM	Ἀαρών		0.80	
+Lev.22:2#6	P-GSM	αὐτός		0.80	
+Lev.22:2#8	V-PAM-3P	προσέχω		0.80	
+Lev.22:2#10	T-GPN	ὁ		0.80	
+Lev.22:2#11	A-GPN	ἅγιος		0.80	
+Lev.22:2#14	N-GSM	Ἰσραήλ		0.80	
+Lev.22:2#18	T-ASN	ὁ		0.80	
+Lev.22:2#19	N-ASN	ὄνομα		0.80	
+Lev.22:2#20	T-ASN	ὁ		0.80	
+Lev.22:2#21	A-ASN	ἅγιος		0.80	
+Lev.22:2#23	K-APN	ὅσος		0.80	
+Lev.22:2#25	V-PAI-3P	ἁγιάζω		0.80	
+Lev.22:3#2	P-DPM	αὐτός		0.80	
+Lev.22:3#17	T-APN	ὁ		0.80	
+Lev.22:3#18	A-APN	ἅγιος		0.80	
+Lev.22:3#19	K-APN	ὅσος		0.80	
+Lev.22:3#24	N-GSM	Ἰσραήλ		0.80	
+Lev.22:3#30	P-GSM	αὐτός		0.80	
+Lev.22:3#32	P-DSM	αὐτός		0.80	
+Lev.22:3#39	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Lev.22:4#6	N-GSM	Ἀαρών		0.80	
+Lev.22:4#11	N-DSF	λέπρα	unsure	0.50	model: unsure
+Lev.22:4#13	A-NSM	γονορρυής		0.80	
+Lev.22:4#14	T-GPN	ὁ		0.80	
+Lev.22:4#15	A-GPN	ἅγιος		0.80	
+Lev.22:4#17	V-FMI-3S	ἐσθίω		0.80	
+Lev.22:4#23	V-PMP-NSM	ἅπτω		0.80	
+Lev.22:4#29	R-DSM	ὅς, ἥ		0.80	
+Lev.22:4#33	P-GSM	αὐτός		0.80	
+Lev.22:5#7	R-NSN	ὅς, ἥ		0.80	
+Lev.22:5#8	V-FAI-3S	μιαίνω		0.80	
+Lev.22:5#14	R-DSM	ὅς, ἥ		0.80	
+Lev.22:5#15	V-FAI-3S	μιαίνω		0.80	
+Lev.22:5#20	P-GSM	αὐτός		0.80	
+Lev.22:6#1	N-NSF	ψυχή		0.80	
+Lev.22:6#5	P-GPN	αὐτός	unsure	0.50	model: unsure
+Lev.22:6#11	V-FMI-3S	ἐσθίω		0.80	
+Lev.22:6#13	T-GPN	ὁ		0.80	
+Lev.22:6#14	A-GPN	ἅγιος		0.80	
+Lev.22:6#17	V-AMS-3S	λούω		0.80	
+Lev.22:6#18	T-ASN	ὁ		0.80	
+Lev.22:6#19	N-ASN	σῶμα		0.80	
+Lev.22:6#20	P-GSM	αὐτός		0.80	
+Lev.22:7#2	V-PAS-3S	δύω		0.80	
+Lev.22:7#11	T-GPN	ὁ		0.80	
+Lev.22:7#12	A-GPN	ἅγιος		0.80	
+Lev.22:7#16	P-GSM	αὐτός		0.80	
+Lev.22:8#1	A-ASN	θνησιμαῖος		0.80	
+Lev.22:8#3	A-ASN	θηριάλωτος		0.80	
+Lev.22:8#6	V-APN	μιαίνω		0.80	
+Lev.22:8#9	P-DPN	αὐτός	unsure	0.50	model: unsure
+Lev.22:9#2	V-FMI-3P	φυλάσσω		0.80	
+Lev.22:9#3	T-APN	ὁ		0.80	
+Lev.22:9#4	N-APN	φύλαγμα		0.80	
+Lev.22:9#10	P-APN	αὐτός		0.80	
+Lev.22:9#15	P-ASN	αὐτός		0.80	
+Lev.22:9#19	P-APN	αὐτός		0.80	
+Lev.22:10#6	A-APN	ἅγιος		0.80	
+Lev.22:10#13	A-APN	ἅγιος		0.80	
+Lev.22:11#4	V-ADS-3S	κτάομαι		0.80	
+Lev.22:11#6	A-ASF	ἔγκτητος	guess	0.40	guess: the model answered with no candidates
+Lev.22:11#13	P-GSM	αὐτός		0.80	
+Lev.22:11#15	A-NPM	οἰκογενής		0.80	
+Lev.22:11#16	P-GSM	αὐτός		0.80	
+Lev.22:11#22	P-GSM	αὐτός		0.80	
+Lev.22:12#2	N-NSF	θυγάτηρ		0.80	
+Lev.22:12#12	T-GSN	ὁ		0.80	
+Lev.22:12#13	A-GSN	ἅγιος		0.80	
+Lev.22:13#2	N-NSF	θυγάτηρ		0.80	
+Lev.22:13#8	N-NSN	σπέρμα		0.80	
+Lev.22:13#13	V-FAI-3S	ἐπαναστρέφω		0.80	
+Lev.22:13#18	A-ASM	πατρικός		0.80	
+Lev.22:13#36	P-GPM	αὐτός		0.80	
+Lev.22:14#6	A-APN	ἅγιος		0.80	
+Lev.22:14#10	V-FAI-3S	προστίθημι		0.80	
+Lev.22:14#11	T-ASN	ὁ		0.80	
+Lev.22:14#12	A-ASN	ἐπίπεμπτος		0.80	
+Lev.22:14#13	P-GSN	αὐτός		0.80	
+Lev.22:14#15	P-ASN	αὐτός		0.80	
+Lev.22:14#20	T-ASN	ὁ		0.80	
+Lev.22:14#21	A-ASN	ἅγιος		0.80	
+Lev.22:15#4	T-APN	ὁ		0.80	
+Lev.22:15#5	A-APN	ἅγιος		0.80	
+Lev.22:15#8	N-GSM	Ἰσραήλ		0.80	
+Lev.22:15#9	R-APN	ὅς, ἥ		0.80	
+Lev.22:15#11	V-PAI-3P	ἀφαιρέω		0.80	
+Lev.22:16#2	V-FAI-3P	ἐπάγω		0.80	
+Lev.22:16#4	F-3APM	ἑαυτοῦ		0.80	
+Lev.22:16#6	N-GSF	πλημμέλεια		0.80	
+Lev.22:16#11	T-APN	ὁ		0.80	
+Lev.22:16#12	A-APN	ἅγιος		0.80	
+Lev.22:16#13	P-GPM	αὐτός		0.80	
+Lev.22:17#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Lev.22:18#2	N-DSM	Ἀαρών		0.80	
+Lev.22:18#6	P-GSM	αὐτός		0.80	
+Lev.22:18#10	N-GSM	Ἰσραήλ		0.80	
+Lev.22:18#20	N-GSM	Ἰσραήλ		0.80	
+Lev.22:18#27	V-PNP-GPM	πρόσκειμαι		0.80	
+Lev.22:18#31	N-DSM	Ἰσραήλ		0.80	
+Lev.22:18#35	T-APN	ὁ		0.80	
+Lev.22:18#36	N-APN	δῶρον		0.80	
+Lev.22:18#37	P-GSM	αὐτός		0.80	
+Lev.22:18#41	P-GPM	αὐτός		0.80	
+Lev.22:18#46	P-GPM	αὐτός		0.80	
+Lev.22:18#47	K-APN	ὅσος		0.80	
+Lev.22:18#49	V-2AAS-3P	προσφέρω		0.80	
+Lev.22:18#53	N-ASN	ὁλοκαύτωμα		0.80	
+Lev.22:19#1	A-NPN	δεκτός	unsure	0.50	model: unsure
+Lev.22:19#3	A-NPN	ἄμωμος		0.80	
+Lev.22:19#14	T-GPF	ὁ	unsure	0.50	model: unsure
+Lev.22:19#15	N-GPF	αἴξ	unsure	0.50	model: unsure
+Lev.22:20#1	A-APN	πᾶς		0.80	
+Lev.22:20#2	K-NPN	ὅσος	unsure	0.50	model: unsure
+Lev.22:20#7	P-DSN	αὐτός	unsure	0.50	model: unsure
+Lev.22:20#9	V-FAI-3P	προσάγω		0.80	
+Lev.22:20#13	A-NSN	δεκτός		0.80	
+Lev.22:21#10	V-AAP-NSM	διαστέλλω		0.80	
+Lev.22:21#26	A-NSN	ἄμωμος	guess	0.40	guess: the model chose outside the candidates
+Lev.22:21#28	A-NSN	εἰσδεκτός		0.80	
+Lev.22:21#30	N-NSM	μῶμος		0.80	
+Lev.22:21#34	P-DSN	αὐτός	unsure	0.50	model: unsure
+Lev.22:22#1	A-ASM	τυφλός		0.80	
+Lev.22:22#3	V-RPP-ASM	συντρίβω		0.80	
+Lev.22:22#5	A-ASM	γλωσσότμητος		0.80	
+Lev.22:22#7	V-PAP-ASM	μυρμηκιάω		0.80	
+Lev.22:22#9	V-PAP-ASM	ψωραγριάω		0.80	
+Lev.22:22#12	V-PAP-ASM	ἔχω		0.80	
+Lev.22:22#14	V-FAI-3P	προσάγω		0.80	
+Lev.22:22#15	D-APN	οὗτος		0.80	
+Lev.22:22#22	V-FAI-2P	δίδωμι		0.80	
+Lev.22:22#24	P-GPN	αὐτός		0.80	
+Lev.22:22#26	T-ASN	ὁ		0.80	
+Lev.22:22#27	N-ASN	θυσιαστήριον		0.80	
+Lev.22:23#4	N-ASN	πρόβατον		0.80	
+Lev.22:23#5	A-ASN	ὠτότμητος		0.80	
+Lev.22:23#7	A-ASN	κολοβόκερκος		0.80	
+Lev.22:23#8	N-APN	σφάγιον		0.80	
+Lev.22:23#10	P-APN	αὐτός		0.80	
+Lev.22:23#11	F-2DSM	σεαυτοῦ		0.80	
+Lev.22:23#17	V-FPI-3S	προσδέχομαι	unsure	0.50	model: unsure
+Lev.22:24#3	V-RPP-ASM	ἐκθλίβω		0.80	
+Lev.22:24#7	V-RPP-ASM	ἀποσπάω		0.80	
+Lev.22:24#9	V-FAI-2S	προσάγω		0.80	
+Lev.22:24#10	P-APN	αὐτός		0.80	
+Lev.22:25#6	V-FAI-2P	προσφέρω		0.80	
+Lev.22:25#7	T-APN	ὁ		0.80	
+Lev.22:25#8	N-APN	δῶρον		0.80	
+Lev.22:25#13	A-GPN	πᾶς		0.80	
+Lev.22:25#14	D-GPN	οὗτος		0.80	
+Lev.22:25#16	A-NPN	φθαρτός		0.80	
+Lev.22:25#19	P-DPN	αὐτός		0.80	
+Lev.22:25#20	N-NSM	μῶμος		0.80	
+Lev.22:25#22	P-DPN	αὐτός		0.80	
+Lev.22:25#24	V-FPI-3S	δέχομαι	unsure	0.50	model: unsure
+Lev.22:26#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Lev.22:27#3	N-ASN	πρόβατον		0.80	
+Lev.22:27#5	N-ASF	αἴξ	guess	0.40	guess: the model chose outside the candidates
+Lev.22:27#12	N-APF	ἡμέρα		0.80	
+Lev.22:27#23	V-FPI-3S	δέχομαι	unsure	0.50	model: unsure
+Lev.22:27#25	N-APN	δῶρον		0.80	
+Lev.22:27#26	N-ASN	κάρπωμα		0.80	
+Lev.22:28#4	N-ASN	πρόβατον		0.80	
+Lev.22:28#7	T-APN	ὁ		0.80	
+Lev.22:28#8	N-APN	παιδίον		0.80	
+Lev.22:28#11	V-FAI-2S	σφάζω		0.80	
+Lev.22:29#6	N-GSF	χαρμοσύνη		0.80	
+Lev.22:29#8	A-ASN	εἰσδεκτός		0.80	
+Lev.22:29#10	V-FAI-2P	θύω		0.80	
+Lev.22:29#11	P-ASN	αὐτός		0.80	
+Lev.22:30#5	V-FPI-3S	βιβρώσκω		0.80	
+Lev.22:30#7	V-FAI-2P	ἀπολείπω		0.80	
+Lev.22:30#9	T-GPN	ὁ		0.80	
+Lev.22:30#10	N-GPN	κρέας		0.80	
+Lev.22:30#12	T-ASN	ὁ		0.80	
+Lev.22:31#2	V-FAI-2P	φυλάσσω		0.80	
+Lev.22:32#3	V-FAI-2P	βεβηλόω		0.80	
+Lev.22:32#4	T-ASN	ὁ		0.80	
+Lev.22:32#5	N-ASN	ὄνομα		0.80	
+Lev.22:32#6	T-GSM	ὁ	unsure	0.50	model: unsure
+Lev.22:32#7	A-GSM	ἅγιος	unsure	0.50	model: unsure
+Lev.22:32#9	V-FPI-1S	ἁγιάζω		0.80	
+Lev.22:32#11	A-DSN	μέσος		0.80	
+Lev.22:32#14	N-GSM	Ἰσραήλ		0.80	
