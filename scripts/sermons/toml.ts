@@ -1,5 +1,5 @@
 // scripts/sermons/toml.ts — the subset of TOML the sermon-index repo's source.toml uses (docs/sources.md there): `key = value` lines with a basic string, a multi-line basic string
-// ("""...""", a backslash at the end of a line joins the next, as TOML says), a boolean, a whole number or a date (kept as its text), and `#` comments. Anything else is an error that names
+// ("""...""", a backslash at the end of a line joins the next, as TOML says), a multi-line literal string (''' ... ''', kept as it stands), a boolean, a whole number or a date (kept as its text), and `#` comments. Anything else is an error that names
 // the line, so a source.toml that grows a table or an array is noticed here rather than read wrong.
 export type TomlValue = string | boolean | number;
 
@@ -28,6 +28,18 @@ export function parseToml(text: string): Record<string, TomlValue> {
     const [, key, rest] = eq;
     const where = `${key} (line ${n + 1})`;
     if (key in out) throw new Error(`${where}: given twice`);
+    if (rest.startsWith("'''")) {
+      // a multi-line literal string: the text to the next ''' as it stands (no escapes, the line breaks kept); a newline right after the opening is dropped
+      let raw = rest.slice(3);
+      while (!raw.includes("'''")) {
+        if (n + 1 >= lines.length) throw new Error(`${where}: the multi-line string is never closed`);
+        raw += `\n${lines[++n]}`;
+      }
+      const close = raw.indexOf("'''");
+      if (raw.slice(close + 3).trim() !== '' && !raw.slice(close + 3).trim().startsWith('#')) throw new Error(`${where}: something after the string`);
+      out[key] = raw.slice(0, close).replace(/^\n/, '');
+      continue;
+    }
     if (rest.startsWith('"""')) {
       // the raw text runs to the next """; a newline right after the opening is dropped
       let raw = rest.slice(3);
