@@ -53,7 +53,7 @@ A chunk at or above 0.6 is called sure in the report: a gloss, a name or the tab
 
 ## What reads the chunks
 
-The Reader's English view draws each chunk as a tap, so a verse now has several taps; the Septuagint's Weave position still draws the Greek verse alone (`septuagintView`, src/reader/septuagint.ts). The sweep of every reader of a Septuagint verse's `e` is in the story's closing comment (mw-u2w5klk.274.1).
+The Reader's English view draws each chunk as a tap, so a verse now has several taps. A chapter whose verses carry aligned chunks (`septuagintAligned`, src/reader/septuagint.ts: some chunk with `y: 'align'` and a word in `g`) is woven in the Weave position as the New Testament is (mw-u2w5klk.274.3: `septuagintSettings` leaves `weaveShown` as the settings have it, so the Greek dial, the weave order and the woven reading check follow); a chapter with none (`data:build:lxx`'s one chunk a verse) keeps the Weave position as the Greek verse alone with the once-only note that the Weave is off (`septuagintView`, `septuagintWeaveNoted`). The sweep of every reader of a Septuagint verse's `e` is in the story's closing comment (mw-u2w5klk.274.1).
 
 ## The report
 
