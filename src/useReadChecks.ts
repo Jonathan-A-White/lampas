@@ -8,7 +8,7 @@
 // words in Greek and the English in English: the request carries its pieces in order, each with its language (services/reading.ts wovenReading), and the answer is kept
 // as a reading of its own (WOVEN_LANG) with the text it was scored against.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Chapter, Verse } from './data/chapter';
+import { sourceLanguage, type Chapter, type SourceLanguage, type Verse } from './data/chapter';
 import { unitId, unitReference } from './data/passage';
 import { getGreekPronunciation, keepVerseReading, reachOf, verseRef } from './data/repositories';
 import { isHebrewBook } from './data/books';
@@ -83,10 +83,13 @@ const buzz = (ms: number) => navigator.vibrate?.(ms);
 /** Where an answer goes instead of the reading history: the reading drill (src/ReadingDrill.tsx) reads words that are not verses and keeps nothing of them there. */
 export type KeepAnswer = (unit: Verse, answer: VerseReadAnswer, language: string) => void | Promise<void>;
 
+/** The language of the words a chapter is read in: the chapter's own where it is here (a Septuagint chapter of a Hebrew book is Greek), else the book's. The Reader's 'greek' view is the Hebrew only of a Hebrew source. */
+export const readingSourceOf = (book: string, data?: Pick<Chapter, 'lang'> | null): SourceLanguage => (data ? sourceLanguage(data) : isHebrewBook(book) ? 'hbo' : 'grc');
+
 export function useReadChecks(book: string, chapter: number, title: string, readerView: ReadingView = 'english', pronunciation?: string, keep?: KeepAnswer, data?: Chapter | null): UseReadChecks {
   const [all, setAll] = useState<AllStates>({});
-  // the source view of an Old Testament chapter is its Hebrew (mw-gdcyf98.14): the Reader says 'greek', the reading is 'hebrew' and is scored in the Hebrew scheme's language
-  const view: ReadingView = readerView === 'greek' && isHebrewBook(book) ? 'hebrew' : readerView;
+  // the source view of an Old Testament chapter is its Hebrew, but not of its Septuagint, whose source is Greek (mw-gdcyf98.14, mw-u2w5klk.274.3): the Reader says 'greek', the reading is 'hebrew' and is scored in the Hebrew scheme's language
+  const view: ReadingView = readerView === 'greek' && readingSourceOf(book, data) === 'hbo' ? 'hebrew' : readerView;
   const keepRef = useRef(keep);
   useEffect(() => {
     keepRef.current = keep;

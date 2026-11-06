@@ -321,7 +321,7 @@ export function VerseView(props: VerseViewProps) {
             </div>
           ) : null}
           {action === 'read' && ai ? (
-            <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} chapter={chapter} checks={checks} hold={read} weave={weave} onRetry={onRetryRead} slot={slot} />
+            <ReadCheckPanel key={unitId(verse)} verse={verse} view={view} book={book} source={source} chapter={chapter} checks={checks} hold={read} weave={weave} onRetry={onRetryRead} slot={slot} />
           ) : null}
           {action === 'practise' && ai ? (
             <PractisePane
