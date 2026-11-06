@@ -141,9 +141,11 @@ describe('runSermonsBuild', () => {
     expect(Object.keys(out)).toEqual(['sources']);
     expect(out.sources).toHaveLength(1);
     const [s] = out.sources;
-    expect(Object.keys(s)).toEqual(['id', 'name', 'kind', 'licence', 'credit', 'homepage', 'rows', 'books', 'fingerprint']);
+    expect(Object.keys(s)).toEqual(['id', 'name', 'kind', 'licence', 'credit', 'homepage', 'onByDefault', 'rows', 'books', 'fingerprint']);
     expect(s).toMatchObject({
       id: 'spurgeon-20',
+      // the fixture's source.toml says on_by_default = false: the key is kept for a source that starts Off (his Logos archives) and left out for one that starts On
+      onByDefault: false,
       kind: 'sermons',
       credit: 'Charles Haddon Spurgeon; the Christian Classics Ethereal Library (ccel.org); Spurgeon Gems (spurgeongems.org)',
       homepage: 'https://ccel.org/ccel/spurgeon',

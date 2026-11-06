@@ -41,6 +41,8 @@ export interface SermonSource {
   licence: string;
   credit: string;
   homepage: string;
+  /** `false` for a source that starts Off (its source.toml says `on_by_default = false`: his Logos archives); left out for one that starts On */
+  onByDefault?: false;
   /** the sermons listed by a passage (a row with no preaching text is not counted) */
   rows: number;
   /** the books with a file, in canon order */
