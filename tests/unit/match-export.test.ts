@@ -134,19 +134,23 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('matchExport on his whole export (mw-
     ({ matched, unmatched } = matchExport(readExport(readFileSync(VAULT_EXPORT, 'utf8'))));
   });
 
-  // The Hebrew texts (mw-5r3p30.1115) are Hebrew Bibles Logos sells that his export does not hold; every other kind is a book he owns. So the catalogue's entries
-  // missing from the export must all be Hebrew texts, and every other entry is opened and listed.
+  // Every entry of the catalogue is a book he owns (mw-5r3p30.1134: the Hebrew texts once named six Hebrew Bibles his export does not hold), so every one is matched by its Resource ID and listed.
   const heldIds = () => new Set(matched.map((m) => m.row.resource));
   const sold = () => CATALOGUE.filter((e) => !heldIds().has(e.resource));
 
-  it('opens every book of the catalogue he owns and lists them all: nothing waits for an update', () => {
-    expect(sold().filter((e) => e.kind !== 'hebrew-text').map((e) => e.resource)).toEqual([]);
-    expect(matched).toHaveLength(CATALOGUE.length - sold().length);
+  it('opens every book of the catalogue and lists them all: nothing waits for an update, and no book is offered that his export lacks', () => {
+    expect(sold().map((e) => e.resource)).toEqual([]);
+    expect(matched).toHaveLength(CATALOGUE.length);
     expect(matched.every(isListed)).toBe(true);
   });
 
+  it('counts the Lexham Hebrew Bible and the Lexham Hebrew-English Interlinear Bible as Hebrew texts matched by their Resource ID', () => {
+    const hebrew = matched.filter((m) => m.kind === 'hebrew-text');
+    expect(hebrew.map((m) => [m.row.resource, m.row.abbreviated, m.by])).toEqual([['LLS:LHB', 'LHB', 'id'], ['LLS:1.0.199', 'LHI', 'id']]);
+  });
+
   it('leaves the rest of the 4,795 books, and no commentary on a book of the Bible', () => {
-    expect(unmatched).toHaveLength(4795 - (CATALOGUE.length - sold().length));
+    expect(unmatched).toHaveLength(4795 - CATALOGUE.length);
     for (const u of unmatched.filter((x) => x.row.type === 'text.monograph.commentary.bible')) expect(coversOfSupersets(u.row.supersets), u.row.title).toEqual([]);
   });
 });
