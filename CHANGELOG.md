@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.142
+_2026-11-06_
+- New: The Lexicons and Grammars pages in your Logos library are now grouped under Hebrew and Greek headings, with the order inside each group kept.
+- New: In the Old Testament in Greek, Swete's square brackets for damaged letters are hidden by default, and a new setting, Show manuscript gaps, brings them back.
+- New: Your Logos library has a Hebrew texts row, so an Old Testament verse can open in the Hebrew Bible you pin, such as BHS or BHQ.
+
 ## 0.7.141
 _2026-11-06_
 - Fixed: typing in Choose a book now shows the first matches at the top of the list, right under the search field.
