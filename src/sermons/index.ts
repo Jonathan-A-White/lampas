@@ -1,4 +1,5 @@
 // src/sermons/index.ts — the sermons module's door (docs/sermons.md): the registry of sources and sermonsFor, the sermons of a place. A second source is one file in src/sermons/sources/ and one line in SOURCES.
+import { savedSettings } from '../data/repositories';
 import { THEME_MAX_VERSES } from '../data/themeIndex';
 import { enabledSources as enabledThemeSources, themesFor } from '../themes';
 import { enabledSources as enabledOf } from './enabled';
@@ -19,10 +20,12 @@ export function setSermonSources(sources: readonly SermonSource[] | undefined): 
 }
 
 /**
- * The sources that are on (src/sermons/enabled.ts). Every source reads as On (its `default`) until Settings has a switch per source (the next story): this is where those values are read. Registry order.
+ * The sources that are on (src/sermons/enabled.ts): each reads its saved switch `sermons.<id>` (written by Settings once it has a switch per source, the next story), else its `default`: On for the free
+ * sources, Off for his Logos archives. Registry order.
  */
 export async function enabledSources(sources: readonly SermonSource[] = active): Promise<SermonSource[]> {
-  return enabledOf(sources, () => undefined);
+  const saved = await savedSettings();
+  return enabledOf(sources, (key) => saved[key]);
 }
 
 /** The sermons of a place from every source that is on: for a verse or a passage those preached on it first, then the rest of the chapter (src/sermons/sermonsFor.ts); { here: [], chapter: [] } where there are none. */
