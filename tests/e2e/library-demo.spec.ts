@@ -87,7 +87,7 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   await expect(page.getByTestId('import-line')).toContainText('from a list of');
   const rows = page.getByTestId('kind-row');
-  await expect(rows).toHaveCount(7);
+  await expect(rows).toHaveCount(8);
   await expect(rows.filter({ hasText: 'Lexicons' }).getByTestId('kind-count')).toContainText(/^\d+ on · \d+ pinned$/);
   await expect(rows.filter({ hasText: 'Devotionals' }).getByTestId('kind-count')).toContainText(/\d+ on/);
   await fitsThePhone(page);
