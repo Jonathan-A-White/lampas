@@ -1,5 +1,5 @@
 // src/library/KindPage.tsx — one kind's page of the Library (#/library?kind=lexicon, docs/design/library-at-scale.md 3.4): every book of the kind in a control of Off | On | Pin, pinned
-// first, then those on, then those off (and by name within each), All on / All off, and a search over the kind. The list is the shared SearchableList (src/ui/SearchableList.tsx), which
+// first, then those on, then those off (and by name within each; a kind with Hebrew and Greek books, Lexicons and Grammars, in a Hebrew group then a Greek one), All on / All off, and a search over the kind. The list is the shared SearchableList (src/ui/SearchableList.tsx), which
 // does not re-sort under his thumb. A fourth pin is refused with a line under the book; Bibles are one at a time (Off | Chosen); Devotionals have no Pin.
 import { useState } from 'react';
 import { setKind, setLogosBible, setState, type ShelfState } from '../data/repositories';
@@ -20,6 +20,9 @@ const OPTIONS: Record<Steps, readonly (readonly [string, string])[]> = {
   chosen: [['off', 'Off'], ['on', 'Chosen']],
 };
 
+const GROUP_LANGS = ['he', 'grc', 'en', 'both'] as const;
+const GROUPS = ['Hebrew', 'Greek', 'English', 'Hebrew and Greek'] as const;
+
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
 export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
@@ -27,6 +30,9 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   const states = useShelf();
   const [refused, setRefused] = useState<string | null>(null);
   const entries = [...entriesOf(kind)].sort((a, b) => a.short.localeCompare(b.short));
+  // a kind with books in both Hebrew and Greek (Lexicons, Grammars) is grouped Hebrew, then Greek, each in the order above (mw-5r3p30.1117)
+  const grouped = entries.some((e) => e.lang === 'he') && entries.some((e) => e.lang === 'grc');
+  const groupRank = (id: string): number => (grouped ? Math.max(0, GROUP_LANGS.indexOf(entryOf(id)!.lang)) : 0);
   const chosen = book !== undefined && entryOf(book)?.kind === kind ? book : undefined;
   useReportScreen({
     name: SCREEN_NAMES.library,
@@ -87,7 +93,8 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                 items={entries.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }))}
                 status={countLine(kind, states)}
                 focus={chosen}
-                rankOf={(id) => (states.get(id) === 'pinned' ? 0 : states.get(id) === 'on' ? 1 : 2)}
+                rankOf={(id) => groupRank(id) * 3 + (states.get(id) === 'pinned' ? 0 : states.get(id) === 'on' ? 1 : 2)}
+                groupOf={grouped ? (id) => GROUPS[groupRank(id)] : undefined}
                 row={(item) => {
                   const entry = entryOf(item.id)!;
                   return (

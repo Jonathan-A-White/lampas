@@ -283,6 +283,16 @@ Feature: The idea sheet
     When he goes Back
     Then the idea sheet "The aorist tense" is on screen over the Goal screen
 
+  # mw-5r3p30.1114: the sheet that Back brought back is not the screen's, so a second trip to the table from it leaves no sheet over the table.
+  Scenario: The idea sheet that came back leaves no sheet over the table the second time
+    Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
+    When he opens the idea sheet of "tense-aorist" from the Goal screen
+    And he follows "Table: Future and aorist" from the idea sheet
+    And he goes Back
+    And the idea sheet is back over the Goal screen
+    And the table "Table: Future and aorist" is tapped again on the sheet
+    Then the table "Future and aorist" is open with no idea sheet over it
+
   Scenario: An idea no table teaches has no table link
     Given Lampas is opened on Romans 8 with the goal "1 John 1", no idea level and a fake Postern
     When he opens the idea sheet of "alphabet" from the Goal screen

@@ -54,6 +54,7 @@ describe('Help is a short list of pages', () => {
     expect(body('paradigms')).toContain('This word | The pattern');
     expect(body('tutor')).toContain('Conversations');
     expect(body('library')).toContain('Maps');
+    expect(body('library')).toContain('Sermons · N');
     expect(body('memorize')).toContain('Due today');
   });
 

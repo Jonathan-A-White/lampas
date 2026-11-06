@@ -50,7 +50,7 @@ Psa.2:6#10	A-ASN	ἅγιος		0.80
 Psa.2:6#11	P-GSM	αὐτός		0.80	
 Psa.2:7#2	T-ASN	ὁ		0.80	
 Psa.2:7#3	N-ASN	πρόσταγμα		0.80	
-Psa.2:8#3	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.2:8#3	S-1SGSN	ἐγώ		0.80	
 Psa.2:8#7	N-APN	ἔθνος		0.80	
 Psa.2:8#15	T-APN	ὁ		0.80	
 Psa.2:8#16	N-APN	πέρας		0.80	
@@ -186,7 +186,7 @@ Psa.6:7#6	V-FAI-1S	λούω		0.80
 Psa.6:7#19	V-FAI-1S	βρέχω		0.80	
 Psa.6:8#7	V-API-1S	παλαιόω		0.80	
 Psa.6:8#9	A-DPM	πᾶς		0.80	
-Psa.6:9#3	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.6:9#3	S-1SGSN	ἐγώ		0.80	
 Psa.6:10#10	V-ADI-3S	προσδέχομαι		0.80	
 Psa.6:11#1	V-APO-3P	αἰσχύνω		0.80	
 Psa.6:11#3	V-APO-3P	ταράσσω		0.80	
@@ -539,7 +539,7 @@ Psa.12:2#7	N-ASN	τέλος		0.80
 Psa.12:2#10	V-FAI-2S	ἀποστρέφω		0.80	
 Psa.12:2#11	T-ASN	ὁ		0.80	
 Psa.12:2#12	N-ASN	πρόσωπον		0.80	
-Psa.12:2#15	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.12:2#15	S-1SGSN	ἐγώ		0.80	
 Psa.12:3#2	I-GSN	τίς		0.80	
 Psa.12:3#3	V-FMI-1S	τίθημι		0.80	
 Psa.12:3#12	N-GSF	ἡμέρα		0.80	

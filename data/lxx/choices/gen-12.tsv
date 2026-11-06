@@ -542,7 +542,7 @@ Gen.50:4#13	N-GSM	Φαραώ		0.80
 Gen.50:4#16	V-2AAI-1S	εὑρίσκω		0.80	
 Gen.50:4#17	N-ASF	χάρις		0.80	
 Gen.50:4#18	PREP	ἐναντίον		0.80	
-Gen.50:4#22	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Gen.50:4#22	S-1SGSN	ἐγώ		0.80	
 Gen.50:4#24	T-APN	ὁ		0.80	
 Gen.50:4#25	N-APN	οὖς		0.80	
 Gen.50:4#26	N-GSM	Φαραώ		0.80	
@@ -649,10 +649,10 @@ Gen.50:18#6	D-NPM	ὅδε	guess	0.40	guess: the model chose outside the candidat
 Gen.50:19#3	P-DPM	αὐτός		0.80	
 Gen.50:19#4	N-NSM	Ἰωσήφ		0.80	
 Gen.50:20#2	V-ADI-2P	βουλεύω	unsure	0.50	model: unsure
-Gen.50:20#4	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Gen.50:20#4	S-1SGSN	ἐγώ		0.80	
 Gen.50:20#6	A-APN	πονηρός		0.80	
 Gen.50:20#10	V-ADI-3S	βουλεύω	unsure	0.50	model: unsure
-Gen.50:20#12	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Gen.50:20#12	S-1SGSN	ἐγώ		0.80	
 Gen.50:20#14	A-APN	ἀγαθός		0.80	
 Gen.50:20#21	V-2APS-3S	τρέφω		0.80	
 Gen.50:21#3	P-DPM	αὐτός		0.80	

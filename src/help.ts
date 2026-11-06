@@ -90,6 +90,7 @@ export const HELP_PAGES: HelpPage[] = [
     line: 'Tables of endings.',
     body: [
       'Paradigms are tables of endings, opened as you learn the grammar. A table opened from a word’s sheet, or from See the table on a Review ending card, can show that word’s own forms: This word | The pattern. Every form the New Testament uses is laid in its cells, never a made-up one; a cell the text never uses says not in the NT, and a tap on a form opens the Reader there.',
+      'From a Septuagint word, This word also lays the Septuagint’s forms, each cell saying whether it was found in the Septuagint or the NT.',
       'With Hebrew chosen, the list also has four Hebrew tables, drawn right to left.',
     ],
   },
@@ -114,11 +115,12 @@ export const HELP_PAGES: HelpPage[] = [
   },
   {
     id: 'library',
-    title: 'Your Logos library and maps',
-    line: 'Books you own, and maps.',
+    title: 'Your Logos library, maps and sermons',
+    line: 'Books you own, maps and sermons.',
     body: [
-      'If you own Logos, Your Logos library (the first row of Settings) lists the books Lampas can open, by kind, each Off, On or Pinned, with a search; Import reads the list Logos saves. Lampas keeps only that list and your choices, and sends nothing of your library unless you ask. On a verse, In Logos opens it in your own Bible.',
-      'Tap a verse, a section heading or the line at the foot of the text, and its Maps · N button opens the maps of that place from Bible Mapper; Settings > Study resources > Maps turns each source on or off.',
+      'If you own Logos, Your Logos library (the first row of Settings) lists the books Lampas can open, each Off, On or Pinned; Import reads your Logos list. Lampas keeps only that list and your choices. On a verse, In Logos opens it in your Bible.',
+      'Maps · N on a verse, heading or place line opens that place’s maps from Bible Mapper; Settings > Study resources > Maps turns each source on or off.',
+      'Sermons · N beside it lists sermons preached on the verse, then its chapter: Spurgeon’s from CCEL, Matthew Henry’s from the Internet Archive. Each opens where it lives, online.',
     ],
   },
   {

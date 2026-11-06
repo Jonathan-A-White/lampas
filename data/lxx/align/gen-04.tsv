@@ -1,0 +1,169 @@
+ref	run	text	g	mark	confidence
+Gen.4:1	1	Eve	3		0.80
+Gen.4:1	2	wife,	5		0.80
+Gen.4:1	3	she	-		0.80
+Gen.4:1	4	brought forth	10		0.80
+Gen.4:1	5	I have	-		0.80
+Gen.4:1	6	a	-		0.80
+Gen.4:2	1	she	-		0.80
+Gen.4:2	2	Abel	10		0.80
+Gen.4:2	3	a	-		0.80
+Gen.4:2	3	keeper	11		0.80
+Gen.4:2	3	of	-		0.80
+Gen.4:2	4	a	-		0.80
+Gen.4:2	5	of	-		0.80
+Gen.4:3	1	it	-		0.80
+Gen.4:3	2	so	-		0.80
+Gen.4:3	3	that	-		0.80
+Gen.4:3	4	brought	-		0.80
+Gen.4:3	5	of	-		0.80
+Gen.4:3	6	a	-		0.80
+Gen.4:3	7	to	-		0.80
+Gen.4:4	1	Abel	1		0.80
+Gen.4:4	1	also	3,4		0.80
+Gen.4:4	1	brought	-		0.80
+Gen.4:4	2	of	-		0.80
+Gen.4:4	3	fatlings,	14		0.80
+Gen.4:5	1	his	-		0.80
+Gen.4:5	2	regarded	9		0.80
+Gen.4:5	3	was exceedingly sorrowful	11,14		0.80
+Gen.4:5	4	his	-		0.80
+Gen.4:6	1	the	3	unsure	0.50
+Gen.4:6	2	Why	8		0.80
+Gen.4:6	2	are you become very	-		0.80
+Gen.4:6	3	why	12,13		0.80
+Gen.4:6	4	countenance	16		0.80
+Gen.4:6	4	fallen?	14		0.80
+Gen.4:7	1	Have you	-		0.80
+Gen.4:7	2	sinned	-		0.80
+Gen.4:7	3	you have	-		0.80
+Gen.4:7	4	it	-		0.80
+Gen.4:7	5	it? be	-		0.80
+Gen.4:7	6	shall be	-		0.80
+Gen.4:7	7	submission,	13		0.80
+Gen.4:7	8	shall	-		0.80
+Gen.4:7	9	over	-		0.80
+Gen.4:8	1	his	-		0.80
+Gen.4:8	2	Let us go out	-		0.80
+Gen.4:8	3	that	-		0.80
+Gen.4:8	3	when	14,15		0.80
+Gen.4:8	4	were	-		0.80
+Gen.4:8	5	rose up	22		0.80
+Gen.4:9	1	Lord	-		0.80
+Gen.4:9	2	he	12	unsure	0.50
+Gen.4:9	3	I	-		0.80
+Gen.4:9	4	am	22		0.80
+Gen.4:9	5	keeper?	18		0.80
+Gen.4:10	1	the Lord	-		0.80
+Gen.4:10	2	have	-		0.80
+Gen.4:10	3	the	-		0.80
+Gen.4:10	4	of your	-		0.80
+Gen.4:10	5	of	-		0.80
+Gen.4:11	1	are	-		0.80
+Gen.4:11	2	from	-		0.80
+Gen.4:11	3	has	-		0.80
+Gen.4:12	1	When	0		0.80
+Gen.4:12	1	you till	1		0.80
+Gen.4:12	2	then	4	unsure	0.50
+Gen.4:12	3	shall	-		0.80
+Gen.4:12	4	continue to	6		0.80
+Gen.4:12	5	its	-		0.80
+Gen.4:12	6	to	-		0.80
+Gen.4:12	7	you shall	-		0.80
+Gen.4:13	1	Lord	-		0.80
+Gen.4:13	2	crime	8		0.80
+Gen.4:13	2	is too	-		0.80
+Gen.4:13	3	for	10	unsure	0.50
+Gen.4:13	4	to be	-		0.80
+Gen.4:14	1	you	-		0.80
+Gen.4:14	2	out this	-		0.80
+Gen.4:14	3	the	-		0.80
+Gen.4:14	4	of	-		0.80
+Gen.4:14	5	I shall be	-		0.80
+Gen.4:14	6	presence,	11		0.80
+Gen.4:14	7	I shall	-		0.80
+Gen.4:14	8	then it will be that	22	unsure	0.50
+Gen.4:14	8	any one that	23,24		0.80
+Gen.4:14	9	shall	-		0.80
+Gen.4:15	1	the	4	unsure	0.50
+Gen.4:15	2	to	-		0.80
+Gen.4:15	3	any one that	8,9		0.80
+Gen.4:15	3	slays	10		0.80
+Gen.4:15	4	shall suffer	14	unsure	0.50
+Gen.4:15	5	vengeance;	13		0.80
+Gen.4:15	6	the	18	unsure	0.50
+Gen.4:15	7	a	-		0.80
+Gen.4:15	8	upon	-		0.80
+Gen.4:15	9	that	23		0.80
+Gen.4:15	10	that	28	unsure	0.50
+Gen.4:15	11	might	-		0.80
+Gen.4:16	1	So	1		0.80
+Gen.4:16	2	forth	-		0.80
+Gen.4:16	3	presence	4		0.80
+Gen.4:16	3	of	-		0.80
+Gen.4:16	4	the	-		0.80
+Gen.4:16	5	of	-		0.80
+Gen.4:16	6	over against	12		0.80
+Gen.4:17	1	wife,	4		0.80
+Gen.4:17	2	having	-		0.80
+Gen.4:17	3	she	-		0.80
+Gen.4:17	4	he	-		0.80
+Gen.4:17	5	a	-		0.80
+Gen.4:17	6	after	19		0.80
+Gen.4:17	7	of	22	unsure	0.50
+Gen.4:17	7	his	-		0.80
+Gen.4:18	1	Enoch	3		0.80
+Gen.4:18	1	was born	-		0.80
+Gen.4:19	1	to	-		0.80
+Gen.4:19	2	the	-		0.80
+Gen.4:19	3	of	-		0.80
+Gen.4:19	4	was	-		0.80
+Gen.4:19	5	the	-		0.80
+Gen.4:19	6	of	-		0.80
+Gen.4:20	1	Ada	2		0.80
+Gen.4:20	2	of those that	-		0.80
+Gen.4:20	3	feeding	-		0.80
+Gen.4:21	1	the	-		0.80
+Gen.4:21	2	of	2	unsure	0.50
+Gen.4:21	2	his	-		0.80
+Gen.4:21	3	was	-		0.80
+Gen.4:21	4	who	-		0.80
+Gen.4:21	4	invented	9		0.80
+Gen.4:21	5	lute	10		0.80
+Gen.4:22	1	also	1	unsure	0.50
+Gen.4:22	2	a smith,	10		0.80
+Gen.4:22	2	a manufacturer	9		0.80
+Gen.4:22	2	both of	-		0.80
+Gen.4:22	2	brass	11		0.80
+Gen.4:22	3	the	-		0.80
+Gen.4:22	4	of	-		0.80
+Gen.4:22	5	was	-		0.80
+Gen.4:23	1	to	3	unsure	0.50
+Gen.4:23	2	you⌃	-		0.80
+Gen.4:23	3	of	-		0.80
+Gen.4:23	4	I have slain	21		0.80
+Gen.4:23	4	a	-		0.80
+Gen.4:23	5	sorrow	23		0.80
+Gen.4:23	6	a	-		0.80
+Gen.4:23	7	grief.	28		0.80
+Gen.4:24	1	vengeance has been exacted	-		0.80
+Gen.4:24	2	on	3	unsure	0.50
+Gen.4:24	3	behalf,	-		0.80
+Gen.4:24	3	on	5	unsure	0.50
+Gen.4:24	4	it shall be	-		0.80
+Gen.4:24	5	times	-		0.80
+Gen.4:25	1	Eve	3		0.80
+Gen.4:25	2	wife,	5		0.80
+Gen.4:25	3	she	-		0.80
+Gen.4:25	4	and	-		0.80
+Gen.4:25	5	a	-		0.80
+Gen.4:25	6	has	-		0.80
+Gen.4:25	7	up to	-		0.80
+Gen.4:25	8	another	24		0.80
+Gen.4:25	9	of	-		0.80
+Gen.4:26	1	had a	-		0.80
+Gen.4:26	2	called	5		0.80
+Gen.4:26	2	his	-		0.80
+Gen.4:26	3	on	-		0.80
+Gen.4:26	4	of	-		0.80
+Gen.4:26	4	the	17	unsure	0.50

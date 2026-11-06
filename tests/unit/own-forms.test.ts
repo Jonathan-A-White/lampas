@@ -2,10 +2,10 @@
 // (src/data/paradigms/ownForms.ts, scripts/build-lemma-forms.mjs, docs/paradigms.md 'This word'). Over the real chapters in public/data.
 // @vitest-environment node
 import { beforeAll, describe, expect, it } from 'vitest';
-import { fileText, lemmaForms, ownFormOf, readChapters, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
+import { fileText, lemmaForms, ownFormOf, readChapters, readSeptuagintChapters, septuagintFormOf, septuagintForms, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import { cellName, cellsOf, paradigmById, paradigmOfWord, tableFor } from '../../src/data/paradigms';
-import { fitsNoTable, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, type OwnForm } from '../../src/data/paradigms/ownForms';
+import { absentText, fitsNoTable, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, septuagintFormOf as appSeptuagintFormOf, type OwnForm } from '../../src/data/paradigms/ownForms';
 import type { Paradigm } from '../../src/data/paradigms/types';
 
 // the New Testament's chapters: this file is the Greek index (the Hebrew one is tests/unit/lemma-forms-hbo.test.ts)
@@ -155,5 +155,132 @@ describe('the lemmas no table fits', () => {
     expect([...kinds.keys()].sort()).toEqual(['ADV', 'ARAM', 'COND', 'CONJ', 'HEB', 'INJ', 'PREP', 'PRT']);
     expect(lost.length).toBe(370);
     expect(lost.length).toBeLessThan(index.size);
+  });
+});
+
+// ---------------------------------------------------------------- the Septuagint's forms (mw-u2w5klk.289)
+// A Septuagint word's own paradigm lays the forms of its lemma found in Swete's Septuagint as well as the New Testament. The shipped chapters (public/data-lxx) are made on the Laptop, so the
+// tests read the fixture chapters of tests/fixtures/data-lxx (Genesis 1, Psalm 22) and a small Septuagint chapter of their own; the codes are the New Testament's scheme, so no translation is made.
+import type { Chapter } from '../../src/data/chapter';
+
+/** A word of a Septuagint chapter the way Swete prints it (punctuation kept), with Lampas's lemma and parsing. */
+const lxxWord = (t: string, l: string, p: string) => ({ t, tr: '', s: '', l, p, y: '1', c: 0.9, e: 0 });
+/** Genesis 1 in miniature: verse 2 has ἀόρατος as a feminine nominative singular (the reading the Governor tapped), with a comma after ἀκατασκεύαστος and a title word in capitals. */
+const genesis = (): Chapter =>
+  ({
+    book: 'Genesis', code: 'gen', chapter: 1, lang: 'grc', translation: 'lxx2012', edition: 'swete', lex: {}, parse: {},
+    verses: [
+      { n: 1, ref: { book: 'gen', chapter: 1, verse: 1 }, g: [lxxWord('ΕΝ', 'ἐν', 'PREP'), lxxWord('ἀρχῇ', 'ἀρχή', 'N-DSF')], e: [] },
+      { n: 2, ref: { book: 'gen', chapter: 1, verse: 2 }, g: [lxxWord('ἀόρατος', 'ἀόρατος', 'A-NSF'), lxxWord('ἀκατασκεύαστος,', 'ἀκατασκεύαστος', 'A-NSF'), lxxWord('ἀόρατος', 'ἀόρατος', 'A-NSF')], e: [] },
+    ],
+  }) as Chapter;
+/** Psalm 9 of the Greek is Psalms 9 and 10 of Lampas: a Greek verse says which Lampas verse it is. */
+const psalm = (): Chapter =>
+  ({
+    book: 'Psalms', code: 'psa', chapter: 9, lang: 'grc', translation: 'lxx2012', edition: 'swete', lex: {}, parse: {},
+    verses: [
+      { n: 1, ref: { book: 'psa', chapter: 9, verse: 1 }, g: [lxxWord('Ἐξομολογήσομαί', 'ἐξομολογέω', 'V-FDI-1S')], e: [] },
+      { n: 22, ref: { book: 'psa', chapter: 10, verse: 1 }, g: [lxxWord('ἀόρατος', 'ἀόρατος', 'A-NSM')], e: [] },
+      { n: 23, ref: 'none', g: [lxxWord('ἀόρατον', 'ἀόρατος', 'A-ASM')], e: [] },
+    ],
+  }) as Chapter;
+
+describe('the index takes the Septuagint’s forms of a lemma, apart from the New Testament’s', () => {
+  const lxx = septuagintForms([genesis(), psalm()]);
+
+  it('ἀόρατος: Gen 1:2 ἀόρατος is in the Septuagint list, counted, with its code and place; the New Testament list is the New Testament’s', () => {
+    const entries = lxx.get('ἀόρατος')!;
+    expect(entries[0]).toEqual(['ἀόρατος', 'A-NSF', 2, 'gen', 1, 2]);
+    // the Psalm's verse is Lampas's Psalm 10:1; a verse Lampas has none for keeps the Greek numbers
+    expect(entries).toContainEqual(['ἀόρατος', 'A-NSM', 1, 'psa', 10, 1]);
+    expect(entries).toContainEqual(['ἀόρατον', 'A-ASM', 1, 'psa', 9, 23]);
+    expect(formsOf('ἀόρατος').map((f) => f.code).sort()).toEqual(['A-ASM', 'A-DSM', 'A-GSM', 'A-NPN']);
+  });
+
+  it('a token is read as Swete prints it: the comma goes, a word in capitals (no accent to match) is left out, a capital that opens a name stays', () => {
+    expect(septuagintFormOf('ἀκατασκεύαστος,', 'ἀκατασκεύαστος')).toBe('ἀκατασκεύαστος');
+    expect(septuagintFormOf('πληθυ]νέσθωσαν', 'πληθύνω')).toBe('πληθυνέσθωσαν');
+    expect(septuagintFormOf('Ἀβραὰμ', 'Ἀβραάμ')).toBe('Ἀβραάμ');
+    expect(septuagintFormOf('Ἐξομολογήσομαί', 'ἐξομολογέω')).toBe('ἐξομολογήσομαί');
+    expect(septuagintFormOf('ΕΝ', 'ἐν')).toBeUndefined();
+    expect(lxx.has('ἐν')).toBe(false);
+    expect(lxx.get('ἀκατασκεύαστος')![0][0]).toBe('ἀκατασκεύαστος');
+    // the app's reading of a tapped word is the build's
+    expect(appSeptuagintFormOf('ἀκατασκεύαστος,', 'ἀκατασκεύαστος')).toBe('ἀκατασκεύαστος');
+    expect(appSeptuagintFormOf('ΕΝ', 'ἐν')).toBeUndefined();
+  });
+
+  it('a lemma with no Septuagint form has a file that is byte for byte the New Testament’s; one with some has them under lxx, and one only the Septuagint has has no New Testament forms', () => {
+    const nt = index.get('ἀόρατος')!;
+    expect(fileText('ἀόρατος', nt)).toBe(fileText('ἀόρατος', nt));
+    expect(JSON.parse(fileText('ἀόρατος', nt, lxx.get('ἀόρατος')))).toEqual({ l: 'ἀόρατος', f: nt, lxx: lxx.get('ἀόρατος') });
+    expect(JSON.parse(fileText('ἀκατασκεύαστος', [], lxx.get('ἀκατασκεύαστος')))).toMatchObject({ f: [], lxx: [['ἀκατασκεύαστος', 'A-NSF', 1, 'gen', 1, 2]] });
+    expect(fileText('ἀόρατος', nt, [])).toBe(fileText('ἀόρατος', nt));
+  });
+
+  it('the fixture chapters are read in the index’s order, a Greek chapter with no file is left out', () => {
+    const chapters = readSeptuagintChapters('tests/fixtures/data-lxx');
+    expect(chapters.map((c) => `${c.code} ${c.chapter}`)).toEqual(['gen 1', 'psa 22']);
+    const fixture = septuagintForms(chapters);
+    expect(fixture.get('ἀόρατος')![0]).toEqual(['ἀόρατος', 'A-NSM', 1, 'gen', 1, 2]);
+    // Greek Psalm 22 is Psalm 23 of Lampas
+    const inPsalms = [...fixture.values()].flat().filter(([, , , book]) => book === 'psa');
+    expect(inPsalms.length).toBeGreaterThan(0);
+    expect(inPsalms.every(([, , , , chapter]) => chapter === 23)).toBe(true);
+  });
+});
+
+describe('a word read in the Septuagint lays both texts, each cell saying where it was found', () => {
+  const lxx = septuagintForms([genesis(), psalm()]);
+  const both = (lemma: string): OwnForm[] => ownFormsOf(index.get(lemma) ?? [], 'septuagint', lxx.get(lemma) ?? []);
+  const adjectives = paradigmById('adjective-endings')!;
+
+  it('the New Testament reading is the New Testament’s alone, as it was', () => {
+    const nt = formsOf('ἀόρατος');
+    expect(nt.every((f) => f.source === 'nt' && f.also === undefined)).toBe(true);
+    expect(ownTable(adjectives, 'ἀόρατος', nt)).toBeDefined();
+    expect(shown(ownTable(adjectives, 'ἀόρατος', nt)!.table)).toEqual(['ἀόρατα', 'ἀοράτου', 'ἀοράτῳ', 'ἀόρατον']);
+    expect(ownTable(adjectives, 'ἀόρατος', nt)!.table.ownText).toBe('nt');
+  });
+
+  it('ἀόρατος, nominative singular feminine (Gen 1:2) has its cell, found in the Septuagint; the New Testament’s forms stay, found in the NT', () => {
+    const forms = both('ἀόρατος');
+    const own = ownTable(adjectives, 'ἀόρατος', forms, 'septuagint')!;
+    expect(own.table.ownText).toBe('septuagint');
+    const place = own.placeOf('ἀόρατος', 'A-NSF');
+    expect(place).toBeDefined();
+    const cell = cellsOf(own.table).find((c) => c.own?.code === 'A-NSF')!;
+    expect(cell.form).toBe('ἀόρατος');
+    expect(cell.own).toMatchObject({ source: 'septuagint', book: 'gen', chapter: 1, verse: 2, count: 2 });
+    expect(referenceText(cell.own!)).toBe('Genesis 1:2');
+    // the New Testament's genitive is there, found in the NT, and is not marked absent
+    const genitive = cellsOf(own.table).find((c) => c.own?.code === 'A-GSM')!;
+    expect(genitive.own).toMatchObject({ source: 'nt', book: 'col', chapter: 1, verse: 15 });
+    // the Septuagint's masculine nominative is a cell too; nothing a text lacks is filled
+    expect(cellsOf(own.table).find((c) => c.own?.code === 'A-NSM')?.own?.source).toBe('septuagint');
+    for (const f of shown(own.table)) expect(['ἀόρατος', 'ἀοράτου', 'ἀοράτῳ', 'ἀόρατον', 'ἀόρατα']).toContain(f);
+  });
+
+  it('a form both texts have is found in the Septuagint first and the NT beside it; the cell it is in is one', () => {
+    const lemma = 'ἀόρατος';
+    const forms = ownFormsOf([['ἀόρατον', 'A-ASM', 1, 'heb', 11, 27]], 'septuagint', [['ἀόρατον', 'A-ASM', 3, 'isa', 45, 3]]);
+    expect(forms).toHaveLength(1);
+    expect(forms[0]).toMatchObject({ source: 'septuagint', count: 3, book: 'isa', also: { source: 'nt', count: 1, book: 'heb', chapter: 11, verse: 27 } });
+    const cell = cellsOf(ownTable(adjectives, lemma, forms, 'septuagint')!.table).find((c) => c.own);
+    expect(cell!.own).toMatchObject({ source: 'septuagint', also: { source: 'nt', count: 1 } });
+  });
+
+  it('a cell neither text has is absent, and the reading says which text it is absent from', () => {
+    const own = ownTable(adjectives, 'ἀόρατος', both('ἀόρατος'), 'septuagint')!;
+    const absent = cellsOf(own.table).filter((c) => c.absent);
+    expect(absent.length).toBeGreaterThan(0);
+    expect(absent.every((c) => c.form === '' && c.own === undefined)).toBe(true);
+    expect(absentText('septuagint')).toBe('not in the Septuagint or NT');
+    expect(absentText('nt')).toBe('not in the NT');
+  });
+
+  it('the forms of a lemma the Septuagint has alone are laid with no New Testament form', () => {
+    const forms = ownFormsOf([], 'septuagint', lxx.get('ἀκατασκεύαστος') ?? []);
+    expect(forms.map((f) => [f.form, f.source])).toEqual([['ἀκατασκεύαστος', 'septuagint']]);
   });
 });

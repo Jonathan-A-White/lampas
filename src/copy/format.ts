@@ -136,12 +136,14 @@ export function copyText(unit: CopyUnit, format: CopyFormat): string {
   return lines.join('\n');
 }
 
-/** What the Share sheet's row shows of a long piece: its first words, a gap and its last words, so a passage's row is short and still ends at its reference. */
+/** What the Share sheet's row shows of a long piece: its first words, a gap and its last words, so a passage's row is short and still ends at its reference. A row has room for
+ * a whole verse (the longest in the Bible is about 400 characters, nearly all under 300, and the whole's row adds its reference), so only a longer piece is cut (mw-5r3p30.1059). */
 const SHOWN_HEAD = 72;
 const SHOWN_TAIL = 36;
+const SHOWN_WHOLE = 340;
 export function cutShort(text: string): string {
   const flat = text.replace(/\s+/g, ' ').trim();
-  if (flat.length <= SHOWN_HEAD + SHOWN_TAIL + 8) return flat;
+  if (flat.length <= SHOWN_WHOLE) return flat;
   // the cuts fall between words
   const head = flat.slice(0, SHOWN_HEAD).replace(/\s+\S*$/, '');
   const tail = flat.slice(-SHOWN_TAIL).replace(/^\S*\s+/, '');

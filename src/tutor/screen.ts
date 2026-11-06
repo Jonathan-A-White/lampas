@@ -59,12 +59,12 @@ export const MAX_FACTS = 12;
 export const FACT_LABEL_MAX = 40;
 export const FACT_VALUE_MAX = 400;
 /** The most settings a screen sends and the longest name, value and help of one (the input schema's limits). */
-export const MAX_SETTINGS = 70;
+export const MAX_SETTINGS = 71;
 export const SETTING_NAME_MAX = 40;
 export const SETTING_VALUE_MAX = 80;
 export const SETTING_HELP_MAX = 100;
 /** The most credits a screen sends and the longest name, use, licence and link of one (the input schema's limits). */
-export const MAX_CREDITS = 45;
+export const MAX_CREDITS = 47;
 export const CREDIT_NAME_MAX = 40;
 export const CREDIT_USE_MAX = 160;
 export const CREDIT_LICENCE_MAX = 60;

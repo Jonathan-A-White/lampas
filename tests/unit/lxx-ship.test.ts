@@ -1,7 +1,7 @@
 // tests/unit/lxx-ship.test.ts — `npm run lxx:ship -- --out <dir>` (scripts/lxx/ship.ts, mw-u2w5klk.265; docs/lxx-derivation.md 'The commands'): derive, release and build into a directory, no tracked file changed.
 // The book is tests/support/lxx-genesis.ts's Genesis (50 chapters, choices for the first six); the sources are the fixtures, never the network, never Docker.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -103,6 +103,37 @@ describe('npm run lxx:ship -- --out <dir>', () => {
     expect(after).toEqual(before.filter((l) => !l.includes(parent.replace(/^\.\//, ''))));
     // and none of the derive's own files (data/lxx/derived, pending) or the annotation files
     expect(after.some((l) => /data\/lxx\/(derived|pending|annotations)/.test(l))).toBe(false);
+  });
+
+  // mw-u2w5klk.295: `npm run build` makes /lemma-forms/ before any Septuagint chapter exists (public/data-lxx ships none), so the deploy's lxx:ship, which puts the chapters in dist/data-lxx, makes
+  // the lemma files' "lxx" forms too, into the lemma-forms folder beside it.
+  it('into a data-lxx folder with a lemma-forms folder beside it (the built dist), rewrites the lemma files with the shipped chapters’ forms under "lxx"', async () => {
+    const dist = tmp();
+    const out = join(dist, 'data-lxx');
+    const forms = join(dist, 'lemma-forms');
+    mkdirSync(forms);
+    writeFileSync(join(forms, 'stale.json'), '{"l":"stale","f":[]}\n');
+    const o = options({ 'gen-01.tsv': choicesTo(6) });
+    await runShip(['--out', out, '--no-morpheus'], o);
+    const chapter = JSON.parse(readFileSync(join(out, 'gen', '1.json'), 'utf8')) as { verses: Array<{ n: number; g: Array<{ t: string; l?: string }> }> };
+    // a word printed wholly in capitals (a book's opening) is not indexed
+    const lemma = chapter.verses[0].g.find((w) => w.l && w.t !== w.t.toUpperCase())!.l!;
+    const file = JSON.parse(readFileSync(join(forms, `${lemma.normalize('NFC')}.json`), 'utf8')) as { l: string; f: unknown[]; lxx?: Array<[string, string, number, string, number, number]> };
+    expect(file.lxx?.length).toBeGreaterThan(0);
+    expect(file.lxx![0].slice(3, 5)).toEqual(['gen', 1]);
+    // a New Testament lemma keeps its forms; the folder is rebuilt, so a lemma the texts lack leaves no file
+    expect(existsSync(join(forms, 'stale.json'))).toBe(false);
+    expect(readdirSync(forms).length).toBeGreaterThan(5000);
+    expect(o.lines.some((l) => /lemma-forms/.test(l))).toBe(true);
+  });
+
+  it('with no lemma-forms folder beside the output (or one named by --lemma-forms), makes none', async () => {
+    const dist = tmp();
+    await runShip(['--out', join(dist, 'data-lxx')], options({ 'gen-01.tsv': choicesTo(6) }));
+    expect(existsSync(join(dist, 'lemma-forms'))).toBe(false);
+    const named = join(tmp(), 'forms');
+    await runShip(['--out', join(dist, 'data-lxx'), '--lemma-forms', named], options({ 'gen-01.tsv': choicesTo(6) }));
+    expect(readdirSync(named).length).toBeGreaterThan(5000);
   });
 
   it('leaves no temporary annotation files behind', async () => {

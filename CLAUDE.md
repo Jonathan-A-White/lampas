@@ -101,7 +101,7 @@ VISION.md 'The tutor': the tutor is told, on every ask, each app setting and eac
   Android Chrome does not always report the navigation bar). tests/e2e/bottom-reach.spec.ts holds the proof.
 - Raw text downloads (`data/raw`) stay out of git; the generated JSON per chapter is committed.
   `ATTRIBUTION.md` names every text and licence.
-- Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence with a link, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks, on a package named in backticks in the Libraries section that is no longer a dependency (credits follow removals), and on a font file (`src/fonts`) or data file (`public/data`, `public/pictures`) with no credit; a new bundled dir needs a rule in `tests/support/credits.ts`.
+- Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks, on a Libraries entry whose package is no longer a dependency, and on a font file (`src/fonts`) or data file (`public/data`, `public/pictures`) with no credit; a new bundled dir needs a rule in `tests/support/credits.ts`.
 - The tutor on About is told each credit as a short `{name, use, licence, link}` (`src/tutor/credits.ts` CREDITS, docs/ask-tutor.md): a new bullet needs its credit there too, and `tests/unit/credits-for-tutor.test.tsx` fails until it has one.
 
 ## Read by need
@@ -110,7 +110,7 @@ One line per file under `docs/`: open the ones your story touches. `tests/unit/c
 
 ```
 docs/layout/app.md # Layout: the shell, build, manifest, worker, updates, What's new, bus, appearance, src/ui/, public/
-docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/ and links in, chips, Immersive, weave, Old Testament
+docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/, links in, chips, Immersive, weave, Old Testament
 docs/layout/word-sheet.md # Layout: the word sheet, Greek and Hebrew, and a word by link
 docs/layout/chapter-picker.md # Layout: the chapter picker, 66 books
 docs/layout/verse-and-reading.md # Layout: the Verse view (Listen, Quiz me, passages), Read it aloud, the Reading ladder and drill
@@ -119,10 +119,10 @@ docs/layout/talk.md # Layout: Bible talk: Talk bar and sheet, services/talk.ts, 
 docs/layout/learner.md # Layout: what the tutor knows of him: About you, Memory, welcome, learner and learner_grammar
 docs/layout/settings.md # Layout: src/settings/ (registry, rows, search, defineSetting), src/resources/ (study resources)
 docs/layout/speech.md # Layout: src/speech/: voices, pronunciation schemes, accents, speaking bar, read aloud; Tap to hear
-docs/layout/words.md # Layout: Words, Quick test, Review, schedule, Parsing drill, glosses, pictures, frontier, pace, New words
+docs/layout/words.md # Layout: Words, Quick test, Review, schedule, Parsing drill, glosses, pictures, frontier, pace
 docs/layout/diagram.md # Layout: sentence diagram, src/diagram/ (Reed-Kellogg)
 docs/layout/memorize.md # Layout: Memorize: src/memorize/, the text a verse is learned in (English, Greek, the weave)
-docs/layout/grammar.md # Layout: grammar terms, ladder, inference, Drill it, letter drill, idea sheet, placement, Goal, Paradigms
+docs/layout/grammar.md # Layout: grammar terms, ladder, inference, Drill it, idea sheet, placement, Goal, Paradigms
 docs/layout/data.md # Layout: Dexie and its versions, repositories, books, chapters, parsing codes, the data build
 docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
 docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
@@ -141,22 +141,22 @@ docs/pictures.md # the memory pictures: the rules, how to add one, which seed wo
 docs/links.md # every link form Lampas takes in, with an example; where web+lampas: fails
 docs/data.md # the data's JSON shape, its two sources and licences, build changes
 docs/maps.md # the maps: src/maps/, Bible Mapper's data and terms, adding an atlas
-docs/sermons.md # the free sermon index: build, files, sources
+docs/sermons.md # the sermon index: build, files, sources
 docs/hebrew.md # Hebrew in the tutor: the depth setting, the font, how a Hebrew word is drawn
 docs/language-parity.md # the golden use cases per language, the Hebrew gaps, what a new language plugs in
 docs/ask-tutor.md # the tutor: what it is told, offers, bridge, profile, memory, welcome, pictures
-docs/verse-view.md # the Verse view: actions, passages, Listen, Quiz me, study way, quiz goal
+docs/verse-view.md # the Verse view: actions, passages, Listen, Quiz me, study way
 docs/read-aloud.md # read aloud: the span, speaking bar, the tutor's responses, pages of prose
 docs/reading-ladder.md # the reading ladder: verses scored by pronunciation difficulty, drills
-docs/grammar.md # the grammar ladder, placement, Drill it, idea sheet, Goal screen (PROVISIONAL)
+docs/grammar.md # the grammar ladder, placement, Drill it, idea sheet, Goal screen
 docs/frontier.md # the frontier picker, the pace and the teach sheet for new words
 docs/paradigms.md # the Paradigms tables and when a form is available
 docs/paradigm-components.md # the paradigm epic's shared parts, reused by mw-irpgqi.3, .4
 docs/tips.md # the tips grind and the one-time tips written in the app
-docs/module-map.md # the module map: modules, collisions, refactors, rule breaks
+docs/module-map.md # the module map: modules, collisions, refactors
 docs/greek-edition.md # GENERATED by greek:edition: which Robinson-Pierpont edition the Greek is
 docs/card-audit.md # the audit of every teaching card for a beginner
-docs/path-gaps.md # what the ladder lacks against BMA Tutor and the grammar book (PROVISIONAL)
+docs/path-gaps.md # what the ladder lacks against BMA Tutor and the grammar book
 docs/best-practices-audit.md # the 2026-10-10 PWA best-practices audit
 docs/demo-free-ai-licensed.md # free to read, a licence for the AI
 docs/demo-lampas-share.md # share a screenshot into a tutor talk
@@ -181,6 +181,7 @@ docs/sources/public-domain-works.md # Spurgeon and other public-domain works: so
 docs/sources/sermon-index.md # a sermon index: Henry, Logos, preachers, themes
 docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
 docs/design/bible-talk-trim-map.md # bible-talk rules before the 100,000-byte trim
+docs/design/reader-split.md # the Reader split: design, mockups, decisions
 docs/sources/septuagint-and-webster.md # Septuagint and Webster 1828 sources and licences
 docs/sources/lxx-derivation-probe.md # the LXX derivation probe
 docs/sources/lxx-morph-probe.md # lxx-morph: verdict
@@ -188,4 +189,5 @@ docs/sources/lxx-settled-audit.md # LXX settled words: hand audit
 docs/lxx-derivation.md # the LXX derivation: layers, files, the bar
 docs/lxx-report.md # GENERATED by lxx:report: where each book stands
 docs/lxx-align.md # GENERATED by lxx:align: Brenton's English aligned to Swete's Greek
+docs/lxx-grammar-gaps.md # GENERATED by lxx:grammar-gaps: what the Greek tables lack for the Septuagint
 ```

@@ -50,6 +50,11 @@ export interface GreekWord {
   y?: string;
   /** PROVISIONAL, the Septuagint only: the derivation's confidence in `l` and `p`, 0 to 1 with two decimals. Absent elsewhere. */
   c?: number;
+  /**
+   * The Septuagint only (loadSeptuagintChapter): the word as Swete printed it, with his lacuna brackets ('συνετε]λέσθησαν'), present only where that differs from `t`, which is bare ('συνετελέσθησαν').
+   * The Greek view draws it while Settings > Show manuscript gaps is On; lookup, speech, copy and search read `t`.
+   */
+  d?: string;
 }
 
 export interface EnglishChunk {
@@ -74,10 +79,10 @@ export interface EnglishChunk {
    */
   c?: number;
   /**
-   * PROVISIONAL, the Septuagint only: what cut this chunk, 'align' (the aligner paired it to the Greek words of `g`) or 'align?' (English the aligner could not pair: `g` is empty, and the chunk waits for the model pass).
+   * PROVISIONAL, the Septuagint only: what cut this chunk, 'align' (the aligner paired it to the Greek words of `g`) or 'align?' (English the aligner could not pair: `g` is empty, and the chunk waits for the model pass), or 'model' (the model pass cut and paired it: `g` may be empty for English with no Greek of its own; `c` is its confidence).
    * Absent in the New Testament and the Old Testament.
    */
-  y?: 'align' | 'align?';
+  y?: 'align' | 'align?' | 'model';
 }
 
 /** A run of a chunk's words that are all supplied, or all not. */

@@ -7,11 +7,12 @@ import { DailyDevotionalControl, DailyMemorizeControl, DailyPlanControl, DailyPs
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
 import { GrammarExtentControl } from './grammarExtent';
-import { GreekInterestControl, HebrewInterestControl, SeptuagintControl } from './interest';
+import { GreekInterestControl, HebrewInterestControl, SeptuagintControl, SeptuagintGapsControl } from './interest';
 import { HandwritingControl } from './handwriting';
 import { LanguagesControl } from './languages';
 import { LinkControl } from './links';
 import { MapsControl } from './maps';
+import { ThemesControl } from './themes';
 import { NewWordsControl } from './newWords';
 import { OfflineCopyControl } from './offlineCopy';
 import { QuizGoalControl } from './quizGoal';
@@ -29,6 +30,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   greekInterest: GreekInterestControl,
   hebrewInterest: HebrewInterestControl,
   septuagint: SeptuagintControl,
+  septuagintGaps: SeptuagintGapsControl,
   theme: AppearanceControl,
   font: FontControl,
   textSize: AppearanceControl,
@@ -99,5 +101,6 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   ...Object.fromEntries(SCRIPTS.map((s) => [s.settingKey, ScriptDepthControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('resource.')).map((r) => [r.key, ResourceControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('maps.')).map((r) => [r.key, MapsControl])),
+  ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('themes.')).map((r) => [r.key, ThemesControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('link.')).map((r) => [r.key, LinkControl])),
 };

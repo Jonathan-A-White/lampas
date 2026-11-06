@@ -1,5 +1,103 @@
 [
   {
+    "version": "0.7.143",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.295",
+    "kind": "fixed",
+    "text": "A Septuagint word's own paradigm now fills the cell of the form found in the Septuagint (Genesis 1:2 ἀόρατος)."
+  },
+  {
+    "version": "0.7.143",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1114",
+    "kind": "fixed",
+    "text": "Manage in the All lexicons sheet now always opens the Lexicons page, and no sheet is left over it."
+  },
+  {
+    "version": "0.7.142",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1117",
+    "kind": "new",
+    "text": "The Lexicons and Grammars pages in your Logos library are now grouped under Hebrew and Greek headings, with the order inside each group kept."
+  },
+  {
+    "version": "0.7.142",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.280",
+    "kind": "new",
+    "text": "In the Old Testament in Greek, Swete's square brackets for damaged letters are hidden by default, and a new setting, Show manuscript gaps, brings them back."
+  },
+  {
+    "version": "0.7.142",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1115",
+    "kind": "new",
+    "text": "Your Logos library has a Hebrew texts row, so an Old Testament verse can open in the Hebrew Bible you pin, such as BHS or BHQ."
+  },
+  {
+    "version": "0.7.141",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1118",
+    "kind": "fixed",
+    "text": "typing in Choose a book now shows the first matches at the top of the list, right under the search field."
+  },
+  {
+    "version": "0.7.141",
+    "date": "2026-11-06",
+    "story": "mw-qtu3zvz.4",
+    "kind": "new",
+    "text": "A verse's sermon list now names its Bible themes and lists sermons on the same theme, with a switch for each theme list in Settings."
+  },
+  {
+    "version": "0.7.141",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1100",
+    "kind": "fixed",
+    "text": "Tapping \"Not now\" twice quickly on the Open in the app bar no longer opens the keyboard on the box underneath."
+  },
+  {
+    "version": "0.7.140",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.289",
+    "kind": "new",
+    "text": "A word of the Greek Old Testament opens its own table of endings with the forms the Septuagint uses as well as the New Testament's, each saying where it was found."
+  },
+  {
+    "version": "0.7.140",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1059",
+    "kind": "fixed",
+    "text": "sharing one verse now shows the whole verse in the Share sheet, not a cut-short version with a gap in the middle."
+  },
+  {
+    "version": "0.7.139",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.274.3",
+    "kind": "new",
+    "text": "In the Septuagint, the Weave now lays the Greek words you know into Brenton's English, as it does in the New Testament."
+  },
+  {
+    "version": "0.7.139",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1099",
+    "kind": "fixed",
+    "text": "the bar that offers to open Lampas in the app no longer covers the Today and Variants buttons or the first row of Settings and Words."
+  },
+  {
+    "version": "0.7.137",
+    "date": "2026-11-06",
+    "story": "mw-qtu3zvz.2",
+    "kind": "new",
+    "text": "A Sermons button beside Maps on a verse lists Spurgeon's and Matthew Henry's sermons preached on that verse and on its chapter, each opening on its own page."
+  },
+  {
+    "version": "0.7.137",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1058",
+    "kind": "fixed",
+    "text": "a quick double tap on Share no longer sends only the link; the Share sheet opens and waits for your choice."
+  },
+  {
     "version": "0.7.136",
     "date": "2026-11-06",
     "story": "mw-5r3p30.1091",

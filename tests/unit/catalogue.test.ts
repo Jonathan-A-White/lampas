@@ -1,5 +1,5 @@
 // tests/unit/catalogue.test.ts — the Logos catalogue (mw-rfjjzd.2, docs/design/library-at-scale.md 3.1): the rules file names every id the app opens today, the
-// tool writes the seven kinds from the rules and an export and a second run changes nothing, the generated kinds are sound (no duplicate Resource ID, a value
+// tool writes the eight kinds from the rules and an export and a second run changes nothing, the generated kinds are sound (no duplicate Resource ID, a value
 // line each, covers codes that are books, grammar sections that are ladder ideas), and the five old exports are views over it that still equal what they were.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
@@ -92,8 +92,8 @@ describe('the catalogue rules', () => {
 });
 
 describe('the generated kinds', () => {
-  it('has the seven kinds, each file stamped with the one version', () => {
-    expect([...KINDS]).toEqual(['lexicon', 'grammar', 'greek-text', 'interlinear', 'commentary', 'bible', 'devotional']);
+  it('has the eight kinds, each file stamped with the one version', () => {
+    expect([...KINDS]).toEqual(['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional']);
     expect(readdirSync(join(root, 'src/resources/catalogue')).sort()).toEqual(KINDS.map((k) => `${k}.json`).sort());
     expect(CATALOGUE_VERSION).toMatch(/^[0-9a-f]{12}$/);
     const files = Object.fromEntries(KINDS.map((kind) => [kind, JSON.parse(readFileSync(join(root, `src/resources/catalogue/${kind}.json`), 'utf8')) as KindFile])) as Record<Kind, KindFile>;
@@ -124,6 +124,7 @@ describe('the generated kinds', () => {
     for (const kind of KINDS) for (const e of entriesOf(kind)) expect(e.kind).toBe(kind);
     expect(new Set(entriesOf('lexicon').map((e) => e.opens))).toEqual(new Set(['word']));
     expect(new Set(entriesOf('devotional').map((e) => e.opens))).toEqual(new Set(['day']));
+    expect(new Set(entriesOf('hebrew-text').map((e) => e.opens))).toEqual(new Set(['verse']));
   });
 
   it('pins BDAG, Louw-Nida and Black, puts a grammar with no sections table on (never pinned), and starts nothing Off', () => {
@@ -304,7 +305,7 @@ describe('the tool', () => {
   const run = (out: string, csv = FIXTURE) => execFileSync(process.execPath, ['--import', 'tsx', join(root, 'scripts/logos-catalogue.ts'), csv, '--out', out], { cwd: root, encoding: 'utf8' });
   const read = (dir: string) => Object.fromEntries(readdirSync(dir).sort().map((f) => [f, readFileSync(join(dir, f), 'utf8')]));
 
-  it('writes the seven kinds from the fixture, and a second run changes nothing', () => {
+  it('writes the eight kinds from the fixture, and a second run changes nothing', () => {
     const [a, b] = [mkdtempSync(join(tmpdir(), 'cat-a-')), mkdtempSync(join(tmpdir(), 'cat-b-'))];
     run(a);
     run(a);
@@ -313,7 +314,7 @@ describe('the tool', () => {
     expect(read(a)).toEqual(read(b));
   }, 60_000);
 
-  it.skipIf(!existsSync(VAULT_EXPORT))('writes the committed seven kinds from his whole export, and a second run changes nothing (the vault copy, or LAMPAS_LOGOS_EXPORT)', () => {
+  it.skipIf(!existsSync(VAULT_EXPORT))('writes the committed eight kinds from his whole export, and a second run changes nothing (the vault copy, or LAMPAS_LOGOS_EXPORT)', () => {
     const [a, b] = [mkdtempSync(join(tmpdir(), 'cat-c-')), mkdtempSync(join(tmpdir(), 'cat-d-'))];
     run(a, VAULT_EXPORT);
     run(a, VAULT_EXPORT);

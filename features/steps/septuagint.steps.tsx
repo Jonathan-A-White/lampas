@@ -11,6 +11,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
 import { loadChapter, type Chapter } from '../../src/data/chapter';
+import { alignChapter } from '../../scripts/lxx/align';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { buildTapForm } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
@@ -51,6 +52,10 @@ interface Extras {
   diagram?: boolean;
   /** open the app at this hash route instead of the chapter, and seed the schedule row of a memorized verse first: its id, step */
   memorize?: { id: string; step: number };
+  /** the Septuagint's Genesis 1 is the one `lxx:ship` writes, its English cut into chunks aligned to the Greek words (scripts/lxx/align.ts), where the fixture holds one chunk a verse */
+  aligned?: boolean;
+  /** lemmas he has solid */
+  solid?: string[];
 }
 
 /** Opens the app on a chapter (the address names it) with the Septuagint set as given and these settings saved. */
@@ -75,6 +80,14 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     const chapterFetch = globalThis.fetch;
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? postern.fetch(input, init) : chapterFetch(input, init)));
   }
+  if (extras.aligned) {
+    const chapterFetch = globalThis.fetch;
+    const lexicon = JSON.parse(readFileSync('tests/fixtures/data-lxx/lexicon-grc-lxx.json', 'utf8')) as Record<string, { g?: string }>;
+    const gen1 = alignChapter(JSON.parse(readFileSync('tests/fixtures/data-lxx/gen/1.json', 'utf8')) as Chapter, (lemma) => lexicon[lemma]?.g ?? '').chapter;
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).startsWith('/data-lxx/gen/1.json') ? Promise.resolve(new Response(JSON.stringify(gen1), { status: 200, headers: { 'Content-Type': 'application/json' } })) : chapterFetch(input, init),
+    );
+  }
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
   if (!book) throw new Error(`no book ${title}`);
@@ -91,6 +104,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     await db.reviews.put({ kind: 'verse', id: extras.memorize.id, step: extras.memorize.step, due: Date.now() - 1000, lastWhen: Date.now() - 86_400_000, lapses: 0, rights: 0 });
     window.history.replaceState(null, '', `/#/memorize/${extras.memorize.id.replace(/^[a-z]+:/, '')}/${extras.memorize.id.split(':')[0]}`);
   }
+  for (const lemma of extras.solid ?? []) await db.words.put({ lemma, lang: 'grc', lemmas: [lemma], gloss: lemma, lesson: 0, source: 'frontier', state: 'solid', since: Date.now() });
   render(<App />);
   if (!extras.memorize) await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
@@ -227,6 +241,31 @@ describeFeature(feature, ({ Scenario }) => {
     And('no tip is shown', noTip);
   });
 
+  // the Weave on a chapter whose verses carry aligned chunks (mw-u2w5klk.274.3): woven as the New Testament is, with no tip
+  Scenario('With aligned chunks the Weave position weaves his solid lemmas in Greek and the tip is not shown', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, aligned English and the Weave {string} with the lemma {string} solid', (_: unknown, weave: string, lemma: string) =>
+      openOn('Genesis 1', 'on', { weave }, { aligned: true, solid: [lemma] }),
+    );
+    Then('the language switch offers {string}, {string} and {string}', switchOffers3);
+    And('the Weave position is chosen', chosenIs('Weave'));
+    And('verse 1 shows the Greek {string} woven into its English', async (_: unknown, word: string) => {
+      await waitFor(() => expect(squash(verseEl(1).querySelector('[data-woven]')?.textContent)).toBe(word));
+      expect(squash(verseEl(1).textContent)).toContain('In the beginning');
+    });
+    And('no tip is shown', noTip);
+  });
+
+  Scenario('With aligned chunks and plain English under the Weave the verse is Brenton\'s prose', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, aligned English, the Weave {string} with the lemma {string} solid and plain English under it', (_: unknown, weave: string, lemma: string) =>
+      openOn('Genesis 1', 'on', { weave, readerPlain: weave }, { aligned: true, solid: [lemma] }),
+    );
+    Then('the English position is chosen', chosenIs('English'));
+    And('verse 1 has no Greek woven into its English', () => {
+      expect(verseEl(1).querySelector('[data-woven]')).toBeNull();
+    });
+    And('no tip is shown', noTip);
+  });
+
   // ---- the word card of a Septuagint word (mw-u2w5klk.12)
   const sheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Word' });
   const taps = async (_: unknown, text: string, verse: number): Promise<void> => {
@@ -299,6 +338,29 @@ describeFeature(feature, ({ Scenario }) => {
     And('the card reads {string}', cardReads);
     And('the card has {string}', cardHas);
     And('the card has no {string}', cardLacks);
+  });
+
+  // Swete's lacuna brackets (mw-u2w5klk.280)
+  const greekOf = (n: number): string => squash(verseEl(n).querySelector('[data-text]')?.textContent);
+  Scenario("Swete's lacuna brackets are not drawn in the Greek view, and a word under one opens its card", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+    Then('verse {int} shows no square bracket', (_: unknown, n: number) => {
+      expect(verseEl(n).textContent).not.toMatch(/[[\]]/);
+    });
+    And('verse {int} reads in Greek {string}', (_: unknown, n: number, text: string) => {
+      expect(greekOf(n)).toBe(text);
+    });
+    When('he taps the word {string} in verse {int}', taps);
+    Then('the card shows the Lemma {string}', shows('sheet-lemma'));
+  });
+
+  Scenario('With Show manuscript gaps on the Greek view prints the brackets as Swete did', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, the saved view {string} and Show manuscript gaps {string}', (_: unknown, view: string, gaps: string) => openOn('Genesis 1', 'on', { readerView: view, septuagintGaps: gaps }));
+    Then('verse {int} reads in Greek {string}', (_: unknown, n: number, text: string) => {
+      expect(greekOf(n)).toBe(text);
+    });
+    When('he taps the word {string} in verse {int}', taps);
+    Then('the card shows the Lemma {string}', shows('sheet-lemma'));
   });
 
   Scenario('Report this reading asks the tutor about the word in its verse', ({ Given, When, And, Then }) => {

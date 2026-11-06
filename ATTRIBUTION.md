@@ -15,16 +15,18 @@ Lampas stands on others' work and names every text, font, library, service and i
   Cambridge. Greek and Hebrew words and parts, TAGNT's variants, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 letters.
 - **[TAGNT and TBESG, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The
   [Septuagint derivation](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md) learns from them. Changes: applied to the Septuagint by Lampas's derivation.
-- **[Swete's Septuagint, from eliranwong's LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930)**: the Greek Old Testament. Public domain; packaging
-  [GPL-3.0](https://github.com/eliranwong/LXX-Swete-1930/blob/1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33/LICENSE). Changes: split by chapter.
+- **[Swete's Septuagint, from eliranwong's LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930)**: Greek Old Testament. Public domain; packaging
+  [GPL-3.0](https://github.com/eliranwong/LXX-Swete-1930/blob/1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33/LICENSE). Changes: by chapter; brackets hidden.
 - **[LXX2012, from eBible](https://ebible.org/eng-lxx2012/)**: Brenton's Septuagint in English (1851), American spelling by M. P. Johnson. Public domain. Changes: footnotes dropped.
 - **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Variant readings and sentence ends. Changes: laid on the words.
 - **[Maurice A. Robinson, "The Case for Byzantine Priority"](https://byzantinetext.com/study/editions/robinson-pierpont/).** Public domain. The 2005 appendix, read on the Preface. Changes: Greek in Greek letters.
 - **[Learn to Read New Testament Greek](https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC)** by David Alan Black. Only lesson titles and pages, so a link finds the lesson.
 - **[Biblical Hebrew Step by Step](https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ)** by Menahem Mansoor. Only lesson titles and pages, so a link finds the lesson.
 - **[Bible Mapper](https://biblemapper.com)**, maps by David P. Barrett. Free for non-commercial use with a credit: "Map by David P. Barrett, biblemapper.com". Shown from his site, not copied.
-- **[Spurgeon's sermons, from CCEL](https://ccel.org/ccel/spurgeon)** (Christian Classics Ethereal Library, Calvin University): titles, passages and links only. Public domain; CCEL's [terms](https://ccel.org/about/copyright.html): "may be used for personal, educational, or non-profit purposes." Changes: split by book.
-- **[Matthew Henry's sermons](https://archive.org)**, from the Internet Archive's scans: titles, passages, links. Public domain; the Archive's [terms](https://archive.org/about/terms.php).
+- **[Spurgeon's sermons, from CCEL](https://ccel.org/ccel/spurgeon)** (Christian Classics Ethereal Library, Calvin University): titles, passages and links for the Sermons sheet. Public domain; CCEL's [terms](https://ccel.org/about/copyright.html): "may be used for personal, educational, or non-profit purposes." Changes: split by book.
+- **[Matthew Henry's sermons](https://archive.org)**, from the Internet Archive's scans: titles, passages and links for the Sermons sheet. Public domain; the Archive's [terms](https://archive.org/about/terms.php).
+- **[Thompson Chain Topics](https://crosswire.org/study/fulllibrary.jsp?show=TCR)** (Frank Charles Thompson, 1934; CrossWire): themes of a verse. Public domain. Changes: split by book.
+- **[Torrey's New Topical Textbook](https://crosswire.org/study/fulllibrary.jsp?show=Torrey)** (R. A. Torrey, 1897; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/)** inspired the grammar ladder, ordered beside the sequence of their Greek path; no course text, image or exercise is copied.
 

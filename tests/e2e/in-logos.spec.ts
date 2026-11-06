@@ -199,3 +199,44 @@ test('a Bible in Logos for each part: the Old Testament one picked, Jonah opens 
   const view = await openVerseView(page, 31);
   await expect(view.getByRole('group', { name: 'Romans 8:31 in Logos' }).getByRole('link', { name: 'In Logos' })).toHaveAttribute('href', 'logosres:lgcystndrdbblsb;ref=Bible.Ro8.31');
 });
+
+test('Settings > Your Logos library has a Hebrew texts row under Greek texts; a pinned Hebrew text is the first book at Psalm 23:1 and opens the verse in Logos (mw-5r3p30.1115)', async ({ page }) => {
+  await openUnlocked(page);
+  await holdAppLinks(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await shelfOn(page, [['commentary', 'Commentaries']]);
+
+  // the home lists the Hebrew texts right after the Greek texts
+  await page.goto('/#/library');
+  await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
+  const rows = page.getByTestId('kind-row');
+  const names = await rows.allInnerTexts();
+  const greek = names.findIndex((n) => n.includes('Greek texts'));
+  expect(greek).toBeGreaterThanOrEqual(0);
+  expect(names[greek + 1]).toContain('Hebrew texts');
+  await rows.nth(greek + 1).click();
+  await expect(page.getByRole('heading', { name: 'Hebrew texts', level: 1 })).toBeVisible();
+
+  // turn one on and pin it
+  const group = page.getByRole('radiogroup', { name: 'BHS SESB', exact: true });
+  await group.getByRole('radio', { name: 'Pin', exact: true }).click();
+  await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await shot(page, 'in-logos-hebrew-texts');
+
+  // Psalm 23:1: In another book… opens Pinned first, the Hebrew text, linked at Psalm 23:1
+  await page.goto('/#/?b=psa&c=23&v=1');
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view).toBeVisible();
+  const another = view.getByRole('group', { name: 'Psalms 23:1 in Logos' }).getByRole('button', { name: 'In another book…', exact: true });
+  await another.click();
+  const sheet = page.getByRole('dialog', { name: 'Psalms 23:1 in Logos' });
+  await expect(sheet).toBeVisible();
+  const first = sheet.getByRole('group').first();
+  await expect(first).toHaveAccessibleName('Pinned');
+  const link = first.getByRole('link').first();
+  await expect(link).toContainText('BHS SESB');
+  await expect(link).toHaveAttribute('href', 'logosres:LLS:BHSSESB;ref=Bible.Ps23.1');
+  expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await shot(page, 'in-logos-hebrew-pinned');
+});

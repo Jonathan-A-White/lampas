@@ -31,8 +31,9 @@ import {
   type ParadigmColumn,
 } from './data/paradigms';
 import { needsOf, needsText } from './data/paradigms/needs';
+import type { OwnText, OwnUse } from './data/paradigms/types';
 import { blocksOf, columnsThatFit, greekRemOf, tableDirection } from './data/paradigms/layout';
-import { loadLemmaForms, ownFormOf, ownTable, referenceText, type OwnForm } from './data/paradigms/ownForms';
+import { absentText, foundIn, loadLemmaForms, ownTable, referenceText, septuagintFormOf, ownFormOf, type OwnForm } from './data/paradigms/ownForms';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
 import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf, screenRef } from './data/repositories';
@@ -232,6 +233,16 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
   // a Hebrew table is drawn right to left: its row labels at the right, its first column beside them (layout.ts tableDirection); its Hebrew is script-he, 1.25em of the table's text-xl
   const rtl = tableDirection(table) === 'rtl';
   const label = 'text-xs';
+  // read from a Septuagint word (mw-u2w5klk.289) each form of the word's own says which text it was found in, under the form and in the cell's name
+  const ownText = table.ownText ?? 'nt';
+  const septuagintRead = ownText === 'septuagint';
+  const foundOf = (cell: ParadigmCell): string => (septuagintRead && cell.own ? `, ${foundText(cell.own)}` : '');
+  const foundMark = (cell: ParadigmCell) =>
+    septuagintRead && cell.own ? (
+      <span lang="en" data-found={cell.own.also ? 'both' : cell.own.source} className="font-sans text-xs leading-tight text-muted">
+        {foundText(cell.own)}
+      </span>
+    ) : null;
   const toggleAsked = (place: string) =>
     oneTap(`paradigms:${place}`, () => {
       setAsked(asked === place ? null : place);
@@ -316,8 +327,8 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                             // the text has no form of the word for this cell (This word): said plainly, never filled with the pattern's form
                             return (
                               <td key={c} className="border-b border-l border-line p-0.5">
-                                <div data-cell={place} data-state="absent" aria-label={`${place}: not in the NT`} className={`${frame} text-center text-xs leading-tight text-muted`}>
-                                  not in the NT
+                                <div data-cell={place} data-state="absent" aria-label={`${place}: ${absentText(ownText)}`} className={`${frame} text-center text-xs leading-tight text-muted`}>
+                                  {absentText(ownText)}
                                 </div>
                               </td>
                             );
@@ -365,11 +376,12 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                                     data-state="shown"
                                     {...mark}
                                     aria-expanded={asked === place}
-                                    aria-label={`${place}: ${cell.form}, not yet. ${needsText(cell, levels)}`}
+                                    aria-label={`${place}: ${cell.form}${foundOf(cell)}, not yet. ${needsText(cell, levels)}`}
                                     onClick={() => toggleAsked(place)}
                                     className={`${cellBox} ${tone} gap-1 rounded-lg active:bg-line ${ring}`}
                                   >
                                     <span {...lang}>{cell.form}</span>
+                                    {foundMark(cell)}
                                     <LockIcon small />
                                   </button>
                                 </td>
@@ -386,11 +398,12 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                                     data-state="shown"
                                     {...lang}
                                     aria-expanded={asked === place}
-                                    aria-label={`${place}: ${cell.form}`}
+                                    aria-label={`${place}: ${cell.form}${foundOf(cell)}`}
                                     onClick={() => toggleAsked(place)}
-                                    className={`${cellBox} rounded-lg active:bg-line ${ring}`}
+                                    className={`${cellBox} rounded-lg active:bg-line ${ring} ${septuagintRead ? 'flex-col' : ''}`}
                                   >
                                     {cell.form}
+                                    {foundMark(cell)}
                                   </button>
                                 </td>
                               );
@@ -436,10 +449,11 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                                 data-grade={grade}
                                 {...mark}
                                 {...(notYet ? {} : lang)}
-                                aria-label={`${place}: ${cell.form}${notYet ? ', not yet' : ''}${said}`}
-                                className={`${cellBox} ${tone} gap-1 rounded-lg ${graded} ${ring}`}
+                                aria-label={`${place}: ${cell.form}${foundOf(cell)}${notYet ? ', not yet' : ''}${said}`}
+                                className={`${cellBox} ${tone} gap-1 rounded-lg ${graded} ${ring} ${septuagintRead && !notYet ? 'flex-col' : ''}`}
                               >
                                 {notYet ? <span {...lang}>{cell.form}</span> : cell.form}
+                                {foundMark(cell)}
                                 {notYet ? <LockIcon small /> : null}
                               </div>
                             </td>
@@ -480,6 +494,15 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
 const HAD_IT = 'Had it';
 const MISSED = 'Missed';
 
+/** 'Used once in the Septuagint', 'Used 3 times in the New Testament': one text's use of a form (mw-u2w5klk.289 names the Septuagint). */
+const usedText = (use: OwnUse): string => {
+  const text = use.source === 'septuagint' ? 'the Septuagint' : 'the New Testament';
+  return use.count === 1 ? `Used once in ${text}` : `Used ${use.count} times in ${text}`;
+};
+
+/** What a cell says of where its form was found: 'in the Septuagint', 'in the NT', or both when both texts have it. */
+const foundText = (own: OwnUse & { also?: OwnUse }): string => (own.also ? 'in the Septuagint and NT' : foundIn(own.source));
+
 /** Where the text uses the word's own form (This word): its parsing, how often, the place it is first used with a button that opens the Reader there, and the pattern's form it stands in for. */
 function OwnNote({ cell }: { cell: ParadigmCell }) {
   const own = cell.own;
@@ -494,8 +517,13 @@ function OwnNote({ cell }: { cell: ParadigmCell }) {
         : {plainParse(own.code)}
       </p>
       <p className="text-muted">
-        {own.count === 1 ? 'Used once in the New Testament' : `Used ${own.count} times in the New Testament`}, first at {place}.
+        {usedText(own)}, first at {place}.
       </p>
+      {own.also ? (
+        <p data-testid="own-also" className="text-muted">
+          {usedText(own.also)}, first at {referenceText(own.also)}.
+        </p>
+      ) : null}
       <p className="text-muted">
         In the pattern: <span {...GREEK_LANG}>{own.pattern}</span>
         {own.others.length > 0 ? (
@@ -619,7 +647,7 @@ function placeOf(table: Paradigm, place: string, levels: Levels, extent: Grammar
   for (const row of table.rows) {
     for (let c = 0; c < row.cells.length; c++) {
       if (cellName(table, row, c) !== place) continue;
-      if (row.cells[c].absent) return { parse: place, form: 'not in the NT' };
+      if (row.cells[c].absent) return { parse: place, form: absentText(table.ownText ?? 'nt') };
       const standing = standingOf(row.cells[c], levels, extent);
       const shown = (standing === 'open' || standing === 'notYet') && (mode === 'learn' || revealedIn(drill, place));
       return { parse: place, ...(shown ? { form: row.cells[c].form } : {}) };
@@ -638,7 +666,17 @@ function paradigmTalk(table: Paradigm, mode: ParadigmMode, lemma: string | undef
   const facts: ScreenFact[] = [
     { label: 'Table', value: table.name },
     { label: 'Mode', value: mode === 'learn' ? 'Learn' : 'Drill' },
-    ...(lemma ? [{ label: 'Forms', value: `${lemma}'s own forms in the New Testament (This word); a cell the text lacks says not in the NT` }] : []),
+    ...(lemma
+      ? [
+          {
+            label: 'Forms',
+            value:
+              table.ownText === 'septuagint'
+                ? `${lemma}'s own forms in the Septuagint and the New Testament (This word), each cell saying which; a cell neither text has says ${absentText('septuagint')}`
+                : `${lemma}'s own forms in the New Testament (This word); a cell the text lacks says ${absentText('nt')}`,
+          },
+        ]
+      : []),
     ...(here ? [{ label: 'Cell in focus', value: here.form ? `${here.parse}: ${here.form}` : `${here.parse} (its form is not shown)` }] : []),
     ...(word ? [{ label: 'Word he came from', value: `${word.form} (${word.parse})` }] : []),
   ];
@@ -650,22 +688,22 @@ function paradigmTalk(table: Paradigm, mode: ParadigmMode, lemma: string | undef
 const drillKeyOf = (table: Paradigm, lemma: string | undefined): string => (lemma ? `${table.id}|${lemma}` : table.id);
 
 /** The lemma's forms once fetched; undefined while they load (or when there is no lemma). A lemma whose file cannot be had has none. */
-function useLemmaForms(lemma: string | undefined): OwnForm[] | undefined {
-  const [loaded, setLoaded] = useState<{ lemma: string; forms: OwnForm[] } | undefined>();
+function useLemmaForms(lemma: string | undefined, reading: OwnText): OwnForm[] | undefined {
+  const [loaded, setLoaded] = useState<{ lemma: string; reading: OwnText; forms: OwnForm[] } | undefined>();
   useEffect(() => {
     if (!lemma) return;
     let current = true;
-    loadLemmaForms(lemma)
-      .then((forms) => current && setLoaded({ lemma, forms }))
+    loadLemmaForms(lemma, reading)
+      .then((forms) => current && setLoaded({ lemma, reading, forms }))
       .catch((error: unknown) => {
         console.error('could not load the forms of the word', error);
-        if (current) setLoaded({ lemma, forms: [] });
+        if (current) setLoaded({ lemma, reading, forms: [] });
       });
     return () => {
       current = false;
     };
-  }, [lemma]);
-  return lemma && loaded?.lemma === lemma ? loaded.forms : undefined;
+  }, [lemma, reading]);
+  return lemma && loaded?.lemma === lemma && loaded.reading === reading ? loaded.forms : undefined;
 }
 
 /** The two views of a table opened from a word (mw-irpgqi.4). */
@@ -680,8 +718,10 @@ const FORM_VIEWS: readonly (readonly [string, string])[] = [
  */
 function ParadigmWord({ table, address, levels, extent }: { table: Paradigm; address: ParadigmAddress; levels: Levels | undefined; extent: GrammarExtent | undefined }) {
   const { lemma, word, parse, own: wantsOwn } = address;
-  const forms = useLemmaForms(lemma);
-  const mine = useMemo(() => (lemma && forms ? ownTable(table, lemma, forms) : undefined), [table, lemma, forms]);
+  // a word of the Septuagint (the address says so) has the Septuagint's forms laid with the New Testament's; a word of the New Testament has the New Testament's alone
+  const reading: OwnText = address.septuagint ? 'septuagint' : 'nt';
+  const forms = useLemmaForms(lemma, reading);
+  const mine = useMemo(() => (lemma && forms ? ownTable(table, lemma, forms, reading) : undefined), [table, lemma, forms, reading]);
   if (wantsOwn && lemma && forms === undefined) {
     return (
       <>
@@ -693,7 +733,9 @@ function ParadigmWord({ table, address, levels, extent }: { table: Paradigm; add
     );
   }
   const showing = wantsOwn && mine ? mine : undefined;
-  const lit = showing ? (word && parse && lemma ? showing.placeOf(ownFormOf(word, lemma), parse) : undefined) : address.cell;
+  // the Septuagint's token is as Swete prints it (a comma after it, brackets in it): the form it is laid under is septuagintFormOf's
+  const litForm = word && lemma ? (reading === 'septuagint' ? septuagintFormOf(word, lemma) : ownFormOf(word, lemma)) : undefined;
+  const lit = showing ? (litForm && parse ? showing.placeOf(litForm, parse) : undefined) : address.cell;
   return (
     <ParadigmTable
       key={showing ? 'word' : 'pattern'}

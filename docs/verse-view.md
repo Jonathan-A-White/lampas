@@ -7,7 +7,7 @@ number or not, mw-5r3p30.609: a number opens its verse there only from the middl
 ```
 ‹ Reader     Romans 8:11            ‹   ›      header: close, the reference, the verse before and after
 And if the Spirit of Him who ...              the verse, big, woven as the Reader weaves it (words tappable), in a box that takes what the controls leave and scrolls
- Copy  Share  Memorize [Rehearse, once memorized]  In Logos ↗  In another book…  Maps · 3     the TOOLS: quiet accent words that act on the text (wrap as a line of words does)
+ Copy  Share  Memorize [Rehearse, once memorized]  In Logos ↗  In another book…  Maps · 3  Sermons · 22     the TOOLS: quiet accent words that act on the text (wrap as a line of words does)
 [Listen] [Read it aloud] [Practise]          the ACTIONS: three to a row (Diagram too, for one verse); the chosen one has the accent's border and a tint, never a fill
 [Diagram       ]
   what the action shows                       Listen: a line; Read it aloud: the reading check; Practise: its door; Diagram: the picture
@@ -43,6 +43,7 @@ And if the Spirit of Him who ...              the verse, big, woven as the Reade
 - [A passage (mw-5r3p30.73)](#a-passage-mw-5r3p3073)
 - [A lesson's range (mw-z370x5.2)](#a-lessons-range-mw-z370x52)
 - [Maps (mw-zbjgn3r.2)](#maps-mw-zbjgn3r2)
+- [Sermons (mw-qtu3zvz.2)](#sermons-mw-qtu3zvz2)
 - [In Logos and In another book… (mw-rfjjzd.9)](#in-logos-and-in-another-book-mw-rfjjzd9)
 - [Practise (mw-5r3p30.899)](#practise-mw-5r3p30899)
 - [Quiz me (mw-5r3p30.74)](#quiz-me-mw-5r3p3074)
@@ -105,11 +106,16 @@ The tools line under the text (after Memorize and the two Logos doors) has a qui
 passage opened from a heading the door carries the passage's range (`{ book, chapter, from, to }`). It opens the Maps sheet (docs/maps.md 'The screens'). The Reader's chapter foot has the same door; with the Immersive reader On the Reader has none and the Verse view keeps it.
 The door wraps with the rest of the tools line, as a word of it; it is not a cell of the action row.
 
+## Sermons (mw-qtu3zvz.2)
+
+After the Maps door the tools line has a quiet **Sermons · N** (`src/sermons/SermonsDoor.tsx`, 44 px): N is the number of sermons listed for the verse's chapter by the free index (`sermonsFor`, docs/sermons.md), and the button is not drawn at 0. A verse, a passage opened from a heading and the whole chapter the place line opens each carry their own place. It opens the Sermons sheet
+('Sermons for Romans 5:8', grouped On this verse and In this chapter; each row a link to the sermon where it lives). docs/sermons.md 'The door' and 'The sheet' are the detail, with the table of what the door does in each Verse view state. For a verse or a passage the sheet also has a **Themes** line under its title and, after In this chapter, **On the same theme** (mw-qtu3zvz.4, docs/sermons.md 'The themes').
+
 ## In Logos and In another book… (mw-rfjjzd.9)
 
 With Logos On, the tools line under the text has two doors (`src/library/InLogosDoors.tsx`, docs/design/library-at-scale.md 3.6; quiet accent words there since mw-5r3p30.896): **In Logos** opens the verse in his Bible in Logos (Settings > Bible in Logos; for a passage, at its first verse) and
-**In another book…** opens the chooser, `<place> in Logos`: Pinned, `Commentaries on <book> (N)`, `Greek texts (N)` and `Interlinears (N)`, each folded to its first three with `N more`, a search field that opens all of them, a row for each
-book on his shelf that covers the place (a link at the verse, `src/library/inLogos.ts`), and `Manage in Your Logos library` at the foot. The second door is not drawn while no Greek text, interlinear or commentary that covers the book is On.
+**In another book…** opens the chooser, `<place> in Logos`: Pinned, `Commentaries on <book> (N)`, `Greek texts (N)` (for an Old Testament place `Bibles`, `Hebrew texts (N)`) and `Interlinears (N)`, each folded to its first three with `N more`, a search field that opens all of them, a row for each
+book on his shelf that covers the place (a link at the verse, `src/library/inLogos.ts`), and `Manage in Your Logos library` at the foot. The second door is not drawn while no Greek text, Hebrew text, interlinear or commentary that covers the book is On.
 An interlinear or commentary whose catalogue entry has `covers` opens only for the books it names (no `covers` is the New Testament); an Old Testament place lists Bibles, the commentaries and interlinears that name its book in `covers`, and no Greek text (mw-uqlxea.3: the catalogue holds no commentary of an Old Testament book yet, so today a Bible only; a volume added with `covers` naming 'jon' is offered on Jonah 1:10 and one covering 'rom' is not, tests/unit/old-testament-verse.test.ts). The Verse view of an Old Testament verse has Listen, Read it aloud, Copy link, Share and Memorize; the Talk sheet the floating ? opens sends the verse's Hebrew words with the English (docs/hebrew.md 'The tutor and a Hebrew verse'); Quiz me is offered from the Hebrew dial's Curious up (the quiz talk carries the verse's `hebrew`, docs/hebrew.md 'Quiz me on a Hebrew verse') and Diagram is offered as on a Greek verse (mw-5r3p30.887): in the Hebrew view the diagram is of the Hebrew words, each cut into its pieces (the article, a prefixed preposition and vav apart from the word they are written on), drawn right to left with the gloss under each (docs/layout/diagram.md).
 A book is listed once: a Pinned one in Pinned and not again in its kind, so the counts are of what each group holds. Where else a verse is shown with an Open in Logos: the tutor's verse chips (chip `In another book`), the Old Testament reference card and the Reader's link notice (`ElsewhereLine`); the New Testament reference card has no Open in Logos (its Open goes to the Reader), the Reader's chapter
 picker, Today's reading-plan chapter and Today's Psalms and Proverbs (which read in Lampas, mw-5r3p30.1007) open a chapter and not a verse, and Share to Lampas lists references that open the reference card.
@@ -145,7 +151,7 @@ the whole passage.
 * **PROVISIONAL, the Governor to confirm:** the button's names (`Start the quiz`, `Continue the quiz`), that Quiz me has no hold bar (the answers are
   given in the Talk sheet, which has one), the sheet's title `Quiz on …`, the opening message `Quiz me on …`, and the short turns (about 60 words) the
   instructions ask for.
-* **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (9400) and only the history is trimmed to fit, so a very long passage may be refused
+* **Limits worth knowing:** a request is capped at `MAX_REQUEST_BYTES` (9500) and only the history is trimmed to fit, so a very long passage may be refused
   with 'Could not send the question'; Romans 8:1-11 fits. There is no way to start the same quiz over except to say so in the sheet. Links to study
   resources come with the words the tutor cites (each opens its word sheet and Study row).
 

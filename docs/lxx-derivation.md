@@ -35,6 +35,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [The deploy](#the-deploy)
 - [The sources](#the-sources)
 - [Checking it](#checking-it)
+- [The grammar check](#the-grammar-check)
 - [What the move from the probe changed](#what-the-move-from-the-probe-changed)
 
 <!-- /toc -->
@@ -649,7 +650,7 @@ the analyzer prints about a word (the probe's reading). What reaches Lampas's da
 | Part of speech | Morpheus prints | TAGNT code | Left unmapped |
 | --- | --- | --- | --- |
 | verb, finite | tense, mood, voice, person, number (`pres ind mp 3rd pl`) | `V-` tense (`P` present, `I` imperfect, `F` future, `A` aorist) voice (below) mood (`I`, `S`, `O`, `M` imperative), `-3P` | a pluperfect or future perfect; an imperfect that is not indicative; the dual |
-| verb, aorist | the same | `A` for the ending table `aor1` or `aor_pass`, `2A` for `aor2` or `aor2_pass` (`V-2AAI-3S`) | any other table (`ath_secondary`) |
+| verb, aorist | the same | `A` for the ending table `aor1` or `aor_pass`, `2A` for `aor2` or `aor2_pass` (`V-2AAI-3S`), `2A` for an athematic verb's table (`emi_aor`, `ami_aor`, `ath_secondary`, `irreg_mi`: θές, ὑποστῇ, παρῇς), and also `A` for its indicative active with a κ before the ending (ἔθηκα; story mw-u2w5klk.287) | any other table |
 | verb, perfect | `perf ind mp 3rd sg`, `perf part act masc nom sg`, `perf inf act` | `V-RPI-3S`, `V-RMI-3S`; an active one `V-RAI-3S` when the form has a κ before its ending (`firstPerfect`: λέλυκα, πεποίηκεν, λελυκώς), else also `V-2RAI-3S` (Morpheus's `perf_act` is one table for TAGNT's first and second perfects; 13 of TAGNT's 163 second perfects have a κ and 302 of its 681 first perfects have none, which is why a form without one is offered as both); a middle or passive one `R` only | a pluperfect or future perfect |
 | infinitive | `pres inf act` | `V-PAN` | |
 | participle | `pres part act fem gen pl` | `V-PAP-GPF` (case, number, gender) | |
@@ -658,6 +659,10 @@ the analyzer prints about a word (the probe's reading). What reaches Lampas's da
 | adjective | the same, from an adjective's ending table (`os_h_on`, `hs_es`, …: `ADJECTIVE_TABLES`) | `A-GSM` | |
 | article | `indeclform`, class `article` | `T-GSM`, `T-GSN` | |
 | indeclinable | `indeclform`, class `conj`, `particle`, `adverb`, `prep` | `CONJ`; `PRT` and `CONJ` for a `particle` (TAGNT writes δέ, οὖν, γάρ, ἄρα CONJ and μέν PRT, where Morpheus says particle for all); `ADV`; `PREP` | a pronoun, a numeral, any other class |
+
+**Readings Morpheus prints in one form only** (story mw-u2w5klk.287; `MAPPING_VERSION` 3). A future middle indicative 2nd singular in -ει is also the future active 3rd singular (`πνεύσει`, Ps 147:7); an α-verb's present subjunctive is also its indicative (`ἐφορᾷ`, Ps 137:6; Morpheus prints the indicative as epic only), and an ο-verb's in the 2nd and 3rd singular active and the 2nd singular middle or passive (`δηλοῖ`).
+
+**Readings added to a word still waiting** (`scripts/lxx/complete.ts`, story mw-u2w5klk.287). After the agreement check, a word still pending is offered what a rule can add, marked `beside` as analogy's readings are, so no word is settled or unsettled by them and the agreement check never reads them (a run settles and leaves pending exactly the words it did before): (1) Morpheus's mapped readings, on a word the New Testament does not show or shows only as a name (its candidates are the rules' guess at a stem: ταλαίπωρος has its feminine, ἐγκαταλίπῃς its second aorist, διαιρέσεις its accusative), and, on a word the New Testament shows, only a reading of a lemma it has; the cache is asked about every such pending word's form; (2) the vocative of a nominative plural or neuter, the same form (Ps 148:3 to 148:12 had none to answer with); (3) the feminine of `σχοῖνος`, which the Septuagint writes feminine; (4) and the junk of the ending rules' candidates is left out of the listing: a headword TBESG lists as a contraction of another (`ᾠδός`, 'contracted for ἀοιδός') beside another candidate, a part of speech the shape of a lemma with none cannot have (κατώτατος as a noun), and an adverb, indeclinable, comparative or superlative parsing no ending of an adjective in -ος allows (αἰνετός came with 20 parsings for the 2 it can be). A choice written before these were offered keeps its row: a guess that names no lemma takes the one lemma of the word's own candidates. Not added: ἐμοῦ as the personal pronoun (TAGNT writes it `S-1SGSN` in all 114 words; mw-u2w5klk.284). Still guesses: a name with no lexicon row (the title Ἁγγαίου), a prefixed compound Morpheus does not know (πρόσχες), an aorist imperative the rules read as another lemma (ἀπόστησον).
 
 **Voice.** Morpheus says `act`, `mid`, `pass` and `mp` (middle or passive), and for a deponent verb says `mp` in every tense; TAGNT says what the form is. `voicesOf` gives each reading the letters TAGNT uses (a deponent is told by its lemma ending in -μαι):
 `act` `A`; `mid` `M` (and `D` for a deponent); `pass` `P` (and `O` for a deponent's aorist or future); `mp` of a deponent `N` in the present and imperfect, `D` and `O` in the aorist and future; `mp` of any other verb `P` and `M`.
@@ -789,7 +794,7 @@ npm run lxx:batches -- --all                   # a row for each of the 39 books:
 npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with their verses and candidates: for a model session
 npm run lxx:choose -- --book gen --batch 1 --from <file>  # a model session's choices, checked, as data/lxx/choices/gen-01.tsv
 npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv: the rows of the chapters that pass the chapter bar ('The chapter bar'), under `# shipped chapters: 1-6 of 50`
-npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>]   # for each book with a choices file: derive, release its shippable chapters and build the chapter files, index.json, lexicon and notices into <dir>; no tracked file changes ('The deploy')
+npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>] [--lemma-forms <dir>]   # for each book with a choices file: derive, release its shippable chapters and build the chapter files, index.json, lexicon and notices into <dir>; no tracked file changes ('The deploy')
 npm run lxx:report                             # docs/lxx-report.md: where every book of the Old Testament stands
 npx tsx scripts/lxx/audit-sample.ts [--seed <n>]    # the hand audit's sample of settled words (6 a pool a book; seed 20261103 unless given), each with its verses; --count <file> [--section <heading>] counts the verdicts
 ```
@@ -809,6 +814,7 @@ The live site's Septuagint is written at deploy, not in the batch stories (mw-u2
 leaves it off; Docker is never needed), holds the known-answer lines once, releases the book's shippable chapters to a temporary annotation set, and builds the chapter files, `index.json`, `lexicon-grc-lxx.json` and the three notice files (`LICENSE-swete.txt`, `README-swete.md`, `README.md`) into `<dir>`.
 It writes nothing under `data/`, `public/` or `docs/`, prints one line a book (`gen: shipped 1-6 of 50`, `shipped all 50`, `shipped none of 50`) and exits non-zero only on a derive or build error, never on nothing shippable or on a word with a parsing it cannot put in words (that chapter is held back and the word named, 'The chapter bar'). So every landed batch ships its chapters on the next deploy.
 The Laptop's deploy runs it after `npm run build`, into the built folder: `npm run lxx:ship -- --out dist/data-lxx`. The repo's own `public/data-lxx/index.json` stays `books: []`.
+Because `npm run build` made `dist/lemma-forms` while `public/data-lxx` held no chapter, the same run makes those files again from the chapters it has written (mw-u2w5klk.295): into `dist/lemma-forms`, the `lemma-forms` folder beside an output named `data-lxx` when there is one, or into `--lemma-forms <dir>`, so a word's own paradigm finds its Septuagint forms on the live site (docs/data.md 'lemma-forms').
 
 ## The sources
 
@@ -841,6 +847,10 @@ The Laptop's deploy runs it after `npm run build`, into the built folder: `npm r
   differently).
 - **The bar's tests** (`tests/unit/lxx-bar.test.ts`) hold `BAR` to the probe's numbers, run John 1 with the probe's choices to its 828 of 829 and 825, and check that `lxx:release` refuses a book with a word pending or guesses at 4%
   and writes the same bytes twice when every line is met, and that `lxx:report` has a row for each of the 39 books and names another second chapter for another build.
+
+## The grammar check
+
+`npm run lxx:grammar-gaps` (`scripts/lxx/grammar-gaps.ts`, story mw-u2w5klk.277) answers the Governor's question of 2026-11-05, *is there anything to update in the Greek lessons or the paradigm tables to read the Septuagint in Greek?* It reads the shipped chapters (`dist/data-lxx`, which `npm run lxx:ship -- --out dist/data-lxx` writes; else `public/data-lxx` when that holds chapters; or `--dir <folder>`), runs each parsing code with its first lemma through `tableFor` (`src/data/paradigms`) and through the ladder (`ideasOf`, `src/data/grammar/ladder.ts`), and writes `docs/lxx-grammar-gaps.md` (PROVISIONAL name and place, the Governor to confirm; `--out <file>` writes another): the codes with no table, the codes whose table (the one the word sheet shows) holds no cell for the form (and those whose cell is in another table), by mood and part of speech with a count and an example word and verse; the lemmas with no lexicon entry or a blank one; and the form ideas no table teaches or no Reading lesson (`src/approaches/john-lessons.ts`) practises. It writes the same bytes twice, reads the shipped chapters and the New Testament's parsing codes (`public/data`) and writes nothing else. `tests/unit/lxx-grammar-gaps.test.ts` runs it on a fixture of ten codes.
 
 ## What the move from the probe changed
 

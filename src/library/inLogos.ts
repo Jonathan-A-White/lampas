@@ -1,5 +1,5 @@
 // src/library/inLogos.ts — what the chooser behind "In another book…" holds for one place (docs/library-at-scale.md 3.6, mw-rfjjzd.9): the books of his shelf that open at a verse, as rows
-// with their Logos links, and the rows as groups (Pinned, Commentaries on <book>, Greek texts, Interlinears; for an Old Testament place, Bibles, the commentaries that cover the book and Interlinears). Pure: the sheet reads
+// with their Logos links, and the rows as groups (Pinned, Commentaries on <book>, Greek texts, Interlinears; for an Old Testament place, Bibles, Hebrew texts, the commentaries that cover the book and Interlinears). Pure: the sheet reads
 // the shelf and hands the states here, and a test hands its own entries.
 import { apocryphaBookOf } from '../data/apocrypha';
 import { bookOf, otBookOf } from '../data/books';
@@ -33,14 +33,14 @@ export const SHOWN_ROWS = 3;
 /** The kinds a New Testament verse is opened in, and an Old Testament one (a commentary opens there when its `covers` name the book: his commentaries on the Old Testament do; the Hebrew epic adds
  *  Hebrew lexicons), in the order the groups are drawn. */
 const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear'];
-const OT_KINDS: readonly Kind[] = ['bible', 'commentary', 'interlinear'];
+const OT_KINDS: readonly Kind[] = ['bible', 'hebrew-text', 'commentary', 'interlinear'];
 
 export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.book) !== undefined;
 
 /** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book); a Bible holds the part of the canon the book is in
- *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one. */
+ *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one; a Hebrew text has `parts` too (the Old Testament). */
 const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
-  entry.kind === 'bible' ? entry.parts === undefined || entry.parts.includes(partOf(place.book)) : entry.covers ? entry.covers.includes(place.book) : partOf(place.book) === 'nt';
+  entry.kind === 'bible' || entry.kind === 'hebrew-text' ? entry.parts === undefined || entry.parts.includes(partOf(place.book)) : entry.covers ? entry.covers.includes(place.book) : partOf(place.book) === 'nt';
 
 /** The link that opens `entry` at the place: a Bible as the Old Testament chapter links are made (logosBible.ts), any other book at the Bible reference, the way a work is (works.ts). */
 function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefined {
@@ -73,6 +73,7 @@ const answers = (entry: CatalogueEntry, query: string): boolean => {
 const TITLES: Record<Kind, (book: string) => string> = {
   commentary: (book) => `Commentaries on ${book}`,
   'greek-text': () => 'Greek texts',
+  'hebrew-text': () => 'Hebrew texts',
   interlinear: () => 'Interlinears',
   bible: () => 'Bibles',
   lexicon: () => 'Lexicons',

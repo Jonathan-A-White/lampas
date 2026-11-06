@@ -31,6 +31,7 @@ export type SectionId =
   | 'pronunciation'
   | 'resources'
   | 'maps'
+  | 'themes'
   | 'daily'
   | 'tips'
   | 'developer'

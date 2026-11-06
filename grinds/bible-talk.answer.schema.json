@@ -1485,6 +1485,7 @@
                   "greekInterest",
                   "hebrewInterest",
                   "septuagint",
+                  "septuagintGaps",
                   "theme",
                   "font",
                   "textSize",
@@ -1535,6 +1536,8 @@
                   "logosBible",
                   "maps.biblemapper",
                   "maps.logosatlas",
+                  "themes.themes-tcr1934",
+                  "themes.themes-torrey",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -1603,6 +1606,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "septuagint" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "septuagintGaps" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
@@ -1903,6 +1912,18 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "maps.logosatlas" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "themes.themes-tcr1934" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "themes.themes-torrey" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

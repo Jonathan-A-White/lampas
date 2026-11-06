@@ -44,6 +44,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `hear-word` | Hearing a word: a tap or long press says it in its language, the one-letter words, no voice says so | greek-audio, hear-any-word, long-press-speak, one-letter-greek-voice, septuagint, word-tip | hebrew-reader, hebrew-speech, hebrew-word-sheet, hebrew-words | gap |
 | `links` | Links into the app at a word or a verse of the language (#/?word=G..., #/?word=H...) | links | hebrew-word-sheet | gap |
 | `verse-view` | The Verse view of a verse or passage in the source language, with its actions | hebrew-verse-view, passage-view, verse-sheet, verse-view | hebrew-verse-view | gap |
+| `sermons` | The Sermons door on the Verse view: the sermons preached on the verse, passage or chapter, each a link out | sermons, themes | sermons | gap |
 | `listen` | Hearing a verse: Listen in the Verse view says the verse in its voice | listen | hebrew-verse-view | gap |
 | `read-aloud` | Read aloud what is shown (Read from the top, a verse, the weave in each piece’s language) with the one speaking bar | read-aloud-anywhere, read-aloud, read-span, speaking-bar, speaking-interruptions | hebrew-reader | gap |
 | `tutor-aloud` | The tutor's answers read aloud, the source words in their own voice | tutor-aloud | hebrew-speech | gap |
@@ -65,7 +66,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `grammar-ladder` | The grammar ladder: the Goal, the idea sheet, the terms and their Grammar sheet, levels that turn solid, inference | goal-progress, goal, grammar-ladder, grammar-levels, grammar-terms, hebrew-grammar, hebrew-ladder, idea-sheet, inference, pattern-ideas, septuagint | hebrew-grammar, hebrew-ladder, hebrew-word-sheet | gap |
 | `drill-it` | Drill it on an idea, the grammar drills in Review, more drill items from the mill | drill-it, drill-sound-rule, fetched-drill-items, grammar-drills, sound-alike-miss | hebrew-letters, hebrew-quiz | gap |
 | `placement` | Placement: test me on the grammar and meet me where I am | placement, quick-round | hebrew-ladder | gap |
-| `paradigms` | Paradigms: the tables, a word’s own paradigm, Drill on a table, How much of a table | hebrew-paradigms, own-paradigm, paradigm-drill, paradigms | hebrew-paradigms, hebrew-word-sheet | gap |
+| `paradigms` | Paradigms: the tables, a word’s own paradigm, Drill on a table, How much of a table | hebrew-paradigms, own-paradigm, paradigm-drill, paradigms, septuagint-own-paradigm | hebrew-paradigms, hebrew-word-sheet | gap |
 | `grammar-approach` | Grammar approach: the order and voice the ladder is taught in | grammar-approach | gap | gap |
 | `lessons` | Lessons read to him: Read lessons to me, a passage lesson that opens its verses and Check passes it by reading | passage-lesson, read-lessons | hebrew-ladder | gap |
 | `reading-ladder` | The reading ladder: verses by how hard they are to say, Read it aloud, the reading check, drills on what he missed, his readings kept | my-reading, reading-check, reading-drill, reading-history, reading-ladder | hebrew-reading-ladder | gap |

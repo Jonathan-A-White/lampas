@@ -80,7 +80,7 @@ Psa.17:23#5	P-GSM	αὐτός		0.80
 Psa.17:23#9	T-NPN	ὁ		0.80	
 Psa.17:23#10	N-NPN	δικαίωμα		0.80	
 Psa.17:23#11	P-GSM	αὐτός		0.80	
-Psa.17:23#15	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.17:23#15	S-1SGSN	ἐγώ		0.80	
 Psa.17:24#5	P-GSM	αὐτός		0.80	
 Psa.17:24#7	V-FMI-1S	φυλάσσω	unsure	0.50	model: unsure
 Psa.17:25#2	V-FAI-3S	ἀνταποδίδωμι		0.80	
@@ -330,7 +330,7 @@ Psa.21:7#11	N-NSN	ἐξουδένημα	guess	0.40	guess: the model answered wit
 Psa.21:10#8	N-GSF	γαστήρ		0.80	
 Psa.21:11#3	V-2API-1S	ἐπιρριπτέω		0.80	
 Psa.21:11#15	V-2AAS-2S	ἀφίστημι		0.80	
-Psa.21:11#17	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.21:11#17	S-1SGSN	ἐγώ		0.80	
 Psa.21:11#19	N-NSF	θλῖψις		0.80	
 Psa.21:13#3	N-NPM	μόσχος		0.80	
 Psa.21:13#6	N-NPM	πίων		0.80	
@@ -389,7 +389,7 @@ Psa.21:25#11	V-AAI-3S	ἀποστρέφω		0.80
 Psa.21:25#12	T-ASN	ὁ		0.80	
 Psa.21:25#13	N-ASN	πρόσωπον		0.80	
 Psa.21:25#14	P-GSM	αὐτός		0.80	
-Psa.21:25#16	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.21:25#16	S-1SGSN	ἐγώ		0.80	
 Psa.21:25#19	T-DSN	ὁ		0.80	
 Psa.21:25#20	V-2RAN	κράζω		0.80	
 Psa.21:26#14	T-GPM	ὁ		0.80	
@@ -425,7 +425,7 @@ Psa.22:3#13	P-GSM	αὐτός		0.80
 Psa.22:4#6	A-DSN	μέσος		0.80	
 Psa.22:4#7	N-GSF	σκιά		0.80	
 Psa.22:4#11	A-APN	κακός		0.80	
-Psa.22:4#15	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.22:4#15	S-1SGSN	ἐγώ		0.80	
 Psa.22:4#24	P-NPF	αὐτός	guess	0.40	guess: the model answered with no candidates
 Psa.22:5#7	T-GPM	ὁ		0.80	
 Psa.22:5#8	V-PAP-GPM	θλίβω		0.80	
@@ -595,7 +595,7 @@ Psa.26:8#14	V-FAI-1S	ζητέω		0.80
 Psa.26:9#2	V-AAS-2S	ἀποστρέφω		0.80	
 Psa.26:9#3	T-ASN	ὁ		0.80	
 Psa.26:9#4	N-ASN	πρόσωπον		0.80	
-Psa.26:9#7	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.26:9#7	S-1SGSN	ἐγώ		0.80	
 Psa.26:9#9	V-PAS-2S	ἐκκλίνω	unsure	0.50	model: unsure
 Psa.26:9#20	V-2AAS-2S	ἐγκαταλείπω	guess	0.40	guess: the model chose outside the candidates
 Psa.26:9#24	V-2AAS-2S	ὑπεροράω	guess	0.40	guess: the model chose outside the candidates

@@ -73,6 +73,8 @@ import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLa
 import { RESOURCES } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import { SOURCES } from '../maps/sources';
+import { SOURCES as THEME_SOURCES } from '../themes/sources';
+import { themeSourceSetting } from './definitions/themes';
 import { mapSourceSetting } from './definitions/maps';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { PLAY_TOS, type PlayTo } from '../speech/readSpan';
@@ -81,7 +83,7 @@ import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
 import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
-import { ANOTHER, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, septuagintSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, audioBibleSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, septuagintSetting, septuagintGapsSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -336,6 +338,9 @@ const resourceEntries = RESOURCES.map((r) =>
 // One On/Off switch per map source (src/maps/index.ts SOURCES): 'maps.<id>', Settings > Study resources > Maps (src/settings/definitions/maps.ts). A source that needs Logos is drawn only while Logos is On.
 const mapEntries = SOURCES.map((source) => fromDefinition(mapSourceSetting(source)));
 
+// One On/Off switch per theme source (src/themes/sources/index.ts): 'themes.<id>', Settings > Study resources > Themes (src/settings/definitions/themes.ts).
+const themeEntries = THEME_SOURCES.map((source) => fromDefinition(themeSourceSetting(source)));
+
 /** How much Greek (the dial at the top of the Settings home): writing it moves the dial, which brings in and turns off what the steps change (src/data/repositories/greekInterest.ts). */
 const greekInterestEntry: SettingEntry = {
   ...fromDefinition(greekInterestSetting),
@@ -410,6 +415,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   greekInterestEntry,
   hebrewInterestEntry,
   fromDefinition(septuagintSetting),
+  fromDefinition(septuagintGapsSetting),
   fromDefinition(themeSetting),
   fromDefinition(fontSetting),
   choice(
@@ -603,6 +609,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   ...resourceEntries,
   logosBibleEntry,
   ...mapEntries,
+  ...themeEntries,
   fromDefinition(audioBibleSetting),
   fromDefinition(readingPlanSetting),
   fromDefinition(dailyReviewSetting),

@@ -16,6 +16,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
+import { VIA_VOCATIVE } from '../../scripts/lxx/complete';
 import {
   DERIVED_HEADER,
   NOTE_ANALOGY,
@@ -286,7 +287,9 @@ describe('--word and the files', async () => {
     for (const c of out.candidates as Candidate[]) {
       expect(text).toContain(`${c.lemma} ${c.morph}: support ${c.support}`);
       for (const why of c.via) expect(text).toContain(why);
-      expect(c.via[0]).toMatch(/^rule: /);
+      // a vocative offered beside a nominative plural or neuter (complete.ts, mw-u2w5klk.287) is no rule's; every other candidate is
+      if (c.via[0] === VIA_VOCATIVE) expect(c.beside).toBe(true);
+      else expect(c.via[0]).toMatch(/^rule: /);
     }
     expect(() => readFileSync(join(outDir, 'derived', 'gen.tsv'))).toThrow();
   });

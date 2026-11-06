@@ -1,0 +1,152 @@
+ref	run	text	g	mark	confidence
+Gen.11:1	1	there was	-		0.80
+Gen.11:1	2	language	8		0.80
+Gen.11:1	2	to	-		0.80
+Gen.11:2	1	came	-		0.80
+Gen.11:2	2	pass	-		0.80
+Gen.11:2	2	as they	2,3	unsure	0.50
+Gen.11:2	3	the	-		0.80
+Gen.11:2	4	they	-		0.80
+Gen.11:2	5	a	-		0.80
+Gen.11:2	6	the	-		0.80
+Gen.11:2	7	of	-		0.80
+Gen.11:2	8	they	-		0.80
+Gen.11:3	1	a	-		0.80
+Gen.11:3	2	to his	3		0.80
+Gen.11:3	3	let us	-		0.80
+Gen.11:3	4	with	-		0.80
+Gen.11:3	5	for	-		0.80
+Gen.11:4	1	they	-		0.80
+Gen.11:4	2	let us	-		0.80
+Gen.11:4	3	to ourselves	4		0.80
+Gen.11:4	3	a	-		0.80
+Gen.11:4	4	shall	-		0.80
+Gen.11:4	5	let us	-		0.80
+Gen.11:4	6	to ourselves	17		0.80
+Gen.11:4	6	a	-		0.80
+Gen.11:4	7	we are	-		0.80
+Gen.11:4	8	abroad	-		0.80
+Gen.11:4	9	the	-		0.80
+Gen.11:4	10	of	-		0.80
+Gen.11:5	1	the	-		0.80
+Gen.11:5	2	down to	-		0.80
+Gen.11:5	3	of	13	unsure	0.50
+Gen.11:6	1	the	-		0.80
+Gen.11:6	2	there is	-		0.80
+Gen.11:6	3	race,	4		0.80
+Gen.11:6	4	of	-		0.80
+Gen.11:6	5	they have	-		0.80
+Gen.11:6	6	to	-		0.80
+Gen.11:6	7	nothing shall fail	16,17		0.80
+Gen.11:6	8	of	-		0.80
+Gen.11:6	9	that	21		0.80
+Gen.11:6	9	they may have	22		0.80
+Gen.11:6	10	to	-		0.80
+Gen.11:7	1	having	-		0.80
+Gen.11:7	2	down let us	-		0.80
+Gen.11:7	3	they may	-		0.80
+Gen.11:7	4	of	14	unsure	0.50
+Gen.11:7	4	his	-		0.80
+Gen.11:8	1	the	-		0.80
+Gen.11:8	2	the	-		0.80
+Gen.11:8	3	of	-		0.80
+Gen.11:8	4	they left off	11		0.80
+Gen.11:9	1	On	0		0.80
+Gen.11:9	2	account	-		0.80
+Gen.11:9	3	was	-		0.80
+Gen.11:9	4	the	-		0.80
+Gen.11:9	5	of	-		0.80
+Gen.11:9	6	the	21	unsure	0.50
+Gen.11:9	7	the	-		0.80
+Gen.11:9	8	of	-		0.80
+Gen.11:10	1	are	-		0.80
+Gen.11:10	2	of	-		0.80
+Gen.11:10	3	and	-		0.80
+Gen.11:10	4	was	-		0.80
+Gen.11:10	5	old	-		0.80
+Gen.11:10	6	he	-		0.80
+Gen.11:10	7	the	-		0.80
+Gen.11:11	1	had begotten	4,5		0.80
+Gen.11:11	2	five	-		0.80
+Gen.11:12	1	one	-		0.80
+Gen.11:12	2	and	-		0.80
+Gen.11:13	1	had begotten	4,5		0.80
+Gen.11:13	2	four	-		0.80
+Gen.11:13	3	one	-		0.80
+Gen.11:13	4	and	-		0.80
+Gen.11:13	5	had begotten	33,34		0.80
+Gen.11:13	6	three	-		0.80
+Gen.11:13	7	and	-		0.80
+Gen.11:14	1	one	-		0.80
+Gen.11:14	2	and	-		0.80
+Gen.11:15	1	had begotten	4,5		0.80
+Gen.11:15	1	Heber,	8		0.80
+Gen.11:15	1	three	-		0.80
+Gen.11:15	2	and	-		0.80
+Gen.11:16	1	Heber	-		0.80
+Gen.11:16	2	and	-		0.80
+Gen.11:17	1	Heber	2		0.80
+Gen.11:17	2	had begotten	4,5		0.80
+Gen.11:17	3	two	-		0.80
+Gen.11:17	4	and	-		0.80
+Gen.11:18	1	one	-		0.80
+Gen.11:18	2	and	-		0.80
+Gen.11:19	1	had begotten	4,5		0.80
+Gen.11:19	2	two	-		0.80
+Gen.11:19	3	and	-		0.80
+Gen.11:20	1	one	-		0.80
+Gen.11:20	2	and	-		0.80
+Gen.11:21	1	Raau	2		0.80
+Gen.11:21	2	had begotten	4,5		0.80
+Gen.11:21	3	two	-		0.80
+Gen.11:21	4	and	-		0.80
+Gen.11:22	1	one	-		0.80
+Gen.11:22	2	and	-		0.80
+Gen.11:23	1	had begotten	4,5		0.80
+Gen.11:23	2	two	-		0.80
+Gen.11:24	1	one hundred and	-		0.80
+Gen.11:25	1	had begotten	4,5		0.80
+Gen.11:25	2	one	-		0.80
+Gen.11:25	3	and	-		0.80
+Gen.11:25	4	he	-		0.80
+Gen.11:27	1	are	-		0.80
+Gen.11:27	2	of	-		0.80
+Gen.11:28	1	Arrhan	-		0.80
+Gen.11:28	2	in the	3	unsure	0.50
+Gen.11:28	3	of	5	unsure	0.50
+Gen.11:28	4	his	-		0.80
+Gen.11:28	5	in	-		0.80
+Gen.11:28	6	born,	-		0.80
+Gen.11:28	7	of	-		0.80
+Gen.11:29	1	to	-		0.80
+Gen.11:29	2	the	-		0.80
+Gen.11:29	3	of	-		0.80
+Gen.11:29	4	of	-		0.80
+Gen.11:29	5	was	-		0.80
+Gen.11:29	6	the	-		0.80
+Gen.11:29	7	of	-		0.80
+Gen.11:29	8	of	-		0.80
+Gen.11:29	9	of	-		0.80
+Gen.11:29	10	he was the	-		0.80
+Gen.11:29	11	of	-		0.80
+Gen.11:29	12	the	-		0.80
+Gen.11:29	13	of	-		0.80
+Gen.11:30	1	did	-		0.80
+Gen.11:30	2	bear	-		0.80
+Gen.11:31	1	the	-		0.80
+Gen.11:31	2	of	-		0.80
+Gen.11:31	3	his	-		0.80
+Gen.11:31	3	daughter-in-law,	21		0.80
+Gen.11:31	4	wife	23		0.80
+Gen.11:31	4	of	24	unsure	0.50
+Gen.11:31	4	Abram	-		0.80
+Gen.11:31	5	forth	-		0.80
+Gen.11:31	6	of	-		0.80
+Gen.11:31	7	of	-		0.80
+Gen.11:31	8	of	-		0.80
+Gen.11:31	9	they	-		0.80
+Gen.11:31	10	as far as	-		0.80
+Gen.11:32	1	all	-		0.80
+Gen.11:32	2	of	-		0.80
+Gen.11:32	3	the land of	-		0.80
+Gen.11:32	4	hundred and	-		0.80

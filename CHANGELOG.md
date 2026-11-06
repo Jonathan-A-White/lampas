@@ -1,5 +1,37 @@
 # What's new
 
+## 0.7.143
+_2026-11-06_
+- Fixed: A Septuagint word's own paradigm now fills the cell of the form found in the Septuagint (Genesis 1:2 ἀόρατος).
+- Fixed: Manage in the All lexicons sheet now always opens the Lexicons page, and no sheet is left over it.
+
+## 0.7.142
+_2026-11-06_
+- New: The Lexicons and Grammars pages in your Logos library are now grouped under Hebrew and Greek headings, with the order inside each group kept.
+- New: In the Old Testament in Greek, Swete's square brackets for damaged letters are hidden by default, and a new setting, Show manuscript gaps, brings them back.
+- New: Your Logos library has a Hebrew texts row, so an Old Testament verse can open in the Hebrew Bible you pin, such as BHS or BHQ.
+
+## 0.7.141
+_2026-11-06_
+- Fixed: typing in Choose a book now shows the first matches at the top of the list, right under the search field.
+- New: A verse's sermon list now names its Bible themes and lists sermons on the same theme, with a switch for each theme list in Settings.
+- Fixed: Tapping "Not now" twice quickly on the Open in the app bar no longer opens the keyboard on the box underneath.
+
+## 0.7.140
+_2026-11-06_
+- New: A word of the Greek Old Testament opens its own table of endings with the forms the Septuagint uses as well as the New Testament's, each saying where it was found.
+- Fixed: sharing one verse now shows the whole verse in the Share sheet, not a cut-short version with a gap in the middle.
+
+## 0.7.139
+_2026-11-06_
+- New: In the Septuagint, the Weave now lays the Greek words you know into Brenton's English, as it does in the New Testament.
+- Fixed: the bar that offers to open Lampas in the app no longer covers the Today and Variants buttons or the first row of Settings and Words.
+
+## 0.7.137
+_2026-11-06_
+- New: A Sermons button beside Maps on a verse lists Spurgeon's and Matthew Henry's sermons preached on that verse and on its chapter, each opening on its own page.
+- Fixed: a quick double tap on Share no longer sends only the link; the Share sheet opens and waits for your choice.
+
 ## 0.7.136
 _2026-11-06_
 - New: when "Open in the app" does not leave the browser, the strip now says which Android switch to turn on.

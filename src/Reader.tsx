@@ -50,7 +50,7 @@ import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { layRp2026English } from './data/rp2026English';
 import { Rp2026Sheet } from './reader/Rp2026Sheet';
-import { readingModeSetting, rp2026EnglishSetting, septuagintSetting } from './settings/definitions';
+import { readingModeSetting, rp2026EnglishSetting, septuagintGapsSetting, septuagintSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
@@ -88,7 +88,7 @@ import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
 import { SeptuagintNote } from './reader/SeptuagintNote';
 import { SeptuagintSources } from './reader/SeptuagintSources';
-import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
+import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
 import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
@@ -163,10 +163,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const settingsLate = useSettingsLate(savedRp2026 !== undefined);
   const rp2026 = savedRp2026 ?? (settingsLate ? rp2026EnglishSetting.default : undefined);
   const chapter = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
-  // The Septuagint chapter: its English is one chunk a verse, so the Weave has nothing to lay a Greek word over: the Weave position draws the Greek alone and a note says so, once (septuagintView); a book that is not shipped says so and stays Hebrew
+  // The Septuagint chapter: where its verses carry aligned chunks it is woven as the New Testament is; where its English is one chunk a verse the Weave has nothing to lay a Greek word over: the Weave position
+  // draws the Greek alone and a note says so, once (septuagintView); a book that is not shipped says so and stays Hebrew
   const septuagint = isSeptuagint(chapter);
+  const aligned = septuagint && septuagintAligned(chapter);
   const septuagintOn = useSetting(septuagintSetting) === 'on';
-  const wovenSettings = useMemo(() => (septuagint ? { ...settings, weaveShown: false } : settings), [septuagint, settings]);
+  // Show manuscript gaps (mw-u2w5klk.280): the Greek view prints Swete's lacuna brackets only while it is On
+  const gaps = useSetting(septuagintGapsSetting) === 'on';
+  const wovenSettings = useMemo(() => (septuagint ? septuagintSettings(settings, aligned) : settings), [septuagint, aligned, settings]);
   const heading = chapter ? septuagintTitle(TITLE, CHAPTER, chapter) : TITLE;
   const [rpShown, setRpShown] = useState<string | null>(null);
   const [sourcesShown, setSourcesShown] = useState(false);
@@ -512,7 +516,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           >
             {SEPTUAGINT_SUBTITLE}
           </button>
-          {view !== undefined && septuagintWeaveNoted(view, weaveShown ?? false) ? <SeptuagintNote className="mx-2 mb-1" /> : null}
+          {view !== undefined && septuagintWeaveNoted(view, weaveShown ?? false, aligned) ? <SeptuagintNote className="mx-2 mb-1" /> : null}
         </>
       ) : null}
       {septuagintOn && chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo' && !chapterReading ? (
@@ -568,9 +572,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                   {layout === 'paragraph' ? (
                     <ParagraphView
                       verses={block}
-                      view={septuagint ? septuagintView(view, weaveShown ?? false) : view}
+                      view={septuagint ? septuagintView(view, weaveShown ?? false, aligned) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
+                      gaps={septuagint && gaps}
                       woven={block.map(wovenOf)}
                       selected={selected}
                       reading={readingVerse}
@@ -586,9 +591,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                   ) : (
                     <VerseLine
                       verse={first}
-                      view={septuagint ? septuagintView(view, weaveShown ?? false) : view}
+                      view={septuagint ? septuagintView(view, weaveShown ?? false, aligned) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
+                      gaps={septuagint && gaps}
                       woven={wovenOf(first)}
                       selected={selected === first.n}
                       reading={readingVerse === first.n}

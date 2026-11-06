@@ -30,14 +30,14 @@ describe('the form helper section of the instructions', () => {
 
   it('ends the answer at the question mark, with a right and a wrong example (mw-5r3p30.158)', () => {
     const s = section();
-    expect(s).toContain('stop at the question mark');
+    expect(s).toContain('ending at its question mark');
     expect(s).toContain('right:');
     expect(s).toContain('wrong:');
   });
 
   it('keeps a field hint out of the question, as the book first question flaked on it (mw-5r3p30.771)', () => {
     const s = section();
-    expect(s).toContain('no field `hint`');
+    expect(s).toContain('never copy the field\'s `hint` after it');
     expect(s).toContain('wrong: `who made this approach, so we can credit them? give a name');
   });
 

@@ -66,10 +66,12 @@ export function VerseLine(props: VerseProps) {
 /** Paragraph: the verses of one MSB paragraph run on, each number a small superscript. The button is still 44 px square
  * (its side margins pull the neighbours back in), and a verse is still selected by its number. The play button of a
  * verse shows only while it is selected, so a paragraph reads as running text. */
-export function ParagraphView({ verses, view, source = 'grc', septuagint, woven, selected, reading, onSelect, onCopy, onPlay, onLook, variantsOf, chosenOf, onVariant, onRp }: {
+export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, woven, selected, reading, onSelect, onCopy, onPlay, onLook, variantsOf, chosenOf, onVariant, onRp }: {
   verses: Verse[];
   /** the chapter is Swete's Septuagint: this is the Greek chapter's number (VerseProps.septuagint) */
   septuagint?: number;
+  /** Show manuscript gaps is On (VerseProps.gaps) */
+  gaps?: boolean;
   view: ReaderView;
   source?: SourceLanguage;
   woven: (WovenVerse | null)[];
@@ -106,7 +108,7 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, woven,
               <ShownNumber verse={verse} septuagint={septuagint} />
             </sup>
           </VerseNumber>
-          <VerseText verse={verse} view={view} source={source} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} />
+          <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} />
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}

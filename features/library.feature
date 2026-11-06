@@ -1,14 +1,14 @@
 Feature: Your Logos library, a screen of its own
-  His Logos library has a screen (docs/design/library-at-scale.md 3.3 and 3.4, mw-rfjjzd.4): #/library draws a card, a search field and seven kind rows with counts from his shelf;
+  His Logos library has a screen (docs/design/library-at-scale.md 3.3 and 3.4, mw-rfjjzd.4): #/library draws a card, a search field and eight kind rows with counts from his shelf;
   #/library?kind=lexicon draws the kind's page, every book of the kind in a control of Off, On or Pin, pinned books first, then those on, then those off. A kind holds at most 3
   pins, Bibles hold one at a time and a Devotional cannot be pinned.
 
-  Scenario: The home shows the card and the seven kinds with counts from the shelf
+  Scenario: The home shows the card and the eight kinds with counts from the shelf
     Given his shelf holds the lexicons "BDAG, Louw-Nida, DBL Greek" On with "BDAG" pinned, the grammar "Kairos" On and the Bible "LSB" chosen
     When he opens the Library
     Then the page "Your Logos library" is open
     And the card counts 5 books on out of all the books of the catalogue
-    And the kinds listed are "Lexicons, Grammars, Greek texts, Interlinears, Commentaries, Bibles, Devotionals"
+    And the kinds listed are "Lexicons, Grammars, Greek texts, Hebrew texts, Interlinears, Commentaries, Bibles, Devotionals"
     And the rows read
       | kind        | reads           |
       | Lexicons    | 3 on · 1 pinned |
@@ -24,12 +24,12 @@ Feature: Your Logos library, a screen of its own
     When he opens the Library at the kind "lexicon"
     Then the page "Lexicons" is open
     And the page says "2 on"
-    And the books are listed with "DBL Greek" first, then "Louw-Nida", then those that are off
+    And the Greek books are listed with "DBL Greek" first, then "Louw-Nida", then those that are off
     And "DBL Greek" is set to "Pin" and "Louw-Nida" is set to "On" and "BDAG" is set to "Off"
     When he sets "BDAG" to "On"
     Then "BDAG" is set to "On"
     And the count now reads "3 on"
-    And the books are still where they were, "DBL Greek" first, then "Louw-Nida"
+    And the Greek books are still where they were, "DBL Greek" first, then "Louw-Nida"
 
   Scenario: All on turns a kind On and All off turns it Off
     Given his shelf holds the lexicons "BDAG" On with "BDAG" pinned
