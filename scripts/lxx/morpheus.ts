@@ -187,6 +187,15 @@ const PRONOUN_CLASSES: ReadonlySet<string> = new Set(['pron1', 'pron_adj1', 'pro
 const PRONOUN_LEMMAS: ReadonlySet<string> = new Set(
   ['αὐτός', 'ἐκεῖνος', 'οὗτος', 'ὅδε', 'ἐμός', 'σός', 'ἡμός', 'ὑμός', 'ὅσος', 'πόσος', 'οἷος', 'τοσοῦτος', 'ποῖος', 'ἀλλήλων', 'ἑαυτοῦ', 'σαυτοῦ', 'ἐμαυτοῦ'].map(bareOf),
 );
+/**
+ * The ending tables of an athematic verb's aorist (τίθημι, ἵημι, ἵστημι, δίδωμι and their compounds: θές, ὑποστῇ, παρῇς; story mw-u2w5klk.287). They say neither first nor second, as `aor1` and
+ * `aor2` do. TAGNT writes these verbs' aorist as the second (V-2AAI-3S ἔστη, V-2AAM-2S θές, V-2AAS-3S παρῇ), and the indicative active of τίθημι, δίδωμι and ἵημι also as the first
+ * (the κ-aorist, V-AAI-1S ἔθηκα, ἔδωκα, ἀφῆκα): `kAorist`.
+ */
+const ATHEMATIC_AORISTS: ReadonlySet<string> = new Set(['emi_aor', 'ami_aor', 'ath_secondary', 'irreg_mi']);
+/** Whether an aorist indicative active has a κ before its ending (ἔθηκα, ἔδωκαν, ἀφῆκεν): the first aorist an athematic verb makes in the indicative active. */
+export const kAorist = (form: string): boolean => /κ(?:α|ας|ε|εν|αμεν|ατε|ασιν?)$/u.test(form.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase());
+
 /** More readings than this from one segment (every gender and case it lists) are too loose to be candidates. */
 const MAX_READINGS = 6;
 /** The flags of a noun or adjective reading that leave it one reading to one code: a contracted form, an enclitic, a movable nu, an alpha privative. */
@@ -275,6 +284,15 @@ export function voicesOf(voice: string, tense: string, lemma: string): string[] 
   return deponent ? (later ? ['D', 'O'] : ['N']) : ['P', 'M'];
 }
 
+const bareForm = (form: string): string => form.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+/** Whether a present subjunctive of this person and number is written as the indicative of the same voice: an α-verb (aw_pr) in every person, an ο-verb (ow_pr) in the 2nd and 3rd singular active and the 2nd singular middle or passive. */
+function contractSubjunctiveIsIndicative(classes: readonly string[], voice: string, person: string, number: string): boolean {
+  if (classes.includes('aw_pr')) return true;
+  if (!classes.includes('ow_pr') || number !== 'S') return false;
+  return voice === 'act' ? person === '2' || person === '3' : person === '2';
+}
+
 function mapReading(raw: RawAnalysis, form?: string): Mapped[] | string {
   const dialects = words(raw.dialects);
   if (dialects.length && !dialects.includes('attic')) return 'a dialect without Attic';
@@ -290,11 +308,13 @@ function mapReading(raw: RawAnalysis, form?: string): Mapped[] | string {
   if (raw.pos === 'V' || raw.pos === 'P') {
     const [tenseWord, ...rest] = tokens;
     let tense = TENSES[tenseWord];
+    let athematic = false;
     if (tenseWord === 'aor') {
       const second = classes.some((c) => c === 'aor2' || c === 'aor2_pass');
       const first = classes.some((c) => c === 'aor1' || c === 'aor_pass');
-      if (second === first) return 'an aorist whose table does not say first or second';
-      tense = second ? '2A' : 'A';
+      athematic = !second && !first && classes.some((c) => ATHEMATIC_AORISTS.has(c));
+      if (second === first && !athematic) return 'an aorist whose table does not say first or second';
+      tense = second || athematic ? '2A' : 'A';
     }
     if (tenseWord === 'perf') tense = 'R';
     if (!tense) return LEFT_OUT_TENSES[tenseWord] ?? 'a tense TAGNT has no code for here';
@@ -304,7 +324,8 @@ function mapReading(raw: RawAnalysis, form?: string): Mapped[] | string {
     const mood = MOODS[moodWord ?? ''];
     if (!mood || !voiceWord) return 'no mood or voice the table knows';
     // an active perfect is R, or R and 2R when the form has no κ before its ending: perf_act is one table for TAGNT's first and second perfect
-    const tenses = tense === 'R' && voiceWord === 'act' && !(form && firstPerfect(form)) ? ['R', '2R'] : [tense];
+    // an athematic verb's indicative active with a κ before its ending is TAGNT's first aorist as well as its second (ἔθηκα)
+    const tenses = tense === 'R' && voiceWord === 'act' && !(form && firstPerfect(form)) ? ['R', '2R'] : athematic && mood === 'I' && voiceWord === 'act' && form && kAorist(form) ? ['A', '2A'] : [tense];
     const voices = tenses.flatMap((t) => voicesOf(voiceWord, t, lemma).map((voice) => `${t}${voice}`));
     const tail = rest.filter((t) => !Object.hasOwn(MOODS, t) && !VOICES.has(t));
     if (moodWord === 'part') {
@@ -317,7 +338,18 @@ function mapReading(raw: RawAnalysis, form?: string): Mapped[] | string {
     const n = NUMBERS[number ?? ''];
     if (tail.length !== 2 || !p || !n) return 'the dual or no person and number';
     if (tense === 'I' && mood !== 'I') return 'an imperfect that is not indicative';
-    return done(voices.map((voice) => `V-${voice}${mood}-${p}${n}`), 'too many readings');
+    const finite = (m: string, vs: readonly string[], person = p): string[] => vs.map((voice) => `V-${voice}${m}-${person}${n}`);
+    const codes = finite(mood, voices);
+    // Morpheus prints some forms in one tense and mood only, and TAGNT has them in another too (story mw-u2w5klk.287):
+    if (tense === 'F' && mood === 'I' && voiceWord === 'mid' && p === '2' && n === 'S' && !/μαι$/.test(lemma) && form && /ει$/u.test(bareForm(form))) {
+      // the middle 2nd singular in -ει is the active 3rd singular: πνεύσει (Ps 147:7) is printed as the middle only
+      codes.push(...finite('I', ['FA'], '3'));
+    }
+    if (tense === 'P' && mood === 'S' && contractSubjunctiveIsIndicative(classes, voiceWord, p, n)) {
+      // an α-verb's present subjunctive is its indicative (ἐφορᾷ, τιμῶμεν), and so, in the singular of the 2nd and 3rd person, an ο-verb's (δηλοῖς, δηλοῖ); Morpheus prints the indicative as epic only
+      codes.push(...finite('I', voices));
+    }
+    return done(codes, 'too many readings');
   }
 
   if (raw.pos !== 'N') return 'not a noun, verb or participle';
@@ -377,9 +409,9 @@ export const CACHE_HEADER = ['form', 'analyses'];
 /**
  * Which mapping made a cache file. The cache holds the mapped readings, not Morpheus's own output, so a change to the mapping leaves every file made before it with
  * the old readings (a perfect `unmapped`): raise this when mapAnalysis changes what it returns for a form, and `ensureCache` asks the forms again. 1 is every file made
- * before the marker existed; 2 maps the perfects (story mw-u2w5klk.32).
+ * before the marker existed; 2 maps the perfects (story mw-u2w5klk.32); 3 maps an athematic aorist, a future middle in -ει also as the active, and an α-verb's present subjunctive also as the indicative (story mw-u2w5klk.287).
  */
-export const MAPPING_VERSION = 2;
+export const MAPPING_VERSION = 3;
 const MARKER = /^# mapping (\d+)$/m;
 
 /** The file's text: tab-separated, a header row, a line `# mapping N`, one row a form in order, `lemma/code` readings joined by ` | ` and one `unmapped` for each reading left out. */

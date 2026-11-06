@@ -27,13 +27,15 @@ import {
   MAPPING_VERSION,
   type MorpheusEngine,
 } from '../../scripts/lxx/morpheus';
-import { isThinLone } from '../../scripts/lxx/parser';
-import { readChoices } from '../../scripts/lxx/choices';
+import { completeReadings, NOTE_COMPLETED } from '../../scripts/lxx/complete';
+import { isThinLone, parse, trainParser } from '../../scripts/lxx/parser';
+import { readTbesg } from '../../scripts/lxx/tbesg';
+import type { TagntRow } from '../../scripts/lxx/tagnt';
+import { applyChoices, readChoices } from '../../scripts/lxx/choices';
 import { morpheusCounts, runRelease } from '../../scripts/lxx/release';
 import { runReport } from '../../scripts/lxx/report';
 import { keyOf } from '../../scripts/lxx/swete';
 import { checkKnown, coverageOf, crunchForms, offeredRight, verdictOf } from '../../scripts/lxx/morpheus-check';
-import type { TagntRow } from '../../scripts/lxx/tagnt';
 
 const FIXTURES = 'tests/fixtures/lxx';
 const tagnt = [readFileSync(join(FIXTURES, 'tagnt-slice.tsv'), 'utf8')];
@@ -176,7 +178,8 @@ describe('the mapping to TAGNT’s codes: one reading to one code, or unmapped',
     expect(codes('V genhqh/twsan,gi/gnomai  aor imperat pass 3rd pl⇥attic⇥⇥aor_pass,e_stem')).toEqual(['γίγνομαι/V-APM-3P', 'γίγνομαι/V-AOM-3P']);
     expect(codes('V fai/nw  aor ind pass 3rd sg⇥⇥⇥w_stem,aor2_pass')).toEqual(['φαίνω/V-2API-3S']);
     expect(codes('V i)a_/swntai,i)a/omai  aor subj mp 3rd pl⇥attic⇥⇥aor1,aw_denom')).toEqual(['ἰάομαι/V-ADS-3P', 'ἰάομαι/V-AOS-3P']);
-    expect(codes('V pari/hmi  aor inf act⇥⇥⇥ath_secondary')).toBe('unmapped');
+    // an athematic aorist is TAGNT's second aorist (mw-u2w5klk.287); it was unmapped before
+    expect(codes('V pari/hmi  aor inf act⇥⇥⇥ath_secondary')).toEqual([nfc('παρίημι/V-2AAN')]);
   });
 
   it('verb, infinitive: no person or number', () => {
@@ -266,7 +269,7 @@ describe('the mapping to TAGNT’s codes: one reading to one code, or unmapped',
     expect(why('V kate/dw  pres imperat act 2nd sg⇥epic⇥⇥w_stem')).toBe('a dialect without Attic');
     expect(why('V qale/w  imperf ind act 2nd sg⇥epic ionic⇥unaugmented⇥ew_pr,ew_denom')).toBe('a dialect without Attic');
     expect(why('V bio/w  imperf ind mp 2nd sg⇥attic epic doric⇥contr unaugmented⇥w_stem')).toBe('an unaugmented form');
-    expect(why('V pari/hmi  aor inf act⇥⇥⇥ath_secondary')).toBe('an aorist whose table does not say first or second');
+    expect(why('V e)/xw  aor imperat act 2nd sg⇥⇥⇥')).toBe('an aorist whose table does not say first or second');
     expect(why('N ne/os  masc nom comp sg⇥⇥⇥os_h_on')).toBe('a comparative or superlative');
     expect(why('N megalopreph/s  adverbial⇥attic epic doric⇥contr⇥hs_es')).toBe('an adverb made from an adjective');
     expect(why('N lo/gos  masc nom sg⇥⇥⇥os_ou')).toBeUndefined();
@@ -340,12 +343,15 @@ describe('derive.ts with the cache of the sample file (the seven forms with no c
     expect(psa.pending.map((w) => w.ref)).toContain(psa.words.find((w) => nfc(keyOf(w.form)) === nfc('ἐξέθρεψεν'))!.ref);
   });
 
-  it('writes data/lxx/morpheus/<book>.tsv, asks Morpheus only for the forms with no candidate, and asks again for none once they are cached', async () => {
+  it('writes data/lxx/morpheus/<book>.tsv, asks Morpheus for the forms with no candidate and the pending words the New Testament does not show (mw-u2w5klk.287), and asks again for none once they are cached', async () => {
     const calls: string[][] = [];
     const outDir = tmp();
     await runDerive(['--book', 'psa'], { input: PSA_22, outDir, morpheus: fakeEngine(calls) });
     expect(calls).toHaveLength(1);
-    expect(calls[0].map(fromBeta).map(nfc).sort()).toEqual(['αὐταί', 'ἐλίπανας', 'ἐξέθρεψεν', 'καταδιώξεται', 'μακρότητα'].map(nfc).sort());
+    const asked = calls[0].map(fromBeta).map(nfc);
+    for (const form of ['αὐταί', 'ἐλίπανας', 'ἐξέθρεψεν', 'καταδιώξεται', 'μακρότητα']) expect(asked).toContain(nfc(form));
+    // and the others it is asked are pending words the New Testament does not show (names, and words the rules read by a stem); a word layer 1 or 2 settled is not asked
+    expect(asked).not.toContain(nfc('κύριος'));
     const file = join(outDir, 'morpheus', 'psa.tsv');
     expect(readFileSync(file, 'utf8')).toContain('ἐξέθρεψεν\tἐκτρέφω/V-AAI-3S\n');
     expect(readFileSync(file, 'utf8')).toContain('αὐταί\tunmapped\n');
@@ -711,6 +717,240 @@ describe('Morpheus’s perfects, and Morpheus asked about a form with one thin c
       const log: string[] = [];
       await runDerive(['--book', 'nah'], { input, outDir: tmp(), morpheus: engine(), log: (l) => log.push(l) });
       expect(log).toContain('Morpheus gave 1 words candidates');
+    });
+  });
+});
+
+
+describe('what the listing lacked (mw-u2w5klk.287): the readings of the Psalms batches that had to be guessed', () => {
+  // Morpheus's output as the real image printed it (the Laptop, `bin/cruncher -S` on the forms of Psalms 5 to 148, story mw-u2w5klk.287)
+  const segment = (s: string) => parseAnalysis(s.replaceAll('⇥', '\t'))!;
+  const read = (s: string, form: string): string[] | 'unmapped' => mapAnalysis(segment(s), form)?.map((m) => `${m.lemma}/${m.code}`) ?? 'unmapped';
+  const entry = (form: string, ...segments: string[]) => formOf({ input: toBeta(form)!, raws: segments.map(segment) }).analyses.map((m) => `${m.lemma}/${m.code}`);
+
+  describe('Morpheus’s mapping', () => {
+    it('a future middle in -ει (2nd sg) is also the future active, 3rd sg: πνεύσει (Ps 147:7) has the active in no row of Morpheus', () => {
+      expect(entry('πνεύσει', 'V pne/w  fut ind mid 2nd sg⇥⇥⇥reg_fut,ev_stem')).toEqual([nfc('πνέω/V-FAI-3S'), nfc('πνέω/V-FMI-2S')]);
+      // not a middle in -ῃ, nor another person, nor a present
+      expect(read('V pne/w  fut ind mid 2nd sg⇥⇥⇥reg_fut,ev_stem', 'πνεύσῃ')).toEqual([nfc('πνέω/V-FMI-2S')]);
+      expect(read('V pne/w  fut ind mid 3rd sg⇥⇥⇥reg_fut,ev_stem', 'πνεύσεται')).toEqual([nfc('πνέω/V-FMI-3S')]);
+    });
+
+    it('an athematic aorist (emi_aor, ami_aor, ath_secondary, irreg_mi) is TAGNT’s second aorist: θές, ὑποστῇ, παρῇς', () => {
+      expect(read('V ti/qhmi  aor imperat act 2nd sg⇥⇥⇥emi_aor', 'θές')).toEqual([nfc('τίθημι/V-2AAM-2S')]);
+      expect(entry('ὑποστῇ', 'V u(fi/sthmi  aor subj mid 2nd sg⇥⇥contr⇥ami_aor', 'V u(fi/sthmi  aor subj act 3rd sg⇥⇥contr⇥ami_aor')).toEqual([nfc('ὑφίστημι/V-2AAS-3S'), nfc('ὑφίστημι/V-2AMS-2S')]);
+      expect(entry('παρῇς', 'V pari/hmi  aor subj act 2nd sg⇥⇥⇥ath_secondary', 'V pari/hmi  aor subj act 2nd sg⇥⇥⇥irreg_mi')).toEqual([nfc('παρίημι/V-2AAS-2S')]);
+      expect(read('V ti/qhmi  aor part mid masc nom sg⇥⇥⇥ath_secondary'.replace('V ti', 'P ti'), 'θέμενος')).toEqual([nfc('τίθημι/V-2AMP-NSM')]);
+    });
+
+    it('the κ-aorist indicative active of τίθημι, δίδωμι and ἵημι is also the first aorist: ἔθηκα is V-AAI-1S and V-2AAI-1S', () => {
+      expect(read('V ti/qhmi  aor ind act 1st sg⇥⇥⇥emi_aor', 'ἔθηκα')).toEqual([nfc('τίθημι/V-AAI-1S'), nfc('τίθημι/V-2AAI-1S')]);
+      expect(read('V ti/qhmi  aor ind act 1st sg⇥⇥⇥emi_aor', 'ἔθετο'.replace('ἔθετο', 'ἔθεμεν'))).toEqual([nfc('τίθημι/V-2AAI-1S')]);
+    });
+
+    it('a contract verb’s present subjunctive in -ᾷ is also its indicative: ἐφορᾷ (Ps 137:6) is V-PAI-3S (Morpheus prints the indicative of an α-verb as epic only)', () => {
+      expect(entry('ἐφορᾷ', 'V e)fora/w  pres subj act 3rd sg⇥⇥contr⇥aw_pr,aw_denom', 'V e)fora/w  pres ind act 3rd sg⇥epic⇥contr⇥aw_pr,aw_denom')).toEqual([nfc('ἐφοράω/V-PAI-3S'), nfc('ἐφοράω/V-PAS-3S')]);
+      expect(read('V e)fora/w  pres subj mp 2nd sg⇥⇥contr⇥aw_pr,aw_denom', 'ἐφορᾷ')).toEqual([nfc('ἐφοράω/V-PPS-2S'), nfc('ἐφοράω/V-PMS-2S'), nfc('ἐφοράω/V-PPI-2S'), nfc('ἐφοράω/V-PMI-2S')]);
+      // an ο-verb: the 2nd and 3rd singular active are one form (δηλοῖς, δηλοῖ), the 1st is not (δηλῶ is the same, but δηλοῦμεν is not δηλῶμεν)
+      expect(read('V dhlo/w  pres subj act 3rd sg⇥⇥contr⇥ow_pr,ow_denom', 'δηλοῖ')).toEqual([nfc('δηλόω/V-PAS-3S'), nfc('δηλόω/V-PAI-3S')]);
+      expect(read('V dhlo/w  pres subj act 1st pl⇥⇥contr⇥ow_pr,ow_denom', 'δηλῶμεν')).toEqual([nfc('δηλόω/V-PAS-1P')]);
+      // an ε-verb’s subjunctive is not its indicative (ποιῇ, ποιεῖ)
+      expect(read('V poie/w  pres subj act 3rd sg⇥⇥contr⇥ew_pr,ew_denom', 'ποιῇ')).toEqual([nfc('ποιέω/V-PAS-3S')]);
+    });
+
+    it('already offered, and kept so: the two-ending adjective’s feminine (ταλαίπωρος), διαιρέσεις’ accusative, κάτω and βοῦς', () => {
+      expect(entry('ταλαίπωρος', 'N talai/pwros  masc/fem nom sg⇥⇥⇥os_on')).toEqual([nfc('ταλαίπωρος/A-NSF'), nfc('ταλαίπωρος/A-NSM')]);
+      expect(entry('διαιρέσεις', 'N diai/resis  fem nom/acc pl⇥attic⇥⇥is_ews')).toEqual([nfc('διαίρεσις/N-APF'), nfc('διαίρεσις/N-NPF')]);
+      expect(entry('κάτω', 'N ka/tw  ⇥⇥indeclform⇥adverb')).toEqual([nfc('κάτω/ADV')]);
+      expect(entry('βοῦς', 'N bou=s  masc/fem acc pl⇥attic⇥indeclform⇥irreg_decl3')).toEqual([nfc('βοῦς/N-APF'), nfc('βοῦς/N-APM')]);
+    });
+  });
+
+  describe('completeReadings: what the listing adds to a word still waiting', () => {
+    const cand = (lemma: string, morph: string, extra: Partial<WordCandidate> = {}): WordCandidate => ({ lemma: nfc(lemma), morph, support: 5, share: 1, via: ['a rule'], ...extra });
+    const pend = (ref: string, candidates: WordCandidate[], notes: string[] = ['not in the New Testament: for the parser']) => ({ ref, candidates, notes });
+    const m = (lemma: string, code: string) => ({ lemma: nfc(lemma), code });
+    const cache = (forms: Record<string, Array<{ lemma: string; code: string }>>) => new Map(Object.entries(forms).map(([f, analyses]) => [nfc(f), { analyses, unmapped: 0 }]));
+    const forms = (ws: Record<string, string>) => (ref: string) => nfc(ws[ref]);
+    const shown = (w: { candidates: readonly WordCandidate[] }) => w.candidates.map((c) => `${c.lemma} ${c.morph}${c.source ? `/${c.source}` : ''}${c.beside ? '+' : ''}`);
+
+    it('puts Morpheus’s readings beside the rules’ on a word not in the New Testament: ταλαίπωρος has its feminine, ἐγκαταλίπῃς its second aorist, διαιρέσεις its accusative', () => {
+      const outs = [
+        pend('a', [cand('ταλαίπωρος', 'A-NSM')]),
+        pend('b', [cand('ἐγκαταλείπω', 'V-PAS-2S'), cand('ἐγκαταλείπω', 'V-RAS-2S', { support: 1 })]),
+        pend('c', [cand('διαίρεσις', 'N-NPF')]),
+      ];
+      const got = completeReadings(
+        outs,
+        forms({ a: 'ταλαίπωρος', b: 'ἐγκαταλίπῃς', c: 'διαιρέσεις' }),
+        cache({
+          ταλαίπωρος: [m('ταλαίπωρος', 'A-NSF'), m('ταλαίπωρος', 'A-NSM')],
+          ἐγκαταλίπῃς: [m('ἐγκαταλείπω', 'V-2AAS-2S')],
+          διαιρέσεις: [m('διαίρεσις', 'N-APF'), m('διαίρεσις', 'N-NPF'), m('διαίρεσις', 'N-VPF')],
+        }),
+      );
+      expect(shown(got[0])).toEqual(['ταλαίπωρος A-NSM', 'ταλαίπωρος A-NSF/morpheus+']);
+      expect(shown(got[1])).toEqual(['ἐγκαταλείπω V-PAS-2S', 'ἐγκαταλείπω V-RAS-2S', 'ἐγκαταλείπω V-2AAS-2S/morpheus+']);
+      expect(shown(got[2])).toEqual(['διαίρεσις N-NPF', 'διαίρεσις N-APF/morpheus+', 'διαίρεσις N-VPF/morpheus+']);
+      expect(got[0].notes).toContain(NOTE_COMPLETED);
+    });
+
+    it('gives a word the New Testament shows only a reading of a lemma it already has: ταλαίπωρος (Rev 3:17) has its feminine, and Morpheus’s other lemmas stay out', () => {
+      const shownWord = pend('a', [cand('ταλαίπωρος', 'A-NSM', { support: 2 })], ['agreement break: an article and the word after it: for the model']);
+      const got = completeReadings([shownWord], forms({ a: 'ταλαίπωρος' }), cache({ ταλαίπωρος: [m('ταλαίπωρος', 'A-NSF'), m('ταλαίπωρος', 'A-NSM'), m('ταλαιπωρία', 'N-NSF')] }));
+      expect(shown(got[0])).toEqual(['ταλαίπωρος A-NSM', 'ταλαίπωρος A-NSF/morpheus+']);
+    });
+
+    it('leaves alone a word the New Testament shows (its counts are better than a second method’s), a word with no cache row, and a settled word', () => {
+      const seen = pend('a', [cand('ὁ', 'T-NSM', { support: 100 })], ['several analyses: for the model']);
+      const unknown = pend('b', [cand('κύριος', 'N-ASM')]);
+      const settled = { ref: 'c', lemma: nfc('λόγος'), morph: 'N-NSM', layer: 1 as const, confidence: 1, candidates: [], notes: [] };
+      const got = completeReadings([seen, unknown, settled], forms({ a: 'οἱ', b: 'κύριον', c: 'λόγος' }), cache({ οἱ: [m('ἡ', 'T-NSF'), m('ὁ', 'T-NSM')], λόγος: [m('λόγος', 'N-VSM')] }));
+      expect(got[0].candidates).toHaveLength(1);
+      expect(got[1].candidates).toHaveLength(1);
+      expect(got[2]).toBe(settled);
+    });
+
+    it('gives a word whose only candidates are names (βόες read as Βοόζ) Morpheus’s readings too', () => {
+      const got = completeReadings([pend('a', [cand('Βοόζ', 'N-NSM'), cand('Βοόζ', 'N-ASM')], ['several analyses: for the model', 'a name in the New Testament'])], forms({ a: 'βόες' }), cache({ βόες: [m('βοῦς', 'N-NPF'), m('βοῦς', 'N-NPM')] }));
+      expect(shown(got[0])).toEqual(['Βοόζ N-NSM', 'Βοόζ N-ASM', 'βοῦς N-NPF/morpheus+', 'βοῦς N-NPM/morpheus+', 'βοῦς N-VPF+', 'βοῦς N-VPM+']);
+    });
+
+    it('offers the vocative beside a nominative plural or neuter of a word still waiting (a list of addresses, Ps 148:3 to 148:12), once and never over a reading it has', () => {
+      const got = completeReadings(
+        [
+          pend('a', [cand('ἄστρον', 'N-NPN'), cand('ἄστρον', 'N-APN', { support: 0 })], ['shared ending: neuter nominative and accusative: for the agreement check or the model']),
+          pend('b', [cand('ἡμέρα', 'N-NPF')]),
+          pend('c', [cand('ὑψηλός', 'A-NPN'), cand('ὑψηλός', 'A-VPN')]),
+          pend('d', [cand('σκεῦος', 'N-NSN')]),
+          pend('e', [cand('λόγος', 'N-NSM')]),
+          pend('f', [cand('ὁ', 'T-NPN', { support: 3 }), cand('τις', 'X-NPN', { support: 1 })]),
+        ],
+        forms({ a: 'ἄστρα', b: 'ἡμέραι', c: 'ὑψηλά', d: 'σκεῦος', e: 'λόγος', f: 'τά' }),
+      );
+      expect(shown(got[0])).toEqual(['ἄστρον N-NPN', 'ἄστρον N-APN', 'ἄστρον N-VPN+']);
+      expect(shown(got[1])).toEqual(['ἡμέρα N-NPF', 'ἡμέρα N-VPF+']);
+      expect(shown(got[2])).toEqual(['ὑψηλός A-NPN', 'ὑψηλός A-VPN']);
+      expect(shown(got[3])).toEqual(['σκεῦος N-NSN', 'σκεῦος N-VSN+']);
+      // a masculine singular has a vocative of its own, and not the nominative’s
+      expect(shown(got[4])).toEqual(['λόγος N-NSM']);
+      expect(shown(got[5])).toEqual(['ὁ T-NPN', 'τις X-NPN', 'ὁ T-VPN+', 'τις X-VPN+']);
+    });
+
+    it('does not offer a vocative that another lemma’s candidate already is (the listing’s lemma-less row would be ambiguous)', () => {
+      const got = completeReadings([pend('a', [cand('ἀρχή', 'N-NPF'), cand('ἀρχή', 'N-VPF', { source: 'morpheus' }), cand('ἄρχω', 'N-VPF')])], forms({ a: 'ἀρχαί' }));
+      expect(shown(got[0])).toEqual(['ἀρχή N-NPF', 'ἀρχή N-VPF/morpheus', 'ἄρχω N-VPF']);
+    });
+
+    it('reads a lemma the Septuagint writes feminine though the lexicon says masculine: σχοῖνος (Ps 138:3, the line)', () => {
+      const got = completeReadings([pend('a', [cand('σχοῖνος', 'N-ASM', { support: 297 })], ['not in the New Testament: for the parser'])], forms({ a: 'σχοῖνον' }));
+      expect(shown(got[0])).toEqual(['σχοῖνος N-ASM', 'σχοῖνος N-ASF+']);
+    });
+  });
+
+  describe('the ending rules’ candidates (parse) with a lexicon that has an invented headword and a lemma with no part of speech', () => {
+    const row = (form: string, lemma: string, morph: string, n: number): TagntRow => ({ book: 'Mat', chapter: 1, verse: 1, word: n, editions: 'NKO', form: nfc(form), lemma: nfc(lemma), morph, name: false });
+    const rows = [
+      row('ἀρχή', 'ἀρχή', 'N-NSF', 1),
+      row('ἀρχῆς', 'ἀρχή', 'N-GSF', 2),
+      row('κρίσεως', 'κρίσις', 'N-GSF', 3),
+      row('καλή', 'καλός', 'A-NSF', 4),
+      row('καλοῦ', 'καλός', 'A-GSM', 5),
+      row('καλῶς', 'καλός', 'ADV', 6),
+      row('καλόν', 'καλός', 'A-NSN', 7),
+      row('κρείσσων', 'καλός', 'A-NSM-C', 8),
+      row('καλός', 'καλός', 'A-NSM', 9),
+      row('ὥρα', 'ὥρα', 'N-NSF', 10),
+      row('ἔργον', 'ἔργον', 'N-NSN', 11),
+      row('κύριος', 'κύριος', 'N-NSM', 12),
+      row('κύριον', 'κύριος', 'N-ASM', 13),
+      // the tags TAGNT gives a few forms, which the rules learn for every form with the same ending
+      row('σοφός', 'σοφός', 'ADV', 14),
+      row('σοφώτερος', 'σοφός', 'A-NSM-C', 15),
+      row('μέγιστος', 'μέγας', 'A-NSM-S', 16),
+      row('ἕτοιμος', 'ἕτοιμος', 'A-NUI', 17),
+      row('σοφῶς', 'σοφός', 'ADV-I', 18),
+    ];
+    const lexicon = readTbesg(
+      [
+        'G5603\tG5603 =\tG5603\tᾠδή\tōdē\tG:N-F\tsong',
+        'G9808\tG9808 =\tG9808\tᾠδός\tōdos\t\ta singer\t<b>a singer </b>, (Euripides) <br><i>contracted</i> for ἀοιδός (ML)',
+        'G9001\tG9001 =\tG9001\tκατώτατος\tkatōtatos\t\tlowest',
+        'G9002\tG9002 =\tG9002\tαἰνετός\tainetos\tG:A\tpraiseworthy',
+      ].join('\n'),
+    );
+    const parser = trainParser(rows, lexicon);
+    // the listing of a word the ending rules read (parse), after the junk is left out; the layers settle on parse's own candidates
+    const shownP = (form: string) => {
+      const pending = { ref: 'x', candidates: parse(nfc(form), parser) as WordCandidate[], notes: ['not in the New Testament: for the parser'] };
+      return completeReadings([pending], () => nfc(form), undefined, parser)[0].candidates.filter((c) => !c.beside).map((c) => `${c.lemma} ${c.morph}`);
+    };
+    it('the ending rules themselves are as they were: parse still has the junk, so no word the layers settle changes its answer', () => {
+      expect(parse(nfc('ᾠδὴ'), parser).some((c) => c.lemma === nfc('ᾠδός'))).toBe(true);
+    });
+
+    it('offers the real headword and not the invented one beside it: ᾠδή (Ps 131:1), never ᾠδός, which TBESG gives no part of speech and no New Testament word', () => {
+      const got = shownP('ᾠδὴ');
+      expect(got).toContain(nfc('ᾠδή N-NSF'));
+      expect(got.filter((x) => x.startsWith(nfc('ᾠδός')))).toEqual([]);
+    });
+
+    it('leaves out Morpheus’s own ᾠδός too (Ps 136:3), where it lists the contraction beside ᾠδή', () => {
+      const pending = { ref: 'x', candidates: parse(nfc('ᾠδὴ'), parser) as WordCandidate[], notes: ['not in the New Testament: for the parser'] };
+      const got = completeReadings([pending], () => nfc('ᾠδὴ'), new Map([[nfc('ᾠδή'), { analyses: [{ lemma: nfc('ᾠδός'), code: 'N-NSM' }, { lemma: nfc('ἀοιδή'), code: 'N-NSF' }], unmapped: 0 }]]), parser)[0];
+      expect(got.candidates.map((c) => `${c.lemma} ${c.morph}`)).not.toContain(nfc('ᾠδός N-NSM'));
+      expect(got.candidates.map((c) => `${c.lemma} ${c.morph}`)).toContain(nfc('ἀοιδή N-NSF'));
+    });
+
+    it('limits a lemma with no part of speech to the parts of speech its shape allows: κατώτατος is an adjective, so no N-, D-, K-, S- parsing', () => {
+      const got = shownP('κατώτατον');
+      expect(got.length).toBeGreaterThan(0);
+      expect(got.every((x) => x.startsWith(nfc('κατώτατος A-')))).toBe(true);
+    });
+
+    it('offers an adjective in -ός no adverb, indeclinable, comparative or superlative parsing from its own form: αἰνετός (Ps 47:2)', () => {
+      const got = shownP('αἰνετός');
+      expect(got).toContain(nfc('αἰνετός A-NSM'));
+      expect(got.filter((x) => /ADV|-C$|-S$|NUI/.test(x))).toEqual([]);
+      // an adverb in -ως is one
+      expect(shownP('αἰνετῶς')).toContain(nfc('αἰνετός ADV'));
+    });
+  });
+
+  describe('words already chosen keep their rows', () => {
+    const pendingOf = (ref: string, lemma: string, morph: string) => ({ ref, candidates: [{ lemma: nfc(lemma), morph, support: 1, share: 1, via: ['a rule'] }], notes: ['not in the New Testament: for the parser'] });
+
+    it('applyChoices over pending words that gained candidates beside refuses nothing it took before, and chooses the same lemma and parsing', () => {
+      const pending = [pendingOf('Psa.1:1#1', 'ἄστρον', 'N-NPN'), pendingOf('Psa.1:1#2', 'ἐγκαταλείπω', 'V-PAS-2S'), pendingOf('Psa.1:1#3', 'ταλαίπωρος', 'A-NSM')];
+      // a choice among the old candidates, a guess with no lemma (one lemma between the candidates: it took that one), and a choice of the lemma named
+      const rows = readChoices('Psa.1:1#1\tN-NPN\nPsa.1:1#2\tV-2AAS-2S\t\tguess\nPsa.1:1#3\tA-NSM\tταλαίπωρος\n', 'psa-01.tsv');
+      const before = applyChoices(pending, rows);
+      expect(before.refused).toEqual([]);
+      const grown = completeReadings(
+        pending,
+        (ref) => nfc({ 'Psa.1:1#1': 'ἄστρα', 'Psa.1:1#2': 'ἐγκαταλίπῃς', 'Psa.1:1#3': 'ταλαίπωρος' }[ref]!),
+        new Map([
+          [nfc('ἄστρα'), { analyses: [], unmapped: 0 }],
+          [nfc('ἐγκαταλίπῃς'), { analyses: [{ lemma: nfc('ἐγκαταλείπω'), code: 'V-2AAS-2S' }, { lemma: nfc('ἐγκαταλίπτω'), code: 'V-PAS-2S' }], unmapped: 0 }],
+          [nfc('ταλαίπωρος'), { analyses: [{ lemma: nfc('ταλαίπωρος'), code: 'A-NSF' }], unmapped: 0 }],
+        ]),
+      );
+      expect(grown[1].candidates.length).toBeGreaterThan(1);
+      const after = applyChoices(grown, rows);
+      expect(after.refused).toEqual([]);
+      expect(after.chosen.map((w) => `${w.ref} ${w.lemma} ${w.morph}`)).toEqual(before.chosen.map((w) => `${w.ref} ${w.lemma} ${w.morph}`));
+    });
+
+    it('a guess that names no lemma still takes the one lemma of the word’s own candidates when readings of other lemmas were added beside them', () => {
+      const pending = [pendingOf('Psa.1:1#1', 'ἐγκαταλείπω', 'V-PAS-2S')];
+      const rows = readChoices('Psa.1:1#1\tV-AAS-2S\t\tguess\n', 'psa-01.tsv');
+      const before = applyChoices(pending, rows);
+      expect(before.chosen.map((w) => w.lemma)).toEqual([nfc('ἐγκαταλείπω')]);
+      const grown = completeReadings(pending, () => nfc('ἐγκαταλίπῃς'), new Map([[nfc('ἐγκαταλίπῃς'), { analyses: [{ lemma: nfc('κατατίθημι'), code: 'V-2AAS-2S' }], unmapped: 0 }]]));
+      expect(grown[0].candidates).toHaveLength(2);
+      const after = applyChoices(grown, rows);
+      expect(after.refused).toEqual([]);
+      expect(after.chosen.map((w) => `${w.lemma} ${w.morph}`)).toEqual([nfc('ἐγκαταλείπω V-AAS-2S')]);
     });
   });
 });

@@ -13,6 +13,8 @@ export interface LexEntry {
   lemma: string;
   /** TBESG's part of speech as written ('G:N-F'), or '' when the row gives none */
   pos: string;
+  /** the row says it is a contraction of another headword (`<i>contracted</i> for ἀοιδός`, ᾠδός): a variant of that headword, not a lemma of its own (story mw-u2w5klk.287) */
+  contracted?: true;
 }
 
 /** bareOf(lemma) -> every one-word lemma TBESG has with those letters */
@@ -31,7 +33,7 @@ export function readTbesg(text: string): Lexicon {
     const key = bareOf(lemma);
     let entries = byBare.get(key);
     if (!entries) byBare.set(key, (entries = []));
-    entries.push({ lemma, pos: (c[5] ?? '').trim() });
+    entries.push({ lemma, pos: (c[5] ?? '').trim(), ...(/contracted<\/i> for|contr\. for/.test(c[7] ?? '') ? { contracted: true as const } : {}) });
   }
   return byBare;
 }
