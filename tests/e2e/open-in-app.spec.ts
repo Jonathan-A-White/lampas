@@ -371,3 +371,68 @@ for (const size of SIZES) {
     });
   }
 }
+
+// mw-5r3p30.1099: the Reader's chips row (Today, Variants, src/ReaderChips.tsx) is under the header and is no header, so the strip stood on it. It stands under that row too.
+/** True where the element at the centre of `el` is `el` itself (or inside it): nothing, the strip least of all, is over it. */
+const isOnTop = (el: Element): boolean => {
+  const r = el.getBoundingClientRect();
+  const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  return top === el || el.contains(top);
+};
+
+for (const size of SIZES) {
+  test(`${size.width}x${size.height} #/?ref=Rom.8.28 in Greek: the Today and Variants chips are not covered by the strip, which stands under their row`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await stubApi(page, WEBAPP);
+    await openUnlocked(page);
+    await page.goto('/#/?ref=Rom.8.28&view=greek');
+    const strip = page.locator('[data-open-in-app]');
+    await expect(strip).toBeVisible();
+    await page.waitForTimeout(500);
+    const row = page.getByTestId('reader-chips');
+    const today = row.getByRole('button', { name: /^Today/ });
+    const variants = row.getByRole('button', { name: /^Variants/ });
+    await expect(today).toBeVisible();
+    await expect(variants).toBeVisible();
+    for (const [name, chip] of [['Today', today], ['Variants', variants]] as const) {
+      expect(await chip.evaluate(isOnTop), `the ${name} chip is the element at its own centre`).toBe(true);
+    }
+    const foot = (await row.boundingBox())!;
+    const stripBox = (await strip.boundingBox())!;
+    expect(stripBox.y, 'the strip starts at or under the foot of the chips row').toBeGreaterThanOrEqual(foot.y + foot.height - 1);
+    await shot(page, `open-in-app-chips-${size.width}x${size.height}`);
+  });
+}
+
+// mw-5r3p30.1099, the sweep: on each screen the spec draws, no button, link, input or heading that starts above the strip's foot and meets the strip has the strip at its centre.
+for (const size of SIZES) {
+  for (const hash of ['#/?ref=Rom.8.28', '#/?ref=Rom.8.28&view=greek', '#/settings', '#/words', '#/about', '#/today', '#/review']) {
+    test(`${size.width}x${size.height} ${hash}: nothing that starts above the strip's foot has the strip at its centre`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await stubApi(page, WEBAPP);
+      await openUnlocked(page);
+      await page.goto(`/${hash}`);
+      await expect(page.locator('[data-open-in-app]')).toBeVisible();
+      await page.waitForTimeout(500);
+      const covered = await page.evaluate(() => {
+        const strip = document.querySelector<HTMLElement>('[data-open-in-app]')!;
+        const room = strip.getBoundingClientRect();
+        const wanted = 'button, a[href], input, select, textarea, [role="button"], [role="link"], h1, h2, h3, h4, h5, h6, [role="heading"]';
+        return [...document.querySelectorAll<HTMLElement>(wanted)]
+          .filter((el) => !strip.contains(el) && el.getClientRects().length > 0)
+          // the Reader's text is the one thing the strip floats over by design (mw-5r3p30.1051: arriving late it moves none of it)
+          .filter((el) => !el.closest('main[data-reader]'))
+          .filter((el) => {
+            const r = el.getBoundingClientRect();
+            if (r.width === 0 || r.height === 0 || r.top >= room.bottom) return false;
+            if (r.right <= room.left || r.left >= room.right || r.bottom <= room.top) return false;
+            const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+            return !!top && strip.contains(top);
+          })
+          .map((el) => `${el.tagName} ${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}`);
+      });
+      expect(covered, 'the strip is over none of these').toEqual([]);
+      await shot(page, `open-in-app-sweep-${hash.replace(/[^a-z]/gi, '')}-${size.width}x${size.height}`);
+    });
+  }
+}

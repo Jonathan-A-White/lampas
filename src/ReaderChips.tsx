@@ -46,6 +46,7 @@ export function ReaderChips({
     <>
     <div
       data-testid="reader-chips"
+      data-reader-chips
       className="flex h-10 shrink-0 items-stretch gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line px-2 [scrollbar-width:none]"
     >
       {hidden ? null : (

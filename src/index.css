@@ -414,6 +414,12 @@ html {
   padding-bottom: calc(1rem + var(--lp-end-inset));
 }
 
+/* The 'Open in the app' strip floats over the top of the screen (src/OpenInApp.tsx); a screen's own scroll box stands that far lower while it shows, so the first row of the screen is not
+ * under it (mw-5r3p30.1099). The Reader's box is left alone: the strip floats over its text and moves none (mw-5r3p30.1051). */
+main.screen:not([data-reader]) {
+  margin-top: var(--lp-strip-room, 0px);
+}
+
 /* A sticky bar stops short of the box's end by the box's own padding, so a box with a Next bar has none: the bar ends where the box does and nothing shows
  * under it (what follows the bar keeps its own room). Doubled so it also wins over `[data-verse-view] .screen`. */
 .screen.screen:has([data-next-bar]) {
