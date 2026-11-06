@@ -403,6 +403,40 @@ describe('Brenton\u2019s English at a Greek chapter not shipped (mw-u2w5klk.273)
   });
 });
 
+describe('a Swete verse with a number and no word under it (mw-u2w5klk.282)', () => {
+  const genesis = syntheticGenesis(3);
+  // Swete's file numbers Gen.2:3 and puts no word under it: drop the lines of that verse from the word file, keep its line in the versification
+  const starts = genesis.versification.split('\n').map((l) => l.split('\t') as [string, string]);
+  const at = starts.findIndex(([, ref]) => ref === 'Gen.2:3');
+  const [from, to] = [Number(starts[at][0]), Number(starts[at + 1][0])];
+  const emptyWords = genesis.words.split('\n').filter((l) => Number(l.split('\t')[0]) < from || Number(l.split('\t')[0]) >= to).join('\n');
+  const gen = sweteBooks(genesis.versification, emptyWords).get('gen') ?? [];
+  const annotations = ['# shipped chapters: all 3', ANNOTATION_HEADER.join('\t'), ...gen.map((w) => [w.ref, 'λόγος', 'N-NSM', '2', '0.90', ''].join('\t'))].join('\n') + '\n';
+  const usfm = ['\\id GEN', '\\c 2', '\\p', '\\v 2 Verse two.', '\\v 3 Verse three has no Greek word.', '\\v 4 Verse four.'].join('\n') + '\n';
+  const run = (words: string) => buildLxx(input({ versification: genesis.versification, words, translit: genesis.translit, annotations: { gen: annotations }, usfm: { gen: usfm } }));
+  const result = run(emptyWords);
+  const chapter2 = JSON.parse(result.files.get('gen/2.json')!) as Chapter;
+
+  it('gives the verse a Greek verse row with no words, and Brenton\u2019s English for it', () => {
+    expect(chapter2.verses.map((v) => v.n)).toEqual([1, 2, 3, 4, 5]);
+    const verse = chapter2.verses[2];
+    expect(verse.g).toEqual([]);
+    expect(verse.e).toEqual([{ t: 'Verse three has no Greek word.', g: [] }]);
+    expect(verse.ref).toMatchObject({ book: 'gen', chapter: 2, verse: 3 });
+  });
+
+  it('does not name the Brenton verse as having no Greek verse', () => {
+    expect(result.notes.filter((n) => n.includes('no Greek verse'))).toEqual([]);
+  });
+
+  it('changes no word of any chapter: every word Swete has is shipped once, in its own verse, with its lemma and parsing', () => {
+    const shipped = [1, 2, 3].flatMap((n) => (JSON.parse(result.files.get(`gen/${n}.json`)!) as Chapter).verses.flatMap((v) => v.g.map((w) => `${v.n}:${w.t}:${w.l}:${w.p}`)));
+    expect(shipped).toHaveLength(gen.length);
+    expect(gen.length).toBe(genesis.words.split('\n').length - (to - from));
+    expect(new Set([1, 2, 3].map((n) => (JSON.parse(result.files.get(`gen/${n}.json`)!) as Chapter).verses.filter((v) => v.g.length === 0).length))).toEqual(new Set([0, 1]));
+  });
+});
+
 describe('the shipped notice', () => {
   const dir = 'public/data-lxx';
 

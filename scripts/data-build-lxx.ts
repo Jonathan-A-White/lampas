@@ -13,7 +13,7 @@ import { parseLexicon } from './data-build';
 import { alignChapter, type AlignSink } from './lxx/align';
 import { chapterFingerprint, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { LXX2012_RELEASE, ensureLxx2012, parseUsfm, usfmFileOf, type UsfmBook } from './data/lxx2012';
-import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, withoutEnglishNote, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
+import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, sweteEmptyVerses, usfmCodeOf, withoutEnglishNote, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
 import { TVTMS_COMMIT, buildMaps, ensureTvtms, parseTvtms, type TvtmsMaps } from './data/tvtms';
 import { ANNOTATIONS_DIR } from './lxx/release';
 import {
@@ -106,6 +106,7 @@ export function buildLxx(input: LxxInput, align?: AlignSink): BuiltLxx {
   const maps: TvtmsMaps = buildMaps(parseTvtms(input.tvtms));
   const translit = parseTranslit(input.translit);
   const swete = sweteBooks(input.versification, input.words);
+  const empty = sweteEmptyVerses(input.versification, input.words);
   const lexicon = lemmaTable(input.tbesg);
 
   const files = new Map<string, string>();
@@ -123,7 +124,7 @@ export function buildLxx(input: LxxInput, align?: AlignSink): BuiltLxx {
     const usfmText = input.usfm[usfmCodeOf(code)];
     const english: UsfmBook | undefined = usfmText === undefined ? undefined : parseUsfm(usfmText);
     if (!english) notes.push(`${code}: no LXX2012 file, so no English`);
-    const book = buildLxxBook({ code, words, translit, annotations: parseAnnotations(annotationText, code), english }, maps, input.lampasVerses);
+    const book = buildLxxBook({ code, words, emptyVerses: empty.get(code), translit, annotations: parseAnnotations(annotationText, code), english }, maps, input.lampasVerses);
     // the line lxx:release writes first (`# shipped chapters: 1-6 of 50`) must name the chapters the rows hold: a hand-edited file stops the build
     const line = shippedChaptersLine(annotationText);
     if (line) {
