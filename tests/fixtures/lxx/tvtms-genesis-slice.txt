@@ -1,0 +1,8 @@
+TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY
+A slice for tests (mw-u2w5klk.286): the Gen.36:43--37:2 section of the condensed data, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+$Gen.36:43--37:2	English KJV	Hebrew	Latin	Greek	Greek2 (eg Brenton)							
+TEST: If...	Gen.36:43=Last	Gen.36:43=Last	Gen.36:43=Last	Gen.36:43=Last	Gen.36:44=Last							
+OneToOne	Gen.37:1	Gen.37:1	Gen.37:1	Gen.37:1	Gen.36:44							
+OneToOne	Gen.37:2	Gen.37:2	Gen.37:2	Gen.37:2	Gen.37:1							
+#DataEnd(Condensed)

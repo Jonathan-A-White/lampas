@@ -13,7 +13,7 @@ import { parseLexicon } from './data-build';
 import { alignChapter, type AlignSink } from './lxx/align';
 import { chapterFingerprint, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { LXX2012_RELEASE, ensureLxx2012, parseUsfm, usfmFileOf, type UsfmBook } from './data/lxx2012';
-import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
+import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, withoutEnglishNote, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
 import { TVTMS_COMMIT, buildMaps, ensureTvtms, parseTvtms, type TvtmsMaps } from './data/tvtms';
 import { ANNOTATIONS_DIR } from './lxx/release';
 import {
@@ -146,6 +146,7 @@ export function buildLxx(input: LxxInput, align?: AlignSink): BuiltLxx {
     }
     for (const lemma of book.lemmas) lemmas.add(lemma);
     if (book.unplaced.length) notes.push(`${code}: LXX2012 verses with no Greek verse to stand at: ${book.unplaced.join(', ')}`);
+    if (book.noEnglish.length) notes.push(withoutEnglishNote(code, book.noEnglish));
     infos.push(book.info);
     shipped.push(code);
   }
