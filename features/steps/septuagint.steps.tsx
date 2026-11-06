@@ -2,6 +2,7 @@
 // tests/fixtures/data-lxx (Genesis 1 and Greek Psalm 22, built by scripts/data-build-lxx.ts); Genesis 1 in the Hebrew is tests/fixtures/data/gen/1.json; Isaiah is not in the Septuagint's index.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -10,6 +11,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
 import { loadChapter, type Chapter } from '../../src/data/chapter';
+import { alignChapter } from '../../scripts/lxx/align';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { buildTapForm } from '../../src/data/grammar/questions';
 import { mulberry32 } from '../../src/data/quiz';
@@ -45,6 +47,10 @@ interface Extras {
   strongs?: boolean;
   speech?: boolean;
   tutor?: boolean;
+  /** the Septuagint's Genesis 1 is the one `lxx:ship` writes, its English cut into chunks aligned to the Greek words (scripts/lxx/align.ts), where the fixture holds one chunk a verse */
+  aligned?: boolean;
+  /** lemmas he has solid */
+  solid?: string[];
 }
 
 /** Opens the app on a chapter (the address names it) with the Septuagint set as given and these settings saved. */
@@ -68,6 +74,14 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     const chapterFetch = globalThis.fetch;
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? postern.fetch(input, init) : chapterFetch(input, init)));
   }
+  if (extras.aligned) {
+    const chapterFetch = globalThis.fetch;
+    const lexicon = JSON.parse(readFileSync('tests/fixtures/data-lxx/lexicon-grc-lxx.json', 'utf8')) as Record<string, { g?: string }>;
+    const gen1 = alignChapter(JSON.parse(readFileSync('tests/fixtures/data-lxx/gen/1.json', 'utf8')) as Chapter, (lemma) => lexicon[lemma]?.g ?? '').chapter;
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).startsWith('/data-lxx/gen/1.json') ? Promise.resolve(new Response(JSON.stringify(gen1), { status: 200, headers: { 'Content-Type': 'application/json' } })) : chapterFetch(input, init),
+    );
+  }
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
   if (!book) throw new Error(`no book ${title}`);
@@ -79,6 +93,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
   await db.settings.put({ key: 'septuagint', value: septuagint });
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   if (extras.strongs) await setResourceOn('strongs', true);
+  for (const lemma of extras.solid ?? []) await db.words.put({ lemma, lang: 'grc', lemmas: [lemma], gloss: lemma, lesson: 0, source: 'frontier', state: 'solid', since: Date.now() });
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
@@ -212,6 +227,31 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Greek position is chosen', chosenIs('Greek'));
     And('verse 1 begins with the Greek {string}', versesBegin);
     And('no English is under verse 1', noEnglishUnder);
+    And('no tip is shown', noTip);
+  });
+
+  // the Weave on a chapter whose verses carry aligned chunks (mw-u2w5klk.274.3): woven as the New Testament is, with no tip
+  Scenario('With aligned chunks the Weave position weaves his solid lemmas in Greek and the tip is not shown', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, aligned English and the Weave {string} with the lemma {string} solid', (_: unknown, weave: string, lemma: string) =>
+      openOn('Genesis 1', 'on', { weave }, { aligned: true, solid: [lemma] }),
+    );
+    Then('the language switch offers {string}, {string} and {string}', switchOffers3);
+    And('the Weave position is chosen', chosenIs('Weave'));
+    And('verse 1 shows the Greek {string} woven into its English', async (_: unknown, word: string) => {
+      await waitFor(() => expect(squash(verseEl(1).querySelector('[data-woven]')?.textContent)).toBe(word));
+      expect(squash(verseEl(1).textContent)).toContain('In the beginning');
+    });
+    And('no tip is shown', noTip);
+  });
+
+  Scenario('With aligned chunks and plain English under the Weave the verse is Brenton\'s prose', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, aligned English, the Weave {string} with the lemma {string} solid and plain English under it', (_: unknown, weave: string, lemma: string) =>
+      openOn('Genesis 1', 'on', { weave, readerPlain: weave }, { aligned: true, solid: [lemma] }),
+    );
+    Then('the English position is chosen', chosenIs('English'));
+    And('verse 1 has no Greek woven into its English', () => {
+      expect(verseEl(1).querySelector('[data-woven]')).toBeNull();
+    });
     And('no tip is shown', noTip);
   });
 

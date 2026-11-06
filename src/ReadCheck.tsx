@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom';
 import { blobOf, clipFileName, downloadSeam, type Clip } from './audio/clip';
 import { ClipPlayer, usePlaying } from './audio/clipPlayer';
 import { speechTimesOf, type SpeechTimes } from './audio/voiceSpan';
-import type { Verse } from './data/chapter';
+import type { SourceLanguage, Verse } from './data/chapter';
 import { isHebrewBook } from './data/books';
 import { unitId, unitName } from './data/passage';
 import { getDeveloper, getGreekPronunciation, getMissTally, getVerseReading, verseRef, type FixWord, type VerseReading } from './data/repositories';
@@ -451,11 +451,13 @@ export const WEAVE_READ_AS_SHOWN = 'Read it as it is shown: the Greek words in G
 
 /** The reading check of the verse in the Verse view. `hold` is the bar's hold for this verse, `checks` has the states; the bar itself is drawn
  * into `slot`, the foot of the Verse view (the one hold bar on that screen), and says what a hold does now. */
-export function ReadCheckPanel({ verse, view: shown, book, chapter, checks, hold, weave = null, onRetry, slot }: {
+export function ReadCheckPanel({ verse, view: shown, book, source, chapter, checks, hold, weave = null, onRetry, slot }: {
   verse: Verse;
   /** the Reader's view: 'greek' is the chapter's source text, the Hebrew of an Old Testament chapter (readingViewOf) */
   view: 'english' | 'greek';
   book: string;
+  /** the language of the chapter's words (sourceLanguage): a Septuagint chapter of Genesis is Greek where Genesis in Hebrew is not; the book's when not given */
+  source?: SourceLanguage;
   chapter: number;
   checks: Pick<UseReadChecks, 'states'>;
   hold: ReadHold;
@@ -465,7 +467,7 @@ export function ReadCheckPanel({ verse, view: shown, book, chapter, checks, hold
   slot: HTMLElement | null;
 }) {
   const ref = verseRef(book, chapter, unitId(verse));
-  const view: ReadingView = readingViewOf(shown, isHebrewBook(book) ? 'hbo' : 'grc');
+  const view: ReadingView = readingViewOf(shown, source ?? (isHebrewBook(book) ? 'hbo' : 'grc'));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
   // a verse read woven is a reading of its own (WOVEN_LANG): its words are not one language's, and its text is the weave's
   const woven = view === 'english' ? weave : null;

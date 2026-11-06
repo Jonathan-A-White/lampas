@@ -27,14 +27,26 @@ export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref'>, greekChapter: 
 }
 
 /**
- * The view a Septuagint chapter's verses are drawn in (mw-u2w5klk.275), by the switch's three positions as the New Testament's are: the Greek position is Swete's Greek alone, with no English under it;
- * the English position is Brenton's English, one chunk a verse, as prose; the Weave position (the Weave on and plain English not chosen under it) has no chunks to weave a Greek word over, so it
- * draws the Greek verse alone, and the note says the Weave is off here. `weaveShown` is useReaderSettings' (the Weave on and plain English not chosen under it).
+ * Whether a Septuagint chapter has English chunks aligned to its Greek words (scripts/lxx/align.ts, mw-u2w5klk.274.1): some chunk of some verse is the aligner's own pairing of English to Greek words (`y` 'align' with
+ * a word in `g`). Such a chapter is woven as the New Testament's is. The chapter `data:build:lxx` writes, one chunk a verse holding every word, and a chapter the aligner paired nothing in, have nothing to weave.
  */
-export const septuagintView = (view: ReaderView, weaveShown: boolean): ReaderView => (view === 'greek' || weaveShown ? 'greek' : 'english');
+export const septuagintAligned = (chapter: Pick<Chapter, 'verses'> | null | undefined): boolean => chapter?.verses.some((v) => v.e.some((c) => c.y === 'align' && c.g.length > 0)) ?? false;
 
-/** Whether the note that the Weave is off in a Septuagint chapter stands: in the Weave position only, which is the English view with the Weave shown. */
-export const septuagintWeaveNoted = (view: ReaderView, weaveShown: boolean): boolean => view === 'english' && weaveShown;
+/**
+ * The settings a Septuagint chapter is woven by (mw-u2w5klk.274.3): the reader's own where its verses carry aligned chunks (`weaveShown` follows them as for the New Testament), the Weave off where they do not.
+ */
+export const septuagintSettings = <T extends { weaveShown?: boolean }>(settings: T, aligned: boolean): T => (aligned || settings.weaveShown === false ? settings : { ...settings, weaveShown: false });
+
+/**
+ * The view a Septuagint chapter's verses are drawn in (mw-u2w5klk.275), by the switch's three positions as the New Testament's are: the Greek position is Swete's Greek alone, with no English under it;
+ * the English position is Brenton's English as prose; the Weave position (the Weave on and plain English not chosen under it) of a chapter with aligned chunks (`aligned`, septuagintAligned) is the English view
+ * with the Greek of his words woven in, as the New Testament's is; of a chapter with none it has no chunks to weave a Greek word over, so it draws the Greek verse alone, and the note says the Weave is off here.
+ * `weaveShown` is useReaderSettings' (the Weave on and plain English not chosen under it).
+ */
+export const septuagintView = (view: ReaderView, weaveShown: boolean, aligned = false): ReaderView => (view === 'greek' || (weaveShown && !aligned) ? 'greek' : 'english');
+
+/** Whether the note that the Weave is off in a Septuagint chapter stands: in the Weave position only, which is the English view with the Weave shown, and only for a chapter with no aligned chunks. */
+export const septuagintWeaveNoted = (view: ReaderView, weaveShown: boolean, aligned = false): boolean => view === 'english' && weaveShown && !aligned;
 
 /** The layers of the derivation, in the words a reader is told (docs/lxx-derivation.md 'The layers'; Help's Words page). */
 const LAYER_WORDS: Record<string, string> = {
