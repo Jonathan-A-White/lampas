@@ -108,6 +108,10 @@ test('a verse: each row hands the share its piece and nothing else', async ({ pa
   await expect(row(page, 'The whole')).toContainText('— Romans 8:11 (MSB)');
   await expect(row(page, 'Just the link')).toContainText('https://lampas.allmymind.org/#/?ref=Rom.8.11');
   await expect(row(page, 'Just the text')).not.toContainText('MSB');
+  // one verse, however long, is shown whole in its rows: no gap in the middle (mw-5r3p30.1059)
+  await expect(row(page, 'Just the text')).toContainText('He who raised Christ from the dead will also give life to your mortal bodies');
+  await expect(row(page, 'Just the text')).not.toContainText('…');
+  await expect(row(page, 'The whole')).not.toContainText('…');
   await expect(row(page, 'Just the reference')).toHaveText(/Romans 8:11 \(MSB\)$/);
   await shot(page, 'share-pieces-verse');
   await page.keyboard.press('Escape');
@@ -123,6 +127,7 @@ test('a passage: numbers follow Verse numbers, the link is the passage\'s, a lon
   await openSheet(page);
   const shown = (await row(page, 'Just the text').innerText()).length;
   expect(shown).toBeLessThan(260);
+  await expect(row(page, 'Just the text')).toContainText(' … ');
   await page.keyboard.press('Escape');
   const got = await shareEach(page);
   expectPieces(got, { words: '2 For in Christ Jesus the law of the Spirit', reference: 'Romans 8:1-11 (MSB)', link: 'https://lampas.allmymind.org/#/?ref=Rom.8.1-11' });
