@@ -519,7 +519,7 @@ Gen.28:19#17	T-ASN	ὁ	unsure	0.50	model: unsure
 Gen.28:19#18	ADV-C	πρότερον		0.80	
 Gen.28:20#2	V-ADI-3S	εὔχομαι		0.80	
 Gen.28:20#3	N-NSM	Ἰακώβ		0.80	
-Gen.28:20#12	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Gen.28:20#12	S-1SGSN	ἐγώ		0.80	
 Gen.28:20#29	N-ASN	ἱμάτιον		0.80	
 Gen.28:20#30	V-2AMN	περιβάλλω		0.80	
 Gen.28:21#2	V-AAS-3S	ἀποστρέφω		0.80	
@@ -653,7 +653,7 @@ Gen.29:18#18	A-GSF-C	νέος	guess	0.40	guess: the model chose outside the cand
 Gen.29:19#3	P-DSM	αὐτός		0.80	
 Gen.29:19#4	N-NSM	Λαβάν		0.80	
 Gen.29:19#5	A-NSN-C	βελτίων	unsure	0.50	model: unsure
-Gen.29:19#18	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Gen.29:19#18	S-1SGSN	ἐγώ		0.80	
 Gen.29:20#3	N-NSM	Ἰακώβ		0.80	
 Gen.29:20#5	N-GSF	Ῥαχήλ		0.80	
 Gen.29:20#7	N-APN	ἔτος		0.80	
@@ -727,7 +727,7 @@ Gen.29:33#26	N-ASN	ὄνομα		0.80
 Gen.29:33#27	P-GSM	αὐτός		0.80	
 Gen.29:33#28	N-ASM	Συμεών		0.80	
 Gen.29:34#10	T-DSM	ὁ		0.80	
-Gen.29:34#14	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Gen.29:34#14	S-1SGSN	ἐγώ		0.80	
 Gen.29:34#19	V-RAI-1S	τίκτω		0.80	
 Gen.29:34#21	P-DSM	αὐτός		0.80	
 Gen.29:34#25	D-ASN	οὗτος		0.80	

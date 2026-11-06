@@ -185,7 +185,7 @@ Psa.68:12#2	V-2AMI-1S	τίθημι	guess	0.40	guess: the model answered with no 
 Psa.68:12#3	T-ASN	ὁ		0.80	
 Psa.68:12#4	N-ASN	ἔνδυμα		0.80	
 Psa.68:12#9	P-DPM	αὐτός		0.80	
-Psa.68:13#2	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.68:13#2	S-1SGSN	ἐγώ		0.80	
 Psa.68:13#3	V-IAI-3P	ἀδολεσχέω		0.80	
 Psa.68:13#11	V-IAI-3P	ψάλλω		0.80	
 Psa.68:15#7	V-2APS-1S	ἐμπήγνυμι		0.80	
@@ -333,7 +333,7 @@ Psa.70:11#4	V-2AAI-3S	ἐγκαταλείπω	guess	0.40	guess: the model answer
 Psa.70:11#6	V-AAM-2P	καταδιώκω		0.80	
 Psa.70:11#8	V-2AAM-2P	καταλαμβάνω		0.80	
 Psa.70:12#4	V-PAS-2S	μακρύνω	unsure	0.50	model: unsure
-Psa.70:12#6	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.70:12#6	S-1SGSN	ἐγώ		0.80	
 Psa.70:13#1	V-APM-3P	αἰσχύνω		0.80	
 Psa.70:13#3	V-2AAM-3P	ἐκλείπω	guess	0.40	guess: the model chose outside the candidates
 Psa.70:13#9	V-2AMM-3P	περιβάλλω		0.80	
@@ -460,7 +460,7 @@ Psa.72:1#6	T-DSM	ὁ		0.80
 Psa.72:1#7	N-DSM	Ἰσραήλ		0.80	
 Psa.72:1#10	T-DPM	ὁ		0.80	
 Psa.72:1#11	A-DPM	εὐθής		0.80	
-Psa.72:2#1	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.72:2#1	S-1SGSN	ἐγώ		0.80	
 Psa.72:2#4	A-ASN	μικρός		0.80	
 Psa.72:2#5	V-API-3P	σαλεύω		0.80	
 Psa.72:2#9	A-ASN	ὀλίγος		0.80	

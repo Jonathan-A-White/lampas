@@ -90,7 +90,7 @@ Psa.85:16#1	V-AAM-2S	ἐπιβλέπω		0.80
 Psa.85:16#8	T-ASN	ὁ		0.80	
 Psa.85:16#9	N-ASN	κράτος		0.80	
 Psa.85:16#11	T-DSM	ὁ		0.80	
-Psa.85:17#3	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.85:17#3	S-1SGSN	ἐγώ		0.80	
 Psa.85:17#4	N-ASN	σημεῖον		0.80	
 Psa.85:17#6	A-ASN	ἀγαθός		0.80	
 Psa.85:17#13	V-APM-3P	αἰσχύνω		0.80	
@@ -148,7 +148,7 @@ Psa.87:8#3	V-API-3S	ἐπιστηρίζω		0.80
 Psa.87:8#14	V-2AAI-2S	ἐπάγω		0.80	
 Psa.87:8#15	N-NSN	διάψαλμα	unsure	0.50	model: unsure
 Psa.87:9#1	V-AAI-2S	μακρύνω		0.80	
-Psa.87:9#6	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.87:9#6	S-1SGSN	ἐγώ		0.80	
 Psa.87:9#9	N-ASN	βδέλυγμα		0.80	
 Psa.87:9#10	F-3DPM	ἑαυτοῦ		0.80	
 Psa.87:9#14	V-INI-1S	ἐκπορεύω	unsure	0.50	model: unsure
@@ -170,14 +170,14 @@ Psa.87:15#2	I-ASN	τίς		0.80
 Psa.87:15#4	V-PAI-2S	ἀπωθέω		0.80	
 Psa.87:15#9	T-ASN	ὁ		0.80	
 Psa.87:15#10	N-ASN	πρόσωπον		0.80	
-Psa.87:15#13	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.87:15#13	S-1SGSN	ἐγώ		0.80	
 Psa.87:16#12	V-API-1S	ταπεινόω		0.80	
 Psa.87:16#14	V-API-1S	ἐξαπορέω		0.80	
 Psa.87:17#3	V-2AAI-3P	διέρχομαι		0.80	
 Psa.87:18#4	N-NSN	ὕδωρ, ὕδατος	unsure	0.50	model: unsure
 Psa.87:18#8	V-2AAI-3P	περιέχω		0.80	
 Psa.87:19#1	V-AAI-2S	μακρύνω		0.80	
-Psa.87:19#3	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.87:19#3	S-1SGSN	ἐγώ		0.80	
 Psa.87:19#4	A-ASM	φίλος		0.80	
 Psa.87:19#10	N-GSF	ταλαιπωρία		0.80	
 Psa.88:1#2	N-DSM	Αἰθάν		0.80	
