@@ -35,6 +35,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [The deploy](#the-deploy)
 - [The sources](#the-sources)
 - [Checking it](#checking-it)
+- [The grammar check](#the-grammar-check)
 - [What the move from the probe changed](#what-the-move-from-the-probe-changed)
 
 <!-- /toc -->
@@ -841,6 +842,10 @@ The Laptop's deploy runs it after `npm run build`, into the built folder: `npm r
   differently).
 - **The bar's tests** (`tests/unit/lxx-bar.test.ts`) hold `BAR` to the probe's numbers, run John 1 with the probe's choices to its 828 of 829 and 825, and check that `lxx:release` refuses a book with a word pending or guesses at 4%
   and writes the same bytes twice when every line is met, and that `lxx:report` has a row for each of the 39 books and names another second chapter for another build.
+
+## The grammar check
+
+`npm run lxx:grammar-gaps` (`scripts/lxx/grammar-gaps.ts`, story mw-u2w5klk.277) answers the Governor's question of 2026-11-05, *is there anything to update in the Greek lessons or the paradigm tables to read the Septuagint in Greek?* It reads the shipped chapters (`dist/data-lxx`, which `npm run lxx:ship -- --out dist/data-lxx` writes; else `public/data-lxx` when that holds chapters; or `--dir <folder>`), runs each parsing code with its first lemma through `tableFor` (`src/data/paradigms`) and through the ladder (`ideasOf`, `src/data/grammar/ladder.ts`), and writes `docs/lxx-grammar-gaps.md` (PROVISIONAL name and place, the Governor to confirm; `--out <file>` writes another): the codes with no table, the codes whose table (the one the word sheet shows) holds no cell for the form (and those whose cell is in another table), by mood and part of speech with a count and an example word and verse; the lemmas with no lexicon entry or a blank one; and the form ideas no table teaches or no Reading lesson (`src/approaches/john-lessons.ts`) practises. It writes the same bytes twice, reads the shipped chapters and the New Testament's parsing codes (`public/data`) and writes nothing else. `tests/unit/lxx-grammar-gaps.test.ts` runs it on a fixture of ten codes.
 
 ## What the move from the probe changed
 
