@@ -138,7 +138,8 @@ export function buildLxx(input: LxxInput, align?: AlignSink): BuiltLxx {
         files.set(path, JSON.stringify(chapter));
         continue;
       }
-      const done = alignChapter(chapter, (lemma) => lexiconEntry(lexicon, lemma)?.g ?? '');
+      const done = alignChapter(chapter, (lemma) => lexiconEntry(lexicon, lemma)?.g ?? '', align.model?.get(`${code}/${chapter.chapter}`));
+      for (const line of done.stale) notes.push(`${code}: the model pass, chapter ${chapter.chapter}: ${line}`);
       align.shares.push({ ...done.share, code });
       // the Reader asks for a chapter as ?v=<fingerprint> and keeps what it was given: an aligned chapter is a different file, so it has its own fingerprint
       book.info.fingerprints[done.chapter.chapter - 1] = chapterFingerprint(done.chapter);
