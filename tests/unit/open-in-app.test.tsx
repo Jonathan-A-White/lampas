@@ -11,6 +11,7 @@ const realGoTo = async () => (await vi.importActual<typeof import('../../src/ope
 
 import { OpenInApp } from '../../src/OpenInApp';
 import { DISMISSED_KEY, handedHref, handOverHref, verseOnTop } from '../../src/openInApp';
+import { oneTap, SETTLE_MS, settle } from '../../src/ui/settle';
 import { bringVerse, pendingRequest, takeRequest } from '../../src/nav/readerRequest';
 import { linkOf } from '../../src/nav/links';
 import { readerOf } from '../../src/nav/route';
@@ -218,6 +219,40 @@ describe('OpenInApp', () => {
     expect(goTo).toHaveBeenCalledWith(handedHref(window.location.href));
     expect(goTo.mock.calls[0]![0]).toBe(`${window.location.origin}/#/?ref=John.3.16`);
     expect(goTo.mock.calls[0]![0]).not.toMatch(/^intent:/);
+  });
+
+  // mw-5r3p30.1093 (mw-5r3p30.1053, .1089): the second tap of a double tap sent a second hand-over (two new tabs, two asks of Android). tests/setup.ts turns the moment off.
+  describe('a double tap', () => {
+    const moment = settle.ms;
+    // oneTap keeps the last tap for the whole page: each test stands on a clock of its own, long after any tap an earlier test made
+    let epoch = 1_000_000;
+    beforeEach(() => {
+      settle.ms = SETTLE_MS;
+      epoch += 1_000_000;
+      vi.spyOn(performance, 'now').mockReturnValue(epoch);
+    });
+    afterEach(() => {
+      settle.ms = moment;
+      oneTap('another control', () => undefined); // the page's last tap is no longer this strip's, on a clock the next test does not share
+    });
+    it('hands the address over once for two quick taps', async () => {
+      setup();
+      render(<OpenInApp />);
+      const button = await screen.findByRole('button', { name: 'Open in the app' });
+      fireEvent.click(button);
+      fireEvent.click(button);
+      expect(goTo).toHaveBeenCalledTimes(1);
+    });
+    it('takes the next tap once the moment has passed (a tap that opened nothing is not locked out)', async () => {
+      setup();
+      render(<OpenInApp />);
+      const button = await screen.findByRole('button', { name: 'Open in the app' });
+      const now = vi.mocked(performance.now);
+      fireEvent.click(button);
+      now.mockReturnValue(epoch + SETTLE_MS + 1);
+      fireEvent.click(button);
+      expect(goTo).toHaveBeenCalledTimes(2);
+    });
   });
 
   it('shows nothing where the API reports nothing', async () => {
