@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { carriedAsGreek, parseUsfm } from '../../scripts/data/lxx2012';
 import { buildMaps, parseTvtms, type TvtmsMaps } from '../../scripts/data/tvtms';
 import { bookReport, formatLine } from '../../scripts/lxx/english';
+import { englishByGreekVerse } from '../../scripts/data/lxxChapter';
 
 const fixture = (name: string): string => readFileSync(`tests/fixtures/lxx/${name}`, 'utf8');
 const gen = parseUsfm(fixture('lxx2012-gen-1.usfm'));
@@ -190,5 +191,66 @@ describe('npm run lxx:english: a book with each verse, its Lampas reference and 
   it('names an Addition of Esther kept inside its verse and a reference the table does not know', () => {
     const lines = bookReport(est, maps).map(formatLine);
     expect(lines[0]).toBe('est 1:1 -> est 1:1 same [bracketed]');
+  });
+});
+
+// mw-u2w5klk.283: LXX2012 numbers Psalms 113-115 in the Hebrew order (its 114 is the Hebrew 115, its 115 the Hebrew 116) and Ps 10 in neither the Greek's nor
+// TVTMS's Brenton columns (it splits the Greek verse 1 in two and has 8 verses to the Greek's 7); TVTMS's sections for them have no column that says so.
+describe("LXX2012's Psalms 10, 114 and 115 stand at the Greek verses their text is", () => {
+  const psalmMaps = buildMaps(parseTvtms(fixture('tvtms-psalms-slice.txt')));
+  const book = parseUsfm(fixture('lxx2012-psa-10-114-115.usfm'));
+  const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+  it("puts Brenton's Psalm 114 (the Hebrew 115, 18 verses) at the Greek 113:9-26", () => {
+    for (const v of range(1, 18)) expect(psalmMaps.lxx2012ToGreek(`psa 114:${v}`)).toEqual({ state: 'one', refs: [`psa 113:${v + 8}`] });
+  });
+
+  it("puts Brenton's Psalm 115 (the Hebrew 116, 19 verses) at the Greek 114:1-9 and 115:1-10", () => {
+    for (const v of range(1, 9)) expect(psalmMaps.lxx2012ToGreek(`psa 115:${v}`)).toEqual({ state: 'one', refs: [`psa 114:${v}`] });
+    for (const v of range(10, 19)) expect(psalmMaps.lxx2012ToGreek(`psa 115:${v}`)).toEqual({ state: 'one', refs: [`psa 115:${v - 9}`] });
+  });
+
+  it("puts Brenton's Psalm 10 (8 verses; his verses 1 and 2 are the Greek's verse 1) at the Greek's 7, and 10:8 at the Greek 10:7", () => {
+    expect(psalmMaps.lxx2012ToGreek('psa 10:T')).toEqual({ state: 'part', refs: ['psa 10:1'] });
+    expect(psalmMaps.lxx2012ToGreek('psa 10:1')).toEqual({ state: 'part', refs: ['psa 10:1'] });
+    expect(psalmMaps.lxx2012ToGreek('psa 10:2')).toEqual({ state: 'part', refs: ['psa 10:1'] });
+    for (const v of range(3, 8)) expect(psalmMaps.lxx2012ToGreek(`psa 10:${v}`)).toEqual({ state: 'one', refs: [`psa 10:${v - 1}`] });
+  });
+
+  it('leaves every verse of the three Psalms at a Greek verse of Swete (Greek Ps 10 has 7 verses, 114 has 9, 115 has 10, 113 has 26)', () => {
+    const last: Record<string, number> = { '10': 7, '113': 26, '114': 9, '115': 10 };
+    for (const chapter of book.chapters) {
+      for (const verse of chapter.verses) {
+        const greek = psalmMaps.lxx2012ToGreek(`psa ${chapter.chapter}:${verse.verse}`).refs;
+        expect(greek).toHaveLength(1);
+        const m = /^psa (\d+):(\d+)$/.exec(greek[0])!;
+        expect(Number(m[2])).toBeGreaterThanOrEqual(1);
+        expect(Number(m[2])).toBeLessThanOrEqual(last[m[1]] ?? 0);
+      }
+    }
+  });
+
+  it("weaves Brenton's English at those Greek verses, nothing unplaced and nothing at a verse Swete lacks", () => {
+    const { byGreek } = englishByGreekVerse(book, psalmMaps);
+    const text = (ref: string): string => (byGreek.get(ref) ?? []).map((s) => s.text).join(' | ');
+    expect(text('psa 10:1')).toMatch(/^For the end, a Psalm of David\. \| In the Lord I have put my trust.* \| Flee to the mountains as a sparrow\?$/);
+    expect(text('psa 10:1')).not.toContain('KJV');
+    expect(text('psa 10:2')).toMatch(/^For behold the sinners have bent their bow/);
+    expect(text('psa 10:7')).toMatch(/^For the Lord is righteous, and loves/);
+    expect(text('psa 113:9')).toMatch(/^Not to us, O Lord, not to us/);
+    expect(text('psa 113:26')).toMatch(/^But we, the living, will bless the Lord, from henceforth and for ever\.$/);
+    expect(text('psa 114:1')).toMatch(/^I am well pleased, because the Lord will listen/);
+    expect(text('psa 114:9')).toMatch(/^I shall be well-pleasing before the Lord in the land of the living\./);
+    expect(text('psa 115:1')).toMatch(/^I believed, therefore I have spoken/);
+    expect(text('psa 115:10')).toMatch(/^in the courts of the Lord's house/);
+    const swete = new Set([...range(1, 7).map((v) => `psa 10:${v}`), ...range(9, 26).map((v) => `psa 113:${v}`), ...range(1, 9).map((v) => `psa 114:${v}`), ...range(1, 10).map((v) => `psa 115:${v}`)]);
+    expect([...byGreek.keys()].filter((ref) => !swete.has(ref))).toEqual([]);
+    expect([...swete].filter((ref) => !byGreek.has(ref))).toEqual([]);
+  });
+
+  it("leaves a Psalm whose Brenton numbering is the Greek's where it was", () => {
+    expect(maps.lxx2012ToGreek('psa 22:1')).toEqual({ state: 'same', refs: ['psa 22:1'] });
+    expect(psalmMaps.lxx2012ToGreek('psa 113:1')).toEqual({ state: 'same', refs: ['psa 113:1'] });
+    expect(psalmMaps.lxx2012ToGreek('psa 116:2')).toEqual({ state: 'same', refs: ['psa 116:2'] });
   });
 });
