@@ -2,7 +2,7 @@
 // segment (src/ui/SourceSegment.tsx); the Greek screens' data is what it was before, and the Hebrew ladder's one idea is the whole of the Hebrew Goal.
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { approachOf, DEFAULT_APPROACH, orderOf } from '../../src/approaches';
+import { approachFor, approachOf, DEFAULT_APPROACH, orderOf } from '../../src/approaches';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import { db } from '../../src/data/db';
 import { learnNext, learningNow } from '../../src/data/grammar/goalProgress';
@@ -115,12 +115,12 @@ describe('the Hebrew ladder on the screens', () => {
   });
 
   it('names the Hebrew idea to learn next and, once it is at the frontier, learning now', () => {
-    const approach = approachOf(DEFAULT_APPROACH)!;
+    const approach = approachFor('hbo');
     const needs = { ideas: [{ id: 'he-alphabet', count: 1, example: { form: '', code: '', ref: '' } }] };
-    expect(learnNext(needs, approach, new Map(), undefined, 'hbo')?.idea.id).toBe('he-alphabet');
+    expect(learnNext(needs, approach, new Map())?.idea.id).toBe('he-alphabet');
     expect(learningNow(new Map([['he-alphabet', 'frontier' as const]]), 'hbo')?.id).toBe('he-alphabet');
     expect(learningNow(new Map([['he-alphabet', 'frontier' as const]]), 'grc')).toBeUndefined();
-    expect(learnNext(needs, approach, new Map([['he-alphabet', 'frontier' as const]]), undefined, 'hbo')).toBeUndefined();
+    expect(learnNext(needs, approach, new Map([['he-alphabet', 'frontier' as const]]))).toBeUndefined();
   });
 
   it('is told to the tutor in its own titles when the learner\'s grammar is of Hebrew', () => {

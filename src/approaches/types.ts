@@ -42,6 +42,8 @@ export interface ApproachStage {
 export interface GrammarApproach {
   /** kept in the settings store, so it never changes: 'ladder' */
   id: string;
+  /** the language whose ladder the approach orders: 'grc' (the Greek ladder) when absent, 'hbo' for the Hebrew ladder (hebrew-ladder.ts) */
+  lang?: 'grc' | 'hbo';
   /** the choice's name in Settings: 'Lampas ladder' */
   name: string;
   credit: ApproachCredit | null;
