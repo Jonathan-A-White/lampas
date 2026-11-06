@@ -18,6 +18,11 @@ Reading needs no licence.
 - [Where the door stands: every Verse view state](#where-the-door-stands-every-verse-view-state)
 - [The sources](#the-sources)
 - [The themes](#the-themes)
+  - [The build](#the-build-1)
+  - [The Themes line](#the-themes-line)
+  - [On the same theme](#on-the-same-theme)
+  - [Settings](#settings)
+  - [Credits](#credits)
 - [Tests](#tests)
 
 <!-- /toc -->
