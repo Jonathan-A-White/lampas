@@ -18,6 +18,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `greekInterest` — How much Greek? From none to all in: each step shows more Greek, and nothing more. Value: "0" (Just English), "1" (Curious), "2" (Dipping a toe), "3" (Learning), "4" (Reading in Greek), "5" (All in).
 - `hebrewInterest` — How much Hebrew? From none to all in: each step shows more Hebrew, and nothing more. Value: "4" (Reading in Hebrew), or any value of `greekInterest`.
 - `septuagint` — Old Testament in Greek (Septuagint). Swete’s Greek with Brenton’s English; the Hebrew when off.
+- `septuagintGaps` — Show manuscript gaps. Swete’s lost-letter brackets.
 - `theme` — Theme. Light, dark, sepia, high contrast, or the phone's own. Value: "phone", "light", "dark", "sepia", "contrast" (High contrast).
 - `font` — Font. The face of the English text; the Greek and the Hebrew keep theirs. Value: "phone" (The phone's own), "literata", "atkinson" (Atkinson Hyperlegible), "lexend".
 - `textSize` — Text size. How big the text is, in steps of the phone's own size. Value: "small", "normal", "large", "largest".
@@ -37,7 +38,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `send` — Send. Sent when you let go, or kept in the box to fix. Value: "release" (On release), "button" (By button).
 - `hebrewDepth` — Hebrew in the tutor. How the tutor writes a Hebrew word: its sound, the letters, or both. Value: "transliteration", "both" (Hebrew and transliteration), "full".
 - `tips` — Tips. One small tip a day, from what you use.
-- `weave` — Weave. In the English view, whether the Greek or Hebrew of his solid words, and of the words he is learning with their English beneath in small grey, is shown in place of their English: Solid: shows the solid ones. + Learning: shows the ones being learned too, with their English beneath in small grey until they turn solid. Value: "off", "solid", "solid+learning".
+- `weave` — Weave. In the English view, whether the Greek or Hebrew of his solid and learning words is shown in place of their English: Solid: shows the solid ones. + Learning: shows the ones being learned too, with their English beneath in small grey until they turn solid. Value: "off", "solid", "solid+learning".
 - `weaveGrammar` — Grammar. Of the woven Greek or Hebrew, keep only forms whose grammar you have at this level: Any, Solid, or Solid and frontier. It shows only while the Weave is not Off. Value: "any", "solid", "solid+frontier" (+ Frontier).
 - `weaveOrder` — Order. Lay the woven verse out in the English or in the original word order. Value: "english", "greek" (Original).
 - `variants` — Variants. Where manuscripts differ: Those that change the English keeps readings that change it; All, every one. Value: "off", "english", "all".

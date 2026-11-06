@@ -27,6 +27,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   variantLessonsOffer: 'screen',
   rp2026English: 'screen',
   septuagint: 'screen',
+  septuagintGaps: 'screen',
   copyReference: 'screen',
   copyNumbers: 'screen',
   copyLink: 'screen',

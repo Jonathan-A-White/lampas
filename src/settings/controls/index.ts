@@ -7,7 +7,7 @@ import { DailyDevotionalControl, DailyMemorizeControl, DailyPlanControl, DailyPs
 import { DeveloperControl } from './developer';
 import { GoalControl } from './goal';
 import { GrammarExtentControl } from './grammarExtent';
-import { GreekInterestControl, HebrewInterestControl, SeptuagintControl } from './interest';
+import { GreekInterestControl, HebrewInterestControl, SeptuagintControl, SeptuagintGapsControl } from './interest';
 import { HandwritingControl } from './handwriting';
 import { LanguagesControl } from './languages';
 import { LinkControl } from './links';
@@ -30,6 +30,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   greekInterest: GreekInterestControl,
   hebrewInterest: HebrewInterestControl,
   septuagint: SeptuagintControl,
+  septuagintGaps: SeptuagintGapsControl,
   theme: AppearanceControl,
   font: FontControl,
   textSize: AppearanceControl,

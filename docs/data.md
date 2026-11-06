@@ -634,6 +634,7 @@ The file says `lang: 'grc'`, `translation: 'lxx2012'` and a new `edition: 'swete
 | `verses[].n` | Swete's verse number. A Psalm's title is not a verse of its own: Swete's verse 1 holds the title and the first verse together |
 | `verses[].ref` | PROVISIONAL. The verse of Lampas's own Old Testament this Greek verse is, `{book, chapter, verse}` with Lampas's codes (`sng` for Swete's `sol`), from TVTMS (`scripts/data/tvtms.ts`); `'none'` where Lampas has no verse for it (an Addition, the Song of the Three, a verse past the end of the Lampas chapter, a book outside the 39). Greek Ps 22:1 is `psa 23:1` and 22:2 is `psa 23:2`. `refs` lists every Lampas verse when it is more than one (`ref` is the first) |
 | `g[].t` | Swete's token as he prints it (NFC): **his capitals (`ΕΝ ΑΡΧΗ`), his brackets (`ἐγέ[νετο`) and his punctuation are kept**; nothing is looked up by it |
+| `g[].d` | **Not in the file**: the Reader's own (src/data/lxxChapter.ts, mw-u2w5klk.280). loadSeptuagintChapter takes Swete's lacuna brackets out of `t` (`withoutGaps`) and keeps his printing here, only where it differs; the Greek view draws it while Show manuscript gaps is On |
 | `g[].tr` | the SBL transliteration (NFC) of eliranwong's `03-Swete_SBL_transliterations.csv`, by the line of the word |
 | `g[].s` | `''` |
 | `g[].l`, `g[].p` | the lemma and the parsing from the annotation file; `p` is TAGNT's code (`N-NSM`, `V-AAI-3S`, `PREP`) |

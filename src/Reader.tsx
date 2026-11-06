@@ -50,7 +50,7 @@ import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { layRp2026English } from './data/rp2026English';
 import { Rp2026Sheet } from './reader/Rp2026Sheet';
-import { readingModeSetting, rp2026EnglishSetting, septuagintSetting } from './settings/definitions';
+import { readingModeSetting, rp2026EnglishSetting, septuagintGapsSetting, septuagintSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
@@ -164,6 +164,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const septuagint = isSeptuagint(chapter);
   const aligned = septuagint && septuagintAligned(chapter);
   const septuagintOn = useSetting(septuagintSetting) === 'on';
+  // Show manuscript gaps (mw-u2w5klk.280): the Greek view prints Swete's lacuna brackets only while it is On
+  const gaps = useSetting(septuagintGapsSetting) === 'on';
   const wovenSettings = useMemo(() => (septuagint ? septuagintSettings(settings, aligned) : settings), [septuagint, aligned, settings]);
   const heading = chapter ? septuagintTitle(TITLE, CHAPTER, chapter) : TITLE;
   const [rpShown, setRpShown] = useState<string | null>(null);
@@ -569,6 +571,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       view={septuagint ? septuagintView(view, weaveShown ?? false, aligned) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
+                      gaps={septuagint && gaps}
                       woven={block.map(wovenOf)}
                       selected={selected}
                       reading={readingVerse}
@@ -587,6 +590,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       view={septuagint ? septuagintView(view, weaveShown ?? false, aligned) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
+                      gaps={septuagint && gaps}
                       woven={wovenOf(first)}
                       selected={selected === first.n}
                       reading={readingVerse === first.n}

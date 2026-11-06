@@ -2,7 +2,7 @@
 // shipped and, for each Greek chapter, the chapter(s) of Lampas's own Old Testament its verses are in; a shipped book's chapter is public/data-lxx/<code>/<n>.json, the Greek chapter's number,
 // which is not always Lampas's (Greek Ps 22 is Psalm 23). loadChapter (src/data/chapter.ts) opens them for an Old Testament book while Settings > Old Testament in Greek is On.
 import { within } from './within';
-import type { BookInfo, Chapter, LexEntry } from './chapter';
+import type { BookInfo, Chapter, GreekWord, LexEntry } from './chapter';
 
 /** One book of public/data-lxx/index.json: a BookInfo of Swete's own book (`code` is Swete's, lower case) with the Lampas book it is and the Lampas chapters of each Greek chapter. */
 export interface LxxBook extends BookInfo {
@@ -26,6 +26,12 @@ export interface GreekChapter {
   /** the fingerprint of its file; '' when the index has none */
   fingerprint: string;
 }
+
+/**
+ * A word with Swete's lacuna brackets taken out ('συνετε]λέσθησαν' -> 'συνετελέσθησαν', mw-u2w5klk.280). Swete prints Codex Alexandrinus for Genesis and brackets the letters lost from its damaged
+ * leaves; the brackets sit inside a word's `t` in public/data-lxx. loadSeptuagintChapter keeps `t` bare with this and the printed form in `d`.
+ */
+export const withoutGaps = (text: string): string => text.replace(/[[\]]/g, '');
 
 let index: Promise<LxxIndex> | null = null;
 
@@ -102,5 +108,8 @@ export async function loadSeptuagintChapter(book: string, n: number): Promise<Ch
   // The words have no Strong's number: the chapter's `lex` is the lexicon's entry for each lemma the chapter uses, keyed by the lemma (wordGloss, wordDefinition).
   const lex: Record<string, LexEntry> = {};
   for (const verse of chapter.verses) for (const word of verse.g) if (Object.hasOwn(all, word.l)) lex[word.l] = all[word.l];
-  return { ...chapter, code: book, lex };
+  // Swete's lacuna brackets are inside a word's `t` ('συνετε]λέσθησαν'): `t` is made bare so lookup, speech, copy and search never see one, and the printed form stays in `d` for the Greek view to draw when asked
+  // (mw-u2w5klk.280). The file is not changed.
+  const bare = (word: GreekWord): GreekWord => (withoutGaps(word.t) === word.t ? word : { ...word, t: withoutGaps(word.t), d: word.t });
+  return { ...chapter, code: book, lex, verses: chapter.verses.map((verse) => (verse.g.some((w) => withoutGaps(w.t) !== w.t) ? { ...verse, g: verse.g.map(bare) } : verse)) };
 }

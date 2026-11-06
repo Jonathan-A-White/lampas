@@ -71,6 +71,22 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     And no English is under verse 1
     And no tip is shown
 
+  # Swete prints Codex Alexandrinus for Genesis and brackets the letters lost from its damaged leaves ('θ[εὸς λέγων]', Genesis 1:22); the Greek view draws them only with Show manuscript gaps On (mw-u2w5klk.280)
+  @uc-septuagint @greek
+  Scenario: Swete's lacuna brackets are not drawn in the Greek view, and a word under one opens its card
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
+    Then verse 22 shows no square bracket
+    And verse 22 reads in Greek "καὶ ηὐλόγησεν αὐτὰ ὁ θεὸς λέγων Αὐξάνεσθε καὶ πληθύνεσθε, καὶ πληρώσατε τὰ ὕδατα ἐν ταῖς θαλάσσαις, καὶ τὰ πετεινὰ πληθυνέσθωσαν ἐπὶ τῆς γῆς."
+    When he taps the word "πετεινὰ" in verse 22
+    Then the card shows the Lemma "πετεινός"
+
+  @uc-septuagint @greek
+  Scenario: With Show manuscript gaps on the Greek view prints the brackets as Swete did
+    Given Lampas is opened on Genesis 1 with the Septuagint on, the saved view "greek" and Show manuscript gaps "on"
+    Then verse 22 reads in Greek "καὶ ηὐλόγησεν αὐτὰ ὁ θ[εὸς λέγων] Αὐξάνεσθε καὶ πληθ[ύνεσθε, καὶ] πληρώσατε τὰ ὕδατα [ἐν ταῖς θα]λάσσαις, καὶ τὰ πετε[ινὰ πληθυ]νέσθωσαν ἐπὶ τῆς [γῆς."
+    When he taps the word "πετε" in verse 22
+    Then the card shows the Lemma "πετεινός"
+
   # With aligned chunks (scripts/lxx/align.ts, as lxx:ship writes a chapter) the Weave is on in a Septuagint chapter as in the New Testament, and the tip that it is off stands only where there are none
   @uc-septuagint @greek
   Scenario: With aligned chunks the Weave position weaves his solid lemmas in Greek and the tip is not shown

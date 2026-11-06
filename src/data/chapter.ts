@@ -50,6 +50,11 @@ export interface GreekWord {
   y?: string;
   /** PROVISIONAL, the Septuagint only: the derivation's confidence in `l` and `p`, 0 to 1 with two decimals. Absent elsewhere. */
   c?: number;
+  /**
+   * The Septuagint only (loadSeptuagintChapter): the word as Swete printed it, with his lacuna brackets ('συνετε]λέσθησαν'), present only where that differs from `t`, which is bare ('συνετελέσθησαν').
+   * The Greek view draws it while Settings > Show manuscript gaps is On; lookup, speech, copy and search read `t`.
+   */
+  d?: string;
 }
 
 export interface EnglishChunk {
