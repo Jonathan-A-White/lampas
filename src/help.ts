@@ -89,7 +89,8 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Paradigms',
     line: 'Tables of endings.',
     body: [
-      'Paradigms are tables of endings, opened as you learn the grammar. A table opened from a word’s sheet, or from See the table on a Review ending card, can show that word’s own forms: This word | The pattern. Every form the New Testament uses is laid in its cells, never a made-up one; a cell the text never uses says not in the NT, and a tap on a form opens the Reader there. Opened from a word of the Septuagint, This word lays the forms found in the Septuagint as well as the New Testament, each cell saying which; a cell neither text has says not in the Septuagint or NT.',
+      'Paradigms are tables of endings, opened as you learn the grammar. A table opened from a word’s sheet, or from See the table on a Review ending card, can show that word’s own forms: This word | The pattern. Every form the New Testament uses is laid in its cells, never a made-up one; a cell the text never uses says not in the NT, and a tap on a form opens the Reader there.',
+      'From a Septuagint word, This word also lays the Septuagint’s forms, each cell saying whether it was found in the Septuagint or the NT.',
       'With Hebrew chosen, the list also has four Hebrew tables, drawn right to left.',
     ],
   },
