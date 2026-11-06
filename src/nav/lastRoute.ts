@@ -21,7 +21,7 @@ const TRAIL_IN_MEMORY = 100;
 
 /** The paths that are somewhere to come back to. Anything else (the Unlock screen and the licence screen, if they
  * ever had an address) is not kept. */
-const KEPT_PATHS = ['#/', '#/words', '#/import', '#/test', '#/drill', '#/review', '#/today', '#/paradigms', '#/placement', '#/goal', '#/path', '#/ipa', '#/sounds', '#/studyway', '#/aboutyou', '#/memory', '#/requests', '#/conversations', '#/askmore', '#/help', '#/library', '#/lists', '#/about', '#/preface', '#/preface/robinson', '#/lessons/variants', '#/settings', '#/share'];
+const KEPT_PATHS = ['#/', '#/words', '#/import', '#/test', '#/drill', '#/review', '#/today', '#/paradigms', '#/placement', '#/goal', '#/path', '#/ipa', '#/sounds', '#/studyway', '#/aboutyou', '#/memory', '#/requests', '#/conversations', '#/askmore', '#/help', '#/library', '#/lists', '#/about', '#/preface', '#/preface/robinson', '#/lessons/variants', '#/settings', '#/tools', '#/memorize', '#/share'];
 
 /** The offsets of each address that has any, least recently written first. */
 type StoredScrolls = Record<string, Record<string, number>>;

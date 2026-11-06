@@ -9,7 +9,8 @@ import {
   saveLastRoute,
   saveScrolls,
 } from '../../src/nav/lastRoute';
-import { navigate } from '../../src/nav/route';
+import { hashFor, navigate } from '../../src/nav/route';
+import { TOOL_SCREENS } from '../../src/tools';
 
 const visit = (hash: string) => {
   window.history.pushState(null, '', `/${hash}`);
@@ -46,6 +47,9 @@ describe('the trail of places he visited', () => {
     visit('#/licence');
     expect(savedTrail()).toEqual(['#/words']);
     expect(isKeptHash('#/settings')).toBe(true);
+    // Tools and the screen of each of its doors (mw-5r3p30.754): a reopen on Words walks Back to Tools
+    expect(isKeptHash('#/tools')).toBe(true);
+    for (const route of Object.values(TOOL_SCREENS)) expect(isKeptHash(hashFor(route)), route).toBe(true);
     expect(isKeptHash('#/review')).toBe(true);
     expect(isKeptHash('#/today')).toBe(true);
     expect(isKeptHash('#/placement')).toBe(true);

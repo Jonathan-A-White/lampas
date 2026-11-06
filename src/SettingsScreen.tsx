@@ -6,22 +6,22 @@
 // (src/settings/controls/, one file per section) names for its key. A row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens the
 // page holding that section, scrolled to it (a link from elsewhere, such as the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts,
 // docs/links.md) opens the page holding that row, at the row: it is drawn whatever its dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that
-// depends on a setting that is off says to turn that on first. Your Logos library is a row of Study resources under the Logos switch, drawn while Logos is On (a link to it, '#/settings?setting=library', opens that page and marks it). docs/layout/settings.md.
+// depends on a setting that is off says to turn that on first. Words, Review, Paradigms, Verse lists, Memorize and Your Logos library left for the Tools screen (src/ToolsScreen.tsx, mw-5r3p30.754); the search still finds them, 'in Tools'. docs/layout/settings.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
-import { backTo, useAddress } from './nav/route';
+import { backTo, navigate, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { CONTROLS } from './settings/controls';
 import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { bringRowIntoView, HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
-import { backToSettingsHome, groupIdOf, settingKeyOf } from './settings/link';
+import { backToSettingsHome, groupIdOf, movedTool, settingKeyOf } from './settings/link';
 import { searchLibrary } from './settings/librarySearch';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { GREEK_LEVELS, greekLevelOf } from './settings/definitions/greekInterest';
 import { HEBREW_LEVELS } from './settings/definitions/hebrewInterest';
-import { HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
+import { HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, visibleToolRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
 import { settingsForTutor } from './settings/tutorSettings';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -59,6 +59,9 @@ function sectionOf(hash: string): string | null {
 export function SettingsScreen() {
   const address = useAddress();
   const wanted = sectionOf(address);
+  // an address kept from before a row moved to Tools (mw-5r3p30.754) opens that tool's screen in its place
+  const moved = movedTool(address);
+  useEffect(() => void (moved && navigate(moved, { replace: true })), [moved]);
   // a link to one setting (src/settings/link.ts) marks its row until his next tap
   const linked = settingKeyOf(address);
   const [tapped, setTapped] = useState<string | null>(null);
@@ -116,6 +119,7 @@ export function SettingsScreen() {
   if (!page) {
     const searching = query.trim() !== '';
     const found = searching && values ? visibleRows(values, query).filter((r) => aiAllowed || !r.licenceOnly) : [];
+    const foundTools = searching && values ? visibleToolRows(values, query) : [];
     // 'Which languages?' is the first thing on the home, and under it the dial of each language chosen (mw-3ased2.2, mw-gdcyf98.2); a search lists matching rows instead
     // (a link to a dial whose language is not chosen draws it all the same, marked, as a link does for any row: rowsAt)
     const dialRows = values ? rows.filter((r) => r.section === 'dial') : [];
@@ -126,7 +130,7 @@ export function SettingsScreen() {
           <div ref={contentRef}>
             <SettingsSearch query={query} onChange={setQuery} />
             {searching ? (
-              values ? <Found rows={found} books={values['resource.logos'] === 'on' ? searchLibrary(query) : NO_BOOKS} query={query} /> : null
+              values ? <Found rows={found} tools={foundTools} books={values['resource.logos'] === 'on' ? searchLibrary(query) : NO_BOOKS} query={query} /> : null
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (

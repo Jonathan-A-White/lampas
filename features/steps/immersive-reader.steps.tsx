@@ -20,7 +20,7 @@ import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recogni
 import { ENGLISH_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages';
-import { getSettingsDoor, openSettings, querySettingsDoor } from '../../tests/unit/openSettings';
+import { getMenuButton, openSettings, queryMenuButton } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -184,12 +184,12 @@ const firstWord = () => document.querySelector<HTMLElement>('[data-verse="1"] [r
 const chips = () => screen.getByTestId('reader-chips');
 const barsAway = () => {
   expect(chips().closest('[data-away]')).not.toBeNull();
-  expect(querySettingsDoor()).toBeNull();
+  expect(queryMenuButton()).toBeNull();
 };
 const barsShown = () => {
   expect(document.querySelectorAll('[data-away]')).toHaveLength(0);
   expect(chips()).toBeInTheDocument();
-  expect(getSettingsDoor()).toBeInTheDocument();
+  expect(getMenuButton()).toBeInTheDocument();
   // the Talk bar and the round Ask button are gone (mw-5r3p30.882)
   expect(screen.queryByRole('button', { name: 'Talk', exact: true })).toBeNull();
 };

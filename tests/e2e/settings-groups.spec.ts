@@ -86,12 +86,12 @@ test('search on the home lists the rows that match with their group; choosing on
   await expect(group(page, 'Daily')).toBeVisible();
 });
 
-test('search finds a row that is not a setting of the registry (Words) and opens its page at its section', async ({ page }) => {
+test('search finds a tool that moved to Tools (Words), says so and opens its screen', async ({ page }) => {
   await openSettingsPage(page);
   await page.getByRole('searchbox', { name: 'Search settings' }).fill('words you are learning');
+  await expect(page.locator('[data-found="link.words"]')).toContainText('in Tools');
   await page.locator('[data-found="link.words"]').click();
-  await expect(heading(page, 'Account')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Words', exact: true })).toBeVisible();
+  await expect(heading(page, 'Words')).toBeVisible();
 });
 
 test('a detail hidden while its setting is off shows on its page when a link names it', async ({ page }) => {

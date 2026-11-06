@@ -53,7 +53,7 @@ describe('the rows', () => {
 
   it('lists the study resources and the links as rows too, so nothing on the screen is outside the list', () => {
     expect(keys(ROWS)).toEqual(
-      expect.arrayContaining(['resource.strongs', 'resource.logos', 'link.aboutyou', 'link.memory', 'link.studyway', 'link.goal', 'link.words', 'link.review', 'link.paradigms', 'link.askmore', 'link.conversations', 'link.about']),
+      expect.arrayContaining(['resource.strongs', 'resource.logos', 'link.aboutyou', 'link.memory', 'link.studyway', 'link.goal', 'link.askmore', 'link.conversations', 'link.about']),
     );
   });
 
@@ -101,7 +101,7 @@ describe('visibleRows', () => {
   });
 
   it('shows the Logos settings for "logos", and the rows whose help names Logos after them in the list\'s order', () => {
-    expect(keys(visibleRows(ALL_ON, 'logos')).slice(0, 3)).toEqual(['resource.logos', 'library', 'logosBible']);
+    expect(keys(visibleRows(ALL_ON, 'logos')).slice(0, 2)).toEqual(['resource.logos', 'logosBible']);
     expect(keys(visibleRows(ALL_ON, 'logos'))).toEqual(expect.arrayContaining(['dailyPlan', 'dailyDevotional']));
   });
 

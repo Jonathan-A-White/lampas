@@ -33,7 +33,7 @@ app says "Update ready, tap to reload").
 1. Open Romans 8 and tap the play button at the top, **Read from the top**. A bar appears above the big Talk button with
    **Pause**, **Restart** and **Stop**.
 2. Tap **Pause**: the voice stops and the first button says **Resume**.
-3. Tap the gear, **Settings**: the bar is now at the foot of Settings and says **Resume**. Tap **‹ Reader**: it still says
+3. Tap the Menu (three lines), **Settings**: the bar is now at the foot of Settings and says **Resume**. Tap **‹ Reader**: it still says
    **Resume**.
 4. Tap **Resume**: the reading goes on from the sentence it stopped at.
 5. Tap **Restart**: the reading starts again from the beginning. Tap **Stop**: it goes quiet and the bar goes away.

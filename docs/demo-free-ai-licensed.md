@@ -16,7 +16,7 @@ https://lampas.allmymind.org with a fresh key, so it holds none.
 2. Tap a word. Its sheet opens (the word, its gloss, how to say it). Tap **Done**. Nowhere is there **Ask the tutor**,
    **Help with this word**, a **Talk** bar, **Hold to ask**, **Read it aloud** (with its **Hold to read** bar) or a
    **Reading ladder**. Tap a verse number: the verse sheet has only **Listen**, **Copy** and **Share**.
-3. Tap the gear for **Settings**. Under **Goal** pick **Book** **1 John**, then tap **Progress**: the **Goal** screen opens.
+3. Tap the Menu (three lines), then **Settings**. Under **Goal** pick **Book** **1 John**, then tap **Progress**: the **Goal** screen opens.
    Tap **Learn next**: the idea sheet (a lesson) opens. Back out to **Settings**.
 4. In **Settings**, scroll to **Tips**, **The tutor's responses**, **Asking the tutor** (**Ask by**),
    **Hebrew in the tutor** and **My study way** (**Quiz goal**): each option shows **Off**, greyed, so it cannot be turned

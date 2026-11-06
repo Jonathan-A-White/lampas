@@ -37,7 +37,7 @@ Mayor.
 2. Ask the tutor to switch: hold **Hold to ask** and say "Let me type instead". The answer says it has switched **Ask by**
    to Typing and shows **Changed: Ask by: Typing** under it. The panel is now type-first: the text box and **Send** are
    there at once, with a small microphone ("Ask by speaking") beside them, and no big bar.
-3. Tap the gear to open **Settings** and find **Ask by** under **Asking the tutor** (or type "Ask by" in **Search
+3. Tap the Menu (three lines), then **Settings**, and find **Ask by** under **Asking the tutor** (or type "Ask by" in **Search
    settings**). **Typing** is chosen. Choose **Speaking**; tap **‹ Reader**, open the Verse view and **Ask the tutor**
    again: the big **Hold to ask** bar is back, with **Type a question** under it.
 4. Choose **Typing** in **Settings** again, then close the app and open it: the panel is still type-first. Tap the small

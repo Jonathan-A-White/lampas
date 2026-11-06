@@ -181,7 +181,7 @@ test('leaving the Reader leaves full screen, and with Immersive reader Off nothi
   await tapText(page);
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 0 });
 
-  // the bars are still shown: the gear is in the header
+  // the bars are still shown: the Menu is in the header
   await openSettings(page);
   await expect(settingsHeading(page)).toBeVisible();
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 1 });

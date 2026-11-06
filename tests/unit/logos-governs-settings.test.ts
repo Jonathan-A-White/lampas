@@ -1,8 +1,8 @@
-// The Logos switch governs everything Logos (mw-rfjjzd.23): Your Logos library, Bible in Logos (three parts) and the Logos-only Daily rows sit under the Logos switch in Study resources
-// and are drawn only while it is On; no licence gates any of them.
+// The Logos switch governs everything Logos (mw-rfjjzd.23): Bible in Logos (three parts) sits under the Logos switch in Study resources, the Logos-only Daily rows hang from it, and Your Logos library (a door of Tools
+// since mw-5r3p30.754) is drawn there only while it is On; no licence gates any of them.
 import { describe, expect, it } from 'vitest';
 import type { GreekLevel } from '../../src/settings/definitions/greekInterest';
-import { GROUPS, ROWS, SECTIONS, orderResourceRows, rowOf, visibleRows, type SettingsRow } from '../../src/settings/rows';
+import { GROUPS, ROWS, SECTIONS, TOOL_ROWS, orderResourceRows, rowOf, visibleRows, visibleToolRows, type SettingsRow } from '../../src/settings/rows';
 
 const study = (values: Record<string, string>): string[] =>
   visibleRows({ languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', ...values }, '')
@@ -12,7 +12,7 @@ const study = (values: Record<string, string>): string[] =>
     .filter((key) => key !== 'audioBible' && key !== 'readingPlan');
 const keysOf = (values: Record<string, string>): string[] => visibleRows({ languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', ...values }, '').map((r) => r.key);
 
-const UNDER_LOGOS = ['library', 'logosBible', 'logosBibleOt', 'logosBibleApocrypha'];
+const UNDER_LOGOS = ['logosBible', 'logosBibleOt', 'logosBibleApocrypha'];
 
 describe('Study resources with Logos Off', () => {
   it('draws the two switches and nothing of Logos under them', () => {
@@ -22,8 +22,11 @@ describe('Study resources with Logos Off', () => {
 });
 
 describe('Study resources with Logos On', () => {
-  it('draws the library and the three Bibles in Logos directly beneath the Logos switch, in that order', () => {
+  it('draws the three Bibles in Logos directly beneath the Logos switch, in that order, and the library among the Tools', () => {
     expect(study({ 'resource.logos': 'on' })).toEqual(['resource.strongs', 'resource.logos', ...UNDER_LOGOS]);
+    const values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5' };
+    expect(visibleToolRows({ ...values, 'resource.logos': 'on' }, '').map((r) => r.key)).toContain('library');
+    expect(visibleToolRows({ ...values, 'resource.logos': 'off' }, '').map((r) => r.key)).not.toContain('library');
   });
 
   it('has no section of its own for Bible in Logos any more', () => {
@@ -33,7 +36,7 @@ describe('Study resources with Logos On', () => {
 
   it('each row beneath the switch depends on it and none needs a licence', () => {
     for (const key of UNDER_LOGOS) {
-      const row = rowOf(key) as SettingsRow;
+      const row = (rowOf(key) ?? TOOL_ROWS.find((r) => r.key === key)) as SettingsRow;
       expect(row.dependsOn?.key).toBe('resource.logos');
       expect(row.ai).toBeUndefined();
     }
@@ -65,11 +68,11 @@ describe('the order the screen draws (orderResourceRows)', () => {
       .filter((r) => r.section === 'resources')
       .map((r) => r.key);
 
-  it('keeps the library and the Bibles directly under the Logos switch at every step of the dial', () => {
+  it('keeps the Bibles directly under the Logos switch at every step of the dial', () => {
     for (const level of [1, 5] as const) {
       const keys = drawn({ 'resource.logos': 'on' }, level);
       const at = keys.indexOf('resource.logos');
-      expect(keys.slice(at + 1, at + 5)).toEqual(UNDER_LOGOS);
+      expect(keys.slice(at + 1, at + 4)).toEqual(UNDER_LOGOS);
     }
   });
 

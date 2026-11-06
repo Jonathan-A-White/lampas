@@ -7,7 +7,7 @@ import { countDue, LESSON_KIND, listDue, recordRound, reviewsOf } from './data/r
 import { parsePassageKey, passageLabel } from './approaches';
 import { DAY, type Grade } from './data/schedule';
 import { type Random } from './data/quiz';
-import { backTo, navigate, openParadigm, openVerseRange } from './nav/route';
+import { navigate, openParadigm, openVerseRange } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { askForMoreItems } from './review/moreItems';
 import { KINDS, flashGrade, isGradedChoice, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
@@ -18,7 +18,8 @@ import { rowOutcome } from './review/rowOutcome';
 import type { RunningRound } from './review/heldRound';
 import { hasPractise, takePractise } from './review/practise';
 import { drawReviewRound } from './review/round';
-import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { ScreenHeader } from './ScreenHeader';
+import { ToolBack } from './ToolBack';
 import { HintCard } from './tips/HintCard';
 import { REVIEW_OPENED } from './tips/hints';
 import { languageFact } from './tutor/screen';
@@ -176,7 +177,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
 
   const header = (subtitle?: string) => (
     <>
-      <ScreenHeader title="Review" subtitle={subtitle} back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
+      <ScreenHeader title="Review" subtitle={subtitle} back={<ToolBack fallback="home" label="‹ Reader" />} />
       <HintCard event={REVIEW_OPENED} className="mx-4 mt-2 shrink-0" />
     </>
   );

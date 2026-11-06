@@ -20,7 +20,7 @@ listen; without one, **Type a question** does the same job.
 ## The Reader
 
 1. Open Lampas. It opens the Reader on **Romans 8** (or where you left off). The title at the top is a button with a small arrow;
-   beside it are **English** and **Greek**, then the play button and the gear. Right: verse numbers, section headings and the
+   beside it are **English** and **Greek**, then the play button and the Menu. Right: verse numbers, section headings and the
    verses are laid out as before, the text is large and clear, and the chapter scrolls inside its own box with the header staying put.
 2. Tap **Greek**, then **English**. Right: the text changes language each time and the chosen button is filled.
 3. Tap the title. Right: the chapter picker opens with **Preface** above the books; choose a book and a chapter and that
@@ -34,13 +34,13 @@ listen; without one, **Type a question** does the same job.
    shows above **Waiting for the tutor…** and then the answer is drawn under the verse.
 7. Choose **Practise**, then **Quiz**, then tap **Start the quiz**. Right: the Talk sheet opens, titled "Quiz on Romans 8:3" (or the verse you
    chose), and the tutor asks its first question. Press **Back** to close the sheet, then **‹ Reader** to leave the Verse view.
-8. Open the Quick test: tap the gear, **Words** (under **More**), then **Test**. Right: **Quick test** shows a Greek word with
+8. Open the Quick test: tap the Menu (three lines), **Tools**, **Words**, then **Test**. Right: **Quick test** shows a Greek word with
    four meanings to tap; after you tap one it says right or wrong, says the word aloud, and offers **Next** and **Ask the tutor**.
    Tap **‹ Reader** to go back to the chapter.
 
 ## Settings
 
-1. In the Reader tap the gear, **Settings**. Right: the **Settings** screen opens with **‹ Reader** at the left, a field
+1. In the Reader tap the Menu (three lines), **Settings**. Right: the **Settings** screen opens with **‹ Reader** at the left, a field
    **Search settings** at the top, then the sections (**Appearance**, **Layout**, **Section headings**, **Weave**, and so on).
 2. Tap **Search settings** and type `text`. Right: only the rows that match stay, and **Text size** is one of them; clear the
    field and the whole list returns. Type `zzz`: the screen says "Nothing in Settings matches “zzz”." Clear it again.

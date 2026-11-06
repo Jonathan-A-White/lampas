@@ -10,8 +10,8 @@ Feature: A double tap that changes the screen or opens a sheet does nothing with
     When he taps "About" and at once taps "Preface"
     Then the address is "#/about"
 
-  Scenario: A second tap on Settings' Paradigms row does not open a table
-    Given he is on "#/settings?group=account" and a screen ignores taps for a moment
+  Scenario: A second tap on Tools' Paradigms row does not open a table
+    Given he is on "#/tools" and a screen ignores taps for a moment
     When he taps "Paradigms" and at once taps "Noun endings"
     Then the address is "#/paradigms"
 

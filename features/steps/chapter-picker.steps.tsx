@@ -15,10 +15,9 @@ import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { BOOKS } from '../../src/data/books';
 import { openTutor } from './open-tutor';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openTool } from '../../tests/unit/openSettings';
 
 
 afterAll(() => {
@@ -200,9 +199,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he opens {string} chapter {int} from the picker', (_, book: string, n: number) => openFromPicker(book, n));
     When('he goes to the Test screen', async () => {
       await screen.findByRole('heading', { name: '1 John 1', level: 1 });
-      await openSettings(user);
-      await openSettingsGroup(user, 'account');
-      await user.click(await screen.findByRole('button', { name: 'Words' }));
+      await openTool(user, 'Words');
       await user.click(await screen.findByRole('button', { name: 'Test' }));
     });
     Then('the Test screen offers the {string}', async (_, label: string) => {

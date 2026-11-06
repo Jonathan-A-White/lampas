@@ -21,7 +21,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { fixturePath } from '../../tests/support/fixture-path';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openSettings, openTool } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -214,9 +214,11 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(logos);
       await waitFor(() => expect(logos).toHaveAttribute('aria-checked', 'true'));
     });
-    And('he opens Your Logos library from Settings', async () => {
-      // its door is the first row of Study resources (mw-5r3p30.837)
-      await user.click(await screen.findByRole('button', { name: /^Your Logos library/ }));
+    And('he opens Your Logos library from Tools', async () => {
+      // its door is a row of Tools (mw-5r3p30.754): back from Study resources to the Reader, then the Menu's Tools
+      await user.click(await screen.findByRole('button', { name: '‹ Settings' }));
+      await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
+      await openTool(user, 'Your Logos library');
       await screen.findByRole('heading', { name: 'Your Logos library', level: 1 });
     });
     And('he opens its Grammars page', async () => {

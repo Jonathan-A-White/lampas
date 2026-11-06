@@ -1,14 +1,15 @@
 // src/settings/link.ts — a link to each setting (mw-5r3p30.502): '#/settings?setting=<key>' opens Settings scrolled to that row, marks it and shows it though the
 // search or its dependency would hide it (src/SettingsScreen.tsx, src/settings/rows.ts rowsAt). The key is one of the registry's SETTINGS (src/settings/registry.ts):
-// a key that is not (the door row 'library' is the one exception) has no link, so the tutor's invented key (src/TutorLinks.tsx) and a mistyped address draw nothing. docs/links.md.
+// a key that is not (the door row 'offlineCopy' is the one exception) has no link, so the tutor's invented key (src/TutorLinks.tsx) and a mistyped address draw nothing. docs/links.md.
 import { forgetScrollsAt } from '../nav/scrollMemory';
 import { previousAddress } from '../nav/lastRoute';
-import { openHash, pathOf, replaceHash } from '../nav/route';
+import { openHash, pathOf, replaceHash, type Route } from '../nav/route';
+import { TOOL_SCREENS } from '../tools';
 import { settingOf } from './registry';
 import { groupById, rowOf, type GroupId } from './rows';
 
-/** The rows that are no setting but have a link: the door to Your Logos library, a row of Study resources under the Logos switch (mw-rfjjzd.23), and Keep on this phone (mw-lcv9z3g.4). */
-const DOOR_ROWS: readonly string[] = ['library', 'offlineCopy'];
+/** The rows that are no setting but have a link: Keep on this phone (mw-lcv9z3g.4). Your Logos library was one until it moved to Tools (mw-5r3p30.754, movedTool below). */
+const DOOR_ROWS: readonly string[] = ['offlineCopy'];
 
 const linkable = (key: string): boolean => settingOf(key) !== undefined || DOOR_ROWS.includes(key);
 
@@ -61,6 +62,15 @@ export function groupIdOf(hash: string): GroupId | null {
   const q = hash.indexOf('?');
   const id = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('group');
   return id !== null ? (groupById(id)?.id ?? null) : null;
+}
+
+/** The screen an old Settings address for a row that has moved to Tools now belongs to ('#/settings?setting=library' is the Library, '#/settings?setting=link.words' Words), or null when it names no such row.
+ *  The Settings screen replaces such an address by that screen's, so a link kept from before the move still lands on the tool (mw-5r3p30.754). */
+export function movedTool(hash: string): Route | null {
+  if (pathOf(hash) !== '#/settings') return null;
+  const q = hash.indexOf('?');
+  const key = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('setting');
+  return key !== null && Object.hasOwn(TOOL_SCREENS, key) ? TOOL_SCREENS[key] : null;
 }
 
 /** Opens the page of the group `id` as a new Back step, from the home; it starts at the top, not where he last left the page. */
