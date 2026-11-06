@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.137",
+    "date": "2026-11-06",
+    "story": "mw-qtu3zvz.2",
+    "kind": "new",
+    "text": "A Sermons button beside Maps on a verse lists Spurgeon's and Matthew Henry's sermons preached on that verse and on its chapter, each opening on its own page."
+  },
+  {
+    "version": "0.7.137",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1058",
+    "kind": "fixed",
+    "text": "a quick double tap on Share no longer sends only the link; the Share sheet opens and waits for your choice."
+  },
+  {
     "version": "0.7.136",
     "date": "2026-11-06",
     "story": "mw-5r3p30.1091",

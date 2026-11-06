@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.137
+_2026-11-06_
+- New: A Sermons button beside Maps on a verse lists Spurgeon's and Matthew Henry's sermons preached on that verse and on its chapter, each opening on its own page.
+- Fixed: a quick double tap on Share no longer sends only the link; the Share sheet opens and waits for your choice.
+
 ## 0.7.136
 _2026-11-06_
 - New: when "Open in the app" does not leave the browser, the strip now says which Android switch to turn on.
