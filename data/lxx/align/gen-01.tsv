@@ -1,0 +1,175 @@
+ref	run	text	g	mark	confidence
+Gen.1:1	1	the	-		0.80
+Gen.1:2	1	was	-		0.80
+Gen.1:2	2	the	-		0.80
+Gen.1:2	3	of	-		0.80
+Gen.1:3	1	Let there	-		0.80
+Gen.1:3	2	there	-		0.80
+Gen.1:4	1	it was	-		0.80
+Gen.1:5	1	he	-		0.80
+Gen.1:5	2	there	-		0.80
+Gen.1:5	3	there	-		0.80
+Gen.1:5	4	morning,	17		0.80
+Gen.1:5	4	the first	19		0.80
+Gen.1:6	1	Let there	-		0.80
+Gen.1:6	2	a	-		0.80
+Gen.1:6	3	the	-		0.80
+Gen.1:6	4	of	-		0.80
+Gen.1:6	5	let it	-		0.80
+Gen.1:6	6	a	-		0.80
+Gen.1:6	7	it	-		0.80
+Gen.1:7	1	firmament,	5		0.80
+Gen.1:7	2	which was	-		0.80
+Gen.1:8	1	it was	-		0.80
+Gen.1:8	2	there	-		0.80
+Gen.1:8	3	there	-		0.80
+Gen.1:8	4	the	-		0.80
+Gen.1:9	1	Let	-		0.80
+Gen.1:9	2	which is	7	unsure	0.50
+Gen.1:9	3	be collected	4		0.80
+Gen.1:9	4	place,	12		0.80
+Gen.1:9	5	let	-		0.80
+Gen.1:9	6	land	-		0.80
+Gen.1:9	6	appear,	15		0.80
+Gen.1:9	7	it	-		0.80
+Gen.1:9	8	which was	25	unsure	0.50
+Gen.1:9	9	was collected	22		0.80
+Gen.1:9	10	places,	31		0.80
+Gen.1:9	11	land	-		0.80
+Gen.1:9	11	appeared.	34		0.80
+Gen.1:10	1	land	-		0.80
+Gen.1:10	2	of	-		0.80
+Gen.1:10	3	he	-		0.80
+Gen.1:10	4	it was	-		0.80
+Gen.1:11	1	Let	-		0.80
+Gen.1:11	2	bring forth	4		0.80
+Gen.1:11	2	the herb	7		0.80
+Gen.1:11	2	of	-		0.80
+Gen.1:11	3	to its	-		0.80
+Gen.1:11	4	to its	-		0.80
+Gen.1:11	5	the	-		0.80
+Gen.1:11	6	tree	17		0.80
+Gen.1:11	6	bearing	19		0.80
+Gen.1:11	7	is	-		0.80
+Gen.1:11	8	its	-		0.80
+Gen.1:12	1	forth	-		0.80
+Gen.1:12	1	the herb	4		0.80
+Gen.1:12	1	of	-		0.80
+Gen.1:12	2	to its	-		0.80
+Gen.1:12	3	to its	-		0.80
+Gen.1:12	4	the	-		0.80
+Gen.1:12	5	tree	14		0.80
+Gen.1:12	5	bearing	16		0.80
+Gen.1:12	6	is	-		0.80
+Gen.1:12	7	its	-		0.80
+Gen.1:12	7	kind	25		0.80
+Gen.1:12	7	on	-		0.80
+Gen.1:12	8	was	-		0.80
+Gen.1:13	1	there	-		0.80
+Gen.1:13	2	there	-		0.80
+Gen.1:13	3	the	-		0.80
+Gen.1:14	1	Let there be	4		0.80
+Gen.1:14	2	of	-		0.80
+Gen.1:14	3	light upon	-		0.80
+Gen.1:14	4	to	-		0.80
+Gen.1:14	5	let them	-		0.80
+Gen.1:15	1	let them	-		0.80
+Gen.1:15	2	of	-		0.80
+Gen.1:15	3	as to	-		0.80
+Gen.1:15	4	it	-		0.80
+Gen.1:16	1	also.	26	unsure	0.50
+Gen.1:17	1	of	-		0.80
+Gen.1:17	2	as to	-		0.80
+Gen.1:18	1	to	-		0.80
+Gen.1:18	2	to	-		0.80
+Gen.1:18	3	it was	-		0.80
+Gen.1:19	1	there	-		0.80
+Gen.1:19	2	there	-		0.80
+Gen.1:19	3	the	-		0.80
+Gen.1:20	1	Let	-		0.80
+Gen.1:20	2	forth	-		0.80
+Gen.1:20	3	winged creatures	11		0.80
+Gen.1:20	4	above	13		0.80
+Gen.1:20	5	in	16	unsure	0.50
+Gen.1:20	6	of	19	unsure	0.50
+Gen.1:20	7	it	-		0.80
+Gen.1:21	1	whales,	5		0.80
+Gen.1:21	2	every	9		0.80
+Gen.1:21	3	brought	-		0.80
+Gen.1:21	4	to	-		0.80
+Gen.1:21	5	kinds,	18		0.80
+Gen.1:21	6	every	21		0.80
+Gen.1:21	6	creature that flies	22		0.80
+Gen.1:21	6	with wings	23		0.80
+Gen.1:21	7	to its	-		0.80
+Gen.1:21	8	they were	-		0.80
+Gen.1:22	1	let	-		0.80
+Gen.1:22	2	creatures that fly	18		0.80
+Gen.1:22	2	be	-		0.80
+Gen.1:23	1	there	-		0.80
+Gen.1:23	2	there	-		0.80
+Gen.1:23	3	the	-		0.80
+Gen.1:24	1	Let	-		0.80
+Gen.1:24	2	forth	-		0.80
+Gen.1:24	3	creature	7		0.80
+Gen.1:24	4	to its	-		0.80
+Gen.1:24	5	beasts of	-		0.80
+Gen.1:24	6	to their	-		0.80
+Gen.1:24	7	it	-		0.80
+Gen.1:25	1	beasts of	-		0.80
+Gen.1:25	2	to their	-		0.80
+Gen.1:25	3	to their	-		0.80
+Gen.1:25	4	of	-		0.80
+Gen.1:25	5	to	-		0.80
+Gen.1:25	6	kind,	22		0.80
+Gen.1:25	7	they were	-		0.80
+Gen.1:26	1	Let us	-		0.80
+Gen.1:26	2	to	-		0.80
+Gen.1:26	3	let them have	-		0.80
+Gen.1:26	4	over	-		0.80
+Gen.1:26	5	of	-		0.80
+Gen.1:26	6	over	-		0.80
+Gen.1:26	7	flying creatures	20		0.80
+Gen.1:26	7	of	-		0.80
+Gen.1:26	8	over	-		0.80
+Gen.1:26	9	over	-		0.80
+Gen.1:26	10	that	-		0.80
+Gen.1:27	1	to the	-		0.80
+Gen.1:27	2	of	-		0.80
+Gen.1:27	3	he	-		0.80
+Gen.1:27	4	he	-		0.80
+Gen.1:28	1	have	-		0.80
+Gen.1:28	2	over	-		0.80
+Gen.1:28	3	of	-		0.80
+Gen.1:28	4	flying creatures	24		0.80
+Gen.1:28	4	of	25	unsure	0.50
+Gen.1:28	5	that	-		0.80
+Gen.1:29	1	I have	-		0.80
+Gen.1:29	2	to	-		0.80
+Gen.1:29	3	itself	24		0.80
+Gen.1:29	3	the	-		0.80
+Gen.1:29	4	of	-		0.80
+Gen.1:29	5	that is	-		0.80
+Gen.1:29	6	to	-		0.80
+Gen.1:29	7	it shall	-		0.80
+Gen.1:30	1	to	-		0.80
+Gen.1:30	2	beasts of	-		0.80
+Gen.1:30	3	to	-		0.80
+Gen.1:30	4	flying creatures	9		0.80
+Gen.1:30	4	of	-		0.80
+Gen.1:30	5	to	-		0.80
+Gen.1:30	6	itself	23		0.80
+Gen.1:30	6	the breath	24		0.80
+Gen.1:30	6	of	-		0.80
+Gen.1:30	7	even	26		0.80
+Gen.1:30	7	every	27		0.80
+Gen.1:30	8	plant	28		0.80
+Gen.1:30	9	it	-		0.80
+Gen.1:31	1	the	4		0.80
+Gen.1:31	1	things that	6		0.80
+Gen.1:31	1	he had	-		0.80
+Gen.1:31	2	they were	-		0.80
+Gen.1:31	2	very	11		0.80
+Gen.1:31	3	there	-		0.80
+Gen.1:31	4	there	-		0.80
+Gen.1:31	5	the	-		0.80

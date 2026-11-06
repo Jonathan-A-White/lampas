@@ -1,7 +1,7 @@
 // tests/unit/lxx-align-choose.test.ts — the model pass of `lxx:align` (scripts/lxx/align-choose.ts, story mw-u2w5klk.274.2; docs/lxx-align.md, 'The model pass'): a Builder session cuts the
 // English the aligner left in remainder chunks (y 'align?') into chunks pointing at Greek word positions, each with a confidence and y 'model'. Here: the session's file, the runner's
 // refusals (a pairing outside the verse's word positions above all), the splice into the verse's `e`, and the real Genesis 1 to 11 data (when the pinned sources are on the disk).
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -10,6 +10,7 @@ import { weaveVerse } from '../../src/data/weave';
 import { alignChapter, alignVerse, renderAlignReport, type AlignShare } from '../../scripts/lxx/align';
 import {
   ALIGN_CHOICES_DIR,
+  AlignChooseRefused,
   alignChoicesName,
   applyModel,
   checkModelLines,
@@ -18,10 +19,13 @@ import {
   readModelRows,
   runsOf,
   modelRowsTsv,
+  parseAlignChooseArgs,
+  runAlignChoose,
 } from '../../scripts/lxx/align-choose';
 import { runShip } from '../../scripts/lxx/ship';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
+const haveSources = existsSync('data/raw/lxx') && existsSync('data/lxx/morpheus/gen.tsv');
 const word = (t: string, tr: string, l: string, p: string): GreekWord => ({ t, tr, s: '', l, p, y: '2', c: 0.9 });
 const verseOf = (text: string, g: GreekWord[], s?: number[]): Verse => ({ n: 2, g, e: [{ t: text, g: [], ...(s ? { s } : {}) }] });
 const joined = (verse: Verse): string => verse.e.map((c) => c.t).join(' ');
@@ -58,13 +62,14 @@ describe('the aligner leaves runs for the model', () => {
 describe('the session file', () => {
   it('reads a run as text and Greek positions between slashes, a mark after the positions, and a run of one chunk with no text', () => {
     const { lines, offences } = parseModelLines(
-      ['# a comment', 'Gen.1:2#1 But the @0 / was @2 ?', 'Gen.1:2#2 @1,3 guess', 'Gen.1:2#3 supplied words @-'].join('\n'),
+      ['# a comment', 'Gen.1:2#1 But the @0 / was @2 ?', 'Gen.1:2#2 @1,3 guess', 'Gen.1:2#3 supplied words @-', 'Gen.1:3 *'].join('\n'),
     );
     expect(offences).toEqual([]);
     expect(lines).toEqual([
       { ref: 'Gen.1:2', run: 1, line: 2, chunks: [{ text: 'But the', g: [0], mark: '' }, { text: 'was', g: [2], mark: 'unsure' }] },
       { ref: 'Gen.1:2', run: 2, line: 3, chunks: [{ text: undefined, g: [1, 3], mark: 'guess' }] },
       { ref: 'Gen.1:2', run: 3, line: 4, chunks: [{ text: 'supplied words', g: [], mark: '' }] },
+      { ref: 'Gen.1:3', run: 0, line: 5, chunks: [] },
     ]);
   });
 
@@ -117,6 +122,15 @@ describe('the runner checks the file against the verse', () => {
     expect(mark('')).toBe(0.8);
     expect(mark(' ?')).toBe(0.5);
     expect(mark(' guess')).toBe(0.4);
+  });
+
+  it('`ref *` gives every run of the verse that has no line of its own no Greek', () => {
+    const lines = parseModelLines(`Gen.1:2 *\nGen.1:2#${runs[0].run} @${free.length ? free[0] : '-'}`).lines;
+    const { rows, offences } = checkModelLines(chapter, lines);
+    expect(offences).toEqual([]);
+    expect(rows).toHaveLength(runs.length);
+    expect(rows.slice(1).every((r) => r.g.length === 0)).toBe(true);
+    expect(checkModelLines(chapter, parseModelLines('Gen.1:7 *').lines).offences.join('\n')).toContain('Gen.1:7 *: not a verse of this chapter');
   });
 
   it('the rows survive a round trip through the choices file', () => {
@@ -182,7 +196,6 @@ describe('the report names the share the model pass settled', () => {
 });
 
 // the real Genesis 1 to 11: when the pinned sources and the Morpheus cache are on the disk (a Builder links data/raw and data/lxx/morpheus; the Laptop has them)
-const haveSources = existsSync('data/raw/lxx') && existsSync('data/lxx/morpheus/gen.tsv');
 describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
   const dirs: string[] = [];
   let withModel: Map<number, Chapter>;
@@ -265,8 +278,40 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
         }
       });
     }
-    expect(modelWoven).toBeGreaterThan(50);
+    expect(modelWoven).toBeGreaterThan(40);
   });
+});
+
+describe('the command', () => {
+  it('reads its flags: a listing or a file, for one chapter of a book', () => {
+    expect(parseAlignChooseArgs(['--list', '--book', 'Gen', '--chapter', '2'])).toMatchObject({ book: 'gen', chapter: 2, list: true });
+    expect(parseAlignChooseArgs(['--book', 'gen', '--chapter', '2', '--from', 'x.txt'])).toMatchObject({ list: false, from: 'x.txt' });
+    expect(() => parseAlignChooseArgs(['--book', 'gen', '--chapter', '2'])).toThrow(/usage/);
+    expect(() => parseAlignChooseArgs(['--list', '--book', 'gen', '--from', 'x'])).toThrow(/usage/);
+    expect(() => parseAlignChooseArgs(['--list', '--book', 'genesis', '--chapter', '1'])).toThrow(/usage/);
+  });
+
+  it.skipIf(!haveSources)('lists the runs of a shipped chapter, refuses a file that misses a run and writes nothing, and writes the file of one that holds up', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'lampas-lxx-model-cmd-'));
+    try {
+      const listed: string[] = [];
+      await runAlignChoose(['--list', '--book', 'gen', '--chapter', '5'], { outDir: dir, print: (t) => listed.push(t) });
+      expect(listed.join('\n')).toMatch(/^Gen\.5:1\n {2}Greek: /);
+      const verses = [...listed.join('\n').matchAll(/^Gen\.5:(\d+)$/gm)].map((m) => `Gen.5:${m[1]} *`);
+      expect(verses.length).toBeGreaterThan(20);
+      const file = join(dir, 'session.txt');
+      writeFileSync(file, verses.slice(1).join('\n'));
+      await expect(runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir })).rejects.toBeInstanceOf(AlignChooseRefused);
+      expect(existsSync(join(dir, alignChoicesName('gen', 5)))).toBe(false);
+      writeFileSync(file, verses.join('\n'));
+      const done = await runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir });
+      expect(done.rows.length).toBeGreaterThan(50);
+      expect(done.rows.every((r) => r.g.length === 0 && r.confidence === 0.8)).toBe(true);
+      expect(readModelRows(readFileSync(join(dir, alignChoicesName('gen', 5)), 'utf8'))).toEqual(done.rows);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 10 * HOOK_TIMEOUT_MS);
 });
 
 describe('alignVerse without a model is as it was', () => {

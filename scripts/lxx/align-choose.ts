@@ -3,7 +3,7 @@
 // left with no English: a Builder's own session reads each verse (`--list` prints it) and writes one line a run, the probe's way (choose.ts):
 //   `ref#run text @positions [?|guess]`    `Gen.1:2#1 was @3 / and unfurnished, @5,6 ?`
 // The run is cut into chunks at the slashes; each chunk is the English words it holds and, after `@`, the positions in the verse's `g` of the Greek words it renders (`-` for none: English the translators
-// supplied or Brenton's own); `?` marks a chunk the model is unsure of and `guess` one it is guessing. A run of one chunk may leave the text out: `Gen.1:2#3 @4`. The file is held against the chapter and
+// supplied or Brenton's own); `Gen.1:2 *` says that every run of the verse with no line of its own renders no Greek (`@-`); `?` marks a chunk the model is unsure of and `guess` one it is guessing. A run of one chunk may leave the text out: `Gen.1:2#3 @4`. The file is held against the chapter and
 // written as data/lxx/align/<book>-<chapter>.tsv, one row a chunk, with the confidence (0.8 chosen, 0.5 unsure, 0.4 guess, as choose.ts). A position outside the verse's words, a Greek word the aligner
 // already paired, a word in two chunks, chunks that do not read as the run, a run with no line or a line for none are each refused with their reference, and nothing is written on any refusal.
 // `lxx:ship` reads the rows (align.ts alignChapter → applyModel): each run is replaced by the model's chunks, `{ t, g, s?, c, y: 'model' }`, and each paired Greek word's `e` points at its chunk; a run whose
@@ -77,6 +77,7 @@ export function runsOf(verse: Verse): Run[] {
 export const confidenceOf = (mark: ChoiceMark): number => (mark === 'guess' ? CONFIDENCE_GUESS : mark === 'unsure' ? CONFIDENCE_UNSURE : CONFIDENCE_CHOSEN);
 
 const REF = /^([1-3A-Za-z]{3}\.\d+:\d+)#(\d+)\s*(.*)$/;
+const REST = /^([1-3A-Za-z]{3}\.\d+:\d+)\s+\*$/;
 const CHUNK = /^(.*?)\s*@(-|\d+(?:,\d+)*)(?:\s+(\?|guess))?$/;
 
 /** The lines of a session's file; `#` at the start of a line is a comment. A line that is not a run, or a chunk with no positions, is an offence naming its line. */
@@ -84,12 +85,14 @@ export function parseModelLines(text: string): { lines: ModelLine[]; offences: s
   const lines: ModelLine[] = [];
   const offences: string[] = [];
   text
-    .replace(/^﻿/, '')
+    .replace(/^\uFEFF/, '')
     .split(/\r?\n/)
     .forEach((raw, i) => {
       const trimmed = raw.trim();
       if (!trimmed || trimmed.startsWith('#')) return;
       const line = i + 1;
+      const rest = REST.exec(trimmed);
+      if (rest) return void lines.push({ ref: rest[1], run: 0, chunks: [], line });
       const head = REF.exec(trimmed);
       if (!head) return void offences.push(`line ${line}: '${trimmed}' does not start with a run like Gen.1:2#1`);
       const parts = head[3].split(' / ');
@@ -132,7 +135,14 @@ export function checkModelLines(chapter: Chapter, lines: readonly ModelLine[]): 
   const offences: string[] = [];
   const byVerse = new Map(chapter.verses.map((v) => [verseRef(chapter, v).toLowerCase(), v]));
   const first = new Map<string, ModelLine>();
+  const rest = new Map<string, ModelLine>();
   for (const line of lines) {
+    if (line.run === 0) {
+      if (!byVerse.has(line.ref.toLowerCase())) offences.push(`${line.ref} *: not a verse of this chapter (line ${line.line})`);
+      else if (rest.has(line.ref.toLowerCase())) offences.push(`${line.ref} *: given twice (lines ${rest.get(line.ref.toLowerCase())!.line} and ${line.line})`);
+      else rest.set(line.ref.toLowerCase(), line);
+      continue;
+    }
     const key = `${line.ref.toLowerCase()}#${line.run}`;
     const earlier = first.get(key);
     if (earlier) offences.push(`${line.ref}#${line.run}: given twice (lines ${earlier.line} and ${line.line})`);
@@ -148,7 +158,9 @@ export function checkModelLines(chapter: Chapter, lines: readonly ModelLine[]): 
     const ref = verseRef(chapter, verse);
     const taken = new Set<number>();
     for (const { run, chunk } of runsOf(verse)) {
-      const line = first.get(`${ref.toLowerCase()}#${run}`);
+      const own = first.get(`${ref.toLowerCase()}#${run}`);
+      const none = rest.get(ref.toLowerCase());
+      const line: ModelLine | undefined = own ?? (none ? { ref, run, chunks: [{ text: undefined, g: [], mark: '' }], line: none.line } : undefined);
       const runText = verse.e[chunk].t;
       if (!line) {
         offences.push(`${ref}#${run}: no choice for run '${runText}'`);
@@ -173,7 +185,7 @@ export const modelRowsTsv = (rows: readonly ModelRow[]): string =>
 export function readModelRows(text: string, source = 'model file'): ModelRow[] {
   const rows: ModelRow[] = [];
   let header = false;
-  text.replace(/^﻿/, '').split(/\r?\n/).forEach((raw, i) => {
+  text.replace(/^\uFEFF/, '').split(/\r?\n/).forEach((raw, i) => {
     if (!raw.trim() || raw.startsWith('#')) return;
     const c = raw.split('\t');
     if (!header) {
@@ -294,11 +306,14 @@ export function listRemainders(chapter: Chapter): string {
 
 export const ALIGN_CHOOSE_USAGE = 'usage: npm run lxx:align-choose -- --list --book <code> --chapter <n>   |   npm run lxx:align-choose -- --book <code> --chapter <n> --from <file>';
 
-export interface AlignChooseOptions extends ShipOptions {
+export interface AlignChooseOptions {
   /** where the model's files are written; default data/lxx/align */
   outDir?: string;
-  /** where the listing goes; default the log */
+  /** where the listing goes; default console.log */
   print?: (text: string) => void;
+  log?: (line: string) => void;
+  /** the ship that makes the chapter the model reads (a test gives its sources) */
+  ship?: ShipOptions;
 }
 
 export interface AlignChooseArgs {
@@ -337,7 +352,7 @@ export class AlignChooseRefused extends Error {
 
 /** The chapter as the aligner leaves it, with no model rows applied (a ship into a temporary directory). */
 async function chapterWithoutModel(args: AlignChooseArgs, options: AlignChooseOptions): Promise<Chapter> {
-  const { outDir: _outDir, print: _print, scratch = tmpdir(), ...ship } = options;
+  const { scratch = tmpdir(), ...ship } = options.ship ?? {};
   const dir = mkdtempSync(join(scratch, 'lampas-lxx-align-choose-'));
   try {
     const { runShip } = await import('./ship');
