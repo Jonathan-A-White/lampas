@@ -3,7 +3,7 @@
 import 'fake-indexeddb/auto';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
-import { getLogosBible, getLogosBibles, setLogosBible, setLogosBibleFor } from '../../src/data/repositories';
+import { dropStaleBibleRows, getLogosBible, getLogosBibles, setLogosBible, setLogosBibleFor, shelfOf } from '../../src/data/repositories';
 import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, bibleFor, bibleRef, partOf, verseLink } from '../../src/resources/logosBible';
 import { verseChips } from '../../src/resources/tutorLinks';
 import { placeOf } from '../../src/resources/tutorLinks';
@@ -92,5 +92,45 @@ describe('the three Bibles he keeps', () => {
     expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
     await db.settings.put({ key: 'logosBibleOt', value: 'nonsense' });
     expect((await getLogosBibles()).ot).toBe(ESV);
+  });
+});
+
+// the Library's Bibles page once kept its own "Chosen" mark on the shelf, apart from the three Settings keys (mw-5r3p30.1135); the marks are now read from the keys and the stale ones go
+describe('the stale Chosen mark of the shelf', () => {
+  const NKJV = 'LLS:1.0.30';
+  const LES = 'LLS:LELXX';
+  const LSB = DEFAULT_LOGOS_BIBLE;
+
+  beforeEach(async () => {
+    await db.library.clear();
+  });
+
+  it('is dropped when no part is set to that Bible, and the three part choices are unchanged', async () => {
+    await setLogosBibleFor('nt', NKJV);
+    await setLogosBibleFor('ot', LSB);
+    await setLogosBibleFor('apocrypha', DEFAULT_APOCRYPHA_BIBLE);
+    // the Library had marked LES Chosen, a Bible no part is set to
+    await db.library.put({ id: LES, kind: 'bible', state: 'on', since: 1 });
+    const before = await getLogosBibles();
+    expect(await dropStaleBibleRows()).toBe(1);
+    expect((await shelfOf('bible')).map((r) => r.id)).toEqual([]);
+    expect(await getLogosBibles()).toEqual(before);
+    expect(before).toEqual({ nt: NKJV, ot: LSB, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+  });
+
+  it('is kept when a part is set to that Bible, and nothing else on the shelf is touched', async () => {
+    await setLogosBibleFor('ot', LES);
+    await db.library.bulkPut([
+      { id: LES, kind: 'bible', state: 'on', since: 1 },
+      { id: 'LLS:46.30.24', kind: 'lexicon', state: 'on', since: 1 },
+    ]);
+    expect(await dropStaleBibleRows()).toBe(0);
+    expect(await db.library.get(LES)).toBeDefined();
+    expect(await db.library.get('LLS:46.30.24')).toBeDefined();
+  });
+
+  it('reads the default Bibles as set (a phone that never opened Settings), so a row for one of them stays', async () => {
+    await db.library.put({ id: LSB, kind: 'bible', state: 'on', since: 1 });
+    expect(await dropStaleBibleRows()).toBe(0);
   });
 });

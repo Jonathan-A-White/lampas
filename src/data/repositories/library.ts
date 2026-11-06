@@ -14,6 +14,7 @@ import { WORKS } from '../../resources/works';
 import { isListed, matchExport, type MatchResult } from '../../library/matchExport';
 import type { ExportRow } from '../../library/parseExport';
 import { db, type ExportedRow, type LibraryRow } from '../db';
+import { getLogosBibles, hasSetBible } from './settings';
 
 export type ShelfState = 'off' | 'on' | 'pinned';
 
@@ -162,6 +163,17 @@ function ensureShelf(): Promise<void> {
 // Taking the old keys at the first open after the update (docs/design 14 S2). Called straight, not through `settling`: a native promise chain would leave Dexie's zone, and the
 // open waits for this to end, so a database call outside the zone would wait for the open.
 db.on('ready', () => settle().catch(() => undefined));
+
+/** The Bible rows of the shelf that no part is set to (the 'Chosen' mark the Library once kept apart from Settings): dropped, since a Bible is shown as set only by the three Settings keys (mw-5r3p30.1135).
+ *  The Bible of each part is untouched. Returns how many rows it dropped. App's first-open effect calls it. */
+export async function dropStaleBibleRows(): Promise<number> {
+  const set = new Set(Object.values(await getLogosBibles()));
+  return db.transaction('rw', db.library, async () => {
+    const stale = (await db.library.where('kind').equals('bible').toArray()).filter((r) => !set.has(r.id)).map((r) => r.id);
+    await db.library.bulkDelete(stale);
+    return stale.length;
+  });
+}
 
 let scheduled = false;
 
@@ -423,7 +435,7 @@ export interface ImportPlan {
 }
 
 /** The list matched, and what turning it on would do on his shelf as it is now. A book he has a row for stays as it is, a book matched by an earlier import and not on the shelf now is one he turned Off
- *  (his tap wins), and a Bible is taken only while he has none, the first of those he owns in the catalogue's order. */
+ *  (his tap wins), and a Bible is taken only while he has none (no row of one and none set in Settings), the first of those he owns in the catalogue's order. */
 export async function planImport(rows: readonly ExportRow[]): Promise<ImportPlan> {
   await ensureShelf();
   const result = matchExport(rows);
@@ -436,7 +448,8 @@ export async function planImport(rows: readonly ExportRow[]): Promise<ImportPlan
     const group = r.state === 'pinned' ? pinGroupOf(r.id) : undefined;
     if (group) pins.set(group, (pins.get(group) ?? 0) + 1);
   }
-  let bible = shelf.some((r) => r.kind === 'bible');
+  // a Bible is Settings' (three parts): an import never takes one for a phone where he has set one, whatever the shelf holds
+  let bible = shelf.some((r) => r.kind === 'bible') || (await hasSetBible());
   const turning: Turning[] = [];
   for (const m of listed) {
     const { entry } = m;

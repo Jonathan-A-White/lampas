@@ -5,12 +5,12 @@ Feature: Settings after the library
   and In the draw follows the shelf. The Settings search finds a book by its title and opens the Library at it.
 
   Scenario: The Settings home has no Your Logos library row; Which languages? is first
-    Given the shelf holds the books "BDAG, Louw-Nida, LSB" and Settings is open at its home
+    Given the shelf holds the books "BDAG, Louw-Nida, Kairos" and Settings is open at its home
     Then the first row under the search field is "Which languages?"
     And the Settings home shows no row "Your Logos library"
 
   Scenario: With Logos On, Study resources show Your Logos library directly under the Logos switch
-    Given the shelf holds the books "BDAG, Louw-Nida, LSB" and Settings is open at Study resources with Logos On
+    Given the shelf holds the books "BDAG, Louw-Nida, Kairos" and Settings is open at Study resources with Logos On
     Then the row under the Logos switch is "Your Logos library · 3 books on"
     When he taps the row "Your Logos library · 3 books on"
     Then the Library home opens
@@ -43,15 +43,18 @@ Feature: Settings after the library
 
   Scenario: Bible in Logos opens Library > Bibles, where the Resource ID can be typed
     Given the shelf holds the books "BDAG" and Settings is open at Study resources with Logos On
-    When he taps the row "One Bible for all three, or type a Resource ID"
+    When he taps the row "Choose from all your Bibles, or type a Resource ID"
     Then the Library opens at Bibles
     When he types the Resource ID "LLS:MYOWNBIBLE.1" on the Bibles page
-    Then the setting "logosBible" holds "LLS:MYOWNBIBLE.1"
+    Then the setting "logosBible" holds nothing
+    When he sets the typed Resource ID for "Old Testament"
+    Then the setting "logosBibleOt" holds "LLS:MYOWNBIBLE.1"
+    And the New Testament key "logosBible" still holds "LLS:LGCYSTNDRDBBLSB"
 
-  Scenario: Choosing a Bible in the Library is the Bible in Logos
+  Scenario: Choosing a Bible in the Library sets the part he names, as Settings does
     Given the shelf holds the books "BDAG" and Settings is open at Study resources with Logos On
-    When he taps the row "One Bible for all three, or type a Resource ID"
-    And he chooses the Bible "ESV" on the Bibles page
+    When he taps the row "Choose from all your Bibles, or type a Resource ID"
+    And he chooses the Bible "ESV" for "New Testament" on the Bibles page
     Then the setting "logosBible" holds "LLS:1.0.710"
 
   Scenario: Which devotional is a searchable picker of the devotionals that are on, with Random

@@ -8,7 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setState, shelfOf, type ShelfState } from '../../src/data/repositories';
+import { getLogosBibles, setLogosBible, setLogosBibleFor, setState, shelfOf, type ShelfState } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { CATALOGUE, entriesOf } from '../../src/resources/catalogue';
@@ -119,9 +119,10 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The home shows the card and the eight kinds with counts from the shelf', ({ Given, When, Then, And }) => {
     Given(
-      'his shelf holds the lexicons {string} On with {string} pinned, the grammar {string} On and the Bible {string} chosen',
+      'his shelf holds the lexicons {string} On with {string} pinned, the grammar {string} On and Settings sets the Bible {string} for every part',
       async (_, lexicons: string, pinned: string, grammar: string, bible: string) => {
-        await shelfHolds([...list(lexicons).map((l): [string, ShelfState] => [l, l === pinned ? 'pinned' : 'on']), [grammar, 'on'], [bible, 'on']]);
+        await shelfHolds([...list(lexicons).map((l): [string, ShelfState] => [l, l === pinned ? 'pinned' : 'on']), [grammar, 'on']]);
+        await setLogosBible(book(bible).resource);
       },
     );
     When('he opens the Library', async () => {
@@ -241,25 +242,90 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Bibles hold one', ({ Given, When, Then, And }) => {
-    Given('his shelf holds the Bible {string} chosen', async (_, short: string) => {
-      await shelfHolds([[short, 'on']]);
+  const sets = async (_: unknown, nt: string, ot: string, apocrypha: string) => {
+    await setLogosBibleFor('nt', book(nt).resource);
+    await setLogosBibleFor('ot', book(ot).resource);
+    await setLogosBibleFor('apocrypha', book(apocrypha).resource);
+  };
+  /** The marks under a Bible's name on the Bibles page ('Set for NT'), or null when it has none: the name is the title line of its row, the marks the line after it. */
+  const markOf = (short: string): string | null => {
+    const title = screen.getAllByText(short, { selector: 'p' }).find((p) => p.className.includes('font-medium'));
+    return title?.parentElement?.querySelector('[data-testid="bible-marks"]')?.textContent ?? null;
+  };
+  const isMarked = async (_: unknown, short: string, mark: string) => {
+    await waitFor(() => expect(markOf(short)).toBe(mark));
+  };
+  const hasNoMark = async (_: unknown, short: string) => {
+    await screen.findAllByText(short, { selector: 'p' });
+    await waitFor(() => expect(markOf(short)).toBeNull());
+  };
+  const asks = async (_: unknown, short: string) => {
+    await user.click(await screen.findByRole('button', { name: `Set for… ${short}` }));
+  };
+
+  Scenario('Bibles show the parts they are set for, read from Settings', ({ Given, When, Then, And }) => {
+    Given('his shelf holds nothing', async () => {
+      await shelfHolds([]);
     });
+    And('Settings sets the New Testament to {string}, the Old Testament to {string} and the Apocrypha to {string}', sets);
     When('he opens the Library at the kind {string}', opensKind);
     Then('the page {string} is open', opened);
-    And('{string} is set to {string}', isSet);
+    And('{string} is marked {string}', isMarked);
+    And('the mark of {string} reads {string}', isMarked);
+    And('the line under {string} says {string}', isMarked);
+    And('{string} has no mark', hasNoMark);
+    And('the page says {string}', pageSays);
     And('the page has no button {string}', (_, label: string) => {
       expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument();
     });
     And('no book of the kind offers {string}', (_, label: string) => {
       expect(screen.queryAllByRole('radio', { name: label })).toEqual([]);
     });
-    When('he sets {string} to {string}', setTo);
-    Then('{string} now shows {string}', isSet);
-    And('{string} is no longer chosen', async (_, short: string) => {
-      await waitFor(() => expect(setting(short)).toBe('Off'));
+    When('Settings sets the Old Testament to {string}', async (_, short: string) => {
+      await setLogosBibleFor('ot', book(short).resource);
     });
-    And('the page says {string}', pageSays);
+    Then('{string} is now marked {string}', isMarked);
+    And('{string} now carries no mark', hasNoMark);
+  });
+
+  const holds = async (_: unknown, nt: string, ot: string, apocrypha: string) => {
+    await waitFor(async () => expect(await getLogosBibles()).toEqual({ nt: book(nt).resource, ot: book(ot).resource, apocrypha: book(apocrypha).resource }));
+  };
+
+  Scenario('Choosing a Bible asks which part and sets only that part', ({ Given, When, Then, And }) => {
+    Given('his shelf holds nothing', async () => {
+      await shelfHolds([]);
+    });
+    And('Settings sets the New Testament to {string}, the Old Testament to {string} and the Apocrypha to {string}', sets);
+    When('he opens the Library at the kind {string}', opensKind);
+    And('he taps Set for on {string}', asks);
+    Then('the parts offered for {string} are {string}', async (_, short: string, parts: string) => {
+      const group = await screen.findByRole('group', { name: `Set ${short} for` });
+      expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(list(parts));
+    });
+    When('he sets {string} for {string}', async (_, short: string, part: string) => {
+      const group = await screen.findByRole('group', { name: `Set ${short} for` });
+      await user.click(within(group).getByRole('button', { name: part }));
+    });
+    Then('Settings holds the New Testament {string}, the Old Testament {string} and the Apocrypha {string}', holds);
+    And('{string} is marked {string}', isMarked);
+    And('{string} has no mark', hasNoMark);
+  });
+
+  Scenario('Choosing All three sets every part the Bible holds and leaves the rest', ({ Given, When, Then, And }) => {
+    Given('his shelf holds nothing', async () => {
+      await shelfHolds([]);
+    });
+    And('Settings sets the New Testament to {string}, the Old Testament to {string} and the Apocrypha to {string}', sets);
+    When('he opens the Library at the kind {string}', opensKind);
+    And('he taps Set for on {string}', asks);
+    And('he sets {string} for {string}', async (_, short: string, part: string) => {
+      const group = await screen.findByRole('group', { name: `Set ${short} for` });
+      await user.click(within(group).getByRole('button', { name: part }));
+    });
+    Then('{string} is marked {string}', isMarked);
+    And('the mark of {string} reads {string}', isMarked);
+    And('{string} has no mark', hasNoMark);
   });
 
   Scenario('Devotionals shows no Pin', ({ Given, When, Then, And }) => {

@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { db } from '../../src/data/db';
-import { setResourceOn, shelfOf } from '../../src/data/repositories';
+import { setLogosBibleFor, setResourceOn, shelfOf } from '../../src/data/repositories';
 import { InLogosChooser } from '../../src/library/InLogosChooser';
 import { InLogosDoors } from '../../src/library/InLogosDoors';
 import type { CatalogueEntry, Kind } from '../../src/resources/catalogue';
@@ -168,7 +168,8 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The Old Testament card lists Bibles and interlinears only', ({ Given, And, When, Then }) => {
     Given(SHELF, () => everything('Interlinear 1'));
     And('the Bible {string} is chosen', async (_, short: string) => {
-      await db.library.put({ id: book(short).resource, kind: 'bible', state: 'on', since: 1 });
+      // a Bible is chosen where Settings sets it: here for the Old Testament, the part of the place these scenarios open
+      await setLogosBibleFor('ot', book(short).resource);
     });
     When('he opens the chooser at {string}', (_, at: string) => opened(at));
     Then('the groups read {string}', async (_, names: string) => {

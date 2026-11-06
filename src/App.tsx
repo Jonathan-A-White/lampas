@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { noteDailyChange } from './data/daily/dailyStore';
 import { subscribe } from './events/bus';
-import { afterCatalogueUpdate, seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
+import { afterCatalogueUpdate, dropStaleBibleRows, seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
 import { About } from './About';
 import { Essay } from './Essay';
 import { VariantLessons } from './lessons/VariantLessons';
@@ -89,6 +89,10 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   // The first open after an update that changed the Logos catalogue: his shelf's rows are re-filed and the Logos list he imported is matched again, so the Library card can say 'N new since' (src/data/repositories/library.ts).
   useEffect(() => {
     void afterCatalogueUpdate().catch((error: unknown) => console.error('matching his Logos list again after the update failed', error));
+  }, []);
+  // The Library's old 'Chosen' mark of a Bible that no part is set to is dropped: a Bible is shown as set only by the three Settings keys (mw-5r3p30.1135).
+  useEffect(() => {
+    void dropStaleBibleRows().catch((error: unknown) => console.error('dropping a stale Bible mark failed', error));
   }, []);
   // A new install starts empty (mw-5r3p30.385): nothing is put in the word list, on the schedule or on the grammar ladder at the first open.
   // These two are the upgrade paths of a phone that already has data: a store from before v10 that has words but no schedule gets them scheduled, and

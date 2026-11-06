@@ -17,8 +17,9 @@ import { matching } from '../ui/listFilter';
 import { AskForBook } from './AskForBook';
 import { ImportLibrary } from './ImportLibrary';
 import { KindPage } from './KindPage';
-import { countLine, countsOf, infoOf, KIND_INFO, STATE_LABEL } from './kinds';
-import { useShelf } from './useShelf';
+import { marksOf } from './bibleParts';
+import { booksOn, countLine, infoOf, KIND_INFO, STATE_LABEL } from './kinds';
+import { useBibles, useShelf } from './useShelf';
 
 /** The most results the search shows at once; the line under the field says when more match. */
 const MAX_RESULTS = 50;
@@ -37,6 +38,7 @@ export function LibraryScreen() {
 
 function LibraryHome() {
   const states = useShelf();
+  const bibles = useBibles();
   const note = useLiveQuery(async () => (await importNote()) ?? null, []);
   const lists = useLiveQuery(verseListCount, []);
   const dueVerses = useLiveQuery(() => countDueVerses(), []);
@@ -44,13 +46,13 @@ function LibraryHome() {
   const ai = useAiAllowed();
   const [asking, setAsking] = useState(false);
   const [query, setQuery] = useState('');
-  const on = KINDS.reduce((sum, kind) => sum + (states ? countsOf(kind, states).on : 0), 0);
+  const on = states ? booksOn(states) : 0;
   const searching = query.trim() !== '';
   const found = searching ? matching(ITEMS, query) : [];
   const results = found.slice(0, MAX_RESULTS).map((item) => entryOf(item.id)!);
   useReportScreen({
     name: SCREEN_NAMES.library,
-    facts: states ? KIND_INFO.map((i) => ({ label: i.plural, value: countLine(i.kind, states) })) : [],
+    facts: states ? KIND_INFO.map((i) => ({ label: i.plural, value: countLine(i.kind, states, bibles) })) : [],
   });
   return (
     <>
@@ -122,7 +124,7 @@ function LibraryHome() {
           className="mt-3 min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
         />
         {searching ? (
-          <Results results={results} found={found.length} states={states} />
+          <Results results={results} found={found.length} states={states} bibles={bibles} />
         ) : (
           <ul className="mt-3 divide-y divide-line rounded-lg border border-line">
             {KIND_INFO.map((info) => (
@@ -130,7 +132,7 @@ function LibraryHome() {
                 <button type="button" onClick={() => openLibrary({ kind: info.kind })} className="flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left text-base">
                   <span className="min-w-0 flex-1 font-medium">{info.plural}</span>{' '}
                   <span data-testid="kind-count" className="shrink-0 text-muted">
-                    {states ? countLine(info.kind, states) : ''}
+                    {states ? countLine(info.kind, states, bibles) : ''}
                   </span>{' '}
                   <span aria-hidden="true" className="shrink-0 text-muted">
                     ›
@@ -173,7 +175,7 @@ function LibraryHome() {
   );
 }
 
-function Results({ results, found, states }: { results: CatalogueEntry[]; found: number; states: ReturnType<typeof useShelf> }) {
+function Results({ results, found, states, bibles }: { results: CatalogueEntry[]; found: number; states: ReturnType<typeof useShelf>; bibles: ReturnType<typeof useBibles> }) {
   if (found === 0) return <p className="pt-3 text-base text-muted">No book matches</p>;
   return (
     <>
@@ -192,7 +194,7 @@ function Results({ results, found, states }: { results: CatalogueEntry[]; found:
                 {entry.short}
               </span>
               <span className="text-sm text-muted">
-                {infoOf(entry.kind).singular} · {entry.kind === 'bible' && states?.get(entry.resource) === 'on' ? 'Chosen' : STATE_LABEL[states?.get(entry.resource) ?? 'off']}
+                {infoOf(entry.kind).singular} · {entry.kind === 'bible' ? (bibles && marksOf(entry.resource, bibles)) || 'Not set' : STATE_LABEL[states?.get(entry.resource) ?? 'off']}
               </span>
             </button>
           </li>

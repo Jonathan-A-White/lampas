@@ -2,6 +2,7 @@
 // screen sideways, each of the three hit areas of the Off | On | Pin control selects, a search result opens its kind's page with the book in view, and a fourth pin is refused.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { turnLogosOn } from './settings-group';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -171,12 +172,42 @@ test('a search result opens the kind page with the book in view', async ({ page 
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
 });
 
-test('Bibles offer Off | Chosen and Devotionals Off | On: neither shows a Pin', async ({ page }) => {
+test('Bibles show the parts they are set for, read from Settings, and choosing one asks which part (mw-5r3p30.1135)', async ({ page }) => {
   await open(page, 'library?kind=bible', 'Bibles');
   await expect(page.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'All on', exact: true })).toHaveCount(0);
-  await page.getByRole('radiogroup', { name: 'ESV', exact: true }).getByRole('radio', { name: 'Chosen', exact: true }).click();
-  await expect(page.getByTestId('kind-status')).toHaveText('1 chosen');
+  await expect(page.getByRole('radio')).toHaveCount(0);
+  // a Bible is marked with the parts it is set for: the start is the LSB for the New and Old Testament and the NRSV for the Apocrypha
+  const marks = (short: string) => page.locator('li, div').filter({ has: page.getByRole('button', { name: `Set for… ${short}` }) }).last().getByTestId('bible-marks');
+  await expect(marks('LSB')).toHaveText('Set for NT · OT');
+  await expect(marks('NRSV')).toHaveText('Set for Apocrypha');
+  await expect(page.getByTestId('kind-status')).toHaveText('2 in use');
+
+  // Settings sets the Old Testament to the ESV: the marks follow at once
+  await page.goto('/#/settings?group=study');
+  await turnLogosOn(page);
+  await page.getByRole('combobox', { name: 'Old Testament Bible in Logos' }).selectOption({ label: 'ESV (English Standard Version)' });
+  await page.goto('/#/library?kind=bible');
+  await expect(page.getByRole('heading', { name: 'Bibles', level: 1 })).toBeVisible();
+  await expect(marks('ESV')).toHaveText('Set for OT');
+  await expect(marks('LSB')).toHaveText('Set for NT');
+
+  // choosing the LES asks which part: it holds the Old Testament and the Apocrypha, not the New Testament
+  await page.getByRole('button', { name: 'Set for… LES' }).click();
+  const ask = page.getByRole('group', { name: 'Set LES for' });
+  await expect(ask.getByRole('button')).toHaveText(['Old Testament', 'Apocrypha', 'All three']);
+  await ask.getByRole('button', { name: 'Old Testament', exact: true }).click();
+  await expect(marks('LES')).toHaveText('Set for OT');
+  await expect(page.getByRole('group', { name: 'Set LES for' })).toHaveCount(0);
+  await expect(marks('LSB')).toHaveText('Set for NT');
+  await expect(page.locator('main').getByText('Set for OT')).toHaveCount(1);
+  await page.goto('/#/settings?group=study');
+  await expect(page.getByRole('combobox', { name: 'Old Testament Bible in Logos' })).toHaveValue('LLS:LELXX');
+  await expect(page.getByRole('combobox', { name: 'New Testament Bible in Logos' })).toHaveValue('LLS:LGCYSTNDRDBBLSB');
+  await page.goto('/#/library?kind=bible');
+  await expect(page.getByRole('heading', { name: 'Bibles', level: 1 })).toBeVisible();
+  await expectThumbSized(page);
+  await shot(page, 'library-bibles-parts');
   await page.goto('/#/library?kind=devotional');
   await expect(page.getByRole('heading', { name: 'Devotionals', level: 1 })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);

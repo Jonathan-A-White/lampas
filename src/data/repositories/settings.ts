@@ -350,6 +350,11 @@ async function savedBibles(): Promise<Record<LogosPart, string | undefined>> {
   return { nt: saved(0), ot: saved(1), apocrypha: saved(2) };
 }
 
+/** Whether he has set a Bible in Logos for any part (a saved, well-formed Resource ID under one of the three keys), as against the defaults: an import chooses a Bible for him only while he has not. */
+export async function hasSetBible(): Promise<boolean> {
+  return Object.values(await savedBibles()).some((id) => id !== undefined);
+}
+
 /** The Resource ID of his Bible in Logos for each part of the canon. The New Testament's is the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed; the
  *  Old Testament follows the New Testament's until it is picked. The Apocrypha starts in the NRSV (DEFAULT_APOCRYPHA_BIBLE), and a saved Bible the catalogue knows to have no Apocrypha is read as the
  *  NRSV too (a typed Resource ID is kept as typed); moveApocryphaBible writes that move down once. */
@@ -386,7 +391,7 @@ export async function getLogosBible(part: LogosPart = 'nt'): Promise<string> {
   return (await getLogosBibles())[part];
 }
 
-/** One Bible in Logos for every part: what choosing a Bible in the Library does (KindPage.tsx, TypedBible.tsx). */
+/** One Bible in Logos for every part: what an import of his Logos list does (ImportLibrary.tsx). The Library's Bibles page asks which part and uses setLogosBibleFor. */
 export async function setLogosBible(resourceId: string): Promise<void> {
   const id = resourceId.trim();
   await db.settings.bulkPut(Object.values(LOGOS_BIBLE_KEYS).map((key) => ({ key, value: id })));
