@@ -1,7 +1,7 @@
 // src/VerseView.tsx — the Verse view (mw-5r3p30.79): a tapped verse number opens the verse on a screen of its own, over the Reader, which stays
 // where it was underneath (the phone's Back closes the view, src/nav/route.ts openVerse). At the top the verse big, drawn by the Reader's own
 // VerseText (so the view and the weave follow the Reader, and its words are tappable), in a box that takes what the controls under it leave and scrolls;
-// under it what the chosen action shows (the reading check, the diagram, Listen's help line); under that a quiet line of TOOLS that act on the text (Copy and Share, Memorize, In Logos and In another book…, Maps: plain accent words, no border, mw-5r3p30.896);
+// under it what the chosen action shows (the reading check, the diagram, Listen's help line); under that a quiet line of TOOLS that act on the text (Copy and Share, Memorize, In Logos and In another book…, Maps, Sermons: plain accent words, no border, mw-5r3p30.896);
 // under that the row of ACTIONS that choose what the foot does (Listen, Read it aloud, Practise and Diagram; an Old Testament verse has the quiz door of Practise only with some Hebrew, mw-uqlxea.3, and Diagram in its Hebrew, mw-5r3p30.887, and no Read it aloud in the Hebrew view, mw-gdcyf98.4; its Ask the tutor sends the Hebrew, mw-5vvlay.3; the verse is drawn in the Reader's view, the Hebrew big and right to left),
 // the chosen one marked with the accent's border and a tint, never filled; and at the foot ONE control, the one thing on the screen filled in the accent,
 // that does the chosen action: Hold to read verse N (the reading check, src/ReadCheck.tsx, a src/talk/Bars.tsx RecordBar). The Ask the tutor action and its composer are gone (mw-5r3p30.882): the floating ? is the one door. Listen is not a hold
@@ -28,6 +28,8 @@ import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
 import { InLogosDoors } from './library/InLogosDoors';
 import { MapsDoor } from './maps/MapsDoor';
+import { sermonPlaceOf } from './sermons/place';
+import { SermonsDoor } from './sermons/SermonsDoor';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
 import { sourceLanguage, type Chapter, type Verse } from './data/chapter';
 import { DiagramPane } from './diagram/DiagramPane';
@@ -165,6 +167,8 @@ export function VerseView(props: VerseViewProps) {
   const variants = useReaderVariants(chapterText);
   const copyUnit = useMemo(() => copyUnitOf(chapterText, verse, { view, woven: wovenChapter ?? null, variants }), [chapterText, verse, view, wovenChapter, variants]);
   // what Share offers on its sheet: the whole, just the link, just the text, just the reference (mw-5r3p30.1026)
+  // the Sermons door asks for the whole chapter when the view is the place line's (a Septuagint chapter by the Lampas verses it answers, src/sermons/place.ts)
+  const sermonPlace = useMemo(() => sermonPlaceOf(chapterText, verse, book, chapter, copyUnit.kind === 'chapter'), [chapterText, verse, book, chapter, copyUnit.kind]);
   const pieces = useMemo(() => sharePieces(copyUnit, copyFormat), [copyUnit, copyFormat]);
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
@@ -195,7 +199,7 @@ export function VerseView(props: VerseViewProps) {
       {/* The tools: what acts on the text itself, plain accent words that wrap as a line of words does (mw-5r3p30.896). Copy and Share (Copied says so above the line; the text to copy by hand
           takes a line of its own), Memorize (mw-fu7dqf.5: the verse, or the passage's range as one reference; an Old Testament verse is learned in the languages its Hebrew dial allows, no licence),
           his Bible in Logos at the verse (a passage: at its first verse) and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6), and the Maps door
-          (mw-zbjgn3r.2: the maps of the verse, or of the passage's range). The Audio Bible row of Listen is in the scroll box above, so the line is under it at every size (mw-5r3p30.746, .775). */}
+          (mw-zbjgn3r.2: the maps of the verse, or of the passage's range) and the Sermons door after it (mw-qtu3zvz.2: the sermons preached on the verse, the passage or the chapter). The Audio Bible row of Listen is in the scroll box above, so the line is under it at every size (mw-5r3p30.746, .775). */}
       <div role="group" aria-label="Tools" data-verse-tools className={`relative mt-0.5 flex shrink-0 flex-wrap items-center gap-x-1 short:min-w-0 short:max-w-[40%] ${controlsRoom}`}>
         <LinkActions
           url={copyLink(copyUnit)}
@@ -209,6 +213,7 @@ export function VerseView(props: VerseViewProps) {
         <MemorizeControl canonical={memorizeRef} quiet />
         <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} quiet />
         <MapsDoor mapRef={{ book, chapter, from: verse.n, ...(verse.to === undefined ? {} : { to: verse.to }) }} quiet />
+        <SermonsDoor place={sermonPlace} quiet />
       </div>
       <ProgressMarks canonical={memorizeRef} className="mt-1 shrink-0 px-2" />
       {/* The row of actions: the chosen one is marked, not filled (the one filled control is at the foot). Three to a row, two under 15 rem of room, one row from 30 rem; the last row's

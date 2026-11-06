@@ -1,7 +1,7 @@
 # Sermons
 
 Lampas lists sermons against the passage each was preached on, and links out to them: nothing of a sermon's words is held. This file is for the free, offline **index** (the epic mw-qtu3zvz,
-story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them (a Sermons door beside Maps) is a later story.
+story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them, the Sermons door beside Maps on the Verse view and its sheet, is story B2 (mw-qtu3zvz.2): see 'The door' and 'The sheet'. A switch per source in Settings is the next story.
 Why the index is shaped this way (a static file per book, no server of our own) is in `docs/sources/sermon-index.md` section 5; what a Logos sermon book would need is in section 2 of the same file.
 Reading needs no licence.
 
@@ -11,6 +11,11 @@ Reading needs no licence.
 - [The build](#the-build)
 - [The files](#the-files)
 - [On the phone](#on-the-phone)
+- [The module](#the-module)
+- [Which sermons are for this verse](#which-sermons-are-for-this-verse)
+- [The door](#the-door)
+- [The sheet](#the-sheet)
+- [Where the door stands: every Verse view state](#where-the-door-stands-every-verse-view-state)
 - [The sources](#the-sources)
 - [Tests](#tests)
 
@@ -70,6 +75,48 @@ with no fetch; the book files are fetched, never bundled. A new source or a chan
   data cache: served with no fetch when the very address is kept, fetched once otherwise, the older copy of the same file dropped. An unversioned address is not matched.
 - **The offline copy** (`src/data/offlineCopy.ts`, `docs/data.md` 'Offline'): the scope `'nt'` also keeps each source's files for the 27 New Testament books, and `'all'` every file, after the chapters and the Hebrew lists, each by its source's
   fingerprint. What the cache holds under the very address is not fetched again, so a changed source (a new fingerprint) fetches only that source's files, and `serveChapter` drops the old ones.
+
+## The module
+
+`src/sermons/` is `src/maps/` for sermons, file for file (docs/maps.md 'The module'): `types.ts` (`SermonSource` {id, name, homepage, credit, describe, default, needs?, `sermonsFor(place)`}, `SermonRow` {id, source, title, preacher?, date?, ref, role, `open` {url, fallback?}, `opensIn` 'web' | 'logos'},
+`SermonPlace` {book, chapter, from?, to?}), `sources/bundled.ts` (one `SermonSource` for each source of `public/sermons/index.json`; it reads `<book>.json` the first time a place in that book is asked, by `sermonBookUrl`, once: the promise is kept, and a file
+that failed is asked for again; a book the source has no file for is no request), `sources/index.ts` (`SOURCES`), `sermonsFor.ts` (`sermonsForSources`, the pure ordering below), `enabled.ts` (`enabledSources(sources, read)`, switch key `sermons.<id>`, Logos for a source that `needs` it),
+`index.ts` (`sermonsFor(place)` over the sources in use, `setSermonSources` for the tests, `sourceOf(row)`), `useSermons.ts`, `openSermons.ts`, `SermonsDoor.tsx`, `SermonsSheet.tsx` and `place.ts`. A second source (a modern preacher's catalogue, a Logos sermon book) is one file in
+`sources/` and a line in `SOURCES`. Every bundled source is read as On until Settings has a switch for it (the next story): `index.ts enabledSources` is where those values will be read. Tests use `tests/support/test-sermons.ts`, sources of their own with rows held in the file.
+
+## Which sermons are for this verse
+
+A source answers `sermonsFor(place)` with the rows whose preaching text touches the chapter, in its own order (a book file's order is verse order). `sermonsForSources` splits them: for a verse or a passage (`from` set) **On this verse** (**On these verses**) is the rows whose
+preaching text overlaps it (`overlaps`: a text that runs on into the next chapter, 5:12 to 6:4, overlaps a verse of chapter 6 as well), narrower first within a source (a stable sort: texts of one width stay in the source's order); **In this chapter** is the rest of the
+chapter's rows in the source's order. The sources are in the registry's order, each source's rows together. For a whole chapter (no `from`) every row is In this chapter. N on the door is every row of both groups. A source that fails (a book file that
+could not be read) is logged and answers nothing; the others still answer.
+
+## The door
+
+`Sermons · N` (`src/sermons/SermonsDoor.tsx`) is a 44 px word in the Verse view's tools line, after the Maps door (`src/VerseView.tsx`, `role=group` 'Tools'): quiet accent words with no border that wrap as a line of words does. It is drawn only while N is above 0 and only on the Verse view
+(as the Maps door, mw-5r3p30.1028): never in the verse text and never at the foot of a chapter, with the Immersive reader On or Off. It is asked for the verse (`from`), the passage a section heading opens (`from`, `to`) and the whole chapter the place line opens, where the place has **no** `from`
+so that the sheet is headed 'Romans 5' and not 'Romans 5:1-21' (`place.ts sermonPlaceOf`, from `copyUnitOf`'s `kind`). Reading it needs no licence and nothing goes through the mill. The count reads the committed index (a book file the worker keeps); nothing of a sermon's page is fetched.
+
+## The sheet
+
+`openSermons(place)` opens the Sermons sheet (`SermonsSheet.tsx`, `<SermonsHost />` mounted once in `src/App.tsx` beside `MapsHost`), a bottom sheet with Back (`useSheetBack`), Escape, the handle's swipe and Close. It is headed 'Sermons for Romans 5:8', 'Sermons for Romans 5:6-11' or 'Sermons for Romans 5',
+then **On this verse** ('On these verses' for a passage) and **In this chapter** (a group is absent when it has no row; a place with none says 'No sermons here.'). Each row is 44 px: the title, and under it the preacher, the date ('14 Mar 1880', 'Mar 1880' or '1880', as far as the source knows it)
+and **Opens on the web** (**Opens in Logos** for a row that opens there). A row is a plain `<a href target=_blank rel="noopener noreferrer">` to the sermon where it lives: the app fetches nothing until it is tapped. While the phone is offline (`useOnline`) the rows stay and the second line says **Needs the internet**.
+Under the rows each source that answered has its credit line with a link to its home page. The proofs: `features/sermons.feature` (tagged `@uc-sermons`, Greek and Hebrew), `tests/unit/sermons-for.test.ts`, `sermons-bundled.test.ts`, `sermons-door.test.tsx`, `sermons-place.test.ts` and `tests/e2e/sermons.spec.ts` at 390x844
+(`shots/sermons-door.png`, `shots/sermons-sheet.png`).
+
+## Where the door stands: every Verse view state
+
+| State of the Verse view | What the door does |
+| --- | --- |
+| Immersive reader On or Off | Drawn as ever: the Verse view's own look follows `data-immersive` but its tools line does not change; no door at the Reader's chapter foot in either |
+| Memorize | The Memorize screens (Due today, a session) are not the Verse view and have no door. In the Verse view Memorize is a word of the tools line and the door follows it, unchanged by Memorizing |
+| The Diagram | The Diagram is a pane under the text of a one-verse view; the tools line stays, so the door is drawn and opens its sheet over the pane (z-50, as the Maps sheet) |
+| A Septuagint chapter | The index is in Lampas's chapters and verses, Swete's are not always (Greek Ps 22:1 is Psalm 23:1): the door is asked for the Lampas verses the Greek verses answer (`place.ts`, from each verse's `ref` and `refs`), for the chapter when the verses have none (a Psalm's title), and for the whole chapter as ever |
+| The Hebrew (an Old Testament verse in the Hebrew view) | Drawn as in the English view, by Lampas's verse (`features/sermons.feature`, Jonah 1:1); the sermons are listed the same either way |
+| The Apocrypha card | A reference into the Apocrypha opens a card, not a Verse view (Lampas holds no text of it), so it has no door; the index builds no Apocrypha book (docs/sermons.md 'The index': a book Lampas lacks leaves its rows out) |
+| A passage lesson's range | A Verse view of the lesson's range: drawn for the passage, as for a heading's |
+| A narrow window or large text | The tools line wraps; the door is a word of it and may take the second line |
 
 ## The sources
 

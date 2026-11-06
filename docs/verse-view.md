@@ -7,7 +7,7 @@ number or not, mw-5r3p30.609: a number opens its verse there only from the middl
 ```
 ‹ Reader     Romans 8:11            ‹   ›      header: close, the reference, the verse before and after
 And if the Spirit of Him who ...              the verse, big, woven as the Reader weaves it (words tappable), in a box that takes what the controls leave and scrolls
- Copy  Share  Memorize [Rehearse, once memorized]  In Logos ↗  In another book…  Maps · 3     the TOOLS: quiet accent words that act on the text (wrap as a line of words does)
+ Copy  Share  Memorize [Rehearse, once memorized]  In Logos ↗  In another book…  Maps · 3  Sermons · 22     the TOOLS: quiet accent words that act on the text (wrap as a line of words does)
 [Listen] [Read it aloud] [Practise]          the ACTIONS: three to a row (Diagram too, for one verse); the chosen one has the accent's border and a tint, never a fill
 [Diagram       ]
   what the action shows                       Listen: a line; Read it aloud: the reading check; Practise: its door; Diagram: the picture
@@ -43,6 +43,7 @@ And if the Spirit of Him who ...              the verse, big, woven as the Reade
 - [A passage (mw-5r3p30.73)](#a-passage-mw-5r3p3073)
 - [A lesson's range (mw-z370x5.2)](#a-lessons-range-mw-z370x52)
 - [Maps (mw-zbjgn3r.2)](#maps-mw-zbjgn3r2)
+- [Sermons (mw-qtu3zvz.2)](#sermons-mw-qtu3zvz2)
 - [In Logos and In another book… (mw-rfjjzd.9)](#in-logos-and-in-another-book-mw-rfjjzd9)
 - [Practise (mw-5r3p30.899)](#practise-mw-5r3p30899)
 - [Quiz me (mw-5r3p30.74)](#quiz-me-mw-5r3p3074)
@@ -104,6 +105,11 @@ Any run of verses of a chapter opens the same passage view: `src/data/passage.ts
 The tools line under the text (after Memorize and the two Logos doors) has a quiet **Maps · N** (`src/maps/MapsDoor.tsx`, 44 px): N is the number of Bible Mapper maps of the verse's chapter (`mapsFor`, from the module's data alone; docs/maps.md), and the button is not drawn at 0. For a
 passage opened from a heading the door carries the passage's range (`{ book, chapter, from, to }`). It opens the Maps sheet (docs/maps.md 'The screens'). The Reader's chapter foot has the same door; with the Immersive reader On the Reader has none and the Verse view keeps it.
 The door wraps with the rest of the tools line, as a word of it; it is not a cell of the action row.
+
+## Sermons (mw-qtu3zvz.2)
+
+After the Maps door the tools line has a quiet **Sermons · N** (`src/sermons/SermonsDoor.tsx`, 44 px): N is the number of sermons listed for the verse's chapter by the free index (`sermonsFor`, docs/sermons.md), and the button is not drawn at 0. A verse, a passage opened from a heading and the whole chapter the place line opens each carry their own place. It opens the Sermons sheet
+('Sermons for Romans 5:8', grouped On this verse and In this chapter; each row a link to the sermon where it lives). docs/sermons.md 'The door' and 'The sheet' are the detail, with the table of what the door does in each Verse view state.
 
 ## In Logos and In another book… (mw-rfjjzd.9)
 
