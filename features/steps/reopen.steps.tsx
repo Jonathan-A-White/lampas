@@ -11,7 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { findSettingsHeading, openTool } from '../../tests/unit/openSettings';
+import { openTool, findToolsHeading } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -73,10 +73,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he goes to the Words screen and then back', async () => {
       await openTool(user, 'Words');
       await screen.findByRole('heading', { name: 'Words', level: 1 });
-      window.history.back(); // the Account page
-      await screen.findByRole('heading', { name: 'Account', level: 1 });
-      window.history.back(); // Settings
-      await findSettingsHeading();
+      window.history.back(); // Tools
+      await findToolsHeading();
       window.history.back();
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

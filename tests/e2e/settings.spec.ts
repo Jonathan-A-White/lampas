@@ -35,7 +35,7 @@ test('the reader header holds the chapter, English | Greek and the Menu, in one 
   await page.screenshot({ path: 'shots/reader-header.png', clip: { x: 0, y: 0, width: 390, height: Math.ceil(head.y + head.height) + 8 } });
 });
 
-test('Settings at phone width: the weave, the voices, the Greek pronunciation, Words and About, each on its group page', async ({ page }) => {
+test('Settings at phone width: the weave, the voices, the Greek pronunciation, and About, each on its group page', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -77,7 +77,7 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, W
 
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
   await openGroup(page, 'Account');
-  await tappable([page.getByRole('button', { name: 'Words', exact: true }), page.getByRole('button', { name: 'About', exact: true })]);
+  await tappable([page.getByRole('button', { name: 'About', exact: true })]);
   await fitsPhone();
 
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();

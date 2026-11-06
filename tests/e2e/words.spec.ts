@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { openGroup } from './settings-group';
-import { openSettings } from './openSettings';
+
+import { openTool } from './openSettings';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: import('@playwright/test').Page) {
@@ -18,9 +18,7 @@ async function expectFitsPhone(page: import('@playwright/test').Page) {
 test('the Words screen lists the seeded words by lesson at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
-  await openSettings(page);
-  await openGroup(page, 'Account');
-  await page.getByRole('button', { name: 'Words', exact: true }).click();
+  await openTool(page, 'Words');
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByTestId('word-counts')).toHaveText('54 solid, 9 learning');
   await expect(page.getByRole('heading', { name: 'Lesson 1', level: 2, exact: true })).toBeVisible();
@@ -55,9 +53,7 @@ for (const scheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: scheme });
     await openUnlocked(page);
     await page.goto('/');
-    await openSettings(page);
-    await openGroup(page, 'Account');
-    await page.getByRole('button', { name: 'Words', exact: true }).click();
+    await openTool(page, 'Words');
     await expect(page.getByTestId('word-counts')).toHaveText('54 solid, 9 learning');
 
     const card = page.locator('[data-lemma="ἀγαπάω"]');

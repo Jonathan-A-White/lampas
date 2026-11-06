@@ -56,8 +56,8 @@ Feature: Settings
     And the English voice picker shows "English (US)"
     And "Modern" is selected
 
-  Scenario: Words and About are reachable from Settings
+  Scenario: About is reachable from Settings
     Given Lampas is opened on a phone with a Greek voice
     When he opens Settings from the reader's Menu
-    And he taps "Words" on the Settings screen
-    Then the Words screen is shown
+    And he taps "About" on the Settings screen
+    Then the About screen is shown

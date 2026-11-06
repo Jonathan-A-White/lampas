@@ -225,7 +225,9 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(row.getAttribute('data-state')).toBe('dropped'));
     });
     And('he returns to the reader', async () => {
-      await leaveSettings(user);
+      // Words was opened from Tools: ‹ Tools, then ‹ Reader
+      await user.click(await screen.findByRole('button', { name: '‹ Tools' }));
+      await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
       await waitForReader();
       await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
     });

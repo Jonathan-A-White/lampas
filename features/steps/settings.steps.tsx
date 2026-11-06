@@ -211,15 +211,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('Words and About are reachable from Settings', ({ Given, When, Then, And }) => {
+  Scenario('About is reachable from Settings', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
     When("he opens Settings from the reader's Menu", openSettingsPage);
     And('he taps {string} on the Settings screen', async (_, label: string) => {
       await ensureSettingsGroup('account');
       await user.click(screen.getByRole('button', { name: label }));
     });
-    Then('the Words screen is shown', async () => {
-      await screen.findByRole('heading', { name: 'Words', level: 1 });
+    Then('the About screen is shown', async () => {
+      await screen.findByRole('heading', { name: 'About', level: 1 });
     });
   });
 });

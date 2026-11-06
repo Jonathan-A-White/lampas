@@ -35,3 +35,9 @@ export async function openTools(where: Scope): Promise<void> {
   await menuRow(where, 'Tools').click();
   await expect(toolsHeading(where)).toBeVisible();
 }
+
+/** Opens Tools through the Menu and taps its door `name` ('Words', 'Review', 'Paradigms', 'Verse lists', 'Memorize', 'Your Logos library'); the screen's own heading is for the spec to wait for. */
+export async function openTool(where: Scope, name: string): Promise<void> {
+  await openTools(where);
+  await where.getByRole('list', { name: 'Tools' }).getByRole('button', { name: new RegExp(`^${name}`) }).click();
+}

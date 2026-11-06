@@ -21,6 +21,7 @@ import { findButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
 import { drillAnswer } from '../../tests/support/drill-answer';
+import { openTool } from '../../tests/unit/openSettings';
 
 afterAll(async () => {
   cleanup();
