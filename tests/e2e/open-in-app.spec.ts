@@ -436,3 +436,54 @@ for (const size of SIZES) {
     });
   }
 }
+
+// mw-5r3p30.1100: the first row of a screen (Settings' 'Search settings' box, Today's 'REVIEW' heading) is not under the strip, and the second tap of a double tap on 'Not now' lands on none of it.
+for (const [hash, name, locate] of [
+  ['#/settings', 'Search settings', (page: Page) => page.getByRole('searchbox', { name: 'Search settings' }).or(page.getByPlaceholder('Search settings')).first()],
+  ['#/today', 'REVIEW', (page: Page) => page.getByRole('heading', { name: 'Review', exact: true }).first()],
+] as const) {
+  test(`390x844 ${hash}: '${name}' is the element at its own centre while the strip shows`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await stubApi(page, WEBAPP);
+    await openUnlocked(page);
+    await page.goto(`/${hash}`);
+    await expect(page.locator('[data-open-in-app]')).toBeVisible();
+    await page.waitForTimeout(500);
+    const target = locate(page);
+    await expect(target).toBeVisible();
+    const strip = (await page.locator('[data-open-in-app]').boundingBox())!;
+    const at = (await target.boundingBox())!;
+    expect(at.y, `'${name}' starts at or under the strip's foot`).toBeGreaterThanOrEqual(strip.y + strip.height - 1);
+    expect(await target.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!top && (top === el || el.contains(top) || top.contains(el));
+    }), `'${name}' is what is at its own centre`).toBe(true);
+    await shot(page, `open-in-app-first-row-${hash.replace(/[^a-z]/gi, '')}`);
+  });
+
+}
+
+// the sweep: on every screen the spec draws, the second tap of a double tap on 'Not now' focuses nothing
+for (const hash of ['#/?ref=Rom.8.28', '#/settings', '#/words', '#/about', '#/today', '#/review']) {
+  test(`390x844 ${hash}: two taps 100 ms apart on 'Not now' focus nothing`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await stubApi(page, WEBAPP);
+    await openUnlocked(page);
+    await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+    await page.goto(`/${hash}`);
+    const notNow = page.locator('[data-open-in-app]').getByRole('button', { name: 'Not now' });
+    await expect(notNow).toBeVisible();
+    await page.waitForTimeout(500);
+    const at = (await notNow.boundingBox())!;
+    const x = at.x + at.width / 2;
+    const y = at.y + at.height / 2;
+    await page.touchscreen.tap(x, y);
+    await page.waitForTimeout(100);
+    await page.touchscreen.tap(x, y);
+    await page.waitForTimeout(500);
+    await expect(page.locator('[data-open-in-app]')).toHaveCount(0);
+    expect(await page.evaluate(() => document.activeElement?.tagName), 'the second tap focused no field or button').toBe('BODY');
+    await shot(page, `open-in-app-not-now-double-${hash.replace(/[^a-z]/gi, '')}`);
+  });
+}

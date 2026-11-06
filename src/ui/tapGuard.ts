@@ -25,6 +25,9 @@ export function screenOf(hash: string): string {
 
 const MODAL = '[role="dialog"],[role="alertdialog"]';
 const holdsModal = (node: Node): boolean => node instanceof Element && (node.matches(MODAL) || node.querySelector(MODAL) !== null);
+// the 'Open in the app' strip floats over the top of a screen and the screen stands lower for it; when 'Not now' takes it away the first row (Settings' search box) rises under the thumb (mw-5r3p30.1100)
+const STRIP = '[data-open-in-app]';
+const holdsStrip = (node: Node): boolean => node instanceof Element && (node.matches(STRIP) || node.querySelector(STRIP) !== null);
 
 /** True for a link that takes him out of the app: it opens a new tab, or its address is neither this page's nor another place in the app. */
 export function leavesApp(link: HTMLAnchorElement): boolean {
@@ -48,9 +51,9 @@ export function startTapGuard(): () => void {
     screen = now;
     swallowTaps();
   });
-  // a sheet comes or goes in the commit of that tap; the observer hears it a microtask later, still long before a thumb's second tap
+  // a sheet comes or goes (or the Open in the app strip goes) in the commit of that tap; the observer hears it a microtask later, still long before a thumb's second tap
   const observer = new MutationObserver((records) => {
-    if (records.some((record) => [...record.addedNodes, ...record.removedNodes].some(holdsModal))) swallowTaps();
+    if (records.some((record) => [...record.addedNodes, ...record.removedNodes].some(holdsModal) || [...record.removedNodes].some(holdsStrip))) swallowTaps();
   });
   observer.observe(document.body, { childList: true, subtree: true });
   // a link that leaves the app: the tap that follows it opens it again. The tap that calls swallowTaps is already past the window, so it goes through.
