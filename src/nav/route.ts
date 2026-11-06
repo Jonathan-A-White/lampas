@@ -1,4 +1,4 @@
-// src/nav/route.ts — twenty-nine screens (ROUTES), told apart by the address hash, so the phone's Back button walks them.
+// src/nav/route.ts — thirty screens (ROUTES), told apart by the address hash, so the phone's Back button walks them.
 // The reader's own state rides in the same hash after a '?': book (b, its code as public/data/index.json has it), chapter (c),
 // view, weave and the selected verse (v), e.g. '#/?b=rom&c=8&view=greek&weave=off&v=28'. An address with a chapter and no book
 // is Romans (every address kept before the picker, mw-5r3p30.60, was). src/nav/lastRoute.ts keeps these addresses across a close.
@@ -14,11 +14,11 @@ import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
 import { pathOf } from './path';
 
-export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'help' | 'about' | 'preface' | 'essay' | 'lessons' | 'library' | 'lists' | 'memorize' | 'settings' | 'share' | 'unlock';
+export type Route = 'home' | 'words' | 'import' | 'test' | 'drill' | 'review' | 'today' | 'paradigms' | 'placement' | 'goal' | 'path' | 'ipa' | 'diagram-lesson' | 'sounds' | 'studyway' | 'aboutyou' | 'memory' | 'requests' | 'conversations' | 'askmore' | 'help' | 'about' | 'preface' | 'essay' | 'lessons' | 'library' | 'lists' | 'memorize' | 'settings' | 'tools' | 'share' | 'unlock';
 
 const ROUTE_TABLE: Record<Route, true> = {
   home: true, words: true, import: true, test: true, drill: true, review: true, today: true, paradigms: true, placement: true, goal: true, path: true, ipa: true, 'diagram-lesson': true, sounds: true, studyway: true,
-  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, help: true, about: true, preface: true, essay: true, lessons: true, library: true, lists: true, memorize: true, settings: true, share: true, unlock: true,
+  aboutyou: true, memory: true, requests: true, conversations: true, askmore: true, help: true, about: true, preface: true, essay: true, lessons: true, library: true, lists: true, memorize: true, settings: true, tools: true, share: true, unlock: true,
 };
 
 /** Every screen of the app, once: the table the tutor's places are checked against (src/tutor/registry.ts, tests/unit/tutor-registry.test.ts). A new Route fails typecheck until it is listed here. */
@@ -91,6 +91,7 @@ export function routeOf(hash: string): Route {
   if (path === LISTS_PATH || path.startsWith(`${LISTS_PATH}/`)) return 'lists';
   if (path === MEMORIZE_PATH || path.startsWith(`${MEMORIZE_PATH}/`)) return 'memorize';
   if (path === '#/settings') return 'settings';
+  if (path === '#/tools') return 'tools';
   if (path === '#/share') return 'share';
   if (path === '#/unlock') return 'unlock';
   return 'home';

@@ -1,4 +1,4 @@
-// src/ParadigmsScreen.tsx — Paradigms (mw-5r3p30.82, #/paradigms, reached from Settings > More beside Review; docs/paradigms.md): the list of
+// src/ParadigmsScreen.tsx — Paradigms (mw-5r3p30.82, #/paradigms, reached from Menu > Tools beside Review; docs/paradigms.md): the list of
 // tables (twenty Greek and four Hebrew, listed in data/paradigms/index.ts; the language in hand chooses, with the Greek | Hebrew segment where both are chosen, mw-gdcyf98.13) with 'Available forms: N of M' and a bar, and a table (#/paradigms?t=article&mode=drill).
 // The list groups the tables by the ladder's tier, under the tier's title. A form is his once every grammar idea it needs is at the frontier or solid
 // (grammarLevels); How much of a table (the setting 'paradigmExtent', src/settings/definitions/grammarExtent.ts, mw-irpgqi.2, with a switch in this
@@ -53,6 +53,7 @@ import { askTheTutor } from './tutor/askNow';
 import { useReportScreen } from './tutor/screenContext';
 import { languageFact, type ScreenFact } from './tutor/screen';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
+import { ToolBack } from './ToolBack';
 import { HintCard } from './tips/HintCard';
 import { PARADIGMS_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
@@ -113,7 +114,7 @@ function ParadigmList({ levels, extent }: { levels: Levels | undefined; extent: 
   const tablesOfLang = lang === undefined ? [] : paradigmsIn(lang ?? 'grc');
   return (
     <>
-      <ScreenHeader title="Paradigms" back={<HeaderButton onClick={() => backTo('home')}>‹ Reader</HeaderButton>} />
+      <ScreenHeader title="Paradigms" back={<ToolBack fallback="home" label="‹ Reader" />} />
       {both ? <SourceSegment label="Language of the tables" /> : null}
       <HintCard event={PARADIGMS_OPENED} className="mx-4 mt-2 shrink-0" />
       <main className="screen min-h-0 flex-1 px-4 pt-4">

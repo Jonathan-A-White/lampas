@@ -19,7 +19,7 @@ export function scrollAddress(hash: string): string {
     const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
     const setting = params.get('setting');
     if (setting) return `#/settings?setting=${setting}`;
-    // so is a link to a section (mw-5r3p30.427): the section scroll is its place, and it does not share (or overwrite) the offset of Settings opened by the gear
+    // so is a link to a section (mw-5r3p30.427): the section scroll is its place, and it does not share (or overwrite) the offset of Settings opened from the Menu
     const section = params.get('section');
     if (section) return `#/settings?section=${section}`;
     // and each group's page keeps its own place (mw-3ased2.1), apart from the home that lists the groups

@@ -1,14 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { getApocryphaMovedFrom, getLogosBible, getStudyResources, moveApocryphaBible, setLogosBibleFor, setResourceOn, setResourceOption } from '../../data/repositories';
-import { countsOf } from '../../library/kinds';
-import { useShelf } from '../../library/useShelf';
 import { openLibrary } from '../../nav/route';
 import { StartPlan } from '../../plan/StartPlan';
 import { resourceOf, type StudyResource } from '../../resources';
 import { storeUrl } from '../../resources/appStore';
 import { AUDIO_BIBLES } from '../../resources/audioBible';
-import { KINDS, entryOf } from '../../resources/catalogue';
+import { entryOf } from '../../resources/catalogue';
 import { DEFAULT_APOCRYPHA_BIBLE, LOGOS_PARTS, biblesFor } from '../../resources/logosBible';
 import { oneTap } from '../../ui/settle';
 import { audioBibleSetting, readingPlanSetting } from '../definitions';
@@ -97,28 +95,6 @@ export const ResourceControl: Control = ({ row }) => {
   const resources = useLiveQuery(getStudyResources, []);
   const resource = resourceOf(row.key.slice('resource.'.length));
   return resources && resource ? <ResourceRow row={row} resource={resource} on={resources.on.includes(resource.id)} typed={resources.options[resource.id] ?? ''} /> : null;
-};
-
-/** Your Logos library (mw-rfjjzd.5): how many books of his shelf are on, and a door to the Library (#/library) where they are chosen. */
-export const LibraryControl: Control = ({ row }) => {
-  const states = useShelf();
-  const on = states === undefined ? undefined : KINDS.reduce((sum, kind) => sum + countsOf(kind, states).on, 0);
-  return (
-    <SettingRow row={row} className="border-b border-line py-2">
-      {on !== undefined ? (
-        <button
-          type="button"
-          onClick={() => openLibrary()}
-          className="flex min-h-12 w-full items-center justify-between gap-3 text-left text-base font-medium"
-        >
-          <span className="title-wrap min-w-0 flex-1">{`${row.label} · ${on} ${on === 1 ? 'book' : 'books'} on`}</span>
-          <span aria-hidden="true" className="shrink-0 text-muted">
-            ›
-          </span>
-        </button>
-      ) : null}
-    </SettingRow>
-  );
 };
 
 /** Bible in Logos for one part of the canon (the row's key says which: logosBible is the New Testament's): a picker of the catalogue's Bibles that hold the part (biblesFor), with his own Resource ID listed too when it is none

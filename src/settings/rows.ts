@@ -91,7 +91,7 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how the talk bars work, tips and your study way.', sections: ['readTutor', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
-  { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos and maps.', sections: ['resources', 'maps'] },
+  { id: 'study', title: 'Study resources', hint: 'Links to the study tools you own, Bible in Logos and maps.', sections: ['resources', 'maps'] },
   { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests, Help and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];
@@ -118,9 +118,6 @@ const LINKS: readonly SettingsRow[] = [
   { key: 'link.memory', label: 'Memory', hint: 'The notes Lampas keeps about you on this phone: read, edit, export and import them.', section: 'memory' },
   { key: 'link.studyway', label: 'My study way', hint: 'The lines you kept about how the tutor quizzes you.', section: 'studyWay' },
   { key: 'link.goal', label: 'Goal', hint: 'Where you are on the grammar of the language you are learning, and what to learn next.', section: 'goal', dependsOn: depthFrom(3) },
-  { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'more', dependsOn: depthFrom(1) },
-  { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'more', dependsOn: depthFrom(1) },
-  { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'more', dependsOn: depthFrom(5) },
   {
     key: 'link.askmore',
     label: 'Ask for more',
@@ -160,7 +157,7 @@ const LIBRARY_ROW: SettingsRow = {
   label: 'Your Logos library',
   hint: 'The books of your Logos library that Lampas opens, and which are on.',
   help: 'Lampas cannot see your Logos library, so you say which books to use. Open it to tick them by hand or to import your list. The word sheet, the idea sheet and the tutor use the ones that are on; the devotionals that are on are the ones Daily draws from. It shows only while Logos is On. Import reads the list Logos saves (Library > Save as Spreadsheet) on the phone and keeps only each book\'s id, title, series, languages and passages; only links to a book or verse are built, and no text of any book is kept, shown or sent. Ask for a book sends the makers the title you type, or the book you pick with its Resource ID, type, series and passages, and Ask the makers about these sends once, when you tap it, how many books you have of each Logos type and a file of the titles Lampas does not open yet; nothing else of your library leaves the phone.',
-  section: 'resources',
+  section: 'tools',
   dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
 };
 
@@ -222,8 +219,21 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
  *  src/tutor/knows.ts and the bible-talk instructions do not carry it (isTalkable). Hand is a row of Layout that any screen reads (hand.ts); the floating ? sits on its side. The Tutor door row is gone (mw-5r3p30.882): the floating ? is the one door. */
 const rowOfDefinition = (def: typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
 const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
-// the library's door is listed just before Bible in Logos, so Study resources reads: the switches, Your Logos library, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
-const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [LIBRARY_ROW, rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+// Study resources reads: the switches, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
+const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+
+/** The Tools screen's doors (mw-5r3p30.754, his words of 2026-10-24: "things that interact with the Bible but are not the Bible themselves", not settings): the Library, his Verse lists, Memorize, Paradigms, Words and Review, in the order
+ *  the screen draws them. They are rows of the section 'tools', which no Settings group holds, so no Settings page draws them and the tutor neither reads nor changes them (isTalkable); they stay rows so that the same
+ *  `dependsOn` hides them (Words and Review below the Curious step, Paradigms below All in, the library while Logos is Off) and the Settings search finds them (visibleToolRows), `ToolsScreen.tsx` draws them
+ *  and src/tools.ts says where each opens. */
+export const TOOL_ROWS: readonly SettingsRow[] = [
+  LIBRARY_ROW,
+  { key: 'link.lists', label: 'Verse lists', hint: 'Lists of verses you keep, to read, listen to and memorize.', section: 'tools' },
+  { key: 'link.memorize', label: 'Memorize', hint: 'Learn verses by heart, the one that is due first.', section: 'tools' },
+  { key: 'link.paradigms', label: 'Paradigms', hint: 'Tables of endings, opened as you learn the grammar.', section: 'tools', dependsOn: depthFrom(5) },
+  { key: 'link.words', label: 'Words', hint: 'The words you are learning.', section: 'tools', dependsOn: depthFrom(1) },
+  { key: 'link.review', label: 'Review', hint: 'The words and ideas that are due.', section: 'tools', dependsOn: depthFrom(1) },
+];
 
 /** Every row of Settings, section by section in the screen's order (within a section, in the order they are listed above). */
 export const ROWS: readonly SettingsRow[] = rowsInOrder<SectionId, SettingsRow>(SECTIONS, unordered);
@@ -252,7 +262,7 @@ export const isTalkable = (key: string): boolean => !key.startsWith('link.') && 
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
-const DEPENDED_ON = [...new Set(ROWS.flatMap((r) => (r.dependsOn ? [r.dependsOn.key] : [])))];
+const DEPENDED_ON = [...new Set([...ROWS, ...TOOL_ROWS].flatMap((r) => (r.dependsOn ? [r.dependsOn.key] : [])))];
 
 /** The current value of every row some other row depends on: a setting's value as text (a resource switch is 'on' or 'off'). */
 export async function readValues(): Promise<Values> {
@@ -311,6 +321,12 @@ export const neededFor = (values: Values, key: string, rows: readonly SettingsRo
 /** The rows to draw at a link to the setting `key` (src/settings/link.ts): what visibleRows gives for `query`, and that row though the query or its
  *  dependency would hide it, with the setting to turn on first (neededFor) beside it. */
 export const rowsAt = (values: Values, query: string, key: string | null, rows: readonly SettingsRow[] = ROWS): SettingsRow[] => rowsAtIn(rows, values, query, key, SEARCH);
+
+/** The Tools the Settings search finds for `query`, drawn (no query) or searched by name, hint and help, hidden by the same dials and the Logos switch as in Settings. The Tools screen calls it with no query. */
+export const visibleToolRows = (values: Values, query: string): SettingsRow[] => {
+  const shown = new Set(TOOL_ROWS.map((r) => r.key));
+  return visibleRows(values, query, [...ROWS, ...TOOL_ROWS]).filter((r) => shown.has(r.key));
+};
 
 /** The groups the home lists: those with a row drawn, given the values read. Developer is not listed until Developer mode is found (its only row hides until then). */
 export const visibleGroups = (values: Values, rows: readonly SettingsRow[] = ROWS): SettingsGroup[] => visibleGroupsIn(rows, GROUPS, values, HOME_SECTIONS);

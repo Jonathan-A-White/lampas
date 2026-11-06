@@ -70,7 +70,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Words',
     line: 'New words, Quick test, Parsing drill.',
     body: [
-      'Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have yet; its sheet shows the word large with how it sounds, its meaning and an easy verse, and Got it puts it in Words. A Hebrew word is shown right to left.',
+      'In Tools, Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have yet; its sheet shows the word large with how it sounds, its meaning and an easy verse, and Got it adds it. A Hebrew word is shown right to left.',
       'Where both languages are chosen, Words and Review show a Greek | Hebrew switch. The Quick test asks words of both together; the Parsing drill reads the chapter of the language you are in.',
       'A Septuagint word’s card says how Lampas read it (sure, likely, unsure). A dotted guess is never learned.',
     ],
@@ -80,7 +80,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Review',
     line: 'What is due, and Today.',
     body: [
-      'Review asks the words and ideas that are due; with both languages chosen it asks the side the switch is on. A word you pick right asks how well you knew it: Know it well moves it up a step at once, Kind of counts as a right, Don’t know brings it back tomorrow. Going on without a tap counts as Kind of.',
+      'In Tools, Review asks the words and ideas that are due; with both languages chosen it asks the side the switch is on. A word you pick right asks how well you knew it: Know it well moves it up a step at once, Kind of counts as a right, Don’t know brings it back tomorrow. Going on without a tap counts as Kind of.',
       'Today lists what is due: Review, Memorize and the rest. The tutor is told what is on it, and can offer Open today’s drill.',
     ],
   },
@@ -89,7 +89,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Paradigms',
     line: 'Tables of endings.',
     body: [
-      'Paradigms are tables of endings, opened as you learn the grammar. A table opened from a word’s sheet, or from See the table on a Review ending card, can show that word’s own forms: This word | The pattern. Every form the New Testament uses is laid in its cells, never a made-up one; a cell the text never uses says not in the NT, and a tap on a form opens the Reader there.',
+      'In Tools, Paradigms are tables of endings, opened as you learn the grammar. A table opened from a word’s sheet, or from See the table on a Review ending card, can show that word’s own forms: This word | The pattern. Every form the New Testament uses is laid in its cells, never a made-up one; a cell the text never uses says not in the NT, and a tap on a form opens the Reader there.',
       'With Hebrew chosen, the list also has four Hebrew tables, drawn right to left.',
     ],
   },
@@ -98,7 +98,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Memorize',
     line: 'Learn a verse by heart.',
     body: [
-      'A Memorize button on a verse, a passage or a row of a verse list puts it on the schedule, in English or in the language of the verse your dials allow. Memorize, in the Library beside Verse lists, shows Due today with Start, and Your verses with the step each is on.',
+      'A Memorize button on a verse, a passage or a row of a verse list puts it on the schedule, in English or in the language of the verse your dials allow. Memorize, in Tools beside Verse lists, shows Due today with Start, and Your verses with the step each is on.',
       'In a session, hold the bar to say the verse, or Type it. A verse list holds references you save; it has Play, Play all and Memorize this list. Today has a Memorize piece too (Settings > Daily > Memorize).',
     ],
   },
@@ -117,7 +117,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Your Logos library and maps',
     line: 'Books you own, and maps.',
     body: [
-      'If you own Logos, Your Logos library (the first row of Settings) lists the books Lampas can open, by kind, each Off, On or Pinned, with a search; Import reads the list Logos saves. Lampas keeps only that list and your choices, and sends nothing of your library unless you ask. On a verse, In Logos opens it in your own Bible.',
+      'If you own Logos, Your Logos library (in Tools) lists the books Lampas can open, by kind, each Off, On or Pinned, with a search; Import reads the list Logos saves. Lampas keeps only that list and your choices, and sends nothing of your library unless you ask. On a verse, In Logos opens it in your own Bible.',
       'Tap a verse, a section heading or the line at the foot of the text, and its Maps · N button opens the maps of that place from Bible Mapper; Settings > Study resources > Maps turns each source on or off.',
     ],
   },
