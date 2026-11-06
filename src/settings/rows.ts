@@ -63,6 +63,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'pronunciation', title: 'Pronunciation' },
   { id: 'resources', title: 'Study resources', hint: 'Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.' },
   { id: 'maps', title: 'Maps', hint: 'Which atlases the Maps door and the tutor draw on.' },
+  { id: 'themes', title: 'Themes', hint: 'Which topic lists name the themes of a verse and find the sermons on the same theme.' },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.' },
   { id: 'tips', title: 'Tips' },
   { id: 'developer', title: 'Developer' },
@@ -91,7 +92,7 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how the talk bars work, tips and your study way.', sections: ['readTutor', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
-  { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos and maps.', sections: ['resources', 'maps'] },
+  { id: 'study', title: 'Study resources', hint: 'Your Logos library, links to the tools you own, Bible in Logos, maps and themes.', sections: ['resources', 'maps', 'themes'] },
   { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests, Help and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
 ];

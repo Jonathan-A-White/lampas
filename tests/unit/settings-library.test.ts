@@ -27,7 +27,7 @@ describe('the rows of Settings after the library', () => {
     const keys = ROWS.filter((r) => r.section === 'resources').map((r) => r.key);
     expect(keys.slice(keys.indexOf('resource.logos'), keys.indexOf('resource.logos') + 3)).toEqual(['resource.logos', 'library', 'logosBible']);
     expect(ROWS.filter(isHomeRow).map((r) => r.key)).not.toContain('library');
-    expect(groupById('study')?.hint).toBe('Your Logos library, links to the tools you own, Bible in Logos and maps.');
+    expect(groupById('study')?.hint).toBe('Your Logos library, links to the tools you own, Bible in Logos, maps and themes.');
   });
 
   it('is drawn only while Logos is on (mw-rfjjzd.23); a search for it finds the Logos switch to turn on first', () => {
