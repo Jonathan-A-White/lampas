@@ -6,6 +6,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { openWithTextSize, PHONES } from './next-in-view';
 import { FLOATING } from './open-tutor';
+import { menuButton } from './openSettings';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -359,13 +360,13 @@ for (const size of SIZES) {
         }), '‹ Reader is the element at its own centre').toBe(true);
       }
       if (hash.startsWith('#/?')) {
-        const gear = page.getByRole('button', { name: 'Settings', exact: true });
-        await expect(gear).toBeVisible();
-        expect(await gear.evaluate((el) => {
+        const menu = menuButton(page);
+        await expect(menu).toBeVisible();
+        expect(await menu.evaluate((el) => {
           const r = el.getBoundingClientRect();
           const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
           return top === el || el.contains(top);
-        }), 'the Reader\'s gear is the element at its own centre').toBe(true);
+        }), 'the Reader\'s Menu is the element at its own centre').toBe(true);
       }
       await shot(page, `open-in-app-topbar-${hash.replace(/[^a-z]/gi, '')}-${size.width}x${size.height}`);
     });

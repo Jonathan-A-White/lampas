@@ -82,7 +82,7 @@ async function solidLemmas(): Promise<Set<string>> {
   return new Set(solid.flatMap((w) => [w.lemma, ...w.lemmas]).map(nfc));
 }
 
-/** The Weave switch is in Settings: open it from the gear, switch, and come back to the reader. */
+/** The Weave switch is in Settings: open it from the Menu, switch, and come back to the reader. */
 type WeaveLabel = 'Off' | 'Solid words' | 'Solid and learning words';
 const WEAVE_VALUE: Record<WeaveLabel, string> = { Off: 'off', 'Solid words': 'solid', 'Solid and learning words': 'solid+learning' };
 const WEAVE_CHIP: Record<WeaveLabel, string> = { Off: 'Off', 'Solid words': 'Solid', 'Solid and learning words': '+ Learning' };

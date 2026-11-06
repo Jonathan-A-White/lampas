@@ -13,7 +13,7 @@ import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setTermKnown } from '../../src/data/repositories/grammar';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { findSettingsDoor, openSettings } from '../../tests/unit/openSettings';
+import { findMenuButton, openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -51,7 +51,7 @@ async function settle(): Promise<void> {
 async function openFresh(): Promise<void> {
   await wipe();
   render(<App />);
-  await findSettingsDoor();
+  await findMenuButton();
   await settle();
 }
 
@@ -131,7 +131,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened', async () => {
       render(<App />);
-      await findSettingsDoor();
+      await findMenuButton();
       await settle();
     });
     Then('every row of the words, the schedule, the grammar levels, the settings and the flags is as it was', async () => {
@@ -147,7 +147,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened', async () => {
       render(<App />);
-      await findSettingsDoor();
+      await findMenuButton();
       await settle();
     });
     Then('every word, review and level row is as it was', async () => {

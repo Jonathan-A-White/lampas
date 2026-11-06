@@ -2,13 +2,13 @@ import { expect, test, type Locator } from '@playwright/test';
 import { shot } from './shot';
 import { leaveSettings, openGroup, turnLogosOn } from './settings-group';
 import { openUnlocked } from './unlocked';
-import { openSettings, settingsDoor, settingsHeading } from './openSettings';
+import { openSettings, menuButton, settingsHeading } from './openSettings';
 
 // These specs measure a 390 px phone screen, so they pin it themselves: run under the 'chromium' project (a bare
 // `npx playwright test <file>`) they would otherwise get Desktop Chrome's 1280 px and fail every width check.
 test.use({ viewport: { width: 390, height: 844 } });
 
-test('the reader header holds the chapter, English | Greek and the gear, in one row at phone width', async ({ page }) => {
+test('the reader header holds the chapter, English | Greek and the Menu, in one row at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -16,16 +16,16 @@ test('the reader header holds the chapter, English | Greek and the gear, in one 
   const header = page.locator('header').first();
   const title = await header.getByRole('heading', { name: 'Romans 8', level: 1 }).boundingBox();
   const language = await header.getByRole('group', { name: 'Language', exact: true }).boundingBox();
-  const gear = await settingsDoor(header).boundingBox();
+  const menu = await menuButton(header).boundingBox();
   const head = await header.boundingBox();
-  if (!title || !language || !gear || !head) throw new Error('the header is missing a part');
+  if (!title || !language || !menu || !head) throw new Error('the header is missing a part');
 
-  expect(gear.width).toBeGreaterThanOrEqual(43.5);
-  expect(gear.height).toBeGreaterThanOrEqual(43.5);
+  expect(menu.width).toBeGreaterThanOrEqual(43.5);
+  expect(menu.height).toBeGreaterThanOrEqual(43.5);
   // left to right, no overlap, all inside the 390 px screen, and the title is not squeezed to nothing
   expect(title.x + title.width).toBeLessThanOrEqual(language.x + 0.5);
-  expect(language.x + language.width).toBeLessThanOrEqual(gear.x + 0.5);
-  expect(gear.x + gear.width).toBeLessThanOrEqual(390);
+  expect(language.x + language.width).toBeLessThanOrEqual(menu.x + 0.5);
+  expect(menu.x + menu.width).toBeLessThanOrEqual(390);
   expect(title.width).toBeGreaterThanOrEqual(90);
   // nothing else in the header, and no Weave switch or Words button in the reader's top
   expect(await page.getByRole('group', { name: 'Weave', exact: true }).count()).toBe(0);

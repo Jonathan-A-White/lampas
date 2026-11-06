@@ -18,7 +18,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { findSettingsDoor, openSettings } from '../../tests/unit/openSettings';
+import { findMenuButton, openSettings } from '../../tests/unit/openSettings';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 
@@ -242,7 +242,7 @@ describeFeature(feature, ({ Scenario }) => {
       window.location.hash = '';
       await seedHisWords();
       render(<App newRandom={() => mulberry32(7)} />);
-      await findSettingsDoor();
+      await findMenuButton();
     });
     Then('the steps he answered are still kept for their words', async () => {
       expect(await db.drills.count()).toBe(answeredSteps);

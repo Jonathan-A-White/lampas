@@ -4,7 +4,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { dueOnToday, reviewPiece, todayChip, waitForDue } from './today-chip';
 import { openGroup } from './settings-group';
-import { openSettings, settingsDoor } from './openSettings';
+import { openSettings, menuButton } from './openSettings';
 
 // The page never scrolls and never grows wider than the window.
 async function expectFitsPhone(page: Page) {
@@ -72,7 +72,7 @@ test('the Today chip fits the Reader at 360 px and leaves the header as it was',
   expect(box && box.x + box.width).toBeLessThanOrEqual(360);
   expect(box?.height).toBeGreaterThanOrEqual(38);
   // the chip sits under the header, so the header's own buttons keep their room
-  expect((await settingsDoor(page).boundingBox())?.width).toBeGreaterThanOrEqual(48);
+  expect((await menuButton(page).boundingBox())?.width).toBeGreaterThanOrEqual(48);
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   await expectFitsPhone(page);
   await context.close();

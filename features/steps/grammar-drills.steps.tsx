@@ -26,7 +26,7 @@ import { paradigmOf } from '../../src/nav/route';
 import { GRAMMAR, grammarRandom, gradedVersesOf } from '../../src/review/kinds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { findSettingsDoor, openSettings } from '../../tests/unit/openSettings';
+import { findMenuButton, openSettings } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -91,7 +91,7 @@ async function drawAs(id: string, passage: Chapter[], kind: GrammarKind, wanted:
 async function openReader(): Promise<void> {
   window.history.replaceState(null, '', '/');
   render(<App newRandom={() => mulberry32(seed)} />);
-  await findSettingsDoor();
+  await findMenuButton();
 }
 
 async function openReviewFromSettings(): Promise<void> {
