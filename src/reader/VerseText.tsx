@@ -17,6 +17,7 @@ import { sayWord } from './sayWord';
 import { variantLabel, variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
+import { gapText } from './septuagint';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
 function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
   return (
@@ -88,6 +89,8 @@ export interface VerseProps {
   chosen?: readonly ChosenUnit[];
   /** a tap on the 'RP 2026' mark after English Lampas wrote for a place the 2026 Greek changes (src/data/rp2026English.ts, mw-9ji6ek0.33): the key of its entry; absent, the mark is not drawn */
   onRp?: (key: string) => void;
+  /** Settings > Show manuscript gaps is On: the Greek view draws a Septuagint word as Swete printed it, with his lacuna brackets (`d`, src/reader/septuagint.ts gapText); absent or false, the bare `t` (mw-u2w5klk.280) */
+  gaps?: boolean;
 }
 
 /** How a variant unit's words are drawn (mw-9ji6ek0.5): a dotted line under them in the accent, which reads in the light and the dark themes and leaves the word's own colour.
@@ -152,7 +155,7 @@ const GUESS = 'underline decoration-dotted decoration-1 underline-offset-4';
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
  * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
  * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
-export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps'> & { marked?: ReadonlySet<number>; still?: boolean }) {
   const hebrew = source === 'hbo';
   const own = sourceAttrs(source);
   const face = sourceFace(source);
@@ -261,7 +264,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
                 run: plan.marked.has(i) ? 'variant' : undefined,
                 node: (bare: boolean) => (
                   <Tap key={i} bare={bare} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-guess={isGuess(w) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''} ${isGuess(w) ? GUESS : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
-                    {w.t}
+                    {gapText(w, gaps)}
                     {isGuess(w) ? <span role="img" aria-label="a guess" /> : null}
                   </Tap>
                 ),

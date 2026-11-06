@@ -2,7 +2,7 @@
 // name (never a bare number), and the line under the buttons says what the chosen step means. Choosing one writes the setting, which moves the dial
 // (src/data/repositories/greekInterest.ts). Step 0 is never drawn: 'Which languages?' above is how a language is left off, and the dial's row hides with it.
 import { levelsOf, type InterestLang } from '../definitions/interest';
-import { greekInterestSetting, hebrewInterestSetting, septuagintSetting } from '../definitions';
+import { greekInterestSetting, hebrewInterestSetting, septuagintGapsSetting, septuagintSetting } from '../definitions';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { OnOff, RowName, SettingRow } from './SettingRow';
@@ -54,6 +54,17 @@ export const SeptuagintControl: Control = ({ row }) => {
     <SettingRow row={row}>
       <RowName row={row} />
       {on ? <OnOff name={row.label} current={on} settingKey="septuagint" /> : null}
+    </SettingRow>
+  );
+};
+
+/** Show manuscript gaps, under the Septuagint's row: On | Off. */
+export const SeptuagintGapsControl: Control = ({ row }) => {
+  const on = useSetting(septuagintGapsSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {on ? <OnOff name={row.label} current={on} settingKey="septuagintGaps" /> : null}
     </SettingRow>
   );
 };

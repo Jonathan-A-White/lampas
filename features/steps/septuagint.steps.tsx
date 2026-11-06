@@ -329,6 +329,29 @@ describeFeature(feature, ({ Scenario }) => {
     And('the card has no {string}', cardLacks);
   });
 
+  // Swete's lacuna brackets (mw-u2w5klk.280)
+  const greekOf = (n: number): string => squash(verseEl(n).querySelector('[data-text]')?.textContent);
+  Scenario("Swete's lacuna brackets are not drawn in the Greek view, and a word under one opens its card", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+    Then('verse {int} shows no square bracket', (_: unknown, n: number) => {
+      expect(verseEl(n).textContent).not.toMatch(/[[\]]/);
+    });
+    And('verse {int} reads in Greek {string}', (_: unknown, n: number, text: string) => {
+      expect(greekOf(n)).toBe(text);
+    });
+    When('he taps the word {string} in verse {int}', taps);
+    Then('the card shows the Lemma {string}', shows('sheet-lemma'));
+  });
+
+  Scenario('With Show manuscript gaps on the Greek view prints the brackets as Swete did', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, the saved view {string} and Show manuscript gaps {string}', (_: unknown, view: string, gaps: string) => openOn('Genesis 1', 'on', { readerView: view, septuagintGaps: gaps }));
+    Then('verse {int} reads in Greek {string}', (_: unknown, n: number, text: string) => {
+      expect(greekOf(n)).toBe(text);
+    });
+    When('he taps the word {string} in verse {int}', taps);
+    Then('the card shows the Lemma {string}', shows('sheet-lemma'));
+  });
+
   Scenario('Report this reading asks the tutor about the word in its verse', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string} and a tutor behind a fake Postern', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }, { tutor: true }));
     When('he taps the word {string} in verse {int}', taps);

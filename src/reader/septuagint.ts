@@ -3,11 +3,16 @@
 import type { Chapter, GreekWord, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 
+export { withoutGaps } from '../data/lxxChapter';
+
 /** What the header says under the title of a Septuagint chapter: the Greek and the English, each with whose it is. */
 export const SEPTUAGINT_SUBTITLE = "Greek: Swete's edition · English: Brenton's translation";
 
 /** The title of the sheet a tap on that line opens (src/reader/SeptuagintSources.tsx); its text is SEPTUAGINT_SOURCES of src/tutor/credits.ts, the one place it is written. */
 export const SEPTUAGINT_SHEET_TITLE = 'Whose texts these are';
+
+/** The Greek of a Septuagint word as the Greek view draws it: as Swete printed it (`d`, with his brackets) while manuscript gaps are shown, else the bare `t`. */
+export const gapText = (word: Pick<GreekWord, 't' | 'd'>, gaps: boolean | undefined): string => (gaps && word.d !== undefined ? word.d : word.t);
 
 /** Whether a chapter is Swete's Septuagint (public/data-lxx): `edition` is 'swete' only there. */
 export const isSeptuagint = (chapter: Pick<Chapter, 'edition'> | null | undefined): boolean => chapter?.edition === 'swete';
