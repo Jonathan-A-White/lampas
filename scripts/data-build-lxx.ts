@@ -11,7 +11,7 @@ import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseLexicon } from './data-build';
 import { alignChapter, type AlignSink } from './lxx/align';
-import { removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
+import { chapterFingerprint, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { LXX2012_RELEASE, ensureLxx2012, parseUsfm, usfmFileOf, type UsfmBook } from './data/lxx2012';
 import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, usfmCodeOf, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
 import { TVTMS_COMMIT, buildMaps, ensureTvtms, parseTvtms, type TvtmsMaps } from './data/tvtms';
@@ -140,6 +140,8 @@ export function buildLxx(input: LxxInput, align?: AlignSink): BuiltLxx {
       }
       const done = alignChapter(chapter, (lemma) => lexiconEntry(lexicon, lemma)?.g ?? '');
       align.shares.push({ ...done.share, code });
+      // the Reader asks for a chapter as ?v=<fingerprint> and keeps what it was given: an aligned chapter is a different file, so it has its own fingerprint
+      book.info.fingerprints[done.chapter.chapter - 1] = chapterFingerprint(done.chapter);
       files.set(path, JSON.stringify(done.chapter));
     }
     for (const lemma of book.lemmas) lemmas.add(lemma);

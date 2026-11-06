@@ -9,7 +9,8 @@ import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { syntheticGenesis } from '../support/lxx-genesis';
 import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
-import { buildLxx, LEXICON_FILE, type LxxInput, type LxxLexiconEntry } from '../../scripts/data-build-lxx';
+import { buildLxx, LEXICON_FILE, type LxxIndex, type LxxInput, type LxxLexiconEntry } from '../../scripts/data-build-lxx';
+import { chapterFingerprint } from '../../scripts/data/chapterWriter';
 import {
   ALIGN_END, ALIGN_START, alignChapter, alignVerse, renderAlignReport, runAlign, type AlignShare, type AlignSink,
 } from '../../scripts/lxx/align';
@@ -201,6 +202,13 @@ describe('the Genesis 1 fixture', () => {
     const again = buildLxx(input(), { shares: [] });
     expect([...again.files.keys()]).toEqual([...aligned.files.keys()]);
     for (const [path, text] of aligned.files) expect(again.files.get(path)).toBe(text);
+  });
+
+  it('gives the aligned chapter its own fingerprint in index.json, for a phone holds a chapter by the fingerprint it asked for', () => {
+    const fingerprints = (files: Map<string, string>): string[] => (JSON.parse(files.get('index.json') ?? '{}') as LxxIndex).books[0].fingerprints;
+    expect(fingerprints(plain.files)[0]).toBe(chapterFingerprint(gen1Plain));
+    expect(fingerprints(aligned.files)[0]).toBe(chapterFingerprint(gen1));
+    expect(fingerprints(aligned.files)[0]).not.toBe(fingerprints(plain.files)[0]);
   });
 
   it('alignChapter on the chapter the build made gives the same chapter the build wrote', () => {
