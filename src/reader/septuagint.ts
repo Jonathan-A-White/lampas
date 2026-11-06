@@ -1,6 +1,7 @@
 // src/reader/septuagint.ts — what the Reader says of a Septuagint chapter (mw-u2w5klk.11, docs/data.md 'The Septuagint data'): the chapter is Swete's Greek with Brenton's English, one chunk a verse, in the Septuagint's
 // own chapters and verses, which are not always Lampas's (Greek Ps 22:1 is Psalm 23:1). The Reader is opened on a Lampas chapter; its title, its verse numbers and its English under the Greek say both.
 import type { Chapter, GreekWord, Verse } from '../data/chapter';
+import type { ReaderView } from '../data/repositories';
 
 /** What the header says under the title of a Septuagint chapter: the Greek and the English, each with whose it is. */
 export const SEPTUAGINT_SUBTITLE = 'Septuagint (Swete) · Brenton (LXX2012)';
@@ -22,8 +23,15 @@ export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref'>, greekChapter: 
   return ref.chapter === greekChapter && ref.verse === verse.n ? { shown: ref.verse } : { shown: ref.verse, greek: `${greekChapter}:${verse.n}` };
 }
 
-/** Brenton's English of a verse: its chunk (a verse has one; two or more are joined). '' when the verse has none. */
-export const englishOfVerse = (verse: Pick<Verse, 'e'>): string => verse.e.map((c) => c.t.trim()).filter(Boolean).join(' ');
+/**
+ * The view a Septuagint chapter's verses are drawn in (mw-u2w5klk.275), by the switch's three positions as the New Testament's are: the Greek position is Swete's Greek alone, with no English under it;
+ * the English position is Brenton's English, one chunk a verse, as prose; the Weave position (the Weave on and plain English not chosen under it) has no chunks to weave a Greek word over, so it
+ * draws the Greek verse alone, and the note says the Weave is off here. `weaveShown` is useReaderSettings' (the Weave on and plain English not chosen under it).
+ */
+export const septuagintView = (view: ReaderView, weaveShown: boolean): ReaderView => (view === 'greek' || weaveShown ? 'greek' : 'english');
+
+/** Whether the note that the Weave is off in a Septuagint chapter stands: in the Weave position only, which is the English view with the Weave shown. */
+export const septuagintWeaveNoted = (view: ReaderView, weaveShown: boolean): boolean => view === 'english' && weaveShown;
 
 /** The layers of the derivation, in the words a reader is told (docs/lxx-derivation.md 'The layers'; Help's Words page). */
 const LAYER_WORDS: Record<string, string> = {

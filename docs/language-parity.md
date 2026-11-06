@@ -36,7 +36,7 @@ The table names, for each use case and language, the feature files with a scenar
 | --- | --- | --- | --- | --- |
 | `english-text` | The English of a chapter beside its source text (the MSB for the Greek, the BSB for the Hebrew) | reader | old-testament | gap |
 | `source-view` | The Reader's source view and its English \| Source switch, immersive reading, the chips row | hebrew-reader, immersive-hint, immersive-reader, reader-chips, reader-weave-switch, reader | hebrew-reader | gap |
-| `septuagint` | Read the Old Testament in Greek over the Hebrew, Brenton's English under each verse | septuagint | n/a: the Hebrew is the Old Testament's own text; the switch is to the Greek | gap |
+| `septuagint` | Read the Old Testament in Greek over the Hebrew, Brenton's English as the English view | septuagint | n/a: the Hebrew is the Old Testament's own text; the switch is to the Greek | gap |
 | `weave` | The diglot weave: his known words stand in the source language inside the English | reader-weave-switch, weave | hebrew-reader | gap |
 | `variants` | Textual variants inline in the Reader, the witnesses setting and reading sets | variants-reader, variants-setting | n/a: the WLC data carries no apparatus (no Qere/Ketiv or witness lists are built, docs/data.md); a story that adds one reopens this row | gap |
 | `copy` | Copy and Share give the words as he reads them, the source text in the source view | copy-format | hebrew-reader | gap |

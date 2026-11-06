@@ -87,7 +87,7 @@ import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
 import { SeptuagintNote } from './reader/SeptuagintNote';
-import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintTitle } from './reader/septuagint';
+import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
 import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
@@ -158,7 +158,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const settingsLate = useSettingsLate(savedRp2026 !== undefined);
   const rp2026 = savedRp2026 ?? (settingsLate ? rp2026EnglishSetting.default : undefined);
   const chapter = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
-  // The Septuagint chapter: its English is one chunk a verse, so the Weave has nothing to lay a Greek word over and is off here (a note says so, once); a book that is not shipped says so and stays Hebrew
+  // The Septuagint chapter: its English is one chunk a verse, so the Weave has nothing to lay a Greek word over: the Weave position draws the Greek alone and a note says so, once (septuagintView); a book that is not shipped says so and stays Hebrew
   const septuagint = isSeptuagint(chapter);
   const septuagintOn = useSetting(septuagintSetting) === 'on';
   const wovenSettings = useMemo(() => (septuagint ? { ...settings, weaveShown: false } : settings), [septuagint, settings]);
@@ -484,8 +484,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         title={heading}
         view={view && level !== undefined && level >= GREEK_VIEW_FROM ? view : undefined}
         source={source}
-        weave={septuagint ? 'off' : (weave ?? 'off')}
-        weaveShown={septuagint ? false : (weaveShown ?? false)}
+        weave={weave ?? 'off'}
+        weaveShown={weaveShown ?? false}
         weaveOrder={weaveOrder ?? 'english'}
         chapterReading={chapterReading}
         reading={reading}
@@ -500,7 +500,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           <p data-reader-subtitle className="chrome-small px-2 pb-1 text-center text-muted">
             {SEPTUAGINT_SUBTITLE}
           </p>
-          {weave !== undefined && weave !== 'off' ? <SeptuagintNote className="mx-2 mb-1" /> : null}
+          {view !== undefined && septuagintWeaveNoted(view, weaveShown ?? false) ? <SeptuagintNote className="mx-2 mb-1" /> : null}
         </>
       ) : null}
       {septuagintOn && chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo' && !chapterReading ? (
@@ -556,7 +556,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                   {layout === 'paragraph' ? (
                     <ParagraphView
                       verses={block}
-                      view={view}
+                      view={septuagint ? septuagintView(view, weaveShown ?? false) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
                       woven={block.map(wovenOf)}
@@ -574,7 +574,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                   ) : (
                     <VerseLine
                       verse={first}
-                      view={view}
+                      view={septuagint ? septuagintView(view, weaveShown ?? false) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
                       woven={wovenOf(first)}
