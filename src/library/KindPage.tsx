@@ -1,8 +1,9 @@
 // src/library/KindPage.tsx — one kind's page of the Library (#/library?kind=lexicon, docs/design/library-at-scale.md 3.4): every book of the kind in a control of Off | On | Pin, pinned
 // first, then those on, then those off (and by name within each; a kind with Hebrew and Greek books, Lexicons and Grammars, in a Hebrew group then a Greek one), All on / All off, and a search over the kind. The list is the shared SearchableList (src/ui/SearchableList.tsx), which
-// does not re-sort under his thumb. A fourth pin is refused with a line under the book; Bibles are one at a time (Off | Chosen); Devotionals have no Pin.
+// does not re-sort under his thumb. A fourth pin is refused with a line under the book; a Bible shows the parts it is set for (NT, OT, Apocrypha, read from the three Settings keys) and "Set for…" asks
+// which part (PartChoice.tsx); Devotionals have no Pin.
 import { useState } from 'react';
-import { setKind, setLogosBible, setState, type ShelfState } from '../data/repositories';
+import { setKind, setState, type ShelfState } from '../data/repositories';
 import { backTo } from '../nav/route';
 import { entriesOf, entryOf, type CatalogueEntry, type Kind } from '../resources/catalogue';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -10,14 +11,15 @@ import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { SearchableList } from '../ui/SearchableList';
 import { ThreeStep } from '../ui/ThreeStep';
-import { countLine, detailOf, headerCount, infoOf, pinRefusal, type Steps } from './kinds';
+import { marksOf } from './bibleParts';
+import { countLine, detailOf, headerCount, infoOf, pinRefusal } from './kinds';
+import { PartChoice } from './PartChoice';
 import { TypedBible } from './TypedBible';
-import { useShelf } from './useShelf';
+import { useBibles, useShelf } from './useShelf';
 
-const OPTIONS: Record<Steps, readonly (readonly [string, string])[]> = {
+const OPTIONS: Record<'pin' | 'on', readonly (readonly [string, string])[]> = {
   pin: [['off', 'Off'], ['on', 'On'], ['pinned', 'Pin']],
   on: [['off', 'Off'], ['on', 'On']],
-  chosen: [['off', 'Off'], ['on', 'Chosen']],
 };
 
 const GROUP_LANGS = ['he', 'grc', 'en', 'both'] as const;
@@ -28,6 +30,9 @@ const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-mediu
 export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   const info = infoOf(kind);
   const states = useShelf();
+  const bibles = useBibles();
+  // the Bible whose "Set for…" is open
+  const [asking, setAsking] = useState<string | null>(null);
   const [refused, setRefused] = useState<string | null>(null);
   const entries = [...entriesOf(kind)].sort((a, b) => a.short.localeCompare(b.short));
   // a kind with books in both Hebrew and Greek (Lexicons, Grammars) is grouped Hebrew, then Greek, each in the order above (mw-5r3p30.1117)
@@ -38,15 +43,13 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
     name: SCREEN_NAMES.library,
     facts: [
       { label: 'Page', value: info.plural },
-      { label: 'On', value: states ? countLine(kind, states) : '' },
+      { label: 'On', value: states ? countLine(kind, states, bibles) : '' },
     ],
   });
 
   const choose = async (entry: CatalogueEntry, to: string): Promise<void> => {
     const result = await setState(entry.resource, to as ShelfState);
     setRefused(result.ok ? null : entry.resource);
-    // the Bible chosen here is the Bible in Logos for all three parts (Settings sets each apart)
-    if (result.ok && kind === 'bible' && to !== 'off') await setLogosBible(entry.resource);
   };
   const all = async (to: 'on' | 'off'): Promise<void> => {
     setRefused(null);
@@ -76,13 +79,15 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
           <>
             <div className="flex flex-wrap gap-2 pt-3">
               {kind === 'bible' ? null : (
-                <button type="button" className={BUTTON} onClick={() => void all('on')}>
-                  All on
-                </button>
+                <>
+                  <button type="button" className={BUTTON} onClick={() => void all('on')}>
+                    All on
+                  </button>
+                  <button type="button" className={BUTTON} onClick={() => void all('off')}>
+                    All off
+                  </button>
+                </>
               )}
-              <button type="button" className={BUTTON} onClick={() => void all('off')}>
-                All off
-              </button>
             </div>
             {states ? (
               <SearchableList
@@ -91,7 +96,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                 label={info.plural}
                 noun={info.singular.toLowerCase()}
                 items={entries.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }))}
-                status={countLine(kind, states)}
+                status={countLine(kind, states, bibles)}
                 focus={chosen}
                 rankOf={(id) => groupRank(id) * 3 + (states.get(id) === 'pinned' ? 0 : states.get(id) === 'on' ? 1 : 2)}
                 groupOf={grouped ? (id) => GROUPS[groupRank(id)] : undefined}
@@ -103,9 +108,31 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                         <div className="min-w-0 flex-1">
                           <p className="title-wrap text-base font-medium">{entry.short}</p>
                           {detailOf(entry) ? <p className="title-wrap text-sm text-muted">{detailOf(entry)}</p> : null}
+                          {info.steps === 'parts' && bibles && marksOf(entry.resource, bibles) ? (
+                            <p data-testid="bible-marks" className="text-sm font-medium text-accent">
+                              Set for {marksOf(entry.resource, bibles)}
+                            </p>
+                          ) : null}
                         </div>
-                        <ThreeStep name={entry.short} current={states.get(entry.resource) ?? 'off'} options={OPTIONS[info.steps]} onChoose={(to) => void choose(entry, to)} />
+                        {info.steps === 'parts' ? (
+                          <button
+                            type="button"
+                            aria-label={`Set for… ${entry.short}`}
+                            aria-expanded={asking === entry.resource}
+                            className={BUTTON}
+                            onClick={() => setAsking(asking === entry.resource ? null : entry.resource)}
+                          >
+                            Set for…
+                          </button>
+                        ) : (
+                          <ThreeStep name={entry.short} current={states.get(entry.resource) ?? 'off'} options={OPTIONS[info.steps]} onChoose={(to) => void choose(entry, to)} />
+                        )}
                       </div>
+                      {info.steps === 'parts' && asking === entry.resource ? (
+                        <div className="px-3 pb-2">
+                          <PartChoice name={entry.short} resourceId={entry.resource} onChosen={() => setAsking(null)} />
+                        </div>
+                      ) : null}
                       {refused === entry.resource ? (
                         <p role="alert" className="px-3 pb-2 text-base text-bad">
                           {pinRefusal(entry)}
