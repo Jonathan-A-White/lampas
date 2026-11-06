@@ -1,0 +1,711 @@
+ref	parsing	lemma	mark	confidence	note
+Psa.131:1#1	N-NSF	ᾠδή		0.80	
+Psa.131:1#6	T-GSM	ὁ		0.80	
+Psa.131:1#7	N-GSM	Δαυείδ		0.80	
+Psa.131:1#12	P-GSM	αὐτός		0.80	
+Psa.131:2#5	V-ADI-3S	εὔχομαι		0.80	
+Psa.131:2#8	N-GSM	Ἰακώβ		0.80	
+Psa.131:3#4	N-ASN	σκήνωμα		0.80	
+Psa.131:3#11	N-GSF	στρωμνή		0.80	
+Psa.131:5#2	R-GSM	ὅς, ἥ	unsure	0.50	model: unsure
+Psa.131:5#7	N-ASN	σκήνωμα		0.80	
+Psa.131:5#10	N-GSM	Ἰακώβ		0.80	
+Psa.131:6#5	N-DSF	Ἐφραθά		0.80	
+Psa.131:6#9	T-DPF	ὁ		0.80	
+Psa.131:6#10	N-DPN	δάσος		0.80	
+Psa.131:7#3	T-APN	ὁ		0.80	
+Psa.131:7#4	N-APN	σκήνωμα		0.80	
+Psa.131:7#5	P-GSM	αὐτός		0.80	
+Psa.131:7#6	V-FAI-1P	προσκυνέω		0.80	
+Psa.131:7#10	ADV	οὗ		0.80	
+Psa.131:7#14	P-GSM	αὐτός		0.80	
+Psa.131:9#4	V-AMI-3P	ἐνδύω		0.80	
+Psa.131:9#10	V-FDI-3P	ἀγαλλιάω		0.80	
+Psa.131:10#2	N-GSM	Δαυείδ		0.80	
+Psa.131:10#7	V-AAS-2S	ἀποστρέφω		0.80	
+Psa.131:10#8	T-ASN	ὁ		0.80	
+Psa.131:10#9	N-ASN	πρόσωπον		0.80	
+Psa.131:10#10	T-GSM	ὁ		0.80	
+Psa.131:10#11	N-GSM	Χριστός		0.80	
+Psa.131:11#3	T-DSM	ὁ		0.80	
+Psa.131:11#4	N-DSM	Δαυείδ		0.80	
+Psa.131:11#9	V-FAI-3S	ἀθετέω		0.80	
+Psa.131:11#16	V-FMI-1S	τίθημι		0.80	
+Psa.131:12#10	T-NPN	ὁ		0.80	
+Psa.131:12#11	N-NPN	μαρτύριον		0.80	
+Psa.131:12#13	D-NPN	οὗτος		0.80	
+Psa.131:12#14	R-APN	ὅς, ἥ		0.80	
+Psa.131:12#15	V-FAI-1S	διδάσκω		0.80	
+Psa.131:12#20	P-GPM	αὐτός		0.80	
+Psa.131:12#23	V-FMI-3P	καθίζω		0.80	
+Psa.131:13#6	V-AMI-3S	αἱρετίζω		0.80	
+Psa.131:13#10	F-3DSM	ἑαυτοῦ		0.80	
+Psa.131:14#9	V-FAI-1S	κατοικέω		0.80	
+Psa.131:14#11	V-AMI-1S	αἱρετίζω		0.80	
+Psa.131:15#9	V-FAI-1S	χορτάζω		0.80	
+Psa.131:16#4	V-FAI-1S	ἐνδύω		0.80	
+Psa.131:16#11	V-FDI-3P	ἀγαλλιάω		0.80	
+Psa.131:17#2	V-FAI-1S	ἐξανατέλλω		0.80	
+Psa.131:17#3	N-ASN	κέρας		0.80	
+Psa.131:17#4	T-DSM	ὁ		0.80	
+Psa.131:17#5	N-DSM	Δαυείδ		0.80	
+Psa.131:17#8	T-DSM	ὁ		0.80	
+Psa.131:17#9	N-DSM	Χριστός		0.80	
+Psa.131:18#3	P-GSM	αὐτός		0.80	
+Psa.131:18#4	V-FAI-1S	ἐνδύω		0.80	
+Psa.131:18#10	T-NSN	ὁ		0.80	
+Psa.131:18#11	N-NSN	ἁγίασμα		0.80	
+Psa.132:1#1	N-NSF	ᾠδή		0.80	
+Psa.132:1#4	T-DSM	ὁ		0.80	
+Psa.132:1#5	N-DSM	Δαυείδ		0.80	
+Psa.132:1#8	I-NSN	τίς		0.80	
+Psa.132:1#9	A-NSN	καλός		0.80	
+Psa.132:1#11	I-NSN	τίς		0.80	
+Psa.132:1#12	A-NSN	τερπνός		0.80	
+Psa.132:1#14	T-NSN	ὁ	unsure	0.50	model: unsure
+Psa.132:1#18	T-ASN	ὁ		0.80	
+Psa.132:1#19	P-ASN	αὐτός		0.80	
+Psa.132:2#2	N-NSN	μύρον	unsure	0.50	model: unsure
+Psa.132:2#5	T-NSN	ὁ		0.80	
+Psa.132:2#6	V-PAP-NSN	καταβαίνω		0.80	
+Psa.132:2#13	T-NSN	ὁ		0.80	
+Psa.132:2#14	V-PAP-NSN	καταβαίνω		0.80	
+Psa.132:2#20	P-GSM	αὐτός		0.80	
+Psa.132:3#2	N-NSF	δρόσος		0.80	
+Psa.132:3#3	N-GSM	Ἁερμών		0.80	
+Psa.132:3#7	T-APN	ὁ		0.80	
+Psa.132:3#8	N-APN	ὄρος		0.80	
+Psa.132:3#9	N-GSF	Σιών		0.80	
+Psa.133:1#1	N-NSF	ᾠδή		0.80	
+Psa.133:2#8	T-APN	ὁ		0.80	
+Psa.133:2#9	A-APN	ἅγιος		0.80	
+Psa.133:3#5	N-GSF	Σιών		0.80	
+Psa.134:1#1	PRT	ἀλληλουϊα		0.80	
+Psa.134:1#3	T-ASN	ὁ		0.80	
+Psa.134:1#4	N-ASN	ὄνομα		0.80	
+Psa.134:1#7	N-VPM	δοῦλος		0.80	
+Psa.134:3#7	V-AAM-2P	ψάλλω	guess	0.40	guess: the model answered with no candidates
+Psa.134:3#10	P-GSM	αὐτός		0.80	
+Psa.134:3#12	A-NSN	καλός		0.80	
+Psa.134:4#5	F-3DSM	ἑαυτοῦ		0.80	
+Psa.134:4#8	N-ASM	Ἰσραήλ		0.80	
+Psa.134:4#11	P-GSM	αὐτός		0.80	
+Psa.134:6#1	A-APN	πᾶς		0.80	
+Psa.134:6#2	K-APN	ὅσος		0.80	
+Psa.134:7#4	A-GSN	ἔσχατος	unsure	0.50	model: unsure
+Psa.134:7#15	P-GSM	αὐτός		0.80	
+Psa.134:8#3	T-APN	ὁ		0.80	
+Psa.134:8#4	A-APN	πρωτότοκος		0.80	
+Psa.134:9#2	N-APN	σημεῖον		0.80	
+Psa.134:9#4	N-APN	τέρας		0.80	
+Psa.134:9#6	A-DSN	μέσος		0.80	
+Psa.134:9#8	N-VSF	Αἴγυπτος		0.80	
+Psa.134:9#10	N-DSM	Φαραώ		0.80	
+Psa.134:9#13	A-DPM	πᾶς		0.80	
+Psa.134:9#16	P-GSM	αὐτός		0.80	
+Psa.134:10#2	N-APN	ἔθνος		0.80	
+Psa.134:10#3	A-APN	πολύς		0.80	
+Psa.134:10#6	N-APM	βασιλεύς		0.80	
+Psa.134:10#7	A-APM	κραταιός		0.80	
+Psa.134:11#4	T-GPM	ὁ		0.80	
+Psa.134:11#5	A-GPM	Ἀμορραῖος		0.80	
+Psa.134:11#8	N-ASM	Ὤγ	guess	0.40	guess: the model answered with no candidates
+Psa.134:11#16	N-GSF	Χαναάν		0.80	
+Psa.134:12#5	P-GPM	αὐτός		0.80	
+Psa.134:12#8	N-GSM	Ἰσραήλ		0.80	
+Psa.134:12#10	P-GSM	αὐτός		0.80	
+Psa.134:13#2	T-NSN	ὁ		0.80	
+Psa.134:13#3	N-NSN	ὄνομα		0.80	
+Psa.134:13#9	T-NSN	ὁ		0.80	
+Psa.134:13#10	N-NSN	μνημόσυνον		0.80	
+Psa.134:14#5	P-GSM	αὐτός		0.80	
+Psa.134:14#10	P-GSM	αὐτός		0.80	
+Psa.134:15#1	T-NPN	ὁ		0.80	
+Psa.134:15#2	N-NPN	εἴδωλον		0.80	
+Psa.134:15#5	N-NSN	ἀργύριον		0.80	
+Psa.134:15#7	N-NSN	χρυσίον		0.80	
+Psa.134:15#8	N-NPN	ἔργον		0.80	
+Psa.134:16#1	N-ASN	στόμα		0.80	
+Psa.134:17#1	N-APN	οὖς		0.80	
+Psa.134:17#5	V-FOI-3P	ἐνωτίζομαι	unsure	0.50	model: unsure
+Psa.134:17#9	N-NSN	πνεῦμα		0.80	
+Psa.134:17#13	P-GPN	αὐτός	unsure	0.50	model: unsure
+Psa.134:18#2	P-DPN	αὐτός	unsure	0.50	model: unsure
+Psa.134:18#3	V-2ADO-3P	γίγνομαι		0.80	
+Psa.134:18#7	P-APN	αὐτός		0.80	
+Psa.134:18#13	P-DPN	αὐτός	unsure	0.50	model: unsure
+Psa.134:19#1	N-VSM	οἶκος		0.80	
+Psa.134:19#2	N-GSM	Ἰσραήλ		0.80	
+Psa.134:19#6	N-VSM	οἶκος		0.80	
+Psa.134:19#7	N-GSM	Ἀαρών		0.80	
+Psa.134:20#1	N-VSM	οἶκος		0.80	
+Psa.134:20#2	N-GSM	Λευΐ		0.80	
+Psa.134:21#4	N-GSF	Σιών		0.80	
+Psa.134:21#7	N-ASF	Ἱερουσαλήμ		0.80	
+Psa.135:1#1	PRT	ἀλληλουϊα		0.80	
+Psa.135:1#11	T-NSN	ὁ		0.80	
+Psa.135:1#12	N-NSN	ἔλεος		0.80	
+Psa.135:1#13	P-GSM	αὐτός		0.80	
+Psa.135:2#4	T-GPM	ὁ		0.80	
+Psa.135:2#5	N-GPM	θεός		0.80	
+Psa.135:2#10	T-NSN	ὁ		0.80	
+Psa.135:2#11	N-NSN	ἔλεος		0.80	
+Psa.135:2#12	P-GSM	αὐτός		0.80	
+Psa.135:3#10	T-NSN	ὁ		0.80	
+Psa.135:3#11	N-NSN	ἔλεος		0.80	
+Psa.135:3#12	P-GSM	αὐτός		0.80	
+Psa.135:4#1	T-DSM	ὁ		0.80	
+Psa.135:4#2	V-PAP-DSM	ποιέω		0.80	
+Psa.135:4#3	A-APN	θαυμάσιος		0.80	
+Psa.135:4#4	A-APN	μέγας		0.80	
+Psa.135:4#5	A-DSM	μόνος		0.80	
+Psa.135:4#10	T-NSN	ὁ		0.80	
+Psa.135:4#11	N-NSN	ἔλεος		0.80	
+Psa.135:4#12	P-GSM	αὐτός		0.80	
+Psa.135:5#1	T-DSM	ὁ		0.80	
+Psa.135:5#2	V-AAP-DSM	ποιέω		0.80	
+Psa.135:5#11	T-NSN	ὁ		0.80	
+Psa.135:5#12	N-NSN	ἔλεος		0.80	
+Psa.135:5#13	P-GSM	αὐτός		0.80	
+Psa.135:6#1	T-DSM	ὁ		0.80	
+Psa.135:6#2	V-AAP-DSM	στερεόω		0.80	
+Psa.135:6#6	T-ASN	ὁ		0.80	
+Psa.135:6#7	N-ASN	ὕδωρ, ὕδατος		0.80	
+Psa.135:6#12	T-NSN	ὁ		0.80	
+Psa.135:6#13	N-NSN	ἔλεος		0.80	
+Psa.135:6#14	P-GSM	αὐτός		0.80	
+Psa.135:7#1	T-DSM	ὁ		0.80	
+Psa.135:7#2	V-AAP-DSM	ποιέω		0.80	
+Psa.135:7#3	N-APN	φῶς		0.80	
+Psa.135:7#4	A-APN	μέγας		0.80	
+Psa.135:7#5	A-DSM	μόνος		0.80	
+Psa.135:7#10	T-NSN	ὁ		0.80	
+Psa.135:7#11	N-NSN	ἔλεος		0.80	
+Psa.135:7#12	P-GSM	αὐτός		0.80	
+Psa.135:8#11	T-NSN	ὁ		0.80	
+Psa.135:8#12	N-NSN	ἔλεος		0.80	
+Psa.135:8#13	P-GSM	αὐτός		0.80	
+Psa.135:9#4	T-APN	ὁ		0.80	
+Psa.135:9#5	N-APN	ἄστρον		0.80	
+Psa.135:9#14	T-NSN	ὁ		0.80	
+Psa.135:9#15	N-NSN	ἔλεος		0.80	
+Psa.135:9#16	P-GSM	αὐτός		0.80	
+Psa.135:10#1	T-DSM	ὁ		0.80	
+Psa.135:10#2	V-AAP-DSM	πατάσσω		0.80	
+Psa.135:10#5	T-DPM	ὁ		0.80	
+Psa.135:10#6	A-DPM	πρωτότοκος		0.80	
+Psa.135:10#7	P-GPM	αὐτός		0.80	
+Psa.135:10#12	T-NSN	ὁ		0.80	
+Psa.135:10#13	N-NSN	ἔλεος		0.80	
+Psa.135:10#14	P-GSM	αὐτός		0.80	
+Psa.135:11#2	V-2AAP-DSM	ἐξάγω		0.80	
+Psa.135:11#3	N-ASM	Ἰσραήλ		0.80	
+Psa.135:11#5	A-GSN	μέσος		0.80	
+Psa.135:11#6	P-GPM	αὐτός		0.80	
+Psa.135:11#11	T-NSN	ὁ		0.80	
+Psa.135:11#12	N-NSN	ἔλεος		0.80	
+Psa.135:11#13	P-GSM	αὐτός		0.80	
+Psa.135:12#3	A-DSF	κραταιός		0.80	
+Psa.135:12#12	T-NSN	ὁ		0.80	
+Psa.135:12#13	N-NSN	ἔλεος		0.80	
+Psa.135:12#14	P-GSM	αὐτός		0.80	
+Psa.135:13#1	T-DSM	ὁ		0.80	
+Psa.135:13#2	V-2AAP-DSM	κατά-διαιρέω		0.80	
+Psa.135:13#7	N-APF	διαίρεσις	guess	0.40	guess: the model chose outside the candidates
+Psa.135:13#12	T-NSN	ὁ		0.80	
+Psa.135:13#13	N-NSN	ἔλεος		0.80	
+Psa.135:13#14	P-GSM	αὐτός		0.80	
+Psa.135:14#2	V-2AAP-DSM	διάγω		0.80	
+Psa.135:14#6	A-DSN	μέσος		0.80	
+Psa.135:14#12	T-NSN	ὁ		0.80	
+Psa.135:14#13	N-NSN	ἔλεος		0.80	
+Psa.135:14#14	P-GSM	αὐτός		0.80	
+Psa.135:15#2	V-AAP-DSM	ἐκτινάσσω		0.80	
+Psa.135:15#3	N-ASM	Φαραώ		0.80	
+Psa.135:15#7	P-GSM	αὐτός		0.80	
+Psa.135:15#15	T-NSN	ὁ		0.80	
+Psa.135:15#16	N-NSN	ἔλεος		0.80	
+Psa.135:15#17	P-GSM	αὐτός		0.80	
+Psa.135:16#1	T-DSM	ὁ		0.80	
+Psa.135:16#2	V-2AAP-DSM	διάγω		0.80	
+Psa.135:16#5	P-GSM	αὐτός		0.80	
+Psa.135:16#12	T-NSN	ὁ		0.80	
+Psa.135:16#13	N-NSN	ἔλεος		0.80	
+Psa.135:16#14	P-GSM	αὐτός		0.80	
+Psa.135:17#1	T-DSM	ὁ		0.80	
+Psa.135:17#2	V-AAP-DSM	πατάσσω		0.80	
+Psa.135:17#3	N-APM	βασιλεύς		0.80	
+Psa.135:17#9	T-NSN	ὁ		0.80	
+Psa.135:17#10	N-NSN	ἔλεος		0.80	
+Psa.135:17#11	P-GSM	αὐτός		0.80	
+Psa.135:18#2	V-AAP-DSM	ἀποκτείνω		0.80	
+Psa.135:18#3	N-APM	βασιλεύς		0.80	
+Psa.135:18#4	A-APM	κραταιός		0.80	
+Psa.135:18#9	T-NSN	ὁ		0.80	
+Psa.135:18#10	N-NSN	ἔλεος		0.80	
+Psa.135:18#11	P-GSM	αὐτός		0.80	
+Psa.135:19#4	T-GPM	ὁ		0.80	
+Psa.135:19#5	A-GPM	Ἀμορραῖος		0.80	
+Psa.135:19#10	T-NSN	ὁ		0.80	
+Psa.135:19#11	N-NSN	ἔλεος		0.80	
+Psa.135:19#12	P-GSM	αὐτός		0.80	
+Psa.135:20#3	N-ASM	Ὤγ	guess	0.40	guess: the model answered with no candidates
+Psa.135:20#11	T-NSN	ὁ		0.80	
+Psa.135:20#12	N-NSN	ἔλεος		0.80	
+Psa.135:20#13	P-GSM	αὐτός		0.80	
+Psa.135:21#2	V-2AAP-DSM	δίδωμι		0.80	
+Psa.135:21#5	P-GPM	αὐτός		0.80	
+Psa.135:21#11	T-NSN	ὁ		0.80	
+Psa.135:21#12	N-NSN	ἔλεος		0.80	
+Psa.135:21#13	P-GSM	αὐτός		0.80	
+Psa.135:22#2	N-DSM	Ἰσραήλ		0.80	
+Psa.135:22#4	P-GSM	αὐτός		0.80	
+Psa.135:22#9	T-NSN	ὁ		0.80	
+Psa.135:22#10	N-NSN	ἔλεος		0.80	
+Psa.135:22#11	P-GSM	αὐτός		0.80	
+Psa.135:24#2	V-AMI-3S	λυτρόω		0.80	
+Psa.135:24#12	T-NSN	ὁ		0.80	
+Psa.135:24#13	N-NSN	ἔλεος		0.80	
+Psa.135:24#14	P-GSM	αὐτός		0.80	
+Psa.135:25#10	T-NSN	ὁ		0.80	
+Psa.135:25#11	N-NSN	ἔλεος		0.80	
+Psa.135:25#12	P-GSM	αὐτός		0.80	
+Psa.135:26#10	T-NSN	ὁ		0.80	
+Psa.135:26#11	N-NSN	ἔλεος		0.80	
+Psa.135:26#12	P-GSM	αὐτός		0.80	
+Psa.136:1#1	T-DSM	ὁ		0.80	
+Psa.136:1#2	N-DSM	Δαυείδ		0.80	
+Psa.136:1#10	V-AAI-1P	κλαίω		0.80	
+Psa.136:1#12	T-DSN	ὁ		0.80	
+Psa.136:2#5	A-DSN	μέσος		0.80	
+Psa.136:2#7	V-AAI-1P	κρεμάω	unsure	0.50	model: unsure
+Psa.136:2#8	T-APN	ὁ		0.80	
+Psa.136:2#9	N-APN	ὄργανον		0.80	
+Psa.136:3#9	N-GPF	ᾠδή		0.80	
+Psa.136:3#17	T-GPF	ὁ		0.80	
+Psa.136:3#18	N-GPF	ᾠδή		0.80	
+Psa.136:3#19	N-GSF	Σιών		0.80	
+Psa.136:4#2	V-AAS-1P	ἀείδω		0.80	
+Psa.136:5#2	V-2ADS-1S	ἐπιλανθάνομαι	unsure	0.50	model: unsure
+Psa.136:5#4	N-VSF	Ἱερουσαλήμ		0.80	
+Psa.136:5#5	V-AOO-3S	ἐπιλανθάνομαι		0.80	
+Psa.136:6#1	V-AOO-3S	κολλάω		0.80	
+Psa.136:6#5	T-DSM	ὁ		0.80	
+Psa.136:6#6	N-DSM	λάρυγξ		0.80	
+Psa.136:6#14	V-AMS-1S	προανατάσσω		0.80	
+Psa.136:7#5	N-GSM	Ἐδώμ		0.80	
+Psa.136:7#8	N-GSF	Ἱερουσαλήμ		0.80	
+Psa.136:7#9	T-GPM	ὁ		0.80	
+Psa.136:7#10	V-PAP-GPM	λέγω		0.80	
+Psa.136:7#11	V-PAM-2P	ἐκκενόω		0.80	
+Psa.136:7#12	V-PAM-2P	ἐκκενόω		0.80	
+Psa.136:8#1	N-VSF	θυγάτηρ		0.80	
+Psa.136:8#3	T-VSF	ὁ	unsure	0.50	model: unsure
+Psa.136:8#4	A-VSF	ταλαίπωρος	guess	0.40	guess: the model chose outside the candidates
+Psa.136:8#7	V-FAI-3S	ἀνταποδίδωμι		0.80	
+Psa.136:8#9	T-ASN	ὁ		0.80	
+Psa.136:8#10	N-ASN	ἀνταπόδομα		0.80	
+Psa.136:8#12	R-ASN	ὅς, ἥ		0.80	
+Psa.136:8#13	V-AAI-2S	ἀνταποδίδωμι		0.80	
+Psa.136:9#5	V-FAI-3S	ἐδαφίζω		0.80	
+Psa.136:9#6	T-APN	ὁ		0.80	
+Psa.136:9#7	A-APN	νήπιος		0.80	
+Psa.137:1#1	T-DSM	ὁ		0.80	
+Psa.137:1#2	N-DSM	Δαυείδ		0.80	
+Psa.137:1#12	T-APN	ὁ		0.80	
+Psa.137:1#13	N-APN	ῥῆμα		0.80	
+Psa.137:1#18	PREP	ἐναντίον		0.80	
+Psa.137:2#20	V-AAI-2S	μεγαλύνω		0.80	
+Psa.137:2#22	A-ASN	πᾶς		0.80	
+Psa.137:2#23	N-ASN	ὄνομα		0.80	
+Psa.137:2#24	T-ASN	ὁ		0.80	
+Psa.137:2#25	A-ASN	ἅγιος		0.80	
+Psa.137:3#5	V-AMS-1S	ἐπικαλέω		0.80	
+Psa.137:3#6	ADV	ταχύ		0.80	
+Psa.137:4#1	V-ADM-3P	ἐξομολογέομαι	unsure	0.50	model: unsure
+Psa.137:4#11	A-APN	πᾶς		0.80	
+Psa.137:4#12	T-APN	ὁ		0.80	
+Psa.137:4#13	N-APN	ῥῆμα		0.80	
+Psa.137:5#2	V-AAM-3P	ἀείδω		0.80	
+Psa.137:5#11	A-NSF	μέγας		0.80	
+Psa.137:6#2	A-NSM	ὑψηλός		0.80	
+Psa.137:6#5	T-APN	ὁ		0.80	
+Psa.137:6#6	A-APN	ταπεινός		0.80	
+Psa.137:6#7	V-PAI-3S	ἐφοράω	guess	0.40	guess: the model chose outside the candidates
+Psa.137:6#9	T-APN	ὁ		0.80	
+Psa.137:6#10	A-APN	ὑψηλός		0.80	
+Psa.137:7#4	A-DSN	μέσος		0.80	
+Psa.137:7#6	V-FAI-2S	ζάω		0.80	
+Psa.137:7#11	V-AAI-2S	ἐκτείνω		0.80	
+Psa.137:8#2	V-FAI-2S	ἀνταποδίδωμι		0.80	
+Psa.137:8#4	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.137:8#6	T-NSN	ὁ		0.80	
+Psa.137:8#7	N-NSN	ἔλεος		0.80	
+Psa.137:8#13	T-APN	ὁ		0.80	
+Psa.137:8#14	N-APN	ἔργον		0.80	
+Psa.137:8#19	V-2AAS-2S	παρίημι	guess	0.40	guess: the model chose outside the candidates
+Psa.138:1#2	T-ASN	ὁ		0.80	
+Psa.138:1#3	N-ASN	τέλος		0.80	
+Psa.138:1#4	N-NSM	ψαλμός		0.80	
+Psa.138:1#5	T-DSM	ὁ		0.80	
+Psa.138:1#6	N-DSM	Δαυείδ		0.80	
+Psa.138:3#5	T-ASF	ὁ		0.80	
+Psa.138:3#6	N-ASF	σχοῖνος	guess	0.40	guess: the model chose outside the candidates
+Psa.138:4#13	A-APN	πᾶς		0.80	
+Psa.138:5#1	T-APN	ὁ		0.80	
+Psa.138:5#2	A-APN	ἔσχατος		0.80	
+Psa.138:5#4	T-APN	ὁ		0.80	
+Psa.138:5#5	A-APN	ἀρχαῖος		0.80	
+Psa.138:6#6	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.138:6#10	V-PNS-1S	δύναμαι		0.80	
+Psa.138:7#13	V-2AAS-1S	φεύγω		0.80	
+Psa.138:8#2	V-2AAS-1S	ἀναβαίνω		0.80	
+Psa.138:8#10	V-2AAS-1S	καταβαίνω		0.80	
+Psa.138:8#13	N-ASM	ᾍδης		0.80	
+Psa.138:9#2	V-2AAS-1S	ἀναλαμβάνω		0.80	
+Psa.138:9#7	A-ASN	ὀρθός	unsure	0.50	model: unsure
+Psa.138:9#9	V-AAS-1S	κατασκηνόω	unsure	0.50	model: unsure
+Psa.138:9#11	T-APN	ὁ		0.80	
+Psa.138:9#12	A-APN	ἔσχατος		0.80	
+Psa.138:10#10	V-FAI-3S	κατέχω		0.80	
+Psa.138:11#4	N-NSN	σκότος		0.80	
+Psa.138:11#5	V-FAI-3S	καταπατέω		0.80	
+Psa.138:11#9	N-NSM	φωτισμός		0.80	
+Psa.138:12#2	T-NSN	ὁ		0.80	
+Psa.138:12#3	N-NSN	σκότος		0.80	
+Psa.138:12#7	T-NSN	ὁ		0.80	
+Psa.138:12#8	N-NSN	φῶς		0.80	
+Psa.138:13#3	V-ADI-2S	κτάομαι		0.80	
+Psa.138:13#8	V-2ADI-2S	ἀντιλαμβάνω		0.80	
+Psa.138:13#11	N-GSF	γαστήρ		0.80	
+Psa.138:14#5	V-API-2S	θαυμαστόω		0.80	
+Psa.138:14#6	A-NPN	θαυμάσιος		0.80	
+Psa.138:14#7	T-NPN	ὁ		0.80	
+Psa.138:14#8	N-NPN	ἔργον		0.80	
+Psa.138:15#3	T-NSN	ὁ		0.80	
+Psa.138:15#4	N-NSN	ὀστέον		0.80	
+Psa.138:15#8	R-ASN	ὅς, ἥ		0.80	
+Psa.138:15#17	T-DPN	ὁ		0.80	
+Psa.138:15#18	ADV	κάτω	guess	0.40	guess: the model chose outside the candidates
+Psa.138:16#1	T-ASN	ὁ		0.80	
+Psa.138:16#2	A-ASN	ἀκατέργαστος		0.80	
+Psa.138:16#10	T-ASN	ὁ		0.80	
+Psa.138:16#11	N-ASN	βιβλίον		0.80	
+Psa.138:16#14	V-FPI-3P	γράφω		0.80	
+Psa.138:16#15	N-APF	ἡμέρα		0.80	
+Psa.138:16#16	V-FPI-3P	πλάσσω		0.80	
+Psa.138:16#20	P-DPM	αὐτός	unsure	0.50	model: unsure
+Psa.138:17#11	V-API-3P	κραταιόω		0.80	
+Psa.138:17#14	P-GPM	αὐτός		0.80	
+Psa.138:18#1	V-FMI-1S	ἐξαριθμέω		0.80	
+Psa.138:18#6	V-FPI-3P	πληθύνω		0.80	
+Psa.138:18#7	V-API-1S	ἐξεγείρω		0.80	
+Psa.138:19#2	V-PAS-2S	ἀποκτείνω	unsure	0.50	model: unsure
+Psa.138:19#6	N-VPM	ἀνήρ		0.80	
+Psa.138:19#8	V-AAM-2P	ἐκκλίνω		0.80	
+Psa.138:19#10	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.138:21#12	V-IPI-1S	ἐκτήκω	unsure	0.50	model: unsure
+Psa.138:22#1	A-ASN	τέλειος		0.80	
+Psa.138:22#2	N-ASN	μῖσος		0.80	
+Psa.138:24#2	V-2AAM-2S	εἴδω		0.80	
+Psa.138:24#13	A-DSF	αἰώνιος		0.80	
+Psa.139:1#2	T-ASN	ὁ		0.80	
+Psa.139:1#3	N-ASN	τέλος		0.80	
+Psa.139:1#4	T-DSM	ὁ		0.80	
+Psa.139:1#5	N-DSM	Δαυείδ		0.80	
+Psa.139:1#6	N-NSM	ψαλμός		0.80	
+Psa.139:2#1	V-2AMM-2S	ἐξαιρέω		0.80	
+Psa.139:2#9	A-GSM	ἄδικος		0.80	
+Psa.139:3#2	V-ADI-3P	λογίζομαι		0.80	
+Psa.139:3#9	V-IMI-3P	παρατάσσω	unsure	0.50	model: unsure
+Psa.139:4#3	P-GPM	αὐτός		0.80	
+Psa.139:4#9	T-APN	ὁ		0.80	
+Psa.139:4#10	N-APN	χεῖλος		0.80	
+Psa.139:4#11	P-GPM	αὐτός		0.80	
+Psa.139:4#12	N-NSN	διάψαλμα	unsure	0.50	model: unsure
+Psa.139:5#10	V-2AMM-2S	ἐξαιρέω		0.80	
+Psa.139:5#13	V-ADI-3P	λογίζομαι		0.80	
+Psa.139:5#15	T-APN	ὁ		0.80	
+Psa.139:5#16	N-APN	διάβημα		0.80	
+Psa.139:6#6	N-APN	σχοινίον		0.80	
+Psa.139:6#12	V-PMP-APN	ἔχω	unsure	0.50	model: unsure
+Psa.139:6#13	N-GSF	τρίβος		0.80	
+Psa.139:6#14	N-ASN	σκάνδαλον		0.80	
+Psa.139:6#17	N-NSN	διάψαλμα	unsure	0.50	model: unsure
+Psa.139:7#8	V-ADM-2S	ἐνωτίζομαι		0.80	
+Psa.139:9#2	V-2AAS-2S	παραδίδωμι		0.80	
+Psa.139:9#9	A-DSM	ἁμαρτωλός		0.80	
+Psa.139:9#10	V-ADI-3P	διαλογίζομαι		0.80	
+Psa.139:9#12	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.139:9#14	V-2AAS-2S	ἐγκαταλείπω	guess	0.40	guess: the model chose outside the candidates
+Psa.139:9#18	V-APS-3P	ὑψόω		0.80	
+Psa.139:9#19	N-NSN	διάψαλμα	unsure	0.50	model: unsure
+Psa.139:10#5	P-GPM	αὐτός		0.80	
+Psa.139:10#9	P-GPM	αὐτός		0.80	
+Psa.139:11#4	N-NPM	ἄνθραξ		0.80	
+Psa.139:11#10	V-FAI-2S	καταβάλλω		0.80	
+Psa.139:11#16	V-2AAS-3P	ὑφίστημι	guess	0.40	guess: the model chose outside the candidates
+Psa.139:12#2	A-ASM	ἄδικος		0.80	
+Psa.139:12#3	A-APN	κακός		0.80	
+Psa.139:13#7	T-GSM	ὁ		0.80	
+Psa.139:13#8	N-GSM	πτωχός		0.80	
+Psa.139:13#12	T-GPM	ὁ		0.80	
+Psa.139:13#13	N-GPM	πένης		0.80	
+Psa.139:14#1	CONJ	πλήν		0.80	
+Psa.139:14#3	V-FMI-3P	ἐξομολογέομαι		0.80	
+Psa.139:14#9	A-NPM	εὐθής		0.80	
+Psa.140:1#1	N-NSM	ψαλμός		0.80	
+Psa.140:1#2	T-DSM	ὁ		0.80	
+Psa.140:1#3	N-DSM	Δαυείδ		0.80	
+Psa.140:1#10	V-2AAM-2S	προσέχω	guess	0.40	guess: the model chose outside the candidates
+Psa.140:1#17	T-DSN	ὁ		0.80	
+Psa.140:1#18	V-2RAN	κράζω		0.80	
+Psa.140:2#1	V-APM-3S	κατευθύνω		0.80	
+Psa.140:2#6	N-NSN	θυμίαμα		0.80	
+Psa.140:2#9	N-NSF	ἔπαρσις		0.80	
+Psa.140:2#14	A-NSF	ἑσπερινός		0.80	
+Psa.140:3#1	V-2AMM-2S	τίθημι	guess	0.40	guess: the model chose outside the candidates
+Psa.140:3#9	N-GSF	περιοχή		0.80	
+Psa.140:3#11	T-APN	ὁ		0.80	
+Psa.140:3#12	N-APN	χεῖλος		0.80	
+Psa.140:4#2	V-PAS-2S	ἐκκλίνω	unsure	0.50	model: unsure
+Psa.140:4#9	T-GSN	ὁ		0.80	
+Psa.140:4#10	V-PNN	προφασίζομαι		0.80	
+Psa.140:4#11	N-APF	πρόφασις		0.80	
+Psa.140:4#16	V-PNP-DPM	ἐργάζομαι		0.80	
+Psa.140:4#21	V-AAS-1S	σύν-δοιάζω	unsure	0.50	model: unsure
+Psa.140:4#23	T-GPM	ὁ		0.80	
+Psa.140:4#24	A-GPM	ἐκλεκτός		0.80	
+Psa.140:4#25	P-GPM	αὐτός		0.80	
+Psa.140:5#9	N-NSN	ἔλαιον		0.80	
+Psa.140:5#11	A-GSM	ἁμαρτωλός		0.80	
+Psa.140:5#13	V-AAM-3S	λιπαίνω	guess	0.40	guess: the model answered with no candidates
+Psa.140:5#27	P-GPM	αὐτός		0.80	
+Psa.140:6#2	V-PMP-APN	ἔχω	unsure	0.50	model: unsure
+Psa.140:6#3	N-GSF	πέτρα		0.80	
+Psa.140:6#6	P-GPM	αὐτός		0.80	
+Psa.140:6#8	T-APN	ὁ		0.80	
+Psa.140:6#9	N-APN	ῥῆμα		0.80	
+Psa.140:7#2	N-NSN	πάχος		0.80	
+Psa.140:7#4	V-2API-3S	διαρρήγνυμι		0.80	
+Psa.140:7#9	T-NPN	ὁ		0.80	
+Psa.140:7#10	N-NPN	ὀστέον		0.80	
+Psa.140:7#14	N-ASM	ᾍδης		0.80	
+Psa.140:8#13	V-2AAS-2S	ἀνταναιρέω	guess	0.40	guess: the model answered with no candidates
+Psa.140:9#6	V-AMI-3P	συνίστημι		0.80	
+Psa.140:10#4	P-GSM	αὐτός		0.80	
+Psa.140:10#5	A-NPM	ἁμαρτωλός		0.80	
+Psa.140:10#11	R-GSM	ὅς, ἥ	unsure	0.50	model: unsure
+Psa.140:10#13	V-2AAS-1S	παρέρχομαι		0.80	
+Psa.141:1#2	T-DSM	ὁ		0.80	
+Psa.141:1#3	N-DSM	Δαυείδ		0.80	
+Psa.141:3#2	PREP	ἐναντίον		0.80	
+Psa.141:3#3	P-GSM	αὐτός		0.80	
+Psa.141:3#11	P-GSM	αὐτός		0.80	
+Psa.141:4#5	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.141:4#6	T-ASN	ὁ		0.80	
+Psa.141:4#7	N-ASN	πνεῦμα		0.80	
+Psa.141:5#1	V-IAI-1S	κατανοέω		0.80	
+Psa.141:5#3	T-APN	ὁ		0.80	
+Psa.141:5#4	A-APN	δεξιός		0.80	
+Psa.141:5#6	V-IAI-1S	ἐπιβλέπω		0.80	
+Psa.141:5#16	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.141:6#16	V-PAP-GPM	ζάω		0.80	
+Psa.141:7#1	V-2AAM-2S	προσέχω	guess	0.40	guess: the model chose outside the candidates
+Psa.141:7#7	V-API-1S	ταπεινόω		0.80	
+Psa.141:7#12	T-GPM	ὁ		0.80	
+Psa.141:7#13	V-PAP-GPM	καταδιώκω		0.80	
+Psa.141:7#16	V-API-3P	κραταιόω		0.80	
+Psa.141:8#7	T-GSN	ὁ		0.80	
+Psa.141:8#8	V-AMN	ἐξομολογέομαι		0.80	
+Psa.141:8#14	V-FAI-3P	ὑπομένω		0.80	
+Psa.141:8#17	R-GSM	ὅς, ἥ	unsure	0.50	model: unsure
+Psa.141:8#18	V-2AAS-2S	ἀνταποδίδωμι		0.80	
+Psa.142:1#1	N-NSM	ψαλμός		0.80	
+Psa.142:1#2	T-DSM	ὁ		0.80	
+Psa.142:1#3	N-DSM	Δαυείδ		0.80	
+Psa.142:1#4	CONJ	ὅτε		0.80	
+Psa.142:1#14	V-ADM-2S	ἐνωτίζομαι		0.80	
+Psa.142:2#16	V-PAP-NSM	ζάω		0.80	
+Psa.142:3#11	A-DPN	σκοτεινός	unsure	0.50	model: unsure
+Psa.142:4#5	T-NSN	ὁ		0.80	
+Psa.142:4#6	N-NSN	πνεῦμα		0.80	
+Psa.142:5#7	A-DPN	πᾶς		0.80	
+Psa.142:6#1	V-AAI-1S	διά-πετάννυμι	unsure	0.50	model: unsure
+Psa.142:6#12	A-NSF	ἄνυδρος		0.80	
+Psa.142:6#14	N-NSN	διάψαλμα	unsure	0.50	model: unsure
+Psa.142:7#1	ADV	ταχύ		0.80	
+Psa.142:7#5	V-2AAI-3S	ἐκλείπω		0.80	
+Psa.142:7#6	T-NSN	ὁ		0.80	
+Psa.142:7#7	N-NSN	πνεῦμα		0.80	
+Psa.142:7#10	V-AAS-2S	ἀποστρέφω		0.80	
+Psa.142:7#11	T-ASN	ὁ		0.80	
+Psa.142:7#12	N-ASN	πρόσωπον		0.80	
+Psa.142:7#15	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Psa.142:7#17	V-FPI-1S	ὁμοιόω		0.80	
+Psa.142:7#18	T-DPM	ὁ		0.80	
+Psa.142:7#19	V-PAP-DPM	καταβαίνω		0.80	
+Psa.142:8#1	A-ASN	ἀκουστός		0.80	
+Psa.142:8#4	T-ASN	ὁ		0.80	
+Psa.142:8#6	T-ASN	ὁ		0.80	
+Psa.142:8#7	N-ASN	ἔλεος		0.80	
+Psa.142:8#23	V-AAI-1S	αἴρω		0.80	
+Psa.142:9#1	V-2AMM-2S	ἐξαιρέω		0.80	
+Psa.142:10#5	T-ASN	ὁ		0.80	
+Psa.142:10#6	N-ASN	θέλημα		0.80	
+Psa.142:10#13	T-NSN	ὁ		0.80	
+Psa.142:10#14	N-NSN	πνεῦμα		0.80	
+Psa.142:10#16	T-NSN	ὁ		0.80	
+Psa.142:10#17	A-NSN	ἅγιος		0.80	
+Psa.142:10#22	N-DSF	εὐθεῖα	unsure	0.50	model: unsure
+Psa.142:11#6	V-FAI-2S	ζάω		0.80	
+Psa.142:11#12	V-FAI-2S	ἐξάγω		0.80	
+Psa.142:12#11	V-FAI-2S	ἀπολλύω		0.80	
+Psa.143:1#1	T-DSM	ὁ		0.80	
+Psa.143:1#2	N-DSM	Δαυείδ		0.80	
+Psa.143:2#1	N-NSN	ἔλεος		0.80	
+Psa.143:2#4	N-NSF	καταφυγή		0.80	
+Psa.143:2#6	N-NSM	ἀντιλήμπτωρ	guess	0.40	guess: the model answered with no candidates
+Psa.143:2#9	N-NSM	ῥύστης		0.80	
+Psa.143:2#11	N-NSM	ὑπερασπιστής		0.80	
+Psa.143:2#15	P-DSM	αὐτός		0.80	
+Psa.143:3#2	I-NSN	τίς		0.80	
+Psa.143:3#6	V-API-2S	γιγνώσκω		0.80	
+Psa.143:3#7	P-DSM	αὐτός		0.80	
+Psa.143:4#6	P-GSM	αὐτός		0.80	
+Psa.143:4#9	V-PAI-3P	παράγω		0.80	
+Psa.143:5#2	V-AAM-2S	κλίνω		0.80	
+Psa.143:5#7	V-AMM-2S	ἅπτω		0.80	
+Psa.143:6#1	V-AAM-2S	ἀστράπτω		0.80	
+Psa.143:6#4	V-FAI-2S	σκορπίζω		0.80	
+Psa.143:6#6	V-AAM-2S	ἐξαποστέλλω		0.80	
+Psa.143:6#7	T-APN	ὁ		0.80	
+Psa.143:6#8	N-APN	βέλος		0.80	
+Psa.143:6#11	V-FAI-2S	συνταράσσω		0.80	
+Psa.143:7#1	V-AAM-2S	ἐξαποστέλλω		0.80	
+Psa.143:7#7	V-2AMM-2S	ἐξαιρέω		0.80	
+Psa.143:8#1	R-GPM	ὅς, ἥ		0.80	
+Psa.143:8#2	T-NSN	ὁ		0.80	
+Psa.143:8#3	N-NSN	στόμα		0.80	
+Psa.143:8#9	P-GPM	αὐτός		0.80	
+Psa.143:8#10	A-NSF	δεξιός		0.80	
+Psa.143:9#5	V-FMI-1S	ἀείδω		0.80	
+Psa.143:10#1	T-DSM	ὁ		0.80	
+Psa.143:10#2	V-PAP-DSM	δίδωμι		0.80	
+Psa.143:10#7	T-DSM	ὁ		0.80	
+Psa.143:10#8	V-PMP-DSM	λυτρόω		0.80	
+Psa.143:10#9	N-ASM	Δαυείδ		0.80	
+Psa.143:10#12	P-GSM	αὐτός		0.80	
+Psa.143:10#14	N-GSF	ῥομφαία		0.80	
+Psa.143:11#4	V-2AMM-2S	ἐξαιρέω		0.80	
+Psa.143:11#10	R-GPM	ὅς, ἥ		0.80	
+Psa.143:11#11	T-NSN	ὁ		0.80	
+Psa.143:11#12	N-NSN	στόμα		0.80	
+Psa.143:11#18	P-GPM	αὐτός		0.80	
+Psa.143:11#19	A-NSF	δεξιός		0.80	
+Psa.143:12#1	R-GPM	ὅς, ἥ		0.80	
+Psa.143:12#5	A-NPN	νεόφυτος		0.80	
+Psa.143:12#6	V-RPP-NPN	ἁδρύνω	unsure	0.50	model: unsure
+Psa.143:12#10	P-GPM	αὐτός		0.80	
+Psa.143:12#13	P-GPM	αὐτός		0.80	
+Psa.143:12#14	V-RPP-NPF	καλλωπίζω	unsure	0.50	model: unsure
+Psa.143:12#15	V-RPP-NPF	περί-κοσμέω	unsure	0.50	model: unsure
+Psa.143:12#17	N-NSN	ὁμοίωμα	unsure	0.50	model: unsure
+Psa.143:13#1	T-NPN	ὁ		0.80	
+Psa.143:13#2	N-NPN	ταμεῖον		0.80	
+Psa.143:13#3	P-GPM	αὐτός		0.80	
+Psa.143:13#5	V-PNP-NPN	ἐξερεύγομαι		0.80	
+Psa.143:13#7	D-GSN	οὗτος	unsure	0.50	model: unsure
+Psa.143:13#9	D-ASN	οὗτος	unsure	0.50	model: unsure
+Psa.143:13#10	T-NPN	ὁ		0.80	
+Psa.143:13#11	N-NPN	πρόβατον		0.80	
+Psa.143:13#12	P-GPM	αὐτός		0.80	
+Psa.143:13#13	A-NPN	πολυτόκος		0.80	
+Psa.143:13#14	V-PAP-NPN	πληθύνω		0.80	
+Psa.143:13#18	P-GPM	αὐτός		0.80	
+Psa.143:14#2	N-NPM	βοῦς	guess	0.40	guess: the model chose outside the candidates
+Psa.143:14#3	P-GPM	αὐτός		0.80	
+Psa.143:14#4	A-NPM	παχύς		0.80	
+Psa.143:14#7	N-NSN	κατάπτωμα		0.80	
+Psa.143:14#10	N-NSF	διέξοδος		0.80	
+Psa.143:14#16	P-GPM	αὐτός		0.80	
+Psa.143:15#4	R-DSM	ὅς, ἥ		0.80	
+Psa.143:15#5	D-NPN	οὗτος		0.80	
+Psa.143:15#10	R-GSM	ὅς, ἥ		0.80	
+Psa.143:15#14	P-GSM	αὐτός		0.80	
+Psa.144:1#1	N-NSF	αἴνεσις		0.80	
+Psa.144:1#2	T-GSM	ὁ		0.80	
+Psa.144:1#3	N-GSM	Δαυείδ		0.80	
+Psa.144:1#4	V-FAI-1S	ὑψόω		0.80	
+Psa.144:1#14	T-ASN	ὁ		0.80	
+Psa.144:1#15	N-ASN	ὄνομα		0.80	
+Psa.144:2#7	V-FAI-1S	αἰνέω		0.80	
+Psa.144:2#8	T-ASN	ὁ		0.80	
+Psa.144:2#9	N-ASN	ὄνομα		0.80	
+Psa.144:3#5	A-NSM	αἰνετός		0.80	
+Psa.144:3#10	P-GSM	αὐτός		0.80	
+Psa.144:3#13	N-NSN	πέρας		0.80	
+Psa.144:4#1	N-NSF	γενεά		0.80	
+Psa.144:4#3	N-NSF	γενεά		0.80	
+Psa.144:4#4	V-FAI-3S	ἐπαινέω		0.80	
+Psa.144:4#5	T-APN	ὁ		0.80	
+Psa.144:4#6	N-APN	ἔργον		0.80	
+Psa.144:5#11	T-APN	ὁ		0.80	
+Psa.144:5#12	A-APN	θαυμάσιος		0.80	
+Psa.144:6#4	T-GPN	ὁ	unsure	0.50	model: unsure
+Psa.144:6#5	A-GPN	φοβερός	unsure	0.50	model: unsure
+Psa.144:6#12	V-FDI-1S	διηγέομαι		0.80	
+Psa.144:7#7	V-FDI-3P	ἐξερεύγομαι		0.80	
+Psa.144:7#12	V-FDI-3P	ἀγαλλιάω		0.80	
+Psa.144:8#6	A-NSM	μακρόθυμος		0.80	
+Psa.144:8#8	A-NSM	πολυέλεος		0.80	
+Psa.144:9#3	T-DPM	ὁ		0.80	
+Psa.144:9#4	V-PAP-DPM	ὑπομένω		0.80	
+Psa.144:9#8	P-GSM	αὐτός		0.80	
+Psa.144:9#10	A-APN	πᾶς		0.80	
+Psa.144:9#11	T-APN	ὁ		0.80	
+Psa.144:9#12	N-APN	ἔργον		0.80	
+Psa.144:9#13	P-GSM	αὐτός		0.80	
+Psa.144:10#1	V-ADM-3P	ἐξομολογέομαι	unsure	0.50	model: unsure
+Psa.144:10#4	A-NPN	πᾶς		0.80	
+Psa.144:10#5	T-NPN	ὁ		0.80	
+Psa.144:10#6	N-NPN	ἔργον		0.80	
+Psa.144:10#12	V-AAM-3P	εὐλογέω		0.80	
+Psa.144:13#5	A-GPM	πᾶς		0.80	
+Psa.144:14#6	P-GSM	αὐτός		0.80	
+Psa.144:14#8	A-NSM	ὅσιος		0.80	
+Psa.144:14#10	A-DPN	πᾶς		0.80	
+Psa.144:14#13	P-GSM	αὐτός		0.80	
+Psa.144:14#20	V-PAI-3S	ἀνορθόω		0.80	
+Psa.144:14#23	V-RPP-APM	καταρρήγνυμι	unsure	0.50	model: unsure
+Psa.144:15#3	A-GPM	πᾶς		0.80	
+Psa.144:15#6	V-PAI-3P	ἐλπίζω		0.80	
+Psa.144:15#9	V-PAI-2S	δίδωμι		0.80	
+Psa.144:15#12	P-GPM	αὐτός		0.80	
+Psa.144:15#14	N-DSF	εὐκαιρία		0.80	
+Psa.144:16#1	V-PAI-2S	ἀνοίγω		0.80	
+Psa.144:16#7	V-PAI-2S	ἐμπίμπλημι		0.80	
+Psa.144:16#8	A-ASN	πᾶς		0.80	
+Psa.144:16#9	N-ASN	ζῷον		0.80	
+Psa.144:17#7	P-GSM	αὐτός		0.80	
+Psa.144:17#9	A-NSM	ὅσιος		0.80	
+Psa.144:17#11	A-DPN	πᾶς		0.80	
+Psa.144:17#14	P-GSM	αὐτός		0.80	
+Psa.144:18#3	A-DPM	πᾶς		0.80	
+Psa.144:18#4	T-DPM	ὁ		0.80	
+Psa.144:18#5	V-PMP-DPM	ἐπικαλέω		0.80	
+Psa.144:18#7	A-DPM	πᾶς		0.80	
+Psa.144:18#8	T-DPM	ὁ		0.80	
+Psa.144:18#9	V-PMP-DPM	ἐπικαλέω		0.80	
+Psa.144:19#1	N-ASN	θέλημα		0.80	
+Psa.144:19#2	T-GPM	ὁ		0.80	
+Psa.144:19#3	V-PPP-GPM	φοβέω		0.80	
+Psa.144:19#9	P-GPM	αὐτός		0.80	
+Psa.144:19#10	V-FDI-3S	ἐπακούω		0.80	
+Psa.144:21#4	T-NSN	ὁ		0.80	
+Psa.144:21#5	N-NSN	στόμα		0.80	
+Psa.144:21#11	T-ASN	ὁ		0.80	
+Psa.144:21#12	N-ASN	ὄνομα		0.80	
+Psa.144:21#13	T-ASN	ὁ		0.80	
+Psa.144:21#14	A-ASN	ἅγιος		0.80	
+Psa.144:21#15	P-GSM	αὐτός		0.80	
