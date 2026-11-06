@@ -47,6 +47,28 @@ export interface SermonSource {
   default: 'on' | 'off';
   /** The source's sermons whose preaching text touches `place`'s chapter, in the source's order (verse order); [] where it has none. The module narrows them to the verses (src/sermons/sermonsFor.ts). */
   sermonsFor(place: SermonPlace): Promise<SermonRow[]>;
+  /** Every one of the source's sermons whose preaching text touches `book`, in verse order; absent where the source cannot say. The sheet's 'On the same theme' rows read it for the books a topic is in (src/sermons/index.ts sameThemeFor). */
+  sermonsInBook?(book: string): Promise<SermonRow[]>;
+}
+
+/** The topic a sermon came in by on the sheet's 'On the same theme' rows: the theme source and the topic (`verses`: how many verses its links cover in all). */
+export interface ThemeTopic {
+  source: string;
+  id: string;
+  label: string;
+  verses: number;
+}
+
+/** The sermons of one topic: the sheet's 'On <topic>' group. */
+export interface ThemeGroup {
+  topic: ThemeTopic;
+  rows: SermonRow[];
+}
+
+/** 'On the same theme': the groups in order (the narrower the topic, the earlier), at most THEME_ROW_LIMIT rows in all, and how many more there were. */
+export interface SameTheme {
+  groups: ThemeGroup[];
+  more: number;
 }
 
 /** What a place has: `here` the sermons whose preaching text overlaps the verse or passage (narrower first), `chapter` the rest of the chapter. A whole chapter has everything in `chapter`. */

@@ -23,9 +23,12 @@ export const isVersionedChapter = (url: URL): boolean =>
 export const isVersionedLadder = (url: URL): boolean =>
   /^\/data\/ladder\/[a-z]{2}\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
 
-/** A sermon index book file asked for by its source's fingerprint: /sermons/spurgeon-ccel/rom.json?v=0123456789ab (src/data/sermonIndex.ts sermonBookUrl); kept and replaced as a chapter is (mw-qtu3zvz.1). The unversioned address is not matched. */
+/**
+ * A sermon index book file asked for by its source's fingerprint: /sermons/spurgeon-ccel/rom.json?v=0123456789ab (src/data/sermonIndex.ts sermonBookUrl), or a theme index's: /themes/themes-torrey/rom.json?v=0123456789ab
+ * (src/data/themeIndex.ts themeBookUrl, mw-qtu3zvz.4); kept and replaced as a chapter is (mw-qtu3zvz.1). The unversioned address is not matched.
+ */
 export const isVersionedSermons = (url: URL): boolean =>
-  /^\/sermons\/[0-9a-z-]+\/[0-9a-z]+\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
+  /^\/(sermons|themes)\/[0-9a-z-]+\/[0-9a-z]+\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
 
 /**
  * Answers a versioned chapter request (or a versioned ladder list or sermon book file: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,

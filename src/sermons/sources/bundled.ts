@@ -54,6 +54,9 @@ function sourceOf(entry: IndexSource): SermonSource {
       if (!entry.books.includes(place.book)) return [];
       return (await bookRows(entry.id, place.book)).filter((row) => touches(row.ref, place.chapter));
     },
+    async sermonsInBook(book: string): Promise<SermonRow[]> {
+      return entry.books.includes(book) ? bookRows(entry.id, book) : [];
+    },
   };
 }
 

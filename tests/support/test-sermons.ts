@@ -42,6 +42,7 @@ const sourceOf = (id: string, name: string, rows: Record<string, SermonRow[]>, d
   describe: `Sermons of the tests’ own: ${name}.`,
   default: default_,
   sermonsFor: async (place: SermonPlace) => (rows[place.book] ?? []).filter((r) => (r.ref.toChapter ?? r.ref.chapter) >= place.chapter && r.ref.chapter <= place.chapter),
+  sermonsInBook: async (book: string) => rows[book] ?? [],
 });
 
 export const testSource = sourceOf('testsermons', 'Test Sermons', TEST_ROWS);
