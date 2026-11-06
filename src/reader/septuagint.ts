@@ -4,7 +4,10 @@ import type { Chapter, GreekWord, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 
 /** What the header says under the title of a Septuagint chapter: the Greek and the English, each with whose it is. */
-export const SEPTUAGINT_SUBTITLE = 'Septuagint (Swete) · Brenton (LXX2012)';
+export const SEPTUAGINT_SUBTITLE = "Greek: Swete's edition · English: Brenton's translation";
+
+/** The title of the sheet a tap on that line opens (src/reader/SeptuagintSources.tsx); its text is SEPTUAGINT_SOURCES of src/tutor/credits.ts, the one place it is written. */
+export const SEPTUAGINT_SHEET_TITLE = 'Whose texts these are';
 
 /** Whether a chapter is Swete's Septuagint (public/data-lxx): `edition` is 'swete' only there. */
 export const isSeptuagint = (chapter: Pick<Chapter, 'edition'> | null | undefined): boolean => chapter?.edition === 'swete';

@@ -17,8 +17,15 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     Then the language switch offers "English" and "Greek"
     And verse 1 begins with the Greek "ΕΝ"
     And no English is under verse 1
-    And the header subtitle reads "Septuagint (Swete) · Brenton (LXX2012)"
+    And the header subtitle reads "Greek: Swete's edition · English: Brenton's translation"
     And the title reads "Genesis 1"
+
+  @uc-septuagint @greek
+  Scenario: A tap on the header line opens the sheet of whose texts these are
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
+    When the header subtitle is tapped
+    Then the sheet "Whose texts these are" shows the Greek, the English, the words' lemma and parsing, and the versification
+    And Done closes the sheet
 
   @uc-septuagint @greek
   Scenario: In the English view the verse is Brenton's English
@@ -30,7 +37,7 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     Given Lampas is opened on Psalms 23 with the Septuagint on and the saved view "greek"
     Then the title reads "Psalms 23 (Greek 22)"
     And the number of the first verse reads "1 (22:1)"
-    And the header subtitle reads "Septuagint (Swete) · Brenton (LXX2012)"
+    And the header subtitle reads "Greek: Swete's edition · English: Brenton's translation"
 
   @uc-septuagint @greek
   Scenario: A book whose Septuagint is not shipped stays Hebrew and says so

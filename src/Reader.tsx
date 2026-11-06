@@ -87,6 +87,7 @@ import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
 import { SeptuagintNote } from './reader/SeptuagintNote';
+import { SeptuagintSources } from './reader/SeptuagintSources';
 import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
 import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
@@ -164,6 +165,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const wovenSettings = useMemo(() => (septuagint ? { ...settings, weaveShown: false } : settings), [septuagint, settings]);
   const heading = chapter ? septuagintTitle(TITLE, CHAPTER, chapter) : TITLE;
   const [rpShown, setRpShown] = useState<string | null>(null);
+  const [sourcesShown, setSourcesShown] = useState(false);
   // 'Loading …' that goes on 8 s (the chapter's fetch hangs, or the settings wait on a database an older tab blocks) offers Try again instead of a black screen (mw-5r3p30.846).
   const dbBlocked = useDbBlocked();
   const stillLoading = useStillLoading(!failed && !(chapter && view && layout && headings));
@@ -497,9 +499,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       />
       {septuagint && !chapterReading ? (
         <>
-          <p data-reader-subtitle className="chrome-small px-2 pb-1 text-center text-muted">
+          <button
+            type="button"
+            data-reader-subtitle
+            aria-haspopup="dialog"
+            onClick={() => setSourcesShown(true)}
+            className="chrome-small mx-auto flex min-h-11 items-center px-2 pb-1 text-center text-muted underline decoration-dotted underline-offset-4"
+          >
             {SEPTUAGINT_SUBTITLE}
-          </p>
+          </button>
           {view !== undefined && septuagintWeaveNoted(view, weaveShown ?? false) ? <SeptuagintNote className="mx-2 mb-1" /> : null}
         </>
       ) : null}
@@ -681,6 +689,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           lesson={viewLesson}
         />
       ) : null}
+      {sourcesShown && septuagint ? <SeptuagintSources onClose={() => setSourcesShown(false)} /> : null}
       {rpShown ? <Rp2026Sheet entryKey={rpShown} onClose={() => setRpShown(null)} /> : null}
       {variantShown ? (
         <VariantSheet
