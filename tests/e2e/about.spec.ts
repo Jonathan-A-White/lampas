@@ -85,9 +85,9 @@ test.describe('at 390x844', () => {
         return { text: el.innerText.slice(0, 40), lines: Math.round(content / parseFloat(style.lineHeight)) };
       });
     });
-    expect(lines.length).toBe(46); // the intro, the credits and the licence notices of ATTRIBUTION.md; main's Morpheus and Septuagint credits took it from 43 (main's own spec says 43 and is stale)
-    // the licence notices that must stay whole (CC BY 4.0, the maps' citation, the font copyrights) may take a line or two more
-    const LONG = /^(Tyndale House|TIPNR|Bible Mapper|Literata)/;
+    expect(lines.length).toBe(48); // the intro, the credits and the licence notices of ATTRIBUTION.md; the Spurgeon and Matthew Henry sermon credits took it from 46
+    // the licence notices that must stay whole (CC BY 4.0, the maps' citation, the font copyrights, CCEL's terms line in the Spurgeon credit) may take a line or two more
+    const LONG = /^(Tyndale House|TIPNR|Bible Mapper|Literata|Spurgeon)/;
     const tooLong = lines.filter((l) => l.lines > (LONG.test(l.text) ? 9 : 4)).map((l) => `${l.lines} lines: ${l.text}`);
     expect(tooLong).toEqual([]);
     await shot(page, 'about-short-credits');
