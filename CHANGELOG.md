@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.136
+_2026-11-06_
+- New: when "Open in the app" does not leave the browser, the strip now says which Android switch to turn on.
+- Fixed: The English of the Greek Old Testament now stands under the right Greek verse in Genesis 22 and 37.
+- Fixed: a quick double tap on Export in Memory now saves one copy of your memory, not two.
+- New: The line under a Septuagint chapter's title now says in plain words whose Greek and English these are, and a tap on it shows the full credit and licences.
+- New: In the Old Testament in Greek (Septuagint), tapping a word of Brenton's English now opens the Greek word it renders.
+
 ## 0.7.135
 _2026-11-06_
 - Fixed: In the Septuagint Psalms, the small second verse number such as (22:1) no longer sits on top of the first words of the verse.

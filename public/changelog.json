@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.136",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1091",
+    "kind": "new",
+    "text": "when \"Open in the app\" does not leave the browser, the strip now says which Android switch to turn on."
+  },
+  {
+    "version": "0.7.136",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.286",
+    "kind": "fixed",
+    "text": "The English of the Greek Old Testament now stands under the right Greek verse in Genesis 22 and 37."
+  },
+  {
+    "version": "0.7.136",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1101",
+    "kind": "fixed",
+    "text": "a quick double tap on Export in Memory now saves one copy of your memory, not two."
+  },
+  {
+    "version": "0.7.136",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.276",
+    "kind": "new",
+    "text": "The line under a Septuagint chapter's title now says in plain words whose Greek and English these are, and a tap on it shows the full credit and licences."
+  },
+  {
+    "version": "0.7.136",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.274.1",
+    "kind": "new",
+    "text": "In the Old Testament in Greek (Septuagint), tapping a word of Brenton's English now opens the Greek word it renders."
+  },
+  {
     "version": "0.7.135",
     "date": "2026-11-06",
     "story": "mw-u2w5klk.279",
