@@ -1,5 +1,5 @@
 // tests/unit/hebrew-texts.test.ts — the eighth kind of the Logos catalogue (mw-5r3p30.1115): the Hebrew Bibles Logos sells, which an Old Testament verse opens in as a Greek text does for the
-// New Testament. The Resource IDs are Logos's own (its topic page of Hebrew Bible text resources, topics.logos.com/?id=10693); the Lexham Hebrew Bible stays among the Bibles, where one is chosen.
+// New Testament. The Resource IDs are Logos's own (its topic page of Hebrew Bible text resources, topics.logos.com/?id=10693); the Lexham Hebrew Bible and the Lexham Hebrew-English Interlinear Bible are the ones his export holds (mw-5r3p30.1134).
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { inLogosGroups, inLogosRows } from '../../src/library/inLogos';
@@ -19,15 +19,14 @@ describe('the hebrew-text kind', () => {
     expect(infoOf('hebrew-text')).toMatchObject({ plural: 'Hebrew texts', singular: 'Hebrew text', steps: 'pin' });
   });
 
-  it('holds at least three Hebrew Bibles, each Hebrew, opening at a verse, with a Logos Resource ID and the Old Testament alone', () => {
-    expect(hebrew.length).toBeGreaterThanOrEqual(3);
+  it('holds the two Hebrew Bibles of his export, each Hebrew, opening at a verse, with a Logos Resource ID and the Old Testament alone (mw-5r3p30.1134)', () => {
+    expect(hebrew.map((e) => e.resource)).toEqual(['LLS:LHB', 'LLS:1.0.199']);
     for (const e of hebrew) {
       expect(e.lang, e.resource).toBe('he');
       expect(e.opens, e.resource).toBe('verse');
       expect(e.resource, e.resource).toMatch(/^LLS:/);
       expect(e.parts, e.resource).toEqual(['ot']);
     }
-    expect(hebrew.map((e) => e.resource)).toEqual(expect.arrayContaining(['LLS:BHSSESB', 'LLS:BHW418']));
   });
 
   it('names a refused pin by the kind', () => {
@@ -59,10 +58,10 @@ describe('the Hebrew texts group of the chooser', () => {
 });
 
 describe('importing a Logos list that holds a Hebrew text', () => {
-  const row = (resource: string): ExportRow => ({ resource, type: 'text.monograph.bible', abbreviated: '', title: 'Biblia Hebraica Stuttgartensia: SESB 2.0 Version', series: '', languages: 'he', supersets: 'bible.1.1.1-39.4.6' });
+  const row = (resource: string): ExportRow => ({ resource, type: 'text.monograph.bible', abbreviated: '', title: 'Lexham Hebrew Bible', series: '', languages: 'he', supersets: 'bible.1.1.1-39.4.6' });
 
   it('matches it by its Resource ID as a Hebrew text, listed, so the import turns it on', () => {
-    const [m] = matchExport([row('LLS:BHSSESB')]).matched;
+    const [m] = matchExport([row('LLS:LHB')]).matched;
     expect(m).toMatchObject({ by: 'id', kind: 'hebrew-text' });
     expect(isListed(m)).toBe(true);
   });

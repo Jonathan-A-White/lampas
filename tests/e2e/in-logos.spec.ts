@@ -219,7 +219,7 @@ test('Settings > Your Logos library has a Hebrew texts row under Greek texts; a 
   await expect(page.getByRole('heading', { name: 'Hebrew texts', level: 1 })).toBeVisible();
 
   // turn one on and pin it
-  const group = page.getByRole('radiogroup', { name: 'BHS SESB', exact: true });
+  const group = page.getByRole('radiogroup', { name: 'LHB', exact: true });
   await group.getByRole('radio', { name: 'Pin', exact: true }).click();
   await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
   await shot(page, 'in-logos-hebrew-texts');
@@ -235,8 +235,8 @@ test('Settings > Your Logos library has a Hebrew texts row under Greek texts; a 
   const first = sheet.getByRole('group').first();
   await expect(first).toHaveAccessibleName('Pinned');
   const link = first.getByRole('link').first();
-  await expect(link).toContainText('BHS SESB');
-  await expect(link).toHaveAttribute('href', 'logosres:LLS:BHSSESB;ref=Bible.Ps23.1');
+  await expect(link).toContainText('LHB');
+  await expect(link).toHaveAttribute('href', 'logosres:LLS:LHB;ref=Bible.Ps23.1');
   expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
   await shot(page, 'in-logos-hebrew-pinned');
 });
