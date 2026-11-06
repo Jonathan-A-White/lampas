@@ -3,6 +3,18 @@
 // needs before the form is his to learn. Pure data: no store and no screen.
 import type { Tier } from '../grammar/ladder';
 
+/** The text a word's own forms are read from (mw-u2w5klk.289): the New Testament's, or the Septuagint's (laid with the New Testament's forms beside). */
+export type OwnText = 'nt' | 'septuagint';
+
+/** Where one text uses a form: which text, how many times, and the verse of the first use (a Septuagint verse is the Lampas verse it answers). */
+export interface OwnUse {
+  source: OwnText;
+  count: number;
+  book: string;
+  chapter: number;
+  verse: number;
+}
+
 export interface ParadigmCell {
   /** The text shown: Greek in NFC with its accents, or English (lang 'en'), or pointed Hebrew (lang 'he', mw-gdcyf98.13). A noun or verb ending starts with a hyphen: '-ος'. */
   form: string;
@@ -14,7 +26,7 @@ export interface ParadigmCell {
   /** Only in a table made by ownTable (ownForms.ts, mw-irpgqi.4): the text has no form of the word for this cell. `form` is then ''. */
   absent?: true;
   /** Only in a table made by ownTable: the form is the word's own, the one the text has, with its parsing and first use, and the pattern's form it stands in for. */
-  own?: { code: string; count: number; book: string; chapter: number; verse: number; pattern: string; others: string[] };
+  own?: OwnUse & { code: string; pattern: string; others: string[]; also?: OwnUse };
 }
 
 export interface ParadigmColumn {
@@ -46,4 +58,6 @@ export interface Paradigm {
   tier: Tier;
   columns: ParadigmColumn[];
   rows: ParadigmRow[];
+  /** Only in a table made by ownTable (ownForms.ts): the text its own forms are read from, which says what a cell with no form is absent from. */
+  ownText?: OwnText;
 }

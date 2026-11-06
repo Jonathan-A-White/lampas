@@ -175,6 +175,8 @@ export interface ParadigmAddress {
   lemma?: string;
   /** the table shows the lemma's own forms (This word) and not the pattern's */
   own?: boolean;
+  /** the word is a word of the Septuagint (`text=lxx`): its own forms are the Septuagint's laid with the New Testament's (mw-u2w5klk.289); absent, the New Testament's alone */
+  septuagint?: boolean;
 }
 
 export function paradigmOf(hash: string): ParadigmAddress {
@@ -198,12 +200,13 @@ export function paradigmOf(hash: string): ParadigmAddress {
   if (address.table !== undefined && lemma) {
     address.lemma = lemma;
     if (params.get('own') === '1') address.own = true;
+    if (params.get('text') === 'lxx') address.septuagint = true;
   }
   return address;
 }
 
 /** The Paradigms address, always in the same order. */
-export function paradigmHash({ table, mode, cell, word, parse, lemma, own }: ParadigmAddress): string {
+export function paradigmHash({ table, mode, cell, word, parse, lemma, own, septuagint }: ParadigmAddress): string {
   const params = new URLSearchParams();
   if (table !== undefined) params.set('t', table);
   if (table !== undefined && mode) params.set('mode', mode);
@@ -215,6 +218,7 @@ export function paradigmHash({ table, mode, cell, word, parse, lemma, own }: Par
   if (table !== undefined && lemma) {
     params.set('l', lemma);
     if (own) params.set('own', '1');
+    if (septuagint) params.set('text', 'lxx');
   }
   const query = params.toString();
   return query ? `#/paradigms?${query}` : '#/paradigms';

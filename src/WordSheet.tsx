@@ -8,7 +8,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
-import { readingOf } from './reader/septuagint';
+import { isSeptuagint, readingOf } from './reader/septuagint';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
@@ -599,7 +599,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
     const found = paradigmOfWord(word);
     if (!found) return;
     holdWord(sheetChapter, lookup);
-    openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p, lemma: word.l });
+    openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p, lemma: word.l, ...(isSeptuagint(sheetChapter) ? { septuagint: true } : {}) });
   };
   // the Help page (Words) that says how the Septuagint's words were read is a page of its own: the sheet is held, and Back brings it back
   const openReading = (): void => {

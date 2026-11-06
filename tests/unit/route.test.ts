@@ -97,6 +97,12 @@ describe('the paradigm address', () => {
     expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω', own: true });
     expect(paradigmOf(paradigmHash({ table: 'contract-verbs', lemma: 'ἀγαπάω' }))).toEqual({ table: 'contract-verbs', lemma: 'ἀγαπάω' });
     expect(paradigmOf('#/paradigms?l=ἀγαπάω&own=1')).toEqual({});
+    // a Septuagint word (mw-u2w5klk.289): text=lxx rides with the lemma, and without one it is nothing
+    const septuagint = paradigmHash({ table: 'adjective-endings', lemma: 'ἀόρατος', own: true, septuagint: true });
+    expect(septuagint).toBe(`#/paradigms?t=adjective-endings&l=${encodeURIComponent('ἀόρατος')}&own=1&text=lxx`);
+    expect(paradigmOf(septuagint)).toEqual({ table: 'adjective-endings', lemma: 'ἀόρατος', own: true, septuagint: true });
+    expect(paradigmHash({ table: 'adjective-endings', septuagint: true })).toBe('#/paradigms?t=adjective-endings');
+    expect(paradigmOf(paradigmHash({ table: 'adjective-endings', lemma: 'ἀόρατος' })).septuagint).toBeUndefined();
   });
 });
 
