@@ -43,6 +43,17 @@ const take = (name: string): void => {
   pages[name] = { text: (document.body.textContent ?? '').replace(/\s+/g, ' ').trim(), html };
 };
 
+/** Waits until the screen has not changed for a moment: the pages draw from live queries and a loaded host takes longer than a fixed wait. */
+async function stillScreen(): Promise<void> {
+  let last = '';
+  for (let tries = 0; tries < 100; tries += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const now = document.body.innerHTML;
+    if (now === last) return;
+    last = now;
+  }
+}
+
 async function open(address: string, hebrewDial: string): Promise<void> {
   cleanup();
   clearBus();
@@ -94,7 +105,9 @@ describe('with the Septuagint Off the Hebrew and the New Testament pages are as 
         window.history.replaceState(null, '', `/#/${route}`);
         window.dispatchEvent(new HashChangeEvent('hashchange'));
         await ready();
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        // the Parsing drill link names the chapter once the study language is read (a live query): the page is taken after it
+        if (route === 'test') await screen.findByRole('button', { name: `Parsing drill: ${book === 'gen' ? 'Genesis 1' : 'Romans 8'}` });
+        await stillScreen();
         take(`${route} with ${place} open`);
       }
     }
