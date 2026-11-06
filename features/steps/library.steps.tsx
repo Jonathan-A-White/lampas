@@ -66,8 +66,12 @@ async function openAt(address: string): Promise<void> {
 const control = (short: string) => screen.getByRole('radiogroup', { name: short });
 const setting = (short: string): string | undefined => within(control(short)).queryAllByRole('radio').find((r) => r.getAttribute('aria-checked') === 'true')?.textContent ?? undefined;
 const kindRow = (label: string) => screen.getByRole('button', { name: new RegExp(`^${label}\\b`) });
-/** The names of the books on a kind page, top to bottom. */
-const listed = (): string[] => screen.getAllByRole('radiogroup').map((g) => g.getAttribute('aria-label') ?? '');
+/** The names of the books on a kind page, top to bottom; the Greek ones when the page is grouped (Lexicons: Hebrew, then Greek, mw-5r3p30.1117). */
+const listed = (): string[] => {
+  const rows = Array.from(screen.getByTestId('searchable-list-box').querySelectorAll('h2, [role="radiogroup"]'));
+  const greek = rows.findIndex((el) => el.tagName === 'H2' && el.textContent === 'Greek');
+  return rows.slice(greek + 1).map((g) => g.getAttribute('aria-label') ?? '');
+};
 
 const feature = await loadFeature('features/library.feature');
 
@@ -146,7 +150,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the Library at the kind {string}', opensKind);
     Then('the page {string} is open', opened);
     And('the page says {string}', pageSays);
-    And('the books are listed with {string} first, then {string}, then those that are off', async (_, first: string, second: string) => {
+    And('the Greek books are listed with {string} first, then {string}, then those that are off', async (_, first: string, second: string) => {
       await waitFor(() => orderIs(null, first, second));
     });
     And('{string} is set to {string} and {string} is set to {string} and {string} is set to {string}', async (_, a: string, as: string, b: string, bs: string, c: string, cs: string) => {
@@ -155,7 +159,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he sets {string} to {string}', setTo);
     Then('{string} is set to {string}', isSet);
     And('the count now reads {string}', pageSays);
-    And('the books are still where they were, {string} first, then {string}', async (_, first: string, second: string) => {
+    And('the Greek books are still where they were, {string} first, then {string}', async (_, first: string, second: string) => {
       await waitFor(() => staysPut(null, first, second));
     });
   });
