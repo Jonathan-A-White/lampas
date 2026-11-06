@@ -92,6 +92,24 @@ export function verseOnTop(): number | null {
 }
 
 /**
+ * Where the strip stands, in px from the top of the shell's bars (mw-5r3p30.1093): under the bars the shell holds (Update ready, the tutor's bar, Welcome back; the strip floats, so it
+ * is not one of them and they never sit under it) and under the screen's own top bar, a `header` that starts where the bars end (the Reader's, a screen's ScreenHeader, the Verse
+ * view's), whichever ends lowest. It floats over the text below, which does not move. Null where the bars are not drawn.
+ */
+export function stripTop(): number | null {
+  const bars = document.querySelector<HTMLElement>('[data-shell-bars]');
+  if (!bars) return null;
+  const room = bars.getBoundingClientRect();
+  let foot = room.bottom;
+  for (const header of document.querySelectorAll<HTMLElement>('header')) {
+    if (bars.contains(header) || header.getClientRects().length === 0) continue;
+    const at = header.getBoundingClientRect();
+    if (at.height > 0 && at.top <= room.bottom + 4 && at.bottom > foot) foot = at.bottom;
+  }
+  return Math.round(foot - room.top);
+}
+
+/**
  * Leaves the page for the address, in a NEW tab with no opener and no referrer (his tap only; mw-5r3p30.1082). A seam: the tests stand in for it, a jsdom window cannot navigate.
  *
  * Why this form, from Chromium's own source (components/external_intents, ExternalNavigationHandler.java; the story's closing comment has the walk through): an intent: URL for the

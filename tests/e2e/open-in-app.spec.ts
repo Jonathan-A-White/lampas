@@ -8,6 +8,7 @@ import { openWithTextSize, PHONES } from './next-in-view';
 import { FLOATING } from './open-tutor';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { SETTLE_MS } from '../../src/ui/settle';
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
 test.use({ hasTouch: true, userAgent: ANDROID });
@@ -232,3 +233,141 @@ test('tapped while Romans 8 is still loading, the hand-over still names verse 28
     release();
   }
 });
+
+// mw-5r3p30.1093 (mw-5r3p30.1053, .1089): a double tap hands over once. openUnlocked starts the settle moment at 0, so this spec puts it back (init scripts run in order).
+test('390x844: a fast double tap on Open in the app opens one new tab', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await stubApi(page, WEBAPP);
+  await openUnlocked(page);
+  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+  // Chromium lets one popup through per user activation and a headless tab may drop the second anyway, so the new tabs alone can hide a second hand-over: count the links the page clicks too
+  await page.addInitScript(() => {
+    const real = HTMLAnchorElement.prototype.click;
+    Object.assign(window, { handOvers: 0 });
+    HTMLAnchorElement.prototype.click = function (this: HTMLAnchorElement) {
+      if (this.target === '_blank') (window as unknown as { handOvers: number }).handOvers += 1;
+      real.call(this);
+    };
+  });
+  await page.goto('/#/?ref=John.5.25');
+  const button = page.locator('[data-open-in-app]').getByRole('button', { name: 'Open in the app' });
+  await expect(button).toBeVisible();
+  const tabs: string[] = [];
+  page.context().on('page', (tab) => tabs.push(tab.url()));
+  const at = (await button.boundingBox())!;
+  await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
+  await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
+  await page.waitForTimeout(1000);
+  expect(tabs, 'one new tab for two taps').toHaveLength(1);
+  expect(await page.evaluate(() => (window as unknown as { handOvers: number }).handOvers), 'one hand-over for two taps').toBe(1);
+  // he can tap again once the moment has passed: the tap that opened nothing is not locked out for good
+  await button.click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { handOvers: number }).handOvers), 'a later tap hands over again').toBe(2);
+  await shot(page, 'open-in-app-double-tap');
+});
+
+// mw-5r3p30.1093 (mw-5r3p30.1080, .1081): the strip floats, but it covers neither another bar of the shell nor a screen's own top bar and way back.
+const SIZES = [
+  { width: 390, height: 844 },
+  { width: 844, height: 390 },
+];
+
+/** Every bar the shell can hold, as the real ones draw it (src/UpdateBanner.tsx, src/speech/TutorWaitingBar.tsx, src/WelcomeBack.tsx), put into [data-shell-bars] next to the strip. */
+async function putBarsIn(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const bars = document.querySelector('[data-shell-bars]')!;
+    const bar = (attr: string, label: string, cls: string) => {
+      const div = document.createElement('div');
+      div.setAttribute(attr, '');
+      div.className = cls;
+      div.innerHTML = `<button type="button" class="flex w-full items-center justify-center px-3 py-3 text-base font-medium">${label}</button>`;
+      bars.appendChild(div);
+    };
+    bar('data-update-banner', 'Update ready, tap to reload', 'border-b border-line bg-accent text-accent-fg');
+    bar('data-tutor-waiting', 'The tutor answered: tap to play', 'border-b border-line bg-accent text-accent-fg');
+    bar('data-welcome-back', 'Welcome back', 'border-b border-line bg-surface');
+  });
+}
+
+/** The visible buttons and headings that match `selector` and whose own centre has the strip over it. */
+async function underStrip(page: Page, selector: string): Promise<string[]> {
+  return page.evaluate((sel) => {
+    const strip = document.querySelector('[data-open-in-app]');
+    return [...document.querySelectorAll<HTMLElement>(sel)]
+      .filter((el) => !strip?.contains(el) && el.getClientRects().length > 0)
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0 || r.bottom <= 0 || r.top >= window.innerHeight) return false;
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!top && !!strip && strip.contains(top);
+      })
+      .map((el) => `${el.tagName} ${(el.textContent ?? el.getAttribute('aria-label') ?? '').trim().slice(0, 30)}`);
+  }, selector);
+}
+
+for (const size of SIZES) {
+  test(`${size.width}x${size.height}: the Update ready bar, the tutor's bar and Welcome back are not covered by the strip`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await stubApi(page, WEBAPP);
+    await openUnlocked(page);
+    await page.goto('/#/?ref=Rom.8.28');
+    await expect(page.locator('[data-open-in-app]')).toBeVisible();
+    await putBarsIn(page);
+    await page.waitForTimeout(300); // the bars' foot is measured again
+    for (const attr of ['data-update-banner', 'data-tutor-waiting', 'data-welcome-back']) {
+      const button = page.locator(`[${attr}] button`);
+      const hit = await button.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return { itself: top === el || el.contains(top), inStrip: !!top?.closest('[data-open-in-app]') };
+      });
+      expect(hit, `${attr}: its button is the element at its own centre`).toEqual({ itself: true, inStrip: false });
+    }
+    expect(await underStrip(page, '[data-shell-bars] button'), 'no bar button is under another').toEqual([]);
+    // the strip's own buttons are reachable too
+    expect(await page.locator('[data-open-in-app] button').evaluateAll((els) => els.map((el) => {
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return top === el || el.contains(top);
+    })), 'the strip\'s buttons are on top').toEqual([true, true]);
+    await shot(page, `open-in-app-bars-${size.width}x${size.height}`);
+  });
+}
+
+for (const size of SIZES) {
+  for (const hash of ['#/?ref=Rom.8.28', '#/settings', '#/words', '#/about']) {
+    test(`${size.width}x${size.height} ${hash}: the strip does not cover the screen's top bar or its way back`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await stubApi(page, WEBAPP);
+      await openUnlocked(page);
+      await page.goto(`/${hash}`);
+      await expect(page.locator('[data-open-in-app]')).toBeVisible();
+      await page.waitForTimeout(500);
+      const header = page.locator('[data-shell] header').first();
+      await expect(header).toBeVisible();
+      const strip = (await page.locator('[data-open-in-app]').boundingBox())!;
+      const bar = (await header.boundingBox())!;
+      expect(strip.y, 'the strip starts at or under the foot of the top bar').toBeGreaterThanOrEqual(bar.y + bar.height - 1);
+      expect(await underStrip(page, '[data-shell] header button, [data-shell] header h1, [data-shell] header a'), 'no control or title of the top bar is under the strip').toEqual([]);
+      if (hash === '#/settings') {
+        const back = page.getByRole('button', { name: '‹ Reader' });
+        await expect(back).toBeVisible();
+        expect(await back.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          return top === el || el.contains(top);
+        }), '‹ Reader is the element at its own centre').toBe(true);
+      }
+      if (hash.startsWith('#/?')) {
+        const gear = page.getByRole('button', { name: 'Settings', exact: true });
+        await expect(gear).toBeVisible();
+        expect(await gear.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          return top === el || el.contains(top);
+        }), 'the Reader\'s gear is the element at its own centre').toBe(true);
+      }
+      await shot(page, `open-in-app-topbar-${hash.replace(/[^a-z]/gi, '')}-${size.width}x${size.height}`);
+    });
+  }
+}
