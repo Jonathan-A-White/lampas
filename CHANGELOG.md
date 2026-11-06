@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.135
+_2026-11-06_
+- Fixed: In the Septuagint Psalms, the small second verse number such as (22:1) no longer sits on top of the first words of the verse.
+- Fixed: The "Open in the app" bar on your phone no longer covers the update bar or the top of each screen, and tapping it twice quickly opens the app once.
+
 ## 0.7.133
 _2026-11-06_
 - Fixed: In the Septuagint, the Greek view now shows the Greek alone; Brenton's English is the English view.
