@@ -1,0 +1,36 @@
+TVTMS Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY
+A slice for tests (mw-u2w5klk.283): the Psa.11:1-11:7 and Psa.114:1-8 .. Psa.116:1-116:19 sections of the condensed data, copied unchanged from STEPBible-Data commit be4191f0082aeedddb0eff0c02c966292b2bd641 (CC BY 4.0, Tyndale House Cambridge).
+#DataStart(Condensed)
+												
+$Psa.11:1-11:7					
+English KJV	 & Psa.9:30=NotExist & Psa.11:7=Last & Psa.11:TextBeforeV1=Exist	
+Hebrew + EngTitleMerged	 & Psa.9:30=NotExist & Psa.11:7=Last & Psa.11:TextBeforeV1=NotExist	
+Latin	 & Psa.9:30=Exist & Psa.10:8=Last & Psa.10:TextBeforeV1=NotExist	
+Greek	 & Psa.9:30=Exist & Psa.10:7=Last & PSA.10:TextBeforeV1=NotExist	
+BrentonSeparate 	 & Psa.9:30=Exist & Psa.10:7=Last & Psa.10:TextBeforeV1=Exist	
+BrentonSeparate2 	 & Psa.9:30=Exist & Psa.10:8=Last & Psa.10:TextBeforeV1=NotExist	
+BIBLES	English KJV	Hebrew	Latin	Greek	EngTitleMerged	BrentonSeparate 	BrentonSeparate2 					
+OneToOne	Psa.11:Title	Absent [=Psa.11:1]	Psa.10:1	Absent [=Psa.10:1]	Absent [=Psa.11:1]	Psa.10:Title	Psa.10:1					
+OneToOne	Psa.11:1	Psa.11:1	Psa.10:2	Psa.10:1	Psa.11:1	Psa.10:1	Psa.10:2					
+OneToOne	Psa.11:2-7	Psa.11:2-7	Psa.10:3-8	Psa.10:2-7	Psa.11:2-7	Psa.10:2-7	Psa.10:3-8					
+												
+$Psa.114:1-8								
+English KJV + Hebrew	 & Psa.9:30=NotExist & Psa.114:8=Last	
+Latin + Greek	 & Psa.9:30=Exist & PSA.113:26=Last	
+BIBLES	English KJV	Hebrew	Latin	Greek								
+OneToOne	Psa.114:1-8	Psa.114:1-8	Psa.113:1-8	Psa.113:1-8								
+												
+$Psa.115:1-18								
+English KJV + Hebrew	 & Psa.9:30=NotExist & Psa.115:18=Last	
+Latin + Greek	 & Psa.9:30=Exist & PSA.113:26=Last	
+BIBLES	English KJV	Hebrew	Latin	Greek								
+OneToOne	Psa.115:1-18	Psa.115:1-18	Psa.113:9-26	Psa.113:9-26								
+												
+$Psa.116:1-116:19								
+English KJV + Hebrew	 & Psa.9:30=NotExist & Psa.116:19=Last	
+Latin + Greek	 & Psa.9:30=Exist & PSA.115:10=Last	
+BIBLES	English KJV	Hebrew	Latin	Greek								
+OneToOne	Psa.116:1-9	Psa.116:1-9	Psa.114:1-9	Psa.114:1-9								
+OneToOne	Psa.116:10-19	Psa.116:10-19	Psa.115:1-10	Psa.115:1-10								
+												
+#DataEnd(Condensed)

@@ -293,9 +293,30 @@ export const SUPPLEMENT_ROWS: readonly TvtmsRow[] = [
   { section: 'Dan.3:23--4:3 (Swete)', type: 'OneToOne', cells: { 'English KJV': 'Dan.4:1-3', Greek: 'Dan.3:98-100' } },
 ];
 
+/**
+ * Rows for LXX2012's own numbering of the Psalms where no column of TVTMS follows it (mw-u2w5klk.283), read by `lxx2012ToGreek` only; their `Brenton (LXX2012)` cell is
+ * LXX2012's verse, their `Greek` cell Swete's. Each stands in for the table's section named in LXX2012_REPLACED or for one the table has no Brenton column for.
+ * - Ps 10: LXX2012 has 8 verses and the title out of verse 1; it splits the Greek verse 1 ("In the Lord I have put my trust ... Flee to the mountains as a sparrow?")
+ *   in two, so its 1 and 2 are the Greek's 1 and its 3-8 the Greek's 2-7 (TVTMS's BrentonSeparate has 7 verses, BrentonSeparate2 has 8 but counts the title as 1).
+ * - Ps 113-115: LXX2012 numbers them in the Hebrew order. Its 113 (the Hebrew 114) is the Greek's 113:1-8, which the table's rows already give as the same; its 114
+ *   (the Hebrew 115, 18 verses) is the Greek 113:9-26, its 115 (the Hebrew 116, 19 verses) the Greek 114:1-9 and 115:1-10 (LXX2012 115:10 is "I believed, therefore I have spoken").
+ */
+export const LXX2012_ROWS: readonly TvtmsRow[] = [
+  ['Psa.10:Title', 'Absent [=Psa.10:1]'],
+  ['Psa.10:1-2', 'Psa.10:1'],
+  ['Psa.10:3-8', 'Psa.10:2-7'],
+  ['Psa.114:1-18', 'Psa.113:9-26'],
+  ['Psa.115:1-9', 'Psa.114:1-9'],
+  ['Psa.115:10-19', 'Psa.115:1-10'],
+].map(([lxx2012, greek]) => ({ section: 'LXX2012', type: 'OneToOne', cells: { 'Brenton (LXX2012)': lxx2012, Greek: greek } }));
+
+/** The sections of the table whose Brenton column is not LXX2012's numbering, which LXX2012_ROWS replaces for `lxx2012ToGreek` (Psa.11:1-11:7 holds Ps 10's rows). */
+const LXX2012_REPLACED: ReadonlySet<string> = new Set(['Psa.11:1-11:7']);
+
 /** The three maps of the rows, each total: a reference the table lacks maps to itself with the state `same`. */
 export function buildMaps(tableRows: readonly TvtmsRow[]): TvtmsMaps {
   const rows = [...tableRows, ...SUPPLEMENT_ROWS];
+  const lxx2012Rows = [...rows.filter((r) => !LXX2012_REPLACED.has(r.section)), ...LXX2012_ROWS];
   const problems: string[] = [];
   const both = (a: (r: TvtmsRow) => string | undefined, b: (r: TvtmsRow) => string | undefined): Pair => (r) => {
     const x = a(r);
@@ -304,6 +325,6 @@ export function buildMaps(tableRows: readonly TvtmsRow[]): TvtmsMaps {
   };
   const toLampas = mapOf(rows, both(greekOf, englishOf), 'to', problems);
   const toGreek = mapOf(rows, both(englishOf, greekOf), 'from', []);
-  const lxx2012ToGreek = mapOf(rows, lxx2012Pair(rows), undefined, []);
+  const lxx2012ToGreek = mapOf(lxx2012Rows, lxx2012Pair(lxx2012Rows), undefined, []);
   return { toLampas, toGreek, lxx2012ToGreek, problems };
 }

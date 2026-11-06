@@ -117,8 +117,8 @@ export function parseTranslit(text: string): Map<number, string> {
 
 // ---------------------------------------------------------------- the English
 
-/** A Psalm's title as LXX2012 has it, "(23) A Psalm of David.": without the number of the Psalm in the numbering it is not in (the chunk is the title's words). */
-const titleWords = (title: string): string => title.replace(/^\(\d+\)\s*/, '');
+/** A Psalm's title as LXX2012 has it, "(23) A Psalm of David." ("(11 in KJV) For the end..." for Ps 10): without the number of the Psalm in the numbering it is not in (the chunk is the title's words). */
+const titleWords = (title: string): string => title.replace(/^\(\d+(?: in KJV)?\)\s*/, '');
 
 interface Segment {
   text: string;
