@@ -16,6 +16,30 @@ Read with the rig's own rules: one hand on a phone, large clear type, the page n
 "easy to use correctly and hard to use incorrectly". One note on his second want: the English the app has beside the Septuagint is Brenton's translation, and the
 Old Testament's plain English is the Berean Standard Bible (the Majority Standard Bible is the New Testament's); the chooser below says whose each text is.
 
+<!-- toc -->
+
+- [The one idea: a sheet that docks](#the-one-idea-a-sheet-that-docks)
+- [Opening and closing](#opening-and-closing)
+- [The divider](#the-divider)
+- [Portrait, sideways and wide](#portrait-sideways-and-wide)
+- [The map pane and a text pane](#the-map-pane-and-a-text-pane)
+- [The Link](#the-link)
+- [A word tap](#a-word-tap)
+- [What is remembered](#what-is-remembered)
+- [Not done](#not-done)
+- [Prior art](#prior-art)
+- [Decisions](#decisions)
+  - [D1 Where the dock stands in portrait](#d1-where-the-dock-stands-in-portrait)
+  - [D2 Where 'Split' opens a text from](#d2-where-split-opens-a-text-from)
+  - [D3 Back and the split](#d3-back-and-the-split)
+  - [D4 The divider's sizes](#d4-the-dividers-sizes)
+- [Revised acceptance criteria](#revised-acceptance-criteria)
+  - [mw-5r3p30.1129 A map beside the passage](#mw-5r3p301129-a-map-beside-the-passage)
+  - [mw-5r3p30.1130 A second text beside the passage, kept in step](#mw-5r3p301130-a-second-text-beside-the-passage-kept-in-step)
+- [How the mockups were made](#how-the-mockups-were-made)
+
+<!-- /toc -->
+
 ## The one idea: a sheet that docks
 
 Every reference thing in Lampas already comes up from the bottom as a sheet over the passage: the Maps sheet, a map, a word, the Talk sheet. Each has the same
