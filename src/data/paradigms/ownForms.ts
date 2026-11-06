@@ -69,11 +69,17 @@ export function referenceText(form: Pick<OwnForm, 'book' | 'chapter' | 'verse'>)
   return `${name} ${form.chapter}:${form.verse}`;
 }
 
+/**
+ * Raised when the lemma files change with no chapter changing, so a phone's worker (CacheFirst) asks for them again: 2 (mw-u2w5klk.295) is the files made again at deploy with the Septuagint's forms
+ * (batch 416's files, made without them, were cached under the same version).
+ */
+export const LEMMA_FORMS_EDITION = 2;
+
 // The files are asked for with the chapters' fingerprints folded into one version, so the worker (CacheFirst, src/sw.ts) keeps a lemma until some chapter changes. The Septuagint's
 // reading folds in the fingerprints of the shipped Septuagint chapters too (`septuagint`: the index's, one string), since its forms ride in the file; the New Testament's does not,
 // so it never waits on that index and a Septuagint chapter shipped leaves its cached file alone.
 function formsVersion(septuagint = ''): string {
-  let hash = 5381;
+  let hash = 5381 + LEMMA_FORMS_EDITION;
   for (const book of BOOK_INDEX.books) for (const fingerprint of book.fingerprints) for (let i = 0; i < fingerprint.length; i++) hash = ((hash * 33) ^ fingerprint.charCodeAt(i)) >>> 0;
   for (let i = 0; i < septuagint.length; i++) hash = ((hash * 33) ^ septuagint.charCodeAt(i)) >>> 0;
   return hash.toString(16);
