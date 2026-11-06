@@ -121,3 +121,12 @@ Vite bakes these in at build time: set the variable for `npm run build`.
 ## The Greek dial's start level (the test seam, mw-3ased2.2)
 
 A new phone is placed on both dials at 0, English only (`placeInterest`, `src/main.tsx`: `placeGreekInterest` and then the Hebrew dial), which hides every Greek and Hebrew setting, the Reader's Greek view and the word sheet. A spec that is not about the dial needs the whole app, so `playwright.config.ts` gives every context the localStorage key **`lampas.greekInterestStart`** = `5` (All in) through `use.storageState`; the phone is placed there instead of at 0. The Hebrew dial's seam is **`lampas.hebrewInterestStart`**, read beside it and, absent, following it (so the config's `5` places both at 5, and a spec that wants another Hebrew step sets that key as well); `startAtAllIn` is unchanged in effect. `tests/e2e/greek-dial.spec.ts` overrides it with an empty storage state and starts as a new reader does. A spec that makes its own context (`browser.newContext`, `launchPersistentContext`) does not get the config's storage state: it calls `startAtAllIn(context)` (`tests/e2e/greek-start.ts`). jsdom features and unit tests do not run `main.tsx`: an unplaced phone reads Greek 5 and Hebrew 0, so they see every Greek row until one calls `setGreekInterest` (the welcome does, for a new reader).
+
+## Speech and the microphone fakes
+
+Speech and the microphone are never faked by hand (mw-it6qk5.3): they are voice-kit's honest fakes (`voice-kit/testing/speech` and `/mic`: an utterance
+  takes `150 + 60 x words` ms and fires start, boundaries and end, `cancel()` interrupts the one being spoken, a recogniser sends interim words as a clip
+  plays). Feature steps use `tests/support/fake-speech.ts` (`stubSpeech`: `finish()`, `finishAll()`, `advance(ms)`, `calls`, `spoken`, on a manual clock,
+  `tests/support/manual-clock.ts`) and `tests/support/fake-mic.ts` (`stubMic()`, `advance(ms)`); Playwright specs use `tests/support/honest-fakes.ts`
+  (`honestSpeech(page, {langs, msPerWord})`, `honestMic(page)`). A screen that holds on a verse being spoken or a clip being recorded needs a slow reader
+  (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip.

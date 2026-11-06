@@ -63,12 +63,7 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
 - Every behaviour is a Gherkin scenario under `features/*.feature` with steps in
   `features/steps/*.steps.ts(x)` (@amiceli/vitest-cucumber), run inside `npm test`. Import
   `@testing-library/react/dont-cleanup-after-each` before React Testing Library in a step file.
-- Speech and the microphone are never faked by hand (mw-it6qk5.3): they are voice-kit's honest fakes (`voice-kit/testing/speech` and `/mic`: an utterance
-  takes `150 + 60 x words` ms and fires start, boundaries and end, `cancel()` interrupts the one being spoken, a recogniser sends interim words as a clip
-  plays). Feature steps use `tests/support/fake-speech.ts` (`stubSpeech`: `finish()`, `finishAll()`, `advance(ms)`, `calls`, `spoken`, on a manual clock,
-  `tests/support/manual-clock.ts`) and `tests/support/fake-mic.ts` (`stubMic()`, `advance(ms)`); Playwright specs use `tests/support/honest-fakes.ts`
-  (`honestSpeech(page, {langs, msPerWord})`, `honestMic(page)`). A screen that holds on a verse being spoken or a clip being recorded needs a slow reader
-  (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip.
+- Speech and the microphone are never faked by hand (mw-it6qk5.3): use voice-kit's honest fakes through `tests/support/` (docs/testing.md 'Speech and the microphone fakes').
 - Every jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS` (`tests/support/timeouts.ts`, 10 s, set in `tests/setup.ts`; a loaded host outruns the library's 1 s): never pass a shorter `timeout:` and give `vi.waitFor` one (`tests/unit/async-wait.test.ts` greps for both).
 - A step that checks what the bus heard waits for it (`tests/support/published.ts`: `expectPublished(() => list, expected)` for a list a step file fills, `expectLatest(kind, check)` for the newest event of a kind): a screen can write before it publishes (mw-5r3p30.389; `tests/unit/published-wait.test.ts` fails on an `expect(list)` or `expect(latest(...))` with no wait).
 - Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
