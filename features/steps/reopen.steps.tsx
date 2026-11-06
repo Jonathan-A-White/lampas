@@ -11,8 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { findSettingsHeading, openSettings } from '../../tests/unit/openSettings';
+import { findSettingsHeading, openTool } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -72,9 +71,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Back to an earlier place of the reader puts its verse back', ({ Given, When, Then }) => {
     Given('Lampas is opened at the address {string}', (_, hash: string) => openAt(hash));
     When('he goes to the Words screen and then back', async () => {
-      await openSettings(user);
-      await openSettingsGroup(user, 'account');
-      await user.click(await screen.findByRole('button', { name: 'Words' }));
+      await openTool(user, 'Words');
       await screen.findByRole('heading', { name: 'Words', level: 1 });
       window.history.back(); // the Account page
       await screen.findByRole('heading', { name: 'Account', level: 1 });
@@ -93,9 +90,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("Leaving the reader for another screen keeps that screen's address", ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8', () => openAt(''));
     When('he goes to the Words screen', async () => {
-      await openSettings(user);
-      await openSettingsGroup(user, 'account');
-      await user.click(await screen.findByRole('button', { name: 'Words' }));
+      await openTool(user, 'Words');
     });
     Then('the address is {string}', (_, hash: string) => {
       expect(window.location.hash).toBe(hash);

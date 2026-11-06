@@ -8,8 +8,7 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber';
 import { db } from '../../../src/data/db';
 import { type FakePostern } from '../../../tests/support/fake-postern';
 import { endScenario, open, openTalk, send, sheet, turnShows, turns, user } from './support';
-import { openSettingsGroup } from '../../../tests/support/settings-pages';
-import { openSettings } from '../../../tests/unit/openSettings';
+import { openTool } from '../../../tests/unit/openSettings';
 
 const explaining = (f: FakePostern): void => {
   f.autoReply = {
@@ -81,9 +80,7 @@ describeFeature(
         await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
       });
       And('he opens the Words screen', async () => {
-        await openSettings(user);
-        await openSettingsGroup(user, 'account');
-        await user.click(await screen.findByRole('button', { name: 'Words' }));
+        await openTool(user, 'Words');
         await screen.findByRole('heading', { name: 'Words' });
       });
       Then('the Words screen lists {string} as learning', async (_, lemma: string) => {

@@ -1,6 +1,6 @@
 // tests/unit/openSettings.tsx — the one place a jsdom test or feature step names the Reader header's Menu, the doors in it (Settings, Tools) and the headings of the screens they open
 // (mw-5r3p30.839, mw-5r3p30.754). The Menu (three lines) stood where the gear was: Tools and Settings are its two rows. When a door moves again, this file changes and the steps do not. The Playwright twin is tests/e2e/openSettings.ts.
-import { screen, type BoundFunctions, type queries } from '@testing-library/react';
+import { screen, within, type BoundFunctions, type queries } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 
 /** Where to look: the whole screen (the default), or a box on it (the Reader's header, from `within`). */
@@ -40,4 +40,10 @@ export async function openSettings(user: UserEvent, where: Scope = screen): Prom
 export async function openTools(user: UserEvent, where: Scope = screen): Promise<HTMLElement> {
   await chooseFromMenu(user, 'Tools', where);
   return findToolsHeading();
+}
+
+/** Opens Tools through the Menu and taps its door `name` ('Words', 'Review', 'Paradigms', 'Verse lists', 'Memorize', 'Your Logos library'); the screen's own heading is for the step to wait for. */
+export async function openTool(user: UserEvent, name: string, where: Scope = screen): Promise<void> {
+  await openTools(user, where);
+  await user.click(await within(await screen.findByRole('list', { name: 'Tools' })).findByRole('button', { name: new RegExp(`^${name}`) }));
 }
