@@ -35,6 +35,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [The deploy](#the-deploy)
 - [The sources](#the-sources)
 - [Checking it](#checking-it)
+- [The grammar check](#the-grammar-check)
 - [What the move from the probe changed](#what-the-move-from-the-probe-changed)
 
 <!-- /toc -->
