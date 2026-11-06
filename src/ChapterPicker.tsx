@@ -214,7 +214,11 @@ export function ChapterPicker({
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="search"
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                // the list opened centred on his book: what he types brings the first matches to the top of the box, not above the field (mw-5r3p30.1118)
+                if (box.current) box.current.scrollTop = 0;
+              }}
               className="min-h-12 w-full rounded-lg border border-line bg-surface px-3 text-base text-fg"
             />
           </form>

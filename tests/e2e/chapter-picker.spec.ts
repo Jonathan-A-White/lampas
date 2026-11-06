@@ -149,6 +149,40 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     });
   }
 
+  // mw-5r3p30.1118: the list opens centred on the book he is in; typing must bring the first matches into view, not leave them above the field
+  for (const height of [844, 500]) {
+    test(`typing g in Choose a book at Psalms lists from Genesis, wholly below the field (viewport 390x${height})`, async ({ page }) => {
+      await openUnlocked(page);
+      await page.goto('/#/?b=psa&c=23');
+      await expect(page.getByRole('heading', { name: 'Psalms 23', level: 1 })).toBeVisible();
+      await page.getByRole('heading', { name: 'Psalms 23', level: 1 }).getByRole('button').click();
+      const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
+      const search = picker.getByRole('searchbox', { name: 'Search books' });
+      await expect(search).toBeFocused();
+      const list = picker.getByTestId('chapter-picker-box');
+      // opened centred on Psalms: scrolled down
+      await expect.poll(() => list.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+      // the keyboard comes up: the viewport shrinks after focusing
+      await page.setViewportSize({ width: 390, height });
+      await page.keyboard.type('g');
+      await expect(search).toHaveValue('g');
+      await expect(picker.locator('[data-book]').first()).toHaveAttribute('data-book', 'gen');
+      await expect.poll(() => list.evaluate((el) => el.scrollTop)).toBe(0);
+      const field = (await search.boundingBox())!;
+      const first = (await picker.locator('[data-book]').first().boundingBox())!;
+      expect(first.y).toBeGreaterThanOrEqual(field.y + field.height);
+      const listBox = (await list.boundingBox())!;
+      expect(first.y + first.height).toBeLessThanOrEqual(listBox.y + listBox.height);
+      await shot(page, `chapter-picker-typed-g-390x${height}`);
+
+      // cleared: the list shows from Genesis too (a cleared field is the whole list from its top, as on a first look)
+      await search.fill('');
+      await expect(picker.locator('[data-book]')).toHaveCount(66);
+      await expect.poll(() => list.evaluate((el) => el.scrollTop)).toBe(0);
+      expect(((await picker.locator('[data-book]').first().boundingBox())!.y)).toBeGreaterThanOrEqual(field.y + field.height);
+    });
+  }
+
   test('Escape and the backdrop close Choose a book while the search field is focused', async ({ page }) => {
     const picker = await openPicker(page);
     await expect(picker.getByRole('searchbox', { name: 'Search books' })).toBeFocused();
