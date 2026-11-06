@@ -569,7 +569,7 @@ npm run lxx:pending -- --book gen --batch 1                 # prints the batch a
 npm run lxx:choose -- --book gen --batch 1 --from <file>    # checks the choices and writes data/lxx/choices/gen-01.tsv
 ```
 
-0. Build the book's Morpheus cache first, when `data/lxx/morpheus/<book>.tsv` is not there (a fresh worktree has none; `lxx:pending` refuses without it): `sg docker -c 'npm run lxx:derive -- --book gen'` makes it in a minute and prints `Morpheus gave N words candidates`.
+0. In a fresh worktree on the Laptop, run `npm run lxx:link` first: it symlinks the git-ignored `data/raw` and `data/lxx/morpheus` from `/home/jwhite/lampas` (idempotent; on a host without that checkout it prints one line and exits 0; `npm run lxx:link -- --unlink` removes only the links it made, never a real directory, e.g. before a dry `lxx:ship` that must see its own data; story mw-u2w5klk.288). Then build the book's Morpheus cache, when `data/lxx/morpheus/<book>.tsv` is not there (a fresh worktree has none; `lxx:pending` refuses without it): `sg docker -c 'npm run lxx:derive -- --book gen'` makes it in a minute and prints `Morpheus gave N words candidates`.
 1. Run `lxx:pending` and read it. Each verse is printed whole with the words to choose marked ⟦like this⟧; under it, a line for each of them: its reference, its form, and its candidates as `lemma parsing (support)`, most frequent first, or `no candidate`.
 2. Write the choices in a file outside the repo (`/tmp/gen-01.txt`), one line a word, in the order of the listing: `ref parsing`, then the lemma when two candidates share that parsing, then `?` when unsure or `guess`:
    `Gen.1:2#16 V-IPI-3S ?` · `Gen.1:7#15 R-ASN ὅς, ἥ` · `Gen.1:14#5 V-APM-3P γίνομαι guess`. A line starting `#` is a comment.
@@ -617,7 +617,7 @@ The rate (the share of the second pass's choices that differ from the first's in
 
 - *Title:* `Lampas Septuagint, <Book> batch <n> (chapters <a>-<b>): the model's choices for <N> pending words`
 - *Path:* rig `lampas`; files: `data/lxx/choices/<book>-<nn>.tsv` and nothing else; size M.
-- *What:* run `npm run lxx:pending -- --book <book> --batch <n>`, read every verse, write the choices, run `npm run lxx:choose -- --book <book> --batch <n> --from <file>`, commit `data/lxx/choices/<book>-<nn>.tsv`. The rules of 'A model session' apply.
+- *What:* first run `npm run lxx:link` (a fresh worktree's `data/raw` and Morpheus cache), then run `npm run lxx:pending -- --book <book> --batch <n>`, read every verse, write the choices, run `npm run lxx:choose -- --book <book> --batch <n> --from <file>`, commit `data/lxx/choices/<book>-<nn>.tsv`. The rules of 'A model session' apply.
 - *Acceptance:* (1) `data/lxx/choices/<book>-<nn>.tsv` exists, was written by `lxx:choose`, and has a row for each of the <N> pending words of the batch (`lxx:batches` gives the count); (2) the diff touches that file only; (3) the closing comment gives the counts chosen, unsure and guessed,
   lists the guesses with their lemma, and says what the session left in doubt; (4) `npm run lxx:report` still runs and the book's pending count has fallen by <N>.
 - *Recheck story:* the same, with `--recheck`, the file `data/lxx/recheck/<book>.tsv`, and the disagreement rate from `lxx:report` in the closing comment.
