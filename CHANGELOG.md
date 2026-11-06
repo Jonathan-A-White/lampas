@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.143
+_2026-11-06_
+- Fixed: A Septuagint word's own paradigm now fills the cell of the form found in the Septuagint (Genesis 1:2 ἀόρατος).
+- Fixed: Manage in the All lexicons sheet now always opens the Lexicons page, and no sheet is left over it.
+
 ## 0.7.142
 _2026-11-06_
 - New: The Lexicons and Grammars pages in your Logos library are now grouped under Hebrew and Greek headings, with the order inside each group kept.

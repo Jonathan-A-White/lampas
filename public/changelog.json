@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.143",
+    "date": "2026-11-06",
+    "story": "mw-u2w5klk.295",
+    "kind": "fixed",
+    "text": "A Septuagint word's own paradigm now fills the cell of the form found in the Septuagint (Genesis 1:2 ἀόρατος)."
+  },
+  {
+    "version": "0.7.143",
+    "date": "2026-11-06",
+    "story": "mw-5r3p30.1114",
+    "kind": "fixed",
+    "text": "Manage in the All lexicons sheet now always opens the Lexicons page, and no sheet is left over it."
+  },
+  {
     "version": "0.7.142",
     "date": "2026-11-06",
     "story": "mw-5r3p30.1117",
