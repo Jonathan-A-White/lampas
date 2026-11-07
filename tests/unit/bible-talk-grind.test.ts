@@ -1015,7 +1015,7 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(text).toContain("`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given");
     expect(text).toContain('Never invent a sermon');
     expect(text).toContain('say who preached it and on what text');
-    expect(text).toContain('When he asks to narrow');
+    expect(text).toContain('To narrow');
     const read = (name: string) => readJson(`grinds/examples/bible-talk/${name}.json`) as unknown as { request: { sermons?: { rows: { id: string; source: string; theme?: string }[] } }; expect: Record<string, Record<string, unknown>> };
     const on = read('sermon-on-the-passage');
     expect(on.request.sermons?.rows.map((r) => `${r.source}:${r.id}`)).toContain('spurgeon-ccel:104');

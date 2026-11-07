@@ -40,7 +40,7 @@ Say only what you know of the author's view, unquoted; the link is where he chec
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. When he asks to narrow (preacher, theme, date), answer with the rows that fit and link at most the best; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say the index lists none and offer In another book.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. To narrow (preacher, theme, date), answer with the rows that fit, linking the best; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say the index lists none and offer In another book, with no link.
 
 ### Links to a paradigm table
 
