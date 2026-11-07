@@ -359,14 +359,19 @@ describe('a Septuagint lemma with a comma is folded onto its headword’s file',
     expect(forms.some((f) => f.form === 'ὕδασιν' && f.source === 'nt')).toBe(true);
   });
 
-  it('a form both lists name is one entry, counted for both; a comma lemma whose headword nothing has keeps its own file; a lemma the New Testament has with the comma stays', () => {
+  it('a form both lists name is one entry, counted for both; a comma lemma whose headword nothing has is filed under its headword too (mw-u2w5klk.305); a lemma the New Testament has with the comma stays', () => {
     const entry = (form: string, code: string, count = 1): LemmaFormEntry => [form, code, count, 'gen', 1, 1];
     const folded = foldSeptuagint(
       new Map([['x, y', [entry('a', 'N-NSM')]], ['x', [entry('a', 'N-NSM', 2), entry('b', 'N-NSM')]], ['p, q', [entry('p', 'N-NSM')]], ['d, e', [entry('d', 'N-NSM')]]]),
       new Set(['d, e']),
     );
     expect(folded.get('x')).toEqual([entry('a', 'N-NSM', 3), entry('b', 'N-NSM')]);
-    expect([...folded.keys()].sort()).toEqual(['d, e', 'p, q', 'x']);
+    expect(folded.get('p')).toEqual([entry('p', 'N-NSM')]);
+    expect([...folded.keys()].sort()).toEqual(['d, e', 'p', 'x']);
+    // two lists with one headword meet in the headword's file
+    const same = foldSeptuagint(new Map([['ὅς, ἥ', [entry('ὅς', 'R-NSM')]], ['ὅς, ἥ, ὅ', [entry('ὅς', 'R-NSM'), entry('ἥ', 'R-NSF')]]]), new Set());
+    expect(same.get('ὅς')).toEqual([entry('ὅς', 'R-NSM', 2), entry('ἥ', 'R-NSF')]);
+    expect([...same.keys()]).toEqual(['ὅς']);
   });
 
   it('the files the build writes keep none of them split: no lxx lemma with a comma has a file when its headword has one', () => {
@@ -381,6 +386,15 @@ describe('a Septuagint lemma with a comma is folded onto its headword’s file',
       });
       expect(split).toEqual([]);
       expect(names.has('ὕδωρ, ὕδατος.json')).toBe(false);
+      // every Septuagint comma lemma of the fixtures is under its headword, whether or not a text has that headword alone: no file with a comma holds a Septuagint form
+      for (const lemma of ['ἔπω, ἐρῶ, εἶπον', 'οὕτω, οὕτως', 'ὅς, ἥ']) {
+        expect(names.has(`${lemma}.json`), lemma).toBe(false);
+        expect(file(headwordOf(lemma)).lxx!.length, lemma).toBeGreaterThan(0);
+      }
+      // the one list the New Testament has itself ('ἄρρην, ἄρσην') keeps its file, and the Septuagint's forms ride in it; no other file with a comma has any Septuagint form
+      const withComma = [...names].map((n) => n.replace(/\.json$/, '')).filter((lemma) => lemma.includes(',') && file(lemma).lxx);
+      expect(withComma).toEqual(['ἄρρην, ἄρσην']);
+      expect(file('ἄρρην, ἄρσην').f.length).toBeGreaterThan(0);
       const water = file('ὕδωρ');
       expect(water.f.length).toBeGreaterThan(0);
       expect(water.lxx!.some(([form, code, , book, chapter, verse]) => form === 'ὕδατος' && code === 'N-GSN' && book === 'gen' && chapter === 1 && verse === 2)).toBe(true);
@@ -409,5 +423,22 @@ describe('the app asks for a Septuagint comma lemma’s forms in its headword’
     expect(asked).toContain('/lemma-forms/ὕδωρ.json');
     expect(forms).toHaveLength(1);
     expect(forms[0]).toMatchObject({ form: 'ὕδατος', source: 'septuagint', also: { source: 'nt', book: 'mat' } });
+  });
+
+  it('Genesis 1:2 ὕδατος (lemma ὕδωρ, ὕδατος, read in the Septuagint) and Matthew 3:11 ὕδατι (lemma ὕδωρ) ask for one file; a list whose headword the New Testament lacks asks for the headword’s too', async () => {
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => {
+      const name = decodeURIComponent(url.split('?')[0]);
+      asked.push(name);
+      if (name === '/lemma-forms/ὕδωρ.json') return new Response(JSON.stringify({ l: 'ὕδωρ', f: [['ὕδατι', 'N-DSN', 2, 'mat', 3, 11]], lxx: [['ὕδατος', 'N-GSN', 3, 'gen', 1, 2]] }), { status: 200 });
+      if (name === '/lemma-forms/ἄρρην.json') return new Response(JSON.stringify({ l: 'ἄρρην', f: [], lxx: [['ἄρσεν', 'A-NSN', 1, 'gen', 1, 27]] }), { status: 200 });
+      return new Response('', { status: 404 });
+    });
+    await loadLemmaForms('ὕδωρ, ὕδατος', 'septuagint');
+    await loadLemmaForms('ὕδωρ', 'nt');
+    const files = asked.filter((name) => name.startsWith('/lemma-forms/') && !name.includes(','));
+    expect(files).toEqual(['/lemma-forms/ὕδωρ.json', '/lemma-forms/ὕδωρ.json']);
+    const male = await loadLemmaForms('ἄρρην, ἄρσην', 'septuagint');
+    expect(male.map((f) => f.form)).toEqual(['ἄρσεν']);
   });
 });
