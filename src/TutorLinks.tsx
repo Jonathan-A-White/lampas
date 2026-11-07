@@ -15,9 +15,10 @@ import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS, type TalkScope } from './services/talk';
 import { bibleFor } from './resources/logosBible';
 import { armFallback } from './resources/openApp';
-import { hebrewLinkLemma, mapChip, placeOf, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
+import { hebrewLinkLemma, mapChip, placeOf, sermonChip, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import { openMaps } from './maps/openMaps';
 import { useMaps } from './maps/useMaps';
+import { useTalkSermons } from './sermons/useSermons';
 import type { MapRef } from './maps/types';
 import type { StudyResource } from './resources';
 import { useGreekInterest } from './settings/useGreekInterest';
@@ -68,11 +69,13 @@ interface Group {
   paradigm?: { id: string; name: string };
   /** a map link: its chip opens that map in the app (openMaps), or, for a card of a link-only source (`open`), is a link to it */
   map?: { id: string; label: string; open?: { url: string; fallback?: string } };
+  /** a sermon link: its chip is a plain link to where the sermon lives (a Logos row arms its fallback), and does not close the Talk sheet */
+  sermon?: { label: string; open: { url: string; fallback?: string } };
   chips: LinkChip[];
 }
 
 /** The chips under an answer. `onLeave` closes the Talk sheet before the Reader opens a verse. `onWord` opens the word sheet of a Hebrew lemma over the Talk sheet (the Word chip is drawn only with it). `place` is the chapter the talk is about (none in a talk from a screen): a `map` link is drawn only for a map of it. `scope` is the talk the links are under: a `paradigm` link holds it, so the sheet comes back when Back returns from the table (src/talkReturn.ts); without it the table opens and Back finds the screen. */
-export function TutorLinks({ links, onLeave, onWord, place, scope }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef; scope?: TalkScope }) {
+export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef; verse?: number; scope?: TalkScope }) {
   const chosen = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
   const works = useLiveQuery(getWorks, []);
@@ -81,10 +84,13 @@ export function TutorLinks({ links, onLeave, onWord, place, scope }: { links: An
   const shown = links.slice(0, MAX_LINKS);
   // the maps of the chapter are read only for an answer that links one
   const mapCards = useMaps(place && shown.some((l) => l.kind === 'map') ? place : null);
+  // the sermons the tutor was told of (the talk's verse, else its chapter) are read only for an answer that links one
+  const sermonRows = useTalkSermons(place && shown.some((l) => l.kind === 'sermon') ? { book: place.book, chapter: place.chapter, ...(verse === undefined ? {} : { from: verse }) } : null);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
   if (!chosen || bibles === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
   if (place && shown.some((l) => l.kind === 'map') && mapCards === undefined) return null;
+  if (place && shown.some((l) => l.kind === 'sermon') && sermonRows === undefined) return null;
 
   const groups: Group[] = [];
   for (const [i, link] of shown.entries()) {
@@ -102,6 +108,9 @@ export function TutorLinks({ links, onLeave, onWord, place, scope }: { links: An
     } else if (link.kind === 'map') {
       const found = place && mapCards ? mapChip(link.map, mapCards) : null;
       if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
+    } else if (link.kind === 'sermon') {
+      const found = place && sermonRows ? sermonChip(link.sermon, sermonRows) : null;
+      if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, open: found.row.open }, chips: [] });
     } else if (link.kind === 'work') {
       // a work of his Logos library opens in Logos: nothing while Logos is Off
       const found = chosen.on.includes('logos') ? workChip(link.work, link.reference, works, link.place, level, shelf.map((row) => row.id)) : null;
@@ -111,7 +120,7 @@ export function TutorLinks({ links, onLeave, onWord, place, scope }: { links: An
       if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bibleFor(place.book, bibles), level) });
     }
   }
-  const drawn = groups.filter((g) => g.reader || g.setting || g.paradigm || g.map || (g.hebrew && onWord) || g.chips.length > 0);
+  const drawn = groups.filter((g) => g.reader || g.setting || g.paradigm || g.map || g.sermon || (g.hebrew && onWord) || g.chips.length > 0);
   if (drawn.length === 0) return null;
 
   return (
@@ -199,6 +208,18 @@ export function TutorLinks({ links, onLeave, onWord, place, scope }: { links: An
               >
                 Map
               </button>
+            ) : null}
+            {group.sermon ? (
+              <a
+                href={group.sermon.open.url}
+                aria-label={group.sermon.label}
+                data-fallback={group.sermon.open.fallback}
+                onClick={group.sermon.open.fallback ? () => armFallback((group.sermon as NonNullable<Group['sermon']>).open.fallback) : undefined}
+                {...(group.sermon.open.url.startsWith('https:') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                className={CHIP}
+              >
+                Sermon ↗
+              </a>
             ) : null}
             {group.chips.map((chip) => (
               <a

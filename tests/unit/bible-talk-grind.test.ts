@@ -1008,6 +1008,28 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     expect(none.expect.links).toEqual({ present: false });
   });
 
+  it('says when to give a sermon link, that only a row of `sermons` is named and how to narrow (mw-qtu3zvz.6), and has an example for the sermon, for narrowing and for none listed', () => {
+    const part = instructionParts(grind.kind as string).find(({ file }) => file.endsWith('200-links-to-his-study-resources.md'));
+    const text = (part?.text ?? '').replace(/\s+/g, ' ');
+    expect(text).toContain('### Links to a sermon');
+    expect(text).toContain("`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given");
+    expect(text).toContain('Never invent a sermon');
+    expect(text).toContain('say who preached it and on what text');
+    expect(text).toContain('When he asks to narrow');
+    const read = (name: string) => readJson(`grinds/examples/bible-talk/${name}.json`) as unknown as { request: { sermons?: { rows: { id: string; source: string; theme?: string }[] } }; expect: Record<string, Record<string, unknown>> };
+    const on = read('sermon-on-the-passage');
+    expect(on.request.sermons?.rows.map((r) => `${r.source}:${r.id}`)).toContain('spurgeon-ccel:104');
+    expect(on.expect['links.0.sermon']).toEqual({ equals: 'spurgeon-ccel:104' });
+    const narrowed = read('sermon-narrowed');
+    const grace = (narrowed.request.sermons?.rows ?? []).filter((r) => r.theme === 'Grace').map((r) => `${r.source}:${r.id}`);
+    expect(grace.length).toBeGreaterThan(1);
+    expect(narrowed.expect['links.0.sermon']).toEqual({ one_of: grace });
+    expect(narrowed.expect['links.1.sermon']).toEqual({ present: false });
+    const none = read('no-sermon-listed');
+    expect(none.request).not.toHaveProperty('sermons');
+    expect(none.expect.links).toEqual({ present: false });
+  });
+
   it('keeps the whole of the instructions under the 110,000 bytes of BIBLE_TALK_CEILING (mw-5r3p30.938; it was 99,500 and every story trimmed old rules to fit)', () => {
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
     expect(BIBLE_TALK_CEILING).toBe(110_000);

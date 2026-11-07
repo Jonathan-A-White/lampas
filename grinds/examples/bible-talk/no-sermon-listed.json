@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1",
+  "description": "Romans 5:8 is held and the request lists no sermons (the index has none here); asked 'is there a Spurgeon sermon on this?', the answer says plainly that the index lists none for this verse, offers In another book for his Logos sermon archives and carries no link.",
+  "request": {
+    "reference": "Romans 5:8",
+    "greek": "συνίστησιν δὲ τὴν ἑαυτοῦ ἀγάπην εἰς ἡμᾶς ὁ Θεός ὅτι ἔτι ἁμαρτωλῶν ὄντων ἡμῶν Χριστὸς ὑπὲρ ἡμῶν ἀπέθανεν",
+    "english": "But God demonstrates His own love toward us, in that while we were still sinners, Christ died for us.",
+    "verses": "5:8",
+    "question": "is there a Spurgeon sermon on this?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": []
+  },
+  "expect": {
+    "links": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

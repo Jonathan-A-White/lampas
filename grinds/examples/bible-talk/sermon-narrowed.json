@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1",
+  "description": "Romans 5:8 is held; the request lists a sermon of the verse and three that came in by a theme (Grace twice, Atonement once); asked 'only on grace', the answer lists the two Grace rows by title, preacher and text, leaves the others out, and links at most one of those two, none of the rest.",
+  "request": {
+    "reference": "Romans 5:8",
+    "greek": "συνίστησιν δὲ τὴν ἑαυτοῦ ἀγάπην εἰς ἡμᾶς ὁ Θεός ὅτι ἔτι ἁμαρτωλῶν ὄντων ἡμῶν Χριστὸς ὑπὲρ ἡμῶν ἀπέθανεν",
+    "english": "But God demonstrates His own love toward us, in that while we were still sinners, Christ died for us.",
+    "verses": "5:8",
+    "question": "only on grace",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": [],
+    "sermons": {
+      "rows": [
+        {
+          "id": "104",
+          "source": "spurgeon-ccel",
+          "title": "Love's Commendation",
+          "preacher": "Charles H. Spurgeon",
+          "ref": "Romans 5:8"
+        },
+        {
+          "id": "1064",
+          "source": "spurgeon-ccel",
+          "title": "Salvation All of Grace",
+          "preacher": "Charles H. Spurgeon",
+          "ref": "Ephesians 2:8",
+          "theme": "Grace"
+        },
+        {
+          "id": "3479",
+          "source": "spurgeon-ccel",
+          "title": "All of Grace",
+          "preacher": "Charles H. Spurgeon",
+          "ref": "Ephesians 2:8",
+          "theme": "Grace"
+        },
+        {
+          "id": "1191",
+          "source": "spurgeon-ccel",
+          "title": "For Whom Did Christ Die?",
+          "preacher": "Charles H. Spurgeon",
+          "ref": "Romans 5:6",
+          "theme": "Atonement"
+        }
+      ],
+      "themes": [
+        {
+          "topic": "themes-tcr1934:grace",
+          "label": "Grace"
+        },
+        {
+          "topic": "themes-torrey:atonement",
+          "label": "Atonement"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "contains": "All of Grace"
+    },
+    "links.0.sermon": {
+      "one_of": [
+        "spurgeon-ccel:1064",
+        "spurgeon-ccel:3479"
+      ]
+    },
+    "links.1.sermon": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
