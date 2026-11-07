@@ -1,8 +1,16 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { parseAttribution } from '../../src/attributionParse';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 412, height: 915 } });
+
+// the rows About holds, counted from ATTRIBUTION.md, the data the page is built from (src/attribution.ts reads it with the same parser), so a new credit does not break the count
+const ATTRIBUTION = parseAttribution(readFileSync('ATTRIBUTION.md', 'utf8'));
+const SECTIONS = ATTRIBUTION.sections.filter((s) => s.title !== null).map((s) => s.title as string);
+const BMA_NOTE_PARAGRAPHS = 2; // About.tsx: the Biblical Mastery Academy note's two paragraphs
+const EXPECTED_ROWS = 1 + BMA_NOTE_PARAGRAPHS + ATTRIBUTION.entries.length; // the intro, the note and every credit
 
 test('About credits the data at phone width, reached from Settings', async ({ page }) => {
   await openUnlocked(page);
@@ -77,15 +85,15 @@ test.describe('at 390x844', () => {
     await openUnlocked(page);
     await page.goto('/#/about');
     await expect(page.getByRole('heading', { name: 'About', exact: true, level: 1 })).toBeVisible();
-    const lines = await page.evaluate(() => {
-      const rows = [...document.querySelectorAll<HTMLElement>('main.screen section[aria-label="Texts and data"] li, main.screen section[aria-label="Type"] li, main.screen section[aria-label="Libraries the app runs on"] li, main.screen section[aria-label="Services and apps"] li, main.screen section[aria-label="Ideas and tools we borrowed"] li, main.screen section[aria-label="What built it"] li, main.screen blockquote + p, main.screen [data-bma-note] p')];
+    const lines = await page.evaluate((titles) => {
+      const rows = [...document.querySelectorAll<HTMLElement>([...titles.map((t) => `main.screen section[aria-label="${t}"] li`), 'main.screen blockquote + p', 'main.screen [data-bma-note] p'].join(', '))];
       return rows.map((el) => {
         const style = getComputedStyle(el);
         const content = el.getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
         return { text: el.innerText.slice(0, 40), lines: Math.round(content / parseFloat(style.lineHeight)) };
       });
-    });
-    expect(lines.length).toBe(48); // the intro, the credits and the licence notices of ATTRIBUTION.md; the Spurgeon and Matthew Henry sermon credits took it from 46
+    }, SECTIONS);
+    expect(lines.length).toBe(EXPECTED_ROWS); // the intro, the credits and the licence notices of ATTRIBUTION.md
     // the licence notices that must stay whole (CC BY 4.0, the maps' citation, the font copyrights, CCEL's terms line in the Spurgeon credit) may take a line or two more
     const LONG = /^(Tyndale House|TIPNR|Bible Mapper|Literata|Spurgeon)/;
     const tooLong = lines.filter((l) => l.lines > (LONG.test(l.text) ? 9 : 4)).map((l) => `${l.lines} lines: ${l.text}`);
