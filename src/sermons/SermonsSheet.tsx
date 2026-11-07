@@ -14,6 +14,8 @@ import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useOnline } from '../ui/online';
 import { sourceOf as themeSourceOf, type Theme } from '../themes';
 import { sermonsServiceKnown } from '../services/sermons';
+import { useAiAllowed } from '../gate/licenceContext';
+import { AskForPreacher } from './AskForPreacher';
 import { sourceOf } from './index';
 import { linkRowOf, linkRowOfHit, type LinkRow } from './merge';
 import type { ArchiveRow } from './sources/logos';
@@ -231,6 +233,23 @@ function FoundGroup({ query, offline, online }: { query: string; offline: boolea
   );
 }
 
+/** 'Ask for a preacher' at the sheet's foot (mw-qtu3zvz.6): a 44 px row that opens the form which tells the makers whom the index lacks. It goes to the mill, so without a licence it is greyed and says 'Needs a licence'. */
+function AskRow({ place }: { place: SermonPlace }) {
+  const allowed = useAiAllowed();
+  const [asking, setAsking] = useState(false);
+  return (
+    <div data-sermons-part="ask" className="pt-1">
+      <button type="button" data-ask-preacher-row disabled={!allowed} onClick={() => setAsking(true)} className={`${ROW} disabled:opacity-50`}>
+        <span className="min-w-0 flex-1">
+          <span className="block break-words">Ask for a preacher</span>
+          {allowed ? null : <span className="block text-sm font-normal text-muted">Needs a licence</span>}
+        </span>
+      </button>
+      {asking ? <AskForPreacher place={place} onClose={() => setAsking(false)} /> : null}
+    </div>
+  );
+}
+
 /** The bottom sheet the Sermons sheet is drawn in: the backdrop, the handle and Close, the heading, the scroll box. It takes the phone's Back, Escape and a swipe down on the handle as every sheet does. */
 function SermonsFrame({ label, onClose, children, heading }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode }) {
   const { drag, handle } = useSheetDrag(onClose);
@@ -310,6 +329,7 @@ export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: 
           {`: ${source.credit}`}
         </p>
       ))}
+      <AskRow place={place} />
     </SermonsFrame>
   );
 }

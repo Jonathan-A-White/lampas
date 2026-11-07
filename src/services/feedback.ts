@@ -111,6 +111,21 @@ export interface MoreRequest {
   app_version: string;
 }
 
+/** The most the context of an Ask for a preacher (the verse he was on and the sources he has On) may add to his reason: the text is at most MAX_FEEDBACK_CHARS in all. */
+export const MAX_PREACHER_CONTEXT = 400;
+
+/** The most of his own reason an Ask for a preacher carries: what is left of the schema's 1,200 after the context and the lines that join them. */
+export const MAX_PREACHER_WHY = MAX_FEEDBACK_CHARS - MAX_PREACHER_CONTEXT - 100;
+
+/** What the grind is sent from Ask for a preacher (Sermons sheet): the preacher or collection by name, then in `text` his reason (when he gave one), the verse he was reading and the sermon sources he has On; a link when he gave one. */
+export interface PreacherRequest {
+  kind: 'preacher';
+  name: string;
+  text: string;
+  url?: string;
+  app_version: string;
+}
+
 /** One miss the nightly run found worth a story: what to build, why, the screen the tutor missed it on and how many times since the last run. */
 export interface MissWorthAStory {
   title: string;
@@ -138,7 +153,7 @@ export function buildMissesRequest(misses: readonly MissWorthAStory[]): MissesRe
   return { kind: 'tutor-misses', text, summary: `Tutor misses worth a story: ${kept.length}`, misses: kept, app_version: __APP_VERSION__ };
 }
 
-export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | BookRequest | LibraryRequest | MoreRequest;
+export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | BookRequest | LibraryRequest | MoreRequest | PreacherRequest;
 
 /** The kinds of feedback; the bus announces one when the mill has it. */
 export type FeedbackKind = FeedbackRequest['kind'];
@@ -209,6 +224,22 @@ export function buildMoreRequest(kind: MoreKind, name: string, why = '', link = 
   return { kind, name: name.trim(), ...(text ? { text } : {}), ...(url ? { url } : {}), ...(memorizing ? { memorizing } : {}), app_version: __APP_VERSION__ };
 }
 
+/**
+ * The request of Ask for a preacher: the name trimmed, the link only when he gave one (https:// put in front of a bare link), and `text`: his reason (cut so the whole fits the schema's 1,200), then 'He was reading <verse>.' and
+ * 'Sermon sources On: <names>.' as lines of words, the sources cut at a whole name to MAX_PREACHER_CONTEXT, so the Mayor decides with the place he asked from in front of him.
+ */
+export function buildPreacherRequest(ask: { name: string; why?: string; link?: string; verse: string; sources: readonly string[] }): PreacherRequest {
+  const url = linkOf(ask.link ?? '');
+  const names: string[] = [];
+  for (const name of ask.sources) {
+    if (`Sermon sources On: ${[...names, name].join('; ')}.`.length > MAX_PREACHER_CONTEXT) break;
+    names.push(name);
+  }
+  const context = [`He was reading ${ask.verse}.`, names.length > 0 ? `Sermon sources On: ${names.join('; ')}.` : 'No sermon source is On.'].join('\n');
+  const why = (ask.why ?? '').trim().slice(0, MAX_PREACHER_WHY);
+  return { kind: 'preacher', name: ask.name.trim(), text: why ? `${why}\n\n${context}` : context, ...(url ? { url } : {}), app_version: __APP_VERSION__ };
+}
+
 /** The most a tutor-ask request may weigh, as JSON in UTF-8: what a talk's was (8,000; src/services/requestBudget.ts raised that to 9,000 for the digest of his shelf, mw-rfjjzd.10, which this request never carries). Greek is two bytes a letter, so the facts are what gives way. */
 export const MAX_ASK_BYTES = 8000;
 
@@ -244,11 +275,13 @@ function kept(request: FeedbackRequest, txid: string, sentAt: number, files: rea
       ? { summary: request.summary, words: request.text }
       : request.kind === 'book'
         ? { text: request.title, ...(request.resource ? { resource: request.resource } : {}) }
-        : request.kind === 'library'
-          ? { text: `My Logos library: ${request.usable} of ${request.books} books` }
-          : 'name' in request
-            ? { text: request.text ? `${request.name}: ${request.text}` : request.name }
-            : { text: request.text };
+        : request.kind === 'preacher'
+          ? { text: request.name }
+          : request.kind === 'library'
+            ? { text: `My Logos library: ${request.usable} of ${request.books} books` }
+            : 'name' in request
+              ? { text: request.text ? `${request.name}: ${request.text}` : request.name }
+              : { text: request.text };
   // a tutor-ask's files are the talk's pictures: the row says how many went (Your requests shows it)
   const pictures = request.kind === 'tutor-ask' && files.length > 0 ? { pictures: files.length } : {};
   return { txid, kind: request.kind, ...what, ...pictures, app_version: request.app_version, sentAt };

@@ -25,6 +25,12 @@ describe('the one feedback sender', () => {
     expect(calling.sort()).toEqual(['src/services/bookRequests.ts', 'src/services/feedback.ts', 'src/services/formCommands.ts', 'src/talk/makers.ts']);
   });
 
+  it("is what Ask for a preacher sends through (mw-qtu3zvz.6): its sheet calls askForPreacher (src/services/formCommands.ts), which calls submitFeedback, and the sheet never does", () => {
+    expect(text('src/sermons/AskForPreacher.tsx')).toMatch(/import \{[^}]*\baskForPreacher\b[^}]*\} from '\.\.\/services\/formCommands'/);
+    expect(text('src/sermons/AskForPreacher.tsx')).not.toMatch(/\bsubmitFeedback\b/);
+    expect(text('src/services/formCommands.ts')).toMatch(/submitFeedback\(buildPreacherRequest\(/);
+  });
+
   it('is the only code that sends the feedback kind: no other file asks the grind itself', () => {
     const others = sources('src').filter((f) => f !== 'src/services/feedback.ts' && f !== 'src/services/tutor.ts');
     for (const file of others) {
