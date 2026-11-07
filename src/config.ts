@@ -28,6 +28,12 @@ export const CHAIN: Chain = env.VITE_LAMPAS_CHAIN === 'mainnet' ? 'mainnet' : 't
 export const POSTERN_DOOR: string = env.VITE_POSTERN_DOOR ?? 'https://postern.allmymind.org';
 
 /**
+ * The sermon index service (the sermon-index repository's `sermons serve`, docs/sermons.md 'When online'): free to read, no licence and no device key, never the mill. VITE_SERMONS_URL sets it for a build;
+ * empty means there is no service to ask (the tests, tests/unit/sermons-service.test.ts) and the Sermons sheet shows the bundled index alone.
+ */
+export const SERMONS_URL: string = (env.VITE_SERMONS_URL ?? 'https://sermons.allmymind.org').trim().replace(/\/+$/, '');
+
+/**
  * Where the device key (a 32-byte private key as 64 hex chars) lives: localStorage, outside the Dexie
  * database. It is also the test seam (docs/testing.md): a test may write a known key here before boot.
  */

@@ -1,0 +1,205 @@
+{
+  "commit": "fd52b364fe0d8d7d8ea7ef905e8658b70db1ad09",
+  "note": "Copied from the sermon-index repository docs/api.md at fd52b364 (the Example: blocks; its TestDocExamples holds them to the server). Update by copying again and naming the new commit.",
+  "GET /v1/sermons?ref=rom.5.8": {
+    "ref": "Rom.5.8",
+    "total": 1,
+    "rows": [
+      {
+        "source": "spurgeon-20",
+        "id": "104",
+        "title": "Love's Commendation",
+        "preacher": "C. H. Spurgeon",
+        "date": null,
+        "url": "https://ccel.org/ccel/spurgeon/sermons02/sermons02.l.html",
+        "alt_url": "https://www.spurgeongems.org/sermon/chs104.pdf",
+        "kind": "link",
+        "ref": "Rom.5.8",
+        "role": "text",
+        "width": 1
+      }
+    ]
+  },
+  "GET /v1/sermons?ref=rom.5.8&tier=theme": {
+    "ref": "Rom.5.8",
+    "passage": {
+      "total": 1,
+      "rows": [
+        {
+          "source": "spurgeon-20",
+          "id": "104",
+          "title": "Love's Commendation",
+          "preacher": "C. H. Spurgeon",
+          "date": null,
+          "url": "https://ccel.org/ccel/spurgeon/sermons02/sermons02.l.html",
+          "alt_url": "https://www.spurgeongems.org/sermon/chs104.pdf",
+          "kind": "link",
+          "ref": "Rom.5.8",
+          "role": "text",
+          "width": 1
+        }
+      ]
+    },
+    "theme": {
+      "total": 1,
+      "rows": [
+        {
+          "source": "spurgeon-20",
+          "id": "1191",
+          "title": "For Whom Did Christ Die?",
+          "preacher": "C. H. Spurgeon",
+          "date": null,
+          "url": "https://ccel.org/ccel/spurgeon/sermons20/sermons20.viii_1.html",
+          "alt_url": "https://www.spurgeongems.org/sermon/chs1191.pdf",
+          "kind": "link",
+          "ref": "Rom.5.6",
+          "role": "text",
+          "width": 1,
+          "theme": {
+            "source": "themes-demo",
+            "topic": "atonement",
+            "label": "Atonement",
+            "part": null,
+            "part_label": null
+          }
+        }
+      ]
+    }
+  },
+  "GET /v1/sermons?ref=rom.5.8&tier=theme-only&theme=themes-demo:atonement": {
+    "ref": "Rom.5.8",
+    "passage": null,
+    "theme": {
+      "total": 1,
+      "rows": [
+        {
+          "source": "spurgeon-20",
+          "id": "1191",
+          "title": "For Whom Did Christ Die?",
+          "preacher": "C. H. Spurgeon",
+          "date": null,
+          "url": "https://ccel.org/ccel/spurgeon/sermons20/sermons20.viii_1.html",
+          "alt_url": "https://www.spurgeongems.org/sermon/chs1191.pdf",
+          "kind": "link",
+          "ref": "Rom.5.6",
+          "role": "text",
+          "width": 1,
+          "theme": {
+            "source": "themes-demo",
+            "topic": "atonement",
+            "label": "Atonement",
+            "part": null,
+            "part_label": null
+          }
+        }
+      ]
+    }
+  },
+  "GET /v1/themes?ref=rom.5.8": {
+    "ref": "Rom.5.8",
+    "total": 2,
+    "rows": [
+      {
+        "source": "themes-demo",
+        "topic": "love",
+        "label": "Love",
+        "part": 1,
+        "part_label": "Of God",
+        "ref": "Rom.5.8",
+        "see": [
+          "grace"
+        ],
+        "sermons": 1,
+        "verses": 3
+      },
+      {
+        "source": "themes-demo",
+        "topic": "atonement",
+        "label": "Atonement",
+        "part": null,
+        "part_label": null,
+        "ref": "Rom.5.6-Rom.5.11",
+        "see": [],
+        "sermons": 2,
+        "verses": 7
+      }
+    ]
+  },
+  "GET /v1/search?q=spurgeon+grace": {
+    "q": "spurgeon grace",
+    "rows": [
+      {
+        "kind": "sermon",
+        "source": "spurgeon-20",
+        "id": "37",
+        "title": "Law and Grace",
+        "ref": "Rom.5.20",
+        "url": "https://ccel.org/ccel/spurgeon/sermons01/sermons01.xxxvi.html",
+        "rank": 0.6157
+      },
+      {
+        "kind": "sermon",
+        "source": "spurgeon-20",
+        "id": "126",
+        "title": "Justification by Grace",
+        "ref": "Rom.3.24",
+        "url": "https://ccel.org/ccel/spurgeon/sermons03/sermons03.xx.html",
+        "rank": 0.6157
+      },
+      {
+        "kind": "sermon",
+        "source": "spurgeon-20",
+        "id": "330",
+        "title": "Reigning Grace",
+        "ref": "Rom.5.21",
+        "url": "https://ccel.org/ccel/spurgeon/sermons06/sermons06.xliv.html",
+        "rank": 0.6157
+      },
+      {
+        "kind": "sermon",
+        "source": "spurgeon-20",
+        "id": "385",
+        "title": "Exposition of the Doctrines of Grace",
+        "ref": null,
+        "url": "https://ccel.org/ccel/spurgeon/sermons07/sermons07.viii_1.html",
+        "rank": 0.6157
+      }
+    ]
+  },
+  "GET /v1/sermons?ref=Rom.5.99": {
+    "error": "bad_ref",
+    "detail": "ref 'Rom.5.99': verse past the chapter"
+  },
+  "GET /v1/sermons?ref=Rom.5&limit=2&offset=1": {
+    "ref": "Rom.5",
+    "total": 6,
+    "rows": [
+      {
+        "source": "spurgeon-20",
+        "id": "104",
+        "title": "Love's Commendation",
+        "preacher": "C. H. Spurgeon",
+        "date": null,
+        "url": "https://ccel.org/ccel/spurgeon/sermons02/sermons02.l.html",
+        "alt_url": "https://www.spurgeongems.org/sermon/chs104.pdf",
+        "kind": "link",
+        "ref": "Rom.5.8",
+        "role": "text",
+        "width": 1
+      },
+      {
+        "source": "spurgeon-20",
+        "id": "330",
+        "title": "Reigning Grace",
+        "preacher": "C. H. Spurgeon",
+        "date": null,
+        "url": "https://ccel.org/ccel/spurgeon/sermons06/sermons06.xliv.html",
+        "alt_url": "https://www.spurgeongems.org/sermon/chs330.pdf",
+        "kind": "link",
+        "ref": "Rom.5.21",
+        "role": "text",
+        "width": 1
+      }
+    ]
+  }
+}

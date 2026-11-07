@@ -32,6 +32,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // no sermon index service in the tests (src/config.ts SERMONS_URL): a test that wants one sets its address with setSermonsUrl (src/services/sermons.ts)
+    env: { VITE_SERMONS_URL: '' },
     globalSetup: ['./tests/global-setup.ts'],
     setupFiles: ['./tests/setup.ts'],
     // MW_TIMING (millwright docs/timing-tests.md): the rig's timing_tests leave the gate under skip and are alone under only (mw-5r3p30.712).
