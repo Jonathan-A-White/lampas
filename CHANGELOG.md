@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.151
+_2026-11-07_
+- New: Help now explains the Old Testament in Greek (Septuagint) setting, and the Preface names the Septuagint's sources.
+
 ## 0.7.149
 _2026-11-07_
 - New: The gear at the top of the Reader is now a Menu with two choices, Tools and Settings; Tools holds Your Logos library, Verse lists, Memorize, Paradigms, Words and Review.
