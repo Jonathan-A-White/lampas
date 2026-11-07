@@ -12,7 +12,6 @@ import { isOneVerse } from '../data/passage';
 import type { Chapter, Verse } from '../data/chapter';
 import { getStudyResources } from '../data/repositories';
 import type { WovenVerse } from '../data/weave';
-import { isSeptuagint } from '../reader/septuagint';
 import type { Lookup } from '../WordSheet';
 import { navigate } from '../nav/route';
 import { useDoorRoom } from '../tutor/doorRoom';
