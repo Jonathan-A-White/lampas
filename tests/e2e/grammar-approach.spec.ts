@@ -24,12 +24,14 @@ test('Settings > Grammar approach at phone width: the one path, the ladder, with
   );
   await page.reload();
 
-  await expect(page.locator('[data-approach-method]')).toBeVisible();
+  // Settings draws a path for each language whose dial stands at step 3 (the Hebrew ladder is a second, mw-fnvjof.17.30): this spec reads the Greek one
+  const greek = page.getByRole('group', { name: 'Grammar approach', exact: true });
+  await expect(greek.locator('[data-approach-method]')).toBeVisible();
   await expect(page.getByRole('radiogroup', { name: 'Grammar approach' })).toHaveCount(0);
-  await expect(page.locator('[data-approach-credit]')).toHaveCount(0);
-  await expect(page.locator('[data-next]')).toHaveCount(1);
-  await expect(page.locator('[data-approach-lessons] [data-lesson-title]').first()).toHaveText('The Greek alphabet');
-  expect(await page.locator('[data-approach-method]').evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+  await expect(greek.locator('[data-approach-credit]')).toHaveCount(0);
+  await expect(greek.locator('[data-next]')).toHaveCount(1);
+  await expect(greek.locator('[data-approach-lessons] [data-lesson-title]').first()).toHaveText('The Greek alphabet');
+  expect(await greek.locator('[data-approach-method]').evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
   // nothing makes the page wider than the phone
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 
@@ -40,7 +42,7 @@ test('Settings > Grammar approach at phone width: the one path, the ladder, with
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
 
   // a lesson's title is a button that opens its idea sheet (mw-86e9r1.42): the lesson of the marks, 48 px tall and inside the window
-  const alike = page.locator('[data-approach-lessons] [data-lesson-title]', { hasText: 'Words that sound alike' });
+  const alike = greek.locator('[data-approach-lessons] [data-lesson-title]', { hasText: 'Words that sound alike' });
   await alike.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   const alikeBox = await alike.boundingBox();
   expect(alikeBox?.height).toBeGreaterThanOrEqual(47.5);

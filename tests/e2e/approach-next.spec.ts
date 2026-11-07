@@ -56,10 +56,13 @@ const seeded = (page: Page) =>
       }),
   );
 
+// Settings holds one path per language whose dial stands at step 3 (the Hebrew ladder is a second, mw-fnvjof.17.30): the Greek path is the group named exactly 'Grammar approach'.
+const greekPath = (page: Page) => page.getByRole('group', { name: 'Grammar approach', exact: true });
+
 /** The title of the lesson Settings > Grammar approach marks Next, once the list is drawn. */
 async function settingsNext(page: Page): Promise<string> {
   await page.goto('/#/settings?group=greek');
-  const next = page.locator('[data-approach-lessons] li:has([data-next]) [data-lesson-title]');
+  const next = greekPath(page).locator('[data-approach-lessons] li:has([data-next]) [data-lesson-title]');
   await expect(next).toHaveCount(1);
   return (await next.textContent()) ?? '';
 }
@@ -96,7 +99,7 @@ test('the Next badge in Settings > Grammar approach sits on the lesson the Goal 
 
   // the shot shows the badge on The singular
   await page.goto('/#/settings?group=greek');
-  await page.locator('[data-approach-lessons] li:has([data-next])').evaluate((el) => el.scrollIntoView({ block: 'center' }));
-  await expect(page.locator('[data-approach-lessons] li:has([data-next]) [data-lesson-title]')).toHaveText('The singular');
+  await greekPath(page).locator('[data-approach-lessons] li:has([data-next])').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  await expect(greekPath(page).locator('[data-approach-lessons] li:has([data-next]) [data-lesson-title]')).toHaveText('The singular');
   await shot(page, 'approach-next');
 });
