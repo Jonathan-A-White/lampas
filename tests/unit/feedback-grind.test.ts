@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_REFS, MAX_RESOURCE_CHARS, MAX_SERIES_CHARS, MAX_TYPE_CHARS, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildLibraryRequest, buildMoreRequest, buildTutorAskRequest, isFeedbackAnswer, buildMissesRequest, MAX_MISSES } from '../../src/services/feedback';
+import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_REFS, MAX_RESOURCE_CHARS, MAX_SERIES_CHARS, MAX_TYPE_CHARS, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildLibraryRequest, buildMoreRequest, buildPreacherRequest, MAX_PREACHER_CONTEXT, buildTutorAskRequest, isFeedbackAnswer, buildMissesRequest, MAX_MISSES } from '../../src/services/feedback';
 import { KINDS } from '../../src/resources/catalogue';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
@@ -91,7 +91,8 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
   const ask = { text: 'Can this work with Olive Tree?', summary: 'He wants Lampas to work with Olive Tree.', screen: 'Goal', reference: 'Goal' };
 
   it('has a branch for each kind of feedback, and all are the same grist kind', () => {
-    expect(branches).toHaveLength(6);
+    expect(branches).toHaveLength(7);
+    expect(branch('preacher')).toBeDefined();
     expect(branch('book')).toBeDefined();
     expect(branch('library')).toBeDefined();
     expect(branch('grammar-approach')).toBeDefined();
@@ -311,5 +312,39 @@ describe('the tutor-misses kind and buildMissesRequest (the nightly run\'s forwa
     expect(request.misses[0].title).toHaveLength(120);
     expect(request.misses[0].why).toHaveLength(400);
     expect(validate(request, input as Schema)).toEqual([]);
+  });
+});
+
+describe('Ask for a preacher and buildPreacherRequest (mw-qtu3zvz.6)', () => {
+  it('names the preacher, then his reason, the verse he was on and the sources he has On, in text the schema accepts', () => {
+    const request = buildPreacherRequest({ name: '  Martyn Lloyd-Jones ', why: ' His Romans series. ', link: ' mljtrust.org ', verse: 'Romans 5:8', sources: ["Spurgeon's sermons (CCEL)", "Matthew Henry's sermons (Internet Archive scans)"] });
+    expect(request).toEqual({
+      kind: 'preacher',
+      name: 'Martyn Lloyd-Jones',
+      text: "His Romans series.\n\nHe was reading Romans 5:8.\nSermon sources On: Spurgeon's sermons (CCEL); Matthew Henry's sermons (Internet Archive scans).",
+      url: 'https://mljtrust.org',
+      app_version: __APP_VERSION__,
+    });
+    expect(validate(request, input as Schema)).toEqual([]);
+  });
+
+  it('leaves out the link he did not give, and says so when no source is On', () => {
+    const request = buildPreacherRequest({ name: 'Truth For Life', verse: 'Romans 5', sources: [] });
+    expect(request).toEqual({ kind: 'preacher', name: 'Truth For Life', text: 'He was reading Romans 5.\nNo sermon source is On.', app_version: __APP_VERSION__ });
+    expect(validate(request, input as Schema)).toEqual([]);
+  });
+
+  it('cuts the sources at a whole name and his reason so the text always fits the schema', () => {
+    const many = Array.from({ length: 40 }, (_, i) => `Source number ${i} of a long list`);
+    const request = buildPreacherRequest({ name: 'Ω'.repeat(120), why: 'α'.repeat(1200), link: `https://example.org/${'a'.repeat(280)}`, verse: 'Revelation 22:21', sources: many });
+    expect(validate(request, input as Schema)).toEqual([]);
+    const context = request.text.split('\n\n')[1];
+    expect(context.length).toBeLessThanOrEqual(MAX_PREACHER_CONTEXT + 40);
+    expect(context).toMatch(/Source number \d+ of a long list\.$/);
+  });
+
+  it('refuses a preacher request with a field it does not have', () => {
+    expect(validate({ kind: 'preacher', name: 'x', credit: { name: 'y' }, app_version: 'v' }, input as Schema)).not.toEqual([]);
+    expect(validate({ kind: 'preacher', text: 'why', app_version: 'v' }, input as Schema)).not.toEqual([]);
   });
 });

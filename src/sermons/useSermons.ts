@@ -9,6 +9,7 @@ import { subscribe } from '../events/bus';
 import { useLogosOn } from '../useLogosOn';
 import { fetchThemeSermons, search, sermonsServiceKnown, type ServiceHit, type ServiceThemeSermon } from '../services/sermons';
 import { latestFor, sermonsFor, type SermonPlace, type SermonsFound } from './index';
+import { talkSermonsFor, type ListedSermon } from './forTutor';
 import { logosArchives, type ArchiveRow } from './sources/logos';
 
 export function useSermons(place: SermonPlace | null): SermonsFound | undefined {
@@ -133,4 +134,26 @@ export function useThemeSermons(key: string | null): ThemeSermons {
   }, [key]);
   if (key === null) return { status: 'idle' };
   return state?.key === key ? state.answer : { status: 'asking' };
+}
+
+/**
+ * The rows the tutor was told of for a talk on `place` (src/sermons/forTutor.ts talkSermonsFor), which a `sermon` link of its answer is found among: `undefined` while they are read, `[]` where there are none; nothing is read for a null place.
+ * It asks again when a sermon source or a theme list is switched.
+ */
+export function useTalkSermons(place: SermonPlace | null): ListedSermon[] | undefined {
+  const [switches, setSwitches] = useState(0);
+  useEffect(() => subscribe('setting-changed', (event) => (event.key.startsWith('sermons.') || event.key.startsWith('themes.') || event.key === 'resource.logos') && setSwitches((n) => n + 1)), []);
+  const key = place ? `${place.book}.${place.chapter}.${place.from ?? ''}.${switches}` : '';
+  const [held, setHeld] = useState<{ key: string; rows: ListedSermon[] } | undefined>();
+  useEffect(() => {
+    if (!place) return;
+    let alive = true;
+    talkSermonsFor(place).then((answer) => alive && setHeld({ key, rows: answer?.rows ?? [] }));
+    return () => {
+      alive = false;
+    };
+    // the place is the key: a new object of the same place asks nothing again
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+  return held?.key === key ? held.rows : undefined;
 }

@@ -1,0 +1,16 @@
+{
+  "description": "Ask for a preacher on the Sermons sheet: the preacher he wants indexed, his reason, a link, the verse he was reading and the sermon sources he has On; the mill forwards it to the Mayor and answers {\"status\":\"sent\"}.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "preacher",
+    "name": "Martyn Lloyd-Jones",
+    "text": "His Romans series is the one I would listen to.\n\nHe was reading Romans 5:8.\nSermon sources On: Spurgeon's sermons (CCEL); Matthew Henry's sermons (Internet Archive scans).",
+    "url": "https://www.mljtrust.org",
+    "app_version": "0.7.160"
+  },
+  "expect": {
+    "status": {
+      "equals": "sent"
+    }
+  }
+}

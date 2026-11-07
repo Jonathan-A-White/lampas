@@ -212,3 +212,27 @@ describe('a word link to a Hebrew lemma (mw-gdcyf98.20)', () => {
     expect(chips[1].url).toBe('logosres:LLS:46.30.16;hw=%D7%A8%D7%90%D7%A9%D7%99%D7%AA');
   });
 });
+
+describe('a sermon link (mw-qtu3zvz.6)', () => {
+  const sermon = { kind: 'sermon', sermon: 'spurgeon-ccel:104' };
+
+  it('is optional like the others: the schema and the guard take {kind: sermon, sermon: <source>:<id>} within the three', () => {
+    const value = { ...base, links: [sermon, verse, word] };
+    expect(validate(value, schema), JSON.stringify(value)).toEqual([]);
+    expect(isTalkAnswer(value)).toBe(true);
+    expect(validate({ ...base, links: [sermon, sermon, sermon, sermon] }, schema)).not.toEqual([]);
+  });
+
+  it.each([
+    ['no sermon id', { kind: 'sermon' }],
+    ['an empty id', { kind: 'sermon', sermon: '' }],
+    ['a map id beside it', { kind: 'sermon', sermon: 'spurgeon-ccel:104', map: 'Ararat' }],
+  ])('refuses %s in both', (_, link) => {
+    expect(validate({ ...base, links: [link] }, schema)).not.toEqual([]);
+    expect(isTalkAnswer({ ...base, links: [link] })).toBe(false);
+  });
+
+  it("the schema says the id is a row of the request's sermons and never one not listed", () => {
+    expect(JSON.stringify(schema.properties?.links)).toMatch(/row of the request's `sermons.rows`, exactly as given; never one not listed/);
+  });
+});

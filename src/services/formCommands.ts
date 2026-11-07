@@ -11,7 +11,7 @@ import { formCommand, type FormArgs } from '../formHelper/formHelper';
 import { appendToVerseList, createVerseList, listVerseLists } from '../data/repositories';
 import { referencesLine } from '../lists/canonical';
 import { NEW_LIST_CHOICE, saveListForm } from '../share/saveListForm';
-import { buildFeedbackRequest, submitFeedback } from './feedback';
+import { buildFeedbackRequest, buildPreacherRequest, submitFeedback } from './feedback';
 import type { MillFile } from './mill';
 
 /** What the sheet or form gives its command: what it holds beside the fields, and what it wants told. */
@@ -53,6 +53,21 @@ export function approachCommand(hooks: ApproachHooks = {}): Command {
 }
 
 export const askForApproachCommand = approachCommand();
+
+/** What Ask for a preacher sends (src/sermons/AskForPreacher.tsx): the preacher or collection, his reason and link when he gave them, the verse he was on and the names of the sermon sources he has On. */
+export interface PreacherAsk {
+  name: string;
+  why?: string;
+  link?: string;
+  verse: string;
+  sources: readonly string[];
+}
+
+/** Sends Ask for a preacher: one 'feedback' grist of the kind preacher, forwarded to the Mayor, through submitFeedback (the one sender), and kept in Your requests. Throws a TutorError when it could not go. */
+export async function askForPreacher(ask: PreacherAsk, hooks: SendHooks = {}): Promise<void> {
+  await submitFeedback(buildPreacherRequest(ask), { signal: hooks.signal?.() });
+  hooks.onSent?.();
+}
 
 /** What Save as a list did, for the sheet that ran it: the list to Open (none when it saved nothing) and the line it shows. */
 export type ListSaved = { id: number; line: string } | { id: null; line: string };

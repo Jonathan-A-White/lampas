@@ -12,6 +12,8 @@ Every grind's instructions stay under 100,000 bytes, as `cat grinds/<kind>.instr
 
 **Bible talk, maps (mw-zbjgn3r.4).** The request may carry `maps` (the maps of the passage's chapter, `{id, source, title, period, places}`, at most 12, Bible Mapper's first and at most two Logos rows last, titled '(opens in Logos)'; docs/maps.md 'The tutor brings up maps') and the answer's `links` may carry `{kind: 'map', map: <id>}`, an id of a line of `maps`. The rule is the `### Links to a map` paragraph of part 200, and the examples are `map-of-the-passage`, `map-in-logos` and `no-map-listed`; verse-ask has neither the field nor the link.
 
+**Bible talk, sermons (mw-qtu3zvz.6).** The request may carry `sermons` (`{rows, themes}`: the sermons of the passage's verse or chapter, `{id, source, title, preacher?, ref, theme?}` at most 8, and its themes, at most 6; docs/sermons.md 'The tutor') and the answer's `links` may carry `{kind: 'sermon', sermon: '<source>:<id>'}`, a row of `sermons.rows`. The rule is the `### Links to a sermon` paragraph of part 200, and the examples are `sermon-on-the-passage`, `sermon-narrowed` and `no-sermon-listed`; verse-ask has neither the field nor the link. The feedback grind gained the kind `preacher` (Ask for a preacher), with the example `feedback/ask-for-preacher`.
+
 <!-- toc -->
 
 - [copywork (mw-5r3p30.899, dictation mw-5r3p30.900)](#copywork-mw-5r3p30899-dictation-mw-5r3p30900)

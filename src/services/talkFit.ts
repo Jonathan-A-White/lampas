@@ -49,7 +49,10 @@ export const trimShelfDigest: Cut<TalkRequest> = (request) =>
 /** The maps of the passage's chapter (mw-zbjgn3r.4) go whole, after the shelf digest: a map the tutor is not told of is a link it does not offer; null when the request has none. */
 export const dropMaps: Cut<TalkRequest> = (request) => (request.maps ? without(request, 'maps') : null);
 
-/** The variants of the held verses (mw-9ji6ek0.7) go whole, right after the maps: the talk still has the text and the settings, and the tutor can ask for the fact `variants`; null when the request has none. */
+/** The sermons of the passage (mw-qtu3zvz.6) go whole, right after the maps: a sermon the tutor is not told of is a link it does not offer; null when the request has none. */
+export const dropSermons: Cut<TalkRequest> = (request) => (request.sermons ? without(request, 'sermons') : null);
+
+/** The variants of the held verses (mw-9ji6ek0.7) go whole, right after the maps and the sermons: the talk still has the text and the settings, and the tutor can ask for the fact `variants`; null when the request has none. */
 export const dropVariants: Cut<TalkRequest> = (request) => (request.variants ? without(request, 'variants') : null);
 
 /** The passages the tutor fetched older than the newest one go, the oldest first (the last in the list, newest first), before anything of the talk's own is cut (mw-5r3p30.734); null when one or none is held. */
@@ -198,6 +201,7 @@ export const bibleTalkSteps = (held: number): readonly Cut<TalkRequest>[] => {
     trimGreekWordsWhileHistory,
     trimShelfDigest,
     dropMaps,
+    dropSermons,
     dropVariants,
     dropOlderHeldPassage,
     dropRusty,

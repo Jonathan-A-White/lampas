@@ -16,6 +16,7 @@ import { CATALOGUE, WORK_GROUPS, type CatalogueEntry, type Kind, type WorkGroup 
 import { TUTOR_KINDS } from './workIds';
 import type { LibraryRow } from '../data/db';
 import type { MapCard } from '../maps/types';
+import type { SermonRow } from '../sermons/types';
 import { WORKS_BYTES } from '../services/requestBudget';
 import { pinnedFirst } from './logos';
 import { bibleRef } from './logosBible';
@@ -271,4 +272,10 @@ function bookChip(id: string, place: TutorPlace | null, shelf: readonly string[]
 export function mapChip(id: string, cards: readonly MapCard[]): { label: string; card: MapCard } | null {
   const card = cards.find((c) => c.id === id && c.kind !== 'video');
   return card ? { label: `Map: ${card.title}${card.open ? ' ↗' : ''}`, card } : null;
+}
+
+/** The chip of a `sermon` link (mw-qtu3zvz.6): 'Sermon: <title> ↗' for the row among `rows` (the sermons the request listed) whose `<source>:<id>` is `id`, a plain link to where the sermon lives. Null for an id the rows lack: a sermon the tutor was not told of draws nothing. */
+export function sermonChip(id: string, rows: readonly SermonRow[]): { label: string; row: SermonRow } | null {
+  const row = rows.find((r) => `${r.source}:${r.id}` === id);
+  return row ? { label: `Sermon: ${row.title} ↗`, row } : null;
 }

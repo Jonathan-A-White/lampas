@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1",
+  "description": "Romans 5:8 is held and the request lists the sermons of the verse, Spurgeon's Love's Commendation first; asked 'is there a Spurgeon sermon on this?', the answer names Love's Commendation, says Spurgeon preached it on this verse, and carries one sermon link, to spurgeon-ccel:104.",
+  "request": {
+    "reference": "Romans 5:8",
+    "greek": "συνίστησιν δὲ τὴν ἑαυτοῦ ἀγάπην εἰς ἡμᾶς ὁ Θεός ὅτι ἔτι ἁμαρτωλῶν ὄντων ἡμῶν Χριστὸς ὑπὲρ ἡμῶν ἀπέθανεν",
+    "english": "But God demonstrates His own love toward us, in that while we were still sinners, Christ died for us.",
+    "verses": "5:8",
+    "question": "is there a Spurgeon sermon on this?",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": [],
+    "sermons": {
+      "rows": [
+        {
+          "id": "104",
+          "source": "spurgeon-ccel",
+          "title": "Love's Commendation",
+          "preacher": "Charles H. Spurgeon",
+          "ref": "Romans 5:8"
+        },
+        {
+          "id": "3392",
+          "source": "spurgeon-ccel",
+          "title": "Justification by Faith",
+          "preacher": "Charles H. Spurgeon",
+          "ref": "Romans 5:1"
+        },
+        {
+          "id": "510",
+          "source": "spurgeon-ccel",
+          "title": "Peace By Believing",
+          "preacher": "Charles H. Spurgeon",
+          "ref": "Romans 5:1"
+        }
+      ],
+      "themes": [
+        {
+          "topic": "themes-tcr1934:love-hatred",
+          "label": "Love-Hatred"
+        },
+        {
+          "topic": "themes-torrey:atonement",
+          "label": "Atonement"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "answer": {
+      "contains": "Love's Commendation"
+    },
+    "links.0.sermon": {
+      "equals": "spurgeon-ccel:104"
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Feedback Request 1",
-  "description": "Feedback to the makers, forwarded to the Mayor. Six forms: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), book (Ask for a book: one book of his Logos library, by title, with the row's Logos details when he picked it from his list), library (Ask the makers about these: the whole list of an import, once, as counts by Logos type with the usable rows attached as library.csv), the three short forms of Settings > Ask for more: approach (an approach or programme), text and translation, and tutor-misses (sent by the nightly tutor-weights run, not by him: what the tutor wanted that the app lacks, when it is worth a story).",
+  "description": "Feedback to the makers, forwarded to the Mayor. Seven forms: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), book (Ask for a book: one book of his Logos library, by title, with the row's Logos details when he picked it from his list), library (Ask the makers about these: the whole list of an import, once, as counts by Logos type with the usable rows attached as library.csv), the three short forms of Settings > Ask for more: approach (an approach or programme), text and translation, preacher (Ask for a preacher on the Sermons sheet: a preacher or collection he would like indexed, with the verse he was on and the sermon sources he has On), and tutor-misses (sent by the nightly tutor-weights run, not by him: what the tutor wanted that the app lacks, when it is worth a story).",
   "type": "object",
   "anyOf": [
     {
@@ -402,6 +402,48 @@
               }
             }
           }
+        },
+        "app_version": {
+          "description": "The Lampas build he sent it from.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name",
+        "app_version"
+      ],
+      "properties": {
+        "kind": {
+          "description": "preacher asks for a preacher or a sermon collection to be added to the sermon index, from the Sermons sheet's Ask for a preacher.",
+          "type": "string",
+          "enum": [
+            "preacher"
+          ]
+        },
+        "name": {
+          "description": "The preacher or collection he wants, as he typed it (Martyn Lloyd-Jones, Truth For Life).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "text": {
+          "description": "Optional. Why he wants it, in his words, then the verse he was reading and the sermon sources he has On, as lines of words. Left out when he wrote nothing and the context is unknown.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        },
+        "url": {
+          "description": "Optional. A link to the preacher's or collection's page, when he gave one.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
         },
         "app_version": {
           "description": "The Lampas build he sent it from.",
