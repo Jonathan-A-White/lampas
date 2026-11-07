@@ -154,3 +154,66 @@ test('an old Settings address for a tool opens the tool', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   expect(new URL(page.url()).hash).toBe('#/words');
 });
+
+/** Puts the Immersive reader setting On in the app's store through raw IndexedDB, as the app wrote it. */
+async function keepImmersive(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction('settings', 'readwrite');
+          tx.objectStore('settings').put({ key: 'immersiveReader', value: 'on' });
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+  );
+}
+
+// mw-5r3p30.1143: on his phone (Mark 12, Weave on, the chips row under the header) the Menu showed one clipped row and no Settings, because the chips row painted over it.
+// Both rows must stand whole and on top at every phone size: the point at each row's centre is that row, and a tap on Settings opens Settings.
+for (const size of [{ width: 360, height: 740 }, { width: 384, height: 832 }, { width: 390, height: 844 }]) {
+  test.describe(`Menu over the chips row at ${size.width} x ${size.height}`, () => {
+    test.use({ viewport: size });
+
+    test('Tools and Settings are both whole and on top of the chips row, and a tap on Settings opens Settings', async ({ page }) => {
+      await openUnlocked(page);
+      await page.goto('/#/?b=mrk&c=12&view=english&weave=solid');
+      await expect(page.locator('[data-verse="1"]')).toBeVisible();
+      // the Immersive reader On wraps the header and chips in a box that clips what hangs below it (src/Away.tsx, .away-inner): that is what clipped his Menu
+      await keepImmersive(page);
+      await page.reload();
+      await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'on');
+      await expect(page.locator('[data-verse="1"]')).toBeVisible();
+      await expect(page.getByTestId('reader-chips')).toBeVisible();
+      await openMenu(page);
+      const chips = (await page.getByTestId('reader-chips').boundingBox())!;
+      const menu = (await page.getByRole('menu', { name: 'Menu' }).boundingBox())!;
+      // the Menu is laid over the chips row (else this check proves nothing)
+      expect(menu.y).toBeLessThan(chips.y + chips.height);
+      for (const name of ['Tools', 'Settings'] as const) {
+        const row = menuRow(page, name);
+        await expect(row).toBeVisible();
+        const box = (await row.boundingBox())!;
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        const hit = await row.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const at = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          return at !== null && el.contains(at);
+        });
+        expect(hit, `${name} is the element at its own centre`).toBe(true);
+        // and whole: the menu's box holds the row's, and the window holds the menu
+        expect(box.y).toBeGreaterThanOrEqual(menu.y - 0.5);
+        expect(box.y + box.height).toBeLessThanOrEqual(menu.y + menu.height + 0.5);
+      }
+      await menuRow(page, 'Settings').click();
+      await expect(settingsHeading(page)).toBeVisible();
+    });
+  });
+}
