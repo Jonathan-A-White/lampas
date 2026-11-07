@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.145
+_2026-11-07_
+- New: Hebrew now has its own grammar path in Settings, listing its lessons in order with the next one marked, beside the Greek one.
+
 ## 0.7.144
 _2026-11-06_
 - New: On Library > Bibles each Bible shows which parts (NT, OT, Apocrypha) it is set for, and choosing one asks which part, so it always agrees with Settings.

@@ -592,7 +592,7 @@ export const SETTINGS: readonly SettingEntry[] = [
       await setGrammarApproach(approach);
       publish({ kind: 'approach-changed', approach });
     },
-    { section: 'approach', dependsOn: greekFrom(3) },
+    { section: 'approach', dependsOn: depthFrom(3) },
   ),
   fromDefinition(handwritingSetting),
   ...voiceEntries,

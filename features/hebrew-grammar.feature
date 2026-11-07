@@ -36,6 +36,15 @@ Feature: Learning to read Hebrew: the grammar tiers
     When he taps Learn this idea
     Then the sheet was asked to teach the term "Qal"
 
+  @uc-grammar-approach @hebrew
+  Scenario: A Hebrew approach orders the Hebrew ladder
+    Given Settings is open on the Learning page with only Hebrew chosen, at Learning
+    Then the Hebrew grammar approach shows its method and its first lesson "The Hebrew alphabet" marked "Next"
+    And the Hebrew grammar approach lists its lessons from "The Hebrew alphabet" to "Word order" in the Hebrew ladder's order
+    And the Greek grammar approach is not drawn
+    When he has the Hebrew alphabet solid
+    Then the Hebrew lesson "Alef" is marked "Next"
+
   @uc-grammar-ladder @greek
   Scenario: A Greek grammar term's sheet is as it was
     Given Romans 8 is open and the Grammar sheet of "conjunction" is open

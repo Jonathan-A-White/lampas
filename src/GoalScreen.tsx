@@ -6,7 +6,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import { approachOf, DEFAULT_APPROACH } from './approaches';
+import { approachFor, approachOf, DEFAULT_APPROACH } from './approaches';
 import { NO_CHAPTER, type Chapter, type GreekWord } from './data/chapter';
 import { goalTitle } from './data/goal';
 import { BOOK_INDEX } from './data/bookIndex';
@@ -277,12 +277,11 @@ function HebrewGoalBody() {
   const ladder = ladderFor('hbo');
   const levels = useLiveQuery(async () => levelsOf(await listLevels()), []);
   const [ideaId, setIdeaId] = useState<string | null>(null);
-  const approachId = useLiveQuery(getGrammarApproach, []);
-  const approach = approachOf(approachId ?? DEFAULT_APPROACH) ?? approachOf(DEFAULT_APPROACH)!;
+  const approach = approachFor('hbo');
   const passages = useLiveQuery(listPassageLessons, []);
   const known = levels ?? new Map<string, Level>();
   const needs = { ideas: ladder.ideas.map((i) => ({ id: i.id, count: 0, example: { form: '', code: '', ref: '' } })) };
-  const next = learnNext(needs, approach, known, { goal: undefined, states: passages ?? new Map() }, 'hbo');
+  const next = learnNext(needs, approach, known, { goal: undefined, states: passages ?? new Map() });
   const learning = learningNow(known, 'hbo');
   const counts: Counts = {
     solid: ladder.ideas.filter((i) => known.get(i.id) === 'solid').length,

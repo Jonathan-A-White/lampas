@@ -2,17 +2,20 @@
 // (Qal) with Hebrew examples from Genesis 1 and its note In Hebrew; a Greek term's sheet beside it, unchanged. The word sheet does not link a Hebrew parsing's terms yet (story j2), so the Grammar sheet is opened
 // over a chapter directly, with the callbacks the word sheet would give it.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { GrammarSheet } from '../../src/GrammarSheet';
+import { SettingsScreen } from '../../src/SettingsScreen';
 import { db } from '../../src/data/db';
 import { loadChapter, type Chapter, type GreekWord } from '../../src/data/chapter';
 import { ladderFor } from '../../src/data/grammar/ladders';
 import { hebrewParseSegments, parseSegments } from '../../src/data/parseCode';
-import { setLanguages } from '../../src/data/repositories';
+import { setHebrewInterest, setLanguages } from '../../src/data/repositories';
+import { setLevel } from '../../src/data/repositories/grammarLevels';
+import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import type { Languages } from '../../src/settings/definitions/interest';
@@ -81,6 +84,10 @@ async function openSheet(book: string, number: number, term: string): Promise<vo
   );
   await grammar();
 }
+
+const hebrewApproach = () => screen.findByRole('group', { name: 'Hebrew grammar approach' });
+const lessonTitles = (group: HTMLElement): string[] => [...group.querySelectorAll('[data-approach-lessons] [data-lesson-title]')].map((el) => el.textContent ?? '');
+const markedNext = (group: HTMLElement): string | null => group.querySelector('[data-next]')?.closest('li')?.querySelector('[data-lesson-title]')?.textContent ?? null;
 
 const feature = await loadFeature('features/hebrew-grammar.feature');
 
@@ -192,6 +199,40 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the sheet was asked to teach the term {string}', (_, term: string) => {
       expect(taught).toEqual([term]);
       expect(ladderFor('hbo').ideaOfTerm(term)).toBe('he-qal');
+    });
+  });
+
+  Scenario('A Hebrew approach orders the Hebrew ladder', ({ Given, When, Then, And }) => {
+    Given('Settings is open on the Learning page with only Hebrew chosen, at Learning', async () => {
+      await fresh('hebrew');
+      await setHebrewInterest(3);
+      window.location.hash = '#/settings?group=greek';
+      render(<SettingsScreen />);
+      await hebrewApproach();
+    });
+    Then('the Hebrew grammar approach shows its method and its first lesson {string} marked {string}', async (_, title: string, mark: string) => {
+      const group = await hebrewApproach();
+      expect(group.querySelector('[data-approach-method]')?.textContent?.trim().length).toBeGreaterThan(40);
+      expect(group.querySelectorAll('[data-next]')).toHaveLength(1);
+      expect(group.querySelector('[data-next]')).toHaveTextContent(mark);
+      expect(markedNext(group)).toBe(title);
+    });
+    And('the Hebrew grammar approach lists its lessons from {string} to {string} in the Hebrew ladder\'s order', async (_, first: string, last: string) => {
+      const titles = lessonTitles(await hebrewApproach());
+      const ideas = HEBREW_LADDER.map((i) => i.title);
+      expect(titles.filter((t) => ideas.includes(t))).toEqual(ideas);
+      expect(titles[0]).toBe(first);
+      expect(ideas.at(-1)).toBe(last);
+    });
+    And('the Greek grammar approach is not drawn', () => {
+      expect(screen.queryByRole('group', { name: 'Grammar approach' })).toBeNull();
+    });
+    When('he has the Hebrew alphabet solid', async () => {
+      await setLevel('he-alphabet', 'solid', 'marked');
+    });
+    Then('the Hebrew lesson {string} is marked {string}', async (_, title: string, mark: string) => {
+      await waitFor(async () => expect(markedNext(await hebrewApproach())).toBe(title));
+      expect((await hebrewApproach()).querySelector('[data-next]')).toHaveTextContent(mark);
     });
   });
 

@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { IdeaSheetWithWord } from '../../IdeaSheetWithWord';
 import { AskApproachSheet } from '../../AskApproachSheet';
 import { useAiAllowed } from '../../gate/licenceContext';
-import { APPROACHES, passageKey, passageLabel, type ApproachLesson, type GrammarApproach } from '../../approaches';
+import { APPROACHES, DEFAULT_HEBREW_APPROACH, HEBREW_APPROACHES, passageKey, passageLabel, type ApproachLesson, type GrammarApproach } from '../../approaches';
 import type { Goal } from '../../data/goal';
 import { nextLesson } from '../../data/grammar/goalProgress';
-import { ideaOf } from '../../data/grammar/ladder';
+import { ideaOfAny as ideaOf } from '../../data/grammar/ladders';
 import type { PassageNeeds } from '../../data/grammar/needs';
-import { getGrammarApproach } from '../../data/repositories';
+import { getGrammarApproach, getInterestLevels } from '../../data/repositories';
 import { listLevels } from '../../data/repositories/grammarLevels';
 import { listPassageLessons } from '../../data/repositories/passageLessons';
 import { useGoalProgress } from '../../useGoalProgress';
@@ -82,6 +82,7 @@ export function ApproachPicker({
   goal,
   passages = new Map(),
   approaches = APPROACHES,
+  name = 'Grammar approach',
 }: {
   chosen: string;
   levels: ReadonlyMap<string, { level: 'solid' | 'frontier' | 'notYet' }>;
@@ -91,6 +92,8 @@ export function ApproachPicker({
   /** the passage lessons he has read or passed, by key: a passed one is marked Passed */
   passages?: ReadonlyMap<string, { state: 'read' | 'passed' }>;
   approaches?: readonly GrammarApproach[];
+  /** the group's name for a screen reader: the Hebrew ladder's path is 'Hebrew grammar approach' */
+  name?: string;
 }) {
   const approach = approaches.find((a) => a.id === chosen) ?? approaches[0];
   const [ideaId, setIdeaId] = useState<string | null>(null);
@@ -98,9 +101,9 @@ export function ApproachPicker({
   const choice = approaches.length > 1;
   return (
     // with one path there is no radiogroup to name the row, so the row's own content is the group
-    <div role={choice ? undefined : 'group'} aria-label={choice ? undefined : 'Grammar approach'}>
+    <div role={choice ? undefined : 'group'} aria-label={choice ? undefined : name}>
       {choice ? (
-        <div role="radiogroup" aria-label="Grammar approach" className="space-y-2">
+        <div role="radiogroup" aria-label={name} className="space-y-2">
           {approaches.map((a) => (
             <button
               key={a.id}
@@ -180,12 +183,29 @@ export const ApproachControl: Control = ({ row }) => {
   // the goal's needs, so Next is the lesson Learn next opens: the picker waits for them, and a goal whose chapters cannot be fetched marks as no goal
   const progress = useGoalProgress();
   const passages = useLiveQuery(listPassageLessons, []);
+  // the row is drawn from step 3 of either dial (depthFrom): each language whose dial stands there has its own path, named when both do (mw-5r3p30.914)
+  const dials = useLiveQuery(getInterestLevels, []);
   const needs = progress.status === 'ready' ? progress.needs : undefined;
   const goal = progress.status === 'ready' ? progress.goal : undefined;
+  const greek = dials === undefined || dials.grc >= 3;
+  const hebrew = dials !== undefined && dials.he >= 3;
   return (
     <SettingRow row={row}>
-      {approach !== undefined && levels !== undefined && progress.status !== 'loading' && passages !== undefined ? (
-        <ApproachPicker chosen={approach} levels={levels} needs={needs} goal={goal} passages={passages} />
+      {approach !== undefined && levels !== undefined && progress.status !== 'loading' && passages !== undefined && dials !== undefined ? (
+        <>
+          {greek ? (
+            <>
+              {hebrew ? <h3 className="pt-3 text-lg font-semibold">Greek</h3> : null}
+              <ApproachPicker chosen={approach} levels={levels} needs={needs} goal={goal} passages={passages} />
+            </>
+          ) : null}
+          {hebrew ? (
+            <>
+              {greek ? <h3 className="pt-3 text-lg font-semibold">Hebrew</h3> : null}
+              <ApproachPicker approaches={HEBREW_APPROACHES} chosen={DEFAULT_HEBREW_APPROACH} levels={levels} passages={passages} name="Hebrew grammar approach" />
+            </>
+          ) : null}
+        </>
       ) : null}
       <AskApproach />
     </SettingRow>
