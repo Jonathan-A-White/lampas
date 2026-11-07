@@ -1,9 +1,9 @@
-// scripts/sermons/osis.ts — reads an OSIS reference of the sermon-index repo's rows.jsonl (docs/sources.md there, 'References') into Lampas's book codes and numbering (src/data/canon.ts):
+// src/sermons/osis.ts — (moved from scripts/sermons/osis.ts by mw-qtu3zvz.5, which re-exports it; the Sermons sheet reads the service's references with it) reads an OSIS reference of the sermon-index repo's rows.jsonl (docs/sources.md there, 'References') into Lampas's book codes and numbering (src/data/canon.ts):
 // `Rom.5.8`, `Rom.5.1-Rom.5.11`, `Rom.5.12-Rom.6.4`, a whole chapter (`Ps.23`, `Rom.5-Rom.6`) or a whole book (`Jude`). A range over books is split into one part for each book it
 // touches, cut at that book's ends, so a row can be listed under every book (scripts/sermons-build.ts). The book is the OSIS name or Lampas's code, in any case.
 // The verse counts come from the caller (public/data/index.json), so a chapter or verse past the end is refused and a whole chapter has its last verse.
-import { CANON } from '../../src/data/canon';
-import type { SermonRef } from '../../src/data/sermonIndex';
+import { CANON } from '../data/canon';
+import type { SermonRef } from '../data/sermonIndex';
 
 /** The verse count of each chapter of a book, by Lampas's code; undefined for a book it does not know. */
 export type VerseCounts = (code: string) => readonly number[] | undefined;

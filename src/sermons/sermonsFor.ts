@@ -29,7 +29,11 @@ async function rowsOf(source: SermonSource, place: SermonPlace): Promise<SermonR
 }
 
 export async function sermonsForSources(sources: readonly SermonSource[], place: SermonPlace): Promise<SermonsFound> {
-  const answers = await Promise.all(sources.map((source) => rowsOf(source, place)));
+  return groupAnswers(await Promise.all(sources.map((source) => rowsOf(source, place))), place);
+}
+
+/** The groups of a place from each source's rows (in the sources' order, each source's rows together): the rows whose text overlaps the verse or passage first, the rest of the chapter after them. The merge with the service's rows (merge.ts) groups again with it. */
+export function groupAnswers(answers: readonly (readonly SermonRow[])[], place: SermonPlace): SermonsFound {
   const from = place.from;
   if (from === undefined) return { here: [], chapter: answers.flat() };
   const to = place.to ?? from;
@@ -38,7 +42,7 @@ export async function sermonsForSources(sources: readonly SermonSource[], place:
   for (const rows of answers) {
     const on = rows.filter((row) => overlaps(row.ref, place.chapter, from, to));
     // a stable sort: texts of one width stay in the source's order
-    here.push(...on.sort((a, b) => width(a.ref) - width(b.ref)));
+    here.push(...[...on].sort((a, b) => width(a.ref) - width(b.ref)));
     chapter.push(...rows.filter((row) => !on.includes(row)));
   }
   return { here, chapter };
