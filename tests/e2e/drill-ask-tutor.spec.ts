@@ -189,8 +189,10 @@ test('the floating ? over the results of a drill asks about them, and the tutor 
   await expect(sheet.locator('[data-turn]')).toHaveCount(1);
 
   // the request the mill received holds every question: the idea, what was asked, his answer, the right answer and right or wrong
-  expect(fake.received).toHaveLength(1);
-  const input = fake.received[0].input as { reference: string; question: string; screen: { name: string; facts: { label: string; value: string }[]; drill: Record<string, unknown>[] } };
+  // each start of the drill also sends the mill a 'drill-items' grist (its extra questions), so the tutor's ask is the one 'bible-talk' grist
+  const asksOfTutor = fake.received.filter((r) => r.grist.kind === 'bible-talk');
+  expect(asksOfTutor).toHaveLength(1);
+  const input = asksOfTutor[0].input as { reference: string; question: string; screen: { name: string; facts: { label: string; value: string }[]; drill: Record<string, unknown>[] } };
   expect(input.reference).toBe('Drill it');
   expect(input.question).toBe('Why did I get these wrong?');
   expect(input.screen.name).toBe('Drill it');
