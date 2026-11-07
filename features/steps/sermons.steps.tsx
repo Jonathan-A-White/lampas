@@ -37,6 +37,8 @@ interface Phone {
   /** a Maps source with a map of Romans 5, to show the Sermons door after the Maps door */
   maps?: boolean;
   sermons?: Parameters<typeof registerTestSermons>[0];
+  /** his Logos sermon archives (the catalogue's, by Resource ID) on the shelf, and whether Logos is On: Greg Laurie's On and J. D. Greear's Pinned, or (`only: 'off'`) Skip Heitzig's Off */
+  archives?: { logos: 'on' | 'off'; only?: 'off' };
 }
 
 let fetched: ChapterFetch;
@@ -60,7 +62,13 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   if (!book) throw new Error(`no book ${title}`);
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  if (phone.archives) {
+    await db.settings.put({ key: 'resource.logos', value: phone.archives.logos });
+    const shelf: { id: string; state: 'on' | 'pinned' }[] =
+      phone.archives.only === 'off' ? [] : [{ id: 'LLS:GRGLRSRMNRCH', state: 'on' }, { id: 'LLS:JDGRRSRMNRCHV', state: 'pinned' }];
+    await db.library.bulkPut(shelf.map((r) => ({ ...r, kind: 'sermons', since: 1 })));
+  }
   if (phone.view) await db.settings.put({ key: 'readerView', value: phone.view });
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });
@@ -77,6 +85,11 @@ const rowNamed = async (title: string): Promise<HTMLAnchorElement> => {
   return row;
 };
 const partTitles = async (): Promise<string[]> => [...(await sheetEl()).querySelectorAll('h3')].map((h) => squash(h.textContent));
+const archiveNamed = async (title: string): Promise<HTMLAnchorElement> => {
+  const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-archive-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
+  if (!row) throw new Error(`no archive ${title} in the sheet`);
+  return row;
+};
 const partRows = async (part: string): Promise<string[]> => {
   const group = await within(await sheetEl()).findByRole('group', { name: part });
   return [...group.querySelectorAll('[data-sermon-title]')].map((t) => squash(t.textContent));
@@ -136,6 +149,13 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const rowReads = async (_: unknown, title: string, line: string) => {
     await waitFor(async () => expect(squash((await rowNamed(title)).querySelector('[data-sermon-meta]')?.textContent)).toBe(line));
+  };
+  const archiveIsLink = async (_: unknown, title: string, url: string) => {
+    const row = await archiveNamed(title);
+    expect(row).toHaveAttribute('href', url);
+    const resource = /^logosres:([^;]+);(.*)$/.exec(url)!;
+    expect(row.getAttribute('data-fallback')).toBe(`https://ref.ly/logosres/${encodeURIComponent(resource[1])}?${resource[2]}`);
+    expect(row.className).toContain('min-h-11');
   };
   const back = async () => {
     act(() => window.history.back());
@@ -291,5 +311,49 @@ describeFeature(feature, ({ Scenario }) => {
       expect(fetched.requests.filter((url) => !url.startsWith('/'))).toEqual([]);
       expect(fetched.requests.filter((url) => url.includes('sermon'))).toEqual([]);
     });
+  });
+
+  const archiveOpened = (logos: 'on' | 'off', only?: 'off') => (_: unknown, title: string) => openOn(title, { archives: { logos, ...(only ? { only } : {}) } });
+  const opensWithThree = async (_: unknown, first: string, second: string, third: string) => {
+    await sheetEl();
+    await waitFor(async () => expect(await partTitles()).toEqual([first, second, third]));
+  };
+
+  Scenario('His Logos sermon archives are the In Logos group, the Pinned ones first', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On and two sermon archives on his shelf', archiveOpened('on'));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet opens with {string}, {string} and {string}', opensWithThree);
+    And('the part {string} holds {string} and {string}', async (_, part: string, a: string, b: string) => {
+      await waitFor(async () => expect([...(await within(await sheetEl()).findByRole('group', { name: part })).querySelectorAll('[data-sermon-title]')].map((t) => squash(t.textContent))).toEqual([a, b]));
+    });
+    And('the archive {string} reads {string}', async (_, title: string, line: string) => {
+      expect(squash((await archiveNamed(title)).querySelector('[data-sermon-meta]')?.textContent)).toBe(line);
+    });
+    And('the archive {string} is a link to {string} with the ref.ly address as its fallback and is 44 px tall', archiveIsLink);
+    And('the sheet still has {int} rows', async (_, n: number) => {
+      expect((await sheetEl()).querySelectorAll('a[data-sermon-row]')).toHaveLength(n);
+    });
+  });
+
+  Scenario('An archive that is Off, or one not on his shelf, is not in the group', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On and only an Off archive', archiveOpened('on', 'off'));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet opens with {string} and then {string}', opensWith);
+  });
+
+  Scenario('With Logos Off there is no In Logos group', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos Off and two sermon archives on his shelf', archiveOpened('off'));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet opens with {string} and then {string}', opensWith);
+  });
+
+  Scenario('A whole chapter opens each archive at the chapter', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On and two sermon archives on his shelf', archiveOpened('on'));
+    When('he taps the place line', tapPlaceLine);
+    And('he taps {string}', tapDoor);
+    Then('the archive {string} is a link to {string} with the ref.ly address as its fallback and is 44 px tall', archiveIsLink);
   });
 });

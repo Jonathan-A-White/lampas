@@ -64,7 +64,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Postern', use: 'Carries your questions and pictures to the tutor', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/postern' },
   { name: 'Twilio Verify', use: 'Sends the codes for a licence', licence: 'none needed; its terms', link: 'https://www.twilio.com/en-us/user-authentication-identity/verify' },
   { name: 'Claude', use: 'The tutor\'s model; pictures, drills, diagrams', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },
-  { name: 'Logos Bible Software', use: 'If on: links into your Logos, its Atlas and Commentary', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
+  { name: 'Logos Bible Software', use: 'If on: links into your Logos, its Atlas, Commentary and sermon archives', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
   { name: 'Audible', use: 'Opens The Word of Promise in your Audible', licence: 'yours; nothing copied', link: 'https://www.audible.com' },
   { name: 'Blue Letter Bible', use: 'Links a word to its Strong\'s entry', licence: 'its terms; links only', link: 'https://www.blueletterbible.org' },
   { name: 'STEPBible', use: 'Tyndale House data, TVTMS verse map; Strong\'s links', licence: 'CC BY 4.0; links', link: 'https://www.stepbible.org' },

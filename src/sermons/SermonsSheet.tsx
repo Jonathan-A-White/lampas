@@ -1,6 +1,7 @@
 // src/sermons/SermonsSheet.tsx — the Sermons sheet (mw-qtu3zvz.2, docs/sermons.md): 'Sermons for Romans 5:8' (a verse), 'Sermons for Romans 5:1-11' (a passage) or 'Sermons for Romans 5', the place's sermons grouped
 // as 'On this verse' ('On these verses') and 'In this chapter' (a group is absent when empty), each row 44 px with the title and, under it, the preacher, the date and where it opens. A row is a plain link
 // to the sermon where it lives; nothing is fetched until one is tapped, and offline the rows stay and the second line says 'Needs the internet'. openSermons(place) opens it; <SermonsHost /> (mounted once in App) draws it.
+// After them, 'In Logos' lists his Pinned and On sermon archives at the place, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos').
 // Under the title of a verse or a passage a 'Themes' line names the topics that carry it, and after 'In this chapter' come the sermons 'On <topic>' that share a topic with it (mw-qtu3zvz.4, docs/sermons.md 'The themes').
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -12,10 +13,11 @@ import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useOnline } from '../ui/online';
 import { sourceOf as themeSourceOf, type Theme } from '../themes';
 import { sourceOf } from './index';
+import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
 import type { SameTheme, SermonPlace, SermonRow } from './types';
-import { useSermons } from './useSermons';
+import { useArchives, useSermons } from './useSermons';
 import { useSameTheme, useThemes } from './useThemes';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
@@ -57,6 +59,39 @@ function Group({ title, rows, online, part }: { title: string; rows: SermonRow[]
       <div className="flex flex-col gap-2">
         {rows.map((row) => (
           <Row key={`${row.source}:${row.id}`} row={row} online={online} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** One archive of his shelf: a plain link into Logos at the place, with the ref.ly address armed as its fallback; nothing is fetched. */
+function Archive({ row }: { row: ArchiveRow }) {
+  const { url, fallback } = row.open;
+  return (
+    <a data-archive-row href={url} data-fallback={fallback} onClick={() => armFallback(fallback)} className={ROW}>
+      <span className="min-w-0 flex-1">
+        <span data-sermon-title className="block break-words">
+          {row.title}
+        </span>
+        <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
+          Opens in Logos
+        </span>
+      </span>
+      <span aria-hidden="true">↗</span>
+    </a>
+  );
+}
+
+/** 'In Logos': a row for each sermon archive of his shelf that is Pinned or On, the Pinned first; absent when there are none (and while Logos is Off). */
+function InLogos({ rows }: { rows: ArchiveRow[] }) {
+  if (rows.length === 0) return null;
+  return (
+    <div role="group" aria-label="In Logos" data-sermons-part="logos" className="pb-3">
+      <h3 className="pb-1 text-base font-semibold">In Logos</h3>
+      <div className="flex flex-col gap-2">
+        {rows.map((row) => (
+          <Archive key={row.id} row={row} />
         ))}
       </div>
     </div>
@@ -135,6 +170,7 @@ export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: 
   const found = useSermons(place);
   const themes = useThemes(place);
   const same = useSameTheme(place, found);
+  const archives = useArchives(place);
   const online = useOnline();
   const title = `Sermons for ${placeName(place)}`;
   const passage = place.from !== undefined && place.to !== undefined && place.to !== place.from;
@@ -159,6 +195,7 @@ export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: 
       {found ? <Group title={passage ? 'On these verses' : 'On this verse'} rows={found.here} online={online} part="here" /> : null}
       {found ? <Group title="In this chapter" rows={found.chapter} online={online} part="chapter" /> : null}
       {same ? <SameThemeGroups same={same} online={online} /> : null}
+      {archives ? <InLogos rows={archives} /> : null}
       {[...sources, ...named].map((source) => (
         <p key={source.id} data-sermon-credit className="pb-2 text-sm text-muted">
           <a href={source.homepage} target="_blank" rel="noopener noreferrer" className="underline">
