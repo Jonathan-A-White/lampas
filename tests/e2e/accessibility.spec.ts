@@ -166,7 +166,7 @@ const SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/#/library');
       await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
-      await expect(page.getByTestId('kind-row')).toHaveCount(7);
+      await expect(page.getByTestId('kind-row')).toHaveCount(8);
     },
   },
   {
