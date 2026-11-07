@@ -68,6 +68,8 @@ export type DiagramWord = ({ text: string; chunk: number } | { text: string; wor
   verse?: number;
   /** only on an English word the Weave shows in Greek (src/diagram/weave.ts): the verse's Greek word indexes drawn in its place (none: the chunk's other words, which the Greek has taken the place of) */
   weft?: number[];
+  /** only on the first English word of a chunk the Weave keeps in English but shows known Greek words before (WovenVerse.beside, src/diagram/weave.ts): the verse's Greek word indexes, drawn before the English in its text */
+  beside?: number[];
   /** only on a Hebrew word (mode 'hebrew'): its English gloss, drawn under it ('' where it has none) */
   gloss?: string;
 };
