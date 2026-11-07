@@ -385,7 +385,7 @@ test('online: when the service cannot be reached the bundled rows stand, the she
   await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
   const opened = performance.now();
-  await expect(sheet.locator('[data-sermons-latest]')).toHaveText('Offline: the bundled index', { timeout: 2000 });
+  await expect(sheet.locator('[data-sermons-latest]')).toHaveText('Offline: the bundled index', { timeout: 2000 }); // the window is the rule itself: the sheet says Offline within 2 s (docs/sermons.md 'When online')
   expect(performance.now() - opened).toBeLessThan(2500);
   const field = sheet.getByRole('searchbox', { name: 'Search sermons and themes' });
   await expect(field).toBeDisabled();
