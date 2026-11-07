@@ -9,6 +9,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Chapter, Verse } from '../data/chapter';
 import { listTurns, talkRef } from '../data/repositories';
+import { passageVerse, rangeOf } from '../data/passage';
 import type { OpenChapter } from '../data/readerChapter';
 import { publish } from '../events/bus';
 import { pendingReturn, takeReturn, watchReturn, type ReaderRequest } from '../nav/readerRequest';
@@ -44,6 +45,8 @@ export interface ReaderTutor {
   askAboutTerm(ask: TermAsk): void;
   askAboutNewWord(ask: NewWordAsk): void;
   openQuiz(): void;
+  /** the Talk sheet opens on the run of verses `first` to `last` (the range a hold on a verse number copied, mw-5r3p30.1074): its talk holds the whole range */
+  askAboutRange(first: number, last: number): void;
   /** the quiz of the unit the Verse view shows has a turn or a message on its way: the button then says Continue */
   quizStarted: boolean;
 }
@@ -161,6 +164,16 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     [askFrom],
   );
   // Quiz me: the quiz about the unit the view shows is begun when it has no turn yet and nothing is on its way; the button then says Continue.
+  const askAboutRange = useCallback(
+    (first: number, last: number) => {
+      const range = chapter ? rangeOf(chapter.verses, first, last, '') : undefined;
+      if (!range || range.last === range.first) return setTalkAbout(first);
+      setQuizUnit(null);
+      setPassageUnit(passageVerse(range));
+      setTalkAboutRaw(range.first);
+    },
+    [chapter, setTalkAbout],
+  );
   const quizKey = viewUnit ? scopeRef(BOOK, CHAPTER, { verse: viewUnit, quiz: true }) : null;
   const quizTurns = useLiveQuery(() => (quizKey ? listTurns(quizKey) : Promise.resolve([])), [quizKey]);
   const quizStarted = (quizTurns?.length ?? 0) > 0 || (quizKey !== null && states[quizKey] !== undefined);
@@ -174,5 +187,5 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     }
   }, [chapter, viewUnit, quizKey, quizTurns, states, say, TITLE]);
 
-  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutEnglishWord, askAboutTerm, askAboutNewWord, openQuiz, quizStarted };
+  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutEnglishWord, askAboutTerm, askAboutNewWord, openQuiz, askAboutRange, quizStarted };
 }

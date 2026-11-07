@@ -15,6 +15,7 @@ import { Away } from './Away';
 import { setImmersiveReader } from './appearance/appearanceSync';
 import { moveBox, useImmersive, useImmersiveSetting, useScrolledPercent } from './immersive';
 import { PlaceLine } from './PlaceLine';
+import { HoldRow } from './copy/HoldRow';
 import { useCopyHold } from './copy/useCopyHold';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
@@ -323,7 +324,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [keyOpen, setKeyOpen] = useState(false);
   const openKey = useCallback(() => setKeyOpen(true), []);
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
-  const copyHold = useCopyHold(chapter, view ? { view, woven, variants } : undefined, openChapter);
+  const copyHold = useCopyHold(chapter, view ? { view, woven, variants } : undefined, openChapter, layout);
   const closeSheet = useCallback(() => setLookup(null), []);
   const viewVerse = chapter && selected !== null ? chapter.verses.find((v) => v.n === selected) : undefined;
   // A heading's passage (the address `p`) opens the same view, with the passage as one Verse; a verse in the address wins.
@@ -425,7 +426,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     ai && chapter && !failed
       ? () => {
           stopReading();
-          setTalkAbout(viewUnit?.n ?? selected);
+          // the question mark tapped while the row of a hold is up asks about the range it holds (mw-5r3p30.1074); the row goes with it
+          const range = viewUnit === undefined ? copyHold.held : null;
+          copyHold.closeRow();
+          if (range && range.last > range.first) tutor.askAboutRange(range.first, range.last);
+          else setTalkAbout(viewUnit?.n ?? range?.first ?? selected);
         }
       : undefined,
     // the immersive reader (the bars away, no sheet over it) is the one screen with no tutor door
@@ -569,6 +574,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           {copyHold.said}
         </p>
       ) : null}
+      {copyHold.row ? <HoldRow row={copyHold.row} onReach={copyHold.reach} onShare={copyHold.share} onTouch={copyHold.touch} /> : null}
       {notice ? <LinkNotice text={notice} onDismiss={() => setNotice(null)} /> : null}
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
