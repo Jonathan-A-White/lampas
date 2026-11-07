@@ -51,8 +51,11 @@ test.beforeEach(async ({ page }) => {
   // the real lemma file (the New Testament's four forms of ἀόρατος) with the Septuagint's forms of it laid under lxx, as the build lays them
   await page.route('**/lemma-forms/*', async (route) => {
     const response = await route.fetch();
-    const file = (await response.json()) as { f: unknown[]; lxx?: unknown[] };
-    file.lxx = [['ἀόρατος', 'A-NSF', 1, 'gen', 1, 2]];
+    // a Septuagint comma lemma ('ὕδωρ, ὕδατος') has no file of its own: the build folds its forms into ὕδωρ's (mw-u2w5klk.297)
+    const file = (await response.json().catch(() => undefined)) as { l: string; f: unknown[]; lxx?: unknown[] } | undefined;
+    if (!file) return route.fulfill({ response });
+    if (file.l === 'ὕδωρ') file.lxx = [['ὕδατος', 'N-GSN', 1, 'gen', 1, 2]];
+    else file.lxx = [['ἀόρατος', 'A-NSF', 1, 'gen', 1, 2]];
     return route.fulfill({ response, json: file });
   });
 });
@@ -118,4 +121,23 @@ test('Genesis 1:1 ΑΡΧΗ, a word Swete prints in capitals: This word outlines 
   const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
   expect(fits.w).toBeLessThanOrEqual(fits.c);
   await shot(page, 'septuagint-own-paradigm-capitals');
+});
+
+test('Genesis 1:2 ὕδατος, a word whose Septuagint lemma has a comma (ὕδωρ, ὕδατος): This word is there and its cell is outlined, with the New Testament’s ὕδωρ forms laid too', async ({ page }) => {
+  await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
+  await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+  await forms(page).getByRole('button', { name: 'This word' }).click();
+  await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
+
+  // the form he tapped has its own cell, outlined, found in the Septuagint and the New Testament both
+  await expect(page.getByTestId('word-lit')).toHaveText('Its form is outlined in the table.');
+  const lit = page.locator('[data-lit]');
+  await expect(lit).toHaveCount(1);
+  await expect(lit).toContainText('ὕδατος');
+  await expect(lit.locator('[data-found]')).toHaveText('in the Septuagint and NT');
+  // the other forms the New Testament has of ὕδωρ are in the table, found in the NT
+  await expect(page.locator('[data-found]').filter({ hasText: /^in the NT$/ }).first()).toBeVisible();
+  const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+  expect(fits.w).toBeLessThanOrEqual(fits.c);
+  await shot(page, 'septuagint-own-paradigm-comma-lemma');
 });

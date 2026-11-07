@@ -1,11 +1,14 @@
 // A word's own paradigm (mw-irpgqi.4): the index from a lemma to every form the New Testament text uses, and a table laid with those forms
 // (src/data/paradigms/ownForms.ts, scripts/build-lemma-forms.mjs, docs/paradigms.md 'This word'). Over the real chapters in public/data.
 // @vitest-environment node
-import { beforeAll, describe, expect, it } from 'vitest';
-import { fileText, lemmaForms, ownFormOf, readChapters, readSeptuagintChapters, septuagintCapitals, septuagintFormOf, septuagintForms, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { fileText, foldSeptuagint, headwordOf as buildHeadwordOf, lemmaForms, writeLemmaForms, ownFormOf, readChapters, readSeptuagintChapters, septuagintCapitals, septuagintFormOf, septuagintForms, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import { cellName, cellsOf, paradigmById, paradigmOfWord, tableFor } from '../../src/data/paradigms';
-import { absentText, fitsNoTable, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, septuagintFormOf as appSeptuagintFormOf, type OwnForm } from '../../src/data/paradigms/ownForms';
+import { absentText, fitsNoTable, forgetLemmaForms, headwordOf, loadLemmaForms, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, septuagintFormOf as appSeptuagintFormOf, type OwnForm } from '../../src/data/paradigms/ownForms';
 import type { Paradigm } from '../../src/data/paradigms/types';
 
 // the New Testament's chapters: this file is the Greek index (the Hebrew one is tests/unit/lemma-forms-hbo.test.ts)
@@ -326,5 +329,85 @@ describe('a word read in the Septuagint lays both texts, each cell saying where 
   it('the forms of a lemma the Septuagint has alone are laid with no New Testament form', () => {
     const forms = ownFormsOf([], 'septuagint', lxx.get('ἀκατασκεύαστος') ?? []);
     expect(forms.map((f) => [f.form, f.source])).toEqual([['ἀκατασκεύαστος', 'septuagint']]);
+  });
+});
+
+
+// ---------------------------------------------------------------- a Septuagint comma lemma (mw-u2w5klk.297)
+// The Septuagint's lemma can be a list ('ὕδωρ, ὕδατος': Genesis 1:2's ὕδατος), while the New Testament's one word is 'ὕδωρ'. The two were filed apart, so the word had no own table:
+// the Septuagint's forms ride in the file of the headword before the comma when the headword is a lemma the text has.
+describe('a Septuagint lemma with a comma is folded onto its headword’s file', () => {
+  const lxx = septuagintForms(readSeptuagintChapters('tests/fixtures/data-lxx'), index);
+
+  it('the headword is what stands before the first comma', () => {
+    expect(headwordOf('ὕδωρ, ὕδατος')).toBe('ὕδωρ');
+    expect(headwordOf('ἔπω, ἐρῶ, εἶπον')).toBe('ἔπω');
+    expect(headwordOf('ὕδωρ')).toBe('ὕδωρ');
+    for (const lemma of ['ὕδωρ, ὕδατος', 'ἔπω, ἐρῶ, εἶπον', 'ὕδωρ']) expect(buildHeadwordOf(lemma)).toBe(headwordOf(lemma));
+  });
+
+  it('ὕδωρ, ὕδατος and the New Testament’s ὕδωρ give one list: the Septuagint’s forms under the headword, with the New Testament’s use beside a form both have', () => {
+    expect(lxx.has('ὕδωρ, ὕδατος')).toBe(true);
+    expect(index.has('ὕδωρ')).toBe(true);
+    const folded = foldSeptuagint(lxx, new Set(index.keys()));
+    expect(folded.has('ὕδωρ, ὕδατος')).toBe(false);
+    const forms = ownFormsOf(index.get('ὕδωρ')!, 'septuagint', folded.get('ὕδωρ')!);
+    const genitive = forms.find((f) => f.form === 'ὕδατος' && f.code === 'N-GSN')!;
+    expect(genitive).toMatchObject({ source: 'septuagint', book: 'gen', chapter: 1, verse: 2 });
+    expect(genitive.also).toMatchObject({ source: 'nt', book: 'mat', chapter: 3, verse: 16 });
+    // the New Testament's other forms are there too: one list of both texts
+    expect(forms.some((f) => f.form === 'ὕδασιν' && f.source === 'nt')).toBe(true);
+  });
+
+  it('a form both lists name is one entry, counted for both; a comma lemma whose headword nothing has keeps its own file; a lemma the New Testament has with the comma stays', () => {
+    const entry = (form: string, code: string, count = 1): LemmaFormEntry => [form, code, count, 'gen', 1, 1];
+    const folded = foldSeptuagint(
+      new Map([['x, y', [entry('a', 'N-NSM')]], ['x', [entry('a', 'N-NSM', 2), entry('b', 'N-NSM')]], ['p, q', [entry('p', 'N-NSM')]], ['d, e', [entry('d', 'N-NSM')]]]),
+      new Set(['d, e']),
+    );
+    expect(folded.get('x')).toEqual([entry('a', 'N-NSM', 3), entry('b', 'N-NSM')]);
+    expect([...folded.keys()].sort()).toEqual(['d, e', 'p, q', 'x']);
+  });
+
+  it('the files the build writes keep none of them split: no lxx lemma with a comma has a file when its headword has one', () => {
+    const out = mkdtempSync(join(tmpdir(), 'lemma-forms-'));
+    try {
+      writeLemmaForms('public/data', out, 'tests/fixtures/data-lxx');
+      const names = new Set(readdirSync(out).map((n) => n.normalize('NFC')));
+      const file = (lemma: string) => JSON.parse(readFileSync(join(out, `${lemma}.json`), 'utf8')) as { l: string; f: unknown[]; lxx?: LemmaFormEntry[] };
+      const split = [...names].filter((name) => {
+        const lemma = name.replace(/\.json$/, '');
+        return lemma.includes(',') && file(lemma).lxx && names.has(`${headwordOf(lemma)}.json`);
+      });
+      expect(split).toEqual([]);
+      expect(names.has('ὕδωρ, ὕδατος.json')).toBe(false);
+      const water = file('ὕδωρ');
+      expect(water.f.length).toBeGreaterThan(0);
+      expect(water.lxx!.some(([form, code, , book, chapter, verse]) => form === 'ὕδατος' && code === 'N-GSN' && book === 'gen' && chapter === 1 && verse === 2)).toBe(true);
+    } finally {
+      rmSync(out, { recursive: true, force: true });
+    }
+  }, 120_000);
+});
+
+describe('the app asks for a Septuagint comma lemma’s forms in its headword’s file', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    forgetLemmaForms();
+  });
+
+  it('ὕδωρ, ὕδατος has no file of its own, so the Septuagint reading takes ὕδωρ’s: both texts in one list', async () => {
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => {
+      asked.push(decodeURIComponent(url.split('?')[0]));
+      if (url.includes('/lemma-forms/' + encodeURIComponent('ὕδωρ') + '.json')) {
+        return new Response(JSON.stringify({ l: 'ὕδωρ', f: [['ὕδατος', 'N-GSN', 24, 'mat', 3, 16]], lxx: [['ὕδατος', 'N-GSN', 3, 'gen', 1, 2]] }), { status: 200 });
+      }
+      return new Response('', { status: 404 });
+    });
+    const forms = await loadLemmaForms('ὕδωρ, ὕδατος', 'septuagint');
+    expect(asked).toContain('/lemma-forms/ὕδωρ.json');
+    expect(forms).toHaveLength(1);
+    expect(forms[0]).toMatchObject({ form: 'ὕδατος', source: 'septuagint', also: { source: 'nt', book: 'mat' } });
   });
 });
