@@ -70,8 +70,8 @@ The table names, for each use case and language, the feature files with a scenar
 | `grammar-approach` | Grammar approach: the order and voice the ladder is taught in | grammar-approach | hebrew-grammar | gap |
 | `lessons` | Lessons read to him: Read lessons to me, a passage lesson that opens its verses and Check passes it by reading | passage-lesson, read-lessons | hebrew-ladder | gap |
 | `reading-ladder` | The reading ladder: verses by how hard they are to say, Read it aloud, the reading check, drills on what he missed, his readings kept | my-reading, reading-check, reading-drill, reading-history, reading-ladder | hebrew-reading-ladder | gap |
-| `memorize` | Memorize a verse: the target text, the session, hearing and typing it, the schedule, the tutor on it | hebrew-memorize, memorize-hear, memorize-schedule, memorize-session, memorize-target, memorize-tutor, memorize-type, memorize | hebrew-memorize | gap |
-| `diagram` | The sentence diagram of a verse (Reed-Kellogg) and the lesson on reading one | diagram-lesson, sentence-diagram | hebrew-diagram | gap |
+| `memorize` | Memorize a verse: the target text, the session, hearing and typing it, the schedule, the tutor on it | hebrew-memorize, memorize-hear, memorize-schedule, memorize-session, memorize-target, memorize-tutor, memorize-type, memorize, septuagint | hebrew-memorize | gap |
+| `diagram` | The sentence diagram of a verse (Reed-Kellogg) and the lesson on reading one | diagram-lesson, sentence-diagram, septuagint | hebrew-diagram | gap |
 | `verse-quiz` | Quiz me on a verse, with the quiz goal, in the Talk sheet | hebrew-quiz, quiz-goal, quiz-me | hebrew-quiz | gap |
 | `practise` | The Practise door on a verse: copywork, narration, dictation, summary and the quiz (Susan Wise Bauer’s order) | practise | practise | gap |
 | `tutor-ask` | Ask the tutor about a verse or a word, holding what the app knows of it in its language | ask-tutor, tutor, word-ask-tutor | hebrew-tutor | gap |

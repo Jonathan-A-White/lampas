@@ -4,7 +4,7 @@
 // one verse's.
 import { memorizedOf } from '../data/repositories/memorize';
 import { hebrewPointedForm } from '../speech/hebrewPronunciation';
-import { sourceOf } from './source';
+import { sourceNow } from './source';
 import { memorizeTarget, type TargetLang, type Token } from './target';
 import { MEMORIZE_LANGS, type MemorizeLang } from './languages';
 import { weaveSettingsNow } from './weaveSettings';
@@ -22,7 +22,7 @@ const spoken = (t: Token): string => (t.lang === 'he' ? hebrewPointedForm(t.text
 export async function verseTextOf({ ref }: { ref: string }): Promise<VerseTexts> {
   const memorized = (await memorizedOf([ref])).get(ref) ?? [];
   const langs = MEMORIZE_LANGS.filter((lang) => lang === 'en' || memorized.includes(lang));
-  const weave = langs.includes('weave') ? await weaveSettingsNow(sourceOf(ref)) : undefined;
+  const weave = langs.includes('weave') ? await weaveSettingsNow(await sourceNow(ref)) : undefined;
   const texts: VerseTexts = {};
   for (const lang of langs) {
     const target = await memorizeTarget(ref, lang as TargetLang, weave);

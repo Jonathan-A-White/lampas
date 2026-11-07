@@ -5,10 +5,19 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addLemmaToLearn } from '../../src/data/answerWord';
-import { isGuess, wordDefinition, wordGloss, type Chapter, type GreekWord, type Verse } from '../../src/data/chapter';
+import { chapterLanguage, forgetChapters, isGuess, wordDefinition, wordGloss, type Chapter, type GreekWord, type Verse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { drawDrill } from '../../src/data/drill';
 import { pickFrontier } from '../../src/data/frontier';
+import type { FrequencyEntry } from '../../src/data/frequency';
+import { diagramLogosLinks } from '../../src/diagram/logosLinks';
+import { offeredFor } from '../../src/memorize/commands';
+import { memorizeTarget } from '../../src/memorize/target';
+import { sourceNow } from '../../src/memorize/source';
+import { getStudyChapter, setOpenChapter, setOpenReadLanguage } from '../../src/data/readerChapter';
+import { loadForms } from '../../src/data/quizWords';
+import { loadHebrewPassage, loadPassage } from '../../src/data/repositories/reviewPassage';
+import { studyLanguage } from '../../src/data/studyLanguage';
 import { loadSeptuagintChapter } from '../../src/data/lxxChapter';
 import { buildQuestion, mulberry32 } from '../../src/data/quiz';
 import type { GradedVerse } from '../../src/data/grammar/gradedVerses';
@@ -247,5 +256,128 @@ describe('the grammar questions over a Septuagint chapter', () => {
     const made: Chapter = { ...gen1, verses: gen1.verses.map((v): Verse => ({ ...v, g: v.g.map((w) => (w.l === 'ποιέω' ? { ...w, y: 'g', c: 0.4 } : w)) })) };
     expect(passageWords([gen1])).toContain('ποιέω');
     expect(passageWords([made])).not.toContain('ποιέω');
+  });
+});
+
+// R5 (mw-u2w5klk.15): with the setting On and a Septuagint book open, the study tools read the chapter as Greek (language 'grc', Greek words), not by the book's name ('hbo'); with it Off nothing changes
+describe('the study tools read a Septuagint chapter as Greek', () => {
+  const setting = (value: 'on' | 'off') => db.settings.put({ key: 'septuagint', value });
+  beforeEach(async () => {
+    stubChapterFetch();
+    localStorage.clear();
+    await Promise.all(db.tables.map((table) => table.clear()));
+    // Greek and Hebrew both chosen (the Greek dial unplaced, the Hebrew one All in): a Hebrew chapter is read in Hebrew, a Greek one in Greek
+    await db.settings.put({ key: 'hebrewInterest', value: '5' });
+    setOpenChapter('gen', 1);
+  });
+
+  it('studyLanguage is grc for Genesis 1 with the Septuagint On, and hbo for the Hebrew Genesis 1 with it Off', async () => {
+    await setting('on');
+    expect(await studyLanguage()).toBe('grc');
+    await setting('off');
+    expect(await studyLanguage()).toBe('hbo');
+  });
+
+  it('the language of a chapter follows the chapter loaded: a book that is not shipped, a New Testament book and the setting Off keep theirs', async () => {
+    await setting('on');
+    expect(await chapterLanguage('gen', 1)).toBe('grc');
+    expect(await chapterLanguage('isa', 1)).toBe('hbo');
+    expect(await chapterLanguage('rom', 8)).toBe('grc');
+    await setting('off');
+    expect(await chapterLanguage('gen', 1)).toBe('hbo');
+  });
+
+  it('Memorize learns Genesis 1:1 in Greek with the Septuagint On and in Hebrew with it Off; Isaiah, not shipped, and Romans do not move', async () => {
+    await setting('on');
+    expect(await sourceNow('Gen.1.1')).toBe('grc');
+    expect(await sourceNow('Isa.1.1')).toBe('hbo');
+    expect(await sourceNow('Rom.8.1')).toBe('grc');
+    const greek = await memorizeTarget('Gen.1.1', 'el');
+    expect(greek?.lang).toBe('el');
+    expect(greek?.tokens.slice(0, 2).map((t) => t.text)).toEqual(['ΕΝ', 'ΑΡΧΗ']);
+    await setting('off');
+    expect(await sourceNow('Gen.1.1')).toBe('hbo');
+  });
+
+  it('Memorize offers Genesis 1:1 the Greek by the Greek dial with the Septuagint On, and by the Hebrew dial with it Off', async () => {
+    await db.settings.put({ key: 'hebrewInterest', value: '0' });
+    await db.settings.put({ key: 'greekInterest', value: '5' });
+    await setting('on');
+    expect(await offeredFor('Gen.1.1')).toEqual(['en', 'el', 'weave']);
+    await setting('off');
+    expect(await offeredFor('Gen.1.1')).toEqual(['en']);
+  });
+
+  it('the Greek study chapter is the open Septuagint chapter, once the Reader has said the open chapter is read as Greek', async () => {
+    expect(getStudyChapter('grc').book).toBe('rom');
+    setOpenReadLanguage('gen', 1, 'grc');
+    expect(getStudyChapter('grc')).toMatchObject({ book: 'gen', chapter: 1 });
+    // another chapter, or the same one read in Hebrew, takes it away
+    setOpenReadLanguage('gen', 1, 'hbo');
+    expect(getStudyChapter('grc').book).toBe('rom');
+    setOpenReadLanguage('gen', 1, 'grc');
+    setOpenChapter('exo', 1);
+    expect(getStudyChapter('grc').book).toBe('rom');
+  });
+
+  it('the Quick test shows a Greek word its form from the Septuagint chapter, and a Hebrew word none from it', async () => {
+    await setting('on');
+    setOpenReadLanguage('gen', 1, 'grc');
+    expect((await loadForms('grc'))?.edition).toBe('swete');
+    expect(await loadForms('hbo')).toBeNull();
+  });
+
+  it('Review draws its passage from the Septuagint chapter and gives a Hebrew idea no Greek one', async () => {
+    await setting('on');
+    setOpenReadLanguage('gen', 1, 'grc');
+    expect((await loadPassage(mulberry32(1))).map((c) => c.edition)).toEqual(['swete']);
+    expect(await loadHebrewPassage(mulberry32(1))).toEqual([]);
+    await setting('off');
+    forgetChapters();
+    setOpenReadLanguage('gen', 1, 'hbo');
+    expect((await loadHebrewPassage(mulberry32(1))).map((c) => c.lang)).toEqual(['hbo']);
+  });
+});
+
+describe("the Diagram's Logos row on a Septuagint chapter", () => {
+  it('has only the how-to at Genesis 1:1: the Lexham SGNT is the New Testament\'s, so it is offered for Greek only on a New Testament verse', () => {
+    const place = { book: 'gen', chapter: 1, verse: 1 };
+    expect(diagramLogosLinks(place, 'lxx').map((l) => l.label)).toEqual(['How to diagram']);
+    expect(diagramLogosLinks({ book: 'rom', chapter: 8, verse: 1 }, 'grc').map((l) => l.label)).toEqual(['Lexham SGNT', 'SGNT Notes', 'How to diagram']);
+  });
+});
+
+describe('the frontier counts the words of a Septuagint chapter', () => {
+  const counts = JSON.parse(readFileSync('public/data/frequency.json', 'utf8')) as FrequencyEntry[];
+  const none = { solid: new Set<string>(), learning: new Set<string>(), dropped: new Set<string>() };
+  const name = { t: 'Ἀβραάμ', tr: '', s: '', l: 'Ἀβραάμ', p: 'N-NSM', y: '1', c: 0.97 } satisfies GreekWord;
+  // a name in the first verse, where the commonest words are: it must still come last
+  const withName: Chapter = { ...gen1, verses: gen1.verses.map((v, i) => (i === 0 ? { ...v, g: [name, name, ...v.g] } : v)) };
+
+  it('gives a word read by layer 1 or 2 its New Testament count, though the file has no Strong\'s number', () => {
+    const list = pickFrontier(gen1, none, counts, 500);
+    const by = (lemma: string) => list.find((c) => c.lemma === lemma)!;
+    expect(by('θεός')).toMatchObject({ strongs: '', count: 1339 });
+    expect(by('ἐν').count).toBe(2789);
+    expect(by('διαχωρίζω').count).toBeGreaterThan(0);
+    expect(list.filter((c) => c.count > 0).length).toBeGreaterThan(40);
+  });
+
+  it('puts a name last and orders the rest by count', () => {
+    const list = pickFrontier(withName, none, counts, 500);
+    expect(list[list.length - 1].lemma).toBe('Ἀβραάμ');
+    expect(list[list.length - 1].count).toBeGreaterThan(0);
+    const rest = list.slice(0, -1).filter((c) => c.count > 0).map((c) => c.count);
+    expect(rest).toEqual([...rest].sort((a, b) => b - a));
+  });
+
+  it('does not count a guessed word', () => {
+    const guess = { ...gen1, verses: gen1.verses.map((v) => ({ ...v, g: v.g.map((w) => (w.l === 'θεός' ? { ...w, y: 'g', c: 0.4 } : w)) })) };
+    expect(pickFrontier(guess, none, counts, 500).map((c) => c.lemma)).not.toContain('θεός');
+  });
+
+  it('leaves the Hebrew and the New Testament as they were: a word with no Strong\'s number in a chapter that is not the Septuagint is not found by its lemma', () => {
+    const hebrewLike: Chapter = { ...gen1, edition: undefined, lang: 'hbo' };
+    expect(pickFrontier(hebrewLike, none, counts, 500).find((c) => c.lemma === 'θεός')?.count).toBe(0);
   });
 });

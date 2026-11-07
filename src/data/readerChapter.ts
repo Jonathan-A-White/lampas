@@ -19,6 +19,9 @@ const STUDY_KEY = 'lampas.studyChapter';
 /** The last chapter the Reader had open that is read in Hebrew (mw-gdcyf98.19): where the Hebrew words of the quizzes and Review draw their forms from. */
 const HEBREW_STUDY_KEY = 'lampas.studyChapterHebrew';
 
+/** The Old Testament chapter the Reader has open and is showing as Greek (Settings > Old Testament in Greek (Septuagint) On, the book shipped): a chapter's file is the only thing that knows, and the screens read the study chapter before they render. */
+const GREEK_OPEN_KEY = 'lampas.openReadAsGreek';
+
 /** Where the Hebrew words' forms come from before he has opened any Old Testament chapter. */
 export const DEFAULT_HEBREW_CHAPTER: OpenChapter = { book: 'gen', chapter: 1, title: 'Genesis 1' };
 
@@ -68,13 +71,30 @@ export function getOpenChapter(): OpenChapter {
 export function getStudyChapter(lang: SourceLanguage = 'grc'): OpenChapter {
   const open = getOpenChapter();
   if (lang === 'hbo') return isHebrewBook(open.book) ? open : (read(HEBREW_STUDY_KEY) ?? DEFAULT_HEBREW_CHAPTER);
-  return isHebrewBook(open.book) ? (read(STUDY_KEY) ?? DEFAULT_CHAPTER) : open;
+  // an Old Testament chapter the Reader shows as the Septuagint's Greek is a Greek chapter to study (mw-u2w5klk.15)
+  if (!isHebrewBook(open.book)) return open;
+  const greek = read(GREEK_OPEN_KEY);
+  return greek && greek.book === open.book && greek.chapter === open.chapter ? open : (read(STUDY_KEY) ?? DEFAULT_CHAPTER);
+}
+
+/**
+ * Keeps what the Reader found the open chapter's words to be, once its file is here: an Old Testament chapter in 'grc' is the Septuagint's (getStudyChapter then offers it to the Greek tools), in 'hbo' the Hebrew.
+ * Called for the chapter that is open; a chapter opened after it takes the note away (setOpenChapter).
+ */
+export function setOpenReadLanguage(book: string, chapter: number, lang: SourceLanguage): void {
+  try {
+    if (isHebrewBook(book) && lang === 'grc') store()?.setItem(GREEK_OPEN_KEY, JSON.stringify({ book, chapter }));
+    else store()?.removeItem(GREEK_OPEN_KEY);
+  } catch {
+    // Storage refused: the Greek tools take the last New Testament chapter, as they did
+  }
 }
 
 /** Keeps this as the chapter he has open. */
 export function setOpenChapter(book: string, chapter: number): void {
   try {
     store()?.setItem(KEY, JSON.stringify({ book, chapter }));
+    store()?.removeItem(GREEK_OPEN_KEY);
     store()?.setItem(isHebrewBook(book) ? HEBREW_STUDY_KEY : STUDY_KEY, JSON.stringify({ book, chapter }));
   } catch {
     // Storage full or refused: the next open is Romans 8, or the chapter in the address.

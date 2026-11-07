@@ -9,7 +9,7 @@ import { listedOf } from '../lists/canonical';
 import { openMemorizeSession } from '../nav/route';
 import { leaveTalk } from '../talk/leave';
 import { languagesFor, langName, type MemorizeLang } from './languages';
-import { sourceOf } from './source';
+import { sourceNow } from './source';
 
 /** What a command did, in words, the references it left alone (printed as 'Ps 62:1-2') and, when it changed something, the way back. */
 export interface CommandResult {
@@ -31,9 +31,9 @@ export function memorizable(refs: readonly string[]): string[] {
   return refs.filter((ref) => listedOf(ref));
 }
 
-/** The languages of `ref` that the dial of its own language allows (the Hebrew dial for an Old Testament verse, the Greek for a New Testament one). */
+/** The languages of `ref` that the dial of its own language allows (the Hebrew dial for an Old Testament verse, the Greek for a New Testament one or an Old Testament one read as the Septuagint). */
 export async function offeredFor(ref: string): Promise<MemorizeLang[]> {
-  return languagesFor(await getInterestLevels(), sourceOf(ref));
+  return languagesFor(await getInterestLevels(), await sourceNow(ref));
 }
 
 /** The languages asked for that the verse's own dial allows; English when none of them is. */

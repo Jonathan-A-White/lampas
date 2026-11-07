@@ -12,7 +12,7 @@ import { useNoDoor } from '../tutor/door';
 import { memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
 import { languagesFor, langName, MEMORIZE_LANGS, type MemorizeLang } from './languages';
 import { openMemorizeSession } from '../nav/route';
-import { sourceOf } from './source';
+import { useSource } from './source';
 
 const BUTTON = 'min-h-12 shrink-0 rounded-xl border px-3 font-medium leading-tight';
 /** The quiet look of the Verse view's tools line (mw-5r3p30.896): accent words with no border; on, a tint of the accent, never filled. */
@@ -79,11 +79,12 @@ function LanguageSheet({ canonical, offered, memorized, onClose }: { canonical: 
 export function MemorizeControl({ canonical, compact = false, quiet = false, className = '' }: { canonical: string; compact?: boolean; quiet?: boolean; className?: string }) {
   const found = useLiveQuery(() => memorizedOf([canonical]), [canonical]);
   const levels = useInterestLevels();
+  const source = useSource(canonical);
   const [sheet, setSheet] = useState(false);
   if (found === undefined || levels === undefined) return null;
   const memorized = found.get(canonical) ?? [];
   // the languages of the verse's own dial (Hebrew for an Old Testament verse, Greek for a New Testament one); at 'Just English' no sheet, a tap on it stops it
-  const offered: MemorizeLang[] = languagesFor(levels, sourceOf(canonical));
+  const offered: MemorizeLang[] = languagesFor(levels, source);
   const on = memorized.length > 0;
   const tap = () => {
     if (!on) {

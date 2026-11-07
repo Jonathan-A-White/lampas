@@ -26,6 +26,7 @@ import { asSpoken } from '../../tests/support/lone-word';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 
+const GENESIS_GREEK_DIAGRAM = (JSON.parse(readFileSync('tests/fixtures/diagrams/gen-1-1-septuagint.json', 'utf8')) as { diagram: unknown }).diagram;
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern | undefined;
@@ -47,6 +48,10 @@ interface Extras {
   strongs?: boolean;
   speech?: boolean;
   tutor?: boolean;
+  /** the tutor answers the sentence-diagram grind with Genesis 1:1 drawn from Swete's Greek (tests/fixtures/diagrams/gen-1-1-septuagint.json) */
+  diagram?: boolean;
+  /** open the app at this hash route instead of the chapter, and seed the schedule row of a memorized verse first: its id, step */
+  memorize?: { id: string; step: number };
   /** the Septuagint's Genesis 1 is the one `lxx:ship` writes, its English cut into chunks aligned to the Greek words (scripts/lxx/align.ts), where the fixture holds one chunk a verse */
   aligned?: boolean;
   /** lemmas he has solid */
@@ -70,6 +75,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     tutorTimings.pollMs = 20;
     const postern = makeFakePostern();
     postern.autoReply = { status: 'answered', answer: GRAMMAR_HELP_ANSWER };
+    if (extras.diagram) postern.replyFor = (_input, kind) => (kind === 'sentence-diagram' ? { status: 'answered', answer: GENESIS_GREEK_DIAGRAM } : undefined);
     fake = postern;
     const chapterFetch = globalThis.fetch;
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? postern.fetch(input, init) : chapterFetch(input, init)));
@@ -93,9 +99,14 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
   await db.settings.put({ key: 'septuagint', value: septuagint });
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   if (extras.strongs) await setResourceOn('strongs', true);
+  if (extras.diagram) window.localStorage.setItem('lampas.welcome', 'done');
+  if (extras.memorize) {
+    await db.reviews.put({ kind: 'verse', id: extras.memorize.id, step: extras.memorize.step, due: Date.now() - 1000, lastWhen: Date.now() - 86_400_000, lapses: 0, rights: 0 });
+    window.history.replaceState(null, '', `/#/memorize/${extras.memorize.id.replace(/^[a-z]+:/, '')}/${extras.memorize.id.split(':')[0]}`);
+  }
   for (const lemma of extras.solid ?? []) await db.words.put({ lemma, lang: 'grc', lemmas: [lemma], gloss: lemma, lesson: 0, source: 'frontier', state: 'solid', since: Date.now() });
   render(<App />);
-  await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  if (!extras.memorize) await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
 const verseEl = (n: number): HTMLElement => {
@@ -394,6 +405,49 @@ describeFeature(feature, ({ Scenario }) => {
     And('a read word of Genesis 1 is the right answer of some question', () => {
       expect(rights.length).toBeGreaterThan(0);
       expect(rights).toContain('ἐποίησεν');
+    });
+  });
+
+  // R5 (mw-u2w5klk.15): Memorize and the Diagram follow the chapter's language
+  Scenario('With the setting on Memorize learns Genesis 1:1 in the Greek', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and Genesis 1:1 memorized in Greek at step {int}', (_: unknown, step: number) =>
+      openOn('Genesis 1', 'on', { greekInterest: '5' }, { memorize: { id: 'el:Gen.1.1', step } }),
+    );
+    When('he opens its Memorize session', async () => {
+      await screen.findByTestId('memorize-verse');
+    });
+    Then('the session says {string}', async (_: unknown, text: string) => {
+      await waitFor(() => expect(squash(document.body.textContent)).toContain(text));
+    });
+    And('the verse is drawn left to right in Greek with {int} of its {int} words blank', async (_: unknown, blank: number, all: number) => {
+      const verse = screen.getByTestId('memorize-verse');
+      await waitFor(() => expect(verse.querySelectorAll('[data-token]')).toHaveLength(all));
+      expect(verse).not.toHaveAttribute('dir', 'rtl');
+      expect(verse.querySelectorAll('[data-blank]')).toHaveLength(blank);
+      const shown = [...verse.querySelectorAll('[data-token]:not([data-blank])')].map((t) => t.getAttribute('lang'));
+      expect(shown.every((lang) => lang === 'el'), 'the words shown are Greek').toBe(true);
+    });
+  });
+
+  Scenario("With the setting on the Diagram of Genesis 1:1 is drawn from Swete's Greek", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and a tutor that draws Genesis 1:1', () => openOn('Genesis 1', 'on', { readerView: 'greek', greekInterest: '5' }, { tutor: true, diagram: true }));
+    When('he opens the Verse view of verse 1 and taps Diagram', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Verse 1', exact: true }));
+      const view = await screen.findByRole('region', { name: 'Verse view' });
+      await user.click(within(view).getByRole('button', { name: 'Diagram', exact: true }));
+    });
+    Then('the pane draws the Greek diagram of Genesis 1:1', async () => {
+      const pane = within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('region', { name: 'Diagram' });
+      expect(await within(pane).findByRole('img', { name: 'Sentence diagram of Genesis 1:1, Greek' })).toBeInTheDocument();
+    });
+    And('the tutor was asked once, in Greek, for the {int} words of the verse beginning {string}', (_: unknown, count: number, start: string) => {
+      const asked = fake!.received.filter((r) => r.grist.kind === 'sentence-diagram');
+      expect(asked).toHaveLength(1);
+      expect(asked[0].input.lang).toBe('greek');
+      expect(asked[0].input.ref).toBe('Genesis 1:1');
+      const words = asked[0].input.words as { text: string }[];
+      expect(words).toHaveLength(count);
+      expect(words.map((w) => w.text).join(' ')).toMatch(new RegExp(`^${start}`));
     });
   });
 });

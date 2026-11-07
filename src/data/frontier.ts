@@ -39,7 +39,7 @@ interface Found extends Candidate {
 /**
  * The words of `chapter` whose lemma is in none of `known`'s three sets, best first: the commonest in the New Testament
  * (`frequency`'s count), then, among equals, the more often in this chapter, then the earlier first verse. A name
- * (`proper` in the table) comes after every other word. At most `n`. A word the table lacks counts 0 and is not a name.
+ * (`proper` in the table) comes after every other word. At most `n`. A word the table lacks counts 0 and is not a name. A Septuagint word (no Strong's number) is found in the table by its lemma.
  * With `formPasses`, a word is kept only when at least one of its forms in the chapter passes it (mw-hqd5bz.11); `n` then
  * counts the words that are kept.
  */
@@ -51,6 +51,9 @@ export function pickFrontier(
   formPasses?: FormTest,
 ): Candidate[] {
   const table = new Map(frequency.map((e) => [e.strongs, e]));
+  // a Septuagint word has no Strong's number (`s` is ''): its count is looked up by its lemma, the commonest entry of it first (a lemma the table has twice keeps the first)
+  const byLemma = new Map<string, FrequencyEntry>();
+  if (chapter.edition === 'swete') for (const e of frequency) if (!byLemma.has(e.lemma.normalize('NFC'))) byLemma.set(e.lemma.normalize('NFC'), e);
   const found = new Map<string, Found>();
   for (const verse of chapter.verses) {
     for (const word of verse.g) {
@@ -66,7 +69,7 @@ export function pickFrontier(
         if (seen.verses[seen.verses.length - 1] !== verse.n) seen.verses.push(verse.n);
         continue;
       }
-      const entry = table.get(word.s);
+      const entry = word.s === '' && chapter.edition === 'swete' ? byLemma.get(lemma) : table.get(word.s);
       found.set(lemma, {
         strongs: word.s,
         lemma,
