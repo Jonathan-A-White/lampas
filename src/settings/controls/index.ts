@@ -1,5 +1,5 @@
 import { SCRIPTS } from '../../script/scripts';
-import { ROWS } from '../rows';
+import { onRowsGrown, ROWS } from '../rows';
 import { AppearanceControl, ChapterButtonsControl, CopyFormatControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
 import { AskDevotionalControl } from './askDevotional';
@@ -105,3 +105,8 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('sermons.')).map((r) => [r.key, SermonsControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('link.')).map((r) => [r.key, LinkControl])),
 };
+
+// a sermon source the index service gave grows its row later (rows.ts growSermonRows): it gets the same switch
+onRowsGrown((rows) => {
+  for (const row of rows) if (row.key.startsWith('sermons.')) (CONTROLS as Record<string, Control>)[row.key] = SermonsControl;
+});

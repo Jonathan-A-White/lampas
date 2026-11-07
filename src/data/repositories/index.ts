@@ -127,6 +127,8 @@ export { afterCatalogueUpdate, applyImport, devotionalDraw, dropStaleBibleRows, 
 export type { ImportNote, ImportPlan, ImportRow, LibraryRow, ShelfRefusal, ShelfResult, ShelfState, Turning } from './library';
 export { dayOf, lastUsageDayBefore, listUsage, recordUsage, savedSettings, usageCounts } from './usage';
 export type { UsageCounts, UsageRow } from './usage';
+export { getKnownSermonSources, rememberSermonSources } from './sermonSources';
+export type { KnownSermonSource } from './sermonSources';
 export { dismissTip, keepTip, openTip, shownTipIds } from './tips';
 export type { TipRow } from './tips';
 export { dropShares, parkShare, waitingShare } from './shares';

@@ -22,7 +22,7 @@ import {
   type SettingsSection as KitSection,
   type Values,
 } from 'pwa-kit/settings';
-import { getDeveloper } from '../data/repositories';
+import { getDeveloper, getKnownSermonSources } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
 import { resourceOf } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
@@ -32,7 +32,9 @@ import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
 import { handSetting } from './hand';
 import { helpPlain } from './helpText';
-import { SETTINGS, settingOf, type SectionId } from './registry';
+import { forgetGrownSermonEntries, growSermonEntries, isGrownSermon, SETTINGS, settingOf, type SectionId } from './registry';
+import { knownSermonSources, onKnownSermonSources, setKnownSermonSources } from '../sermons/known';
+import type { KnownSermonSource } from '../data/repositories/sermonSources';
 
 export type SettingsSection = KitSection<SectionId>;
 
@@ -260,14 +262,49 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
 }
 
 /** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && !PART_ROWS.some((r) => r.key === key);
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isGrownSermon(key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
+
+const grownListeners = new Set<(rows: readonly SettingsRow[]) => void>();
+
+/** Calls `listener` with the rows each time Settings grows some; returns the unsubscribe. */
+export function onRowsGrown(listener: (rows: readonly SettingsRow[]) => void): () => void {
+  grownListeners.add(listener);
+  return () => void grownListeners.delete(listener);
+}
+
+/**
+ * Grows the On | Off row of each sermon source the index service has that the bundle lacks and that has none yet (mw-qtu3zvz.5, docs/sermons.md 'When online'): at the end of the Sermons section, in the order the sources were first seen.
+ * ROWS is the one array every screen reads, so it grows in place; the tutor does not read these rows (isTalkable). Returns whether any row was made.
+ */
+export function growSermonRows(known: readonly KnownSermonSource[]): boolean {
+  const rows = growSermonEntries(known).map(rowOfSetting);
+  if (rows.length === 0) return false;
+  const all = ROWS as SettingsRow[];
+  const after = all.reduce((at, r, i) => (r.section === 'sermons' ? i : at), all.length - 1);
+  all.splice(after + 1, 0, ...rows);
+  for (const listener of [...grownListeners]) listener(rows);
+  return true;
+}
+
+/** Takes the grown rows out again and forgets their entries (a test starts over). */
+export function forgetGrownSermonRows(): void {
+  const all = ROWS as SettingsRow[];
+  for (let i = all.length - 1; i >= 0; i--) if (isGrownSermon(all[i].key)) all.splice(i, 1);
+  forgetGrownSermonEntries();
+}
+
+// the rows of sources already known, and each one the service tells of later
+growSermonRows(knownSermonSources());
+onKnownSermonSources(growSermonRows);
 
 const DEPENDED_ON = [...new Set([...ROWS, ...TOOL_ROWS].flatMap((r) => (r.dependsOn ? [r.dependsOn.key] : [])))];
 
 /** The current value of every row some other row depends on: a setting's value as text (a resource switch is 'on' or 'off'). */
 export async function readValues(): Promise<Values> {
+  // the sermon sources the index service gave on an earlier day have their rows before the screen draws (growSermonRows); the screen draws once the values are read
+  await getKnownSermonSources().then((list) => list.length > 0 && setKnownSermonSources(list), () => undefined);
   const entries = await Promise.all(
     DEPENDED_ON.map(async (key) => {
       if (key === 'developerMode') return [key, await getDeveloper()] as const;

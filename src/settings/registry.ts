@@ -77,6 +77,8 @@ import { SOURCES as THEME_SOURCES } from '../themes/sources';
 import { themeSourceSetting } from './definitions/themes';
 import { mapSourceSetting } from './definitions/maps';
 import { SOURCES as SERMON_SOURCES } from '../sermons/sources';
+import { serviceSource } from '../sermons/sources/service';
+import type { KnownSermonSource } from '../data/repositories/sermonSources';
 import { sermonSourceSetting } from './definitions/sermons';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { PLAY_TOS, type PlayTo } from '../speech/readSpan';
@@ -635,10 +637,40 @@ export const SETTINGS: readonly SettingEntry[] = [
 /** The registry over SETTINGS (the kit's createRegistry): it looks a setting up, saves a change and checks a talked one against what each setting allows. */
 const registry = createRegistry<SectionId>(SETTINGS, { textMax: TEXT_MAX });
 
-export const settingOf = registry.settingOf;
+/**
+ * The On | Off rows of sermon sources the index service has and the bundle lacks (mw-qtu3zvz.5, docs/sermons.md 'When online'): made the first time a source is seen, from the list kept on the phone
+ * (src/data/repositories/sermonSources.ts, src/sermons/known.ts), so they are not in SETTINGS: the tutor is not told of them and does not flip them by talk, and the grind's settings text does not name them.
+ * Settings draws them (rows.ts growSermonRows) and they are read and saved here like any 'sermons.<id>'.
+ */
+const grown = new Map<string, SettingEntry>();
+
+/** Makes the Settings entry of each known sermon source that has none; returns the ones it made. */
+export function growSermonEntries(known: readonly KnownSermonSource[]): SettingEntry[] {
+  const made: SettingEntry[] = [];
+  for (const source of known) {
+    const key = `sermons.${source.id}`;
+    if (grown.has(key) || registry.settingOf(key)) continue;
+    const entry = fromDefinition(sermonSourceSetting(serviceSource(source)));
+    grown.set(key, entry);
+    made.push(entry);
+  }
+  return made;
+}
+
+/** Whether `key` is the switch of a sermon source the service gave (not the bundled ones, not SETTINGS). */
+export const isGrownSermon = (key: string): boolean => grown.has(key);
+
+/** Forgets the grown entries (a test starts over). */
+export const forgetGrownSermonEntries = (): void => grown.clear();
+
+export const settingOf = (key: string): SettingEntry | undefined => registry.settingOf(key) ?? grown.get(key);
 
 /** Saves a choice and tells the bus: what the Settings screen does when he taps a control. Throws for a key that is no setting. */
-export const writeSetting = registry.write;
+export const writeSetting = async (key: string, value: Parameters<typeof registry.write>[1]): Promise<void> => {
+  const entry = grown.get(key);
+  if (entry) return entry.write(value);
+  return registry.write(key, value);
+};
 
 export type { AppliedChange, ChangeResult };
 export { MAX_CHANGES };
