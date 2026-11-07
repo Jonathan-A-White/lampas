@@ -56,6 +56,10 @@ interface Extras {
   aligned?: boolean;
   /** lemmas he has solid */
   solid?: string[];
+  /** a tutor behind the fake Postern that explains these words (a TalkAnswer's `words`) in answer to whatever is asked */
+  explains?: { greek: string; lemma: string; note: string }[];
+  /** every word of Genesis 1 with this lemma is a guess (y 'g'), so the chapter has the lemma only as guessed words */
+  guessed?: string;
 }
 
 /** Opens the app on a chapter (the address names it) with the Septuagint set as given and these settings saved. */
@@ -74,7 +78,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     localStorage.setItem(DEVICE_KEY_STORAGE_KEY, PHONE_KEY);
     tutorTimings.pollMs = 20;
     const postern = makeFakePostern();
-    postern.autoReply = { status: 'answered', answer: GRAMMAR_HELP_ANSWER };
+    postern.autoReply = { status: 'answered', answer: extras.explains ? { answer: 'These are the words.', words: extras.explains } : GRAMMAR_HELP_ANSWER };
     if (extras.diagram) postern.replyFor = (_input, kind) => (kind === 'sentence-diagram' ? { status: 'answered', answer: GENESIS_GREEK_DIAGRAM } : undefined);
     fake = postern;
     const chapterFetch = globalThis.fetch;
@@ -87,6 +91,17 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
       String(input).startsWith('/data-lxx/gen/1.json') ? Promise.resolve(new Response(JSON.stringify(gen1), { status: 200, headers: { 'Content-Type': 'application/json' } })) : chapterFetch(input, init),
     );
+  }
+  if (extras.guessed) {
+    const chapterFetch = globalThis.fetch;
+    const lemma = extras.guessed;
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const response = await chapterFetch(input, init);
+      if (!String(input).startsWith('/data-lxx/gen/1.json')) return response;
+      const gen1 = (await response.json()) as Chapter;
+      const guess = { ...gen1, verses: gen1.verses.map((v) => ({ ...v, g: v.g.map((w) => (w.l === lemma ? { ...w, y: 'g', c: 0.4 } : w)) })) };
+      return new Response(JSON.stringify(guess), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    });
   }
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
@@ -448,6 +463,52 @@ describeFeature(feature, ({ Scenario }) => {
       const words = asked[0].input.words as { text: string }[];
       expect(words).toHaveLength(count);
       expect(words.map((w) => w.text).join(' ')).toMatch(new RegExp(`^${start}`));
+    });
+  });
+
+  // R6 (mw-u2w5klk.16): Add to my words under a tutor's explained word
+  const talkSheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Talk about Genesis 1:14' });
+  const answerWord = (lemma: string): HTMLElement => {
+    const row = Array.from(talkSheet().querySelectorAll<HTMLElement>('[data-talk-words] > div')).find((r) => r.querySelector('dd [lang="el"]')?.textContent === lemma);
+    if (!row) throw new Error(`no answer word ${lemma}`);
+    return row;
+  };
+  const EXPLAINED = [
+    { greek: 'Γενηθήτωσαν', lemma: 'γίνομαι', note: 'verb, aorist passive imperative, 3rd person plural' },
+    { greek: 'κάρπιμον', lemma: 'κάρπιμος', note: 'adjective, accusative singular neuter' },
+  ];
+  Scenario('Add to my words on a guess-only lemma says why it did nothing, and on a read lemma that only the Septuagint has it adds it', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, every γίνομαι read only as a guess and a tutor that explains the words Γενηθήτωσαν and κάρπιμον', () =>
+      openOn('Genesis 1', 'on', { readerView: 'greek' }, { tutor: true, explains: EXPLAINED, guessed: 'γίνομαι' }),
+    );
+    When('he taps the word {string} in verse {int}', taps);
+    And('he taps {string} on the card', tapsOnCard);
+    And('the tutor has explained the words', async () => {
+      await waitFor(() => {
+        answerWord('γίνομαι');
+        answerWord('κάρπιμος');
+      });
+    });
+    And('he taps {string} on the answer word {string}', async (_: unknown, label: string, lemma: string) => {
+      await user.click(await within(answerWord(lemma)).findByRole('button', { name: label }));
+    });
+    Then('the answer word {string} says {string}', async (_: unknown, lemma: string, text: string) => {
+      await waitFor(() => expect(squash(within(answerWord(lemma)).getByRole('status').textContent)).toBe(text));
+    });
+    And('the answer word {string} still offers {string}', async (_: unknown, lemma: string, label: string) => {
+      expect(within(answerWord(lemma)).getByRole('button', { name: label })).toBeEnabled();
+    });
+    And('the word {string} is not on his list', async (_: unknown, lemma: string) => {
+      expect((await db.words.toArray()).filter((w) => w.lemma === lemma)).toEqual([]);
+    });
+    When('he adds the answer word {string} to his words', async (_: unknown, lemma: string) => {
+      await user.click(await within(answerWord(lemma)).findByRole('button', { name: 'Add to my words' }));
+    });
+    Then('the answer word {string} shows {string}', async (_: unknown, lemma: string, label: string) => {
+      await waitFor(() => expect(within(answerWord(lemma)).getByRole('button', { name: label })).toBeDisabled());
+    });
+    And('the word {string} is on his list once, with the gloss {string}', async (_: unknown, lemma: string, gloss: string) => {
+      expect((await db.words.toArray()).filter((w) => w.lemma === lemma)).toMatchObject([{ lemma, gloss, state: 'learning' }]);
     });
   });
 });

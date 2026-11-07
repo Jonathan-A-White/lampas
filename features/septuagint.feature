@@ -165,3 +165,18 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     When he opens the Verse view of verse 1 and taps Diagram
     Then the pane draws the Greek diagram of Genesis 1:1
     And the tutor was asked once, in Greek, for the 10 words of the verse beginning "ΕΝ ΑΡΧΗ"
+
+  # R6 (mw-u2w5klk.16): a guess is not learned until it is checked, and the button says so; a lemma only the Septuagint has (κάρπιμος is in no New Testament word) is added with the gloss the Septuagint's lexicon gives
+  @uc-tutor-word @words @greek
+  Scenario: Add to my words on a guess-only lemma says why it did nothing, and on a read lemma that only the Septuagint has it adds it
+    Given Lampas is opened on Genesis 1 with the Septuagint on, every γίνομαι read only as a guess and a tutor that explains the words Γενηθήτωσαν and κάρπιμον
+    When he taps the word "Γενηθήτωσαν" in verse 14
+    And he taps "Report this reading" on the card
+    And the tutor has explained the words
+    And he taps "Add to my words" on the answer word "γίνομαι"
+    Then the answer word "γίνομαι" says "Not added: Lampas only guessed this word, and a guessed word is not learned until it is checked."
+    And the answer word "γίνομαι" still offers "Add to my words"
+    And the word "γίνομαι" is not on his list
+    When he adds the answer word "κάρπιμος" to his words
+    Then the answer word "κάρπιμος" shows "On my list"
+    And the word "κάρπιμος" is on his list once, with the gloss "fruitful"

@@ -11,6 +11,8 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
 import { openVerseView } from './verse-view';
+import { openTutor } from './open-tutor';
+import { talkField } from './talk-field';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -200,4 +202,35 @@ test.describe('Memorize and the Diagram on a Septuagint chapter', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await shot(page, 'septuagint-diagram');
   });
+});
+
+// R6 (mw-u2w5klk.16): a lemma only the Septuagint has (κάρπιμος is in no word of the New Testament) is added by the tutor's words_to_add, from a private stub of the tutor (never the live Postern or grind)
+test("the tutor's words_to_add adds a lemma only the Septuagint has, and the Words list shows it", async ({ page }) => {
+  const fake = makeFakePostern();
+  fake.autoReply = { status: 'answered', answer: { answer: 'A fruitful tree; adding it.', words: [], words_to_add: ['κάρπιμος'] } };
+  await routePostern(page, fake);
+  await openUnlocked(page, { empty: true });
+  await turnOn(page);
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Greek', exact: true }).click();
+  await openVerseView(page, 11);
+  const sheet = await openTutor(page, { sheet: 'Talk about Genesis 1:11' });
+  const field = await talkField(sheet);
+  await field.fill('What is a fruit tree called here?');
+  await sheet.getByRole('button', { name: 'Send', exact: true }).click();
+  const card = sheet.locator('[data-turn]');
+  await expect(card).toContainText('A fruitful tree; adding it.');
+  await expect(card.locator('[data-talk-added]')).toContainText('κάρπιμος');
+  await expect(card).not.toContainText('not in the lexicon');
+  expect(fake.received).toHaveLength(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await shot(page, 'septuagint-words-to-add');
+
+  await page.goto('/#/words');
+  await expect(page.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
+  const row = page.locator('[data-lemma="κάρπιμος"]');
+  await expect(row).toBeVisible();
+  await expect(row).toContainText('fruitful');
+  await expect(row).toHaveAttribute('data-state', 'learning');
 });

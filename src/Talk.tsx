@@ -147,6 +147,8 @@ function ChangeRow({ turn, change, index }: { turn: TalkTurn; change: AppliedCha
 function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
   const listed = useLiveQuery(() => wordIsListed(word.lemma), [word.lemma]);
   const [busy, setBusy] = useState(false);
+  // why a tap did nothing: a lemma the Septuagint's derivation only guessed is not put on his list (mw-u2w5klk.16)
+  const [guessed, setGuessed] = useState(false);
   if (listed === undefined) return null;
   const add = async (): Promise<void> => {
     setBusy(true);
@@ -154,20 +156,28 @@ function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
       // The lexicon's gloss and part of speech; a word it lacks still goes in with the gloss the chapter has, as he asked.
       const { result } = await addWord(scope, word.lemma);
       if (result === 'unknown') await addWordToLearn(word.lemma, glossOf(scope, word), Date.now(), '', languageOfLemma(word.lemma));
+      setGuessed(result === 'ignored');
     } finally {
       setBusy(false);
     }
   };
   return (
-    <button
-      type="button"
-      data-add-word={word.lemma}
-      disabled={listed || busy}
-      onClick={() => void add()}
-      className={`mt-1 block min-h-11 rounded-lg border px-3 text-base font-medium ${listed ? 'border-line text-muted' : 'border-accent text-accent active:bg-line'}`}
-    >
-      {listed ? 'On my list' : 'Add to my words'}
-    </button>
+    <>
+      <button
+        type="button"
+        data-add-word={word.lemma}
+        disabled={listed || busy}
+        onClick={() => void add()}
+        className={`mt-1 block min-h-11 rounded-lg border px-3 text-base font-medium ${listed ? 'border-line text-muted' : 'border-accent text-accent active:bg-line'}`}
+      >
+        {listed ? 'On my list' : 'Add to my words'}
+      </button>
+      {guessed && !listed ? (
+        <p role="status" data-add-word-why={word.lemma} className="mt-1 text-base text-muted">
+          Not added: Lampas only guessed this word, and a guessed word is not learned until it is checked.
+        </p>
+      ) : null}
+    </>
   );
 }
 
