@@ -78,9 +78,9 @@ export function referenceText(form: Pick<OwnForm, 'book' | 'chapter' | 'verse'>)
 
 /**
  * Raised when the lemma files change with no chapter changing, so a phone's worker (CacheFirst) asks for them again: 2 (mw-u2w5klk.295) is the files made again at deploy with the Septuagint's forms
- * (batch 416's files, made without them, were cached under the same version).
+ * (batch 416's files, made without them, were cached under the same version); 3 (mw-u2w5klk.296) is the files with a word printed in capitals indexed under its accented form.
  */
-export const LEMMA_FORMS_EDITION = 2;
+export const LEMMA_FORMS_EDITION = 3;
 
 // The files are asked for with the chapters' fingerprints folded into one version, so the worker (CacheFirst, src/sw.ts) keeps a lemma until some chapter changes. The Septuagint's
 // reading folds in the fingerprints of the shipped Septuagint chapters too (`septuagint`: the index's, one string), since its forms ride in the file; the New Testament's does not,
