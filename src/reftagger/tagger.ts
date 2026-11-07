@@ -1,11 +1,15 @@
 // src/reftagger/tagger.ts — the blog's tagger (mw-5r3p30.1043): every Bible reference in a post's text becomes a plain link to that passage in Lampas. It replaces Logos RefTagger,
 // whose tap opened a NET popover. The reading of a reference is the Reader's own (nav/refsInText.ts over nav/links.ts, never a second table of books), so the blog and the
-// Reader agree on what a reference is. Only the text of a post (a `root`) is read; text already in a link, in code or in a heading is left alone, and so is every link already there.
+// Reader agree on what a reference is. Only the text of a post (a `root`) is read; text already in a link, in code or in a heading is left alone, and so is every link already there (adoptLinks only marks the ones that go to Lampas, for the popup).
 import { referenceUrl } from '../nav/links';
 import { referenceSpans } from '../nav/refsInText';
+import { isAdoptable } from './passage';
 
 /** Where text is never tagged: a link already (its address is never changed), code, a heading, a form's field, a script or a stylesheet. */
 const LEAVE = /^(?:A|CODE|PRE|KBD|SAMP|VAR|BUTTON|SELECT|OPTION|TEXTAREA|INPUT|LABEL|SCRIPT|STYLE|NOSCRIPT|TEMPLATE|SVG|MATH|H[1-6])$/;
+
+/** The mark on a link a post already had to a passage in Lampas, which the popup takes over (adoptLinks): the link itself is not changed, so its address, text and target stay the author's. */
+export const ADOPTED = 'data-lampas-adopted';
 
 /** The mark on a link the tagger made, which also keeps a second run from tagging again. */
 export const MARK = 'data-lampas-ref';
@@ -33,6 +37,18 @@ const isLeft = (node: Node, root: Element): boolean => {
   }
   return false;
 };
+
+/** Marks each link already in `root` that goes to a passage in Lampas (a hand-written or publisher-made `https://lampas.allmymind.org/#/?ref=John.5.25`), so a tap opens the popup first.
+ *  A link to another host, one naming no passage and one carrying `go=1` are left alone (they go where they always did). Returns how many it adopted. */
+export function adoptLinks(root: Element): number {
+  let adopted = 0;
+  for (const link of root.querySelectorAll<HTMLAnchorElement>('a[href]')) {
+    if (link.hasAttribute(MARK) || link.hasAttribute(ADOPTED) || !isAdoptable(link.getAttribute('href') ?? '')) continue;
+    link.setAttribute(ADOPTED, '');
+    adopted += 1;
+  }
+  return adopted;
+}
 
 /** Links every reference in the text of `root`; returns how many links it made. */
 export function tagReferences(root: Element): number {
