@@ -1,6 +1,7 @@
 // The Tools screen's doors (mw-5r3p30.754): the six rows that left Settings, what hides each, what opens each, the Settings search that still finds them, the old Settings address, the tutor's places for them.
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
+import { isKeptHash } from '../../src/nav/lastRoute';
 import { routeOf, ROUTES } from '../../src/nav/route';
 import { movedTool, settingKeyOf, settingLink } from '../../src/settings/link';
 import { GROUPS, isTalkable, ROWS, SECTIONS, TOOL_ROWS, visibleRows, visibleToolRows } from '../../src/settings/rows';
@@ -76,6 +77,10 @@ describe('the Tools screen as a place', () => {
     expect(ROUTES).toContain('tools');
     expect(SCREEN_NAMES.tools).toBe('Tools');
     expect(suggestionsFor('Tools').length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('is kept in the trail, so a cold open rebuilds Back through Tools (tests/e2e/reopen.spec.ts)', () => {
+    expect(isKeptHash('#/tools')).toBe(true);
   });
 
   it('is a place the tutor opens, as are the screens of the tools it holds', async () => {
