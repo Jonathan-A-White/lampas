@@ -107,7 +107,7 @@ could not be read) is logged and answers nothing; the others still answer.
 
 ## The door
 
-`Sermons · N` (`src/sermons/SermonsDoor.tsx`) is a 44 px word in the Verse view's tools line, after the Maps door (`src/VerseView.tsx`, `role=group` 'Tools'): quiet accent words with no border that wrap as a line of words does. It is drawn only while N is above 0 and only on the Verse view
+`Sermons · N` (`src/sermons/SermonsDoor.tsx`) is a 44 px word in the Verse view's tools line, after the Maps door (`src/VerseView.tsx`, `role=group` 'Tools'): quiet accent words with no border, on one row that scrolls sideways where they are wider than it (mw-fnvjof.17.32, docs/verse-view.md 'Maps'). It is drawn only while N is above 0 and only on the Verse view
 (as the Maps door, mw-5r3p30.1028): never in the verse text and never at the foot of a chapter, with the Immersive reader On or Off. It is asked for the verse (`from`), the passage a section heading opens (`from`, `to`) and the whole chapter the place line opens, where the place has **no** `from`
 so that the sheet is headed 'Romans 5' and not 'Romans 5:1-21' (`place.ts sermonPlaceOf`, from `copyUnitOf`'s `kind`). Reading it needs no licence and nothing goes through the mill. The count reads the committed index (a book file the worker keeps); nothing of a sermon's page is fetched.
 

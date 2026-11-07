@@ -32,8 +32,11 @@ for (const phone of PHONES) {
       const tools = view.getByRole('group', { name: 'Tools', exact: true });
       await expect(tools.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
       await expect(tools.getByRole('button', { name: 'Share', exact: true })).toHaveCount(share ? 1 : 0);
-      for (const button of [...buttons, ...(await tools.getByRole('button').all())]) {
+      const doors = await tools.getByRole('button').all();
+      for (const button of [...buttons, ...doors]) {
         const name = (await button.textContent()) ?? '';
+        // the tools line is one row that scrolls sideways (mw-fnvjof.17.32): a door past its end is measured once scrolled to, as a thumb reaches it
+        if (doors.includes(button)) await button.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
         const b = await button.boundingBox();
         if (!b) throw new Error(`no box for ${name}`);
         expect(b.width, `${name} width`).toBeGreaterThanOrEqual(43.5);

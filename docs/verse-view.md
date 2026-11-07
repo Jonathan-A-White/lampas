@@ -104,7 +104,7 @@ Any run of verses of a chapter opens the same passage view: `src/data/passage.ts
 
 The tools line under the text (after Memorize and the two Logos doors) has a quiet **Maps · N** (`src/maps/MapsDoor.tsx`, 44 px): N is the number of Bible Mapper maps of the verse's chapter (`mapsFor`, from the module's data alone; docs/maps.md), and the button is not drawn at 0. For a
 passage opened from a heading the door carries the passage's range (`{ book, chapter, from, to }`). It opens the Maps sheet (docs/maps.md 'The screens'). The Reader's chapter foot has the same door; with the Immersive reader On the Reader has none and the Verse view keeps it.
-The door wraps with the rest of the tools line, as a word of it; it is not a cell of the action row.
+The door is a word of the tools line; it is not a cell of the action row. The tools line is one row that scrolls sideways where its doors are wider than it (as the Reader's chips do), its end fading into the page while a door is past it; the text to copy by hand still takes a line of its own. A fifth door (Sermons) wrapped it onto a second row, and the controls' extra 44 px cost five layout specs their room (mw-fnvjof.17.32, tests/e2e/verse-tools-line.spec.ts). Sideways the tools' column is 40 % of the window but never under 12.5 rem, and keeps no room for the ? when the ? is at the right (it floats over the row of actions there).
 
 ## Sermons (mw-qtu3zvz.2)
 
