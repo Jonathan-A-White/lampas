@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.145",
+    "date": "2026-11-07",
+    "story": "mw-5r3p30.914",
+    "kind": "new",
+    "text": "Hebrew now has its own grammar path in Settings, listing its lessons in order with the next one marked, beside the Greek one."
+  },
+  {
     "version": "0.7.144",
     "date": "2026-11-06",
     "story": "mw-5r3p30.1135",
