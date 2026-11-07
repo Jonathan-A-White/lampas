@@ -30,6 +30,32 @@ describe('listFilter', () => {
     expect(ranked(items, new Map([['b', 0]])).map((i) => i.id)).toEqual(['b', 'a', 'c']);
   });
 
+  // mw-5r3p30.1140: letters in order rank the names whose word starts with the first letter typed before the rest
+  describe('letters in order put a word start first', () => {
+    const books = BOOKS.map((b) => ({ id: b.code, name: b.name }));
+    const names = (query: string) => matchingInOrder(books, query).map((i) => i.name);
+
+    it("'rn' lists Romans and Revelation before the names that only hold r then n in the middle of a word", () => {
+      expect(names('rn')).toEqual(['Romans', 'Revelation', 'Deuteronomy', '1 Chronicles', '2 Chronicles', '1 Corinthians', '2 Corinthians']);
+      expect(matchingInOrderExactly(books, 'rn').map((i) => i.name)).toEqual(names('rn'));
+    });
+
+    it("a word start counts: 'cr' lists the Chronicles and Corinthians before Zechariah, which holds c then r inside a word", () => {
+      const found = names('cr');
+      expect(found.slice(0, 4)).toEqual(['1 Chronicles', '2 Chronicles', '1 Corinthians', '2 Corinthians']);
+      expect(found.indexOf('Zechariah')).toBeGreaterThan(found.indexOf('2 Corinthians'));
+    });
+
+    it('still ranks a start, then a hold, before letters in order, and finds the old cases', () => {
+      expect(names('phlm')).toContain('Philemon');
+      expect(names('1jn')[0]).toBe('1 John');
+      expect(names('mat')[0]).toBe('Matthew');
+      const list = [{ id: 'a', name: 'Aaron' }, { id: 'b', name: 'Barn' }, { id: 'c', name: 'Rain' }];
+      // 'rn': Barn holds it (rank 1), Rain's word starts with r, Aaron has r then n inside a word
+      expect(matchingInOrderExactly(list, 'rn').map((i) => i.id)).toEqual(['b', 'c', 'a']);
+    });
+  });
+
   // mw-fnvjof.17.8: when no name holds what he typed, the names one slip away show, closest first
   describe('a fat finger is forgiven when nothing else matches', () => {
     const books = BOOKS.map((b) => ({ id: b.code, name: b.name }));
