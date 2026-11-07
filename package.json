@@ -35,6 +35,7 @@
     "variants:english": "tsx scripts/variants-english.ts",
     "lxx:english": "tsx scripts/lxx/english.ts",
     "lxx:known": "tsx scripts/lxx/known.ts",
+    "lxx:link": "tsx scripts/lxx/link.ts",
     "lxx:grammar-gaps": "tsx scripts/lxx/grammar-gaps.ts",
     "lxx:lone-support": "tsx scripts/lxx/lone-support.ts",
     "lxx:morpheus-check": "tsx scripts/lxx/morpheus-check.ts",
