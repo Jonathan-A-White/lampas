@@ -7,6 +7,7 @@ import { honestMic } from '../support/honest-fakes';
 import { holdFor } from '../support/hold';
 import { routePostern } from '../support/playwright-postern';
 import { openUnlocked } from './unlocked';
+import { KINDS } from '../../src/resources/catalogue';
 import { chooseAction } from './verse-view';
 import { talkField } from './talk-field';
 import { menuButton, settingsHeading } from './openSettings';
@@ -166,7 +167,7 @@ const SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/#/library');
       await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
-      await expect(page.getByTestId('kind-row')).toHaveCount(8);
+      await expect(page.getByTestId('kind-row')).toHaveCount(KINDS.length);
     },
   },
   {

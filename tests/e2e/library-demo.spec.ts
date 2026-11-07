@@ -11,7 +11,7 @@ import { shot } from './shot';
 import { openUnlocked, SEED_PUBLIC_KEY } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
 import { openVerseView } from './verse-view';
-import { CATALOGUE } from '../../src/resources/catalogue';
+import { CATALOGUE, KINDS } from '../../src/resources/catalogue';
 import { openSettings, openTool } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -88,7 +88,7 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   await expect(page.getByTestId('import-line')).toContainText('from a list of');
   const rows = page.getByTestId('kind-row');
-  await expect(rows).toHaveCount(8);
+  await expect(rows).toHaveCount(KINDS.length);
   await expect(rows.filter({ hasText: 'Lexicons' }).getByTestId('kind-count')).toContainText(/^\d+ on · \d+ pinned$/);
   await expect(rows.filter({ hasText: 'Devotionals' }).getByTestId('kind-count')).toContainText(/\d+ on/);
   await fitsThePhone(page);
