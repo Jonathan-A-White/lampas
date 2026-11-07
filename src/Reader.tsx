@@ -37,13 +37,14 @@ import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
 import { pendingRequest, reopenTalk, takeRequest } from './nav/readerRequest';
 import { closeVerse, openPassage, openVerse, openVerseRange, readerOf, routeOf, useAddress } from './nav/route';
-import { useScrollMemory } from './nav/scrollMemory';
+import { hasKeptScroll, useScrollMemory } from './nav/scrollMemory';
 import { useReadChecks } from './useReadChecks';
 import { stepOf, stepOfVerse } from './reader/steps';
 import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
 import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
 import { canCross, crossChapter } from './reader/crossChapter';
+import { useBringLastVerse, useNoteLastVerse } from './reader/lastPlace';
 import { useBringVerse } from './reader/useBringVerse';
 import { useKeepTopVerse, weavedWordsKey } from './reader/useKeepTopVerse';
 import { usePages } from './reader/usePages';
@@ -261,6 +262,10 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const showPage = pages.show;
   // Choose a book's Go to John 18:2: the chapter, with that verse brought to the top of the reading area (no Verse view)
   useBringVerse(main, inner, BOOK, CHAPTER, chapter, paging, showPage);
+  // A chapter he has read before opens at the verse he was last on in it (mw-5r3p30.1148), unless the open names a place (a verse asked for, a link, a verse in the address) or a scroll offset is kept for it
+  const [placed] = useState(() => request !== undefined || link !== undefined || opened.verse !== undefined || opened.passage !== undefined || hasKeptScroll(window.location.hash, 'reader'));
+  useNoteLastVerse(main, BOOK, CHAPTER, paging);
+  useBringLastVerse(main, inner, BOOK, CHAPTER, chapter, paging, placed);
   // English, Weave and Greek (Hebrew) lay a verse out at different heights: the verse on top before a switch is on top after it (mw-5r3p30.863)
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);

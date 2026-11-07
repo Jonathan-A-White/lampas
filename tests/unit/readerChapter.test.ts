@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
-import { chapterOf, DEFAULT_CHAPTER, getLastChapters, getOpenChapter, setOpenChapter } from '../../src/data/readerChapter';
+import { chapterOf, DEFAULT_CHAPTER, getLastChapters, getLastVerse, getOpenChapter, setLastVerse, setOpenChapter } from '../../src/data/readerChapter';
 import { countDue, ensureScheduled, listDue } from '../../src/data/repositories/reviews';
 
 beforeEach(() => localStorage.clear());
@@ -68,5 +68,28 @@ describe('the chapter last open in each book (mw-5r3p30.1146)', () => {
     expect(getLastChapters()).toEqual({});
     localStorage.setItem('lampas.lastChapters', JSON.stringify({ exo: 6, xyz: 2, gen: 0, rom: 'x' }));
     expect(getLastChapters()).toEqual({ exo: 6 });
+  });
+});
+
+describe('the verse last on top in each chapter (mw-5r3p30.1148)', () => {
+  it('is none for a chapter never read, and keeps a verse per chapter', () => {
+    expect(getLastVerse('gen', 1)).toBeUndefined();
+    setLastVerse('gen', 1, 20);
+    setLastVerse('exo', 1, 4);
+    expect(getLastVerse('gen', 1)).toBe(20);
+    expect(getLastVerse('exo', 1)).toBe(4);
+    setLastVerse('gen', 1, 22);
+    expect(getLastVerse('gen', 1)).toBe(22);
+  });
+
+  it('takes the note away for a chapter left at its top, and reads nothing from what cannot be read', () => {
+    setLastVerse('gen', 1, 20);
+    setLastVerse('gen', 1, null);
+    expect(getLastVerse('gen', 1)).toBeUndefined();
+    localStorage.setItem('lampas.lastVerses', 'not json');
+    expect(getLastVerse('gen', 1)).toBeUndefined();
+    localStorage.setItem('lampas.lastVerses', JSON.stringify({ 'gen/1': 0, 'gen/2': 'x', 'gen/3': 5 }));
+    expect(getLastVerse('gen', 1)).toBeUndefined();
+    expect(getLastVerse('gen', 3)).toBe(5);
   });
 });
