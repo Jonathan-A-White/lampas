@@ -391,6 +391,7 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   'render-errors': 'one bad render never blacks out the app: the shell',
   reopen: 'reopening where he left it: the shell',
   'send-to-makers': 'a wish for the makers: the request flow',
+  'sermons-settings': 'Sermons in Settings: one On or Off row for each source, the shell',
   settings: 'the Settings screen: the shell',
   'settings-details': 'a setting’s details show while it is on: the shell',
   'settings-library': 'Settings after the library: the shelf',

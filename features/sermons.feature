@@ -123,3 +123,35 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     When he taps verse 8
     And he taps "Sermons · 4"
     Then no page outside the app has been asked for
+
+  @uc-sermons @greek
+  Scenario: His Logos sermon archives are the In Logos group, the Pinned ones first
+    Given Lampas is opened on "Romans 5" with Logos On and two sermon archives on his shelf
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
+    And the part "In Logos" holds "J. D. Greear Sermon Archive" and "Greg Laurie Sermon Archive"
+    And the archive "Greg Laurie Sermon Archive" reads "Opens in Logos"
+    And the archive "Greg Laurie Sermon Archive" is a link to "logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall
+    And the sheet still has 4 rows
+
+  @uc-sermons @greek
+  Scenario: An archive that is Off, or one not on his shelf, is not in the group
+    Given Lampas is opened on "Romans 5" with Logos On and only an Off archive
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then the sheet opens with "On this verse" and then "In this chapter"
+
+  @uc-sermons @greek
+  Scenario: With Logos Off there is no In Logos group
+    Given Lampas is opened on "Romans 5" with Logos Off and two sermon archives on his shelf
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then the sheet opens with "On this verse" and then "In this chapter"
+
+  @uc-sermons @greek
+  Scenario: A whole chapter opens each archive at the chapter
+    Given Lampas is opened on "Romans 5" with Logos On and two sermon archives on his shelf
+    When he taps the place line
+    And he taps "Sermons · 4"
+    Then the archive "Greg Laurie Sermon Archive" is a link to "logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5" with the ref.ly address as its fallback and is 44 px tall

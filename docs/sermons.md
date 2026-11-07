@@ -1,7 +1,7 @@
 # Sermons
 
 Lampas lists sermons against the passage each was preached on, and links out to them: nothing of a sermon's words is held. This file is for the free, offline **index** (the epic mw-qtu3zvz,
-story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them, the Sermons door beside Maps on the Verse view and its sheet, is story B2 (mw-qtu3zvz.2): see 'The door' and 'The sheet'. A switch per source in Settings is a later story (B3). The index by **theme** second, story B4 (mw-qtu3zvz.4): the Themes line and 'On the same theme' on the sheet, and a Settings switch for each theme list, is 'The themes' below.
+story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them, the Sermons door beside Maps on the Verse view and its sheet, is story B2 (mw-qtu3zvz.2): see 'The door' and 'The sheet'. A switch per source in Settings and his own Logos sermon archives are story B3 (mw-qtu3zvz.3): see 'Choosing the sources' and 'In Logos'. The index by **theme** second, story B4 (mw-qtu3zvz.4): the Themes line and 'On the same theme' on the sheet, and a Settings switch for each theme list, is 'The themes' below.
 Why the index is shaped this way (a static file per book, no server of our own) is in `docs/sources/sermon-index.md` section 5; what a Logos sermon book would need is in section 2 of the same file.
 Reading needs no licence.
 
@@ -17,6 +17,8 @@ Reading needs no licence.
 - [The sheet](#the-sheet)
 - [Where the door stands: every Verse view state](#where-the-door-stands-every-verse-view-state)
 - [The sources](#the-sources)
+- [Choosing the sources](#choosing-the-sources)
+- [In Logos](#in-logos)
 - [The themes](#the-themes)
   - [The build](#the-build-1)
   - [The Themes line](#the-themes-line)
@@ -88,7 +90,7 @@ with no fetch; the book files are fetched, never bundled. A new source or a chan
 `SermonPlace` {book, chapter, from?, to?}), `sources/bundled.ts` (one `SermonSource` for each source of `public/sermons/index.json`; it reads `<book>.json` the first time a place in that book is asked, by `sermonBookUrl`, once: the promise is kept, and a file
 that failed is asked for again; a book the source has no file for is no request), `sources/index.ts` (`SOURCES`), `sermonsFor.ts` (`sermonsForSources`, the pure ordering below), `enabled.ts` (`enabledSources(sources, read)`, switch key `sermons.<id>`, Logos for a source that `needs` it),
 `index.ts` (`sermonsFor(place)` over the sources in use, `setSermonSources` for the tests, `sourceOf(row)`), `useSermons.ts`, `openSermons.ts`, `SermonsDoor.tsx`, `SermonsSheet.tsx` and `place.ts`. A second source (a modern preacher's catalogue, a Logos sermon book) is one file in
-`sources/` and a line in `SOURCES`. A source is On or Off by its saved switch `sermons.<id>`, else its `default`: `index.ts enabledSources` reads the saved rows (`savedSettings`), and the Settings row that writes them is the next story (B3, mw-qtu3zvz.3). `default` is 'off' for a source whose index entry says `onByDefault: false` (his Logos archives), 'on' for the rest; a row whose address is a `ref.ly` link is `opensIn: 'logos'`. Tests use `tests/support/test-sermons.ts`, sources of their own with rows held in the file.
+`sources/` and a line in `SOURCES`. A source is On or Off by its saved switch `sermons.<id>`, else its `default`: `index.ts enabledSources` reads the saved rows (`savedSettings`), and the Settings row that writes them is 'Choosing the sources' below. `default` is 'off' for a source whose index entry says `onByDefault: false` (his Logos archives), 'on' for the rest; a row whose address is a `ref.ly` link is `opensIn: 'logos'`. Tests use `tests/support/test-sermons.ts`, sources of their own with rows held in the file.
 
 ## Which sermons are for this verse
 
@@ -138,12 +140,31 @@ Size at that commit: about 997 KB of JSON in 65 book files, 126 KB gzipped as on
 
 `henry-sermons` (Matthew Henry's sermons) is bundled since mw-qtu3zvz.8: 51 rows read by hand from the Internet Archive's scans of the 1830 Miscellaneous Works and the 1847 Complete Works (sermon-index `sources/henry-sermons`, first in `efac7003`); 45 are listed under 20 books, 6 have no preaching text (the Archive's page prints none) and are left out. Its urls are the ones sermon-index re-found in the Archive's OCR (mw-qtu3zvz.33: the hand-made urls were 1 to 6 leaves late, so Matthew 16:26's The Worth of the Soul, Sermon I opened Sermon II's page, and `funeral-sermon-4` went out, its leaves are not in the scan); the bundle is pinned at `8ee5cd7c`, the first commit with them, and `tests/fixtures/sermons/henry-sermons-8ee5cd7.jsonl` is that commit's `rows.jsonl`, which `tests/unit/sermons-henry.test.ts` holds the bundled urls equal to: whoever moves the pin copies the new `rows.jsonl` over it. About 13 KB of JSON, under 3 KB gzipped. Its licence line is the Archive's terms of use, quoted in `index.json`; the words are public domain. A Henry text beyond these 51 rows would be a story on the sermon-index repository.
 
-**His Logos archives** (mw-qtu3zvz.12; the sermon-index repository's `tools/logos-import` made the rows, mw-qtu3zvz.11). Each row is a sermon of an archive in the Governor's own Logos library: a title, the passage, the preacher, a date where the archive has one and the `ref.ly` address of the sermon (`https://ref.ly/logosres/LLS:<resource>?art=<id>`), which opens it in Logos for an owner of the archive and for no one else. No Logos text is kept. The three start **Off** (`on_by_default = false` in their `source.toml`, carried by the build into `index.json` as `onByDefault: false` and read by `bundled.ts`), and a row says **Opens in Logos**. Their licence line in `index.json` is the Governor's own words (2026-11-06), since no terms page was read; the `source.toml` `licence_note` carries the footing. Until the Settings shelf (B3, mw-qtu3zvz.3) lands there is no row to turn one On: the switch is the saved setting `sermons.<id>` = `on` (`tests/e2e/keep-settings.ts` writes it). Rows left out: two J. D. Greear rows (CH20, CH165) end at Acts 8:40, a verse past the end of Lampas's Acts 8 (the same slip as the theme sources', below). Skip Heitzig's 176 rows with no passage are mostly verse-by-verse studies whose titles name it (the sermon-index follow-up).
+**His Logos archives** (mw-qtu3zvz.12; the sermon-index repository's `tools/logos-import` made the rows, mw-qtu3zvz.11). Each row is a sermon of an archive in the Governor's own Logos library: a title, the passage, the preacher, a date where the archive has one and the `ref.ly` address of the sermon (`https://ref.ly/logosres/LLS:<resource>?art=<id>`), which opens it in Logos for an owner of the archive and for no one else. No Logos text is kept. The three start **Off** (`on_by_default = false` in their `source.toml`, carried by the build into `index.json` as `onByDefault: false` and read by `bundled.ts`), and a row says **Opens in Logos**. Their licence line in `index.json` is the Governor's own words (2026-11-06), since no terms page was read; the `source.toml` `licence_note` carries the footing. Settings > Study resources > Sermons has a row to turn each On ('Choosing the sources' below; `tests/e2e/keep-settings.ts` writes the saved setting `sermons.<id>` = `on` where a spec needs one On without the screen). Rows left out: two J. D. Greear rows (CH20, CH165) end at Acts 8:40, a verse past the end of Lampas's Acts 8 (the same slip as the theme sources', below). Skip Heitzig's 176 rows with no passage are mostly verse-by-verse studies whose titles name it (the sermon-index follow-up).
 
 The sermon-index repository's other two sources (`themes-tcr1934`, `themes-torrey`) are theme sources (`kind = "themes"`): they are listed under `themes` in `sources.json` and built into `public/themes` (next section). A theme source listed under `sources`, or a sermon source under `themes`, stops the build, naming it.
 
 Each bundled source needs the four credits (CLAUDE.md 'Conventions'): an entry in `ATTRIBUTION.md` quoting the licence line from `source.toml`, a line in `src/preface.ts`, a `CREDITS` entry in `src/tutor/credits.ts` and a rule in
 `tests/support/credits.ts` for `public/sermons/<id>/`. `tests/unit/credits.test.ts` fails until each exists.
+
+## Choosing the sources
+
+**Settings > Study resources > Sermons** (section `sermons`, after Maps and Themes; `docs/layout/settings.md`) has one **On | Off** row for each member of `SOURCES`, key `sermons.<source.id>`, made by `sermonSourceSetting(source)` (`src/settings/definitions/sermons.ts`) the way `mapSourceSetting` makes a map source's
+(`docs/maps.md` 'Choosing the sources'): label `source.name` (less a bracketed qualifier at its end only where the name would pass the 40 characters the tutor is told a setting's name in), hint `source.describe`, On or Off to start as `source.default`.
+**Every bundled source is On to start but his Logos archives**: `spurgeon-ccel` and `henry-sermons` are On, `greg-laurie-logos`, `jd-greear-logos` and `skip-heitzig-logos` are Off (`onByDefault: false`, above). A source with `needs: 'logos'` rides on the Logos study resource: its row is drawn only while Logos is On (`dependsOn resource.logos`) and it answers
+nothing while Logos is Off, whatever its own switch says. (The three bundled Logos archives do not set `needs` today, so they follow their own switch alone.) The tutor may flip the rows by talk; they bear on what the app offers, not on an answer, so `BEARS_ON` (`src/tutor/knows.ts`) says `screen`.
+
+`enabledSources(sources, read)` (`src/sermons/enabled.ts`, pure) keeps the sources whose switch is On and whose `needs` are met; `enabledSources()` in `src/sermons/index.ts` reads the store; `sermonsFor` asks only those. `useSermons` asks the place again when a `sermons.*` setting or `resource.logos` changes
+(`setting-changed` on the bus), so the door's count falls the moment a source goes Off. Proved in `tests/unit/sermons-enabled.test.ts` and `features/sermons-settings.feature` (three sources of the tests' own, `tests/support/sermon-sources.ts`, put in `SOURCES` by a `vi.mock`).
+
+## In Logos
+
+His Logos sermon archives are not a `SermonSource`: Logos does not say which sermons of an archive preach a passage (`docs/sources/sermon-index.md` section 2), so Lampas can list no row of them and the door counts none. They are the catalogue's kind `sermons` (`docs/resources.md` 'Sermon archives': the two Logos types `text.monograph.sermons` and
+`text.monograph.sermon-outlines`, 61 and 17 books, `opens: 'verse'`), listed in Your Logos library > Sermons with Off | On | Pinned and offered by **In another book…** at a verse, New Testament or Old. **Every link is UNVERIFIED on a device until his tap** (mw-5r3p30.1072).
+
+The Sermons sheet adds a group **In Logos** after the bundled groups (`On this verse`, `In this chapter`, `On the same theme`): one 44 px row for each archive of his shelf that is **Pinned or On**, the Pinned first (`src/sermons/sources/logos.ts logosArchives`, `useArchives`), titled with the archive ('Greg Laurie Sermon Archive ↗') and with
+the second line `Opens in Logos`. A row is a plain `<a href="logosres:<id>;ref=Bible.Ro5.8">` (a passage opens at its first verse, a chapter at `Bible.Ro5`) with `data-fallback` (the `ref.ly` address) armed by `armFallback`, as the Logos Atlas rows of the maps sheet are drawn; nothing is fetched. The group is drawn only while Logos is On and only
+when an archive is On or Pinned. `features/sermons.feature` proves it over a mocked shelf; `tests/e2e/sermons.spec.ts` shows it at 390x844 (`shots/sermons-in-logos.png`).
 
 ## The themes
 
@@ -185,7 +206,7 @@ Each topic is a heading, `On Atonement` (the topic's label), over its sermons, w
 
 ### Settings
 
-**Settings > Study resources > Themes** (section `themes`, after Maps; `src/settings/definitions/themes.ts`, `controls/themes.tsx`) has one **On | Off** row for each theme source, `themes.<id>`, both On to start, and the tutor may flip them by talk. Off, a list gives no name to the Themes line and no topic to the join. They bear on what the app offers, not on an answer: `BEARS_ON` says `screen`. The sermon sources' own switches are a later story.
+**Settings > Study resources > Themes** (section `themes`, after Maps; `src/settings/definitions/themes.ts`, `controls/themes.tsx`) has one **On | Off** row for each theme source, `themes.<id>`, both On to start, and the tutor may flip them by talk. Off, a list gives no name to the Themes line and no topic to the join. They bear on what the app offers, not on an answer: `BEARS_ON` says `screen`. The sermon sources' own switches are in the Sermons section ('Choosing the sources').
 
 ### Credits
 

@@ -1538,6 +1538,11 @@
                   "maps.logosatlas",
                   "themes.themes-tcr1934",
                   "themes.themes-torrey",
+                  "sermons.spurgeon-ccel",
+                  "sermons.henry-sermons",
+                  "sermons.greg-laurie-logos",
+                  "sermons.jd-greear-logos",
+                  "sermons.skip-heitzig-logos",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -1924,6 +1929,36 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "themes.themes-torrey" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.spurgeon-ccel" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.henry-sermons" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.greg-laurie-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.jd-greear-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.skip-heitzig-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

@@ -291,7 +291,7 @@ describe('fitHistory', () => {
 
   it('drops the whole history when even one clipped turn cannot fit', () => {
     // the weight is a field that is never cut: the text of a passage is clipped before a turn is dropped (tests/unit/long-passage-fits.test.ts)
-    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(9100) };
+    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(9300) };
     expect(fitHistory(r).history).toEqual([]);
   });
 });
@@ -395,7 +395,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.catalogue).toBeUndefined();
-    const { plain: tight, built: tightest } = await padded(8960);
+    const { plain: tight, built: tightest } = await padded(9160);
     const none = fitHistory(tightest, 0, 'rom.8@1');
     expect(none.facts).toBeUndefined();
     expect(none.history).toEqual(tight.history);

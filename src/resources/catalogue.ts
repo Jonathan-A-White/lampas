@@ -9,9 +9,10 @@ import greekText from './catalogue/greek-text.json' with { type: 'json' };
 import hebrewText from './catalogue/hebrew-text.json' with { type: 'json' };
 import interlinear from './catalogue/interlinear.json' with { type: 'json' };
 import lexicon from './catalogue/lexicon.json' with { type: 'json' };
+import sermons from './catalogue/sermons.json' with { type: 'json' };
 import type { BookSection, LogosPart, ResourceLang } from './types';
 
-export const KINDS = ['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional'] as const;
+export const KINDS = ['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional', 'sermons'] as const;
 export type Kind = (typeof KINDS)[number];
 
 /** Where Lampas opens an entry: a word (the lexicon's headword), a parsing (a grammar's section for a ladder idea), a verse, a chapter (a Bible's Old Testament chapter), a day (a devotional), the
@@ -86,7 +87,7 @@ export interface WorkGroup {
   index?: WorkIndex;
 }
 
-/** One generated file: `version` is the same in all eight (a hash of every entry), `works` is only in the commentary file. */
+/** One generated file: `version` is the same in all nine (a hash of every entry), `works` is only in the commentary file. */
 export interface KindFile {
   kind: Kind;
   version: string;
@@ -103,6 +104,7 @@ const FILES: Record<Kind, KindFile> = {
   commentary: commentary as unknown as KindFile,
   bible: bible as unknown as KindFile,
   devotional: devotional as unknown as KindFile,
+  sermons: sermons as unknown as KindFile,
 };
 
 /** The catalogue's version stamp: the same in every kind file, and a new one whenever any entry changes. A library kept on the phone is re-matched when it differs. */

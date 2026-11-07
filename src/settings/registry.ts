@@ -76,6 +76,8 @@ import { SOURCES } from '../maps/sources';
 import { SOURCES as THEME_SOURCES } from '../themes/sources';
 import { themeSourceSetting } from './definitions/themes';
 import { mapSourceSetting } from './definitions/maps';
+import { SOURCES as SERMON_SOURCES } from '../sermons/sources';
+import { sermonSourceSetting } from './definitions/sermons';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE, isResourceId } from '../resources/logosBible';
 import { PLAY_TOS, type PlayTo } from '../speech/readSpan';
 import { chooseAccent } from '../speech/accents';
@@ -307,7 +309,7 @@ const logosBibleEntry: SettingEntry = {
   label: 'Bible in Logos',
   hint: 'The Bible that New Testament verses open in, in Logos.',
   help: `The Bible in your Logos library that New Testament verses open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). It shows only while Logos is On. The Old Testament and the Apocrypha have a Bible of their own below it; Library > Bibles sets all three at once.`,
-  allowed: { kind: 'text', valid: isResourceId, example: DEFAULT_LOGOS_BIBLE },
+  allowed: { kind: 'text', valid: isResourceId, example: DEFAULT_LOGOS_BIBLE, note: 'a Resource ID; "" for none' },
   read: getLogosBible,
   write: async (value) => {
     await setLogosBibleFor('nt', String(value));
@@ -340,6 +342,9 @@ const mapEntries = SOURCES.map((source) => fromDefinition(mapSourceSetting(sourc
 
 // One On/Off switch per theme source (src/themes/sources/index.ts): 'themes.<id>', Settings > Study resources > Themes (src/settings/definitions/themes.ts).
 const themeEntries = THEME_SOURCES.map((source) => fromDefinition(themeSourceSetting(source)));
+
+// One On/Off switch per sermon source (src/sermons/sources/index.ts): 'sermons.<id>', Settings > Study resources > Sermons (src/settings/definitions/sermons.ts). A source that needs Logos is drawn only while Logos is On.
+const sermonEntries = SERMON_SOURCES.map((source) => fromDefinition(sermonSourceSetting(source)));
 
 /** How much Greek (the dial at the top of the Settings home): writing it moves the dial, which brings in and turns off what the steps change (src/data/repositories/greekInterest.ts). */
 const greekInterestEntry: SettingEntry = {
@@ -610,6 +615,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   logosBibleEntry,
   ...mapEntries,
   ...themeEntries,
+  ...sermonEntries,
   fromDefinition(audioBibleSetting),
   fromDefinition(readingPlanSetting),
   fromDefinition(dailyReviewSetting),

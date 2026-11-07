@@ -1,6 +1,6 @@
 {
   "kind": "hebrew-text",
-  "version": "a8470f3507bd",
+  "version": "4fb8c8be1afa",
   "entries": [
     {"resource":"LLS:LHB","kind":"hebrew-text","title":"Lexham Hebrew Bible","short":"LHB","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"},
     {"resource":"LLS:1.0.199","kind":"hebrew-text","title":"The Lexham Hebrew-English Interlinear Bible","short":"LHI","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"}

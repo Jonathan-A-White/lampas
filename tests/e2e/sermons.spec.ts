@@ -1,11 +1,13 @@
 // tests/e2e/sermons.spec.ts — Lampas sermons on the screen (mw-qtu3zvz.2, docs/sermons.md) at 390x844: the quiet 'Sermons · N' door in the tools line of the Verse view of Romans 5:8, the Sermons sheet (On this verse,
 // In this chapter, each row 44 px with the preacher, the date and where it opens) and a row that is a plain link out. The data is the committed index (public/sermons): no sermon's page is fetched, and the spec
-// holds that no request is made to the sites the rows point at.
+// holds that no request is made to the sites the rows point at. The last tests are mw-qtu3zvz.3's: the Sermons rows of Settings and his Logos sermon archives, In Logos, on the sheet.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { keepSettings } from './keep-settings';
 import { openVerseView } from './verse-view';
+import { openSettings } from './openSettings';
+import { openGroup } from './settings-group';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -183,4 +185,71 @@ test('with Greg Laurie On, Genesis 1 lists \'Who Is Man\', a link that opens in 
   // J. D. Greear and Skip Heitzig stay Off
   await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: /Greear|Heitzig/ })).toHaveCount(0);
   await shot(page, 'sermons-logos');
+});
+
+test('Settings > Study resources > Sermons has a row for each bundled source, the Logos archives Off, and a source turned Off leaves its sermons out (mw-qtu3zvz.3)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings?group=study');
+  const section = page.locator('[data-section="sermons"]');
+  await expect(section).toBeVisible();
+  const on = async (name: string, value: 'On' | 'Off') => expect(section.getByRole('group', { name, exact: true }).getByRole('button', { name: value, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await on('Spurgeon\'s sermons (CCEL)', 'On');
+  await on('Matthew Henry\'s sermons', 'On');
+  await on('Greg Laurie\'s sermons', 'Off');
+  await shot(page, 'sermons-settings');
+
+  // Spurgeon Off: the sermons of Romans 5:8 are Henry's alone (or none), and none is Spurgeon's
+  const spurgeon = section.getByRole('group', { name: 'Spurgeon\'s sermons (CCEL)', exact: true });
+  await spurgeon.getByRole('button', { name: 'Off', exact: true }).click();
+  await on('Spurgeon\'s sermons (CCEL)', 'Off');
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await page.waitForTimeout(500);
+  await expect(view.getByRole('button', { name: /^Sermons/ })).toHaveCount(0);
+});
+
+test('with Logos On, his Pinned and On sermon archives are the In Logos group of the Sermons sheet, each a 44 px link into Logos at the verse (mw-qtu3zvz.3)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  // Logos On, then one archive On and one Pinned from the Library's own Sermons page
+  await openSettings(page);
+  await openGroup(page, 'Study resources');
+  const logos = page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true });
+  if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
+  await expect(logos).toHaveAttribute('aria-checked', 'true');
+  await page.goto('/#/library?kind=sermons');
+  await expect(page.getByRole('heading', { name: 'Sermons', level: 1 })).toBeVisible();
+  const choose = async (name: string, step: 'On' | 'Pin') => {
+    const group = page.getByRole('radiogroup', { name, exact: true });
+    await group.getByRole('radio', { name: step, exact: true }).click();
+    await expect(group.getByRole('radio', { name: step, exact: true })).toHaveAttribute('aria-checked', 'true');
+  };
+  await choose('Greg Laurie Sermon Archive', 'On');
+  await choose('J. D. Greear Sermon Archive', 'Pin');
+
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  await expect(sheet).toBeVisible();
+  const group = sheet.getByRole('group', { name: 'In Logos', exact: true });
+  await expect(group).toBeVisible();
+  // after the bundled groups
+  const heads = await sheet.locator('h3').allTextContents();
+  expect(heads.at(-1)).toBe('In Logos');
+  const rows = group.locator('a[data-archive-row]');
+  await expect(rows).toHaveCount(2);
+  await expect(rows.nth(0).locator('[data-sermon-title]')).toHaveText('J. D. Greear Sermon Archive');
+  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Greg Laurie Sermon Archive');
+  for (let i = 0; i < 2; i++) {
+    expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+    await expect(rows.nth(i).locator('[data-sermon-meta]')).toHaveText('Opens in Logos');
+    await expect(rows.nth(i)).toHaveAttribute('href', /^logosres:LLS:[A-Z0-9.]+;ref=Bible\.Ro5\.8$/);
+    await expect(rows.nth(i)).toHaveAttribute('data-fallback', /^https:\/\/ref\.ly\/logosres\/LLS%3A[A-Z0-9.]+\?ref=Bible\.Ro5\.8$/);
+  }
+  await group.scrollIntoViewIfNeeded();
+  await shot(page, 'sermons-in-logos');
 });

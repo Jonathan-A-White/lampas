@@ -81,7 +81,7 @@ describe('the registry lists every Settings row', () => {
   it('gives every entry a distinct key, a label, a hint, and the values it allows', () => {
     expect(new Set(SETTINGS.map((s) => s.key)).size).toBe(SETTINGS.length);
     expect(SETTINGS.map((s) => s.key).sort()).toEqual(
-      ['audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'hebrewKeyboard', 'hebrewPronunciation', 'hebrewRate', 'hebrewVoice', 'immersiveHint', 'immersiveReader', 'ipaLesson', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'pronunciation', 'pronunciationSeparate', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'rp2026English', 'sectionHeadings', 'send', 'septuagint', 'septuagintGaps', 'talk', 'textSize', 'theme', 'themes.themes-tcr1934', 'themes.themes-torrey', 'tips', 'todaysDevotional', 'variantLessonsOffer', 'variantWitnesses', 'variants', 'weave', 'weaveGrammar', 'weaveOrder'],
+      ['audioBible', 'chapterButtons', 'copyLink', 'copyNumbers', 'copyReference', 'dailyDevotional', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyReview', 'dailyTicks', 'devotional', 'devotionalDraw', 'englishAccent', 'englishRate', 'englishVoice', 'font', 'goal', 'grammarApproach', 'grammarMove', 'greekInterest', 'greekKeyboard', 'greekPronunciation', 'greekRate', 'greekVoice', 'handwritingDrills', 'hebrewDepth', 'hebrewInterest', 'hebrewKeyboard', 'hebrewPronunciation', 'hebrewRate', 'hebrewVoice', 'immersiveHint', 'immersiveReader', 'ipaLesson', 'languages', 'layout', 'logosBible', 'maps.biblemapper', 'maps.logosatlas', 'newWordsADay', 'paradigmExtent', 'pickerGrammar', 'pronunciation', 'pronunciationSeparate', 'quizGoal', 'readLessons', 'readSpan', 'readTutor', 'readingMode', 'readingPlan', 'resource.logos', 'resource.strongs', 'rp2026English', 'sectionHeadings', 'send', 'septuagint', 'septuagintGaps', 'sermons.greg-laurie-logos', 'sermons.henry-sermons', 'sermons.jd-greear-logos', 'sermons.skip-heitzig-logos', 'sermons.spurgeon-ccel', 'talk', 'textSize', 'theme', 'themes.themes-tcr1934', 'themes.themes-torrey', 'tips', 'todaysDevotional', 'variantLessonsOffer', 'variantWitnesses', 'variants', 'weave', 'weaveGrammar', 'weaveOrder'],
     );
     for (const s of SETTINGS) {
       expect(s.label).not.toBe('');
@@ -342,6 +342,11 @@ describe('currentSettings', () => {
       'maps.logosatlas': 'on',
       'themes.themes-tcr1934': 'on',
       'themes.themes-torrey': 'on',
+      'sermons.spurgeon-ccel': 'on',
+      'sermons.henry-sermons': 'on',
+      'sermons.greg-laurie-logos': 'off',
+      'sermons.jd-greear-logos': 'off',
+      'sermons.skip-heitzig-logos': 'off',
       quizGoal: '',
       'resource.strongs': 'off',
       'resource.logos': 'off',

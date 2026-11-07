@@ -1,4 +1,4 @@
-// src/library/kinds.ts — what the Library screen says of each of the eight kinds (docs/design/library-at-scale.md 3.3 and 3.4): their names, the help line of a kind's page, what Pin means for
+// src/library/kinds.ts — what the Library screen says of each of the nine kinds (docs/design/library-at-scale.md 3.3 and 3.4): their names, the help line of a kind's page, what Pin means for
 // them, and the count line a row reads ('19 on · 2 pinned'). Pure: the screens read the shelf and hand the rows here.
 import { MAX_PINS, type LibraryRow, type ShelfState } from '../data/repositories';
 import { entriesOf, entryOf, KINDS, type CatalogueEntry, type Kind } from '../resources/catalogue';
@@ -66,6 +66,12 @@ const INFO: Record<Kind, Omit<KindInfo, 'kind'>> = {
     singular: 'Devotional',
     help: 'Opens the day in your own copy. The ones that are on are in the draw of Today; Settings > Daily chooses among them.',
     steps: 'on',
+  },
+  sermons: {
+    plural: 'Sermons',
+    singular: 'Sermon archive',
+    help: 'Opens the verse you are reading in your own sermon archive, where Logos has it indexed. Pinned ones are among the books at the verse; the Sermons sheet lists the ones that are on under In Logos.',
+    steps: 'pin',
   },
 };
 

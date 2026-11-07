@@ -5,6 +5,7 @@
 // without a reason here, when a new setting has no entry in BEARS_ON, and when a builder does not send what a row says. A new setting, or a new part of his
 // progress, is classified here in the same story that makes it.
 import { SOURCES } from '../maps/sources';
+import { SOURCES as SERMON_SOURCES } from '../sermons/sources';
 import { SOURCES as THEME_SOURCES } from '../themes/sources';
 import { SETTINGS } from '../settings/registry';
 
@@ -40,6 +41,8 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   ...Object.fromEntries(SOURCES.map((source) => [`maps.${source.id}`, 'screen' as const])),
   // which theme lists the Verse view's sheet names a verse's topics from and finds the sermons on the same theme by: what the app offers on a sheet, not what he knows or how the tutor answers (one switch per source in src/themes/sources, mw-qtu3zvz.4)
   ...Object.fromEntries(THEME_SOURCES.map((source) => [`themes.${source.id}`, 'screen' as const])),
+  // which sermon lists the Sermons door and its sheet draw on: what the app offers on a sheet, not what he knows or how the tutor answers (one switch per source in src/sermons/sources, mw-qtu3zvz.3)
+  ...Object.fromEntries(SERMON_SOURCES.map((source) => [`sermons.${source.id}`, 'screen' as const])),
   'resource.logos': 'screen', // also gives a tapped English word its Look it up in Logos row (Webster's 1828): an offer on a sheet, it changes no answer
   logosBible: 'screen',
   audioBible: 'screen',

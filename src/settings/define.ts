@@ -32,6 +32,7 @@ export type SectionId =
   | 'resources'
   | 'maps'
   | 'themes'
+  | 'sermons'
   | 'daily'
   | 'tips'
   | 'developer'
