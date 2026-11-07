@@ -45,6 +45,9 @@ export const absentText = (reading: OwnText): string => (reading === 'septuagint
 /** The name of a text, as 'in the Septuagint' / 'in the NT' says where a form was found. */
 export const foundIn = (source: OwnText): string => (source === 'septuagint' ? 'in the Septuagint' : 'in the NT');
 
+/** The same as the short caption under a form ('LXX', 'NT'; 'LXX + NT' for both), which fits a cell of a phone's table; the long wording stays in the cell's name (mw-u2w5klk.313). */
+export const foundShort = (source: OwnText, alsoNt = false): string => (alsoNt ? 'LXX + NT' : source === 'septuagint' ? 'LXX' : 'NT');
+
 /** The text's form as the files hold it: a grave accent turned acute, a capital at the start lowered unless the lemma is a name (the same as the build's ownFormOf; tests/unit/own-forms.test.ts holds them equal). */
 export function ownFormOf(text: string, lemma: string): string {
   const decomposed = text.normalize('NFD').replace(/̀/g, '́');

@@ -1,8 +1,8 @@
 @uc-paradigms @greek
 Feature: A Septuagint word's own paradigm
   A table opened from the word sheet of a Septuagint word (mw-u2w5klk.289; the wording PROVISIONAL, the Governor to confirm) has the same switch, This word | The pattern.
-  This word lays the forms of the word's lemma found in Swete's Septuagint as well as the New Testament's, each cell saying which text it was found in ('in the Septuagint',
-  'in the NT'). The form he tapped has its cell, and a cell neither text has says so ('not in the Septuagint or NT'), never 'not in the NT' for a form the Septuagint has.
+  This word lays the forms of the word's lemma found in Swete's Septuagint as well as the New Testament's, each cell saying which text it was found in (a short caption under the form: 'LXX', 'NT', 'LXX + NT';
+  the cell's name says it in full, 'in the Septuagint and NT', and the table fits a phone, mw-u2w5klk.313). The form he tapped has its cell, and a cell neither text has says so ('not in the Septuagint or NT'), never 'not in the NT' for a form the Septuagint has.
   A word of the New Testament is read as before: the New Testament's forms alone.
 
   Background:
@@ -12,8 +12,8 @@ Feature: A Septuagint word's own paradigm
     When he opens "adjective-endings" from the Septuagint word "ἀόρατος" of "ἀόρατος" parsed "A-NSF" in Learn
     And he chooses "This word"
     Then the word line says "Its form is outlined in the table."
-    And the outlined cell holds "ἀόρατος" and says "in the Septuagint"
-    And the cell holding "ἀοράτου" says "in the NT"
+    And the outlined cell holds "ἀόρατος" and says "LXX"
+    And the cell holding "ἀοράτου" says "NT"
     And no cell says "not in the NT"
     And an empty cell says "not in the Septuagint or NT"
 
