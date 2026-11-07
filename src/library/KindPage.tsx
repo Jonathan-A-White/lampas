@@ -63,7 +63,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
         back={<HeaderButton onClick={() => backTo('library')}>‹ Library</HeaderButton>}
         action={
           <span data-testid="kind-status" className="chrome-small text-muted">
-            {states ? headerCount(kind, states) : ''}
+            {states ? headerCount(kind, states, bibles) : ''}
           </span>
         }
       />

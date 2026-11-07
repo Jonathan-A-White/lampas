@@ -37,6 +37,28 @@ describe('the marks of a Bible', () => {
   });
 });
 
+describe('the Bibles page header (mw-fnvjof.17.6)', () => {
+  const TYPED = 'LLS:MYTYPEDBIBLE';
+  const TYPED2 = 'LLS:ANOTHERTYPED';
+  const pool = [NKJV, LSB, NRSV, ESV, TYPED, TYPED2];
+
+  it('counts a typed Resource ID the catalogue lacks, as the line under the search names it', () => {
+    const mix = { nt: LSB, ot: TYPED, apocrypha: NRSV };
+    expect(bibleLine(mix)).toBe('NT LSB · OT LLS:MYTYPEDBIBLE · Apocrypha NRSV');
+    expect(headerCount('bible', withBibles(new Map(), Object.values(mix)), mix)).toBe('3 in use');
+  });
+
+  it('equals the number of distinct Bibles in the summary line, for every mix of catalogue and typed IDs', () => {
+    for (const nt of pool) for (const ot of pool) for (const apocrypha of pool) {
+      const mix = { nt, ot, apocrypha };
+      const line = bibleLine(mix);
+      // the line names a Bible once when all three parts agree ('X for all three'), else once for each part: count the names it carries
+      const named = line.endsWith('for all three') ? 1 : new Set(line.split(' · ').map((part) => part.split(' ').slice(1).join(' '))).size;
+      expect(headerCount('bible', withBibles(new Map(), Object.values(mix)), mix), line).toBe(`${named} in use`);
+    }
+  });
+});
+
 describe('the Bibles row and the page', () => {
   it('read the three parts, in one name when they agree', () => {
     expect(bibleLine(bibles)).toBe('NT NKJV · OT LSB · Apocrypha NRSV');

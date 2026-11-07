@@ -120,9 +120,10 @@ export function countLine(kind: Kind, states: ReadonlyMap<string, ShelfState>, b
   return pinned > 0 ? `${on} on · ${pinned} pinned` : `${on} on`;
 }
 
-/** The count a kind's page shows in its header: '19 on', 'none on', '2 in use' (the Bibles set for some part). */
-export function headerCount(kind: Kind, states: ReadonlyMap<string, ShelfState>): string {
+/** The count a kind's page shows in its header: '19 on', 'none on', '3 in use' (the distinct Bibles set for some part). The Bibles are counted from the three Settings keys (`bibles`), the same
+ *  fact the line under the search names, so a typed Resource ID the catalogue lacks counts too (mw-fnvjof.17.6); without them the catalogue rows of `states` are counted. */
+export function headerCount(kind: Kind, states: ReadonlyMap<string, ShelfState>, bibles?: LogosBibles): string {
   const { on } = countsOf(kind, states);
-  if (kind === 'bible') return `${on} in use`;
+  if (kind === 'bible') return `${bibles ? new Set(Object.values(bibles)).size : on} in use`;
   return on === 0 ? 'none on' : `${on} on`;
 }

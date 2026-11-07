@@ -214,3 +214,13 @@ test('Bibles show the parts they are set for, read from Settings, and choosing o
   await expect(page.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
   await expectThumbSized(page);
 });
+
+test('a typed Resource ID counts in use (mw-fnvjof.17.6)', async ({ page }) => {
+  await open(page, 'library?kind=bible', 'Bibles');
+  await expect(page.getByTestId('kind-status')).toHaveText('2 in use');
+  await page.getByRole('textbox', { name: 'Resource ID' }).fill('LLS:MYTYPEDBIBLE');
+  await page.getByRole('group', { name: 'Set LLS:MYTYPEDBIBLE for' }).getByRole('button', { name: 'Old Testament', exact: true }).click();
+  await expect(page.getByText('NT LSB · OT LLS:MYTYPEDBIBLE · Apocrypha NRSV')).toBeVisible();
+  await expect(page.getByTestId('kind-status')).toHaveText('3 in use');
+  await shot(page, 'library-bibles-typed-count');
+});
