@@ -119,6 +119,62 @@ test('a tap on a Septuagint word opens its card from the lemma lexicon, and a gu
   await expect(sheet.getByTestId('sheet-guess')).toHaveText('A guess: Lampas derived this reading and is not sure');
   await expect(sheet.locator('[data-reading-line]')).toHaveText('How Lampas read this word: A guess (unsure)');
   await expect(sheet.getByRole('button', { name: 'Add to my words' })).toHaveCount(0);
+  // its Parsing row (a term is a button, a comma plain text) never wraps a line that holds only a comma (mw-u2w5klk.17)
+  const lines = await sheet.getByTestId('sheet-parse').evaluate((dd) => {
+    const walker = document.createTreeWalker(dd, NodeFilter.SHOW_TEXT);
+    const chars: { y: number; x: number; c: string }[] = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.textContent ?? '';
+      for (let i = 0; i < text.length; i += 1) {
+        const range = document.createRange();
+        range.setStart(node, i);
+        range.setEnd(node, i + 1);
+        const r = range.getBoundingClientRect();
+        if (r.width > 0) chars.push({ y: r.top + r.height / 2, x: r.left, c: text[i] });
+      }
+    }
+    const rows: { y: number; chars: { x: number; c: string }[] }[] = [];
+    for (const ch of chars) {
+      const row = rows.find((r) => Math.abs(r.y - ch.y) < 12);
+      if (row) row.chars.push(ch);
+      else rows.push({ y: ch.y, chars: [ch] });
+    }
+    return rows.sort((p, q) => p.y - q.y).map((r) => r.chars.sort((p, q) => p.x - q.x).map((ch) => ch.c).join('').trim());
+  });
+  expect(lines.join(' ')).toBe('verb, aorist passive imperative, 3rd person plural');
+  for (const line of lines) {
+    expect(line, `a line of the Parsing row: ${JSON.stringify(lines)}`).not.toMatch(/^[,;:.\s]*$/);
+    expect(line, 'a line starting with a comma').not.toMatch(/^,/);
+  }
+  await shot(page, 'septuagint-word-guess');
+});
+
+// R7 (mw-u2w5klk.17): a punctuated word's card heads the word without the mark; About this reading opens the Help page that explains the five layers, and Back returns to the same card
+test('the card of γῆν. has no full stop, and About this reading opens Help at Words and Back returns to the open card', async ({ page }) => {
+  await openUnlocked(page);
+  await turnOn(page);
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Greek', exact: true }).click();
+  const verse = page.locator('[data-verse="1"]');
+  await expect(verse.locator('[data-text]')).toContainText('γῆν.');
+  await verse.getByRole('button', { name: /^γῆν\./ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Word' });
+  await expect(sheet.getByTestId('sheet-word')).toHaveText('γῆν');
+  await sheet.getByRole('button', { name: 'About this reading' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Words' })).toBeVisible();
+  const main = page.getByRole('main');
+  for (const layer of [/New Testament’s forms/, /paradigm parser/, /agreement with neighbours/, /model’s reading/, /a guess/, /Sure, likely or unsure/]) await expect(main).toContainText(layer);
+  await shot(page, 'septuagint-about-reading');
+  // the header's Back is to the card ...
+  await page.getByRole('button', { name: '‹ Word' }).click();
+  await expect(page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-word')).toHaveText('γῆν');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  // ... and so is the phone's
+  await page.getByRole('dialog', { name: 'Word' }).getByRole('button', { name: 'About this reading' }).click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Words' })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('dialog', { name: 'Word' }).getByTestId('sheet-word')).toHaveText('γῆν');
 });
 
 // R5 (mw-u2w5klk.15): Memorize and the Diagram read Genesis 1:1 as Swete's Greek while the setting is On (the study tools follow the chapter's language, not the book's name)

@@ -180,3 +180,22 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     When he adds the answer word "κάρπιμος" to his words
     Then the answer word "κάρπιμος" shows "On my list"
     And the word "κάρπιμος" is on his list once, with the gloss "fruitful"
+
+  # R7 (mw-u2w5klk.17): Swete's punctuation stays in the verse the Reader draws and is not the word of the card ('γῆν.' is γῆν), and About this reading opens the Help page that explains the five layers, from which Back returns to the same card
+  @uc-word-sheet @greek
+  Scenario: Tapping a punctuated word shows its heading without the mark
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
+    When he taps the word "γῆν." in verse 1
+    Then the card heading reads "γῆν"
+    And verse 1 still ends with "γῆν."
+
+  @uc-word-sheet @greek
+  Scenario: About this reading explains the five layers and Back returns to the same card
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
+    When he taps the word "ἐποίησεν" in verse 1
+    And he taps "About this reading" on the card
+    Then Help opens at the page "Words"
+    And the page names the five layers and the three confidences
+    When he taps "‹ Word" on the Help page
+    Then the card of "ἐποίησεν" is open again over the chapter
+    And the card reads "How Lampas read this word: From the New Testament's forms (sure)"

@@ -1,12 +1,13 @@
 // tests/unit/lxx-word.test.ts — a word of a Septuagint chapter (mw-u2w5klk.12, the Septuagint epic's R4): its gloss and definition come from the lemma lexicon (public/data-lxx/lexicon-grc-lxx.json),
 // how Lampas read it is told in words, and a word the derivation only guessed (`y: 'g'`) is never offered to learn, quizzed, drilled or added: one test for each seam.
 import 'fake-indexeddb/auto';
-import { render, renderHook, waitFor } from '@testing-library/react';
+import { cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { createElement } from 'react';
 import { latest } from '../../src/events/bus';
 import { LinkOpener } from '../../src/nav/LinkOpener';
 import { readFileSync } from 'node:fs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addLemmaToLearn } from '../../src/data/answerWord';
 import { loadLexicon } from '../../src/data/lexicon';
 import { findWord } from '../../src/nav/links';
@@ -39,6 +40,11 @@ import { confidenceWord, readingOf } from '../../src/reader/septuagint';
 import { useNewWords } from '../../src/useNewWords';
 import { FIXTURE_CHAPTER } from '../fixtures/frontier';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../support/fake-speech';
+import { asSpoken } from '../support/lone-word';
+import { reportQuestion } from '../../src/services/talk';
+import { dropHeldWord, holdWord, holdWordStillWanted } from '../../src/wordReturn';
+import { WordSheet, type WordHelp } from '../../src/WordSheet';
 
 const gen1 = JSON.parse(readFileSync('tests/fixtures/data-lxx/gen/1.json', 'utf8')) as Chapter;
 
@@ -464,5 +470,94 @@ describe('a lemma only the Septuagint has', () => {
     expect(ran.result).toBe('unknown');
     const same = await addWord({ title: 'Test 1', chapter: FIXTURE_CHAPTER, verse: null }, 'κόσμος');
     expect(same).toMatchObject({ result: 'added', said: 'Added κόσμος to his words' });
+  });
+});
+
+// mw-u2w5klk.17 item F: Swete's punctuation ('γῆν.', 'ἀβύσσου·') stays in the word's `t` so the Reader draws the verse as he printed it; the card, Hear it and the questions use the word without it
+describe("a Septuagint word's card has the word without Swete's punctuation", () => {
+  const user = userEvent.setup();
+  const genesis = async (): Promise<Chapter> => (await loadSeptuagintChapter('gen', 1))!;
+  const wordOf = (chapter: Chapter, printed: string): GreekWord => chapter.verses.flatMap((v) => v.g).find((w) => w.t === printed)!;
+
+  beforeEach(() => {
+    stubChapterFetch();
+  });
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it('heads the card γῆν and ἀβύσσου, and says them to Hear it without the mark, while the verse the Reader draws keeps it', async () => {
+    const chapter = await genesis();
+    const verses = chapter.verses.map((v) => v.g.map((w) => w.t).join(' '));
+    expect(verses[0]).toMatch(/γῆν\.$/);
+    expect(verses[1]).toContain('ἀβύσσου·');
+    for (const [printed, clean] of [['γῆν.', 'γῆν'], ['ἀβύσσου·', 'ἀβύσσου']] as const) {
+      const synth = stubSpeech([GREEK_VOICE, ENGLISH_VOICE]);
+      const word = wordOf(chapter, printed);
+      expect(word, printed).toBeDefined();
+      render(createElement(WordSheet, { chapter, lookup: { words: [word], fromEnglish: false, verse: 1 }, onClose: () => undefined }));
+      expect((await screen.findByTestId('sheet-word')).textContent).toBe(clean);
+      await user.click(screen.getByRole('button', { name: 'Hear it' }));
+      await waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0));
+      expect(synth.spoken[synth.spoken.length - 1].text).toBe(asSpoken(clean));
+      expect(word.t, 'the data keeps the mark').toBe(printed);
+      cleanup();
+    }
+  });
+
+  it('asks the tutor, and reports a reading, in the clean form', async () => {
+    const chapter = await genesis();
+    const printed = wordOf(chapter, 'ἀβύσσου·');
+    // the card offers Report this reading for a word the derivation is unsure of
+    const word: GreekWord = { ...printed, y: 'g', c: 0.4 };
+    const asked: WordHelp[] = [];
+    render(createElement(WordSheet, { chapter, lookup: { words: [word], fromEnglish: false, verse: 2 }, onClose: () => undefined, onHelp: (help) => asked.push(help) }));
+    await user.click(await screen.findByRole('button', { name: 'Report this reading' }));
+    expect(asked).toHaveLength(1);
+    expect(asked[0]).toMatchObject({ form: 'ἀβύσσου', report: true });
+    expect(reportQuestion({ form: asked[0].form, lemma: asked[0].lemma, parse: asked[0].parse, kind: 'word' }, 'Genesis 1:2')).toMatch(/^Is ἀβύσσου in Genesis 1:2 read right as /);
+    await user.click(screen.getByRole('button', { name: 'Grammar' }));
+    expect(asked[1]).toMatchObject({ form: 'ἀβύσσου', kind: 'grammar' });
+  });
+
+  it('keeps the Reader\'s verse as printed: every mark Swete put on a word is still in the chapter the Reader gets', async () => {
+    const chapter = await genesis();
+    expect(chapter.verses.flatMap((v) => v.g).filter((w) => /[.,·;]$/.test(w.t)).length).toBeGreaterThan(50);
+  });
+});
+
+// mw-u2w5klk.17 item B: About this reading holds the word's sheet and opens Help; the hold must survive the trip, and still be dropped for any other route
+describe('the held word and the Help page About this reading opens', () => {
+  afterEach(() => {
+    dropHeldWord();
+    window.history.replaceState(null, '', '/#/');
+  });
+  const hold = async (): Promise<void> => {
+    window.history.replaceState(null, '', '/#/?b=gen&c=1');
+    stubChapterFetch();
+    const chapter = (await loadSeptuagintChapter('gen', 1))!;
+    holdWord(chapter, { words: [chapter.verses[0].g[2]], fromEnglish: false, verse: 1 });
+  };
+  const goes = (hash: string): void => {
+    window.history.pushState(null, '', `/${hash}`);
+  };
+
+  it('is kept at the Help page About this reading opens, and at the table or the Library as before', async () => {
+    await hold();
+    goes('#/help?page=words');
+    expect(holdWordStillWanted()).toBe(true);
+    goes('#/paradigms/eimi');
+    expect(holdWordStillWanted()).toBe(true);
+    goes('#/library');
+    expect(holdWordStillWanted()).toBe(true);
+  });
+
+  it('is dropped, as before, at any other route: the Help list, another Help page, the Words list, Settings', async () => {
+    await hold();
+    for (const hash of ['#/help', '#/help?page=licence', '#/words', '#/settings', '#/review']) {
+      goes(hash);
+      expect(holdWordStillWanted(), hash).toBe(false);
+    }
   });
 });

@@ -9,6 +9,7 @@ import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { askTheTutor } from './tutor/askNow';
 import { SCREEN_NAMES, type ScreenContext } from './tutor/screen';
 import { useReportScreen } from './tutor/screenContext';
+import { heldWord, leaveToWord, READING_HELP_PAGE } from './wordReturn';
 
 const NAME = SCREEN_NAMES.help;
 
@@ -45,13 +46,15 @@ function AskButton() {
 export function HelpScreen() {
   const page = helpPageById(helpPageOf(useAddress()));
   const opens = page?.opens;
+  // About this reading on a Septuagint word's card opened this page with the sheet held: Back is to the sheet (src/wordReturn.ts); with the sheet gone (a reload) it is the list
+  const toWord = page?.id === READING_HELP_PAGE && heldWord() !== undefined;
   useReportScreen(page ? pageScreen(page) : listScreen());
   const scrollRef = useScrollMemory('help');
   return (
     <>
       <ScreenHeader
         title={NAME}
-        back={page ? <HeaderButton onClick={() => backTo('help')}>‹ Help</HeaderButton> : <HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>}
+        back={toWord ? <HeaderButton onClick={() => leaveToWord(() => backTo('help'))}>‹ Word</HeaderButton> : page ? <HeaderButton onClick={() => backTo('help')}>‹ Help</HeaderButton> : <HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>}
       />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4 pb-[var(--lp-end-inset)]">
         <AskButton />

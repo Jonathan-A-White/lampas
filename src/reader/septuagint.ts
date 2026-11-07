@@ -14,8 +14,17 @@ export const SEPTUAGINT_SHEET_TITLE = 'Whose texts these are';
 /** The Greek of a Septuagint word as the Greek view draws it: as Swete printed it (`d`, with his brackets) while manuscript gaps are shown, else the bare `t`. */
 export const gapText = (word: Pick<GreekWord, 't' | 'd'>, gaps: boolean | undefined): string => (gaps && word.d !== undefined ? word.d : word.t);
 
+/** Swete's marks at the edge of a word: his stops ('.' ',' ';' ':'), the high stop '·' (the Greek ano teleia too), the Greek question mark and his brackets. A koronis or an apostrophe (ἀπ᾽) is the word's own and stays. */
+const SWETE_MARKS = /^[.,;:·\u0387\u037E()[\]]+|[.,;:·\u0387\u037E()[\]]+$/gu;
+
+/** A Septuagint word as its card, Hear it and the tutor's questions have it: without Swete's punctuation and brackets ('γῆν.' -> 'γῆν'). The chapter keeps the printed `t`, which the Reader draws (mw-u2w5klk.17). */
+export const withoutMarks = (text: string): string => text.replace(SWETE_MARKS, '') || text;
+
 /** Whether a chapter is Swete's Septuagint (public/data-lxx): `edition` is 'swete' only there. */
 export const isSeptuagint = (chapter: Pick<Chapter, 'edition'> | null | undefined): boolean => chapter?.edition === 'swete';
+
+/** The form of a word to show, say or ask about: the clean form in a Septuagint chapter, the word's `t` as it is anywhere else. */
+export const cardForm = (chapter: Pick<Chapter, 'edition'> | null | undefined, word: Pick<GreekWord, 't'>): string => (isSeptuagint(chapter) ? withoutMarks(word.t) : word.t);
 
 /** The title of a chapter opened as Lampas's chapter `title` ('Psalms 23'): with the Greek chapter's number beside it where that differs ('Psalms 23 (Greek 22)'). */
 export const septuagintTitle = (title: string, lampas: number, chapter: Pick<Chapter, 'chapter' | 'edition'>): string =>

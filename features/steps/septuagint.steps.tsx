@@ -400,6 +400,41 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  // R7 (mw-u2w5klk.17)
+  Scenario('Tapping a punctuated word shows its heading without the mark', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+    When('he taps the word {string} in verse {int}', taps);
+    Then('the card heading reads {string}', (_: unknown, text: string) => {
+      expect(squash(within(sheet()).getByTestId('sheet-word').textContent)).toBe(text);
+    });
+    And('verse {int} still ends with {string}', (_: unknown, n: number, text: string) => {
+      expect(greekOf(n).endsWith(text)).toBe(true);
+    });
+  });
+
+  Scenario('About this reading explains the five layers and Back returns to the same card', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+    When('he taps the word {string} in verse {int}', taps);
+    And('he taps {string} on the card', tapsOnCard);
+    Then('Help opens at the page {string}', async (_: unknown, title: string) => {
+      expect(await screen.findByRole('heading', { name: title, level: 2 })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/help?page=words');
+    });
+    And('the page names the five layers and the three confidences', () => {
+      const page = squash(screen.getByRole('main').textContent);
+      for (const layer of [/New Testament.s forms/, /paradigm parser/, /agreement with (its )?neighbours/, /model.s reading/, /\ba guess\b/, /\bsure\b/i, /\blikely\b/i, /\bunsure\b/i]) expect(page).toMatch(layer);
+    });
+    When('he taps {string} on the Help page', async (_: unknown, name: string) => {
+      await user.click(screen.getByRole('button', { name }));
+    });
+    Then('the card of {string} is open again over the chapter', async (_: unknown, text: string) => {
+      const card = await screen.findByRole('dialog', { name: 'Word' });
+      expect(squash(within(card).getByTestId('sheet-word').textContent)).toBe(text);
+      expect(window.location.hash).toMatch(/^#\/\?b=gen&c=1/);
+    });
+    And('the card reads {string}', cardReads);
+  });
+
   // R4's 'never quizzed' (mw-5r3p30.963): the grammar questions Review and Drill it build over a passage, here over the chapter as the app loads it with the Septuagint on
   Scenario('A grammar question over the Septuagint chapter never asks for a guessed word', ({ Given, Then, And }) => {
     let rights: string[] = [];
