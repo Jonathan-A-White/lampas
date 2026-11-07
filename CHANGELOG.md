@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.158
+_2026-11-07_
+- New: You can practise any verse you are memorizing whenever you like, say it again, or move it on to the next step at once.
+- Fixed: In a word's own forms table, the captions are now short and the table fits the phone.
+- Fixed: In the Diagram under the Weave, a Greek word the Weave shows beside an English one (such as δὲ before "So" in Mark 12:16) is now drawn in the diagram too.
+
 ## 0.7.157
 _2026-11-07_
 - Fixed: Searching for a book by a few letters now lists the books whose name starts with your first letter before the others (rn finds Romans and Revelation first).

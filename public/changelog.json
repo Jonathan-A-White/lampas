@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.158",
+    "date": "2026-11-07",
+    "story": "mw-5r3p30.1145",
+    "kind": "new",
+    "text": "You can practise any verse you are memorizing whenever you like, say it again, or move it on to the next step at once."
+  },
+  {
+    "version": "0.7.158",
+    "date": "2026-11-07",
+    "story": "mw-u2w5klk.313",
+    "kind": "fixed",
+    "text": "In a word's own forms table, the captions are now short and the table fits the phone."
+  },
+  {
+    "version": "0.7.158",
+    "date": "2026-11-07",
+    "story": "mw-5r3p30.1141",
+    "kind": "fixed",
+    "text": "In the Diagram under the Weave, a Greek word the Weave shows beside an English one (such as δὲ before \"So\" in Mark 12:16) is now drawn in the diagram too."
+  },
+  {
     "version": "0.7.157",
     "date": "2026-11-07",
     "story": "mw-5r3p30.1140",
