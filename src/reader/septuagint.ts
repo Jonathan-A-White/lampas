@@ -72,3 +72,23 @@ export function readingOf(word: Pick<GreekWord, 'y' | 'c'>): { layer: string; co
   const confidence = confidenceWord(word.y === 'g' ? Math.min(word.c ?? 0, 0.49) : (word.c ?? 0));
   return { layer, confidence, report: confidence === 'unsure' };
 }
+
+/** What a Septuagint word's English line says (mw-u2w5klk.274.4): `text` is its own aligned Brenton chunk, or with `whole` the English of the whole verse, for a word no chunk is cut for. */
+export interface WordEnglish {
+  text: string;
+  whole: boolean;
+}
+
+/**
+ * The English of a Septuagint word as its sheet shows it, as the New Testament word shows its MSB chunk. The word's own chunk is one the aligner or the model pass paired to it (`y` 'align' or 'model', the word in `g`);
+ * a word with no such chunk (a Greek article Brenton has no 'the' for) and a word of a chapter nothing was paired in (one unmarked chunk holds every word) give Brenton's whole verse, with `whole` set so the sheet says so.
+ * Undefined for a word that is not one of the chapter's (the caller keeps the English it was given) and for a verse with no English.
+ */
+export function septuagintEnglish(chapter: Pick<Chapter, 'verses'>, word: GreekWord, verseOf?: number): WordEnglish | undefined {
+  const verse = chapter.verses.find((v) => (verseOf === undefined || v.n === verseOf) && v.g.includes(word));
+  if (!verse) return undefined;
+  const chunk = word.e === undefined ? undefined : verse.e[word.e];
+  if (chunk && (chunk.y === 'align' || chunk.y === 'model') && chunk.g.includes(verse.g.indexOf(word))) return { text: chunk.t, whole: false };
+  const text = verse.e.map((c) => c.t).join(' ');
+  return text === '' ? undefined : { text, whole: true };
+}
