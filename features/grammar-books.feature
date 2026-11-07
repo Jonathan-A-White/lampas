@@ -47,7 +47,7 @@ Feature: Grammar books in Logos on the idea sheet
   Scenario: Black and Step by Step are on among the grammar books of Your Logos library once Logos is on, and turning Black Off there is kept
     Given Lampas is opened on Romans 8 with no study resources on
     When he turns Logos on in Settings
-    And he opens Your Logos library from Settings
+    And he opens Your Logos library from Tools
     And he opens its Grammars page
     Then the library shows the grammar book "Black, Learn to Read NT Greek" as "Pin"
     When he turns the grammar book "Black, Learn to Read NT Greek" Off
