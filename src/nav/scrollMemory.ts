@@ -73,6 +73,11 @@ export function forgetScroll(hash: string, slot: string): void {
   }
 }
 
+/** Whether a scroll offset is kept for the box `slot` of the screen at `hash` (the Reader then opens there, and a remembered verse is not needed, mw-5r3p30.1148). */
+export function hasKeptScroll(hash: string, slot: string): boolean {
+  return offsets.has(`${scrollAddress(hash)}#${slot}`);
+}
+
 /** Called once before the first render: the offsets kept for the addresses he was at, the one the app opens at last. */
 export function restoreScrolls(): void {
   for (const [key, top] of readAllScrolls(scrollAddress(window.location.hash))) offsets.set(key, top);

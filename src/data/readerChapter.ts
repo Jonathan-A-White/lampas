@@ -28,6 +28,9 @@ const LAST_KEY = 'lampas.lastChapters';
 /** How many times he has opened a chapter of each book, `{ mrk: 3, mat: 1 }` (mw-5r3p30.1147): Choose a book puts the book he opens more often first among equally good matches. */
 const OPENS_KEY = 'lampas.bookOpens';
 
+/** The verse on top when he left each chapter, `{ 'gen/1': 20 }` (mw-5r3p30.1148): the last-place store of LAST_KEY, extended from a chapter per book to a verse per chapter. A chapter he left at its top has none. */
+const VERSES_KEY = 'lampas.lastVerses';
+
 /** Where the Hebrew words' forms come from before he has opened any Old Testament chapter. */
 export const DEFAULT_HEBREW_CHAPTER: OpenChapter = { book: 'gen', chapter: 1, title: 'Genesis 1' };
 
@@ -139,5 +142,41 @@ export function setOpenChapter(book: string, chapter: number): void {
     store()?.setItem(isHebrewBook(book) ? HEBREW_STUDY_KEY : STUDY_KEY, JSON.stringify({ book, chapter }));
   } catch {
     // Storage full or refused: the next open is Romans 8, or the chapter in the address.
+  }
+}
+
+function lastVerses(): Record<string, number> {
+  const verses: Record<string, number> = {};
+  try {
+    const saved = JSON.parse(store()?.getItem(VERSES_KEY) ?? 'null') as Record<string, unknown> | null;
+    if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+      for (const [place, verse] of Object.entries(saved)) if (typeof verse === 'number' && Number.isInteger(verse) && verse >= 1) verses[place] = verse;
+    }
+  } catch {
+    // unreadable: none
+  }
+  return verses;
+}
+
+/** The verse that was on top when he left this chapter, or undefined when he never read it or left it at its top. */
+export function getLastVerse(book: string, chapter: number): number | undefined {
+  return lastVerses()[`${book}/${chapter}`];
+}
+
+/** Keeps `verse` as the one on top in this chapter; null (the chapter is at its top) takes the note away. */
+export function setLastVerse(book: string, chapter: number, verse: number | null): void {
+  try {
+    const verses = lastVerses();
+    const place = `${book}/${chapter}`;
+    if (verse === null) {
+      if (!(place in verses)) return;
+      delete verses[place];
+    } else {
+      if (verses[place] === verse) return;
+      verses[place] = verse;
+    }
+    store()?.setItem(VERSES_KEY, JSON.stringify(verses));
+  } catch {
+    // Storage full or refused: the chapter opens at its top, as it did
   }
 }
