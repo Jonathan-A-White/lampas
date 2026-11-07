@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.161
+_2026-11-07_
+- New: Choose a book now puts the books you open most often first when you search.
+- Fixed: at the largest text size the Bibles row of Your Logos library now wraps its list of parts instead of running off the screen.
+
 ## 0.7.160
 _2026-11-07_
 - New: The Sermons sheet now asks the online sermon index for the newest sermons and can search sermons and themes when you are online.
