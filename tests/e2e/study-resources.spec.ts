@@ -3,7 +3,7 @@ import { pageTime } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
-import { openSettings } from './openSettings';
+import { openSettings, openTool, openTools } from './openSettings';
 
 const VIEWPORT = { width: 390, height: 844 };
 
@@ -58,22 +58,17 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await expect(section.getByRole('checkbox')).toHaveCount(0);
   await shot(page, 'settings-resources');
 
-  // the first row of this section: its count is the Library's, and its button opens the Library
-  const library = section.getByRole('button', { name: /^Your Logos library · \d+ books on$/ });
-  await expect(library).toBeVisible();
-  // indented directly beneath the Logos switch, with the three Bibles in Logos after it
+  // the library is no row here any more: its door is in Tools (mw-5r3p30.754), and the three Bibles in Logos follow the Logos switch
+  await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
   const under = await section.locator('[data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
-  expect(under.slice(under.indexOf('resource.logos'), under.indexOf('resource.logos') + 5)).toEqual(['resource.logos', 'library', 'logosBible', 'logosBibleOt', 'logosBibleApocrypha']);
-  const switchBox = await section.getByRole('switch', { name: 'Logos', exact: true }).boundingBox();
-  const libraryBox = await library.boundingBox();
-  // indented: its left edge is well in from the screen's padding
-  expect(libraryBox?.x ?? 0).toBeGreaterThan(30);
-  expect(libraryBox?.y ?? 0).toBeGreaterThan((switchBox?.y ?? 0) + (switchBox?.height ?? 0));
-  const row = await library.boundingBox();
-  expect(row?.height).toBeGreaterThanOrEqual(43.5);
-  expect((row?.x ?? 0) + (row?.width ?? 0)).toBeLessThanOrEqual(VIEWPORT.width);
-  const counted = (await library.innerText()).match(/· (\d+) books on/)?.[1];
-  await library.click();
+  expect(under.slice(under.indexOf('resource.logos'), under.indexOf('resource.logos') + 4)).toEqual(['resource.logos', 'logosBible', 'logosBibleOt', 'logosBibleApocrypha']);
+  await leaveSettings(page);
+  await openTools(page);
+  // the Tools door counts the books on as the Library's card does, and opens the Library
+  const door = page.getByRole('list', { name: 'Tools' }).getByRole('button', { name: /^Your Logos library/ });
+  const counted = (await door.innerText()).match(/(\d+) books? on/)?.[1];
+  expect(counted).toBeDefined();
+  await door.click();
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   await expect(page.getByTestId('library-card')).toContainText(`${counted} of the`);
   expect(new URL(page.url()).hash).toBe('#/library');
@@ -105,7 +100,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   await shot(page, 'word-sheet-study');
 });
 
-test('Settings home at 360 px opens with Which languages?, and Your Logos library sits under the Logos switch with Bible in Logos, only while Logos is On (mw-rfjjzd.23)', async ({ page }) => {
+test('Settings home at 360 px opens with Which languages?, the Bibles in Logos sit under the Logos switch only while Logos is On (mw-rfjjzd.23), and Your Logos library is in Tools (mw-5r3p30.754)', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 860 });
   await openUnlocked(page);
   await holdAppLinks(page);
@@ -118,29 +113,30 @@ test('Settings home at 360 px opens with Which languages?, and Your Logos librar
   const order = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
   expect(order[0]).toBe('languages');
   expect(order).not.toContain('library');
-  await expect(page.getByRole('button', { name: /^Study resources/ })).toContainText('Your Logos library, links to the tools you own, Bible in Logos, maps and themes.');
+  await expect(page.getByRole('button', { name: /^Study resources/ })).toContainText('Links to the study tools you own, Bible in Logos, maps and themes.');
 
-  // with Logos Off (its start) there is no library row in Study resources
+  // with Logos Off (its start) nothing hangs under it; On, the Bibles in Logos do, and still no library row
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
-  const libraryLine = section.getByRole('button', { name: /^Your Logos library · \d+ books? on$/ });
-  await expect(libraryLine).toHaveCount(0);
+  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toHaveCount(0);
   await turnsOnWithApp(page, section, 'Logos');
-  await expect(libraryLine).toBeVisible();
-  const line = await libraryLine.boundingBox();
-  expect(line?.height).toBeGreaterThanOrEqual(43.5);
-  expect((line?.x ?? 0) + (line?.width ?? 0)).toBeLessThanOrEqual(360);
+  // Bible in Logos is a picker for each part of the canon (mw-5r3p30.841)
+  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toBeVisible();
+  await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
+  const withLogos = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
+  expect(withLogos[withLogos.indexOf('resource.logos') + 1]).toBe('logosBible');
   const fits = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
   expect(fits).toBe(true);
   await shot(page, 'settings-logos-library');
 
-  // Bible in Logos is a picker for each part of the canon (mw-5r3p30.841)
-  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toBeVisible();
-  const withLogos = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
-  expect(withLogos[withLogos.indexOf('resource.logos') + 1]).toBe('library');
-
-  // it opens the Library
-  await libraryLine.click();
+  // Tools has the door while Logos is On, a thumb's height, and it opens the Library
+  await leaveSettings(page);
+  await openTools(page);
+  const door = page.getByRole('list', { name: 'Tools' }).getByRole('button', { name: /^Your Logos library/ });
+  const line = await door.boundingBox();
+  expect(line?.height).toBeGreaterThanOrEqual(43.5);
+  expect((line?.x ?? 0) + (line?.width ?? 0)).toBeLessThanOrEqual(360);
+  await door.click();
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   expect(new URL(page.url()).hash).toBe('#/library');
 });
@@ -155,15 +151,18 @@ test('The Study links are equal tiles in two columns at 360 px', async ({ page }
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
   await turnsOnWithApp(page, section, 'Logos');
-  // the Lexham Theological Wordbook is turned On in Your Logos library (Lexicons), the way a book is now chosen; the door is the first row of Study resources
-  await page.getByRole('button', { name: /^Your Logos library/ }).click();
+  // the Lexham Theological Wordbook is turned On in Your Logos library (Lexicons), the way a book is now chosen; the door is in Tools (mw-5r3p30.754)
+  await leaveSettings(page);
+  await openTool(page, 'Your Logos library');
   await page.getByTestId('kind-row').filter({ hasText: 'Lexicons' }).getByRole('button').click();
   const lexham = page.getByRole('radiogroup', { name: 'Lexham Theological Wordbook', exact: true }).getByRole('radio', { name: 'On', exact: true });
   await lexham.click();
   await expect(lexham).toHaveAttribute('aria-checked', 'true');
+  // Back steps over the Lexicons page, the Library and Tools to the Reader
   await page.goBack();
   await page.goBack();
-  await leaveSettings(page);
+  await page.goBack();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'condemnation', exact: true }).click();
 
   const study = page.getByRole('dialog', { name: 'Word', exact: true }).getByRole('group', { name: 'Study', exact: true });
