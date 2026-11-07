@@ -123,6 +123,20 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
         </button>
       );
     }
+    // an English word with known Greek drawn before it ('δὲ So', the Weave's beside): the Greek in its own face and colour, the English after it
+    const beside = words[index]?.beside;
+    if (beside?.length) {
+      const [lead, ...rest] = l.text.split(' ');
+      const greekPart = [lead, ...rest.slice(0, beside.length - 1)].join(' ');
+      return (
+        <button key={l.id} type="button" data-word={String(index)} aria-label={l.text} data-beside={beside.join(' ')} data-lit={shown ? '' : undefined} style={place} onClick={() => onWord(index)} className={`${text} ${face} ${NO_SELECT} cursor-pointer gap-1 rounded active:bg-line ${shown ? 'bg-line ring-2 ring-accent' : ''}`}>
+          <span {...langOf(true)} className={`${GREEK_FACE} text-accent`}>
+            {greekPart}
+          </span>
+          <span>{l.text.slice(greekPart.length + 1)}</span>
+        </button>
+      );
+    }
     return (
       <button key={l.id} type="button" data-word={String(index)} data-woven={woven ? '' : undefined} data-lit={shown ? '' : undefined} {...langOf(greek || woven)} style={place} onClick={() => onWord(index)} className={`${text} ${woven ? GREEK_FACE : face} ${NO_SELECT} cursor-pointer rounded active:bg-line ${shown ? 'bg-line ring-2 ring-accent' : ''}`}>
         {l.text}
