@@ -121,6 +121,63 @@ describe('the Help screen', () => {
   });
 });
 
+describe('the Septuagint is in Help (mw-5r3p30.1110)', () => {
+  const body = (id: string) => helpPageById(id)?.body.join(' ') ?? '';
+
+  it('the Reader page names the Septuagint beside Hebrew for an Old Testament chapter, with both numberings', () => {
+    const reader = body('reader');
+    expect(reader).toContain('Hebrew');
+    expect(reader).toContain('Old Testament in Greek (Septuagint)');
+    expect(reader).toContain('Swete’s Greek');
+    expect(reader).toContain('Brenton’s English');
+    expect(reader).toContain('Psalms 23, Greek 22');
+    expect(reader).toMatch(/not ready stays Hebrew/);
+  });
+
+  it('the Greek and Hebrew page names the setting, its switch, the Weave and its note, and the tools that read Greek', () => {
+    const languages = body('languages');
+    expect(languages).toContain('Old Testament in Greek (Septuagint)');
+    expect(languages).toContain('How much Greek?');
+    expect(languages).toMatch(/starts off/);
+    expect(languages).toContain('Curious up');
+    expect(languages).toContain('English | Weave | Greek');
+    expect(languages).toMatch(/Weave aligns Swete’s Greek and Brenton’s English by chunk/);
+    expect(languages).toMatch(/note where they are not aligned/);
+    for (const tool of ['Memorize', 'Diagram', 'the Quick test', 'the Parsing drill', 'Review']) expect(languages, tool).toContain(tool);
+    expect(languages).toMatch(/read a Septuagint chapter as Greek/);
+    expect(languages).toMatch(/frontier counts its words/);
+    // what the page says is kept
+    expect(languages).toContain('The sentence Diagram works in English, Greek and Hebrew.');
+  });
+
+  it('the Paradigms page says a Septuagint word’s table also lays its Septuagint forms, and where each was found', () => {
+    const paradigms = body('paradigms');
+    expect(paradigms).toMatch(/From a Septuagint word, This word also lays the Septuagint’s forms/);
+    expect(paradigms).toMatch(/the Septuagint, the NT or both/);
+  });
+
+  it('the Words and Memorize pages point to the Greek and Hebrew page and do not repeat its line', () => {
+    for (const id of ['words', 'memorize']) {
+      expect(body(id), id).toContain('Septuagint');
+      expect(body(id), id).toContain('Greek and Hebrew');
+      expect(body(id), id).not.toContain('Parsing drill and Review read');
+    }
+  });
+
+  it('the Preface names the Septuagint’s sources: Swete’s Greek and Brenton’s English', () => {
+    const preface = PREFACE_PARAGRAPHS.join(' ');
+    expect(preface).toContain('Swete');
+    expect(preface).toContain('Brenton');
+    expect(preface).toContain('public domain');
+  });
+
+  it('draws the Septuagint line on the Reader page', () => {
+    window.location.hash = '#/help?page=reader';
+    render(<HelpScreen />);
+    expect(screen.getByText(/Swete’s Greek with Brenton’s English/)).toBeVisible();
+  });
+});
+
 describe('the Preface keeps only what we chose', () => {
   const NOT_HERE = /licen[cs]e|twilio|phone check|free to read|needs a licence|get a licence/i;
 

@@ -64,3 +64,16 @@ test('the Preface says only what we chose: no Free to read, no licence', async (
   await expect(page.getByText('Free to read')).toHaveCount(0);
   await expect(page.locator('main')).not.toContainText(/licen[cs]e|Twilio/i);
 });
+
+test('Help > The Reader names the Septuagint beside Hebrew', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/help');
+  await page.getByRole('button', { name: /^The Reader/ }).click();
+  await expect(page).toHaveURL(/#\/help\?page=reader$/);
+  await expect(page.getByRole('heading', { name: 'The Reader', level: 2 })).toBeVisible();
+  await expect(page.getByText(/Old Testament in Greek \(Septuagint\)/)).toBeVisible();
+  await expect(page.getByText(/Swete’s Greek with Brenton’s English/)).toBeVisible();
+  const { scrollHeight, clientHeight } = await page.locator('main.screen').evaluate((el) => ({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }));
+  expect(scrollHeight, 'a page fits the phone screen').toBeLessThanOrEqual(clientHeight + 1);
+  await shot(page, 'help-page-reader');
+});
