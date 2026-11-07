@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { startAtAllIn } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
-import { openGroup } from './settings-group';
-import { openSettings, settingsHeading } from './openSettings';
+
+import { settingsHeading, openTool } from './openSettings';
 
 const scrollTop = (page: Page) => page.locator('[data-reader]').evaluate((el) => el.scrollTop);
 /** The biggest scroll offset the app has written to the phone (localStorage 'lampas.scrolls', src/nav/lastRoute.ts). */
@@ -29,9 +29,7 @@ test('closing the app and opening it again puts him back, and Back walks the pla
   // the scroll is written to the phone 250 ms after the last scroll event: wait for the write, not for a time
   await expect.poll(() => keptScroll(first)).toBeGreaterThan(left - 5);
 
-  await openSettings(first);
-  await openGroup(first, 'Account');
-  await first.getByRole('button', { name: 'Words', exact: true }).click();
+  await openTool(first, 'Words');
   await expect(first.getByRole('heading', { name: 'Words', exact: true, level: 1 })).toBeVisible();
   await first.getByRole('button', { name: 'Test', exact: true }).click();
   await expect(first.getByRole('heading', { name: 'Quick test', level: 1 })).toBeVisible();

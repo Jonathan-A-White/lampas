@@ -1,16 +1,16 @@
 // src/reader/ReaderHeader.tsx — the Reader's header (docs/module-map.md R1, part d): the chapter's title (a button that opens the picker),
-// English | Weave | Greek, the Play button of Read aloud and the gear that opens Settings. While a reading the speaking bar does not hold waits for Pause
+// English | Weave | Greek, the Play button of Read aloud and the Menu (three lines) that opens Tools or Settings. While a reading the speaking bar does not hold waits for Pause
 // or Play, the header gives its room to those and Stop; the title stays for screen readers.
 import { useEffect, useRef, useState } from 'react';
 import type { SourceLanguage } from '../data/chapter';
 import { chooseReaderLanguage, type ReaderLanguage, type ReaderView, type Weave } from '../data/repositories';
-import { navigate } from '../nav/route';
 import { weaveOrderSetting } from '../settings/definitions';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { setSetting } from '../settings/store';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { ReadingState } from '../speech/readAloud';
 import { ReadFromButton } from '../speech/ReadControls';
+import { ReaderMenu } from './ReaderMenu';
 
 const TOAST_MS = 2500;
 const WORD_ORDER_NAME: Record<SourceLanguage, Record<WeaveOrder, string>> = {
@@ -20,8 +20,8 @@ const WORD_ORDER_NAME: Record<SourceLanguage, Record<WeaveOrder, string>> = {
 /** What the switch calls the chapter's own words: its source view's label. */
 const SOURCE_NAME: Record<SourceLanguage, string> = { grc: 'Greek', hbo: 'Hebrew' };
 
-/** Under 390 px (a narrow phone or a split-screen window, mw-5r3p30.768) the header cannot hold the title, the switch, Play and the gear on one line: the switch (the
- * widest, `order-1` below) goes to a line of its own, and the title, Play and the gear stay together on the first, so no line holds a lone button.
+/** Under 390 px (a narrow phone or a split-screen window, mw-5r3p30.768) the header cannot hold the title, the switch, Play and the Menu on one line: the switch (the
+ * widest, `order-1` below) goes to a line of its own, and the title, Play and the Menu stay together on the first, so no line holds a lone button.
  *
  * English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
  * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). On an Old
@@ -67,15 +67,6 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder, source }: { view: Rea
         </p>
       ) : null}
     </>
-  );
-}
-
-function GearIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
-    </svg>
   );
 }
 
@@ -160,14 +151,7 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
       {headerButtons ? <span className="flex-1" /> : null}
       {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaveOrder={weaveOrder} source={source} /> : null}
       {canRead ? <ReadFromButton from={from} reading={reading} onRead={onRead} /> : null}
-      <button
-        type="button"
-        aria-label="Settings"
-        onClick={() => navigate('settings')}
-        className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-lg text-accent active:bg-line"
-      >
-        <GearIcon />
-      </button>
+      <ReaderMenu />
     </header>
   );
 }

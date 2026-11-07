@@ -18,7 +18,7 @@ import { asSpoken } from '../../tests/support/lone-word';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openSettings, openTool } from '../../tests/unit/openSettings';
 
 // Each step renders the whole App and several take 5-7 s alone; a loaded host (a full-suite run) outruns the 20 s default.
 vi.setConfig({ testTimeout: 90_000 });
@@ -82,7 +82,7 @@ async function solidLemmas(): Promise<Set<string>> {
   return new Set(solid.flatMap((w) => [w.lemma, ...w.lemmas]).map(nfc));
 }
 
-/** The Weave switch is in Settings: open it from the gear, switch, and come back to the reader. */
+/** The Weave switch is in Settings: open it from the Menu, switch, and come back to the reader. */
 type WeaveLabel = 'Off' | 'Solid words' | 'Solid and learning words';
 const WEAVE_VALUE: Record<WeaveLabel, string> = { Off: 'off', 'Solid words': 'solid', 'Solid and learning words': 'solid+learning' };
 const WEAVE_CHIP: Record<WeaveLabel, string> = { Off: 'Off', 'Solid words': 'Solid', 'Solid and learning words': '+ Learning' };
@@ -211,9 +211,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened with nothing saved', openFresh);
     And('he sets Weave to Solid words', async () => setWeave('Solid words'));
     When('he drops the word {string} on the Words screen', async (_, lemma: string) => {
-      await openSettings(user);
-      await openSettingsGroup(user, 'account');
-      await user.click(await screen.findByRole('button', { name: 'Words' }));
+      await openTool(user, 'Words');
       await screen.findByRole('heading', { name: 'Words', level: 1 });
       const row = await waitFor(() => {
         const el = document.querySelector<HTMLElement>(`[data-lemma="${lemma}"]`);
@@ -227,7 +225,9 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(row.getAttribute('data-state')).toBe('dropped'));
     });
     And('he returns to the reader', async () => {
-      await leaveSettings(user);
+      // Words was opened from Tools: ‹ Tools, then ‹ Reader
+      await user.click(await screen.findByRole('button', { name: '‹ Tools' }));
+      await user.click(await screen.findByRole('button', { name: '‹ Reader' }));
       await waitForReader();
       await waitFor(() => expect(wovenIn(1).length).toBeGreaterThan(0));
     });

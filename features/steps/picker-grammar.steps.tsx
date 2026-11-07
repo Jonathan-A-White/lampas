@@ -31,7 +31,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FIXTURE_CHAPTER, FIXTURE_FREQUENCY } from '../../tests/fixtures/frontier';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openSettings, openTool } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -88,9 +88,7 @@ async function finishRound(rightAnswer: boolean): Promise<void> {
   moves = [];
   const off = subscribe('picker-level-moved', (e) => void moves.push(e));
   render(<App newRandom={() => mulberry32(7)} />);
-  await openSettings(user);
-  await openSettingsGroup(user, 'account');
-  await user.click(await screen.findByRole('button', { name: 'Review' }));
+  await openTool(user, 'Review');
   await user.click(await screen.findByRole('button', { name: 'Start' }));
   // the grammar idea is asked first; then the words, each answered by its first option or a flashcard
   for (let guard = 0; guard < 30; guard += 1) {

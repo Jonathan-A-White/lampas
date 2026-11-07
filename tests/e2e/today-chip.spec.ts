@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openToday, todayChip } from './today-chip';
 import { openUnlocked } from './unlocked';
-import { settingsDoor } from './openSettings';
+import { menuButton } from './openSettings';
 
 // The Reader's Today chip (src/today/TodayChip.tsx, mw-1fwagb.6): it replaced the Due and Plan chips, counts the pieces Today holds and those he ticked, and opens Today.
 test.use({ viewport: { width: 390, height: 844 } });
@@ -93,7 +93,7 @@ test('a piece switched off is not counted, and with Tick boxes off the chip says
 
 test('with every Daily piece off the Reader has no Today chip', async ({ page }) => {
   await openReader(page, DAILY.map((key) => ({ key, value: 'off' })));
-  await expect(page.getByTestId('new-words').or(page.getByTestId('weave-count')).or(settingsDoor(page)).first()).toBeVisible();
+  await expect(page.getByTestId('new-words').or(page.getByTestId('weave-count')).or(menuButton(page)).first()).toBeVisible();
   await expect(todayChip(page)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Due:/ })).toHaveCount(0);
   await expect(page.getByTestId('plan-chip')).toHaveCount(0);

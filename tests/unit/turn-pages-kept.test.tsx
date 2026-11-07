@@ -45,6 +45,7 @@ const AWAY: Record<Exclude<Route, 'home'>, string> = {
   essay: ESSAY_PATH,
   lessons: '#/lessons/variants',
   settings: '#/settings',
+  tools: '#/tools',
   share: '#/share',
   unlock: '#/unlock',
 };

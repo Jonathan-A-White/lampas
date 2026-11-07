@@ -109,7 +109,7 @@ describeFeature(feature, ({ Scenario }) => {
         tutorGuide: () => `${label}: every word as its capitals.`,
       });
     });
-    When("he taps the gear in the reader's header", openSettingsListening);
+    When("he opens Settings from the reader's Menu", openSettingsListening);
     And('he sets each language on its own', () => setEachOnItsOwn(user, true));
     Then('Greek pronunciation lists {string} and {string}', async (_, a: string, b: string) => {
       const group = await screen.findByRole('radiogroup', { name: 'Greek pronunciation' });
@@ -148,7 +148,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The family row sets both languages', ({ Given, When, Then }) => {
     Given(OPENED, openedSaved);
-    When("he taps the gear in the reader's header", openSettingsListening);
+    When("he opens Settings from the reader's Menu", openSettingsListening);
     Then('Listening shows the Pronunciation row with the choice {string}, and neither the Greek nor the Hebrew pronunciation row', familyShownAlone);
     When('he chooses the pronunciation family {string}', async (_, label: string) => {
       await user.click(await screen.findByRole('radio', { name: new RegExp(`^${label}`) }));
@@ -158,7 +158,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Set each language on its own shows the Greek and the Hebrew row, and the family goes', ({ Given, When, Then, And }) => {
     Given(OPENED_PLAIN, openedPlain);
-    When("he taps the gear in the reader's header", openSettingsListening);
+    When("he opens Settings from the reader's Menu", openSettingsListening);
     And('he sets each language on its own', () => setEachOnItsOwn(user, true));
     Then('Listening shows the Greek pronunciation and the Hebrew pronunciation rows, and no Pronunciation row', async () => {
       expect(await screen.findByRole('radiogroup', { name: 'Hebrew pronunciation' })).toBeInTheDocument();
@@ -174,7 +174,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Turning it off puts the family back and both languages follow it', ({ Given, When, Then, And }) => {
     Given(OPENED, openedSaved);
-    When("he taps the gear in the reader's header", openSettingsListening);
+    When("he opens Settings from the reader's Menu", openSettingsListening);
     And('he sets each language on its own', () => setEachOnItsOwn(user, true));
     And('he turns Set each language on its own off', () => setEachOnItsOwn(user, false));
     Then('Listening shows the Pronunciation row with the choice {string}, and neither the Greek nor the Hebrew pronunciation row', familyShownAlone);
@@ -183,7 +183,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The Hebrew voice, speed and keyboard rows show while Hebrew is at Curious or above', ({ Given, When, Then, And }) => {
     Given(OPENED_PLAIN, openedPlain);
-    When("he taps the gear in the reader's header", openSettingsListening);
+    When("he opens Settings from the reader's Menu", openSettingsListening);
     Then('Listening has the Hebrew voice and the Hebrew speed, and no Greek voice or Greek speed', async () => {
       expect(await screen.findByRole('combobox', { name: 'Hebrew voice' })).toBeInTheDocument();
       expect(await screen.findByRole('slider', { name: 'Hebrew speed' })).toBeInTheDocument();
@@ -199,7 +199,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("Neither language's voice, speed or keyboard rows show at English only", ({ Given, When, Then, And }) => {
     Given(OPENED_PLAIN, openedPlain);
-    When("he taps the gear in the reader's header", async () => {
+    When("he opens Settings from the reader's Menu", async () => {
       await openSettings(user);
     });
     Then('Listening has neither the Hebrew nor the Greek voice or speed, nor a Pronunciation row', async () => {

@@ -45,6 +45,7 @@ import { ShareScreen } from './share/ShareScreen';
 import { ReviewScreen } from './ReviewScreen';
 import { Today } from './today/Today';
 import { SettingsScreen } from './SettingsScreen';
+import { ToolsScreen } from './ToolsScreen';
 import { BarSlot, LampasSpeakingBar } from './speech/SpeakingBarSlot';
 import { LiveRegion } from './ui/LiveRegion';
 import { startSpeechSettingsSync } from './speech/settingsSync';
@@ -175,6 +176,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <MemorizeScreen />
       ) : route === 'settings' ? (
         <SettingsScreen />
+      ) : route === 'tools' ? (
+        <ToolsScreen />
       ) : route === 'share' ? (
         <ShareScreen />
       ) : route === 'unlock' ? (

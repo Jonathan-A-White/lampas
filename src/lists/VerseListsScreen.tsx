@@ -3,8 +3,9 @@
 // to make one. A list he just deleted is offered back for a few seconds: 'Refuge deleted' with Undo (src/lists/deleted.ts).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { listVerseLists } from '../data/repositories';
-import { backTo, openVerseList, useAddress, verseListOf } from '../nav/route';
-import { HeaderButton, ScreenHeader } from '../ScreenHeader';
+import { openVerseList, useAddress, verseListOf } from '../nav/route';
+import { ScreenHeader } from '../ScreenHeader';
+import { ToolBack } from '../ToolBack';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { referencesLine } from './canonical';
@@ -22,7 +23,7 @@ function VerseListsHome() {
   useReportScreen({ name: SCREEN_NAMES.lists, facts: lists ? [{ label: 'Lists', value: String(lists.length) }] : [] });
   return (
     <>
-      <ScreenHeader title={SCREEN_NAMES.lists} back={<HeaderButton onClick={() => backTo('library')}>‹ Library</HeaderButton>} />
+      <ScreenHeader title={SCREEN_NAMES.lists} back={<ToolBack fallback="library" label="‹ Library" />} />
       <main className="screen min-h-0 flex-1 px-4">
         {lists === undefined ? null : lists.length === 0 ? (
           <p data-testid="lists-empty" className="mt-3 text-base">

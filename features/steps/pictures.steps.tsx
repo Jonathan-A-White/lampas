@@ -11,8 +11,7 @@ import { forgetChapters } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openTool } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -49,17 +48,13 @@ async function openLampasHolding(lemma: string): Promise<void> {
 }
 
 async function openWords(): Promise<void> {
-  await openSettings(user);
-  await openSettingsGroup(user, 'account');
-  await user.click(await screen.findByRole('button', { name: 'Words' }));
+  await openTool(user, 'Words');
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));
 }
 
 async function openQuickTest(): Promise<void> {
-  await openSettings(user);
-  await openSettingsGroup(user, 'account');
-  await user.click(await screen.findByRole('button', { name: 'Words' }));
+  await openTool(user, 'Words');
   await user.click(await screen.findByRole('button', { name: 'Test' }));
   await screen.findByRole('heading', { name: 'Quick test' });
   await screen.findByTestId('prompt');

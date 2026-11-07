@@ -17,8 +17,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { findSettingsDoor, openSettings } from '../../tests/unit/openSettings';
+import { findMenuButton, openTool } from '../../tests/unit/openSettings';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 
@@ -59,9 +58,7 @@ async function openLampasFresh(): Promise<void> {
 async function openDrill(): Promise<void> {
   // The Test button is in the Words header, which the Reader's Settings opens.
   if (!screen.queryByRole('button', { name: 'Test' })) {
-    await openSettings(user);
-    await openSettingsGroup(user, 'account');
-    await user.click(await screen.findByRole('button', { name: 'Words' }));
+    await openTool(user, 'Words');
   }
   await user.click(await screen.findByRole('button', { name: 'Test' }));
   await user.click(await screen.findByRole('button', { name: 'Parsing drill: Romans 8' }));
@@ -242,7 +239,7 @@ describeFeature(feature, ({ Scenario }) => {
       window.location.hash = '';
       await seedHisWords();
       render(<App newRandom={() => mulberry32(7)} />);
-      await findSettingsDoor();
+      await findMenuButton();
     });
     Then('the steps he answered are still kept for their words', async () => {
       expect(await db.drills.count()).toBe(answeredSteps);

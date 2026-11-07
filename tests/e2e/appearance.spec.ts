@@ -6,7 +6,7 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
-import { openSettings, settingsDoor } from './openSettings';
+import { openSettings, menuButton } from './openSettings';
 
 // 44 px is the floor; a word must clear it by a pixel so one font's metrics can shave a little and it still holds.
 const TAP_WITH_MARGIN = 45;
@@ -161,7 +161,7 @@ test('Text size Large makes the verse text larger and every tap target stays at 
       await page.locator('[data-verse="1"] [data-chunk="0"]').boundingBox(),
       await page.getByRole('button', { name: 'Verse 1', exact: true }).boundingBox(),
       await page.getByRole('button', { name: 'Greek', exact: true }).boundingBox(),
-      await settingsDoor(page).boundingBox(),
+      await menuButton(page).boundingBox(),
       await page.locator('[data-verse="1"]').getByRole('button', { name: 'Hear the verse' }).boundingBox(),
     ];
     return boxes.map((b) => b?.height ?? 0);

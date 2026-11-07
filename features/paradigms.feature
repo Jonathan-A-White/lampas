@@ -1,6 +1,6 @@
 @uc-paradigms @greek
 Feature: Paradigms
-  The Paradigms screen (#/paradigms, reached from Settings > More, beside Review) lists twenty tables: The article, Noun endings, εἰμί,
+  The Paradigms screen (#/paradigms, reached from Menu > Tools, beside Review) lists twenty tables: The article, Noun endings, εἰμί,
   Verb endings, The third declension, Adjective endings, Personal pronouns, Demonstrative and relative pronouns, Interrogative
   and indefinite pronouns, Future and aorist, Aorist and future passive, Perfect and pluperfect, Second aorist, Contract verbs,
   Verbs in -μι, οἶδα, The subjunctive, The imperative, The infinitive and The participle (src/data/paradigms/, docs/paradigms.md), each with 'Available forms: N of M' and a progress bar. A form is
@@ -85,9 +85,9 @@ Feature: Paradigms
     And the cell "γένος, neuter Nominative Singular" is also locked and shows no form
     And the table still has 60 cells
 
-  Scenario: Settings reaches the Paradigms screen and a table opens from the list
-    Given Lampas is open on Settings
-    When he taps Paradigms in Settings
+  Scenario: Tools reaches the Paradigms screen and a table opens from the list
+    Given Lampas is open on Tools
+    When he taps Paradigms in Tools
     And he taps "The article" in the list
     Then the table "The article" is on screen with 24 cells
     And the address is for the table "article"
