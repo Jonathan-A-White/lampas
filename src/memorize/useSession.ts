@@ -4,12 +4,13 @@
 //   phases   'shown' (the verse at its rung, the hold below it) -> 'sending' (a Weave recording is with the mill) -> 'judged' (misses marked, the recall kept, 'Due <day>')
 //   hearing  useRecallHold(lang): dictation (en-US, el-GR, he-IL) judged by judgeSaid ('said'), a Weave recording sent by sendWeaveRecall and judged by judgeReading ('mill'); typed(text) is judged by judgeTyped ('typed', never for the Weave); a phone that cannot hear that language, is
 //            offline or has no microphone says so (`note`) and lets him grade himself (I had it / Not yet, 'self')
-//   keeping  recordRecall writes the recall and moves the verse on the schedule; the row is read again for its due day
+//   keeping  recordRecall writes the recall and moves the verse on the schedule (a verse practised before its due day keeps its row); the row is read again for its due day
+//   going on again() puts the same step back (hidden again, a new recall); nextStep() after a pass moves the verse to the step after this one (advanceStep) and the session shows that step (mw-5r3p30.1145)
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { foldWords, hideWords } from 'learn-kit/recall';
 import type { Verses } from './refs';
 import { versesOf } from './refs';
-import { memorizedRowOf, nextDueVerse, recordRecall, type RecallHow } from '../data/repositories/memorize';
+import { advanceStep, memorizedRowOf, nextDueVerse, recordRecall, type RecallHow } from '../data/repositories/memorize';
 import { wovenOf } from '../reader/useWoven';
 import type { WovenVerse } from '../data/weave';
 import { sourceLanguage, type SourceLanguage } from '../data/chapter';
@@ -20,7 +21,9 @@ import { sendWeaveRecall } from './sendWeave';
 import { memorizeTarget, type VerseToken } from './target';
 import { useRecallHold, type RecallHold, type RecallUnavailable } from './useRecallHold';
 import { dueWords } from './due';
+import { RARE_STEP } from '../data/schedule';
 import { STEPS } from './progress';
+import { announce } from '../ui/live';
 import { weaveSettingsNow } from './weaveSettings';
 
 /** What the session says when a recall cannot be heard, ahead of the two buttons that let him grade himself. */
@@ -68,7 +71,13 @@ export type SessionState =
       selfGraded: boolean;
       /** the next verse that is due, once this one is kept; null when none is */
       next: { ref: string; lang: MemorizeLang } | null;
+      /** a passing recall of a step before the last: Next step is offered */
+      canAdvance: boolean;
       gradeSelf(passed: boolean): void;
+      /** Again: this step once more, the verse hidden again (mw-5r3p30.1145) */
+      again(): void;
+      /** Next step: after a pass, the verse moves to the step after this one at once and the session shows it */
+      nextStep(): void;
       /** what he typed (src/memorize/TypeIt.tsx), judged and kept as 'typed' */
       typed(text: string): void;
     };
@@ -189,6 +198,31 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
     [keep],
   );
 
+  /** Back to the verse hidden, ready for another recall, at `step`. */
+  const restart = useCallback((step: number): void => {
+    keeping.current = false;
+    setLoaded((was) => (was !== null && typeof was === 'object' ? { ...was, step } : was));
+    setKept(null);
+    setNote(null);
+    setPhase('shown');
+  }, []);
+
+  const again = useCallback((): void => {
+    const at = latest.current;
+    if (at) restart(at.step);
+  }, [restart]);
+
+  const nextStep = useCallback((): void => {
+    const at = latest.current;
+    if (!at || at.step >= RARE_STEP) return;
+    void advanceStep(ref, lang, at.step)
+      .then(() => restart(at.step + 1))
+      .catch((error) => {
+        console.error('could not move the verse to the next step', error);
+        announce('The verse could not be moved on. Try again.');
+      });
+  }, [ref, lang, restart]);
+
   const typed = useCallback(
     (text: string): void => {
       const at = latest.current;
@@ -203,5 +237,5 @@ export function useSession(ref: string, lang: MemorizeLang): SessionState {
   const rung = rungFor(loaded.step);
   const hidden = rung.kind === 'gaps' ? hideWords(loaded.tokens.length, rung.share, loaded.seed) : new Set<number>();
   const selfGraded = lang === 'weave' && loaded.source === 'hbo';
-  return { status: 'ready', heading, lang, step: loaded.step, rung, tokens: loaded.tokens, hidden, phase, note: note ?? (selfGraded && phase === 'shown' ? UNAVAILABLE_NOTES['hebrew-weave'] : null), kept, hold, selfGraded, next, gradeSelf, typed };
+  return { status: 'ready', heading, lang, step: loaded.step, rung, tokens: loaded.tokens, hidden, phase, note: note ?? (selfGraded && phase === 'shown' ? UNAVAILABLE_NOTES['hebrew-weave'] : null), kept, hold, selfGraded, next, canAdvance: kept !== null && kept.judgement.passed && loaded.step < RARE_STEP, gradeSelf, again, nextStep, typed };
 }

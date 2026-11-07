@@ -3,7 +3,7 @@ import 'fake-indexeddb/auto';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { clearBus, latest } from '../../src/events/bus';
 import { db } from '../../src/data/db';
-import { DAY } from '../../src/data/schedule';
+import { DAY, RARE_STEP } from '../../src/data/schedule';
 import {
   VERSE_KIND,
   countDueVerses,
@@ -12,6 +12,7 @@ import {
   memorize,
   memorizedOf,
   parseVerseId,
+  advanceStep,
   recordRecall,
   unmemorize,
   verseId,
@@ -154,5 +155,43 @@ describe('recordRecall', () => {
   it('puts a verse that was not on the schedule on it, as the one recall of it', async () => {
     await recordRecall(recall(1), NOW);
     expect(await db.reviews.get(['verse', 'en:Rom.8.28'])).toMatchObject({ rights: 1 });
+  });
+});
+
+describe('practising before the due day (mw-5r3p30.1145)', () => {
+  it('keeps the recall and leaves the row as it was: step, due day, rights, lapses and recent answers', async () => {
+    await memorize(ref, ['en'], NOW);
+    await recordRecall(recall(1), NOW);
+    const before = await db.reviews.get(['verse', 'en:Rom.8.28']);
+    expect(before).toMatchObject({ due: NOW + DAY });
+    await recordRecall(recall(1), NOW + 1000);
+    await recordRecall(recall(0.2), NOW + 2000);
+    expect(await db.reviews.get(['verse', 'en:Rom.8.28'])).toEqual(before);
+    expect(await db.recalls.count()).toBe(3);
+  });
+
+  it('a recall on the due day, or after it, moves the row as always', async () => {
+    await memorize(ref, ['en'], NOW);
+    await recordRecall(recall(1), NOW);
+    // due at NOW + DAY; later the same day is still the due day
+    await recordRecall(recall(1), NOW + DAY + 3600_000);
+    expect(await db.reviews.get(['verse', 'en:Rom.8.28'])).toMatchObject({ step: 1, rights: 0 });
+  });
+});
+
+describe('advanceStep: Next step', () => {
+  it('moves the verse to the step after the one practised, due after that step\'s gap, and counts no right', async () => {
+    await memorize(ref, ['en'], NOW);
+    await recordRecall(recall(1), NOW);
+    await advanceStep(ref, 'en', 0, NOW + 1000);
+    // step 1 waits three days
+    expect(await db.reviews.get(['verse', 'en:Rom.8.28'])).toMatchObject({ step: 1, rights: 0, due: NOW + 1000 + 3 * DAY });
+  });
+
+  it('never goes past the last step and tells the bus', async () => {
+    await memorize(ref, ['en'], NOW);
+    await advanceStep(ref, 'en', RARE_STEP + 3, NOW);
+    expect((await db.reviews.get(['verse', 'en:Rom.8.28']))?.step).toBe(RARE_STEP);
+    expect(latest('memorize-due-changed')).toEqual({ kind: 'memorize-due-changed', due: 0 });
   });
 });

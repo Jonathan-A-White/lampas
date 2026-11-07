@@ -1,6 +1,6 @@
 // src/memorize/MemorizeScreen.tsx — the Memorize route (#/memorize, docs/layout/memorize.md): a MemorizeSession when the address names one (#/memorize/<ref>/<lang>), else the home (mw-fu7dqf.11):
 // 'Due today' with a row for each verse and language that is due and its Start (and Start all: the sessions one after another, which the session's Next verse carries on), then 'Your verses'
-// by the verse lists that hold them and 'Picked alone', each row with its reference, its marks (ProgressMark) and Stop memorizing. Nothing memorized says how to pick verses.
+// by the verse lists that hold them and 'Picked alone', each row with its reference, Stop memorizing, and a mark (ProgressMark) with its Practise for each language. Nothing memorized says how to pick verses.
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { ReactNode } from 'react';
 import { listVerseLists } from '../data/repositories';
@@ -52,18 +52,23 @@ function VerseRow({ canonical, rows }: { canonical: string; rows: VerseProgress[
   const source = useSource(canonical);
   const stop = () => void unmemorizeVerse({ ref: canonical }).then(({ said }) => announce(said)).catch((error) => console.error('could not stop memorizing', error));
   return (
-    <li data-verse-row={canonical} className="flex items-start gap-3 border-b border-line py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-base font-medium">{name}</p>
-        <div className="mt-1 flex flex-col gap-1">
-          {rows.map((row) => (
-            <ProgressMark key={row.lang} progress={row.progress} lang={row.lang} rtl={source === 'hbo'} />
-          ))}
-        </div>
+    <li data-verse-row={canonical} className="border-b border-line py-2">
+      <div className="flex items-center gap-3">
+        <p className="min-w-0 flex-1 text-base font-medium">{name}</p>
+        <button type="button" onClick={stop} aria-label={`Stop memorizing ${name}`} className={`${BUTTON} text-bad`}>
+          Stop memorizing
+        </button>
       </div>
-      <button type="button" onClick={stop} aria-label={`Stop memorizing ${name}`} className={`${BUTTON} text-bad`}>
-        Stop memorizing
-      </button>
+      <div className="mt-1 flex flex-col gap-2">
+        {rows.map((row) => (
+          <div key={row.lang} className="flex items-center gap-3">
+            <ProgressMark progress={row.progress} lang={row.lang} rtl={source === 'hbo'} className="min-w-0 flex-1" />
+            <button type="button" onClick={() => openMemorizeSession(row.ref, row.lang)} aria-label={`Practise ${name} in ${langName(row.lang)}`} className={`${BUTTON} bg-accent text-accent-fg`}>
+              Practise
+            </button>
+          </div>
+        ))}
+      </div>
     </li>
   );
 }

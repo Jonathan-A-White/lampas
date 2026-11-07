@@ -6,7 +6,7 @@
 import { db, type RecallHow, type RecallRow, type Review } from '../db';
 import { publish } from '../../events/bus';
 import { isMemorizeLang, MEMORIZE_LANGS, type MemorizeLang } from '../../memorize/languages';
-import { DAY, startSchedule } from '../schedule';
+import { DAY, RARE_STEP, gapOf, startSchedule } from '../schedule';
 import { listDue, VERSE_KIND, writeReview } from './reviews';
 
 export { VERSE_KIND };
@@ -116,13 +116,21 @@ export async function countDueVerses(now = Date.now()): Promise<number> {
   return (await listDueVerses(now)).length;
 }
 
+const startOfDay = (when: number): number => {
+  const d = new Date(when);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+};
+
+/** Whether `now` falls on a day before the day `due` falls on: the verse is practised early. */
+const beforeDueDay = (due: number, now: number): boolean => startOfDay(now) < startOfDay(due);
+
 /** What a recall is made of, before it is dated and given its gap. */
 export type RecallInput = Omit<RecallRow, 'id' | 'when' | 'gap' | 'lang'> & { lang: MemorizeLang };
 
 /**
  * Keeps one recall and moves the verse on the schedule: the recall row (with its gap, the days since the last recall of this verse in this language, 0 for the first) and the
  * schedule row (a score of PASS_SCORE or more is right, as the words' schedule has it; less drops it two steps and makes it due tomorrow) are written in one transaction. A verse that
- * was not on the schedule is put there. Publishes 'memorize-due-changed'.
+ * was not on the schedule is put there. A recall before the verse's due day (he is practising it early) is kept and leaves the schedule row alone. Publishes 'memorize-due-changed'.
  */
 export async function recordRecall(input: RecallInput, now = Date.now()): Promise<RecallRow> {
   const row = await db.transaction('rw', db.reviews, db.recalls, async () => {
@@ -130,11 +138,27 @@ export async function recordRecall(input: RecallInput, now = Date.now()): Promis
     const last = before.reduce((latest, r) => Math.max(latest, r.when), -Infinity);
     const recall: RecallRow = { ...input, when: now, gap: before.length === 0 ? 0 : Math.max(0, Math.round((now - last) / DAY)) };
     recall.id = await db.recalls.add(recall);
-    await writeReview(VERSE_KIND, verseId(input.ref, input.lang), input.score >= PASS_SCORE, now);
+    // a verse practised before its due day keeps its schedule (mw-5r3p30.1145): the recall is evidence, the row stays as it was until he takes Next step
+    const there = await db.reviews.get([VERSE_KIND, verseId(input.ref, input.lang)]);
+    if (!there || !beforeDueDay(there.due, now)) await writeReview(VERSE_KIND, verseId(input.ref, input.lang), input.score >= PASS_SCORE, now);
     return recall;
   });
   await announceDueVerses(now);
   return row;
+}
+
+/**
+ * Next step (mw-5r3p30.1145): after a passing recall of step `from` he moves the verse on at once. The row goes to the step after `from` (the last step at most), due after that step's gap,
+ * no rights counted towards the next advance. A verse that is not on the schedule is put there. Publishes 'memorize-due-changed'.
+ */
+export async function advanceStep(ref: string, lang: MemorizeLang, from: number, now = Date.now()): Promise<void> {
+  await db.transaction('rw', db.reviews, async () => {
+    const id = verseId(ref, lang);
+    const before = await db.reviews.get([VERSE_KIND, id]);
+    const step = Math.min(RARE_STEP, Math.max(0, Math.trunc(from)) + 1);
+    await db.reviews.put({ lapses: 0, ...before, kind: VERSE_KIND, id, step, due: now + gapOf(step), lastWhen: now, rights: 0 });
+  });
+  await announceDueVerses(now);
 }
 
 /** Every recall of a verse (all languages, or one), oldest first: the evidence the tutor and the schedule models read. */

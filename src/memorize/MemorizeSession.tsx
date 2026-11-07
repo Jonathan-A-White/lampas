@@ -87,7 +87,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
     );
   }
 
-  const { rung, tokens, hidden, phase, note, kept, hold, next, selfGraded } = session;
+  const { rung, tokens, hidden, phase, note, kept, hold, next, selfGraded, canAdvance } = session;
   const judged = phase === 'judged' && kept !== null;
   const hearing = reading.answer === HEAR_ID && reading.status !== 'idle';
   const hear = () => (hearing ? stopAnswerSpeech() : startAnswer(HEAR_ID, runsOfTokens(tokens)));
@@ -122,6 +122,28 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
             </p>
             <div className={`flex flex-wrap gap-2 pb-[var(--lp-end-inset)] ${room}`}>
               {hearIt}
+              <button
+                type="button"
+                onClick={() => {
+                  setTyping(false);
+                  session.again();
+                }}
+                className={ACTION}
+              >
+                Again
+              </button>
+              {canAdvance ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTyping(false);
+                    session.nextStep();
+                  }}
+                  className={ACTION}
+                >
+                  Next step
+                </button>
+              ) : null}
               {next ? (
                 <button type="button" onClick={() => openMemorizeSession(next.ref, next.lang, { replace: true })} className={PRIMARY}>
                   Next verse

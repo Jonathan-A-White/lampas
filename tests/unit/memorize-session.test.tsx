@@ -372,3 +372,99 @@ describe('a verse that cannot be learned', () => {
     expect(memorizeSessionOf(window.location.hash)).toEqual({ ref: REF, lang: 'en' });
   });
 });
+
+describe('practising any time, again and on to the next step (mw-5r3p30.1145)', () => {
+  /** The verse at `step`, not due for `days` more days. */
+  async function seedResting(step: number, days: number, ref = REF): Promise<void> {
+    await seed('en', step, ref);
+    await patch('en', ref, { due: Date.now() + days * DAY });
+  }
+  const wait = async () => (await screen.findByTestId('judgement')).textContent;
+
+  it('Your verses has Practise on a row with nothing due, and it opens the session at the verse\'s step', async () => {
+    await seedResting(2, 3);
+    window.history.replaceState(null, '', '/#/memorize');
+    render(<MemorizeScreen />);
+    expect(await screen.findByText('Nothing due today')).toBeTruthy();
+    const mine = await screen.findByRole('region', { name: 'Your verses' });
+    fireEvent.click(await within(mine).findByRole('button', { name: 'Practise John 1:16 in English' }));
+    await screen.findByTestId('memorize-verse');
+    expect(memorizeSessionOf(window.location.hash)).toEqual({ ref: REF, lang: 'en' });
+    expect(screen.getByText(/Half the words gone · step 3 of 7/)).toBeTruthy();
+  });
+
+  it('a practise before the due day keeps the recall and leaves the due day where it was', async () => {
+    await seedResting(2, 3);
+    const due = (await listMemorized())[0].due;
+    await open(REF, 'en');
+    await sayIt(WORDS.join(' '));
+    expect(await wait()).toBe('Got it: 10 of 10 words');
+    expect(await recallsOf(REF, 'en')).toHaveLength(1);
+    const [row] = await listMemorized();
+    expect(row).toMatchObject({ step: 2, due });
+  });
+
+  it('Again puts the same step back with the verse hidden, as many times as he likes; a pass shows Next step, a miss does not', async () => {
+    await seedResting(2, 3);
+    await open(REF, 'en');
+    await sayIt(WORDS.join(' '));
+    await wait();
+    expect(screen.getByRole('button', { name: 'Next step' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Again' }));
+    await waitFor(() => expect(blanks()).toHaveLength(5));
+    expect(screen.getByText(/Half the words gone · step 3 of 7/)).toBeTruthy();
+    expect(screen.queryByTestId('judgement')).toBeNull();
+    await sayIt('From His we');
+    expect(await wait()).toBe('Not yet: 7 words missed');
+    expect(screen.queryByRole('button', { name: 'Next step' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Again' }));
+    await waitFor(() => expect(blanks()).toHaveLength(5));
+    await sayIt(WORDS.join(' '));
+    expect(await wait()).toBe('Got it: 10 of 10 words');
+    expect(await recallsOf(REF, 'en')).toHaveLength(3);
+    expect((await listMemorized())[0].step).toBe(2);
+  });
+
+  it('Next step shows step N+1 at once and moves the verse to that step with its due day', async () => {
+    await seedResting(2, 1);
+    await open(REF, 'en');
+    await sayIt(WORDS.join(' '));
+    await wait();
+    const before = Date.now();
+    fireEvent.click(screen.getByRole('button', { name: 'Next step' }));
+    await waitFor(() => expect(screen.getByText(/Three quarters of the words gone · step 4 of 7/)).toBeTruthy());
+    expect(blanks()).toHaveLength(8);
+    expect(screen.queryByTestId('judgement')).toBeNull();
+    const [row] = await listMemorized();
+    expect(row.step).toBe(3);
+    expect(row.due).toBeGreaterThanOrEqual(before + 14 * DAY);
+    // the next recall is of the new step and, the verse not being due, leaves its schedule
+    await sayIt(WORDS.join(' '));
+    await wait();
+    expect((await recallsOf(REF, 'en')).map((r) => r.rung)).toEqual([2, 3]);
+    expect((await listMemorized())[0]).toMatchObject({ step: 3, due: row.due });
+  });
+
+  it('a due verse that is practised, passed twice over, still moves once as the schedule says', async () => {
+    await seed('en', 0);
+    await open(REF, 'en');
+    await sayIt(WORDS.join(' '));
+    await wait();
+    fireEvent.click(screen.getByRole('button', { name: 'Again' }));
+    await waitFor(() => expect(screen.queryByTestId('judgement')).toBeNull());
+    await sayIt(WORDS.join(' '));
+    await wait();
+    expect(await recallsOf(REF, 'en')).toHaveLength(2);
+    expect(await db.reviews.get(['verse', `en:${REF}`])).toMatchObject({ step: 0, rights: 1 });
+  });
+
+  it('on the last step there is no Next step', async () => {
+    await seedResting(RARE_STEP, 30);
+    await open(REF, 'en');
+    await sayIt(WORDS.join(' '));
+    await wait();
+    expect(screen.queryByRole('button', { name: 'Next step' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Again' })).toBeTruthy();
+  });
+});
