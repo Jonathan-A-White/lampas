@@ -243,7 +243,7 @@ export const USE_CASES: readonly UseCase[] = [
     title: 'Grammar approach: the order and voice the ladder is taught in',
     status: {
       greek: 'has',
-      hebrew: { gap: 'scenario "A Hebrew approach orders the Hebrew ladder" in features/hebrew-grammar.feature; an approach for the Hebrew ladder in src/approaches/, src/settings/registry.ts Grammar approach shown by either dial (today greekFrom, docs/layout/settings.md), and the Hebrew ladder\u2019s path reads it; M' },
+      hebrew: 'has',
       latin: LATIN_LATER,
     },
   },

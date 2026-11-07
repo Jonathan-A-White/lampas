@@ -67,7 +67,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `drill-it` | Drill it on an idea, the grammar drills in Review, more drill items from the mill | drill-it, drill-sound-rule, fetched-drill-items, grammar-drills, sound-alike-miss | hebrew-letters, hebrew-quiz | gap |
 | `placement` | Placement: test me on the grammar and meet me where I am | placement, quick-round | hebrew-ladder | gap |
 | `paradigms` | Paradigms: the tables, a word’s own paradigm, Drill on a table, How much of a table | hebrew-paradigms, own-paradigm, paradigm-drill, paradigms, septuagint-own-paradigm | hebrew-paradigms, hebrew-word-sheet | gap |
-| `grammar-approach` | Grammar approach: the order and voice the ladder is taught in | grammar-approach | gap | gap |
+| `grammar-approach` | Grammar approach: the order and voice the ladder is taught in | grammar-approach | hebrew-grammar | gap |
 | `lessons` | Lessons read to him: Read lessons to me, a passage lesson that opens its verses and Check passes it by reading | passage-lesson, read-lessons | hebrew-ladder | gap |
 | `reading-ladder` | The reading ladder: verses by how hard they are to say, Read it aloud, the reading check, drills on what he missed, his readings kept | my-reading, reading-check, reading-drill, reading-history, reading-ladder | hebrew-reading-ladder | gap |
 | `memorize` | Memorize a verse: the target text, the session, hearing and typing it, the schedule, the tutor on it | hebrew-memorize, memorize-hear, memorize-schedule, memorize-session, memorize-target, memorize-tutor, memorize-type, memorize | hebrew-memorize | gap |
@@ -90,7 +90,6 @@ The table names, for each use case and language, the feature files with a scenar
 Each line is one backfill story: its acceptance criterion is the named `@hebrew` scenario passing (and the registry row turned to `has`). Sizes: XS a scenario over code that already does it, S a scenario and one module, M new content or a new module.
 
 <!-- hebrew-gaps -->
-- `grammar-approach` (Grammar approach: the order and voice the ladder is taught in): scenario "A Hebrew approach orders the Hebrew ladder" in features/hebrew-grammar.feature; an approach for the Hebrew ladder in src/approaches/, src/settings/registry.ts Grammar approach shown by either dial (today greekFrom, docs/layout/settings.md), and the Hebrew ladder’s path reads it; M
 <!-- /hebrew-gaps -->
 
 Two rows the Governor may want to reopen: `variants` is `n/a` for Hebrew because the WLC data carries no apparatus (a Qere/Ketiv story would add one); `script-depth` is `n/a` for Greek because the Greek is written in its letters wherever it is drawn (`src/script/scripts.ts`: Greek is not a `SCRIPTS` entry).

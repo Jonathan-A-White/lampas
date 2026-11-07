@@ -9,7 +9,7 @@ import { ladderFor } from './data/grammar/ladders';
 import type { Level } from './data/grammar/needs';
 import { startPlacement, summarize } from './data/grammar/placement';
 import { listLevels } from './data/repositories';
-import { approachOf, DEFAULT_APPROACH } from './approaches';
+import { approachFor } from './approaches';
 import { publish } from './events/bus';
 import { navigate, placementOriginOf, useAddress } from './nav/route';
 import { openSetting } from './settings/link';
@@ -39,8 +39,8 @@ export function HebrewPlacement({ lang }: { lang: 'hbo' | null }) {
 
   const state = { ...startPlacement(null, levels, ladder.ideas.map((i) => i.id), 0, new Map(), 'hbo'), done: 'finished' as const };
   const sum = summarize(state);
-  const approach = approachOf(DEFAULT_APPROACH)!;
-  const next = learnNext({ ideas: ladder.ideas.map((i) => ({ id: i.id, count: 0, example: { form: '', code: '', ref: '' } })) }, approach, levels, undefined, 'hbo');
+  const approach = approachFor('hbo');
+  const next = learnNext({ ideas: ladder.ideas.map((i) => ({ id: i.id, count: 0, example: { form: '', code: '', ref: '' } })) }, approach, levels);
   const have = state.ideas.filter((id) => levels.get(id) === 'solid').map((id) => ladder.ideaOf(id).title);
   const start = (): void => {
     publish({ kind: 'placement-done', goal: '', approach: 'hebrew', solid: sum.solid, frontier: sum.frontier, notYet: sum.notYet, untested: sum.untested });

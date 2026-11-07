@@ -4,10 +4,13 @@
 import type { GrammarLevelName } from '../data/db';
 import { bookOf } from '../data/books';
 import { LADDER } from '../data/grammar/ladder';
-import { HEBREW_PASSAGE_LESSONS } from '../data/grammar/hebrew/ladder';
+import { HEBREW_LADDER, HEBREW_PASSAGE_LESSONS } from '../data/grammar/hebrew/ladder';
+import type { GrammarIdea } from '../data/grammar/ladder';
+import { hebrewLadder } from './hebrew-ladder';
 import { ladder } from './ladder';
 import type { ApproachLesson, ApproachLevel, ApproachStage, GrammarApproach, Passage } from './types';
 
+export { hebrewLadder } from './hebrew-ladder';
 export type { ApproachCredit, ApproachLesson, ApproachLevel, ApproachStage, GrammarApproach, Passage } from './types';
 
 export const APPROACHES: readonly GrammarApproach[] = [ladder];
@@ -18,6 +21,21 @@ export const DEFAULT_APPROACH = 'ladder';
 
 export const approachOf = (id: string): GrammarApproach | undefined => APPROACHES.find((a) => a.id === id);
 
+/** The approaches that order the Hebrew ladder, as Settings lists them: one path today, as for Greek (src/approaches/hebrew-ladder.ts). The saved choice (`grammarApproach`) is the Greek ladder's;
+ *  the Hebrew ladder has its own path and reads no choice until there are two. PROVISIONAL, the Governor to confirm. */
+export const HEBREW_APPROACHES: readonly GrammarApproach[] = [hebrewLadder];
+
+export const DEFAULT_HEBREW_APPROACH = 'hebrew-ladder';
+
+/** The approach that orders the ladder of `lang`: for Greek the one saved as `id` (the default when it is not listed), for Hebrew the Hebrew path. */
+export function approachFor(lang: 'grc' | 'hbo', id?: string): GrammarApproach {
+  if (lang === 'hbo') return HEBREW_APPROACHES.find((a) => a.id === id) ?? hebrewLadder;
+  return (id === undefined ? undefined : approachOf(id)) ?? approachOf(DEFAULT_APPROACH)!;
+}
+
+/** The ideas of the ladder `approach` orders, easy first. */
+const ideasOf = (approach: GrammarApproach): readonly GrammarIdea[] => (approach.lang === 'hbo' ? HEBREW_LADDER : LADDER);
+
 /** The ladder's idea ids in the order `approach` teaches them: each once, in lesson order (a revisit is skipped); the ideas no lesson
  *  names follow, by rung. */
 export function orderOf(approach: GrammarApproach): string[] {
@@ -27,7 +45,7 @@ export function orderOf(approach: GrammarApproach): string[] {
       for (const lesson of level.lessons) for (const id of lesson.ideas) seen.add(id);
     }
   }
-  for (const idea of LADDER) seen.add(idea.id);
+  for (const idea of ideasOf(approach)) seen.add(idea.id);
   return [...seen];
 }
 
@@ -77,7 +95,7 @@ export function stepsOf(approach: GrammarApproach): Step[] {
       }
     }
   }
-  for (const idea of LADDER) {
+  for (const idea of ideasOf(approach)) {
     if (seen.has(idea.id)) continue;
     seen.add(idea.id);
     steps.push({ kind: 'idea', id: idea.id });
