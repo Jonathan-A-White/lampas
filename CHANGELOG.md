@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.149
+_2026-11-07_
+- New: The gear at the top of the Reader is now a Menu with two choices, Tools and Settings; Tools holds Your Logos library, Verse lists, Memorize, Paradigms, Words and Review.
+- Fixed: A Bible-verse link already written into a blog post now opens the small verse card first, with a button to open it in Lampas, instead of going straight to the app.
+
 ## 0.7.148
 _2026-11-07_
 - Fixed: In the English reading of a Septuagint chapter, tapping an English word that is not yet linked to a Greek word now opens that verse instead of a wrong Greek word.

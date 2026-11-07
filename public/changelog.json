@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.149",
+    "date": "2026-11-07",
+    "story": "mw-5r3p30.1111",
+    "kind": "new",
+    "text": "The gear at the top of the Reader is now a Menu with two choices, Tools and Settings; Tools holds Your Logos library, Verse lists, Memorize, Paradigms, Words and Review."
+  },
+  {
+    "version": "0.7.149",
+    "date": "2026-11-07",
+    "story": "mw-fnvjof.17.1",
+    "kind": "fixed",
+    "text": "A Bible-verse link already written into a blog post now opens the small verse card first, with a button to open it in Lampas, instead of going straight to the app."
+  },
+  {
     "version": "0.7.148",
     "date": "2026-11-07",
     "story": "mw-u2w5klk.278",
