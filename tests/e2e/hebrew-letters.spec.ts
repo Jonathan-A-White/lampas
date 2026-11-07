@@ -1,6 +1,7 @@
 // The Hebrew letters (mw-gdcyf98.11) at 390x844: with Hebrew chosen the Goal lists the letters, Alef's sheet shows the letter in Hebrew type with Hear it, and Got it on The Hebrew alphabet starts the
 // letter drill, whose glyphs are drawn right to left in the Hebrew face at the drill's size, a thumb tall.
 import { expect, test, type Page } from '@playwright/test';
+import { ladderFor } from '../../src/data/grammar/ladders';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -24,7 +25,7 @@ test.beforeEach(async ({ page }) => {
 
 test('Alef\'s sheet shows the letter in Hebrew type, with Hear it a thumb tall', async ({ page }) => {
   await chooseHebrew(page);
-  await expect(page.getByTestId('hebrew-ideas').locator('[data-idea]')).toHaveCount(70);
+  await expect(page.getByTestId('hebrew-ideas').locator('[data-idea]')).toHaveCount(ladderFor('hbo').ideas.length); // the Hebrew ladder's ideas, as the Goal screen lists them
   await row(page, 'he-letter-alef').click();
   const sheet = page.getByRole('dialog', { name: 'Idea' });
   await expect(sheet.getByRole('heading', { name: 'Alef' })).toBeVisible();
