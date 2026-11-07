@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.162
+_2026-11-07_
+- New: A chapter you have read before now opens at the verse you were last on in it.
+
 ## 0.7.161
 _2026-11-07_
 - New: Choose a book now puts the books you open most often first when you search.
