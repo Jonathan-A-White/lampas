@@ -488,6 +488,11 @@ textarea,
   min-height: 0;
   overflow: hidden;
 }
+/* The header's Menu (src/reader/ReaderMenu.tsx) hangs below the header, over the chips row and the text; the box's clip cut it at the chips row's foot, so the Settings row
+ * was gone (mw-5r3p30.1143). While the Menu is open the bars are up and still (it cannot open on a bar that is away), so the clip has nothing to hold. */
+.away-inner:has([role="menu"]) {
+  overflow: visible;
+}
 /* The place line's row slides with the bars (src/PlaceLine.tsx), as `.away-box` does for them: shut it is no height and not in the tab order. */
 /* The tutor's one door, the floating ? (src/AskTutor.tsx FloatingTutor): 17 rem above the phone's bar, but never more than 35 % of the window, so a window a third tall
  * keeps it (tests/e2e/split-screen-walk.spec.ts). In a short window (a phone sideways) 'Welcome back' or 'Update ready' pushes the screen's header down to where the ? is, so
