@@ -3,6 +3,7 @@
 // which is not always Lampas's (Greek Ps 22 is Psalm 23). loadChapter (src/data/chapter.ts) opens them for an Old Testament book while Settings > Old Testament in Greek is On.
 import { within } from './within';
 import type { BookInfo, Chapter, GreekWord, LexEntry } from './chapter';
+import type { LemmaLexicon } from './lexicon';
 
 /** One book of public/data-lxx/index.json: a BookInfo of Swete's own book (`code` is Swete's, lower case) with the Lampas book it is and the Lampas chapters of each Greek chapter. */
 export interface LxxBook extends BookInfo {
@@ -50,30 +51,58 @@ export function loadLxxIndex(): Promise<LxxIndex> {
   return request;
 }
 
+type LxxLexiconFile = Record<string, LexEntry & { s?: string }>;
+let lexiconFile: Promise<LxxLexiconFile> | null = null;
 let lexicon: Promise<Record<string, LexEntry>> | null = null;
+let lemmas: Promise<LemmaLexicon> | null = null;
+
+/** Fetches /data-lxx/lexicon-grc-lxx.json once, as the file has it. A failure is not kept. */
+function loadLxxLexiconFile(): Promise<LxxLexiconFile> {
+  if (lexiconFile) return lexiconFile;
+  const request = within(async (signal) => {
+    const response = await fetch('/data-lxx/lexicon-grc-lxx.json', { signal });
+    if (!response.ok) throw new Error(`Could not load the Septuagint lexicon: ${response.status}`);
+    return (await response.json()) as LxxLexiconFile;
+  });
+  lexiconFile = request;
+  request.catch(() => {
+    if (lexiconFile === request) lexiconFile = null;
+  });
+  return request;
+}
 
 /**
  * Fetches /data-lxx/lexicon-grc-lxx.json once: every lemma of the shipped books -> TBESG's gloss and definition (and its Strong's number, which a word of this text does not show: it has none of its own).
  * A lexicon that cannot be fetched is `{}`, not a failure: the word's card then has no Meaning, and the next chapter asks again.
  */
 export function loadLxxLexicon(): Promise<Record<string, LexEntry>> {
-  if (lexicon) return lexicon;
-  const request = within(async (signal) => {
-    const response = await fetch('/data-lxx/lexicon-grc-lxx.json', { signal });
-    if (!response.ok) throw new Error(`Could not load the Septuagint lexicon: ${response.status}`);
-    return (await response.json()) as Record<string, LexEntry & { s?: string }>;
-  }).then((all) => Object.fromEntries(Object.entries(all).map(([lemma, { g, d }]) => [lemma, { g, d }])));
-  lexicon = request;
-  request.catch(() => {
-    if (lexicon === request) lexicon = null;
+  lexicon ??= loadLxxLexiconFile().then((all) => Object.fromEntries(Object.entries(all).map(([lemma, { g, d }]) => [lemma, { g, d }])));
+  const held = lexicon;
+  held.catch(() => {
+    if (lexicon === held) lexicon = null;
   });
-  return request.catch(() => ({}));
+  return held.catch(() => ({}));
+}
+
+/**
+ * The same lexicon as the word-by-lemma paths read the New Testament's (src/data/lexicon.ts LemmaLexicon): every lemma of the shipped books -> gloss, Strong's number and, which the file lacks, no part of speech ('').
+ * One object for as long as the page lives, so findWord's index (src/nav/links.ts) is built once. A lexicon that cannot be fetched is `{}`.
+ */
+export function loadLxxLemmas(): Promise<LemmaLexicon> {
+  lemmas ??= loadLxxLexiconFile().then((all) => Object.fromEntries(Object.entries(all).map(([lemma, { g, s }]) => [lemma, { g, s: s ?? '', c: '' }])));
+  const held = lemmas;
+  held.catch(() => {
+    if (lemmas === held) lemmas = null;
+  });
+  return held.catch(() => ({}));
 }
 
 /** Forgets the index and the lexicon held in memory (tests). */
 export const forgetLxxIndex = (): void => {
   index = null;
+  lexiconFile = null;
   lexicon = null;
+  lemmas = null;
 };
 
 /**

@@ -3,7 +3,7 @@
 // plain reader address, and the Reader opens there. It never leaves a blank screen: whatever the link says, the reader opens somewhere.
 import { useEffect } from 'react';
 import { loadCanonIndex } from '../data/chapter';
-import { loadLexicon } from '../data/lexicon';
+import { loadLexicon, septuagintLemmas } from '../data/lexicon';
 import { getOpenChapter } from '../data/readerChapter';
 import { announceLink } from './linkRequest';
 import { findWord, isHebrewText, notHeld, resolveReference, type Link } from './links';
@@ -33,7 +33,13 @@ async function open(link: Link, hash: string, current: () => boolean): Promise<v
   // the Hebrew lexicon is asked for only when the text names a Hebrew word (an H number or Hebrew letters): a Greek link loads what it always did
   const lexicon = await loadLexicon(isHebrewText(link.text) ? 'hbo' : 'grc').catch(() => null);
   if (!current()) return;
-  const found = lexicon ? findWord(link.text, lexicon) : undefined;
+  let found = lexicon ? findWord(link.text, lexicon) : undefined;
+  // a Greek word only the Septuagint has (mw-u2w5klk.16): asked for only when the New Testament's lexicon lacks it and the setting is On
+  if (lexicon && !found && !isHebrewText(link.text)) {
+    const septuagint = await septuagintLemmas().catch(() => ({}));
+    if (!current()) return;
+    found = findWord(link.text, lexicon, undefined, septuagint);
+  }
   const notice = found ? null : lexicon ? notHeld(link.text, there.title) : `Could not look up “${link.text}” just now; showing ${there.title}.`;
   const word = found ? { lemma: found.lemma, strongs: found.entry.s, gloss: found.entry.g } : null;
   announceLink({ book: there.book, chapter: there.chapter, verse: null, notice, word });

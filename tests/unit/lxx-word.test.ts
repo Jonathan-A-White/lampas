@@ -1,10 +1,19 @@
 // tests/unit/lxx-word.test.ts — a word of a Septuagint chapter (mw-u2w5klk.12, the Septuagint epic's R4): its gloss and definition come from the lemma lexicon (public/data-lxx/lexicon-grc-lxx.json),
 // how Lampas read it is told in words, and a word the derivation only guessed (`y: 'g'`) is never offered to learn, quizzed, drilled or added: one test for each seam.
 import 'fake-indexeddb/auto';
-import { renderHook, waitFor } from '@testing-library/react';
+import { render, renderHook, waitFor } from '@testing-library/react';
+import { createElement } from 'react';
+import { latest } from '../../src/events/bus';
+import { LinkOpener } from '../../src/nav/LinkOpener';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addLemmaToLearn } from '../../src/data/answerWord';
+import { loadLexicon } from '../../src/data/lexicon';
+import { findWord } from '../../src/nav/links';
+import { addWord } from '../../src/tutor/registry';
+import { septuagintSetting } from '../../src/settings/definitions';
+import { setSetting } from '../../src/settings/store';
+import { forgetLxxIndex } from '../../src/data/lxxChapter';
 import { chapterLanguage, forgetChapters, isGuess, wordDefinition, wordGloss, type Chapter, type GreekWord, type Verse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { drawDrill } from '../../src/data/drill';
@@ -379,5 +388,81 @@ describe('the frontier counts the words of a Septuagint chapter', () => {
   it('leaves the Hebrew and the New Testament as they were: a word with no Strong\'s number in a chapter that is not the Septuagint is not found by its lemma', () => {
     const hebrewLike: Chapter = { ...gen1, edition: undefined, lang: 'hbo' };
     expect(pickFrontier(hebrewLike, none, counts, 500).find((c) => c.lemma === 'θεός')?.count).toBe(0);
+  });
+});
+
+// mw-u2w5klk.16 (R6): a lemma only the Septuagint has (κάρπιμος: in the lemma lexicon, not in the New Testament's) is added by the tutor's words_to_add and reached by a #/?word= link
+describe('a lemma only the Septuagint has', () => {
+  beforeEach(async () => {
+    stubChapterFetch();
+    forgetLxxIndex();
+    await Promise.all(db.tables.map((table) => table.clear()));
+    await setSetting(septuagintSetting, 'on');
+  });
+
+  it("is added by the tutor's add-word with the chapter's gloss and no part of speech, and is not answered 'is not in the lexicon'", async () => {
+    const chapter = (await loadSeptuagintChapter('gen', 1))!;
+    const ran = await addWord({ title: 'Genesis 1', chapter, verse: null }, 'κάρπιμος');
+    expect(ran.result).toBe('added');
+    expect(ran.said).toBe('Added κάρπιμος to his words');
+    expect(ran.said).not.toMatch(/not in the lexicon/);
+    const row = (await listWords()).find((w) => w.lemma === 'κάρπιμος');
+    expect(row).toMatchObject({ gloss: wordGloss(chapter, chapter.verses[10].g.find((w) => w.l === 'κάρπιμος')!), lang: 'grc' });
+    expect(row!.gloss).not.toBe('');
+  });
+
+  it('is added when the tutor names it from a chapter that does not have it (the lexicon is the whole shipped text)', async () => {
+    const ran = await addWord({ title: 'Test 1', chapter: FIXTURE_CHAPTER, verse: null }, 'ἕρπω');
+    expect(ran.result).toBe('added');
+  });
+
+  it('still answers as before for a lemma that is in neither lexicon', async () => {
+    const chapter = (await loadSeptuagintChapter('gen', 1))!;
+    const ran = await addWord({ title: 'Genesis 1', chapter, verse: null }, 'ζζζζζ');
+    expect(ran.result).toBe('unknown');
+    expect(ran.said).toBe('ζζζζζ is not in the lexicon, so it was not added');
+    expect(await listWords()).toEqual([]);
+  });
+
+  it('is reached by a word link from the Septuagint lexicon, and a New Testament lemma is the same card as before', async () => {
+    const { loadLxxLemmas } = await import('../../src/data/lxxChapter');
+    const nt = await loadLexicon('grc');
+    const lxx = await loadLxxLemmas();
+    expect(findWord('κάρπιμος', nt)).toBeUndefined();
+    const found = findWord('κάρπιμος', nt, undefined, lxx);
+    expect(found).toMatchObject({ lemma: 'κάρπιμος', entry: { s: 'G7802', g: expect.stringMatching(/\S/) } });
+    expect(findWord('καρπιμος', nt, undefined, lxx)?.lemma).toBe('κάρπιμος');
+    expect(findWord('G7802', nt, undefined, lxx)?.lemma).toBe('κάρπιμος');
+    for (const text of ['νόμος', 'νομος', 'G3551']) expect(findWord(text, nt, undefined, lxx)).toEqual(findWord(text, nt));
+    expect(findWord('νόμος', nt, undefined, lxx)).toMatchObject({ lemma: 'νόμος', entry: { s: 'G3551', g: 'law' } });
+  });
+
+  it('is opened by a #/?word= link: the link announces the Septuagint lemma with its gloss and Strong\'s number, and a New Testament lemma as it always did', async () => {
+    window.history.replaceState(null, '', '/#/?b=gen&c=1');
+    const opened = async (text: string) => {
+      const { unmount } = render(createElement(LinkOpener, { link: { kind: 'word', text } }));
+      const event = await waitFor(() => {
+        const e = latest('link-opened');
+        if (!e || e.word?.lemma !== text) throw new Error('not announced yet');
+        return e;
+      });
+      unmount();
+      return event;
+    };
+    expect((await opened('κάρπιμος')).word).toEqual({ lemma: 'κάρπιμος', strongs: 'G7802', gloss: 'fruitful' });
+    expect((await opened('νόμος')).word).toEqual({ lemma: 'νόμος', strongs: 'G3551', gloss: 'law' });
+  });
+
+  it('is not reached or added with the setting Off: the New Testament and the Hebrew are as before', async () => {
+    await setSetting(septuagintSetting, 'off');
+    const { septuagintLemmas } = await import('../../src/data/lexicon');
+    expect(await septuagintLemmas()).toEqual({});
+    const nt = await loadLexicon('grc');
+    for (const text of ['νόμος', 'G3551', 'νομος']) expect(findWord(text, nt, undefined, await septuagintLemmas())).toEqual(findWord(text, nt));
+    expect(findWord('κάρπιμος', nt, undefined, await septuagintLemmas())).toBeUndefined();
+    const ran = await addWord({ title: 'Test 1', chapter: FIXTURE_CHAPTER, verse: null }, 'ἕρπω');
+    expect(ran.result).toBe('unknown');
+    const same = await addWord({ title: 'Test 1', chapter: FIXTURE_CHAPTER, verse: null }, 'κόσμος');
+    expect(same).toMatchObject({ result: 'added', said: 'Added κόσμος to his words' });
   });
 });
