@@ -5,7 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openGroup, leaveSettings } from './settings-group';
 import { openUnlocked } from './unlocked';
-import { openSettings, settingsHeading } from './openSettings';
+import { openSettings, openTools, settingsHeading } from './openSettings';
 
 // a new phone: the specs before the dial start at 5, All in (playwright.config.ts); this one starts where a new reader does
 test.use({ viewport: { width: 390, height: 844 }, storageState: { cookies: [], origins: [] } });
@@ -37,6 +37,15 @@ async function setStep(page: Page, name: string) {
   await step(page, name).click();
   await expect(step(page, name)).toHaveAttribute('aria-pressed', 'true');
   await leaveSettings(page);
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+}
+
+/** On the Tools screen: its Paradigms door (it shows only at All in; Paradigms left Settings for Tools, mw-5r3p30.754). */
+const paradigmsDoor = (page: Page) => page.getByRole('list', { name: 'Tools' }).getByRole('button', { name: /^Paradigms/ });
+
+/** Leaves Tools for the Reader. */
+async function leaveTools(page: Page) {
+  await page.getByRole('button', { name: '‹ Reader', exact: true }).click();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
 
@@ -148,14 +157,17 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
   await openSettingsPage(page);
   await openGroup(page, 'Learning');
   await expect(page.getByRole('group', { name: 'Goal', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
-  expect(await pageText(page, 'Account')).not.toMatch(/Paradigms/);
   await leaveSettings(page);
+  await openTools(page);
+  await expect(paradigmsDoor(page)).toHaveCount(0);
+  await leaveTools(page);
 
   // 5 All in: everything Greek, the paradigms included (Hebrew in the tutor is the Hebrew dial's, from Curious up)
   await setStep(page, 'All in');
+  await openTools(page);
+  await expect(paradigmsDoor(page)).toHaveCount(1);
+  await leaveTools(page);
   await openSettingsPage(page);
-  expect(await pageText(page, 'Account')).toMatch(/Paradigms/);
   expect(await pageText(page, 'Learning')).not.toMatch(/Hebrew in the tutor/);
   await shot(page, 'greek-dial-5');
 });

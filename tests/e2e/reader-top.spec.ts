@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { neededIdeas } from './needed-ideas';
+import { menuButton } from './openSettings';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -96,9 +97,8 @@ test('with the Today chip, a goal and new words the chips are one slim row and t
 
 test('the header keeps 44 px tap targets', async ({ page }) => {
   await openWithEverything(page);
-  for (const name of ['Settings']) {
-    const box = await page.getByRole('button', { name }).boundingBox();
-    expect(box?.height).toBeGreaterThanOrEqual(43.5);
-    expect(box?.width).toBeGreaterThanOrEqual(43.5);
-  }
+  // the Menu stands where the gear was (d24740570): Settings is a row of it
+  const box = await menuButton(page).boundingBox();
+  expect(box?.height).toBeGreaterThanOrEqual(43.5);
+  expect(box?.width).toBeGreaterThanOrEqual(43.5);
 });
