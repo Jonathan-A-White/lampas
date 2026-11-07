@@ -3,7 +3,7 @@
 // Governor to confirm). The text is a small file of the chapter's English (public/data/verses-<book>-<chapter>.json, a few KB, not the chapter file), fetched from the page that loaded the script: a cross-origin fetch, so it needs the host to send Access-Control-Allow-Origin
 // (docs/links.md 'The blog's popup'); when it cannot be had the card is still the reference and the button. The card lives in a shadow root, so the blog's styles never reach it and its
 // own never reach the blog. One card at a time. It sets no cookie and sends no header of its own.
-import { MARK, TO_CHAPTER } from './tagger';
+import { ADOPTED, MARK, TO_CHAPTER } from './tagger';
 import { headingOf, isOnlyTheStart, passageOf, versesOf, versesUrl, type TaggedPassage } from './passage';
 import { translationName, type ShownVerse } from './verses';
 
@@ -195,7 +195,7 @@ function closeLater(to: EventTarget | null): void {
 
 const linkOf = (e: Event): HTMLAnchorElement | null => {
   const t = e.target;
-  return t instanceof Element ? t.closest<HTMLAnchorElement>(`a[${MARK}]`) : null;
+  return t instanceof Element ? t.closest<HTMLAnchorElement>(`a[${MARK}], a[${ADOPTED}]`) : null;
 };
 
 /** Listens on the page for a tap or a hover on a tagged link. Called once; `from` is the origin the script was loaded from, where the chapter files are (the app's, when unknown). */

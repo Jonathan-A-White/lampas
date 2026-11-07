@@ -19,17 +19,45 @@ export interface TaggedPassage {
 /** The code of the book an OSIS name ('1Kgs') is, read back out of links.ts's own two tables (the one place book names are kept). */
 const codeOfOsis = (osis: string): string | undefined => [...Object.entries(OSIS), ...Object.entries(OT_OSIS)].find(([, name]) => name === osis)?.[0];
 
+/** The `ref=` of an address: the one in the fragment ('#/?ref=John.5.25', where the app reads it) before one in the query, because the publisher's links carry the blog's own
+ *  `?ref=allmymind.org` ahead of it. */
+const refOf = (href: string): string | undefined => {
+  const hash = href.indexOf('#');
+  const inFragment = hash < 0 ? undefined : /[?&]ref=([^&#]+)/.exec(href.slice(hash))?.[1];
+  return inFragment ?? /[?&]ref=([^&#]+)/.exec(hash < 0 ? href : href.slice(0, hash))?.[1];
+};
+
 /** The passage a tagged link's address names ('https://lampas.allmymind.org/#/?ref=John.5.24-29'), or null for an address that names none the app holds. `to` is the last chapter of a
  *  chapter range, which the address does not carry (tagger.ts writes it on the link): it counts for a chapter alone and only when it ends after the first. */
 export function passageOf(href: string, to?: number): TaggedPassage | null {
-  const ref = /[?&]ref=([^&#]+)/.exec(href)?.[1];
-  const m = ref ? /^([0-9A-Za-z]+)\.(\d+)(?:\.(\d+)(?:-(\d+))?)?$/.exec(decodeURIComponent(ref)) : null;
+  const ref = refOf(href);
+  let m: RegExpExecArray | null = null;
+  try {
+    m = ref ? /^([0-9A-Za-z]+)\.(\d+)(?:\.(\d+)(?:-(\d+))?)?$/.exec(decodeURIComponent(ref)) : null;
+  } catch {
+    return null; // a stray % in a hand-written address
+  }
   const code = m ? codeOfOsis(m[1]) : undefined;
   if (!m || !code) return null;
   const first = m[3] === undefined ? undefined : Number(m[3]);
   const last = first === undefined ? undefined : Math.max(first, m[4] === undefined ? first : Number(m[4]));
   const chapter = Number(m[2]);
   return { code, chapter, ...(first === undefined ? (to !== undefined && to > chapter ? { lastChapter: to } : {}) : { first, last }) };
+}
+
+/** Whether a link already written into a post is one the popup takes over: an address on Lampas's own host that names a passage and does not insist on going straight to the app
+ *  (a `go=1` in its query or its `#/?` fragment, which an author can type in Ghost's link box). */
+export function isAdoptable(href: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    return false; // a relative address is the blog's own
+  }
+  if (url.origin !== LINK_ORIGIN) return false;
+  const inFragment = /[?&]go=1(?:&|$)/.test(url.hash);
+  if (inFragment || url.searchParams.get('go') === '1') return false;
+  return passageOf(href) !== null;
 }
 
 /** A chapter alone or a chapter range names more than the one verse the card shows (its first): the card says so. */
