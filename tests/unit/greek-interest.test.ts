@@ -25,7 +25,10 @@ import { getSetting, setSetting } from '../../src/settings/store';
 import { handwritingSetting, readLessonsSetting, weaveOrderSetting } from '../../src/settings/definitions';
 import { GREEK_LEVELS, greekFrom, newWordsAt, placementOf, viewAt, weaveAt, type GreekLevel } from '../../src/settings/definitions/greekInterest';
 import { languagesOf } from '../../src/settings/definitions/interest';
-import { ROWS, visibleRows, type Values } from '../../src/settings/rows';
+import { ROWS, TOOL_ROWS, visibleRows, type Values } from '../../src/settings/rows';
+
+// the rows of Settings and the doors of Tools (words, review, paradigms moved there, mw-5r3p30.754) follow the same dials
+const EVERY_ROW = [...ROWS, ...TOOL_ROWS];
 import { settingOf } from '../../src/settings/registry';
 import { SEPARATE_KEYS } from '../../src/settings/definitions/pronunciation';
 
@@ -102,7 +105,7 @@ describe('the table', () => {
   it('shows at every pair of levels exactly the rows the table gives it, by the dial each follows (the Greek one, the Hebrew one, or the higher)', () => {
     for (const greek of LEVELS) {
       for (const hebrew of LEVELS) {
-        const shown = new Set(visibleRows(valuesAt(greek, hebrew), '').map((r) => r.key));
+        const shown = new Set(visibleRows(valuesAt(greek, hebrew), '', EVERY_ROW).map((r) => r.key));
         for (const [key, [follows, from]] of Object.entries(GREEK_ROWS)) {
           expect(shown.has(key), `${key} at Greek ${greek} and Hebrew ${hebrew} (${follows} from ${from})`).toBe(levelFor(follows, greek, hebrew) >= from);
         }
@@ -111,8 +114,8 @@ describe('the table', () => {
   });
 
   it('shows no such row with both dials at 0 and every one with both at 5, and keeps each dial on the home while its language is chosen', () => {
-    expect(visibleRows(valuesAt(0, 0), '').filter((r) => r.key in GREEK_ROWS)).toEqual([]);
-    expect(visibleRows(valuesAt(5, 5), '').filter((r) => r.key in GREEK_ROWS)).toHaveLength(Object.keys(GREEK_ROWS).length);
+    expect(visibleRows(valuesAt(0, 0), '', EVERY_ROW).filter((r) => r.key in GREEK_ROWS)).toEqual([]);
+    expect(visibleRows(valuesAt(5, 5), '', EVERY_ROW).filter((r) => r.key in GREEK_ROWS)).toHaveLength(Object.keys(GREEK_ROWS).length);
     for (const level of LEVELS.slice(1)) {
       expect(visibleRows(valuesAt(level, 0), '').some((r) => r.key === 'greekInterest')).toBe(true);
       expect(visibleRows(valuesAt(level, 0), '').some((r) => r.key === 'hebrewInterest')).toBe(false);
@@ -123,12 +126,12 @@ describe('the table', () => {
 
   it('lists a row only because of the dial it follows or a setting that depends on it (no second visibility mechanism)', () => {
     for (const [key, [follows]] of Object.entries(GREEK_ROWS)) {
-      const row = ROWS.find((r) => r.key === key);
+      const row = EVERY_ROW.find((r) => r.key === key);
       expect(row, key).toBeDefined();
       // a language's own pronunciation row follows its dial through the key readValues derives from the switch and that dial
       const reaches = (k: string | undefined): boolean => k === follows || (follows === 'greekInterest' && k === SEPARATE_KEYS.grc) || (follows === 'hebrewInterest' && k === SEPARATE_KEYS.he);
       let at = row;
-      while (at?.dependsOn && !reaches(at.dependsOn.key)) at = ROWS.find((r) => r.key === at?.dependsOn?.key);
+      while (at?.dependsOn && !reaches(at.dependsOn.key)) at = EVERY_ROW.find((r) => r.key === at?.dependsOn?.key);
       expect(reaches(at?.dependsOn?.key), `${key} reaches ${follows}`).toBe(true);
     }
   });

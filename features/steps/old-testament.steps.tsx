@@ -485,7 +485,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Settings has a Bible in Logos for each part, the Legacy Standard Bible to start (the NRSV for the Apocrypha), and a door to Library > Bibles', ({ Given, When, Then, And }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
-    When("he taps the gear in the reader's header", openSettingsPage);
+    When("he opens Settings from the reader's Menu", openSettingsPage);
     Then('the New Testament and Old Testament pickers say {string} and the Apocrypha picker says {string}', async (_, text: string, apocrypha: string) => {
       for (const part of ['New Testament', 'Old Testament']) {
         expect(await screen.findByRole('combobox', { name: `${part} Bible in Logos` })).toHaveDisplayValue(text);
@@ -502,7 +502,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A Bible set for a part on the Bibles page is kept across a close', ({ Given, When, And, Then }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
-    When("he taps the gear in the reader's header", openSettingsPage);
+    When("he opens Settings from the reader's Menu", openSettingsPage);
     And('he opens the Bible in Logos row', opensRow);
     And('he sets the Bible {string} for {string} on the Bibles page', async (_, short: string, part: string) => {
       await user.click(await screen.findByRole('button', { name: `Set for… ${short}` }));
@@ -518,7 +518,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A typed Resource ID is kept for the part he names, and a malformed one is not', ({ Given, When, And, Then }) => {
     Given(romansLogos, () => openRomans(withLogos(true)));
-    When("he taps the gear in the reader's header", openSettingsPage);
+    When("he opens Settings from the reader's Menu", openSettingsPage);
     And('he opens the Bible in Logos row', opensRow);
     And('he types the Resource ID {string}', async (_, id: string) => {
       await user.clear(resourceId());

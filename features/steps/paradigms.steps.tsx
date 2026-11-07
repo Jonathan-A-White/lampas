@@ -313,9 +313,9 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
   });
 
-  Scenario("Settings reaches the Paradigms screen and a table opens from the list", ({ Given, When, And, Then }) => {
-    Given('Lampas is open on Settings', () => openAt('#/settings?group=account'));
-    When('he taps Paradigms in Settings', async () => {
+  Scenario("Tools reaches the Paradigms screen and a table opens from the list", ({ Given, When, And, Then }) => {
+    Given('Lampas is open on Tools', () => openAt('#/tools'));
+    When('he taps Paradigms in Tools', async () => {
       await user.click(await screen.findByRole('button', { name: /^Paradigms/ }));
     });
     And('he taps {string} in the list', async (_, name: string) => {

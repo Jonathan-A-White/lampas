@@ -83,7 +83,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Switching the weave on publishes weave-changed', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 and the bus is listened to', openAndListen);
     When('he switches the weave to Solid words', async () => {
-      // the Weave switch is in Settings, opened by the gear
+      // the Weave switch is in Settings, opened from the Menu
       await openSettings(user);
       await openSettingsGroup(user, 'reading');
       await user.click(within(await screen.findByRole('group', { name: 'Weave' })).getByRole('button', { name: 'Solid' }));

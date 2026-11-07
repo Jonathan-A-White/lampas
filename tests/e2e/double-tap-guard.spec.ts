@@ -26,6 +26,7 @@ import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { toolsHeading } from './openSettings';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { pageTime, tapTwice } from '../support/gesture';
 import { talkField } from './talk-field';
@@ -215,9 +216,10 @@ test.describe('Settings rows', () => {
     await shot(page, 'double-tap-guard-about-row');
   });
 
-  test('mw-5r3p30.454: a double tap on the Paradigms row opens the list, not its first table', async ({ page }) => {
-    await open(page, '#/settings?group=account', {}, () => page.getByRole('heading', { name: 'Account', exact: true, level: 1 }).first().waitFor());
-    const row = page.getByRole('button', { name: /^Paradigms/ });
+  test("mw-5r3p30.454: a double tap on Tools' Paradigms row opens the list, not its first table", async ({ page }) => {
+    // Paradigms left Settings for Tools (mw-5r3p30.754): the row is a door of Tools now
+    await open(page, '#/tools', {}, () => toolsHeading(page).first().waitFor());
+    const row = page.getByRole('list', { name: 'Tools' }).getByRole('button', { name: /^Paradigms/ });
     await row.scrollIntoViewIfNeeded();
     await reads(page);
     await thumbDoubleTap(page, row, () => page.getByRole('heading', { name: 'Paradigms', exact: true, level: 1 }).first().waitFor(), { selector: '[data-paradigm]' });

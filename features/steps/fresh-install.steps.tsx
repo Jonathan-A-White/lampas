@@ -12,8 +12,7 @@ import { seedLevelsIfFirstOpen } from '../../src/data/repositories/grammarLevels
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setTermKnown } from '../../src/data/repositories/grammar';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { findSettingsDoor, openSettings } from '../../tests/unit/openSettings';
+import { findMenuButton, openTool } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -51,14 +50,12 @@ async function settle(): Promise<void> {
 async function openFresh(): Promise<void> {
   await wipe();
   render(<App />);
-  await findSettingsDoor();
+  await findMenuButton();
   await settle();
 }
 
 async function openWords(): Promise<void> {
-  await openSettings(user);
-  await openSettingsGroup(user, 'account');
-  await user.click(await screen.findByRole('button', { name: 'Words' }));
+  await openTool(user, 'Words');
   await screen.findByRole('heading', { name: 'Words' });
   await screen.findByTestId('word-counts');
 }
@@ -102,9 +99,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Review on a new install has nothing due', ({ Given, When, Then }) => {
     Given('Lampas is opened on a phone with nothing on it', openFresh);
     When('he opens Review', async () => {
-      await openSettings(user);
-      await openSettingsGroup(user, 'account');
-      await user.click(await screen.findByRole('button', { name: 'Review' }));
+      await openTool(user, 'Review');
       await screen.findByRole('heading', { name: 'Review', level: 1 });
     });
     Then('Review says nothing is due', async () => {
@@ -131,7 +126,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened', async () => {
       render(<App />);
-      await findSettingsDoor();
+      await findMenuButton();
       await settle();
     });
     Then('every row of the words, the schedule, the grammar levels, the settings and the flags is as it was', async () => {
@@ -147,7 +142,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('Lampas is opened', async () => {
       render(<App />);
-      await findSettingsDoor();
+      await findMenuButton();
       await settle();
     });
     Then('every word, review and level row is as it was', async () => {

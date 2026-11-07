@@ -403,6 +403,7 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   'talk-pictures': 'pictures in the talk: the tutor’s mechanics',
   'tap-guard': 'a double tap that changes the screen: the shell',
   tips: 'the one-time tips: the shell',
+  tools: 'the Reader’s Menu and the Tools place: the shell',
   'tutor-does': 'what the tutor does shows on the sheet: the tutor’s mechanics',
   'hand-setting': 'the Hand setting: the shell',
   'tutor-go': 'the tutor takes him to a chapter: navigation',

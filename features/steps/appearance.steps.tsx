@@ -90,7 +90,7 @@ afterAll(() => {
 });
 
 async function openSettingsPage(): Promise<void> {
-  // the gear in the Reader's header, not through the whole chapter: a role query on `screen` for buttons walks every word of it (3 s, mw-5r3p30.555)
+  // the Menu in the Reader's header, not through the whole chapter: a role query on `screen` for buttons walks every word of it (3 s, mw-5r3p30.555)
   const header = await waitFor(() => {
     const found = document.querySelector<HTMLElement>('[data-reader-top]');
     if (!found) throw new Error('the Reader header is not drawn yet');

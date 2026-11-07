@@ -10,7 +10,7 @@ import { resourcesForLevel } from '../../src/resources/resourcesForLevel';
 import { resourcesForTutor, verseChips, wordChips, workChip, worksForTutor } from '../../src/resources/tutorLinks';
 import type { GrammarBook, ResourceLang, StudyResource } from '../../src/resources/types';
 import { WORKS, type Work } from '../../src/resources/works';
-import { orderResourceRows, rowOf, visibleRows, ROWS, type Values } from '../../src/settings/rows';
+import { orderResourceRows, visibleRows, ROWS, type Values } from '../../src/settings/rows';
 import { GREEK_LEVELS, type GreekLevel } from '../../src/settings/definitions/greekInterest';
 
 const item = (id: string, lang: ResourceLang) => ({ id, lang });
@@ -166,6 +166,5 @@ describe('the Study resources rows follow the dial', () => {
     expect(orderResourceRows(rows, 2)).toHaveLength(rows.length);
     // a switch a link forces into view at Just English is ordered, not dropped
     expect(switches(orderResourceRows(rows, 0))).toHaveLength(2);
-    expect(rowOf('library')).toBeDefined();
   });
 });

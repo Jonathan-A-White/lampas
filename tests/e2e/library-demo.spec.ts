@@ -9,10 +9,10 @@ import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked, SEED_PUBLIC_KEY } from './unlocked';
-import { openGroup } from './settings-group';
+import { leaveSettings, openGroup } from './settings-group';
 import { openVerseView } from './verse-view';
 import { CATALOGUE } from '../../src/resources/catalogue';
-import { openSettings } from './openSettings';
+import { openSettings, openTool } from './openSettings';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -52,14 +52,15 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   await page.goto('/#/?b=rom&c=8');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 
-  // 1. Settings > Study resources > Logos On, then Settings > Your Logos library > Import: choose the file
+  // 1. Settings > Study resources > Logos On, then Tools > Your Logos library > Import: choose the file
   await openSettings(page);
   await openGroup(page, 'Study resources');
   const resources = page.getByRole('region', { name: 'Study resources' });
   await resources.getByRole('switch', { name: 'Logos', exact: true }).click();
   await expect(resources.getByRole('switch', { name: 'Logos', exact: true })).toHaveAttribute('aria-checked', 'true');
-  // the door is the first row of Study resources
-  await resources.getByRole('button', { name: /^Your Logos library/ }).click();
+  // the door is a row of Tools (mw-5r3p30.754), from the Reader's Menu
+  await leaveSettings(page);
+  await openTool(page, 'Your Logos library');
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Import your library', level: 1 })).toBeVisible();

@@ -10,8 +10,7 @@ import { db } from '../../src/data/db';
 import { normaliseLemma, type NormalisedLemma } from '../../src/data/lemma';
 import { SEED_WORDS } from '../../src/data/seed-words';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openTool } from '../../tests/unit/openSettings';
 
 afterAll(() => {
   cleanup();
@@ -30,9 +29,7 @@ async function openLampasFresh(): Promise<void> {
 }
 
 async function openWords(): Promise<void> {
-  await openSettings(user);
-  await openSettingsGroup(user, 'account');
-  await user.click(await screen.findByRole('button', { name: 'Words' }));
+  await openTool(user, 'Words');
   await screen.findByRole('heading', { name: 'Words' });
   await waitFor(() => expect(document.querySelectorAll('[data-lemma]').length).toBeGreaterThan(0));
 }

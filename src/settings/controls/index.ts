@@ -16,7 +16,7 @@ import { ThemesControl } from './themes';
 import { NewWordsControl } from './newWords';
 import { OfflineCopyControl } from './offlineCopy';
 import { QuizGoalControl } from './quizGoal';
-import { AudioBibleControl, LibraryControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
+import { AudioBibleControl, LogosBibleControl, ReadingPlanControl, ResourceControl } from './resources';
 import { HandControl } from './hand';
 import { ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
@@ -89,7 +89,6 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   greekKeyboard: GreekKeyboardControl,
   hebrewKeyboard: HebrewKeyboardControl,
   'request.devotional': AskDevotionalControl,
-  library: LibraryControl,
   tips: TipsControl,
   readTutor: ReadTutorControl,
   readLessons: ReadLessonsControl,
