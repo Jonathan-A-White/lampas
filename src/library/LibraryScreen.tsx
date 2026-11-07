@@ -1,5 +1,5 @@
 // src/library/LibraryScreen.tsx — Your Logos library (#/library, docs/design/library-at-scale.md 3.3): a card that says how many of the books Lampas can open are on, a search over every
-// book's title, author and series, and eight rows, one for each kind, with their counts from his shelf. A kind's row opens its page (src/library/KindPage.tsx, #/library?kind=lexicon);
+// book's title, author and series, and nine rows, one for each kind, with their counts from his shelf. A kind's row opens its page (src/library/KindPage.tsx, #/library?kind=lexicon);
 // a search result opens the page at the book. The address picks the page: a kind it does not know is the home.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
@@ -88,7 +88,7 @@ function LibraryHome() {
           ) : (
             <>
               <p className="text-base">
-                Lampas opens a Logos library&rsquo;s lexicons, grammars, Greek texts, Hebrew texts, interlinears, commentaries, Bibles and devotionals. Import your list, or tick the ones you own.
+                Lampas opens a Logos library&rsquo;s lexicons, grammars, Greek texts, Hebrew texts, interlinears, commentaries, Bibles, devotionals and sermon archives. Import your list, or tick the ones you own.
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button type="button" className={BUTTON} onClick={() => openLibrary({ import: true })}>

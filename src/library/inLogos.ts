@@ -32,15 +32,22 @@ export const SHOWN_ROWS = 3;
 
 /** The kinds a New Testament verse is opened in, and an Old Testament one (a commentary opens there when its `covers` name the book: his commentaries on the Old Testament do; the Hebrew epic adds
  *  Hebrew lexicons), in the order the groups are drawn. */
-const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear'];
-const OT_KINDS: readonly Kind[] = ['bible', 'hebrew-text', 'commentary', 'interlinear'];
+const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear', 'sermons'];
+const OT_KINDS: readonly Kind[] = ['bible', 'hebrew-text', 'commentary', 'interlinear', 'sermons'];
 
 export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.book) !== undefined;
 
 /** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book); a Bible holds the part of the canon the book is in
- *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one; a Hebrew text has `parts` too (the Old Testament). */
+ *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one; a Hebrew text has `parts` too (the Old Testament); a sermon archive is indexed by the passage each sermon is preached on and the
+ *  export cannot say which books, so it is offered at every verse (docs/sources/sermon-index.md section 2). */
 const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
-  entry.kind === 'bible' || entry.kind === 'hebrew-text' ? entry.parts === undefined || entry.parts.includes(partOf(place.book)) : entry.covers ? entry.covers.includes(place.book) : partOf(place.book) === 'nt';
+  entry.kind === 'bible' || entry.kind === 'hebrew-text'
+    ? entry.parts === undefined || entry.parts.includes(partOf(place.book))
+    : entry.kind === 'sermons'
+      ? true
+      : entry.covers
+        ? entry.covers.includes(place.book)
+        : partOf(place.book) === 'nt';
 
 /** The link that opens `entry` at the place: a Bible as the Old Testament chapter links are made (logosBible.ts), any other book at the Bible reference, the way a work is (works.ts). */
 function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefined {
@@ -79,6 +86,7 @@ const TITLES: Record<Kind, (book: string) => string> = {
   lexicon: () => 'Lexicons',
   grammar: () => 'Grammars',
   devotional: () => 'Devotionals',
+  sermons: () => 'Sermon archives',
 };
 
 /** The groups the sheet draws for `rows`: Pinned first (a book once, not again in its kind), then the kinds in order; a group with no rows is left out. `query` keeps only the rows it matches. */

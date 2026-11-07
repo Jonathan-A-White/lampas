@@ -35,6 +35,7 @@ const NOUNS: Record<Kind, readonly [string, string]> = {
   commentary: ['commentary', 'commentaries'],
   bible: ['Bible', 'Bibles'],
   devotional: ['devotional', 'devotionals'],
+  sermons: ['sermon archive', 'sermon archives'],
 };
 
 const count = (n: number, one: string, many: string): string => `${n.toLocaleString('en')} ${n === 1 ? one : many}`;
