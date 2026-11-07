@@ -8,7 +8,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
-import { isSeptuagint, readingOf } from './reader/septuagint';
+import { isSeptuagint, readingOf, septuagintEnglish, type WordEnglish } from './reader/septuagint';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
@@ -88,6 +88,9 @@ export interface TermAsk {
   term: string;
   verse: number;
 }
+
+/** What the English line says under a Septuagint word's whole-verse English, so it is not read as the word's own. */
+const WHOLE_VERSE = 'This word has no English of its own: the whole verse.';
 
 function Fact({ label, children, testId, greek, hebrew }: { label: string; children: ReactNode; testId: string; greek?: boolean; hebrew?: boolean }) {
   return (
@@ -375,12 +378,14 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
   );
 }
 
-function WordCard({ chapter, word, verseOf, english, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onReading, onMissing, onAll }: {
+function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onReading, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   /** the verse to ask about when the word is not one of the chapter's (a form of a variant reading) */
   verseOf?: number;
   english?: string;
+  /** `english` is the whole verse's, for a Septuagint word that has no chunk of its own: the line then says so (mw-u2w5klk.274.4) */
+  wholeVerse?: boolean;
   pronunciation: GreekPronunciation | undefined;
   known: ReadonlySet<string>;
   study: StudyResources | undefined;
@@ -469,6 +474,11 @@ function WordCard({ chapter, word, verseOf, english, pronunciation, known, study
         {english ? (
           <Fact label="English" testId="sheet-english">
             {bareEnglish(english)}
+            {wholeVerse ? (
+              <span data-testid="sheet-english-whole" className="block text-sm text-muted">
+                {WHOLE_VERSE}
+              </span>
+            ) : null}
           </Fact>
         ) : null}
       </dl>
@@ -570,6 +580,8 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   const tiles = lookup.words.reduce((n, w) => n + studyGroupsOf(sheetChapter, w, study, levels).reduce((m, g) => m + g.links.length + (g.door ? 1 : 0), 0), 0);
   const many = tiles > MANY_TILES;
   const heading = lookup.fromEnglish && lookup.english;
+  // a Septuagint word's English line is its own aligned chunk, or the whole verse where it has none (mw-u2w5klk.274.4); the New Testament's and the Old Testament's come as the Reader gave them
+  const englishOf = (w: GreekWord): WordEnglish | undefined => (isSeptuagint(sheetChapter) && !hebrew ? septuagintEnglish(sheetChapter, w, lookup.verse) : undefined);
   const scroll = useRef<HTMLDivElement>(null);
   const moreBelow = useMoreBelow(scroll, `${tiles}:${lookup.words.length}`);
   // A word of another chapter has no verse in the Reader's chapter to help with or ask about.
@@ -693,7 +705,8 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
                 chapter={sheetChapter}
                 word={w}
                 verseOf={lookup.verse}
-                english={lookup.fromEnglish ? undefined : lookup.english}
+                english={lookup.fromEnglish ? undefined : (englishOf(w)?.text ?? lookup.english)}
+                wholeVerse={lookup.fromEnglish ? undefined : englishOf(w)?.whole}
                 pronunciation={pronunciation}
                 known={known}
                 study={study}
