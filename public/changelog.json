@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.160",
+    "date": "2026-11-07",
+    "story": "mw-qtu3zvz.5",
+    "kind": "new",
+    "text": "The Sermons sheet now asks the online sermon index for the newest sermons and can search sermons and themes when you are online."
+  },
+  {
     "version": "0.7.159",
     "date": "2026-11-07",
     "story": "mw-5r3p30.1146",

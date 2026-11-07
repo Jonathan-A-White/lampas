@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.160
+_2026-11-07_
+- New: The Sermons sheet now asks the online sermon index for the newest sermons and can search sermons and themes when you are online.
+
 ## 0.7.159
 _2026-11-07_
 - New: Choose a book now shows, quietly, the chapter you were last on in each book you have read, and marks it in the book's chapter grid.
