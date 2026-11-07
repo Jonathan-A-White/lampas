@@ -733,8 +733,9 @@ function ParadigmWord({ table, address, levels, extent }: { table: Paradigm; add
     );
   }
   const showing = wantsOwn && mine ? mine : undefined;
-  // the Septuagint's token is as Swete prints it (a comma after it, brackets in it): the form it is laid under is septuagintFormOf's
-  const litForm = word && lemma ? (reading === 'septuagint' ? septuagintFormOf(word, lemma) : ownFormOf(word, lemma)) : undefined;
+  // the Septuagint's token is as Swete prints it (a comma after it, brackets in it, wholly in capitals): the form it is laid under is septuagintFormOf's, a word in capitals matched to the form of its parsing the forms have
+  const accented = (forms ?? []).filter((f) => f.code === parse).map((f) => f.form);
+  const litForm = word && lemma ? (reading === 'septuagint' ? septuagintFormOf(word, lemma, accented) : ownFormOf(word, lemma)) : undefined;
   const lit = showing ? (litForm && parse ? showing.placeOf(litForm, parse) : undefined) : address.cell;
   return (
     <ParadigmTable

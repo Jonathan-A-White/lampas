@@ -32,7 +32,7 @@ export function ownFormOf(text, lemma) {
 /**
  * Every lemma's forms from the chapters (in canonical order): Map<lemma, [form, code, count, book, chapter, verse][]>. The same form with the same code is one
  * entry, counted, with the place of its first use; the same form with another code (ἀγαπᾷ, indicative and subjunctive) is another entry.
- * `formOf(word, lemma, hebrew)` gives the form a word is indexed under (undefined: left out) and `placeOf(chapter, verse)` the [book, chapter, verse] of a use.
+ * `formOf(text, lemma, hebrew, code)` gives the form a word is indexed under (undefined: left out) and `placeOf(chapter, verse)` the [book, chapter, verse] of a use.
  */
 function collect(chapters, formOf, placeOf) {
   const lemmas = new Map();
@@ -42,7 +42,7 @@ function collect(chapters, formOf, placeOf) {
       const place = placeOf(chapter, verse);
       for (const word of verse.g) {
         if (!word.l) continue; // a Hebrew word with no headword of its own has no lemma to be a form of
-        const form = formOf(word.t, word.l, hebrew);
+        const form = formOf(word.t, word.l, hebrew, word.p);
         if (form === undefined) continue;
         const entries = lemmas.get(word.l) ?? new Map();
         lemmas.set(word.l, entries);
@@ -61,19 +61,70 @@ export const lemmaForms = (chapters) => collect(chapters, (t, l, hebrew) => (heb
 /** What Swete's printing adds to a word (docs/lxx-derivation.md 'Swete's tokens'): punctuation, brackets and the editor's signs (scripts/lxx/swete.ts PUNCT). */
 const SWETE_MARKS = /[.,;:!?()[\]{}"\u00B7\u0387\u037E\u201C\u201D\u00AB\u00BB\u2014\u2013\-\u2E00-\u2E7F\u00B6\u00A7*+\u2020\u2021]/g;
 
+/** A word's letters with every mark dropped, lower case and final sigma as sigma: what a word printed in capitals (no accent, breathing or iota subscript) can be matched on. */
+export const bareOf = (text) => text.normalize('NFD').replace(/[\u0300-\u036F]/g, '').toLowerCase().replace(/\u03C2/g, '\u03C3');
+
+/** Whether a token is printed wholly in capitals (a book's opening, ΕΝ ΑΡΧΗ): one letter alone is an ordinary capital. */
+const inCapitals = (bare) => bare.length > 1 && bare === bare.toUpperCase() && bare !== bare.toLowerCase();
+
 /**
- * The form a Septuagint token is indexed under: the token without Swete's marks, then ownFormOf. A word printed wholly in capitals (a book's opening, ΕΝ ΑΡΧΗ) has no accent or breathing to
- * match, so it is left out (undefined) rather than indexed as a spelling no one writes.
+ * The form a Septuagint token is indexed under: the token without Swete's marks, then ownFormOf. A word printed wholly in capitals has no accent or breathing to read, so it is
+ * matched to the form of its lemma with its parsing that the text does have (`accented`: those forms, accents kept; ΑΡΧΗ with N-DSF is ἀρχῇ, not ἀρχή) and is left out (undefined)
+ * when there is none, rather than indexed as a spelling no one writes.
  */
-export function septuagintFormOf(text, lemma) {
+export function septuagintFormOf(text, lemma, accented = []) {
   const bare = text.replace(SWETE_MARKS, '');
-  if (bare.length > 1 && bare === bare.toUpperCase() && bare !== bare.toLowerCase()) return undefined;
-  return bare === '' ? undefined : ownFormOf(bare, lemma);
+  if (bare === '') return undefined;
+  if (inCapitals(bare)) return accented.find((form) => bareOf(form) === bareOf(bare));
+  return ownFormOf(bare, lemma);
 }
 
-/** Every lemma's forms in the Septuagint chapters (mw-u2w5klk.289): as lemmaForms, with the Lampas verse a Greek verse answers as its place (the Greek numbers where Lampas has none). */
-export const septuagintForms = (chapters) =>
-  collect(chapters, (t, l) => septuagintFormOf(t, l), (chapter, verse) => (verse.ref && verse.ref !== 'none' ? [verse.ref.book, verse.ref.chapter, verse.ref.verse] : [chapter.code, chapter.chapter, verse.n]));
+const accentKey = (lemma, code) => `${lemma}\u0000${code}`;
+
+/** The forms the text has for each lemma and parsing, accents kept: the New Testament's (`nt`, as lemmaForms gives it) and the Septuagint's own words in small letters. Map<accentKey, form[]>. */
+function accentedForms(chapters, nt) {
+  const accented = new Map();
+  const note = (lemma, code, form) => {
+    const forms = accented.get(accentKey(lemma, code)) ?? [];
+    accented.set(accentKey(lemma, code), forms);
+    if (!forms.includes(form)) forms.push(form);
+  };
+  for (const [lemma, entries] of nt) for (const [form, code] of entries) note(lemma, code, form);
+  for (const chapter of chapters) {
+    for (const verse of chapter.verses) {
+      for (const word of verse.g) {
+        const form = word.l ? septuagintFormOf(word.t, word.l) : undefined;
+        if (form !== undefined) note(word.l, word.p, form);
+      }
+    }
+  }
+  return accented;
+}
+
+/**
+ * Every lemma's forms in the Septuagint chapters (mw-u2w5klk.289): as lemmaForms, with the Lampas verse a Greek verse answers as its place (the Greek numbers where Lampas has none).
+ * A word in capitals takes its accent from the forms of its lemma and parsing in the New Testament (`nt`) or in the Septuagint's own small letters (mw-u2w5klk.296).
+ */
+export function septuagintForms(chapters, nt = new Map()) {
+  const accented = accentedForms(chapters, nt);
+  return collect(chapters, (t, l, hebrew, code) => septuagintFormOf(t, l, accented.get(accentKey(l, code))), (chapter, verse) => (verse.ref && verse.ref !== 'none' ? [verse.ref.book, verse.ref.chapter, verse.ref.verse] : [chapter.code, chapter.chapter, verse.n]));
+}
+
+/** Every word printed in capitals in the Septuagint chapters, with the form septuagintForms matches it to (undefined: left out), for the build to tell and the tests to sweep. */
+export function septuagintCapitals(chapters, nt = new Map()) {
+  const accented = accentedForms(chapters, nt);
+  const told = [];
+  for (const chapter of chapters) {
+    for (const verse of chapter.verses) {
+      for (const word of verse.g) {
+        const token = word.t.replace(SWETE_MARKS, '');
+        if (!word.l || !inCapitals(token)) continue;
+        told.push({ token, lemma: word.l, code: word.p, form: septuagintFormOf(token, word.l, accented.get(accentKey(word.l, word.p))), place: `${chapter.code} ${chapter.chapter}:${verse.n}` });
+      }
+    }
+  }
+  return told;
+}
 
 /** The file's text for one lemma: its New Testament (or Hebrew) forms under "f", and under "lxx" its Septuagint forms when it has any. */
 export const fileText = (lemma, entries, septuagint = []) => `${JSON.stringify(septuagint.length > 0 ? { l: lemma, f: entries, lxx: septuagint } : { l: lemma, f: entries })}\n`;
@@ -122,7 +173,8 @@ export function readSeptuagintChapters(lxxDir) {
 /** Writes a file for each lemma under `outDir` (emptied first, so a lemma the text no longer has leaves no file); returns the counts and the sizes. `lxxDir` is the Septuagint's folder, whose forms ride in the lemma's file. */
 export function writeLemmaForms(dataDir, outDir, lxxDir) {
   const nt = lemmaForms(readChapters(dataDir));
-  const lxx = lxxDir ? septuagintForms(readSeptuagintChapters(lxxDir)) : new Map();
+  const lxxChapters = lxxDir ? readSeptuagintChapters(lxxDir) : [];
+  const lxx = septuagintForms(lxxChapters, nt);
   const lemmas = new Map([...nt, ...[...lxx].filter(([lemma]) => !nt.has(lemma)).map(([lemma]) => [lemma, []])]);
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
@@ -135,12 +187,15 @@ export function writeLemmaForms(dataDir, outDir, lxxDir) {
     bytes += size;
     if (size > largest.bytes) largest = { lemma, bytes: size };
   }
-  return { lemmas: lemmas.size, bytes, largest };
+  const capitals = septuagintCapitals(lxxChapters, nt);
+  return { lemmas: lemmas.size, bytes, largest, capitals: capitals.length, unmatched: capitals.filter((c) => c.form === undefined) };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const done = writeLemmaForms('public/data', 'public/lemma-forms', 'public/data-lxx');
   console.log(`${done.lemmas} lemma files, ${(done.bytes / 1024).toFixed(0)} KB in all, the largest ${done.largest.lemma} at ${done.largest.bytes} bytes`);
+  // the Septuagint's words printed in capitals take their accent from a form of the lemma the text has; those with none are left out of the files
+  console.log(`${done.capitals} Septuagint words in capitals, ${done.unmatched.length} with no accented form to match${done.unmatched.length > 0 ? `: ${[...new Set(done.unmatched.map((c) => c.token))].slice(0, 20).join(' ')}` : ''}`);
   // a build that leaves a stray file behind would be told at once
   if (readdirSync('public/lemma-forms').length !== done.lemmas) process.exit(1);
 }
