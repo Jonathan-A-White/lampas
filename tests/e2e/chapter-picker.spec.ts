@@ -100,10 +100,10 @@ test('a bare open reads the chapter last open, and a chapter fetched once reads 
   await alert.getByRole('button', { name: 'Choose another chapter' }).click();
   await picker.getByRole('button', { name: '1 John' }).click();
   await picker.getByRole('button', { name: 'Chapter 2' }).click();
-  // 1 John 2 was fetched while the network was up: it is held, and reads with the network cut, at the top
+  // 1 John 2 was fetched while the network was up: it is held, and reads with the network cut. He left it scrolled to the bottom, so it opens at the verse he was last on (mw-5r3p30.1148), not its top.
   await expect(page.getByRole('heading', { name: '1 John 2', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  expect(await page.locator('[data-reader]').evaluate((el) => el.scrollTop)).toBe(0);
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-restored-verse', /^\d+$/);
+  await expect(page.locator('[data-verse="1"]')).toHaveCount(1);
   await context.setOffline(false);
 });
 
