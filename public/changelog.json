@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.163",
+    "date": "2026-11-07",
+    "story": "mw-u2w5klk.17",
+    "kind": "fixed",
+    "text": "a Septuagint word's card now shows and says the word without the printed punctuation, About this reading explains how each word was read and Back brings the card back."
+  },
+  {
+    "version": "0.7.163",
+    "date": "2026-11-07",
+    "story": "mw-qtu3zvz.6",
+    "kind": "new",
+    "text": "The tutor now knows which sermons were preached on the verse you are reading and can link one, and you can ask the makers to add a preacher."
+  },
+  {
     "version": "0.7.162",
     "date": "2026-11-07",
     "story": "mw-5r3p30.1148",

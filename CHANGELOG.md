@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.163
+_2026-11-07_
+- Fixed: a Septuagint word's card now shows and says the word without the printed punctuation, About this reading explains how each word was read and Back brings the card back.
+- New: The tutor now knows which sermons were preached on the verse you are reading and can link one, and you can ask the makers to add a preacher.
+
 ## 0.7.162
 _2026-11-07_
 - New: A chapter you have read before now opens at the verse you were last on in it.
