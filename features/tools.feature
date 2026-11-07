@@ -11,7 +11,7 @@ Feature: Tools
     Then the Menu is closed
     And the reader is shown
 
-  Scenario: Settings in the Menu opens Settings, as the gear did
+  Scenario: Settings in the Menu opens Settings
     Given Lampas is opened on Romans 8
     When he opens Settings from the reader's Menu
     Then the Settings screen is shown

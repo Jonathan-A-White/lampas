@@ -13,7 +13,7 @@ import { writeSetting } from '../../src/settings/registry';
 import { seedHisWords } from '../../tests/support/his-words';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech } from '../../tests/support/fake-speech';
-import { openSettings, openTools, findMenuButton, findToolsHeading } from '../../tests/unit/openSettings';
+import { openSettings, openTools, findMenuButton, findToolsHeading, findSettingsHeading } from '../../tests/unit/openSettings';
 
 const user = userEvent.setup();
 
@@ -69,13 +69,13 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  Scenario("Settings in the Menu opens Settings, as the gear did", ({ Given, When, Then, And }) => {
+  Scenario("Settings in the Menu opens Settings", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8', () => openReader(false));
     When("he opens Settings from the reader's Menu", async () => {
       await openSettings(user);
     });
     Then('the Settings screen is shown', async () => {
-      expect(await screen.findByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
+      expect(await findSettingsHeading()).toBeVisible();
     });
     And('the address is {string}', (_, hash: string) => expect(window.location.hash).toBe(hash));
     And('the Settings groups do not list Tools', async () => {
