@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.148",
+    "date": "2026-11-07",
+    "story": "mw-u2w5klk.278",
+    "kind": "fixed",
+    "text": "In the English reading of a Septuagint chapter, tapping an English word that is not yet linked to a Greek word now opens that verse instead of a wrong Greek word."
+  },
+  {
+    "version": "0.7.148",
+    "date": "2026-11-07",
+    "story": "mw-fnvjof.17.8",
+    "kind": "fixed",
+    "text": "A mistyped book in a search, like \"mwt\" for Matthew, now shows the closest books instead of nothing."
+  },
+  {
     "version": "0.7.147",
     "date": "2026-11-07",
     "story": "mw-u2w5klk.296",

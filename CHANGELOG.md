@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.148
+_2026-11-07_
+- Fixed: In the English reading of a Septuagint chapter, tapping an English word that is not yet linked to a Greek word now opens that verse instead of a wrong Greek word.
+- Fixed: A mistyped book in a search, like "mwt" for Matthew, now shows the closest books instead of nothing.
+
 ## 0.7.147
 _2026-11-07_
 - Fixed: A Greek Old Testament word printed in capitals, like the first word of Genesis, now finds its own cell when you open its table.
