@@ -22,7 +22,7 @@ import {
   type SettingsSection as KitSection,
   type Values,
 } from 'pwa-kit/settings';
-import { getDeveloper, getKnownSermonSources } from '../data/repositories';
+import { getDeveloper } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
 import { resourceOf } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
@@ -33,7 +33,7 @@ import { SEPARATE_KEYS } from './definitions/pronunciation';
 import { handSetting } from './hand';
 import { helpPlain } from './helpText';
 import { forgetGrownSermonEntries, growSermonEntries, isGrownSermon, SETTINGS, settingOf, type SectionId } from './registry';
-import { knownSermonSources, onKnownSermonSources, setKnownSermonSources } from '../sermons/known';
+import { knownSermonSources, onKnownSermonSources } from '../sermons/known';
 import type { KnownSermonSource } from '../data/repositories/sermonSources';
 
 export type SettingsSection = KitSection<SectionId>;
@@ -267,6 +267,10 @@ export const isTalkable = (key: string): boolean => !key.startsWith('link.') && 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 
 const grownListeners = new Set<(rows: readonly SettingsRow[]) => void>();
+let grownCount = 0;
+
+/** How many times Settings has grown rows (for a hook to read, useSyncExternalStore, src/settings/useGrownRows.ts): a screen draws again when it changes. */
+export const grownRowsCount = (): number => grownCount;
 
 /** Calls `listener` with the rows each time Settings grows some; returns the unsubscribe. */
 export function onRowsGrown(listener: (rows: readonly SettingsRow[]) => void): () => void {
@@ -284,6 +288,7 @@ export function growSermonRows(known: readonly KnownSermonSource[]): boolean {
   const all = ROWS as SettingsRow[];
   const after = all.reduce((at, r, i) => (r.section === 'sermons' ? i : at), all.length - 1);
   all.splice(after + 1, 0, ...rows);
+  grownCount++;
   for (const listener of [...grownListeners]) listener(rows);
   return true;
 }
@@ -304,7 +309,6 @@ const DEPENDED_ON = [...new Set([...ROWS, ...TOOL_ROWS].flatMap((r) => (r.depend
 /** The current value of every row some other row depends on: a setting's value as text (a resource switch is 'on' or 'off'). */
 export async function readValues(): Promise<Values> {
   // the sermon sources the index service gave on an earlier day have their rows before the screen draws (growSermonRows); the screen draws once the values are read
-  await getKnownSermonSources().then((list) => list.length > 0 && setKnownSermonSources(list), () => undefined);
   const entries = await Promise.all(
     DEPENDED_ON.map(async (key) => {
       if (key === 'developerMode') return [key, await getDeveloper()] as const;

@@ -22,7 +22,7 @@ import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { GREEK_LEVELS, greekLevelOf } from './settings/definitions/greekInterest';
 import { HEBREW_LEVELS } from './settings/definitions/hebrewInterest';
 import { HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, visibleToolRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
-import { settingsForTutor } from './settings/tutorSettings';
+import { settingsForTutor } from './settings/tutorSettings'; import { useGrownRows } from './settings/useGrownRows';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
@@ -100,7 +100,7 @@ export function SettingsScreen() {
     setLinkSeen(linked);
     if (linked !== null && linkedRow && isHomeRow(linkedRow)) setQuery('');
   }
-  const values = useLiveQuery(readValues, []);
+  const grown = useGrownRows(); const values = useLiveQuery(readValues, [grown]); // a sermon source the index service gave grows its row
   // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3); the Hand row is not drawn at all (mw-5r3p30.880: no tutor door exists)
   const aiAllowed = useAiAllowed();
   const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest)).filter((r) => aiAllowed || !r.licenceOnly);

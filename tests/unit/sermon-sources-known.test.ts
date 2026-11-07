@@ -79,7 +79,7 @@ describe('the Settings rows', () => {
   it('is not told to the tutor and not flipped by talk', async () => {
     setKnownSermonSources([NEW]);
     expect(isTalkable('sermons.newbie-sermons')).toBe(false);
-    expect((await settingsForTutor()).map((s) => s.key)).not.toContain('sermons.newbie-sermons');
+    expect((await settingsForTutor()).map((s) => s.name)).not.toContain(NEW.name);
   });
 
   it('forgetting the grown rows takes them out', () => {

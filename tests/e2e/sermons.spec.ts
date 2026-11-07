@@ -384,9 +384,9 @@ test('online: when the service cannot be reached the bundled rows stand, the she
   const view = await openVerseView(page, 8);
   await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
   const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
-  const opened = Date.now();
+  const opened = performance.now();
   await expect(sheet.locator('[data-sermons-latest]')).toHaveText('Offline: the bundled index', { timeout: 2000 });
-  expect(Date.now() - opened).toBeLessThan(2500);
+  expect(performance.now() - opened).toBeLessThan(2500);
   const field = sheet.getByRole('searchbox', { name: 'Search sermons and themes' });
   await expect(field).toBeDisabled();
   await expect(field).toHaveAttribute('placeholder', 'Needs the internet');
