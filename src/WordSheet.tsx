@@ -8,7 +8,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
-import { isSeptuagint, readingOf, septuagintEnglish, type WordEnglish } from './reader/septuagint';
+import { cardForm, isSeptuagint, readingOf, septuagintEnglish, type WordEnglish } from './reader/septuagint';
 import { parseSegments } from './data/parseCode';
 import { getStudyResources, setResourceOn, type StudyResources } from './data/repositories';
 import { publish, useLatest } from './events/bus';
@@ -21,7 +21,7 @@ import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
 import { paradigmOfHebrewWord, paradigmOfWord } from './data/paradigms';
 import { openHelpPage, openLibrary, openParadigm } from './nav/route';
-import { holdWord } from './wordReturn';
+import { holdWord, READING_HELP_PAGE } from './wordReturn';
 import { oneTap } from './ui/settle';
 import { resourcesForLevel } from './resources/resourcesForLevel';
 import { optionOf, RESOURCES, type StudyLink, type StudyRef, type StudyResource } from './resources';
@@ -108,14 +108,21 @@ function Fact({ label, children, testId, greek, hebrew }: { label: string; child
 }
 
 /** The Parsing in plain words with each grammar word a link (a 44 px tap target): underlined, or plain once he knows it. */
-function ParseTerms({ parse, known, open, language = 'grc' }: { parse: string; known: ReadonlySet<string>; open: (term: string) => void; language?: SourceLanguage }) {
+function ParseTerms({ parse, known, open, language = 'grc', glued = false }: { parse: string; known: ReadonlySet<string>; open: (term: string) => void; language?: SourceLanguage; glued?: boolean }) {
+  const segments = parseSegments(parse, language);
   return (
     <>
-      {parseSegments(parse, language).map((segment, i) => {
+      {segments.map((segment, i) => {
         const term = segment.term;
-        if (term === undefined) return segment.text;
+        if (term === undefined) {
+          // glued: the comma that follows a term goes with it, in the term's own no-break span (below), so a wrapped line never starts with a comma on its own
+          const comma = glued && i > 0 && segments[i - 1].term !== undefined ? /^[,;:.]+/.exec(segment.text)?.[0] : undefined;
+          return comma ? segment.text.slice(comma.length) : segment.text;
+        }
         const isKnown = known.has(term);
-        return (
+        const next = segments[i + 1];
+        const comma = glued && next && next.term === undefined ? /^[,;:.]+/.exec(next.text)?.[0] : undefined;
+        const button = (
           <button
             key={i}
             type="button"
@@ -126,6 +133,14 @@ function ParseTerms({ parse, known, open, language = 'grc' }: { parse: string; k
           >
             {term}
           </button>
+        );
+        return comma ? (
+          <span key={i} className="whitespace-nowrap">
+            {button}
+            {comma}
+          </span>
+        ) : (
+          button
         );
       })}
     </>
@@ -159,7 +174,8 @@ function studyGroups(chosen: StudyResources | undefined, levels: InterestLevels 
 function studyGroupsOf(chapter: Chapter, word: GreekWord, study: StudyResources | undefined, levels: InterestLevels | undefined): StudyGroup[] {
   const verse = chapter.verses.find((v) => v.g.includes(word))?.n;
   const ref = verse === undefined ? undefined : { book: chapter.code, chapter: chapter.chapter, verse };
-  return studyGroups(study, levels, word, ref, wordGloss(chapter, word));
+  const form = cardForm(chapter, word);
+  return studyGroups(study, levels, form === word.t ? word : { ...word, t: form }, ref, wordGloss(chapter, word));
 }
 
 /** More tiles than this and the sheet is a long one: a Close button sits under its scroll box and a fade says there is more below. 5 since the list lost its third app (mw-5r3p30.738): Strong's, three pinned lexicons, Bible Word Study and the door (6) is still a long sheet. */
@@ -412,6 +428,8 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
   const table = paradigmOfWord(word)?.table;
   // a word of the Septuagint (the derivation read it, `y`): how Lampas read it, told as a guess when it only guessed (mw-u2w5klk.12)
   const reading = readingOf(word);
+  // a Septuagint word is shown, said and asked about without Swete's punctuation (the chapter keeps it for the verse the Reader draws)
+  const form = cardForm(chapter, word);
   return (
     <section className="border-t border-line py-3 first:border-t-0 first:pt-0">
       {isGuess(word) ? (
@@ -421,13 +439,13 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
       ) : null}
       <div className="flex items-start justify-between gap-2">
         <h2 data-testid="sheet-word" {...GREEK_LANG} className="min-w-0 break-words font-greek text-4xl font-bold">
-          {word.t}
+          {form}
         </h2>
-        <SpeakButton text={word.t} id={`word:${word.t}`} label="Hear it" kind="speaker" className="shrink-0" />
+        <SpeakButton text={form} id={`word:${form}`} label="Hear it" kind="speaker" className="shrink-0" />
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-2">
         <p data-testid="sheet-respelling" className="min-w-0 break-words text-xl text-muted">
-          {pronunciationOf(pronunciation).respell(word.t)}
+          {pronunciationOf(pronunciation).respell(form)}
         </p>
         {word.s ? <LinkActions url={wordUrl(word.s)} title={wordLemma(word)} className="-mr-3" /> : null}
       </div>
@@ -439,7 +457,7 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
         )}
         {wordParse(chapter, word) ? (
           <Fact label="Parsing" testId="sheet-parse">
-            <ParseTerms parse={wordParse(chapter, word)} known={known} open={(term) => onTerm(term, word, verse)} />
+            <ParseTerms parse={wordParse(chapter, word)} known={known} open={(term) => onTerm(term, word, verse)} glued={isSeptuagint(chapter)} />
           </Fact>
         ) : null}
         {table ? (
@@ -495,7 +513,7 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
           {reading.report && onHelp && verse !== undefined ? (
             <button
               type="button"
-              onClick={() => onHelp({ kind: 'word', form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse, report: true })}
+              onClick={() => onHelp({ kind: 'word', form, lemma: wordLemma(word), parse: wordParse(chapter, word), verse, report: true })}
               className={`${HELP_BUTTON} mt-1 w-full flex-none`}
             >
               Report this reading
@@ -509,7 +527,7 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
       <WordCognate lemma={wordLemma(word)} className="mt-3" />
       <StudyRow groups={studyGroupsOf(chapter, word, study, levels)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
       {onHelp && verse !== undefined ? (
-        <HelpRow help={(kind) => onHelp({ kind, form: word.t, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
+        <HelpRow help={(kind) => onHelp({ kind, form, lemma: wordLemma(word), parse: wordParse(chapter, word), verse })} />
       ) : null}
     </section>
   );
@@ -599,7 +617,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
   // A sheet with nothing to ask about (a word of another chapter, a linked word, one with no help) is a covered door: the ? is not drawn over it, for the Talk sheet it opened would stand under this one (z-35) (mw-5r3p30.953).
   const askWord =
     help && first && firstVerse !== undefined
-      ? () => help(hebrew ? { kind: 'word', form: hebrewPointedForm(first.t), lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse, language: 'he' } : { kind: 'word', form: first.t, lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse })
+      ? () => help(hebrew ? { kind: 'word', form: hebrewPointedForm(first.t), lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse, language: 'he' } : { kind: 'word', form: cardForm(sheetChapter, first), lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse })
       : undefined;
   useDoorTarget(askWord ?? (() => undefined), askWord === undefined, true);
   const openTerm = (term: string, word: GreekWord, verse: number | undefined): void => {
@@ -611,12 +629,12 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
     const found = paradigmOfWord(word);
     if (!found) return;
     holdWord(sheetChapter, lookup);
-    openParadigm({ table: found.table.id, cell: found.cell, word: word.t, parse: word.p, lemma: word.l, ...(isSeptuagint(sheetChapter) ? { septuagint: true } : {}) });
+    openParadigm({ table: found.table.id, cell: found.cell, word: cardForm(sheetChapter, word), parse: word.p, lemma: word.l, ...(isSeptuagint(sheetChapter) ? { septuagint: true } : {}) });
   };
   // the Help page (Words) that says how the Septuagint's words were read is a page of its own: the sheet is held, and Back brings it back
   const openReading = (): void => {
     holdWord(sheetChapter, lookup);
-    openHelpPage('words');
+    openHelpPage(READING_HELP_PAGE);
   };
   // a Hebrew word's table: the parsing in plain words rides in the address as the Greek word's code does (no lemma: This word is the Greek tables' only)
   const openHebrewTable = (word: GreekWord): void => {

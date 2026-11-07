@@ -13,6 +13,10 @@ export interface HeldWord {
   hash: string;
 }
 
+/** The page of Help that About this reading opens (src/help.ts 'words'): the one Help route the hold survives, and the one whose Back returns to the sheet. */
+export const READING_HELP_PAGE = 'words';
+const READING_HASH = `#/help?page=${READING_HELP_PAGE}`;
+
 let held: HeldWord | undefined;
 const watchers = new Set<() => void>();
 const tell = (): void => watchers.forEach((w) => w());
@@ -53,10 +57,15 @@ export function useReturnedWord(): HeldWord | undefined {
   return held !== undefined && window.location.hash === held.hash && sheetDepth() === 0 ? held : undefined;
 }
 
-/** Whether the hold still has a reason to stay: he is at the table (or, from All lexicons > Manage, the Library), or at the address it was over. */
-export const holdWordStillWanted = (): boolean => held === undefined || window.location.hash === held.hash || window.location.hash.startsWith('#/paradigms') || window.location.hash.startsWith('#/library');
+/** Whether the hold still has a reason to stay: he is at the table (or, from All lexicons > Manage, the Library), at the Help page About this reading opened, or at the address it was over. */
+export const holdWordStillWanted = (): boolean =>
+  held === undefined ||
+  window.location.hash === held.hash ||
+  window.location.hash.startsWith('#/paradigms') ||
+  window.location.hash.startsWith('#/library') ||
+  window.location.hash === READING_HASH;
 
-/** Back from the table to the word sheet: a step Back when the sheet is held (the screen under it is as he left it), else (a reload left nothing behind) the list of tables. */
+/** Back from the table (or the Help page About this reading opened) to the word sheet: a step Back when the sheet is held (the screen under it is as he left it), else (a reload left nothing behind) the list of tables. */
 export function leaveToWord(fallback: () => void): void {
   if (held === undefined) fallback();
   else window.history.back();

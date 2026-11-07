@@ -70,9 +70,9 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Words',
     line: 'New words, Quick test, Parsing drill.',
     body: [
-      'In Tools, Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have yet; its sheet shows the word with how it sounds, its meaning and an easy verse, and Got it adds it.',
-      'Where both languages are chosen, Words and Review show a Greek | Hebrew switch. The Quick test asks words of both together; the Parsing drill reads the chapter of the language you are in.',
-      'A Septuagint word’s card says how Lampas read it (sure, likely, unsure); a dotted guess is never learned. Septuagint chapters: see Greek and Hebrew.',
+      'In Tools, Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have; Got it adds one.',
+      'Where both languages are chosen, Words and Review show a Greek | Hebrew switch; the Quick test asks both, the Parsing drill the language you are in.',
+      'A Septuagint word’s card says how Lampas read it, by one of five layers: the New Testament’s forms, the paradigm parser, agreement with neighbours, a model’s reading, or a guess. Sure, likely or unsure says how far to trust it. A dotted guess is never learned. See Greek and Hebrew.',
     ],
   },
   {

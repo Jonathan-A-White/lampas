@@ -17,7 +17,7 @@ import { sayWord } from './sayWord';
 import { variantLabel, variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
-import { gapText, septuagintChunkLinked } from './septuagint';
+import { gapText, septuagintChunkLinked, withoutMarks } from './septuagint';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
 function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
   return (
@@ -178,6 +178,8 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
   const say = (text: string, language: SpeechLanguage) => sayWord(text, language, verse.n);
+  // a Septuagint word is said without Swete's punctuation ('γῆν.' is γῆν); `onUnlinked` is given for a verse of the Septuagint only. The text keeps the mark.
+  const sayGreek = (w: GreekWord, language: SpeechLanguage) => say(onUnlinked !== undefined && language === 'greek' ? withoutMarks(w.t) : w.t, language);
   // a word inside a variant's brace opens the word popup as a word of the text does (src/reader/variantWords.ts), saying which reading it is from
   const lookVariant = (word: string, reading: BraceReading, language: 'greek' | 'english') => {
     const lookup = variantLookup(verse, word, reading, language, variantLabel(reading.chips));
@@ -186,7 +188,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   // a marked word the MSB gives no English of its own is in no chunk: it is drawn, marked, in its own place in the English and the weave (weave.ts strayMarks, mw-5r3p30.817)
   const strays = view === 'greek' || marked === undefined ? { before: new Map<number, readonly number[]>(), end: [] as readonly number[] } : strayMarks(verse, marked, drawnOrder(verse, woven));
   const strayWord = (i: number) => (
-    <Tap key={`w${i}`} still={still} data-word={String(i)} data-marked="" {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD} ${MARKED}`} onTap={() => lookGreek(verse.g[i])} onLongPress={() => say(verse.g[i].t, ownSpeech)}>
+    <Tap key={`w${i}`} still={still} data-word={String(i)} data-marked="" {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD} ${MARKED}`} onTap={() => lookGreek(verse.g[i])} onLongPress={() => sayGreek(verse.g[i], ownSpeech)}>
       {verse.g[i].t}
     </Tap>
   );
@@ -268,7 +270,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
               {
                 run: plan.marked.has(i) ? 'variant' : undefined,
                 node: (bare: boolean) => (
-                  <Tap key={i} bare={bare} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-guess={isGuess(w) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''} ${isGuess(w) ? GUESS : ''}`} onTap={() => lookGreek(w)} onLongPress={() => say(w.t, ownSpeech)}>
+                  <Tap key={i} bare={bare} still={still} data-word={String(i)} data-marked={marked?.has(i) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-guess={isGuess(w) ? '' : undefined} className={`${TAP_PAD} ${marked?.has(i) ? MARKED : ''} ${isGuess(w) ? GUESS : ''}`} onTap={() => lookGreek(w)} onLongPress={() => sayGreek(w, ownSpeech)}>
                     {gapText(w, gaps)}
                     {isGuess(w) ? <span role="img" aria-label="a guess" /> : null}
                   </Tap>
@@ -296,7 +298,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
             if (weft && weft.words.length > 1) {
               // Two Greek words behind one English chunk ("to you." is ὑμῖν γράφω): the wrapper only holds the chunk's marks, each word is its own target (mw-5r3p30.614).
               const words = (bare: boolean) => weft.words.map((w, k) => (
-                <Tap key={k} bare={bare && k === weft.words.length - 1} still={still} dir={ownDir} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, ownSpeech)}>
+                <Tap key={k} bare={bare && k === weft.words.length - 1} still={still} dir={ownDir} className={TAP_PAD} onTap={() => lookWord(w, c)} onLongPress={() => sayGreek(w, ownSpeech)}>
                   {w.t}
                 </Tap>
               ));
@@ -323,7 +325,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
             const beside = weft ? [] : besideOf(woven, i);
             const known = () =>
               beside.map((w, k) => (
-                <Tap key={`b${i}-${k}`} still={still} data-beside={String(verse.g.indexOf(w))} {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD}`} onTap={() => lookWord(w, c)} onLongPress={() => say(w.t, ownSpeech)}>
+                <Tap key={`b${i}-${k}`} still={still} data-beside={String(verse.g.indexOf(w))} {...own} dir={ownDir} className={`${face} text-accent ${TAP_PAD}`} onTap={() => lookWord(w, c)} onLongPress={() => sayGreek(w, ownSpeech)}>
                   {w.t}
                 </Tap>
               ));
