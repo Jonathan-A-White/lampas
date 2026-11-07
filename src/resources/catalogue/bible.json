@@ -1,6 +1,6 @@
 {
   "kind": "bible",
-  "version": "cd3499bc79b1",
+  "version": "a8470f3507bd",
   "entries": [
     {"resource":"LLS:LGCYSTNDRDBBLSB","kind":"bible","title":"Legacy Standard Bible","short":"LSB","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","parts":["nt","ot"],"starts":"pinned","via":"id"},
     {"resource":"LLS:1.0.710","kind":"bible","title":"English Standard Version","short":"ESV","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","parts":["nt","ot"],"starts":"on","via":"id"},
@@ -19,7 +19,6 @@
     {"resource":"LLS:NCPBWITHAPOCR","kind":"bible","title":"The New Cambridge Paragraph Bible with the Apocrypha: King James Version","short":"NCPB","lang":"en","opens":"chapter","value":"The Apocrypha (Tobit, Sirach and the rest), which a Bible without it cannot open.","parts":["nt","ot","apocrypha"],"starts":"on","via":"id"},
     {"resource":"LLS:LELXX","kind":"bible","title":"The Lexham English Septuagint","short":"LES","lang":"en","opens":"chapter","value":"The Apocrypha (Tobit, Sirach and the rest), which a Bible without it cannot open.","parts":["ot","apocrypha"],"starts":"on","via":"id"},
     {"resource":"LLS:BRENTONLXXEN","kind":"bible","title":"The Septuagint Version of the Old Testament: English Translation","short":"Brenton LXX En","lang":"en","opens":"chapter","value":"The Apocrypha (Tobit, Sirach and the rest), which a Bible without it cannot open.","parts":["ot","apocrypha"],"starts":"on","via":"id"},
-    {"resource":"LLS:LHB","kind":"bible","title":"Lexham Hebrew Bible","short":"LHB","lang":"he","opens":"chapter","value":"The Old Testament in its Hebrew, from a reader that holds only the New Testament.","parts":["ot"],"starts":"on","via":"id"},
     {"resource":"LLS:1.0.1026","kind":"bible","title":"The NET Bible","short":"NET","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","parts":["nt","ot"],"starts":"on","via":"type"},
     {"resource":"LLS:1.0.160","kind":"bible","title":"Good News Translation","short":"GNB","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","parts":["nt","ot"],"starts":"on","via":"type"},
     {"resource":"LLS:1.0.165","kind":"bible","title":"The Message: The Bible in Contemporary Language","short":"MSG","lang":"en","opens":"chapter","value":"The whole Bible from a reader that holds only the New Testament.","parts":["nt","ot"],"starts":"on","via":"type"},

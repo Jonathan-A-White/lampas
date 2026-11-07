@@ -1,20 +1,20 @@
 Feature: Your Logos library, a screen of its own
   His Logos library has a screen (docs/design/library-at-scale.md 3.3 and 3.4, mw-rfjjzd.4): #/library draws a card, a search field and eight kind rows with counts from his shelf;
   #/library?kind=lexicon draws the kind's page, every book of the kind in a control of Off, On or Pin, pinned books first, then those on, then those off. A kind holds at most 3
-  pins, Bibles hold one at a time and a Devotional cannot be pinned.
+  pins, a Bible shows the parts it is set for (read from Settings, never kept apart) and a Devotional cannot be pinned.
 
   Scenario: The home shows the card and the eight kinds with counts from the shelf
-    Given his shelf holds the lexicons "BDAG, Louw-Nida, DBL Greek" On with "BDAG" pinned, the grammar "Kairos" On and the Bible "LSB" chosen
+    Given his shelf holds the lexicons "BDAG, Louw-Nida, DBL Greek" On with "BDAG" pinned, the grammar "Kairos" On and Settings sets the Bible "LSB" for every part
     When he opens the Library
     Then the page "Your Logos library" is open
-    And the card counts 5 books on out of all the books of the catalogue
+    And the card counts 4 books on out of all the books of the catalogue
     And the kinds listed are "Lexicons, Grammars, Greek texts, Hebrew texts, Interlinears, Commentaries, Bibles, Devotionals"
     And the rows read
       | kind        | reads           |
       | Lexicons    | 3 on · 1 pinned |
       | Grammars    | 1 on            |
       | Greek texts | none on         |
-      | Bibles      | 1 chosen: LSB   |
+      | Bibles      | NT LSB · OT LSB · Apocrypha NRSV |
       | Devotionals | none on         |
     When the shelf puts "DBL Greek" Off
     Then the row "Lexicons" reads "2 on · 1 pinned"
@@ -67,17 +67,42 @@ Feature: Your Logos library, a screen of its own
     Then "EDNT" now shows "Pin"
     And the line "Three Greek lexicons pinned already: unpin one first" is not shown
 
-  Scenario: Bibles hold one
-    Given his shelf holds the Bible "LSB" chosen
+  Scenario: Bibles show the parts they are set for, read from Settings
+    Given his shelf holds nothing
+    And Settings sets the New Testament to "NKJV", the Old Testament to "LSB" and the Apocrypha to "NRSV"
     When he opens the Library at the kind "bible"
     Then the page "Bibles" is open
-    And "LSB" is set to "Chosen"
+    And "NKJV" is marked "Set for NT"
+    And the mark of "LSB" reads "Set for OT"
+    And the line under "NRSV" says "Set for Apocrypha"
+    And "ESV" has no mark
+    And the page says "3 in use"
     And the page has no button "All on"
     And no book of the kind offers "Pin"
-    When he sets "ESV" to "Chosen"
-    Then "ESV" now shows "Chosen"
-    And "LSB" is no longer chosen
-    And the page says "1 chosen"
+    When Settings sets the Old Testament to "ESV"
+    Then "ESV" is now marked "Set for OT"
+    And "LSB" now carries no mark
+
+  Scenario: Choosing a Bible asks which part and sets only that part
+    Given his shelf holds nothing
+    And Settings sets the New Testament to "NKJV", the Old Testament to "LSB" and the Apocrypha to "NRSV"
+    When he opens the Library at the kind "bible"
+    And he taps Set for on "LES"
+    Then the parts offered for "LES" are "Old Testament, Apocrypha, All three"
+    When he sets "LES" for "Old Testament"
+    Then Settings holds the New Testament "NKJV", the Old Testament "LES" and the Apocrypha "NRSV"
+    And "LES" is marked "Set for OT"
+    And "LSB" has no mark
+
+  Scenario: Choosing All three sets every part the Bible holds and leaves the rest
+    Given his shelf holds nothing
+    And Settings sets the New Testament to "NKJV", the Old Testament to "LSB" and the Apocrypha to "NRSV"
+    When he opens the Library at the kind "bible"
+    And he taps Set for on "ESV"
+    And he sets "ESV" for "All three"
+    Then "ESV" is marked "Set for NT · OT"
+    And "NKJV" has no mark
+    And the mark of "NRSV" reads "Set for Apocrypha"
 
   Scenario: Devotionals shows no Pin
     Given his shelf holds nothing

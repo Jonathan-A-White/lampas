@@ -115,11 +115,12 @@ describe('the Apocrypha Bible he keeps', () => {
 });
 
 describe('In another book at a place', () => {
-  it('offers a Bible that holds the place’s part: the Lexham Hebrew Bible at Jonah, not at Romans', async () => {
+  it('offers a Bible or Hebrew text that holds the place’s part: the Lexham Hebrew Bible (a Hebrew text, mw-5r3p30.1134) at Jonah, not at Romans', async () => {
     const { inLogosRows } = await import('../../src/library/inLogos');
     const { entriesOf } = await import('../../src/resources/catalogue');
-    const on = new Map(entriesOf('bible').map((e) => [e.resource, 'on' as const]));
-    const at = (book: string): string[] => inLogosRows(entriesOf('bible'), on, { book, chapter: 1, verse: 1 }).map((r) => r.entry.resource);
+    const held = [...entriesOf('bible'), ...entriesOf('hebrew-text')];
+    const on = new Map(held.map((e) => [e.resource, 'on' as const]));
+    const at = (book: string): string[] => inLogosRows(held, on, { book, chapter: 1, verse: 1 }).map((r) => r.entry.resource);
     expect(at('jon')).toContain('LLS:LHB');
     expect(at('rom')).not.toContain('LLS:LHB');
   });

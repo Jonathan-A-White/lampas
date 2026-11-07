@@ -1,12 +1,8 @@
 {
   "kind": "hebrew-text",
-  "version": "cd3499bc79b1",
+  "version": "a8470f3507bd",
   "entries": [
-    {"resource":"LLS:BHSSESB","kind":"hebrew-text","title":"Biblia Hebraica Stuttgartensia: SESB 2.0 Version","short":"BHS SESB","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"},
-    {"resource":"LLS:BHSSESBNM","kind":"hebrew-text","title":"Biblia Hebraica Stuttgartensia: SESB Core Version","short":"BHS SESB Core","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"},
-    {"resource":"LLS:BHW418","kind":"hebrew-text","title":"Biblia Hebraica Westmonasteriensis","short":"BHW (WLC)","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"},
-    {"resource":"LLS:WIVUMORPH","kind":"hebrew-text","title":"Biblia Hebraica Stuttgartensia: with Werkgroep Informatica, Vrije Universiteit Morphology","short":"BHS WIVU","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"},
-    {"resource":"LLS:BHQ","kind":"hebrew-text","title":"Biblia Hebraica Quinta","short":"BHQ","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"},
-    {"resource":"LLS:AFHEB10","kind":"hebrew-text","title":"The Hebrew Bible: Andersen-Forbes Analyzed Text","short":"Andersen-Forbes","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"}
+    {"resource":"LLS:LHB","kind":"hebrew-text","title":"Lexham Hebrew Bible","short":"LHB","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"},
+    {"resource":"LLS:1.0.199","kind":"hebrew-text","title":"The Lexham Hebrew-English Interlinear Bible","short":"LHI","lang":"he","opens":"verse","value":"The Old Testament verse he is reading, in another Hebrew text of his own library, beside the one Lampas reads: where the Hebrew editions differ is answered there.","parts":["ot"],"starts":"on","via":"id"}
   ]
 }

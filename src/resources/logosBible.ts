@@ -4,14 +4,17 @@
 import { APOCRYPHA } from '../data/apocrypha';
 import { CANON } from '../data/canon';
 import { otBookOf } from '../data/books';
-import { entriesOf } from './catalogue';
+import { entriesOf, type CatalogueEntry } from './catalogue';
 import { resourceLink } from './logosRes';
 import type { LogosPart } from './types';
 
 export type { LogosPart };
 
+/** The entries the Bible-in-Logos pickers choose from: the catalogue's Bibles and its Hebrew texts (the Lexham Hebrew Bible is a Hebrew text of the library and still a Bible one may read the Old Testament in; mw-5r3p30.1134). */
+const readable = (): CatalogueEntry[] => [...entriesOf('bible'), ...entriesOf('hebrew-text')];
+
 /** The short list in Settings: `id` is the Resource ID Logos prints (the library listing); the order is the order shown. A view over the catalogue's Bibles named by id (catalogue.ts), each as 'LSB (Legacy Standard Bible)'. */
-export const COMMON_BIBLES: readonly { id: string; name: string }[] = entriesOf('bible')
+export const COMMON_BIBLES: readonly { id: string; name: string }[] = readable()
   .filter((e) => e.via === 'id')
   .map((e) => ({ id: e.resource, name: `${e.short} (${e.title})` }));
 
@@ -28,13 +31,13 @@ export const DEFAULT_APOCRYPHA_BIBLE = 'LLS:1.0.50';
 
 /** The Bibles a part's picker offers: those of the catalogue that hold the part (their `parts`), in the catalogue's order. */
 export const biblesFor = (part: LogosPart): readonly { id: string; name: string }[] =>
-  entriesOf('bible')
+  readable()
     .filter((e) => e.via === 'id' && e.parts?.includes(part))
     .map((e) => ({ id: e.resource, name: `${e.short} (${e.title})` }));
 
 /** Whether the Bible holds the part: what the catalogue says of a Bible it lists; true for a Resource ID it does not list (he typed it, so it is as he typed it). */
 export const bibleHolds = (resourceId: string, part: LogosPart): boolean => {
-  const entry = entriesOf('bible').find((e) => e.resource === resourceId);
+  const entry = readable().find((e) => e.resource === resourceId);
   return entry?.parts === undefined || entry.parts.includes(part);
 };
 
