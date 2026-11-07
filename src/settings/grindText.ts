@@ -8,17 +8,24 @@ import { MAX_CHANGES, SETTINGS, TEXT_MAX, type SettingEntry } from './registry';
 export const SETTINGS_BEGIN = '<!-- settings:begin -->';
 export const SETTINGS_END = '<!-- settings:end -->';
 
-/** A choice's values, each with its label up to any subtitle ('Holiness Day by Day: Transformational Thoughts ...' is named by its title); "on" needs no (On). */
-const choiceText = (values: readonly { value: string; label: string }[], help = ''): string =>
-  runsOf(values)
-    .map((run) => {
-      const title = run.label.split(': ')[0];
-      const quoted = run.values.map((v) => `"${v}"`);
-      const named = run.values.length > 2 ? `${quoted[0]} to ${quoted[run.values.length - 1]}` : quoted.join(', ');
-      // a label the help already names with its colon ('Atkinson Hyperlegible: Very clear') is not said again beside its value (mw-t3xu9a.5)
-      return run.label.toLowerCase() === run.values[0] || help.includes(title) ? named : `${named} (${title})`;
-    })
-    .join(', ');
+/**
+ * A choice's values, each with its label up to any subtitle ('Holiness Day by Day: Transformational Thoughts ...' is named by its title); "on" needs no (On). Values next to each other that
+ * share a title are said together with it once ("LLS:TICHDD", "LLS:TICHDQ", "LLS:TICHDS" (Today in Christian History)), as the instructions say a thing once (mw-qtu3zvz.3).
+ */
+const choiceText = (values: readonly { value: string; label: string }[], help = ''): string => {
+  const said: { title?: string; values: string[] }[] = [];
+  for (const run of runsOf(values)) {
+    const title = run.label.split(': ')[0];
+    const quoted = run.values.map((v) => `"${v}"`);
+    const named = run.values.length > 2 ? `${quoted[0]} to ${quoted[run.values.length - 1]}` : quoted.join(', ');
+    // a label the help already names with its colon ('Atkinson Hyperlegible: Very clear') is not said again beside its value (mw-t3xu9a.5)
+    const own = run.label.toLowerCase() === run.values[0] || help.includes(title) ? undefined : title;
+    const last = said[said.length - 1];
+    if (own !== undefined && last?.title === own) last.values.push(named);
+    else said.push({ title: own, values: [named] });
+  }
+  return said.map((s) => (s.title === undefined ? s.values.join(', ') : `${s.values.join(', ')} (${s.title})`)).join(', ');
+};
 
 /**
  * The values of a choice in runs, so a label is said once for the values that share it (mw-gdcyf98.28): the three Today in Christian History
@@ -88,18 +95,25 @@ const HELP_KEPT: readonly string[] = ['devotional', 'weave'];
 
 const bytesOf = (text: string): number => new TextEncoder().encode(text).length;
 
+/** A sentence that says only when a row is drawn ('It shows only while the Weave is not Off.'): the tutor can set a row whether or not it is drawn, and the Settings screen's own `settings` say what is there, so the instructions leave it out (mw-qtu3zvz.3, to keep their room). */
+const WHEN_SHOWN = /\s*(?:It shows|Shown)(?: only)? while [^.]*\./g;
+
 const LANGUAGES = /\b(?:English|Greek|Hebrew)\b/g;
+
+/** Two keys of one family, `themes.themes-tcr1934` and `themes.themes-torrey`: the same word before the dot (the switches of a list of sources, one for each source). */
+const sameFamily = (a: string, b: string): boolean => a.includes('.') && a.split('.')[0] === b.split('.')[0];
 
 /**
  * The list of keys and values the instructions carry, between the two markers: a setting's help, or its hint when it has no help or its help is longer than HELP_MAX_BYTES.
- * Settings next to each other that say the same but for the language they name (the three voices, the three speeds) are one line (mw-gdcyf98.28):
+ * Settings next to each other that say the same but for the language they name (the three voices, the three speeds) are one line (mw-gdcyf98.28), and so are the switches of one family of sources
+ * that say the same (themes.*, sermons.*, mw-qtu3zvz.3):
  * their keys and labels together, the words once, with 'that language' where the first named its own.
  */
 export function settingsBlock(): string {
   const lines: { keys: string[]; labels: string[]; body: string; same: string }[] = [];
   for (const s of SETTINGS) {
     const plain = s.help ? helpPlain(s.help) : s.hint;
-    const help = !HELP_KEPT.includes(s.key) && s.hint && bytesOf(plain) > HELP_MAX_BYTES ? s.hint : plain;
+    const help = (!HELP_KEPT.includes(s.key) && s.hint && bytesOf(plain) > HELP_MAX_BYTES ? s.hint : plain).replace(WHEN_SHOWN, '');
     const body = `${help}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
     const same = `${s.label.replace(LANGUAGES, '')}|${body.replace(LANGUAGES, '')}`;
     const last = lines[lines.length - 1];
@@ -107,6 +121,10 @@ export function settingsBlock(): string {
       last.keys.push(s.key);
       last.labels.push(s.label);
       last.body = last.body.replace(LANGUAGES, 'that language');
+    } else if (last && last.body === body && sameFamily(last.keys[0], s.key)) {
+      // the switches of two sources of one list that say the same (the two theme lists, the sermon lists) are one line
+      last.keys.push(s.key);
+      last.labels.push(s.label);
     } else lines.push({ keys: [s.key], labels: [s.label], body, same });
   }
   return [SETTINGS_BEGIN, ...lines.map((l) => `- ${l.keys.map((k) => `\`${k}\``).join(', ')} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`), SETTINGS_END].join('\n');

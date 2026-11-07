@@ -50,7 +50,8 @@ function sourceOf(entry: IndexSource): SermonSource {
     name: entry.name,
     homepage: entry.homepage,
     credit: entry.credit,
-    describe: `${entry.rows.toLocaleString('en-US')} sermons listed by the passage each was preached on, each read on its own page at ${entry.credit}.`,
+    // one short line: the Settings row's hint, and a line of what the tutor is told (the credit is on the sheet)
+    describe: `Listed by passage${/logos\.com/.test(entry.homepage) ? '; opens in Logos' : ''}.`,
     default: entry.onByDefault === false ? 'off' : 'on',
     async sermonsFor(place: SermonPlace): Promise<SermonRow[]> {
       // a book the source has no file for is no request

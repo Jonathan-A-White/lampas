@@ -118,9 +118,9 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Your Logos library, maps and sermons',
     line: 'Books you own, maps and sermons.',
     body: [
-      'If you own Logos, Your Logos library (in Tools) lists the books Lampas can open, each Off, On or Pinned; Import reads your Logos list. Lampas keeps only that list and your choices. On a verse, In Logos opens it in your Bible.',
-      'Maps · N on a verse, heading or place line opens that place’s maps from Bible Mapper; Settings > Study resources > Maps turns each source on or off.',
-      'Sermons · N beside it lists sermons preached on the verse, then its chapter: Spurgeon’s from CCEL, Matthew Henry’s from the Internet Archive. Each opens where it lives, online.',
+      'If you own Logos, Your Logos library (in Tools) lists the books Lampas can open, sermon archives too, each Off, On or Pinned; Import reads your Logos list. Lampas keeps only that list and your choices. On a verse, In Logos opens it in your Bible.',
+      'Maps · N on a verse, heading or place line opens that place’s maps from Bible Mapper; Settings > Study resources turns each source on or off.',
+      'Sermons · N beside it lists sermons preached on the verse, then its chapter: Spurgeon’s from CCEL, Matthew Henry’s from the Internet Archive. Each opens where it lives, online. In Logos lists your archives.',
     ],
   },
   {
