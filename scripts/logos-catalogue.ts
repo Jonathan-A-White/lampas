@@ -17,8 +17,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const RULES_FILE = join(ROOT, 'data/logos/catalogue-rules.json');
 export const CATALOGUE_DIR = join(ROOT, 'src/resources/catalogue');
 
-/** The eight kinds, as src/resources/catalogue.ts lists them (repeated here: this tool must not import the files it writes). */
-export const KIND_LIST: readonly Kind[] = ['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional'];
+/** The nine kinds, as src/resources/catalogue.ts lists them (repeated here: this tool must not import the files it writes). */
+export const KIND_LIST: readonly Kind[] = ['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional', 'sermons'];
 
 // ---- The rules file ----
 
@@ -82,8 +82,8 @@ export { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, read
 
 // ---- The catalogue ----
 
-const DEFAULT_LANG: Record<Kind, ResourceLang> = { lexicon: 'grc', grammar: 'grc', 'greek-text': 'grc', 'hebrew-text': 'he', interlinear: 'both', commentary: 'en', bible: 'en', devotional: 'en' };
-const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing', 'greek-text': 'verse', 'hebrew-text': 'verse', interlinear: 'verse', commentary: 'verse', bible: 'chapter', devotional: 'day' };
+const DEFAULT_LANG: Record<Kind, ResourceLang> = { lexicon: 'grc', grammar: 'grc', 'greek-text': 'grc', 'hebrew-text': 'he', interlinear: 'both', commentary: 'en', bible: 'en', devotional: 'en', sermons: 'en' };
+const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing', 'greek-text': 'verse', 'hebrew-text': 'verse', interlinear: 'verse', commentary: 'verse', bible: 'chapter', devotional: 'day', sermons: 'verse' };
 
 /** The entry with its fields in the one order, and none that is undefined, so the bytes written depend on the data alone. */
 function ordered(e: CatalogueEntry): CatalogueEntry {
@@ -91,7 +91,7 @@ function ordered(e: CatalogueEntry): CatalogueEntry {
   return Object.fromEntries(order.filter((k) => e[k] !== undefined).map((k) => [k, e[k]])) as unknown as CatalogueEntry;
 }
 
-/** The version stamp: a hash of every entry and work of the eight kinds, so a file left behind by an edit shows. */
+/** The version stamp: a hash of every entry and work of the nine kinds, so a file left behind by an edit shows. */
 export function versionOf(files: Record<Kind, Pick<KindFile, 'entries' | 'works'>>): string {
   const body = KIND_LIST.map((k) => ({ kind: k, works: files[k].works ?? null, entries: files[k].entries.map(ordered) }));
   return createHash('sha256').update(JSON.stringify(body)).digest('hex').slice(0, 12);
@@ -160,7 +160,8 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
 
   const add = (row: ExportRow, kind: Kind, via: Via, rule: { value?: string; lang?: ResourceLang; starts?: 'on' | 'pinned' }, what: string): void => {
     // a commentary keeps every book of the Bible it covers (Old Testament too); a Greek book needs only the New Testament's, and none of them when it covers all 27
-    const covers = kind === 'commentary' ? coversOfSupersets(row.supersets) : coversNewTestament(row.supersets);
+    // an archive of sermons is indexed by the passage each sermon is preached on and opens at any verse: it has no list of books (docs/sources/sermon-index.md section 2)
+    const covers = kind === 'commentary' ? coversOfSupersets(row.supersets) : kind === 'sermons' ? [] : coversNewTestament(row.supersets);
     byKind[kind].push({
       resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, series: row.series || undefined,
       lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
@@ -201,7 +202,7 @@ export function loadRules(file = RULES_FILE): Rules {
   return JSON.parse(readFileSync(file, 'utf8')) as Rules;
 }
 
-/** Writes the eight files into `dir`; returns the notes. */
+/** Writes the nine files into `dir`; returns the notes. */
 export function writeCatalogue(csvPath: string, dir = CATALOGUE_DIR, rulesFile = RULES_FILE): string[] {
   const { files, notes } = buildCatalogue(loadRules(rulesFile), readExport(readFileSync(csvPath, 'utf8')));
   mkdirSync(dir, { recursive: true });
@@ -220,7 +221,7 @@ function main(argv: string[]): void {
   }
   const notes = writeCatalogue(resolve(csv), out);
   for (const n of notes) console.log(`note: ${n}`);
-  console.log(`wrote the eight kinds to ${out}`);
+  console.log(`wrote the nine kinds to ${out}`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main(process.argv);
