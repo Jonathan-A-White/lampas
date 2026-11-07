@@ -4,7 +4,7 @@ Feature: Ask for a preacher (mw-qtu3zvz.6, docs/sermons.md 'Ask for a preacher')
   and the form then reads "Sent · the makers decide". It goes to the mill, so it is licence-gated as every mill call is: without a licence the row is greyed and says "Needs a licence". These scenarios use sermon
   sources of the tests' own (tests/support/test-sermons.ts) and a fake Postern.
 
-  @uc-sermons-ask
+  @uc-sermons @greek
   Scenario: He asks for a preacher from Romans 5:8 and the makers get his words with the verse and the sources
     Given Lampas is open on the Sermons sheet for "Romans 5:8" behind a fake Postern
     When he taps "Ask for a preacher"
@@ -15,7 +15,7 @@ Feature: Ask for a preacher (mw-qtu3zvz.6, docs/sermons.md 'Ask for a preacher')
     And the form says "Sent · the makers decide"
     And the phone keeps one request of kind preacher with the words "Martyn Lloyd-Jones"
 
-  @uc-sermons-ask
+  @uc-sermons @greek
   Scenario: Without a licence the row is greyed and says it needs one
     Given Lampas is open on the Sermons sheet for "Romans 5:8" behind a fake Postern with no licence
     Then the row "Ask for a preacher" is disabled and says "Needs a licence"
