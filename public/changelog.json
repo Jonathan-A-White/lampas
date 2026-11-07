@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.147",
+    "date": "2026-11-07",
+    "story": "mw-u2w5klk.296",
+    "kind": "fixed",
+    "text": "A Greek Old Testament word printed in capitals, like the first word of Genesis, now finds its own cell when you open its table."
+  },
+  {
+    "version": "0.7.147",
+    "date": "2026-11-07",
+    "story": "mw-u2w5klk.274.4",
+    "kind": "fixed",
+    "text": "a Septuagint word's sheet now shows that word's own English instead of the whole verse, and says so when it can only show the whole verse."
+  },
+  {
     "version": "0.7.145",
     "date": "2026-11-07",
     "story": "mw-5r3p30.914",

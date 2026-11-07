@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.147
+_2026-11-07_
+- Fixed: A Greek Old Testament word printed in capitals, like the first word of Genesis, now finds its own cell when you open its table.
+- Fixed: a Septuagint word's sheet now shows that word's own English instead of the whole verse, and says so when it can only show the whole verse.
+
 ## 0.7.145
 _2026-11-07_
 - New: Hebrew now has its own grammar path in Settings, listing its lessons in order with the next one marked, beside the Greek one.
