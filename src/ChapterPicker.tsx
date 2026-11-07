@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import type { PlanChapter } from './data/plans';
 import { type BookIndex, forgetCanonIndex, loadIndex } from './data/chapter';
-import { getLastChapters, type OpenChapter } from './data/readerChapter';
+import { getBookOpens, getLastChapters, type OpenChapter } from './data/readerChapter';
 import { keyOf } from './data/repositories/readingPlan';
 import { bookPart, readPlace, type PlaceRead } from './nav/parseReference';
 import { bringVerse, openAtVerse } from './nav/readerRequest';
@@ -21,12 +21,36 @@ import { navigate, openReader } from './nav/route';
 import { useStillLoading } from './reader/useStillLoading';
 import { usePlan, type PlanView } from './plan/usePlan';
 import { focusQuietly } from './ui/focus';
-import { matching, matchingInOrder, matchingInOrderExactly } from './ui/listFilter';
+import { type ListItem, matching, matchingInOrder, matchingInOrderExactly } from './ui/listFilter';
 import { useNoDoor } from './tutor/door';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
 const ITEMS = BOOKS.map((b) => ({ id: b.code, name: b.name }));
+
+/** How well a book's name fits what he typed, as listFilter's matchingInOrder tiers them: 0 the name starts with it, 1 holds it, 2 holds its letters in order and a word starts
+ *  with the first, 3 holds its letters in order, 4 not at all (a slip away, or no match). */
+function tierOf(name: string, typed: string): number {
+  const squash = (t: string) => t.toLocaleLowerCase().replace(/[\s.]/g, '');
+  const q = squash(typed);
+  const n = squash(name);
+  if (n.startsWith(q)) return 0;
+  if (n.includes(q)) return 1;
+  let at = 0;
+  for (const letter of n) if (letter === q[at]) at += 1;
+  if (at < q.length) return 4;
+  return name.toLocaleLowerCase().split(/[\s.-]+/).some((w) => w.startsWith(q[0])) ? 2 : 3;
+}
+
+/** The books listFilter listed for `typed`, the book he opens more often first within each tier of match (a stable sort: ties and an empty search keep the list's order).
+ *  A list that holds a book which does not fit (the slips fallback) is left as it came, as it is ordered by closeness. */
+function byUse(shown: readonly ListItem[], typed: string, opens: Readonly<Record<string, number>>): ListItem[] {
+  if (typed.trim() === '' || shown.some((b) => tierOf(b.name, typed) === 4)) return [...shown];
+  return shown
+    .map((b, i) => ({ b, i, tier: tierOf(b.name, typed), n: opens[b.id] ?? 0 }))
+    .sort((a, b) => a.tier - b.tier || b.n - a.n || a.i - b.i)
+    .map((r) => r.b);
+}
 
 /** How a chapter of the plan is marked: only the next one, outlined and said to a screen reader as the button's description. A chapter done is not marked. */
 function markOf(marks: PlanView | undefined, code: string, chapter: number): { attrs: Record<string, string>; ring: string; description?: string } {
@@ -125,6 +149,8 @@ export function ChapterPicker({
   const [query, setQuery] = useState('');
   // the chapter last open in each book, read as the sheet opens: the Reader keeps it (setOpenChapter). Choose mode (a plan's place) is not about where he read, so it shows none.
   const [lastRead] = useState(() => (onChoose ? {} : getLastChapters()));
+  // how often he has opened a chapter of each book, read as the sheet opens; in choose mode (a plan's place) the list is not about what he reads, so it ranks by none
+  const [opens] = useState(() => (onChoose ? {} : getBookOpens()));
   /** A book he has left and has a last chapter in: the row says which, quietly. The book he is in has the chapter open and says it by its colour. */
   const wasRead = (code: string) => code !== current.book && lastRead[code] !== undefined;
   const { drag, handle } = useSheetDrag(onClose);
@@ -151,7 +177,11 @@ export function ChapterPicker({
   const typed: PlaceRead = read.kind === 'place' && read.testament === 'ap' ? { kind: 'none' } : read;
   // a name filters by its letters in order, names that start with it first; a start that fits more than one book ('J 3') is no place and lists the books it fits
   // and when none does, the books one slip away ('mwt' lists Matthew, mw-fnvjof.17.8); a place or a chapter the book lacks keeps the exact filter, so that 'jo 3' lists no book beside its Go to row
-  const shown = typed.kind === 'none' ? matchingInOrder(ITEMS, bookPart(query)) : matchingInOrderExactly(ITEMS, query);
+  // among books that fit equally well, the one he opens more often comes first (mw-5r3p30.1147)
+  const shown =
+    typed.kind === 'none'
+      ? byUse(matchingInOrder(ITEMS, bookPart(query)), bookPart(query), opens)
+      : byUse(matchingInOrderExactly(ITEMS, query), query, opens);
   const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
   const name = book ? bookOf(book)?.name : undefined;
   const pick = (chapter: number) => {

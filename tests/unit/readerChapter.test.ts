@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
-import { chapterOf, DEFAULT_CHAPTER, getLastChapters, getOpenChapter, setOpenChapter } from '../../src/data/readerChapter';
+import { chapterOf, DEFAULT_CHAPTER, getBookOpens, getLastChapters, getOpenChapter, setOpenChapter } from '../../src/data/readerChapter';
 import { countDue, ensureScheduled, listDue } from '../../src/data/repositories/reviews';
 
 beforeEach(() => localStorage.clear());
@@ -68,5 +68,41 @@ describe('the chapter last open in each book (mw-5r3p30.1146)', () => {
     expect(getLastChapters()).toEqual({});
     localStorage.setItem('lampas.lastChapters', JSON.stringify({ exo: 6, xyz: 2, gen: 0, rom: 'x' }));
     expect(getLastChapters()).toEqual({ exo: 6 });
+  });
+});
+
+describe('how often a chapter of each book is opened (mw-5r3p30.1147)', () => {
+  it('is empty on a fresh install', () => {
+    expect(getBookOpens()).toEqual({});
+  });
+
+  it('counts, per book, each time another chapter is opened, and survives being read again', () => {
+    setOpenChapter('mrk', 1);
+    setOpenChapter('mrk', 2);
+    setOpenChapter('mat', 1);
+    setOpenChapter('mrk', 3);
+    expect(getBookOpens()).toEqual({ mrk: 3, mat: 1 });
+  });
+
+  it('does not count the chapter that is already open again (a reload, or the effect run twice)', () => {
+    setOpenChapter('mrk', 1);
+    setOpenChapter('mrk', 1);
+    setOpenChapter('mrk', 1);
+    expect(getBookOpens()).toEqual({ mrk: 1 });
+    setOpenChapter('mat', 1);
+    setOpenChapter('mrk', 1);
+    expect(getBookOpens()).toEqual({ mrk: 2, mat: 1 });
+  });
+
+  it('counts the first open of Romans 8 on a fresh install, though Romans 8 is the default', () => {
+    setOpenChapter('rom', 8);
+    expect(getBookOpens()).toEqual({ rom: 1 });
+  });
+
+  it('reads nothing from what cannot be read, and drops a book that is not real or a count that is not a number', () => {
+    localStorage.setItem('lampas.bookOpens', 'not json');
+    expect(getBookOpens()).toEqual({});
+    localStorage.setItem('lampas.bookOpens', JSON.stringify({ mrk: 4, xyz: 2, mat: 'x', jhn: -1 }));
+    expect(getBookOpens()).toEqual({ mrk: 4 });
   });
 });

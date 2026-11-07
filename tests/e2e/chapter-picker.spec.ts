@@ -367,3 +367,36 @@ test('Choose a book shows the chapter last read in a book he has left, and marks
   await expect(picker.locator('[data-chapter="1"]')).toHaveAttribute('aria-current', 'true');
   await expect(picker.locator('[data-last-read]')).toHaveCount(0);
 });
+
+// mw-5r3p30.1147: the books he opens most rank first among equally good matches; a stronger match still wins
+test('Choose a book ranks the book he opens more often first among equal matches, and a stronger match still wins', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=mat&c=1');
+  await expect(page.getByRole('heading', { name: 'Matthew 1', level: 1 })).toBeVisible();
+  for (const c of [1, 2, 3]) {
+    await page.goto(`/#/?b=mrk&c=${c}`);
+    await expect(page.getByRole('heading', { name: `Mark ${c}`, level: 1 })).toBeVisible();
+  }
+  // the count survives a reload
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Mark 3', level: 1 })).toBeVisible();
+
+  await page.getByRole('heading', { name: 'Mark 3', level: 1 }).getByRole('button').click();
+  const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
+  await expect(picker).toBeVisible();
+  // nothing typed: canonical order (Matthew before Mark)
+  const names = await picker.locator('[data-book-name]').allTextContents();
+  expect(names.indexOf('Matthew')).toBeLessThan(names.indexOf('Mark'));
+
+  const search = picker.getByRole('searchbox', { name: 'Search books' });
+  await search.fill('m');
+  const order = await picker.locator('[data-book]').evaluateAll((els) => els.map((el) => el.getAttribute('data-book')));
+  // every name that starts with m is one tier: the more opened Mark is before Matthew, which is before the unopened rest
+  expect(order.indexOf('mrk')).toBeLessThan(order.indexOf('mat'));
+  expect(order.indexOf('mat')).toBeLessThan(order.indexOf('mic'));
+  await shot(page, 'chapter-picker-most-opened-first');
+
+  await search.fill('mat');
+  await expect(picker.locator('[data-book]').first()).toHaveAttribute('data-book', 'mat');
+});

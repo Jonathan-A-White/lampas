@@ -25,6 +25,9 @@ const GREEK_OPEN_KEY = 'lampas.openReadAsGreek';
 /** The last chapter open in each book, `{ exo: 6, gen: 1 }` (mw-5r3p30.1146): Choose a book shows it for a book he has left, so he can go straight back. */
 const LAST_KEY = 'lampas.lastChapters';
 
+/** How many times he has opened a chapter of each book, `{ mrk: 3, mat: 1 }` (mw-5r3p30.1147): Choose a book puts the book he opens more often first among equally good matches. */
+const OPENS_KEY = 'lampas.bookOpens';
+
 /** Where the Hebrew words' forms come from before he has opened any Old Testament chapter. */
 export const DEFAULT_HEBREW_CHAPTER: OpenChapter = { book: 'gen', chapter: 1, title: 'Genesis 1' };
 
@@ -107,9 +110,29 @@ export function getLastChapters(): Record<string, number> {
   return last;
 }
 
-/** Keeps this as the chapter he has open, and as the last one open in its book. */
+/** How many times he has opened a chapter of each book, on this device, by the book's code; a book never opened has none. A book that is not real, or a count that is not a whole number above 0, is left out. */
+export function getBookOpens(): Record<string, number> {
+  const opens: Record<string, number> = {};
+  try {
+    const saved = JSON.parse(store()?.getItem(OPENS_KEY) ?? 'null') as Record<string, unknown> | null;
+    if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+      for (const [book, n] of Object.entries(saved)) if (typeof n === 'number' && Number.isInteger(n) && n > 0 && bookOf(book)) opens[book] = n;
+    }
+  } catch {
+    // unreadable: none
+  }
+  return opens;
+}
+
+/** Keeps this as the chapter he has open, and as the last one open in its book. A chapter other than the one already kept as open counts as one more open of its book
+ *  (the same chapter again is a reload, or the Reader's effect run twice, and counts nothing). */
 export function setOpenChapter(book: string, chapter: number): void {
   try {
+    const kept = read(KEY);
+    if (!kept || kept.book !== book || kept.chapter !== chapter) {
+      const opens = getBookOpens();
+      store()?.setItem(OPENS_KEY, JSON.stringify({ ...opens, [book]: (opens[book] ?? 0) + 1 }));
+    }
     store()?.setItem(LAST_KEY, JSON.stringify({ ...getLastChapters(), [book]: chapter }));
     store()?.setItem(KEY, JSON.stringify({ book, chapter }));
     store()?.removeItem(GREEK_OPEN_KEY);
