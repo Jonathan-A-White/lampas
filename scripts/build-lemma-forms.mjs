@@ -130,14 +130,14 @@ export function septuagintCapitals(chapters, nt = new Map()) {
 export const headwordOf = (lemma) => lemma.split(',')[0].trim();
 
 /**
- * The Septuagint's forms with each comma lemma ('ὕδωρ, ὕδατος', mw-u2w5klk.297) filed under its headword ('ὕδωρ') when the headword is a lemma of the New Testament (`known`) or of the
- * Septuagint, so the two texts' forms of one word meet in one file. A comma lemma the New Testament has with the comma (a file of its own) stays, as does one whose headword no text has.
- * The same form with the same code from both is one entry, counted for both.
+ * The Septuagint's forms with each comma lemma ('ὕδωρ, ὕδατος', mw-u2w5klk.297) filed under its headword ('ὕδωρ'), so the two texts' forms of one word meet in one file; a headword no text has
+ * alone ('ἄρρην' of 'ἄρρην, ἄρσην') gets its file all the same (mw-u2w5klk.305), so no Septuagint form is in a file named with a comma. A comma lemma the New Testament has with the comma (`known`,
+ * a file of its own) stays. The same form with the same code from either is one entry, counted for both.
  */
 export function foldSeptuagint(lxx, known) {
   const target = (lemma) => {
     const head = headwordOf(lemma);
-    return lemma.includes(',') && !known.has(lemma) && head !== '' && (known.has(head) || lxx.has(head)) ? head : lemma;
+    return lemma.includes(',') && !known.has(lemma) && head !== '' ? head : lemma;
   };
   const folded = new Map();
   for (const [lemma, entries] of lxx) {
