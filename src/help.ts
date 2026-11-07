@@ -28,7 +28,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'The Reader',
     line: 'Chapters, words and verses.',
     body: [
-      'The title opens the chapter picker. A tap on a verse number opens the Verse view (Listen, Read it aloud, Practise, Share, Memorize); a hold copies it. A word opens its sheet.',
+      'The title opens the chapter picker. A tap on a verse number opens the Verse view (Listen, Read it aloud, Practise, Share, Memorize); a hold copies it, with a wider copy or Share. A word opens its sheet.',
       'An Old Testament chapter reads in Hebrew (How much Hebrew?), or with Old Testament in Greek (Septuagint) on, in Swete’s Greek with Brenton’s English. Its title gives both numberings (Psalms 23, Greek 22); a book not ready stays Hebrew.',
       'Variants in Settings can show where manuscripts differ. A variant’s sheet has Go deeper and Read this. The tutor explains it without ruling.',
       'English from the 2026 Greek shows Lampas’s own English, marked RP 2026, where that Greek changes it.',
