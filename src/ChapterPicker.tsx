@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import type { PlanChapter } from './data/plans';
 import { type BookIndex, forgetCanonIndex, loadIndex } from './data/chapter';
-import type { OpenChapter } from './data/readerChapter';
+import { getLastChapters, type OpenChapter } from './data/readerChapter';
 import { keyOf } from './data/repositories/readingPlan';
 import { bookPart, readPlace, type PlaceRead } from './nav/parseReference';
 import { bringVerse, openAtVerse } from './nav/readerRequest';
@@ -35,18 +35,21 @@ function markOf(marks: PlanView | undefined, code: string, chapter: number): { a
 }
 
 /** One chapter number in a grid: 48 px, the chapter he is in filled, the next chapter of the plan outlined. */
-function ChapterButton({ code, n, here, marks, onPick }: { code: string; n: number; here?: boolean; marks: PlanView | undefined; onPick: () => void }) {
+function ChapterButton({ code, n, here, last, marks, onPick }: { code: string; n: number; here?: boolean; last?: boolean; marks: PlanView | undefined; onPick: () => void }) {
   const mark = markOf(marks, code, n);
+  // the chapter he was last on in a book he has left: a quiet dotted accent outline and a word for a screen reader, never the open chapter's fill (mw-5r3p30.1146)
+  const lastRead = last && !here;
   return (
     <button
       type="button"
       data-chapter={n}
       {...mark.attrs}
-      aria-label={`Chapter ${n}`}
+      {...(lastRead ? { 'data-last-read': '' } : {})}
+      aria-label={lastRead ? `Chapter ${n}, last read` : `Chapter ${n}`}
       aria-description={mark.description}
       aria-current={here ? 'true' : undefined}
       onClick={onPick}
-      className={`min-h-12 rounded-xl border text-lg font-medium ${here ? 'border-accent bg-accent text-accent-fg' : `border-line bg-surface ${mark.ring}`}`}
+      className={`min-h-12 rounded-xl border text-lg font-medium ${here ? 'border-accent bg-accent text-accent-fg' : `bg-surface ${lastRead ? 'border-dashed border-accent' : 'border-line'} ${mark.ring}`}`}
     >
       {n}
     </button>
@@ -54,7 +57,7 @@ function ChapterButton({ code, n, here, marks, onPick }: { code: string; n: numb
 }
 
 /** The chapter numbers of one book: a grid of 48 px buttons. */
-function Chapters({ code, current, marks, onPick }: { code: string; current: OpenChapter; marks: PlanView | undefined; onPick: (chapter: number) => void }) {
+function Chapters({ code, current, last, marks, onPick }: { code: string; current: OpenChapter; last: number | undefined; marks: PlanView | undefined; onPick: (chapter: number) => void }) {
   const [index, setIndex] = useState<BookIndex | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -97,7 +100,7 @@ function Chapters({ code, current, marks, onPick }: { code: string; current: Ope
   return (
     <div role="group" aria-label={`${bookOf(code)?.name} chapters`} className="grid grid-cols-4 gap-2 px-1 pt-1">
       {Array.from({ length: count }, (_, i) => i + 1).map((n) => (
-        <ChapterButton key={n} code={code} n={n} here={current.book === code && current.chapter === n} marks={marks} onPick={() => onPick(n)} />
+        <ChapterButton key={n} code={code} n={n} here={current.book === code && current.chapter === n} last={last === n} marks={marks} onPick={() => onPick(n)} />
       ))}
     </div>
   );
@@ -120,6 +123,10 @@ export function ChapterPicker({
   const marks = showPlan ? plan?.started : undefined;
   const [book, setBook] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  // the chapter last open in each book, read as the sheet opens: the Reader keeps it (setOpenChapter). Choose mode (a plan's place) is not about where he read, so it shows none.
+  const [lastRead] = useState(() => (onChoose ? {} : getLastChapters()));
+  /** A book he has left and has a last chapter in: the row says which, quietly. The book he is in has the chapter open and says it by its colour. */
+  const wasRead = (code: string) => code !== current.book && lastRead[code] !== undefined;
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
@@ -230,7 +237,7 @@ export function ChapterPicker({
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1rem+var(--lp-end-inset))] pt-2"
         >
           {book ? (
-            <Chapters code={book} current={current} marks={marks} onPick={pick} />
+            <Chapters code={book} current={current} last={lastRead[book]} marks={marks} onPick={pick} />
           ) : (
             <>
               {preface ? (
@@ -269,11 +276,16 @@ export function ChapterPicker({
                       key={b.id}
                       type="button"
                       data-book={b.id}
+                      aria-label={wasRead(b.id) ? b.name : undefined}
+                      aria-description={wasRead(b.id) ? `Last read: chapter ${lastRead[b.id]}` : undefined}
                       aria-current={b.id === current.book ? 'true' : undefined}
                       onClick={() => setBook(b.id)}
                       className={`flex min-h-12 w-full flex-wrap items-center justify-between gap-x-2 py-1 border-t border-line px-3 text-left text-lg first:border-t-0 ${b.id === current.book ? 'font-semibold text-accent' : ''}`}
                     >
                       <span data-book-name>{b.name}</span>
+                      {wasRead(b.id) ? (
+                        <span data-last-chapter aria-hidden="true" className="shrink-0 text-sm text-muted">{`ch ${lastRead[b.id]}`}</span>
+                      ) : null}
                     </button>
                   ))}
                 </div>

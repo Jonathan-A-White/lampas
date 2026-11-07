@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
-import { chapterOf, DEFAULT_CHAPTER, getOpenChapter, setOpenChapter } from '../../src/data/readerChapter';
+import { chapterOf, DEFAULT_CHAPTER, getLastChapters, getOpenChapter, setOpenChapter } from '../../src/data/readerChapter';
 import { countDue, ensureScheduled, listDue } from '../../src/data/repositories/reviews';
 
 beforeEach(() => localStorage.clear());
@@ -47,5 +47,26 @@ describe('the chapter the Reader has open', () => {
     expect(await db.reviews.get(['word', 'ἀγάπη'])).toEqual(before);
     expect((await listDue('word', NOW)).map((r) => r.id)).toEqual(['ἀγάπη']);
     expect(await countDue(NOW)).toBe(1);
+  });
+});
+
+describe('the chapter last open in each book (mw-5r3p30.1146)', () => {
+  it('is empty on a fresh install', () => {
+    expect(getLastChapters()).toEqual({});
+  });
+
+  it('keeps, per book, the last chapter that was open, and a book read again takes the newer one', () => {
+    setOpenChapter('exo', 6);
+    setOpenChapter('gen', 1);
+    expect(getLastChapters()).toEqual({ exo: 6, gen: 1 });
+    setOpenChapter('exo', 7);
+    expect(getLastChapters()).toEqual({ exo: 7, gen: 1 });
+  });
+
+  it('reads nothing from what cannot be read, and drops a book or chapter that is not real', () => {
+    localStorage.setItem('lampas.lastChapters', 'not json');
+    expect(getLastChapters()).toEqual({});
+    localStorage.setItem('lampas.lastChapters', JSON.stringify({ exo: 6, xyz: 2, gen: 0, rom: 'x' }));
+    expect(getLastChapters()).toEqual({ exo: 6 });
   });
 });

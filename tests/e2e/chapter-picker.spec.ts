@@ -330,3 +330,40 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     await expect(page.locator('[data-verse="36"]')).toBeVisible();
   });
 });
+
+// mw-5r3p30.1146: a book he has read before says, quietly, the chapter he was last on in it
+test('Choose a book shows the chapter last read in a book he has left, and marks it in its grid', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.goto('/#/?b=exo&c=6');
+  await expect(page.getByRole('heading', { name: 'Exodus 6', level: 1 })).toBeVisible();
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.getByRole('heading', { name: 'Genesis 1', level: 1 })).toBeVisible();
+  // it survives a reload
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Genesis 1', level: 1 })).toBeVisible();
+
+  await page.getByRole('heading', { name: 'Genesis 1', level: 1 }).getByRole('button').click();
+  const picker = page.getByRole('dialog', { name: 'Choose a chapter' });
+  await expect(picker).toBeVisible();
+  // Exodus says ch 6; the open book (Genesis) says nothing; a book never read says nothing
+  await expect(picker.locator('[data-book="exo"] [data-last-chapter]')).toHaveText('ch 6');
+  await expect(picker.locator('[data-book="gen"] [data-last-chapter]')).toHaveCount(0);
+  await expect(picker.locator('[data-book="lev"] [data-last-chapter]')).toHaveCount(0);
+  await shot(page, 'chapter-picker-last-read-books');
+
+  await picker.locator('[data-book="exo"]').click();
+  const tile = picker.getByRole('button', { name: 'Chapter 6, last read' });
+  await expect(tile).toBeVisible();
+  await expect(tile).toHaveAttribute('data-last-read', '');
+  await expect(picker.locator('[data-last-read]')).toHaveCount(1);
+  // the quiet mark is an outline, not the filled gold of the open chapter
+  await expect(tile).not.toHaveAttribute('aria-current', 'true');
+  await shot(page, 'chapter-picker-last-read-exodus');
+
+  // Genesis keeps its open chapter filled and no last-read mark
+  await picker.getByRole('button', { name: '‹ Books' }).click();
+  await picker.locator('[data-book="gen"]').click();
+  await expect(picker.locator('[data-chapter="1"]')).toHaveAttribute('aria-current', 'true');
+  await expect(picker.locator('[data-last-read]')).toHaveCount(0);
+});
