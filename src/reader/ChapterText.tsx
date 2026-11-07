@@ -57,7 +57,7 @@ export function VerseLine(props: VerseProps) {
       >
         <ShownNumber verse={verse} septuagint={props.septuagint} />
       </VerseNumber>
-      <VerseText {...props} />
+      <VerseText {...props} onUnlinked={props.septuagint !== undefined ? onSelect : undefined} />
       <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
     </p>
   );
@@ -108,7 +108,7 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
               <ShownNumber verse={verse} septuagint={septuagint} />
             </sup>
           </VerseNumber>
-          <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} />
+          <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} onUnlinked={septuagint !== undefined ? () => onSelect(verse.n) : undefined} />
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
           ) : null}
@@ -140,7 +140,7 @@ export function SectionHeading({ text, onOpen, onCopy, mirrored }: { text: strin
  * block, each a [data-passage-text] with the Reader's face, size and leading, so src/index.css sets the book look and the weave's roomy lines block by block as it
  * does in the Reader. Each verse has a small number before it and the one being read is highlighted; the reading is followed down the box the view scrolls the
  * passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
-export function PassageText({ passage, view, source = 'grc', layout, wovenOf, reading, onLook, onRp }: {
+export function PassageText({ passage, view, source = 'grc', layout, wovenOf, reading, onLook, onRp, onUnlinked }: {
   passage: Passage;
   view: ReaderView;
   /** the language of the chapter's own words: a Hebrew chapter's blocks are tagged he and run right to left in the source view, not el */
@@ -151,6 +151,8 @@ export function PassageText({ passage, view, source = 'grc', layout, wovenOf, re
   onLook: (lookup: Lookup) => void;
   /** a tap on the 'RP 2026' mark (src/reader/Rp2026Mark.tsx) */
   onRp?: (key: string) => void;
+  /** what a tap on an English chunk paired to no Greek word does, for a Septuagint passage (VerseProps.onUnlinked) */
+  onUnlinked?: () => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -168,7 +170,7 @@ export function PassageText({ passage, view, source = 'grc', layout, wovenOf, re
           {block.map((verse) => (
             <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
               <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted">{verse.n}</sup>
-              <VerseText verse={verse} view={view} source={source} woven={wovenOf(verse)} onLook={onLook} onRp={onRp} />
+              <VerseText verse={verse} view={view} source={source} woven={wovenOf(verse)} onLook={onLook} onRp={onRp} onUnlinked={onUnlinked} />
             </span>
           ))}
         </p>
