@@ -1,6 +1,7 @@
 // tests/e2e/sermons.spec.ts — Lampas sermons on the screen (mw-qtu3zvz.2, docs/sermons.md) at 390x844: the quiet 'Sermons · N' door in the tools line of the Verse view of Romans 5:8, the Sermons sheet (On this verse,
 // In this chapter, each row 44 px with the preacher, the date and where it opens) and a row that is a plain link out. The data is the committed index (public/sermons): no sermon's page is fetched, and the spec
-// holds that no request is made to the sites the rows point at. The last tests are mw-qtu3zvz.3's: the Sermons rows of Settings and his Logos sermon archives, In Logos, on the sheet.
+// holds that no request is made to the sites the rows point at. The tests after them are mw-qtu3zvz.3's: the Sermons rows of Settings and his Logos sermon archives, In Logos, on the sheet.
+// The last are mw-qtu3zvz.5's: the sheet online. The sermon index service is stubbed with page.route (the live one answers only once its VPS door is up); every other test has it refuse, so a live service never changes a count.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -10,6 +11,16 @@ import { openSettings } from './openSettings';
 import { openGroup } from './settings-group';
 
 test.use({ viewport: { width: 390, height: 844 } });
+
+/** The sermon index service the build asks (src/config.ts SERMONS_URL, default). */
+const SERVICE = 'https://sermons.allmymind.org';
+/** The service allows the app's origin; the stub allows any, as a preview server's origin is not the real one's. */
+const CORS = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
+
+// the service is refused unless a test serves it: the counts above are the bundled index's
+test.beforeEach(async ({ page }) => {
+  await page.route(`${SERVICE}/**`, (route) => route.abort());
+});
 
 const SITES = /^https:\/\/(www\.)?(ccel\.org|archive\.org|spurgeongems\.org)\//;
 
@@ -252,4 +263,132 @@ test('with Logos On, his Pinned and On sermon archives are the In Logos group of
   }
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'sermons-in-logos');
+});
+
+/** The service's answers, the examples of the sermon-index repository's docs/api.md (tests/fixtures/sermons) given the id of a bundled Spurgeon row (104, Romans 5:8) and a row the bundle lacks. */
+async function serveService(page: Page, { down = false }: { down?: boolean } = {}): Promise<{ asked: string[] }> {
+  const asked: string[] = [];
+  await page.route(`${SERVICE}/**`, async (route) => {
+    const url = new URL(route.request().url());
+    asked.push(`${url.pathname}${url.search}`);
+    if (down) return route.abort();
+    const json = (body: unknown) => route.fulfill({ status: 200, headers: CORS, body: JSON.stringify(body) });
+    const sermon = (id: string, title: string, ref: string, address: string) => ({ source: 'spurgeon-ccel', id, title, preacher: 'C. H. Spurgeon', date: null, url: address, alt_url: null, kind: 'link', ref, role: 'text', width: 1 });
+    if (url.pathname === '/v1/sources') {
+      return json({
+        rows: [
+          { id: 'spurgeon-ccel', name: 'Spurgeon', kind: 'sermons', licence: 'x', credit: 'x', homepage: 'https://ccel.org/ccel/spurgeon', on_by_default: true, rows: 1 },
+          { id: 'newbie-sermons', name: 'Newbie\'s sermons (a source the bundle lacks)', kind: 'sermons', licence: 'x', credit: 'The Newbie Collection', homepage: 'https://newbie.example', on_by_default: false, rows: 1 },
+        ],
+      });
+    }
+    if (url.pathname === '/v1/search') {
+      return json({
+        q: url.searchParams.get('q'),
+        rows: [
+          { kind: 'sermon', source: 'spurgeon-ccel', id: '37', title: 'Law and Grace', ref: 'Rom.5.20', url: 'https://ccel.org/ccel/spurgeon/sermons01/sermons01.xxxvi.html', rank: 0.6 },
+          { kind: 'theme', source: 'themes-demo', id: 'atonement', title: 'Atonement', ref: null, url: null, rank: 0.2 },
+        ],
+      });
+    }
+    if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only') {
+      return json({ ref: 'Gen.1.1-Rev.22.21', passage: null, theme: { total: 1, rows: [{ ...sermon('1191', 'For Whom Did Christ Die?', 'Rom.5.6', 'https://ccel.org/ccel/spurgeon/sermons20/sermons20.viii_1.html'), theme: { source: 'themes-demo', topic: 'atonement', label: 'Atonement', part: null, part_label: null } }] } });
+    }
+    return json({
+      ref: 'Rom.5',
+      total: 2,
+      rows: [sermon('104', 'Love\'s Commendation, Revised', 'Rom.5.8', 'https://ccel.org/ccel/spurgeon/sermons02/revised.html'), sermon('9999', 'Reigning Grace, Newly Found', 'Rom.5.21', 'https://ccel.org/ccel/spurgeon/sermons06/new.html')],
+    });
+  });
+  return { asked };
+}
+
+test('online: the sheet shows the bundled rows, then the service\'s newest, and says \'Latest from the index · N new\' (mw-qtu3zvz.5)', async ({ page }) => {
+  await openUnlocked(page);
+  const { asked } = await serveService(page);
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  await expect(sheet).toBeVisible();
+  const line = sheet.locator('[data-sermons-latest]');
+  await expect(line).toHaveText('Latest from the index · 1 new');
+  // the service's row of the same source and id wins: the newer title and address
+  const revised = sheet.locator('a[data-sermon-row]').filter({ hasText: 'Love\'s Commendation, Revised' });
+  await expect(revised).toHaveCount(1);
+  await expect(revised).toHaveAttribute('href', 'https://ccel.org/ccel/spurgeon/sermons02/revised.html');
+  await expect(sheet.getByText("Love's Commendation", { exact: true })).toHaveCount(0);
+  // a row the bundle lacks is under its group (In this chapter: Romans 5:21)
+  await expect(sheet.locator('[data-sermons-part="chapter"] a[data-sermon-row]').filter({ hasText: 'Reigning Grace, Newly Found' })).toHaveCount(1);
+  // the line sits under the title
+  const title = await sheet.getByRole('heading', { level: 2 }).boundingBox();
+  expect((await line.boundingBox())!.y).toBeGreaterThanOrEqual(title!.y + title!.height - 1);
+  // asked once for the chapter, by the sources that are On, with nothing of his
+  const sermons = asked.filter((a) => a.startsWith('/v1/sermons'));
+  expect(sermons).toHaveLength(1);
+  expect(sermons[0]).toMatch(/^\/v1\/sermons\?ref=rom\.5&source=[a-z,-]*spurgeon-ccel[a-z,-]*&limit=200$/);
+  expect(sermons[0]).not.toContain('newbie-sermons');
+  await shot(page, 'sermons-online');
+});
+
+test('online: a search is answered by the service alone, a sermon opens where it lives and a theme lists its sermons in the sheet (mw-qtu3zvz.5)', async ({ page }) => {
+  await openUnlocked(page);
+  const { asked } = await serveService(page);
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  const field = sheet.getByRole('searchbox', { name: 'Search sermons and themes' });
+  await expect(field).toBeEnabled();
+  expect((await field.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await field.fill('grace');
+  const found = sheet.getByRole('group', { name: 'Found' });
+  const law = found.locator('a[data-sermon-row]').filter({ hasText: 'Law and Grace' });
+  await expect(law).toHaveAttribute('href', 'https://ccel.org/ccel/spurgeon/sermons01/sermons01.xxxvi.html');
+  expect(asked.filter((a) => a.startsWith('/v1/search'))).toEqual(['/v1/search?q=grace']);
+  await found.getByRole('button', { name: /Atonement/ }).click();
+  await expect(found.locator('[data-found-theme] a[data-sermon-row]')).toHaveText(/For Whom Did Christ Die\?/);
+  for (const row of await found.locator('a[data-sermon-row], button').all()) expect((await row.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await found.scrollIntoViewIfNeeded();
+  await shot(page, 'sermons-search');
+});
+
+test('online: a source the bundle lacks gets an Off row in Settings the first time it is seen (mw-qtu3zvz.5)', async ({ page }) => {
+  await openUnlocked(page);
+  await serveService(page);
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  await expect(sheet.locator('[data-sermons-latest]')).toBeVisible();
+  // its rows are not asked for while it is Off, and its credit is not on the sheet
+  await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'Newbie' })).toHaveCount(0);
+  await page.goto('/#/settings?group=study');
+  const section = page.locator('[data-section="sermons"]');
+  await expect(section).toBeVisible();
+  const group = section.getByRole('group', { name: 'Newbie\'s sermons', exact: true });
+  await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  expect((await group.getByRole('button', { name: 'On', exact: true }).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await group.scrollIntoViewIfNeeded();
+  await shot(page, 'sermons-online-source');
+});
+
+test('online: when the service cannot be reached the bundled rows stand, the sheet says Offline within 2 seconds and the search is greyed (mw-qtu3zvz.5)', async ({ page }) => {
+  await openUnlocked(page);
+  await serveService(page, { down: true });
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  const opened = Date.now();
+  await expect(sheet.locator('[data-sermons-latest]')).toHaveText('Offline: the bundled index', { timeout: 2000 });
+  expect(Date.now() - opened).toBeLessThan(2500);
+  const field = sheet.getByRole('searchbox', { name: 'Search sermons and themes' });
+  await expect(field).toBeDisabled();
+  await expect(field).toHaveAttribute('placeholder', 'Needs the internet');
+  await expect(sheet.locator('[data-sermons-part="here"] a[data-sermon-row]').first()).toBeVisible();
 });
