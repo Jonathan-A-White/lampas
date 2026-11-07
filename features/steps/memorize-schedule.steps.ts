@@ -48,8 +48,13 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A verse I miss comes back tomorrow', ({ Given, And, When, Then }) => {
     Given('he memorizes {string} in {word}', (_, ref: string, name: string) => start(ref, name));
-    And('{string} in {word} has been recalled fully twice in a row {int} times', async (_, ref: string, name: string, times: number) => {
-      for (let i = 0; i < times * 2; i += 1) await recall(ref, name, 1, i);
+    And('{string} in {word} has been recalled fully twice in a row {int} times, each on the day it came due', async (_, ref: string, name: string, times: number) => {
+      // each recall is on the day the verse comes due: a recall before its due day leaves the schedule alone (mw-5r3p30.1145)
+      let n = 0;
+      for (let i = 0; i < times * 2; i += 1) {
+        await recall(ref, name, 1, n);
+        n = Math.round(((await row(ref, name)).due - DAY0) / DAY);
+      }
       expect((await row(ref, name)).step).toBe(times);
     });
     When('he recalls {string} in {word} with {int} percent on day {int}', async (_, ref: string, name: string, percent: number, n: number) => void (await recall(ref, name, percent / 100, n)));
@@ -58,9 +63,9 @@ describeFeature(feature, ({ Scenario }) => {
       expect(r.due).toBe(day(n));
       expect(r.step).toBe(1);
     });
-    And('the recall of day {int} is kept with its score and its gap of 25 days', async (_, n: number) => {
+    And('the recall of day {int} is kept with its score and its gap of 21 days', async (_, n: number) => {
       const kept = (await db.recalls.toArray()).find((r) => r.when === day(n));
-      expect(kept).toMatchObject({ score: 0.8, gap: 25, how: 'said' });
+      expect(kept).toMatchObject({ score: 0.8, gap: 21, how: 'said' });
     });
   });
 

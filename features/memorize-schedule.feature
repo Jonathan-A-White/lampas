@@ -12,10 +12,10 @@ Feature: A verse I memorize comes back on the schedule
 
   Scenario: A verse I miss comes back tomorrow
     Given he memorizes "Rom.8.28" in English
-    And "Rom.8.28" in English has been recalled fully twice in a row 3 times
-    When he recalls "Rom.8.28" in English with 80 percent on day 30
-    Then "Rom.8.28" in English is due on day 31
-    And the recall of day 30 is kept with its score and its gap of 25 days
+    And "Rom.8.28" in English has been recalled fully twice in a row 3 times, each on the day it came due
+    When he recalls "Rom.8.28" in English with 80 percent on day 42
+    Then "Rom.8.28" in English is due on day 43
+    And the recall of day 42 is kept with its score and its gap of 21 days
 
   Scenario: Review does not count my verses
     Given he memorizes "Rom.8.28" in English
