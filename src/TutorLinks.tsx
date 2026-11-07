@@ -5,7 +5,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import type { AnswerLink } from './data/db';
-import { lookupLemma } from './data/lexicon';
+import { lookupLemma, lookupSeptuagintLemma } from './data/lexicon';
 import { getLogosBibles, getStudyResources, getWorks, setResourceOn, shelfOf } from './data/repositories';
 import { openParadigm, openReader, paradigmHash } from './nav/route';
 import { paradigmById } from './data/paradigms';
@@ -31,8 +31,13 @@ function useStrongs(lemmas: string[]): Record<string, string> | undefined {
   const [found, setFound] = useState<{ key: string; strongs: Record<string, string> }>();
   useEffect(() => {
     let live = true;
-    // a Hebrew lemma is asked of the Hebrew lexicon, a Greek one of the Greek (mw-gdcyf98.20)
-    void Promise.all(lemmas.map(async (lemma) => [lemma, (await lookupLemma(lemma, hebrewLinkLemma(lemma) ? 'hbo' : 'grc').catch(() => undefined))?.s ?? ''] as const)).then((pairs) => {
+    // a Hebrew lemma is asked of the Hebrew lexicon, a Greek one of the Greek (mw-gdcyf98.20), and a Greek one that lexicon lacks of the Septuagint's while that is On (mw-u2w5klk.16)
+    const strongsOf = async (lemma: string): Promise<string> => {
+      const hebrew = hebrewLinkLemma(lemma);
+      const entry = (await lookupLemma(lemma, hebrew ? 'hbo' : 'grc').catch(() => undefined)) ?? (hebrew ? undefined : await lookupSeptuagintLemma(lemma).catch(() => undefined));
+      return entry?.s ?? '';
+    };
+    void Promise.all(lemmas.map(async (lemma) => [lemma, await strongsOf(lemma)] as const)).then((pairs) => {
       if (live) setFound({ key, strongs: Object.fromEntries(pairs) });
     });
     return () => {

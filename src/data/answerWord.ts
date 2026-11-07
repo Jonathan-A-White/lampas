@@ -2,7 +2,7 @@
 import { type Chapter, type GreekWord, type Verse, isGuess, wordGloss, wordLemma } from './chapter';
 import type { AnswerWord } from './db';
 import { languageOfLemma, normaliseHeadword } from './lemma';
-import { lookupLemma } from './lexicon';
+import { lookupLemma, lookupSeptuagintLemma } from './lexicon';
 import { addWordToLearn, wordIsListed } from './repositories';
 import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 import type { TalkScope } from '../services/talk';
@@ -64,6 +64,8 @@ export async function addLemmaToLearn(scope: TalkScope, lemma: string, now = Dat
     const gloss = glossOf(scope, { greek: headword, lemma: headword, note: '', language: lang === 'hbo' ? 'he' : 'grc' });
     return gloss ? { headword, result: await addWordToLearn(headword, gloss, now, '', lang) } : { headword, result: 'unknown' };
   }
+  // a Greek lemma only the Septuagint has (mw-u2w5klk.16): its gloss from that lexicon, as the chapter's own would give it, with no part of speech (the file has none)
+  if (!entry && lang === 'grc') entry = await lookupSeptuagintLemma(headword).catch(() => undefined);
   if (!entry) return { headword, result: 'unknown' };
   return { headword, result: await addWordToLearn(headword, entry.g, now, entry.c, lang) };
 }

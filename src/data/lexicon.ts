@@ -2,6 +2,9 @@
 // chapter does not use is still looked up here, with the gloss and part of speech the chapter files would give it. The Old Testament's Hebrew
 // lemmas are /data/lexicon-hbo.json, loaded beside the Greek one by language (mw-5vvlay.2).
 import type { SourceLanguage } from './chapter';
+import { loadLxxLemmas } from './lxxChapter';
+import { getSetting } from '../settings/store';
+import { septuagintSetting } from '../settings/definitions/septuagint';
 
 export interface LemmaEntry {
   /** TBESG gloss: 'flesh' (the word card's gloss) */
@@ -37,6 +40,22 @@ export function loadLexicon(language: SourceLanguage = 'grc'): Promise<LemmaLexi
 /** The lexicon's entry for a lemma (any Unicode form), or undefined when the text never uses it. Rejects when the lexicon cannot be loaded. */
 export async function lookupLemma(lemma: string, language: SourceLanguage = 'grc'): Promise<LemmaEntry | undefined> {
   const all = await loadLexicon(language);
+  const key = lemma.normalize('NFC');
+  return Object.hasOwn(all, key) ? all[key] : undefined;
+}
+
+/**
+ * The lemmas of the Septuagint's shipped books (public/data-lxx/lexicon-grc-lxx.json) as a lexicon, for a word the New Testament's lexicon lacks (mw-u2w5klk.16): `{}` while Settings > Old Testament in Greek
+ * (Septuagint) is Off, so the Hebrew and the New Testament ask for nothing new, and `{}` when the lexicon cannot be fetched. A Greek lemma only; the entries have no part of speech.
+ */
+export async function septuagintLemmas(): Promise<LemmaLexicon> {
+  const on = await getSetting(septuagintSetting).then((value) => value === 'on', () => false);
+  return on ? loadLxxLemmas() : {};
+}
+
+/** The Septuagint's entry for a Greek lemma (any Unicode form) the New Testament's lexicon lacks, or undefined; see septuagintLemmas. */
+export async function lookupSeptuagintLemma(lemma: string): Promise<LemmaEntry | undefined> {
+  const all = await septuagintLemmas();
   const key = lemma.normalize('NFC');
   return Object.hasOwn(all, key) ? all[key] : undefined;
 }

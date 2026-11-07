@@ -48,7 +48,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `listen` | Hearing a verse: Listen in the Verse view says the verse in its voice | listen | hebrew-verse-view | gap |
 | `read-aloud` | Read aloud what is shown (Read from the top, a verse, the weave in each piece’s language) with the one speaking bar | read-aloud-anywhere, read-aloud, read-span, speaking-bar, speaking-interruptions | hebrew-reader | gap |
 | `tutor-aloud` | The tutor's answers read aloud, the source words in their own voice | tutor-aloud | hebrew-speech | gap |
-| `tutor-word` | A source word in the tutor's answer: drawn in its face, tappable, said, its guide, Add to my words | bible-talk | hebrew-speech, hebrew-talk, hebrew-tutor | gap |
+| `tutor-word` | A source word in the tutor's answer: drawn in its face, tappable, said, its guide, Add to my words | bible-talk, septuagint | hebrew-speech, hebrew-talk, hebrew-tutor | gap |
 | `voice-settings` | The language's voice and speed rows in Settings, shown from its dial's Curious | greek-voice-test, pronunciation | pronunciation | gap |
 | `voice-test` | Hear and switch the voice from Settings: the name of the voice in use and Test | greek-voice-test | hebrew-voice-test | gap |
 | `pronunciation` | The respelling of a word in the chosen pronunciation, the one family setting and each language on its own | pronunciation-progress, pronunciation, voice-respelling-agree | pronunciation | gap |

@@ -239,17 +239,21 @@ function indexOf(lexicon: LemmaLexicon) {
 export const isHebrewText = (text: string): boolean => /^[hH]0*\d+$/.test(text.trim()) || /\p{Script=Hebrew}/u.test(text);
 
 /** The word a link names: a Strong's number ('G3551', 'g3551', '3551'; 'H7225' for a Hebrew one) or a lemma (accents optional; a Hebrew lemma pointed or not: the vowel points are
- *  taken off on both sides), or undefined when the text never uses it. A Hebrew number or lemma is looked up in `hebrew` (the Hebrew lexicon, src/data/lexicon.ts loadLexicon('hbo')), else in `lexicon`. */
-export function findWord(text: string, lexicon: LemmaLexicon, hebrew?: LemmaLexicon): FoundWord | undefined {
+ *  taken off on both sides), or undefined when the text never uses it. A Hebrew number or lemma is looked up in `hebrew` (the Hebrew lexicon, src/data/lexicon.ts loadLexicon('hbo')), else in `lexicon`.
+ *  A Greek word `lexicon` lacks is looked up in `septuagint` (src/data/lexicon.ts septuagintLemmas), when it is given: the New Testament's word always comes first. */
+export function findWord(text: string, lexicon: LemmaLexicon, hebrew?: LemmaLexicon, septuagint?: LemmaLexicon): FoundWord | undefined {
   const wanted = text.trim();
   if (wanted === '') return undefined;
-  const lex = isHebrewText(wanted) ? hebrew ?? lexicon : lexicon;
-  const { byStrongs, byBare } = indexOf(lex);
-  const number = /^([gGhH]?)0*(\d+)$/.exec(wanted);
-  const lemma = number
-    ? byStrongs.get(`${number[1].toUpperCase() || 'G'}${number[2]}`)
-    : Object.hasOwn(lex, wanted.normalize('NFC')) ? wanted.normalize('NFC') : byBare.get(bare(wanted));
-  return lemma === undefined ? undefined : { lemma, entry: lex[lemma] };
+  const hebrewText = isHebrewText(wanted);
+  const found = (lex: LemmaLexicon): FoundWord | undefined => {
+    const { byStrongs, byBare } = indexOf(lex);
+    const number = /^([gGhH]?)0*(\d+)$/.exec(wanted);
+    const lemma = number
+      ? byStrongs.get(`${number[1].toUpperCase() || 'G'}${number[2]}`)
+      : Object.hasOwn(lex, wanted.normalize('NFC')) ? wanted.normalize('NFC') : byBare.get(bare(wanted));
+    return lemma === undefined ? undefined : { lemma, entry: lex[lemma] };
+  };
+  return found(hebrewText ? hebrew ?? lexicon : lexicon) ?? (hebrewText || !septuagint ? undefined : found(septuagint));
 }
 
 /** A link in the address: a reference to open the reader on, or a word to open the sheet of. */
