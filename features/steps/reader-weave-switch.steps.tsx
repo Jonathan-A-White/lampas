@@ -41,8 +41,8 @@ async function openFresh(): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.grammarLevels.clear()]);
   // the chapter an earlier scenario had open is kept (setOpenChapter), so a bare address would open it: say Romans 8
   window.location.hash = '#/?b=rom&c=8';
-  // the chapter an earlier scenario opened, and the place it was left at, are not this one's
-  for (const key of ['lampas.lastRoute', 'lampas.trail', 'lampas.scrolls']) localStorage.removeItem(key);
+  // the chapter an earlier scenario opened, and the place (scroll offset, verse) it was left at, are not this one's
+  for (const key of ['lampas.lastRoute', 'lampas.trail', 'lampas.scrolls', 'lampas.lastVerses']) localStorage.removeItem(key);
   forgetTrail();
   forgetScrolls();
   Element.prototype.getBoundingClientRect = real;
