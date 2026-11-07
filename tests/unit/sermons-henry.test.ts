@@ -48,3 +48,35 @@ describe('the Henry source in the sermon bundle', () => {
     expect(total).toBeGreaterThanOrEqual(henry.rows);
   });
 });
+
+// mw-qtu3zvz.33: the Henry links were hand-made and landed a sermon or more late (Matthew 16:26's The Worth of the Soul, Sermon I opened the leaf of Sermon II).
+// sermon-index 881cce1 re-found every url in the Archive's OCR; tests/fixtures/sermons/henry-sermons-8ee5cd7.jsonl is its rows.jsonl at 8ee5cd7, the first
+// commit with them. Whoever moves the pin and rebuilds copies the new rows.jsonl over it, so the bundle never keeps a url the index has since corrected.
+const SERMON_INDEX_PIN_WITH_LATE_HENRY_URLS = '64f9469ab73e6945c17b698be5eb908445f6bc6c';
+type IndexRow = { id: string; ref?: string; url: string };
+
+describe('the Henry urls in the sermon bundle (mw-qtu3zvz.33)', () => {
+  const rows = readFileSync('tests/fixtures/sermons/henry-sermons-8ee5cd7.jsonl', 'utf8')
+    .split('\n')
+    .filter((line) => line.trim() !== '')
+    .map((line) => JSON.parse(line) as IndexRow);
+  const henry = index.sources.find((s) => s.id === 'henry-sermons')!;
+  const bundled = new Map<string, string>();
+  for (const book of henry.books) {
+    for (const row of (JSON.parse(readFileSync(`public/sermons/henry-sermons/${book}.json`, 'utf8')) as SermonBookFile).rows) bundled.set(row.id, row.url);
+  }
+
+  it('is pinned past the commit whose Henry urls were late', () => {
+    expect(config.commit).not.toBe(SERMON_INDEX_PIN_WITH_LATE_HENRY_URLS);
+  });
+
+  it('holds, for every row of the index that has a preaching text, the url the index gives it', () => {
+    const withText = rows.filter((row) => row.ref);
+    expect(withText.length).toBeGreaterThan(40);
+    for (const row of withText) expect(bundled.get(row.id), row.id).toBe(row.url);
+  });
+
+  it('opens Matthew 16:26 Sermon I at the leaf that prints its head', () => {
+    expect(bundled.get('worth-of-the-soul-1')).toBe('https://archive.org/details/miscellaneouswor00henr/page/n1248');
+  });
+});
