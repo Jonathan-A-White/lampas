@@ -175,7 +175,7 @@ the Abridged BDB (`abridgedbdb`, `LLS:46.30.7`), the Theological Lexicon of the 
 
 ## Grammar books in Logos: Read more on an idea sheet (mw-5r3p30.381, PROVISIONAL, Governor to confirm)
 
-With Logos on, Library > Grammars (Settings > Your Logos library, the first row of the home; since mw-rfjjzd.5 Settings has no Grammar books list) shows a control for each book of `GRAMMAR_BOOKS` in
+With Logos on, Library > Grammars (Tools > Your Logos library, mw-5r3p30.754; since mw-rfjjzd.5 Settings has no Grammar books list) shows a control for each book of `GRAMMAR_BOOKS` in
 `src/resources/grammarBooks.ts`, Black ticked until he changes it (the ticked ids are a JSON array in the settings store's `grammarBooks`,
 `src/data/repositories/resources.ts` getGrammarBooks / setGrammarBooks; not in the settings registry, like the lexicons). An idea sheet
 (`src/IdeaSheet.tsx` ReadMore) whose idea a ticked book teaches shows **Read more**, after the tables: one line a book (its `short` name over one
