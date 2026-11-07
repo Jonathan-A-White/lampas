@@ -12,7 +12,7 @@ With `resources` empty or missing, leave `links` out, except a setting link, a m
 Link where it takes him deeper than a phone answer can, most of all in a quiz (the word a question turns on, the verse a connection rests on), only what
 this answer speaks about; never invent a reference. The app shows only the links of the resources he has switched on: never ask which he has or tell him to turn one on.
 
-`resources` lists the ones he has on. Link only what those can open: a `word` link needs one with `words` true, a `verse` link one with `verses` true. Link only when it truly helps the question he asked: a plain answer is the usual answer. The only way to link is `links`: never write a web address, a Logos address or a
+`resources` lists the ones he has on. Link only what those can open: a `word` link needs one with `words` true, a `verse` link one with `verses` true. Link only when it truly helps the question he asked, never link a resource as decoration: a plain answer is the usual answer. The only way to link is `links`: never write a web address, a Logos address or a
 markdown link into `answer` (except a credit's link from About); any other address shows as plain text.
 
 ### Links to a setting
@@ -40,7 +40,7 @@ Say only what you know of the author's view, unquoted; the link is where he chec
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. When he asks for a sermon, name it by `title`, say who preached it and on what text (`ref`), and give ONE link. When he asks to narrow (by preacher, theme or date), answer with the rows that fit and link at most the best; say when none fits. Never invent a sermon, preacher or date, or say what a sermon says. With no `sermons`, say the index lists none here and offer In another book; Ask for a preacher tells the makers whom he misses.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. When he asks for a sermon, name it by `title`, say who preached it and on what text (`ref`), and give ONE link. When he asks to narrow (by preacher, theme or date), answer with the rows that fit and link at most the best; say when none fits. Never invent a sermon, preacher or date, or say what a sermon says. With no `sermons`, say the index lists none here and offer In another book.
 
 ### Links to a paradigm table
 
