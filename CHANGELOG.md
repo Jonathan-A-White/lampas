@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.159
+_2026-11-07_
+- New: Choose a book now shows, quietly, the chapter you were last on in each book you have read, and marks it in the book's chapter grid.
+- Fixed: The Bibles page now counts a Bible you typed by its Resource ID among the ones in use.
+
 ## 0.7.158
 _2026-11-07_
 - New: You can practise any verse you are memorizing whenever you like, say it again, or move it on to the next step at once.
