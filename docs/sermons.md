@@ -1,7 +1,7 @@
 # Sermons
 
 Lampas lists sermons against the passage each was preached on, and links out to them: nothing of a sermon's words is held. This file is for the free, offline **index** (the epic mw-qtu3zvz,
-story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them, the Sermons door beside Maps on the Verse view and its sheet, is story B2 (mw-qtu3zvz.2): see 'The door' and 'The sheet'. A switch per source in Settings and his own Logos sermon archives are story B3 (mw-qtu3zvz.3): see 'Choosing the sources' and 'In Logos'. The index by **theme** second, story B4 (mw-qtu3zvz.4): the Themes line and 'On the same theme' on the sheet, and a Settings switch for each theme list, is 'The themes' below.
+story B1, mw-qtu3zvz.1): where its facts come from, how they are built, what the files hold and how a phone keeps them. The screen that shows them, the Sermons door beside Maps on the Verse view and its sheet, is story B2 (mw-qtu3zvz.2): see 'The door' and 'The sheet'. A switch per source in Settings and his own Logos sermon archives are story B3 (mw-qtu3zvz.3): see 'Choosing the sources' and 'In Logos'. The index by **theme** second, story B4 (mw-qtu3zvz.4): the Themes line and 'On the same theme' on the sheet, and a Settings switch for each theme list, is 'The themes' below. The newest rows and a search from the sermon index **service**, story B5 (mw-qtu3zvz.5), are 'When online' below.
 Why the index is shaped this way (a static file per book, no server of our own) is in `docs/sources/sermon-index.md` section 5; what a Logos sermon book would need is in section 2 of the same file.
 Reading needs no licence.
 
@@ -25,6 +25,12 @@ Reading needs no licence.
   - [On the same theme](#on-the-same-theme)
   - [Settings](#settings)
   - [Credits](#credits)
+- [When online](#when-online)
+  - [The service's calls](#the-services-calls)
+  - [The merge and the line under the title](#the-merge-and-the-line-under-the-title)
+  - [Sources the bundle lacks](#sources-the-bundle-lacks)
+  - [The search](#the-search)
+  - [What Lampas fetches from other hosts](#what-lampas-fetches-from-other-hosts)
 - [Tests](#tests)
 
 <!-- /toc -->
@@ -56,7 +62,7 @@ commit from `raw.githubusercontent.com/<owner>/<name>/<sha>/…` into `data/raw/
 A source id that is not in the repository at that commit stops the build, naming the source. `scripts/sermons/toml.ts` reads the subset of TOML a `source.toml` uses (strings, a multi-line licence whose line-ending backslashes join,
 booleans, a date); it refuses anything else rather than reading it wrong. `kind = "themes"` sources are built by the same run, from the `themes` list of `sources.json`: see 'The themes'.
 
-**A reference** is read by `scripts/sermons/osis.ts` (`parseOsisRef`): `Rom.5.8`, `Rom.5.1-Rom.5.11`, `Rom.5.12-Rom.6.4`, a whole chapter (`Ps.23`, `Rom.5-Rom.6`) or a whole book (`Jude`), by OSIS name or Lampas's code (`src/data/canon.ts`), in
+**A reference** is read by `src/sermons/osis.ts` (`parseOsisRef`, moved from `scripts/sermons/osis.ts` by mw-qtu3zvz.5, which re-exports it): `Rom.5.8`, `Rom.5.1-Rom.5.11`, `Rom.5.12-Rom.6.4`, a whole chapter (`Ps.23`, `Rom.5-Rom.6`) or a whole book (`Jude`), by OSIS name or Lampas's code (`src/data/canon.ts`), in
 Lampas's chapters and verses (the verse counts of `public/data/index.json`; a whole chapter is its first verse to its last). A range over books is **listed under every book it touches**, in each cut at that book's ends. A reference the
 canon cannot hold (a book Lampas lacks, such as Tobit; a chapter or verse past the end) leaves the row out, and the build's report lists it (`left out: <source> row <id> (<ref>): <reason>`). A row with no preaching text (`ref` absent) is counted
 in the report (`no preaching text`) and not listed. **A cited reference (`cited`) is not built yet**: such a row is listed under its preaching text only.
@@ -212,9 +218,43 @@ Each topic is a heading, `On Atonement` (the topic's label), over its sermons, w
 
 Each theme source has the four credits (below, and `tests/support/credits.ts` for `public/themes/<id>/`); Thompson's note records the renewal search the sermon-index source made (`licence_note` in its `source.toml`: the registration A72501 is in none of the four Catalog of Copyright Entries volumes of 1961 and 1962 searched).
 
+## When online
+
+The bundled index is the whole of what the sheet needs offline. Online it asks the **sermon index service** (the sermon-index repository's `sermons serve`; its `docs/api.md` is the contract) for the rows the bundle may lack and for a search. The service is **free**: no licence, no device key, nothing signed, and never the mill.
+
+### The service's calls
+
+`src/services/sermons.ts` is its one client: `fetchSermons(ref, sources, limit?)` (`GET /v1/sermons?ref=&source=&limit=`), `fetchSources()` (`/v1/sources`), `fetchThemes(ref)` (`/v1/themes`), `fetchThemeSermons(source, topic)` (the theme tier over the whole Bible for one topic) and `search(q)` (`/v1/search`). Each waits **2 seconds** (`within`, `AbortSignal`) and sends a plain GET with `credentials: 'omit'`: no cookie, no key, no header of ours. It imports nothing of `src/services/mill.ts` or `bsv-kit/grist` (`tests/unit/sermons-service.test.ts` follows its imports to hold that, and `docs/layout/licence.md`'s one-gated-client rule stands). The address is `VITE_SERMONS_URL` (`src/config.ts` `SERMONS_URL`, `.env.example`), `https://sermons.allmymind.org` when the build sets none and **empty in the tests** (`vitest.config.ts`): with none, no call is made, the sheet shows no line and no search field, and `setSermonsUrl` (the test seam) puts one in. This is another origin from Postern's: the service allows `https://lampas.allmymind.org` itself (its `SERMONS_ORIGINS`), and the Postern CORS note of `docs/commands.md` is not about it. The live service is reachable only once its VPS door is up (the service epic's hands step).
+
+### The merge and the line under the title
+
+`latestFor(place, found)` (`src/sermons/index.ts`) runs once the sheet has the bundled rows, which it shows at once. It asks for the **chapter** (`ref=rom.5`, 200 rows) with the ids of the sources that are On, the bundled ones and the service's own (below), and `mergeServiceRows` (`src/sermons/merge.ts`, pure) merges the answer into the bundled groups: a row of the same source and id is **replaced** by the service's (its newer title or address wins), a row the bundle lacks is **added** under its group (On this verse when its preaching text overlaps the verse, else In this chapter), each source's rows stay together in verse order and the sources in the registry's order. Only preaching texts are listed (a row that merely cites the passage is left out, as the bundle's), a row of a source that is Off is left out, a reference Lampas cannot hold or an address that is not https is left out. The line under the title (`data-sermons-latest`, a status) reads **Latest from the index · N new** (N the rows added; **Latest from the index** when none) or, when the call fails or does not answer in 2 seconds (or the phone says it is offline), **Offline: the bundled index**; while the call is out the bundled rows stand with no line. The credit line of each source that gave a row is under the rows as before.
+
+### Sources the bundle lacks
+
+The same visit asks `/v1/sources` (kept five minutes, a failure not kept). A sermon source the service has that the bundle lacks is kept on the phone (`src/data/repositories/sermonSources.ts`, one `meta` row, `KnownSermonSource`) and, **the first time it is seen**, gets its own On | Off row in Settings > Study resources > Sermons: key `sermons.<id>`, **Off to start unless the service says `on_by_default`**, made by the same `sermonSourceSetting`. The registry of rows grows from that list: `src/sermons/known.ts` holds it in memory and tells the settings registry (`growSermonRows`, `src/settings/rows.ts`), which adds the row at the end of the section, the entry beside the registry's own (`growSermonEntries`), and the Settings screen's control for it (`src/settings/controls/index.ts`). The row exists from then on, offline too (`readValues` reads the kept list when Settings opens). These rows are **not in `SETTINGS`**: the tutor is not told of them and does not flip them by talk (`isTalkable`), and the grind's settings text does not name them. A source that is On is asked for in the next call (one that is On at once by `on_by_default` in a second call in the same visit); one that is Off is neither asked for nor credited. Its rows carry the service's credit and home page from the kept list.
+
+### The search
+
+A field at the head of the sheet, **Search sermons and themes** (`data-sermons-search`, 44 px, 16 px type), is answered by `/v1/search` alone, 300 ms after the last key (`SEARCH_DEBOUNCE_MS`). The hits are rows under **Found**, above the passage's groups: a sermon is a plain link that opens where it lives, a theme is a button that lists its sermons right under it in the same sheet (the theme tier over the whole Bible, `ref=Gen.1.1-Rev.22.21&tier=theme-only&theme=<source>:<topic>`; a topic over 300 verses lists none, as the service says). Offline, or after the service failed, the field is greyed and says **Needs the internet**. The service refuses a query over 200 characters, so none is sent.
+
+### What Lampas fetches from other hosts
+
+So that About's and the Help's sentences are right, every request the app makes to a host other than its own origin:
+
+| Host | When | What is sent | Purpose |
+| --- | --- | --- | --- |
+| the sermon index (`VITE_SERMONS_URL`, `sermons.allmymind.org`) | the Sermons sheet opens online; a search; a theme tapped | the chapter's reference (`rom.5`), the ids of the sources that are On, the search words; no cookie, key or licence | newest rows, sources, search (this section) |
+| Postern, `postern.allmymind.org` (`POSTERN_DOOR`) | a tutor ask, a picture, a request, a licence sign-up, the list of his devices | what the screen says it sends, signed by the device key where it is the mill | the tutor and the licence (`docs/layout/licence.md`: the one gated client, `src/services/mill.ts`; `register.ts` for sign-up) |
+| WhatsOnChain (through `bsv-kit`) | the licence check | the chain lookup for the licence of the phone's key | whether the key holds a licence (24 hours' grace offline) |
+
+Everything else the app reads is its own origin (`/data`, `/sermons`, `/data-lxx`, `/themes`, the maps' files). **Links are not fetches**: a sermon row's page (`ccel.org`, `archive.org`, `spurgeongems.org`), a `ref.ly` or `logosres:` address, the Audible app link and a study resource's page are opened only when he taps them, in the browser or the other app; the app asks them for nothing. `tests/e2e/sermons.spec.ts` holds that no request goes to a sermon's site before a row is tapped. The blog's `reftagger.js` (`src/reftagger/`) is not part of the app: it runs on another site and fetches one chapter file from Lampas's origin.
+
 ## Tests
 
 `tests/unit/sermons-build.test.ts` holds the OSIS parse, the TOML subset, the split by book, the fingerprint, the pinned addresses and the second-run bytes on a 20-row cut of the Spurgeon source
 (`tests/fixtures/sermons/spurgeon-20.jsonl` and `.toml`, the sermon-index repository's own fixture); `tests/unit/offline-copy.test.ts` the offline copy's files and fingerprint check. The themes: `tests/unit/sermons-build.test.ts` also builds a 3-topic fixture (`tests/fixtures/sermons/tcr-three.*`: Atonement over three books, Love-Hatred with a link Lampas cannot hold, Shepherd with a whole chapter and no parts);
 `tests/unit/themes-for.test.ts` the Themes line's names and the bundled sources over the committed files; `tests/unit/sermons-theme-tier.test.ts` the cap, the dedupe, the order and the cut at 12; `tests/unit/no-trademark.test.ts` the trademark;
 `features/themes.feature` the sheet and the Settings rows on theme lists of the tests' own (`tests/support/test-themes.ts`); `tests/e2e/sermons.spec.ts` the real Romans 5:8 sheet at 390x844 (`shots/sermons-themes.png`).
+
+The online sheet (mw-qtu3zvz.5): `tests/unit/sermons-service.test.ts` (the request each call makes, the 2 seconds, the empty address in tests, nothing of the mill), `tests/unit/sermons-merge.test.ts` (the pure merge), `tests/unit/sermon-sources-known.test.ts` (the kept list and its Settings rows), `features/sermons-online.feature` (the sheet with the service stubbed by the examples of the sermon-index repository's `docs/api.md`, copied into `tests/fixtures/sermons/api-rom-5-8.json` and `api-sources.json` at sermon-index `fd52b364`, the commit each file names: whoever moves them copies the `Example:` blocks again) and `tests/e2e/sermons.spec.ts` with `page.route` stubbing the service (`shots/sermons-online.png`, `sermons-search.png`, `sermons-online-source.png`).

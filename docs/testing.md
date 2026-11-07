@@ -116,6 +116,7 @@ elsewhere) and waits for a new screen with `pageTime`; a screen that waits on it
 | collection | none | `lampas` |
 | chain | `VITE_LAMPAS_CHAIN` | `testnet` (bsv-kit reads testnet only so far) |
 | Postern door | `VITE_POSTERN_DOOR` | `https://postern.allmymind.org` |
+| sermon index service (mw-qtu3zvz.5, docs/sermons.md 'When online') | `VITE_SERMONS_URL` | `https://sermons.allmymind.org`; empty in the tests (`vitest.config.ts`), `setSermonsUrl` puts one in; `.env.example` |
 
 Vite bakes these in at build time: set the variable for `npm run build`.
 
