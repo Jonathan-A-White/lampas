@@ -263,6 +263,8 @@ const MORE_SCREENS: readonly Screen[] = [
   { name: 'Share to Lampas', shot: 'large-text-share', open: async (page) => void (await openShare(page)) },
   { name: 'Your Logos library', shot: 'large-text-library', open: async (page) => openLibrary(page) },
   { name: 'Library: Lexicons', shot: 'large-text-library-lexicons', open: async (page) => openLibrary(page, 'lexicon') },
+  // mw-fnvjof.17.24: the Bibles page, each Bible with its 'Set for NT · OT · Apocrypha' line
+  { name: 'Library: Bibles', shot: 'large-text-library-bibles', open: async (page) => openLibrary(page, 'bible') },
   // mw-5r3p30.1039: the screens that draw answers or rows of buttons beside the ?'s reserved room (src/tutor/doorRoom.ts, 4.5 rem = 144 px at 200%), each with the longest answer Review can be given
   { name: 'Review, a word with long answers', shot: 'large-text-review-choice', open: async (page) => openReviewCard(page, 'choice') },
   { name: 'Review after a right pick', shot: 'large-text-review-answered', open: openReviewAnswered },
@@ -461,6 +463,7 @@ test('the screens are the ones the stories name', () => {
     'Share to Lampas',
     'Your Logos library',
     'Library: Lexicons',
+    'Library: Bibles',
     'Review, a word with long answers',
     'Review after a right pick',
     'Review flashcard, shown',

@@ -251,5 +251,5 @@ export async function openLibrary(page: Page, kind?: string): Promise<void> {
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
   await page.goto(kind ? `/#/library?kind=${kind}` : '/#/library');
-  await expect(page.getByRole('heading', { name: kind ? 'Lexicons' : 'Your Logos library', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: kind === 'bible' ? 'Bibles' : kind ? 'Lexicons' : 'Your Logos library', level: 1 })).toBeVisible();
 }

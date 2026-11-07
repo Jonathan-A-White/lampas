@@ -130,8 +130,8 @@ function LibraryHome() {
             {KIND_INFO.map((info) => (
               <li key={info.kind} data-testid="kind-row" data-label={info.plural}>
                 <button type="button" onClick={() => openLibrary({ kind: info.kind })} className="flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left text-base">
-                  <span className="min-w-0 flex-1 font-medium">{info.plural}</span>{' '}
-                  <span data-testid="kind-count" className="shrink-0 text-muted">
+                  <span className="shrink-0 font-medium">{info.plural}</span>{' '}
+                  <span data-testid="kind-count" className="min-w-0 flex-1 text-right text-muted">
                     {states ? countLine(info.kind, states, bibles) : ''}
                   </span>{' '}
                   <span aria-hidden="true" className="shrink-0 text-muted">
