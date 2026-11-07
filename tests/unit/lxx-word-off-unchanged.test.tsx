@@ -34,7 +34,7 @@ async function stillScreen(): Promise<void> {
 }
 
 /** The card of one word as it stands: its text and its HTML, with the ids (and what points at them) taken out. */
-async function card(book: Chapter, index: number, hebrew: boolean): Promise<{ text: string; html: string }> {
+async function card(book: Chapter, index: number): Promise<{ text: string; html: string }> {
   cleanup();
   await db.open();
   await Promise.all(db.tables.map((table) => table.clear()));
@@ -43,7 +43,7 @@ async function card(book: Chapter, index: number, hebrew: boolean): Promise<{ te
   await db.settings.put({ key: 'septuagint', value: 'off' });
   const word = book.verses[0].g[index];
   render(<WordSheet chapter={book} lookup={{ words: [word], fromEnglish: false, verse: 1 }} onClose={() => undefined} />);
-  await screen.findByTestId(hebrew ? 'sheet-word' : 'sheet-word');
+  await screen.findByTestId('sheet-word');
   await stillScreen();
   const html = document.body.innerHTML.replace(/\s(id|for|aria-labelledby|aria-describedby|aria-controls)="[^"]*"/g, '').replace(/:r[0-9a-z]+:/g, '');
   return { text: (document.body.textContent ?? '').replace(/\s+/g, ' ').trim(), html };
@@ -52,9 +52,9 @@ async function card(book: Chapter, index: number, hebrew: boolean): Promise<{ te
 describe('with the Septuagint Off the Hebrew and the New Testament word cards and the Help pages are as they were', () => {
   it('draws words 0 and 2 of Genesis 1:1 and of Romans 8:1, and every Help page but Words, exactly as before', async () => {
     const taken: Taken = {};
-    for (const [code, n, hebrew] of [['gen', 1, true], ['rom', 8, false]] as const) {
+    for (const [code, n] of [['gen', 1], ['rom', 8]] as const) {
       const book = chapter(code, n);
-      for (const index of [0, 2]) taken[`${code} ${n}:1 word ${index}`] = await card(book, index, hebrew);
+      for (const index of [0, 2]) taken[`${code} ${n}:1 word ${index}`] = await card(book, index);
     }
     for (const page of HELP_PAGES) if (page.id !== 'words') taken[`help ${page.id}`] = [page.title, page.line, ...page.body];
     if (RECORD) {
