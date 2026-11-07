@@ -1,0 +1,28 @@
+{
+  "commit": "fd52b364fe0d8d7d8ea7ef905e8658b70db1ad09",
+  "note": "Copied from the sermon-index repository docs/api.md at fd52b364 (the Example: blocks; its TestDocExamples holds them to the server). Update by copying again and naming the new commit.",
+  "GET /v1/sources": {
+    "rows": [
+      {
+        "id": "spurgeon-20",
+        "name": "C. H. Spurgeon's sermons (twenty, a fixture)",
+        "kind": "sermons",
+        "licence": "CCEL.org website and special contents copyright 1993-2020 Harry Plantinga. Most of the editions at the Christian Classics Ethereal library are based on books that are public domain in the United States. However, they may have copyrighted introductions, cover art, and other special contents. A few books are under another publisher's copyright and are used by permission; these are noted on the book information page. These books may be used for personal, educational, or non-profit purposes. Contact us for permission to republish CCEL works or to use them commercially. Copyright laws in other countries vary; it may be that some books that are in the public domain in the United States but are still under copyright in other countries. Check your local copyright law before copying.",
+        "credit": "Charles Haddon Spurgeon; the Christian Classics Ethereal Library (ccel.org); Spurgeon Gems (spurgeongems.org)",
+        "homepage": "https://ccel.org/ccel/spurgeon",
+        "on_by_default": false,
+        "rows": 20
+      },
+      {
+        "id": "themes-demo",
+        "name": "Demo themes (a fixture)",
+        "kind": "themes",
+        "licence": "Written for this repository's tests; MIT, as the code is.",
+        "credit": "The sermon index's tests",
+        "homepage": "https://github.com/Jonathan-A-White/sermon-index",
+        "on_by_default": false,
+        "rows": 4
+      }
+    ]
+  }
+}

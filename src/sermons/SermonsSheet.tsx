@@ -2,8 +2,9 @@
 // as 'On this verse' ('On these verses') and 'In this chapter' (a group is absent when empty), each row 44 px with the title and, under it, the preacher, the date and where it opens. A row is a plain link
 // to the sermon where it lives; nothing is fetched until one is tapped, and offline the rows stay and the second line says 'Needs the internet'. openSermons(place) opens it; <SermonsHost /> (mounted once in App) draws it.
 // After them, 'In Logos' lists his Pinned and On sermon archives at the place, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos').
-// Under the title of a verse or a passage a 'Themes' line names the topics that carry it, and after 'In this chapter' come the sermons 'On <topic>' that share a topic with it (mw-qtu3zvz.4, docs/sermons.md 'The themes').
-import type { ReactNode } from 'react';
+// Online (mw-qtu3zvz.5, docs/sermons.md 'When online'): the sheet opens on the bundled rows, asks the sermon index service and says 'Latest from the index · N new' (or 'Offline: the bundled index') under the title;
+// a search field answers from the service alone ('Found'). Under the title of a verse or a passage a 'Themes' line names the topics that carry it, and after 'In this chapter' come the sermons 'On <topic>' that share a topic with it (mw-qtu3zvz.4, docs/sermons.md 'The themes').
+import { useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { placeName } from '../maps/placeName';
 import { armFallback } from '../resources/openApp';
@@ -12,22 +13,24 @@ import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useOnline } from '../ui/online';
 import { sourceOf as themeSourceOf, type Theme } from '../themes';
+import { sermonsServiceKnown } from '../services/sermons';
 import { sourceOf } from './index';
+import { linkRowOf, linkRowOfHit, type LinkRow } from './merge';
 import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
 import type { SameTheme, SermonPlace, SermonRow } from './types';
-import { useArchives, useSermons } from './useSermons';
+import { useArchives, useLatest, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
 import { useSameTheme, useThemes } from './useThemes';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
 /** The second line of a row: the preacher, the date, and where it opens (a web page needs the internet while the phone is offline). */
-function metaOf(row: SermonRow, online: boolean): string {
+function metaOf(row: LinkRow, online: boolean): string {
   const opens = row.opensIn === 'logos' ? 'Opens in Logos' : online ? 'Opens on the web' : 'Needs the internet';
   return [row.preacher, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
 }
 
-function Row({ row, online }: { row: SermonRow; online: boolean }) {
+function Row({ row, online }: { row: LinkRow; online: boolean }) {
   const { url, fallback } = row.open;
   return (
     <a
@@ -134,6 +137,100 @@ function SameThemeGroups({ same, online }: { same: SameTheme; online: boolean })
   );
 }
 
+/** The line under the title that says where the rows come from once the service has answered (or not): absent while it is asked and when there is no service. */
+function LatestLine({ latest, online }: { latest: ReturnType<typeof useLatest>; online: boolean }) {
+  const offline = latest.status === 'offline' || (!online && latest.status !== 'none');
+  const text = offline ? 'Offline: the bundled index' : latest.status === 'latest' ? (latest.added > 0 ? `Latest from the index · ${latest.added} new` : 'Latest from the index') : null;
+  if (text === null) return null;
+  return (
+    <p data-sermons-latest={offline ? 'offline' : 'latest'} role="status" className="pt-1 text-sm text-muted">
+      {text}
+    </p>
+  );
+}
+
+const FIELD = 'min-h-11 w-full rounded-xl border border-line bg-surface px-4 text-base text-fg placeholder:text-muted disabled:opacity-60';
+
+/** The search field at the head of the sheet: answered by the service alone, so it is greyed with 'Needs the internet' while the phone (or the service) cannot be reached. */
+function SearchField({ query, onChange, offline }: { query: string; onChange: (value: string) => void; offline: boolean }) {
+  return (
+    <div className="pt-2">
+      <input
+        type="search"
+        data-sermons-search
+        aria-label="Search sermons and themes"
+        placeholder={offline ? 'Needs the internet' : 'Search sermons and themes'}
+        value={offline ? '' : query}
+        disabled={offline}
+        enterKeyHint="search"
+        autoComplete="off"
+        spellCheck={false}
+        onChange={(event) => onChange(event.target.value)}
+        className={FIELD}
+      />
+    </div>
+  );
+}
+
+/** A theme the search found: tapping it lists its sermons right under it, in this sheet. */
+function ThemeHit({ source, id, title, open, onToggle, online }: { source: string; id: string; title: string; open: boolean; onToggle: () => void; online: boolean }) {
+  const sermons = useThemeSermons(open ? `${source}:${id}` : null);
+  const rows = sermons.status === 'found' ? sermons.rows.flatMap((row) => linkRowOf(row) ?? []) : [];
+  return (
+    <div data-found-theme={`${source}:${id}`}>
+      <button type="button" aria-expanded={open} onClick={onToggle} className={ROW}>
+        <span className="min-w-0 flex-1">
+          <span data-sermon-title className="block break-words">
+            {title}
+          </span>
+          <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
+            Theme · tap for its sermons
+          </span>
+        </span>
+        <span aria-hidden="true">{open ? '▾' : '▸'}</span>
+      </button>
+      {open ? (
+        <div className="flex flex-col gap-2 pt-2 pl-3">
+          {sermons.status === 'asking' ? <p className="text-sm text-muted">Looking…</p> : null}
+          {sermons.status === 'failed' ? <p className="text-sm text-muted">Could not reach the sermon index.</p> : null}
+          {sermons.status === 'found' && rows.length === 0 ? <p className="text-sm text-muted">No sermons on this theme.</p> : null}
+          {rows.map((row) => (
+            <Row key={`${row.source}:${row.id}`} row={row} online={online} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** 'Found': the search's answer, sermons that open where they live and themes that list their sermons on a tap. */
+function FoundGroup({ query, offline, online }: { query: string; offline: boolean; online: boolean }) {
+  const found = useServiceSearch(query, !offline);
+  const [open, setOpen] = useState<string | null>(null);
+  if (found.status === 'idle') return null;
+  return (
+    <div role="group" aria-label="Found" data-sermons-part="found" className="pb-3">
+      <h3 className="pb-1 text-base font-semibold">Found</h3>
+      {found.status === 'searching' ? <p className="text-sm text-muted">Searching…</p> : null}
+      {found.status === 'failed' ? <p role="status" className="text-sm text-muted">Could not reach the sermon index.</p> : null}
+      {found.status === 'found' && found.hits.length === 0 ? <p role="status" className="text-sm text-muted">Nothing found.</p> : null}
+      {found.status === 'found' ? (
+        <div className="flex flex-col gap-2">
+          {found.hits.map((hit) => {
+            const key = `${hit.kind}:${hit.source}:${hit.id}`;
+            if (hit.kind === 'theme') {
+              const themeKey = `${hit.source}:${hit.id}`;
+              return <ThemeHit key={key} source={hit.source} id={hit.id} title={hit.title} open={open === themeKey} onToggle={() => setOpen(open === themeKey ? null : themeKey)} online={online} />;
+            }
+            const row = linkRowOfHit(hit);
+            return row ? <Row key={key} row={row} online={online} /> : null;
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 /** The bottom sheet the Sermons sheet is drawn in: the backdrop, the handle and Close, the heading, the scroll box. It takes the phone's Back, Escape and a swipe down on the handle as every sheet does. */
 function SermonsFrame({ label, onClose, children, heading }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode }) {
   const { drag, handle } = useSheetDrag(onClose);
@@ -167,11 +264,17 @@ function SermonsFrame({ label, onClose, children, heading }: { label: string; on
 }
 
 export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: () => void }) {
-  const found = useSermons(place);
+  const bundled = useSermons(place);
+  // the service's newest rows are merged in once they come; the bundled rows stand until then, and when the service cannot be reached
+  const latest = useLatest(place, bundled);
+  const found = latest.status === 'latest' ? latest.found : bundled;
+  const [query, setQuery] = useState('');
   const themes = useThemes(place);
   const same = useSameTheme(place, found);
   const archives = useArchives(place);
   const online = useOnline();
+  const serviceKnown = sermonsServiceKnown();
+  const offline = !online || latest.status === 'offline';
   const title = `Sermons for ${placeName(place)}`;
   const passage = place.from !== undefined && place.to !== undefined && place.to !== place.from;
   // the credit of each source that answered a row, once, in the order its rows come
@@ -187,10 +290,13 @@ export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: 
       heading={
         <>
           <h2 className="text-xl font-semibold">{title}</h2>
+          <LatestLine latest={latest} online={online} />
           {themes ? <ThemesLine themes={themes} /> : null}
+          {serviceKnown ? <SearchField query={query} onChange={setQuery} offline={offline} /> : null}
         </>
       }
     >
+      {serviceKnown ? <FoundGroup query={query} offline={offline} online={online} /> : null}
       {found && rows.length === 0 && same && sameRows === 0 ? <p role="status" className="py-2 text-base text-muted">No sermons here.</p> : null}
       {found ? <Group title={passage ? 'On these verses' : 'On this verse'} rows={found.here} online={online} part="here" /> : null}
       {found ? <Group title="In this chapter" rows={found.chapter} online={online} part="chapter" /> : null}

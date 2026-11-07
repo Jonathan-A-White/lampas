@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 7500;
+export const MAX_CREDITS_BYTES = 7700;
 
 /** One line of the sheet a Septuagint chapter's header opens (mw-u2w5klk.276): what is credited, in plain words, and a link where there is one. The one place the sheet's text is written. */
 export interface SeptuagintSource {
@@ -61,6 +61,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'node-qrcode', use: 'The key as a QR code', licence: 'MIT', link: 'https://github.com/soldair/node-qrcode' },
   { name: 'Workbox', use: 'Lets Lampas open offline', licence: 'MIT', link: 'https://developer.chrome.com/docs/workbox' },
   { name: 'WhatsOnChain', use: 'Checks your key holds a licence', licence: 'none needed; public API', link: 'https://whatsonchain.com' },
+  { name: 'Sermon index', use: 'Newest sermon rows and search; no key sent', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/sermon-index' },
   { name: 'Postern', use: 'Carries your questions and pictures to the tutor', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/postern' },
   { name: 'Twilio Verify', use: 'Sends the codes for a licence', licence: 'none needed; its terms', link: 'https://www.twilio.com/en-us/user-authentication-identity/verify' },
   { name: 'Claude', use: 'The tutor\'s model; pictures, drills, diagrams', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },
