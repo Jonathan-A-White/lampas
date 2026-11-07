@@ -78,9 +78,9 @@ export function referenceText(form: Pick<OwnForm, 'book' | 'chapter' | 'verse'>)
 
 /**
  * Raised when the lemma files change with no chapter changing, so a phone's worker (CacheFirst) asks for them again: 2 (mw-u2w5klk.295) is the files made again at deploy with the Septuagint's forms
- * (batch 416's files, made without them, were cached under the same version); 3 (mw-u2w5klk.296) is the files with a word printed in capitals indexed under its accented form.
+ * (batch 416's files, made without them, were cached under the same version); 3 (mw-u2w5klk.296) is the files with a word printed in capitals indexed under its accented form; 4 (mw-u2w5klk.297) is the files with a Septuagint comma lemma folded into its headword's file.
  */
-export const LEMMA_FORMS_EDITION = 3;
+export const LEMMA_FORMS_EDITION = 4;
 
 // The files are asked for with the chapters' fingerprints folded into one version, so the worker (CacheFirst, src/sw.ts) keeps a lemma until some chapter changes. The Septuagint's
 // reading folds in the fingerprints of the shipped Septuagint chapters too (`septuagint`: the index's, one string), since its forms ride in the file; the New Testament's does not,
@@ -104,6 +104,9 @@ interface LemmaFile {
   lxx?: LemmaFormEntry[];
 }
 
+/** The headword of a lemma written as a list ('ὕδωρ, ὕδατος'): what stands before the first comma (the build's headwordOf; tests/unit/own-forms.test.ts holds them equal). */
+export const headwordOf = (lemma: string): string => lemma.split(',')[0].trim();
+
 const loaded = new Map<string, Promise<LemmaFile>>();
 
 /**
@@ -115,10 +118,18 @@ export async function loadLemmaForms(lemma: string, reading: OwnText = 'nt'): Pr
   let request = loaded.get(key);
   if (!request) {
     const fetched: Promise<LemmaFile> = (reading === 'septuagint' ? septuagintVersion() : Promise.resolve('')).then(async (version) => {
-      const response = await fetch(lemmaFormsUrl(lemma, version));
-      if (response.status === 404) return { f: [] };
-      if (!response.ok) throw new Error(`Could not load the forms of ${lemma}: ${response.status}`);
-      return (await response.json()) as LemmaFile;
+      const fetchFile = async (name: string): Promise<LemmaFile | undefined> => {
+        const response = await fetch(lemmaFormsUrl(name, version));
+        if (response.status === 404) return undefined;
+        if (!response.ok) throw new Error(`Could not load the forms of ${name}: ${response.status}`);
+        // a server that answers a missing file with its index page (a 200 of HTML) has no file either
+        return (await response.json().catch(() => undefined)) as LemmaFile | undefined;
+      };
+      const own = await fetchFile(lemma);
+      if (own) return own;
+      // a Septuagint lemma written as a list ('ὕδωρ, ὕδατος') has its forms in the file of its headword when the build folded it there (scripts/build-lemma-forms.mjs foldSeptuagint)
+      const head = headwordOf(lemma);
+      return (reading === 'septuagint' && head !== '' && head !== lemma ? await fetchFile(head) : undefined) ?? { f: [] };
     });
     request = fetched;
     loaded.set(key, fetched);

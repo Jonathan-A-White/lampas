@@ -20,6 +20,8 @@ export interface SeptuagintCapital {
   place: string;
 }
 export function septuagintCapitals(chapters: Iterable<Pick<Chapter, 'code' | 'chapter' | 'verses'>>, nt?: Map<string, LemmaFormEntry[]>): SeptuagintCapital[];
+export function headwordOf(lemma: string): string;
+export function foldSeptuagint(lxx: Map<string, LemmaFormEntry[]>, known: ReadonlySet<string>): Map<string, LemmaFormEntry[]>;
 export function readSeptuagintChapters(lxxDir: string): Chapter[];
 export function readChapters(dataDir: string): Chapter[];
 export function writeLemmaForms(dataDir: string, outDir: string, lxxDir?: string): { lemmas: number; bytes: number; largest: { lemma: string; bytes: number }; capitals: number; unmatched: SeptuagintCapital[] };

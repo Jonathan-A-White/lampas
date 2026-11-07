@@ -126,6 +126,34 @@ export function septuagintCapitals(chapters, nt = new Map()) {
   return told;
 }
 
+/** The headword of a lemma written as a list ('ὕδωρ, ὕδατος'): what stands before the first comma (the app's headwordOf is the same; tests/unit/own-forms.test.ts holds them equal). */
+export const headwordOf = (lemma) => lemma.split(',')[0].trim();
+
+/**
+ * The Septuagint's forms with each comma lemma ('ὕδωρ, ὕδατος', mw-u2w5klk.297) filed under its headword ('ὕδωρ') when the headword is a lemma of the New Testament (`known`) or of the
+ * Septuagint, so the two texts' forms of one word meet in one file. A comma lemma the New Testament has with the comma (a file of its own) stays, as does one whose headword no text has.
+ * The same form with the same code from both is one entry, counted for both.
+ */
+export function foldSeptuagint(lxx, known) {
+  const target = (lemma) => {
+    const head = headwordOf(lemma);
+    return lemma.includes(',') && !known.has(lemma) && head !== '' && (known.has(head) || lxx.has(head)) ? head : lemma;
+  };
+  const folded = new Map();
+  for (const [lemma, entries] of lxx) {
+    const into = target(lemma);
+    const have = folded.get(into) ?? new Map();
+    folded.set(into, have);
+    for (const entry of entries) {
+      const key = `${entry[0]}\u0000${entry[1]}`;
+      const same = have.get(key);
+      if (same) same[2] += entry[2];
+      else have.set(key, [...entry]);
+    }
+  }
+  return new Map([...folded].map(([lemma, entries]) => [lemma, [...entries.values()]]));
+}
+
 /** The file's text for one lemma: its New Testament (or Hebrew) forms under "f", and under "lxx" its Septuagint forms when it has any. */
 export const fileText = (lemma, entries, septuagint = []) => `${JSON.stringify(septuagint.length > 0 ? { l: lemma, f: entries, lxx: septuagint } : { l: lemma, f: entries })}\n`;
 
@@ -174,7 +202,7 @@ export function readSeptuagintChapters(lxxDir) {
 export function writeLemmaForms(dataDir, outDir, lxxDir) {
   const nt = lemmaForms(readChapters(dataDir));
   const lxxChapters = lxxDir ? readSeptuagintChapters(lxxDir) : [];
-  const lxx = septuagintForms(lxxChapters, nt);
+  const lxx = foldSeptuagint(septuagintForms(lxxChapters, nt), new Set(nt.keys()));
   const lemmas = new Map([...nt, ...[...lxx].filter(([lemma]) => !nt.has(lemma)).map(([lemma]) => [lemma, []])]);
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
