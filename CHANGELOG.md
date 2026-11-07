@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.156
+_2026-11-07_
+- Fixed: A Septuagint word whose dictionary entry is a pair, like the one for "man" or "thus", now has its New Testament and Septuagint forms together in its paradigm table.
+
 ## 0.7.155
 _2026-11-07_
 - Fixed: The Reader's Menu now shows both Tools and Settings in full, so you can reach Settings from the Reader.

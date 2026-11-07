@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.156",
+    "date": "2026-11-07",
+    "story": "mw-u2w5klk.305",
+    "kind": "fixed",
+    "text": "A Septuagint word whose dictionary entry is a pair, like the one for \"man\" or \"thus\", now has its New Testament and Septuagint forms together in its paradigm table."
+  },
+  {
     "version": "0.7.155",
     "date": "2026-11-07",
     "story": "mw-5r3p30.1143",
