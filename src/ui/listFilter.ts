@@ -95,8 +95,14 @@ function inOrder(letters: string, name: string): boolean {
   return letters === '';
 }
 
+/** Whether the name, or one of its words, starts with `letter` ('c' of '1 Corinthians'); words are split at spaces, dots and hyphens. */
+function wordStartsWith(letter: string, name: string): boolean {
+  return name.toLocaleLowerCase().split(/[\s.-]+/).some((w) => w.startsWith(letter));
+}
+
 /** The items whose name holds what he typed, or holds its letters in order ('phlm' finds Philemon, '1jn' finds 1 John), ignoring case, spaces and dots. The names that
- *  start with it come first, then those that hold it, then the rest, each group in the list's own order; all of them for an empty search. Only when none does, the
+ *  start with it come first, then those that hold it, then those with its letters in order whose name or one of its words starts with its first letter ('rn' lists
+ *  Romans and Revelation before Deuteronomy), then the rest, each group in the list's own order; all of them for an empty search. Only when none does, the
  *  names one slip away from it, closest first (`slipsAway`: 'mwt' finds Matthew). */
 export function matchingInOrder(items: readonly ListItem[], query: string): ListItem[] {
   const found = matchingInOrderExactly(items, query);
@@ -107,7 +113,13 @@ export function matchingInOrder(items: readonly ListItem[], query: string): List
 export function matchingInOrderExactly(items: readonly ListItem[], query: string): ListItem[] {
   const q = squashed(query);
   if (q === '') return [...items];
-  const rank = (name: string): number => (name.startsWith(q) ? 0 : name.includes(q) ? 1 : inOrder(q, name) ? 2 : 3);
-  const ranked = items.map((item) => ({ item, rank: rank(squashed(item.name)) })).filter((r) => r.rank < 3);
-  return [0, 1, 2].flatMap((n) => ranked.filter((r) => r.rank === n).map((r) => r.item));
+  const rank = (item: ListItem): number => {
+    const name = squashed(item.name);
+    if (name.startsWith(q)) return 0;
+    if (name.includes(q)) return 1;
+    if (!inOrder(q, name)) return 4;
+    return wordStartsWith(q[0], item.name) ? 2 : 3;
+  };
+  const ranked = items.map((item) => ({ item, rank: rank(item) })).filter((r) => r.rank < 4);
+  return [0, 1, 2, 3].flatMap((n) => ranked.filter((r) => r.rank === n).map((r) => r.item));
 }
