@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { SEPTUAGINT_SUBTITLE, SEPTUAGINT_SHEET_TITLE } from '../../src/reader/septuagint';
-import { SEPTUAGINT_SOURCES } from '../../src/tutor/credits';
+import { CREDITS, SEPTUAGINT_SOURCES } from '../../src/tutor/credits';
 
 const read = (path: string): string => readFileSync(path, 'utf8');
 
@@ -30,6 +30,18 @@ describe('the sheet text, from src/tutor/credits.ts', () => {
 
   it("credits Brenton's 1844 translation in eBible's 2012 edition, public domain", () => {
     expect(all).toContain("Sir Lancelot Brenton's 1844 translation of the Septuagint, in eBible's 2012 edition with modernised spelling (eng-lxx2012), public domain");
+  });
+
+  it("says Brenton translated the Vatican text, not Swete's edition, and that his English can differ from the Greek shown", () => {
+    const english = SEPTUAGINT_SOURCES.find((s) => s.label === 'English')?.text ?? '';
+    expect(english).toContain('Vatican text');
+    expect(english).toContain('Codex Vaticanus');
+    expect(english).toContain('Sixtine');
+    expect(english).toContain('1587');
+    expect(english).toMatch(/did not translate Swete's edition/);
+    expect(english).toMatch(/before Swete's edition \(1887 to 1894\)/);
+    expect(english).toMatch(/can differ from the Greek shown, in a word or in where a verse begins/);
+    expect(english).toContain("Lampas maps his verses onto Swete's");
   });
 
   it("says the lemma and parsing are Lampas's own and links the method", () => {
@@ -62,5 +74,13 @@ describe('the other screens that print Swete or LXX2012', () => {
         .filter((l) => !/^\s*(\/\/|\/\*|\*)/.test(l) && !/\/\*\*/.test(l));
       expect(shown.join('\n'), file).not.toContain('LXX2012');
     }
+  });
+});
+
+describe("the English credit the tutor is told", () => {
+  it("says Brenton translated the Vatican text, not Swete's edition", () => {
+    const credit = CREDITS.find((c) => c.name === 'LXX2012');
+    expect(credit?.use).toContain('Vatican text');
+    expect(credit?.use).toContain("not Swete's");
   });
 });
