@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.157
+_2026-11-07_
+- Fixed: Searching for a book by a few letters now lists the books whose name starts with your first letter before the others (rn finds Romans and Revelation first).
+- New: choose which sermon lists the Sermons door uses in Settings, and see your own Logos sermon archives at each verse.
+
 ## 0.7.156
 _2026-11-07_
 - Fixed: A Septuagint word whose dictionary entry is a pair, like the one for "man" or "thus", now has its New Testament and Septuagint forms together in its paradigm table.

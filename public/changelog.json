@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.157",
+    "date": "2026-11-07",
+    "story": "mw-5r3p30.1140",
+    "kind": "fixed",
+    "text": "Searching for a book by a few letters now lists the books whose name starts with your first letter before the others (rn finds Romans and Revelation first)."
+  },
+  {
+    "version": "0.7.157",
+    "date": "2026-11-07",
+    "story": "mw-qtu3zvz.3",
+    "kind": "new",
+    "text": "choose which sermon lists the Sermons door uses in Settings, and see your own Logos sermon archives at each verse."
+  },
+  {
     "version": "0.7.156",
     "date": "2026-11-07",
     "story": "mw-u2w5klk.305",
