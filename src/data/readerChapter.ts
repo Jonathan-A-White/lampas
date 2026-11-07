@@ -22,6 +22,9 @@ const HEBREW_STUDY_KEY = 'lampas.studyChapterHebrew';
 /** The Old Testament chapter the Reader has open and is showing as Greek (Settings > Old Testament in Greek (Septuagint) On, the book shipped): a chapter's file is the only thing that knows, and the screens read the study chapter before they render. */
 const GREEK_OPEN_KEY = 'lampas.openReadAsGreek';
 
+/** The last chapter open in each book, `{ exo: 6, gen: 1 }` (mw-5r3p30.1146): Choose a book shows it for a book he has left, so he can go straight back. */
+const LAST_KEY = 'lampas.lastChapters';
+
 /** Where the Hebrew words' forms come from before he has opened any Old Testament chapter. */
 export const DEFAULT_HEBREW_CHAPTER: OpenChapter = { book: 'gen', chapter: 1, title: 'Genesis 1' };
 
@@ -90,9 +93,24 @@ export function setOpenReadLanguage(book: string, chapter: number, lang: SourceL
   }
 }
 
-/** Keeps this as the chapter he has open. */
+/** The chapter last open in each book he has read, by the book's code; a book never read has none. A book or chapter that is not real is left out. */
+export function getLastChapters(): Record<string, number> {
+  const last: Record<string, number> = {};
+  try {
+    const saved = JSON.parse(store()?.getItem(LAST_KEY) ?? 'null') as Record<string, unknown> | null;
+    if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+      for (const [book, chapter] of Object.entries(saved)) if (typeof chapter === 'number' && chapterOf(book, chapter)) last[book] = chapter;
+    }
+  } catch {
+    // unreadable: none
+  }
+  return last;
+}
+
+/** Keeps this as the chapter he has open, and as the last one open in its book. */
 export function setOpenChapter(book: string, chapter: number): void {
   try {
+    store()?.setItem(LAST_KEY, JSON.stringify({ ...getLastChapters(), [book]: chapter }));
     store()?.setItem(KEY, JSON.stringify({ book, chapter }));
     store()?.removeItem(GREEK_OPEN_KEY);
     store()?.setItem(isHebrewBook(book) ? HEBREW_STUDY_KEY : STUDY_KEY, JSON.stringify({ book, chapter }));
