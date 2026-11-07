@@ -1,6 +1,6 @@
 // tests/unit/lxx-off-unchanged.test.tsx — with Settings > Old Testament in Greek (Septuagint) Off, the Hebrew Genesis 1 and Romans 8:1 pages of Memorize, Diagram, the Quick test and Review are what they were before
 // the study tools followed the chapter's language (mw-u2w5klk.15, the Septuagint epic's R5). tests/fixtures/septuagint-off-pages.json holds each page's text and HTML (ids stripped) as the code of 0.7.136 drew them;
-// RECORD_PAGES=1 writes it afresh (only ever on code that has not changed those pages).
+// RECORD_PAGES=1 writes it afresh (only ever on code that has not changed those pages). The two Diagram pages were re-recorded in batch 426: the Reader header now draws a Menu button where the Settings gear stood (mw-5r3p30.1111).
 import 'fake-indexeddb/auto';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
