@@ -16,6 +16,9 @@ import { SCREEN_NAMES } from '../../src/tutor/screen';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { seedHisWords } from '../support/his-words';
 
+// jsdom draws no layout and has no scrollIntoView: Settings scrolls to the section it opens at
+Element.prototype.scrollIntoView = () => {};
+
 beforeAll(async () => {
   stubChapterFetch();
   await db.open();
