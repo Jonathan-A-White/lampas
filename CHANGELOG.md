@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.152
+_2026-11-07_
+- Fixed: A Greek Old Testament word like ὕδατος in Genesis 1:2 now has its own "This word" table, with its forms joined to the New Testament's forms of the same word.
+
 ## 0.7.151
 _2026-11-07_
 - New: Help now explains the Old Testament in Greek (Septuagint) setting, and the Preface names the Septuagint's sources.
