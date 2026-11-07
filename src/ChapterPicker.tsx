@@ -21,7 +21,7 @@ import { navigate, openReader } from './nav/route';
 import { useStillLoading } from './reader/useStillLoading';
 import { usePlan, type PlanView } from './plan/usePlan';
 import { focusQuietly } from './ui/focus';
-import { matching, matchingInOrder } from './ui/listFilter';
+import { matching, matchingInOrder, matchingInOrderExactly } from './ui/listFilter';
 import { useNoDoor } from './tutor/door';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
@@ -143,7 +143,8 @@ export function ChapterPicker({
   const read = readPlace(query);
   const typed: PlaceRead = read.kind === 'place' && read.testament === 'ap' ? { kind: 'none' } : read;
   // a name filters by its letters in order, names that start with it first; a start that fits more than one book ('J 3') is no place and lists the books it fits
-  const shown = matchingInOrder(ITEMS, typed.kind === 'none' ? bookPart(query) : query);
+  // and when none does, the books one slip away ('mwt' lists Matthew, mw-fnvjof.17.8); a place or a chapter the book lacks keeps the exact filter, so that 'jo 3' lists no book beside its Go to row
+  const shown = typed.kind === 'none' ? matchingInOrder(ITEMS, bookPart(query)) : matchingInOrderExactly(ITEMS, query);
   const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
   const name = book ? bookOf(book)?.name : undefined;
   const pick = (chapter: number) => {

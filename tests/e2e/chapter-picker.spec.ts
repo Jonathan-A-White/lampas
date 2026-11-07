@@ -250,6 +250,24 @@ test.describe('a reference typed in Choose a book (390x844)', () => {
     await shot(page, 'chapter-picker-start-of-book-390x844');
   });
 
+  // mw-fnvjof.17.8: a fat finger is forgiven when no name holds the letters
+  test('mwt lists Matthew first and a tap on it shows its chapters; mwt 5 offers Go to Matthew 5', async ({ page }) => {
+    const picker = await openPicker(page);
+    const search = picker.getByRole('searchbox', { name: 'Search books' });
+    await search.fill('mwt');
+    await expect(picker.getByText('No book matches')).toHaveCount(0);
+    await expect(picker.locator('[data-book]').first()).toHaveAttribute('data-book', 'mat');
+    await shot(page, 'chapter-picker-fat-finger-390x844');
+    await picker.locator('[data-book="mat"]').click();
+    await expect(picker.locator('[data-chapter]')).toHaveCount(28);
+    await picker.getByRole('button', { name: '‹ Books' }).click();
+    await search.fill('mwt 5');
+    await expect(picker.getByRole('button', { name: 'Go to Matthew 5' })).toBeVisible();
+    await search.press('Enter');
+    await expect(picker).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Matthew 5', level: 1 })).toBeVisible();
+  });
+
   test('a verse of the chapter he is in is brought to the top without opening the Verse view', async ({ page }) => {
     const picker = await openPicker(page);
     await picker.getByRole('searchbox', { name: 'Search books' }).fill('Rom 8:30');
