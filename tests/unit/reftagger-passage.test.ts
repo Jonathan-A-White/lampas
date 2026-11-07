@@ -1,6 +1,6 @@
 import { readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { headingOf, isOnlyTheStart, passageOf, versesOf, versesUrl } from '../../src/reftagger/passage';
+import { headingOf, isAdoptable, isOnlyTheStart, passageOf, versesOf, versesUrl } from '../../src/reftagger/passage';
 import { plainVerses, translationName } from '../../src/reftagger/verses';
 import { TRANSLATION_NAME } from '../../src/reader/englishSource';
 import { sourceLanguage, type Chapter } from '../../src/data/chapter';
@@ -24,6 +24,24 @@ describe('the blog popup: what a tagged link names (mw-5r3p30.1048)', () => {
     expect(passageOf('https://example.com/x')).toBeNull();
     expect(passageOf(`${REF}Nope.1.1`)).toBeNull();
     expect(passageOf(`${REF}John`)).toBeNull();
+  });
+
+  it('reads the passage from the fragment ahead of a ?ref= the publisher put in the query (mw-fnvjof.17.1)', () => {
+    expect(passageOf('https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.25')).toEqual({ code: 'jhn', chapter: 5, first: 25, last: 25 });
+    expect(passageOf('https://lampas.allmymind.org/?ref=John.5.25')?.code).toBe('jhn');
+    expect(passageOf('https://lampas.allmymind.org/#/?ref=%E0%A4%A')).toBeNull();
+  });
+
+  it('adopts a Lampas address that names a passage, and only that, unless it insists with go=1 (mw-fnvjof.17.1)', () => {
+    expect(isAdoptable(`${REF}John.5.25`)).toBe(true);
+    expect(isAdoptable('https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.25')).toBe(true);
+    expect(isAdoptable(`${REF}John.5.25&go=1`)).toBe(false);
+    expect(isAdoptable('https://lampas.allmymind.org/?go=1#/?ref=John.5.25')).toBe(false);
+    expect(isAdoptable(`${REF}John.5.25&go=10`)).toBe(true);
+    expect(isAdoptable('https://example.com/?ref=allmymind.org#/?ref=John.5.25')).toBe(false);
+    expect(isAdoptable('https://lampas.allmymind.org/')).toBe(false);
+    expect(isAdoptable(`${REF}Nope.1.1`)).toBe(false);
+    expect(isAdoptable('/#/?ref=John.5.25')).toBe(false);
   });
 
   it('heads it as people write it', () => {

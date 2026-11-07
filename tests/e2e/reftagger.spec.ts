@@ -126,8 +126,9 @@ const chapterFile = (url: string) => readFileSync(`public/data/${url.split('/dat
 
 async function serveData(page: Page, headers: Record<string, string> = CORS) {
   await page.route(DATA, (route: Route) => route.fulfill({ contentType: 'application/json', headers, body: chapterFile(route.request().url()) }));
+  await page.route(/^https:\/\/example\.com\//, (route) => route.fulfill({ contentType: 'text/html', body: '<title>Elsewhere</title>' }));
   // what a click on Open in Lampas, or on the link with a mouse, opens: a page of that address (the app itself is not under test here)
-  await page.route(/^https:\/\/lampas\.allmymind\.org\/(?:#.*)?$/, (route) => route.fulfill({ contentType: 'text/html', body: '<title>Lampas</title>' }));
+  await page.route(/^https:\/\/lampas\.allmymind\.org\/(?:\?[^#]*)?(?:#.*)?$/, (route) => route.fulfill({ contentType: 'text/html', body: '<title>Lampas</title>' }));
 }
 
 const inView = async (page: Page) => {
@@ -156,6 +157,60 @@ test.describe('on a phone', () => {
     expect(context.pages()).toHaveLength(1);
     await inView(page);
     await shot(page, 'reftagger-popup');
+  });
+
+  // A link already written into a post (mw-fnvjof.17.1): the publisher's own anchor to Lampas gets the card first, as a bare reference does.
+  const HAND = 'https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.25';
+
+  test('a verse link already written into the post opens the popup, and Open in Lampas goes to that link\'s own address', async ({ page, context }) => {
+    await serveData(page);
+    await openPost(page);
+    await page.locator('#hand-query').tap();
+    const popup = page.locator(POPUP);
+    await expect(popup).toBeVisible();
+    await expect(popup).toContainText('John 5:25');
+    await expect(popup).toContainText('the dead will hear the voice of the Son of God');
+    expect(page.url()).toBe(BLOG);
+    expect(context.pages()).toHaveLength(1);
+    const open = page.locator(`${POPUP} a`, { hasText: 'Open in Lampas' });
+    await expect(open).toHaveAttribute('href', HAND);
+    const opened = context.waitForEvent('page');
+    await open.tap();
+    expect((await opened).url()).toBe(HAND);
+    await page.keyboard.press('Escape');
+    await page.locator('#hand-plain').tap();
+    await expect(popup).toContainText('John 5:24-29');
+    await expect(popup).toContainText('resurrection of judgment');
+    await expect(page.locator(`${POPUP} a`, { hasText: 'Open in Lampas' })).toHaveAttribute('href', 'https://lampas.allmymind.org/#/?ref=John.5.24-29');
+    expect(page.url()).toBe(BLOG);
+  });
+
+  test('a link carrying go=1 goes straight to the app, one without it pops up', async ({ page }) => {
+    await serveData(page);
+    await openPost(page);
+    for (const [id, to] of [['go-fragment', 'https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.25&go=1'], ['go-query', 'https://lampas.allmymind.org/?go=1#/?ref=John.5.25']]) {
+      await page.goto(BLOG);
+      await expect(page.locator('a[data-lampas-ref]').first()).toBeVisible();
+      await page.locator(`#${id}`).tap();
+      await expect(page).toHaveURL(to);
+      await expect(page.locator(POPUP)).toHaveCount(0);
+    }
+    await page.goto(BLOG);
+    await expect(page.locator('a[data-lampas-ref]').first()).toBeVisible();
+    await page.locator('#hand-query').tap();
+    await expect(page.locator(POPUP)).toBeVisible();
+    expect(page.url()).toBe(BLOG);
+  });
+
+  test('a link to any other host, and a Lampas link that names no passage, is left as it is', async ({ page }) => {
+    await serveData(page);
+    await openPost(page);
+    for (const id of ['elsewhere', 'home']) {
+      await expect(page.locator(`#${id}`)).not.toHaveAttribute('data-lampas-adopted', /.*/);
+    }
+    await page.locator('#elsewhere').tap();
+    await expect(page).toHaveURL(/^https:\/\/example\.com\//);
+    await expect(page.locator(POPUP)).toHaveCount(0);
   });
 
   test('a range shows each of its verses, and a link to the chapter shows its first', async ({ page }) => {
@@ -431,6 +486,18 @@ test.describe('with a mouse', () => {
     await page.locator('#plain a').click();
     expect((await opened).url()).toBe(`${REF}John.5.25`);
     expect(page.url()).toBe(BLOG);
+  });
+
+  test('a link already written into the post: hover opens the popup and a click goes to Lampas (mw-fnvjof.17.1)', async ({ page }) => {
+    await serveData(page);
+    await openPost(page);
+    const popup = page.locator(POPUP);
+    await page.locator('#hand-query').hover();
+    await expect(popup).toContainText('the dead will hear the voice of the Son of God');
+    await page.mouse.move(900, 600);
+    await expect(popup).toHaveCount(0);
+    await page.locator('#hand-query').click();
+    await expect(page).toHaveURL('https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.25');
   });
 
   test('Esc closes it; one popup at a time', async ({ page }) => {
