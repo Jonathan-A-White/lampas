@@ -29,9 +29,8 @@ export const HELP_PAGES: HelpPage[] = [
     line: 'Chapters, words and verses.',
     body: [
       'The title opens the chapter picker. A tap on a verse number opens the Verse view (Listen, Read it aloud, Practise, Share, Memorize); a hold copies it. A word opens its sheet.',
-      'An Old Testament chapter can be read in Hebrew (How much Hebrew?). Copy gives the text with its link; Share sends the whole or a piece.',
-      'Variants in Settings can show where manuscripts differ. Five short lessons explain how to read that, offline.',
-      'A variant’s sheet has Go deeper and Read this, which puts it in the text. The tutor explains it without ruling.',
+      'An Old Testament chapter reads in Hebrew (How much Hebrew?), or with Old Testament in Greek (Septuagint) on, in Swete’s Greek with Brenton’s English. Its title gives both numberings (Psalms 23, Greek 22); a book not ready stays Hebrew.',
+      'Variants in Settings can show where manuscripts differ. A variant’s sheet has Go deeper and Read this. The tutor explains it without ruling.',
       'English from the 2026 Greek shows Lampas’s own English, marked RP 2026, where that Greek changes it.',
     ],
     opens: { label: 'Lessons on variant readings', route: 'lessons' },
@@ -39,11 +38,12 @@ export const HELP_PAGES: HelpPage[] = [
   {
     id: 'languages',
     title: 'Greek and Hebrew',
-    line: 'How much Greek and Hebrew you see.',
+    line: 'How much of each you see.',
     body: [
-      'Lampas opens as a plain English Bible. At the top of Settings, Which languages? chooses English only, Greek, Hebrew or Greek and Hebrew.',
-      'Each language chosen has a dial, How much Greek? or How much Hebrew?, from Curious to All in. Each step shows more of that language and nothing more: Curious its view and a word’s Strong’s number, Dipping a toe the Weave, Learning new words each day, Reading in Greek or Hebrew opens the Reader in it. English only hides them all and keeps your levels. The Study resources follow the dials.',
-      'The sentence Diagram works in English, Greek and Hebrew.',
+      'Lampas opens as a plain English Bible; in Settings, Which languages? chooses English only, Greek, Hebrew or both.',
+      'Each language has a dial, How much Greek? or How much Hebrew?; English only hides both.',
+      'Old Testament in Greek (Septuagint), under How much Greek? from Curious up, starts off. The switch is English | Weave | Greek; Weave aligns Swete’s Greek and Brenton’s English by chunk, with a note where they are not aligned.',
+      'With it on, Memorize, Diagram, the Quick test, the Parsing drill and Review read a Septuagint chapter as Greek, and the frontier counts its words. The sentence Diagram works in English, Greek and Hebrew.',
     ],
   },
   {
@@ -70,9 +70,9 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Words',
     line: 'New words, Quick test, Parsing drill.',
     body: [
-      'In Tools, Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have yet; its sheet shows the word large with how it sounds, its meaning and an easy verse, and Got it adds it. A Hebrew word is shown right to left.',
+      'In Tools, Words lists the words you are learning. New words each day (from Learning on the dial) offers the commonest words of the chapter you do not have yet; its sheet shows the word with how it sounds, its meaning and an easy verse, and Got it adds it.',
       'Where both languages are chosen, Words and Review show a Greek | Hebrew switch. The Quick test asks words of both together; the Parsing drill reads the chapter of the language you are in.',
-      'A Septuagint word’s card says how Lampas read it (sure, likely, unsure). A dotted guess is never learned.',
+      'A Septuagint word’s card says how Lampas read it (sure, likely, unsure); a dotted guess is never learned. Septuagint chapters: see Greek and Hebrew.',
     ],
   },
   {
@@ -90,7 +90,7 @@ export const HELP_PAGES: HelpPage[] = [
     line: 'Tables of endings.',
     body: [
       'In Tools, Paradigms are tables of endings, opened as you learn the grammar. A table opened from a word’s sheet, or from See the table on a Review ending card, can show that word’s own forms: This word | The pattern. Every form the New Testament uses is laid in its cells, never a made-up one; a cell the text never uses says not in the NT, and a tap on a form opens the Reader there.',
-      'From a Septuagint word, This word also lays the Septuagint’s forms, each cell saying whether it was found in the Septuagint or the NT.',
+      'From a Septuagint word, This word also lays the Septuagint’s forms, each cell saying if found in the Septuagint, the NT or both.',
       'With Hebrew chosen, the list also has four Hebrew tables, drawn right to left.',
     ],
   },
@@ -99,7 +99,7 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Memorize',
     line: 'Learn a verse by heart.',
     body: [
-      'A Memorize button on a verse, a passage or a row of a verse list puts it on the schedule, in English or in the language of the verse your dials allow. Memorize, in Tools beside Verse lists, shows Due today with Start, and Your verses with the step each is on.',
+      'A Memorize button on a verse, a passage or a row of a verse list puts it on the schedule, in English or in the language of the verse your dials allow. Memorize, in Tools beside Verse lists, shows Due today with Start, and Your verses with the step each is on. With the Septuagint on (see Greek and Hebrew), an Old Testament verse is learned in Swete’s Greek.',
       'In a session, hold the bar to say the verse, or Type it. A verse list holds references you save; it has Play, Play all and Memorize this list. Today has a Memorize piece too (Settings > Daily > Memorize).',
     ],
   },
