@@ -21,6 +21,7 @@ describe('the steps of the Bible talk\'s fit', () => {
       'trimGreekWordsWhileHistory',
       'trimShelfDigest',
       'dropMaps',
+      'dropSermons',
       'dropVariants',
       'dropOlderHeldPassage',
       'dropRusty',

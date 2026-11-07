@@ -26,6 +26,7 @@ import { MAX_SUMMARY } from './feedback';
 import { greekSyllables, stressedSyllable } from '../speech/greekSyllables';
 import { DEFAULT_PRONUNCIATION, pronunciationOf, tutorGuideOf, type GreekPronunciation } from '../speech/pronunciation';
 import { mapsForTutor, type TutorMap } from '../maps/forTutor';
+import type { TutorSermons } from '../sermons/forTutor';
 import type { ReadingSet } from '../reader/readingSets';
 import { variantFactsHeld, type VariantFacts } from '../tutor/variantFacts';
 import type { MapCard } from '../maps/types';
@@ -277,6 +278,8 @@ export interface TalkRequest {
   works?: TutorWork[];
   /** the maps of the chapter of the passage the talk holds (mw-zbjgn3r.4, src/maps/forTutor.ts), at most 12, each {id, title, period, places}: `places` are the names the held verse or range speaks, empty for a chapter; the only maps a `map` link may name; missing when the chapter has none, with no passage held (a talk from a screen) and in About; fitHistory cuts it after the shelf digest */
   maps?: TutorMap[];
+  /** the sermons of the passage the talk holds (mw-qtu3zvz.6, src/sermons/forTutor.ts): `rows` at most 8, each {id, source, title, preacher?, ref, theme?} (the passage's own first, then those on the same theme, which name the topic), the only sermons a `sermon` link may name, and the verse's `themes` {topic, label}, at most 6; missing when the passage has none, with no passage held (a talk from a screen) and in About; fitHistory cuts it right after the maps */
+  sermons?: TutorSermons;
   /** the variants of the verses the talk holds (mw-9ji6ek0.7, src/tutor/variantFacts.ts), added by buildTalkRequest while Settings > Variants is on: each unit set in those verses with its readings in Greek and English and the witness spelled out, and the chapter's count; missing with Variants Off, in a talk from a screen and where the chapter has none; fitHistory cuts it after the maps */
   variants?: VariantFacts;
   /** present only when pictures go with the message (mw-y3qno5.1): how many, 1 to 4. They are the grist's attachments; the tutor reads the text in them */
@@ -439,7 +442,7 @@ const isWorkLink = (value: Record<string, unknown>): boolean =>
 const isAnswerLink = (value: unknown): value is AnswerLink =>
   isObject(value) &&
   (isWorkLink(value) ||
-    (Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)) || (value.kind === 'map' && isText(value.map, 80)) || (value.kind === 'paradigm' && isText(value.table, 40)))));
+    (Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)) || (value.kind === 'map' && isText(value.map, 80)) || (value.kind === 'sermon' && isText(value.sermon, 120)) || (value.kind === 'paradigm' && isText(value.table, 40)))));
 
 const isFormValue = (value: unknown): value is FormValue =>
   isObject(value) && Object.keys(value).length === 2 && isText(value.field, 30) && isText(value.value, 1200);
@@ -614,6 +617,7 @@ export function buildTalkRequest(
   today?: TodayItem[],
   maps: MapCard[] = [],
   readingSet?: ReadingSet,
+  sermons?: TutorSermons,
 ): TalkRequest {
   // the turns older than the window that the summary does not hold yet: the next few, oldest first, for the tutor to fold in (mw-5r3p30.700)
   const past = Math.max(0, turns.length - MAX_HISTORY_TURNS);
@@ -664,6 +668,7 @@ export function buildTalkRequest(
     ...(aboutCredits ? {} : { resources }),
     ...(works.length > 0 && !aboutCredits ? { works } : {}),
     ...(mapsHeld.length > 0 ? { maps: mapsHeld } : {}),
+    ...(sermons && sermons.rows.length > 0 && hold && !aboutCredits ? { sermons } : {}),
     ...(variantsHeld ? { variants: variantsHeld } : {}),
     ...(pictureCount > 0 ? { pictures: pictureCount } : {}),
     ...(pendingOffer ? { pending_offer: pendingOffer } : {}),

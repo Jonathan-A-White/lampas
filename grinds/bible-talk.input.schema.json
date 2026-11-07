@@ -258,6 +258,44 @@
         }
       }
     },
+    "sermons": {
+      "description": "Optional. The sermons preached on the passage the talk holds, the only ones a `sermon` link may name: `rows` (at most 8: those preached on the held verse, or on the chapter for a chapter, first, then those on the same theme) and `themes` (the topics that carry the held verse, at most 6). Each row is `id` and `source` (the value of a `sermon` link is `<source>:<id>`, exactly as given), `title`, `preacher` (missing when the index has none), `ref` (the passage it was preached on, such as Romans 5:8) and `theme`, only on a row that came in by a topic (it was preached on another passage that shares it). Each theme is `topic` (its id) and `label` (its name). Missing when the passage has no sermon in the index, when no passage is held (a talk from a screen) and in a talk from About.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rows", "themes"],
+      "properties": {
+        "rows": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "source", "title", "ref"],
+            "properties": {
+              "id": { "description": "The sermon's key within its source, the second part of a `sermon` link.", "type": "string" },
+              "source": { "description": "The index it is from (spurgeon-ccel, henry-sermons, or an archive of his), the first part of a `sermon` link.", "type": "string" },
+              "title": { "description": "The sermon's title.", "type": "string" },
+              "preacher": { "description": "Who preached it, when the index says.", "type": "string" },
+              "ref": { "description": "The passage the sermon was preached on.", "type": "string" },
+              "theme": { "description": "The topic the sermon came in by; present only on a row preached on another passage than the one held.", "type": "string" }
+            }
+          }
+        },
+        "themes": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["topic", "label"],
+            "properties": {
+              "topic": { "description": "The topic's key.", "type": "string" },
+              "label": { "description": "The topic's name, as the Themes line of the Sermons sheet says it.", "type": "string" }
+            }
+          }
+        }
+      }
+    },
     "variants": {
       "description": "Optional. Present while his Variants setting is on and the chapter has places where the manuscripts differ: `units` are the ones set in the verses the talk holds (in the order of the text) and `chapter_units` is how many the chapter has in all. Each unit is `verse`, `text` (the reading in the text he reads, `greek` and `english`), `other_readings` (each a different Greek once, with its `english` and `witness`, the manuscripts or editions that read it spelled out) `asked: true` on the one unit he opened the talk on from its sheet, and `he_is_reading` (`he is reading: <reading> (<set name>)`) on a unit where the reading set he reads in gives other than the text's own. `read_as` names that set, once; both are missing under Byzantine, the text's own. A reading that leaves the words out has `left out`. `units` is empty when the held verses have none. Missing with Variants Off, in a talk from a screen, in About, when the chapter has none, and when the request was too big (ask for the fact `variants`).",
       "type": "object",
