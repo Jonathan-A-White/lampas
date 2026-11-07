@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.155
+_2026-11-07_
+- Fixed: The Reader's Menu now shows both Tools and Settings in full, so you can reach Settings from the Reader.
+
 ## 0.7.153
 _2026-11-07_
 - Fixed: Matthew Henry's Worth of the Soul sermons now open at the page where each sermon begins instead of a sermon or more late.

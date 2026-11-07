@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.155",
+    "date": "2026-11-07",
+    "story": "mw-5r3p30.1143",
+    "kind": "fixed",
+    "text": "The Reader's Menu now shows both Tools and Settings in full, so you can reach Settings from the Reader."
+  },
+  {
     "version": "0.7.153",
     "date": "2026-11-07",
     "story": "mw-qtu3zvz.33",
