@@ -33,7 +33,7 @@ import {
 import { needsOf, needsText } from './data/paradigms/needs';
 import type { OwnText, OwnUse } from './data/paradigms/types';
 import { blocksOf, columnsThatFit, greekRemOf, tableDirection } from './data/paradigms/layout';
-import { absentText, foundIn, loadLemmaForms, ownTable, referenceText, septuagintFormOf, ownFormOf, type OwnForm } from './data/paradigms/ownForms';
+import { absentText, foundIn, foundShort, loadLemmaForms, ownTable, referenceText, septuagintFormOf, ownFormOf, type OwnForm } from './data/paradigms/ownForms';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
 import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf, screenRef } from './data/repositories';
@@ -240,10 +240,17 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
   const foundOf = (cell: ParadigmCell): string => (septuagintRead && cell.own ? `, ${foundText(cell.own)}` : '');
   const foundMark = (cell: ParadigmCell) =>
     septuagintRead && cell.own ? (
-      <span lang="en" data-found={cell.own.also ? 'both' : cell.own.source} className="font-sans text-xs leading-tight text-muted">
-        {foundText(cell.own)}
+      <span lang="en" data-found={cell.own.also ? 'both' : cell.own.source} title={foundText(cell.own)} className="font-sans text-xs leading-tight text-muted">
+        {foundCaption(cell.own)}
       </span>
     ) : null;
+  /** The caption and the not-yet lock side by side under the form, wrapping so neither leaves the cell (the form is never beside them: a table of four columns is 67 px a cell). */
+  const underForm = (cell: ParadigmCell) => (
+    <span className="flex flex-wrap items-center justify-center gap-x-1">
+      {foundMark(cell)}
+      <LockIcon small />
+    </span>
+  );
   const toggleAsked = (place: string) =>
     oneTap(`paradigms:${place}`, () => {
       setAsked(asked === place ? null : place);
@@ -379,11 +386,10 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                                     aria-expanded={asked === place}
                                     aria-label={`${place}: ${cell.form}${foundOf(cell)}, not yet. ${needsText(cell, levels)}`}
                                     onClick={() => toggleAsked(place)}
-                                    className={`${cellBox} ${tone} gap-1 rounded-lg active:bg-line ${ring}`}
+                                    className={`${cellBox} ${tone} gap-1 rounded-lg active:bg-line ${ring} ${septuagintRead ? 'flex-col' : ''}`}
                                   >
                                     <span {...lang}>{cell.form}</span>
-                                    {foundMark(cell)}
-                                    <LockIcon small />
+                                    {septuagintRead && cell.own ? underForm(cell) : <LockIcon small />}
                                   </button>
                                 </td>
                               );
@@ -451,11 +457,11 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                                 {...mark}
                                 {...(notYet ? {} : lang)}
                                 aria-label={`${place}: ${cell.form}${foundOf(cell)}${notYet ? ', not yet' : ''}${said}`}
-                                className={`${cellBox} ${tone} gap-1 rounded-lg ${graded} ${ring} ${septuagintRead && !notYet ? 'flex-col' : ''}`}
+                                className={`${cellBox} ${tone} gap-1 rounded-lg ${graded} ${ring} ${septuagintRead && cell.own ? 'flex-col' : ''}`}
                               >
                                 {notYet ? <span {...lang}>{cell.form}</span> : cell.form}
-                                {foundMark(cell)}
-                                {notYet ? <LockIcon small /> : null}
+                                {notYet && septuagintRead && cell.own ? underForm(cell) : foundMark(cell)}
+                                {notYet && !(septuagintRead && cell.own) ? <LockIcon small /> : null}
                               </div>
                             </td>
                           );
@@ -503,6 +509,8 @@ const usedText = (use: OwnUse): string => {
 
 /** What a cell says of where its form was found: 'in the Septuagint', 'in the NT', or both when both texts have it. */
 const foundText = (own: OwnUse & { also?: OwnUse }): string => (own.also ? 'in the Septuagint and NT' : foundIn(own.source));
+/** The caption under a form: short, so it fits a cell of a phone's table (mw-u2w5klk.313); the cell's name (aria-label) says it in full. */
+const foundCaption = (own: OwnUse & { also?: OwnUse }): string => foundShort(own.source, own.also !== undefined);
 
 /** Where the text uses the word's own form (This word): its parsing, how often, the place it is first used with a button that opens the Reader there, and the pattern's form it stands in for. */
 function OwnNote({ cell }: { cell: ParadigmCell }) {

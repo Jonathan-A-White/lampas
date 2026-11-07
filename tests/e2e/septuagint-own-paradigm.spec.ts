@@ -13,17 +13,18 @@ const NOUN_IDEAS = ['noun', 'declension-1', 'declension-2', 'case-nominative', '
 const ADJECTIVE_IDEAS = ['adjective', 'declension-2', 'case-nominative', 'gender-masculine', 'number-singular', 'declension-1', 'gender-feminine', 'gender-neuter', 'number-plural', 'case-genitive', 'case-dative', 'case-accusative', 'case-vocative', 'declension-3'];
 
 /** Puts his grammar levels in the app's own store through raw IndexedDB, as the app wrote them. */
-async function putLevels(page: Page, ids: string[]) {
+async function putLevels(page: Page, ids: string[], textSize?: number) {
   const rows = ids.map((id) => ({ id, level: 'solid', since: Date.now(), how: 'marked' }));
   await page.evaluate(
-    (list) =>
+    ({ list, size }) =>
       new Promise<void>((resolve, reject) => {
         const open = indexedDB.open('lampas');
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
           const idb = open.result;
-          const tx = idb.transaction('grammarLevels', 'readwrite');
+          const tx = idb.transaction(['grammarLevels', 'settings'], 'readwrite');
           for (const row of list) tx.objectStore('grammarLevels').put(row);
+          if (size) tx.objectStore('settings').put({ key: 'textSize', value: String(size) });
           tx.oncomplete = () => {
             idb.close();
             resolve();
@@ -31,7 +32,7 @@ async function putLevels(page: Page, ids: string[]) {
           tx.onerror = () => reject(tx.error);
         };
       }),
-    rows,
+    { list: rows, size: textSize },
   );
 }
 
@@ -62,11 +63,11 @@ test.beforeEach(async ({ page }) => {
 
 const forms = (page: Page) => page.getByRole('group', { name: 'Forms', exact: true });
 
-async function openTable(page: Page, verse = 2, word = 'ἀόρατος', ideas = ADJECTIVE_IDEAS, heading = 'Adjective endings') {
+async function openTable(page: Page, verse = 2, word = 'ἀόρατος', ideas = ADJECTIVE_IDEAS, heading = 'Adjective endings', textSize?: number) {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await putLevels(page, ideas);
+  await putLevels(page, ideas, textSize);
   await page.goto('/#/settings');
   const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
   await row.getByRole('button', { name: 'On', exact: true }).click();
@@ -89,11 +90,11 @@ test('Genesis 1:2 ἀόρατος: This word lays the Septuagint’s form and th
   const lit = page.locator('[data-lit]');
   await expect(lit).toHaveCount(1);
   await expect(lit).toContainText('ἀόρατος');
-  await expect(lit.locator('[data-found]')).toHaveText('in the Septuagint');
+  await expect(lit.locator('[data-found]')).toHaveText('LXX');
 
   // the New Testament's forms are there, found in the NT; no cell says 'not in the NT' for a form the Septuagint has, and an empty one names both texts
   const found = page.locator('[data-found]');
-  await expect(found).toHaveText(['in the Septuagint', 'in the NT', 'in the NT', 'in the NT', 'in the NT']);
+  await expect(found).toHaveText(['LXX', 'NT', 'NT', 'NT', 'NT']);
   const texts = await page.locator('[data-cell]').allInnerTexts();
   expect(texts.filter((t) => t === 'not in the NT')).toHaveLength(0);
   expect(texts.filter((t) => t === 'not in the Septuagint or NT').length).toBeGreaterThan(0);
@@ -134,10 +135,119 @@ test('Genesis 1:2 ὕδατος, a word whose Septuagint lemma has a comma (ὕ�
   const lit = page.locator('[data-lit]');
   await expect(lit).toHaveCount(1);
   await expect(lit).toContainText('ὕδατος');
-  await expect(lit.locator('[data-found]')).toHaveText('in the Septuagint and NT');
+  await expect(lit.locator('[data-found]')).toHaveText('LXX + NT');
   // the other forms the New Testament has of ὕδωρ are in the table, found in the NT
-  await expect(page.locator('[data-found]').filter({ hasText: /^in the NT$/ }).first()).toBeVisible();
+  await expect(page.locator('[data-found]').filter({ hasText: /^NT$/ }).first()).toBeVisible();
   const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
   expect(fits.w).toBeLessThanOrEqual(fits.c);
   await shot(page, 'septuagint-own-paradigm-comma-lemma');
 });
+
+/** What a table of This word read from the Septuagint must keep at a phone's width (mw-u2w5klk.313): it fits its box, no form touches its caption, no lock leaves its cell. */
+async function measureTables(page: Page) {
+  return page.evaluate(() => {
+    const overlap = (a: DOMRect, b: DOMRect) => a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+    const inside = (a: DOMRect, box: DOMRect) => a.left >= box.left - 0.5 && a.right <= box.right + 0.5 && a.top >= box.top - 0.5 && a.bottom <= box.bottom + 0.5;
+    const tables = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="paradigm-table"]')).map((table) => ({ scrollWidth: table.parentElement!.scrollWidth, clientWidth: table.parentElement!.clientWidth, tableWidth: table.getBoundingClientRect().width }));
+    const touching: string[] = [];
+    const clipped: string[] = [];
+    let captions = 0;
+    for (const cell of Array.from(document.querySelectorAll<HTMLElement>('[data-cell]'))) {
+      const box = cell.getBoundingClientRect();
+      const caption = cell.querySelector<HTMLElement>('[data-found]');
+      const lock = cell.querySelector<SVGElement>('svg');
+      const name = cell.dataset.cell ?? '';
+      // an empty cell's words ('not in the Septuagint or NT') stay inside it too
+      if (cell.scrollWidth > cell.clientWidth + 1) clipped.push(`${name}: cell content wider than the cell`);
+      // the form is the text of the cell outside its caption (a bare text node, or the span of a not-yet cell)
+      const formNode = Array.from(cell.childNodes).find((n) => (n.nodeType === Node.TEXT_NODE && n.textContent?.trim()) || (n instanceof HTMLElement && n.lang === 'grc' && n !== caption));
+      let form: DOMRect | undefined;
+      if (formNode) {
+        const range = document.createRange();
+        range.selectNodeContents(formNode);
+        form = range.getBoundingClientRect();
+      }
+      if (caption) {
+        captions += 1;
+        const cap = caption.getBoundingClientRect();
+        if (form && overlap(form, cap)) touching.push(`${name}: form over caption`);
+        if (!inside(cap, box)) clipped.push(`${name}: caption outside its cell`);
+      }
+      if (form && !inside(form, box)) clipped.push(`${name}: form outside its cell`);
+      if (lock) {
+        const l = lock.getBoundingClientRect();
+        if (!inside(l, box)) clipped.push(`${name}: lock outside its cell`);
+        if (form && overlap(form, l)) touching.push(`${name}: form over lock`);
+        if (caption && overlap(caption.getBoundingClientRect(), l)) touching.push(`${name}: caption over lock`);
+      }
+    }
+    return { tables, touching, clipped, captions, page: { w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth } };
+  });
+}
+
+// his phone showed it at Text size Large (130), under Any, the plural not yet his
+for (const [label, ideas, any, size] of [
+  ['every idea solid', [...NOUN_IDEAS, 'declension-3'], false, 100],
+  ['the plural still locked', [...NOUN_IDEAS.filter((id) => id !== 'number-plural'), 'declension-3'], false, 100],
+  ['the plural not yet his, under Any (a lock beside each form)', [...NOUN_IDEAS.filter((id) => id !== 'number-plural'), 'declension-3'], true, 100],
+  ['the plural not yet his, under Any, Text size Large (his phone)', [...NOUN_IDEAS.filter((id) => id !== 'number-plural'), 'declension-3'], true, 130],
+  ['the plural not yet his, under Any, Text size 115', [...NOUN_IDEAS.filter((id) => id !== 'number-plural'), 'declension-3'], true, 115],
+  ['the plural not yet his, under Any, Text size 120', [...NOUN_IDEAS.filter((id) => id !== 'number-plural'), 'declension-3'], true, 120],
+  ['every idea solid, Text size Largest', [...NOUN_IDEAS, 'declension-3'], false, 160],
+] as const) {
+  test(`Genesis 1:2 ὕδατος, ${label}: This word fits the phone, no form touches its caption, every lock is in its cell, the last line scrolls clear of the bar`, async ({ page }) => {
+    await openTable(page, 2, 'ὕδατος.', [...ideas], 'The third declension', size);
+    await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+    if (any) await page.getByRole('button', { name: 'Any', exact: true }).click();
+    await forms(page).getByRole('button', { name: 'This word' }).click();
+    await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('[data-lit] [data-found]')).toHaveCount(1);
+    if (any) await expect(page.locator('[data-state="shown"][data-standing="notYet"]').first()).toBeVisible();
+
+    const m = await measureTables(page);
+    expect(m.captions).toBeGreaterThan(0);
+    for (const t of m.tables) {
+      expect(t.scrollWidth, 'the table box scrolls sideways').toBeLessThanOrEqual(t.clientWidth);
+      expect(t.tableWidth).toBeLessThanOrEqual(t.clientWidth + 1);
+    }
+    expect(m.page.w).toBeLessThanOrEqual(m.page.c);
+    expect(m.touching).toEqual([]);
+    expect(m.clipped).toEqual([]);
+
+    // the caption still says where each form was found: the tapped one in both texts, the others in the NT (the cell's name says it in full)
+    const lit = page.locator('[data-lit]');
+    await expect(lit).toHaveAttribute('aria-label', /in the Septuagint and NT/);
+    await expect(lit.locator('[data-found]')).toHaveAttribute('data-found', 'both');
+
+    // the last line of the details (the New Testament's use) can be scrolled fully above the bottom bar
+    const last = page.getByTestId('own-also');
+    await expect(last).toBeVisible();
+    await last.evaluate((el) => el.closest('.screen')?.scrollTo({ top: 1e6 }));
+    const bottom = await page.getByTestId('own-note').evaluate((note) => {
+      const box = note.getBoundingClientRect();
+      const nav = document.querySelector('nav')?.getBoundingClientRect();
+      return { bottom: box.bottom, nav: nav?.top ?? window.innerHeight, h: window.innerHeight };
+    });
+    expect(bottom.bottom).toBeLessThanOrEqual(bottom.h);
+    expect(bottom.bottom).toBeLessThanOrEqual(bottom.nav);
+    await shot(page, `septuagint-own-paradigm-comma-lemma-fits-${size}-${any ? 'any' : label.includes('plural') ? 'locked' : 'solid'}`);
+  });
+}
+
+// the sweep: the adjective table (six columns, a form and an empty cell's words in each) at the sizes a phone is read at; the pattern table, the Hebrew tables and the New Testament's own table carry no per-cell caption
+for (const size of [100, 130, 160]) {
+  test(`Genesis 1:2 ἀόρατος, Text size ${size}: the Adjective endings table fits the phone, empty cells and captions inside their cells`, async ({ page }) => {
+    await openTable(page, 2, 'ἀόρατος', ADJECTIVE_IDEAS, 'Adjective endings', size);
+    await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+    await page.getByRole('button', { name: 'Any', exact: true }).click();
+    await forms(page).getByRole('button', { name: 'This word' }).click();
+    await expect(page.locator('[data-lit] [data-found]')).toHaveCount(1);
+    const m = await measureTables(page);
+    expect(m.captions).toBeGreaterThan(0);
+    for (const t of m.tables) expect(t.scrollWidth, 'the table box scrolls sideways').toBeLessThanOrEqual(t.clientWidth);
+    expect(m.page.w).toBeLessThanOrEqual(m.page.c);
+    expect(m.touching).toEqual([]);
+    expect(m.clipped).toEqual([]);
+    await shot(page, `septuagint-own-paradigm-adjective-${size}`);
+  });
+}
