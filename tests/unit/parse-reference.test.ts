@@ -111,6 +111,36 @@ describe('readPlace takes a start of a book', () => {
   });
 });
 
+// mw-fnvjof.17.8: a book part one slip from a name, when no name holds it, is the closest book if exactly one is
+describe('readPlace forgives a fat finger in the book', () => {
+  it.each([
+    ['mwt 5', 'mat', 5],
+    ['mwt 5:3', 'mat', 5],
+    ['jhon 3:16', 'jhn', 3],
+    ['rmoans 8', 'rom', 8],
+    ['gensis 1', 'gen', 1],
+  ])('reads %s', (text, book, chapter) => {
+    expect(place(text)).toMatchObject({ book, chapter });
+  });
+
+  it('opens a verse of the book it guessed', () => {
+    expect(place('jhon 3:16')).toMatchObject({ book: 'jhn', chapter: 3, verse: 16 });
+  });
+
+  it('says how many chapters the guessed book has', () => {
+    expect(readPlace('mwt 99')).toEqual({ kind: 'bad', message: 'Matthew has 28 chapters' });
+  });
+
+  it('reads nothing when two books are equally close, and the list shows both', () => {
+    expect(readPlace('ape 3').kind).toBe('none');
+    expect(matchingInOrder(BOOKS.map((b) => ({ id: b.code, name: b.name })), bookPart('ape 3')).map((i) => i.name)).toEqual(['1 Peter', '2 Peter']);
+  });
+
+  it('reads nothing for a name no book is near, a name alone, or a start a book holds', () => {
+    for (const text of ['zzzz 3', 'mwt', 'hello 5', 'Hezekiah 3:1', 'Ph 1', 'Phi 1']) expect(readPlace(text).kind, text).toBe('none');
+  });
+});
+
 describe('the looser book match reaches only what he types', () => {
   it('leaves parseCanonReference, which reads free text, to the names in the table', () => {
     for (const text of ['Ep 4:15', 'Ephe 4:15', 'Jo 3:16', 'Gene 1:1']) expect(parseCanonReference(text), text).toBeNull();

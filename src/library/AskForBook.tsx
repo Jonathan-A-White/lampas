@@ -22,7 +22,7 @@ import { focusOnMount } from '../ui/focus';
 import { isTooLong } from '../ui/lengthLimit';
 import { LengthNote } from '../ui/LengthNote';
 import { LimitedInput } from '../ui/LimitedField';
-import { matching } from '../ui/listFilter';
+import { matching, matchingExactly } from '../ui/listFilter';
 import { useOnline } from '../ui/online';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose } from '../ui/sheetDrag';
@@ -102,7 +102,7 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
     if (field === 'title') {
       setTitle(value);
       setRefusal(null);
-      const found = matching(items, value);
+      const found = matchingExactly(items, value);
       setPicked(rows && found.length === 1 ? (byId.get(found[0].id) ?? null) : null);
     } else if (field === 'kind') setWanted(KINDS.find((k) => infoOf(k).singular === value) ?? '');
     else if (field === 'why') setWhy(value);
