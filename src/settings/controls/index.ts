@@ -12,7 +12,7 @@ import { HandwritingControl } from './handwriting';
 import { LanguagesControl } from './languages';
 import { LinkControl } from './links';
 import { MapsControl } from './maps';
-import { SermonsControl } from './sermons';
+import { OpenWebControl, SermonsControl } from './sermons';
 import { ThemesControl } from './themes';
 import { NewWordsControl } from './newWords';
 import { OfflineCopyControl } from './offlineCopy';
@@ -37,6 +37,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   textSize: AppearanceControl,
   layout: LayoutControl,
   readingMode: ReadingModeControl,
+  sermonsOpenWeb: OpenWebControl,
   chapterButtons: ChapterButtonsControl,
   copyReference: CopyFormatControl,
   copyNumbers: CopyFormatControl,

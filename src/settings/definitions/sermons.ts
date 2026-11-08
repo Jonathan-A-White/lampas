@@ -25,3 +25,22 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
     ...(source.needs === 'logos' ? { help: 'This source is used, and its row shown, only while Logos is On in Study resources.' } : {}),
     ...(source.needs === 'logos' ? { dependsOn: { key: 'resource.logos', shown: (value: string) => value === 'on' } } : {}),
   });
+
+export type OpenWebIn = 'browser' | 'firefox';
+
+/** Where a web sermon opens (mw-qtu3zvz.16, src/sermons/openWeb.ts). Its key has no dot: 'sermons.<id>' is a source's On/Off switch. Not in the registry or DEFINITIONS (the tutor's Settings request is full): a row of its own, rows.ts OPEN_WEB_ROW, as Hand is. */
+export const openWebSetting = defineSetting<OpenWebIn>({
+  key: 'sermonsOpenWeb',
+  default: 'browser',
+  allowed: {
+    kind: 'choice',
+    values: [
+      { value: 'browser', label: 'This browser' },
+      { value: 'firefox', label: 'Firefox' },
+    ],
+  },
+  section: 'sermons',
+  label: 'Open web sermons in',
+  hint: 'Where a web sermon opens. Firefox works on Android only.',
+  help: 'A web sermon opens in **This browser**, the default, or in **Firefox**. Firefox is for Android, where its read-aloud works over a Bluetooth speaker or earbuds when Chrome\'s plays on the phone. On a phone with no Firefox, or off Android, the sermon opens in this browser as before. A sermon in your Logos library always opens in Logos.',
+});
