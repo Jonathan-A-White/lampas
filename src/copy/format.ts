@@ -214,3 +214,35 @@ export function sharePieces(unit: CopyUnit, format: CopyFormat): SharePiece[] {
     { id: 'reference', label: 'Just the reference', shown: reference, data: { text: reference }, hand: reference },
   ];
 }
+
+/** What a range of the tutor's copy or share link gives (mw-5r3p30.1075): `text` for the clipboard, `share` for the phone's share sheet, `name` the reference ('Hebrews 9:11-10:4'). */
+export interface RangeCopy {
+  text: string;
+  share: ShareData;
+  name: string;
+}
+
+/** The text of `units`, one for each chapter a range touches, in order. In one chapter it is exactly what a hold gives (copyText, sharePieces' whole). Across chapters the verses run on in one paragraph, each led by its number when
+ * Verse numbers is on and the first verse of each chapter after the first led by its chapter too ('28 … 10:1 …'); the reference is 'Hebrews 9:11-10:4' (two whole chapters 'Hebrews 9-10') and the link is the
+ * first verse's, as a link to a range across chapters would open nowhere. A range of the Septuagint across chapters names the edition without the Greek address. */
+export function copyRange(units: readonly CopyUnit[], format: CopyFormat): RangeCopy {
+  if (units.length === 1) return { text: copyText(units[0], format), share: sharePieces(units[0], format)[0].data, name: copyReference(units[0]) };
+  const first = units[0];
+  const last = units[units.length - 1];
+  const firstVerse = first.verses[0]?.n ?? 1;
+  const lastVerse = last.verses[last.verses.length - 1]?.n ?? 1;
+  const whole = first.kind === 'chapter' && last.kind === 'chapter';
+  const name = whole ? `${first.book} ${first.chapter}-${last.chapter}` : `${first.book} ${first.chapter}:${firstVerse}-${last.chapter}:${lastVerse}`;
+  const reference = `${name} (${units.some((u) => u.septuagint) ? SEPTUAGINT_EDITION : TRANSLATION})`;
+  const numbered = format.numbers === 'on';
+  const words = units
+    .flatMap((unit, i) => unit.verses.map((v, j) => ({ text: v.shown ?? v.english, label: i > 0 && j === 0 ? `${unit.chapter}:${v.n}` : `${v.n}` })))
+    .map((v) => (numbered ? `${v.label} ${v.text}` : v.text))
+    .join(' ')
+    .trim();
+  const link = referenceUrl(first.code, first.chapter, firstVerse);
+  const linked = format.link === 'on';
+  const lines = [...(format.reference === 'before' ? [reference] : []), words, ...(format.reference === 'after' ? [`— ${reference}`] : []), ...(linked ? [link] : [])];
+  const shareText = [...(format.reference === 'before' ? [reference] : []), words, ...(format.reference === 'after' ? [`— ${reference}`] : [])].join('\n');
+  return { text: lines.join('\n'), share: { title: name, text: shareText, ...(linked ? { url: link } : {}) }, name };
+}

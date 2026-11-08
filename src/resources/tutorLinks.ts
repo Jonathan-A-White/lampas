@@ -9,6 +9,7 @@ import { BOOK_INDEX } from '../data/bookIndex';
 import { titleOf, otBookOf, isHeld } from '../data/books';
 import type { StudyResources } from '../data/repositories';
 import { isHebrewText } from '../data/lemma';
+import { parseCopyRange, type CopyRange } from '../copy/rangeText';
 import { parseCanonReference } from '../nav/links';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import { optionOf, resourceOf, RESOURCES, type StudyPlace, type StudyResource, type StudyWord } from './index';
@@ -58,6 +59,13 @@ export function placeOf(reference: string): TutorPlace | null {
     title = `${info.name} ${chapter}`;
   }
   return { book, chapter, ...(verse === undefined ? {} : { verse }), name: verse === undefined ? title : `${title}:${verse}`, reader: isHeld(book) };
+}
+
+/** The chip of a copy or share link (mw-5r3p30.1075): 'Copy Hebrews 9:11-10:4' or 'Share Hebrews 9:11-10:4', with the range it puts on the clipboard or hands the share sheet; the reference is read as the tutor wrote it
+ *  ('Heb.9.11-10.4' or 'Hebrews 9:11-10:4'). Null, drawing nothing, for a reference Lampas has no text for (the Apocrypha, a chapter the book lacks) or cannot read. */
+export function copyChip(kind: 'copy' | 'share', reference: string): { label: string; range: CopyRange } | null {
+  const range = parseCopyRange(reference);
+  return range ? { label: `${kind === 'copy' ? 'Copy' : 'Share'} ${range.name}`, range } : null;
 }
 
 /** The resources he switched on that the dial shows (resourcesForLevel: Greek ones are hidden at Just English and follow the English ones between), in that order. A hidden one keeps its switch. */

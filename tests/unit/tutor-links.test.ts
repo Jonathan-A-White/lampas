@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
 import { verseLink } from '../../src/resources/logosBible';
-import { hebrewLinkLemma, mapChip, placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
+import { copyChip, hebrewLinkLemma, mapChip, placeOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
 import type { MapCard } from '../../src/maps/types';
 import { TEST_CARDS } from '../support/test-maps';
 import type { StudyResources } from '../../src/data/repositories';
@@ -234,5 +234,52 @@ describe('a sermon link (mw-qtu3zvz.6)', () => {
 
   it("the schema says the id is a row of the request's sermons and never one not listed", () => {
     expect(JSON.stringify(schema.properties?.links)).toMatch(/row of the request's `sermons.rows`, exactly as given; never one not listed/);
+  });
+});
+
+describe('a copy or share link (mw-5r3p30.1075)', () => {
+  const copy = { kind: 'copy', reference: 'Heb.9.11-10.4' };
+  const share = { kind: 'share', reference: 'Hebrews 9:11-10:4' };
+
+  it('is optional like the others: the schema and the guard take {kind: copy|share, reference} within the three', () => {
+    for (const link of [copy, share]) {
+      const value = { ...base, links: [link, verse, word] };
+      expect(validate(value, schema), JSON.stringify(value)).toEqual([]);
+      expect(isTalkAnswer(value)).toBe(true);
+    }
+    expect(validate({ ...base, links: [copy, share, copy, copy] }, schema)).not.toEqual([]);
+  });
+
+  it.each([
+    ['no reference', { kind: 'copy' }],
+    ['an empty reference', { kind: 'share', reference: '' }],
+    ['text beside the reference', { kind: 'copy', reference: 'Heb.9.11', text: 'the verse' }],
+    ['a lemma in place of the reference', { kind: 'share', lemma: 'ἀγάπη' }],
+  ])('refuses %s in both', (_, link) => {
+    expect(validate({ ...base, links: [link] }, schema)).not.toEqual([]);
+    expect(isTalkAnswer({ ...base, links: [link] })).toBe(false);
+  });
+
+  it('is told in the instructions: the link, never the text, and the chip is how a phone copies', () => {
+    expect(instructions).toContain('## Copy and share a passage');
+    expect(instructions).toContain('`kind` `copy`');
+    expect(instructions).toContain('`kind` `share`');
+    expect(instructions).toMatch(/Tap Copy for Hebrews 9:11-10:4\./);
+    expect(instructions).toMatch(/never the text itself/i);
+  });
+});
+
+describe('copyChip', () => {
+  it('names the chip for the range, in Lampas’s way of writing it, whatever way the tutor wrote it', () => {
+    expect(copyChip('copy', 'Heb.9.11-10.4')).toEqual({ label: 'Copy Hebrews 9:11-10:4', range: expect.objectContaining({ book: 'heb', toChapter: 10 }) });
+    expect(copyChip('share', 'Hebrews 9:11-10:4')?.label).toBe('Share Hebrews 9:11-10:4');
+    expect(copyChip('copy', 'Romans 8:28')?.label).toBe('Copy Romans 8:28');
+    expect(copyChip('copy', 'Isaiah 53')?.label).toBe('Copy Isaiah 53');
+  });
+
+  it('draws nothing for the Apocrypha, a chapter the book lacks, or what is no reference', () => {
+    expect(copyChip('copy', 'Wisdom of Solomon 3:1')).toBeNull();
+    expect(copyChip('copy', 'Hebrews 40:1-2')).toBeNull();
+    expect(copyChip('share', 'every verse about faith')).toBeNull();
   });
 });
