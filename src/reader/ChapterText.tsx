@@ -17,7 +17,7 @@ import type { ChosenUnit } from './chosenReading';
 import type { ShownUnit } from './variants';
 
 /** The number of a verse of a Septuagint chapter (`septuagint` is the Greek chapter's number): Lampas's verse, and the Greek chapter and verse in small beside it where they differ ('1 (22:1)'). */
-function ShownNumber({ verse, septuagint }: { verse: Verse; septuagint?: number }) {
+export function ShownNumber({ verse, septuagint }: { verse: Verse; septuagint?: number }) {
   if (septuagint === undefined) return <>{verse.n}</>;
   const { shown, greek } = septuagintNumber(verse, septuagint);
   return (

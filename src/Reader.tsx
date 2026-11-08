@@ -21,7 +21,14 @@ import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
 import { Dock } from './reader/split/Dock';
 import { useSplit } from './reader/split/useSplit';
-import { takeVerseBeside, useSplitOpen } from './reader/split/splitSettings';
+import { keepSplitLink, openSplitWithText, takeVerseBeside, useSplitLink, useSplitOpen, useSplitText } from './reader/split/splitSettings';
+import { TextDock } from './reader/split/TextDock';
+import { SplitChooser } from './reader/split/SplitChooser';
+import { useDockedText } from './reader/split/useDockedText';
+import { OWN_NUMBERS, topVerse, useLinkedScroll, type PassageNumbers } from './reader/split/useLinkedScroll';
+import { noTextFor, splitTextNamed } from './reader/split/splitTexts';
+import { passageNumbers } from './reader/split/splitPairing';
+import { openMaps } from './maps/openMaps';
 import { MapDockBody } from './maps/MapDock';
 import { dockedTitle, MAP_CREDIT_ROW, useDockedMap } from './maps/useDockedMap';
 import { useAiAllowed } from './gate/licenceContext';
@@ -97,7 +104,7 @@ import { TipCard } from './tips/TipCard';
 import { SeptuagintDoor } from './reader/SeptuagintDoor';
 import { SeptuagintNote } from './reader/SeptuagintNote';
 import { SeptuagintSources } from './reader/SeptuagintSources';
-import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
+import { isSeptuagint, lampasNumber, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
 import { useNotReadyName } from './reader/useNotReadyName';
 import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
@@ -203,9 +210,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [opened] = useState(() => readerOf(window.location.hash));
   const scrollRef = useScrollMemory('reader');
   const main = useRef<HTMLElement | null>(null);
+  // the passage's box as state too, for the Link of the split (src/reader/split/useLinkedScroll.ts)
+  const [mainEl, setMainEl] = useState<HTMLElement | null>(null);
   const mainRef = useCallback(
     (el: HTMLElement | null) => {
       main.current = el;
+      setMainEl(el);
       scrollRef(el);
     },
     [scrollRef],
@@ -251,9 +261,16 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Genesis 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
   // The split (src/reader/split/): a dock below the passage, side by side sideways and wide, whose handle row is the divider. The box is the passage and the dock in one column; shut, it is no box at all.
-  const docked = useDockedMap(useSplitOpen(), { book: BOOK, chapter: CHAPTER });
+  // The dock holds a text beside the passage (mw-5r3p30.1130) or, while it holds none, a map (mw-5r3p30.1129.2).
+  const splitOn = useSplitOpen();
+  const dockText = useSplitText();
+  const docked = useDockedMap(splitOn && dockText === null, { book: BOOK, chapter: CHAPTER });
+  const textDocked = useDockedText(splitOn ? dockText : null, BOOK, CHAPTER);
   const split = useSplit({ body: docked ? MAP_CREDIT_ROW : undefined });
   const { setBox: boxRef, setFoot: footRef } = split;
+  const [dockBody, setDockBody] = useState<HTMLElement | null>(null);
+  const [choosing, setChoosing] = useState(false);
+  const linkOn = useSplitLink();
   const inner = useRef<HTMLDivElement | null>(null);
   const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);
   const dismissSwipeNote = useCallback(() => setSwipeEnd(null), []);
@@ -537,6 +554,42 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const rect = el.getBoundingClientRect();
     if (rect.top < bar.top || rect.bottom > bar.bottom) moveBox(box, box.scrollTop + rect.top - bar.top - GAP);
   }, [dockOpen, paging, showPage]);
+  // The Link of a text beside the passage (src/reader/split/useLinkedScroll.ts): the passage and the dock kept on the same verse as either scrolls, by Lampas's verse number (a Septuagint passage's verses are numbered
+  // as Lampas numbers them through their `ref`). Turn pages keeps its own page, so the Link waits for Scroll.
+  const numbers = useMemo<PassageNumbers>(() => {
+    if (!chapter || !septuagint) return OWN_NUMBERS;
+    return {
+      toLampas: (n) => {
+        const verse = chapter.verses.find((v) => v.n === n);
+        return verse && verse.ref !== 'none' ? lampasNumber(chapter, verse) : null;
+      },
+      fromLampas: (l) => chapter.verses.find((v) => v.ref !== 'none' && lampasNumber(chapter, v) === l)?.n ?? null,
+    };
+  }, [chapter, septuagint]);
+  const passageVerses = useMemo(() => (chapter ? passageNumbers(chapter) : []), [chapter]);
+  const textReady = textDocked?.status === 'ready' && chapter !== null;
+  useLinkedScroll({ passageBox: mainEl, dockBox: dockBody, numbers, linked: linkOn && dockText !== null && !paging, ready: textReady, place: `${dockText}:${BOOK}/${CHAPTER}` });
+  // A text swapped for another while the Link is off keeps the verse the dock was on (linked, the passage's verse is the dock's)
+  const resumeAt = useRef<number | null>(null);
+  useEffect(() => {
+    const at = resumeAt.current;
+    if (!textReady || at === null || !dockBody) return;
+    resumeAt.current = null;
+    if (linkOn) return;
+    const row = dockBody.querySelector<HTMLElement>(`[data-dock-verse="${at}"]`);
+    if (row) moveBox(dockBody, dockBody.scrollTop + row.getBoundingClientRect().top - dockBody.getBoundingClientRect().top);
+  }, [textReady, dockText, dockBody, linkOn]);
+  const swapText = (key: Parameters<typeof openSplitWithText>[0]) => {
+    setChoosing(false);
+    if (key === dockText) return;
+    resumeAt.current = dockBody ? topVerse(dockBody, '[data-dock-verse]', (el) => (el.dataset.dockVerse ? Number(el.dataset.dockVerse) : null)) : null;
+    void openSplitWithText(key);
+  };
+  const bookName = bookOf(BOOK)?.name ?? BOOK;
+  // the dock's name: the text's, or what the chapter lacks of it ('No Septuagint for Romans'), which is also true before the text has been asked for
+  const textNamed = dockText === null ? undefined : splitTextNamed(BOOK, dockText);
+  const textLacking = dockText !== null && (textNamed === undefined || textDocked?.status === 'none');
+  const dockTitle = dockText === null ? (docked ? dockedTitle(docked) : 'Split') : textLacking ? noTextFor(dockText, bookName) : (textNamed?.label ?? 'Split');
 
   return (
     <VariantKeyContext.Provider value={openKey}>
@@ -685,8 +738,41 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       </main>
       {split.open ? (
-        <Dock split={split} footRef={footRef} title={docked ? dockedTitle(docked) : 'Split'} quiet={docked?.card === null} inert={sheetOpen || viewUnit !== undefined}>
-          {docked ? <MapDockBody docked={docked} /> : <p className="px-4 py-3 text-muted">The dock&rsquo;s body: a map or a second text goes here.</p>}
+        <Dock
+          split={split}
+          footRef={footRef}
+          bodyRef={setDockBody}
+          title={dockTitle}
+          onTitle={dockText !== null ? () => setChoosing(true) : undefined}
+          link={dockText !== null && textReady ? { on: linkOn, toggle: () => void keepSplitLink(!linkOn) } : undefined}
+          quiet={dockText !== null ? textLacking : docked?.card === null}
+          inert={sheetOpen || viewUnit !== undefined}
+        >
+          {dockText !== null ? (
+            textDocked?.status === 'ready' && chapter && !textLacking ? (
+              <TextDock
+                text={dockText}
+                book={BOOK}
+                lampasChapter={CHAPTER}
+                chapter={textDocked.chapter}
+                passage={passageVerses}
+                onLook={(lookup, at) => setLinked({ chapter: at, lookup })}
+                onNumber={(n) => showVerse(numbers.fromLampas(n) ?? n)}
+              />
+            ) : textDocked?.status === 'failed' ? (
+              <p role="status" className="px-4 py-3 text-base text-muted">
+                That text could not be loaded.
+              </p>
+            ) : textDocked?.status === 'loading' && !textLacking ? (
+              <p role="status" className="px-4 py-3 text-base text-muted">
+                Loading…
+              </p>
+            ) : null
+          ) : docked ? (
+            <MapDockBody docked={docked} />
+          ) : (
+            <p className="px-4 py-3 text-muted">The dock&rsquo;s body: a map or a second text goes here.</p>
+          )}
         </Dock>
       ) : null}
       </div>
@@ -792,6 +878,20 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       ) : null}
       {keyOpen ? <VariantKeySheet onClose={() => setKeyOpen(false)} /> : null}
       {picking ? <ChapterPicker current={open} onClose={closePicker} /> : null}
+      {choosing ? (
+        <SplitChooser
+          book={BOOK}
+          chapter={CHAPTER}
+          title={TITLE}
+          current={dockText}
+          onClose={() => setChoosing(false)}
+          onChoose={swapText}
+          onMap={() => {
+            setChoosing(false);
+            openMaps({ book: BOOK, chapter: CHAPTER });
+          }}
+        />
+      ) : null}
       {linked ? <WordSheet chapter={linked.chapter} lookup={linked.lookup} onClose={() => setLinked(null)} /> : null}
       {chapter && lookup ? (
         <WordSheet chapter={chapter} lookup={lookup} onClose={closeSheet} onHelp={tutor.helpWithWord} onAskEnglish={tutor.askAboutEnglishWord} onAskTerm={tutor.askAboutTerm} />

@@ -16,6 +16,9 @@ const subscribe = (notify: () => void): (() => void) => {
 };
 const useSideBySide = (): boolean => useSyncExternalStore(subscribe, () => query()?.matches ?? false, () => false);
 
+/** How far a finger on the handle row moves before it is a drag, in px. */
+const DRAG_SLOP = 4;
+
 export interface SplitHandle {
   onPointerDown(e: React.PointerEvent<HTMLElement>): void;
   onPointerMove(e: React.PointerEvent<HTMLElement>): void;
@@ -109,12 +112,19 @@ export function useSplit({ body }: { body?: number } = {}): Split {
   };
   const handle: SplitHandle = {
     onPointerDown: (e) => {
-      if (resting === null || (e.target as HTMLElement).closest('button') || (e.pointerType === 'mouse' && e.button !== 0)) return;
-      e.currentTarget.setPointerCapture?.(e.pointerId);
+      // a button of the row answers a tap; the name of a text (data-drag-through) is also a place to start a drag
+      if (resting === null || (e.target as HTMLElement).closest('button:not([data-drag-through])') || (e.pointerType === 'mouse' && e.button !== 0)) return;
       setGrip({ at: along(e), size: resting });
     },
     onPointerMove: (e) => {
-      if (grip) setLive(grip.size + grip.at - along(e));
+      if (!grip) return;
+      const to = grip.size + grip.at - along(e);
+      // a finger that stays within DRAG_SLOP is a tap, and the name under it keeps its click: the pointer is captured, and the dock moves, only once it has gone further
+      if (live === null) {
+        if (Math.abs(to - grip.size) < DRAG_SLOP) return;
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+      }
+      setLive(to);
     },
     onPointerUp: finish,
     onPointerCancel: finish,

@@ -28,6 +28,11 @@ import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
 import { InLogosDoors } from './library/InLogosDoors';
 import { MapsDoor } from './maps/MapsDoor';
+import { openMaps } from './maps/openMaps';
+import { SplitChooser } from './reader/split/SplitChooser';
+import { keepVerseBeside, openSplitWithText } from './reader/split/splitSettings';
+import { closeVerse } from './nav/route';
+import { afterSheetEntryGone } from './ui/sheetBack';
 import { sermonPlaceOf } from './sermons/place';
 import { SermonsDoor } from './sermons/SermonsDoor';
 import { ReadCheckPanel, type ReadHold } from './ReadCheck';
@@ -150,6 +155,8 @@ export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
+  // Split: the sheet of the texts the chapter can be read beside (src/reader/split/SplitChooser.tsx, mw-5r3p30.1130); it is drawn outside the Tools line, whose one-tap guard would otherwise see its rows
+  const [splitting, setSplitting] = useState(false);
   // The foot of the view, where the chosen action draws its bar.
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
   // A diagram is of one verse: a passage or a range has no Diagram, and a phone left on it by a verse opens the passage on Listen (the kept action is not changed)
@@ -253,6 +260,9 @@ export function VerseView(props: VerseViewProps) {
         <InLogosDoors place={{ book, chapter, verse: lampas.n }} name={`${title}:${verse.n}`} quiet />
         <MapsDoor mapRef={{ book, chapter, from: lampas.n, ...(lampas.to === undefined ? {} : { to: lampas.to }) }} quiet />
         <SermonsDoor place={sermonPlace} quiet />
+        <button type="button" aria-haspopup="dialog" data-split-door onClick={() => setSplitting(true)} className="inline-flex min-h-11 items-center justify-center rounded-lg px-2.5 text-sm font-medium text-accent active:bg-line">
+          Split
+        </button>
         {/* More to the right: the row's end fades into the page while a door is past it, and this sits over empty room once the row is scrolled to its end or holds every door */}
         <span aria-hidden data-verse-tools-more className="pointer-events-none sticky right-0 w-6 self-stretch bg-linear-to-l from-canvas to-transparent" />
         </div>
@@ -402,6 +412,25 @@ export function VerseView(props: VerseViewProps) {
                 }
               : undefined
           }
+        />
+      ) : null}
+      {splitting ? (
+        <SplitChooser
+          book={book}
+          chapter={chapter}
+          title={title}
+          onClose={() => setSplitting(false)}
+          onMap={() => {
+            setSplitting(false);
+            openMaps({ book, chapter, from: lampas.n, ...(lampas.to === undefined ? {} : { to: lampas.to }) });
+          }}
+          onChoose={(key) => {
+            // the text goes to the dock beside the passage at this verse; the sheet and then the Verse view close (both are Back steps: the sheet takes its own off, the Verse view's is popped once it has gone)
+            keepVerseBeside(verse.n);
+            void openSplitWithText(key);
+            setSplitting(false);
+            afterSheetEntryGone(closeVerse);
+          }}
         />
       ) : null}
       <BarSlot level={2} />
