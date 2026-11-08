@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.171",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1123",
+    "kind": "new",
+    "text": "The round tutor button now shows over the listening-plan sheets, Write it and the share sheet, and the tutor it opens already knows what the sheet is about."
+  },
+  {
     "version": "0.7.170",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1128",
