@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.166",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1144",
+    "kind": "fixed",
+    "text": "Help no longer has its own Ask the tutor button; the round ? opens the tutor there."
+  },
+  {
+    "version": "0.7.166",
+    "date": "2026-11-08",
+    "story": "mw-qtu3zvz.16",
+    "kind": "new",
+    "text": "Sermons can now open in Firefox on Android, chosen in Settings, so Firefox's read-aloud plays over your Bluetooth."
+  },
+  {
     "version": "0.7.165",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1121",

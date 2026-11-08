@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.166
+_2026-11-08_
+- Fixed: Help no longer has its own Ask the tutor button; the round ? opens the tutor there.
+- New: Sermons can now open in Firefox on Android, chosen in Settings, so Firefox's read-aloud plays over your Bluetooth.
+
 ## 0.7.165
 _2026-11-08_
 - New: The word sheet of an English word now has the round tutor button, and the tutor you reach from it is already asking about that word, its verse, the word it is paired with and what the lexicons found.
