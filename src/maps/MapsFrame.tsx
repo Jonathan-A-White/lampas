@@ -7,7 +7,8 @@ import { useSheetTalk, type SheetTalk } from '../tutor/sheetTalk';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 
-export function MapsFrame({ label, onClose, children, heading, talk, escape = true }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode; talk: SheetTalk; escape?: boolean }) {
+/** `action`: a button that stands beside Close in the handle row (the map's Split). */
+export function MapsFrame({ label, onClose, children, heading, talk, escape = true, action }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode; talk: SheetTalk; escape?: boolean; action?: ReactNode }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, escape);
   useSheetBack(onClose);
@@ -26,9 +27,12 @@ export function MapsFrame({ label, onClose, children, heading, talk, escape = tr
       >
         <div data-testid="maps-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2">
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
-          <button type="button" onClick={onClose} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
-            Close
-          </button>
+          <div className="absolute right-2 top-1 flex items-center">
+            {action}
+            <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
+              Close
+            </button>
+          </div>
         </div>
         <div className="shrink-0 px-4 pb-2">{heading}</div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(0.5rem+var(--lp-bar-inset))]">{children}</div>

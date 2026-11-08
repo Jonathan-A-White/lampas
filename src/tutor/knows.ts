@@ -11,12 +11,13 @@ import { SETTINGS } from '../settings/registry';
 
 /**
  * The settings of the settings store that are kept out of the registry (like Hand, src/settings/hand.ts), each with the written reason the tutor is not told of it: the registry is what the tutor
- * reads and changes, and its Settings request and the bible-talk instructions are full. Both of the Reader split's are here (mw-5r3p30.1129.1): whether the dock is open and the share of the box it
- * takes. When the dock holds a map or a text (mw-5r3p30.1129.2, .1130) the Bible talk is told what is beside the passage as a part of progress, the way `maps` is, and this reason is superseded.
+ * reads and changes, and its Settings request and the bible-talk instructions are full. All three of the Reader split's are here (mw-5r3p30.1129.1, .2): whether the dock is open, the share of the box it
+ * takes and the map it holds. When the second text is docked (mw-5r3p30.1130) the Bible talk is told what is beside the passage as a part of progress, the way `maps` is, and these reasons are superseded.
  * tests/unit/tutor-knows.test.ts holds that every key here is declared once, is in no registry, and has its reason.
  */
 export const NOT_IN_THE_REGISTRY: Readonly<Record<string, string>> = {
-  readerSplit: 'Whether a dock stands below the passage holds nothing yet but a stub; the tutor is told what is beside the passage when it holds a map or a text, and it cannot open or close the split for him.',
+  readerSplit: 'Whether a dock stands below the passage is a layout he chooses in place (Split on a map, Close on the dock); the tutor cannot open or close the split for him, and it is not yet told what the dock holds (mw-5r3p30.1130 brings the second text and tells it then).',
+  splitMap: 'Which map the dock holds is what he opened with Split on that map, kept so a reload brings it back; the tutor cannot dock or change a map for him, and is not yet told which map stands beside the passage (mw-5r3p30.1130 tells it with the second text).',
   splitSize: 'How tall he dragged the dock is a layout he sets with his thumb, in place; it changes nothing the tutor says, and the tutor cannot move the divider for him.',
 };
 
