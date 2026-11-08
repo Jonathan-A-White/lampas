@@ -26,8 +26,9 @@ const SOURCE_NAME: Record<SourceLanguage, string> = { grc: 'Greek', hbo: 'Hebrew
  * English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
  * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). On an Old
  * Testament chapter the last choice, the chapter's source view, reads Hebrew and the order's name is the Hebrew word order (mw-5vvlay.1). A long press on that last button flips
- * the Septuagint setting (`onFlip`, src/reader/flipSeptuagint.ts) and says in a toast which text is on now, or why nothing changed (mw-u2w5klk.293). */
-function ViewSwitch({ view, weave, weaveShown, weaveOrder, source, onFlip }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder; source: SourceLanguage; onFlip?: () => Promise<string> }) {
+ * the Septuagint setting (`onFlip`, src/reader/flipSeptuagint.ts) and says in a toast which text is on now, or why nothing changed (mw-u2w5klk.293).
+ * A long press on Weave in a chapter whose Weave draws nothing woven (`weaves` false: a Septuagint chapter with no aligned English) does nothing (mw-u2w5klk.300). */
+function ViewSwitch({ view, weave, weaveShown, weaves, weaveOrder, source, onFlip }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaves: boolean; weaveOrder: WeaveOrder; source: SourceLanguage; onFlip?: () => Promise<string> }) {
   const [toast, setToast] = useState<{ text: string; top: number } | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -42,6 +43,8 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder, source, onFlip }: { v
     timer.current = setTimeout(() => setToast(null), TOAST_MS);
   };
   const flip = () => {
+    // a chapter whose Weave draws nothing woven has no word order to change: the hold is ignored, and the Order every other book is laid out by is left as it was (mw-u2w5klk.300)
+    if (!weaves) return;
     const next: WeaveOrder = weaveOrder === 'greek' ? 'english' : 'greek';
     void setSetting(weaveOrderSetting, next);
     choose('weave');
@@ -92,6 +95,8 @@ export interface ReaderHeaderProps {
   weave: Weave;
   /** the woven English is shown (useReaderSettings weaveShown) */
   weaveShown: boolean;
+  /** the Weave lays Greek words in the English of this chapter; false for a Septuagint chapter with no aligned English, whose Weave is the Greek alone and has no word order to flip (default true) */
+  weaves?: boolean;
   weaveOrder: WeaveOrder;
   /** a chapter reading is under way (not a tutor answer being read) */
   chapterReading: boolean;
@@ -131,7 +136,7 @@ function titleRoom(name: string): string {
   return `${(name.length * LETTER_EM * TITLE_MIN_REM).toFixed(2)}rem`;
 }
 
-export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
+export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaves = true, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
   return (
@@ -156,7 +161,7 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
         </button>
       </h1>
       {headerButtons ? <span className="flex-1" /> : null}
-      {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaveOrder={weaveOrder} source={source} onFlip={onFlip} /> : null}
+      {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaves={weaves} weaveOrder={weaveOrder} source={source} onFlip={onFlip} /> : null}
       {canRead ? <ReadFromButton from={from} reading={reading} onRead={onRead} /> : null}
       <ReaderMenu />
     </header>
