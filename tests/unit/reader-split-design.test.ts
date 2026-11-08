@@ -122,6 +122,13 @@ describe(DOC, () => {
     expect(existsSync('src/settings/definitions/split.ts')).toBe(true);
   });
 
+  it('says the three shapes of the dock in one paragraph of docs/layout/reader.md (mw-5r3p30.1129.3)', () => {
+    const layout = readFileSync('docs/layout/reader.md', 'utf8');
+    const paragraph = layout.split('\n').find((line) => line.includes("The dock's three shapes")) ?? '';
+    for (const word of ['Portrait', 'Sideways', 'Wide', 'max-height: 500px', 'min-width: 768px', 'fraction', 'width', 'follows the chapter', 'No map for Genesis 15', 'Let go to close'])
+      expect(paragraph, `the paragraph says ${word}`).toContain(word);
+  });
+
   it("is in CLAUDE.md's Read by need", () => {
     expect(readFileSync('CLAUDE.md', 'utf8')).toMatch(/^docs\/design\/reader-split\.md\s+#/m);
   });

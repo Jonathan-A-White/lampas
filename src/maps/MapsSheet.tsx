@@ -11,15 +11,14 @@ import { MapsFrame } from './MapsFrame';
 import { MapView } from './MapView';
 import { closeMaps, useOpenMapCard, useOpenMaps } from './openMaps';
 import { placeName } from './placeName';
+import { SHEET_KINDS } from './splitMap';
 import type { MapCard, MapKind, MapRef } from './types';
 import { useMaps } from './useMaps';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
-const GROUPS: readonly { kind: MapKind; title: string }[] = [
-  { kind: 'event', title: 'Events' },
-  { kind: 'region', title: 'Regions' },
-  { kind: 'video', title: 'Videos' },
-];
+const GROUP_TITLES: Partial<Record<MapKind, string>> = { event: 'Events', region: 'Regions', video: 'Videos' };
+// the kinds in the order the dock takes "the first map" from (SHEET_KINDS, src/maps/splitMap.ts)
+const GROUPS: readonly { kind: MapKind; title: string }[] = SHEET_KINDS.map((kind) => ({ kind, title: GROUP_TITLES[kind] ?? kind }));
 
 function Row({ card, onOpen, shows = false }: { card: MapCard; onOpen: (card: MapCard) => void; /** the places the map shows are named under its title (the maps for this verse) */ shows?: boolean }) {
   const matched = shows ? (card.matched ?? []) : [];

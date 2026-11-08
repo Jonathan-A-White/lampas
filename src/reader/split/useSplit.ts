@@ -81,7 +81,7 @@ export function useSplit({ body }: { body?: number } = {}): Split {
   }, [footEl]);
 
   const box = dims ? (axis === 'column' ? dims.height : dims.width) : 0;
-  const bounds = boundsOf({ box, body, foot: axis === 'column' ? foot : 0 });
+  const bounds = boundsOf({ box, body, foot: axis === 'column' ? foot : 0, axis });
   const resting = box > 0 ? sizeOf(fraction, box, bounds) : null;
   const size = live !== null ? clampSize(live, { min: bounds.min - CLOSE_DISTANCE, max: bounds.max }) : resting;
   const closing = live !== null && bounds.min - live >= CLOSE_DISTANCE;

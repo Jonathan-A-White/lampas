@@ -12,13 +12,8 @@ export function MapDockBody({ docked }: { docked: DockedMap }): ReactNode {
       </p>
     );
   }
-  if (docked.card === null) {
-    return (
-      <p role="status" className="px-4 py-3 text-base text-muted">
-        This map is not available now.
-      </p>
-    );
-  }
+  // a chapter with no map: the handle row says so (dockedTitle) and the body is empty; no picture is asked for
+  if (docked.card === null) return null;
   return (
     <div key={`${docked.card.source}:${docked.card.id}`} className="px-4 pt-2">
       <MapBody card={docked.card} mapRef={docked.ref} docked />

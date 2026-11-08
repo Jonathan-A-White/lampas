@@ -251,7 +251,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Genesis 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
   // The split (src/reader/split/): a dock below the passage, side by side sideways and wide, whose handle row is the divider. The box is the passage and the dock in one column; shut, it is no box at all.
-  const docked = useDockedMap(useSplitOpen());
+  const docked = useDockedMap(useSplitOpen(), { book: BOOK, chapter: CHAPTER });
   const split = useSplit({ body: docked ? MAP_CREDIT_ROW : undefined });
   const { setBox: boxRef, setFoot: footRef } = split;
   const inner = useRef<HTMLDivElement | null>(null);
@@ -685,7 +685,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       </main>
       {split.open ? (
-        <Dock split={split} footRef={footRef} title={docked ? dockedTitle(docked) : 'Split'} inert={sheetOpen || viewUnit !== undefined}>
+        <Dock split={split} footRef={footRef} title={docked ? dockedTitle(docked) : 'Split'} quiet={docked?.card === null} inert={sheetOpen || viewUnit !== undefined}>
           {docked ? <MapDockBody docked={docked} /> : <p className="px-4 py-3 text-muted">The dock&rsquo;s body: a map or a second text goes here.</p>}
         </Dock>
       ) : null}

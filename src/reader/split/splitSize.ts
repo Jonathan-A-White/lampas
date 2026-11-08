@@ -2,7 +2,7 @@
 // (not just 3 fixed ones)"). The dock has no fixed sizes: the divider rests wherever he lets go, between a smallest size (its handle row and two text lines, or the body's own
 // minimum a caller passes, and the foot the phone keeps clear) and a largest (the passage above keeps two lines). A drag past the smallest by CLOSE_DISTANCE closes.
 // The size is kept as a fraction of the box, so a box that turns or grows keeps it (the bounds are worked out again from the box). PROVISIONAL, the Governor to confirm: the bounds, Half as
-// the first opening, the tenth of a step and the 80 px. Sideways and wide the same sums run on the box's width.
+// the first opening, the tenth of a step and the 80 px. Sideways and wide the same sums run on the box's width, with the bounds of a width (ROW_DOCK_MIN, ROW_PASSAGE_MIN).
 import { CLOSE_DISTANCE } from '../../ui/sheetDrag';
 
 export { CLOSE_DISTANCE };
@@ -14,6 +14,9 @@ export const TEXT_LINE = 44;
 /** Lines of text the dock keeps at its smallest, and the passage keeps at the dock's largest. */
 export const DOCK_LINES = 2;
 export const PASSAGE_LINES = 2;
+/** Side by side the lengths are widths, where two lines mean nothing: the dock keeps at least what its handle row needs for the title, the pill and Close, and the passage keeps a column of text. */
+export const ROW_DOCK_MIN = 240;
+export const ROW_PASSAGE_MIN = 280;
 /** The fraction of the box the dock opens at the first time: Half. */
 export const FIRST_FRACTION = 0.5;
 /** An arrow key or the Larger split / Smaller split button moves the divider by this much of the box. */
@@ -29,9 +32,11 @@ export type Axis = 'column' | 'row';
 
 /**
  * The smallest and largest size, in px along the box's axis. `box` is the box's length, `body` the least the dock's body needs (default two text lines; a map passes its credit row's),
- * `foot` the room the phone's bar keeps clear at the dock's foot. In a box too small for both ends the largest gives way to the smallest.
+ * `foot` the room the phone's bar keeps clear at the dock's foot. Side by side (`axis` 'row') the box is a width: the dock keeps ROW_DOCK_MIN and the passage ROW_PASSAGE_MIN. In a box too small
+ * for both ends the largest gives way to the smallest.
  */
-export function boundsOf({ box, body = 0, foot = 0 }: { box: number; body?: number; foot?: number }): Bounds {
+export function boundsOf({ box, body = 0, foot = 0, axis = 'column' }: { box: number; body?: number; foot?: number; axis?: Axis }): Bounds {
+  if (axis === 'row') return { min: ROW_DOCK_MIN, max: Math.max(ROW_DOCK_MIN, box - ROW_PASSAGE_MIN) };
   const min = HANDLE_ROW + Math.max(DOCK_LINES * TEXT_LINE, body) + foot;
   return { min, max: Math.max(min, box - PASSAGE_LINES * TEXT_LINE) };
 }
