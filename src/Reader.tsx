@@ -511,6 +511,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         source={source}
         weave={weave ?? 'off'}
         weaveShown={weaveShown ?? false}
+        weaves={!septuagint || aligned}
         weaveOrder={weaveOrder ?? 'english'}
         chapterReading={chapterReading}
         reading={reading}
