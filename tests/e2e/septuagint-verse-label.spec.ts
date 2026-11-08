@@ -50,6 +50,30 @@ async function overlaps(page: Page): Promise<Overlap[]> {
   });
 }
 
+/** For every verse on the page: the verses whose first text rect of their own words is not on the line of the verse's number button (the button's box spans the line it leads or ends). */
+async function labelsLeftBehind(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const out: string[] = [];
+    for (const verse of Array.from(document.querySelectorAll('[data-verse]'))) {
+      const button = verse.querySelector('[data-verse-number]');
+      if (!button) continue;
+      const box = button.getBoundingClientRect();
+      const walker = document.createTreeWalker(verse, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if (!n.textContent?.replace(/\u2060/g, '').trim() || button.contains(n) || (n.parentElement && n.parentElement.closest('button[aria-label^="Play"], button[aria-label^="Stop"]'))) continue;
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        const first = Array.from(range.getClientRects()).find((r) => r.width > 0 && r.height > 0);
+        if (!first) continue;
+        const middle = (first.top + first.bottom) / 2;
+        if (middle < box.top || middle > box.bottom) out.push(`${verse.getAttribute('data-verse')}: label at ${Math.round(box.top)}-${Math.round(box.bottom)}, words at ${Math.round(first.top)}-${Math.round(first.bottom)} ("${n.textContent.trim().slice(0, 12)}")`);
+        break;
+      }
+    }
+    return out;
+  });
+}
+
 /** Puts a setting in the app's store through raw IndexedDB, as the app wrote it. */
 async function keep(page: Page, key: string, value: string): Promise<void> {
   await page.evaluate(
@@ -72,13 +96,14 @@ async function keep(page: Page, key: string, value: string): Promise<void> {
   );
 }
 
-async function openPsalm23(page: Page, view: 'English' | 'Greek', layout: 'verse' | 'paragraph'): Promise<void> {
+async function openPsalm23(page: Page, view: 'English' | 'Greek', layout: 'verse' | 'paragraph', textSize = '100'): Promise<void> {
   await openUnlocked(page);
   await page.goto('/#/settings');
   const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
   await row.getByRole('button', { name: 'On', exact: true }).click();
   await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await keep(page, 'layout', layout);
+  await keep(page, 'textSize', textSize);
   await page.goto('/#/?b=psa&c=23');
   await page.reload();
   await expect(page.locator('[data-verse="1"] [data-verse-number]')).toHaveText(/^1\s*\(22:1\)$/);
@@ -97,5 +122,24 @@ for (const width of [390, 1280]) {
         await shot(page, `septuagint-verse-label-${view.toLowerCase()}-${layout}-${width}`);
       });
     }
+  }
+}
+
+const SIZES = [
+  ['Normal', '100'],
+  ['Large', '130'],
+  ['Largest', '160'],
+] as const;
+
+for (const view of ['English', 'Greek'] as const) {
+  for (const [size, percent] of SIZES) {
+    test(`Psalms 23 in the Septuagint, ${view} view, paragraph layout, ${size} text at 390px: every verse's first words are on the line of its label (mw-u2w5klk.303)`, async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await openPsalm23(page, view, 'paragraph', percent);
+      for (const n of [1, 2, 3]) await expect(page.locator(`[data-verse="${n}"] [data-verse-number]`)).toHaveText(new RegExp(`^${n}\\s*\\(22:${n}\\)$`));
+      expect(await labelsLeftBehind(page)).toEqual([]);
+      expect(await overlaps(page)).toEqual([]);
+      await shot(page, `septuagint-verse-label-${view.toLowerCase()}-paragraph-${size.toLowerCase()}`);
+    });
   }
 }

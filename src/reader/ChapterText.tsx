@@ -97,6 +97,7 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
         const wide = septuagint !== undefined && septuagintNumber(verse, septuagint).greek !== undefined;
         return (
         <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
+          <span className={wide ? 'whitespace-nowrap' : undefined}>
           <VerseNumber
             n={verse.n}
             selected={selected === verse.n}
@@ -108,6 +109,9 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
               <ShownNumber verse={verse} septuagint={septuagint} />
             </sup>
           </VerseNumber>
+          {/* a wide label keeps its verse's first word on its line: the nowrap span holds the label and a word joiner, which forbids a break before the first word (mw-u2w5klk.303) */}
+          {wide ? '\u2060' : null}
+          </span>
           <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} onUnlinked={septuagint !== undefined ? () => onSelect(verse.n) : undefined} />
           {selected === verse.n || reading === verse.n ? (
             <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
