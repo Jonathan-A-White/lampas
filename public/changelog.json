@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.165",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1121",
+    "kind": "new",
+    "text": "The word sheet of an English word now has the round tutor button, and the tutor you reach from it is already asking about that word, its verse, the word it is paired with and what the lexicons found."
+  },
+  {
+    "version": "0.7.165",
+    "date": "2026-11-08",
+    "story": "mw-fnvjof.17.15",
+    "kind": "fixed",
+    "text": "after a second trip from the word sheet to Manage lexicons, Back brings the word sheet back again."
+  },
+  {
+    "version": "0.7.165",
+    "date": "2026-11-08",
+    "story": "mw-fnvjof.17.32",
+    "kind": "fixed",
+    "text": "the Verse view's line of Copy, Share, Memorize, Maps and Sermons is one row you can swipe sideways, so the new Sermons door no longer pushes the actions and the Listen link out of room."
+  },
+  {
     "version": "0.7.164",
     "date": "2026-11-08",
     "story": "mw-u2w5klk.292",

@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.165
+_2026-11-08_
+- New: The word sheet of an English word now has the round tutor button, and the tutor you reach from it is already asking about that word, its verse, the word it is paired with and what the lexicons found.
+- Fixed: after a second trip from the word sheet to Manage lexicons, Back brings the word sheet back again.
+- Fixed: the Verse view's line of Copy, Share, Memorize, Maps and Sermons is one row you can swipe sideways, so the new Sermons door no longer pushes the actions and the Listen link out of room.
+
 ## 0.7.164
 _2026-11-08_
 - New: The sheet behind a Septuagint chapter's header now says Brenton translated the Vatican text, not Swete's edition, so his English can differ from the Greek shown.
