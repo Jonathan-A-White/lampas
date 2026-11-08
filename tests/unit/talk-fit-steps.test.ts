@@ -10,7 +10,7 @@ import { bibleTalkSteps, talkBytes } from '../../src/services/talkFit';
 const rev2 = JSON.parse(readFileSync('public/data/rev/2.json', 'utf8')) as Chapter;
 const size = (r: TalkRequest) => new TextEncoder().encode(JSON.stringify(r)).length;
 const scope = { title: 'Revelation 2', chapter: rev2, verse: null };
-const settings = Object.fromEntries(Array.from({ length: 140 }, (_, i) => [`setting${i}`, 'a value of some length']));
+const settings = Object.fromEntries(Array.from({ length: 148 }, (_, i) => [`setting${i}`, 'a value of some length']));
 const turns = (n: number, chars: number) => Array.from({ length: n }, (_, i) => ({ q: `Question ${i}`, a: 'x'.repeat(chars) }));
 
 describe('the steps of the Bible talk\'s fit', () => {
