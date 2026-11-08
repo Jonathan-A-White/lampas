@@ -151,7 +151,7 @@ async function answerOne(page: Page, drill: ReturnType<Page['locator']>) {
 
 // The Tester (mw-5r3p30.430): a double tap on Next gave the next question a Hint he never tapped, because Hint stands where Next was.
 // Each gap is a new walk, so a miss can never end it before the next question: one answer at step 1 always leads to a second question.
-// 300 ms is the moment itself (SETTLE_MS): a second tap that close to it races the browser's own delay, so the gaps stop short of it.
+// 450 ms is the moment itself (SETTLE_MS): a second tap that close to it races the browser's own delay, so the gaps stop short of it.
 test('a double tap on Next takes no answers away from the next question', async ({ page }) => {
   const idea = await openIdea(page);
   for (const gap of [80, 120, 200]) {

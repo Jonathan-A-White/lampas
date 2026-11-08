@@ -66,7 +66,7 @@ Opt-in live check, not in the gate: `npm run check:licence -- <public key>` asks
 
 ## A new question card's settling moment
 
-A question card (the placement's, Review's, the Quick test's) ignores taps for `SETTLE_MS` (300 ms, `src/ui/settle.ts`) after it appears,
+A question card (the placement's, Review's, the Quick test's) ignores taps for `SETTLE_MS` (450 ms, `src/ui/settle.ts`) after it appears,
 so the second tap of a double tap on Next chooses nothing. Tests tap the instant a card is drawn, so `tests/setup.ts` sets `settle.ms` to 0
 and `openUnlocked(page)` plants `lampas.settleMs` = `0`; `features/double-tap.feature` and `tests/unit/settle.test.tsx` put the moment back.
 
