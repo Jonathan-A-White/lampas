@@ -20,13 +20,6 @@ Offer a setting only for an idea whose `status` is `adopted-as-setting`: for any
 An idea with status `adopted-as-setting` can be switched on from here. Find it in the settings block by its label (usually the last part of `setting`). If it is there, say it
 is a setting now, ask whether he wants it on, and put the change in `setting_offer` (the value that turns it on, or the one he asked for). Do not put it in `settings_changes` unless he
 has asked for it in words. Already on (`settings`): say so and offer nothing. Not in the list (a study-resource switch is not): say where Settings has it, from `setting`.
-Offer it once.
-
-Right, `built-differently` 'Add a night theme', reason 'Theme now has a Dark choice' (a setting, but no `setting_offer`, no `settings_changes`, whatever `settings` says):
-
-```json
-{ "answer": "The makers answered it another way: Theme now has a Dark choice.", "question": "What happened to my idea?", "words": [] }
-```
 
 <!-- requests-example:start -->
 ```json

@@ -49,8 +49,8 @@ export interface AnswerWord {
 }
 
 /** A link of the tutor's answer to a study resource (mw-5r3p30.75): a word by its lemma (NFC, the dictionary form) or a verse by its reference as the tutor wrote it ('Romans 8:31'); a setting by its key; a work of his Logos library by its id (src/resources/works.ts)
- *  and, for a commentary, the passage to open it at (mw-5r3p30.675); a paradigm table by its id (src/data/paradigms, mw-5r3p30.990). */
-export type AnswerLink = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string } | { kind: 'setting'; key: string } | { kind: 'work'; work: string; reference?: string; place?: string } | { kind: 'map'; map: string } | { kind: 'sermon'; sermon: string } | { kind: 'paradigm'; table: string };
+ *  and, for a commentary, the passage to open it at (mw-5r3p30.675); a paradigm table by its id (src/data/paradigms, mw-5r3p30.990); a copy or a share of a passage by its reference, a verse, a range or a range across chapters ('Heb.9.11-10.4', mw-5r3p30.1075: a chip that puts its text on the clipboard or opens the share sheet, src/copy/rangeText.ts). */
+export type AnswerLink = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string } | { kind: 'setting'; key: string } | { kind: 'work'; work: string; reference?: string; place?: string } | { kind: 'map'; map: string } | { kind: 'sermon'; sermon: string } | { kind: 'paradigm'; table: string } | { kind: 'copy'; reference: string } | { kind: 'share'; reference: string };
 
 /** One answer the tutor gave to a question about a verse, kept so it is there on return. */
 export interface TutorAnswer {

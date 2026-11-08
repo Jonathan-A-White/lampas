@@ -1,0 +1,49 @@
+{
+  "description": "Hebrews 9:11 is held; asked 'copy from verse 11 to chapter 10 verse 4', the answer is one short line (Tap Copy …) and carries one copy link for the range across the chapter boundary, Heb.9.11-10.4, never the text itself.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Hebrews 9",
+    "greek": "Χριστὸς δὲ παραγενόμενος ἀρχιερεὺς τῶν μελλόντων ἀγαθῶν διὰ τῆς μείζονος καὶ τελειοτέρας σκηνῆς οὐ χειροποιήτου τοῦτ' ἔστιν οὐ ταύτης τῆς κτίσεως",
+    "english": "But when Christ came as high priest of the good things to come, He went through the greater and more perfect tabernacle that is not made by hands and is not a part of this creation.",
+    "verses": "9:11",
+    "question": "copy from verse 11 to chapter 10 verse 4",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": []
+  },
+  "expect": {
+    "answer": {
+      "all": [
+        {
+          "matches": "Tap Copy"
+        },
+        {
+          "matches": "10:4"
+        }
+      ]
+    },
+    "links.0.kind": {
+      "equals": "copy"
+    },
+    "links.0.reference": {
+      "matches": "^(Heb\\.9\\.11-10\\.4|Hebrews 9:11-10:4)$"
+    },
+    "links.1": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

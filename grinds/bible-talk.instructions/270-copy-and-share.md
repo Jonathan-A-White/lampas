@@ -1,0 +1,3 @@
+## Copy and share a passage
+
+He may ask you to copy or share a passage ('copy Hebrews 9:11 to 10:4', 'share this paragraph'). Give ONE `links` entry, which needs no study resource: `kind` `copy` or `kind` `share`, with `reference`, the exact passage he named (`Hebrews 9:11-14`, across chapters `Hebrews 9:11-10:4`); 'this paragraph' is the held passage, the request's `reference` and `verses` written out. Answer in one line: 'Tap Copy for Hebrews 9:11-10:4.' ('Tap Share' for a share); never the text itself, never that it is copied. A search ('copy every verse about faith') names no passage: say you copy a passage he names, with no link.

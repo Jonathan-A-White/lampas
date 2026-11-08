@@ -14,6 +14,8 @@ Every grind's instructions stay under 100,000 bytes, as `cat grinds/<kind>.instr
 
 **Bible talk, sermons (mw-qtu3zvz.6).** The request may carry `sermons` (`{rows, themes}`: the sermons of the passage's verse or chapter, `{id, source, title, preacher?, ref, theme?}` at most 8, and its themes, at most 6; docs/sermons.md 'The tutor') and the answer's `links` may carry `{kind: 'sermon', sermon: '<source>:<id>'}`, a row of `sermons.rows`. The rule is the `### Links to a sermon` paragraph of part 200, and the examples are `sermon-on-the-passage`, `sermon-narrowed` and `no-sermon-listed`; verse-ask has neither the field nor the link. The feedback grind gained the kind `preacher` (Ask for a preacher), with the example `feedback/ask-for-preacher`.
 
+**Bible talk, copy and share (mw-5r3p30.1075).** The answer's `links` may carry `{kind: 'copy', reference}` or `{kind: 'share', reference}`, the passage he named (a range across chapters allowed, `Heb.9.11-10.4`), drawn as a chip that copies it or opens the share sheet (docs/ask-tutor.md 'Copy and share by asking'). The rule is `270-copy-and-share.md` (with `200`'s count of the kinds), and the examples are `copy-a-passage`, `share-this-paragraph` and `copy-not-a-passage`.
+
 <!-- toc -->
 
 - [copywork (mw-5r3p30.899, dictation mw-5r3p30.900)](#copywork-mw-5r3p30899-dictation-mw-5r3p30900)

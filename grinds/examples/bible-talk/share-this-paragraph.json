@@ -1,0 +1,49 @@
+{
+  "description": "Hebrews 9:11-14 is the held passage; asked to 'share this paragraph', the answer is one short line (Tap Share …) and carries one share link for the held passage, never the text itself.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Hebrews 9",
+    "greek": "Χριστὸς δὲ παραγενόμενος ἀρχιερεὺς τῶν μελλόντων ἀγαθῶν διὰ τῆς μείζονος καὶ τελειοτέρας σκηνῆς οὐ χειροποιήτου τοῦτ' ἔστιν οὐ ταύτης τῆς κτίσεως οὐδὲ δι' αἵματος τράγων καὶ μόσχων διὰ δὲ τοῦ ἰδίου αἵματος εἰσῆλθεν ἐφάπαξ εἰς τὰ ἅγια αἰωνίαν λύτρωσιν εὑράμενος Εἰ γὰρ τὸ αἷμα ταύρων καὶ τράγων καὶ σποδὸς δαμάλεως ῥαντίζουσα τοὺς κεκοινωμένους ἁγιάζει πρὸς τὴν τῆς σαρκὸς καθαρότητα πόσῳ μᾶλλον τὸ αἷμα τοῦ χριστοῦ ὃς διὰ πνεύματος αἰωνίου ἑαυτὸν προσήνεγκεν ἄμωμον τῷ θεῷ καθαριεῖ τὴν συνείδησιν ὑμῶν ἀπὸ νεκρῶν ἔργων εἰς τὸ λατρεύειν θεῷ ζῶντι",
+    "english": "But when Christ came as high priest of the good things to come, He went through the greater and more perfect tabernacle that is not made by hands and is not a part of this creation. He did not enter by the blood of goats and calves, but He entered the Most Holy Place once for all by His own blood, thus securing eternal redemption. For if the blood of bulls and goats and the ashes of a heifer sprinkled on those who are ceremonially unclean sanctify them so that their bodies are clean, how much more will the blood of Christ, who through the eternal Spirit offered Himself unblemished to God, purify your consciences from works of death, so that we may serve the living God!",
+    "verses": "9:11-14",
+    "question": "share this paragraph",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": []
+  },
+  "expect": {
+    "answer": {
+      "all": [
+        {
+          "matches": "Tap Share"
+        },
+        {
+          "matches": "9:11"
+        }
+      ]
+    },
+    "links.0.kind": {
+      "equals": "share"
+    },
+    "links.0.reference": {
+      "matches": "^(Heb\\.9\\.11-14|Hebrews 9:11-14)$"
+    },
+    "links.1": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}

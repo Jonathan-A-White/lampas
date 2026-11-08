@@ -474,7 +474,7 @@ const isWorkLink = (value: Record<string, unknown>): boolean =>
 const isAnswerLink = (value: unknown): value is AnswerLink =>
   isObject(value) &&
   (isWorkLink(value) ||
-    (Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)) || (value.kind === 'map' && isText(value.map, 80)) || (value.kind === 'sermon' && isText(value.sermon, 120)) || (value.kind === 'paradigm' && isText(value.table, 40)))));
+    (Object.keys(value).length === 2 && ((value.kind === 'word' && isText(value.lemma, 80)) || (value.kind === 'verse' && isText(value.reference, 40)) || (value.kind === 'setting' && isText(value.key, 40)) || (value.kind === 'map' && isText(value.map, 80)) || (value.kind === 'sermon' && isText(value.sermon, 120)) || (value.kind === 'paradigm' && isText(value.table, 40)) || ((value.kind === 'copy' || value.kind === 'share') && isText(value.reference, 40)))));
 
 const isFormValue = (value: unknown): value is FormValue =>
   isObject(value) && Object.keys(value).length === 2 && isText(value.field, 30) && isText(value.value, 1200);

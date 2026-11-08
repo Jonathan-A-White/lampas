@@ -1,0 +1,36 @@
+{
+  "description": "Hebrews 9:11 is held; asked to 'copy every verse about faith in Hebrews', which names no one passage, the answer says it copies a passage he names and carries no copy or share link.",
+  "schemaVersion": "1",
+  "request": {
+    "reference": "Hebrews 9",
+    "greek": "Χριστὸς δὲ παραγενόμενος ἀρχιερεὺς τῶν μελλόντων ἀγαθῶν διὰ τῆς μείζονος καὶ τελειοτέρας σκηνῆς οὐ χειροποιήτου τοῦτ' ἔστιν οὐ ταύτης τῆς κτίσεως",
+    "english": "But when Christ came as high priest of the good things to come, He went through the greater and more perfect tabernacle that is not made by hands and is not a part of this creation.",
+    "verses": "9:11",
+    "question": "copy every verse about faith in Hebrews",
+    "history": [],
+    "solid_words": [
+      "ὁ",
+      "καί",
+      "θεός"
+    ],
+    "settings": {
+      "theme": "phone",
+      "textSize": "normal"
+    },
+    "resources": []
+  },
+  "expect": {
+    "answer": {
+      "matches": "passage"
+    },
+    "links": {
+      "present": false
+    },
+    "settings_changes": {
+      "present": false
+    },
+    "setting_offer": {
+      "present": false
+    }
+  }
+}
