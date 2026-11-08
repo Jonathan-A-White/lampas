@@ -168,7 +168,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   const isMarked = (c: EnglishChunk): boolean => marked !== undefined && c.g.some((i) => marked.has(i));
   const lookGreek = (w: GreekWord) =>
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
-  const lookWord = (w: GreekWord, c: EnglishChunk) => onLook({ words: [w], english: c.t, fromEnglish: false });
+  const lookWord = (w: GreekWord, c: EnglishChunk) => onLook({ words: [w], english: c.t, fromEnglish: false, inChunk: true });
   // `tapped` is the one English word of the chunk his finger was on, when the chunk is drawn in English and holds more than one (the sheet then looks up that word alone, mw-5r3p30.782)
   // A Septuagint chunk paired to no Greek word (septuagintChunkLinked) names no word to open: `onUnlinked`, given for a Septuagint verse only, is what the tap does instead (mw-u2w5klk.278)
   const lookEnglish = (c: EnglishChunk, e?: MouseEvent<HTMLElement>) => {

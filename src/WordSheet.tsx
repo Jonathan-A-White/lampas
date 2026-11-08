@@ -63,6 +63,8 @@ export interface Lookup {
   english?: string;
   /** true when the English was what he tapped (the sheet then heads with it) */
   fromEnglish: boolean;
+  /** the tap was on a source word the weave draws in place of its English chunk (`english` is that chunk): a number the chunk says opens the Number sheet as a tap on the chunk does (mw-5r3p30.1127) */
+  inChunk?: true;
   /** the one English word of the tapped chunk his finger was on, when that is known (a tap on a chunk of more than one word): the sheet's English lookups are for it alone; a sheet opened with none (a link, a list) lists a row for each word of the chunk */
   tapped?: string;
   /** the verse the words are asked about, when they are not all words of it (a form of a variant reading the verse's own text does not carry, mw-9ji6ek0.15): Ask the tutor needs it */
@@ -564,7 +566,7 @@ export function WordSheet(props: WordSheetProps) {
  * value and the sum. A word he taps in it opens its own word sheet over the Number sheet, and closing that brings the Number sheet back. A tap that is not on an English chunk, and a number of one word, open the word sheet as ever. */
 function WordOrNumber(props: WordSheetProps) {
   const { chapter, lookup, onClose, onHelp, onAskEnglish, onAskTerm } = props;
-  const phrase = useMemo(() => (lookup.fromEnglish ? numberPhraseOf(chapter, lookup.words, lookup.english, lookup.verse) : undefined), [chapter, lookup]);
+  const phrase = useMemo(() => (lookup.fromEnglish || lookup.inChunk ? numberPhraseOf(chapter, lookup.words, lookup.english, lookup.verse) : undefined), [chapter, lookup]);
   const [word, setWord] = useState<{ base: Lookup; lookup: Lookup } | null>(null);
   if (!phrase) return <WordSheetBody {...props} />;
   const over = word && word.base === lookup ? word.lookup : null;

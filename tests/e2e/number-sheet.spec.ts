@@ -56,6 +56,43 @@ test('Genesis 14:14: "the 318" opens the Number sheet with eight, ten, three, hu
   await expect(sheet).toHaveCount(0);
 });
 
+/** Hebrew words of his, solid, written into the app's own store the moment it is first made (the pattern of tests/e2e/hebrew-reader.spec.ts), so the weave draws them in Hebrew. */
+async function giveHebrewWords(page: Page, lemmas: string[]): Promise<void> {
+  const now = Date.now();
+  const words = lemmas.map((lemma) => ({ lemma, lemmas: [lemma], gloss: '', lesson: 0, state: 'solid', since: now }));
+  await page.addInitScript((words) => {
+    const open = IDBFactory.prototype.open;
+    IDBFactory.prototype.open = function (this: IDBFactory, name: string, version?: number) {
+      const request = version === undefined ? open.call(this, name) : open.call(this, name, version);
+      if (name !== 'lampas') return request;
+      let created = false;
+      request.addEventListener('upgradeneeded', (event) => {
+        if ((event as IDBVersionChangeEvent).oldVersion === 0) created = true;
+      });
+      request.addEventListener('success', () => {
+        if (!created) return;
+        const tx = request.result.transaction(['words'], 'readwrite');
+        for (const word of words) tx.objectStore('words').put(word);
+      });
+      return request;
+    } as typeof IDBFactory.prototype.open;
+  }, words);
+}
+
+test('in the weave the Hebrew word that stands where "the 318" was opens the same Number sheet', async ({ page }) => {
+  await giveHebrewWords(page, ['שְׁמֹנֶה']);
+  await openUnlocked(page);
+  await page.goto('/#/?b=gen&c=14&weave=solid');
+  const woven = page.locator('[data-verse="14"] [data-woven]').first();
+  // the weave draws the word with its cantillation: שְׁמֹנָ֤ה
+  await expect(woven).toHaveAttribute('data-chunk', '6');
+  await woven.click();
+  const sheet = page.getByRole('dialog', { name: 'Number', exact: true });
+  await expect(sheet.getByTestId('number-line')).toHaveText('8 + 10 + 300 = 318');
+  await sheet.getByRole('button', { name: 'Done' }).click();
+  await expect(sheet).toHaveCount(0);
+});
+
 test('"trained men" in Genesis 14:14 holds the last three numeral words but says no number: the word sheet', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=14');
