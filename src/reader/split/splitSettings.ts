@@ -1,7 +1,8 @@
 // src/reader/split/splitSettings.ts — the split's two settings read and saved (src/settings/definitions/split.ts): whether the dock is open, and the share of the box it takes.
 import { setSetting, useSetting } from '../../settings/store';
-import { readerSplitSetting, splitMapSetting, splitSizeSetting } from '../../settings/definitions/split';
+import { readerSplitSetting, splitLinkSetting, splitMapSetting, splitSizeSetting, splitTextSetting } from '../../settings/definitions/split';
 import { fractionOf } from './splitSize';
+import { splitTextOf, type SplitTextKey } from './splitTexts';
 
 /** Whether the dock is open, following every change; false until the setting has been read. */
 export const useSplitOpen = (): boolean => useSetting(readerSplitSetting) === 'on';
@@ -16,11 +17,24 @@ export const keepSplitSize = (size: number, box: number): Promise<void> => setSe
 
 /** The map the dock holds, as src/maps/splitMap.ts writes it ('' for none); undefined until the setting has been read. */
 export const useSplitMap = (): string | undefined => useSetting(splitMapSetting);
-/** Opens the dock with a map in it (the map is kept first, so the dock never draws a moment with the old one). */
+/** Opens the dock with a map in it (the map is kept first, and any text the dock held is let go, so the dock never draws a moment with the old one). */
 export const openSplitWithMap = async (map: string): Promise<void> => {
   await setSetting(splitMapSetting, map);
+  await setSetting(splitTextSetting, '');
   await openSplit();
 };
+
+/** The text the dock holds, following every change; null while it holds none or the setting has not been read yet. */
+export const useSplitText = (): SplitTextKey | null => splitTextOf(useSetting(splitTextSetting) ?? '');
+/** Opens the dock with a text beside the passage (kept first, as the map is), or swaps the text of a dock already open. */
+export const openSplitWithText = async (key: SplitTextKey): Promise<void> => {
+  await setSetting(splitTextSetting, key);
+  await openSplit();
+};
+
+/** Whether the Link is on, following every change; true until the setting has been read (it is on by default). */
+export const useSplitLink = (): boolean => useSetting(splitLinkSetting) !== 'off';
+export const keepSplitLink = (on: boolean): Promise<void> => setSetting(splitLinkSetting, on ? 'on' : 'off');
 
 /** The verse the dock is opened beside (Split on a map is pressed over that verse's Verse view): the passage keeps it in view as it shrinks. Asked for just before the dock opens; the Reader takes it once, and one nobody took in 5 s is let go. */
 let besideVerse: { n: number; at: number } | null = null;

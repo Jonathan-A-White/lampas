@@ -4,10 +4,11 @@
 import { defineSetting } from '../define';
 import { FIRST_FRACTION } from '../../reader/split/splitSize';
 import { decodeSplitMap } from '../../maps/splitMap';
+import { SPLIT_TEXT_KEYS } from '../../reader/split/splitTexts';
 
 export type ReaderSplit = 'on' | 'off';
 
-/** Whether the dock is open. What is in it is `splitMap` (a map; a text is mw-5r3p30.1130's). */
+/** Whether the dock is open. What is in it is `splitText` (a text beside the passage) or, while that is empty, `splitMap` (a map). */
 export const readerSplitSetting = defineSetting<ReaderSplit>({
   key: 'readerSplit',
   default: 'off',
@@ -55,5 +56,39 @@ export const splitMapSetting = defineSetting<string>({
   hint: 'The map the dock holds.',
 });
 
+/** The text the dock holds (mw-5r3p30.1130): one of src/reader/split/splitTexts.ts SPLIT_TEXT_KEYS ('hebrew', 'greek', 'english', 'lxx-greek', 'lxx-english'), or empty for none; while it is set the dock shows the text, not the map. A reload brings the same text back. */
+export const splitTextSetting = defineSetting<string>({
+  key: 'splitText',
+  default: '',
+  allowed: {
+    kind: 'text',
+    valid: (value) => value === '' || SPLIT_TEXT_KEYS.some((key) => key === value),
+    example: 'lxx-greek',
+    note: `one of ${SPLIT_TEXT_KEYS.join(', ')}, or empty for no text`,
+  },
+  parse: (raw) => (typeof raw === 'string' && (raw === '' || SPLIT_TEXT_KEYS.some((key) => key === raw)) ? raw : ''),
+  section: 'tools',
+  label: 'Split text',
+  hint: 'The text the dock holds beside the passage.',
+});
+
+export type SplitLink = 'on' | 'off';
+
+/** Whether the two panes of a text split keep to the same verse as either scrolls (the Link on the dock's handle row; mw-5r3p30.1130). On until he turns it off. */
+export const splitLinkSetting = defineSetting<SplitLink>({
+  key: 'splitLink',
+  default: 'on',
+  allowed: {
+    kind: 'choice',
+    values: [
+      { value: 'on', label: 'On' },
+      { value: 'off', label: 'Off' },
+    ],
+  },
+  section: 'tools',
+  label: 'Split link',
+  hint: 'Keep the passage and the dock on the same verse as either scrolls.',
+});
+
 /** The settings of the split, for the tutor's table (src/tutor/knows.ts). */
-export const SPLIT_SETTINGS = [readerSplitSetting, splitSizeSetting, splitMapSetting] as const;
+export const SPLIT_SETTINGS = [readerSplitSetting, splitSizeSetting, splitMapSetting, splitTextSetting, splitLinkSetting] as const;

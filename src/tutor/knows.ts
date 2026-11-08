@@ -11,13 +11,15 @@ import { SETTINGS } from '../settings/registry';
 
 /**
  * The settings of the settings store that are kept out of the registry (like Hand, src/settings/hand.ts), each with the written reason the tutor is not told of it: the registry is what the tutor
- * reads and changes, and its Settings request and the bible-talk instructions are full. All three of the Reader split's are here (mw-5r3p30.1129.1, .2): whether the dock is open, the share of the box it
- * takes and the map it holds. When the second text is docked (mw-5r3p30.1130) the Bible talk is told what is beside the passage as a part of progress, the way `maps` is, and these reasons are superseded.
+ * reads and changes, and its Settings request and the bible-talk instructions are full. All five of the Reader split's are here (mw-5r3p30.1129.1, .2, mw-5r3p30.1130): whether the dock is open, the share of the box it
+ * takes, the map it holds, the text it holds and the Link. The Bible talk is not yet told what is beside the passage: the instructions of bible-talk sit at their byte room (grinds/bible-talk.instructions), so telling it is a story of its own.
  * tests/unit/tutor-knows.test.ts holds that every key here is declared once, is in no registry, and has its reason.
  */
 export const NOT_IN_THE_REGISTRY: Readonly<Record<string, string>> = {
   readerSplit: 'Whether a dock stands below the passage is a layout he chooses in place (Split on a map, Close on the dock); the tutor cannot open or close the split for him, and it is not yet told what the dock holds (mw-5r3p30.1130 brings the second text and tells it then).',
   splitMap: 'Which map the dock holds is what he opened with Split on that map, kept so a reload brings it back; the tutor cannot dock or change a map for him, and is not yet told which map stands beside the passage (mw-5r3p30.1130 tells it with the second text).',
+  splitText: 'Which text the dock holds beside the passage (Hebrew, English, the Septuagint\'s Greek or English) is what he chose with Split on the Verse view or the dock\'s name, kept so a reload brings it back; the tutor cannot dock a text for him, and is not yet told which text stands beside the passage (the instructions of bible-talk have no room).',
+  splitLink: 'Whether the passage and the dock keep to the same verse as either scrolls is the Link button on the dock\'s row, on until he turns it off; it changes nothing the tutor says, and the tutor cannot press it for him.',
   splitSize: 'How tall he dragged the dock is a layout he sets with his thumb, in place; it changes nothing the tutor says, and the tutor cannot move the divider for him.',
 };
 

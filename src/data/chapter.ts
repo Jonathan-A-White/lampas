@@ -330,6 +330,30 @@ function septuagintIsOn(): Promise<boolean> {
   return Promise.race([read, late]).finally(() => clearTimeout(timer));
 }
 
+/** Fetches /data/<book>/<n>.json: Lampas's own chapter (the Hebrew of an Old Testament book, the Greek of a New Testament one). A fetch the worker never answers (a half-written cache entry) is given up on, so the Reader can say so rather than load for ever (mw-5r3p30.846). */
+const fetchOwnChapter = (book: string, n: number): Promise<Chapter> =>
+  within(async (signal) => {
+    const response = await fetch(chapterUrl(book, n), { signal });
+    if (!response.ok) throw new Error(`Could not load ${keyOf(book, n, false)}: ${response.status}`);
+    return fillChapter((await response.json()) as Chapter);
+  });
+
+/**
+ * Lampas's own chapter, whatever Settings > Old Testament in Greek says: the Hebrew of an Old Testament book, never the Septuagint's (the Reader's dock holds either beside the passage, mw-5r3p30.1130).
+ * Kept under the same key as loadChapter's Hebrew, so a chapter read one way is not fetched again the other.
+ */
+export function loadOwnChapter(book: string, n: number): Promise<Chapter> {
+  const key = keyOf(book, n, false);
+  const known = chapters.get(key);
+  if (known) return known;
+  const request = fetchOwnChapter(book, n);
+  chapters.set(key, request);
+  request.catch(() => {
+    if (chapters.get(key) === request) chapters.delete(key);
+  });
+  return request;
+}
+
 /**
  * Fetches /data/<book>/<n>.json once; later and concurrent callers share the one request. An Old Testament book while Settings > Old Testament in Greek (Septuagint) is On is the Septuagint's chapter
  * of public/data-lxx that holds Lampas's chapter `n` (src/data/lxxChapter.ts; its `chapter` is the Greek number, `lang` 'grc'), when the book is shipped there, else the Hebrew as ever.
@@ -339,13 +363,7 @@ export async function loadChapter(book: string, n: number): Promise<Chapter> {
   const key = keyOf(book, n, septuagint);
   const known = chapters.get(key);
   if (known) return known;
-  // A fetch the worker never answers (a half-written cache entry) is given up on, so the Reader can say so rather than load for ever (mw-5r3p30.846).
-  const hebrew = (): Promise<Chapter> =>
-    within(async (signal) => {
-      const response = await fetch(chapterUrl(book, n), { signal });
-      if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
-      return fillChapter((await response.json()) as Chapter);
-    });
+  const hebrew = (): Promise<Chapter> => fetchOwnChapter(book, n);
   // The Septuagint has no section headings of its own: the MSB's, from the Lampas chapter's file, are laid on the Greek verses they head (withHeadings, mw-u2w5klk.302). That file is asked for beside the Greek one; a
   // chapter that cannot be fetched gives no headings and the Greek is shown as before. The worker keeps it under its fingerprint, so a chapter read before is not fetched again.
   const msb = septuagint ? hebrew() : null;

@@ -57,8 +57,8 @@ describe('the table of what each grind is told (src/tutor/knows.ts)', () => {
     expect(Object.keys(BEARS_ON)).not.toContain('library');
   });
 
-  it('classifies the Reader split\'s settings: declared once, kept out of the registry and the tutor\'s reach, each with its reason (mw-5r3p30.1129.1, splitMap mw-5r3p30.1129.2)', () => {
-    expect(SPLIT_SETTINGS.map((s) => s.key)).toEqual(['readerSplit', 'splitSize', 'splitMap']);
+  it('classifies the Reader split\'s settings: declared once, kept out of the registry and the tutor\'s reach, each with its reason (mw-5r3p30.1129.1, splitMap mw-5r3p30.1129.2, splitText and splitLink mw-5r3p30.1130)', () => {
+    expect(SPLIT_SETTINGS.map((s) => s.key)).toEqual(['readerSplit', 'splitSize', 'splitMap', 'splitText', 'splitLink']);
     expect(Object.keys(NOT_IN_THE_REGISTRY).sort()).toEqual(SPLIT_SETTINGS.map((s) => s.key).sort());
     for (const [key, reason] of Object.entries(NOT_IN_THE_REGISTRY)) {
       expect(SETTINGS.some((s) => s.key === key), `${key} is in the registry`).toBe(false);
