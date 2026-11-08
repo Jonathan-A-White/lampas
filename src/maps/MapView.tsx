@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { sourceOf } from './index';
 import { MapsFrame } from './MapsFrame';
 import { placeName } from './placeName';
+import { listFact } from '../tutor/sheetTalk';
 import type { MapCard, MapRef, MapSource } from './types';
 
 const LINK = 'inline-flex min-h-11 items-center text-base font-medium text-accent underline underline-offset-4';
@@ -47,6 +48,16 @@ export function MapView({ card, mapRef, onClose }: { card: MapCard; mapRef: MapR
     <MapsFrame
       label={card.title}
       onClose={onClose}
+      talk={{
+        name: 'Map',
+        facts: [
+          { label: 'Map', value: card.title },
+          { label: 'Period', value: card.period },
+          { label: 'Passage', value: placeName(mapRef) },
+          listFact('Places on the map', card.places),
+        ],
+        suggestions: ['What does this map show?', 'How does this map help me read this passage?'],
+      }}
       heading={
         <>
           <h2 className="text-xl font-semibold">{card.title}</h2>

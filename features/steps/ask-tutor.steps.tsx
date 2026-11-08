@@ -178,7 +178,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
   });
 
-  Scenario('The ? is not drawn over a picker, whose sheet would hide the tutor (mw-5r3p30.953)', ({ Given, When, Then }) => {
+  Scenario('The chapter picker keeps the ?, and its Talk opens in front of it (mw-5r3p30.953, mw-5r3p30.1122)', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/ with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/', goal));
     Then('the screen has one control named {string}', async (_, name: string) => {
       expect(name).toBe(CONTROL);
@@ -188,22 +188,29 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       await user.click(within(await screen.findByRole('heading', { level: 1 })).getByRole('button'));
       expect(await screen.findByRole('dialog', { name: 'Choose a chapter' })).toBeInTheDocument();
     });
-    Then('the screen has no control named {string}', async (_, name: string) => {
+    Then('the screen still has one control named {string}', async (_, name: string) => {
       expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+    When('he opens the tutor with the floating ?', taps);
+    Then('the Talk sheet is drawn inside the chapter picker, in front of it', async () => {
+      // the Talk is z-10: only inside the picker's own layer does it stand in front of it
+      const picker = screen.getByRole('dialog', { name: 'Choose a chapter' });
+      expect(await within(picker.parentElement!).findByRole('dialog', { name: 'Ask the tutor: Choose a chapter' })).toBeInTheDocument();
+    });
+    And('the control is hidden while the sheet is open', async () => {
       await waitFor(() => expect(control()).toHaveLength(0));
     });
-    When('he closes the chapter picker', async () => {
+    When('he closes the Talk sheet', async () => {
+      await user.click(within(await screen.findByRole('dialog', { name: /^Ask the tutor: / })).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Ask the tutor: / })).toBeNull());
+    });
+    And('he closes the chapter picker', async () => {
       await user.click(within(screen.getByRole('dialog', { name: 'Choose a chapter' })).getByRole('button', { name: 'Done' }));
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Choose a chapter' })).toBeNull());
     });
     Then('the floating ? is drawn again', async () => {
       await waitFor(() => expect(control()).toHaveLength(1));
-    });
-    When('he opens the tutor with the floating ?', taps);
-    Then('the Talk sheet is in front of the Reader', async () => {
-      // nothing is drawn after it: the one dialog open is the Talk sheet
-      const talk = await screen.findByRole('dialog', { name: /^(Ask the tutor: |Talk about )/ });
-      expect(screen.getAllByRole('dialog')).toEqual([talk]);
     });
   });
 
@@ -229,7 +236,26 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
   });
 
-  Scenario('A sheet with nothing to ask about draws no ?, and it is back when the sheet is closed (mw-5r3p30.955)', ({ Given, When, Then }) => {
+  Scenario('A menu with nothing to ask about draws no ?, and it is back when the menu is closed (mw-5r3p30.955)', ({ Given, When, Then }) => {
+    Given('Lampas is opened on #/ with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/', goal));
+    When("he opens the Reader's menu", async () => {
+      await user.click(await screen.findByRole('button', { name: 'Menu' }));
+      expect(await screen.findByRole('menu', { name: 'Menu' })).toBeInTheDocument();
+    });
+    Then('the screen has no control named {string}', async (_, name: string) => {
+      expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(0));
+    });
+    When("he closes the Reader's menu", async () => {
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('menu', { name: 'Menu' })).toBeNull());
+    });
+    Then('the floating ? is drawn again', async () => {
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+  });
+
+  Scenario('The language sheet of Memorize keeps the ?, and its Talk opens in front of it (mw-5r3p30.955, mw-5r3p30.1122)', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on #/?b=rom&c=8&view=english&weave=off&v=28 with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/?b=rom&c=8&view=english&weave=off&v=28', goal));
     When('he memorizes the verse and opens its language sheet', async () => {
       const view = await screen.findByRole('region', { name: 'Verse view' });
@@ -237,11 +263,23 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       await user.click(await within(view).findByRole('button', { name: 'Memorizing · English' }));
       expect(await screen.findByRole('dialog', { name: 'Memorize Rom 8:28' })).toBeInTheDocument();
     });
-    Then('the screen has no control named {string}', async (_, name: string) => {
+    Then('the screen has one control named {string}', async (_, name: string) => {
       expect(name).toBe(CONTROL);
+      await waitFor(() => expect(control()).toHaveLength(1));
+    });
+    When('he opens the tutor with the floating ?', taps);
+    Then('the Talk sheet is drawn inside the language sheet, in front of it', async () => {
+      const sheet = screen.getByRole('dialog', { name: 'Memorize Rom 8:28' });
+      expect(await within(sheet).findByRole('dialog', { name: 'Ask the tutor: Memorize' })).toBeInTheDocument();
+    });
+    And('the control is hidden while the sheet is open', async () => {
       await waitFor(() => expect(control()).toHaveLength(0));
     });
-    When('he closes the language sheet', async () => {
+    When('he closes the Talk sheet', async () => {
+      await user.click(within(await screen.findByRole('dialog', { name: /^Ask the tutor: / })).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Ask the tutor: / })).toBeNull());
+    });
+    And('he closes the language sheet', async () => {
       await user.click(within(screen.getByRole('dialog', { name: 'Memorize Rom 8:28' })).getByRole('button', { name: 'Done' }));
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Memorize Rom 8:28' })).toBeNull());
     });

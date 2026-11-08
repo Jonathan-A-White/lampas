@@ -8,7 +8,8 @@ import { useInterestLevels } from '../settings/useInterestLevels';
 import { announce } from '../ui/live';
 import { useEscapeToClose } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { memorizeVerse, printedRef, unmemorizeVerse, type CommandResult } from './commands';
 import { languagesFor, langName, MEMORIZE_LANGS, type MemorizeLang } from './languages';
 import { openMemorizeSession } from '../nav/route';
@@ -24,8 +25,16 @@ const tell = (done: Promise<CommandResult>): void => void done.then(({ said }) =
 function LanguageSheet({ canonical, offered, memorized, onClose }: { canonical: string; offered: readonly MemorizeLang[]; memorized: readonly MemorizeLang[]; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-40, over the Talk sheet (z-10) and nothing on it to ask about, switches only: no ? here (mw-5r3p30.955)
-  useNoDoor();
+  // z-40, over the Talk sheet (z-10): the ? asks about the verse being memorized and the languages it is learned in, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1122)
+  const ask = useSheetTalk({
+    name: 'Memorize',
+    facts: [
+      { label: 'Verse', value: printedRef(canonical) },
+      { label: 'Memorized in', value: memorized.map(langName).join(', ') },
+      { label: 'Could be learned in', value: offered.map(langName).join(', ') },
+    ],
+    suggestions: [`What helps me learn ${printedRef(canonical)} by heart?`, 'Which language should I memorize it in?'],
+  });
   // a language he memorized it in stays on the sheet to be switched off, though the dial has since gone down
   const shown = MEMORIZE_LANGS.filter((lang) => offered.includes(lang) || memorized.includes(lang));
   return (
@@ -70,6 +79,7 @@ function LanguageSheet({ canonical, offered, memorized, onClose }: { canonical: 
           </button>
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

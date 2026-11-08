@@ -224,6 +224,7 @@ const OVERLAYS: Array<Omit<Overlay, 'door'> & { door?: Overlay['door'] }> = [
   {
     name: 'the chapter picker',
     sheet: 'Choose a chapter',
+    door: 'talk', // a Talk drawn inside the picker (mw-5r3p30.1122)
     open: async (page) => {
       await page.getByRole('heading', { name: 'Romans 8', level: 1 }).getByRole('button').click();
     },

@@ -11,6 +11,7 @@ import {
   openAppMissing,
   openAskApproachFromSettings,
   openAskForBook,
+  openChapterPicker,
   openConversationAlert,
   openDropConfirm,
   openEnglishWord,
@@ -22,6 +23,7 @@ import {
   openReturnSheet,
   openScreenshotRead,
   openSendOff,
+  openSermonsSheet,
   openShareScreen,
   openStartPlan,
 } from './door-layers';
@@ -83,7 +85,7 @@ const OVERLAYS: Overlay[] = [
   { name: 'Try it on a verse', door: 'talk', open: openTryIt, close: stop },
   {
     name: 'the language sheet of Memorize',
-    door: 'hidden',
+    door: 'talk',
     open: async (page) => {
       await openUnlocked(page);
       await page.goto('/');
@@ -116,14 +118,14 @@ const button = (name: string) => async (_page: Page, sheet: Locator) => void (aw
 // The z-30, z-10 and z-50 layers (mw-5r3p30.956): the Talk sheet is z-10 and a route's Talk is drawn after its screen, so a z-10 layer of a route's screen is already under the Talk; a z-30 or z-50 layer is not.
 OVERLAYS.push(
   { name: 'the reading drill', door: 'talk', open: openReadingDrill, close: escape },
-  { name: 'Ask for a book', door: 'hidden', open: openAskForBook, close: button('Done') },
+  { name: 'Ask for a book', door: 'talk', open: openAskForBook, close: button('Done') },
   { name: 'the send-off to Audible', door: 'hidden', open: openSendOff, close: escape },
   { name: 'Start a listening plan', door: 'hidden', open: openStartPlan, close: button('Not now') },
   { name: 'Where are you in the plan?', door: 'hidden', open: (page) => openPlacePicker(page, 'where'), close: button('Not now') },
   {
-    // the picker stands over Where are you in the plan?: the ? is back once both are closed
+    // the picker is the chapter picker (ChapterPicker, in choose mode) over Where are you in the plan?, and has the ? like the chapter picker (mw-5r3p30.1122): a Talk opens inside it; the ? is back once both are closed
     name: 'Pick a place',
-    door: 'hidden',
+    door: 'talk',
     open: (page) => openPlacePicker(page, 'pick'),
     close: async (page, picker) => {
       await escape(page);
@@ -143,10 +145,12 @@ OVERLAYS.push(
       await escape(page);
     },
   },
-  { name: 'All lexicons', door: 'hidden', open: openAllLexicons, close: button('Done') },
+  { name: 'All lexicons', door: 'talk', open: openAllLexicons, close: button('Done') },
   { name: 'App not on this phone', door: 'hidden', open: openAppMissing, close: button('Done') },
-  { name: 'the Logos chooser (In another book…)', door: 'hidden', open: openInLogosChooser, close: escape },
-  { name: 'a map of the Maps sheet', door: 'hidden', open: openMapsFrame, close: escape },
+  { name: 'the Logos chooser (In another book…)', door: 'talk', open: openInLogosChooser, close: escape },
+  { name: 'the Maps sheet', door: 'talk', open: openMapsFrame, close: escape },
+  { name: 'the Sermons sheet', door: 'talk', open: openSermonsSheet, close: escape },
+  { name: 'the chapter picker', door: 'talk', open: openChapterPicker, close: button('Done') },
   { name: 'Ask for another approach', door: 'talk', open: openAskApproachFromSettings, close: button('Done') },
   { name: 'the alert of a conversation that cannot be opened', door: 'talk', open: openConversationAlert, close: button('Close') },
   { name: 'Drop this word?', door: 'talk', open: openDropConfirm, close: button('Keep') },
@@ -292,3 +296,41 @@ test('Floating ?: over the sheet of "Aggai" in the Septuagint\'s Genesis 13 Weav
   expect(askedWord(fake)).toContain('Genesis 13:3');
   expect(askedWord(fake)).toContain('found no entry for it');
 });
+
+// The sheets that used to hide the ? have it (mw-5r3p30.1122; his words, Postern general 2026-11-06: "the two finger tap should bring and remove tutor the question mark from every screen"). Their Talk is drawn inside
+// their own layer, so it stands in front, and the tutor is told what the sheet is about. A two-finger tap on the sheet puts the ? away and the next brings it back (src/tutor/doorTap.ts).
+const SHEETS = [
+  { name: 'Sermons', open: openSermonsSheet, screen: 'Sermons', fact: { label: 'Passage', value: 'Romans 5:8' } },
+  { name: 'Maps', open: openMapsFrame, screen: 'Maps', fact: { label: 'Passage', value: 'Genesis 10:19' } },
+];
+
+for (const sheet of SHEETS) {
+  test(`Floating ?: over the ${sheet.name} sheet the tutor opens in front of it and is told ${sheet.fact.value}; a two-finger tap puts the ? away and brings it back (mw-5r3p30.1122)`, async ({ page }) => {
+    const fake = makeFakePostern();
+    await routePostern(page, fake);
+    const layer = await sheet.open(page);
+    await expect(floating(page)).toBeVisible();
+    await twoFingers(page);
+    await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+    await expect(layer).toBeVisible();
+    await twoFingers(page);
+    await expect(floating(page)).toBeVisible();
+    await shot(page, `sheet-door-${sheet.name.toLowerCase()}`);
+    // a click within 600 ms of a two-finger tap is dropped (src/tutor/doorTap.ts): wait it out before the tap on the ?
+    await page.waitForTimeout(700);
+    await floating(page).click();
+    const talk = await expectTalkInFront(page);
+    await expect(talk).toHaveAccessibleName(`Ask the tutor: ${sheet.screen}`);
+    // the tutor is told the sheet's passage when a question goes
+    await talk.getByRole('button', { name: 'Type a message' }).click();
+    await talk.getByRole('textbox', { name: 'Your message' }).fill('What is this?');
+    await talk.getByRole('button', { name: 'Send', exact: true }).click();
+    await expect
+      .poll(() => {
+        const asked = fake.received.filter((g) => g.grist.kind === 'bible-talk');
+        const screen = (asked[asked.length - 1]?.input as { screen?: { name: string; facts: { label: string; value: string }[] } } | undefined)?.screen;
+        return screen?.name === sheet.screen && screen.facts.some((f) => f.label === sheet.fact.label && f.value === sheet.fact.value);
+      })
+      .toBe(true);
+  });
+}

@@ -17,7 +17,8 @@ import { FormHelper } from '../formHelper/FormHelper';
 import { bookSending, sendWaitingBooks, startBookRequests, subscribeBookSending } from '../services/bookRequests';
 import { MAX_BOOK_CHARS, MAX_FEEDBACK_CHARS } from '../services/feedback';
 import { FAILURE_TITLES } from '../services/tutor';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { isTooLong } from '../ui/lengthLimit';
 import { LengthNote } from '../ui/LengthNote';
@@ -45,8 +46,6 @@ function kindWord(row: ExportedRow): string {
 export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-30, over the Talk sheet (z-10), a form that sends a request and has nothing to ask about: no ? over it, for a Talk would open under it (mw-5r3p30.956)
-  useNoDoor();
   const ids = { query: useId(), title: useId(), why: useId(), whyCount: useId(), kind: useId() };
   const rows = useLiveQuery(unmatchedRows, []);
   const waiting = useLiveQuery(listWaitingBooks, []);
@@ -112,6 +111,17 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
   const ring = (field: string): string => (filled === field ? ' ring-2 ring-accent' : '');
 
   const stillWaiting = asked !== null && (waiting ?? []).some((w) => w.id === asked.id);
+  // z-30, over the Talk sheet (z-10): the ? asks about the book he is asking for (the kind, the title, his reason), in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1122)
+  const ask = useSheetTalk({
+    name: 'Ask for a book',
+    facts: [
+      { label: 'Kind of book', value: wanted ? infoOf(wanted).singular : '' },
+      { label: 'Book', value: asked ? asked.title : words },
+      { label: 'Why it would help', value: why },
+      asked ? { label: 'Request', value: stillWaiting ? 'Waiting to send' : 'Sent' } : null,
+    ],
+    suggestions: ['Which book should I ask the makers for?', 'What kind of book would help me most?'],
+  });
   // drawn in the body: a sheet that opens inside another (the idea sheet is dragged by a transform) would be placed by it
   return createPortal(
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
@@ -287,6 +297,7 @@ export function AskForBook({ kind, onClose }: { kind?: Kind; onClose: () => void
           </div>
         )}
       </div>
+      <DialogAskTutor {...ask} />
     </div>,
     document.body,
   );

@@ -19,15 +19,17 @@ Feature: Ask the tutor from any screen
       | Review   | #/review  |
       | Settings | #/settings |
 
-  Scenario: The ? is not drawn over a picker, whose sheet would hide the tutor (mw-5r3p30.953)
+  Scenario: The chapter picker keeps the ?, and its Talk opens in front of it (mw-5r3p30.953, mw-5r3p30.1122)
     Given Lampas is opened on #/ with the goal "1 John 1:1" behind a fake Postern
     Then the screen has one control named "Ask the tutor about what is on screen"
     When he opens the chapter picker from the Reader's title
-    Then the screen has no control named "Ask the tutor about what is on screen"
-    When he closes the chapter picker
-    Then the floating ? is drawn again
+    Then the screen still has one control named "Ask the tutor about what is on screen"
     When he opens the tutor with the floating ?
-    Then the Talk sheet is in front of the Reader
+    Then the Talk sheet is drawn inside the chapter picker, in front of it
+    And the control is hidden while the sheet is open
+    When he closes the Talk sheet
+    And he closes the chapter picker
+    Then the floating ? is drawn again
 
   Scenario: A screen he works in keeps the ?, and its Talk opens in front of it (mw-5r3p30.955)
     Given Lampas is opened on #/?b=1jn&c=1&p=1&pt=4&view=english&weave=off with the goal "1 John 1:1" behind a fake Postern
@@ -37,11 +39,22 @@ Feature: Ask the tutor from any screen
     Then the Talk sheet is drawn inside the Check, in front of it
     And the control is hidden while the sheet is open
 
-  Scenario: A sheet with nothing to ask about draws no ?, and it is back when the sheet is closed (mw-5r3p30.955)
+  Scenario: A menu with nothing to ask about draws no ?, and it is back when the menu is closed (mw-5r3p30.955)
+    Given Lampas is opened on #/ with the goal "1 John 1:1" behind a fake Postern
+    When he opens the Reader's menu
+    Then the screen has no control named "Ask the tutor about what is on screen"
+    When he closes the Reader's menu
+    Then the floating ? is drawn again
+
+  Scenario: The language sheet of Memorize keeps the ?, and its Talk opens in front of it (mw-5r3p30.955, mw-5r3p30.1122)
     Given Lampas is opened on #/?b=rom&c=8&view=english&weave=off&v=28 with the goal "1 John 1:1" behind a fake Postern
     When he memorizes the verse and opens its language sheet
-    Then the screen has no control named "Ask the tutor about what is on screen"
-    When he closes the language sheet
+    Then the screen has one control named "Ask the tutor about what is on screen"
+    When he opens the tutor with the floating ?
+    Then the Talk sheet is drawn inside the language sheet, in front of it
+    And the control is hidden while the sheet is open
+    When he closes the Talk sheet
+    And he closes the language sheet
     Then the floating ? is drawn again
 
   Scenario: From Goal the request carries the goal, the counts, Learn next and the Next words
