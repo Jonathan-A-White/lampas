@@ -1,7 +1,7 @@
 // 'Open web sermons in' (mw-qtu3zvz.16, docs/sermons.md 'Open web sermons in'): Settings > Study resources > Sermons, This browser (default) or Firefox. With Firefox on Android a web
 // sermon's link is an intent:// address for Firefox (src/sermons/openWeb.ts), with the plain https address as its browser_fallback_url; anywhere else, and for a Logos row, the link is as it was.
 import '@testing-library/jest-dom/vitest';
-import { act, cleanup, render, screen, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
@@ -113,7 +113,7 @@ describe('the Sermons sheet', () => {
     const sheet = await open();
     const rows = [...sheet.querySelectorAll<HTMLAnchorElement>('a[data-sermon-row]')];
     expect(rows.length).toBeGreaterThan(1);
-    await vi.waitFor(() => expect(hrefs(sheet).every((h) => h?.startsWith('intent://sermons.test/') && h.includes('package=org.mozilla.firefox') && h.includes('S.browser_fallback_url=https%3A%2F%2Fsermons.test%2F'))).toBe(true));
+    await waitFor(() => expect(hrefs(sheet).every((h) => h?.startsWith('intent://sermons.test/') && h.includes('package=org.mozilla.firefox') && h.includes('S.browser_fallback_url=https%3A%2F%2Fsermons.test%2F'))).toBe(true));
     // the credit link to the source's homepage goes the same way
     const credit = within(sheet).getAllByRole('link').find((a) => a.closest('[data-sermon-credit]'));
     expect(credit?.getAttribute('href')).toMatch(/^intent:\/\//);
