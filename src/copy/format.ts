@@ -3,6 +3,7 @@
 // (src/settings/definitions/copyFormat.ts): Reference (after | before | off), Verse numbers (on | off), Link (on | off).
 import type { Chapter, SourceLanguage, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
+import { lampasChapterOf } from '../data/lxxChapter';
 import { besideOf, chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { passageUrl, referenceUrl } from '../nav/links';
 import { isSeptuagint, lampasNumber } from '../reader/septuagint';
@@ -75,12 +76,6 @@ function shownOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, varia
     .join(' ')
     .replace(/\s+/g, ' ')
     .trim();
-}
-
-/** The Lampas chapter a Septuagint chapter is opened as: that of its first verse with a Lampas verse (a chapter keeps only the verses of its own Lampas chapter, loadSeptuagintChapter), else its own number. */
-function lampasChapterOf(chapter: Chapter): number {
-  const ref = chapter.verses.map((v) => v.ref).find((r) => r !== undefined && r !== 'none');
-  return ref ? ref.chapter : chapter.chapter;
 }
 
 /** The Septuagint's own address of `held` verses of a chapter opened as Lampas's chapter `lampas`: 'Greek 22:1', 'Greek 22:2-3', 'Greek 114:1-115:2' or, for a whole chapter, 'Greek 22' ('Greek 114 and 115'); '' where it is Lampas's own. */

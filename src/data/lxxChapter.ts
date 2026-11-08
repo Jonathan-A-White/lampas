@@ -121,6 +121,15 @@ export function greekChapterOf(from: LxxIndex, book: string, n: number): GreekCh
 }
 
 /**
+ * The reverse of greekChapterOf: the Lampas chapter a Septuagint chapter is opened as (Greek Psalm 22 is Psalm 23), that of its first verse with a Lampas verse (loadSeptuagintChapter keeps only the verses of its own Lampas chapter),
+ * else its own number. A chapter's `chapter` is the Greek number, so anything that names the chapter to Lampas (a reference, a Copy line, a kept diagram) asks this. Only a Septuagint verse has a `ref`: any other chapter is its own number.
+ */
+export function lampasChapterOf(chapter: Pick<Chapter, 'chapter' | 'verses'>): number {
+  const ref = chapter.verses.map((v) => v.ref).find((r) => r !== undefined && r !== 'none');
+  return ref ? ref.chapter : chapter.chapter;
+}
+
+/**
  * What the Reader's notice says when an Old Testament chapter is the Hebrew while the Septuagint is On (mw-u2w5klk.18). 'Not ready yet' is true only when the index was reached (`from`) and the book, or this chapter of it, is
  * not in it. An index that could not be reached is told as it is: the phone is offline (on the browser's word, as the Reader's other fetch notices say it), or it could not be fetched. `name` is the book's name as the Reader writes it.
  */
