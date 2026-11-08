@@ -21,6 +21,9 @@ import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
 import { Dock } from './reader/split/Dock';
 import { useSplit } from './reader/split/useSplit';
+import { takeVerseBeside, useSplitOpen } from './reader/split/splitSettings';
+import { MapDockBody } from './maps/MapDock';
+import { dockedTitle, MAP_CREDIT_ROW, useDockedMap } from './maps/useDockedMap';
 import { useAiAllowed } from './gate/licenceContext';
 import { LicenceTip } from './gate/LicenceTip';
 import { TalkSheet } from './Talk';
@@ -49,7 +52,7 @@ import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
 import { canCross, crossChapter } from './reader/crossChapter';
 import { flipSeptuagint, useBringFlipped } from './reader/flipSeptuagint';
 import { useBringLastVerse, useNoteLastVerse } from './reader/lastPlace';
-import { useBringVerse } from './reader/useBringVerse';
+import { GAP, useBringVerse } from './reader/useBringVerse';
 import { topVerseOf, useKeepTopVerse, weavedWordsKey } from './reader/useKeepTopVerse';
 import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
@@ -248,7 +251,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Genesis 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
   // The split (src/reader/split/): a dock below the passage, side by side sideways and wide, whose handle row is the divider. The box is the passage and the dock in one column; shut, it is no box at all.
-  const split = useSplit();
+  const docked = useDockedMap(useSplitOpen());
+  const split = useSplit({ body: docked ? MAP_CREDIT_ROW : undefined });
   const { setBox: boxRef, setFoot: footRef } = split;
   const inner = useRef<HTMLDivElement | null>(null);
   const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);
@@ -511,6 +515,28 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     const rect = el.getBoundingClientRect();
     if (rect.top < bar.top + margin || rect.bottom > bar.bottom - margin) moveBox(box, box.scrollTop + rect.top - bar.top - margin);
   }, [readingVerse, paging, showPage]);
+  // The dock opens beside the passage after Split on a map pressed over a verse's Verse view: the passage shrinks, and that verse is kept in view, by moving this box and nothing else.
+  const dockSeen = useRef(false);
+  const dockOpen = split.open && split.size !== null;
+  useEffect(() => {
+    if (!dockOpen) {
+      dockSeen.current = false;
+      return;
+    }
+    if (dockSeen.current) return;
+    dockSeen.current = true;
+    const box = main.current;
+    const beside = takeVerseBeside();
+    const el = beside !== null ? box?.querySelector<HTMLElement>(`[data-verse="${beside}"]`) : null;
+    if (!box || !el) return;
+    if (paging) {
+      showPage(el);
+      return;
+    }
+    const bar = box.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    if (rect.top < bar.top || rect.bottom > bar.bottom) moveBox(box, box.scrollTop + rect.top - bar.top - GAP);
+  }, [dockOpen, paging, showPage]);
 
   return (
     <VariantKeyContext.Provider value={openKey}>
@@ -659,8 +685,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </div>
       </main>
       {split.open ? (
-        <Dock split={split} footRef={footRef} title="Split" inert={sheetOpen || viewUnit !== undefined}>
-          <p className="px-4 py-3 text-muted">The dock&rsquo;s body: a map or a second text goes here.</p>
+        <Dock split={split} footRef={footRef} title={docked ? dockedTitle(docked) : 'Split'} inert={sheetOpen || viewUnit !== undefined}>
+          {docked ? <MapDockBody docked={docked} /> : <p className="px-4 py-3 text-muted">The dock&rsquo;s body: a map or a second text goes here.</p>}
         </Dock>
       ) : null}
       </div>

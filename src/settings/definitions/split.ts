@@ -3,10 +3,11 @@
 // table says so in src/tutor/knows.ts (NOT_IN_THE_REGISTRY). They are rows of the settings store all the same, so a reload brings the split back as it was.
 import { defineSetting } from '../define';
 import { FIRST_FRACTION } from '../../reader/split/splitSize';
+import { decodeSplitMap } from '../../maps/splitMap';
 
 export type ReaderSplit = 'on' | 'off';
 
-/** Whether the dock is open. S2 and S3 of mw-5r3p30.1129 say what is in it (a map, a text). */
+/** Whether the dock is open. What is in it is `splitMap` (a map; a text is mw-5r3p30.1130's). */
 export const readerSplitSetting = defineSetting<ReaderSplit>({
   key: 'readerSplit',
   default: 'off',
@@ -38,5 +39,21 @@ export const splitSizeSetting = defineSetting<number>({
   hint: 'How much of the screen the dock takes.',
 });
 
+/** The map the dock holds (mw-5r3p30.1129.2): the chapter it was opened from and the card, as src/maps/splitMap.ts writes it; empty while the dock holds none. A reload brings the same map back. */
+export const splitMapSetting = defineSetting<string>({
+  key: 'splitMap',
+  default: '',
+  allowed: {
+    kind: 'text',
+    valid: (value) => value === '' || decodeSplitMap(value) !== null,
+    example: 'gen|14|biblemapper|BattleAtValleyOfSiddim',
+    note: "the book, chapter, map source and map id joined by '|', or empty for no map",
+  },
+  parse: (raw) => (typeof raw === 'string' && (raw === '' || decodeSplitMap(raw) !== null) ? raw : ''),
+  section: 'tools',
+  label: 'Split map',
+  hint: 'The map the dock holds.',
+});
+
 /** The settings of the split, for the tutor's table (src/tutor/knows.ts). */
-export const SPLIT_SETTINGS = [readerSplitSetting, splitSizeSetting] as const;
+export const SPLIT_SETTINGS = [readerSplitSetting, splitSizeSetting, splitMapSetting] as const;
