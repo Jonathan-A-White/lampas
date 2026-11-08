@@ -121,8 +121,14 @@ const LETTER_EM = 0.8;
 
 /** The title as its two halves: the book's name ('1 Thessalonians', never broken) and the chapter ('5'; a Septuagint chapter's '23 (Greek 22)'), which may drop to a second line. */
 function partsOf(title: string): { name: string; chapter: string } {
-  const at = title.search(/\s\d+(?: \(Greek \d+\))?$/);
+  const at = title.search(/\s\d+(?: \(Greek \d+(?: and \d+)?\))?$/);
   return at < 0 ? { name: title, chapter: '' } : { name: title.slice(0, at), chapter: title.slice(at + 1) };
+}
+
+/** The chapter as the words that are never broken, with a space between them where a line may end: '23 (Greek 22)' is '23', '(Greek' and '22)', so at a large Text size the Greek chapter's number
+ * drops to a line of the title's own column, word by word as far as it must, rather than running under the switch beside it (mw-u2w5klk.301). The last word carries the chevron. */
+function chapterPieces(chapter: string): string[] {
+  return chapter.split(' ');
 }
 
 /** The title's type size: the largest the header holds, smaller only as far as the book's name needs to stand whole on a line in the room the
@@ -139,6 +145,7 @@ function titleRoom(name: string): string {
 export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaves = true, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
+  const pieces = chapterPieces(chapter);
   return (
     <header inert={inert} className="flex shrink-0 flex-wrap items-center gap-1 border-b border-line px-1">
       <h1 style={headerButtons ? undefined : { minWidth: titleRoom(name) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
@@ -148,15 +155,22 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
           onClick={onPick}
           className="flex min-h-12 w-full items-center rounded-lg px-1 text-left font-semibold active:bg-line"
         >
-          <span className="min-w-0" style={{ fontSize: titleSize(name) }}>
+          <span className="title-wrap" style={{ fontSize: titleSize(name) }}>
             <span className="whitespace-nowrap">{name}</span>
             {chapter ? ' ' : null}
-            <span className="whitespace-nowrap">
-              {chapter}
-              <span className="ml-0.5 inline-block align-middle text-accent">
-                <ChevronIcon />
+            {pieces.map((piece, i) => (
+              <span key={piece}>
+                {i > 0 ? ' ' : null}
+                <span className="whitespace-nowrap">
+                  {piece}
+                  {i === pieces.length - 1 ? (
+                    <span className="ml-0.5 inline-block align-middle text-accent">
+                      <ChevronIcon />
+                    </span>
+                  ) : null}
+                </span>
               </span>
-            </span>
+            ))}
           </span>
         </button>
       </h1>
