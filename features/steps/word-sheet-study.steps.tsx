@@ -10,6 +10,7 @@ import { db } from '../../src/data/db';
 import { setKind, setState } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { dropHeldWord } from '../../src/wordReturn';
 import { LEXICONS } from '../../src/resources/logos';
 import { resourceLink } from '../../src/resources/logosRes';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -28,6 +29,8 @@ async function openWith(_: unknown, on: number, pinned: number): Promise<void> {
   cleanup();
   clearBus();
   forgetTrail();
+  // a fresh page has no word sheet held (All lexicons > Manage held one): the last scenario's hold would reopen its sheet over this one (src/wordReturn.ts)
+  dropHeldWord();
   localStorage.clear();
   vi.unstubAllGlobals();
   stubChapterFetch();
