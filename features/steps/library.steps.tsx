@@ -5,6 +5,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
+import { DEFAULT_SEPTUAGINT_BIBLE } from '../../src/resources/logosBible';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
@@ -289,7 +290,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   const holds = async (_: unknown, nt: string, ot: string, apocrypha: string) => {
-    await waitFor(async () => expect(await getLogosBibles()).toEqual({ nt: book(nt).resource, ot: book(ot).resource, apocrypha: book(apocrypha).resource }));
+    await waitFor(async () => expect(await getLogosBibles()).toEqual({ nt: book(nt).resource, ot: book(ot).resource, apocrypha: book(apocrypha).resource, septuagint: DEFAULT_SEPTUAGINT_BIBLE }));
   };
 
   Scenario('Choosing a Bible asks which part and sets only that part', ({ Given, When, Then, And }) => {

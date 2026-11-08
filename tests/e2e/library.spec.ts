@@ -182,7 +182,7 @@ test('Bibles show the parts they are set for, read from Settings, and choosing o
   const marks = (short: string) => page.locator('li, div').filter({ has: page.getByRole('button', { name: `Set for… ${short}` }) }).last().getByTestId('bible-marks');
   await expect(marks('LSB')).toHaveText('Set for NT · OT');
   await expect(marks('NRSV')).toHaveText('Set for Apocrypha');
-  await expect(page.getByTestId('kind-status')).toHaveText('2 in use');
+  await expect(page.getByTestId('kind-status')).toHaveText('3 in use');
 
   // Settings sets the Old Testament to the ESV: the marks follow at once
   await page.goto('/#/settings?group=study');
@@ -193,10 +193,10 @@ test('Bibles show the parts they are set for, read from Settings, and choosing o
   await expect(marks('ESV')).toHaveText('Set for OT');
   await expect(marks('LSB')).toHaveText('Set for NT');
 
-  // choosing the LES asks which part: it holds the Old Testament and the Apocrypha, not the New Testament
+  // choosing the LES asks which part: it holds the Old Testament, the Apocrypha and the Septuagint, not the New Testament
   await page.getByRole('button', { name: 'Set for… LES' }).click();
   const ask = page.getByRole('group', { name: 'Set LES for' });
-  await expect(ask.getByRole('button')).toHaveText(['Old Testament', 'Apocrypha', 'All three']);
+  await expect(ask.getByRole('button')).toHaveText(['Old Testament', 'Apocrypha', 'Septuagint', 'All three']);
   await ask.getByRole('button', { name: 'Old Testament', exact: true }).click();
   await expect(marks('LES')).toHaveText('Set for OT');
   await expect(page.getByRole('group', { name: 'Set LES for' })).toHaveCount(0);
@@ -217,10 +217,10 @@ test('Bibles show the parts they are set for, read from Settings, and choosing o
 
 test('a typed Resource ID counts in use (mw-fnvjof.17.6)', async ({ page }) => {
   await open(page, 'library?kind=bible', 'Bibles');
-  await expect(page.getByTestId('kind-status')).toHaveText('2 in use');
+  await expect(page.getByTestId('kind-status')).toHaveText('3 in use');
   await page.getByRole('textbox', { name: 'Resource ID' }).fill('LLS:MYTYPEDBIBLE');
   await page.getByRole('group', { name: 'Set LLS:MYTYPEDBIBLE for' }).getByRole('button', { name: 'Old Testament', exact: true }).click();
-  await expect(page.getByText('NT LSB · OT LLS:MYTYPEDBIBLE · Apocrypha NRSV')).toBeVisible();
-  await expect(page.getByTestId('kind-status')).toHaveText('3 in use');
+  await expect(page.getByText('NT LSB · OT LLS:MYTYPEDBIBLE · Apocrypha NRSV · Septuagint LXX Swete')).toBeVisible();
+  await expect(page.getByTestId('kind-status')).toHaveText('4 in use');
   await shot(page, 'library-bibles-typed-count');
 });

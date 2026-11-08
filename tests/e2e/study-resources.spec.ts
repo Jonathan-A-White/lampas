@@ -46,7 +46,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   // Logos Off (its start): nothing of Logos hangs under its switch (mw-rfjjzd.23)
   await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
   await expect(section.getByRole('group', { name: 'Bible in Logos', exact: true })).toHaveCount(0);
-  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toHaveCount(0);
+  for (const part of ['New Testament', 'Old Testament', 'Apocrypha', 'Septuagint']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toHaveCount(0);
   await expect(page.locator('[data-under-logos]')).toHaveCount(0);
   await shot(page, 'settings-resources-off');
   await section.getByRole('switch', { name: "Strong's", exact: true }).click();
@@ -61,7 +61,7 @@ test('Study resources at phone width: thumb-sized switches in Settings, and a St
   // the library is no row here any more: its door is in Tools (mw-5r3p30.754), and the three Bibles in Logos follow the Logos switch
   await expect(section.getByRole('button', { name: /^Your Logos library/ })).toHaveCount(0);
   const under = await section.locator('[data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
-  expect(under.slice(under.indexOf('resource.logos'), under.indexOf('resource.logos') + 4)).toEqual(['resource.logos', 'logosBible', 'logosBibleOt', 'logosBibleApocrypha']);
+  expect(under.slice(under.indexOf('resource.logos'), under.indexOf('resource.logos') + 5)).toEqual(['resource.logos', 'logosBible', 'logosBibleOt', 'logosBibleApocrypha', 'logosBibleSeptuagint']);
   await leaveSettings(page);
   await openTools(page);
   // the Tools door counts the books on as the Library's card does, and opens the Library
@@ -118,7 +118,7 @@ test('Settings home at 360 px opens with Which languages?, the Bibles in Logos s
   // with Logos Off (its start) nothing hangs under it; On, the Bibles in Logos do, and still no library row
   await openGroup(page, 'Study resources');
   const section = page.getByRole('region', { name: 'Study resources' });
-  for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toHaveCount(0);
+  for (const part of ['New Testament', 'Old Testament', 'Apocrypha', 'Septuagint']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toHaveCount(0);
   await turnsOnWithApp(page, section, 'Logos');
   // Bible in Logos is a picker for each part of the canon (mw-5r3p30.841)
   for (const part of ['New Testament', 'Old Testament', 'Apocrypha']) await expect(page.getByRole('combobox', { name: `${part} Bible in Logos` })).toBeVisible();

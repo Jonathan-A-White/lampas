@@ -13,7 +13,7 @@ import { referencesIn } from '../../src/markdown/verseLinks';
 import { inWords, osisOf, parseCanonReference, parseHeldReference, parseTypedReference, resolveReference } from '../../src/nav/links';
 import { readPlace } from '../../src/nav/parseReference';
 import { findReferences } from '../../src/nav/refsInText';
-import { bibleFor, DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, verseLink } from '../../src/resources/logosBible';
+import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE, bibleFor, verseLink } from '../../src/resources/logosBible';
 import { placeOf, verseChips } from '../../src/resources/tutorLinks';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
@@ -122,7 +122,7 @@ describe('a tutor answer naming Sirach 1:1', () => {
   it('draws a chip that opens logosres:1.0.50;ref=Bible.Sir1.1 with Logos on, and none with it off', () => {
     const place = placeOf('Sirach 1:1')!;
     expect(place).toMatchObject({ book: 'sir', chapter: 1, verse: 1, name: 'Sirach 1:1', reader: false });
-    const bible = bibleFor(place.book, { nt: DEFAULT_LOGOS_BIBLE, ot: DEFAULT_LOGOS_BIBLE, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    const bible = bibleFor(place.book, { nt: DEFAULT_LOGOS_BIBLE, ot: DEFAULT_LOGOS_BIBLE, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
     expect(bible).toBe('LLS:1.0.50');
     const [chip, ...rest] = verseChips(place, place.name, { on: ['logos'], options: {} }, bible);
     expect(rest).toEqual([]);

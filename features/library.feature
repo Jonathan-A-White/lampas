@@ -14,7 +14,7 @@ Feature: Your Logos library, a screen of its own
       | Lexicons    | 3 on · 1 pinned |
       | Grammars    | 1 on            |
       | Greek texts | none on         |
-      | Bibles      | NT LSB · OT LSB · Apocrypha NRSV |
+      | Bibles      | NT LSB · OT LSB · Apocrypha NRSV · Septuagint LXX Swete |
       | Devotionals | none on         |
     When the shelf puts "DBL Greek" Off
     Then the row "Lexicons" reads "2 on · 1 pinned"
@@ -76,7 +76,7 @@ Feature: Your Logos library, a screen of its own
     And the mark of "LSB" reads "Set for OT"
     And the line under "NRSV" says "Set for Apocrypha"
     And "ESV" has no mark
-    And the page says "3 in use"
+    And the page says "4 in use"
     And the page has no button "All on"
     And no book of the kind offers "Pin"
     When Settings sets the Old Testament to "ESV"
@@ -88,7 +88,7 @@ Feature: Your Logos library, a screen of its own
     And Settings sets the New Testament to "NKJV", the Old Testament to "LSB" and the Apocrypha to "NRSV"
     When he opens the Library at the kind "bible"
     And he taps Set for on "LES"
-    Then the parts offered for "LES" are "Old Testament, Apocrypha, All three"
+    Then the parts offered for "LES" are "Old Testament, Apocrypha, Septuagint, All three"
     When he sets "LES" for "Old Testament"
     Then Settings holds the New Testament "NKJV", the Old Testament "LES" and the Apocrypha "NRSV"
     And "LES" is marked "Set for OT"

@@ -148,7 +148,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(document.querySelector('[data-under-logos]')).toBeNull();
       expect(within(section).queryByRole('button', { name: /^Your Logos library/ })).toBeNull();
       expect(within(section).queryByText(/Bible in Logos/)).toBeNull();
-      for (const key of ['logosBible', 'logosBibleOt', 'logosBibleApocrypha']) expect(document.querySelector(`[data-setting="${key}"]`)).toBeNull();
+      for (const key of ['logosBible', 'logosBibleOt', 'logosBibleApocrypha', 'logosBibleSeptuagint']) expect(document.querySelector(`[data-setting="${key}"]`)).toBeNull();
     });
     And('the Settings search for {string} shows no book of the library', async (_, text: string) => {
       await openAt('#/settings');

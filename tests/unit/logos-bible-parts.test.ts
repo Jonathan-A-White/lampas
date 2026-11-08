@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { dropStaleBibleRows, getLogosBible, getLogosBibles, setLogosBible, setLogosBibleFor, shelfOf } from '../../src/data/repositories';
-import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, bibleFor, bibleRef, partOf, verseLink } from '../../src/resources/logosBible';
+import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE, bibleFor, bibleRef, partOf, verseLink } from '../../src/resources/logosBible';
 import { verseChips } from '../../src/resources/tutorLinks';
 import { placeOf } from '../../src/resources/tutorLinks';
 
@@ -30,7 +30,7 @@ describe('the part of a book', () => {
   });
 
   it('picks the Bible of that part', () => {
-    const bibles = { nt: DEFAULT_LOGOS_BIBLE, ot: NASB, apocrypha: KJV };
+    const bibles = { nt: DEFAULT_LOGOS_BIBLE, ot: NASB, apocrypha: KJV, septuagint: DEFAULT_SEPTUAGINT_BIBLE };
     expect(bibleFor('rom', bibles)).toBe(DEFAULT_LOGOS_BIBLE);
     expect(bibleFor('dan', bibles)).toBe(NASB);
     expect(bibleFor('wis', bibles)).toBe(KJV);
@@ -43,7 +43,7 @@ describe('the part of a book', () => {
 });
 
 describe('Open in Logos on a reference', () => {
-  const bibles = { nt: DEFAULT_LOGOS_BIBLE, ot: NASB, apocrypha: KJV };
+  const bibles = { nt: DEFAULT_LOGOS_BIBLE, ot: NASB, apocrypha: KJV, septuagint: DEFAULT_SEPTUAGINT_BIBLE };
   const resources = { on: ['logos'], options: {} };
 
   it('opens a New Testament reference in the New Testament Bible', () => {
@@ -65,31 +65,31 @@ describe('Open in Logos on a reference', () => {
 
 describe('the three Bibles he keeps', () => {
   it('are the default Bibles while he has chosen none: the Legacy Standard Bible, and the NRSV for the Apocrypha', async () => {
-    expect(await getLogosBibles()).toEqual({ nt: DEFAULT_LOGOS_BIBLE, ot: DEFAULT_LOGOS_BIBLE, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    expect(await getLogosBibles()).toEqual({ nt: DEFAULT_LOGOS_BIBLE, ot: DEFAULT_LOGOS_BIBLE, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
   });
 
   it('follow the one Bible he had (the logosBible setting) until each is picked, the Apocrypha excepted', async () => {
     await db.settings.put({ key: 'logosBible', value: NASB });
-    expect(await getLogosBibles()).toEqual({ nt: NASB, ot: NASB, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    expect(await getLogosBibles()).toEqual({ nt: NASB, ot: NASB, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
     expect(await getLogosBible()).toBe(NASB);
   });
 
   it('keep one part picked apart from the others, and survive a reload (the store is read again)', async () => {
     await db.settings.put({ key: 'logosBible', value: NASB });
     await setLogosBibleFor('ot', ESV);
-    expect(await getLogosBibles()).toEqual({ nt: NASB, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    expect(await getLogosBibles()).toEqual({ nt: NASB, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
     expect(await getLogosBible('ot')).toBe(ESV);
     // picking the New Testament does not move a part that was following it
     await setLogosBibleFor('nt', KJV);
-    expect(await getLogosBibles()).toEqual({ nt: KJV, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    expect(await getLogosBibles()).toEqual({ nt: KJV, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
     db.close();
     await db.open();
-    expect(await getLogosBibles()).toEqual({ nt: KJV, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    expect(await getLogosBibles()).toEqual({ nt: KJV, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
   });
 
   it('are set together by setLogosBible (the Library chooses one Bible; the Apocrypha keeps to a Bible that has one), and a malformed saved one is the default', async () => {
     await setLogosBible(ESV);
-    expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
     await db.settings.put({ key: 'logosBibleOt', value: 'nonsense' });
     expect((await getLogosBibles()).ot).toBe(ESV);
   });
@@ -115,7 +115,7 @@ describe('the stale Chosen mark of the shelf', () => {
     expect(await dropStaleBibleRows()).toBe(1);
     expect((await shelfOf('bible')).map((r) => r.id)).toEqual([]);
     expect(await getLogosBibles()).toEqual(before);
-    expect(before).toEqual({ nt: NKJV, ot: LSB, apocrypha: DEFAULT_APOCRYPHA_BIBLE });
+    expect(before).toEqual({ nt: NKJV, ot: LSB, apocrypha: DEFAULT_APOCRYPHA_BIBLE, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
   });
 
   it('is kept when a part is set to that Bible, and nothing else on the shelf is touched', async () => {

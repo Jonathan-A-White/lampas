@@ -12,7 +12,7 @@ const study = (values: Record<string, string>): string[] =>
     .filter((key) => key !== 'audioBible' && key !== 'readingPlan');
 const keysOf = (values: Record<string, string>): string[] => visibleRows({ languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', ...values }, '').map((r) => r.key);
 
-const UNDER_LOGOS = ['logosBible', 'logosBibleOt', 'logosBibleApocrypha'];
+const UNDER_LOGOS = ['logosBible', 'logosBibleOt', 'logosBibleApocrypha', 'logosBibleSeptuagint'];
 
 describe('Study resources with Logos Off', () => {
   it('draws the two switches and nothing of Logos under them', () => {
@@ -22,7 +22,7 @@ describe('Study resources with Logos Off', () => {
 });
 
 describe('Study resources with Logos On', () => {
-  it('draws the three Bibles in Logos directly beneath the Logos switch, in that order, and the library among the Tools', () => {
+  it('draws the four Bibles in Logos directly beneath the Logos switch, in that order, and the library among the Tools', () => {
     expect(study({ 'resource.logos': 'on' })).toEqual(['resource.strongs', 'resource.logos', ...UNDER_LOGOS]);
     const values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5' };
     expect(visibleToolRows({ ...values, 'resource.logos': 'on' }, '').map((r) => r.key)).toContain('library');
@@ -72,7 +72,7 @@ describe('the order the screen draws (orderResourceRows)', () => {
     for (const level of [1, 5] as const) {
       const keys = drawn({ 'resource.logos': 'on' }, level);
       const at = keys.indexOf('resource.logos');
-      expect(keys.slice(at + 1, at + 4)).toEqual(UNDER_LOGOS);
+      expect(keys.slice(at + 1, at + 1 + UNDER_LOGOS.length)).toEqual(UNDER_LOGOS);
     }
   });
 

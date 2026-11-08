@@ -9,7 +9,7 @@ import { getLogosBibles, moveApocryphaBible, setLogosBible, setLogosBibleFor } f
 import { LogosBibleControl } from '../../src/settings/controls/resources';
 import { rowOf } from '../../src/settings/rows';
 import { entryOf } from '../../src/resources/catalogue';
-import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, biblesFor, bibleFor } from '../../src/resources/logosBible';
+import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE, bibleFor, biblesFor } from '../../src/resources/logosBible';
 import { partsOfSupersets } from '../../src/library/parseExport';
 
 const LSB = 'LLS:LGCYSTNDRDBBLSB';
@@ -83,7 +83,7 @@ describe('Apocrypha Bible in Logos on the Settings screen', () => {
 describe('the Apocrypha Bible he keeps', () => {
   it('starts as NRSV, while the New Testament starts as the Legacy Standard Bible', async () => {
     expect(DEFAULT_APOCRYPHA_BIBLE).toBe(NRSV);
-    expect(await getLogosBibles()).toEqual({ nt: DEFAULT_LOGOS_BIBLE, ot: DEFAULT_LOGOS_BIBLE, apocrypha: NRSV });
+    expect(await getLogosBibles()).toEqual({ nt: DEFAULT_LOGOS_BIBLE, ot: DEFAULT_LOGOS_BIBLE, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
     expect(bibleFor('tob', await getLogosBibles())).toBe(NRSV);
   });
 
@@ -110,7 +110,7 @@ describe('the Apocrypha Bible he keeps', () => {
 
   it('is not left on a Bible without it when the Library chooses one Bible for all three parts', async () => {
     await setLogosBible(ESV);
-    expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: NRSV });
+    expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
   });
 });
 

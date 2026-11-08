@@ -6,14 +6,14 @@ import { db } from '../../src/data/db';
 import { getLogosBibles, planImport, setLogosBibleFor } from '../../src/data/repositories';
 import { bibleLine, marksOf, partsFor, setBibleFor, withBibles } from '../../src/library/bibleParts';
 import { booksOn, countLine, headerCount, infoOf } from '../../src/library/kinds';
-import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
+import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE } from '../../src/resources/logosBible';
 
 const NKJV = 'LLS:1.0.30';
 const ESV = 'LLS:1.0.710';
 const LES = 'LLS:LELXX';
 const LSB = DEFAULT_LOGOS_BIBLE;
 const NRSV = DEFAULT_APOCRYPHA_BIBLE;
-const bibles = { nt: NKJV, ot: LSB, apocrypha: NRSV };
+const bibles = { nt: NKJV, ot: LSB, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE };
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -27,7 +27,7 @@ describe('the marks of a Bible', () => {
     expect(marksOf(LSB, bibles)).toBe('OT');
     expect(marksOf(NRSV, bibles)).toBe('Apocrypha');
     expect(marksOf(ESV, bibles)).toBe('');
-    expect(marksOf(LSB, { nt: LSB, ot: LSB, apocrypha: NRSV })).toBe('NT · OT');
+    expect(marksOf(LSB, { nt: LSB, ot: LSB, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE })).toBe('NT · OT');
   });
 
   it('change with Settings at once: the Bible a part moves to is marked and the one it left is not', () => {
@@ -43,17 +43,18 @@ describe('the Bibles page header (mw-fnvjof.17.6)', () => {
   const pool = [NKJV, LSB, NRSV, ESV, TYPED, TYPED2];
 
   it('counts a typed Resource ID the catalogue lacks, as the line under the search names it', () => {
-    const mix = { nt: LSB, ot: TYPED, apocrypha: NRSV };
-    expect(bibleLine(mix)).toBe('NT LSB · OT LLS:MYTYPEDBIBLE · Apocrypha NRSV');
-    expect(headerCount('bible', withBibles(new Map(), Object.values(mix)), mix)).toBe('3 in use');
+    const mix = { nt: LSB, ot: TYPED, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE };
+    expect(bibleLine(mix)).toBe('NT LSB · OT LLS:MYTYPEDBIBLE · Apocrypha NRSV · Septuagint LXX Swete');
+    expect(headerCount('bible', withBibles(new Map(), Object.values(mix)), mix)).toBe('4 in use');
   });
 
   it('equals the number of distinct Bibles in the summary line, for every mix of catalogue and typed IDs', () => {
     for (const nt of pool) for (const ot of pool) for (const apocrypha of pool) {
-      const mix = { nt, ot, apocrypha };
+      const mix = { nt, ot, apocrypha, septuagint: DEFAULT_SEPTUAGINT_BIBLE };
       const line = bibleLine(mix);
-      // the line names a Bible once when all three parts agree ('X for all three'), else once for each part: count the names it carries
-      const named = line.endsWith('for all three') ? 1 : new Set(line.split(' · ').map((part) => part.split(' ').slice(1).join(' '))).size;
+      // the line names a Bible once when all three parts agree ('X for all three'), else once for each part, and the Septuagint's last: count the names it carries
+      const [canon, septuagint] = [line.slice(0, line.lastIndexOf(' · ')), line.slice(line.lastIndexOf(' · ') + 3)];
+      const named = (canon.endsWith('for all three') ? 1 : new Set(canon.split(' · ').map((part) => part.split(' ').slice(1).join(' '))).size) + (septuagint === 'Septuagint LXX Swete' ? 1 : 0);
       expect(headerCount('bible', withBibles(new Map(), Object.values(mix)), mix), line).toBe(`${named} in use`);
     }
   });
@@ -61,10 +62,10 @@ describe('the Bibles page header (mw-fnvjof.17.6)', () => {
 
 describe('the Bibles row and the page', () => {
   it('read the three parts, in one name when they agree', () => {
-    expect(bibleLine(bibles)).toBe('NT NKJV · OT LSB · Apocrypha NRSV');
-    expect(bibleLine({ nt: NRSV, ot: NRSV, apocrypha: NRSV })).toBe('NRSV for all three');
-    expect(countLine('bible', new Map(), bibles)).toBe('NT NKJV · OT LSB · Apocrypha NRSV');
-    expect(headerCount('bible', withBibles(new Map(), Object.values(bibles)))).toBe('3 in use');
+    expect(bibleLine(bibles)).toBe('NT NKJV · OT LSB · Apocrypha NRSV · Septuagint LXX Swete');
+    expect(bibleLine({ nt: NRSV, ot: NRSV, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE })).toBe('NRSV for all three · Septuagint LXX Swete');
+    expect(countLine('bible', new Map(), bibles)).toBe('NT NKJV · OT LSB · Apocrypha NRSV · Septuagint LXX Swete');
+    expect(headerCount('bible', withBibles(new Map(), Object.values(bibles)))).toBe('4 in use');
   });
 
   it('take the Bibles from Settings, dropping what a shelf row of a Bible said', () => {
@@ -83,23 +84,23 @@ describe('the Bibles row and the page', () => {
 describe('choosing a Bible asks which part', () => {
   it('offers only the parts the Bible holds', () => {
     expect(partsFor(ESV)).toEqual(['nt', 'ot']);
-    expect(partsFor(LES)).toEqual(['ot', 'apocrypha']);
-    expect(partsFor('LLS:MYOWNBIBLE.1')).toEqual(['nt', 'ot', 'apocrypha']);
+    expect(partsFor(LES)).toEqual(['ot', 'apocrypha', 'septuagint']);
+    expect(partsFor('LLS:MYOWNBIBLE.1')).toEqual(['nt', 'ot', 'apocrypha', 'septuagint']);
   });
 
   it('writes only the part named', async () => {
     await setBibleFor('nt', NKJV);
     await setBibleFor('ot', LSB);
     await setBibleFor('ot', LES);
-    expect(await getLogosBibles()).toEqual({ nt: NKJV, ot: LES, apocrypha: NRSV });
+    expect(await getLogosBibles()).toEqual({ nt: NKJV, ot: LES, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
   });
 
   it('All three writes every part the Bible holds and leaves the rest', async () => {
     await setBibleFor('apocrypha', LES);
     await setBibleFor('all', ESV);
-    expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: LES });
+    expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: LES, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
     await setBibleFor('all', NRSV);
-    expect(await getLogosBibles()).toEqual({ nt: NRSV, ot: NRSV, apocrypha: NRSV });
+    expect(await getLogosBibles()).toEqual({ nt: NRSV, ot: NRSV, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
   });
 });
 
