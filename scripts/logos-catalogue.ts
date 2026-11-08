@@ -129,7 +129,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
   for (const rule of rules.ids) {
     if (!KIND_LIST.includes(rule.kind)) throw new Error(`${rule.resource}: ${rule.kind} is not a kind`);
     if (taken.has(rule.resource)) throw new Error(`${rule.resource} is named twice in the rules`);
-    if ((rule.kind === 'bible' || rule.kind === 'hebrew-text') && !rule.parts?.length) throw new Error(`${rule.resource} is a Bible with no "parts": say which of nt, ot and apocrypha it holds`);
+    if ((rule.kind === 'bible' || rule.kind === 'hebrew-text') && !rule.parts?.length) throw new Error(`${rule.resource} is a Bible with no "parts": say which of nt, ot, apocrypha and septuagint it holds`);
     for (const code of rule.covers ?? []) if (!known.has(code)) throw new Error(`${rule.resource} covers ${code}, which is no book`);
     if (rule.work !== undefined && !workIds.has(rule.work)) throw new Error(`${rule.resource} is a volume of ${rule.work}, which the rules do not list under "works"`);
     taken.add(rule.resource);

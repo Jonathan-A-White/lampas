@@ -1,9 +1,9 @@
 // src/library/PartChoice.tsx — "which part?": the question that follows choosing a Bible on Library > Bibles (the list's rows and the typed Resource ID, TypedBible.tsx). One button for each part
-// the Bible can be set for (the catalogue's `parts`: bibleHolds) and one for all three; a tap writes that part's Bible in Logos alone (setLogosBibleFor), or all three (setLogosBible). It is the
+// the Bible can be set for (the catalogue's `parts`: bibleHolds, the Septuagint's too) and one for all three (the canon's, when it holds any); a tap writes that part's Bible in Logos alone (setLogosBibleFor), or all three (setLogosBible). It is the
 // same fact Settings > Study resources sets, so nothing here is kept apart.
 import { LOGOS_PARTS, type LogosPart } from '../resources/logosBible';
 import { oneTap } from '../ui/settle';
-import { partsFor, setBibleFor } from './bibleParts';
+import { canonPartsFor, partsFor, setBibleFor } from './bibleParts';
 
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
@@ -19,9 +19,11 @@ export function PartChoice({ name, resourceId, onChosen }: { name: string; resou
           {p.label}
         </button>
       ))}
-      <button type="button" className={BUTTON} onClick={() => oneTap(`part-choice:${name}`, () => choose('all'))}>
-        All three
-      </button>
+      {canonPartsFor(resourceId).length > 0 ? (
+        <button type="button" className={BUTTON} onClick={() => oneTap(`part-choice:${name}`, () => choose('all'))}>
+          All three
+        </button>
+      ) : null}
     </div>
   );
 }

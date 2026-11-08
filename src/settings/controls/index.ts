@@ -77,6 +77,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   logosBible: LogosBibleControl,
   logosBibleOt: LogosBibleControl,
   logosBibleApocrypha: LogosBibleControl,
+  logosBibleSeptuagint: LogosBibleControl,
   audioBible: AudioBibleControl,
   readingPlan: ReadingPlanControl,
   dailyReview: DailyReviewControl,

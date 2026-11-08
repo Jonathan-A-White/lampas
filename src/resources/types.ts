@@ -1,8 +1,9 @@
 // src/resources/types.ts — what a study resource is. One resource is one file in this folder exporting a StudyResource, and one
 // line in index.ts. A resource only builds links; it holds, fetches and shows no text of any lexicon (docs/resources.md).
 
-/** The three parts of the canon he keeps a Bible in Logos for (Settings > Bible in Logos): in the order a Bible lists the parts it holds. */
-export type LogosPart = 'nt' | 'ot' | 'apocrypha';
+/** The parts he keeps a Bible in Logos for (Settings > Bible in Logos): the three of the canon, in the order a Bible lists the parts it holds, and the Septuagint (mw-u2w5klk.266), the one a chapter
+ *  Lampas has not shipped in the Septuagint opens in. A book is never of the Septuagint part (partOf): it is a Bible's own, named in the catalogue rules. */
+export type LogosPart = 'nt' | 'ot' | 'apocrypha' | 'septuagint';
 
 /** A verse as the data names it: the book's code ('act', as in public/data/index.json), the chapter and the verse. */
 export interface StudyRef {

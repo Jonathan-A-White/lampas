@@ -29,6 +29,9 @@ export const DEFAULT_LOGOS_BIBLE: string = (() => {
  *  The Legacy Standard Bible, the New Testament's start, has none. */
 export const DEFAULT_APOCRYPHA_BIBLE = 'LLS:1.0.50';
 
+/** The Septuagint a chapter Lampas has not shipped opens in: Swete's Greek, the text Lampas itself reads (PROVISIONAL, the Governor to confirm; mw-u2w5klk.266). */
+export const DEFAULT_SEPTUAGINT_BIBLE = 'LLS:OTGRKSWETETXT';
+
 /** The Bibles a part's picker offers: those of the catalogue that hold the part (their `parts`), in the catalogue's order. */
 export const biblesFor = (part: LogosPart): readonly { id: string; name: string }[] =>
   readable()
@@ -68,13 +71,25 @@ export const LOGOS_PARTS: readonly { part: LogosPart; label: string; key: string
   { part: 'nt', label: 'New Testament', key: 'logosBible' },
   { part: 'ot', label: 'Old Testament', key: 'logosBibleOt' },
   { part: 'apocrypha', label: 'Apocrypha', key: 'logosBibleApocrypha' },
+  { part: 'septuagint', label: 'Septuagint', key: 'logosBibleSeptuagint' },
 ];
+
+/** The parts of the canon: the three a book is in (partOf), as against the Septuagint, which no book is of. */
+export const CANON_PARTS: readonly LogosPart[] = ['nt', 'ot', 'apocrypha'];
 
 /** The part of the canon a book is in, by our code: the Apocrypha's, the Old Testament's, else the New Testament's (what a code that is none of them has always been given). */
 export const partOf = (code: string): LogosPart => (code in APOCRYPHA_LOGOS ? 'apocrypha' : otBookOf(code) ? 'ot' : 'nt');
 
 /** The Bible in Logos a place in the book `code` opens in: that of the book's part. */
 export const bibleFor = (code: string, bibles: LogosBibles): string => bibles[partOf(code)];
+
+/** The link that opens chapter `chapter` of the Old Testament book `code` in his Septuagint `resourceId` in Logos (Settings > Bible in Logos > Septuagint): the reference is Lampas's own numbering,
+ *  `Bible.Ge7`, which Logos maps into a Septuagint resource by its own tables (UNVERIFIED on a device, docs/resources.md); the Resource ID stays as Logos prints it, as a commentary's door has it
+ *  (library/inLogos.ts). Undefined for a book that is not of the Old Testament or a chapter below 1. */
+export function septuagintLink(code: string, chapter: number, resourceId: string): { url: string; fallback: string } | undefined {
+  const ref = otBookOf(code) ? bibleRef(code, chapter) : undefined;
+  return ref ? resourceLink(resourceId.trim(), `ref=${ref}`) : undefined;
+}
 
 /** The New Testament books' abbreviations in a Logos reference (Logos' own list, https://www.logos.com/bible-book-abbreviations, written like the Old Testament's in
  *  data/otBooks.ts; UNVERIFIED on a device, docs/resources.md), by our book code: the canon's (data/canon.ts). */

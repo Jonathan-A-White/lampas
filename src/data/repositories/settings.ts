@@ -7,7 +7,7 @@ import { MOVE_WINDOW, type GrammarMove } from '../grammar/move';
 import { DEFAULT_LAYOUT, isLayout, type ReadingLayout } from '../../layout/layouts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from '../../appearance/textSizes';
 import type { Theme } from '../../appearance/themes';
-import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, LOGOS_PARTS, bibleHolds, isResourceId, type LogosBibles, type LogosPart } from '../../resources/logosBible';
+import { CANON_PARTS, DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE, LOGOS_PARTS, bibleHolds, isResourceId, type LogosBibles, type LogosPart } from '../../resources/logosBible';
 import { playToOf, type PlayTo } from '../../speech/readSpan';
 import { LANGUAGES, normaliseRate, type SettableLanguage, type SpeechRates } from '../../speech/languages';
 import { DEFAULT_DEPTH, isDepth, type Depth, type TutorScript } from '../../script/scripts';
@@ -343,26 +343,28 @@ export async function setQuizGoal(text: string): Promise<void> {
 
 const LOGOS_BIBLE_KEYS = Object.fromEntries(LOGOS_PARTS.map((p) => [p.part, p.key])) as Record<LogosPart, string>;
 
-/** The Resource IDs saved for the three parts (undefined for a part with none or a malformed one), read in one go. */
+/** The Resource IDs saved for the parts (undefined for a part with none or a malformed one), read in one go. */
 async function savedBibles(): Promise<Record<LogosPart, string | undefined>> {
   const rows = await db.settings.bulkGet(LOGOS_PARTS.map((p) => p.key));
   const saved = (i: number): string | undefined => (typeof rows[i]?.value === 'string' && isResourceId(rows[i]?.value) ? rows[i]?.value.trim() : undefined);
-  return { nt: saved(0), ot: saved(1), apocrypha: saved(2) };
+  return { nt: saved(0), ot: saved(1), apocrypha: saved(2), septuagint: saved(3) };
 }
 
-/** Whether he has set a Bible in Logos for any part (a saved, well-formed Resource ID under one of the three keys), as against the defaults: an import chooses a Bible for him only while he has not. */
+/** Whether he has set a Bible in Logos for any part of the canon (a saved, well-formed Resource ID under one of the three keys), as against the defaults: an import chooses a Bible for him only while he has not.
+ *  The Septuagint's is not one of them: it is a Bible of its own, which an import does not choose. */
 export async function hasSetBible(): Promise<boolean> {
-  return Object.values(await savedBibles()).some((id) => id !== undefined);
+  const saved = await savedBibles();
+  return CANON_PARTS.some((part) => saved[part] !== undefined);
 }
 
-/** The Resource ID of his Bible in Logos for each part of the canon. The New Testament's is the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed; the
+/** The Resource ID of his Bible in Logos for each part: the three of the canon and the Septuagint. The New Testament's is the default (the Legacy Standard Bible) while none was chosen or the saved one is malformed; the
  *  Old Testament follows the New Testament's until it is picked. The Apocrypha starts in the NRSV (DEFAULT_APOCRYPHA_BIBLE), and a saved Bible the catalogue knows to have no Apocrypha is read as the
- *  NRSV too (a typed Resource ID is kept as typed); moveApocryphaBible writes that move down once. */
+ *  NRSV too (a typed Resource ID is kept as typed); moveApocryphaBible writes that move down once. The Septuagint starts in Swete's Greek (DEFAULT_SEPTUAGINT_BIBLE) and follows no other part. */
 export async function getLogosBibles(): Promise<LogosBibles> {
   const saved = await savedBibles();
   const nt = saved.nt ?? DEFAULT_LOGOS_BIBLE;
   const apocrypha = saved.apocrypha ?? DEFAULT_APOCRYPHA_BIBLE;
-  return { nt, ot: saved.ot ?? nt, apocrypha: bibleHolds(apocrypha, 'apocrypha') ? apocrypha : DEFAULT_APOCRYPHA_BIBLE };
+  return { nt, ot: saved.ot ?? nt, apocrypha: bibleHolds(apocrypha, 'apocrypha') ? apocrypha : DEFAULT_APOCRYPHA_BIBLE, septuagint: saved.septuagint ?? DEFAULT_SEPTUAGINT_BIBLE };
 }
 
 const APOCRYPHA_MOVED_KEY = 'logosBibleApocryphaMoved';
@@ -391,17 +393,18 @@ export async function getLogosBible(part: LogosPart = 'nt'): Promise<string> {
   return (await getLogosBibles())[part];
 }
 
-/** One Bible in Logos for every part: what an import of his Logos list does (ImportLibrary.tsx). The Library's Bibles page asks which part and uses setLogosBibleFor. */
+/** One Bible in Logos for every part of the canon (not the Septuagint's, which is a Bible of its own): what an import of his Logos list does (ImportLibrary.tsx). The Library's Bibles page asks which part and uses setLogosBibleFor. */
 export async function setLogosBible(resourceId: string): Promise<void> {
   const id = resourceId.trim();
-  await db.settings.bulkPut(Object.values(LOGOS_BIBLE_KEYS).map((key) => ({ key, value: id })));
+  await db.settings.bulkPut(CANON_PARTS.map((part) => ({ key: LOGOS_BIBLE_KEYS[part], value: id })));
   await db.settings.delete(APOCRYPHA_MOVED_KEY);
 }
 
-/** The Bible in Logos of one part. The other two are kept as they are now, so a part that was following another does not move with it. */
+/** The Bible in Logos of one part. The other parts are kept as they are now, so a part that was following another does not move with it; the Septuagint's is written only when it is the part set or was already saved. */
 export async function setLogosBibleFor(part: LogosPart, resourceId: string): Promise<void> {
-  const bibles = { ...(await getLogosBibles()), [part]: resourceId.trim() };
-  await db.settings.bulkPut((Object.keys(LOGOS_BIBLE_KEYS) as LogosPart[]).map((p) => ({ key: LOGOS_BIBLE_KEYS[p], value: bibles[p] })));
+  const [bibles, saved] = [{ ...(await getLogosBibles()), [part]: resourceId.trim() }, await savedBibles()];
+  const written = (Object.keys(LOGOS_BIBLE_KEYS) as LogosPart[]).filter((p) => p !== 'septuagint' || p === part || saved.septuagint !== undefined);
+  await db.settings.bulkPut(written.map((p) => ({ key: LOGOS_BIBLE_KEYS[p], value: bibles[p] })));
   if (part === 'apocrypha') await db.settings.delete(APOCRYPHA_MOVED_KEY);
 }
 

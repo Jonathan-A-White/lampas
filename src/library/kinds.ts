@@ -58,7 +58,7 @@ const INFO: Record<Kind, Omit<KindInfo, 'kind'>> = {
   bible: {
     plural: 'Bibles',
     singular: 'Bible',
-    help: 'Opens a chapter or a verse in the Bible you set for its part. Each Bible shows the parts it is set for; choose one and say which part: the New Testament, the Old Testament, the Apocrypha, or all three. Settings > Study resources sets the same three.',
+    help: 'Opens a chapter or a verse in the Bible you set for its part. Each Bible shows the parts it is set for; choose one and say which part: the New Testament, the Old Testament, the Apocrypha, the Septuagint, or all three of the first. Settings > Study resources sets the same four.',
     steps: 'parts',
   },
   devotional: {
