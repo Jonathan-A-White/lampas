@@ -291,11 +291,16 @@ const anyGenitive = (w: AgreementWord, role: Role): boolean => roleReadings(w, r
 
 /** Two readings agree: the same case, number and gender; an article and an infinitive when the article is neuter singular. */
 function agrees(a: Reading, b: Reading): boolean {
-  const ca = cngOf(a.morph);
-  const cb = cngOf(b.morph);
+  return morphsAgree(a.morph, b.morph);
+}
+
+/** Two parsings agree (`agrees`, on parsings alone): the model's answers to the two words of a break, asked of them once chosen (release.ts standingBreaks). */
+export function morphsAgree(a: string, b: string): boolean {
+  const ca = cngOf(a);
+  const cb = cngOf(b);
   if (ca && cb) return ca === cb;
-  if (partOf(a.morph) === 'inf' && partOf(b.morph) === 'T') return Boolean(cb?.endsWith('SN'));
-  if (partOf(b.morph) === 'inf' && partOf(a.morph) === 'T') return Boolean(ca?.endsWith('SN'));
+  if (partOf(a) === 'inf' && partOf(b) === 'T') return Boolean(cb?.endsWith('SN'));
+  if (partOf(b) === 'inf' && partOf(a) === 'T') return Boolean(ca?.endsWith('SN'));
   return false;
 }
 
@@ -351,6 +356,8 @@ export interface AgreementOutcome {
   brokenWords: number;
   /** the verse of each break (`Gen.1:20`, once a break), in the text's order: a chapter counts its own (the chapter bar, bar.ts chapterVerdict) */
   breakVerses: string[];
+  /** the two words of each break, in the same order as `breakVerses`: the chapter bar asks whether the model's answers to them agree (release.ts standingBreaks; mw-u2w5klk.298) */
+  breakPairs: Array<[string, string]>;
 }
 
 /**
@@ -371,6 +378,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
   let brokenWords = 0;
   let settled = 0;
   const breakVerses: string[] = [];
+  const breakPairs: Array<[string, string]> = [];
   const perVerse = [...verses.values()].map((v) => ({ v, links: linksOf(v) }));
   for (const { v, links } of perVerse) {
     const broken = new Map<number, string[]>();
@@ -379,6 +387,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
       if (agrees(readingsOf(v[l.a])[0], readingsOf(v[l.b])[0])) continue;
       breaks++;
       breakVerses.push(v[l.a].verse);
+      breakPairs.push([v[l.a].ref, v[l.b].ref]);
       for (const [x, y] of [
         [l.a, l.b],
         [l.b, l.a],
@@ -447,7 +456,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
       });
     }
   }
-  return { outs: items.map((w) => w.out), settled, breaks, brokenWords, breakVerses };
+  return { outs: items.map((w) => w.out), settled, breaks, brokenWords, breakVerses, breakPairs };
 }
 
 // ---------------------------------------------------------------- the address rule
@@ -746,6 +755,8 @@ export interface AgreementStats {
   brokenWords: number;
   /** the verse of each break (AgreementOutcome.breakVerses) */
   breakVerses: string[];
+  /** the two words of each break (AgreementOutcome.breakPairs) */
+  breakPairs: Array<[string, string]>;
 }
 
 const isLowerCase = (form: string): boolean => {
@@ -775,7 +786,7 @@ function mergeCandidates(first: readonly WordCandidate[], ...more: ReadonlyArray
  * Returns each word's answer after the check, in the same order, and its counts.
  */
 export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string; form: string; display: string }>, given: readonly Out[], ctx: CheckContext): { outs: Out[]; stats: AgreementStats } {
-  const stats: AgreementStats = { pendingBefore: given.filter((o) => !isSettled(o)).length, addressed: 0, governed: 0, governedPending: 0, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0, breakVerses: [] };
+  const stats: AgreementStats = { pendingBefore: given.filter((o) => !isSettled(o)).length, addressed: 0, governed: 0, governedPending: 0, names: 0, demoted: 0, demotedSettled: 0, settled: 0, breaks: 0, brokenWords: 0, breakVerses: [], breakPairs: [] };
   const read = readAddresses(words, given);
   stats.addressed = read.addressed;
   const prep = readPrepositions(words, read.outs, ctx.governs ?? new Map());
@@ -818,6 +829,7 @@ export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string
   stats.breaks = outcome.breaks;
   stats.brokenWords = outcome.brokenWords;
   stats.breakVerses = outcome.breakVerses;
+  stats.breakPairs = outcome.breakPairs;
   stats.demotedSettled = outcome.outs.filter((o) => isSettled(o) && demoted.has(o.ref)).length;
   return { outs: outcome.outs, stats };
 }

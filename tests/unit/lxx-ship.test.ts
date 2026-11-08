@@ -153,6 +153,15 @@ describe('npm run lxx:ship -- --out <dir>', () => {
     expect(existsSync(join(out, 'gen'))).toBe(false);
   });
 
+  // mw-u2w5klk.298: a held chapter is named with its clause and the words holding it (Genesis 14 was held and the run said only 'shipped 1-13, 15-50')
+  it('names each chapter it holds back, the clause that holds it and the words', async () => {
+    const o = options({ 'gen-01.tsv': choicesTo(6) });
+    await runShip(['--out', tmp()], o);
+    const seven = o.lines.find((l) => l.startsWith('gen: chapter 7 is not shipped'));
+    expect(seven).toMatch(/^gen: chapter 7 is not shipped: pending: 18 words left without an answer \(the bar: none\): Gen\.7:\d+#\d+ \S+/);
+    expect(o.lines.some((l) => l.startsWith('gen: chapter 6 is not shipped'))).toBe(false);
+  });
+
   it('with no choices file anywhere builds an empty index, and says so', async () => {
     const out = tmp();
     const o = options({});
