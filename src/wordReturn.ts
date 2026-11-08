@@ -4,6 +4,7 @@
 // on the screen with no sheet; the hold is dropped when he goes anywhere but the table or back to that address.
 import { useSyncExternalStore } from 'react';
 import type { Chapter } from './data/chapter';
+import { sameScreenAddress } from './nav/route';
 import type { Lookup } from './WordSheet';
 
 export interface HeldWord {
@@ -54,13 +55,13 @@ const sheetDepth = (): number => (window.history.state as { sheet?: number } | n
  */
 export function useReturnedWord(): HeldWord | undefined {
   useSyncExternalStore(subscribe, () => `${held?.hash ?? ''}|${window.location.hash}|${sheetDepth()}`);
-  return held !== undefined && window.location.hash === held.hash && sheetDepth() === 0 ? held : undefined;
+  return held !== undefined && sameScreenAddress(window.location.hash, held.hash) && sheetDepth() === 0 ? held : undefined;
 }
 
 /** Whether the hold still has a reason to stay: he is at the table (or, from All lexicons > Manage, the Library), at the Help page About this reading opened, or at the address it was over. */
 export const holdWordStillWanted = (): boolean =>
   held === undefined ||
-  window.location.hash === held.hash ||
+  sameScreenAddress(window.location.hash, held.hash) ||
   window.location.hash.startsWith('#/paradigms') ||
   window.location.hash.startsWith('#/library') ||
   window.location.hash === READING_HASH;

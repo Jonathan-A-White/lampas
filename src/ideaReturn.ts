@@ -3,6 +3,7 @@
 // over, and IdeaReturn (src/IdeaReturn.tsx, in App) opens that idea's sheet again once Back has brought him to that address. Module state, like review/practise.ts: a
 // reload drops it and he is on the screen with no sheet. The hold is dropped when he goes anywhere but the table or back to that address.
 import { useSyncExternalStore } from 'react';
+import { sameScreenAddress } from './nav/route';
 
 interface Hold {
   ideaId: string;
@@ -53,11 +54,11 @@ export function useReturnedIdea(): string | null {
   const key = useSyncExternalStore(subscribe, () => `${held?.ideaId ?? ''}|${held?.hash ?? ''}|${window.location.hash}|${sheetDepth()}`);
   const [ideaId, hash, here, depth] = key.split('|');
   if (!ideaId) return null;
-  if (here === hash) return depth === '0' ? ideaId : null;
+  if (sameScreenAddress(here, hash)) return depth === '0' ? ideaId : null;
   return null;
 }
 
 /** Whether the hold still has a reason to stay: he is at the table, at a Hard sounds lesson the sheet opened (mw-5r3p30.361), or at the address it was over. */
 export function holdStillWanted(): boolean {
-  return held === undefined || window.location.hash === held.hash || window.location.hash.startsWith('#/paradigms') || window.location.hash.startsWith('#/sounds');
+  return held === undefined || sameScreenAddress(window.location.hash, held.hash) || window.location.hash.startsWith('#/paradigms') || window.location.hash.startsWith('#/sounds');
 }

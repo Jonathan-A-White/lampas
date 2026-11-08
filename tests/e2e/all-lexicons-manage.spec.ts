@@ -21,6 +21,8 @@ const holdAppLinks = async (page: Page): Promise<void> => {
 const CASES = [
   { name: 'Psalm 23 (Hebrew)', hash: '/#/?b=psa&c=23', hebrew: true, word: '[data-verse="1"] [data-word="1"]', english: false },
   { name: 'Romans 8:1 (Greek)', hash: '/#/?b=rom&c=8', hebrew: false, word: '[data-verse="1"]', english: true },
+  // opened with the Reader's own view and weave already in the address (mw-fnvjof.17.15)
+  { name: 'Romans 8:1 (Greek, opened with view and weave)', hash: '/#/?b=rom&c=8&view=english&weave=off', hebrew: false, word: '[data-verse="1"]', english: true },
 ];
 
 for (const c of CASES) {
@@ -48,11 +50,16 @@ for (const c of CASES) {
       await expect(page.getByRole('dialog')).toHaveCount(0);
     };
     await manage();
-    await shot(page, `all-lexicons-manage-${c.hebrew ? 'hebrew' : 'greek'}`);
-    // Back returns the held word sheet, and Manage again shows the page again
+    await shot(page, `all-lexicons-manage-${c.hebrew ? 'hebrew' : c.hash.includes('view') ? 'greek-view' : 'greek'}`);
+    // Back returns the held word sheet, and Manage again shows the page again: the second and third trips too (mw-fnvjof.17.15: by the second the Reader had rewritten the
+    // held entry's address with its view and weave, and the exact match on the held address dropped the hold)
+    for (let trip = 0; trip < 3; trip++) {
+      await page.goBack();
+      await expect(word).toBeVisible();
+      await manage();
+    }
     await page.goBack();
     await expect(word).toBeVisible();
-    await manage();
   });
 }
 

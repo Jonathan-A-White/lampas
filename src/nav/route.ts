@@ -156,6 +156,19 @@ export function readerHash({ book, chapter, view, weave, verse, passage, passage
   return query ? `#/?${query}` : '#/';
 }
 
+/**
+ * Whether two addresses are the same screen as a held sheet means it (src/wordReturn.ts, src/ideaReturn.ts): equal, or both the Reader on the same book and chapter. The Reader writes
+ * its own view, weave and verse into the entry he is on (src/nav/readerAddress.ts), so the address a sheet was held at and the one Back lands on can differ in those alone
+ * (#/?b=rom&c=8 and #/?b=rom&c=8&view=english&weave=off) and still be the one screen (mw-fnvjof.17.15).
+ */
+export function sameScreenAddress(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (routeOf(a) !== 'home' || routeOf(b) !== 'home') return false;
+  const x = readerOf(a);
+  const y = readerOf(b);
+  return x.book === y.book && x.chapter === y.chapter && x.passage === y.passage && x.passageTo === y.passageTo;
+}
+
 /** The two views of a paradigm table (mw-irpgqi.2): Learn (every form shown) and Drill (each cell blank until tapped, then Had it or Missed). */
 export type ParadigmMode = 'learn' | 'drill';
 

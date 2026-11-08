@@ -13,6 +13,7 @@ import { forgetDrills } from '../../src/data/paradigms/drill';
 import { setLanguages } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { dropHeldWord } from '../../src/wordReturn';
 import type { Languages } from '../../src/settings/definitions/interest';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -45,6 +46,8 @@ async function freshStore(languages: Languages): Promise<void> {
   cleanup();
   clearBus();
   forgetTrail();
+  // a fresh page has no word sheet held for a table: the last scenario's hold would reopen its sheet over this one (src/wordReturn.ts)
+  dropHeldWord();
   forgetDrills();
   unstubRangeRects();
   localStorage.clear();
@@ -66,6 +69,8 @@ function openAt(hash: string): void {
   cleanup();
   clearBus();
   forgetTrail();
+  // a fresh page has no word sheet held for a table: the last scenario's hold would reopen its sheet over this one (src/wordReturn.ts)
+  dropHeldWord();
   window.history.replaceState(null, '', `/${hash}`);
   render(<App />);
 }
