@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.184",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1130",
+    "kind": "new",
+    "text": "Beside your passage you can now keep a second text, such as the Hebrew or the English, in a panel that scrolls to the same verse as the passage does."
+  },
+  {
     "version": "0.7.183",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1129.3",

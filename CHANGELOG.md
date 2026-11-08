@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.184
+_2026-11-08_
+- New: Beside your passage you can now keep a second text, such as the Hebrew or the English, in a panel that scrolls to the same verse as the passage does.
+
 ## 0.7.183
 _2026-11-08_
 - New: The map panel under or beside your text now follows you from chapter to chapter, and sits beside the text when the phone is on its side or the window is wide.
