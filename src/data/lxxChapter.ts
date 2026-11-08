@@ -207,3 +207,25 @@ export async function loadSeptuagintChapter(book: string, n: number): Promise<Ch
   const bare = (word: GreekWord): GreekWord => (withoutGaps(word.t) === word.t ? word : { ...word, t: withoutGaps(word.t), d: word.t });
   return { ...chapter, code: book, lex, verses: verses.map((verse) => (verse.g.some((w) => withoutGaps(w.t) !== w.t) ? { ...verse, g: verse.g.map(bare) } : verse)) };
 }
+
+/**
+ * A Septuagint chapter with the MSB's section headings laid on it (mw-u2w5klk.302). Swete's Greek and Brenton's English carry no headings, so the headings are the MSB's own English, read at run time from the Lampas
+ * chapter's file (`msb`, public/data/<book>/<n>.json: the chapter loadChapter reads for the Hebrew), and each goes on the Greek verse that BEGINS at the Lampas verse it heads, by the verse's `ref` (from STEPBible's
+ * TVTMS, scripts/data/tvtms.ts): the Greek chapter and verse numbers are not Lampas's (Psalms from 10, Jeremiah, Exodus 35-40). A heading goes on one verse only, the first that answers its Lampas verse. It is left out,
+ * never put on another verse, when no Greek verse begins at its Lampas verse (the Greek has none, or the verse it is in began earlier, `refs`), or the verse has no `ref` or one in another Lampas chapter. A chapter
+ * with nothing to lay is returned as it is.
+ */
+export function withHeadings(chapter: Chapter, msb: Pick<Chapter, 'verses'> | null, book: string, n: number): Chapter {
+  const headings = new Map((msb?.verses ?? []).flatMap((v) => (v.h ? [[v.n, v.h] as const] : [])));
+  if (headings.size === 0) return chapter;
+  const placed = new Set<number>();
+  const verses = chapter.verses.map((verse) => {
+    const { ref } = verse;
+    if (ref === undefined || ref === 'none' || ref.book !== book || ref.chapter !== n || placed.has(ref.verse)) return verse;
+    const h = headings.get(ref.verse);
+    if (h === undefined) return verse;
+    placed.add(ref.verse);
+    return { ...verse, h };
+  });
+  return placed.size === 0 ? chapter : { ...chapter, verses };
+}
