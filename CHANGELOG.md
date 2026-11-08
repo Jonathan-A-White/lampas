@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.178
+_2026-11-08_
+- New: Ask the tutor to copy or share a passage, even across chapters, and one tap on the button it gives you puts the text on your clipboard or opens the share sheet.
+- Fixed: In the Septuagint's paragraph layout a verse label no longer gets stranded at the end of a line away from its verse.
+- Fixed: the "Open in the app" bar no longer covers the card that offers the lessons on variant readings, nor a tip's card or the variant key.
+
 ## 0.7.177
 _2026-11-08_
 - New: A chapter of the Old Testament that the Septuagint does not have yet now opens in your Logos Septuagint with one tap, and Settings lets you choose which Septuagint that is.

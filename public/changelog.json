@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.178",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1075",
+    "kind": "new",
+    "text": "Ask the tutor to copy or share a passage, even across chapters, and one tap on the button it gives you puts the text on your clipboard or opens the share sheet."
+  },
+  {
+    "version": "0.7.178",
+    "date": "2026-11-08",
+    "story": "mw-u2w5klk.303",
+    "kind": "fixed",
+    "text": "In the Septuagint's paragraph layout a verse label no longer gets stranded at the end of a line away from its verse."
+  },
+  {
+    "version": "0.7.178",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1137",
+    "kind": "fixed",
+    "text": "the \"Open in the app\" bar no longer covers the card that offers the lessons on variant readings, nor a tip's card or the variant key."
+  },
+  {
     "version": "0.7.177",
     "date": "2026-11-08",
     "story": "mw-u2w5klk.266",
