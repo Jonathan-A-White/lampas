@@ -13,7 +13,7 @@ export const KEY_POINTS_LINE = 'The tutor wrote down the key points of this talk
 function KeyPointsSheet({ keyPoints, onClose }: { keyPoints: string; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-50, opened from inside a Talk sheet (where the ? is put away already): it says so for itself, so a Talk elsewhere can never leave a ? over it (mw-5r3p30.956)
+  // keeps no door (mw-5r3p30.1124): it opens only from inside a Talk sheet, where the ? is put away, and these are the tutor's own notes of the talk he is in, so a second Talk about them would be a talk about a talk
   useNoDoor();
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">

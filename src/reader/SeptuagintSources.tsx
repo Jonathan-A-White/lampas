@@ -2,7 +2,8 @@
 // the one place they are written. Done, Back, Escape, a swipe down or a tap outside close it. A portal: the line is in the Reader's header.
 import { createPortal } from 'react-dom';
 import { focusOnMount } from '../ui/focus';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { SEPTUAGINT_SOURCES } from '../tutor/credits';
@@ -12,7 +13,12 @@ function Sheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  useNoDoor(); // z-30, above the Talk sheet (z-10): no ? over it (mw-5r3p30.953)
+  // z-30, above the Talk sheet (z-10): the ? asks about the texts the sheet names, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1124)
+  const ask = useSheetTalk({
+    name: SEPTUAGINT_SHEET_TITLE,
+    facts: SEPTUAGINT_SOURCES.map((source) => ({ label: source.label, value: source.text })),
+    suggestions: ['Where do these Septuagint texts come from?', 'Why is the Septuagint numbered differently from my English Bible?'],
+  });
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -51,6 +57,7 @@ function Sheet({ onClose }: { onClose: () => void }) {
           ))}
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

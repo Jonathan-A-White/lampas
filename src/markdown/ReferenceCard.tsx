@@ -27,7 +27,8 @@ import { isOrdered, rowAttrs } from '../reader/sourceText';
 import { lampasNumber } from '../reader/septuagint';
 import { textClass } from '../reader/textClass';
 import { MARGIN, WIDTH, spotFor, type Spot } from './cardSpot';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { useOnline } from '../ui/online';
 import { KeepOnPhoneLink } from '../ui/KeepOnPhoneLink';
 import { cardOf, elsewhereOf, referenceHash, type HeldPlace, type ReferenceCard as Card } from './verseLinks';
@@ -169,8 +170,6 @@ function PlayControls({ card }: { card: Card }) {
 
 function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
   useSheetBack(onClose);
-  // z-40 (drawn into document.body), over the Talk sheet (z-10) and a card to read: no ? over it (mw-5r3p30.955)
-  useNoDoor();
   const { held } = card;
   const online = useOnline();
   const [passage, setPassage] = useState<Passage>(null);
@@ -182,6 +181,16 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   const head = useRef<HTMLDivElement>(null);
   const foot = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);
+  // z-40 (drawn into document.body), over the Talk sheet (z-10): the ? asks about the reference the card shows, in a Talk drawn inside the card's layer so it stands in front (mw-5r3p30.1124)
+  const ask = useSheetTalk({
+    name: 'Reference card',
+    facts: [
+      { label: 'Reference', value: card.heading },
+      held ? { label: 'Shown in', value: view === 'greek' ? (passage !== null && passage !== 'failed' && sourceLanguage(passage) === 'hbo' ? HEBREW_TEXT : GREEK_TEXT) : TRANSLATION_NAME[otBookOf(held.book) ? 'bsb' : 'msb'] } : { label: 'In Lampas', value: 'Not in Lampas yet' },
+      mark ? { label: 'Marked word', value: mark } : null,
+    ],
+    suggestions: [`What is ${card.heading} about?`, `How does ${card.heading} fit the verses around it?`],
+  });
 
   const stillPassage = useStillLoading(!!held && passage === null);
   useEffect(() => {
@@ -286,6 +295,10 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
             </div>
           ) : null}
         </div>
+      </div>
+      {/* a tap inside the Talk is not a tap outside the card (the layer closes the card on one): React bubbles it through the portal's parents */}
+      <div onClick={(e) => e.stopPropagation()}>
+        <DialogAskTutor {...ask} />
       </div>
     </div>,
     document.body,

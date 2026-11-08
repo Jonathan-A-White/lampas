@@ -26,6 +26,7 @@ import {
   openSermonsSheet,
   openShareScreen,
   openStartPlan,
+  openVariantKey,
 } from './door-layers';
 import { openCheck, openHebrewGuide, openLetterDrill, openTryIt, openWriteIt } from './large-text-titles';
 import { TALK_SHEET, twoFingers } from './open-tutor';
@@ -99,7 +100,7 @@ const OVERLAYS: Overlay[] = [
     },
     close: done,
   },
-  { name: 'the card of a verse reference', door: 'hidden', open: openReferenceCard, close: (_page, card) => card.getByRole('button', { name: 'Close', exact: true }).click() },
+  { name: 'the card of a verse reference', door: 'talk', open: openReferenceCard, close: (_page, card) => card.getByRole('button', { name: 'Close', exact: true }).click() },
   {
     // the guide stands over the Talk sheet it was opened from, where the ? is already put away; closed, the Talk is still open and the ? comes back with it
     name: 'the Hebrew guide',
@@ -305,10 +306,13 @@ const SHEETS = [
   // the plan sheets (mw-5r3p30.1123): Start a listening plan, and the return sheet, which tells the tutor where she set off
   { name: 'Start a listening plan', open: openStartPlan, screen: 'Start a listening plan', fact: { label: 'Plans', value: 'The whole Bible' } },
   { name: 'Where did you get to?', open: openReturnSheet, screen: 'Where did you get to?', fact: { label: 'Set off from', value: 'Leviticus 1' } },
+  // the card of a verse reference and the key to the marks of a variant brace (mw-5r3p30.1124)
+  { name: 'verse reference card', open: openReferenceCard, screen: 'Reference card', fact: { label: 'Reference', value: /^Romans 8:\d+$/ } },
+  { name: 'brace key', open: openVariantKey, screen: 'The marks of a variant', fact: { label: 'Explains', value: 'The marks the Reader draws for a variant brace: the other reading in a dotted or plain English, the editions that read it (NA, ECM, B, RP) and the lines under the words' } },
 ];
 
 for (const sheet of SHEETS) {
-  test(`Floating ?: over the ${sheet.name} sheet the tutor opens in front of it and is told ${sheet.fact.value}; a two-finger tap puts the ? away and brings it back (mw-5r3p30.1122, .1123)`, async ({ page }) => {
+  test(`Floating ?: over the ${sheet.name} sheet the tutor opens in front of it and is told its ${sheet.fact.label.toLowerCase()}; a two-finger tap puts the ? away and brings it back (mw-5r3p30.1122, .1123, .1124)`, async ({ page }) => {
     const fake = makeFakePostern();
     await routePostern(page, fake);
     const layer = await sheet.open(page);
@@ -318,7 +322,7 @@ for (const sheet of SHEETS) {
     await expect(layer).toBeVisible();
     await twoFingers(page);
     await expect(floating(page)).toBeVisible();
-    await shot(page, `sheet-door-${sheet.name.toLowerCase()}`);
+    await shot(page, `sheet-door-${sheet.name.replace(/\W+/g, '-').toLowerCase()}`);
     // a click within 600 ms of a two-finger tap is dropped (src/tutor/doorTap.ts): wait it out before the tap on the ?
     await page.waitForTimeout(700);
     await floating(page).click();
@@ -332,7 +336,7 @@ for (const sheet of SHEETS) {
       .poll(() => {
         const asked = fake.received.filter((g) => g.grist.kind === 'bible-talk');
         const screen = (asked[asked.length - 1]?.input as { screen?: { name: string; facts: { label: string; value: string }[] } } | undefined)?.screen;
-        return screen?.name === sheet.screen && screen.facts.some((f) => f.label === sheet.fact.label && f.value === sheet.fact.value);
+        return screen?.name === sheet.screen && screen.facts.some((f) => f.label === sheet.fact.label && (typeof sheet.fact.value === 'string' ? f.value === sheet.fact.value : sheet.fact.value.test(f.value)));
       })
       .toBe(true);
   });

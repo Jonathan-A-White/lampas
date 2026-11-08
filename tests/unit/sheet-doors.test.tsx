@@ -37,6 +37,11 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../support/fa
 import { forgetTestMaps, registerTestMaps } from '../support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 import { within } from '@testing-library/react';
+import { ReferenceLink } from '../../src/markdown/ReferenceCard';
+import { SeptuagintSources } from '../../src/reader/SeptuagintSources';
+import { Rp2026Sheet } from '../../src/reader/Rp2026Sheet';
+import { VariantFilterSheet } from '../../src/reader/VariantFilterSheet';
+import { VariantKeySheet } from '../../src/reader/VariantKey';
 
 const PHONE_KEY = '00'.repeat(31) + '02';
 const FLOATING = 'Ask the tutor about what is on screen';
@@ -233,6 +238,49 @@ CASES['the share sheet'] = {
       onClose={() => undefined}
     />
   ),
+};
+
+// The reference card, the variant sheets, RP 2026 and the Septuagint sources (mw-5r3p30.1124): the same pattern. The key points sheet keeps no door (src/talk/KeyPointsLine.tsx), for it opens only inside a Talk.
+CASES['the card of a verse reference'] = {
+  dialog: 'Romans 8:28',
+  screen: 'Reference card',
+  facts: [{ label: 'Reference', value: 'Romans 8:28' }],
+  sheet: () => <ReferenceLink written="Romans 8:28">Romans 8:28</ReferenceLink>,
+  after: async () => void (await user.click(await screen.findByRole('link', { name: 'Romans 8:28' }))),
+};
+CASES['the key to the marks of a brace'] = {
+  dialog: 'What the marks in a brace mean',
+  screen: 'The marks of a variant',
+  facts: [{ label: 'Explains', value: /brace/ }],
+  sheet: () => <VariantKeySheet onClose={() => undefined} />,
+};
+CASES['the variants filter sheet'] = {
+  dialog: 'Variants',
+  screen: 'Variants',
+  facts: [
+    { label: 'Variants shown', value: /./ },
+    { label: 'Witnesses', value: /./ },
+  ],
+  sheet: () => <VariantFilterSheet onClose={() => undefined} />,
+};
+CASES['the RP 2026 sheet'] = {
+  dialog: 'RP 2026: English from the 2026 Greek',
+  screen: 'RP 2026',
+  facts: [
+    { label: 'Place', value: 'Philemon 1:1' },
+    { label: 'The MSB’s English', value: 'of Christ Jesus' },
+    { label: 'Lampas’s English', value: 'of Jesus Christ' },
+  ],
+  sheet: () => <Rp2026Sheet entryKey="Philemon 1:1 7765b3ef" onClose={() => undefined} />,
+};
+CASES['the Septuagint sources sheet'] = {
+  dialog: 'Whose texts these are',
+  screen: 'Whose texts these are',
+  facts: [
+    { label: 'Greek', value: /Swete/ },
+    { label: 'English', value: /Brenton/ },
+  ],
+  sheet: () => <SeptuagintSources onClose={() => undefined} />,
 };
 
 describe('the floating ? over a sheet that stands over the Talk sheet opens the tutor in front of it, about the sheet', () => {

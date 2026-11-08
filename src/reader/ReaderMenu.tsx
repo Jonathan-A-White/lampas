@@ -53,7 +53,7 @@ function Row({ icon, label, onGo, first }: { icon: ReactNode; label: string; onG
 function MenuPanel({ onClose }: { onClose: () => void }) {
   useSheetBack(onClose);
   useEscapeToClose(onClose);
-  useNoDoor();
+  useNoDoor(); // keeps no door (mw-5r3p30.1124): a menu of buttons, nothing on it to ask about
   // a row takes him to a screen of its own: the menu closes first (its history entry is left beneath, which Back steps over, src/ui/sheetBack.ts closeAllSheets)
   const go = (route: 'tools' | 'settings') => () => {
     closeAllSheets();

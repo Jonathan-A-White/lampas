@@ -263,6 +263,7 @@ const OVERLAYS: Array<Omit<Overlay, 'door'> & { door?: Overlay['door'] }> = [
   {
     name: 'the RP 2026 sheet',
     sheet: 'RP 2026: English from the 2026 Greek',
+    door: 'talk', // a Talk drawn inside the sheet (mw-5r3p30.1124)
     open: async (page) => {
       await page.goto('/#/settings?group=reading');
       const setting = page.getByRole('group', { name: 'English from the 2026 Greek', exact: true });
@@ -276,6 +277,7 @@ const OVERLAYS: Array<Omit<Overlay, 'door'> & { door?: Overlay['door'] }> = [
   {
     name: 'the key to the marks of a variant brace',
     sheet: 'What the marks in a brace mean',
+    door: 'talk', // a Talk drawn inside the sheet (mw-5r3p30.1124)
     open: async (page) => {
       await page.goto('/#/?b=rev&c=10&weave=solid');
       await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
@@ -289,6 +291,7 @@ const OVERLAYS: Array<Omit<Overlay, 'door'> & { door?: Overlay['door'] }> = [
   {
     name: 'the variants filter sheet',
     sheet: 'Variants',
+    door: 'talk', // a Talk drawn inside the sheet (mw-5r3p30.1124)
     open: async (page) => {
       await page.goto('/#/?b=rev&c=3');
       await expect(page.locator('[data-verse="7"] [data-text]')).toBeVisible();

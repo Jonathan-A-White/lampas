@@ -377,3 +377,19 @@ export async function openChapterPicker(page: Page): Promise<Locator> {
   await expect(sheet).toBeVisible();
   return sheet;
 }
+
+/** The key to the marks of a variant brace (src/reader/VariantKey.tsx), opened from the first brace of Revelation 10 in the Weave with Variants On: the sheet over the Reader (mw-5r3p30.1124). */
+export async function openVariantKey(page: Page): Promise<Locator> {
+  await openUnlocked(page);
+  await page.goto('/#/?b=rev&c=10&weave=solid');
+  await expect(page.locator('[data-verse="1"] [data-text]')).toBeVisible();
+  const chip = page.getByRole('button', { name: /^Variants,/ });
+  await chip.click();
+  await expect(chip).toHaveAttribute('aria-pressed', 'true');
+  const brace = page.locator('[data-brace-key]').first();
+  await brace.scrollIntoViewIfNeeded();
+  await brace.click();
+  const sheet = dialog(page, 'What the marks in a brace mean');
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
