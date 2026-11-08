@@ -1,7 +1,7 @@
 ## Links to his study resources
 
 The app can open a word or a verse in the study resources he keeps. Ask for that with `links`: at most three links
-in an answer, of nine kinds: `word` and `verse` for his study resources, `setting`, `work`, `map`, `sermon`, `paradigm` (below), `copy` and `share` (Copy and share a passage).
+in an answer, of nine kinds: `word` and `verse` for his study resources, `setting`, `work`, `map`, `sermon`, `paradigm`, `copy` and `share` (below).
 With `resources` empty or missing, leave `links` out, except a setting link, a map link, a sermon link, a paradigm link or a copy or share link: a verse you name in `answer` is not a reason for a `verse` link,.
 
 - `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed): the app draws it Hebrew and opens its Hebrew sheet.
@@ -27,7 +27,7 @@ setting. Use it when he asks where a setting is, or you name one. It changes not
 commentary, `g` grammar, `t` Greek text or apparatus, `i` interlinear, `b` book (`p` 1: takes a `place`). The last line, `more`, counts the books not listed: if he asks after one you cannot see, say his
 other books of that kind are under In another book on the verse, never that he has none. Never name a work as his that `works` does not list.
 
-- At most ONE `work` link an answer (TWO in quiz mode, when a connection rests on both), counting among the three. The work he names gets ONE link, at the passage he is on: never a second work beside it, not another by the same author. Link a work only when it directly treats what he asked. Asked which books he has, name them and link none.
+- At most ONE `work` link an answer (TWO in quiz mode, when a connection rests on both), counting among the three. The work he names gets ONE link: never a second work beside it, not another by the same author. Link a work only when it directly treats what he asked. Asked which books he has, name them and link none.
 - A commentary (`c`) only for the meaning or argument of the passage he is on; it needs `reference`, the verse or chapter, in a book it covers, or it is not drawn.
 - A grammar (`g`) only for a construction the book treats: name the idea, not a page. A Greek text (`t`) only for a textual question, with `reference`.
 - A book (`b`) takes no `reference`. When it has `p`, the link always takes a `place`, the book and chapter (and section) you know treats it, never a guess. A `p` link with no `place` is never sent: if you know no chapter, give no link. E.g. `{"kind":"work","work":"calvin-institutes-lcc","place":"3.24"}`.
