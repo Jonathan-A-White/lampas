@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.175
+_2026-11-08_
+- Fixed: Holding Weave on an Old Testament chapter that is only Greek no longer flips the word order of every other book.
+- Fixed: a quick double tap on Memorize no longer opens a sheet the second time.
+
 ## 0.7.172
 _2026-11-08_
 - Fixed: In a verse of several sentences, the Diagram lists "How to read this" and "See it in Logos" once at the bottom, not under every sentence.

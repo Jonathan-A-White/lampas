@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.175",
+    "date": "2026-11-08",
+    "story": "mw-u2w5klk.300",
+    "kind": "fixed",
+    "text": "Holding Weave on an Old Testament chapter that is only Greek no longer flips the word order of every other book."
+  },
+  {
+    "version": "0.7.175",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1105",
+    "kind": "fixed",
+    "text": "a quick double tap on Memorize no longer opens a sheet the second time."
+  },
+  {
     "version": "0.7.172",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1142",
