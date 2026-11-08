@@ -61,10 +61,15 @@ interface Extras {
   explains?: { greek: string; lemma: string; note: string }[];
   /** every word of Genesis 1 with this lemma is a guess (y 'g'), so the chapter has the lemma only as guessed words */
   guessed?: string;
+  /** the phone is offline: navigator.onLine is false and every fetch of the Septuagint (its index too) fails; 'file' keeps the index and fails Genesis 1's file (mw-u2w5klk.18) */
+  network?: 'off' | 'file';
 }
 
 /** Opens the app on a chapter (the address names it) with the Septuagint set as given and these settings saved. */
+let offlineSpy: { mockRestore(): void } | undefined;
 async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<string, string> = {}, extras: Extras = {}): Promise<void> {
+  offlineSpy?.mockRestore();
+  offlineSpy = undefined;
   cleanup();
   stopReading();
   clearBus();
@@ -92,6 +97,12 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) =>
       String(input).startsWith('/data-lxx/gen/1.json') ? Promise.resolve(new Response(JSON.stringify(gen1), { status: 200, headers: { 'Content-Type': 'application/json' } })) : chapterFetch(input, init),
     );
+  }
+  if (extras.network) {
+    const chapterFetch = globalThis.fetch;
+    const failing = extras.network === 'off' ? (url: string) => url.startsWith('/data-lxx/') : (url: string) => url.startsWith('/data-lxx/gen/1.json');
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (failing(String(input)) ? Promise.reject(new TypeError('Failed to fetch')) : chapterFetch(input, init)));
+    if (extras.network === 'off') offlineSpy = vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false);
   }
   if (extras.guessed) {
     const chapterFetch = globalThis.fetch;
@@ -122,7 +133,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
   }
   for (const lemma of extras.solid ?? []) await db.words.put({ lemma, lang: 'grc', lemmas: [lemma], gloss: lemma, lesson: 0, source: 'frontier', state: 'solid', since: Date.now() });
   render(<App />);
-  if (!extras.memorize) await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  if (!extras.memorize && extras.network !== 'file') await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
 const verseEl = (n: number): HTMLElement => {
@@ -133,6 +144,9 @@ const verseEl = (n: number): HTMLElement => {
 const switchEl = (): HTMLElement => screen.getByRole('group', { name: 'Language' });
 
 const feature = await loadFeature('features/septuagint.feature');
+
+/** The Verse view that is open */
+const verseView = (): HTMLElement => screen.getByRole('region', { name: 'Verse view' });
 
 describeFeature(feature, ({ Scenario }) => {
   const noEnglishUnder = (): void => {
@@ -608,6 +622,57 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the word {string} is on his list once, with the gloss {string}', async (_: unknown, lemma: string, gloss: string) => {
       expect((await db.words.toArray()).filter((w) => w.lemma === lemma)).toMatchObject([{ lemma, gloss, state: 'learning' }]);
+    });
+  });
+  Scenario("The Verse view of Psalms 23:1 is headed with Lampas's reference and the Greek address beside it, and copies with the edition named", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Psalms 23 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Psalms 23', 'on', { readerView: view }));
+    When('he opens the Verse view of verse {int}', async (_: unknown, n: number) => {
+      await user.click(await screen.findByRole('button', { name: new RegExp(`^Verse ${n}\\b`) }));
+      await screen.findByRole('region', { name: 'Verse view' });
+    });
+    Then('the Verse view is headed {string}', async (_: unknown, text: string) => {
+      await waitFor(() => expect(squash(within(verseView()).getByRole('heading', { level: 2 }).textContent)).toBe(text));
+    });
+    And('the Verse view shows the Greek {string}', async (_: unknown, word: string) => {
+      await waitFor(() => expect(squash(verseView().querySelector('[data-word="0"]')?.textContent)).toBe(word));
+    });
+    And('Copy puts {string} after the verse', async (_: unknown, line: string) => {
+      const written: string[] = [];
+      Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: (t: string) => (written.push(t), Promise.resolve()) } });
+      await user.click(within(verseView()).getByRole('button', { name: 'Copy', exact: true }));
+      await waitFor(() => expect(written).toHaveLength(1));
+      expect(written[0]).toContain(`\u2014 ${line}`);
+    });
+  });
+
+  Scenario("The Verse view of Psalms 10 names the verse as Lampas does, though Greek 9 numbers it 22", ({ Given, When, Then }) => {
+    Given('Lampas is opened on Psalms 10 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Psalms 10', 'on', { readerView: view }));
+    When('he opens the Verse view of verse {int}', async (_: unknown, n: number) => {
+      await user.click(await screen.findByRole('button', { name: new RegExp(`^Verse ${n}\\b`) }));
+      await screen.findByRole('region', { name: 'Verse view' });
+    });
+    Then('the Verse view is headed {string}', async (_: unknown, text: string) => {
+      await waitFor(() => expect(squash(within(verseView()).getByRole('heading', { level: 2 }).textContent)).toBe(text));
+    });
+  });
+
+  Scenario('With the network off the Reader says the phone is offline and shows the Hebrew', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, the saved view {string} and the network off', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }, { network: 'off' }));
+    Then('the language switch offers {string} and {string}', switchOffers);
+    And('the note reads {string}', async (_: unknown, text: string) => {
+      await waitFor(() => expect(squash(document.querySelector('[data-septuagint-not-ready]')?.textContent)).toBe(text));
+    });
+  });
+
+  Scenario("With the index reached and the chapter's file failing the Reader keeps the plain retry", ({ Given, Then, And }) => {
+    Given("Lampas is opened on Genesis 1 with the Septuagint on, the saved view {string} and the chapter's file failing", (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }, { network: 'file' }));
+    Then('the Reader says {string} and offers {string}', async (_: unknown, line: string, button: string) => {
+      const alert = await screen.findByRole('alert');
+      expect(squash(alert.textContent)).toContain(line);
+      expect(within(alert).getByRole('button', { name: button })).toBeInTheDocument();
+    });
+    And('no note says the Septuagint is not ready', () => {
+      expect(document.querySelector('[data-septuagint-not-ready]')).toBeNull();
     });
   });
 });

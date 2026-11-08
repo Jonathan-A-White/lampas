@@ -372,3 +372,24 @@ describe('Pause, Resume and Stop', () => {
     await vi.waitFor(() => expect(getPassagePlayer().state).toBe('idle'), { timeout });
   });
 });
+
+// mw-u2w5klk.18: a reference is in Lampas's verses, and a Septuagint chapter's own numbers are the Greek's (Psalm 10:1 is Greek 9:22), so the verses asked for are found by the Lampas verse they answer.
+describe('a reference to a Septuagint chapter (the Septuagint On, Psalms 10, which Greek 9 shares with Psalms 9)', () => {
+  it('reads the Lampas verse asked for, in Greek, and only the verses of Psalm 10', async () => {
+    await db.settings.put({ key: 'septuagint', value: 'on' });
+    await db.settings.put({ key: 'hebrewInterest', value: '5' });
+    await setReaderView('greek');
+    playPassages([{ heading: 'Psalms 10:1-2', held: { book: 'psa', chapter: 10, first: 1, last: 2 } }]);
+    await listenToTheEnd();
+    const said = synth.spoken.map((s) => flat(s.text));
+    expect(said[0]).toBe('Psalms 10:1-2');
+    const verses = synth.spoken.slice(1);
+    expect(verses.length).toBeGreaterThan(0);
+    expect(verses.every((s) => s.lang === 'el-GR')).toBe(true);
+    const all = verses.map((s) => flat(s.text)).join(' ');
+    expect(all).toContain('Ἵνα');
+    expect(all).toContain('τῷ');
+    // the speech is respelled, so the other chapter's verses are known by their first letters
+    expect(all).not.toContain('Ἐξομολ');
+  });
+});

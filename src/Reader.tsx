@@ -537,7 +537,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       ) : null}
       {hebrewHeld && !chapterReading && heldName !== null ? (
         <p role="note" data-septuagint-not-ready className="chrome-small px-2 pb-1 text-center text-muted">
-          The Septuagint of {heldName} is not ready yet; this is the Hebrew.
+          {heldName}
         </p>
       ) : null}
       <ReaderChips
@@ -692,6 +692,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 onLook={setLookup}
                 onRp={setRpShown}
                 onUnlinked={septuagint ? stay : undefined}
+                septuagint={septuagint ? chapter.chapter : undefined}
               />
             ) : (
               <VerseText verse={viewUnit} view={sheetView} source={source} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} onRp={setRpShown} onUnlinked={septuagint ? stay : undefined} />

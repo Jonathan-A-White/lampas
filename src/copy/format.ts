@@ -5,6 +5,7 @@ import type { Chapter, SourceLanguage, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { besideOf, chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { passageUrl, referenceUrl } from '../nav/links';
+import { isSeptuagint, lampasNumber } from '../reader/septuagint';
 import { textWithVariants } from '../reader/variantText';
 import type { ReaderVariants } from '../reader/variants';
 
@@ -22,6 +23,9 @@ export const COPY_DEFAULTS: CopyFormat = { reference: 'after', numbers: 'on', li
 
 /** The translation the reference names: the English of every chapter, the New Testament's and the Old's, is the MSB's (src/data/chapter.ts `translation`). */
 const TRANSLATION = 'MSB';
+
+/** What the reference names for a chapter of the Septuagint (mw-u2w5klk.18): the edition, as the Reader's header names it. The wording is PROVISIONAL (the Governor has not chosen it): Swete's Greek with Brenton's English, neither the MSB. */
+export const SEPTUAGINT_EDITION = "Septuagint: Swete's Greek, Brenton's English";
 
 export interface CopyVerse {
   n: number;
@@ -48,6 +52,8 @@ export interface CopyUnit {
   /** the language of the original text */
   language: SourceLanguage;
   verses: readonly CopyVerse[];
+  /** Swete's Septuagint (src/reader/septuagint.ts): `chapter` and the verse numbers are then Lampas's, and `greek` is the Septuagint's own address of the unit ('Greek 22:1'), '' where it is the same */
+  septuagint?: { greek: string };
 }
 
 const englishOf = (verse: Verse): string => verse.e.map((chunk) => chunk.t.trim()).join(' ').replace(/\s+/g, ' ').trim();
@@ -71,6 +77,24 @@ function shownOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, varia
     .trim();
 }
 
+/** The Lampas chapter a Septuagint chapter is opened as: that of its first verse with a Lampas verse (a chapter keeps only the verses of its own Lampas chapter, loadSeptuagintChapter), else its own number. */
+function lampasChapterOf(chapter: Chapter): number {
+  const ref = chapter.verses.map((v) => v.ref).find((r) => r !== undefined && r !== 'none');
+  return ref ? ref.chapter : chapter.chapter;
+}
+
+/** The Septuagint's own address of `held` verses of a chapter opened as Lampas's chapter `lampas`: 'Greek 22:1', 'Greek 22:2-3', 'Greek 114:1-115:2' or, for a whole chapter, 'Greek 22' ('Greek 114 and 115'); '' where it is Lampas's own. */
+function greekAddress(chapter: Chapter, held: readonly Verse[], lampas: number, whole: boolean): string {
+  const at = (v: Verse): { chapter: number; verse: number } => v.greek ?? { chapter: chapter.chapter, verse: v.n };
+  if (held.every((v) => at(v).chapter === lampas && at(v).verse === lampasNumber(chapter, v))) return '';
+  const chapters = [...new Set(held.map((v) => at(v).chapter))];
+  if (whole || held.length === 0) return `Greek ${chapters.join(' and ')}`;
+  const first = at(held[0]);
+  const last = at(held[held.length - 1]);
+  if (first.chapter === last.chapter) return `Greek ${first.chapter}:${first.verse}${first.verse === last.verse ? '' : `-${last.verse}`}`;
+  return `Greek ${first.chapter}:${first.verse}-${last.chapter}:${last.verse}`;
+}
+
 /** A chapter's verses as copy units: `verse` is what the Verse view shows, a verse or (n to to) a passage; the first verse to the chapter's last is the whole chapter.
  * `read` is the view the Reader is in, for Text 'As you read it'; without it the verses are shown in English. */
 export function copyUnitOf(chapter: Chapter, verse: Pick<Verse, 'n' | 'to'>, read?: ReadView): CopyUnit {
@@ -78,14 +102,18 @@ export function copyUnitOf(chapter: Chapter, verse: Pick<Verse, 'n' | 'to'>, rea
   const kind: CopyUnit['kind'] =
     verse.to === undefined ? 'verse' : verse.n === (chapter.verses[0]?.n ?? verse.n) && verse.to >= last ? 'chapter' : 'passage';
   const held = chapter.verses.filter((v) => v.n >= verse.n && v.n <= (verse.to ?? verse.n));
+  // a chapter of the Septuagint is named and numbered as Lampas's (Greek Ps 22:1 is Psalm 23:1), the edition and the Greek address in the reference line (mw-u2w5klk.18)
+  const septuagint = isSeptuagint(chapter);
+  const lampas = septuagint ? lampasChapterOf(chapter) : chapter.chapter;
   return {
     kind,
     book: chapter.book,
     code: chapter.code,
-    chapter: chapter.chapter,
+    chapter: lampas,
     language: chapter.lang ?? 'grc',
+    ...(septuagint ? { septuagint: { greek: greekAddress(chapter, held, lampas, kind === 'chapter') } } : {}),
     verses: held.map((v) => ({
-      n: v.n,
+      n: lampasNumber(chapter, v),
       english: englishOf(v),
       ...(read ? { shown: shownOf(v, read.view, read.woven?.[chapter.verses.indexOf(v)] ?? null, read.variants) } : {}),
     })),
@@ -121,8 +149,9 @@ function paragraph(unit: CopyUnit, numbers: OnOffChoice): string {
     .trim();
 }
 
-/** The reference as Copy writes it: 'Colossians 3:1 (MSB)'. */
-export const copyReferenceLine = (unit: CopyUnit): string => `${copyReference(unit)} (${TRANSLATION})`;
+/** The reference as Copy writes it: 'Colossians 3:1 (MSB)'; of the Septuagint 'Psalms 23:1 (Septuagint: Swete's Greek, Brenton's English; Greek 22:1)'. */
+export const copyReferenceLine = (unit: CopyUnit): string =>
+  `${copyReference(unit)} (${unit.septuagint ? `${SEPTUAGINT_EDITION}${unit.septuagint.greek ? `; ${unit.septuagint.greek}` : ''}` : TRANSLATION})`;
 
 /** The text to copy for `unit` in `format`: the words as he reads them, their reference before or after, and the link on a last line of its own. */
 export function copyText(unit: CopyUnit, format: CopyFormat): string {
@@ -182,7 +211,7 @@ export function sharePieces(unit: CopyUnit, format: CopyFormat): SharePiece[] {
       id: 'whole',
       label: 'The whole',
       shown: linked ? `${cutShort(words)}\n${link}` : cutShort(words),
-      data: { title: copyReference(unit), text: words, ...(linked ? { url: link } : {}) },
+      data: { title: unit.septuagint ? reference : copyReference(unit), text: words, ...(linked ? { url: link } : {}) },
       hand: copyText(unit, format),
     },
     { id: 'link', label: 'Just the link', shown: link, data: { url: link }, hand: link },

@@ -8,6 +8,7 @@
 // rather than being stopped: the reading's end by itself goes to the next reference, a Stop or another speech taking the voice ends the player.
 import type { HeldPlace } from '../markdown/verseLinks';
 import { loadChapter, sourceLanguage } from '../data/chapter';
+import { lampasNumber } from '../reader/septuagint';
 import { readViewSettings, settingsFor } from '../reader/useViewSettings';
 import { wovenOf } from '../reader/useWoven';
 import { getReading, listenCompletedNow, pauseReading, planOf, resumeReading, startReading, stopReading, subscribeReading, type PlanVerse } from './readAloud';
@@ -66,7 +67,8 @@ async function planOfReference(held: HeldPlace): Promise<PlanVerse[]> {
   const [chapter, saved] = await Promise.all([loadChapter(held.book, held.chapter), readViewSettings()]);
   const settings = settingsFor(saved, chapter);
   const woven = wovenOf(chapter, settings);
-  const wanted = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
+  // a reference is in Lampas's verses: a Septuagint chapter's are its `ref`s (Greek 9:22 is Psalm 10:1), not the Greek numbers (mw-u2w5klk.18)
+  const wanted = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => lampasNumber(chapter, v) >= held.first && lampasNumber(chapter, v) <= held.last);
   return planOf(
     wanted.map(({ v }) => v),
     settings.view,

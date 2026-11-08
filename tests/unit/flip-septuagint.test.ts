@@ -131,3 +131,22 @@ describe('the flip', () => {
     expect(await getSetting(septuagintSetting)).toBe('off');
   });
 });
+
+// mw-u2w5klk.18: an index that cannot be reached is told as it is, not as 'not ready'
+describe('the flip when the Septuagint index cannot be reached', () => {
+  it('says the phone is offline on the browser’s word, else that it could not be fetched', async () => {
+    const { vi } = await import('vitest');
+    vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new TypeError('Failed to fetch'))));
+    const { forgetLxxIndex } = await import('../../src/data/lxxChapter');
+    forgetLxxIndex();
+    const online = vi.spyOn(window.navigator, 'onLine', 'get');
+    online.mockReturnValue(false);
+    expect(await flipSeptuagint({ book: 'gen', chapter: 1, shown: shown(), top: null })).toBe(FLIP_TEXT.offline);
+    online.mockReturnValue(true);
+    forgetLxxIndex();
+    expect(await flipSeptuagint({ book: 'gen', chapter: 1, shown: shown(), top: null })).toBe(FLIP_TEXT.unreachable);
+    expect(await getSetting(septuagintSetting)).toBe('off');
+    online.mockRestore();
+    vi.unstubAllGlobals();
+  });
+});
