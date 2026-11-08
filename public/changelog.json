@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.179",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1138",
+    "kind": "fixed",
+    "text": "A second tap on \"Not now\" about half a second after the first no longer lands on whatever was under the bar."
+  },
+  {
+    "version": "0.7.179",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1120",
+    "kind": "fixed",
+    "text": "Turned sideways, the Share sheet now keeps a long verse inside its own box instead of printing over the next row."
+  },
+  {
     "version": "0.7.178",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1075",

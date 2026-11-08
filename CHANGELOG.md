@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.179
+_2026-11-08_
+- Fixed: A second tap on "Not now" about half a second after the first no longer lands on whatever was under the bar.
+- Fixed: Turned sideways, the Share sheet now keeps a long verse inside its own box instead of printing over the next row.
+
 ## 0.7.178
 _2026-11-08_
 - New: Ask the tutor to copy or share a passage, even across chapters, and one tap on the button it gives you puts the text on your clipboard or opens the share sheet.
