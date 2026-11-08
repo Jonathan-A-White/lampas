@@ -42,6 +42,7 @@
     "lxx:pending": "tsx scripts/lxx/pending.ts",
     "lxx:release": "tsx scripts/lxx/release.ts",
     "lxx:report": "tsx scripts/lxx/report.ts",
+    "numerals:sweep": "tsx scripts/numeral-sweep.ts",
     "lxx:ship": "tsx scripts/lxx/ship.ts",
     "variants:sweep": "tsx scripts/variants-sweep.ts",
     "variants:align": "tsx scripts/variants-align.ts",
