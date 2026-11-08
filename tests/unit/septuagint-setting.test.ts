@@ -27,6 +27,10 @@ describe('the setting', () => {
     expect(ROWS.find((r) => r.key === 'septuagint')?.section).toBe('dial');
   });
 
+  it('has a help line that says a hold on Hebrew or Greek in the Reader\'s header flips it (mw-u2w5klk.293)', () => {
+    expect(septuagintSetting.help).toContain('holding Hebrew (or Greek, once it is on) in the header flips this setting');
+  });
+
   it('is kept', async () => {
     expect(await getSetting(septuagintSetting)).toBe('off');
     await setSetting(septuagintSetting, 'on');

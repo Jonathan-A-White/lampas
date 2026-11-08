@@ -40,9 +40,9 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'Greek and Hebrew',
     line: 'How much of each you see.',
     body: [
-      'Lampas opens as a plain English Bible; in Settings, Which languages? chooses English only, Greek, Hebrew or both.',
-      'Each language has a dial, How much Greek? or How much Hebrew?; English only hides both.',
-      'Old Testament in Greek (Septuagint), under How much Greek? from Curious up, starts off. The switch is English | Weave | Greek; Weave aligns Swete’s Greek and Brenton’s English by chunk, with a note where they are not aligned.',
+      'Lampas opens as plain English; Settings, Which languages? chooses English only, Greek, Hebrew or both.',
+      'Dials: How much Greek? and How much Hebrew?; English only hides both.',
+      'Old Testament in Greek (Septuagint), under How much Greek? from Curious up, starts off; hold Hebrew or Greek in the header to flip it. The switch is English | Weave | Greek; Weave aligns Swete’s Greek and Brenton’s English by chunk, with a note where they are not aligned.',
       'With it on, Memorize, Diagram, the Quick test, the Parsing drill and Review read a Septuagint chapter as Greek, and the frontier counts its words. The sentence Diagram works in English, Greek and Hebrew.',
     ],
   },

@@ -150,6 +150,10 @@ describe('the Septuagint is in Help (mw-5r3p30.1110)', () => {
     expect(languages).toContain('The sentence Diagram works in English, Greek and Hebrew.');
   });
 
+  it('the Greek and Hebrew page says a hold on Hebrew or Greek in the header flips the Septuagint (mw-u2w5klk.293)', () => {
+    expect(body('languages')).toMatch(/hold Hebrew or Greek in the header to flip it/);
+  });
+
   it('the Paradigms page says a Septuagint word’s table also lays its Septuagint forms, and where each was found', () => {
     const paradigms = body('paradigms');
     expect(paradigms).toMatch(/From a Septuagint word, This word also lays the Septuagint’s forms/);
