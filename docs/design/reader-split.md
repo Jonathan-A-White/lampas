@@ -176,9 +176,9 @@ Settings (`src/settings/define.ts`, Dexie, live in the Reader as `useReaderSetti
 
 | Key | Values | Note |
 | --- | --- | --- |
-| `readerSplit` | `off` \| `map` \| `text` | what is docked |
-| `splitText` | the text's key (`hebrew`, `english`, `lxx-greek`, `lxx-english`, `greek`, `msb`) | read while `readerSplit` is `text` |
-| `splitMap` | the map's source and id | read while `readerSplit` is `map`; a reload shows the same map |
+| `readerSplit` | `on` \| `off` | whether the dock is open (as built: what it holds is `splitText`, or `splitMap` while that is empty) |
+| `splitText` | the text's key (`hebrew`, `greek`, `english`, `lxx-greek`, `lxx-english`; `english` is the Berean Standard Bible in the Old Testament and the Majority Standard Bible in the New) | the text the dock holds; empty for none, and then the dock holds `splitMap`'s map |
+| `splitMap` | the map's chapter, source and id | read while `splitText` is empty; a reload shows the same map |
 | `splitSize` | a number between 0 and 1 (the fraction of the box the dock takes; Half until he has dragged it) | the dock's size |
 | `splitLink` | `on` \| `off` | the Link; `on` by default |
 
