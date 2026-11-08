@@ -258,7 +258,7 @@ Gen.14:10#5	A-NSF	ἁλυκός		0.80
 Gen.14:10#6	N-NPN	φρέαρ		0.80	
 Gen.14:10#16	V-2AAI-3P	ἐμπίπτω		0.80	
 Gen.14:11#3	T-ASF	ὁ		0.80	
-Gen.14:11#4	N-ASM	ἵππος	unsure	0.50	model: unsure
+Gen.14:11#4	N-ASF	ἵππος	guess	0.40	guess: the model chose outside the candidates
 Gen.14:11#11	A-APN	πᾶς		0.80	
 Gen.14:11#12	T-APN	ὁ		0.80	
 Gen.14:11#13	N-APN	βρῶμα		0.80	
@@ -298,7 +298,7 @@ Gen.14:15#20	R-NSF	ὅς, ἥ		0.80
 Gen.14:15#23	A-DSF	ἀριστερός		0.80	
 Gen.14:16#2	V-AAI-3S	ἀποστρέφω		0.80	
 Gen.14:16#4	T-ASF	ὁ		0.80	
-Gen.14:16#5	N-ASM	ἵππος	unsure	0.50	model: unsure
+Gen.14:16#5	N-ASF	ἵππος	guess	0.40	guess: the model chose outside the candidates
 Gen.14:16#8	N-ASM	Λώτ		0.80	
 Gen.14:16#11	P-GSM	αὐτός		0.80	
 Gen.14:16#12	V-AAI-3S	ἀποστρέφω		0.80	
@@ -323,7 +323,7 @@ Gen.14:20#16	P-DSM	αὐτός		0.80
 Gen.14:20#19	A-GPN	πᾶς	unsure	0.50	model: unsure
 Gen.14:21#6	N-ASM	Ἀβράμ		0.80	
 Gen.14:21#11	T-ASF	ὁ		0.80	
-Gen.14:21#13	N-ASM	ἵππος	unsure	0.50	model: unsure
+Gen.14:21#13	N-ASF	ἵππος	guess	0.40	guess: the model chose outside the candidates
 Gen.14:21#15	F-2DSM	σεαυτοῦ		0.80	
 Gen.14:22#3	N-NSM	Ἀβράμ		0.80	
 Gen.14:22#7	V-FAI-1S	ἐκτείνω		0.80	
