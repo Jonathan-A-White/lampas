@@ -289,6 +289,12 @@ describe('the agreement links, on verses built for the test', () => {
     expect(agree([settledWord('Tst.1:1#1', 'ὁ', 'T-NSF'), settledWord('Tst.1:1#2', 'γῆ', 'N-NSF')]).breakVerses).toEqual([]);
   });
 
+  it('names the two words of each break, so the chapter bar can ask whether the model’s answers leave it standing (mw-u2w5klk.298)', () => {
+    const out = agree([settledWord('Tst.1:1#1', 'ὁ', 'T-ASF'), settledWord('Tst.1:1#2', 'ἵππος', 'N-ASM')]);
+    expect(out.breakPairs).toEqual([['Tst.1:1#1', 'Tst.1:1#2']]);
+    expect(agree([settledWord('Tst.1:1#1', 'ὁ', 'T-NSF'), settledWord('Tst.1:1#2', 'γῆ', 'N-NSF')]).breakPairs).toEqual([]);
+  });
+
   it('never counts a break from a link that only chooses: ὁ θεὸς τὸ ξηρὸν, a noun before a substantive in another case', () => {
     const out = agree([
       settledWord('Tst.1:1#1', 'ὁ', 'T-NSM'),

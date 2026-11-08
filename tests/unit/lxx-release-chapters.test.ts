@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { syntheticGenesis } from '../support/lxx-genesis';
-import { ANNOTATION_HEADER, ReleaseRefused, chapterRows, joinChoices, runRelease, shippedLine } from '../../scripts/lxx/release';
+import { ANNOTATION_HEADER, ReleaseRefused, chapterRows, heldLines, joinChoices, runRelease, shippedLine } from '../../scripts/lxx/release';
+import type { DerivedWord } from '../../scripts/lxx/derive';
 import { deriveBook, type DeriveInput } from '../../scripts/lxx/derive';
 import type { KnownScore } from '../../scripts/lxx/known';
 
@@ -167,6 +168,47 @@ describe('a chapter on its own figures', () => {
     const [one, two] = chapterRows(broken, joinChoices(broken, new Map()));
     expect([one.breaks, two.breaks]).toEqual([0, 2]);
     expect(two.verdict.failures.map((f) => f.short)).toContain('breaks: 25.3 per 1,000');
+  });
+
+  // mw-u2w5klk.298: Genesis 14 has τὴν ἵππον three times (an article in the feminine, a noun the New Testament has as a masculine): 3 breaks in 522 words held the chapter at 5.7 per 1,000. A break sends both
+  // words to the model; once the model's answers agree in case, number and gender it is answered, not standing.
+  describe('a break the model’s answers settle', () => {
+    const a = 'Gen.2:1#1';
+    const b = 'Gen.2:1#2';
+    const c = 'Gen.2:3#1';
+    const d = 'Gen.2:3#2';
+    const answered = (...pairs: Array<[string, string]>): DerivedWord[] => pairs.map(([ref, morph]) => ({ ref, lemma: 'x', morph, layer: 3, confidence: 0.8, candidates: [], notes: [] }));
+    const run = (rows: DerivedWord[]) => {
+      const broken = { ...result, agreement: { ...result.agreement, breaks: 2, breakVerses: ['Gen.2:1', 'Gen.2:3'], breakPairs: [[a, b], [c, d]] as Array<[string, string]> } };
+      const base = joinChoices(broken, new Map());
+      const [, two] = chapterRows(broken, { ...base, rows: [...base.rows.filter((r) => ![a, b, c, d].includes(r.ref)), ...rows], left: [] });
+      return two;
+    };
+
+    it('is not counted when the two answers agree', () => {
+      const two = run(answered([a, 'T-ASF'], [b, 'N-ASF'], [c, 'T-GSF'], [d, 'N-GSF']));
+      expect(two.breaks).toBe(0);
+    });
+
+    it('is counted when the answers still disagree, or when a word has no answer', () => {
+      expect(run(answered([a, 'T-ASF'], [b, 'N-ASM'], [c, 'T-GSF'], [d, 'N-GSF'])).breaks).toBe(1);
+      expect(run(answered([a, 'T-ASF'], [c, 'T-GSF'], [d, 'N-GSF'])).breaks).toBe(1);
+    });
+
+    it('does not name a standing break that holds nothing back: the chapter’s breaks are under the line', () => {
+      const two = run(answered([a, 'T-ASF'], [b, 'N-ASM'], [c, 'T-GSF'], [d, 'N-GSF']));
+      const roomy = { ...two, words: 1000, verdict: { ...two.verdict, failures: [{ key: 'pending' as const, line: 'pending: 1 word left without an answer (the bar: none)', short: 'pending: 1' }] }, holding: { ...two.holding, pending: ['Gen.2:5#1'] } };
+      expect(heldLines('gen', [roomy])).toEqual(['gen: chapter 2 is not shipped: pending: 1 word left without an answer (the bar: none): Gen.2:5#1']);
+    });
+
+    it('names the words holding a chapter: the pending ones, and the two of each standing break', () => {
+      const two = run(answered([a, 'T-ASF'], [b, 'N-ASM'], [c, 'T-GSF'], [d, 'N-GSF']));
+      expect(two.holding.breaks).toEqual([[a, b]]);
+      const lines = heldLines('gen', [two], new Map([[a, 'τὴν'], [b, 'ἵππον']]));
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(/^gen: chapter 2 is not shipped: breaks: 12\.7 per 1,000 words, 1 in 79 \(the bar: at most 5\)/);
+      expect(lines[0]).toContain('Gen.2:1#1 τὴν + Gen.2:1#2 ἵππον');
+    });
   });
 
   it('says a chapter list as ranges, and a whole book as all', () => {

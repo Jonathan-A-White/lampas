@@ -47,6 +47,13 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     And no header subtitle is shown
 
   @uc-septuagint @greek
+  Scenario: A chapter not shipped in a book that is shipped says the chapter, not the book
+    Given Lampas is opened on Genesis 2 with the Septuagint on and the saved view "greek"
+    Then the language switch offers "English" and "Hebrew"
+    And the note reads "The Septuagint of Genesis 2 is not ready yet; this is the Hebrew."
+    And no header subtitle is shown
+
+  @uc-septuagint @greek
   Scenario: With the Weave on the switch has a Weave position that draws the Greek alone and says why once
     Given Lampas is opened on Genesis 1 with the Septuagint on and the Weave "solid"
     Then the language switch offers "English", "Weave" and "Greek"

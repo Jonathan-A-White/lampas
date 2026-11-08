@@ -210,6 +210,15 @@ describeFeature(feature, ({ Scenario }) => {
     And('no header subtitle is shown', noSubtitle);
   });
 
+  Scenario('A chapter not shipped in a book that is shipped says the chapter, not the book', ({ Given, Then, And }) => {
+    Given('Lampas is opened on Genesis 2 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 2', 'on', { readerView: view }));
+    Then('the language switch offers {string} and {string}', switchOffers);
+    And('the note reads {string}', async (_: unknown, text: string) => {
+      await waitFor(() => expect(squash(document.querySelector('[data-septuagint-not-ready]')?.textContent)).toBe(text));
+    });
+    And('no header subtitle is shown', noSubtitle);
+  });
+
   const switchOffers3 = async (_: unknown, a: string, b: string, c: string): Promise<void> => {
     await waitFor(() => expect(within(switchEl()).getAllByRole('button').map((x) => x.textContent)).toEqual([a, b, c]));
   };

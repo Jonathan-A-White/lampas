@@ -122,7 +122,7 @@ describe('the flip', () => {
   });
 
   it('changes nothing in a chapter of a shipped book that has no Greek chapter yet', async () => {
-    expect(await flipSeptuagint({ book: 'psa', chapter: 1, shown: shown(), top: null })).toBe('The Septuagint of Psalms is not ready yet');
+    expect(await flipSeptuagint({ book: 'psa', chapter: 1, shown: shown(), top: null })).toBe('The Septuagint of Psalms 1 is not ready yet');
     expect(await getSetting(septuagintSetting)).toBe('off');
   });
 

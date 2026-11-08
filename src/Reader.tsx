@@ -91,6 +91,7 @@ import { TipCard } from './tips/TipCard';
 import { SeptuagintNote } from './reader/SeptuagintNote';
 import { SeptuagintSources } from './reader/SeptuagintSources';
 import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
+import { useNotReadyName } from './reader/useNotReadyName';
 import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
 import { BarSlot } from './speech/SpeakingBarSlot';
@@ -172,6 +173,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const septuagint = isSeptuagint(chapter);
   const aligned = septuagint && septuagintAligned(chapter);
   const septuagintOn = useSetting(septuagintSetting) === 'on';
+  // the notice for an Old Testament chapter shown in Hebrew while the Septuagint is on names the chapter when the book ships and this chapter does not, else the book (mw-u2w5klk.298)
+  const hebrewHeld = septuagintOn && !!chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo';
+  const heldName = useNotReadyName(hebrewHeld, BOOK, chapter?.chapter ?? CHAPTER, bookOf(BOOK)?.name ?? BOOK);
   // Show manuscript gaps (mw-u2w5klk.280): the Greek view prints Swete's lacuna brackets only while it is On
   const gaps = useSetting(septuagintGapsSetting) === 'on';
   const wovenSettings = useMemo(() => (septuagint ? septuagintSettings(settings, aligned) : settings), [septuagint, aligned, settings]);
@@ -531,9 +535,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           {view !== undefined && septuagintWeaveNoted(view, weaveShown ?? false, aligned) ? <SeptuagintNote className="mx-2 mb-1" /> : null}
         </>
       ) : null}
-      {septuagintOn && chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo' && !chapterReading ? (
+      {hebrewHeld && !chapterReading && heldName !== null ? (
         <p role="note" data-septuagint-not-ready className="chrome-small px-2 pb-1 text-center text-muted">
-          The Septuagint of {bookOf(BOOK)?.name ?? BOOK} is not ready yet; this is the Hebrew.
+          The Septuagint of {heldName} is not ready yet; this is the Hebrew.
         </p>
       ) : null}
       <ReaderChips

@@ -4,7 +4,7 @@
 import { useEffect, type RefObject } from 'react';
 import { bookOf, isHebrewBook } from '../data/books';
 import type { Chapter } from '../data/chapter';
-import { loadSeptuagintChapter } from '../data/lxxChapter';
+import { loadLxxIndex, loadSeptuagintChapter, notReadyName } from '../data/lxxChapter';
 import { setLastVerse } from '../data/readerChapter';
 import { septuagintSetting } from '../settings/definitions';
 import { setSetting } from '../settings/store';
@@ -17,7 +17,7 @@ export const FLIP_TEXT = {
   off: 'Hebrew text on',
   notOldTestament: 'Only an Old Testament book has a Septuagint',
   loading: 'The chapter is still loading',
-  notReady: (book: string): string => `The Septuagint of ${book} is not ready yet`,
+  notReady: (name: string): string => `The Septuagint of ${name} is not ready yet`,
 } as const;
 
 /** Lampas's verses a Greek verse answers that lie in chapter `lampas` (`refs` where it is several, else `ref`). */
@@ -60,7 +60,7 @@ export async function flipSeptuagint({ book, chapter, shown, top }: { book: stri
   let verse: number | null = null;
   if (toSeptuagint) {
     const greek = await loadSeptuagintChapter(book, chapter).catch(() => null);
-    if (!greek) return FLIP_TEXT.notReady(bookOf(book)?.name ?? book);
+    if (!greek) return FLIP_TEXT.notReady(notReadyName(await loadLxxIndex().catch(() => null), book, chapter, bookOf(book)?.name ?? book));
     verse = top === null ? null : greekVerseOf(greek, top, chapter);
   } else if (top !== null) {
     verse = lampasVerseOf(shown, top, chapter);

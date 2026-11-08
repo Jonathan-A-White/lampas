@@ -20,6 +20,7 @@ import { morpheusKey, noMorpheusWarning, readMorpheusCache, type MorpheusCache }
 import { KNOWN_DIR, knownFileOf, knownScores, type KnownScore } from './known';
 import { RAW_DIR, type Fetcher } from './sources';
 import { bareOf } from './swete';
+import { morphsAgree } from './agreement';
 
 /** Where the choices for Swete's books are kept: data/lxx/choices/<book>-<batch>.tsv (B4's batches: gen-01.tsv). */
 export const CHOICES_DIR = join(OUT_DIR, 'choices');
@@ -103,10 +104,18 @@ export const chapterOfRef = (ref: string): number => {
   return Number(m[1]);
 };
 
+/** The words holding a Greek chapter back, by reference: those with no answer, the two words of each break the model's answers leave standing, and those with a parsing Lampas cannot put in words. */
+export interface Holding {
+  pending: string[];
+  breaks: Array<[string, string]>;
+  unsayable: string[];
+}
+
 /** One Greek chapter of a book: its own figures held against the chapter bar. */
 export interface ChapterRow extends ChapterFigures {
   chapter: number;
   verdict: ChapterVerdict;
+  holding: Holding;
 }
 
 /** Whether Lampas can put a parsing in words (decodeParse): the build of a chapter stops at a row it cannot, so the bar holds the chapter back before (mw-u2w5klk.270). */
@@ -122,21 +131,69 @@ export function sayable(parsing: string): boolean {
 /** The joined rows whose parsing Lampas cannot put in words, in the text's order. */
 export const unsayableRows = (joined: Joined): DerivedWord[] => joined.rows.filter((w) => !sayable(w.morph));
 
-/** Each Greek chapter of a book (in order) with its words, pending words, guesses, agreement breaks and words with a parsing it cannot put in words, and the chapter bar's verdict on them. */
+/**
+ * The breaks of a book that still stand (mw-u2w5klk.298): the agreement check marks a break where two settled words do not agree and sends both to the model; a break is answered once the two
+ * words have answers that agree (`τὴν ἵππον`, Gen 14:11: the model's feminine for a noun the New Testament has as a masculine). One whose words have no answer, or answers that still disagree, stands.
+ * A result with no pairs (a hand-made one) counts every break by its verse.
+ */
+export function standingBreaks(result: BookResult, joined: Joined): Array<{ verse: string; pair?: [string, string] }> {
+  const { breakVerses, breakPairs } = result.agreement;
+  const morphs = new Map(joined.rows.map((w) => [w.ref, w.morph]));
+  return breakVerses.flatMap((verse, i) => {
+    const pair = breakPairs?.[i];
+    if (!pair) return [{ verse }];
+    const [x, y] = [morphs.get(pair[0]), morphs.get(pair[1])];
+    return x !== undefined && y !== undefined && morphsAgree(x, y) ? [] : [{ verse, pair }];
+  });
+}
+
+/** Each Greek chapter of a book (in order) with its words, pending words, guesses, agreement breaks that stand and words with a parsing it cannot put in words, and the chapter bar's verdict on them. */
 export function chapterRows(result: BookResult, joined: Joined): ChapterRow[] {
-  const by = new Map<number, ChapterFigures>();
-  const at = (ref: string): ChapterFigures => {
+  const by = new Map<number, { figures: ChapterFigures; holding: Holding }>();
+  const at = (ref: string) => {
     const n = chapterOfRef(ref);
     let f = by.get(n);
-    if (!f) by.set(n, (f = { words: 0, pending: 0, guesses: 0, breaks: 0, unsayable: 0 }));
+    if (!f) by.set(n, (f = { figures: { words: 0, pending: 0, guesses: 0, breaks: 0, unsayable: 0 }, holding: { pending: [], breaks: [], unsayable: [] } }));
     return f;
   };
-  for (const w of result.words) at(w.ref).words++;
-  for (const w of joined.left) at(w.ref).pending++;
-  for (const w of joined.rows) if (isGuess(w)) at(w.ref).guesses++;
-  for (const verse of result.agreement.breakVerses) at(verse).breaks++;
-  for (const w of unsayableRows(joined)) at(w.ref).unsayable!++;
-  return [...by].sort(([a], [b]) => a - b).map(([chapter, f]) => ({ chapter, ...f, verdict: chapterVerdict(f) }));
+  for (const w of result.words) at(w.ref).figures.words++;
+  for (const w of joined.left) {
+    const c = at(w.ref);
+    c.figures.pending++;
+    c.holding.pending.push(w.ref);
+  }
+  for (const w of joined.rows) if (isGuess(w)) at(w.ref).figures.guesses++;
+  for (const b of standingBreaks(result, joined)) {
+    const c = at(b.verse);
+    c.figures.breaks++;
+    if (b.pair) c.holding.breaks.push(b.pair);
+  }
+  for (const w of unsayableRows(joined)) {
+    const c = at(w.ref);
+    c.figures.unsayable!++;
+    c.holding.unsayable.push(w.ref);
+  }
+  return [...by].sort(([a], [b]) => a - b).map(([chapter, { figures, holding }]) => ({ chapter, ...figures, verdict: chapterVerdict(figures), holding }));
+}
+
+/** How many words a held chapter's line names before it says "and N more". */
+const NAMED_WORDS = 4;
+
+/**
+ * One line a Greek chapter the bar holds back (mw-u2w5klk.298): `gen: chapter 14 is not shipped: breaks: 5.7 per 1,000 words, 3 in 522 (the bar: at most 5): Gen.14:11#3 τὴν + Gen.14:11#4 ἵππον, ...`.
+ * It names each failing clause and the first few words that hold the chapter (a word with no answer; the two words of a break; a word with a parsing it cannot put in words), `forms` giving a word's printed form by its reference.
+ */
+export function heldLines(book: string, chapters: readonly ChapterRow[], forms: ReadonlyMap<string, string> = new Map()): string[] {
+  const word = (ref: string): string => (forms.has(ref) ? `${ref} ${forms.get(ref)}` : ref);
+  return chapters
+    .filter((c) => !c.verdict.shippable)
+    .map((c) => {
+      // a break under the line holds nothing back: only the chapter whose breaks line fails names them
+      const breaks = c.verdict.failures.some((f) => f.key === 'breaks') ? c.holding.breaks : [];
+      const named = [...c.holding.pending.map(word), ...breaks.map(([x, y]) => `${word(x)} + ${word(y)}`), ...c.holding.unsayable.map(word)];
+      const more = named.length > NAMED_WORDS ? `, and ${named.length - NAMED_WORDS} more` : '';
+      return `${book}: chapter ${c.chapter} is not shipped: ${c.verdict.failures.map((f) => f.line).join('; ')}: ${named.slice(0, NAMED_WORDS).join(', ')}${more}`;
+    });
 }
 
 /** The first line of a partly or wholly shipped book's annotation file: `# shipped chapters: 1-6 of 50`, `1-2, 4-6 of 50`, or `all 50` when every chapter of the book is in it. */
