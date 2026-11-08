@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.183",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1129.3",
+    "kind": "new",
+    "text": "The map panel under or beside your text now follows you from chapter to chapter, and sits beside the text when the phone is on its side or the window is wide."
+  },
+  {
     "version": "0.7.182",
     "date": "2026-11-08",
     "story": "mw-u2w5klk.301",

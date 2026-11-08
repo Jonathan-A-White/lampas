@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.183
+_2026-11-08_
+- New: The map panel under or beside your text now follows you from chapter to chapter, and sits beside the text when the phone is on its side or the window is wide.
+
 ## 0.7.182
 _2026-11-08_
 - Fixed: On a Septuagint chapter at Large or Largest text, the chapter title in the top bar no longer runs under the English / Greek switch.
