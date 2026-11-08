@@ -19,6 +19,8 @@ import { HoldRow } from './copy/HoldRow';
 import { useCopyHold } from './copy/useCopyHold';
 import { ImmersiveHint } from './ImmersiveHint';
 import { ReaderControls } from './ReaderControls';
+import { Dock } from './reader/split/Dock';
+import { useSplit } from './reader/split/useSplit';
 import { useAiAllowed } from './gate/licenceContext';
 import { LicenceTip } from './gate/LicenceTip';
 import { TalkSheet } from './Talk';
@@ -245,6 +247,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [notice, setNotice] = useState(link?.notice ?? (request?.action === 'opened' ? `Opened ${TITLE}` : null));
   // Swiping the text goes to the next or previous chapter (src/reader/useChapterSwipe.ts); past Genesis 1 or Revelation 22 a short note says so.
   const sheetOpen = useSheetOpen();
+  // The split (src/reader/split/): a dock below the passage, side by side sideways and wide, whose handle row is the divider. The box is the passage and the dock in one column; shut, it is no box at all.
+  const split = useSplit();
+  const { setBox: boxRef, setFoot: footRef } = split;
   const inner = useRef<HTMLDivElement | null>(null);
   const [swipeEnd, setSwipeEnd] = useState<SwipeEnd | null>(null);
   const dismissSwipeNote = useCallback(() => setSwipeEnd(null), []);
@@ -572,6 +577,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           onBars={bars.toggle}
           pages={paging ? { page: pages.page, count: pages.count, turn: pages.turn, chapterBefore: around.previous !== null, chapterAfter: around.next !== null } : null}
           inert={sheetOpen || viewUnit !== undefined}
+          split={split.open ? { larger: split.larger, smaller: split.smaller, close: split.close } : null}
         />
       ) : null}
       {copyHold.said ? (
@@ -584,7 +590,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       {swipeEnd ? <SwipeNote end={swipeEnd} lastBook={BOOKS[BOOKS.length - 1].name} onDismiss={dismissSwipeNote} /> : null}
       <ReadingBar reading={reading} />
       {chapter && !failed ? <ImmersiveHint enabled={immersive} away={away} mode={paging ? 'pages' : 'scroll'} /> : null}
-      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} data-place-below={percentLine && away ? '' : undefined} className="screen min-h-0 flex-1 touch-pan-y px-1 pt-2">
+      <div ref={boxRef} data-reader-box className={split.open ? `flex min-h-0 min-w-0 flex-1 ${split.axis === 'column' ? 'flex-col' : 'flex-row'}` : 'contents'}>
+      <main ref={mainRef} inert={viewUnit !== undefined} data-reader data-view={view} data-weave={weave} data-layout={layout} data-headings={headings} data-read-span={readSpan} data-immersive={immersive ? 'on' : 'off'} data-paging={paging ? 'pages' : 'scroll'} data-place-below={percentLine && away ? '' : undefined} className="screen min-h-0 min-w-0 flex-1 touch-pan-y px-1 pt-2">
         <div ref={inner} data-reader-text data-pages={paging ? '' : undefined}>
         {failed ? (
           <ChapterFailed title={TITLE} onRetry={retry} onPick={() => setPicking(true)} />
@@ -651,9 +658,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         )}
         </div>
       </main>
+      {split.open ? (
+        <Dock split={split} footRef={footRef} title="Split" inert={sheetOpen || viewUnit !== undefined}>
+          <p className="px-4 py-3 text-muted">The dock&rsquo;s body: a map or a second text goes here.</p>
+        </Dock>
+      ) : null}
+      </div>
       {paging && placeShown ? <PlaceLine title={TITLE} at={`Page ${pages.page} of ${pages.count}`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
       {/* Scroll with the Immersive reader Off: the line is there all the time, how far through the chapter he is (mw-5r3p30.1028); with it On it comes with the bars away, below */}
-      {readingMode !== undefined && !paging && !immersive && placeShown ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
+      {readingMode !== undefined && !paging && !immersive && placeShown && !split.open ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} floor={!barUp} /> : null}
       <BarSlot level={1} inset={!(percentLine && away)} />
       {chapter && !failed && !viewUnit ? <LicenceTip /> : null}
       {percentLine ? <PlaceLine title={TITLE} at={`${percent}%`} onOpen={openChapter} onCopy={copyHold.chapter} visible={away} floor /> : null}

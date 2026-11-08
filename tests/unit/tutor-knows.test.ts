@@ -9,9 +9,10 @@ import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { buildReadingRequest } from '../../src/services/reading';
 import { buildTalkRequest } from '../../src/services/talk';
 import { currentSettings, SETTINGS } from '../../src/settings/registry';
-import { isTalkable } from '../../src/settings/rows';
+import { isTalkable, ROWS } from '../../src/settings/rows';
 import { buildTipRequest } from '../../src/tips/tip';
-import { BEARS_ON, GRINDS, PROGRESS, TUTOR_KNOWS, type GrindKind } from '../../src/tutor/knows';
+import { BEARS_ON, GRINDS, NOT_IN_THE_REGISTRY, PROGRESS, TUTOR_KNOWS, type GrindKind } from '../../src/tutor/knows';
+import { SPLIT_SETTINGS } from '../../src/settings/definitions/split';
 import type { Schema } from '../support/schema-validate';
 import '../support/grinds-in-graph';
 
@@ -54,6 +55,17 @@ describe('the table of what each grind is told (src/tutor/knows.ts)', () => {
     expect(isTalkable('library')).toBe(false);
     expect(SETTINGS.some((s) => s.key === 'library')).toBe(false);
     expect(Object.keys(BEARS_ON)).not.toContain('library');
+  });
+
+  it('classifies the Reader split\'s settings: declared once, kept out of the registry and the tutor\'s reach, each with its reason (mw-5r3p30.1129.1)', () => {
+    expect(SPLIT_SETTINGS.map((s) => s.key)).toEqual(['readerSplit', 'splitSize']);
+    expect(Object.keys(NOT_IN_THE_REGISTRY).sort()).toEqual(SPLIT_SETTINGS.map((s) => s.key).sort());
+    for (const [key, reason] of Object.entries(NOT_IN_THE_REGISTRY)) {
+      expect(SETTINGS.some((s) => s.key === key), `${key} is in the registry`).toBe(false);
+      expect(Object.keys(BEARS_ON), `${key} is in BEARS_ON`).not.toContain(key);
+      expect(isTalkable(key) && ROWS.some((r) => r.key === key), `${key} is a row the tutor reads`).toBe(false);
+      expect(reason.trim().length, `${key} has a written reason`).toBeGreaterThanOrEqual(20);
+    }
   });
 
   describe.each(GRINDS)('%s', (kind) => {
