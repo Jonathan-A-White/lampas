@@ -8,7 +8,8 @@ import { openLibrary } from '../nav/route';
 import type { CatalogueEntry } from '../resources/catalogue';
 import { armFallback } from '../resources/openApp';
 import type { StudyPlace } from '../resources/types';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { listFact, useSheetTalk } from '../tutor/sheetTalk';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { detailOf, inLogosGroups, SHOWN_ROWS } from './inLogos';
@@ -33,11 +34,19 @@ export function InLogosChooser({ place, name, onClose, entries }: InLogosChooser
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-50, over the Talk sheet (z-10): a list of links to other books, nothing to ask about, so no ? over it (mw-5r3p30.956)
-  useNoDoor();
   const searching = query.trim() !== '';
   const groups = rows ? inLogosGroups(rows, place, query) : [];
   const title = `${name} in Logos`;
+  // z-50, over the Talk sheet (z-10): the ? asks about the place whose books are listed, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1122)
+  const ask = useSheetTalk({
+    name: 'In Logos',
+    facts: [
+      { label: 'Place', value: name },
+      listFact('Books that open it', groups.flatMap((group) => group.rows.map(({ entry }) => entry.short))),
+      { label: 'Searching for', value: query.trim() },
+    ],
+    suggestions: [`Which of my books would help most with ${name}?`, `What should I look for in ${name}?`],
+  });
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
@@ -111,6 +120,7 @@ export function InLogosChooser({ place, name, onClose, entries }: InLogosChooser
           </button>
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>,
     document.body,
   );

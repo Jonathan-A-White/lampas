@@ -8,7 +8,8 @@ import { SpeakButton } from '../speech/SpeakButton';
 import { speak } from '../speech/greek';
 import { BarSlot } from '../speech/SpeakingBarSlot';
 import { HebrewAskContext, hebrewKey, noHebrewVoice } from './hebrewSpeech';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -28,8 +29,13 @@ export function HebrewGuide({ word, noVoice, onClose }: { word: string; noVoice:
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-40, drawn into document.body over the Talk sheet it was opened from: no ? over it, whether or not that Talk is open (mw-5r3p30.955)
-  useNoDoor();
+  // z-40, drawn into document.body, over the Talk sheet it was opened from: where that Talk is open no ? is drawn at all; where it is not (an answer kept in Your conversations) the ? asks about the word, in a Talk
+  // drawn inside this layer so it stands in front (mw-5r3p30.1122)
+  const ask = useSheetTalk({
+    name: 'How to say it',
+    facts: [{ label: 'Hebrew word', value: word }, noVoice ? { label: 'Voice', value: 'This phone has no Hebrew voice' } : null],
+    suggestions: ['How do I say this Hebrew word, letter by letter?', 'What does this word mean?'],
+  });
   return createPortal(
     <div className="fixed inset-0 z-40 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
@@ -83,6 +89,7 @@ export function HebrewGuide({ word, noVoice, onClose }: { word: string; noVoice:
           ) : null}
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>,
     document.body,
   );

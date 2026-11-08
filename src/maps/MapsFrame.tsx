@@ -2,16 +2,17 @@
 // (useSheetBack), Escape and a swipe down on the handle as every sheet does; a map opened over the sheet is a second frame, one Back deeper.
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk, type SheetTalk } from '../tutor/sheetTalk';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 
-export function MapsFrame({ label, onClose, children, heading, escape = true }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode; escape?: boolean }) {
+export function MapsFrame({ label, onClose, children, heading, talk, escape = true }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode; talk: SheetTalk; escape?: boolean }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, escape);
   useSheetBack(onClose);
-  // z-50, over the Talk sheet (z-10): the Maps sheet and a map, nothing to ask about, so no ? over it (mw-5r3p30.956)
-  useNoDoor();
+  // z-50, over the Talk sheet (z-10): the ? asks about the Maps sheet's passage or the map open, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1122)
+  const ask = useSheetTalk(talk);
   return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <div data-testid="maps-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
@@ -32,6 +33,7 @@ export function MapsFrame({ label, onClose, children, heading, escape = true }: 
         <div className="shrink-0 px-4 pb-2">{heading}</div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(0.5rem+var(--lp-bar-inset))]">{children}</div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>,
     document.body,
   );

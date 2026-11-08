@@ -4,7 +4,8 @@
 import { useState } from 'react';
 import { faceOf } from '../script/greekLang';
 import { armFallback } from '../resources/openApp';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { listFact, useSheetTalk } from '../tutor/sheetTalk';
 import type { LexiconEntry } from '../resources/logos';
 import { focusOnMount } from '../ui/focus';
 import { matching } from '../ui/listFilter';
@@ -29,8 +30,12 @@ export function AllLexiconsSheet({ word, hebrew = false, entries, onClose, onMis
   const [query, setQuery] = useState('');
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-30, over the word sheet (a door target whose Talk is z-10, under this): a list of links, nothing to ask about, so no ? over it (mw-5r3p30.956)
-  useNoDoor();
+  // z-30, over the word sheet (a door target whose Talk is z-10, under this): the ? asks about the word the lexicons open, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1122)
+  const ask = useSheetTalk({
+    name: 'All lexicons',
+    facts: [{ label: 'Word', value: word }, { label: 'Language', value: hebrew ? 'Hebrew' : 'Greek' }, listFact('Lexicons', entries.map((e) => e.name), 12)],
+    suggestions: [`Which lexicon should I open first for ${word}?`, `What does ${word} mean?`],
+  });
   const shown = matching(
     entries.map((e) => ({ id: e.id, name: e.link.tile ?? e.name, also: e.name })),
     query,
@@ -89,6 +94,7 @@ export function AllLexiconsSheet({ word, hebrew = false, entries, onClose, onMis
           </button>
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

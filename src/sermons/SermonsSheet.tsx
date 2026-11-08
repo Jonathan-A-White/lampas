@@ -8,7 +8,8 @@ import { useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { placeName } from '../maps/placeName';
 import { armFallback } from '../resources/openApp';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { listFact, useSheetTalk, type SheetTalk } from '../tutor/sheetTalk';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useOnline } from '../ui/online';
@@ -254,12 +255,12 @@ function AskRow({ place }: { place: SermonPlace }) {
 }
 
 /** The bottom sheet the Sermons sheet is drawn in: the backdrop, the handle and Close, the heading, the scroll box. It takes the phone's Back, Escape and a swipe down on the handle as every sheet does. */
-function SermonsFrame({ label, onClose, children, heading }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode }) {
+function SermonsFrame({ label, onClose, children, heading, talk }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode; talk: SheetTalk }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, true);
   useSheetBack(onClose);
-  // z-50, over the Talk sheet (z-10): nothing to ask about here, so no ? over it
-  useNoDoor();
+  // z-50, over the Talk sheet (z-10): the ? asks about the passage, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1122)
+  const ask = useSheetTalk(talk);
   return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <div data-testid="sermons-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
@@ -280,6 +281,7 @@ function SermonsFrame({ label, onClose, children, heading }: { label: string; on
         <div className="shrink-0 px-4 pb-2">{heading}</div>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(0.5rem+var(--lp-bar-inset))]">{children}</div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>,
     document.body,
   );
@@ -331,6 +333,11 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
     <SermonsFrame
       label={title}
       onClose={onClose}
+      talk={{
+        name: 'Sermons',
+        facts: [{ label: 'Passage', value: placeName(place) }, listFact('Sermons listed', rows.map((row) => row.title))],
+        suggestions: ['Which of these sermons would help me most with this passage?', 'What do these sermons say about this passage?'],
+      }}
       heading={
         <>
           <h2 className="text-xl font-semibold">{title}</h2>

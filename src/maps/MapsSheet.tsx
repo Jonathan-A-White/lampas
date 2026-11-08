@@ -4,6 +4,7 @@
 // nothing is fetched until a map is opened. A map row opens the map in the app (MapView.tsx, over the sheet); a video row is a plain link to its article. The sheet's count and rows
 // come from the module's data alone (useMaps). openMaps(ref) opens it; <MapsHost /> (mounted once in App) draws it.
 import { useState } from 'react';
+import { listFact } from '../tutor/sheetTalk';
 import { armFallback } from '../resources/openApp';
 import { sourceOf } from './index';
 import { MapsFrame } from './MapsFrame';
@@ -134,7 +135,16 @@ export function MapsSheet({ mapRef, onClose, openCard }: { mapRef: MapRef; onClo
   const blocks = sources.map((source) => ({ source, cards: (cards ?? []).filter((c) => c.source === source) }));
   return (
     <>
-      <MapsFrame label={title} onClose={onClose} escape={map === null} heading={<h2 className="text-xl font-semibold">{title}</h2>}>
+      <MapsFrame
+        label={title}
+        onClose={onClose}
+        escape={map === null}
+        talk={{
+          name: 'Maps',
+          facts: [{ label: 'Passage', value: placeName(mapRef) }, listFact('Maps listed', (cards ?? []).map((c) => c.title))],
+          suggestions: ['Which of these maps shows what this passage is about?', 'Where do the places of this passage lie?'],
+        }}
+        heading={<h2 className="text-xl font-semibold">{title}</h2>}>
         {cards && cards.length === 0 ? <p role="status" className="py-2 text-base text-muted">No maps here.</p> : null}
         {blocks.map(({ source, cards: own }) => {
           const links = own.filter(isLink);

@@ -22,7 +22,8 @@ import { useStillLoading } from './reader/useStillLoading';
 import { usePlan, type PlanView } from './plan/usePlan';
 import { focusQuietly } from './ui/focus';
 import { type ListItem, matching, matchingInOrder, matchingInOrderExactly } from './ui/listFilter';
-import { useNoDoor } from './tutor/door';
+import { DialogAskTutor } from './AskTutor';
+import { useSheetTalk } from './tutor/sheetTalk';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 
@@ -156,8 +157,6 @@ export function ChapterPicker({
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-10 and drawn after the Talk sheet: a tutor opened from the ? would stand under this picker, so no ? is drawn over it (mw-5r3p30.953)
-  useNoDoor();
   const box = useRef<HTMLDivElement>(null);
   // The search field has the focus when the sheet opens and when the books come back from a chapter grid, so the keyboard is up and ready to type (mw-5r3p30.711).
   // Not a ref callback: useSheetBack, above, moves focus to the heading once the sheet has mounted, and this effect runs after it, still inside the tap that opened the sheet.
@@ -184,6 +183,17 @@ export function ChapterPicker({
       : byUse(matchingInOrderExactly(ITEMS, query), query, opens);
   const preface = !onChoose && matching([{ id: 'preface', name: 'Preface' }], query).length > 0;
   const name = book ? bookOf(book)?.name : undefined;
+  // z-10 and drawn after the Talk sheet, so a Talk drawn inside this layer is what stands in front: the ? asks about the chapter he is reading, the book he has opened and what he typed (mw-5r3p30.953, mw-5r3p30.1122)
+  const ask = useSheetTalk({
+    name: 'Choose a chapter',
+    facts: [
+      { label: onChoose ? 'Place now' : 'Reading now', value: current.title },
+      { label: 'Choosing for', value: heading ?? '' },
+      { label: 'Book opened', value: name ?? '' },
+      { label: 'Searching for', value: query.trim() },
+    ],
+    suggestions: ['Where in the Bible should I read next?', 'Which book would you start with, and why?'],
+  });
   const pick = (chapter: number) => {
     if (!book) return;
     if (onChoose) return onChoose({ code: book, chapter });
@@ -324,6 +334,7 @@ export function ChapterPicker({
           )}
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }
