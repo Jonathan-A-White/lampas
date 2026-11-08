@@ -67,7 +67,8 @@ describe('loadChapter with the Septuagint On', () => {
     expect(lxxRequests()).toEqual(['/data-lxx/index.json', '/data-lxx/psa/22.json?v=7098b55d4464', '/data-lxx/lexicon-grc-lxx.json']);
     expect(chapter).toMatchObject({ code: 'psa', chapter: 22, lang: 'grc', translation: 'lxx2012', edition: 'swete' });
     expect(chapter.verses[0].ref).toEqual({ book: 'psa', chapter: 23, verse: 1 });
-    expect(hebrewRequests()).toEqual([]);
+    // the Lampas chapter's own file is read for its section headings and for nothing else (mw-u2w5klk.302)
+    expect(hebrewRequests().map((url) => url.replace(/\?v=.*/, ''))).toEqual(['/data/psa/23.json']);
   });
 
   it('asks for the Greek chapter the index names for Psalm 10, and keeps only the verses that are Psalm 10\'s', async () => {

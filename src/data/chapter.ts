@@ -4,7 +4,7 @@
 
 import { CANON_INDEX, greekBooks } from './bookIndex';
 import { isHebrewBook } from './books';
-import { forgetLxxIndex, loadSeptuagintChapter } from './lxxChapter';
+import { forgetLxxIndex, loadSeptuagintChapter, withHeadings } from './lxxChapter';
 import { chapterWait } from './chapterWait';
 import { within } from './within';
 import { getSetting } from '../settings/store';
@@ -346,7 +346,13 @@ export async function loadChapter(book: string, n: number): Promise<Chapter> {
       if (!response.ok) throw new Error(`Could not load ${key}: ${response.status}`);
       return fillChapter((await response.json()) as Chapter);
     });
-  const request = septuagint ? loadSeptuagintChapter(book, n).then((greek) => (greek ? fillChapter(greek) : hebrew())) : hebrew();
+  // The Septuagint has no section headings of its own: the MSB's, from the Lampas chapter's file, are laid on the Greek verses they head (withHeadings, mw-u2w5klk.302). That file is asked for beside the Greek one; a
+  // chapter that cannot be fetched gives no headings and the Greek is shown as before. The worker keeps it under its fingerprint, so a chapter read before is not fetched again.
+  const msb = septuagint ? hebrew() : null;
+  msb?.catch(() => undefined);
+  const request = septuagint
+    ? loadSeptuagintChapter(book, n).then(async (greek) => (greek ? fillChapter(withHeadings(greek, await msb!.catch(() => null), book, n)) : msb!))
+    : hebrew();
   chapters.set(key, request);
   // A failure is not kept: the next call asks again.
   request.catch(() => {
