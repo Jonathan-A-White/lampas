@@ -233,7 +233,9 @@ test.describe('a double tap on Share', () => {
       await pageTime(page, SETTLE_MS + 100);
       const button = view(page).getByRole('group', { name: 'Tools', exact: true }).getByRole('button', { name: 'Share', exact: true });
       await expect(button).toBeVisible();
-      const where = await settledBox(button);
+      // both taps in the button's top quarter: with the tools line one row (mw-fnvjof.17.32) the button's middle is over the 8 px gap between two of the sheet's rows, its top over Just the link
+      const settled = await settledBox(button);
+      const where = { ...settled, height: settled.height / 2 };
       // the second tap lands where the Share button was: that spot is what the first tap's sheet drew there
       await tapTwice(page, where, gap, {
         touch: true,

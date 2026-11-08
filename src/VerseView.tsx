@@ -126,6 +126,11 @@ function Arrow({ move, name, glyph }: { move: (() => void) | null; name: string;
 const CELL = 'min-h-11 rounded-xl border px-1 text-sm font-medium leading-tight';
 const CELL_CHOSEN = 'border-accent bg-accent/15 text-fg';
 const CELL_REST = 'border-line text-fg active:bg-line';
+/** The tools line pinned above the foot: one row that scrolls sideways, its doors (and Copy and Share's own row) never squeezed; while the text to copy by hand shows it wraps,
+ * the field taking a line of its own (mw-fnvjof.17.32). */
+const TOOLS_ROW =
+  'flex items-center gap-x-1 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&>*]:shrink-0 [&_[data-link-actions]>div]:shrink-0 ' +
+  'has-[[data-link-actions]>:is(textarea,input)]:flex-wrap has-[[data-link-actions]>:is(textarea,input)]:overflow-visible';
 
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
@@ -142,6 +147,9 @@ export function VerseView(props: VerseViewProps) {
   // The text itself uses the full width (mw-5r3p30.1005): a word may be under the ?, and a two-finger tap hides it.
   const doorPad = useDoorRoom();
   const controlsRoom = ai ? doorPad : '';
+  // Sideways the tools stand left of the row of actions, so a ? at the right edge floats over the row, never the tools: their line keeps the ?'s room only when the ? is at the left
+  // (the Hand), or where the tools span the window (upright, or a narrow window) (mw-fnvjof.17.32).
+  const toolsRoom = controlsRoom === 'pr-[4.5rem]' ? 'pr-[4.5rem] short:pr-0' : controlsRoom;
   const hebrewOn = useHebrewOn();
   const reference = unitReference(title, verse);
   // The Practise door that is open (src/practise/PractisePane.tsx): kept for the verse or passage it was opened on, so the next one opens at the door.
@@ -196,11 +204,18 @@ export function VerseView(props: VerseViewProps) {
   // Play bar at rest (tests/e2e/audio-bible-landscape.spec.ts). In a narrow window they are the end of the scrolling flow instead.
   const controls = (
     <div data-verse-controls className={narrow ? 'shrink-0' : 'flex shrink-0 flex-col px-3 pb-1 short:flex-row short:items-start short:gap-x-2'}>
-      {/* The tools: what acts on the text itself, plain accent words that wrap as a line of words does (mw-5r3p30.896). Copy and Share (Copied says so above the line; the text to copy by hand
+      {/* The tools: what acts on the text itself, plain accent words (mw-5r3p30.896). Copy and Share (Copied says so above the line; the text to copy by hand
           takes a line of its own), Memorize (mw-fu7dqf.5: the verse, or the passage's range as one reference; an Old Testament verse is learned in the languages its Hebrew dial allows, no licence),
           his Bible in Logos at the verse (a passage: at its first verse) and the chooser of the rest of his shelf behind In another book… (docs/design/library-at-scale.md 3.6), and the Maps door
-          (mw-zbjgn3r.2: the maps of the verse, or of the passage's range) and the Sermons door after it (mw-qtu3zvz.2: the sermons preached on the verse, the passage or the chapter). The Audio Bible row of Listen is in the scroll box above, so the line is under it at every size (mw-5r3p30.746, .775). */}
-      <div role="group" aria-label="Tools" data-verse-tools className={`relative mt-0.5 flex shrink-0 flex-wrap items-center gap-x-1 short:min-w-0 short:max-w-[40%] ${controlsRoom}`}>
+          (mw-zbjgn3r.2: the maps of the verse, or of the passage's range) and the Sermons door after it (mw-qtu3zvz.2: the sermons preached on the verse, the passage or the chapter). The Audio Bible row of Listen is in the scroll box above, so the line is under it at every size (mw-5r3p30.746, .775).
+          The line is one row that scrolls sideways where its doors are wider than it, as the Reader's chips do: a fifth door wrapped it onto a second row, and the
+          controls' extra 44 px cost the Audio Bible link, the Summary field, a reading's message, the Next word card and Diagram their room (mw-fnvjof.17.32,
+          tests/e2e/verse-tools-line.spec.ts). The text to copy by hand still takes a line of its own (the row wraps while it shows), and Copied, placed by the group, is not cut by the
+          scrolling row. In a narrow window, where the line ends the scrolling flow, it is one row too: at 160 % text it wrapped to three, and the Audio Bible link above it was
+          scrolled out of sight when Listen was tapped. Sideways its column is 40 % of the window but never under 12.5 rem, so the widest door shows whole (a 390 px window
+          cut to 400 px tall left it 74 px), and keeps the ?'s room only when the ? is at the left (toolsRoom). */}
+      <div role="group" aria-label="Tools" data-verse-tools className={`relative mt-0.5 shrink-0 short:min-w-0 short:max-w-[max(40%,12.5rem)] ${narrow ? controlsRoom : toolsRoom}`}>
+        <div data-verse-tools-line className={TOOLS_ROW}>
         <LinkActions
           url={copyLink(copyUnit)}
           title={reference}
@@ -214,6 +229,9 @@ export function VerseView(props: VerseViewProps) {
         <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} quiet />
         <MapsDoor mapRef={{ book, chapter, from: verse.n, ...(verse.to === undefined ? {} : { to: verse.to }) }} quiet />
         <SermonsDoor place={sermonPlace} quiet />
+        {/* More to the right: the row's end fades into the page while a door is past it, and this sits over empty room once the row is scrolled to its end or holds every door */}
+        <span aria-hidden data-verse-tools-more className="pointer-events-none sticky right-0 w-6 self-stretch bg-linear-to-l from-canvas to-transparent" />
+        </div>
       </div>
       <ProgressMarks canonical={memorizeRef} className="mt-1 shrink-0 px-2" />
       {/* The row of actions: the chosen one is marked, not filled (the one filled control is at the foot). Three to a row, two under 15 rem of room, one row from 30 rem; the last row's
