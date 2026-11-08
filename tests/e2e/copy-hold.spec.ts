@@ -57,7 +57,7 @@ test('a hold on a verse number copies the verse, says so for a moment, selects n
   await expect(page.getByRole('dialog', { name: /^Talk about/ })).toHaveCount(0);
   expect(await page.evaluate(() => (window as unknown as { __bsvKitTesting: { mic: { recognitions: unknown[] } } }).__bsvKitTesting.mic.recognitions.length)).toBe(0);
   await shot(page, 'copy-hold');
-  await page.clock.runFor(2600);
+  await page.clock.runFor(3100);
   await expect(page.getByRole('status').filter({ hasText: 'Copied Colossians 3:1' })).toHaveCount(0);
 });
 

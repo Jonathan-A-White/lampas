@@ -407,6 +407,22 @@ html {
   top: calc(max(var(--lp-bars-h, 0px), env(safe-area-inset-top)) + 0.75rem);
 }
 
+/* The row of a hold on a verse number (src/copy/HoldRow.tsx, mw-5r3p30.1074): a strip above the place line at the foot, so it covers one strip of text and moves none. It fades in; no motion under prefers-reduced-motion. */
+.copy-row {
+  bottom: calc(var(--lp-bar-inset) + 2.75rem);
+  animation: copy-row-in 120ms ease-out;
+}
+@keyframes copy-row-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .copy-row {
+    animation: none;
+  }
+}
+
 .screen {
   overflow-y: auto;
   overscroll-behavior: contain;
