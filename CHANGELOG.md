@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.164
+_2026-11-08_
+- New: The sheet behind a Septuagint chapter's header now says Brenton translated the Vatican text, not Swete's edition, so his English can differ from the Greek shown.
+- Fixed: With the Old Testament in Greek on, a New Testament word's own forms table now also shows the Septuagint's forms, marked LXX.
+
 ## 0.7.163
 _2026-11-07_
 - Fixed: a Septuagint word's card now shows and says the word without the printed punctuation, About this reading explains how each word was read and Back brings the card back.

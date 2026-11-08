@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.164",
+    "date": "2026-11-08",
+    "story": "mw-u2w5klk.292",
+    "kind": "new",
+    "text": "The sheet behind a Septuagint chapter's header now says Brenton translated the Vatican text, not Swete's edition, so his English can differ from the Greek shown."
+  },
+  {
+    "version": "0.7.164",
+    "date": "2026-11-08",
+    "story": "mw-u2w5klk.314",
+    "kind": "fixed",
+    "text": "With the Old Testament in Greek on, a New Testament word's own forms table now also shows the Septuagint's forms, marked LXX."
+  },
+  {
     "version": "0.7.163",
     "date": "2026-11-07",
     "story": "mw-u2w5klk.17",
