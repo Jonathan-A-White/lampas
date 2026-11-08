@@ -39,7 +39,7 @@ export const dailyPlanSetting = piece(
   'dailyPlan',
   'Plan chapter',
   "Today holds your reading plan's chapter.",
-  "Whether Today holds the reading plan's chapter for the day, to read in Logos. With no plan started there is nothing to show.",
+  "Whether Today holds the reading plan's chapter for the day, to read in Logos.",
 );
 
 export const dailyPsalmsSetting = piece(
@@ -67,7 +67,7 @@ export const devotionalSetting = defineSetting<string>({
   section: 'daily',
   label: 'Which devotional',
   hint: 'The one Today shows, or Random: a different one each day.',
-  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, Morning and Evening (${DEFAULT_DEVOTIONAL}) to start. Random draws a different one each day from those On in Your Logos library.`,
+  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, Morning and Evening (${DEFAULT_DEVOTIONAL}) to start.`,
   dependsOn: LOGOS_ON,
 });
 
@@ -94,7 +94,7 @@ export const dailyTicksSetting = piece(
   'dailyTicks',
   'Tick boxes',
   'Each piece has a box you tick yourself.',
-  'Whether each piece on Today has a box you tick yourself when you have done it. Off makes Today a plain list of links. On by default.',
+  'Whether each piece on Today has a box you tick yourself when you have done it. Off makes Today a plain list of links.',
 );
 
 /** The value of Today's devotional that draws another one for the day (any devotional's Logos id names that one). */

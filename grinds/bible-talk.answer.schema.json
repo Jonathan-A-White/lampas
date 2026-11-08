@@ -1557,6 +1557,10 @@
                   "sermons.greg-laurie-logos",
                   "sermons.jd-greear-logos",
                   "sermons.skip-heitzig-logos",
+                  "sermons.spurgeon-sermon-notes-logos",
+                  "sermons.wesley-logos",
+                  "sermons.whitefield-logos",
+                  "sermons.moody-logos",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -1973,6 +1977,30 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.skip-heitzig-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.spurgeon-sermon-notes-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.wesley-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.whitefield-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.moody-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

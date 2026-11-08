@@ -88,7 +88,7 @@ describe('the verses a Bible talk holds', () => {
 describe('the clip', () => {
   // ten long kept answers and a settings record as heavy as a phone's full one push a talk over the cap, past what the word list gives back
   const turns = Array.from({ length: 10 }, (_, i) => ({ q: `Question ${i}`, a: 'x'.repeat(300) }));
-  const settings = Object.fromEntries(Array.from({ length: 140 }, (_, i) => [`setting${i}`, 'a value of some length']));
+  const settings = Object.fromEntries(Array.from({ length: 148 }, (_, i) => [`setting${i}`, 'a value of some length']));
   const heavy = (question: string, linked?: string) =>
     buildTalkRequest(scope, question, linked ? turns.map((t, i) => (i === 9 ? { ...t, links: [{ kind: 'verse' as const, reference: linked }] } : t)) : turns, [], settings);
 
