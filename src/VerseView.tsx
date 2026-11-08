@@ -63,6 +63,7 @@ import { useSendOff } from './plan/useSendOff';
 import { audioBibleSetting } from './settings/definitions';
 import { useSetting } from './settings/store';
 import { isOrdered, rowAttrs } from './reader/sourceText';
+import { lampasUnit } from './reader/septuagint';
 import { useReaderVariants } from './reader/variants';
 import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
@@ -151,7 +152,9 @@ export function VerseView(props: VerseViewProps) {
   // (the Hand), or where the tools span the window (upright, or a narrow window) (mw-fnvjof.17.32).
   const toolsRoom = controlsRoom === 'pr-[4.5rem]' ? 'pr-[4.5rem] short:pr-0' : controlsRoom;
   const hebrewOn = useHebrewOn();
-  const reference = unitReference(title, verse);
+  // a Septuagint verse is named and numbered as Lampas's (Greek Ps 22:1 is Psalm 23:1), the Greek address beside it as the Reader's number has it (mw-u2w5klk.18)
+  const lampas = useMemo(() => lampasUnit(chapterText, verse), [chapterText, verse]);
+  const reference = unitReference(title, lampas);
   // The Practise door that is open (src/practise/PractisePane.tsx): kept for the verse or passage it was opened on, so the next one opens at the door.
   const unitKey = `${book}.${chapter}.${unitId(verse)}`;
   const [kept, setPractice] = useState<PracticeState>(() => freshPractice(unitKey));
@@ -164,7 +167,7 @@ export function VerseView(props: VerseViewProps) {
   // 20 rem of window or less (a 360 px phone at 130 % text or more): the controls cannot stand under the text's box, so they join the scrolling flow, the text's box at most 40 % of the window (src/ui/useNarrow.ts)
   const narrow = useNarrow();
   const passage = verse.to !== undefined;
-  const name = unitName(verse);
+  const name = unitName(lampas);
   const memorizeRef = `${osisOf(book)}.${chapter}.${verse.n}${verse.to === undefined ? '' : `-${verse.to}`}`;
   const noun = passage ? 'passage' : 'verse';
   // Copy and Share give the unit in the format of Settings > Reading > When you copy (src/copy/format.ts); the defaults until the three rows are read
@@ -178,6 +181,14 @@ export function VerseView(props: VerseViewProps) {
   // the Sermons door asks for the whole chapter when the view is the place line's (a Septuagint chapter by the Lampas verses it answers, src/sermons/place.ts)
   const sermonPlace = useMemo(() => sermonPlaceOf(chapterText, verse, book, chapter, copyUnit.kind === 'chapter'), [chapterText, verse, book, chapter, copyUnit.kind]);
   const pieces = useMemo(() => sharePieces(copyUnit, copyFormat), [copyUnit, copyFormat]);
+  // the Septuagint's own address of the verse or passage, small beside the reference ('(22:1)', as the Reader's verse number says it), where it differs from Lampas's
+  const greekNote = copyUnit.septuagint?.greek.replace(/^Greek /, '') ?? '';
+  const greekSpan = greekNote ? (
+    <span data-greek-number className="text-xs font-medium text-muted">
+      {' '}
+      ({greekNote})
+    </span>
+  ) : null;
   // A verse is shown big; a passage is set as the Reader sets its text, in the Reader's blocks (PassageText: the face and size of textClass, the Reader's leading,
   // and with Immersive on the book look of src/index.css, which [data-passage-text] shares with the Reader's verses), under his own size settings.
   // A Hebrew verse is set as big as the Greek one, in the app's Hebrew face (.script-he, whose .reader-hebrew gives the Greek size and the Reader's leading), right to left; the English view is English whatever the chapter.
@@ -226,8 +237,8 @@ export function VerseView(props: VerseViewProps) {
           statusClassName="absolute right-0 bottom-full mb-1 rounded-lg border border-line bg-surface px-2 py-0.5 text-sm text-muted"
         />
         <MemorizeControl canonical={memorizeRef} quiet />
-        <InLogosDoors place={{ book, chapter, verse: verse.n }} name={`${title}:${verse.n}`} quiet />
-        <MapsDoor mapRef={{ book, chapter, from: verse.n, ...(verse.to === undefined ? {} : { to: verse.to }) }} quiet />
+        <InLogosDoors place={{ book, chapter, verse: lampas.n }} name={`${title}:${verse.n}`} quiet />
+        <MapsDoor mapRef={{ book, chapter, from: lampas.n, ...(lampas.to === undefined ? {} : { to: lampas.to }) }} quiet />
         <SermonsDoor place={sermonPlace} quiet />
         {/* More to the right: the row's end fades into the page while a door is past it, and this sits over empty room once the row is scrolled to its end or holds every door */}
         <span aria-hidden data-verse-tools-more className="pointer-events-none sticky right-0 w-6 self-stretch bg-linear-to-l from-canvas to-transparent" />
@@ -272,11 +283,11 @@ export function VerseView(props: VerseViewProps) {
           // a lesson's range is headed with its own range, which the heading then says once
           <h2 aria-label={verse.h === reference ? reference : `${verse.h}, ${reference}`} className="chrome-title min-w-0 flex-1 text-center font-semibold leading-tight @max-[20rem]:order-last @max-[20rem]:basis-full">
             <span className="line-clamp-2 break-words">{verse.h}</span>
-            {verse.h === reference ? null : <span className="block break-words text-sm font-medium text-muted">{reference}</span>}
+            {verse.h === reference ? null : <span className="block break-words text-sm font-medium text-muted">{reference}{greekSpan}</span>}
           </h2>
         ) : (
           // the whole reference, wrapped (two lines at most) rather than cut: on the ladder the book changes at every verse, so '1 Thessalonians 5:16' is the only place that says where he is (mw-neuq78.19)
-          <h2 className="chrome-title min-w-0 flex-1 line-clamp-2 break-words text-center font-semibold leading-tight @max-[20rem]:order-last @max-[20rem]:basis-full">{reference}</h2>
+          <h2 className="chrome-title min-w-0 flex-1 line-clamp-2 break-words text-center font-semibold leading-tight @max-[20rem]:order-last @max-[20rem]:basis-full">{reference}{greekSpan}</h2>
         )}
         <Arrow move={previous} name={`Previous ${noun}`} glyph="‹" />
         <Arrow move={next} name={`Next ${noun}`} glyph="›" />

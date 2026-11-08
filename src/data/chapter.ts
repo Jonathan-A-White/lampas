@@ -174,6 +174,11 @@ export interface Verse {
   ref?: VerseRef | 'none';
   /** PROVISIONAL, the Septuagint only: every Lampas verse the Greek verse answers, when that is more than one (`ref` is the first); absent otherwise */
   refs?: VerseRef[];
+  /**
+   * PROVISIONAL, the Septuagint only (loadSeptuagintChapter): set on every verse of a Lampas chapter whose verses are in more than one Greek chapter (Psalm 116 is Greek 114 and 115), where the Greek verse numbers
+   * collide and `n` is therefore Lampas's own verse; the Greek chapter and verse it is. Absent everywhere else (`n` is then the Greek verse, as the file has it).
+   */
+  greek?: { chapter: number; verse: number };
   /** the MSB's section heading that comes before this verse (English); absent when none */
   h?: string;
   /** 1 when the MSB starts a paragraph at this verse; absent otherwise */

@@ -18,6 +18,9 @@ export const FLIP_TEXT = {
   notOldTestament: 'Only an Old Testament book has a Septuagint',
   loading: 'The chapter is still loading',
   notReady: (name: string): string => `The Septuagint of ${name} is not ready yet`,
+  /** the index could not be reached, so nothing is known of the book (mw-u2w5klk.18): offline on the browser's word, else not fetched */
+  offline: 'You are offline, and a Septuagint chapter needs the network',
+  unreachable: 'The Septuagint could not be fetched',
 } as const;
 
 /** Lampas's verses a Greek verse answers that lie in chapter `lampas` (`refs` where it is several, else `ref`). */
@@ -60,7 +63,12 @@ export async function flipSeptuagint({ book, chapter, shown, top }: { book: stri
   let verse: number | null = null;
   if (toSeptuagint) {
     const greek = await loadSeptuagintChapter(book, chapter).catch(() => null);
-    if (!greek) return FLIP_TEXT.notReady(notReadyName(await loadLxxIndex().catch(() => null), book, chapter, bookOf(book)?.name ?? book));
+    if (!greek) {
+      const index = await loadLxxIndex().catch(() => null);
+      // the index not reached: nothing is known of the book, so it is not 'not ready'
+      if (!index) return navigator.onLine === false ? FLIP_TEXT.offline : FLIP_TEXT.unreachable;
+      return FLIP_TEXT.notReady(notReadyName(index, book, chapter, bookOf(book)?.name ?? book));
+    }
     verse = top === null ? null : greekVerseOf(greek, top, chapter);
   } else if (top !== null) {
     verse = lampasVerseOf(shown, top, chapter);

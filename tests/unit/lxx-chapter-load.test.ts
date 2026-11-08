@@ -1,6 +1,6 @@
 // tests/unit/lxx-chapter-load.test.ts — Lampas Septuagint R3 (mw-u2w5klk.11): loadChapter of an Old Testament book follows Settings > Old Testament in Greek (Septuagint). On, a book shipped in
 // public/data-lxx is the Greek chapter its index names for the Lampas chapter (Psalm 23 is Greek 22.json, Psalm 10 the Greek chapter that holds it); Off, or a book the index lacks, is the Hebrew.
-// The files are the fixtures in tests/fixtures/data-lxx (Genesis 1 and Greek Psalm 22, built by scripts/data-build-lxx.ts from tests/fixtures/lxx; its index maps Psalms 9 and 10 to Greek 9).
+// The files are the fixtures in tests/fixtures/data-lxx (Genesis 1 and Greek Psalms 9, 22, 114 and 115, built by scripts/data-build-lxx.ts from tests/fixtures/lxx; its index maps Psalms 9 and 10 to Greek 9 and Psalm 116 to Greek 114 and 115).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { loadChapter } from '../../src/data/chapter';
@@ -70,10 +70,12 @@ describe('loadChapter with the Septuagint On', () => {
     expect(hebrewRequests()).toEqual([]);
   });
 
-  it('asks for the Greek chapter the index names for Psalm 10', async () => {
-    // the fixture ships no Greek Psalm 9 file: the address asked is what is proved
-    await expect(loadChapter('psa', 10)).rejects.toThrow(/psa\/9/);
+  it('asks for the Greek chapter the index names for Psalm 10, and keeps only the verses that are Psalm 10\'s', async () => {
+    // Psalms 9 and 10 are one Greek chapter, 9 (mw-u2w5klk.18: the fixture's file holds verses of both)
+    const chapter = await loadChapter('psa', 10);
     expect(lxxRequests()).toEqual(['/data-lxx/index.json', '/data-lxx/psa/9.json', '/data-lxx/lexicon-grc-lxx.json']);
+    expect(chapter).toMatchObject({ code: 'psa', chapter: 9 });
+    expect(chapter.verses.map((v) => v.n)).toEqual([22, 23]);
   });
 
   it('loads Genesis 1 in the Greek with the English of Brenton under it', async () => {

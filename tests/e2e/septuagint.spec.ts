@@ -3,14 +3,14 @@
 // tests/fixtures/data-lxx, answered to the page by route (the chapters are built from tests/fixtures/lxx by scripts/data-build-lxx.ts).
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { clips, honestMic, honestSpeech } from '../support/honest-fakes';
+import { clips, honestMic, honestSpeech, spoken } from '../support/honest-fakes';
 import { holdFor } from '../support/hold';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
-import { openVerseView } from './verse-view';
+import { chooseAction, openVerseView } from './verse-view';
 import { openTutor } from './open-tutor';
 import { talkField } from './talk-field';
 
@@ -292,4 +292,25 @@ test("the tutor's words_to_add adds a lemma only the Septuagint has, and the Wor
   await expect(row).toBeVisible();
   await expect(row).toContainText('fruitful');
   await expect(row).toHaveAttribute('data-state', 'learning');
+});
+
+// R8 (mw-u2w5klk.18): Listen on a Septuagint verse speaks Swete's Greek, and names the verse as Lampas does. The voice is voice-kit's honest fake: a real phone voice was not run (the Deputy is to hear it once a book ships).
+test('Listen on Psalm 10:1, which Greek 9 numbers 22, speaks the Greek and the view is headed with Lampas’s reference', async ({ page }) => {
+  await honestSpeech(page, { langs: ['en-US', 'el-GR'] });
+  await openUnlocked(page);
+  await turnOn(page);
+  await page.goto('/#/?b=psa&c=10');
+  await expect(page.locator('[data-verse="22"]')).toBeVisible();
+  // only the verses of Psalm 10 are on the page, not the whole Greek chapter
+  await expect(page.locator('[data-verse="1"]')).toHaveCount(0);
+  await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Greek', exact: true }).click();
+  const view = await chooseAction(page, 22, 'Listen');
+  await expect(view.getByRole('heading', { level: 2 })).toHaveText('Psalms 10:1 (9:22)');
+  await view.getByRole('button', { name: 'Play verse 1', exact: true }).click();
+  await expect.poll(async () => (await spoken(page)).filter((s) => s.lang === 'el-GR').length).toBeGreaterThan(0);
+  const said = await spoken(page);
+  expect(said.every((s) => s.lang === 'el-GR')).toBe(true);
+  expect(said.map((s) => s.text).join(' ')).not.toContain('Ἐξομολ');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await shot(page, 'septuagint-listen');
 });

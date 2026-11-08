@@ -1,0 +1,348 @@
+{
+ "hebrew.english": {
+  "unit": {
+   "kind": "verse",
+   "book": "Genesis",
+   "code": "gen",
+   "chapter": 1,
+   "language": "hbo",
+   "verses": [
+    {
+     "n": 1,
+     "english": "In the beginning God created the heavens and the earth.",
+     "shown": "In the beginning God created the heavens and the earth."
+    }
+   ]
+  },
+  "line": "Genesis 1:1 (MSB)",
+  "text": [
+   "In the beginning God created the heavens and the earth.\n— Genesis 1:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1",
+   "Genesis 1:1 (MSB)\nIn the beginning God created the heavens and the earth.",
+   "1 In the beginning God created the heavens and the earth. 2 Now the earth was formless and void, and darkness was over the surface of the deep. And the Spirit of God was hovering over the surface of the waters. 3 And God said, “Let there be light,” and there was light. 4 And God saw that the light was good, and He separated the light from the darkness. 5 God called the light “day,” and the darkness He called “night.” And there was evening, and there was morning — the first day. 6 And God said, “Let there be an expanse between the waters, to separate the waters from the waters.” 7 So God made the expanse and separated the waters beneath it from the waters above. And it was so. 8 God called the expanse “sky.” And there was evening, and there was morning — the second day. 9 And God said, “Let the waters under the sky be gathered into one place, so that the dry land may appear.” And it was so. 10 God called the dry land “earth,” and the gathering of waters He called “seas.” And God saw that it was good. 11 Then God said, “Let the earth bring forth vegetation: seed-bearing plants and fruit trees, each bearing fruit with seed according to its kind.” And it was so. 12 The earth produced vegetation: seed-bearing plants according to their kinds and trees bearing fruit with seed according to their kinds. And God saw that it was good. 13 And there was evening, and there was morning — the third day. 14 And God said, “Let there be lights in the expanse of the sky to distinguish between the day and the night, and let them be signs to mark the seasons and days and years. 15 And let them serve as lights in the expanse of the sky to shine upon the earth.” And it was so. 16 God made two great lights: the greater light to rule the day and the lesser light to rule the night. And He made the stars as well. 17 God set these lights in the expanse of the sky to shine upon the earth, 18 to preside over the day and the night, and to separate the light from the darkness. And God saw that it was good. 19 And there was evening, and there was morning — the fourth day. 20 And God said, “Let the waters teem with living creatures, and let birds fly above the earth in the open expanse of the sky.” 21 So God created the great sea creatures and every living thing that moves, with which the waters teemed according to their kinds, and every winged bird after its kind. And God saw that it was good. 22 Then God blessed them and said, “Be fruitful and multiply and fill the waters of the seas, and let birds multiply on the earth.” 23 And there was evening, and there was morning — the fifth day. 24 And God said, “Let the earth bring forth living creatures according to their kinds: livestock, land crawlers, and beasts of the earth according to their kinds.” And it was so. 25 God made the beasts of the earth according to their kinds, the livestock according to their kinds, and everything that crawls upon the earth according to its kind. And God saw that it was good. 26 Then God said, “Let Us make man in Our image, after Our likeness, to rule over the fish of the sea and the birds of the air, over the livestock, and over all the earth itself and every creature that crawls upon it.” 27 So God created man in His own image; in the image of God He created him; male and female He created them. 28 God blessed them and said to them, “Be fruitful and multiply, and fill the earth and subdue it; rule over the fish of the sea and the birds of the air and every creature that crawls upon the earth.” 29 Then God said, “Behold, I have given you every seed-bearing plant on the face of all the earth, and every tree whose fruit contains seed. They will be yours for food. 30 And to every beast of the earth and every bird of the air and every creature that crawls upon the earth — everything that has the breath of life in it — I have given every green plant for food.” And it was so. 31 And God looked upon all that He had made, and indeed, it was very good. And there was evening, and there was morning — the sixth day.\n— Genesis 1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1-31"
+  ],
+  "pieces": [
+   {
+    "id": "whole",
+    "label": "The whole",
+    "shown": "In the beginning God created the heavens and the earth. — Genesis 1:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1",
+    "data": {
+     "title": "Genesis 1:1",
+     "text": "In the beginning God created the heavens and the earth.\n— Genesis 1:1 (MSB)",
+     "url": "https://lampas.allmymind.org/#/?ref=Gen.1.1"
+    },
+    "hand": "In the beginning God created the heavens and the earth.\n— Genesis 1:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1"
+   },
+   {
+    "id": "link",
+    "label": "Just the link",
+    "shown": "https://lampas.allmymind.org/#/?ref=Gen.1.1",
+    "data": {
+     "url": "https://lampas.allmymind.org/#/?ref=Gen.1.1"
+    },
+    "hand": "https://lampas.allmymind.org/#/?ref=Gen.1.1"
+   },
+   {
+    "id": "text",
+    "label": "Just the text",
+    "shown": "In the beginning God created the heavens and the earth.",
+    "data": {
+     "text": "In the beginning God created the heavens and the earth."
+    },
+    "hand": "In the beginning God created the heavens and the earth."
+   },
+   {
+    "id": "reference",
+    "label": "Just the reference",
+    "shown": "Genesis 1:1 (MSB)",
+    "data": {
+     "text": "Genesis 1:1 (MSB)"
+    },
+    "hand": "Genesis 1:1 (MSB)"
+   }
+  ],
+  "runs": [
+   {
+    "n": 1,
+    "runs": [
+     {
+      "text": "In the beginning God created the heavens and the earth.",
+      "language": "english"
+     }
+    ],
+    "heading": true
+   },
+   {
+    "n": 2,
+    "runs": [
+     {
+      "text": "Now the earth was formless and void, and darkness was over the surface of the deep. And the Spirit of God was hovering over the surface of the waters.",
+      "language": "english"
+     }
+    ],
+    "heading": false
+   }
+  ]
+ },
+ "hebrew.greek": {
+  "unit": {
+   "kind": "verse",
+   "book": "Genesis",
+   "code": "gen",
+   "chapter": 1,
+   "language": "hbo",
+   "verses": [
+    {
+     "n": 1,
+     "english": "In the beginning God created the heavens and the earth.",
+     "shown": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃"
+    }
+   ]
+  },
+  "line": "Genesis 1:1 (MSB)",
+  "text": [
+   "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃\n— Genesis 1:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1",
+   "Genesis 1:1 (MSB)\nבְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃",
+   "1 בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃ 2 וְהָאָ֗רֶץ הָיְתָ֥ה תֹ֙הוּ֙ וָבֹ֔הוּ וְחֹ֖שֶׁךְ עַל־ פְּנֵ֣י תְה֑וֹם וְר֣וּחַ אֱלֹהִ֔ים מְרַחֶ֖פֶת עַל־ פְּנֵ֥י הַמָּֽיִם׃ 3 וַיֹּ֥אמֶר אֱלֹהִ֖ים יְהִ֣י א֑וֹר וַֽיְהִי־ אֽוֹר׃ 4 וַיַּ֧רְא אֱלֹהִ֛ים אֶת־ הָא֖וֹר כִּי־ ט֑וֹב וַיַּבְדֵּ֣ל אֱלֹהִ֔ים בֵּ֥ין הָא֖וֹר וּבֵ֥ין הַחֹֽשֶׁךְ׃ 5 וַיִּקְרָ֨א אֱלֹהִ֤ים׀ לָאוֹר֙ י֔וֹם וְלַחֹ֖שֶׁךְ קָ֣רָא לָ֑יְלָה וַֽיְהִי־ עֶ֥רֶב וַֽיְהִי־ בֹ֖קֶר י֥וֹם אֶחָֽד׃פ 6 וַיֹּ֣אמֶר אֱלֹהִ֔ים יְהִ֥י רָקִ֖יעַ בְּת֣וֹךְ הַמָּ֑יִם וִיהִ֣י מַבְדִּ֔יל בֵּ֥ין מַ֖יִם לָמָֽיִם׃ 7 וַיַּ֣עַשׂ אֱלֹהִים֮ אֶת־ הָרָקִיעַ֒ וַיַּבְדֵּ֗ל בֵּ֤ין הַמַּ֙יִם֙ אֲשֶׁר֙ מִתַּ֣חַת לָרָקִ֔יעַ וּבֵ֣ין הַמַּ֔יִם אֲשֶׁ֖ר מֵעַ֣ל לָרָקִ֑יעַ וַֽיְהִי־ כֵֽן׃ 8 וַיִּקְרָ֧א אֱלֹהִ֛ים לָֽרָקִ֖יעַ שָׁמָ֑יִם וַֽיְהִי־ עֶ֥רֶב וַֽיְהִי־ בֹ֖קֶר י֥וֹם שֵׁנִֽי׃פ 9 וַיֹּ֣אמֶר אֱלֹהִ֗ים יִקָּו֨וּ הַמַּ֜יִם מִתַּ֤חַת הַשָּׁמַ֙יִם֙ אֶל־ מָק֣וֹם אֶחָ֔ד וְתֵרָאֶ֖ה הַיַּבָּשָׁ֑ה וַֽיְהִי־ כֵֽן׃ 10 וַיִּקְרָ֨א אֱלֹהִ֤ים׀ לַיַּבָּשָׁה֙ אֶ֔רֶץ וּלְמִקְוֵ֥ה הַמַּ֖יִם קָרָ֣א יַמִּ֑ים וַיַּ֥רְא אֱלֹהִ֖ים כִּי־ טֽוֹב׃ 11 וַיֹּ֣אמֶר אֱלֹהִ֗ים תַּֽדְשֵׁ֤א הָאָ֙רֶץ֙ דֶּ֔שֶׁא עֵ֚שֶׂב מַזְרִ֣יעַ זֶ֔רַע עֵ֣ץ פְּרִ֞י עֹ֤שֶׂה פְּרִי֙ לְמִינ֔וֹ אֲשֶׁ֥ר זַרְעוֹ־ ב֖וֹ עַל־ הָאָ֑רֶץ וַֽיְהִי־ כֵֽן׃ 12 וַתּוֹצֵ֨א הָאָ֜רֶץ דֶּ֠שֶׁא עֵ֣שֶׂב מַזְרִ֤יעַ זֶ֙רַע֙ לְמִינֵ֔הוּ וְעֵ֧ץ עֹֽשֶׂה־ פְּרִ֛י אֲשֶׁ֥ר זַרְעוֹ־ ב֖וֹ לְמִינֵ֑הוּ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־ טֽוֹב׃ 13 וַֽיְהִי־ עֶ֥רֶב וַֽיְהִי־ בֹ֖קֶר י֥וֹם שְׁלִישִֽׁי׃פ 14 וַיֹּ֣אמֶר אֱלֹהִ֗ים יְהִ֤י מְאֹרֹת֙ בִּרְקִ֣יעַ הַשָּׁמַ֔יִם לְהַבְדִּ֕יל בֵּ֥ין הַיּ֖וֹם וּבֵ֣ין הַלָּ֑יְלָה וְהָי֤וּ לְאֹתֹת֙ וּלְמ֣וֹעֲדִ֔ים וּלְיָמִ֖ים וְשָׁנִֽים׃ 15 וְהָי֤וּ לִמְאוֹרֹת֙ בִּרְקִ֣יעַ הַשָּׁמַ֔יִם לְהָאִ֖יר עַל־ הָאָ֑רֶץ וַֽיְהִי־ כֵֽן׃ 16 וַיַּ֣עַשׂ אֱלֹהִ֔ים אֶת־ שְׁנֵ֥י הַמְּאֹרֹ֖ת הַגְּדֹלִ֑ים אֶת־ הַמָּא֤וֹר הַגָּדֹל֙ לְמֶמְשֶׁ֣לֶת הַיּ֔וֹם וְאֶת־ הַמָּא֤וֹר הַקָּטֹן֙ לְמֶמְשֶׁ֣לֶת הַלַּ֔יְלָה וְאֵ֖ת הַכּוֹכָבִֽים׃ 17 וַיִּתֵּ֥ן אֹתָ֛ם אֱלֹהִ֖ים בִּרְקִ֣יעַ הַשָּׁמָ֑יִם לְהָאִ֖יר עַל־ הָאָֽרֶץ׃ 18 וְלִמְשֹׁל֙ בַּיּ֣וֹם וּבַלַּ֔יְלָה וּֽלֲהַבְדִּ֔יל בֵּ֥ין הָא֖וֹר וּבֵ֣ין הַחֹ֑שֶׁךְ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־ טֽוֹב׃ 19 וַֽיְהִי־ עֶ֥רֶב וַֽיְהִי־ בֹ֖קֶר י֥וֹם רְבִיעִֽי׃פ 20 וַיֹּ֣אמֶר אֱלֹהִ֔ים יִשְׁרְצ֣וּ הַמַּ֔יִם שֶׁ֖רֶץ נֶ֣פֶשׁ חַיָּ֑ה וְעוֹף֙ יְעוֹפֵ֣ף עַל־ הָאָ֔רֶץ עַל־ פְּנֵ֖י רְקִ֥יעַ הַשָּׁמָֽיִם׃ 21 וַיִּבְרָ֣א אֱלֹהִ֔ים אֶת־ הַתַּנִּינִ֖ם הַגְּדֹלִ֑ים וְאֵ֣ת כָּל־ נֶ֣פֶשׁ הַֽחַיָּ֣ה׀ הָֽרֹמֶ֡שֶׂת אֲשֶׁר֩ שָׁרְצ֨וּ הַמַּ֜יִם לְמִֽינֵהֶ֗ם וְאֵ֨ת כָּל־ ע֤וֹף כָּנָף֙ לְמִינֵ֔הוּ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־ טֽוֹב׃ 22 וַיְבָ֧רֶךְ אֹתָ֛ם אֱלֹהִ֖ים לֵאמֹ֑ר פְּר֣וּ וּרְב֗וּ וּמִלְא֤וּ אֶת־ הַמַּ֙יִם֙ בַּיַּמִּ֔ים וְהָע֖וֹף יִ֥רֶב בָּאָֽרֶץ׃ 23 וַֽיְהִי־ עֶ֥רֶב וַֽיְהִי־ בֹ֖קֶר י֥וֹם חֲמִישִֽׁי׃פ 24 וַיֹּ֣אמֶר אֱלֹהִ֗ים תּוֹצֵ֨א הָאָ֜רֶץ נֶ֤פֶשׁ חַיָּה֙ לְמִינָ֔הּ בְּהֵמָ֥ה וָרֶ֛מֶשׂ וְחַֽיְתוֹ־ אֶ֖רֶץ לְמִינָ֑הּ וַֽיְהִי־ כֵֽן׃ 25 וַיַּ֣עַשׂ אֱלֹהִים֩ אֶת־ חַיַּ֨ת הָאָ֜רֶץ לְמִינָ֗הּ וְאֶת־ הַבְּהֵמָה֙ לְמִינָ֔הּ וְאֵ֛ת כָּל־ רֶ֥מֶשׂ הָֽאֲדָמָ֖ה לְמִינֵ֑הוּ וַיַּ֥רְא אֱלֹהִ֖ים כִּי־ טֽוֹב׃ 26 וַיֹּ֣אמֶר אֱלֹהִ֔ים נַֽעֲשֶׂ֥ה אָדָ֛ם בְּצַלְמֵ֖נוּ כִּדְמוּתֵ֑נוּ וְיִרְדּוּ֩ בִדְגַ֨ת הַיָּ֜ם וּבְע֣וֹף הַשָּׁמַ֗יִם וּבַבְּהֵמָה֙ וּבְכָל־ הָאָ֔רֶץ וּבְכָל־ הָרֶ֖מֶשׂ הָֽרֹמֵ֥שׂ עַל־ הָאָֽרֶץ׃ 27 וַיִּבְרָ֨א אֱלֹהִ֤ים׀ אֶת־ הָֽאָדָם֙ בְּצַלְמ֔וֹ בְּצֶ֥לֶם אֱלֹהִ֖ים בָּרָ֣א אֹת֑וֹ זָכָ֥ר וּנְקֵבָ֖ה בָּרָ֥א אֹתָֽם׃ 28 וַיְבָ֣רֶךְ אֹתָם֮ אֱלֹהִים֒ וַיֹּ֨אמֶר לָהֶ֜ם אֱלֹהִ֗ים פְּר֥וּ וּרְב֛וּ וּמִלְא֥וּ אֶת־ הָאָ֖רֶץ וְכִבְשֻׁ֑הָ וּרְד֞וּ בִּדְגַ֤ת הַיָּם֙ וּבְע֣וֹף הַשָּׁמַ֔יִם וּבְכָל־ חַיָּ֖ה הָֽרֹמֶ֥שֶׂת עַל־ הָאָֽרֶץ׃ 29 וַיֹּ֣אמֶר אֱלֹהִ֗ים הִנֵּה֩ נָתַ֨תִּי לָכֶ֜ם אֶת־ כָּל־ עֵ֣שֶׂב׀ זֹרֵ֣עַ זֶ֗רַע אֲשֶׁר֙ עַל־ פְּנֵ֣י כָל־ הָאָ֔רֶץ וְאֶת־ כָּל־ הָעֵ֛ץ אֲשֶׁר־ בּ֥וֹ פְרִי־ עֵ֖ץ זֹרֵ֣עַ זָ֑רַע לָכֶ֥ם יִֽהְיֶ֖ה לְאָכְלָֽה׃ 30 וּֽלְכָל־ חַיַּ֣ת הָ֠אָרֶץ וּלְכָל־ ע֨וֹף הַשָּׁמַ֜יִם וּלְכֹ֣ל׀ רוֹמֵ֣שׂ עַל־ הָאָ֗רֶץ אֲשֶׁר־ בּוֹ֙ נֶ֣פֶשׁ חַיָּ֔ה אֶת־ כָּל־ יֶ֥רֶק עֵ֖שֶׂב לְאָכְלָ֑ה וַֽיְהִי־ כֵֽן׃ 31 וַיַּ֤רְא אֱלֹהִים֙ אֶת־ כָּל־ אֲשֶׁ֣ר עָשָׂ֔ה וְהִנֵּה־ ט֖וֹב מְאֹ֑ד וַֽיְהִי־ עֶ֥רֶב וַֽיְהִי־ בֹ֖קֶר י֥וֹם הַשִּׁשִּֽׁי׃פ\n— Genesis 1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1-31"
+  ],
+  "pieces": [
+   {
+    "id": "whole",
+    "label": "The whole",
+    "shown": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃ — Genesis 1:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1",
+    "data": {
+     "title": "Genesis 1:1",
+     "text": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃\n— Genesis 1:1 (MSB)",
+     "url": "https://lampas.allmymind.org/#/?ref=Gen.1.1"
+    },
+    "hand": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃\n— Genesis 1:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Gen.1.1"
+   },
+   {
+    "id": "link",
+    "label": "Just the link",
+    "shown": "https://lampas.allmymind.org/#/?ref=Gen.1.1",
+    "data": {
+     "url": "https://lampas.allmymind.org/#/?ref=Gen.1.1"
+    },
+    "hand": "https://lampas.allmymind.org/#/?ref=Gen.1.1"
+   },
+   {
+    "id": "text",
+    "label": "Just the text",
+    "shown": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃",
+    "data": {
+     "text": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃"
+    },
+    "hand": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃"
+   },
+   {
+    "id": "reference",
+    "label": "Just the reference",
+    "shown": "Genesis 1:1 (MSB)",
+    "data": {
+     "text": "Genesis 1:1 (MSB)"
+    },
+    "hand": "Genesis 1:1 (MSB)"
+   }
+  ],
+  "runs": [
+   {
+    "n": 1,
+    "runs": [
+     {
+      "text": "בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃",
+      "language": "hebrew"
+     }
+    ],
+    "heading": true
+   },
+   {
+    "n": 2,
+    "runs": [
+     {
+      "text": "וְהָאָ֗רֶץ הָיְתָ֥ה תֹ֙הוּ֙ וָבֹ֔הוּ וְחֹ֖שֶׁךְ עַל־ פְּנֵ֣י תְה֑וֹם וְר֣וּחַ אֱלֹהִ֔ים מְרַחֶ֖פֶת עַל־ פְּנֵ֥י הַמָּֽיִם׃",
+      "language": "hebrew"
+     }
+    ],
+    "heading": false
+   }
+  ]
+ },
+ "romans.english": {
+  "unit": {
+   "kind": "verse",
+   "book": "Romans",
+   "code": "rom",
+   "chapter": 8,
+   "language": "grc",
+   "verses": [
+    {
+     "n": 1,
+     "english": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+     "shown": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit."
+    }
+   ]
+  },
+  "line": "Romans 8:1 (MSB)",
+  "text": [
+   "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.\n— Romans 8:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1",
+   "Romans 8:1 (MSB)\nTherefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+   "1 Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit. 2 For in Christ Jesus the law of the Spirit of life set me free from the law of sin and death. 3 For what the law was powerless to do in that it was weakened by the flesh, God did by sending His own Son in the likeness of sinful man, as an offering for sin. He thus condemned sin in the flesh, 4 so that the righteous standard of the law might be fulfilled in us, who do not walk according to the flesh but according to the Spirit. 5 Those who live according to the flesh set their minds on the things of the flesh; but those who live according to the Spirit set their minds on the things of the Spirit. 6 The mind of the flesh is death, but the mind of the Spirit is life and peace, 7 because the mind of the flesh is hostile to God: It does not submit to God’s law, nor can it do so. 8 Those controlled by the flesh cannot please God. 9 You, however, are controlled not by the flesh, but by the Spirit, if the Spirit of God lives in you. And if anyone does not have the Spirit of Christ, he does not belong to Christ. 10 But if Christ is in you, your body is dead because of sin, yet your spirit is alive because of righteousness. 11 And if the Spirit of Him who raised Jesus from the dead is living in you, He who raised Christ from the dead will also give life to your mortal bodies through His Spirit, who lives in you. 12 Therefore, brothers, we have an obligation, but it is not to the flesh, to live according to it. 13 For if you live according to the flesh, you will die; but if by the Spirit you put to death the deeds of the body, you will live. 14 For all who are led by the Spirit of God are sons of God. 15 For you did not receive a spirit of slavery that returns you to fear, but you received the Spirit of adoption to sonship, by whom we cry, “Abba! Father!” 16 The Spirit Himself testifies with our spirit that we are God’s children. 17 And if we are children, then we are heirs: heirs of God and co-heirs with Christ — if indeed we suffer with Him, so that we may also be glorified with Him. 18 I consider that our present sufferings are not comparable to the glory that will be revealed in us. 19 The creation waits in eager expectation for the revelation of the sons of God. 20 For the creation was subjected to futility, not by its own will, but because of the One who subjected it, in hope 21 that the creation itself will be set free from its bondage to decay and brought into the glorious freedom of the children of God. 22 We know that the whole creation has been groaning together in the pains of childbirth until the present time. 23 Not only that, but we ourselves, who have the firstfruits of the Spirit, groan inwardly as we wait eagerly for our adoption as sons, the redemption of our bodies. 24 For in this hope we were saved; but hope that is seen is no hope at all. Why would one hope for what he can already see? 25 But if we hope for what we do not yet see, we wait for it patiently. 26 In the same way, the Spirit helps us in our weaknesses. For we do not know how we ought to pray, but the Spirit Himself intercedes for us with groans too deep for words. 27 And He who searches our hearts knows the mind of the Spirit, because the Spirit intercedes for the saints according to the will of God. 28 And we know that all things work together for the good of those who love Him, who are called according to His purpose. 29 For those God foreknew, He also predestined to be conformed to the image of His Son, so that He would be the firstborn among many brothers. 30 And those He predestined, He also called; those He called, He also justified; those He justified, He also glorified. 31 What then shall we say in response to these things? If God is for us, who can be against us? 32 He who did not spare His own Son but gave Him up for us all, how will He not also, along with Him, freely give us all things? 33 Who will bring any charge against God’s elect? It is God who justifies. 34 Who is there to condemn us? For Christ, who died, and more than that was raised to life, is at the right hand of God— and He is interceding for us. 35 Who shall separate us from the love of Christ? Shall trouble or distress or persecution or famine or nakedness or danger or sword? 36 As it is written: “For Your sake we face death all day long; we are considered as sheep to be slaughtered.” 37 No, in all these things we are more than conquerors through Him who loved us. 38 For I am convinced that neither death nor life, neither angels nor principalities nor powers, neither the present nor the future, 39 neither height nor depth, nor anything else in all creation, will be able to separate us from the love of God that is in Christ Jesus our Lord.\n— Romans 8 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1-39"
+  ],
+  "pieces": [
+   {
+    "id": "whole",
+    "label": "The whole",
+    "shown": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit. — Romans 8:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1",
+    "data": {
+     "title": "Romans 8:1",
+     "text": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.\n— Romans 8:1 (MSB)",
+     "url": "https://lampas.allmymind.org/#/?ref=Rom.8.1"
+    },
+    "hand": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.\n— Romans 8:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1"
+   },
+   {
+    "id": "link",
+    "label": "Just the link",
+    "shown": "https://lampas.allmymind.org/#/?ref=Rom.8.1",
+    "data": {
+     "url": "https://lampas.allmymind.org/#/?ref=Rom.8.1"
+    },
+    "hand": "https://lampas.allmymind.org/#/?ref=Rom.8.1"
+   },
+   {
+    "id": "text",
+    "label": "Just the text",
+    "shown": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+    "data": {
+     "text": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit."
+    },
+    "hand": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit."
+   },
+   {
+    "id": "reference",
+    "label": "Just the reference",
+    "shown": "Romans 8:1 (MSB)",
+    "data": {
+     "text": "Romans 8:1 (MSB)"
+    },
+    "hand": "Romans 8:1 (MSB)"
+   }
+  ],
+  "runs": [
+   {
+    "n": 1,
+    "runs": [
+     {
+      "text": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+      "language": "english"
+     }
+    ],
+    "heading": true
+   },
+   {
+    "n": 2,
+    "runs": [
+     {
+      "text": "For in Christ Jesus the law of the Spirit of life set me free from the law of sin and death.",
+      "language": "english"
+     }
+    ],
+    "heading": false
+   }
+  ]
+ },
+ "romans.greek": {
+  "unit": {
+   "kind": "verse",
+   "book": "Romans",
+   "code": "rom",
+   "chapter": 8,
+   "language": "grc",
+   "verses": [
+    {
+     "n": 1,
+     "english": "Therefore there is now no condemnation for those who are in Christ Jesus, who do not walk according to the flesh but according to the Spirit.",
+     "shown": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα"
+    }
+   ]
+  },
+  "line": "Romans 8:1 (MSB)",
+  "text": [
+   "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα\n— Romans 8:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1",
+   "Romans 8:1 (MSB)\nΟὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα",
+   "1 Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα 2 Ὁ γὰρ νόμος τοῦ πνεύματος τῆς ζωῆς ἐν χριστῷ Ἰησοῦ ἠλευθέρωσέν με ἀπὸ τοῦ νόμου τῆς ἁμαρτίας καὶ τοῦ θανάτου 3 Τὸ γὰρ ἀδύνατον τοῦ νόμου ἐν ᾧ ἠσθένει διὰ τῆς σαρκός ὁ θεὸς τὸν ἑαυτοῦ υἱὸν πέμψας ἐν ὁμοιώματι σαρκὸς ἁμαρτίας καὶ περὶ ἁμαρτίας κατέκρινεν τὴν ἁμαρτίαν ἐν τῇ σαρκί 4 ἵνα τὸ δικαίωμα τοῦ νόμου πληρωθῇ ἐν ἡμῖν τοῖς μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα 5 Οἱ γὰρ κατὰ σάρκα ὄντες τὰ τῆς σαρκὸς φρονοῦσιν οἱ δὲ κατὰ πνεῦμα τὰ τοῦ πνεύματος 6 Τὸ γὰρ φρόνημα τῆς σαρκὸς θάνατος τὸ δὲ φρόνημα τοῦ πνεύματος ζωὴ καὶ εἰρήνη 7 διότι τὸ φρόνημα τῆς σαρκὸς ἔχθρα εἰς θεόν τῷ γὰρ νόμῳ τοῦ θεοῦ οὐχ ὑποτάσσεται οὐδὲ γὰρ δύναται 8 οἱ δὲ ἐν σαρκὶ ὄντες θεῷ ἀρέσαι οὐ δύνανται 9 Ὑμεῖς δὲ οὐκ ἐστὲ ἐν σαρκί ἀλλ' ἐν πνεύματι εἴπερ πνεῦμα θεοῦ οἰκεῖ ἐν ὑμῖν Εἰ δέ τις πνεῦμα χριστοῦ οὐκ ἔχει οὗτος οὐκ ἔστιν αὐτοῦ 10 Εἰ δὲ χριστὸς ἐν ὑμῖν τὸ μὲν σῶμα νεκρὸν διὰ ἁμαρτίαν τὸ δὲ πνεῦμα ζωὴ διὰ δικαιοσύνην 11 Εἰ δὲ τὸ πνεῦμα τοῦ ἐγείραντος Ἰησοῦν ἐκ νεκρῶν οἰκεῖ ἐν ὑμῖν ὁ ἐγείρας τὸν χριστὸν ἐκ νεκρῶν ζῳοποιήσει καὶ τὰ θνητὰ σώματα ὑμῶν διὰ τὸ ἐνοικοῦν αὐτοῦ πνεῦμα ἐν ὑμῖν 12 Ἄρα οὖν ἀδελφοί ὀφειλέται ἐσμέν οὐ τῇ σαρκί τοῦ κατὰ σάρκα ζῇν 13 εἰ γὰρ κατὰ σάρκα ζῆτε μέλλετε ἀποθνῄσκειν εἰ δὲ πνεύματι τὰς πράξεις τοῦ σώματος θανατοῦτε ζήσεσθε 14 Ὅσοι γὰρ πνεύματι θεοῦ ἄγονται οὗτοί εἰσιν υἱοὶ θεοῦ 15 Οὐ γὰρ ἐλάβετε πνεῦμα δουλείας πάλιν εἰς φόβον ἀλλ' ἐλάβετε πνεῦμα υἱοθεσίας ἐν ᾧ κράζομεν Ἀββᾶ ὁ πατήρ 16 Αὐτὸ τὸ πνεῦμα συμμαρτυρεῖ τῷ πνεύματι ἡμῶν ὅτι ἐσμὲν τέκνα θεοῦ 17 εἰ δὲ τέκνα καὶ κληρονόμοι κληρονόμοι μὲν θεοῦ συγκληρονόμοι δὲ χριστοῦ εἴπερ συμπάσχομεν ἵνα καὶ συνδοξασθῶμεν 18 Λογίζομαι γὰρ ὅτι οὐκ ἄξια τὰ παθήματα τοῦ νῦν καιροῦ πρὸς τὴν μέλλουσαν δόξαν ἀποκαλυφθῆναι εἰς ἡμᾶς 19 Ἡ γὰρ ἀποκαραδοκία τῆς κτίσεως τὴν ἀποκάλυψιν τῶν υἱῶν τοῦ θεοῦ ἀπεκδέχεται 20 Τῇ γὰρ ματαιότητι ἡ κτίσις ὑπετάγη οὐχ ἑκοῦσα ἀλλὰ διὰ τὸν ὑποτάξαντα ἐπ' ἐλπίδι 21 ὅτι καὶ αὐτὴ ἡ κτίσις ἐλευθερωθήσεται ἀπὸ τῆς δουλείας τῆς φθορᾶς εἰς τὴν ἐλευθερίαν τῆς δόξης τῶν τέκνων τοῦ θεοῦ 22 Οἴδαμεν γὰρ ὅτι πᾶσα ἡ κτίσις συστενάζει καὶ συνωδίνει ἄχρι τοῦ νῦν 23 Οὐ μόνον δέ ἀλλὰ καὶ αὐτοὶ τὴν ἀπαρχὴν τοῦ πνεύματος ἔχοντες καὶ ἡμεῖς αὐτοὶ ἐν ἑαυτοῖς στενάζομεν υἱοθεσίαν ἀπεκδεχόμενοι τὴν ἀπολύτρωσιν τοῦ σώματος ἡμῶν 24 Τῇ γὰρ ἐλπίδι ἐσώθημεν ἐλπὶς δὲ βλεπομένη οὐκ ἔστιν ἐλπίς ὃ γὰρ βλέπει τις τί καὶ ἐλπίζει 25 Εἰ δὲ ὃ οὐ βλέπομεν ἐλπίζομεν δι' ὑπομονῆς ἀπεκδεχόμεθα 26 Ὡσαύτως δὲ καὶ τὸ πνεῦμα συναντιλαμβάνεται ταῖς ἀσθενείαις ἡμῶν τὸ γὰρ τί προσευξόμεθα καθὸ δεῖ οὐκ οἴδαμεν ἀλλ' αὐτὸ τὸ πνεῦμα ὑπερεντυγχάνει ὑπὲρ ἡμῶν στεναγμοῖς ἀλαλήτοις 27 ὁ δὲ ἐρευνῶν τὰς καρδίας οἶδεν τί τὸ φρόνημα τοῦ πνεύματος ὅτι κατὰ θεὸν ἐντυγχάνει ὑπὲρ ἁγίων 28 Οἴδαμεν δὲ ὅτι τοῖς ἀγαπῶσιν τὸν θεὸν πάντα συνεργεῖ εἰς ἀγαθόν τοῖς κατὰ πρόθεσιν κλητοῖς οὖσιν 29 Ὅτι οὓς προέγνω καὶ προώρισεν συμμόρφους τῆς εἰκόνος τοῦ υἱοῦ αὐτοῦ εἰς τὸ εἶναι αὐτὸν πρωτότοκον ἐν πολλοῖς ἀδελφοῖς 30 οὓς δὲ προώρισεν τούτους καὶ ἐκάλεσεν καὶ οὓς ἐκάλεσεν τούτους καὶ ἐδικαίωσεν οὓς δὲ ἐδικαίωσεν τούτους καὶ ἐδόξασεν 31 Τί οὖν ἐροῦμεν πρὸς ταῦτα Εἰ ὁ θεὸς ὑπὲρ ἡμῶν τίς καθ' ἡμῶν 32 Ὅς γε τοῦ ἰδίου υἱοῦ οὐκ ἐφείσατο ἀλλ' ὑπὲρ ἡμῶν πάντων παρέδωκεν αὐτόν πῶς οὐχὶ καὶ σὺν αὐτῷ τὰ πάντα ἡμῖν χαρίσεται 33 Τίς ἐγκαλέσει κατὰ ἐκλεκτῶν θεοῦ Θεὸς ὁ δικαιῶν 34 τίς ὁ κατακρίνων Χριστὸς ὁ ἀποθανών μᾶλλον δὲ καὶ ἐγερθείς ὃς καὶ ἔστιν ἐν δεξιᾷ τοῦ θεοῦ ὃς καὶ ἐντυγχάνει ὑπὲρ ἡμῶν 35 Τίς ἡμᾶς χωρίσει ἀπὸ τῆς ἀγάπης τοῦ χριστοῦ Θλίψις ἢ στενοχωρία ἢ διωγμός ἢ λιμός ἢ γυμνότης ἢ κίνδυνος ἢ μάχαιρα 36 Καθὼς γέγραπται ὅτι Ἕνεκέν σου θανατούμεθα ὅλην τὴν ἡμέραν ἐλογίσθημεν ὡς πρόβατα σφαγῆς 37 Ἀλλ' ἐν τούτοις πᾶσιν ὑπερνικῶμεν διὰ τοῦ ἀγαπήσαντος ἡμᾶς 38 Πέπεισμαι γὰρ ὅτι οὔτε θάνατος οὔτε ζωὴ οὔτε ἄγγελοι οὔτε ἀρχαὶ οὔτε δυνάμεις οὔτε ἐνεστῶτα οὔτε μέλλοντα 39 οὔτε ὕψωμα οὔτε βάθος οὔτε τις κτίσις ἑτέρα δυνήσεται ἡμᾶς χωρίσαι ἀπὸ τῆς ἀγάπης τοῦ θεοῦ τῆς ἐν χριστῷ Ἰησοῦ τῷ κυρίῳ ἡμῶν\n— Romans 8 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1-39"
+  ],
+  "pieces": [
+   {
+    "id": "whole",
+    "label": "The whole",
+    "shown": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα — Romans 8:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1",
+    "data": {
+     "title": "Romans 8:1",
+     "text": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα\n— Romans 8:1 (MSB)",
+     "url": "https://lampas.allmymind.org/#/?ref=Rom.8.1"
+    },
+    "hand": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα\n— Romans 8:1 (MSB)\nhttps://lampas.allmymind.org/#/?ref=Rom.8.1"
+   },
+   {
+    "id": "link",
+    "label": "Just the link",
+    "shown": "https://lampas.allmymind.org/#/?ref=Rom.8.1",
+    "data": {
+     "url": "https://lampas.allmymind.org/#/?ref=Rom.8.1"
+    },
+    "hand": "https://lampas.allmymind.org/#/?ref=Rom.8.1"
+   },
+   {
+    "id": "text",
+    "label": "Just the text",
+    "shown": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα",
+    "data": {
+     "text": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα"
+    },
+    "hand": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα"
+   },
+   {
+    "id": "reference",
+    "label": "Just the reference",
+    "shown": "Romans 8:1 (MSB)",
+    "data": {
+     "text": "Romans 8:1 (MSB)"
+    },
+    "hand": "Romans 8:1 (MSB)"
+   }
+  ],
+  "runs": [
+   {
+    "n": 1,
+    "runs": [
+     {
+      "text": "Οὐδὲν ἄρα νῦν κατάκριμα τοῖς ἐν χριστῷ Ἰησοῦ μὴ κατὰ σάρκα περιπατοῦσιν ἀλλὰ κατὰ πνεῦμα",
+      "language": "greek"
+     }
+    ],
+    "heading": true
+   },
+   {
+    "n": 2,
+    "runs": [
+     {
+      "text": "Ὁ γὰρ νόμος τοῦ πνεύματος τῆς ζωῆς ἐν χριστῷ Ἰησοῦ ἠλευθέρωσέν με ἀπὸ τοῦ νόμου τῆς ἁμαρτίας καὶ τοῦ θανάτου",
+      "language": "greek"
+     }
+    ],
+    "heading": false
+   }
+  ]
+ },
+ "preface": [
+  "The Greek you read in Lampas is the Byzantine Textform, edited by Maurice A. Robinson and William G. Pierpont and published in 2005 as The New Testament in the Original Greek. It is the form of the text found in the large majority of surviving Greek manuscripts, so it is often called the Majority text.",
+  "The Majority Standard Bible’s table does not say which edition its Greek is, so we compared it word by word with both. It is the 2005 edition: where the 2018 edition, which Robinson recommends in its place, changes a word’s accents or capitals, the Greek in Lampas has the 2005 reading, so the 2018 changes are not applied. Over the 2005 Greek we lay the 2026 changes, the few places where the Robinson-Pierpont 2026 text words a verse differently from 2018: Matthew 26:29, Philemon 1:1 and Revelation 13:14 read the 2026 way, and Romans 13:9 and Revelation 11:16 already did in 2005. Only Philemon 1:1 changes what the English says, the two names swapping places, so there Lampas can set an English of its own beside the Majority Standard Bible’s, made for Lampas by an AI model (Claude, by Anthropic) and marked as from the 2026 Greek; it is no published translation. Both editions are public domain.",
+  "The variant readings that can be shown beside the Greek are those of the Robinson-Pierpont 2018 edition with its apparatus, which records where the Byzantine manuscripts divide and where the Nestle-Aland text and the Editio Critica Maior read otherwise. Any one of those readings can be read in the Greek in place of the text’s own, or the whole text can be read as the Byzantine text, Nestle-Aland or the Editio Critica Maior (where its apparatus gives it) reads. The short English beside a reading is the Majority Standard Bible’s own footnote where it gives one, and where it gives none, a word-for-word rendering made for Lampas by an AI model (Claude, by Anthropic); that rendering is no published translation, and it is marked wherever it appears: in italics within a dotted ring beside the text, and by name on a reading’s card. The Strong’s number of each word of a reading is the one the Greek text or the lexicon gives that form or lemma, or, for a form they lack, the one STEPBible’s Translators Amalgamated Greek New Testament (TAGNT, Tyndale House, CC BY 4.0) gives it; where none has the form, the nearest lemma’s number is given and marked as a guess. The Greek of Lampas carries no punctuation, so where a sentence ends, which Diagram uses to draw a whole sentence across verse breaks, is read from the full stops and question marks of that same 2018 edition.",
+  "Robinson makes the case that this form of the text goes back to the earliest centuries and should be read as the original line of transmission, not as a late revision. Other scholars, who give most weight to the oldest manuscripts, read the evidence differently, and most modern Bibles follow them. Lampas does not settle that question. It tells you which text it uses and points you to the people who wrote about it. Robinson’s essay, The Case for Byzantine Priority, is carried here as it is printed in the appendix of the 2005 edition, and the older article it grew from is linked beneath it.",
+  "The English beside the Greek is the Majority Standard Bible, whose New Testament is translated from the same Robinson and Pierpont text. Its footnotes note where the modern critical texts read differently. The Robinson and Pierpont text and the Majority Standard Bible are both public domain. When a Greek word is asked for its meaning, the answer gives the meanings this English uses for it most, counted by Lampas; where the count cannot say, the STEPBible lexicon’s gloss stays.",
+  "The Old Testament is read in the English of the Majority Standard Bible, which there is the Berean Standard Bible, and in the pointed Hebrew and Aramaic of the Westminster Leningrad Codex, word-aligned to it. Both are public domain. The gloss and definition of a Hebrew word are from the STEPBible lexicon. The parts a Greek word is built from, where we show them, are those the Abbott-Smith lexicon in STEPBible gives, or Lampas’s own notes on the word; a word whose parts no source states is shown with none.",
+  "Where an Old Testament book is read in the Septuagint, the Greek is Henry Barclay Swete’s The Old Testament in Greek (Cambridge, 1887 to 1894), which follows Codex Vaticanus, and the English is Sir Lancelot Brenton’s 1844 translation of the Septuagint, in eBible’s 2012 edition with modernised spelling. Brenton translated the Vatican text (the Sixtine Roman edition of 1587, built on Codex Vaticanus), not Swete’s edition, so his English can differ from the Greek shown, and Lampas maps his verses onto Swete’s. Both are public domain. The lemma and parsing of each Greek word are Lampas’s own, worked out by the method written up in its docs, and the Septuagint’s chapters and verses are laid on Lampas’s by STEPBible’s TVTMS (CC BY 4.0).",
+  "Sermons are listed against the passage each was preached on. The list holds only facts: a title, the passage, the preacher, the date where it is known, and the address of the page where the sermon is read; no sermon’s words are copied. Charles Haddon Spurgeon’s come from the Christian Classics Ethereal Library’s edition of his sermons (sermons 1 to 3563, preached 1855 to 1892 and printed to 1917), so his words are public domain; the Library asks that its pages be used for personal, educational or non-profit purposes, and each sermon is read there, on its own page. Matthew Henry’s sermons (he died in 1714) are listed from the Internet Archive’s scans of the 1830 Miscellaneous Works and the 1847 Complete Works, each linked to the Archive’s page where the sermon begins; the Archive asks that its collections be used for noninfringing purposes. Sermons of Greg Laurie, J. D. Greear, Skip Heitzig, Charles Haddon Spurgeon (his My Sermon Notes), John Wesley, George Whitefield and D. L. Moody are listed from the owner’s own copies of their Logos sermon archives and books (Faithlife): only a title, the passage and an address are kept, and the address opens the sermon in Logos for someone who owns that archive and for no one else. Under a verse the sermon list also names its themes: the topics that carry the verse, and the sermons preached on a verse that shares a topic. The topics and the passages joined to them come from two public-domain indexes, kept as CrossWire’s modules: the subject index of Frank Charles Thompson’s 1934 Bible (the module is called Thompson Chain Topics, keyed and proofed by Paul Houghton), and R. A. Torrey’s New Topical Textbook of 1897. Only a topic’s name, its part labels and its passages are kept; none of either book’s words are copied. The choice of topics is theirs, not Lampas’s and not a preacher’s. The Bible talk is told the same facts for the passage it holds, and may link a sermon from them; it holds no sermon’s words either. Newer sermons, and other sermon lists, come from the sermon index that Jonathan A. White keeps (github.com/Jonathan-A-White/sermon-index), which holds the same facts and nothing of a sermon’s words; each list keeps the credit its own source asks for."
+ ]
+}

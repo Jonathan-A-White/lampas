@@ -246,3 +246,29 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     When he taps "‹ Word" on the Help page
     Then the card of "ἐποίησεν" is open again over the chapter
     And the card reads "How Lampas read this word: From the New Testament's forms (sure)"
+
+  @uc-septuagint @greek
+  Scenario: The Verse view of Psalms 23:1 is headed with Lampas's reference and the Greek address beside it, and copies with the edition named
+    Given Lampas is opened on Psalms 23 with the Septuagint on and the saved view "greek"
+    When he opens the Verse view of verse 1
+    Then the Verse view is headed "Psalms 23:1 (22:1)"
+    And the Verse view shows the Greek "Ψαλμὸς"
+    And Copy puts "Psalms 23:1 (Septuagint: Swete's Greek, Brenton's English; Greek 22:1)" after the verse
+
+  @uc-septuagint @greek
+  Scenario: The Verse view of Psalms 10 names the verse as Lampas does, though Greek 9 numbers it 22
+    Given Lampas is opened on Psalms 10 with the Septuagint on and the saved view "greek"
+    When he opens the Verse view of verse 22
+    Then the Verse view is headed "Psalms 10:1 (9:22)"
+
+  @uc-septuagint @greek
+  Scenario: With the network off the Reader says the phone is offline and shows the Hebrew
+    Given Lampas is opened on Genesis 1 with the Septuagint on, the saved view "greek" and the network off
+    Then the language switch offers "English" and "Hebrew"
+    And the note reads "You are offline, and a Septuagint chapter needs the network; this is the Hebrew."
+
+  @uc-septuagint @greek
+  Scenario: With the index reached and the chapter's file failing the Reader keeps the plain retry
+    Given Lampas is opened on Genesis 1 with the Septuagint on, the saved view "greek" and the chapter's file failing
+    Then the Reader says "Genesis 1 could not be fetched." and offers "Try again"
+    And no note says the Septuagint is not ready

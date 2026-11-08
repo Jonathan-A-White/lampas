@@ -26,18 +26,45 @@ export const isSeptuagint = (chapter: Pick<Chapter, 'edition'> | null | undefine
 /** The form of a word to show, say or ask about: the clean form in a Septuagint chapter, the word's `t` as it is anywhere else. */
 export const cardForm = (chapter: Pick<Chapter, 'edition'> | null | undefined, word: Pick<GreekWord, 't'>): string => (isSeptuagint(chapter) ? withoutMarks(word.t) : word.t);
 
-/** The title of a chapter opened as Lampas's chapter `title` ('Psalms 23'): with the Greek chapter's number beside it where that differs ('Psalms 23 (Greek 22)'). */
-export const septuagintTitle = (title: string, lampas: number, chapter: Pick<Chapter, 'chapter' | 'edition'>): string =>
-  isSeptuagint(chapter) && chapter.chapter !== lampas ? `${title} (Greek ${chapter.chapter})` : title;
+/** The Greek chapter(s) a Septuagint chapter's verses are in: its own number, or where it joins two Greek chapters (Psalm 116 is Greek 114 and 115, Verse.greek) each of them. */
+const greekChaptersOf = (chapter: Pick<Chapter, 'chapter' | 'verses'>): number[] => {
+  const joined = [...new Set(chapter.verses.flatMap((v) => (v.greek ? [v.greek.chapter] : [])))];
+  return joined.length > 0 ? joined : [chapter.chapter];
+};
+
+/** The title of a chapter opened as Lampas's chapter `title` ('Psalms 23'): with the Greek chapter's number beside it where that differs ('Psalms 23 (Greek 22)'; 'Psalms 116 (Greek 114 and 115)'). */
+export const septuagintTitle = (title: string, lampas: number, chapter: Pick<Chapter, 'chapter' | 'edition'> & Partial<Pick<Chapter, 'verses'>>): string => {
+  if (!isSeptuagint(chapter)) return title;
+  const greek = greekChaptersOf({ chapter: chapter.chapter, verses: chapter.verses ?? [] });
+  return greek.length === 1 && greek[0] === lampas ? title : `${title} (Greek ${greek.join(' and ')})`;
+};
 
 /**
  * The number a Septuagint verse is shown with: Lampas's verse (its `ref`), and the Greek chapter and verse beside it where they differ ('1' and '22:1' of Greek Ps 22:1, which is Psalm 23:1).
- * A verse Lampas has no verse for ('none') shows its Greek number alone.
+ * A verse Lampas has no verse for ('none') shows its Greek number alone. A verse of a chapter that joins two Greek chapters (Verse.greek) says its own Greek chapter.
  */
-export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref'>, greekChapter: number): { shown: number; greek?: string } {
+export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref' | 'greek'>, greekChapter: number): { shown: number; greek?: string } {
   const { ref } = verse;
   if (!ref || ref === 'none') return { shown: verse.n };
+  if (verse.greek) return { shown: ref.verse, greek: `${verse.greek.chapter}:${verse.greek.verse}` };
   return ref.chapter === greekChapter && ref.verse === verse.n ? { shown: ref.verse } : { shown: ref.verse, greek: `${greekChapter}:${verse.n}` };
+}
+
+/** The verse number Lampas knows a verse of `chapter` by: a Septuagint verse's `ref` (Greek 9:22 is Psalm 10:1), else the verse's own `n` (every other chapter, and a verse with no Lampas verse). */
+export const lampasNumber = (chapter: Pick<Chapter, 'edition'>, verse: Pick<Verse, 'n' | 'ref'>): number => (isSeptuagint(chapter) && verse.ref && verse.ref !== 'none' ? verse.ref.verse : verse.n);
+
+/**
+ * The Lampas verses a view of Greek verses `n` to `to` (`to` absent: the verse alone) is of: the lowest and highest Lampas verse of the Greek verses in the range, as `{ n, to? }` (`to` only when they differ). A New Testament or Hebrew
+ * unit is as it is. Greek verses Lampas has none for give their own numbers.
+ */
+export function lampasUnit(chapter: Pick<Chapter, 'edition' | 'verses'>, unit: Pick<Verse, 'n' | 'to'>): { n: number; to?: number } {
+  if (!isSeptuagint(chapter)) return unit.to === undefined ? { n: unit.n } : { n: unit.n, to: unit.to };
+  const held = chapter.verses.filter((v) => v.n >= unit.n && v.n <= (unit.to ?? unit.n) && v.ref && v.ref !== 'none');
+  if (held.length === 0) return unit.to === undefined ? { n: unit.n } : { n: unit.n, to: unit.to };
+  const numbers = held.map((v) => lampasNumber(chapter, v));
+  const from = Math.min(...numbers);
+  const last = Math.max(...numbers);
+  return last === from ? { n: from } : { n: from, to: last };
 }
 
 /**

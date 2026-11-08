@@ -175,7 +175,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const septuagintOn = useSetting(septuagintSetting) === 'on';
   // the notice for an Old Testament chapter shown in Hebrew while the Septuagint is on names the chapter when the book ships and this chapter does not, else the book (mw-u2w5klk.298)
   const hebrewHeld = septuagintOn && !!chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo';
-  const heldName = useNotReadyName(hebrewHeld, BOOK, chapter?.chapter ?? CHAPTER, bookOf(BOOK)?.name ?? BOOK);
+  const heldNotice = useNotReadyName(hebrewHeld, BOOK, chapter?.chapter ?? CHAPTER, bookOf(BOOK)?.name ?? BOOK);
   // Show manuscript gaps (mw-u2w5klk.280): the Greek view prints Swete's lacuna brackets only while it is On
   const gaps = useSetting(septuagintGapsSetting) === 'on';
   const wovenSettings = useMemo(() => (septuagint ? septuagintSettings(settings, aligned) : settings), [septuagint, aligned, settings]);
@@ -535,9 +535,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           {view !== undefined && septuagintWeaveNoted(view, weaveShown ?? false, aligned) ? <SeptuagintNote className="mx-2 mb-1" /> : null}
         </>
       ) : null}
-      {hebrewHeld && !chapterReading && heldName !== null ? (
+      {hebrewHeld && !chapterReading && heldNotice !== null ? (
         <p role="note" data-septuagint-not-ready className="chrome-small px-2 pb-1 text-center text-muted">
-          The Septuagint of {heldName} is not ready yet; this is the Hebrew.
+          {heldNotice}
         </p>
       ) : null}
       <ReaderChips
@@ -692,6 +692,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 onLook={setLookup}
                 onRp={setRpShown}
                 onUnlinked={septuagint ? stay : undefined}
+                septuagint={septuagint ? chapter.chapter : undefined}
               />
             ) : (
               <VerseText verse={viewUnit} view={sheetView} source={source} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} onRp={setRpShown} onUnlinked={septuagint ? stay : undefined} />

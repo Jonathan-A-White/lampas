@@ -24,6 +24,7 @@ import { VerseText } from '../reader/VerseText';
 import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
+import { lampasNumber } from '../reader/septuagint';
 import { textClass } from '../reader/textClass';
 import { MARGIN, WIDTH, spotFor, type Spot } from './cardSpot';
 import { useNoDoor } from '../tutor/door';
@@ -53,12 +54,13 @@ function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPl
   const woven = useWoven(chapter, settings ?? {});
   const still = useStillLoading(!settings);
   if (!settings) return <p role="status" className="py-1 text-base text-muted">{still ? 'Still loading. Close this card and open it again.' : 'Loading…'}</p>;
-  const inRange = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => v.n >= held.first && v.n <= held.last);
+  // a reference is in Lampas's verses; a Septuagint chapter's own numbers are the Greek's (Greek 9:22 is Psalm 10:1), so its verses are found by the Lampas verse they answer (mw-u2w5klk.18)
+  const inRange = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => lampasNumber(chapter, v) >= held.first && lampasNumber(chapter, v) <= held.last);
   return (
     <p data-reference-text data-view={settings.view} {...rowAttrs(settings.view, source, isOrdered(woven))} className={`break-words leading-snug ${textClass(settings.view, source)}`}>
       {inRange.map(({ v, i }, k) => (
         <span key={v.n}>
-          {inRange.length > 1 ? <sup className="mr-0.5 font-sans text-xs text-muted">{v.n}</sup> : null}
+          {inRange.length > 1 ? <sup className="mr-0.5 font-sans text-xs text-muted">{lampasNumber(chapter, v)}</sup> : null}
           <VerseText verse={v} view={settings.view} source={source} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(v, mark)} still />
           {k < inRange.length - 1 ? ' ' : ''}
         </span>
