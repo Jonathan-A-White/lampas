@@ -109,6 +109,15 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
     const index = l.index;
     const woven = words[index]?.weft !== undefined;
     const shown = isLit(index);
+    // a compound numeral folded into one box (numeral.ts): a dashed box that says the sum, a tap on it opens it to its words
+    const pieces = words[index]?.numeral;
+    if (pieces) {
+      return (
+        <button key={l.id} type="button" data-word={String(index)} data-numeral={pieces.join(' ')} aria-expanded="false" aria-label={`${l.text}, a number said in ${pieces.length} words; open it`} style={place} onClick={() => onWord(index)} className={`${text} ${ENGLISH_FACE} ${NO_SELECT} cursor-pointer rounded border border-dashed border-muted active:bg-line`}>
+          {l.text}
+        </button>
+      );
+    }
     if (hebrew) {
       return (
         <button key={l.id} type="button" data-word={String(index)} data-lit={shown ? '' : undefined} style={place} onClick={() => onWord(index)} className={`${text} flex-col gap-0.5 ${NO_SELECT} cursor-pointer rounded active:bg-line ${shown ? 'bg-line ring-2 ring-accent' : ''}`}>

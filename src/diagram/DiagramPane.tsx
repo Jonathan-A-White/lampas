@@ -24,6 +24,7 @@ import { loadSentenceTable, loadedSentenceTable, sentenceEnds, sentencesAt, type
 import { fetchDiagram, type DiagramResult } from './fetchDiagram';
 import { keepInviteDismissed, lessonInvited } from './lesson';
 import { diagramLogosLinks } from './logosLinks';
+import { foldNumerals, numeralBoxes } from './numeral';
 import type { DiagramMode, DiagramWord } from './types';
 import { weaveDiagramWords } from './weave';
 import { isSeptuagint, septuagintChunkLinked } from '../reader/septuagint';
@@ -206,6 +207,18 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
     [drawn, mode, woven, verses, chapter],
   );
 
+  // a compound numeral ('eight, ten, and three, hundred') is one box that says its sum until he opens it (numeral.ts, mw-5r3p30.1128); the boxes he has opened are kept by the id of their first word
+  const [open, setOpen] = useState<ReadonlySet<number>>(new Set());
+  const boxes = useMemo(() => (drawn && words ? numeralBoxes(verses, words, mode) : []), [drawn, words, verses, mode]);
+  const folded = useMemo(() => (drawn && words ? foldNumerals(drawn.diagram, words, boxes, open) : null), [drawn, words, boxes, open]);
+  const toggle = (id: number, on: boolean): void =>
+    setOpen((was) => {
+      const next = new Set(was);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
   return (
     <div data-diagram-sentence className="flex flex-col gap-2">
       {caption ? <p className={`px-1 text-sm text-muted ${room}`} data-diagram-caption>{caption}</p> : null}
@@ -230,18 +243,32 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
           </div>
         </div>
       ) : null}
-      {drawn && words ? (
+      {drawn && words && folded ? (
         <div className={working ? 'opacity-50' : undefined}>
           <ReedKellogg
-            diagram={drawn.diagram}
-            words={words}
+            diagram={folded.diagram}
+            words={folded.words}
             mode={mode}
             reference={reference}
             onWord={(index) => {
-              const look = lookupOfWord(verses, words[index], isSeptuagint(chapter));
+              const box = folded.words[index];
+              if (box.numeral) {
+                toggle(index, true);
+                return;
+              }
+              const look = lookupOfWord(verses, box, isSeptuagint(chapter));
               if (look) onLook(look);
             }}
           />
+          {folded.opened.length > 0 ? (
+            <div role="group" aria-label="Numbers open" data-diagram-numerals className={`flex flex-wrap gap-2 pt-2 ${room}`}>
+              {folded.opened.map((box) => (
+                <button key={box.id} type="button" aria-expanded="true" data-numeral-fold={box.id} onClick={() => toggle(box.id, false)} className={INVITE_BUTTON}>
+                  {`Fold ${box.label}`}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : null}
       {problem !== null ? (

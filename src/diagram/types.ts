@@ -72,6 +72,8 @@ export type DiagramWord = ({ text: string; chunk: number } | { text: string; wor
   beside?: number[];
   /** only on a Hebrew word (mode 'hebrew'): its English gloss, drawn under it ('' where it has none) */
   gloss?: string;
+  /** only on the first piece of a compound numeral folded into one box (src/diagram/numeral.ts, mw-5r3p30.1128): its text is the sum ('318') and this lists the indexes of the pieces it stands for, itself first; a tap opens the box */
+  numeral?: number[];
 };
 
 /** The words of a request, in order: TokenRef {i} is a position in this list. */
