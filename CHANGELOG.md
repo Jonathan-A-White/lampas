@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.180
+_2026-11-08_
+- Fixed: Section headings now show above the verses in the Septuagint's Old Testament chapters, as they do in the Hebrew.
+
 ## 0.7.179
 _2026-11-08_
 - Fixed: A second tap on "Not now" about half a second after the first no longer lands on whatever was under the bar.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.180",
+    "date": "2026-11-08",
+    "story": "mw-u2w5klk.302",
+    "kind": "fixed",
+    "text": "Section headings now show above the verses in the Septuagint's Old Testament chapters, as they do in the Hebrew."
+  },
+  {
     "version": "0.7.179",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1138",
