@@ -219,7 +219,7 @@ export function englishWordQuestion(ask: EnglishWordAsk, reference: string): str
   const head = `I tapped the English word “${ask.word}”${stands} in ${reference}, on the English side of the text.`;
   const pairs = ask.paired.map((p) => `${p.form} (lemma ${p.lemma}${p.parse ? `; ${p.parse}` : ''}${p.gloss ? `; gloss “${p.gloss}”` : ''})`);
   const paired = pairs.length ? ` It is paired with the ${ask.language} ${pairs.join(', ')}.` : ` No ${ask.language} word is paired with it.`;
-  const found = lexiconFound(ask) ? '' : ' The lexicons and dictionaries I looked in found no entry for it.';
+  const found = lexiconFound(ask) ? '' : ' The lexicons in Lampas found no entry for it.';
   return `${head}${paired}${found} Tell me about this word: what it is, what it means here and how to remember it.`;
 }
 
