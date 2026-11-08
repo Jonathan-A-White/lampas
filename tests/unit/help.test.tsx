@@ -1,5 +1,5 @@
-// Help (mw-5r3p30.823): a short list of the pieces of the app, one line each, each a tap to a page of under 120 words; the notes that left the Preface live on those pages; Ask the tutor at the top
-// opens the round control's sheet with Help as the screen (src/tutor/askNow.ts). The Preface keeps only what we chose. The layout is proven by tests/e2e/help.spec.ts.
+// Help (mw-5r3p30.823): a short list of the pieces of the app, one line each, each a tap to a page of under 120 words; the notes that left the Preface live on those pages; Help has no Ask the tutor
+// button of its own (mw-5r3p30.1144): the floating ? is the tutor's one door and Help reports itself as its screen. The Preface keeps only what we chose. The layout is proven by tests/e2e/help.spec.ts.
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -8,7 +8,6 @@ import { HELP_MAX_PAGES, HELP_MAX_WORDS, HELP_PAGES, helpPageById, wordsOf } fro
 import { routeOf } from '../../src/nav/route';
 import { ESSAY_ORIGINAL_NOTE, ESSAY_RELEASE, PREFACE_LINKS, PREFACE_PARAGRAPHS } from '../../src/preface';
 import { Preface } from '../../src/Preface';
-import { askRequestNow } from '../../src/tutor/askNow';
 import { FACT_VALUE_MAX, fitScreen, SCREEN_NAMES, suggestionsFor } from '../../src/tutor/screen';
 import { screenContextNow } from '../../src/tutor/screenContext';
 
@@ -67,16 +66,25 @@ describe('Help is a short list of pages', () => {
 });
 
 describe('the Help screen', () => {
-  it('lists every piece as a button, with Ask the tutor first', () => {
+  it('lists every piece as a button', () => {
     render(<HelpScreen />);
     const buttons = screen.getAllByRole('button').map((b) => b.textContent ?? '');
     expect(buttons.some((t) => t.startsWith('‹'))).toBe(true);
-    const ask = screen.getByRole('button', { name: 'Ask the tutor' });
     for (const page of HELP_PAGES) {
       const row = screen.getByRole('button', { name: new RegExp(`^${page.title}`) });
       expect(row).toHaveTextContent(page.line);
-      expect(ask.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING, `${page.title} after Ask the tutor`).toBeTruthy();
     }
+  });
+
+  it('has no Ask the tutor button of its own, on the list or on a page: the floating ? is the door (mw-5r3p30.1144)', () => {
+    const { unmount } = render(<HelpScreen />);
+    expect(screen.queryByRole('button', { name: 'Ask the tutor' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Needs a licence' })).toBeNull();
+    unmount();
+    window.location.hash = '#/help?page=licence';
+    render(<HelpScreen />);
+    expect(screen.queryByRole('button', { name: 'Ask the tutor' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Needs a licence' })).toBeNull();
   });
 
   it('tells the tutor its screen is Help, with a fact for each piece, so a question about the app is answered from it', () => {
@@ -88,13 +96,6 @@ describe('the Help screen', () => {
     // what the request carries is what the schema takes: no fact is dropped
     const sent = fitScreen(screenContextNow()!);
     expect(sent.facts).toHaveLength(HELP_PAGES.length);
-  });
-
-  it('opens the tutor with the round control when Ask the tutor is tapped', () => {
-    render(<HelpScreen />);
-    const before = askRequestNow()?.id ?? 0;
-    fireEvent.click(screen.getByRole('button', { name: 'Ask the tutor' }));
-    expect(askRequestNow()?.id).toBeGreaterThan(before);
   });
 
   it('opens a page on a tap and tells the tutor the page in hand', () => {
@@ -111,7 +112,6 @@ describe('the Help screen', () => {
     expect(screenContextNow()?.name).toBe('Help');
     expect(factsText()).toContain('Page: The licence');
     expect(factsText()).toContain('five devices');
-    expect(screen.getByRole('button', { name: 'Ask the tutor' })).toBeVisible();
   });
 
   it('draws the list for a page it does not know', () => {
