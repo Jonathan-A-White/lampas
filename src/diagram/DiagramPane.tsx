@@ -1,6 +1,6 @@
 // src/diagram/DiagramPane.tsx — the Verse view's Diagram action (mw-souyao.3): the sentence diagram of the verse or the passage in the Reader's current mode.
 // It asks fetchDiagram (the kept diagram, else the tutor), says 'Working it out…' while the tutor thinks, draws the answer with ReedKellogg (a box that scrolls sideways) and
-// offers Redraw under it with one line saying the tutor drew it and a quiet link, 'How to read this', to the lesson (#/diagram-lesson; mw-q6t5tvn.2), and above a drawn diagram one line inviting him to the lesson
+// offers Redraw under it (and, under the last sentence only, once: one line saying the tutor drew it, a quiet link, 'How to read this', to the lesson (#/diagram-lesson; mw-q6t5tvn.2) and 'See it in Logos'), and above a drawn diagram one line inviting him to the lesson
 // (Learn, Not now) until he has finished it or dismissed it. A tap on a word reports the Lookup the Reader's own WordSheet opens (English: the word's chunk, fromEnglish;
 // Greek: that Greek word). When the tutor could not (no answer, or a tree that broke THE RULE twice) it says so and why and offers Try again. The pane is keyed by the
 // unit and the mode (src/VerseView.tsx), so a switch of the Reader's view is a new pane that asks for the new mode; a Redraw keeps the picture beneath it until the new one comes.
@@ -146,6 +146,7 @@ export function DiagramPane({ chapter, verse, view, woven, onLook }: DiagramPane
           sentence={sentence}
           caption={sentenceCaption(chapter, sentence, k, sentences.length, n)}
           first={k === 0}
+          last={k === sentences.length - 1}
           view={view}
           woven={woven}
           onLook={onLook}
@@ -160,10 +161,12 @@ interface SentenceDiagramProps extends Omit<DiagramPaneProps, 'verse'> {
   caption: string | null;
   /** the first of the stack: only it carries the invitation to the lesson */
   first: boolean;
+  /** the last of the stack: only it carries the pane's resources, 'How to read this' and 'See it in Logos', once (mw-5r3p30.1142) */
+  last: boolean;
 }
 
 /** One sentence: asked for (or kept), worked out, drawn, redrawable. */
-function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLook }: SentenceDiagramProps) {
+function SentenceDiagram({ chapter, sentence, caption, first, last, view, woven, onLook }: SentenceDiagramProps) {
   // an Old Testament chapter read in its source language (the Reader's 'greek' view) is diagrammed in its Hebrew (mw-5r3p30.887)
   const mode: DiagramMode = chapter.lang === 'hbo' && view === 'greek' ? 'hebrew' : view;
   const verses = useMemo(() => sentenceVerses(chapter, sentence), [chapter, sentence]);
@@ -294,13 +297,17 @@ function SentenceDiagram({ chapter, sentence, caption, first, view, woven, onLoo
           >
             Redraw
           </button>
-          <div className="flex flex-wrap items-center justify-between gap-x-3">
-            <p className="px-1 text-sm text-muted">{DRAWN_BY_LINE}</p>
-            <button type="button" onClick={() => navigate('diagram-lesson')} className="min-h-12 px-1 text-sm text-accent underline underline-offset-4">
-              How to read this
-            </button>
-          </div>
-          <SeeItInLogos chapter={chapter} n={n} />
+          {last ? (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-x-3">
+                <p className="px-1 text-sm text-muted">{DRAWN_BY_LINE}</p>
+                <button type="button" onClick={() => navigate('diagram-lesson')} className="min-h-12 px-1 text-sm text-accent underline underline-offset-4">
+                  How to read this
+                </button>
+              </div>
+              <SeeItInLogos chapter={chapter} n={n} />
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>

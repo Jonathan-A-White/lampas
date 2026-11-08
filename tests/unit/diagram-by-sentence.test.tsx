@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { setGreekInterest, setReaderView } from '../../src/data/repositories';
+import { setGreekInterest, setReaderView, setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
@@ -95,6 +95,27 @@ describe('Diagram draws the sentence', () => {
     expect(asked().reduce((sum, a) => sum + a.words.length, 0)).toBe(14);
     // one invitation to the lesson and Redraw per diagram: the first only carries the invitation
     expect(within(pane).getAllByRole('button', { name: 'Redraw' })).toHaveLength(2);
+  });
+
+  it('a verse of two sentences lists How to read this, the tutor line and See it in Logos once, after the last sentence', async () => {
+    await setResourceOn('logos', true);
+    const pane = await open('/#/?b=jhn&c=2&v=4');
+    await waitFor(() => expect(within(pane).getAllByRole('img')).toHaveLength(2));
+    await within(pane).findByRole('group', { name: 'See it in Logos' });
+    expect(within(pane).getAllByRole('button', { name: 'Redraw' })).toHaveLength(2);
+    expect(within(pane).getAllByRole('button', { name: 'How to read this' })).toHaveLength(1);
+    expect(within(pane).getAllByText('Drawn by the tutor; Redraw if a word sits wrong')).toHaveLength(1);
+    expect(within(pane).getAllByRole('group', { name: 'See it in Logos' })).toHaveLength(1);
+    const [first, last] = Array.from(pane.querySelectorAll('[data-diagram-sentence]'));
+    expect(within(first as HTMLElement).queryByRole('button', { name: 'How to read this' })).toBeNull();
+    expect(within(first as HTMLElement).queryByRole('group', { name: 'See it in Logos' })).toBeNull();
+    expect(within(first as HTMLElement).getByRole('button', { name: 'Redraw' })).toBeInTheDocument();
+    expect(within(last as HTMLElement).getByRole('button', { name: 'Redraw' })).toBeInTheDocument();
+    const lastImg = within(last as HTMLElement).getByRole('img');
+    const how = within(last as HTMLElement).getByRole('button', { name: 'How to read this' });
+    const logos = within(last as HTMLElement).getByRole('group', { name: 'See it in Logos' });
+    expect(lastImg.compareDocumentPosition(how) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(how.compareDocumentPosition(logos) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('Genesis 1:1 is one Hebrew sentence', async () => {
