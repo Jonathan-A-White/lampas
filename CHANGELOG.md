@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.168
+_2026-11-08_
+- New: Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's and D. L. Moody's sermons from your Logos library can be turned on in Settings and listed by the passage you are reading, with a link into Logos.
+- New: Tapping a number the Hebrew or Greek writes as several words, like the 318 in Genesis 14:14, now opens one sheet that lists each word, its value and the sum.
+
 ## 0.7.167
 _2026-11-08_
 - New: Holding the Hebrew or Greek button at the top of the Reader switches an Old Testament book between the Hebrew and the Septuagint, keeping your place.
