@@ -1,6 +1,6 @@
 // The map the Reader's dock holds (mw-5r3p30.1129.2): the text the setting `splitMap` keeps, src/maps/splitMap.ts, and the setting's own check of it.
 import { describe, expect, it } from 'vitest';
-import { decodeSplitMap, encodeSplitMap } from '../../src/maps/splitMap';
+import { decodeSplitMap, dockedCard, encodeSplitMap } from '../../src/maps/splitMap';
 import { splitMapSetting } from '../../src/settings/definitions/split';
 import type { MapCard } from '../../src/maps/types';
 
@@ -26,5 +26,38 @@ describe('splitMap', () => {
     expect(splitMapSetting.parse('gen|14|biblemapper|BattleAtValleyOfSiddim')).toBe('gen|14|biblemapper|BattleAtValleyOfSiddim');
     expect(splitMapSetting.parse('half')).toBe('');
     expect(splitMapSetting.parse(3)).toBe('');
+  });
+});
+
+describe('dockedCard: the map the dock shows when the chapter moves', () => {
+  const make = (id: string, kind: MapCard['kind'], source = 'biblemapper', extra: Partial<MapCard> = {}): MapCard => ({ ...card, id, kind, source, ...extra });
+  const world = make('World', 'event');
+  const canaan = make('Canaan', 'event');
+  const table = make('Table', 'region');
+  const film = make('Film', 'video');
+  const link = make('Link', 'link', 'logosatlas', { open: { url: 'https://example.org/' } });
+
+  it('keeps his map when the chapter has it', () => {
+    expect(dockedCard([world, canaan, table], { source: 'biblemapper', id: 'Canaan' })).toBe(canaan);
+    expect(dockedCard([world, canaan, table], { source: 'biblemapper', id: 'Table' })).toBe(table);
+  });
+
+  it('else takes the chapter’s first in the Maps sheet’s order: Events before Regions whatever the source listed first', () => {
+    expect(dockedCard([table, world, canaan], { source: 'biblemapper', id: 'Gone' })).toBe(world);
+    expect(dockedCard([table], { source: 'biblemapper', id: 'Gone' })).toBe(table);
+  });
+
+  it('passes over a video and a link-only row, which cannot be docked, even when it was his map', () => {
+    expect(dockedCard([film, link, canaan], { source: 'biblemapper', id: 'Gone' })).toBe(canaan);
+    expect(dockedCard([film, link], { source: 'biblemapper', id: 'Film' })).toBeNull();
+  });
+
+  it('is none for a chapter with no map', () => {
+    expect(dockedCard([], { source: 'biblemapper', id: 'Gone' })).toBeNull();
+  });
+
+  it('matches the source as well as the id', () => {
+    const other = make('World', 'event', 'atlas');
+    expect(dockedCard([other, world], { source: 'biblemapper', id: 'World' })).toBe(world);
   });
 });

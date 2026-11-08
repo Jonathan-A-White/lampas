@@ -115,7 +115,7 @@ column, Left and Right side by side) move it by a tenth of the box, Home goes to
   its fraction. The speaking bar of Read aloud, when it shows, stands under the dock as it stands under the text today, and the dock's body gives it the room.
   The place line (`Genesis 14 · 45%`) is not drawn while a dock is open in Scroll (the dock's row is the passage's foot); in Turn pages it stays, since it says the page.
 - **Sideways** (`short:`, `max-height: 500px`): side by side; the passage at the left, the dock at the right half, the handle row at the dock's top with its pill
-  standing on the divider at the left edge (text-sideways.png). The size is a fraction of the width; a drag right past the smallest size closes. The passage keeps the left
+  standing on the divider at the left edge (text-sideways.png). The size is a fraction of the width; a drag right past the smallest size closes. Side by side the bounds are widths (built in mw-5r3p30.1129.3): the dock keeps at least 240 px (what its handle row needs for the title, the pill and Close) and the passage at least 280 px, since "two lines" mean nothing across; PROVISIONAL, the Governor to confirm. The passage keeps the left
   because reading begins there and the dock is the sheet that slid in from the right edge; the Hand setting does not move it (one rule to learn).
 - **Wide** (a tablet or a desktop window, `min-width: 768px`, at any height): as sideways; at Half each pane is as wide as a phone.
 - **Turning the phone** keeps the size as a fraction of the box (what was a share of the height is the same share of the width) and the scroll of each pane's top verse.

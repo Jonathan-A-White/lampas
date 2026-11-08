@@ -7,6 +7,8 @@ import {
   FIRST_FRACTION,
   HANDLE_ROW,
   KEY_STEP,
+  ROW_DOCK_MIN,
+  ROW_PASSAGE_MIN,
   TEXT_LINE,
   boundsOf,
   clampSize,
@@ -33,6 +35,21 @@ describe('the bounds', () => {
   it('never put the largest below the smallest, in a box too small for both', () => {
     const bounds = boundsOf({ box: 150 });
     expect(bounds.max).toBeGreaterThanOrEqual(bounds.min);
+  });
+
+  it('side by side are widths: the dock keeps what its row needs, the passage keeps a column of text, and the foot and the body\'s lines count for nothing', () => {
+    expect(boundsOf({ box: 844, axis: 'row' })).toEqual({ min: ROW_DOCK_MIN, max: 844 - ROW_PASSAGE_MIN });
+    expect(boundsOf({ box: 844, axis: 'row', body: 200, foot: 48 })).toEqual(boundsOf({ box: 844, axis: 'row' }));
+    expect(boundsOf({ box: 300, axis: 'row' }).max).toBe(ROW_DOCK_MIN);
+  });
+
+  it('side by side keep a fraction across boxes, a drag past the smallest width by the close distance closes, and a drag short of it rests at the smallest', () => {
+    const wide = boundsOf({ box: 1280, axis: 'row' });
+    const sideways = boundsOf({ box: 844, axis: 'row' });
+    const fraction = fractionOf(0.4 * 1280, 1280);
+    expect(sizeOf(fraction, 844, sideways)).toBeCloseTo(0.4 * 844, 0);
+    expect(dragTo(wide.min - CLOSE_DISTANCE, wide).close).toBe(true);
+    expect(dragTo(wide.min - CLOSE_DISTANCE + 1, wide)).toEqual({ size: wide.min, close: false });
   });
 });
 
