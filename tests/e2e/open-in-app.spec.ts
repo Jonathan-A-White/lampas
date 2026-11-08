@@ -489,6 +489,31 @@ for (const hash of ['#/?ref=Rom.8.28', '#/settings', '#/words', '#/about', '#/to
   });
 }
 
+// mw-5r3p30.1138: a thumb that taps again 400 ms later (src/ui/settle.ts, mw-5r3p30.1058) still lands on nothing: the moment after the strip leaves outlasts it.
+for (const [hash, label] of [['#/settings', 'Settings'], ['#/?ref=Rom.8.28', 'the Reader']] as const) {
+  test(`390x844 ${label}: second tap 400 ms after the first on 'Not now' lands on nothing under the bar`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await stubApi(page, WEBAPP);
+    await openUnlocked(page);
+    // init scripts run in order: the moment as on his phone, after openUnlocked's '0'
+    await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+    await page.clock.install();
+    await page.goto(`/${hash}`);
+    const notNow = page.locator('[data-open-in-app]').getByRole('button', { name: 'Not now' });
+    await expect(notNow).toBeVisible();
+    await pageTime(page, 500);
+    const before = await page.evaluate(() => window.location.hash);
+    await tapTwice(page, notNow, 400, { touch: true });
+    await pageTime(page, 100);
+    await expect(page.locator('[data-open-in-app]')).toHaveCount(0);
+    expect(await page.evaluate(() => document.activeElement?.tagName), 'the second tap focused no field or button').toBe('BODY');
+    if (hash === '#/settings') await expect(page.getByPlaceholder('Search settings')).not.toBeFocused();
+    expect(await page.evaluate(() => window.location.hash), 'the address gained no passage (&p=)').not.toMatch(/[?&]p=/);
+    expect(await page.evaluate(() => window.location.hash.replace(/[?&]p=[^&]*/, ''))).toBe(before.replace(/[?&]p=[^&]*/, ''));
+    await shot(page, `open-in-app-not-now-400-${hash.replace(/[^a-z]/gi, '')}`);
+  });
+}
+
 // mw-5r3p30.1137: what the Reader draws between its chips row and its text (the card that offers the lessons on variant readings, the key to the marks of a variant, a due tip's card)
 // is under the strip too, not covered by it: the strip stands at the foot of the last of them.
 /** Every paragraph, button and heading in `scope` whose box meets the strip and which has the strip at its centre. */

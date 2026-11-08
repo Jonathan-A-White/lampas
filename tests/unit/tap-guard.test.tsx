@@ -43,8 +43,16 @@ function Shell({ beneath, act: onAct, role }: { beneath: () => void; act: () => 
   useTapGuard();
   const route = useRoute();
   const [open, setOpen] = useState(false);
+  const [strip, setStrip] = useState(true);
   return (
     <>
+      {strip ? (
+        <div data-open-in-app>
+          <button type="button" onClick={() => setStrip(false)}>
+            Strip
+          </button>
+        </div>
+      ) : null}
       <p>on {route}</p>
       <button type="button" onClick={() => setOpen(true)}>
         Open
@@ -273,6 +281,32 @@ function sources(dir: string): string[] {
 }
 
 describe('the sweep: one guard', () => {
+  // mw-5r3p30.1138: a thumb of his taps again 400 ms later (mw-5r3p30.1058); every moment the guard starts (screen change, sheet or strip leaving, a link that leaves the app)
+  // lasts at least that long, since each is swallowTaps() with no argument: the moment is settle.ms, and the default for it is SETTLE_MS.
+  it('the moment every guard starts lasts at least the 400 ms of a thumb that taps again', () => {
+    expect(SETTLE_MS).toBeGreaterThanOrEqual(400);
+    const files = sources('src').filter((file) => /\bswallowTaps\(/.test(readFileSync(file, 'utf8')));
+    expect(files.sort()).toEqual([join('src', 'ui', 'settle.ts'), join('src', 'ui', 'tapGuard.ts')]);
+    expect(readFileSync(join('src', 'ui', 'tapGuard.ts'), 'utf8').match(/swallowTaps\([^)]/g)).toBeNull();
+    expect(readFileSync(join('src', 'ui', 'settle.ts'), 'utf8')).toMatch(/const until = performance\.now\(\) \+ settle\.ms;/);
+  });
+
+  it.each([
+    ['a sheet closing', async () => { tap('Open'); await wait(SETTLE_MS + 50); tap('Done'); }],
+    ['the Open in the app strip leaving', async () => { tap('Strip'); }],
+  ])('swallows a tap 400 ms after %s', async (_name, first) => {
+    const beneath = vi.fn();
+    render(<Shell beneath={beneath} act={vi.fn()} />);
+    await wait(SETTLE_MS + 50);
+    await first();
+    await wait(400);
+    tap('Beneath');
+    expect(beneath).not.toHaveBeenCalled();
+    await wait(100);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(1);
+  });
+
   it('the shell starts it once, and no screen, sheet or card asks for its own moment around it', () => {
     const files = sources('src');
     expect(files.filter((file) => /^\s*useTapGuard\(\);/m.test(readFileSync(file, 'utf8')))).toEqual(['src/App.tsx']);

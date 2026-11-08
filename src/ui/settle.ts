@@ -14,8 +14,10 @@
 // Read from here, a verse's play, the speaker, ReadCheck's Me and Play my reading) and ReadCheck's open / closed word (mw-5r3p30.637).
 import { useCallback, useEffect, useRef } from 'react';
 
-/** How long a new card ignores taps. The Tester's double taps were 120 ms apart; reading a question takes longer than this. PROVISIONAL */
-export const SETTLE_MS = 300;
+/** How long a new card, and the app-wide guard after a screen, sheet or strip changes, ignores taps. The Tester's double taps were 120 ms apart, and a thumb of his taps again 400 ms
+ * later (mw-5r3p30.1058), 450 ms after the strip 'Open in the app' leaves (mw-5r3p30.1138): so the moment outlasts 400 ms with room over the clock's own jitter; reading a question takes longer
+ * than this. PROVISIONAL */
+export const SETTLE_MS = 450;
 
 /** The moment a card settles for. A seam: tests/setup.ts sets 0 so a step may tap the instant a card is drawn; a test of the guard puts SETTLE_MS back,
  * and a browser spec starts at 0 through tests/e2e/unlocked.ts (localStorage 'lampas.settleMs'). */
