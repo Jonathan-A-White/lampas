@@ -1,6 +1,7 @@
 // src/ReaderControls.tsx — the Reader's actions that are otherwise a gesture, each as a button with a name (mw-cwf538.4, the epic 'Lampas for every age and every
 // ability'; docs/accessibility.md 'Gesture-only actions'): the two-finger tap that shows or puts away the Immersive reader's bars, going in and out of the
-// Immersive reader (Settings > Immersive reader), and with Turn pages the tap on the outer thirds and the swipe that turn a page. They are out of sight (one
+// Immersive reader (Settings > Immersive reader), and with Turn pages the tap on the outer thirds and the swipe that turn a page; with the split open the drag of its divider (Larger split, Smaller split)
+// and its Close (Close the split). They are out of sight (one
 // pixel, clipped: `.reveal-on-focus` in src/index.css) until the keyboard or a screen reader's focus reaches one, and then the row shows at the top of the
 // screen: a sighted reader on a touch screen sees nothing new, and TalkBack finds them as buttons. A button that changes what it is (Leave / Start immersive
 // reading) stays the same element, so focus stays on it.
@@ -19,7 +20,14 @@ export interface PageControls {
   turn(by: 1 | -1): void;
 }
 
-export function ReaderControls({ immersive, away, onBars, pages, inert }: {
+/** The split's divider as buttons: the drag of its handle row, which moves it by a tenth of the box, and the close that is otherwise a Close at the row's end (src/reader/split/). */
+export interface SplitControls {
+  larger(): void;
+  smaller(): void;
+  close(): void;
+}
+
+export function ReaderControls({ immersive, away, onBars, pages, inert, split }: {
   immersive: boolean;
   /** the Immersive reader's bars are out of view */
   away: boolean;
@@ -29,6 +37,8 @@ export function ReaderControls({ immersive, away, onBars, pages, inert }: {
   pages: PageControls | null;
   /** a sheet is open over the Reader: nothing here is reachable */
   inert: boolean;
+  /** with the split open: its divider and its close */
+  split?: SplitControls | null;
 }) {
   const bars = () => {
     announce(away ? 'The bars are back' : 'The bars are away');
@@ -57,6 +67,19 @@ export function ReaderControls({ immersive, away, onBars, pages, inert }: {
         <button type="button" onClick={bars} className={BUTTON}>
           {away ? 'Show the bars' : 'Put the bars away'}
         </button>
+      ) : null}
+      {split ? (
+        <>
+          <button type="button" onClick={split.larger} className={BUTTON}>
+            Larger split
+          </button>
+          <button type="button" onClick={split.smaller} className={BUTTON}>
+            Smaller split
+          </button>
+          <button type="button" onClick={split.close} className={BUTTON}>
+            Close the split
+          </button>
+        </>
       ) : null}
       <button type="button" onClick={mode} className={BUTTON}>
         {immersive ? 'Leave immersive reading' : 'Start immersive reading'}

@@ -119,3 +119,45 @@ test('with no gesture the chapter after this one opens (the swipe has its button
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Mark 13', level: 1 })).toBeVisible();
 });
+
+test('with no gesture the split can be made larger and smaller, moved with the keys, and closed (the drag of its handle has its buttons)', async ({ page }) => {
+  await openMark12(page, { readerSplit: 'on' });
+  const dock = page.locator('[data-dock]');
+  await expect(dock).toBeVisible();
+  const reader = (await page.locator('[data-reader-box]').boundingBox())!;
+  const height = async () => (await dock.boundingBox())!.height;
+  const bar = page.getByRole('separator', { name: 'Split size' });
+  const min = Number(await bar.getAttribute('aria-valuemin'));
+  const max = Number(await bar.getAttribute('aria-valuemax'));
+  const half = await height();
+  expect(Math.abs(half - reader.height / 2)).toBeLessThanOrEqual(10);
+
+  // the buttons are out of sight until focus reaches them, and each moves the divider by a tenth of the box
+  const group = page.getByRole('group', { name: 'Reading controls' });
+  expect((await group.boundingBox())?.height).toBeLessThanOrEqual(2);
+  await page.getByRole('button', { name: 'Larger split', exact: true }).focus();
+  expect((await group.boundingBox())?.height).toBeGreaterThan(40);
+  await shot(page, 'no-gesture-split-controls');
+  await page.keyboard.press('Enter');
+  await expect.poll(async () => Math.abs((await height()) - (half + reader.height / 10))).toBeLessThanOrEqual(2);
+  await press(page, 'Smaller split');
+  await press(page, 'Smaller split');
+  await expect.poll(async () => Math.abs((await height()) - (half - reader.height / 10))).toBeLessThanOrEqual(2);
+
+  // the focused handle: the arrow keys move it by a tenth, Home and End go to the bounds
+  await bar.focus();
+  const before = await height();
+  await page.keyboard.press('ArrowUp');
+  await expect.poll(async () => Math.abs((await height()) - (before + reader.height / 10))).toBeLessThanOrEqual(2);
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await expect.poll(async () => Math.abs((await height()) - (before - reader.height / 10))).toBeLessThanOrEqual(2);
+  await page.keyboard.press('Home');
+  await expect.poll(async () => Math.abs((await height()) - min)).toBeLessThanOrEqual(2);
+  await page.keyboard.press('End');
+  await expect.poll(async () => Math.abs((await height()) - max)).toBeLessThanOrEqual(2);
+
+  await press(page, 'Close the split');
+  await expect(dock).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Larger split' })).toHaveCount(0);
+});
