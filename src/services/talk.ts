@@ -191,6 +191,38 @@ export function helpQuestion(focus: WordFocus, reference: string): string {
     : `The word ${word}. Help me pronounce this word: its syllables and how each sounds.`;
 }
 
+/** A word of the text an English word stands for, as the sheet shows it: the form, its dictionary form (lemma), its parsing in plain words and the lexicon's gloss ('' when the lexicon has none). */
+export interface PairedWord {
+  form: string;
+  lemma: string;
+  parse: string;
+  gloss: string;
+}
+
+/** The English word he tapped and asked the tutor about (the floating ? over an English word's sheet, mw-5r3p30.1121): the word as tapped, the chunk of English it stands in when that is more than the word,
+ * the verse, the words of the source language the Weave pairs with it (`paired`; none when the chunk is paired to nothing, as a name the translators added) and which language that is. */
+export interface EnglishWordAsk {
+  word: string;
+  chunk?: string;
+  verse: number;
+  language: 'Greek' | 'Hebrew';
+  paired: PairedWord[];
+}
+
+/** Whether the lexicons found anything for the word: a paired word with a gloss. A word paired to nothing, or to words the lexicon has no entry for, is a word they found nothing for. */
+export const lexiconFound = (ask: Pick<EnglishWordAsk, 'paired'>): boolean => ask.paired.some((p) => p.gloss !== '');
+
+/** The question the floating ? over an English word's sheet sends: the word as tapped, where it stands (`reference`: book, chapter and verse), that it is the English side, the word the Weave pairs with it and
+ * what the lexicons found, or that they found no entry; then it asks what the word is and how to remember it. */
+export function englishWordQuestion(ask: EnglishWordAsk, reference: string): string {
+  const stands = ask.chunk && ask.chunk !== ask.word ? ` (in the English “${ask.chunk}”)` : '';
+  const head = `I tapped the English word “${ask.word}”${stands} in ${reference}, on the English side of the text.`;
+  const pairs = ask.paired.map((p) => `${p.form} (lemma ${p.lemma}${p.parse ? `; ${p.parse}` : ''}${p.gloss ? `; gloss “${p.gloss}”` : ''})`);
+  const paired = pairs.length ? ` It is paired with the ${ask.language} ${pairs.join(', ')}.` : ` No ${ask.language} word is paired with it.`;
+  const found = lexiconFound(ask) ? '' : ' The lexicons in Lampas found no entry for it.';
+  return `${head}${paired}${found} Tell me about this word: what it is, what it means here and how to remember it.`;
+}
+
 /** The question the Septuagint word card's Report this reading sends (mw-u2w5klk.12): is the word in its verse read right as the lemma and parsing Lampas derived. Asked as any word question is: the focus is the word's. */
 export function reportQuestion(focus: WordFocus, reference: string): string {
   return `Is ${focus.form} in ${reference} read right as ${focus.lemma}, ${focus.parse}?`;
