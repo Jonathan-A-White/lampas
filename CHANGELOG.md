@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.176
+_2026-11-08_
+- New: Holding a verse number copies the verse and shows a small strip to copy on to the end of the paragraph, the section or the chapter, or share it.
+- New: The round tutor button now shows over verse reference cards, the variant key and filter sheets, the RP 2026 sheet and the Septuagint sources sheet, and the tutor it opens already knows what the sheet shows.
+
 ## 0.7.175
 _2026-11-08_
 - Fixed: Holding Weave on an Old Testament chapter that is only Greek no longer flips the word order of every other book.

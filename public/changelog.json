@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.176",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1074",
+    "kind": "new",
+    "text": "Holding a verse number copies the verse and shows a small strip to copy on to the end of the paragraph, the section or the chapter, or share it."
+  },
+  {
+    "version": "0.7.176",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1124",
+    "kind": "new",
+    "text": "The round tutor button now shows over verse reference cards, the variant key and filter sheets, the RP 2026 sheet and the Septuagint sources sheet, and the tutor it opens already knows what the sheet shows."
+  },
+  {
     "version": "0.7.175",
     "date": "2026-11-08",
     "story": "mw-u2w5klk.300",
