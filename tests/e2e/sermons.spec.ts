@@ -198,6 +198,25 @@ test('with Greg Laurie On, Genesis 1 lists \'Who Is Man\', a link that opens in 
   await shot(page, 'sermons-logos');
 });
 
+test('with Spurgeon\'s My Sermon Notes On, Genesis 19 lists \'Genesis 19:15\', a link that opens his book in Logos (mw-qtu3zvz.18)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=gen&c=19');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await keepSettings(page, { 'sermons.spurgeon-sermon-notes-logos': 'on' });
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.locator('button[data-place-line]').click();
+  await page.getByRole('region', { name: 'Verse view' }).getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Genesis 19' });
+  await expect(sheet).toBeVisible();
+  const row = sheet.locator('a[data-sermon-row]').filter({ hasText: 'Genesis 19:15' });
+  await expect(row).toHaveCount(1);
+  await expect(row.locator('[data-sermon-meta]')).toContainText('Charles H. Spurgeon');
+  await expect(row.locator('[data-sermon-meta]')).toContainText('Opens in Logos');
+  await expect(row).toHaveAttribute('href', 'https://ref.ly/logosres/LLS:MYSRMNOTES01?off=14522');
+  await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'Charles H. Spurgeon, My Sermon Notes' })).toBeVisible();
+  await shot(page, 'sermons-notes');
+});
+
 test('Settings > Study resources > Sermons has a row for each bundled source, the Logos archives Off, and a source turned Off leaves its sermons out (mw-qtu3zvz.3)', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings?group=study');
@@ -207,6 +226,8 @@ test('Settings > Study resources > Sermons has a row for each bundled source, th
   await on('Spurgeon\'s sermons (CCEL)', 'On');
   await on('Matthew Henry\'s sermons', 'On');
   await on('Greg Laurie\'s sermons', 'Off');
+  // his batch 2 books (mw-qtu3zvz.18)
+  for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
   await shot(page, 'sermons-settings');
 
   // Spurgeon Off: the sermons of Romans 5:8 are Henry's alone (or none), and none is Spurgeon's

@@ -88,6 +88,10 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sermons/greg-laurie-logos/')) return 'Greg Laurie Sermon Archive'; // rows of his Logos archive (sermon-index sources/greg-laurie-logos): titles, passages and ref.ly links, facts only
   if (path.startsWith('public/sermons/jd-greear-logos/')) return 'J. D. Greear Sermon Archive'; // likewise
   if (path.startsWith('public/sermons/skip-heitzig-logos/')) return 'Skip Heitzig Sermon Archive'; // likewise
+  if (path.startsWith('public/sermons/spurgeon-sermon-notes-logos/')) return 'Spurgeon\'s My Sermon Notes'; // rows of his Logos copy of Spurgeon's My Sermon Notes (sermon-index sources/spurgeon-sermon-notes-logos), facts only
+  if (path.startsWith('public/sermons/wesley-logos/')) return 'John Wesley\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/whitefield-logos/')) return 'George Whitefield\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/moody-logos/')) return 'D. L. Moody\'s sermons'; // likewise
   if (path.startsWith('public/themes/themes-tcr1934/')) return 'Thompson'; // the theme index's book files (scripts/sermons-build.ts): topics, part labels and passages of CrossWire's TCR module (Thompson's 1934 subject index), facts only
   if (path.startsWith('public/themes/themes-torrey/')) return 'Torrey'; // the same of CrossWire's Torrey module (R. A. Torrey's New Topical Textbook, 1897)
   if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)

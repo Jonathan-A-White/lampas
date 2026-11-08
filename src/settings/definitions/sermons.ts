@@ -22,7 +22,7 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
     section: 'sermons',
     label: source.name.length > NAME_MAX ? source.name.replace(/ \([^)]*\)$/, '') : source.name,
     hint: source.describe,
-    ...(source.needs === 'logos' ? { help: 'This source is used, and its row shown, only while Logos is On in Study resources.' } : {}),
+    ...(source.needs === 'logos' ? { help: 'Used only while Logos is On in Study resources.' } : {}),
     ...(source.needs === 'logos' ? { dependsOn: { key: 'resource.logos', shown: (value: string) => value === 'on' } } : {}),
   });
 

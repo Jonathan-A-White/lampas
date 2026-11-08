@@ -124,7 +124,7 @@ describe('buildTalkRequest', () => {
     const guide = buildTalkRequest(scope, 'Why?', [], []).pronunciation_guide;
     expect(guide).toMatch(/^Modern Greek/);
     const long = Array.from({ length: MAX_HISTORY_TURNS }, (_, i) => turn(i, 'x'.repeat(300)));
-    const full = fitHistory(buildTalkRequest(scope, 'Why?', long, []));
+    const full = fitHistory({ ...buildTalkRequest(scope, 'Why?', long, []), learner: 'l'.repeat(300) }); // the 300 is the cap's raise (mw-qtu3zvz.18) that the turns no longer fill
     expect(full.pronunciation_guide).toBeUndefined();
     expect(full.history.length).toBe(MAX_HISTORY_TURNS);
     expect(size(full)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
@@ -291,7 +291,7 @@ describe('fitHistory', () => {
 
   it('drops the whole history when even one clipped turn cannot fit', () => {
     // the weight is a field that is never cut: the text of a passage is clipped before a turn is dropped (tests/unit/long-passage-fits.test.ts)
-    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(9300) };
+    const r = { ...base([turn(1, 'z'.repeat(1500))]), learner: 'l'.repeat(9600) };
     expect(fitHistory(r).history).toEqual([]);
   });
 });
@@ -395,7 +395,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.catalogue).toBeUndefined();
-    const { plain: tight, built: tightest } = await padded(9160);
+    const { plain: tight, built: tightest } = await padded(9460);
     const none = fitHistory(tightest, 0, 'rom.8@1');
     expect(none.facts).toBeUndefined();
     expect(none.history).toEqual(tight.history);

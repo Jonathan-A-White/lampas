@@ -127,6 +127,13 @@ export function settingsBlock(): string {
       last.labels.push(s.label);
     } else lines.push({ keys: [s.key], labels: [s.label], body, same });
   }
+  // the labels of a family line that all end in the same word ("Greg Laurie's sermons, J. D. Greear's sermons, ...") say it once, at the last (mw-qtu3zvz.18)
+  for (const l of lines) {
+    const ends = l.labels.filter((label) => label.endsWith(' sermons'));
+    if (l.keys.length < 4 || ends.length < 4) continue;
+    const last = ends[ends.length - 1];
+    l.labels = l.labels.map((label) => (label !== last && ends.includes(label) ? label.slice(0, -' sermons'.length) : label));
+  }
   return [SETTINGS_BEGIN, ...lines.map((l) => `- ${l.keys.map((k) => `\`${k}\``).join(', ')} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`), SETTINGS_END].join('\n');
 }
 

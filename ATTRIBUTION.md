@@ -28,6 +28,10 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Greg Laurie Sermon Archive](https://www.logos.com)** (Harvest Ministries), in Logos: titles, passages and links, opening only for an owner. Nothing copied.
 - **[J. D. Greear Sermon Archive](https://www.logos.com)**, in Logos: titles, passages and links, opening only for an owner. Nothing copied.
 - **[Skip Heitzig Sermon Archive](https://www.logos.com)**, in Logos: titles, passages and links, opening only for an owner. Nothing copied.
+- **[Spurgeon's My Sermon Notes](https://www.logos.com)** (Charles H. Spurgeon), in Logos: titles, passages and links, opening only for an owner. Nothing copied.
+- **[John Wesley's sermons](https://www.logos.com)**, in Logos: titles, passages and links, opening only for an owner. Nothing copied.
+- **[George Whitefield's sermons](https://www.logos.com)**, in Logos: titles, passages and links, opening only for an owner. Nothing copied.
+- **[D. L. Moody's sermons](https://www.logos.com)**, in Logos: titles, passages and links, opening only for an owner. Nothing copied.
 - **[Thompson Chain Topics](https://crosswire.org/study/fulllibrary.jsp?show=TCR)** (Frank Charles Thompson, 1934; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[Torrey's New Topical Textbook](https://crosswire.org/study/fulllibrary.jsp?show=Torrey)** (R. A. Torrey, 1897; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.
