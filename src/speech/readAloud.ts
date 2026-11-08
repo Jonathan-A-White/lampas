@@ -19,6 +19,7 @@ import type { ReaderView } from '../data/repositories';
 import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
+import { septuagintVerseView } from '../reader/septuagint';
 import { besideNow, greekVoiceForm, hasGreekVoice, hasVoice, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
 import type { SpeechLanguage } from './languages';
 import { hebrewVoiceForm } from './pronunciation';
@@ -56,7 +57,9 @@ const speakable = (text: string): boolean => /[\p{L}\p{N}]/u.test(text);
 
 /** What is shown of `verse`, as runs of one language each, in the order it is shown. `source` is the language of the chapter's own words: the Greek view and the words
  * the weave shows are read in it ('hbo' is Hebrew, in the he-IL voice). */
-export function runsOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, source: SourceLanguage = 'grc'): Run[] {
+export function runsOf(verse: Verse, chapterView: ReaderView, woven: WovenVerse | null, source: SourceLanguage = 'grc'): Run[] {
+  // a verse with Greek words and no English chunk is read in Greek, as it is drawn (mw-u2w5klk.274.7)
+  const view = septuagintVerseView(chapterView, verse);
   const language = source === 'hbo' ? ('hebrew' as const) : ('greek' as const);
   const parts: Run[] =
     view === 'greek'

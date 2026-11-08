@@ -93,6 +93,12 @@ export const septuagintSettings = <T extends { weaveShown?: boolean }>(settings:
  */
 export const septuagintView = (view: ReaderView, weaveShown: boolean, aligned = false): ReaderView => (view === 'greek' || (weaveShown && !aligned) ? 'greek' : 'english');
 
+/**
+ * The view one verse is drawn and read in (mw-u2w5klk.274.7): the chapter's `view`, except that a verse with Greek words and no English chunk at all (Isaiah 40:7 has seven words and `e: []`) has nothing to
+ * draw in the English view or in a Weave of it (a bare verse number, an empty Verse view, nothing to read aloud), so it falls back to its Greek alone, as the unaligned Weave draws the chapter.
+ */
+export const septuagintVerseView = (view: ReaderView, verse: Pick<Verse, 'e' | 'g'>): ReaderView => (view === 'english' && verse.e.length === 0 && verse.g.length > 0 ? 'greek' : view);
+
 /** Whether the note that the Weave is off in a Septuagint chapter stands: in the Weave position only, which is the English view with the Weave shown, and only for a chapter with no aligned chunks. */
 export const septuagintWeaveNoted = (view: ReaderView, weaveShown: boolean, aligned = false): boolean => view === 'english' && weaveShown && !aligned;
 

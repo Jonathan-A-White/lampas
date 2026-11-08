@@ -4,13 +4,15 @@
 // and aligned (the same chapter through alignChapter, as `lxx:ship` writes it).
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup } from '@testing-library/react';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { afterAll, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { sourceLanguage, type Chapter, type Verse } from '../../src/data/chapter';
 import { chunkOrder } from '../../src/data/weave';
-import { septuagintAligned, septuagintSettings, septuagintView, septuagintWeaveNoted } from '../../src/reader/septuagint';
+import { septuagintAligned, septuagintSettings, septuagintVerseView, septuagintView, septuagintWeaveNoted } from '../../src/reader/septuagint';
+import { VerseText } from '../../src/reader/VerseText';
+import { runsOf } from '../../src/speech/readAloud';
 import { wovenOf } from '../../src/reader/useWoven';
 import type { ReaderSettings } from '../../src/reader/useReaderSettings';
 import { ReadCheckPanel } from '../../src/ReadCheck';
@@ -174,5 +176,76 @@ describe('the woven reading check on a Septuagint verse', () => {
     unmount();
     render(createElement(ReadCheckPanel, props));
     expect(await screen.findByText(/aloud in Hebrew/)).toBeTruthy();
+  });
+});
+
+const text = (container: HTMLElement): string => (container.textContent ?? '').replace(/\s+/g, ' ').trim();
+
+// mw-u2w5klk.274.7: a Septuagint verse with Greek words and no Brenton English (Isaiah 40:7, e: []) drew a bare verse number in the Weave position, an empty Verse view and nothing to read aloud
+describe('a verse with Greek words and no English chunk', () => {
+  const holed = (chapter: Chapter, n: number): Chapter => ({ ...chapter, verses: chapter.verses.map((v) => (v.n === n ? { ...v, e: [] } : v)) });
+  const bare = holed(aligned, 2);
+  const greekOf = (v: Verse): string => v.g.map((w) => w.t).join(' ');
+
+  it('is in an aligned chapter, which is woven (so the Weave position draws its verses in English)', () => {
+    expect(septuagintAligned(bare)).toBe(true);
+    expect(verse(bare, 2).e).toEqual([]);
+    expect(verse(bare, 2).g.length).toBeGreaterThan(0);
+  });
+
+  it('draws its Greek words in the Weave position, not an empty row', () => {
+    const v = verse(bare, 2);
+    const woven = wovenChunks(bare, 2);
+    const { container, unmount } = render(createElement(VerseText, { verse: v, view: septuagintView('english', true, true), source: 'grc', woven, onLook: () => undefined, onUnlinked: () => undefined }));
+    expect(text(container)).toContain(v.g[0].t);
+    expect(text(container)).toContain(v.g[v.g.length - 1].t);
+    unmount();
+  });
+
+  it('is read aloud: the plan has the verse to read', () => {
+    const v = verse(bare, 2);
+    const runs = runsOf(v, 'english', wovenChunks(bare, 2), 'grc');
+    expect(runs.map((r) => r.text).join(' ')).toBe(greekOf(v).replace(/\s+/g, ' ').trim());
+    expect(runs.every((r) => r.language === 'greek')).toBe(true);
+  });
+
+  it('leaves a verse with English, and the Greek view, as they were', () => {
+    expect(septuagintVerseView('english', verse(aligned, 1))).toBe('english');
+    expect(septuagintVerseView('greek', verse(bare, 2))).toBe('greek');
+    expect(septuagintVerseView('english', verse(bare, 2))).toBe('greek');
+    expect(septuagintVerseView('english', { ...verse(bare, 2), g: [] })).toBe('english');
+  });
+});
+
+describe('every shipped Septuagint chapter in the Weave position', () => {
+  const dirs = ['public/data-lxx', 'tests/fixtures/data-lxx'];
+  const files = dirs.flatMap((dir) =>
+    existsSync(dir)
+      ? readdirSync(dir, { withFileTypes: true })
+          .filter((d) => d.isDirectory())
+          .flatMap((d) => readdirSync(`${dir}/${d.name}`).filter((f) => /^\d+\.json$/.test(f)).map((f) => `${dir}/${d.name}/${f}`))
+      : [],
+  );
+
+  it('has a chapter to look at (the fixtures at least)', () => {
+    expect(files.length).toBeGreaterThan(0);
+  });
+
+  it('draws text for every verse that has Greek words, whether or not it has English', () => {
+    const empty: string[] = [];
+    for (const file of files) {
+      const chapter = read<Chapter>(file);
+      const aligned = septuagintAligned(chapter);
+      for (const v of chapter.verses) {
+        if (v.g.length === 0) continue;
+        const view = septuagintVerseView(septuagintView('english', true, aligned), v);
+        const woven = wovenOf(chapter, septuagintSettings(weaving({ solid: new Set(chapter.verses.flatMap((x) => x.g.map((w) => w.l))) }), aligned))?.[chapter.verses.indexOf(v)] ?? null;
+        const { container, unmount } = render(createElement(VerseText, { verse: v, view, source: 'grc', woven, onLook: () => undefined, onUnlinked: () => undefined }));
+        if (text(container) === '') empty.push(`${file} ${v.n}`);
+        unmount();
+        if (runsOf(v, view, woven, 'grc').length === 0) empty.push(`${file} ${v.n} (aloud)`);
+      }
+    }
+    expect(empty).toEqual([]);
   });
 });

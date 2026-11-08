@@ -17,7 +17,7 @@ import { sayWord } from './sayWord';
 import { variantLabel, variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
-import { gapText, septuagintChunkLinked, withoutMarks } from './septuagint';
+import { gapText, septuagintChunkLinked, septuagintVerseView, withoutMarks } from './septuagint';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
 function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
   return (
@@ -157,7 +157,9 @@ const GUESS = 'underline decoration-dotted decoration-1 underline-offset-4';
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
  * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
  * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
-export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps, onUnlinked }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps' | 'onUnlinked'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+export function VerseText({ verse, view: chapterView, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps, onUnlinked }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps' | 'onUnlinked'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+  // a verse with Greek words and no English chunk is drawn in Greek alone, where the English view would draw nothing (mw-u2w5klk.274.7)
+  const view = septuagintVerseView(chapterView, verse);
   const hebrew = source === 'hbo';
   const own = sourceAttrs(source);
   const face = sourceFace(source);
