@@ -39,7 +39,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `septuagint` | Read the Old Testament in Greek over the Hebrew, Brenton's English as the English view | septuagint | n/a: the Hebrew is the Old Testament's own text; the switch is to the Greek | gap |
 | `weave` | The diglot weave: his known words stand in the source language inside the English | reader-weave-switch, weave | hebrew-reader | gap |
 | `variants` | Textual variants inline in the Reader, the witnesses setting and reading sets | variants-reader, variants-setting | n/a: the WLC data carries no apparatus (no Qere/Ketiv or witness lists are built, docs/data.md); a story that adds one reopens this row | gap |
-| `copy` | Copy and Share give the words as he reads them, the source text in the source view | copy-format, copy-hold | hebrew-reader | gap |
+| `copy` | Copy and Share give the words as he reads them, the source text in the source view | copy-format, copy-hold, tutor-copy | hebrew-reader | gap |
 | `word-sheet` | The word card: form, respelling, lemma, gloss, parsing with its terms as links, Help with this word | clean-gloss, hebrew-word-sheet, number-sheet, septuagint, word-heart, word-help, word-question-verse, word-sheet-english, word-sheet-many-resources, word-sheet-study | hebrew-reader, hebrew-word-sheet, number-sheet | gap |
 | `hear-word` | Hearing a word: a tap or long press says it in its language, the one-letter words, no voice says so | greek-audio, hear-any-word, long-press-speak, one-letter-greek-voice, septuagint, word-tip | hebrew-reader, hebrew-speech, hebrew-word-sheet, hebrew-words | gap |
 | `links` | Links into the app at a word or a verse of the language (#/?word=G..., #/?word=H...) | links | hebrew-word-sheet | gap |

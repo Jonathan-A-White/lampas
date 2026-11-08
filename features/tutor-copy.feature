@@ -1,3 +1,4 @@
+@uc-copy @greek
 Feature: The tutor copies or shares a passage he names
   In a Bible talk he may ask the tutor to copy or share a passage ('copy Hebrews 9:11 to 10:4', 'share this paragraph', mw-5r3p30.1075). The answer carries a copy or a
   share link and the app draws a chip, 'Copy Hebrews 9:11-10:4' or 'Share Hebrews 9:11-10:4': a phone writes its clipboard and opens its share view only on a tap, so one
