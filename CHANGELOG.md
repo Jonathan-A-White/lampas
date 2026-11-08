@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.169
+_2026-11-08_
+- New: The round tutor button now shows over the Sermons, Maps, lexicon list, Logos chooser, Ask for a book, Memorize and chapter picker sheets, and the tutor it opens already knows what the sheet is about.
+
 ## 0.7.168
 _2026-11-08_
 - New: Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's and D. L. Moody's sermons from your Logos library can be turned on in Settings and listed by the passage you are reading, with a link into Logos.

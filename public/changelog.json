@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.169",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1122",
+    "kind": "new",
+    "text": "The round tutor button now shows over the Sermons, Maps, lexicon list, Logos chooser, Ask for a book, Memorize and chapter picker sheets, and the tutor it opens already knows what the sheet is about."
+  },
+  {
     "version": "0.7.168",
     "date": "2026-11-08",
     "story": "mw-qtu3zvz.18",
