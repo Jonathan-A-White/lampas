@@ -18,6 +18,7 @@ import { mulberry32 } from '../../src/data/quiz';
 import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
@@ -279,6 +280,60 @@ describeFeature(feature, ({ Scenario }) => {
       expect(verseEl(1).querySelector('[data-woven]')).toBeNull();
     });
     And('no tip is shown', noTip);
+  });
+
+  // ---- a hold on the header's Greek / Hebrew button (mw-u2w5klk.293)
+  const holds = async (_: unknown, name: string): Promise<void> => {
+    const target = await waitFor(() => within(switchEl()).getByRole('button', { name }));
+    await user.pointer({ keys: '[MouseLeft>]', target });
+    await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150));
+    await user.pointer({ keys: '[/MouseLeft]', target });
+  };
+  const settingIs = async (_: unknown, value: string): Promise<void> => {
+    await waitFor(async () => expect((await db.settings.get('septuagint'))?.value).toBe(value));
+  };
+  const statusReads = async (_: unknown, text: string): Promise<void> => {
+    await waitFor(() => expect(screen.getAllByRole('status').map((el) => squash(el.textContent))).toContain(text));
+  };
+  const opensWithOff = (title: string) => (): Promise<void> => openOn(title, 'off');
+
+  Scenario('A hold on Hebrew in Genesis 1 turns the Septuagint on and the button reads Greek', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint off', () => openOn('Genesis 1', 'off'));
+    When('he holds {string} on the language switch', holds);
+    Then('the language switch offers {string} and {string}', switchOffers);
+    And('the Septuagint setting is {string}', settingIs);
+    And('the status reads {string}', statusReads);
+    And('the title reads {string}', titleReads);
+  });
+
+  Scenario('A hold on Greek in Genesis 1 turns the Septuagint off, keeping the source view', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+    When('he holds {string} on the language switch', holds);
+    Then('the language switch offers {string} and {string}', switchOffers);
+    And('the Septuagint setting is {string}', settingIs);
+    And('the status reads {string}', statusReads);
+    And('the Hebrew position is chosen', chosenIs('Hebrew'));
+  });
+
+  Scenario('A hold on Hebrew in Psalm 23 opens Greek Psalm 22 at the same chapter', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint off', (_: unknown, title: string) => opensWithOff(title)());
+    When('he holds {string} on the language switch', holds);
+    Then('the title reads {string}', titleReads);
+    And('the Septuagint setting is {string}', settingIs);
+  });
+
+  Scenario('A hold in Matthew changes nothing and says why', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint off', (_: unknown, title: string) => opensWithOff(title)());
+    When('he holds {string} on the language switch', holds);
+    Then('the Septuagint setting is {string}', settingIs);
+    And('the status reads {string}', statusReads);
+  });
+
+  Scenario('A hold in a book whose Septuagint is not shipped changes nothing and says why', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint off', (_: unknown, title: string) => opensWithOff(title)());
+    When('he holds {string} on the language switch', holds);
+    Then('the Septuagint setting is {string}', settingIs);
+    And('the status reads {string}', statusReads);
   });
 
   // ---- the word card of a Septuagint word (mw-u2w5klk.12)

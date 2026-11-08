@@ -19,6 +19,6 @@ export const septuagintSetting = defineSetting<Septuagint>({
   section: 'dial',
   label: 'Old Testament in Greek (Septuagint)',
   hint: 'Swete’s Greek with Brenton’s English; the Hebrew when off.',
-  help: 'On: a book of the Old Testament that has its Septuagint opens in the Greek of Swete’s Septuagint, with Brenton’s English as the English view, instead of the Hebrew. The Septuagint numbers some chapters and verses differently (Greek Psalm 22 is Psalm 23), so the title says both, as “Psalms 23 (Greek 22)”. A book whose Septuagint is not ready stays in the Hebrew and says so. Off by default; it shows only from Curious up in How much Greek?',
+  help: 'On: a book of the Old Testament that has its Septuagint opens in the Greek of Swete’s Septuagint, with Brenton’s English as the English view, instead of the Hebrew. The Septuagint numbers some chapters and verses differently (Greek Psalm 22 is Psalm 23), so the title says both, as “Psalms 23 (Greek 22)”. A book whose Septuagint is not ready stays in the Hebrew and says so. In the Reader, holding Hebrew (or Greek, once it is on) in the header flips this setting where you read, keeping the chapter, the verse and the view. Off by default; it shows only from Curious up in How much Greek?',
   dependsOn: greekFrom(1),
 });
