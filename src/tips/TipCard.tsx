@@ -27,7 +27,7 @@ export function TipCard({ onClose }: { onClose?: () => void }) {
   };
   const button = 'min-h-12 shrink-0 rounded-lg px-4 text-base font-medium active:bg-line';
   return (
-    <section data-testid="tip-card" aria-label="Tip" className="shrink-0 border-b border-line bg-surface px-3 py-2">
+    <section data-testid="tip-card" aria-label="Tip" data-reader-under-chips className="shrink-0 border-b border-line bg-surface px-3 py-2">
       <h2 className="text-base font-semibold">{tip.title}</h2>
       <p className="text-base text-muted">{tip.body}</p>
       <div className="flex justify-end gap-1">

@@ -46,7 +46,7 @@ function Chip({ children }: { children: string }) {
 /** The line under the chips row: a sample of each look and the witness letters in a few words, with a way to read more and a × to put it away. */
 export function VariantKeyLine({ onMore, onDismiss }: { onMore: () => void; onDismiss: () => void }) {
   return (
-    <aside role="note" aria-label="Key to the marks of a variant" data-testid="variant-key-line" className="flex shrink-0 items-start border-b border-line pl-3 text-sm text-muted">
+    <aside role="note" aria-label="Key to the marks of a variant" data-testid="variant-key-line" data-reader-under-chips className="flex shrink-0 items-start border-b border-line pl-3 text-sm text-muted">
       <p className="min-w-0 flex-1 py-2 leading-relaxed">
         <Sample source="lampas">dotted</Sample>: Lampas’s English · <Sample source="msb">plain</Sample>: the MSB’s footnote · <Chip>NA</Chip> <Chip>B</Chip>: which Greek text reads it.{' '}
         <button type="button" onClick={onMore} className="inline-flex min-h-11 items-center font-medium text-accent underline">

@@ -100,7 +100,7 @@ export function verseOnTop(): number | null {
 /**
  * Where the strip stands, in px from the top of the shell's bars (mw-5r3p30.1093): under the bars the shell holds (Update ready, the tutor's bar, Welcome back; the strip floats, so it
  * is not one of them and they never sit under it) and under the screen's own top bar, a `header` that starts where the bars end (the Reader's, a screen's ScreenHeader, the Verse
- * view's) and under the Reader's chips row (`data-reader-chips`, src/ReaderChips.tsx: Today, Variants; a row under the header, no header itself, mw-5r3p30.1099), whichever ends lowest. It floats over the text below, which does not move. Null where the bars are not drawn.
+ * view's) and under the Reader's chips row (`data-reader-chips`, src/ReaderChips.tsx: Today, Variants; a row under the header, no header itself, mw-5r3p30.1099) and whatever the Reader draws under that row before its text (`data-reader-under-chips`: the lessons offer, a tip's card, the variant key; mw-5r3p30.1137), whichever ends lowest. It floats over the text below, which does not move. Null where the bars are not drawn.
  */
 export function stripTop(): number | null {
   const bars = document.querySelector<HTMLElement>('[data-shell-bars]');
@@ -114,7 +114,9 @@ export function stripTop(): number | null {
     if (at.top <= room.bottom + 4 && at.bottom > foot) foot = at.bottom;
   }
   // the chips row starts where the header ends (or inside it, on a wide screen), so it is measured after the header
-  for (const row of document.querySelectorAll<HTMLElement>('[data-reader-chips]')) {
+  // and what the Reader draws under that row before its text (`data-reader-under-chips`: the card that offers the lessons on variant readings, a tip's card, the key to the marks of a variant;
+  // mw-5r3p30.1137), each starting where the one before ends, so DOM order is the order to measure in
+  for (const row of document.querySelectorAll<HTMLElement>('[data-reader-chips], [data-reader-under-chips]')) {
     if (!drawn(row)) continue;
     const at = row.getBoundingClientRect();
     if (at.top <= foot + 4 && at.bottom > foot) foot = at.bottom;
