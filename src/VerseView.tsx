@@ -22,7 +22,7 @@
 // the box is its content, at most 40 % of the window, and the screen scrolls as it did, so the Audio Bible row keeps its place above the Play bar (tests/e2e/audio-bible-landscape.spec.ts).
 // The row is three cells to a row, the last row's cells stretched over it so no row has a hole; two to a row under 15 rem of room (a phone at 200 % text, where a third of
 // the row is too narrow for 'Read it aloud'), and one row from 30 rem (a phone sideways), where five labels have a line each.
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, type SyntheticEvent, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
@@ -133,6 +133,19 @@ const TOOLS_ROW =
   'flex items-center gap-x-1 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&>*]:shrink-0 [&_[data-link-actions]>div]:shrink-0 ' +
   'has-[[data-link-actions]>:is(textarea,input)]:flex-wrap has-[[data-link-actions]>:is(textarea,input)]:overflow-visible';
 
+/** The Verse view's tools line takes one tap per two settle moments (mw-5r3p30.1105): a door's tap changes the line (Memorize grows into 'Memorizing · English' and 'Rehearse' appears, a sheet comes up),
+ * and where the window is short or narrow the line does not move up with the progress marks, so the second tap of a double tap, 120 to 600 ms later, lands on the control the first one turned
+ * into (the language sheet opened) or on the door that moved under it. A tap on a door (a button or a link, not the field of Copy's text to copy by hand) within the moment of the last one is dropped. */
+const TOOLS_MOMENTS = 2;
+const oneToolTap = (event: SyntheticEvent): void => {
+  if (!(event.target instanceof Element) || !event.target.closest('button, a')) return;
+  let first = false;
+  oneTap('verse-tools', () => (first = true), TOOLS_MOMENTS);
+  if (first) return;
+  event.preventDefault();
+  event.stopPropagation();
+};
+
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
@@ -225,7 +238,7 @@ export function VerseView(props: VerseViewProps) {
           scrolling row. In a narrow window, where the line ends the scrolling flow, it is one row too: at 160 % text it wrapped to three, and the Audio Bible link above it was
           scrolled out of sight when Listen was tapped. Sideways its column is 40 % of the window but never under 12.5 rem, so the widest door shows whole (a 390 px window
           cut to 400 px tall left it 74 px), and keeps the ?'s room only when the ? is at the left (toolsRoom). */}
-      <div role="group" aria-label="Tools" data-verse-tools className={`relative mt-0.5 shrink-0 short:min-w-0 short:max-w-[max(40%,12.5rem)] ${narrow ? controlsRoom : toolsRoom}`}>
+      <div role="group" aria-label="Tools" data-verse-tools onClickCapture={oneToolTap} className={`relative mt-0.5 shrink-0 short:min-w-0 short:max-w-[max(40%,12.5rem)] ${narrow ? controlsRoom : toolsRoom}`}>
         <div data-verse-tools-line className={TOOLS_ROW}>
         <LinkActions
           url={copyLink(copyUnit)}

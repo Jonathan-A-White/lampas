@@ -34,6 +34,17 @@ describe('oneTap', () => {
     expect(act).toHaveBeenCalledTimes(3);
   });
 
+  it('drops a tap 400 ms later when the control asks for two moments, and takes it after them', () => {
+    const act = vi.fn();
+    oneTap('a', act, 2);
+    now += 400;
+    oneTap('a', act, 2);
+    expect(act).toHaveBeenCalledTimes(1);
+    now += 2 * SETTLE_MS;
+    oneTap('a', act, 2);
+    expect(act).toHaveBeenCalledTimes(2);
+  });
+
   it('takes every tap when the moment is off', () => {
     settle.ms = 0;
     const act = vi.fn();

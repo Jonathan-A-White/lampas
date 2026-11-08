@@ -52,11 +52,12 @@ let lastTap: { key: string; at: number } | null = null;
  * Runs `act` unless the last act run through `oneTap` had the same `key` and began less than `settle.ms` ago. A control that flips a state in place
  * (a mode button, a reveal cell, a tick box, a switch) goes through it, so a double tap ends where one tap does. Controls that take each other's place
  * (Hide all goes and Review mode grows over it) share a key; controls that do not (two reveal cells) have their own, so a quick tap on another one is
- * his next. The moment is judged by performance.now(), as useSettled is.
+ * his next. The moment is judged by performance.now(), as useSettled is. `moments` lengthens it, as useSettled's does, for a line whose doors move under a thumb
+ * that taps again 400 ms later (the Verse view's tools line, mw-5r3p30.1105).
  */
-export function oneTap(key: string, act: () => void): void {
+export function oneTap(key: string, act: () => void, moments = 1): void {
   const now = performance.now();
-  if (lastTap && lastTap.key === key && now - lastTap.at < settle.ms) return;
+  if (lastTap && lastTap.key === key && now - lastTap.at < settle.ms * moments) return;
   lastTap = { key, at: now };
   act();
 }
