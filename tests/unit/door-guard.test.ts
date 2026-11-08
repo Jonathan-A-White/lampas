@@ -25,7 +25,7 @@ const ALLOWED: Record<string, string> = {
 
 /** A component of a file that does choose, which draws a layer and calls no hook itself because the component that draws it does (`file#Component`), each with the reason. */
 const COVERED: Record<string, string> = {
-  'plan/PlacePicker.tsx#Sheet': 'the Where are you? sheet is drawn only by Places, in the same file, which calls useNoDoor() for as long as it is mounted',
+  'plan/PlacePicker.tsx#Places': 'the z-30 wrapper of the picker is the ChapterPicker in choose mode, which draws a DialogAskTutor of its own inside its layer; the Where are you? sheet (Sheet) and Set your place (Confirm) draw theirs',
 };
 
 const SRC = join(__dirname, '..', '..', 'src');

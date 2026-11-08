@@ -6,7 +6,8 @@ import { createPortal } from 'react-dom';
 import { ChapterPicker } from '../ChapterPicker';
 import { listPlans } from '../data/plans';
 import { startPlan } from '../data/repositories/readingPlan';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { listFact, useSheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -20,9 +21,14 @@ function Sheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, planId === null);
   useSheetBack(onClose);
-  // z-30, over the Talk sheet (z-10), with nothing on it to ask about: no ? over it, for a Talk would open under it (mw-5r3p30.956)
-  useNoDoor();
-  const start = usePlan()?.started?.next ?? GENESIS_1;
+  const plan = usePlan();
+  const start = plan?.started?.next ?? GENESIS_1;
+  // z-30, over the Talk sheet (z-10): the ? asks about the plan he is starting, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1123)
+  const ask = useSheetTalk({
+    name: 'Start a listening plan',
+    facts: [listFact('Plans', listPlans().map((p) => p.name)), plan?.started?.next ? { label: 'Plan is at', value: chapterName(plan.started.next) } : null],
+    suggestions: ['What is a listening plan?', 'Where should I start my plan?'],
+  });
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -65,6 +71,7 @@ function Sheet({ onClose }: { onClose: () => void }) {
           onChoose={(chosen) => void startPlan(planId, chosen).then((started) => started && onClose())}
         />
       )}
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

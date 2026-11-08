@@ -2,10 +2,12 @@
 // After a right he writes it again, or goes on to the next stage when the right moved him there, or is done; Skip and Done close it with nothing lost.
 import { useState } from 'react';
 import type { GrammarIdea } from '../data/grammar/ladder';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { isWrittenFromMemory, type WriteProgress, type WriteStage } from './progression';
+import { writeTargetOf } from './target';
 import { WriteIt } from './WriteIt';
 import { WRITE_PLAIN, WRITE_PRIMARY } from './writeText';
 
@@ -17,8 +19,12 @@ function goOnLabel(before: WriteStage, after: WriteProgress): string {
 
 export function WriteItScreen({ idea, onClose }: { idea: GrammarIdea; onClose: () => void }) {
   useSheetBack(onClose);
-  // z-40, over the Talk sheet (z-10), with the pen's canvas the ? would float over: no ? here, for a Talk would open under the card (mw-5r3p30.955)
-  useNoDoor();
+  // z-40, over the Talk sheet (z-10): the ? asks about the letter's lesson, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1123); it is his to put away with a two-finger tap, off the pen's pad
+  const ask = useSheetTalk({
+    name: 'Write it',
+    facts: [{ label: 'Lesson', value: idea.title }, { label: 'Letter', value: writeTargetOf(idea)?.title ?? '' }],
+    suggestions: ['How do I write this letter?', 'Why do I write letters by hand?'],
+  });
   // each card is a new attempt, at the stage he is at as it opens
   const [card, setCard] = useState(0);
   return (
@@ -46,6 +52,7 @@ export function WriteItScreen({ idea, onClose }: { idea: GrammarIdea; onClose: (
           )}
         />
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

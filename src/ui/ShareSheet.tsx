@@ -3,7 +3,8 @@
 // when it is long (what is sent is whole). A tap on a row closes the sheet and hands the phone's share that piece, but not in the sheet's first two settle moments (a double tap on Share would land on Just the link, mw-5r3p30.1058). Back (useSheetBack), the Close button, Escape and a tap outside close it.
 import { createPortal } from 'react-dom';
 import type { SharePiece } from '../copy/format';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { listFact, useSheetTalk } from '../tutor/sheetTalk';
 import { useSettled } from './settle';
 import { useSheetBack } from './sheetBack';
 import { useEscapeToClose, useSheetDrag } from './sheetDrag';
@@ -19,8 +20,12 @@ export function ShareSheet({ title, pieces, onPick, onClose }: { title: string; 
   const settled = useSettled(0, ROW_MOMENTS);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // a list of rows to tap, nothing to ask about: no ? over it
-  useNoDoor();
+  // z-50, over the Talk sheet (z-10): the ? asks what sharing the verse sends, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1123)
+  const ask = useSheetTalk({
+    name: 'Share',
+    facts: [{ label: 'Sharing', value: title }, listFact('Pieces', pieces.map((p) => p.label))],
+    suggestions: ['What is the difference between these ways to share?', 'Which one should I send to a friend?'],
+  });
   return createPortal(
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
       <div data-testid="share-sheet-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
@@ -52,6 +57,7 @@ export function ShareSheet({ title, pieces, onPick, onClose }: { title: string; 
           ))}
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>,
     document.body,
   );
