@@ -44,7 +44,7 @@ export function ShareSheet({ title, pieces, onPick, onClose }: { title: string; 
           </button>
         </div>
         <h2 className="shrink-0 px-4 pb-2 text-xl font-semibold short:pb-1">Share {title}</h2>
-        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-4 pb-[calc(0.75rem+var(--lp-bar-inset))] short:grid short:grid-cols-2 short:pb-2">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-4 pb-[calc(0.75rem+var(--lp-bar-inset))] short:grid short:grid-cols-2 short:auto-rows-min short:content-start short:pb-2">
           {pieces.map((piece) => (
             <button key={piece.id} type="button" data-share-piece={piece.id} onClick={() => settled() && onPick(piece)} className={ROW}>
               <span className="text-base font-medium text-accent">{piece.label}</span>

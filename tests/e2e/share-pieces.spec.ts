@@ -216,6 +216,44 @@ test('sideways at 844x390: the sheet fits, nothing is clipped, each row is 48 px
   await shot(page, 'share-pieces-landscape');
 });
 
+// mw-5r3p30.1120: a verse of 310 characters (Revelation 17:8, shown whole since mw-5r3p30.1059) turned sideways ran its text out of a row and over the next one. Each row's text
+// stays inside its own box (scrollHeight not over clientHeight), no two rows' boxes overlap, and the sheet's scroll box reaches every row.
+test('sideways at 844x390 on a 310-character verse: each row holds its own text and no row overprints another', async ({ page }) => {
+  await start(page, 'rev', 17, 'Revelation 17');
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.getByRole('button', { name: 'Verse 8', exact: true }).click();
+  await expect(view(page)).toBeVisible();
+  await openSheet(page);
+  const names = ['The whole', 'Just the link', 'Just the text', 'Just the reference'];
+  const whole = await row(page, 'The whole').innerText();
+  expect(whole.length, 'the verse is long enough to fill a landscape row').toBeGreaterThan(300);
+  for (const name of names) {
+    const fit = await row(page, name).evaluate((el) => ({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight }));
+    expect(fit.scrollHeight, `${name}: its text (${fit.scrollHeight} px) fits its box (${fit.clientHeight} px)`).toBeLessThanOrEqual(fit.clientHeight);
+  }
+  // all four boxes measured at once, in the one scroll position, so they can be compared
+  const boxes = await sheet(page).evaluate((el, labels) => {
+    return labels.map((name) => {
+      const found = [...el.querySelectorAll<HTMLElement>('[data-share-piece]')].find((b) => (b.textContent ?? '').startsWith(name));
+      const r = found!.getBoundingClientRect();
+      return { name, x: r.x, y: r.y, width: r.width, height: r.height };
+    });
+  }, names);
+  // the sheet scrolls to the last row: it can be reached
+  await row(page, 'Just the reference').scrollIntoViewIfNeeded();
+  const last = await row(page, 'Just the reference').boundingBox();
+  expect(last && last.y + last.height <= 390 + 0.5, 'the last row can be scrolled into view').toBe(true);
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i];
+      const b = boxes[j];
+      const apart = a.x + a.width <= b.x + 0.5 || b.x + b.width <= a.x + 0.5 || a.y + a.height <= b.y + 0.5 || b.y + b.height <= a.y + 0.5;
+      expect(apart, `${a.name} and ${b.name} do not overlap`).toBe(true);
+    }
+  }
+  await shot(page, 'share-pieces-landscape-long');
+});
+
 // mw-5r3p30.1058: a double tap on Share put the second tap on the "Just the link" row (the sheet rises under the button), which sent the link by itself. The
 // sheet takes no tap in its first moment (src/ui/settle.ts, the app-wide guard src/ui/tapGuard.ts), as on his phone: the moment is put back to SETTLE_MS.
 test.describe('a double tap on Share', () => {
