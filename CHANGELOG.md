@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.185
+_2026-11-08_
+- Fixed: A Septuagint verse that has Greek but no English (Isaiah 40:7) now shows its Greek and can be read aloud, instead of a bare verse number.
+
 ## 0.7.184
 _2026-11-08_
 - New: Beside your passage you can now keep a second text, such as the Hebrew or the English, in a panel that scrolls to the same verse as the passage does.
