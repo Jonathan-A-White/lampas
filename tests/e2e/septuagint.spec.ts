@@ -86,6 +86,9 @@ test('Psalms 23 names both numberings and a book that is not shipped says so', a
   await expect(page.locator('[data-verse="1"] [data-verse-number]')).toHaveText('1 (22:1)');
   await page.goto('/#/?b=isa&c=1');
   await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('The Septuagint of Isaiah is not ready yet; this is the Hebrew.');
+  // a book that ships with a chapter that does not (the fixture index has Genesis 1 only) names the chapter
+  await page.goto('/#/?b=gen&c=2');
+  await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('The Septuagint of Genesis 2 is not ready yet; this is the Hebrew.');
 });
 
 test('a tap on a Septuagint word opens its card from the lemma lexicon, and a guessed word is drawn with a mark and told as a guess', async ({ page }) => {

@@ -4,7 +4,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { loadChapter } from '../../src/data/chapter';
-import { greekChapterOf, type LxxIndex } from '../../src/data/lxxChapter';
+import { greekChapterOf, notReadyName, type LxxIndex } from '../../src/data/lxxChapter';
 import { septuagintSetting } from '../../src/settings/definitions';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch, type ChapterFetch } from '../support/chapter-fetch';
@@ -115,5 +115,17 @@ describe('loadChapter with the Septuagint Off', () => {
     expect((await loadChapter('gen', 1)).lang).toBe('grc');
     await setSetting(septuagintSetting, 'off');
     expect((await loadChapter('gen', 1)).lang).toBe('hbo');
+  });
+});
+
+// mw-u2w5klk.298: the notice named the whole book for Genesis 14 alone, which was held back when every other Genesis chapter shipped.
+describe('what the "not ready" notice names', () => {
+  const from = index as unknown as LxxIndex;
+  it('names the chapter when the book ships but this chapter does not: "Genesis 2"', () => {
+    expect(notReadyName(from, 'gen', 2, 'Genesis')).toBe('Genesis 2');
+  });
+  it('names the book when the book is not shipped at all, or the index could not be read', () => {
+    expect(notReadyName(from, 'isa', 1, 'Isaiah')).toBe('Isaiah');
+    expect(notReadyName(null, 'gen', 2, 'Genesis')).toBe('Genesis');
   });
 });

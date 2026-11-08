@@ -116,6 +116,12 @@ export function greekChapterOf(from: LxxIndex, book: string, n: number): GreekCh
   return at < 0 ? null : { code: shipped.code, chapter: at + 1, fingerprint: shipped.fingerprints[at] ?? '' };
 }
 
+/**
+ * What a "not ready" notice names (mw-u2w5klk.298): the book alone (`Genesis`) when the Septuagint of the book is not shipped, or the index could not be read; the chapter (`Genesis 14`) when the book is shipped and this
+ * chapter is the one held back. `name` is the book's name as the Reader writes it.
+ */
+export const notReadyName = (from: LxxIndex | null, book: string, n: number, name: string): string => (from?.books.some((b) => b.lampas === book) ? `${name} ${n}` : name);
+
 /** The address of a Greek chapter's file: /data-lxx/<code>/<n>.json?v=<fingerprint>, plain when the index has no fingerprint for it. */
 export const lxxChapterUrl = (at: GreekChapter): string => `/data-lxx/${at.code}/${at.chapter}.json${at.fingerprint ? `?v=${at.fingerprint}` : ''}`;
 
