@@ -21,6 +21,7 @@ import { linkRowOf, linkRowOfHit, type LinkRow } from './merge';
 import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
+import { opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } from './openWeb';
 import type { SameTheme, SermonPlace, SermonRow } from './types';
 import { useArchives, useLatest, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
 import { useSameTheme, useThemes } from './useThemes';
@@ -33,14 +34,16 @@ function metaOf(row: LinkRow, online: boolean): string {
 }
 
 function Row({ row, online }: { row: LinkRow; online: boolean }) {
-  const { url, fallback } = row.open;
+  const { fallback } = row.open;
+  // the Firefox intent when he chose Firefox on Android (openWeb.ts); a Logos row's link is never turned
+  const href = useRowHref()(row);
   return (
     <a
       data-sermon-row
-      href={url}
+      href={href}
       data-fallback={fallback}
       onClick={fallback ? () => armFallback(fallback) : undefined}
-      {...(url.startsWith('https:') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      {...(opensNewTab(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className={ROW}
     >
       <span className="min-w-0 flex-1">
@@ -283,6 +286,28 @@ function SermonsFrame({ label, onClose, children, heading }: { label: string; on
 }
 
 export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: () => void }) {
+  const openWeb = useOpenWebIn();
+  return (
+    <OpenWebContext.Provider value={openWeb}>
+      <SermonsSheetBody place={place} onClose={onClose} />
+    </OpenWebContext.Provider>
+  );
+}
+
+/** A source's name, linked to its home page; the page opens where the sermons do (openWeb.ts). */
+function Credit({ source }: { source: { name: string; homepage: string; credit: string; id: string } }) {
+  const href = useWebHref()(source.homepage);
+  return (
+    <p data-sermon-credit className="pb-2 text-sm text-muted">
+      <a href={href} {...(opensNewTab(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="underline">
+        {source.name}
+      </a>
+      {`: ${source.credit}`}
+    </p>
+  );
+}
+
+function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () => void }) {
   const bundled = useSermons(place);
   // the service's newest rows are merged in once they come; the bundled rows stand until then, and when the service cannot be reached
   const latest = useLatest(place, bundled);
@@ -322,12 +347,7 @@ export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: 
       {same ? <SameThemeGroups same={same} online={online} /> : null}
       {archives ? <InLogos rows={archives} /> : null}
       {[...sources, ...named].map((source) => (
-        <p key={source.id} data-sermon-credit className="pb-2 text-sm text-muted">
-          <a href={source.homepage} target="_blank" rel="noopener noreferrer" className="underline">
-            {source.name}
-          </a>
-          {`: ${source.credit}`}
-        </p>
+        <Credit key={source.id} source={source} />
       ))}
       <AskRow place={place} />
     </SermonsFrame>

@@ -61,7 +61,9 @@ describe('the registry lists every Settings row', () => {
         // the Hebrew ladder's own path (mw-5r3p30.914) is drawn in the Grammar approach row beside the Greek one while the Hebrew dial stands at 3 or more: one row, two groups
         .filter((label) => label !== 'Hebrew grammar approach')
         // Hand (mw-5r3p30.879) is a row of its own too (rows.ts HAND_ROW), kept outside the registry so the tutor does not change it; the Tutor door row is gone (mw-5r3p30.882)
-        .filter((label) => label !== 'Tutor door' && label !== 'Hand' && label !== 'Which hand do you hold your phone in?');
+        .filter((label) => label !== 'Tutor door' && label !== 'Hand' && label !== 'Which hand do you hold your phone in?')
+        // Open web sermons in (mw-qtu3zvz.16) is likewise a row of its own (rows.ts OPEN_WEB_ROW), kept outside the registry: the tutor's Settings request is full
+        .filter((label) => label !== 'Open web sermons in');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);
     // the study-resource switches are checkboxes, not groups: the Settings screen's other tests draw them
     const all: string[] = [];

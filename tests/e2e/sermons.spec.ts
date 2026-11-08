@@ -392,3 +392,56 @@ test('online: when the service cannot be reached the bundled rows stand, the she
   await expect(field).toHaveAttribute('placeholder', 'Needs the internet');
   await expect(sheet.locator('[data-sermons-part="here"] a[data-sermon-row]').first()).toBeVisible();
 });
+
+// mw-qtu3zvz.16: Settings > Study resources > Sermons > Open web sermons in (This browser | Firefox); with Firefox on Android a web row's link is the Firefox intent, its https address the fallback.
+const ANDROID_UA = 'Mozilla/5.0 (Linux; Android 16; SM-S938B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36';
+
+async function webRows(page: Page) {
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  await expect(sheet).toBeVisible();
+  const rows = sheet.locator('[data-sermons-part="here"] a[data-sermon-row], [data-sermons-part="chapter"] a[data-sermon-row]');
+  await expect(rows.first()).toBeVisible();
+  return { sheet, rows };
+}
+
+test('Open web sermons in is This browser to start, Firefox is kept across a reload, and off Android a row stays an https link (mw-qtu3zvz.16)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings?group=study');
+  const section = page.locator('[data-section="sermons"]');
+  await expect(section).toBeVisible();
+  const row = section.getByRole('group', { name: 'Open web sermons in', exact: true });
+  await expect(row.getByRole('button', { name: 'This browser', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await row.getByRole('button', { name: 'Firefox', exact: true }).click();
+  await expect(row.getByRole('button', { name: 'Firefox', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await shot(page, 'sermons-open-web-setting');
+  await page.reload();
+  await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true }).getByRole('button', { name: 'Firefox', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  // this is not an Android phone: the choice does nothing
+  const { rows } = await webRows(page);
+  expect(await rows.first().getAttribute('href')).toMatch(/^https:\/\//);
+});
+
+test.describe('on an Android phone', () => {
+  test.use({ userAgent: ANDROID_UA });
+
+  test('with Firefox chosen a web row is the Firefox intent with its https address as the fallback; with This browser it is the https link (mw-qtu3zvz.16)', async ({ page }) => {
+    await openUnlocked(page);
+    let { sheet, rows } = await webRows(page);
+    expect(await rows.first().getAttribute('href')).toMatch(/^https:\/\//);
+    await keepSettings(page, { sermonsOpenWeb: 'firefox' });
+    ({ sheet, rows } = await webRows(page));
+    const count = await rows.count();
+    for (let i = 0; i < count; i++) {
+      const href = (await rows.nth(i).getAttribute('href')) ?? '';
+      expect(href).toMatch(/^intent:\/\/[^#]+#Intent;scheme=https;package=org\.mozilla\.firefox;S\.browser_fallback_url=https%3A%2F%2F[^;]+;end$/);
+      expect(decodeURIComponent(href.split('S.browser_fallback_url=')[1].replace(/;end$/, ''))).toMatch(/^https:\/\//);
+    }
+    // the source credit's home page link goes the same way
+    expect(await sheet.locator('[data-sermon-credit] a').first().getAttribute('href')).toMatch(/^intent:\/\//);
+    await shot(page, 'sermons-open-web-firefox');
+  });
+});

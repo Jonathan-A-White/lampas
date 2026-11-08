@@ -31,6 +31,7 @@ import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
 import { handSetting } from './hand';
+import { openWebSetting } from './definitions/sermons';
 import { helpPlain } from './helpText';
 import { forgetGrownSermonEntries, growSermonEntries, isGrownSermon, SETTINGS, settingOf, type SectionId } from './registry';
 import { knownSermonSources, onKnownSermonSources } from '../sermons/known';
@@ -223,8 +224,10 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
  *  src/tutor/knows.ts and the bible-talk instructions do not carry it (isTalkable). Hand is a row of Layout that any screen reads (hand.ts); the floating ? sits on its side. The Tutor door row is gone (mw-5r3p30.882): the floating ? is the one door. */
 const rowOfDefinition = (def: typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
 const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
+/** Open web sermons in (mw-qtu3zvz.16, openWebSetting): kept out of the registry and DEFINITIONS like Hand, so the tutor does not read or change it (isTalkable). No licence needed. */
+const OPEN_WEB_ROW: SettingsRow = { key: openWebSetting.key, label: openWebSetting.label, hint: openWebSetting.hint, help: openWebSetting.help, section: openWebSetting.section };
 // Study resources reads: the switches, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
-const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, OPEN_WEB_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** The Tools screen's doors (mw-5r3p30.754, his words of 2026-10-24: "things that interact with the Bible but are not the Bible themselves", not settings): the Library, his Verse lists, Memorize, Paradigms, Words and Review, in the order
  *  the screen draws them. They are rows of the section 'tools', which no Settings group holds, so no Settings page draws them and the tutor neither reads nor changes them (isTalkable); they stay rows so that the same
@@ -262,7 +265,7 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
 }
 
 /** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isGrownSermon(key);
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== OPEN_WEB_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isGrownSermon(key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 

@@ -31,6 +31,7 @@ Reading needs no licence.
   - [Sources the bundle lacks](#sources-the-bundle-lacks)
   - [The search](#the-search)
   - [What Lampas fetches from other hosts](#what-lampas-fetches-from-other-hosts)
+- [Open web sermons in](#open-web-sermons-in)
 - [The tutor](#the-tutor)
 - [Ask for a preacher](#ask-for-a-preacher)
 - [Tests](#tests)
@@ -251,6 +252,12 @@ So that About's and the Help's sentences are right, every request the app makes 
 | WhatsOnChain (through `bsv-kit`) | the licence check | the chain lookup for the licence of the phone's key | whether the key holds a licence (24 hours' grace offline) |
 
 Everything else the app reads is its own origin (`/data`, `/sermons`, `/data-lxx`, `/themes`, the maps' files). **Links are not fetches**: a sermon row's page (`ccel.org`, `archive.org`, `spurgeongems.org`), a `ref.ly` or `logosres:` address, the Audible app link and a study resource's page are opened only when he taps them, in the browser or the other app; the app asks them for nothing. `tests/e2e/sermons.spec.ts` holds that no request goes to a sermon's site before a row is tapped. The blog's `reftagger.js` (`src/reftagger/`) is not part of the app: it runs on another site and fetches one chapter file from Lampas's origin.
+
+## Open web sermons in
+
+**Settings > Study resources > Sermons > Open web sermons in** (`openWebSetting`, key `sermonsOpenWeb`, `src/settings/definitions/sermons.ts`; the key has no dot because `sermons.<id>` is a source's On | Off switch) is **This browser** (the default) or **Firefox** (mw-qtu3zvz.16). Why: Chrome's Reading mode read-aloud plays on his phone's speaker, Firefox's goes over his Bluetooth. `src/sermons/openWeb.ts` is the one helper: with Firefox chosen **and an Android user agent** (`onAndroid`, `src/openInApp.ts`) `webHref(url, choice, android)` turns `https://host/path?q` into
+`intent://host/path?q#Intent;scheme=https;package=org.mozilla.firefox;S.browser_fallback_url=<the https address, encoded>;end`, so a phone without Firefox opens the page where it was going. Anything else, **This browser** or a non-Android user agent, leaves the address as it is, and a page's own `#fragment` is kept only in the fallback. `rowHref` turns only a row whose `opensIn` is `web`: a Logos row (its `logosres:` link and `ref.ly` fallback) is never touched.
+The sheet reads the choice once (`useOpenWebIn`, handed to its rows by `OpenWebContext`); each web row's link (`Row`) and each source's home page (the credit under the rows, `Credit`) go through it. A link that is an intent has no `target="_blank"` (it hands the page to another app; a blank tab would be left behind). It is a row of its own (`OPEN_WEB_ROW`, `src/settings/rows.ts`), kept out of the registry and `DEFINITIONS` as Hand is: the tutor's Settings request is full, so the tutor neither reads nor changes it (`isTalkable`). Proof: `tests/unit/open-web.test.tsx` and, on an Android user agent, `tests/e2e/sermons.spec.ts`.
 
 ## The tutor
 
