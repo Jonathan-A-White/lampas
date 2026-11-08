@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.167
+_2026-11-08_
+- New: Holding the Hebrew or Greek button at the top of the Reader switches an Old Testament book between the Hebrew and the Septuagint, keeping your place.
+
 ## 0.7.166
 _2026-11-08_
 - Fixed: Help no longer has its own Ask the tutor button; the round ? opens the tutor there.
