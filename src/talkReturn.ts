@@ -3,6 +3,7 @@
 // over and the address of the table, and TalkReturn (src/TalkReturn.tsx, in App) opens the talk's sheet again once Back has brought him to that address. The same as
 // src/wordReturn.ts: module state, so a reload drops it and he is on the screen with no sheet; the hold is dropped when he goes anywhere but the table or back to that address.
 import { useSyncExternalStore } from 'react';
+import { sameScreenAddress } from './nav/route';
 import type { TalkScope } from './services/talk';
 
 export interface HeldTalk {
@@ -47,11 +48,11 @@ const sheetDepth = (): number => (window.history.state as { sheet?: number } | n
 /** The talk whose sheet is to come back: held, and he is at the address it was over with no sheet entry of the old screen left to step over (sheetBack.ts skipStale walks Back past them). Undefined otherwise. */
 export function useReturnedTalk(): HeldTalk | undefined {
   useSyncExternalStore(subscribe, () => `${held?.hash ?? ''}|${window.location.hash}|${sheetDepth()}`);
-  return held !== undefined && window.location.hash === held.hash && sheetDepth() === 0 ? held : undefined;
+  return held !== undefined && sameScreenAddress(window.location.hash, held.hash) && sheetDepth() === 0 ? held : undefined;
 }
 
 /** Whether the hold still has a reason to stay: he is at the table (or the Paradigms list one step on), or at the address it was over. */
-export const holdTalkStillWanted = (): boolean => held === undefined || window.location.hash === held.hash || window.location.hash.startsWith('#/paradigms');
+export const holdTalkStillWanted = (): boolean => held === undefined || sameScreenAddress(window.location.hash, held.hash) || window.location.hash.startsWith('#/paradigms');
 
 /** Whether the table he is on is the one the talk sent him to, so its Back is the talk's. */
 export const tableIsFromTalk = (): boolean => held !== undefined && window.location.hash === held.table;
