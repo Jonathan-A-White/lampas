@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.182",
+    "date": "2026-11-08",
+    "story": "mw-u2w5klk.301",
+    "kind": "fixed",
+    "text": "On a Septuagint chapter at Large or Largest text, the chapter title in the top bar no longer runs under the English / Greek switch."
+  },
+  {
     "version": "0.7.181",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1129.2",

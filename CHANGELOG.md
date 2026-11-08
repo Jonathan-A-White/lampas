@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.182
+_2026-11-08_
+- Fixed: On a Septuagint chapter at Large or Largest text, the chapter title in the top bar no longer runs under the English / Greek switch.
+
 ## 0.7.181
 _2026-11-08_
 - New: On a map, a Split button puts the map under the passage so you can look at it while you read, each scrolling on its own.
