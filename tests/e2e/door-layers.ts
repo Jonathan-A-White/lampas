@@ -352,3 +352,28 @@ export async function openRemoveDevice(page: Page): Promise<Locator> {
   await expect(confirm).toBeVisible();
   return confirm;
 }
+
+/** The Sermons sheet of Romans 5:8, from the Verse view's 'Sermons · N' door (the committed index; the sermon service refused). */
+export async function openSermonsSheet(page: Page): Promise<Locator> {
+  await page.route('https://sermons.allmymind.org/**', (route) => route.abort());
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = dialog(page, 'Sermons for Romans 5:8');
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
+
+/** The chapter picker, from the Reader's title. */
+export async function openChapterPicker(page: Page): Promise<Locator> {
+  await openUnlocked(page);
+  await page.goto('/');
+  const title = page.getByRole('heading', { name: 'Romans 8', level: 1 });
+  await expect(title).toBeVisible();
+  await title.getByRole('button').click();
+  const sheet = dialog(page, 'Choose a chapter');
+  await expect(sheet).toBeVisible();
+  return sheet;
+}
