@@ -1,12 +1,9 @@
-// src/HelpScreen.tsx — Help (#/help, mw-5r3p30.823): the app's own notes as a short list, one line for each piece of the app, each a tap to a page of a few lines (#/help?page=licence). Ask the tutor
-// is the first thing on both: it opens the round control's sheet over the screen (src/tutor/askNow.ts), and the screen reports its pieces (the list) or its page, so a question about the app is
-// answered from Help. The words are in src/help.ts. Reached from Settings, Account, More.
-import { useAiAllowed } from './gate/licenceContext';
+// src/HelpScreen.tsx — Help (#/help, mw-5r3p30.823): the app's own notes as a short list, one line for each piece of the app, each a tap to a page of a few lines (#/help?page=licence). It has no Ask the tutor button
+// (mw-5r3p30.1144): the floating ? is the tutor's one door, and the screen reports its pieces (the list) or its page, so a question about the app is answered from Help. The words are in src/help.ts. Reached from Settings, Account, More.
 import { HELP_PAGES, helpPageById, type HelpPage } from './help';
-import { backTo, helpPageOf, navigate, openHelpPage, openLicence, useAddress } from './nav/route';
+import { backTo, helpPageOf, navigate, openHelpPage, useAddress } from './nav/route';
 import { useScrollMemory } from './nav/scrollMemory';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
-import { askTheTutor } from './tutor/askNow';
 import { SCREEN_NAMES, type ScreenContext } from './tutor/screen';
 import { useReportScreen } from './tutor/screenContext';
 import { heldWord, leaveToWord, READING_HELP_PAGE } from './wordReturn';
@@ -29,20 +26,6 @@ const pageScreen = (page: HelpPage): ScreenContext => ({
   ],
 });
 
-/** Ask the tutor, at the top of Help: the tutor with this screen in hand. Without a licence the tutor is not offered, and the way to one is. */
-function AskButton() {
-  const ai = useAiAllowed();
-  return ai ? (
-    <button type="button" onClick={() => askTheTutor()} className="mt-4 min-h-12 w-full rounded-xl bg-accent px-5 text-lg font-medium text-accent-fg">
-      Ask the tutor
-    </button>
-  ) : (
-    <button type="button" onClick={() => openLicence('settings')} className="mt-4 min-h-12 w-full rounded-xl border border-line px-5 text-base font-medium text-accent">
-      Needs a licence
-    </button>
-  );
-}
-
 export function HelpScreen() {
   const page = helpPageById(helpPageOf(useAddress()));
   const opens = page?.opens;
@@ -57,7 +40,6 @@ export function HelpScreen() {
         back={toWord ? <HeaderButton onClick={() => leaveToWord(() => backTo('help'))}>‹ Word</HeaderButton> : page ? <HeaderButton onClick={() => backTo('help')}>‹ Help</HeaderButton> : <HeaderButton onClick={() => backTo('settings')}>‹ Settings</HeaderButton>}
       />
       <main ref={scrollRef} className="screen min-h-0 flex-1 px-4 pb-[var(--lp-end-inset)]">
-        <AskButton />
         {page ? (
           <article className="pb-4">
             <h2 data-read-block className="pt-5 text-lg font-semibold">

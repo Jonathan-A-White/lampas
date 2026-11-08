@@ -141,6 +141,7 @@ docs/hebrew.md # Hebrew in the tutor: the depth setting, the font, how a Hebrew 
 docs/language-parity.md # the golden use cases per language, the Hebrew gaps, what a new language plugs in
 docs/ask-tutor.md # the tutor: what it is told, offers, bridge, profile, memory, welcome, pictures
 docs/verse-view.md # the Verse view: actions, passages, Listen, Quiz me, study way
+docs/tutor-doors.md # every in-page tutor button audited against the floating ?: what each sends, the verdict
 docs/read-aloud.md # read aloud: the span, speaking bar, the tutor's responses, pages of prose
 docs/reading-ladder.md # the reading ladder: verses scored by pronunciation difficulty, drills
 docs/grammar.md # the grammar ladder, placement, Drill it, idea sheet, Goal screen
