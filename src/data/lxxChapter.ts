@@ -144,14 +144,6 @@ export function notReadyNotice(from: LxxIndex | null, online: boolean, book: str
  */
 export const notReadyName = (from: LxxIndex | null, book: string, n: number, name: string): string => (from?.books.some((b) => b.lampas === book) ? `${name} ${n}` : name);
 
-/** What of the Septuagint a Lampas chapter lacks (mw-u2w5klk.266): null when it is shipped, 'chapter' when the book is shipped but this chapter is not (the index names the book and no Greek chapter for it),
- *  'book' when the book is not in the index (or the index could not be fetched, `from` null). The Reader words its line by it. */
-export function septuagintGapOf(from: LxxIndex | null, book: string, n: number): 'chapter' | 'book' | null {
-  if (!from) return 'book';
-  if (greekChapterOf(from, book, n)) return null;
-  return from.books.some((b) => b.lampas === book) ? 'chapter' : 'book';
-}
-
 /** The address of a Greek chapter's file: /data-lxx/<code>/<n>.json?v=<fingerprint>, plain when the index has no fingerprint for it. */
 export const lxxChapterUrl = (at: GreekChapter): string => `/data-lxx/${at.code}/${at.chapter}.json${at.fingerprint ? `?v=${at.fingerprint}` : ''}`;
 

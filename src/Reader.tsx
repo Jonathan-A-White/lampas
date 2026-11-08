@@ -89,6 +89,7 @@ import { TeachSheet } from './TeachSheet';
 import { useNewWords } from './useNewWords';
 import { usePace } from './usePace';
 import { TipCard } from './tips/TipCard';
+import { SeptuagintDoor } from './reader/SeptuagintDoor';
 import { SeptuagintNote } from './reader/SeptuagintNote';
 import { SeptuagintSources } from './reader/SeptuagintSources';
 import { isSeptuagint, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
@@ -542,9 +543,12 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         </>
       ) : null}
       {hebrewHeld && !chapterReading && heldNotice !== null ? (
-        <p role="note" data-septuagint-not-ready className="chrome-small px-2 pb-1 text-center text-muted">
-          {heldNotice}
-        </p>
+        <div className="px-2 pb-1 text-center">
+          <p role="note" data-septuagint-not-ready className="chrome-small text-muted">
+            {heldNotice}
+          </p>
+          <SeptuagintDoor book={BOOK} chapter={CHAPTER} />
+        </div>
       ) : null}
       <ReaderChips
         hidden={chapterReading}

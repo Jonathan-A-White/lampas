@@ -92,6 +92,15 @@ describe('loadChapter with the Septuagint On', () => {
     expect(hebrewRequests()[0]).toMatch(/^\/data\/isa\/1\.json/);
   });
 
+  it('keeps today\'s behaviour for a chapter whose Greek file fails to fetch: the load fails, it is not read as the Hebrew', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url === '/data-lxx/index.json') return new Response(JSON.stringify(index), { status: 200 });
+      return new Response('', { status: 500 });
+    }));
+    await expect(loadChapter('gen', 1)).rejects.toThrow();
+  });
+
   it('reads the Hebrew when the Septuagint index cannot be fetched', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) => (url.startsWith('/data-lxx/') ? new Response('', { status: 404 }) : new Response(JSON.stringify({ book: 'Isaiah', code: 'isa', chapter: 1, lang: 'hbo', lex: {}, parse: {}, verses: [] })))));
     expect((await loadChapter('isa', 1)).lang).toBe('hbo');

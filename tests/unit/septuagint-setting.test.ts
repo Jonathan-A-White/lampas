@@ -7,6 +7,9 @@ import { settingOf } from '../../src/settings/registry';
 import { ROWS, visibleRows, readValues } from '../../src/settings/rows';
 import { getSetting, setSetting } from '../../src/settings/store';
 import { septuagintView, septuagintWeaveNoted } from '../../src/reader/septuagint';
+import { getLogosBible, getLogosBibles, setLogosBibleFor } from '../../src/data/repositories';
+import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
+import { biblesFor, DEFAULT_SEPTUAGINT_BIBLE, LOGOS_PARTS, septuagintLink } from '../../src/resources/logosBible';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -78,5 +81,56 @@ describe('the view a Septuagint chapter is drawn in (mw-u2w5klk.275)', () => {
     expect(septuagintWeaveNoted('english', false)).toBe(false);
     expect(septuagintWeaveNoted('greek', true)).toBe(false);
     expect(septuagintWeaveNoted('greek', false)).toBe(false);
+  });
+});
+
+// Settings > Bible in Logos > Septuagint (mw-u2w5klk.266): the fourth part of the Bible in Logos, the Septuagint a chapter Lampas has not shipped opens in.
+const SWETE = 'LLS:OTGRKSWETETXT';
+
+describe('the Septuagint part of the Bible in Logos', () => {
+  it('lists the four Septuagints of his Logos library, Swete\'s Greek first', () => {
+    expect(biblesFor('septuagint').map((b) => b.id)).toEqual([SWETE, 'LLS:OTGRKSWETEINTTXT', 'LLS:LELXX', 'LLS:BRENTONLXXEN']);
+    expect(biblesFor('septuagint')[0].name).toBe('LXX Swete (The Old Testament in Greek according to the Septuagint)');
+  });
+
+  it('is the fourth of the parts Settings lists, kept under logosBibleSeptuagint', () => {
+    expect(LOGOS_PARTS.map((p) => p.part)).toEqual(['nt', 'ot', 'apocrypha', 'septuagint']);
+    expect(LOGOS_PARTS[3]).toEqual({ part: 'septuagint', label: 'Septuagint', key: 'logosBibleSeptuagint' });
+  });
+
+  it('starts in Swete\'s Greek, the text Lampas itself reads, and keeps the pick', async () => {
+    expect(DEFAULT_SEPTUAGINT_BIBLE).toBe(SWETE);
+    expect(await getLogosBibles()).toMatchObject({ septuagint: SWETE });
+    await setLogosBibleFor('septuagint', 'LLS:LELXX');
+    expect(await getLogosBible('septuagint')).toBe('LLS:LELXX');
+    expect((await getLogosBibles()).nt).toBe(DEFAULT_LOGOS_BIBLE);
+  });
+
+  it('reads a saved store without the key as the default, and keeps a typed Resource ID as typed', async () => {
+    await db.settings.put({ key: 'logosBible', value: 'LLS:NASB95' });
+    expect((await getLogosBibles()).septuagint).toBe(SWETE);
+    await setLogosBibleFor('septuagint', 'LLS:MYOWNLXX');
+    expect((await getLogosBibles()).septuagint).toBe('LLS:MYOWNLXX');
+  });
+
+  it('is a row of Settings drawn while Logos is On, whatever the Septuagint setting says, and found by Septuagint', async () => {
+    const row = ROWS.find((r) => r.key === 'logosBibleSeptuagint');
+    expect(row?.section).toBe('resources');
+    expect(row?.dependsOn).toEqual({ key: 'resource.logos', shown: expect.any(Function) });
+    const shown = async (logos: 'on' | 'off', septuagint: 'on' | 'off', query = ''): Promise<boolean> => {
+      await db.settings.put({ key: 'septuagint', value: septuagint });
+      const values = { ...(await readValues()), 'resource.logos': logos };
+      return visibleRows(values, query).some((r) => r.key === 'logosBibleSeptuagint');
+    };
+    expect(await shown('on', 'off')).toBe(true);
+    expect(await shown('on', 'on')).toBe(true);
+    expect(await shown('off', 'on')).toBe(false);
+    expect(await shown('on', 'off', 'Septuagint')).toBe(true);
+  });
+
+  it('opens a chapter as a commentary\'s door does, in Lampas\'s numbering', () => {
+    expect(septuagintLink('gen', 7, SWETE)).toEqual({ url: 'logosres:LLS:OTGRKSWETETXT;ref=Bible.Ge7', fallback: 'https://ref.ly/logosres/LLS%3AOTGRKSWETETXT?ref=Bible.Ge7' });
+    expect(septuagintLink('isa', 1, 'LLS:LELXX')?.url).toBe('logosres:LLS:LELXX;ref=Bible.Isa1');
+    expect(septuagintLink('rom', 1, SWETE)).toBeUndefined();
   });
 });

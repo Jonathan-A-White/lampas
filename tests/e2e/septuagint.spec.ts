@@ -11,6 +11,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
 import { chooseAction, openVerseView } from './verse-view';
+import { openGroup } from './settings-group';
 import { openTutor } from './open-tutor';
 import { talkField } from './talk-field';
 
@@ -313,4 +314,49 @@ test('Listen on Psalm 10:1, which Greek 9 numbers 22, speaks the Greek and the v
   expect(said.map((s) => s.text).join(' ')).not.toContain('Ἐξομολ');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await shot(page, 'septuagint-listen');
+});
+
+// mw-u2w5klk.266: Settings > Bible in Logos has a Septuagint row (Swete's Greek to start), and a chapter the Septuagint does not have yet says so by chapter and opens, with one tap, in the Septuagint he chose in Logos.
+// The fixtures' index ships Genesis 1 and Greek Psalm 22; Genesis 7 is a chapter of a shipped book not yet shipped, Isaiah a book not yet shipped.
+test('Settings > Bible in Logos has a Septuagint row, Swete to start, and a chapter not shipped opens in it from a 44 px door', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  await openGroup(page, 'Study resources');
+  const section = page.getByRole('region', { name: 'Study resources' });
+  // the row is drawn while Logos is On, whatever the Septuagint setting says (it is Off to start)
+  await expect(page.getByRole('combobox', { name: 'Septuagint Bible in Logos' })).toHaveCount(0);
+  await section.getByRole('switch', { name: 'Logos', exact: true }).click();
+  const picker = page.getByRole('combobox', { name: 'Septuagint Bible in Logos' });
+  await expect(picker).toBeVisible();
+  await expect(picker.locator('option:checked')).toContainText('LXX Swete');
+  await expect(picker.locator('option')).toHaveText([
+    'LXX Swete (The Old Testament in Greek according to the Septuagint)',
+    'Lexham LXX Int Swete (The Lexham Greek-English Interlinear Septuagint: Swete)',
+    'LES (The Lexham English Septuagint)',
+    'Brenton LXX En (The Septuagint Version of the Old Testament: English Translation)',
+  ]);
+  const box = await picker.boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+  await picker.scrollIntoViewIfNeeded();
+  await shot(page, 'settings-septuagint-row');
+
+  await turnOn(page);
+  await page.goto('/#/?b=gen&c=7');
+  await expect(page.getByRole('heading', { name: 'Genesis 7', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('Genesis 7 in the Septuagint is not ready yet; this is the Hebrew.');
+  const door = page.locator('[data-septuagint-door]');
+  await expect(door).toHaveText('Read it in Logos: LXX Swete');
+  await expect(door).toHaveAttribute('href', 'logosres:LLS:OTGRKSWETETXT;ref=Bible.Ge7');
+  await expect(door).toHaveAttribute('data-fallback', 'https://ref.ly/logosres/LLS%3AOTGRKSWETETXT?ref=Bible.Ge7');
+  const doorBox = await door.boundingBox();
+  expect(doorBox?.height).toBeGreaterThanOrEqual(43.5);
+  expect((doorBox?.x ?? 0) + (doorBox?.width ?? 0)).toBeLessThanOrEqual(390);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  await shot(page, 'septuagint-not-ready');
+
+  // a book not shipped at all says so by book and has the same door
+  await page.goto('/#/?b=isa&c=1');
+  await expect(page.getByRole('heading', { name: 'Isaiah 1', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('The Septuagint of Isaiah is not ready yet; this is the Hebrew.');
+  await expect(page.locator('[data-septuagint-door]')).toHaveAttribute('href', 'logosres:LLS:OTGRKSWETETXT;ref=Bible.Isa1');
 });

@@ -55,6 +55,10 @@ interface Extras {
   memorize?: { id: string; step: number };
   /** the Septuagint's Genesis 1 is the one `lxx:ship` writes, its English cut into chunks aligned to the Greek words (scripts/lxx/align.ts), where the fixture holds one chunk a verse */
   aligned?: boolean;
+  /** Logos is linked (Settings > Study resources), so the door of a chapter not shipped opens in his Septuagint there */
+  logos?: boolean;
+  /** the index ships Genesis 1 to 6 (each file is the fixture's Genesis 1 numbered as that chapter) and no other book, as `lxx:ship` writes it (mw-u2w5klk.265) */
+  genesisOneToSix?: boolean;
   /** lemmas he has solid */
   solid?: string[];
   /** a tutor behind the fake Postern that explains these words (a TalkAnswer's `words`) in answer to whatever is asked */
@@ -104,6 +108,24 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (failing(String(input)) ? Promise.reject(new TypeError('Failed to fetch')) : chapterFetch(input, init)));
     if (extras.network === 'off') offlineSpy = vi.spyOn(window.navigator, 'onLine', 'get').mockReturnValue(false);
   }
+  if (extras.genesisOneToSix) {
+    const chapterFetch = globalThis.fetch;
+    const fill = <T,>(n: number, v: T): T[] => Array.from({ length: n }, () => v);
+    const fixture = JSON.parse(readFileSync('tests/fixtures/data-lxx/gen/1.json', 'utf8')) as Chapter;
+    const shipped = {
+      sources: {},
+      books: [{ code: 'gen', name: 'Genesis', lampas: 'gen', lang: 'grc', chapters: 50, shipped: [1, 2, 3, 4, 5, 6], verses: [31, 31, 31, 31, 31, 31, ...fill(44, 0)], fingerprints: fill(50, ''), lampasChapters: [[1], [2], [3], [4], [5], [6], ...fill<number[]>(44, [])] }],
+    };
+    const json = (body: unknown): Response => new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url === '/data-lxx/index.json') return Promise.resolve(json(shipped));
+      const at = /^\/data-lxx\/gen\/([2-6])\.json/.exec(url);
+      if (!at) return chapterFetch(input, init);
+      const n = Number(at[1]);
+      return Promise.resolve(json({ ...fixture, chapter: n, verses: fixture.verses.map((v) => ({ ...v, ref: { ...v.ref, chapter: n } })) }));
+    });
+  }
   if (extras.guessed) {
     const chapterFetch = globalThis.fetch;
     const lemma = extras.guessed;
@@ -126,6 +148,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
   await db.settings.put({ key: 'septuagint', value: septuagint });
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   if (extras.strongs) await setResourceOn('strongs', true);
+  if (extras.logos) await setResourceOn('logos', true);
   if (extras.diagram) window.localStorage.setItem('lampas.welcome', 'done');
   if (extras.memorize) {
     await db.reviews.put({ kind: 'verse', id: extras.memorize.id, step: extras.memorize.step, due: Date.now() - 1000, lastWhen: Date.now() - 86_400_000, lapses: 0, rights: 0 });
@@ -213,6 +236,78 @@ describeFeature(feature, ({ Scenario }) => {
       expect(squash(verseEl(1).querySelector('[data-verse-number]')?.textContent)).toBe(text);
     });
     And('the header subtitle reads {string}', subtitleReads);
+  });
+
+  const notReady = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-septuagint-not-ready]');
+  const door = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-septuagint-door]');
+  const openedWith = (title: string, septuagint: string, logos: string, bible?: string) =>
+    openOn(title, septuagint === 'on' ? 'on' : 'off', bible ? { logosBibleSeptuagint: bible } : {}, { logos: logos === 'linked', genesisOneToSix: true });
+  const theNoteReads = async (_: unknown, text: string): Promise<void> => {
+    await waitFor(() => expect(squash(notReady()?.textContent)).toBe(text));
+  };
+  const theDoorReads = async (_: unknown, text: string): Promise<void> => {
+    await waitFor(() => expect(squash(door()?.textContent)).toBe(text));
+  };
+  const theDoorOpens = async (_: unknown, url: string, fallback: string): Promise<void> => {
+    await waitFor(() => expect(door()?.getAttribute('href')).toBe(url));
+    expect(door()?.getAttribute('data-fallback')).toBe(fallback);
+  };
+  const noNote = async (): Promise<void> => {
+    // the chapter has drawn before the absence of its note means anything
+    await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+    expect(notReady()).toBeNull();
+  };
+  const noDoor = async (): Promise<void> => {
+    await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+    // the door's reading of the index is asynchronous: wait for the note when it should be there, else give it a moment
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(door()).toBeNull();
+  };
+
+  Scenario('A shipped chapter of a partly shipped book opens in Greek as ever, with no line and no door', ({ Given, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint {string}, Logos {string} and Genesis 1 to 6 shipped', (_: unknown, title: string, septuagint: string, logos: string) => openedWith(title, septuagint, logos));
+    Then('the language switch offers {string} and {string}', switchOffers);
+    And('the header subtitle reads {string}', subtitleReads);
+    And('no note says the Septuagint is not ready', noNote);
+    And('no door reads in the Septuagint', noDoor);
+  });
+
+  Scenario('A chapter not yet shipped is the Hebrew, says so by chapter and opens in his Septuagint in Logos', ({ Given, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint {string}, Logos {string} and Genesis 1 to 6 shipped', (_: unknown, title: string, septuagint: string, logos: string) => openedWith(title, septuagint, logos));
+    Then('the language switch offers {string} and {string}', switchOffers);
+    And('the note reads {string}', theNoteReads);
+    And('the door reads {string}', theDoorReads);
+    And('the door opens {string} and falls back to {string}', theDoorOpens);
+  });
+
+  Scenario('A book not yet shipped says so by book and has the same door', ({ Given, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint {string}, Logos {string} and Genesis 1 to 6 shipped', (_: unknown, title: string, septuagint: string, logos: string) => openedWith(title, septuagint, logos));
+    Then('the note reads {string}', theNoteReads);
+    And('the door reads {string}', theDoorReads);
+    And('the door opens {string} and falls back to {string}', theDoorOpens);
+  });
+
+  Scenario('The door opens in the Septuagint he chose in Settings', ({ Given, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint {string}, Logos {string}, the Septuagint {string} chosen and Genesis 1 to 6 shipped', (_: unknown, title: string, septuagint: string, logos: string, bible: string) =>
+      openedWith(title, septuagint, logos, bible),
+    );
+    Then('the door reads {string}', theDoorReads);
+    And('the door opens {string} and falls back to {string}', theDoorOpens);
+  });
+
+  Scenario('With Logos not linked the line stands and the door says where to link it', ({ Given, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint {string}, Logos {string} and Genesis 1 to 6 shipped', (_: unknown, title: string, septuagint: string, logos: string) => openedWith(title, septuagint, logos));
+    Then('the note reads {string}', theNoteReads);
+    And('no door reads in the Septuagint', noDoor);
+    And('Link Logos in Settings is offered under the note', async () => {
+      await waitFor(() => expect(within(notReady()?.parentElement as HTMLElement).getByRole('link', { name: 'Link Logos in Settings' })).toBeTruthy());
+    });
+  });
+
+  Scenario('With the Septuagint off neither the line nor the door shows', ({ Given, Then, And }) => {
+    Given('Lampas is opened on {string} with the Septuagint {string}, Logos {string} and Genesis 1 to 6 shipped', (_: unknown, title: string, septuagint: string, logos: string) => openedWith(title, septuagint, logos));
+    Then('no note says the Septuagint is not ready', noNote);
+    And('no door reads in the Septuagint', noDoor);
   });
 
   Scenario('A book whose Septuagint is not shipped stays Hebrew and says so', ({ Given, Then, And }) => {

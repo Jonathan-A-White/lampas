@@ -272,3 +272,47 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     Given Lampas is opened on Genesis 1 with the Septuagint on, the saved view "greek" and the chapter's file failing
     Then the Reader says "Genesis 1 could not be fetched." and offers "Try again"
     And no note says the Septuagint is not ready
+
+  # mw-u2w5klk.266: a chapter not shipped says so by chapter and opens, with one tap, in the Septuagint he chose in Logos (Settings > Bible in Logos > Septuagint, Swete's Greek to start). Here the index ships
+  # Genesis 1 to 6 and no Isaiah.
+  @uc-septuagint @greek
+  Scenario: A shipped chapter of a partly shipped book opens in Greek as ever, with no line and no door
+    Given Lampas is opened on "Genesis 3" with the Septuagint "on", Logos "linked" and Genesis 1 to 6 shipped
+    Then the language switch offers "English" and "Greek"
+    And the header subtitle reads "Greek: Swete's edition · English: Brenton's translation"
+    And no note says the Septuagint is not ready
+    And no door reads in the Septuagint
+
+  @uc-septuagint @greek
+  Scenario: A chapter not yet shipped is the Hebrew, says so by chapter and opens in his Septuagint in Logos
+    Given Lampas is opened on "Genesis 7" with the Septuagint "on", Logos "linked" and Genesis 1 to 6 shipped
+    Then the language switch offers "English" and "Hebrew"
+    And the note reads "Genesis 7 in the Septuagint is not ready yet; this is the Hebrew."
+    And the door reads "Read it in Logos: LXX Swete"
+    And the door opens "logosres:LLS:OTGRKSWETETXT;ref=Bible.Ge7" and falls back to "https://ref.ly/logosres/LLS%3AOTGRKSWETETXT?ref=Bible.Ge7"
+
+  @uc-septuagint @greek
+  Scenario: A book not yet shipped says so by book and has the same door
+    Given Lampas is opened on "Isaiah 1" with the Septuagint "on", Logos "linked" and Genesis 1 to 6 shipped
+    Then the note reads "The Septuagint of Isaiah is not ready yet; this is the Hebrew."
+    And the door reads "Read it in Logos: LXX Swete"
+    And the door opens "logosres:LLS:OTGRKSWETETXT;ref=Bible.Isa1" and falls back to "https://ref.ly/logosres/LLS%3AOTGRKSWETETXT?ref=Bible.Isa1"
+
+  @uc-septuagint @greek
+  Scenario: The door opens in the Septuagint he chose in Settings
+    Given Lampas is opened on "Genesis 7" with the Septuagint "on", Logos "linked", the Septuagint "LLS:LELXX" chosen and Genesis 1 to 6 shipped
+    Then the door reads "Read it in Logos: LES"
+    And the door opens "logosres:LLS:LELXX;ref=Bible.Ge7" and falls back to "https://ref.ly/logosres/LLS%3ALELXX?ref=Bible.Ge7"
+
+  @uc-septuagint @greek
+  Scenario: With Logos not linked the line stands and the door says where to link it
+    Given Lampas is opened on "Genesis 7" with the Septuagint "on", Logos "not linked" and Genesis 1 to 6 shipped
+    Then the note reads "Genesis 7 in the Septuagint is not ready yet; this is the Hebrew."
+    And no door reads in the Septuagint
+    And Link Logos in Settings is offered under the note
+
+  @uc-septuagint @greek
+  Scenario: With the Septuagint off neither the line nor the door shows
+    Given Lampas is opened on "Genesis 7" with the Septuagint "off", Logos "linked" and Genesis 1 to 6 shipped
+    Then no note says the Septuagint is not ready
+    And no door reads in the Septuagint
