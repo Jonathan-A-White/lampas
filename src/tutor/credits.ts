@@ -17,7 +17,7 @@ export interface SeptuagintSource {
 
 export const SEPTUAGINT_SOURCES: SeptuagintSource[] = [
   { label: 'Greek', text: 'Henry Barclay Swete, The Old Testament in Greek (Cambridge, 1887 to 1894; the 1909 to 1912 printing), following Codex Vaticanus, public domain.' },
-  { label: 'English', text: "Sir Lancelot Brenton's 1844 translation of the Septuagint, in eBible's 2012 edition with modernised spelling (eng-lxx2012), public domain." },
+  { label: 'English', text: "Sir Lancelot Brenton's 1844 translation of the Septuagint, in eBible's 2012 edition with modernised spelling (eng-lxx2012), public domain. Brenton did not translate Swete's edition: he translated the Vatican text, the Sixtine Roman edition of 1587, built on Codex Vaticanus, decades before Swete's edition (1887 to 1894), which also follows Vaticanus. So his English can differ from the Greek shown, in a word or in where a verse begins, and Lampas maps his verses onto Swete's." },
   {
     label: "The words' lemma and parsing",
     text: "Lampas's own, MIT. The method:",
@@ -33,7 +33,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },
   { name: 'TBESG', use: 'Greek lemmas, glosses, the parts of a compound word; TAGNT: variants, the Septuagint\'s parsing; TBESH: Hebrew', licence: 'CC BY 4.0', link: 'https://www.stepbible.org' },
   { name: 'Swete\'s Septuagint', use: 'The Greek Old Testament (Swete), with its transliteration', licence: 'Public domain; packaging GPL-3.0', link: 'https://github.com/eliranwong/LXX-Swete-1930' },
-  { name: 'LXX2012', use: 'The Septuagint\'s English (Brenton)', licence: 'Public domain', link: 'https://ebible.org/eng-lxx2012/' },
+  { name: 'LXX2012', use: 'The Septuagint\'s English (Brenton, of the Vatican text, not Swete\'s)', licence: 'Public domain', link: 'https://ebible.org/eng-lxx2012/' },
   { name: 'Learn to Read New Testament Greek', use: 'Lesson titles, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC' },
   { name: 'Biblical Hebrew Step by Step', use: 'Lesson titles, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ' },
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
