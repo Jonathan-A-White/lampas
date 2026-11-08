@@ -24,7 +24,7 @@ beforeEach(async () => {
   await db.settings.clear();
 });
 
-const LOGOS_PICKERS = ['New Testament', 'Old Testament', 'Apocrypha'].map((part) => `${part} Bible in Logos`);
+const LOGOS_PICKERS = ['New Testament', 'Old Testament', 'Apocrypha', 'Septuagint'].map((part) => `${part} Bible in Logos`);
 const isLogosPicker = (el: HTMLElement): boolean => LOGOS_PICKERS.includes(el.closest('label')?.querySelector('span')?.textContent ?? '');
 
 describe('the registry lists every Settings row', () => {
@@ -49,7 +49,7 @@ describe('the registry lists every Settings row', () => {
         ...screen.queryAllByRole('group'),
         ...screen.queryAllByRole('radiogroup'),
         // the Goal group's own Book, Chapter and Verse pickers are parts of that one setting
-        // (and the three Bible in Logos pickers, one for each part: the group named Bible in Logos holds the New Testament's, the other two have rows of their own)
+        // (and the four Bible in Logos pickers, one for each part: the group named Bible in Logos holds the New Testament's, the other three have rows of their own)
         ...screen.queryAllByRole('combobox').filter((el) => !el.closest('[role="group"][aria-label="Goal"]') && !isLogosPicker(el)),
         ...screen.queryAllByRole('slider'),
       ]
