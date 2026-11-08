@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /** A swipe down of at least this many pixels closes the sheet. */
-const CLOSE_DISTANCE = 80;
+export const CLOSE_DISTANCE = 80;
 
 /** Calls `onClose` on Escape while `enabled` (a sheet above this one is open when it is not). */
 export function useEscapeToClose(onClose: () => void, enabled = true): void {
