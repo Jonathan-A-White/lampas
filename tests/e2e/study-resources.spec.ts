@@ -113,7 +113,7 @@ test('Settings home at 360 px opens with Which languages?, the Bibles in Logos s
   const order = await page.locator('main [data-setting]').evaluateAll((els) => els.map((el) => el.getAttribute('data-setting')));
   expect(order[0]).toBe('languages');
   expect(order).not.toContain('library');
-  await expect(page.getByRole('button', { name: /^Study resources/ })).toContainText('Links to the study tools you own, Bible in Logos, maps and themes.');
+  await expect(page.getByRole('button', { name: /^Study resources/ })).toContainText('Links to the study tools you own, Bible in Logos, maps, themes and sermons.');
 
   // with Logos Off (its start) nothing hangs under it; On, the Bibles in Logos do, and still no library row
   await openGroup(page, 'Study resources');
