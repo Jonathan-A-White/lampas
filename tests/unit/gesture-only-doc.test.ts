@@ -18,6 +18,9 @@ const CONTROLS = [
   'Hear it',
   'Hear the verse',
   'Done',
+  'Larger split',
+  'Smaller split',
+  'Close the split',
 ];
 
 function sources(dir: string): string {
@@ -29,7 +32,7 @@ function sources(dir: string): string {
 describe('the gesture-only actions', () => {
   it('docs/accessibility.md has the section, with a row for each gesture of the app', () => {
     expect(section).not.toBe('');
-    for (const gesture of ['Tap with two fingers', 'Tap on the outer thirds', 'Swipe left or right: the next or previous chapter', 'Long press on a word', 'Hold a bar', 'Swipe down on a sheet', 'Pinch and drag the grammar ladder graph', 'Double tap']) {
+    for (const gesture of ['Tap with two fingers', 'Tap on the outer thirds', 'Swipe left or right: the next or previous chapter', 'Long press on a word', 'Hold a bar', 'Swipe down on a sheet', 'Drag the split', 'Pinch and drag the grammar ladder graph', 'Double tap']) {
       expect(section, `no row for: ${gesture}`).toContain(gesture);
     }
   });

@@ -83,7 +83,7 @@ the chapter (a map), with the current one ticked. So a second text changes witho
 **Closing**, three ways, all the sheets' own:
 
 - `Close` at the right of the handle row: the dock slides off in 200 ms (the bars' own time, `src/Away.tsx`; none under `prefers-reduced-motion`) and the passage takes the whole box without its scroll moving.
-- A drag down on the handle row past the smallest size by 80 px (`CLOSE_DISTANCE`, the sheets' own in `src/ui/sheetDrag.ts`): as the finger crosses it the row's name becomes `Let go to close` and the dock's words fade (closing.png); letting go closes, letting go before it snaps back to Small.
+- A drag down on the handle row past the smallest size by 80 px (`CLOSE_DISTANCE`, the sheets' own in `src/ui/sheetDrag.ts`): as the finger crosses it the row's name becomes `Let go to close` and the dock's words fade (closing.png); letting go closes, letting go before it rests at the smallest size.
 - `Close the split`, a button of `src/ReaderControls.tsx` (the Reader's buttons for what is otherwise a gesture), shown while focused, for a keyboard and TalkBack.
 
 Not Back, not Escape: the split is a layout, not a sheet on top of one (decision D3). Not the chooser: it has no 'Close the split' row, because Close is already on the row.
@@ -94,15 +94,19 @@ The handle row is the divider: 44 px tall, the pill in the middle (the sheets' o
 the chooser or the Maps sheet), `Link` and `Close` at the right (`Link` for a text only). The whole row is the drag surface (`touch-none`, pointer events so a
 mouse drags it too), as a sheet's handle row is. Nothing else resizes the split: a scroll inside either pane never moves the divider (`overscroll-contain` in both).
 
-**Three sizes, not a free divider.** Small, Half and Large: the dock takes a third, a half or two thirds of the box under the chips (at 390x844 the box is 748 px:
-249, 374 and 499 px, the row included). The drag follows the finger live; letting go settles on the nearest size in 200 ms; above Large stays at Large; below
-Small by 80 px closes (above). Both a map and a text open at Half: a map at the box's width (382 px) is about 240 px tall and fits Half with its credit; Half
-gives two text panes of about seven 44 px lines each. Why not free sizing: a free divider invites fiddling, leaves slivers that hold half a line, and cannot be
-proven by a test; three sizes are predictable, each one a known picture, and the Immersive bars going away or the phone turning recomputes them from the box with
-no drift (decision D4).
+**A free divider, not three sizes** (his answer on D4, 2026-11-06: "Do a, but allow for dynamic sizes (not just 3 fixed ones)"; the card on mw-5r3p30.1129, by Postern,
+txid `direct:df71a5dca5d9a0018405fabe5f35885e0b30923a462535cf34a8570a6deba100`). The handle row drags the divider live to any height and letting go leaves it there: no snapping. The dock
+opens at Half (half the box under the chips; at 390x844 the box is 748 px, so 374 px, the row included) the first time, and after that at the size he last left it. The bounds: never
+smaller than its handle row plus two text lines (or the body's own minimum a map passes, its credit row), and the room the phone's bar keeps clear at its foot; never so large that the
+passage above shows fewer than two lines (at 390x844, from 180 to 660 px). A drag past the smallest size by 80 px (`CLOSE_DISTANCE`) closes, as above; a drag under the smallest short of that
+rests at the smallest. Both a map and a text open at Half: a map at the box's width (382 px) is about 240 px tall and fits Half with its credit; Half gives two text panes of about seven 44 px
+lines each. The size is kept as a fraction of the box, not a name, so the Immersive bars going away or the phone turning works it out from the box again with no drift. The maths is pure
+(`src/reader/split/splitSize.ts`, `tests/unit/split-size.test.ts`). Size details PROVISIONAL, the Governor to confirm: the bounds, Half as the first opening, the one-tenth keyboard
+step and the 80 px close distance.
 
-**Buttons for the gesture** (docs/accessibility.md 'Gesture-only actions'): `Larger split` and `Smaller split` join `Close the split` in `src/ReaderControls.tsx`,
-shown while focused, stepping through the three sizes.
+**Buttons for the gesture and the keys** (docs/accessibility.md 'Gesture-only actions'): `Larger split` and `Smaller split` join `Close the split` in `src/ReaderControls.tsx`, shown while focused,
+each moving the divider by a tenth of the box (past either bound it stays at it). The divider itself is a focusable separator (`Split size`): the arrow keys of its axis (Up and Down in a
+column, Left and Right side by side) move it by a tenth of the box, Home goes to the smallest size and End to the largest.
 
 ## Portrait, sideways and wide
 
@@ -111,10 +115,10 @@ shown while focused, stepping through the three sizes.
   its fraction. The speaking bar of Read aloud, when it shows, stands under the dock as it stands under the text today, and the dock's body gives it the room.
   The place line (`Genesis 14 · 45%`) is not drawn while a dock is open in Scroll (the dock's row is the passage's foot); in Turn pages it stays, since it says the page.
 - **Sideways** (`short:`, `max-height: 500px`): side by side; the passage at the left, the dock at the right half, the handle row at the dock's top with its pill
-  standing on the divider at the left edge (text-sideways.png). The sizes are thirds of the width; a drag right past Small closes. The passage keeps the left
+  standing on the divider at the left edge (text-sideways.png). The size is a fraction of the width; a drag right past the smallest size closes. The passage keeps the left
   because reading begins there and the dock is the sheet that slid in from the right edge; the Hand setting does not move it (one rule to learn).
 - **Wide** (a tablet or a desktop window, `min-width: 768px`, at any height): as sideways; at Half each pane is as wide as a phone.
-- **Turning the phone** keeps the size (Half stays Half) and the scroll of each pane's top verse.
+- **Turning the phone** keeps the size as a fraction of the box (what was a share of the height is the same share of the width) and the scroll of each pane's top verse.
 - **Turn pages** (Settings > Reading): the passage pane turns pages in its shorter box as it does today, the dock scrolls; the Link follows the page's first verse. Not proven in the first two stories (see Not done).
 
 ## The map pane and a text pane
@@ -168,14 +172,14 @@ One switch for two panes: no link-set letters, no three-state icon.
 
 ## What is remembered
 
-Settings in the registry (`src/settings/define.ts`, Dexie, live in the Reader as `useReaderSettings`'s are), app-wide, not per book or chapter:
+Settings (`src/settings/define.ts`, Dexie, live in the Reader as `useReaderSettings`'s are), app-wide, not per book or chapter; the first story declares `readerSplit` (`on` \| `off` until a map or a text is docked) and `splitSize` in `src/settings/definitions/split.ts`, kept out of the registry like Hand:
 
 | Key | Values | Note |
 | --- | --- | --- |
 | `readerSplit` | `off` \| `map` \| `text` | what is docked |
 | `splitText` | the text's key (`hebrew`, `english`, `lxx-greek`, `lxx-english`, `greek`, `msb`) | read while `readerSplit` is `text` |
 | `splitMap` | the map's source and id | read while `readerSplit` is `map`; a reload shows the same map |
-| `splitSize` | `small` \| `half` \| `large` | the dock's size |
+| `splitSize` | a number between 0 and 1 (the fraction of the box the dock takes; Half until he has dragged it) | the dock's size |
 | `splitLink` | `on` \| `off` | the Link; `on` by default |
 
 A reload brings the split back as it was (his AC 5 of mw-5r3p30.1129). Not remembered: each pane's scroll (the Reader's scroll memory stays the passage's, per
@@ -186,7 +190,7 @@ ask about a difference he is looking at; verse-read and tips are not), which `te
 ## Not done
 
 - No third pane, because a phone has room for two and the one Link is for two; Logos's letters serve many panels, which is not the ask.
-- No free divider, only three sizes, because a free one invites fiddling, leaves slivers, and has no picture a test can hold (decision D4).
+- No snapping of the divider to fixed sizes, because the Governor asked for dynamic ones (decision D4); the bounds, a smallest size of the handle row and two lines and a largest that keeps two lines of the passage, stop slivers.
 - No Back or Escape to close the split, because it is a layout that survives a reload, with no history step to pop, and after a verse or a word has been opened and closed "Back closes the split" would be a surprise (decision D3).
 - No split on the Verse view, Memorize or any other screen, because the split is the Reader's reading layout; those screens open over both panes.
 - No Link for a map, because his word ("obviously it wouldn't apply to a map") and a map has no verses to follow; a map follows the chapter, not the scroll.
@@ -243,6 +247,7 @@ Four, each A or B with the recommended one; the Mayor chooses (his word of 17:53
 - A: Three sizes (Small, Half, Large: a third, a half, two thirds of the box), the drag live and settling on the nearest; below Small closes.
 - B: A free divider with a floor of 120 px on each pane.
 - Recommended: A.
+- Chosen: the Governor, "Do a, but allow for dynamic sizes (not just 3 fixed ones)" (the card on mw-5r3p30.1129, by Postern, 2026-11-06T22:45:31Z, txid `direct:df71a5dca5d9a0018405fabe5f35885e0b30923a462535cf34a8570a6deba100`): A's drag and its close, with no three fixed sizes: the divider rests wherever he lets go, between a smallest and a largest size (above, 'A free divider').
 
 ## Revised acceptance criteria
 
@@ -256,12 +261,12 @@ chapter has, `splitPairing.ts`), `src/settings/definitions/split.ts`, `src/maps/
 
 1. Genesis 14, the Verse view of verse 15, `Maps · 6`, a map: the map's handle row has `Split` beside `Close`; tapping it closes the map, the Maps sheet and the Verse view and shows the Reader with the map docked below the passage at Half: the dock's box is half the box under the chips within 10 px, its handle row 44 px tall with the map's title at the left and `Close` at the right and no `Link`, the picture wholly visible, and verse 15 within the passage's box (e2e, tests/e2e/map-split.spec.ts).
 2. The passage scrolls on its own: scrolling it by 300 px moves the dock's box and the picture not at all; a tap on the picture zooms it to twice the box's width and scrolling the box pans it with the passage's scrollTop unchanged (e2e).
-3. The drag: a touch drag of the handle row to two thirds of the box settles the dock at Large within 10 px, and a drag above that stays at Large; a drag down past Small by 80 px turns the row's name into `Let go to close` and, let go, closes the split with the passage's scrollTop unchanged; let go before that it settles at Small (e2e, `hasTouch`).
+3. The drag (as the Governor changed D4, built in mw-5r3p30.1129.1): a touch drag of the handle row to two heights, neither a third, a half nor two thirds of the box, leaves the dock resting at each within 2 px, with no snapping; a drag above the largest size clamps to it; a drag down past the smallest by 80 px turns the row's name into `Let go to close` and, let go, closes the split with the passage's scrollTop unchanged; let go before that it rests at the smallest (e2e, `hasTouch`, tests/e2e/reader-split-dock.spec.ts).
 4. `Close` closes the split at the same verse; Back with the split open does not: a verse opened from the passage and closed with Back leaves the split as it was (e2e).
-5. `Larger split`, `Smaller split` and `Close the split` are buttons of ReaderControls, shown while focused, and step through the sizes and close (e2e, tests/e2e/no-gesture-only.spec.ts extended).
+5. `Larger split`, `Smaller split` and `Close the split` are buttons of ReaderControls, shown while focused: the first two move the divider by a tenth of the box, the third closes (e2e, tests/e2e/no-gesture-only.spec.ts extended).
 6. The next chapter (`Genesis 15 ›`) keeps the split and shows a map of Genesis 15 (the same map if it covers the chapter, else the chapter's first in the Maps sheet's order); on a chapter `mapsFor` answers nothing for (the Builder finds one from `src/maps/data/biblemapper.json`) the row reads `No map for <Book N>`, the body is empty, no picture is fetched, and the dock keeps its size (e2e).
-7. A reload keeps the split, the same map and the size (settings `readerSplit`, `splitMap`, `splitSize`) (e2e); each new setting is classified in `src/tutor/knows.ts` (unit test, tests/unit/tutor-knows.test.ts).
-8. Sideways at 844x390 the dock stands at the right half with the passage at the left, its handle row at the dock's top, and a drag right past Small closes it (e2e, viewport 844x390).
+7. A reload keeps the split, the same map and the size (settings `readerSplit`, `splitMap`, `splitSize`, the last a fraction of the box) (e2e); each new setting is classified in `src/tutor/knows.ts` (unit test, tests/unit/tutor-knows.test.ts).
+8. Sideways at 844x390 the dock stands at the right with the passage at the left, its share of the width the share of the height it had, its handle row at the dock's top, and a drag right past the smallest size closes it (e2e, viewport 844x390).
 9. A word tap in the passage opens the word sheet over both panes and closing it leaves the split (e2e); the place line is not drawn while the dock is open in Scroll (e2e).
 10. `docs/maps.md` and `docs/layout/reader.md` say where the split lives, and Help's maps page says what `Split` does, in one sentence (gate).
 11. The rig's gate passes (gate). Sweep, in the closing comment: every other bottom sheet of the Reader that shows reference matter beside the text, and whether it should dock; named for a follow-up, not built.

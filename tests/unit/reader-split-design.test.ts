@@ -100,6 +100,28 @@ describe(DOC, () => {
     }
   });
 
+  it("amends D4 to the Governor's free divider, with his words and txid as the reason (mw-5r3p30.1129.1): no three fixed sizes", () => {
+    const d4 = section('Decisions').split(/^### /m).find((d) => d.startsWith('D4')) ?? '';
+    expect(d4, 'D4 says what was chosen').toMatch(/^- Chosen: /m);
+    expect(d4).toContain('Do a, but allow for dynamic sizes (not just 3 fixed ones)');
+    expect(d4).toContain('direct:df71a5dca5d9a0018405fabe5f35885e0b30923a462535cf34a8570a6deba100');
+    const divider = section('The divider');
+    expect(divider, 'the divider is free').toMatch(/A free divider, not three sizes/);
+    expect(divider).toMatch(/no snapping/);
+    expect(divider).not.toMatch(/Three sizes, not a free divider/);
+    expect(doc, 'the size is kept as a fraction, not a name').toMatch(/\| `splitSize` \| a number between 0 and 1/);
+    expect(doc).not.toMatch(/`small` \\\| `half` \\\| `large`/);
+  });
+
+  it('says where the dock lives in docs/layout/reader.md', () => {
+    const layout = readFileSync('docs/layout/reader.md', 'utf8');
+    expect(layout).toMatch(/^src\/reader\/split\/Dock\.tsx\b.*#/m);
+    expect(layout).toContain('[data-reader-box]');
+    expect(layout).toContain('[data-dock]');
+    for (const file of ['Dock.tsx', 'useSplit.ts', 'splitSettings.ts', 'splitSize.ts']) expect(existsSync(`src/reader/split/${file}`), `${file} exists`).toBe(true);
+    expect(existsSync('src/settings/definitions/split.ts')).toBe(true);
+  });
+
   it("is in CLAUDE.md's Read by need", () => {
     expect(readFileSync('CLAUDE.md', 'utf8')).toMatch(/^docs\/design\/reader-split\.md\s+#/m);
   });
