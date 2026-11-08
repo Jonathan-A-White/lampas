@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
-import { buildDiagramRequest } from '../../src/diagram/request';
+import { buildDiagramRequest, diagramReference } from '../../src/diagram/request';
 import { validate, type Schema } from '../support/schema-validate';
 import { loadFixture } from '../support/diagram-fixtures';
 import '../support/grinds-in-graph';
@@ -115,5 +115,31 @@ describe('the words of a verse with marks', () => {
     };
     expect(buildDiagramRequest(chapter, chapter.verses, 'greek').words.map((w) => w.text)).toEqual(["ἀφ'", 'Σαμαρείτιδος']);
     expect(buildDiagramRequest(chapter, chapter.verses, 'english').words.map((w) => w.text)).toEqual(['Lord’s', 'Samaria']);
+  });
+});
+
+describe('the reference of a Septuagint chapter (mw-u2w5klk.309)', () => {
+  const word = { t: 'Κύριος', tr: '', s: '', l: 'κύριος', p: 'N-NSM' };
+  const ref = (chapter: number, verse: number) => ({ book: 'psa', chapter, verse });
+  // Greek Psalm 22 is opened as Psalm 23; Greek Psalm 9:22-23 are Psalm 10:1-2
+  const greek22: Chapter = { ...col3, code: 'psa', book: 'Psalms', chapter: 22, edition: 'swete', verses: [{ n: 1, ref: ref(23, 1), g: [word], e: [{ t: 'The Lord', g: [0] }] }, { n: 2, ref: ref(23, 2), g: [word], e: [{ t: 'The Lord', g: [0] }] }] };
+  const greek9: Chapter = { ...greek22, chapter: 9, verses: [{ n: 22, ref: ref(10, 1), g: [word], e: [{ t: 'The Lord', g: [0] }] }, { n: 23, ref: ref(10, 2), g: [word], e: [{ t: 'The Lord', g: [0] }] }] };
+
+  it('names a verse of Greek Psalm 22 by Lampas\'s chapter: Psalms 23:1', () => {
+    expect(diagramReference(greek22, [greek22.verses[0]])).toBe('Psalms 23:1');
+    expect(buildDiagramRequest(greek22, [greek22.verses[0]], 'greek').request.ref).toBe('Psalms 23:1');
+  });
+
+  it('names a passage by Lampas\'s verses too: Psalms 23:1-2', () => {
+    expect(diagramReference(greek22, [{ ...greek22.verses[0], to: 2 }])).toBe('Psalms 23:1-2');
+  });
+
+  it('names Greek 9:22 as Psalms 10:1', () => {
+    expect(diagramReference(greek9, [greek9.verses[0]])).toBe('Psalms 10:1');
+  });
+
+  it('keeps a New Testament chapter\'s reference as it was', () => {
+    expect(diagramReference(col3, [verse(1)])).toBe('Colossians 3:1');
+    expect(diagramReference(col3, [{ ...verse(1), to: 2 }])).toBe('Colossians 3:1-2');
   });
 });

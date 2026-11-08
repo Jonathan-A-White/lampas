@@ -2,7 +2,9 @@
 // tree (types.ts) whose {i} point into `words`; the same list is built here for the request and for the picture, so an index means the same word on both sides. Pure: no store, no network.
 import { bareEnglish, wordGloss, type Chapter, type GreekWord, type Verse } from '../data/chapter';
 import { titleOf } from '../data/books';
+import { lampasChapterOf } from '../data/lxxChapter';
 import { unitReference } from '../data/passage';
+import { lampasUnit } from '../reader/septuagint';
 import { hebrewPieces } from './hebrewPieces';
 import { isWholeVerses, type Sentence, type SentencePart } from './sentence';
 import type { DiagramMode, DiagramWords } from './types';
@@ -85,8 +87,9 @@ const greekText = (word: GreekWord): string => word.t.replace(GREEK_EDGE, '');
 export function diagramReference(chapter: Chapter, verses: readonly Verse[]): string {
   const first = verses[0];
   const last = verses[verses.length - 1];
-  const unit = { n: first.n, to: last.to ?? last.n };
-  return unitReference(titleOf(chapter.code, chapter.chapter), unit);
+  // a Septuagint chapter is named by Lampas's chapter and verses, not the Greek file's (Greek Psalm 22:1 is Psalms 23:1)
+  const unit = lampasUnit(chapter, { n: first.n, to: last.to ?? last.n });
+  return unitReference(titleOf(chapter.code, lampasChapterOf(chapter)), unit);
 }
 
 /** The line that names a sentence on the pane: its verses and that it is one sentence, and, in a verse of several, which it is ('John 2:4, one sentence (1 of 2 in verse 4)'); nothing for a sentence that is one whole verse. */
