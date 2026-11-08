@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.172
+_2026-11-08_
+- Fixed: In a verse of several sentences, the Diagram lists "How to read this" and "See it in Logos" once at the bottom, not under every sentence.
+
 ## 0.7.171
 _2026-11-08_
 - New: The round tutor button now shows over the listening-plan sheets, Write it and the share sheet, and the tutor it opens already knows what the sheet is about.

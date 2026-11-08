@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.172",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1142",
+    "kind": "fixed",
+    "text": "In a verse of several sentences, the Diagram lists \"How to read this\" and \"See it in Logos\" once at the bottom, not under every sentence."
+  },
+  {
     "version": "0.7.171",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1123",
