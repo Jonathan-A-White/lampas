@@ -7,6 +7,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { openWithTextSize, PHONES } from './next-in-view';
 import { FLOATING } from './open-tutor';
 import { pageTime, tapTwice } from '../support/gesture';
+import { makeFakePostern, TIP_ANSWER } from '../support/fake-postern';
+import { routePostern } from '../support/playwright-postern';
 import { menuButton } from './openSettings';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -485,4 +487,79 @@ for (const hash of ['#/?ref=Rom.8.28', '#/settings', '#/words', '#/about', '#/to
     expect(await page.evaluate(() => document.activeElement?.tagName), 'the second tap focused no field or button').toBe('BODY');
     await shot(page, `open-in-app-not-now-double-${hash.replace(/[^a-z]/gi, '')}`);
   });
+}
+
+// mw-5r3p30.1137: what the Reader draws between its chips row and its text (the card that offers the lessons on variant readings, the key to the marks of a variant, a due tip's card)
+// is under the strip too, not covered by it: the strip stands at the foot of the last of them.
+/** Every paragraph, button and heading in `scope` whose box meets the strip and which has the strip at its centre. */
+async function coveredIn(page: Page, scope: string): Promise<string[]> {
+  return page.evaluate((within) => {
+    const strip = document.querySelector<HTMLElement>('[data-open-in-app]')!;
+    const room = strip.getBoundingClientRect();
+    return [...document.querySelectorAll<HTMLElement>(`${within} p, ${within} button, ${within} h1, ${within} h2, ${within} h3`)]
+      .filter((el) => el.getClientRects().length > 0)
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return false;
+        if (r.right <= room.left || r.left >= room.right || r.bottom <= room.top || r.top >= room.bottom) return false;
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!top && strip.contains(top);
+      })
+      .map((el) => `${el.tagName} ${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}`);
+  }, scope);
+}
+
+for (const size of SIZES) {
+  test(`${size.width}x${size.height} #/?ref=Rom.8.28: the Variants chip's lessons offer is readable and its buttons are on top of the strip, which stands under the chips row`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await stubApi(page, WEBAPP);
+    await openUnlocked(page);
+    await page.goto('/#/?ref=Rom.8.28');
+    const strip = page.locator('[data-open-in-app]');
+    await expect(strip).toBeVisible();
+    await page.getByTestId('reader-chips').getByRole('button', { name: /^Variants/ }).click();
+    const offer = page.getByTestId('variant-lessons-offer');
+    await expect(offer).toBeVisible();
+    await page.waitForTimeout(500);
+    const question = offer.getByText('New to variant readings?');
+    const read = offer.getByRole('button', { name: 'Read the lessons', exact: true });
+    const notNow = offer.getByRole('button', { name: 'Not now', exact: true });
+    for (const [name, el] of [['the question', question], ['Read the lessons', read], ['Not now', notNow]] as const) {
+      expect(await el.evaluate(isOnTop), `${name} is the element at its own centre`).toBe(true);
+    }
+    const foot = (await page.getByTestId('reader-chips').boundingBox())!;
+    const stripBox = (await strip.boundingBox())!;
+    expect(stripBox.y, 'the strip starts at or under the foot of the chips row').toBeGreaterThanOrEqual(foot.y + foot.height - 1);
+    await shot(page, `open-in-app-variants-offer-${size.width}x${size.height}`);
+  });
+}
+
+for (const size of SIZES) {
+  for (const what of ['offer', 'key', 'tip'] as const) {
+    test(`${size.width}x${size.height} the ${what} under the chips row: nothing in it that meets the strip has the strip at its centre`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await stubApi(page, WEBAPP);
+      const fake = makeFakePostern();
+      fake.autoReply = { status: 'answered', answer: TIP_ANSWER };
+      await routePostern(page, fake);
+      await openUnlocked(page, { tips: what === 'tip' });
+      await page.goto(what === 'key' ? '/#/?b=rev&c=10&weave=solid' : '/#/?ref=Rom.8.28');
+      const strip = page.locator('[data-open-in-app]');
+      await expect(strip).toBeVisible();
+      const scope = { offer: '[data-testid="variant-lessons-offer"]', key: '[data-testid="variant-key-line"]', tip: '[data-testid="tip-card"]' }[what];
+      if (what === 'tip') {
+        await page.getByTestId('tip-chip').click();
+      } else {
+        await page.getByTestId('reader-chips').getByRole('button', { name: /^Variants/ }).click();
+        if (what === 'key') await page.getByTestId('variant-lessons-offer').getByRole('button', { name: 'Not now', exact: true }).click();
+      }
+      await expect(page.locator(scope)).toBeVisible();
+      await page.waitForTimeout(500);
+      expect(await coveredIn(page, scope), 'the strip is over none of these').toEqual([]);
+      const foot = (await page.locator(scope).boundingBox())!;
+      const stripBox = (await strip.boundingBox())!;
+      expect(stripBox.y, `the strip starts at or under the foot of the ${what}`).toBeGreaterThanOrEqual(foot.y + foot.height - 1);
+      await shot(page, `open-in-app-under-chips-${what}-${size.width}x${size.height}`);
+    });
+  }
 }

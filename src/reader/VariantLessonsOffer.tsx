@@ -17,7 +17,7 @@ export function VariantLessonsOffer({ variantsOn }: { variantsOn: boolean }) {
     if (read) navigate('lessons');
   };
   return (
-    <aside role="note" data-testid="variant-lessons-offer" className="shrink-0 border-b border-line px-3 py-2">
+    <aside role="note" data-testid="variant-lessons-offer" data-reader-under-chips className="shrink-0 border-b border-line px-3 py-2">
       <p className="text-base">New to variant readings? Five short lessons explain them.</p>
       <div className="flex gap-2 pt-1">
         <button type="button" onClick={() => answer(true)} className="min-h-11 rounded-lg px-3 text-base font-medium text-accent active:bg-line">
