@@ -6,7 +6,7 @@
 // the term I know this, plain after. With many lexicons On the Logos group draws the pinned ones, Bible Word Study and a door, All N lexicons, to a sheet that lists every one with a search (src/library/AllLexiconsSheet.tsx). A Study link whose app did not open (src/resources/openApp.ts) opens the sheet that says the app is not on this phone: Get it, or Turn off its resource. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
 // and is not drawn when none is on.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
 import { cardForm, isSeptuagint, readingOf, septuagintEnglish, type WordEnglish } from './reader/septuagint';
 import { parseSegments } from './data/parseCode';
@@ -54,6 +54,8 @@ import { HeartOfWord } from './HeartOfWord';
 import { WordCognate } from './WordCognate';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
 import { hebrewPointedForm } from './speech/hebrewPronunciation';
+import { numberPhraseOf } from './data/numerals';
+import { NumberSheet } from './NumberSheet';
 
 /** What was tapped: Greek words, and the English they stand for. `english` is the tapped chunk, or a Greek word's own chunk. */
 export interface Lookup {
@@ -61,6 +63,8 @@ export interface Lookup {
   english?: string;
   /** true when the English was what he tapped (the sheet then heads with it) */
   fromEnglish: boolean;
+  /** the tap was on a source word the weave draws in place of its English chunk (`english` is that chunk): a number the chunk says opens the Number sheet as a tap on the chunk does (mw-5r3p30.1127) */
+  inChunk?: true;
   /** the one English word of the tapped chunk his finger was on, when that is known (a tap on a chunk of more than one word): the sheet's English lookups are for it alone; a sheet opened with none (a link, a list) lists a row for each word of the chunk */
   tapped?: string;
   /** the verse the words are asked about, when they are not all words of it (a form of a variant reading the verse's own text does not carry, mw-9ji6ek0.15): Ask the tutor needs it */
@@ -551,11 +555,38 @@ interface WordSheetProps {
 export function WordSheet(props: WordSheetProps) {
   const dials = useInterestLevels();
   const ai = useAiAllowed();
-  if (dials === undefined || levelOf(sourceLanguage(props.chapter), dials) >= GREEK_VIEW_FROM) return <WordSheetBody {...props} />;
+  if (dials === undefined || levelOf(sourceLanguage(props.chapter), dials) >= GREEK_VIEW_FROM) return <WordOrNumber {...props} />;
   // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a source word has no sheet. An Old Testament chunk lists each of its words (mw-uqlxea.2).
   const { lookup, onClose, chapter, onAskEnglish } = props;
   const ask = ai ? englishAsk(chapter, lookup, onAskEnglish) : undefined;
   return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} tapped={lookup.tapped} listWords={sourceLanguage(chapter) === 'hbo'} onAsk={ask} onClose={onClose} /> : null;
+}
+
+/** An English chunk that says a number the source writes as a run of words ('the 318', Genesis 14:14: eight, ten, three, hundreds) opens the Number sheet (mw-5r3p30.1127): the phrase in source order, each word's
+ * value and the sum. A word he taps in it opens its own word sheet over the Number sheet, and closing that brings the Number sheet back. A tap that is not on an English chunk, and a number of one word, open the word sheet as ever. */
+function WordOrNumber(props: WordSheetProps) {
+  const { chapter, lookup, onClose, onHelp, onAskEnglish, onAskTerm } = props;
+  const phrase = useMemo(() => (lookup.fromEnglish || lookup.inChunk ? numberPhraseOf(chapter, lookup.words, lookup.english, lookup.verse) : undefined), [chapter, lookup]);
+  const [word, setWord] = useState<{ base: Lookup; lookup: Lookup } | null>(null);
+  if (!phrase) return <WordSheetBody {...props} />;
+  const over = word && word.base === lookup ? word.lookup : null;
+  const verse = lookup.verse ?? chapter.verses.find((v) => lookup.words.length > 0 && v.g.includes(lookup.words[0]))?.n;
+  // what the word sheet over this one hands on (Help with this word, Ask the tutor) closes this sheet too
+  return (
+    <>
+      <NumberSheet chapter={chapter} phrase={phrase} covered={over !== null} onClose={onClose} onWord={(w) => setWord({ base: lookup, lookup: { words: [w], english: undefined, fromEnglish: false, ...(verse !== undefined ? { verse } : {}) } })} />
+      {over ? (
+        <WordSheetBody
+          chapter={chapter}
+          lookup={over}
+          onClose={() => setWord(null)}
+          onHelp={onHelp && ((help) => { onClose(); onHelp(help); })}
+          onAskEnglish={onAskEnglish && ((ask) => { onClose(); onAskEnglish(ask); })}
+          onAskTerm={onAskTerm && ((ask) => { onClose(); onAskTerm(ask); })}
+        />
+      ) : null}
+    </>
+  );
 }
 
 /** What the floating ? over an English word's sheet asks the tutor (mw-5r3p30.1121): the word as tapped (the whole chunk when the tapped word is not known), the verse it stands in, and the
