@@ -3,6 +3,7 @@
 // and a Talk opens in FRONT of it (door 'talk'), a picker or a card with nothing to ask about draws no ? (door 'hidden') and the ? is back, with a Talk in front, when it is closed.
 // A new overlay is one more row here, and one hook in the overlay (src/tutor/door.ts: useNoDoor, useDoorTarget, or DialogAskTutor); tests/unit/door-guard.test.ts fails on an overlay that chose neither.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import {
@@ -11,8 +12,8 @@ import {
   openAskApproachFromSettings,
   openAskForBook,
   openConversationAlert,
-  openEnglishWord,
   openDropConfirm,
+  openEnglishWord,
   openInLogosChooser,
   openMapsFrame,
   openPlacePicker,
@@ -25,7 +26,7 @@ import {
   openStartPlan,
 } from './door-layers';
 import { openCheck, openHebrewGuide, openLetterDrill, openTryIt, openWriteIt } from './large-text-titles';
-import { TALK_SHEET } from './open-tutor';
+import { TALK_SHEET, twoFingers } from './open-tutor';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
@@ -143,7 +144,6 @@ OVERLAYS.push(
     },
   },
   { name: 'All lexicons', door: 'hidden', open: openAllLexicons, close: button('Done') },
-  { name: 'the English word sheet', door: 'hidden', open: openEnglishWord, close: button('Done') },
   { name: 'App not on this phone', door: 'hidden', open: openAppMissing, close: button('Done') },
   { name: 'the Logos chooser (In another book…)', door: 'hidden', open: openInLogosChooser, close: escape },
   { name: 'a map of the Maps sheet', door: 'hidden', open: openMapsFrame, close: escape },
@@ -197,3 +197,98 @@ for (const overlay of OVERLAYS) {
     await expectTalkInFront(page);
   });
 }
+
+// The English word sheets have the ? (mw-5r3p30.1121; his words, Postern general 2026-11-06: he tapped "Aggai" in Genesis 13 in the Weave and the sheet had only a Logos link, no ?). The sheet is z-35 over the Talk (z-10), so
+// the ? closes the sheet and opens the Talk in front, about the word as tapped. A two-finger tap on the sheet puts the ? away and the next brings it back (src/tutor/doorTap.ts).
+const askedWord = (fake: ReturnType<typeof makeFakePostern>) => {
+  const talks = fake.received.filter((g) => g.grist.kind === 'bible-talk');
+  return (talks[talks.length - 1]?.input as { question?: string } | undefined)?.question ?? '';
+};
+
+test('Floating ?: over the English word sheet (Just English) it asks the tutor about the word he tapped, with the Talk in front (mw-5r3p30.1121)', async ({ page }) => {
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  const sheet = await openEnglishWord(page);
+  await expect(floating(page)).toBeVisible();
+  await shot(page, 'english-word-door-sheet');
+  await floating(page).click();
+  await expect(sheet).toHaveCount(0);
+  await expectTalkInFront(page);
+  await expect.poll(() => askedWord(fake)).toContain('“we love”');
+  expect(askedWord(fake)).toContain('2 John 1:5');
+  await shot(page, 'english-word-door-talk');
+});
+
+test('Floating ?: over the word sheet of an English word in the Weave it asks about the word as tapped, in its verse (Genesis 13:3, mw-5r3p30.1121)', async ({ page }) => {
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/#/?b=gen&c=13&weave=solid');
+  await expect(page.locator('[data-verse="3"]')).toBeVisible();
+  await page.locator('[data-verse="3"]').getByRole('button', { name: 'Ai', exact: true }).first().click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet).toBeVisible();
+  await expect(floating(page)).toBeVisible();
+  await floating(page).click();
+  await expect(sheet).toHaveCount(0);
+  await expectTalkInFront(page);
+  await expect.poll(() => askedWord(fake)).toContain('“Ai”');
+  expect(askedWord(fake)).toContain('Genesis 13:3');
+  expect(askedWord(fake)).toContain('English side');
+});
+
+test('Floating ?: a two-finger tap on an open word sheet puts the ? away and a second brings it back (mw-5r3p30.1121, .1006)', async ({ page }) => {
+  await routePostern(page, makeFakePostern());
+  const sheet = await openEnglishWord(page);
+  await expect(floating(page)).toBeVisible();
+  await twoFingers(page);
+  await expect(page.locator('[data-floating-tutor]')).toHaveCount(0);
+  await expect(sheet).toBeVisible();
+  await twoFingers(page);
+  await expect(floating(page)).toBeVisible();
+  await expect(sheet).toBeVisible();
+});
+
+test('Floating ?: over the sheet of "Aggai" in the Septuagint\'s Genesis 13 Weave the lexicons found nothing, and the tutor is told so (mw-5r3p30.1121)', async ({ page }) => {
+  // public/data-lxx ships no chapter in the gate: Genesis 13 is the fixture of Genesis 1 renumbered, with verse 3 a proper name (Swete's ΑΓΓΑΙ) that the lexicon has no entry for
+  await page.route('**/data-lxx/**', (route) => {
+    const path = new URL(route.request().url()).pathname.replace(/^\/data-lxx\//, '');
+    let body = readFileSync(`tests/fixtures/data-lxx/${path === 'gen/13.json' ? 'gen/1.json' : path}`, 'utf8');
+    if (path === 'index.json') {
+      const index = JSON.parse(body) as { books: { code: string; chapters: number; verses: number[]; fingerprints: string[]; lampasChapters: number[][] }[] };
+      const gen = index.books.find((b) => b.code === 'gen')!;
+      gen.chapters = 13;
+      gen.verses = Array.from({ length: 13 }, () => 31);
+      gen.fingerprints = Array.from({ length: 13 }, () => gen.fingerprints[0]);
+      gen.lampasChapters = Array.from({ length: 13 }, (_, i) => [i + 1]);
+      body = JSON.stringify(index);
+    } else if (path === 'gen/13.json') {
+      const chapter = JSON.parse(body) as { chapter: number; verses: { n: number; g: Record<string, unknown>[]; e: { t: string; g: number[]; c: number; y: string }[] }[] };
+      chapter.chapter = 13;
+      const verse = chapter.verses.find((v) => v.n === 3)!;
+      verse.g = [{ t: 'ΑΓΓΑΙ', tr: 'Angai', s: '', l: 'Αγγαι', p: 'N-NSM', y: '1', c: 0.5, e: 0 }];
+      verse.e = [{ t: 'Aggai', g: [0], c: 0.8, y: 'align' }];
+      body = JSON.stringify(chapter);
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body });
+  });
+  const fake = makeFakePostern();
+  await routePostern(page, fake);
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
+  await row.getByRole('button', { name: 'On', exact: true }).click();
+  await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.goto('/#/?b=gen&c=13&weave=solid');
+  await expect(page.locator('[data-verse="3"]')).toBeVisible();
+  await page.locator('[data-verse="3"]').getByRole('button', { name: 'Aggai', exact: true }).first().click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet).toBeVisible();
+  await expect(floating(page)).toBeVisible();
+  await floating(page).click();
+  await expect(sheet).toHaveCount(0);
+  await expectTalkInFront(page);
+  await expect.poll(() => askedWord(fake)).toContain('“Aggai”');
+  expect(askedWord(fake)).toContain('Genesis 13:3');
+  expect(askedWord(fake)).toContain('found no entry for it');
+});

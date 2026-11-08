@@ -14,6 +14,7 @@ import { getStudyResources, setResourceOn, type StudyResources } from './data/re
 import { publish, useLatest } from './events/bus';
 import { useAiAllowed } from './gate/licenceContext';
 import { useDoorTarget, useNoDoor } from './tutor/door';
+import type { EnglishWordAsk, PairedWord } from './services/talk';
 import { EnglishDictionaryRow, EnglishWordList, EnglishWordSheet, TurnOnLogos } from './EnglishWordSheet';
 import { useLogosOn } from './useLogosOn';
 import { GrammarSheet } from './GrammarSheet';
@@ -540,6 +541,8 @@ interface WordSheetProps {
   lookup: Lookup;
   onClose: () => void;
   onHelp?: (help: WordHelp) => void;
+  /** the floating ? over an English word's sheet asks the tutor about it (the sheet closes itself before this is called); without it that sheet draws no ? */
+  onAskEnglish?: (ask: EnglishWordAsk) => void;
   onAskTerm?: (ask: TermAsk) => void;
 }
 
@@ -547,13 +550,32 @@ interface WordSheetProps {
  * (mw-3ased2.2, mw-gdcyf98.3); at Just English of that language an English word opens EnglishWordSheet. */
 export function WordSheet(props: WordSheetProps) {
   const dials = useInterestLevels();
+  const ai = useAiAllowed();
   if (dials === undefined || levelOf(sourceLanguage(props.chapter), dials) >= GREEK_VIEW_FROM) return <WordSheetBody {...props} />;
   // at Just English an English word he taps opens the small English sheet instead (mw-5r3p30.707); a source word has no sheet. An Old Testament chunk lists each of its words (mw-uqlxea.2).
-  const { lookup, onClose, chapter } = props;
-  return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} tapped={lookup.tapped} listWords={sourceLanguage(chapter) === 'hbo'} onClose={onClose} /> : null;
+  const { lookup, onClose, chapter, onAskEnglish } = props;
+  const ask = ai ? englishAsk(chapter, lookup, onAskEnglish) : undefined;
+  return lookup.fromEnglish && lookup.english ? <EnglishWordSheet english={lookup.english} tapped={lookup.tapped} listWords={sourceLanguage(chapter) === 'hbo'} onAsk={ask} onClose={onClose} /> : null;
 }
 
-function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: WordSheetProps) {
+/** What the floating ? over an English word's sheet asks the tutor (mw-5r3p30.1121): the word as tapped (the whole chunk when the tapped word is not known), the verse it stands in, and the
+ * words the Weave pairs with its chunk with what the lexicons hold of each. Undefined where there is nothing to ask: no way to ask, a sheet that is not an English tap, or no verse to ask in. */
+function englishAsk(chapter: Chapter, lookup: Lookup, onAskEnglish: ((ask: EnglishWordAsk) => void) | undefined): (() => void) | undefined {
+  if (!onAskEnglish || !lookup.fromEnglish || !lookup.english) return undefined;
+  const verse = lookup.verse ?? chapter.verses.find((v) => lookup.words.length > 0 && v.g.includes(lookup.words[0]))?.n;
+  if (verse === undefined) return undefined;
+  const hebrew = sourceLanguage(chapter) === 'hbo';
+  const paired: PairedWord[] = lookup.words.map((w) => ({
+    form: hebrew ? hebrewPointedForm(w.t) : cardForm(chapter, w),
+    lemma: wordLemma(w),
+    parse: wordParse(chapter, w),
+    gloss: wordGloss(chapter, w),
+  }));
+  const chunk = bareEnglish(lookup.english);
+  return () => onAskEnglish({ word: lookup.tapped ?? chunk, ...(lookup.tapped !== undefined && lookup.tapped !== chunk ? { chunk } : {}), verse, language: hebrew ? 'Hebrew' : 'Greek', paired });
+}
+
+function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish, onAskTerm }: WordSheetProps) {
   const { drag, handle } = useSheetDrag(onClose);
   // The Grammar sheet takes the Escape while it is open.
   const [grammar, setGrammar] = useState<{ term: string; word: GreekWord; verse: number | undefined } | null>(null);
@@ -619,7 +641,15 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskTerm }: 
     help && first && firstVerse !== undefined
       ? () => help(hebrew ? { kind: 'word', form: hebrewPointedForm(first.t), lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse, language: 'he' } : { kind: 'word', form: cardForm(sheetChapter, first), lemma: wordLemma(first), parse: wordParse(sheetChapter, first), verse: firstVerse })
       : undefined;
-  useDoorTarget(askWord ?? (() => undefined), askWord === undefined, true);
+  // The English part of the sheet (an English word he tapped, with the words the Weave pairs with it, or none): the ? asks about the English word as tapped, not about the first Greek word (mw-5r3p30.1121)
+  const askEnglish = ai && !elsewhere ? englishAsk(sheetChapter, lookup, onAskEnglish) : undefined;
+  const door = askEnglish
+    ? () => {
+        onClose();
+        askEnglish();
+      }
+    : askWord;
+  useDoorTarget(door ?? (() => undefined), door === undefined, true);
   const openTerm = (term: string, word: GreekWord, verse: number | undefined): void => {
     setGrammar({ term, word, verse });
     publish({ kind: 'grammar-term-opened', term });

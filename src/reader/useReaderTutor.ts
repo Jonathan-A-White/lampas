@@ -13,6 +13,7 @@ import type { OpenChapter } from '../data/readerChapter';
 import { publish } from '../events/bus';
 import { pendingReturn, takeReturn, watchReturn, type ReaderRequest } from '../nav/readerRequest';
 import {
+  englishWordQuestion,
   helpQuestion,
   reportQuestion,
   newWordQuestion,
@@ -20,6 +21,7 @@ import {
   scopeRef,
   scopeTitle,
   termQuestion,
+  type EnglishWordAsk,
   type TalkFocus,
   type TalkScope,
   type WordFocus,
@@ -38,6 +40,7 @@ export interface ReaderTutor {
   talkAbout: number | null | undefined;
   setTalkAbout(about: number | null | undefined): void;
   helpWithWord(help: WordHelp): void;
+  askAboutEnglishWord(ask: EnglishWordAsk): void;
   askAboutTerm(ask: TermAsk): void;
   askAboutNewWord(ask: NewWordAsk): void;
   openQuiz(): void;
@@ -142,6 +145,11 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     },
     [chapter, askFrom, CHAPTER],
   );
+  // The floating ? over an English word's sheet: the verse it was tapped in; the question names the word as tapped, its pairing and what the lexicons found (no focus: there is no Greek form to focus on).
+  const askAboutEnglishWord = useCallback(
+    (ask: EnglishWordAsk) => askFrom(ask.verse, (scope) => ({ question: englishWordQuestion(ask, scopeTitle(scope)) })),
+    [askFrom],
+  );
   // Ask the tutor on a Grammar sheet: the verse of the word the term was tapped on.
   const askAboutTerm = useCallback(
     (ask: TermAsk) => askFrom(ask.verse, (scope) => ({ question: termQuestion(ask.term, scopeTitle(scope)), focus: { term: ask.term, kind: 'grammar-term' } })),
@@ -166,5 +174,5 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     }
   }, [chapter, viewUnit, quizKey, quizTurns, states, say, TITLE]);
 
-  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutTerm, askAboutNewWord, openQuiz, quizStarted };
+  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutEnglishWord, askAboutTerm, askAboutNewWord, openQuiz, quizStarted };
 }

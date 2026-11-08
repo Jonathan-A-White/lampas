@@ -1,7 +1,7 @@
 // src/EnglishWordSheet.tsx — the small sheet an English word opens at Just English (mw-5r3p30.707): the word as tapped, Listen, and Look it up in Logos (his English
 // dictionary, Webster's 1828: src/resources/logos.ts ENGLISH_DICTIONARY). No Greek on it: at that step the Greek word sheet is not drawn (WordSheet.tsx). With Logos off
 // it says so, with one tap to turn it on. At the Greek steps the Greek word sheet carries the same row (EnglishDictionaryRow, shown only while Logos is on).
-// Closes by a tap outside, a swipe down on its handle, Done, Escape or the phone's Back.
+// Closes by a tap outside, a swipe down on its handle, Done, Escape or the phone's Back. The floating ? asks the tutor about the word (`onAsk`, WordSheet.tsx englishAsk).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { bareEnglish } from './data/chapter';
 import { getStudyResources, setResourceOn } from './data/repositories';
@@ -11,7 +11,7 @@ import { SpeakButton } from './speech/SpeakButton';
 import { BarSlot } from './speech/SpeakingBarSlot';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
-import { useNoDoor } from './tutor/door';
+import { useDoorTarget } from './tutor/door';
 
 const ROW = 'flex min-h-12 items-center justify-center rounded-xl border border-line px-3 text-center text-base font-medium text-accent active:bg-line';
 
@@ -82,12 +82,22 @@ export function EnglishWordList({ text, named = false }: { text: string; named?:
 /** `listWords` (an Old Testament chunk, mw-uqlxea.2, where there is no Greek word to open): a chunk of more than one word lists each word under the heading, with its own Listen and its own
  * Look it up in Logos (Webster's 1828), so the sheet answers for any word of the chunk; a chunk of one word is the sheet as it always was. `tapped`, the one word of the chunk he tapped when that is
  * known (mw-5r3p30.782), is the only word looked up: the heading stays the chunk. */
-export function EnglishWordSheet({ english, tapped, onClose, listWords = false }: { english: string; tapped?: string; onClose: () => void; listWords?: boolean }) {
+export function EnglishWordSheet({ english, tapped, onClose, onAsk, listWords = false }: { english: string; tapped?: string; onClose: () => void; onAsk?: () => void; listWords?: boolean }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-35, over the Talk (z-10), and nothing to ask about: the floating ? would open the tutor under this sheet (mw-5r3p30.977)
-  useNoDoor();
+  // z-35, over the Talk (z-10): the floating ? asks about this word, and the sheet closes first, for the Talk it opens would stand under it (mw-5r3p30.977, mw-5r3p30.1121). With nothing to ask (no licence,
+  // no verse known) the ? is not drawn over it.
+  useDoorTarget(
+    onAsk
+      ? () => {
+          onClose();
+          onAsk();
+        }
+      : () => undefined,
+    onAsk === undefined,
+    true,
+  );
   const word = bareEnglish(english);
   const each = listWords ? wordsOf(tapped ?? english) : [];
   const several = each.length > 1;

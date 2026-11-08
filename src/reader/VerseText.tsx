@@ -173,7 +173,7 @@ export function VerseText({ verse, view, source = 'grc', woven, onLook, marked, 
   // A Septuagint chunk paired to no Greek word (septuagintChunkLinked) names no word to open: `onUnlinked`, given for a Septuagint verse only, is what the tap does instead (mw-u2w5klk.278)
   const lookEnglish = (c: EnglishChunk, e?: MouseEvent<HTMLElement>) => {
     if (onUnlinked && !septuagintChunkLinked(c)) return onUnlinked();
-    onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true, tapped: e ? wordAtPoint(e.currentTarget, e.clientX, e.clientY) : undefined });
+    onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true, verse: verse.n, tapped: e ? wordAtPoint(e.currentTarget, e.clientX, e.clientY) : undefined });
   };
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.

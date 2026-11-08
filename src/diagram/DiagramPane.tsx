@@ -52,7 +52,7 @@ function lookupOfWord(verses: readonly Verse[], word: DiagramWord, septuagint: b
     if (word.weft && chunk) return { words: word.weft.map((i) => verse.g[i]), english: chunk.t, fromEnglish: false };
     // a Septuagint chunk paired to no Greek word names none to open (septuagintChunkLinked, mw-u2w5klk.278)
     if (chunk && septuagint && !septuagintChunkLinked(chunk)) return undefined;
-    return chunk ? { words: chunk.g.map((i) => verse.g[i]), english: chunk.t, fromEnglish: true } : undefined;
+    return chunk ? { words: chunk.g.map((i) => verse.g[i]), english: chunk.t, fromEnglish: true, verse: verse.n } : undefined;
   }
   const greek = verse.g[word.word];
   return greek ? { words: [greek], english: greek.e === undefined ? undefined : verse.e[greek.e]?.t, fromEnglish: false } : undefined;
