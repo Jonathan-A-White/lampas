@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.177
+_2026-11-08_
+- New: A chapter of the Old Testament that the Septuagint does not have yet now opens in your Logos Septuagint with one tap, and Settings lets you choose which Septuagint that is.
+
 ## 0.7.176
 _2026-11-08_
 - New: Holding a verse number copies the verse and shows a small strip to copy on to the end of the paragraph, the section or the chapter, or share it.
