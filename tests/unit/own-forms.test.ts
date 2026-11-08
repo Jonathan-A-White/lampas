@@ -267,13 +267,13 @@ describe('the index takes the Septuagint’s forms of a lemma, apart from the Ne
 
   it('the fixture chapters are read in the index’s order, a Greek chapter with no file is left out', () => {
     const chapters = readSeptuagintChapters('tests/fixtures/data-lxx');
-    expect(chapters.map((c) => `${c.code} ${c.chapter}`)).toEqual(['gen 1', 'psa 22']);
+    expect(chapters.map((c) => `${c.code} ${c.chapter}`)).toEqual(['gen 1', 'psa 9', 'psa 22', 'psa 114', 'psa 115']);
     const fixture = septuagintForms(chapters);
     expect(fixture.get('ἀόρατος')![0]).toEqual(['ἀόρατος', 'A-NSM', 1, 'gen', 1, 2]);
-    // Greek Psalm 22 is Psalm 23 of Lampas
+    // Greek Psalm 22 is Psalm 23 of Lampas; Greek 9 is Psalms 9 and 10, and Greek 114 and 115 are Psalm 116 (mw-u2w5klk.18)
     const inPsalms = [...fixture.values()].flat().filter(([, , , book]) => book === 'psa');
     expect(inPsalms.length).toBeGreaterThan(0);
-    expect(inPsalms.every(([, , , , chapter]) => chapter === 23)).toBe(true);
+    expect([...new Set(inPsalms.map(([, , , , chapter]) => chapter))].sort((a, b) => Number(a) - Number(b))).toEqual([9, 10, 23, 116]);
   });
 });
 
