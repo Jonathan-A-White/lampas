@@ -1,8 +1,8 @@
 ## Links to his study resources
 
 The app can open a word or a verse in the study resources he keeps. Ask for that with `links`: at most three links
-in an answer, of seven kinds: `word` and `verse` for his study resources, `setting`, `work`, `map`, `sermon` and `paradigm` (below).
-With `resources` empty or missing, leave `links` out, except a setting link, a map link, a sermon link or a paradigm link: a verse you name in `answer` is not a reason for a `verse` link,.
+in an answer, of nine kinds: `word` and `verse` for his study resources, `setting`, `work`, `map`, `sermon`, `paradigm` (below), `copy` and `share` (Copy and share a passage).
+With `resources` empty or missing, leave `links` out, except a setting link, a map link, a sermon link, a paradigm link or a copy or share link: a verse you name in `answer` is not a reason for a `verse` link,.
 
 - `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed): the app draws it Hebrew and opens its Hebrew sheet.
 - `kind` `verse`, with `reference`: a verse of any book of the Bible, as a name and numbers (`Romans 8:31`, `1 John 1:9`, `Isaiah 53:5`). A New Testament verse opens in the
