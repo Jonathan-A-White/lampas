@@ -55,7 +55,7 @@ test.beforeEach(async ({ page }) => {
     // a Septuagint comma lemma ('ὕδωρ, ὕδατος') has no file of its own: the build folds its forms into ὕδωρ's (mw-u2w5klk.297)
     const file = (await response.json().catch(() => undefined)) as { l: string; f: unknown[]; lxx?: unknown[] } | undefined;
     if (!file) return route.fulfill({ response });
-    if (file.l === 'ὕδωρ') file.lxx = [['ὕδατος', 'N-GSN', 1, 'gen', 1, 2]];
+    if (file.l === 'ὕδωρ') file.lxx = [['ὕδατος', 'N-GSN', 1, 'gen', 1, 2], ['ὕδασι', 'N-DPN', 1, 'gen', 1, 7]];
     else file.lxx = [['ἀόρατος', 'A-NSF', 1, 'gen', 1, 2]];
     return route.fulfill({ response, json: file });
   });
@@ -63,16 +63,17 @@ test.beforeEach(async ({ page }) => {
 
 const forms = (page: Page) => page.getByRole('group', { name: 'Forms', exact: true });
 
-async function openTable(page: Page, verse = 2, word = 'ἀόρατος', ideas = ADJECTIVE_IDEAS, heading = 'Adjective endings', textSize?: number) {
+async function openTable(page: Page, verse = 2, word = 'ἀόρατος', ideas = ADJECTIVE_IDEAS, heading = 'Adjective endings', textSize?: number, chapter = 'b=gen&c=1', septuagint = true) {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await putLevels(page, ideas, textSize);
   await page.goto('/#/settings');
   const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
-  await row.getByRole('button', { name: 'On', exact: true }).click();
-  await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await page.goto('/#/?b=gen&c=1&view=greek');
+  const choice = septuagint ? 'On' : 'Off';
+  await row.getByRole('button', { name: choice, exact: true }).click();
+  await expect(row.getByRole('button', { name: choice, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.goto(`/#/?${chapter}&view=greek`);
   await page.reload();
   await page.locator(`[data-verse="${verse}"]`).getByRole('button', { name: word, exact: true }).first().click();
   await page.getByRole('dialog', { name: 'Word', exact: true }).getByTestId('sheet-paradigm').getByRole('button').click();
@@ -142,6 +143,32 @@ test('Genesis 1:2 ὕδατος, a word whose Septuagint lemma has a comma (ὕ�
   expect(fits.w).toBeLessThanOrEqual(fits.c);
   await shot(page, 'septuagint-own-paradigm-comma-lemma');
 });
+
+// mw-u2w5klk.314: a New Testament word, with the Septuagint On, has the forms of its lemma file's lxx list laid too (step 5 of mw-u2w5klk.305's HOW TO CHECK)
+for (const septuagint of [true, false]) {
+  test(`Matthew 3:11 ὕδατι, Septuagint ${septuagint ? 'On' : 'Off'}: This word ${septuagint ? 'marks ὕδασι as in the Septuagint beside the New Testament’s forms' : 'has the New Testament’s forms alone'}`, async ({ page }) => {
+    await openTable(page, 11, 'ὕδατι', [...NOUN_IDEAS, 'declension-3'], 'The third declension', undefined, 'b=mat&c=3', septuagint);
+    await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+    await forms(page).getByRole('button', { name: 'This word' }).click();
+    await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('word-lit')).toHaveText('Its form is outlined in the table.');
+    await expect(page.locator('[data-lit]')).toContainText('ὕδατι');
+    const dativePlural = page.locator('[data-cell*="Dative Plural"]');
+    if (septuagint) {
+      await expect(page.locator('[data-lit] [data-found]')).toHaveText('NT');
+      await expect(dativePlural).toContainText('ὕδασι');
+      await expect(dativePlural.locator('[data-found]')).toHaveText('LXX');
+      await expect(dativePlural).toHaveAttribute('aria-label', /in the Septuagint/);
+    } else {
+      await expect(page.locator('[data-found]')).toHaveCount(0);
+      await expect(dativePlural).toContainText('ὕδασιν');
+      expect((await page.locator('[data-cell]').allInnerTexts()).filter((t) => t === 'not in the NT').length).toBeGreaterThan(0);
+    }
+    const fits = await page.evaluate(() => ({ w: document.documentElement.scrollWidth, c: document.documentElement.clientWidth }));
+    expect(fits.w).toBeLessThanOrEqual(fits.c);
+    await shot(page, septuagint ? 'septuagint-own-paradigm-nt-word-on' : 'septuagint-own-paradigm-nt-word-off');
+  });
+}
 
 /** What a table of This word read from the Septuagint must keep at a phone's width (mw-u2w5klk.313): it fits its box, no form touches its caption, no lock leaves its cell. */
 async function measureTables(page: Page) {

@@ -21,6 +21,8 @@ import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 const user = userEvent.setup();
 /** What Genesis 1:2 of Swete's Septuagint holds of ἀόρατος (the lemma file's `lxx` list): the feminine nominative singular, twice. */
 const SEPTUAGINT: LemmaFormEntry[] = [['ἀόρατος', 'A-NSF', 2, 'gen', 1, 2]];
+/** What the Septuagint holds of ὕδωρ (its file's `lxx` list, mw-u2w5klk.314): the dative plural without the final nu the New Testament's ὕδασιν has. */
+const WATER: LemmaFormEntry[] = [['ὕδασι', 'N-DPN', 1, 'gen', 1, 7], ['ὕδατος', 'N-GSN', 3, 'gen', 1, 2]];
 
 let forms: Map<string, LemmaFormEntry[]>;
 beforeAll(() => {
@@ -45,7 +47,7 @@ function stubFetch(): void {
     if (lemma === undefined) return chapterFetch(input, init);
     const name = decodeURIComponent(lemma);
     const entries = forms.get(name);
-    return entries ? new Response(fileText(name, entries, name === 'ἀόρατος' ? SEPTUAGINT : []), { status: 200 }) : new Response('not found', { status: 404 });
+    return entries ? new Response(fileText(name, entries, name === 'ἀόρατος' ? SEPTUAGINT : name === 'ὕδωρ' ? WATER : []), { status: 200 }) : new Response('not found', { status: 404 });
   });
 }
 
@@ -62,7 +64,7 @@ async function freshStore(): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear(), db.talks.clear()]);
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }, { key: 'grammarLevelsSeeded', value: '1' }]);
-  const ideas = new Set(cellsOf(paradigmById('adjective-endings')!).flatMap((cell) => cell.ideas));
+  const ideas = new Set(['adjective-endings', 'third-declension'].flatMap((id) => cellsOf(paradigmById(id)!).flatMap((cell) => cell.ideas)));
   await db.grammarLevels.bulkPut([...ideas].map((id) => ({ id, level: 'solid' as const, since: Date.now(), how: 'marked' as const })));
 }
 
@@ -82,11 +84,16 @@ const choose = async (_: unknown, name: string): Promise<void> => {
   await user.click(await within(await screen.findByRole('group', { name: 'Forms' })).findByRole('button', { name, exact: true }));
 };
 
+/** The Old Testament in Greek setting, as Settings keeps it (the screen reads it at mount). */
+const setSeptuagint = async (_: unknown, value: string): Promise<void> => {
+  await db.settings.put({ key: 'septuagint', value });
+};
+
 const feature = await loadFeature('features/septuagint-own-paradigm.feature');
 
 describeFeature(feature, ({ Background, Scenario }) => {
   Background(({ Given }) => {
-    Given('his grammar levels have every adjective ending solid', freshStore);
+    Given('his grammar levels have every adjective and noun ending solid', freshStore);
   });
 
   Scenario("The form he tapped in Genesis 1:2 has its cell, found in the Septuagint, beside the New Testament's forms", ({ When, Then, And }) => {
@@ -140,6 +147,41 @@ describeFeature(feature, ({ Background, Scenario }) => {
     });
     And('an empty cell says {string}', (_, text: string) => {
       expect(cells().filter((cell) => cell.dataset.state === 'absent' && cell.textContent === text).length).toBeGreaterThan(0);
+    });
+  });
+
+  Scenario("With the Septuagint On, a New Testament word's table lays the Septuagint's forms of its lemma too", ({ Given, When, Then, And }) => {
+    Given('the Septuagint is {string}', setSeptuagint);
+    When('he opens {string} from the New Testament word {string} of {string} parsed {string} in Learn', (_, table: string, word: string, lemma: string, parse: string) => open(table, word, lemma, parse, false));
+    And('he chooses {string}', choose);
+    Then('the outlined cell holds {string} and says {string}', async (_, form: string, found: string) => {
+      await waitFor(() => expect(document.querySelector('[data-lit]')).not.toBeNull());
+      const lit = document.querySelector<HTMLElement>('[data-lit]')!;
+      expect(lit.firstChild?.textContent).toBe(form);
+      expect(lit.querySelector('[data-found]')).toHaveTextContent(found);
+    });
+    And('the cell holding {string} says {string}', async (_, form: string, found: string) => {
+      await waitFor(() => expect(holding(form)).toBeDefined());
+      expect(holding(form)!.querySelector('[data-found]')).toHaveTextContent(found);
+    });
+    And('no cell says {string}', (_, text: string) => {
+      expect(cells().filter((cell) => cell.textContent === text)).toHaveLength(0);
+    });
+    And('an empty cell says {string}', (_, text: string) => {
+      expect(cells().filter((cell) => cell.dataset.state === 'absent' && cell.textContent === text).length).toBeGreaterThan(0);
+    });
+  });
+
+  Scenario("With the Septuagint Off, the same New Testament word's table has the New Testament's forms alone", ({ Given, When, Then, And }) => {
+    Given('the Septuagint is {string}', setSeptuagint);
+    When('he opens {string} from the New Testament word {string} of {string} parsed {string} in Learn', (_, table: string, word: string, lemma: string, parse: string) => open(table, word, lemma, parse, false));
+    And('he chooses {string}', choose);
+    Then('the table shows these forms: {string} among its empty cells', async (_, list: string) => {
+      await waitFor(() => expect(cells().filter((cell) => cell.dataset.state !== 'absent').map((cell) => cell.textContent?.trim())).toEqual(list.split(', ')));
+    });
+    And('no cell says {string}', (_, text: string) => {
+      expect(document.querySelector('[data-found]')).toBeNull();
+      expect(document.body.textContent).not.toContain(text);
     });
   });
 });

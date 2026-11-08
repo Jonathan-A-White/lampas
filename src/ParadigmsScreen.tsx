@@ -34,6 +34,8 @@ import { needsOf, needsText } from './data/paradigms/needs';
 import type { OwnText, OwnUse } from './data/paradigms/types';
 import { blocksOf, columnsThatFit, greekRemOf, tableDirection } from './data/paradigms/layout';
 import { absentText, foundIn, foundShort, loadLemmaForms, ownTable, referenceText, septuagintFormOf, ownFormOf, type OwnForm } from './data/paradigms/ownForms';
+import { useSetting } from './settings/store';
+import { septuagintSetting } from './settings/definitions';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
 import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf, screenRef } from './data/repositories';
@@ -727,9 +729,12 @@ const FORM_VIEWS: readonly (readonly [string, string])[] = [
  */
 function ParadigmWord({ table, address, levels, extent }: { table: Paradigm; address: ParadigmAddress; levels: Levels | undefined; extent: GrammarExtent | undefined }) {
   const { lemma, word, parse, own: wantsOwn } = address;
-  // a word of the Septuagint (the address says so) has the Septuagint's forms laid with the New Testament's; a word of the New Testament has the New Testament's alone
-  const reading: OwnText = address.septuagint ? 'septuagint' : 'nt';
-  const forms = useLemmaForms(lemma, reading);
+  // a word of the Septuagint (the address says so) has the Septuagint's forms laid with the New Testament's; a word of the New Testament has the New Testament's alone, unless the Septuagint
+  // is On (mw-u2w5klk.314): then its lemma's file is read as the Septuagint's reading too, and the table is that reading's only when the file holds a Septuagint form (else it is the NT's, as it was)
+  const septuagintOn = useSetting(septuagintSetting) === 'on' && languageOf(table) !== 'hbo';
+  const asked: OwnText = address.septuagint || septuagintOn ? 'septuagint' : 'nt';
+  const forms = useLemmaForms(lemma, asked);
+  const reading: OwnText = address.septuagint || forms?.some((f) => f.source === 'septuagint') ? 'septuagint' : 'nt';
   const mine = useMemo(() => (lemma && forms ? ownTable(table, lemma, forms, reading) : undefined), [table, lemma, forms, reading]);
   if (wantsOwn && lemma && forms === undefined) {
     return (
