@@ -25,8 +25,9 @@ const SOURCE_NAME: Record<SourceLanguage, string> = { grc: 'Greek', hbo: 'Hebrew
  *
  * English | Weave | Greek while the Weave is on (English | Greek with it Off): English is plain English, Weave the woven English, and a long press on
  * Weave flips the woven text between the English and the Greek word order (the Weave's Order setting) and says which in a toast (mw-5r3p30.651). On an Old
- * Testament chapter the last choice, the chapter's source view, reads Hebrew and the order's name is the Hebrew word order (mw-5vvlay.1). */
-function ViewSwitch({ view, weave, weaveShown, weaveOrder, source }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder; source: SourceLanguage }) {
+ * Testament chapter the last choice, the chapter's source view, reads Hebrew and the order's name is the Hebrew word order (mw-5vvlay.1). A long press on that last button flips
+ * the Septuagint setting (`onFlip`, src/reader/flipSeptuagint.ts) and says in a toast which text is on now, or why nothing changed (mw-u2w5klk.293). */
+function ViewSwitch({ view, weave, weaveShown, weaveOrder, source, onFlip }: { view: ReaderView; weave: Weave; weaveShown: boolean; weaveOrder: WeaveOrder; source: SourceLanguage; onFlip?: () => Promise<string> }) {
   const [toast, setToast] = useState<{ text: string; top: number } | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -34,22 +35,26 @@ function ViewSwitch({ view, weave, weaveShown, weaveOrder, source }: { view: Rea
   const weaveOn = weave !== 'off';
   const chosen: ReaderLanguage = view === 'greek' ? 'greek' : weaveOn && weaveShown ? 'weave' : 'english';
   const choose = (value: ReaderLanguage) => void chooseReaderLanguage(value, weave);
+  const say = (text: string) => {
+    // the toast stands under the header (or the switch's own line, where a narrow window makes the header `display: contents`), so it never hides the switch it speaks of
+    setToast({ text, top: Math.max(box.current?.closest('header')?.getBoundingClientRect().bottom ?? 0, box.current?.getBoundingClientRect().bottom ?? 0) });
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setToast(null), TOAST_MS);
+  };
   const flip = () => {
     const next: WeaveOrder = weaveOrder === 'greek' ? 'english' : 'greek';
     void setSetting(weaveOrderSetting, next);
     choose('weave');
-    // the toast stands under the header (or the switch's own line, where a narrow window makes the header `display: contents`), so it never hides the switch it speaks of
-    setToast({ text: WORD_ORDER_NAME[source][next], top: Math.max(box.current?.closest('header')?.getBoundingClientRect().bottom ?? 0, box.current?.getBoundingClientRect().bottom ?? 0) });
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setToast(null), TOAST_MS);
+    say(WORD_ORDER_NAME[source][next]);
   };
   const press = useLongPress(() => choose('weave'), flip);
+  const sourcePress = useLongPress(() => choose('greek'), () => void onFlip?.().then(say));
   const button = (value: ReaderLanguage, label: string) => (
     <button
       type="button"
       aria-pressed={chosen === value}
-      {...(value === 'weave' ? press : { onClick: () => choose(value) })}
-      className={`min-h-11 min-w-11 rounded-lg px-1 chrome-text font-medium ${value === 'weave' ? NO_SELECT : ''} ${chosen === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+      {...(value === 'weave' ? press : value === 'greek' && onFlip ? sourcePress : { onClick: () => choose(value) })}
+      className={`min-h-11 min-w-11 rounded-lg px-1 chrome-text font-medium ${value === 'weave' || (value === 'greek' && onFlip) ? NO_SELECT : ''} ${chosen === value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
     >
       {label}
     </button>
@@ -99,6 +104,8 @@ export interface ReaderHeaderProps {
   inert: boolean;
   onPick(): void;
   onRead(): void;
+  /** a long press on the switch's last button (Greek or Hebrew): flips the Septuagint setting and answers the words for the toast (src/reader/flipSeptuagint.ts); without it the button takes only a tap */
+  onFlip?: () => Promise<string>;
 }
 
 // In rem, so the title follows the phone's own text size (at 200% it is twice as large, mw-cwf538.5), and the room it needs does too.
@@ -124,7 +131,7 @@ function titleRoom(name: string): string {
   return `${(name.length * LETTER_EM * TITLE_MIN_REM).toFixed(2)}rem`;
 }
 
-export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead }: ReaderHeaderProps) {
+export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
   return (
@@ -149,7 +156,7 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
         </button>
       </h1>
       {headerButtons ? <span className="flex-1" /> : null}
-      {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaveOrder={weaveOrder} source={source} /> : null}
+      {view ? <ViewSwitch view={view} weave={weave} weaveShown={weaveShown} weaveOrder={weaveOrder} source={source} onFlip={onFlip} /> : null}
       {canRead ? <ReadFromButton from={from} reading={reading} onRead={onRead} /> : null}
       <ReaderMenu />
     </header>

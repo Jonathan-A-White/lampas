@@ -44,9 +44,10 @@ import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
 import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
 import { canCross, crossChapter } from './reader/crossChapter';
+import { flipSeptuagint, useBringFlipped } from './reader/flipSeptuagint';
 import { useBringLastVerse, useNoteLastVerse } from './reader/lastPlace';
 import { useBringVerse } from './reader/useBringVerse';
-import { useKeepTopVerse, weavedWordsKey } from './reader/useKeepTopVerse';
+import { topVerseOf, useKeepTopVerse, weavedWordsKey } from './reader/useKeepTopVerse';
 import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { layRp2026English } from './data/rp2026English';
@@ -266,6 +267,9 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const [placed] = useState(() => request !== undefined || link !== undefined || opened.verse !== undefined || opened.passage !== undefined || hasKeptScroll(window.location.hash, 'reader'));
   useNoteLastVerse(main, BOOK, CHAPTER, paging);
   useBringLastVerse(main, inner, BOOK, CHAPTER, chapter, paging, placed);
+  // a hold on the header's Greek / Hebrew button flips the Septuagint and keeps the verse on top (mw-u2w5klk.293)
+  useBringFlipped(main, inner, BOOK, chapter);
+  const flipText = useCallback(() => flipSeptuagint({ book: BOOK, chapter: CHAPTER, shown: chapter, top: main.current && !paging ? topVerseOf(main.current) : null }), [BOOK, CHAPTER, chapter, paging]);
   // English, Weave and Greek (Hebrew) lay a verse out at different heights: the verse on top before a switch is on top after it (mw-5r3p30.863)
   const [linked, setLinked] = useState(() => (link?.word ? lemmaSheet(link.word) : null));
   const pronunciation = useLiveQuery(getGreekPronunciation, []);
@@ -511,6 +515,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
         inert={viewUnit !== undefined}
         onPick={() => setPicking(true)}
         onRead={() => readFrom(selected ?? 1, true)}
+        onFlip={flipText}
       />
       {septuagint && !chapterReading ? (
         <>

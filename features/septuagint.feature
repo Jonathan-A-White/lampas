@@ -103,6 +103,46 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     And verse 1 has no Greek woven into its English
     And no tip is shown
 
+  # A hold on the header's last button (Greek or Hebrew) flips the Septuagint setting itself from where he reads (mw-u2w5klk.293, his word 2026-11-06: "Yes, the setting"); a tap on it still chooses the view
+  @uc-septuagint @greek
+  Scenario: A hold on Hebrew in Genesis 1 turns the Septuagint on and the button reads Greek
+    Given Lampas is opened on Genesis 1 with the Septuagint off
+    When he holds "Hebrew" on the language switch
+    Then the language switch offers "English" and "Greek"
+    And the Septuagint setting is "on"
+    And the status reads "Septuagint on"
+    And the title reads "Genesis 1"
+
+  @uc-septuagint @greek
+  Scenario: A hold on Greek in Genesis 1 turns the Septuagint off, keeping the source view
+    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
+    When he holds "Greek" on the language switch
+    Then the language switch offers "English" and "Hebrew"
+    And the Septuagint setting is "off"
+    And the status reads "Hebrew text on"
+    And the Hebrew position is chosen
+
+  @uc-septuagint @greek
+  Scenario: A hold on Hebrew in Psalm 23 opens Greek Psalm 22 at the same chapter
+    Given Lampas is opened on "Psalms 23" with the Septuagint off
+    When he holds "Hebrew" on the language switch
+    Then the title reads "Psalms 23 (Greek 22)"
+    And the Septuagint setting is "on"
+
+  @uc-septuagint @greek
+  Scenario: A hold in Matthew changes nothing and says why
+    Given Lampas is opened on "Matthew 1" with the Septuagint off
+    When he holds "Greek" on the language switch
+    Then the Septuagint setting is "off"
+    And the status reads "Only an Old Testament book has a Septuagint"
+
+  @uc-septuagint @greek
+  Scenario: A hold in a book whose Septuagint is not shipped changes nothing and says why
+    Given Lampas is opened on "Isaiah 1" with the Septuagint off
+    When he holds "Hebrew" on the language switch
+    Then the Septuagint setting is "off"
+    And the status reads "The Septuagint of Isaiah is not ready yet"
+
   # The word card of a Septuagint word (mw-u2w5klk.12): the lemma, parsing and meaning come from the lemma lexicon (public/data-lxx/lexicon-grc-lxx.json; a word of this text has no Strong's number),
   # the card says how Lampas read the word (the layer and the confidence in words), a word the derivation only guessed is drawn with a mark and told as a guess, never offered to learn, and can be reported.
   @uc-word-sheet @greek
