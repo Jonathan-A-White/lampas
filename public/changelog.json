@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.181",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1129.2",
+    "kind": "new",
+    "text": "On a map, a Split button puts the map under the passage so you can look at it while you read, each scrolling on its own."
+  },
+  {
     "version": "0.7.180",
     "date": "2026-11-08",
     "story": "mw-u2w5klk.302",

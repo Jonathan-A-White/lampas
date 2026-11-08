@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.181
+_2026-11-08_
+- New: On a map, a Split button puts the map under the passage so you can look at it while you read, each scrolling on its own.
+
 ## 0.7.180
 _2026-11-08_
 - Fixed: Section headings now show above the verses in the Septuagint's Old Testament chapters, as they do in the Hebrew.
