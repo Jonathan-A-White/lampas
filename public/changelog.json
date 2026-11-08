@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.170",
+    "date": "2026-11-08",
+    "story": "mw-5r3p30.1128",
+    "kind": "new",
+    "text": "In the Hebrew and Greek diagram, a number written as several words, like the 318 in Genesis 14:14, is one box showing its value that opens to its words."
+  },
+  {
+    "version": "0.7.170",
+    "date": "2026-11-08",
+    "story": "mw-u2w5klk.298",
+    "kind": "fixed",
+    "text": "Genesis 14 now reads in the Septuagint's Greek like the rest of Genesis, and the \"not ready\" note names the chapter that is held back instead of the whole book."
+  },
+  {
     "version": "0.7.169",
     "date": "2026-11-08",
     "story": "mw-5r3p30.1122",

@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.170
+_2026-11-08_
+- New: In the Hebrew and Greek diagram, a number written as several words, like the 318 in Genesis 14:14, is one box showing its value that opens to its words.
+- Fixed: Genesis 14 now reads in the Septuagint's Greek like the rest of Genesis, and the "not ready" note names the chapter that is held back instead of the whole book.
+
 ## 0.7.169
 _2026-11-08_
 - New: The round tutor button now shows over the Sermons, Maps, lexicon list, Logos chooser, Ask for a book, Memorize and chapter picker sheets, and the tutor it opens already knows what the sheet is about.
