@@ -343,7 +343,7 @@ test('Settings > Bible in Logos has a Septuagint row, Swete to start, and a chap
   await turnOn(page);
   await page.goto('/#/?b=gen&c=7');
   await expect(page.getByRole('heading', { name: 'Genesis 7', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('Genesis 7 in the Septuagint is not ready yet; this is the Hebrew.');
+  await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('The Septuagint of Genesis 7 is not ready yet; this is the Hebrew.');
   const door = page.locator('[data-septuagint-door]');
   await expect(door).toHaveText('Read it in Logos: LXX Swete');
   await expect(door).toHaveAttribute('href', 'logosres:LLS:OTGRKSWETETXT;ref=Bible.Ge7');

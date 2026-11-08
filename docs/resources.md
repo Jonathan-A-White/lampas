@@ -223,8 +223,8 @@ No book of Lampas is of this part (`partOf` never gives it); it is the Bible a c
 `"parts":["septuagint"]`: Swete's Greek (`LLS:OTGRKSWETETXT`, short name `LXX Swete`, first and the start), the Lexham Greek-English Interlinear Septuagint: Swete (`LLS:OTGRKSWETEINTTXT`), the Lexham English Septuagint (`LLS:LELXX`) and Brenton (`LLS:BRENTONLXXEN`);
 a typed Resource ID is kept as typed. They are Bibles of the catalogue (kind `bible`), so Library > Bibles lists them and `PartChoice` offers 'Septuagint'.
 
-While the Septuagint setting is On, an Old Testament chapter that `loadChapter` reads as the Hebrew because the Septuagint lacks it says so in `src/reader/SeptuagintNotReady.tsx`: by chapter ('Genesis 7 in the Septuagint is not ready yet; this is the Hebrew.')
-where the book is in the index (`septuagintGapOf` in `src/data/lxxChapter.ts` is `'chapter'`), by book ('The Septuagint of Isaiah is not ready yet; this is the Hebrew.') where it is not (`'book'`); and under it a 44 px door **Read it in Logos: LXX Swete**
+While the Septuagint setting is On, an Old Testament chapter that `loadChapter` reads as the Hebrew because the Septuagint lacks it says so (`useNotReadyName`, mw-u2w5klk.298): by chapter ('The Septuagint of Genesis 7 is not ready yet; this is the Hebrew.')
+where the book is in the index, by book ('The Septuagint of Isaiah is not ready yet; this is the Hebrew.') where it is not (`notReadyName` in `src/data/lxxChapter.ts`); and under it a 44 px door (`src/reader/SeptuagintDoor.tsx`) **Read it in Logos: LXX Swete**
 (the short name of the Septuagint he chose): `septuagintLink(book, chapter, resourceId)` in `logosBible.ts`, `logosres:LLS:OTGRKSWETETXT;ref=Bible.Ge7` with the ref.ly fallback armed by `armFallback` (`data-fallback`), the Resource ID raw as a commentary's door has it.
 The reference is Lampas's own numbering: Logos maps a Bible reference into a Septuagint resource by its own tables, UNVERIFIED on a device until the Governor taps the door. With Logos not linked the line stands and the door says `Link Logos in Settings`, as the Apocrypha's card does.
 

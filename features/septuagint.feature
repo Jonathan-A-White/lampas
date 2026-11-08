@@ -287,7 +287,7 @@ Feature: The Reader reads an Old Testament book in the Septuagint
   Scenario: A chapter not yet shipped is the Hebrew, says so by chapter and opens in his Septuagint in Logos
     Given Lampas is opened on "Genesis 7" with the Septuagint "on", Logos "linked" and Genesis 1 to 6 shipped
     Then the language switch offers "English" and "Hebrew"
-    And the note reads "Genesis 7 in the Septuagint is not ready yet; this is the Hebrew."
+    And the note reads "The Septuagint of Genesis 7 is not ready yet; this is the Hebrew."
     And the door reads "Read it in Logos: LXX Swete"
     And the door opens "logosres:LLS:OTGRKSWETETXT;ref=Bible.Ge7" and falls back to "https://ref.ly/logosres/LLS%3AOTGRKSWETETXT?ref=Bible.Ge7"
 
@@ -307,7 +307,7 @@ Feature: The Reader reads an Old Testament book in the Septuagint
   @uc-septuagint @greek
   Scenario: With Logos not linked the line stands and the door says where to link it
     Given Lampas is opened on "Genesis 7" with the Septuagint "on", Logos "not linked" and Genesis 1 to 6 shipped
-    Then the note reads "Genesis 7 in the Septuagint is not ready yet; this is the Hebrew."
+    Then the note reads "The Septuagint of Genesis 7 is not ready yet; this is the Hebrew."
     And no door reads in the Septuagint
     And Link Logos in Settings is offered under the note
 
