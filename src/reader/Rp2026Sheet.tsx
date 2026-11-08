@@ -6,7 +6,8 @@ import { rp2026EntryByKey, type Rp2026Entry } from '../data/rp2026English';
 import { navigate } from '../nav/route';
 import { GREEK_LANG } from '../script/greekLang';
 import { focusOnMount } from '../ui/focus';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { SOURCE_LINK } from './englishSource';
@@ -36,8 +37,20 @@ function Sheet({ entry, onClose }: { entry: Rp2026Entry; onClose: () => void }) 
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  useNoDoor(); // z-30, above the Talk sheet (z-10): no ? over it (mw-5r3p30.953)
   const { provenance: p } = entry;
+  // z-30, above the Talk sheet (z-10): the ? asks about the place and the words the sheet shows, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1124)
+  const ask = useSheetTalk({
+    name: RP_LABEL,
+    facts: [
+      { label: 'Place', value: entry.ref },
+      { label: 'What changes', value: entry.note },
+      { label: 'The MSB’s English', value: entry.msb },
+      { label: 'Lampas’s English', value: entry.lampas ?? '' },
+      { label: 'The Greek, 2018', value: entry.from.join(' ') },
+      { label: 'The Greek, 2026', value: entry.to.join(' ') },
+    ],
+    suggestions: ['Why does the 2026 Greek change the English here?', 'Which English should I trust here?'],
+  });
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -79,6 +92,7 @@ function Sheet({ entry, onClose }: { entry: Rp2026Entry; onClose: () => void }) 
           </button>
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

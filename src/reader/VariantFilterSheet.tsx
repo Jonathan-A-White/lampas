@@ -7,7 +7,8 @@ import { ChipRow } from '../settings/controls/SettingRow';
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { focusOnMount } from '../ui/focus';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { ReadAs } from './ReadingSetSheet';
@@ -16,6 +17,10 @@ import { ReadAs } from './ReadingSetSheet';
 const labelsOf = (def: typeof variantsSetting | typeof variantWitnessesSetting, values: readonly string[]): [string, string][] =>
   def.allowed.kind === 'choice' ? def.allowed.values.filter((v) => values.includes(v.value)).map((v) => [v.value, v.label]) : [];
 
+/** The label the setting's own choices give `value`, else the value as it is. */
+const labelOf = (def: typeof variantsSetting | typeof variantWitnessesSetting, value: string): string =>
+  (def.allowed.kind === 'choice' ? def.allowed.values.find((v) => v.value === value)?.label : undefined) ?? value;
+
 /** How long the link waits for the sheet's own Back entry to be taken off before it opens Settings (jsdom and a phone both answer well within it). */
 const LEAVE_WAIT_MS = 400;
 
@@ -23,9 +28,17 @@ function Sheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  useNoDoor(); // z-30, above the Talk sheet (z-10): no ? over it (mw-5r3p30.953)
   const variants = useSetting(variantsSetting);
   const witnesses = useSetting(variantWitnessesSetting);
+  // z-30, above the Talk sheet (z-10): the ? asks about the two filters as they stand now, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1124)
+  const ask = useSheetTalk({
+    name: 'Variants',
+    facts: [
+      { label: 'Variants shown', value: labelOf(variantsSetting, variants ?? 'off') },
+      { label: 'Witnesses', value: labelOf(variantWitnessesSetting, witnesses ?? 'ecm') },
+    ],
+    suggestions: ['What is the difference between the two filters?', 'Which witnesses should I count?'],
+  });
   // the sheet's history entry is taken off as it closes (src/ui/sheetBack.ts): Settings opens once that Back has landed, so it is not undone by it
   const toSettings = () => {
     let gone = false;
@@ -74,6 +87,7 @@ function Sheet({ onClose }: { onClose: () => void }) {
           Variants in Settings
         </button>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

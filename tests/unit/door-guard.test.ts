@@ -2,7 +2,7 @@
 // z-10, so over a full-screen layer that registers nothing with the tutor door (src/tutor/door.ts) a tap on the floating ? opens the tutor UNDER the layer and, to him, does nothing. Every component of src/ that
 // draws a fixed full-screen layer (`fixed` and `inset-0`) must choose: useNoDoor() (the ? is not drawn), useDoorTarget / registerDoorTarget (a target of its own) or a DialogAskTutor / LessonTalk drawn inside it (a Talk
 // in front); or it is on ALLOWED with a reason. A new overlay is one more hook, never a new mechanism (tests/e2e/tutor-door-overlays.spec.ts and the OVERLAYS table of tutor-door.spec.ts run them on the built app; mw-5r3p30.956 settled the z-30, z-10 and z-50 layers).
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -90,5 +90,20 @@ describe('every fixed full-screen layer chooses what the floating ? does over it
     expect(inspect(talk('Always', '      <DialogAskTutor kept="k" screen={result ? a : b} suggestions={result ? c : d} />')).conditional).toEqual([]);
     const other = `function Sheet() {\n  return <div className="fixed inset-0 z-30" />;\n}\nexport function Screen() {\n  useNoDoor();\n  return <Sheet />;\n}\n`;
     expect(inspect(other)).toEqual({ bare: ['Sheet'], conditional: [] });
+  });
+
+  // mw-5r3p30.1124: the last sheets that called useNoDoor now have the ? with their context; a sheet that still calls it says in one line why it can be asked nothing.
+  it('every useNoDoor( call in src/ has a one-line reason comment, on its line or the line above', () => {
+    const files = (dir: string): string[] => readdirSync(dir).flatMap((name) => (statSync(join(dir, name)).isDirectory() ? files(join(dir, name)) : /\.tsx?$/.test(name) ? [join(dir, name)] : []));
+    const bare: string[] = [];
+    for (const file of files(SRC)) {
+      if (file.endsWith(join('tutor', 'door.ts'))) continue;
+      const lines = readFileSync(file, 'utf8').split('\n');
+      lines.forEach((line, i) => {
+        if (!/\buseNoDoor\(/.test(line) || /^\s*(import|\/\/)/.test(line)) return;
+        if (!/\/\/ ?\S{3,}/.test(line) && !/^\s*\/\/ ?\S{3,}/.test(lines[i - 1] ?? '')) bare.push(`${file.slice(SRC.length + 1)}:${i + 1}`);
+      });
+    }
+    expect(bare, 'a sheet that keeps useNoDoor() says in a one-line comment why it cannot be asked about; otherwise it draws a DialogAskTutor (src/tutor/sheetTalk.ts)').toEqual([]);
   });
 });

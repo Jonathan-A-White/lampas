@@ -10,7 +10,8 @@ import { openVariantLesson } from '../nav/route';
 import { variantLessonsOfferSetting } from '../settings/definitions';
 import { useSetting } from '../settings/store';
 import { focusOnMount } from '../ui/focus';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { variantEnglishClass, type EnglishSource } from './englishSource';
@@ -83,7 +84,12 @@ export function VariantKeySheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  useNoDoor(); // z-30, above the Talk sheet (z-10): no ? over it (mw-5r3p30.953)
+  // z-30, above the Talk sheet (z-10): the ? asks about the marks of a variant, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1124)
+  const ask = useSheetTalk({
+    name: 'The marks of a variant',
+    facts: [{ label: 'Explains', value: 'The marks the Reader draws for a variant brace: the other reading in a dotted or plain English, the editions that read it (NA, ECM, B, RP) and the lines under the words' }],
+    suggestions: ['What do the marks in a brace mean?', 'Why do the manuscripts differ here?'],
+  });
   return createPortal(
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -125,6 +131,7 @@ export function VariantKeySheet({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>,
     document.body,
   );
