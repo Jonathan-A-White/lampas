@@ -36,7 +36,10 @@ test('a two-finger tap with the Verse view open opens the Talk sheet about that 
 
 test('a two-finger tap on an open word sheet opens the tutor about the word', async ({ page }) => {
   await openReader(page);
-  await page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true }).click();
+  // a Greek word of the Greek view: a tap on an English chunk asks about the English word, with no focus (mw-5r3p30.1121; tests/e2e/word-door-sweep.spec.ts holds both)
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
+  await page.locator('[data-verse="28"]').getByRole('button', { name: 'συνεργεῖ', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
   const sheet = await openTutor(page);
   await expect(sheet).toBeVisible();

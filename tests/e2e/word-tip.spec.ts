@@ -58,7 +58,10 @@ test('the first tap on a word shows the tip once; Got it keeps it away; the floa
   fake.autoReply = { status: 'answered', answer: GRAMMAR_HELP_ANSWER };
   await routePostern(page, fake);
   await openReader(page);
-  const word = page.locator('[data-verse="28"]').getByRole('button', { name: 'work together', exact: true });
+  // a Greek word of the Greek view: a tap on an English chunk asks about the English word, with no focus (mw-5r3p30.1121)
+  await page.getByRole('button', { name: 'Greek', exact: true }).click();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'greek');
+  const word = page.locator('[data-verse="28"]').getByRole('button', { name: 'συνεργεῖ', exact: true });
   await word.tap();
 
   const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
