@@ -80,7 +80,7 @@ async function openReferenceCard(page: Page): Promise<Locator> {
 
 const OVERLAYS: Overlay[] = [
   { name: 'the letter drill', door: 'talk', open: openLetterDrill, close: stop },
-  { name: 'Write it', door: 'hidden', open: openWriteIt, close: done },
+  { name: 'Write it', door: 'talk', open: openWriteIt, close: done },
   { name: 'Check on a passage lesson', door: 'talk', open: openCheck, close: stop },
   { name: 'Try it on a verse', door: 'talk', open: openTryIt, close: stop },
   {
@@ -119,9 +119,9 @@ const button = (name: string) => async (_page: Page, sheet: Locator) => void (aw
 OVERLAYS.push(
   { name: 'the reading drill', door: 'talk', open: openReadingDrill, close: escape },
   { name: 'Ask for a book', door: 'talk', open: openAskForBook, close: button('Done') },
-  { name: 'the send-off to Audible', door: 'hidden', open: openSendOff, close: escape },
-  { name: 'Start a listening plan', door: 'hidden', open: openStartPlan, close: button('Not now') },
-  { name: 'Where are you in the plan?', door: 'hidden', open: (page) => openPlacePicker(page, 'where'), close: button('Not now') },
+  { name: 'the send-off to Audible', door: 'talk', open: openSendOff, close: escape },
+  { name: 'Start a listening plan', door: 'talk', open: openStartPlan, close: button('Not now') },
+  { name: 'Where are you in the plan?', door: 'talk', open: (page) => openPlacePicker(page, 'where'), close: button('Not now') },
   {
     // the picker is the chapter picker (ChapterPicker, in choose mode) over Where are you in the plan?, and has the ? like the chapter picker (mw-5r3p30.1122): a Talk opens inside it; the ? is back once both are closed
     name: 'Pick a place',
@@ -133,11 +133,11 @@ OVERLAYS.push(
       await escape(page);
     },
   },
-  { name: 'Where did you get to?', door: 'hidden', open: openReturnSheet, close: button('Not now') },
+  { name: 'Where did you get to?', door: 'talk', open: openReturnSheet, close: button('Not now') },
   {
-    // the screenshot sheet stands over the return sheet: the ? is back once both are closed
+    // the screenshot sheet stands over the return sheet and has the ? of its own (mw-5r3p30.1123); the ? is back once both are closed
     name: 'Your screenshot',
-    door: 'hidden',
+    door: 'talk',
     open: openScreenshotRead,
     close: async (page) => {
       await escape(page);
@@ -302,10 +302,13 @@ test('Floating ?: over the sheet of "Aggai" in the Septuagint\'s Genesis 13 Weav
 const SHEETS = [
   { name: 'Sermons', open: openSermonsSheet, screen: 'Sermons', fact: { label: 'Passage', value: 'Romans 5:8' } },
   { name: 'Maps', open: openMapsFrame, screen: 'Maps', fact: { label: 'Passage', value: 'Genesis 10:19' } },
+  // the plan sheets (mw-5r3p30.1123): Start a listening plan, and the return sheet, which tells the tutor where she set off
+  { name: 'Start a listening plan', open: openStartPlan, screen: 'Start a listening plan', fact: { label: 'Plans', value: 'The whole Bible' } },
+  { name: 'Where did you get to?', open: openReturnSheet, screen: 'Where did you get to?', fact: { label: 'Set off from', value: 'Leviticus 1' } },
 ];
 
 for (const sheet of SHEETS) {
-  test(`Floating ?: over the ${sheet.name} sheet the tutor opens in front of it and is told ${sheet.fact.value}; a two-finger tap puts the ? away and brings it back (mw-5r3p30.1122)`, async ({ page }) => {
+  test(`Floating ?: over the ${sheet.name} sheet the tutor opens in front of it and is told ${sheet.fact.value}; a two-finger tap puts the ? away and brings it back (mw-5r3p30.1122, .1123)`, async ({ page }) => {
     const fake = makeFakePostern();
     await routePostern(page, fake);
     const layer = await sheet.open(page);

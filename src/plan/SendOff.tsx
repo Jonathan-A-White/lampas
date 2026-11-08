@@ -2,18 +2,23 @@
 // on (useSendOff.ts go: the start time is recorded, then Audible opens); Back, Escape, a swipe down or a tap outside close it and begin nothing.
 import { createPortal } from 'react-dom';
 import { bookOf } from '../data/books';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import type { SendOff as SendOffState } from './useSendOff';
 
-function Sheet({ title, onGo, onClose }: { title: string; onGo: () => void; onClose: () => void }) {
+function Sheet({ title, chapter, onGo, onClose }: { title: string; chapter: string; onGo: () => void; onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-30, over the Talk sheet (z-10), with nothing on it to ask about: no ? over it, for a Talk would open under it (mw-5r3p30.956)
-  useNoDoor();
+  // z-30, over the Talk sheet (z-10): the ? asks about the chapter he is off to hear, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1123)
+  const ask = useSheetTalk({
+    name: 'Off to Audible',
+    facts: [{ label: 'Chapter', value: chapter }],
+    suggestions: ['What happens when I tap Go?', `What should I listen for in ${chapter}?`],
+  });
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sendoff-backdrop" aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
@@ -33,6 +38,7 @@ function Sheet({ title, onGo, onClose }: { title: string; onGo: () => void; onCl
           Go
         </button>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }
@@ -42,5 +48,5 @@ export function SendOff({ send }: { send: SendOffState }) {
   const { offered } = send;
   if (!offered) return null;
   const name = bookOf(offered.code)?.name ?? offered.code;
-  return createPortal(<Sheet title={`Off to Audible: ${name} ${offered.chapter}`} onGo={() => void send.go()} onClose={send.close} />, document.body);
+  return createPortal(<Sheet title={`Off to Audible: ${name} ${offered.chapter}`} chapter={`${name} ${offered.chapter}`} onGo={() => void send.go()} onClose={send.close} />, document.body);
 }

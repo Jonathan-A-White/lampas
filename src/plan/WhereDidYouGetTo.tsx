@@ -14,7 +14,9 @@ import type { Heard } from '../data/repositories/readingPlan';
 import { useAiAllowed } from '../gate/licenceContext';
 import { openLicence } from '../nav/route';
 import { TALK_PICTURE_MIMES } from '../talk/pictures';
+import { DialogAskTutor } from '../AskTutor';
 import { useNoDoor } from '../tutor/door';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -35,9 +37,19 @@ function Sheet({ proposal, hidden, onAnswer, onClose }: { proposal: ReturnPropos
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, !picking && !screenshot && !hidden);
   useSheetBack(onClose);
-  // z-10, drawn after the Reader's Talk sheet (z-10) so over it: nothing on it to ask about, so no ? over it, unless it is put away (the Licence page) (mw-5r3p30.956)
-  useNoDoor(!hidden);
   const { session, elapsedMs, estimate } = proposal;
+  // z-10, drawn after the Reader's Talk sheet (z-10) so over it: the ? asks about the return, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1123)
+  const ask = useSheetTalk({
+    name: 'Where did you get to?',
+    facts: [
+      { label: 'Set off from', value: chapterName(session) },
+      { label: 'Time away', value: awayText(elapsedMs) },
+      { label: 'My guess', value: chapterName(estimate.reached) },
+    ],
+    suggestions: ['How do you guess where I got to?', 'What happens to my plan if I stopped partway?'],
+  });
+  // put away (the Licence page open over it): the layer stays mounted, and no ? is drawn over the Licence page; this one is newer than the Talk's, so it is the one asked (mw-5r3p30.956)
+  useNoDoor(hidden);
   return (
     <div hidden={hidden} className="fixed inset-0 z-10 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -132,6 +144,7 @@ function Sheet({ proposal, hidden, onAnswer, onClose }: { proposal: ReturnPropos
         />
       ) : null}
       {screenshot ? <ScreenshotRead picture={screenshot} setOffFrom={session} onAccept={onAnswer} onClose={() => setScreenshot(null)} /> : null}
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react';
 import type { PlanChapter } from '../data/plans';
 import type { Heard } from '../data/repositories/readingPlan';
 import { failedLine } from '../share/findRefs';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -27,6 +28,10 @@ export const NO_CHAPTER_LINE = 'I could not find a chapter in that screenshot.';
 /** What the plan will do with the reading, in words. */
 const heardWords = ({ chapter, heard }: ScreenshotReading): string =>
   heard === 'finished' ? 'You heard it to the end: the plan moves on.' : `You stopped partway in it: the plan stays at ${chapterName(chapter)}.`;
+
+/** The reading as a fact for the tutor: where it stands, and the chapter it proposes once it has one. */
+const readingFact = (read: Read): string =>
+  read.status === 'reading' ? READING_LINE : read.status === 'failed' ? read.line : read.reading === null ? NO_CHAPTER_LINE : `It shows ${chapterName(read.reading.chapter)}. ${heardWords(read.reading)}`;
 
 const buttonClass = 'flex min-h-12 w-full items-center justify-center rounded-xl border px-4 text-lg font-medium';
 
@@ -65,8 +70,15 @@ export function ScreenshotRead({
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose);
   useSheetBack(onClose);
-  // z-10, drawn over the return sheet (itself without a ?, WhereDidYouGetTo): nothing on it to ask about (mw-5r3p30.956)
-  useNoDoor();
+  // z-10, drawn over the return sheet: the ? asks about the reading, in a Talk drawn inside this layer so it stands in front; what it reports follows the reading (mw-5r3p30.1123)
+  const ask = useSheetTalk({
+    name: 'Your screenshot',
+    facts: [
+      { label: 'Set off from', value: chapterName(setOffFrom) },
+      { label: 'Reading', value: readingFact(read) },
+    ],
+    suggestions: ['Why could you not read my screenshot?', 'What should my screenshot of Audible show?'],
+  });
   const back = (
     <button type="button" ref={focusOnMount} onClick={onClose} className={`${buttonClass} border-line bg-surface`}>
       Back to the choices
@@ -140,6 +152,7 @@ export function ScreenshotRead({
           )}
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }

@@ -9,7 +9,8 @@ import { ChapterPicker } from '../ChapterPicker';
 import type { PlanChapter } from '../data/plans';
 import { getOpenChapter } from '../data/readerChapter';
 import { setPlace, setPlaceAfter, type ReadingPlanState } from '../data/repositories';
-import { useNoDoor } from '../tutor/door';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk, type SheetTalk } from '../tutor/sheetTalk';
 import { focusOnMount } from '../ui/focus';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
@@ -24,10 +25,12 @@ export interface PlaceMove {
 const GENESIS_1 = { code: 'gen', chapter: 1 };
 const OPTION = 'flex min-h-12 w-full items-center rounded-xl border border-line bg-surface px-4 text-left text-lg font-medium';
 
-function Sheet({ label, title, children, onClose, escape = true }: { label: string; title: string; children: ReactNode; onClose: () => void; escape?: boolean }) {
+function Sheet({ label, title, talk, children, onClose, escape = true }: { label: string; title: string; talk: SheetTalk; children: ReactNode; onClose: () => void; escape?: boolean }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, escape);
   useSheetBack(onClose);
+  // z-30, over the Talk sheet (z-10): the ? asks about the sheet, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1123)
+  const ask = useSheetTalk(talk);
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -49,6 +52,7 @@ function Sheet({ label, title, children, onClose, escape = true }: { label: stri
         </div>
         {children}
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }
@@ -58,9 +62,13 @@ function Confirm({ chapter, onSet, onBack }: { chapter: PlanChapter; onSet: () =
   const { drag, handle } = useSheetDrag(onBack);
   useEscapeToClose(onBack);
   useSheetBack(onBack);
-  // z-40, over the Talk sheet (z-10), a yes or no with nothing to ask about: no ? over it (mw-5r3p30.955)
-  useNoDoor();
   const name = chapterName(chapter);
+  // z-40, over the Talk sheet (z-10): the ? asks about the place he chose, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1123)
+  const ask = useSheetTalk({
+    name: 'Set your place',
+    facts: [{ label: 'Chosen chapter', value: name }],
+    suggestions: [`What does it mean to set my place at ${name}?`, 'What happens to what I have already done?'],
+  });
   return (
     <div className="fixed inset-0 z-40 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onBack} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -85,13 +93,12 @@ function Confirm({ chapter, onSet, onBack }: { chapter: PlanChapter; onSet: () =
           </button>
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }
 
 function Places({ next, onMove, onClose }: { next: PlanChapter | undefined; onMove: (move: PlaceMove) => void; onClose: () => void }) {
-  // z-30, over the Talk sheet (z-10): Where are you? and the picker over it have nothing to ask about, so no ? over them (the Set your place sheet says so for itself, mw-5r3p30.955; mw-5r3p30.956)
-  useNoDoor();
   const [picking, setPicking] = useState(false);
   const [chosen, setChosen] = useState<PlanChapter | null>(null);
   const open = getOpenChapter();
@@ -103,7 +110,17 @@ function Places({ next, onMove, onClose }: { next: PlanChapter | undefined; onMo
   };
   return (
     <>
-      <Sheet label="Where are you in the plan?" title="Where are you?" onClose={onClose} escape={!picking}>
+      <Sheet
+        label="Where are you in the plan?"
+        title="Where are you?"
+        talk={{
+          name: 'Where are you in the plan?',
+          facts: [next ? { label: 'Plan is at', value: chapterName(next) } : null, { label: 'Open in the Reader', value: open.title }],
+          suggestions: ['What does it mean to set my place in the plan?', 'Which should I choose, I\'m at or Pick a place?'],
+        }}
+        onClose={onClose}
+        escape={!picking}
+      >
         <p className="text-base text-muted">{next ? `The plan is at ${chapterName(next)}. Say where you are and it carries on from there.` : 'Say where you are and the plan carries on from there.'}</p>
         <div role="group" aria-label="Ways to say where you are" className="flex flex-col gap-2 pt-4">
           <button type="button" onClick={() => move({ run: () => setPlaceAfter(here), said: `Counted ${open.title} as done.` })} className={OPTION}>
