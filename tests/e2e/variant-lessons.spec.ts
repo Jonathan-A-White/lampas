@@ -109,7 +109,7 @@ test('Help names the lessons and opens them', async ({ page }) => {
   await page.goto('/#/help');
   await page.getByRole('button', { name: /^The Reader/ }).click();
   await expect(page).toHaveURL(/#\/help\?page=reader$/);
-  await expect(page.getByText(/Five short lessons explain how to read that/)).toBeVisible();
+  await expect(page.getByText(/Variants in Settings can show where manuscripts differ/)).toBeVisible();
   await page.getByRole('button', { name: 'Lessons on variant readings', exact: true }).click();
   await expect(page).toHaveURL(/#\/lessons\/variants$/);
   await expect(page.locator('main li button')).toHaveCount(5);
