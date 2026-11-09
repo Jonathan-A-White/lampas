@@ -9,10 +9,11 @@ import { entriesOf, entryOf, type CatalogueEntry, type Kind } from '../resources
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
+import { useInterestLevels } from '../settings/useInterestLevels';
 import { SearchableList } from '../ui/SearchableList';
 import { ThreeStep } from '../ui/ThreeStep';
 import { marksOf } from './bibleParts';
-import { countLine, detailOf, headerCount, infoOf, pinRefusal } from './kinds';
+import { countLine, detailOf, headerCount, hiddenLine, infoOf, pinRefusal } from './kinds';
 import { PartChoice } from './PartChoice';
 import { TypedBible } from './TypedBible';
 import { useBibles, useShelf } from './useShelf';
@@ -31,6 +32,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   const info = infoOf(kind);
   const states = useShelf();
   const bibles = useBibles();
+  const levels = useInterestLevels();
   // the Bible whose "Set for…" is open
   const [asking, setAsking] = useState<string | null>(null);
   const [refused, setRefused] = useState<string | null>(null);
@@ -89,7 +91,12 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                 </>
               )}
             </div>
-            {states ? (
+            {states && levels && hiddenLine(kind, levels) ? (
+              <p data-testid="dial-hides" className="pt-3 text-base text-muted">
+                {hiddenLine(kind, levels)}
+              </p>
+            ) : null}
+            {states && levels ? (
               <SearchableList
                 key={kind}
                 flat

@@ -3,6 +3,8 @@
 import { MAX_PINS, type LibraryRow, type ShelfState } from '../data/repositories';
 import { entriesOf, entryOf, KINDS, type CatalogueEntry, type Kind } from '../resources/catalogue';
 import type { LogosBibles } from '../resources/logosBible';
+import { resourcesForLevel } from '../resources/resourcesForLevel';
+import type { InterestLevels } from '../settings/definitions/interest';
 import { bibleLine } from './bibleParts';
 
 /** How a kind's rows are set: Off | On | Pin; Off | On (Devotionals have no Pin, the Daily page chooses among them); 'parts' (Bibles: each is set for the New Testament, the Old Testament, the Apocrypha, or all three). */
@@ -126,4 +128,20 @@ export function headerCount(kind: Kind, states: ReadonlyMap<string, ShelfState>,
   const { on } = countsOf(kind, states);
   if (kind === 'bible') return `${bibles ? new Set(Object.values(bibles)).size : on} in use`;
   return on === 0 ? 'none on' : `${on} on`;
+}
+
+/** The line a kind's page gives when it lists a book the dials hide (mw-fnvjof.17.9): the chooser behind "In another book…", the word sheet and the tutor take a Greek book out at Greek 0 and a Hebrew
+ *  one at Hebrew 0 (resourcesForLevel), while the page lists every book of the kind and keeps its switches. A kind of one language says 'These Hebrew texts'; a kind of two ('The Hebrew lexicons') names
+ *  only the language that is off. Undefined when nothing is hidden. */
+export function hiddenLine(kind: Kind, levels: InterestLevels): string | undefined {
+  const entries = entriesOf(kind);
+  const shown = new Set(resourcesForLevel(entries, levels.grc, undefined, levels));
+  const langs = (['he', 'grc'] as const).filter((lang) => entries.some((e) => e.lang === lang && !shown.has(e)));
+  if (langs.length === 0) return undefined;
+  const names = langs.map((lang) => LANGUAGE_WORDS[lang]!);
+  const mixed = new Set(entries.map((e) => e.lang)).size > 1;
+  const noun = infoOf(kind).plural.toLowerCase();
+  const subject = mixed ? `The ${names.join(' and ')} ${noun}` : `These ${noun}`;
+  const language = names.join(' and ');
+  return `${subject} are not offered while ${language} ${names.length > 1 ? 'are' : 'is'} off in Which languages? (Settings). Your switches stay as they are; turn ${language} on there to use them.`;
 }

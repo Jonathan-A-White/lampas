@@ -240,3 +240,55 @@ test('Settings > Your Logos library has a Hebrew texts row under Greek texts; a 
   expect((await link.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
   await shot(page, 'in-logos-hebrew-pinned');
 });
+
+test('with the language dial at English only the Hebrew texts page says its books open only while Hebrew is on, and with Hebrew on the door is drawn (mw-fnvjof.17.9)', async ({ page }) => {
+  await openUnlocked(page);
+  await holdAppLinks(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await shelfOn(page, [['commentary', 'Commentaries']]);
+
+  // Which languages? at English only: Hebrew 0
+  await page.goto('/#/?b=rom&c=8');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await openSettings(page);
+  const languages = page.getByRole('group', { name: 'Which languages?', exact: true });
+  await languages.getByRole('button', { name: 'English only', exact: true }).click();
+  await expect(languages.getByRole('button', { name: 'English only', exact: true })).toHaveAttribute('aria-pressed', 'true');
+
+  // the page lists LHB and lets him Pin it, and says why the verse will not offer it
+  await page.goto('/#/library?kind=hebrew-text');
+  await expect(page.getByRole('heading', { name: 'Hebrew texts', level: 1 })).toBeVisible();
+  const group = page.getByRole('radiogroup', { name: 'LHB', exact: true });
+  await group.getByRole('radio', { name: 'Pin', exact: true }).click();
+  await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveAttribute('aria-checked', 'true');
+  const why = page.getByTestId('dial-hides');
+  await expect(why).toContainText('Which languages?');
+  await expect(why).toContainText('Hebrew');
+  const box = (await why.boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(390.5);
+  await shot(page, 'in-logos-hebrew-texts-english-only');
+
+  // a kind of both languages names only the one that is off (Greek stays at its placed step)
+  await page.goto('/#/library?kind=lexicon');
+  await expect(page.getByRole('heading', { name: 'Lexicons', level: 1 })).toBeVisible();
+  await expect(page.getByTestId('dial-hides')).toContainText('Hebrew');
+
+  // Hebrew on: the line is gone and the door is drawn, LHB first under Pinned
+  await page.goto('/#/?b=rom&c=8');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await openSettings(page);
+  await languages.getByRole('button', { name: 'Hebrew', exact: true }).click();
+  await page.goto('/#/library?kind=hebrew-text');
+  await expect(page.getByRole('heading', { name: 'Hebrew texts', level: 1 })).toBeVisible();
+  await expect(page.getByRole('radiogroup', { name: 'LHB', exact: true })).toBeVisible();
+  await expect(page.getByTestId('dial-hides')).toHaveCount(0);
+  await page.goto('/#/?b=psa&c=23&v=1');
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view).toBeVisible();
+  await view.getByRole('group', { name: 'Psalms 23:1 in Logos' }).getByRole('button', { name: 'In another book…', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'Psalms 23:1 in Logos' });
+  await expect(sheet.getByRole('group').first()).toHaveAccessibleName('Pinned');
+  await expect(sheet.getByRole('group').first().getByRole('link').first()).toHaveAttribute('href', 'logosres:LLS:LHB;ref=Bible.Ps23.1');
+});
