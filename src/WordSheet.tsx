@@ -21,6 +21,7 @@ import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
 import { paradigmOfHebrewWord, paradigmOfWord } from './data/paradigms';
+import { accentedFormsOf, inCapitals, matchedWord } from './data/paradigms/ownForms';
 import { openHelpPage, openLibrary, openParadigm } from './nav/route';
 import { holdWord, READING_HELP_PAGE } from './wordReturn';
 import { oneTap } from './ui/settle';
@@ -687,10 +688,17 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
   };
   // the word's table is a page of its own: the sheet is held, with what it showed, and Back brings it back (src/wordReturn.ts)
   const openTable = (word: GreekWord): void => {
-    const found = paradigmOfWord(word);
-    if (!found) return;
-    holdWord(sheetChapter, lookup);
-    openParadigm({ table: found.table.id, cell: found.cell, word: cardForm(sheetChapter, word), parse: word.p, lemma: word.l, ...(isSeptuagint(sheetChapter) ? { septuagint: true } : {}) });
+    const open = (found: ReturnType<typeof paradigmOfWord>): void => {
+      if (!found) return;
+      holdWord(sheetChapter, lookup);
+      openParadigm({ table: found.table.id, cell: found.cell, word: cardForm(sheetChapter, word), parse: word.p, lemma: word.l, ...(isSeptuagint(sheetChapter) ? { septuagint: true } : {}) });
+    };
+    // a Septuagint word printed in capitals is asked of the table as the accented form of its lemma and parsing (mw-u2w5klk.323): ΑΡΧΗ has no iota subscript to tell -ῃ from -ᾳ
+    if (isSeptuagint(sheetChapter) && inCapitals(word.t) && word.l) {
+      void accentedFormsOf(word).then((accented) => open(paradigmOfWord(matchedWord(word, accented))));
+      return;
+    }
+    open(paradigmOfWord(word));
   };
   // the Help page (Words) that says how the Septuagint's words were read is a page of its own: the sheet is held, and Back brings it back
   const openReading = (): void => {
