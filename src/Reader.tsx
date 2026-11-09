@@ -614,21 +614,23 @@ function ReaderBody({ open }: { open: OpenChapter }) {
       />
       {septuagint && !chapterReading ? (
         <>
-          <button
-            type="button"
-            data-reader-subtitle
-            aria-haspopup="dialog"
-            onClick={() => setSourcesShown(true)}
-            className="chrome-small mx-auto flex min-h-11 items-center px-2 pb-1 text-center text-muted underline decoration-dotted underline-offset-4"
-          >
-            {SEPTUAGINT_SUBTITLE}
-          </button>
+          <div>
+            <button
+              type="button"
+              data-reader-subtitle
+              aria-haspopup="dialog"
+              onClick={() => setSourcesShown(true)}
+              className="mx-auto flex min-h-11 w-fit max-w-full items-center justify-center px-1 py-1 text-center text-[calc(0.8125rem/var(--lp-scale))] leading-[1.4] text-balance text-muted underline decoration-dotted underline-offset-4"
+            >
+              {SEPTUAGINT_SUBTITLE}
+            </button>
+          </div>
           {view !== undefined && septuagintWeaveNoted(view, weaveShown ?? false, aligned) ? <SeptuagintNote className="mx-2 mb-1" /> : null}
         </>
       ) : null}
       {hebrewHeld && !chapterReading && heldNotice !== null ? (
         <div className="px-2 pb-1 text-center">
-          <p role="note" data-septuagint-not-ready className="chrome-small text-muted">
+          <p role="note" data-septuagint-not-ready className="chrome-small text-balance text-muted">
             {heldNotice}
           </p>
           <SeptuagintDoor book={BOOK} chapter={CHAPTER} />
