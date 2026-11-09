@@ -1,5 +1,15 @@
 # What's new
 
+## 0.7.191
+_2026-11-09_
+- Fixed: the Hebrew texts page of Your Logos library now says that these books open only while Hebrew is on in Which languages?, instead of silently giving no "In another book…".
+- Fixed: in the English view of the Old Testament in Greek, a verse that Brenton's English joins with the one before is now shown as one row with a range number (like 32-33), no longer as an empty verse.
+- Fixed: Tapping the Septuagint's capital-letter word ἀρχῇ in Genesis 1:1 now shows its ending in the right noun table.
+- Fixed: A Hebrew word link that did not work on a phone that already held the old Hebrew word list now opens, once the app is updated.
+- Fixed: Help now says the Weave button in a Septuagint chapter appears from "Dipping a toe" up, not at "Curious".
+- Fixed: In the Old Testament in Greek, tapping the leading words of a phrase like "Let there be" or "there was" in the English now opens the Greek word they belong to.
+- Fixed: choosing a Bible in the Library no longer offers "All three" when it holds fewer than three parts; it says "Both" for two and offers nothing extra for one.
+
 ## 0.7.190
 _2026-11-09_
 - New: With a second text beside the passage, Turn pages now keeps both on the same verse: turning a page moves the other text, and scrolling the other text turns the page.
