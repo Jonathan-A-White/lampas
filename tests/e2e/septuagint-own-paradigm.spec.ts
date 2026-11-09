@@ -125,6 +125,27 @@ test('Genesis 1:1 ΑΡΧΗ, a word Swete prints in capitals: This word outlines 
   await shot(page, 'septuagint-own-paradigm-capitals');
 });
 
+// mw-u2w5klk.323: the capitals have no iota subscript, so the cell the sheet hands the table was the α (ἡμέρα) group's -ᾳ, not the η (φωνή) group's -ῃ
+test('Genesis 1:1 ΑΡΧΗ: the Paradigm link names the cell in the η (φωνή) group, and Learn > The pattern outlines -ῃ there, not -ᾳ in the α (ἡμέρα) group', async ({ page }) => {
+  await openTable(page, 1, 'ΑΡΧΗ', NOUN_IDEAS, 'Noun endings');
+  const address = new URLSearchParams(new URL(page.url()).hash.split('?')[1]);
+  expect(address.get('cell')).toBe('First declension, feminine in η (φωνή) Dative Singular');
+  await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+  await forms(page).getByRole('button', { name: 'The pattern' }).click();
+  await expect(forms(page).getByRole('button', { name: 'The pattern' })).toHaveAttribute('aria-pressed', 'true');
+  const lit = page.locator('[data-lit]');
+  await expect(lit).toHaveCount(1);
+  await expect(lit).toContainText('-ῃ');
+  // the lit cell sits under the heading of the φωνή group, the last row heading before it
+  const heading = await lit.evaluate((cell) => {
+    let row = cell.closest('tr')?.previousElementSibling ?? null;
+    while (row && !row.querySelector('th[scope="rowgroup"]')) row = row.previousElementSibling;
+    return row?.querySelector('th[scope="rowgroup"]')?.textContent?.trim() ?? '';
+  });
+  expect(heading).toBe('First declension, feminine in η (φωνή)');
+  await shot(page, 'septuagint-own-paradigm-capitals-pattern');
+});
+
 test('Genesis 1:2 ὕδατος, a word whose Septuagint lemma has a comma (ὕδωρ, ὕδατος): This word is there and its cell is outlined, with the New Testament’s ὕδωρ forms laid too', async ({ page }) => {
   await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
   await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();

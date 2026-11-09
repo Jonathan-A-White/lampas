@@ -8,7 +8,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { fileText, foldSeptuagint, headwordOf as buildHeadwordOf, lemmaForms, writeLemmaForms, ownFormOf, readChapters, readSeptuagintChapters, septuagintCapitals, septuagintFormOf, septuagintForms, type LemmaFormEntry } from '../../scripts/build-lemma-forms.mjs';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import { cellName, cellsOf, paradigmById, paradigmOfWord, tableFor } from '../../src/data/paradigms';
-import { absentText, fitsNoTable, forgetLemmaForms, headwordOf, loadLemmaForms, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, septuagintFormOf as appSeptuagintFormOf, type OwnForm } from '../../src/data/paradigms/ownForms';
+import { absentText, fitsNoTable, forgetLemmaForms, headwordOf, loadLemmaForms, matchedWord, ownFormOf as appOwnFormOf, ownFormsOf, ownTable, referenceText, septuagintFormOf as appSeptuagintFormOf, type OwnForm } from '../../src/data/paradigms/ownForms';
 import type { Paradigm } from '../../src/data/paradigms/types';
 
 // the New Testament's chapters: this file is the Greek index (the Hebrew one is tests/unit/lemma-forms-hbo.test.ts)
@@ -255,6 +255,31 @@ describe('the index takes the Septuagint’s forms of a lemma, apart from the Ne
     const arche = told.find((c) => c.token === 'ΑΡΧΗ')!;
     expect(arche).toMatchObject({ lemma: 'ἀρχή', code: 'N-DSF', form: 'ἀρχῇ', place: 'gen 1:1' });
     for (const c of told) expect(c.token).toBe(c.token.toUpperCase());
+  });
+
+  it('a capitals word handed its matched accented form opens the table and cell of that form (mw-u2w5klk.323: ΑΡΧΗ is ἀρχῇ in η (φωνή), not -ᾳ in α (ἡμέρα))', () => {
+    const word = { t: 'ΑΡΧΗ', l: 'ἀρχή', p: 'N-DSF' };
+    const accented = paradigmOfWord({ t: 'ἀρχῇ', l: 'ἀρχή', p: 'N-DSF' });
+    expect(accented?.cell).toBe('First declension, feminine in η (φωνή) Dative Singular');
+    const handed = paradigmOfWord(matchedWord(word, ['ἀρχῇ']));
+    expect(handed?.table.id).toBe(accented?.table.id);
+    expect(handed?.cell).toBe(accented?.cell);
+    // a word in small letters, and a capitals word with no matched form, are handed as they are
+    expect(matchedWord({ t: 'ἀρχῇ', l: 'ἀρχή', p: 'N-DSF' }, ['ἀρχῇ'])).toEqual({ t: 'ἀρχῇ', l: 'ἀρχή', p: 'N-DSF' });
+    expect(matchedWord(word, [])).toEqual(word);
+  });
+
+  it('every capitals token of the fixture chapters, handed its matched form, opens the table and cell of that form (the shipped chapters too, when built)', () => {
+    const chapters = readSeptuagintChapters('tests/fixtures/data-lxx');
+    const told = septuagintCapitals(chapters, index);
+    expect(told.length).toBeGreaterThan(0);
+    for (const c of told) {
+      if (c.form === undefined) continue;
+      const handed = paradigmOfWord(matchedWord({ t: c.token, l: c.lemma, p: c.code }, [c.form]));
+      const accented = paradigmOfWord({ t: c.form, l: c.lemma, p: c.code });
+      expect(handed?.table.id, `${c.token} ${c.place}`).toBe(accented?.table.id);
+      expect(handed?.cell, `${c.token} ${c.place}`).toBe(accented?.cell);
+    }
   });
 
   it('a lemma with no Septuagint form has a file that is byte for byte the New Testament’s; one with some has them under lxx, and one only the Septuagint has has no New Testament forms', () => {
