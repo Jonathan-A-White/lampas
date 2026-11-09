@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedSermons, serveChapter } from '../../src/dataCache';
+import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedList, isVersionedSermons, serveChapter } from '../../src/dataCache';
 
 function fakeCaches(names: string[]) {
   const held = new Set(names);
@@ -121,5 +121,17 @@ describe('serveChapter', () => {
     t.cache.entries.set(`http://localhost${A}`, 'v1 text');
     expect((await t.ask(B)).status).toBe(404);
     expect([...t.cache.entries.keys()]).toEqual([`http://localhost${A}`]);
+  });
+});
+
+describe('isVersionedList', () => {
+  it('is a Hebrew word list with a 12-hex ?v=, and nothing else (mw-fnvjof.17.41)', () => {
+    const is = (path: string) => isVersionedList(new URL(path, 'http://localhost'));
+    expect(is('/data/lexicon-hbo.json?v=0123456789ab')).toBe(true);
+    expect(is('/data/frequency-hbo.json?v=0123456789ab')).toBe(true);
+    expect(is('/data/lexicon-hbo.json')).toBe(false);
+    expect(is('/data/lexicon-hbo.json?v=xyz')).toBe(false);
+    expect(is('/data/lexicon.json?v=0123456789ab')).toBe(false);
+    expect(is('/data/jhn/1.json?v=0123456789ab')).toBe(false);
   });
 });

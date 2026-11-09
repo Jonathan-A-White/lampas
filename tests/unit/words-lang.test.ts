@@ -130,7 +130,7 @@ describe('a lemma the Talk answer names, by language', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async (url: string) => {
-        const lexicon = url.endsWith('lexicon-hbo.json') ? { [BARA]: { g: 'to create', s: 'H1254', c: 'verb' } } : { 'σάρξ': { g: 'flesh', s: 'G4561', c: 'noun' } };
+        const lexicon = url.split('?')[0].endsWith('lexicon-hbo.json') ? { [BARA]: { g: 'to create', s: 'H1254', c: 'verb' } } : { 'σάρξ': { g: 'flesh', s: 'G4561', c: 'noun' } };
         return new Response(JSON.stringify(lexicon));
       }),
     );

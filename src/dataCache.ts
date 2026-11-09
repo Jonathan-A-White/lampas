@@ -24,6 +24,13 @@ export const isVersionedLadder = (url: URL): boolean =>
   /^\/data\/ladder\/[a-z]{2}\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
 
 /**
+ * A Hebrew word list asked for by its fingerprint: /data/lexicon-hbo.json?v=0123456789ab (src/data/chapter.ts listUrl, the fingerprint in index.json `lists`); kept and replaced as a chapter is (mw-fnvjof.17.41).
+ * The unversioned address is not matched, so a plain request falls to the cache-first route; the app no longer asks for one.
+ */
+export const isVersionedList = (url: URL): boolean =>
+  /^\/data\/(lexicon|frequency)-hbo\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
+
+/**
  * A sermon index book file asked for by its source's fingerprint: /sermons/spurgeon-ccel/rom.json?v=0123456789ab (src/data/sermonIndex.ts sermonBookUrl), or a theme index's: /themes/themes-torrey/rom.json?v=0123456789ab
  * (src/data/themeIndex.ts themeBookUrl, mw-qtu3zvz.4); kept and replaced as a chapter is (mw-qtu3zvz.1). The unversioned address is not matched.
  */
@@ -31,7 +38,7 @@ export const isVersionedSermons = (url: URL): boolean =>
   /^\/(sermons|themes)\/[0-9a-z-]+\/[0-9a-z]+\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
 
 /**
- * Answers a versioned chapter request (or a versioned ladder list or sermon book file: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
+ * Answers a versioned chapter request (or a versioned ladder list, Hebrew word list or sermon book file: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
  * and every other copy of the same chapter (an older fingerprint) is removed. A refusal is passed on and nothing is kept or removed; with no
  * network the older copy of the chapter is read in the new one's place, rather than nothing.
  */

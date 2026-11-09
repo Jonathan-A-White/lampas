@@ -1,7 +1,7 @@
 // src/data/lexicon.ts — the whole text's lemmas as /data/lexicon.json has them (docs/data.md): a word he names that the open
 // chapter does not use is still looked up here, with the gloss and part of speech the chapter files would give it. The Old Testament's Hebrew
 // lemmas are /data/lexicon-hbo.json, loaded beside the Greek one by language (mw-5vvlay.2).
-import type { SourceLanguage } from './chapter';
+import { listUrl, type SourceLanguage } from './chapter';
 import { loadLxxLemmas } from './lxxChapter';
 import { getSetting } from '../settings/store';
 import { septuagintSetting } from '../settings/definitions/septuagint';
@@ -21,14 +21,15 @@ export interface LemmaEntry {
 /** every lemma of the text (NFC) -> its entry */
 export type LemmaLexicon = Record<string, LemmaEntry>;
 
-const FILES: Record<SourceLanguage, string> = { grc: '/data/lexicon.json', hbo: '/data/lexicon-hbo.json' };
+/** The Greek lexicon is in the precache, so its plain address is always the build's own; the Hebrew one is asked for by its fingerprint (listUrl), so a changed list reaches a phone that kept the old (mw-fnvjof.17.41). */
+const file = (language: SourceLanguage): string => (language === 'hbo' ? listUrl('lexicon-hbo') : '/data/lexicon.json');
 const lexicons: Partial<Record<SourceLanguage, Promise<LemmaLexicon>>> = {};
 
-/** Fetches /data/lexicon.json (or, for 'hbo', /data/lexicon-hbo.json) once; later and concurrent callers share the one request. A failure is not kept. */
+/** Fetches /data/lexicon.json (or, for 'hbo', /data/lexicon-hbo.json?v=<fingerprint>) once; later and concurrent callers share the one request. A failure is not kept. */
 export function loadLexicon(language: SourceLanguage = 'grc'): Promise<LemmaLexicon> {
   const held = lexicons[language];
   if (held) return held;
-  const request = fetch(FILES[language]).then(async (response) => {
+  const request = fetch(file(language)).then(async (response) => {
     if (!response.ok) throw new Error(`Could not load the lexicon: ${response.status}`);
     return (await response.json()) as LemmaLexicon;
   });
