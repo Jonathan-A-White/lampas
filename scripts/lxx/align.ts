@@ -8,6 +8,7 @@
 // The chunks, joined by a space, are Brenton's whole verse, and no Greek word is dropped: one with no `e` has no English yet. `lxx:ship` aligns every chapter it ships (ship.ts);
 // `lxx:align` runs that ship into a directory (default a temporary one) and writes the aligned share of each chapter between the markers of docs/lxx-align.md. PROVISIONAL, Governor to confirm: the shape, `c`, `y`.
 // The model pass (align-choose.ts, mw-u2w5klk.274.2) then replaces each remainder by chunks `{ t, g, s?, c, y: 'model' }` where a Builder session has cut it (data/lxx/align); alignChapter applies its rows.
+// Last, the words Brenton supplies for a verb ('Let there', 'there', 'he', 'it') join the chunk of the verb after them ('Let there be'), so a tap on them finds the Greek (mw-u2w5klk.274.9).
 // No network beyond what the ship fetches; no paid API is called.
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -361,6 +362,60 @@ export function alignVerse(verse: Verse, gloss: (lemma: string) => string): { ve
 
 // ---------------------------------------------------------------- a chapter, and the report
 
+/** The English words Brenton supplies in front of a Greek verb that has none of its own: 'Let there be' for Γενηθήτω, 'there was' and 'it was' for ἐγένετο, 'he called' for ἐκάλεσεν. */
+const SUPPLIED_FOR_VERB = new Set(['let', 'there', 'it', 'he', 'she', 'they', 'we', 'i', 'you', 'thou', 'ye']);
+
+/**
+ * The last words of a chunk with no Greek, when they are such words and a chunk of a Greek verb follows, join that chunk ('Let there' + 'be' is 'Let there be'), so a tap on the leading half of the
+ * phrase finds the verb; the words before them stay a chunk of their own ('And he' + 'called' is 'And' and 'he called'). The verb's chunk keeps its `g`, `c` and `y`; the supplied marks of both parts
+ * are kept, at their place among the joined words. `e` of each Greek word follows its chunk.
+ */
+function joinSupplied(verse: Verse): Verse {
+  const isVerb = (chunk: EnglishChunk | undefined): chunk is EnglishChunk => chunk !== undefined && chunk.g.some((k) => verse.g[k]?.p.startsWith('V-'));
+  const wordsOf = (chunk: EnglishChunk): string[] => chunk.t.split(/\s+/).filter(Boolean);
+  /** how many of the chunk's last words are supplied-for-verb words */
+  const tailOf = (chunk: EnglishChunk): number => {
+    const words = wordsOf(chunk);
+    let n = 0;
+    while (n < words.length && SUPPLIED_FOR_VERB.has(lettersOf(words[words.length - 1 - n]))) n++;
+    return chunk.g.length === 0 ? n : 0;
+  };
+  if (!verse.e.some((chunk, i) => tailOf(chunk) > 0 && isVerb(verse.e[i + 1]))) return verse;
+  const e: EnglishChunk[] = [];
+  for (let i = 0; i < verse.e.length; i++) {
+    const chunk = verse.e[i];
+    const next = verse.e[i + 1];
+    const tail = isVerb(next) ? tailOf(chunk) : 0;
+    if (tail === 0) {
+      e.push(chunk);
+      continue;
+    }
+    const words = wordsOf(chunk);
+    const cut = words.length - tail;
+    if (cut > 0) {
+      const head: EnglishChunk = { ...chunk, t: words.slice(0, cut).join(' ') };
+      const headS = (chunk.s ?? []).filter((k) => k < cut);
+      if (headS.length > 0) head.s = headS;
+      else delete head.s;
+      e.push(head);
+    }
+    const s = [...(chunk.s ?? []).filter((k) => k >= cut).map((k) => k - cut), ...(next.s ?? []).map((k) => k + tail)];
+    const joined: EnglishChunk = { t: `${words.slice(cut).join(' ')} ${next.t}`, g: [...next.g] };
+    if (s.length > 0) joined.s = s;
+    if (next.c !== undefined) joined.c = next.c;
+    if (next.y !== undefined) joined.y = next.y;
+    e.push(joined);
+    i++;
+  }
+  const g = verse.g.map((w) => {
+    const word: GreekWord = { ...w };
+    delete word.e;
+    return word;
+  });
+  e.forEach((chunk, i) => chunk.g.forEach((k) => (g[k].e = i)));
+  return { ...verse, g, e };
+}
+
 /** What the report says of one chapter. */
 export interface AlignShare {
   /** Swete's code, lower case */
@@ -396,6 +451,8 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
     return out.verse;
   });
   const modelled = applyModel({ ...chapter, verses }, model);
+  // after the model pass, so the runs it numbers are the aligner's own: the words Brenton supplies for a verb join its chunk
+  modelled.chapter = { ...modelled.chapter, verses: modelled.chapter.verses.map(joinSupplied) };
   if (model.length > 0) {
     // the share of a chapter the model cut is read from the chapter itself
     share.paired = 0;

@@ -188,6 +188,58 @@ describe('an unpaired word is never dropped', () => {
   });
 });
 
+describe('the words Brenton supplies for a verb join its chunk', () => {
+  const verse3 = gen1.verses[2];
+  const chunkOf = (verse: Verse, t: string): number => verse.e.findIndex((c) => c.t === t);
+
+  it('Gen 1:3: "Let there be" is one chunk of Γενηθήτω, so a tap on "Let there" finds the Greek', () => {
+    const chunk = verse3.e.find((c) => c.t.startsWith('Let there'))!;
+    expect(chunk.t).toBe('Let there be');
+    expect(chunk.g).toEqual([4]);
+    expect(verse3.g[4].e).toBe(verse3.e.indexOf(chunk));
+  });
+
+  it('Gen 1:3: no "there" chunk with no Greek stands before the paired "was"; "there was" is one chunk of ἐγένετο', () => {
+    const was = verse3.e.findIndex((c) => c.t === 'there was');
+    expect(was).toBeGreaterThan(0);
+    expect(verse3.e[was].g).toEqual([7]);
+    verse3.e.forEach((c, i) => {
+      if (c.g.length === 0) expect(verse3.e[i + 1]?.t).not.toBe('was');
+    });
+  });
+
+  it('Gen 1:5: "he" joins "called" and the verse is still Brenton\'s whole verse', () => {
+    const verse5 = gen1.verses[4];
+    expect(verse5.e.find((c) => c.t === 'he called')?.g).toEqual([10]);
+    expect(joined(verse5)).toBe(gen1Plain.verses[4].e[0].t);
+    verse5.e.forEach((chunk, i) => chunk.g.forEach((g) => expect(verse5.g[g].e).toBe(i)));
+  });
+
+  it('only a verb takes them: "let it" before a noun stays a remainder, and the supplied marks of both parts are kept', () => {
+    const noun = alignVerse(verseOf('And let it light.', [word('φῶς', 'phōs', 'φῶς', 'N-ASN')]), () => 'light').verse;
+    expect(noun.e.map((c) => c.t)).toEqual(['And let it', 'light.']);
+    const verb = alignChapter(
+      { code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf('And he called light.', [word('ἐκάλεσεν', 'ekalesen', 'καλέω', 'V-AAI-3S'), word('φῶς', 'phōs', 'φῶς', 'N-ASN')], [1])] } as Chapter,
+      (l) => ({ καλέω: 'call', φῶς: 'light' })[l] ?? '',
+    ).chapter.verses[0];
+    expect(verb.e.map((c) => [c.t, c.g, c.s])).toEqual([['And', [], undefined], ['he called', [0], [0]], ['light.', [1], undefined]]);
+    expect(chunkOf(verb, 'he called')).toBe(1);
+  });
+});
+
+describe('the model pass and the words supplied for a verb', () => {
+  it('a "there" the model pass found no Greek for still joins "was", and the model\'s rows stay held to the aligner\'s runs', () => {
+    const chapter = { code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf('And there was light.', [word('καὶ', 'kai', 'καί', 'CONJ'), word('ἐγένετο', 'egeneto', 'γίνομαι', 'V-2ADI-3S'), word('φῶς', 'phōs', 'φῶς', 'N-ASN')])] } as Chapter;
+    const gl = (l: string): string => ({ καί: 'and', γίνομαι: 'become', φῶς: 'light' })[l] ?? '';
+    const row = { ref: 'Gen.1:1', run: 1, text: 'there', g: [], mark: '' as const, confidence: 0.8 };
+    const out = alignChapter(chapter, gl, [row]);
+    expect(out.stale).toEqual([]);
+    const verse = out.chapter.verses[0];
+    expect(verse.e.map((c) => [c.t, c.g, c.y])).toEqual([['And', [0], 'align'], ['there was', [1], 'align'], ['light.', [2], 'align']]);
+    expect(verse.g[1].e).toBe(1);
+  });
+});
+
 describe('the Genesis 1 fixture', () => {
   it('aligns at least the stated share of its Greek words', () => {
     const words = gen1.verses.flatMap((v) => v.g);
