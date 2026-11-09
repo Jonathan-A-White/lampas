@@ -9,6 +9,7 @@ import { useSyncExternalStore } from 'react';
 import { bookOf } from '../data/books';
 import { paradigmById } from '../data/paradigms';
 import type { ReaderView, Weave } from '../data/repositories';
+import { withoutMarks } from '../reader/septuagint';
 import type { CourseLanguage } from '../ipa/course';
 import type { MemorizeLang } from '../memorize/languages';
 import { previousAddress } from './lastRoute';
@@ -214,7 +215,11 @@ export function paradigmOf(hash: string): ParadigmAddress {
   if (address.table !== undefined && lemma) {
     address.lemma = lemma;
     if (params.get('own') === '1') address.own = true;
-    if (params.get('text') === 'lxx') address.septuagint = true;
+    // a link made before the word was cleaned (or by hand) may carry Swete's punctuation: the word is without it (mw-u2w5klk.306)
+    if (params.get('text') === 'lxx') {
+      address.septuagint = true;
+      if (address.word) address.word = withoutMarks(address.word);
+    }
   }
   return address;
 }
@@ -226,7 +231,7 @@ export function paradigmHash({ table, mode, cell, word, parse, lemma, own, septu
   if (table !== undefined && mode) params.set('mode', mode);
   if (table !== undefined && cell) params.set('cell', cell);
   if (table !== undefined && word && parse) {
-    params.set('w', word);
+    params.set('w', septuagint ? withoutMarks(word) : word);
     params.set('p', parse);
   }
   if (table !== undefined && lemma) {

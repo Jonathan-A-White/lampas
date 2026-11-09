@@ -104,6 +104,16 @@ describe('the paradigm address', () => {
     expect(paradigmHash({ table: 'adjective-endings', septuagint: true })).toBe('#/paradigms?t=adjective-endings');
     expect(paradigmOf(paradigmHash({ table: 'adjective-endings', lemma: 'ἀόρατος' })).septuagint).toBeUndefined();
   });
+
+  // mw-u2w5klk.306: Swete's full stop on the last word of a clause is not part of the word, whether the link is made now or is an older one that carries it
+  it('keeps Swete\'s punctuation off a Septuagint word, in the link it makes and in one it reads', () => {
+    const made = paradigmHash({ table: 'third-declension', word: 'ὕδατος.', parse: 'N-GSN', lemma: 'ὕδωρ', own: true, septuagint: true });
+    expect(made).toBe(`#/paradigms?t=third-declension&w=${encodeURIComponent('ὕδατος')}&p=N-GSN&l=${encodeURIComponent('ὕδωρ')}&own=1&text=lxx`);
+    const older = `#/paradigms?t=third-declension&w=${encodeURIComponent('ὕδατος.')}&p=N-GSN&l=${encodeURIComponent('ὕδωρ')}&own=1&text=lxx`;
+    expect(paradigmOf(older).word).toBe('ὕδατος');
+    // a New Testament word is as it was given
+    expect(paradigmOf(`#/paradigms?t=third-declension&w=${encodeURIComponent('ὕδατος.')}&p=N-GSN&l=${encodeURIComponent('ὕδωρ')}&own=1`).word).toBe('ὕδατος.');
+  });
 });
 
 describe('the library import address', () => {

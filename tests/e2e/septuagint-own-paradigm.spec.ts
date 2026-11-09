@@ -278,3 +278,44 @@ for (const size of [100, 130, 160]) {
     await shot(page, `septuagint-own-paradigm-adjective-${size}`);
   });
 }
+
+// mw-u2w5klk.306: Swete's full stop on ὕδατος (the clause's last word) is on the Reader's line only: the word sheet, the paradigm link's address and the paradigm screen's word line have the bare form
+test('Genesis 1:2 ὕδατος., the last word of the clause: the word sheet, the address and the paradigm screen\'s word line carry ὕδατος without the full stop', async ({ page }) => {
+  await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
+  // the paradigm screen's word line: the form, a colon, its parsing
+  const line = page.getByTestId('word-line');
+  await expect(line).toHaveText(/^ὕδατος: noun, genitive singular neuter/);
+  await expect(line.locator('span').first()).toHaveText('ὕδατος');
+  // the address he came by carries the form without the point
+  const hash = new URL(page.url()).hash;
+  expect(decodeURIComponent(hash)).toContain('w=ὕδατος&');
+  expect(decodeURIComponent(hash)).not.toContain('ὕδατος.');
+  await shot(page, 'septuagint-word-form-without-stop');
+});
+
+test('Genesis 1:2 ὕδατος.: the word sheet\'s title is ὕδατος without the full stop', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.goto('/#/settings');
+  const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
+  await row.getByRole('button', { name: 'On', exact: true }).click();
+  await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.goto('/#/?b=gen&c=1&view=greek');
+  await page.reload();
+  await page.locator('[data-verse="2"]').getByRole('button', { name: 'ὕδατος.', exact: true }).first().click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet.getByText('ὕδατος', { exact: true }).first()).toBeVisible();
+  await expect(sheet.getByText('ὕδατος.', { exact: true })).toHaveCount(0);
+  await shot(page, 'septuagint-word-sheet-without-stop');
+});
+
+test('an older link to the paradigm screen that carries the full stop (w=ὕδατος.) shows the word line without it', async ({ page }) => {
+  await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
+  const address = `/#/paradigms?t=third-declension&mode=learn&w=${encodeURIComponent('ὕδατος.')}&p=N-GSN&l=${encodeURIComponent('ὕδωρ')}&own=1&text=lxx`;
+  await page.goto(address);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'The third declension', level: 1 })).toBeVisible();
+  await expect(page.getByTestId('word-line')).toHaveText(/^ὕδατος: noun, genitive singular neuter/);
+  await shot(page, 'septuagint-older-link-without-stop');
+});
