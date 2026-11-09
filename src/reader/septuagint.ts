@@ -42,12 +42,44 @@ export const septuagintTitle = (title: string, lampas: number, chapter: Pick<Cha
 /**
  * The number a Septuagint verse is shown with: Lampas's verse (its `ref`), and the Greek chapter and verse beside it where they differ ('1' and '22:1' of Greek Ps 22:1, which is Psalm 23:1).
  * A verse Lampas has no verse for ('none') shows its Greek number alone. A verse of a chapter that joins two Greek chapters (Verse.greek) says its own Greek chapter.
+ * A row that stands for several Greek verses (`through`, englishRows) reads as the range: '32-33', and the Greek '37:32-33' where that differs.
  */
-export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref' | 'greek'>, greekChapter: number): { shown: number; greek?: string } {
-  const { ref } = verse;
-  if (!ref || ref === 'none') return { shown: verse.n };
-  if (verse.greek) return { shown: ref.verse, greek: `${verse.greek.chapter}:${verse.greek.verse}` };
-  return ref.chapter === greekChapter && ref.verse === verse.n ? { shown: ref.verse } : { shown: ref.verse, greek: `${greekChapter}:${verse.n}` };
+export function septuagintNumber(verse: Pick<Verse, 'n' | 'ref' | 'greek' | 'through'>, greekChapter: number): { shown: number | string; greek?: string } {
+  const one = (v: Pick<Verse, 'n' | 'ref' | 'greek'>): { shown: number; greek?: string } => {
+    const { ref } = v;
+    if (!ref || ref === 'none') return { shown: v.n };
+    if (v.greek) return { shown: ref.verse, greek: `${v.greek.chapter}:${v.greek.verse}` };
+    return ref.chapter === greekChapter && ref.verse === v.n ? { shown: ref.verse } : { shown: ref.verse, greek: `${greekChapter}:${v.n}` };
+  };
+  const first = one(verse);
+  if (!verse.through) return first;
+  const last = one(verse.through);
+  const shown = last.shown === first.shown ? first.shown : `${first.shown}-${last.shown}`;
+  if (first.greek === undefined && last.greek === undefined) return { shown };
+  const a = first.greek ?? `${greekChapter}:${verse.n}`;
+  const b = last.greek ?? `${greekChapter}:${verse.through.n}`;
+  const [chapterA, verseA] = a.split(':');
+  const [chapterB, verseB] = b.split(':');
+  return { shown, greek: chapterA === chapterB ? `${chapterA}:${verseA}-${verseB}` : `${a}-${b}` };
+}
+
+/**
+ * The rows the English view of a Septuagint chapter draws (mw-u2w5klk.307). Brenton's English for two Greek verses is one verse of his, kept at the first (scripts/data/lxxChapter.ts): the verse after it has no English
+ * (Genesis 37:33, Psalm 149:9; Isaiah 38:15 has no Greek word either), so an English row of its own would be a number with nothing beside it. The pair is one row instead: the first verse with `to` and `through` the verse folded into it (as many as
+ * follow it), `g` holding the Greek words of them all so the Greek is still there to read. The Greek view keeps every verse as it is. A verse with a heading, or the first of the chapter, stays its own row.
+ * The array given is returned as it is when nothing folds.
+ */
+export function englishRows(verses: readonly Verse[]): Verse[] {
+  const rows: Verse[] = [];
+  let folded = false;
+  for (const v of verses) {
+    const prev = rows[rows.length - 1];
+    if (prev && prev.e.length > 0 && v.e.length === 0 && !v.h && prev.greek?.chapter === v.greek?.chapter) {
+      rows[rows.length - 1] = { ...prev, to: v.n, through: { n: v.n, ref: v.ref, greek: v.greek }, g: [...prev.g, ...v.g] };
+      folded = true;
+    } else rows.push(v);
+  }
+  return folded ? rows : (verses as Verse[]);
 }
 
 /** The verse number Lampas knows a verse of `chapter` by: a Septuagint verse's `ref` (Greek 9:22 is Psalm 10:1), else the verse's own `n` (every other chapter, and a verse with no Lampas verse). */
@@ -61,7 +93,8 @@ export function lampasUnit(chapter: Pick<Chapter, 'edition' | 'verses'>, unit: P
   if (!isSeptuagint(chapter)) return unit.to === undefined ? { n: unit.n } : { n: unit.n, to: unit.to };
   const held = chapter.verses.filter((v) => v.n >= unit.n && v.n <= (unit.to ?? unit.n) && v.ref && v.ref !== 'none');
   if (held.length === 0) return unit.to === undefined ? { n: unit.n } : { n: unit.n, to: unit.to };
-  const numbers = held.map((v) => lampasNumber(chapter, v));
+  // a row englishRows folded holds the Lampas verses of the Greek verses folded into it too
+  const numbers = held.flatMap((v) => [lampasNumber(chapter, v), ...(v.through?.ref && v.through.ref !== 'none' ? [lampasNumber(chapter, v.through)] : [])]);
   const from = Math.min(...numbers);
   const last = Math.max(...numbers);
   return last === from ? { n: from } : { n: from, to: last };

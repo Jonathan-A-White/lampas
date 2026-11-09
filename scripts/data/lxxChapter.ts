@@ -169,9 +169,31 @@ export function versesWithoutEnglish(byGreek: ReadonlyMap<string, unknown>, swet
   return [...swete].filter((ref) => !byGreek.has(ref));
 }
 
-/** The log line naming a book's Greek verses with no English. A verse of Brenton's that answers two Greek verses stands at the first, so the second is named here with the text in the first's English. */
+/**
+ * The log line naming a book's Greek verses with no English that the Reader's English view draws as one row with the verse before (englishRows, src/reader/septuagint.ts, mw-u2w5klk.307): a verse of Brenton's that answers two
+ * Greek verses stands at the first, so the second is named here, and its text is in the first's English.
+ */
 export function withoutEnglishNote(code: string, refs: readonly string[]): string {
-  return `${code}: Greek verses with no English (their text, if Brenton has it, stands in the English of the verse before): ${refs.join(', ')}`;
+  return `${code}: Greek verses with no English (each is drawn in the English view as one row with the verse before it, whose English holds its text if Brenton has it): ${refs.join(', ')}`;
+}
+
+/** The log line naming the Greek verses with no English and no verse before them with English to join: the English view has only their Greek to draw. */
+export function aloneNote(code: string, refs: readonly string[]): string {
+  return `${code}: Verses with nothing to join in the English view (no English, and no verse before them with English; the Greek is drawn alone): ${refs.join(', ')}`;
+}
+
+/** The Greek verses of the chapters (verses in order) with no English chunk, split: those with a verse before them that has English, which the English view folds into its row (`joined`), and those with none (`alone`). */
+export function noEnglishSplit(chapters: ReadonlyArray<{ chapter: number; verses: ReadonlyArray<{ n: number; e: readonly unknown[] }> }>, code: string): { joined: string[]; alone: string[] } {
+  const joined: string[] = [];
+  const alone: string[] = [];
+  for (const chapter of chapters) {
+    let open = false;
+    for (const v of chapter.verses) {
+      if (v.e.length > 0) open = true;
+      else (open ? joined : alone).push(refOf(code, chapter.chapter, v.n));
+    }
+  }
+  return { joined, alone };
 }
 
 /** The segments of one Greek verse as one chunk: their texts joined by a space, the supplied positions moved on by the words before. */
@@ -252,8 +274,10 @@ export interface BuiltLxxBook {
   lemmas: string[];
   /** the verses of LXX2012 with no Greek verse of the book to stand at */
   unplaced: string[];
-  /** the Greek verses of the shipped chapters that no Brenton verse stands at: they carry no English (mw-u2w5klk.286) */
+  /** the Greek verses of the shipped chapters that no Brenton verse stands at and that have a verse before them with English: the English view draws each as one row with that verse (mw-u2w5klk.286, .307) */
   noEnglish: string[];
+  /** the Greek verses of the shipped chapters with no English and no verse before them with English: nothing to join in the English view */
+  alone: string[];
 }
 
 /**
@@ -377,8 +401,12 @@ export function buildLxxBook(src: LxxBookSource, maps: TvtmsMaps, counts?: Lampa
   const unplaced = english ? unplacedVerses(english.placedAt, swete) : [];
   // a Greek verse of a chapter shipped that no Brenton verse stands at (mw-u2w5klk.286): the Greek verse has no English chunk, which the note names
   const shippedVerses = [...swete].filter((ref) => shipped.has(Number(/^[^ ]+ (\d+):/.exec(ref)![1])));
-  const noEnglish = english ? versesWithoutEnglish(english.byGreek, shippedVerses) : [];
-  return { chapters: built, info, lemmas: [...lemmas], unplaced, noEnglish };
+  const without = new Set(english ? versesWithoutEnglish(english.byGreek, shippedVerses) : []);
+  // told apart by the chapters as built: a verse with no chunk after a verse with one is a row in the English view with that verse (englishRows)
+  const split = noEnglishSplit(built.map((b) => b.chapter), usfm);
+  const noEnglish = split.joined.filter((ref) => without.has(ref));
+  const alone = split.alone.filter((ref) => without.has(ref));
+  return { chapters: built, info, lemmas: [...lemmas], unplaced, noEnglish, alone };
 }
 
 /** The verses Swete's versification numbers that have no word under them in the word file, by book code (lower case): `Gen.31:51`, in the form of a SweteWord's `verse` (mw-u2w5klk.282). */
