@@ -3,7 +3,9 @@
 // top verse changes the other scrolls, at once, so that verse stands at its top. The follower's own scroll event is told apart from a scroll of his hand by the offset it was moved to (the browser clamps and
 // rounds it, so what the box took is what its event will show), so the follower never moves the leader back; and a follower that cannot reach the verse (the end of its box) is not asked to lead for it.
 // Pure parts are exported for the unit test. The first verse goes to the top of the box (scrollTop 0), not to its own place, so the heading above it is not scrolled away.
-import { useEffect } from 'react';
+// With Turn pages (mw-fnvjof.17.3) the passage's "top verse" is the first verse with a line on the page shown, and it is brought into view by turning to the page that holds its beginning (`showPage`, the Reader's
+// usePages show); a page turned is a scroll of the box sideways, which tells the Link as a scroll of the other kind does.
+import { useEffect, useRef } from 'react';
 
 /** A verse whose bottom is less than this far below the box's top is cut at the top, and not the top verse: the verse brought to a few pixels under the top (the Reader's GAP) is the top one. */
 export const HALF_LINE = 12;
@@ -14,6 +16,17 @@ export function topVerse(box: HTMLElement, items: string, numberOf: (el: HTMLEle
   for (const el of Array.from(box.querySelectorAll<HTMLElement>(items))) {
     const n = numberOf(el);
     if (n !== null && el.getBoundingClientRect().bottom > top + HALF_LINE) return n;
+  }
+  return null;
+}
+
+/** The verse at the top of the page Turn pages shows in `box`: the first of its `items` that is Lampas's verse (`numberOf`) and has a line on the page (a line wider than nothing that lies across the box's width; the
+ * next page's column starts a gap beyond the box's edge, the last one's ends before it); null where there is none. */
+export function firstVerseOnPage(box: HTMLElement, items: string, numberOf: (el: HTMLElement) => number | null): number | null {
+  const { left, right } = box.getBoundingClientRect();
+  for (const el of Array.from(box.querySelectorAll<HTMLElement>(items))) {
+    const n = numberOf(el);
+    if (n !== null && Array.from(el.getClientRects()).some((r) => r.width > 0 && r.right > left + 1 && r.left < right - 1)) return n;
   }
   return null;
 }
@@ -33,15 +46,22 @@ export interface LinkedPane {
   numberOf(el: HTMLElement): number | null;
   /** the element of Lampas's verse `n` in the pane, or null */
   find(n: number): HTMLElement | null;
+  /** how far the pane is scrolled, which its own scroll event will show (scrollTop where it is not given) */
+  at?(): number;
+  /** the pane's top verse (the verse at the top of its box where it is not given) */
+  top?(): number | null;
+  /** brings `item` to the pane's top (a scroll of the box where it is not given); answers the offset the pane took, or null where it did not move */
+  bring?(item: HTMLElement | null, first: boolean): number | null;
 }
 
 /** Puts `to` on the top verse of `from`; answers the verse, and the offset `to` took when it moved. */
 export function followTop(from: LinkedPane, to: LinkedPane): { verse: number | null; moved: number | null } {
-  const verse = topVerse(from.box, from.items, from.numberOf);
+  const verse = from.top ? from.top() : topVerse(from.box, from.items, from.numberOf);
   if (verse === null) return { verse, moved: null };
   const target = to.find(verse);
   const firstOfTo = Array.from(to.box.querySelectorAll<HTMLElement>(to.items)).find((el) => to.numberOf(el) !== null);
-  return { verse, moved: bring(to.box, target, target !== null && target === firstOfTo) };
+  const first = target !== null && target === firstOfTo;
+  return { verse, moved: to.bring ? to.bring(target, first) : bring(to.box, target, first) };
 }
 
 /** How the passage's verses are numbered against Lampas's: a Septuagint passage's `data-verse` is the Greek verse, whose Lampas verse is its `ref` (src/reader/septuagint.ts lampasNumber); any other passage is Lampas's own. */
@@ -62,7 +82,13 @@ const asNumber = (value: string | undefined): number | null => {
  * then put on the passage's top verse. Pressing Link again (linked turning true) does the same: the passage leads at that moment. The passage's verses are `[data-verse]`, the dock's `[data-dock-verse]`
  * (Lampas's number, absent on a row with none).
  */
-export function useLinkedScroll({ passageBox, dockBox, numbers = OWN_NUMBERS, linked, ready, place }: { passageBox: HTMLElement | null; dockBox: HTMLElement | null; numbers?: PassageNumbers; linked: boolean; ready: boolean; place: string }): void {
+export function useLinkedScroll({ passageBox, dockBox, numbers = OWN_NUMBERS, linked, ready, place, showPage = null }: { passageBox: HTMLElement | null; dockBox: HTMLElement | null; numbers?: PassageNumbers; linked: boolean; ready: boolean; place: string; showPage?: ((el: Element) => void) | null }): void {
+  // Turn pages: the passage turns to a verse's page by the Reader's own `show`, kept in a ref so a new function does not start the Link afresh
+  const turn = useRef(showPage);
+  useEffect(() => {
+    turn.current = showPage;
+  });
+  const paged = showPage !== null;
   useEffect(() => {
     if (!passageBox || !dockBox || !linked || !ready) return;
     const passage: LinkedPane = {
@@ -77,6 +103,15 @@ export function useLinkedScroll({ passageBox, dockBox, numbers = OWN_NUMBERS, li
         return n === null ? null : passageBox.querySelector<HTMLElement>(`[data-verse="${n}"]`);
       },
     };
+    if (paged) {
+      passage.at = () => passageBox.scrollLeft;
+      passage.top = () => firstVerseOnPage(passageBox, passage.items, passage.numberOf);
+      passage.bring = (item) => {
+        const before = passageBox.scrollLeft;
+        if (item) turn.current?.(item);
+        return passageBox.scrollLeft === before ? null : passageBox.scrollLeft;
+      };
+    }
     const dock: LinkedPane = {
       box: dockBox,
       items: '[data-dock-verse]',
@@ -90,9 +125,9 @@ export function useLinkedScroll({ passageBox, dockBox, numbers = OWN_NUMBERS, li
       const ours = moved.get(from.box);
       if (ours !== undefined) {
         moved.delete(from.box);
-        if (Math.abs(from.box.scrollTop - ours) < 1.5) return;
+        if (Math.abs((from.at ? from.at() : from.box.scrollTop) - ours) < 1.5) return;
       }
-      const verse = topVerse(from.box, from.items, from.numberOf);
+      const verse = from.top ? from.top() : topVerse(from.box, from.items, from.numberOf);
       if (verse === null || verse === last) return;
       last = verse;
       const took = followTop(from, to).moved;
@@ -106,11 +141,26 @@ export function useLinkedScroll({ passageBox, dockBox, numbers = OWN_NUMBERS, li
     const fromDock = lead(dock, passage);
     passageBox.addEventListener('scroll', fromPassage, { passive: true });
     dockBox.addEventListener('scroll', fromDock, { passive: true });
+    // Turn pages cut afresh when the box changes size (the divider dragged, the phone turned): the page shown may begin on another verse without the box having scrolled, and the dock follows it
+    let frame = 0;
+    const watch = paged && typeof ResizeObserver === 'function' ? new ResizeObserver(() => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const verse = passage.top ? passage.top() : null;
+        if (verse === null || verse === last) return;
+        last = verse;
+        const took = followTop(passage, dock).moved;
+        if (took !== null) moved.set(dockBox, took);
+      });
+    }) : null;
+    watch?.observe(passageBox);
     return () => {
+      cancelAnimationFrame(frame);
+      watch?.disconnect();
       passageBox.removeEventListener('scroll', fromPassage);
       dockBox.removeEventListener('scroll', fromDock);
     };
     // `numbers` is made again with each chapter, and `place` says so
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [passageBox, dockBox, linked, ready, place]);
+  }, [passageBox, dockBox, linked, ready, place, paged]);
 }
