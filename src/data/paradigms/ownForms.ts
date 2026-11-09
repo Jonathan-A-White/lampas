@@ -69,8 +69,30 @@ export const bareOf = (text: string): string => text.normalize('NFD').replace(/[
 export function septuagintFormOf(text: string, lemma: string, accented: readonly string[] = []): string | undefined {
   const bare = text.replace(SWETE_MARKS, '');
   if (bare === '') return undefined;
-  if (bare.length > 1 && bare === bare.toUpperCase() && bare !== bare.toLowerCase()) return accented.find((form) => bareOf(form) === bareOf(bare));
+  if (inCapitals(bare)) return accented.find((form) => bareOf(form) === bareOf(bare));
   return ownFormOf(bare, lemma);
+}
+
+/** Whether a Septuagint token is printed wholly in capitals (Swete's marks aside): a word with no accent, breathing or iota subscript to read. */
+export function inCapitals(text: string): boolean {
+  const bare = text.replace(SWETE_MARKS, '');
+  return bare.length > 1 && bare === bare.toUpperCase() && bare !== bare.toLowerCase();
+}
+
+/**
+ * The word as it is handed to paradigmOfWord (mw-u2w5klk.323): a word printed in capitals has no iota subscript for the table's tiebreak to see (ΑΡΧΗ is ἀρχῇ, -ῃ in the φωνή group, not -ᾳ in the ἡμέρα
+ * one), so it is handed as the form among `accented` (the forms of its lemma with its parsing) that has its letters; any other word, or one with no such form, is handed as it is.
+ */
+export function matchedWord<W extends { t: string; l: string }>(word: W, accented: readonly string[] = []): W {
+  if (!inCapitals(word.t)) return word;
+  const form = septuagintFormOf(word.t, word.l, accented);
+  return form === undefined ? word : { ...word, t: form };
+}
+
+/** The word's forms with its parsing among the lemma's Septuagint forms: what a capitals word is matched against. A lemma whose file cannot be had has none. */
+export async function accentedFormsOf(word: { l: string; p: string }): Promise<string[]> {
+  const forms = await loadLemmaForms(word.l, 'septuagint').catch(() => []);
+  return forms.filter((f) => f.code === word.p).map((f) => f.form);
 }
 
 /** 'John 14:31', 'Genesis 1:2': the canon's names, the Old Testament's too, since a Septuagint use is in it. */
