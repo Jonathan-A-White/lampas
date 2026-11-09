@@ -88,18 +88,24 @@ Feature: Your Logos library, a screen of its own
     And Settings sets the New Testament to "NKJV", the Old Testament to "LSB" and the Apocrypha to "NRSV"
     When he opens the Library at the kind "bible"
     And he taps Set for on "LES"
-    Then the parts offered for "LES" are "Old Testament, Apocrypha, Septuagint, All three"
+    Then the parts offered for "LES" are "Old Testament, Apocrypha, Septuagint, Both"
     When he sets "LES" for "Old Testament"
     Then Settings holds the New Testament "NKJV", the Old Testament "LES" and the Apocrypha "NRSV"
     And "LES" is marked "Set for OT"
     And "LSB" has no mark
 
-  Scenario: Choosing All three sets every part the Bible holds and leaves the rest
+  Scenario: A Bible with one part offers no button for all of it
+    Given his shelf holds nothing
+    When he opens the Library at the kind "bible"
+    And he taps Set for on "Tyndale 1536"
+    Then the parts offered for "Tyndale 1536" are "New Testament"
+
+  Scenario: Choosing Both sets every part the Bible holds and leaves the rest
     Given his shelf holds nothing
     And Settings sets the New Testament to "NKJV", the Old Testament to "LSB" and the Apocrypha to "NRSV"
     When he opens the Library at the kind "bible"
     And he taps Set for on "ESV"
-    And he sets "ESV" for "All three"
+    And he sets "ESV" for "Both"
     Then "ESV" is marked "Set for NT · OT"
     And "NKJV" has no mark
     And the mark of "NRSV" reads "Set for Apocrypha"

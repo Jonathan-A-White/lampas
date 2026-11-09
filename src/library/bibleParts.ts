@@ -17,6 +17,12 @@ export const partsFor = (resourceId: string): LogosPart[] => LOGOS_PARTS.map((p)
 /** The parts of the canon a Bible can be set for: 'All three' means these, never the Septuagint's, which is a Bible of its own. */
 export const canonPartsFor = (resourceId: string): LogosPart[] => partsFor(resourceId).filter((part) => CANON_PARTS.includes(part));
 
+/** The words of the last button of the ask: 'All three' for a Bible holding the canon's three parts, 'Both' for two, and null for one (its own part's button already does it). */
+export function allLabelFor(resourceId: string): string | null {
+  const n = canonPartsFor(resourceId).length;
+  return n >= 3 ? 'All three' : n === 2 ? 'Both' : null;
+}
+
 /** Sets the Bible for one part, or for every part of the canon it holds when `part` is 'all' (a part it cannot hold keeps its own Bible, and the Septuagint's is left as it is): the Settings keys, the same fact Settings > Study resources sets. */
 export async function setBibleFor(part: LogosPart | 'all', resourceId: string): Promise<void> {
   for (const p of part === 'all' ? canonPartsFor(resourceId) : [part]) await setLogosBibleFor(p, resourceId);
