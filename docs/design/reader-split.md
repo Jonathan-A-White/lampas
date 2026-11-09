@@ -119,7 +119,7 @@ column, Left and Right side by side) move it by a tenth of the box, Home goes to
   because reading begins there and the dock is the sheet that slid in from the right edge; the Hand setting does not move it (one rule to learn).
 - **Wide** (a tablet or a desktop window, `min-width: 768px`, at any height): as sideways; at Half each pane is as wide as a phone.
 - **Turning the phone** keeps the size as a fraction of the box (what was a share of the height is the same share of the width) and the scroll of each pane's top verse.
-- **Turn pages** (Settings > Reading): the passage pane turns pages in its shorter box as it does today, the dock scrolls; the Link follows the page's first verse. Not proven in the first two stories (see Not done).
+- **Turn pages** (Settings > Reading): the passage pane turns pages in its shorter box as it does today, the dock scrolls; the Link follows the page's first verse (built in mw-fnvjof.17.3, tests/e2e/reader-split-turn.spec.ts): the passage's top verse is the first verse with a line on the page shown, turning a page moves the linked dock to it, and the dock moved to another verse turns the passage to the page where that verse begins; the page the passage lands on may begin on an earlier verse, and the dock then stays on the verse it led with. The box re-pages when the divider is dragged and the dock follows the new page's first verse. PROVISIONAL, the Governor to confirm.
 
 ## The map pane and a text pane
 
@@ -203,7 +203,6 @@ ask about a difference he is looking at; verse-read and tips are not), which `te
 - No place of the dock on the Hand's side, because the panes are read, not reached for, and one rule (the passage left, the dock right) is easier to learn.
 - No Settings row for the split, because it is chosen and closed in place, and a second way to the same thing is a way to use it incorrectly.
 - No remembering a split per book or per chapter, because the Reader's other choices (view, weave, layout) are app-wide and a split that comes and goes by chapter would feel broken.
-- No proof of the split with Turn pages in the first two stories, because paging in a shorter box should simply work and proving it (a page's first verse leading the Link) is one more e2e, a follow-up story of its own.
 - No two maps, and no map beside a second text, because that is three things on a phone's screen.
 
 ## Prior art

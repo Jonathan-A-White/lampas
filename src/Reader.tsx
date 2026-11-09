@@ -555,7 +555,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (rect.top < bar.top || rect.bottom > bar.bottom) moveBox(box, box.scrollTop + rect.top - bar.top - GAP);
   }, [dockOpen, paging, showPage]);
   // The Link of a text beside the passage (src/reader/split/useLinkedScroll.ts): the passage and the dock kept on the same verse as either scrolls, by Lampas's verse number (a Septuagint passage's verses are numbered
-  // as Lampas numbers them through their `ref`). Turn pages keeps its own page, so the Link waits for Scroll.
+  // as Lampas numbers them through their `ref`). With Turn pages the passage's top verse is its page's first verse and the dock turns it to the page holding a verse (mw-fnvjof.17.3).
   const numbers = useMemo<PassageNumbers>(() => {
     if (!chapter || !septuagint) return OWN_NUMBERS;
     return {
@@ -568,7 +568,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   }, [chapter, septuagint]);
   const passageVerses = useMemo(() => (chapter ? passageNumbers(chapter) : []), [chapter]);
   const textReady = textDocked?.status === 'ready' && chapter !== null;
-  useLinkedScroll({ passageBox: mainEl, dockBox: dockBody, numbers, linked: linkOn && dockText !== null && !paging, ready: textReady, place: `${dockText}:${BOOK}/${CHAPTER}` });
+  useLinkedScroll({ passageBox: mainEl, dockBox: dockBody, numbers, linked: linkOn && dockText !== null, ready: textReady, place: `${dockText}:${BOOK}/${CHAPTER}`, showPage: paging ? showPage : null });
   // A text swapped for another while the Link is off keeps the verse the dock was on (linked, the passage's verse is the dock's)
   const resumeAt = useRef<number | null>(null);
   useEffect(() => {
