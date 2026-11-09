@@ -7,7 +7,7 @@ import { carriedAsGreek, parseUsfm } from '../../scripts/data/lxx2012';
 import { buildMaps, parseTvtms, type TvtmsMaps } from '../../scripts/data/tvtms';
 import { bookReport, formatLine } from '../../scripts/lxx/english';
 import { sweteVerses, verseSetGaps, formatGap } from '../../scripts/lxx/versesets';
-import { englishByGreekVerse, unplacedVerses, versesWithoutEnglish, withoutEnglishNote } from '../../scripts/data/lxxChapter';
+import { aloneNote, englishByGreekVerse, noEnglishSplit, unplacedVerses, versesWithoutEnglish, withoutEnglishNote } from '../../scripts/data/lxxChapter';
 
 const fixture = (name: string): string => readFileSync(`tests/fixtures/lxx/${name}`, 'utf8');
 const gen = parseUsfm(fixture('lxx2012-gen-1.usfm'));
@@ -322,7 +322,18 @@ describe("LXX2012's Genesis 22, 31 and 37 and Psalm 149 stand at the Greek verse
     expect(textAt(byGreek, 'psa 149:8')).toMatch(/^to bind their kings with fetters.*to execute on them the judgment written: this honor have all his saints\.$/);
     expect(versesWithoutEnglish(byGreek, swete149)).toEqual(['psa 149:9']);
     expect(unplacedVerses(placedAt, swete149)).toEqual([]);
-    expect(withoutEnglishNote('psa', ['psa 149:9'])).toBe('psa: Greek verses with no English (their text, if Brenton has it, stands in the English of the verse before): psa 149:9');
+    expect(withoutEnglishNote('psa', ['psa 149:9'])).toBe('psa: Greek verses with no English (each is drawn in the English view as one row with the verse before it, whose English holds its text if Brenton has it): psa 149:9');
+  });
+
+  it('tells the verses the English view folds into the verse before (a verse with English before them) from those with nothing to join (mw-u2w5klk.307)', () => {
+    const chunk = [{ t: 'x', g: [0] }];
+    const chapters = [
+      { chapter: 37, verses: [{ n: 1, e: [] }, { n: 2, e: chunk }, { n: 3, e: [] }, { n: 4, e: [] }, { n: 5, e: chunk }] },
+      { chapter: 38, verses: [{ n: 1, e: [] }] },
+    ];
+    expect(noEnglishSplit(chapters, 'gen')).toEqual({ joined: ['gen 37:3', 'gen 37:4'], alone: ['gen 37:1', 'gen 38:1'] });
+    expect(aloneNote('gen', ['gen 37:1'])).toMatch(/^gen: Verses with nothing to join in the English view/);
+    expect(aloneNote('gen', ['gen 37:1'])).not.toMatch(/Greek verses with no English/);
   });
 
   it('runs the verse-set sweep: after the rows, Genesis 22 and Psalm 149 reach every verse of the verses of Swete, Genesis 37 all but its 1 (the 36:44 of Brenton), and Genesis 31:51 is the numbered verse with no word', () => {

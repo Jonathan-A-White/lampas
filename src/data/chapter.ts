@@ -188,7 +188,12 @@ export interface Verse {
   g: GreekWord[];
   /** English chunks in English order */
   e: EnglishChunk[];
-  /** only on a passage made by src/data/passage.ts: the number of its last verse (`n` is its first). The chunks' `g` indices point into
+  /**
+   * PROVISIONAL, the Septuagint only (englishRows, src/reader/septuagint.ts): set on a row the Reader draws in the English view for several Greek verses, where Brenton's English holds the verses after the first inside the first
+   * (Genesis 37:32-33): the last of those verses (its Greek number, Lampas's `ref` and `greek`); `to` is its number and `g` holds the Greek words of them all. Never in a file.
+   */
+  through?: { n: number; ref?: VerseRef | 'none'; greek?: { chapter: number; verse: number } };
+  /** only on a passage made by src/data/passage.ts, or a Septuagint row englishRows folded (`through`): the number of its last verse (`n` is its first). The chunks' `g` indices point into
    * the verse they came from, so a passage's text is for reading, asking and sending, never for the weave. */
   to?: number;
 }

@@ -104,7 +104,7 @@ import { TipCard } from './tips/TipCard';
 import { SeptuagintDoor } from './reader/SeptuagintDoor';
 import { SeptuagintNote } from './reader/SeptuagintNote';
 import { SeptuagintSources } from './reader/SeptuagintSources';
-import { isSeptuagint, lampasNumber, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
+import { englishRows, isSeptuagint, lampasNumber, SEPTUAGINT_SUBTITLE, septuagintAligned, septuagintSettings, septuagintTitle, septuagintView, septuagintWeaveNoted } from './reader/septuagint';
 import { useNotReadyName } from './reader/useNotReadyName';
 import type { InterestLang } from './settings/definitions/interest';
 import { ReadingBar } from './speech/ReadControls';
@@ -181,11 +181,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const savedRp2026 = useSetting(rp2026EnglishSetting);
   const settingsLate = useSettingsLate(savedRp2026 !== undefined);
   const rp2026 = savedRp2026 ?? (settingsLate ? rp2026EnglishSetting.default : undefined);
-  const chapter = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
+  const laid = useMemo(() => (fetched && rp2026 ? layRp2026English(fetched, rp2026) : null), [fetched, rp2026]);
   // The Septuagint chapter: where its verses carry aligned chunks it is woven as the New Testament is; where its English is one chunk a verse the Weave has nothing to lay a Greek word over: the Weave position
   // draws the Greek alone and a note says so, once (septuagintView); a book that is not shipped says so and stays Hebrew
-  const septuagint = isSeptuagint(chapter);
-  const aligned = septuagint && septuagintAligned(chapter);
+  const septuagint = isSeptuagint(laid);
+  const aligned = septuagint && septuagintAligned(laid);
+  // In the English view of a Septuagint chapter a Greek verse Brenton's English holds inside the verse before is not a row of its own: the pair is one row, its number a range (mw-u2w5klk.307)
+  const folds = septuagint && view !== undefined && septuagintView(view, weaveShown ?? false, aligned) === 'english';
+  const chapter = useMemo(() => (laid && folds ? { ...laid, verses: englishRows(laid.verses) } : laid), [laid, folds]);
   const septuagintOn = useSetting(septuagintSetting) === 'on';
   // the notice for an Old Testament chapter shown in Hebrew while the Septuagint is on names the chapter when the book ships and this chapter does not, else the book (mw-u2w5klk.298)
   const hebrewHeld = septuagintOn && !!chapter && !failed && isHebrewBook(BOOK) && sourceLanguage(chapter) === 'hbo';
@@ -353,7 +356,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // A hold on a verse number, a section heading or the place line copies its verse, passage or the chapter in the view the Reader is in (src/copy/useCopyHold.ts)
   const copyHold = useCopyHold(chapter, view ? { view, woven, variants } : undefined, openChapter, layout);
   const closeSheet = useCallback(() => setLookup(null), []);
-  const viewVerse = chapter && selected !== null ? chapter.verses.find((v) => v.n === selected) : undefined;
+  // a row that holds several Greek verses (englishRows) is opened by any of them
+  const viewVerse = chapter && selected !== null ? chapter.verses.find((v) => v.n === selected || (v.through !== undefined && selected > v.n && selected <= (v.to ?? v.n))) : undefined;
   // A heading's passage (the address `p`) opens the same view, with the passage as one Verse; a verse in the address wins.
   const named = readerOf(address);
   const wantedPassage = isHere(named, BOOK, CHAPTER) ? named.passage : undefined;
@@ -835,7 +839,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
             )
           }
           previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
-          next={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), 1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).next)}
+          next={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), 1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.through ? viewUnit.to ?? viewUnit.n : viewUnit.n).next)}
           onClose={closeVerse}
           action={action}
           onAction={chooseAction}
