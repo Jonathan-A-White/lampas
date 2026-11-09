@@ -11,13 +11,13 @@ test.use({ viewport: { width: 390, height: 844 } });
 const FIXTURE = 'tests/fixtures/logos-export-head.csv';
 const HEADER = 'ResourceId,Type,AbbreviatedTitle,Title,Series,Languages,ReferenceSupersets';
 
-/** A long list as Logos saves it: every book of the catalogue (by Resource ID, with its title), and a thousand manuscripts, sermons and journals Lampas cannot use. */
+/** A long list as Logos saves it: every book of the catalogue (by Resource ID, with its title), and a thousand manuscripts, festschriften and journals Lampas cannot use. */
 function longList(): string {
   const quote = (text: string): string => (/[",]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text);
   const kept = readdirSync('src/resources/catalogue')
     .flatMap((file) => (JSON.parse(readFileSync(`src/resources/catalogue/${file}`, 'utf8')) as { entries: { resource: string; short: string; title: string }[] }).entries)
     .map((e) => [e.resource, 'text.monograph', e.short, e.title, '', 'en', ''].map(quote).join(','));
-  const types = ['text.monograph.ancient-manuscript', 'text.monograph.sermons', 'text.serial.journal', 'text.monograph.collected-work'];
+  const types = ['text.monograph.ancient-manuscript', 'text.monograph.festschrift', 'text.serial.journal', 'text.monograph.collected-work'];
   const rest = Array.from({ length: 1000 }, (_, i) => [`LLS:FILLER-${i}`, types[i % types.length], '', `Filler book ${i}`, '', 'en', ''].join(','));
   return [HEADER, ...kept, ...rest].join('\r\n') + '\r\n';
 }
@@ -30,14 +30,15 @@ const open = async (page: Page, hash: string, heading: string): Promise<void> =>
   await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible();
 };
 
-/** Every visible button is at least 44 px high and wide, none runs past the right edge, and the page does not scroll sideways. */
+/** Every visible button is at least 44 px high and wide, none runs past the right edge, and the page does not scroll sideways. A button in the scrolling .screen box may lie below the fold (the Library lists a dozen
+ *  rows now); one outside it (a pinned bar) must end inside the screen. */
 async function expectThumbSized(page: Page): Promise<void> {
   const found = await page.evaluate(() =>
     Array.from(document.querySelectorAll<HTMLElement>('main button, header button, footer button'))
       .filter((el) => el.getClientRects().length > 0)
       .map((el) => {
         const box = el.getBoundingClientRect();
-        return { name: el.textContent?.trim() ?? el.tagName, width: box.width, height: box.height, right: box.right, bottom: box.bottom };
+        return { name: el.textContent?.trim() ?? el.tagName, width: box.width, height: box.height, right: box.right, bottom: el.closest('.screen') ? 0 : box.bottom };
       }),
   );
   expect(found.length).toBeGreaterThan(0);
@@ -82,7 +83,7 @@ test('commentaries on the Old Testament and the whole Bible are open from Lampas
     HEADER,
     'LLS:GUZIKCOMM32JON,text.monograph.commentary.bible,DGCB Jon,Jonah,David Guzik’s Commentaries on the Bible,en,bible.32.1-32.4.11',
     'LLS:29.1.1,text.monograph.commentary.bible,BKC,The Bible Knowledge Commentary,,en,"bible.1.1.1-39.4.6\tbible.61.1.1-87.22.21"',
-    'LLS:HEBREWSERMONS,text.monograph.sermons,,Sermons on the Psalms,,en,bible.19.1.1-19.150.6',
+    'LLS:HEBREWESSAYS,text.monograph.festschrift,,Essays on the Psalms,,en,bible.19.1.1-19.150.6',
   ].join('\r\n') + '\r\n';
   await page.getByLabel('Logos list file').setInputFiles({ name: 'logos-list.csv', mimeType: 'text/csv', buffer: Buffer.from(list, 'utf8') });
   await expect(page.getByTestId('import-read')).toHaveText('3 books read from your Logos list.');
