@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getLogosBibles, planImport, setLogosBibleFor } from '../../src/data/repositories';
-import { bibleLine, marksOf, partsFor, setBibleFor, withBibles } from '../../src/library/bibleParts';
+import { allLabelFor, bibleLine, marksOf, partsFor, setBibleFor, withBibles } from '../../src/library/bibleParts';
 import { booksOn, countLine, headerCount, infoOf } from '../../src/library/kinds';
 import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE } from '../../src/resources/logosBible';
 
@@ -88,6 +88,13 @@ describe('choosing a Bible asks which part', () => {
     expect(partsFor('LLS:MYOWNBIBLE.1')).toEqual(['nt', 'ot', 'apocrypha', 'septuagint']);
   });
 
+  it('words the last button for the parts the Bible holds, and leaves it out for one part', () => {
+    expect(allLabelFor('LLS:MYOWNBIBLE.1')).toBe('All three');
+    expect(allLabelFor(ESV)).toBe('Both');
+    expect(allLabelFor(LES)).toBe('Both');
+    expect(allLabelFor('LLS:TYNDALEBBL1536')).toBeNull();
+  });
+
   it('writes only the part named', async () => {
     await setBibleFor('nt', NKJV);
     await setBibleFor('ot', LSB);
@@ -95,7 +102,7 @@ describe('choosing a Bible asks which part', () => {
     expect(await getLogosBibles()).toEqual({ nt: NKJV, ot: LES, apocrypha: NRSV, septuagint: DEFAULT_SEPTUAGINT_BIBLE });
   });
 
-  it('All three writes every part the Bible holds and leaves the rest', async () => {
+  it('Both (all three when it holds three) writes every part the Bible holds and leaves the rest', async () => {
     await setBibleFor('apocrypha', LES);
     await setBibleFor('all', ESV);
     expect(await getLogosBibles()).toEqual({ nt: ESV, ot: ESV, apocrypha: LES, septuagint: DEFAULT_SEPTUAGINT_BIBLE });

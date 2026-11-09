@@ -293,6 +293,11 @@ describeFeature(feature, ({ Scenario }) => {
     await waitFor(async () => expect(await getLogosBibles()).toEqual({ nt: book(nt).resource, ot: book(ot).resource, apocrypha: book(apocrypha).resource, septuagint: DEFAULT_SEPTUAGINT_BIBLE }));
   };
 
+  const offered = async (_: unknown, short: string, parts: string) => {
+    const group = await screen.findByRole('group', { name: `Set ${short} for` });
+    expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(list(parts));
+  };
+
   Scenario('Choosing a Bible asks which part and sets only that part', ({ Given, When, Then, And }) => {
     Given('his shelf holds nothing', async () => {
       await shelfHolds([]);
@@ -300,10 +305,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('Settings sets the New Testament to {string}, the Old Testament to {string} and the Apocrypha to {string}', sets);
     When('he opens the Library at the kind {string}', opensKind);
     And('he taps Set for on {string}', asks);
-    Then('the parts offered for {string} are {string}', async (_, short: string, parts: string) => {
-      const group = await screen.findByRole('group', { name: `Set ${short} for` });
-      expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(list(parts));
-    });
+    Then('the parts offered for {string} are {string}', offered);
     When('he sets {string} for {string}', async (_, short: string, part: string) => {
       const group = await screen.findByRole('group', { name: `Set ${short} for` });
       await user.click(within(group).getByRole('button', { name: part }));
@@ -313,7 +315,16 @@ describeFeature(feature, ({ Scenario }) => {
     And('{string} has no mark', hasNoMark);
   });
 
-  Scenario('Choosing All three sets every part the Bible holds and leaves the rest', ({ Given, When, Then, And }) => {
+  Scenario('A Bible with one part offers no button for all of it', ({ Given, When, Then, And }) => {
+    Given('his shelf holds nothing', async () => {
+      await shelfHolds([]);
+    });
+    When('he opens the Library at the kind {string}', opensKind);
+    And('he taps Set for on {string}', asks);
+    Then('the parts offered for {string} are {string}', offered);
+  });
+
+  Scenario('Choosing Both sets every part the Bible holds and leaves the rest', ({ Given, When, Then, And }) => {
     Given('his shelf holds nothing', async () => {
       await shelfHolds([]);
     });

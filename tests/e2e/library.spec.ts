@@ -196,7 +196,11 @@ test('Bibles show the parts they are set for, read from Settings, and choosing o
   // choosing the LES asks which part: it holds the Old Testament, the Apocrypha and the Septuagint, not the New Testament
   await page.getByRole('button', { name: 'Set for… LES' }).click();
   const ask = page.getByRole('group', { name: 'Set LES for' });
-  await expect(ask.getByRole('button')).toHaveText(['Old Testament', 'Apocrypha', 'Septuagint', 'All three']);
+  await expect(ask.getByRole('button')).toHaveText(['Old Testament', 'Apocrypha', 'Septuagint', 'Both']);
+  // a Bible holding one part offers no second button for the same thing
+  await page.getByRole('button', { name: 'Set for… Tyndale 1536' }).click();
+  await expect(page.getByRole('group', { name: 'Set Tyndale 1536 for' }).getByRole('button')).toHaveText(['New Testament']);
+  await page.getByRole('button', { name: 'Set for… LES' }).click();
   await ask.getByRole('button', { name: 'Old Testament', exact: true }).click();
   await expect(marks('LES')).toHaveText('Set for OT');
   await expect(page.getByRole('group', { name: 'Set LES for' })).toHaveCount(0);
