@@ -194,6 +194,15 @@ describe('findWord for a Hebrew word (mw-5vvlay.2)', () => {
     }
   });
 
+  it('finds יָרָה, the dictionaries\' spelling of H3384 (the text spells it יָרָא), pointed and not (mw-fnvjof.17.40)', () => {
+    for (const text of ['יָרָה', 'ירה', 'יָרָה'.normalize('NFD')]) {
+      expect(findWord(text, lexicon, hebrew), text).toMatchObject({ lemma: 'יָרָה', entry: { s: 'H3384', g: 'to show' } });
+    }
+    expect(findWord('H3384', lexicon, hebrew)?.lemma).toBe('יָרָא');
+    expect(findWord('ירא', lexicon, hebrew)?.lemma).toBe('יָרֵא'); // the other verb, H3372: the text's own lemma comes first
+    expect(findWord('שָׂדֶה', lexicon, hebrew)?.entry.s).toBe('H7704');
+  });
+
   it('looks in the Hebrew lexicon alone when that is the only one given', () => {
     expect(findWord('ראשית', hebrew)?.entry.s).toBe('H7225');
     expect(findWord('H7225', hebrew)?.lemma).toBe('רֵאשִׁית');

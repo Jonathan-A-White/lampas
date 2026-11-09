@@ -15,6 +15,8 @@ export interface LemmaEntry {
   s: string;
   /** part of speech: 'noun', 'verb' ... (parseCode.ts splitParse) */
   c: string;
+  /** Hebrew only (mw-fnvjof.17.40): another spelling of the number's lemma that the text never uses ('יָרָה' for H3384, the text's being 'יָרָא'); a lookup by number gives the text's own spelling, not this. */
+  v?: true;
 }
 /** every lemma of the text (NFC) -> its entry */
 export type LemmaLexicon = Record<string, LemmaEntry>;

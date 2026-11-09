@@ -61,6 +61,21 @@ export function otLexicon(text: string): Lexicon {
   return parseTbes(text, { letter: 'H', gloss: (_lemma, gloss) => cleanHebrewGloss(gloss) });
 }
 
+/**
+ * Adds to the lemma lexicon each other spelling TBESH gives a number its text uses (mw-fnvjof.17.40): H3384 is יָרָא in the text and יָרָה in the dictionaries, so a link by יָרָה
+ * (src/nav/links.ts findWord) finds nothing unless יָרָה is a key too. The entry is the spelling's own gloss and part of speech under the same Strong's number, marked `v` so a lookup
+ * by number still gives the text's spelling. A spelling the lexicon already keys (the text's own lemma of another number) is left: the text's word comes first.
+ */
+export function addSpellings(lexicon: LemmaLexicon, lex: Lexicon): LemmaLexicon {
+  const out: LemmaLexicon = { ...lexicon };
+  for (const number of new Set(Object.values(lexicon).map((e) => e.s))) {
+    for (const spelling of lex.spellings?.(number) ?? []) {
+      if (!(spelling.lemma in out)) out[spelling.lemma] = { g: spelling.gloss, s: number, c: spelling.pos ?? '', v: true };
+    }
+  }
+  return out;
+}
+
 export interface BuiltChapter {
   path: string;
   chapter: Chapter;
@@ -207,7 +222,7 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
   const frequency = [...seen]
     .map(([strongs, e]): FrequencyEntry => ({ strongs, lemma: lex.get(strongs)!.lemma, count: e.count, chapters: e.chapters, proper: lex.get(strongs)!.name === true }))
     .sort((a, b) => b.count - a.count || numeric(a.strongs, b.strongs));
-  return { books, lexicon: sortedKeys(lexicon), frequency };
+  return { books, lexicon: sortedKeys(addSpellings(lexicon, lex)), frequency };
 }
 
 // ---------------------------------------------------------------- files

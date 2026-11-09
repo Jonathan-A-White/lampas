@@ -608,7 +608,7 @@ The word and chunk keys are the New Testament's (the table above), with this mea
 
 ### `lexicon-hbo.json` and `frequency-hbo.json`
 
-The shapes of `lexicon.json` and `frequency.json`. `lexicon-hbo.json` has every Hebrew lemma of the text once (7,828, 445 KB), `{"g": TBESH gloss, "s": "H7225", "c": "noun"}`, the part of speech the TBESH morph names (`verb`, `noun`, `preposition` ...), from the lemma's first use in canon order; keys NFC, in sort order.
+The shapes of `lexicon.json` and `frequency.json`. `lexicon-hbo.json` has every Hebrew lemma of the text once (7,828, 445 KB), `{"g": TBESH gloss, "s": "H7225", "c": "noun"}`, the part of speech the TBESH morph names (`verb`, `noun`, `preposition` ...), from the lemma's first use in canon order; keys NFC, in sort order. It also has 176 other spellings (mw-fnvjof.17.40: TBESH's other lines of a number the text uses, a plain or 'a Spelling of' line of the same part of speech that is no name; `addSpellings`), each `{"g", "s", "c", "v": true}` under the same number: H3384 is יָרָא in the text and יָרָה (to show) in the dictionaries, so a link by יָרָה finds it; `v` entries are none of the text's lemmas (7,828 of them).
 `frequency-hbo.json` has one entry per Strong's number the text uses (8,539, 711 KB), commonest first, ties by number; `proper` is true when TBESH calls the entry a name (a person, a place or a people: the morph's language `N`). **Nothing is left out** (the Greek leaves out the article, which Hebrew writes as a prefix the table does not number): אֵת (the object marker, 10,937) is first.
 Neither is loaded by the app yet.
 

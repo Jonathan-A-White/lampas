@@ -10,7 +10,7 @@ import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { runBuild } from '../../scripts/data-build';
 import { checkHeader } from '../../scripts/data/bereanTable';
 import { cleanHebrewGloss, parseTbes } from '../../scripts/data/tbes';
-import { BSB_FILE, OT_EXPECTED_HEADER, TBESH_FILE, buildOt, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
+import { BSB_FILE, OT_EXPECTED_HEADER, TBESH_FILE, addSpellings, buildOt, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
 import { wordGloss, type BookIndex, type Chapter } from '../../src/data/chapter';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import type { LemmaLexicon } from '../../src/data/lexicon';
@@ -326,5 +326,34 @@ describe('the shared reader of the TBES lexicons', () => {
   it('reads Greek keys only as before', () => {
     const g = parseTbes('G0001\tG0001 =\tG0001\tΑ\ta\tG:N\tAlpha\tletter\n', { letter: 'G', gloss: (_l, raw) => raw });
     expect(g.get('G1')?.lemma).toBe('Α');
+  });
+});
+
+describe('the other spellings of a number (mw-fnvjof.17.40)', () => {
+  const row = (key: string, lemma: string, gloss: string, how = '=', morph = 'H:V') => `${key}\t${key.toUpperCase()} ${how}\t${key.toUpperCase()}\t${lemma}\tt\t${morph}\t${gloss}\tdef`;
+  const text = [
+    row('H3384a', 'יָרָא', 'to shoot'),
+    row('H3384b', 'יָרָה', 'to show'),
+    row('H7183a', 'קַשָּׁב', 'attentive', '= a Spelling of', 'H:A'),
+    row('H7183b', 'קַשֻּׁב', 'attentive', '=', 'H:A'),
+    row('H7161a', 'קֶ֫רֶן', 'horn', '=', 'H:N'),
+    row('H7161b', 'קַרְנַ֫יִם', 'Karnaim', '= a Name of', 'N:N'),
+    row('H7311a', 'רוּם', 'to exalt'),
+    row('H7311b', 'רָנַן', 'to sing', '= a Meaning of'),
+  ].join('\n');
+  const tb = parseTbes(text, { letter: 'H', gloss: (_l, g) => g });
+
+  it("gives a number's other plain or spelling lines of its own part of speech, never a name or a meaning", () => {
+    expect(tb.spellings?.('H3384')).toEqual([{ lemma: 'יָרָה', gloss: 'to show', definition: '', pos: 'verb' }]);
+    expect(tb.spellings?.('H7183')?.map((e) => e.lemma)).toEqual(['קַשֻּׁב']);
+    expect(tb.spellings?.('H7161')).toEqual([]);
+    expect(tb.spellings?.('H7311')).toEqual([]);
+  });
+
+  it('adds the spelling to the lexicon under the same number, marked v, after the text and never over a lemma the text has', () => {
+    const base: LemmaLexicon = { 'יָרָא': { g: 'to shoot', s: 'H3384', c: 'verb' }, 'יָרָה': { g: 'x', s: 'H1', c: 'verb' } };
+    expect(addSpellings(base, tb)['יָרָה']).toEqual({ g: 'x', s: 'H1', c: 'verb' });
+    const only: LemmaLexicon = { 'יָרָא': { g: 'to shoot', s: 'H3384', c: 'verb' } };
+    expect(addSpellings(only, tb)).toEqual({ ...only, 'יָרָה': { g: 'to show', s: 'H3384', c: 'verb', v: true } });
   });
 });

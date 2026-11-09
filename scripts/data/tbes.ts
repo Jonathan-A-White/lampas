@@ -23,6 +23,12 @@ export interface Lexicon {
   entries?(): Iterable<[string, LexiconEntry]>;
   /** TBESG (Greek) only: the meanings the lexicon's other lines of a number give ('G5590H = a Meaning of' 'soul: life' gives 'life'), the chosen part of each, not the number's own gloss. Absent on a lexicon made by hand in a test. */
   senses?(strongs: string): string[];
+  /**
+   * TBESH only (mw-fnvjof.17.40): the other spellings the lexicon's lines of a number give, one entry for each lemma that is not the number's own ('H3384a' 'יָרָא' to shoot, 'H3384b' 'יָרָה' to show:
+   * the number's other lemma, the one the dictionaries head it with). A line that is a name, a part of one, a group, an Aramaic equivalent or a list of forms is left, and so is a line
+   * whose part of speech is not the number's. Absent on a lexicon made by hand in a test.
+   */
+  spellings?(strongs: string): LexiconEntry[];
 }
 
 /** Removes markup, scripture references, daggers and source tags; cuts at a word boundary near 300 characters. */
@@ -185,9 +191,26 @@ export function parseTbes(text: string, { letter, gloss }: TbesOptions): Lexicon
     }
     entries.set(key, entry);
   }
+  const spellings = (strongs: string): LexiconEntry[] => {
+    if (letter !== 'H') return [];
+    const own = lines.get(strongs) ?? [];
+    const main = entries.get(strongs);
+    const seen = new Set<string>(main ? [main.lemma] : []);
+    const out: LexiconEntry[] = [];
+    for (const f of own) {
+      const lemma = headLemma(f[3]);
+      if (seen.has(lemma) || lemma === '' || lemma.includes(',')) continue;
+      if (!(isPlain(f) || /=\s*a Spelling of\s*$/.test(f[1])) || isNamePart(f)) continue;
+      const pos = HEBREW_TYPES[/^[A-Za-z]:([A-Za-z]*)/.exec(f[5])?.[1] ?? ''];
+      if (pos !== main?.pos) continue;
+      seen.add(lemma);
+      out.push({ lemma, gloss: gloss(lemma, cleanGloss(f[6].trim().normalize('NFC'))), definition: '', ...(pos ? { pos } : {}) });
+    }
+    return out;
+  };
   const senses = (strongs: string): string[] =>
     letter === 'H'
       ? []
       : (lines.get(strongs) ?? []).slice(1).map((f) => f[6].trim().normalize('NFC').split(':').pop()!.trim()).filter((g) => g !== '');
-  return { get: (strongs) => entries.get(strongs), entries: () => entries.entries(), senses };
+  return { get: (strongs) => entries.get(strongs), entries: () => entries.entries(), senses, spellings };
 }

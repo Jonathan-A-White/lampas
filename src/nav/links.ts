@@ -226,7 +226,9 @@ function indexOf(lexicon: LemmaLexicon) {
   let held = indexes.get(lexicon);
   if (!held) {
     held = { byStrongs: new Map(), byBare: new Map() };
-    for (const [lemma, entry] of Object.entries(lexicon)) {
+    // a spelling the text never uses (`v`) comes after every lemma of the text, so a number gives the text's spelling and letters that two lemmas share give the text's
+    const all = Object.entries(lexicon);
+    for (const [lemma, entry] of [...all.filter(([, e]) => !e.v), ...all.filter(([, e]) => e.v)]) {
       if (!held.byStrongs.has(entry.s)) held.byStrongs.set(entry.s, lemma);
       if (!held.byBare.has(bare(lemma))) held.byBare.set(bare(lemma), lemma);
     }
