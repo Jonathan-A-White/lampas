@@ -130,7 +130,7 @@ describe('the Septuagint is in Help (mw-5r3p30.1110)', () => {
     expect(reader).toContain('Old Testament in Greek (Septuagint)');
     expect(reader).toContain('Swete’s Greek');
     expect(reader).toContain('Brenton’s English');
-    expect(reader).toContain('Psalms 23, Greek 22');
+    expect(reader).toContain('Psalms 23 (Greek 22)');
     expect(reader).toMatch(/not ready stays Hebrew/);
   });
 
@@ -138,9 +138,11 @@ describe('the Septuagint is in Help (mw-5r3p30.1110)', () => {
     const languages = body('languages');
     expect(languages).toContain('Old Testament in Greek (Septuagint)');
     expect(languages).toContain('How much Greek?');
-    expect(languages).toMatch(/starts off/);
+    expect(languages).toMatch(/Off to start/);
+    expect(languages).not.toMatch(/starts off/);
     expect(languages).toContain('Curious up');
     expect(languages).toContain('English | Weave | Greek');
+    expect(languages).toContain('English | Greek');
     expect(languages).toMatch(/Weave aligns Swete’s Greek and Brenton’s English by chunk/);
     expect(languages).toMatch(/note where they are not aligned/);
     for (const tool of ['Memorize', 'Diagram', 'the Quick test', 'the Parsing drill', 'Review']) expect(languages, tool).toContain(tool);
@@ -148,6 +150,17 @@ describe('the Septuagint is in Help (mw-5r3p30.1110)', () => {
     expect(languages).toMatch(/frontier counts its words/);
     // what the page says is kept
     expect(languages).toContain('The sentence Diagram works in English, Greek and Hebrew.');
+  });
+
+  it('the Greek and Hebrew page says the Weave button needs Dipping a toe, not Curious (mw-fnvjof.17.43)', () => {
+    const languages = body('languages');
+    expect(languages).toMatch(/from Dipping a toe, English \| Weave \| Greek/);
+    // the Septuagint itself shows from Curious, and the page does not hang the Weave on Curious
+    expect(languages).not.toMatch(/The switch is English \| Weave \| Greek;/);
+  });
+
+  it('the Greek and Hebrew page says where the Septuagint setting is, true for Greek alone and for both languages (mw-fnvjof.17.44)', () => {
+    expect(body('languages')).toMatch(/Below the dials, Old Testament in Greek \(Septuagint\)/);
   });
 
   it('the Greek and Hebrew page says a hold on Hebrew or Greek in the header flips the Septuagint (mw-u2w5klk.293)', () => {
