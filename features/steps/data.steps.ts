@@ -302,7 +302,9 @@ describeFeature(feature, ({ Scenario }) => {
           }
         }
       }
-      expect(Object.keys(lexicon).sort()).toEqual([...lemmas].sort());
+      // the lemmas of the text, each once; and, marked `v`, other spellings of a number the text uses (mw-fnvjof.17.40), none of them a lemma of the text
+      expect(Object.keys(lexicon).filter((k) => !lexicon[k].v).sort()).toEqual([...lemmas].sort());
+      for (const [k, e] of Object.entries(lexicon)) if (e.v) expect(counts.has(e.s) && !lemmas.has(k), k).toBe(true);
       expect(table).toHaveLength(counts.size);
       for (const e of table) expect(e.count).toBe(counts.get(e.strongs));
       expect(table[0].count).toBeGreaterThanOrEqual(table[1].count);
