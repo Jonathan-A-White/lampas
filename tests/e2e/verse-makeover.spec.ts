@@ -89,6 +89,8 @@ async function expectActionsInReach(view: Locator, viewport: { width: number; he
     for (const button of buttons) {
       const name = (await button.textContent()) ?? '';
       if (large) await button.scrollIntoViewIfNeeded();
+      // the Tools line is one row that scrolls sideways where its doors are wider than the window (mw-fnvjof.17.32): each door is measured scrolled to
+      else if (group === 'Tools') await button.evaluate((el) => el.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
       const b = await boxOf(button);
       expect(b.height, `${name} height`).toBeGreaterThanOrEqual(43.5);
       expect(b.x, `${name} left`).toBeGreaterThanOrEqual(0);
