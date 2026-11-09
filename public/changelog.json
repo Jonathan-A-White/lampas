@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.190",
+    "date": "2026-11-09",
+    "story": "mw-fnvjof.17.3",
+    "kind": "new",
+    "text": "With a second text beside the passage, Turn pages now keeps both on the same verse: turning a page moves the other text, and scrolling the other text turns the page."
+  },
+  {
     "version": "0.7.188",
     "date": "2026-11-09",
     "story": "mw-fnvjof.17.40",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.190
+_2026-11-09_
+- New: With a second text beside the passage, Turn pages now keeps both on the same verse: turning a page moves the other text, and scrolling the other text turns the page.
+
 ## 0.7.188
 _2026-11-09_
 - Fixed: A link to a Hebrew word by its dictionary spelling, such as yarah (יָרָה), now opens its word sheet instead of saying it is not in Lampas; 176 such spellings were missing.
