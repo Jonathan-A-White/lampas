@@ -5,7 +5,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import type { ReactNode } from 'react';
 import { listVerseLists } from '../data/repositories';
 import { closeMemorize, memorizeSessionOf, openMemorizeSession, useAddress } from '../nav/route';
-import { HeaderButton, ScreenHeader } from '../ScreenHeader';
+import { ScreenHeader } from '../ScreenHeader';
+import { ToolBack } from '../ToolBack';
 import { HintCard } from '../tips/HintCard';
 import { MEMORIZE_OPENED } from '../tips/hints';
 import { SCREEN_NAMES } from '../tutor/screen';
@@ -82,7 +83,7 @@ function MemorizeHome() {
     name: SCREEN_NAMES.memorize,
     facts: found ? [{ label: 'Due today', value: String(due.length) }, { label: 'Verses memorized', value: String(refs.length) }] : [],
   });
-  const back = <HeaderButton onClick={closeMemorize}>‹ Back</HeaderButton>;
+  const back = <ToolBack fallback="today" label="‹ Back" leave={closeMemorize} />;
   if (found === undefined || lists === undefined) return <ScreenHeader title={SCREEN_NAMES.memorize} back={back} />;
   const groups = groupVerses(refs, lists);
   return (

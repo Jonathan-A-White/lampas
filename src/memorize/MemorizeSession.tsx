@@ -2,7 +2,8 @@
 // to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold) or Type it (TypeIt.tsx: English always, Greek while Settings > Greek keyboard is On, Hebrew while Hebrew keyboard is On, never the Weave), the judgement with the missed words marked, the recall kept and 'Due <day>', I had it / Not yet when the phone
 // cannot hear him, and Next verse (or Done). The screen reports the verse, its language, its rung and the last score to the tutor.
 import { useEffect, useState } from 'react';
-import { HeaderButton, ScreenHeader } from '../ScreenHeader';
+import { ScreenHeader } from '../ScreenHeader';
+import { ToolBack } from '../ToolBack';
 import { getReading, startAnswer, stopAnswerSpeech, useReading } from '../speech/readAloud';
 import { warmVoices } from '../speech/greek';
 import { HeldTalkBar, RecordBar } from '../talk/Bars';
@@ -71,7 +72,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
       : [],
   });
 
-  const back = <HeaderButton onClick={closeMemorize}>‹ Back</HeaderButton>;
+  const back = <ToolBack fallback="today" label="‹ Back" leave={closeMemorize} />;
   if (session.status === 'loading') return <ScreenHeader title="" back={back} />;
   if (session.status === 'unknown') {
     return (

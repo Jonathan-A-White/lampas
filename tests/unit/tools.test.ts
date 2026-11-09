@@ -1,5 +1,9 @@
 // The Tools screen's doors (mw-5r3p30.754): the six rows that left Settings, what hides each, what opens each, the Settings search that still finds them, the old Settings address, the tutor's places for them.
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { createElement } from 'react';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { isKeptHash } from '../../src/nav/lastRoute';
 import { routeOf, ROUTES } from '../../src/nav/route';
@@ -8,6 +12,12 @@ import { GROUPS, isTalkable, ROWS, SECTIONS, TOOL_ROWS, visibleRows, visibleTool
 import { TOOL_SCREENS } from '../../src/tools';
 import { lampasRegistry, placeNameOf } from '../../src/tutor/registry';
 import { SCREEN_NAMES, suggestionsFor } from '../../src/tutor/screen';
+import { clearBus } from '../../src/events/bus';
+import { forgetTrail } from '../../src/nav/lastRoute';
+import { writeSetting } from '../../src/settings/registry';
+import { stubChapterFetch } from '../support/chapter-fetch';
+import { stubSpeech } from '../support/fake-speech';
+import { openTools } from './openSettings';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -92,5 +102,31 @@ describe('the Tools screen as a place', () => {
       expect(routeOf(window.location.hash), route).toBe(route);
       expect(window.history.state).toEqual({ tutorGo: true });
     }
+  });
+});
+
+describe('every tool door, opened from Tools', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it.each(Object.keys(TOOL_SCREENS))('%s: its back button says ‹ Tools and returns to Tools', async (key) => {
+    const user = userEvent.setup();
+    clearBus();
+    forgetTrail();
+    localStorage.clear();
+    stubChapterFetch();
+    stubSpeech([]);
+    await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+    window.history.replaceState(null, '', '/');
+    await writeSetting('resource.logos', 'on');
+    render(createElement(App));
+    await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
+    await openTools(user);
+    const row = TOOL_ROWS.find((r) => r.key === key);
+    await user.click(await within(await screen.findByRole('list', { name: 'Tools' })).findByRole('button', { name: new RegExp(`^${row?.label}`) }));
+    await user.click(await screen.findByRole('button', { name: '‹ Tools' }));
+    expect(await screen.findByRole('heading', { name: 'Tools', level: 1 })).toBeVisible();
   });
 });
