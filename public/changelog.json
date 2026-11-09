@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.188",
+    "date": "2026-11-09",
+    "story": "mw-fnvjof.17.40",
+    "kind": "fixed",
+    "text": "A link to a Hebrew word by its dictionary spelling, such as yarah (יָרָה), now opens its word sheet instead of saying it is not in Lampas; 176 such spellings were missing."
+  },
+  {
     "version": "0.7.185",
     "date": "2026-11-08",
     "story": "mw-u2w5klk.274.7",

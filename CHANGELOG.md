@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.188
+_2026-11-09_
+- Fixed: A link to a Hebrew word by its dictionary spelling, such as yarah (יָרָה), now opens its word sheet instead of saying it is not in Lampas; 176 such spellings were missing.
+
 ## 0.7.185
 _2026-11-08_
 - Fixed: A Septuagint verse that has Greek but no English (Isaiah 40:7) now shows its Greek and can be read aloud, instead of a bare verse number.
