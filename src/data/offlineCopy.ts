@@ -6,7 +6,8 @@
 // The copy stays current (mw-lcv9z3g.3): refreshOfflineCopy runs at app start (src/main.tsx, after the first render) and after each update check (updateChecked), and keeps the time of the check.
 import type { UpdateRegistration } from 'pwa-kit/app-update';
 import { CANON_INDEX, greekBooks } from './bookIndex';
-import { chapterUrl, type BookIndex } from './chapter';
+import { chapterUrl, listUrl, type BookIndex } from './chapter';
+import { VERSIONED_LISTS } from './versionedLists';
 import { CANON } from './canon';
 import { db } from './db';
 import { DATA_CACHE } from '../dataCache';
@@ -15,8 +16,8 @@ import { within } from './within';
 
 export type OfflineScope = 'none' | 'nt' | 'all';
 
-/** The Hebrew word lists the worker does not precache (pwa-precache.ts has the Greek ones); asked for plain, kept as they first came. */
-export const HEBREW_LISTS: readonly string[] = ['/data/lexicon-hbo.json', '/data/frequency-hbo.json'];
+/** The Hebrew word lists the worker does not precache (pwa-precache.ts has the Greek ones), each by the address the app asks for it (listUrl: ?v=<fingerprint> from `index`), so the worker keeps it and replaces an older copy. */
+export const hebrewLists = (index: BookIndex = CANON_INDEX): string[] => VERSIONED_LISTS.map((list) => listUrl(list, index));
 
 /** How many fetches a run has in flight at once. */
 export const OFFLINE_CONCURRENCY = 3;
@@ -48,7 +49,7 @@ function sermonsOf(scope: 'nt' | 'all', sermons: SermonIndex): string[] {
 export function offlineUrls(scope: OfflineScope, index: BookIndex = CANON_INDEX, sermons: SermonIndex = SERMON_INDEX): string[] {
   if (scope === 'none') return [];
   if (scope === 'nt') return [...chaptersOf(greekBooks(index)), ...sermonsOf('nt', sermons)];
-  return [...chaptersOf(index), ...HEBREW_LISTS, ...sermonsOf('all', sermons)];
+  return [...chaptersOf(index), ...hebrewLists(index), ...sermonsOf('all', sermons)];
 }
 
 // The chosen scope: one text in the settings store under 'offlineCopy', outside the settings registry (like dailyStore.ts); no Dexie version.

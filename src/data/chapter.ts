@@ -7,6 +7,7 @@ import { isHebrewBook } from './books';
 import { forgetLxxIndex, loadSeptuagintChapter, withHeadings } from './lxxChapter';
 import { chapterWait } from './chapterWait';
 import { within } from './within';
+import type { VersionedList } from './versionedLists';
 import { getSetting } from '../settings/store';
 import { septuagintSetting } from '../settings/definitions/septuagint';
 
@@ -285,6 +286,8 @@ export interface BookIndex {
   books: BookInfo[];
   /** The fingerprint of each reading ladder list (public/data/ladder/<lang>.json), written by `npm run ladder`: a list is asked for as ?v=<fingerprint>, so a rescored one is fetched again (mw-9ji6ek0.10). */
   ladders?: Partial<Record<'el' | 'en' | 'he', string>>;
+  /** The fingerprint of each Hebrew word list the worker does not precache (public/data/<list>.json), written by `npm run data:build:ot`: a list is asked for as ?v=<fingerprint>, so a changed one reaches a phone that kept the old (mw-fnvjof.17.41). */
+  lists?: Partial<Record<VersionedList, string>>;
 }
 
 export const wordLemma = (w: GreekWord): string => w.l;
@@ -305,6 +308,12 @@ const chapters = new Map<string, Promise<Chapter>>();
 export function chapterUrl(book: string, n: number, from: BookIndex = CANON_INDEX): string {
   const fingerprint = from.books.find((b) => b.code === book)?.fingerprints[n - 1];
   return `/data/${book}/${n}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
+}
+
+/** The address of a Hebrew word list: /data/<list>.json?v=<fingerprint>, the fingerprint from `lists` in the index (the bundle's unless one is given); plain when the index has none. The worker keeps it under that address until the fingerprint changes (src/dataCache.ts). */
+export function listUrl(list: VersionedList, from: BookIndex = CANON_INDEX): string {
+  const fingerprint = from.lists?.[list];
+  return `/data/${list}.json${fingerprint ? `?v=${fingerprint}` : ''}`;
 }
 
 /** The address of a reading ladder's list: /data/ladder/<lang>.json?v=<fingerprint>, the fingerprint from the index in the bundle; plain when the index has none. */

@@ -6,7 +6,7 @@
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
-import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedLadder, isVersionedSermons, serveChapter } from './dataCache';
+import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedLadder, isVersionedList, isVersionedSermons, serveChapter } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 import { isShareRequest, receiveShare } from './share/target';
 
@@ -51,12 +51,17 @@ registerRoute(
   ({ url, request }) => request.method === 'GET' && isVersionedLadder(url),
   ({ request }) => serveChapter(request, self.caches),
 );
+// A Hebrew word list (/data/lexicon-hbo.json?v=<fingerprint>, /data/frequency-hbo.json?v=<fingerprint>, the fingerprints in index.json `lists`) is kept the same way: it is not in the precache, and a list asked for plain would be kept as it first came, for good (mw-fnvjof.17.41).
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isVersionedList(url),
+  ({ request }) => serveChapter(request, self.caches),
+);
 // A sermon index book file (/sermons/<source>/<book>.json?v=<fingerprint>, the fingerprint in public/sermons/index.json) and a theme index's (/themes/..., public/themes/index.json) are kept the same way. It is not in the precache: it is fetched on first use or by the offline copy.
 registerRoute(
   ({ url, request }) => request.method === 'GET' && isVersionedSermons(url),
   ({ request }) => serveChapter(request, self.caches),
 );
-// Everything else under /data/ (a list asked for plain) is kept as it first came.
+// Everything else under /data/ (index.json and the Greek lists, which the precache answers first, and a plain request for anything else) is kept as it first came.
 registerRoute(
   ({ url, request }) => request.method === 'GET' && url.pathname.startsWith('/data/'),
   new CacheFirst({ cacheName: DATA_CACHE }),

@@ -142,7 +142,7 @@ Found by search (`'grc' | 'hbo'`, `'el' | 'he'`, `'greek' | 'hebrew'`, `=== 'hbo
 | `src/data/learnerSummary.ts:57` | the Hebrew part of the learner line (`ladderFor('hbo')`, `hebrewChosen` at `:98`): a Greek side and a Hebrew side | make generic: one part per chosen language in a loop |
 | `src/data/lexicon.ts:17`, `src/data/frequency.ts:25` | `FILES: Record<SourceLanguage, string>` | table; fine as is |
 | `src/data/canon.ts:14` | `CanonBook.lang`; the Old Testament rows are `hbo` (`:92`) | fine as is for a book's first text; a second text of the same books needs a source on the chapter, not the book |
-| `src/data/offlineCopy.ts:17` | `HEBREW_LISTS` (the lexicon and frequency files to keep) | make generic: derive from `FILES` |
+| `src/data/offlineCopy.ts:17` | `hebrewLists` (the lexicon and frequency files to keep, each by `listUrl`) | make generic: derive from `VERSIONED_LISTS` |
 | `src/data/readingLadder.ts:10` | `LADDER_LANGS = ['el', 'en', 'he']`, `LADDER_NAMES`: the reading ladder's own language ids | table; fine as is (its ids differ from `SourceLanguage`: a Latin story should map once) |
 | `src/data/repositories/greekInterest.ts:36` | `HEBREW_DIAL_KEY`, `moveDial`, `setGreekInterest`/`setHebrewInterest`, `placeInterest`: exactly two dials and the kept level of the other | make generic: one `moveDial(lang)` over `LANGUAGES`' dials, the "other dial" the highest of the rest |
 | `src/data/repositories/settings.ts:24` | `ReaderView = 'english' \| 'greek'`: `greek` means the source view (`src/reader/sourceText.ts`) and Hebrew chapters use it | fine as is (a naming quirk: `'greek'` is "the source text"); rename when convenient |

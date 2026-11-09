@@ -2,6 +2,7 @@
 // of the verse groups of Genesis 1:1-5, Jonah 1:1-3 and 1:17 and Daniel 2:4, taken from data/raw/bsb_tables.tsv with
 //   awk -F'\t' -v refs='Genesis 1:1|...|Daniel 2:4' 'BEGIN{...} FNR==NR{if($13 in want)g[$4]=1;next} FNR==1||($4 in g&&$5!="Greek")' bsb_tables.tsv bsb_tables.tsv
 // (docs/data.md has the line) and tbesh_slice.txt is the TBESH entries of their Strong's numbers.
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -257,6 +258,9 @@ describe('the files', () => {
     const frequency = JSON.parse(readFileSync(join(out, 'frequency-hbo.json'), 'utf8')) as FrequencyEntry[];
     expect(Object.keys(lexicon).length).toBeGreaterThan(20);
     expect(frequency.length).toBeGreaterThan(20);
+    // the app asks for the two Hebrew lists by the fingerprints index.json carries (src/data/chapter.ts listUrl, mw-fnvjof.17.41)
+    const fingerprint = (file: string) => createHash('sha256').update(readFileSync(join(out, file))).digest('hex').slice(0, 12);
+    expect(index.lists).toEqual({ 'lexicon-hbo': fingerprint('lexicon-hbo.json'), 'frequency-hbo': fingerprint('frequency-hbo.json') });
     const before = dump(out);
     const second = await runBuildOt({ rawDir: raw, outDir: out, download });
     expect(second.written).toBe(0);
@@ -288,6 +292,7 @@ describe('the files', () => {
     }
     const index = JSON.parse(readFileSync(join(out, 'index.json'), 'utf8')) as BookIndex;
     expect(index.books.map((b) => [b.code, b.lang])).toEqual([['gen', 'hbo'], ['dan', 'hbo'], ['jon', 'hbo'], ['mat', 'grc'], ['jhn', 'grc'], ['rom', 'grc'], ['rev', 'grc']]);
+    expect(index.lists).toEqual((JSON.parse(before.split('index.json\n')[1].split('\n')[0]) as BookIndex).lists);
   });
 
   it('downloads a raw file that is absent, from the Berean site and the STEPBible-Data Lexicons folder', async () => {

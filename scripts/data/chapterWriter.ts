@@ -110,9 +110,12 @@ export function mergeIndex(existing: BookIndex | undefined, built: readonly Book
     const kept = canon.lang === lang ? undefined : existing?.books.find((b) => b.code === canon.code);
     if (kept) books.push({ code: kept.code, name: kept.name, chapters: kept.chapters, verses: kept.verses, fingerprints: kept.fingerprints, lang: kept.lang ?? 'grc' });
   }
-  // the ladder fingerprints belong to scripts/ladder-shared.ts: a data build keeps them
-  return existing?.ladders ? { books, ladders: existing.ladders } : { books };
+  // the ladder fingerprints belong to scripts/ladder-shared.ts, the Hebrew lists' to scripts/data-build-ot.ts (listFingerprint): a data build keeps them
+  return { books, ...(existing?.ladders ? { ladders: existing.ladders } : {}), ...(existing?.lists ? { lists: existing.lists } : {}) };
 }
+
+/** The first 12 hex characters of the SHA-256 of the bytes a list file holds, as ladder-shared.ts takes a ladder's. */
+export const listFingerprint = (text: string): string => createHash('sha256').update(text).digest('hex').slice(0, 12);
 
 export function readIndex(outDir: string): BookIndex | undefined {
   const path = join(outDir, 'index.json');

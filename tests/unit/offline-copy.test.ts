@@ -86,7 +86,7 @@ describe('offlineUrls', () => {
     const chapters = CANON_INDEX.books.reduce((n, b) => n + b.chapters, 0);
     expect(urls).toHaveLength(chapters + 2);
     expect(urls.slice(0, chapters)).toEqual(CANON_INDEX.books.flatMap((b) => Array.from({ length: b.chapters }, (_, i) => chapterUrl(b.code, i + 1))));
-    expect(urls.slice(chapters)).toEqual(['/data/lexicon-hbo.json', '/data/frequency-hbo.json']);
+    expect(urls.slice(chapters)).toEqual([`/data/lexicon-hbo.json?v=${CANON_INDEX.lists?.['lexicon-hbo']}`, `/data/frequency-hbo.json?v=${CANON_INDEX.lists?.['frequency-hbo']}`]);
     expect(new Set(urls).size).toBe(urls.length);
   });
 
@@ -186,11 +186,11 @@ describe('runOfflineCopy', () => {
     expect(most).toBe(3);
   });
 
-  it('fetches the two Hebrew lists plain, with the whole Bible', async () => {
+  it('fetches the two Hebrew lists by their fingerprints, with the whole Bible', async () => {
     const s = setup();
     const end = await runOfflineCopy('all', deps(s));
-    expect(s.calls).toContain('/data/lexicon-hbo.json');
-    expect(s.calls).toContain('/data/frequency-hbo.json');
+    expect(s.calls).toContain(`/data/lexicon-hbo.json?v=${CANON_INDEX.lists?.['lexicon-hbo']}`);
+    expect(s.calls).toContain(`/data/frequency-hbo.json?v=${CANON_INDEX.lists?.['frequency-hbo']}`);
     expect(end.done).toBe(end.total);
   });
 

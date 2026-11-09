@@ -13,7 +13,8 @@ import type { BookInfo, Chapter, LexEntry } from '../src/data/chapter';
 import type { FrequencyEntry } from '../src/data/frequency';
 import type { LemmaLexicon } from '../src/data/lexicon';
 import { COLUMNS, addRow, checkHeader, readLines, splitReference, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
-import { buildVerse, chapterFingerprint, fetchTo, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
+import { buildVerse, chapterFingerprint, fetchTo, listFingerprint, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
+import type { VersionedList } from '../src/data/versionedLists';
 import { cleanHebrewGloss, hebrewStem, parseTbes, type Lexicon } from './data/tbes';
 
 export const BSB_URL = 'https://bereanbible.com/bsb_tables.tsv';
@@ -260,7 +261,12 @@ export async function runBuildOt(options: BuildOtOptions): Promise<{ chapters: n
     put(path, JSON.stringify(chapter));
   });
   // index.json lists the 66 books: this build writes the 39 of the Old Testament and keeps the New Testament's from the index on disk (scripts/data-build.ts writes those)
-  put('index.json', JSON.stringify(mergeIndex(readIndex(outDir), built.books, 'hbo')));
+  // and carries the fingerprints of the two Hebrew lists it writes, which the app asks for them by (src/data/chapter.ts listUrl, mw-fnvjof.17.41)
+  const lists: Record<VersionedList, string> = {
+    'lexicon-hbo': listFingerprint(JSON.stringify(built.lexicon)),
+    'frequency-hbo': listFingerprint(JSON.stringify(built.frequency)),
+  };
+  put('index.json', JSON.stringify({ ...mergeIndex(readIndex(outDir), built.books, 'hbo'), lists }));
   put('lexicon-hbo.json', JSON.stringify(built.lexicon));
   put('frequency-hbo.json', JSON.stringify(built.frequency));
 
