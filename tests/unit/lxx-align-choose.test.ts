@@ -5,9 +5,9 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSy
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
+import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
-import { alignChapter, alignVerse, renderAlignReport, type AlignShare } from '../../scripts/lxx/align';
+import { alignChapter, alignVerse, lettersOf, renderAlignReport, SUPPLIED_FOR_VERB, type AlignShare } from '../../scripts/lxx/align';
 import {
   ALIGN_CHOICES_DIR,
   AlignChooseRefused,
@@ -29,6 +29,33 @@ const haveSources = existsSync('data/raw/lxx') && existsSync('data/lxx/morpheus/
 const word = (t: string, tr: string, l: string, p: string): GreekWord => ({ t, tr, s: '', l, p, y: '2', c: 0.9 });
 const verseOf = (text: string, g: GreekWord[], s?: number[]): Verse => ({ n: 2, g, e: [{ t: text, g: [], ...(s ? { s } : {}) }] });
 const joined = (verse: Verse): string => verse.e.map((c) => c.t).join(' ');
+const aligned = (v: Verse): EnglishChunk[] => v.e.filter((c) => c.y === 'align');
+/**
+ * How the aligner's own chunks of `now` (the model pass applied) differ from those of `was` (without it), by Greek positions: none, in a verse the model pass left alone. A chunk keeps its
+ * positions and confidence; its text may be short of the words Brenton supplies for a verb that the model paired with a Greek word of their own (joinSupplied joins only a chunk with no Greek:
+ * "they moved" is "moved" when the model gives "they" a word), and of nothing else.
+ */
+const alignedDiffs = (was: Verse, now: Verse): string[] => {
+  const out: string[] = [];
+  const key = (c: EnglishChunk): string => c.g.join(',');
+  const after = new Map(aligned(now).map((c) => [key(c), c]));
+  for (const c of aligned(was)) {
+    const d = after.get(key(c));
+    if (!d) {
+      out.push(`${c.t}|${key(c)}: no longer an aligned chunk`);
+      continue;
+    }
+    after.delete(key(c));
+    if (d.c !== c.c) out.push(`${c.t}|${key(c)}: confidence ${c.c} became ${d.c}`);
+    const cut = c.t.split(/\s+/).filter(Boolean);
+    const rest = d.t.split(/\s+/).filter(Boolean);
+    const lead = cut.slice(0, cut.length - rest.length);
+    const supplied = lead.every((w) => SUPPLIED_FOR_VERB.has(lettersOf(w)));
+    if (c.t !== d.t && !(lead.length > 0 && cut.slice(lead.length).join(' ') === d.t && supplied)) out.push(`${c.t}|${key(c)}: text became ${d.t}`);
+  }
+  for (const d of after.values()) out.push(`${d.t}|${key(d)}: a new aligned chunk`);
+  return out;
+};
 
 /** Genesis 1:2 in miniature: three Greek words, one of which the aligner pairs; the rest of the English is remainder. */
 const chapterOf = (verse: Verse): Chapter => ({ book: 'Genesis', code: 'gen', chapter: 1, verses: [verse] }) as unknown as Chapter;
@@ -186,6 +213,38 @@ describe('the model\'s chunks are spliced into the verse', () => {
   });
 });
 
+describe('a supplied word the model pairs on its own (Genesis 11:2 "as they", 11:6 "they may have")', () => {
+  const GREEK_THEY = [word('καὶ', 'kai', 'καί', 'CONJ'), word('δὲ', 'de', 'δέ', 'CONJ'), word('ἐκινήθησαν', 'ekinēthēsan', 'κινέω', 'V-API-3P')];
+  const glossThey = (l: string): string => ({ καί: 'and', κινέω: 'move' })[l] ?? '';
+  const build = (model: Parameters<typeof alignChapter>[2]): Verse =>
+    alignChapter({ code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf('And they moved.', GREEK_THEY.map((w) => ({ ...w })))] } as Chapter, glossThey, model).chapter.verses[0];
+  const row = { ref: 'Gen.1:2', run: 1, text: 'they', g: [1], mark: '' as const, confidence: 0.8 };
+
+  it('stays its own chunk: only a chunk with no Greek joins the verb, so "moved" is bare and "they" keeps δέ', () => {
+    expect(build([]).e.map((c) => [c.t, c.g, c.y])).toEqual([['And', [0], 'align'], ['they moved.', [2], 'align']]);
+    expect(build([row]).e.map((c) => [c.t, c.g, c.y])).toEqual([['And', [0], 'align'], ['they', [1], 'model'], ['moved.', [2], 'align']]);
+  });
+
+  it('is the one difference the real-data check lets through: same Greek positions and confidence, the text short of supplied words only', () => {
+    expect(alignedDiffs(build([]), build([row]))).toEqual([]);
+  });
+
+  it('keeps its power: a chunk that loses a word that is not supplied, a Greek position or a confidence, or goes missing, is reported', () => {
+    const was = build([]);
+    const lose = (change: (c: EnglishChunk) => void): Verse => {
+      const now = build([row]);
+      change(now.e[2]);
+      return now;
+    };
+    expect(alignedDiffs(was, lose((c) => (c.t = 'moving.')))).not.toEqual([]);
+    expect(alignedDiffs(was, lose((c) => (c.g = [1])))).not.toEqual([]);
+    expect(alignedDiffs(was, lose((c) => (c.c = 0.1)))).not.toEqual([]);
+    const heavier = { ...was, e: was.e.map((c, i) => (i === 1 ? { ...c, t: 'quickly they moved.' } : c)) };
+    expect(alignedDiffs(heavier, build([row]))).not.toEqual([]);
+    expect(alignedDiffs(was, { ...was, e: was.e.slice(0, 1) })).not.toEqual([]);
+  });
+});
+
 describe('the report names the share the model pass settled', () => {
   const shares: AlignShare[] = [{ code: 'gen', book: 'Genesis', chapter: 1, verses: 31, words: 751, paired: 700, sure: 600, tokens: 800, pairedTokens: 700, model: 70 }];
   it('has a column for the Greek words the model paired, and a line with the total', () => {
@@ -243,7 +302,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
     }
   });
 
-  it('drops no word and no English: the chunks joined are Brenton\'s whole verse as the aligner had it, the Greek words are the same, and an aligned chunk is untouched', () => {
+  it('drops no word and no English: the chunks joined are Brenton\'s whole verse as the aligner had it, the Greek words are the same, and an aligned chunk is untouched, bar the supplied words the model paired with a Greek word of their own', () => {
     for (const [n, chapter] of withModel) {
       const was = base.get(n)!;
       expect(chapter.verses).toHaveLength(was.verses.length);
@@ -253,8 +312,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
         expect(verse.g.map((w) => w.t)).toEqual(prior.g.map((w) => w.t));
         const supplied = (v: Verse): number => v.e.reduce((a, c) => a + (c.s?.length ?? 0), 0);
         expect(supplied(verse)).toBe(supplied(prior));
-        const keep = (v: Verse): string[] => v.e.filter((c) => c.y === 'align').map((c) => `${c.t}|${c.g.join(',')}|${c.c}`);
-        expect(keep(verse)).toEqual(keep(prior));
+        expect(alignedDiffs(prior, verse), `Gen ${n}:${verse.n}`).toEqual([]);
       });
     }
   });
