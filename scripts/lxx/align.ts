@@ -363,7 +363,7 @@ export function alignVerse(verse: Verse, gloss: (lemma: string) => string): { ve
 // ---------------------------------------------------------------- a chapter, and the report
 
 /** The English words Brenton supplies in front of a Greek verb that has none of its own: 'Let there be' for Γενηθήτω, 'there was' and 'it was' for ἐγένετο, 'he called' for ἐκάλεσεν, 'I have' for δέδωκα, 'it shall' for ἔσται. */
-const SUPPLIED_FOR_VERB = new Set(['let', 'there', 'it', 'he', 'she', 'they', 'we', 'i', 'you', 'thou', 'ye', 'have', 'had', 'shall', 'will', 'us', 'them']);
+export const SUPPLIED_FOR_VERB = new Set(['let', 'there', 'it', 'he', 'she', 'they', 'we', 'i', 'you', 'thou', 'ye', 'have', 'had', 'shall', 'will', 'us', 'them']);
 
 /** 'us' and 'them' are often the object of the verb before them ('blessed them'), so they lead a verb only after 'let' ('Let us make', 'let them be'): a run of supplied words does not start with one. */
 const OBJECT_WORDS = new Set(['us', 'them']);
