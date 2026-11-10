@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.198
+_2026-11-10_
+- Fixed: With a text beside the passage in Turn pages, the text beside now follows the first verse you actually read at the top of the page, not the one before it.
+- Fixed: On a Library page, the line saying a kind of book is not offered while a language is off now spells Hebrew and Greek with capitals, and "Which languages?" in it can be tapped to open that setting.
+
 ## 0.7.197
 _2026-11-10_
 - Fixed: double-tapping Noun endings on a Septuagint word printed in capitals no longer leaves the Word sheet open over the table.
