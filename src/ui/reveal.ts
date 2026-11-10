@@ -35,7 +35,8 @@ export function revealTop(el: HTMLElement | null): void {
 
 /** Brings `el` into view in the nearest scrolling ancestor: left where it is when the whole of it shows, else scrolled to the middle of the box (as far as the content allows): a cell he was sent to,
  * with the screen's own top (the word it is the cell of) kept when it needs no scroll. `keep`, when given, is a control above `el` that must not be scrolled out of sight to do it
- * (the choice he just used): the box scrolls no further than puts its top at the top of the box. Like revealInScrollBox it moves the box and never the document. */
+ * (the choice he just used): the box scrolls no further than puts its top at the top of the box, unless that leaves `el` still below the box (a window too short for both):
+ * `el` is what he went there to see, so it wins and the control may scroll out of sight. Like revealInScrollBox it moves the box and never the document. */
 export function bringIntoScrollBox(el: HTMLElement | null, keep?: HTMLElement | null): void {
   const box = scrollBoxOf(el);
   if (!el || !box) return;
@@ -45,7 +46,9 @@ export function bringIntoScrollBox(el: HTMLElement | null, keep?: HTMLElement | 
   const by = inner.top + inner.height / 2 - (outer.top + outer.height / 2);
   // a scroll back up is never held (the control is below the top then, or the cell is above it)
   const limit = keep ? keep.getBoundingClientRect().top - outer.top : Infinity;
-  box.scrollTop += by > 0 ? Math.min(by, Math.max(0, limit)) : by;
+  const held = Math.min(by, Math.max(0, limit));
+  const stillBelow = inner.bottom - held > outer.bottom;
+  box.scrollTop += by > 0 && !stillBelow ? held : by;
 }
 
 /** The top of what is drawn over the foot of `box`'s scroll content: the sticky NextBar (src/ui/NextBar.tsx), when the box has one, else the box's own bottom.
