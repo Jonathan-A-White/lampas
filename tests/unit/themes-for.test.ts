@@ -1,7 +1,7 @@
 // src/themes/ (mw-qtu3zvz.4, docs/sermons.md 'The themes'): the topics of a verse or passage from a list of sources, the part label each carries, the switches, and the bundled sources reading the committed
 // public/themes files. The tests' own sources are tests/support/test-themes.ts; the bundled ones are tried with a fetch that answers from the files on disk.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { parseLinkRef, THEME_INDEX, themeBookUrl } from '../../src/data/themeIndex';
 import { enabledSources, sourceKey } from '../../src/themes/enabled';
 import { bookOf, bundledSources, forgetThemeFiles } from '../../src/themes/sources/bundled';
@@ -130,6 +130,20 @@ describe('the bundled sources: one for each source of public/themes/index.json',
     expect(names).toContain('Love-Hatred: Of God');
     expect(names.length).toBeGreaterThan(5);
     expect(names.every((n) => !/Chain.Reference/i.test(n))).toBe(true);
+  });
+
+  it('carry no topic or part label that ends in , ; or : or has a space at either end (mw-qtu3zvz.51)', () => {
+    const bad: string[] = [];
+    for (const id of readdirSync('public/themes').filter((d) => d !== 'index.json')) {
+      for (const file of readdirSync(`public/themes/${id}`)) {
+        const book = JSON.parse(readFileSync(`public/themes/${id}/${file}`, 'utf8')) as { topics: Array<{ label: string; parts: Array<{ label: string }> }> };
+        for (const topic of book.topics) {
+          for (const label of [topic.label, ...topic.parts.map((p) => p.label)]) if (/[,;:]$/.test(label) || label !== label.trim() || label === '') bad.push(`${id}/${file}: '${label}'`);
+        }
+      }
+    }
+    expect(bad.slice(0, 10)).toEqual([]);
+    expect(bad).toHaveLength(0);
   });
 
   it('make every link of a book file a passage of that book, in Lampas\'s chapters', () => {

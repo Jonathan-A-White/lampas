@@ -37,6 +37,11 @@ export interface ThemeReport {
   rawBytes: number;
 }
 
+/** A label as a book file keeps it: the module's own trailing ',' ';' ':' and spaces at either end are dropped (a Themes line puts ' · ' after it; mw-qtu3zvz.51). */
+export function tidyLabel(label: string): string {
+  return label.replace(/[\s,;:]+$/, '').trim();
+}
+
 /** A link's reference as a book file writes it: '5.8', '23.1-6', '5.12-6.4'. */
 export function linkRef(ref: SermonRef): string {
   const end = ref.toChapter === undefined ? `${ref.to}` : `${ref.toChapter}.${ref.to}`;
@@ -119,8 +124,8 @@ export function buildTheme(id: string, topicsText: string, linksText: string, ve
       .sort((a, b) => a.order - b.order)
       .map((topic) => {
         const wanted = used.get(topic.row.id)!;
-        const parts: ThemePartFile[] = (topic.row.parts ?? []).filter((p) => wanted.has(p.n)).map((p) => ({ n: p.n, label: p.label }));
-        const out: ThemeTopicFile = { id: topic.row.id, label: topic.row.label, parts, verses: topic.verses.size };
+        const parts: ThemePartFile[] = (topic.row.parts ?? []).filter((p) => wanted.has(p.n)).map((p) => ({ n: p.n, label: tidyLabel(p.label) }));
+        const out: ThemeTopicFile = { id: topic.row.id, label: tidyLabel(topic.row.label), parts, verses: topic.verses.size };
         if (topic.verses.size <= THEME_MAX_VERSES) out.books = CANON.map((c) => c.code).filter((code) => topic.books.has(code));
         return out;
       });
