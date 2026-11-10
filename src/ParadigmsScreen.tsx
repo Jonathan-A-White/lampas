@@ -228,9 +228,10 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
   // the idea he opened from that line, and the word he tapped in its examples: both sheets open over the table, which stays (mw-svw421.25)
   const [ideaId, setIdeaId] = useState<string | null>(null);
   const [word, setWord] = useState<{ chapter: Chapter; lookup: Lookup } | null>(null);
-  // the word's own cell is brought into view in the screen's scroll box once the table is drawn in the blocks that fit (a change of blocks moves it)
+  // the word's own cell is brought into view in the screen's scroll box once the table is drawn in the blocks that fit (a change of blocks moves it), never so far that
+  // the This word | The pattern choice he just used leaves the top of the screen (mw-u2w5klk.326)
   useLayoutEffect(() => {
-    if (lit) bringIntoScrollBox(box.current?.querySelector<HTMLElement>('[data-lit]') ?? null);
+    if (lit) bringIntoScrollBox(box.current?.querySelector<HTMLElement>('[data-lit]') ?? null, box.current?.closest('main')?.querySelector<HTMLElement>('[role=group][aria-label=Forms]'));
   }, [lit, fit, table]);
   const size = greekRemOf(table) > 1.25 ? 'text-2xl' : 'text-xl';
   // a Hebrew table is drawn right to left: its row labels at the right, its first column beside them (layout.ts tableDirection); its Hebrew is script-he, 1.25em of the table's text-xl
