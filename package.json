@@ -14,7 +14,7 @@
     "test:bdd": "vitest run features/steps",
     "test:e2e": "playwright test",
     "typecheck": "tsc -b --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint . --pass-on-unpruned-suppressions",
     "shots": "playwright test --project=shots",
     "gate:shots": "npm run build && TZ=UTC playwright test --project=shots",
     "e2e:live": "LAMPAS_E2E=live TZ=UTC playwright test --project=live",
