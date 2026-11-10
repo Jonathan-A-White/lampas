@@ -6,7 +6,8 @@
 // Revelation 22 nothing happens). A tap on a button or link outside the verses (the
 // chapter buttons) does what it does; a verse's play button and a section heading's button are text: their outer thirds turn the page, as a
 // Kindle's edges always do (mw-5r3p30.609). A verse's number is not (mw-fnvjof.17.59): it is a 44 px button at the left edge, the only door to the Verse view and
-// its Split, so a tap on it opens its verse wherever it is. A tap in the middle third
+// its Split, so a tap on it opens its verse wherever it is; in the Paragraph layout, where a number stands anywhere along a line, only its digit does (mw-fnvjof.17.66) and the
+// rest of its 44 px box turns the page like the text around it. A tap in the middle third
 // still opens the word, verse or heading; so does a long press (the word's own click guard drops its click; a held number talks, or with no licence opens
 // its verse), and so does Enter on a focused number (a click with no short press before it). A swipe is a drag (below); no drag starts within the chapter swipe's EDGE_PX of the screen's edge (src/reader/useChapterSwipe.ts, off while pages are on).
 // When the box changes size (text size, the hint card closed, the bars brought back) the pages are cut afresh and the page shown is the one where the
@@ -56,6 +57,13 @@ export interface Pages {
 /** True when the press began somewhere a swipe or a page tap is not wanted. */
 const ignoredStart = (target: EventTarget | null): boolean =>
   target instanceof Element && target.closest('input, textarea, select, [data-hold-bar], [role="slider"], [contenteditable="true"]') !== null;
+
+/** Whether (x, y) is on the digit of a verse's number, the box of its superscript, with a few px of slop for a finger. */
+const DIGIT_SLOP_PX = 6;
+const onDigit = (number: Element, x: number, y: number): boolean => {
+  const r = (number.querySelector('sup') ?? number).getBoundingClientRect();
+  return x >= r.left - DIGIT_SLOP_PX && x <= r.right + DIGIT_SLOP_PX && y >= r.top - DIGIT_SLOP_PX && y <= r.bottom + DIGIT_SLOP_PX;
+};
 
 /** What the layout effect lets the rest of the hook do while the pages are cut. */
 interface Turner {
@@ -363,6 +371,8 @@ export function usePages(
     /** the press that ended last: whether its click may be a tap, and whether it was a drag (its click, if one comes, is dropped) */
     let tapped = false;
     let swiped = false;
+    /** where the tap that ended last came down: Chrome moves a tap near a button onto the button, so the click's own point is not where the finger was */
+    let tappedAt = { x: 0, y: 0 };
     const stop = () => {
       press = null;
       window.removeEventListener('pointermove', onMove);
@@ -423,6 +433,7 @@ export function usePages(
       const dy = e.clientY - p.y;
       const now = performance.now();
       tapped = now - p.at <= TAP_MS && Math.hypot(dx, dy) <= TAP_SLOP_PX;
+      tappedAt = { x: p.x, y: p.y };
       const d = p.drag;
       if (!d) return;
       swiped = true;
@@ -478,10 +489,13 @@ export function usePages(
       // sits at the left edge, where a thumb cannot reach the middle third, and is the one door to its Verse view (and so to Split), so it keeps its own
       // tap and its outer thirds turn the page around it (mw-5r3p30.609); the chapter buttons keep their taps
       const control = e.target instanceof Element ? e.target.closest('a, button, input, select, textarea, label, summary') : null;
-      if (control?.closest('[data-verse-number]')) return;
-      if (control && !control.closest('[data-heading], [data-verse]')) return;
+      const number = control?.closest('[data-verse-number]');
+      // in a Paragraph the numbers stand anywhere along a line, so the 44 px box would take the forward tap itself (mw-fnvjof.17.66): there only the digit keeps
+      // the tap, judged by where the finger came down, and the rest of the box turns the page like the text around it; at the verse-by-verse left edge the box is the door
+      if (number && !(number.closest('[data-paragraph]') && !onDigit(number, tappedAt.x, tappedAt.y))) return;
+      if (!number && control && !control.closest('[data-heading], [data-verse]')) return;
       const r = el.getBoundingClientRect();
-      const x = e.clientX - r.left;
+      const x = tappedAt.x - r.left;
       const by = x < r.width / 3 ? -1 : x > (r.width * 2) / 3 ? 1 : 0;
       if (by === 0) return;
       e.preventDefault();
