@@ -11,6 +11,7 @@ import { parseToml } from '../../scripts/sermons/toml';
 import type { SermonBookFile, SermonIndex } from '../../src/data/sermonIndex';
 import type { ThemeBookFile, ThemeIndex } from '../../src/data/themeIndex';
 import { rawUrl, runSermonsBuild, sourceFingerprint, themeLicence } from '../../scripts/sermons-build';
+import { buildTheme } from '../../scripts/sermons/themes';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: Array<{ code: string; verses: number[] }> };
 const verses = (code: string): readonly number[] | undefined => index.books.find((b) => b.code === code)?.verses;
@@ -310,6 +311,15 @@ describe('runSermonsBuild: the theme sources', () => {
       { topic: 'love-hatred', ref: 'Rom.16.25', reason: expect.stringContaining('verse') },
       { topic: 'shepherd', ref: 'Tob.3.1', reason: "unknown book 'Tob'" },
     ]);
+  });
+
+  it('strips the stray punctuation and spaces a module leaves on a topic or part label (mw-qtu3zvz.51)', () => {
+    const topics = '{"id":"t","label":" Church, The ","parts":[{"n":1,"label":"Of Believers,"},{"n":2,"label":"Facts concerning:"},{"n":3,"label":" Sacraments of ; "}]}\n';
+    const links = [1, 2, 3].map((n) => `{"topic":"t","part":${n},"ref":"Rom.5.${n}"}`).join('\n');
+    const { files } = buildTheme('stray', topics, links, (book) => (book === 'rom' ? Array(16).fill(40) : undefined));
+    const [topic] = files.get('rom')!.topics;
+    expect(topic.label).toBe('Church, The');
+    expect(topic.parts.map((p) => p.label)).toEqual(['Of Believers', 'Facts concerning', 'Sacraments of']);
   });
 
   it('writes a book file of {topics: [{id, label, parts, verses, books}], links: [{topic, part, ref}]} for that book\'s links', async () => {
