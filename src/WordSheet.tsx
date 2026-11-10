@@ -400,7 +400,7 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
   );
 }
 
-function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, onReading, onMissing, onAll }: {
+function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, known, study, levels, onHelp, onTerm, onParadigm, opening, onReading, onMissing, onAll }: {
   chapter: Chapter;
   word: GreekWord;
   /** the verse to ask about when the word is not one of the chapter's (a form of a variant reading) */
@@ -418,6 +418,8 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
   /** the Paradigm row was tapped: the word, to open its table */
   onParadigm: (word: GreekWord) => void;
+  /** the Paradigm row was tapped and its table waits on the lemma's forms: the row says so (mw-u2w5klk.345) */
+  opening?: boolean;
   /** About this reading was tapped: Help's Words page opens, the sheet held */
   onReading: () => void;
   /** a Study link's app did not open */
@@ -472,10 +474,12 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
               type="button"
               data-table={table.id}
               onClick={() => oneTap('word:paradigm', () => onParadigm(word))}
+              aria-busy={opening ? true : undefined}
               {...greekLang(table.id === 'eimi' || table.id === 'oida')}
-              className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4"
+              className={`inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4${opening ? ' opacity-60' : ''}`}
             >
               {table.name}
+              {opening ? <span className="ml-2 text-sm text-muted no-underline">Opening…</span> : null}
             </button>
           </Fact>
         ) : null}
@@ -689,6 +693,8 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
   // the word's table is a page of its own: the sheet is held, with what it showed, and Back brings it back (src/wordReturn.ts)
   // a table asked for and still waiting on the lemma's forms: the sheet stays up meanwhile, so a second tap must not open it again (mw-u2w5klk.334)
   const opening = useRef(false);
+  // the word whose table waits, for its Paradigm row to say so (mw-u2w5klk.345)
+  const [waiting, setWaiting] = useState<GreekWord | null>(null);
   // closing the sheet while it waits cancels the table: it must not open later over the chapter (mw-u2w5klk.344)
   const mounted = useRef(true);
   useEffect(() => {
@@ -707,10 +713,12 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
     // a Septuagint word printed in capitals is asked of the table as the accented form of its lemma and parsing (mw-u2w5klk.323): ΑΡΧΗ has no iota subscript to tell -ῃ from -ᾳ
     if (isSeptuagint(sheetChapter) && inCapitals(word.t) && word.l) {
       opening.current = true;
+      setWaiting(word);
       void accentedFormsOf(word)
         .then((accented) => open(paradigmOfWord(matchedWord(word, accented))))
         .finally(() => {
           opening.current = false;
+          if (mounted.current) setWaiting(null);
         });
       return;
     }
@@ -817,6 +825,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
                 onHelp={help}
                 onTerm={openTerm}
                 onParadigm={openTable}
+                opening={waiting === w}
                 onReading={openReading}
                 onMissing={setMissing}
                 onAll={(word, door) => setAllLexicons({ word, door })}

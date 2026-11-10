@@ -211,6 +211,36 @@ test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: Done on the Word sheet before t
   await shot(page, 'septuagint-own-paradigm-capitals-done-during-wait');
 });
 
+// mw-u2w5klk.345: while the forms load, the tap shows it was taken
+test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: Noun endings reports a working state after one tap, and the Word sheet is gone once the table shows', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await putLevels(page, NOUN_IDEAS);
+  await page.goto('/#/settings');
+  const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
+  await row.getByRole('button', { name: 'On', exact: true }).click();
+  await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.goto('/#/?b=gen&c=1&view=greek');
+  await page.reload();
+  await page.route('**/lemma-forms/*', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await route.fallback();
+  });
+  await page.locator('[data-verse="1"]').getByRole('button', { name: 'ΑΡΧΗ', exact: true }).first().click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet).toBeVisible();
+  const button = sheet.getByTestId('sheet-paradigm').getByRole('button');
+  await expect(button).not.toHaveAttribute('aria-busy', 'true');
+  await button.click();
+  // the forms are held 2 s: half a second on, the button says it is working
+  await page.waitForTimeout(500);
+  await expect(sheet.getByTestId('sheet-paradigm').getByRole('button')).toHaveAttribute('aria-busy', 'true');
+  await shot(page, 'septuagint-own-paradigm-capitals-working');
+  await expect(page.getByRole('heading', { name: 'Noun endings', level: 1 })).toBeVisible();
+  await expect(sheet).toBeHidden();
+});
+
 test('Genesis 1:2 ὕδατος, a word whose Septuagint lemma has a comma (ὕδωρ, ὕδατος): This word is there and its cell is outlined, with the New Testament’s ὕδωρ forms laid too', async ({ page }) => {
   await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
   await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
