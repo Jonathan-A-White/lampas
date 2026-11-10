@@ -7,6 +7,7 @@ import { sourceLanguage, type Chapter, type GreekWord } from './data/chapter';
 import { exampleMeaning } from './data/grammar/ideaSheet';
 import { conceptOf, hebrewConceptOf } from './data/grammar-concepts';
 import { grammarExamples } from './data/grammarExamples';
+import { cardForm } from './reader/septuagint';
 import { proseOf } from './speech/proseOf';
 import { LessonReadAloud } from './speech/ReadAloud';
 import { BarSlot } from './speech/SpeakingBarSlot';
@@ -88,7 +89,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onD
                     <button
                       type="button"
                       data-testid="grammar-example"
-                      data-form={example.t}
+                      data-form={cardForm(chapter, example)}
                       data-lemma={example.l}
                       onClick={() => onWord(example)}
                       className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-line px-3 py-1 text-left active:bg-line"
@@ -99,7 +100,7 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onD
                         </span>
                       ) : (
                         <span {...GREEK_LANG} className="font-greek text-2xl">
-                          {example.t}
+                          {cardForm(chapter, example)}
                         </span>
                       )}
                       <span data-testid="grammar-gloss" className="min-w-0 flex-1 break-words text-base text-muted">{exampleMeaning(chapter, verse, example)}</span>

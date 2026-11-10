@@ -6,6 +6,7 @@ import { holdsLemma, normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
 import { SEED_WORDS_HBO } from './seed-words-hbo';
 import { choicesOf } from './choices';
+import { cardForm } from '../reader/septuagint';
 import type { LemmaLexicon } from './lexicon';
 import { meaningsOf, shareMeaning } from './meanings';
 import { shuffle, type Random } from './random';
@@ -102,6 +103,7 @@ export function buildOptions(
 
 /** One occurrence of a word in a chapter. */
 export interface Occurrence {
+  /** the word as it is shown, spoken and asked about: cardForm's (a Septuagint word without Swete's mark) */
   form: string;
   /** 'Romans 8:1' */
   reference: string;
@@ -136,7 +138,7 @@ export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string
   return chapter.verses.flatMap((v) =>
     v.g
       .filter((g) => isFormOf(g, lemmas, others))
-      .map((g) => ({ form: g.t, reference: `${chapter.book} ${chapter.chapter}:${v.n}`, book: chapter.code, chapter: chapter.chapter, verse: v.n })),
+      .map((g) => ({ form: cardForm(chapter, g), reference: `${chapter.book} ${chapter.chapter}:${v.n}`, book: chapter.code, chapter: chapter.chapter, verse: v.n })),
   );
 }
 

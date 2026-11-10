@@ -245,7 +245,7 @@ export function VerseView(props: VerseViewProps) {
   const summarizing = action === 'practise' && ai && practice.door === 'summary';
   const copyLanguages = ownNarration || narrating || summarizing ? (['en'] as CopyLanguage[]) : copyLanguagesOf(source);
   const copyLanguage: CopyLanguage = copyLanguages.includes(practice.language) ? practice.language : 'en';
-  const modelText = ownNarration ? ownNarration.text : modelTextOf(verse, copyLanguage);
+  const modelText = ownNarration ? ownNarration.text : modelTextOf(verse, copyLanguage, chapterText);
   const big = hebrewView ? 'script-he reader-hebrew [--lp-greek-size:2.25rem]' : view === 'greek' ? 'font-greek [--lp-greek-size:2.25rem]' : 'font-sans [--lp-english-size:1.75rem] [--lp-greek-size:2.25rem]';
   const size = hebrewView ? '' : view === 'greek' ? 'text-[length:var(--lp-greek-size)]' : 'text-[length:var(--lp-english-size)]';
   const typeClass = `leading-(--lp-leading) ${big} ${size}`;

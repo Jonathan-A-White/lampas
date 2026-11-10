@@ -24,7 +24,7 @@ import { VerseText } from '../reader/VerseText';
 import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
-import { lampasNumber } from '../reader/septuagint';
+import { cardForm, lampasNumber } from '../reader/septuagint';
 import { textClass } from '../reader/textClass';
 import { MARGIN, WIDTH, spotFor, type Spot } from './cardSpot';
 import { DialogAskTutor } from '../AskTutor';
@@ -41,8 +41,9 @@ const HEBREW_TEXT = 'Westminster Leningrad Codex';
 type Passage = Chapter | 'failed' | null;
 
 /** The indices of the Greek words of `verse` that are `form`: the first one, which a card marks (a form that stands twice in a verse is marked at its first place). */
-const markedIn = (verse: Verse, form: string): ReadonlySet<number> => {
-  const at = verse.g.findIndex((w) => w.t === form);
+const markedIn = (chapter: Chapter, verse: Verse, form: string): ReadonlySet<number> => {
+  // a Septuagint form is asked about without Swete's mark (cardForm), so it is found the same way
+  const at = verse.g.findIndex((w) => cardForm(chapter, w) === form);
   return new Set(at < 0 ? [] : [at]);
 };
 
@@ -62,7 +63,7 @@ function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPl
       {inRange.map(({ v, i }, k) => (
         <span key={v.n}>
           {inRange.length > 1 ? <sup className="mr-0.5 font-sans text-xs text-muted">{lampasNumber(chapter, v)}</sup> : null}
-          <VerseText verse={v} view={settings.view} source={source} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(v, mark)} still />
+          <VerseText verse={v} view={settings.view} source={source} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(chapter, v, mark)} still />
           {k < inRange.length - 1 ? ' ' : ''}
         </span>
       ))}

@@ -3,6 +3,7 @@
 // one the card can explain (mw-5r3p30.234): its parsing carries the idea, it is a part of speech the cards below taught, its form is in the
 // card's table, and it is shown with the ending the table names marked, its one sense here, and its parsing in the card's own terms.
 // Pure data work: no store, no screen; docs/grammar.md.
+import { cardForm } from '../../reader/septuagint';
 import { chosenPronunciation } from '../../speech/greek';
 import { lessonsOf, type Pronunciation } from '../../speech/pronunciation';
 import { isGuess, type BookIndex, type Chapter, type GreekWord, type Verse, ownEnglish, wordGloss } from '../chapter';
@@ -105,8 +106,8 @@ function englishOfUse(verse: Verse, words: readonly number[]): string {
 }
 
 /** The verse written out, a part for each word and each space, the words at `marked` marked. */
-function verseParts(verse: Verse, marked: readonly number[]): ExamplePart[] {
-  return verse.g.flatMap((word, i): ExamplePart[] => [...(i > 0 ? [{ text: ' ', marked: false }] : []), { text: word.t, marked: marked.includes(i) }]);
+function verseParts(chapter: Chapter, verse: Verse, marked: readonly number[]): ExamplePart[] {
+  return verse.g.flatMap((word, i): ExamplePart[] => [...(i > 0 ? [{ text: ' ', marked: false }] : []), { text: cardForm(chapter, word), marked: marked.includes(i) }]);
 }
 
 /**
@@ -128,7 +129,7 @@ function sentenceExamples(id: string, chapters: Chapter[], verse: number | undef
             chapter,
             verse: v.n,
             reference: `${chapter.book} ${chapter.chapter}:${v.n}`,
-            parts: verseParts(v, use.words),
+            parts: verseParts(chapter, v, use.words),
             english: englishOfUse(v, use.words),
           },
           first,
@@ -156,7 +157,7 @@ function* wordsOf(chapters: Chapter[], verse?: number): Generator<{ word: GreekW
 
 /** Every form of the passage (NFC), for finding the worked example that stands in the verse he reads. */
 export const passageForms = (passage: Pick<IdeaPassage, 'chapters' | 'verse'>): Set<string> =>
-  new Set([...wordsOf(passage.chapters, passage.verse)].map(({ word }) => word.t.normalize('NFC')));
+  new Set([...wordsOf(passage.chapters, passage.verse)].map(({ word, chapter }) => cardForm(chapter, word).normalize('NFC')));
 
 /** True for an idea about how Greek is spelt and said (the alphabet, a letter, a pair, a breathing, an accent, iota subscript, syllables,
  * punctuation): its examples are forms with the letters marked, found by their spelling, never by their parsing. */
@@ -322,17 +323,19 @@ export function ideaExamples(id: string, chapters: Chapter[], verse?: number, ma
   const seen = new Set<string>();
   for (const { word, chapter, verse: n } of wordsOf(chapters, verse)) {
     if (chosen.length >= limit) break;
-    const key = spelling || byForm ? bare(word.t) : word.l;
+    // the form is cardForm's: a Septuagint word has no mark of Swete's in its parts, its spelling or its ending
+    const form = cardForm(chapter, word);
+    const key = spelling || byForm ? bare(form) : word.l;
     if (seen.has(key)) continue;
     let parts: ExamplePart[];
     if (spelling) {
-      const spans = spellingOf(id, word.t, scheme);
+      const spans = spellingOf(id, form, scheme);
       if (!spans) continue;
-      parts = partsOf(word.t, spans);
+      parts = partsOf(form, spans);
     } else {
-      if (!explains(word)) continue;
-      const ending = table ? endingLength(table, word.t) : 0;
-      parts = ending ? endingParts(word.t, ending) : [{ text: word.t, marked: false }];
+      if (!explains(form === word.t ? word : { ...word, t: form })) continue;
+      const ending = table ? endingLength(table, form) : 0;
+      parts = ending ? endingParts(form, ending) : [{ text: form, marked: false }];
     }
     seen.add(key);
     chosen.push({ word, chapter, verse: n, reference: `${chapter.book} ${chapter.chapter}:${n}`, parts });
@@ -353,7 +356,7 @@ export function exampleGloss(idea: GrammarIdea, example: IdeaExample): string {
   if (example.english !== undefined) return example.english;
   if (word.p.startsWith('T-') && (idea.id === 'article' || idea.id === 'alphabet')) return 'the';
   if (!isSpellingIdea(idea.id)) {
-    const form = word.t.normalize('NFC');
+    const form = cardForm(chapter, word).normalize('NFC');
     const worked = teachOf(idea.id).worked.find((w) => (w.say ?? w.word).normalize('NFC') === form);
     if (worked) return worked.gloss;
   }
@@ -392,7 +395,7 @@ export function exampleNote(idea: GrammarIdea, example: IdeaExample): string | u
   const parts = groups.length ? [groups.join(', ')] : [];
   if (idea.id === 'article') {
     const partner = partnerOf(example);
-    if (partner) parts.push(`goes with ${partner.t} “${exampleGloss(idea, { ...example, word: partner })}”`);
+    if (partner) parts.push(`goes with ${cardForm(example.chapter, partner)} “${exampleGloss(idea, { ...example, word: partner })}”`);
   }
   return parts.length ? parts.join(' · ') : undefined;
 }
@@ -419,16 +422,17 @@ export function pairCaseOf(id: string, chapters: Chapter[], verse?: number, sche
   if (!LETTER_IDS.includes(id) || !scheme.spellings) return undefined;
   let best: { score: number; found: PairCase } | undefined;
   for (const { word, chapter, verse: n } of wordsOf(chapters, verse)) {
-    if (!isWholeWord(word.t)) continue;
-    const clusters = clustersOf(word.t).filter((c) => c.letter);
-    for (const unit of scheme.spellings(word.t)) {
+    const form = cardForm(chapter, word);
+    if (!isWholeWord(form)) continue;
+    const clusters = clustersOf(form).filter((c) => c.letter);
+    for (const unit of scheme.spellings(form)) {
       if (unit.to - unit.from < 2) continue;
       const letters = clusters.slice(unit.from, unit.to);
       if (!letters.some((c) => letterIdOf(c.text) === id)) continue;
       const pair = letters.map((c) => c.base).join('');
       const idea = LADDER.find((i) => i.pair === pair && i.parent !== 'breathings');
       if (!idea) continue;
-      const score = scoreWords([word.t]).score;
+      const score = scoreWords([form]).score;
       if (!best || score < best.score) best = { score, found: { word, chapter, verse: n, reference: `${chapter.book} ${chapter.chapter}:${n}`, pair, sound: unit.sound, idea } };
     }
   }
@@ -526,11 +530,12 @@ async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterL
       const examples = ideaExamples(id, place.chapters, place.verse, Number.MAX_SAFE_INTEGER, scheme).map((e) => (place.whole ? { ...e, chapter: place.whole } : e));
       pairCase ??= pairCaseOf(id, place.chapters, place.verse, scheme);
       for (const example of examples) {
-        const key = bare(example.word.t);
-        if (seen.has(key) || !isWholeWord(example.word.t)) continue;
+        const form = cardForm(example.chapter, example.word);
+        const key = bare(form);
+        if (seen.has(key) || !isWholeWord(form)) continue;
         seen.add(key);
-        const score = scoreWords([example.word.t]).score;
-        const unmet = ranking.known ? foundationOf(example.word.t).filter((f) => LETTER_IDS.includes(f) && !ranking.known?.has(f)).length : 0;
+        const score = scoreWords([form]).score;
+        const unmet = ranking.known ? foundationOf(form).filter((f) => LETTER_IDS.includes(f) && !ranking.known?.has(f)).length : 0;
         candidates.push({ example, level, easy: score <= EASY_SCORE, score, unmet, uses: ranking.frequency?.get(lemmaKeyOf(example.word.l)) ?? 0, order: candidates.length });
       }
       level++;
