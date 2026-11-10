@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.202",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.344",
+    "kind": "fixed",
+    "text": "closing a word's sheet right after tapping its Noun endings no longer opens the endings table a few seconds later."
+  },
+  {
     "version": "0.7.201",
     "date": "2026-11-10",
     "story": "mw-u2w5klk.331",
