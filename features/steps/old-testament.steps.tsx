@@ -311,9 +311,8 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('dialog', { name: 'Word' });
       expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
     });
-    And('it says {string}', (_, text: string) => {
-      expect(sheet()).toHaveTextContent(text);
-    });
+    // the Turn on Logos line waits for the study-resources live query, so on a loaded host it comes after the sheet
+    And('it says {string}', (_, text: string) => waitFor(() => expect(sheet()).toHaveTextContent(text)));
   });
 
   Scenario('A long press on a chunk says it in English', ({ Given, When, Then, And }) => {
