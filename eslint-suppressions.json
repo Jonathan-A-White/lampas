@@ -1,0 +1,757 @@
+{
+  "features/steps/ai-needs-licence.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/appearance.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/audio-bible.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/chapter-picker.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/chapter-swipe.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/copy-format.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 6
+    }
+  },
+  "features/steps/copy-hold.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "features/steps/fresh-install.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/hear-any-word.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/hebrew-ladder.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "features/steps/hebrew-reader.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/hebrew-speech.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "features/steps/hebrew-words.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/immersive-hint.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/immersive-reader.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 29
+    }
+  },
+  "features/steps/in-logos.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/listen.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/long-press-speak.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/long-question.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/maps.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 5
+    }
+  },
+  "features/steps/offline-copy.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/old-testament.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/one-letter-greek-voice.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/paradigm-drill.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/paradigms.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/passage-lesson.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "features/steps/passage-view.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/preface.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/quick-round.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/quick-test-after-answer.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/read-lessons.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/read-span.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/reader-weave-switch.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/reading-check.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 6
+    }
+  },
+  "features/steps/reading-drill.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/reading-plan-sendoff.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/septuagint.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/sermons-settings.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/sermons.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "features/steps/share-references.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/share-target.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "features/steps/sheet-back.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 6
+    }
+  },
+  "features/steps/speaking-interruptions.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/talk-pictures.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/themes.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/tips.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/turn-pages.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/tutor-aloud.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 7
+    }
+  },
+  "features/steps/tutor-links.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "features/steps/tutor-works.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/unsent-draft.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/variants-reader.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/verse-view.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "features/steps/voice-offers.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/weave.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/welcome-back.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/whats-new.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/word-tip.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/your-requests.steps.tsx": {
+    "local/no-real-time-wait": {
+      "count": 8
+    }
+  },
+  "tests/e2e/appearance.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/cold-start-address.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "tests/e2e/door-overlap-sweep.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/door-reader-text.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/double-tap-guard.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/drill-it.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 14
+    }
+  },
+  "tests/e2e/drill.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/floating-tutor-once.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/fresh-install.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/hear-any-word.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/idea-sheet-taps.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 5
+    }
+  },
+  "tests/e2e/immersive-awake.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/immersive-flip.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 6
+    }
+  },
+  "tests/e2e/immersive-fullscreen.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 10
+    }
+  },
+  "tests/e2e/immersive-hint.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "tests/e2e/immersive-place.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 12
+    }
+  },
+  "tests/e2e/immersive-reader.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 14
+    }
+  },
+  "tests/e2e/library.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "tests/e2e/licence-tip.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/maps.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/my-word.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/open-in-app.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 15
+    }
+  },
+  "tests/e2e/passage-typography.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/place-line-chapter.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "tests/e2e/placement-confirm.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/placement-intro.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/placement-leave-steady.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 5
+    }
+  },
+  "tests/e2e/quiz-goal-offer.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/quiz.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/reader-split-text.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "tests/e2e/reader-split-turn.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "tests/e2e/reading-plan-return.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/reading-plan-screenshot.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/reference-card.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/reference-open-verse.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/septuagint-own-paradigm.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/septuagint-weave-hold.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/sermons.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "tests/e2e/settings-search-lands.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/share-sheet-top.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/share-steady.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/sheet-leave-steady.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "tests/e2e/short-drill-confirm.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "tests/e2e/speed-swipe.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/talk-landscape.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/talk-session.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/turn-pages.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 8
+    }
+  },
+  "tests/e2e/tutor-door-absent.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "tests/e2e/tutor-door-overlays.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/tutor-door.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/update-banner.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/weave-space.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/e2e/weave-switch.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 5
+    }
+  },
+  "tests/e2e/word-tip-overlap.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/e2e/your-requests.spec.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/support/fake-postern.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/support/gesture.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/support/hold.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/appearance-sync.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/chapter-buttons.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/unit/clip-player.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/diagram-logos-links.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/door-two-finger.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 5
+    }
+  },
+  "tests/unit/download-double-tap.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/english-accent-setting.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/english-word-door.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/fonts.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/lxx-off-unchanged.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/lxx-word-off-unchanged.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/maps-door.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/offline-copy.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/open-web.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/passage-player.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 4
+    }
+  },
+  "tests/unit/read-check-failed.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/readAloud.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/reader-header-flip.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/reading-deadline.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/seen-items-screens.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/sermons-door.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/sheet-doors.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/talk-retry-name.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/to-confirm.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/tutor-copy-chip.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 3
+    }
+  },
+  "tests/unit/tutor-door.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 5
+    }
+  },
+  "tests/unit/tutor-map-links.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/unit/tutor-paradigm-links.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/tutor-sermon-links.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/unit/tutor-setting-links.test.tsx": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/tutor-wait.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/usage-settle.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "tests/unit/voice-offers.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 2
+    }
+  },
+  "tests/unit/wake-lock.test.ts": {
+    "local/no-real-time-wait": {
+      "count": 1
+    }
+  }
+}

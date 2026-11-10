@@ -18,6 +18,7 @@ the one place the key lives and how a test seeds it.
 - [The Greek dial's start level (the test seam, mw-3ased2.2)](#the-greek-dials-start-level-the-test-seam-mw-3ased22)
 - [Speech and the microphone fakes](#speech-and-the-microphone-fakes)
 - [The Septuagint tests that read the real, git-ignored sources (mw-cv2w9um)](#the-septuagint-tests-that-read-the-real-git-ignored-sources-mw-cv2w9um)
+- [A real-time sleep in a test (mw-t5shinh.6)](#a-real-time-sleep-in-a-test-mw-t5shinh6)
 
 <!-- /toc -->
 
@@ -147,3 +148,11 @@ in every gate but the Laptop's main checkout and a story that broke their invari
 - no sources anywhere (cloud hosts): skipped with that one line, never a failure; `LAMPAS_LXX_REAL=run|skip` forces it.
 
 Other `skipIf` tests in `tests/` on a git-ignored path: `tests/unit/supplied-words.test.ts` (`data/raw/msb_nt_tables.tsv`); the catalogue, sermon-archives and match-export tests wait on the vault's Logos export (outside the repo).
+
+## A real-time sleep in a test (mw-t5shinh.6)
+
+`npm run lint` refuses, in `tests/**` and `features/steps/**`, `page.waitForTimeout(...)`, a `new Promise` that resolves on `setTimeout`, and a call of `sleep`/`delay`/`pause` with a number or a name ending `_MS`
+(`eslint-rules/no-real-time-wait.js`, held by `tests/unit/no-real-time-wait.test.ts`). The fixes, in order: wait on the condition (`expect.poll`, `findBy`, `waitFor`); drive the page clock or `vi` fake timers;
+and, only for a window in which nothing must happen, mark the line or the line above `// a real-time wait: <reason>` (`// a real-time hold: <reason>` counts too). Not a shorter timeout, a loop on `Date.now` or a helper under another name.
+The sleeps already there are counted per file in `eslint-suppressions.json` (`eslint . --suppress-rule local/no-real-time-wait`): a file that gains a sleep is refused and ESLint lists every sleep in it; `npm run lint`
+passes on unused suppressions (`--pass-on-unpruned-suppressions`), so removing a sleep sends no story back.
