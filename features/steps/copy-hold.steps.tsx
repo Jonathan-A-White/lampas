@@ -1,7 +1,7 @@
 // features/steps/copy-hold.steps.tsx — runs features/copy-hold.feature (mw-5r3p30.1074): the row a hold on a verse number draws (src/copy/HoldRow.tsx), its ends (src/copy/holdEnds.ts),
 // Share, and the question mark that asks about the range held. The clipboard is a fake that keeps what was written; Romans 8 is the chapter (verse 13: paragraph 12-14, pericope 12-17).
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
@@ -119,8 +119,12 @@ const marks = (_: unknown, name: string) => {
   const pressed = Array.from(row().querySelectorAll('button[aria-pressed="true"]')).map((button) => squash(button.textContent));
   expect(pressed).toEqual([name]);
 };
+// The row stays ROW_MS (3 s) from its last touch, and a loaded host is slow enough in user.click to outrun that, so the tap asks about the chapter instead of the range held: touch the row and click in one tick.
 const tapQuestionMark = async () => {
-  await user.click(await screen.findByRole('button', { name: FLOATING_TUTOR_LABEL }));
+  const button = await screen.findByRole('button', { name: FLOATING_TUTOR_LABEL });
+  const held = document.querySelector<HTMLElement>('[data-copy-row]');
+  if (held) fireEvent.pointerDown(held);
+  fireEvent.click(button);
 };
 const talkOpenAs = async (_: unknown, name: string) => {
   expect(await screen.findByRole('dialog', { name })).toBeInTheDocument();
