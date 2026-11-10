@@ -23,8 +23,15 @@ export interface ServiceSermon {
   width: number;
 }
 
-/** A sermon the theme tier names: the row, and how it came in. */
-export interface ServiceThemeSermon extends ServiceSermon {
+/**
+ * A sermon the theme tier names: the row, and how it came in. A sermon its source linked to the topic itself, from the sermon notes (docs/api.md 'Direct links', at sermon-index 6d1d505a), has `direct: true`; a row reached
+ * through its preaching text has no `direct` key at all. A direct row has `ref`, `role` and `width` null when the sermon has no preaching text.
+ */
+export interface ServiceThemeSermon extends Omit<ServiceSermon, 'ref' | 'role' | 'width'> {
+  ref: string | null;
+  role: 'text' | 'cited' | null;
+  width: number | null;
+  direct?: true;
   theme: { source: string; topic: string; label: string; part: number | null; part_label: string | null };
 }
 
@@ -102,6 +109,15 @@ export async function fetchSermons(ref: string, sources?: readonly string[], lim
 export async function fetchThemeSermons(source: string, topic: string, limit = 50): Promise<{ total: number; rows: ServiceThemeSermon[] }> {
   const answer = await get<{ theme: { total: number; rows: ServiceThemeSermon[] } }>('/v1/sermons', { ref: 'Gen.1.1-Rev.22.21', tier: 'theme-only', theme: `${source}:${topic}`, limit: String(limit) });
   return answer.theme;
+}
+
+/**
+ * The sermons its source linked directly to a topic that links `ref` (a verse or a passage, `rom.5.8`, `rom.5.6-rom.5.8`) in the sources `sources` (their ids): the theme tier asked for direct links alone (`direct=only`, docs/api.md
+ * 'Direct links'). An older service ignores `direct`, so the caller keeps only the rows marked `direct`. Throws as the other calls do.
+ */
+export async function fetchDirectThemeSermons(ref: string, sources: readonly string[]): Promise<ServiceThemeSermon[]> {
+  const answer = await get<{ theme: { rows: ServiceThemeSermon[] } }>('/v1/sermons', { ref, tier: 'theme-only', source: sources.join(','), direct: 'only', limit: '200' });
+  return answer.theme.rows;
 }
 
 /** Every source the service has, sermon sources first (`GET /v1/sources`). */

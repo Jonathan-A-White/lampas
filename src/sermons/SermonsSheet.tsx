@@ -18,12 +18,13 @@ import { sermonsServiceKnown } from '../services/sermons';
 import { useAiAllowed } from '../gate/licenceContext';
 import { AskForPreacher } from './AskForPreacher';
 import { sourceOf } from './index';
+import { refText } from './forTutor';
 import { linkRowOf, linkRowOfHit, openedRow, type LinkRow } from './merge';
 import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
 import { opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } from './openWeb';
-import type { SameTheme, SermonPlace, SermonRow } from './types';
+import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
 import { useArchives, useLatest, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
 import { useSameTheme, useThemes } from './useThemes';
 
@@ -34,7 +35,10 @@ function metaOf(row: LinkRow, online: boolean): string {
   return [row.preacher, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
 }
 
-function Row({ row: given, online }: { row: LinkRow; online: boolean }) {
+/** The line under a row that came in by the sermon notes (mw-qtu3zvz.59.2): where the sermon was preached, where the service gave a preaching text. */
+const whyOf = (row: Pick<ThemeRow, 'ref'>): string => (row.ref ? `From the sermon notes · preached on ${refText(row.ref)}` : 'From the sermon notes');
+
+function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?: string }) {
   // one link a row: the Subsplash address where the row has one, else its url (mw-qtu3zvz.49.2)
   const row = openedRow(given);
   const { fallback } = row.open;
@@ -56,6 +60,11 @@ function Row({ row: given, online }: { row: LinkRow; online: boolean }) {
         <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
           {metaOf(row, online)}
         </span>
+        {why === undefined ? null : (
+          <span data-sermon-why className="block break-words text-sm font-normal text-muted">
+            {why}
+          </span>
+        )}
       </span>
       <span aria-hidden="true">↗</span>
     </a>
@@ -121,7 +130,7 @@ function ThemesLine({ themes }: { themes: Theme[] }) {
 }
 
 /** 'On the same theme': a group for each topic, headed 'On <topic>', then how many more there were beyond the cut. */
-function SameThemeGroups({ same, online }: { same: SameTheme; online: boolean }) {
+export function SameThemeGroups({ same, online }: { same: SameTheme<ThemeRow>; online: boolean }) {
   if (same.groups.length === 0) return null;
   return (
     <div role="group" aria-label="On the same theme" data-sermons-part="theme" className="pb-3">
@@ -131,7 +140,7 @@ function SameThemeGroups({ same, online }: { same: SameTheme; online: boolean })
           <h4 className="pb-1 text-sm font-semibold text-muted">{`On ${group.topic.label}`}</h4>
           <div className="flex flex-col gap-2">
             {group.rows.map((row) => (
-              <Row key={`${row.source}:${row.id}`} row={row} online={online} />
+              <Row key={`${row.source}:${row.id}`} row={row} online={online} why={row.notes ? whyOf(row) : undefined} />
             ))}
           </div>
         </div>
@@ -318,7 +327,7 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
   const found = latest.status === 'latest' ? latest.found : bundled;
   const [query, setQuery] = useState('');
   const themes = useThemes(place);
-  const same = useSameTheme(place, found);
+  const same = useSameTheme(place, found, latest.status === 'latest');
   const archives = useArchives(place);
   const online = useOnline();
   const serviceKnown = sermonsServiceKnown();
@@ -327,7 +336,9 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
   const passage = place.from !== undefined && place.to !== undefined && place.to !== place.from;
   // the credit of each source that answered a row, once, in the order its rows come
   const rows = found ? [...found.here, ...found.chapter] : [];
-  const sources = [...new Set(rows.map((row) => row.source))].flatMap((id) => sourceOf({ source: id }) ?? []);
+  // a source that gave a row only on the same theme has its credit too
+  const sameListed = same ? same.groups.flatMap((group) => group.rows) : [];
+  const sources = [...new Set([...rows, ...sameListed].map((row) => row.source))].flatMap((id) => sourceOf({ source: id }) ?? []);
   // and of each theme source that named a topic of the line or a group, once
   const named = [...new Set([...(themes ?? []).map((theme) => theme.source), ...(same?.groups ?? []).map((group) => group.topic.source)])].flatMap((id) => themeSourceOf({ source: id }) ?? []);
   const sameRows = same ? same.groups.reduce((n, group) => n + group.rows.length, 0) : 0;

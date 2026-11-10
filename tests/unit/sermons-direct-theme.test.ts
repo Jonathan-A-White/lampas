@@ -2,6 +2,7 @@
 // (`direct: true`); Lampas takes those rows only, for the topics the phone's Themes line holds and the sources that are On, and sorts them first. The service is stubbed with the Example of the sermon-index repository's
 // docs/api.md 'Direct links' (tests/fixtures/sermons/api-direct-theme.json); the bundled sermons and the themes are the tests' own.
 import { render, screen, within } from '@testing-library/react';
+import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { rememberSermonSources } from '../../src/data/repositories';
@@ -156,7 +157,7 @@ describe('the line a row says why it is there', () => {
   };
 
   it('reads "From the sermon notes · preached on <text>", or "From the sermon notes" alone, and a row reached through its text has none', () => {
-    render(<SameThemeGroups same={same} online />);
+    render(createElement(SameThemeGroups, { same, online: true }));
     const rows = [...document.querySelectorAll('a[data-sermon-row]')];
     const why = (el: Element) => el.querySelector('[data-sermon-why]')?.textContent;
     expect(why(rows[0])).toBe('From the sermon notes · preached on 2 Peter 3:10-18');

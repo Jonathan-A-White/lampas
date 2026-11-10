@@ -4,8 +4,8 @@
 import { CANON_INDEX } from '../data/bookIndex';
 import { parseOsisRef, type VerseCounts } from './osis';
 import { groupAnswers, touches } from './sermonsFor';
-import type { ServiceHit, ServiceSermon } from '../services/sermons';
-import type { SermonPlace, SermonRow, SermonsFound } from './types';
+import type { ServiceHit, ServiceSermon, ServiceThemeSermon } from '../services/sermons';
+import type { SermonPlace, SermonRow, SermonsFound, ThemeRow } from './types';
 
 /** The verse counts of Lampas's chapters, from the bundled index. */
 export const canonVerses: VerseCounts = (code) => CANON_INDEX.books.find((book) => book.code === code)?.verses;
@@ -54,6 +54,28 @@ export function rowOfService(row: ServiceSermon, book: string, verses: VerseCoun
     open: { url: row.url },
     opensIn: opensInLogos(row.url) ? 'logos' : 'web',
     ...(row.alt_url ? { alt: row.alt_url } : {}),
+  };
+}
+
+/**
+ * The row of a sermon the service marks as linked from its notes to a topic (mw-qtu3zvz.59.2): the sermon whole, whatever its book. Its preaching text is the first part of `ref` in Lampas's books, and absent where the service
+ * gives none (null: most of Brookfield First's) or none Lampas can read; the row then says only that it came from the notes. Undefined where the address is no https page.
+ */
+export function directRowOfService(row: ServiceThemeSermon, verses: VerseCounts = canonVerses): ThemeRow | undefined {
+  if (!isWeb(row.url)) return undefined;
+  const parsed = row.ref === null ? undefined : parseOsisRef(row.ref, verses);
+  const ref = parsed?.ok ? parsed.parts[0] : undefined;
+  return {
+    id: row.id,
+    source: row.source,
+    title: row.title,
+    ...(row.preacher === null || row.preacher === '' ? {} : { preacher: row.preacher }),
+    ...(row.date === null || row.date === '' ? {} : { date: row.date }),
+    ...(ref ? { ref, role: 'text' as const } : {}),
+    open: { url: row.url },
+    opensIn: opensInLogos(row.url) ? 'logos' : 'web',
+    ...(row.alt_url ? { alt: row.alt_url } : {}),
+    notes: true,
   };
 }
 

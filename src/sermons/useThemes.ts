@@ -2,7 +2,7 @@
 // sermons of the passage, and a failure leaves them empty: the sheet's own rows never wait on a theme file.
 import { useEffect, useState } from 'react';
 import { themesFor, type Theme } from '../themes';
-import { sameThemeFor, type SameTheme, type SermonPlace, type SermonsFound } from './index';
+import { directThemeRows, sameThemeFor, type SameTheme, type SermonPlace, type SermonsFound, type ThemeRow } from './index';
 
 const keyOf = (place: SermonPlace): string => `${place.book}.${place.chapter}.${place.from ?? ''}.${place.to ?? ''}`;
 
@@ -28,25 +28,41 @@ export function useThemes(place: SermonPlace): Theme[] | undefined {
   return themes?.key === key ? themes.themes : undefined;
 }
 
-/** The sermons on the same theme as the verse or passage, once `found` (the passage's own sermons) is known: they leave out what `found` lists. */
-export function useSameTheme(place: SermonPlace, found: SermonsFound | undefined): SameTheme | undefined {
+/**
+ * The sermons on the same theme as the verse or passage, once `found` (the passage's own sermons) is known: they leave out what `found` lists. The bundled sources' rows come first, as ever; then, once the service has
+ * answered the sheet (`online`: Sermons sheet's 'Latest from the index'), it is asked for the sermons linked from their notes to a topic of the place (directThemeRows) and, if it gives any, the list is made again with them.
+ * Offline, with no service, or when the call fails, it stays as it was, and no line says so.
+ */
+export function useSameTheme(place: SermonPlace, found: SermonsFound | undefined, online = false): SameTheme<ThemeRow> | undefined {
   const key = keyOf(place);
-  const [same, setSame] = useState<{ key: string; same: SameTheme } | undefined>();
+  const [same, setSame] = useState<{ key: string; same: SameTheme<ThemeRow> } | undefined>();
   useEffect(() => {
     if (!found) return;
     let alive = true;
-    sameThemeFor(place, found).then(
-      (answer) => alive && setSame({ key, same: answer }),
-      (error: unknown) => {
+    (async () => {
+      let answer: SameTheme<ThemeRow> = { groups: [], more: 0 };
+      try {
+        answer = await sameThemeFor(place, found);
+      } catch (error) {
         console.warn(`could not read the sermons on the same theme: ${error instanceof Error ? error.message : String(error)}`);
-        if (alive) setSame({ key, same: { groups: [], more: 0 } });
-      },
-    );
+      }
+      // online, the list stays as it was until the service's rows are in: it is not drawn twice
+      if (online) {
+        try {
+          const direct = await directThemeRows(place);
+          if (direct.length > 0) answer = await sameThemeFor(place, found, direct);
+        } catch (error) {
+          // the sheet stays as it was: no new status line
+          console.warn(`could not read the sermons linked from their notes: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+      if (alive) setSame({ key, same: answer });
+    })();
     return () => {
       alive = false;
     };
-    // the place and the passage's answer are the key
+    // the place, the passage's answer and whether the service answered are the key
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, found]);
+  }, [key, found, online]);
   return same?.key === key ? same.same : undefined;
 }

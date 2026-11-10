@@ -1,7 +1,7 @@
 // src/sermons/sermonsFor.ts — the sermons of a place from a list of sources (docs/sermons.md 'Which sermons are for this verse'): the rows whose preaching text overlaps the verse or passage first, narrower first,
 // the rest of the chapter after them in the source's order; the sources in the list's order. A whole chapter has every row in `chapter`.
 import { THEME_MAX_VERSES } from '../data/themeIndex';
-import type { SameTheme, SermonRef, SermonRow, SermonPlace, SermonsFound, SermonSource, ThemeGroup, ThemeTopic } from './types';
+import type { DirectRow, SameTheme, SermonRef, SermonRow, SermonPlace, SermonsFound, SermonSource, ThemeGroup, ThemeRow, ThemeTopic } from './types';
 
 /** A place in a book as one number, so that a text that runs into the next chapter compares: no chapter has a thousand verses. */
 const at = (chapter: number, verse: number): number => chapter * 1000 + verse;
@@ -68,20 +68,45 @@ const compareTopics = (a: ThemeTopic, b: ThemeTopic): number => a.verses - b.ver
  * A sermon is on a topic when its preaching text overlaps a link of the topic and the topic covers at most THEME_MAX_VERSES verses; it is never a row in `skip` (the sermons the passage groups hold, by `source:id`);
  * it is listed once, with its narrowest topic (fewest verses, then the theme source, then the topic). The rows run by the topic's size, then the topic (so that a topic's sermons stay together under its heading),
  * then the sermon's source and its id as a number; `limit` rows are kept and `more` is how many were left out.
+ * `direct` (mw-qtu3zvz.59.2, PROVISIONAL): sermons the service says their source linked to a topic itself, from the sermon notes (index.ts directThemeRows). They are on their topic whatever its size (the service applies no cap
+ * to a direct link) and whatever their text; a topic holding one comes before every topic holding none; within a topic the direct rows come first; a sermon both direct and reached through its text is listed once, as direct.
  */
-export function themeTier(topics: readonly TopicLinks[], rows: readonly SermonRow[], skip: ReadonlySet<string>, limit = THEME_ROW_LIMIT): SameTheme {
+export function themeTier(topics: readonly TopicLinks[], rows: readonly SermonRow[], skip: ReadonlySet<string>, limit?: number): SameTheme;
+export function themeTier(topics: readonly TopicLinks[], rows: readonly SermonRow[], skip: ReadonlySet<string>, limit: number, direct: readonly DirectRow[]): SameTheme<ThemeRow>;
+export function themeTier(topics: readonly TopicLinks[], rows: readonly SermonRow[], skip: ReadonlySet<string>, limit = THEME_ROW_LIMIT, direct: readonly DirectRow[] = []): SameTheme<ThemeRow> {
   const usable = topics.filter((topic) => topic.verses <= THEME_MAX_VERSES).sort(compareTopics);
-  const best = new Map<string, { row: SermonRow; topic: TopicLinks }>();
+  interface Entry {
+    row: ThemeRow;
+    topic: ThemeTopic;
+    direct: boolean;
+  }
+  const best = new Map<string, Entry>();
+  for (const { row, topic } of direct) {
+    const key = `${row.source}:${row.id}`;
+    if (skip.has(key)) continue;
+    const held = best.get(key);
+    if (!held || compareTopics(topic, held.topic) < 0) best.set(key, { row, topic, direct: true });
+  }
   for (const row of rows) {
     const key = `${row.source}:${row.id}`;
     if (row.role !== 'text' || skip.has(key)) continue;
     const topic = usable.find((t) => t.links.some((link) => refsOverlap(link, row.ref)));
     if (!topic) continue;
     const held = best.get(key);
-    if (!held || compareTopics(topic, held.topic) < 0) best.set(key, { row, topic });
+    if (held?.direct) continue;
+    if (!held || compareTopics(topic, held.topic) < 0) best.set(key, { row, topic, direct: false });
   }
-  const ordered = [...best.values()].sort((a, b) => compareTopics(a.topic, b.topic) || a.row.source.localeCompare(b.row.source) || byId(a.row.id, b.row.id));
-  const groups: ThemeGroup[] = [];
+  const topicKey = (topic: ThemeTopic): string => `${topic.source}:${topic.id}`;
+  const withDirect = new Set([...best.values()].filter((entry) => entry.direct).map((entry) => topicKey(entry.topic)));
+  const ordered = [...best.values()].sort(
+    (a, b) =>
+      Number(withDirect.has(topicKey(b.topic))) - Number(withDirect.has(topicKey(a.topic))) ||
+      compareTopics(a.topic, b.topic) ||
+      Number(b.direct) - Number(a.direct) ||
+      a.row.source.localeCompare(b.row.source) ||
+      byId(a.row.id, b.row.id),
+  );
+  const groups: ThemeGroup<ThemeRow>[] = [];
   for (const { row, topic } of ordered.slice(0, limit)) {
     const last = groups[groups.length - 1];
     if (last && last.topic.source === topic.source && last.topic.id === topic.id) last.rows.push(row);

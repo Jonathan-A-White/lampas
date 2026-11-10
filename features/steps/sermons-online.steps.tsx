@@ -22,6 +22,7 @@ import { forgetTestSermons, registerTestSermons } from '../../tests/support/test
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import api from '../../tests/fixtures/sermons/api-rom-5-8.json';
 import apiSources from '../../tests/fixtures/sermons/api-sources.json';
+import apiDirect from '../../tests/fixtures/sermons/api-direct-theme.json';
 
 const BASE = 'https://sermons.test';
 
@@ -60,9 +61,14 @@ const SOURCES = [
 /** The search's example answer, and a theme beside its sermons (the example has none). */
 const HITS: ServiceHit[] = [...(api['GET /v1/search?q=spurgeon+grace'].rows as ServiceHit[]), { kind: 'theme', source: 'themes-demo', id: 'atonement', title: 'Atonement', ref: null, url: null, rank: 0.2 }];
 
+/** The direct-link Example's one marked row, put under the tests' own Atonement topic (the Example's is the demo's Grace). */
+const [NOTES_ROW] = apiDirect['GET /v1/sermons?ref=eph.2.8&tier=theme-only'].theme.rows;
+const NOTES_ANSWER = { ref: 'Rom.5.8', passage: null, theme: { total: 1, rows: [{ ...NOTES_ROW, theme: { ...NOTES_ROW.theme, source: 'testthemes', topic: 'atonement', label: 'Atonement' } }] } };
+
 interface Service {
   down: boolean;
   onByDefault: boolean;
+  notes: boolean;
   asked: { url: URL; init: RequestInit | undefined }[];
 }
 let service: Service;
@@ -73,6 +79,7 @@ const askedFor = (path: string): URL[] => service.asked.filter((a) => a.url.path
 async function answer(url: URL): Promise<Response> {
   if (url.pathname === '/v1/sources') return json({ rows: SOURCES.map((s) => (s.id === 'spurgeon-20' ? { ...s, on_by_default: service.onByDefault } : s)) });
   if (url.pathname === '/v1/search') return json({ q: url.searchParams.get('q'), rows: HITS });
+  if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only' && url.searchParams.get('direct') === 'only') return json(service.notes ? NOTES_ANSWER : { ref: 'Rom.5.8', passage: null, theme: { total: 0, rows: [] } });
   if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only') return json(api['GET /v1/sermons?ref=rom.5.8&tier=theme-only&theme=themes-demo:atonement']);
   if (url.pathname === '/v1/sermons') {
     const rows = (url.searchParams.get('source') ?? '').split(',').flatMap((id) => ROWS[id] ?? []);
@@ -84,6 +91,10 @@ async function answer(url: URL): Promise<Response> {
 interface Phone {
   down?: boolean;
   onByDefault?: boolean;
+  /** the service has a sermon linked from its notes, and the tests' theme source is read */
+  notes?: boolean;
+  /** the tests' theme source is read (the default of these scenarios reads none) */
+  themes?: boolean;
 }
 
 /** Opens the app on a chapter, the sermon index stubbed as `phone` says. */
@@ -98,11 +109,12 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   forgetGrownSermonRows();
   setKnownSermonSources([]);
   registerTestSermons();
-  registerTestThemes({ none: true });
+  if (phone.notes || phone.themes) registerTestThemes();
+  else registerTestThemes({ none: true });
   registerTestMaps();
   stubChapterFetch();
   const chapters = globalThis.fetch;
-  service = { down: phone.down ?? false, onByDefault: phone.onByDefault ?? false, asked: [] };
+  service = { down: phone.down ?? false, onByDefault: phone.onByDefault ?? phone.notes ?? false, notes: phone.notes ?? false, asked: [] };
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
     const text = String(input);
     if (!text.startsWith(BASE)) return chapters(input, init);
@@ -322,6 +334,59 @@ describeFeature(feature, ({ Scenario }) => {
         expect(field).toBeDisabled();
         expect(field).toHaveAttribute('placeholder', line);
       });
+    });
+  });
+
+  const partOf = async (name: string): Promise<HTMLElement> => within(await sheetEl()).findByRole('group', { name });
+  const topicsOf = (part: HTMLElement): HTMLElement[] => [...part.querySelectorAll<HTMLElement>('[data-theme-topic]')];
+  const titlesOf = (el: HTMLElement): string[] => [...el.querySelectorAll('[data-sermon-title]')].map((t) => squash(t.textContent));
+  const rowOn = rowNamed;
+
+  Scenario('A sermon linked from its notes is on the same theme', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the sermon index answering a sermon linked from its notes', openedWith({ notes: true }));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('under {string} the topic {string} comes first and holds {string} then {string}', async (_, part: string, heading: string, first: string, second: string) => {
+      await waitFor(async () => {
+        const first_ = topicsOf(await partOf(part))[0];
+        expect(squash(first_?.querySelector('h4')?.textContent)).toBe(heading);
+        expect(titlesOf(first_)).toEqual([first, second]);
+      });
+    });
+    And('the row {string} reads {string}', async (_, title: string, line: string) => {
+      const row = await rowOn(title);
+      expect(squash(row.querySelector('[data-sermon-why]')?.textContent)).toBe(line);
+    });
+    And('the row {string} has no such line', async (_, title: string) => {
+      expect((await rowOn(title)).querySelector('[data-sermon-why]')).toBeNull();
+    });
+    And('the sheet credits {string} for it, as its only row there is on the same theme', async (_, name: string) => {
+      const credits = [...(await sheetEl()).querySelectorAll('[data-sermon-credit]')].map((c) => squash(c.textContent));
+      expect(credits.some((c) => c.startsWith(name))).toBe(true);
+    });
+    And('the service was asked for the theme tier of {string} in the sources {string} and {string}', (_, ref: string, a: string, b: string) => {
+      const asks = askedFor('/v1/sermons').filter((u) => u.searchParams.get('tier') === 'theme-only' && u.searchParams.get('direct') === 'only');
+      expect(asks).toHaveLength(1);
+      expect(asks[0].searchParams.get('ref')).toBe(ref);
+      expect(asks[0].searchParams.get('source')).toBe(`${a},${b}`);
+    });
+  });
+
+  Scenario('Offline the same sheet has no sermon linked from its notes', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the sermon index not answering, and the themes read', openedWith({ down: true, themes: true }));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet says {string}', says);
+    And('under {string} the topic {string} comes first and holds {string}', async (_, part: string, heading: string, first: string) => {
+      await waitFor(async () => {
+        const first_ = topicsOf(await partOf(part))[0];
+        expect(squash(first_?.querySelector('h4')?.textContent)).toBe(heading);
+        expect(titlesOf(first_)).toEqual([first]);
+      });
+    });
+    And('no row of the sheet reads {string}', async (_, line: string) => {
+      expect(squash((await sheetEl()).textContent)).not.toContain(line);
+      expect(askedFor('/v1/sermons').filter((u) => u.searchParams.get('tier') === 'theme-only')).toEqual([]);
     });
   });
 });
