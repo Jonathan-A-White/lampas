@@ -7,9 +7,12 @@
 // screens did not, so each one that forgot was its own Tester bug (about 25). A tap that acts inside one screen (a Paradigms reveal, a Study | Review
 // switch, Next on a question card) is no change here: a new card settles by itself (useSettled). A link that leaves the app (a new tab, or another
 // app by its scheme: Adopted in <version>, a study resource, Listen in Audible) is a change too, and its second tap would open it again (mw-5r3p30.457).
+// A click on the SAME control (a button, a link that leaves the app, a role=button or role=switch) within the settle moment of the last click on it is dropped too (mw-t5shinh.8):
+// a control that acts and changes no screen (Open in the app, Save, Export) acted twice for a double tap, and each fix was one more oneTap. A control that is
+// meant to be tapped twice quickly (Next page, Larger split) carries `data-repeat`; tests/unit/repeat-guard.test.ts makes every button that steps a value choose.
 import { useEffect } from 'react';
 import { paradigmOf, readerOf, routeOf, watchAddress } from '../nav/route';
-import { swallowTaps } from './settle';
+import { settle, swallowTaps } from './settle';
 
 /** The screen an address shows: its route, the Verse view over the Reader (a verse or a passage in the address), a Paradigms table over the list.
  * A move inside one (another chapter, view or verse, a table's mode, where Your requests returns to) is not a change of screen. */
@@ -41,6 +44,11 @@ export function leavesApp(link: HTMLAnchorElement): boolean {
   }
 }
 
+/** What a tap is aimed at: a button, a link, or an element that says it is one. */
+const CONTROL = 'button,a[href],[role="button"],[role="switch"]';
+/** A control that takes quick repeats says so: itself or a group around it. */
+const REPEAT = '[data-repeat]';
+
 /** Starts the guard; gives the stop. */
 export function startTapGuard(): () => void {
   let screen = screenOf(window.location.hash);
@@ -62,9 +70,27 @@ export function startTapGuard(): () => void {
     if (link instanceof HTMLAnchorElement && leavesApp(link)) swallowTaps();
   };
   document.addEventListener('click', onLink, true);
+  // the same control twice within the moment: the second click never reaches the app. Only a click that went through starts the moment, as oneTap's does.
+  let last: { control: Element; at: number } | null = null;
+  const onSame = (event: MouseEvent): void => {
+    if (settle.ms <= 0 || !(event.target instanceof Element)) return;
+    const control = event.target.closest(CONTROL);
+    if (!control || control.closest(REPEAT)) return;
+    // a link inside the app goes to an address, so twice is the same place; a move to another screen is already guarded (the address watch)
+    if (control instanceof HTMLAnchorElement && !leavesApp(control)) return;
+    const now = performance.now();
+    if (last && last.control === control && now - last.at < settle.ms) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+    last = { control, at: now };
+  };
+  document.addEventListener('click', onSame, true);
   return () => {
     stopWatching();
     document.removeEventListener('click', onLink, true);
+    document.removeEventListener('click', onSame, true);
     observer.disconnect();
   };
 }

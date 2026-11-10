@@ -1,7 +1,8 @@
 // src/ReaderControls.tsx — the Reader's actions that are otherwise a gesture, each as a button with a name (mw-cwf538.4, the epic 'Lampas for every age and every
 // ability'; docs/accessibility.md 'Gesture-only actions'): the two-finger tap that shows or puts away the Immersive reader's bars, going in and out of the
 // Immersive reader (Settings > Immersive reader), and with Turn pages the tap on the outer thirds and the swipe that turn a page; with the split open the drag of its divider (Larger split, Smaller split)
-// and its Close (Close the split). They are out of sight (one
+// and its Close (Close the split). Previous page, Next page, Larger split and Smaller split carry `data-repeat`: they are meant to be tapped twice quickly, and the app-wide
+// guard (src/ui/tapGuard.ts) drops the second quick tap on any other control. They are out of sight (one
 // pixel, clipped: `.reveal-on-focus` in src/index.css) until the keyboard or a screen reader's focus reaches one, and then the row shows at the top of the
 // screen: a sighted reader on a touch screen sees nothing new, and TalkBack finds them as buttons. A button that changes what it is (Leave / Start immersive
 // reading) stays the same element, so focus stays on it.
@@ -55,10 +56,10 @@ export function ReaderControls({ immersive, away, onBars, pages, inert, split }:
     <div role="group" aria-label="Reading controls" inert={inert} data-reader-controls className="reveal-on-focus">
       {pages ? (
         <>
-          <button type="button" aria-disabled={pages.page <= 1 && !pages.chapterBefore ? true : undefined} onClick={() => turn(-1)} className={BUTTON}>
+          <button type="button" aria-disabled={pages.page <= 1 && !pages.chapterBefore ? true : undefined} onClick={() => turn(-1)} data-repeat className={BUTTON}>
             Previous page
           </button>
-          <button type="button" aria-disabled={pages.page >= pages.count && !pages.chapterAfter ? true : undefined} onClick={() => turn(1)} className={BUTTON}>
+          <button type="button" aria-disabled={pages.page >= pages.count && !pages.chapterAfter ? true : undefined} onClick={() => turn(1)} data-repeat className={BUTTON}>
             Next page
           </button>
         </>
@@ -70,10 +71,10 @@ export function ReaderControls({ immersive, away, onBars, pages, inert, split }:
       ) : null}
       {split ? (
         <>
-          <button type="button" onClick={split.larger} className={BUTTON}>
+          <button type="button" onClick={split.larger} data-repeat className={BUTTON}>
             Larger split
           </button>
-          <button type="button" onClick={split.smaller} className={BUTTON}>
+          <button type="button" onClick={split.smaller} data-repeat className={BUTTON}>
             Smaller split
           </button>
           <button type="button" onClick={split.close} className={BUTTON}>
