@@ -16,6 +16,8 @@ import { MAX_LINKS, type TalkScope } from './services/talk';
 import { bibleFor } from './resources/logosBible';
 import { armFallback } from './resources/openApp';
 import { openedRow } from './sermons/merge';
+import { opensNewTab, rowHref, useOpenWebIn } from './sermons/openWeb';
+import { onAndroid } from './openInApp';
 import { copyChip, hebrewLinkLemma, mapChip, placeOf, sermonChip, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import { openMaps } from './maps/openMaps';
 import { useMaps } from './maps/useMaps';
@@ -139,7 +141,7 @@ interface Group {
   /** a map link: its chip opens that map in the app (openMaps), or, for a card of a link-only source (`open`), is a link to it */
   map?: { id: string; label: string; open?: { url: string; fallback?: string } };
   /** a sermon link: its chip is a plain link to where the sermon lives (a Logos row arms its fallback), and does not close the Talk sheet */
-  sermon?: { label: string; open: { url: string; fallback?: string } };
+  sermon?: { label: string; opensIn: 'web' | 'logos'; open: { url: string; fallback?: string } };
   /** a copy or share link: its chip puts the range's text on the clipboard or opens the share sheet, and does not close the Talk sheet */
   copy?: { kind: 'copy' | 'share'; label: string; range: CopyRange };
   chips: LinkChip[];
@@ -152,6 +154,8 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
   const works = useLiveQuery(getWorks, []);
   const shelf = useLiveQuery(shelfOf, []);
   const level = useGreekInterest();
+  // 'Open web sermons in' (openWeb.ts): the chip follows the choice the Sermons sheet does
+  const openWeb = useOpenWebIn();
   const shown = links.slice(0, MAX_LINKS);
   // the maps of the chapter are read only for an answer that links one
   const mapCards = useMaps(place && shown.some((l) => l.kind === 'map') ? place : null);
@@ -181,7 +185,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
       if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
     } else if (link.kind === 'sermon') {
       const found = place && sermonRows ? sermonChip(link.sermon, sermonRows) : null;
-      if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, open: openedRow(found.row).open }, chips: [] });
+      if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, opensIn: openedRow(found.row).opensIn, open: openedRow(found.row).open }, chips: [] });
     } else if (link.kind === 'copy' || link.kind === 'share') {
       // a reference Lampas has no text for (the Apocrypha, a chapter the book lacks) draws nothing
       const found = copyChip(link.kind, link.reference);
@@ -286,11 +290,11 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
             ) : null}
             {group.sermon ? (
               <a
-                href={group.sermon.open.url}
+                href={rowHref(group.sermon, openWeb, onAndroid())}
                 aria-label={group.sermon.label}
                 data-fallback={group.sermon.open.fallback}
                 onClick={group.sermon.open.fallback ? () => armFallback((group.sermon as NonNullable<Group['sermon']>).open.fallback) : undefined}
-                {...(group.sermon.open.url.startsWith('https:') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                {...(opensNewTab(rowHref(group.sermon, openWeb, onAndroid())) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 className={CHIP}
               >
                 Sermon ↗
