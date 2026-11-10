@@ -9,11 +9,12 @@ import { entriesOf, entryOf, type CatalogueEntry, type Kind } from '../resources
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
+import { openSetting } from '../settings/link';
 import { useInterestLevels } from '../settings/useInterestLevels';
 import { SearchableList } from '../ui/SearchableList';
 import { ThreeStep } from '../ui/ThreeStep';
 import { marksOf } from './bibleParts';
-import { countLine, detailOf, headerCount, hiddenLine, infoOf, pinRefusal } from './kinds';
+import { countLine, detailOf, headerCount, hiddenLine, infoOf, inSentence, LANGUAGES_LABEL, pinRefusal } from './kinds';
 import { PartChoice } from './PartChoice';
 import { TypedBible } from './TypedBible';
 import { useBibles, useShelf } from './useShelf';
@@ -40,6 +41,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   // a kind with books in both Hebrew and Greek (Lexicons, Grammars) is grouped Hebrew, then Greek, each in the order above (mw-5r3p30.1117)
   const grouped = entries.some((e) => e.lang === 'he') && entries.some((e) => e.lang === 'grc');
   const groupRank = (id: string): number => (grouped ? Math.max(0, GROUP_LANGS.indexOf(entryOf(id)!.lang)) : 0);
+  const hidden = levels ? hiddenLine(kind, levels) : undefined;
   const chosen = book !== undefined && entryOf(book)?.kind === kind ? book : undefined;
   useReportScreen({
     name: SCREEN_NAMES.library,
@@ -74,7 +76,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
         {kind === 'bible' ? <TypedBible /> : null}
         {entries.length === 0 ? (
           <>
-            <p className="pt-3 text-base font-medium">No {info.plural.toLowerCase()} yet</p>
+            <p className="pt-3 text-base font-medium">No {inSentence(info.plural)} yet</p>
             <p className="text-base text-muted">Lampas has none of these in its catalogue yet.</p>
           </>
         ) : (
@@ -91,9 +93,13 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                 </>
               )}
             </div>
-            {states && levels && hiddenLine(kind, levels) ? (
+            {states && levels && hidden ? (
               <p data-testid="dial-hides" className="pt-3 text-base text-muted">
-                {hiddenLine(kind, levels)}
+                {hidden.slice(0, hidden.indexOf(LANGUAGES_LABEL))}
+                <button type="button" onClick={() => openSetting('languages')} className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4">
+                  {LANGUAGES_LABEL}
+                </button>
+                {hidden.slice(hidden.indexOf(LANGUAGES_LABEL) + LANGUAGES_LABEL.length)}
               </p>
             ) : null}
             {states && levels ? (
@@ -101,7 +107,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                 key={kind}
                 flat
                 label={info.plural}
-                noun={info.singular.toLowerCase()}
+                noun={inSentence(info.singular)}
                 items={entries.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }))}
                 status={countLine(kind, states, bibles)}
                 focus={chosen}

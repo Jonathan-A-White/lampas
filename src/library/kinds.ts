@@ -81,6 +81,13 @@ export const KIND_INFO: readonly KindInfo[] = KINDS.map((kind) => ({ kind, ...IN
 
 export const infoOf = (kind: Kind): KindInfo => KIND_INFO.find((i) => i.kind === kind)!;
 
+/** A kind's name inside a sentence: lowercase, but a proper word keeps its capital ('Greek texts', 'Hebrew texts', 'Greek Bibles', 'lexicons'), as it does in the page's title. */
+const PROPER = new Set(['Greek', 'Hebrew', 'Bible', 'Bibles']);
+export const inSentence = (name: string): string => name.split(' ').map((w) => (PROPER.has(w) ? w : w.toLowerCase())).join(' ');
+
+/** What the line under a kind's All on / All off calls the Settings row that turns a language on; KindPage draws it as a button to that row (hiddenLine). */
+export const LANGUAGES_LABEL = 'Which languages?';
+
 /** What a book is called under its name: the full title when the name is a short one, and its author. */
 export const detailOf = (entry: CatalogueEntry): string => [entry.title === entry.short ? '' : entry.title, entry.author ?? ''].filter(Boolean).join(' · ');
 
@@ -97,7 +104,7 @@ export function pinRefusal(entry: CatalogueEntry): string {
   const count = NUMBER_WORDS[MAX_PINS] ?? MAX_PINS;
   const language = LANGUAGE_WORDS[entry.lang];
   const mixed = new Set(entriesOf(entry.kind).map((e) => e.lang)).size > 1;
-  return mixed && language ? `${count} ${language} ${infoOf(entry.kind).plural.toLowerCase()} pinned already: unpin one first` : `${count} pinned already: unpin one first`;
+  return mixed && language ? `${count} ${language} ${inSentence(infoOf(entry.kind).plural)} pinned already: unpin one first` : `${count} pinned already: unpin one first`;
 }
 
 /** The rows of the shelf that are books of the catalogue, by Resource ID. */
@@ -140,8 +147,8 @@ export function hiddenLine(kind: Kind, levels: InterestLevels): string | undefin
   if (langs.length === 0) return undefined;
   const names = langs.map((lang) => LANGUAGE_WORDS[lang]!);
   const mixed = new Set(entries.map((e) => e.lang)).size > 1;
-  const noun = infoOf(kind).plural.toLowerCase();
+  const noun = inSentence(infoOf(kind).plural);
   const subject = mixed ? `The ${names.join(' and ')} ${noun}` : `These ${noun}`;
   const language = names.join(' and ');
-  return `${subject} are not offered while ${language} ${names.length > 1 ? 'are' : 'is'} off in Which languages? (Settings). Your switches stay as they are; turn ${language} on there to use them.`;
+  return `${subject} are not offered while ${language} ${names.length > 1 ? 'are' : 'is'} off in ${LANGUAGES_LABEL} (Settings). Your switches stay as they are; turn ${language} on there to use them.`;
 }

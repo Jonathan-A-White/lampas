@@ -1,9 +1,10 @@
 // tests/unit/kind-page-hidden-line.test.tsx — a kind's page of the Library lists every book of the kind, but the chooser behind "In another book…" and the word sheet hide a Greek book at
 // Greek 0 and a Hebrew one at Hebrew 0 (resourcesForLevel); when the page lists a book the dials hide it says so, naming Settings > Which languages? (mw-fnvjof.17.9).
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { shelfOf } from '../../src/data/repositories';
+import { hiddenLine } from '../../src/library/kinds';
 import { KindPage } from '../../src/library/KindPage';
 import { CATALOGUE, entriesOf, KINDS } from '../../src/resources/catalogue';
 import { resourcesForLevel } from '../../src/resources/resourcesForLevel';
@@ -79,4 +80,33 @@ describe('a kind page says why it lists a book the dials hide', () => {
     expect(line.textContent).toMatch(/Hebrew/);
     expect(line.textContent).not.toMatch(/Greek/);
   }, ASYNC_WAIT_MS);
+
+  it('the Hebrew texts line holds a button for Which languages? that opens Settings at that setting', async () => {
+    await setDials({ grc: 5, he: 0 });
+    window.location.hash = '#/library?kind=hebrew-text';
+    render(<KindPage kind="hebrew-text" />);
+    const line = await screen.findByTestId('dial-hides');
+    const button = within(line).getByRole('button', { name: 'Which languages?' });
+    fireEvent.click(button);
+    expect(window.location.hash).toBe('#/settings?setting=languages');
+  }, ASYNC_WAIT_MS);
+
+  it('spells the kind with its own capitals: These Hebrew texts, These Greek texts, The Greek Bibles', () => {
+    expect(hiddenLine('hebrew-text', { grc: 5, he: 0 })).toContain('These Hebrew texts');
+    expect(hiddenLine('greek-text', { grc: 0, he: 5 })).toContain('These Greek texts');
+    expect(hiddenLine('bible', { grc: 0, he: 5 })).toContain('Greek Bibles');
+  });
+
+  it('no line of any kind at any pair of dials holds a lowercase hebrew or greek', () => {
+    let seen = 0;
+    for (const levels of DIALS) {
+      for (const kind of KINDS) {
+        const line = hiddenLine(kind, levels);
+        if (line === undefined) continue;
+        seen += 1;
+        expect(line, `${kind} at Greek ${levels.grc}, Hebrew ${levels.he}`).not.toMatch(/\b(hebrew|greek)\b/);
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
 });
