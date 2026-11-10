@@ -48,12 +48,13 @@ export function VerseLine(props: VerseProps) {
       {...row}
       className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${reading ? READING_CLASS : selected ? 'bg-accent/15' : ''} ${textClass(view, source)}`}
     >
+      {/* a Septuagint row's number box holds a range of two-digit verses ('15-16', englishRows) and a clear space after it, in the number's own em so Large text keeps it; every row of the chapter has it, so the text starts at one x (mw-u2w5klk.329) */}
       <VerseNumber
         n={verse.n}
         selected={selected}
         onSelect={onSelect}
         onCopy={onCopy}
-        className="inline-block min-h-(--lp-tap) min-w-(--lp-tap) pe-1 text-start align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted"
+        className={`inline-block min-h-(--lp-tap) ${props.septuagint !== undefined ? 'min-w-[max(var(--lp-tap),4.5em)]' : 'min-w-(--lp-tap)'} pe-1 text-start align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted`}
       >
         <ShownNumber verse={verse} septuagint={props.septuagint} />
       </VerseNumber>
@@ -93,8 +94,8 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
   return (
     <p data-paragraph {...rowAttrs(view, source, isOrdered(woven))} className={`mb-2 break-words px-2 leading-(--lp-leading) ${textClass(view, source)}`}>
       {verses.map((verse, i) => {
-        // a label with the Greek number beside it ('1 (22:1)') is wider than the 44 px box the -mx-3 pull-in is made for (a bare number leaves slack on each side): pulled in, the verse's words would start under it (mw-u2w5klk.279)
-        const wide = septuagint !== undefined && septuagintNumber(verse, septuagint).greek !== undefined;
+        // a label with the Greek number beside it ('1 (22:1)') or a range ('15-16', a row englishRows folded: mw-u2w5klk.329) is wider than the 44 px box the -mx-3 pull-in is made for (a bare number leaves slack on each side): pulled in, the verse's words would start under it (mw-u2w5klk.279)
+        const wide = septuagint !== undefined && (septuagintNumber(verse, septuagint).greek !== undefined || verse.through !== undefined);
         return (
         <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
           <span className={wide ? 'whitespace-nowrap' : undefined}>
@@ -103,7 +104,7 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
             selected={selected === verse.n}
             onSelect={() => onSelect(verse.n)}
             onCopy={onCopy ? () => onCopy(verse.n) : undefined}
-            className={`${wide ? 'me-1 whitespace-nowrap px-1' : '-mx-3'} inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)`}
+            className={`${wide ? `${verse.through !== undefined ? 'me-2 px-2' : 'me-1 px-1'} whitespace-nowrap` : '-mx-3'} inline-block min-h-(--lp-tap) min-w-(--lp-tap) text-center align-baseline font-sans leading-(--lp-tap)`}
           >
             <sup className="text-xs font-semibold text-muted">
               <ShownNumber verse={verse} septuagint={septuagint} />
