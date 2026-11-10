@@ -7,12 +7,12 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { syntheticGenesis } from '../support/lxx-genesis';
-import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
+import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
 import { buildLxx, LEXICON_FILE, type LxxIndex, type LxxInput, type LxxLexiconEntry } from '../../scripts/data-build-lxx';
 import { chapterFingerprint } from '../../scripts/data/chapterWriter';
 import {
-  ALIGN_END, ALIGN_START, alignChapter, alignVerse, renderAlignReport, runAlign, type AlignShare, type AlignSink,
+  ALIGN_END, ALIGN_START, alignChapter, SUPPLIED_FOR_VERB, alignVerse, renderAlignReport, runAlign, type AlignShare, type AlignSink,
 } from '../../scripts/lxx/align';
 import { deriveBook, type DeriveInput } from '../../scripts/lxx/derive';
 import type { KnownScore } from '../../scripts/lxx/known';
@@ -175,9 +175,14 @@ describe('an unpaired word is never dropped', () => {
       expect(joined(verse)).toBe(gen1Plain.verses[i].e[0].t);
       expect(verse.g.map((w) => w.t)).toEqual(gen1Plain.verses[i].g.map((w) => w.t));
       verse.e.forEach((chunk) => chunk.g.forEach((g) => expect(verse.g[g]).toBeDefined()));
-      // a Greek word is in at most one chunk
-      const used = verse.e.flatMap((c) => c.g);
-      expect(new Set(used).size).toBe(used.length);
+      // a Greek word is in at most one chunk, bar the English words Brenton supplies for a verb that stand some words before it ("Let" of "Let the water be collected"), which are paired to the verb without
+      // joining it (joinSupplied, mw-u2w5klk.274.14): its own chunk is the one `e` names, the others hold only such supplied words and come before it
+      verse.g.forEach((_, k) => {
+        const holders = verse.e.flatMap((c, x) => (c.g.includes(k) ? [x] : []));
+        if (holders.length < 2) return;
+        expect(holders[holders.length - 1], `verse ${verse.n}`).toBe(verse.g[k].e);
+        holders.slice(0, -1).forEach((x) => expect(verse.e[x].t.split(/\s+/).every((w) => SUPPLIED_FOR_VERB.has(w.toLowerCase().replace(/[^a-z]/g, ''))), `verse ${verse.n}`).toBe(true));
+      });
     });
   });
 
@@ -268,6 +273,72 @@ describe('the pronouns and auxiliaries Brenton puts before a verb join its chunk
     expect(texts.some((t) => /^them said/.test(t))).toBe(false);
     const leading = alignChapter({ code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf('And let them say', [g[0], g[2]])] } as Chapter, gl).chapter.verses[0];
     expect(leading.e.map((c) => [c.t, c.g])).toEqual([['And', [0]], ['let them say', [1]]]);
+  });
+});
+
+describe('the words Brenton supplies reach the verb past a "not", a "there" or the subject (mw-u2w5klk.274.14, .274.15)', () => {
+  const gl = (l: string): string => ({ δέ: 'and', καί: 'and', λέγω: 'say', οὐ: 'not', πατάσσω: 'kill', εὑρίσκω: 'find', θεός: 'God', συνάγω: 'collect', ὕδωρ: 'water', ὁ: 'the', ποιέω: 'make', ἐκεῖ: 'there', βλαστάνω: 'sprout', γῆ: 'earth' })[l] ?? '';
+  const run = (text: string, g: GreekWord[]): Verse => alignChapter({ code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf(text, g)] } as Chapter, gl).chapter.verses[0];
+  const chunkNamed = (verse: Verse, t: string): EnglishChunk => verse.e.find((c) => c.t === t)!;
+  const said = [word('καὶ', 'kai', 'καί', 'CONJ'), word('εἶπεν', 'eipen', 'λέγω', 'V-2AAI-3S')];
+
+  it('Gen 37:21: "Let us" before "not kill" is paired to πατάξομεν, and "not" and "kill" keep their own Greek', () => {
+    const verse = run('And said, Let us not kill him.', [...said, word('Οὐ', 'ou', 'οὐ', 'PRT-N'), word('πατάξομεν', 'pataxomen', 'πατάσσω', 'V-FAI-1P'), word('αὐτὸν', 'auton', 'αὐτός', 'P-ASM')]);
+    expect(chunkNamed(verse, 'Let us')).toMatchObject({ g: [3], y: 'align' });
+    expect(chunkNamed(verse, 'not').g).toEqual([2]);
+    expect(chunkNamed(verse, 'kill').g).toEqual([3]);
+    // the Greek word points at its own chunk, not at the leading one
+    expect(verse.e[verse.g[3].e!].t).toBe('kill');
+    expect(joined(verse)).toBe('And said, Let us not kill him.');
+  });
+
+  it('Gen 38:22: "I have" before "not found" is paired to εὗρον', () => {
+    const verse = run('And said, I have not found her;', [...said, word('Οὐχ', 'ouch', 'οὐ', 'PRT-N'), word('εὗρον', 'heuron', 'εὑρίσκω', 'V-2AAI-3P')]);
+    expect(chunkNamed(verse, 'I have')).toMatchObject({ g: [3], y: 'align' });
+    expect(chunkNamed(verse, 'not').g).toEqual([2]);
+  });
+
+  it('Gen 35:3: "let us" before "there make" is paired to ποιήσωμεν; a supplied word alone before a noun is not paired', () => {
+    const verse = run('And let us there make an altar', [word('καὶ', 'kai', 'καί', 'CONJ'), word('ποιήσωμεν', 'poiesomen', 'ποιέω', 'V-AAS-1P'), word('ἐκεῖ', 'ekei', 'ἐκεῖ', 'ADV')]);
+    const lead = verse.e.find((c) => /let us$/.test(c.t))!;
+    expect(lead.g).toEqual([1]);
+    const noun = run('And I have light.', [word('καὶ', 'kai', 'καί', 'CONJ'), word('φῶς', 'phōs', 'φῶς', 'N-ASN')]);
+    expect(noun.e.filter((c) => c.g.length === 0).every((c) => c.y === 'align?')).toBe(true);
+  });
+
+  it('Gen 1:9: "Let" before "the water ... be collected" is paired to the jussive Συναχθήτω; "Let there be" (1:3) and "blessed them" are unchanged', () => {
+    const verse = run('And God said, Let the water be collected into one place.', [
+      ...said, word('ὁ', 'ho', 'ὁ', 'T-NSM'), word('θεός', 'theos', 'θεός', 'N-NSM'), word('Συναχθήτω', 'sunachthētō', 'συνάγω', 'V-APM-3S'), word('τὸ', 'to', 'ὁ', 'T-NSN'), word('ὕδωρ', 'hudōr', 'ὕδωρ', 'N-NSN'),
+    ]);
+    const lead = chunkNamed(verse, 'Let');
+    expect(lead.g).toEqual([4]);
+    expect(lead.y).toBe('align');
+    // the verb's own chunk keeps it, and the Greek word points at that chunk
+    const own = verse.e.findIndex((c, i) => c.g.includes(4) && c !== lead && i > verse.e.indexOf(lead));
+    expect(own).toBeGreaterThan(-1);
+    expect(verse.g[4].e).toBe(own);
+    expect(joined(verse)).toBe('And God said, Let the water be collected into one place.');
+    // 1:3 and 1:28 as before
+    expect(gen1.verses[2].e.some((c) => c.t === 'Let there be' && c.g.length === 1)).toBe(true);
+    expect(gen1.verses[27].e.some((c) => c.g.length === 0 && /them$/.test(c.t))).toBe(false);
+  });
+
+  it('a "Let" is not paired past the end of its clause or past another finite verb', () => {
+    const stop = run('And said, Let the water, and he said, Be done.', [...said, word('ὁ', 'ho', 'ὁ', 'T-NSM'), word('ὕδωρ', 'hudōr', 'ὕδωρ', 'N-NSN'), word('εἶπεν', 'eipen', 'λέγω', 'V-2AAI-3S')]);
+    expect(stop.e.filter((c) => c.g.length === 0 && /Let$/.test(c.t)).length).toBe(1);
+  });
+
+  it('in Genesis 1 no "let"/"Let" with no Greek stands in a clause whose Greek has a third-person jussive verb ahead of it', () => {
+    gen1.verses.forEach((verse) => {
+      verse.e.forEach((c, i) => {
+        if (c.g.length > 0 || !/\blet$/i.test(c.t)) return;
+        for (let j = i + 1; j < verse.e.length; j++) {
+          const next = verse.e[j];
+          if (next.g.some((k) => /^V-\w*[MS]-3[SP]$/.test(verse.g[k].p))) throw new Error(`verse ${verse.n}: "${c.t}" reaches no Greek, though "${next.t}" is a jussive verb`);
+          if (/[,;.:?!]$/.test(next.t)) break;
+        }
+      });
+    });
   });
 });
 
