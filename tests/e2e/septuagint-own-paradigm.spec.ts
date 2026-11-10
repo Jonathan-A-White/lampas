@@ -340,3 +340,28 @@ test('an older link to the paradigm screen that carries the full stop (w=ὕδα
   await expect(page.getByTestId('word-line')).toHaveText(/^ὕδατος: noun, genitive singular neuter/);
   await shot(page, 'septuagint-older-link-without-stop');
 });
+
+// mw-u2w5klk.326: tapping The pattern moved the screen down to the pattern's outlined cell and left the This word | The pattern choice above the top of the screen
+test('Genesis 1:2 ὕδατος: tapping The pattern (and This word again) leaves the This word | The pattern choice in the window', async ({ page }) => {
+  await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
+  await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+  const inWindow = async (name: string) => {
+    const box = await forms(page).getByRole('button', { name, exact: true }).boundingBox();
+    const bar = await page.locator('header').first().boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.y).toBeGreaterThanOrEqual(bar!.y + bar!.height - 1);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(844);
+  };
+  await forms(page).getByRole('button', { name: 'This word' }).click();
+  await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-lit]')).toHaveCount(1);
+  await inWindow('This word');
+  await forms(page).getByRole('button', { name: 'The pattern' }).click();
+  await expect(forms(page).getByRole('button', { name: 'The pattern' })).toHaveAttribute('aria-pressed', 'true');
+  await inWindow('This word');
+  await inWindow('The pattern');
+  await shot(page, 'septuagint-own-paradigm-after-pattern');
+  await forms(page).getByRole('button', { name: 'This word' }).click();
+  await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
+  await inWindow('This word');
+});
