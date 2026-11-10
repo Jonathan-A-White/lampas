@@ -35,10 +35,10 @@ describe('a chapter that cannot be fetched', () => {
     expect(screen.getByRole('alert')).not.toHaveTextContent('could not be fetched');
   });
 
-  it.each([true, false])('with onLine %s offers Keep the New Testament on this phone, a link to the setting', async (online) => {
+  it.each([true, false])('with onLine %s offers Keep the Bible on this phone, a link to the setting', async (online) => {
     onLine(online);
     render(<ChapterFailed title="Acts 18" onRetry={() => undefined} onPick={() => undefined} />);
-    const link = screen.getByRole('link', { name: 'Keep the New Testament on this phone' });
+    const link = screen.getByRole('link', { name: 'Keep the Bible on this phone' });
     expect(link).toHaveAttribute('href', '#/settings?setting=offlineCopy');
     await userEvent.click(link);
     expect(window.location.hash).toBe('#/settings?setting=offlineCopy');

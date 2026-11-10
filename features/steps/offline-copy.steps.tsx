@@ -8,6 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
+import { LXX_LEXICON_URL } from '../../src/data/lxxChapter';
 import { offlineRunning, offlineUrls, stopOfflineCopy } from '../../src/data/offlineCopy';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -33,9 +34,12 @@ const CHAPTER_BYTES = 200_000;
 const ANSWERED = 5;
 
 let fetched: string[] = [];
+let fetchedLxx: string[] = [];
 let held: Array<() => void> = [];
 let arrivedAll = false;
 let entries = new Set<string>();
+/** Colossians 3 is read by the Settings screen itself (the app's own fetch), not by the offline copy, so a check that the copy fetched no chapter leaves it out */
+const runFetched = (): string[] => fetched.filter((url) => !url.startsWith('/data/col/3.json'));
 let deleted: string[] = [];
 
 /** The fake fetch: the first ANSWERED chapters of the copy at once, the others when `arrive()` is called; everything else the app asks for is answered as the other features do. */
@@ -43,16 +47,19 @@ function stubOfflineFetch(): void {
   // fetches the last scenario left waiting are let go, so its stopped run ends
   held.splice(0).forEach((release) => release());
   fetched = [];
+  fetchedLxx = [];
   held = [];
   arrivedAll = false;
   stubChapterFetch();
   const app = globalThis.fetch;
-  const copy = new Set(offlineUrls('all'));
+  // the Septuagint's files are the fixtures' (the app's own fetch answers them), but are recorded
+  const copy = new Set(offlineUrls('all').filter((url) => !url.startsWith('/data-lxx/')));
   const answered = new Set(offlineUrls('nt').slice(0, ANSWERED));
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
+      if (url.startsWith('/data-lxx/')) fetchedLxx.push(url);
       if (!copy.has(url)) return app(input, init);
       fetched.push(url);
       if (!answered.has(url) && !arrivedAll) await new Promise<void>((release) => held.push(release));
@@ -136,10 +143,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     expect(await statusOf()).toBe('');
   };
 
-  Scenario('Settings offers three choices with their sizes, Nothing extra to start', ({ Given, Then, And }) => {
+  Scenario('Settings offers five choices with their sizes, Nothing extra to start', ({ Given, Then, And }) => {
     Given('Settings is open at Reading with nothing chosen', () => openReading());
-    Then('Keep on this phone offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, current: string) => {
-      expect(await labels()).toEqual([a, b, c]);
+    Then('Keep on this phone offers {string}, {string}, {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, d: string, e: string, current: string) => {
+      // the Septuagint's megabytes arrive with its index
+      await waitFor(async () => expect(await labels()).toEqual([a, b, c, d, e]));
       expect(await chosen()).toEqual([current]);
     });
     And('the row says nothing about progress', noProgress);
@@ -210,9 +218,41 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
-  Scenario('A phone that kept the New Testament checks it again when Settings opens', ({ Given, Then }) => {
+  Scenario('A phone that kept the New Testament checks it again when Settings opens', ({ Given, Then, And }) => {
     Given('Settings is open at Reading with the New Testament chosen and every chapter kept', () => openReading({ saved: { offlineCopy: 'nt' }, kept: offlineUrls('nt') }));
     Then('the row reads {string} and a time', upToDate);
+    And('no chapter is fetched again', () => {
+      expect(runFetched()).toEqual([]);
+    });
+  });
+
+  Scenario('A phone that saved the whole Bible before still has All chosen, and gains the Septuagint without fetching what it keeps', ({ Given, Then, And }) => {
+    Given('Settings is open at Reading with All saved and the Hebrew and the New Testament chapters kept', () => openReading({ saved: { offlineCopy: 'all' }, kept: [...offlineUrls('hbo'), ...offlineUrls('nt')] }));
+    Then('Keep on this phone has {string} chosen', async (_, choice: string) => {
+      await waitFor(async () => expect(await chosen()).toEqual([choice]));
+    });
+    And('the row reads {string} and a time', upToDate);
+    And('no chapter of the Old Testament or the New Testament is fetched again', () => {
+      expect(runFetched()).toEqual([]);
+    });
+    And("the Septuagint's chapter and lexicon are fetched", () => {
+      expect(fetchedLxx).toContain(LXX_LEXICON_URL);
+      expect(fetchedLxx.some((url) => /^\/data-lxx\/gen\/1\.json\?v=[0-9a-f]{12}$/.test(url))).toBe(true);
+    });
+  });
+
+  Scenario("Choosing Old Testament: Septuagint keeps the Septuagint's chapters and nothing of the Hebrew or Greek", ({ Given, When, Then, And }) => {
+    Given('Settings is open at Reading with nothing chosen', () => openReading());
+    When('he chooses {string} in the group {string}', choose);
+    Then('the row reads {string} and a time', upToDate);
+    And("the Septuagint's chapter and lexicon are fetched", () => {
+      expect(fetchedLxx).toContain(LXX_LEXICON_URL);
+      expect(fetchedLxx.some((url) => /^\/data-lxx\/gen\/1\.json\?v=[0-9a-f]{12}$/.test(url))).toBe(true);
+    });
+    And('no chapter of the Old Testament or the New Testament is fetched', () => {
+      expect(runFetched()).toEqual([]);
+    });
+    And('the setting {string} is kept as {string}', (_, key: string, value: string) => savedAs(key, value));
   });
 
   Scenario("With the New Testament kept and the browser offline, a lesson's passage card opens and reads", ({ Given, When, Then, And }) => {

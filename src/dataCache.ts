@@ -38,6 +38,16 @@ export const isVersionedSermons = (url: URL): boolean =>
   /^\/(sermons|themes)\/[0-9a-z-]+\/[0-9a-z]+\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
 
 /**
+ * A Septuagint chapter asked for by its fingerprint: /data-lxx/gen/1.json?v=0123456789ab (src/data/lxxChapter.ts lxxChapterUrl, the fingerprint in /data-lxx/index.json); kept and replaced as a chapter is, so the
+ * Reader reads it offline and a changed chapter replaces its old copy (mw-lcv9z3g.6). A plain address is not matched.
+ */
+export const isVersionedLxxChapter = (url: URL): boolean =>
+  /^\/data-lxx\/[0-9a-z]+\/\d+\.json$/.test(url.pathname) && /^[0-9a-f]{12}$/.test(url.searchParams.get('v') ?? '');
+
+/** The Septuagint's index and its Greek lexicon, which carry no fingerprint of their own: the worker asks the network first and keeps the answer, so they stay current and are read offline (mw-lcv9z3g.6). */
+export const isLxxPlainFile = (url: URL): boolean => url.pathname === '/data-lxx/index.json' || url.pathname === '/data-lxx/lexicon-grc-lxx.json';
+
+/**
  * Answers a versioned chapter request (or a versioned ladder list, Hebrew word list or sermon book file: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
  * and every other copy of the same chapter (an older fingerprint) is removed. A refusal is passed on and nothing is kept or removed; with no
  * network the older copy of the chapter is read in the new one's place, rather than nothing.

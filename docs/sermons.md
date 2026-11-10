@@ -90,7 +90,7 @@ with no fetch; the book files are fetched, never bundled. A new source or a chan
 - **Not precached.** `pwa-precache.ts` lists no `sermons/` file: a book file is fetched on first use (as the maps' data files are loaded on first use), and `tests/unit/sw-data-route.test.ts` holds that no precache pattern names `sermons`.
 - **Kept by the worker.** A book file is asked for as `/sermons/<source>/<book>.json?v=<fingerprint>` (`sermonBookUrl`); `src/sw.ts` takes that address (`isVersionedSermons`, `src/dataCache.ts`) the way it takes a chapter, into the
   data cache: served with no fetch when the very address is kept, fetched once otherwise, the older copy of the same file dropped. An unversioned address is not matched.
-- **The offline copy** (`src/data/offlineCopy.ts`, `docs/data.md` 'Offline'): the scope `'nt'` also keeps each source's files for the 27 New Testament books, and `'all'` every file, after the chapters and the Hebrew lists, each by its source's
+- **The offline copy** (`src/data/offlineCopy.ts`, `docs/data.md` 'Offline'): the scope `'nt'` also keeps each source's files for the 27 New Testament books, `'hbo'` for the 39 Old Testament books, and `'all'` every file, after the chapters and the Hebrew lists, each by its source's
   fingerprint. What the cache holds under the very address is not fetched again, so a changed source (a new fingerprint) fetches only that source's files, and `serveChapter` drops the old ones.
 
 ## The module
