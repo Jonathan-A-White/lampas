@@ -2,6 +2,7 @@
 // the chapters, the form test formLevel.ts pickerPasses builds and the lemmas he knows; nothing here reads the store, the network or a screen.
 import type { Chapter, GreekWord, Verse } from '../chapter';
 import { wordLemma } from '../chapter';
+import { lemmaKeyOf } from '../lemma';
 import type { FormTest } from '../frontier';
 import { ALWAYS_NEEDED, ideasOfWord } from './ladder';
 
@@ -33,7 +34,7 @@ export interface GradeOptions {
   ideaMet?: (id: string) => boolean;
 }
 
-const lemmaOf = (w: GreekWord): string => wordLemma(w).normalize('NFC');
+const lemmaOf = (w: GreekWord): string => lemmaKeyOf(wordLemma(w));
 
 /** The ideas a form needs, as the Weave and the picker count them (ideasOfWord, which throws on a code the ladder cannot read, gives none) and ALWAYS_NEEDED. */
 export function needsOfForm(word: GreekWord): string[] {

@@ -1,6 +1,7 @@
 // src/data/weave.ts — the diglot weave: which English chunks of a verse are shown as their Greek instead.
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { type GreekWord, ownEnglish, type Verse, wordLemma } from './chapter';
+import { holdsLemma } from './lemma';
 
 /** The Greek words to show in place of English chunk `i` (in the chunk's own order), or null when it stays English.
  * `learning` is true when at least one of them is a word he is still learning: the Reader sets the chunk's English
@@ -30,7 +31,8 @@ export interface WeaveLemmas {
 export function weaveWord(word: GreekWord, { solid, learning, formPasses }: WeaveLemmas): 'solid' | 'learning' | null {
   const lemma = wordLemma(word).normalize('NFC');
   if (!lemma || (formPasses && !formPasses(word))) return null;
-  return solid.has(lemma) ? 'solid' : learning?.has(lemma) ? 'learning' : null;
+  // a Septuagint lemma written as a list ('ὕδωρ, ὕδατος') is the word of its headword, which is what he keeps (mw-u2w5klk.327)
+  return holdsLemma(solid, lemma) ? 'solid' : learning && holdsLemma(learning, lemma) ? 'learning' : null;
 }
 
 /** The weave `woven` knows the rule it was made by: `word` says of a Greek word whether the weave would show it in Greek (a variant chip's words are not in the verse's chunks). It is not an element of the weave. */
@@ -93,7 +95,7 @@ export function weaveForTeaching(verse: Verse, solid: ReadonlySet<string>, lemma
   return verse.e.map((chunk, i) => {
     if (woven[i]?.learning || chunk.t.trim() === '-') return woven[i];
     const words = chunk.g.map((g) => verse.g[g] as GreekWord | undefined).filter((w): w is GreekWord => w !== undefined);
-    return words.some((w) => wordLemma(w).normalize('NFC') === lemma) ? { words, learning: true } : woven[i];
+    return words.some((w) => holdsLemma(new Set([lemma]), wordLemma(w))) ? { words, learning: true } : woven[i];
   });
 }
 

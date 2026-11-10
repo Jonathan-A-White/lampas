@@ -5,6 +5,7 @@
 // ids, so an id, once shipped, is not renamed. The 'sentences' tier (mw-br588b.2) is the one tier that is not about a word: its ideas are the uses of uses.ts.
 import { GRAMMAR_CONCEPTS } from '../grammar-concepts';
 import { bookOf } from '../books';
+import { lemmaKeyOf } from '../lemma';
 import { GRAMMAR_TERMS, decodeParse, parseSegments, splitParse } from '../parseCode';
 import { patternsOf } from './patterns';
 import { textIdeasOf } from './textIdeas';
@@ -666,7 +667,7 @@ const PREPOSITION_IDEA_OF_LEMMA = new Map(PREPOSITIONS.map((p) => [p.greek.norma
 
 /** The id of the idea that is this very word's own (mw-86e9r1.36): the idea of a preposition of the twelve, or undefined for any other word. */
 export const ownIdeaOfWord = (word: { l: string; p: string }): string | undefined =>
-  word.p === 'PREP' ? PREPOSITION_IDEA_OF_LEMMA.get(word.l.normalize('NFC')) : undefined;
+  word.p === 'PREP' ? PREPOSITION_IDEA_OF_LEMMA.get(lemmaKeyOf(word.l)) : undefined;
 
 /** ideasOf for a word of the text (mw-86e9r1.5): a preposition of the twelve also needs its own idea, which its parsing code cannot name, and (mw-svw421.1)
  * a word also needs the pattern ideas its dictionary form and code show (patterns.ts patternsOf): its declension, the augment, its tense signs and the rest;

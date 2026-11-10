@@ -5,6 +5,7 @@ import type { Level } from 'learn-kit/graph';
 import type { WordState } from '../db';
 import { wordGloss, type BookIndex, type Chapter } from '../chapter';
 import type { Goal } from '../goal';
+import { lemmaKeyOf } from '../lemma';
 import { ladderFor, type LadderLang } from './ladders';
 import { usesOf, type Use } from './uses';
 
@@ -82,7 +83,7 @@ export async function passageNeeds(goal: Goal, load: ChapterLoader, index: BookI
       const ref = `${goal.book}.${chapter.chapter}.${verse.n}`;
       for (const w of verse.g) {
         tokens++;
-        const lemma = w.l.normalize('NFC');
+        const lemma = lemmaKeyOf(w.l);
         const known = words.get(lemma);
         if (known) known.count++;
         else words.set(lemma, { lemma, gloss: wordGloss(chapter, w), count: 1, firstRef: ref });

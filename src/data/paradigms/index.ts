@@ -2,6 +2,7 @@
 // grammar levels make of them, as far as How much of a table takes in (the extent, src/data/grammar/extent.ts, mw-irpgqi.2). Pure: the levels come in as a lookup (listLevels' rows, or a fixture).
 import { DEFAULT_EXTENT, withinExtent, type GrammarExtent } from '../grammar/extent';
 import { ideasOf, ideasOfWord } from '../grammar/ladder';
+import { lemmaKeyOf } from '../lemma';
 import type { LadderLang } from '../grammar/ladders';
 import { patternsOf } from '../grammar/patterns';
 import type { Level } from '../grammar/needs';
@@ -334,7 +335,7 @@ function findWordParadigm(word: { t: string; l: string; p: string }): WordParadi
   if (OF_ITS_OWN_WORDS.includes(table.id)) {
     // ποῖος is no form of τίς: it is an adjective's, so its cell is Adjective endings' of its case, number and gender; a form no table holds (δεῖνα) has no table, not one lit on nothing (mw-5r3p30.1033)
     const adjectives = paradigmsIn('grc').find((other) => other.id === 'adjective-endings');
-    if (!adjectives || !DECLINED_LIKE_AN_ADJECTIVE.includes(word.l)) return undefined;
+    if (!adjectives || !DECLINED_LIKE_AN_ADJECTIVE.includes(lemmaKeyOf(word.l))) return undefined;
     const asAdjective = [...wanted.filter((id) => id !== 'pronoun' && id !== 'pronoun-interrogative'), 'adjective'];
     const cell = best(hitsIn(adjectives, asAdjective, form));
     return cell ? { table: adjectives, cell: cell.place } : undefined;

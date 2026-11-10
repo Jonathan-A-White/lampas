@@ -2,6 +2,7 @@
 // dictionary form (the lemma) and its RP parsing code. Pure: no ladder, no store. ladder.ts ideasOfWord adds these to the ideas its code names;
 // the ids are ladder ids (PROVISIONAL, not renamed once shipped). 'dictionary-entry' and 'principal-parts' are about how a dictionary lists a word,
 // not about a form, so no word uses them.
+import { lemmaKeyOf } from '../lemma';
 
 const bare = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
@@ -49,7 +50,7 @@ function declensionOf(code: string, lemma: string, form?: string): PatternIdea |
  * as forms); 'ὅ' and 'καί' use no pattern.
  */
 export function patternsOf(word: { l: string; p: string; t?: string }): PatternIdea[] {
-  const lemma = word.l.normalize('NFC');
+  const lemma = lemmaKeyOf(word.l);
   const code = word.p;
   const out = new Set<PatternIdea>();
   const verb = VERB_CODE.exec(code);

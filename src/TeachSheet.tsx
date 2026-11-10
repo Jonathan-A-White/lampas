@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { type Chapter, sourceLanguage, wordParse } from './data/chapter';
 import { type Candidate, easiestVerse } from './data/frontier';
 import { teachWord, type WordOutcome } from './data/repositories';
+import { lemmaKeyOf } from './data/lemma';
 import { skipForToday } from './data/skipped';
 import { weaveForTeaching } from './data/weave';
 import { publish, useLatest } from './events/bus';
@@ -66,8 +67,8 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
     const verse = chapter.verses.find((v) => v.n === n);
     if (!verse) return null;
     const woven = weaveForTeaching(verse, solid, current.lemma);
-    const forms = verse.g.filter((w) => w.l.normalize('NFC') === current.lemma).map((w) => w.t);
-    const first = chapter.verses.flatMap((v) => v.g).find((w) => w.l.normalize('NFC') === current.lemma);
+    const forms = verse.g.filter((w) => lemmaKeyOf(w.l) === current.lemma).map((w) => w.t);
+    const first = chapter.verses.flatMap((v) => v.g).find((w) => lemmaKeyOf(w.l) === current.lemma);
     return { verse, woven, forms, first };
   }, [current, chapter, solid]);
 

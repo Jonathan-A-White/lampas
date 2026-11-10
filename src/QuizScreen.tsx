@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useState } from 'react';
 import { wordLemma, wordParse } from './data/chapter';
+import { holdsLemma } from './data/lemma';
 import { lookupLemma } from './data/lexicon';
 import { getLanguages, listWords, recordAnswer } from './data/repositories';
 import { clearRound, readRound, saveRound } from './data/roundKeep';
@@ -120,7 +121,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     const about = askAbout(question, { book: open.book, chapter: open.chapter, verse: 1 });
     const [forms, entry] = await Promise.all([loadForms(hebrew ? 'hbo' : 'grc'), lookupLemma(question.lemma, hebrew ? 'hbo' : 'grc')]);
     const verse = forms?.verses.find((v) => v.n === question.verse);
-    const word = question.form === undefined ? undefined : verse?.g.find((w) => w.t === question.form && wordLemma(w) === question.lemma);
+    const word = question.form === undefined ? undefined : verse?.g.find((w) => w.t === question.form && holdsLemma(new Set([question.lemma]), wordLemma(w)));
     const focus: QuizFocus = {
       kind: 'quiz',
       lemma: question.lemma,

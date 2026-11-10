@@ -2,7 +2,7 @@
 // builder and the question. Nothing here touches the store or the screen; the random source is passed in.
 import { isGuess, sourceLanguage, wordLemma, type Chapter, type GreekWord, type SourceLanguage } from './chapter';
 import type { Word, WordState } from './db';
-import { normaliseLemma } from './lemma';
+import { holdsLemma, normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
 import { SEED_WORDS_HBO } from './seed-words-hbo';
 import { choicesOf } from './choices';
@@ -124,7 +124,7 @@ export function lemmasOf(word: Word, others: ReadonlySet<string> = new Set()): S
  */
 export function isFormOf(g: GreekWord, lemmas: ReadonlySet<string>, others: ReadonlySet<string> = new Set()): boolean {
   // a Septuagint word the derivation only guessed (`y` 'g') is not a place the lemma is known to stand: not shown in the Quick test, not drilled (mw-u2w5klk.12)
-  return !isGuess(g) && lemmas.has(nfc(wordLemma(g))) && !others.has(nfc(g.t));
+  return !isGuess(g) && holdsLemma(lemmas, wordLemma(g)) && !others.has(nfc(g.t));
 }
 
 /**

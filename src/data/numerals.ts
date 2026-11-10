@@ -4,6 +4,7 @@
 // no number); only the cardinals count, no ordinal. A sum is shown only where the English says it too (numberPhraseOf): where a noun splits a number ('930 years' is 'thirty years and nine
 // hundred years') or the English reads it another way, the word sheet opens as it always did. scripts/numeral-sweep.ts checks every phrase of the shipped text; docs/layout/word-sheet.md.
 import { sourceLanguage, type Chapter, type GreekWord, type Verse } from './chapter';
+import { lemmaKeyOf } from './lemma';
 
 /** The language of the words: 'hbo' for an Old Testament chapter, 'grc' for the Greek (the New Testament and the Septuagint). */
 export type NumeralLanguage = 'hbo' | 'grc';
@@ -66,13 +67,13 @@ export function numeralValue(word: GreekWord, language: NumeralLanguage): Numera
     const scale = HEBREW_SCALES[word.s];
     return scale === undefined ? { value } : { value: numberOf(word) === 'd' ? value * 2 : value, scale };
   }
-  const lemma = nfc(word.l);
+  const lemma = lemmaKeyOf(word.l);
   const value = GREEK.get(lemma);
   const scale = GREEK_SCALES.get(lemma);
   return value === undefined ? undefined : scale === undefined ? { value } : { value, scale };
 }
 
-const keyOf = (word: GreekWord, language: NumeralLanguage): string => (language === 'hbo' ? word.s : nfc(word.l));
+const keyOf = (word: GreekWord, language: NumeralLanguage): string => (language === 'hbo' ? word.s : lemmaKeyOf(word.l));
 const hasWaw = (word: GreekWord): boolean => /Conj-w/.test(word.p);
 /** A Hebrew word that carries a preposition or the article ('לִשְׁתֵּי' for two, 'בַּחֲמֵשׁ' by five): inside a number the words carry at most an 'and', so it begins a number of its own. */
 const hasPrefix = (word: GreekWord): boolean => /(^|\| )(Prep|Art)/.test(word.p);
@@ -186,7 +187,7 @@ export function numeralPhrases(words: readonly GreekWord[], language: NumeralLan
       kai = undefined;
       run.push({ index, word, value: info.value });
       infos.push({ word, info });
-    } else if (language === 'grc' && nfc(word.l) === KAI && run.length > 0 && kai === undefined) kai = { word, index };
+    } else if (language === 'grc' && lemmaKeyOf(word.l) === KAI && run.length > 0 && kai === undefined) kai = { word, index };
     else close();
   });
   close();

@@ -7,6 +7,7 @@ import { chosenPronunciation } from '../../speech/greek';
 import { lessonsOf, type Pronunciation } from '../../speech/pronunciation';
 import { isGuess, type BookIndex, type Chapter, type GreekWord, type Verse, ownEnglish, wordGloss } from '../chapter';
 import { goalText, parseGoal } from '../goal';
+import { lemmaKeyOf } from '../lemma';
 import type { FormTest } from '../frontier';
 import { scoreWords } from '../ladderScore';
 import { decodeParse, parseSegments, splitParse } from '../parseCode';
@@ -504,7 +505,7 @@ interface Candidate {
 }
 
 /** The dictionary word a candidate is a form of (NFC), by which examples are told apart. */
-const lemmaOf = (c: Candidate): string => bare(c.example.word.l);
+const lemmaOf = (c: Candidate): string => bare(lemmaKeyOf(c.example.word.l));
 
 /**
  * The examples of a letter or a sound for a passage (mw-5r3p30.351, his words: "a simpler word, what you've learned so far, rather than being from your goal"):
@@ -530,7 +531,7 @@ async function soundExamplesFor(id: string, passage: IdeaPassage, load: ChapterL
         seen.add(key);
         const score = scoreWords([example.word.t]).score;
         const unmet = ranking.known ? foundationOf(example.word.t).filter((f) => LETTER_IDS.includes(f) && !ranking.known?.has(f)).length : 0;
-        candidates.push({ example, level, easy: score <= EASY_SCORE, score, unmet, uses: ranking.frequency?.get(example.word.l.normalize('NFC')) ?? 0, order: candidates.length });
+        candidates.push({ example, level, easy: score <= EASY_SCORE, score, unmet, uses: ranking.frequency?.get(lemmaKeyOf(example.word.l)) ?? 0, order: candidates.length });
       }
       level++;
       if (new Set(candidates.filter((c) => c.easy).map(lemmaOf)).size >= SOUND_EXAMPLES) break;
