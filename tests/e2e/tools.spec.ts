@@ -106,7 +106,7 @@ for (const size of WIDTHS) {
       const screens: [string, string, string][] = [
         ['Your Logos library', 'Your Logos library', '‹ Tools'],
         ['Verse lists', 'Verse lists', '‹ Tools'],
-        ['Memorize', 'Memorize', '‹ Back'],
+        ['Memorize', 'Memorize', '‹ Tools'],
         ['Paradigms', 'Paradigms', '‹ Tools'],
         ['Words', 'Words', '‹ Tools'],
         ['Review', 'Review', '‹ Tools'],
