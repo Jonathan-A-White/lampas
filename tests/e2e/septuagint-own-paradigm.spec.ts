@@ -160,7 +160,7 @@ test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: a double tap on Noun endings is
   await page.reload();
   // the lemma file's response is held 2 s (a slow connection); the routes of beforeEach lay the Septuagint's forms on it after
   await page.route('**/lemma-forms/*', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // a real-time hold: the slow connection is the thing under test
     await route.fallback();
   });
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'ΑΡΧΗ', exact: true }).first().click();
@@ -170,7 +170,7 @@ test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: a double tap on Noun endings is
   await sheet.getByTestId('sheet-paradigm').getByRole('button').dblclick({ delay: 0 });
   await expect(page.getByRole('heading', { name: 'Noun endings', level: 1 })).toBeVisible();
   // the second tap's work would come later still: give it time to show
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(500); // a real-time wait: nothing must happen in the window, the second tap's work would come later
   await expect(sheet).toBeHidden();
   await expect(page.getByRole('button', { name: /^‹ ?Word$/ })).toBeVisible();
   expect(await page.evaluate(() => window.history.length)).toBe(before + 1);
@@ -192,7 +192,7 @@ test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: Done on the Word sheet before t
   await page.goto('/#/?b=gen&c=1&view=greek');
   await page.reload();
   await page.route('**/lemma-forms/*', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000)); // a real-time hold: the slow connection is the thing under test
     await route.fallback();
   });
   await page.locator('[data-verse="1"]').getByRole('button', { name: 'ΑΡΧΗ', exact: true }).first().click();
@@ -204,7 +204,7 @@ test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: Done on the Word sheet before t
   await sheet.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(sheet).toBeHidden();
   // the forms arrive at 2 s: give the cancelled table the time to show if it were going to
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(3000); // a real-time wait: nothing must happen in the window, the cancelled table must not show
   await expect(page.getByRole('heading', { name: 'Noun endings', level: 1 })).toHaveCount(0);
   expect(await page.evaluate(() => window.location.hash)).toBe(hash);
   expect(await page.evaluate(() => window.history.length)).toBe(before);
