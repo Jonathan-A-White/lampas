@@ -3,7 +3,9 @@
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 
-export { withoutGaps } from '../data/lxxChapter';
+import { withoutGaps } from '../data/lxxChapter';
+
+export { withoutGaps };
 
 /** What the header says under the title of a Septuagint chapter: the Greek and the English, each with whose it is. */
 export const SEPTUAGINT_SUBTITLE = "Greek: Swete's edition · English: Brenton's translation";
@@ -13,6 +15,13 @@ export const SEPTUAGINT_SHEET_TITLE = 'Whose texts these are';
 
 /** The Greek of a Septuagint word as the Greek view draws it: as Swete printed it (`d`, with his brackets) while manuscript gaps are shown, else the bare `t`. */
 export const gapText = (word: Pick<GreekWord, 't' | 'd'>, gaps: boolean | undefined): string => (gaps && word.d !== undefined ? word.d : word.t);
+
+/**
+ * An English chunk's text as the English view draws it (mw-u2w5klk.331): Brenton brackets words the Greek lacks ('[And Jacob removed ... Gader,] and it came to pass'), and the brackets look like Swete's, so Settings >
+ * Show manuscript gaps governs them too. `gaps` false (a Septuagint chapter, the setting Off) drops the bracket characters and keeps every word; true draws the text as printed; `undefined` is a text that is not the
+ * Septuagint, which is never touched. Display only: the chunk keeps its `t`, which lookup, speech, copy and search read.
+ */
+export const chunkShown = (text: string, gaps: boolean | undefined): string => (gaps === false ? withoutGaps(text) : text);
 
 /** Swete's marks at the edge of a word: his stops ('.' ',' ';' ':'), the high stop '·' (the Greek ano teleia too), the Greek question mark and his brackets. A koronis or an apostrophe (ἀπ᾽) is the word's own and stays. */
 const SWETE_MARKS = /^[.,;:·\u0387\u037E()[\]]+|[.,;:·\u0387\u037E()[\]]+$/gu;

@@ -17,9 +17,9 @@ import { sayWord } from './sayWord';
 import { variantLabel, variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
-import { gapText, septuagintChunkLinked, septuagintVerseView, withoutMarks } from './septuagint';
+import { chunkShown, gapText, septuagintChunkLinked, septuagintVerseView, withoutMarks } from './septuagint';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
-function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
+function SuppliedText({ chunk, gaps }: { chunk: EnglishChunk; gaps?: boolean }) {
   return (
     <>
       {englishRuns(chunk).map((run, i) => (
@@ -27,10 +27,10 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
           {i > 0 ? ' ' : ''}
           {run.supplied ? (
             <i data-supplied className="italic">
-              {run.text}
+              {chunkShown(run.text, gaps)}
             </i>
           ) : (
-            run.text
+            chunkShown(run.text, gaps)
           )}
         </Fragment>
       ))}
@@ -91,7 +91,7 @@ export interface VerseProps {
   chosen?: readonly ChosenUnit[];
   /** a tap on the 'RP 2026' mark after English Lampas wrote for a place the 2026 Greek changes (src/data/rp2026English.ts, mw-9ji6ek0.33): the key of its entry; absent, the mark is not drawn */
   onRp?: (key: string) => void;
-  /** Settings > Show manuscript gaps is On: the Greek view draws a Septuagint word as Swete printed it, with his lacuna brackets (`d`, src/reader/septuagint.ts gapText); absent or false, the bare `t` (mw-u2w5klk.280) */
+  /** Settings > Show manuscript gaps is On: the Greek view draws a Septuagint word as Swete printed it, with his lacuna brackets (`d`, src/reader/septuagint.ts gapText); absent or false, the bare `t` (mw-u2w5klk.280). Set for a Septuagint chapter only (false when Off): the English view then drops Brenton's square brackets too, keeping their words (chunkShown, mw-u2w5klk.331); absent, a text that is not the Septuagint, nothing is dropped */
   gaps?: boolean;
   /** given for a verse of the Septuagint only (mw-u2w5klk.278): what a tap on an English chunk paired to no Greek word does (septuagintChunkLinked), in place of opening a word sheet; the Reader opens the verse, the Verse view does nothing */
   onUnlinked?: () => void;
@@ -299,6 +299,8 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
             const text = chunkText(verse, woven, i);
             const c = text === verse.e[i].t ? verse.e[i] : { ...verse.e[i], t: text };
             const weft = woven?.[i];
+            // a chunk that is only Brenton's bracket ('[' of Psalm 146:8) has nothing left to draw once the brackets are off: no empty button (mw-u2w5klk.331)
+            if (!weft && chunkShown(c.t, gaps).trim() === '') return [...before, ...braces];
             if (weft && weft.words.length > 1) {
               // Two Greek words behind one English chunk ("to you." is ὑμῖν γράφω): the wrapper only holds the chunk's marks, each word is its own target (mw-5r3p30.614).
               const words = (bare: boolean) => weft.words.map((w, k) => (
@@ -313,7 +315,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
                       <span className="inline-flex flex-col items-center align-top leading-tight">
                         <span data-greek>{words(true)}</span>
                         <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
-                          {c.t}
+                          {chunkShown(c.t, gaps)}
                         </Tap>
                       </span>
                       {/* the space after the chunk stands outside the stack: inside it, at the end of the Greek line, it collapses (mw-5r3p30.991) */}
@@ -355,7 +357,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
                   <span className="inline-flex flex-col items-center align-top leading-tight">
                     <span data-greek>{weft.words.map((w) => w.t).join(' ')}</span>
                     <span data-hint lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted">
-                      {c.t}
+                      {chunkShown(c.t, gaps)}
                     </span>
                   </span>
                 ) : (
@@ -366,7 +368,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
               <Fragment key={i}>
                 {known()}
                 <Tap bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
-                  {c.s ? <SuppliedText chunk={c} /> : c.t}
+                  {c.s ? <SuppliedText chunk={c} gaps={gaps} /> : chunkShown(c.t, gaps)}
                 </Tap>
               </Fragment>
             ) }, ...braces];

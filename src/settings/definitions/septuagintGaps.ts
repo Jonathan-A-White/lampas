@@ -18,6 +18,6 @@ export const septuagintGapsSetting = defineSetting<SeptuagintGaps>({
   section: 'dial',
   label: 'Show manuscript gaps',
   hint: 'Swete’s lost-letter brackets.',
-  help: 'On: the Septuagint’s Greek view prints Swete’s square brackets as he did. They mark letters lost from a damaged leaf of the manuscript (for Genesis, Codex Alexandrinus) and supplied from other witnesses, as in “[Καὶ συνετε]λέσθησαν”. Off: the Greek reads without them. A tap on a word opens the same card either way. Drawn only while the Old Testament in Greek (Septuagint) is on.',
+  help: 'On: the Septuagint’s Greek view prints Swete’s square brackets as he did. They mark letters lost from a damaged leaf of the manuscript (for Genesis, Codex Alexandrinus) and supplied from other witnesses, as in “[Καὶ συνετε]λέσθησαν”. Off: the Greek reads without them. The English view follows the same setting for Brenton’s own square brackets (words he added that the Greek lacks): On prints them, Off drops the brackets and keeps every word. A tap on a word opens the same card either way. Drawn only while the Old Testament in Greek (Septuagint) is on.',
   dependsOn: { key: 'septuagint', shown: (value) => value === 'on' },
 });
