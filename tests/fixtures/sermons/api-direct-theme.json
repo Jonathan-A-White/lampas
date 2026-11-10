@@ -1,0 +1,94 @@
+{
+  "commit": "6d1d505a31fd63846aa7e35dbb69028de7858248",
+  "note": "Copied from the sermon-index repository docs/api.md at 6d1d505a (section 'Direct links' under 'The theme tier', the Example: block; its TestDocExamples holds it to the server). Update by copying again and naming the new commit.",
+  "GET /v1/sermons?ref=eph.2.8&tier=theme-only": {
+    "ref": "Eph.2.8",
+    "passage": null,
+    "theme": {
+      "total": 4,
+      "rows": [
+        {
+          "source": "spurgeon-20",
+          "id": "12",
+          "title": "The Peculiar Sleep of the Beloved",
+          "preacher": "C. H. Spurgeon",
+          "date": null,
+          "url": "https://ccel.org/ccel/spurgeon/sermons01/sermons01.xi.html",
+          "alt_url": "https://www.spurgeongems.org/sermon/chs12.pdf",
+          "kind": "link",
+          "ref": "Ps.127.2",
+          "role": "text",
+          "width": 1,
+          "direct": true,
+          "theme": {
+            "source": "themes-demo",
+            "topic": "grace",
+            "label": "Grace",
+            "part": null,
+            "part_label": null
+          }
+        },
+        {
+          "source": "spurgeon-20",
+          "id": "37",
+          "title": "Law and Grace",
+          "preacher": "C. H. Spurgeon",
+          "date": null,
+          "url": "https://ccel.org/ccel/spurgeon/sermons01/sermons01.xxxvi.html",
+          "alt_url": "https://www.spurgeongems.org/sermon/chs37.pdf",
+          "kind": "link",
+          "ref": "Rom.5.20",
+          "role": "text",
+          "width": 1,
+          "theme": {
+            "source": "themes-demo",
+            "topic": "grace",
+            "label": "Grace",
+            "part": null,
+            "part_label": null
+          }
+        },
+        {
+          "source": "spurgeon-20",
+          "id": "330",
+          "title": "Reigning Grace",
+          "preacher": "C. H. Spurgeon",
+          "date": null,
+          "url": "https://ccel.org/ccel/spurgeon/sermons06/sermons06.xliv.html",
+          "alt_url": "https://www.spurgeongems.org/sermon/chs330.pdf",
+          "kind": "link",
+          "ref": "Rom.5.21",
+          "role": "text",
+          "width": 1,
+          "theme": {
+            "source": "themes-demo",
+            "topic": "grace",
+            "label": "Grace",
+            "part": null,
+            "part_label": null
+          }
+        },
+        {
+          "source": "spurgeon-20",
+          "id": "2544",
+          "title": "The One and the Many",
+          "preacher": "C. H. Spurgeon",
+          "date": null,
+          "url": "https://ccel.org/ccel/spurgeon/sermons43/sermons43.xlvii.html",
+          "alt_url": "https://www.spurgeongems.org/sermon/chs2544.pdf",
+          "kind": "link",
+          "ref": "Rom.5.16",
+          "role": "text",
+          "width": 1,
+          "theme": {
+            "source": "themes-demo",
+            "topic": "grace",
+            "label": "Grace",
+            "part": null,
+            "part_label": null
+          }
+        }
+      ]
+    }
+  }
+}

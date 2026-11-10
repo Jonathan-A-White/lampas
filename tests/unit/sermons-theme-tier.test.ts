@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { sameThemeFor, sermonsFor } from '../../src/sermons';
 import { THEME_ROW_LIMIT, themeTier, type TopicLinks } from '../../src/sermons/sermonsFor';
-import type { SermonRef, SermonRow } from '../../src/sermons/types';
+import type { DirectRow, SameTheme, SermonRef, SermonRow, ThemeRow } from '../../src/sermons/types';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../support/test-themes';
 
@@ -139,5 +139,74 @@ describe('sameThemeFor: the sources that are on', () => {
     setSermonSources([{ ...testSource, id: 'broken', sermonsInBook: async () => Promise.reject(new Error('404')) }, testSource]);
     expect(names(await sameThemeFor(place, await sermonsFor(place))).length).toBe(4);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('broken'));
+  });
+});
+
+// Directly linked sermons (mw-qtu3zvz.59.2, PROVISIONAL, the Governor to confirm): a sermon the service marks as linked from its notes to a topic comes in with `direct` rows. A topic holding one sorts before every topic
+// holding none, its direct rows come first within it, they count toward the 12, and a heading is never drawn twice.
+describe('themeTier: directly linked sermons', () => {
+  const note = (source: string, id: string, ref?: SermonRef): ThemeRow => ({ id, source, title: `Sermon ${id}`, ...(ref ? { ref } : {}), open: { url: `https://x.test/${source}/${id}` }, opensIn: 'web', notes: true });
+  const of = (t: TopicLinks, ...rows: ThemeRow[]): DirectRow[] => rows.map((r) => ({ row: r, topic: { source: t.source, id: t.id, label: t.label, verses: t.verses } }));
+  const shown = (found: SameTheme<ThemeRow>): string[] => found.groups.flatMap((g) => g.rows.map((r) => `${g.topic.id}:${r.source}:${r.id}${r.notes ? '*' : ''}`));
+
+  it('puts a topic holding a direct row before every topic without one, narrow or not', () => {
+    const narrow = topic('t', 'narrow', 6, at(1, 2));
+    const wide = topic('t', 'wide', 200, at(1, 1));
+    const rows = [row('a', '1', at(1, 2)), row('a', '2', at(1, 1))];
+    expect(shown(themeTier([narrow, wide], rows, new Set(), THEME_ROW_LIMIT, of(wide, note('d', '9'))))).toEqual(['wide:d:9*', 'wide:a:2', 'narrow:a:1']);
+    // without it, today's order: the narrow topic first
+    expect(shown(themeTier([narrow, wide], rows, new Set()))).toEqual(['narrow:a:1', 'wide:a:2']);
+  });
+
+  it('lists the direct rows of a topic first, then the rows reached through the text, and draws the heading once', () => {
+    const a = topic('t', 'a', 8, at(1, 1));
+    const found = themeTier([a], [row('a', '1', at(1, 1)), row('a', '2', at(1, 1))], new Set(), THEME_ROW_LIMIT, of(a, note('z', '20'), note('b', '3'), note('b', '10')));
+    expect(shown(found)).toEqual(['a:b:3*', 'a:b:10*', 'a:z:20*', 'a:a:1', 'a:a:2']);
+    expect(found.groups).toHaveLength(1);
+  });
+
+  it('orders two topics that hold direct rows by the narrower first, and the ones with none after both', () => {
+    const wide = topic('t', 'wide', 90, at(1, 1));
+    const mid = topic('t', 'mid', 40, at(1, 1));
+    const none = topic('t', 'none', 3, at(1, 1));
+    const found = themeTier([wide, mid, none], [row('a', '1', at(1, 1))], new Set(), THEME_ROW_LIMIT, [...of(wide, note('d', '1')), ...of(mid, note('d', '2'))]);
+    expect(found.groups.map((g) => g.topic.id)).toEqual(['mid', 'wide', 'none']);
+  });
+
+  it('lists a sermon once: as a direct row when the text reaches it too, and never one the passage groups hold', () => {
+    const a = topic('t', 'a', 8, at(1, 1));
+    const found = themeTier([a], [row('s', '1', at(1, 1)), row('s', '2', at(1, 1))], new Set(['s:3']), THEME_ROW_LIMIT, of(a, note('s', '1'), note('s', '3'), note('s', '1')));
+    expect(shown(found)).toEqual(['a:s:1*', 'a:s:2']);
+  });
+
+  it('keeps a sermon linked to two topics with the narrower', () => {
+    const wide = topic('t', 'wide', 90, at(1, 1));
+    const narrow = topic('t', 'narrow', 6, at(1, 1));
+    expect(shown(themeTier([wide, narrow], [], new Set(), THEME_ROW_LIMIT, [...of(wide, note('s', '1')), ...of(narrow, note('s', '1'))]))).toEqual(['narrow:s:1*']);
+  });
+
+  it('takes a direct row of a topic over 300 verses: the cap is the service\'s, not the phone\'s', () => {
+    const big = topic('t', 'big', 4051, at(1, 1));
+    expect(shown(themeTier([big], [row('s', '1', at(1, 1))], new Set(), THEME_ROW_LIMIT, of(big, note('d', '1'))))).toEqual(['big:d:1*']);
+  });
+
+  it('counts direct rows toward the 12 and says how many more there were', () => {
+    const a = topic('t', 'a', 8, at(1, 1));
+    const direct = of(a, ...Array.from({ length: 5 }, (_, i) => note('d', String(i + 1))));
+    const rows = Array.from({ length: 10 }, (_, i) => row('s', String(i + 1), at(1, 1)));
+    const found = themeTier([a], rows, new Set(), THEME_ROW_LIMIT, direct);
+    expect(found.groups.flatMap((g) => g.rows)).toHaveLength(12);
+    expect(shown(found).slice(0, 5)).toEqual(['a:d:1*', 'a:d:2*', 'a:d:3*', 'a:d:4*', 'a:d:5*']);
+    expect(found.more).toBe(3);
+    // the cut falls inside the direct rows when there are more than 12 of them
+    const many = themeTier([a], rows, new Set(), THEME_ROW_LIMIT, of(a, ...Array.from({ length: 14 }, (_, i) => note('d', String(i + 1)))));
+    expect(many.groups.flatMap((g) => g.rows).every((r) => r.notes)).toBe(true);
+    expect(many.more).toBe(12);
+  });
+
+  it('is today\'s answer, deep-equal, with no direct row', () => {
+    const topics = [topic('t', 'wide', 90, at(1, 1)), topic('t', 'narrow', 6, at(1, 2))];
+    const rows = [row('b', '2', at(1, 1)), row('a', '10', at(1, 1)), row('a', '9', at(1, 1)), row('b', '1', at(1, 2)), row('a', '3', at(1, 2))];
+    expect(themeTier(topics, rows, new Set(), THEME_ROW_LIMIT, [])).toEqual(themeTier(topics, rows, new Set()));
   });
 });

@@ -3,7 +3,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SERMONS_URL } from '../../src/config';
-import { fetchSermons, fetchSources, fetchThemes, fetchThemeSermons, search, SERVICE_WAIT_MS, setSermonsUrl, sermonsServiceKnown } from '../../src/services/sermons';
+import { db } from '../../src/data/db';
+import { directThemeRows } from '../../src/sermons';
+import { setKnownSermonSources } from '../../src/sermons/known';
+import { fetchDirectThemeSermons, fetchSermons, fetchSources, fetchThemes, fetchThemeSermons, search, SERVICE_WAIT_MS, setSermonsUrl, sermonsServiceKnown } from '../../src/services/sermons';
+import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
+import { forgetTestThemes, registerTestThemes } from '../support/test-themes';
+import direct from '../fixtures/sermons/api-direct-theme.json';
 import rom58 from '../fixtures/sermons/api-rom-5-8.json';
 import apiSources from '../fixtures/sermons/api-sources.json';
 
@@ -177,5 +183,85 @@ describe('it is free', () => {
     expect([...packages].filter((p) => /bsv-kit|@bsv/.test(p))).toEqual([]);
     // and the file itself says so in its imports
     expect(importsOf(join(root, 'services/sermons.ts')).packages).toEqual([]);
+  });
+});
+
+// The call for the sermons the service marks as linked from their notes (mw-qtu3zvz.59.2, docs/sermons.md 'When online'): the theme tier for the verse or passage, over every source that is On.
+describe('the theme-tier call for directly linked sermons', () => {
+  const eph = direct['GET /v1/sermons?ref=eph.2.8&tier=theme-only'];
+
+  it('fetchDirectThemeSermons GETs the theme tier for the place, the sources that are On, direct links only, and gives its rows', async () => {
+    serve(eph);
+    const got = await fetchDirectThemeSermons('eph.2.8', ['testsermons', 'spurgeon-20']);
+    expect(asked.map((a) => a.url)).toEqual([`${BASE}/v1/sermons?ref=eph.2.8&tier=theme-only&source=testsermons,spurgeon-20&direct=only&limit=200`]);
+    expect(got.map((r) => r.id)).toEqual(['12', '37', '330', '2544']);
+    expect(got[0].direct).toBe(true);
+    expect(got[1].direct).toBeUndefined();
+  });
+
+  it('carries no cookie, no key and no header, and gives up at 2 seconds', async () => {
+    serve(eph);
+    await fetchDirectThemeSermons('eph.2.8', ['a']);
+    expect(asked[0].init?.credentials).toBe('omit');
+    expect(asked[0].init?.headers).toBeUndefined();
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      'fetch',
+      (_: RequestInfo | URL, init?: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+        }),
+    );
+    const failed = fetchDirectThemeSermons('eph.2.8', ['a']).then(
+      () => 'answered',
+      (error: unknown) => (error as Error).name,
+    );
+    await vi.advanceTimersByTimeAsync(SERVICE_WAIT_MS);
+    expect(await failed).toBe('AbortError');
+  });
+
+  describe('as the Sermons sheet makes it', () => {
+    const own = { id: 'spurgeon-20', name: 'Spurgeon', credit: 'C. H. Spurgeon', homepage: 'https://ccel.org/ccel/spurgeon', onByDefault: true };
+    beforeEach(async () => {
+      await db.open();
+      await db.settings.clear();
+      await db.meta.clear();
+      registerTestSermons();
+      registerTestThemes();
+      setKnownSermonSources([]);
+      serve(eph);
+    });
+    afterEach(() => {
+      forgetTestSermons();
+      forgetTestThemes();
+      setKnownSermonSources([]);
+    });
+
+    it('asks for the verse, or for the passage, never the chapter, with the ids of every source that is On: the bundled and the service\'s own', async () => {
+      const { rememberSermonSources } = await import('../../src/data/repositories');
+      await rememberSermonSources([own]);
+      await directThemeRows({ book: 'rom', chapter: 5, from: 8 });
+      await directThemeRows({ book: 'rom', chapter: 5, from: 6, to: 8 });
+      expect(asked.map((a) => new URL(a.url).searchParams.get('ref'))).toEqual(['rom.5.8', 'rom.5.6-rom.5.8']);
+      for (const a of asked) {
+        const url = new URL(a.url);
+        expect(url.pathname).toBe('/v1/sermons');
+        expect(url.searchParams.get('tier')).toBe('theme-only');
+        expect(url.searchParams.get('source')).toBe('testsermons,spurgeon-20');
+        expect(a.init?.credentials).toBe('omit');
+      }
+    });
+
+    it('asks nothing for a whole chapter, with no service address, with no source On, and for a verse no topic holds', async () => {
+      await directThemeRows({ book: 'rom', chapter: 5 });
+      setSermonsUrl('');
+      expect(await directThemeRows({ book: 'rom', chapter: 5, from: 8 })).toEqual([]);
+      setSermonsUrl(BASE);
+      await db.settings.put({ key: 'sermons.testsermons', value: 'off' });
+      expect(await directThemeRows({ book: 'rom', chapter: 5, from: 8 })).toEqual([]);
+      await db.settings.put({ key: 'sermons.testsermons', value: 'on' });
+      await directThemeRows({ book: 'rom', chapter: 5, from: 40 });
+      expect(asked).toEqual([]);
+    });
   });
 });
