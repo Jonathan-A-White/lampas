@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.200
+_2026-11-10_
+- Fixed: In the Septuagint English, tapping "Let us", "I have" or "Let" at the start of a clause now opens the word sheet of the Greek verb it belongs with, even when "not" or the subject comes between.
+
 ## 0.7.199
 _2026-11-10_
 - Fixed: A Septuagint chapter's title in the Reader no longer breaks into four short lines beside the English | Weave | Greek switch.
