@@ -23,9 +23,13 @@ import {
   runAlignChoose,
 } from '../../scripts/lxx/align-choose';
 import { runShip } from '../../scripts/lxx/ship';
+import { lxxRealData } from '../support/lxx-real-data';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
-const haveSources = existsSync('data/raw/lxx') && existsSync('data/lxx/morpheus/gen.tsv');
+// Whether the real data is used, and where it is, is decided once by the gate's global setup (tests/support/lxx-real-data.ts, mw-cv2w9um): it prints one line, and a skip says why.
+const real = lxxRealData();
+const haveSources = real.run;
+const sources = { rawDir: real.rawDir, morpheusDir: real.morpheusDir };
 const word = (t: string, tr: string, l: string, p: string): GreekWord => ({ t, tr, s: '', l, p, y: '2', c: 0.9 });
 const verseOf = (text: string, g: GreekWord[], s?: number[]): Verse => ({ n: 2, g, e: [{ t: text, g: [], ...(s ? { s } : {}) }] });
 const joined = (verse: Verse): string => verse.e.map((c) => c.t).join(' ');
@@ -254,7 +258,8 @@ describe('the report names the share the model pass settled', () => {
   });
 });
 
-// the real Genesis 1 to 11: when the pinned sources and the Morpheus cache are on the disk (a Builder links data/raw and data/lxx/morpheus; the Laptop has them)
+// the real Genesis 1 to 11: when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
+// the gate's log says in one line when it is skipped and why. Sources found elsewhere than the cwd are given to runShip, so no symlink is needed.
 describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
   const dirs: string[] = [];
   let withModel: Map<number, Chapter>;
@@ -270,8 +275,8 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
     const b = mkdtempSync(join(tmpdir(), 'lampas-lxx-model-b-'));
     dirs.push(a, b);
     const log: string[] = [];
-    await runShip(['--out', a], { alignDir: '', log: () => undefined });
-    await runShip(['--out', b], { log: (l) => log.push(l) });
+    await runShip(['--out', a], { ...sources, alignDir: '', log: () => undefined });
+    await runShip(['--out', b], { ...sources, log: (l) => log.push(l) });
     base = read(a);
     withModel = read(b);
     stale = log.filter((l) => /model pass/.test(l) && /stale|kept/.test(l));
@@ -353,16 +358,16 @@ describe('the command', () => {
     const dir = mkdtempSync(join(tmpdir(), 'lampas-lxx-model-cmd-'));
     try {
       const listed: string[] = [];
-      await runAlignChoose(['--list', '--book', 'gen', '--chapter', '5'], { outDir: dir, print: (t) => listed.push(t) });
+      await runAlignChoose(['--list', '--book', 'gen', '--chapter', '5'], { outDir: dir, ship: sources, print: (t) => listed.push(t) });
       expect(listed.join('\n')).toMatch(/^Gen\.5:1\n {2}Greek: /);
       const verses = [...listed.join('\n').matchAll(/^Gen\.5:(\d+)$/gm)].map((m) => `Gen.5:${m[1]} *`);
       expect(verses.length).toBeGreaterThan(20);
       const file = join(dir, 'session.txt');
       writeFileSync(file, verses.slice(1).join('\n'));
-      await expect(runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir })).rejects.toBeInstanceOf(AlignChooseRefused);
+      await expect(runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir, ship: sources })).rejects.toBeInstanceOf(AlignChooseRefused);
       expect(existsSync(join(dir, alignChoicesName('gen', 5)))).toBe(false);
       writeFileSync(file, verses.join('\n'));
-      const done = await runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir });
+      const done = await runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir, ship: sources });
       expect(done.rows.length).toBeGreaterThan(50);
       expect(done.rows.every((r) => r.g.length === 0 && r.confidence === 0.8)).toBe(true);
       expect(readModelRows(readFileSync(join(dir, alignChoicesName('gen', 5)), 'utf8'))).toEqual(done.rows);
