@@ -96,7 +96,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
             {states && levels && hidden ? (
               <p data-testid="dial-hides" className="pt-3 text-base text-muted">
                 {hidden.slice(0, hidden.indexOf(LANGUAGES_LABEL))}
-                <button type="button" onClick={() => openSetting('languages')} className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4">
+                <button type="button" onClick={() => openSetting('languages')} className="relative inline text-left text-accent underline underline-offset-4 after:absolute after:-inset-x-1 after:-inset-y-2.5 after:content-['']">
                   {LANGUAGES_LABEL}
                 </button>
                 {hidden.slice(hidden.indexOf(LANGUAGES_LABEL) + LANGUAGES_LABEL.length)}

@@ -269,6 +269,17 @@ test('with the language dial at English only the Hebrew texts page says its book
   const box = (await why.boundingBox())!;
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(390.5);
+  // the line reads as one paragraph: its button does not stretch the lines it sits on (four 24 px lines at most, under the paragraph's 12 px top padding), yet is still a 44 px tap (mw-fnvjof.17.63)
+  expect(box.height).toBeLessThanOrEqual(4 * 24 + 12);
+  const languagesLink = why.getByRole('button', { name: 'Which languages?', exact: true });
+  const linkBox = (await languagesLink.boundingBox())!;
+  const lineHeight = await why.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+  expect(linkBox.height).toBeLessThanOrEqual(lineHeight + 0.5);
+  const mid = linkBox.x + linkBox.width / 2;
+  for (const dy of [-20, 20]) {
+    const hit = await page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('button')?.textContent ?? null, [mid, linkBox.y + linkBox.height / 2 + dy]);
+    expect(hit).toBe('Which languages?');
+  }
   await shot(page, 'in-logos-hebrew-texts-english-only');
 
   // "Which languages?" in the line is a button to that setting, and Settings opens at it with English only still pressed
