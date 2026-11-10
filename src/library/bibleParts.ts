@@ -17,10 +17,13 @@ export const partsFor = (resourceId: string): LogosPart[] => LOGOS_PARTS.map((p)
 /** The parts of the canon a Bible can be set for: 'All three' means these, never the Septuagint's, which is a Bible of its own. */
 export const canonPartsFor = (resourceId: string): LogosPart[] => partsFor(resourceId).filter((part) => CANON_PARTS.includes(part));
 
-/** The words of the last button of the ask: 'All three' for a Bible holding the canon's three parts, 'Both' for two, and null for one (its own part's button already does it). */
+/** The words of the last button of the ask, which sets the canon's parts the Bible holds (never the Septuagint's): 'All three' or 'Both' where those parts are the whole list of buttons, and their names ('OT and Apocrypha') where the Septuagint is among the buttons, so the name says what it sets; null for one part (its own button already does it). */
 export function allLabelFor(resourceId: string): string | null {
-  const n = canonPartsFor(resourceId).length;
-  return n >= 3 ? 'All three' : n === 2 ? 'Both' : null;
+  const canon = canonPartsFor(resourceId);
+  if (canon.length < 2) return null;
+  if (canon.length === partsFor(resourceId).length) return canon.length >= 3 ? 'All three' : 'Both';
+  const names = canon.map((part) => PART_MARKS[part]);
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
 /** Sets the Bible for one part, or for every part of the canon it holds when `part` is 'all' (a part it cannot hold keeps its own Bible, and the Septuagint's is left as it is): the Settings keys, the same fact Settings > Study resources sets. */

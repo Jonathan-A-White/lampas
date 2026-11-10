@@ -196,7 +196,7 @@ test('Bibles show the parts they are set for, read from Settings, and choosing o
   // choosing the LES asks which part: it holds the Old Testament, the Apocrypha and the Septuagint, not the New Testament
   await page.getByRole('button', { name: 'Set for… LES' }).click();
   const ask = page.getByRole('group', { name: 'Set LES for' });
-  await expect(ask.getByRole('button')).toHaveText(['Old Testament', 'Apocrypha', 'Septuagint', 'Both']);
+  await expect(ask.getByRole('button')).toHaveText(['Old Testament', 'Apocrypha', 'Septuagint', 'OT and Apocrypha']);
   // a Bible holding one part offers no second button for the same thing
   await page.getByRole('button', { name: 'Set for… Tyndale 1536' }).click();
   await expect(page.getByRole('group', { name: 'Set Tyndale 1536 for' }).getByRole('button')).toHaveText(['New Testament']);
@@ -217,6 +217,15 @@ test('Bibles show the parts they are set for, read from Settings, and choosing o
   await expect(page.getByRole('heading', { name: 'Devotionals', level: 1 })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
   await expectThumbSized(page);
+});
+
+test('choosing one asks which part: the last button sets the parts its name promises (mw-fnvjof.17.51)', async ({ page }) => {
+  await open(page, 'library?kind=bible', 'Bibles');
+  await page.getByRole('button', { name: 'Set for… LES' }).click();
+  await page.getByRole('group', { name: 'Set LES for' }).getByRole('button', { name: 'OT and Apocrypha', exact: true }).click();
+  // the Old Testament and the Apocrypha are LES; the Septuagint stays on Swete, as the name says
+  await expect(page.getByText('NT LSB · OT LES · Apocrypha LES · Septuagint LXX Swete')).toBeVisible();
+  await shot(page, 'library-bibles-ot-and-apocrypha');
 });
 
 test('a typed Resource ID counts in use (mw-fnvjof.17.6)', async ({ page }) => {
