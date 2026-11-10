@@ -16,6 +16,26 @@ const opensInLogos = (url: string): boolean => /^https:\/\/ref\.ly\//.test(url);
 /** The service's addresses are https pages; anything else (a script, a file) is never made a link. */
 const isWeb = (url: string): boolean => /^https:\/\//.test(url);
 
+/** The alternate address when it is a Subsplash one (https on subsplash.com or subspla.sh, or a subdomain of either: the church's short links are brookfieldfirst.subspla.sh/…), else undefined. Subsplash is already trimmed to the sermon, so it is preferred to the row's url (mw-qtu3zvz.49.2). */
+export function subsplashAlt(alt: string | undefined): string | undefined {
+  if (alt === undefined) return undefined;
+  let parsed: URL;
+  try {
+    parsed = new URL(alt);
+  } catch {
+    return undefined;
+  }
+  const host = parsed.hostname.toLowerCase();
+  const subsplash = ['subsplash.com', 'subspla.sh'].some((domain) => host === domain || host.endsWith(`.${domain}`));
+  return parsed.protocol === 'https:' && subsplash ? alt : undefined;
+}
+
+/** The row as the sheet opens it: a Subsplash alternate address opens in place of the url (as a web page, whatever the url was); every other row is as it is. */
+export function openedRow<T extends Pick<SermonRow, 'open' | 'opensIn' | 'alt'>>(row: T): T {
+  const subsplash = subsplashAlt(row.alt);
+  return subsplash === undefined ? row : { ...row, open: { url: subsplash }, opensIn: 'web' };
+}
+
 /** The module's row for one of the service's, or undefined when its reference is none Lampas can hold in the place's book (a book it lacks, a verse past the end). */
 export function rowOfService(row: ServiceSermon, book: string, verses: VerseCounts = canonVerses): SermonRow | undefined {
   if (!isWeb(row.url)) return undefined;
@@ -33,14 +53,15 @@ export function rowOfService(row: ServiceSermon, book: string, verses: VerseCoun
     role: 'text',
     open: { url: row.url },
     opensIn: opensInLogos(row.url) ? 'logos' : 'web',
+    ...(row.alt_url ? { alt: row.alt_url } : {}),
   };
 }
 
 /** What a row of the sheet draws: a sermon's title, the preacher and date where known, and where it opens. The search's rows have no passage to hold, so they are only this. */
-export type LinkRow = Pick<SermonRow, 'id' | 'source' | 'title' | 'preacher' | 'date' | 'open' | 'opensIn'>;
+export type LinkRow = Pick<SermonRow, 'id' | 'source' | 'title' | 'preacher' | 'date' | 'open' | 'opensIn' | 'alt'>;
 
 /** The row of a sermon the service gave, with no passage read. */
-export const linkRowOf = (row: Pick<ServiceSermon, 'source' | 'id' | 'title' | 'url'> & Partial<Pick<ServiceSermon, 'preacher' | 'date'>>): LinkRow | undefined =>
+export const linkRowOf = (row: Pick<ServiceSermon, 'source' | 'id' | 'title' | 'url'> & Partial<Pick<ServiceSermon, 'preacher' | 'date' | 'alt_url'>>): LinkRow | undefined =>
   !isWeb(row.url)
     ? undefined
     : {
@@ -51,6 +72,7 @@ export const linkRowOf = (row: Pick<ServiceSermon, 'source' | 'id' | 'title' | '
         ...(row.date ? { date: row.date } : {}),
         open: { url: row.url },
         opensIn: opensInLogos(row.url) ? 'logos' : 'web',
+        ...(row.alt_url ? { alt: row.alt_url } : {}),
       };
 
 /** The row of a search hit that is a sermon (it has an address); a theme has none. */

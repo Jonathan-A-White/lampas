@@ -31,6 +31,8 @@ export interface SermonRow {
   open: { url: string; fallback?: string };
   /** where it opens, for the row's second line: 'web' in the browser, 'logos' in his Logos library */
   opensIn: 'web' | 'logos';
+  /** a second address of the sermon (the index's alt_url: a Spurgeon PDF, a church's Subsplash link); the sheet opens it in place of `open` only where it is on Subsplash (subsplashAlt, merge.ts) */
+  alt?: string;
 }
 
 export interface SermonSource {

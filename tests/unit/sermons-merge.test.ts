@@ -1,6 +1,6 @@
 // The merge of the bundled sermons of a place with the sermon index service's (mw-qtu3zvz.5, src/sermons/merge.ts, docs/sermons.md 'When online'): pure.
 import { describe, expect, it } from 'vitest';
-import { linkRowOfHit, mergeServiceRows, rowOfService } from '../../src/sermons/merge';
+import { linkRowOf, linkRowOfHit, mergeServiceRows, rowOfService, subsplashAlt } from '../../src/sermons/merge';
 import type { ServiceHit, ServiceSermon } from '../../src/services/sermons';
 import { groupAnswers } from '../../src/sermons/sermonsFor';
 import { row } from '../support/sermon-sources';
@@ -127,5 +127,27 @@ describe('linkRowOfHit', () => {
     expect(linkRowOfHit(hit({}))).toMatchObject({ id: '1', source: 'a', title: 'T', open: { url: 'https://sermons.test/t' }, opensIn: 'web' });
     expect(linkRowOfHit(hit({ kind: 'theme', url: null }))).toBeUndefined();
     expect(linkRowOfHit(hit({ url: 'http://insecure.test' }))).toBeUndefined();
+  });
+});
+
+describe('the alternate address (mw-qtu3zvz.49.2)', () => {
+  it('rowOfService and linkRowOf carry a service row’s alt_url, and a row with none has none', () => {
+    const alt = 'https://brookfieldfirst.subspla.sh/q59d572';
+    expect(rowOfService(sermon({ source: 'a', id: '1', alt_url: alt }), 'rom')?.alt).toBe(alt);
+    expect(linkRowOf(sermon({ source: 'a', id: '1', alt_url: alt }))?.alt).toBe(alt);
+    expect('alt' in rowOfService(sermon({ source: 'a', id: '1', alt_url: null }), 'rom')!).toBe(false);
+    expect('alt' in linkRowOf(sermon({ source: 'a', id: '1', alt_url: null }))!).toBe(false);
+    expect('alt' in linkRowOf({ source: 'a', id: '1', title: 't', url: 'https://sermons.test/a' })!).toBe(false);
+  });
+
+  it('subsplashAlt is the alt address only on subsplash.com or subspla.sh (https), else undefined', () => {
+    expect(subsplashAlt('https://brookfieldfirst.subspla.sh/q59d572')).toBe('https://brookfieldfirst.subspla.sh/q59d572');
+    expect(subsplashAlt('https://subsplash.com/u/-abc/media/d/xyz')).toBe('https://subsplash.com/u/-abc/media/d/xyz');
+    expect(subsplashAlt('https://www.subsplash.com/x')).toBe('https://www.subsplash.com/x');
+    expect(subsplashAlt('https://www.spurgeongems.org/sermon/chs1.pdf')).toBeUndefined();
+    expect(subsplashAlt('https://evilsubsplash.com/x')).toBeUndefined();
+    expect(subsplashAlt('https://subsplash.com.evil.test/x')).toBeUndefined();
+    expect(subsplashAlt('http://subsplash.com/x')).toBeUndefined();
+    expect(subsplashAlt(undefined)).toBeUndefined();
   });
 });
