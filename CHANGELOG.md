@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.197
+_2026-11-10_
+- Fixed: double-tapping Noun endings on a Septuagint word printed in capitals no longer leaves the Word sheet open over the table.
+
 ## 0.7.196
 _2026-11-10_
 - Fixed: a screen reader now says "Verses 8-9" for a Septuagint verse number that covers two verses, instead of only the first.

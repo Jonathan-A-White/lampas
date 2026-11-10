@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.197",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.334",
+    "kind": "fixed",
+    "text": "double-tapping Noun endings on a Septuagint word printed in capitals no longer leaves the Word sheet open over the table."
+  },
+  {
     "version": "0.7.196",
     "date": "2026-11-10",
     "story": "mw-u2w5klk.330",
