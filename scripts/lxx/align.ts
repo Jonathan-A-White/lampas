@@ -368,10 +368,27 @@ export const SUPPLIED_FOR_VERB = new Set(['let', 'there', 'it', 'he', 'she', 'th
 /** 'us' and 'them' are often the object of the verb before them ('blessed them'), so they lead a verb only after 'let' ('Let us make', 'let them be'): a run of supplied words does not start with one. */
 const OBJECT_WORDS = new Set(['us', 'them']);
 
+/** Words that may stand between a supplied-for-verb run and its verb without ending the reach: 'I have not found', 'let us there make', 'we shall never see'. */
+const BETWEEN_WORDS = new Set(['not', 'there', 'never', 'also']);
+
+const MOODS = /^V-\w*([IMSO])-([123])[SP]$/;
+
+/** Whether a Greek parsing is a finite verb; `jussive` narrows it to a verb a 'Let' can lead: the third-person imperative, the subjunctive in the first or third person ('Let us make'). */
+function finiteVerb(parse: string, jussive: boolean): boolean {
+  const m = MOODS.exec(parse);
+  if (!m) return false;
+  return !jussive || (m[1] === 'M' && m[2] === '3') || (m[1] === 'S' && m[2] !== '2');
+}
+
 /**
  * The last words of a chunk with no Greek, when they are such words and a chunk of a Greek verb follows, join that chunk ('Let there' + 'be' is 'Let there be'), so a tap on the leading half of the
  * phrase finds the verb; the words before them stay a chunk of their own ('And he' + 'called' is 'And' and 'he called'). The verb's chunk keeps its `g`, `c` and `y`; the supplied marks of both parts
  * are kept, at their place among the joined words. `e` of each Greek word follows its chunk.
+ *
+ * When the verb is not the next chunk (mw-u2w5klk.274.14, .15) the words cannot join it: 'Let us' + 'not' + 'kill' ('Let us not kill him', Genesis 37:21), 'I have' + 'not' + 'found', 'let us' + 'there' + 'make',
+ * 'Let' + 'the water' + 'be collected'. They stay a chunk of their own and are paired to the verb's Greek word, with a confidence of 0.5, without joining: the verb's Greek word keeps pointing at the verb's own
+ * chunk, and a tap on either English chunk opens the verb's sheet. After 'not', 'there', 'never' or 'also' any finite verb is the verb; after 'let' the verb is the first third-person imperative or subjunctive
+ * ahead in the clause (not past a comma, a full stop or another finite verb), however many words of the subject lie between.
  */
 function joinSupplied(verse: Verse): Verse {
   const isVerb = (chunk: EnglishChunk | undefined): chunk is EnglishChunk => chunk !== undefined && chunk.g.some((k) => verse.g[k]?.p.startsWith('V-'));
@@ -385,18 +402,44 @@ function joinSupplied(verse: Verse): Verse {
     while (n > 0 && OBJECT_WORDS.has(lettersOf(words[words.length - n]))) n--;
     return chunk.g.length === 0 ? n : 0;
   };
-  if (!verse.e.some((chunk, i) => tailOf(chunk) > 0 && isVerb(verse.e[i + 1]))) return verse;
+  /** the Greek word a run of supplied words that does not stand directly before its verb belongs to, or undefined */
+  const verbAhead = (i: number, tail: number): number | undefined => {
+    const words = wordsOf(verse.e[i]);
+    const leadsLet = lettersOf(words[words.length - tail]) === 'let';
+    // nothing but 'not' and 'there' between: any finite verb is the verb ('Let us not kill', Greek future); further off, a 'Let' wants a verb of its own mood
+    let near = true;
+    for (let j = i + 1; j < verse.e.length && j <= i + 12; j++) {
+      const chunk = verse.e[j];
+      const finite = chunk.g.filter((k) => finiteVerb(verse.g[k]?.p ?? '', leadsLet && !near));
+      if (finite.length > 0) return finite[0];
+      const between = wordsOf(chunk).length === 1 && BETWEEN_WORDS.has(lettersOf(chunk.t));
+      if (!between) near = false;
+      if (leadsLet) {
+        // a 'Let' reaches over its subject, but not out of its clause, past another finite verb or into another 'let'
+        if (chunk.g.some((k) => finiteVerb(verse.g[k]?.p ?? '', false)) || /[,;.:?!]$/.test(chunk.t) || tailOf(chunk) > 0) return undefined;
+      } else if (!between) return undefined;
+    }
+    return undefined;
+  };
+  const plan = verse.e.map((chunk, i): { tail: number; to?: number } | null => {
+    const tail = tailOf(chunk);
+    if (tail === 0) return null;
+    if (isVerb(verse.e[i + 1])) return { tail };
+    const to = verbAhead(i, tail);
+    return to === undefined ? null : { tail, to };
+  });
+  if (plan.every((p) => p === null)) return verse;
   const e: EnglishChunk[] = [];
   for (let i = 0; i < verse.e.length; i++) {
     const chunk = verse.e[i];
     const next = verse.e[i + 1];
-    const tail = isVerb(next) ? tailOf(chunk) : 0;
-    if (tail === 0) {
+    const how = plan[i];
+    if (how === null) {
       e.push(chunk);
       continue;
     }
     const words = wordsOf(chunk);
-    const cut = words.length - tail;
+    const cut = words.length - how.tail;
     if (cut > 0) {
       const head: EnglishChunk = { ...chunk, t: words.slice(0, cut).join(' ') };
       const headS = (chunk.s ?? []).filter((k) => k < cut);
@@ -404,7 +447,15 @@ function joinSupplied(verse: Verse): Verse {
       else delete head.s;
       e.push(head);
     }
-    const s = [...(chunk.s ?? []).filter((k) => k >= cut).map((k) => k - cut), ...(next.s ?? []).map((k) => k + tail)];
+    const ownS = (chunk.s ?? []).filter((k) => k >= cut).map((k) => k - cut);
+    if (how.to !== undefined) {
+      // paired without joining: the verb is not the next chunk
+      const lead: EnglishChunk = { t: words.slice(cut).join(' '), g: [how.to], c: 0.5, y: 'align' };
+      if (ownS.length > 0) lead.s = ownS;
+      e.push(lead);
+      continue;
+    }
+    const s = [...ownS, ...(next.s ?? []).map((k) => k + how.tail)];
     const joined: EnglishChunk = { t: `${words.slice(cut).join(' ')} ${next.t}`, g: [...next.g] };
     if (s.length > 0) joined.s = s;
     if (next.c !== undefined) joined.c = next.c;
@@ -417,6 +468,7 @@ function joinSupplied(verse: Verse): Verse {
     delete word.e;
     return word;
   });
+  // a Greek word points at the last chunk that holds it: the verb's own, which follows the English words paired to it
   e.forEach((chunk, i) => chunk.g.forEach((k) => (g[k].e = i)));
   return { ...verse, g, e };
 }
@@ -464,13 +516,15 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
     share.sure = 0;
     share.pairedTokens = 0;
     for (const verse of modelled.chapter.verses) {
-      for (const chunk of verse.e) {
-        if (chunk.g.length === 0) continue;
-        share.paired += chunk.g.length;
-        if (round2(chunk.c ?? 0) >= SURE) share.sure += chunk.g.length;
-        if (chunk.y === 'model') share.model += chunk.g.length;
+      verse.e.forEach((chunk, i) => {
+        // a Greek word is counted once, at the chunk it points at (joinSupplied pairs the words that lead a verb to it as well)
+        const own = chunk.g.filter((k) => verse.g[k]?.e === i);
+        if (chunk.g.length === 0) return;
+        share.paired += own.length;
+        if (round2(chunk.c ?? 0) >= SURE) share.sure += own.length;
+        if (chunk.y === 'model') share.model += own.length;
         share.pairedTokens += chunk.t.split(/\s+/).filter(Boolean).length;
-      }
+      });
     }
   }
   return { chapter: modelled.chapter, share, stale: modelled.stale };
