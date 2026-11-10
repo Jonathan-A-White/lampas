@@ -13,6 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTutor } from './open-tutor';
@@ -72,7 +73,7 @@ const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
 const turn = () => sheet().querySelector<HTMLElement>('[data-turn]') as HTMLElement;
 
 async function askAboutVerse28(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Verse 28' }));
+  await user.click(await findButton('Verse 28'));
   await screen.findByRole('region', { name: 'Verse view' });
   await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
