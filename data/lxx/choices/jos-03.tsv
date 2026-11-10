@@ -1,0 +1,761 @@
+ref	parsing	lemma	mark	confidence	note
+Jos.12:1#8	V-2AAI-3P	ἀναιρέω		0.80	
+Jos.12:1#11	N-GSM	Ἰσρηάλ		0.80	
+Jos.12:1#16	P-GPM	αὐτός		0.80	
+Jos.12:1#24	N-GSF	φάραγξ		0.80	
+Jos.12:1#25	N-GSM	Ἀρνών		0.80	
+Jos.12:1#29	N-GSM	Ἁερμών		0.80	
+Jos.12:1#34	N-ASF	Ἀραβά	guess	0.40	guess: the model chose outside the candidates
+Jos.12:2#1	N-ASM	Σηών	guess	0.40	guess: the model chose outside the candidates
+Jos.12:2#4	T-GPM	ὁ		0.80	
+Jos.12:2#5	N-GPM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
+Jos.12:2#7	V-IAI-3S	κατοικέω		0.80	
+Jos.12:2#9	N-DSF	Ἐσεβών		0.80	
+Jos.12:2#12	N-GSM	Ἀρνών		0.80	
+Jos.12:2#13	R-NSF	ὅς, ἥ		0.80	
+Jos.12:2#19	N-ASN	μέρος		0.80	
+Jos.12:2#23	T-ASN	ὁ		0.80	
+Jos.12:2#24	A-ASN	ἥμισυς		0.80	
+Jos.12:2#28	N-GSM	Ἰαβόκ		0.80	
+Jos.12:2#29	N-APN	ὅριον		0.80	
+Jos.12:2#31	N-GSM	Ἀμμών		0.80	
+Jos.12:3#2	N-ASF	Ἀραβά	guess	0.40	guess: the model chose outside the candidates
+Jos.12:3#6	N-GSF	Χενέρεθ		0.80	
+Jos.12:3#8	N-APF	ἀνατολή		0.80	
+Jos.12:3#13	N-GSF	Ἀραβά	guess	0.40	guess: the model chose outside the candidates
+Jos.12:3#15	T-GPM	ὁ		0.80	
+Jos.12:3#16	N-GPM	ἅλς		0.80	
+Jos.12:3#22	N-ASF	Ἁσειμώθ		0.80	
+Jos.12:3#24	N-GSF	Θαιμάν		0.80	
+Jos.12:3#27	N-ASF	Μηδώθ		0.80	
+Jos.12:3#28	N-ASF	Φασγά	unsure	0.50	model: unsure
+Jos.12:4#2	N-NSM	Ὢγ	guess	0.40	guess: the model answered with no candidates
+Jos.12:4#4	N-GSF	Βασά		0.80	
+Jos.12:4#5	V-API-3S	ὑπολείπω		0.80	
+Jos.12:4#7	T-GPM	ὁ		0.80	
+Jos.12:4#8	N-GPM	γίγας	guess	0.40	guess: the model answered with no candidates
+Jos.12:4#12	N-DSF	Ἀσταρώθ		0.80	
+Jos.12:4#15	N-DSF	Ἐδράειν	guess	0.40	guess: the model chose outside the candidates
+Jos.12:5#4	N-GSM	Ἁερμών		0.80	
+Jos.12:5#7	N-GSF	Σεκχαί		0.80	
+Jos.12:5#14	N-GSM	Γεργεσεί		0.80	
+Jos.12:5#17	N-ASF	Μαχεί		0.80	
+Jos.12:5#19	T-ASN	ὁ		0.80	
+Jos.12:5#20	A-ASN	ἥμισυς		0.80	
+Jos.12:5#21	N-GSF	Γαλαάδ		0.80	
+Jos.12:5#23	N-GSM	Σηών		0.80	
+Jos.12:5#25	N-GSF	Ἑσεβών		0.80	
+Jos.12:6#8	N-GSM	Ἰσραήλ		0.80	
+Jos.12:6#16	N-DSF	κληρονομία		0.80	
+Jos.12:6#17	N-DSM	Ῥουβήν		0.80	
+Jos.12:6#19	N-DSM	Γάδ		0.80	
+Jos.12:6#21	T-DSM	ὁ		0.80	
+Jos.12:6#22	A-DSM	ἥμισυς		0.80	
+Jos.12:6#24	N-GSM	Μανασσῆς		0.80	
+Jos.12:7#5	T-GPM	ὁ		0.80	
+Jos.12:7#6	N-GPM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
+Jos.12:7#13	N-GSM	Ἰσραήλ		0.80	
+Jos.12:7#15	T-DSN	ὁ		0.80	
+Jos.12:7#21	N-ASF	Βαλαγαδά	unsure	0.50	model: unsure
+Jos.12:7#29	N-GSM	Χελχά		0.80	
+Jos.12:7#30	V-PAP-GPM	ἀναβαίνω	unsure	0.50	model: unsure
+Jos.12:7#32	N-ASM	Σηείρ		0.80	
+Jos.12:7#39	N-GSM	Ἰσραήλ		0.80	
+Jos.12:7#43	P-GPF	αὐτός	unsure	0.50	model: unsure
+Jos.12:8#10	N-DSF	Ἀραβά	guess	0.40	guess: the model chose outside the candidates
+Jos.12:8#13	N-DSF	Ἀσηδώθ		0.80	
+Jos.12:8#19	N-DSF	Νάγεβ		0.80	
+Jos.12:8#21	N-ASM	Χετταῖος	guess	0.40	guess: the model answered with no candidates
+Jos.12:8#24	N-ASM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
+Jos.12:8#30	N-ASM	Φερεζαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.12:8#33	N-ASM	Εὑαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.12:8#36	N-ASM	Ἰεβουσαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.12:9#4	N-GSF	Ἱεριχώ		0.80	
+Jos.12:9#10	R-NSF	ὅς, ἥ		0.80	
+Jos.12:9#12	ADV	πλησίον		0.80	
+Jos.12:9#13	N-GSF	Βαιθήλ		0.80	
+Jos.12:10#2	N-GSF	Ἱερουσαλήμ		0.80	
+Jos.12:10#4	N-GSF	Χεβρών		0.80	
+Jos.12:11#2	N-GSF	Ἰερειμούθ		0.80	
+Jos.12:11#4	N-GSF	Λαχείς	guess	0.40	guess: the model answered with no candidates
+Jos.12:12#2	N-GSF	Αἰλάμ	guess	0.40	guess: the model chose outside the candidates
+Jos.12:12#4	N-GSF	Γάζερ		0.80	
+Jos.12:13#2	N-GSF	Δαβείρ	guess	0.40	guess: the model chose outside the candidates
+Jos.12:13#4	N-GSF	Ἄσει	guess	0.40	guess: the model answered with no candidates
+Jos.12:14#2	N-GSF	Ἑρμάθ		0.80	
+Jos.12:14#4	N-GSF	Αἰράθ		0.80	
+Jos.12:14#6	N-GSF	Ἀράθ		0.80	
+Jos.12:15#2	N-GSF	Λεβνά		0.80	
+Jos.12:15#4	N-GSF	Ὀδολλάμ		0.80	
+Jos.12:16#2	N-GSF	Ἠλάδ		0.80	
+Jos.12:17#2	N-GSF	Ἀταφόυτ		0.80	
+Jos.12:17#4	N-GSF	Ὅφερ		0.80	
+Jos.12:18#2	N-GSF	Ὀφέκ		0.80	
+Jos.12:19#2	N-GSF	Ἁσόμ		0.80	
+Jos.12:20#2	N-GSF	Συμοών		0.80	
+Jos.12:20#4	N-GSF	Μαμρώθ		0.80	
+Jos.12:20#6	N-GSF	Ἀζείφ		0.80	
+Jos.12:21#2	N-GSF	Κάδης	guess	0.40	guess: the model chose outside the candidates
+Jos.12:21#4	N-GSF	Ζακάχ		0.80	
+Jos.12:21#6	N-GSF	Μαρεδώθ		0.80	
+Jos.12:21#9	N-GSF	Ἰεκόμ		0.80	
+Jos.12:21#10	T-GSM	ὁ		0.80	
+Jos.12:21#11	N-GSM	Χερμέλ		0.80	
+Jos.12:23#2	N-GSF	Ἐλδώμ		0.80	
+Jos.12:23#3	T-GSM	ὁ		0.80	
+Jos.12:23#4	N-GSM	Φεννεδδώρ		0.80	
+Jos.12:23#6	N-GSF	Γεεί		0.80	
+Jos.12:24#2	N-GSF	Θαρσά		0.80	
+Jos.12:24#5	N-NPM	βασιλεύς		0.80	
+Jos.13:1#19	V-RPI-3S	ὑπολείπω	guess	0.40	guess: the model answered with no candidates
+Jos.13:2#5	V-RPP-NSF	καταλείπω	guess	0.40	guess: the model answered with no candidates
+Jos.13:2#6	N-NPN	ὅριον	unsure	0.50	model: unsure
+Jos.13:2#7	N-GSM	Φυλιστιείμ		0.80	
+Jos.13:3#6	N-ASN	πρόσωπον		0.80	
+Jos.13:3#11	N-GSF	Ἀκκαρών		0.80	
+Jos.13:3#13	A-GPN	εὐώνυμος		0.80	
+Jos.13:3#14	T-GPM	ὁ		0.80	
+Jos.13:3#15	A-GPM	Χανααναῖος		0.80	
+Jos.13:3#19	N-DPF	σατραπεία		0.80	
+Jos.13:3#20	T-GPM	ὁ		0.80	
+Jos.13:3#21	N-GSM	Φυλιστιέμ		0.80	
+Jos.13:3#22	T-DSM	ὁ		0.80	
+Jos.13:3#23	N-DSM	Γαζαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.13:3#25	T-DSM	ὁ		0.80	
+Jos.13:3#26	N-DSM	Ἀζώτειος	guess	0.40	guess: the model answered with no candidates
+Jos.13:3#28	T-DSM	ὁ		0.80	
+Jos.13:3#29	N-DSM	Ἀσκαλωνείτης	guess	0.40	guess: the model answered with no candidates
+Jos.13:3#31	T-DSM	ὁ		0.80	
+Jos.13:3#32	N-DSM	Γεθθαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.13:3#34	T-DSM	ὁ		0.80	
+Jos.13:3#35	N-DSM	Ἀκκαρωνείτης	guess	0.40	guess: the model answered with no candidates
+Jos.13:3#37	T-DSM	ὁ		0.80	
+Jos.13:3#38	N-DSM	Εὐαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.13:4#2	N-GSF	Θαιμάν		0.80	
+Jos.13:4#6	N-GSM	Χανάαν	guess	0.40	guess: the model answered with no candidates
+Jos.13:4#7	PREP	ἐναντίον		0.80	
+Jos.13:4#8	N-GSF	Γάζα		0.80	
+Jos.13:4#13	N-GSF	Ταφέκ		0.80	
+Jos.13:4#17	T-GPM	ὁ		0.80	
+Jos.13:4#18	N-GPM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
+Jos.13:5#5	N-ASF	Γαλιάθ	unsure	0.50	model: unsure
+Jos.13:5#6	N-GSM	Φυλιστιείμ		0.80	
+Jos.13:5#8	A-ASM	πᾶς		0.80	
+Jos.13:5#15	N-GSF	Γαλγαά		0.80	
+Jos.13:5#17	T-ASN	ὁ		0.80	
+Jos.13:5#18	N-ASN	ὄρος		0.80	
+Jos.13:5#19	T-ASN	ὁ		0.80	
+Jos.13:5#20	N-ASM	Ἁερμών	unsure	0.50	model: unsure
+Jos.13:5#24	N-GSF	Ἑμάθ		0.80	
+Jos.13:6#17	V-FAI-1S	ἐξολεθρεύω		0.80	
+Jos.13:6#20	N-GSM	Ἰσραήλ		0.80	
+Jos.13:6#26	T-DSM	ὁ		0.80	
+Jos.13:6#27	N-DSM	Ἰσραήλ		0.80	
+Jos.13:7#8	N-DSF	κληρονομία		0.80	
+Jos.13:7#13	T-DSM	ὁ		0.80	
+Jos.13:7#14	A-DSM	ἥμισυς		0.80	
+Jos.13:7#16	N-GSM	Μανασσῆς		0.80	
+Jos.13:7#18	T-GSM	ὁ		0.80	
+Jos.13:7#19	N-GSM	Ἰορδάνης	guess	0.40	guess: the model answered with no candidates
+Jos.13:7#34	V-FAI-3S	ὁρίζω		0.80	
+Jos.13:8#4	T-DSM	ὁ		0.80	
+Jos.13:8#5	A-DSM	ἥμισυς		0.80	
+Jos.13:8#7	N-GSM	Μανασσῆς		0.80	
+Jos.13:8#8	T-DSM	ὁ		0.80	
+Jos.13:8#9	N-DSM	Ῥουβήν		0.80	
+Jos.13:8#11	T-DSM	ὁ		0.80	
+Jos.13:8#12	N-DSM	Γάδ		0.80	
+Jos.13:8#16	T-DSN	ὁ		0.80	
+Jos.13:8#21	N-APF	ἀνατολή		0.80	
+Jos.13:8#24	P-DSM	αὐτός		0.80	
+Jos.13:9#2	N-GSF	Ἀροήρ		0.80	
+Jos.13:9#3	R-NSF	ὅς, ἥ		0.80	
+Jos.13:9#9	N-GSM	Ἀρνών		0.80	
+Jos.13:9#15	A-DSN	μέσος		0.80	
+Jos.13:9#23	N-GSF	Δαιδαβάν		0.80	
+Jos.13:10#4	N-GSM	Σηών		0.80	
+Jos.13:10#6	N-GPM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
+Jos.13:10#10	N-DSF	Ἑσεβών		0.80	
+Jos.13:10#15	N-GSM	Ἀμμών		0.80	
+Jos.13:11#3	N-ASF	Γαλααδεῖτις	guess	0.40	guess: the model answered with no candidates
+Jos.13:11#5	T-APN	ὁ		0.80	
+Jos.13:11#6	N-APN	ὅριον		0.80	
+Jos.13:11#7	N-GSM	Γεσειρεί		0.80	
+Jos.13:11#9	T-GSM	ὁ		0.80	
+Jos.13:11#10	N-GSM	Μαχατεί		0.80	
+Jos.13:11#11	A-ASN	πᾶς		0.80	
+Jos.13:11#12	N-ASN	ὄρος		0.80	
+Jos.13:11#13	N-ASM	Ἁερμών	unsure	0.50	model: unsure
+Jos.13:11#17	N-ASF	Βασανῖτις	guess	0.40	guess: the model answered with no candidates
+Jos.13:11#19	N-GSF	Ἀχά		0.80	
+Jos.13:12#4	N-GSM	Ὢγ	guess	0.40	guess: the model answered with no candidates
+Jos.13:12#7	N-DSF	Βασανῖτις	guess	0.40	guess: the model answered with no candidates
+Jos.13:12#11	N-DSF	Ἐδράειν	guess	0.40	guess: the model chose outside the candidates
+Jos.13:12#14	N-DSF	Ἀσταρώθ		0.80	
+Jos.13:12#18	T-GPM	ὁ		0.80	
+Jos.13:12#19	N-GPM	γίγας	guess	0.40	guess: the model answered with no candidates
+Jos.13:13#6	N-GSM	Ἰσραήλ		0.80	
+Jos.13:13#16	V-IAI-3S	κατοικέω		0.80	
+Jos.13:13#18	N-GSM	Γεσειρεί		0.80	
+Jos.13:13#25	N-GSM	Ἰσραήλ		0.80	
+Jos.13:13#29	N-GSF	ἡμέρα		0.80	
+Jos.13:14#1	PREP	πλήν		0.80	
+Jos.13:14#4	N-GSM	Λευΐ		0.80	
+Jos.13:14#11	N-GSM	Ἰσραήλ		0.80	
+Jos.13:14#13	P-GPM	αὐτός		0.80	
+Jos.13:14#17	P-DPM	αὐτός		0.80	
+Jos.13:14#18	N-NSM	κύριος		0.80	
+Jos.13:14#28	N-GSM	Ἰσραήλ		0.80	
+Jos.13:14#30	N-DSF	Ἀραβώθ		0.80	
+Jos.13:14#31	N-GSM	Μωάβ		0.80	
+Jos.13:14#33	T-DSN	ὁ		0.80	
+Jos.13:14#38	N-ASF	Ἱεριχώ		0.80	
+Jos.13:15#6	N-GSM	Ῥουβήν		0.80	
+Jos.13:15#9	P-GPM	αὐτός		0.80	
+Jos.13:16#3	P-GPM	αὐτός		0.80	
+Jos.13:16#4	T-NPN	ὁ		0.80	
+Jos.13:16#5	N-NPN	ὅριον		0.80	
+Jos.13:16#7	N-GSF	Ἀροήρ		0.80	
+Jos.13:16#8	R-NSF	ὅς, ἥ		0.80	
+Jos.13:16#11	N-ASN	πρόσωπον		0.80	
+Jos.13:16#12	N-GSF	φάραγξ		0.80	
+Jos.13:16#13	N-GSM	Ἀρνών		0.80	
+Jos.13:16#21	N-GSM	Ἀρνών		0.80	
+Jos.13:17#2	N-GSF	Ἑσεβών		0.80	
+Jos.13:17#13	N-ASF	Δαιβών		0.80	
+Jos.13:17#15	N-ASF	Βαιμών		0.80	
+Jos.13:17#16	N-ASF	Βάαλ	unsure	0.50	model: unsure
+Jos.13:17#19	N-GSF	Μεελβώθ		0.80	
+Jos.13:18#2	N-ASF	Βασάν	guess	0.40	guess: the model answered with no candidates
+Jos.13:18#4	N-ASF	Βακεδμώθ		0.80	
+Jos.13:18#6	N-ASF	Μαιφάαθ		0.80	
+Jos.13:19#2	N-ASF	Καριαθάιμ		0.80	
+Jos.13:19#4	N-ASF	Σεβαμά		0.80	
+Jos.13:19#6	N-ASF	Σεραδά		0.80	
+Jos.13:19#12	N-DSM	Ἔναβ		0.80	
+Jos.13:20#2	N-ASF	Βαιθφογώρ		0.80	
+Jos.13:20#4	N-ASF	Ἀσηδώθ		0.80	
+Jos.13:20#5	N-ASF	Φασγά		0.80	
+Jos.13:20#7	N-ASF	Βαιθθασεινώθ		0.80	
+Jos.13:21#5	T-GSM	ὁ		0.80	
+Jos.13:21#6	N-GSM	Μεισώρ		0.80	
+Jos.13:21#11	T-GSM	ὁ		0.80	
+Jos.13:21#12	N-GSM	Σηών		0.80	
+Jos.13:21#14	T-GPM	ὁ		0.80	
+Jos.13:21#15	N-GPM	Ἀμορραῖος	guess	0.40	guess: the model answered with no candidates
+Jos.13:21#23	N-GSM	Μαδιάν		0.80	
+Jos.13:21#32	N-ASM	Σουρ		0.80	
+Jos.13:21#38	N-ASM	Ῥόβε	guess	0.40	guess: the model answered with no candidates
+Jos.13:21#40	N-APN	ἔναρα	guess	0.40	guess: the model answered with no candidates
+Jos.13:21#41	N-GSM	Σειών		0.80	
+Jos.13:21#45	N-ASM	Σειών	unsure	0.50	model: unsure
+Jos.13:22#5	T-GSM	ὁ		0.80	
+Jos.13:22#6	N-GSM	Βεώρ		0.80	
+Jos.13:23#3	T-NPN	ὁ		0.80	
+Jos.13:23#4	N-NPN	ὅριον		0.80	
+Jos.13:23#5	N-GSM	Ῥουβήν		0.80	
+Jos.13:23#6	N-NSM	Ἰορδάνης		0.80	
+Jos.13:23#7	N-NSN	ὅριον		0.80	
+Jos.13:23#12	N-GSM	Ῥουβήν		0.80	
+Jos.13:23#15	P-GPM	αὐτός		0.80	
+Jos.13:23#18	P-GPM	αὐτός		0.80	
+Jos.13:23#22	P-GPM	αὐτός		0.80	
+Jos.13:24#6	N-GSM	Γάδ		0.80	
+Jos.13:24#9	P-GPM	αὐτός		0.80	
+Jos.13:25#3	T-NPN	ὁ		0.80	
+Jos.13:25#4	N-NPN	ὅριον		0.80	
+Jos.13:25#5	P-GPM	αὐτός		0.80	
+Jos.13:25#6	N-NSF	Ἰαζήρ		0.80	
+Jos.13:25#10	N-GSF	Γαλαάδ		0.80	
+Jos.13:25#12	T-ASN	ὁ		0.80	
+Jos.13:25#13	A-ASN	ἥμισυς		0.80	
+Jos.13:25#16	N-GSM	Ἀμμών		0.80	
+Jos.13:25#18	N-GSF	Ἀραβά	guess	0.40	guess: the model chose outside the candidates
+Jos.13:25#19	R-NSF	ὅς, ἥ		0.80	
+Jos.13:25#22	N-ASN	πρόσωπον		0.80	
+Jos.13:25#23	N-GSF	Ἀράδ		0.80	
+Jos.13:26#3	N-GSF	Ἑσεβών		0.80	
+Jos.13:26#5	N-GSF	Ἀραβώθ		0.80	
+Jos.13:26#10	N-ASF	Βοτανεί		0.80	
+Jos.13:26#12	N-ASF	Βαάν		0.80	
+Jos.13:26#16	N-GSF	Δαιβών		0.80	
+Jos.13:27#2	N-ASF	Ἐναδώμ		0.80	
+Jos.13:27#4	N-ASF	Ὀθαργαεί		0.80	
+Jos.13:27#6	N-ASF	Βαινθαναβρά		0.80	
+Jos.13:27#8	N-ASF	Σοκχωθά		0.80	
+Jos.13:27#10	N-ASF	Σαφάν		0.80	
+Jos.13:27#15	N-GSM	Σηών		0.80	
+Jos.13:27#17	N-GSF	Ἑσεβών		0.80	
+Jos.13:27#21	V-FAI-3S	ὁρίζω		0.80	
+Jos.13:27#26	N-GSF	Χενέρεθ		0.80	
+Jos.13:28#5	N-GSM	Γάδ		0.80	
+Jos.13:28#8	P-GPM	αὐτός		0.80	
+Jos.13:28#9	N-ASM	αὐχήν		0.80	
+Jos.13:28#10	V-FAI-3P	ἐπιστρέφω		0.80	
+Jos.13:28#11	PREP	ἐναντίον		0.80	
+Jos.13:28#14	P-GPM	αὐτός		0.80	
+Jos.13:28#19	P-GPM	αὐτός		0.80	
+Jos.13:28#22	P-GPM	αὐτός		0.80	
+Jos.13:28#26	P-GPM	αὐτός		0.80	
+Jos.13:29#4	T-DSM	ὁ		0.80	
+Jos.13:29#5	A-DSM	ἥμισυς		0.80	
+Jos.13:29#7	N-GSM	Μανασσῆς		0.80	
+Jos.13:29#10	P-GPM	αὐτός		0.80	
+Jos.13:30#3	T-NPN	ὁ		0.80	
+Jos.13:30#4	N-NPN	ὅριον		0.80	
+Jos.13:30#5	P-GPM	αὐτός		0.80	
+Jos.13:30#7	N-GSF	Μαανά		0.80	
+Jos.13:30#11	N-GSF	Βασανεί		0.80	
+Jos.13:30#15	N-GSM	Ὤγ	guess	0.40	guess: the model answered with no candidates
+Jos.13:30#17	N-GSF	Βασάν		0.80	
+Jos.13:30#22	N-GSM	Ἰαείρ		0.80	
+Jos.13:30#23	R-NPF	ὅς, ἥ		0.80	
+Jos.13:30#27	N-DSF	Βασανῖτις	guess	0.40	guess: the model answered with no candidates
+Jos.13:30#29	N-APF	πόλις		0.80	
+Jos.13:31#2	T-ASN	ὁ		0.80	
+Jos.13:31#3	A-ASN	ἥμισυς		0.80	
+Jos.13:31#8	N-DSF	Ἀσταρώθ		0.80	
+Jos.13:31#11	N-DSF	Ἐδράειν	guess	0.40	guess: the model chose outside the candidates
+Jos.13:31#12	N-APF	πόλις	unsure	0.50	model: unsure
+Jos.13:31#13	N-GSF	βασιλεία		0.80	
+Jos.13:31#14	N-GSM	Ὤγ	guess	0.40	guess: the model answered with no candidates
+Jos.13:31#16	N-DSF	Βασανῖτις	guess	0.40	guess: the model answered with no candidates
+Jos.13:31#17	T-DPM	ὁ		0.80	
+Jos.13:31#18	N-GSM	Μαχείρ		0.80	
+Jos.13:31#20	N-GSM	Μανασσῆς		0.80	
+Jos.13:31#22	T-DPM	ὁ		0.80	
+Jos.13:31#23	A-DPM	ἥμισυς	guess	0.40	guess: the model answered with no candidates
+Jos.13:31#25	N-GSM	Μαχείρ		0.80	
+Jos.13:31#27	N-GSM	Μανασσῆς		0.80	
+Jos.13:31#30	P-GPM	αὐτός		0.80	
+Jos.13:32#9	N-DSF	Ἀραβώθ		0.80	
+Jos.13:32#10	N-GSM	Μωάβ		0.80	
+Jos.13:32#12	T-DSN	ὁ		0.80	
+Jos.13:32#16	T-GSM	ὁ		0.80	
+Jos.13:32#18	N-ASF	Ἱεριχώ		0.80	
+Jos.14:1#6	N-GSM	Ἰσραήλ		0.80	
+Jos.14:1#10	N-GSF	Χαναάν		0.80	
+Jos.14:1#11	R-DPM	ὅς, ἥ		0.80	
+Jos.14:1#13	P-DPM	αὐτός		0.80	
+Jos.14:1#14	N-NSM	Ἐλεάζαρ		0.80	
+Jos.14:1#20	T-GSM	ὁ		0.80	
+Jos.14:1#21	N-GSM	Ναυή		0.80	
+Jos.14:1#25	N-GPF	πατριά		0.80	
+Jos.14:1#29	N-GSM	Ἰσραήλ		0.80	
+Jos.14:2#10	N-GSM	Ἰησοῦς		0.80	
+Jos.14:2#15	T-DSM	ὁ		0.80	
+Jos.14:2#16	A-DSM	ἥμισυς		0.80	
+Jos.14:3#2	T-GSN	ὁ		0.80	
+Jos.14:3#13	P-DPM	αὐτός		0.80	
+Jos.14:4#5	N-GSM	Ἰωσήφ		0.80	
+Jos.14:4#8	N-GSM	Μανασσῆς		0.80	
+Jos.14:4#10	N-GSM	Ἐφραίμ		0.80	
+Jos.14:4#22	N-APF	πόλις		0.80	
+Jos.14:4#25	T-APN	ὁ		0.80	
+Jos.14:4#26	V-RPP-APN	ἀφορίζω		0.80	
+Jos.14:4#27	P-GPM	αὐτός		0.80	
+Jos.14:4#31	T-APN	ὁ		0.80	
+Jos.14:4#32	N-APN	κτῆνος		0.80	
+Jos.14:4#33	P-GPM	αὐτός		0.80	
+Jos.14:5#5	T-DSM	ὁ		0.80	
+Jos.14:5#6	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Jos.14:5#11	N-GSM	Ἰσραήλ		0.80	
+Jos.14:6#2	V-2AAI-3P	προσέρχομαι		0.80	
+Jos.14:6#5	N-GSM	Ἰούδας		0.80	
+Jos.14:6#9	N-DSF	Γαλγάλ		0.80	
+Jos.14:6#14	N-NSM	Χαλέβ		0.80	
+Jos.14:6#16	T-GSM	ὁ		0.80	
+Jos.14:6#17	N-GSM	Ἰεφοννή		0.80	
+Jos.14:6#19	N-NSM	Κενεζαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.14:6#21	V-PNI-2S	ἐπίσταμαι		0.80	
+Jos.14:6#22	T-ASN	ὁ		0.80	
+Jos.14:6#23	N-ASN	ῥῆμα		0.80	
+Jos.14:6#24	R-ASN	ὅς, ἥ		0.80	
+Jos.14:6#28	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Jos.14:6#33	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Jos.14:6#37	N-DSF	Καδής	guess	0.40	guess: the model chose outside the candidates
+Jos.14:6#38	N-DSF	Βαρνή		0.80	
+Jos.14:7#5	CONJ	ὅτε		0.80	
+Jos.14:7#14	N-GSF	Καδής	guess	0.40	guess: the model chose outside the candidates
+Jos.14:7#15	N-GSF	Βαρνή		0.80	
+Jos.14:7#16	V-AAN	κατασκοπέω		0.80	
+Jos.14:7#21	P-DSM	αὐτός		0.80	
+Jos.14:7#26	P-GSM	αὐτός		0.80	
+Jos.14:8#8	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Jos.14:8#9	V-AAI-3P	μεθίστημι		0.80	
+Jos.14:8#16	V-2AAI-1S	προστίθημι	guess	0.40	guess: the model answered with no candidates
+Jos.14:9#13	V-2AAI-2S	ἐπιβαίνω		0.80	
+Jos.14:9#26	V-API-2S	προστίθημι		0.80	
+Jos.14:9#28	PREP	ὀπίσω		0.80	
+Jos.14:10#3	V-AAI-3S	διατρέφω	guess	0.40	guess: the model answered with no candidates
+Jos.14:10#9	D-ASN	οὗτος		0.80	
+Jos.14:10#10	A-ASN	τεσσαρακοστός	guess	0.40	guess: the model answered with no candidates
+Jos.14:10#12	A-ASN	πέμπτος		0.80	
+Jos.14:10#13	N-ASN	ἔτος		0.80	
+Jos.14:10#15	R-GSN	ὅς, ἥ	unsure	0.50	model: unsure
+Jos.14:10#18	T-ASN	ὁ		0.80	
+Jos.14:10#19	N-ASN	ῥῆμα		0.80	
+Jos.14:10#20	D-ASN	οὗτος		0.80	
+Jos.14:10#22	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Jos.14:10#25	N-NSM	Ἰσραήλ		0.80	
+Jos.14:11#6	CONJ	ὅτε		0.80	
+Jos.14:12#5	T-ASN	ὁ		0.80	
+Jos.14:12#6	N-ASN	ὄρος		0.80	
+Jos.14:12#7	D-ASN	οὗτος		0.80	
+Jos.14:12#16	V-2RAI-2S	ἀκούω		0.80	
+Jos.14:12#17	T-ASN	ὁ		0.80	
+Jos.14:12#18	N-ASN	ῥῆμα		0.80	
+Jos.14:12#19	D-ASN	οὗτος		0.80	
+Jos.14:12#26	N-NSM	Ἐνακείμ		0.80	
+Jos.14:12#29	N-NPF	πόλις		0.80	
+Jos.14:12#37	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Jos.14:12#39	V-FAI-1S	ἐξολεθρεύω		0.80	
+Jos.14:13#7	N-ASF	Χεβρών		0.80	
+Jos.14:13#8	T-DSM	ὁ		0.80	
+Jos.14:13#9	N-DSM	Χαλέβ		0.80	
+Jos.14:13#11	N-GSM	Ἰεφοννή		0.80	
+Jos.14:13#13	N-GSM	Κενέζ		0.80	
+Jos.14:14#2	D-ASN	οὗτος		0.80	
+Jos.14:14#6	T-DSM	ὁ		0.80	
+Jos.14:14#7	N-DSM	Χαλέβ		0.80	
+Jos.14:14#8	T-DSM	ὁ		0.80	
+Jos.14:14#9	T-GSM	ὁ		0.80	
+Jos.14:14#10	N-GSM	Ἰεφοννή		0.80	
+Jos.14:14#11	T-GSM	ὁ		0.80	
+Jos.14:14#12	N-GSM	Κενεζαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.14:14#20	T-ASN	ὁ		0.80	
+Jos.14:14#27	N-GSM	Ἰσραήλ		0.80	
+Jos.14:15#1	T-NSN	ὁ		0.80	
+Jos.14:15#3	N-NSN	ὄνομα		0.80	
+Jos.14:15#7	T-ASN	ὁ		0.80	
+Jos.14:15#8	ADV-C	πρότερον		0.80	
+Jos.14:15#9	N-NSF	πόλις		0.80	
+Jos.14:15#10	N-GSM	Ἀργόβ		0.80	
+Jos.14:15#11	N-NSF	μητρόπολις		0.80	
+Jos.14:15#12	T-GPM	ὁ		0.80	
+Jos.14:15#13	N-GSM	Ἐνακείμ		0.80	
+Jos.15:1#3	T-NPN	ὁ		0.80	
+Jos.15:1#4	N-NPN	ὅριον		0.80	
+Jos.15:1#6	N-GSM	Ἰούδας		0.80	
+Jos.15:1#9	P-GPM	αὐτός		0.80	
+Jos.15:1#18	N-GSF	Σείν	guess	0.40	guess: the model chose outside the candidates
+Jos.15:1#20	N-GSF	Καδής	guess	0.40	guess: the model chose outside the candidates
+Jos.15:2#3	P-GPM	αὐτός		0.80	
+Jos.15:2#4	T-NPN	ὁ		0.80	
+Jos.15:2#5	N-NPN	ὅριον		0.80	
+Jos.15:2#7	N-GSM	λίψ	guess	0.40	guess: the model answered with no candidates
+Jos.15:3#2	V-PNI-3S	διαπορεύω	unsure	0.50	model: unsure
+Jos.15:3#6	N-GSF	Ἀκραβείν	guess	0.40	guess: the model answered with no candidates
+Jos.15:3#9	N-ASF	Ἔννακ		0.80	
+Jos.15:3#13	N-GSM	λίψ	guess	0.40	guess: the model answered with no candidates
+Jos.15:3#15	N-ASF	Καδής	guess	0.40	guess: the model chose outside the candidates
+Jos.15:3#16	N-ASF	Βαρνή		0.80	
+Jos.15:3#19	N-ASF	Ἁσωρών		0.80	
+Jos.15:3#23	N-ASF	Σαράδα	guess	0.40	guess: the model answered with no candidates
+Jos.15:3#29	N-ASF	Καδής	guess	0.40	guess: the model chose outside the candidates
+Jos.15:4#4	N-ASF	Σελμών	guess	0.40	guess: the model answered with no candidates
+Jos.15:4#8	N-GSF	φάραγξ		0.80	
+Jos.15:4#12	P-GSN	αὐτός	unsure	0.50	model: unsure
+Jos.15:4#20	D-NSN	οὗτος		0.80	
+Jos.15:4#22	P-GPM	αὐτός		0.80	
+Jos.15:4#23	N-NPN	ὅριον	unsure	0.50	model: unsure
+Jos.15:4#25	N-GSM	λίψ	guess	0.40	guess: the model answered with no candidates
+Jos.15:5#2	T-NPN	ὁ		0.80	
+Jos.15:5#3	N-NPN	ὅριον		0.80	
+Jos.15:5#10	A-NSF	ἁλυκός		0.80	
+Jos.15:5#15	T-NPN	ὁ		0.80	
+Jos.15:5#16	N-NPN	ὅριον		0.80	
+Jos.15:5#17	P-GPM	αὐτός		0.80	
+Jos.15:6#2	T-NPN	ὁ		0.80	
+Jos.15:6#3	N-NPN	ὅριον		0.80	
+Jos.15:6#5	N-ASF	Βαιθαγλάαμ		0.80	
+Jos.15:6#11	N-ASF	Βαιθαραβά		0.80	
+Jos.15:6#14	T-NPN	ὁ		0.80	
+Jos.15:6#15	N-NPN	ὅριον		0.80	
+Jos.15:6#20	N-GSM	Ῥουβήν		0.80	
+Jos.15:7#3	T-NPN	ὁ		0.80	
+Jos.15:7#4	N-NPN	ὅριον		0.80	
+Jos.15:7#6	T-ASN	ὁ		0.80	
+Jos.15:7#7	A-ASN	τέταρτος		0.80	
+Jos.15:7#10	N-GSF	Ἀχώρ		0.80	
+Jos.15:7#14	N-ASF	Τααγάδ		0.80	
+Jos.15:7#15	R-NSF	ὅς, ἥ		0.80	
+Jos.15:7#19	N-GSF	πρόσβασις	guess	0.40	guess: the model answered with no candidates
+Jos.15:7#20	N-GSF	Ἀδδαμείν	guess	0.40	guess: the model answered with no candidates
+Jos.15:7#21	R-NSF	ὅς, ἥ		0.80	
+Jos.15:7#30	T-ASN	ὁ		0.80	
+Jos.15:7#31	N-ASN	ὕδωρ, ὕδατος		0.80	
+Jos.15:7#36	P-GSN	αὐτός	unsure	0.50	model: unsure
+Jos.15:7#40	N-GSM	Ῥωγήλ		0.80	
+Jos.15:8#3	T-NPN	ὁ		0.80	
+Jos.15:8#4	N-NPN	ὅριον		0.80	
+Jos.15:8#6	N-ASF	φάραγξ		0.80	
+Jos.15:8#7	N-GSM	Ὁνόμ		0.80	
+Jos.15:8#10	T-GSM	ὁ		0.80	
+Jos.15:8#11	N-GSM	Ἰεβούς	guess	0.40	guess: the model answered with no candidates
+Jos.15:8#13	N-GSM	λίψ	guess	0.40	guess: the model answered with no candidates
+Jos.15:8#16	N-NSF	Ἱερουσαλήμ		0.80	
+Jos.15:8#19	T-NPN	ὁ		0.80	
+Jos.15:8#20	N-NPN	ὅριον		0.80	
+Jos.15:8#24	R-NSF	ὅς, ἥ		0.80	
+Jos.15:8#27	N-ASN	πρόσωπον		0.80	
+Jos.15:8#28	N-GSF	φάραγξ		0.80	
+Jos.15:8#29	N-GSM	Ὁνόμ		0.80	
+Jos.15:8#31	N-GSF	θάλασσα		0.80	
+Jos.15:8#32	R-NSF	ὅς, ἥ		0.80	
+Jos.15:8#37	N-GPM	Ῥαφαείν	guess	0.40	guess: the model answered with no candidates
+Jos.15:9#3	T-NSN	ὁ		0.80	
+Jos.15:9#4	N-NSN	ὅριον		0.80	
+Jos.15:9#6	N-GSF	κορυφή		0.80	
+Jos.15:9#12	N-GSF	Μαφθώ		0.80	
+Jos.15:9#16	T-ASN	ὁ		0.80	
+Jos.15:9#17	N-ASN	ὄρος		0.80	
+Jos.15:9#18	N-ASM	Ἐφρών		0.80	
+Jos.15:9#21	T-NSN	ὁ		0.80	
+Jos.15:9#22	N-NSN	ὅριον		0.80	
+Jos.15:9#23	N-ASF	Ἰεβάαλ		0.80	
+Jos.15:9#26	N-NSF	πόλις		0.80	
+Jos.15:9#27	N-GSM	Ἰαρείμ		0.80	
+Jos.15:10#2	V-FDI-3S	περιέρχομαι	unsure	0.50	model: unsure
+Jos.15:10#3	N-NSN	ὅριον		0.80	
+Jos.15:10#5	N-GSF	Βάαλ		0.80	
+Jos.15:10#11	N-ASN	ὄρος		0.80	
+Jos.15:10#12	N-ASM	Ἀσσάρ		0.80	
+Jos.15:10#16	N-ASF	Ἰαρείν	guess	0.40	guess: the model answered with no candidates
+Jos.15:10#21	N-NSF	Χασλών		0.80	
+Jos.15:11#3	T-NSN	ὁ		0.80	
+Jos.15:11#4	N-NSN	ὅριον		0.80	
+Jos.15:11#7	N-GSF	Ἀκκαρών		0.80	
+Jos.15:11#12	T-NPN	ὁ		0.80	
+Jos.15:11#13	N-NPN	ὅριον		0.80	
+Jos.15:11#15	N-ASF	Σοκχώθ		0.80	
+Jos.15:11#18	N-NPN	ὅριον		0.80	
+Jos.15:11#24	N-ASF	Λεμνά		0.80	
+Jos.15:12#2	T-NPN	ὁ		0.80	
+Jos.15:12#3	N-NPN	ὅριον		0.80	
+Jos.15:12#4	P-GPM	αὐτός		0.80	
+Jos.15:12#11	V-FAI-3S	ὁρίζω		0.80	
+Jos.15:12#12	D-NPN	οὗτος		0.80	
+Jos.15:12#13	T-NPN	ὁ		0.80	
+Jos.15:12#14	N-NPN	ὅριον		0.80	
+Jos.15:12#16	N-GSM	Ἰούδας		0.80	
+Jos.15:12#20	P-GPM	αὐτός		0.80	
+Jos.15:13#2	T-DSM	ὁ		0.80	
+Jos.15:13#3	N-DSM	Χαλέβ		0.80	
+Jos.15:13#5	N-GSM	Ἰεφοννή		0.80	
+Jos.15:13#9	A-DSN	μέσος		0.80	
+Jos.15:13#11	N-GSM	Ἰούδας		0.80	
+Jos.15:13#18	P-DSM	αὐτός		0.80	
+Jos.15:13#22	N-ASF	Ἀρβόκ		0.80	
+Jos.15:13#24	N-GSM	Ἐνάκ		0.80	
+Jos.15:13#27	N-NSF	Χεβρών		0.80	
+Jos.15:14#4	N-NSM	Χαλέβ		0.80	
+Jos.15:14#6	N-GSM	Ἰεφοννή		0.80	
+Jos.15:14#10	N-GSM	Ἐνάκ		0.80	
+Jos.15:14#14	N-ASM	Θοαλμεί		0.80	
+Jos.15:15#4	N-NSM	Χαλέβ		0.80	
+Jos.15:15#8	N-ASF	Δαβείρ	guess	0.40	guess: the model chose outside the candidates
+Jos.15:15#9	T-NSN	ὁ		0.80	
+Jos.15:15#11	N-NSN	ὄνομα		0.80	
+Jos.15:15#12	N-GSF	Δαβείρ	guess	0.40	guess: the model chose outside the candidates
+Jos.15:15#14	T-ASN	ὁ		0.80	
+Jos.15:15#15	ADV-C	πρότερον		0.80	
+Jos.15:15#16	N-NSF	πόλις		0.80	
+Jos.15:16#3	N-NSM	Χαλέβ		0.80	
+Jos.15:16#8	V-AAS-3S	ἐκκόπτω		0.80	
+Jos.15:16#17	P-DSM	αὐτός		0.80	
+Jos.15:16#19	N-ASF	Ἄσχα	guess	0.40	guess: the model answered with no candidates
+Jos.15:17#4	N-NSM	Γοθονιήλ		0.80	
+Jos.15:17#6	N-GSM	Κενέζ		0.80	
+Jos.15:17#8	N-GSM	Χαλέβ		0.80	
+Jos.15:17#11	P-DSM	αὐτός		0.80	
+Jos.15:17#13	N-ASF	Ἄσχα	guess	0.40	guess: the model answered with no candidates
+Jos.15:17#15	P-GSM	αὐτός		0.80	
+Jos.15:18#8	V-AMI-3S	συμβουλεύω	unsure	0.50	model: unsure
+Jos.15:18#9	P-DSM	αὐτός		0.80	
+Jos.15:18#11	V-FMI-1S	αἰτέω		0.80	
+Jos.15:18#19	T-GSM	ὁ		0.80	
+Jos.15:18#24	N-NSM	Χαλέβ		0.80	
+Jos.15:18#25	I-NSN	τίς		0.80	
+Jos.15:19#3	P-DSM	αὐτός		0.80	
+Jos.15:19#10	N-GSF	Νάγεβ		0.80	
+Jos.15:19#16	N-ASF	Βοθθανείς	guess	0.40	guess: the model answered with no candidates
+Jos.15:20#6	N-GSM	Ἰούδας		0.80	
+Jos.15:21#3	N-NPF	πόλις		0.80	
+Jos.15:21#4	P-GPM	αὐτός		0.80	
+Jos.15:21#5	N-NPF	πόλις		0.80	
+Jos.15:21#10	N-GSM	Ἰούδας		0.80	
+Jos.15:21#13	N-GSM	Ἐδώμ		0.80	
+Jos.15:21#17	N-NSF	Καιβαισελεήλ		0.80	
+Jos.15:21#21	N-NSF	Ἀσώρ		0.80	
+Jos.15:22#2	N-NSF	Ἰκάμ		0.80	
+Jos.15:22#4	N-NSF	Ῥεγμά		0.80	
+Jos.15:22#6	N-NSF	Ἀρουήλ		0.80	
+Jos.15:23#2	N-NSF	Κάδης	guess	0.40	guess: the model chose outside the candidates
+Jos.15:23#4	N-NSF	Ἁσοριωνάιν	guess	0.40	guess: the model answered with no candidates
+Jos.15:23#6	N-NSF	Μαινάμ	guess	0.40	guess: the model chose outside the candidates
+Jos.15:24#2	N-NSF	Βαλμαινάν		0.80	
+Jos.15:24#6	P-GPF	αὐτός		0.80	
+Jos.15:25#4	N-GSF	Ἁσερών	guess	0.40	guess: the model chose outside the candidates
+Jos.15:25#6	N-NSF	Ἁσώρ		0.80	
+Jos.15:26#4	N-NSF	Σαλμάα	guess	0.40	guess: the model answered with no candidates
+Jos.15:26#6	N-NSF	Μωλαδά		0.80	
+Jos.15:27#2	N-NSF	Σερεί		0.80	
+Jos.15:27#4	N-NSF	Βαιφάλαδ		0.80	
+Jos.15:28#2	N-NSF	Χολασεωλά		0.80	
+Jos.15:28#4	N-NSF	Βηρσάβεε	guess	0.40	guess: the model answered with no candidates
+Jos.15:28#8	P-GPF	αὐτός		0.80	
+Jos.15:28#12	P-GPF	αὐτός		0.80	
+Jos.15:29#1	N-NSF	Βαλά	guess	0.40	guess: the model answered with no candidates
+Jos.15:29#3	N-NSF	Βακώκ		0.80	
+Jos.15:29#5	N-NSF	Ἄσομ		0.80	
+Jos.15:30#2	N-NSF	Ἐλβωυδάδ		0.80	
+Jos.15:30#4	N-NSF	Βαιθήλ		0.80	
+Jos.15:30#6	N-NSF	Ἑρμά	guess	0.40	guess: the model chose outside the candidates
+Jos.15:31#2	N-NSF	Σεκελάκ		0.80	
+Jos.15:31#4	N-NSF	Μαχαρείμ		0.80	
+Jos.15:31#6	N-NSF	Σεθεννάκ		0.80	
+Jos.15:32#2	N-NSF	Λαβώς	guess	0.40	guess: the model chose outside the candidates
+Jos.15:32#4	N-NSF	Σαλή		0.80	
+Jos.15:32#6	N-NSF	Ἐρωμώθ		0.80	
+Jos.15:32#7	N-NPF	πόλις		0.80	
+Jos.15:32#8	A-NUI	εἴκοσι	guess	0.40	guess: the model answered with no candidates
+Jos.15:32#12	P-GPF	αὐτός		0.80	
+Jos.15:33#4	N-NSF	Ἀσταώλ		0.80	
+Jos.15:33#6	N-NSF	Ῥαά		0.80	
+Jos.15:33#8	N-NSF	Ἀσσά	guess	0.40	guess: the model chose outside the candidates
+Jos.15:34#2	N-NSF	Ῥαμέν	guess	0.40	guess: the model answered with no candidates
+Jos.15:34#4	N-NSF	Τανώ		0.80	
+Jos.15:34#6	N-NSF	Ἰλουθώθ		0.80	
+Jos.15:34#8	N-NSF	Μαιανεί		0.80	
+Jos.15:35#2	N-NSF	Ἰερμούθ		0.80	
+Jos.15:35#4	N-NSF	Ὀδολλάμ		0.80	
+Jos.15:35#6	N-NSF	Μεμβρα		0.80	
+Jos.15:35#8	N-NSF	Σαωχώ		0.80	
+Jos.15:35#10	N-NSF	Ἰαζηκά		0.80	
+Jos.15:36#2	N-NSF	Σακαρείμ		0.80	
+Jos.15:36#4	N-NSF	Γαδηρά		0.80	
+Jos.15:36#9	N-NPF	πόλις		0.80	
+Jos.15:36#11	A-NPF	τέσσαρες		0.80	
+Jos.15:36#15	P-GPF	αὐτός		0.80	
+Jos.15:37#1	N-NSF	Σεννά	guess	0.40	guess: the model answered with no candidates
+Jos.15:37#3	N-NSF	Ἀδασάν		0.80	
+Jos.15:37#5	N-NSF	Μαγαδά		0.80	
+Jos.15:37#6	N-NSM	Γάδ	unsure	0.50	model: unsure
+Jos.15:38#2	N-NSF	Δαλάλ		0.80	
+Jos.15:38#4	N-NSF	Μασφά		0.80	
+Jos.15:38#6	N-NSF	Ἰακαρεήλ		0.80	
+Jos.15:39#2	N-NSF	Μαχής	guess	0.40	guess: the model chose outside the candidates
+Jos.15:39#4	N-NSF	Βασηδώθ		0.80	
+Jos.15:39#6	N-NSF	Ἰδεαδαλεά		0.80	
+Jos.15:40#2	N-NSF	Χαβρά		0.80	
+Jos.15:40#4	N-NSF	Μαχές	guess	0.40	guess: the model answered with no candidates
+Jos.15:40#6	N-NSF	Μααχώς	guess	0.40	guess: the model answered with no candidates
+Jos.15:41#2	N-NSF	Γεδδώρ		0.80	
+Jos.15:41#4	N-NSF	Βαγαδιήλ		0.80	
+Jos.15:41#6	N-NSF	Νωμάν		0.80	
+Jos.15:41#8	N-NSF	Μακηδάν		0.80	
+Jos.15:41#9	N-NPF	πόλις		0.80	
+Jos.15:41#15	P-GPF	αὐτός		0.80	
+Jos.15:42#1	N-NSF	Λεμνά	guess	0.40	guess: the model answered with no candidates
+Jos.15:42#3	N-NSF	Ἴθακ		0.80	
+Jos.15:42#5	N-NSF	Ἀνώχ		0.80	
+Jos.15:43#2	N-NSF	Ἰανά		0.80	
+Jos.15:43#4	N-NSF	Νασείβ		0.80	
+Jos.15:44#2	N-NSF	Κεειλάμ		0.80	
+Jos.15:44#4	N-NSF	Ἀκιεζεί		0.80	
+Jos.15:44#6	N-NSF	Κεζείβ		0.80	
+Jos.15:44#8	N-NSF	Βαθησάρ		0.80	
+Jos.15:44#10	N-NSF	Αἰλών		0.80	
+Jos.15:44#11	N-NPF	πόλις		0.80	
+Jos.15:44#16	P-GPF	αὐτός		0.80	
+Jos.15:45#1	N-NSF	Ἀκκαρών	guess	0.40	guess: the model answered with no candidates
+Jos.15:45#9	P-GPF	αὐτός		0.80	
+Jos.15:46#2	N-GSF	Ἀκκαρών		0.80	
+Jos.15:46#3	N-ASF	Γέμνα	guess	0.40	guess: the model answered with no candidates
+Jos.15:46#8	ADV	πλησίον		0.80	
+Jos.15:46#9	N-GSF	Ἀσηδώθ		0.80	
+Jos.15:46#13	P-GPF	αὐτός		0.80	
+Jos.15:47#1	N-NSF	Ἀσειεδώθ	guess	0.40	guess: the model answered with no candidates
+Jos.15:47#10	N-NSF	Γάζα		0.80	
+Jos.15:48#5	N-NSF	Σαμείρ		0.80	
+Jos.15:48#7	N-NSF	Ἰεθέρ		0.80	
+Jos.15:48#9	N-NSF	Σωχά		0.80	
+Jos.15:49#2	N-NSF	Ῥεννά		0.80	
+Jos.15:49#4	N-NSF	πόλις		0.80	
+Jos.15:49#7	N-NSF	Δαβείρ	guess	0.40	guess: the model chose outside the candidates
+Jos.15:50#2	N-NSF	Ἀνών		0.80	
+Jos.15:50#4	N-NSF	Ἐσκαιμάν		0.80	
+Jos.15:50#6	N-NSF	Αἰσάμ		0.80	
+Jos.15:51#2	N-NSF	Γόσομ		0.80	
+Jos.15:51#4	N-NSF	Χαλού		0.80	
+Jos.15:51#6	N-NSF	Χαννά		0.80	
+Jos.15:51#7	N-NPF	πόλις		0.80	
+Jos.15:51#12	P-GPF	αὐτός		0.80	
+Jos.15:52#1	N-NSF	Αἰρέμ	guess	0.40	guess: the model answered with no candidates
+Jos.15:52#3	N-NSF	Ῥεμνά		0.80	
+Jos.15:52#5	N-NSF	Σομά		0.80	
+Jos.15:53#2	N-NSF	Ἰεμάειν	guess	0.40	guess: the model answered with no candidates
+Jos.15:53#4	N-NSF	Βαιθαχού		0.80	
+Jos.15:53#6	N-NSF	Φακουά		0.80	
+Jos.15:54#2	N-NSF	Εὑμά		0.80	
+Jos.15:54#4	N-NSF	πόλις		0.80	
+Jos.15:54#5	N-GSM	Ἀρβόκ		0.80	
+Jos.15:54#8	N-NSF	Χεβρών		0.80	
+Jos.15:54#10	N-NSF	Σώρθ		0.80	
+Jos.15:54#11	N-NPF	πόλις		0.80	
+Jos.15:54#16	P-GPF	αὐτός		0.80	
+Jos.15:55#1	N-NSF	Μαώρ	guess	0.40	guess: the model answered with no candidates
+Jos.15:55#3	N-NSF	Χερμέλ		0.80	
+Jos.15:55#5	N-NSF	Ὀζείβ		0.80	
+Jos.15:55#7	N-NSF	Ἰτάν		0.80	
+Jos.15:56#2	N-NSF	Ἰαριήλ		0.80	
+Jos.15:56#4	N-NSF	Ἰαρεικάμ		0.80	
+Jos.15:56#6	N-NSF	Ζακανάειμ		0.80	
+Jos.15:57#2	N-NSF	Γαβαά		0.80	
+Jos.15:57#4	N-NSF	Θαμναθά		0.80	
+Jos.15:57#5	N-NPF	πόλις		0.80	
+Jos.15:57#10	P-GPF	αὐτός		0.80	
+Jos.15:58#1	N-NSF	Ἁλουά	guess	0.40	guess: the model answered with no candidates
+Jos.15:58#3	N-NSF	Βαιθσούρ		0.80	
+Jos.15:58#5	N-NSF	Γεδδών		0.80	
+Jos.15:59#2	N-NSF	Μαγαρώθ		0.80	
+Jos.15:59#4	N-NSF	Βαιθανάμ		0.80	
+Jos.15:59#6	N-NSF	Θεκούμ	guess	0.40	guess: the model answered with no candidates
+Jos.15:59#7	N-NPF	πόλις		0.80	
+Jos.15:59#12	P-GPF	αὐτός		0.80	
+Jos.15:59#13	N-NSF	Θεκω		0.80	
+Jos.15:59#15	N-NSF	Ἐφράθα	guess	0.40	guess: the model answered with no candidates
+Jos.15:59#18	N-NSF	Βαιθλέεμ		0.80	
+Jos.15:59#20	N-NSF	Φαγωρ		0.80	
+Jos.15:59#22	N-NSF	Αιταν		0.80	
+Jos.15:59#24	N-NSF	Κουλον		0.80	
+Jos.15:59#26	N-NSF	Ταταμ		0.80	
+Jos.15:59#28	N-NSF	Εωβης		0.80	
+Jos.15:59#30	N-NSF	Καρεμ		0.80	
+Jos.15:59#32	N-NSF	Γαλεμ		0.80	
+Jos.15:59#34	N-NSF	Θεθηρ		0.80	
+Jos.15:59#36	N-NSF	Μανοχω		0.80	
+Jos.15:59#37	N-NPF	πόλις		0.80	
+Jos.15:59#42	P-GPF	αὐτός		0.80	
+Jos.15:60#1	N-NSF	Καριαθβάαλ	guess	0.40	guess: the model answered with no candidates
+Jos.15:60#5	N-GSM	Ἰαρείμ		0.80	
+Jos.15:60#7	N-NSF	Σωθηβά		0.80	
+Jos.15:60#8	N-NPF	πόλις		0.80	
+Jos.15:60#13	P-GPF	αὐτός		0.80	
+Jos.15:61#2	N-NSF	Βαδδαργείς	guess	0.40	guess: the model answered with no candidates
+Jos.15:61#4	N-NSF	Θαραβαάμ		0.80	
+Jos.15:61#6	N-NSF	Αἰνών		0.80	
+Jos.15:62#2	N-NSF	Αἰχιοζά		0.80	
+Jos.15:62#4	N-NSF	Ναφλαζών		0.80	
+Jos.15:62#8	N-GSF	Σάδωμ		0.80	
+Jos.15:62#10	N-GSF	Ἀκνάδης	guess	0.40	guess: the model answered with no candidates
+Jos.15:62#11	N-NPF	πόλις		0.80	
+Jos.15:62#16	P-GPF	αὐτός		0.80	
+Jos.15:63#3	N-NSM	Ἰεβουσαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.15:63#4	V-IAI-3S	κατοικέω		0.80	
+Jos.15:63#6	N-DSF	Ἱερουσαλήμ		0.80	
+Jos.15:63#9	V-AOI-3P	δύναμαι	guess	0.40	guess: the model answered with no candidates
+Jos.15:63#12	N-GSM	Ἰούδας		0.80	
+Jos.15:63#18	N-NPM	Ἰεβουσαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.15:63#20	N-DSF	Ἱερουσαλήμ		0.80	
