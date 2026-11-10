@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.199",
+    "date": "2026-11-10",
+    "story": "mw-fnvjof.17.55",
+    "kind": "fixed",
+    "text": "A Septuagint chapter's title in the Reader no longer breaks into four short lines beside the English | Weave | Greek switch."
+  },
+  {
+    "version": "0.7.199",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.335",
+    "kind": "fixed",
+    "text": "Turned on its side, tapping \"The pattern\" on a word table now shows the outlined cell instead of leaving it below the screen."
+  },
+  {
+    "version": "0.7.199",
+    "date": "2026-11-10",
+    "story": "mw-qtu3zvz.49.14",
+    "kind": "fixed",
+    "text": "the tutor's sermon link now opens the church's Subsplash page for a sermon that has one, the same as the Sermons list does, instead of YouTube."
+  },
+  {
+    "version": "0.7.199",
+    "date": "2026-11-10",
+    "story": "mw-fnvjof.17.59",
+    "kind": "fixed",
+    "text": "In Turn pages, tapping a verse's number with your finger now opens that verse instead of turning the page back."
+  },
+  {
+    "version": "0.7.199",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.328",
+    "kind": "fixed",
+    "text": "Copying a joined Old Testament in Greek verse pair such as Psalms 149:8-9 now names both verses in the reference and the link, not just the first."
+  },
+  {
     "version": "0.7.198",
     "date": "2026-11-10",
     "story": "mw-fnvjof.17.58",

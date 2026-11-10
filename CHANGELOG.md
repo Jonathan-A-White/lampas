@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.199
+_2026-11-10_
+- Fixed: A Septuagint chapter's title in the Reader no longer breaks into four short lines beside the English | Weave | Greek switch.
+- Fixed: Turned on its side, tapping "The pattern" on a word table now shows the outlined cell instead of leaving it below the screen.
+- Fixed: the tutor's sermon link now opens the church's Subsplash page for a sermon that has one, the same as the Sermons list does, instead of YouTube.
+- Fixed: In Turn pages, tapping a verse's number with your finger now opens that verse instead of turning the page back.
+- Fixed: Copying a joined Old Testament in Greek verse pair such as Psalms 149:8-9 now names both verses in the reference and the link, not just the first.
+
 ## 0.7.198
 _2026-11-10_
 - Fixed: With a text beside the passage in Turn pages, the text beside now follows the first verse you actually read at the top of the page, not the one before it.
