@@ -48,7 +48,7 @@ import { focusOnMount } from './ui/focus';
 import { useNarrow } from './ui/useNarrow';
 import { Icon as PlayIcon } from './speech/ReadControls';
 import { stopReading } from './speech/readAloud';
-import { oneTap, useSettled } from './ui/settle';
+import { oneTap, SETTLE_MS, useOpeningGuard } from './ui/settle';
 import { LinkActions } from './ui/LinkActions';
 import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf, sharePieces } from './copy/format';
 import { useCopyFormat } from './copy/useCopyFormat';
@@ -151,27 +151,22 @@ const oneToolTap = (event: SyntheticEvent): void => {
   event.stopPropagation();
 };
 
-/** The Verse view takes no tap for two settle moments after it opens (mw-u2w5klk.322): a word of a Septuagint English chunk (or a verse number, a heading, a link) opens it under the thumb, and the second tap of a
- * double tap, up to half a second later, landed on a door of the new screen at the spot of the word (Diagram, Listen, an arrow) and pressed it. The app-wide guard (src/ui/tapGuard.ts) holds
- * one moment (450 ms) and the Tester's second tap came at 500; this is as long as the tools line's (TOOLS_MOMENTS). A deliberate tap on a door is never this quick: the verse is read first. */
-const OPENING_MOMENTS = 2;
-// ‹ Reader is no door of the screen: leaving it is what a tap right after opening may mean, and a tap on it closes the view at once (tests/e2e/double-tap-guard.spec.ts, mw-5r3p30.446)
-const isDoor = (target: EventTarget, back: Element | null): boolean => target instanceof Element && target.closest('button, a, [role="button"]') !== null && !back?.contains(target);
+/** The Verse view takes no tap on a control for 600 ms after it opens (mw-u2w5klk.322, mw-fnvjof.17.69): a word of a Septuagint English chunk (or a verse number, a heading, a link) opens it under the thumb, and the second
+ * tap of a double tap, up to half a second later, landed on a door of the new screen at the spot of the word (Diagram, Listen, an arrow) or on a word of the verse (the Word sheet over the view, covering
+ * ‹ Reader) and pressed it. The app-wide guard (src/ui/tapGuard.ts) holds one moment (450 ms) and the Tester's second tap came at 500; the one shared guard `useOpeningGuard` (src/ui/settle.ts) holds 600, so
+ * a single tap 600 ms or more after opening (a word, to hear or look up) goes through. A deliberate tap on a door is never quicker: the verse is read first. */
+const OPENING_MOMENTS = 600 / SETTLE_MS;
 
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
-  const opened = useSettled('verse-view-opened', OPENING_MOMENTS);
   const backButton = useRef<HTMLButtonElement | null>(null);
+  // ‹ Reader is no door of the screen: leaving it is what a tap right after opening may mean, and a tap on it closes the view at once (tests/e2e/double-tap-guard.spec.ts, mw-5r3p30.446)
+  const dropEarlyTap = useOpeningGuard('verse-view-opened', OPENING_MOMENTS, () => backButton.current);
   // a stable ref callback: one that changed every render would focus the button again each time
   const backRef = useCallback((el: HTMLButtonElement | null) => {
     backButton.current = el;
     focusOnMount(el);
   }, []);
-  const dropEarlyTap = (event: SyntheticEvent): void => {
-    if (opened() || !isDoor(event.target, backButton.current)) return;
-    event.preventDefault();
-    event.stopPropagation();
-  };
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
   // Split: the sheet of the texts the chapter can be read beside (src/reader/split/SplitChooser.tsx, mw-5r3p30.1130); it is drawn outside the Tools line, whose one-tap guard would otherwise see its rows

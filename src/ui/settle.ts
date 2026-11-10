@@ -12,7 +12,7 @@
 // mw-svw421.41): the second tap of a double tap would flip it back, or land on the control that took its place. A control that a tap makes go away and
 // whose place another control takes (the idea sheet's Mark known without a drill, the level slider) asks `justTapped` of the one that takes its place (mw-5r3p30.558). So does a play / stop button (Read aloud,
 // Read from here, a verse's play, the speaker, ReadCheck's Me and Play my reading) and ReadCheck's open / closed word (mw-5r3p30.637).
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type SyntheticEvent } from 'react';
 
 /** How long a new card, and the app-wide guard after a screen, sheet or strip changes, ignores taps. The Tester's double taps were 120 ms apart, and a thumb of his taps again 400 ms
  * later (mw-5r3p30.1058), 450 ms after the strip 'Open in the app' leaves (mw-5r3p30.1138): so the moment outlasts 400 ms with room over the clock's own jitter; reading a question takes longer
@@ -44,6 +44,26 @@ export function useSettled(key: unknown = 0, moments = 1): () => boolean {
     since.current = performance.now();
   }, [key]);
   return useCallback(() => performance.now() - since.current >= settle.ms * moments, [moments]);
+}
+
+/** What a tap right after a view opens is aimed at, when it is a control (a button, a link, or an element that says it is one). */
+const DOOR = 'button, a, [role="button"]';
+
+/**
+ * The one guard of a view that a tap has just opened (mw-fnvjof.17.69; the class of mw-u2w5klk.322, .341 and .344): the second tap of a double tap, up to half a second after the first, lands
+ * on whatever the new view draws under the same spot (a word of the verse, a door of the tools line) and acts. Put the returned handler on the view's root as `onClickCapture`: for
+ * `moments` settle moments after the view mounts (re-keyed by `key`) it drops a click on any control of the view, and lets through a click on `keep` (the way back out: leaving is what a tap
+ * right after opening may mean) and on anything that is no control. A deliberate tap on a control is never this quick: the view is read first. The app-wide guard (src/ui/tapGuard.ts) holds
+ * one moment for every screen and sheet; this is for the view whose second tap came later than that (the Verse view, two moments).
+ */
+export function useOpeningGuard(key: unknown, moments: number, keep: () => Element | null = () => null): (event: SyntheticEvent) => void {
+  const opened = useSettled(key, moments);
+  return (event) => {
+    const target = event.target;
+    if (opened() || !(target instanceof Element) || target.closest(DOOR) === null || keep()?.contains(target)) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
 }
 
 /** The last act `oneTap` ran. One for the page, not one per control: a control that flips is often put in again by the flip (a tick box that becomes
