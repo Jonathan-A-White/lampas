@@ -49,6 +49,31 @@ test('Keep on this phone offers five choices with their sizes, counts the New Te
   await expect(again.getByRole('button', { name: 'New Testament (36 MB)', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
 
+// mw-lcv9z3g.10: a double tap on All stops the first run at once, before its index is read; the row used to read that stopped run as finished and say 'Up to date' for a moment with nothing kept.
+test('a double tap on All never reads Up to date before the count shows', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings?group=reading');
+  const row = page.getByRole('group', { name: 'Keep on this phone', exact: true });
+  await expect(row.getByRole('button', { name: 'Nothing extra', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  // set only now, once the Copy preview further up this screen has its chapter (Colossians 3): it would choke on a stand-in chapter
+  await expect(page.locator('[data-copy-preview]')).toBeVisible();
+  await page.route(/\/data\/[0-9a-z]+\/\d+\.json\?v=[0-9a-f]{12}$/, (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ filler: 'x'.repeat(20_000) }) }));
+  const status = page.locator('[data-setting="offlineCopy"] [data-offline-status]');
+  // every line the row shows from now on, so a line that flashes by between two polls is still seen
+  await status.evaluate((node) => {
+    const seen: string[] = [];
+    (window as unknown as { __offlineLines: string[] }).__offlineLines = seen;
+    new MutationObserver(() => seen.push(node.textContent ?? '')).observe(node, { childList: true, subtree: true, characterData: true });
+  });
+  await row.getByRole('button', { name: /^All/ }).dblclick();
+  await expect(row.getByRole('button', { name: /^All/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(status).toContainText(/\d+ of \d+ chapters/);
+  const lines = await page.evaluate(() => (window as unknown as { __offlineLines: string[] }).__offlineLines);
+  expect(lines.length).toBeGreaterThan(0);
+  expect(lines.filter((line) => line.includes('Up to date'))).toEqual([]);
+  await shot(page, 'offline-copy-double-tap');
+});
+
 // The Septuagint (mw-lcv9z3g.6), through the REAL worker (this spec lets the built worker run: it keeps /data-lxx/ chapters, and the index and lexicon network first). public/data-lxx ships no chapter in the gate, so the
 // context answers the Septuagint's files from tests/fixtures/data-lxx (the route is the context's: the worker's own trips to the network go through it too): Genesis 1 renumbered into 18 chapters, the same fingerprint for each.
 test.describe('Old Testament: Septuagint', () => {

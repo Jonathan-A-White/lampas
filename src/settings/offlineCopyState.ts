@@ -56,7 +56,8 @@ export interface Status {
 /** What the row says of the copy of `scope`, given its progress (undefined until the run's first report) and the time of the last check. */
 export function statusOf(scope: OfflineScope, progress: OfflineProgress | undefined, checked: number | undefined): Status | undefined {
   if (scope === 'none') return undefined;
-  if (!progress) return { text: 'Checking what is kept…' };
+  // no files listed yet (total 0) is a run that has not begun, or one stopped before its index was read: never a finished one
+  if (!progress || progress.total === 0) return { text: 'Checking what is kept…' };
   const { chapters } = progress;
   const done = Math.min(progress.done, chapters);
   if (progress.done === progress.total) {
