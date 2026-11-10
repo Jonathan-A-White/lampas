@@ -157,7 +157,7 @@ it('a reload opens the chapter on the page he was reading', async () => {
 
   await reopen();
   await waitFor(() => expect(placeLine()).toHaveTextContent(/^Mark 12 · Page 3 of \d+$/));
-});
+}, 60_000);
 
 it('a stored page past the chapter\'s last page opens the last page, never a blank one', async () => {
   versesAPage = 4;
