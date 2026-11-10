@@ -227,6 +227,50 @@ describe('the words Brenton supplies for a verb join its chunk', () => {
   });
 });
 
+describe('the pronouns and auxiliaries Brenton puts before a verb join its chunk too (mw-u2w5klk.274.11)', () => {
+  const chunkWith = (n: number, k: number) => {
+    const verse = gen1.verses[n - 1];
+    return verse.e.find((c) => c.g.includes(k));
+  };
+  const wordIndex = (n: number, lemma: string): number => gen1.verses[n - 1].g.findIndex((w) => w.l === lemma);
+
+  it('Gen 1:26: "Let us make" is one chunk of ποιήσωμεν', () => {
+    const chunk = chunkWith(26, wordIndex(26, 'ποιέω'))!;
+    expect(chunk.t.startsWith('Let us make')).toBe(true);
+    expect(chunk.g).toEqual([wordIndex(26, 'ποιέω')]);
+  });
+
+  it('Gen 1:14: "let them be" is one chunk of γενέσθωσαν; 1:29: "I have given" and 1:31: "he had made" join their verbs', () => {
+    const be = gen1.verses[13].e.find((c) => /^let them be\b/.test(c.t))!;
+    expect(be.g.length).toBe(1);
+    expect(gen1.verses[13].g[be.g[0]].p.startsWith('V-')).toBe(true);
+    expect(chunkWith(29, wordIndex(29, 'δίδωμι'))!.t).toMatch(/^I have given\b/);
+    expect(chunkWith(31, wordIndex(31, 'ποιέω'))!.t).toMatch(/\bhe had made/);
+  });
+
+  it('no Genesis 1 chunk with no Greek ends in such a word before a verb chunk, bar the object ones, and the verse is still Brenton\'s whole verse', () => {
+    gen1.verses.forEach((verse, v) => {
+      expect(joined(verse)).toBe(gen1Plain.verses[v].e[0].t);
+      verse.e.forEach((c, i) => {
+        const next = verse.e[i + 1];
+        if (c.g.length > 0 || !next?.g.some((k) => verse.g[k]?.p.startsWith('V-'))) return;
+        expect(c.t, `verse ${verse.n}`).not.toMatch(/\b(let|let us|let them|I|he|she|it|they|we|have|had|shall|will)$/i);
+      });
+    });
+  });
+
+  it('"us" and "them" are often objects: "blessed them" before a new verb is not joined to it, but "let them" is', () => {
+    const gl = (l: string): string => ({ καί: 'and', εὐλογέω: 'bless', λέγω: 'say' })[l] ?? '';
+    const g = [word('καὶ', 'kai', 'καί', 'CONJ'), word('εὐλογήσεν', 'eulogēsen', 'εὐλογέω', 'V-AAI-3S'), word('εἶπεν', 'eipen', 'λέγω', 'V-2AAI-3S')];
+    const object = alignChapter({ code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf('And blessed them said', g.slice(0, 1).concat(g.slice(2)))] } as Chapter, gl).chapter.verses[0];
+    const texts = object.e.map((c) => c.t);
+    expect(texts.join(' ')).toBe('And blessed them said');
+    expect(texts.some((t) => /^them said/.test(t))).toBe(false);
+    const leading = alignChapter({ code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf('And let them say', [g[0], g[2]])] } as Chapter, gl).chapter.verses[0];
+    expect(leading.e.map((c) => [c.t, c.g])).toEqual([['And', [0]], ['let them say', [1]]]);
+  });
+});
+
 describe('the model pass and the words supplied for a verb', () => {
   it('a "there" the model pass found no Greek for still joins "was", and the model\'s rows stay held to the aligner\'s runs', () => {
     const chapter = { code: 'gen', book: 'Genesis', chapter: 1, verses: [verseOf('And there was light.', [word('καὶ', 'kai', 'καί', 'CONJ'), word('ἐγένετο', 'egeneto', 'γίνομαι', 'V-2ADI-3S'), word('φῶς', 'phōs', 'φῶς', 'N-ASN')])] } as Chapter;

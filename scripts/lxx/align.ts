@@ -362,8 +362,11 @@ export function alignVerse(verse: Verse, gloss: (lemma: string) => string): { ve
 
 // ---------------------------------------------------------------- a chapter, and the report
 
-/** The English words Brenton supplies in front of a Greek verb that has none of its own: 'Let there be' for Γενηθήτω, 'there was' and 'it was' for ἐγένετο, 'he called' for ἐκάλεσεν. */
-const SUPPLIED_FOR_VERB = new Set(['let', 'there', 'it', 'he', 'she', 'they', 'we', 'i', 'you', 'thou', 'ye']);
+/** The English words Brenton supplies in front of a Greek verb that has none of its own: 'Let there be' for Γενηθήτω, 'there was' and 'it was' for ἐγένετο, 'he called' for ἐκάλεσεν, 'I have' for δέδωκα, 'it shall' for ἔσται. */
+const SUPPLIED_FOR_VERB = new Set(['let', 'there', 'it', 'he', 'she', 'they', 'we', 'i', 'you', 'thou', 'ye', 'have', 'had', 'shall', 'will', 'us', 'them']);
+
+/** 'us' and 'them' are often the object of the verb before them ('blessed them'), so they lead a verb only after 'let' ('Let us make', 'let them be'): a run of supplied words does not start with one. */
+const OBJECT_WORDS = new Set(['us', 'them']);
 
 /**
  * The last words of a chunk with no Greek, when they are such words and a chunk of a Greek verb follows, join that chunk ('Let there' + 'be' is 'Let there be'), so a tap on the leading half of the
@@ -378,6 +381,8 @@ function joinSupplied(verse: Verse): Verse {
     const words = wordsOf(chunk);
     let n = 0;
     while (n < words.length && SUPPLIED_FOR_VERB.has(lettersOf(words[words.length - 1 - n]))) n++;
+    // the run starts with the first word that is not an object word (the 'them' of 'blessed them' belongs to the verb before it)
+    while (n > 0 && OBJECT_WORDS.has(lettersOf(words[words.length - n]))) n--;
     return chunk.g.length === 0 ? n : 0;
   };
   if (!verse.e.some((chunk, i) => tailOf(chunk) > 0 && isVerb(verse.e[i + 1]))) return verse;
