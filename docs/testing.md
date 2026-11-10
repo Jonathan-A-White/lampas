@@ -132,3 +132,17 @@ Speech and the microphone are never faked by hand (mw-it6qk5.3): they are voice-
   `tests/support/manual-clock.ts`) and `tests/support/fake-mic.ts` (`stubMic()`, `advance(ms)`); Playwright specs use `tests/support/honest-fakes.ts`
   (`honestSpeech(page, {langs, msPerWord})`, `honestMic(page)`). A screen that holds on a verse being spoken or a clip being recorded needs a slow reader
   (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip.
+
+## The Septuagint tests that read the real, git-ignored sources (mw-cv2w9um)
+
+`tests/unit/lxx-align-choose.test.ts` 'Genesis 1 to 11 with the model pass' (and the `lxx:align-choose` command test) read `data/raw/lxx` and `data/lxx/morpheus`, which are git-ignored, so they used to be skipped
+in every gate but the Laptop's main checkout and a story that broke their invariant landed green. `tests/global-setup.ts` now decides once (`tests/support/lxx-real-data.ts`) and prints one line in the gate's log,
+`lxx real-data tests (...): RUN on the sources of <where>` or `SKIPPED, <why>`:
+
+- the sources are looked for in the cwd, then in the Laptop's checkout `/home/jwhite/lampas`; the test gives `runShip` their directories (`rawDir`, `morpheusDir`), so no `npm run lxx:link` is needed;
+- the cwd's own real directories (the Laptop's main checkout): the tests always run;
+- borrowed sources (a leftover link, or the Laptop's checkout): they run only when the work (the branch against `main`, plus uncommitted files) touches `scripts/lxx/`, `data/lxx/choices/`, `data/lxx/align/`, `data/lxx/known/`
+  or those two test files, so a leftover link cannot fail a gate on data the story did not change; if git cannot say what changed they run;
+- no sources anywhere (cloud hosts): skipped with that one line, never a failure; `LAMPAS_LXX_REAL=run|skip` forces it.
+
+Other `skipIf` tests in `tests/` on a git-ignored path: `tests/unit/supplied-words.test.ts` (`data/raw/msb_nt_tables.tsv`); the catalogue, sermon-archives and match-export tests wait on the vault's Logos export (outside the repo).
