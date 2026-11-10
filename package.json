@@ -44,6 +44,7 @@
     "lxx:report": "tsx scripts/lxx/report.ts",
     "numerals:sweep": "tsx scripts/numeral-sweep.ts",
     "split:sweep": "tsx scripts/split-pairing-sweep.ts",
+    "offline:sizes": "tsx scripts/offline-sizes.ts",
     "lxx:ship": "tsx scripts/lxx/ship.ts",
     "variants:sweep": "tsx scripts/variants-sweep.ts",
     "variants:align": "tsx scripts/variants-align.ts",

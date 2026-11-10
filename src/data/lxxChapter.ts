@@ -147,6 +147,26 @@ export const notReadyName = (from: LxxIndex | null, book: string, n: number, nam
 /** The address of a Greek chapter's file: /data-lxx/<code>/<n>.json?v=<fingerprint>, plain when the index has no fingerprint for it. */
 export const lxxChapterUrl = (at: GreekChapter): string => `/data-lxx/${at.code}/${at.chapter}.json${at.fingerprint ? `?v=${at.fingerprint}` : ''}`;
 
+/** The Septuagint's index and its Greek lexicon: plain addresses (no fingerprint), which the worker answers network first so they stay current and are read offline (src/sw.ts, mw-lcv9z3g.6). */
+export const LXX_INDEX_URL = '/data-lxx/index.json';
+export const LXX_LEXICON_URL = '/data-lxx/lexicon-grc-lxx.json';
+
+/** What the offline copy reads of the Septuagint's index: each book's chapters, verses and fingerprints. */
+export interface LxxShipped {
+  books: Pick<LxxBook, 'code' | 'chapters' | 'verses' | 'fingerprints'>[];
+}
+
+/**
+ * The address of every Greek chapter the index ships, in its order (the offline copy keeps these, mw-lcv9z3g.6). A chapter is shipped when the index gives it a fingerprint or verses; the gaps
+ * (a Greek chapter number Swete lacks, a chapter not shipped yet) have neither.
+ */
+export const lxxChapterUrls = (from: LxxShipped): string[] =>
+  from.books.flatMap((b) =>
+    Array.from({ length: b.chapters }, (_, i) => ({ code: b.code, chapter: i + 1, fingerprint: b.fingerprints[i] ?? '' }))
+      .filter((at, i) => at.fingerprint !== '' || (b.verses[i] ?? 0) > 0)
+      .map(lxxChapterUrl),
+  );
+
 /** Whether verse `verse` of a Greek chapter belongs to Lampas's chapter `n` of `book`: one of the Lampas verses it answers is in that chapter (a verse with no `ref` at all is the file's, so it stays). A verse Lampas has no verse
  * for ('none': an Addition, a Psalm's extra title) belongs to the first Lampas chapter its file serves (`owner`). */
 function belongsTo(verse: Verse, book: string, n: number, owner: boolean): boolean {

@@ -5,8 +5,8 @@
 // window posts {type:'SKIP_WAITING'} after his tap on the Update banner (section 10).
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
-import { CacheFirst } from 'workbox-strategies';
-import { DATA_CACHE, dropOldDataCaches, isVersionedChapter, isVersionedLadder, isVersionedList, isVersionedSermons, serveChapter } from './dataCache';
+import { CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { DATA_CACHE, dropOldDataCaches, isLxxPlainFile, isVersionedChapter, isVersionedLadder, isVersionedLxxChapter, isVersionedList, isVersionedSermons, serveChapter } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 import { isShareRequest, receiveShare } from './share/target';
 
@@ -60,6 +60,16 @@ registerRoute(
 registerRoute(
   ({ url, request }) => request.method === 'GET' && isVersionedSermons(url),
   ({ request }) => serveChapter(request, self.caches),
+);
+// A Septuagint chapter (/data-lxx/<code>/<n>.json?v=<fingerprint>) is kept the same way, so it is read offline and a changed chapter replaces its old copy (mw-lcv9z3g.6). Its index and Greek lexicon have no
+// fingerprint of their own, so they go to the network first (a short wait, then the copy kept) and what comes back is kept: a new chapter's fingerprint reaches the phone, and both are read offline.
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isVersionedLxxChapter(url),
+  ({ request }) => serveChapter(request, self.caches),
+);
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isLxxPlainFile(url),
+  new NetworkFirst({ cacheName: DATA_CACHE, networkTimeoutSeconds: 5 }),
 );
 // Everything else under /data/ (index.json and the Greek lists, which the precache answers first, and a plain request for anything else) is kept as it first came.
 registerRoute(

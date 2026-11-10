@@ -1,7 +1,9 @@
 // src/settings/offlineCopyState.ts — what the Keep on this phone row does with the offline copy (src/data/offlineCopy.ts, mw-lcv9z3g.2): choosing a scope saves it and starts the run
 // in place of one going (or stops it for Nothing extra, which deletes nothing), and a phone that chose a scope before checks it again when the row first shows unless a run is going
 // (refreshOfflineCopy, which the app also runs at its start: what is kept is not fetched again). The time of the check is the offline copy's own (getOfflineCheckedAt).
-import { getOfflineScope, offlineUrls, refreshOfflineCopy, setOfflineScope, stopOfflineCopy, type OfflineProgress, type OfflineScope } from '../data/offlineCopy';
+import { getOfflineScope, refreshOfflineCopy, setOfflineScope, stopOfflineCopy, type OfflineProgress, type OfflineScope } from '../data/offlineCopy';
+import type { LxxShipped } from '../data/lxxChapter';
+import { scopeBytes } from '../data/offlineSizes';
 
 /** He chose `scope`: it is saved, and the copy of it starts in place of any run going; Nothing extra stops the run and deletes nothing. */
 export async function chooseOfflineScope(scope: OfflineScope): Promise<void> {
@@ -17,24 +19,20 @@ export async function resumeOfflineCopy(): Promise<OfflineScope> {
   return scope;
 }
 
-const counted = new Map<OfflineScope, { files: number; chapters: number }>();
-
-/** How many files a scope keeps, and how many of them are chapters (the Hebrew word lists of the whole Bible are files, not chapters). */
-export function countsOf(scope: OfflineScope): { files: number; chapters: number } {
-  let counts = counted.get(scope);
-  if (!counts) {
-    const urls = offlineUrls(scope);
-    counts = { files: urls.length, chapters: urls.filter((url) => /\/\d+\.json\?v=/.test(url)).length };
-    counted.set(scope, counts);
-  }
-  return counts;
+/** The labels of the chips, in order, with each scope's megabytes (src/data/offlineSizes.ts): the Septuagint's index (`lxx`, null until it is read) gives its size and the whole's, and without it those two show no megabytes rather than a wrong one. */
+export function offlineChoices(lxx: LxxShipped | null): readonly (readonly [OfflineScope, string])[] {
+  const label = (scope: OfflineScope, name: string): string => {
+    const bytes = scopeBytes(scope, lxx);
+    return bytes === undefined ? name : `${name} (${megabytes(bytes)})`;
+  };
+  return [
+    ['none', 'Nothing extra'],
+    ['hbo', label('hbo', 'Old Testament: Hebrew')],
+    ['lxx', label('lxx', 'Old Testament: Septuagint')],
+    ['nt', label('nt', 'New Testament')],
+    ['all', label('all', 'All')],
+  ];
 }
-
-export const OFFLINE_CHOICES: readonly (readonly [OfflineScope, string])[] = [
-  ['none', 'Nothing extra'],
-  ['nt', 'New Testament (34 MB)'],
-  ['all', 'Whole Bible (113 MB)'],
-];
 
 /** Megabytes fetched: one decimal under 10 ('0.4 MB', '1 MB'), whole numbers above. */
 export function megabytes(bytes: number): string {
@@ -58,8 +56,8 @@ export interface Status {
 /** What the row says of the copy of `scope`, given its progress (undefined until the run's first report) and the time of the last check. */
 export function statusOf(scope: OfflineScope, progress: OfflineProgress | undefined, checked: number | undefined): Status | undefined {
   if (scope === 'none') return undefined;
-  const { chapters } = countsOf(scope);
   if (!progress) return { text: 'Checking what is kept…' };
+  const { chapters } = progress;
   const done = Math.min(progress.done, chapters);
   if (progress.done === progress.total) {
     if (progress.failed.length > 0) return { text: `Could not keep ${progress.failed.length} of ${progress.total}.`, note: 'Choose it again to try them again.' };
