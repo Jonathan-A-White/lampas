@@ -360,3 +360,68 @@ test('Settings > Bible in Logos has a Septuagint row, Swete to start, and a chap
   await expect(page.locator('[data-septuagint-not-ready]')).toHaveText('The Septuagint of Isaiah is not ready yet; this is the Hebrew.');
   await expect(page.locator('[data-septuagint-door]')).toHaveAttribute('href', 'logosres:LLS:OTGRKSWETETXT;ref=Bible.Isa1');
 });
+
+// mw-u2w5klk.308: the line under a Septuagint chapter's title is one line, centred, and its button is no wider than its words and padding
+type CaptionBox = { lines: number; left: number; right: number; textWidth: number; buttonWidth: number; padding: number; width: number };
+
+async function captionBox(page: Page, selector: string): Promise<CaptionBox> {
+  return page.locator(selector).evaluate((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const rects = Array.from(range.getClientRects());
+    const box = range.getBoundingClientRect();
+    const style = getComputedStyle(el);
+    const outer = el.getBoundingClientRect();
+    const width = document.documentElement.clientWidth;
+    return {
+      lines: rects.length,
+      left: box.left,
+      right: width - box.right,
+      textWidth: box.width,
+      buttonWidth: outer.width,
+      padding: parseFloat(style.paddingLeft) + parseFloat(style.paddingRight),
+      width,
+    };
+  });
+}
+
+for (const size of [
+  { width: 390, height: 844 },
+  { width: 844, height: 390 },
+]) {
+  test(`the Septuagint header line is one centred line, its button no wider than its words, at ${size.width}x${size.height}`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await openUnlocked(page);
+    await turnOn(page);
+    await page.goto('/#/?b=gen&c=1');
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
+    await expect(page.locator('[data-reader-subtitle]')).toBeVisible();
+    for (const view of ['English', 'Greek']) {
+      await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: view, exact: true }).click();
+      const caption = await captionBox(page, '[data-reader-subtitle]');
+      expect(caption.lines, `${view} view: lines`).toBe(1);
+      expect(Math.abs(caption.left - caption.right), `${view} view: margins ${caption.left} / ${caption.right}`).toBeLessThanOrEqual(1);
+      expect(caption.buttonWidth, `${view} view: button ${caption.buttonWidth} against text ${caption.textWidth} + padding ${caption.padding}`).toBeLessThanOrEqual(caption.textWidth + caption.padding + 1);
+    }
+    await shot(page, `septuagint-subtitle-${size.width}`);
+  });
+}
+
+test('the "not ready yet" line under the title has no lone word on a line and is centred at 390x844', async ({ page }) => {
+  await openUnlocked(page);
+  await turnOn(page);
+  for (const url of ['/#/?b=isa&c=1', '/#/?b=gen&c=2']) {
+    await page.goto(url);
+    await expect(page.locator('[data-septuagint-not-ready]')).toBeVisible();
+    const note = await captionBox(page, '[data-septuagint-not-ready]');
+    expect(Math.abs(note.left - note.right), `${url}: margins ${note.left} / ${note.right}`).toBeLessThanOrEqual(1);
+    // a wrapped line ends in more than one word: the last of its rects is wider than a lone short word
+    const last = await page.locator('[data-septuagint-not-ready]').evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const rects = Array.from(range.getClientRects());
+      return { lines: rects.length, lastWidth: rects[rects.length - 1]?.width ?? 0 };
+    });
+    if (last.lines > 1) expect(last.lastWidth, `${url}: last line ${last.lastWidth}px`).toBeGreaterThan(60);
+  }
+});
