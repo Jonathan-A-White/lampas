@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.196
+_2026-11-10_
+- Fixed: a screen reader now says "Verses 8-9" for a Septuagint verse number that covers two verses, instead of only the first.
+
 ## 0.7.195
 _2026-11-10_
 - Fixed: Tapping a Hebrew lesson in Settings' grammar approach list now opens its lesson instead of showing an error screen.
