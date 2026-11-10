@@ -41,8 +41,10 @@ function SuppliedText({ chunk }: { chunk: EnglishChunk }) {
 /** The button with a verse's number: a tap selects the verse (it opens its Verse view), a hold (half a second) copies the verse at once, licence or not, as a hold on a section heading
  * or the place line copies its passage or the chapter (`onCopy`, src/copy/useCopyHold.ts: useLongPress, the app's one hold). Talking about the verse is one tap away in the Verse view;
  * the Talk sheet's own bar is the hold-to-talk (mw-5r3p30.835). */
-export function VerseNumber({ n, selected, onSelect, onCopy, className, children }: {
+export function VerseNumber({ n, to, selected, onSelect, onCopy, className, children }: {
   n: number;
+  /** the last verse of a Septuagint row englishRows folded (Verse.to): the button is named for the range, as its label reads '8-9' */
+  to?: number;
   selected: boolean;
   onSelect: () => void;
   onCopy?: () => void;
@@ -55,7 +57,7 @@ export function VerseNumber({ n, selected, onSelect, onCopy, className, children
       type="button"
       {...press}
       data-verse-number
-      aria-label={`Verse ${n}`}
+      aria-label={to !== undefined && to !== n ? `Verses ${n}-${to}` : `Verse ${n}`}
       aria-pressed={selected}
       className={`${NO_SELECT} ${className}`}
     >

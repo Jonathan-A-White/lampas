@@ -51,6 +51,7 @@ export function VerseLine(props: VerseProps) {
       {/* a Septuagint row's number box holds a range of two-digit verses ('15-16', englishRows) and a clear space after it, in the number's own em so Large text keeps it; every row of the chapter has it, so the text starts at one x (mw-u2w5klk.329) */}
       <VerseNumber
         n={verse.n}
+        to={verse.to}
         selected={selected}
         onSelect={onSelect}
         onCopy={onCopy}
@@ -101,6 +102,7 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
           <span className={wide ? 'whitespace-nowrap' : undefined}>
           <VerseNumber
             n={verse.n}
+            to={verse.to}
             selected={selected === verse.n}
             onSelect={() => onSelect(verse.n)}
             onCopy={onCopy ? () => onCopy(verse.n) : undefined}
