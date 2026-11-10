@@ -30,6 +30,8 @@ export const SEPTUAGINT_EDITION = "Septuagint: Swete's Greek, Brenton's English"
 
 export interface CopyVerse {
   n: number;
+  /** the last Lampas verse a row stands for, where it stands for several (a Septuagint row the English view folded, englishRows: Psalm 149:8-9 is `n` 8, `through` 9); absent for a single verse */
+  through?: number;
   english: string;
   /** the verse as the Reader shows it in the view on now (English, the original or the Weave); absent when the view is not known: the English */
   shown?: string;
@@ -80,12 +82,14 @@ function shownOf(verse: Verse, view: ReaderView, woven: WovenVerse | null, varia
 
 /** The Septuagint's own address of `held` verses of a chapter opened as Lampas's chapter `lampas`: 'Greek 22:1', 'Greek 22:2-3', 'Greek 114:1-115:2' or, for a whole chapter, 'Greek 22' ('Greek 114 and 115'); '' where it is Lampas's own. */
 function greekAddress(chapter: Chapter, held: readonly Verse[], lampas: number, whole: boolean): string {
-  const at = (v: Verse): { chapter: number; verse: number } => v.greek ?? { chapter: chapter.chapter, verse: v.n };
-  if (held.every((v) => at(v).chapter === lampas && at(v).verse === lampasNumber(chapter, v))) return '';
+  const at = (v: Pick<Verse, 'n' | 'greek'>): { chapter: number; verse: number } => v.greek ?? { chapter: chapter.chapter, verse: v.n };
+  // a folded row (englishRows) ends at the verse folded into it
+  const endOf = (v: Verse): Pick<Verse, 'n' | 'ref' | 'greek'> => v.through ?? v;
+  if (held.every((v) => [v, endOf(v)].every((x) => at(x).chapter === lampas && at(x).verse === lampasNumber(chapter, x)))) return '';
   const chapters = [...new Set(held.map((v) => at(v).chapter))];
   if (whole || held.length === 0) return `Greek ${chapters.join(' and ')}`;
   const first = at(held[0]);
-  const last = at(held[held.length - 1]);
+  const last = at(endOf(held[held.length - 1]));
   if (first.chapter === last.chapter) return `Greek ${first.chapter}:${first.verse}${first.verse === last.verse ? '' : `-${last.verse}`}`;
   return `Greek ${first.chapter}:${first.verse}-${last.chapter}:${last.verse}`;
 }
@@ -94,9 +98,10 @@ function greekAddress(chapter: Chapter, held: readonly Verse[], lampas: number, 
  * `read` is the view the Reader is in, for Text 'As you read it'; without it the verses are shown in English. */
 export function copyUnitOf(chapter: Chapter, verse: Pick<Verse, 'n' | 'to'>, read?: ReadView): CopyUnit {
   const last = chapter.verses[chapter.verses.length - 1]?.n ?? verse.n;
-  const kind: CopyUnit['kind'] =
-    verse.to === undefined ? 'verse' : verse.n === (chapter.verses[0]?.n ?? verse.n) && verse.to >= last ? 'chapter' : 'passage';
   const held = chapter.verses.filter((v) => v.n >= verse.n && v.n <= (verse.to ?? verse.n));
+  // a row the English view folded (englishRows) stands for several verses: held alone it is a passage, named from its first verse to its last (mw-u2w5klk.328)
+  const kind: CopyUnit['kind'] =
+    verse.to === undefined ? (held.some((v) => v.through) ? 'passage' : 'verse') : verse.n === (chapter.verses[0]?.n ?? verse.n) && verse.to >= last ? 'chapter' : 'passage';
   // a chapter of the Septuagint is named and numbered as Lampas's (Greek Ps 22:1 is Psalm 23:1), the edition and the Greek address in the reference line (mw-u2w5klk.18)
   const septuagint = isSeptuagint(chapter);
   const lampas = septuagint ? lampasChapterOf(chapter) : chapter.chapter;
@@ -109,16 +114,23 @@ export function copyUnitOf(chapter: Chapter, verse: Pick<Verse, 'n' | 'to'>, rea
     ...(septuagint ? { septuagint: { greek: greekAddress(chapter, held, lampas, kind === 'chapter') } } : {}),
     verses: held.map((v) => ({
       n: lampasNumber(chapter, v),
+      ...(v.through && lampasNumber(chapter, v.through) !== lampasNumber(chapter, v) ? { through: lampasNumber(chapter, v.through) } : {}),
       english: englishOf(v),
       ...(read ? { shown: shownOf(v, read.view, read.woven?.[chapter.verses.indexOf(v)] ?? null, read.variants) } : {}),
     })),
   };
 }
 
+/** The number of the unit's last verse: that of the last row, or the verse a folded last row stands through to (CopyVerse.through). */
+function lastOf(unit: CopyUnit): number | undefined {
+  const row = unit.verses[unit.verses.length - 1];
+  return row === undefined ? undefined : row.through ?? row.n;
+}
+
 /** 'Colossians 3:1', 'Colossians 3:1-4' or, for a whole chapter, 'Colossians 3'. */
 export function copyReference(unit: CopyUnit): string {
   const first = unit.verses[0]?.n;
-  const last = unit.verses[unit.verses.length - 1]?.n;
+  const last = lastOf(unit);
   if (unit.kind === 'chapter' || first === undefined || last === undefined) return `${unit.book} ${unit.chapter}`;
   return `${unit.book} ${unit.chapter}:${first === last ? first : `${first}-${last}`}`;
 }
@@ -126,10 +138,11 @@ export function copyReference(unit: CopyUnit): string {
 /** The https link of the unit, as Copy link gave it before this setting. */
 export function copyLink(unit: CopyUnit): string {
   const first = unit.verses[0]?.n;
-  const last = unit.verses[unit.verses.length - 1]?.n;
+  const last = lastOf(unit);
   if (first === undefined || last === undefined) return referenceUrl(unit.code, unit.chapter);
   // a passage and a whole chapter are a verse range, as the Verse view's Copy link gave them
-  return unit.kind === 'verse' ? referenceUrl(unit.code, unit.chapter, first) : passageUrl(unit.code, unit.chapter, first, last);
+  // (a passage of Greek verses that are one Lampas verse, a Psalm's title, is that verse's link)
+  return unit.kind === 'verse' || (unit.kind === 'passage' && first === last) ? referenceUrl(unit.code, unit.chapter, first) : passageUrl(unit.code, unit.chapter, first, last);
 }
 
 /** The unit's verses as one paragraph of the words as he reads them (the English when the view is not known), each led by its number when the unit has more than one verse and Verse numbers is on. */
@@ -138,7 +151,7 @@ function paragraph(unit: CopyUnit, numbers: OnOffChoice): string {
   return unit.verses
     .map((v) => {
       const text = v.shown ?? v.english;
-      return numbered ? `${v.n} ${text}` : text;
+      return numbered ? `${v.through ? `${v.n}-${v.through}` : v.n} ${text}` : text;
     })
     .join(' ')
     .trim();
@@ -230,13 +243,13 @@ export function copyRange(units: readonly CopyUnit[], format: CopyFormat): Range
   const first = units[0];
   const last = units[units.length - 1];
   const firstVerse = first.verses[0]?.n ?? 1;
-  const lastVerse = last.verses[last.verses.length - 1]?.n ?? 1;
+  const lastVerse = lastOf(last) ?? 1;
   const whole = first.kind === 'chapter' && last.kind === 'chapter';
   const name = whole ? `${first.book} ${first.chapter}-${last.chapter}` : `${first.book} ${first.chapter}:${firstVerse}-${last.chapter}:${lastVerse}`;
   const reference = `${name} (${units.some((u) => u.septuagint) ? SEPTUAGINT_EDITION : TRANSLATION})`;
   const numbered = format.numbers === 'on';
   const words = units
-    .flatMap((unit, i) => unit.verses.map((v, j) => ({ text: v.shown ?? v.english, label: i > 0 && j === 0 ? `${unit.chapter}:${v.n}` : `${v.n}` })))
+    .flatMap((unit, i) => unit.verses.map((v, j) => ({ text: v.shown ?? v.english, label: `${i > 0 && j === 0 ? `${unit.chapter}:` : ''}${v.n}${v.through ? `-${v.through}` : ''}` })))
     .map((v) => (numbered ? `${v.label} ${v.text}` : v.text))
     .join(' ')
     .trim();
