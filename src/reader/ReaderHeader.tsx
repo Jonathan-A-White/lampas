@@ -1,7 +1,7 @@
 // src/reader/ReaderHeader.tsx — the Reader's header (docs/module-map.md R1, part d): the chapter's title (a button that opens the picker),
 // English | Weave | Greek, the Play button of Read aloud and the Menu (three lines) that opens Tools or Settings. While a reading the speaking bar does not hold waits for Pause
 // or Play, the header gives its room to those and Stop; the title stays for screen readers.
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import type { SourceLanguage } from '../data/chapter';
 import { chooseReaderLanguage, type ReaderLanguage, type ReaderView, type Weave } from '../data/repositories';
 import { weaveOrderSetting } from '../settings/definitions';
@@ -161,7 +161,7 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
         >
           <span className="title-wrap" style={{ fontSize: titleSize(longest) }}>
             {pieces.map((piece, i) => (
-              <span key={piece}>
+              <Fragment key={piece}>
                 {i > 0 ? ' ' : null}
                 <span className="whitespace-nowrap">
                   {piece}
@@ -171,7 +171,7 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
                     </span>
                   ) : null}
                 </span>
-              </span>
+              </Fragment>
             ))}
           </span>
         </button>
