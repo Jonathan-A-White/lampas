@@ -989,6 +989,119 @@ for (const on of [2, 3, 4]) {
   });
 }
 
+/** Genesis 14 (Hebrew) in the Paragraph layout with Turn pages, the pages cut for good. */
+async function openGenesis14Paragraph(page: Page) {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await keep(page, { readingMode: 'pages', layout: 'paragraph' });
+  await page.goto('/#/?b=gen&c=14');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Genesis 14', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', 'pages');
+  await expect(page.locator('[data-reader] [data-paragraph]').first()).toBeVisible();
+  await settled(page);
+}
+
+/** The verse numbers wholly in the reading box now, with the box of each button and of its digit, and the third of the box the button's centre is in. */
+const numbersHere = (page: Page) =>
+  page.evaluate(() => {
+    const b = (document.querySelector('[data-reader]') as HTMLElement).getBoundingClientRect();
+    const rect = (r: DOMRect) => ({ left: r.left, right: r.right, top: r.top, bottom: r.bottom });
+    return Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse-number]'))
+      .map((n) => ({ n, r: n.getBoundingClientRect(), d: (n.querySelector('sup') ?? n).getBoundingClientRect() }))
+      .filter(({ r }) => r.width > 0 && r.left >= b.left && r.right <= b.right && r.top >= b.top && r.bottom <= b.bottom)
+      .map(({ n, r, d }) => {
+        const share = ((r.left + r.right) / 2 - b.left) / b.width;
+        return { verse: n.closest<HTMLElement>('[data-verse]')?.dataset.verse ?? '', box: rect(r), digit: rect(d), third: share < 1 / 3 ? 'left' : share > 2 / 3 ? 'right' : 'middle' };
+      });
+  });
+
+// mw-fnvjof.17.66: in the Paragraph layout a number stands anywhere along a line, so its 44 px button must not take the forward tap: only its digit opens the verse, and
+// a tap on the rest of the box turns the page like the text around it.
+test('with Turn pages and the Paragraph layout a tap near a verse number off its digit turns the page, and on its digit opens the verse', async ({ page }) => {
+  await openGenesis14Paragraph(page);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  const count = (await placeOf(page)).of;
+  let found: { on: number; digit: { left: number; right: number; top: number; bottom: number } } | null = null;
+  for (let on = 1; on <= count && !found; on++) {
+    if (on > 1) {
+      await tapAt(page, 0.85);
+      await expect.poll(() => at(page)).toBe(on);
+    }
+    const here = (await numbersHere(page)).find((n) => n.verse === '19');
+    if (here && here.third === 'right') found = { on, digit: here.digit };
+  }
+  if (!found) throw new Error('verse 19 has no number in the right third of any page');
+  const y = (found.digit.top + found.digit.bottom) / 2;
+  // 10 and 20 px to the left of the digit: inside its 44 px box (the digit is 17 px wide in it), off the digit
+  for (const away of [10, 20]) {
+    await page.touchscreen.tap(found.digit.left - away, y);
+    await expect.poll(() => at(page), `a tap ${away} px left of the digit turns the page`).toBe(found.on + 1);
+    expect(await opened(page)).toBe(false);
+    await tapAt(page, 0.15);
+    await expect.poll(() => at(page)).toBe(found.on);
+  }
+  // the digit itself opens verse 19
+  await page.touchscreen.tap((found.digit.left + found.digit.right) / 2, y);
+  await expect(view).toBeVisible();
+  await expect(view).toHaveAttribute('data-verse-view', /(^|[^0-9])19$/);
+  await view.getByRole('button', { name: '‹ Reader' }).click();
+  await expect(view).toHaveCount(0);
+  expect(await at(page)).toBe(found.on);
+  await shot(page, 'turn-pages-paragraph-number-beside');
+});
+
+test('with Turn pages and the Paragraph layout every number in an outer third turns the page from the corners of its box, and opens its verse from its digit', async ({ page }) => {
+  test.setTimeout(240_000);
+  await openGenesis14Paragraph(page);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  const count = (await placeOf(page)).of;
+  expect(count).toBeGreaterThan(2);
+  let corners = 0;
+  let digits = 0;
+  for (let on = 1; on <= count; on++) {
+    if (on > 1) {
+      await tapAt(page, 0.85);
+      await expect.poll(() => at(page)).toBe(on);
+    }
+    const b = await box(page);
+    for (const n of await numbersHere(page)) {
+      if (n.third === 'middle') continue;
+      const forward = n.third === 'right';
+      // the first page has no page before it (the chapter before opens) and the last none after it
+      const to = on + (forward ? 1 : -1);
+      const there = to >= 1 && to <= count;
+      for (const [x, y] of [
+        [n.box.left + 4, n.box.top + 4],
+        [n.box.right - 4, n.box.top + 4],
+        [n.box.left + 4, n.box.bottom - 4],
+        [n.box.right - 4, n.box.bottom - 4],
+      ]) {
+        // a point under the floating ? is the tutor door's, and a corner past the box (or past a third, for a box that straddles it) is not this number's
+        if (!there || x < b.left || x > b.right || y < b.top || y > b.bottom || (await underDoor(page, x, y))) continue;
+        const share = (x - b.left) / b.width;
+        if (share >= 1 / 3 && share <= 2 / 3) continue;
+        await page.touchscreen.tap(x, y);
+        await expect.poll(() => at(page), `verse ${n.verse}: a tap at (${Math.round(x)}, ${Math.round(y)}) in the box's corner turns the page`).toBe(to);
+        expect(await opened(page), `verse ${n.verse}: the corner tap opens nothing`).toBe(false);
+        corners++;
+        await tapAt(page, forward ? 0.15 : 0.85);
+        await expect.poll(() => at(page)).toBe(on);
+      }
+      await page.touchscreen.tap((n.digit.left + n.digit.right) / 2, (n.digit.top + n.digit.bottom) / 2);
+      await expect(view).toBeVisible();
+      await expect(view).toHaveAttribute('data-verse-view', new RegExp(`(^|[^0-9])${n.verse}$`));
+      await view.getByRole('button', { name: '‹ Reader' }).click();
+      await expect(view).toHaveCount(0);
+      expect(await at(page)).toBe(on);
+      digits++;
+    }
+  }
+  expect(corners).toBeGreaterThan(0);
+  expect(digits).toBeGreaterThan(0);
+});
+
 test('with Scroll nothing changes: the text scrolls, a tap on the right third turns no page, a swipe opens the next chapter', async ({ page }) => {
   await openMark12(page, 'scroll');
   await expect(page.locator('[data-reader] [data-pages]')).toHaveCount(0);
