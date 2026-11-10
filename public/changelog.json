@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.192",
+    "date": "2026-11-10",
+    "story": "mw-fnvjof.17.42",
+    "kind": "fixed",
+    "text": "Memorize's back button now says \"‹ Tools\" when you open it from Tools, like the other tools."
+  },
+  {
+    "version": "0.7.192",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.308",
+    "kind": "fixed",
+    "text": "The line under a Septuagint chapter's title now fits on one line and stays centred, upright and sideways, and only the words themselves can be tapped."
+  },
+  {
     "version": "0.7.191",
     "date": "2026-11-09",
     "story": "mw-fnvjof.17.9",

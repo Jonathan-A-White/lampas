@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.192
+_2026-11-10_
+- Fixed: Memorize's back button now says "‹ Tools" when you open it from Tools, like the other tools.
+- Fixed: The line under a Septuagint chapter's title now fits on one line and stays centred, upright and sideways, and only the words themselves can be tapped.
+
 ## 0.7.191
 _2026-11-09_
 - Fixed: the Hebrew texts page of Your Logos library now says that these books open only while Hebrew is on in Which languages?, instead of silently giving no "In another book…".
