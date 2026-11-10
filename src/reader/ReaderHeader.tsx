@@ -163,6 +163,8 @@ function emOf(text: string): number {
 const TITLE_FLOOR_CAP_PX = 11;
 /** What the title button takes beside its text, in px: its side padding (px-1, 8) and the chevron with its margin (12 + 2). */
 const TITLE_CHROME_PX = 22;
+/** …of which the side padding alone (px-1). */
+const TITLE_PAD_PX = 8;
 const TITLE_FLOOR = `min(${TITLE_MIN_REM}rem, ${TITLE_FLOOR_CAP_PX}px)`;
 
 /** The title's type size: the largest the header holds, smaller only as far as the widest whole piece needs to stand on one line in the room the title has (`100cqw` is the title box's width, less the button's own padding and chevron). */
@@ -170,9 +172,9 @@ function titleSize(wholeEm: number): string {
   return `clamp(${TITLE_FLOOR}, calc((100cqw - ${TITLE_CHROME_PX}px) / ${wholeEm.toFixed(2)}), ${TITLE_MAX_REM}rem)`;
 }
 
-/** The least room the title box is given: the widest unit at the smallest size, whole, with the button's padding and chevron. A row that cannot hold it wraps, so no unit is cut. */
-function titleRoom(unitEm: number): string {
-  return `calc(${TITLE_FLOOR} * ${unitEm.toFixed(2)} + ${TITLE_CHROME_PX}px)`;
+/** The least room the title box is given: the widest unit at the smallest size, whole, with the button's padding, and the chevron's room for the last unit, which carries it. A row that cannot hold it wraps, so no unit is cut. */
+function titleRoom(unitEm: number, lastEm: number): string {
+  return `max(calc(${TITLE_FLOOR} * ${unitEm.toFixed(2)} + ${TITLE_PAD_PX}px), calc(${TITLE_FLOOR} * ${lastEm.toFixed(2)} + ${TITLE_CHROME_PX}px))`;
 }
 
 export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaves = true, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
@@ -182,10 +184,12 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
   const septuagint = /^\d+ \(Greek /.test(chapter);
   const unitsIn = (piece: string, i: number) => unitsOf(piece, septuagint, i === 0);
   const wholeEm = Math.max(...pieces.map(emOf));
-  const unitEm = Math.max(...pieces.flatMap(unitsIn).map(emOf));
+  const units = pieces.flatMap(unitsIn);
+  const unitEm = Math.max(...units.map(emOf));
+  const lastEm = emOf(units[units.length - 1]);
   return (
     <header inert={inert} className="flex shrink-0 flex-wrap items-center gap-1 border-b border-line px-1">
-      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(unitEm) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
+      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(unitEm, lastEm) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
         <button
           type="button"
           aria-haspopup="dialog"
