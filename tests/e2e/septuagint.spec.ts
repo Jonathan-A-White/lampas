@@ -407,6 +407,24 @@ for (const size of [
   });
 }
 
+test('the Septuagint header line keeps 8 px from the screen edges at 360x740, or wraps balanced onto two lines', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await openUnlocked(page);
+  await turnOn(page);
+  await page.goto('/#/?b=gen&c=1');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await expect(page.locator('[data-reader-subtitle]')).toBeVisible();
+  for (const view of ['English', 'Greek']) {
+    await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: view, exact: true }).click();
+    const caption = await captionBox(page, '[data-reader-subtitle]');
+    expect(caption.lines, `${view} view: lines`).toBeLessThanOrEqual(2);
+    expect(Math.abs(caption.left - caption.right), `${view} view: margins ${caption.left} / ${caption.right}`).toBeLessThanOrEqual(1);
+    expect(caption.left, `${view} view: left margin ${caption.left}`).toBeGreaterThanOrEqual(8);
+    expect(caption.right, `${view} view: right margin ${caption.right}`).toBeGreaterThanOrEqual(8);
+  }
+  await shot(page, 'septuagint-subtitle-360');
+});
+
 test('the "not ready yet" line under the title has no lone word on a line and is centred at 390x844', async ({ page }) => {
   await openUnlocked(page);
   await turnOn(page);

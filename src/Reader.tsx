@@ -624,7 +624,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
               data-reader-subtitle
               aria-haspopup="dialog"
               onClick={() => setSourcesShown(true)}
-              className="mx-auto flex min-h-11 w-fit max-w-full items-center justify-center px-1 py-1 text-center text-[calc(0.8125rem/var(--lp-scale))] leading-[1.4] text-balance text-muted underline decoration-dotted underline-offset-4"
+              className="mx-auto flex min-h-11 w-fit max-w-[calc(100%-1rem)] items-center justify-center px-1 py-1 text-center text-[calc(0.8125rem/var(--lp-scale))] leading-[1.4] text-balance text-muted underline decoration-dotted underline-offset-4"
             >
               {SEPTUAGINT_SUBTITLE}
             </button>
