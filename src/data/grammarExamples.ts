@@ -1,6 +1,7 @@
 // src/data/grammarExamples.ts — the examples a Grammar sheet shows: words of the chapter whose parsing has the term. The chapter's own language decides which terms its parsings are cut
 // into: the Greek ones (GRAMMAR_TERMS) or, for a Hebrew chapter, the Hebrew parsing terms (hebrew/terms.ts, mw-gdcyf98.12).
 import { isGuess, sourceLanguage, type Chapter, type GreekWord } from './chapter';
+import { lemmaKeyOf } from './lemma';
 import { hebrewParseSegments, parseSegments } from './parseCode';
 
 export interface GrammarExample {
@@ -26,12 +27,12 @@ export function grammarExamples(chapter: Chapter, term: string, except?: GreekWo
     return found;
   };
   const chosen: GrammarExample[] = [];
-  const lemmas = new Set<string>(except ? [except.l] : []);
+  const lemmas = new Set<string>(except ? [lemmaKeyOf(except.l)] : []);
   for (const verse of chapter.verses) {
     for (const word of verse.g) {
       if (chosen.length >= max) return chosen;
-      if (isGuess(word) || !hasTerm(word.p) || lemmas.has(word.l)) continue;
-      lemmas.add(word.l);
+      if (isGuess(word) || !hasTerm(word.p) || lemmas.has(lemmaKeyOf(word.l))) continue;
+      lemmas.add(lemmaKeyOf(word.l));
       chosen.push({ word, verse: verse.n });
     }
   }

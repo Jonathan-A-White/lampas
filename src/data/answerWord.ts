@@ -1,7 +1,7 @@
 // src/data/answerWord.ts — a Greek word of an answer, found again in the chapter's text, so a tap can open its word sheet.
 import { type Chapter, type GreekWord, type Verse, isGuess, wordGloss, wordLemma } from './chapter';
 import type { AnswerWord } from './db';
-import { languageOfLemma, normaliseHeadword } from './lemma';
+import { languageOfLemma, lemmaKeyOf, normaliseHeadword } from './lemma';
 import { lookupLemma, lookupSeptuagintLemma } from './lexicon';
 import { addWordToLearn, wordIsListed } from './repositories';
 import { hebrewPointedForm } from '../speech/hebrewPronunciation';
@@ -20,7 +20,7 @@ export function findGreekWord(scope: TalkScope, word: AnswerWord): GreekWord | u
   const written = (w: GreekWord): string => (word.language === 'he' ? hebrewPointedForm(w.t) : w.t);
   const exact = (w: GreekWord) => written(w).normalize('NFC') === word.greek.normalize('NFC');
   const loose = (w: GreekWord) => plain(w.t) === plain(word.greek);
-  const lemma = (w: GreekWord) => plain(wordLemma(w)) === plain(word.lemma);
+  const lemma = (w: GreekWord) => plain(lemmaKeyOf(wordLemma(w))) === plain(lemmaKeyOf(word.lemma));
   return words.find(exact) ?? words.find(loose) ?? words.find(lemma);
 }
 

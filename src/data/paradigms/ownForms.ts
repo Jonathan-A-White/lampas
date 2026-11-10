@@ -3,6 +3,7 @@
 // ever one the text has, never one made up, so a cell the text does not use is marked absent ('not in the NT') and keeps no form. Pure, but for the one fetch.
 // Read from a Septuagint word (mw-u2w5klk.289) the file's Septuagint forms are laid too, with the New Testament's, each cell saying which text it was found in.
 import { BOOK_INDEX, CANON_INDEX } from '../bookIndex';
+import { headwordOf } from '../lemma';
 import { loadLxxIndex } from '../lxxChapter';
 import { bestHit, cellName, cellsLanding, cellsOf, formFit, tableFor, type Hit } from './index';
 import type { OwnText, OwnUse, Paradigm, ParadigmCell, ParadigmRow } from './types';
@@ -129,8 +130,7 @@ interface LemmaFile {
   lxx?: LemmaFormEntry[];
 }
 
-/** The headword of a lemma written as a list ('ὕδωρ, ὕδατος'): what stands before the first comma (the build's headwordOf; tests/unit/own-forms.test.ts holds them equal). */
-export const headwordOf = (lemma: string): string => lemma.split(',')[0].trim();
+export { headwordOf };
 
 const loaded = new Map<string, Promise<LemmaFile>>();
 

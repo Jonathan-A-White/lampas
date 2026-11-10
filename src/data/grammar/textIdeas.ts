@@ -3,6 +3,7 @@
 // stands (its form, dictionary form and code), like patterns.ts; ladder.ts ideasOfWord adds them to the ideas its code names, so a goal's needs, the placement and
 // every screen that asks "what does this word need" read them from one place. Pure: no ladder, no store.
 import { MARK_PAIRS } from './marks';
+import { lemmaKeyOf } from '../lemma';
 import { COMPOUND_VERBS } from './prepositions';
 import { SOUND_ALIKE } from './soundAlike';
 
@@ -31,7 +32,7 @@ const ELIDED = /['’᾿ʼ]$/;
  */
 export function textIdeasOf(word: { t?: string; l: string; p: string }): TextIdea[] {
   const form = word.t ?? '';
-  const lemma = nfc(word.l);
+  const lemma = lemmaKeyOf(word.l);
   const out = new Set<TextIdea>();
   if (ALIKE_WORDS.has(bare(form))) out.add('words-sound-alike');
   if (MOVES.has(nfc(form)) || MOVES.has(nfc(bare(form))) || ELIDED.test(form)) out.add('movable-letters');

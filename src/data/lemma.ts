@@ -15,6 +15,18 @@ const HEADWORD_END = /[,(+]/;
 /** Whether the text holds a Hebrew letter or point (the Hebrew block, U+0590 to U+05FF): a pointed Hebrew headword, which is the language of the word. */
 export const isHebrewText = (text: string): boolean => /[\u0590-\u05FF]/.test(text);
 
+/** The headword of a lemma written as a list ('ὕδωρ, ὕδατος'): what stands before the first comma (the build's headwordOf; tests/unit/own-forms.test.ts holds them equal). */
+export const headwordOf = (lemma: string): string => lemma.split(',')[0].trim();
+
+/**
+ * A lemma of the text as a table keyed by headwords has it (mw-u2w5klk.327): NFC, and a Greek lemma written as a list ('ὕδωρ, ὕδατος', which the Septuagint's derivation gives) is its headword ('ὕδωρ').
+ * A Hebrew lemma is kept whole, as normaliseHeadword keeps it (TBESH's own headword can hold a comma).
+ */
+export const lemmaKeyOf = (lemma: string): string => (isHebrewText(lemma) ? lemma.normalize('NFC') : headwordOf(lemma).normalize('NFC'));
+
+/** Whether `lemmas` (NFC, headwords as the store keeps them) holds the lemma of the text, written whole or as a list's headword. */
+export const holdsLemma = (lemmas: ReadonlySet<string>, lemma: string): boolean => lemmas.has(lemma.normalize('NFC')) || lemmas.has(lemmaKeyOf(lemma));
+
 /** The language a headword is in: 'hbo' when it holds Hebrew, else 'grc'. */
 export const languageOfLemma = (lemma: string): 'grc' | 'hbo' => (isHebrewText(lemma) ? 'hbo' : 'grc');
 

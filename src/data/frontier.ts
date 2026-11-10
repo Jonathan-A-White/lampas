@@ -3,6 +3,7 @@
 // word counts; nothing here reads the store or the network.
 import { type Chapter, type GreekWord, isGuess, wordGloss, wordLemma } from './chapter';
 import type { FrequencyEntry } from './frequency';
+import { lemmaKeyOf } from './lemma';
 
 /** The lemmas (NFC, as listSolidLemmas gives them) he has in each state. A lemma in any of the three is not new. */
 export interface Known {
@@ -26,7 +27,8 @@ export interface Candidate {
 /** Whether one form of the chapter is at the grammar level the picker is held to (src/data/grammar/formLevel.ts pickerPasses). */
 export type FormTest = (word: GreekWord) => boolean;
 
-const lemmaOf = (w: GreekWord): string => wordLemma(w).normalize('NFC');
+/** The lemma of a word as he keeps it: a Septuagint lemma written as a list ('ὕδωρ, ὕδατος') is its headword, one word with it (mw-u2w5klk.327). */
+const lemmaOf = (w: GreekWord): string => lemmaKeyOf(wordLemma(w));
 
 interface Found extends Candidate {
   /** whether any form of it in the chapter passes the form test */

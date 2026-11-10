@@ -7,6 +7,7 @@ import { bookOf } from '../books';
 import { OPTION_COUNT, choicesOf, lookAlikesOf, pairMates } from '../choices';
 import { isGuess, wordLemma, type Chapter, type EnglishChunk, type GreekWord, type Verse } from '../chapter';
 import { buildSteps, type ParseStep } from '../drill';
+import { lemmaKeyOf } from '../lemma';
 import { decodeParse, parseSegments, splitParse, type ParseFeatureId, type SplitParse } from '../parseCode';
 import { PARADIGMS, tableFor } from '../paradigms';
 import { shuffle, type Random } from '../quiz';
@@ -413,7 +414,7 @@ export function buildParse(idea: GrammarIdea, passage: readonly Chapter[], rando
       code: place.word.p,
       say: place.word.t,
       steps,
-      lemma: nfc(wordLemma(place.word)),
+      lemma: lemmaKeyOf(wordLemma(place.word)),
     };
   }
   return null;
@@ -493,7 +494,8 @@ export const EVERY_TABLE: ReadonlySet<string> = new Set(PARADIGMS.map((p) => p.i
 export function stemOf(lemma: string, form: string): Readonly<{ stem: string; ending: string }> | null {
   const key = `${lemma}|${form}`;
   if (stemCache.has(key)) return stemCache.get(key)!;
-  const stem = findStem(lemma, form);
+  // a Septuagint lemma written as a list ('ὕδωρ, ὕδατος') has the stem of its headword (mw-u2w5klk.327)
+  const stem = findStem(lemmaKeyOf(lemma), form);
   stemCache.set(key, stem);
   return stem;
 }
@@ -568,7 +570,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   const shownOf = (endings: readonly string[]) => endings.map((e) => shownEnding(e, pos, place.word.p));
   const shownFrom = (found: readonly Place[]) => found.flatMap((p) => { const e = stems(p)?.ending; return e === undefined ? [] : [shownEnding(e, pos, p.word.p)]; });
   // the near misses are the same word's other endings in the passage (another case or tense of it), then other words' of its kind, then the common ones
-  const sameWord = shownFrom(shuffle(places.filter((p) => p.word.l === place.word.l && p.word.p !== place.word.p), random));
+  const sameWord = shownFrom(shuffle(places.filter((p) => lemmaKeyOf(p.word.l) === lemmaKeyOf(place.word.l) && p.word.p !== place.word.p), random));
   const sameKind = shownFrom(places.filter((p) => parsedOf(p.word.p).pos === pos));
   const { options, near } = choicesOf(
     { right, near: sameWord, fillers: sameKind, lastResort: shownOf(shuffle(COMMON_ENDINGS[pos === 'verb' ? 'verb' : 'noun'], random)), keyOf: (e) => e.key },
@@ -577,7 +579,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
   return {
     kind: 'ending',
     ideaId: idea.id,
-    prompt: `Fill in the ending: ${featuresOf(place.word.p, idea)!.join(' ')} of ${place.word.l}`,
+    prompt: `Fill in the ending: ${featuresOf(place.word.p, idea)!.join(' ')} of ${lemmaKeyOf(place.word.l)}`,
     options: options.map((e) => e.text),
     near: near.map((e) => e.text),
     right: right.text,
@@ -586,7 +588,7 @@ export function buildEnding(idea: GrammarIdea, passage: readonly Chapter[], rand
     code: place.word.p,
     table: tableFor(place.word.p, place.word)?.id,
     word: place.word.t,
-    lemma: nfc(place.word.l),
+    lemma: lemmaKeyOf(place.word.l),
     facet: ENDING,
   };
 }

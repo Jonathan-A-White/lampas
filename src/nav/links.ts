@@ -8,6 +8,7 @@ import type { BookIndex, Chapter } from '../data/chapter';
 import type { Lookup } from '../WordSheet';
 import type { LemmaEntry, LemmaLexicon } from '../data/lexicon';
 import type { OpenChapter } from '../data/readerChapter';
+import { lemmaKeyOf } from '../data/lemma';
 import { LINK_ORIGIN } from '../config';
 import { pathOf } from './path';
 
@@ -232,6 +233,8 @@ function indexOf(lexicon: LemmaLexicon) {
       if (!held.byStrongs.has(entry.s)) held.byStrongs.set(entry.s, lemma);
       if (!held.byBare.has(bare(lemma))) held.byBare.set(bare(lemma), lemma);
     }
+    // a lemma written as a list ('ὕδωρ, ὕδατος', the Septuagint's) is also found by its headword, after every lemma that is that headword on its own (mw-u2w5klk.327)
+    for (const [lemma] of all) if (!held.byBare.has(bare(lemmaKeyOf(lemma)))) held.byBare.set(bare(lemmaKeyOf(lemma)), lemma);
     indexes.set(lexicon, held);
   }
   return held;
@@ -252,7 +255,7 @@ export function findWord(text: string, lexicon: LemmaLexicon, hebrew?: LemmaLexi
     const number = /^([gGhH]?)0*(\d+)$/.exec(wanted);
     const lemma = number
       ? byStrongs.get(`${number[1].toUpperCase() || 'G'}${number[2]}`)
-      : Object.hasOwn(lex, wanted.normalize('NFC')) ? wanted.normalize('NFC') : byBare.get(bare(wanted));
+      : Object.hasOwn(lex, wanted.normalize('NFC')) ? wanted.normalize('NFC') : byBare.get(bare(wanted)) ?? byBare.get(bare(lemmaKeyOf(wanted)));
     return lemma === undefined ? undefined : { lemma, entry: lex[lemma] };
   };
   return found(hebrewText ? hebrew ?? lexicon : lexicon) ?? (hebrewText || !septuagint ? undefined : found(septuagint));
