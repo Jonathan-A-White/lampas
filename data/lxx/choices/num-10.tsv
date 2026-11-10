@@ -1,0 +1,77 @@
+ref	parsing	lemma	mark	confidence	note
+Num.36:1#7	N-GSM	Γαλαάδ		0.80	
+Num.36:1#9	N-GSM	Μαχείρ		0.80	
+Num.36:1#11	N-GSM	Μανασσῆς		0.80	
+Num.36:1#16	N-GSM	Ἰωσήφ		0.80	
+Num.36:1#20	N-GSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model chose outside the candidates
+Num.36:1#23	N-GSM	Ἐλεάζαρ		0.80	
+Num.36:1#31	N-GPF	πατριά		0.80	
+Num.36:1#33	N-GSM	Ἰσραήλ		0.80	
+Num.36:2#17	N-GSM	Ἰσραήλ		0.80	
+Num.36:2#26	N-GSM	Σαλπαάδ		0.80	
+Num.36:2#32	P-GSM	αὐτός		0.80	
+Num.36:3#3	A-DSM	εἷς	unsure	0.50	model: unsure
+Num.36:3#7	N-GSM	Ἰσραήλ		0.80	
+Num.36:3#8	N-NPF	γυνή		0.80	
+Num.36:3#13	P-GPF	αὐτός	unsure	0.50	model: unsure
+Num.36:3#26	R-DPM	ὅς, ἥ	unsure	0.50	model: unsure
+Num.36:3#29	N-NPF	γυνή		0.80	
+Num.36:4#8	N-GSM	Ἰσραήλ		0.80	
+Num.36:4#13	P-GPF	αὐτός	unsure	0.50	model: unsure
+Num.36:4#19	R-DPM	ὅς, ἥ	unsure	0.50	model: unsure
+Num.36:4#22	N-NPF	γυνή		0.80	
+Num.36:4#33	P-GPF	αὐτός	unsure	0.50	model: unsure
+Num.36:5#6	N-GSM	Ἰσραήλ		0.80	
+Num.36:5#12	N-NSF	φυλή		0.80	
+Num.36:5#14	N-GSM	Ἰωσήφ		0.80	
+Num.36:6#1	D-NSN	οὗτος	unsure	0.50	model: unsure
+Num.36:6#2	T-NSN	ὁ	unsure	0.50	model: unsure
+Num.36:6#3	N-NSN	ῥῆμα	unsure	0.50	model: unsure
+Num.36:6#4	R-ASN	ὅς, ἥ		0.80	
+Num.36:6#9	N-GSM	Σαλπαάδ		0.80	
+Num.36:6#11	R-GSM	ὅς, ἥ	unsure	0.50	model: unsure
+Num.36:6#13	PREP	ἐναντίον		0.80	
+Num.36:6#14	P-GPF	αὐτός	unsure	0.50	model: unsure
+Num.36:6#16	N-NPF	γυνή		0.80	
+Num.36:6#17	CONJ	πλήν	unsure	0.50	model: unsure
+Num.36:6#23	P-GPF	αὐτός		0.80	
+Num.36:6#25	N-NPF	γυνή		0.80	
+Num.36:7#3	V-2FPI-3S	περιστρέφω	unsure	0.50	model: unsure
+Num.36:7#7	N-GSM	Ἰσραήλ		0.80	
+Num.36:7#21	P-GSM	αὐτός		0.80	
+Num.36:7#25	N-GSM	Ἰσραήλ		0.80	
+Num.36:8#3	N-NSF	θυγάτηρ		0.80	
+Num.36:8#4	V-PAP-NSF	ἀγχιστεύω		0.80	
+Num.36:8#10	N-GSM	Ἰσραήλ		0.80	
+Num.36:8#11	A-DSM	εἷς		0.80	
+Num.36:8#12	T-GPM	ὁ		0.80	
+Num.36:8#20	N-NPF	γυνή		0.80	
+Num.36:8#25	N-GSM	Ἰσραήλ		0.80	
+Num.36:9#3	V-2FPI-3S	περιστρέφω	unsure	0.50	model: unsure
+Num.36:9#15	P-GSM	αὐτός		0.80	
+Num.36:9#19	N-GSM	Ἰσραήλ		0.80	
+Num.36:10#5	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Num.36:10#8	N-NPF	θυγάτηρ		0.80	
+Num.36:10#9	N-GSM	Σαλπαάδ		0.80	
+Num.36:11#3	N-NSF	Θερσά		0.80	
+Num.36:11#5	N-NSF	Ἑγλά		0.80	
+Num.36:11#7	N-NSF	Μελχά		0.80	
+Num.36:11#9	N-NSF	Νουά		0.80	
+Num.36:11#11	N-NSF	Μααλά		0.80	
+Num.36:11#12	N-NPF	θυγάτηρ		0.80	
+Num.36:11#13	N-GSM	Σαλπαάδ		0.80	
+Num.36:11#16	P-GPF	αὐτός	unsure	0.50	model: unsure
+Num.36:12#4	T-GSM	ὁ		0.80	
+Num.36:12#5	N-GSM	Μανασσῆς		0.80	
+Num.36:12#7	N-GSM	Ἰωσήφ		0.80	
+Num.36:12#9	N-NPF	γυνή		0.80	
+Num.36:12#14	P-GPF	αὐτός	unsure	0.50	model: unsure
+Num.36:12#21	P-GPF	αὐτός		0.80	
+Num.36:13#5	T-NPN	ὁ	unsure	0.50	model: unsure
+Num.36:13#6	N-NPN	δικαίωμα	unsure	0.50	model: unsure
+Num.36:13#8	T-NPN	ὁ	unsure	0.50	model: unsure
+Num.36:13#9	N-NPN	κρίμα	unsure	0.50	model: unsure
+Num.36:13#10	R-APN	ὅς, ἥ		0.80	
+Num.36:13#15	N-GSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model chose outside the candidates
+Num.36:13#18	N-GSM	Μωάβ		0.80	
+Num.36:13#23	N-ASF	Ἱεριχώ		0.80	
