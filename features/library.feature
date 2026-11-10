@@ -88,7 +88,7 @@ Feature: Your Logos library, a screen of its own
     And Settings sets the New Testament to "NKJV", the Old Testament to "LSB" and the Apocrypha to "NRSV"
     When he opens the Library at the kind "bible"
     And he taps Set for on "LES"
-    Then the parts offered for "LES" are "Old Testament, Apocrypha, Septuagint, Both"
+    Then the parts offered for "LES" are "Old Testament, Apocrypha, Septuagint, OT and Apocrypha"
     When he sets "LES" for "Old Testament"
     Then Settings holds the New Testament "NKJV", the Old Testament "LES" and the Apocrypha "NRSV"
     And "LES" is marked "Set for OT"
