@@ -42,8 +42,11 @@ const aligned = (v: Verse): EnglishChunk[] => v.e.filter((c) => c.y === 'align')
 const alignedDiffs = (was: Verse, now: Verse): string[] => {
   const out: string[] = [];
   const key = (c: EnglishChunk): string => c.g.join(',');
-  const after = new Map(aligned(now).map((c) => [key(c), c]));
-  for (const c of aligned(was)) {
+  // a lead chunk (mw-u2w5klk.274.14) is supplied words paired to the verb's Greek word without joining it, so another chunk holds the same word: it is left out on both sides
+  const isLead = (v: Verse, d: EnglishChunk): boolean =>
+    d.c === 0.5 && d.t.split(/\s+/).every((w) => SUPPLIED_FOR_VERB.has(lettersOf(w))) && v.e.some((o) => o !== d && o.g.some((k) => d.g.includes(k)));
+  const after = new Map(aligned(now).filter((c) => !isLead(now, c)).map((c) => [key(c), c]));
+  for (const c of aligned(was).filter((c) => !isLead(was, c))) {
     const d = after.get(key(c));
     if (!d) {
       out.push(`${c.t}|${key(c)}: no longer an aligned chunk`);
@@ -293,7 +296,8 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
     for (const [n, chapter] of withModel) {
       for (const verse of chapter.verses) {
         expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
-        const used = verse.e.flatMap((c) => c.g);
+        // a Greek word points at the last chunk that holds it; an earlier one is a lead chunk of supplied words paired to the verb (joinSupplied, mw-u2w5klk.274.14)
+        const used = verse.e.flatMap((c, i) => c.g.filter((g) => verse.g[g].e === i));
         expect(new Set(used).size).toBe(used.length);
         for (const chunk of verse.e) {
           chunk.g.forEach((g) => expect(g >= 0 && g < verse.g.length, `Gen ${n}:${verse.n} g ${g}`).toBe(true));
@@ -302,7 +306,8 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
             expect(chunk.c).toBeLessThanOrEqual(1);
           }
         }
-        verse.e.forEach((chunk, i) => chunk.g.forEach((g) => expect(verse.g[g].e).toBe(i)));
+        verse.e.forEach((chunk, i) => chunk.g.forEach((g) => expect(verse.g[g].e).toBeGreaterThanOrEqual(i)));
+        verse.g.forEach((w, k) => w.e !== undefined && expect(verse.e[w.e].g).toContain(k));
       }
     }
   });
