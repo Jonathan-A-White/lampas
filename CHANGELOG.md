@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.194
+_2026-11-10_
+- New: a sermon that has a church Subsplash link now opens that link, already trimmed to the sermon, and opens its usual page where there is none.
+- Fixed: In the Old Testament in Greek, a number like 15-16 no longer sits tight against the first word of its verse.
+- New: Keep on this phone can now keep the Old Testament in Hebrew, the Septuagint, the New Testament, or all of them for reading without a signal.
+
 ## 0.7.193
 _2026-11-10_
 - Fixed: Tapping "The pattern" on a word's table no longer scrolls the "This word / The pattern" choice out of sight.

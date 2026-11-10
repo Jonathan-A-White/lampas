@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.194",
+    "date": "2026-11-10",
+    "story": "mw-qtu3zvz.49.2",
+    "kind": "new",
+    "text": "a sermon that has a church Subsplash link now opens that link, already trimmed to the sermon, and opens its usual page where there is none."
+  },
+  {
+    "version": "0.7.194",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.329",
+    "kind": "fixed",
+    "text": "In the Old Testament in Greek, a number like 15-16 no longer sits tight against the first word of its verse."
+  },
+  {
+    "version": "0.7.194",
+    "date": "2026-11-10",
+    "story": "mw-lcv9z3g.6",
+    "kind": "new",
+    "text": "Keep on this phone can now keep the Old Testament in Hebrew, the Septuagint, the New Testament, or all of them for reading without a signal."
+  },
+  {
     "version": "0.7.193",
     "date": "2026-11-10",
     "story": "mw-u2w5klk.326",
