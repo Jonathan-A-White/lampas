@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.203
+_2026-11-10_
+- Fixed: Keeping the Bible on your phone now downloads several times faster.
+
 ## 0.7.202
 _2026-11-10_
 - Fixed: closing a word's sheet right after tapping its Noun endings no longer opens the endings table a few seconds later.
