@@ -3,7 +3,7 @@
 import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
 import { PLAN_KIND, parseRowId } from '../grammar/drillPlan';
-import { IDEA_KIND, ideaOf } from '../grammar/ladder';
+import { IDEA_KIND } from '../grammar/ladder';
 import { ideaOfAny } from '../grammar/ladders';
 import { ideaOfStored, storedId } from '../grammar/soundScope';
 import { availableCount, paradigmById } from '../paradigms';
@@ -175,7 +175,7 @@ function namesSomething(r: Review): boolean {
   if (r.kind !== SOUND_KIND) return true;
   const at = parseReviewId(r.id);
   if (!at) return false;
-  return at.lang === 'en' || (ideaExists(at.unit) && ideaOf(at.unit).parent !== undefined);
+  return at.lang === 'en' || (ideaExists(at.unit) && ideaOfAny(at.unit).parent !== undefined);
 }
 
 /** The items due at `now` (of `kind`, or of every kind but the memorized verses, which Memorize asks for by their own kind), the longest overdue first. A word he dropped is not due. */
