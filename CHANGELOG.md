@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.193
+_2026-11-10_
+- Fixed: Tapping "The pattern" on a word's table no longer scrolls the "This word / The pattern" choice out of sight.
+
 ## 0.7.192
 _2026-11-10_
 - Fixed: Memorize's back button now says "‹ Tools" when you open it from Tools, like the other tools.

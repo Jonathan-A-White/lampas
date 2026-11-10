@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.193",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.326",
+    "kind": "fixed",
+    "text": "Tapping \"The pattern\" on a word's table no longer scrolls the \"This word / The pattern\" choice out of sight."
+  },
+  {
     "version": "0.7.192",
     "date": "2026-11-10",
     "story": "mw-fnvjof.17.42",
