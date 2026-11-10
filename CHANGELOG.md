@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.204
+_2026-11-10_
+- Fixed: The Themes line under a verse no longer shows a stray comma at the end of a topic's label.
+- Fixed: In Turn pages with the Paragraph layout, a verse number near the right edge no longer swallows the tap that should turn the page forward; only a tap on the number itself opens the verse.
+- Fixed: a fast double tap on a button now does what one tap does, in every part of the app, except page turning and the split's size, which still take quick repeats.
+
 ## 0.7.203
 _2026-11-10_
 - Fixed: Keeping the Bible on your phone now downloads several times faster.
