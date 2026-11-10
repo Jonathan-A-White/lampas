@@ -23,7 +23,10 @@ class FakeCache {
     return body === undefined ? undefined : new Response(body);
   };
   put = async (request: Request, response: Response) => void this.entries.set(request.url, await response.text());
-  keys = async () => [...this.entries.keys()].map((url) => new Request(url));
+  keys = async (request?: Request, options?: CacheQueryOptions) =>
+    [...this.entries.keys()]
+      .filter((url) => !request || (options?.ignoreSearch ? new URL(url).pathname === new URL(request.url).pathname : url === request.url))
+      .map((url) => new Request(url));
   delete = async (request: Request) => this.entries.delete(request.url);
 }
 const stores = new Map<string, FakeCache>();

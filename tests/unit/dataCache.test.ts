@@ -31,7 +31,14 @@ class FakeCache {
     return body === undefined ? undefined : new Response(body);
   };
   put = async (request: Request, response: Response) => void this.entries.set(request.url, await response.text());
-  keys = async () => [...this.entries.keys()].map((url) => new Request(url));
+  /** what each keys() call was given: serveChapter must always name the chapter (mw-lcv9z3g.8), never list the whole cache */
+  keysCalls: Array<{ request?: Request; options?: CacheQueryOptions }> = [];
+  keys = async (request?: Request, options?: CacheQueryOptions) => {
+    this.keysCalls.push({ request, options });
+    const all = [...this.entries.keys()];
+    const urls = request ? all.filter((url) => (options?.ignoreSearch ? new URL(url).pathname === new URL(request.url).pathname : url === request.url)) : all;
+    return urls.map((url) => new Request(url));
+  };
   delete = async (request: Request) => this.entries.delete(request.url);
 }
 
@@ -103,6 +110,27 @@ describe('serveChapter', () => {
     expect([...t.cache.entries.keys()].sort()).toEqual([`http://localhost${B}`, 'http://localhost/data/jhn/2.json?v=cccccccccccc']);
     await t.ask(B);
     expect(t.fetched).toHaveLength(1);
+  });
+
+  it('finds an older fingerprint of the chapter by asking for that chapter, never by listing the whole cache (mw-lcv9z3g.8)', async () => {
+    const t = setup({ '/data/jhn/1.json': 'v2 text' });
+    for (let n = 2; n <= 40; n++) t.cache.entries.set(`http://localhost/data/jhn/${n}.json?v=cccccccccccc`, `chapter ${n}`);
+    t.cache.entries.set(`http://localhost${A}`, 'v1 text');
+    await t.ask(B);
+    expect(t.cache.keysCalls.length).toBeGreaterThan(0);
+    for (const call of t.cache.keysCalls) {
+      expect(call.request).toBeDefined();
+      expect(call.options?.ignoreSearch).toBe(true);
+    }
+    expect(t.cache.entries.has(`http://localhost${A}`)).toBe(false);
+    expect(t.cache.entries.has(`http://localhost${B}`)).toBe(true);
+    // offline: the older copy is still served in the new one's place, found the same way
+    const off = setup();
+    off.cache.entries.set(`http://localhost${A}`, 'v1 text');
+    off.cache.entries.set('http://localhost/data/jhn/2.json?v=cccccccccccc', 'another');
+    off.goOffline();
+    expect(await (await off.ask(B)).text()).toBe('v1 text');
+    for (const call of off.cache.keysCalls) expect(call.request).toBeDefined();
   });
 
   it('keeps the old copy when the new one cannot be fetched, and reads from it offline', async () => {
