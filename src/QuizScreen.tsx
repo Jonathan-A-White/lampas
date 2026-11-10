@@ -17,6 +17,7 @@ import { askAboutWord } from './nav/readerRequest';
 import { MAX_QUIZ_ANSWERS, quizQuestion, type QuizAnswer, type QuizFocus } from './services/talk';
 import { speakWord } from './speech/greek';
 import { getStudyChapter } from './data/readerChapter';
+import { cardForm } from './reader/septuagint';
 import { studyLanguage } from './data/studyLanguage';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { WordQuestion } from './WordQuestion';
@@ -121,7 +122,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     const about = askAbout(question, { book: open.book, chapter: open.chapter, verse: 1 });
     const [forms, entry] = await Promise.all([loadForms(hebrew ? 'hbo' : 'grc'), lookupLemma(question.lemma, hebrew ? 'hbo' : 'grc')]);
     const verse = forms?.verses.find((v) => v.n === question.verse);
-    const word = question.form === undefined ? undefined : verse?.g.find((w) => w.t === question.form && holdsLemma(new Set([question.lemma]), wordLemma(w)));
+    const word = question.form === undefined ? undefined : verse?.g.find((w) => forms && cardForm(forms, w) === question.form && holdsLemma(new Set([question.lemma]), wordLemma(w)));
     const focus: QuizFocus = {
       kind: 'quiz',
       lemma: question.lemma,

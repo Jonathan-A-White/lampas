@@ -29,6 +29,7 @@ import { WordParts } from './WordParts';
 import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getStudyChapter } from './data/readerChapter';
+import { cardForm } from './reader/septuagint';
 import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { useDoorTarget } from './tutor/door';
@@ -324,7 +325,7 @@ function PairLine({ pairCase, onOpen }: { pairCase: PairCase; onOpen: () => void
     <p data-testid="pair-line" className="pt-3 text-base text-muted">
       In a pair it sounds different:{' '}
       <button type="button" data-testid="pair-word" onClick={onOpen} className="min-h-11 px-1 text-accent underline underline-offset-4">
-        <span {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.word.t}</span>
+        <span {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)]">{cardForm(pairCase.chapter, pairCase.word)}</span>
       </button>
       , <span {...GREEK_LANG} className="font-greek text-[length:var(--lp-greek-size)]">{pairCase.pair}</span> = {pairCase.sound}
     </p>
@@ -336,13 +337,14 @@ function Example({ idea, example, onWord, hidden }: { idea: GrammarIdea; example
   const note = exampleNote(idea, example);
   // a sentence idea shows its verse with the use's words marked (data-use), and the speaker says those words
   const sentence = isSentenceIdea(idea.id);
-  const said = sentence ? example.parts.filter((p) => p.marked).map((p) => p.text).join(' ') : word.t;
+  const form = cardForm(chapter, word);
+  const said = sentence ? example.parts.filter((p) => p.marked).map((p) => p.text).join(' ') : form;
   return (
     <li hidden={hidden} className="flex items-center gap-1">
       <button
         type="button"
         data-testid="idea-example"
-        data-form={word.t}
+        data-form={form}
         data-lemma={word.l}
         // the second tap of a double tap on 'Show N more' lands on the row that has taken the button's place (mw-5r3p30.558)
         onClick={() => (justTapped(SHOW_MORE) ? undefined : onWord(chapter, word))}

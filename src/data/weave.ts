@@ -1,7 +1,8 @@
 // src/data/weave.ts — the diglot weave: which English chunks of a verse are shown as their Greek instead.
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
-import { type GreekWord, ownEnglish, type Verse, wordLemma } from './chapter';
-import { holdsLemma } from './lemma';
+import { type Chapter, type GreekWord, ownEnglish, type Verse, wordLemma } from './chapter';
+import { holdsLemma, lemmaKeyOf } from './lemma';
+import { cardForm } from '../reader/septuagint';
 
 /** The Greek words to show in place of English chunk `i` (in the chunk's own order), or null when it stays English.
  * `learning` is true when at least one of them is a word he is still learning: the Reader sets the chunk's English
@@ -98,6 +99,9 @@ export function weaveForTeaching(verse: Verse, solid: ReadonlySet<string>, lemma
     return words.some((w) => holdsLemma(new Set([lemma]), wordLemma(w))) ? { words, learning: true } : woven[i];
   });
 }
+
+/** The forms of the new word `lemma` in `verse`, as the teach sheet lists them under 'In this verse': cardForm's, so a Septuagint word has no mark of Swete's. */
+export const teachForms = (verse: Verse, lemma: string, chapter: Pick<Chapter, 'edition'>): string[] => verse.g.filter((w) => lemmaKeyOf(w.l) === lemma).map((w) => cardForm(chapter, w));
 
 /**
  * The order the chunks of a verse are laid out in (mw-5r3p30.250), as indexes into `verse.e`. English: the MSB's English order, 0, 1, 2 ...

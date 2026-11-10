@@ -2,7 +2,8 @@
 // by hand. The verse is shown in the script he picks (English always; Greek on a New Testament verse; Hebrew, pointed, on an Old Testament one), he writes it on paper and photographs
 // the page, and the copywork grind (grinds/copywork.json: sonnet, one picture) marks each word right, missing or wrong. This file is the pure part: the languages a verse has, the text to
 // copy and the words of it, the request, and the check of the answer. The screen is CopyworkPane.tsx.
-import type { SourceLanguage, Verse } from '../data/chapter';
+import type { Chapter, SourceLanguage, Verse } from '../data/chapter';
+import { cardForm } from '../reader/septuagint';
 import { GREEK_LANG } from '../script/greekLang';
 import { hebrewPointedForm } from '../speech/hebrewPronunciation';
 
@@ -23,10 +24,10 @@ export const copyAttrs = (language: CopyLanguage): { lang: string; 'data-lang'?:
 /** The most words a page of copywork judges: the grind's input schema takes 400, and a hand copies far fewer in a sitting. */
 export const MAX_COPY_WORDS = 150;
 
-/** The text of `unit` (a verse, or a passage as one Verse) to copy, in `language`: English as the translation has it, Greek as the text has it (accents and breathings), Hebrew pointed with
+/** The text of `unit` (a verse, or a passage as one Verse) to copy, in `language`: English as the translation has it, Greek as the text has it (accents and breathings; a Septuagint word without Swete's mark: cardForm, given its `chapter`), Hebrew pointed with
  * the cantillation marks off. */
-export function copyTextOf(unit: Pick<Verse, 'g' | 'e'>, language: CopyLanguage): string {
-  const words = language === 'en' ? unit.e.map((chunk) => chunk.t) : unit.g.map((word) => (language === 'grc' ? word.t.normalize('NFC') : hebrewPointedForm(word.t)));
+export function copyTextOf(unit: Pick<Verse, 'g' | 'e'>, language: CopyLanguage, chapter?: Pick<Chapter, 'edition'>): string {
+  const words = language === 'en' ? unit.e.map((chunk) => chunk.t) : unit.g.map((word) => (language === 'grc' ? cardForm(chapter, word).normalize('NFC') : hebrewPointedForm(word.t)));
   return words.map((w) => w.trim()).filter(Boolean).join(' ');
 }
 

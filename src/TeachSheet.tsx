@@ -9,7 +9,8 @@ import { type Candidate, easiestVerse } from './data/frontier';
 import { teachWord, type WordOutcome } from './data/repositories';
 import { lemmaKeyOf } from './data/lemma';
 import { skipForToday } from './data/skipped';
-import { weaveForTeaching } from './data/weave';
+import { teachForms, weaveForTeaching } from './data/weave';
+import { cardForm } from './reader/septuagint';
 import { publish, useLatest } from './events/bus';
 import { chosenHebrewPronunciation, pronunciationOf } from './speech/pronunciation';
 import { proseOf } from './speech/proseOf';
@@ -67,7 +68,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
     const verse = chapter.verses.find((v) => v.n === n);
     if (!verse) return null;
     const woven = weaveForTeaching(verse, solid, current.lemma);
-    const forms = verse.g.filter((w) => lemmaKeyOf(w.l) === current.lemma).map((w) => w.t);
+    const forms = teachForms(verse, current.lemma, chapter);
     const first = chapter.verses.flatMap((v) => v.g).find((w) => lemmaKeyOf(w.l) === current.lemma);
     return { verse, woven, forms, first };
   }, [current, chapter, solid]);
@@ -174,7 +175,7 @@ export function TeachSheet({ chapter, title, candidates, solid, onClose, onShowV
               {verse.e.map((chunk, i) => {
                 const weft = woven[i];
                 if (!weft) return <span key={i} data-plain>{chunk.t}{' '}</span>;
-                const greek = weft.words.map((w) => w.t).join(' ');
+                const greek = weft.words.map((w) => cardForm(chapter, w)).join(' ');
                 return weft.learning ? (
                   <span key={i} data-new {...faceOf(lang, { greek: '', hebrew: 'reader-hebrew' }, 'mr-1 inline-flex flex-col items-center align-top text-[length:var(--lp-greek-size)] leading-tight text-accent')}>
                     <span data-greek className="font-bold">{greek}</span>
