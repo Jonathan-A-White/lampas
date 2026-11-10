@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.206
+_2026-11-10_
+- Fixed: tapping Noun endings on an Old Testament Greek word now shows at once that it is opening while the forms load.
+- Fixed: The chapter header no longer grows to two rows at Large and Largest text when a Septuagint chapter title is long.
+
 ## 0.7.205
 _2026-11-10_
 - Fixed: the tutor's Sermon link now opens in Firefox, like the sermon list does, when you have chosen Firefox for web sermons.

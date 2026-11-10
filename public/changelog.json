@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.206",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.345",
+    "kind": "fixed",
+    "text": "tapping Noun endings on an Old Testament Greek word now shows at once that it is opening while the forms load."
+  },
+  {
+    "version": "0.7.206",
+    "date": "2026-11-10",
+    "story": "mw-fnvjof.17.70",
+    "kind": "fixed",
+    "text": "The chapter header no longer grows to two rows at Large and Largest text when a Septuagint chapter title is long."
+  },
+  {
     "version": "0.7.205",
     "date": "2026-11-10",
     "story": "mw-qtu3zvz.49.25",
