@@ -398,3 +398,26 @@ test('Genesis 1:2 ὕδατος: tapping The pattern (and This word again) leave
   await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
   await inWindow('This word');
 });
+
+// mw-u2w5klk.335: turned on its side (844x390) the window cannot hold the choice and the outlined cell, and tapping The pattern left the cell below the window; the cell wins
+test.describe('on its side', () => {
+  test.use({ viewport: { width: 844, height: 390 } });
+  test('Genesis 1:2 ὕδατος at 844x390: tapping The pattern leaves the outlined cell inside the window', async ({ page }) => {
+    await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
+    await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();
+    await forms(page).getByRole('button', { name: 'This word' }).click();
+    await expect(forms(page).getByRole('button', { name: 'This word' })).toHaveAttribute('aria-pressed', 'true');
+    await forms(page).getByRole('button', { name: 'The pattern' }).click();
+    await expect(forms(page).getByRole('button', { name: 'The pattern' })).toHaveAttribute('aria-pressed', 'true');
+    const lit = page.locator('[data-lit]');
+    await expect(lit).toHaveCount(1);
+    await expect
+      .poll(async () => {
+        const box = await lit.boundingBox();
+        const bar = await page.locator('header').first().boundingBox();
+        return !!box && box.y >= bar!.y + bar!.height - 1 && box.y + box.height <= 390;
+      })
+      .toBe(true);
+    await shot(page, 'septuagint-own-paradigm-after-pattern-landscape');
+  });
+});
