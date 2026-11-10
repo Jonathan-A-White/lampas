@@ -48,7 +48,7 @@ import { focusOnMount } from './ui/focus';
 import { useNarrow } from './ui/useNarrow';
 import { Icon as PlayIcon } from './speech/ReadControls';
 import { stopReading } from './speech/readAloud';
-import { oneTap } from './ui/settle';
+import { oneTap, useSettled } from './ui/settle';
 import { LinkActions } from './ui/LinkActions';
 import { COPY_DEFAULTS, copyLink, copyText, copyUnitOf, sharePieces } from './copy/format';
 import { useCopyFormat } from './copy/useCopyFormat';
@@ -151,8 +151,21 @@ const oneToolTap = (event: SyntheticEvent): void => {
   event.stopPropagation();
 };
 
+/** The Verse view takes no tap for two settle moments after it opens (mw-u2w5klk.322): a word of a Septuagint English chunk (or a verse number, a heading, a link) opens it under the thumb, and the second tap of a
+ * double tap, up to half a second later, landed on a door of the new screen at the spot of the word (Diagram, Listen, an arrow) and pressed it. The app-wide guard (src/ui/tapGuard.ts) holds
+ * one moment (450 ms) and the Tester's second tap came at 500; this is as long as the tools line's (TOOLS_MOMENTS). A deliberate tap on a door is never this quick: the verse is read first. */
+const OPENING_MOMENTS = 2;
+// ‹ Reader is no door of the screen: leaving it is what a tap right after opening may mean, and a tap on it closes the view at once (tests/e2e/double-tap-guard.spec.ts, mw-5r3p30.446)
+const isDoor = (target: EventTarget): boolean => target instanceof Element && target.closest('button, a, [role="button"]') !== null && target.closest('[data-verse-back]') === null;
+
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
+  const opened = useSettled('verse-view-opened', OPENING_MOMENTS);
+  const dropEarlyTap = (event: SyntheticEvent): void => {
+    if (opened() || !isDoor(event.target)) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
   // the key of the lesson whose Check is open: moving to another passage leaves it closed
   const [checking, setChecking] = useState<string | null>(null);
   // Split: the sheet of the texts the chapter can be read beside (src/reader/split/SplitChooser.tsx, mw-5r3p30.1130); it is drawn outside the Tools line, whose one-tap guard would otherwise see its rows
@@ -291,14 +304,14 @@ export function VerseView(props: VerseViewProps) {
     </div>
   );
   return (
-    <section aria-label="Verse view" data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
+    <section aria-label="Verse view" onClickCapture={dropEarlyTap} data-verse-view={unitId(verse)} data-immersive={immersive ? 'on' : 'off'} className="fixed inset-0 z-5 flex flex-col bg-canvas pt-[env(safe-area-inset-top)]">
       {/* No box of its own, except in a window under 300 px tall with the Ask open (src/index.css): there the header and the text scroll together above the composer (mw-5r3p30.773). */}
       <div data-verse-scroll className="contents">
       {/* At 20 rem or less of the phone's own text (390 px at 200%) the title takes a row of its own under ‹ Reader and the arrows, so a passage's heading has the whole width and is not clamped (mw-cwf538.9). */}
       <div className="@container shrink-0 border-b border-line">
       <header className="flex flex-wrap items-center gap-1 px-2 py-1.5">
         {/* The Reader beneath is inert, so focus starts here and a keyboard or screen reader finds the view first. */}
-        <button type="button" ref={focusOnMount} onClick={onClose} className="min-h-11 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line @max-[20rem]:mr-auto">
+        <button type="button" ref={focusOnMount} data-verse-back onClick={onClose} className="min-h-11 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line @max-[20rem]:mr-auto">
           ‹ Reader
         </button>
         {passage ? (
