@@ -689,10 +689,18 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
   // the word's table is a page of its own: the sheet is held, with what it showed, and Back brings it back (src/wordReturn.ts)
   // a table asked for and still waiting on the lemma's forms: the sheet stays up meanwhile, so a second tap must not open it again (mw-u2w5klk.334)
   const opening = useRef(false);
+  // closing the sheet while it waits cancels the table: it must not open later over the chapter (mw-u2w5klk.344)
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const openTable = (word: GreekWord): void => {
     if (opening.current) return;
     const open = (found: ReturnType<typeof paradigmOfWord>): void => {
-      if (!found) return;
+      if (!found || !mounted.current) return;
       holdWord(sheetChapter, lookup);
       openParadigm({ table: found.table.id, cell: found.cell, word: cardForm(sheetChapter, word), parse: word.p, lemma: word.l, ...(isSeptuagint(sheetChapter) ? { septuagint: true } : {}) });
     };
