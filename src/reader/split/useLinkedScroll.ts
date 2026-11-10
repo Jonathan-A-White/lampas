@@ -20,15 +20,28 @@ export function topVerse(box: HTMLElement, items: string, numberOf: (el: HTMLEle
   return null;
 }
 
-/** The verse at the top of the page Turn pages shows in `box`: the first of its `items` that is Lampas's verse (`numberOf`) and has a line on the page (a line wider than nothing that lies across the box's width; the
+/** The verse at the top of the page Turn pages shows in `box`: the first of its `items` that is Lampas's verse (`numberOf`) and has a line on the page (a line of its number or words, wider than nothing, that lies across the box's width; its play button alone does not count; the
  * next page's column starts a gap beyond the box's edge, the last one's ends before it); null where there is none. */
 export function firstVerseOnPage(box: HTMLElement, items: string, numberOf: (el: HTMLElement) => number | null): number | null {
   const { left, right } = box.getBoundingClientRect();
   for (const el of Array.from(box.querySelectorAll<HTMLElement>(items))) {
     const n = numberOf(el);
-    if (n !== null && Array.from(el.getClientRects()).some((r) => r.width > 0 && r.right > left + 1 && r.left < right - 1)) return n;
+    if (n !== null && wordLines(el).some((r) => r.width > 0 && r.right > left + 1 && r.left < right - 1)) return n;
   }
   return null;
+}
+
+/** The lines of a verse's element that hold its number or words: its play button (Hear the verse) wraps onto the next page's top line where the verse ends at a page's foot, and is no mark of the verse there (mw-fnvjof.17.58). */
+function wordLines(el: HTMLElement): DOMRect[] {
+  if (typeof document.createRange !== 'function') return Array.from(el.getClientRects());
+  const lines: DOMRect[] = [];
+  const range = document.createRange();
+  for (const child of Array.from(el.childNodes)) {
+    if (child instanceof HTMLElement && child.matches('[data-verse-play]')) continue;
+    range.selectNodeContents(child);
+    lines.push(...Array.from(range.getClientRects()));
+  }
+  return lines;
 }
 
 /** Scrolls `box` so that `item` stands at its top (the first item to its very top); answers the offset the box took, or null where it did not move. */

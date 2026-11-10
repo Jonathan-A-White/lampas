@@ -88,6 +88,33 @@ const shown = (page: Page) =>
     return { first: on[0] ?? null, on, cut, bottom: box.bottom, height: box.height };
   });
 
+/** The dock has verse `n` at its top, or it is scrolled to its end with that verse in view (its box cannot take the verse any higher). */
+const dockHolds = (page: Page, n: number) =>
+  page.evaluate((verse) => {
+    const el = document.querySelector('[data-dock-body]')!;
+    const box = el.getBoundingClientRect();
+    const row = el.querySelector(`[data-dock-verse="${verse}"]`)!.getBoundingClientRect();
+    const top = Array.from(el.querySelectorAll<HTMLElement>('[data-dock-verse]')).find((r) => r.getBoundingClientRect().bottom > box.top + 12);
+    if (Number(top?.dataset.dockVerse) === verse) return true;
+    const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+    return atEnd && row.top >= box.top - 1 && row.bottom <= box.bottom + 1;
+  }, n);
+
+/** The first verse with a word on the page: a verse whose only line on the page is its play button (Hear the verse) does not count. */
+const firstWithWords = (page: Page) =>
+  page.evaluate(() => {
+    const box = document.querySelector('[data-reader]')!.getBoundingClientRect();
+    for (const v of Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse]'))) {
+      for (const child of Array.from(v.childNodes)) {
+        if (child instanceof HTMLElement && child.closest('[data-verse-play]')) continue;
+        const range = document.createRange();
+        range.selectNodeContents(child);
+        if (Array.from(range.getClientRects()).some((r) => r.width > 0 && r.right > box.left + 1 && r.left < box.right - 1)) return Number(v.dataset.verse);
+      }
+    }
+    return null;
+  });
+
 /** How many pages the place line says the chapter has. */
 const pagesOf = async (page: Page) => {
   const match = ((await place(page).textContent()) ?? '').match(/Page (\d+) of (\d+)$/);
@@ -120,7 +147,7 @@ async function tapAt(page: Page, share: number) {
 }
 
 /** Genesis 14 with the Septuagint's Greek docked beside the Hebrew (as reader-split-text.spec.ts does it), then the Reader put in Turn pages and opened again: the pages cut and the Link on. */
-async function dockInPages(page: Page) {
+async function dockInPages(page: Page, textSize?: string) {
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=14');
   await expect(page.locator('[data-verse="15"]')).toBeAttached();
@@ -130,6 +157,7 @@ async function dockInPages(page: Page) {
   await expect(dock(page)).toBeVisible();
   await expect(page.locator('[data-dock-verse="15"]')).toBeAttached();
   await keep(page, 'readingMode', 'pages');
+  if (textSize) await keep(page, 'textSize', textSize);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Genesis 14', level: 1 })).toBeVisible();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', 'pages');
@@ -243,3 +271,21 @@ test('Turn pages, Link off: turning a page moves the dock not at all and scrolli
   expect(await shown(page)).toEqual(pageWas);
   expect((await pagesOf(page)).at).toBe(2);
 });
+
+// mw-fnvjof.17.58: a verse that ends at the foot of a page has its play button wrap onto the top line of the next, and that button is not the verse's words
+for (const [name, size] of [['Small', '85'], ['Normal', '100'], ['Largest', '160']] as const) {
+  test(`Turn pages, Link on, text ${name}: at every page the dock's top verse is the first verse with a word on the page, not one whose only line there is its play button`, async ({ page }) => {
+    await dockInPages(page, size);
+    const of = (await pagesOf(page)).of;
+    expect(of).toBeGreaterThan(2);
+    for (let at = 1; at <= of; at++) {
+      await expect.poll(async () => (await pagesOf(page)).at).toBe(at);
+      const first = await firstWithWords(page);
+      expect(first, `page ${at}`).not.toBeNull();
+      // the dock's top verse is it; or, where the dock's box ends before it can stand at the top, the dock is at its end with that verse in view
+      await expect.poll(() => dockHolds(page, first!), { message: `page ${at} of ${of}` }).toBe(true);
+      if (at < of) await tapAt(page, 0.85);
+    }
+    await shot(page, `reader-split-turn-link-${name.toLowerCase()}`);
+  });
+}
