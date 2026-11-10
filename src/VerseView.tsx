@@ -22,7 +22,7 @@
 // the box is its content, at most 40 % of the window, and the screen scrolls as it did, so the Audio Bible row keeps its place above the Play bar (tests/e2e/audio-bible-landscape.spec.ts).
 // The row is three cells to a row, the last row's cells stretched over it so no row has a hole; two to a row under 15 rem of room (a phone at 200 % text, where a third of
 // the row is too narrow for 'Read it aloud'), and one row from 30 rem (a phone sideways), where five labels have a line each.
-import { type ReactNode, type SyntheticEvent, useMemo, useState } from 'react';
+import { type ReactNode, type SyntheticEvent, useCallback, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
@@ -156,13 +156,19 @@ const oneToolTap = (event: SyntheticEvent): void => {
  * one moment (450 ms) and the Tester's second tap came at 500; this is as long as the tools line's (TOOLS_MOMENTS). A deliberate tap on a door is never this quick: the verse is read first. */
 const OPENING_MOMENTS = 2;
 // ‹ Reader is no door of the screen: leaving it is what a tap right after opening may mean, and a tap on it closes the view at once (tests/e2e/double-tap-guard.spec.ts, mw-5r3p30.446)
-const isDoor = (target: EventTarget): boolean => target instanceof Element && target.closest('button, a, [role="button"]') !== null && target.closest('[data-verse-back]') === null;
+const isDoor = (target: EventTarget, back: Element | null): boolean => target instanceof Element && target.closest('button, a, [role="button"]') !== null && !back?.contains(target);
 
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
   const opened = useSettled('verse-view-opened', OPENING_MOMENTS);
+  const backButton = useRef<HTMLButtonElement | null>(null);
+  // a stable ref callback: one that changed every render would focus the button again each time
+  const backRef = useCallback((el: HTMLButtonElement | null) => {
+    backButton.current = el;
+    focusOnMount(el);
+  }, []);
   const dropEarlyTap = (event: SyntheticEvent): void => {
-    if (opened() || !isDoor(event.target)) return;
+    if (opened() || !isDoor(event.target, backButton.current)) return;
     event.preventDefault();
     event.stopPropagation();
   };
@@ -311,7 +317,7 @@ export function VerseView(props: VerseViewProps) {
       <div className="@container shrink-0 border-b border-line">
       <header className="flex flex-wrap items-center gap-1 px-2 py-1.5">
         {/* The Reader beneath is inert, so focus starts here and a keyboard or screen reader finds the view first. */}
-        <button type="button" ref={focusOnMount} data-verse-back onClick={onClose} className="min-h-11 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line @max-[20rem]:mr-auto">
+        <button type="button" ref={backRef} onClick={onClose} className="min-h-11 shrink-0 rounded-lg px-2 chrome-text font-medium text-accent active:bg-line @max-[20rem]:mr-auto">
           ‹ Reader
         </button>
         {passage ? (
