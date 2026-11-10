@@ -17,7 +17,7 @@ vi.mock('workbox-routing', () => ({
   NavigationRoute: class {},
   registerRoute: (match: (ctx: { url: URL; request: Request }) => boolean, handler: unknown) => registered.push({ match, handler }),
 }));
-vi.mock('workbox-strategies', () => ({ CacheFirst }));
+vi.mock('workbox-strategies', () => ({ CacheFirst, NetworkFirst: class {} }));
 
 beforeAll(async () => {
   Object.assign(window, { skipWaiting: vi.fn(), clients: { claim: vi.fn() }, __WB_MANIFEST: [] });
