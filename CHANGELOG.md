@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.207
+_2026-11-10_
+- Fixed: Tapping All twice fast under Keep on this phone no longer says "Up to date" for a moment when nothing has been kept yet.
+
 ## 0.7.206
 _2026-11-10_
 - Fixed: tapping Noun endings on an Old Testament Greek word now shows at once that it is opening while the forms load.

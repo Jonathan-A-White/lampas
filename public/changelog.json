@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.207",
+    "date": "2026-11-10",
+    "story": "mw-lcv9z3g.10",
+    "kind": "fixed",
+    "text": "Tapping All twice fast under Keep on this phone no longer says \"Up to date\" for a moment when nothing has been kept yet."
+  },
+  {
     "version": "0.7.206",
     "date": "2026-11-10",
     "story": "mw-u2w5klk.345",
