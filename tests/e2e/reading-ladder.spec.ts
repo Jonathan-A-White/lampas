@@ -97,7 +97,7 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await page.getByRole('button', { name: 'Greek', exact: true }).click();
     // the Verse view is a screen of its own: it takes no tap in its first moment (src/ui/tapGuard.ts), so he reads it first
     const view = await openVerseView(page, 28);
-    await pageTime(page, SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS * 2 + 100); // two moments (OPENING_MOMENTS, src/VerseView.tsx, mw-u2w5klk.322)
     await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
     const panel = page.getByRole('region', { name: 'Reading check' });
     await panel.getByRole('button', { name: 'Reading ladder', exact: true }).tap();

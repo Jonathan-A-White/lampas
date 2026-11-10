@@ -49,7 +49,8 @@ async function readVerse28(page: Page) {
   await page.getByRole('button', { name: 'Verse 28', exact: true }).click();
   const view = page.getByRole('region', { name: 'Verse view' });
   await expect(view).toBeVisible();
-  await pageTime(page, SETTLE_MS + 100);
+  // the view takes no tap for two moments after it opens (OPENING_MOMENTS, src/VerseView.tsx, mw-u2w5klk.322)
+  await pageTime(page, SETTLE_MS * 2 + 100);
   await view.getByRole('button', { name: 'Read it aloud', exact: true }).click();
   const panel = page.getByRole('region', { name: 'Reading check' });
   await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 28', exact: true }), 2200);
