@@ -146,6 +146,39 @@ test('Genesis 1:1 ΑΡΧΗ: the Paradigm link names the cell in the η (φωνή
   await shot(page, 'septuagint-own-paradigm-capitals-pattern');
 });
 
+// mw-u2w5klk.334: the sheet waits for the lemma's forms before it leaves for a capitals word, so its Paradigm button stays live and a second tap in that time opened the table again
+test('Genesis 1:1 ΑΡΧΗ, the lemma file slow: a double tap on Noun endings is one screen change, the Word sheet gone, Back one press to the Word sheet', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await putLevels(page, NOUN_IDEAS);
+  await page.goto('/#/settings');
+  const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
+  await row.getByRole('button', { name: 'On', exact: true }).click();
+  await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.goto('/#/?b=gen&c=1&view=greek');
+  await page.reload();
+  // the lemma file's response is held 2 s (a slow connection); the routes of beforeEach lay the Septuagint's forms on it after
+  await page.route('**/lemma-forms/*', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await route.fallback();
+  });
+  await page.locator('[data-verse="1"]').getByRole('button', { name: 'ΑΡΧΗ', exact: true }).first().click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  await expect(sheet).toBeVisible();
+  const before = await page.evaluate(() => window.history.length);
+  await sheet.getByTestId('sheet-paradigm').getByRole('button').dblclick({ delay: 0 });
+  await expect(page.getByRole('heading', { name: 'Noun endings', level: 1 })).toBeVisible();
+  // the second tap's work would come later still: give it time to show
+  await page.waitForTimeout(500);
+  await expect(sheet).toBeHidden();
+  await expect(page.getByRole('button', { name: /^‹ ?Word$/ })).toBeVisible();
+  expect(await page.evaluate(() => window.history.length)).toBe(before + 1);
+  const address = new URLSearchParams(new URL(page.url()).hash.split('?')[1]);
+  expect(address.get('cell')).toBe('First declension, feminine in η (φωνή) Dative Singular');
+  await shot(page, 'septuagint-own-paradigm-capitals-double-tap');
+});
+
 test('Genesis 1:2 ὕδατος, a word whose Septuagint lemma has a comma (ὕδωρ, ὕδατος): This word is there and its cell is outlined, with the New Testament’s ὕδωρ forms laid too', async ({ page }) => {
   await openTable(page, 2, 'ὕδατος.', [...NOUN_IDEAS, 'declension-3'], 'The third declension');
   await page.getByRole('group', { name: 'Mode', exact: true }).getByRole('button', { name: 'Learn', exact: true }).click();

@@ -687,7 +687,10 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
     publish({ kind: 'grammar-term-opened', term });
   };
   // the word's table is a page of its own: the sheet is held, with what it showed, and Back brings it back (src/wordReturn.ts)
+  // a table asked for and still waiting on the lemma's forms: the sheet stays up meanwhile, so a second tap must not open it again (mw-u2w5klk.334)
+  const opening = useRef(false);
   const openTable = (word: GreekWord): void => {
+    if (opening.current) return;
     const open = (found: ReturnType<typeof paradigmOfWord>): void => {
       if (!found) return;
       holdWord(sheetChapter, lookup);
@@ -695,7 +698,12 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
     };
     // a Septuagint word printed in capitals is asked of the table as the accented form of its lemma and parsing (mw-u2w5klk.323): ΑΡΧΗ has no iota subscript to tell -ῃ from -ᾳ
     if (isSeptuagint(sheetChapter) && inCapitals(word.t) && word.l) {
-      void accentedFormsOf(word).then((accented) => open(paradigmOfWord(matchedWord(word, accented))));
+      opening.current = true;
+      void accentedFormsOf(word)
+        .then((accented) => open(paradigmOfWord(matchedWord(word, accented))))
+        .finally(() => {
+          opening.current = false;
+        });
       return;
     }
     open(paradigmOfWord(word));
