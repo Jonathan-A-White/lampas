@@ -4,8 +4,9 @@
 // the text or a swipe to the left turns forward a page, the left third or a swipe to the right turns back; past the last page the next chapter opens
 // on its first page and back past the first page the previous chapter opens on its last (`cross`, src/reader/crossChapter.ts, mw-5r3p30.620; at Matthew 1 and
 // Revelation 22 nothing happens). A tap on a button or link outside the verses (the
-// chapter buttons) does what it does; a verse's number and play button and a section heading's button are text: their outer thirds turn the page, as a
-// Kindle's edges always do (mw-5r3p30.609: the number is a 44 px button at the left edge, where a thumb taps to turn back). A tap in the middle third
+// chapter buttons) does what it does; a verse's play button and a section heading's button are text: their outer thirds turn the page, as a
+// Kindle's edges always do (mw-5r3p30.609). A verse's number is not (mw-fnvjof.17.59): it is a 44 px button at the left edge, the only door to the Verse view and
+// its Split, so a tap on it opens its verse wherever it is. A tap in the middle third
 // still opens the word, verse or heading; so does a long press (the word's own click guard drops its click; a held number talks, or with no licence opens
 // its verse), and so does Enter on a focused number (a click with no short press before it). A swipe is a drag (below); no drag starts within the chapter swipe's EDGE_PX of the screen's edge (src/reader/useChapterSwipe.ts, off while pages are on).
 // When the box changes size (text size, the hint card closed, the bars brought back) the pages are cut afresh and the page shown is the one where the
@@ -473,9 +474,11 @@ export function usePages(
       // a click with no short press before it (a long press, Enter on a button) is not a page tap
       if (!tapped) return;
       tapped = false;
-      // a verse's own buttons (its number, its play button) and a heading's are text here, opened from the middle third like a word: the number sits
-      // at the left edge, right where a thumb taps to turn back (mw-5r3p30.609); the chapter buttons keep their taps
+      // a verse's play button and a heading's are text here, opened from the middle third like a word; a verse's number is not (mw-fnvjof.17.59): it
+      // sits at the left edge, where a thumb cannot reach the middle third, and is the one door to its Verse view (and so to Split), so it keeps its own
+      // tap and its outer thirds turn the page around it (mw-5r3p30.609); the chapter buttons keep their taps
       const control = e.target instanceof Element ? e.target.closest('a, button, input, select, textarea, label, summary') : null;
+      if (control?.closest('[data-verse-number]')) return;
       if (control && !control.closest('[data-heading], [data-verse]')) return;
       const r = el.getBoundingClientRect();
       const x = e.clientX - r.left;
