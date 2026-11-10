@@ -22,6 +22,7 @@ import { septuagintSetting } from '../../src/settings/definitions';
 import { setSetting } from '../../src/settings/store';
 import type { TalkScope } from '../../src/services/talk';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import '../support/grinds-in-graph';
 
 /** The four comma lemmas of the Genesis fixture (tests/fixtures/data-lxx/gen/1.json): the list, its headword, and a parsing a word of it has. */
 const LEMMAS: ReadonlyArray<{ list: string; head: string; code: string; form: string }> = [
