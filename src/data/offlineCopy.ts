@@ -28,7 +28,7 @@ export interface OfflineProgress {
   scope: OfflineScope;
   /** how many of the files are chapters (they come first); the rest are the word lists, the sermon files and the Septuagint's index and lexicon */
   chapters: number;
-  /** files kept or given up on, so a run that ends has done === total; `failed` says which were given up on */
+  /** files kept or given up on, so a run that ends has done === total; `failed` says which were given up on. A report always has a total above 0: a run stopped before its files were listed reports nothing. */
   done: number;
   total: number;
   /** bytes fetched by this run (a file already kept is not counted) */
@@ -189,10 +189,8 @@ export async function runOfflineCopy(scope: OfflineScope, deps: OfflineDeps = {}
         lxx = undefined;
       }
     }
-    if (signal?.aborted) {
-      report(state);
-      return current;
-    }
+    // Stopped before the index was read: the total is not known, so there is nothing to report (a total of 0 with 0 done would read as a copy that finished, and a late report would overwrite the run that replaced this one).
+    if (signal?.aborted) return { ...state, failed: [...state.failed] };
     const urls = offlineUrls(scope, index, sermons, lxx ?? null);
     state.total = urls.length;
     state.chapters = urls.filter((url) => CHAPTER_ADDRESS.test(url)).length;
