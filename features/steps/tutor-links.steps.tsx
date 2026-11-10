@@ -15,14 +15,18 @@ import { readerOf } from '../../src/nav/route';
 import { RESOURCES } from '../../src/resources';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
+import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTutor } from './open-tutor';
 
-afterAll(() => {
+// The App writes on its own after a tap (the usage count) and at its first open (the grammar ideas seeding); db.close() with one of them in flight is a DatabaseClosedError.
+afterAll(async () => {
   cleanup();
   stopReading();
+  await usageWritesSettled();
   vi.unstubAllGlobals();
   db.close();
 });
@@ -35,6 +39,7 @@ type Link = { kind: 'word'; lemma: string } | { kind: 'verse'; reference: string
 
 async function open(links: Link[]): Promise<void> {
   cleanup();
+  await usageWritesSettled();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
@@ -57,6 +62,7 @@ async function open(links: Link[]): Promise<void> {
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
+  await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
 
 const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
@@ -70,7 +76,8 @@ async function onlyButton(_: unknown, name: string): Promise<void> {
 }
 
 async function askAboutVerse28(text = 'Tell me about love'): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Verse 28' }));
+  // findButton, not screen.findByRole: a role query walks every word of the chapter (1.6 s calm, a multiple under load) and a step past the 20 s testTimeout leaves its body running into the next scenario's cleanup and afterAll's db.close()
+  await user.click(await findButton('Verse 28'));
   await screen.findByRole('region', { name: 'Verse view' });
   await openTutor();
   await screen.findByRole('dialog', { name: /^Talk about / });
