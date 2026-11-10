@@ -164,3 +164,44 @@ for (const [address, title] of [
     }
   }
 }
+
+/** The header's height and each control's top and bottom against the title's: a control "on a row of its own below the title" has its top at or under the title's bottom. */
+async function headerRows(page: Page): Promise<{ header: number; below: string[]; boxes: string[] }> {
+  return page.evaluate(() => {
+    const header = document.querySelector('header') as HTMLElement;
+    const h1 = header.querySelector('h1') as HTMLElement;
+    const t = h1.getBoundingClientRect();
+    const below: string[] = [];
+    const boxes: string[] = [];
+    for (const c of Array.from(header.children)) {
+      const r = c.getBoundingClientRect();
+      if (c === h1 || r.width <= 0) continue;
+      const name = c.getAttribute('aria-label') ?? c.tagName;
+      boxes.push(`${name} ${Math.round(r.left)}-${Math.round(r.right)} x ${Math.round(r.top)}-${Math.round(r.bottom)}`);
+      if (r.top >= t.bottom - 1) below.push(name);
+    }
+    return { header: header.getBoundingClientRect().height, below, boxes };
+  });
+}
+
+// Large and Largest text (mw-fnvjof.17.70): the title takes two lines, but the header must not double in height with the menu (or the whole switch) dropped to a row of its own. The header is
+// no taller than at How much Greek? 1 plus one title line, and no control sits below the title.
+for (const [size, percent] of SIZES) {
+  for (const [address, title] of [
+    ['/#/?b=psa&c=23', /\(Greek 22\)/],
+    ['/#/?b=psa&c=116', /\(Greek 114 and 115\)/],
+    ['/#/?b=gen&c=1', /Genesis 1/],
+  ] as const) {
+    test(`${address} at How much Greek? 2, ${size} text at 390px: the header is one row, no control alone below the title`, async ({ page }) => {
+      await openTitled(page, address, percent, title, '1');
+      const curious = await titleLines(page);
+      await openTitled(page, address, percent, title, '2');
+      const dipping = await titleLines(page);
+      const rows = await headerRows(page);
+      expect(rows.below, rows.boxes.join('; ')).toEqual([]);
+      expect(dipping.header, rows.boxes.join('; ')).toBeLessThanOrEqual(curious.header + dipping.lineHeight + 1);
+      if (address.endsWith('c=23')) expect(dipping.header).toBeLessThan(80);
+      await shot(page, `septuagint-header-rows-${address.replace(/\W+/g, '')}-${size.toLowerCase()}`);
+    });
+  }
+}
