@@ -70,7 +70,7 @@ const SIZES = [
 ] as const;
 
 /** Opens a chapter by its address with the Septuagint On at a Text size, and waits for the header's title to read `title`. */
-async function openTitled(page: Page, address: string, percent: string, title: RegExp): Promise<void> {
+async function openTitled(page: Page, address: string, percent: string, title: RegExp, dial?: string): Promise<void> {
   await page.setViewportSize({ width: 390, height: 844 });
   await openUnlocked(page);
   await page.goto('/#/settings');
@@ -78,6 +78,7 @@ async function openTitled(page: Page, address: string, percent: string, title: R
   await row.getByRole('button', { name: 'On', exact: true }).click();
   await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await keep(page, 'textSize', percent);
+  if (dial) await keep(page, 'greekInterest', dial);
   await page.goto(address);
   await page.reload();
   await expect(page.locator('header h1')).toContainText(title);
@@ -109,5 +110,57 @@ for (const [size, percent] of SIZES.slice(1)) {
       expect(await titleOverlaps(page)).toEqual([]);
       await shot(page, `septuagint-header-title-${code}-${size.toLowerCase()}`);
     });
+  }
+}
+
+/** The title's lines (the distinct tops of its text rects), the line's height in px, the title h1's height and the header's. */
+async function titleLines(page: Page): Promise<{ lines: number; lineHeight: number; h1: number; header: number; text: string }> {
+  return page.evaluate(() => {
+    const header = document.querySelector('header') as HTMLElement;
+    const h1 = header.querySelector('h1') as HTMLElement;
+    const span = h1.querySelector('.title-wrap') as HTMLElement;
+    const tops = new Set<number>();
+    const walker = document.createTreeWalker(h1, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (!n.textContent?.trim()) continue;
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const r of Array.from(range.getClientRects())) if (r.width > 0 && r.height > 0) tops.add(Math.round(r.top / 4));
+    }
+    const lh = parseFloat(getComputedStyle(span).lineHeight);
+    const fs = parseFloat(getComputedStyle(span).fontSize);
+    return { lines: tops.size, lineHeight: Number.isNaN(lh) ? fs * 1.25 : lh, h1: h1.getBoundingClientRect().height, header: header.getBoundingClientRect().height, text: h1.textContent ?? '' };
+  });
+}
+
+// How much Greek? 2, Dipping a toe, draws English | Weave | Greek: the widest switch, so the title has the least room beside it (mw-fnvjof.17.55). The title takes two lines at most, and the header
+// is no taller than at Curious (English | Greek) by more than one title line.
+test('Psalms 23 in the Septuagint at Dipping a toe, Normal text at 390px: the title is two lines at most and the header no taller than at Curious by a title line', async ({ page }) => {
+  await openTitled(page, '/#/?b=psa&c=23', '100', /\(Greek 22\)/, '1');
+  const curious = await titleLines(page);
+  await openTitled(page, '/#/?b=psa&c=23', '100', /\(Greek 22\)/, '2');
+  const dipping = await titleLines(page);
+  expect(dipping.text.replace(/\s+/g, ' ').trim()).toBe('Psalms 23 (Greek 22)');
+  expect(dipping.h1).toBeLessThan(dipping.lineHeight * 2.5);
+  expect(dipping.header).toBeLessThanOrEqual(curious.header + dipping.lineHeight + 1);
+  expect(await titleOverlaps(page)).toEqual([]);
+  await shot(page, 'septuagint-header-title-dipping');
+});
+
+// The sweep: every fixture chapter, the two dials that differ, the three text sizes.
+for (const [address, title] of [
+  ['/#/?b=gen&c=1', /Genesis 1/],
+  ['/#/?b=psa&c=23', /\(Greek 22\)/],
+] as const) {
+  for (const dial of ['1', '2']) {
+    for (const [size, percent] of SIZES) {
+      test(`${address} at How much Greek? ${dial}, ${size} text at 390px: the title is two lines at most`, async ({ page }) => {
+        await openTitled(page, address, percent, title, dial);
+        const t = await titleLines(page);
+        expect(t.lines).toBeLessThanOrEqual(2);
+        expect(t.h1).toBeLessThan(t.lineHeight * 2.5);
+        expect(await titleOverlaps(page)).toEqual([]);
+      });
+    }
   }
 }

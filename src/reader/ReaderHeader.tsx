@@ -1,7 +1,7 @@
 // src/reader/ReaderHeader.tsx — the Reader's header (docs/module-map.md R1, part d): the chapter's title (a button that opens the picker),
 // English | Weave | Greek, the Play button of Read aloud and the Menu (three lines) that opens Tools or Settings. While a reading the speaking bar does not hold waits for Pause
 // or Play, the header gives its room to those and Stop; the title stays for screen readers.
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import type { SourceLanguage } from '../data/chapter';
 import { chooseReaderLanguage, type ReaderLanguage, type ReaderView, type Weave } from '../data/repositories';
 import { weaveOrderSetting } from '../settings/definitions';
@@ -125,41 +125,43 @@ function partsOf(title: string): { name: string; chapter: string } {
   return at < 0 ? { name: title, chapter: '' } : { name: title.slice(0, at), chapter: title.slice(at + 1) };
 }
 
-/** The chapter as the words that are never broken, with a space between them where a line may end: '23 (Greek 22)' is '23', '(Greek' and '22)', so at a large Text size the Greek chapter's number
- * drops to a line of the title's own column, word by word as far as it must, rather than running under the switch beside it (mw-u2w5klk.301). The last word carries the chevron. */
-function chapterPieces(chapter: string): string[] {
-  return chapter.split(' ');
+/** The title as the pieces that are never broken, with a space between them where a line may end. An ordinary title is its name and its chapter ('1 Thessalonians', '5'). A Septuagint
+ * chapter's '23 (Greek 22)' is two pieces, 'Psalms 23' and '(Greek 22)', so the title is two lines at most beside the switch, never 'Psalms / 23 / (Greek / 22)' (mw-fnvjof.17.55); the
+ * room the title is given holds the wider of the two (titleRoom), and the row wraps the switch to a line of its own before it breaks one. The last piece carries the chevron. */
+function titlePieces(name: string, chapter: string): string[] {
+  const greek = /^(\d+) (\(Greek .+\))$/.exec(chapter);
+  if (greek) return [`${name} ${greek[1]}`, greek[2]];
+  return chapter ? [name, chapter] : [name];
 }
 
-/** The title's type size: the largest the header holds, smaller only as far as the book's name needs to stand whole on a line in the room the
- * title has (`100cqw` is the title box's width; a name's letters average up to about 0.8 em in semibold). The chapter is never cut. */
-function titleSize(name: string): string {
-  return `clamp(${TITLE_MIN_REM}rem, calc(100cqw / ${(name.length * LETTER_EM).toFixed(2)}), ${TITLE_MAX_REM}rem)`;
+/** The title's type size: the largest the header holds, smaller only as far as the widest piece needs to stand whole on a line in the room the
+ * title has (`100cqw` is the title box's width; a letter averages up to about 0.8 em in semibold). */
+function titleSize(longest: number): string {
+  return `clamp(${TITLE_MIN_REM}rem, calc(100cqw / ${(longest * LETTER_EM).toFixed(2)}), ${TITLE_MAX_REM}rem)`;
 }
 
-/** The least room the title box is given: the book's name at the smallest size, whole. A row that cannot hold it wraps, so the name is never cut. */
-function titleRoom(name: string): string {
-  return `${(name.length * LETTER_EM * TITLE_MIN_REM).toFixed(2)}rem`;
+/** The least room the title box is given: the widest piece at the smallest size, whole. A row that cannot hold it wraps, so no piece is cut. */
+function titleRoom(longest: number): string {
+  return `${(longest * LETTER_EM * TITLE_MIN_REM).toFixed(2)}rem`;
 }
 
 export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaves = true, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
-  const pieces = chapterPieces(chapter);
+  const pieces = titlePieces(name, chapter);
+  const longest = Math.max(...pieces.map((piece) => piece.length));
   return (
     <header inert={inert} className="flex shrink-0 flex-wrap items-center gap-1 border-b border-line px-1">
-      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(name) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
+      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(longest) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
         <button
           type="button"
           aria-haspopup="dialog"
           onClick={onPick}
           className="flex min-h-12 w-full items-center rounded-lg px-1 text-left font-semibold active:bg-line"
         >
-          <span className="title-wrap" style={{ fontSize: titleSize(name) }}>
-            <span className="whitespace-nowrap">{name}</span>
-            {chapter ? ' ' : null}
+          <span className="title-wrap" style={{ fontSize: titleSize(longest) }}>
             {pieces.map((piece, i) => (
-              <span key={piece}>
+              <Fragment key={piece}>
                 {i > 0 ? ' ' : null}
                 <span className="whitespace-nowrap">
                   {piece}
@@ -169,7 +171,7 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
                     </span>
                   ) : null}
                 </span>
-              </span>
+              </Fragment>
             ))}
           </span>
         </button>
