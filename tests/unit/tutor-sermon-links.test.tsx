@@ -8,7 +8,8 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import { db } from '../../src/data/db';
 import { sermonChip } from '../../src/resources/tutorLinks';
 import { TutorLinks } from '../../src/TutorLinks';
-import { row } from '../support/sermon-sources';
+import { setSermonSources } from '../../src/sermons';
+import { row, sourceOf } from '../support/sermon-sources';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 
 const place = { book: 'rom', chapter: 5 };
@@ -52,6 +53,15 @@ describe('the sermon chip', () => {
     chip.addEventListener('click', (event) => event.preventDefault());
     await userEvent.click(chip);
     expect(onLeave).not.toHaveBeenCalled();
+  });
+
+  it('opens the row’s Subsplash address, not its YouTube url, as the Sermons sheet does; any other alt leaves the url', async () => {
+    const subsplash = { ...row('altsource', 'love', 'Love Commended', ['rom', 5, 8, 8], 'Test Preacher'), open: { url: 'https://www.youtube.com/watch?v=abc' }, alt: 'https://brookfieldfirst.subspla.sh/x' };
+    const gems = { ...row('altsource', 'peace', 'Peace with God', ['rom', 5, 1, 11], 'Test Preacher'), open: { url: 'https://www.youtube.com/watch?v=def' }, alt: 'https://www.spurgeongems.org/sermon/chs1.pdf' };
+    setSermonSources([sourceOf('altsource', 'Alt Sermons', { rom: [subsplash, gems] })]);
+    render(<TutorLinks links={[{ kind: 'sermon', sermon: 'altsource:love' }, { kind: 'sermon', sermon: 'altsource:peace' }]} place={place} verse={8} onLeave={() => undefined} />);
+    expect(await screen.findByRole('link', { name: 'Sermon: Love Commended ↗' })).toHaveAttribute('href', 'https://brookfieldfirst.subspla.sh/x');
+    expect(await screen.findByRole('link', { name: 'Sermon: Peace with God ↗' })).toHaveAttribute('href', 'https://www.youtube.com/watch?v=def');
   });
 
   it('is not drawn for an id the passage lacks, and nothing at all is drawn when it is the only link', async () => {

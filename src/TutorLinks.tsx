@@ -15,6 +15,7 @@ import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS, type TalkScope } from './services/talk';
 import { bibleFor } from './resources/logosBible';
 import { armFallback } from './resources/openApp';
+import { openedRow } from './sermons/merge';
 import { copyChip, hebrewLinkLemma, mapChip, placeOf, sermonChip, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import { openMaps } from './maps/openMaps';
 import { useMaps } from './maps/useMaps';
@@ -180,7 +181,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
       if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
     } else if (link.kind === 'sermon') {
       const found = place && sermonRows ? sermonChip(link.sermon, sermonRows) : null;
-      if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, open: found.row.open }, chips: [] });
+      if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, open: openedRow(found.row).open }, chips: [] });
     } else if (link.kind === 'copy' || link.kind === 'share') {
       // a reference Lampas has no text for (the Apocrypha, a chapter the book lacks) draws nothing
       const found = copyChip(link.kind, link.reference);
