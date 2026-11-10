@@ -89,9 +89,10 @@ describe('choosing a Bible asks which part', () => {
   });
 
   it('words the last button for the parts the Bible holds, and leaves it out for one part', () => {
-    expect(allLabelFor('LLS:MYOWNBIBLE.1')).toBe('All three');
     expect(allLabelFor(ESV)).toBe('Both');
-    expect(allLabelFor(LES)).toBe('Both');
+    // the Septuagint is among the buttons, so the last button names the parts it sets (it leaves the Septuagint alone)
+    expect(allLabelFor('LLS:MYOWNBIBLE.1')).toBe('NT, OT and Apocrypha');
+    expect(allLabelFor(LES)).toBe('OT and Apocrypha');
     expect(allLabelFor('LLS:TYNDALEBBL1536')).toBeNull();
   });
 
