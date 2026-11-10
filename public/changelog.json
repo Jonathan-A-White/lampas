@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.201",
+    "date": "2026-11-10",
+    "story": "mw-u2w5klk.331",
+    "kind": "fixed",
+    "text": "In the Septuagint's English text, Brenton's square brackets now follow \"Show manuscript gaps\": hidden (with every word kept) unless you turn it on."
+  },
+  {
+    "version": "0.7.201",
+    "date": "2026-11-10",
+    "story": "mw-fnvjof.17.63",
+    "kind": "fixed",
+    "text": "the \"Which languages?\" link in the Library's not-offered line no longer spreads its sentence into unevenly spaced lines."
+  },
+  {
+    "version": "0.7.201",
+    "date": "2026-11-10",
+    "story": "mw-fnvjof.17.62",
+    "kind": "fixed",
+    "text": "The Bibles page's help line now says the last \"Set for\" button sets the parts its name lists and leaves the Septuagint alone, instead of promising \"the first three\"."
+  },
+  {
     "version": "0.7.200",
     "date": "2026-11-10",
     "story": "mw-u2w5klk.274.14",

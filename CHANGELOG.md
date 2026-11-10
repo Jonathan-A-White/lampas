@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.201
+_2026-11-10_
+- Fixed: In the Septuagint's English text, Brenton's square brackets now follow "Show manuscript gaps": hidden (with every word kept) unless you turn it on.
+- Fixed: the "Which languages?" link in the Library's not-offered line no longer spreads its sentence into unevenly spaced lines.
+- Fixed: The Bibles page's help line now says the last "Set for" button sets the parts its name lists and leaves the Septuagint alone, instead of promising "the first three".
+
 ## 0.7.200
 _2026-11-10_
 - Fixed: In the Septuagint English, tapping "Let us", "I have" or "Let" at the start of a clause now opens the word sheet of the Greek verb it belongs with, even when "not" or the subject comes between.
