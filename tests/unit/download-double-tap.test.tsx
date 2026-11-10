@@ -1,4 +1,4 @@
-// tests/unit/download-double-tap.test.tsx — the two buttons that save a file take one tap per moment (mw-5r3p30.1101, found in mw-5r3p30.1093's sweep of launchers):
+// tests/unit/download-double-tap.test.tsx — the two buttons that save a file take one tap per moment (mw-5r3p30.1101, found in mw-5r3p30.1093's sweep of launchers; 'Download my recording' by the app-wide guard, mw-t5shinh.8):
 // 'Download my recording' (ReadCheck, Developer mode) and Memory's 'Export'. The second tap of a double tap would save the same file twice; the Export's file is made
 // by an await, so a second tap must not start a second one while the first is still being made.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -9,6 +9,7 @@ import { setDeveloper } from '../../src/data/repositories';
 import { MemoryScreen } from '../../src/MemoryScreen';
 import { MyReading } from '../../src/ReadCheck';
 import { SETTLE_MS, settle } from '../../src/ui/settle';
+import { startTapGuard } from '../../src/ui/tapGuard';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 /** The Export's file: made when `release` is called, if a test holds it. */
@@ -26,15 +27,19 @@ const NAME = 'lampas-rom.8.28-20261009T120000Z.webm';
 
 let saved: string[];
 let before: number;
+let stopGuard: () => void;
 beforeEach(async () => {
   // oneTap remembers the last tap for the whole page: let the previous test's moment pass, as a later tap would
   await wait(SETTLE_MS + 50);
   before = settle.ms;
   settle.ms = SETTLE_MS;
+  // 'Download my recording' has no oneTap of its own: the app-wide guard drops the second tap on the same button
+  stopGuard = startTapGuard();
   saved = [];
   vi.spyOn(downloadSeam, 'save').mockImplementation((name) => void saved.push(name));
 });
 afterEach(() => {
+  stopGuard();
   cleanup();
   settle.ms = before;
   made.hold = null;
