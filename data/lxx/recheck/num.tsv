@@ -1,0 +1,338 @@
+ref	parsing	lemma	mark	confidence	note
+Num.1:4#8	A-GSM	ἕκαστος		0.80	
+Num.1:13#3	N-NSM	Φαγαιήλ		0.80	
+Num.1:16#5	N-NPM	ἄρχων		0.80	
+Num.1:17#10	V-APP-APM	ἀνακαλέω		0.80	
+Num.1:20#26	A-APN	ἀρσενικός	unsure	0.50	model: unsure
+Num.1:28#6	P-GPM	αὐτός		0.80	
+Num.1:32#5	N-APF	συγγενίς		0.80	
+Num.1:34#3	N-GSM	Βενιαμίν		0.80	
+Num.1:35#3	P-GPM	αὐτός		0.80	
+Num.1:36#9	P-GPM	αὐτός		0.80	
+Num.1:36#21	A-APN	πᾶς	unsure	0.50	model: unsure
+Num.1:37#3	P-GPM	αὐτός		0.80	
+Num.1:38#5	N-APF	συγγενίς		0.80	
+Num.1:40#24	A-GSM	εἰκοσαετής	unsure	0.50	model: unsure
+Num.1:42#24	A-GSM	εἰκοσαετής	unsure	0.50	model: unsure
+Num.1:45#18	V-AMN	παρατάσσω	unsure	0.50	model: unsure
+Num.2:2#10	N-GPF	πατριά		0.80	
+Num.2:7#13	N-NSM	Ἐλιάβ		0.80	
+Num.2:14#13	N-GSM	Γάδ		0.80	
+Num.2:24#16	A-NPM	τρίτος		0.80	
+Num.2:27#16	N-GSM	Ἐχράν		0.80	
+Num.2:32#23	A-NPM	τρισχίλιοι		0.80	
+Num.2:32#24	A-NPM	πεντακόσιοι		0.80	
+Num.2:33#11	T-DSM	ὁ		0.80	
+Num.2:34#6	A-APN	πᾶς		0.80	
+Num.3:10#19	A-APN	πᾶς		0.80	
+Num.3:12#8	A-GSN	μέσος		0.80	
+Num.3:13#17	A-ASN	πρωτότοκος	guess	0.40	guess: the model chose outside the candidates
+Num.3:15#7	N-GPF	πατριά		0.80	
+Num.3:16#6	N-NSM	Ἀαρών		0.80	
+Num.3:16#13	P-DPM	αὐτός		0.80	
+Num.3:17#10	N-NSM	Γεδσών	guess	0.40	guess: the model answered with no candidates
+Num.3:24#10	N-NSM	Ἐλισάφ		0.80	
+Num.3:26#2	T-NPN	ὁ	unsure	0.50	model: unsure
+Num.3:27#13	N-NSM	Χεβρωνείς	guess	0.40	guess: the model answered with no candidates
+Num.3:37#10	P-GPM	αὐτός		0.80	
+Num.3:38#18	P-GSM	αὐτός		0.80	
+Num.3:41#14	N-GSM	Ἰσραήλ		0.80	
+Num.3:44#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Num.3:46#19	N-GSM	Ἰσραήλ		0.80	
+Num.3:49#8	T-GPM	ὁ		0.80	
+Num.4:3#17	A-APN	πᾶς		0.80	
+Num.4:9#29	R-DPN	ὅς, ἥ		0.80	
+Num.4:11#3	T-ASN	ὁ		0.80	
+Num.4:13#13	A-ASN	ὁλοπόρφυρος		0.80	
+Num.4:15#24	D-APN	οὗτος		0.80	
+Num.4:15#33	A-GPN	ἅγιος		0.80	
+Num.4:16#23	T-NSN	ὁ	unsure	0.50	model: unsure
+Num.4:16#24	N-NSN	ἔλαιον	unsure	0.50	model: unsure
+Num.4:18#2	V-AAS-2P	ὀλεθρεύω		0.80	
+Num.4:19#10	V-PNP-GPM	προσπορεύομαι		0.80	
+Num.4:23#18	P-GSM	αὐτός		0.80	
+Num.4:24#7	N-GSM	Γεδσών		0.80	
+Num.4:26#16	A-APN	πᾶς		0.80	
+Num.4:31#4	N-NPN	φύλαγμα	unsure	0.50	model: unsure
+Num.4:31#8	P-GPM	αὐτός		0.80	
+Num.4:31#44	P-GPM	αὐτός	unsure	0.50	model: unsure
+Num.4:32#33	A-APN	πᾶς		0.80	
+Num.4:32#48	T-APN	ὁ		0.80	
+Num.4:32#55	P-GPM	αὐτός		0.80	
+Num.4:34#19	P-GPM	αὐτός		0.80	
+Num.4:46#20	N-GPF	πατριά		0.80	
+Num.4:47#20	T-APN	ὁ		0.80	
+Num.5:2#4	N-GSM	Ἰσραήλ		0.80	
+Num.5:2#6	V-AAM-3P	ἐξαποστέλλω		0.80	
+Num.5:2#13	A-ASM	πᾶς		0.80	
+Num.5:3#4	A-GSN	θηλυκός	unsure	0.50	model: unsure
+Num.5:8#30	R-GSM	ὅς, ἥ		0.80	
+Num.5:9#5	A-APN	πᾶς		0.80	
+Num.5:13#20	V-RPP-NSF	μιαίνω		0.80	
+Num.5:15#27	N-ASN	ἔλαιον		0.80	
+Num.5:19#2	V-FAI-3S	ὁρκίζω		0.80	
+Num.5:24#5	T-ASN	ὁ		0.80	
+Num.5:27#23	V-FPI-3S	πρήθω	unsure	0.50	model: unsure
+Num.5:28#11	A-NSF	ἀθῷος		0.80	
+Num.5:31#7	N-GSF	ἁμαρτία		0.80	
+Num.6:4#8	A-GPN	πᾶς		0.80	
+Num.6:8#6	P-GSM	αὐτός		0.80	
+Num.6:9#12	N-GSF	εὐχή		0.80	
+Num.6:9#18	P-GSM	αὐτός		0.80	
+Num.6:15#17	P-GPM	αὐτός	unsure	0.50	model: unsure
+Num.7:1#20	N-APN	σκεῦος		0.80	
+Num.7:2#5	N-GSM	Ἰσραήλ		0.80	
+Num.7:2#12	N-NPM	ἄρχων		0.80	
+Num.7:3#12	A-APM	ιβ	guess	0.40	guess: the model chose outside the candidates
+Num.7:8#18	N-GSM	Ἰθάμαρ		0.80	
+Num.7:11#5	N-ASM	Μωϋσῆς, Μωσῆς		0.80	
+Num.7:19#6	N-ASN	τρύβλιον		0.80	
+Num.7:25#25	V-RPP-GSF	ἀνά-ποιέω		0.80	
+Num.7:27#9	A-ASM	ἐνιαύσιος		0.80	
+Num.7:34#7	N-GSF	ἁμαρτία		0.80	
+Num.7:35#12	A-APF	ἐνιαύσιος		0.80	
+Num.7:35#15	T-NSN	ὁ		0.80	
+Num.7:55#4	N-NSN	τρύβλιον	unsure	0.50	model: unsure
+Num.7:58#7	N-GSF	ἁμαρτία		0.80	
+Num.7:60#9	N-NSM	Ἀβειδάν		0.80	
+Num.7:61#2	N-NSN	δῶρον	unsure	0.50	model: unsure
+Num.7:61#3	P-GSM	αὐτός		0.80	
+Num.7:67#4	N-NSN	τρύβλιον	unsure	0.50	model: unsure
+Num.7:70#4	N-GPF	αἴξ		0.80	
+Num.7:71#5	N-APF	δάμαλις		0.80	
+Num.7:73#25	V-RPP-GSF	ἀνά-ποιέω		0.80	
+Num.7:83#19	N-GSM	Αἰνάν		0.80	
+Num.7:85#17	T-NSN	ὁ	unsure	0.50	model: unsure
+Num.7:86#8	N-NSN	χρυσίον		0.80	
+Num.8:6#7	N-GSM	Ἰσραήλ		0.80	
+Num.8:14#8	N-GSM	Ἰσραήλ		0.80	
+Num.8:15#9	N-APN	ἔργον		0.80	
+Num.8:16#10	N-GSM	Ἰσραήλ		0.80	
+Num.8:18#6	A-GSM	πᾶς	unsure	0.50	model: unsure
+Num.8:20#5	N-NSM	Ἀαρών		0.80	
+Num.9:1#9	N-GSN	Σινᾶ	unsure	0.50	model: unsure
+Num.9:10#28	N-ASN	πάσχα		0.80	
+Num.9:16#9	N-GSF	ἡμέρα		0.80	
+Num.10:4#13	N-GSM	Ἰσραήλ		0.80	
+Num.10:14#10	P-GPM	αὐτός		0.80	
+Num.10:24#10	T-GSM	ὁ		0.80	
+Num.11:2#15	N-NSN	πῦρ		0.80	
+Num.11:4#6	P-DPM	αὐτός		0.80	
+Num.11:4#15	N-GSM	Ἰσραήλ		0.80	
+Num.11:4#18	I-NSM	τίς		0.80	
+Num.11:10#5	P-GPM	αὐτός		0.80	
+Num.11:10#23	A-NSN	πονηρός		0.80	
+Num.11:17#13	T-GSN	ὁ		0.80	
+Num.11:17#21	V-FNI-3P	συναντιλαμβάνομαι	guess	0.40	guess: the model answered with no candidates
+Num.11:21#21	P-DPM	αὐτός		0.80	
+Num.11:26#11	N-NSM	Ἐλδάδ		0.80	
+Num.11:26#25	T-GPM	ὁ		0.80	
+Num.11:31#22	N-GSF	ἡμέρα		0.80	
+Num.11:31#28	A-ASN	δίπηχυς	unsure	0.50	model: unsure
+Num.12:1#12	N-GSF	Αἰθιόπισσα	guess	0.40	guess: the model answered with no candidates
+Num.12:6#17	V-FPI-1S	γινώσκω		0.80	
+Num.12:11#3	N-NSM	Ἀαρών		0.80	
+Num.12:14#22	N-APF	ἡμέρα		0.80	
+Num.13:13#3	N-GSM	Δάν		0.80	
+Num.13:16#4	N-NSM	Γουδιήλ		0.80	
+Num.13:17#18	N-GSM	Ναυή		0.80	
+Num.13:24#18	P-GSM	αὐτός		0.80	
+Num.13:25#15	N-GSM	Ἰσραήλ		0.80	
+Num.13:31#10	P-DSM	αὐτός		0.80	
+Num.13:33#36	A-NPM	ὑπερμήκης		0.80	
+Num.14:6#17	N-APN	ἱμάτιον		0.80	
+Num.14:9#17	N-NSN	κατάβρωμα		0.80	
+Num.14:10#12	V-API-3S	ὁράω		0.80	
+Num.14:14#38	P-GPM	αὐτός		0.80	
+Num.14:15#16	N-ASN	ὄνομα		0.80	
+Num.14:23#27	A-ASN	κακός		0.80	
+Num.14:24#15	V-FAI-1S	εἰσάγω		0.80	
+Num.14:27#16	N-GSM	Ἰσραήλ		0.80	
+Num.14:30#26	N-GSM	Ναυή		0.80	
+Num.14:33#6	V-PMP-NPM	νέμω	unsure	0.50	model: unsure
+Num.14:34#7	V-AMI-2P	κατασκέπτομαι		0.80	
+Num.14:35#24	V-FNI-3P	ἀποθνήσκω		0.80	
+Num.14:38#4	N-GSM	Ναυή		0.80	
+Num.15:6#18	V-RPP-GSF	ἀνά-ποιέω		0.80	
+Num.15:19#3	CONJ	ὅταν		0.80	
+Num.15:20#5	N-ASN	ἀφαίρεμα		0.80	
+Num.15:20#11	N-GSF	ἅλως		0.80	
+Num.15:24#28	D-GSM	οὗτος		0.80	
+Num.15:24#38	N-GPF	αἴξ		0.80	
+Num.15:25#22	N-ASN	δῶρον		0.80	
+Num.15:26#19	A-NSN	ἀκούσιος		0.80	
+Num.15:29#16	P-DPM	αὐτός		0.80	
+Num.15:33#7	N-APN	ξύλον		0.80	
+Num.15:33#15	N-ASM	Ἀαρών		0.80	
+Num.15:36#24	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Num.15:38#4	N-GSM	Ἰσραήλ		0.80	
+Num.16:2#18	N-NPM	ἀνήρ		0.80	
+Num.16:5#8	P-GSM	αὐτός		0.80	
+Num.16:9#10	N-GSM	Ἰσραήλ		0.80	
+Num.16:18#4	T-ASN	ὁ		0.80	
+Num.16:19#5	N-NSM	Κορέ		0.80	
+Num.16:28#5	D-DSN	οὗτος		0.80	
+Num.16:35#2	N-NSN	πῦρ		0.80	
+Num.16:37#9	V-2AMM-2P	ἀναιρέω		0.80	
+Num.16:40#36	N-GSM	Μωϋσῆς, Μωσῆς	guess	0.40	guess: the model chose outside the candidates
+Num.16:45#3	A-GSN	μέσος		0.80	
+Num.17:2#22	P-GPM	αὐτός		0.80	
+Num.17:9#21	P-GSM	αὐτός		0.80	
+Num.17:10#21	V-AMM-3S	παύω		0.80	
+Num.18:3#13	T-APN	ὁ		0.80	
+Num.18:10#5	A-GPN	ἅγιος		0.80	
+Num.18:10#6	V-FDI-2P	φαγεῖν		0.80	
+Num.18:10#8	A-NSN	πᾶς		0.80	
+Num.18:11#2	D-NSN	οὗτος		0.80	
+Num.18:15#3	V-PAP-NSN	διανοίγω		0.80	
+Num.18:15#32	V-FMI-2S	λυτρόω		0.80	
+Num.18:19#2	N-ASN	ἀφαίρεμα		0.80	
+Num.18:19#3	T-GPN	ὁ		0.80	
+Num.18:20#30	N-GSM	Ἰσραήλ		0.80	
+Num.18:23#26	A-DSN	μέσος		0.80	
+Num.18:24#20	P-DPM	αὐτός		0.80	
+Num.18:30#16	N-NSN	γένημα	unsure	0.50	model: unsure
+Num.19:8#8	P-GSM	αὐτός		0.80	
+Num.19:8#11	T-ASN	ὁ		0.80	
+Num.19:15#8	V-RPI-3S	καταδέω		0.80	
+Num.19:19#27	T-APN	ὁ		0.80	
+Num.20:8#27	V-FAI-2P	ἐκφέρω		0.80	
+Num.20:12#29	P-DPM	αὐτός		0.80	
+Num.20:14#6	N-GSF	Καδής	guess	0.40	guess: the model chose outside the candidates
+Num.20:15#12	N-APF	ἡμέρα		0.80	
+Num.20:17#24	V-FAI-1P	ἐκκλίνω		0.80	
+Num.20:19#28	A-NSN	οὐδείς		0.80	
+Num.20:23#16	N-GSM	Ἐδώμ	unsure	0.50	model: unsure
+Num.20:27#11	N-ASN	Ὥρ	guess	0.40	guess: the model answered with no candidates
+Num.21:3#22	T-ASN	ὁ		0.80	
+Num.21:11#6	V-2AAI-3P	παρεμβάλλω		0.80	
+Num.21:11#21	N-APF	ἀνατολή		0.80	
+Num.21:29#11	V-PPN	διασῴζω		0.80	
+Num.22:2#11	A-DSM	Ἀμορραῖος		0.80	
+Num.22:4#6	N-GSM	Μαδιάν		0.80	
+Num.22:5#7	N-GSM	Βεώρ		0.80	
+Num.22:6#20	V-FAI-1S	ἐκβάλλω		0.80	
+Num.22:7#16	P-GPM	αὐτός		0.80	
+Num.22:11#30	V-FAI-1S	ἐκβάλλω		0.80	
+Num.22:16#4	N-ASM	Βαλαάμ		0.80	
+Num.22:16#13	N-GSM	Σεπφώρ		0.80	
+Num.22:17#13	V-ADM-2S	ἐπικαταράομαι		0.80	
+Num.22:18#24	N-ASN	ῥῆμα		0.80	
+Num.22:20#9	P-DSM	αὐτός		0.80	
+Num.22:25#22	V-AAN	μαστίζω		0.80	
+Num.22:32#10	V-AAI-2S	πατάσσω		0.80	
+Num.22:38#15	T-ASN	ὁ		0.80	
+Num.22:38#23	T-ASN	ὁ		0.80	
+Num.22:39#5	N-GSM	Βαλάκ		0.80	
+Num.22:40#12	T-DPM	ὁ		0.80	
+Num.22:41#14	T-GSM	ὁ		0.80	
+Num.23:1#3	N-NSM	Βαλαάμ		0.80	
+Num.23:2#3	N-NSM	Βαλάκ		0.80	
+Num.23:3#21	N-ASN	ῥῆμα		0.80	
+Num.23:5#2	V-2AAI-3S	ἐμβάλλω		0.80	
+Num.23:6#11	P-GSM	αὐτός		0.80	
+Num.23:8#9	V-ADS-1S	καταράομαι		0.80	
+Num.23:23#4	N-NSM	οἰωνισμός		0.80	
+Num.23:25#3	N-NSM	Βαλάκ		0.80	
+Num.23:26#13	R-ASN	ὅς, ἥ		0.80	
+Num.23:26#19	V-FAI-1S	ποιέω		0.80	
+Num.24:1#15	T-ASN	ὁ		0.80	
+Num.24:3#8	N-NSM	Βαλαάμ		0.80	
+Num.24:3#15	ADV	ἀληθινῶς	guess	0.40	guess: the model chose outside the candidates
+Num.24:8#15	T-APN	ὁ		0.80	
+Num.24:10#20	V-RAI-1S	καλέω		0.80	
+Num.25:5#7	V-AAM-2P	ἀποκτείνω		0.80	
+Num.25:14#14	N-GSF	Μαδιανῖτις	guess	0.40	guess: the model answered with no candidates
+Num.25:15#8	V-2RAP-DSF	πλήσσω		0.80	
+Num.25:15#10	N-NSF	θυγάτηρ		0.80	
+Num.25:17#5	V-AAM-2P	πατάσσω		0.80	
+Num.26:5#12	T-DSM	ὁ		0.80	
+Num.26:10#11	N-ASM	Κορέ		0.80	
+Num.26:12#11	N-DSM	Ναμουήλ		0.80	
+Num.26:13#1	T-DSM	ὁ		0.80	
+Num.26:14#3	N-GSM	Συμεών		0.80	
+Num.26:19#3	N-GSM	Ἰσαχάρ		0.80	
+Num.26:33#3	T-DSM	ὁ		0.80	
+Num.26:36#1	T-DSM	ὁ		0.80	
+Num.26:46#6	P-GPM	αὐτός		0.80	
+Num.26:46#17	P-GPM	αὐτός		0.80	
+Num.26:47#7	P-GPM	αὐτός		0.80	
+Num.26:54#15	V-2AOI-3P	ἐπισκέπτομαι	unsure	0.50	model: unsure
+Num.26:57#18	N-DSM	Μεραρεί		0.80	
+Num.26:61#11	A-ASN	ἀλλότριος		0.80	
+Num.26:62#10	A-NSN	πᾶς	unsure	0.50	model: unsure
+Num.26:63#14	N-GSM	Ἰσραήλ		0.80	
+Num.27:12#16	N-ASN	ὄρος		0.80	
+Num.27:13#2	V-FMI-2S	ὁράω		0.80	
+Num.27:14#24	P-GPM	αὐτός		0.80	
+Num.27:20#14	N-GSM	Ἰσραήλ		0.80	
+Num.27:23#15	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
+Num.28:6#1	N-NSN	ὁλοκαύτωμα	unsure	0.50	model: unsure
+Num.28:7#15	V-FAI-2S	σπένδω		0.80	
+Num.28:7#17	N-ASN	σίκερα		0.80	
+Num.28:15#4	N-GPF	αἴξ		0.80	
+Num.28:18#10	A-ASN	πᾶς		0.80	
+Num.28:25#11	N-ASN	ἔργον		0.80	
+Num.28:28#4	N-NSF	σεμίδαλις		0.80	
+Num.29:12#9	D-GSM	οὗτος		0.80	
+Num.29:14#9	A-NPN	δέκατος	unsure	0.50	model: unsure
+Num.29:24#18	P-GPM	αὐτός		0.80	
+Num.29:27#18	P-GPM	αὐτός		0.80	
+Num.30:4#8	V-AMS-3S	ὁρίζω		0.80	
+Num.30:8#2	V-AAS-3S	ἀκούω		0.80	
+Num.30:8#25	V-AMI-3S	ὁρίζω	unsure	0.50	model: unsure
+Num.31:4#1	A-NPM	χίλιοι	unsure	0.50	model: unsure
+Num.31:6#17	N-GSM	Ἐλεάζαρ		0.80	
+Num.31:21#26	T-DSM	ὁ		0.80	
+Num.31:36#8	V-RMP-GPM	ἐκπορεύω	unsure	0.50	model: unsure
+Num.31:39#9	N-NSN	τέλος	unsure	0.50	model: unsure
+Num.31:41#7	T-ASN	ὁ		0.80	
+Num.31:41#17	T-DSM	ὁ		0.80	
+Num.31:43#11	A-NPF	τριακόσιοι		0.80	
+Num.31:47#11	A-ASN	εἷς		0.80	
+Num.31:48#15	N-NPM	ἑκατόνταρχος		0.80	
+Num.31:52#16	A-NPM	ἑπτακόσιοι		0.80	
+Num.31:54#19	P-APN	αὐτός		0.80	
+Num.32:1#3	N-NSN	πλῆθος		0.80	
+Num.32:11#26	N-DSM	Ἀβραάμ		0.80	
+Num.32:13#9	V-AAI-3S	κατερομβεύω	guess	0.40	guess: the model answered with no candidates
+Num.32:30#29	N-GSF	Χαναάν		0.80	
+Num.32:32#3	V-RPP-NPM	ἐνοπλίζω		0.80	
+Num.32:33#21	N-GSM	Σηών		0.80	
+Num.33:1#14	P-GPM	αὐτός		0.80	
+Num.33:4#4	V-IAI-3P	θάπτω		0.80	
+Num.33:5#5	N-GSM	Ἰσραήλ		0.80	
+Num.33:6#9	R-NSN	ὅς, ἥ		0.80	
+Num.33:8#7	A-ASN	μέσος		0.80	
+Num.33:10#6	V-2AAI-3P	παρεμβάλλω		0.80	
+Num.33:15#6	V-2AAI-3P	παρεμβάλλω		0.80	
+Num.33:21#4	N-GSF	Λεμωνά		0.80	
+Num.33:26#6	V-2AAI-3P	παρεμβάλλω		0.80	
+Num.33:31#4	N-GSF	Μασσουρούθ		0.80	
+Num.33:33#10	N-ASF	Σετεβάθα	guess	0.40	guess: the model answered with no candidates
+Num.33:38#3	N-NSM	Ἀαρών		0.80	
+Num.33:46#4	N-GSF	Δαιβών		0.80	
+Num.33:54#5	P-GPM	αὐτός		0.80	
+Num.33:54#23	P-GPM	αὐτός		0.80	
+Num.34:2#4	N-GSM	Ἰσραήλ		0.80	
+Num.34:4#4	T-NPN	ὁ		0.80	
+Num.34:9#15	N-NPN	ὅριον		0.80	
+Num.34:10#4	P-DPM	αὐτός		0.80	
+Num.34:10#6	N-APN	ὅριον		0.80	
+Num.34:15#4	A-NSN	ἥμισυς		0.80	
+Num.34:19#2	D-NPN	οὗτος		0.80	
+Num.34:19#3	T-NPN	ὁ		0.80	
+Num.35:6#24	N-APF	πόλις		0.80	
+Num.35:8#10	N-GSM	Ἰσραήλ		0.80	
+Num.35:8#15	A-APN	πολύς	unsure	0.50	model: unsure
+Num.35:11#4	P-DPM	αὐτός		0.80	
+Num.35:24#19	D-APN	οὗτος		0.80	
+Num.35:27#14	P-GSM	αὐτός		0.80	
+Num.35:29#3	D-NPN	οὗτος		0.80	
+Num.36:1#16	N-GSM	Ἰωσήφ		0.80	
+Num.36:1#33	N-GSM	Ἰσραήλ		0.80	
+Num.36:3#7	N-GSM	Ἰσραήλ		0.80	
+Num.36:3#26	R-DPM	ὅς, ἥ		0.80	
+Num.36:4#13	P-GPM	αὐτός		0.80	
+Num.36:8#10	N-GSM	Ἰσραήλ		0.80	
+Num.36:10#5	N-DSM	Μωϋσῆς, Μωσῆς		0.80	
