@@ -23,6 +23,7 @@ const rowOf = (source: string, row: FileRow): SermonRow => ({
   role: row.role,
   open: { url: row.url },
   opensIn: opensInLogos(row.url) ? 'logos' : 'web',
+  ...(row.alt === undefined || row.alt === '' ? {} : { alt: row.alt }),
 });
 
 async function readBook(source: string, book: string): Promise<SermonRow[]> {

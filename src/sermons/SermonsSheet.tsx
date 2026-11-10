@@ -18,7 +18,7 @@ import { sermonsServiceKnown } from '../services/sermons';
 import { useAiAllowed } from '../gate/licenceContext';
 import { AskForPreacher } from './AskForPreacher';
 import { sourceOf } from './index';
-import { linkRowOf, linkRowOfHit, type LinkRow } from './merge';
+import { linkRowOf, linkRowOfHit, openedRow, type LinkRow } from './merge';
 import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
@@ -34,7 +34,9 @@ function metaOf(row: LinkRow, online: boolean): string {
   return [row.preacher, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
 }
 
-function Row({ row, online }: { row: LinkRow; online: boolean }) {
+function Row({ row: given, online }: { row: LinkRow; online: boolean }) {
+  // one link a row: the Subsplash address where the row has one, else its url (mw-qtu3zvz.49.2)
+  const row = openedRow(given);
   const { fallback } = row.open;
   // the Firefox intent when he chose Firefox on Android (openWeb.ts); a Logos row's link is never turned
   const href = useRowHref()(row);

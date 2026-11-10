@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SermonsDoor } from '../../src/sermons/SermonsDoor';
 import { SermonsHost } from '../../src/sermons/SermonsSheet';
 import { closeSermons } from '../../src/sermons/openSermons';
+import { setSermonSources } from '../../src/sermons';
+import { row, sourceOf } from '../support/sermon-sources';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 
 afterEach(() => {
@@ -107,6 +109,32 @@ describe('the Sermons sheet', () => {
       delete (navigator as unknown as Record<string, unknown>).onLine;
       if (online) Object.defineProperty(Navigator.prototype, 'onLine', online);
     }
+  });
+
+  it('opens a row’s Subsplash alt address (subsplash.com or subspla.sh) and no YouTube link; any other row opens its url as before (mw-qtu3zvz.49.2)', async () => {
+    const yt = 'https://www.youtube.com/watch?v=abc';
+    const withAlt = (id: string, title: string, alt?: string) => ({ ...row('altsrc', id, title, ['rom', 5, 8, 8]), open: { url: yt }, ...(alt === undefined ? {} : { alt }) });
+    setSermonSources([
+      sourceOf('altsrc', 'Alt Sermons', {
+        rom: [
+          withAlt('one', 'On subsplash.com', 'https://subsplash.com/u/-abc/media/d/xyz'),
+          withAlt('two', 'On subspla.sh', 'https://brookfieldfirst.subspla.sh/q59d572'),
+          withAlt('three', 'A PDF', 'https://www.spurgeongems.org/sermon/chs1.pdf'),
+          withAlt('four', 'No alt'),
+        ],
+      }),
+    ]);
+    const sheet = await openFor({ book: 'rom', chapter: 5, from: 8, to: 8 });
+    const rows = [...sheet.querySelectorAll<HTMLAnchorElement>('a[data-sermon-row]')];
+    expect(rows).toHaveLength(4);
+    const hrefOf = (title: string) => rows.find((r) => r.querySelector('[data-sermon-title]')?.textContent === title)?.getAttribute('href');
+    expect(hrefOf('On subsplash.com')).toBe('https://subsplash.com/u/-abc/media/d/xyz');
+    expect(hrefOf('On subspla.sh')).toBe('https://brookfieldfirst.subspla.sh/q59d572');
+    expect(hrefOf('A PDF')).toBe(yt);
+    expect(hrefOf('No alt')).toBe(yt);
+    // one link a row, and no YouTube link beside a Subsplash one
+    expect(sheet.querySelectorAll('a[data-sermon-row]')).toHaveLength(4);
+    expect([...sheet.querySelectorAll('a')].filter((a) => a.getAttribute('href')?.includes('youtube')).map((a) => a.closest('[data-sermon-row]')?.querySelector('[data-sermon-title]')?.textContent)).toEqual(['A PDF', 'No alt']);
   });
 
   it('closes with Close', async () => {

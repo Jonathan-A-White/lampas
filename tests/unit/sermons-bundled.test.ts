@@ -46,6 +46,17 @@ describe('the bundled sources', () => {
     expect(asked).toHaveLength(1);
   });
 
+  it('carry a file row’s alt address into the module row, and none where the file has none', async () => {
+    const file = { rows: [
+      { id: 'a', title: 'With', ref: { book: 'rom', chapter: 5, from: 8, to: 8 }, role: 'text', url: 'https://ccel.test/a', alt: 'https://brookfieldfirst.subspla.sh/q59d572' },
+      { id: 'b', title: 'Without', ref: { book: 'rom', chapter: 5, from: 8, to: 8 }, role: 'text', url: 'https://ccel.test/b' },
+    ] };
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(file), { status: 200 })));
+    const rows = await spurgeon.sermonsFor({ book: 'rom', chapter: 5, from: 8, to: 8 });
+    expect(rows.find((r) => r.id === 'a')?.alt).toBe('https://brookfieldfirst.subspla.sh/q59d572');
+    expect('alt' in rows.find((r) => r.id === 'b')!).toBe(false);
+  });
+
   it('ask for nothing of a book the source has no file for', async () => {
     expect(await henry.sermonsFor({ book: 'rom', chapter: 5 })).toEqual([]);
     expect(await spurgeon.sermonsFor({ book: 'xyz', chapter: 1 })).toEqual([]);
