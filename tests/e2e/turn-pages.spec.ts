@@ -566,7 +566,7 @@ test('the place line says the page, under the text; the type is the size it is w
   await shot(page, 'turn-pages');
 });
 
-test('with Turn pages a tap in the middle third opens the word, and a verse number in the left third is the page edge', async ({ page }) => {
+test('with Turn pages a tap in the middle third opens the word, and a verse number in the left third opens its verse', async ({ page }) => {
   await openMark12(page, 'pages');
   const b = await box(page);
   // a word of verse 1 that stands wholly in the middle third
@@ -588,11 +588,63 @@ test('with Turn pages a tap in the middle third opens the word, and a verse numb
   const numberBox = await number.boundingBox();
   if (!numberBox) throw new Error('no verse number');
   expect(numberBox.x).toBeLessThan(b.left + b.width / 3);
-  // mw-5r3p30.609: the left third turns back, number or not; on the first page that is the previous chapter's last page (mw-5r3p30.620), and no verse opens
+  // mw-fnvjof.17.59: the number is the one door to the Verse view, so its tap opens verse 2 rather than turning back; the rest of the left third still turns back
   await page.touchscreen.tap(numberBox.x + numberBox.width / 2, numberBox.y + numberBox.height / 2);
+  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await page.getByRole('region', { name: 'Verse view' }).getByRole('button', { name: '‹ Reader' }).click();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
+  expect(await at(page)).toBe(1);
+  await page.touchscreen.tap(b.left + b.width * 0.1, numberBox.y + numberBox.height * 3);
   await expect(page.getByRole('heading', { name: 'Mark 11', level: 1 })).toBeVisible();
-  expect(page.url()).not.toMatch(/[?&]v=/);
-  await expect(page.getByTestId('sheet-backdrop')).toHaveCount(0);
+});
+
+// mw-fnvjof.17.59: a verse's number is a button at the left edge, inside the left third; a finger's tap on it opens its Verse view (the door to Split) in Turn
+// pages too, and does not turn the page back. Genesis 14 (Hebrew), page 2, a verse number that is wholly in the left third.
+test('with Turn pages a finger on a verse number opens the Verse view, and does not turn the page back', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await keep(page, { readingMode: 'pages' });
+  await page.goto('/#/?b=gen&c=14');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Genesis 14', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', 'pages');
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  let last = '';
+  await expect
+    .poll(async () => {
+      const now = (await place(page).textContent()) ?? '';
+      const same = now === last;
+      last = now;
+      return same;
+    }, { intervals: [500] })
+    .toBe(true);
+  const there = async () => {
+    const match = ((await place(page).textContent()) ?? '').match(/^Genesis 14 · Page (\d+) of (\d+)$/);
+    if (!match) throw new Error('the place line does not read Genesis 14 · Page n of m');
+    return Number(match[1]);
+  };
+  await tapAt(page, 0.85);
+  await expect.poll(() => there()).toBe(2);
+  const b = await box(page);
+  // a number that begins on this page, wholly on screen
+  const number = await page.evaluate(({ left, right }) => {
+    for (const n of Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse-number]'))) {
+      const r = n.getBoundingClientRect();
+      if (r.width > 0 && r.left >= left - 1 && r.right <= right + 1) return { verse: n.closest<HTMLElement>('[data-verse]')?.dataset.verse ?? '', x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+    return null;
+  }, { left: b.left, right: b.right });
+  if (!number) throw new Error('no verse number on page 2');
+  expect(number.x).toBeLessThan(b.left + b.width / 3);
+  await page.touchscreen.tap(number.x, number.y);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view).toBeVisible();
+  await expect(view).toHaveAttribute('data-verse-view', new RegExp(`(^|[^0-9])${number.verse}$`));
+  await view.getByRole('button', { name: '‹ Reader' }).click();
+  await expect(view).toHaveCount(0);
+  expect(await there()).toBe(2);
+  await shot(page, 'turn-pages-verse-number-opens');
 });
 
 /** The gap on screen between the bottom of the lowest line of text (or Hear the verse button) on the page shown and the top of the place line, and the line height of that line. A
@@ -853,6 +905,14 @@ const underDoor = (page: Page, x: number, y: number) =>
     return !!r && x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 4 && y <= r.bottom + 4;
   }, { x, y });
 
+/** Whether (x, y) is on a verse number, or within 24 px of one (Chrome snaps a finger's tap near a button to it): its tap opens the verse, it does not turn the page. */
+const onNumber = (page: Page, x: number, y: number) =>
+  page.evaluate(({ x, y }) =>
+    Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse-number]')).some((n) => {
+      const r = n.getBoundingClientRect();
+      return r.width > 0 && x >= r.left - 24 && x <= r.right + 24 && y >= r.top - 24 && y <= r.bottom + 24;
+    }), { x, y });
+
 /** Taps (x, y) and waits for the page to be `to`; fails, naming the point and what it landed on, when a verse or sheet opened instead. */
 async function tapTurns(page: Page, x: number, y: number, to: number) {
   const hit = await page.evaluate(({ x, y }) => {
@@ -864,24 +924,33 @@ async function tapTurns(page: Page, x: number, y: number, to: number) {
   expect(await opened(page), `a tap at (${Math.round(x)}, ${Math.round(y)}) on ${hit} opens nothing`).toBe(false);
 }
 
-// mw-5r3p30.609: the verse number is a 44 px button at the left edge of its verse, right where a thumb taps to turn back; like a Kindle's, the left
-// edge always turns back. Page 4 of Mark 12 begins three verses (page 3 only two since the pages reach the place line, mw-5r3p30.610).
-test('with Turn pages a tap on any verse number in the left third turns back, and no verse opens', async ({ page }) => {
+// mw-fnvjof.17.59 (mw-5r3p30.609 made the number the page edge): the verse number is a 44 px button at the left edge of its verse, where a thumb taps to turn
+// back; a tap on it opens its verse, whichever page. Page 4 of Mark 12 begins three verses (page 3 only two since the pages reach the place line, mw-5r3p30.610).
+test('with Turn pages a tap on any verse number in the left third opens its verse, and does not turn the page', async ({ page }) => {
   await openMark12(page, 'pages');
   await turnTo(page, 4);
   const b = await box(page);
   const numbers = await page.evaluate(({ left, right }) =>
     Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-verse-number]'))
-      .map((n) => n.getBoundingClientRect())
-      .filter((r) => r.width > 0 && r.left >= left - 1 && r.right <= right + 1)
-      .map((r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 })),
+      .filter((n) => {
+        const r = n.getBoundingClientRect();
+        return r.width > 0 && r.left >= left - 1 && r.right <= right + 1;
+      })
+      .map((n) => {
+        const r = n.getBoundingClientRect();
+        return { verse: n.closest<HTMLElement>('[data-verse]')?.dataset.verse ?? '', x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      }),
   { left: b.left, right: b.right });
   expect(numbers.length).toBeGreaterThan(2);
+  const view = page.getByRole('region', { name: 'Verse view' });
   for (const n of numbers) {
     expect(n.x).toBeLessThan(b.left + b.width / 3);
-    await tapTurns(page, n.x, n.y, 3);
-    await tapAt(page, 0.85);
-    await expect.poll(() => at(page)).toBe(4);
+    await page.touchscreen.tap(n.x, n.y);
+    await expect(view).toBeVisible();
+    await expect(view).toHaveAttribute('data-verse-view', new RegExp(`(^|[^0-9])${n.verse}$`));
+    await view.getByRole('button', { name: '‹ Reader' }).click();
+    await expect(view).toHaveCount(0);
+    expect(await at(page)).toBe(4);
   }
   await shot(page, 'turn-pages-verse-numbers');
 });
@@ -908,10 +977,13 @@ for (const on of [2, 3, 4]) {
       for (let i = 0; i < left.length; i++) {
         // a point under the floating ? taps the tutor door, not the page (the door is proved in floating-tutor-once.spec.ts)
         if (await underDoor(page, right[i], y)) continue;
+        // a verse number keeps its own tap, which opens its verse (mw-fnvjof.17.59): the point is skipped if it is on one, here or on the page it turns to
+        if (await onNumber(page, left[i], y)) continue;
         await tapTurns(page, left[i], y, on - 1);
         await tapTurns(page, right[i], y, on);
         await tapTurns(page, right[i], y, on + 1);
-        await tapTurns(page, left[i], y, on);
+        // the way home is the same point, or, where the next page has a number there, one in the same row clear of the numbers
+        await tapTurns(page, (await onNumber(page, left[i], y)) ? left[left.length - 1] : left[i], y, on);
       }
     }
   });

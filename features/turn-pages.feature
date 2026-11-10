@@ -1,8 +1,8 @@
 Feature: Turn pages in the Reader
   Settings > Reading is Scroll | Turn pages, Scroll by default. With Turn pages the chapter is laid out in pages the size of the reading box:
   a tap on the right third of the text or a swipe to the left turns forward a page, a tap on the left third or a swipe to the right turns back,
-  and one quiet line under the text says the page ('Romans 8 · Page 2 of 7'). In the outer thirds a verse number, its play button or a heading is
-  text and turns the page like the rest (mw-5r3p30.609); the chapter buttons still do what they do; a tap in the middle third still opens the word. Past the last page the next chapter opens on its first page, and back past the first page the previous chapter opens on its last (mw-5r3p30.620); at Matthew 1 and Revelation 22 nothing opens. With Scroll the
+  and one quiet line under the text says the page ('Romans 8 · Page 2 of 7'). In the outer thirds a verse's play button or a heading is
+  text and turns the page like the rest (mw-5r3p30.609); a verse's number keeps its tap and opens the verse from anywhere (mw-fnvjof.17.59); the chapter buttons still do what they do; a tap in the middle third still opens the word. Past the last page the next chapter opens on its first page, and back past the first page the previous chapter opens on its last (mw-5r3p30.620); at Matthew 1 and Revelation 22 nothing opens. With Scroll the
   Reader is as it always was. jsdom has no layout, so each chapter here is one page; how the pages look and turn at 390x844 is proven by
   tests/e2e/turn-pages.spec.ts (src/reader/usePages.ts).
 
