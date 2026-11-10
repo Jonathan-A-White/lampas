@@ -694,7 +694,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       view={septuagint ? septuagintView(view, weaveShown ?? false, aligned) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
-                      gaps={septuagint && gaps}
+                      gaps={septuagint ? gaps : undefined}
                       woven={block.map(wovenOf)}
                       selected={selected}
                       reading={readingVerse}
@@ -713,7 +713,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                       view={septuagint ? septuagintView(view, weaveShown ?? false, aligned) : view}
                       source={source}
                       septuagint={septuagint ? chapter.chapter : undefined}
-                      gaps={septuagint && gaps}
+                      gaps={septuagint ? gaps : undefined}
                       woven={wovenOf(first)}
                       selected={selected === first.n}
                       reading={readingVerse === first.n}
