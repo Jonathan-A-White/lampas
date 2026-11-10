@@ -3,7 +3,7 @@
 // at a time (mw-5r3p30.378).
 import { useState } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
-import { ideaOf } from './data/grammar/ladder';
+import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { IdeaSheet } from './IdeaSheet';
 import { WordSheet, type Lookup } from './WordSheet';
 

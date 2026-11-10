@@ -2,7 +2,7 @@
 // The screen reports `drill`, one entry for each question he was asked: the idea it tests, what was asked, the answer he gave, the right answer and whether he was right. The
 // results go to the tutor as data in the request (the bible-talk grind's `screen.drill`), not as words he reads. Pure: the screens call it, src/AskTutor.tsx sends it.
 import type { GrammarQuestion } from '../data/grammar/questions';
-import { ideaOf } from '../data/grammar/ladder';
+import { ideaOfAny as ideaOf } from '../data/grammar/ladders';
 import { DRILL_SCREEN, type ScreenContext, type ScreenDrillAnswer, type ScreenFact } from './screen';
 
 /** One question of a run and what he did with it. */
