@@ -96,6 +96,19 @@ describe('choosing a Bible asks which part', () => {
     expect(allLabelFor('LLS:TYNDALEBBL1536')).toBeNull();
   });
 
+  it('has a help line that promises no count the last button does not set, and says the Septuagint stays as it is (mw-fnvjof.17.62)', () => {
+    const help = infoOf('bible').help;
+    // the last button sets the parts its name lists (Both, All three, 'OT and Apocrypha'), never 'the first three it holds'
+    expect(help).not.toMatch(/first three|first \w+ it holds/i);
+    expect(help).toMatch(/the parts its name lists/);
+    expect(help).toMatch(/leaves the Septuagint as it is/);
+    // read against what each last button sets: LES two parts, ESV two, NRSV three (it holds no Septuagint), a typed Resource ID three, never the Septuagint
+    expect(allLabelFor(LES)).toBe('OT and Apocrypha');
+    expect(allLabelFor(ESV)).toBe('Both');
+    expect(allLabelFor(NRSV)).toBe('All three');
+    expect(allLabelFor('LLS:MYTYPEDBIBLE')).toBe('NT, OT and Apocrypha');
+  });
+
   it('writes only the part named', async () => {
     await setBibleFor('nt', NKJV);
     await setBibleFor('ot', LSB);
