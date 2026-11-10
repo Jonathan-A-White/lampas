@@ -265,10 +265,18 @@ test('with the language dial at English only the Hebrew texts page says its book
   const why = page.getByTestId('dial-hides');
   await expect(why).toContainText('Which languages?');
   await expect(why).toContainText('Hebrew');
+  await expect(why).toContainText('These Hebrew texts');
   const box = (await why.boundingBox())!;
   expect(box.x).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(390.5);
   await shot(page, 'in-logos-hebrew-texts-english-only');
+
+  // "Which languages?" in the line is a button to that setting, and Settings opens at it with English only still pressed
+  await why.getByRole('button', { name: 'Which languages?', exact: true }).click();
+  await expect(page).toHaveURL(/#\/settings\?setting=languages/);
+  await expect(languages).toBeVisible();
+  await expect(languages.getByRole('button', { name: 'English only', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await shot(page, 'in-logos-hebrew-texts-languages-link');
 
   // a kind of both languages names only the one that is off (Greek stays at its placed step)
   await page.goto('/#/library?kind=lexicon');
