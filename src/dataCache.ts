@@ -57,7 +57,8 @@ export async function serveChapter(request: Request, caches: Pick<CacheStorage, 
   const kept = await cache.match(request);
   if (kept) return kept;
   const path = new URL(request.url).pathname;
-  const others = async () => (await cache.keys()).filter((key) => new URL(key.url).pathname === path && key.url !== request.url);
+  // Asks for this chapter's copies only (every fingerprint of the path): listing the whole cache after each save made a run quadratic (mw-lcv9z3g.8).
+  const others = async () => (await cache.keys(request, { ignoreSearch: true })).filter((key) => new URL(key.url).pathname === path && key.url !== request.url);
   let response: Response;
   try {
     response = await fetcher(request);

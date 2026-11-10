@@ -20,7 +20,7 @@ import {
 } from '../../src/data/offlineCopy';
 
 // The offline copy (mw-lcv9z3g.1): every chapter of a scope is fetched through the reader's own versioned address, so the worker's serveChapter
-// keeps it; what the data cache already holds is not fetched again, three at a time, paused offline and resumed online.
+// keeps it; what the data cache already holds is not fetched again, six at a time, paused offline and resumed online.
 
 class FakeCache {
   entries = new Map<string, string>();
@@ -244,8 +244,8 @@ describe('runOfflineCopy', () => {
       flying--;
     });
     await runOfflineCopy('nt', deps(s));
-    expect(OFFLINE_CONCURRENCY).toBe(3);
-    expect(most).toBe(3);
+    expect(OFFLINE_CONCURRENCY).toBe(6);
+    expect(most).toBe(6);
   });
 
   it('fetches the two Hebrew lists by their fingerprints, with the whole Bible', async () => {
@@ -269,18 +269,18 @@ describe('runOfflineCopy', () => {
     const s = setup(
       () =>
         new Promise<void>((resolve) => {
-          if (started++ < 3) held.push(resolve);
+          if (started++ < OFFLINE_CONCURRENCY) held.push(resolve);
           else resolve();
         }),
     );
     const run = runOfflineCopy('nt', deps(s));
-    await vi.waitFor(() => expect(s.calls).toHaveLength(3), { timeout });
+    await vi.waitFor(() => expect(s.calls).toHaveLength(OFFLINE_CONCURRENCY), { timeout });
     s.events.dispatchEvent(new Event('offline'));
     expect(offlineProgress().paused).toBe(true);
     held.splice(0).forEach((release) => release());
     await tick();
     await tick();
-    expect(s.calls).toHaveLength(3);
+    expect(s.calls).toHaveLength(OFFLINE_CONCURRENCY);
     s.events.dispatchEvent(new Event('online'));
     const end = await run;
     expect(end).toMatchObject({ done: 260, total: 260, failed: [], paused: false });

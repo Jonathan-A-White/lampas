@@ -20,8 +20,8 @@ export type OfflineScope = 'none' | 'nt' | 'hbo' | 'lxx' | 'all';
 /** The Hebrew word lists the worker does not precache (pwa-precache.ts has the Greek ones), each by the address the app asks for it (listUrl: ?v=<fingerprint> from `index`), so the worker keeps it and replaces an older copy. */
 export const hebrewLists = (index: BookIndex = CANON_INDEX): string[] => VERSIONED_LISTS.map((list) => listUrl(list, index));
 
-/** How many fetches a run has in flight at once. */
-export const OFFLINE_CONCURRENCY = 3;
+/** How many fetches a run has in flight at once. Six, not three (mw-lcv9z3g.8): a run of scope All on a locally served build at 4x CPU throttle kept 33-39 chapters/s with three and 48-50 with six, none failed; eight was no faster than six. */
+export const OFFLINE_CONCURRENCY = 6;
 
 export interface OfflineProgress {
   /** the scope this run keeps, so the row can tell a report of another scope's run (one just replaced) from its own */

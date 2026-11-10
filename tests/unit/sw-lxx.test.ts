@@ -16,7 +16,10 @@ class FakeCache {
     return body === undefined ? undefined : new Response(body);
   };
   put = async (request: Request, response: Response) => void this.entries.set(request.url, await response.text());
-  keys = async () => [...this.entries.keys()].map((url) => new Request(url));
+  keys = async (request?: Request, options?: CacheQueryOptions) =>
+    [...this.entries.keys()]
+      .filter((url) => !request || (options?.ignoreSearch ? new URL(url).pathname === new URL(request.url).pathname : url === request.url))
+      .map((url) => new Request(url));
   delete = async (request: Request) => this.entries.delete(request.url);
 }
 const stores = new Map<string, FakeCache>();
@@ -162,7 +165,7 @@ describe('the offline copy of the Septuagint through the worker', () => {
     server['/data-lxx/gen/1.json'] = 'chapter v2';
     const end = await run();
     expect(end).toMatchObject({ done: 3, total: 3, failed: [] });
-    // the chapter and the lexicon go three at a time, so in no set order
+    // the chapter and the lexicon go several at a time, so in no set order
     expect([...network].sort()).toEqual(['/data-lxx/gen/1.json?v=bbbbbbbbbbbb', '/data-lxx/index.json', '/data-lxx/lexicon-grc-lxx.json']);
     expect([...store(DATA_CACHE).entries.keys()].filter((key) => key.includes('/gen/1'))).toEqual(['http://localhost/data-lxx/gen/1.json?v=bbbbbbbbbbbb']);
     network = [];
