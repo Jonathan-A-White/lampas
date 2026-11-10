@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.195
+_2026-11-10_
+- Fixed: Tapping a Hebrew lesson in Settings' grammar approach list now opens its lesson instead of showing an error screen.
+- Fixed: In your Logos library, a Bible's last "Set for" button now names the parts it sets instead of saying "Both".
+- Fixed: In the Septuagint English, tapping "Let us", "let them", "I have" or "he had" opens the Greek verb's word sheet instead of the whole verse.
+- Fixed: a quick double tap on an English word of a Septuagint chapter no longer presses a button on the verse screen that the first tap opened.
+
 ## 0.7.194
 _2026-11-10_
 - New: a sermon that has a church Subsplash link now opens that link, already trimmed to the sermon, and opens its usual page where there is none.
