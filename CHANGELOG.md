@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.205
+_2026-11-10_
+- Fixed: the tutor's Sermon link now opens in Firefox, like the sermon list does, when you have chosen Firefox for web sermons.
+
 ## 0.7.204
 _2026-11-10_
 - Fixed: The Themes line under a verse no longer shows a stray comma at the end of a topic's label.

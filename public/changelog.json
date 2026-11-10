@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.205",
+    "date": "2026-11-10",
+    "story": "mw-qtu3zvz.49.25",
+    "kind": "fixed",
+    "text": "the tutor's Sermon link now opens in Firefox, like the sermon list does, when you have chosen Firefox for web sermons."
+  },
+  {
     "version": "0.7.204",
     "date": "2026-11-10",
     "story": "mw-qtu3zvz.51",
