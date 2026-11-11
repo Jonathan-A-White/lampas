@@ -13,6 +13,7 @@ and a Builder's own session cuts and pairs those ([The model pass](#the-model-pa
 - [The shape](#the-shape)
 - [How a pair is made](#how-a-pair-is-made)
 - [The model pass](#the-model-pass)
+- [The unpaired English](#the-unpaired-english)
 - [What reads the chunks](#what-reads-the-chunks)
 - [The report](#the-report)
   - [Each chapter shipped](#each-chapter-shipped)
@@ -25,6 +26,7 @@ and a Builder's own session cuts and pairs those ([The model pass](#the-model-pa
 - `npm run lxx:ship -- --out dist/data-lxx` aligns every chapter it ships (the Laptop's deploy step, docs/lxx-derivation.md 'The commands'). `npm run data:build:lxx` (public/data-lxx) is unchanged: one chunk a verse.
 - `npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>]` is that ship into `<dir>` (a temporary directory by default) and writes the aligned share of each chapter shipped between the markers below.
   Both read the choices under `data/lxx/choices`, so the chapters are the ones the ship ships, and both apply the model pass's files under `data/lxx/align`.
+- `npm run lxx:unpaired [-- --book <code>] [--no-morpheus]` is the same ship into a temporary directory and a count of the English content words that sit where a tap opens no Greek word, per chapter and book ([The unpaired English](#the-unpaired-english)). It prints, writes nothing and never fails on a gap.
 - `npm run lxx:align-choose -- --list --book gen --chapter 1` prints the verses of a chapter that still have a remainder; `npm run lxx:align-choose -- --book gen --chapter 1 --from <file>` checks a model session's file and writes `data/lxx/align/gen-01.tsv`.
 
 ## The shape
@@ -83,6 +85,21 @@ Genesis 20 was done on its own (story mw-u2w5klk.349.2, the Governor's report of
 `removed` is paired to ἐκίνησεν, `thence` to ἐκεῖθεν. Of its English content words 53 had no Greek word before (read by hand from `--list`) and 16 have none after, each named in `tests/unit/lxx-align-choose.test.ts` with why: the Greek word that renders it is a pair the aligner made to another English word (the pass does not touch a pair), or Brenton has no Greek word for it (Genesis 20:6's 'Yes,'). A tap on one opens the Verse view, never a wrong word.
 `--list` and `--from` number and check the runs at the stage `lxx:ship` applies the rows at (`alignRuns` in `scripts/lxx/align.ts`, which `alignChapter` also starts from: the chapter before the rows and before `joinSupplied`; the command asks the ship for it with `runsOnly`), so a verse with supplied words before a verb ('She will' + 'love') lists the supplied words as a run of their own, as the ship has it (mw-u2w5klk.349.16; before it the listing read the chapter after the join and its numbers were not the ship's).
 The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 12 to 19 and 21 to 50 (37 chapters, about 7,000 runs), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs): about twelve batches of some 1,400 runs, as Genesis 1 to 11 was one.
+
+## The unpaired English
+
+Story mw-u2w5klk.349.1, the sweep of the pairing epic (mw-u2w5klk.349; the Governor's report of 2026-11-10: he tapped 'removed' in Genesis 20:1 and got the Verse view). The Reader opens a Greek word from a tap on an English chunk only where the chunk names one (`septuagintChunkLinked`, src/reader/septuagint.ts);
+`npm run lxx:unpaired` counts the English that is left where it does not. It runs the ship as `lxx:align` does (the choices and the model pass's files under `data/lxx/align`), reads the chapters the ship wrote, and prints a table, a row for each chapter shipped and the book's `total` after its chapters, books in the Old Testament's order; `--book gen` counts one book.
+
+| Column | Meaning |
+| --- | --- |
+| English content words | the words of Brenton's English that are not function words (`FUNCTION_WORDS` in `scripts/lxx/unpaired.ts`: and, the, of, to, a, that, in, is, was, for, he, his, the pronouns, the prepositions, 'be', 'have', 'do' and their forms, Brenton's thou, thy, hath, unto); a word is its letters, so 'Abraham's' is 'abraham' |
+| Unpaired | the content words in a remainder chunk (`y: 'align?'`) or in a chunk with no Greek word that is not the model's (`g` empty, or no `y` at all, the one chunk a verse that `data:build:lxx` makes): a tap on one opens the Verse view. These are the gaps the epic is to close |
+| No Greek by the model | the content words in a model chunk (`y: 'model'`) whose `g` is empty: a session settled that they render no Greek word. Counted apart, not a gap. Some are English whose Greek word the aligner paired to another English word, which the pass does not touch (the 16 of Genesis 20 listed in `tests/unit/lxx-align-choose.test.ts`) |
+| Share | Unpaired over English content words |
+
+The command reports and does not fail on a gap. A later story makes a gap a failing test once the model batches have finished a book. `tests/unit/lxx-unpaired.test.ts` holds the function-word list, the counting on a fixture verse with a known remainder, the table, and (where the git-ignored sources are on the disk, as `lxx-align-choose.test.ts`)
+the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 12 to 19 and 21 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 16% and 35% a chapter.
 
 ## What reads the chunks
 
