@@ -26,6 +26,7 @@ The section heading is read from the data whether or not Settings > Section head
 <!-- toc -->
 
 - [Crossing into another chapter](#crossing-into-another-chapter)
+- [The recorded voice](#the-recorded-voice)
 - [The speaking bar (mw-m7v5kc.3)](#the-speaking-bar-mw-m7v5kc3)
 - [Pages of prose (mw-5r3p30.128)](#pages-of-prose-mw-5r3p30128)
 - [The tutor's responses (mw-5r3p30.93)](#the-tutors-responses-mw-5r3p3093)
@@ -54,6 +55,41 @@ reading in every case, crossing included. A Listen (a verse, a section, a chapte
 
 The verse being read keeps doing what it did: `verse-reading` on the bus per verse, the highlight, the scroll that keeps it in
 view, and the wake lock.
+
+## The recorded voice
+
+A chapter of the Majority Standard Bible that has verse timings (`public/data/audio/msb-david/`, `src/data/audioTimings.ts`, `docs/data.md`) can be read by the publisher's own recording, David's reading
+from openbible.com, in place of the phone's voice (mw-82lb97i.3). It is **off in production**: the one seam is `wantsRecording()` in `src/speech/recordedVoice.ts`, which names the voice
+(`'msb-david'`) only when `localStorage` `lampas:bibleVoice` is `msb-david` (read once at load; `setWantsRecording` for a jsdom test). Story b3 replaces the seam with a setting; every caller asks that one function.
+
+**What plays.** One `HTMLAudioElement` for the app's life, made on first use and reused for every chapter (a later chapter, after a crossing, needs no new tap), `preload` 'auto', its `src` the
+timings' MP3 address. It plays from the start of the verse the reading starts at (the chapter's first verse from second 0, the narrator's title included, with that verse marked meanwhile), tells
+`readAloud.ts` the verse at each `timeupdate` (`verseAt`; never `requestAnimationFrame` alone, which stops when the page hides), and stops at the end of the span's last verse: a timer aimed at it,
+`(end - currentTime) / playbackRate`, re-aimed on a change of speed, a pause or a seek, which waits on rather than cut a word when the recording stalled; a `timeupdate` past the end and the element's
+`ended` stop it too. It seeks by verse (`seekToVerse`: the start, a Listen's Restart and a tapped verse all use it), so a later previous-verse or next-verse button is one call. It plays at his English
+speed (`rates-changed`, through `settingsSync.ts` `setRecordedRate`), keeping its pitch; a change while it plays takes effect at once.
+
+**The reading is the same reading.** `startReading` and `continueReading` take one optional field, `recorded` (the chapter's timings): the state, the verse marked and kept in view, `verse-reading` per verse,
+the wake lock, Play to's crossing, the Listen keys, Play again and `restartListen` behave as with the phone's voice; only the sound differs. A verse's play button stops at that verse's end, a Listen at the
+end of its last verse, a passage at the verse before the next heading, and the header's Play at the chapter's end, where it crosses as before: into a chapter with timings the recording plays it from its
+first verse, otherwise the phone's voice reads on (John 21 into Acts 1 under End of the Bible: PROVISIONAL, the Governor to confirm). The header's Pause and Play pause and play the element at the same
+second; Stop and every new reading (a tutor's answer, a page of prose, another verse) pause it and drop its listener (the epoch). A weave turned on while it plays hands the reading to the phone's voice from
+the next verse. In this story the speaking bar does not hold a recorded reading (`onBar` stays false), so the header's Pause / Play and Stop and the line under it are its controls.
+
+**When the phone's voice reads instead.** `recordingFor` (`recordedVoice.ts`) decides at the tap, with nothing awaited between the tap and `play()`: the seam names a voice, the chapter is the MSB's
+New Testament (`translation` 'msb', Greek source: no Old Testament, no Septuagint), every run of every verse to be read is English (the English view with nothing woven), the timings are already loaded
+and have every verse to be read, and `navigator.onLine` is not false. The Reader loads the book's timings when a chapter opens (only while the seam names a voice) so the tap finds them; the Reader that
+opens a chapter a reading crossed into decides by the same rule. **The recording reads the MSB's English only: a plan with any Greek or Hebrew run (the Greek view, the weave, a woven verse) is read by
+the phone's voices as before.** Offline, no timings, the weave or the Greek shown, an Old Testament or Septuagint chapter, or the seam at null: the phone's voice, with no notice and no `src` set.
+
+**Never silence.** `play()` refused, the element's `error`, or no `playing` within 8 s (`PLAYING_WAIT_MS`) hands the reading to the phone's voice from the verse in hand, with the line
+*The recorded voice could not be reached: reading with the phone voice* (`RECORDING_FAILED_NOTICE`).
+
+**No `crossOrigin`, no fetch.** The publisher's server sends no CORS headers, so the element has no `crossOrigin` attribute (with one it would refuse to play), and the MP3 is never `fetch()`ed, read
+with WebAudio, cached or copied: the element plays it as any page's `<audio>` would, and there is no second element to preload. Tests never reach openbible.com: `features/recorded-voice.feature`
+(jsdom, `tests/support/fake-audio.ts` moves the element's time) and `tests/e2e/recorded-voice.spec.ts` (a stub's URL answered with a WAV of silence; any other request there is failed and counted).
+
+**Later stories.** b2: the speaking bar holds a recorded reading, a word said beside it, a hidden page; b3: the setting in place of the seam; b4: the media session (the lock screen's controls).
 
 ## The speaking bar (mw-m7v5kc.3)
 
