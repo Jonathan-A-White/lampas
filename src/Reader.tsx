@@ -66,7 +66,7 @@ import { usePages } from './reader/usePages';
 import { useSetting } from './settings/store';
 import { layRp2026English } from './data/rp2026English';
 import { Rp2026Sheet } from './reader/Rp2026Sheet';
-import { readingModeSetting, rp2026EnglishSetting, septuagintGapsSetting, septuagintSetting } from './settings/definitions';
+import { bibleVoiceSetting, readingModeSetting, rp2026EnglishSetting, septuagintGapsSetting, septuagintSetting } from './settings/definitions';
 import { useSheetOpen } from './ui/sheetBack';
 import { BOOKS, bookOf, isHebrewBook } from './data/books';
 import { ChapterFailed } from './reader/ChapterFailed';
@@ -96,7 +96,7 @@ import { useDoorTarget } from './tutor/door';
 import { useTalk } from './useTalk';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
-import { recordingFor, wantsRecording } from './speech/recordedVoice';
+import { recordingFor } from './speech/recordedVoice';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
@@ -505,9 +505,11 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     if (plan && crossingHere && readingStatus === 'reading') continueReading({ book: BOOK, chapter: CHAPTER, plan, recorded: recordingFor(BOOK, chapter, plan) });
   }, [plan, crossingHere, readingStatus, BOOK, CHAPTER, chapter]);
   // The recorded voice's timings for this book are loaded when a chapter opens, so a tap on Play finds them with no wait (mw-82lb97i.3).
+  // Any choice but the phone voice warms them (a small file), so a tap on the Wi-Fi choice finds them when Wi-Fi comes; it follows his Bible voice setting (Settings > Listening), so choosing the recording while a chapter is open brings its timings too.
+  const bibleVoice = useSetting(bibleVoiceSetting);
   useEffect(() => {
-    if (wantsRecording()) void loadBookTimings(BOOK);
-  }, [BOOK]);
+    if (bibleVoice !== 'phone') void loadBookTimings(BOOK);
+  }, [BOOK, bibleVoice]);
   // A chapter that cannot be fetched ends the reading that was going on into it.
   useEffect(() => {
     if (failed && crossingHere) stopReading();

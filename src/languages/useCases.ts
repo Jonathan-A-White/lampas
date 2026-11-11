@@ -387,6 +387,7 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   'reading-plan-return': 'back from Audible: the English audio Bible',
   'reading-plan-screenshot': 'a screenshot of Audible: the English audio Bible',
   'reading-plan-sendoff': 'the Audible send-off: the English audio Bible',
+  'bible-voice-setting': 'the Bible voice row of Settings > Listening: the recording or the phone’s voice, for English only',
   'recorded-voice': 'the publisher’s recording of the Majority Standard Bible: an English audio Bible, never Greek or Hebrew',
   'reference-card': 'a Bible reference in an answer opens a card: the tutor’s mechanics',
   'render-errors': 'one bad render never blacks out the app: the shell',

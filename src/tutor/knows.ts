@@ -77,6 +77,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   readLessons: 'speech',
   talk: 'screen',
   send: 'screen',
+  bibleVoice: 'speech',
   englishVoice: 'speech',
   greekVoice: 'speech',
   englishRate: 'speech',
@@ -148,6 +149,7 @@ const everySetting = Object.fromEntries(SETTINGS.map((s) => [s.key, `settings.${
 const byName = Object.fromEntries(bearingKeys.map((key) => [key, 'summary.settings_changed']));
 
 const READ_LESSONS = 'Whether a lesson reads itself aloud when it opens is a reading control; it changes nothing the answer says.';
+const BIBLE_VOICE = 'Which voice reads the Bible aloud (a recording or the phone) changes how a verse is heard, never what a verdict on one reading says.';
 const SPOKEN_LATER = 'It changes how loud or fast the answer is heard, never what it says.';
 const FAMILY_SET_BOTH = 'Pronunciation sets greekPronunciation and hebrewPronunciation together; what it left them at is what the request carries, so it is not sent a second time.';
 const NO_QUIZ = 'The quiz is the Bible talk\'s Quiz me mode alone; this grind never quizzes him.';
@@ -175,6 +177,7 @@ export const TUTOR_KNOWS: Readonly<Record<GrindKind, GrindKnows>> = {
       readSpan: 'Where the header\'s Play stops (Play to) has no part in the verdict on one verse he read.',
       readLessons: READ_LESSONS,
       readTutor: 'The verdict is written to be safe to speak whether or not it is read aloud to him (no words the voice mispronounces).',
+      bibleVoice: BIBLE_VOICE,
       englishVoice: SPOKEN_LATER,
       greekVoice: SPOKEN_LATER,
       hebrewVoice: SPOKEN_LATER,
