@@ -32,3 +32,8 @@ public/lemma-forms
 
 # Claude Code
 .claude/
+
+# The timing maker's guard (scripts/audio-timings/align.py): the publisher's MP3s live in ~/.cache/lampas-audio-timings, never in the repo
+scripts/audio-timings/**/*.mp3
+scripts/audio-timings/**/*.mp3.part
+scripts/audio-timings/__pycache__/
