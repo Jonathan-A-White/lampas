@@ -61,7 +61,7 @@ Lampas stands on others' work and names every text, font, library, service and i
 ## Services and apps
 
 - **[WhatsOnChain](https://whatsonchain.com)**. A public Bitcoin SV block explorer: it says whether your key holds a licence. Licence: none needed; its [terms](https://whatsonchain.com/terms) apply.
-- **[Sermon index](https://github.com/Jonathan-A-White/sermon-index)**, by Jonathan A. White. Gives the Sermons sheet its newest rows and search; no key sent. Licence: [MIT](https://github.com/Jonathan-A-White/sermon-index/blob/main/LICENSE). Changes: none.
+- **[Sermon index](https://github.com/Jonathan-A-White/sermon-index)**, by Jonathan A. White. Gives the Sermons sheet its newest rows, search and themed sermons; no key sent. Licence: [MIT](https://github.com/Jonathan-A-White/sermon-index/blob/main/LICENSE). Changes: none.
 - **[Postern](https://github.com/Jonathan-A-White/postern)** and its mill, by Jonathan A. White. Carry your questions to the tutor. Licence: [MIT](https://github.com/Jonathan-A-White/postern/blob/main/LICENSE). Changes: none.
 - **[Twilio Verify](https://www.twilio.com/en-us/user-authentication-identity/verify)**. Sends the codes for a licence. Licence: none needed; its [terms](https://www.twilio.com/en-us/legal/tos) apply.
 - **[Claude](https://www.anthropic.com/claude)** by Anthropic. The tutor's model, and its diagrams (Reed and Kellogg 1877, Greek or Hebrew) and variant English. Licence: none; its [terms](https://www.anthropic.com/legal/consumer-terms) apply.

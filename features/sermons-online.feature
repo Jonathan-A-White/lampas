@@ -82,3 +82,25 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the search field is greyed and says "Needs the internet"
+
+  # mw-qtu3zvz.59.2 (PROVISIONAL, the Governor to confirm): a sermon its source linked to a topic from the sermon notes is on the same theme, asked of the service when the sheet is online. The service's answer is the Example of
+  # the sermon-index repository's docs/api.md 'Direct links' (tests/fixtures/sermons/api-direct-theme.json), its topic given the tests' own Atonement.
+  @uc-sermons @greek
+  Scenario: A sermon linked from its notes is on the same theme
+    Given Lampas is opened on "Romans 5" with the sermon index answering a sermon linked from its notes
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then under "On the same theme" the topic "On Atonement" comes first and holds "The Peculiar Sleep of the Beloved" then "Running from God"
+    And the row "The Peculiar Sleep of the Beloved" reads "From the sermon notes · preached on Psalms 127:2"
+    And the row "Running from God" has no such line
+    And the sheet credits "C. H. Spurgeon's sermons (twenty, a fixture)" for it, as its only row there is on the same theme
+    And the service was asked for the theme tier of "rom.5.8" in the sources "testsermons" and "spurgeon-20"
+
+  @uc-sermons @greek
+  Scenario: Offline the same sheet has no sermon linked from its notes
+    Given Lampas is opened on "Romans 5" with the sermon index not answering, and the themes read
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then the sheet says "Offline: the bundled index"
+    And under "On the same theme" the topic "On Love-Hatred" comes first and holds "The Storm at Sea"
+    And no row of the sheet reads "From the sermon notes"

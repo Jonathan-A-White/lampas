@@ -1,16 +1,16 @@
 // src/sermons/index.ts — the sermons module's door (docs/sermons.md): the registry of sources and sermonsFor, the sermons of a place. A second source is one file in src/sermons/sources/ and one line in SOURCES.
 import { getKnownSermonSources, rememberSermonSources, savedSettings, type KnownSermonSource } from '../data/repositories';
-import { fetchSermons, fetchSources, sermonsServiceKnown, type ServiceSermon } from '../services/sermons';
+import { fetchDirectThemeSermons, fetchSermons, fetchSources, sermonsServiceKnown, type ServiceSermon } from '../services/sermons';
 import { THEME_MAX_VERSES } from '../data/themeIndex';
 import { enabledSources as enabledThemeSources, themesFor } from '../themes';
 import { enabledSources as enabledOf } from './enabled';
 import { SOURCES } from './sources';
 import { knownSources, setKnownSermonSources } from './known';
-import { mergeServiceRows } from './merge';
-import { sermonsForSources, themeTier, type TopicLinks } from './sermonsFor';
-import type { SameTheme, SermonPlace, SermonRow, SermonsFound, SermonSource } from './types';
+import { directRowOfService, mergeServiceRows } from './merge';
+import { sermonsForSources, THEME_ROW_LIMIT, themeTier, type TopicLinks } from './sermonsFor';
+import type { DirectRow, SameTheme, SermonPlace, SermonRow, SermonsFound, SermonSource, ThemeRow } from './types';
 
-export type { SameTheme, SermonPlace, SermonRow, SermonSource, SermonsFound } from './types';
+export type { DirectRow, SameTheme, SermonPlace, SermonRow, SermonSource, SermonsFound, ThemeRow } from './types';
 
 export { SOURCES };
 
@@ -42,12 +42,15 @@ const NO_THEME: SameTheme = { groups: [], more: 0 };
  * 'On the same theme' (docs/sermons.md): the sermons of the sources that are on whose preaching text overlaps a link of a topic that also links the verse or passage, the topic at most 300 verses, a sermon once with
  * its narrowest topic, none that `found` already lists, at most 12. A whole chapter has none. It reads only what the join needs: the topic's books that have a sermon, and in them the theme sources' links. A source that
  * fails is logged and answers nothing; the others still answer.
+ * `direct` (mw-qtu3zvz.59.2): the sermons the sermon index service says were linked from their notes to a topic of the place (directThemeRows). They come in whatever their book, and sort first (themeTier).
  */
-export async function sameThemeFor(place: SermonPlace, found: SermonsFound): Promise<SameTheme> {
+export async function sameThemeFor(place: SermonPlace, found: SermonsFound): Promise<SameTheme>;
+export async function sameThemeFor(place: SermonPlace, found: SermonsFound, direct: readonly DirectRow[]): Promise<SameTheme<ThemeRow>>;
+export async function sameThemeFor(place: SermonPlace, found: SermonsFound, direct: readonly DirectRow[] = []): Promise<SameTheme<ThemeRow>> {
   const { from } = place;
   if (from === undefined) return NO_THEME;
   const themes = (await themesFor({ book: place.book, chapter: place.chapter, from, ...(place.to === undefined ? {} : { to: place.to }) })).filter((theme) => theme.verses <= THEME_MAX_VERSES);
-  if (themes.length === 0) return NO_THEME;
+  if (themes.length === 0 && direct.length === 0) return NO_THEME;
   const sermonSources = await enabledSources();
   const books = [...new Set(themes.flatMap((theme) => theme.books ?? [place.book]))];
   const rowsByBook = new Map<string, SermonRow[]>();
@@ -65,7 +68,7 @@ export async function sameThemeFor(place: SermonPlace, found: SermonsFound): Pro
       if (rows.length > 0) rowsByBook.set(book, rows);
     }),
   );
-  if (rowsByBook.size === 0) return NO_THEME;
+  if (rowsByBook.size === 0 && direct.length === 0) return NO_THEME;
   const themeSources = new Map((await enabledThemeSources()).map((source) => [source.id, source]));
   const topics: TopicLinks[] = await Promise.all(
     themes.map(async (theme) => {
@@ -87,7 +90,37 @@ export async function sameThemeFor(place: SermonPlace, found: SermonsFound): Pro
     }),
   );
   const skip = new Set([...found.here, ...found.chapter].map((row) => `${row.source}:${row.id}`));
-  return themeTier(topics, [...rowsByBook.values()].flat(), skip);
+  return themeTier(topics, [...rowsByBook.values()].flat(), skip, THEME_ROW_LIMIT, direct);
+}
+
+/** The osis-style address of the verse or passage the place is: the service takes Lampas's own book codes, in any case. */
+const placeRef = (place: SermonPlace): string => `${place.book}.${place.chapter}.${place.from}${place.to === undefined || place.to === place.from ? '' : `-${place.book}.${place.chapter}.${place.to}`}`;
+
+/**
+ * The sermons the service says were linked from their notes to a topic of the verse or passage (mw-qtu3zvz.59.2, docs/sermons.md 'When online'): its theme tier asked for the place with every source that is On, the bundled and the
+ * service's own. Only the rows marked `direct` are taken, and only those of a source that is On over a topic the phone's Themes line holds (a theme list that is On links the place); a row reached through its text is left to
+ * the phone, which works those out for the bundled sources. The topic's size is the phone's own (themesFor), with no cap: the service applies none to a direct link. A sermon once, with its narrowest topic.
+ * [] with no service, for a whole chapter, with no source On and for a place no topic holds (nothing is asked); throws when the service does not answer (2 seconds), and the sheet then stays as it was.
+ */
+export async function directThemeRows(place: SermonPlace): Promise<DirectRow[]> {
+  const { from } = place;
+  if (from === undefined || !sermonsServiceKnown()) return [];
+  const held = new Map((await themesFor({ book: place.book, chapter: place.chapter, from, ...(place.to === undefined ? {} : { to: place.to }) })).map((theme) => [`${theme.source}:${theme.topic}`, theme]));
+  if (held.size === 0) return [];
+  await loadKnownSermonSources();
+  const asked = [...new Set([...(await enabledSources()), ...(await enabledServiceSources())].map((source) => source.id))];
+  if (asked.length === 0) return [];
+  const taken = new Map<string, DirectRow>();
+  for (const sermon of await fetchDirectThemeSermons(placeRef(place), asked)) {
+    if (sermon.direct !== true || !asked.includes(sermon.source)) continue;
+    const theme = held.get(`${sermon.theme.source}:${sermon.theme.topic}`);
+    const row = directRowOfService(sermon);
+    if (!theme || !row) continue;
+    const key = `${row.source}:${row.id}`;
+    const was = taken.get(key);
+    if (!was || theme.verses < was.topic.verses) taken.set(key, { row, topic: { source: theme.source, id: theme.topic, label: theme.label, verses: theme.verses } });
+  }
+  return [...taken.values()];
 }
 
 /** The number of sermons a found set holds. */

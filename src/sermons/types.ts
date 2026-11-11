@@ -61,15 +61,30 @@ export interface ThemeTopic {
   verses: number;
 }
 
-/** The sermons of one topic: the sheet's 'On <topic>' group. */
-export interface ThemeGroup {
+/**
+ * A row on 'On the same theme'. A sermon reached through its preaching text is a SermonRow. One the sermon index service says its source linked to the topic directly (`notes`: from the sermon notes, mw-qtu3zvz.59.2)
+ * may have no preaching text (`ref` absent: most of Brookfield First's), and then no role either.
+ */
+export type ThemeRow = Omit<SermonRow, 'ref' | 'role'> & { ref?: SermonRef; role?: SermonRole; notes?: true };
+
+/** A directly linked row and the topic of the phone's Themes line it was linked to. */
+export interface DirectRow {
+  row: ThemeRow;
   topic: ThemeTopic;
-  rows: SermonRow[];
 }
 
-/** 'On the same theme': the groups in order (the narrower the topic, the earlier), at most THEME_ROW_LIMIT rows in all, and how many more there were. */
-export interface SameTheme {
-  groups: ThemeGroup[];
+/** The sermons of one topic: the sheet's 'On <topic>' group. */
+export interface ThemeGroup<R = SermonRow> {
+  topic: ThemeTopic;
+  rows: R[];
+}
+
+/**
+ * 'On the same theme': the groups in order (a topic holding a directly linked sermon first, then the narrower the topic, the earlier), at most THEME_ROW_LIMIT rows in all, and how many more there were.
+ * Where the groups can hold directly linked rows the row type is ThemeRow.
+ */
+export interface SameTheme<R = SermonRow> {
+  groups: ThemeGroup<R>[];
   more: number;
 }
 
