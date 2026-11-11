@@ -20,5 +20,5 @@ export const weaveSetting = defineSetting<Weave>({
   dependsOn: depthFrom(2),
   label: 'Weave',
   hint: 'The Greek or Hebrew of your words in place of their English.',
-  help: 'In the English view, whether the Greek or Hebrew of his solid and learning words is shown in place of their English:\n\n- **Solid**: shows the solid ones.\n- **+ Learning**: shows the ones being learned too, with their English beneath in small grey until they turn solid.',
+  help: 'Your words in Greek or Hebrew in place of their English:\n\n- **Solid**: the solid ones.\n- **+ Learning**: those you learn too, English beneath in small grey.',
 });

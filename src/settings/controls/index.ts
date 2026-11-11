@@ -21,7 +21,7 @@ import { AudioBibleControl, LogosBibleControl, ReadingPlanControl, ResourceContr
 import { HandControl } from './hand';
 import { ReadLessonsControl, ReadTutorControl, ScriptDepthControl, SendControl, TalkControl, TipsControl } from './tutor';
 import type { Control } from './types';
-import { EnglishAccentControl, FamilyControl, IpaLessonControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
+import { BibleVoiceControl, EnglishAccentControl, FamilyControl, IpaLessonControl, PronunciationControl, PronunciationSeparateControl, ReadSpanControl, SpeedControl, VoiceControl } from './voice';
 import { ReadingSetControl, Rp2026EnglishControl, VariantLessonsOfferControl, VariantsControl, VariantWitnessesControl } from './variants';
 import { WeaveControl } from './weave';
 
@@ -62,6 +62,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   grammarApproach: ApproachControl,
   handwritingDrills: HandwritingControl,
   readSpan: ReadSpanControl,
+  bibleVoice: BibleVoiceControl,
   englishVoice: VoiceControl,
   greekVoice: VoiceControl,
   englishRate: SpeedControl,

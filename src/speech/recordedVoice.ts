@@ -5,32 +5,30 @@
 // and asks this file to play from a verse to a second (playRecording), seek by verse (seekToVerse), pause, resume and stop. It tells its ONE listener the verse
 // at each 'timeupdate' (never requestAnimationFrame alone, which stops when the page hides), the span's end (a timer aimed at it, re-aimed on a change of speed, a
 // pause or a seek, and 'timeupdate' past it), and a failure (play() refused, the element's 'error', or no 'playing' within PLAYING_WAIT_MS).
-// Whether he wants it is the seam wantsRecording() (story b3 replaces it with a setting); recordingFor() is the rule a tap decides by, with no wait.
+// Whether he wants it is his Bible voice setting (wantsRecording(), mw-82lb97i.6); recordingFor() is the rule a tap decides by, with no wait.
 import { sourceLanguage, type Chapter } from '../data/chapter';
 import { chapterTimingsNow, spanOf, verseAt, type ChapterTimings } from '../data/audioTimings';
+import { bibleVoiceSetting, type BibleVoice } from '../settings/definitions/bibleVoice';
+import { connectionKind } from './connection';
 import type { PlanVerse } from './readAloud';
 
 /** The recorded voices Lampas knows: the folder of their timings under /data/audio/. */
 export type RecordedVoiceId = 'msb-david';
 
-const SEAM_KEY = 'lampas:bibleVoice';
+let chosen: BibleVoice = bibleVoiceSetting.default;
 
-function readSeam(): RecordedVoiceId | null {
-  try {
-    return typeof localStorage !== 'undefined' && localStorage.getItem(SEAM_KEY) === 'msb-david' ? 'msb-david' : null;
-  } catch {
-    return null;
-  }
+/** The recorded voice the Bible is read in, or null for the phone's voice: his Bible voice setting (src/settings/definitions/bibleVoice.ts, handed here by src/speech/settingsSync.ts)
+ * with the kind of connection (src/speech/connection.ts): 'msb-david' always; 'msb-david-wifi' only while the phone is on Wi-Fi (a phone that cannot tell, null, is not); 'phone' never.
+ * It is asked when a chapter starts (the tap, and each crossing into a next chapter), never in the middle of one: a chapter that began in one voice finishes in it. */
+export function wantsRecording(): RecordedVoiceId | null {
+  if (chosen === 'msb-david') return 'msb-david';
+  if (chosen === 'msb-david-wifi' && connectionKind() === 'wifi') return 'msb-david';
+  return null;
 }
 
-let wanted: RecordedVoiceId | null = readSeam();
-
-/** The recorded voice the Bible is read in, or null for the phone's voice. Read once at load from localStorage 'lampas:bibleVoice' (the setting replaces this, story b3). */
-export const wantsRecording = (): RecordedVoiceId | null => wanted;
-
-/** Sets the seam (a jsdom test's). */
-export function setWantsRecording(voice: RecordedVoiceId | null): void {
-  wanted = voice;
+/** Tells the voice his Bible voice setting holds (the settings sync's, and a jsdom test's). */
+export function setBibleVoice(voice: BibleVoice): void {
+  chosen = voice;
 }
 
 /** The timings to read `verses` of this chapter by, or undefined for the phone's voice: decided at the tap with nothing awaited. All must hold: he wants the recording,
@@ -271,6 +269,7 @@ export function setRecordedRate(next: number): void {
 /** Forgets the element and everything about it (a test's: each scenario starts with no element). */
 export function resetRecordedVoice(): void {
   halt();
+  chosen = bibleVoiceSetting.default;
   element = null;
   timings = null;
   lastVerse = null;

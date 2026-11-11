@@ -1561,6 +1561,7 @@
                   "goal",
                   "grammarApproach",
                   "handwritingDrills",
+                  "bibleVoice",
                   "englishVoice",
                   "greekVoice",
                   "hebrewVoice",
@@ -1861,6 +1862,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "handwritingDrills" }, "value": { "type": "string", "enum": ["auto", "on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "bibleVoice" }, "value": { "type": "string", "enum": ["msb-david", "msb-david-wifi", "phone"] } }
           },
           {
             "type": "object",

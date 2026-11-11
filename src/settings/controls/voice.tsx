@@ -4,9 +4,11 @@ import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type Play
 import { hasVoice, noVoiceHelp, speaksLanguage, testVoice, useSpeakingKey, useVoices, voiceInUse, voiceKey, VOICE_TEST_KEY, warmVoices } from '../../speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLanguage } from '../../speech/languages';
 import { ACCENTS } from '../../speech/accents';
+import { connectionKind } from '../../speech/connection';
 import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
 import { PLAY_TOS } from '../../speech/readSpan';
-import { englishAccentSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
+import { bibleVoiceSetting, englishAccentSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
+import { NO_WIFI_SENSE } from '../definitions/bibleVoice';
 import { PRONUNCIATION_FAMILIES } from '../definitions/pronunciation';
 import { PHONE_VOICE, writeSetting } from '../registry';
 import { getSetting, useSetting } from '../store';
@@ -287,6 +289,36 @@ export const EnglishAccentControl: Control = ({ row }) => {
               className={`min-h-12 rounded-lg px-4 text-left text-base font-medium ${accent === a.id ? 'bg-accent text-accent-fg' : 'text-fg'}`}
             >
               {a.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </SettingRow>
+  );
+};
+
+/** The Bible voice (mw-82lb97i.6): the recording of David, the recording on Wi-Fi only, or the phone's voice, one 48 px button a line. On a phone that cannot tell Wi-Fi from
+ * mobile data (connectionKind() is null) the Wi-Fi choice is not offered and the help ends with one more sentence saying so; a 'Recording on Wi-Fi only' saved all the same
+ * (the tutor set it, a restored copy) is still shown as saved, with the other two beside it. */
+export const BibleVoiceControl: Control = ({ row }) => {
+  const voice = useSetting(bibleVoiceSetting);
+  const cannotTell = connectionKind() === null;
+  const choices = bibleVoiceSetting.allowed.kind === 'choice' ? bibleVoiceSetting.allowed.values : [];
+  const offered = choices.filter((c) => !cannotTell || c.value !== 'msb-david-wifi' || voice === 'msb-david-wifi');
+  return (
+    <SettingRow row={cannotTell && row.help ? { ...row, help: `${row.help} ${NO_WIFI_SENSE}` } : row}>
+      <RowName row={row} />
+      {voice ? (
+        <div role="group" aria-label={row.label} className="flex flex-col gap-1 rounded-xl border border-line p-0.5">
+          {offered.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              aria-pressed={voice === c.value}
+              onClick={() => void writeSetting('bibleVoice', c.value)}
+              className={`min-h-12 rounded-lg px-4 text-left text-base font-medium ${voice === c.value ? 'bg-accent text-accent-fg' : 'text-fg'}`}
+            >
+              {c.label}
             </button>
           ))}
         </div>
