@@ -59,8 +59,21 @@ view, and the wake lock.
 ## The recorded voice
 
 A chapter of the Majority Standard Bible that has verse timings (`public/data/audio/msb-david/`, `src/data/audioTimings.ts`, `docs/data.md`) can be read by the publisher's own recording, David's reading
-from openbible.com, in place of the phone's voice (mw-82lb97i.3). It is **off in production**: the one seam is `wantsRecording()` in `src/speech/recordedVoice.ts`, which names the voice
-(`'msb-david'`) only when `localStorage` `lampas:bibleVoice` is `msb-david` (read once at load; `setWantsRecording` for a jsdom test). Story b3 replaces the seam with a setting; every caller asks that one function.
+from openbible.com, in place of the phone's voice (mw-82lb97i.3). It is chosen by the **Bible voice** setting (mw-82lb97i.6): Settings > Listening > Reading voices, drawn above the English voice row (registry key `bibleVoice`, `src/settings/definitions/bibleVoice.ts`),
+with three choices saved by the voice's id so another recorded voice can be added beside the first: **Recording (David)** (`msb-david`, the default), **Recording on Wi-Fi only** (`msb-david-wifi`) and **Phone voice**
+(`phone`). The row is shown always: every English text Lampas reads aloud is the MSB (the Septuagint's Brenton has no recording and is never read by it), and where no timings file exists the phone's voice reads
+whatever is chosen. Its help opens with the credit line 'Recording: Majority Standard Bible, read by David, streamed from openbible.com'. The one seam is `wantsRecording()` in `src/speech/recordedVoice.ts`,
+which `src/speech/settingsSync.ts` tells the choice at start and on a change (as it does the English accent): `msb-david` names `'msb-david'`; `msb-david-wifi` names it only while `connectionKind()` is `'wifi'`;
+`phone` names none. Every caller asks that one function (`setBibleVoice` is a jsdom test's way in).
+
+**How Wi-Fi is told.** `src/speech/connection.ts` is the one file that reads `navigator.connection` (the Network Information API's `type`; `setConnectionForTests` fakes it): `wifi` and `ethernet` are `'wifi'`; `cellular`
+and every other named type (`unknown`, `none`, `bluetooth`, `wimax`, `mixed`, `other`) are `'other'`, so no mobile data is spent on a guess; no `navigator.connection` or no `type` (iOS Safari, desktop browsers) is
+`null`: the phone cannot tell at all. Where it is `null` the Wi-Fi choice is **hidden** (the row shows Recording (David) and Phone voice, and its help ends with 'This phone cannot tell Wi-Fi from mobile data, so Recording on
+Wi-Fi only is not offered.'); a `msb-david-wifi` that reaches such a browser (the tutor set it, a restored copy) is shown as saved, with the other two to choose from, and reads in the phone's voice. `effectiveType`,
+`downlink` and `saveData` are never a stand-in for Wi-Fi.
+
+**When it is decided.** When a chapter starts (the tap, and each crossing into a next chapter under Play to), never in the middle of one: a chapter that began in the recording finishes in it when Wi-Fi drops or the setting
+changes (if the stream then fails, the fallback below reads on in the phone's voice), and a chapter that began in the phone's voice finishes in it. The Reader warms a book's timings (a small file) unless the choice is Phone voice.
 
 **What plays.** One `HTMLAudioElement` for the app's life, made on first use and reused for every chapter (a later chapter, after a crossing, needs no new tap), `preload` 'auto', its `src` the
 timings' MP3 address. It plays from the start of the verse the reading starts at (the chapter's first verse from second 0, the narrator's title included, with that verse marked meanwhile), tells
@@ -76,7 +89,7 @@ first verse, otherwise the phone's voice reads on (John 21 into Acts 1 under End
 second; Stop and every new reading (a tutor's answer, a page of prose, another verse) pause it and drop its listener (the epoch). A weave turned on while it plays hands the reading to the phone's voice from
 the next verse. The speaking bar holds a recorded reading too (below), so the header's Pause / Play and Stop are gone while it plays; the line under the header stays.
 
-**When the phone's voice reads instead.** `recordingFor` (`recordedVoice.ts`) decides at the tap, with nothing awaited between the tap and `play()`: the seam names a voice, the chapter is the MSB's
+**When the phone's voice reads instead.** `recordingFor` (`recordedVoice.ts`) decides at the tap, with nothing awaited between the tap and `play()`: the Bible voice names a recording (`wantsRecording()`), the chapter is the MSB's
 New Testament (`translation` 'msb', Greek source: no Old Testament, no Septuagint), every run of every verse to be read is English (the English view with nothing woven), the timings are already loaded
 and have every verse to be read, and `navigator.onLine` is not false. The Reader loads the book's timings when a chapter opens (only while the seam names a voice) so the tap finds them; the Reader that
 opens a chapter a reading crossed into decides by the same rule. **The recording reads the MSB's English only: a plan with any Greek or Hebrew run (the Greek view, the weave, a woven verse) is read by
