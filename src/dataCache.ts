@@ -47,6 +47,9 @@ export const isVersionedLxxChapter = (url: URL): boolean =>
 /** The Septuagint's index and its Greek lexicon, which carry no fingerprint of their own: the worker asks the network first and keeps the answer, so they stay current and are read offline (mw-lcv9z3g.6). */
 export const isLxxPlainFile = (url: URL): boolean => url.pathname === '/data-lxx/index.json' || url.pathname === '/data-lxx/lexicon-grc-lxx.json';
 
+/** The recorded voice's timing files (/data/audio/msb-david/index.json, /data/audio/msb-david/jhn.json): they carry no fingerprint and change when a book is added, so the worker asks the network first and a kept copy answers offline (mw-82lb97i.1). */
+export const isAudioTimingsFile = (url: URL): boolean => url.pathname.startsWith('/data/audio/');
+
 /**
  * Answers a versioned chapter request (or a versioned ladder list, Hebrew word list or sermon book file: the same rule). A copy kept under the very address is served with no fetch. Otherwise the chapter is fetched once, kept,
  * and every other copy of the same chapter (an older fingerprint) is removed. A refusal is passed on and nothing is kept or removed; with no

@@ -6,7 +6,7 @@
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst } from 'workbox-strategies';
-import { DATA_CACHE, dropOldDataCaches, isLxxPlainFile, isVersionedChapter, isVersionedLadder, isVersionedLxxChapter, isVersionedList, isVersionedSermons, serveChapter } from './dataCache';
+import { DATA_CACHE, dropOldDataCaches, isAudioTimingsFile, isLxxPlainFile, isVersionedChapter, isVersionedLadder, isVersionedLxxChapter, isVersionedList, isVersionedSermons, serveChapter } from './dataCache';
 import { healPrecache, isGuardedAsset, serveAsset } from './precacheGuard';
 import { isShareRequest, receiveShare } from './share/target';
 
@@ -69,6 +69,12 @@ registerRoute(
 );
 registerRoute(
   ({ url, request }) => request.method === 'GET' && isLxxPlainFile(url),
+  new NetworkFirst({ cacheName: DATA_CACHE, networkTimeoutSeconds: 5 }),
+);
+// The recorded voice's timing files (/data/audio/<edition>/index.json and <book>.json) carry no fingerprint and a book is added to them, so the network is asked first (a short wait, then the copy kept), as for the Septuagint's plain files.
+// This comes BEFORE the cache-first rule below, which would keep the first index for ever (mw-82lb97i.1). /data/audio/ is not in the precache (pwa-precache.ts); the publisher's MP3 is never fetched by the worker or kept.
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isAudioTimingsFile(url),
   new NetworkFirst({ cacheName: DATA_CACHE, networkTimeoutSeconds: 5 }),
 );
 // Everything else under /data/ (index.json and the Greek lists, which the precache answers first, and a plain request for anything else) is kept as it first came.
