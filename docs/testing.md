@@ -156,3 +156,9 @@ Other `skipIf` tests in `tests/` on a git-ignored path: `tests/unit/supplied-wor
 and, only for a window in which nothing must happen, mark the line or the line above `// a real-time wait: <reason>` (`// a real-time hold: <reason>` counts too). Not a shorter timeout, a loop on `Date.now` or a helper under another name.
 The sleeps already there are counted per file in `eslint-suppressions.json` (`eslint . --suppress-rule local/no-real-time-wait`): a file that gains a sleep is refused and ESLint lists every sleep in it; `npm run lint`
 passes on unused suppressions (`--pass-on-unpruned-suppressions`), so removing a sleep sends no story back.
+
+`npm run lint` also refuses, in `tests/e2e/**` and `features/steps/**`, a raw write of the Greek or Hebrew dial (`'greekInterest'`, `'hebrewInterest'` as a row's `key`, an object's property or the argument of `put`, `keep`, `set...`;
+`eslint-rules/no-raw-interest-write.js`, held by `tests/unit/no-raw-interest-write.test.ts`): a bare level skips what tapping its step also sets (the Weave Solid at 2, the Greek view at 4, `BRINGS` in
+`src/data/repositories/greekInterest.ts`), so the spec draws a screen the Governor never sees (mw-fnvjof.17.74). An e2e puts a phone at a level with `putAtLevels(page, { greek, hebrew }, extra)` (or `rowsAtLevels` inside its own
+transaction) from `tests/e2e/greek-start.ts`, which writes the level and what the steps up to it bring (held against the dial itself by `tests/unit/greek-start-helper.test.ts`); a line that must write a bare level says
+`// a raw level: <reason>`. The feature steps' old raw writes are counted per file in `eslint-suppressions.json` (`eslint . --suppress-rule local/no-raw-interest-write`).

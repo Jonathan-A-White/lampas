@@ -44,22 +44,86 @@
       "count": 1
     }
   },
+  "features/steps/hebrew-diagram.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    }
+  },
+  "features/steps/hebrew-hard-sounds.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    }
+  },
+  "features/steps/hebrew-ipa-course.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    }
+  },
   "features/steps/hebrew-ladder.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 3
     }
   },
+  "features/steps/hebrew-paradigms.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    }
+  },
+  "features/steps/hebrew-quiz.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    }
+  },
   "features/steps/hebrew-reader.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    },
     "local/no-real-time-wait": {
       "count": 1
     }
   },
+  "features/steps/hebrew-reading-ladder.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 2
+    }
+  },
   "features/steps/hebrew-speech.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    },
     "local/no-real-time-wait": {
       "count": 3
     }
   },
+  "features/steps/hebrew-talk.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 3
+    }
+  },
+  "features/steps/hebrew-tutor.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 5
+    }
+  },
+  "features/steps/hebrew-verse-view.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 2
+    }
+  },
+  "features/steps/hebrew-voice-test.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    }
+  },
+  "features/steps/hebrew-word-sheet.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 3
+    }
+  },
   "features/steps/hebrew-words.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 2
+    },
     "local/no-real-time-wait": {
       "count": 2
     }
@@ -77,6 +141,11 @@
   "features/steps/in-logos.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
+    }
+  },
+  "features/steps/languages.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 4
     }
   },
   "features/steps/listen.steps.tsx": {
@@ -99,12 +168,20 @@
       "count": 5
     }
   },
+  "features/steps/number-sheet.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 2
+    }
+  },
   "features/steps/offline-copy.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 2
     }
   },
   "features/steps/old-testament.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    },
     "local/no-real-time-wait": {
       "count": 2
     }
@@ -139,6 +216,11 @@
       "count": 1
     }
   },
+  "features/steps/pronunciation.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 2
+    }
+  },
   "features/steps/quick-round.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -160,6 +242,9 @@
     }
   },
   "features/steps/reader-weave-switch.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    },
     "local/no-real-time-wait": {
       "count": 1
     }
@@ -180,6 +265,9 @@
     }
   },
   "features/steps/septuagint.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 3
+    },
     "local/no-real-time-wait": {
       "count": 2
     }
@@ -244,6 +332,11 @@
       "count": 4
     }
   },
+  "features/steps/tutor-rust.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 2
+    }
+  },
   "features/steps/tutor-works.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -281,6 +374,16 @@
   },
   "features/steps/whats-new.steps.tsx": {
     "local/no-real-time-wait": {
+      "count": 1
+    }
+  },
+  "features/steps/word-ask-tutor.steps.tsx": {
+    "local/no-raw-interest-write": {
+      "count": 1
+    }
+  },
+  "features/steps/word-help.steps.tsx": {
+    "local/no-raw-interest-write": {
       "count": 1
     }
   },
