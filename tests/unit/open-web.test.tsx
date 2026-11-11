@@ -9,7 +9,7 @@ import { clearBus } from '../../src/events/bus';
 import { SermonsDoor } from '../../src/sermons/SermonsDoor';
 import { SermonsHost } from '../../src/sermons/SermonsSheet';
 import { closeSermons } from '../../src/sermons/openSermons';
-import { rowHref, webHref } from '../../src/sermons/openWeb';
+import { isVideoAddress, opensNewTab, rowHref, webHref } from '../../src/sermons/openWeb';
 import { openWebSetting } from '../../src/settings/definitions/sermons';
 import { isTalkable, ROWS, rowOf } from '../../src/settings/rows';
 import { getSetting, setSetting } from '../../src/settings/store';
@@ -76,6 +76,51 @@ describe('webHref', () => {
   it('leaves an address that is not https as it is', () => {
     expect(webHref('logosres:logos-1;ref=bible:Ro5.8', 'firefox', true)).toBe('logosres:logos-1;ref=bible:Ro5.8');
     expect(webHref('http://x.test/a', 'firefox', true)).toBe('http://x.test/a');
+  });
+});
+
+describe('a video address (mw-qtu3zvz.62): YouTube and Subsplash open as they are, Firefox is for text', () => {
+  const VIDEOS = [
+    'https://m.youtube.com/watch?v=x',
+    'https://www.youtube.com/watch?v=x',
+    'https://youtu.be/x',
+    'https://brookfieldfirst.subspla.sh/abc',
+    'https://subsplash.com/u/x/media/mi/y',
+  ];
+  const TEXTS = ['https://www.ccel.org/ccel/spurgeon/sermons1.i.html', 'https://youtube.com.evil.example/watch?v=x', 'https://notyoutube.com/watch?v=x', 'https://subsplash.com.evil.example/a', 'https://notsubsplash.com/a'];
+
+  it.each(VIDEOS)('leaves %s as it is with Firefox chosen on Android', (url) => {
+    expect(isVideoAddress(url)).toBe(true);
+    expect(webHref(url, 'firefox', true)).toBe(url);
+  });
+
+  it('still turns a text address into the Firefox intent', () => {
+    const ccel = 'https://www.ccel.org/ccel/spurgeon/sermons1.i.html';
+    expect(webHref(ccel, 'firefox', true)).toBe(`intent://www.ccel.org/ccel/spurgeon/sermons1.i.html#Intent;scheme=https;package=org.mozilla.firefox;S.browser_fallback_url=${encodeURIComponent(ccel)};end`);
+  });
+
+  it.each(TEXTS)('counts the look-alike or text address %s as text', (url) => {
+    expect(isVideoAddress(url)).toBe(false);
+    expect(webHref(url, 'firefox', true)).toMatch(/^intent:\/\//);
+  });
+
+  it('is not a video when it is not an address', () => {
+    expect(isVideoAddress('not a url')).toBe(false);
+    expect(isVideoAddress('logosres:logos-1;ref=bible:Ro5.8')).toBe(false);
+  });
+
+  it('a video row opens as a plain https link in a new tab under Firefox on Android', () => {
+    const row = { opensIn: 'web' as const, open: { url: 'https://m.youtube.com/watch?v=x' } };
+    const href = rowHref(row, 'firefox', true);
+    expect(href).toBe('https://m.youtube.com/watch?v=x');
+    expect(opensNewTab(href)).toBe(true);
+  });
+
+  it('a video Tutor chip (a Subsplash row) opens as a plain https link in a new tab under Firefox on Android', () => {
+    const row = { opensIn: 'web' as const, open: { url: 'https://brookfieldfirst.subspla.sh/abc' } };
+    const href = rowHref(row, 'firefox', true);
+    expect(href).toBe('https://brookfieldfirst.subspla.sh/abc');
+    expect(opensNewTab(href)).toBe(true);
   });
 });
 

@@ -3,6 +3,7 @@
 // carries the https address as its browser_fallback_url, so a phone without Firefox opens the page where it was going to anyway. Off Android the choice does nothing.
 import { createContext, useContext } from 'react';
 import { onAndroid } from '../openInApp';
+import { isSubsplashHost } from './merge';
 import { openWebSetting } from '../settings/definitions/sermons';
 import type { OpenWebIn } from '../settings/definitions/sermons';
 import { useSetting } from '../settings/store';
@@ -11,7 +12,20 @@ export type { OpenWebIn } from '../settings/definitions/sermons';
 
 const FIREFOX = 'org.mozilla.firefox';
 
-/** The link for an https address under the choice: the Firefox intent where Firefox is chosen on Android, else the address as it is. Anything that is not an https address is left alone. */
+/** Whether an address is a video: its host is youtube.com, youtu.be or a subdomain of either (m.youtube.com), or a Subsplash host (merge.ts isSubsplashHost; Subsplash pages are the service's video). A look-alike (youtube.com.evil.example, notyoutube.com) is text. PROVISIONAL, the Governor to confirm (mw-qtu3zvz.62). */
+export function isVideoAddress(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  const host = parsed.hostname.toLowerCase();
+  const youtube = ['youtube.com', 'youtu.be'].some((domain) => host === domain || host.endsWith(`.${domain}`));
+  return youtube || isSubsplashHost(host);
+}
+
+/** The link for an https address under the choice: the Firefox intent where Firefox is chosen on Android, else the address as it is. Anything that is not an https address, and a video (Firefox is for a page of text; a video has its own sound), is left alone. */
 export function webHref(url: string, choice: OpenWebIn, android: boolean): string {
   if (choice !== 'firefox' || !android || !url.startsWith('https:')) return url;
   let parsed: URL;
@@ -20,6 +34,7 @@ export function webHref(url: string, choice: OpenWebIn, android: boolean): strin
   } catch {
     return url;
   }
+  if (isVideoAddress(url)) return url;
   // the page's own #fragment cannot ride in an intent address (its '#' starts the intent's parts); the fallback keeps it
   return `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=https;package=${FIREFOX};S.browser_fallback_url=${encodeURIComponent(parsed.href)};end`;
 }
