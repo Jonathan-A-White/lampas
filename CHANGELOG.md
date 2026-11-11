@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.210
+_2026-11-11_
+- New: A sermon your church's notes tie to a theme now shows under the verse's themes in the Sermons sheet, online, with a line saying it came from the sermon notes.
+
 ## 0.7.209
 _2026-11-11_
 - Fixed: At Large and Largest text with the Weave on, the Reader's header stays one row instead of dropping the menu button onto a second row.
