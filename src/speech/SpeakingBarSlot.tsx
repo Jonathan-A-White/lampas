@@ -6,7 +6,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { SpeakingBar } from 'voice-kit/speech/react';
-import { useBarShown } from './barShown';
+import { useBarShown, useRecordedShown } from './barShown';
+import { RecordedBar } from './RecordedBar';
 import { restartListen } from './readAloud';
 
 interface Slot {
@@ -52,7 +53,10 @@ export function BarSlot({ level, inset = false }: { level: number; inset?: boole
 export function LampasSpeakingBar() {
   const slot = useSyncExternalStore(subscribe, () => top, () => null);
   const shown = useBarShown();
+  const recorded = useRecordedShown();
   if (!slot || !shown) return null;
+  // a recorded reading has its own bar (RecordedBar, the same markup in the same slot); the package's bar never shows with it
+  if (recorded) return createPortal(<RecordedBar />, slot);
   // Restart on a Listen goes back to the first verse of the passage (readAloud.ts restartListen); on any other reading the package restarts the speech.
   return createPortal(
     <div
