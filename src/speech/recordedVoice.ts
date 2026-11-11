@@ -1,6 +1,6 @@
 // src/speech/recordedVoice.ts — the recorded voice (mw-82lb97i.3, docs/read-aloud.md 'The recorded voice'): a chapter that has verse timings (src/data/audioTimings.ts) is
 // read by the publisher's own MP3, played from their server by ONE audio element made on first use and kept for the app's life, so a later chapter needs no new tap.
-// It has no crossOrigin attribute (the publisher's server sends no CORS headers: with one the element would refuse to play) and is never fetch()ed, copied or cached:
+// It has no CORS attribute (the publisher's server sends no CORS headers: with one the element would refuse to play) and the MP3 is never fetched by script, copied or cached:
 // the element plays it as any page's <audio> would. This file is the sound only: src/speech/readAloud.ts keeps the reading (its verses, its span, crossing, Listen),
 // and asks this file to play from a verse to a second (playRecording), seek by verse (seekToVerse), pause, resume and stop. It tells its ONE listener the verse
 // at each 'timeupdate' (never requestAnimationFrame alone, which stops when the page hides), the span's end (a timer aimed at it, re-aimed on a change of speed, a
