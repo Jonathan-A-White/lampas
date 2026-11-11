@@ -74,7 +74,7 @@ the wake lock, Play to's crossing, the Listen keys, Play again and `restartListe
 end of its last verse, a passage at the verse before the next heading, and the header's Play at the chapter's end, where it crosses as before: into a chapter with timings the recording plays it from its
 first verse, otherwise the phone's voice reads on (John 21 into Acts 1 under End of the Bible: PROVISIONAL, the Governor to confirm). The header's Pause and Play pause and play the element at the same
 second; Stop and every new reading (a tutor's answer, a page of prose, another verse) pause it and drop its listener (the epoch). A weave turned on while it plays hands the reading to the phone's voice from
-the next verse. In this story the speaking bar does not hold a recorded reading (`onBar` stays false), so the header's Pause / Play and Stop and the line under it are its controls.
+the next verse. The speaking bar holds a recorded reading too (below), so the header's Pause / Play and Stop are gone while it plays; the line under the header stays.
 
 **When the phone's voice reads instead.** `recordingFor` (`recordedVoice.ts`) decides at the tap, with nothing awaited between the tap and `play()`: the seam names a voice, the chapter is the MSB's
 New Testament (`translation` 'msb', Greek source: no Old Testament, no Septuagint), every run of every verse to be read is English (the English view with nothing woven), the timings are already loaded
@@ -89,7 +89,23 @@ the phone's voices as before.** Offline, no timings, the weave or the Greek show
 with WebAudio, cached or copied: the element plays it as any page's `<audio>` would, and there is no second element to preload. Tests never reach openbible.com: `features/recorded-voice.feature`
 (jsdom, `tests/support/fake-audio.ts` moves the element's time) and `tests/e2e/recorded-voice.spec.ts` (a stub's URL answered with a WAV of silence; any other request there is failed and counted).
 
-**Later stories.** b2: the speaking bar holds a recorded reading, a word said beside it, a hidden page; b3: the setting in place of the seam; b4: the media session (the lock screen's controls).
+**The bar (mw-82lb97i.4, PROVISIONAL).** voice-kit's `<SpeakingBar />` shows only the package's own speech (`useSpeech`), and a recording is played by an element the package does not know, so a recorded reading has
+`src/speech/RecordedBar.tsx`: Lampas's own small component with the same markup as voice-kit's (`section.bk-speech`, `data-testid` 'speaking-bar', `data-state` playing | paused, the buttons `.bk-speech__button` with
+`data-action` pause | resume | restart | stop and `data-primary` on Resume, voice-kit's `DEFAULT_LABELS`, each 44 px at the least, Lampas's `--bk-speech-*` colours). `LampasSpeakingBar` draws it into the SAME top slot
+(`BarSlot`) while a recorded reading is going or paused, voice-kit's bar otherwise, never both; `useBarShown()` is true for it, so the Reader's foot, the floating ? and every sheet's `BarSlot` make room as for the phone's
+voice. `ReadingState` has `recorded` (true from the first second of a recording to its end, a failure or a hand-over to the phone's voice) and `onBar` is true with it, so the header's Pause and Stop go. Pause and Resume call
+`pauseReading` / `resumeReading` (the element at its second), Stop `stopReading`, Restart goes back to the start of the verse being read (`restartRecorded`: `seekToVerse` and play, the span's end kept) and, on a Listen, to its
+first verse (`restartListen`, as for the phone's voice). If the slice is kept its home is voice-kit (an engine that takes an outside player), a later story; voice-kit is not changed here.
+
+**What pauses it.** As docs 'Listen is a Listen' and 'An interruption pauses, it does not end' say for the phone's voice: a word said alone while it plays (a long press, a speaker, Tap to hear) pauses the recording at its
+second BEFORE the word is heard and never talks over it (the package holds no reading's speech, so `greek.ts` says the word on its own, not `speakBeside`; `readAloud.ts` sees it in the package's speech, `recordedWordSync`, and in
+`subscribeBeside` for the clip of a one-letter word, and pauses at once: `greek.ts` is unchanged). A hold of a talk bar or of the reading check (`askTranscriber.ts`, `interruptListen`) pauses it too. A Listen goes on by itself
+when the interruption ends; any other reading waits for his Resume, which plays from the same second. A tutor's answer (`startAnswer`) is read in front of a recorded Listen and the Listen goes on after it, as before.
+**A page that hides** pauses the recording (as the package pauses the phone's voice; `readAloud.ts` listens to `visibilitychange`, so a recording never plays on in a pocket): the bar offers Resume on coming back, and a Listen
+paused that way waits for his Resume. Leaving the Reader for another screen pauses it and coming back offers Resume; opening another chapter ends it (`Reader.tsx`'s effects, for a recording as for the phone's voice).
+`features/recorded-voice.feature` and `tests/e2e/recorded-voice.spec.ts` (the bar in the Reader's foot, in the viewport, over no text) hold all of this.
+
+**Later stories.** b3: the setting in place of the seam; b4: the media session (the lock screen's controls).
 
 ## The speaking bar (mw-m7v5kc.3)
 
