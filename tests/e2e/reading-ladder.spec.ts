@@ -6,7 +6,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { chooseAction, openVerseView } from './verse-view';
 import { holdFor } from '../support/hold';
-import { pageTime, tapTwice } from '../support/gesture';
+import { pageTime, settledBox, tapTwice } from '../support/gesture';
 import { SETTLE_MS } from '../../src/ui/settle';
 
 const VIEWPORT = { width: 390, height: 844 };
@@ -123,7 +123,9 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 1500);
     await expect(panel).toContainText('Well read');
     await pageTime(page, SETTLE_MS + 100);
-    await tapTwice(page, panel.getByRole('button', { name: 'Next verse', exact: true }), 60, { touch: true, lagMs: 400 });
+    // the result still draws ('Play my reading' comes in once the clip is kept) and the bar stands lower for it: the finger is aimed at the box once it has stopped moving
+    const next = await settledBox(panel.getByRole('button', { name: 'Next verse', exact: true }));
+    await tapTwice(page, next, 60, { touch: true, lagMs: 400 });
     await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:19');
     await page.clock.runFor(1000);
     await expect(panel).toContainText('Number 2 of');
@@ -138,7 +140,8 @@ test.describe('a double tap on the ladder bar moves one verse only', () => {
     await holdFor(page, page.getByRole('button', { name: 'Hold to read verse 16', exact: true }), 1500);
     await expect(panel).toContainText('Words to fix');
     await pageTime(page, SETTLE_MS + 100);
-    await tapTwice(page, panel.getByRole('button', { name: 'Try again', exact: true }), 60, { touch: true, lagMs: 400 });
+    const tryAgain = await settledBox(panel.getByRole('button', { name: 'Try again', exact: true })); // the result still draws under the bar: aim at the box once it has stopped moving
+    await tapTwice(page, tryAgain, 60, { touch: true, lagMs: 400 });
     await page.clock.runFor(1000);
     await expect(panel).toContainText('Number 1 of');
     await expect(view.getByRole('heading', { level: 2 })).toHaveText('1 Thessalonians 5:16');
