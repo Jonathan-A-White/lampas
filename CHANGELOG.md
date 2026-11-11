@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.209
+_2026-11-11_
+- Fixed: At Large and Largest text with the Weave on, the Reader's header stays one row instead of dropping the menu button onto a second row.
+- Fixed: The line under a Septuagint chapter's title no longer touches the screen edges on a 360-pixel-wide phone.
+
 ## 0.7.208
 _2026-11-11_
 - Fixed: In Genesis 20 of the Septuagint, tapping most English words such as "removed" now opens the Greek word instead of the whole verse.

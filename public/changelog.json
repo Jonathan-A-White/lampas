@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.209",
+    "date": "2026-11-11",
+    "story": "mw-fnvjof.17.73",
+    "kind": "fixed",
+    "text": "At Large and Largest text with the Weave on, the Reader's header stays one row instead of dropping the menu button onto a second row."
+  },
+  {
+    "version": "0.7.209",
+    "date": "2026-11-11",
+    "story": "mw-u2w5klk.338",
+    "kind": "fixed",
+    "text": "The line under a Septuagint chapter's title no longer touches the screen edges on a 360-pixel-wide phone."
+  },
+  {
     "version": "0.7.208",
     "date": "2026-11-11",
     "story": "mw-u2w5klk.349.2",
