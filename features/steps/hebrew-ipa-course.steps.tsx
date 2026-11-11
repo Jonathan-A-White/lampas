@@ -8,6 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
+import { putAtLevels, type Level } from './levels';
 import { mulberry32 } from '../../src/data/random';
 import { getIpaProgress } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -29,7 +30,7 @@ const SEED = 5;
 const scheme = hebrewPronunciationOf();
 const sounds: CourseSound[] = courseSounds(scheme, accentOf('american'));
 const COURSE_LINE = 'You do not need this for Lampas or for reading Hebrew. It is only here if you want it.';
-const DIALS: Record<string, string> = { 'Just English': '0', Curious: '1', Learning: '3' };
+const DIALS: Record<string, Level> = { 'Just English': 0, Curious: 1, Learning: 3 };
 
 Element.prototype.scrollIntoView = function () {};
 
@@ -58,7 +59,7 @@ async function open(dial: string, hash = '#/goal'): Promise<void> {
   window.history.replaceState(null, '', `/${hash}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
-  await db.settings.put({ key: 'hebrewInterest', value: DIALS[dial] });
+  await putAtLevels({ hebrew: DIALS[dial] });
   await seedHisWords();
   render(<App />);
   await screen.findByRole('heading', { name: 'Goal', level: 1 });

@@ -10,6 +10,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { ENGLISH_READER, putAtLevels, settingsAtLevels } from './levels';
 import { loadChapter, type Chapter } from '../../src/data/chapter';
 import { alignChapter } from '../../scripts/lxx/align';
 import { LADDER } from '../../src/data/grammar/ladder';
@@ -144,7 +145,7 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   // the Hebrew view of a chapter needs the Hebrew dial (mw-gdcyf98.3): these scenarios are of a phone with Hebrew All in, and the Greek dial unplaced (All in)
-  await db.settings.put({ key: 'hebrewInterest', value: '5' });
+  await putAtLevels({ hebrew: 5 }, ENGLISH_READER);
   await db.settings.put({ key: 'septuagint', value: septuagint });
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   if (extras.strongs) await setResourceOn('strongs', true);
@@ -634,7 +635,7 @@ describeFeature(feature, ({ Scenario }) => {
   // R5 (mw-u2w5klk.15): Memorize and the Diagram follow the chapter's language
   Scenario('With the setting on Memorize learns Genesis 1:1 in the Greek', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with the Septuagint on and Genesis 1:1 memorized in Greek at step {int}', (_: unknown, step: number) =>
-      openOn('Genesis 1', 'on', { greekInterest: '5' }, { memorize: { id: 'el:Gen.1.1', step } }),
+      openOn('Genesis 1', 'on', settingsAtLevels({ greek: 5 }), { memorize: { id: 'el:Gen.1.1', step } }),
     );
     When('he opens its Memorize session', async () => {
       await screen.findByTestId('memorize-verse');
@@ -653,7 +654,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("With the setting on the Diagram of Genesis 1:1 is drawn from Swete's Greek", ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Genesis 1 with the Septuagint on and a tutor that draws Genesis 1:1', () => openOn('Genesis 1', 'on', { readerView: 'greek', greekInterest: '5' }, { tutor: true, diagram: true }));
+    Given('Lampas is opened on Genesis 1 with the Septuagint on and a tutor that draws Genesis 1:1', () => openOn('Genesis 1', 'on', { readerView: 'greek', ...settingsAtLevels({ greek: 5 }) }, { tutor: true, diagram: true }));
     When('he opens the Verse view of verse 1 and taps Diagram', async () => {
       await user.click(await screen.findByRole('button', { name: 'Verse 1', exact: true }));
       const view = await screen.findByRole('region', { name: 'Verse view' });

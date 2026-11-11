@@ -13,6 +13,7 @@ import { registerPronunciation } from '../../src/speech/pronunciation';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ensureSettingsGroup, openSettingsGroup, leaveSettings, setEachOnItsOwn } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { settingsAtLevels, type Level } from './levels';
 
 const user = userEvent.setup();
 let unregister: (() => void) | undefined;
@@ -61,7 +62,7 @@ const openSettingsListening = async (): Promise<void> => {
 };
 /** A pronunciation row of Listening: the radio group of the scheme list, by its name. */
 const rowNamed = (name: string): HTMLElement | null => screen.queryByRole('radiogroup', { name });
-const openedAt = (greek: number, hebrew: number, saved: Record<string, string> = {}) => openFresh({ greekInterest: String(greek), hebrewInterest: String(hebrew), ...saved });
+const openedAt = (greek: number, hebrew: number, saved: Record<string, string> = {}) => openFresh({ ...settingsAtLevels({ greek: greek as Level, hebrew: hebrew as Level }), ...saved });
 const labelsOf = (group: HTMLElement): (string | undefined)[] => within(group).getAllByRole('radio').map((r) => document.getElementById(r.getAttribute('aria-labelledby') ?? '')?.textContent ?? undefined);
 const comboNamed = (name: string): HTMLElement | null => screen.queryByRole('combobox', { name });
 const ensureListening = (): Promise<void> => ensureSettingsGroup('listening');

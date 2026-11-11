@@ -8,6 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import { setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -51,7 +52,7 @@ async function openVerse(): Promise<void> {
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.diagrams.clear()]);
-  await db.settings.put({ key: 'hebrewInterest', value: '3' });
+  await putAtLevels({ hebrew: 3 });
   await setReaderView('greek');
   setVerseAction('listen');
   window.history.replaceState(null, '', '/#/?b=gen&c=1');

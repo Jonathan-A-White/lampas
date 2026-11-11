@@ -9,6 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { setLanguages } from '../../src/data/repositories';
 import { db } from '../../src/data/db';
+import { putAtLevels, type Level } from './levels';
 import { mulberry32 } from '../../src/data/random';
 import { clearBus } from '../../src/events/bus';
 import { lessonById, lessonsFor } from '../../src/hardSounds/lessons';
@@ -24,7 +25,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 
 const user = userEvent.setup();
 const SECTION = 'Hard sounds of Hebrew (optional)';
-const DIALS: Record<string, string> = { 'Just English': '0', Curious: '1', Learning: '3' };
+const DIALS: Record<string, Level> = { 'Just English': 0, Curious: 1, Learning: 3 };
 
 let synth: FakeSynth;
 
@@ -52,7 +53,7 @@ async function open(dial: string, accent = DEFAULT_ACCENT): Promise<void> {
   window.history.replaceState(null, '', '/#/goal');
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear(), db.grammarLevels.clear()]);
-  await db.settings.put({ key: 'hebrewInterest', value: DIALS[dial] });
+  await putAtLevels({ hebrew: DIALS[dial] });
   if (accent !== DEFAULT_ACCENT) await db.settings.put({ key: 'englishAccent', value: accent });
   await seedHisWords();
   render(<App />);

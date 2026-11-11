@@ -9,6 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
@@ -88,7 +89,7 @@ async function openReader(voices: FakeVoice[], saved: Record<string, string>): P
   window.history.replaceState(null, '', '/#/?b=gen&c=1');
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
-  await db.settings.bulkPut(Object.entries({ hebrewInterest: '5', readerView: 'greek', ...saved }).map(([key, value]) => ({ key, value })));
+  await putAtLevels({ hebrew: 5 }, { readerView: 'greek', ...saved });
   render(<App />);
   await screen.findByRole('heading', { name: 'Genesis 1', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse] [data-word]').length).toBeGreaterThan(0));

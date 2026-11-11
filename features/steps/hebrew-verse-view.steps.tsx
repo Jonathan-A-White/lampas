@@ -13,6 +13,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import type { Chapter } from '../../src/data/chapter';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { ENGLISH_READER, putAtLevels } from './levels';
 import type { Question } from '../../src/data/quiz';
 import { setReaderView } from '../../src/data/repositories';
 import { startPlan } from '../../src/data/repositories/readingPlan';
@@ -83,7 +84,7 @@ async function openOn(title: string, settings: Record<string, string> = {}, soli
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
-  await db.settings.put({ key: 'hebrewInterest', value: phone.hebrew0 ? '0' : '5' });
+  await putAtLevels({ hebrew: phone.hebrew0 ? 0 : 5 }, ENGLISH_READER);
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   await db.words.bulkPut(solid.map((lemma) => ({ lemma, lemmas: [lemma], gloss: '', lesson: 0, state: 'solid' as const, since: Date.now() })));
   render(<App />);
@@ -292,7 +293,7 @@ describeFeature(feature, ({ Scenario }) => {
         synth = stubSpeech(ALL_VOICES);
         await db.open();
         await Promise.all([db.words.clear(), db.settings.clear()]);
-        await db.settings.put({ key: 'hebrewInterest', value: '5' });
+        await putAtLevels({ hebrew: 5 });
         await setReaderView('greek');
         window.history.replaceState(null, '', '/#/test');
         render(<Holder />);

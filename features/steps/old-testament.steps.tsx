@@ -12,6 +12,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOKS, bookOf } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { ENGLISH_READER, putAtLevels } from './levels';
 import { getStudyChapter } from '../../src/data/readerChapter';
 import { createVerseList } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -103,7 +104,7 @@ async function openOn(title: string, settings: Record<string, string> = {}, spea
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   // an Old Testament chapter is read by the Hebrew dial (mw-gdcyf98.3), which a phone not yet placed reads at 0: these scenarios are of a phone with Hebrew All in
-  await db.settings.put({ key: 'hebrewInterest', value: '5' });
+  await putAtLevels({ hebrew: 5 }, ENGLISH_READER);
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });

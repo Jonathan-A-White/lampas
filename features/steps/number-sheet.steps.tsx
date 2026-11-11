@@ -6,6 +6,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { unstubRangeRects } from '../../tests/support/fake-layout';
 
@@ -24,8 +25,7 @@ async function openOn(book: string, chapter: number, title: string): Promise<voi
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   // the source words are drawn from Curious up: the Number sheet is a sheet of them (at Just English an English tap opens the small English sheet)
-  await db.settings.put({ key: 'hebrewInterest', value: '5' });
-  await db.settings.put({ key: 'greekInterest', value: '5' });
+  await putAtLevels({ hebrew: 5, greek: 5 });
   window.location.hash = `#/?b=${book}&c=${chapter}&view=english`;
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });

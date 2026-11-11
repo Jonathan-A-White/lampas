@@ -8,6 +8,7 @@ import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { type Chapter, markSupplied } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { putAtLevels, type Level } from './levels';
 import { getGreekInterest, getHebrewInterest } from '../../src/data/repositories';
 import { hebrewPointedForm } from '../../src/speech/hebrewPronunciation';
 import { TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -25,7 +26,7 @@ const verseOf = (chapter: Chapter, n: number) => {
 };
 const CANTILLATION = /[֑-֯]/;
 const PLACES: Record<string, string> = { 'Jonah 1': '#/?b=jon&c=1', 'Genesis 1': '#/?b=gen&c=1', 'Romans 8': '' };
-const LEVELS: Record<string, string> = { Curious: '1', 'Just English': '0' };
+const LEVELS: Record<string, Level> = { Curious: 1, 'Just English': 0 };
 const WORD_ANSWER = {
   answer: 'The word here is דָּבָר, "word": דְּבַר־ is its construct form, the word of the LORD.',
   words: [{ greek: 'דְּבַר־', lemma: 'דָּבָר', note: 'noun, masculine singular construct', language: 'he' }],
@@ -38,7 +39,7 @@ const LINK_ANSWER = { answer: 'The word for word is דָּבָר.', words: [], l
 
 const opened = (place: string, level: string, answer: unknown = TALK_ANSWER) => async (): Promise<void> => {
   await open((f: FakePostern) => void (f.autoReply = { status: 'answered', answer }), false, PLACES[place]);
-  await db.settings.put({ key: 'hebrewInterest', value: LEVELS[level] });
+  await putAtLevels({ hebrew: LEVELS[level] });
 };
 const input = () => {
   expect(fake.received).toHaveLength(1);
@@ -257,8 +258,7 @@ describeFeature(
       Given('Lampas is opened on Genesis 1 in English behind a fake Postern whose tutor offers the Hebrew view', async () => {
         await open((f: FakePostern) => void (f.autoReply = { status: 'answered', answer: HEBREW_OFFER }), false, PLACES['Genesis 1']);
         // a phone placed at Just English, as the app places a new one
-        await db.settings.put({ key: 'greekInterest', value: '0' });
-        await db.settings.put({ key: 'hebrewInterest', value: '0' });
+        await putAtLevels({ greek: 0, hebrew: 0 });
       });
       When('he opens the talk and asks {string}', async (_, question: string) => {
         await openTalk();

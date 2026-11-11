@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import { bookOf } from '../../src/data/books';
 import { currentLadderPlace, forgetLadders, refParts, type LadderEntry } from '../../src/data/readingLadder';
 import { clearBus } from '../../src/events/bus';
@@ -79,8 +80,7 @@ async function open(languages: Languages, reply: Reply, extra: () => Promise<voi
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith(POSTERN_ORIGIN) ? fake.fetch(input, init) : chapterFetch(input, init)));
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.readingHistory.clear(), db.missTally.clear(), db.ladder.clear()]);
-  await db.settings.put({ key: 'greekInterest', value: languages === 'hebrew' ? '0' : '5' });
-  await db.settings.put({ key: 'hebrewInterest', value: languages === 'greek' ? '0' : '5' });
+  await putAtLevels({ greek: languages === 'hebrew' ? 0 : 5, hebrew: languages === 'greek' ? 0 : 5 });
   await seedHisWords();
   await extra();
   render(<App />);

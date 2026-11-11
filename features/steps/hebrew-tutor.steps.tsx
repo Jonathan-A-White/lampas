@@ -11,6 +11,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { putAtLevels, settingsAtLevels } from './levels';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
@@ -95,7 +96,7 @@ const HEBREW_WORDS: Seed['words'] = [
   { lemma: 'מַיִם', lang: 'hbo', state: 'learning' },
 ];
 const HEBREW_READER: Seed = {
-  settings: { greekInterest: '0', hebrewInterest: '3' },
+  settings: settingsAtLevels({ greek: 0, hebrew: 3 }),
   words: HEBREW_WORDS,
   levels: [
     { id: 'he-alphabet', level: 'solid' },
@@ -104,7 +105,7 @@ const HEBREW_READER: Seed = {
   ],
 };
 const GREEK_ONLY_READER: Seed = {
-  settings: { greekInterest: '5', hebrewInterest: '0' },
+  settings: settingsAtLevels({ greek: 5, hebrew: 0 }),
   words: [...HEBREW_WORDS, { lemma: 'θεός', lang: 'grc', state: 'solid' }],
   levels: [],
 };
@@ -119,7 +120,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const asks = async (_: unknown, question: string): Promise<void> => {
     // the Talk sheet holds the Hebrew from the Hebrew dial's Curious up (mw-gdcyf98.3); a reader who chose a dial keeps it
-    if (!(await db.settings.get('hebrewInterest'))) await db.settings.put({ key: 'hebrewInterest', value: '1' });
+    if (!(await db.settings.get('hebrewInterest'))) await putAtLevels({ hebrew: 1 });
     await typeQuestion(user, viewEl(), question);
   };
   const phone = 'Lampas is opened on Jonah 1 with a licence and a tutor behind a fake Postern';

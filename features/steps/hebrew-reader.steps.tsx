@@ -11,6 +11,7 @@ import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { ENGLISH_READER, putAtLevels } from './levels';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
@@ -54,7 +55,7 @@ async function openOn(title: string, settings: Record<string, string> = {}, soli
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
   // an Old Testament chapter is read by the Hebrew dial (mw-gdcyf98.3), which a phone not yet placed reads at 0: these scenarios are of a phone with Hebrew All in
-  await db.settings.put({ key: 'hebrewInterest', value: '5' });
+  await putAtLevels({ hebrew: 5 }, ENGLISH_READER);
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   await db.words.bulkPut(solid.map((lemma) => ({ lemma, lemmas: [lemma], gloss: '', lesson: 0, state: 'solid' as const, since: Date.now() })));
   render(<App />);

@@ -18,6 +18,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { openTutor } from './open-tutor';
+import { settingsAtLevels } from './levels';
 
 afterAll(() => {
   cleanup();
@@ -169,7 +170,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   // a Hebrew word of Jonah 1 (the copy of the built chapter in tests/fixtures/data), in the Hebrew view, with the Hebrew dial at All
   const openHebrew = async (): Promise<void> => {
-    await open('#/?b=jon&c=1', undefined, { hebrewInterest: '5', readerView: 'greek' });
+    await open('#/?b=jon&c=1', undefined, { ...settingsAtLevels({ hebrew: 5 }), readerView: 'greek' });
     await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   };
   const tapsHebrewWord = async (_: unknown, text: string, verse: number): Promise<void> => {

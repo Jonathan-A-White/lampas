@@ -8,6 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import type { RustyItem } from '../../src/data/rusty';
 import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
@@ -57,7 +58,7 @@ async function openHebrew(): Promise<void> {
   await openWith(false, '#/?b=gen&c=1');
   cleanup();
   const now = Date.now();
-  await db.settings.bulkPut([{ key: 'greekInterest', value: '0' }, { key: 'hebrewInterest', value: '3' }]);
+  await putAtLevels({ greek: 0, hebrew: 3 });
   await Promise.all([db.words.clear(), db.grammarLevels.clear(), db.reviews.clear()]);
   await db.words.bulkPut([{ lemma: 'אֶרֶץ', lang: 'hbo', lemmas: [], gloss: 'land', lesson: 1, state: 'solid', since: now - 60 * DAY }]);
   await db.grammarLevels.put({ id: 'he-article', level: 'solid', since: now - 60 * DAY, how: 'placement' });

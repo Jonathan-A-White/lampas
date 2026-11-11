@@ -7,6 +7,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { putAtLevels, type Level } from './levels';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { tutorTimings } from '../../src/services/tutor';
@@ -56,10 +57,10 @@ async function openOnNewPhone(): Promise<void> {
   await screen.findByRole('group', { name: 'Which languages?' });
 }
 
-const stepOf = (name: string): string => {
+const stepOf = (name: string): Level => {
   const found = GREEK_LEVELS.find((l) => l.name === name);
   if (!found) throw new Error(`no step ${name}`);
-  return String(found.level);
+  return found.level;
 };
 const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern | undefined;
@@ -89,10 +90,7 @@ async function openChapter(title: string, greek: string, hebrew: string, postern
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear()]);
-  await db.settings.bulkPut([
-    { key: 'greekInterest', value: stepOf(greek) },
-    { key: 'hebrewInterest', value: stepOf(hebrew) },
-  ]);
+  await putAtLevels({ greek: stepOf(greek), hebrew: stepOf(hebrew) });
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -276,11 +274,7 @@ describeFeature(feature, ({ Scenario }) => {
     window.history.replaceState(null, '', '/');
     await db.open();
     await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
-    await db.settings.bulkPut([
-      { key: 'greekInterest', value: stepOf(greek) },
-      { key: 'hebrewInterest', value: stepOf(hebrew) },
-      { key: 'readerView', value: 'greek' },
-    ]);
+    await putAtLevels({ greek: stepOf(greek), hebrew: stepOf(hebrew) }, { readerView: 'greek' });
   };
   const openCard = async (_: unknown, written: string): Promise<void> => {
     // the card a verse list or a Review question opens: the passage held (an Old Testament one too), as the reader's chapter file has it

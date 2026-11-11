@@ -7,6 +7,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { describeFeature, loadFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import { mulberry32 } from '../../src/data/quiz';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -38,7 +39,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.results.clear()]);
   // the Hebrew voice row is shown from the Hebrew dial's Curious up
-  await db.settings.put({ key: 'hebrewInterest', value: '5' });
+  await putAtLevels({ hebrew: 5 });
   window.history.replaceState(null, '', '/');
   await seedHisWords();
   render(<App newRandom={() => mulberry32(7)} />);

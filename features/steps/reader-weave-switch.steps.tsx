@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { forgetScrolls } from '../../src/nav/scrollMemory';
@@ -312,7 +313,7 @@ describeFeature(feature, ({ Scenario }) => {
     s.And('the Reader lays each mode out at a height of its own', layOutModes);
     s.And('his Hebrew dial is at All in', async () => {
       // an Old Testament chapter is read by the Hebrew dial, which a phone not yet placed reads at 0, with no Hebrew in the switch
-      await db.settings.put({ key: 'hebrewInterest', value: '5' });
+      await putAtLevels({ hebrew: 5 });
     });
     s.And('he opens Genesis 1', () => openChapter('gen', 'Genesis', 1));
     s.And('he has scrolled so verse {int} is the first verse at the top', (_, n: number) => scrollSoTopIs(n));

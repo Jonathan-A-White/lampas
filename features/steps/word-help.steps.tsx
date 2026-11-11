@@ -23,6 +23,7 @@ import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, SOUND_HELP_ANSWER
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
+import { settingsAtLevels } from './levels';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -244,7 +245,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   // a Hebrew word of Jonah 1 (the copy of the built chapter in tests/fixtures/data), in the Hebrew view, with the Hebrew dial at All
-  const HEBREW = { hebrewInterest: '5', readerView: 'greek' };
+  const HEBREW = { ...settingsAtLevels({ hebrew: 5 }), readerView: 'greek' };
   const HE_FORM = 'נִינְוֵה';
   const HE_PARSE = 'Noun - proper - feminine singular';
   const tapsHebrewWord = async (_: unknown, text: string, verse: number): Promise<void> => {

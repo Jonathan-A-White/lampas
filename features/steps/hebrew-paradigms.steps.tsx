@@ -8,6 +8,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { db, type GrammarLevelName } from '../../src/data/db';
+import { putAtLevels } from './levels';
 import { paradigmsIn } from '../../src/data/paradigms';
 import { forgetDrills } from '../../src/data/paradigms/drill';
 import { setLanguages } from '../../src/data/repositories';
@@ -61,7 +62,7 @@ async function freshStore(languages: Languages): Promise<void> {
   await db.grammarLevels.bulkPut(Object.entries(FIXTURE).map(([id, level]) => ({ id, level, since: Date.now(), how: 'marked' as const })));
   await setLanguages(languages);
   // an Old Testament chapter is read by the Hebrew dial: these scenarios are of a phone with Hebrew All in
-  if (languages !== 'greek') await db.settings.put({ key: 'hebrewInterest', value: '5' });
+  if (languages !== 'greek') await putAtLevels({ hebrew: 5 });
   await db.settings.put({ key: 'readerView', value: 'greek' });
 }
 

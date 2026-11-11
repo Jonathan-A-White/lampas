@@ -9,6 +9,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { markSupplied, type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
+import { putAtLevels, type Level } from './levels';
 import { buildDrillItemsRequest, checkedItems, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
 import { hebrewFormOf, hebrewIdeasOfWord } from '../../src/data/grammar/hebrew/wordQuestions';
 import { ideaOfAny } from '../../src/data/grammar/ladders';
@@ -40,7 +41,7 @@ const verseOf = (chapter: Chapter, n: number) => {
 };
 const CANTILLATION = /[֑-֯]/;
 const PHONE_KEY = '00'.repeat(31) + '0e';
-const LEVELS: Record<string, string> = { Curious: '1', 'Just English': '0' };
+const LEVELS: Record<string, Level> = { Curious: 1, 'Just English': 0 };
 const MILL_PROMPT = 'Tap a word with the article';
 
 beforeAll(() => {
@@ -65,8 +66,8 @@ const actionNames = (): string[] =>
 async function openQuiz(place: string, level: string): Promise<void> {
   await open((f) => void (f.autoReply = { status: 'answered', answer: QUIZ_ANSWER }), false, place);
   // the dial is set before the verse is opened: the Verse view reads it
-  await db.settings.put({ key: 'hebrewInterest', value: LEVELS[level] ?? '0' });
-  await waitFor(async () => expect((await db.settings.get('hebrewInterest'))?.value).toBe(LEVELS[level] ?? '0'));
+  await putAtLevels({ hebrew: LEVELS[level] ?? 0 });
+  await waitFor(async () => expect((await db.settings.get('hebrewInterest'))?.value).toBe(String(LEVELS[level] ?? 0)));
 }
 
 // ---- Review ----

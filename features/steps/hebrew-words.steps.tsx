@@ -9,6 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { putAtLevels, type Level } from './levels';
 import { forgetFrequency } from '../../src/data/frequency';
 import { SEED_WORDS_HBO } from '../../src/data/seed-words-hbo';
 import { forgetSkipped } from '../../src/data/skipped';
@@ -35,8 +36,8 @@ const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/
 
 interface Phone {
   /** the Greek and Hebrew dials: 0 to 5 (3 is Learning) */
-  greek: number;
-  hebrew: number;
+  greek: Level;
+  hebrew: Level;
   newWords?: number;
   speaks?: boolean;
   words?: { lemma: string; lang: 'grc' | 'hbo'; gloss: string }[];
@@ -60,8 +61,7 @@ async function openOn(title: string, phone: Phone): Promise<void> {
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear()]);
-  await db.settings.put({ key: 'greekInterest', value: String(phone.greek) });
-  await db.settings.put({ key: 'hebrewInterest', value: String(phone.hebrew) });
+  await putAtLevels({ greek: phone.greek, hebrew: phone.hebrew });
   if (phone.newWords !== undefined) await db.settings.put({ key: 'newWordsADay', value: String(phone.newWords) });
   const now = Date.now();
   for (const w of phone.words ?? []) {
