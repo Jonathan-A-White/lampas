@@ -1,0 +1,8 @@
+# The timing maker's Python packages (docs/data.md 'Recorded audio timings'). Install into a virtualenv OUTSIDE the repo:
+#   uv venv ~/.cache/lampas-audio-timings/venv
+#   uv pip install --python ~/.cache/lampas-audio-timings/venv/bin/python -r scripts/audio-timings/requirements.txt
+# The CPU-only wheels of torch and torchaudio come from the extra index below (no CUDA wheel); the version pins carry the +cpu local tag.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.7.1+cpu
+torchaudio==2.7.1+cpu
+numpy==2.2.6
