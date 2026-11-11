@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.223
+_2026-11-11_
+- Fixed: A chapter whose sermons are only in the online index, like 2 Peter 3, now shows its Sermons door.
+
 ## 0.7.215
 _2026-11-11_
 - Fixed: A long book name such as 1 Thessalonians no longer pushes the Menu button onto a second row of the Reader's top bar.
