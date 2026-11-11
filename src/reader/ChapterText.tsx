@@ -147,7 +147,7 @@ export function SectionHeading({ text, onOpen, onCopy, mirrored }: { text: strin
  * block, each a [data-passage-text] with the Reader's face, size and leading, so src/index.css sets the book look and the weave's roomy lines block by block as it
  * does in the Reader. Each verse has a small number before it and the one being read is highlighted; the reading is followed down the box the view scrolls the
  * passage in (data-passage-box), by moving that box and nothing else. Each verse is the Reader's own VerseText, so the weave and the tappable words follow it. */
-export function PassageText({ passage, view, source = 'grc', layout, wovenOf, reading, onLook, onRp, onUnlinked, septuagint }: {
+export function PassageText({ passage, view, source = 'grc', layout, wovenOf, reading, onLook, onRp, onUnlinked, septuagint, gaps }: {
   passage: Passage;
   view: ReaderView;
   /** the language of the chapter's own words: a Hebrew chapter's blocks are tagged he and run right to left in the source view, not el */
@@ -162,6 +162,8 @@ export function PassageText({ passage, view, source = 'grc', layout, wovenOf, re
   onUnlinked?: () => void;
   /** the chapter is Swete's Septuagint and this is the number of its Greek chapter: each verse's number says Lampas's verse and the Greek one beside it, as the Reader's does (mw-u2w5klk.18) */
   septuagint?: number;
+  /** Show manuscript gaps for a Septuagint passage (VerseProps.gaps): false drops Brenton's square brackets from the English, as the chapter does (mw-u2w5klk.348); absent, a text that is not the Septuagint */
+  gaps?: boolean;
 }) {
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -179,7 +181,7 @@ export function PassageText({ passage, view, source = 'grc', layout, wovenOf, re
           {block.map((verse) => (
             <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
               <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted"><ShownNumber verse={verse} septuagint={septuagint} /></sup>
-              <VerseText verse={verse} view={view} source={source} woven={wovenOf(verse)} onLook={onLook} onRp={onRp} onUnlinked={onUnlinked} />
+              <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={wovenOf(verse)} onLook={onLook} onRp={onRp} onUnlinked={onUnlinked} />
             </span>
           ))}
         </p>

@@ -24,7 +24,9 @@ import { VerseText } from '../reader/VerseText';
 import { settingsFor, useViewSettings } from '../reader/useViewSettings';
 import { useWoven } from '../reader/useWoven';
 import { isOrdered, rowAttrs } from '../reader/sourceText';
-import { cardForm, lampasNumber } from '../reader/septuagint';
+import { cardForm, isSeptuagint, lampasNumber } from '../reader/septuagint';
+import { septuagintGapsSetting } from '../settings/definitions';
+import { useSetting } from '../settings/store';
 import { textClass } from '../reader/textClass';
 import { MARGIN, WIDTH, spotFor, type Spot } from './cardSpot';
 import { DialogAskTutor } from '../AskTutor';
@@ -55,6 +57,9 @@ function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPl
   const source = sourceLanguage(chapter);
   const woven = useWoven(chapter, settings ?? {});
   const still = useStillLoading(!settings);
+  // Show manuscript gaps governs Brenton's brackets in a Septuagint card's English as it does in the chapter (mw-u2w5klk.348)
+  const gapsOn = useSetting(septuagintGapsSetting) === 'on';
+  const gaps = isSeptuagint(chapter) ? gapsOn : undefined;
   if (!settings) return <p role="status" className="py-1 text-base text-muted">{still ? 'Still loading. Close this card and open it again.' : 'Loading…'}</p>;
   // a reference is in Lampas's verses; a Septuagint chapter's own numbers are the Greek's (Greek 9:22 is Psalm 10:1), so its verses are found by the Lampas verse they answer (mw-u2w5klk.18)
   const inRange = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => lampasNumber(chapter, v) >= held.first && lampasNumber(chapter, v) <= held.last);
@@ -63,7 +68,7 @@ function MarkedPassage({ chapter, held, mark }: { chapter: Chapter; held: HeldPl
       {inRange.map(({ v, i }, k) => (
         <span key={v.n}>
           {inRange.length > 1 ? <sup className="mr-0.5 font-sans text-xs text-muted">{lampasNumber(chapter, v)}</sup> : null}
-          <VerseText verse={v} view={settings.view} source={source} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(chapter, v, mark)} still />
+          <VerseText verse={v} view={settings.view} source={source} gaps={gaps} woven={woven?.[i] ?? null} onLook={() => undefined} marked={mark === undefined ? undefined : markedIn(chapter, v, mark)} still />
           {k < inRange.length - 1 ? ' ' : ''}
         </span>
       ))}

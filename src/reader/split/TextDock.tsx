@@ -5,6 +5,8 @@
 import type { ReactNode } from 'react';
 import type { Chapter } from '../../data/chapter';
 import { ShownNumber } from '../ChapterText';
+import { septuagintGapsSetting } from '../../settings/definitions';
+import { useSetting } from '../../settings/store';
 import { isSeptuagint } from '../septuagint';
 import { rowAttrs } from '../sourceText';
 import { textClass } from '../textClass';
@@ -32,6 +34,9 @@ export function TextDock({ text, book, lampasChapter, chapter, passage, onLook, 
 }): ReactNode {
   const { view, source } = splitTextView(text, book);
   const septuagint = isSeptuagint(chapter);
+  // Show manuscript gaps governs Brenton's brackets in the dock's English as it does in the chapter (mw-u2w5klk.348)
+  const gapsOn = useSetting(septuagintGapsSetting) === 'on';
+  const gaps = septuagint ? gapsOn : undefined;
   const rows = pairVerses(passage, chapter.verses, book, lampasChapter);
   return (
     <div data-dock-text={text} className="px-1 pt-2">
@@ -51,7 +56,7 @@ export function TextDock({ text, book, lampasChapter, chapter, passage, onLook, 
             <button type="button" data-verse-number aria-label={`Verse ${row.lampas ?? row.verse.n}`} disabled={row.lampas === null} onClick={() => row.lampas !== null && onNumber(row.lampas)} className={NUMBER}>
               <ShownNumber verse={row.verse} septuagint={septuagint ? chapter.chapter : undefined} />
             </button>
-            <VerseText verse={row.verse} view={view} source={source} woven={null} onLook={(lookup) => onLook(lookup, chapter)} onUnlinked={septuagint ? stay : undefined} />
+            <VerseText verse={row.verse} view={view} source={source} gaps={gaps} woven={null} onLook={(lookup) => onLook(lookup, chapter)} onUnlinked={septuagint ? stay : undefined} />
           </div>
         ),
       )}
