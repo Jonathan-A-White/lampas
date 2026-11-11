@@ -278,10 +278,19 @@ for (const [name, size] of [['Small', '85'], ['Normal', '100'], ['Largest', '160
     await dockInPages(page, size);
     const of = (await pagesOf(page)).of;
     expect(of).toBeGreaterThan(2);
+    let held: number | null = null;
     for (let at = 1; at <= of; at++) {
       await expect.poll(async () => (await pagesOf(page)).at).toBe(at);
       const first = await firstWithWords(page);
-      expect(first, `page ${at}`).not.toBeNull();
+      if (first === null) {
+        // a verse ending at the very foot of the last page leaves the chapter's end (the buttons to the neighbouring chapters) alone on a page after it: no verse to follow, so the dock stays on the one before
+        expect(at, `page ${at} has no verse and is not the last`).toBe(of);
+        await expect(page.locator('[data-reader]').getByRole('button', { name: /^Genesis 15/ })).toBeInViewport();
+        expect(held, `page ${at} follows a page with a verse`).not.toBeNull();
+        await expect.poll(() => dockHolds(page, held!), { message: `page ${at} of ${of}` }).toBe(true);
+        break;
+      }
+      held = first;
       // the dock's top verse is it; or, where the dock's box ends before it can stand at the top, the dock is at its end with that verse in view
       await expect.poll(() => dockHolds(page, first!), { message: `page ${at} of ${of}` }).toBe(true);
       if (at < of) await tapAt(page, 0.85);
