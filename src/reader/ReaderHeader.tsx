@@ -1,7 +1,7 @@
 // src/reader/ReaderHeader.tsx — the Reader's header (docs/module-map.md R1, part d): the chapter's title (a button that opens the picker),
 // English | Weave | Greek, the Play button of Read aloud and the Menu (three lines) that opens Tools or Settings. While a reading the speaking bar does not hold waits for Pause
 // or Play, the header gives its room to those and Stop; the title stays for screen readers.
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { SourceLanguage } from '../data/chapter';
 import { chooseReaderLanguage, type ReaderLanguage, type ReaderView, type Weave } from '../data/repositories';
 import { weaveOrderSetting } from '../settings/definitions';
@@ -132,71 +132,87 @@ function titlePieces(name: string, chapter: string): string[] {
   return chapter ? [name, chapter] : [name];
 }
 
-/** The units that are never broken inside a Septuagint chapter's piece: a line may end between them. 'Psalms 23' is the name and the number, '(Greek 114 and 115)' is '(Greek', '114' and 'and 115)'. So a
- * narrow header (Large and Largest text beside English | Weave | Greek, Play and the Menu) holds the title in as many short lines as it needs rather than wrapping the Menu to a row of its own
- * (mw-fnvjof.17.70, mw-fnvjof.17.73). Every other title's piece is one unit. */
+/** The units that are never broken inside a title's piece: a line may end between them. In a Septuagint chapter 'Psalms 23' is the name and the number, '(Greek 114 and 115)' is '(Greek', '114' and
+ * 'and 115)'. In any title the book's name is its words ('Song' 'of' 'Solomon', '1' 'Thessalonians'), so a long name goes onto a second line before it widens the title past the room beside English | Weave | Greek,
+ * Play and the Menu and drops the Menu to a row of its own (mw-fnvjof.17.70, .73, .79); a word is never broken. A chapter number stands alone. */
 function unitsOf(piece: string, septuagint: boolean, first: boolean): string[] {
+  if (first) return piece.split(' ');
   if (!septuagint) return [piece];
-  if (!first) return piece.split(/ (?=and )/).flatMap((part) => (part.startsWith('(Greek ') ? [part.slice(0, 6), part.slice(7)] : [part]));
-  const at = piece.lastIndexOf(' ');
-  return [piece.slice(0, at), piece.slice(at + 1)];
+  return piece.split(/ (?=and )/).flatMap((part) => (part.startsWith('(Greek ') ? [part.slice(0, 6), part.slice(7)] : [part]));
 }
 
-/** What a character of a semibold name measures, in em, at the most (the phone's own wide sans, DejaVu Bold, as an upper bound): letters about 0.72, capitals 0.85, the narrow letters
- * and 'm' 'w' by themselves, a digit 0.7, a space or a bracket less. A flat 0.8 a character held 'Psalms 116 (Greek 114 and 115)' 25% too wide, and the Play button and the Menu wrapped under it. */
+/** What a character of a semibold name measures, in em: the advance widths of DejaVu Bold, the wide sans of the phones this was measured on (a phone's own sans is narrower), and a little over (EM_SLACK) so a name
+ * the room holds to the pixel is not wrapped by a rounding. The first estimate here, 0.72 for every lower-case letter, held 'Chronicles' 11% too wide and the Menu dropped to a row of its own for a name
+ * that fits (mw-fnvjof.17.79). A digit 0.696, a space 0.348, anything not listed (a bracket) 0.46. */
+const LOWER = [0.675, 0.716, 0.593, 0.716, 0.678, 0.435, 0.716, 0.712, 0.343, 0.343, 0.665, 0.343, 1.042, 0.712, 0.687, 0.716, 0.716, 0.493, 0.595, 0.478, 0.712, 0.652, 0.924, 0.645, 0.652, 0.582];
+const UPPER = [0.774, 0.762, 0.734, 0.83, 0.683, 0.683, 0.821, 0.837, 0.372, 0.372, 0.775, 0.637, 0.995, 0.837, 0.85, 0.733, 0.85, 0.77, 0.72, 0.682, 0.812, 0.774, 1.103, 0.774, 0.724, 0.725];
+const EM_SLACK = 1.02;
 function emOf(text: string): number {
   let em = 0;
   for (const ch of text) {
-    if (/[0-9]/.test(ch)) em += 0.7;
-    else if (ch === ' ') em += 0.4;
-    else if (/[A-Z]/.test(ch)) em += 0.85;
-    else if (/[ijltfr]/.test(ch)) em += 0.45;
-    else if (/[mw]/.test(ch)) em += 1.05;
-    else if (/[a-z]/.test(ch)) em += 0.72;
-    else em += 0.5;
+    const at = ch.charCodeAt(0);
+    if (ch >= '0' && ch <= '9') em += 0.696;
+    else if (ch === ' ') em += 0.348;
+    else if (ch >= 'a' && ch <= 'z') em += LOWER[at - 97];
+    else if (ch >= 'A' && ch <= 'Z') em += UPPER[at - 65];
+    else em += 0.46;
   }
-  return em;
+  return em * EM_SLACK;
 }
 
 /** The floor of the title's type size is its rem floor, but never more than this: at Large and Largest text the floor would grow with the phone's text size (17.6 px at Largest), and beside English | Weave | Greek, Play
  * and the Menu (89 px of room at 390 px) the Menu dropped to a row of its own and the header doubled (mw-fnvjof.17.73). The switch does not grow with the text size, so neither does the title's floor past this. */
 const TITLE_FLOOR_CAP_PX = 11;
+/** The smallest the title goes, for the one name whose longest word does not stand in the room at the floor (beside English | Weave | Greek, Play and the Menu: 1 and 2 Thessalonians in 89 px, Lamentations and
+ * Deuteronomy in the 75 px that Hebrew leaves): it shrinks to fit that word, never past this, and a row that still cannot hold it wraps. A name is never cut (mw-fnvjof.17.79). */
+const TITLE_SMALLEST_REM = 0.5;
+const TITLE_SMALLEST_CAP_PX = 8;
 /** What the title button takes beside its text, in px: its side padding (px-1, 8) and the chevron with its margin (12 + 2). */
 const TITLE_CHROME_PX = 22;
 /** …of which the side padding alone (px-1). */
 const TITLE_PAD_PX = 8;
 const TITLE_FLOOR = `min(${TITLE_MIN_REM}rem, ${TITLE_FLOOR_CAP_PX}px)`;
+const TITLE_SMALLEST = `min(${TITLE_SMALLEST_REM}rem, ${TITLE_SMALLEST_CAP_PX}px)`;
 
-/** The title's type size: the largest the header holds, smaller only as far as the widest whole piece needs to stand on one line in the room the title has (`100cqw` is the title box's width, less the button's own padding and chevron). */
-function titleSize(wholeEm: number): string {
-  return `clamp(${TITLE_FLOOR}, calc((100cqw - ${TITLE_CHROME_PX}px) / ${wholeEm.toFixed(2)}), ${TITLE_MAX_REM}rem)`;
+/** The title's type size: the largest the header holds, smaller only as far as the title needs to stand on one line in the room it has (`100cqw` is the title box's width, less the button's own padding and chevron);
+ * where the whole title does not fit one line at the floor it stays at the floor and breaks between its words; where the widest word does not fit even there, it shrinks to that word, to TITLE_SMALLEST at the least. */
+function titleSize(wholeEm: number, unitEm: number, lastEm: number): string {
+  const wholeFits = `(100cqw - ${TITLE_CHROME_PX}px) / ${wholeEm.toFixed(2)}`;
+  const wordFits = `min((100cqw - ${TITLE_PAD_PX}px) / ${unitEm.toFixed(2)}, (100cqw - ${TITLE_CHROME_PX}px) / ${lastEm.toFixed(2)})`;
+  return `min(${TITLE_MAX_REM}rem, max(calc(${wholeFits}), min(${TITLE_FLOOR}, max(calc(${wordFits}), ${TITLE_SMALLEST}))))`;
 }
 
-/** The least room the title box is given: the widest unit at the smallest size, whole, with the button's padding, and the chevron's room for the last unit, which carries it. A row that cannot hold it wraps, so no unit is cut. */
-function titleRoom(unitEm: number, lastEm: number): string {
-  return `max(calc(${TITLE_FLOOR} * ${unitEm.toFixed(2)} + ${TITLE_PAD_PX}px), calc(${TITLE_FLOOR} * ${lastEm.toFixed(2)} + ${TITLE_CHROME_PX}px))`;
+/** The least room the title box is given at a type size: the widest unit at that size, whole, with the button's padding, and the chevron's room for the last unit, which carries it. A row that cannot hold it wraps, so no unit is cut. */
+function titleRoom(size: string, unitEm: number, lastEm: number): string {
+  return `max(calc(${size} * ${unitEm.toFixed(2)} + ${TITLE_PAD_PX}px), calc(${size} * ${lastEm.toFixed(2)} + ${TITLE_CHROME_PX}px))`;
 }
 
+// The room is the widest unit at the floor, as the switch's wrap under 390 px has it (the switch goes to a line of its own, mw-5r3p30.768); from 390 px up it is the widest unit at the smallest size, so a long name
+// shrinks before it drops the Menu to a row of its own (mw-fnvjof.17.79).
 export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaves = true, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
   const pieces = titlePieces(name, chapter);
   const septuagint = /^\d+ \(Greek /.test(chapter);
   const unitsIn = (piece: string, i: number) => unitsOf(piece, septuagint, i === 0);
-  const wholeEm = Math.max(...pieces.map(emOf));
+  // a Septuagint title's pieces stand on lines of their own beside the switch; any other title stands on one line where it can
+  const wholeEm = septuagint ? Math.max(...pieces.map(emOf)) : emOf(pieces.join(' '));
   const units = pieces.flatMap(unitsIn);
   const unitEm = Math.max(...units.map(emOf));
   const lastEm = emOf(units[units.length - 1]);
   return (
     <header inert={inert} className="flex shrink-0 flex-wrap items-center gap-1 border-b border-line px-1">
-      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(unitEm, lastEm) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
+      <h1
+        style={headerButtons ? undefined : ({ '--title-room': titleRoom(TITLE_FLOOR, unitEm, lastEm), '--title-room-least': titleRoom(TITLE_SMALLEST, unitEm, lastEm) } as CSSProperties)}
+        className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'min-w-[var(--title-room)] min-[390px]:min-w-[var(--title-room-least)] flex-1'}`}
+      >
         <button
           type="button"
           aria-haspopup="dialog"
           onClick={onPick}
           className="flex min-h-12 w-full items-center rounded-lg px-1 text-left font-semibold active:bg-line"
         >
-          <span className="title-wrap" style={{ fontSize: titleSize(wholeEm) }}>
+          <span className="title-wrap" style={{ fontSize: titleSize(wholeEm, unitEm, lastEm) }}>
             {pieces.map((piece, i) => (
               <Fragment key={piece}>
                 {i > 0 ? ' ' : null}
