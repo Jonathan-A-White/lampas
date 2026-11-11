@@ -17,6 +17,20 @@ test.beforeEach(async ({ page }) => {
 
 const choice = (page: Page, name: string) => page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name, exact: true });
 
+// holdFor presses where the box was when it read it. A page just opened lays its header and chip rows out a little after the first verse is drawn (more so on a loaded host and
+// sideways), so a press is made only once the box has stood in one place for two reads in a row.
+async function settledBox(page: Page, name: string) {
+  let last = '';
+  await expect
+    .poll(async () => {
+      const now = JSON.stringify(await choice(page, name).boundingBox());
+      const same = now === last;
+      last = now;
+      return same;
+    })
+    .toBe(true);
+}
+
 for (const { name, size } of SIZES) {
   test(`the switch is English | Weave | Greek and a long press on Weave flips the word order, ${name}`, async ({ page }) => {
     await page.setViewportSize(size);
@@ -71,6 +85,7 @@ for (const { name, size } of SIZES) {
     // the order is kept across a reload; a second long press puts the English order back
     await page.reload();
     await expect(verse1).toHaveText(/^no Therefore there is now condemnation/);
+    await settledBox(page, 'Weave');
     await holdFor(page, choice(page, 'Weave'), 700);
     await expect(page.getByRole('status').filter({ hasText: 'English word order' })).toBeVisible();
     await expect(verse1).toHaveText(/^Therefore there is now no condemnation/);
@@ -120,12 +135,19 @@ test('switching the mode keeps the verse that is on top, Acts 18', async ({ page
       const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top);
       return Number(el?.dataset.verse);
     });
-  await page.evaluate(() => {
-    const box = document.querySelector<HTMLElement>('main[data-reader]')!;
-    const el = document.querySelector('[data-verse="14"]')!;
-    box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-  });
-  expect(await firstVerse()).toBe(14);
+  // A late layout (a font arriving, a line drawn again) can move the lines above verse 14 after one scroll and leave verse 15 on top on a loaded host, so the box is scrolled
+  // again until verse 14 holds, the way useBringVerse settles a verse.
+  await page.evaluate(() => document.fonts.ready);
+  await expect
+    .poll(async () => {
+      await page.evaluate(() => {
+        const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+        const el = document.querySelector('[data-verse="14"]')!;
+        box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+      });
+      return firstVerse();
+    })
+    .toBe(14);
   await shot(page, 'weave-switch-place-weave');
 
   for (const label of ['Greek', 'Weave', 'English']) {
