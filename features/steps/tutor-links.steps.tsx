@@ -65,7 +65,18 @@ async function open(links: Link[]): Promise<void> {
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
 
-const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
+/**
+ * The open Talk sheet, found beside its own markup: screen.getByRole('dialog', { name }) works out the role and name of every element of the Reader behind
+ * it, and turn() and the waits below call this on every poll (mw-lcv9z3g.13: with the reads of the ask step that cost it 20 s under load).
+ */
+const sheet = (): HTMLElement => {
+  for (const dialog of document.querySelectorAll<HTMLElement>('[role="dialog"]')) {
+    const labelledBy = dialog.getAttribute('aria-labelledby');
+    const title = dialog.getAttribute('aria-label') ?? (labelledBy ? document.getElementById(labelledBy)?.textContent : null) ?? '';
+    if (/^Talk about /.test(title.trim())) return dialog;
+  }
+  throw new Error('no Talk sheet is open');
+};
 const turn = () => sheet().querySelector<HTMLElement>('[data-turn]') as HTMLElement;
 const links = () => within(turn()).queryAllByRole('link');
 
@@ -78,11 +89,15 @@ async function onlyButton(_: unknown, name: string): Promise<void> {
 async function askAboutVerse28(text = 'Tell me about love'): Promise<void> {
   // findButton, not screen.findByRole: a role query walks every word of the chapter (1.6 s calm, a multiple under load) and a step past the 20 s testTimeout leaves its body running into the next scenario's cleanup and afterAll's db.close()
   await user.click(await findButton('Verse 28'));
-  await screen.findByRole('region', { name: 'Verse view' });
-  await openTutor();
-  await screen.findByRole('dialog', { name: /^Talk about / });
-  await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), text);
-  await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
+  // the ? asks about what is open, so the Verse view must be up first (a plain query on its own attribute, not a role query)
+  await waitFor(() => expect(document.querySelector('[data-verse-view]')).not.toBeNull());
+  // openTutor waits for the Verse view's ? and for the Talk sheet and returns it: no role query over the Reader again (mw-lcv9z3g.13)
+  const talk = await openTutor();
+  const message = within(talk).getByRole('textbox', { name: 'Your message' });
+  // one paste, not a render per key: the step is the single test that carries the whole ask, and its keys were 0.8 s calm
+  await user.click(message);
+  await user.paste(text);
+  await user.click(within(talk).getByRole('button', { name: 'Send' }));
   await waitFor(() => expect(sheet().querySelector('[data-turn]')).not.toBeNull());
 }
 
