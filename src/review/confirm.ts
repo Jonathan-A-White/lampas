@@ -5,6 +5,7 @@
 import { isFresh, recordAnswer, type FreshStore } from 'learn-kit/fresh';
 import { isFetchable } from '../data/grammar/fetchedItems';
 import { ideaOfAny as ideaOf } from '../data/grammar/ladders';
+import { isClosedDatabase } from '../data/closedDatabase';
 import type { GrammarQuestion } from '../data/grammar/questions';
 import { fetchedStock, freshStore, isFreshQuestion, isToConfirm, markConfirmed, missedBefore, noteDrillMiss, noteSeen, questionKey, recordGrammarAnswer } from '../data/repositories';
 
@@ -60,6 +61,6 @@ export async function confirmAnswer(question: GrammarQuestion, right: boolean, o
     // not waited for: the feedback of the answer does not depend on the mill
     if (verdict === 'to-confirm' && !marked) fetchedStock.rightAfterMiss(id);
   } catch (error) {
-    console.warn('could not confirm the idea', error);
+    if (!isClosedDatabase(error)) console.warn('could not confirm the idea', error);
   }
 }

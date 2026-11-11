@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { noteDailyChange } from './data/daily/dailyStore';
 import { subscribe } from './events/bus';
-import { afterCatalogueUpdate, dropStaleBibleRows, seedLevelsIfFirstOpen, seedScheduleIfFirstOpen } from './data/repositories';
+import { startBackgroundWrites } from './data/startupWrites';
 import { About } from './About';
 import { Essay } from './Essay';
 import { VariantLessons } from './lessons/VariantLessons';
@@ -87,22 +87,9 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
   }, []);
   // A change to a Settings > Daily row answers Today's explanation of what it could hold, so it is not shown again (src/data/daily/dailyStore.ts).
   useEffect(() => subscribe('setting-changed', (event) => void noteDailyChange(event.key)), []);
-  // The first open after an update that changed the Logos catalogue: his shelf's rows are re-filed and the Logos list he imported is matched again, so the Library card can say 'N new since' (src/data/repositories/library.ts).
+  // The writes App starts by itself at its first open: the Logos list matched again after an update, the stale Bible marks dropped, the upgrade paths of a phone that already has data (src/data/startupWrites.ts).
   useEffect(() => {
-    void afterCatalogueUpdate().catch((error: unknown) => console.error('matching his Logos list again after the update failed', error));
-  }, []);
-  // The Library's old 'Chosen' mark of a Bible that no part is set to is dropped: a Bible is shown as set only by the three Settings keys (mw-5r3p30.1135).
-  useEffect(() => {
-    void dropStaleBibleRows().catch((error: unknown) => console.error('dropping a stale Bible mark failed', error));
-  }, []);
-  // A new install starts empty (mw-5r3p30.385): nothing is put in the word list, on the schedule or on the grammar ladder at the first open.
-  // These two are the upgrade paths of a phone that already has data: a store from before v10 that has words but no schedule gets them scheduled, and
-  // a store from before v11 has the terms he marked I know this make their ideas solid. Each does nothing without his own rows to work from, and
-  // neither deletes or rewrites a row.
-  useEffect(() => {
-    void seedScheduleIfFirstOpen()
-      .then(() => seedLevelsIfFirstOpen())
-      .catch((error: unknown) => console.error('scheduling the words and the grammar terms he kept failed', error));
+    void startBackgroundWrites();
   }, []);
   return (
     <div data-shell className="flex h-full min-w-0 flex-col overflow-clip">

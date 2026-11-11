@@ -30,7 +30,7 @@ import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getStudyChapter } from './data/readerChapter';
 import { cardForm } from './reader/septuagint';
-import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, recordDrill, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { useDoorTarget } from './tutor/door';
 import { AskForBook } from './library/AskForBook';
@@ -66,6 +66,7 @@ import { GREEK_LANG } from './script/greekLang';
 import { useGreekInterest } from './settings/useGreekInterest';
 import { lessonKept, lessonScreen, lessonSuggestions } from './tutor/lessonTalk';
 import { HEBREW_LANG_ATTRS } from './reader/sourceText';
+import { keepDrill } from './review/keepDrill';
 
 // Each button is as wide as its label and shares the rest, so neither wraps at 390 px.
 const BUTTON = 'min-h-12 flex-auto whitespace-nowrap rounded-xl border px-2 text-base font-medium';
@@ -905,7 +906,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           ideaId={idea.id}
           mode={drill}
           passage={passage?.chapters}
-          onResult={(result) => void recordDrill(result, drill).catch((error: unknown) => console.error('could not keep the drill', error))}
+          onResult={(result) => void keepDrill(result, drill)}
           onClose={closeDrill}
         />
       ) : null}

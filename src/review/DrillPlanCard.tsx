@@ -4,7 +4,7 @@
 import { useRef, useState } from 'react';
 import { ideaOfAny as ideaOf } from '../data/grammar/ladders';
 import type { DrillResult } from '../data/grammar/drillIt';
-import { recordDrill } from '../data/repositories';
+import { keepDrill } from './keepDrill';
 import { DrillItScreen } from '../DrillItScreen';
 import { FacetLabel } from '../FacetLabel';
 import { PlanDrillScreen } from '../PlanDrillScreen';
@@ -55,7 +55,7 @@ export function DrillPlanCard({ item, picked, onPick }: { item: PlanDrillItem; p
           passage={item.passage}
           onResult={(result) => {
             proveRun.current = result;
-            void recordDrill(result, 'prove').catch((error: unknown) => console.error('could not keep the drill', error));
+            void keepDrill(result, 'prove');
           }}
           onClose={() => {
             setRunning(false);

@@ -2,6 +2,7 @@
 // another screen adds one for 'screen:<route>'. Only the kind or the route is kept, never the event's payload (no verse, word or
 // question). A chapter opened after another is 'chapter-changed', which tells the picker and the chapter buttons from a plain reopen.
 // The summary (summary.ts) reads the rows; tips are offered from it (docs/tips.md).
+import { isClosedDatabase } from '../data/closedDatabase';
 import { recordUsage } from '../data/repositories';
 import { subscribeAll } from '../events/bus';
 import { routeOf } from '../nav/route';
@@ -22,7 +23,7 @@ export async function usageWritesSettled(): Promise<void> {
  * for a newer version), so the write has nowhere to go and the count is only a tally. Any other failure is logged (mw-lcv9z3g.15).
  */
 function keepFailure(error: unknown): void {
-  if (error instanceof Error && error.name === 'DatabaseClosedError') return;
+  if (isClosedDatabase(error)) return;
   console.error('could not keep the usage count', error);
 }
 

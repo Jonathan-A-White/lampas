@@ -2,6 +2,7 @@
 // {kind, id}: kind 'word' with the NFC headword as id, 'grammar' with a ladder idea's id, 'paradigm' with a table's id (mw-svw421.6), 'sound' and 'drill-plan'.
 import { db, type Review } from '../db';
 import { publish } from '../../events/bus';
+import { isClosedDatabase } from '../closedDatabase';
 import { PLAN_KIND, parseRowId } from '../grammar/drillPlan';
 import { IDEA_KIND } from '../grammar/ladder';
 import { ideaOfAny } from '../grammar/ladders';
@@ -53,7 +54,7 @@ export async function announceDue(now = Date.now()): Promise<void> {
   try {
     publish({ kind: 'review-due-changed', due: await countDue(now) });
   } catch (error) {
-    console.error('could not count the reviews due', error);
+    if (!isClosedDatabase(error)) console.error('could not count the reviews due', error);
   }
 }
 
