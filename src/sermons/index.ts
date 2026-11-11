@@ -152,9 +152,19 @@ export interface Latest {
 const SOURCES_KEPT_MS = 5 * 60 * 1000;
 let listed: { at: number; asked: Promise<void> } | undefined;
 
+/** What the service gave for a chapter: its rows and the ids of the sources they were asked for. */
+interface ServiceRows {
+  rows: ServiceSermon[];
+  sources: string[];
+}
+
+/** The service's rows of a chapter (and whether the ask failed), by chapter and the sources asked: see askServiceRows. */
+const rowsKept = new Map<string, { at: number; failed: boolean; asked: Promise<ServiceRows | undefined> }>();
+
 /** Forgets that the list of the service's sources was asked for (a test starts over). */
 export const forgetServiceSources = (): void => {
   listed = undefined;
+  rowsKept.clear();
 };
 
 /**
@@ -181,29 +191,53 @@ function noteServiceSources(): Promise<void> {
 /** The osis-style address of the chapter the place is in: the service takes Lampas's own book codes. */
 const chapterRef = (place: SermonPlace): string => `${place.book}.${place.chapter}`;
 
-/**
- * The newest rows (docs/sermons.md 'When online'): the service is asked for the place's chapter with the sources that are On (the bundled ones and the service's own) and its rows are merged into the bundled `found`
- * (merge.ts: the service's row wins by source and id). A source the service lists that the bundle lacks is kept the first time it is seen, and if it turns out to be On at once (`on_by_default`) it is asked for too.
- * `undefined` when there is no service or no source is On; throws when the service does not answer (2 seconds, services/sermons.ts), so the sheet can say 'Offline'.
- */
-export async function latestFor(place: SermonPlace, found: SermonsFound): Promise<Latest | undefined> {
-  if (!sermonsServiceKnown()) return undefined;
+/** How long the service's rows of a chapter are kept, and how long a failed ask is remembered, so that moving between verses of a chapter asks nothing again (mw-qtu3zvz.63). */
+const ROWS_KEPT_MS = 5 * 60 * 1000;
+const FAILURE_KEPT_MS = 30 * 1000;
+
+/** Asks the service for the rows of the place's chapter in the sources that are On: `undefined` where there is nothing to ask; throws when the service does not answer. */
+async function askServiceRows(place: SermonPlace): Promise<ServiceRows | undefined> {
   await loadKnownSermonSources();
   const bundled = (await enabledSources()).map((source) => source.id);
   const own = (await enabledServiceSources()).map((source) => source.id);
   const asked = [...bundled, ...own];
   if (asked.length === 0) return undefined;
   const ref = chapterRef(place);
-  const [answer] = await Promise.all([fetchSermons(ref, asked, 200), noteServiceSources().catch(() => undefined)]);
-  let rows: ServiceSermon[] = answer.rows;
-  // a source first seen just now that is On at once: its rows come in a second call
-  const after = (await enabledServiceSources()).map((source) => source.id).filter((id) => !asked.includes(id));
-  if (after.length > 0) {
-    try {
-      rows = [...rows, ...(await fetchSermons(ref, after, 200)).rows];
-    } catch (error) {
-      console.warn(`could not read the new sermon sources: ${error instanceof Error ? error.message : String(error)}`);
+  const key = `${ref}|${asked.join(',')}`;
+  const kept = rowsKept.get(key);
+  if (kept && Date.now() - kept.at < (kept.failed ? FAILURE_KEPT_MS : ROWS_KEPT_MS)) return kept.asked;
+  const work = (async (): Promise<ServiceRows> => {
+    const [answer] = await Promise.all([fetchSermons(ref, asked, 200), noteServiceSources().catch(() => undefined)]);
+    let rows: ServiceSermon[] = answer.rows;
+    // a source first seen just now that is On at once: its rows come in a second call
+    const after = (await enabledServiceSources()).map((source) => source.id).filter((id) => !asked.includes(id));
+    if (after.length > 0) {
+      try {
+        rows = [...rows, ...(await fetchSermons(ref, after, 200)).rows];
+      } catch (error) {
+        console.warn(`could not read the new sermon sources: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
-  }
-  return mergeServiceRows(found, rows, { place, sources: [...asked, ...after] });
+    return { rows, sources: [...asked, ...after] };
+  })();
+  const entry = { at: Date.now(), failed: false, asked: work };
+  rowsKept.set(key, entry);
+  work.catch(() => {
+    entry.failed = true;
+    entry.at = Date.now();
+  });
+  return work;
+}
+
+/**
+ * The newest rows (docs/sermons.md 'When online'): the service is asked for the place's chapter with the sources that are On (the bundled ones and the service's own) and its rows are merged into the bundled `found`
+ * (merge.ts: the service's row wins by source and id). A source the service lists that the bundle lacks is kept the first time it is seen, and if it turns out to be On at once (`on_by_default`) it is asked for too.
+ * One ask a chapter (mw-qtu3zvz.63): the door and the sheet, and every verse of the chapter, share the rows kept for five minutes (a failed ask for thirty seconds); a source switched On or Off asks again.
+ * `undefined` when there is no service or no source is On; throws when the service does not answer (2 seconds, services/sermons.ts), so the sheet can say 'Offline'.
+ */
+export async function latestFor(place: SermonPlace, found: SermonsFound): Promise<Latest | undefined> {
+  if (!sermonsServiceKnown()) return undefined;
+  const given = await askServiceRows(place);
+  if (!given) return undefined;
+  return mergeServiceRows(found, given.rows, { place, sources: given.sources });
 }

@@ -82,6 +82,16 @@ export function useLatest(place: SermonPlace | null, found: SermonsFound | undef
   return state && state.found === found && state.switches === switches ? state.answer : { status: 'asking' };
 }
 
+/**
+ * The sermons of a place as the door counts them (mw-qtu3zvz.63): the bundled rows, and once the service has answered for the chapter its rows merged in (a sermon in both counts once). Where the service is unknown, offline,
+ * failing or slow the bundled rows stand and nothing is shown of it. The ask is kept a chapter, so every verse of it and the sheet share one.
+ */
+export function useSermonsWithLatest(place: SermonPlace | null): SermonsFound | undefined {
+  const bundled = useSermons(place);
+  const latest = useLatest(place, bundled);
+  return latest.status === 'latest' ? latest.found : bundled;
+}
+
 /** How long the search field waits after the last key before it asks. */
 export const SEARCH_DEBOUNCE_MS = 300;
 
