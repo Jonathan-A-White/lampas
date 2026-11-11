@@ -4,6 +4,7 @@
 // Hold to say it steps aside for 'Say it instead', nothing covers the box (the ? goes to the foot, beside Check) and no empty band stands between the last control and the keyboard.
 // The keyboard is the window losing its height (index.html interactive-widget=resizes-content), as tests/e2e/talk-composer-keyboard.spec.ts does it. Greek and Hebrew on a gaps step, at the Text size 160 too.
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { rowsAtLevels } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -43,7 +44,7 @@ const CASES: Case[] = [
 /** Puts the verse on the schedule at `step`, due, the dials and keyboards On and the Text size, as Memorize and Settings write them. */
 async function seed(page: Page, c: Case): Promise<void> {
   await page.evaluate(
-    ({ ref, lang, step, textSize }) =>
+    ({ ref, lang, step, textSize, dials }) =>
       new Promise<void>((resolve, reject) => {
         const open = indexedDB.open('lampas');
         open.onerror = () => reject(open.error);
@@ -52,7 +53,7 @@ async function seed(page: Page, c: Case): Promise<void> {
           const tx = db.transaction(['reviews', 'settings'], 'readwrite');
           const now = Date.now();
           tx.objectStore('reviews').put({ kind: 'verse', id: `${lang}:${ref}`, step, due: now - 1000, lastWhen: now - 86_400_000, lapses: 0, rights: 0 });
-          for (const [key, value] of Object.entries({ greekInterest: '5', hebrewInterest: '5', greekKeyboard: 'on', hebrewKeyboard: 'on', textSize: String(textSize) })) {
+          for (const { key, value } of [...dials, ...Object.entries({ greekKeyboard: 'on', hebrewKeyboard: 'on', textSize: String(textSize) }).map(([key, value]) => ({ key, value }))]) {
             tx.objectStore('settings').put({ key, value });
           }
           tx.oncomplete = () => {
@@ -62,7 +63,7 @@ async function seed(page: Page, c: Case): Promise<void> {
           tx.onerror = () => reject(tx.error);
         };
       }),
-    { ref: c.ref, lang: c.lang, step: c.step, textSize: c.textSize },
+    { ref: c.ref, lang: c.lang, step: c.step, textSize: c.textSize, dials: rowsAtLevels({ greek: 5, hebrew: 5 }) },
   );
 }
 

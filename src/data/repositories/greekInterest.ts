@@ -29,6 +29,7 @@ import { languagesOf, type InterestLang, type InterestLevel, type InterestLevels
 import { getSetting, setSetting } from '../../settings/store';
 import { BOOK_INDEX } from '../bookIndex';
 import { parseGoal } from '../goal';
+import { BRINGS, broughtUpTo } from './greekBrings';
 import { normaliseNewWordsADay } from '../pace';
 import { getNewWordsADay, getReaderView, getWeave, setGoal, setNewWordsADay, setQuizGoal, setReaderView, setWeave } from './settings';
 
@@ -96,12 +97,8 @@ const MANAGED: readonly Managed[] = [
   },
 ];
 
-/** What each step brings in, to its starting values, on the way up (the epic mw-3ased2: the level table). */
-const BRINGS: Readonly<Partial<Record<GreekLevel, Readonly<Record<string, string>>>>> = {
-  2: { weave: 'solid' },
-  3: { newWordsADay: '3' },
-  4: { readerView: 'greek', weaveOrder: 'greek', newWordsADay: '5' },
-};
+// BRINGS, the level table, and broughtUpTo live in greekBrings.ts (no imports, so an e2e spec can load them); both are exported from here too.
+export { BRINGS, broughtUpTo };
 
 /** Writes a starting value by its key: a managed setting, or the Weave's order (which the dial brings but never turns off). */
 async function bring(key: string, value: string): Promise<void> {

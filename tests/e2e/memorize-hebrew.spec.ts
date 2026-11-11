@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { clips, honestMic, honestSpeech } from '../support/honest-fakes';
 import { holdFor } from '../support/hold';
+import { rowsAtLevels } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -20,7 +21,7 @@ const SAID = WORDS.map((w) => w.normalize('NFD').replace(/\p{M}/gu, '')).join(' 
 /** Puts the verse on the schedule in Hebrew at `step`, due, and the Hebrew setting at All in (and the keyboard as asked), as Memorize and Settings write them. */
 async function seed(page: Page, step: number, keyboard: 'on' | 'off'): Promise<void> {
   await page.evaluate(
-    ({ ref, step, keyboard }) =>
+    ({ ref, step, keyboard, dials }) =>
       new Promise<void>((resolve, reject) => {
         const open = indexedDB.open('lampas');
         open.onerror = () => reject(open.error);
@@ -29,7 +30,7 @@ async function seed(page: Page, step: number, keyboard: 'on' | 'off'): Promise<v
           const tx = db.transaction(['reviews', 'settings'], 'readwrite');
           const now = Date.now();
           tx.objectStore('reviews').put({ kind: 'verse', id: `he:${ref}`, step, due: now - 1000, lastWhen: now - 86_400_000, lapses: 0, rights: 0 });
-          tx.objectStore('settings').put({ key: 'hebrewInterest', value: '5' });
+          for (const row of dials) tx.objectStore('settings').put(row);
           tx.objectStore('settings').put({ key: 'hebrewKeyboard', value: keyboard });
           tx.oncomplete = () => {
             db.close();
@@ -38,7 +39,7 @@ async function seed(page: Page, step: number, keyboard: 'on' | 'off'): Promise<v
           tx.onerror = () => reject(tx.error);
         };
       }),
-    { ref: REF, step, keyboard },
+    { ref: REF, step, keyboard, dials: rowsAtLevels({ hebrew: 5 }) },
   );
 }
 

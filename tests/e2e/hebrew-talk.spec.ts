@@ -3,6 +3,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { putAtLevels } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
@@ -15,26 +16,8 @@ const ANSWER = {
   words: [{ greek: 'דְּבַר־', lemma: 'דָּבָר', note: 'noun, masculine singular construct', language: 'he' }],
 };
 
-/** The Hebrew dial at Curious, as Settings > How much Hebrew? writes it. */
-async function hebrewAtCurious(page: Page): Promise<void> {
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve, reject) => {
-        const open = indexedDB.open('lampas');
-        open.onerror = () => reject(open.error);
-        open.onsuccess = () => {
-          const db = open.result;
-          const tx = db.transaction(['settings'], 'readwrite');
-          tx.objectStore('settings').put({ key: 'hebrewInterest', value: '1' });
-          tx.oncomplete = () => {
-            db.close();
-            resolve();
-          };
-          tx.onerror = () => reject(tx.error);
-        };
-      }),
-  );
-}
+/** The Hebrew dial at Curious, as Settings > How much Hebrew? writes it (with what that step brings: nothing). */
+const hebrewAtCurious = (page: Page): Promise<void> => putAtLevels(page, { hebrew: 1 });
 
 test('The talk about verse 1 on Jonah 1 sends the Hebrew and its words, and draws the answer\'s Hebrew word right to left', async ({ page }) => {
   const fake = makeFakePostern();
