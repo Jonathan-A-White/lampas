@@ -10,7 +10,7 @@ import { buildVerses, smallFileOf } from '../../scripts/verses-build';
 const DATA = 'public/data';
 const chapterFiles = (): { book: string; n: string }[] =>
   readdirSync(DATA, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name !== 'ladder')
+    .filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')
     .flatMap((d) => readdirSync(`${DATA}/${d.name}`).flatMap((f) => (/^\d+\.json$/.test(f) ? [{ book: d.name, n: f.replace('.json', '') }] : [])));
 
 describe('the small file of each chapter\'s English', () => {

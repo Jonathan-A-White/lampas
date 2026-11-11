@@ -30,7 +30,7 @@ const alone = (w: string): string => w.normalize('NFD').replace(/̀/gu, '́').no
 /** Every word of the Lampas data: each word form of every chapter (punctuation dropped) and every lemma of the lexicon. */
 const DATA_WORDS: ReadonlySet<string> = (() => {
   const out = new Set<string>();
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'audio')) {
     for (const file of readdirSync(`public/data/${book.name}`)) {
       const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Partial<Chapter>;
       for (const verse of chapter.verses ?? []) for (const w of verse.g) out.add(alone(w.t.replace(/[^\p{Script=Greek}\p{M}]/gu, '')));

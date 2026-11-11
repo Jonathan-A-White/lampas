@@ -55,7 +55,7 @@ describe('sweep: every chapter in public/data', () => {
     let before = 0;
     let after = 0;
     let verses = 0;
-    for (const book of readdirSync('public/data').filter((b) => statSync(`public/data/${b}`).isDirectory())) {
+    for (const book of readdirSync('public/data').filter((b) => statSync(`public/data/${b}`).isDirectory() && b !== 'audio')) {
       for (const file of readdirSync(`public/data/${book}`)) {
         if (!/^\d+\.json$/.test(file)) continue;
         for (const verse of chapter(`public/data/${book}/${file}`).verses) {

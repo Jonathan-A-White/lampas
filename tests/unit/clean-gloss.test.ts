@@ -81,7 +81,7 @@ describe('every gloss a screen can show', () => {
 
   it("in every chapter file (the word sheet, the teach sheet, the Goal screen, Drill it's examples, what the tutor is sent) is clean", () => {
     const found: Array<[string, string]> = [];
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')) {
       for (const file of readdirSync(`public/data/${book.name}`)) {
         const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
         for (const [strongs, e] of Object.entries(chapter.lex)) found.push([`${book.name}/${file} ${strongs}`, e.g]);

@@ -271,7 +271,7 @@ describe('the build', () => {
 });
 
 describe('the committed data', () => {
-  const books = existsSync('public/data') ? readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && !['ladder'].includes(d.name)) : [];
+  const books = existsSync('public/data') ? readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && !['ladder', 'audio'].includes(d.name)) : [];
   const all: Array<{ ref: string; unit: VariantUnit }> = [];
   const verses = new Map<VariantUnit, Verse>();
   for (const dir of books) {

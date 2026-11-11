@@ -14,7 +14,7 @@ const lexicon = JSON.parse(readFileSync(`${DATA}/lexicon.json`, 'utf8')) as Lemm
 
 function chapters(): Chapter[] {
   const found: Chapter[] = [];
-  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory() && b !== 'ladder')) {
+  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory() && b !== 'ladder' && b !== 'audio')) {
     for (const file of readdirSync(`${DATA}/${book}`)) {
       const json: unknown = JSON.parse(readFileSync(`${DATA}/${book}/${file}`, 'utf8'));
       if (typeof json === 'object' && json !== null && 'verses' in json) found.push(json as Chapter);

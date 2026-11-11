@@ -57,7 +57,7 @@ describe('the example row for ἑωράκαμεν (ὁράω)', () => {
 
 describe('the row gloss of every lemma in the bundled data', () => {
   const DATA = join(process.cwd(), 'public/data');
-  const books = readdirSync(DATA).filter((b) => /^[0-9a-z]+$/.test(b) && b !== 'ladder' && statSync(join(DATA, b)).isDirectory());
+  const books = readdirSync(DATA).filter((b) => /^[0-9a-z]+$/.test(b) && b !== 'ladder' && b !== 'audio' && statSync(join(DATA, b)).isDirectory());
 
   it('is never of the form "X: X", with its own English or with only the dictionary gloss', () => {
     const found: string[] = [];

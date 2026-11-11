@@ -20,7 +20,7 @@ const greekKey = (word: string): string =>
 /** Every lemma of the lexicon and every word the text uses, as greekKey has them. */
 function knownGreek(): Set<string> {
   const known = new Set(Object.keys(lexicon).flatMap((l) => l.split(/,\s*/)).map(greekKey));
-  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory())) {
+  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory() && b !== 'audio')) {
     for (const file of readdirSync(`${DATA}/${book}`)) {
       const chapter = JSON.parse(readFileSync(`${DATA}/${book}/${file}`, 'utf8')) as { verses?: { g: { t: string }[] }[] };
       for (const verse of chapter.verses ?? []) for (const w of verse.g) known.add(greekKey(w.t.replace(/[.,;\u00b7]/g, '')));

@@ -39,7 +39,7 @@ describe('the committed data', () => {
       const list = readJson<Array<{ lemma?: string }> | Record<string, { lemma?: string }>>(`public/data/${file}`);
       for (const e of Array.isArray(list) ? list : Object.values(list)) if (e.lemma?.includes('=')) bad.push(`${file}: ${e.lemma}`);
     }
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'audio')) {
       for (const file of readdirSync(`public/data/${book.name}`).filter((f) => f.endsWith('.json'))) {
         const chapter = readJson<Chapter>(`public/data/${book.name}/${file}`);
         if (!Array.isArray(chapter.verses)) continue; // ladder/ holds other files
