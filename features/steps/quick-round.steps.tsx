@@ -22,14 +22,15 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { storedId } from '../../src/data/grammar/soundScope';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 let synth: FakeSynth;
 
-afterAll(() => {
+afterAll(async () => {
   settle.ms = 0;
   cleanup();
   clearBus();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

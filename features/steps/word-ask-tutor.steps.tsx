@@ -19,12 +19,13 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { openTutor } from './open-tutor';
 import { settingsAtLevels } from './levels';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

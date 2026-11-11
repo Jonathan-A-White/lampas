@@ -26,11 +26,12 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { storedId } from '../../src/data/grammar/soundScope';
 import { expectLatest } from '../../tests/support/published';
 import { findSettingsHeading } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

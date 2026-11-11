@@ -11,11 +11,12 @@ import { InLogosChooser } from '../../src/library/InLogosChooser';
 import { InLogosDoors } from '../../src/library/InLogosDoors';
 import type { CatalogueEntry, Kind } from '../../src/resources/catalogue';
 import type { StudyPlace } from '../../src/resources/types';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

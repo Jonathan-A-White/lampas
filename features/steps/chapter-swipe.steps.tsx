@@ -11,13 +11,14 @@ import { BOOKS } from '../../src/data/books';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   unslow?.();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup({ delay: null });

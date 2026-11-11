@@ -14,6 +14,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech } from '../../tests/support/fake-speech';
 import { openSettings, openTools, findMenuButton, findToolsHeading, findSettingsHeading } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
@@ -34,11 +35,11 @@ async function openReader(logos: boolean): Promise<void> {
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
 }
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const menu = () => screen.queryByRole('menu', { name: 'Menu' });

@@ -29,6 +29,7 @@ import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER } from '../../tests/su
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
+import { closeDatabase } from './close-database';
 
 const jonah1 = JSON.parse(readFileSync('tests/fixtures/data/jon/1.json', 'utf8')) as Chapter;
 const user = userEvent.setup();
@@ -36,13 +37,13 @@ const real = { ...browserEnv };
 let synth: FakeSynth | undefined;
 const PHONE_KEY = '00'.repeat(31) + '02';
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(browserEnv, real);
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();

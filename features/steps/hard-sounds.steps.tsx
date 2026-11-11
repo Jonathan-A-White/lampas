@@ -21,6 +21,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/spoken-word';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const SECTION = 'Hard sounds (optional)';
@@ -28,12 +29,12 @@ const HEADINGS = ['Why it is hard for you', 'Start from a sound you know', 'Hear
 
 let synth: FakeSynth;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopSpeaking();
   chooseAccent(DEFAULT_ACCENT);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Opens the app on the Goal screen with every store emptied, `goal` saved when there is one, `accent` chosen and, with `licensed` false, no licence. */

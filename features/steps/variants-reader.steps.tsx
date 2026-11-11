@@ -14,15 +14,16 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 // jsdom has no scrollIntoView: a row a link opens Settings at scrolls to itself
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const REV3 = JSON.parse(readFileSync('public/data/rev/3.json', 'utf8')) as Chapter;

@@ -14,6 +14,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ensureSettingsGroup, openSettingsGroup, leaveSettings, setEachOnItsOwn } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
 import { settingsAtLevels, type Level } from './levels';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 let unregister: (() => void) | undefined;
@@ -40,12 +41,12 @@ async function waitForReader(): Promise<void> {
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-afterAll(() => {
+afterAll(async () => {
   unregister?.();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const verseEl = (n: number): HTMLElement => {

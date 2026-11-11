@@ -18,13 +18,14 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { findMenuButton, openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

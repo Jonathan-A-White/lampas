@@ -22,13 +22,14 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { LOOKALIKES } from '../../src/handwriting/templates';
 import { WRITERS, drawing, writing } from '../../tests/support/handwriting';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
   letterDrillSeed.next = realSeed;
-  db.close();
+  await closeDatabase();
 });
 
 const realSeed = letterDrillSeed.next;

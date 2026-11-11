@@ -29,6 +29,7 @@ import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
@@ -49,13 +50,13 @@ interface Phone {
 // The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
 const real = { ...browserEnv };
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(browserEnv, real);
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();

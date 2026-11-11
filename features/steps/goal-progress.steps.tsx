@@ -22,11 +22,12 @@ import { markPassed } from '../../src/data/repositories/passageLessons';
 import { parsePassageKey } from '../../src/approaches';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

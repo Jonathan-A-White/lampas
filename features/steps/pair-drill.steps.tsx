@@ -19,6 +19,7 @@ import { stopSpeaking } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/spoken-word';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const tappedR = lessonById('tapped-r')!;
@@ -29,12 +30,12 @@ const pairOf = (word: string): [string, string] => contrast.pairs.find((p) => p.
 
 let synth: FakeSynth;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopSpeaking();
   chooseAccent(DEFAULT_ACCENT);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Opens the app on the contrast step of the lesson `title`, every store emptied and the draw seeded. */

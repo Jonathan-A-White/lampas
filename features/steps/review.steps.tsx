@@ -22,13 +22,13 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../te
 import { asSpoken } from '../../tests/support/lone-word';
 import { drillAnswer } from '../../tests/support/drill-answer';
 import { openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 afterAll(async () => {
   cleanup();
   clearBus();
   // App's cleanup drops the usage log's pending writes; let them land before the file closes the db (mw-5r3p30.86).
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

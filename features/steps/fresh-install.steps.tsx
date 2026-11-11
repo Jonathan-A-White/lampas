@@ -13,10 +13,11 @@ import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { setTermKnown } from '../../src/data/repositories/grammar';
 import { seedHisWords } from '../../tests/support/his-words';
 import { findMenuButton, openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

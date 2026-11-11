@@ -17,16 +17,17 @@ import { registerPronunciation } from '../../src/speech/pronunciation';
 import { MODERN } from '../../src/speech/schemes/modern';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { setEachOnItsOwn } from '../../tests/support/settings-pages';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 let unregister: (() => void) | undefined;
 let modernGrammarSolid: string[] = [];
 
-afterAll(() => {
+afterAll(async () => {
   unregister?.();
   cleanup();
   clearBus();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

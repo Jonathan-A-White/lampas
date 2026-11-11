@@ -34,16 +34,17 @@ import { validate, type Schema } from '../../tests/support/schema-validate';
 import { asSpoken, isOneLetter } from '../../tests/support/lone-word';
 import '../../tests/support/grinds-in-graph';
 import { openTutor } from './open-tutor';
+import { closeDatabase } from './close-database';
 
 let unregisterTestish: (() => void) | undefined;
 
-afterAll(() => {
+afterAll(async () => {
   unregisterTestish?.();
   chooseAccent(DEFAULT_ACCENT);
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

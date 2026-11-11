@@ -13,8 +13,9 @@ import { LEXICONS } from '../../src/resources/logos';
 import { tickedOf } from '../../src/resources';
 import { logos } from '../../src/resources/logos';
 import { WORKS } from '../../src/resources/works';
+import { closeDatabase } from './close-database';
 
-afterAll(() => db.close());
+afterAll(closeDatabase);
 
 const list = (text: string): string[] => text.split(',').map((s) => s.trim());
 const lexicon = (id: string): string => LEXICONS.find((l) => l.id === id)?.resource ?? `no lexicon ${id}`;

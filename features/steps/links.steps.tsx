@@ -14,13 +14,14 @@ import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
   unshare();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

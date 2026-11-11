@@ -25,17 +25,18 @@ import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { HOLDER, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
+import { closeDatabase } from './close-database';
 
 const realSeam = { ...imageSeam };
 
-afterAll(() => {
+afterAll(async () => {
   setVisibility('visible');
   vi.useRealTimers();
   cleanup();
   clearBus();
   Object.assign(imageSeam, realSeam);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

@@ -18,15 +18,16 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { ASYNC_WAIT_MS } from '../../tests/support/timeouts';
+import { closeDatabase } from './close-database';
 
 const realSeam = { ...imageSeam };
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   Object.assign(imageSeam, realSeam);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

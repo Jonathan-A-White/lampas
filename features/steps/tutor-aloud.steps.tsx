@@ -25,16 +25,17 @@ import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
 if (!verse28) throw new Error('no verse 28');
 const ENGLISH_28 = verse28.e.map((c) => c.t.trim()).join(' ');
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

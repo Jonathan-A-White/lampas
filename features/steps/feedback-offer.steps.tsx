@@ -20,16 +20,17 @@ import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import '../../tests/support/grinds-in-graph';
 import { openTutor } from './open-tutor';
+import { closeDatabase } from './close-database';
 
 const realSeam = { ...imageSeam };
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(imageSeam, realSeam);
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

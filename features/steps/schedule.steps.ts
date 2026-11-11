@@ -6,8 +6,9 @@ import { db, type Word } from '../../src/data/db';
 import { recordAnswer } from '../../src/data/repositories/results';
 import { seedScheduleIfFirstOpen } from '../../src/data/repositories/reviews';
 import { DAY } from '../../src/data/schedule';
+import { closeDatabase } from './close-database';
 
-afterAll(() => db.close());
+afterAll(closeDatabase);
 
 /** Day 0 of every scenario. */
 const DAY0 = Date.UTC(2026, 9, 8, 9, 0, 0);

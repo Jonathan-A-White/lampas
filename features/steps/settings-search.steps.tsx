@@ -11,17 +11,18 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
 // jsdom draws no layout and has no scrollIntoView: a found setting's page scrolls to its row
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 async function openSettingsPage(seed: Record<string, string> = {}): Promise<void> {

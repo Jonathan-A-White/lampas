@@ -21,6 +21,7 @@ import { findButton } from '../../tests/support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTutor } from './open-tutor';
+import { closeDatabase } from './close-database';
 
 // The App writes on its own after a tap (the usage count) and at its first open (the grammar ideas seeding); db.close() with one of them in flight is a DatabaseClosedError.
 afterAll(async () => {
@@ -28,7 +29,7 @@ afterAll(async () => {
   stopReading();
   await usageWritesSettled();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

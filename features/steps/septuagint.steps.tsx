@@ -20,13 +20,13 @@ import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
-import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { asSpoken } from '../../tests/support/lone-word';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { closeDatabase } from './close-database';
 
 const GENESIS_GREEK_DIAGRAM = (JSON.parse(readFileSync('tests/fixtures/diagrams/gen-1-1-septuagint.json', 'utf8')) as { diagram: unknown }).diagram;
 const user = userEvent.setup();
@@ -39,8 +39,7 @@ afterAll(async () => {
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
 });
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();

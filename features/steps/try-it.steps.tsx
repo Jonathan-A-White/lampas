@@ -17,6 +17,7 @@ import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/spoken-word';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const AT = { clientX: 100, clientY: 700 };
@@ -37,13 +38,13 @@ let fetched: string[] = [];
 /** How many requests had been made when he began to hold. */
 let fetchedBefore = 0;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopSpeaking();
   chooseAccent(DEFAULT_ACCENT);
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const bytesOf = (blob: Blob): Promise<number[]> =>

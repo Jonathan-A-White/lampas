@@ -23,12 +23,13 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../te
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

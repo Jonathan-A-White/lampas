@@ -21,14 +21,15 @@ import { ENGLISH_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages';
 import { getMenuButton, openSettings, queryMenuButton } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   // the Reader's unmount set a leave-full-screen timer: it must not fire after jsdom is torn down
   resetImmersive();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

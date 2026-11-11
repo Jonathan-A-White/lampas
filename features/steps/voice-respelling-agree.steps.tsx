@@ -15,16 +15,17 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 let synth: FakeSynth;
 
-afterAll(() => {
+afterAll(async () => {
   stopSpeaking();
   stopReading();
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Opens the app straight on 1 Thessalonians 5 in Greek (the address names the place, so no hop from Romans 8), with both voices and the stores emptied. */

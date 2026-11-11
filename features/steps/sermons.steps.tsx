@@ -16,15 +16,16 @@ import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter
 import { forgetTestMaps, registerTestMaps, TEST_CARDS, testSource as testMapSource } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   closeSermons();
   forgetTestSermons();
   forgetTestThemes();
   forgetTestMaps();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

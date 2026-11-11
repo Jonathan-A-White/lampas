@@ -25,6 +25,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -77,13 +78,13 @@ function heardOf(upTo?: { spoken: number; clips: number }): string[] {
   return out;
 }
 
-afterAll(() => {
+afterAll(async () => {
   stopSpeaking();
   stopReading();
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Speech with both voices (or only `voices`) and an audio element, nothing heard yet. */

@@ -16,6 +16,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings, querySettingsHeading } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const fileOf = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;
 const CHAPTERS: Record<string, Chapter> = { 'rom/8': fileOf('rom/8'), 'rom/9': fileOf('rom/9'), 'rev/22': fileOf('rev/22'), '2jn/1': fileOf('2jn/1'), '3jn/1': fileOf('3jn/1') };
@@ -48,12 +49,12 @@ async function openWith(): Promise<void> {
   subscribe('verse-reading', (e) => read.push(e.verse));
 }
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
   localStorage.clear();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

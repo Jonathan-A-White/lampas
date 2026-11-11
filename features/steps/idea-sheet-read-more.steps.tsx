@@ -14,18 +14,19 @@ import { CATALOGUE } from '../../src/resources/catalogue';
 import { browserEnv } from '../../src/resources/openApp';
 import type { GrammarBook } from '../../src/resources/types';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
 const real = { ...browserEnv };
 browserEnv.after = () => () => {};
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(browserEnv, real);
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Seven books of the test's own, each teaching The noun in one section. */

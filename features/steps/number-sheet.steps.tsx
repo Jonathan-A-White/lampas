@@ -9,11 +9,12 @@ import { db } from '../../src/data/db';
 import { putAtLevels } from './levels';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { unstubRangeRects } from '../../tests/support/fake-layout';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

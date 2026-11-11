@@ -16,12 +16,13 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, HOLDER_PUB, ISSUER_PUB, newChain, SITE_ISSUER, SITE_ISSUER_PUB } from '../../tests/support/licence-chain';
 import { statusLine } from '../../tests/support/status';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

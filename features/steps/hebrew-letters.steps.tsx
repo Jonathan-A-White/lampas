@@ -29,17 +29,18 @@ import { WRITERS, onPad, writing, type Pad } from '../../tests/support/handwriti
 import { WriteIt } from '../../src/handwriting/WriteIt';
 import { ideaOfAny } from '../../src/data/grammar/ladders';
 import { frameOfPad } from '../../src/handwriting/padFrame';
+import { closeDatabase } from './close-database';
 
 const realLetterSeed = letterDrillSeed.next;
 const realDrillSeed = drillSeed.next;
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   stopReading();
   vi.unstubAllGlobals();
   letterDrillSeed.next = realLetterSeed;
   drillSeed.next = realDrillSeed;
-  db.close();
+  await closeDatabase();
 });
 
 const SEED = 7;

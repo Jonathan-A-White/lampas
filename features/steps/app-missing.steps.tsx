@@ -12,6 +12,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 // No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
 vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
@@ -28,12 +29,12 @@ let opened: string[] = [];
 // The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
 const real = { ...browserEnv };
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(browserEnv, real);
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const waitForReader = async (): Promise<void> => {

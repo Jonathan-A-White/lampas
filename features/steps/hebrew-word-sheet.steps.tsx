@@ -18,16 +18,17 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { clickWordOf, unstubRangeRects } from '../../tests/support/fake-layout';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 let synth: FakeSynth | undefined;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();

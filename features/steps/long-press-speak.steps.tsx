@@ -20,6 +20,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
@@ -56,12 +57,12 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBe(63));
 }
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   Reflect.deleteProperty(navigator, 'vibrate');
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

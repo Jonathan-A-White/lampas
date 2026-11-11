@@ -17,6 +17,7 @@ import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { hearing, type Hearing } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
 import { drillAnswer } from '../../tests/support/drill-answer';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -26,10 +27,10 @@ let audio: FakeAudio;
 /** the word of the question as he hears it: its first word is ὁ, handed to the voice doubled (mw-5r3p30.421) */
 let heard: Hearing;
 
-afterAll(() => {
+afterAll(async () => {
   stopSpeaking();
   cleanup();
-  db.close();
+  await closeDatabase();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });

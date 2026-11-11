@@ -20,14 +20,15 @@ import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
 import { seedHisWords } from '../../tests/support/his-words';
 import { settle, SETTLE_MS } from '../../src/ui/settle';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   settle.ms = 0;
   vi.restoreAllMocks();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

@@ -12,10 +12,11 @@ import { db } from '../../src/data/db';
 import { mulberry32 } from '../../src/data/quiz';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

@@ -22,16 +22,17 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { stubRecorder } from '../../tests/support/fake-recorder';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, stubSpeech } from '../../tests/support/fake-speech';
+import { closeDatabase } from './close-database';
 
 const LAST_WHEN = 1_700_000_000_000;
 const REF = 'Jonah.1.1';
 const user = userEvent.setup();
 
-afterAll(() => {
+afterAll(async () => {
   stopReading();
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Each step is a test of its own, so a scenario starts in its first Given. */

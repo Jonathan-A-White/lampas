@@ -20,15 +20,16 @@ import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../te
 import { asSpoken } from '../../tests/support/lone-word';
 import '../../tests/support/grinds-in-graph';
 import { openTutor } from './open-tutor';
+import { closeDatabase } from './close-database';
 
 const realSeam = { ...imageSeam };
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   Object.assign(imageSeam, realSeam);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();
@@ -307,7 +308,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('Lampas is closed and opened again on the same talk', async () => {
       cleanup();
       stopReading();
-      db.close();
+      await closeDatabase();
       await db.open();
       render(<App />);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

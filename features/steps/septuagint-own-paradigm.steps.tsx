@@ -14,9 +14,9 @@ import { forgetDrills } from '../../src/data/paradigms/drill';
 import { forgetLemmaForms } from '../../src/data/paradigms/ownForms';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 /** What Genesis 1:2 of Swete's Septuagint holds of ἀόρατος (the lemma file's `lxx` list): the feminine nominative singular, twice. */
@@ -32,8 +32,7 @@ beforeAll(() => {
 afterAll(async () => {
   cleanup();
   clearBus();
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

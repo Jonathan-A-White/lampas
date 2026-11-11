@@ -10,6 +10,7 @@ import { App } from '../../src/App';
 import { type Chapter, type EnglishChunk, type Verse, wordGloss, wordParse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseData = (n: number): Verse => {
@@ -18,10 +19,10 @@ const verseData = (n: number): Verse => {
   return v;
 };
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

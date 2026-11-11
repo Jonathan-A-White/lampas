@@ -29,6 +29,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 /** The seed the Check draws its questions from (src/data/grammar/drillSeed.ts), so a step knows them. */
 const CHECK_SEED = 1;
@@ -43,7 +44,7 @@ afterAll(async () => {
   stopReading();
   clearBus();
   drillSeed.next = realSeed;
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

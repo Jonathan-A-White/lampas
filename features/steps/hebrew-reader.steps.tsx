@@ -19,18 +19,19 @@ import { stripCantillation } from '../../src/speech/schemes/hebrew-israeli';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
+import { closeDatabase } from './close-database';
 
 const genesis1 = JSON.parse(readFileSync('tests/fixtures/data/gen/1.json', 'utf8')) as Chapter;
 const user = userEvent.setup();
 let synth: FakeSynth | undefined;
 let copied: string[] = [];
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();

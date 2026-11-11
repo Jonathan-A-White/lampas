@@ -15,6 +15,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ISSUER_PUB } from '../../tests/support/licence-chain';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
@@ -29,12 +30,12 @@ let stamps: number[] = [];
 // The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
 const real = { ...browserEnv };
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(browserEnv, real);
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 async function openWith(settings: Record<string, string>, { licence }: { licence: boolean } = { licence: true }): Promise<void> {

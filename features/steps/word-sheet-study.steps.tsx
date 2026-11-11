@@ -14,14 +14,15 @@ import { dropHeldWord } from '../../src/wordReturn';
 import { LEXICONS } from '../../src/resources/logos';
 import { resourceLink } from '../../src/resources/logosRes';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Logos on, `on` of its lexicons On (the first ones) and the last `pinned` of those Pinned, so the pinned ones are not the first in the catalogue's order. */

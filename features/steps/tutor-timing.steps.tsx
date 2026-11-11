@@ -6,17 +6,17 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { About } from '../../src/About';
-import { db } from '../../src/data/db';
 import { answerDrawn, LAST_ANSWER_KEY } from '../../src/services/clientTiming';
 import { askGrind, tutorTimings, TutorError } from '../../src/services/tutor';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   for (const a of asks ?? []) a.abort();
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const PHONE_KEY = '00'.repeat(31) + '02';

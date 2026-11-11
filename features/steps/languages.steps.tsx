@@ -23,17 +23,18 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openTutor } from './open-tutor';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
 // jsdom draws no layout and has no scrollIntoView
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 async function openOnNewPhone(): Promise<void> {

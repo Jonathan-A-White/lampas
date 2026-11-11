@@ -22,6 +22,7 @@ import { fixturePath } from '../../tests/support/fixture-path';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings, openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
@@ -29,12 +30,12 @@ const user = userEvent.setup();
 const real = { ...browserEnv };
 browserEnv.after = () => () => {};
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(browserEnv, real);
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Four books of the test's own, each teaching The noun in one section. */

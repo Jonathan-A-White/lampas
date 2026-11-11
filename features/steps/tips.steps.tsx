@@ -17,12 +17,13 @@ import { TIPS_DAY_KEY } from '../../src/tips/offer';
 import { TipsSitting } from '../../src/tips/TipsSitting';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TIP_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

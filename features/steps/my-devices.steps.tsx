@@ -13,18 +13,17 @@ import { clearBus } from '../../src/events/bus';
 import { LicenceProvider } from '../../src/gate/LicenceProvider';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
-import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, HOLDER_PUB, ISSUER, ISSUER_PUB, newChain, SITE_ISSUER, SITE_ISSUER_PUB } from '../../tests/support/licence-chain';
 import { statusLine } from '../../tests/support/status';
+import { closeDatabase } from './close-database';
 
 afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

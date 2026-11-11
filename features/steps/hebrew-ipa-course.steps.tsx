@@ -24,6 +24,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { GROUPS } from '../../src/settings/rows';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const SEED = 5;
@@ -36,12 +37,12 @@ Element.prototype.scrollIntoView = function () {};
 
 let synth: FakeSynth;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopSpeaking();
   chooseAccent('american');
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Opens the app on the Goal screen with Greek and Hebrew voices, every store emptied, and his Hebrew dial at `dial`. */

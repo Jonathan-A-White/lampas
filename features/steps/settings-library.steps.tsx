@@ -15,13 +15,14 @@ import { libraryOf } from '../../src/nav/route';
 import { CATALOGUE } from '../../src/resources/catalogue';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 // jsdom has no scrollIntoView: a row a link opens Settings at scrolls to itself

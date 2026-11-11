@@ -24,6 +24,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../te
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/spoken-word';
 import { GROUPS } from '../../src/settings/rows';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const SEED = 5;
@@ -33,12 +34,12 @@ const COURSE_LINE = 'You do not need this for Lampas or for reading Greek. It is
 
 let synth: FakeSynth;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopSpeaking();
   chooseAccent('american');
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Opens the app on `hash` with a Greek voice, every store emptied, and `goal` saved when there is one. */

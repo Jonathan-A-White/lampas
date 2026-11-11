@@ -13,6 +13,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../../tests/support/fake-speech';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
+import { closeDatabase } from './close-database';
 
 const ADDRESS: Record<string, { hash: string; title: string }> = {
   About: { hash: '#/about', title: 'About' },
@@ -54,11 +55,11 @@ beforeAll(async () => {
   await import('../../src/essay/robinson.json');
 }, HOOK_TIMEOUT_MS);
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

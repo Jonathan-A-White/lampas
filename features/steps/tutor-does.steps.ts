@@ -21,14 +21,15 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type Reply } from '.
 import { seedHisWords } from '../../tests/support/his-words';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { openTutor } from './open-tutor';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   watcher?.disconnect();
   vi.restoreAllMocks();
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

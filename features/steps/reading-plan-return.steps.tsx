@@ -18,14 +18,15 @@ import { readingPlanSetting } from '../../src/settings/definitions/readingPlan';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   setVisibility('visible');
   vi.useRealTimers();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

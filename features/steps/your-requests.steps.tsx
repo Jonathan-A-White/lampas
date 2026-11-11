@@ -18,6 +18,7 @@ import { requestTimings } from '../../src/services/requestStatus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { findSettingsHeading } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
@@ -29,11 +30,11 @@ let fake: FakePostern;
 let txids = new Map<string, string>();
 let clock = 0;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const txidOf = (summary: string): string => `direct:${Array.from(summary, (c) => c.charCodeAt(0).toString(16).padStart(2, '0')).join('').padEnd(64, '0').slice(0, 64)}`;

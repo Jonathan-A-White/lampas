@@ -28,17 +28,18 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTutor } from './open-tutor';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 let fake: FakePostern;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const credit = () => document.querySelector<HTMLElement>('[data-approach-credit]');

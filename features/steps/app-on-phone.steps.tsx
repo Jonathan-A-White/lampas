@@ -13,6 +13,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 // No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
 vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
@@ -33,14 +34,14 @@ const recordClick = (e: MouseEvent): void => {
   }
 };
 
-afterAll(() => {
+afterAll(async () => {
   document.removeEventListener('click', recordClick, true);
   openSpy?.mockRestore();
   vi.useRealTimers();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 async function openSettingsPage(agent: string, ons: string[] = []): Promise<void> {

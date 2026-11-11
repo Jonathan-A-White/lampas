@@ -24,6 +24,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } 
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
 import { settingsAtLevels } from './levels';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -31,11 +32,11 @@ if (!verse28) throw new Error('no verse 28');
 const greekOf28 = verse28.g.map((w) => w.t).join(' ');
 const englishOf28 = verse28.e.map(markSupplied).join(' ');
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

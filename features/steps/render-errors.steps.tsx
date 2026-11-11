@@ -10,11 +10,12 @@ import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

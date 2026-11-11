@@ -18,14 +18,15 @@ import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { BOOKS } from '../../src/data/books';
 import { openTutor } from './open-tutor';
 import { openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
   setOnLine(true);
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

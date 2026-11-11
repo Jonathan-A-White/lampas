@@ -16,6 +16,7 @@ import { stopSpeaking } from '../../src/speech/greek';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
@@ -23,10 +24,10 @@ const rom8 = readFileSync('public/data/rom/8.json', 'utf8');
 let synth: FakeSynth;
 let noted: string[] = [];
 
-afterAll(() => {
+afterAll(async () => {
   stopSpeaking();
   cleanup();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

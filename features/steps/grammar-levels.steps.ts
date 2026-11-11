@@ -6,8 +6,9 @@ import { db } from '../../src/data/db';
 import { DAY } from '../../src/data/schedule';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { getLevel, recordGrammarAnswer, scheduleIdea, seedLevelsIfFirstOpen, setLevel } from '../../src/data/repositories/grammarLevels';
+import { closeDatabase } from './close-database';
 
-afterAll(() => db.close());
+afterAll(closeDatabase);
 
 const DAY0 = Date.UTC(2026, 9, 8, 9, 0, 0);
 const day = (n: number) => DAY0 + n * DAY;

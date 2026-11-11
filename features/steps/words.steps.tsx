@@ -11,10 +11,11 @@ import { normaliseLemma, type NormalisedLemma } from '../../src/data/lemma';
 import { SEED_WORDS } from '../../src/data/seed-words';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

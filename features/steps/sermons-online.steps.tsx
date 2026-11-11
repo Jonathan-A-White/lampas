@@ -23,10 +23,11 @@ import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-t
 import api from '../../tests/fixtures/sermons/api-rom-5-8.json';
 import apiSources from '../../tests/fixtures/sermons/api-sources.json';
 import apiDirect from '../../tests/fixtures/sermons/api-direct-theme.json';
+import { closeDatabase } from './close-database';
 
 const BASE = 'https://sermons.test';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   closeSermons();
   forgetTestSermons();
@@ -34,7 +35,7 @@ afterAll(() => {
   forgetTestMaps();
   setSermonsUrl(undefined);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 // jsdom has no scrollIntoView: a row a link opens Settings at scrolls to itself

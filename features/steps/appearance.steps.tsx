@@ -17,6 +17,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/fake-speech';
 import { ensureSettingsGroup, openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const GREEK: FakeVoice = { lang: 'el-GR', name: 'Greek (Greece)' };
 const ENGLISH: FakeVoice = { lang: 'en-US', name: 'English (US)' };
@@ -81,12 +82,12 @@ function slowSettingsReads(ms: number): void {
     get(key).then((row) => new Dexie.Promise((resolve) => setTimeout(() => resolve(row), ms)))) as unknown as typeof db.settings.get);
 }
 
-afterAll(() => {
+afterAll(async () => {
   vi.restoreAllMocks();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 async function openSettingsPage(): Promise<void> {

@@ -19,6 +19,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings, onSettingsPage, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings, openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 // Each step renders the whole App and several take 5-7 s alone; a loaded host (a full-suite run) outruns the 20 s default.
 vi.setConfig({ testTimeout: 90_000 });
@@ -26,10 +27,10 @@ vi.setConfig({ testTimeout: 90_000 });
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse1: Verse = chapter.verses[0];
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

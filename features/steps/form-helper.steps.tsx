@@ -13,18 +13,19 @@ import { tutorTimings } from '../../src/services/tutor';
 import { AskForBook } from '../../src/library/AskForBook';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const realSeam = { ...imageSeam };
 let fake: FakePostern;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   Object.assign(imageSeam, realSeam);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const START = 'Let the tutor do it';

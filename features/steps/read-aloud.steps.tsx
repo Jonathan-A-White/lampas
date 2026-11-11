@@ -19,6 +19,7 @@ import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { queryStatusLine, statusLine } from '../../tests/support/status';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
@@ -63,12 +64,12 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   subscribe('verse-reading', (e) => read.push(e.verse));
 }
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
   delete (navigator as unknown as { wakeLock?: unknown }).wakeLock;
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

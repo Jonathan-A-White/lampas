@@ -14,6 +14,7 @@ import { MAX_PICTURES } from '../../src/services/feedback';
 import { tutorTimings } from '../../src/services/tutor';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
@@ -21,12 +22,12 @@ const realSeam = { ...imageSeam };
 let fake: FakePostern;
 let picture = 0;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   Object.assign(imageSeam, realSeam);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const APPROACH = 'Teach the cases with colours, one at a time.';

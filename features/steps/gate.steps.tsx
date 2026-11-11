@@ -7,18 +7,18 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import type { licence } from 'bsv-kit/bsv';
 import { App } from '../../src/App';
-import { db } from '../../src/data/db';
 import { Gate } from '../../src/gate/Gate';
 import { qrPath } from '../../src/gate/qr';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { addMint, addRevoke, HOLDER, HOLDER_PUB, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

@@ -20,15 +20,16 @@ import { validate, type Schema } from '../../tests/support/schema-validate';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import '../../tests/support/grinds-in-graph';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   closeSermons();
   forgetTestSermons();
   forgetTestThemes();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

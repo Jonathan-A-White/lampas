@@ -22,6 +22,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/spoken-word';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const SECTION = 'Hard sounds (optional)';
@@ -31,13 +32,13 @@ const rolling = lessonById('tapped-r')!;
 let synth: FakeSynth;
 let unregister: (() => void) | undefined;
 
-afterAll(() => {
+afterAll(async () => {
   unregister?.();
   cleanup();
   stopSpeaking();
   chooseAccent(DEFAULT_ACCENT);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Opens the app on the Goal screen with every store emptied, the goal `goal`, the pronunciation `pronunciation` and the accent `accent` chosen. */

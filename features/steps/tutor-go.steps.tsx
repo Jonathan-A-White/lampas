@@ -20,12 +20,13 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { findStatusLine } from '../../tests/support/status';
 import { openTutor } from './open-tutor';
 import { findSettingsHeading } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

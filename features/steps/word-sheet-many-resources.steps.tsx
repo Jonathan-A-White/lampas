@@ -12,14 +12,15 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { setKind, setState } from '../../src/data/repositories';
 import { LEXICONS } from '../../src/resources/logos';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const LONG = ['Lexham Theological Wordbook', 'NASB Dictionaries', 'Intermediate Greek-English Lexicon'];

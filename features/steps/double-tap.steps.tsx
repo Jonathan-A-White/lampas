@@ -17,14 +17,14 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { settle, SETTLE_MS } from '../../src/ui/settle';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 afterAll(async () => {
   settle.ms = 0;
   vi.restoreAllMocks();
   cleanup();
   clearBus();
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

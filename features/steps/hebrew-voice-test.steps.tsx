@@ -17,6 +17,7 @@ import { stubSpeech, type FakeSynth, type FakeVoice } from '../../tests/support/
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const HEBREW = voice('he-IL', 'Hebrew (Israel)');
@@ -46,13 +47,13 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
 }
 
-afterAll(() => {
+afterAll(async () => {
   act(() => stopSpeaking());
   cleanup();
   clearBus();
   setVoice('hebrew', null);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const inUse = () => screen.findByTestId('hebrew-voice-in-use');

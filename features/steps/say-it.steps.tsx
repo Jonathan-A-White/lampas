@@ -23,15 +23,16 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { type StubbedMic, stubMic } from '../../tests/support/fake-mic';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   stopSpeaking();
   vi.unstubAllGlobals();
   letterDrillSeed.next = realSeed;
   Object.defineProperty(window.navigator, 'permissions', { configurable: true, value: undefined });
-  db.close();
+  await closeDatabase();
 });
 
 const realSeed = letterDrillSeed.next;

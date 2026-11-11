@@ -16,11 +16,12 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
+import { closeDatabase } from './close-database';
 
 // jsdom has no scrollIntoView: a row a link opens Settings at scrolls to itself
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   closeSermons();
   forgetTestSermons();
@@ -28,7 +29,7 @@ afterAll(() => {
   forgetTestMaps();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

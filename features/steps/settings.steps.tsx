@@ -15,6 +15,7 @@ import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
 import { ensureSettingsGroup, leaveSettings, setEachOnItsOwn } from '../../tests/support/settings-pages';
 import { openSettings, querySettingsHeading } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -49,11 +50,11 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBe(63));
 }
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 // the home is titled Settings and a group's page by its group (mw-3ased2.1): either is the Settings screen

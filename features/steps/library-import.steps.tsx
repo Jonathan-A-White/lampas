@@ -18,13 +18,14 @@ import { CATALOGUE, CATALOGUE_VERSION } from '../../src/resources/catalogue';
 import { stopReading } from '../../src/speech/readAloud';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

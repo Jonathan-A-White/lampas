@@ -14,6 +14,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 // The essay is a lazy chunk (src/Essay.tsx imports its 216 KB JSON when the page opens). The first import is a cold transform that outran
 // the 10 s of a findBy on a loaded host (load ~10 of 16 cores: 11 of 45 steps failed, mw-5r3p30.596), so it is paid here, under a hook's budget.
@@ -21,11 +22,11 @@ beforeAll(async () => {
   await import('../../src/essay/robinson.json');
 }, HOOK_TIMEOUT_MS);
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

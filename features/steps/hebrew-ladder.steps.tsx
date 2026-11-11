@@ -28,6 +28,7 @@ import { SettingsScreen } from '../../src/SettingsScreen';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 const realSeed = drillSeed.next;
 afterAll(async () => {
@@ -36,7 +37,7 @@ afterAll(async () => {
   stopReading();
   clearBus();
   drillSeed.next = realSeed;
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

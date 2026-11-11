@@ -20,6 +20,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../te
 import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const feature = await loadFeature('features/read-lessons.feature');
 const user = userEvent.setup();
@@ -51,9 +52,9 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     cleanup();
     vi.unstubAllGlobals();
   });
-  afterAll(() => {
+  afterAll(async () => {
     cleanup();
-    db.close();
+    await closeDatabase();
   });
 
   const engine = (): FakeSynth => {

@@ -13,9 +13,9 @@ import { forgetDrills } from '../../src/data/paradigms/drill';
 import { forgetLemmaForms } from '../../src/data/paradigms/ownForms';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const CONTRACT_IDEAS = ['verb', 'mood-indicative', 'voice-active', 'person-1st', 'person-2nd', 'person-3rd', 'number-singular', 'number-plural', 'tense-present', 'contract-verbs'];
@@ -29,8 +29,7 @@ afterAll(async () => {
   cleanup();
   clearBus();
   // App's cleanup drops the usage log's pending writes; let them land before the file closes the db
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

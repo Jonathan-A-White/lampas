@@ -18,6 +18,7 @@ import { asSpoken } from '../../tests/support/spoken-word';
 import { seedHisWords } from '../../tests/support/his-words';
 import { groupHash, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const voice = (lang: string, name: string): FakeVoice => ({ lang, name, voiceURI: name });
 const GREEK = voice('el-GR', 'Greek (Greece)');
@@ -45,13 +46,13 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
 }
 
-afterAll(() => {
+afterAll(async () => {
   act(() => stopSpeaking());
   cleanup();
   clearBus();
   setVoice('greek', null);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const inUse = () => screen.findByTestId('greek-voice-in-use');

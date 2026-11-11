@@ -15,15 +15,16 @@ import { clearBus } from '../../src/events/bus';
 import { readingText } from '../../src/services/reading';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse22 = chapter.verses.find((v) => v.n === 22);
 if (!verse22) throw new Error('no verse 22');
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

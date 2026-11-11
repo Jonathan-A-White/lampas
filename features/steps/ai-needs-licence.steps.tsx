@@ -24,12 +24,13 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

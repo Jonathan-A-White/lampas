@@ -27,6 +27,7 @@ import { fixtureChangelog, stubChangelog, OLDER_VERSION, RUNNING_NEW } from '../
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { pairsAsConsonant } from '../../tests/support/lone-word';
 import { statusLine } from '../../tests/support/status';
+import { closeDatabase } from './close-database';
 
 const feature = await loadFeature('features/read-aloud-anywhere.feature');
 const user = userEvent.setup();
@@ -51,9 +52,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario, After
     cleanup();
     vi.unstubAllGlobals();
   });
-  afterAll(() => {
+  afterAll(async () => {
     cleanup();
-    db.close();
+    await closeDatabase();
   });
 
   const engine = (): FakeSynth => {

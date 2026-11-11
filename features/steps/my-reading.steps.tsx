@@ -17,12 +17,13 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, TIMED_READING_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

@@ -21,15 +21,16 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { forgetGoalNeeds } from '../../src/useGoalProgress';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 const chapter8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const nfc = (s: string): string => s.normalize('NFC');
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

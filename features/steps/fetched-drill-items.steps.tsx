@@ -33,6 +33,7 @@ import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 afterAll(async () => {
   cleanup();
@@ -41,8 +42,7 @@ afterAll(async () => {
   // a scenario may end with an ask held (the confirm and Prove it ask ahead): the mill ends it first, then nothing is out
   fake?.endAll({ status: 'failed', reason: 'the scenario is over' });
   await whenIdle();
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

@@ -22,6 +22,7 @@ import { SOUND_IDS } from '../../src/speech/sounds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const SECTION = 'Hard sounds of Hebrew (optional)';
@@ -35,7 +36,7 @@ afterAll(async () => {
   stopSpeaking();
   chooseAccent(DEFAULT_ACCENT);
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 /** Opens the app on the Goal screen with every store emptied, his Hebrew dial at `dial` and `accent` chosen. */

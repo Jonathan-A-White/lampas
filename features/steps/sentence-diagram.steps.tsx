@@ -19,11 +19,12 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { loadFixture, type DiagramFixture } from '../../tests/support/diagram-fixtures';
 import { seedHisWords } from '../../tests/support/his-words';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

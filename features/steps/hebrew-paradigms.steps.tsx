@@ -16,17 +16,16 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { dropHeldWord } from '../../src/wordReturn';
 import type { Languages } from '../../src/settings/definitions/interest';
-import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { unstubRangeRects } from '../../tests/support/fake-layout';
 import { writeSourceSegment } from '../../src/ui/sourceSegmentStore';
+import { closeDatabase } from './close-database';
 
 afterAll(async () => {
   cleanup();
   clearBus();
   // App's cleanup drops the usage log's pending writes; let them land before the file closes the db
-  await usageWritesSettled();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

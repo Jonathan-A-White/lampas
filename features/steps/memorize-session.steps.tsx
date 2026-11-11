@@ -17,15 +17,16 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
+import { closeDatabase } from './close-database';
 
 const WORDS = ['From', 'His', 'fullness', 'we', 'have', 'all', 'received', 'grace', 'upon', 'grace.'];
 const LAST_WHEN = 1_700_000_000_000;
 
-afterAll(() => {
+afterAll(async () => {
   stopReading();
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 let ref = '';

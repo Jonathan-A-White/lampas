@@ -16,6 +16,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken, pairsAsConsonant } from '../../tests/support/lone-word';
 import { queryStatusLine, statusLine } from '../../tests/support/status';
 import { openTool } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verseGreek = (n: number): string => {
@@ -46,10 +47,10 @@ async function openWith(voices: FakeVoice[], userAgent?: string): Promise<void> 
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

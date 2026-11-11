@@ -20,12 +20,13 @@ import { type FakePostern, POSTERN_ORIGIN, TALK_ANSWER, makeFakePostern } from '
 import { ENGLISH_VOICE, type FakeSynth, type FakeVoice, GREEK_VOICE, stubSpeech } from '../../../tests/support/fake-speech';
 import { seedHisWords } from '../../../tests/support/his-words';
 import { openTutor } from '../open-tutor';
+import { closeDatabase } from '../close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 export const user = userEvent.setup();

@@ -18,6 +18,7 @@ import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { seedHisWords } from '../../tests/support/his-words';
 import { ensureSettingsGroup, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
@@ -28,13 +29,13 @@ const realGo = window.history.go.bind(window.history);
 const LATE_TRAVERSAL_MS = 150;
 window.history.go = (delta?: number): void => void setTimeout(() => realGo(delta), LATE_TRAVERSAL_MS);
 
-afterAll(() => {
+afterAll(async () => {
   Object.assign(browserEnv, real);
   window.history.go = realGo;
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 type Start = { code: string; chapter: number };

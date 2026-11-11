@@ -11,12 +11,13 @@ import type { Question } from '../../src/data/quiz';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { WordQuestion } from '../../src/WordQuestion';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 

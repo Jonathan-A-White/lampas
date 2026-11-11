@@ -16,20 +16,21 @@ import { writeSetting } from '../../src/settings/registry';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
+import { closeDatabase } from './close-database';
 
 vi.mock('../../src/sermons/sources', async () => {
   const { logosSource, secondSource, testSource } = await import('../../tests/support/sermon-sources');
   return { SOURCES: [testSource, secondSource, logosSource] };
 });
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   closeSermons();
   forgetTestThemes();
   forgetTestMaps();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 // jsdom has no scrollIntoView: a row a link opens Settings at scrolls to itself

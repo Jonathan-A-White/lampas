@@ -17,15 +17,16 @@ import { Flashcard } from '../../src/Flashcard';
 import { TeachSheet } from '../../src/TeachSheet';
 import { WordQuestion } from '../../src/WordQuestion';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 const chapter8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const nfc = (s: string): string => s.normalize('NFC');

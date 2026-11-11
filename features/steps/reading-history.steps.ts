@@ -4,8 +4,9 @@ import { afterAll, expect } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { db } from '../../src/data/db';
 import { getMissTally, getVerseReading, keepVerseReading, listReadingHistory, type FixWord } from '../../src/data/repositories/readings';
+import { closeDatabase } from './close-database';
 
-afterAll(() => db.close());
+afterAll(closeDatabase);
 
 const T0 = Date.UTC(2026, 9, 12, 9, 0, 0);
 let clock = 0;

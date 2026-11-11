@@ -6,8 +6,9 @@ import { countDueVerses, memorize, recordRecall, verseId } from '../../src/data/
 import { countDue } from '../../src/data/repositories/reviews';
 import { isMemorizeLang, type MemorizeLang } from '../../src/memorize/languages';
 import { DAY } from '../../src/data/schedule';
+import { closeDatabase } from './close-database';
 
-afterAll(() => db.close());
+afterAll(closeDatabase);
 
 /** Day 0 of every scenario. */
 const DAY0 = Date.UTC(2026, 9, 24, 9, 0, 0);

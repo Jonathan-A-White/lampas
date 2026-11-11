@@ -21,6 +21,7 @@ import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, PARTIAL_ANSWE
 import { normalWord, wordsOfText } from '../../src/services/reading';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/lone-word';
+import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const verse28 = chapter.verses.find((v) => v.n === 28);
@@ -70,10 +71,10 @@ const PARTIAL_TOGETHER_ANSWER = {
   next_word: { word: 'together', index: 7, chunks: ['to', 'geth', 'er'], tip: 'Stress the second part: tuh-GETH-er.' },
 };
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 const user = userEvent.setup();

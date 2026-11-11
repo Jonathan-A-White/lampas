@@ -15,13 +15,14 @@ import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { expectLatest } from '../../tests/support/published';
+import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
-  db.close();
+  await closeDatabase();
 });
 
 const group = () => screen.getByRole('group', { name: 'Goal' });

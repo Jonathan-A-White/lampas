@@ -10,6 +10,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { closeDatabase } from './close-database';
 
 vi.mock('../../src/maps/sources', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/maps/sources')>();
@@ -17,11 +18,11 @@ vi.mock('../../src/maps/sources', async (importOriginal) => {
   return { ...actual, SOURCES: [bibleMapper, { ...bibleMapper, id: 'testlogos', name: 'Test Logos Atlas', describe: 'An atlas of the tests’ own that rides on Logos.', needs: 'logos' as const }] };
 });
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
-  db.close();
+  await closeDatabase();
 });
 
 // jsdom has no scrollIntoView: a row a link opens Settings at scrolls to itself

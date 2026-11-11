@@ -21,11 +21,12 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import type { Languages } from '../../src/settings/definitions/interest';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
+import { closeDatabase } from './close-database';
 
-afterAll(() => {
+afterAll(async () => {
   cleanup();
   clearBus();
-  db.close();
+  await closeDatabase();
   vi.unstubAllGlobals();
 });
 
