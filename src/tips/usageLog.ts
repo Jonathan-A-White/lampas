@@ -17,6 +17,15 @@ export async function usageWritesSettled(): Promise<void> {
   await Promise.all([...logs].map((log) => log.queue));
 }
 
+/**
+ * A count whose write meets a closed database is dropped quietly: the db is closing (a test's teardown, or the browser closing it
+ * for a newer version), so the write has nowhere to go and the count is only a tally. Any other failure is logged (mw-lcv9z3g.15).
+ */
+function keepFailure(error: unknown): void {
+  if (error instanceof Error && error.name === 'DatabaseClosedError') return;
+  console.error('could not keep the usage count', error);
+}
+
 /** Starts the log; the returned stop unsubscribes and resolves when every write is kept. `now` is for tests. */
 export function startUsageLog(now: () => number = Date.now): () => Promise<void> {
   // One write at a time, in the order things happened; a failed write is logged and never stops the app.
@@ -24,7 +33,7 @@ export function startUsageLog(now: () => number = Date.now): () => Promise<void>
   logs.add(log);
   const count = (name: string) => {
     const when = now();
-    log.queue = log.queue.then(() => recordUsage(name, when)).catch((error: unknown) => console.error('could not keep the usage count', error));
+    log.queue = log.queue.then(() => recordUsage(name, when)).catch(keepFailure);
   };
 
   let chapter: string | null = null;
