@@ -1,9 +1,10 @@
 // A gloss never repeats itself (mw-5r3p30.374): 'to see: see' is written 'to see' once, in the data, so no screen has to mend it.
 // The sweep reads public/data/lexicon.json and every chapter's lex 'g'; src/data/gloss.ts cleanGloss is what the data build runs.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { cleanGloss } from '../../src/data/gloss';
 import type { LemmaLexicon } from '../../src/data/lexicon';
+import { dataBooks } from '../support/dataBooks';
 
 const DATA = 'public/data';
 const FILLER = new Set(['to', 'an', 'a', 'be']);
@@ -21,7 +22,7 @@ export function repeatsItself(gloss: string): boolean {
 function allGlosses(): { where: string; g: string }[] {
   const lexicon = JSON.parse(readFileSync(`${DATA}/lexicon.json`, 'utf8')) as LemmaLexicon;
   const found = Object.entries(lexicon).map(([lemma, e]) => ({ where: `lexicon ${lemma}`, g: e.g }));
-  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory() && b !== 'audio')) {
+  for (const book of dataBooks(DATA)) {
     for (const file of readdirSync(`${DATA}/${book}`)) {
       const chapter = JSON.parse(readFileSync(`${DATA}/${book}/${file}`, 'utf8')) as { lex?: Record<string, { g: string }> };
       for (const [strongs, e] of Object.entries(chapter.lex ?? {})) found.push({ where: `${book}/${file} ${strongs}`, g: e.g });

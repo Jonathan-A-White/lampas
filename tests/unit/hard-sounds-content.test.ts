@@ -13,6 +13,7 @@ import { greekWordSpeech, setVoice, speak, stopSpeaking } from '../../src/speech
 import { respellModern } from '../../src/speech/schemes/modern';
 import type { SoundId } from '../../src/speech/sounds';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
+import { dataBooks } from '../support/dataBooks';
 
 /** The lessons of this story, by file: γ, χ, δ and θ, π τ κ without the puff, pure vowels, κ γ χ λ before e and i, μπ ντ γκ, two consonants at a word's start. */
 const CONTENT = ['gamma', 'chi', 'delta-theta', 'no-puff', 'pure-vowels', 'front-vowels', 'nasal-pairs', 'clusters'];
@@ -30,9 +31,9 @@ const alone = (w: string): string => w.normalize('NFD').replace(/̀/gu, '́').no
 /** Every word of the Lampas data: each word form of every chapter (punctuation dropped) and every lemma of the lexicon. */
 const DATA_WORDS: ReadonlySet<string> = (() => {
   const out = new Set<string>();
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'audio')) {
-    for (const file of readdirSync(`public/data/${book.name}`)) {
-      const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Partial<Chapter>;
+  for (const book of dataBooks('public/data')) {
+    for (const file of readdirSync(`public/data/${book}`)) {
+      const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Partial<Chapter>;
       for (const verse of chapter.verses ?? []) for (const w of verse.g) out.add(alone(w.t.replace(/[^\p{Script=Greek}\p{M}]/gu, '')));
     }
   }

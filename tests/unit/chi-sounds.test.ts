@@ -9,6 +9,7 @@ import { ideaOf } from '../../src/data/grammar/ladder';
 import { soundLesson } from '../../src/data/grammar/lessons';
 import { pronunciationOf, soundRuleOf } from '../../src/speech/pronunciation';
 import { respellModern } from '../../src/speech/schemes/modern';
+import { dataBooks } from '../support/dataBooks';
 
 const modern = pronunciationOf('modern');
 const bare = (s: string): string => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -48,9 +49,8 @@ const handed = (word: string): string => modern.wordForm!(word.toLowerCase());
 const ROOT = 'public/data';
 const FORMS = [
   ...new Set(
-    readdirSync(ROOT, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')
-      .flatMap((d) => readdirSync(`${ROOT}/${d.name}`).map((f) => JSON.parse(readFileSync(`${ROOT}/${d.name}/${f}`, 'utf8')) as Chapter))
+    dataBooks(ROOT)
+      .flatMap((d) => readdirSync(`${ROOT}/${d}`).map((f) => JSON.parse(readFileSync(`${ROOT}/${d}/${f}`, 'utf8')) as Chapter))
       .flatMap((c) => c.verses.flatMap((v) => v.g.flatMap((g) => [g.t.normalize('NFC'), g.l.normalize('NFC')]))),
   ),
 ].filter((w) => w.includes('χ') || w.includes('Χ'));

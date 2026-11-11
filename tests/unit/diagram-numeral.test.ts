@@ -10,6 +10,7 @@ import { validateDiagram } from '../../src/diagram/validate';
 import { flatDiagram } from '../support/flat-diagram';
 import { sweepChapter } from '../../scripts/numeral-sweep';
 import { slotOf } from '../support/diagram-fixtures';
+import { dataBooks } from '../support/dataBooks';
 
 const chapterOf = (code: string, n: number): Chapter => JSON.parse(readFileSync(`public/data/${code}/${n}.json`, 'utf8')) as Chapter;
 const verseOf = (chapter: Chapter, n: number) => chapter.verses.find((v) => v.n === n)!;
@@ -193,7 +194,7 @@ describe('every numeral phrase of the shipped text that its English says (the sw
     let phrases = 0;
     let boxed = 0;
     const dir = 'public/data';
-    for (const code of readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)) {
+    for (const code of dataBooks(dir)) {
       for (const file of readdirSync(`${dir}/${code}`)) {
         if (!/^\d+\.json$/.test(file)) continue;
         const chapter = JSON.parse(readFileSync(`${dir}/${code}/${file}`, 'utf8')) as Chapter;

@@ -1,14 +1,14 @@
 // tests/unit/marked-word-drawn.test.ts — a verse card that marks a Greek word (a Review question's 'ὅς in Colossians 3:25 as ὃ', mw-5r3p30.817) draws that word in the English and
 // the weave whatever the MSB did with it. A word with no English chunk (37,764 of the 445,641 words of the data) is placed by strayMarks beside its neighbours; this sweeps every verse
 // of every chapter file, in both orders, for a word that would be marked and not drawn, or drawn twice.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { chunkOrder, strayMarks } from '../../src/data/weave';
+import { dataBooks } from '../support/dataBooks';
 
 const chapters = (): Chapter[] =>
-  readdirSync('public/data')
-    .filter((book) => statSync(`public/data/${book}`).isDirectory() && book !== 'ladder' && book !== 'audio')
+  dataBooks('public/data')
     .flatMap((book) => readdirSync(`public/data/${book}`).map((file) => JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter));
 
 /** How many times each Greek index of `verse` is drawn when every word is marked: by its chunk, or as a stray. */

@@ -14,6 +14,7 @@ import { startReading, stopReading } from '../../src/speech/readAloud';
 import { greekSyllables } from '../../src/speech/greekSyllables';
 import { MODERN, respellModern, wordFormModern } from '../../src/speech/schemes/modern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
+import { dataBooks } from '../support/dataBooks';
 
 let synth: FakeSynth;
 beforeEach(() => {
@@ -84,9 +85,9 @@ describe('the Greek voice keeps the nasal of ντ, μπ and γκ inside a word',
 
 describe('every bundled word', () => {
   const forms = new Set<string>(Object.keys(JSON.parse(readFileSync('public/data/lexicon.json', 'utf8')) as Record<string, unknown>));
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')) {
-    for (const file of readdirSync(`public/data/${book.name}`)) {
-      const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
+  for (const book of dataBooks('public/data')) {
+    for (const file of readdirSync(`public/data/${book}`)) {
+      const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter;
       for (const verse of chapter.verses) for (const w of verse.g) forms.add(w.t);
     }
   }

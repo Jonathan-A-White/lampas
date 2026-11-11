@@ -1,10 +1,11 @@
 // A verse's closing mark in a Greek-order weave (mw-5r3p30.698): English pieces move with the Greek order, and a sentence's closing mark
 // stays at the end of the sentence's last drawn piece, never before the sentence's own words.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { chunkText, drawnOrder, weaveVerse, wovenInOrder } from '../../src/data/weave';
 import { runsOf } from '../../src/speech/readAloud';
+import { dataBooks } from '../support/dataBooks';
 
 const chapter = (path: string): Chapter => JSON.parse(readFileSync(path, 'utf8')) as Chapter;
 const verse2 = chapter('public/data/1ti/4.json').verses[1];
@@ -55,7 +56,7 @@ describe('sweep: every chapter in public/data', () => {
     let before = 0;
     let after = 0;
     let verses = 0;
-    for (const book of readdirSync('public/data').filter((b) => statSync(`public/data/${b}`).isDirectory() && b !== 'audio')) {
+    for (const book of dataBooks('public/data')) {
       for (const file of readdirSync(`public/data/${book}`)) {
         if (!/^\d+\.json$/.test(file)) continue;
         for (const verse of chapter(`public/data/${book}/${file}`).verses) {

@@ -5,13 +5,13 @@ import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { ideaOf } from '../../src/data/grammar/ladder';
 import { PRONUNCIATIONS, pronunciationOf, soundRulesOf } from '../../src/speech/pronunciation';
+import { dataBooks } from '../support/dataBooks';
 
 const nfc = (s: string): string => s.normalize('NFC');
 const ROOT = 'public/data';
 const TEXT = new Set(
-  readdirSync(ROOT, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')
-    .flatMap((d) => readdirSync(`${ROOT}/${d.name}`).map((f) => JSON.parse(readFileSync(`${ROOT}/${d.name}/${f}`, 'utf8')) as Chapter))
+  dataBooks(ROOT)
+    .flatMap((d) => readdirSync(`${ROOT}/${d}`).map((f) => JSON.parse(readFileSync(`${ROOT}/${d}/${f}`, 'utf8')) as Chapter))
     .flatMap((c) => c.verses.flatMap((v) => v.g.map((g) => nfc(g.t)))),
 );
 

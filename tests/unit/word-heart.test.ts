@@ -2,11 +2,12 @@
 // the lexicon's lemma. Each key is a word the app knows and among the 300 commonest; each note is 2 to 4 sentences, under 600
 // characters, and every Greek word it names is a lemma of the lexicon or a form the text itself uses (a stem or ending written with a
 // hyphen, 'δο-' or '-μι', and a single letter are not words).
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { WORD_HEART, wordHeart } from '../../src/data/wordHeart';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import type { LemmaLexicon } from '../../src/data/lexicon';
+import { dataBooks } from '../support/dataBooks';
 
 const DATA = 'public/data';
 const lexicon = JSON.parse(readFileSync(`${DATA}/lexicon.json`, 'utf8')) as LemmaLexicon;
@@ -20,7 +21,7 @@ const greekKey = (word: string): string =>
 /** Every lemma of the lexicon and every word the text uses, as greekKey has them. */
 function knownGreek(): Set<string> {
   const known = new Set(Object.keys(lexicon).flatMap((l) => l.split(/,\s*/)).map(greekKey));
-  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory() && b !== 'audio')) {
+  for (const book of dataBooks(DATA)) {
     for (const file of readdirSync(`${DATA}/${book}`)) {
       const chapter = JSON.parse(readFileSync(`${DATA}/${book}/${file}`, 'utf8')) as { verses?: { g: { t: string }[] }[] };
       for (const verse of chapter.verses ?? []) for (const w of verse.g) known.add(greekKey(w.t.replace(/[.,;\u00b7]/g, '')));

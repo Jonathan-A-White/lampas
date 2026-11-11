@@ -1,13 +1,14 @@
 // tests/unit/example-gloss-repeat.test.ts — an example row's gloss never repeats itself (mw-5r3p30.263). TBESG writes some entries 'range: chosen'
 // ('to see: see'); the idea sheet's breathings lesson, 'Examples from 1 John 1:1', showed ἑωράκαμεν with that whole string where ἀκηκόαμεν showed
 // 'to hear'. A row reads one clean gloss: the word's own English in its verse, else the first sense of its dictionary gloss, whatever the source wrote.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadChapter, type Chapter, type GreekWord } from '../../src/data/chapter';
 import { exampleGloss, exampleMeaning, type IdeaExample } from '../../src/data/grammar/ideaSheet';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { dataBooks } from '../support/dataBooks';
 
 const breathings = LADDER.find((i) => i.id === 'breathings') ?? LADDER.find((i) => /breathing/.test(i.id));
 if (!breathings) throw new Error('no breathings idea');
@@ -57,7 +58,7 @@ describe('the example row for ἑωράκαμεν (ὁράω)', () => {
 
 describe('the row gloss of every lemma in the bundled data', () => {
   const DATA = join(process.cwd(), 'public/data');
-  const books = readdirSync(DATA).filter((b) => /^[0-9a-z]+$/.test(b) && b !== 'ladder' && b !== 'audio' && statSync(join(DATA, b)).isDirectory());
+  const books = dataBooks(DATA).filter((b) => /^[0-9a-z]+$/.test(b));
 
   it('is never of the form "X: X", with its own English or with only the dictionary gloss', () => {
     const found: string[] = [];

@@ -1,6 +1,6 @@
 // tests/unit/gloss-align.test.ts — the per-word English an example row shows (mw-5r3p30.360): the chunk the MSB aligns to a word, WITHOUT the words the
 // translators supplied beside it that belong to its neighbours ('touched with' for ἐψηλάφησαν: 'with' is for 'our hands'; 'this is' for περί).
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { bareEnglish, loadChapter, type Chapter, type GreekWord } from '../../src/data/chapter';
@@ -8,6 +8,7 @@ import { exampleGloss, exampleMeaning, ideaExamples, wordEnglish, type IdeaExamp
 import { LADDER } from '../../src/data/grammar/ladder';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { isGreekBook } from '../support/data-books';
+import { dataBooks } from '../support/dataBooks';
 
 let john: Chapter;
 
@@ -58,7 +59,7 @@ describe('the example rows of 1 John 1:1 (the Rho and Phi sheets)', () => {
 // supplied words; it is the same fault as 'touched with' and 'this is' wherever it sits.
 describe('the per-word English of every chapter', () => {
   const DATA = join(process.cwd(), 'public/data');
-  const books = readdirSync(DATA).filter((b) => /^[0-9a-z]+$/.test(b) && b !== 'ladder' && b !== 'audio' && isGreekBook(b) && statSync(join(DATA, b)).isDirectory());
+  const books = dataBooks(DATA).filter((b) => /^[0-9a-z]+$/.test(b) && isGreekBook(b));
 
   const leaks = (chapter: Chapter): { verse: number; word: string; shown: string }[] => {
     const found: { verse: number; word: string; shown: string }[] = [];

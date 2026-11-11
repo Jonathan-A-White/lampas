@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { USE_IDS, usesOf, type Use, type UseId } from '../../src/data/grammar/uses';
+import { dataBooks } from '../support/dataBooks';
 
 const chapterOf = (book: string, n: number): Chapter => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
 const verseOf = (book: string, chapter: number, n: number): Verse => chapterOf(book, chapter).verses.find((v) => v.n === n)!;
@@ -146,13 +147,13 @@ describe('a verse with no such use finds none', () => {
 describe('every verse of the New Testament', () => {
   it('is walked without a throw, each use naming real words in text order', () => {
     let verses = 0;
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')) {
-      for (const file of readdirSync(`public/data/${book.name}`)) {
-        const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
+    for (const book of dataBooks('public/data')) {
+      for (const file of readdirSync(`public/data/${book}`)) {
+        const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter;
         for (const verse of chapter.verses) {
           verses++;
           for (const use of usesOf(verse)) {
-            const where = `${book.name} ${file} ${verse.n} ${use.id}`;
+            const where = `${book} ${file} ${verse.n} ${use.id}`;
             expect(USE_IDS, where).toContain(use.id);
             expect(use.words.length, where).toBeGreaterThan(0);
             expect(use.words, where).toEqual([...new Set(use.words)].sort((a, b) => a - b));

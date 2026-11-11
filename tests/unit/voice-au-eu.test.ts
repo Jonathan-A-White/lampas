@@ -11,6 +11,7 @@ import { greekVoiceForm, greekWordSpeech, speakWord, stopSpeaking } from '../../
 import { startReading, stopReading } from '../../src/speech/readAloud';
 import { respellModern, spellingsModern } from '../../src/speech/schemes/modern';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
+import { dataBooks } from '../support/dataBooks';
 
 let synth: FakeSynth;
 beforeEach(() => {
@@ -62,9 +63,9 @@ describe('Tap to hear says αυ, ευ and ηυ as one sound', () => {
 /** Every distinct form with αυ, ευ or ηυ (marks or none) in the chapters and the lexicon, lower case. */
 function pairForms(): string[] {
   const forms = new Set<string>(Object.keys(JSON.parse(readFileSync('public/data/lexicon.json', 'utf8')) as Record<string, unknown>));
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')) {
-    for (const file of readdirSync(`public/data/${book.name}`)) {
-      const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
+  for (const book of dataBooks('public/data')) {
+    for (const file of readdirSync(`public/data/${book}`)) {
+      const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter;
       for (const verse of chapter.verses) for (const w of verse.g) forms.add(w.t);
     }
   }

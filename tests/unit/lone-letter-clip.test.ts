@@ -14,6 +14,7 @@ import { planOf, runsOf, startReading, stopReading } from '../../src/speech/read
 import { MODERN, MODERN_LONE_CLIPS } from '../../src/speech/schemes/modern';
 import { stubAudio, type FakeAudio } from '../support/fake-audio';
 import { ENGLISH_VOICE, GREEK_VOICE, type FakeSynth, stubSpeech } from '../support/fake-speech';
+import { dataBooks } from '../support/dataBooks';
 
 /** the marks that show a dropped vowel: the text's apostrophe, the typographic ones and the Greek koronis and psili */
 const ELISION = "'’ʼ᾽᾿";
@@ -79,8 +80,8 @@ function elidedForms(): string[] {
     for (const m of text.matchAll(word)) forms.add(m[0].normalize('NFC'));
   };
   collect(readFileSync('public/data/lexicon.json', 'utf8'));
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'audio')) {
-    for (const file of readdirSync(`public/data/${book.name}`)) collect(readFileSync(`public/data/${book.name}/${file}`, 'utf8'));
+  for (const book of dataBooks('public/data')) {
+    for (const file of readdirSync(`public/data/${book}`)) collect(readFileSync(`public/data/${book}/${file}`, 'utf8'));
   }
   return [...forms].sort();
 }
@@ -141,11 +142,11 @@ describe('a verse read aloud never hands the voice a bare one-letter word (mw-5r
   /** every verse of the text that holds a word of one consonant and a mark of a dropped vowel (δ' δ᾽ τ' θ'), with its chapter */
   function verses(): { name: string; chapter: Chapter; verse: Verse }[] {
     const found: { name: string; chapter: Chapter; verse: Verse }[] = [];
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')) {
-      for (const file of readdirSync(`public/data/${book.name}`)) {
-        const chapter = chapterOf(`public/data/${book.name}/${file}`);
+    for (const book of dataBooks('public/data')) {
+      for (const file of readdirSync(`public/data/${book}`)) {
+        const chapter = chapterOf(`public/data/${book}/${file}`);
         for (const verse of chapter.verses) {
-          if (verse.g.some((w) => isElided(w.t) && bareLetter(w.t))) found.push({ name: `${book.name} ${file.replace('.json', '')}:${verse.n}`, chapter, verse });
+          if (verse.g.some((w) => isElided(w.t) && bareLetter(w.t))) found.push({ name: `${book} ${file.replace('.json', '')}:${verse.n}`, chapter, verse });
         }
       }
     }
@@ -229,10 +230,10 @@ describe('a δ\' that ends a run still never reaches the voice bare (mw-5r3p30.6
   const holdingBare = (v: Verse) => v.g.some((word) => isElided(word.t) && bareLetter(word.t));
   const chunkOfBare = (v: Verse): number => v.e.findIndex((chunk) => chunk.g.some((g) => isElided(v.g[g].t) && bareLetter(v.g[g].t)));
   const swept: { name: string; chapter: Chapter; verse: Verse }[] = [];
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')) {
-    for (const file of readdirSync(`public/data/${book.name}`)) {
-      const chapter = chapterOf(`public/data/${book.name}/${file}`);
-      for (const v of chapter.verses) if (holdingBare(v)) swept.push({ name: `${book.name} ${file.replace('.json', '')}:${v.n}`, chapter, verse: v });
+  for (const book of dataBooks('public/data')) {
+    for (const file of readdirSync(`public/data/${book}`)) {
+      const chapter = chapterOf(`public/data/${book}/${file}`);
+      for (const v of chapter.verses) if (holdingBare(v)) swept.push({ name: `${book} ${file.replace('.json', '')}:${v.n}`, chapter, verse: v });
     }
   }
 

@@ -7,6 +7,7 @@ import { ideaSound } from '../../src/data/grammar/lessons';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 import { GRAMMAR_TERMS } from '../../src/data/parseCode';
 import { isGreekBook } from '../support/data-books';
+import { dataBooks } from '../support/dataBooks';
 
 const words = (text: string): number => text.trim().split(/\s+/).length;
 const tierOf = (id: string) => ideaOf(id).tier;
@@ -137,10 +138,10 @@ describe('ideasOf: the ideas a token with an RP code needs', () => {
   it('finds a non-empty idea set, of known ideas, for every parse code of all 260 chapters', () => {
     const codes = new Set<string>();
     let files = 0;
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio' && isGreekBook(d.name))) {
-      for (const file of readdirSync(`public/data/${book.name}`)) {
+    for (const book of dataBooks('public/data').filter((d) => isGreekBook(d))) {
+      for (const file of readdirSync(`public/data/${book}`)) {
         files += 1;
-        const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
+        const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter;
         for (const code of Object.keys(chapter.parse)) codes.add(code);
       }
     }

@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { parseTbes } from '../../scripts/data/tbes';
 import type { Chapter } from '../../src/data/chapter';
 import { WordSheet } from '../../src/WordSheet';
+import { dataBooks } from '../support/dataBooks';
 
 afterEach(cleanup);
 
@@ -39,11 +40,11 @@ describe('the committed data', () => {
       const list = readJson<Array<{ lemma?: string }> | Record<string, { lemma?: string }>>(`public/data/${file}`);
       for (const e of Array.isArray(list) ? list : Object.values(list)) if (e.lemma?.includes('=')) bad.push(`${file}: ${e.lemma}`);
     }
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'audio')) {
-      for (const file of readdirSync(`public/data/${book.name}`).filter((f) => f.endsWith('.json'))) {
-        const chapter = readJson<Chapter>(`public/data/${book.name}/${file}`);
+    for (const book of dataBooks('public/data')) {
+      for (const file of readdirSync(`public/data/${book}`).filter((f) => f.endsWith('.json'))) {
+        const chapter = readJson<Chapter>(`public/data/${book}/${file}`);
         if (!Array.isArray(chapter.verses)) continue; // ladder/ holds other files
-        for (const verse of chapter.verses) for (const w of verse.g) if (w.l.includes('=')) bad.push(`${book.name}/${file}: ${w.l}`);
+        for (const verse of chapter.verses) for (const w of verse.g) if (w.l.includes('=')) bad.push(`${book}/${file}: ${w.l}`);
       }
     }
     expect(bad).toEqual([]);

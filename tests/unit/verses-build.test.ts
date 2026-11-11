@@ -6,12 +6,12 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { buildVerses, smallFileOf } from '../../scripts/verses-build';
+import { dataBooks } from '../support/dataBooks';
 
 const DATA = 'public/data';
 const chapterFiles = (): { book: string; n: string }[] =>
-  readdirSync(DATA, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')
-    .flatMap((d) => readdirSync(`${DATA}/${d.name}`).flatMap((f) => (/^\d+\.json$/.test(f) ? [{ book: d.name, n: f.replace('.json', '') }] : [])));
+  dataBooks(DATA)
+    .flatMap((d) => readdirSync(`${DATA}/${d}`).flatMap((f) => (/^\d+\.json$/.test(f) ? [{ book: d, n: f.replace('.json', '') }] : [])));
 
 describe('the small file of each chapter\'s English', () => {
   it('is there for each of the 1189 chapters, equal to what the script makes, and a fraction of the chapter\'s size', { timeout: 120_000 }, () => {
