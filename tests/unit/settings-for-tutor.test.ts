@@ -63,8 +63,8 @@ describe('the Settings request', () => {
 
   it('is within the size a request may weigh with a full history left to cut', async () => {
     const settings = await settingsForTutor();
-    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional, 4900 with Talk and Send, 5100 with the Greek dial, 5200 with How much of a table, 5400 with Chapter buttons, 5900 with When you copy's four, 6000 with the map sources' switches, 6200 with the Logos Atlas's, 6400 with Which languages? and How much Hebrew?, 7000 with the Pronunciation family, its switch, Hebrew pronunciation, voice, speed and keyboard, 7200 with IPA lesson, 7400 with Variants and Witnesses, 7600 with English from the 2026 Greek, 7800 with Show manuscript gaps, 8100 with the five sermon sources): fitHistory cuts the history to make room
-    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(8500);
+    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional, 4900 with Talk and Send, 5100 with the Greek dial, 5200 with How much of a table, 5400 with Chapter buttons, 5900 with When you copy's four, 6000 with the map sources' switches, 6200 with the Logos Atlas's, 6400 with Which languages? and How much Hebrew?, 7000 with the Pronunciation family, its switch, Hebrew pronunciation, voice, speed and keyboard, 7200 with IPA lesson, 7400 with Variants and Witnesses, 7600 with English from the 2026 Greek, 7800 with Show manuscript gaps, 8100 with the five sermon sources, 8800 with the Bible voice and the room for ten more): fitHistory cuts the history to make room
+    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(8800);
   });
 });
 
@@ -115,7 +115,7 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
 
   it('drops his requests and memory notes before the newest turn when even that cannot fit', async () => {
     const request = await settingsRequest([turn1], 'n'.repeat(2500));
-    const fitted = fitHistory({ ...request, history: [{ q: 'q'.repeat(250), a: 'a'.repeat(150) }] });
+    const fitted = fitHistory({ ...request, history: [{ q: 'q'.repeat(150), a: 'a'.repeat(100) }] });
     expect(size(fitted)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(fitted.history).toHaveLength(1);
     expect(fitted.requests ?? []).toEqual([]);

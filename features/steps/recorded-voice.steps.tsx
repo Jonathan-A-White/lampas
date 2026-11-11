@@ -14,7 +14,9 @@ import { db } from '../../src/data/db';
 import { setReaderView, setSpeechRate, setWeave } from '../../src/data/repositories';
 import { clearBus, latest, publish, subscribe } from '../../src/events/bus';
 import { getReading, stopReading } from '../../src/speech/readAloud';
-import { recordingElement, resetRecordedVoice, setWantsRecording } from '../../src/speech/recordedVoice';
+import { recordingElement, resetRecordedVoice, wantsRecording } from '../../src/speech/recordedVoice';
+import { bibleVoiceSetting } from '../../src/settings/definitions';
+import { setSetting } from '../../src/settings/store';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { speakWord } from '../../src/speech/greek';
 import { askTranscriber } from '../../src/speech/askTranscriber';
@@ -68,7 +70,6 @@ async function open({ chapters = [3, 4], english }: Options = {}): Promise<void>
   window.history.replaceState(null, '', '/');
   resetRecordedVoice();
   forgetTimings();
-  setWantsRecording('msb-david');
   synth = stubSpeech([ENGLISH_VOICE, GREEK_VOICE]);
   audio = stubAudio();
   stubChapterFetch();
@@ -326,7 +327,10 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       } else if (condition === 'the Greek view is shown') {
         await setReaderView('greek');
         await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));
-      } else if (condition === 'the recorded voice is left at its default') setWantsRecording(null);
+      } else if (condition === 'the Bible voice is Phone voice') {
+        await setSetting(bibleVoiceSetting, 'phone');
+        await waitFor(() => expect(wantsRecording()).toBeNull());
+      }
       else throw new Error(`no such condition: ${condition}`);
     });
     When('he taps {string}', tapHeader);

@@ -3,7 +3,7 @@ Feature: The recorded voice reads a chapter that has timings
   MP3 through one audio element: the verse marked as being read follows the timings, the speaking bar (the same bar, Pause, Resume, Restart
   and Stop, in the same slot) steers it, a word said beside it, a hold to ask and a hidden page pause it,
   a verse's play button and a Listen read their own span of the recording, and Play to goes on into the next chapter. Where the recording
-  cannot be used (no network, the weave or the Greek shown, no timings, the recorded voice not chosen) the phone's voice reads as before, and
+  cannot be used (no network, the weave or the Greek shown, no timings, the Bible voice set to Phone voice) the phone's voice reads as before, and
   a recording that fails hands the verse in hand to the phone's voice. The element, the timings and the network are fakes (tests/support).
 
   Scenario: Play reads John 3 from the recording and the verse being read follows its timings
@@ -72,7 +72,7 @@ Feature: The recorded voice reads a chapter that has timings
       | the phone is offline                    |
       | the weave is on                         |
       | the Greek view is shown                 |
-      | the recorded voice is left at its default |
+      | the Bible voice is Phone voice          |
 
   Scenario: The recording plays at his English speed and follows a change of it
     Given John 3 is open in English with the recorded voice chosen and his English speed is 1.5
