@@ -161,4 +161,5 @@ passes on unused suppressions (`--pass-on-unpruned-suppressions`), so removing a
 `eslint-rules/no-raw-interest-write.js`, held by `tests/unit/no-raw-interest-write.test.ts`): a bare level skips what tapping its step also sets (the Weave Solid at 2, the Greek view at 4, `BRINGS` in
 `src/data/repositories/greekInterest.ts`), so the spec draws a screen the Governor never sees (mw-fnvjof.17.74). An e2e puts a phone at a level with `putAtLevels(page, { greek, hebrew }, extra)` (or `rowsAtLevels` inside its own
 transaction) from `tests/e2e/greek-start.ts`, which writes the level and what the steps up to it bring (held against the dial itself by `tests/unit/greek-start-helper.test.ts`); a line that must write a bare level says
-`// a raw level: <reason>`. The feature steps' old raw writes are counted per file in `eslint-suppressions.json` (`eslint . --suppress-rule local/no-raw-interest-write`).
+`// a raw level: <reason>`. A feature step does the same through `putAtLevels({ greek, hebrew }, extra)` (written into the store) or `settingsAtLevels(...)` (an object for a helper that opens the app with settings) from
+`features/steps/levels.ts` (held by `tests/unit/step-levels.test.ts`); `ENGLISH_READER` is the extra for a scenario of a reader who chose the English view, the Weave Off and the English order after the climb (mw-fnvjof.17.80).
