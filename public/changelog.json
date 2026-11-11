@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.208",
+    "date": "2026-11-11",
+    "story": "mw-u2w5klk.349.2",
+    "kind": "fixed",
+    "text": "In Genesis 20 of the Septuagint, tapping most English words such as \"removed\" now opens the Greek word instead of the whole verse."
+  },
+  {
     "version": "0.7.207",
     "date": "2026-11-10",
     "story": "mw-lcv9z3g.10",

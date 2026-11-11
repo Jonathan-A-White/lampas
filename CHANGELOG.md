@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.208
+_2026-11-11_
+- Fixed: In Genesis 20 of the Septuagint, tapping most English words such as "removed" now opens the Greek word instead of the whole verse.
+
 ## 0.7.207
 _2026-11-10_
 - Fixed: Tapping All twice fast under Keep on this phone no longer says "Up to date" for a moment when nothing has been kept yet.
