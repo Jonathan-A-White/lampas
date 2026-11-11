@@ -3,11 +3,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { dataBooks } from '../support/dataBooks';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const made: string[] = [];
 afterEach(() => {
   for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
-});
+}, HOOK_TIMEOUT_MS);
 
 describe('dataBooks: the book directories of a data folder', () => {
   it('returns jhn only from a folder holding jhn/, ladder/, audio/ and index.json', () => {
