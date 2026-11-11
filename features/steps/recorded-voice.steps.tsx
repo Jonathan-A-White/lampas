@@ -16,7 +16,10 @@ import { clearBus, latest, publish, subscribe } from '../../src/events/bus';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { recordingElement, resetRecordedVoice, setWantsRecording } from '../../src/speech/recordedVoice';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
+import { speakWord } from '../../src/speech/greek';
+import { askTranscriber } from '../../src/speech/askTranscriber';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';
@@ -44,6 +47,10 @@ function chapterTimings(key: string, chapter: number): ChapterTimings {
 let synth: FakeSynth;
 let audio: FakeAudio;
 let read: number[] = [];
+/** whether the recording was playing at each moment the phone's voice was handed a word */
+let playingWhenSpoken: boolean[] = [];
+/** the second the recording was paused at by the last interruption or Pause */
+let heldAt = 0;
 
 interface Options {
   /** the chapters of John with timings */
@@ -81,6 +88,7 @@ async function open({ chapters = [3, 4], english }: Options = {}): Promise<void>
   await setWeave('off');
   if (english !== undefined) await setSpeechRate('english', english);
   read = [];
+  playingWhenSpoken = [];
   window.location.hash = '#/?b=jhn&c=3';
   render(<App />);
   await screen.findByRole('heading', { name: 'John 3', level: 1 });
@@ -125,6 +133,41 @@ const headingEl = (text: string): HTMLElement => {
 };
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const footEl = () => viewEl().querySelector<HTMLElement>('[data-verse-bar]') as HTMLElement;
+
+const speakingBars = () => Array.from(document.querySelectorAll<HTMLElement>("[data-testid='speaking-bar']"));
+const speakingBar = () => screen.getByRole('region', { name: 'Speaking' });
+const barLabels = () => within(speakingBar()).getAllByRole('button').map((b) => b.textContent);
+const onSpeakingBar = (name: string) => user.click(within(speakingBar()).getByRole('button', { name, exact: true }));
+const passageVerse = (n: number): HTMLElement => {
+  const el = viewEl().querySelector<HTMLElement>(`[data-passage-verse="${n}"]`);
+  if (!el) throw new Error(`no passage verse ${n}`);
+  return el;
+};
+/** A press of a word: the finger stays down past the long press (src/ui/longPress.ts), then lifts. */
+/** From here on, whether the recording plays is noted at every moment the phone's voice is handed something. */
+const watchSpeak = () => {
+  const phone = window.speechSynthesis;
+  const speak = phone.speak.bind(phone);
+  phone.speak = (utterance) => {
+    playingWhenSpoken.push(audio.playing() !== null);
+    return speak(utterance);
+  };
+};
+const holdWord = async (word: HTMLElement) => {
+  watchSpeak();
+  const at = { clientX: 100, clientY: 100 };
+  await user.pointer({ keys: '[MouseLeft>]', target: word, coords: at });
+  await act(async () => {
+    // a real-time wait: the finger must stay down past LONG_PRESS_MS (the app times a press by the page's clock)
+    await new Promise((resolve) => setTimeout(resolve, 650));
+  });
+  await user.pointer({ keys: '[/MouseLeft]', target: word, coords: at });
+};
+const goTo = async (hash: string) => {
+  await act(async () => {
+    window.location.hash = hash;
+  });
+};
 
 const feature = await loadFeature('features/recorded-voice.feature');
 
@@ -175,31 +218,6 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await waitFor(() => expect(read).toEqual([1, 2, 3]));
       expect(synth.calls.filter((c) => c.startsWith('speak'))).toEqual([]);
     });
-  });
-
-  Scenario("The header's Pause holds the recording, Play goes on from the same second and Stop ends it", ({ Given, When, Then, And }) => {
-    let pausedAt = 0;
-    Given(opened, () => open());
-    When('he taps {string}', tapHeader);
-    And('the recording passes the end of verse {int}', passes);
-    And('he taps "Pause" in the header', async () => {
-      await tapHeader(null, 'Pause');
-      pausedAt = element().currentTime;
-    });
-    Then('the audio element is paused', paused);
-    And('the reading bar says {string}', async (_, text: string) => {
-      await waitFor(() => expect(bar()).toHaveTextContent(text));
-    });
-    When('he taps "Play" in the header', () => tapHeader(null, 'Play'));
-    Then('the audio element plays on from the second it was paused at', async () => {
-      await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
-      expect(audio.playedAt).toEqual([0, pausedAt]);
-      expect(element().currentTime).toBe(pausedAt);
-      expect(getReading()).toMatchObject({ status: 'reading', verse: 2 });
-    });
-    When('he taps "Stop" in the header', () => tapHeader(null, 'Stop'));
-    Then('the audio element is paused again', paused);
-    And('the reading is idle', idle);
   });
 
   Scenario("A verse's play button reads that verse of the recording and stops at its end", ({ Given, When, Then, And }) => {
@@ -338,6 +356,222 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then("the audio element's playback rate is 0.8", () => {
       expect(element().playbackRate).toBe(0.8);
       expect(audio.playing()).toBe(recordingElement());
+    });
+  });
+  const barPlaying = () => {
+    const bar = speakingBar();
+    expect(bar).toHaveAttribute('data-testid', 'speaking-bar');
+    expect(bar).toHaveAttribute('data-state', 'playing');
+    expect(barLabels()).toEqual(['Pause', 'Restart', 'Stop']);
+  };
+  const firstIsResume = async () => {
+    await waitFor(() => expect(barLabels()).toEqual(['Resume', 'Restart', 'Stop']));
+    const first = within(speakingBar()).getAllByRole('button')[0];
+    expect(first).toHaveAttribute('data-primary', 'true');
+    expect(first).toHaveAttribute('data-action', 'resume');
+    expect(speakingBar()).toHaveAttribute('data-state', 'paused');
+  };
+  const onBar = async (_: unknown, name: string) => {
+    await onSpeakingBar(name);
+  };
+  const pausedHere = async () => {
+    await waitFor(() => expect(audio.playing()).toBeNull());
+    heldAt = element().currentTime;
+  };
+  const playsOnFromHeld = async () => {
+    await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
+    expect(audio.playedAt.at(-1)).toBe(heldAt);
+    expect(element().currentTime).toBe(heldAt);
+  };
+  const playsFromStartOf = async (_: unknown, n: number) => {
+    await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
+    expect(audio.playedAt.at(-1)).toBe(n === 1 ? 0 : startOf(n));
+  };
+  const tapListen = async (_: unknown, name: string) => {
+    await user.click(within(footEl()).getByRole('button', { name, exact: true }));
+  };
+  const tapSectionHeading = async (_: unknown, text: string) => {
+    await user.click(within(headingEl(text)).getByRole('button'));
+    await screen.findByRole('region', { name: 'Verse view' });
+  };
+  const noBar = () => expect(speakingBars()).toHaveLength(0);
+
+  Scenario('The speaking bar holds a recorded reading: Pause, Resume from the same second, and Stop', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    Then('the speaking bar is playing and shows Pause, Restart and Stop', () => barPlaying());
+    And('the header shows no Pause or Stop', () => {
+      expect(screen.getAllByRole('button', { name: 'Pause' })).toEqual([within(speakingBar()).getByRole('button', { name: 'Pause' })]);
+      expect(screen.getAllByRole('button', { name: 'Stop' })).toEqual([within(speakingBar()).getByRole('button', { name: 'Stop' })]);
+      expect(getReading().onBar).toBe(true);
+    });
+    When('he taps "Pause" on the speaking bar', async () => {
+      heldAt = element().currentTime;
+      await onBar(null, 'Pause');
+    });
+    Then('the audio element is paused', paused);
+    And('the reading bar says {string}', async (_, text: string) => {
+      await waitFor(() => expect(bar()).toHaveTextContent(text));
+    });
+    And("the speaking bar's first button is Resume", firstIsResume);
+    When('he taps "Resume" on the speaking bar', () => onBar(null, 'Resume'));
+    Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
+    When('he taps "Stop" on the speaking bar', () => onBar(null, 'Stop'));
+    Then('the audio element is paused again', paused);
+    And('the reading is idle', async () => {
+      await waitFor(() => expect(getReading().status).toBe('idle'));
+    });
+    And('there is no speaking bar', noBar);
+  });
+
+  Scenario('Restart goes back to the start of the verse being read', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('the recording plays {int} seconds into verse {int}', (_, seconds: number, n: number) => {
+      act(() => audio.advanceTo(startOf(n) + seconds));
+      expect(getReading().verse).toBe(n);
+    });
+    And('he taps "Restart" on the speaking bar', () => onBar(null, 'Restart'));
+    Then('the audio element plays on from the start of verse {int}', playsFromStartOf);
+    And('verse {int} is marked as being read', marked);
+  });
+
+  Scenario("Restart on a Listen of a section goes back to the section's first verse", ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps the heading {string}', tapSectionHeading);
+    And('he taps {string} in the Verse view', tapListen);
+    And('the recording passes the end of verse {int}', passes);
+    And('he taps "Restart" on the speaking bar', () => onBar(null, 'Restart'));
+    Then('the audio element plays on from the start of verse {int}', playsFromStartOf);
+    And('verse {int} is marked as being read', marked);
+  });
+
+  Scenario('A word said alone while the recording plays pauses it first, and Resume goes on from the same second', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('a Greek word is said alone, as a speaker beside it says one', () => {
+      watchSpeak();
+      act(() => {
+        speakWord('λόγος', 'greek');
+      });
+    });
+    Then('the audio element was paused before the word was spoken', async () => {
+      await waitFor(() => expect(playingWhenSpoken.length).toBeGreaterThan(0));
+      expect(playingWhenSpoken.every((playing) => !playing)).toBe(true);
+      await pausedHere();
+    });
+    And("the speaking bar's first button is Resume", firstIsResume);
+    When('the phone finishes the word', () => {
+      act(() => synth.finish());
+    });
+    Then('the audio element is paused', paused);
+    And('the speaking bar still offers Resume first', firstIsResume);
+    When('he taps "Resume" on the speaking bar', () => onBar(null, 'Resume'));
+    Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
+  });
+
+  Scenario('A word held while a recorded Listen plays pauses it and the Listen goes on by itself when the word ends', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps the heading {string}', tapSectionHeading);
+    And('he taps {string} in the Verse view', tapListen);
+    And('the recording passes the end of verse {int}', passes);
+    And('he long presses the first word of verse {int} in the passage', async (_, n: number) => {
+      await holdWord(within(passageVerse(n)).getAllByRole('button')[0]);
+    });
+    Then('the audio element was paused before the word was spoken', async () => {
+      await waitFor(() => expect(playingWhenSpoken.length).toBeGreaterThan(0));
+      expect(playingWhenSpoken.every((playing) => !playing)).toBe(true);
+      await pausedHere();
+    });
+    And("the speaking bar's first button is Resume", firstIsResume);
+    When('the phone finishes the word', () => {
+      act(() => synth.finish());
+    });
+    Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
+    And('the speaking bar is playing and shows Pause, Restart and Stop', () => barPlaying());
+  });
+
+  Scenario('A hold to ask pauses the recording and a Listen goes on when the hold ends', ({ Given, When, Then, And }) => {
+    let session: { stop(): Promise<unknown> } | null = null;
+    Given(opened, () => open());
+    When('he taps the heading {string}', tapSectionHeading);
+    And('he taps {string} in the Verse view', tapListen);
+    And('the recording passes the end of verse {int}', passes);
+    And('a hold to ask begins', () => {
+      stubRecognizer();
+      const started = askTranscriber.start({ lang: 'en-US' });
+      if (!started.ok) throw new Error('the hold did not start');
+      session = started.session;
+      FakeRecognizer.last().open();
+    });
+    Then('the audio element was paused', pausedHere);
+    And("the speaking bar's first button is Resume", firstIsResume);
+    When('the hold to ask ends', async () => {
+      const ended = session?.stop();
+      act(() => FakeRecognizer.last().onend?.());
+      await ended;
+    });
+    Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
+  });
+
+  Scenario('A page that hides pauses the recording and waits for Resume', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('the page goes hidden', () => {
+      heldAt = element().currentTime;
+      act(() => {
+        Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+    });
+    Then('the audio element is paused', paused);
+    And('the reading is paused', () => expect(getReading().status).toBe('paused'));
+    When('the page comes back', () => {
+      act(() => {
+        Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+    });
+    Then('the audio element is still paused', paused);
+    And("the speaking bar's first button is Resume", firstIsResume);
+    When('he taps "Resume" on the speaking bar', () => onBar(null, 'Resume'));
+    Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
+  });
+
+  Scenario('Leaving the Reader pauses the recording and opening another chapter ends it', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('he opens Settings', () => goTo('#/settings'));
+    Then('the audio element is paused', paused);
+    And('the reading is paused', () => expect(getReading().status).toBe('paused'));
+    When('he opens John 3 again', async () => {
+      await goTo('#/?b=jhn&c=3');
+      await screen.findByRole('heading', { name: 'John 3', level: 1 });
+    });
+    Then("the speaking bar's first button is Resume", firstIsResume);
+    When('he opens John 4 by hand', async () => {
+      await goTo('#/?b=jhn&c=4');
+      await screen.findByRole('heading', { name: 'John 4', level: 1 });
+    });
+    Then('the reading is idle', async () => {
+      await waitFor(() => expect(getReading().status).toBe('idle'));
+      expect(audio.playing()).toBeNull();
+    });
+    And('there is no speaking bar', noBar);
+  });
+
+  Scenario('There is only one speaking bar', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('he taps "Pause" on the speaking bar', () => onBar(null, 'Pause'));
+    Then('the page holds exactly one speaking bar', async () => {
+      await firstIsResume();
+      expect(speakingBars()).toHaveLength(1);
     });
   });
 });

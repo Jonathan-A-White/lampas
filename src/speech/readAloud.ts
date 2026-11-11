@@ -21,11 +21,11 @@ import { chunkText, drawnOrder, type WovenVerse } from '../data/weave';
 import { publish } from '../events/bus';
 import { openReader } from '../nav/route';
 import { septuagintVerseView } from '../reader/septuagint';
-import { besideNow, greekVoiceForm, hasGreekVoice, hasVoice, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
+import { besideNow, greekVoiceForm, hasGreekVoice, hasVoice, isWordSpeech, loneLetterCuts, playInTurn, playLetterClip, READ_KEY, speakText, stopLetterClip, subscribeBeside, type Piece } from './greek';
 import type { SpeechLanguage } from './languages';
 import { hebrewVoiceForm } from './pronunciation';
 import type { ReadSpan } from './readSpan';
-import { pauseRecording, playRecording, resumeRecording, stopRecording } from './recordedVoice';
+import { pauseRecording, playRecording, resumeRecording, seekToVerse, stopRecording } from './recordedVoice';
 import { dropWaiting } from './tutorWaiting';
 import { keepAwake, letSleep } from './wakeLock';
 
@@ -101,15 +101,17 @@ export interface ReadingState {
   /** the chapter the reading is going on into: the Reader has been asked to turn to it and the voice waits for its plan
    * (verse is null meanwhile); null otherwise */
   crossing: ChapterRef | null;
-  /** the package's bar holds this reading (its Pause, Resume, Restart and Stop are the controls); false when the voice was taken by a
-   * word said alone and the reading waits at its verse, with only the header to Resume it */
+  /** the speaking bar holds this reading (its Pause, Resume, Restart and Stop are the controls): the package's bar for the phone's voice, RecordedBar for a recording;
+   * false when the voice was taken by a word said alone and the reading waits at its verse, with only the header to Resume it */
   onBar: boolean;
+  /** the chapter's recording is heard (src/speech/recordedVoice.ts): the bar is RecordedBar's, whose controls are this file's pauseReading, resumeReading, restartRecorded and stopReading */
+  recorded: boolean;
   /** the key of the Listen this reading is (a passage or a verse in the Verse view, listenKeyOf), or null for any other reading: a Listen is paused by an
    * interruption from inside the app and goes on by itself when it ends */
   listen: string | null;
 }
 
-const IDLE: ReadingState = { status: 'idle', verse: null, notice: null, answer: null, crossing: null, onBar: false, listen: null };
+const IDLE: ReadingState = { status: 'idle', verse: null, notice: null, answer: null, crossing: null, onBar: false, recorded: false, listen: null };
 
 let state: ReadingState = IDLE;
 let plan: PlanVerse[] = [];
@@ -181,6 +183,7 @@ function syncWithEngine(): void {
   const had = engineHad;
   engineHad = ours;
   if (state.status === 'idle') return;
+  if (recording) recordedWordSync(speech);
   if (ours) {
     if (speech.status === 'paused' && state.status === 'reading') {
       letSleep();
@@ -369,7 +372,10 @@ function playFromRecording(timings: ChapterTimings, from: number, my: number): b
     return false;
   }
   // a play() that threw at once has already handed the verse to the phone's voice (recordingFailed)
-  if (recording === timings) markVerse(from, at);
+  if (recording === timings) {
+    set({ ...state, onBar: true, recorded: true });
+    markVerse(from, at);
+  }
   return true;
 }
 
@@ -382,6 +388,7 @@ function recordedVerse(n: number, my: number): void {
   if (queued) {
     if (!englishOnly(queued.filter((v) => v.n >= n))) {
       dropRecording();
+      set({ ...state, onBar: false, recorded: false });
       return readVerse(n, my);
     }
     plan = queued;
@@ -394,6 +401,7 @@ function recordedVerse(n: number, my: number): void {
 function recordingReached(my: number): void {
   if (my !== epoch || !recording) return;
   recording = null;
+  if (state.recorded) set({ ...state, onBar: false, recorded: false });
   if (queued) {
     plan = queued;
     queued = null;
@@ -408,7 +416,7 @@ function recordingReached(my: number): void {
 function recordingFailed(my: number): void {
   if (my !== epoch || !recording) return;
   recording = null;
-  set({ ...state, notice: RECORDING_FAILED_NOTICE });
+  set({ ...state, notice: RECORDING_FAILED_NOTICE, onBar: false, recorded: false });
   // a paused reading goes on in the phone's voice when he taps Play (resumeReading reads the verse it waits at)
   if (state.status === 'reading' && state.verse !== null) readVerse(state.verse, my);
 }
@@ -462,7 +470,7 @@ export function startReading(options: StartOptions): void {
   reach = options.continuous ? options.span ?? 'chapter' : 'verse';
   queued = null;
   const notice = noVoiceNotice(options.from, reach !== 'verse');
-  set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, listen: options.listen ?? null });
+  set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, recorded: false, listen: options.listen ?? null });
   keepAwake();
   if (options.recorded && playFromRecording(options.recorded, options.from, epoch)) return;
   readVerse(options.from, epoch);
@@ -501,7 +509,7 @@ export function pauseReading(): void {
 export function resumeReading(): void {
   if (state.status !== 'paused' || (state.verse === null && !state.crossing)) return;
   if (recording && !state.crossing) {
-    set({ ...state, status: 'reading', onBar: false });
+    set({ ...state, status: 'reading' });
     keepAwake();
     return resumeRecording();
   }
@@ -556,15 +564,35 @@ export function interruptListen(): (() => void) | null {
   return holdListen();
 }
 
+/** The word said beside the reading is over: a Listen it paused goes on. */
+function endBeside(): void {
+  const end = besideEnd;
+  besideEnd = null;
+  end?.();
+}
+
+/** A word said alone while a RECORDED reading plays (the package holds no speech of the reading's, so greek.ts says the word on its own, not beside it) pauses the
+ * recording at its second before the word is heard: a Listen goes on by itself when the word ends, any other reading waits for his Resume (docs/read-aloud.md). */
+function interruptRecorded(): void {
+  if (besideEnd) return;
+  const resume = interruptListen();
+  if (!resume) pauseReading();
+  besideEnd = resume ?? (() => undefined);
+}
+
+/** The package's speech changed while a recording is the reading: a word (any speech that is not the reading's) is said, or it is over. A clip of a one-letter word
+ * is a word beside the reading too (greek.ts playLoneLetter), watched by onBeside. */
+function recordedWordSync(speech: ReturnType<typeof getSpeech>): void {
+  if (speech.status !== 'idle' && isWordSpeech(speech.key)) interruptRecorded();
+  else if (!besideNow()) endBeside();
+}
+
 /** A word said beside the reading (greek.ts speakBeside) pauses a Listen and is over when its last sentence ends. */
 function onBeside(): void {
   const now = besideNow();
-  if (now && now.interrupted && !besideEnd && state.listen !== null && state.status !== 'idle') besideEnd = holdListen();
-  else if (!now && besideEnd) {
-    const end = besideEnd;
-    besideEnd = null;
-    end();
-  }
+  if (now && recording && state.status !== 'idle') interruptRecorded();
+  else if (now && now.interrupted && !besideEnd && state.listen !== null && state.status !== 'idle') besideEnd = holdListen();
+  else if (!now && besideEnd && !(recording && isWordSpeech(getSpeech().key) && getSpeech().status !== 'idle')) endBeside();
 }
 
 if (typeof window !== 'undefined') subscribeBeside(onBeside);
@@ -578,6 +606,27 @@ export function restartListen(): boolean {
   if (!first) return false;
   startReading({ ...startedWith, from: first.n });
   return true;
+}
+
+/** The speaking bar's Restart on a recorded reading: back to the start of the verse being read, and playing (a paused reading plays). False when no recording is the reading. */
+export function restartRecorded(): boolean {
+  if (!recording || state.status === 'idle' || state.verse === null) return false;
+  if (!seekToVerse(state.verse)) return false;
+  if (state.status === 'paused') {
+    keepAwake();
+    set({ ...state, status: 'reading' });
+  }
+  // play() again even when it plays: from the verse's start, with the span's end kept
+  resumeRecording();
+  return true;
+}
+
+// A page that hides pauses a recording, as the package pauses the phone's voice (voice-kit/speech): the recording would go on in a pocket. Coming back offers Resume
+// on the bar; a Listen paused this way waits for his Resume too (holdListen's end does not go on while the page is hidden).
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && recording && state.status === 'reading') pauseReading();
+  });
 }
 
 /** The key of the Listen on a verse or a passage of a chapter (`unit` is data/passage.ts unitId). */

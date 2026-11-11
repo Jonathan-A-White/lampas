@@ -1,5 +1,6 @@
 // tests/e2e/recorded-voice.spec.ts — the recorded voice in a real Chromium (mw-82lb97i.3, src/speech/recordedVoice.ts): John 3 in English with timings is read by the one
-// audio element, the verse marked as being read moves by itself as the recording plays, and the header's Pause, Play and Stop work on it. The seam is set before the
+// audio element, the verse marked as being read moves by itself as the recording plays, and the speaking bar (src/speech/RecordedBar.tsx, the same bar in the same slot
+// as voice-kit's: mw-82lb97i.4) holds it: Pause, Resume and Stop by tap. The seam is set before the
 // app loads; the timings are a stub giving each of John 3's 36 verses half a second after a half-second title, and the stub's recording is a WAV of silence made here.
 // Nothing reaches openbible.com: its one URL is answered here and any other request to it is failed and counted. How the publisher's MP3 sounds on his phone is a phone check.
 import { expect, test, type Page } from '@playwright/test';
@@ -65,8 +66,10 @@ async function stubRecording(page: Page): Promise<{ reached: string[] }> {
 
 const readingBar = (page: Page) => page.locator('[data-reading-bar]');
 const header = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
+const bar = (page: Page) => page.getByRole('region', { name: 'Speaking', exact: true });
+const onBar = (page: Page, name: string) => bar(page).getByRole('button', { name, exact: true });
 
-test('Play in John 3 is read by the recording: the verse being read moves by itself, Pause holds it, Play goes on, Stop ends it', async ({ page }) => {
+test('Play in John 3 is read by the recording: the speaking bar sits in the Reader\'s foot, Pause holds it, Resume goes on, Stop ends it', async ({ page }) => {
   await openUnlocked(page);
   await honestSpeech(page, { msPerWord: 5 });
   await page.addInitScript(() => window.localStorage.setItem('lampas:bibleVoice', 'msb-david'));
@@ -85,20 +88,62 @@ test('Play in John 3 is read by the recording: the verse being read moves by its
     .toBeGreaterThanOrEqual(3);
   await expect(page.locator('[data-reader] [data-verse][data-reading]')).toHaveCount(1);
 
-  await header(page, 'Pause').click();
+  // the same bar as the phone voice's, in the Reader's foot slot: whole in the viewport, above the bottom inset, covering no verse text; the header's Pause and Stop are gone
+  await expect(bar(page)).toHaveCount(1);
+  await expect(page.locator('[data-testid="speaking-bar"]')).toHaveAttribute('data-state', 'playing');
+  await expect(bar(page).getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
+  // the only Pause and the only Stop on the page are the bar's own
+  await expect(header(page, 'Pause')).toHaveCount(1);
+  await expect(header(page, 'Stop')).toHaveCount(1);
+  await expect(bar(page).getByRole('button', { name: 'Pause', exact: true })).toHaveCount(1);
+  await expect(bar(page).getByRole('button', { name: 'Stop', exact: true })).toHaveCount(1);
+  const box = await bar(page).boundingBox();
+  const main = await page.locator('[data-reader]').boundingBox();
+  const slot = await page.locator('[data-speaking-slot="1"]').boundingBox();
+  expect(box && main && slot).toBeTruthy();
+  if (box && main && slot) {
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    // the slot ends the screen and pads itself with the bar inset (48 px at the least): the bar is above it
+    expect(box.y + box.height).toBeLessThanOrEqual(844 - 48 + 0.5);
+    expect(box.y).toBeGreaterThanOrEqual(slot.y - 0.5);
+    // under the reading box, in flow: no verse is covered
+    expect(main.y + main.height).toBeLessThanOrEqual(box.y + 1);
+  }
+  for (const name of ['Pause', 'Restart', 'Stop']) {
+    const b = await onBar(page, name).boundingBox();
+    expect(b?.height).toBeGreaterThanOrEqual(43.5);
+    expect(b?.width).toBeGreaterThanOrEqual(43.5);
+  }
+  // each verse's part inside the reading box (the box scrolls, so a verse may run past it): none touches the bar
+  const verses = await page.locator('[data-reader] [data-verse]').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON() as { top: number; bottom: number; left: number; right: number }));
+  const covered = verses.filter((r) => {
+    if (!box || !main) return false;
+    const top = Math.max(r.top, main.y);
+    const bottom = Math.min(r.bottom, main.y + main.height);
+    return bottom > top && bottom > box.y + 1 && top < box.y + box.height - 1 && r.right > box.x && r.left < box.x + box.width;
+  });
+  expect(covered).toEqual([]);
+  await shot(page, 'recorded-voice-bar');
+
+  await onBar(page, 'Pause').click();
   await expect(readingBar(page)).toContainText('Paused at verse');
   const pausedAt = await readingBar(page).textContent();
   // a real-time wait: the recording would have gone on two verses in this second if Pause had not held it
   await page.waitForTimeout(1000);
   await expect(readingBar(page)).toHaveText(pausedAt ?? '');
+  await expect(bar(page).getByRole('button')).toHaveText(['Resume', 'Restart', 'Stop']);
+  await expect(page.locator('[data-testid="speaking-bar"]')).toHaveCount(1);
 
-  await header(page, 'Play').click();
+  await onBar(page, 'Resume').click();
   const from = Number(pausedAt?.match(/verse (\d+)/)?.[1] ?? 0);
   await expect
     .poll(async () => Number((await readingBar(page).textContent())?.match(/Reading verse (\d+)/)?.[1] ?? 0), { timeout: 15_000 })
     .toBeGreaterThan(from);
 
-  await header(page, 'Stop').click();
+  await onBar(page, 'Stop').click();
+  await expect(bar(page)).toHaveCount(0);
   await expect(readingBar(page)).toHaveCount(0);
   await expect(header(page, 'Read from the top')).toBeVisible();
 
