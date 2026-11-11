@@ -285,6 +285,48 @@ test.describe('the Reader', () => {
   });
 });
 
+test.describe("a verse's number (mw-fnvjof.17.69)", () => {
+  // The second tap of a double tap on a verse's number landed on a word of the Verse view the first tap had opened and opened the Word sheet over it, so ‹ Reader was covered.
+  // Mark 12, the Greek view; the second tap goes to the first word of the Verse view's text (the spot under the number depends on where the number stands on the page).
+  for (const mode of ['scroll', 'pages'] as const) {
+    test(`a double tap on a verse's number in ${mode === 'pages' ? 'Turn pages' : 'Scroll'} opens the Verse view and no Word sheet over it`, async ({ page }) => {
+      await open(page, '#/?b=mrk&c=12&view=greek', { settings: [{ key: 'readingMode', value: mode }] }, async () => {
+        await expect(page.locator('[data-reader]')).toHaveAttribute('data-paging', mode);
+        await page.evaluate(() => document.fonts.ready.then(() => undefined));
+      });
+      const number = page.locator('[data-verse="2"] [data-verse-number]');
+      await number.scrollIntoViewIfNeeded();
+      await reads(page);
+      const verseView = page.getByRole('region', { name: 'Verse view' });
+      await thumbDoubleTap(page, number, () => verseView.getByRole('button', { name: '‹ Reader' }).waitFor(), {
+        selector: '[data-verse-text] [role="button"]',
+        second: { selector: '[data-verse-text] [role="button"]' },
+      });
+      await expect(verseView).toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toHaveCount(0);
+      const back = verseView.getByRole('button', { name: '‹ Reader' });
+      await expect(back).toBeVisible();
+      // ‹ Reader is hit-testable: the element at its centre is the button itself
+      const hit = await back.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+      });
+      expect(hit).toBe(true);
+      await shot(page, `double-tap-guard-verse-number-${mode}`);
+    });
+  }
+
+  test('a single tap on a word of the Verse view, after it has opened, still opens the Word sheet', async ({ page }) => {
+    await open(page, '#/?b=mrk&c=12&view=greek', {}, () => page.locator('[data-verse="2"] [data-verse-number]').waitFor());
+    await page.locator('[data-verse="2"] [data-verse-number]').tap();
+    const verseView = page.getByRole('region', { name: 'Verse view' });
+    await expect(verseView).toBeVisible();
+    await pageTime(page, 650); // 600 ms or more after the view opened
+    await verseView.locator('[data-verse-text] [role="button"]').first().tap();
+    await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toBeVisible();
+  });
+});
+
 test.describe('the Goal screen and its idea sheets', () => {
   test('mw-5r3p30.445, mw-5r3p30.559: a double tap on The Greek alphabet opens its sheet and no letter over it', async ({ page }) => {
     const list = await openIdeasList(page);
