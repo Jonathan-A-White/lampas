@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.215",
+    "date": "2026-11-11",
+    "story": "mw-fnvjof.17.79",
+    "kind": "fixed",
+    "text": "A long book name such as 1 Thessalonians no longer pushes the Menu button onto a second row of the Reader's top bar."
+  },
+  {
     "version": "0.7.212",
     "date": "2026-11-11",
     "story": "mw-u2w5klk.348",

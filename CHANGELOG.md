@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.215
+_2026-11-11_
+- Fixed: A long book name such as 1 Thessalonians no longer pushes the Menu button onto a second row of the Reader's top bar.
+
 ## 0.7.212
 _2026-11-11_
 - Fixed: With manuscript gaps off, the Septuagint's English no longer shows square brackets in the verse view, the split pane or the reference card either.
