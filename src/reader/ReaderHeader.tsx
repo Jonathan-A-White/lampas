@@ -132,10 +132,14 @@ function titlePieces(name: string, chapter: string): string[] {
   return chapter ? [name, chapter] : [name];
 }
 
-/** The pieces that are never broken inside a piece that may break: '(Greek 114 and 115)' may end a line after '(Greek 114', so a narrow header (Largest text) holds the title in three short lines rather than
- * wrapping the switch or the menu to a row of its own (mw-fnvjof.17.70). Every other piece is one unit. */
-function unitsOf(piece: string): string[] {
-  return piece.startsWith('(Greek ') && piece.includes(' and ') ? [piece.slice(0, piece.indexOf(' and ')), piece.slice(piece.indexOf(' and ') + 1)] : [piece];
+/** The units that are never broken inside a Septuagint chapter's piece: a line may end between them. 'Psalms 23' is the name and the number, '(Greek 114 and 115)' is '(Greek', '114' and 'and 115)'. So a
+ * narrow header (Large and Largest text beside English | Weave | Greek, Play and the Menu) holds the title in as many short lines as it needs rather than wrapping the Menu to a row of its own
+ * (mw-fnvjof.17.70, mw-fnvjof.17.73). Every other title's piece is one unit. */
+function unitsOf(piece: string, septuagint: boolean, first: boolean): string[] {
+  if (!septuagint) return [piece];
+  if (!first) return piece.split(/ (?=and )/).flatMap((part) => (part.startsWith('(Greek ') ? [part.slice(0, 6), part.slice(7)] : [part]));
+  const at = piece.lastIndexOf(' ');
+  return [piece.slice(0, at), piece.slice(at + 1)];
 }
 
 /** What a character of a semibold name measures, in em, at the most (the phone's own wide sans, DejaVu Bold, as an upper bound): letters about 0.72, capitals 0.85, the narrow letters
@@ -154,25 +158,38 @@ function emOf(text: string): number {
   return em;
 }
 
-/** The title's type size: the largest the header holds, smaller only as far as the widest whole piece needs to stand on one line in the room the title has (`100cqw` is the title box's width). */
+/** The floor of the title's type size is its rem floor, but never more than this: at Large and Largest text the floor would grow with the phone's text size (17.6 px at Largest), and beside English | Weave | Greek, Play
+ * and the Menu (89 px of room at 390 px) the Menu dropped to a row of its own and the header doubled (mw-fnvjof.17.73). The switch does not grow with the text size, so neither does the title's floor past this. */
+const TITLE_FLOOR_CAP_PX = 11;
+/** What the title button takes beside its text, in px: its side padding (px-1, 8) and the chevron with its margin (12 + 2). */
+const TITLE_CHROME_PX = 22;
+/** …of which the side padding alone (px-1). */
+const TITLE_PAD_PX = 8;
+const TITLE_FLOOR = `min(${TITLE_MIN_REM}rem, ${TITLE_FLOOR_CAP_PX}px)`;
+
+/** The title's type size: the largest the header holds, smaller only as far as the widest whole piece needs to stand on one line in the room the title has (`100cqw` is the title box's width, less the button's own padding and chevron). */
 function titleSize(wholeEm: number): string {
-  return `clamp(${TITLE_MIN_REM}rem, calc(100cqw / ${wholeEm.toFixed(2)}), ${TITLE_MAX_REM}rem)`;
+  return `clamp(${TITLE_FLOOR}, calc((100cqw - ${TITLE_CHROME_PX}px) / ${wholeEm.toFixed(2)}), ${TITLE_MAX_REM}rem)`;
 }
 
-/** The least room the title box is given: the widest unit at the smallest size, whole. A row that cannot hold it wraps, so no unit is cut. */
-function titleRoom(unitEm: number): string {
-  return `${(unitEm * TITLE_MIN_REM).toFixed(2)}rem`;
+/** The least room the title box is given: the widest unit at the smallest size, whole, with the button's padding, and the chevron's room for the last unit, which carries it. A row that cannot hold it wraps, so no unit is cut. */
+function titleRoom(unitEm: number, lastEm: number): string {
+  return `max(calc(${TITLE_FLOOR} * ${unitEm.toFixed(2)} + ${TITLE_PAD_PX}px), calc(${TITLE_FLOOR} * ${lastEm.toFixed(2)} + ${TITLE_CHROME_PX}px))`;
 }
 
 export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, weaves = true, weaveOrder, chapterReading, reading, from, canRead, inert, onPick, onRead, onFlip }: ReaderHeaderProps) {
   const headerButtons = chapterReading && !reading.onBar;
   const { name, chapter } = partsOf(title);
   const pieces = titlePieces(name, chapter);
+  const septuagint = /^\d+ \(Greek /.test(chapter);
+  const unitsIn = (piece: string, i: number) => unitsOf(piece, septuagint, i === 0);
   const wholeEm = Math.max(...pieces.map(emOf));
-  const unitEm = Math.max(...pieces.flatMap(unitsOf).map(emOf));
+  const units = pieces.flatMap(unitsIn);
+  const unitEm = Math.max(...units.map(emOf));
+  const lastEm = emOf(units[units.length - 1]);
   return (
     <header inert={inert} className="flex shrink-0 flex-wrap items-center gap-1 border-b border-line px-1">
-      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(unitEm) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
+      <h1 style={headerButtons ? undefined : { minWidth: titleRoom(unitEm, lastEm) }} className={`font-semibold leading-tight [container-type:inline-size] ${headerButtons ? 'sr-only' : 'flex-1'}`}>
         <button
           type="button"
           aria-haspopup="dialog"
@@ -184,7 +201,7 @@ export function ReaderHeader({ title, view, source = 'grc', weave, weaveShown, w
               <Fragment key={piece}>
                 {i > 0 ? ' ' : null}
                 <span>
-                  {unitsOf(piece).map((unit, u, units) => (
+                  {unitsIn(piece, i).map((unit, u, units) => (
                     <Fragment key={unit}>
                       {u > 0 ? ' ' : null}
                       <span className="whitespace-nowrap">

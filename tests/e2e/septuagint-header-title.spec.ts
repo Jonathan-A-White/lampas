@@ -70,7 +70,7 @@ const SIZES = [
 ] as const;
 
 /** Opens a chapter by its address with the Septuagint On at a Text size, and waits for the header's title to read `title`. */
-async function openTitled(page: Page, address: string, percent: string, title: RegExp, dial?: string): Promise<void> {
+async function openTitled(page: Page, address: string, percent: string, title: RegExp, dial?: string, weave?: 'off' | 'solid'): Promise<void> {
   await page.setViewportSize({ width: 390, height: 844 });
   await openUnlocked(page);
   await page.goto('/#/settings');
@@ -79,6 +79,9 @@ async function openTitled(page: Page, address: string, percent: string, title: R
   await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await keep(page, 'textSize', percent);
   if (dial) await keep(page, 'greekInterest', dial);
+  // tapping 'Dipping a toe' (and every step above it) also sets the Weave to Solid (src/data/repositories/greekInterest.ts BRINGS), which draws English | Weave | Greek: the widest switch
+  const woven = weave ?? (dial && Number(dial) >= 2 ? 'solid' : 'off');
+  if (woven === 'solid') await keep(page, 'weave', 'solid');
   await page.goto(address);
   await page.reload();
   await expect(page.locator('header h1')).toContainText(title);
@@ -113,6 +116,9 @@ for (const [size, percent] of SIZES.slice(1)) {
   }
 }
 
+/** The title button's own least height (min-h-12): at a small title size two lines are shorter than it. */
+const H1_FLOOR = 48;
+
 /** The title's lines (the distinct tops of its text rects), the line's height in px, the title h1's height and the header's. */
 async function titleLines(page: Page): Promise<{ lines: number; lineHeight: number; h1: number; header: number; text: string }> {
   return page.evaluate(() => {
@@ -141,7 +147,7 @@ test('Psalms 23 in the Septuagint at Dipping a toe, Normal text at 390px: the ti
   await openTitled(page, '/#/?b=psa&c=23', '100', /\(Greek 22\)/, '2');
   const dipping = await titleLines(page);
   expect(dipping.text.replace(/\s+/g, ' ').trim()).toBe('Psalms 23 (Greek 22)');
-  expect(dipping.h1).toBeLessThan(dipping.lineHeight * 2.5);
+  expect(dipping.h1).toBeLessThan(Math.max(dipping.lineHeight * 2.5, H1_FLOOR + 1));
   expect(dipping.header).toBeLessThanOrEqual(curious.header + dipping.lineHeight + 1);
   expect(await titleOverlaps(page)).toEqual([]);
   await shot(page, 'septuagint-header-title-dipping');
@@ -158,7 +164,7 @@ for (const [address, title] of [
         await openTitled(page, address, percent, title, dial);
         const t = await titleLines(page);
         expect(t.lines).toBeLessThanOrEqual(2);
-        expect(t.h1).toBeLessThan(t.lineHeight * 2.5);
+        expect(t.h1).toBeLessThan(Math.max(t.lineHeight * 2.5, H1_FLOOR + 1));
         expect(await titleOverlaps(page)).toEqual([]);
       });
     }
@@ -203,5 +209,25 @@ for (const [size, percent] of SIZES) {
       if (address.endsWith('c=23')) expect(dipping.header).toBeLessThan(80);
       await shot(page, `septuagint-header-rows-${address.replace(/\W+/g, '')}-${size.toLowerCase()}`);
     });
+  }
+}
+
+// The sweep (mw-fnvjof.17.73): every fixture chapter at How much Greek? 1 to 5, the Weave off and Solid, and the three text sizes: no control sits below the title, and the header is under 80 px.
+for (const [size, percent] of SIZES) {
+  for (const [address, title] of [
+    ['/#/?b=gen&c=1', /Genesis 1/],
+    ['/#/?b=psa&c=23', /\(Greek 22\)/],
+    ['/#/?b=psa&c=116', /\(Greek 114 and 115\)/],
+  ] as const) {
+    for (const dial of ['1', '2', '3', '4', '5']) {
+      for (const weave of ['off', 'solid'] as const) {
+        test(`sweep ${address} at How much Greek? ${dial}, Weave ${weave}, ${size} text at 390px: the header is one row`, async ({ page }) => {
+          await openTitled(page, address, percent, title, dial, weave);
+          const rows = await headerRows(page);
+          expect(rows.below, rows.boxes.join('; ')).toEqual([]);
+          expect(rows.header, rows.boxes.join('; ')).toBeLessThan(80);
+        });
+      }
+    }
   }
 }
