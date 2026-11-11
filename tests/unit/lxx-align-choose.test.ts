@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
+import { septuagintChunkLinked } from '../../src/reader/septuagint';
 import { alignChapter, alignVerse, lettersOf, renderAlignReport, SUPPLIED_FOR_VERB, type AlignShare } from '../../scripts/lxx/align';
 import {
   ALIGN_CHOICES_DIR,
@@ -261,16 +262,18 @@ describe('the report names the share the model pass settled', () => {
   });
 });
 
-// the real Genesis 1 to 11: when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
+// the real Genesis 1 to 11 and 20 (the chapters the model pass has been run for): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
 // the gate's log says in one line when it is skipped and why. Sources found elsewhere than the cwd are given to runShip, so no symlink is needed.
-describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
+// Genesis 20 is his own report (2026-11-10, mw-u2w5klk.349.2: a tap on 'removed' in Genesis 20:1 opened the Verse view); the chapters of the model pass are listed here, and a chapter is added when its file is
+const MODELLED = [...Array.from({ length: 11 }, (_, i) => i + 1), 20];
+describe.skipIf(!haveSources)('Genesis 1 to 11 and 20 with the model pass', () => {
   const dirs: string[] = [];
   let withModel: Map<number, Chapter>;
   let base: Map<number, Chapter>;
   let stale: string[] = [];
   const read = (dir: string): Map<number, Chapter> => {
     const out = new Map<number, Chapter>();
-    for (let n = 1; n <= 11; n++) out.set(n, JSON.parse(readFileSync(join(dir, 'gen', `${n}.json`), 'utf8')) as Chapter);
+    for (const n of MODELLED) out.set(n, JSON.parse(readFileSync(join(dir, 'gen', `${n}.json`), 'utf8')) as Chapter);
     return out;
   };
   beforeAll(async () => {
@@ -286,9 +289,9 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
   }, 10 * HOOK_TIMEOUT_MS);
   afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
-  it('has a model file for each of the eleven chapters, and none of its runs is stale', () => {
+  it('has a model file for each of Genesis 1 to 11 and 20, and none of its runs is stale', () => {
     const files = readdirSync(ALIGN_CHOICES_DIR).filter((f) => f.startsWith('gen-'));
-    expect(files).toEqual(Array.from({ length: 11 }, (_, i) => alignChoicesName('gen', i + 1)));
+    expect(files).toEqual(MODELLED.map((n) => alignChoicesName('gen', n)));
     expect(stale).toEqual([]);
   });
 
@@ -330,6 +333,49 @@ describe.skipIf(!haveSources)('Genesis 1 to 11 with the model pass', () => {
   it('settles more of the Greek: more words have English than the aligner alone gave, in every chapter', () => {
     const paired = (c: Chapter): number => c.verses.reduce((a, v) => a + v.g.filter((w) => w.e !== undefined).length, 0);
     for (const [n, chapter] of withModel) expect(paired(chapter), `Gen ${n}`).toBeGreaterThan(paired(base.get(n)!));
+  });
+
+  it("pairs Genesis 20:1's 'removed' to ἐκίνησεν, which Swete has there, as a model chunk the Reader links (his report: the tap opened the Verse view)", () => {
+    const verse = withModel.get(20)!.verses[0];
+    const chunk = verse.e.find((c) => c.t === 'removed')!;
+    expect(chunk, 'a chunk of its own').toBeDefined();
+    expect(chunk.y).toBe('model');
+    expect(chunk.c).toBe(0.8);
+    expect(chunk.g.map((i) => verse.g[i].t)).toEqual(['ἐκίνησεν']);
+    expect(septuagintChunkLinked(chunk)).toBe(true);
+    // 'thence' too, and the country: no English word of the verse's first clause is left without a Greek word of its own, bar the 'the' a case ending carries
+    expect(verse.e.filter((c) => !septuagintChunkLinked(c)).map((c) => c.t)).toEqual(['the']);
+  });
+
+  // The English content words Genesis 20 has no Greek word for after the pass (mw-u2w5klk.349.2), each named with why: the Greek word that renders it is a pair the aligner made to another English
+  // word (the model re-chooses remainders, not pairs), or Brenton has no Greek word for it. A tap on one opens the Verse view, never a wrong word (septuagintChunkLinked). Every other unpaired chunk of the
+  // chapter is made of function words (articles, prepositions, the pronouns and auxiliaries Brenton supplies).
+  const FUNCTION_WORDS = new Set(
+    'a against an and are at be by for from had has have he her him his i in into is it me my not of on or she shall should so that the their them there they those to us was we which will with you your'.split(' '),
+  );
+  const UNPAIRED_CONTENT: Record<string, string> = {
+    '2:sake.': "'for her sake' (δι᾽ αὐτήν): both Greek words are the aligner's, paired to 'for' and 'her'",
+    '4:sinning': "'ignorantly sinning': ἀγνοοῦν is the aligner's, paired to 'ignorantly'",
+    '6:Yes,': "Brenton's 'Yes, I knew' has no Greek word for 'Yes'",
+    '8:morning,': "'early in the morning' (τὸ πρωί): πρωί is the aligner's, paired to 'early'; the article is all that is left",
+    '9:ought': "'which no one ought to do': the aligner paired 'no one' with μή τι, and οὐδεὶς has no English left to take it",
+    '11:Why': "Brenton's 'Why' has no Greek word",
+    '11:worship': "'the worship of God': θεοσέβεια is the aligner's, paired to 'God'",
+    '13:came': "'it came to pass' renders ἐγένετο, the aligner's, paired to 'to'",
+    '13:pass': "'it came to pass' renders ἐγένετο, the aligner's, paired to 'to'",
+    '13:forth': "'brought forth' renders ἐξήγαγεν, the aligner's, paired to 'brought'",
+    '16:countenance,': "'the price of your countenance': the aligner paired 'price' with προσώπου, and τιμήν has no English left",
+    '16:women': "'to all the women': ταῖς is the aligner's, paired to 'the'",
+    '16:speak': "'speak the truth' renders ἀλήθευσον, the aligner's, paired to 'truth'",
+    '16:things.': "'in all things' renders πάντα, the aligner's, paired to 'all'",
+    '17:wife,': "'his wife' renders γυναῖκα, the aligner's, paired to 'women'",
+    '17:children.': "'they bore children' renders ἔτεκον, the aligner's, paired to 'bore'",
+  };
+  const unpaired = (chapter: Chapter): string[] =>
+    chapter.verses.flatMap((v) => v.e.filter((c) => !septuagintChunkLinked(c)).flatMap((c) => c.t.split(/\s+/).filter((w) => !FUNCTION_WORDS.has(lettersOf(w))).map((w) => `${v.n}:${w}`)));
+
+  it('leaves in Genesis 20 no English content word without a Greek word but those named, each with why', () => {
+    expect(unpaired(withModel.get(20)!).sort()).toEqual(Object.keys(UNPAIRED_CONTENT).sort());
   });
 
   it('Genesis 1 reads woven through weaveVerse with the model\'s chunks', () => {

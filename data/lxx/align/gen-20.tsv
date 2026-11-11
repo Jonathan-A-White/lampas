@@ -1,0 +1,142 @@
+ref	run	text	g	mark	confidence
+Gen.20:1	1	removed	1		0.80
+Gen.20:1	1	thence	2		0.80
+Gen.20:1	2	the	-		0.80
+Gen.20:1	2	southern	7		0.80
+Gen.20:1	2	country,	5		0.80
+Gen.20:2	1	his	-		0.80
+Gen.20:2	2	is	-		0.80
+Gen.20:2	3	She	-		0.80
+Gen.20:2	4	wife,	16		0.80
+Gen.20:2	5	at any time	20		0.80
+Gen.20:2	6	of	-		0.80
+Gen.20:2	7	should	-		0.80
+Gen.20:2	8	him	-		0.80
+Gen.20:2	9	sake.	-		0.80
+Gen.20:2	9	So	30		0.80
+Gen.20:2	10	of	-		0.80
+Gen.20:3	1	by	-		0.80
+Gen.20:3	2	for	16		0.80
+Gen.20:3	3	you have	-		0.80
+Gen.20:3	4	whereas	22		0.80
+Gen.20:3	5	has	-		0.80
+Gen.20:3	6	a	-		0.80
+Gen.20:4	1	had	-		0.80
+Gen.20:4	2	he	-		0.80
+Gen.20:4	3	will you	-		0.80
+Gen.20:4	4	an	-		0.80
+Gen.20:4	5	sinning	-		0.80
+Gen.20:4	6	nation?	8		0.80
+Gen.20:5	1	he	-		0.80
+Gen.20:5	2	to	-		0.80
+Gen.20:5	3	is	-		0.80
+Gen.20:5	4	she not	-		0.80
+Gen.20:5	5	me,	-		0.80
+Gen.20:5	6	a	-		0.80
+Gen.20:5	7	the	-		0.80
+Gen.20:5	8	of my	-		0.80
+Gen.20:5	9	have	-		0.80
+Gen.20:6	1	to	-		0.80
+Gen.20:6	2	Yes,	-		0.80
+Gen.20:6	3	you	-		0.80
+Gen.20:6	4	with a	-		0.80
+Gen.20:6	4	pure	11		0.80
+Gen.20:6	5	so that	19	unsure	0.50
+Gen.20:6	6	should	-		0.80
+Gen.20:6	7	me,	-		0.80
+Gen.20:6	7	therefore	25,26		0.80
+Gen.20:7	1	his	-		0.80
+Gen.20:7	1	wife;	4		0.80
+Gen.20:7	2	he	-		0.80
+Gen.20:7	3	a	-		0.80
+Gen.20:7	4	shall	-		0.80
+Gen.20:7	5	for	12		0.80
+Gen.20:7	6	you shall	-		0.80
+Gen.20:7	7	you	-		0.80
+Gen.20:7	7	restore	19		0.80
+Gen.20:7	7	her	-		0.80
+Gen.20:7	8	shall	-		0.80
+Gen.20:8	1	in the morning,	-		0.80
+Gen.20:8	2	servants,	9		0.80
+Gen.20:8	3	words	15		0.80
+Gen.20:8	4	their	-		0.80
+Gen.20:9	1	to	-		0.80
+Gen.20:9	2	What	8		0.80
+Gen.20:9	2	is	-		0.80
+Gen.20:9	3	that you have	-		0.80
+Gen.20:9	4	us? Have	-		0.80
+Gen.20:9	5	sinned	14		0.80
+Gen.20:9	5	against	-		0.80
+Gen.20:9	6	you have	-		0.80
+Gen.20:9	7	a	-		0.80
+Gen.20:9	8	You have	-		0.80
+Gen.20:9	9	to	-		0.80
+Gen.20:9	10	a	-		0.80
+Gen.20:9	10	deed,	28		0.80
+Gen.20:9	11	ought to	-		0.80
+Gen.20:10	1	to	-		0.80
+Gen.20:10	2	What	5		0.80
+Gen.20:10	2	have you	-		0.80
+Gen.20:10	3	in me that you have	-		0.80
+Gen.20:11	1	Why	-		0.80
+Gen.20:11	2	Surely	5		0.80
+Gen.20:11	2	there	-		0.80
+Gen.20:11	3	the worship of	-		0.80
+Gen.20:11	4	they will	-		0.80
+Gen.20:11	5	me	-		0.80
+Gen.20:11	6	of	-		0.80
+Gen.20:11	7	wife.	18		0.80
+Gen.20:12	1	she	-		0.80
+Gen.20:12	2	my	-		0.80
+Gen.20:12	3	by	6		0.80
+Gen.20:12	4	by	10		0.80
+Gen.20:12	4	my	-		0.80
+Gen.20:12	5	she	-		0.80
+Gen.20:13	1	it came	-		0.80
+Gen.20:13	2	pass	-		0.80
+Gen.20:13	3	forth	-		0.80
+Gen.20:13	4	of	-		0.80
+Gen.20:13	5	of my	-		0.80
+Gen.20:13	6	to	-		0.80
+Gen.20:13	7	you shall	-		0.80
+Gen.20:13	8	into which	25		0.80
+Gen.20:13	9	may	26	unsure	0.50
+Gen.20:13	10	of	-		0.80
+Gen.20:13	11	He	-		0.80
+Gen.20:13	12	my	-		0.80
+Gen.20:14	1	a	-		0.80
+Gen.20:14	2	pieces of silver,	4		0.80
+Gen.20:14	2	and	-		0.80
+Gen.20:14	3	them to	-		0.80
+Gen.20:14	4	returned	17		0.80
+Gen.20:14	4	him	-		0.80
+Gen.20:14	5	wife.	21		0.80
+Gen.20:15	1	to	-		0.80
+Gen.20:15	2	land	7		0.80
+Gen.20:15	2	is	-		0.80
+Gen.20:15	2	before	9		0.80
+Gen.20:15	3	it	-		0.80
+Gen.20:15	3	may	12	unsure	0.50
+Gen.20:16	1	to	-		0.80
+Gen.20:16	2	I have	-		0.80
+Gen.20:16	3	a	-		0.80
+Gen.20:16	4	pieces of silver,	7		0.80
+Gen.20:16	4	those shall be	-		0.80
+Gen.20:16	5	of	-		0.80
+Gen.20:16	6	countenance,	-		0.80
+Gen.20:16	7	to	-		0.80
+Gen.20:16	8	women	-		0.80
+Gen.20:16	9	speak the	-		0.80
+Gen.20:16	10	in	-		0.80
+Gen.20:16	11	things.	-		0.80
+Gen.20:17	1	wife,	-		0.80
+Gen.20:17	2	servants,	18		0.80
+Gen.20:17	3	they	-		0.80
+Gen.20:17	4	children.	-		0.80
+Gen.20:18	1	the	-		0.80
+Gen.20:18	2	had fast closed	1		0.80
+Gen.20:18	2	from without	3		0.80
+Gen.20:18	2	every	4		0.80
+Gen.20:18	3	of	-		0.80
+Gen.20:18	4	of	-		0.80
+Gen.20:18	5	wife.	14		0.80
