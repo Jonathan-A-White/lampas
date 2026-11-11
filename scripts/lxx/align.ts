@@ -494,9 +494,15 @@ export interface AlignSink {
   shares: AlignShare[];
   /** the model pass's rows by `<book>/<chapter>` (align-choose.ts readModelDir); absent: no model pass */
   model?: ReadonlyMap<string, readonly ModelRow[]>;
+  /** keep each chapter as alignRuns leaves it (no rows, no joinSupplied): the chapter `lxx:align-choose` lists and checks against, so its run numbers are the ones the ship applies the rows at */
+  runsOnly?: boolean;
 }
 
-export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string, model: readonly ModelRow[] = []): { chapter: Chapter; share: AlignShare; stale: string[] } {
+/**
+ * The chapter at the stage the model pass's rows are applied at: each verse through alignVerse, nothing else (no rows, no joinSupplied). A row names a run by its number, so a listing and a check of
+ * the runs (align-choose.ts) and alignChapter must number them at this one stage: joinSupplied, which runs after the rows, makes 'She will' + 'love' one chunk and takes a run away (mw-u2w5klk.349.16).
+ */
+export function alignRuns(chapter: Chapter, gloss: (lemma: string) => string): { chapter: Chapter; share: AlignShare } {
   const share: AlignShare = { code: chapter.code, book: chapter.book, chapter: chapter.chapter, verses: chapter.verses.length, words: 0, paired: 0, sure: 0, tokens: 0, pairedTokens: 0, model: 0 };
   const verses = chapter.verses.map((verse) => {
     const out = alignVerse(verse, gloss);
@@ -507,7 +513,12 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
     share.pairedTokens += out.share.pairedTokens;
     return out.verse;
   });
-  const modelled = applyModel({ ...chapter, verses }, model);
+  return { chapter: { ...chapter, verses }, share };
+}
+
+export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string, model: readonly ModelRow[] = []): { chapter: Chapter; share: AlignShare; stale: string[] } {
+  const { chapter: runs, share } = alignRuns(chapter, gloss);
+  const modelled = applyModel(runs, model);
   // after the model pass, so the runs it numbers are the aligner's own: the words Brenton supplies for a verb join its chunk
   modelled.chapter = { ...modelled.chapter, verses: modelled.chapter.verses.map(joinSupplied) };
   if (model.length > 0) {

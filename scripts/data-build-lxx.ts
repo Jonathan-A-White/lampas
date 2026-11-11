@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseLexicon } from './data-build';
-import { alignChapter, type AlignSink } from './lxx/align';
+import { alignChapter, alignRuns, type AlignSink } from './lxx/align';
 import { chapterFingerprint, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import { LXX2012_RELEASE, ensureLxx2012, parseUsfm, usfmFileOf, type UsfmBook } from './data/lxx2012';
 import { buildLxxBook, chapterRanges, parseAnnotations, parseTranslit, shippedChaptersLine, sweteBooks, sweteEmptyVerses, usfmCodeOf, aloneNote, withoutEnglishNote, type LampasVerses, type LxxBookInfo } from './data/lxxChapter';
@@ -139,7 +139,8 @@ export function buildLxx(input: LxxInput, align?: AlignSink): BuiltLxx {
         files.set(path, JSON.stringify(chapter));
         continue;
       }
-      const done = alignChapter(chapter, (lemma) => lexiconEntry(lexicon, lemma)?.g ?? '', align.model?.get(`${code}/${chapter.chapter}`));
+      const gloss = (lemma: string): string => lexiconEntry(lexicon, lemma)?.g ?? '';
+      const done = align.runsOnly ? { ...alignRuns(chapter, gloss), stale: [] as string[] } : alignChapter(chapter, gloss, align.model?.get(`${code}/${chapter.chapter}`));
       for (const line of done.stale) notes.push(`${code}: the model pass, chapter ${chapter.chapter}: ${line}`);
       align.shares.push({ ...done.share, code });
       // the Reader asks for a chapter as ?v=<fingerprint> and keeps what it was given: an aligned chapter is a different file, so it has its own fingerprint
