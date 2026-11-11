@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
 import { septuagintChunkLinked } from '../../src/reader/septuagint';
-import { alignChapter, alignVerse, lettersOf, renderAlignReport, SUPPLIED_FOR_VERB, type AlignShare } from '../../scripts/lxx/align';
+import { alignChapter, alignRuns, alignVerse, lettersOf, renderAlignReport, SUPPLIED_FOR_VERB, type AlignShare } from '../../scripts/lxx/align';
 import {
   ALIGN_CHOICES_DIR,
   AlignChooseRefused,
@@ -91,6 +91,50 @@ describe('the aligner leaves runs for the model', () => {
     const text = listRemainders(chapter);
     expect(text).toContain('Gen.1:2');
     expect(text).toContain('#1');
+  });
+});
+
+/**
+ * Genesis 20:2 in miniature (mw-u2w5klk.349.16): 'She will' leads the verb 'love', so joinSupplied (the last step of alignChapter, after the rows) makes 'She will love,' one chunk. The rows are applied
+ * before it, so the runs a session numbers must be the ones before it: the listing and the check use alignRuns, the stage `lxx:ship` applies the rows at.
+ */
+describe('the listing numbers the runs at the stage the ship applies the rows', () => {
+  const g = (): GreekWord[] => [
+    word('Ἀβραὰμ', 'abraam', 'Ἀβραάμ', 'N-NSM'),
+    word('εἶπεν', 'eipen', 'λέγω', 'V-AAI-3S'),
+    word('Σάρρας', 'sarras', 'Σάρρα', 'N-GSF'),
+    word('ἀγαπᾶται', 'agapatai', 'ἀγαπάω', 'V-PPI-3S'),
+    word('ἀδελφή', 'adelphē', 'ἀδελφή', 'N-NSF'),
+    word('μου', 'mou', 'ἐγώ', 'P-GS'),
+  ];
+  const glosses = (lemma: string): string => ({ Ἀβραάμ: 'Abraham', Σάρρα: 'Sarah', ἀδελφή: 'sister', λέγω: 'say', ἀγαπάω: 'love' })[lemma] ?? '';
+  const plain = (): Chapter => ({ book: 'Genesis', code: 'gen', chapter: 20, verses: [{ n: 2, g: g(), e: [{ t: 'And Abraham said of Sarah, She will love, my sister.', g: [] }] }] }) as unknown as Chapter;
+
+  it('lists the runs the rows are applied to: She will is a run of its own in the listing, as it is when the ship applies the rows', () => {
+    const listed = alignRuns(plain(), glosses).chapter;
+    const runs = runsOf(listed.verses[0]);
+    expect(runs.map((r) => listed.verses[0].e[r.chunk].t)).toEqual(['And', 'of', 'She will']);
+    expect(listRemainders(listed)).toContain('{#3 She will} love,');
+    // the shipped chapter has joined it to the verb: it has two runs, so a listing made from it would number the third away
+    expect(runsOf(alignChapter(plain(), glosses).chapter.verses[0])).toHaveLength(2);
+  });
+
+  it('a session file made from the listing, run 3 included, applies in alignChapter with no row stale', () => {
+    const listed = alignRuns(plain(), glosses).chapter;
+    const { rows, offences } = checkModelLines(listed, parseModelLines('Gen.20:2 *').lines);
+    expect(offences).toEqual([]);
+    const shipped = alignChapter(plain(), glosses, rows);
+    expect(shipped.stale).toEqual([]);
+    expect(shipped.chapter.verses[0].e.map((c) => c.t)).toContain('She will love,');
+  });
+
+  it('alignRuns is the stage alignChapter applies the rows at: the chapter it gives is the one applyModel is given', () => {
+    const listed = alignRuns(plain(), glosses).chapter;
+    const rows = checkModelLines(listed, parseModelLines('Gen.20:2#1 And @-\nGen.20:2#2 of @-\nGen.20:2#3 She will @-').lines).rows;
+    const done = applyModel(listed, rows);
+    expect(done.stale).toEqual([]);
+    const shipped = alignChapter(plain(), glosses, rows).chapter.verses[0];
+    expect(shipped.e.map((c) => c.t)).toEqual(['And', 'Abraham', 'said', 'of', 'Sarah,', 'She will love,', 'my', 'sister.']);
   });
 });
 

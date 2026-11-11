@@ -64,6 +64,8 @@ export interface ShipOptions {
   choicesDir?: string;
   /** where the model pass's files are (align-choose.ts); default `align` beside the choices directory (data/lxx/align); '' applies none */
   alignDir?: string;
+  /** write each chapter as the aligner leaves it before the model pass's rows and joinSupplied (align.ts alignRuns): what `lxx:align-choose` numbers the runs of; default false */
+  runsOnly?: boolean;
   /** where the known-answer chapters' choices files are; default data/lxx/known */
   knownDir?: string;
   /** where the Morpheus caches are; default data/lxx/morpheus */
@@ -147,7 +149,7 @@ export async function runShip(argv: readonly string[], options: ShipOptions = {}
     }
     const lxx = await (options.load ?? ((dir) => loadLxxInput({ rawDir, annotationsDir: dir, log })))(annotations);
     const aligned: AlignShare[] = [];
-    const written = writeLxx(lxx, args.out, log, { shares: aligned, model: readModelDir(alignDir) });
+    const written = writeLxx(lxx, args.out, log, { shares: aligned, model: readModelDir(alignDir), runsOnly: options.runsOnly });
     if (!existsSync(notice)) throw new Error(`the notice ${notice} is not there`);
     if (writeIfChanged(join(args.out, 'README.md'), readFileSync(notice, 'utf8'))) written.written++;
     const formsDir = args.lemmaForms ?? (basename(resolve(args.out)) === 'data-lxx' && existsSync(join(dirname(resolve(args.out)), 'lemma-forms')) ? join(dirname(args.out), 'lemma-forms') : undefined);

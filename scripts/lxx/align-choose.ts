@@ -350,13 +350,13 @@ export class AlignChooseRefused extends Error {
   }
 }
 
-/** The chapter as the aligner leaves it, with no model rows applied (a ship into a temporary directory). */
+/** The chapter as the aligner leaves it, at the stage `lxx:ship` applies the rows at: no rows, and before joinSupplied (align.ts alignRuns; a ship into a temporary directory). */
 async function chapterWithoutModel(args: AlignChooseArgs, options: AlignChooseOptions): Promise<Chapter> {
   const { scratch = tmpdir(), ...ship } = options.ship ?? {};
   const dir = mkdtempSync(join(scratch, 'lampas-lxx-align-choose-'));
   try {
     const { runShip } = await import('./ship');
-    await runShip(['--out', dir, ...args.rest], { ...ship, scratch, alignDir: '', log: () => undefined });
+    await runShip(['--out', dir, ...args.rest], { ...ship, scratch, alignDir: '', runsOnly: true, log: () => undefined });
     const file = join(dir, args.book, `${args.chapter}.json`);
     if (!existsSync(file)) throw new Error(`lxx:align-choose: ${args.book} ${args.chapter} is not a shipped chapter`);
     return JSON.parse(readFileSync(file, 'utf8')) as Chapter;
