@@ -14,6 +14,7 @@ import { chosenUnits } from '../../src/reader/chosenReading';
 import { NA } from '../../src/reader/readingSets';
 import { braceReadings, braceText, plainEnglish, readerVariants, shownUnits, type VariantFilter } from '../../src/reader/variants';
 import type { ReaderView } from '../../src/data/repositories';
+import { dataBooks } from '../support/dataBooks';
 
 afterEach(cleanup);
 
@@ -207,12 +208,11 @@ describe('an omission unit whose words the English gives no chunk of their own (
 });
 
 describe('every omission unit of the committed chapters has a word to dot (mw-9ji6ek0.30)', () => {
-  const chapters: Chapter[] = readdirSync('public/data', { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+  const chapters: Chapter[] = dataBooks('public/data')
     .flatMap((d) =>
-      readdirSync(`public/data/${d.name}`)
+      readdirSync(`public/data/${d}`)
         .filter((f) => /^\d+\.json$/.test(f))
-        .map((f) => JSON.parse(readFileSync(`public/data/${d.name}/${f}`, 'utf8')) as Chapter),
+        .map((f) => JSON.parse(readFileSync(`public/data/${d}/${f}`, 'utf8')) as Chapter),
     );
 
   it('maps each unit that a reading leaves out to a marked word in the Greek view and a marked chunk in the English one, but for the ones at the start of a verse', () => {
@@ -276,12 +276,11 @@ describe('a unit whose reading changes the words and whose words the English giv
 });
 
 describe('every non-omission variant unit of the committed chapters has a word and a chunk to dot (mw-9ji6ek0.35)', () => {
-  const chapters: Chapter[] = readdirSync('public/data', { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+  const chapters: Chapter[] = dataBooks('public/data')
     .flatMap((d) =>
-      readdirSync(`public/data/${d.name}`)
+      readdirSync(`public/data/${d}`)
         .filter((f) => /^\d+\.json$/.test(f))
-        .map((f) => JSON.parse(readFileSync(`public/data/${d.name}/${f}`, 'utf8')) as Chapter),
+        .map((f) => JSON.parse(readFileSync(`public/data/${d}/${f}`, 'utf8')) as Chapter),
     );
 
   it('maps each unit to a marked word in the Greek view and a marked chunk in the English one, but for the ones before a verse’s first English chunk', () => {
@@ -405,12 +404,11 @@ describe('the English filter compares the verse, not the unit’s own snippet (m
 });
 
 describe('the committed chapters', () => {
-  const chapters: Chapter[] = readdirSync('public/data', { withFileTypes: true })
-    .filter((d) => d.isDirectory())
+  const chapters: Chapter[] = dataBooks('public/data')
     .flatMap((d) =>
-      readdirSync(`public/data/${d.name}`)
+      readdirSync(`public/data/${d}`)
         .filter((f) => /^\d+\.json$/.test(f))
-        .map((f) => JSON.parse(readFileSync(`public/data/${d.name}/${f}`, 'utf8')) as Chapter),
+        .map((f) => JSON.parse(readFileSync(`public/data/${d}/${f}`, 'utf8')) as Chapter),
     );
   const units: VariantUnit[] = chapters.flatMap((c) => c.variants ?? []);
 

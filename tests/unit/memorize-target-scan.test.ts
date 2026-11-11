@@ -1,11 +1,12 @@
 // tests/unit/memorize-target-scan.test.ts — every verse of the New Testament gives a target (mw-fu7dqf.1): the recall judge and the reading check agree on the text.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, Verse } from '../../src/data/chapter';
 import { wovenOf } from '../../src/reader/useWoven';
 import { readingText, wovenReading } from '../../src/services/reading';
 import { tokensOf } from '../../src/memorize/target';
 import { isGreekBook } from '../support/data-books';
+import { dataBooks } from '../support/dataBooks';
 
 const words = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 
@@ -13,7 +14,7 @@ describe('sweep: every chapter in public/data', () => {
   it('every verse has en and el tokens, none empty; en reads the English; a fully solid weave reads as the reading check does', () => {
     let verses = 0;
     const problems: string[] = [];
-    for (const book of readdirSync('public/data').filter((b) => statSync(`public/data/${b}`).isDirectory() && isGreekBook(b))) {
+    for (const book of dataBooks('public/data').filter((b) => isGreekBook(b))) {
       for (const file of readdirSync(`public/data/${book}`)) {
         if (!/^\d+\.json$/.test(file)) continue;
         const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter;

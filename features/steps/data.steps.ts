@@ -13,6 +13,7 @@ import { sourceLanguage, type BookIndex, type Chapter } from '../../src/data/cha
 import type { LemmaLexicon } from '../../src/data/lexicon';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import { serveChapter } from '../../src/dataCache';
+import { dataBooks } from '../../tests/support/dataBooks';
 import { childBuildTestMs, viteBuild } from '../../tests/support/child-build';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
 
@@ -106,7 +107,10 @@ describeFeature(feature, ({ Scenario }) => {
       }
       expect(files).toBe(1189);
       // data:build's and data:build:ot's output; ladder/el.json is scripts/ladder-el.ts's, audio/ is the recorded voice's timings (docs/data.md), and verses-<book>-<n>.json (the blog popup's small file of English) is scripts/verses-build.ts's
-      const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json') && !p.startsWith('ladder') && !p.startsWith('audio') && !p.startsWith('verses-'));
+      const books = dataBooks('public/data');
+      const onDisk = readdirSync('public/data', { recursive: true })
+        .map(String)
+        .filter((p) => p.endsWith('.json') && !p.startsWith('verses-') && (!/[\\/]/.test(p) || books.includes(p.split(/[\\/]/)[0])));
       expect(onDisk).toHaveLength(1189 + 5);
     });
   });

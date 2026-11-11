@@ -1,12 +1,13 @@
 // A verb whose aorist cannot be guessed carries it in its gloss (mw-bsf54t.12): 'to come/go (aorist ἦλθον)', like the BMA list's λέγω.
 // src/data/irregular-aorists.ts is the list and withAoristNote; the data build (scripts/data-build.ts) and the seed build run it where a gloss
 // comes in. The sweep reads public/data (the lexicon, every chapter's lex and its words) so each aorist is confirmed by the app's own text.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import type { LemmaLexicon } from '../../src/data/lexicon';
 import { IRREGULAR_AORISTS, withAoristNote } from '../../src/data/irregular-aorists';
 import { SEED_WORDS } from '../../src/data/seed-words';
+import { dataBooks } from '../support/dataBooks';
 
 const DATA = 'public/data';
 const nfc = (s: string) => s.normalize('NFC');
@@ -14,7 +15,7 @@ const lexicon = JSON.parse(readFileSync(`${DATA}/lexicon.json`, 'utf8')) as Lemm
 
 function chapters(): Chapter[] {
   const found: Chapter[] = [];
-  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory() && b !== 'ladder' && b !== 'audio')) {
+  for (const book of dataBooks(DATA)) {
     for (const file of readdirSync(`${DATA}/${book}`)) {
       const json: unknown = JSON.parse(readFileSync(`${DATA}/${book}/${file}`, 'utf8'));
       if (typeof json === 'object' && json !== null && 'verses' in json) found.push(json as Chapter);

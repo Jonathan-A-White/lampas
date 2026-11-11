@@ -5,6 +5,7 @@ import { GRAMMAR_CONCEPTS, conceptOf } from '../../src/data/grammar-concepts';
 import { grammarExamples } from '../../src/data/grammarExamples';
 import { decodeParse, GRAMMAR_TERMS, parseSegments } from '../../src/data/parseCode';
 import { isGreekBook } from '../support/data-books';
+import { dataBooks } from '../support/dataBooks';
 
 const words = (text: string): number => text.trim().split(/\s+/).length;
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -61,9 +62,9 @@ describe('parseSegments: a decoded parsing cut into links and the text between',
 
   it('is all terms and separators for every parsing code of the New Testament, and every term it finds has an entry', () => {
     const codes = new Set<string>();
-    for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio' && isGreekBook(d.name))) {
-      for (const file of readdirSync(`public/data/${book.name}`)) {
-        const c = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
+    for (const book of dataBooks('public/data').filter((d) => isGreekBook(d))) {
+      for (const file of readdirSync(`public/data/${book}`)) {
+        const c = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter;
         for (const code of Object.keys(c.parse)) codes.add(code);
       }
     }

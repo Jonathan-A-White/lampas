@@ -17,6 +17,7 @@ import {
 import { COLUMNS } from '../../scripts/data/bereanTable';
 import { sameInVerse } from '../../src/data/variantVerse';
 import type { Chapter, VariantCode, VariantPlace, VariantUnit, Verse } from '../../src/data/chapter';
+import { dataBooks } from '../support/dataBooks';
 
 describe('an MSB footnote', () => {
   it('reads the critical text’s own words from "CT <i>…</i>", with the entity written out', () => {
@@ -271,12 +272,12 @@ describe('the build', () => {
 });
 
 describe('the committed data', () => {
-  const books = existsSync('public/data') ? readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && !['ladder', 'audio'].includes(d.name)) : [];
+  const books = existsSync('public/data') ? dataBooks('public/data') : [];
   const all: Array<{ ref: string; unit: VariantUnit }> = [];
   const verses = new Map<VariantUnit, Verse>();
   for (const dir of books) {
-    for (const file of readdirSync(`public/data/${dir.name}`)) {
-      const chapter = JSON.parse(readFileSync(`public/data/${dir.name}/${file}`, 'utf8')) as Chapter;
+    for (const file of readdirSync(`public/data/${dir}`)) {
+      const chapter = JSON.parse(readFileSync(`public/data/${dir}/${file}`, 'utf8')) as Chapter;
       for (const unit of chapter.variants ?? []) {
         all.push({ ref: `${chapter.book} ${chapter.chapter}:${unit.v}`, unit });
         verses.set(unit, chapter.verses.find((v) => v.n === unit.v)!);

@@ -8,6 +8,7 @@ import type { StudyResources } from '../../src/data/repositories';
 import { LEXICONS, logosStudy, consonants } from '../../src/resources/logos';
 import { RESOURCES, type StudyLink, type StudyResource } from '../../src/resources';
 import { studyWordOf, verseChips, wordChips } from '../../src/resources/tutorLinks';
+import { dataBooks } from '../support/dataBooks';
 
 const DATA = join(__dirname, '..', '..', 'public', 'data');
 const allIds = LEXICONS.map((l) => l.id);
@@ -17,9 +18,8 @@ interface Unit { alts: { g?: GreekWord[] }[] }
 interface ChapterFile { verses: { g: GreekWord[] }[]; variants?: Unit[] }
 
 const chapters = (): ChapterFile[] =>
-  readdirSync(DATA, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .flatMap((d) => readdirSync(join(DATA, d.name)).filter((f) => /^\d+\.json$/.test(f)).map((f) => JSON.parse(readFileSync(join(DATA, d.name, f), 'utf8')) as ChapterFile));
+  dataBooks(DATA)
+    .flatMap((d) => readdirSync(join(DATA, d)).filter((f) => /^\d+\.json$/.test(f)).map((f) => JSON.parse(readFileSync(join(DATA, d, f), 'utf8')) as ChapterFile));
 
 /** every distinct word of the variant readings, and the first words of each verse's chapter's first verse (Greek and Hebrew) as a sample of ordinary ones */
 const words = (): GreekWord[] => {

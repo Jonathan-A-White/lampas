@@ -12,6 +12,7 @@ import { hebrewWordSpeech, setVoice, speak, stopSpeaking } from '../../src/speec
 import { hebrewPronunciationOf } from '../../src/speech/pronunciation';
 import { stripCantillation } from '../../src/speech/schemes/hebrew-israeli';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
+import { dataBooks } from '../support/dataBooks';
 
 const CONTENT = ['hebrew-het', 'hebrew-ayin', 'hebrew-resh', 'hebrew-tsade'];
 const israeli = hebrewPronunciationOf();
@@ -23,9 +24,9 @@ const nfc = (w: string): string => stripCantillation(w).normalize('NFC');
 /** Every Hebrew word of the Lampas data: each form of every Old Testament chapter, and every lemma of the Hebrew lexicon, cantillation taken off. */
 const DATA_WORDS: ReadonlySet<string> = (() => {
   const out = new Set<string>();
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'audio')) {
-    for (const file of readdirSync(`public/data/${book.name}`)) {
-      const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Partial<Chapter>;
+  for (const book of dataBooks('public/data')) {
+    for (const file of readdirSync(`public/data/${book}`)) {
+      const chapter = JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Partial<Chapter>;
       if (chapter.lang !== 'hbo') continue;
       for (const verse of chapter.verses ?? []) for (const w of verse.g) out.add(nfc(w.t.replace(/[־׃]/gu, '')));
     }
