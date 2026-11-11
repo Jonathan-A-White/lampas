@@ -1,0 +1,279 @@
+// src/speech/recordedVoice.ts — the recorded voice (mw-82lb97i.3, docs/read-aloud.md 'The recorded voice'): a chapter that has verse timings (src/data/audioTimings.ts) is
+// read by the publisher's own MP3, played from their server by ONE audio element made on first use and kept for the app's life, so a later chapter needs no new tap.
+// It has no crossOrigin attribute (the publisher's server sends no CORS headers: with one the element would refuse to play) and is never fetch()ed, copied or cached:
+// the element plays it as any page's <audio> would. This file is the sound only: src/speech/readAloud.ts keeps the reading (its verses, its span, crossing, Listen),
+// and asks this file to play from a verse to a second (playRecording), seek by verse (seekToVerse), pause, resume and stop. It tells its ONE listener the verse
+// at each 'timeupdate' (never requestAnimationFrame alone, which stops when the page hides), the span's end (a timer aimed at it, re-aimed on a change of speed, a
+// pause or a seek, and 'timeupdate' past it), and a failure (play() refused, the element's 'error', or no 'playing' within PLAYING_WAIT_MS).
+// Whether he wants it is the seam wantsRecording() (story b3 replaces it with a setting); recordingFor() is the rule a tap decides by, with no wait.
+import { sourceLanguage, type Chapter } from '../data/chapter';
+import { chapterTimingsNow, spanOf, verseAt, type ChapterTimings } from '../data/audioTimings';
+import type { PlanVerse } from './readAloud';
+
+/** The recorded voices Lampas knows: the folder of their timings under /data/audio/. */
+export type RecordedVoiceId = 'msb-david';
+
+const SEAM_KEY = 'lampas:bibleVoice';
+
+function readSeam(): RecordedVoiceId | null {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem(SEAM_KEY) === 'msb-david' ? 'msb-david' : null;
+  } catch {
+    return null;
+  }
+}
+
+let wanted: RecordedVoiceId | null = readSeam();
+
+/** The recorded voice the Bible is read in, or null for the phone's voice. Read once at load from localStorage 'lampas:bibleVoice' (the setting replaces this, story b3). */
+export const wantsRecording = (): RecordedVoiceId | null => wanted;
+
+/** Sets the seam (a jsdom test's). */
+export function setWantsRecording(voice: RecordedVoiceId | null): void {
+  wanted = voice;
+}
+
+/** The timings to read `verses` of this chapter by, or undefined for the phone's voice: decided at the tap with nothing awaited. All must hold: he wants the recording,
+ * the chapter is the MSB's New Testament (no Old Testament, no Septuagint), every run of every verse to be read is English (the English view with nothing woven: the
+ * recording reads the MSB's English only), the chapter's timings are already loaded and have every verse, and the phone is not offline. */
+export function recordingFor(book: string, chapter: Chapter | null, verses: readonly PlanVerse[]): ChapterTimings | undefined {
+  if (!wantsRecording() || !chapter || verses.length === 0) return undefined;
+  if (chapter.translation !== 'msb' || sourceLanguage(chapter) !== 'grc') return undefined;
+  if (!verses.every((v) => v.runs.every((r) => r.language === 'english'))) return undefined;
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return undefined;
+  const timings = chapterTimingsNow(book, chapter.chapter);
+  if (!timings || !verses.every((v) => spanOf(timings, v.n) !== null)) return undefined;
+  return timings;
+}
+
+/** What the recording tells the reading. */
+export interface RecordingListener {
+  /** the verse at the recording's second changed */
+  verse(n: number): void;
+  /** the span's end was reached (or the recording's own end) */
+  reached(): void;
+  /** it cannot be played: the reading goes on in the phone's voice */
+  failed(): void;
+}
+
+/** How long the element may take, from play() to its 'playing', before the reading goes to the phone's voice. */
+export const PLAYING_WAIT_MS = 8000;
+
+/** The wait, in ms, from `now` (seconds into the recording) to `end` at `rate`: the recording's seconds go by `rate` times as fast. Never below 0. */
+export const endWaitMs = (end: number, now: number, rate: number): number => (Math.max(0, end - now) / (rate > 0 ? rate : 1)) * 1000;
+
+/** A timer fires a little early or the recording stalls: the end counts as reached within this many seconds of it. */
+const END_SLACK = 0.05;
+
+let element: HTMLAudioElement | null = null;
+let rate = 1;
+let timings: ChapterTimings | null = null;
+let endSecond = Infinity;
+let listener: RecordingListener | null = null;
+let lastVerse: number | null = null;
+/** where the reading asked to start: applied again once the recording's metadata is in, should the browser have dropped a seek made before it */
+let pendingStart: number | null = null;
+/** the reading wants sound now (play() asked for and not paused since): a play() refused after a pause is not a failure */
+let wantPlaying = false;
+/** the play() asked for last: an answer to an older one is ignored */
+let playToken = 0;
+let endTimer: ReturnType<typeof setTimeout> | null = null;
+let endAimedMs: number | null = null;
+let playingWatch: ReturnType<typeof setTimeout> | null = null;
+
+function clearEndTimer(): void {
+  if (endTimer !== null) clearTimeout(endTimer);
+  endTimer = null;
+  endAimedMs = null;
+}
+
+function clearPlayingWatch(): void {
+  if (playingWatch !== null) clearTimeout(playingWatch);
+  playingWatch = null;
+}
+
+/** Aims the end timer at the span's end from the second the element is at, at its speed; a paused or ended recording has none. */
+function aimEnd(): void {
+  clearEndTimer();
+  if (!element || !wantPlaying || !listener || !Number.isFinite(endSecond)) return;
+  const wait = endWaitMs(endSecond, element.currentTime, rate);
+  endAimedMs = wait;
+  endTimer = setTimeout(() => {
+    endTimer = null;
+    endAimedMs = null;
+    if (!element || !wantPlaying) return;
+    // the recording stalled (buffering) or the timer came early: aim again rather than cut a word off
+    if (element.currentTime < endSecond - END_SLACK) return aimEnd();
+    reach();
+  }, wait);
+}
+
+/** The wait the end timer is aimed at, in ms, or null when none is (a test's). */
+export const endTimerMs = (): number | null => endAimedMs;
+
+function reach(): void {
+  const to = listener;
+  halt();
+  to?.reached();
+}
+
+function fail(): void {
+  const to = listener;
+  halt();
+  to?.failed();
+}
+
+/** Pauses the element and drops the listener: nothing more is told. */
+function halt(): void {
+  wantPlaying = false;
+  playToken++;
+  listener = null;
+  pendingStart = null;
+  clearEndTimer();
+  clearPlayingWatch();
+  element?.pause();
+}
+
+function tell(): void {
+  if (!element || !timings || !listener) return;
+  const now = element.currentTime;
+  if (pendingStart !== null) {
+    if (now + END_SLACK < pendingStart) return; // the start's seek is not in yet
+    pendingStart = null;
+  }
+  // at the span's end the verse after it is never told (it may start on the very second the span ends)
+  if (now >= endSecond - END_SLACK) return reach();
+  const n = verseAt(timings, now);
+  if (n !== null && n !== lastVerse) {
+    lastVerse = n;
+    listener.verse(n);
+  }
+}
+
+function make(): HTMLAudioElement {
+  const audio = new Audio();
+  audio.preload = 'auto';
+  audio.preservesPitch = true;
+  audio.addEventListener('timeupdate', () => {
+    if (wantPlaying) tell();
+  });
+  audio.addEventListener('playing', () => {
+    clearPlayingWatch();
+    aimEnd();
+  });
+  audio.addEventListener('seeked', () => aimEnd());
+  audio.addEventListener('ratechange', () => aimEnd());
+  audio.addEventListener('loadedmetadata', () => {
+    if (pendingStart !== null && Math.abs(audio.currentTime - pendingStart) > END_SLACK) audio.currentTime = pendingStart;
+  });
+  audio.addEventListener('ended', () => {
+    if (listener && wantPlaying) reach();
+  });
+  audio.addEventListener('error', () => {
+    if (listener) fail();
+  });
+  return audio;
+}
+
+/** The one element, made on first use. */
+function audio(): HTMLAudioElement {
+  element ??= make();
+  return element;
+}
+
+/** The one element, or null before the first recording (a test's, and the media session's later). */
+export const recordingElement = (): HTMLAudioElement | null => element;
+
+/** Plays the element now: from a tap, nothing may be awaited before this. A refusal, or no 'playing' in time, is a failure. */
+function play(): void {
+  const el = audio();
+  wantPlaying = true;
+  const mine = ++playToken;
+  el.playbackRate = rate;
+  clearPlayingWatch();
+  playingWatch = setTimeout(() => {
+    playingWatch = null;
+    if (mine === playToken && wantPlaying && listener) fail();
+  }, PLAYING_WAIT_MS);
+  let started: Promise<void> | undefined;
+  try {
+    started = el.play();
+  } catch {
+    return fail();
+  }
+  started?.catch(() => {
+    if (mine === playToken && wantPlaying && listener) fail();
+  });
+  aimEnd();
+}
+
+/** Plays `recording` from the start of verse `from` (second 0 for its first verse, the narrator's title included) to `until` seconds, telling `to` as it goes. The
+ * element and its src are kept when it is the recording already loaded. Call it straight from the tap. */
+export function playRecording(recording: ChapterTimings, from: number, until: number, to: RecordingListener): boolean {
+  halt();
+  const el = audio();
+  if (timings !== recording || el.getAttribute('src') !== recording.audio) el.src = recording.audio;
+  timings = recording;
+  listener = to;
+  endSecond = until;
+  if (!seekToVerse(from)) {
+    listener = null;
+    return false;
+  }
+  play();
+  return true;
+}
+
+/** Moves the recording to the start of verse `n` (second 0 for the recording's first verse): the start, Restart and a tapped verse all come here. False when it has no such verse. */
+export function seekToVerse(n: number): boolean {
+  if (!timings || !element) return false;
+  const span = spanOf(timings, n);
+  if (!span) return false;
+  const start = timings.verses[0]?.[0] === n ? 0 : span.start;
+  pendingStart = start;
+  element.currentTime = start;
+  lastVerse = n;
+  aimEnd();
+  return true;
+}
+
+/** Holds the recording at the second it is at. */
+export function pauseRecording(): void {
+  if (!element) return;
+  wantPlaying = false;
+  playToken++;
+  clearEndTimer();
+  clearPlayingWatch();
+  element.pause();
+}
+
+/** Plays on from the second it was paused at. */
+export function resumeRecording(): void {
+  if (!element || !listener) return;
+  play();
+}
+
+/** Stops the recording and forgets its listener: every new reading and every Stop comes here. */
+export function stopRecording(): void {
+  halt();
+}
+
+/** His English speed: the recording plays at it, keeping its pitch; a change while it plays takes effect at once. */
+export function setRecordedRate(next: number): void {
+  if (!(next > 0)) return;
+  rate = next;
+  if (element) {
+    element.playbackRate = rate;
+    aimEnd();
+  }
+}
+
+/** Forgets the element and everything about it (a test's: each scenario starts with no element). */
+export function resetRecordedVoice(): void {
+  halt();
+  element = null;
+  timings = null;
+  lastVerse = null;
+  endSecond = Infinity;
+  rate = 1;
+}
