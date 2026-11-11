@@ -6,6 +6,7 @@ import type { PlayTo, ReaderView } from '../data/repositories';
 import { passageVerse, unitId, type Passage } from '../data/passage';
 import type { Verse } from '../data/chapter';
 import { getReading, listenKeyOf, pauseReading, planOf, startReading, useListenCompleted } from '../speech/readAloud';
+import { recordingFor } from '../speech/recordedVoice';
 import type { WovenVerse } from '../data/weave';
 
 /** `sheet` is what the Verse view shows when it is not what the Reader shows (an Old Testament chapter's view stays English for now, mw-5vvlay.1): its Listen reads that. */
@@ -19,35 +20,42 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
     [plan, chapter, sheetView, sheetWoven, source],
   );
   // The header's Play (continuous) goes on to the end of the book or of the Bible, as Play to says; a verse's play button reads that verse only.
+  // Each is heard in the recorded voice when the verses it reads can be (src/speech/recordedVoice.ts recordingFor, decided here at the tap with no wait).
   const readFrom = useCallback(
     (from: number, continuous: boolean) => {
-      if (plan) startReading({ book, chapter: chapterN, plan, from, continuous, span: readSpan });
+      if (!plan) return;
+      const recorded = recordingFor(book, chapter, plan.filter((v) => (continuous ? v.n >= from : v.n === from)));
+      startReading({ book, chapter: chapterN, plan, from, continuous, span: readSpan, recorded });
     },
-    [plan, book, chapterN, readSpan],
+    [plan, book, chapter, chapterN, readSpan],
   );
   // Listen on a passage (a section heading's view, or the place line's whole chapter): its verses only, to the end of the passage and no further, whatever Play to says. On a verse: that verse only.
   // A Listen is paused by an interruption from inside the app and goes on by itself (src/speech/readAloud.ts interruptListen).
   const listenTo = useCallback(
     (passage: Passage) => {
-      if (listenPlan)
-        startReading({
-          inBook: book,
-          chapter: chapterN,
-          plan: listenPlan.filter((v) => v.n >= passage.first && v.n <= passage.last),
-          from: passage.first,
-          continuous: true,
-          // the plan is the passage's verses and nothing more: 'chapter' reads to its end and does not stop at a heading inside it (the place line's whole chapter has several)
-          span: 'chapter',
-          listen: listenKeyOf(book, chapterN, unitId(passageVerse(passage))),
-        });
+      if (!listenPlan) return;
+      const verses = listenPlan.filter((v) => v.n >= passage.first && v.n <= passage.last);
+      startReading({
+        inBook: book,
+        chapter: chapterN,
+        plan: verses,
+        from: passage.first,
+        continuous: true,
+        // the plan is the passage's verses and nothing more: 'chapter' reads to its end and does not stop at a heading inside it (the place line's whole chapter has several)
+        span: 'chapter',
+        listen: listenKeyOf(book, chapterN, unitId(passageVerse(passage))),
+        recorded: recordingFor(book, chapter, verses),
+      });
     },
-    [listenPlan, book, chapterN],
+    [listenPlan, book, chapter, chapterN],
   );
   const listenVerse = useCallback(
     (verse: Verse) => {
-      if (listenPlan) startReading({ book, chapter: chapterN, plan: listenPlan, from: verse.n, continuous: false, span: 'verse', listen: listenKeyOf(book, chapterN, unitId(verse)) });
+      if (!listenPlan) return;
+      const recorded = recordingFor(book, chapter, listenPlan.filter((v) => v.n === verse.n));
+      startReading({ book, chapter: chapterN, plan: listenPlan, from: verse.n, continuous: false, span: 'verse', listen: listenKeyOf(book, chapterN, unitId(verse)), recorded });
     },
-    [listenPlan, book, chapterN],
+    [listenPlan, book, chapter, chapterN],
   );
   // The key of the Listen the Verse view offers; leaving the verse or passage (Back, an arrow) pauses it: the speaking bar then offers Resume at the same verse.
   const viewKey = viewUnit ? listenKeyOf(book, chapterN, unitId(viewUnit)) : null;

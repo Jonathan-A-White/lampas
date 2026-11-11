@@ -10,13 +10,18 @@ import { chooseAccent } from './accents';
 import { setGreekPronunciation, setSpeechRate, setVoice } from './greek';
 import { LANGUAGES, type SettableLanguage } from './languages';
 import { setHebrewPronunciation } from './pronunciation';
+import { setRecordedRate } from './recordedVoice';
 
 /** Starts listening and loads the saved choices; returns the stop. */
 export function startSpeechSettingsSync(): () => void {
   let live = true;
   const stops = [
     subscribe('voices-changed', ({ voices }) => LANGUAGES.forEach((l) => setVoice(l.id, voices[l.id]))),
-    subscribe('rates-changed', ({ rates }) => LANGUAGES.forEach((l) => setSpeechRate(l.id, rates[l.id]))),
+    subscribe('rates-changed', ({ rates }) => {
+      LANGUAGES.forEach((l) => setSpeechRate(l.id, rates[l.id]));
+      // the recorded voice reads English: it plays at his English speed (mw-82lb97i.3)
+      setRecordedRate(rates.english);
+    }),
     subscribe('pronunciation-changed', ({ pronunciation }) => setGreekPronunciation(pronunciation)),
     onSetting(englishAccentSetting, chooseAccent),
     onSetting(hebrewPronunciationSetting, setHebrewPronunciation),

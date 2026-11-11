@@ -13,6 +13,7 @@
 // as the voice reaches it.
 import { useSyncExternalStore } from 'react';
 import { getSpeech, isSpeaking, pause as enginePause, resume as engineResume, stop as engineStop, subscribe as subscribeEngine } from 'voice-kit/speech';
+import { spanOf, type ChapterTimings } from '../data/audioTimings';
 import { loadChapter, type SourceLanguage, type Verse } from '../data/chapter';
 import { neighbours } from '../data/neighbours';
 import type { ReaderView } from '../data/repositories';
@@ -24,6 +25,7 @@ import { besideNow, greekVoiceForm, hasGreekVoice, hasVoice, loneLetterCuts, pla
 import type { SpeechLanguage } from './languages';
 import { hebrewVoiceForm } from './pronunciation';
 import type { ReadSpan } from './readSpan';
+import { pauseRecording, playRecording, resumeRecording, stopRecording } from './recordedVoice';
 import { dropWaiting } from './tutorWaiting';
 import { keepAwake, letSleep } from './wakeLock';
 
@@ -52,6 +54,9 @@ export const NO_GREEK_VOICE_NOTICE = 'This phone has no Greek voice: Greek is re
 
 /** The line shown when a phone has no Hebrew voice and Hebrew is read anyway (the same line a Hebrew word's tap shows, src/speech/greek.ts noVoiceHelp). */
 export const NO_HEBREW_VOICE_NOTICE = 'No Hebrew voice on this phone';
+
+/** The line shown when the recorded voice fails and the phone's voice reads on from the verse in hand (mw-82lb97i.3). */
+export const RECORDING_FAILED_NOTICE = 'The recorded voice could not be reached: reading with the phone voice';
 
 const speakable = (text: string): boolean => /[\p{L}\p{N}]/u.test(text);
 
@@ -130,6 +135,10 @@ let startedWith: StartOptions | null = null;
 let suspended: { options: StartOptions; verse: number } | null = null;
 /** the Listen that last ran to its end by itself: its foot offers Play again */
 let completed: string | null = null;
+/** the chapter's recording this reading is heard in (src/speech/recordedVoice.ts, mw-82lb97i.3), or null when the phone's voice reads it */
+let recording: ChapterTimings | null = null;
+/** the last verse the recording plays to: at its end the reading goes on as at the end of a spoken verse (afterVerse) */
+let recordedUntil = 0;
 const listeners = new Set<() => void>();
 
 function set(next: ReadingState): void {
@@ -155,6 +164,7 @@ export function useReading(): ReadingState {
 function finish(my: number, natural = false): void {
   if (my !== epoch) return;
   epoch++;
+  dropRecording();
   letSleep();
   suspended = null;
   completed = natural ? state.listen : null;
@@ -186,7 +196,8 @@ function syncWithEngine(): void {
   if (!had) return;
   const my = epoch;
   queueMicrotask(() => {
-    if (my !== epoch || state.status === 'idle' || state.crossing || loading || clipping) return;
+    // a recorded reading never holds the package: its speech ending (a phone reading it took over from) is not its end
+    if (my !== epoch || state.status === 'idle' || state.crossing || loading || clipping || recording) return;
     const now = getSpeech();
     if (now.status === 'idle') return finish(my);
     if (now.key === READ_KEY) return;
@@ -294,6 +305,15 @@ function playPieces(pieces: Piece[], my: number, done: () => void, slowly: boole
   });
 }
 
+/** Verse `verse` (at `at` in the plan) is the one being read now: the state, the bus, and the next chapter's load when it is the plan's last. */
+function markVerse(verse: number, at: number): void {
+  if (state.verse !== verse) set({ ...state, verse });
+  if (state.answer === null) publish({ kind: 'verse-reading', chapter: chapterNumber, verse });
+  // the last verse starts the next chapter's load, so the voice need not wait for it
+  const ahead = at === plan.length - 1 ? chapterAhead() : null;
+  if (ahead) loadChapter(ahead.book, ahead.chapter).catch(() => {});
+}
+
 function readVerse(verse: number, my: number): void {
   if (my !== epoch) return;
   if (queued) {
@@ -303,13 +323,94 @@ function readVerse(verse: number, my: number): void {
   const at = plan.findIndex((v) => v.n === verse);
   const entry = plan[at];
   if (!entry) return finish(my);
-  if (state.verse !== verse) set({ ...state, verse });
-  if (state.answer === null) publish({ kind: 'verse-reading', chapter: chapterNumber, verse });
-  // the last verse starts the next chapter's load, so the voice need not wait for it
-  const ahead = at === plan.length - 1 ? chapterAhead() : null;
-  if (ahead) loadChapter(ahead.book, ahead.chapter).catch(() => {});
+  markVerse(verse, at);
   if (entry.runs.length === 0) return afterVerse(at, my);
   playPieces(piecesOf(entry.runs), my, () => afterVerse(at, my), entry.runs.every((r) => r.slow));
+}
+
+// The recorded voice (mw-82lb97i.3, docs/read-aloud.md 'The recorded voice'): the state, the verses, the span and the crossing are the same as the phone's; only
+// the sound is the recording's. It plays from the verse the reading starts at to the end of the last verse its span reads in this plan, and its end goes on as
+// the end of a spoken verse does (afterVerse: the end of the reading, the Listen's Play again, or the crossing).
+
+/** The plan's index of the last verse a reading from index `at` reads here: the verse itself for a verse, the verse before the next heading for a passage, else the plan's last. */
+function lastIndexFrom(at: number): number {
+  if (reach === 'verse') return at;
+  if (reach === 'passage') {
+    const heading = plan.findIndex((v, i) => i > at && v.heading);
+    if (heading > 0) return heading - 1;
+  }
+  return plan.length - 1;
+}
+
+const englishOnly = (verses: PlanVerse[]): boolean => verses.every((v) => v.runs.every((r) => r.language === 'english'));
+
+/** Stops the recording, if one plays, and forgets it. */
+function dropRecording(): void {
+  if (!recording) return;
+  recording = null;
+  stopRecording();
+}
+
+/** Plays the reading from verse `from` in `timings`; false when it cannot (the verse or the span's last verse is not in them), and the phone's voice reads instead. */
+function playFromRecording(timings: ChapterTimings, from: number, my: number): boolean {
+  const at = plan.findIndex((v) => v.n === from);
+  const last = plan[lastIndexFrom(at)];
+  const end = at >= 0 && last ? spanOf(timings, last.n)?.end : undefined;
+  if (end === undefined || !englishOnly(plan.slice(at, lastIndexFrom(at) + 1))) return false;
+  recording = timings;
+  recordedUntil = last.n;
+  const played = playRecording(timings, from, end, {
+    verse: (n) => recordedVerse(n, my),
+    reached: () => recordingReached(my),
+    failed: () => recordingFailed(my),
+  });
+  if (!played) {
+    recording = null;
+    return false;
+  }
+  // a play() that threw at once has already handed the verse to the phone's voice (recordingFailed)
+  if (recording === timings) markVerse(from, at);
+  return true;
+}
+
+/** The recording reached verse `n`: it is the verse being read, and a plan that now has Greek or Hebrew in it (the weave turned on) is read by the phone's voice from here. */
+function recordedVerse(n: number, my: number): void {
+  if (my !== epoch || !recording || state.status !== 'reading' || n > recordedUntil) return;
+  const now = state.verse === null ? -1 : plan.findIndex((v) => v.n === state.verse);
+  const at = plan.findIndex((v) => v.n === n);
+  if (at <= now) return;
+  if (queued) {
+    if (!englishOnly(queued.filter((v) => v.n >= n))) {
+      dropRecording();
+      return readVerse(n, my);
+    }
+    plan = queued;
+    queued = null;
+  }
+  markVerse(n, plan.findIndex((v) => v.n === n));
+}
+
+/** The recording reached the end of the last verse it plays: the reading goes on as after a spoken verse. */
+function recordingReached(my: number): void {
+  if (my !== epoch || !recording) return;
+  recording = null;
+  if (queued) {
+    plan = queued;
+    queued = null;
+  }
+  const at = plan.findIndex((v) => v.n === recordedUntil);
+  if (at < 0) return finish(my);
+  if (state.verse !== recordedUntil) markVerse(recordedUntil, at);
+  afterVerse(at, my);
+}
+
+/** The recording cannot be played (play() refused, the element's error, no sound in time): the phone's voice reads on from the verse in hand, never silence. */
+function recordingFailed(my: number): void {
+  if (my !== epoch || !recording) return;
+  recording = null;
+  set({ ...state, notice: RECORDING_FAILED_NOTICE });
+  // a paused reading goes on in the phone's voice when he taps Play (resumeReading reads the verse it waits at)
+  if (state.status === 'reading' && state.verse !== null) readVerse(state.verse, my);
 }
 
 function languageAhead(language: SpeechLanguage, from: number, all: boolean): boolean {
@@ -339,6 +440,8 @@ export interface StartOptions {
   answer?: number;
   /** this reading is a Listen (listenKeyOf): an interruption from inside the app pauses it and it goes on by itself afterwards */
   listen?: string;
+  /** the chapter's recording to hear it in (src/speech/recordedVoice.ts recordingFor decides at the tap), else the phone's voice reads it */
+  recorded?: ChapterTimings;
 }
 
 export function startReading(options: StartOptions): void {
@@ -350,6 +453,7 @@ export function startReading(options: StartOptions): void {
   startedWith = options.answer === undefined ? options : startedWith;
   completed = null;
   resetInterrupts();
+  dropRecording();
   if (getSpeech().status !== 'idle') engineStop();
   plan = options.plan;
   chapterNumber = options.chapter;
@@ -360,12 +464,13 @@ export function startReading(options: StartOptions): void {
   const notice = noVoiceNotice(options.from, reach !== 'verse');
   set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, listen: options.listen ?? null });
   keepAwake();
+  if (options.recorded && playFromRecording(options.recorded, options.from, epoch)) return;
   readVerse(options.from, epoch);
 }
 
 /** The Reader that opened the chapter a reading was going on into hands over that chapter's plan, and the voice starts its
  * first verse. Nothing happens unless this is the chapter the reading is waiting for (and not paused). */
-export function continueReading(options: { book: string; chapter: number; plan: PlanVerse[] }): void {
+export function continueReading(options: { book: string; chapter: number; plan: PlanVerse[]; recorded?: ChapterTimings }): void {
   const to = state.crossing;
   const first = options.plan[0];
   if (state.status !== 'reading' || !to || to.book !== options.book || to.chapter !== options.chapter) return;
@@ -377,13 +482,16 @@ export function continueReading(options: { book: string; chapter: number; plan: 
   if (!first) return finish(epoch);
   const notice = noVoiceNotice(first.n, true) ?? state.notice;
   set({ ...state, verse: first.n, notice, crossing: null });
+  if (options.recorded && playFromRecording(options.recorded, first.n, epoch)) return;
   readVerse(first.n, epoch);
 }
 
 /** Pauses the speech where it is: the package keeps the sentence reached, and its bar offers Resume. */
 export function pauseReading(): void {
   if (state.status !== 'reading') return;
-  if (isSpeaking(READ_KEY)) return enginePause();
+  // the recording is held at its second; the header's Play goes on from it
+  if (recording) pauseRecording();
+  else if (isSpeaking(READ_KEY)) return enginePause();
   // nothing is speaking: the reading waits at a chapter's door
   letSleep();
   set({ ...state, status: 'paused' });
@@ -392,6 +500,11 @@ export function pauseReading(): void {
 /** Reads on from the sentence it was paused at; when the voice was taken meanwhile (a word said alone), from the start of the verse. */
 export function resumeReading(): void {
   if (state.status !== 'paused' || (state.verse === null && !state.crossing)) return;
+  if (recording && !state.crossing) {
+    set({ ...state, status: 'reading', onBar: false });
+    keepAwake();
+    return resumeRecording();
+  }
   const speech = getSpeech();
   if (speech.key === READ_KEY && speech.status === 'paused') return engineResume();
   epoch++;
@@ -488,6 +601,7 @@ export function stopReading(): void {
     return;
   }
   epoch++;
+  dropRecording();
   letSleep();
   suspended = null;
   completed = null;

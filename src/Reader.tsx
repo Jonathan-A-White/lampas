@@ -36,6 +36,7 @@ import { LicenceTip } from './gate/LicenceTip';
 import { TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
+import { loadBookTimings } from './data/audioTimings';
 import { chooseReading, getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, setOpenReadLanguage, type OpenChapter } from './data/readerChapter';
 import { neighbours, verseNeighbours } from './data/neighbours';
@@ -95,6 +96,7 @@ import { useDoorTarget } from './tutor/door';
 import { useTalk } from './useTalk';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
+import { recordingFor, wantsRecording } from './speech/recordedVoice';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
@@ -498,9 +500,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const crossing = reading.crossing;
   const crossingHere = crossing !== null && crossing.book === BOOK && crossing.chapter === CHAPTER;
   const readingStatus = reading.status;
+  // It is heard in the recorded voice by the rule a tap goes by (src/speech/recordedVoice.ts recordingFor), else in the phone's.
   useEffect(() => {
-    if (plan && crossingHere && readingStatus === 'reading') continueReading({ book: BOOK, chapter: CHAPTER, plan });
-  }, [plan, crossingHere, readingStatus, BOOK, CHAPTER]);
+    if (plan && crossingHere && readingStatus === 'reading') continueReading({ book: BOOK, chapter: CHAPTER, plan, recorded: recordingFor(BOOK, chapter, plan) });
+  }, [plan, crossingHere, readingStatus, BOOK, CHAPTER, chapter]);
+  // The recorded voice's timings for this book are loaded when a chapter opens, so a tap on Play finds them with no wait (mw-82lb97i.3).
+  useEffect(() => {
+    if (wantsRecording()) void loadBookTimings(BOOK);
+  }, [BOOK]);
   // A chapter that cannot be fetched ends the reading that was going on into it.
   useEffect(() => {
     if (failed && crossingHere) stopReading();
