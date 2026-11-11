@@ -141,11 +141,11 @@ export function writeIfChanged(path: string, text: string): boolean {
   return true;
 }
 
-/** Removes the .json files under outDir that `owned` says a build made and `made` does not hold: what an earlier build left. ladder/ is scripts/ladder-el.ts's and is never touched. */
+/** Removes the .json files under outDir that `owned` says a build made and `made` does not hold: what an earlier build left. ladder/ is scripts/ladder-el.ts's and audio/ is the recorded voice's timings (src/data/audioTimings.ts): neither is ever touched. */
 export function removeStale(outDir: string, made: ReadonlySet<string>, owned: (path: string) => boolean): void {
   if (!existsSync(outDir)) return;
   for (const p of readdirSync(outDir, { recursive: true }).map(String)) {
     const path = p.split('\\').join('/');
-    if (path.endsWith('.json') && !path.startsWith('ladder/') && owned(path) && !made.has(path)) rmSync(join(outDir, p));
+    if (path.endsWith('.json') && !path.startsWith('ladder/') && !path.startsWith('audio/') && owned(path) && !made.has(path)) rmSync(join(outDir, p));
   }
 }

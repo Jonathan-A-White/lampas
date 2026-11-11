@@ -79,6 +79,7 @@ function creditFor(path: string): string | null | undefined {
   if (path === 'public/data-lxx/lexicon-grc-lxx.json') return 'TBESG';
   if (path === 'public/data-lxx/README.md' || path === 'public/data-lxx/LICENSE-swete.txt' || path === 'public/data-lxx/README-swete.md') return null; // notices, not data (the last two are eliranwong's own)
   if (path.startsWith('public/data-lxx/')) return 'Swete'; // the chapters and index.json: Swete's Septuagint
+  if (path.startsWith('public/data/audio/msb-david/')) return 'streamed from openbible.com'; // the recorded voice's verse timings (src/data/audioTimings.ts): our forced alignment of the publisher's MP3s, which are streamed and never in the repo; credited in the Recording bullet
   if (path.startsWith('public/data/')) return 'Majority Standard Bible';
   if (path.startsWith('public/lemma-forms/')) return 'Majority Standard Bible'; // the forms of each lemma the text uses, made from the chapters (scripts/build-lemma-forms.mjs)
   if (path.startsWith('public/sounds/')) return 'eSpeak NG'; // the clips of a one-letter Greek word's sound, made by eSpeak NG (scripts/sounds-build.sh)

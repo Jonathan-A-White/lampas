@@ -290,6 +290,21 @@ describe('writing the files', () => {
     }
   });
 
+  it('leaves audio/ (the recorded voice\'s verse timings, src/data/audioTimings.ts) alone too', async () => {
+    const base = mkdtempSync(join(tmpdir(), 'lampas-data-'));
+    try {
+      const out = join(base, 'out');
+      mkdirSync(join(out, 'audio', 'msb-david'), { recursive: true });
+      writeFileSync(join(out, 'audio', 'msb-david', 'index.json'), '{}');
+      writeFileSync(join(out, 'old.json'), '{}');
+      await run(join(base, 'raw'), out);
+      expect(existsSync(join(out, 'audio', 'msb-david', 'index.json'))).toBe(true);
+      expect(existsSync(join(out, 'old.json'))).toBe(false);
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
   it('leaves ladder/ (scripts/ladder-el.ts\'s file) alone while it removes any other file it no longer makes', async () => {
     const base = mkdtempSync(join(tmpdir(), 'lampas-data-'));
     try {

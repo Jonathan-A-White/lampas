@@ -21,7 +21,7 @@ export function repeatsItself(gloss: string): boolean {
 function allGlosses(): { where: string; g: string }[] {
   const lexicon = JSON.parse(readFileSync(`${DATA}/lexicon.json`, 'utf8')) as LemmaLexicon;
   const found = Object.entries(lexicon).map(([lemma, e]) => ({ where: `lexicon ${lemma}`, g: e.g }));
-  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory())) {
+  for (const book of readdirSync(DATA).filter((b) => statSync(`${DATA}/${b}`).isDirectory() && b !== 'audio')) {
     for (const file of readdirSync(`${DATA}/${book}`)) {
       const chapter = JSON.parse(readFileSync(`${DATA}/${book}/${file}`, 'utf8')) as { lex?: Record<string, { g: string }> };
       for (const [strongs, e] of Object.entries(chapter.lex ?? {})) found.push({ where: `${book}/${file} ${strongs}`, g: e.g });

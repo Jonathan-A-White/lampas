@@ -8,7 +8,7 @@ import { chunkOrder, strayMarks } from '../../src/data/weave';
 
 const chapters = (): Chapter[] =>
   readdirSync('public/data')
-    .filter((book) => statSync(`public/data/${book}`).isDirectory() && book !== 'ladder')
+    .filter((book) => statSync(`public/data/${book}`).isDirectory() && book !== 'ladder' && book !== 'audio')
     .flatMap((book) => readdirSync(`public/data/${book}`).map((file) => JSON.parse(readFileSync(`public/data/${book}/${file}`, 'utf8')) as Chapter));
 
 /** How many times each Greek index of `verse` is drawn when every word is marked: by its chunk, or as a stray. */

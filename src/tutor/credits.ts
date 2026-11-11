@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 8400;
+export const MAX_CREDITS_BYTES = 8600;
 
 /** One line of the sheet a Septuagint chapter's header opens (mw-u2w5klk.276): what is credited, in plain words, and a link where there is one. The one place the sheet's text is written. */
 export interface SeptuagintSource {
@@ -28,6 +28,7 @@ export const SEPTUAGINT_SOURCES: SeptuagintSource[] = [
 
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The New Testament\'s Greek, aligned to the English', licence: 'Public domain', link: 'https://majoritybible.com' },
+  { name: 'Recording: Majority Standard Bible', use: 'The English read aloud in David\'s voice, streamed; verse timings are ours', licence: 'Public downloads; text public domain', link: 'https://openbible.com/audio.htm' },
   { name: 'Berean Standard Bible', use: 'The Old Testament\'s Hebrew aligned to the English', licence: 'Public domain', link: 'https://berean.bible/licensing.htm' },
   { name: 'byztxt', use: 'The variant readings and sentence ends', licence: 'Public domain', link: 'https://github.com/byztxt/byzantine-majority-text' },
   { name: 'Byzantine Priority', use: 'Robinson\'s essay, read on the Preface', licence: 'Public domain', link: 'https://byzantinetext.com/study/editions/robinson-pierpont/' },

@@ -105,8 +105,8 @@ describeFeature(feature, ({ Scenario }) => {
         }
       }
       expect(files).toBe(1189);
-      // data:build's and data:build:ot's output; ladder/el.json is scripts/ladder-el.ts's, and verses-<book>-<n>.json (the blog popup's small file of English) is scripts/verses-build.ts's
-      const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json') && !p.startsWith('ladder') && !p.startsWith('verses-'));
+      // data:build's and data:build:ot's output; ladder/el.json is scripts/ladder-el.ts's, audio/ is the recorded voice's timings (docs/data.md), and verses-<book>-<n>.json (the blog popup's small file of English) is scripts/verses-build.ts's
+      const onDisk = readdirSync('public/data', { recursive: true }).map(String).filter((p) => p.endsWith('.json') && !p.startsWith('ladder') && !p.startsWith('audio') && !p.startsWith('verses-'));
       expect(onDisk).toHaveLength(1189 + 5);
     });
   });

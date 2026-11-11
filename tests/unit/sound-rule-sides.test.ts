@@ -10,7 +10,7 @@ const nfc = (s: string): string => s.normalize('NFC');
 const ROOT = 'public/data';
 const TEXT = new Set(
   readdirSync(ROOT, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && d.name !== 'ladder')
+    .filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')
     .flatMap((d) => readdirSync(`${ROOT}/${d.name}`).map((f) => JSON.parse(readFileSync(`${ROOT}/${d.name}/${f}`, 'utf8')) as Chapter))
     .flatMap((c) => c.verses.flatMap((v) => v.g.map((g) => nfc(g.t)))),
 );

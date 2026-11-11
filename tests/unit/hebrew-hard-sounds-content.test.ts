@@ -23,7 +23,7 @@ const nfc = (w: string): string => stripCantillation(w).normalize('NFC');
 /** Every Hebrew word of the Lampas data: each form of every Old Testament chapter, and every lemma of the Hebrew lexicon, cantillation taken off. */
 const DATA_WORDS: ReadonlySet<string> = (() => {
   const out = new Set<string>();
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory())) {
+  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'audio')) {
     for (const file of readdirSync(`public/data/${book.name}`)) {
       const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Partial<Chapter>;
       if (chapter.lang !== 'hbo') continue;

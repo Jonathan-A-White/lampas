@@ -62,7 +62,7 @@ describe('Tap to hear says αυ, ευ and ηυ as one sound', () => {
 /** Every distinct form with αυ, ευ or ηυ (marks or none) in the chapters and the lexicon, lower case. */
 function pairForms(): string[] {
   const forms = new Set<string>(Object.keys(JSON.parse(readFileSync('public/data/lexicon.json', 'utf8')) as Record<string, unknown>));
-  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder')) {
+  for (const book of readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== 'ladder' && d.name !== 'audio')) {
     for (const file of readdirSync(`public/data/${book.name}`)) {
       const chapter = JSON.parse(readFileSync(`public/data/${book.name}/${file}`, 'utf8')) as Chapter;
       for (const verse of chapter.verses) for (const w of verse.g) forms.add(w.t);
