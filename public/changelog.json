@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.212",
+    "date": "2026-11-11",
+    "story": "mw-u2w5klk.348",
+    "kind": "fixed",
+    "text": "With manuscript gaps off, the Septuagint's English no longer shows square brackets in the verse view, the split pane or the reference card either."
+  },
+  {
     "version": "0.7.210",
     "date": "2026-11-11",
     "story": "mw-qtu3zvz.59.2",

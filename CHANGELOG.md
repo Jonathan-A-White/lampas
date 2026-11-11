@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.212
+_2026-11-11_
+- Fixed: With manuscript gaps off, the Septuagint's English no longer shows square brackets in the verse view, the split pane or the reference card either.
+
 ## 0.7.210
 _2026-11-11_
 - New: A sermon your church's notes tie to a theme now shows under the verse's themes in the Sermons sheet, online, with a line saying it came from the sermon notes.
