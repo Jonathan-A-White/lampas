@@ -1,6 +1,7 @@
 // Quiz me on a Hebrew verse (mw-gdcyf98.21) at 390x844: the Verse view of Jonah 1:1 offers Quiz me from the Hebrew dial's Curious up and Diagram at any dial, and a due Hebrew idea is asked in Review as a
 // question of four Hebrew words, each a thumb-sized tap, right to left in the bundled Hebrew face.
 import { expect, test, type Page } from '@playwright/test';
+import { putAtLevels } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { waitForDue } from './today-chip';
@@ -34,7 +35,7 @@ test('Jonah 1:1 offers the Quiz in Practise at Curious and Diagram, and Diagram 
   await openUnlocked(page);
   await page.goto('/#/?b=jon&c=1');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await put(page, 'settings', [{ key: 'hebrewInterest', value: '1' }]);
+  await putAtLevels(page, { hebrew: 1 });
   await page.reload();
   const view = await openVerseView(page, 1);
   const actions = view.getByRole('group', { name: 'Actions' });
@@ -46,7 +47,7 @@ test('Jonah 1:1 offers the Quiz in Practise at Curious and Diagram, and Diagram 
   await expect(view.getByRole('button', { name: 'Start the quiz', exact: true })).toBeVisible();
 
   await page.getByRole('button', { name: '‹ Reader' }).click();
-  await put(page, 'settings', [{ key: 'hebrewInterest', value: '0' }]);
+  await putAtLevels(page, { hebrew: 0 });
   await page.reload();
   const english = await openVerseView(page, 1);
   await english.getByRole('button', { name: 'Practise', exact: true }).click();

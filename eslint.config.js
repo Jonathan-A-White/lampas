@@ -4,7 +4,10 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
+import noRawInterestWrite from './eslint-rules/no-raw-interest-write.js';
 import noRealTimeWait from './eslint-rules/no-real-time-wait.js';
+
+const local = { rules: { 'no-real-time-wait': noRealTimeWait, 'no-raw-interest-write': noRawInterestWrite } };
 
 export default defineConfig([
   globalIgnores(['dist', 'shots', 'test-results', 'playwright-report']),
@@ -24,7 +27,13 @@ export default defineConfig([
   {
     // A test does not sleep in real time unless its line says why (eslint-rules/no-real-time-wait.js; old sleeps: eslint-suppressions.json).
     files: ['tests/**/*.{ts,tsx}', 'features/steps/**/*.{ts,tsx}'],
-    plugins: { local: { rules: { 'no-real-time-wait': noRealTimeWait } } },
+    plugins: { local },
     rules: { 'local/no-real-time-wait': 'error' },
+  },
+  {
+    // A test puts a phone at a Greek or Hebrew level through tests/e2e/greek-start.ts, not by a bare write of the dial (eslint-rules/no-raw-interest-write.js; old writes: eslint-suppressions.json).
+    files: ['tests/e2e/**/*.{ts,tsx}', 'features/steps/**/*.{ts,tsx}'],
+    plugins: { local },
+    rules: { 'local/no-raw-interest-write': 'error' },
   },
 ]);

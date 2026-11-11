@@ -4,7 +4,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { shot } from './shot';
+import { putAtLevels } from './greek-start';
 import { openUnlocked } from './unlocked';
+import type { GreekLevel } from '../../src/settings/definitions/greekInterest';
 
 test.beforeEach(async ({ page }) => {
   await page.route('**/data-lxx/**', (route) => {
@@ -12,28 +14,6 @@ test.beforeEach(async ({ page }) => {
     return route.fulfill({ status: 200, contentType: 'application/json', body: readFileSync(`tests/fixtures/data-lxx/${path}`, 'utf8') });
   });
 });
-
-/** Puts a setting in the app's store through raw IndexedDB, as the app wrote it. */
-async function keep(page: Page, key: string, value: string): Promise<void> {
-  await page.evaluate(
-    ([k, v]) =>
-      new Promise<void>((resolve, reject) => {
-        const open = indexedDB.open('lampas');
-        open.onerror = () => reject(open.error);
-        open.onsuccess = () => {
-          const db = open.result;
-          const tx = db.transaction('settings', 'readwrite');
-          tx.objectStore('settings').put({ key: k, value: v });
-          tx.oncomplete = () => {
-            db.close();
-            resolve();
-          };
-          tx.onerror = () => reject(tx.error);
-        };
-      }),
-    [key, value],
-  );
-}
 
 /** Each text rect of the header's title that overlaps (more than a pixel each way) the box of any other control in the header (the Language switch, Play, the Menu), by what the rect says and what it hits. */
 async function titleOverlaps(page: Page): Promise<string[]> {
@@ -77,11 +57,9 @@ async function openTitled(page: Page, address: string, percent: string, title: R
   const row = page.getByRole('group', { name: 'Old Testament in Greek (Septuagint)', exact: true });
   await row.getByRole('button', { name: 'On', exact: true }).click();
   await expect(row.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await keep(page, 'textSize', percent);
-  if (dial) await keep(page, 'greekInterest', dial);
-  // tapping 'Dipping a toe' (and every step above it) also sets the Weave to Solid (src/data/repositories/greekInterest.ts BRINGS), which draws English | Weave | Greek: the widest switch
-  const woven = weave ?? (dial && Number(dial) >= 2 ? 'solid' : 'off');
-  if (woven === 'solid') await keep(page, 'weave', 'solid');
+  // the level goes in through putAtLevels, which writes what tapping its step also sets (at 2 the Weave Solid, which draws English | Weave | Greek: the widest switch; at 4 the Greek view);
+  // a `weave` given is the reader turning the Weave off (or on) after that
+  await putAtLevels(page, dial ? { greek: Number(dial) as GreekLevel } : {}, { textSize: percent, ...(weave ? { weave } : {}) });
   await page.goto(address);
   await page.reload();
   await expect(page.locator('header h1')).toContainText(title);
