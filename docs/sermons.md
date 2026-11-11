@@ -29,6 +29,7 @@ Reading needs no licence.
   - [The service's calls](#the-services-calls)
   - [The merge and the line under the title](#the-merge-and-the-line-under-the-title)
   - [Sources the bundle lacks](#sources-the-bundle-lacks)
+  - [The sermons linked from their notes](#the-sermons-linked-from-their-notes)
   - [The search](#the-search)
   - [What Lampas fetches from other hosts](#what-lampas-fetches-from-other-hosts)
 - [Open web sermons in](#open-web-sermons-in)
