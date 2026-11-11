@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.224
+_2026-11-11_
+- New: Settings > Listening has a Bible voice choice, so David's recording of John can read to you, read only on Wi-Fi, or leave the reading to the phone's voice.
+
 ## 0.7.223
 _2026-11-11_
 - Fixed: A chapter whose sermons are only in the online index, like 2 Peter 3, now shows its Sermons door.
