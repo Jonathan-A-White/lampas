@@ -18,7 +18,7 @@ markdown link into `answer` (except a credit's link from About); any other addre
 ### Links to a setting
 
 `kind` `setting`, with `key`, one of the keys under "Changing the app's settings": a button that opens Settings at that
-setting. Use it when he asks where a setting is, or you name one; never as a way round an empty sermon list (he did not ask where a source is). It changes nothing
+setting. Use it when he asks where a setting is or how to change one. It changes nothing
 (that is `settings_changes` or `setting_offer`), needs no study resource, and must be a listed key: never invent a key.
 
 ### Links to a work he owns
@@ -40,7 +40,7 @@ Say only what you know of the author's view, unquoted; the link is where he chec
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. To narrow (preacher, theme, date), answer with the rows that fit, linking the best; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, the index lists none: say so, offer In another book, and leave `links` out. You are not told which sources are On, so a setting link would guess: none.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. To narrow (preacher, theme, date), answer with the rows that fit, linking the best; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, none is listed for this verse: say so, offer In another book, say nothing of Settings or sources, and leave `links` out.
 
 ### Links to a paradigm table
 
