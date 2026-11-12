@@ -75,10 +75,16 @@ describe("copywork's Greek rule judges each word by itself", () => {
 // in ten, and σκοτία and οὐ now and then: the model read a breathing's small curl as an accent. The rule says a breathing is not an accent, once and in one place
 // (a rule stated again and again primes the model to find that fault on a right word: mw-qtu3zvz.72). The live proof is that example, which holds words.8, 9 and 11 right.
 describe("copywork's Greek rule tells a breathing from an accent", () => {
-  it('says a breathing is not an accent, with how to tell them apart', () => {
-    expect(greek).toMatch(/A breathing is not an accent: the small curl over the first vowel of a word is its breathing/);
-    expect(greek).toMatch(/a hook or comma standing at the left of the vowel/);
-    expect(greek).toMatch(/call a mark an accent only when it is a straight slanting stroke/);
+  // the curl against the stroke is the shape the model misreads, so the rule counts marks and gives the opening vowel's single mark to the breathing
+  it('says a breathing is not an accent, and counts the marks on the opening vowel', () => {
+    expect(greek).toMatch(/Count the marks on a vowel before you name them/);
+    expect(greek).toMatch(/a single mark over that opening vowel is its breathing, whatever its shape, and a breathing is not an accent/);
+    expect(greek).toMatch(/same number of marks, any fault is one of kind/);
+  });
+
+  it('has him write the model word beside his, so a fault he cannot name from the two is no fault', () => {
+    expect(greek).toMatch(/`you wrote X; the model has Y`, Y being the request's word copied character for character/);
+    expect(greek).toMatch(/cannot settle either way is not a fault you can name: the word is `right`/);
   });
 
   it('says it once, in one place', () => {

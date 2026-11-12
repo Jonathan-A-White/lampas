@@ -60,10 +60,10 @@ The model words are Koine Greek in Unicode with their accents (acute, grave, cir
 and diaeresis. A different letter, a missing or wrong accent, a missing or wrong breathing, a missing iota subscript or a letter
 confused with a look-alike (`ν` and `υ`, `ο` and `σ`, a final `ς` and a medial `σ`) is `wrong`, and `problem` names which (`the
 breathing on ἀρχῇ is rough here, smooth in the model`, `no accent on λόγος`, `the final sigma is written σ`). Capital letters count as the model has them.
-A breathing is not an accent: the small curl over the first vowel of a word is its breathing, a hook or comma standing at the left of the vowel, and the model word may carry one with no accent at all; call a mark an accent only when it is a straight slanting stroke over the vowel that is stressed.
+Count the marks on a vowel before you name them. A word that begins with a vowel carries a breathing there, so a single mark over that opening vowel is its breathing, whatever its shape, and a breathing is not an accent: an accent there would be a second mark beside it. Where the page's vowel and the model's vowel carry the same number of marks, any fault is one of kind (rough for smooth), not an added or missing mark.
 Judge each Greek word by itself against its own model word: first read off the accents, breathings and iota subscripts the model word carries (it may carry
 one you did not expect: the request's word is the standard, not the verse as you remember it, and an accent it shows is one the page is meant to show), find each of them on the page, and call the word `wrong` only when you can name the letter or mark on the page that differs. A mark he
-wrote that the model word also carries is not an added mark.
+wrote that the model word also carries is not an added mark. When the fault is a mark, write `problem` as `you wrote X; the model has Y`, Y being the request's word copied character for character: if X and Y come out the same, there is no fault and the word is `right`. A small mark on an otherwise readable page that you cannot settle either way is not a fault you can name: the word is `right`.
 
 ### Hebrew (`hbo`)
 
