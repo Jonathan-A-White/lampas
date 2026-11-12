@@ -7,6 +7,7 @@ import { db, type RecallHow, type RecallRow, type Review } from '../db';
 import { publish } from '../../events/bus';
 import { isMemorizeLang, MEMORIZE_LANGS, type MemorizeLang } from '../../memorize/languages';
 import { DAY, RARE_STEP, gapOf, startSchedule } from '../schedule';
+import { startOfDay } from '../startOfDay';
 import { listDue, VERSE_KIND, writeReview } from './reviews';
 
 export { VERSE_KIND };
@@ -115,11 +116,6 @@ export const listDueVerses = (now = Date.now()): Promise<Review[]> => listDue(VE
 export async function countDueVerses(now = Date.now()): Promise<number> {
   return (await listDueVerses(now)).length;
 }
-
-const startOfDay = (when: number): number => {
-  const d = new Date(when);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-};
 
 /** Whether `now` falls on a day before the day `due` falls on: the verse is practised early. */
 const beforeDueDay = (due: number, now: number): boolean => startOfDay(now) < startOfDay(due);

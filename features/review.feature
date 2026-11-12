@@ -39,6 +39,21 @@ Feature: Review brings back the words that are due
     And he opens Today from the Reader
     Then Today shows "Nothing due"
 
+  Scenario: Today's Review row shows the day's progress
+    Given 39 items were due at midnight and he has reviewed 12 of them today
+    When Lampas is opened on the Reader
+    And he opens Today from the Reader
+    Then Today shows "12 of 39 done today"
+    And Today shows "27 due"
+    And the Review bar on Today has 12 of 39 done
+
+  Scenario: What he reviewed before midnight is not counted, and what comes due later in the day adds to it
+    Given 6 items are due now, 2 were reviewed today and 3 were reviewed yesterday
+    When Lampas is opened on the Reader
+    And he opens Today from the Reader
+    Then Today shows "2 of 8 done today"
+    And Today shows "6 due"
+
   Scenario: Review draws due words before others
     Given 3 of his words are due
     When Lampas is opened on the Reader
