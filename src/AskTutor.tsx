@@ -198,6 +198,44 @@ export function LessonTalk({ screen, kept, suggestions, open, onClose }: { scree
   );
 }
 
+/**
+ * The talk of one wrong answer (mw-indx1x6.6, the 'Study this' row's Ask the tutor where nothing teaches the question: src/review/StudyThis.tsx): as LessonTalk, kept mounted by the row, which says
+ * when `open`; `screen` is the miss as facts (src/review/studyThis.ts missScreen), `kept` a key of this miss alone, and `first` the turn the talk opens with, sent once when the talk has no turn
+ * yet: it names the question, his answer, the right answer and the idea, so the tutor answers the miss without being asked. Drawn only where a licence allows the tutor.
+ */
+export function MissTalk({ screen, kept, first, open, onClose }: { screen: ScreenContext; kept: string; first: string; open: boolean; onClose: () => void }) {
+  const ai = useAiAllowed();
+  const fitted = fitScreen(screen);
+  const scope: TalkScope = { title: fitted.name, chapter: NO_CHAPTER, verse: null, screen: fitted, kept };
+  const talk = useScreenTalk(scope, open, onClose);
+  const sent = useRef(false);
+  const ref = talk.ref;
+  useEffect(() => {
+    if (!ai || !open || !ref || sent.current) return;
+    sent.current = true;
+    stopReading();
+    void listTurns(ref).then((turns) => {
+      if (turns.length === 0) talk.say(scope, first);
+    });
+    // sent once, when the talk first opens: the scope and the talk it is sent with are the ones of that render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ai, open, ref]);
+  if (!ai || !open || !ref) return null;
+  return (
+    <TalkSheet
+      scope={scope}
+      talkRef={ref}
+      state={talk.state}
+      suggestions={[]}
+      onSay={(message, focus, pictures) => talk.say(scope, message, focus, pictures)}
+      onResume={() => talk.resume(scope)}
+      onHelp={() => {}}
+      onAskTerm={() => {}}
+      onClose={talk.close}
+    />
+  );
+}
+
 /** The floating button's name for a screen reader and the tests. */
 export const FLOATING_TUTOR_LABEL = 'Ask the tutor about what is on screen';
 

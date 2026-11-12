@@ -7,7 +7,7 @@ import { countDue, LESSON_KIND, listDue, recordRound, reviewsOf } from './data/r
 import { parsePassageKey, passageLabel } from './approaches';
 import { DAY, type Grade } from './data/schedule';
 import { type Random } from './data/quiz';
-import { navigate, openParadigm, openVerseRange } from './nav/route';
+import { navigate, openParadigm, openVerseRange, type ParadigmAddress } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { askForMoreItems } from './review/moreItems';
 import { KINDS, flashGrade, isGradedChoice, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
@@ -25,6 +25,8 @@ import { REVIEW_OPENED } from './tips/hints';
 import { languageFact } from './tutor/screen';
 import { useReportScreen } from './tutor/screenContext';
 import { reviewFacts } from './review/reviewFacts';
+import { StudyThis } from './review/StudyThis';
+import { studyOfItem } from './review/studyThis';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { SourceSegment } from './ui/SourceSegment';
@@ -298,6 +300,12 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     void askForMoreItems(round.missed);
     setRound({ status: 'done', total: items.length, right, ...back, move: await moveAfter(items) });
   };
+  // a wrong answer (a wrong pick, a flashcard graded down, 'Don't know' after a right pick) shows what teaches the question under it (src/review/StudyThis.tsx, mw-indx1x6.6); a right one shows nothing more
+  const missed = picked !== null && (!kindOf(item.kind).isRight(item, picked) || round.grade === 'not');
+  const seeTable = (address: ParadigmAddress) => {
+    holdRound(round);
+    openParadigm(address);
+  };
   return (
     <>
       {header(`${index + 1} of ${items.length}`)}
@@ -314,11 +322,10 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           onStep={(step, wasRight) => {
             writing.current = writing.current.then(() => recordParseStep(item, step, wasRight)).catch((error: unknown) => console.error('could not record the step', error));
           }}
-          onSeeTable={(address) => {
-            holdRound(round);
-            openParadigm(address);
-          }}
+          // after a miss the table is a link of the row below, with the lesson and the word beside it
+          onSeeTable={missed ? undefined : seeTable}
         />
+        {missed && picked !== null ? <StudyThis key={index} study={studyOfItem(item, picked)} screen="Review" back="Back to Review" onParadigm={seeTable} className="mt-3" /> : null}
         {picked !== null ? (
           <NextBar>
             <button

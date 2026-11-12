@@ -20,6 +20,8 @@ import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
+import { StudyThis } from './review/StudyThis';
+import { studyOfQuestion } from './review/studyThis';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
 import { DRILL_SCREEN } from './tutor/screen';
 import { questionFact, workScreen, workSuggestions } from './tutor/workTalk';
@@ -254,15 +256,21 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
         ) : result ? (
           <Result result={result} mode={mode} passage={passage} />
         ) : question ? (
-          <GrammarCard
-            key={walk.asked.length}
-            question={question}
-            mode="choice"
-            picked={after?.picked ?? null}
-            onPick={pick}
-            taken={taken ?? undefined}
-            sideBySide
-          />
+          <>
+            <GrammarCard
+              key={walk.asked.length}
+              question={question}
+              mode="choice"
+              picked={after?.picked ?? null}
+              onPick={pick}
+              taken={taken ?? undefined}
+              sideBySide
+            />
+            {/* a wrong answer links to what teaches it, each opened over the drill so the run is kept (mw-indx1x6.6) */}
+            {after && after.picked !== question.right ? (
+              <StudyThis key={`study-${walk.asked.length}`} study={studyOfQuestion(question, after.picked)} screen={DRILL_SCREEN} back="Back to the drill" className="mb-3 mt-2" />
+            ) : null}
+          </>
         ) : null}
       </div>
       <FootBar>

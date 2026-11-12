@@ -897,6 +897,17 @@ function ParadigmTable({ table, pattern, address, mode, levels, extent, cell, wo
   );
 }
 
+/**
+ * A table by itself, in Learn, with the cell `cell` lit and brought into view (mw-indx1x6.6: the layer a 'Study this' row opens over a drill, src/review/StudyThis.tsx): the pattern as this
+ * screen draws it, by his levels and How much of a table, so a form he has not unlocked is locked here too. It has no Drill and tells the tutor nothing.
+ */
+export function TableAt({ table, cell }: { table: Paradigm; cell?: string }) {
+  const levels = useLiveQuery(listLevels, []);
+  const extent = useParadigmExtent();
+  if (!levels || !extent) return null;
+  return <Table table={table} levels={levels} extent={extent} mode="learn" drill={undefined} lit={cell} onReveal={() => {}} onGrade={() => {}} onFocus={() => {}} />;
+}
+
 export function ParadigmsScreen() {
   const levels = useLiveQuery(listLevels, []);
   const extent = useParadigmExtent();
