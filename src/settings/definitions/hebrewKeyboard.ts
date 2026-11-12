@@ -17,7 +17,7 @@ export const hebrewKeyboardSetting = defineSetting<HebrewKeyboard>({
   },
   section: 'daily',
   label: 'Hebrew keyboard',
-  hint: 'You have added a Hebrew keyboard to your phone',
+  hint: 'On once you have added a Hebrew keyboard to your phone',
   help: 'On once you have added a Hebrew keyboard to your phone. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Hebrew.',
   dependsOn: hebrewFrom(1),
 });

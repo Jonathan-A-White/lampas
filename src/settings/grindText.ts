@@ -127,13 +127,15 @@ export function settingsBlock(): string {
   for (const s of SETTINGS) {
     const plain = s.help ? helpPlain(s.help) : s.hint;
     const help = (s.hint && (HINT_ONLY.includes(s.key) || (!HELP_KEPT.includes(s.key) && bytesOf(plain) > HELP_MAX_BYTES)) ? s.hint : plain).replace(WHEN_SHOWN, '').replace(PHONE_STEPS, '');
-    const body = `${help}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
+    // a hint, unlike a help, has no closing full stop: the line ends its sentence before its Value (mw-82lb97i.21)
+    const body = `${help.replace(/([^.?!])$/, '$1.')}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
     const same = `${s.label.replace(LANGUAGES, '')}|${body.replace(LANGUAGES, '')}`;
     const last = lines[lines.length - 1];
     if (last && last.same === same && s.label.search(LANGUAGES) >= 0) {
       last.keys.push(s.key);
       last.labels.push(s.label);
-      last.body = last.body.replace(LANGUAGES, 'that language');
+      // 'a Greek keyboard' becomes 'a keyboard of that language', not 'a that language keyboard' (mw-82lb97i.21)
+      last.body = last.body.replace(/\b(a|an) (English|Greek|Hebrew) (\w+)/g, '$1 $3 of that language').replace(LANGUAGES, 'that language');
     } else if (last && last.body === body && sameFamily(last.keys[0], s.key)) {
       // the switches of two sources of one list that say the same (the two theme lists, the sermon lists) are one line
       last.keys.push(s.key);

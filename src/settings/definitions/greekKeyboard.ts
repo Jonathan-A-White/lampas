@@ -17,7 +17,7 @@ export const greekKeyboardSetting = defineSetting<GreekKeyboard>({
   },
   section: 'daily',
   label: 'Greek keyboard',
-  hint: 'You have added a Greek keyboard to your phone',
+  hint: 'On once you have added a Greek keyboard to your phone',
   help: 'On once you have added a Greek keyboard to your phone, so Memorize offers Type it for a verse in Greek. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Greek.',
   dependsOn: greekFrom(1),
 });
