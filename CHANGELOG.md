@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.239
+_2026-11-12_
+- New: The Parsing drill now follows your Weave's Words and Grammar settings, asks the idea you are learning now first, and offers the widest setting when nothing fits.
+- Fixed: On a Library page, All on and All off now only change the books your search shows, and say "All shown on" and "All shown off" while you search.
+- New: Today's Review row now shows how many of the day's reviews you have done, with a progress bar.
+- New: Logos sermon collections are now listed only when your imported library says you own them.
+
 ## 0.7.237
 _2026-11-12_
 - Fixed: the blog's home page in dark mode shows its banner picture again instead of a flat dark block.

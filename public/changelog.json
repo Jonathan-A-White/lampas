@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.239",
+    "date": "2026-11-12",
+    "story": "mw-indx1x6.9",
+    "kind": "new",
+    "text": "The Parsing drill now follows your Weave's Words and Grammar settings, asks the idea you are learning now first, and offers the widest setting when nothing fits."
+  },
+  {
+    "version": "0.7.239",
+    "date": "2026-11-12",
+    "story": "mw-qtu3zvz.103",
+    "kind": "fixed",
+    "text": "On a Library page, All on and All off now only change the books your search shows, and say \"All shown on\" and \"All shown off\" while you search."
+  },
+  {
+    "version": "0.7.239",
+    "date": "2026-11-12",
+    "story": "mw-indx1x6.14",
+    "kind": "new",
+    "text": "Today's Review row now shows how many of the day's reviews you have done, with a progress bar."
+  },
+  {
+    "version": "0.7.239",
+    "date": "2026-11-12",
+    "story": "mw-qtu3zvz.94",
+    "kind": "new",
+    "text": "Logos sermon collections are now listed only when your imported library says you own them."
+  },
+  {
     "version": "0.7.237",
     "date": "2026-11-12",
     "story": "mw-fnvjof.17.102",
