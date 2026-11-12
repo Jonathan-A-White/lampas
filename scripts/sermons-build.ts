@@ -29,6 +29,8 @@ export interface SermonsConfig {
   sources: string[];
   /** the theme source ids to bundle (public/themes), in the order its index.json lists them; none when absent */
   themes?: string[];
+  /** a name for a source, by id, in place of the one its source.toml has: the names read by a reader are Lampas's to word (mw-qtu3zvz.108), and a rebuild keeps them */
+  names?: Record<string, string>;
 }
 
 /** Where raw GitHub serves `file` of `source` at `commit`: the one address the build fetches by. */
@@ -189,7 +191,7 @@ async function buildSource(id: string, config: SermonsConfig, o: BuildEnv) {
   }
   const source: SermonSource = {
     id,
-    name: text(toml.name, 'name', id),
+    name: config.names?.[id] ?? text(toml.name, 'name', id),
     kind,
     licence: text(toml.licence, 'licence', id),
     credit: text(toml.credit, 'credit', id),
