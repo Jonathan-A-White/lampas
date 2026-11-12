@@ -104,7 +104,7 @@ export const PREFACE_LINKS: PrefaceLink[] = [
   },
   {
     name: 'Sermon archives and books of Greg Laurie, J. D. Greear, Skip Heitzig, Spurgeon, Wesley, Whitefield and Moody, in Logos (logos.com)',
-    about: 'The Logos sermon archives that the sermon list links to; a link opens its sermon in Logos for an owner of the archive.',
+    about: 'The Logos sermon archives that the sermon list links to; an archive is listed only when your Library import says you own it, and a link opens its sermon in Logos.',
     url: 'https://www.logos.com',
   },
   {

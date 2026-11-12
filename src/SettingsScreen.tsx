@@ -32,7 +32,7 @@ const KEEP_IN_VIEW_MS = 2500;
 /** What a linked row that something else hides says: a Greek or Hebrew row names the dial's step that shows it, a row both share says to raise either dial, any other says to turn on the setting it depends on. */
 function neededText(values: Values, row: SettingsRow | undefined, needed: SettingsRow | undefined): string {
   const dial = row && dialOf(row);
-  if (!row || (dial !== 'greekInterest' && dial !== 'hebrewInterest' && dial !== 'depth')) return `“${row?.label}” is shown once “${needed?.label}” is on. Turn “${needed?.label}” on first.`;
+  if (!row || (dial !== 'greekInterest' && dial !== 'hebrewInterest' && dial !== 'depth')) return needed ? `“${row?.label}” is shown once “${needed.label}” is on. Turn “${needed.label}” on first.` : `“${row?.label}” is shown only when your Library import says you own it in Logos. Import your Logos library first.`;
   // the step is found with both languages chosen, so only the dial's level decides
   const level = (n: number) => String(n);
   const both = { ...values, languages: 'both' };

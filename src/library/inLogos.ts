@@ -10,6 +10,7 @@ import { bibleRef, partOf, verseLink } from '../resources/logosBible';
 import { resourceLink, type LogosLink } from '../resources/logosRes';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import type { StudyPlace } from '../resources/types';
+import { isOffered, type Owned } from './owned';
 
 /** One book that opens at the place: the catalogue's entry, its state on the shelf (never Off) and the link that opens it there. */
 export interface InLogosRow {
@@ -57,12 +58,13 @@ function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefine
 }
 
 /** The books of `entries` that are On or Pinned on the shelf (`states`, by Resource ID), cover the place and open at a verse, each with its link, in the entries' order as the dial shows them
- *  (resourcesForLevel: Greek books are hidden at Just English). */
-export function inLogosRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, level: GreekLevel = GREEK_TOP): InLogosRow[] {
+ *  (resourcesForLevel: Greek books are hidden at Just English). With `owned` (the Resource IDs his Library import holds, src/library/owned.ts), a sermon archive is listed only if it is in his import or is a free Logos resource
+ *  (mw-qtu3zvz.94); the other kinds are not checked yet (mw-qtu3zvz.94's closing comment names the bug). */
+export function inLogosRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, level: GreekLevel = GREEK_TOP, owned?: Owned): InLogosRow[] {
   const kinds = partOf(place.book) === 'nt' ? NT_KINDS : OT_KINDS;
   return resourcesForLevel(entries, level).flatMap((entry): InLogosRow[] => {
     const state = states.get(entry.resource);
-    if (!state || state === 'off' || !kinds.includes(entry.kind) || (entry.kind !== 'bible' && entry.opens !== 'verse') || !covers(entry, place)) return [];
+    if (!state || state === 'off' || (owned && entry.kind === 'sermons' && !isOffered(entry.resource, owned)) || !kinds.includes(entry.kind) || (entry.kind !== 'bible' && entry.opens !== 'verse') || !covers(entry, place)) return [];
     const link = linkFor(entry, place);
     return link ? [{ entry, state, link }] : [];
   });

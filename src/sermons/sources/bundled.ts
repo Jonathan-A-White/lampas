@@ -13,6 +13,17 @@ export const forgetSermonFiles = (): void => files.clear();
 /** A ref.ly address is a link into his Logos library: the app opens the sermon there, for an owner of the archive. */
 const opensInLogos = (url: string): boolean => /^https:\/\/ref\.ly\//.test(url);
 
+/** The Logos Resource IDs each bundled Logos source opens its sermons in (the ref.ly address of its rows; tests/unit/sermons-owned.test.ts holds this equal to the book files). */
+export const LOGOS_RESOURCES: Readonly<Record<string, readonly string[]>> = {
+  'greg-laurie-logos': ['LLS:GRGLRSRMNRCH'],
+  'jd-greear-logos': ['LLS:JDGRRSRMNRCHV'],
+  'skip-heitzig-logos': ['LLS:SKPHTZGSRMN'],
+  'spurgeon-sermon-notes-logos': ['LLS:MYSRMNOTES01', 'LLS:MYSRMNOTES03'],
+  'wesley-logos': ['LLS:36.0.11', 'LLS:WORKSWESLEY05', 'LLS:WORKSWESLEY06', 'LLS:WORKSWESLEY07'],
+  'whitefield-logos': ['LLS:36.0.12'],
+  'moody-logos': ['LLS:MENBBLMOODY', 'LLS:OVRCMNGLFMOODY', 'LLS:WAYGODMOODY', 'LLS:12SELSERMMOODY'],
+};
+
 const rowOf = (source: string, row: FileRow): SermonRow => ({
   id: row.id,
   source,
@@ -54,6 +65,7 @@ function sourceOf(entry: IndexSource): SermonSource {
     // one short line: the Settings row's hint, and a line of what the tutor is told (the credit is on the sheet)
     describe: `Listed by passage${/logos\.com/.test(entry.homepage) ? '; opens in Logos' : ''}.`,
     default: entry.onByDefault === false ? 'off' : 'on',
+    ...(LOGOS_RESOURCES[entry.id] ? { resources: LOGOS_RESOURCES[entry.id] } : {}),
     async sermonsFor(place: SermonPlace): Promise<SermonRow[]> {
       // a book the source has no file for is no request
       if (!entry.books.includes(place.book)) return [];

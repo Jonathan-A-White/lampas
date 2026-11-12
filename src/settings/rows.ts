@@ -22,7 +22,7 @@ import {
   type SettingsSection as KitSection,
   type Values,
 } from 'pwa-kit/settings';
-import { getDeveloper } from '../data/repositories';
+import { getDeveloper, ownedResources } from '../data/repositories';
 import { SCRIPTS } from '../script/scripts';
 import { resourceOf } from '../resources';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
@@ -35,6 +35,8 @@ import { openWebSetting } from './definitions/sermons';
 import { helpPlain } from './helpText';
 import { forgetGrownSermonEntries, growSermonEntries, isGrownSermon, SETTINGS, settingOf, type SectionId } from './registry';
 import { knownSermonSources, onKnownSermonSources } from '../sermons/known';
+import { OWNS_PREFIX, ownsKey, sourceOffered } from '../sermons/enabled';
+import { SOURCES as SERMON_SOURCES } from '../sermons/sources';
 import type { KnownSermonSource } from '../data/repositories/sermonSources';
 
 export type SettingsSection = KitSection<SectionId>;
@@ -330,6 +332,11 @@ export async function readValues(): Promise<Values> {
         const [on, dial] = await Promise.all([settingOf('pronunciationSeparate')?.read(), settingOf(separate === 'grc' ? 'greekInterest' : 'hebrewInterest')?.read()]);
         const level = separate === 'grc' ? greekLevelOf(dial) : hebrewLevelOf(dial);
         return [key, on === 'on' && level >= 1 ? 'on' : 'off'] as const;
+      }
+      // a Logos sermon collection: On while his Library import holds one of its resources or Logos gives it free (mw-qtu3zvz.94)
+      if (key.startsWith(OWNS_PREFIX)) {
+        const source = SERMON_SOURCES.find((candidate) => ownsKey(candidate) === key);
+        return [key, source && sourceOffered(source, await ownedResources()) ? 'on' : 'off'] as const;
       }
       return [key, String(await settingOf(key)?.read())] as const;
     }),

@@ -6,7 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useState } from 'react';
 import { loadChapter } from '../data/chapter';
 import { passagesOf } from '../data/passage';
-import { shelfOf, type ShelfState } from '../data/repositories';
+import { ownedResources, shelfOf, type ShelfState } from '../data/repositories';
 import { subscribe } from '../events/bus';
 import { useLogosOn } from '../useLogosOn';
 import { fetchThemeSermons, search, sermonsServiceKnown, type ServiceHit, type ServiceThemeSermon } from '../services/sermons';
@@ -42,15 +42,16 @@ export function useSermons(place: SermonPlace | null): SermonsFound | undefined 
 /** His sermon archives at the place, live with his shelf and the Logos switch: `undefined` until both are read, `[]` while Logos is Off or none is On or Pinned. */
 export function useArchives(place: SermonPlace | null): ArchiveRow[] | undefined {
   const held = useLiveQuery(() => shelfOf('sermons'), []);
+  const owned = useLiveQuery(ownedResources, []);
   const logos = useLogosOn();
   const book = place?.book;
   const chapter = place?.chapter;
   const from = place?.from;
   return useMemo(() => {
-    if (held === undefined || logos === undefined) return undefined;
+    if (held === undefined || owned === undefined || logos === undefined) return undefined;
     if (!logos || book === undefined || chapter === undefined) return [];
-    return logosArchives({ book, chapter, ...(from === undefined ? {} : { from }) }, new Map<string, ShelfState>(held.map((r) => [r.id, r.state])));
-  }, [held, logos, book, chapter, from]);
+    return logosArchives({ book, chapter, ...(from === undefined ? {} : { from }) }, new Map<string, ShelfState>(held.map((r) => [r.id, r.state])), undefined, owned);
+  }, [held, owned, logos, book, chapter, from]);
 }
 
 

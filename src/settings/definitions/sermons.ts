@@ -1,5 +1,6 @@
 // Sermons (Settings > Study resources > Sermons): one On/Off switch per sermon source (src/sermons/sources/), 'sermons.<id>', made from the registry of sources the way the map switches are (definitions/maps.ts).
-// A source that is Off gives the Sermons door and its sheet no rows. A source that needs Logos is drawn, and used, only while Logos is On (src/sermons/enabled.ts).
+// A source that is Off gives the Sermons door and its sheet no rows. A source that needs Logos is drawn, and used, only while Logos is On; one that opens in Logos resources (`resources`) is drawn and used only while his Library import holds one (src/sermons/enabled.ts).
+import { ownsKey } from '../../sermons/enabled';
 import type { SermonSource } from '../../sermons/types';
 import { defineSetting } from '../define';
 
@@ -8,7 +9,7 @@ export type SermonSwitch = 'on' | 'off';
 /** The tutor is told a setting's name in this many characters (src/tutor/screen.ts SETTING_NAME_MAX); a source's name is the label, less a bracketed qualifier at its end when it would not fit. */
 const NAME_MAX = 40;
 
-export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | 'describe' | 'default' | 'needs'>) =>
+export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | 'describe' | 'default' | 'needs' | 'resources'>) =>
   defineSetting<SermonSwitch>({
     key: `sermons.${source.id}`,
     default: source.default,
@@ -22,8 +23,13 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
     section: 'sermons',
     label: source.name.length > NAME_MAX ? source.name.replace(/ \([^)]*\)$/, '') : source.name,
     hint: source.describe,
-    ...(source.needs === 'logos' ? { help: 'Used only while Logos is On in Study resources.' } : {}),
-    ...(source.needs === 'logos' ? { dependsOn: { key: 'resource.logos', shown: (value: string) => value === 'on' } } : {}),
+    ...(source.resources ? { help: 'Offered only when your Library import says you own this sermon collection in Logos.' } : source.needs === 'logos' ? { help: 'Used only while Logos is On in Study resources.' } : {}),
+    // a Logos collection is drawn only while his import holds it (or Logos gives it free): the pseudo-key is read by rows.ts readValues
+    ...(source.resources
+      ? { dependsOn: { key: ownsKey(source), shown: (value: string) => value === 'on' } }
+      : source.needs === 'logos'
+        ? { dependsOn: { key: 'resource.logos', shown: (value: string) => value === 'on' } }
+        : {}),
   });
 
 export type OpenWebIn = 'browser' | 'firefox';
