@@ -77,7 +77,7 @@ describe("copywork's Greek rule judges each word by itself", () => {
 describe("copywork's Greek rule tells a breathing from an accent", () => {
   // the curl against the stroke is the shape the model misreads, so the rule counts marks and gives the opening vowel's single mark to the breathing
   it('says a breathing is not an accent, and counts the marks on the opening vowel', () => {
-    expect(greek).toMatch(/Count the marks on a vowel before you name them/);
+    expect(greek).toMatch(/Count the marks on a vowel, in the model word and on the page, before you name them/);
     expect(greek).toMatch(/a single mark over that opening vowel is its breathing, whatever its shape, and a breathing is not an accent/);
     expect(greek).toMatch(/same number of marks, any fault is one of kind/);
   });
