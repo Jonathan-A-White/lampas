@@ -357,7 +357,7 @@ describe('currentSettings', () => {
       'resource.strongs': 'off',
       'resource.logos': 'off',
       audioBible: 'off',
-      bibleVoice: 'msb-david',
+      bibleVoice: 'msb-david-wifi',
       readingPlan: 'off',
       dailyReview: 'on',
       dailyMemorize: 'on',

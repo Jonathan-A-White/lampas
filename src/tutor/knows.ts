@@ -149,7 +149,7 @@ const everySetting = Object.fromEntries(SETTINGS.map((s) => [s.key, `settings.${
 const byName = Object.fromEntries(bearingKeys.map((key) => [key, 'summary.settings_changed']));
 
 const READ_LESSONS = 'Whether a lesson reads itself aloud when it opens is a reading control; it changes nothing the answer says.';
-const BIBLE_VOICE = 'Which voice reads the Bible aloud (a recording or the phone) changes how a verse is heard, never what a verdict on one reading says.';
+const BIBLE_VOICE = 'Which voice reads the Bible aloud (a recording or the phone) changes how a verse is heard, never what a verdict on one reading says. Recording on Wi-Fi only is the start: David plays on Wi-Fi, the phone voice on mobile data (a one-time notice, and one question whether to play David over data at about 1.4 MB a minute), and where David has not recorded a book yet the phone voice reads.';
 const SPOKEN_LATER = 'It changes how loud or fast the answer is heard, never what it says.';
 const FAMILY_SET_BOTH = 'Pronunciation sets greekPronunciation and hebrewPronunciation together; what it left them at is what the request carries, so it is not sent a second time.';
 const NO_QUIZ = 'The quiz is the Bible talk\'s Quiz me mode alone; this grind never quizzes him.';

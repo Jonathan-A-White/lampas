@@ -96,7 +96,8 @@ import { useDoorTarget } from './tutor/door';
 import { useTalk } from './useTalk';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
-import { recordingFor } from './speech/recordedVoice';
+import { decideVoice } from './speech/voiceDecision';
+import { DataVoiceQuestion } from './speech/DataVoiceQuestion';
 import { answerRuns, syllableRuns } from './speech/answerRuns';
 import { ReaderChips } from './ReaderChips';
 import { TeachSheet } from './TeachSheet';
@@ -500,9 +501,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const crossing = reading.crossing;
   const crossingHere = crossing !== null && crossing.book === BOOK && crossing.chapter === CHAPTER;
   const readingStatus = reading.status;
-  // It is heard in the recorded voice by the rule a tap goes by (src/speech/recordedVoice.ts recordingFor), else in the phone's.
+  // It is heard in the recorded voice by the rule a tap goes by (src/speech/voiceDecision.ts decideVoice), else in the phone's.
   useEffect(() => {
-    if (plan && crossingHere && readingStatus === 'reading') continueReading({ book: BOOK, chapter: CHAPTER, plan, recorded: recordingFor(BOOK, chapter, plan) });
+    if (plan && crossingHere && readingStatus === 'reading') {
+      // a crossing asks nothing (decideVoice's mayAsk is false): the phone's voice reads on data, with the one-time notice
+      const say = decideVoice(BOOK, chapter, plan, false);
+      continueReading({ book: BOOK, chapter: CHAPTER, plan, recorded: say.recorded, notice: say.notice });
+    }
   }, [plan, crossingHere, readingStatus, BOOK, CHAPTER, chapter]);
   // The recorded voice's timings for this book are loaded when a chapter opens, so a tap on Play finds them with no wait (mw-82lb97i.3).
   // Any choice but the phone voice warms them (a small file), so a tap on the Wi-Fi choice finds them when Wi-Fi comes; it follows his Bible voice setting (Settings > Listening), so choosing the recording while a chapter is open brings its timings too.
@@ -606,6 +611,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
 
   return (
     <VariantKeyContext.Provider value={openKey}>
+      <DataVoiceQuestion />
       <Away enabled={immersive} away={away}>
       <div data-reader-top className="reader-top">
       <ReaderHeader

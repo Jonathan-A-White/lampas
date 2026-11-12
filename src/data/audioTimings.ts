@@ -112,10 +112,12 @@ async function readJson(url: string): Promise<{ value: unknown; retry: boolean }
 let indexRequest: Promise<TimingsIndex | null> | undefined;
 const bookRequests = new Map<string, Promise<BookTimings | null>>();
 const loaded = new Map<string, BookTimings>();
+let loadedIndex: TimingsIndex | null = null;
 
 /** Forgets everything loaded (a test's). */
 export function forgetTimings(): void {
   indexRequest = undefined;
+  loadedIndex = null;
   bookRequests.clear();
   loaded.clear();
 }
@@ -125,7 +127,9 @@ export function loadTimingsIndex(): Promise<TimingsIndex | null> {
   if (indexRequest) return indexRequest;
   const request = readJson(timingsIndexUrl()).then(({ value, retry }): TimingsIndex | null => {
     if (retry && indexRequest === request) indexRequest = undefined;
-    return isTimingsIndex(value) ? value : null;
+    if (!isTimingsIndex(value)) return null;
+    loadedIndex = value;
+    return value;
   });
   indexRequest = request;
   return request;
@@ -152,6 +156,12 @@ export function loadBookTimings(book: string): Promise<BookTimings | null> {
   });
   bookRequests.set(book, request);
   return request;
+}
+
+/** Whether the index (once loaded) lists this chapter as timed: true or false, or null while the index is not in (no wait, no guess). voiceDecision.ts says 'David has not recorded it yet' only on a false. */
+export function chapterListedNow(book: string, chapter: number): boolean | null {
+  if (!loadedIndex) return null;
+  return Object.hasOwn(loadedIndex.books, book) && loadedIndex.books[book].includes(chapter);
 }
 
 /** What is ALREADY loaded of a chapter, with no wait, or null: the player decides at the tap and may not wait for a fetch. Call loadBookTimings beforehand (on opening the chapter) to have it ready. */

@@ -475,6 +475,8 @@ export interface StartOptions {
   listen?: string;
   /** the chapter's recording to hear it in (src/speech/recordedVoice.ts recordingFor decides at the tap), else the phone's voice reads it */
   recorded?: ChapterTimings;
+  /** the line about the voice (src/speech/voiceDecision.ts): shown as the reading starts, unless a missing Greek or Hebrew voice has a line to say first */
+  notice?: string;
 }
 
 export function startReading(options: StartOptions): void {
@@ -483,7 +485,7 @@ export function startReading(options: StartOptions): void {
     // a tutor's answer read while a Listen is playing is read in front of it, and the Listen goes on after it
     if (state.answer === null && state.status === 'reading' && state.listen !== null && startedWith && state.verse !== null) suspended = { options: startedWith, verse: state.verse };
   } else suspended = null;
-  startedWith = options.answer === undefined ? options : startedWith;
+  startedWith = options.answer === undefined ? { ...options, notice: undefined } : startedWith;
   completed = null;
   resetInterrupts();
   dropRecording();
@@ -495,7 +497,7 @@ export function startReading(options: StartOptions): void {
   planBook = options.inBook ?? options.book ?? null;
   reach = options.continuous ? options.span ?? 'chapter' : 'verse';
   queued = null;
-  const notice = noVoiceNotice(options.from, reach !== 'verse');
+  const notice = noVoiceNotice(options.from, reach !== 'verse') ?? options.notice ?? null;
   set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, recorded: false, listen: options.listen ?? null });
   keepAwake();
   if (options.recorded && playFromRecording(options.recorded, options.from, epoch)) return;
@@ -504,7 +506,7 @@ export function startReading(options: StartOptions): void {
 
 /** The Reader that opened the chapter a reading was going on into hands over that chapter's plan, and the voice starts its
  * first verse. Nothing happens unless this is the chapter the reading is waiting for (and not paused). */
-export function continueReading(options: { book: string; chapter: number; plan: PlanVerse[]; recorded?: ChapterTimings }): void {
+export function continueReading(options: { book: string; chapter: number; plan: PlanVerse[]; recorded?: ChapterTimings; notice?: string }): void {
   const to = state.crossing;
   const first = options.plan[0];
   if (state.status !== 'reading' || !to || to.book !== options.book || to.chapter !== options.chapter) return;
@@ -514,7 +516,7 @@ export function continueReading(options: { book: string; chapter: number; plan: 
   planBook = options.book;
   queued = null;
   if (!first) return finish(epoch);
-  const notice = noVoiceNotice(first.n, true) ?? state.notice;
+  const notice = noVoiceNotice(first.n, true) ?? options.notice ?? state.notice;
   set({ ...state, verse: first.n, notice, crossing: null });
   if (options.recorded && playFromRecording(options.recorded, first.n, epoch)) return;
   readVerse(first.n, epoch);

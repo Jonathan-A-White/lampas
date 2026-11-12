@@ -10,7 +10,7 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
-import { chapterTimingsNow, forgetTimings, type BookTimings, type ChapterTimings, type TimingsIndex } from '../../src/data/audioTimings';
+import { chapterListedNow, chapterTimingsNow, forgetTimings, type BookTimings, type ChapterTimings, type TimingsIndex } from '../../src/data/audioTimings';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus, publish } from '../../src/events/bus';
@@ -114,14 +114,14 @@ const chosenOf = async (): Promise<string[]> =>
     .map((b) => b.textContent ?? '');
 const listOf = (a: string, b?: string, c?: string): string[] => [a, b, c].filter((x): x is string => x !== undefined);
 
-async function openReader(voice: string, connection: string): Promise<void> {
-  await fresh(voice);
+async function openReader(voice: string, connection: string, chapterN = 3, timed: number[] = [3, 4]): Promise<void> {
+  await fresh(voice === 'default' ? undefined : voice);
   connect(connection);
   synth = stubSpeech([ENGLISH_VOICE, GREEK_VOICE]);
   audio = stubAudio();
   stubChapterFetch();
-  const index: TimingsIndex = { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: [3, 4] } };
-  const book: BookTimings = { v: 1, edition: 'msb-david', book: 'jhn', chapters: { '3': chapterTimings('jhn/3', 3), '4': chapterTimings('jhn/4', 4) } };
+  const index: TimingsIndex = { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: timed } };
+  const book: BookTimings = { v: 1, edition: 'msb-david', book: 'jhn', chapters: Object.fromEntries(timed.map((n) => [String(n), chapterTimings(`jhn/${n}`, n)])) };
   const chapterFetch = globalThis.fetch;
   vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
@@ -132,13 +132,15 @@ async function openReader(voice: string, connection: string): Promise<void> {
   });
   await setReaderView('english');
   await setWeave('off');
-  window.location.hash = '#/?b=jhn&c=3';
+  window.location.hash = `#/?b=jhn&c=${chapterN}`;
   render(<App />);
-  await screen.findByRole('heading', { name: 'John 3', level: 1 });
+  await screen.findByRole('heading', { name: `John ${chapterN}`, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   // the Bible voice is told to the speaker as the App starts, and the book's timings are warmed unless the voice is the phone's
-  await waitFor(() => expect(wantsRecording()).toBe(voice === 'msb-david' || (voice === 'msb-david-wifi' && connection === 'wifi') ? 'msb-david' : null));
-  if (voice !== 'phone') await waitFor(() => expect(chapterTimingsNow('jhn', 3)).not.toBeNull());
+  await waitFor(() => expect(wantsRecording()).toBe(voice === 'msb-david' || (voice !== 'phone' && connection !== 'cellular') ? 'msb-david' : null));
+  if (voice !== 'phone') await waitFor(() => expect(chapterTimingsNow('jhn', timed[0])).not.toBeNull());
+  // the index is in, so a chapter it does not list is known to be unrecorded
+  if (voice !== 'phone') await waitFor(() => expect(chapterListedNow('jhn', chapterN)).toBe(timed.includes(chapterN)));
 }
 
 const verseEl = (n: number): HTMLElement => {
@@ -166,7 +168,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     await waitFor(async () => expect(await choicesOf()).toEqual(listOf(a, b, c)));
   };
 
-  Scenario('Bible voice stands above English voice, Recording (David) chosen, with its hint and its credit line', ({ Given, When, Then, And }) => {
+  Scenario('Bible voice stands above English voice, Recording on Wi-Fi only chosen, with its hint and its credit line', ({ Given, When, Then, And }) => {
     Given('Settings is open at the page of {string} on a phone whose connection type is {string}', async (_, _page: string, type: string) => {
       await fresh();
       await openListening(type);
@@ -187,6 +189,10 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(helpText()).toContain('internet');
       expect(helpText()).toContain('John');
     });
+    And('the help says it uses about 1.4 MB a minute and that books arrive as they are timed', () => {
+      expect(helpText()).toContain('about 1.4 MB a minute');
+      expect(helpText()).toContain('as they are timed');
+    });
   });
 
   Scenario('On a phone that reports its connection the row offers three choices and the Wi-Fi one is kept across a reload', ({ Given, When, Then }) => {
@@ -205,12 +211,13 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the {string} row shows {string} chosen', async (_, _name: string, value: string) => shows(null, value));
   });
 
-  Scenario('On a phone that cannot tell, the row offers two choices and says so in its help', ({ Given, When, Then }) => {
+  Scenario('On a phone that cannot tell, the start is shown as Recording on Wi-Fi only, with its help saying what the phone cannot tell', ({ Given, When, Then, And }) => {
     Given('Settings is open at the page of {string} on a phone with no connection type', async () => {
       await fresh();
       await openListening('none');
     });
-    Then('the {string} row offers {string} and {string}', async (_, _name: string, a: string, b: string) => offers(null, a, b));
+    Then('the {string} row offers {string}, {string} and {string}', async (_, _name: string, a: string, b: string, c: string) => offers(null, a, b, c));
+    And('the {string} row shows {string} chosen', async (_, _name: string, value: string) => shows(null, value));
     When('he opens the More help of the {string} row', opensHelp);
     Then('the help ends with {string}', (_, text: string) => {
       expect(helpText().endsWith(text)).toBe(true);
@@ -278,6 +285,70 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('the audio element was given only John 3', () => {
       expect(audio.sources).toEqual([audioOf(3)]);
     });
+  });
+
+  const DATA_NOTICE = 'On mobile data Lampas reads in the phone voice. David plays on Wi-Fi.';
+  const question = () => screen.queryByRole('alertdialog', { name: 'Bible voice on mobile data' });
+  const asked = async (_: unknown, text: string) => {
+    const dialog = await screen.findByRole('alertdialog', { name: 'Bible voice on mobile data' });
+    expect(squash(dialog.textContent)).toContain(text);
+  };
+  const notAsked = () => {
+    expect(question()).toBeNull();
+  };
+  const readingSays = async (_: unknown, text: string) => {
+    await waitFor(() => expect(squash(document.querySelector('[data-reading-bar]')?.parentElement?.textContent)).toContain(text));
+  };
+
+  Scenario('On mobile data with the start, the first Play asks once whether to play David over data, and Play David on data plays him and sets the Bible voice', ({ Given, When, Then, And }) => {
+    Given(given, async (_, voice: string, connection: string) => openReader(voice, connection));
+    When('he taps {string}', tap);
+    Then('he is asked {string}', asked);
+    And('the phone\'s voice is handed nothing and the element has no src', () => {
+      expect(synth.calls.filter((c) => c.startsWith('speak'))).toEqual([]);
+      expect(audio.sources).toEqual([]);
+    });
+    When('he taps "Play David on data"', () => tap(null, 'Play David on data'));
+    Then('the audio element is given the recording of John {int}', async (_, chapter: number) => recordingGiven(null, String(chapter)));
+    And('the setting {string} is kept as {string}', async (_, key: string, value: string) => {
+      await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
+    });
+  });
+
+  Scenario('Keep the phone voice reads in the phone voice, says why once, and is never asked again', ({ Given, When, Then, And }) => {
+    Given(given, async (_, voice: string, connection: string) => openReader(voice, connection));
+    When('he taps {string}', tap);
+    And('he taps "Keep the phone voice"', () => tap(null, 'Keep the phone voice'));
+    Then('the phone\'s voice is handed verse 1 and the element has no src', handedVerseOne);
+    And('the reading says {string}', readingSays);
+    When('he taps "Stop" on the speaking bar', () => tap(null, 'Stop'));
+    And('he taps "Read from the top" again', () => tap(null, 'Read from the top'));
+    Then('he is not asked again', notAsked);
+    And('the phone\'s voice is handed verse 1 and the element has no src', async () => {
+      await waitFor(() => expect(spokenTexts().length).toBeGreaterThan(0));
+      expect(audio.sources).toEqual([]);
+    });
+    And('the reading says nothing about the data', () => {
+      expect(squash(document.querySelector('[data-reading-bar]')?.parentElement?.textContent)).not.toContain(DATA_NOTICE);
+    });
+  });
+
+  const givenUntimed = 'John 4 is open in English with the Bible voice {string} on a connection of type {string} and only John 3 timed';
+  Scenario('On Wi-Fi in a chapter David has not recorded yet, a line says so and the phone\'s voice reads it', ({ Given, When, Then, And }) => {
+    Given(givenUntimed, async (_, voice: string, connection: string) => openReader(voice, connection, 4, [3]));
+    When('he taps {string}', tap);
+    Then('the reading says {string}', readingSays);
+    And('the phone\'s voice is handed the English of John 4:1', async () => {
+      await waitFor(() => expect(spokenTexts().join(' ')).toBe(englishIn('jhn/4', 1)));
+      expect(audio.sources).toEqual([]);
+    });
+  });
+
+  Scenario('On mobile data in a chapter David has not recorded yet, the one-time notice is given with no question', ({ Given, When, Then, And }) => {
+    Given(givenUntimed, async (_, voice: string, connection: string) => openReader(voice, connection, 4, [3]));
+    When('he taps {string}', tap);
+    Then('the reading says {string}', readingSays);
+    And('he is not asked again', notAsked);
   });
 
   Scenario('A chapter that began in the recording finishes in it when the Bible voice is changed to Phone voice, and the next Play is the phone\'s voice', ({ Given, When, Then, And }) => {

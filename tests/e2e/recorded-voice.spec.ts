@@ -192,25 +192,33 @@ async function openJohn3WithVoice(page: Page, voice: string | null): Promise<{ r
   return network;
 }
 
-test('on a phone that cannot tell Wi-Fi from mobile data, Settings > Listening offers Recording (David) and Phone voice, not Recording on Wi-Fi only', async ({ page }) => {
+test('on a phone that cannot tell Wi-Fi from mobile data, the start is Recording on Wi-Fi only, shown chosen, and David is not held back', async ({ page }) => {
   await connectionIs(page, null);
   await openUnlocked(page);
   await page.goto('/#/settings');
   await openGroup(page, 'Listening');
   const row = page.getByRole('group', { name: 'Bible voice', exact: true });
   await row.scrollIntoViewIfNeeded();
-  await expect(row.getByRole('button')).toHaveText(['Recording (David)', 'Phone voice']);
-  await expect(row.getByRole('button', { name: 'Recording (David)', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('button', { name: 'Recording on Wi-Fi only', exact: true })).toHaveCount(0);
+  await expect(row.getByRole('button')).toHaveText(['Recording (David)', 'Recording on Wi-Fi only', 'Phone voice']);
+  await expect(row.getByRole('button', { name: 'Recording on Wi-Fi only', exact: true })).toHaveAttribute('aria-pressed', 'true');
   for (const button of await row.getByRole('button').all()) expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
   await shot(page, 'bible-voice-setting');
 });
 
-test('Recording on Wi-Fi only on mobile data reads John 3 in the phone voice and asks openbible.com for nothing', async ({ page }) => {
+test('Recording on Wi-Fi only on mobile data asks once about data, and Keep the phone voice reads John 3 in the phone voice and asks openbible.com for nothing', async ({ page }) => {
   await connectionIs(page, 'cellular');
-  const network = await openJohn3WithVoice(page, 'msb-david-wifi');
+  const network = await openJohn3WithVoice(page, null);
   await header(page, 'Read from the top').click();
+  const question = page.getByRole('alertdialog', { name: 'Bible voice on mobile data' });
+  await expect(question).toContainText('Play David over mobile data? It uses about 1.4 MB a minute (about 86 MB an hour).');
+  // the card sits at the foot of the phone, inside the screen, with two 48 px buttons
+  const box = await question.boundingBox();
+  expect(box && box.x >= 0 && box.x + box.width <= 390 && box.y + box.height <= 844).toBe(true);
+  for (const name of ['Play David on data', 'Keep the phone voice']) expect((await question.getByRole('button', { name }).boundingBox())?.height).toBeGreaterThanOrEqual(47.5);
+  await shot(page, 'bible-voice-data-question');
+  await question.getByRole('button', { name: 'Keep the phone voice' }).click();
   await expect(readingBar(page)).toContainText('Reading verse 1');
+  await expect(page.getByRole('status').filter({ hasText: 'On mobile data Lampas reads in the phone voice. David plays on Wi-Fi.' })).toBeVisible();
   await expect.poll(async () => (await spoken(page)).length, { timeout: 15_000 }).toBeGreaterThan(0);
   expect(network.asked).toEqual([]);
 });

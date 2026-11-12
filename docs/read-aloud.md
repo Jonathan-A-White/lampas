@@ -60,17 +60,26 @@ view, and the wake lock.
 
 A chapter of the Majority Standard Bible that has verse timings (`public/data/audio/msb-david/`, `src/data/audioTimings.ts`, `docs/data.md`) can be read by the publisher's own recording, David's reading
 from openbible.com, in place of the phone's voice (mw-82lb97i.3). It is chosen by the **Bible voice** setting (mw-82lb97i.6): Settings > Listening > Reading voices, drawn above the English voice row (registry key `bibleVoice`, `src/settings/definitions/bibleVoice.ts`),
-with three choices saved by the voice's id so another recorded voice can be added beside the first: **Recording (David)** (`msb-david`, the default), **Recording on Wi-Fi only** (`msb-david-wifi`) and **Phone voice**
+with three choices saved by the voice's id so another recorded voice can be added beside the first: **Recording (David)** (`msb-david`), **Recording on Wi-Fi only** (`msb-david-wifi`, the default since mw-zbgo4ep.30) and **Phone voice**
 (`phone`). The row is shown always: every English text Lampas reads aloud is the MSB (the Septuagint's Brenton has no recording and is never read by it), and where no timings file exists the phone's voice reads
 whatever is chosen. Its help opens with the credit line 'Recording: Majority Standard Bible, read by David, streamed from openbible.com'. The one seam is `wantsRecording()` in `src/speech/recordedVoice.ts`,
-which `src/speech/settingsSync.ts` tells the choice at start and on a change (as it does the English accent): `msb-david` names `'msb-david'`; `msb-david-wifi` names it only while `connectionKind()` is `'wifi'`;
+which `src/speech/settingsSync.ts` tells the choice at start and on a change (as it does the English accent): `msb-david` names `'msb-david'`; `msb-david-wifi` names it unless `connectionKind()` is `'other'` (a phone that cannot tell, `null`, is taken for Wi-Fi: the start would otherwise take David from it);
 `phone` names none. Every caller asks that one function (`setBibleVoice` is a jsdom test's way in).
 
 **How Wi-Fi is told.** `src/speech/connection.ts` is the one file that reads `navigator.connection` (the Network Information API's `type`; `setConnectionForTests` fakes it): `wifi` and `ethernet` are `'wifi'`; `cellular`
 and every other named type (`unknown`, `none`, `bluetooth`, `wimax`, `mixed`, `other`) are `'other'`, so no mobile data is spent on a guess; no `navigator.connection` or no `type` (iOS Safari, desktop browsers) is
-`null`: the phone cannot tell at all. Where it is `null` the Wi-Fi choice is **hidden** (the row shows Recording (David) and Phone voice, and its help ends with 'This phone cannot tell Wi-Fi from mobile data, so Recording on
-Wi-Fi only is not offered.'); a `msb-david-wifi` that reaches such a browser (the tutor set it, a restored copy) is shown as saved, with the other two to choose from, and reads in the phone's voice. `effectiveType`,
+`null`: the phone cannot tell at all. Where it is `null` the Wi-Fi choice is **hidden** unless it is the saved or default value, which it is now (so the row shows all three, Recording on Wi-Fi only chosen, and its help ends with 'This phone cannot tell Wi-Fi from mobile data, so Recording on
+Wi-Fi only is not offered.'); a `msb-david-wifi` that reaches such a browser reads David as `msb-david` does. `effectiveType`,
 `downlink` and `saveData` are never a stand-in for Wi-Fi.
+
+**The voice explains itself (mw-zbgo4ep.30).** Every place a Bible reading starts (the header's Play, a verse's play button, Play to, a Listen on a passage, and the crossing into the next chapter) asks `decideVoice()` in
+`src/speech/voiceDecision.ts` once, with no wait; `src/reader/useReadFrom.ts` `begin` and `src/Reader.tsx` (the crossing, `mayAsk` false) are its only callers, so no start goes round it. It returns the recording to play, the line to
+show (`StartOptions.notice`, drawn in the Reading bar's status line), or `ask`. PROVISIONAL wording, the Governor's to confirm: on Wi-Fi (or Recording (David)) in a chapter the index (`chapterListedNow`) does not list, the line
+'David hasn't recorded <Book> here yet: the phone voice reads it.' once a book a session (an index not loaded yet says nothing); on mobile data with Recording on Wi-Fi only, in a chapter David has, the FIRST time a question
+card (`src/speech/DataVoiceQuestion.tsx`, `role=alertdialog`) 'Play David over mobile data? It uses about 1.4 MB a minute (about 86 MB an hour).' with **Play David on data** (sets Bible voice to Recording (David) and plays David)
+and **Keep the phone voice** (the phone voice reads; `lampas.dataVoiceAsked` in localStorage, never asked again; Settings still changes it; a tap outside takes the card down and starts nothing); and the first time the
+phone's voice reads because of data (after Keep, in a chapter with no David, or crossing into the next chapter) the one-time notice 'On mobile data Lampas reads in the phone voice. David plays on Wi-Fi.'
+(`lampas.dataVoiceNoticed`). The MP3s are 192 kbps mono: 24 KB a second, 1.44 MB a minute, about 86 MB an hour. The phone voice read by `passagePlayer.ts`, a tutor answer or a page of prose never uses the recording and says nothing.
 
 **When it is decided.** When a chapter starts (the tap, and each crossing into a next chapter under Play to), never in the middle of one: a chapter that began in the recording finishes in it when Wi-Fi drops or the setting
 changes (if the stream then fails, the fallback below reads on in the phone's voice), and a chapter that began in the phone's voice finishes in it. The Reader warms a book's timings (a small file) unless the choice is Phone voice.
