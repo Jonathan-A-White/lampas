@@ -161,8 +161,8 @@ Postern's and SpellForge's; its colours are Lampas's (`--bk-speech-*` in `src/in
   only the word. A second word cuts the first off; Resume tapped while a word still sounds goes on after it; Stop on the bar ends everything. The word sheet and the Hebrew
   guide, which sit over the screen's own bar, leave a `<BarSlot level={4}>` so Resume stays in view. Only a new question, the panel being left (below) or Stop ends an answer.
 - What the package lacks stays in `src/speech/greek.ts`: his **speed** for a language and the **voice he picked** (the package names a language and takes the phone's
-  voice; the app puts the rate and the chosen voice on each utterance as it is handed to the phone, by wrapping `speechSynthesis.speak` once; with the voice it sets the
-  utterance's `lang` to the voice's own tag, hyphenated, because Android Chrome sounds an utterance by its tag and ignores the voice object: mw-82lb97i.17), the slow speed of a
+  voice; the app puts the rate and the chosen voice on each utterance as it is handed to the phone, by wrapping `speechSynthesis.speak` once; with an English voice it sets the
+  utterance's `lang` to the voice's own tag, hyphenated (Greek and Hebrew keep the pronunciation's tag), because Android Chrome sounds an utterance by its tag and ignores the voice object: mw-82lb97i.17), the slow speed of a
   word being sounded out, the no-voice help line and the word said alone (`speakWord`). A phone that lists no voices yet is waited for up to a second by the package
   before the first sentence (`warmVoices` ahead of a tap avoids it).
 - Leaving the Reader for another screen **pauses** the chapter's reading and coming back offers Resume; the tutor's answers still stop when their panel goes (the story
