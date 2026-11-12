@@ -1,5 +1,5 @@
 // mw-zbgo4ep.33: opening a chapter warms its book's recorded-voice timings (src/Reader.tsx) only when David could play: Recording (David), or Recording on Wi-Fi only on Wi-Fi
-// (or a phone that does not say). On mobile data with Wi-Fi only on, David will not play and the small file is not fetched; on the Phone voice never.
+// (or a phone that does not say). On mobile data with Wi-Fi only on, David will not play and the small file is not fetched once the one question about data is answered (before it, the first Play needs the timings to offer David); on the Phone voice never.
 import '@testing-library/react/dont-cleanup-after-each';
 import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,11 +10,13 @@ import { db } from '../../src/data/db';
 import { bibleVoiceSetting } from '../../src/settings/definitions';
 import { setConnectionForTests, type ConnectionLike } from '../../src/speech/connection';
 import { resetRecordedVoice } from '../../src/speech/recordedVoice';
+import { forgetVoiceNotices, markDataQuestionAnswered } from '../../src/speech/voiceDecision';
 import { stubChapterFetch, type ChapterFetch } from '../support/chapter-fetch';
 
 let stub: ChapterFetch;
 beforeEach(async () => {
   cleanup();
+  forgetVoiceNotices();
   await db.settings.clear();
   forgetTimings();
   stub = stubChapterFetch();
@@ -22,6 +24,7 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup();
   setConnectionForTests(undefined);
+  forgetVoiceNotices();
   resetRecordedVoice();
   vi.unstubAllGlobals();
   forgetChapters();
@@ -41,9 +44,15 @@ async function openJohn3(voice: string, connection: ConnectionLike | null | unde
 const timingsRequests = () => stub.requests.filter((url) => url.startsWith('/data/audio/'));
 
 describe('opening a chapter warms the book timings only when David could play', () => {
-  it('on mobile data with Recording on Wi-Fi only, asks for no timings at all', async () => {
+  it('on mobile data with Recording on Wi-Fi only, once the question about data is answered, asks for no timings at all', async () => {
+    markDataQuestionAnswered();
     await openJohn3('msb-david-wifi', { type: 'cellular' });
     expect(timingsRequests()).toEqual([]);
+  });
+
+  it('on mobile data with Recording on Wi-Fi only, while the question about data is still to be asked, warms them (the first Play offers David and needs them)', async () => {
+    await openJohn3('msb-david-wifi', { type: 'cellular' });
+    await waitFor(() => expect(timingsRequests()).toContain(timingsIndexUrl()));
   });
 
   it('on Wi-Fi with Recording on Wi-Fi only, warms them (the index first)', async () => {
@@ -64,6 +73,7 @@ describe('opening a chapter warms the book timings only when David could play', 
   it('when the phone goes from mobile data to Wi-Fi, warms them then', async () => {
     const link = Object.assign(new EventTarget(), { type: 'cellular' });
     Object.defineProperty(navigator, 'connection', { value: link, configurable: true });
+    markDataQuestionAnswered();
     try {
       await openJohn3('msb-david-wifi', undefined);
       expect(timingsRequests()).toEqual([]);

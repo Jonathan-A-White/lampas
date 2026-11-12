@@ -38,7 +38,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
 import { loadBookTimings } from './data/audioTimings';
 import { onConnectionChange } from './speech/connection';
-import { recordingWanted } from './speech/recordedVoice';
+import { timingsWarmFor } from './speech/voiceDecision';
 import { chooseReading, getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, setOpenReadLanguage, type OpenChapter } from './data/readerChapter';
 import { neighbours, verseNeighbours } from './data/neighbours';
@@ -512,13 +512,13 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     }
   }, [plan, crossingHere, readingStatus, BOOK, CHAPTER, chapter]);
   // The recorded voice's timings for this book are loaded when a chapter opens, so a tap on Play finds them with no wait (mw-82lb97i.3).
-  // They are warmed only when David could play (recordingWanted: Recording (David); Recording on Wi-Fi only unless the phone says it is on mobile data), never for the phone voice nor before the
-  // saved setting is read, so mobile data spends nothing on a recording that will not play (mw-zbgo4ep.33). It follows his Bible voice setting (Settings > Listening) and the connection
+  // They are warmed only when David could play (timingsWarmFor, src/speech/voiceDecision.ts: Recording (David); Recording on Wi-Fi only unless the phone says it is on mobile data, where only until the one
+  // question about data is answered), never for the phone voice nor before the saved setting is read, so mobile data spends nothing on a recording that will not play (mw-zbgo4ep.33). It follows his Bible voice setting (Settings > Listening) and the connection
   // (a change from data to Wi-Fi warms them), so choosing the recording while a chapter is open brings its timings too.
   const bibleVoice = useSetting(bibleVoiceSetting);
   const [, setConnectionTick] = useState(0); // a change of connection draws again, so recordingWanted is asked again
   useEffect(() => onConnectionChange(() => setConnectionTick((n) => n + 1)), []);
-  const warmTimings = recordingWanted(bibleVoice) !== null;
+  const warmTimings = timingsWarmFor(bibleVoice);
   useEffect(() => {
     if (warmTimings) void loadBookTimings(BOOK);
   }, [BOOK, warmTimings]);
