@@ -80,7 +80,8 @@ timings' MP3 address. It plays from the start of the verse the reading starts at
 `readAloud.ts` the verse at each `timeupdate` (`verseAt`; never `requestAnimationFrame` alone, which stops when the page hides), and stops at the end of the span's last verse: a timer aimed at it,
 `(end - sound) / playbackRate`, re-aimed on a change of speed, a pause, a seek and each `timeupdate`, which waits on rather than cut a word when the recording stalled; a `timeupdate` past the end and the element's
 `ended` stop it too. The end is judged by where the SOUND is (`soundAt`, mw-82lb97i.18): the element's second moves in steps (each `timeupdate` on a phone, in bursts in Chromium), so it is run on by
-the clock since it last moved (at most `RUN_ON_MS`, 300 ms, and only while it is seen to move: a stall, a seek or a `waiting` holds it). Read alone, the second was a step behind and the stop
+the clock since it last moved (at most `RUN_ON_MS`, 300 ms, and only while it is seen to move: a stall, a seek or a `waiting` holds it). The timer is aimed `END_LEAD` (40 ms of the recording)
+before the end and stops within `END_SLACK` (50 ms) of it, because a timer on a busy page fires late: the stop is at or before the end, inside the aligner's 0.25 s pad after the last word. Read alone, the second was a step behind and the stop
 waited for the next `timeupdate`: his John 1:50 ran on into 'Then He declar…' of verse 51. `tests/e2e/recorded-voice-stop.spec.ts` plays verses of John's real timings over a silent MP3 and holds the
 pause within 50 ms past each end (`LAMPAS_ALL_JOHN=1` runs all 879 verses, outside the gate). It seeks by verse (`seekToVerse`: the start, a Listen's Restart and a tapped verse all use it), so a later previous-verse or next-verse button is one call. It plays at his English
 speed (`rates-changed`, through `settingsSync.ts` `setRecordedRate`), keeping its pitch; a change while it plays takes effect at once.

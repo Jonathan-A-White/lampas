@@ -53,21 +53,21 @@ describe('the wait for a span’s end', () => {
   });
 
   it.each([
-    [0.5, 40_000],
-    [1, 20_000],
-    [2, 10_000],
-  ])('at rate %s, from verse 2 to the end of verse 3, is %s ms', (rate, wait) => {
+    [0.5, 39_920],
+    [1, 19_960],
+    [2, 9_980],
+  ])('at rate %s, from verse 2 to 40 ms of the recording before the end of verse 3 (END_LEAD: a busy page’s timer fires late), is %s ms', (rate, wait) => {
     setRecordedRate(rate);
     playRecording(TIMINGS, 2, 30, listener);
     expect(element().currentTime).toBe(10);
     expect(element().playbackRate).toBe(rate);
-    expect(endTimerMs()).toBe(wait);
+    expect(endTimerMs()).toBeCloseTo(wait);
   });
 
   it('starts the recording’s first verse at second 0, the title included', () => {
     playRecording(TIMINGS, 1, 10, listener);
     expect(element().currentTime).toBe(0);
-    expect(endTimerMs()).toBe(10_000);
+    expect(endTimerMs()).toBeCloseTo(9_960);
   });
 });
 
@@ -79,16 +79,16 @@ describe('the end timer is aimed again', () => {
     expect(endTimerMs()).toBeNull();
     resumeRecording();
     expect(audio.playedAt).toEqual([10, 15]);
-    expect(endTimerMs()).toBe(15_000);
+    expect(endTimerMs()).toBeCloseTo(14_960);
   });
 
   it('after a seek', () => {
     setRecordedRate(2);
     playRecording(TIMINGS, 1, 30, listener);
-    expect(endTimerMs()).toBe(15_000);
+    expect(endTimerMs()).toBeCloseTo(14_980);
     seekToVerse(3);
     expect(element().currentTime).toBe(20);
-    expect(endTimerMs()).toBe(5_000);
+    expect(endTimerMs()).toBeCloseTo(4_980);
   });
 
   it('after a change of speed while it plays', () => {
@@ -96,7 +96,7 @@ describe('the end timer is aimed again', () => {
     audio.advanceTo(12);
     setRecordedRate(0.5);
     expect(element().playbackRate).toBe(0.5);
-    expect(endTimerMs()).toBe(16_000);
+    expect(endTimerMs()).toBeCloseTo(15_920);
   });
 });
 
@@ -119,7 +119,7 @@ describe('the end', () => {
     await Promise.resolve();
     vi.advanceTimersByTime(10_000);
     expect(told).toEqual([]);
-    expect(endTimerMs()).toBe(10_000);
+    expect(endTimerMs()).toBeCloseTo(9_960);
     audio.advanceTo(20);
     expect(told).toEqual(['reached']);
   });

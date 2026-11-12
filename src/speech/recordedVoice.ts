@@ -65,6 +65,11 @@ export const endWaitMs = (end: number, now: number, rate: number): number => (Ma
 /** A timer fires a little early or the recording stalls: the end counts as reached within this many seconds of it. */
 const END_SLACK = 0.05;
 
+/** The end timer is aimed this many seconds of the recording BEFORE the end (inside END_SLACK, so a timer on time stops there): a timer on a busy page fires late (on the
+ * Laptop at load 30 by 50-100 ms, John 11:35 +59 ms and 17:3 +74 ms past the end when it was aimed at the end itself), and the stop is at or before the end, never past it.
+ * Stopping 40 ms early cuts nothing: the aligner leaves each verse's last word 0.25 s of room (scripts/audio-timings/align.py PAD_END). */
+export const END_LEAD = 0.04;
+
 /** The longest the element's second is run on by the clock past its last move: a little over one 'timeupdate' (a phone fires one about every 250 ms). */
 export const RUN_ON_MS = 300;
 
@@ -122,11 +127,11 @@ function clearPlayingWatch(): void {
   playingWatch = null;
 }
 
-/** Aims the end timer at the span's end from the second the element is at, at its speed; a paused or ended recording has none. */
+/** Aims the end timer at END_LEAD before the span's end from the second the sound is at, at its speed; a paused or ended recording has none. */
 function aimEnd(): void {
   clearEndTimer();
   if (!element || !wantPlaying || !listener || !Number.isFinite(endSecond)) return;
-  const wait = endWaitMs(endSecond, soundAt(), rate);
+  const wait = endWaitMs(endSecond - END_LEAD, soundAt(), rate);
   endAimedMs = wait;
   endTimer = setTimeout(() => {
     endTimer = null;
