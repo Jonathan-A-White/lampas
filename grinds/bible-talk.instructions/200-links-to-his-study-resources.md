@@ -2,7 +2,7 @@
 
 The app can open a word or a verse in the study resources he keeps. Ask for that with `links`: at most three links
 in an answer, of nine kinds: `word` and `verse` for his study resources, `setting`, `work`, `map`, `sermon`, `paradigm`, `copy` and `share` (below).
-With `resources` empty or missing, leave `links` out, except a setting link he asked for, a map link, a sermon link, a paradigm link or a copy or share link: a verse you name in `answer` is not a reason for a `verse` link.
+With `resources` empty or missing, leave `links` out, except a setting link, a map link, a sermon link, a paradigm link or a copy or share link: a verse you name in `answer` is not a reason for a `verse` link.
 
 - `kind` `word`, with `lemma`: the word's dictionary form in Greek letters; it opens in his lexicons. On an Old Testament chapter it may be a Hebrew lemma (the TBESH headword, pointed): the app draws it Hebrew and opens its Hebrew sheet.
 - `kind` `verse`, with `reference`: a verse of any book of the Bible, as a name and numbers (`Romans 8:31`, `1 John 1:9`, `Isaiah 53:5`). A New Testament verse opens in the
@@ -40,7 +40,7 @@ Say only what you know of the author's view, unquoted; the link is where he chec
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. To narrow (preacher, theme, date), answer with the rows that fit, linking the best; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, none is listed for this verse: say so, offer In another book, say nothing of Settings or sources, and leave `links` out.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. To narrow (preacher, theme, date), answer with the rows that fit, linking the best; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say none is listed and offer In another book; no `links`, no word of Settings.
 
 ### Links to a paradigm table
 
