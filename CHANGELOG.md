@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.235
+_2026-11-12_
+- Fixed: On the blog in dark mode, the sign-up box at the end of a post and the email field on the home page are dark, and the Subscribe pill and search no longer sit on a white patch.
+
 ## 0.7.234
 _2026-11-12_
 - New: David's recorded reading now keeps going with the screen locked, and the lock screen shows the chapter with Play and Pause.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.235",
+    "date": "2026-11-12",
+    "story": "mw-fnvjof.17.91",
+    "kind": "fixed",
+    "text": "On the blog in dark mode, the sign-up box at the end of a post and the email field on the home page are dark, and the Subscribe pill and search no longer sit on a white patch."
+  },
+  {
     "version": "0.7.234",
     "date": "2026-11-12",
     "story": "mw-82lb97i.7",
