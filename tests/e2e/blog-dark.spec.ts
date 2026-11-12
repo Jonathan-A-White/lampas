@@ -341,6 +341,52 @@ for (const size of WIDTHS) {
   });
 }
 
+// The pictures the theme places behind or among content (mw-fnvjof.17.102): the home banner (an <img> at z-index -1 inside .gh-header, which the page's OWN background
+// would paint over if body had one in dark), the post's feature image, the tag and author cover and the list cards' pictures. Each is read by screenshot pixel in dark
+// and in light, because a computed style cannot say whether a background is painted over a picture.
+const near = (a: Rgb, b: Rgb, tol = 12) => a.every((v, i) => Math.abs(v - b[i]!) <= tol);
+const PAGE_BG: Rgb = [0x15, 0x17, 0x1a];
+const PICTURES = [
+  { kind: 'home', what: 'the banner picture', selector: '.gh-header-image' },
+  { kind: 'post', what: "the post's feature image", selector: '#post-feature img' },
+  { kind: 'tag', what: "the tag page's cover", selector: '#tag-cover img' },
+  { kind: 'author', what: "the author page's cover", selector: '#author-cover img' },
+  { kind: 'home', what: "a list card's picture", selector: '.card-picture img' },
+] as const;
+
+for (const size of WIDTHS) {
+  test.describe(`pictures at ${size.width}x${size.height} (${size.name})`, () => {
+    test.use({ viewport: { width: size.width, height: size.height } });
+
+    // a pixel inside the picture's box, in its top-left corner, away from the home banner's quote and email field (centred) and off the box's edge
+    const cornerOf = async (page: Page, selector: string) => {
+      const target = page.locator(selector).first();
+      await target.scrollIntoViewIfNeeded();
+      const box = (await target.boundingBox())!;
+      return pixelAt(page, box.x + 20, box.y + 20);
+    };
+
+    for (const pic of PICTURES) {
+      test(`${pic.kind}: ${pic.what} is painted in dark, as in light`, async ({ page }) => {
+        await open(page, pic.kind, 'light');
+        const light = await cornerOf(page, pic.selector);
+        await open(page, pic.kind, 'dark');
+        const dark = await cornerOf(page, pic.selector);
+        expect(near(dark, PAGE_BG, 8), `${pic.what} in dark is ${dark}: the page background ${PAGE_BG}, not the picture`).toBe(false);
+        expect(near(dark, light), `${pic.what} in dark ${dark} matches light ${light}`).toBe(true);
+      });
+    }
+
+    test('home, dark: the quote over the banner stays white, as in light, and the banner shows its picture beside it', async ({ page }) => {
+      await open(page, 'home', 'dark');
+      expect(await page.locator('.gh-header-title').evaluate((t) => getComputedStyle(t).color)).toBe('rgb(255, 255, 255)');
+      const pairs = await measure(page);
+      expect(contrastOf(pairs, 'h1.gh-header-title')).toBeGreaterThanOrEqual(AA);
+      await shot(page, `blog-dark-banner-picture-${size.name}`);
+    });
+  });
+}
+
 test('the check fails on a stylesheet that does not meet AA: one that only darkens the page leaves the accent links and the quote unreadable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const darkPageOnly = '@media (prefers-color-scheme: dark) { :root:root { --background-color: #15171a; } html:root body { background-color: #15171a; color: #e8eaed; } }';

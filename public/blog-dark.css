@@ -31,10 +31,12 @@
     --color-dark-border: rgba(255, 255, 255, 0.55);
   }
 
-  /* The page, header and footer */
+  /* The page, header and footer. No rule here gives html or body a background-color of its own (mw-fnvjof.17.102): the theme's body rule takes its colour from
+     --background-color, which is dark above, and with no background on html the browser lends body's to the whole canvas, painted BEHIND everything. A background set
+     on both html and body made body paint its own over the home banner's picture, which the theme puts at z-index -1 (.gh-header.is-classic.has-image .gh-header-image),
+     and the banner went flat dark. */
   html:root,
   html:root body {
-    background-color: #15171a;
     color: #e8eaed;
   }
   html:root .gh-navigation,
