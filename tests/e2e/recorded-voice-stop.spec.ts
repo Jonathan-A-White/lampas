@@ -1,0 +1,197 @@
+// tests/e2e/recorded-voice-stop.spec.ts — a single verse read by the recorded voice stops at its end (mw-82lb97i.18): his John 1:50 in David's voice ran on into
+// 'Then He declar…' of verse 51. In a real Chromium, with John's real timings (public/data/audio/msb-david/jhn.json) and a SILENT MP3 of each chapter's length made
+// here by ffmpeg (192 kbps CBR at 44.1 kHz, as the publisher's), the Verse view's Play of a verse must leave the element paused no more than 50 ms past the verse's
+// end. The second the element is at is logged at each pause() (an init script wraps HTMLMediaElement.prototype.pause). Chromium's element moves its second in bursts
+// (0.23 s, then 0.46 s, a 266 ms 'timeupdate' apart): the player judges the end by the sound, the second run on by the clock (src/speech/recordedVoice.ts soundAt), so the
+// second at the pause may stand short of the end by up to END_SLACK + RUN_ON_MS, never more than 50 ms past it.
+// John 1:50 and 3:16 (his check) are played whole; the other verses are moved, once playing, to a second and a half before their end (a seek the end timer is aimed again
+// after). LAMPAS_ALL_JOHN=1 runs every verse of John (879, the story's sixth criterion) the same way, a test a chapter; it is outside the gate (a quarter of an hour on
+// three workers). Nothing reaches openbible.com: its MP3 addresses are answered here, any other request to it is failed.
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { expect, test, type Page } from '@playwright/test';
+import { honestSpeech, spoken } from '../support/honest-fakes';
+import { shot } from './shot';
+import { openUnlocked } from './unlocked';
+
+test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+type Triple = [number, number, number];
+interface ChapterTimings {
+  audio: string;
+  duration: number;
+  verses: Triple[];
+}
+const JOHN = JSON.parse(readFileSync(join(process.cwd(), 'public/data/audio/msb-david/jhn.json'), 'utf8')) as { chapters: Record<string, ChapterTimings> };
+
+/** How far past a verse's end the recording may be when it is paused. */
+const LATE_MS = 50;
+/** How far short of it the element's second may stand at the pause: END_SLACK (50 ms) and RUN_ON_MS (300 ms) of src/speech/recordedVoice.ts. */
+const SHORT_MS = 350;
+
+const scratch = mkdtempSync(join(tmpdir(), 'lampas-silent-mp3-'));
+const made = new Map<string, Buffer>();
+
+/** A silent MP3 of `seconds`, 44.1 kHz mono at 192 kbps CBR (the publisher's own rate), made once a length. */
+function silentMp3(seconds: number): Buffer {
+  const key = seconds.toFixed(2);
+  const known = made.get(key);
+  if (known) return known;
+  const out = join(scratch, `${key}.mp3`);
+  // no Xing/Info seek table, as the publisher's files have none (Chromium then seeks a CBR file by its byte rate)
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', key, '-c:a', 'libmp3lame', '-b:a', '192k', '-write_xing', '0', out]);
+  const mp3 = readFileSync(out);
+  made.set(key, mp3);
+  return mp3;
+}
+
+test.afterAll(() => rmSync(scratch, { recursive: true, force: true }));
+
+/** Answers each chapter MP3 of John with silence of its length; fails and counts any other openbible.com request. */
+async function silentJohn(page: Page): Promise<string[]> {
+  const other: string[] = [];
+  const byAudio = new Map(Object.values(JOHN.chapters).map((c) => [c.audio, c.duration]));
+  await page.route(/^https?:\/\/([a-z0-9-]+\.)*openbible\.com\//, (route) => {
+    const duration = byAudio.get(route.request().url());
+    if (duration === undefined) {
+      other.push(route.request().url());
+      return route.abort('failed');
+    }
+    // a file server's byte ranges, as the publisher's sends: with none the element cannot seek to a verse and plays from second 0
+    const body = silentMp3(duration);
+    const range = /^bytes=(\d+)-(\d*)$/.exec(route.request().headers()['range'] ?? '');
+    if (!range) return route.fulfill({ status: 200, contentType: 'audio/mpeg', headers: { 'accept-ranges': 'bytes' }, body });
+    const from = Number(range[1]);
+    const to = range[2] ? Math.min(Number(range[2]), body.length - 1) : body.length - 1;
+    return route.fulfill({
+      status: 206,
+      contentType: 'audio/mpeg',
+      headers: { 'accept-ranges': 'bytes', 'content-range': `bytes ${from}-${to}/${body.length}` },
+      body: body.subarray(from, to + 1),
+    });
+  });
+  return other;
+}
+
+/** Logs the element's second at each pause() into window.lampasPauses, and keeps the element play() was called on as window.lampasAudio. */
+async function logPauses(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const w = window as unknown as { lampasPauses: number[]; lampasAudio?: HTMLMediaElement };
+    w.lampasPauses = [];
+    const { play, pause } = HTMLMediaElement.prototype;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      w.lampasAudio = this;
+      return play.call(this);
+    };
+    HTMLMediaElement.prototype.pause = function (this: HTMLMediaElement) {
+      w.lampasPauses.push(this.currentTime);
+      return pause.call(this);
+    };
+  });
+}
+
+const pauses = (page: Page): Promise<number[]> => page.evaluate(() => (window as unknown as { lampasPauses: number[] }).lampasPauses.slice());
+
+/** Opens John `c`:`v` in the Verse view on Listen, in English with nothing woven, the book's timings loaded. */
+async function openVerse(page: Page, c: number, v: number): Promise<void> {
+  await page.goto(`/#/?b=jhn&c=${c}&v=${v}&view=english&weave=off`);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  await expect(view).toBeVisible();
+  await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').some((e) => e.name.endsWith('/data/audio/msb-david/jhn.json')))).toBe(true);
+  const listen = view.getByRole('button', { name: 'Listen', exact: true });
+  if ((await listen.getAttribute('aria-pressed')) !== 'true') await listen.click();
+}
+
+async function start(page: Page): Promise<string[]> {
+  await openUnlocked(page);
+  await honestSpeech(page, { msPerWord: 5 });
+  await logPauses(page);
+  return silentJohn(page);
+}
+
+/** Plays John `c`:`v` alone by the Verse view's Play (from its start; `whole` false moves it to 1.5 s before its end once it plays) and gives how far past the
+ * verse's end, in ms, the element's second was when it was paused (below 0: short of it). */
+async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise<number> {
+  const span = JOHN.chapters[String(c)].verses.find(([n]) => n === v);
+  if (!span) throw new Error(`no timing for John ${c}:${v}`);
+  await openVerse(page, c, v);
+  const view = page.getByRole('region', { name: 'Verse view' });
+  const before = (await pauses(page)).length;
+  // the Verse view drops a tap for its first 600 ms (src/ui/settle.ts useOpeningGuard): Play is tapped until the Listen's Stop stands in its place
+  await expect(async () => {
+    const play = view.getByRole('button', { name: `Play verse ${v}`, exact: true });
+    if (await play.isVisible()) await play.click();
+    await expect(view.locator('[data-listen-stop]')).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15_000 });
+  if (!whole && span[2] - span[1] > 2) {
+    // once the sound has started from the verse's start
+    await page.waitForFunction(
+      (from) => {
+        const a = (window as unknown as { lampasAudio?: HTMLMediaElement }).lampasAudio;
+        return !!a && !a.paused && a.currentTime > from;
+      },
+      span[1],
+      { polling: 20, timeout: 15_000 },
+    );
+    await page.evaluate((to) => {
+      const a = (window as unknown as { lampasAudio?: HTMLMediaElement }).lampasAudio;
+      if (a) a.currentTime = to;
+    }, span[2] - 1.5);
+  }
+  await expect(view.getByRole('button', { name: 'Play again', exact: true })).toBeVisible({ timeout: 60_000 });
+  const at = (await pauses(page)).slice(before);
+  expect(at.length, `John ${c}:${v} was paused`).toBeGreaterThan(0);
+  return Math.round((at[at.length - 1] - span[2]) * 1000);
+}
+
+const TEN: Array<[number, number, boolean]> = [
+  [1, 50, true],
+  [3, 16, true],
+  [1, 14, false],
+  [5, 24, false],
+  [6, 35, false],
+  [8, 12, false],
+  [11, 35, false],
+  [14, 6, false],
+  [17, 3, false],
+  [20, 31, false],
+];
+
+test('the Verse view’s Play of one verse in David’s voice stops at the verse’s end, not in the next verse (John 1:50, 3:16 and eight more)', async ({ page }) => {
+  test.setTimeout(180_000);
+  const other = await start(page);
+  const report: string[] = [];
+  for (const [c, v, whole] of TEN) {
+    const late = await lateOf(page, c, v, whole);
+    report.push(`John ${c}:${v} ${late} ms`);
+    expect.soft(late, `John ${c}:${v}: ms past its end`).toBeLessThanOrEqual(LATE_MS);
+    expect.soft(late, `John ${c}:${v}: ms past its end`).toBeGreaterThanOrEqual(-SHORT_MS);
+    if (c === 1 && v === 50) await shot(page, 'recorded-voice-stop-john-1-50');
+  }
+  console.log(`stopped past the verse's end: ${report.join(', ')}`);
+  expect(await spoken(page)).toEqual([]);
+  expect(other).toEqual([]);
+});
+
+// The story's sixth criterion: every verse of John, outside the gate.
+test.describe('every verse of John stops within 50 ms of its end (LAMPAS_ALL_JOHN=1)', () => {
+  test.skip(process.env.LAMPAS_ALL_JOHN !== '1', 'outside the gate: LAMPAS_ALL_JOHN=1 runs it');
+  for (const c of Object.keys(JOHN.chapters).map(Number)) {
+    test(`John ${c}`, async ({ page }) => {
+      test.setTimeout(30 * 60_000);
+      const other = await start(page);
+      const late: string[] = [];
+      const all: number[] = [];
+      for (const [v] of JOHN.chapters[String(c)].verses) {
+        const ms = await lateOf(page, c, v, false);
+        all.push(ms);
+        if (ms > LATE_MS || ms < -SHORT_MS) late.push(`${c}:${v} ${ms} ms`);
+      }
+      console.log(`John ${c}: ${all.length} verses, ms past the end min ${Math.min(...all)} max ${Math.max(...all)}; outside: ${late.join(', ') || 'none'}`);
+      expect(late).toEqual([]);
+      expect(other).toEqual([]);
+    });
+  }
+});
