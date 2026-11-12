@@ -1,0 +1,129 @@
+/*
+  https://lampas.allmymind.org/blog-dark.css: the blog's dark mode (mw-fnvjof.17.89).
+
+  allmymind.org is Ghost with the Source theme. The blog loads this file with one link tag in Code injection (Site header),
+  beside reftagger.js, so a later fix reaches the blog without a second paste:
+
+    <link rel="stylesheet" href="https://lampas.allmymind.org/blog-dark.css">
+
+  EVERY rule is inside the one @media (prefers-color-scheme: dark) block: with the phone or computer set to light the file changes
+  nothing (tests/e2e/blog-dark.spec.ts holds both). Source colours its page through custom properties on :root (--background-color,
+  --color-darker-gray for text and links, --color-secondary-text, --color-lighter-gray for code, --color-border) and the Ghost accent
+  (--ghost-accent-color, the link colour in a post and the quote's rule); the card styles (cards.min.css) fix a few colours of their
+  own, which are set again below. `:root:root` lifts each custom property over the theme's own `:root` rule whichever sheet loads
+  last. Every text and background pair below is at least 4.5:1 (WCAG AA); the spec measures it on a Source post, page, list, tag,
+  author and 404 page.
+*/
+@media (prefers-color-scheme: dark) {
+  :root:root {
+    color-scheme: dark;
+    --background-color: #15171a;
+    --ghost-accent-color: #9fb0ff;
+    --color-white: #15171a;
+    --color-lighter-gray: rgba(255, 255, 255, 0.08);
+    --color-light-gray: #2b2f35;
+    --color-mid-gray: #4a4f57;
+    --color-dark-gray: #c9ccd1;
+    --color-darker-gray: #f1f3f5;
+    --color-primary-text: #e8eaed;
+    --color-secondary-text: rgba(255, 255, 255, 0.7);
+    --color-border: rgba(255, 255, 255, 0.14);
+    --color-dark-border: rgba(255, 255, 255, 0.55);
+  }
+
+  /* The page, header and footer */
+  html:root,
+  html:root body {
+    background-color: #15171a;
+    color: #e8eaed;
+  }
+  html:root .gh-navigation,
+  html:root .gh-navigation-actions {
+    background-color: #15171a;
+    color: #f1f3f5;
+  }
+  html:root .gh-footer {
+    color: #f1f3f5;
+  }
+
+  /* The accent button (Subscribe): the accent is light here, so its words are dark */
+  html:root .gh-button,
+  html:root .kg-button-card a.kg-btn-accent,
+  html:root .kg-product-card a.kg-product-card-btn-accent {
+    background-color: #9fb0ff;
+    color: #15171a;
+  }
+
+  /* Links: the Source theme's own link colours come from the accent and the text variables above; a post's links keep their underline */
+  html:root .gh-content a,
+  html:root .gh-article-tag,
+  html:root figcaption a {
+    color: #9fb0ff;
+  }
+
+  /* Quotes and code */
+  html:root blockquote:not([class]) {
+    border-left-color: #9fb0ff;
+    color: #e8eaed;
+  }
+  html:root blockquote.kg-blockquote-alt {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  html:root .gh-content pre,
+  html:root .gh-content :not(pre) > code {
+    background: #23262b;
+    color: #e8eaed;
+  }
+
+  /* The email field of the footer and its placeholder */
+  html:root .gh-form {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  html:root .gh-form:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+  html:root .gh-form-input {
+    color: #f1f3f5;
+  }
+  html:root .gh-form-input::placeholder,
+  html:root button.gh-form-input {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  html:root .gh-form-input::-moz-placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* Cards the theme's card sheet paints white or near white */
+  html:root .kg-audio-card,
+  html:root .kg-file-card a.kg-file-card-container,
+  html:root .kg-nft-card a.kg-nft-card-container,
+  html:root .kg-product-card-container,
+  html:root .kg-header-card.kg-style-light,
+  html:root .kg-signup-card-fields,
+  html:root .kg-signup-card-input {
+    background: #1f2227;
+    color: #e8eaed;
+  }
+  html:root .kg-bookmark-card a.kg-bookmark-container,
+  html:root .kg-bookmark-card a.kg-bookmark-container:hover {
+    background: #1f2227 !important;
+    color: #e8eaed !important;
+  }
+  html:root .kg-nft-header h4.kg-nft-title,
+  html:root .kg-nft-creator span,
+  html:root .kg-nft-card p.kg-nft-description,
+  html:root .kg-nft-creator {
+    color: #e8eaed;
+  }
+  html:root .kg-audio-time {
+    color: #c4c7cc;
+  }
+  html:root .kg-header-card.kg-style-light h2.kg-header-card-header,
+  html:root .kg-header-card.kg-style-light h3.kg-header-card-subheader {
+    color: #e8eaed;
+  }
+  html:root .kg-header-card.kg-style-light a.kg-header-card-button {
+    background: #9fb0ff;
+    color: #15171a;
+  }
+}
