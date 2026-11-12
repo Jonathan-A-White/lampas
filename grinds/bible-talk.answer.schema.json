@@ -634,7 +634,7 @@
       "maxLength": 30
     },
     "links": {
-      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos, a map (a line of the request's `maps`) opens in the app, a sermon (a row of the request's `sermons`) opens where it lives, a paradigm (a table of the Paradigms screen, by its id) opens that table, and a copy or a share (a passage he named, by its reference) is a button that puts its text on his clipboard or opens his share sheet. At most three, and at most one of them a work (two in a quiz). Leave it out when no lexicon, verse or setting would help him.",
+      "description": "Links the app turns into buttons: a word or a verse opens in the reader's own study resources (lexicons, a Bible), of which he sees only the ones he has switched on, a setting opens the app's Settings at that setting, a work (a commentary, grammar, Greek text or book on his Logos shelf, listed in the request's `works`) opens in Logos, a map (a line of the request's `maps`) opens in the app, a sermon (a row of the request's `sermons`) opens where it lives, a paradigm (a table of the Paradigms screen, by its id) opens that table, and a copy or a share (a passage he named, by its reference) is a button that puts its text on his clipboard or opens his share sheet. At most three, and at most one of them a work (two in a quiz). Leave it out unless he asked for what a link opens.",
       "type": "array",
       "minItems": 1,
       "maxItems": 3,
