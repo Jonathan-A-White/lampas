@@ -98,8 +98,8 @@ function creditFor(path: string): string | null | undefined {
   if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)
   if (path === 'public/sermons/index.json') return 'Spurgeon'; // the index of the sources: each one's licence and credit, so it needs the credit of every source it lists (each source has its own rule above; the Spurgeon credit is the one it is checked against)
   if (path.startsWith('public/pictures/')) return 'Claude Code'; // the memory pictures: drawn by Claude Code, credited as a tool
-  // the app's own: the lamp icon (also Claude Code's drawing), the changelog mw next writes, and the letter-sounds listening page (its clips are credited above)
-  if (/^public\/(icon\.svg|icon-\d+\.png|changelog\.json|sounds-trial\.html)$/.test(path)) return null;
+  // the app's own: the lamp icon (also Claude Code's drawing), the changelog mw next writes, the letter-sounds listening page (its clips are credited above) and the blog's dark stylesheet (blog-dark.css, ours: it sets the Source theme's own custom properties and borrows none of its code)
+  if (/^public\/(icon\.svg|icon-\d+\.png|changelog\.json|sounds-trial\.html|blog-dark\.css)$/.test(path)) return null;
   return undefined;
 }
 
