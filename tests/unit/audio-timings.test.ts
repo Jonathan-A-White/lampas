@@ -89,6 +89,44 @@ describe('isBookTimings', () => {
   });
 });
 
+// mw-82lb97i.27 moved each verse's end by the recording's energy and changed nothing of the file's shape. The worker asks the network first for a timing file (below), so a
+// phone gets today's file with no change of the data cache's name; one that is answered by the copy it kept yesterday (a slow network) must still read it.
+describe('yesterday\'s timing file (2026-11-11, before the gap pass) is still read', () => {
+  /** John 1's last three verses as the file had them on 2026-11-11: verse 50 ended at 371.25, a quarter second after the aligner's last letter. */
+  const yesterday = (): unknown => ({
+    v: 1,
+    edition: 'msb-david',
+    book: 'jhn',
+    chapters: { '1': { audio: 'https://openbible.com/audio/msb/MSB_43_Jhn_001_D.mp3', duration: 382.43, verses: [[49, 354.65, 361.07], [50, 361.85, 371.25], [51, 371.51, 382.25]] } },
+  });
+
+  it('passes the guard', () => {
+    expect(isBookTimings(yesterday())).toBe(true);
+  });
+
+  it('is loaded and gives John 1:50 its span of then', async () => {
+    forgetTimings();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        const body = url.endsWith('/index.json') ? { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: [1] } } : yesterday();
+        return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
+      }),
+    );
+    try {
+      const book = await loadBookTimings('jhn');
+      expect(book).not.toBeNull();
+      const chapter = chapterTimingsNow('jhn', 1);
+      expect(chapter && spanOf(chapter, 50)).toEqual({ start: 361.85, end: 371.25 });
+      expect(chapter && verseAt(chapter, 371.3)).toBe(50);
+    } finally {
+      vi.unstubAllGlobals();
+      forgetTimings();
+    }
+  });
+});
+
 describe('isTimingsIndex', () => {
   it('accepts the empty index and one that lists chapters', () => {
     expect(isTimingsIndex({ v: 1, edition: 'msb-david', voice: 'David', books: {} })).toBe(true);

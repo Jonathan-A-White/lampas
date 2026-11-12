@@ -7,6 +7,7 @@ The MP3s stay in a scratch folder OUTSIDE the repo (default ~/.cache/lampas-audi
 
     python align.py --book jhn [--chapters 3,4] [--scratch <dir>] [--allow-flagged 3:5,7:12]
     python align.py --book jhn --check          # the sanity check: 20 verses decoded back from the audio between their start and end
+    python align.py --book jhn --gaps           # the gap pass alone, on the timings already written: no model, no alignment (a minute for John)
 
 WHAT ALLOWS THE DOWNLOAD (the Mayor's reading, 2026-11-11): the publisher offers these files as public downloads ('Audio Downloads' at
 https://openbible.com/audio.htm: per-chapter files and a zip of all chapters); the site has no robots.txt rules; the MSB text is public domain
@@ -19,12 +20,19 @@ https://docs.pytorch.org/audio/stable/generated/torchaudio.pipelines.WAV2VEC2_AS
 [Baevski et al., 2020] under MIT License and redistributed with the same license.' (Not the MMS forced-aligner weights, which are CC-BY-NC.)
 The method is that of https://github.com/BSB-publishing/bsb-align (MIT); none of its timing data is used.
 
+THE GAP PASS (mw-82lb97i.27): the narrator's recording is gated, so between two verses it is digital silence (about -90 dBFS; speech is above -45). After the
+alignment, and alone under --gaps, each verse's END is moved by the recording's energy (RMS of 10 ms frames, read only around the gap, no word aligned again) to
+END_AFTER_SOUND seconds after the verse's last sound has died away: the start of the quiet, so a player that stops late has the whole of the quiet before the next
+verse's first sound, never less than MIN_BEFORE_ONSET. What was measured of each gap (where the quiet starts, where the next verse's sound begins) is written to
+scripts/audio-timings/quiet/<edition>-<book>.json, which tests/unit/audio-timings-data.test.ts holds the timings to. Starts are not moved.
+
 One process, one chapter at a time, torch on 4 threads: start it as `nice -n 10 ~/.cache/lampas-audio-timings/venv/bin/python scripts/audio-timings/align.py --book jhn`.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import re
 import subprocess
@@ -51,6 +59,14 @@ TORCH_THREADS = 4
 # A CTC model puts a letter at the middle of its sound, so a word's aligned span starts a little late and ends a little early (a verse's first word was heard
 # clipped in 9 of John 3's 36 verses, its last word in 5). Each verse is widened by these seconds into the gap around it, never past the middle of the gap.
 PAD_START, PAD_END = 0.15, 0.25
+# The gap pass: a frame of FRAME_SECONDS every HOP_SECONDS is quiet below QUIET_DB (dBFS of its RMS); a quiet of the gap is at least MIN_QUIET long and is looked for
+# from REACH before the aligned end to REACH after the aligned next start, inside the two verses.
+FRAME_SECONDS, HOP_SECONDS = 0.010, 0.005
+QUIET_DB = -60.0
+MIN_QUIET = 0.06
+REACH = 0.75
+END_AFTER_SOUND = 0.05  # a verse ends this long after its last sound died: the player stops in the 50 ms before the end (src/speech/recordedVoice.ts END_SLACK)
+MIN_BEFORE_ONSET = 0.05  # and never nearer than this to the next verse's first sound
 SPW_MIN, SPW_MAX = 0.12, 1.5  # seconds a word of a verse: outside this the chapter is left out
 CHECK_VERSES = 20
 CHECK_PASS = 18
@@ -302,6 +318,87 @@ class Model:
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+# The gap pass: each verse's end by the recording's energy
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def frame_levels(wave, a: float, b: float):
+    """The level of each frame from second `a` to `b`: (the frames' start seconds, their RMS in dBFS)."""
+    import numpy as np
+
+    size = int(FRAME_SECONDS * SAMPLE_RATE)
+    hop = int(HOP_SECONDS * SAMPLE_RATE)
+    first = max(0, int(round(a * SAMPLE_RATE)))
+    last = min(len(wave), int(round(b * SAMPLE_RATE))) - size
+    if last < first:
+        return np.zeros(0), np.zeros(0)
+    starts = np.arange(first, last + 1, hop)
+    squares = np.concatenate(([0.0], np.cumsum(wave[first:last + size].astype('float64') ** 2)))
+    mean = (squares[starts - first + size] - squares[starts - first]) / size
+    return starts / SAMPLE_RATE, 10 * np.log10(mean + 1e-12)
+
+
+def quiet_of(wave, end: float, next_start: float, low: float, high: float) -> tuple[float, float] | None:
+    """The quiet between a verse and the next, from the energy alone: (the second its last sound has died away, the second the next verse's sound begins), or None
+    when there is no quiet of MIN_QUIET there. `end` and `next_start` are the aligner's, and only say which quiet is meant: the one they lie in or nearest to.
+    The search stays inside `low`..`high` (the verse's own start, the next verse's end)."""
+    a = max(low, end - REACH)
+    b = min(high, next_start + REACH)
+    times, levels = frame_levels(wave, a, b)
+    runs: list[tuple[float, float]] = []
+    k = 0
+    while k < len(levels):
+        if levels[k] >= QUIET_DB:
+            k += 1
+            continue
+        j = k
+        while j < len(levels) and levels[j] < QUIET_DB:
+            j += 1
+        # the frame before the first quiet one reaches HOP into it and is loud: the sound has died by the first quiet frame's start. The first loud frame after the
+        # run starts HOP after the last quiet one, whose own FRAME was quiet: the sound begins no earlier than that frame's end.
+        quiet_start = float(times[k])
+        onset = float(times[j - 1]) + FRAME_SECONDS if j < len(levels) else b
+        if k > 0 and onset - quiet_start >= MIN_QUIET:  # a run from the very start of the search has no sound before it: not this verse's
+            runs.append((quiet_start, onset))
+        k = j
+    if not runs:
+        return None
+    middle = (end + next_start) / 2
+
+    def rank(run: tuple[float, float]) -> tuple[int, float, float]:
+        holds = run[0] <= middle <= run[1]
+        overlap = max(0.0, min(run[1], next_start) - max(run[0], end))
+        return (0 if holds else 1, -overlap, 0.0 if holds else min(abs(run[0] - middle), abs(run[1] - middle)))
+
+    return min(runs, key=rank)
+
+
+def settle_ends(wave, triples: list[list]) -> tuple[list[list], list[list], list[str]]:
+    """Moves each verse's end to END_AFTER_SOUND after its last sound died away (never nearer than MIN_BEFORE_ONSET to the next verse's first sound, never past the next
+    verse's start). Gives (the verses, what was measured of each gap as [verse, quiet start, onset], the verses the narrator reads on from with no quiet). Such a
+    verse keeps the aligner's end and is measured as [verse, None, None]; the last verse of a chapter keeps its end too."""
+    settled = [list(t) for t in triples]
+    measured: list[list] = []
+    runs_on: list[str] = []
+    for i in range(len(triples) - 1):
+        n, start, end = triples[i]
+        _, next_start, next_end = triples[i + 1]
+        found = quiet_of(wave, end, next_start, start, next_end)
+        placed = None
+        if found is not None:
+            quiet_start, onset = found
+            # to two decimals: the onset's bound rounded down, so the end is never a hair nearer to the onset than MIN_BEFORE_ONSET
+            placed = min(round(quiet_start + END_AFTER_SOUND, 2), math.floor((onset - MIN_BEFORE_ONSET) * 100 + 1e-6) / 100, next_start)
+        # no quiet at the boundary, or the nearest one starts after the next verse does (it is a pause inside that verse): the narrator read on
+        if found is None or placed is None or placed < quiet_start or placed <= start:
+            measured.append([n, None, None])
+            runs_on.append(f'verse {n}: no quiet between it and the next verse (the narrator reads on): its end stays {end}')
+            continue
+        measured.append([n, round(quiet_start, 3), round(onset, 3)])
+        settled[i][2] = placed
+    return settled, measured, runs_on
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 # One chapter
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -358,13 +455,16 @@ def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[t
         if (spw < SPW_MIN or spw > SPW_MAX) and (chapter, v['n']) not in allow:
             problems.append(f'verse {v["n"]}: {spw:.2f} s a word ({len(v["words"])} words, {start}-{end})')
         triples.append([v['n'], start, end])
+    triples, quiet, runs_on = settle_ends(wave, triples)
+    for note in runs_on:
+        log(f'  reads on: {book} {chapter} {note}')
     lead = triples[0][1] if triples else float('nan')
     tail = duration - triples[-1][2] if triples else float('nan')
     line = (f'chapter {chapter:2d}: verses in text {len(verses):3d}, timed {len(triples):3d}, duration {duration:7.2f} s, before verse 1 {lead:6.2f} s, '
             f'after last verse {tail:6.2f} s, s/word min {low if low is not None else float("nan"):.2f} max {high if high is not None else float("nan"):.2f}')
     if len(triples) != len(verses):
         problems.append(f'verses timed {len(triples)} of {len(verses)}')
-    return {'ok': not problems, 'line': line, 'problems': problems, 'timings': {'audio': audio_url(book, chapter), 'duration': round(duration, 2), 'verses': triples}}
+    return {'ok': not problems, 'line': line, 'problems': problems, 'quiet': quiet, 'timings': {'audio': audio_url(book, chapter), 'duration': round(duration, 2), 'verses': triples}}
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -402,6 +502,60 @@ def write_chapters(book: str, results: dict[int, dict | None]) -> None:
         index['books'].pop(book, None)
     index['books'] = dict(sorted(index['books'].items()))
     write_json(index_path, index)
+
+
+def quiet_path(book: str) -> Path:
+    return Path(__file__).resolve().parent / 'quiet' / f'{EDITION}-{book}.json'
+
+
+def write_quiet(book: str, results: dict[int, list | None]) -> None:
+    """Puts what the gap pass measured of each chapter's gaps into scripts/audio-timings/quiet/<edition>-<book>.json; a chapter left out (None) is taken out."""
+    path = quiet_path(book)
+    data = read_json(path, {'v': 1, 'edition': EDITION, 'book': book, 'quietDb': QUIET_DB, 'frame': FRAME_SECONDS, 'chapters': {}})
+    data['quietDb'], data['frame'] = QUIET_DB, FRAME_SECONDS
+    for chapter, rows in results.items():
+        data['chapters'].pop(str(chapter), None)
+        if rows is not None:
+            data['chapters'][str(chapter)] = rows
+    data['chapters'] = {k: data['chapters'][k] for k in sorted(data['chapters'], key=int)}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_json(path, data)
+
+
+def run_gaps(book: str, chapters: list[int] | None, scratch: Path, fetcher: Fetcher) -> bool:
+    """The gap pass alone, on the timings already written: each chapter's MP3 is decoded, each verse's end moved by the energy of its gap, nothing aligned again."""
+    path = out_dir() / f'{book}.json'
+    data = read_json(path, None)
+    if not data or not data['chapters']:
+        raise Stop(f'no timings for {book} to settle')
+    near_before = near_after = pairs = moved = reads_on = 0
+    for key in sorted(data['chapters'], key=int):
+        chapter = int(key)
+        if chapters is not None and chapter not in chapters:
+            continue
+        timings = data['chapters'][key]
+        mp3 = fetcher.get(audio_url(book, chapter), scratch / 'mp3' / Path(audio_url(book, chapter)).name)
+        wave = decode(mp3)
+        before = timings['verses']
+        after, quiet, runs_on = settle_ends(wave, before)
+        onset = {row[0]: row[2] for row in quiet if row[2] is not None}
+        rooms_before = sorted(onset[b[0]] - b[2] for b in before if b[0] in onset)
+        rooms_after = sorted(onset[a[0]] - a[2] for a in after if a[0] in onset)
+        pairs += len(before) - 1
+        reads_on += len(runs_on)
+        near_before += sum(room < MIN_BEFORE_ONSET - 1e-9 for room in rooms_before)
+        near_after += sum(room < MIN_BEFORE_ONSET - 1e-9 for room in rooms_after)
+        moved += sum(a[2] != b[2] for a, b in zip(after, before))
+        log(f'chapter {chapter:2d}: {len(before) - 1:3d} pairs, quiet from the end to the next onset min {rooms_before[0]:.3f} -> {rooms_after[0]:.3f} s, '
+            f'median {rooms_before[len(rooms_before) // 2]:.3f} -> {rooms_after[len(rooms_after) // 2]:.3f} s')
+        for note in runs_on:
+            log(f'  reads on: {book} {chapter} {note}')
+        timings['verses'] = after
+        write_quiet(book, {chapter: quiet})
+    write_json(path, data)
+    log(f'verse pairs {pairs}; ends moved {moved}; pairs the narrator reads on through (no quiet, end kept) {reads_on}; '
+        f'of the others, ends within {MIN_BEFORE_ONSET} s of the next onset: {near_before} before, {near_after} after')
+    return True
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -454,6 +608,7 @@ def main() -> int:
     parser.add_argument('--scratch', type=Path, default=SCRATCH_DEFAULT, help='the folder of the venv, the MP3s and the weights, outside the repo')
     parser.add_argument('--allow-flagged', default='', help='chapter:verse,... whose seconds-a-word outside 0.12-1.5 has been looked at and explained')
     parser.add_argument('--check', action='store_true', help='run the sanity check on the written timings instead of aligning')
+    parser.add_argument('--gaps', action='store_true', help="run the gap pass alone on the written timings: each verse's end by the recording's energy, nothing aligned again")
     args = parser.parse_args()
     scratch = args.scratch.expanduser().resolve()
     if REPO in scratch.parents or scratch == REPO:
@@ -464,6 +619,8 @@ def main() -> int:
     try:
         if args.check:
             return 0 if run_check(args.book, scratch, fetcher) else 1
+        if args.gaps:
+            return 0 if run_gaps(args.book, [int(c) for c in args.chapters.split(',')] if args.chapters else None, scratch, fetcher) else 1
         book_dir = REPO / 'public' / 'data' / args.book
         chapters = [int(c) for c in args.chapters.split(',')] if args.chapters else sorted(int(p.stem) for p in book_dir.glob('*.json'))
         allow = {tuple(int(x) for x in pair.split(':')) for pair in args.allow_flagged.split(',') if pair}
@@ -478,9 +635,11 @@ def main() -> int:
             lines.append(result['line'])
             if result['ok']:
                 write_chapters(args.book, {chapter: result['timings']})
+                write_quiet(args.book, {chapter: result['quiet']})
             else:
                 left_out.append(chapter)
                 write_chapters(args.book, {chapter: None})
+                write_quiet(args.book, {chapter: None})
                 for problem in result['problems']:
                     log(f'  LEFT OUT chapter {chapter}: {problem}')
         log('')
