@@ -135,7 +135,12 @@ function applyChoices(utterance: SpeechSynthesisUtterance, synth: SpeechSynthesi
   const chosen = chosenVoices[language];
   if (chosen === null) return;
   const voice = synth.getVoices().find((v) => voiceKey(v) === chosen && isLanguage(language)(v));
-  if (voice) utterance.voice = voice;
+  if (!voice) return;
+  utterance.voice = voice;
+  // Android Chrome sounds an utterance by its language tag and ignores the voice object (mw-82lb97i.17: English United Kingdom, listed as en_GB, was set on an
+  // utterance still tagged en-US and the phone read it in the US voice): so an English utterance takes the voice's own tag, with the hyphen a tag is written with.
+  // Greek and Hebrew keep the tag of the pronunciation he chose (el-CY, say), which is the scheme's to say and not the voice's.
+  if (language === 'english' && voice.lang) utterance.lang = voice.lang.replace(/_/g, '-');
 }
 
 function chooseVoices(synth: SpeechSynthesis): void {
