@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.236
+_2026-11-12_
+- New: The Bible voice now starts on Wi-Fi only, and tells you in plain words when it reads in the phone voice instead, asking once whether to play David over mobile data.
+
 ## 0.7.235
 _2026-11-12_
 - Fixed: On the blog in dark mode, the sign-up box at the end of a post and the email field on the home page are dark, and the Subscribe pill and search no longer sit on a white patch.
