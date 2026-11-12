@@ -221,6 +221,45 @@ describeFeature(feature, ({ Scenario }) => {
     Then('Today shows {string}', async (_, text: string) => todayShows(text));
   });
 
+  /** Makes `lemmas` words with a schedule row each: `kept` answered `agoMs` ago and due in a day, the rest due now. */
+  const answered = async (lemmas: string[], agoMs: number): Promise<void> => {
+    const now = Date.now();
+    await db.reviews.bulkPut(lemmas.map((id) => ({ kind: 'word', id, step: 1, rights: 1, due: now + DAY, lastWhen: now - agoMs, lapses: 0, recent: [{ when: now - agoMs, right: true }] })));
+  };
+  const lemmasOf = async (n: number): Promise<string[]> => (await db.words.toCollection().primaryKeys()).slice(0, n).map(String);
+
+  Scenario("Today's Review row shows the day's progress", ({ Given, When, And, Then }) => {
+    Given('{int} items were due at midnight and he has reviewed {int} of them today', async (_, total: number, reviewed: number) => {
+      await freshStore();
+      const lemmas = await lemmasOf(total);
+      await makeDue(lemmas.slice(reviewed));
+      await answered(lemmas.slice(0, reviewed), 1000);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Today from the Reader', openToday);
+    Then('Today shows {string}', async (_, text: string) => todayShows(text));
+    And('Today shows {string}', async (_, text: string) => todayShows(text));
+    And('the Review bar on Today has {int} of {int} done', async (_, done: number, total: number) => {
+      const bar = within(await reviewPiece()).getByRole('progressbar');
+      expect(bar).toHaveAttribute('aria-valuenow', String(done));
+      expect(bar).toHaveAttribute('aria-valuemax', String(total));
+    });
+  });
+
+  Scenario('What he reviewed before midnight is not counted, and what comes due later in the day adds to it', ({ Given, When, And, Then }) => {
+    Given('{int} items are due now, {int} were reviewed today and {int} were reviewed yesterday', async (_, due: number, today: number, yesterday: number) => {
+      await freshStore();
+      const lemmas = await lemmasOf(due + today + yesterday);
+      await makeDue(lemmas.slice(0, due));
+      await answered(lemmas.slice(due, due + today), 1000);
+      await answered(lemmas.slice(due + today), 2 * DAY);
+    });
+    When('Lampas is opened on the Reader', openReader);
+    And('he opens Today from the Reader', openToday);
+    Then('Today shows {string}', async (_, text: string) => todayShows(text));
+    And('Today shows {string}', async (_, text: string) => todayShows(text));
+  });
+
   Scenario('Review draws due words before others', ({ Given, When, And, Then }) => {
     Given('{int} of his words are due', async (_, n: number) => {
       await freshStore();

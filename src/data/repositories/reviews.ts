@@ -12,6 +12,7 @@ import { PARADIGM_KIND } from '../paradigms/cells';
 import { parseReviewId } from '../readingDrill';
 import { RECENT_ANSWERS } from '../rusty';
 import { DAY, KNOWN_STEP, isDue, nextReview, startSchedule, type Grade } from '../schedule';
+import { startOfDay } from '../startOfDay';
 import { getDrillPlan } from './drillPlans';
 import { listLevels } from './grammarLevels';
 import { planFacetQuestions } from './reviewPassage';
@@ -196,6 +197,25 @@ export async function reviewsOf(items: Array<Pick<Review, 'kind' | 'id'>>): Prom
 /** How many items are due at `now`, of `kind` or of every kind but the memorized verses. */
 export async function countDue(now = Date.now(), kind?: string): Promise<number> {
   return (await listDue(kind, now)).length;
+}
+
+/** What Today's Review row shows of the day: `done` items answered since his local midnight and not due again, `due` items due now; the day's M is done + due. */
+export interface DayProgress {
+  done: number;
+  due: number;
+}
+
+/**
+ * The day's Review progress (mw-indx1x6.14). An item answered since local midnight (its last kept answer, not the moment it was scheduled) and not due again now is
+ * done today; what is due now is still to do, so M = done + due is what was due at the start of his day plus what came due since. An item answered before midnight is not
+ * counted; a memorized verse is Memorize's, not Review's. Rows are counted only when Review can ask them (the same rule as countDue).
+ */
+export async function dayProgress(now = Date.now()): Promise<DayProgress> {
+  const start = startOfDay(now);
+  const rows = await db.reviews.toArray();
+  const answered = rows.filter((r) => r.kind !== VERSE_KIND && r.due > now && (r.recent?.at(-1)?.when ?? -Infinity) >= start);
+  const done = (await inScheme(await live(answered))).filter(namesSomething).length;
+  return { done, due: await countDue(now) };
 }
 
 /**

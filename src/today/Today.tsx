@@ -9,7 +9,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { RANDOM, devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
 import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnotherDevotional } from '../data/daily/dailyStore';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
-import { countDue, getLogosBibles, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
+import { dayProgress, getLogosBibles, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
 import { backTo, navigate, openMemorizeSession, openReader } from '../nav/route';
@@ -88,19 +88,37 @@ function TickBox({ label, checked, onToggle }: { label: string; checked: boolean
 const List = ({ children }: { children: ReactNode }) => <ul className="divide-y divide-line rounded-xl border border-line bg-surface px-1">{children}</ul>;
 
 function ReviewPiece({ ticks }: { ticks: Ticks }) {
-  const due = useLatestLiveQuery(() => countDue());
-  if (due === undefined) return null;
+  const progress = useLatestLiveQuery(() => dayProgress());
+  if (progress === undefined) return null;
+  const { done, due } = progress;
+  const total = done + due;
   const open = (): void => {
     void markOpened(ticks.date, 'review');
     navigate('review');
   };
+  const left = due === 0 ? 'Nothing due' : `${due} due`;
+  // with nothing answered yet today the row reads as ever: '27 due' / 'Nothing due' (no '0 of 27', no '0 of 0')
+  const line = done === 0 ? left : `${done} of ${total} done today · ${left}`;
   return (
     <section aria-label="Review">
       <h2 className={HEADING}>Review</h2>
       <List>
         <Piece id="review" label="Review" ticks={ticks}>
           <button type="button" onClick={open} className={LINK}>
-            <span className="text-lg font-medium text-accent">{due === 0 ? 'Nothing due' : `${due} due`}</span>
+            <span className="text-lg font-medium text-accent">{line}</span>
+            {done > 0 ? (
+              <span
+                role="progressbar"
+                aria-label="Review done today"
+                aria-valuemin={0}
+                aria-valuemax={total}
+                aria-valuenow={done}
+                aria-valuetext={`${done} of ${total} done today`}
+                className="my-1 block h-2 w-full overflow-hidden rounded-full bg-line"
+              >
+                <span className="block h-full rounded-full bg-accent" style={{ width: `${Math.round((done / total) * 100)}%` }} />
+              </span>
+            ) : null}
             <span className="text-sm text-muted">{due === 0 ? 'Open Review anyway' : 'Open Review'}</span>
           </button>
         </Piece>
