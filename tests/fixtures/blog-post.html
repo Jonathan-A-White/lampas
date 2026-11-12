@@ -7,7 +7,9 @@
 <!--
   A fixture of the blog's Ghost Source theme: the markup of its page kinds (post, page, home list, tag page, author page, 404) and the theme's own rules
   that colour them, trimmed from https://allmymind.org/assets/built/screen.css and /public/cards.min.css (Source, MIT licence, TryGhost/Source), as served
-  on 2026-11-12. #kind in the address picks the page kind (post, page, home, tag, author, 404); the default is post. The spec serves the dark stylesheet at
+  on 2026-11-12, plus the three iframes Ghost's scripts add to a post (the comments widget's sign-up box, the Portal Subscribe pill, the search popup), built
+  below as the scripts build them (comments-ui, portal and sodo-search from cdn.jsdelivr.net, read 2026-11-12: an iframe with srcdoc "<!DOCTYPE html>" whose
+  head and body are filled in once it has loaded), and the home page's picture banner (.gh-header.is-classic.has-image). #kind in the address picks the page kind (post, page, home, tag, author, 404); the default is post. The spec serves the dark stylesheet at
   https://lampas.allmymind.org/blog-dark.css, as the blog's Code injection names it, after the theme's sheet.
 -->
 <style id="theme">
@@ -87,6 +89,23 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
 .kg-header-card.kg-style-light{background-color:#fafafa}
 .footnotes{font-size:1.4rem}
 .footnotes-list{padding-left:28px}
+.gh-header{margin-top:40px;position:relative}
+.gh-header-inner{overflow:hidden;position:relative}
+.gh-header.is-classic{display:flex;margin-top:0;padding-block:160px}
+.gh-header.is-classic .gh-header-inner{align-items:center;display:flex;flex-direction:column;gap:48px;margin:auto;max-width:1020px;overflow:unset;text-align:center}
+.gh-header.is-classic .gh-header-title{font-size:calc(clamp(3rem, 1.82vw + 2.27rem, 4.6rem)*var(--factor, 1));letter-spacing:-.028em;line-height:1.1}
+.gh-header.is-classic.has-image{margin-top:0}
+.gh-header.is-classic.has-image:before{background-color:var(--color-black);content:"";inset:0;opacity:.3;position:absolute}
+.gh-header.is-classic.has-image .gh-header-inner{color:#fff}
+.gh-header.is-classic.has-image .gh-header-image{height:100%;inset:0;-o-object-fit:cover;object-fit:cover;position:absolute;width:100%;z-index:-1}
+.gh-header.is-classic.has-image .gh-form{background-color:#fff}
+.gh-header.is-classic.has-image .gh-form-input{color:#15171a}
+.gh-header.is-classic.has-image .gh-form-input::-moz-placeholder{color:rgba(0,0,0,.5)}
+.gh-header.is-classic.has-image .gh-form-input::placeholder,.gh-header.is-classic.has-image .gh-form>svg,.gh-header.is-classic.has-image button.gh-form-input{color:rgba(0,0,0,.5)}
+.gh-form .gh-button{font-size:inherit;height:44px;padding-inline:12px;position:absolute;right:6px}
+.gh-form .gh-button span span{display:none}
+.gh-form .gh-button span svg{display:inline;height:20px;margin-top:2px;position:static;width:20px}
+.gh-comments{margin-top:56px}
 .gh-footer{color:var(--color-darker-gray);font-size:1.5rem;margin-top:96px}
 .gh-footer a:not(.gh-button){color:inherit}
 .gh-footer-bar{align-items:center;border-block:1px solid var(--color-border);display:flex;gap:24px;justify-content:space-between;padding-block:32px}
@@ -113,7 +132,7 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
         </ul>
       </nav>
       <div class="gh-navigation-actions">
-        <button class="gh-search gh-icon-button" aria-label="Search this site"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></button>
+        <button class="gh-search gh-icon-button" aria-label="Search this site" data-ghost-search><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></button>
         <div class="gh-navigation-members"><a href="#/portal/signin">Sign in</a> <a class="gh-button" href="#/portal/signup">Subscribe</a></div>
       </div>
     </div>
@@ -153,6 +172,9 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
       </section>
     </article>
 
+    <!-- the comments widget of a post (comments-ui): its root is built by the script, an iframe inside it (see the templates below) -->
+    <div class="gh-comments gh-canvas" data-kinds="post"><div id="ghost-comments-root"></div></div>
+
     <!-- page -->
     <article class="gh-article page" data-kinds="page">
       <header class="gh-article-header gh-canvas">
@@ -165,6 +187,15 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
         <p>Write to me through <a href="/resources/">the resources page</a>.</p>
       </section>
     </article>
+
+    <!-- home: the picture banner, as the theme draws it with a header image (the image is a data URI here) -->
+    <section class="gh-header is-classic has-image gh-outer" data-kinds="home">
+      <img class="gh-header-image" alt="All My Mind" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23d9e6f2'/%3E%3Cstop offset='1' stop-color='%23a8c4a0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='400' fill='url(%23g)'/%3E%3C/svg%3E">
+      <div class="gh-header-inner gh-inner">
+        <h1 class="gh-header-title is-title">And you shall love the Lord your God with all your heart, with all your soul, with all your mind, and with all your strength. --Mark 12:30</h1>
+        <form class="gh-form" onsubmit="return false"><input class="gh-form-input" id="header-email" name="email" type="email" placeholder="jamie@example.com" aria-label="Your email"><button class="gh-button" type="submit" aria-label="Subscribe"><span><span>Subscribe</span> <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256"><path d="M224.49,136.49l-72,72a12,12,0,0,1-17-17L187,140H40a12,12,0,0,1,0-24H187L135.51,64.48a12,12,0,0,1,17-17l72,72A12,12,0,0,1,224.49,136.49Z"></path></svg></span></button></form>
+      </div>
+    </section>
 
     <!-- home list -->
     <section class="gh-container is-list gh-outer" data-kinds="home">
@@ -229,6 +260,73 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
     </div>
   </footer>
 </div>
+<!-- What the Ghost scripts put inside their iframes, as they draw it for a visitor who is not signed in (comments-ui: the member prompt; portal: the trigger pill;
+     sodo-search: the popup's scrim and card). Each is light-themed unless the widget decides on dark: comments-ui does that from the colour of the text around it. -->
+<template id="comments-frame-head"><style>
+  body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .ghost-display{display:block;padding:24px 0}
+  h1{margin:0 0 8px;text-align:center;font-size:24px;font-weight:700;letter-spacing:-.025em;color:#000}
+  .lead{margin:0 0 28px;text-align:center;font-size:18px;line-height:1.5;color:#525252}
+  .signup{display:block;margin:0 auto 12px;border:0;border-radius:4px;padding:14px 20px;background:#1329d4;color:#fff;font:500 16px/1 ui-sans-serif,system-ui,sans-serif}
+  .hint{margin:0;text-align:center;font-size:16px;color:rgba(0,0,0,.4)}
+  .signin{border:0;background:none;padding:0;font:600 14px/1.4 ui-sans-serif,system-ui,sans-serif;color:#1329d4}
+  .dark h1,.dark .lead{color:rgba(255,255,255,.85)}
+  .dark .hint{color:rgba(255,255,255,.5)}
+</style></template>
+<template id="comments-frame-body"><section class="ghost-display" data-testid="content-box">
+  <h1>Start the conversation</h1>
+  <p class="lead">Become a member of <span style="font-weight:600">All My Mind</span> to start commenting.</p>
+  <button class="signup" data-testid="signup-button" type="button">Sign up now</button>
+  <p class="hint"><span>Already a member?</span> <button class="signin" data-testid="signin-button" type="button">Sign in</button></p>
+</section></template>
+<template id="portal-frame-head"><style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .trigger{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:8px;height:60px;padding:0 24px;border-radius:30px;background:#1329d4;color:#fff;font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+</style></template>
+<template id="portal-frame-body"><div class="trigger" data-testid="portal-trigger-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Subscribe</span></div></template>
+<template id="search-frame-head"><style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.3)}
+  .card{position:absolute;top:80px;left:50%;transform:translateX(-50%);width:min(560px,90vw);height:120px;border-radius:12px;background:#fff;color:#15171a;padding:24px;box-sizing:border-box}
+</style></template>
+<template id="search-frame-body"><div class="scrim"></div><div class="card" data-testid="search-card">Search posts, tags and authors</div></template>
+<script>
+  // Ghost's scripts build each widget as an iframe with srcdoc "<!DOCTYPE html>" and fill its head and body in when it has loaded
+  function ghostFrame(parent, title, cls, style, head, body, onFill) {
+    const f = document.createElement('iframe');
+    f.srcdoc = '<!DOCTYPE html>';
+    f.title = title;
+    if (cls) f.className = cls;
+    f.setAttribute('frameborder', '0');
+    f.setAttribute('style', style);
+    f.addEventListener('load', () => {
+      const d = f.contentDocument;
+      d.head.appendChild(document.getElementById(head).content.cloneNode(true));
+      d.body.appendChild(document.getElementById(body).content.cloneNode(true));
+      if (onFill) onFill(d);
+    });
+    parent.appendChild(f);
+    return f;
+  }
+  // comments-ui, data-color-scheme="auto": the widget goes dark when the text colour around its root is light (white against it is under 5:1)
+  const lum = (c) => c.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const commentsRoot = document.getElementById('ghost-comments-root');
+  ghostFrame(commentsRoot, 'comments-frame', '', 'width:100%;height:260px;border:0', 'comments-frame-head', 'comments-frame-body', (d) => {
+    const rgb = getComputedStyle(commentsRoot.parentElement).color.match(/[\d.]+/g).slice(0, 3).map(Number);
+    const dark = (1.05 / (lum(rgb) + 0.05)) < 5;
+    d.querySelector('.ghost-display').className = 'ghost-display ' + (dark ? 'dark' : '');
+  });
+  // portal: the trigger pill is a fixed iframe at the bottom right of every page
+  ghostFrame(document.body, 'portal-trigger', 'gh-portal-triggerbtn-iframe', 'z-index:3999998;position:fixed;bottom:0;right:0;width:186px;max-width:500px;height:98px;border:0;overflow:hidden', 'portal-frame-head', 'portal-frame-body');
+  // sodo-search: the magnifier opens a full-screen iframe with its own scrim and card
+  document.querySelector('[data-ghost-search]').addEventListener('click', () => {
+    if (document.getElementById('sodo-search-root')) return;
+    const root = document.createElement('div');
+    root.id = 'sodo-search-root';
+    document.body.appendChild(root);
+    ghostFrame(root, 'portal-popup', '', 'position:fixed;inset:0;width:100%;height:100%;z-index:3999999;border:0', 'search-frame-head', 'search-frame-body');
+  });
+</script>
 <script>
   // #post, #page, #home, #tag, #author or #404 picks the page kind; the default is a post
   const kind = location.hash.slice(1) || 'post';
