@@ -4,7 +4,9 @@
 // the element plays it as any page's <audio> would. This file is the sound only: src/speech/readAloud.ts keeps the reading (its verses, its span, crossing, Listen),
 // and asks this file to play from a verse to a second (playRecording), seek by verse (seekToVerse), pause, resume and stop. It tells its ONE listener the verse
 // at each 'timeupdate' (never requestAnimationFrame alone, which stops when the page hides), the span's end (a timer aimed at it, re-aimed on a change of speed, a
-// pause or a seek, and 'timeupdate' past it), and a failure (play() refused, the element's 'error', or no 'playing' within PLAYING_WAIT_MS).
+// pause, a seek and each 'timeupdate', and 'timeupdate' past it), and a failure (play() refused, the element's 'error', or no 'playing' within PLAYING_WAIT_MS).
+// The end is judged by where the SOUND is (soundAt, mw-82lb97i.18): the element's second moves in steps (at each 'timeupdate' on a phone, in bursts in Chromium), so a timer
+// that read it alone found it a step behind, waited again and let the next 'timeupdate' land past the end: his John 1:50 ran on into 'Then He declar…' of verse 51.
 // Whether he wants it is his Bible voice setting (wantsRecording(), mw-82lb97i.6); recordingFor() is the rule a tap decides by, with no wait.
 import { sourceLanguage, type Chapter } from '../data/chapter';
 import { chapterTimingsNow, spanOf, verseAt, type ChapterTimings } from '../data/audioTimings';
@@ -63,6 +65,9 @@ export const endWaitMs = (end: number, now: number, rate: number): number => (Ma
 /** A timer fires a little early or the recording stalls: the end counts as reached within this many seconds of it. */
 const END_SLACK = 0.05;
 
+/** The longest the element's second is run on by the clock past its last move: a little over one 'timeupdate' (a phone fires one about every 250 ms). */
+export const RUN_ON_MS = 300;
+
 let element: HTMLAudioElement | null = null;
 let rate = 1;
 let timings: ChapterTimings | null = null;
@@ -78,6 +83,33 @@ let playToken = 0;
 let endTimer: ReturnType<typeof setTimeout> | null = null;
 let endAimedMs: number | null = null;
 let playingWatch: ReturnType<typeof setTimeout> | null = null;
+/** the element's second when it was last seen to change, and the clock (performance.now()) then */
+let seenSecond = Number.NaN;
+let seenAt = 0;
+/** its second has been seen to move on since the last play, seek or wait: only a recording seen to play is run on by the clock (one that stalls is not) */
+let moving = false;
+
+/** Forgets the element's movement: after a play, a seek, a pause or a wait for data, its second is trusted alone until it is seen to move on again. */
+function holdStill(): void {
+  moving = false;
+  seenSecond = element?.currentTime ?? Number.NaN;
+  seenAt = performance.now();
+}
+
+/** Where the sound is, in seconds of the recording: the element's second, run on by the clock since it last moved (at `rate`, for at most RUN_ON_MS) while it is seen
+ * to play forward. Its second moves in steps (each 'timeupdate'), so read alone it can be a step behind what is heard. */
+function soundAt(): number {
+  if (!element) return Number.NaN;
+  const second = element.currentTime;
+  const now = performance.now();
+  if (second !== seenSecond) {
+    moving = wantPlaying && !element.seeking && second > seenSecond;
+    seenSecond = second;
+    seenAt = now;
+  }
+  if (!moving || !wantPlaying) return second;
+  return second + (Math.min(Math.max(0, now - seenAt), RUN_ON_MS) / 1000) * rate;
+}
 
 function clearEndTimer(): void {
   if (endTimer !== null) clearTimeout(endTimer);
@@ -94,14 +126,14 @@ function clearPlayingWatch(): void {
 function aimEnd(): void {
   clearEndTimer();
   if (!element || !wantPlaying || !listener || !Number.isFinite(endSecond)) return;
-  const wait = endWaitMs(endSecond, element.currentTime, rate);
+  const wait = endWaitMs(endSecond, soundAt(), rate);
   endAimedMs = wait;
   endTimer = setTimeout(() => {
     endTimer = null;
     endAimedMs = null;
     if (!element || !wantPlaying) return;
     // the recording stalled (buffering) or the timer came early: aim again rather than cut a word off
-    if (element.currentTime < endSecond - END_SLACK) return aimEnd();
+    if (soundAt() < endSecond - END_SLACK) return aimEnd();
     reach();
   }, wait);
 }
@@ -130,6 +162,7 @@ function halt(): void {
   clearEndTimer();
   clearPlayingWatch();
   element?.pause();
+  holdStill();
 }
 
 function tell(): void {
@@ -140,12 +173,14 @@ function tell(): void {
     pendingStart = null;
   }
   // at the span's end the verse after it is never told (it may start on the very second the span ends)
-  if (now >= endSecond - END_SLACK) return reach();
+  if (soundAt() >= endSecond - END_SLACK) return reach();
   const n = verseAt(timings, now);
   if (n !== null && n !== lastVerse) {
     lastVerse = n;
     listener.verse(n);
   }
+  // the second is fresh: the end timer is aimed again from it, so it never waits for the next 'timeupdate'
+  aimEnd();
 }
 
 function make(): HTMLAudioElement {
@@ -157,9 +192,19 @@ function make(): HTMLAudioElement {
   });
   audio.addEventListener('playing', () => {
     clearPlayingWatch();
+    holdStill();
     aimEnd();
   });
-  audio.addEventListener('seeked', () => aimEnd());
+  audio.addEventListener('seeking', () => holdStill());
+  // no data yet: the sound has stopped where the element's second is
+  audio.addEventListener('waiting', () => {
+    holdStill();
+    aimEnd();
+  });
+  audio.addEventListener('seeked', () => {
+    holdStill();
+    aimEnd();
+  });
   audio.addEventListener('ratechange', () => aimEnd());
   audio.addEventListener('loadedmetadata', () => {
     if (pendingStart !== null && Math.abs(audio.currentTime - pendingStart) > END_SLACK) audio.currentTime = pendingStart;
@@ -188,6 +233,7 @@ function play(): void {
   wantPlaying = true;
   const mine = ++playToken;
   el.playbackRate = rate;
+  holdStill();
   clearPlayingWatch();
   playingWatch = setTimeout(() => {
     playingWatch = null;
@@ -231,6 +277,7 @@ export function seekToVerse(n: number): boolean {
   pendingStart = start;
   element.currentTime = start;
   lastVerse = n;
+  holdStill();
   aimEnd();
   return true;
 }
@@ -243,6 +290,7 @@ export function pauseRecording(): void {
   clearEndTimer();
   clearPlayingWatch();
   element.pause();
+  holdStill();
 }
 
 /** Plays on from the second it was paused at. */
