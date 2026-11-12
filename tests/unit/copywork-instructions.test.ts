@@ -61,7 +61,34 @@ describe("copywork's Greek rule judges each word by itself", () => {
     expect(greek).toMatch(/A mark he\s+wrote that the model word also carries is not an added mark/);
   });
 
+  // the failing answers said 'the verse has no accent here' of σκοτία and κατέλαβεν, whose request words carry one: the model took the verse from its memory.
+  it("says the request's word is the standard, not the verse as the model remembers it", () => {
+    expect(greek).toMatch(/the request's word is the standard, not the verse as you remember it/);
+  });
+
   it('names no Greek word of the examples in the rule', () => {
     expect(greek).not.toMatch(/κατέλαβεν|σκοτίᾳ|φαίνει/);
+  });
+});
+
+// mw-qtu3zvz.95: the same example's right ἡ (a rough breathing and no accent on the page) was marked wrong, 'you wrote ή with an acute accent', in about nine runs
+// in ten, and σκοτία and οὐ now and then: the model read a breathing's small curl as an accent. The rule says a breathing is not an accent, once and in one place
+// (a rule stated again and again primes the model to find that fault on a right word: mw-qtu3zvz.72). The live proof is that example, which holds words.8, 9 and 11 right.
+describe("copywork's Greek rule tells a breathing from an accent", () => {
+  // the curl against the stroke is the shape the model misreads, so the rule counts marks and gives the opening vowel's single mark to the breathing
+  it('says a breathing is not an accent, and counts the marks on the opening vowel', () => {
+    expect(greek).toMatch(/Count the marks on a vowel before you name them/);
+    expect(greek).toMatch(/a single mark over that opening vowel is its breathing, whatever its shape, and a breathing is not an accent/);
+    expect(greek).toMatch(/same number of marks, any fault is one of kind/);
+  });
+
+  it('has him write the model word beside his, so a fault he cannot name from the two is no fault', () => {
+    expect(greek).toMatch(/`you wrote X; the model has Y`, Y being the request's word copied character for character/);
+    expect(greek).toMatch(/cannot settle either way is not a fault you can name: the word is `right`/);
+  });
+
+  it('says it once, in one place', () => {
+    expect(greek.match(/is not an accent/g) ?? []).toHaveLength(1);
+    expect(text.match(/is not an accent/g) ?? []).toHaveLength(1);
   });
 });
