@@ -62,7 +62,7 @@ export const REASONS: readonly Reason[] = [
   },
   {
     key: 'books',
-    label: 'Other books, collected works, sermons and journals',
+    label: 'Other books, collected works and journals',
     why: 'Lampas links a book only where it opens at the word, the verse or the day.',
     fits: (row) => row.type.startsWith('text.'),
   },
