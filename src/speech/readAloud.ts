@@ -25,7 +25,9 @@ import { besideNow, greekVoiceForm, hasGreekVoice, hasVoice, isWordSpeech, loneL
 import type { SpeechLanguage } from './languages';
 import { hebrewVoiceForm } from './pronunciation';
 import type { ReadSpan } from './readSpan';
+import { showSession } from './mediaSession';
 import { pauseRecording, playRecording, resumeRecording, seekToVerse, stopRecording } from './recordedVoice';
+import { titleOf } from '../data/books';
 import { dropWaiting } from './tutorWaiting';
 import { keepAwake, letSleep } from './wakeLock';
 
@@ -141,11 +143,29 @@ let completed: string | null = null;
 let recording: ChapterTimings | null = null;
 /** the last verse the recording plays to: at its end the reading goes on as at the end of a spoken verse (afterVerse) */
 let recordedUntil = 0;
+/** The lock screen shows this reading (src/speech/mediaSession.ts, mw-82lb97i.7): a recording is, or was just, its sound, and it goes on into the next chapter's recording. The phone's voice never has one. */
+let lockScreen = false;
 const listeners = new Set<() => void>();
+
+const lockActions = { play: () => resumeReading(), pause: () => pauseReading(), stop: () => stopReading() };
+
+/** Shows the reading on the lock screen, or takes it off: its title is the chapter being read, or the one it is crossing into. */
+function syncLockScreen(): void {
+  const to = state.crossing;
+  const book = bookCode ?? planBook;
+  const title = to ? titleOf(to.book, to.chapter) : book !== null ? titleOf(book, chapterNumber) : null;
+  showSession(lockScreen && state.status !== 'idle' && title !== null ? { title, paused: state.status === 'paused' } : null, lockActions);
+}
 
 function set(next: ReadingState): void {
   state = next;
+  syncLockScreen();
   listeners.forEach((l) => l());
+}
+
+function holdLockScreen(on: boolean): void {
+  lockScreen = on;
+  syncLockScreen();
 }
 
 export const getReading = (): ReadingState => state;
@@ -167,6 +187,7 @@ function finish(my: number, natural = false): void {
   if (my !== epoch) return;
   epoch++;
   dropRecording();
+  lockScreen = false;
   letSleep();
   suspended = null;
   completed = natural ? state.listen : null;
@@ -326,6 +347,8 @@ function readVerse(verse: number, my: number): void {
   const at = plan.findIndex((v) => v.n === verse);
   const entry = plan[at];
   if (!entry) return finish(my);
+  // the phone's voice reads from here: the lock screen has nothing of a recording to show
+  if (lockScreen) holdLockScreen(false);
   markVerse(verse, at);
   if (entry.runs.length === 0) return afterVerse(at, my);
   playPieces(piecesOf(entry.runs), my, () => afterVerse(at, my), entry.runs.every((r) => r.slow));
@@ -373,6 +396,7 @@ function playFromRecording(timings: ChapterTimings, from: number, my: number): b
   }
   // a play() that threw at once has already handed the verse to the phone's voice (recordingFailed)
   if (recording === timings) {
+    lockScreen = true;
     set({ ...state, onBar: true, recorded: true });
     markVerse(from, at);
   }
@@ -416,6 +440,7 @@ function recordingReached(my: number): void {
 function recordingFailed(my: number): void {
   if (my !== epoch || !recording) return;
   recording = null;
+  lockScreen = false;
   set({ ...state, notice: RECORDING_FAILED_NOTICE, onBar: false, recorded: false });
   // a paused reading goes on in the phone's voice when he taps Play (resumeReading reads the verse it waits at)
   if (state.status === 'reading' && state.verse !== null) readVerse(state.verse, my);
@@ -462,6 +487,7 @@ export function startReading(options: StartOptions): void {
   completed = null;
   resetInterrupts();
   dropRecording();
+  lockScreen = false;
   if (getSpeech().status !== 'idle') engineStop();
   plan = options.plan;
   chapterNumber = options.chapter;
@@ -621,13 +647,9 @@ export function restartRecorded(): boolean {
   return true;
 }
 
-// A page that hides pauses a recording, as the package pauses the phone's voice (voice-kit/speech): the recording would go on in a pocket. Coming back offers Resume
-// on the bar; a Listen paused this way waits for his Resume too (holdListen's end does not go on while the page is hidden).
-if (typeof document !== 'undefined') {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' && recording && state.status === 'reading') pauseReading();
-  });
-}
+// A page that hides does NOT pause a recording (mw-82lb97i.7, PROVISIONAL; mw-82lb97i.3's rule is taken back for it): a recording goes on with the screen locked, as an audio Bible does,
+// and the lock screen offers Play and Pause (src/speech/mediaSession.ts). The phone's voice is paused by voice-kit when the page hides, as before. A Listen an interruption paused
+// while the page is hidden still waits for his Resume (holdListen's end).
 
 /** The key of the Listen on a verse or a passage of a chapter (`unit` is data/passage.ts unitId). */
 export const listenKeyOf = (book: string, chapter: number, unit: string): string => `${book}.${chapter}.${unit}`;
@@ -651,6 +673,7 @@ export function stopReading(): void {
   }
   epoch++;
   dropRecording();
+  lockScreen = false;
   letSleep();
   suspended = null;
   completed = null;
