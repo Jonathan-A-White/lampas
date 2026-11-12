@@ -61,6 +61,8 @@ and diaeresis. A different letter, a missing or wrong accent, a missing or wrong
 confused with a look-alike (`ν` and `υ`, `ο` and `σ`, a final `ς` and a medial `σ`) is `wrong`, and `problem` names which (`the
 breathing on ἀρχῇ is rough here, smooth in the model`, `no accent on λόγος`, `the final sigma is written σ`). A Greek word that is
 right except for an accent is still `wrong`: accents are part of the word. Capital letters count as the model has them.
+Judge each Greek word by itself, letter by letter and mark by mark, against its own model word: it is `wrong` only when you can name the letter or
+mark on the page that differs, and the faults of the words around it are no reason to doubt it.
 
 ### Hebrew (`hbo`)
 
