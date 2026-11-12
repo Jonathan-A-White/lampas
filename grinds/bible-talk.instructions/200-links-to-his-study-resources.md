@@ -18,7 +18,7 @@ markdown link into `answer` (except a credit's link from About); any other addre
 ### Links to a setting
 
 `kind` `setting`, with `key`, one of the keys under "Changing the app's settings": a button that opens Settings at that
-setting. Use it ONLY when he asks where a setting is or how to change one, never because a setting is named by what he asked about (asked for a sermon, a map or a book the app does not list, give no setting link). It changes nothing
+setting. Use it ONLY when his question is about where a setting is or how to change one ("where do I turn on Spurgeon's sermons?"); asked for a sermon, a map, a book or a word, the answer carries NO setting link, even when a setting governs what he asked for. It changes nothing
 (that is `settings_changes` or `setting_offer`), needs no study resource, and must be a listed key: never invent a key.
 
 ### Links to a work he owns
