@@ -123,7 +123,7 @@ async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise
   await expect(async () => {
     const play = view.getByRole('button', { name: `Play verse ${v}`, exact: true });
     if (await play.isVisible()) await play.click();
-    await expect(view.locator('[data-listen-stop]')).toBeVisible({ timeout: 1000 });
+    await expect(view.locator('[data-listen-stop]')).toBeVisible({ timeout: 1000 }); // short on purpose: a dropped tap is tapped again, within toPass's 15 s
   }).toPass({ timeout: 15_000 });
   if (!whole && span[2] - span[1] > 2) {
     // once the sound has started from the verse's start
