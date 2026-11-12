@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { shot } from './shot';
 
@@ -104,6 +104,82 @@ const contrastOf = (pairs: Pair[], what: string) => {
   return Math.min(...found.map((p) => p.ratio));
 };
 
+// Ghost's widgets (the comments box's sign-up prompt, the Portal Subscribe pill, the search popup) are IFRAMES with a light document inside: the page's CSS reaches
+// the iframe element and nothing in it, and a page set to color-scheme: dark gives an iframe whose document is light an opaque white canvas. So what is read here is
+// what is drawn: a screenshot of the element's box, its backdrop pixel and the pixel farthest from it (the ink).
+type Rgb = [number, number, number];
+const lumOf = (c: Rgb) => {
+  const ch = c.map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * ch[0]! + 0.7152 * ch[1]! + 0.0722 * ch[2]!;
+};
+const ratioOf = (a: Rgb, b: Rgb) => {
+  const [hi, lo] = [lumOf(a), lumOf(b)].sort((x, y) => y - x);
+  return Math.round(((hi! + 0.05) / (lo! + 0.05)) * 100) / 100;
+};
+const isBlue = ([r, g, b]: Rgb) => b >= r + 60 && b >= g + 20;
+const isDark = (c: Rgb) => Math.max(...c) < 60;
+
+// The element's drawn pixels: `backdrop` is the pixel at `at` (the box's corner, or just inside it for a button) and `ink` the pixel farthest from it by contrast.
+async function paint(page: Page, el: Locator, inside = false): Promise<{ backdrop: Rgb; ink: Rgb; ratio: number }> {
+  const box = await el.boundingBox();
+  expect(box, 'the element has a box').not.toBeNull();
+  const png = await page.screenshot({ clip: { x: Math.floor(box!.x), y: Math.floor(box!.y), width: Math.ceil(box!.width), height: Math.ceil(box!.height) } });
+  const [bx, by] = inside ? [4, Math.floor(box!.height / 2)] : [0, 0];
+  const got = await page.evaluate(
+    async ({ b64, bx, by }) => {
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      const bmp = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+      const cv = document.createElement('canvas');
+      cv.width = bmp.width;
+      cv.height = bmp.height;
+      const ctx = cv.getContext('2d')!;
+      ctx.drawImage(bmp, 0, 0);
+      const d = ctx.getImageData(0, 0, bmp.width, bmp.height).data;
+      const lum = (r: number, g: number, b: number) => [r, g, b].map((v) => v / 255).map((s) => (s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4)).reduce((a, v, i) => a + v * [0.2126, 0.7152, 0.0722][i]!, 0);
+      const at = (by * bmp.width + bx) * 4;
+      const back: Rgb = [d[at]!, d[at + 1]!, d[at + 2]!];
+      const lb = lum(...back);
+      let ink: Rgb = back;
+      let best = 1;
+      for (let i = 0; i < d.length; i += 4) {
+        const l = lum(d[i]!, d[i + 1]!, d[i + 2]!);
+        const r = (Math.max(l, lb) + 0.05) / (Math.min(l, lb) + 0.05);
+        if (r > best) {
+          best = r;
+          ink = [d[i]!, d[i + 1]!, d[i + 2]!];
+        }
+      }
+      return { backdrop: back, ink };
+    },
+    { b64: png.toString('base64'), bx, by },
+  );
+  return { ...got, ratio: ratioOf(got.ink, got.backdrop) };
+}
+
+const commentsFrame = (page: Page) => page.frameLocator('iframe[title="comments-frame"]');
+// The widgets fill their iframes in when these have loaded; the sign-up box is scrolled to the middle of the window, clear of the fixed Subscribe pill.
+async function openSignUpBox(page: Page) {
+  await expect(commentsFrame(page).getByRole('button', { name: 'Sign in' })).toBeVisible();
+  await page.locator('iframe[title="comments-frame"]').evaluate((f) => f.scrollIntoView({ block: 'center' }));
+}
+// The colour drawn at one point of the window.
+async function pixelAt(page: Page, x: number, y: number): Promise<Rgb> {
+  const png = await page.screenshot({ clip: { x: Math.floor(x), y: Math.floor(y), width: 1, height: 1 } });
+  return page.evaluate(async (b64) => {
+    const bmp = await createImageBitmap(new Blob([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))], { type: 'image/png' }));
+    const cv = document.createElement('canvas');
+    cv.width = 1;
+    cv.height = 1;
+    const ctx = cv.getContext('2d')!;
+    ctx.drawImage(bmp, 0, 0);
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    return [d[0]!, d[1]!, d[2]!] as [number, number, number];
+  }, png.toString('base64'));
+}
+
 // What the page looks like, for every element: the colours a stylesheet could change.
 const snapshot = (page: Page) =>
   page.evaluate(() => {
@@ -175,6 +251,92 @@ for (const size of WIDTHS) {
       // the quote keeps its rule, in the light accent
       expect(await page.locator('#quote').evaluate((q) => getComputedStyle(q).borderLeftColor)).toBe('rgb(159, 176, 255)');
       await shot(page, `blog-dark-${size.name}`);
+    });
+  });
+}
+
+for (const size of WIDTHS) {
+  test.describe(`Ghost's iframes at ${size.width}x${size.height} (${size.name})`, () => {
+    test.use({ viewport: { width: size.width, height: size.height } });
+
+    test('post, dark: the sign-up box at the end of the post is dark like the page, its words and the Sign in link are readable, and the Sign up now button keeps its blue', async ({ page }) => {
+      await open(page, 'post', 'dark');
+      await openSignUpBox(page);
+      const frame = commentsFrame(page);
+      const pageBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      const box = await paint(page, page.locator('iframe[title="comments-frame"]'));
+      expect(isDark(box.backdrop), `the box's backdrop ${box.backdrop} is dark (the page is ${pageBg})`).toBe(true);
+      const heading = await paint(page, frame.getByRole('heading', { name: 'Start the conversation' }));
+      expect(heading.ratio, `heading ${heading.ink} on ${heading.backdrop}`).toBeGreaterThanOrEqual(AA);
+      const lead = await paint(page, frame.getByText('Become a member of'));
+      expect(lead.ratio, `lead ${lead.ink} on ${lead.backdrop}`).toBeGreaterThanOrEqual(AA);
+      const signIn = await paint(page, frame.getByRole('button', { name: 'Sign in' }));
+      expect(signIn.ratio, `Sign in ${signIn.ink} on ${signIn.backdrop}`).toBeGreaterThanOrEqual(AA);
+      const signUp = await paint(page, frame.getByRole('button', { name: 'Sign up now' }), true);
+      expect(isBlue(signUp.backdrop), `the Sign up now button ${signUp.backdrop} is blue`).toBe(true);
+      expect(signUp.ratio, `Sign up now ${signUp.ink} on ${signUp.backdrop}`).toBeGreaterThanOrEqual(AA);
+      // Ghost's own "Already a member?" is a 40% tint of the text colour: 3.5:1 here, the most a page's CSS can get from it (listed as found, not fixed)
+      const hint = await paint(page, frame.getByText('Already a member?'));
+      expect(hint.ratio, `hint ${hint.ink} on ${hint.backdrop}`).toBeGreaterThanOrEqual(3.5);
+      await shot(page, `blog-dark-signup-${size.name}`);
+    });
+
+    test('post, light: the sign-up box is the widget as Ghost draws it, on the white page, with no filter on it', async ({ page }) => {
+      await open(page, 'post', 'light');
+      await openSignUpBox(page);
+      const frame = page.locator('iframe[title="comments-frame"]');
+      expect(await frame.evaluate((f) => getComputedStyle(f).filter)).toBe('none');
+      const box = await paint(page, frame);
+      expect(box.backdrop).toEqual([255, 255, 255]);
+      const heading = await paint(page, commentsFrame(page).getByRole('heading', { name: 'Start the conversation' }));
+      expect(heading.ink, 'the heading is black, as Ghost draws it').toEqual([0, 0, 0]);
+    });
+
+    test('post, dark: the Portal Subscribe pill sits on the page, with no light rectangle around it, and keeps its blue', async ({ page }) => {
+      await open(page, 'post', 'dark');
+      const trigger = page.locator('iframe[title="portal-trigger"]');
+      await expect(page.frameLocator('iframe[title="portal-trigger"]').getByText('Subscribe')).toBeVisible();
+      // the iframe's colour scheme is its document's (light), so the browser paints no canvas of its own behind it
+      expect(await trigger.evaluate((f) => getComputedStyle(f).colorScheme)).toBe('light');
+      const frameBox = (await trigger.boundingBox())!;
+      // a pixel beside the pill: the iframe's top-left corner, above and left of it
+      const beside = await pixelAt(page, frameBox.x + 2, frameBox.y + 2);
+      expect(isDark(beside), `beside the pill ${beside} is dark`).toBe(true);
+      const pill = await paint(page, page.frameLocator('iframe[title="portal-trigger"]').locator('[data-testid="portal-trigger-button"]'), true);
+      expect(isBlue(pill.backdrop), `the pill ${pill.backdrop} keeps its blue`).toBe(true);
+    });
+
+    test('post, dark: the search popup (the magnifier) shows no white card or light scrim from the iframe\'s own canvas', async ({ page }) => {
+      await open(page, 'post', 'dark');
+      await page.getByRole('button', { name: 'Search this site' }).click();
+      const popup = page.locator('iframe[title="portal-popup"]');
+      await expect(page.frameLocator('iframe[title="portal-popup"]').getByTestId('search-card')).toBeVisible();
+      expect(await popup.evaluate((f) => getComputedStyle(f).colorScheme)).toBe('light');
+      // the scrim's top-left corner (far from the card): the page's header, darkened by the scrim, not a white canvas
+      const px = await pixelAt(page, 2, 2);
+      expect(isDark(px), `the popup's scrim corner ${px} is dark`).toBe(true);
+    });
+
+    test('post, light: the Portal pill and the search popup keep their own light canvas and colour scheme (colour-scheme is untouched)', async ({ page }) => {
+      await open(page, 'post', 'light');
+      expect(await page.locator('iframe[title="portal-trigger"]').evaluate((f) => getComputedStyle(f).colorScheme)).toBe('normal');
+    });
+
+    test('home, dark: the picture banner\'s email field is dark, its words and placeholder pass AA, and the arrow button keeps its blue', async ({ page }) => {
+      await open(page, 'home', 'dark');
+      const form = await page.locator('#header-email').evaluate((input) => {
+        const f = input.closest('.gh-form')!;
+        const b = f.querySelector('.gh-button')!;
+        return { bg: getComputedStyle(f).backgroundColor, button: getComputedStyle(b).backgroundColor, buttonInk: getComputedStyle(b).color };
+      });
+      const rgb = (css: string): Rgb => (css.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number) as Rgb;
+      expect(isDark(rgb(form.bg)), `the banner form's background ${form.bg} is dark, not the theme's #fff`).toBe(true);
+      const pairs = await measure(page);
+      expect(contrastOf(pairs, 'input#header-email.gh-form-input (typed text)')).toBeGreaterThanOrEqual(AA);
+      expect(contrastOf(pairs, 'input#header-email.gh-form-input (placeholder)')).toBeGreaterThanOrEqual(AA);
+      expect(isBlue(rgb(form.button)), `the arrow button ${form.button} keeps its blue`).toBe(true);
+      expect(ratioOf(rgb(form.buttonInk), rgb(form.button))).toBeGreaterThanOrEqual(AA);
+      await shot(page, `blog-dark-banner-${size.name}`);
     });
   });
 }

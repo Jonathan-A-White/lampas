@@ -10,7 +10,7 @@
   nothing (tests/e2e/blog-dark.spec.ts holds both). Source colours its page through custom properties on :root (--background-color,
   --color-darker-gray for text and links, --color-secondary-text, --color-lighter-gray for code, --color-border) and the Ghost accent
   (--ghost-accent-color, the link colour in a post and the quote's rule); the card styles (cards.min.css) fix a few colours of their
-  own, which are set again below. `:root:root` lifts each custom property over the theme's own `:root` rule whichever sheet loads
+  own, which are set again below, and the iframes of Ghost's widgets (comments, Portal, search) are given back a transparent canvas (see the iframe rules at the end). `:root:root` lifts each custom property over the theme's own `:root` rule whichever sheet loads
   last. Every text and background pair below is at least 4.5:1 (WCAG AA); the spec measures it on a Source post, page, list, tag,
   author and 404 page.
 */
@@ -75,22 +75,44 @@
     color: #e8eaed;
   }
 
-  /* The email field of the footer and its placeholder */
-  html:root .gh-form {
-    background-color: rgba(255, 255, 255, 0.08);
+  /* The email fields (the picture banner on the home page and the footer's): ONE selector set. The banner's own rules (.gh-header.is-classic.has-image .gh-form,
+     four classes) paint it white with dark words over the picture, and outrank a bare .gh-form, so each rule names both; the field is opaque, as the banner's is
+     over a picture. The arrow button is the .gh-button above. */
+  html:root :is(.gh-form, .gh-header.is-classic.has-image .gh-form) {
+    background-color: #25282c;
   }
-  html:root .gh-form:hover {
-    background-color: rgba(255, 255, 255, 0.12);
+  html:root :is(.gh-form, .gh-header.is-classic.has-image .gh-form):hover {
+    background-color: #2b2e32;
   }
-  html:root .gh-form-input {
+  html:root :is(.gh-form-input, .gh-header.is-classic.has-image .gh-form-input) {
     color: #f1f3f5;
   }
-  html:root .gh-form-input::placeholder,
-  html:root button.gh-form-input {
+  html:root :is(.gh-form-input, .gh-header.is-classic.has-image .gh-form-input)::placeholder,
+  html:root :is(.gh-form > svg, .gh-header.is-classic.has-image .gh-form > svg),
+  html:root :is(button.gh-form-input, .gh-header.is-classic.has-image button.gh-form-input) {
     color: rgba(255, 255, 255, 0.6);
   }
-  html:root .gh-form-input::-moz-placeholder {
+
+  html:root :is(.gh-form-input, .gh-header.is-classic.has-image .gh-form-input)::-moz-placeholder {
     color: rgba(255, 255, 255, 0.6);
+  }
+
+  /* Ghost's widgets are iframes (the comments box and its sign-up prompt, the Portal Subscribe pill, the search popup). Page CSS reaches the iframe element and nothing
+     inside it, and the documents inside are light: with the page at color-scheme: dark (above) the browser paints an opaque WHITE canvas behind a light document, which
+     put a white box behind the sign-up prompt (its light words invisible on it) and a white rectangle behind the pill. So each iframe takes the document's own scheme
+     back and is transparent again. */
+  html:root iframe {
+    color-scheme: light;
+  }
+  /* The comments widget picks its own dark from the colour of the text around it (comments-ui, data-color-scheme="auto"); its dark theme leaves the Sign in link
+     in the blog's accent (a dark blue, 2:1 on this page) inline where no stylesheet reaches. So its text is set dark here, which has it draw its light theme (dark words,
+     the accent button with white words), and the iframe is then turned into a dark one with one filter: light becomes dark, the accent a light blue, the button's white
+     words dark, 4.5:1 or more for every word but Ghost's own 40% "Already a member?". */
+  html:root .gh-comments {
+    color: #15171a;
+  }
+  html:root .gh-comments iframe {
+    filter: invert(1) hue-rotate(180deg);
   }
 
   /* Cards the theme's card sheet paints white or near white */
