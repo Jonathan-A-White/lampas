@@ -76,6 +76,16 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
     And he taps the theme "Atonement"
     Then the theme "Atonement" lists "For Whom Did Christ Die?"
 
+  # mw-qtu3zvz.65 (PROVISIONAL, the Governor to confirm): "The themes should only show if there are sermons for them."
+  @uc-sermons @greek
+  Scenario: A theme with no sermons is not offered in Found, and a theme with some says how many
+    Given Lampas is opened on "Romans 5" with the sermon index answering
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    And he searches the sheet for "spurgeon grace"
+    Then the theme "Atonement" says "Theme · 1 sermon · tap for its sermons"
+    And Found offers no theme "Business Life"
+
   @uc-sermons @greek
   Scenario: Offline the search field is greyed and says it needs the internet
     Given Lampas is opened on "Romans 5" with the sermon index not answering

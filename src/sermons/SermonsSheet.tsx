@@ -189,10 +189,8 @@ function SearchField({ query, onChange, offline }: { query: string; onChange: (v
   );
 }
 
-/** A theme the search found: tapping it lists its sermons right under it, in this sheet. */
-function ThemeHit({ source, id, title, open, onToggle, online }: { source: string; id: string; title: string; open: boolean; onToggle: () => void; online: boolean }) {
-  const sermons = useThemeSermons(open ? `${source}:${id}` : null);
-  const rows = sermons.status === 'found' ? sermons.rows.flatMap((row) => linkRowOf(row) ?? []) : [];
+/** A theme the search found, with the sermons it holds: tapping it lists them right under it, in this sheet. */
+function ThemeHit({ source, id, title, rows, open, onToggle, online }: { source: string; id: string; title: string; rows: LinkRow[]; open: boolean; onToggle: () => void; online: boolean }) {
   return (
     <div data-found-theme={`${source}:${id}`}>
       <button type="button" aria-expanded={open} onClick={onToggle} className={ROW}>
@@ -201,16 +199,13 @@ function ThemeHit({ source, id, title, open, onToggle, online }: { source: strin
             {title}
           </span>
           <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
-            Theme · tap for its sermons
+            {`Theme · ${rows.length === 1 ? '1 sermon' : `${rows.length} sermons`} · tap for its sermons`}
           </span>
         </span>
         <span aria-hidden="true">{open ? '▾' : '▸'}</span>
       </button>
       {open ? (
         <div className="flex flex-col gap-2 pt-2 pl-3">
-          {sermons.status === 'asking' ? <p className="text-sm text-muted">Looking…</p> : null}
-          {sermons.status === 'failed' ? <p className="text-sm text-muted">Could not reach the sermon index.</p> : null}
-          {sermons.status === 'found' && rows.length === 0 ? <p className="text-sm text-muted">No sermons on this theme.</p> : null}
           {rows.map((row) => (
             <Row key={`${row.source}:${row.id}`} row={row} online={online} />
           ))}
@@ -220,30 +215,36 @@ function ThemeHit({ source, id, title, open, onToggle, online }: { source: strin
   );
 }
 
-/** 'Found': the search's answer, sermons that open where they live and themes that list their sermons on a tap. */
+/**
+ * 'Found': the search's answer, sermons that open where they live and themes that list their sermons on a tap. A theme is offered only once its sermons are known and number one or more (mw-qtu3zvz.65, PROVISIONAL,
+ * the Governor to confirm): one with none, or whose sermons could not be asked, is left out.
+ */
 function FoundGroup({ query, offline, online }: { query: string; offline: boolean; online: boolean }) {
   const found = useServiceSearch(query, !offline);
   const [open, setOpen] = useState<string | null>(null);
+  const hits = found.status === 'found' ? found.hits : [];
+  const lists = useThemeSermons(hits.flatMap((hit) => (hit.kind === 'theme' ? [`${hit.source}:${hit.id}`] : [])));
   if (found.status === 'idle') return null;
+  const shown = hits.flatMap((hit) => {
+    const key = `${hit.kind}:${hit.source}:${hit.id}`;
+    if (hit.kind === 'theme') {
+      const themeKey = `${hit.source}:${hit.id}`;
+      const list = lists.get(themeKey);
+      const rows = list?.status === 'found' ? list.rows.flatMap((row) => linkRowOf(row) ?? []) : [];
+      return rows.length === 0 ? [] : [<ThemeHit key={key} source={hit.source} id={hit.id} title={hit.title} rows={rows} open={open === themeKey} onToggle={() => setOpen(open === themeKey ? null : themeKey)} online={online} />];
+    }
+    const row = linkRowOfHit(hit);
+    return row ? [<Row key={key} row={row} online={online} />] : [];
+  });
+  const themesAsking = hits.some((hit) => hit.kind === 'theme' && lists.get(`${hit.source}:${hit.id}`)?.status === 'asking');
   return (
     <div role="group" aria-label="Found" data-sermons-part="found" className="pb-3">
       <h3 className="pb-1 text-base font-semibold">Found</h3>
       {found.status === 'searching' ? <p className="text-sm text-muted">Searching…</p> : null}
       {found.status === 'failed' ? <p role="status" className="text-sm text-muted">Could not reach the sermon index.</p> : null}
-      {found.status === 'found' && found.hits.length === 0 ? <p role="status" className="text-sm text-muted">Nothing found.</p> : null}
-      {found.status === 'found' ? (
-        <div className="flex flex-col gap-2">
-          {found.hits.map((hit) => {
-            const key = `${hit.kind}:${hit.source}:${hit.id}`;
-            if (hit.kind === 'theme') {
-              const themeKey = `${hit.source}:${hit.id}`;
-              return <ThemeHit key={key} source={hit.source} id={hit.id} title={hit.title} open={open === themeKey} onToggle={() => setOpen(open === themeKey ? null : themeKey)} online={online} />;
-            }
-            const row = linkRowOfHit(hit);
-            return row ? <Row key={key} row={row} online={online} /> : null;
-          })}
-        </div>
-      ) : null}
+      {found.status === 'found' && shown.length === 0 && !themesAsking ? <p role="status" className="text-sm text-muted">Nothing found.</p> : null}
+      {found.status === 'found' && shown.length === 0 && themesAsking ? <p className="text-sm text-muted">Searching…</p> : null}
+      {found.status === 'found' && shown.length > 0 ? <div className="flex flex-col gap-2">{shown}</div> : null}
     </div>
   );
 }

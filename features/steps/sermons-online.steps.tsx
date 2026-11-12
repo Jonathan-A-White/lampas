@@ -60,7 +60,7 @@ const SOURCES = [
   THEMES_DEMO,
 ];
 /** The search's example answer, and a theme beside its sermons (the example has none). */
-const HITS: ServiceHit[] = [...(api['GET /v1/search?q=spurgeon+grace'].rows as ServiceHit[]), { kind: 'theme', source: 'themes-demo', id: 'atonement', title: 'Atonement', ref: null, url: null, rank: 0.2 }];
+const HITS: ServiceHit[] = [...(api['GET /v1/search?q=spurgeon+grace'].rows as ServiceHit[]), { kind: 'theme', source: 'themes-demo', id: 'atonement', title: 'Atonement', ref: null, url: null, rank: 0.2 }, { kind: 'theme', source: 'themes-demo', id: 'business-life', title: 'Business Life', ref: null, url: null, rank: 0.1 }];
 
 /** The direct-link Example's one marked row, put under the tests' own Atonement topic (the Example's is the demo's Grace). */
 const [NOTES_ROW] = apiDirect['GET /v1/sermons?ref=eph.2.8&tier=theme-only'].theme.rows;
@@ -81,6 +81,8 @@ async function answer(url: URL): Promise<Response> {
   if (url.pathname === '/v1/sources') return json({ rows: SOURCES.map((s) => (s.id === 'spurgeon-20' ? { ...s, on_by_default: service.onByDefault } : s)) });
   if (url.pathname === '/v1/search') return json({ q: url.searchParams.get('q'), rows: HITS });
   if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only' && url.searchParams.get('direct') === 'only') return json(service.notes ? NOTES_ANSWER : { ref: 'Rom.5.8', passage: null, theme: { total: 0, rows: [] } });
+  // mw-qtu3zvz.65: a theme the search finds that holds no sermon at all (his 'Business Life')
+  if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only' && url.searchParams.get('theme') === 'themes-demo:business-life') return json({ ref: 'Gen.1.1-Rev.22.21', passage: null, theme: { total: 0, rows: [] } });
   if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only') return json(api['GET /v1/sermons?ref=rom.5.8&tier=theme-only&theme=themes-demo:atonement']);
   if (url.pathname === '/v1/sermons') {
     const rows = (url.searchParams.get('source') ?? '').split(',').flatMap((id) => ROWS[id] ?? []);
@@ -322,6 +324,30 @@ describeFeature(feature, ({ Scenario }) => {
         expect([...theme!.querySelectorAll('a[data-sermon-row] [data-sermon-title]')].map((t) => t.textContent)).toEqual([sermon]);
       });
       expect(askedFor('/v1/sermons').some((u) => u.searchParams.get('theme') === 'themes-demo:atonement' && u.searchParams.get('tier') === 'theme-only')).toBe(true);
+    });
+  });
+
+  Scenario('A theme with no sermons is not offered in Found, and a theme with some says how many', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the sermon index answering', openedWith({}));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    And('he searches the sheet for {string}', searchesFor);
+    Then('the theme {string} says {string}', async (_, title: string, line: string) => {
+      const group = await within(await sheetEl()).findByRole('group', { name: 'Found' });
+      await waitFor(() => {
+        const theme = [...group.querySelectorAll<HTMLElement>('[data-found-theme]')].find((t) => t.querySelector('[data-sermon-title]')?.textContent === title);
+        expect(theme?.querySelector('[data-sermon-meta]')?.textContent).toBe(line);
+      });
+    });
+    And('Found offers no theme {string}', async (_, title: string) => {
+      const group = await within(await sheetEl()).findByRole('group', { name: 'Found' });
+      // the lookup of every theme has come back: Atonement is drawn, and Business Life asked its sermons and was left out
+      await waitFor(() => {
+        expect(askedFor('/v1/sermons').some((u) => u.searchParams.get('theme') === 'themes-demo:business-life')).toBe(true);
+        expect(group.querySelector('[data-found-theme]')).not.toBeNull();
+      });
+      expect([...group.querySelectorAll('[data-sermon-title]')].map((t) => t.textContent)).not.toContain(title);
+      expect(within(group).queryByText('No sermons on this theme.')).toBeNull();
     });
   });
 
