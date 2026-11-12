@@ -6,9 +6,9 @@
 // The patterns for it name its files, no wildcard. The memory pictures (public/pictures, about 20 KB
 // in all) are precached by name too, so a card shows its picture offline. The clips of a one-letter word's sound (public/sounds/<scheme>/, a few KB
 // each, mw-5r3p30.347) are precached, so ὁ is heard offline. The listening page of the letter-sounds research (public/sounds-trial.html and its
-// clips under public/sounds-trial/, mw-5r3p30.395) is served but never precached: it is not part of the app. Nor is the blog's tagger (reftagger.js, mw-5r3p30.1043).
+// clips under public/sounds-trial/, mw-5r3p30.395) is served but never precached: it is not part of the app. Nor are the blog's tagger (reftagger.js, mw-5r3p30.1043) and its dark stylesheet (blog-dark.css, mw-fnvjof.17.89): the blog loads both from this origin.
 export const injectManifestOptions = {
   globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}', 'pictures/*.svg', 'sounds/*/*.mp3', 'data/index.json', 'data/lexicon.json', 'data/frequency.json', 'data/rom/8.json'],
-  globIgnores: ['sounds-trial.html', 'sounds-trial/**', 'reftagger.js'],
+  globIgnores: ['sounds-trial.html', 'sounds-trial/**', 'reftagger.js', 'blog-dark.css'],
   maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
 };
