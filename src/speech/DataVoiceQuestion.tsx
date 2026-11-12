@@ -2,11 +2,14 @@
 // he taps Play. Two buttons: Play David on data (sets Bible voice to Recording (David) and plays David) and Keep the phone voice (plays the phone voice; never asked again).
 // A tap outside takes the question down and starts nothing; it is asked again at the next Play.
 import { useEffect } from 'react';
+import { useNoDoor } from '../tutor/door';
 import { answerDataQuestion, dropDataQuestion, useDataQuestion } from './dataQuestion';
 import { DATA_QUESTION, KEEP_PHONE_VOICE, PLAY_ON_DATA } from './voiceDecision';
 
 export function DataVoiceQuestion() {
   const asking = useDataQuestion();
+  // the floating ? is not drawn over the card (it cannot be asked about)
+  useNoDoor(asking);
   // leaving the Reader takes an unanswered question down
   useEffect(() => dropDataQuestion, []);
   if (!asking) return null;
