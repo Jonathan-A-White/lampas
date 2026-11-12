@@ -118,11 +118,23 @@ first verse (`restartListen`, as for the phone's voice). If the slice is kept it
 second BEFORE the word is heard and never talks over it (the package holds no reading's speech, so `greek.ts` says the word on its own, not `speakBeside`; `readAloud.ts` sees it in the package's speech, `recordedWordSync`, and in
 `subscribeBeside` for the clip of a one-letter word, and pauses at once: `greek.ts` is unchanged). A hold of a talk bar or of the reading check (`askTranscriber.ts`, `interruptListen`) pauses it too. A Listen goes on by itself
 when the interruption ends; any other reading waits for his Resume, which plays from the same second. A tutor's answer (`startAnswer`) is read in front of a recorded Listen and the Listen goes on after it, as before.
-**A page that hides** pauses the recording (as the package pauses the phone's voice; `readAloud.ts` listens to `visibilitychange`, so a recording never plays on in a pocket): the bar offers Resume on coming back, and a Listen
-paused that way waits for his Resume. Leaving the Reader for another screen pauses it and coming back offers Resume; opening another chapter ends it (`Reader.tsx`'s effects, for a recording as for the phone's voice).
+Leaving the Reader for another screen pauses it and coming back offers Resume; opening another chapter ends it (`Reader.tsx`'s effects, for a recording as for the phone's voice).
+A page that hides does NOT pause a recording any more (mw-82lb97i.7): see 'The lock screen' below.
 `features/recorded-voice.feature` and `tests/e2e/recorded-voice.spec.ts` (the bar in the Reader's foot, in the viewport, over no text) hold all of this.
 
-**Later stories.** b3: the setting in place of the seam; b4: the media session (the lock screen's controls).
+**The lock screen (mw-82lb97i.7, PROVISIONAL, the Governor to confirm).** A recording, unlike the phone's voice, goes on with the screen off, as an audio Bible does. `src/speech/mediaSession.ts` (used only by a recorded
+reading, through `readAloud.ts`) sets `navigator.mediaSession` while one is going or paused: metadata title '<Book> <chapter>' ('John 3'), artist 'Majority Standard Bible, read by David', album 'Lampas', artwork `icon-192.png`
+and `icon-512.png`; `playbackState` 'playing' or 'paused' as the reading is; the action handlers Play, Pause and Stop call `resumeReading`, `pauseReading` and `stopReading`, so a headset's button does the same. The title follows a crossing into
+the next chapter (it says the chapter being crossed into at once and stays across the gap, with no flicker to 'none'); when the reading ends (Stop, its span's end, a failure to the phone's voice, a weave that hands it over, the
+phone's voice reading on into a chapter with no timings) the metadata and handlers are cleared and `playbackState` is 'none'. A phone without `navigator.mediaSession` reads on regardless. The phone's voice has no session:
+voice-kit pauses it when the page hides, and Android stops its voice anyway, so it is unchanged. **What goes on while the page is hidden:** the recording, the verse marked (the verse reached while hidden is the verse marked when he comes
+back), `verse-reading` on the bus, and a crossing into the next chapter (`cross`, then the Reader's `continueReading` on a hidden page, which plays the next chapter's recording and shows 'John 4' on the lock screen). **What does not:**
+a word said alone and a hold to ask still pause it; leaving the Reader for another screen of the app still pauses it; a Listen an interruption paused while the page was hidden waits for his Resume; the wake lock is as it was
+(`wakeLock.ts` drops it when the page hides and asks again when it shows). Not built, on purpose: previous or next track, seek handlers, a position state or any skip by verse (a later story if the Governor wants it; `seekToVerse` is there
+for it), a silent looping audio to keep the page alive (docs/pwa-best-practices.md section 11), `crossOrigin`, a fetch of the MP3. Not proved on a phone yet: the tests fake the page's hiding, so whether a locked phone keeps the end timer and the crossing on time is for the Governor's own check. `tests/unit/media-session.test.ts` (a stub session, `tests/support/fake-media-session.ts`) and `features/recorded-voice.feature` (hidden: not paused, the verse follows, the lock
+screen's Pause and Play, hidden crossing into John 4) hold it.
+
+**Later stories.** b3: the setting in place of the seam (done); b4: the media session (above); a verse skip from the lock screen, if he says yes.
 
 ## The speaking bar (mw-m7v5kc.3)
 

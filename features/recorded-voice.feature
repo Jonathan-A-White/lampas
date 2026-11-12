@@ -1,7 +1,7 @@
 Feature: The recorded voice reads a chapter that has timings
   A chapter of the Majority Standard Bible shown in English with nothing woven, whose recording has verse timings, is read by the publisher's
   MP3 through one audio element: the verse marked as being read follows the timings, the speaking bar (the same bar, Pause, Resume, Restart
-  and Stop, in the same slot) steers it, a word said beside it, a hold to ask and a hidden page pause it,
+  and Stop, in the same slot) steers it, a word said beside it and a hold to ask pause it, a hidden page does not (it goes on with the screen locked, and the lock screen shows the chapter with Play and Pause),
   a verse's play button and a Listen read their own span of the recording, and Play to goes on into the next chapter. Where the recording
   cannot be used (no network, the weave or the Greek shown, no timings, the Bible voice set to Phone voice) the phone's voice reads as before, and
   a recording that fails hands the verse in hand to the phone's voice. The element, the timings and the network are fakes (tests/support).
@@ -152,18 +152,42 @@ Feature: The recorded voice reads a chapter that has timings
     When the hold to ask ends
     Then the audio element plays on from the second it was paused at
 
-  Scenario: A page that hides pauses the recording and waits for Resume
+  Scenario: A page that hides does not pause the recording: the verse marked follows the recording and the lock screen shows the chapter
     Given John 3 is open in English with the recorded voice chosen
     When he taps "Read from the top"
     And the recording passes the end of verse 1
     And the page goes hidden
-    Then the audio element is paused
-    And the reading is paused
+    Then the audio element is still playing
+    And the reading is not paused
+    And the lock screen says "John 3" and playing
+    When the recording goes on past the end of verse 3
+    Then verse 4 is marked as being read
     When the page comes back
-    Then the audio element is still paused
-    And the speaking bar's first button is Resume
-    When he taps "Resume" on the speaking bar
+    Then the audio element still plays
+    And verse 4 is still the verse marked
+    And the speaking bar is playing and shows Pause, Restart and Stop
+
+  Scenario: The lock screen's Pause and Play steer a recorded reading while the page is hidden
+    Given John 3 is open in English with the recorded voice chosen
+    When he taps "Read from the top"
+    And the recording passes the end of verse 1
+    And the page goes hidden
+    And he presses Pause on the lock screen
+    Then the audio element is paused
+    And the lock screen says "John 3" and paused
+    When he presses Play on the lock screen
     Then the audio element plays on from the second it was paused at
+    And the lock screen then says "John 3" and playing
+
+  Scenario: Hidden, Play to End of the book turns to John 4 and the lock screen says John 4
+    Given John 3 is open in English with the recorded voice chosen
+    When he selects verse 36 and taps "Read from here"
+    And the page goes hidden
+    And the recording passes the end of verse 36
+    Then the Reader shows John 4
+    And the audio element plays the recording of John 4 from its start
+    And verse 1 is marked as being read
+    And the lock screen says "John 4" and playing
 
   Scenario: Leaving the Reader pauses the recording and opening another chapter ends it
     Given John 3 is open in English with the recorded voice chosen

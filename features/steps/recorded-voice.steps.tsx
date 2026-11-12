@@ -18,6 +18,8 @@ import { recordingElement, resetRecordedVoice, wantsRecording } from '../../src/
 import { bibleVoiceSetting } from '../../src/settings/definitions';
 import { setSetting } from '../../src/settings/store';
 import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
+import { stubMediaSession, type FakeMediaSession } from '../../tests/support/fake-media-session';
+import { resetMediaSession } from '../../src/speech/mediaSession';
 import { speakWord } from '../../src/speech/greek';
 import { askTranscriber } from '../../src/speech/askTranscriber';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -48,6 +50,7 @@ function chapterTimings(key: string, chapter: number): ChapterTimings {
 
 let synth: FakeSynth;
 let audio: FakeAudio;
+let session: FakeMediaSession;
 let read: number[] = [];
 /** whether the recording was playing at each moment the phone's voice was handed a word */
 let playingWhenSpoken: boolean[] = [];
@@ -72,6 +75,8 @@ async function open({ chapters = [3, 4], english }: Options = {}): Promise<void>
   forgetTimings();
   synth = stubSpeech([ENGLISH_VOICE, GREEK_VOICE]);
   audio = stubAudio();
+  resetMediaSession();
+  session = stubMediaSession();
   stubChapterFetch();
   const index: TimingsIndex = { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: chapters } };
   const book: BookTimings = { v: 1, edition: 'msb-david', book: 'jhn', chapters: Object.fromEntries(chapters.map((c) => [String(c), chapterTimings(`jhn/${c}`, c)])) };
@@ -521,29 +526,75 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
   });
 
-  Scenario('A page that hides pauses the recording and waits for Resume', ({ Given, When, Then, And }) => {
+  const goesHidden = () => {
+    heldAt = element().currentTime;
+    act(() => {
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+  };
+  const lockScreenSays = (_: unknown, title: string, playbackState: string) => {
+    expect(session.metadata?.title).toBe(title);
+    expect(session.metadata?.artist).toBe('Majority Standard Bible, read by David');
+    expect(session.metadata?.album).toBe('Lampas');
+    expect(session.playbackState).toBe(playbackState);
+  };
+
+  Scenario('A page that hides does not pause the recording: the verse marked follows the recording and the lock screen shows the chapter', ({ Given, When, Then, And }) => {
     Given(opened, () => open());
     When('he taps {string}', tapHeader);
     And('the recording passes the end of verse {int}', passes);
-    And('the page goes hidden', () => {
-      heldAt = element().currentTime;
-      act(() => {
-        Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
-        document.dispatchEvent(new Event('visibilitychange'));
-      });
-    });
-    Then('the audio element is paused', paused);
-    And('the reading is paused', () => expect(getReading().status).toBe('paused'));
+    And('the page goes hidden', goesHidden);
+    Then('the audio element is still playing', () => expect(audio.playing()).toBe(recordingElement()));
+    And('the reading is not paused', () => expect(getReading().status).toBe('reading'));
+    And('the lock screen says {string} and {word}', lockScreenSays);
+    When('the recording goes on past the end of verse {int}', passes);
+    Then('verse {int} is marked as being read', marked);
     When('the page comes back', () => {
       act(() => {
         Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
         document.dispatchEvent(new Event('visibilitychange'));
       });
     });
-    Then('the audio element is still paused', paused);
-    And("the speaking bar's first button is Resume", firstIsResume);
-    When('he taps "Resume" on the speaking bar', () => onBar(null, 'Resume'));
+    Then('the audio element still plays', () => expect(audio.playing()).toBe(recordingElement()));
+    And('verse {int} is still the verse marked', marked);
+    And('the speaking bar is playing and shows Pause, Restart and Stop', () => barPlaying());
+  });
+
+  Scenario("The lock screen's Pause and Play steer a recorded reading while the page is hidden", ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('the page goes hidden', goesHidden);
+    And('he presses Pause on the lock screen', () => {
+      heldAt = element().currentTime;
+      act(() => session.handlers.pause?.());
+    });
+    Then('the audio element is paused', paused);
+    And('the lock screen says {string} and {word}', lockScreenSays);
+    When('he presses Play on the lock screen', () => {
+      act(() => session.handlers.play?.());
+    });
     Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
+    And('the lock screen then says {string} and {word}', lockScreenSays);
+  });
+
+  Scenario('Hidden, Play to End of the book turns to John 4 and the lock screen says John 4', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he selects verse {int} and taps {string}', selectAndReadFromHere);
+    And('the page goes hidden', goesHidden);
+    And('the recording passes the end of verse {int}', passes);
+    Then('the Reader shows John 4', async () => {
+      await screen.findByRole('heading', { name: 'John 4', level: 1 });
+    });
+    And('the audio element plays the recording of John 4 from its start', async () => {
+      await waitFor(() => expect(audio.sources).toEqual([audioOf(3), audioOf(4)]));
+      expect(audio.playing()).toBe(recordingElement());
+      expect(element().src).toBe(audioOf(4));
+      expect(audio.playedAt).toEqual([startOf(36), 0]);
+    });
+    And('verse {int} is marked as being read', marked);
+    And('the lock screen says {string} and {word}', lockScreenSays);
   });
 
   Scenario('Leaving the Reader pauses the recording and opening another chapter ends it', ({ Given, When, Then, And }) => {
