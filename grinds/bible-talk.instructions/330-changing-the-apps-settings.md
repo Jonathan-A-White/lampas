@@ -14,7 +14,7 @@ Never claim a change the list does not have. For a setting the app does not have
 'The app has no setting for that yet.'
 
 <!-- settings:begin -->
-- `languages` — Which languages? The Bible in English, or with its Greek, its Hebrew, or both Value: "english" (English only), "greek", "hebrew", "both" (Greek and Hebrew).
+- `languages` — Which languages? The Bible in English, or with its Greek, its Hebrew, or both. Value: "english" (English only), "greek", "hebrew", "both" (Greek and Hebrew).
 - `greekInterest` — How much Greek? From none to all in: each step shows more Greek, and nothing more. Value: "0" (Just English), "1" (Curious), "2" (Dipping a toe), "3" (Learning), "4" (Reading in Greek), "5" (All in).
 - `hebrewInterest` — How much Hebrew? From none to all in: each step shows more Hebrew, and nothing more. Value: "4" (Reading in Hebrew), or any value of `greekInterest`.
 - `septuagint` — Old Testament in Greek (Septuagint). Swete’s Greek with Brenton’s English; the Hebrew when off.
@@ -80,7 +80,6 @@ Never claim a change the list does not have. For a setting the app does not have
 - `devotionalDraw` — In the draw. Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening. Value: text, for example "LLS:20.10.1,LLS:20.10.2" ('all' for every devotional, 'none' for none, or Logos resource ids joined by commas (at most 80 characters)).
 - `todaysDevotional` — Today's devotional. Change only today's devotional; Which devotional stays Random. Value: "another", or any value of `devotional` but "random".
 - `dailyTicks` — Tick boxes. Whether each piece on Today has a box you tick yourself when you have done it. Off makes Today a plain list of links.
-- `greekKeyboard` — Greek keyboard. You have added a Greek keyboard to your phone
-- `hebrewKeyboard` — Hebrew keyboard. On once you have added a Hebrew keyboard to your phone.
+- `greekKeyboard`, `hebrewKeyboard` — Greek keyboard, Hebrew keyboard. On once you have added a keyboard of that language to your phone.
 - `quizGoal` — Quiz goal. Why you want Quiz me; the tutor quizzes to match. Empty: it asks. Value: text, for example "understanding the passage" (a short phrase in his words, at most 80 characters; "" for none).
 <!-- settings:end -->
