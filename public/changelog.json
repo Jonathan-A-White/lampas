@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.225",
+    "date": "2026-11-12",
+    "story": "mw-qtu3zvz.62",
+    "kind": "fixed",
+    "text": "With \"Open web sermons in\" set to Firefox, a video sermon (YouTube or Subsplash) now opens as usual, and only a text sermon goes to Firefox."
+  },
+  {
     "version": "0.7.224",
     "date": "2026-11-11",
     "story": "mw-82lb97i.6",
