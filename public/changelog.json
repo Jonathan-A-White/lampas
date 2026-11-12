@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.228",
+    "date": "2026-11-12",
+    "story": "mw-qtu3zvz.66",
+    "kind": "new",
+    "text": "Searching the Sermons sheet now lists sermons on the open verse, its section, its chapter and its themes before general matches."
+  },
+  {
     "version": "0.7.227",
     "date": "2026-11-12",
     "story": "mw-82lb97i.17",

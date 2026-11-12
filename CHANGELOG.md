@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.228
+_2026-11-12_
+- New: Searching the Sermons sheet now lists sermons on the open verse, its section, its chapter and its themes before general matches.
+
 ## 0.7.227
 _2026-11-12_
 - Fixed: choosing English United Kingdom as the English voice now makes the Bible read in that voice on the phone.
