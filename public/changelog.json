@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.226",
+    "date": "2026-11-12",
+    "story": "mw-qtu3zvz.65",
+    "kind": "fixed",
+    "text": "the Sermons search no longer lists a theme that has no sermons, and a theme that has some says how many."
+  },
+  {
     "version": "0.7.225",
     "date": "2026-11-12",
     "story": "mw-qtu3zvz.62",

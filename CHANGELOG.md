@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.226
+_2026-11-12_
+- Fixed: the Sermons search no longer lists a theme that has no sermons, and a theme that has some says how many.
+
 ## 0.7.225
 _2026-11-12_
 - Fixed: With "Open web sermons in" set to Firefox, a video sermon (YouTube or Subsplash) now opens as usual, and only a text sermon goes to Firefox.
