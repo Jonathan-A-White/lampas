@@ -1,0 +1,396 @@
+ref	parsing	lemma	mark	confidence	note
+Joe.1:1#6	N-ASM	Ἰωήλ		0.80	
+Joe.1:1#8	T-GSM	ὁ		0.80	
+Joe.1:1#9	N-GSM	Βαθουήλ		0.80	
+Joe.1:2#2	D-APN	οὗτος		0.80	
+Joe.1:2#14	D-NPN	τοιοῦτος		0.80	
+Joe.1:3#2	P-GPN	αὐτός	unsure	0.50	model: unsure
+Joe.1:3#6	V-ADM-2P	διηγέομαι		0.80	
+Joe.1:3#8	T-APN	ὁ		0.80	
+Joe.1:3#9	N-APN	τέκνον		0.80	
+Joe.1:3#13	P-GPM	αὐτός	unsure	0.50	model: unsure
+Joe.1:3#15	T-APN	ὁ		0.80	
+Joe.1:3#16	N-APN	τέκνον		0.80	
+Joe.1:3#17	P-GPM	αὐτός	unsure	0.50	model: unsure
+Joe.1:4#1	T-APN	ὁ		0.80	
+Joe.1:4#2	A-APN	κατάλοιπος		0.80	
+Joe.1:4#9	T-APN	ὁ		0.80	
+Joe.1:4#10	A-APN	κατάλοιπος		0.80	
+Joe.1:4#17	T-APN	ὁ		0.80	
+Joe.1:4#18	A-APN	κατάλοιπος		0.80	
+Joe.1:5#6	P-GPM	αὐτός		0.80	
+Joe.1:5#21	N-NSF	εὐφροσύνη		0.80	
+Joe.1:5#23	N-NSF	χαρά		0.80	
+Joe.1:6#2	N-NSN	ἔθνος		0.80	
+Joe.1:6#8	A-NSN	ἰσχυρός		0.80	
+Joe.1:6#10	A-NSN	ἀναρίθμητος		0.80	
+Joe.1:6#13	P-GSN	αὐτός	unsure	0.50	model: unsure
+Joe.1:6#19	P-GSN	αὐτός	unsure	0.50	model: unsure
+Joe.1:7#12	N-ASM	συγκλασμός	guess	0.40	guess: the model answered with no candidates
+Joe.1:7#19	T-APN	ὁ		0.80	
+Joe.1:7#20	N-APN	κλῆμα		0.80	
+Joe.1:8#6	V-RMP-ASF	περιζώννυμι	guess	0.40	guess: the model answered with no candidates
+Joe.1:9#1	V-RPI-3S	ἐξαίρω	guess	0.40	guess: the model chose outside the candidates
+Joe.1:9#4	N-NSF	σπονδή		0.80	
+Joe.1:9#8	V-PAM-2P	πενθέω		0.80	
+Joe.1:9#9	N-VPM	ἱερεύς		0.80	
+Joe.1:10#3	T-NPN	ὁ		0.80	
+Joe.1:10#4	N-NPN	πεδίον		0.80	
+Joe.1:10#10	N-NSM	σῖτος		0.80	
+Joe.1:10#14	N-NSN	ἔλαιον		0.80	
+Joe.1:11#1	V-API-3P	ξηραίνω		0.80	
+Joe.1:11#3	V-PAM-2P	θρηνέω		0.80	
+Joe.1:11#4	N-VPN	κτῆμα		0.80	
+Joe.1:11#6	N-GSM	πυρός		0.80	
+Joe.1:11#8	N-GSF	κριθή		0.80	
+Joe.1:11#11	N-NSM	τρυγητός		0.80	
+Joe.1:12#8	N-NSF	ῥόα		0.80	
+Joe.1:12#10	N-NSM	φοῖνιξ		0.80	
+Joe.1:12#12	N-NSN	μῆλον		0.80	
+Joe.1:12#14	A-NPN	πᾶς		0.80	
+Joe.1:12#15	T-NPN	ὁ		0.80	
+Joe.1:12#18	V-API-3P	ξηραίνω		0.80	
+Joe.1:13#1	V-AMM-2P	περιζώννυμι		0.80	
+Joe.1:13#3	V-PMM-2P	κόπτω	unsure	0.50	model: unsure
+Joe.1:13#6	V-PAM-2P	θρηνέω		0.80	
+Joe.1:13#17	V-RAI-3S	ἀπέχω		0.80	
+Joe.1:13#24	N-NSF	σπονδή		0.80	
+Joe.1:14#15	V-AAM-2P	κράζω	guess	0.40	guess: the model answered with no candidates
+Joe.1:15#1	INJ	οἴμοι		0.80	
+Joe.1:15#2	INJ	οἴμοι		0.80	
+Joe.1:15#3	INJ	οἴμοι		0.80	
+Joe.1:15#14	N-GSF	ταλαιπωρία		0.80	
+Joe.1:16#1	PREP	κατέναντι		0.80	
+Joe.1:16#5	N-NPN	βρῶμα		0.80	
+Joe.1:16#11	N-NSF	εὐφροσύνη		0.80	
+Joe.1:16#13	N-NSF	χαρά		0.80	
+Joe.1:17#2	N-NPF	δάμαλις		0.80	
+Joe.1:17#6	P-GPF	αὐτός		0.80	
+Joe.1:17#9	V-2API-3P	κατασκάπτω	guess	0.40	guess: the model answered with no candidates
+Joe.1:17#10	N-NPF	ληνός		0.80	
+Joe.1:17#13	N-NSM	σῖτος		0.80	
+Joe.1:18#1	I-ASN	τίς		0.80	
+Joe.1:18#2	V-FAI-1P	ἀποτίθημι	guess	0.40	guess: the model answered with no candidates
+Joe.1:18#3	F-1DPM	ἑαυτοῦ		0.80	
+Joe.1:18#4	V-AAI-3P	κλαίω	guess	0.40	guess: the model chose outside the candidates
+Joe.1:18#5	N-NPN	βουκόλιον		0.80	
+Joe.1:18#10	N-NSF	νομή		0.80	
+Joe.1:18#11	P-DPN	αὐτός	unsure	0.50	model: unsure
+Joe.1:18#13	T-NPN	ὁ		0.80	
+Joe.1:18#14	N-NPN	ποίμνιον		0.80	
+Joe.1:19#4	V-FDI-1S	βοάω	guess	0.40	guess: the model answered with no candidates
+Joe.1:19#6	N-NSN	πῦρ		0.80	
+Joe.1:19#7	V-AAI-3S	ἀναλίσκω	guess	0.40	guess: the model answered with no candidates
+Joe.1:19#8	T-APN	ὁ		0.80	
+Joe.1:19#9	A-APN	ὡραῖος		0.80	
+Joe.1:19#15	A-APN	πᾶς		0.80	
+Joe.1:19#16	T-APN	ὁ		0.80	
+Joe.1:19#17	N-APN	ξύλον		0.80	
+Joe.1:20#2	T-NPN	ὁ		0.80	
+Joe.1:20#3	N-NPN	κτῆνος		0.80	
+Joe.1:20#10	V-API-3P	ξηραίνω		0.80	
+Joe.1:20#11	N-NPF	ἄφεσις		0.80	
+Joe.1:20#14	N-NSN	πῦρ		0.80	
+Joe.1:20#16	T-APN	ὁ		0.80	
+Joe.1:20#17	A-APN	ὡραῖος		0.80	
+Joe.2:1#4	N-DSF	Σειών		0.80	
+Joe.2:1#11	V-APM-3P	συγχέω	guess	0.40	guess: the model answered with no candidates
+Joe.2:2#8	N-GSF	ὀμίχλη		0.80	
+Joe.2:2#10	N-NSM	ὄρθρος		0.80	
+Joe.2:2#11	V-FPI-3S	χέω	guess	0.40	guess: the model answered with no candidates
+Joe.2:2#13	T-APN	ὁ		0.80	
+Joe.2:2#14	N-APN	ὄρος		0.80	
+Joe.2:2#20	P-DSM	αὐτός		0.80	
+Joe.2:3#1	T-NPN	ὁ	unsure	0.50	model: unsure
+Joe.2:3#3	P-GSM	αὐτός		0.80	
+Joe.2:3#4	N-NSN	πῦρ		0.80	
+Joe.2:3#5	V-PAP-NSN	ἀναλίσκω		0.80	
+Joe.2:3#7	T-NPN	ὁ	unsure	0.50	model: unsure
+Joe.2:3#8	PREP	ὀπίσω		0.80	
+Joe.2:3#9	P-GSM	αὐτός		0.80	
+Joe.2:3#10	V-PPP-NSF	ἀνάπτω	unsure	0.50	model: unsure
+Joe.2:3#13	N-NSM	παράδεισος		0.80	
+Joe.2:3#14	N-GSF	τρυφή		0.80	
+Joe.2:3#19	P-GSM	αὐτός		0.80	
+Joe.2:3#21	T-NPN	ὁ	unsure	0.50	model: unsure
+Joe.2:3#23	P-GSM	αὐτός		0.80	
+Joe.2:3#24	N-NSN	πεδίον		0.80	
+Joe.2:3#27	V-PPP-NSM	ἀνασῴζω	unsure	0.50	model: unsure
+Joe.2:3#30	P-DSM	αὐτός		0.80	
+Joe.2:4#2	N-NSF	ὅρασις		0.80	
+Joe.2:4#6	P-GPM	αὐτός		0.80	
+Joe.2:4#11	V-FMI-3P	καταδιώκω	guess	0.40	guess: the model answered with no candidates
+Joe.2:5#9	V-FDI-3P	ἐξάλλομαι	guess	0.40	guess: the model answered with no candidates
+Joe.2:5#13	N-GSF	φλόξ		0.80	
+Joe.2:5#15	V-PAP-GSF	κατεσθίω		0.80	
+Joe.2:5#23	V-PPP-NSM	παρατάσσω	unsure	0.50	model: unsure
+Joe.2:6#3	P-GSM	αὐτός		0.80	
+Joe.2:6#4	V-FPI-3P	συντρίβω	guess	0.40	guess: the model answered with no candidates
+Joe.2:6#6	A-NSN	πᾶς		0.80	
+Joe.2:6#7	N-NSN	πρόσωπον		0.80	
+Joe.2:6#9	N-NSN	πρόσκαυμα	unsure	0.50	model: unsure
+Joe.2:6#10	N-GSF	χύτρα		0.80	
+Joe.2:7#2	N-NPM	μαχητής		0.80	
+Joe.2:7#3	V-FNI-3P	τρέχω		0.80	
+Joe.2:7#6	N-NPM	ἀνήρ		0.80	
+Joe.2:7#7	N-NPM	πολεμιστής		0.80	
+Joe.2:7#10	T-APN	ὁ		0.80	
+Joe.2:7#11	N-APN	τεῖχος		0.80	
+Joe.2:7#17	P-GSM	αὐτός		0.80	
+Joe.2:7#25	P-GPM	αὐτός		0.80	
+Joe.2:8#6	P-GSM	αὐτός		0.80	
+Joe.2:8#8	V-FMI-3S	ἀπέχω	guess	0.40	guess: the model answered with no candidates
+Joe.2:8#13	P-GPM	αὐτός		0.80	
+Joe.2:8#19	P-GPM	αὐτός		0.80	
+Joe.2:8#24	V-APS-3P	συντελέω		0.80	
+Joe.2:9#3	V-FDI-3P	ἐπιλαμβάνομαι	guess	0.40	guess: the model answered with no candidates
+Joe.2:9#6	T-GPN	ὁ		0.80	
+Joe.2:9#7	N-GPN	τεῖχος		0.80	
+Joe.2:9#8	V-FNI-3P	τρέχω		0.80	
+Joe.2:10#3	P-GSM	αὐτός		0.80	
+Joe.2:10#4	V-FPI-3S	συγχέω		0.80	
+Joe.2:10#8	V-FPI-3S	σείω		0.80	
+Joe.2:10#16	V-FAI-3P	συσκοτάζω		0.80	
+Joe.2:10#18	T-NPN	ὁ		0.80	
+Joe.2:10#19	N-NPN	ἄστρον		0.80	
+Joe.2:10#20	V-FAI-3P	δύω	guess	0.40	guess: the model answered with no candidates
+Joe.2:10#21	T-ASN	ὁ		0.80	
+Joe.2:10#22	N-ASN	φέγγος		0.80	
+Joe.2:10#23	P-GPN	αὐτός		0.80	
+Joe.2:11#5	P-GSM	αὐτός		0.80	
+Joe.2:11#9	P-GSM	αὐτός		0.80	
+Joe.2:11#16	P-GSM	αὐτός		0.80	
+Joe.2:11#18	A-NPN	ἰσχυρός	guess	0.40	guess: the model chose outside the candidates
+Joe.2:11#19	N-NPN	ἔργον		0.80	
+Joe.2:11#21	P-GSM	αὐτός		0.80	
+Joe.2:11#27	A-NSF	μέγας		0.80	
+Joe.2:11#29	A-NSF	ἐπιφανής		0.80	
+Joe.2:11#32	I-NSM	τίς		0.80	
+Joe.2:12#8	V-2APM-2P	ἐπιστρέφω		0.80	
+Joe.2:13#2	V-AAM-2P	διαρρήγνυμι	guess	0.40	guess: the model answered with no candidates
+Joe.2:13#8	T-APN	ὁ		0.80	
+Joe.2:13#9	N-APN	ἱμάτιον		0.80	
+Joe.2:13#12	V-2APM-2P	ἐπιστρέφω		0.80	
+Joe.2:13#23	A-NSM	μακρόθυμος		0.80	
+Joe.2:13#25	A-NSM	πολυέλεος		0.80	
+Joe.2:14#1	I-NSM	τίς		0.80	
+Joe.2:14#2	V-RAI-3S	εἴδω		0.80	
+Joe.2:14#6	V-FAI-3S	μετανοέω		0.80	
+Joe.2:14#8	V-FMI-3S	ὑπολείπω	guess	0.40	guess: the model answered with no candidates
+Joe.2:14#9	PREP	ὀπίσω		0.80	
+Joe.2:14#10	P-GSM	αὐτός		0.80	
+Joe.2:15#4	N-DSF	Σειών		0.80	
+Joe.2:15#6	N-ASF	νηστεία		0.80	
+Joe.2:16#5	V-AMM-2P	ἐκλέγω		0.80	
+Joe.2:16#8	A-APN	νήπιος		0.80	
+Joe.2:16#9	V-PAP-APN	θηλάζω		0.80	
+Joe.2:16#11	V-2AAM-3S	ἐξέρχομαι		0.80	
+Joe.2:16#16	P-GSM	αὐτός		0.80	
+Joe.2:17#2	A-ASN	μέσος		0.80	
+Joe.2:17#7	V-FDI-3P	κλαίω		0.80	
+Joe.2:17#15	V-ADM-2S	φείδομαι		0.80	
+Joe.2:17#27	N-ASN	ὄνειδος		0.80	
+Joe.2:17#28	T-GSN	ὁ		0.80	
+Joe.2:17#29	V-AAN	κατάρχω		0.80	
+Joe.2:17#30	P-GPM	αὐτός		0.80	
+Joe.2:17#31	N-APN	ἔθνος		0.80	
+Joe.2:17#42	P-GPM	αὐτός		0.80	
+Joe.2:18#6	P-GSM	αὐτός		0.80	
+Joe.2:18#11	P-GSM	αὐτός		0.80	
+Joe.2:19#8	P-GSM	αὐτός		0.80	
+Joe.2:19#11	V-PAI-1S	ἐξαποστέλλω		0.80	
+Joe.2:19#19	T-ASN	ὁ		0.80	
+Joe.2:19#20	N-ASN	ἔλαιον		0.80	
+Joe.2:19#22	V-FPI-2P	ἐμπίμπλημι		0.80	
+Joe.2:19#23	P-GPM	αὐτός	unsure	0.50	model: unsure
+Joe.2:20#5	V-FAI-1S	ἐκδιώκω		0.80	
+Joe.2:20#9	V-FAI-1S	ἐξωθέω		0.80	
+Joe.2:20#15	V-FAI-1S	ἀφανίζω		0.80	
+Joe.2:20#16	T-ASN	ὁ		0.80	
+Joe.2:20#17	N-ASN	πρόσωπον		0.80	
+Joe.2:20#18	P-GSM	αὐτός		0.80	
+Joe.2:20#25	T-APN	ὁ		0.80	
+Joe.2:20#26	PREP	ὀπίσω		0.80	
+Joe.2:20#27	P-GSM	αὐτός		0.80	
+Joe.2:20#35	N-NSF	σαπρία		0.80	
+Joe.2:20#36	P-GSM	αὐτός		0.80	
+Joe.2:20#41	P-GSM	αὐτός		0.80	
+Joe.2:20#43	V-AAI-3S	μεγαλύνω		0.80	
+Joe.2:20#44	T-APN	ὁ		0.80	
+Joe.2:20#45	N-APN	ἔργον		0.80	
+Joe.2:20#46	P-GSM	αὐτός		0.80	
+Joe.2:21#7	V-AAI-3S	μεγαλύνω		0.80	
+Joe.2:22#2	N-VPN	κτῆνος		0.80	
+Joe.2:22#6	V-RAI-3S	βλαστάνω	guess	0.40	guess: the model answered with no candidates
+Joe.2:22#7	N-NPN	πεδίον		0.80	
+Joe.2:22#11	N-NSN	ξύλον		0.80	
+Joe.2:22#15	P-GSN	αὐτός		0.80	
+Joe.2:22#22	P-GPF	αὐτός		0.80	
+Joe.2:23#2	T-VPN	ὁ		0.80	
+Joe.2:23#3	N-VPN	τέκνον		0.80	
+Joe.2:23#4	N-GSF	Σειών		0.80	
+Joe.2:23#16	T-APN	ὁ		0.80	
+Joe.2:23#17	N-APN	βρῶμα		0.80	
+Joe.2:23#21	V-FAI-3S	βρέχω		0.80	
+Joe.2:23#26	A-ASM	ὄψιμος		0.80	
+Joe.2:24#7	V-FPI-3P	ὑπερχέω	guess	0.40	guess: the model answered with no candidates
+Joe.2:25#2	V-FAI-3S	ἀνταποδίδωμι		0.80	
+Joe.2:25#7	R-GPN	ὅς, ἥ		0.80	
+Joe.2:25#26	V-AAI-1S	ἐξαποστέλλω		0.80	
+Joe.2:26#2	V-FDI-2P	φαγεῖν		0.80	
+Joe.2:26#5	V-FPI-2P	ἐμπίμπλημι		0.80	
+Joe.2:26#7	V-FAI-2P	αἰνέω		0.80	
+Joe.2:26#8	T-ASN	ὁ		0.80	
+Joe.2:26#9	N-ASN	ὄνομα		0.80	
+Joe.2:26#14	R-APN	ὅς, ἥ		0.80	
+Joe.2:26#19	A-APN	θαυμάσιος		0.80	
+Joe.2:27#5	A-DSN	μέσος		0.80	
+Joe.2:27#6	T-GSM	ὁ		0.80	
+Joe.2:27#7	N-GSM	Ἰσραήλ		0.80	
+Joe.2:27#20	PREP	πλήν		0.80	
+Joe.2:27#21	P-1GS	ἐγώ	guess	0.40	guess: the model chose outside the candidates
+Joe.2:28#4	D-APN	οὗτος		0.80	
+Joe.2:28#27	N-APN	ἐνύπνιον		0.80	
+Joe.2:30#3	N-APN	τέρας		0.80	
+Joe.2:30#11	N-ASN	αἷμα		0.80	
+Joe.2:30#13	N-ASN	πῦρ		0.80	
+Joe.2:31#5	N-ASN	σκότος		0.80	
+Joe.2:31#10	N-ASN	αἷμα		0.80	
+Joe.2:31#11	PREP	πρίν	unsure	0.50	model: unsure
+Joe.2:32#7	T-ASN	ὁ		0.80	
+Joe.2:32#8	N-ASN	ὄνομα		0.80	
+Joe.2:32#15	N-GSF	Σειών	unsure	0.50	model: unsure
+Joe.2:32#18	N-DSF	Ἱερουσαλήμ		0.80	
+Joe.2:32#20	V-PPP-NSM	ἀνασῴζω	unsure	0.50	model: unsure
+Joe.3:1#12	D-DSM	ἐκεῖνος		0.80	
+Joe.3:1#13	CONJ	ὅταν		0.80	
+Joe.3:1#14	V-PAS-1S	ἐπιστρέφω		0.80	
+Joe.3:1#17	N-GSM	Ἰούδας		0.80	
+Joe.3:1#19	N-GSF	Ἱερουσαλήμ		0.80	
+Joe.3:2#3	A-APN	πᾶς		0.80	
+Joe.3:2#4	T-APN	ὁ		0.80	
+Joe.3:2#5	N-APN	ἔθνος		0.80	
+Joe.3:2#7	V-FAI-1S	κατάγω		0.80	
+Joe.3:2#8	P-APN	αὐτός		0.80	
+Joe.3:2#12	N-GSM	Ἰωσαφάτ	unsure	0.50	model: unsure
+Joe.3:2#26	N-GSM	Ἰσραήλ		0.80	
+Joe.3:2#27	R-NPM	ὅς, ἥ		0.80	
+Joe.3:2#36	V-AMI-3P	καταδιαιρέω	guess	0.40	guess: the model answered with no candidates
+Joe.3:3#10	T-APN	ὁ		0.80	
+Joe.3:3#11	N-APN	παιδάριον		0.80	
+Joe.3:3#14	T-APN	ὁ		0.80	
+Joe.3:3#15	N-APN	κοράσιον		0.80	
+Joe.3:4#2	I-NSN	τίς	unsure	0.50	model: unsure
+Joe.3:4#5	N-VSF	Τύρος		0.80	
+Joe.3:4#7	N-VSF	Σιδών		0.80	
+Joe.3:4#10	N-NSF	Γαλιλαία	unsure	0.50	model: unsure
+Joe.3:4#11	A-GPM	ἀλλόφυλος		0.80	
+Joe.3:4#13	N-ASN	ἀνταπόδομα		0.80	
+Joe.3:4#15	V-PAI-2P	ἀνταποδίδωμι	guess	0.40	guess: the model chose outside the candidates
+Joe.3:4#18	V-PAI-2P	μνησικακέω		0.80	
+Joe.3:4#22	ADV	ὀξέως		0.80	
+Joe.3:4#26	T-ASN	ὁ		0.80	
+Joe.3:4#27	N-ASN	ἀνταπόδομα		0.80	
+Joe.3:5#2	R-GPN	ὅς, ἥ		0.80	
+Joe.3:5#3	T-ASN	ὁ		0.80	
+Joe.3:5#4	N-ASN	ἀργύριον		0.80	
+Joe.3:5#7	T-ASN	ὁ		0.80	
+Joe.3:5#8	N-ASN	χρυσίον		0.80	
+Joe.3:5#12	T-APN	ὁ		0.80	
+Joe.3:5#13	A-APN	ἐπίλεκτος		0.80	
+Joe.3:5#16	T-APN	ὁ		0.80	
+Joe.3:5#17	A-APN	καλός		0.80	
+Joe.3:5#18	V-AAI-2P	εἰσφέρω		0.80	
+Joe.3:6#4	N-GSM	Ἰούδας		0.80	
+Joe.3:6#8	N-GSF	Ἱερουσαλήμ		0.80	
+Joe.3:6#20	P-GPM	αὐτός		0.80	
+Joe.3:7#3	V-PAI-1S	ἐξεγείρω		0.80	
+Joe.3:7#8	ADV	οὗ	unsure	0.50	model: unsure
+Joe.3:7#14	T-ASN	ὁ		0.80	
+Joe.3:7#15	N-ASN	ἀνταπόδομα		0.80	
+Joe.3:8#2	V-FMI-1S	ἀποδίδωμι	guess	0.40	guess: the model chose outside the candidates
+Joe.3:8#14	N-GSM	Ἰούδας		0.80	
+Joe.3:8#16	V-FDI-3P	ἀποδίδωμι		0.80	
+Joe.3:8#21	N-ASN	ἔθνος		0.80	
+Joe.3:8#22	ADV	μακρός		0.80	
+Joe.3:8#23	V-PAP-ASN	ἀπέχω		0.80	
+Joe.3:9#2	D-APN	οὗτος		0.80	
+Joe.3:9#8	V-AAM-2P	ἐξεγείρω		0.80	
+Joe.3:9#12	V-2AAM-2P	προσάγω		0.80	
+Joe.3:9#14	V-PAM-2P	ἀναβαίνω		0.80	
+Joe.3:9#16	N-VPM	ἀνήρ	unsure	0.50	model: unsure
+Joe.3:9#17	N-VPM	πολεμιστής	unsure	0.50	model: unsure
+Joe.3:10#1	V-AAM-2P	συγκόπτω		0.80	
+Joe.3:10#2	T-APN	ὁ		0.80	
+Joe.3:10#3	N-APN	ἄροτρον		0.80	
+Joe.3:10#6	N-APF	ῥομφαία		0.80	
+Joe.3:10#8	T-APN	ὁ		0.80	
+Joe.3:10#9	N-APN	δρέπανον		0.80	
+Joe.3:11#1	V-PPM-2P	συναθροίζω	unsure	0.50	model: unsure
+Joe.3:11#3	V-PNM-2P	εἰσπορεύω		0.80	
+Joe.3:11#4	A-VPN	πᾶς		0.80	
+Joe.3:11#5	T-VPN	ὁ		0.80	
+Joe.3:11#6	N-VPN	ἔθνος		0.80	
+Joe.3:11#12	A-NSM	πραΰς		0.80	
+Joe.3:11#14	N-NSM	μαχητής		0.80	
+Joe.3:12#1	V-PPM-3P	ἐξεγείρω		0.80	
+Joe.3:12#2	V-PAM-3P	ἀναβαίνω		0.80	
+Joe.3:12#3	A-NPN	πᾶς		0.80	
+Joe.3:12#4	T-NPN	ὁ		0.80	
+Joe.3:12#5	N-NPN	ἔθνος		0.80	
+Joe.3:12#9	N-GSM	Ἰωσαφάτ	unsure	0.50	model: unsure
+Joe.3:12#12	V-FAI-1S	καθίζω		0.80	
+Joe.3:12#15	A-APN	πᾶς		0.80	
+Joe.3:12#16	T-APN	ὁ		0.80	
+Joe.3:12#17	N-APN	ἔθνος		0.80	
+Joe.3:13#1	V-AAM-2P	ἐξαποστέλλω		0.80	
+Joe.3:13#2	N-APN	δρέπανον		0.80	
+Joe.3:13#5	N-NSM	τρυγητός		0.80	
+Joe.3:13#6	V-PNM-2P	εἰσπορεύω		0.80	
+Joe.3:13#7	V-PAM-2P	πατέω		0.80	
+Joe.3:13#9	A-NSF	πλήρης		0.80	
+Joe.3:13#12	V-PAM-2P	ὑπερεκχέω		0.80	
+Joe.3:13#13	T-APN	ὁ		0.80	
+Joe.3:13#14	N-APN	ὑπολήνιον		0.80	
+Joe.3:13#16	V-RPI-3S	πληθύνω		0.80	
+Joe.3:13#17	T-NPN	ὁ		0.80	
+Joe.3:13#18	A-NPN	κακός		0.80	
+Joe.3:13#19	P-GPM	αὐτός	unsure	0.50	model: unsure
+Joe.3:14#1	N-NPM	ἦχος		0.80	
+Joe.3:14#2	V-AAI-3P	ἐξηχέω		0.80	
+Joe.3:15#6	V-FAI-3P	συσκοτάζω		0.80	
+Joe.3:15#10	V-FAI-3P	δύω	guess	0.40	guess: the model answered with no candidates
+Joe.3:15#11	N-ASN	φέγγος		0.80	
+Joe.3:15#12	P-GPM	αὐτός		0.80	
+Joe.3:16#5	N-GSF	Σειών		0.80	
+Joe.3:16#6	V-FMI-3S	ἀνακράζω	guess	0.40	guess: the model answered with no candidates
+Joe.3:16#9	N-GSF	Ἱερουσαλήμ		0.80	
+Joe.3:16#12	P-GSM	αὐτός		0.80	
+Joe.3:16#14	V-FPI-3S	σείω		0.80	
+Joe.3:16#26	P-GSM	αὐτός		0.80	
+Joe.3:16#31	N-GSM	Ἰσραήλ		0.80	
+Joe.3:17#12	N-DSF	Σειών		0.80	
+Joe.3:17#19	N-NSF	Ἱερουσαλήμ		0.80	
+Joe.3:17#22	A-NPM	ἀλλογενής		0.80	
+Joe.3:18#7	V-FAI-3S	ἀποσταλάζω		0.80	
+Joe.3:18#8	T-NPN	ὁ		0.80	
+Joe.3:18#9	N-NPN	ὄρος		0.80	
+Joe.3:18#14	V-2FPI-3P	ῥέω	guess	0.40	guess: the model answered with no candidates
+Joe.3:18#15	N-ASN	γάλα		0.80	
+Joe.3:18#20	N-GSM	Ἰούδας		0.80	
+Joe.3:18#21	V-2FPI-3P	ῥέω	guess	0.40	guess: the model answered with no candidates
+Joe.3:18#22	N-APN	ὕδωρ, ὕδατος		0.80	
+Joe.3:18#30	V-FAI-3S	ποτίζω		0.80	
+Joe.3:19#9	N-ASN	πεδίον		0.80	
+Joe.3:19#15	N-GSM	Ἰούδας		0.80	
+Joe.3:19#17	R-GPN	ὅς, ἥ		0.80	
+Joe.3:19#19	N-ASN	αἷμα		0.80	
+Joe.3:19#20	A-ASN	δίκαιος		0.80	
+Joe.3:19#24	P-GPM	αὐτός		0.80	
+Joe.3:20#9	N-NSF	Ἱερουσαλήμ		0.80	
+Joe.3:21#2	V-FAI-1S	ἐκζητέω		0.80	
+Joe.3:21#3	T-ASN	ὁ		0.80	
+Joe.3:21#4	N-ASN	αἷμα		0.80	
+Joe.3:21#5	P-GPM	αὐτός		0.80	
+Joe.3:21#9	V-AAS-1S	ἀθῳόω	unsure	0.50	model: unsure
+Joe.3:21#14	N-DSF	Σειών		0.80	
