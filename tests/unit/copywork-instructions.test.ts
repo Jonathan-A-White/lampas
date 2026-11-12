@@ -61,6 +61,11 @@ describe("copywork's Greek rule judges each word by itself", () => {
     expect(greek).toMatch(/A mark he\s+wrote that the model word also carries is not an added mark/);
   });
 
+  // the failing answers said 'the verse has no accent here' of σκοτία and κατέλαβεν, whose request words carry one: the model took the verse from its memory.
+  it("says the request's word is the standard, not the verse as the model remembers it", () => {
+    expect(greek).toMatch(/the request's word is the standard, not the verse as you remember it/);
+  });
+
   it('names no Greek word of the examples in the rule', () => {
     expect(greek).not.toMatch(/κατέλαβεν|σκοτίᾳ|φαίνει/);
   });

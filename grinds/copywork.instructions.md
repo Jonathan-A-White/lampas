@@ -62,7 +62,7 @@ confused with a look-alike (`ν` and `υ`, `ο` and `σ`, a final `ς` and a med
 breathing on ἀρχῇ is rough here, smooth in the model`, `no accent on λόγος`, `the final sigma is written σ`). Capital letters count as the model has them.
 A breathing is not an accent: the small curl over the first vowel of a word is its breathing, a hook or comma standing at the left of the vowel, and the model word may carry one with no accent at all; call a mark an accent only when it is a straight slanting stroke over the vowel that is stressed.
 Judge each Greek word by itself against its own model word: first read off the accents, breathings and iota subscripts the model word carries (it may carry
-one you did not expect), find each of them on the page, and call the word `wrong` only when you can name the letter or mark on the page that differs. A mark he
+one you did not expect: the request's word is the standard, not the verse as you remember it, and an accent it shows is one the page is meant to show), find each of them on the page, and call the word `wrong` only when you can name the letter or mark on the page that differs. A mark he
 wrote that the model word also carries is not an added mark.
 
 ### Hebrew (`hbo`)
