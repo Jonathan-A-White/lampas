@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.237",
+    "date": "2026-11-12",
+    "story": "mw-fnvjof.17.102",
+    "kind": "fixed",
+    "text": "the blog's home page in dark mode shows its banner picture again instead of a flat dark block."
+  },
+  {
+    "version": "0.7.237",
+    "date": "2026-11-12",
+    "story": "mw-qtu3zvz.89",
+    "kind": "new",
+    "text": "A sermon with no known preacher now shows its church's name (Brookfield First Assembly of God) where the preacher would be."
+  },
+  {
     "version": "0.7.236",
     "date": "2026-11-12",
     "story": "mw-zbgo4ep.30",

@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.237
+_2026-11-12_
+- Fixed: the blog's home page in dark mode shows its banner picture again instead of a flat dark block.
+- New: A sermon with no known preacher now shows its church's name (Brookfield First Assembly of God) where the preacher would be.
+
 ## 0.7.236
 _2026-11-12_
 - New: The Bible voice now starts on Wi-Fi only, and tells you in plain words when it reads in the phone voice instead, asking once whether to play David over mobile data.
