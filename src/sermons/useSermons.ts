@@ -4,6 +4,8 @@
 // useArchives is the 'In Logos' group of the sheet: his Pinned and On sermon archives at the place, none while Logos is Off.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useState } from 'react';
+import { loadChapter } from '../data/chapter';
+import { passagesOf } from '../data/passage';
 import { shelfOf, type ShelfState } from '../data/repositories';
 import { subscribe } from '../events/bus';
 import { useLogosOn } from '../useLogosOn';
@@ -171,4 +173,29 @@ export function useTalkSermons(place: SermonPlace | null): ListedSermon[] | unde
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
   return held?.key === key ? held.rows : undefined;
+}
+
+/**
+ * The verses of the section the place's first verse stands under (the MSB heading's passage, src/data/passage.ts), for Found to rank a sermon on the pericope (mw-qtu3zvz.66): read only while `enabled` (a search is typed),
+ * `undefined` until read, for a whole chapter, for a verse under no heading, and where the chapter cannot be read (nothing is said of that: the pericope tier is simply empty).
+ */
+export function usePericope(place: SermonPlace, enabled: boolean): { first: number; last: number } | undefined {
+  const { book, chapter, from } = place;
+  const key = `${book}.${chapter}.${from ?? ''}`;
+  const [held, setHeld] = useState<{ key: string; span: { first: number; last: number } | undefined } | undefined>();
+  useEffect(() => {
+    if (!enabled || from === undefined) return;
+    let alive = true;
+    loadChapter(book, chapter).then(
+      (loaded) => {
+        const passage = passagesOf(loaded.verses).find((p) => from >= p.first && from <= p.last);
+        if (alive) setHeld({ key, span: passage ? { first: passage.first, last: passage.last } : undefined });
+      },
+      () => alive && setHeld({ key, span: undefined }),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [key, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  return held?.key === key ? held.span : undefined;
 }

@@ -25,7 +25,8 @@ import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
 import { opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } from './openWeb';
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
-import { useArchives, useLatest, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
+import { rankHits, type FoundRankContext } from './foundRank';
+import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
 import { useSameTheme, useThemes } from './useThemes';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
@@ -219,10 +220,12 @@ function ThemeHit({ source, id, title, rows, open, onToggle, online }: { source:
  * 'Found': the search's answer, sermons that open where they live and themes that list their sermons on a tap. A theme is offered only once its sermons are known and number one or more (mw-qtu3zvz.65, PROVISIONAL,
  * the Governor to confirm): one with none, or whose sermons could not be asked, is left out.
  */
-function FoundGroup({ query, offline, online }: { query: string; offline: boolean; online: boolean }) {
+function FoundGroup({ query, offline, online, rank }: { query: string; offline: boolean; online: boolean; rank: Omit<FoundRankContext, 'pericope'> }) {
   const found = useServiceSearch(query, !offline);
   const [open, setOpen] = useState<string | null>(null);
-  const hits = found.status === 'found' ? found.hits : [];
+  const pericope = usePericope(rank.place, found.status !== 'idle');
+  // mw-qtu3zvz.66: what is on the open verse, its pericope, its chapter or a theme of it comes first (PROVISIONAL, the Governor to confirm); the rest stand in the service's order
+  const hits = found.status === 'found' ? rankHits(found.hits, { ...rank, pericope }) : [];
   const lists = useThemeSermons(hits.flatMap((hit) => (hit.kind === 'theme' ? [`${hit.source}:${hit.id}`] : [])));
   if (found.status === 'idle') return null;
   const shown = hits.flatMap((hit) => {
@@ -361,7 +364,7 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
         </>
       }
     >
-      {serviceKnown ? <FoundGroup query={query} offline={offline} online={online} /> : null}
+      {serviceKnown ? <FoundGroup query={query} offline={offline} online={online} rank={{ place, themes: new Set((themes ?? []).map((theme) => `${theme.source}:${theme.topic}`)), themeSermons: new Set(sameListed.map((row) => `${row.source}:${row.id}`)) }} /> : null}
       {found && rows.length === 0 && same && sameRows === 0 ? <p role="status" className="py-2 text-base text-muted">No sermons here.</p> : null}
       {found ? <Group title={passage ? 'On these verses' : 'On this verse'} rows={found.here} online={online} part="here" /> : null}
       {found ? <Group title="In this chapter" rows={found.chapter} online={online} part="chapter" /> : null}
