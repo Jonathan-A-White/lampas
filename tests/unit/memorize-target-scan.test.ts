@@ -5,8 +5,7 @@ import type { Chapter, Verse } from '../../src/data/chapter';
 import { wovenOf } from '../../src/reader/useWoven';
 import { readingText, wovenReading } from '../../src/services/reading';
 import { tokensOf } from '../../src/memorize/target';
-import { isGreekBook } from '../support/data-books';
-import { dataBooks } from '../support/dataBooks';
+import { dataBooks, isGreekBook } from '../support/dataBooks';
 
 const words = (text: string): string[] => text.split(/\s+/).filter(Boolean);
 

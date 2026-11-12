@@ -7,8 +7,7 @@ import { bareEnglish, loadChapter, type Chapter, type GreekWord } from '../../sr
 import { exampleGloss, exampleMeaning, ideaExamples, wordEnglish, type IdeaExample } from '../../src/data/grammar/ideaSheet';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { stubChapterFetch } from '../support/chapter-fetch';
-import { isGreekBook } from '../support/data-books';
-import { dataBooks } from '../support/dataBooks';
+import { dataBooks, isGreekBook } from '../support/dataBooks';
 
 let john: Chapter;
 

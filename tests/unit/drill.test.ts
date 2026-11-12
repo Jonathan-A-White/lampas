@@ -7,8 +7,7 @@ import type { Word, WordState } from '../../src/data/db';
 import { DRILL_SIZE, buildSteps, drawDrill } from '../../src/data/drill';
 import { decodeParse, splitParse } from '../../src/data/parseCode';
 import { mulberry32 } from '../../src/data/quiz';
-import { isGreekBook } from '../support/data-books';
-import { dataBooks } from '../support/dataBooks';
+import { dataBooks, isGreekBook } from '../support/dataBooks';
 
 const rom8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
 const codes = [...new Set(rom8.verses.flatMap((v) => v.g.map((g) => g.p)))];

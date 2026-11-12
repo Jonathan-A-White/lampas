@@ -4,8 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord } from '../../src/data/chapter';
 import { ideasOf, ideasOfWord } from '../../src/data/grammar/ladder';
 import { PATTERN_IDEAS, patternsOf } from '../../src/data/grammar/patterns';
-import { isGreekBook } from '../support/data-books';
-import { dataBooks } from '../support/dataBooks';
+import { dataBooks, isGreekBook } from '../support/dataBooks';
 
 const bareOf = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 const chapter = (book: string, n: number): Chapter => JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;

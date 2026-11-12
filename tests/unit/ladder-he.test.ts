@@ -7,7 +7,7 @@ import { buildLadder as buildGreek } from '../../scripts/ladder-el';
 import type { LadderEntry as GreekEntry } from '../../scripts/ladder-el';
 import { buildLadder, scoreHebrewWords, type LadderEntry, type Unsyllabified } from '../../scripts/ladder-he';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
-import { isGreekBook } from '../support/data-books';
+import { isGreekBook } from '../support/dataBooks';
 
 const trs = (text: string): string[] => text.split(' ');
 
