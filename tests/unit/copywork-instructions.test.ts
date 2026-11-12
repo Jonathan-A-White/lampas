@@ -42,3 +42,26 @@ describe("copywork's Hebrew rule says where each mark of a letter sits", () => {
     expect(hebrew).toMatch(/is not there[^.]*`wrong`/);
   });
 });
+
+// mw-qtu3zvz.72: in a Greek dictation with two sounds-alike misspellings (`grc-dictation-sounds-alike-john-1-5`) the right last word, κατέλαβεν, was
+// marked wrong about one run in thirty (and a right ἡ about nine runs in ten, 'an added acute accent'): the Greek rule says an accent alone makes a word
+// wrong, and nothing had him check the model word's own marks first. The live proof is that example, which holds words.12 right.
+const greekFrom = text.indexOf('### Greek (`grc`)');
+const greek = text.slice(greekFrom, text.indexOf('\n### ', greekFrom + 1));
+
+describe("copywork's Greek rule judges each word by itself", () => {
+  it('marks a word wrong only when a letter or mark that differs can be named from the page', () => {
+    expect(greek).toMatch(/`wrong` only when you can name the letter or\s+mark on the page that differs/);
+  });
+
+  // the failing answers said 'you wrote κατέλαβεν with an acute accent; the verse has no accent on this word' of a model word that carries it (and the same of a
+  // right ἡ): the model read the accents off its memory of the verse, so the rule has him read them off the model word first.
+  it('has him read off the marks the model word carries before he calls one added or missing', () => {
+    expect(greek).toMatch(/first read off the accents, breathings and iota subscripts the model word carries/);
+    expect(greek).toMatch(/A mark he\s+wrote that the model word also carries is not an added mark/);
+  });
+
+  it('names no Greek word of the examples in the rule', () => {
+    expect(greek).not.toMatch(/κατέλαβεν|σκοτίᾳ|φαίνει/);
+  });
+});
