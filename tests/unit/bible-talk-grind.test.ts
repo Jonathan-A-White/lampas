@@ -846,6 +846,16 @@ describe('a setting is offered only when the turn asks for one', () => {
     expect(requests).toMatch(/a setting that has the same name as the idea[^.]*is not an offer/);
   });
 
+  // mw-5r3p30.1153: request-landed still gave `theme: sepia` now and then (1 of 95), because a landed idea that IS a choice of a setting reads
+  // as an invitation to switch it on; the one sentence says that case by name, in the one place (part 290).
+  it('says in one sentence that a landed idea which is a setting\'s choice gets where Settings has it and no offer', () => {
+    const sentences = requests.split('\n').filter((s) => s.includes('Offer a setting only for an idea'));
+    expect(sentences).toHaveLength(1);
+    expect(sentences[0]).toMatch(/[Ee]ven a `landed` idea[^.]*where Settings has it/);
+    expect(sentences[0]).toMatch(/never "shall I set it\?"/);
+    expect(requests.match(/shall I set it/g) ?? []).toHaveLength(1);
+  });
+
   // The examples that are about a setting: the offer waits and is answered, the offer is made, or he asks for the change in words.
   const ABOUT_SETTINGS = ['request-adopted-as-setting'];
   const dir = 'grinds/examples/bible-talk';
