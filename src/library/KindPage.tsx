@@ -1,5 +1,5 @@
 // src/library/KindPage.tsx — one kind's page of the Library (#/library?kind=lexicon, docs/design/library-at-scale.md 3.4): every book of the kind in a control of Off | On | Pin, pinned
-// first, then those on, then those off (and by name within each; a kind with Hebrew and Greek books, Lexicons and Grammars, in a Hebrew group then a Greek one), All on / All off, and a search over the kind. The list is the shared SearchableList (src/ui/SearchableList.tsx), which
+// first, then those on, then those off (and by name within each; a kind with Hebrew and Greek books, Lexicons and Grammars, in a Hebrew group then a Greek one), All on / All off, and a search over the kind (while one is typed the buttons read All shown on / All shown off and act on the rows shown only). The list is the shared SearchableList (src/ui/SearchableList.tsx), which
 // does not re-sort under his thumb. A fourth pin is refused with a line under the book; a Bible shows the parts it is set for (NT, OT, Apocrypha, read from the three Settings keys) and "Set for…" asks
 // which part (PartChoice.tsx); Devotionals have no Pin.
 import { useState } from 'react';
@@ -37,6 +37,8 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   // the Bible whose "Set for…" is open
   const [asking, setAsking] = useState<string | null>(null);
   const [refused, setRefused] = useState<string | null>(null);
+  // the rows the search shows: All on / All off act on these only while a search is typed (mw-qtu3zvz.103)
+  const [shown, setShown] = useState<{ ids: readonly string[]; searching: boolean }>({ ids: [], searching: false });
   const entries = [...entriesOf(kind)].sort((a, b) => a.short.localeCompare(b.short));
   // a kind with books in both Hebrew and Greek (Lexicons, Grammars) is grouped Hebrew, then Greek, each in the order above (mw-5r3p30.1117)
   const grouped = entries.some((e) => e.lang === 'he') && entries.some((e) => e.lang === 'grc');
@@ -57,7 +59,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   };
   const all = async (to: 'on' | 'off'): Promise<void> => {
     setRefused(null);
-    await setKind(kind, to);
+    await setKind(kind, to, Date.now(), shown.searching ? shown.ids : undefined);
   };
 
   return (
@@ -85,10 +87,10 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
               {kind === 'bible' ? null : (
                 <>
                   <button type="button" className={BUTTON} onClick={() => void all('on')}>
-                    All on
+                    {shown.searching ? 'All shown on' : 'All on'}
                   </button>
                   <button type="button" className={BUTTON} onClick={() => void all('off')}>
-                    All off
+                    {shown.searching ? 'All shown off' : 'All off'}
                   </button>
                 </>
               )}
@@ -111,6 +113,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
                 items={entries.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }))}
                 status={countLine(kind, states, bibles)}
                 focus={chosen}
+                onShown={(ids, searching) => setShown({ ids, searching })}
                 rankOf={(id) => groupRank(id) * 3 + (states.get(id) === 'pinned' ? 0 : states.get(id) === 'on' ? 1 : 2)}
                 groupOf={grouped ? (id) => GROUPS[groupRank(id)] : undefined}
                 row={(item) => {

@@ -30,15 +30,24 @@ type Props = {
   focus?: string;
   /** The heading an item stands under; the rows are shown in the order of `rankOf`, so put one group's items together there. A heading shows above the first shown row of its group, so a search that empties a group hides its heading. None for no headings. */
   groupOf?: (id: string) => string | undefined;
+  /** Told the ids of the rows shown, and whether a search is typed, whenever either changes (a bulk button above the list acts on what is shown). */
+  onShown?: (ids: readonly string[], searching: boolean) => void;
 };
 
 /** The ticked items lead the list. They are put first when the list opens and when the search changes, not as he ticks: a row that jumps
  *  from under his thumb makes the next tap land on the wrong one. */
-export function SearchableList({ label, hint, noun, items, ticked = [], onToggle, row, rankOf, status, flat, focus, groupOf }: Props) {
+export function SearchableList({ label, hint, noun, items, ticked = [], onToggle, row, rankOf, status, flat, focus, groupOf, onShown }: Props) {
   const [query, setQuery] = useState('');
   const rankNow = (): Map<string, number> => new Map(items.map((i) => [i.id, rankOf ? rankOf(i.id) : ticked.includes(i.id) ? 0 : 1]));
   const [rank, setRank] = useState(rankNow);
   const shown = ranked(matching(items, query), rank);
+  const searching = query.trim() !== '';
+  const shownKey = shown.map((i) => i.id).join('\n');
+  const told = useRef(onShown);
+  told.current = onShown;
+  useEffect(() => {
+    told.current?.(shownKey === '' ? [] : shownKey.split('\n'), searching);
+  }, [shownKey, searching]);
   const marked = useRef<HTMLElement | null>(null);
   const listBox = useRef<HTMLDivElement>(null);
   useEffect(() => {
