@@ -65,3 +65,18 @@ describe("copywork's Greek rule judges each word by itself", () => {
     expect(greek).not.toMatch(/κατέλαβεν|σκοτίᾳ|φαίνει/);
   });
 });
+
+// mw-qtu3zvz.95: the same example's right ἡ (a rough breathing and no accent on the page) was marked wrong, 'you wrote ή with an acute accent', in about nine runs
+// in ten, and σκοτία and οὐ now and then: the model read a breathing's small curl as an accent. The rule says a breathing is not an accent, once and in one place
+// (a rule stated again and again primes the model to find that fault on a right word: mw-qtu3zvz.72). The live proof is that example, which holds words.8, 9 and 11 right.
+describe("copywork's Greek rule tells a breathing from an accent", () => {
+  it('says a breathing is not an accent, with how to tell them apart', () => {
+    expect(greek).toMatch(/A breathing is not an accent: the small curl over the first vowel of a word is its breathing/);
+    expect(greek).toMatch(/call a mark an accent only when it is a stroke/);
+  });
+
+  it('says it once, in one place', () => {
+    expect(greek.match(/is not an accent/g) ?? []).toHaveLength(1);
+    expect(text.match(/is not an accent/g) ?? []).toHaveLength(1);
+  });
+});
