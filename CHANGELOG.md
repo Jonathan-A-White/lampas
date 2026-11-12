@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.232
+_2026-11-12_
+- Fixed: a single verse read in David's voice now stops at its own end instead of running into the next verse's first words.
+
 ## 0.7.228
 _2026-11-12_
 - New: Searching the Sermons sheet now lists sermons on the open verse, its section, its chapter and its themes before general matches.
