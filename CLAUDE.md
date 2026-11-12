@@ -178,9 +178,10 @@ docs/sources/tagnt.md # STEPBible's TAGNT: variant words' Strong's numbers and t
 docs/sources/msb-chunk-pairs.md # MSB '. . .' rows, the chunks
 docs/sources/public-domain-works.md # Spurgeon and other public-domain works: sources
 docs/sources/sermon-index.md # a sermon index: Henry, Logos, preachers, themes
-docs/design/library-at-scale.md # the Logos library at scale, mockups, build plan
+docs/design/library-at-scale.md # the Logos library at scale
 docs/design/bible-talk-trim-map.md # bible-talk rules before the 100,000-byte trim
-docs/design/reader-split.md # the Reader split: design, mockups, decisions
+docs/design/reader-split.md # the Reader split: design, mockups
+docs/design/sermon-sources.md # the one Sermons list
 docs/sources/septuagint-and-webster.md # Septuagint and Webster 1828 sources and licences
 docs/sources/lxx-derivation-probe.md # the LXX derivation probe
 docs/sources/lxx-morph-probe.md # lxx-morph: verdict
