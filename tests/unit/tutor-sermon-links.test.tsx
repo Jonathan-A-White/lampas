@@ -85,14 +85,14 @@ describe('the sermon chip', () => {
       expect(chip).not.toHaveAttribute('target');
     });
 
-    it('with Firefox chosen on Android turns the row’s Subsplash address, which is the fallback', async () => {
+    it('with Firefox chosen on Android leaves the row’s Subsplash address, which is the fallback, as a plain https link: it is a video (mw-qtu3zvz.62)', async () => {
       vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(ANDROID);
       await setSetting(openWebSetting, 'firefox');
       setSermonSources([sourceOf('altsource', 'Alt Sermons', { rom: [subsplash] })]);
       render(<TutorLinks links={[{ kind: 'sermon', sermon: 'altsource:love' }]} place={place} verse={8} onLeave={() => undefined} />);
       const chip = await screen.findByRole('link', { name: 'Sermon: Love Commended ↗' });
-      await waitFor(() => expect(chip.getAttribute('href')).toMatch(/^intent:\/\//));
-      expect(chip).toHaveAttribute('href', intentOf('https://brookfieldfirst.subspla.sh/x104'));
+      await waitFor(() => expect(chip).toHaveAttribute('href', 'https://brookfieldfirst.subspla.sh/x104'));
+      expect(chip).toHaveAttribute('target', '_blank');
     });
 
     it('with This browser chosen on Android is the https address in a new tab, as before', async () => {

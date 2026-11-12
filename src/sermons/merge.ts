@@ -16,6 +16,12 @@ const opensInLogos = (url: string): boolean => /^https:\/\/ref\.ly\//.test(url);
 /** The service's addresses are https pages; anything else (a script, a file) is never made a link. */
 const isWeb = (url: string): boolean => /^https:\/\//.test(url);
 
+/** Whether a host name is Subsplash's: subsplash.com or subspla.sh, or a subdomain of either. The one rule for it (subsplashAlt and openWeb.ts isVideoAddress both read it). */
+export function isSubsplashHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return ['subsplash.com', 'subspla.sh'].some((domain) => host === domain || host.endsWith(`.${domain}`));
+}
+
 /** The alternate address when it is a Subsplash one (https on subsplash.com or subspla.sh, or a subdomain of either: the church's short links are brookfieldfirst.subspla.sh/…), else undefined. Subsplash is already trimmed to the sermon, so it is preferred to the row's url (mw-qtu3zvz.49.2). */
 export function subsplashAlt(alt: string | undefined): string | undefined {
   if (alt === undefined) return undefined;
@@ -25,9 +31,7 @@ export function subsplashAlt(alt: string | undefined): string | undefined {
   } catch {
     return undefined;
   }
-  const host = parsed.hostname.toLowerCase();
-  const subsplash = ['subsplash.com', 'subspla.sh'].some((domain) => host === domain || host.endsWith(`.${domain}`));
-  return parsed.protocol === 'https:' && subsplash ? alt : undefined;
+  return parsed.protocol === 'https:' && isSubsplashHost(parsed.hostname) ? alt : undefined;
 }
 
 /** The row as the sheet opens it: a Subsplash alternate address opens in place of the url (as a web page, whatever the url was); every other row is as it is. */
