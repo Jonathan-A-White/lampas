@@ -44,7 +44,9 @@ export function SearchableList({ label, hint, noun, items, ticked = [], onToggle
   const searching = query.trim() !== '';
   const shownKey = shown.map((i) => i.id).join('\n');
   const told = useRef(onShown);
-  told.current = onShown;
+  useEffect(() => {
+    told.current = onShown;
+  });
   useEffect(() => {
     told.current?.(shownKey === '' ? [] : shownKey.split('\n'), searching);
   }, [shownKey, searching]);

@@ -56,9 +56,9 @@ describe('a kind page: All on and All off while a search is typed', () => {
 
   it('with the search empty, the buttons say All on / All off and act on the whole kind', async () => {
     render(<KindPage kind="commentary" />);
-    await userEvent.click(await screen.findByRole('button', { name: 'All on', exact: true }));
+    await userEvent.click(await screen.findByRole('button', { name: /^All on$/ }));
     await expect.poll(async () => db.library.where('kind').equals('commentary').count(), { timeout: ASYNC_WAIT_MS }).toBe(entriesOf('commentary').length);
-    await userEvent.click(screen.getByRole('button', { name: 'All off', exact: true }));
+    await userEvent.click(screen.getByRole('button', { name: /^All off$/ }));
     await expect.poll(async () => db.library.where('kind').equals('commentary').count(), { timeout: ASYNC_WAIT_MS }).toBe(0);
   }, ASYNC_WAIT_MS);
 });
