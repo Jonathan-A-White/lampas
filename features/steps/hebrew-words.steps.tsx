@@ -40,6 +40,8 @@ interface Phone {
   greek: Level;
   hebrew: Level;
   newWords?: number;
+  /** the Weave's Words, when the scenario says (the dial's climb leaves it Solid, which the Parsing drill reads: it asks only solid words, mw-indx1x6.9) */
+  weave?: 'off' | 'solid' | 'solid+learning';
   speaks?: boolean;
   words?: { lemma: string; lang: 'grc' | 'hbo'; gloss: string }[];
 }
@@ -64,6 +66,7 @@ async function openOn(title: string, phone: Phone): Promise<void> {
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.reviews.clear()]);
   await putAtLevels({ greek: phone.greek, hebrew: phone.hebrew });
   if (phone.newWords !== undefined) await db.settings.put({ key: 'newWordsADay', value: String(phone.newWords) });
+  if (phone.weave !== undefined) await db.settings.put({ key: 'weave', value: phone.weave });
   const now = Date.now();
   for (const w of phone.words ?? []) {
     await db.words.put({ lemma: nfc(w.lemma), lang: w.lang, lemmas: [nfc(w.lemma)], gloss: w.gloss, lesson: 0, source: 'frontier', state: 'learning', since: now });
@@ -309,7 +312,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The Parsing drill on a Hebrew word asks its terms with the verse in Hebrew', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with Hebrew chosen at Learning and a Hebrew verb he is learning', () =>
-      openOn('Genesis 1', { ...HEBREW_LEARNING, newWords: 0, words: [{ lemma: 'בָּרָא', lang: 'hbo', gloss: 'to create' }] }),
+      openOn('Genesis 1', { ...HEBREW_LEARNING, newWords: 0, weave: 'solid+learning', words: [{ lemma: 'בָּרָא', lang: 'hbo', gloss: 'to create' }] }),
     );
     When('he opens the Parsing drill', () => goTo('#/drill', 'Parsing drill'));
     Then('the Parsing drill shows the verse in Hebrew, right to left, with a form of {string} marked', async (_, lemma: string) => {
