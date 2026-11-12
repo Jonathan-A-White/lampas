@@ -1,5 +1,5 @@
 // src/sermons/SermonsSheet.tsx — the Sermons sheet (mw-qtu3zvz.2, docs/sermons.md): 'Sermons for Romans 5:8' (a verse), 'Sermons for Romans 5:1-11' (a passage) or 'Sermons for Romans 5', the place's sermons grouped
-// as 'On this verse' ('On these verses') and 'In this chapter' (a group is absent when empty), each row 44 px with the title and, under it, the preacher, the date and where it opens. A row is a plain link
+// as 'On this verse' ('On these verses') and 'In this chapter' (a group is absent when empty), each row 44 px with the title and, under it, the preacher (the source's `by` where there is none), the date and where it opens. A row is a plain link
 // to the sermon where it lives; nothing is fetched until one is tapped, and offline the rows stay and the second line says 'Needs the internet'. openSermons(place) opens it; <SermonsHost /> (mounted once in App) draws it.
 // After them, 'In Logos' lists his Pinned and On sermon archives at the place, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos').
 // Online (mw-qtu3zvz.5, docs/sermons.md 'When online'): the sheet opens on the bundled rows, asks the sermon index service and says 'Latest from the index · N new' (or 'Offline: the bundled index') under the title;
@@ -30,10 +30,10 @@ import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useT
 import { useSameTheme, useThemes } from './useThemes';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
-/** The second line of a row: the preacher, the date, and where it opens (a web page needs the internet while the phone is offline). */
-function metaOf(row: LinkRow, online: boolean): string {
+/** The second line of a row: the preacher (else the source's `by`, the church, where the preacher is unknown: mw-qtu3zvz.89), the date, and where it opens (a web page needs the internet while the phone is offline). */
+function metaOf(row: LinkRow, online: boolean, by?: string): string {
   const opens = row.opensIn === 'logos' ? 'Opens in Logos' : online ? 'Opens on the web' : 'Needs the internet';
-  return [row.preacher, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
+  return [row.preacher ? row.preacher : by, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
 }
 
 /** The line under a row that came in by the sermon notes (mw-qtu3zvz.59.2): where the sermon was preached, where the service gave a preaching text. */
@@ -59,7 +59,7 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
           {row.title}
         </span>
         <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
-          {metaOf(row, online)}
+          {metaOf(row, online, sourceOf(row)?.by)}
         </span>
         {why === undefined ? null : (
           <span data-sermon-why className="block break-words text-sm font-normal text-muted">

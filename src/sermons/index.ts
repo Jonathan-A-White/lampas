@@ -177,7 +177,7 @@ function noteServiceSources(): Promise<void> {
     const own = new Set(active.map((source) => source.id));
     const found: KnownSermonSource[] = (await fetchSources())
       .filter((source) => source.kind === 'sermons' && !own.has(source.id))
-      .map((source) => ({ id: source.id, name: source.name, credit: source.credit, homepage: source.homepage, onByDefault: source.on_by_default }));
+      .map((source) => ({ id: source.id, name: source.name, credit: source.credit, homepage: source.homepage, onByDefault: source.on_by_default, ...(typeof source.by === 'string' && source.by !== '' ? { by: source.by } : {}) }));
     const fresh = await rememberSermonSources(found);
     if (fresh.length > 0 || found.length > 0) setKnownSermonSources(await getKnownSermonSources());
   })();
