@@ -23,7 +23,7 @@ export function stubMediaSession(): FakeMediaSession {
   const stub: FakeMediaSession = {
     metadata: null,
     playbackState: 'none',
-    handlers: { play: null, pause: null, stop: null },
+    handlers: { play: null, pause: null, stop: null, previoustrack: null, nexttrack: null },
     setActionHandler(action, handler) {
       stub.handlers[action] = handler;
     },

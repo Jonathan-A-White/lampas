@@ -85,12 +85,12 @@ Feature: The recorded voice reads a chapter that has timings
     Given John 3 is open in English with the recorded voice chosen
     When he taps "Read from the top"
     And the recording passes the end of verse 1
-    Then the speaking bar is playing and shows Pause, Restart and Stop
+    Then the speaking bar is playing and shows Previous verse, Pause, Restart, Next verse and Stop
     And the header shows no Pause or Stop
     When he taps "Pause" on the speaking bar
     Then the audio element is paused
     And the reading bar says "Paused at verse 2"
-    And the speaking bar's first button is Resume
+    And the speaking bar offers Resume in place of Pause
     When he taps "Resume" on the speaking bar
     Then the audio element plays on from the second it was paused at
     When he taps "Stop" on the speaking bar
@@ -122,10 +122,10 @@ Feature: The recorded voice reads a chapter that has timings
     And the recording passes the end of verse 1
     And a Greek word is said alone, as a speaker beside it says one
     Then the audio element was paused before the word was spoken
-    And the speaking bar's first button is Resume
+    And the speaking bar offers Resume in place of Pause
     When the phone finishes the word
     Then the audio element is paused
-    And the speaking bar still offers Resume first
+    And the speaking bar still offers Resume
     When he taps "Resume" on the speaking bar
     Then the audio element plays on from the second it was paused at
 
@@ -136,10 +136,10 @@ Feature: The recorded voice reads a chapter that has timings
     And the recording passes the end of verse 1
     And he long presses the first word of verse 2 in the passage
     Then the audio element was paused before the word was spoken
-    And the speaking bar's first button is Resume
+    And the speaking bar offers Resume in place of Pause
     When the phone finishes the word
     Then the audio element plays on from the second it was paused at
-    And the speaking bar is playing and shows Pause, Restart and Stop
+    And the speaking bar is playing and shows Previous verse, Pause, Restart, Next verse and Stop
 
   Scenario: A hold to ask pauses the recording and a Listen goes on when the hold ends
     Given John 3 is open in English with the recorded voice chosen
@@ -148,7 +148,7 @@ Feature: The recorded voice reads a chapter that has timings
     And the recording passes the end of verse 1
     And a hold to ask begins
     Then the audio element was paused
-    And the speaking bar's first button is Resume
+    And the speaking bar offers Resume in place of Pause
     When the hold to ask ends
     Then the audio element plays on from the second it was paused at
 
@@ -165,7 +165,7 @@ Feature: The recorded voice reads a chapter that has timings
     When the page comes back
     Then the audio element still plays
     And verse 4 is still the verse marked
-    And the speaking bar is playing and shows Pause, Restart and Stop
+    And the speaking bar is playing and shows Previous verse, Pause, Restart, Next verse and Stop
 
   Scenario: The lock screen's Pause and Play steer a recorded reading while the page is hidden
     Given John 3 is open in English with the recorded voice chosen
@@ -197,7 +197,7 @@ Feature: The recorded voice reads a chapter that has timings
     Then the audio element is paused
     And the reading is paused
     When he opens John 3 again
-    Then the speaking bar's first button is Resume
+    Then the speaking bar offers Resume in place of Pause
     When he opens John 4 by hand
     Then the reading is idle
     And there is no speaking bar
@@ -207,3 +207,88 @@ Feature: The recorded voice reads a chapter that has timings
     When he taps "Read from the top"
     And he taps "Pause" on the speaking bar
     Then the page holds exactly one speaking bar
+
+  # Skip a verse (mw-82lb97i.19, PROVISIONAL: the button words and "Previous always means the verse before")
+  Scenario: Next verse skips to the start of the verse after the one being read and the reading plays on
+    Given John 3 is open in English with the recorded voice chosen
+    When he taps "Read from the top"
+    And the recording passes the end of verse 4
+    And the recording plays 4 seconds into verse 5
+    And he taps "Next verse" on the speaking bar
+    Then the audio element plays on from the start of verse 6
+    And verse 6 is marked as being read
+    When the recording passes the end of verse 6
+    Then verse 7 is marked as being read
+
+  Scenario Outline: Previous verse goes to the start of the verse before, however far into this one the reading is
+    Given John 3 is open in English with the recorded voice chosen
+    When he taps "Read from the top"
+    And the recording passes the end of verse 4
+    And the recording plays <seconds> seconds into verse 5
+    And he taps "Previous verse" on the speaking bar
+    Then the audio element plays on from the start of verse 4
+    And verse 4 is marked as being read
+
+    Examples:
+      | seconds |
+      | 1       |
+      | 8       |
+
+  Scenario: Next verse on a paused reading leaves it paused at the start of the next verse
+    Given John 3 is open in English with the recorded voice chosen
+    When he taps "Read from the top"
+    And the recording passes the end of verse 4
+    And the recording plays 4 seconds into verse 5
+    And he taps "Pause" on the speaking bar
+    And he taps "Next verse" on the speaking bar
+    Then the audio element is paused at the start of verse 6
+    And verse 6 is marked as being read
+    And the reading is paused
+    And the speaking bar offers Resume in place of Pause
+
+  Scenario: Previous verse at the chapter's first verse changes nothing
+    Given John 3 is open in English with the recorded voice chosen
+    When he taps "Read from the top"
+    And the recording plays 4 seconds into verse 1
+    And he taps "Previous verse" on the speaking bar
+    Then nothing changes: the recording plays on 4 seconds into verse 1
+
+  Scenario: Next verse at the last verse of John 3 during Play to End plays John 4 from its first verse
+    Given John 3 is open in English with the recorded voice chosen
+    When he selects verse 36 and taps "Read from here"
+    And he taps "Next verse" on the speaking bar
+    Then the Reader shows John 4
+    And the audio element plays the recording of John 4 from its start
+    And verse 1 is marked as being read
+
+  Scenario: A Listen of a section never leaves its section: Next verse at its last verse does nothing
+    Given John 3 is open in English with the recorded voice chosen
+    When he taps the heading "Jesus and Nicodemus"
+    And he taps "Play verses 1-21" in the Verse view
+    And the recording passes the end of verse 19
+    And he taps "Next verse" on the speaking bar
+    Then the audio element plays on from the start of verse 21
+    And verse 21 is marked as being read
+    When he taps "Next verse" on the speaking bar
+    Then nothing changes: the recording plays on at the start of verse 21
+
+  Scenario: The lock screen's previous and next track skip a verse like the buttons and are cleared when the reading ends
+    Given John 3 is open in English with the recorded voice chosen
+    When he taps "Read from the top"
+    And the recording passes the end of verse 4
+    Then the lock screen offers previous and next track
+    When he presses Next on the lock screen
+    Then the audio element plays on from the start of verse 6
+    And verse 6 is marked as being read
+    When he presses Previous on the lock screen
+    Then the audio element then plays on from the start of verse 5
+    And verse 5 is then marked as being read
+    When he taps "Stop" on the speaking bar
+    Then the lock screen has no previous or next track
+
+  Scenario: The phone's voice has no skip buttons on its bar and no previous or next track
+    Given John 3 is open in English with the recorded voice chosen
+    And the Bible voice is Phone voice
+    When he taps "Read from the top"
+    Then the phone's voice bar has no Previous verse or Next verse
+    And the lock screen has no previous or next track

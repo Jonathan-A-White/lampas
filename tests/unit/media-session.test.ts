@@ -81,12 +81,33 @@ describe('a recorded reading on the lock screen', () => {
     expect(audio.playing()).toBeNull();
   });
 
+  it('has a previous and a next track that skip a verse like the bar’s buttons (mw-82lb97i.19)', () => {
+    recorded();
+    audio.advanceTo(13.5);
+    expect(getReading().verse).toBe(2);
+    session.handlers.nexttrack?.();
+    expect(getReading().verse).toBe(3);
+    expect(recordingElement()?.currentTime).toBe(23);
+    session.handlers.previoustrack?.();
+    expect(getReading().verse).toBe(2);
+    expect(recordingElement()?.currentTime).toBe(13);
+    expect(audio.playing()).toBe(recordingElement());
+    // the first verse has none before it: nothing happens
+    session.handlers.previoustrack?.();
+    session.handlers.previoustrack?.();
+    expect(getReading().verse).toBe(1);
+    expect(recordingElement()?.currentTime).toBe(0);
+    session.handlers.previoustrack?.();
+    expect(getReading().verse).toBe(1);
+    expect(recordingElement()?.currentTime).toBe(0);
+  });
+
   it('is cleared when the reading ends: no metadata, state none, no handlers', () => {
     recorded();
     stopReading();
     expect(session.metadata).toBeNull();
     expect(session.playbackState).toBe('none');
-    expect(session.handlers).toEqual({ play: null, pause: null, stop: null });
+    expect(session.handlers).toEqual({ play: null, pause: null, stop: null, previoustrack: null, nexttrack: null });
   });
 
   it('is cleared when a verse’s recording runs to its end by itself', () => {
@@ -107,7 +128,7 @@ describe('where there is no lock screen to show', () => {
     expect(getReading().status).toBe('reading');
     expect(session.metadata).toBeNull();
     expect(session.playbackState).toBe('none');
-    expect(session.handlers).toEqual({ play: null, pause: null, stop: null });
+    expect(session.handlers).toEqual({ play: null, pause: null, stop: null, previoustrack: null, nexttrack: null });
   });
 
   it('a recorded reading starts and ends with no error where navigator.mediaSession is undefined', () => {

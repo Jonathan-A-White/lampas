@@ -2,7 +2,8 @@
 // reading, navigator.mediaSession shows the chapter ('John 3' by 'Majority Standard Bible, read by David', album 'Lampas', Lampas's own icons), follows Play and Pause, and its
 // Play, Pause and Stop buttons call the reading's own resumeReading, pauseReading and stopReading (src/speech/readAloud.ts hands them in, so this file imports nothing of it).
 // The phone's voice has no session (voice-kit pauses it when the page hides, and Android stops its voice anyway), and a phone without navigator.mediaSession reads on regardless.
-// Deliberately NOT here: previous or next track, seek handlers, a position state (a verse skip is a later story, recordedVoice.ts seekToVerse is there for it).
+// Previous and next track skip one verse (mw-82lb97i.19, PROVISIONAL): they call readAloud.ts skipRecordedVerse, the same as the speaking bar's Previous verse and Next verse.
+// Deliberately NOT here: seek handlers, a position state.
 
 /** What the lock screen shows of a reading. */
 export interface SessionView {
@@ -17,12 +18,16 @@ export interface SessionActions {
   play(): void;
   pause(): void;
   stop(): void;
+  /** Previous track: back to the start of the verse before the one being read */
+  previous(): void;
+  /** Next track: on to the start of the verse after the one being read */
+  next(): void;
 }
 
 export const SESSION_ARTIST = 'Majority Standard Bible, read by David';
 export const SESSION_ALBUM = 'Lampas';
 
-const ACTIONS = ['play', 'pause', 'stop'] as const;
+const ACTIONS = ['play', 'pause', 'stop', 'previoustrack', 'nexttrack'] as const;
 
 let shown = false;
 let shownTitle: string | null = null;
@@ -63,6 +68,8 @@ export function showSession(view: SessionView | null, actions: SessionActions): 
       session.setActionHandler('play', () => actions.play());
       session.setActionHandler('pause', () => actions.pause());
       session.setActionHandler('stop', () => actions.stop());
+      session.setActionHandler('previoustrack', () => actions.previous());
+      session.setActionHandler('nexttrack', () => actions.next());
     }
     if (shownTitle !== view.title) {
       shownTitle = view.title;
