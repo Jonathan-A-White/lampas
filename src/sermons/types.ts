@@ -47,6 +47,8 @@ export interface SermonSource {
   needs?: 'logos';
   /** whether its switch starts On or Off */
   default: 'on' | 'off';
+  /** the one church or preacher the whole source is of (mw-qtu3zvz.89, PROVISIONAL, the Governor to confirm the key and that only a source of one church or one preacher sets it): the Sermons sheet names it where a sermon has no preacher of its own. Absent for a source of many. */
+  by?: string;
   /** The source's sermons whose preaching text touches `place`'s chapter, in the source's order (verse order); [] where it has none. The module narrows them to the verses (src/sermons/sermonsFor.ts). */
   sermonsFor(place: SermonPlace): Promise<SermonRow[]>;
   /** Every one of the source's sermons whose preaching text touches `book`, in verse order; absent where the source cannot say. The sheet's 'On the same theme' rows read it for the books a topic is in (src/sermons/index.ts sameThemeFor). */

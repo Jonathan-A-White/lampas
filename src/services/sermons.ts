@@ -44,6 +44,8 @@ export interface ServiceSource {
   credit: string;
   homepage: string;
   on_by_default: boolean;
+  /** the one church or preacher the whole source is of (mw-qtu3zvz.89); absent where it is of many, and from a service that does not say */
+  by?: string;
   rows: number;
 }
 

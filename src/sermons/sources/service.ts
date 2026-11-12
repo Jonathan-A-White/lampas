@@ -10,5 +10,6 @@ export const serviceSource = (known: KnownSermonSource): SermonSource => ({
   credit: known.credit,
   describe: 'Listed by the sermon index online.',
   default: known.onByDefault ? 'on' : 'off',
+  ...(known.by === undefined ? {} : { by: known.by }),
   sermonsFor: async () => [],
 });
