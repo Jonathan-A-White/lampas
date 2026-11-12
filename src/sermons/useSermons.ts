@@ -122,28 +122,33 @@ export function useServiceSearch(query: string, enabled: boolean): FoundState {
   return state?.words === words ? state.answer : { status: 'searching' };
 }
 
-export type ThemeSermons = { status: 'idle' | 'asking' | 'failed' } | { status: 'found'; rows: ServiceThemeSermon[] };
+export type ThemeSermons = { status: 'asking' | 'failed' } | { status: 'found'; rows: ServiceThemeSermon[] };
 
-/** The sermons of the theme `key` ('<theme source>:<topic>') the search found, once he taps it; `idle` while none is open. */
-export function useThemeSermons(key: string | null): ThemeSermons {
-  const [state, setState] = useState<{ key: string; answer: ThemeSermons } | undefined>();
+/**
+ * The sermons of each theme the search found (`keys`, '<theme source>:<topic>' each), asked at once when the hits arrive, so Found can leave out a theme with no sermons (mw-qtu3zvz.65) and say how many a theme has.
+ * A key not answered yet is `asking`, one that could not be asked `failed`; nothing is asked for none.
+ */
+export function useThemeSermons(keys: readonly string[]): ReadonlyMap<string, ThemeSermons> {
+  const [answers, setAnswers] = useState<ReadonlyMap<string, ThemeSermons>>(new Map());
+  const wanted = keys.join('\n');
   useEffect(() => {
-    if (key === null) return;
+    if (wanted === '') return;
     let alive = true;
-    const at = key.indexOf(':');
-    fetchThemeSermons(key.slice(0, at), key.slice(at + 1)).then(
-      (answer) => alive && setState({ key, answer: { status: 'found', rows: answer.rows } }),
-      (error: unknown) => {
-        console.warn(`could not read the sermons of a theme: ${error instanceof Error ? error.message : String(error)}`);
-        if (alive) setState({ key, answer: { status: 'failed' } });
-      },
-    );
+    for (const key of wanted.split('\n')) {
+      const at = key.indexOf(':');
+      fetchThemeSermons(key.slice(0, at), key.slice(at + 1)).then(
+        (answer) => alive && setAnswers((held) => new Map(held).set(key, { status: 'found', rows: answer.rows })),
+        (error: unknown) => {
+          console.warn(`could not read the sermons of a theme: ${error instanceof Error ? error.message : String(error)}`);
+          if (alive) setAnswers((held) => new Map(held).set(key, { status: 'failed' }));
+        },
+      );
+    }
     return () => {
       alive = false;
     };
-  }, [key]);
-  if (key === null) return { status: 'idle' };
-  return state?.key === key ? state.answer : { status: 'asking' };
+  }, [wanted]);
+  return useMemo(() => new Map(keys.map((key) => [key, answers.get(key) ?? { status: 'asking' as const }])), [wanted, answers]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 /**
