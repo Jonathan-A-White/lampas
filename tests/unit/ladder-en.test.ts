@@ -6,7 +6,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { buildLadder, scoreEnglish, syllablesOf } from '../../scripts/ladder-en';
 import type { LadderEntry } from '../../scripts/ladder-shared';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
-import { GREEK_BOOKS } from '../support/data-books';
+import { GREEK_BOOKS } from '../support/dataBooks';
 
 describe('syllables of an English word', () => {
   it.each([

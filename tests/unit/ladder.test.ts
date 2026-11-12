@@ -6,8 +6,7 @@ import { ALWAYS_NEEDED, LADDER, TIERS, ideaOf, ideasBelow, ideasOf } from '../..
 import { ideaSound } from '../../src/data/grammar/lessons';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 import { GRAMMAR_TERMS } from '../../src/data/parseCode';
-import { isGreekBook } from '../support/data-books';
-import { dataBooks } from '../support/dataBooks';
+import { dataBooks, isGreekBook } from '../support/dataBooks';
 
 const words = (text: string): number => text.trim().split(/\s+/).length;
 const tierOf = (id: string) => ideaOf(id).tier;

@@ -5,7 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { type Chapter, type EnglishChunk, englishRuns, markSupplied } from '../../src/data/chapter';
 import { buildTalkRequest } from '../../src/services/talk';
 import { instructionsOf } from '../../scripts/grind-parts';
-import { GREEK_BOOKS, isGreekBook } from '../support/data-books';
+import { GREEK_BOOKS, isGreekBook } from '../support/dataBooks';
 import '../support/grinds-in-graph';
 
 const load = (path: string): Chapter => JSON.parse(readFileSync(`public/data/${path}.json`, 'utf8')) as Chapter;

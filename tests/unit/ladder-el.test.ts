@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { buildLadder, scoreWords, type LadderEntry } from '../../scripts/ladder-el';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
-import { GREEK_BOOKS } from '../support/data-books';
+import { GREEK_BOOKS } from '../support/dataBooks';
 
 const words = (text: string): string[] => text.split(' ');
 

@@ -4,8 +4,7 @@ import type { Chapter } from '../../src/data/chapter';
 import { GRAMMAR_CONCEPTS, conceptOf } from '../../src/data/grammar-concepts';
 import { grammarExamples } from '../../src/data/grammarExamples';
 import { decodeParse, GRAMMAR_TERMS, parseSegments } from '../../src/data/parseCode';
-import { isGreekBook } from '../support/data-books';
-import { dataBooks } from '../support/dataBooks';
+import { dataBooks, isGreekBook } from '../support/dataBooks';
 
 const words = (text: string): number => text.trim().split(/\s+/).length;
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;

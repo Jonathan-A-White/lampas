@@ -25,8 +25,7 @@ import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { mulberry32 } from '../../src/data/quiz';
 import { formOfQuestion } from '../../src/data/grammar/inference';
 import { usesOf } from '../../src/data/grammar/uses';
-import { isGreekBook } from '../support/data-books';
-import { dataBooks } from '../support/dataBooks';
+import { dataBooks, isGreekBook } from '../support/dataBooks';
 
 const load = (file: string) => JSON.parse(readFileSync(`public/data/${file}.json`, 'utf8')) as Chapter;
 const jn1 = load('1jn/1');

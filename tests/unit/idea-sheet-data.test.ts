@@ -9,7 +9,7 @@ import { ideaOfTerm, ideasOf, LADDER } from '../../src/data/grammar/ladder';
 import { decodeParse, parseSegments } from '../../src/data/parseCode';
 import { DEFAULT_CHAPTER } from '../../src/data/readerChapter';
 import { stubChapterFetch } from '../support/chapter-fetch';
-import { isGreekBook } from '../support/data-books';
+import { isGreekBook } from '../support/dataBooks';
 
 let index: BookIndex;
 let john: Chapter;
