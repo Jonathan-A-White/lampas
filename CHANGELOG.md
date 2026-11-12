@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.234
+_2026-11-12_
+- New: David's recorded reading now keeps going with the screen locked, and the lock screen shows the chapter with Play and Pause.
+
 ## 0.7.232
 _2026-11-12_
 - Fixed: a single verse read in David's voice now stops at its own end instead of running into the next verse's first words.
