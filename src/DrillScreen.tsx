@@ -217,7 +217,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   const room = useDoorRoom();
 
   const greek = (question ? (question.lang ?? 'grc') : (studying ?? 'grc')) === 'grc';
-  const settings = <RoundSettings greek={greek} learning={learningIdea?.title} />;
+  const settings = <RoundSettings greek={greek} learning={greek ? learningIdea?.title : undefined} />;
 
   const header = (
     <ScreenHeader
