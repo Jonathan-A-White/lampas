@@ -37,6 +37,8 @@ import { TalkSheet } from './Talk';
 import { ErrorBoundary } from './ErrorBoundary';
 import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
 import { loadBookTimings } from './data/audioTimings';
+import { onConnectionChange } from './speech/connection';
+import { recordingWanted } from './speech/recordedVoice';
 import { chooseReading, getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, setOpenReadLanguage, type OpenChapter } from './data/readerChapter';
 import { neighbours, verseNeighbours } from './data/neighbours';
@@ -510,11 +512,16 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     }
   }, [plan, crossingHere, readingStatus, BOOK, CHAPTER, chapter]);
   // The recorded voice's timings for this book are loaded when a chapter opens, so a tap on Play finds them with no wait (mw-82lb97i.3).
-  // Any choice but the phone voice warms them (a small file), so a tap on the Wi-Fi choice finds them when Wi-Fi comes; it follows his Bible voice setting (Settings > Listening), so choosing the recording while a chapter is open brings its timings too.
+  // They are warmed only when David could play (recordingWanted: Recording (David); Recording on Wi-Fi only unless the phone says it is on mobile data), never for the phone voice nor before the
+  // saved setting is read, so mobile data spends nothing on a recording that will not play (mw-zbgo4ep.33). It follows his Bible voice setting (Settings > Listening) and the connection
+  // (a change from data to Wi-Fi warms them), so choosing the recording while a chapter is open brings its timings too.
   const bibleVoice = useSetting(bibleVoiceSetting);
+  const [, setConnectionTick] = useState(0); // a change of connection draws again, so recordingWanted is asked again
+  useEffect(() => onConnectionChange(() => setConnectionTick((n) => n + 1)), []);
+  const warmTimings = recordingWanted(bibleVoice) !== null;
   useEffect(() => {
-    if (bibleVoice !== 'phone') void loadBookTimings(BOOK);
-  }, [BOOK, bibleVoice]);
+    if (warmTimings) void loadBookTimings(BOOK);
+  }, [BOOK, warmTimings]);
   // A chapter that cannot be fetched ends the reading that was going on into it.
   useEffect(() => {
     if (failed && crossingHere) stopReading();

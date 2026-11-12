@@ -29,3 +29,11 @@ export function connectionKind(): ConnectionKind {
   if (typeof type !== 'string') return null;
   return type === 'wifi' || type === 'ethernet' ? 'wifi' : 'other';
 }
+
+/** Calls `listener` when the phone's connection changes (navigator.connection 'change'); returns the unsubscribe. A phone with no such event never calls it. */
+export function onConnectionChange(listener: () => void): () => void {
+  const target = typeof navigator === 'undefined' ? undefined : (navigator as Navigator & { connection?: EventTarget }).connection;
+  if (!target || typeof target.addEventListener !== 'function') return () => undefined;
+  target.addEventListener('change', listener);
+  return () => target.removeEventListener('change', listener);
+}

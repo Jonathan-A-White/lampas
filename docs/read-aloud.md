@@ -82,7 +82,7 @@ phone's voice reads because of data (after Keep, in a chapter with no David, or 
 (`lampas.dataVoiceNoticed`). The MP3s are 192 kbps mono: 24 KB a second, 1.44 MB a minute, about 86 MB an hour. The phone voice read by `passagePlayer.ts`, a tutor answer or a page of prose never uses the recording and says nothing.
 
 **When it is decided.** When a chapter starts (the tap, and each crossing into a next chapter under Play to), never in the middle of one: a chapter that began in the recording finishes in it when Wi-Fi drops or the setting
-changes (if the stream then fails, the fallback below reads on in the phone's voice), and a chapter that began in the phone's voice finishes in it. The Reader warms a book's timings (a small file) unless the choice is Phone voice.
+changes (if the stream then fails, the fallback below reads on in the phone's voice), and a chapter that began in the phone's voice finishes in it. The Reader warms a book's timings (a small file) only when David could play (`recordingWanted`): not for Phone voice, nor for Recording on Wi-Fi only on mobile data, until the saved setting is read; a change to Wi-Fi warms them (mw-zbgo4ep.33).
 
 **What plays.** One `HTMLAudioElement` for the app's life, made on first use and reused for every chapter (a later chapter, after a crossing, needs no new tap), `preload` 'auto', its `src` the
 timings' MP3 address. It plays from the start of the verse the reading starts at (the chapter's first verse from second 0, the narrator's title included, with that verse marked meanwhile), tells
