@@ -90,9 +90,14 @@ timings' MP3 address. It plays from the start of the verse the reading starts at
 `(end - sound) / playbackRate`, re-aimed on a change of speed, a pause, a seek and each `timeupdate`, which waits on rather than cut a word when the recording stalled; a `timeupdate` past the end and the element's
 `ended` stop it too. The end is judged by where the SOUND is (`soundAt`, mw-82lb97i.18): the element's second moves in steps (each `timeupdate` on a phone, in bursts in Chromium), so it is run on by
 the clock since it last moved (at most `RUN_ON_MS`, 300 ms, and only while it is seen to move: a stall, a seek or a `waiting` holds it). The timer is aimed `END_LEAD` (40 ms of the recording)
-before the end and stops within `END_SLACK` (50 ms) of it, because a timer on a busy page fires late: the stop is at or before the end, inside the aligner's 0.25 s pad after the last word. Read alone, the second was a step behind and the stop
-waited for the next `timeupdate`: his John 1:50 ran on into 'Then He declar…' of verse 51. `tests/e2e/recorded-voice-stop.spec.ts` plays verses of John's real timings over a silent MP3 and holds the
-pause within 50 ms past each end (`LAMPAS_ALL_JOHN=1` runs all 879 verses, outside the gate). It seeks by verse (`seekToVerse`: the start, a Listen's Restart, a tapped verse and the skip below all use it). It plays at his English
+before the end and stops within `END_SLACK` (50 ms) of it, because a timer on a busy page fires late: the stop is at or before the end, which the timing maker's gap pass puts 0.05 s after the verse's last sound has died away. Read alone, the second was a step behind and the stop
+waited for the next `timeupdate`: his John 1:50 ran on into 'Then He declar…' of verse 51. After that he still heard the first 'th' of 'Then' (mw-82lb97i.27), though verse 50's end lay in 0.4 s of digital
+silence: a reading of the element can run behind the sound and then jump on (traced on a loaded page: 0.82 s of the recording a second of the clock, then +0.37 s in 0.175 s), and a reading that moves only
+in steps is behind by up to a step when it is looked at. So within `NEAR_MS` (700 ms) of the end the timer looks at the element every `POLL_MS` (20 ms); `soundAt` carries the best reading of the last
+`NEAR_MS` on by the clock (a reading is never ahead of the sound), never more than `RUN_ON_MS` ahead of the element's own second; and the last `FADE` (60 ms) before the stop are faded to silence by the
+element's volume (`fadeVolume`: 1 until 110 ms before the end, 0 from 50 ms before it; full again at the next play), so the last of what a phone's output still holds when `pause()` is called was given to it quiet.
+How long a phone's output plays on after `pause()` is not measured (no phone on the Laptop): the fade shortens it by 60 ms and cannot end it. `tests/e2e/recorded-voice-stop.spec.ts` plays verses of John's real timings over a silent MP3 and holds the
+pause within 50 ms past each end and the volume at 0 when it comes (`LAMPAS_ALL_JOHN=1` runs all 879 verses, each chapter on a freshly loaded page, outside the gate). It seeks by verse (`seekToVerse`: the start, a Listen's Restart, a tapped verse and the skip below all use it). It plays at his English
 speed (`rates-changed`, through `settingsSync.ts` `setRecordedRate`), keeping its pitch; a change while it plays takes effect at once.
 
 **The reading is the same reading.** `startReading` and `continueReading` take one optional field, `recorded` (the chapter's timings): the state, the verse marked and kept in view, `verse-reading` per verse,

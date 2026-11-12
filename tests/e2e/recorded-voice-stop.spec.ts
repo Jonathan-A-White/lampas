@@ -7,6 +7,13 @@
 // John 1:50 and 3:16 (his check) are played whole; the other verses are moved, once playing, to a second and a half before their end (a seek the end timer is aimed again
 // after). LAMPAS_ALL_JOHN=1 runs every verse of John (879, the story's sixth criterion) the same way, a test a chapter; it is outside the gate (a quarter of an hour on
 // three workers). Nothing reaches openbible.com: its MP3 addresses are answered here, any other request to it is failed.
+// mw-82lb97i.27 (he still heard the first 'th' of verse 51's 'Then'): the element's volume at each pause() is logged too, and a verse's stop must find it 0, the last
+// 60 ms before the stop faded to silence (src/speech/recordedVoice.ts FADE). Each test of the LAMPAS_ALL_JOHN run starts on a freshly loaded page, where the first
+// verses' stops came late before (John 9:1 +288 ms): its line gives the chapter's least and most ms past the end. Run it as
+// `LAMPAS_ALL_JOHN=1 npx playwright test tests/e2e/recorded-voice-stop.spec.ts --project=shots --fully-parallel --workers=3` (without --fully-parallel one worker runs it all).
+// What is left (measured 2026-11-12, traced): within two seconds of a seek headless Chromium's element can read slow (0.75 s of the recording a second of the clock) and
+// then jump on 0.2 to 0.35 s between two looks 20 ms apart, so a stop that comes that soon after this spec's own seek (1.5 s before the end) can still land past the
+// end (John 9:1, 4 of 36 fresh pages 58 to 112 ms past, once 791 ms); played whole from the verse's start, as he plays it, 60 of 60 stops were between 93 ms before and 7 ms past.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -75,11 +82,13 @@ async function silentJohn(page: Page): Promise<string[]> {
   return other;
 }
 
-/** Logs the element's second at each pause() into window.lampasPauses, counts each play() in window.lampasPlays, and keeps the element play() was called on as window.lampasAudio. */
+/** Logs the element's second at each pause() into window.lampasPauses and its volume then into window.lampasPauseVolumes, counts each play() in window.lampasPlays, and
+ * keeps the element play() was called on as window.lampasAudio. */
 async function logPauses(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const w = window as unknown as { lampasPauses: number[]; lampasPlays: number; lampasAudio?: HTMLMediaElement };
+    const w = window as unknown as { lampasPauses: number[]; lampasPauseVolumes: number[]; lampasPlays: number; lampasAudio?: HTMLMediaElement };
     w.lampasPauses = [];
+    w.lampasPauseVolumes = [];
     w.lampasPlays = 0;
     const { play, pause } = HTMLMediaElement.prototype;
     HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
@@ -89,12 +98,14 @@ async function logPauses(page: Page): Promise<void> {
     };
     HTMLMediaElement.prototype.pause = function (this: HTMLMediaElement) {
       w.lampasPauses.push(this.currentTime);
+      w.lampasPauseVolumes.push(this.volume);
       return pause.call(this);
     };
   });
 }
 
 const pauses = (page: Page): Promise<number[]> => page.evaluate(() => (window as unknown as { lampasPauses: number[] }).lampasPauses.slice());
+const pauseVolumes = (page: Page): Promise<number[]> => page.evaluate(() => (window as unknown as { lampasPauseVolumes: number[] }).lampasPauseVolumes.slice());
 const plays = (page: Page): Promise<number> => page.evaluate(() => (window as unknown as { lampasPlays: number }).lampasPlays);
 
 /** Opens John `c`:`v` in the Verse view on Listen, in English with nothing woven, the book's timings loaded. */
@@ -155,6 +166,8 @@ async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise
   expect(await spoken(page), `John ${c}:${v} was read by the recording, not the phone's voice`).toEqual([]);
   const at = (await pauses(page)).slice(before);
   expect(at.length, `John ${c}:${v} was paused`).toBeGreaterThan(0);
+  // the stop cannot leak: the recording was faded to silence before it was paused
+  expect.soft((await pauseVolumes(page)).pop(), `John ${c}:${v}: the element's volume when it was paused at its end`).toBe(0);
   return Math.round((at[at.length - 1] - span[2]) * 1000);
 }
 
@@ -187,7 +200,7 @@ test('the Verse view’s Play of one verse in David’s voice stops at the verse
   expect(other).toEqual([]);
 });
 
-// The story's sixth criterion: every verse of John, outside the gate.
+// Every verse of John, outside the gate (mw-82lb97i.18's sixth criterion, mw-82lb97i.27's fourth: each chapter on a freshly loaded page, under three workers).
 test.describe('every verse of John stops within 50 ms of its end (LAMPAS_ALL_JOHN=1)', () => {
   test.skip(process.env.LAMPAS_ALL_JOHN !== '1', 'outside the gate: LAMPAS_ALL_JOHN=1 runs it');
   for (const c of Object.keys(JOHN.chapters).map(Number)) {
