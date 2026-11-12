@@ -92,7 +92,7 @@ timings' MP3 address. It plays from the start of the verse the reading starts at
 the clock since it last moved (at most `RUN_ON_MS`, 300 ms, and only while it is seen to move: a stall, a seek or a `waiting` holds it). The timer is aimed `END_LEAD` (40 ms of the recording)
 before the end and stops within `END_SLACK` (50 ms) of it, because a timer on a busy page fires late: the stop is at or before the end, inside the aligner's 0.25 s pad after the last word. Read alone, the second was a step behind and the stop
 waited for the next `timeupdate`: his John 1:50 ran on into 'Then He declar…' of verse 51. `tests/e2e/recorded-voice-stop.spec.ts` plays verses of John's real timings over a silent MP3 and holds the
-pause within 50 ms past each end (`LAMPAS_ALL_JOHN=1` runs all 879 verses, outside the gate). It seeks by verse (`seekToVerse`: the start, a Listen's Restart and a tapped verse all use it), so a later previous-verse or next-verse button is one call. It plays at his English
+pause within 50 ms past each end (`LAMPAS_ALL_JOHN=1` runs all 879 verses, outside the gate). It seeks by verse (`seekToVerse`: the start, a Listen's Restart, a tapped verse and the skip below all use it). It plays at his English
 speed (`rates-changed`, through `settingsSync.ts` `setRecordedRate`), keeping its pitch; a change while it plays takes effect at once.
 
 **The reading is the same reading.** `startReading` and `continueReading` take one optional field, `recorded` (the chapter's timings): the state, the verse marked and kept in view, `verse-reading` per verse,
@@ -117,7 +117,7 @@ with WebAudio, cached or copied: the element plays it as any page's `<audio>` wo
 
 **The bar (mw-82lb97i.4, PROVISIONAL).** voice-kit's `<SpeakingBar />` shows only the package's own speech (`useSpeech`), and a recording is played by an element the package does not know, so a recorded reading has
 `src/speech/RecordedBar.tsx`: Lampas's own small component with the same markup as voice-kit's (`section.bk-speech`, `data-testid` 'speaking-bar', `data-state` playing | paused, the buttons `.bk-speech__button` with
-`data-action` pause | resume | restart | stop and `data-primary` on Resume, voice-kit's `DEFAULT_LABELS`, each 44 px at the least, Lampas's `--bk-speech-*` colours). `LampasSpeakingBar` draws it into the SAME top slot
+`data-action` previous-verse | pause | resume | restart | next-verse | stop and `data-primary` on Resume, voice-kit's `DEFAULT_LABELS`, each 44 px at the least, Lampas's `--bk-speech-*` colours). `LampasSpeakingBar` draws it into the SAME top slot
 (`BarSlot`) while a recorded reading is going or paused, voice-kit's bar otherwise, never both; `useBarShown()` is true for it, so the Reader's foot, the floating ? and every sheet's `BarSlot` make room as for the phone's
 voice. `ReadingState` has `recorded` (true from the first second of a recording to its end, a failure or a hand-over to the phone's voice) and `onBar` is true with it, so the header's Pause and Stop go. Pause and Resume call
 `pauseReading` / `resumeReading` (the element at its second), Stop `stopReading`, Restart goes back to the start of the verse being read (`restartRecorded`: `seekToVerse` and play, the span's end kept) and, on a Listen, to its
@@ -139,11 +139,20 @@ phone's voice reading on into a chapter with no timings) the metadata and handle
 voice-kit pauses it when the page hides, and Android stops its voice anyway, so it is unchanged. **What goes on while the page is hidden:** the recording, the verse marked (the verse reached while hidden is the verse marked when he comes
 back), `verse-reading` on the bus, and a crossing into the next chapter (`cross`, then the Reader's `continueReading` on a hidden page, which plays the next chapter's recording and shows 'John 4' on the lock screen). **What does not:**
 a word said alone and a hold to ask still pause it; leaving the Reader for another screen of the app still pauses it; a Listen an interruption paused while the page was hidden waits for his Resume; the wake lock is as it was
-(`wakeLock.ts` drops it when the page hides and asks again when it shows). Not built, on purpose: previous or next track, seek handlers, a position state or any skip by verse (a later story if the Governor wants it; `seekToVerse` is there
-for it), a silent looping audio to keep the page alive (docs/pwa-best-practices.md section 11), `crossOrigin`, a fetch of the MP3. Not proved on a phone yet: the tests fake the page's hiding, so whether a locked phone keeps the end timer and the crossing on time is for the Governor's own check. `tests/unit/media-session.test.ts` (a stub session, `tests/support/fake-media-session.ts`) and `features/recorded-voice.feature` (hidden: not paused, the verse follows, the lock
+(`wakeLock.ts` drops it when the page hides and asks again when it shows). Previous and next track skip a verse: see 'Skip a verse' below. Not built, on purpose: seek handlers, a position state, a silent looping audio to keep the page alive (docs/pwa-best-practices.md section 11), `crossOrigin`, a fetch of the MP3. Not proved on a phone yet: the tests fake the page's hiding, so whether a locked phone keeps the end timer and the crossing on time is for the Governor's own check. `tests/unit/media-session.test.ts` (a stub session, `tests/support/fake-media-session.ts`) and `features/recorded-voice.feature` (hidden: not paused, the verse follows, the lock
 screen's Pause and Play, hidden crossing into John 4) hold it.
 
-**Later stories.** b3: the setting in place of the seam (done); b4: the media session (above); a verse skip from the lock screen, if he says yes.
+**Skip a verse (mw-82lb97i.19, PROVISIONAL: the button words and 'Previous always means the verse before', the Governor to confirm).** While a recorded reading is going or paused the bar has two more buttons, **Previous verse** and
+**Next verse** (`RecordedBar.tsx`, 44 px at the least, `data-action` previous-verse and next-verse, drawn as their icons alone so the five buttons fit two rows at 390 px; the words are their names), and the lock screen's (or a headset's, or a car's)
+previous and next track do the same: all call `skipRecordedVerse(-1 | 1)` in `readAloud.ts`, which seeks the recording with `seekToVerse` to the START of the verse before or after the one being read, however far into this verse it is
+(Restart is the way back to this verse's start). The verse mark follows at once (`markVerse`, `verse-reading` on the bus); a paused reading stays paused at the new verse's start and a reading in progress plays on from it. It never leaves the span:
+a verse's own play button reads one verse, so neither skip goes anywhere; a Listen of a section keeps to its section (Next at its last verse and Previous at its first do nothing); the chapter's first verse has none before it, and nothing is said when
+nothing is done. After the chapter's last verse a Play to End (the header's Play, to the end of the book or of the Bible) goes on into the next chapter's first verse, as it does when the recording ends by itself (the recording is stopped and the reading
+crosses, `recordingReached`; a paused reading plays on there, because the Reader hands a chapter over only to a reading that plays); a Listen of a chapter or a section does nothing there. The action handlers `previoustrack` and `nexttrack`
+are set with the rest while a recorded reading is going or paused and cleared when it ends. The phone's voice has neither buttons nor handlers. `features/recorded-voice.feature` ('Next verse', 'Previous verse' and the lock screen's) and
+`tests/e2e/recorded-voice.spec.ts` (five buttons at 390 px, `recorded-skip`) hold it. Not built: a seek bar, a time display, skip buttons on the phone voice's bar.
+
+**Later stories.** b3: the setting in place of the seam (done); b4: the media session (above); b5: skip a verse (above).
 
 ## The speaking bar (mw-m7v5kc.3)
 
