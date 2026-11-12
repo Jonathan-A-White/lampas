@@ -59,8 +59,7 @@ missing`). A missing hyphen or apostrophe counts too. Different handwriting styl
 The model words are Koine Greek in Unicode with their accents (acute, grave, circumflex), breathings (smooth, rough), iota subscripts
 and diaeresis. A different letter, a missing or wrong accent, a missing or wrong breathing, a missing iota subscript or a letter
 confused with a look-alike (`ν` and `υ`, `ο` and `σ`, a final `ς` and a medial `σ`) is `wrong`, and `problem` names which (`the
-breathing on ἀρχῇ is rough here, smooth in the model`, `no accent on λόγος`, `the final sigma is written σ`). A Greek word that is
-right except for an accent is still `wrong`: accents are part of the word. Capital letters count as the model has them.
+breathing on ἀρχῇ is rough here, smooth in the model`, `no accent on λόγος`, `the final sigma is written σ`). Capital letters count as the model has them.
 Judge each Greek word by itself against its own model word: first read off the accents, breathings and iota subscripts the model word carries (it may carry
 one you did not expect), find each of them on the page, and call the word `wrong` only when you can name the letter or mark on the page that differs. A mark he
 wrote that the model word also carries is not an added mark.
