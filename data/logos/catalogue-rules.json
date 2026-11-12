@@ -8,7 +8,7 @@
     "commentary": "The depth of his library at the verse he is reading: the tutor names what it argues and the link is where he checks it.",
     "bible": "The whole Bible from a reader that holds only the New Testament.",
     "devotional": "Today opens the day's reading in his own copy.",
-    "sermons": "His own sermon archive opened at the verse he is reading: whatever Logos has indexed of it by passage is answered there, which Lampas cannot list."
+    "sermons": "Your own sermon archive opened at the verse you are reading: whatever Logos has indexed of it by passage is answered there, which Lampas cannot list."
   },
   "works": [
     {"id":"calvin-commentaries","lang":"en","title":"Calvin's Commentaries","author":"John Calvin","kind":"commentary","source":"His Logos library listing of 2026-10-08 (vault plans/lampas-logos-library-2026-10-08.csv, ResourceId and ReferenceSupersets columns)"},
@@ -140,7 +140,12 @@
     {"resource":"LLS:12MOSUNA","kind":"devotional","title":"Twelve Months of Sundays: Reflections on Bible Readings, Year A","short":"Twelve Months of Sundays: Reflections on Bible Readings, Year A","author":"N. T. Wright","dayOfYear":false},
     {"resource":"LLS:12MOSUNB","kind":"devotional","title":"Twelve Months of Sundays: Reflections on Bible Readings, Year B","short":"Twelve Months of Sundays: Reflections on Bible Readings, Year B","author":"N. T. Wright","dayOfYear":false},
     {"resource":"LLS:12MOSUNC","kind":"devotional","title":"Twelve Months of Sundays: Reflections on Bible Readings, Year C","short":"Twelve Months of Sundays: Reflections on Bible Readings, Year C","author":"N. T. Wright","dayOfYear":false},
-    {"resource":"LLS:WMNSDLYSPRTWRFR","kind":"devotional","title":"Women’s Daily Declarations for Spiritual Warfare","short":"Women’s Daily Declarations for Spiritual Warfare","author":"John Eckhardt","dayOfYear":true}
+    {"resource":"LLS:WMNSDLYSPRTWRFR","kind":"devotional","title":"Women’s Daily Declarations for Spiritual Warfare","short":"Women’s Daily Declarations for Spiritual Warfare","author":"John Eckhardt","dayOfYear":true},
+    {"resource":"LLS:6.60.10","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.10: Saint Chrysostom: Homilies on the Gospel of Saint Matthew","short":"NPNF1.10","series":"Early Church Fathers (Protestant Edition)","covers":["mat"]},
+    {"resource":"LLS:6.60.11","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.11: Saint Chrysostom: Homilies on the Acts of the Apostles and the Epistle to the Romans","short":"NPNF1.11","series":"Early Church Fathers (Protestant Edition)","covers":["act","rom"]},
+    {"resource":"LLS:6.60.12","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.12: Saint Chrysostom: Homilies on the Epistles of Paul to the Corinthians","short":"NPNF1.12","series":"Early Church Fathers (Protestant Edition)","covers":["1co","2co"]},
+    {"resource":"LLS:6.60.13","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.13: Saint Chrysostom: Homilies on Galatians, Ephesians, Philippians, Colossians, Thessalonians, Timothy, Titus, and Philemon","short":"NPNF1.13","series":"Early Church Fathers (Protestant Edition)","covers":["gal","eph","php","col","1th","2th","1ti","2ti","tit","phm"]},
+    {"resource":"LLS:6.60.14","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.14: Saint Chrysostom: Homilies on the Gospel of St. John and Epistle to the Hebrews","short":"NPNF1.14","series":"Early Church Fathers (Protestant Edition)","covers":["jhn","heb"]}
   ],
   "types": [
     {"type":"lbx.reverse-interlinear","kind":"interlinear","needs":"nt"},
@@ -155,5 +160,9 @@
     {"series":"New International Greek Testament Commentary","kind":"commentary"},
     {"series":"Pillar New Testament Commentary","kind":"commentary"},
     {"series":"Lenski’s Commentary on the New Testament","kind":"commentary"}
+  ],
+  "exclude": [
+    {"resource":"LLS:HWRTNARSRM","title":"How to Write Narrative Sermons","reason":"a book about how to preach, not a sermon archive"},
+    {"resource":"LLS:TRNSFRMTNLPRCHN","title":"Transformational Preaching: A Guide to Developing and Delivering Expository Sermons","reason":"a book about how to preach, not a sermon archive"}
   ]
 }

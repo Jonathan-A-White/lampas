@@ -49,7 +49,7 @@ describe('the kind sermons', () => {
 });
 
 describe.skipIf(!existsSync(VAULT_EXPORT))('the catalogue written from his whole export', () => {
-  it('takes 61 sermon books and 17 outline books by type, each opening at a verse, none with a covers list', () => {
+  it('takes the 61 sermon books and 17 outline books by type but seven, each opening at a verse, none with a covers list (two books about preaching are left out and five volumes of Chrysostom are commentaries, mw-qtu3zvz.108)', () => {
     const rows = readExport(readFileSync(VAULT_EXPORT, 'utf8'));
     const sermonRows = rows.filter((r) => r.type === 'text.monograph.sermons');
     const outlineRows = rows.filter((r) => r.type === 'text.monograph.sermon-outlines');
@@ -57,8 +57,9 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('the catalogue written from his whole
     expect(outlineRows).toHaveLength(17);
     const { files } = buildCatalogue(RULES, rows);
     const taken = files.sermons.entries;
-    expect(taken).toHaveLength(78);
-    expect(new Set(taken.map((e) => e.resource))).toEqual(new Set([...sermonRows, ...outlineRows].map((r) => r.resource)));
+    const notArchives = new Set(['LLS:HWRTNARSRM', 'LLS:TRNSFRMTNLPRCHN', 'LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14']);
+    expect(taken).toHaveLength(78 - notArchives.size);
+    expect(new Set(taken.map((e) => e.resource))).toEqual(new Set([...sermonRows, ...outlineRows].map((r) => r.resource).filter((r) => !notArchives.has(r))));
     for (const e of taken) {
       expect(e.kind).toBe('sermons');
       expect(e.opens).toBe('verse');
@@ -68,10 +69,10 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('the catalogue written from his whole
     }
   });
 
-  it('is what is committed: 78 archives, Greg Laurie’s among them', () => {
-    expect(archives()).toHaveLength(78);
+  it('is what is committed: 71 archives, Greg Laurie’s among them', () => {
+    expect(archives()).toHaveLength(71);
     expect(laurie().title).toBe('Greg Laurie Sermon Archive');
-    expect(CATALOGUE.filter((e) => e.kind === 'sermons')).toHaveLength(78);
+    expect(CATALOGUE.filter((e) => e.kind === 'sermons')).toHaveLength(71);
   });
 });
 

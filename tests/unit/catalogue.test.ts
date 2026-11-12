@@ -16,6 +16,7 @@ import { LEXICONS, lexiconLinks } from '../../src/resources/logos';
 import { COMMON_BIBLES, DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { WORKS } from '../../src/resources/works';
 import { buildCatalogue, coversOfSupersets, parseCsv, readExport, versionOf, type Rules } from '../../scripts/logos-catalogue';
+import { matchExport } from '../../src/library/matchExport';
 
 const root = join(__dirname, '../..');
 const RULES = JSON.parse(readFileSync(join(root, 'data/logos/catalogue-rules.json'), 'utf8')) as Rules;
@@ -170,9 +171,9 @@ describe('the committed catalogue is written from his whole library, not from th
       expect(e.opens, e.resource).toBe('verse');
       expect(e.starts, e.resource).toBe('on');
     }
-    // the series and the ids are as they were: 24 volumes and 12 named ones
+    // the series and the ids are as they were: 24 volumes and 12 named ones, and Chrysostom's five volumes of the Nicene and Post-Nicene Fathers (named by id: Logos types them as sermons, mw-qtu3zvz.108)
     expect(kindEntries('commentary').filter((e) => e.via === 'series')).toHaveLength(24);
-    expect(kindEntries('commentary').filter((e) => e.via === 'id')).toHaveLength(12);
+    expect(kindEntries('commentary').filter((e) => e.via === 'id')).toHaveLength(12 + 5);
     // Guzik, Barnes and the Bible Speaks Today open on Romans
     for (const series of ['David Guzik’s Commentaries on the Bible', 'Barnes’ Notes on the Old and New Testaments', 'The Bible Speaks Today']) {
       expect(byType.filter((e) => e.series === series && e.covers?.includes('rom')).length, series).toBeGreaterThan(0);
@@ -422,5 +423,58 @@ describe('the rules at work on rows the fixture does not hold', () => {
     const { files } = buildCatalogue(RULES, rows);
     expect(files.lexicon.entries.find((e) => e.resource === 'LLS:46.30.18')?.title).toBe('BDAG');
     expect(files.lexicon.entries.filter((e) => e.resource === 'LLS:46.30.18')).toHaveLength(1);
+  });
+});
+
+describe('the sermons kind holds sermons, in words a reader can read (mw-qtu3zvz.108, folding .102, .105 and .107)', () => {
+  const sermons = entriesOf('sermons');
+  const BOOKS_ABOUT_PREACHING = ['LLS:HWRTNARSRM', 'LLS:TRNSFRMTNLPRCHN'];
+  const NPNF_CHRYSOSTOM = ['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14'];
+
+  it('holds no book about how to preach, and the rules say they are left out (.102)', () => {
+    for (const id of BOOKS_ABOUT_PREACHING) {
+      expect(CATALOGUE.filter((e) => e.resource === id), id).toEqual([]);
+      expect(RULES.exclude?.map((x) => x.resource), id).toContain(id);
+    }
+    expect(readFileSync(join(root, 'src/resources/catalogue/sermons.json'), 'utf8')).not.toMatch(/HWRTNARSRM|TRNSFRMTNLPRCHN/);
+  });
+
+  it('leaves a rule’s excluded book out of the tool’s output, whichever rule would have taken it', () => {
+    const row = { resource: 'LLS:BOOKONPREACHING', type: 'text.monograph.sermons', abbreviated: '', title: 'A Book on Preaching', series: '', languages: 'en', supersets: '' };
+    const rules = { values: { sermons: 'a value' }, works: [], ids: [], types: [{ type: 'text.monograph.sermons', kind: 'sermons' as const }], series: [], exclude: [{ resource: 'LLS:BOOKONPREACHING', reason: 'a book about preaching' }] } as unknown as Rules;
+    expect(buildCatalogue(rules, [row]).files.sermons.entries).toEqual([]);
+    expect(buildCatalogue({ ...rules, exclude: [] } as unknown as Rules, [row]).files.sermons.entries.map((e) => e.resource)).toEqual(['LLS:BOOKONPREACHING']);
+  });
+
+  it('reads a list that holds one as a book Lampas has no sermon entry for', () => {
+    const row = { resource: 'LLS:HWRTNARSRM', type: 'text.monograph.sermons', abbreviated: '', title: 'How to Write Narrative Sermons', series: '', languages: 'en', supersets: '' };
+    expect(matchExport([row]).matched).toEqual([]);
+  });
+
+  it('does not offer a volume of the Fathers at every verse: Chrysostom’s five are commentaries with the books they cover, not sermon archives (.107)', () => {
+    for (const id of NPNF_CHRYSOSTOM) {
+      expect(sermons.map((e) => e.resource), id).not.toContain(id);
+      const entry = CATALOGUE.find((e) => e.resource === id);
+      expect(entry?.kind, id).toBe('commentary');
+      expect(entry?.covers?.length, id).toBeGreaterThan(0);
+    }
+    expect(CATALOGUE.find((e) => e.resource === 'LLS:6.60.10')?.covers).toEqual(['mat']);
+  });
+
+  it('has no sermons entry that opens at a verse with no books it covers, unless a type rule took it as a sermon archive (.107)', () => {
+    const bare = sermons.filter((e) => e.opens === 'verse' && (e.covers ?? []).length === 0);
+    expect(bare.filter((e) => e.via !== 'type').map((e) => e.resource)).toEqual([]);
+    // a volume of a work a Father preached through, passage by passage, is not an archive indexed by passage
+    expect(bare.filter((e) => e.series === 'Early Church Fathers (Protestant Edition)').map((e) => e.resource)).toEqual([]);
+  });
+
+  it('names no one in the third person: the sermons value, the rules’ value line and the bundled index (.105)', () => {
+    expect(sermons.length).toBeGreaterThan(0);
+    for (const e of sermons) expect(e.value, e.resource).not.toMatch(/\bhis\b|\bhe is\b|\bHis\b/);
+    expect(RULES.values.sermons).not.toMatch(/\bhis\b|\bhe is\b|\bHis\b/);
+    const index = JSON.parse(readFileSync(join(root, 'public/sermons/index.json'), 'utf8')) as { sources: { id: string; name: string }[] };
+    for (const s of index.sources) expect(s.name, s.id).not.toMatch(/\bhis\b|\bHis\b/);
+    const config = JSON.parse(readFileSync(join(root, 'data/sermons/sources.json'), 'utf8')) as { sources: string[]; names?: Record<string, string> };
+    for (const s of index.sources.filter((x) => x.id.endsWith('-logos'))) expect(config.names?.[s.id], s.id).toBe(s.name);
   });
 });
