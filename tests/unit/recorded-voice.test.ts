@@ -53,21 +53,21 @@ describe('the wait for a span’s end', () => {
   });
 
   it.each([
-    [0.5, 40_000],
-    [1, 20_000],
-    [2, 10_000],
-  ])('at rate %s, from verse 2 to the end of verse 3, is %s ms', (rate, wait) => {
+    [0.5, 39_920],
+    [1, 19_960],
+    [2, 9_980],
+  ])('at rate %s, from verse 2 to 40 ms of the recording before the end of verse 3 (END_LEAD: a busy page’s timer fires late), is %s ms', (rate, wait) => {
     setRecordedRate(rate);
     playRecording(TIMINGS, 2, 30, listener);
     expect(element().currentTime).toBe(10);
     expect(element().playbackRate).toBe(rate);
-    expect(endTimerMs()).toBe(wait);
+    expect(endTimerMs()).toBeCloseTo(wait);
   });
 
   it('starts the recording’s first verse at second 0, the title included', () => {
     playRecording(TIMINGS, 1, 10, listener);
     expect(element().currentTime).toBe(0);
-    expect(endTimerMs()).toBe(10_000);
+    expect(endTimerMs()).toBeCloseTo(9_960);
   });
 });
 
@@ -79,16 +79,16 @@ describe('the end timer is aimed again', () => {
     expect(endTimerMs()).toBeNull();
     resumeRecording();
     expect(audio.playedAt).toEqual([10, 15]);
-    expect(endTimerMs()).toBe(15_000);
+    expect(endTimerMs()).toBeCloseTo(14_960);
   });
 
   it('after a seek', () => {
     setRecordedRate(2);
     playRecording(TIMINGS, 1, 30, listener);
-    expect(endTimerMs()).toBe(15_000);
+    expect(endTimerMs()).toBeCloseTo(14_980);
     seekToVerse(3);
     expect(element().currentTime).toBe(20);
-    expect(endTimerMs()).toBe(5_000);
+    expect(endTimerMs()).toBeCloseTo(4_980);
   });
 
   it('after a change of speed while it plays', () => {
@@ -96,7 +96,7 @@ describe('the end timer is aimed again', () => {
     audio.advanceTo(12);
     setRecordedRate(0.5);
     expect(element().playbackRate).toBe(0.5);
-    expect(endTimerMs()).toBe(16_000);
+    expect(endTimerMs()).toBeCloseTo(15_920);
   });
 });
 
@@ -119,7 +119,7 @@ describe('the end', () => {
     await Promise.resolve();
     vi.advanceTimersByTime(10_000);
     expect(told).toEqual([]);
-    expect(endTimerMs()).toBe(10_000);
+    expect(endTimerMs()).toBeCloseTo(9_960);
     audio.advanceTo(20);
     expect(told).toEqual(['reached']);
   });
@@ -135,5 +135,54 @@ describe('the end', () => {
     playRecording(TIMINGS, 2, 20, listener);
     vi.advanceTimersByTime(8_000);
     expect(told).toEqual(['failed']);
+  });
+});
+
+// mw-82lb97i.18: his John 1:50 in David's voice ran on into 'Then He declar…' of verse 51. A phone's element moves its second in steps, at each 'timeupdate' (about every
+// 250 ms), while the sound runs on by the clock: a stop that reads the second when its timer fires finds it a step behind, waits again, and the next 'timeupdate' lands past the end.
+describe('a single verse stops at its end on a phone’s 250 ms timeupdate cadence (mw-82lb97i.18)', () => {
+  /** Plays verse `verse` alone and lets the phone run: the sound goes on by the clock, the element's second moves to it only at each 'timeupdate', the first `phase` ms
+   * after the sound starts and then every 250 ms. Gives the second of the sound when the recording was stopped. */
+  async function stopOf(verse: number, phase: number, rate = 1): Promise<number> {
+    setRecordedRate(rate);
+    const span = TIMINGS.verses.find(([n]) => n === verse);
+    if (!span) throw new Error('no verse');
+    let stoppedAt: number | null = null;
+    playRecording(TIMINGS, verse, span[2], { ...listener, reached: () => (stoppedAt = span[1] + (Date.now() - began) / 1000 * rate) });
+    await Promise.resolve();
+    const began = Date.now();
+    for (let tick = phase; stoppedAt === null && tick < 60_000; tick += 250) {
+      vi.advanceTimersByTime(began + tick - Date.now());
+      if (stoppedAt !== null || !audio.playing()) break;
+      element().currentTime = span[1] + (tick / 1000) * rate;
+      element().dispatchEvent(new Event('timeupdate'));
+    }
+    if (stoppedAt === null) throw new Error('it never stopped');
+    return stoppedAt;
+  }
+
+  it.each([0, 40, 100, 160, 230])('verse 2 (10 s to 20 s) with the first timeupdate %s ms in: stopped at the end, never more than 50 ms past it', async (phase) => {
+    const at = await stopOf(2, phase);
+    expect(at).toBeGreaterThanOrEqual(20 - 0.05);
+    expect(at).toBeLessThanOrEqual(20 + 0.05);
+    expect(audio.playing()).toBeNull();
+  });
+
+  it.each([0.75, 1.5])('at his speed %s too', async (rate) => {
+    const at = await stopOf(3, 110, rate);
+    expect(at).toBeGreaterThanOrEqual(30 - 0.05);
+    expect(at).toBeLessThanOrEqual(30 + 0.05);
+  });
+
+  it('a recording that stalls (no second moves) is not stopped by the clock alone: it waits for the sound to get there', async () => {
+    playRecording(TIMINGS, 2, 20, listener);
+    await Promise.resolve();
+    audio.advanceTo(19.5);
+    // buffering: the element's second stands at 19.5 for three seconds
+    vi.advanceTimersByTime(3000);
+    expect(told).toEqual([]);
+    expect(audio.playing()).not.toBeNull();
+    audio.advanceTo(20);
+    expect(told).toEqual(['reached']);
   });
 });
