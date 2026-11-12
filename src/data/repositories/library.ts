@@ -247,17 +247,19 @@ async function put(entry: CatalogueEntry, state: ShelfState, now: number): Promi
   return OK;
 }
 
-/** All on / All off for a kind: every catalogue book of the kind goes On (a Pinned one stays Pinned), or every row of the kind goes. Bibles are one at a time: All on is refused. */
-export async function setKind(kind: Kind, state: 'on' | 'off', now = Date.now()): Promise<ShelfResult> {
+/** All on / All off for a kind: every catalogue book of the kind goes On (a Pinned one stays Pinned), or every row of the kind goes. Bibles are one at a time: All on is refused.
+ *  `only` limits it to those books of the kind (the rows a search shows, mw-qtu3zvz.103); the others keep their state. */
+export async function setKind(kind: Kind, state: 'on' | 'off', now = Date.now(), only?: readonly string[]): Promise<ShelfResult> {
   await ensureShelf();
   if (state === 'on' && kind === 'bible') return refused('one-at-a-time');
+  const within = only ? new Set(only) : undefined;
   return db.transaction('rw', db.library, async () => {
     if (state === 'off') {
-      await db.library.where('kind').equals(kind).delete();
+      await db.library.where('kind').equals(kind).filter((r) => !within || within.has(r.id)).delete();
       return OK;
     }
     const have = new Map((await db.library.where('kind').equals(kind).toArray()).map((r) => [r.id, r]));
-    await db.library.bulkPut(entriesOf(kind).map((e): LibraryRow => have.get(e.resource) ?? { id: e.resource, kind, state: 'on', since: now }));
+    await db.library.bulkPut(entriesOf(kind).filter((e) => !within || within.has(e.resource)).map((e): LibraryRow => have.get(e.resource) ?? { id: e.resource, kind, state: 'on', since: now }));
     return OK;
   });
 }
