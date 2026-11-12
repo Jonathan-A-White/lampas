@@ -68,7 +68,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `maps.logosatlas` — Logos Atlas. Used only while Logos is On in Study resources.
 - `themes.themes-tcr1934`, `themes.themes-torrey` — Thompson Chain Topics, Torrey's New Topical Textbook. Verse topics.
 - `sermons.spurgeon-ccel`, `sermons.henry-sermons` — Spurgeon's sermons (CCEL), Matthew Henry's sermons. Listed by passage.
-- `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos` — Greg Laurie's sermons (Logos archive), J. D. Greear's sermons (Logos archive), Skip Heitzig's sermons (Logos archive), Spurgeon's My Sermon Notes, John Wesley's sermons (Logos library), George Whitefield's sermons, D. L. Moody's sermons (Logos library). Listed by passage; opens in Logos.
+- `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos` — Greg Laurie's, J. D. Greear's, Skip Heitzig's, Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's, D. L. Moody's sermons. Listed by passage; opens in Logos.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
 - `readingPlan` — Reading plan. Read through the Bible a chapter at a time, with the audio Bible.
 - `dailyReview` — Review. Whether Today holds a Review piece: the words and ideas that are due.
