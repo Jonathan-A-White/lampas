@@ -4,7 +4,9 @@
 // mistakes the right one for (aorist for imperfect, middle for passive), or the same answer with one of its features changed ('plural masculine' for 'singular masculine').
 import { sourceLanguage, wordParse, type Chapter } from './chapter';
 import { OPTION_COUNT, choicesOf } from './choices';
-import type { Word } from './db';
+import type { GrammarLevel, Word, WordState } from './db';
+import type { GrammarExtent } from './grammar/extent';
+import { formPasses, formTier } from './grammar/formLevel';
 import { hebrewSteps, termsOf } from './hebrewDrill';
 import { PARTS_OF_SPEECH, splitParse, type ParseFeature, type ParseFeatureId } from './parseCode';
 import { isFormOf, lemmasOf, shuffle, type Random } from './quiz';
@@ -141,6 +143,20 @@ export function buildSteps(code: string, random: Random): DrillStep[] {
 
 const nfc = (s: string) => s.normalize('NFC');
 
+/** What tunes a round to him (mw-indx1x6.9): the grammar extent and the words the Reader's Weave settings name, his grammar levels, and the idea he is learning now. */
+export interface DrillTuning {
+  /** the Weave's Grammar dial: a Greek form is asked only when every idea it needs is within it (formPasses; a Hebrew chapter is not held to it) */
+  extent: GrammarExtent;
+  /** the words asked: the Weave's Words ('solid' only the solid ones; 'solid+learning', and Off, the solid and the learning) */
+  words: 'solid' | 'solid+learning';
+  levels: ReadonlyMap<string, GrammarLevel>;
+  /** the idea of the Goal screen's 'Learning now'; forms that use it come first */
+  learning?: string;
+}
+
+/** The states of the words a round may ask. */
+const statesOf = (words: DrillTuning['words']): readonly WordState[] => (words === 'solid' ? ['solid'] : ['solid', 'learning']);
+
 interface Candidate {
   word: Word;
   verse: number;
@@ -151,7 +167,7 @@ interface Candidate {
 }
 
 /** The places in the chapter where a word he knows stands, each place claimed by one word. A Hebrew chapter's places are those of his Hebrew words with a parsing, a Greek chapter's those of his Greek ones. */
-function candidatesOf(chapter: Chapter, words: readonly Word[]): Candidate[] {
+function candidatesOf(chapter: Chapter, words: readonly Word[], fits?: (code: string) => boolean): Candidate[] {
   const hebrew = sourceLanguage(chapter) === 'hbo';
   const headwords = new Set(words.map((w) => nfc(w.lemma)));
   const claimed = new Set<string>();
@@ -164,6 +180,7 @@ function candidatesOf(chapter: Chapter, words: readonly Word[]): Candidate[] {
       v.g.forEach((g, at) => {
         const key = `${v.n}:${at}`;
         if (claimed.has(key) || !isFormOf(g, lemmas, others)) return;
+        if (fits && !fits(g.p)) return;
         // a Hebrew word is parsed from the chapter's plain words for its code; one the chapter gives none cannot be drilled
         if (hebrew && termsOf(wordParse(chapter, g)).length === 0) return;
         claimed.add(key);
@@ -187,11 +204,14 @@ function onePerWord(order: readonly Word[], byWord: ReadonlyMap<string, Candidat
  * when he has them, five learning ones first. Words that are only their part of speech (a particle, a preposition)
  * come after every word with more to parse, and only when the round would be short without them.
  */
-export function drawDrill(chapter: Chapter, allWords: readonly Word[], random: Random, size = DRILL_SIZE): DrillQuestion[] {
+export function drawDrill(chapter: Chapter, allWords: readonly Word[], random: Random, size = DRILL_SIZE, tuning?: DrillTuning): DrillQuestion[] {
   const hebrew = sourceLanguage(chapter) === 'hbo';
   // a chapter is drilled on the words of its own language (a word stored with no language is Greek)
-  const words = allWords.filter((w) => (w.lang ?? 'grc') === (hebrew ? 'hbo' : 'grc'));
-  const all = candidatesOf(chapter, words);
+  const states = tuning ? statesOf(tuning.words) : undefined;
+  const words = allWords.filter((w) => (w.lang ?? 'grc') === (hebrew ? 'hbo' : 'grc') && (!states || states.includes(w.state)));
+  const fits = tuning && !hebrew ? (code: string) => formPasses(code, tuning.levels, tuning.extent) : undefined;
+  const all = candidatesOf(chapter, words, fits);
+  if (tuning) return tunedRound(chapter, all, tuning, random, size);
   const group = (list: Candidate[]) => {
     const byWord = new Map<string, Candidate[]>();
     for (const c of list) byWord.set(c.word.lemma, [...(byWord.get(c.word.lemma) ?? []), c]);
@@ -209,23 +229,50 @@ export function drawDrill(chapter: Chapter, allWords: readonly Word[], random: R
   const rest = shuffle(onePerWord([...plain.values()].map((places) => places[0].word), plain, random), random);
   const more = shuffle(all.filter((c) => !c.parsable && !rest.includes(c)), random);
 
-  return shuffle([...first, ...again, ...rest, ...more].slice(0, size), random).map((c) => {
-    const verse = chapter.verses.find((v) => v.n === c.verse);
-    if (!verse) throw new Error(`No verse ${c.verse}`);
-    const g = verse.g[c.at];
-    return {
-      lemma: c.word.lemma,
-      ...(hebrew ? { lang: 'hbo' as const } : {}),
-      form: g.t,
-      reference: `${chapter.book} ${chapter.chapter}:${verse.n}`,
-      book: chapter.code,
-      chapter: chapter.chapter,
-      verse: verse.n,
-      words: verse.g.map((w) => w.t),
-      at: c.at,
-      code: c.code,
-      parsing: wordParse(chapter, g),
-      steps: hebrew ? hebrewSteps(wordParse(chapter, g), random) : buildSteps(c.code, random),
-    };
-  });
+  return shuffle([...first, ...again, ...rest, ...more].slice(0, size), random).map((c) => questionOf(chapter, c, random));
+}
+
+/** A tuned round (mw-indx1x6.9): the same places as the plain round, but in the order of how near each form is to what he is learning (formTier): the forms
+ * of the idea he learns now, then those with a frontier idea, then the solid ones. Within a tier the learning words come first; the order is kept, not shuffled. */
+function tunedRound(chapter: Chapter, all: readonly Candidate[], tuning: DrillTuning, random: Random, size: number): DrillQuestion[] {
+  const hebrew = sourceLanguage(chapter) === 'hbo';
+  const tierOf = (c: Candidate) => (hebrew ? 2 : formTier(c.code, tuning.levels, tuning.learning));
+  const ranked = (list: readonly Candidate[]) =>
+    shuffle(list, random)
+      .map((c, i) => ({ c, i }))
+      .sort((a, b) => tierOf(a.c) - tierOf(b.c) || Number(b.c.word.state === 'learning') - Number(a.c.word.state === 'learning') || a.i - b.i)
+      .map(({ c }) => c);
+  // one place per word, its nearest to what he learns; the words then in order of that place
+  const onePlaces = (list: readonly Candidate[]): Candidate[] => {
+    const seen = new Set<string>();
+    return ranked(list).filter((c) => !seen.has(c.word.lemma) && (seen.add(c.word.lemma), true));
+  };
+  const parsable = all.filter((c) => c.parsable);
+  const plain = all.filter((c) => !c.parsable);
+  const first = onePlaces(parsable);
+  const rest = onePlaces(plain);
+  const again = ranked(parsable.filter((c) => !first.includes(c)));
+  const more = ranked(plain.filter((c) => !rest.includes(c)));
+  return [...first, ...again, ...rest, ...more].slice(0, size).map((c) => questionOf(chapter, c, random));
+}
+
+function questionOf(chapter: Chapter, c: Candidate, random: Random): DrillQuestion {
+  const hebrew = sourceLanguage(chapter) === 'hbo';
+  const verse = chapter.verses.find((v) => v.n === c.verse);
+  if (!verse) throw new Error(`No verse ${c.verse}`);
+  const g = verse.g[c.at];
+  return {
+    lemma: c.word.lemma,
+    ...(hebrew ? { lang: 'hbo' as const } : {}),
+    form: g.t,
+    reference: `${chapter.book} ${chapter.chapter}:${verse.n}`,
+    book: chapter.code,
+    chapter: chapter.chapter,
+    verse: verse.n,
+    words: verse.g.map((w) => w.t),
+    at: c.at,
+    code: c.code,
+    parsing: wordParse(chapter, g),
+    steps: hebrew ? hebrewSteps(wordParse(chapter, g), random) : buildSteps(c.code, random),
+  };
 }

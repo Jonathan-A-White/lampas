@@ -2,16 +2,24 @@
 // step (part of speech first, then tense, voice and mood, or case, number and gender ...) with four choices. A step shows at
 // once whether it was right; a miss shows the right choice and the full parsing, and so does the last step of a word.
 // Every question has Ask the tutor and Talk about it, which send him to the Reader on that verse (src/nav/readerRequest.ts).
-// The words come from src/data/drill.ts; each answer is kept per word and step (src/data/repositories/drills.ts).
+// The words come from src/data/drill.ts; each answer is kept per word and step (src/data/repositories/drills.ts). The round is tuned to him (mw-indx1x6.9): the Reader's
+// Weave settings, Words (solid | + Learning) and Grammar (Any | Solid | + Frontier), choose the forms, and the idea of the Goal screen's Learning now comes first; the
+// two rows sit on the screen where a round begins, and when no form fits the screen says so and offers the widest setting.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { loadChapter } from './data/chapter';
-import { drawDrill, type DrillQuestion } from './data/drill';
+import { drawDrill, type DrillQuestion, type DrillTuning } from './data/drill';
 import { clearDrill, readDrill, saveDrill, type SavedDrill } from './data/drillKeep';
 import type { Random } from './data/quiz';
 import { getStudyChapter } from './data/readerChapter';
 import { studyLanguage } from './data/studyLanguage';
-import { listWords, recordDrillStep } from './data/repositories';
+import { getWeave, getWeaveGrammar, listLevels, listWords, recordDrillStep } from './data/repositories';
+import { EXTENT_LABELS } from './data/grammar/extent';
+import { learningNow, levelsOf } from './data/grammar/goalProgress';
+import { extentOf } from './settings/definitions/grammarExtent';
+import { ExtentChips } from './settings/controls/grammarExtent';
+import { ChipRow } from './settings/controls/SettingRow';
+import { writeSetting } from './settings/registry';
 import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
 import { backTo, navigate } from './nav/route';
@@ -62,11 +70,43 @@ function opening(): Session {
 const keep = (s: Session, away: number | null = null): void =>
   saveDrill({ questions: s.questions, question: s.question, step: s.step, picked: s.picked, missed: s.missed, asked: s.asked, right: s.right, away });
 
-async function drawRound(random: Random): Promise<DrillQuestion[]> {
+/** A round, and whether his settings narrowed it (so that an empty one can offer the widest setting). */
+interface Round {
+  questions: DrillQuestion[];
+  narrowed: boolean;
+}
+
+async function drawRound(random: Random): Promise<Round> {
   // the chapter of the language he is studying: the open chapter's when he chose it, else the one he chose, else the segment's (src/data/studyLanguage.ts)
   const open = getStudyChapter(await studyLanguage());
-  const [words, chapter] = await Promise.all([listWords(), loadChapter(open.book, open.chapter)]);
-  return drawDrill(chapter, words, random);
+  const [words, chapter, levels, extent, weave] = await Promise.all([listWords(), loadChapter(open.book, open.chapter), listLevels(), getWeaveGrammar(), getWeave()]);
+  // the Weave's Words: Off asks the solid and the learning words, as the drill always did
+  const tuning: DrillTuning = { extent, words: weave === 'solid' ? 'solid' : 'solid+learning', levels, learning: learningNow(levelsOf(levels))?.id };
+  return { questions: drawDrill(chapter, words, random, undefined, tuning), narrowed: extent !== 'any' || weave === 'solid' };
+}
+
+/** The Weave's Words and Grammar rows, the settings the round is drawn by (the same as the Reader's Weave). The Grammar row is for Greek: a Hebrew chapter is not held to it. */
+function RoundSettings({ greek, learning }: { greek: boolean; learning: string | undefined }) {
+  const weave = useLiveQuery(getWeave, []);
+  const grammar = useLiveQuery(getWeaveGrammar, []);
+  return (
+    <section data-testid="drill-settings" aria-label="Settings for this round" className="mt-4 space-y-2 text-left">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="w-16 shrink-0 text-sm font-medium text-muted">Words</span>
+        {weave ? <ChipRow name="Words" current={weave} options={[['off', 'Off'], ['solid', 'Solid'], ['solid+learning', '+ Learning']]} settingKey="weave" /> : null}
+      </div>
+      {greek ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="w-16 shrink-0 text-sm font-medium text-muted">Grammar</span>
+          <ExtentChips settingKey="weaveGrammar" name="Grammar" current={grammar} />
+        </div>
+      ) : null}
+      <p className="text-sm text-muted">
+        {greek ? 'Forms use only the grammar these settings take' : 'Words these settings take'}
+        {learning ? `; forms with ${learning} (Learning now) come first.` : '.'}
+      </p>
+    </section>
+  );
 }
 
 const OPTION_BASE = 'block min-h-14 w-full break-words rounded-xl border px-4 py-3 text-left text-lg first-letter:uppercase disabled:opacity-100';
@@ -110,6 +150,10 @@ function VerseWithWord({ q }: { q: DrillQuestion }) {
 export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const ai = useAiAllowed();
   const [s, setS] = useState<Session>(opening);
+  const [narrowed, setNarrowed] = useState(false);
+  // the settings the round on the screen was drawn by; a change before the first answer draws the round again
+  const drawnBy = useRef<string | null>(null);
+  const drawing = useRef(0);
 
   const another = () => {
     clearDrill();
@@ -118,13 +162,16 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   };
 
   const start = () => {
+    const mine = (drawing.current += 1);
     drawRound(newRandom()).then(
-      (questions) => {
+      ({ questions, narrowed: narrow }) => {
+        if (mine !== drawing.current) return; // a later round was asked for meanwhile
+        setNarrowed(narrow);
         const next: Session = { status: 'ready', ...FRESH, questions };
         if (questions.length > 0) keep(next);
         setS(next);
       },
-      () => setS({ status: 'failed', ...FRESH }),
+      () => mine === drawing.current && setS({ status: 'failed', ...FRESH }),
     );
   };
 
@@ -143,6 +190,20 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   }, []);
 
   const total = s.questions.length;
+  const weaveNow = useLiveQuery(getWeave, []);
+  const grammarNow = useLiveQuery(getWeaveGrammar, []);
+  const levelsNow = useLiveQuery(listLevels, []);
+  const learningIdea = levelsNow ? learningNow(levelsOf(levelsNow)) : undefined;
+  const atStart = s.status === 'ready' && total > 0 && s.question === 0 && s.step === 0 && s.picked === null;
+  const settingsKey = weaveNow && grammarNow ? `${weaveNow}|${grammarNow}` : null;
+  useEffect(() => {
+    if (settingsKey === null) return;
+    const before = drawnBy.current;
+    drawnBy.current = settingsKey;
+    // a setting changed where a round begins, or under an empty round: the round is drawn again by the new setting
+    if (before !== null && before !== settingsKey && (atStart || (s.status === 'ready' && total === 0))) another();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settingsKey]);
   const finished = s.status === 'ready' && total > 0 && s.question >= total;
   const question = s.questions[s.question];
   const step = question?.steps[s.step];
@@ -154,6 +215,9 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   const settled = useSettled(`${s.question}:${s.step}`);
   // the options leave the floating ? its room on the Hand's side (src/tutor/doorRoom.ts)
   const room = useDoorRoom();
+
+  const greek = (question ? (question.lang ?? 'grc') : (studying ?? 'grc')) === 'grc';
+  const settings = <RoundSettings greek={greek} learning={learningIdea?.title} />;
 
   const header = (
     <ScreenHeader
@@ -178,6 +242,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
               New round
             </button>
           </div>
+          {settings}
         </main>
       </>
     );
@@ -201,12 +266,30 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   }
 
   if (total === 0) {
+    // his settings left no form to ask: say so and offer the widest setting, never an empty round
+    const widen = () => {
+      void writeSetting('weaveGrammar', 'any');
+      if (weaveNow === 'solid') void writeSetting('weave', 'solid+learning');
+    };
     return (
       <>
         {header}
         <main className="screen min-h-0 flex-1 px-6 pt-8 text-center">
-          <p className="text-lg">No words of {reader.title} to drill yet.</p>
-          <p className="mt-1 text-muted">Words that are solid or learning are asked here. Add some with Import.</p>
+          {narrowed ? (
+            <>
+              <p data-testid="drill-none" className="text-lg">No form of {reader.title} fits your settings.</p>
+              <p className="mt-1 text-muted">Grammar: {EXTENT_LABELS[extentOf('weaveGrammar', grammarNow ?? 'any')]} · Words: {weaveNow === 'solid' ? 'Solid' : 'Solid and learning'}</p>
+              <button type="button" data-testid="drill-widen" onClick={widen} className="mt-6 min-h-12 w-full rounded-xl bg-accent text-lg font-medium text-accent-fg">
+                {weaveNow === 'solid' ? 'Use Any grammar and + Learning words' : 'Use Any grammar'}
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="text-lg">No words of {reader.title} to drill yet.</p>
+              <p className="mt-1 text-muted">Words that are solid or learning are asked here. Add some with Import.</p>
+            </>
+          )}
+          {settings}
         </main>
       </>
     );
@@ -250,6 +333,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
               Another round
             </button>
           </div>
+          {settings}
         </main>
       </>
     );
@@ -300,6 +384,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
     <>
       {header}
       <main className="screen min-h-0 flex-1 px-4 pt-4">
+        {atStart ? settings : null}
         <VerseWithWord q={question} />
         <p className="mt-1 text-sm text-muted">
           <DrillReference reference={question.reference} mark={question.form} linked />

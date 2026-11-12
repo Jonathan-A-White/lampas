@@ -2,15 +2,20 @@
 // steps and choices, the two links to the tutor, and the results kept in Dexie. The chapter comes from disk; the right
 // choice of a step is found from the word's RP code with the same builder the app uses.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor } from '@testing-library/react';
+import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
-import { db } from '../../src/data/db';
+import { db, type GrammarLevel } from '../../src/data/db';
 import { buildSteps } from '../../src/data/drill';
+import { formPasses } from '../../src/data/grammar/formLevel';
+import { ideasOf } from '../../src/data/grammar/ladder';
+import { ladderFor } from '../../src/data/grammar/ladders';
+import { storedId } from '../../src/data/grammar/soundScope';
+import { getWeaveGrammar, setWeaveGrammar, getGreekPronunciation } from '../../src/data/repositories';
 import { mulberry32 } from '../../src/data/quiz';
 import { listDrillResults } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
@@ -140,6 +145,25 @@ const parsingOf = (): string => {
   return words;
 };
 
+/** Every idea of the ladder solid except `frontier`, which is at the frontier; no other row (the tables' ids are the plain ids; a sound idea's carries the scheme). */
+async function putLevels(frontier: string[]): Promise<void> {
+  const scheme = await getGreekPronunciation();
+  const rows = ladderFor('grc').ideas.map((idea): GrammarLevel => ({ id: storedId(idea.id, scheme), level: frontier.includes(idea.id) ? 'frontier' : 'solid', since: 0, how: 'sheet' }));
+  await db.grammarLevels.bulkPut(rows);
+}
+
+async function openWithLevels(frontier: string[]): Promise<void> {
+  await db.open();
+  await db.grammarLevels.clear();
+  await db.meta.put({ key: 'grammarLevelsSeeded', value: '1' });
+  await openLampasFresh();
+  await db.grammarLevels.clear();
+  await db.meta.put({ key: 'grammarLevelsSeeded', value: '1' });
+  await putLevels(frontier);
+}
+
+const levelsNow = async () => new Map((await db.grammarLevels.toArray()).map((row): [string, GrammarLevel] => [row.id, row]));
+
 const feature = await loadFeature('features/drill.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -244,6 +268,71 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the steps he answered are still kept for their words', async () => {
       expect(await db.drills.count()).toBe(answeredSteps);
+    });
+  });
+
+  Scenario('The Grammar row on the drill shows and changes the extent, and an empty round offers the widest setting', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened for the first time with no grammar level', async () => {
+      await openLampasFresh();
+      await db.grammarLevels.clear();
+      await db.meta.put({ key: 'grammarLevelsSeeded', value: '1' });
+    });
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    Then('the drill\'s Grammar row has Any chosen', async () => {
+      const row = await within(screen.getByTestId('drill-settings')).findByRole('group', { name: 'Grammar' });
+      expect(within(row).getByRole('button', { name: 'Any' })).toHaveAttribute('aria-pressed', 'true');
+    });
+    When('he taps Solid on the drill\'s Grammar row', async () => {
+      const row = await within(screen.getByTestId('drill-settings')).findByRole('group', { name: 'Grammar' });
+      await user.click(within(row).getByRole('button', { name: 'Solid' }));
+    });
+    Then('the Weave\'s Grammar setting is solid', async () => {
+      await waitFor(async () => expect(await getWeaveGrammar()).toBe('solid'));
+    });
+    And('the drill says no form fits his settings and offers Use Any grammar', async () => {
+      expect(await screen.findByTestId('drill-none')).toHaveTextContent('No form of Romans 8 fits your settings.');
+      expect(screen.getByRole('button', { name: 'Use Any grammar' })).toBeInTheDocument();
+    });
+    When('he taps Use Any grammar', async () => {
+      await user.click(screen.getByRole('button', { name: 'Use Any grammar' }));
+    });
+    Then('the Weave\'s Grammar setting is any', async () => {
+      await waitFor(async () => expect(await getWeaveGrammar()).toBe('any'));
+    });
+    And('the first question shows a word of Romans 8 in its verse and asks its part of speech with 4 choices', async () => {
+      await screen.findByTestId('drill-word');
+      expectStep('pos');
+      expect(options()).toHaveLength(4);
+    });
+  });
+
+  Scenario('With Grammar on Solid every form uses only grammar he has solid', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened for the first time with every idea solid but the participle, which is at the frontier', () => openWithLevels(['mood-participle']));
+    And('the Weave\'s Grammar is Solid', () => setWeaveGrammar('solid'));
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    Then('no form asked in the whole round needs the participle', async () => {
+      const levels = await levelsNow();
+      const plain = new Map([...levels].map(([id, row]): [string, GrammarLevel] => [id.slice(id.lastIndexOf(':') + 1), row]));
+      let seen = 0;
+      for (let q = 0; q < 10 && !screen.queryByTestId('score'); q += 1) {
+        await screen.findByTestId('drill-word');
+        const code = codeOnScreen();
+        expect(ideasOf(code), code).not.toContain('mood-participle');
+        expect(formPasses(code, plain, 'solid'), code).toBe(true);
+        seen += 1;
+        await answerQuestion(() => true);
+        await waitFor(() => expect(screen.queryByTestId('score') ?? screen.queryByTestId('drill-word')).not.toBeNull());
+      }
+      expect(seen).toBe(10);
+    });
+  });
+
+  Scenario('The idea he is learning now comes first when Grammar takes the frontier', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened for the first time with every idea solid but the aorist, which he is learning now', () => openWithLevels(['tense-aorist']));
+    And('the Weave\'s Grammar is Solid and frontier', () => setWeaveGrammar('solid+frontier'));
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    Then('the first form asked uses the aorist', () => {
+      expect(ideasOf(codeOnScreen())).toContain('tense-aorist');
     });
   });
 });

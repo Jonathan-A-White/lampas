@@ -51,3 +51,26 @@ Feature: A parsing drill on the chapter
     And every step he answered is kept for its word
     When Lampas is opened again without clearing anything
     Then the steps he answered are still kept for their words
+
+  Scenario: The Grammar row on the drill shows and changes the extent, and an empty round offers the widest setting
+    Given Lampas is opened for the first time with no grammar level
+    When he opens the Parsing drill from the Test screen
+    Then the drill's Grammar row has Any chosen
+    When he taps Solid on the drill's Grammar row
+    Then the Weave's Grammar setting is solid
+    And the drill says no form fits his settings and offers Use Any grammar
+    When he taps Use Any grammar
+    Then the Weave's Grammar setting is any
+    And the first question shows a word of Romans 8 in its verse and asks its part of speech with 4 choices
+
+  Scenario: With Grammar on Solid every form uses only grammar he has solid
+    Given Lampas is opened for the first time with every idea solid but the participle, which is at the frontier
+    And the Weave's Grammar is Solid
+    When he opens the Parsing drill from the Test screen
+    Then no form asked in the whole round needs the participle
+
+  Scenario: The idea he is learning now comes first when Grammar takes the frontier
+    Given Lampas is opened for the first time with every idea solid but the aorist, which he is learning now
+    And the Weave's Grammar is Solid and frontier
+    When he opens the Parsing drill from the Test screen
+    Then the first form asked uses the aorist
