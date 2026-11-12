@@ -79,7 +79,11 @@ function sharedChoice(entry: SettingEntry): string | undefined {
 function valueText(entry: SettingEntry, help: string): string {
   const { allowed } = entry;
   if (allowed.kind === 'choice') return sharedChoice(entry) ?? choiceText(allowed.values, help);
-  if (allowed.kind === 'text') return `text, for example "${allowed.example}" (${allowed.note ?? 'a book, a chapter or a verse; "" for none'})`;
+  if (allowed.kind === 'text') {
+    // a clause of the note the help already says ('a book, a chapter or a verse') is not said again (mw-82lb97i.16)
+    const clauses = (allowed.note ?? 'a book, a chapter or a verse; "" for none').split('; ').filter((c) => !help.includes(c));
+    return `text, for example "${allowed.example}"${clauses.length > 0 ? ` (${clauses.join('; ')})` : ''}`;
+  }
   return `a number from ${allowed.min} to ${allowed.max}, in steps of ${allowed.step}`;
 }
 
@@ -90,8 +94,17 @@ const isOnOff = ({ allowed }: SettingEntry): boolean =>
 /** The most a setting's help may take of the instructions, in bytes (mw-gdcyf98.2, 400 B; mw-gdcyf98.28, 280 B): a longer help gives way to the setting's hint, which the Value list after it completes. */
 export const HELP_MAX_BYTES = 180;
 
-/** The settings whose long help the instructions keep whole: Which devotional lists the devotionals, which the tutor names; Weave says what Solid and + Learning show, which its hint does not. */
-const HELP_KEPT: readonly string[] = ['devotional', 'weave'];
+/** The settings whose help the instructions keep whole however long: Weave says what Solid and + Learning show, which its hint does not. */
+export const HELP_KEPT: readonly string[] = ['weave'];
+
+/**
+ * The settings the instructions say by their hint, not their help, whatever the help's length (mw-82lb97i.16): Which devotional's help ('one of the 37 in your Logos library, Morning and Evening (LLS:20.10.1) to start')
+ * only repeats what its Value list says with all 37 named, and that list is the line's bulk; Layout's help only spells out its two values, "Verse by verse" and "Paragraph", which its Value list gives with their labels.
+ */
+const HINT_ONLY: readonly string[] = ['devotional', 'layout'];
+
+/** A how-to for the person at the phone ('Android: Settings > System > Languages & input > ... add Hebrew.'): the tutor sets a keyboard row, it does not walk him through the phone's own settings (mw-82lb97i.16, to keep room). */
+const PHONE_STEPS = /\s*Android: [^.]*\./g;
 
 const bytesOf = (text: string): number => new TextEncoder().encode(text).length;
 
@@ -113,7 +126,7 @@ export function settingsBlock(): string {
   const lines: { keys: string[]; labels: string[]; body: string; same: string }[] = [];
   for (const s of SETTINGS) {
     const plain = s.help ? helpPlain(s.help) : s.hint;
-    const help = (!HELP_KEPT.includes(s.key) && s.hint && bytesOf(plain) > HELP_MAX_BYTES ? s.hint : plain).replace(WHEN_SHOWN, '');
+    const help = (s.hint && (HINT_ONLY.includes(s.key) || (!HELP_KEPT.includes(s.key) && bytesOf(plain) > HELP_MAX_BYTES)) ? s.hint : plain).replace(WHEN_SHOWN, '').replace(PHONE_STEPS, '');
     const body = `${help}${isOnOff(s) ? '' : ` Value: ${valueText(s, help)}.`}`;
     const same = `${s.label.replace(LANGUAGES, '')}|${body.replace(LANGUAGES, '')}`;
     const last = lines[lines.length - 1];
