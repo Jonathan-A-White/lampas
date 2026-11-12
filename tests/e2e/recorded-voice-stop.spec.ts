@@ -75,14 +75,16 @@ async function silentJohn(page: Page): Promise<string[]> {
   return other;
 }
 
-/** Logs the element's second at each pause() into window.lampasPauses, and keeps the element play() was called on as window.lampasAudio. */
+/** Logs the element's second at each pause() into window.lampasPauses, counts each play() in window.lampasPlays, and keeps the element play() was called on as window.lampasAudio. */
 async function logPauses(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const w = window as unknown as { lampasPauses: number[]; lampasAudio?: HTMLMediaElement };
+    const w = window as unknown as { lampasPauses: number[]; lampasPlays: number; lampasAudio?: HTMLMediaElement };
     w.lampasPauses = [];
+    w.lampasPlays = 0;
     const { play, pause } = HTMLMediaElement.prototype;
     HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
       w.lampasAudio = this;
+      w.lampasPlays++;
       return play.call(this);
     };
     HTMLMediaElement.prototype.pause = function (this: HTMLMediaElement) {
@@ -93,6 +95,7 @@ async function logPauses(page: Page): Promise<void> {
 }
 
 const pauses = (page: Page): Promise<number[]> => page.evaluate(() => (window as unknown as { lampasPauses: number[] }).lampasPauses.slice());
+const plays = (page: Page): Promise<number> => page.evaluate(() => (window as unknown as { lampasPlays: number }).lampasPlays);
 
 /** Opens John `c`:`v` in the Verse view on Listen, in English with nothing woven, the book's timings loaded. */
 async function openVerse(page: Page, c: number, v: number): Promise<void> {
@@ -116,15 +119,22 @@ async function start(page: Page): Promise<string[]> {
 async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise<number> {
   const span = JOHN.chapters[String(c)].verses.find(([n]) => n === v);
   if (!span) throw new Error(`no timing for John ${c}:${v}`);
+  // the chapter's silent MP3 is made here, before the page asks for it: made inside the route on a loaded host, ffmpeg held the answer past the player's 8 s wait for
+  // 'playing' (PLAYING_WAIT_MS), the reading went to the phone's voice and was over before a Stop was seen (attempt 1's failure on John 6:35 at load 30)
+  silentMp3(JOHN.chapters[String(c)].duration);
   await openVerse(page, c, v);
   const view = page.getByRole('region', { name: 'Verse view' });
   const before = (await pauses(page)).length;
-  // the Verse view drops a tap for its first 600 ms (src/ui/settle.ts useOpeningGuard): Play is tapped until the Listen's Stop stands in its place
+  const played = await plays(page);
+  // The Verse view drops a tap for its first 600 ms (src/ui/settle.ts useOpeningGuard): Play is tapped until the tap is TAKEN, which is the element's play() (called
+  // straight from the tap, src/speech/recordedVoice.ts playRecording), never by a Stop seen: a short reading can come and go between two looks, and its Play is then
+  // 'Play again', which this loop would never tap. A tap is tapped again only when no play() followed it.
   await expect(async () => {
+    if ((await plays(page)) > played) return;
     const play = view.getByRole('button', { name: `Play verse ${v}`, exact: true });
     if (await play.isVisible()) await play.click();
-    await expect(view.locator('[data-listen-stop]')).toBeVisible({ timeout: 1000 }); // short on purpose: a dropped tap is tapped again, within toPass's 15 s
-  }).toPass({ timeout: 15_000 });
+    expect(await plays(page), `John ${c}:${v}: the Play tap was taken`).toBeGreaterThan(played);
+  }).toPass({ intervals: [250, 500, 1000], timeout: 30_000 });
   if (!whole && span[2] - span[1] > 2) {
     // once the sound has started from the verse's start
     await page.waitForFunction(
@@ -133,7 +143,7 @@ async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise
         return !!a && !a.paused && a.currentTime > from;
       },
       span[1],
-      { polling: 20, timeout: 15_000 },
+      { polling: 20, timeout: 30_000 },
     );
     await page.evaluate((to) => {
       const a = (window as unknown as { lampasAudio?: HTMLMediaElement }).lampasAudio;
@@ -141,6 +151,8 @@ async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise
     }, span[2] - 1.5);
   }
   await expect(view.getByRole('button', { name: 'Play again', exact: true })).toBeVisible({ timeout: 60_000 });
+  // a recording that did not start in time goes to the phone's voice (and its Play again comes at once): say so here, by the verse, rather than as a stop short of its end
+  expect(await spoken(page), `John ${c}:${v} was read by the recording, not the phone's voice`).toEqual([]);
   const at = (await pauses(page)).slice(before);
   expect(at.length, `John ${c}:${v} was paused`).toBeGreaterThan(0);
   return Math.round((at[at.length - 1] - span[2]) * 1000);
