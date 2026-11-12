@@ -8,6 +8,7 @@ import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { GROUPS, ROWS, SECTIONS, groupOf, isHomeRow } from '../../src/settings/rows';
 import { showSettingsGroup } from '../support/settings-pages';
+import { keepImport } from '../support/logos-import';
 
 afterAll(() => {
   cleanup();
@@ -35,6 +36,7 @@ describe('the names Settings draws', () => {
       { key: 'developerMode', value: 'on' },
       { key: 'pronunciationSeparate', value: 'on' },
     ]);
+    await keepImport(); // his Logos sermon collections are in his import, so their rows are drawn (mw-qtu3zvz.94)
     render(<SettingsScreen />);
     // a row is named by its own text, or by the heading of its section when it carries the section's name or stands alone in it
     const nameless: string[] = [];

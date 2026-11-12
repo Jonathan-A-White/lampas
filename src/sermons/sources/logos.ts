@@ -4,6 +4,7 @@
 // fetches nothing: every link is UNVERIFIED on a device until he taps it (docs/resources.md, mw-5r3p30.1072).
 import type { ShelfState } from '../../data/repositories';
 import { inLogosRows } from '../../library/inLogos';
+import type { Owned } from '../../library/owned';
 import { entriesOf, type CatalogueEntry } from '../../resources/catalogue';
 import type { SermonPlace } from '../types';
 
@@ -20,11 +21,11 @@ export interface ArchiveRow {
 }
 
 /**
- * The archives that are On or Pinned in `shelf` (by Resource ID) at the place, the Pinned first and each state in the catalogue's order. A passage opens at its first verse, a chapter at the chapter. Pure; `entries` is a
+ * The archives that are On or Pinned in `shelf` (by Resource ID) and, given `owned`, in his import or free (src/library/owned.ts), at the place, the Pinned first and each state in the catalogue's order. A passage opens at its first verse, a chapter at the chapter. Pure; `entries` is a
  * test's own.
  */
-export function logosArchives(place: SermonPlace, shelf: ReadonlyMap<string, ShelfState>, entries: readonly CatalogueEntry[] = entriesOf('sermons')): ArchiveRow[] {
-  const rows = inLogosRows(entries, shelf, { book: place.book, chapter: place.chapter, ...(place.from === undefined ? {} : { verse: place.from }) }).map(
+export function logosArchives(place: SermonPlace, shelf: ReadonlyMap<string, ShelfState>, entries: readonly CatalogueEntry[] = entriesOf('sermons'), owned?: Owned): ArchiveRow[] {
+  const rows = inLogosRows(entries, shelf, { book: place.book, chapter: place.chapter, ...(place.from === undefined ? {} : { verse: place.from }) }, undefined, owned).map(
     (row): ArchiveRow => ({ id: row.entry.resource, entry: row.entry, state: row.state, title: row.entry.title, open: { url: row.link.url, fallback: row.link.fallback }, opensIn: 'logos' }),
   );
   return [...rows.filter((r) => r.state === 'pinned'), ...rows.filter((r) => r.state !== 'pinned')];

@@ -17,6 +17,7 @@ import { forgetTestMaps, registerTestMaps, TEST_CARDS, testSource as testMapSour
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import { closeDatabase } from './close-database';
+import { keepImport } from '../../tests/support/logos-import';
 
 afterAll(async () => {
   cleanup();
@@ -39,7 +40,7 @@ interface Phone {
   maps?: boolean;
   sermons?: Parameters<typeof registerTestSermons>[0];
   /** his Logos sermon archives (the catalogue's, by Resource ID) on the shelf, and whether Logos is On: Greg Laurie's On and J. D. Greear's Pinned, or (`only: 'off'`) Skip Heitzig's Off */
-  archives?: { logos: 'on' | 'off'; only?: 'off' };
+  archives?: { logos: 'on' | 'off'; only?: 'off'; /** the Resource IDs his kept Library import holds (mw-qtu3zvz.94); both archives when left out */ owned?: string[] };
 }
 
 let fetched: ChapterFetch;
@@ -69,6 +70,7 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
     const shelf: { id: string; state: 'on' | 'pinned' }[] =
       phone.archives.only === 'off' ? [] : [{ id: 'LLS:GRGLRSRMNRCH', state: 'on' }, { id: 'LLS:JDGRRSRMNRCHV', state: 'pinned' }];
     await db.library.bulkPut(shelf.map((r) => ({ ...r, kind: 'sermons', since: 1 })));
+    await keepImport(phone.archives.owned ?? ['LLS:GRGLRSRMNRCH', 'LLS:JDGRRSRMNRCHV', 'LLS:SKPHTZGSRMN']);
   }
   if (phone.view) await db.settings.put({ key: 'readerView', value: phone.view });
   render(<App />);
@@ -314,6 +316,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  const importHolds = (_: unknown, title: string) => openOn(title, { archives: { logos: 'on', owned: ['LLS:GRGLRSRMNRCH'] } });
   const archiveOpened = (logos: 'on' | 'off', only?: 'off') => (_: unknown, title: string) => openOn(title, { archives: { logos, ...(only ? { only } : {}) } });
   const opensWithThree = async (_: unknown, first: string, second: string, third: string) => {
     await sheetEl();
@@ -342,6 +345,14 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('the sheet opens with {string} and then {string}', opensWith);
+  });
+
+  Scenario('An archive on his shelf that his Library import lacks is not in the group', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with two sermon archives on his shelf and an import that holds only Greg Laurie’s', importHolds);
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet opens with {string}, {string} and {string}', opensWithThree);
+    And('the part {string} holds {string}', holdsOne);
   });
 
   Scenario('With Logos Off there is no In Logos group', ({ Given, When, Then, And }) => {

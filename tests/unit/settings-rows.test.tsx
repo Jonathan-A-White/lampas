@@ -9,6 +9,9 @@ import { SettingsScreen } from '../../src/SettingsScreen';
 import { SETTINGS } from '../../src/settings/registry';
 import { GROUPS, ROWS, SECTIONS, foldText, groupOf, isHomeRow, rowOf, visibleRows, type Values } from '../../src/settings/rows';
 import { showSettingsGroup } from '../support/settings-pages';
+import { forgetImport, keepImport } from '../support/logos-import';
+import { OWNS_PREFIX, ownsKey } from '../../src/sermons/enabled';
+import { SOURCES as SERMON_SOURCES } from '../../src/sermons/sources';
 
 afterAll(() => {
   cleanup();
@@ -20,10 +23,13 @@ beforeEach(async () => {
   clearBus();
   await db.open();
   await db.settings.clear();
+  await forgetImport();
 });
 
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
-const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', septuagint: 'on', depth: '5', weave: 'solid', variants: 'all', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', devotional: 'random', developerMode: 'on', pronunciationSeparate: 'on', 'pronunciationSeparate.grc': 'on', 'pronunciationSeparate.he': 'on' };
+/** Every Logos sermon collection is in his import (readValues reads each as owns.<id>). */
+const OWNED_ALL = Object.fromEntries(SERMON_SOURCES.filter((s) => s.resources).map((s) => [ownsKey(s), 'on']));
+const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', septuagint: 'on', depth: '5', weave: 'solid', variants: 'all', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', ...OWNED_ALL, devotional: 'random', developerMode: 'on', pronunciationSeparate: 'on', 'pronunciationSeparate.grc': 'on', 'pronunciationSeparate.he': 'on' };
 /** Every row ALL_ON shows: all but the Pronunciation family, which gives way to the Greek and the Hebrew row while Set each language on its own is On (the one pair of rows that exclude each other). */
 const ALL_SHOWN = (): string[] => keys(ROWS).filter((k) => k !== 'pronunciation');
 /** Values a row may read that are not rows of their own: Developer mode is found on About, and `depth` is the higher of the two dials (readValues); neither is a setting of the list; the last two say Set each language on its own is On and that language's dial is at Curious or above (readValues). */
@@ -48,7 +54,7 @@ describe('the rows', () => {
       expect(row, s.key).toBeDefined();
       expect(row?.label).toBe(s.label);
     }
-    for (const row of ROWS) if (row.dependsOn && !NOT_ROWS.includes(row.dependsOn.key)) expect(rowOf(row.dependsOn.key), row.key).toBeDefined();
+    for (const row of ROWS) if (row.dependsOn && !NOT_ROWS.includes(row.dependsOn.key) && !row.dependsOn.key.startsWith(OWNS_PREFIX)) expect(rowOf(row.dependsOn.key), row.key).toBeDefined();
   });
 
   it('lists the study resources and the links as rows too, so nothing on the screen is outside the list', () => {
@@ -134,6 +140,7 @@ describe('the Settings screen', () => {
       { key: 'developerMode', value: 'on' },
       { key: 'pronunciationSeparate', value: 'on' },
     ]);
+    await keepImport(); // his Logos sermon collections are in his import, so their rows are drawn (mw-qtu3zvz.94)
     render(<SettingsScreen />);
     // each group's page draws exactly its rows, in the order of the list (the Pronunciation family gives way to the two languages' rows while Set each language on its own is On)
     const seen: string[] = [];

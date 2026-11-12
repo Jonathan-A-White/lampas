@@ -45,6 +45,8 @@ export interface SermonSource {
   describe: string;
   /** the study resource the source rides on: it is left out while that resource is Off */
   needs?: 'logos';
+  /** the Logos Resource IDs its rows open in (a ref.ly address): the source is offered, and a row of it listed, only for one his Library import says he owns or Logos gives free (src/library/owned.ts) */
+  resources?: readonly string[];
   /** whether its switch starts On or Off */
   default: 'on' | 'off';
   /** the one church or preacher the whole source is of (mw-qtu3zvz.89, PROVISIONAL, the Governor to confirm the key and that only a source of one church or one preacher sets it): the Sermons sheet names it where a sermon has no preacher of its own. Absent for a source of many. */

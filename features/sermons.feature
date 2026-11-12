@@ -143,6 +143,14 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     Then the sheet opens with "On this verse" and then "In this chapter"
 
   @uc-sermons @greek
+  Scenario: An archive on his shelf that his Library import lacks is not in the group
+    Given Lampas is opened on "Romans 5" with two sermon archives on his shelf and an import that holds only Greg Laurie’s
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
+    And the part "In Logos" holds "Greg Laurie Sermon Archive"
+
+  @uc-sermons @greek
   Scenario: With Logos Off there is no In Logos group
     Given Lampas is opened on "Romans 5" with Logos Off and two sermon archives on his shelf
     When he taps verse 8

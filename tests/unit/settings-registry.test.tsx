@@ -11,6 +11,7 @@ import { getStudyResources } from '../../src/data/repositories';
 import { GROUPS, isTalkable, ROWS, groupOf, isHomeRow } from '../../src/settings/rows';
 import { showSettingsGroup } from '../support/settings-pages';
 import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
+import { keepImport } from '../support/logos-import';
 
 afterAll(() => {
   cleanup();
@@ -42,6 +43,7 @@ describe('the registry lists every Settings row', () => {
       // Set each language on its own: the Greek and the Hebrew row are drawn, not the Pronunciation family
       { key: 'pronunciationSeparate', value: 'on' },
     ]);
+    await keepImport(); // his Logos sermon collections are in his import, so their rows are drawn (mw-qtu3zvz.94)
     // jsdom has no speechSynthesis: two voice pickers still draw, empty
     render(<SettingsScreen />);
     const drawnOnPage = (): string[] =>

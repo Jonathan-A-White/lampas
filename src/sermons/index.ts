@@ -1,6 +1,7 @@
 // src/sermons/index.ts — the sermons module's door (docs/sermons.md): the registry of sources and sermonsFor, the sermons of a place. A second source is one file in src/sermons/sources/ and one line in SOURCES.
-import { getKnownSermonSources, rememberSermonSources, savedSettings, type KnownSermonSource } from '../data/repositories';
+import { getKnownSermonSources, ownedResources, rememberSermonSources, savedSettings, type KnownSermonSource } from '../data/repositories';
 import { fetchDirectThemeSermons, fetchSermons, fetchSources, sermonsServiceKnown, type ServiceSermon } from '../services/sermons';
+import { addressOffered } from '../library/owned';
 import { THEME_MAX_VERSES } from '../data/themeIndex';
 import { enabledSources as enabledThemeSources, themesFor } from '../themes';
 import { enabledSources as enabledOf } from './enabled';
@@ -27,8 +28,8 @@ export function setSermonSources(sources: readonly SermonSource[] | undefined): 
  * sources, Off for his Logos archives. Registry order.
  */
 export async function enabledSources(sources: readonly SermonSource[] = active): Promise<SermonSource[]> {
-  const saved = await savedSettings();
-  return enabledOf(sources, (key) => saved[key]);
+  const [saved, owned] = await Promise.all([savedSettings(), ownedResources()]);
+  return enabledOf(sources, (key) => saved[key], owned);
 }
 
 /** The sermons of a place from every source that is on: for a verse or a passage those preached on it first, then the rest of the chapter (src/sermons/sermonsFor.ts); { here: [], chapter: [] } where there are none. */
@@ -111,8 +112,9 @@ export async function directThemeRows(place: SermonPlace): Promise<DirectRow[]> 
   const asked = [...new Set([...(await enabledSources()), ...(await enabledServiceSources())].map((source) => source.id))];
   if (asked.length === 0) return [];
   const taken = new Map<string, DirectRow>();
+  const owned = await ownedResources();
   for (const sermon of await fetchDirectThemeSermons(placeRef(place), asked)) {
-    if (sermon.direct !== true || !asked.includes(sermon.source)) continue;
+    if (sermon.direct !== true || !asked.includes(sermon.source) || !addressOffered(sermon.url, owned)) continue;
     const theme = held.get(`${sermon.theme.source}:${sermon.theme.topic}`);
     const row = directRowOfService(sermon);
     if (!theme || !row) continue;
@@ -203,17 +205,21 @@ async function askServiceRows(place: SermonPlace): Promise<ServiceRows | undefin
   const asked = [...bundled, ...own];
   if (asked.length === 0) return undefined;
   const ref = chapterRef(place);
-  const key = `${ref}|${asked.join(',')}`;
+  const owned = await ownedResources();
+  // a new import changes what is listed, so it is part of what the kept rows were asked for
+  const key = `${ref}|${asked.join(',')}|${owned.size}`;
   const kept = rowsKept.get(key);
   if (kept && Date.now() - kept.at < (kept.failed ? FAILURE_KEPT_MS : ROWS_KEPT_MS)) return kept.asked;
   const work = (async (): Promise<ServiceRows> => {
     const [answer] = await Promise.all([fetchSermons(ref, asked, 200), noteServiceSources().catch(() => undefined)]);
-    let rows: ServiceSermon[] = answer.rows;
+    // a sermon opened in a Logos resource he does not own (and Logos does not give free) is not listed (mw-qtu3zvz.94)
+    const offered = (list: ServiceSermon[]): ServiceSermon[] => list.filter((row) => addressOffered(row.url, owned));
+    let rows: ServiceSermon[] = offered(answer.rows);
     // a source first seen just now that is On at once: its rows come in a second call
     const after = (await enabledServiceSources()).map((source) => source.id).filter((id) => !asked.includes(id));
     if (after.length > 0) {
       try {
-        rows = [...rows, ...(await fetchSermons(ref, after, 200)).rows];
+        rows = [...rows, ...offered((await fetchSermons(ref, after, 200)).rows)];
       } catch (error) {
         console.warn(`could not read the new sermon sources: ${error instanceof Error ? error.message : String(error)}`);
       }
