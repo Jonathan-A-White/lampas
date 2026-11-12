@@ -82,7 +82,8 @@ describe('the goal setting', () => {
   });
 
   it('is told to the grind as text with an example, and as a string of at most 80 characters', () => {
-    expect(settingsBlock()).toContain('Value: text, for example "1 John 1:1" (a book, a chapter or a verse; "" for none).');
+    // the note's clause 'a book, a chapter or a verse' is in the help just before, so the line says it once (mw-82lb97i.16)
+    expect(settingsBlock()).toContain('The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" ("" for none).');
     const items = (settingsChangesSchema().items as { anyOf: { properties: { key: { const: string }; value: unknown } }[] }).anyOf;
     expect(items.find((i) => i.properties.key.const === 'goal')?.properties.value).toEqual({ type: 'string', maxLength: 80 });
   });

@@ -5,7 +5,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { learnerGrammarOf } from '../../src/data/grammar/learnerGrammar';
 import { pronunciationOf } from '../../src/speech/pronunciation';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
-import { formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
+import { HELP_KEPT, HELP_MAX_BYTES, formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
+import { helpPlain } from '../../src/settings/helpText';
 import { SETTINGS } from '../../src/settings/registry';
 import { lampasRegistry } from '../../src/tutor/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
@@ -1040,6 +1041,29 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
     expect(BIBLE_TALK_ROOM).toBe(10_000);
     expect(BIBLE_TALK_CEILING - bytes, `${bytes} bytes used of ${BIBLE_TALK_CEILING}`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
+  });
+
+  it('still leaves the 10,000 bytes of room after one more setting with the longest help the instructions carry, so the next new setting needs no trim first (mw-82lb97i.16)', () => {
+    const bytes = instructionParts(grind.kind as string).reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
+    // the longest help a line carries is HELP_MAX_BYTES (a longer one gives way to its hint) or a help HELP_KEPT keeps whole (Weave's)
+    const kept = SETTINGS.filter((s) => HELP_KEPT.includes(s.key)).map((s) => Buffer.byteLength(helpPlain(s.help ?? s.hint)));
+    const longestHelp = Math.max(HELP_MAX_BYTES, ...kept);
+    // an on/off setting's line: key, label and help, and no Value (the commonest kind); one with a Value costs more, but only by its values
+    const next = `- \`nextSetting\` — Next setting. ${'x'.repeat(longestHelp)}\n`;
+    expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING}, and a ${Buffer.byteLength(next)}-byte line more`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
+  });
+
+  it('keeps every setting key and what Weave and Bible voice say in the instructions after the settings were said more tersely (mw-82lb97i.16)', () => {
+    const block = settingsBlock();
+    for (const s of SETTINGS) expect(block, s.key).toContain(`\`${s.key}\``);
+    expect(block).toMatch(/`weave` — Weave\. Your words in Greek or Hebrew in place of their English: Solid: the solid ones\. \+ Learning: those you learn too/);
+    expect(block).toMatch(/`bibleVoice` — Bible voice\..*"msb-david" \(Recording \(David\)\), "msb-david-wifi" \(Recording on Wi-Fi only\), "phone" \(Phone voice\)/);
+    // every one of the 37 devotionals is still named: a run of volumes by its first and last
+    const line = block.split('\n').find((l) => l.startsWith('- `devotional`')) ?? '';
+    for (const v of ['random', 'LLS:HLINSSDYBYDY', 'LLS:20.10.1', 'LLS:20.10.2', 'LLS:TICHDQ', 'LLS:12MOSUNC', 'LLS:WMNSDLYSPRTWRFR']) expect(line, v).toContain(`"${v}"`);
+    expect(line).toContain('"LLS:365SPURGEON1" to "LLS:365SPURGEON6"');
+    expect(block).toContain('`layout` — Layout. Verses one per line, or run together in paragraphs. Value: "verse" (Verse by verse), "paragraph".');
+    expect(block).not.toContain('Android: Settings');
   });
 
   it('says a run of settings that differ only in their language once, and still names every key (mw-gdcyf98.28)', () => {
