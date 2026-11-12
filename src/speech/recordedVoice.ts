@@ -20,12 +20,27 @@ export type RecordedVoiceId = 'msb-david';
 let chosen: BibleVoice = bibleVoiceSetting.default;
 
 /** The recorded voice the Bible is read in, or null for the phone's voice: his Bible voice setting (src/settings/definitions/bibleVoice.ts, handed here by src/speech/settingsSync.ts)
- * with the kind of connection (src/speech/connection.ts): 'msb-david' always; 'msb-david-wifi' only while the phone is on Wi-Fi (a phone that cannot tell, null, is not); 'phone' never.
+ * with the kind of connection (src/speech/connection.ts): 'msb-david' always; 'msb-david-wifi' unless the phone says it is on mobile data (a phone that cannot tell, null, is taken for Wi-Fi: it is the start, and it could not be offered David otherwise,
+ * mw-zbgo4ep.30); 'phone' never.
  * It is asked when a chapter starts (the tap, and each crossing into a next chapter), never in the middle of one: a chapter that began in one voice finishes in it. */
 export function wantsRecording(): RecordedVoiceId | null {
   if (chosen === 'msb-david') return 'msb-david';
-  if (chosen === 'msb-david-wifi' && connectionKind() === 'wifi') return 'msb-david';
+  if (chosen === 'msb-david-wifi' && connectionKind() !== 'other') return 'msb-david';
   return null;
+}
+
+/** The Bible voice setting as last told here. */
+export const bibleVoiceChosen = (): BibleVoice => chosen;
+
+/** Recording on Wi-Fi only is chosen and the phone says it is on mobile data: David is held back, and the phone's voice reads (voiceDecision.ts says why). */
+export const heldBackByData = (): boolean => chosen === 'msb-david-wifi' && connectionKind() === 'other';
+
+/** Whether this chapter and these verses could be read by a recording at all, whatever he chose: the MSB's New Testament, every run English, and the phone online. */
+export function recordingEligible(chapter: Chapter | null, verses: readonly PlanVerse[]): chapter is Chapter {
+  if (!chapter || verses.length === 0) return false;
+  if (chapter.translation !== 'msb' || sourceLanguage(chapter) !== 'grc') return false;
+  if (!verses.every((v) => v.runs.every((r) => r.language === 'english'))) return false;
+  return !(typeof navigator !== 'undefined' && navigator.onLine === false);
 }
 
 /** Tells the voice his Bible voice setting holds (the settings sync's, and a jsdom test's). */
@@ -37,10 +52,7 @@ export function setBibleVoice(voice: BibleVoice): void {
  * the chapter is the MSB's New Testament (no Old Testament, no Septuagint), every run of every verse to be read is English (the English view with nothing woven: the
  * recording reads the MSB's English only), the chapter's timings are already loaded and have every verse, and the phone is not offline. */
 export function recordingFor(book: string, chapter: Chapter | null, verses: readonly PlanVerse[]): ChapterTimings | undefined {
-  if (!wantsRecording() || !chapter || verses.length === 0) return undefined;
-  if (chapter.translation !== 'msb' || sourceLanguage(chapter) !== 'grc') return undefined;
-  if (!verses.every((v) => v.runs.every((r) => r.language === 'english'))) return undefined;
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) return undefined;
+  if (!wantsRecording() || !recordingEligible(chapter, verses)) return undefined;
   const timings = chapterTimingsNow(book, chapter.chapter);
   if (!timings || !verses.every((v) => spanOf(timings, v.n) !== null)) return undefined;
   return timings;

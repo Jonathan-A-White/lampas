@@ -30,7 +30,7 @@ export function startSpeechSettingsSync(): () => void {
   ];
   // the English accent of the sound hints (mw-5r3p30.353) is told to the accent module as soon as it is read, so no sheet is drawn in the wrong one for long
   void getSetting(englishAccentSetting).then((accent) => live && chooseAccent(accent));
-  // the Bible voice (mw-82lb97i.6) is told to the recorded voice as soon as it is read: a chapter started before it is read goes by the default, Recording (David)
+  // the Bible voice (mw-82lb97i.6) is told to the recorded voice as soon as it is read: a chapter started before it is read goes by the default, Recording on Wi-Fi only (mw-zbgo4ep.30)
   void getSetting(bibleVoiceSetting).then((voice) => live && setBibleVoice(voice));
   void getSetting(hebrewPronunciationSetting).then((scheme) => live && setHebrewPronunciation(scheme));
   void Promise.all([Promise.all(LANGUAGES.map(async (l) => [l.id, await getVoice(l.id)] as const)), getGreekPronunciation(), getSpeechRates()]).then(([saved, pronunciation, rates]) => {

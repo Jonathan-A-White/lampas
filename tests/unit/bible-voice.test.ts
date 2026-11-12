@@ -19,9 +19,9 @@ afterEach(() => {
 });
 
 describe('the Bible voice setting', () => {
-  it('is Recording (David) to start, with the three choices keyed by the voice id', () => {
+  it('is Recording on Wi-Fi only to start, with the three choices keyed by the voice id', () => {
     expect(bibleVoiceSetting.key).toBe('bibleVoice');
-    expect(bibleVoiceSetting.default).toBe('msb-david');
+    expect(bibleVoiceSetting.default).toBe('msb-david-wifi');
     expect(bibleVoiceSetting.section).toBe('voices');
     expect(bibleVoiceSetting.label).toBe('Bible voice');
     expect(bibleVoiceSetting.allowed).toEqual({
@@ -45,8 +45,8 @@ describe('the Bible voice setting', () => {
   it('reads a saved value that is not a choice as the default', () => {
     expect(bibleVoiceSetting.parse('msb-david-wifi')).toBe('msb-david-wifi');
     expect(bibleVoiceSetting.parse('phone')).toBe('phone');
-    expect(bibleVoiceSetting.parse('nonsense')).toBe('msb-david');
-    expect(bibleVoiceSetting.parse(undefined)).toBe('msb-david');
+    expect(bibleVoiceSetting.parse('nonsense')).toBe('msb-david-wifi');
+    expect(bibleVoiceSetting.parse(undefined)).toBe('msb-david-wifi');
   });
 });
 
@@ -62,7 +62,7 @@ describe('wantsRecording', () => {
   it.each([
     ['wifi', 'msb-david'],
     ['other', null],
-    [null, null],
+    [null, 'msb-david'], // a phone that cannot tell is not held back: the start would otherwise take David from it
   ] as const)("'msb-david-wifi' on a %s connection wants %s", (kind, wanted) => {
     setConnectionForTests(connectionOf(kind));
     setBibleVoice('msb-david-wifi');
@@ -83,7 +83,7 @@ describe('wantsRecording', () => {
     expect(wantsRecording()).toBeNull();
   });
 
-  it('is the recording before any choice is told (the setting starts at Recording (David))', () => {
+  it('is the recording before any choice is told (the setting starts at Recording on Wi-Fi only, and a phone that cannot tell is taken for Wi-Fi)', () => {
     expect(wantsRecording()).toBe('msb-david');
   });
 });
