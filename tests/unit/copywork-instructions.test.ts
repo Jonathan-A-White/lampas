@@ -72,7 +72,8 @@ describe("copywork's Greek rule judges each word by itself", () => {
 describe("copywork's Greek rule tells a breathing from an accent", () => {
   it('says a breathing is not an accent, with how to tell them apart', () => {
     expect(greek).toMatch(/A breathing is not an accent: the small curl over the first vowel of a word is its breathing/);
-    expect(greek).toMatch(/call a mark an accent only when it is a stroke/);
+    expect(greek).toMatch(/a hook or comma standing at the left of the vowel/);
+    expect(greek).toMatch(/call a mark an accent only when it is a straight slanting stroke/);
   });
 
   it('says it once, in one place', () => {
