@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Source-theme page of allmymind.org (a fixture of tests/e2e/blog-dark.spec.ts)</title>
+<!--
+  A fixture of the blog's Ghost Source theme: the markup of its page kinds (post, page, home list, tag page, author page, 404) and the theme's own rules
+  that colour them, trimmed from https://allmymind.org/assets/built/screen.css and /public/cards.min.css (Source, MIT licence, TryGhost/Source), as served
+  on 2026-11-12. #kind in the address picks the page kind (post, page, home, tag, author, 404); the default is post. The spec serves the dark stylesheet at
+  https://lampas.allmymind.org/blog-dark.css, as the blog's Code injection names it, after the theme's sheet.
+-->
+<style id="theme">
+:root{--color-white:#fff;--color-lighter-gray:rgba(0,0,0,.05);--color-light-gray:#e6e6e6;--color-mid-gray:#ccc;--color-dark-gray:#444;--color-darker-gray:#15171a;--color-black:#000;--color-primary-text:var(--color-darker-gray);--color-secondary-text:rgba(0,0,0,.55);--color-border:rgba(0,0,0,.08);--color-dark-border:rgba(0,0,0,.55);--font-sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Roboto",sans-serif;--font-serif-alt:Georgia,Times,serif;--font-mono:"JetBrains Mono",Menlo,Consolas,Monaco,"Liberation Mono",monospace;--container-width:1320px;--container-gap:clamp(24px,1.7032rem + 1.9355vw,48px);--grid-gap:42px}
+:root{--background-color:#ffffff}
+:root{--ghost-accent-color:#1329d4}
+*,:after,:before{box-sizing:border-box}*{margin:0}
+[hidden]{display:none!important}
+html{font-size:62.5%}
+body{-webkit-font-smoothing:antialiased;line-height:1.6;background-color:var(--background-color);color:var(--color-primary-text);font-family:var(--font-sans);font-size:1.6rem}
+h1,h2,h3,h4,h5,h6{line-height:1.2;font-family:var(--font-sans)}
+img,svg{display:block;max-width:100%;height:auto}
+button,input{font:inherit}
+a{color:var(--color-darker-gray);text-decoration:none}
+a:hover{opacity:.8}
+.gh-button{align-items:center;background-color:var(--ghost-accent-color);border:0;border-radius:100px;color:var(--color-white);cursor:pointer;display:inline-flex;font-size:1.5rem;font-weight:600;gap:.4em;justify-content:center;line-height:1;padding:.8em 1.4em}
+.gh-icon-button{align-items:center;background-color:transparent;border:0;color:var(--color-darker-gray);cursor:pointer;display:inline-flex;height:32px;justify-content:center;padding:0;width:32px}
+.gh-icon-button svg{height:20px;width:20px}
+.gh-form{align-items:center;background-color:var(--color-lighter-gray);border-radius:40px;display:flex;font-size:1.7rem;height:56px;max-width:560px;position:relative;width:100%}
+.gh-form:hover{background-color:rgba(0,0,0,.065)}
+.gh-form-input{background-color:transparent;border:0;border-radius:40px;font-size:inherit;height:100%;inset:0;outline:none;padding-inline:26px;position:absolute;width:100%}
+.gh-form-input::placeholder{color:rgba(0,0,0,.3)}
+.gh-viewport{display:flex;flex-direction:column;min-height:100vh;position:relative}
+.gh-outer{padding:0 max(4vmin,20px)}
+.gh-inner{margin:0 auto;max-width:var(--container-width);width:100%}
+.gh-main{flex-grow:1}
+.gh-canvas{display:block;margin:0 auto;max-width:720px;width:100%}
+.gh-navigation{background-color:var(--background-color);color:var(--color-darker-gray);font-size:1.6rem;height:96px}
+.gh-navigation-inner{align-items:center;display:flex;gap:24px;height:100%;justify-content:space-between}
+.gh-navigation-logo img{height:44px;width:auto}
+.gh-navigation-menu .nav{display:flex;gap:28px;list-style:none;padding:0}
+.gh-navigation a:not(.gh-button){color:inherit}
+.gh-navigation-actions{align-items:center;background-color:var(--background-color);display:flex;gap:20px}
+.gh-container-title{border-bottom:1px solid var(--color-border);font-size:1.3rem;font-weight:700;letter-spacing:.04em;margin-bottom:24px;padding-bottom:12px;text-transform:uppercase}
+.gh-feed{display:grid;gap:40px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.gh-card-link{display:flex;flex-direction:column;gap:20px;color:var(--color-darker-gray)}
+.gh-card-image{background:var(--color-light-gray);height:120px;width:100%}
+.gh-card-title{font-size:1.9rem;font-weight:725;line-height:1.3}
+.gh-card-excerpt{font-size:1.45rem;line-height:1.4;margin-top:8px}
+.gh-card-meta{color:var(--color-secondary-text);display:flex;font-size:1.3rem;gap:8px;margin-top:12px}
+.gh-article-header{padding-top:64px}
+.gh-article-tag{color:var(--ghost-accent-color);font-size:1.4rem;font-weight:600;text-transform:uppercase}
+.gh-article-title{font-size:4rem;letter-spacing:-.022em;line-height:1.1}
+.gh-article-excerpt{font-size:1.9rem;line-height:1.45;margin-top:14px}
+.gh-article-meta{align-items:center;display:flex;gap:12px;margin-top:28px}
+.gh-article-meta-content{color:var(--color-secondary-text);font-size:1.4rem}
+.gh-article-image{margin:32px 0}
+.gh-article-image figcaption{color:var(--color-secondary-text);font-size:1.4rem;margin-top:8px}
+.gh-article-author-name{font-size:1.5rem}
+.gh-archive{margin-block:80px 24px}
+.gh-archive-inner{border-bottom:1px solid var(--color-border);padding-bottom:40px}
+.gh-archive-description{font-size:1.9rem;margin-top:12px}
+.gh-author-meta{color:var(--color-secondary-text);display:flex;font-size:1.5rem;font-weight:550;gap:10px;margin-top:14px}
+.gh-author-meta a{color:inherit}
+.gh-content{font-size:1.7rem;letter-spacing:-.01em}
+.gh-content>*+*{margin-bottom:0;margin-top:28px}
+.gh-content>[id]:not(:first-child){margin-top:56px}
+.gh-content>[id]+p{margin-top:12px}
+.gh-content>:is(hr,blockquote){margin-top:48px!important;position:relative}
+.gh-content>:is(hr,blockquote)+*{margin-top:48px!important}
+.gh-content h2{font-size:calc(1.6em)}
+.gh-content h3{font-size:calc(1.3em)}
+.gh-content a{color:var(--ghost-accent-color);text-decoration:underline}
+.gh-content hr{background-color:var(--color-border);border:0;height:1px;width:100%}
+.gh-content pre{border-radius:6px;font-size:1.5rem;line-height:1.5em;overflow:auto;padding:16px}
+.gh-content :not(pre)>code,.gh-content pre{background:var(--color-lighter-gray);font-family:var(--font-mono)}
+.gh-content :not(pre)>code{border-radius:.25em;font-size:.95em;line-height:1em;padding:.15em .4em}
+.gh-content>blockquote,.gh-content>p{font-family:var(--font-serif-alt)}
+blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-left:1.5em}
+.kg-callout-card{display:flex;padding:20px 28px;border-radius:.25em}
+.kg-callout-card-grey{background:rgba(124,139,154,.13)}
+.kg-bookmark-card a.kg-bookmark-container,.kg-bookmark-card a.kg-bookmark-container:hover{display:flex;padding:20px;text-decoration:none;background:var(--background-color)!important;color:var(--color-darker-gray)!important;border:1px solid rgb(124 139 154/25%);border-radius:.25em}
+.kg-bookmark-title{font-weight:600}
+.kg-bookmark-description{font-size:1.4rem;margin-top:8px}
+.kg-file-card a.kg-file-card-container{display:flex;padding:16px;background:#fff;color:#222;border:1px solid rgb(124 139 154/25%);border-radius:5px;text-decoration:none}
+.kg-header-card{padding:32px}
+.kg-header-card.kg-style-light{background-color:#fafafa}
+.footnotes{font-size:1.4rem}
+.footnotes-list{padding-left:28px}
+.gh-footer{color:var(--color-darker-gray);font-size:1.5rem;margin-top:96px}
+.gh-footer a:not(.gh-button){color:inherit}
+.gh-footer-bar{align-items:center;border-block:1px solid var(--color-border);display:flex;gap:24px;justify-content:space-between;padding-block:32px}
+.gh-footer-logo img{height:44px;width:auto}
+.gh-footer-signup{align-items:center;display:flex;flex-direction:column;padding-block:64px;text-align:center}
+.gh-footer-signup-header{font-size:3.2rem;font-weight:700}
+.gh-footer-signup-subhead{font-size:1.8rem;font-weight:450;line-height:1.4;margin-top:12px;max-width:640px;opacity:.75}
+.gh-footer-signup .gh-form{margin-top:40px}
+.gh-error{padding:120px 0;text-align:center}
+.gh-error-code{font-size:8rem;font-weight:700}
+</style>
+<link rel="stylesheet" href="https://lampas.allmymind.org/blog-dark.css">
+</head>
+<body class="has-sans-title has-sans-body">
+<div class="gh-viewport">
+  <header id="gh-navigation" class="gh-navigation is-middle-logo gh-outer">
+    <div class="gh-navigation-inner gh-inner">
+      <a class="gh-navigation-logo is-title" href="https://allmymind.org/"><img alt="All My Mind" width="66" height="44" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='66' height='44'%3E%3Crect width='66' height='44' fill='%23181c30'/%3E%3C/svg%3E"></a>
+      <nav class="gh-navigation-menu">
+        <ul class="nav">
+          <li class="nav-home"><a href="https://allmymind.org/">Home</a></li>
+          <li class="nav-about"><a href="https://allmymind.org/about/">About</a></li>
+          <li class="nav-resources"><a href="https://allmymind.org/resources/">Resources</a></li>
+        </ul>
+      </nav>
+      <div class="gh-navigation-actions">
+        <button class="gh-search gh-icon-button" aria-label="Search this site"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></button>
+        <div class="gh-navigation-members"><a href="#/portal/signin">Sign in</a> <a class="gh-button" href="#/portal/signup">Subscribe</a></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="gh-main">
+    <!-- post -->
+    <article class="gh-article post" data-kinds="post">
+      <header class="gh-article-header gh-canvas">
+        <a class="gh-article-tag" href="/tag/john/">John</a>
+        <h1 class="gh-article-title is-title">Who Are the Dead Who Hear? (John 5:25)</h1>
+        <p class="gh-article-excerpt is-body">Read in its context, John 5:25 is about living people who are spiritually dead hearing Jesus and coming to life.</p>
+        <div class="gh-article-meta">
+          <div class="gh-article-meta-wrapper">
+            <h4 class="gh-article-author-name"><a href="/author/jonathan/">Jonathan White</a></h4>
+            <div class="gh-article-meta-content"><time datetime="2026-11-05">05 Nov 2026</time> <span class="gh-article-meta-length">— 4 min read</span></div>
+          </div>
+        </div>
+        <figure class="gh-article-image"><div class="gh-card-image" role="img" aria-label="The post's picture"></div><figcaption><span>"The hour is coming and has now come."</span></figcaption></figure>
+      </header>
+      <section class="gh-content gh-canvas is-body" id="post-text">
+        <blockquote id="quote">
+          <p>Truly, truly, I tell you, the hour is coming and has now come when the dead will hear the voice of the Son of God, and those who hear will live.<br>
+          — <a data-lampas-ref="John.5.25" href="https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.25">John 5:25 (MSB)</a></p>
+        </blockquote>
+        <p id="first">Can someone who died without believing in Jesus still hear Him and believe? I understand why that is comforting. But it is not what Jesus is saying. The <a id="plain-link" href="https://nak-sued.de/db/14239?ref=allmymind.org">report of the service</a> says the departed could hear His voice.</p>
+        <h3 id="1-the-verse-before-it-is-about-the-living">1. The Verse Before It Is About the Living</h3>
+        <p id="tagged">Read it whole here: <a id="tagged-verse" data-lampas-ref="John.5.16-30" href="https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.16-30">John 5:16-30</a>, and <code id="inline-code">John.5.25</code> is how it is written in a link.<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup></p>
+        <pre id="code-block"><code>https://lampas.allmymind.org/#/?ref=John.5.25
+// one verse, then a range: John.5.24-29</code></pre>
+        <div class="kg-card kg-callout-card kg-callout-card-grey"><div class="kg-callout-text">A note in a callout card, with <a href="/resources/">a link to the resources</a>.</div></div>
+        <div class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://biblehub.com/commentaries/mhc/john/5.htm"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Matthew Henry's Concise Commentary</div><div class="kg-bookmark-description">The time was come when the dead should hear his voice.</div></div></a></div>
+        <div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/notes.pdf"><span class="kg-file-card-title">Sermon notes (PDF)</span></a></div>
+        <div class="kg-card kg-header-card kg-style-light"><h2 class="kg-header-card-header">A light header card</h2><h3 class="kg-header-card-subheader">With its subheader</h3></div>
+        <hr class="footnotes-sep">
+        <section class="footnotes"><ol class="footnotes-list"><li id="fn1" class="footnote-item"><p><a href="https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.1-15">John 5:1-15</a>. <a href="#fnref1" class="footnote-backref">↩︎</a></p></li></ol></section>
+      </section>
+    </article>
+
+    <!-- page -->
+    <article class="gh-article page" data-kinds="page">
+      <header class="gh-article-header gh-canvas">
+        <h1 class="gh-article-title is-title">About</h1>
+        <p class="gh-article-excerpt is-body">Why this blog is called All My Mind.</p>
+      </header>
+      <section class="gh-content gh-canvas is-body">
+        <p>I read the New Testament in Greek, and write down what I learn. Everything here is tied to the text: <a data-lampas-ref="Mark.12.30" href="https://lampas.allmymind.org/#/?ref=Mark.12.30">Mark 12:30</a>.</p>
+        <h2 id="contact">Contact</h2>
+        <p>Write to me through <a href="/resources/">the resources page</a>.</p>
+      </section>
+    </article>
+
+    <!-- home list -->
+    <section class="gh-container is-list gh-outer" data-kinds="home">
+      <div class="gh-container-inner gh-inner">
+        <h2 class="gh-container-title">Latest</h2>
+        <div class="gh-feed">
+          <article class="gh-card post"><a class="gh-card-link" href="/is-death-the-last-opportunity-to-believe-on-jesus-2/"><div class="gh-card-image"></div><div class="gh-card-wrapper"><h3 class="gh-card-title is-title">Is Death the Last Opportunity to Believe on Jesus?</h3><p class="gh-card-excerpt is-body">What Hebrews 9:27 says about what comes after death.</p></div></a><footer class="gh-card-meta"><span class="gh-card-author">By Jonathan White</span> <time class="gh-card-date" datetime="2025-05-19">19 May 2025</time></footer></article>
+          <article class="gh-card post"><a class="gh-card-link" href="/was-adam-genderless-before-eve/"><div class="gh-card-image"></div><div class="gh-card-wrapper"><h3 class="gh-card-title is-title">Was Adam Genderless Before Eve?</h3><p class="gh-card-excerpt is-body">A look at the Hebrew of Genesis 2.</p></div></a><footer class="gh-card-meta"><span class="gh-card-author">By Jonathan White</span> <time class="gh-card-date" datetime="2025-04-02">02 Apr 2025</time></footer></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- tag page -->
+    <section class="gh-container is-grid gh-outer" data-kinds="tag">
+      <div class="gh-container-inner gh-inner">
+        <div class="gh-archive">
+          <div class="gh-archive-inner">
+            <div class="gh-archive-wrapper"><h1 class="gh-article-title is-title">John</h1><p class="gh-archive-description is-body">Posts on the Gospel of John.</p></div>
+          </div>
+        </div>
+        <div class="gh-feed">
+          <article class="gh-card post"><a class="gh-card-link" href="/who-are-the-dead-who-hear-john-5-25/"><div class="gh-card-image"></div><div class="gh-card-wrapper"><h3 class="gh-card-title is-title">Who Are the Dead Who Hear? (John 5:25)</h3><p class="gh-card-excerpt is-body">Spiritually dead people hearing Jesus and coming to life.</p></div></a><footer class="gh-card-meta"><span class="gh-card-author">By Jonathan White</span> <time class="gh-card-date" datetime="2026-11-05">05 Nov 2026</time></footer></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- author page -->
+    <section class="gh-container is-grid gh-outer author-template" data-kinds="author">
+      <div class="gh-container-inner gh-inner">
+        <div class="gh-archive">
+          <div class="gh-archive-inner">
+            <div class="gh-archive-wrapper"><h1 class="gh-article-title is-title">Jonathan White</h1><p class="gh-archive-description is-body">Reads the Greek New Testament.</p>
+              <div class="gh-author-meta"><span class="gh-author-location">Home</span> <a class="gh-author-social-link" href="https://allmymind.org/">allmymind.org</a></div></div>
+          </div>
+        </div>
+        <div class="gh-feed">
+          <article class="gh-card post"><a class="gh-card-link" href="/was-adams-headship-a-result-of-the-fall/"><div class="gh-card-image"></div><div class="gh-card-wrapper"><h3 class="gh-card-title is-title">Was Adam's Headship a Result of the Fall?</h3><p class="gh-card-excerpt is-body">What Genesis 3 does and does not say.</p></div></a><footer class="gh-card-meta"><span class="gh-card-author">By Jonathan White</span> <time class="gh-card-date" datetime="2025-03-04">04 Mar 2025</time></footer></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 404 -->
+    <section class="gh-error gh-outer" data-kinds="404">
+      <p class="gh-error-code">404</p>
+      <h1 class="gh-article-title is-title">Page not found</h1>
+      <p class="gh-article-excerpt is-body">This page does not exist. <a href="https://allmymind.org/">Go to the front page</a>.</p>
+    </section>
+  </main>
+
+  <footer class="gh-footer gh-outer">
+    <div class="gh-footer-inner gh-inner">
+      <div class="gh-footer-bar">
+        <span class="gh-footer-logo is-title"><img alt="All My Mind" width="66" height="44" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='66' height='44'%3E%3Crect width='66' height='44' fill='%23181c30'/%3E%3C/svg%3E"></span>
+        <nav class="gh-footer-menu"><a href="https://allmymind.org/about/">About</a></nav>
+        <div class="gh-footer-copyright">Powered by <a href="https://ghost.org/" target="_blank" rel="noopener">Ghost</a></div>
+      </div>
+      <section class="gh-footer-signup">
+        <h2 class="gh-footer-signup-header is-title">All My Mind</h2>
+        <p class="gh-footer-signup-subhead is-body">And you shall love the Lord your God with all your heart, with all your soul, with all your mind, and with all your strength. --Mark 12:30</p>
+        <form class="gh-form" onsubmit="return false"><input class="gh-form-input" id="footer-email" name="email" type="email" placeholder="jamie@example.com" aria-label="Your email"><button class="gh-button" type="submit" aria-label="Subscribe"><span>Subscribe</span></button></form>
+      </section>
+    </div>
+  </footer>
+</div>
+<script>
+  // #post, #page, #home, #tag, #author or #404 picks the page kind; the default is a post
+  const kind = location.hash.slice(1) || 'post';
+  document.body.dataset.kind = kind;
+  for (const el of document.querySelectorAll('[data-kinds]')) el.hidden = !el.dataset.kinds.split(' ').includes(kind);
+</script>
+</body>
+</html>
