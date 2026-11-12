@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.227",
+    "date": "2026-11-12",
+    "story": "mw-82lb97i.17",
+    "kind": "fixed",
+    "text": "choosing English United Kingdom as the English voice now makes the Bible read in that voice on the phone."
+  },
+  {
     "version": "0.7.226",
     "date": "2026-11-12",
     "story": "mw-qtu3zvz.65",

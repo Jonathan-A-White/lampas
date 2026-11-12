@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.227
+_2026-11-12_
+- Fixed: choosing English United Kingdom as the English voice now makes the Bible read in that voice on the phone.
+
 ## 0.7.226
 _2026-11-12_
 - Fixed: the Sermons search no longer lists a theme that has no sermons, and a theme that has some says how many.
