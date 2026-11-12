@@ -63,9 +63,17 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
     When he taps verse 8
     And he taps "Sermons · 4"
     And he searches the sheet for "spurgeon grace"
-    Then the part "Found" holds "Law and Grace", "Justification by Grace", "Reigning Grace", "Exposition of the Doctrines of Grace" and "Atonement"
+    Then the part "Found" holds "Law and Grace", "Reigning Grace", "Justification by Grace", "Exposition of the Doctrines of Grace" and "Atonement"
     And the service was asked to search once, for "spurgeon grace"
     And the sermon "Law and Grace" opens at "https://ccel.org/ccel/spurgeon/sermons01/sermons01.xxxvi.html"
+
+  @uc-sermons @greek
+  Scenario: A match on the open verse's chapter ranks above a general match (mw-qtu3zvz.66, tier order PROVISIONAL)
+    Given Lampas is opened on "Romans 5" with the sermon index answering
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    And he searches the sheet for "spurgeon grace"
+    Then the part "Found" holds "Law and Grace", "Reigning Grace", "Justification by Grace", "Exposition of the Doctrines of Grace" and "Atonement"
 
   @uc-sermons @greek
   Scenario: A theme found by the search lists its sermons in the same sheet when it is tapped

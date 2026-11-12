@@ -302,6 +302,15 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  // mw-qtu3zvz.66: the fixture's Rom.5.20 and Rom.5.21 are on the chapter of the open verse and come before Rom.3.24, a general match, though the service listed that second
+  Scenario("A match on the open verse's chapter ranks above a general match (mw-qtu3zvz.66, tier order PROVISIONAL)", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the sermon index answering', openedWith({}));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    And('he searches the sheet for {string}', searchesFor);
+    Then('the part {string} holds {string}, {string}, {string}, {string} and {string}', holdsFive);
+  });
+
   Scenario('A theme found by the search lists its sermons in the same sheet when it is tapped', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with the sermon index answering', openedWith({}));
     When('he taps verse {int}', tapVerse);
