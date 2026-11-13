@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.241",
+    "date": "2026-11-13",
+    "story": "mw-fnvjof.17.101",
+    "kind": "fixed",
+    "text": "on the blog in dark mode, the Subscribe button and the sign-up line under a post are easier to see and read."
+  },
+  {
     "version": "0.7.240",
     "date": "2026-11-13",
     "story": "mw-5r3p30.1156",

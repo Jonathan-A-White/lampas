@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.241
+_2026-11-13_
+- Fixed: on the blog in dark mode, the Subscribe button and the sign-up line under a post are easier to see and read.
+
 ## 0.7.240
 _2026-11-13_
 - New: A Strong's number on the word sheet now opens STEP Bible in your LSB, with the verse list filled in.
