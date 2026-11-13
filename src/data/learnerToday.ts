@@ -3,7 +3,7 @@
 // holds it; its instructions say how to use it. `done` is missing from every item while Tick boxes is Off: nothing is ticked then, and 'not done' would be a guess.
 import { devotionalForDay, tickedDevotionals } from './daily/devotionals';
 import { getDay, localDate } from './daily/dailyStore';
-import { countDue } from './repositories';
+import { dayProgress } from './repositories';
 import { chapterName } from '../plan/chapterName';
 import { readPlan } from '../plan/usePlan';
 import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting } from '../settings/definitions';
@@ -20,7 +20,7 @@ export type TodayKind = 'review' | 'memorize' | 'plan' | 'psalm' | 'proverb' | '
 
 export interface TodayItem {
   kind: TodayKind;
-  /** what Today calls it: 'Review: 17 due', 'Memorize: 2 verses due', 'Reading plan: 3 John 1', 'Reading plan: Revelation 12 read today, next Revelation 13', 'Psalm 5', the devotional's title */
+  /** what Today calls it: 'Review: 17 due', 'Review: 12 of 39 done today · 27 due', 'Memorize: 2 verses due', 'Reading plan: 3 John 1', 'Reading plan: Revelation 12 read today, next Revelation 13', 'Psalm 5', the devotional's title */
   title: string;
   /** whether he ticked it today; missing while Tick boxes is Off */
   done?: boolean;
@@ -58,9 +58,11 @@ export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[]
     let kind: TodayKind;
     let title: string;
     if (id === 'review') {
-      const due = await countDue(now.getTime());
+      const { done, due } = await dayProgress(now.getTime());
       kind = 'review';
-      title = due === 0 ? 'Review: nothing due' : `Review: ${due} due`;
+      // The words of Today's Review row (src/today/Today.tsx ReviewPiece): with nothing answered yet today it reads as ever, with no '0 of 27' or '0 of 0' (mw-indx1x6.22).
+      const left = due === 0 ? 'nothing due' : `${due} due`;
+      title = done === 0 ? `Review: ${left}` : `Review: ${done} of ${done + due} done today · ${left}`;
     } else if (id === 'memorize') {
       kind = 'memorize';
       title = memorizeLine(await memorizeToday(now.getTime()));

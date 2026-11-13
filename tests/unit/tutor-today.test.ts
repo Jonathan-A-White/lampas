@@ -118,6 +118,38 @@ describe('todayNow: the items behind the chip', () => {
   });
 });
 
+describe("the Review item's title says the day's progress the way Today's Review row does (mw-indx1x6.22)", () => {
+  const reviewTitle = async (): Promise<string> => (await todayNow(NOW))!.find((i) => i.kind === 'review')!.title;
+  const midnight = new Date(2026, 9, 22, 0, 0, 0).getTime();
+  const word = async (i: number, due: number, recent?: Array<{ when: number; right: boolean }>): Promise<void> => {
+    const lemma = `λ${i}`;
+    await db.words.put({ lemma, lang: 'grc', lemmas: [], gloss: 'g', lesson: 1, state: 'learning', since: 0 });
+    await db.reviews.put({ kind: 'word', id: lemma, step: 1, due, lastWhen: 0, lapses: 0, rights: 0, ...(recent ? { recent } : {}) });
+  };
+
+  it('39 due at midnight and 12 reviewed since: "12 of 39 done today · 27 due"', async () => {
+    for (let i = 0; i < 27; i++) await word(i, midnight - DAY);
+    for (let i = 27; i < 39; i++) await word(i, NOW.getTime() + DAY, [{ when: midnight + 3_600_000, right: true }]);
+    expect(await reviewTitle()).toBe('Review: 12 of 39 done today · 27 due');
+  });
+
+  it('everything done: "N of N done today · nothing due"', async () => {
+    for (let i = 0; i < 3; i++) await word(i, NOW.getTime() + DAY, [{ when: midnight + 3_600_000, right: true }]);
+    expect(await reviewTitle()).toBe('Review: 3 of 3 done today · nothing due');
+  });
+
+  it('nothing done yet reads as ever, with no "0 of"', async () => {
+    expect(await reviewTitle()).toBe('Review: nothing due');
+    await word(0, midnight - DAY);
+    expect(await reviewTitle()).toBe('Review: 1 due');
+  });
+
+  it('an answer from before his midnight is not counted', async () => {
+    await word(0, NOW.getTime() + DAY, [{ when: midnight - 3_600_000, right: true }]);
+    expect(await reviewTitle()).toBe('Review: nothing due');
+  });
+});
+
 describe('the request', () => {
   const TODAY: TodayItem[] = [
     { kind: 'review', title: 'Review: 17 due', done: false },
