@@ -14,6 +14,9 @@ const SHARED = 'features/steps/ask-verse.ts';
 /** The step files whose scenarios ask the tutor about a verse of the open chapter. */
 const FILES = ['features/steps/tutor-links.steps.tsx', 'features/steps/tutor-works.steps.tsx', 'features/steps/tutor-copy.steps.tsx'];
 
+/** The step files whose 'he talks about verse 11 and sends ...' is the same step with no wait for the answer (their next step waits on the mill): 4 to 4.6 s a step on a calm host before, with the same three slow things in it. */
+const SENDERS = ['features/steps/about-you.steps.tsx', 'features/steps/memory-tutor.steps.tsx'];
+
 const offences = (file: string, pattern: RegExp): string[] =>
   readFileSync(file, 'utf8')
     .split('\n')
@@ -24,6 +27,13 @@ describe("the step 'he asks the tutor about verse 28'", () => {
     const source = readFileSync(file, 'utf8');
     expect(source).toMatch(/import \{[^}]*\baskAboutVerse\b[^}]*\} from '\.\/ask-verse'/);
     expect(source).toMatch(/\baskAboutVerse\(user, 28, /);
+  });
+
+  it.each(SENDERS)('%s sends through the shared sendAboutVerse, with no look of its own for the verse number, the Talk sheet over the Reader or the composer', (file) => {
+    const source = readFileSync(file, 'utf8');
+    expect(source).toMatch(/import \{[^}]*\bsendAboutVerse\b[^}]*\} from '\.\/ask-verse'/);
+    expect(source).toMatch(/\bsendAboutVerse\(user, 11, /);
+    expect(offences(file, /'Your message'|ByRole\('dialog', \{ name: 'Talk about |ByRole\('region', \{ name: 'Verse view'/)).toEqual([]);
   });
 
   it.each([SHARED, ...FILES])('%s makes no role query on the whole screen: the Reader behind the sheet is walked for each one', (file) => {
@@ -38,7 +48,7 @@ describe("the step 'he asks the tutor about verse 28'", () => {
     const source = readFileSync(SHARED, 'utf8');
     expect(source).toMatch(/await openTutor\(\)/);
     expect(source).toMatch(/user\.paste\(/);
-    expect(source).toMatch(/waitFor\(\(\) => answeredTurn\(\)\)/);
+    expect(source).toMatch(/await sendAboutVerse\(user, n, text\);\n\s+return waitFor\(\(\) => answeredTurn\(\)\)/);
     expect(readFileSync('features/steps/open-tutor.ts', 'utf8')).toMatch(/querySelectorAll<HTMLElement>\('\[role="dialog"\]'\)/);
   });
 });

@@ -18,7 +18,8 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { openTutor } from './open-tutor';
+import { sendAboutVerse } from './ask-verse';
+import { queryTalkSheet } from './open-tutor';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
@@ -72,13 +73,9 @@ describeFeature(feature, ({ Scenario }) => {
     if (!got) throw new Error(`the mill received no grist number ${i}`);
     return got;
   };
+  // the shared step (features/steps/ask-verse.ts, mw-indx1x6.30): no role query over the Reader and the question in one paste; the step after it waits on the mill
   const talk = async (_: unknown, said: string) => {
-    await user.click(await screen.findByRole('button', { name: 'Verse 11' }));
-    await screen.findByRole('region', { name: 'Verse view' });
-    await openTutor();
-    const sheet = await screen.findByRole('dialog', { name: 'Talk about Romans 8:11' });
-    await user.type(within(sheet).getByRole('textbox', { name: 'Your message' }), said);
-    await user.click(within(sheet).getByRole('button', { name: 'Send' }));
+    await sendAboutVerse(user, 11, said);
   };
   const millGot = (_: unknown, n: number) => waitFor(() => expect(fake.received).toHaveLength(n));
   const keptNote = async (name: string, text: string, by: string) => {
@@ -142,7 +139,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he talks about verse 11 and sends {string}', talk);
     Then('the mill received 1 grist', () => millGot(null, 1));
     When('he opens {string} from the Reader', async (_, name: string) => {
-      const sheet = screen.queryByRole('dialog', { name: 'Talk about Romans 8:11' });
+      const sheet = queryTalkSheet('Talk about Romans 8:11');
       if (sheet) {
         await waitFor(async () => expect(await db.talks.count()).toBeGreaterThan(0));
         await user.click(within(sheet).getByRole('button', { name: 'Done' }));

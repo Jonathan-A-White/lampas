@@ -103,7 +103,8 @@ elsewhere) and waits for a new screen with `pageTime`; a screen that waits on it
   with an answer, once the sheet shows no question waiting). A step after it reads the sheet with `answeredTurn()`, `verseTalk()` or `queryTalkSheet()`
   (`open-tutor.ts`), inside a `waitFor` when it waits for something drawn later; never `screen.getByRole('dialog')`, which walks the Reader behind the sheet on
   every call. vitest-cucumber gives each step its own 20 s test and a step failed by that timeout goes on running into the steps after it
-  (`tests/unit/step-ask-about-verse.test.ts` holds tutor-links, tutor-works and tutor-copy to it; the other tutor step files still have their own ask).
+  (`tests/unit/step-ask-about-verse.test.ts` holds tutor-links, tutor-works and tutor-copy to it). A step whose next step waits on the mill, not on the answer, calls
+  `sendAboutVerse(user, n, text)`, the same step without that last wait (about-you and memory-tutor); the other tutor step files still have their own ask.
 - `tests/e2e/tutor.spec.ts` (in `npm run shots`, shots `ask.png` and `answer.png`) routes Postern's origin to the same fake
   from Playwright (`tests/support/playwright-postern.ts`); the app's real signing and sealing run.
 - `tests/e2e/tutor-live.spec.ts` is the true end-to-end test, Playwright project `live`, run by `npm run e2e:live` only. It

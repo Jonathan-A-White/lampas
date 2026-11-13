@@ -1,5 +1,6 @@
 // features/steps/ask-verse.ts — the one step 'he asks the tutor about verse 28' (mw-indx1x6.30), shared by the features whose tutor answers with links (tutor-links, tutor-works,
-// tutor-copy): a tap on the verse's number, the Verse view, the floating ?, the question, Send, and the wait for the answered turn. vitest-cucumber gives the step one 20 s test, and a
+// tutor-copy): a tap on the verse's number, the Verse view, the floating ?, the question, Send, and the wait for the answered turn. about-you and memory-tutor, whose next step
+// waits on the mill, take the same step without that last wait (sendAboutVerse). vitest-cucumber gives the step one 20 s test, and a
 // step failed by that timeout goes on running into the steps after it, so everything here waits on the Talk sheet's own state and looks for the sheet beside its own markup: no role query
 // on `screen` (it works out the role and name of every element of the Reader behind the sheet, seconds a call under load) and no key-by-key typing (a render of the sheet for each key).
 // tests/unit/step-ask-about-verse.test.ts holds the step files to it.
@@ -30,9 +31,10 @@ export function answeredTurn(): HTMLElement {
 }
 
 /**
- * He taps verse `n` of the open chapter, opens the tutor from its Verse view, puts `text` in and sends it. Resolves with the answered turn, once the sheet has settled on it.
+ * He taps verse `n` of the open chapter, opens the tutor from its Verse view, puts `text` in and taps Send. Resolves with the Talk sheet, the question sent and its answer not waited for:
+ * for a step whose next step waits on the mill or on what was kept (about-you, memory-tutor).
  */
-export async function askAboutVerse(user: UserEvent, n: number, text: string): Promise<HTMLElement> {
+export async function sendAboutVerse(user: UserEvent, n: number, text: string): Promise<HTMLElement> {
   // findButton, not a role query: a role query walks every word of the chapter (1.6 s calm, a multiple under load; mw-yrz5b8z)
   await user.click(await findButton(`Verse ${n}`));
   // the ? asks about what is open, so the Verse view must be up first (a plain query on its own attribute)
@@ -47,5 +49,13 @@ export async function askAboutVerse(user: UserEvent, n: number, text: string): P
   await user.click(message);
   await user.paste(text);
   await user.click(within(talk).getByRole('button', { name: 'Send' }));
+  return talk;
+}
+
+/**
+ * He asks the tutor `text` about verse `n` of the open chapter (sendAboutVerse) and the answer comes. Resolves with the answered turn, once the sheet has settled on it.
+ */
+export async function askAboutVerse(user: UserEvent, n: number, text: string): Promise<HTMLElement> {
+  await sendAboutVerse(user, n, text);
   return waitFor(() => answeredTurn());
 }
