@@ -164,5 +164,11 @@
   "exclude": [
     {"resource":"LLS:HWRTNARSRM","title":"How to Write Narrative Sermons","reason":"a book about how to preach, not a sermon archive"},
     {"resource":"LLS:TRNSFRMTNLPRCHN","title":"Transformational Preaching: A Guide to Developing and Delivering Expository Sermons","reason":"a book about how to preach, not a sermon archive"}
+  ],
+  "alsoSermons": [
+    {"resource":"LLS:SLSRHMTRTSTGSTN","title":"Homilies on the Gospel according to St. John, and His First Epistle, Vols. 1 & 2","reason":"Augustine's homilies, filed by Logos as a commentary on John and 1 John"},
+    {"resource":"LLS:HMLSSTJHNCHRYSTM10","title":"Commentary on the Epistle to the Galatians, and Homilies on the Epistle to the Ephesians","reason":"Chrysostom's homilies on Ephesians with his commentary on Galatians"},
+    {"resource":"LLS:6.60.6","title":"Nicene and Post-Nicene Fathers 1.6: Saint Augustin: Sermon on the Mount, Harmony of the Gospels, Homilies on the Gospels","reason":"Augustine's homilies on the Gospels with other works"},
+    {"resource":"LLS:6.60.7","title":"Nicene and Post-Nicene Fathers 1.7: St. Augustin: Homilies on the Gospel of John, Homilies on the First Epistle of John, Soliloquies","reason":"Augustine's homilies on John and 1 John with the Soliloquies"}
   ]
 }
