@@ -1,5 +1,47 @@
 [
   {
+    "version": "0.7.240",
+    "date": "2026-11-13",
+    "story": "mw-5r3p30.1156",
+    "kind": "new",
+    "text": "A Strong's number on the word sheet now opens STEP Bible in your LSB, with the verse list filled in."
+  },
+  {
+    "version": "0.7.240",
+    "date": "2026-11-13",
+    "story": "mw-qtu3zvz.108",
+    "kind": "fixed",
+    "text": "Two books about preaching no longer show among your sermon archives, Chrysostom's homilies now appear only at the books they cover, and the sermon lists no longer speak of \"his\" Logos library."
+  },
+  {
+    "version": "0.7.240",
+    "date": "2026-11-13",
+    "story": "mw-zbgo4ep.33",
+    "kind": "fixed",
+    "text": "On mobile data with Recording on Wi-Fi only, opening a chapter no longer downloads the recording's timings once you have answered the question about playing David over data."
+  },
+  {
+    "version": "0.7.240",
+    "date": "2026-11-13",
+    "story": "mw-qtu3zvz.104",
+    "kind": "fixed",
+    "text": "the list of books Lampas cannot open no longer names sermons among them, since Lampas opens sermon books."
+  },
+  {
+    "version": "0.7.240",
+    "date": "2026-11-13",
+    "story": "mw-82lb97i.19",
+    "kind": "new",
+    "text": "While David reads, you can skip back or forward one verse from the reading bar or the lock screen."
+  },
+  {
+    "version": "0.7.240",
+    "date": "2026-11-13",
+    "story": "mw-indx1x6.6",
+    "kind": "new",
+    "text": "After a wrong answer in Review or a drill, a Study this box links to the table, lesson or word that teaches it, and where nothing does, Ask the tutor opens already knowing your miss."
+  },
+  {
     "version": "0.7.239",
     "date": "2026-11-12",
     "story": "mw-indx1x6.9",

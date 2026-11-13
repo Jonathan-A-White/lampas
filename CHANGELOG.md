@@ -1,5 +1,14 @@
 # What's new
 
+## 0.7.240
+_2026-11-13_
+- New: A Strong's number on the word sheet now opens STEP Bible in your LSB, with the verse list filled in.
+- Fixed: Two books about preaching no longer show among your sermon archives, Chrysostom's homilies now appear only at the books they cover, and the sermon lists no longer speak of "his" Logos library.
+- Fixed: On mobile data with Recording on Wi-Fi only, opening a chapter no longer downloads the recording's timings once you have answered the question about playing David over data.
+- Fixed: the list of books Lampas cannot open no longer names sermons among them, since Lampas opens sermon books.
+- New: While David reads, you can skip back or forward one verse from the reading bar or the lock screen.
+- New: After a wrong answer in Review or a drill, a Study this box links to the table, lesson or word that teaches it, and where nothing does, Ask the tutor opens already knowing your miss.
+
 ## 0.7.239
 _2026-11-12_
 - New: The Parsing drill now follows your Weave's Words and Grammar settings, asks the idea you are learning now first, and offers the widest setting when nothing fits.
