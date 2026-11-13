@@ -12,6 +12,7 @@ import { db } from '../../src/data/db';
 import { setGreekInterest, setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { FLOATING_TUTOR_LABEL } from '../../src/AskTutor';
+import { ROW_MS } from '../../src/copy/useCopyHold';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -19,6 +20,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
+  stopRowClock();
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
@@ -47,7 +49,45 @@ const sleep = (ms: number) =>
     await new Promise((resolve) => setTimeout(resolve, ms));
   });
 
+// The row's ROW_MS timer on a clock the test moves (mw-indx1x6.25): 'after two seconds' and 'two more seconds' slept on the real clock, and a loaded
+// host outran the row's 3 s between the hold and the touch, so the row was gone before it was touched. Only a timer set for ROW_MS is held back
+// here (a clearTimeout of it cancels it, as the app's touch does); every other timer is the real one. advanceRowClock fires what has come due.
+let rowClock: { now: number; timers: Map<unknown, { fn: () => void; at: number }>; spies: { mockRestore: () => void }[] } | null = null;
+const stopRowClock = () => {
+  rowClock?.spies.forEach((spy) => spy.mockRestore());
+  rowClock = null;
+};
+const startRowClock = () => {
+  stopRowClock();
+  const clock = { now: 0, timers: new Map<unknown, { fn: () => void; at: number }>(), spies: [] as { mockRestore: () => void }[] };
+  const realSet = globalThis.setTimeout;
+  const realClear = globalThis.clearTimeout;
+  clock.spies.push(
+    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: TimerHandler, ms?: number, ...args: unknown[]) => {
+      if (ms !== ROW_MS || typeof fn !== 'function') return realSet(fn, ms, ...args);
+      const id = {};
+      clock.timers.set(id, { fn: () => fn(...args), at: clock.now + ms });
+      return id;
+    }) as unknown as typeof setTimeout),
+    vi.spyOn(globalThis, 'clearTimeout').mockImplementation(((id?: unknown) => {
+      if (clock.timers.delete(id)) return;
+      realClear(id as Parameters<typeof clearTimeout>[0]);
+    }) as typeof clearTimeout),
+  );
+  rowClock = clock;
+};
+const advanceRowClock = (ms: number) =>
+  act(async () => {
+    const clock = rowClock!;
+    clock.now += ms;
+    for (const [id, timer] of [...clock.timers].sort((a, b) => a[1].at - b[1].at)) {
+      if (timer.at > clock.now || !clock.timers.delete(id)) continue;
+      timer.fn();
+    }
+  });
+
 async function open(layout: 'paragraph' | 'verse', options: { refuses?: boolean } = {}): Promise<void> {
+  stopRowClock();
   cleanup();
   stopReading();
   clearBus();
@@ -224,11 +264,12 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A tap on the row starts its time again', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Romans 8 in Paragraph layout', paragraphLayout);
     When('he holds the number of verse {int}', holdNumber);
+    And('the row\'s three seconds are counted on a clock the test moves', startRowClock);
     And('after two seconds he touches {string} on the row', async (_, name: string) => {
-      await sleep(2000);
+      await advanceRowClock(2000);
       await tapOnRow(undefined, name);
     });
-    And('two more seconds go by', () => sleep(2000));
+    And('two more seconds go by', () => advanceRowClock(2000));
     Then('the row says {string}', rowSays);
   });
 

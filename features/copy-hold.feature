@@ -75,6 +75,7 @@ Feature: The row a hold on a verse number draws
 
   Scenario: A tap on the row starts its time again
     Given Lampas is opened on Romans 8 in Paragraph layout
+    And the row's three seconds are counted on a clock the test moves
     When he holds the number of verse 13
     And after two seconds he touches "Paragraph" on the row
     And two more seconds go by

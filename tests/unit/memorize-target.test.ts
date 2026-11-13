@@ -1,7 +1,7 @@
 // tests/unit/memorize-target.test.ts — the text a verse is memorized in (mw-fu7dqf.1): a per-token {text, lang} sequence for English, Greek and the
 // weave of the moment, for a verse or a range from a canonical reference; an Old Testament reference is its English (mw-uqlxea.3).
 import { readFileSync } from 'node:fs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { memorizeTarget, tokensOf } from '../../src/memorize/target';
 import { versesOf } from '../../src/memorize/refs';
@@ -176,5 +176,3 @@ describe('references', () => {
     expect(found.verses.map((v) => v.n)).toEqual([24, 25]);
   });
 });
-
-vi.setConfig({ testTimeout: 30_000 });

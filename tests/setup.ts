@@ -7,7 +7,7 @@ import { configure } from '@testing-library/dom';
 import { settle } from '../src/ui/settle';
 import { ASYNC_WAIT_MS } from './support/timeouts';
 
-// waitFor/findBy default to 1 s, which a loaded host outruns; ASYNC_WAIT_MS (tests/support/timeouts.ts) is the one wait. vitest's testTimeout (20 s) stays above it.
+// waitFor/findBy default to 1 s, which a loaded host outruns; ASYNC_WAIT_MS (tests/support/timeouts.ts) is the one wait. vitest's testTimeout (the preset's 40 s, vitest.config.ts) stays above it.
 configure({ asyncUtilTimeout: ASYNC_WAIT_MS });
 
 // The wall clock steps BACK on a dev box (WSL2's time sync moves it back by about 1.8 s every 30 s on the Desktop). A word's answers
