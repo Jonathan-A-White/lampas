@@ -2,7 +2,8 @@
 // Talk sheet's own state, and the step files that use it make no role query over the open Reader (mw-indx1x6.30).
 // vitest-cucumber gives each Given/When/Then its own test with the 20 s testTimeout. tutor-copy's ask step found the Verse view and the Talk sheet with
 // screen.findByRole (each one works out the role and name of every element of the chapter behind it), found the sheet again by role for every read and
-// typed its 40-letter question a key at a time: 2.5 to 3.5 s alone on a calm host, past 20 s inside a gate part at load 26 of 8 cores. A step failed by
+// typed its 40-letter question a key at a time: 1.7 to 2.2 s alone on a calm host (1.1 to 1.8 s through the shared step), past 20 s inside a gate part at load 26 of 8 cores:
+// a waitFor runs its look again at every change of the page, so a look that walks the Reader costs more the busier the host is. A step failed by
 // the timeout goes on running, so the next step found no turn ('Expected container to be an Element ... got null') and the clipboard step after it
 // waited on a clipboard nothing had written yet. tutor-links was mended the same way in mw-lcv9z3g.13; its copy of the step is now the shared one.
 // Recipe to see it on a calm host: `TZ=UTC npx vitest run features/steps/tutor-copy.steps.tsx --testTimeout=2000` (a step slower than 2 s then fails and
