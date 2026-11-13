@@ -176,5 +176,3 @@ describe('references', () => {
     expect(found.verses.map((v) => v.n)).toEqual([24, 25]);
   });
 });
-
-vi.setConfig({ testTimeout: 30_000 });

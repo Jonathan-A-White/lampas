@@ -3,7 +3,7 @@ import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { timingFilter } from 'pwa-kit/test-preset';
+import { timingFilter, vitestTimeouts } from 'pwa-kit/test-preset';
 import { buildVersion, shortCommit } from './build-version';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
@@ -52,7 +52,8 @@ export default defineConfig({
     passWithNoTests: process.env.MW_TIMING === 'only',
     // A few tests run a real vite build; capping workers keeps them from piling up and timing out.
     maxWorkers: 4,
-    testTimeout: 20_000,
+    // testTimeout, hookTimeout and expect.poll: the preset's, sized for a loaded host (a step outran the 20 s this had at load 14+ of 8 cores: mw-indx1x6.25).
+    ...vitestTimeouts,
     // Console lines go straight to the stream, not over the worker rpc: a line written as the worker closes (a failed
     // best-effort write after the last test) otherwise fails the run with EnvironmentTeardownError (mw-5r3p30.83).
     disableConsoleIntercept: true,
