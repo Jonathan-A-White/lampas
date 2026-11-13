@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.243
+_2026-11-13_
+- Fixed: the Parsing drill now says that Off and + Learning on its Words row ask the same words.
+
 ## 0.7.241
 _2026-11-13_
 - Fixed: on the blog in dark mode, the Subscribe button and the sign-up line under a post are easier to see and read.

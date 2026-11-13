@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.243",
+    "date": "2026-11-13",
+    "story": "mw-indx1x6.23",
+    "kind": "fixed",
+    "text": "the Parsing drill now says that Off and + Learning on its Words row ask the same words."
+  },
+  {
     "version": "0.7.241",
     "date": "2026-11-13",
     "story": "mw-fnvjof.17.101",
