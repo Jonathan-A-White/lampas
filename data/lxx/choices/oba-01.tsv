@@ -1,0 +1,130 @@
+ref	parsing	lemma	mark	confidence	note
+Oba.1:1#1	N-NSF	ὅρασις		0.80	
+Oba.1:1#2	N-GSM	Ὀβδειού		0.80	
+Oba.1:1#3	D-APN	ὅδε, ἥδε		0.80	
+Oba.1:1#17	T-APN	ὁ		0.80	
+Oba.1:1#18	N-APN	ἔθνος		0.80	
+Oba.1:1#20	V-2AAM-2P	ἀνίστημι		0.80	
+Oba.1:1#22	V-PAS-1P	ἐξανίστημι	unsure	0.50	model: unsure
+Oba.1:2#2	A-ASM	ὀλιγοστός		0.80	
+Oba.1:2#8	V-RPP-NSM	ἀτιμόω		0.80	
+Oba.1:3#7	V-PAP-ASM	κατασκηνόω		0.80	
+Oba.1:3#11	T-GPF	ὁ		0.80	
+Oba.1:3#12	N-GPF	πέτρα		0.80	
+Oba.1:3#15	P-GSM	αὐτός		0.80	
+Oba.1:3#19	P-GSM	αὐτός		0.80	
+Oba.1:3#20	I-NSM	τίς		0.80	
+Oba.1:3#22	V-FAI-3S	κατάγω		0.80	
+Oba.1:4#2	V-APS-2S	μετεωρίζω		0.80	
+Oba.1:4#4	N-NSM	ἀετός		0.80	
+Oba.1:4#8	A-ASN	μέσος		0.80	
+Oba.1:4#11	V-2AAS-2S	τίθημι	guess	0.40	guess: the model answered with no candidates
+Oba.1:4#15	V-FAI-1S	κατάγω		0.80	
+Oba.1:5#3	V-2AAI-3P	εἰσέρχομαι		0.80	
+Oba.1:5#11	V-2API-2S	ἀπορρίπτω	guess	0.40	guess: the model answered with no candidates
+Oba.1:5#15	T-APN	ὁ		0.80	
+Oba.1:5#16	A-APN	ἱκανός		0.80	
+Oba.1:5#17	F-3DPM	ἑαυτοῦ		0.80	
+Oba.1:5#20	N-NPM	τρυγητής		0.80	
+Oba.1:5#21	V-2AAI-3P	εἰσέρχομαι		0.80	
+Oba.1:5#26	V-IMI-3P	ὑπολείπω	unsure	0.50	model: unsure
+Oba.1:6#3	N-NSM	Ἠσαῦ		0.80	
+Oba.1:6#5	V-API-3S	καταλαμβάνω		0.80	
+Oba.1:6#6	P-GSM	αὐτός		0.80	
+Oba.1:6#7	T-NPN	ὁ		0.80	
+Oba.1:6#8	V-RPP-NPN	κρύπτω		0.80	
+Oba.1:7#14	V-AOI-3P	δύναμαι	guess	0.40	guess: the model answered with no candidates
+Oba.1:7#17	N-NPM	ἀνήρ		0.80	
+Oba.1:7#18	A-NPM	εἰρηνικός		0.80	
+Oba.1:7#21	N-APN	ἔνεδρον		0.80	
+Oba.1:7#26	N-NSF	σύνεσις		0.80	
+Oba.1:7#27	P-DPM	αὐτός		0.80	
+Oba.1:8#16	N-GSM	Ἠσαῦ		0.80	
+Oba.1:9#2	V-FPI-3P	πτοέω		0.80	
+Oba.1:9#8	N-GSM	Θαιμάν	unsure	0.50	model: unsure
+Oba.1:9#10	V-APS-3S	ἐξαίρω		0.80	
+Oba.1:9#14	N-GSM	Ἠσαῦ		0.80	
+Oba.1:10#9	N-GSM	Ἰακώβ		0.80	
+Oba.1:10#14	V-FPI-2S	ἐξαίρω	guess	0.40	guess: the model answered with no candidates
+Oba.1:11#3	N-GSF	ἡμέρα		0.80	
+Oba.1:11#4	V-2AAI-2S	ἀνθίστημι		0.80	
+Oba.1:11#9	V-PAP-GPM	αἰχμαλωτεύω		0.80	
+Oba.1:11#10	A-GPM	ἀλλογενής		0.80	
+Oba.1:11#12	P-GSM	αὐτός		0.80	
+Oba.1:11#14	A-NPM	ἀλλότριος		0.80	
+Oba.1:11#15	V-2AAI-3P	εἰσέρχομαι		0.80	
+Oba.1:11#18	P-GSM	αὐτός		0.80	
+Oba.1:11#21	N-ASF	Ἱερουσαλήμ		0.80	
+Oba.1:11#30	P-GPM	αὐτός		0.80	
+Oba.1:12#3	V-2AAS-2S	ἐπεῖδον		0.80	
+Oba.1:12#9	A-GPM	ἀλλότριος		0.80	
+Oba.1:12#12	V-2APS-2S	ἐπιχαίρω	guess	0.40	guess: the model chose outside the candidates
+Oba.1:12#16	N-GSM	Ἰούδας		0.80	
+Oba.1:12#19	N-GSF	ἀπώλεια		0.80	
+Oba.1:12#20	P-GPM	αὐτός		0.80	
+Oba.1:12#23	V-PAS-2S	μεγαλορημονέω	guess	0.40	guess: the model answered with no candidates
+Oba.1:13#1	CONJ-N	μηδέ		0.80	
+Oba.1:13#9	P-GPM	αὐτός		0.80	
+Oba.1:13#10	CONJ-N	μηδέ		0.80	
+Oba.1:13#11	V-2AAS-2S	ἐπεῖδον		0.80	
+Oba.1:13#16	P-GPM	αὐτός		0.80	
+Oba.1:13#20	P-GPM	αὐτός		0.80	
+Oba.1:13#21	CONJ-N	μηδέ		0.80	
+Oba.1:13#22	V-2AMS-2S	συνεπιτίθημι	guess	0.40	guess: the model chose outside the candidates
+Oba.1:13#26	P-GPM	αὐτός		0.80	
+Oba.1:13#29	N-GSF	ἀπώλεια		0.80	
+Oba.1:13#30	P-GPM	αὐτός		0.80	
+Oba.1:14#1	CONJ-N	μηδέ		0.80	
+Oba.1:14#6	P-GSM	αὐτός		0.80	
+Oba.1:14#7	V-AAN	ἐξολεθρεύω		0.80	
+Oba.1:14#9	V-PPP-APM	ἀνασῴζω		0.80	
+Oba.1:14#10	P-GSM	αὐτός		0.80	
+Oba.1:14#11	CONJ-N	μηδέ		0.80	
+Oba.1:14#12	V-AAS-2S	συγκλείω		0.80	
+Oba.1:14#15	P-GSM	αὐτός		0.80	
+Oba.1:15#6	A-APN	πᾶς		0.80	
+Oba.1:15#7	T-APN	ὁ		0.80	
+Oba.1:15#8	N-APN	ἔθνος		0.80	
+Oba.1:15#15	T-NSN	ὁ		0.80	
+Oba.1:15#16	N-NSN	ἀνταπόδομα		0.80	
+Oba.1:16#6	T-ASN	ὁ		0.80	
+Oba.1:16#7	N-ASN	ὄρος		0.80	
+Oba.1:16#8	T-ASN	ὁ		0.80	
+Oba.1:16#9	A-ASN	ἅγιος		0.80	
+Oba.1:16#11	V-FDI-3P	πίνω	guess	0.40	guess: the model answered with no candidates
+Oba.1:17#5	N-DSF	Σειών	unsure	0.50	model: unsure
+Oba.1:17#10	A-NSN	ἅγιος		0.80	
+Oba.1:17#15	N-GSM	Ἰακώβ		0.80	
+Oba.1:18#5	N-GSM	Ἰακώβ		0.80	
+Oba.1:18#6	N-NSN	πῦρ		0.80	
+Oba.1:18#10	N-GSM	Ἰωσήφ		0.80	
+Oba.1:18#15	N-GSM	Ἠσαῦ		0.80	
+Oba.1:18#19	V-FPI-3P	ἐκκαίω	guess	0.40	guess: the model answered with no candidates
+Oba.1:18#23	V-FDI-3P	κατεσθίω		0.80	
+Oba.1:18#28	A-NSM	πυροφόρος		0.80	
+Oba.1:18#31	N-GSM	Ἠσαῦ		0.80	
+Oba.1:19#5	N-DSM	Νάγεβ		0.80	
+Oba.1:19#6	T-ASN	ὁ		0.80	
+Oba.1:19#7	N-ASN	ὄρος		0.80	
+Oba.1:19#8	T-ASN	ὁ		0.80	
+Oba.1:19#9	N-GSM	Ἠσαῦ		0.80	
+Oba.1:19#19	T-ASN	ὁ		0.80	
+Oba.1:19#20	N-ASN	ὄρος		0.80	
+Oba.1:19#21	N-GSM	Ἐφραίμ		0.80	
+Oba.1:19#23	T-ASN	ὁ		0.80	
+Oba.1:19#24	N-ASN	πεδίον		0.80	
+Oba.1:19#27	N-ASM	Βενιαμίν		0.80	
+Oba.1:19#30	N-ASF	Γαλααδεῖτις	guess	0.40	guess: the model answered with no candidates
+Oba.1:20#9	N-GSM	Ἰσραήλ		0.80	
+Oba.1:20#11	T-GPM	ὁ		0.80	
+Oba.1:20#12	A-GPM	Χανααναῖος		0.80	
+Oba.1:20#14	N-GPN	Σάρεπτα	unsure	0.50	model: unsure
+Oba.1:20#18	N-GSF	Ἱερουσαλήμ		0.80	
+Oba.1:20#20	N-GSF	Ἐφράθα	guess	0.40	guess: the model answered with no candidates
+Oba.1:20#24	T-GSM	ὁ		0.80	
+Oba.1:20#25	N-GSM	Νάγεβ		0.80	
+Oba.1:21#3	V-PPP-NPM	ἀνασῴζω		0.80	
+Oba.1:21#6	N-GSF	Σειών	unsure	0.50	model: unsure
+Oba.1:21#9	T-ASN	ὁ		0.80	
+Oba.1:21#10	N-ASN	ὄρος		0.80	
+Oba.1:21#11	N-GSM	Ἠσαῦ		0.80	
