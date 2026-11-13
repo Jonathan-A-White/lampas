@@ -208,14 +208,14 @@ export interface DayProgress {
 /**
  * The day's Review progress (mw-indx1x6.14). An item answered since local midnight (its last kept answer, not the moment it was scheduled) and not due again now is
  * done today; what is due now is still to do, so M = done + due is what was due at the start of his day plus what came due since. An item answered before midnight is not
- * counted; a memorized verse is Memorize's, not Review's. Rows are counted only when Review can ask them (the same rule as countDue).
+ * counted; a memorized verse is Memorize's, not Review's (Memorize's own progress asks for `kind` VERSE_KIND, mw-indx1x6.21). Rows are counted only when Review can ask them (the same rule as countDue).
  */
-export async function dayProgress(now = Date.now()): Promise<DayProgress> {
+export async function dayProgress(now = Date.now(), kind?: string): Promise<DayProgress> {
   const start = startOfDay(now);
   const rows = await db.reviews.toArray();
-  const answered = rows.filter((r) => r.kind !== VERSE_KIND && r.due > now && (r.recent?.at(-1)?.when ?? -Infinity) >= start);
+  const answered = rows.filter((r) => (kind === undefined ? r.kind !== VERSE_KIND : r.kind === kind) && r.due > now && (r.recent?.at(-1)?.when ?? -Infinity) >= start);
   const done = (await inScheme(await live(answered))).filter(namesSomething).length;
-  return { done, due: await countDue(now) };
+  return { done, due: await countDue(now, kind) };
 }
 
 /**
