@@ -1,3 +1,4 @@
+# mw-indx1x6.8: the Governor's words (2026-11-12): "They should be available after each question, but the aggragate should be deduped and prioritized at the end of the drill/review."
 # mw-indx1x6.6: the Governor's words (2026-11-12): "If I get something wrong in a drill, can you link to the specific paradigm(s)/lesson(s)/word card(s),
 # mnemonic,... That would help me the most. If nothing is available, tutor should have enough context to help."
 @uc-review @greek
@@ -77,3 +78,57 @@ Feature: A wrong answer links to what teaches it
     And the cell "First declension, feminine in η (φωνή) Dative Singular" is lit and reads "-ῃ"
     When he taps "Back to the drill"
     Then the short drill is still on "Question 1 of 2"
+
+  # mw-indx1x6.8: at the end of the session, a Study list of everything the misses linked to, one row each, most-missed first
+  Scenario: A Review with misses ends with a Study list that shows a table once, first
+    Given the table "noun-endings" is due in Review and the round asks "First declension, feminine in η (φωνή) dative singular of noun endings" first
+    When he opens Review and starts the round
+    And he misses every question of the round
+    Then the end card shows a "Study list"
+    And the list's first row is "Table: Noun endings" for 3 misses
+    And the list has the link "Table: Noun endings" once
+    And the rows are ordered by how many misses pointed to them
+    When he taps the list's link "Table: Noun endings"
+    Then the table "Noun endings" is open over the end card
+    And one cell is lit
+
+  Scenario: Three misses in a short drill, two on one table, show that table once, first
+    Given a short drill of three questions is open: two cells of "noun-endings" and one of "article"
+    When he misses every question
+    Then the drill's result shows a "Study list"
+    And the list's first row is "Table: Noun endings" for 2 misses
+    And the list has the link "Table: Noun endings" once
+    And the list also has the link "Table: The article" once
+    And the "Table: The article" row comes after the "Table: Noun endings" row
+
+  Scenario: A drill with no misses shows no Study list
+    Given a short drill of three questions is open: two cells of "noun-endings" and one of "article"
+    When he answers every question right
+    Then the drill's result shows no "Study list"
+
+  Scenario: A Review with no misses shows no Study list
+    Given the table "noun-endings" is due in Review and the round asks "First declension, feminine in η (φωνή) dative singular of noun endings" first
+    When he opens Review and starts the round
+    And he answers every question of the round right
+    Then the end card shows no "Study list"
+
+  Scenario: A miss that nothing teaches ends in one row that asks the tutor about it
+    Given a phone with a licence and a fake Postern
+    And the English word "blessed" he misread is due in Review
+    When he opens Review and starts the round
+    And he says he did not know it
+    And he finishes the round
+    Then the end card shows a "Study list"
+    And the list has only "Ask the tutor about these"
+    When he taps "Ask the tutor about these" in the list
+    Then the tutor's talk is open
+    And the tutor's first turn names the question "Say this word aloud: blessed", his answer "Not yet", the right answer "blessed" and the idea "Saying the word blessed"
+    And the tutor is sent the misses as the screen's facts
+
+  Scenario: Without a licence a miss that nothing teaches leaves no Study list
+    Given a phone with no licence
+    And the English word "blessed" he misread is due in Review
+    When he opens Review and starts the round
+    And he says he did not know it
+    And he finishes the round
+    Then the end card shows no "Study list"

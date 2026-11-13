@@ -48,4 +48,12 @@ describe('the kept Review round (mw-86e9r1.32)', () => {
     sessionStorage.setItem('lampas.reviewRound', 'not json');
     expect(keptRound()).toBeUndefined();
   });
+
+  it('keeps what the round\'s misses link to, for the Study list at the end (mw-indx1x6.8), and drops a kept list that is not one', () => {
+    const studied = [{ links: [{ kind: 'lesson' as const, label: 'Lesson: x', ideaId: 'x' }], miss: { asked: 'Q', answer: 'a', right: 'r', idea: 'i' } }];
+    keepRound(round({ index: 1, studied }));
+    expect(keptRound()).toEqual(round({ index: 1, studied }));
+    sessionStorage.setItem('lampas.reviewRound', JSON.stringify({ round: { ...round(), studied: ['no'] }, at: Date.now() }));
+    expect(keptRound()).toEqual(round());
+  });
 });

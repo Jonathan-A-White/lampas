@@ -2,6 +2,7 @@
 // carries on at the next question instead of 'Due today ... Start' (mw-86e9r1.32). The items are plain data, so the round is kept whole. Dropped when the round ends,
 // when the tab's session does, or after KEPT_MS.
 import type { RunningRound } from './heldRound';
+import type { Study } from './studyThis';
 
 const KEY = 'lampas.reviewRound';
 
@@ -41,19 +42,22 @@ export function dropRound(): void {
 
 const isText = (v: unknown): v is string => typeof v === 'string';
 
+/** A miss kept: its links and the miss in words. */
+const isStudy = (v: unknown): v is Study => typeof v === 'object' && v !== null && Array.isArray((v as Study).links) && typeof (v as Study).miss === 'object' && (v as Study).miss !== null;
+
 /** The round kept and still his, or undefined (nothing kept, too old, or what is stored is not a round). */
 export function keptRound(now = Date.now()): RunningRound | undefined {
   try {
     const saved = JSON.parse(store()?.getItem(KEY) ?? 'null') as { round?: Partial<RunningRound>; at?: unknown } | null;
     const round = saved?.round;
     if (!round || typeof saved?.at !== 'number' || now - saved.at > KEPT_MS) return undefined;
-    const { items, index, picked, right, missed, outcomes } = round;
+    const { items, index, picked, right, missed, outcomes, studied } = round;
     if (!Array.isArray(items) || items.length === 0 || !items.every((i) => typeof i === 'object' && i !== null && isText((i as { kind?: unknown }).kind))) return undefined;
     if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= items.length) return undefined;
     if (picked !== null && !isText(picked)) return undefined;
     if (typeof right !== 'number' || !Array.isArray(missed) || !missed.every(isText)) return undefined;
     const sound = typeof outcomes === 'object' && outcomes !== null && Object.values(outcomes).every((v) => typeof v === 'boolean');
-    return { status: 'running', items, index, picked, right, missed, ...(sound ? { outcomes } : {}) };
+    return { status: 'running', items, index, picked, right, missed, ...(sound ? { outcomes } : {}), ...(Array.isArray(studied) && studied.every(isStudy) ? { studied } : {}) };
   } catch {
     return undefined;
   }
