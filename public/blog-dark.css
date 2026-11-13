@@ -63,6 +63,13 @@
     color: #9fb0ff;
   }
 
+  /* The paywall CTA (.gh-post-upgrade-cta, mw-fnvjof.17.100) is drawn by Ghost inside the post's content: its box is the site's #1329d4 by inline style and its words white, which
+     is 9:1 and needs no change. But the rule above reaches its "Sign in" link (a link in .gh-content) and set it light blue on that blue, 4.4:1, so the link is white again, as
+     Ghost's own sheet has it. The button (a.gh-btn) keeps its inline blue words on its white. */
+  html:root .gh-content .gh-post-upgrade-cta a:not(.gh-btn) {
+    color: #ffffff;
+  }
+
   /* Quotes and code */
   html:root blockquote:not([class]) {
     border-left-color: #9fb0ff;
@@ -114,7 +121,7 @@
      contrast, 4.7:1, with the blue still a blue (tests/e2e/blog-dark.spec.ts holds the pixels).
      NOT reachable from page CSS (mw-fnvjof.17.101): inside the Portal pop-ups (Subscribe, Sign in, account: a full-page white document, an inverted whole would flip the
      site's logo) and the search popup's own white card (a filter over its iframe turns its dim scrim into a light veil); any photo in the comments iframe is inverted with
-     the rest of it, because no rule can pick one out. The paywall CTA (.gh-post-upgrade-cta) needs no rule: Ghost sets its blue and white inline, white on #1329d4 is 9:1. */
+     the rest of it, because no rule can pick one out. The paywall CTA (.gh-post-upgrade-cta) keeps Ghost's inline blue and white (9:1); only its Sign in link, which the links rule would have lightened, takes a rule. */
   html:root .gh-comments {
     color: #15171a;
   }

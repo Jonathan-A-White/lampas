@@ -353,6 +353,9 @@ for (const size of WIDTHS) {
       expect(button.ratio, `button ${button.ink} on ${button.backdrop}`).toBeGreaterThanOrEqual(AA);
       const signIn = await paint(page, cta.getByText('Already have an account?'));
       expect(signIn.ratio, `sign in line ${signIn.ink} on ${signIn.backdrop}`).toBeGreaterThanOrEqual(AA);
+      // the "Sign in" link is a link in the post's content: the links rule made it light blue on the blue box (4.4:1) until it was given its white back
+      const link = await paint(page, cta.locator('a[data-portal="signin"]'));
+      expect(link.ratio, `Sign in link ${link.ink} on ${link.backdrop}`).toBeGreaterThanOrEqual(AA);
       await shot(page, `blog-dark-paywall-${size.name}`);
     });
 
