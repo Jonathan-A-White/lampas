@@ -3,7 +3,7 @@
 //   npm run check:step -- G25 H7225     those Strong's numbers (G or H)
 //   npm run check:step -- --all         every Greek Strong's number the text uses (about 5,400 requests)
 //   npm run check:step -- --hebrew      every Hebrew one (about 7,800 requests)
-// STEP's REST search is what its page runs: https://www.stepbible.org/rest/search/masterSearch/version=ESV|strong=<number>, as the link opens it.
+// STEP's REST search is what its page runs: https://www.stepbible.org/rest/search/masterSearch/version=LSB|strong=<number>, as the link opens it.
 // It answers a browser's User-Agent only (Cloudflare turns curl away). Exit code 1 when any link finds neither verses nor a lexicon entry.
 import { readFileSync } from 'node:fs';
 import { STEP_VERSION, stepNumber, strongsUrl } from '../src/resources/strongs';

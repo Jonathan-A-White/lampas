@@ -15,10 +15,12 @@ export const stepNumber = (strongs: string): string => {
 const STRONGS_LAST = { G: 5624, H: 8674 };
 
 /**
- * The version a link opens STEP in. Without one STEP searches the visitor's saved primary version, and a version that does not tag the
- * Strong's number (his LSB) answers 'did not yield any results' (mw-5r3p30.891). The ESV covers both testaments and lists the same verses.
+ * The version a link opens STEP in: his LSB (mw-5r3p30.1156). STEP lists the verses of a Strong's number in any version, from the original-word
+ * tagging, and shows that version's text; the 'did not yield any results in the following resources: LSB' of mw-5r3p30.891 was a bare Hebrew
+ * number (H0430 lists 0, H0430G lists 2,088; stepNumber adds the letter). Without a version STEP searches the visitor's saved primary one.
+ * STEP keeps its dark theme only in the visitor's own browser storage (no URL setting), so the link cannot ask for it.
  */
-export const STEP_VERSION = 'ESV';
+export const STEP_VERSION = 'LSB';
 
 const entryUrl = (number: string): string => {
   const side = number[0] === 'H' ? 'wlc' : 'tr';
