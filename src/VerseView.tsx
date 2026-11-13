@@ -72,6 +72,8 @@ import { lampasUnit } from './reader/septuagint';
 import { useReaderVariants } from './reader/variants';
 import type { WovenVerse } from './data/weave';
 import type { WovenReading } from './services/reading';
+import { ScrollFades } from './ScrollMore';
+import { useScrollMore } from './useScrollMore';
 
 /** Listen is a player: Play reads the verse or passage on to its end by itself. */
 export interface ListenPlayer {
@@ -135,7 +137,7 @@ const CELL_REST = 'border-line text-fg active:bg-line';
 /** The tools line pinned above the foot: one row that scrolls sideways, its doors (and Copy and Share's own row) never squeezed; while the text to copy by hand shows it wraps,
  * the field taking a line of its own (mw-fnvjof.17.32). */
 const TOOLS_ROW =
-  'flex items-center gap-x-1 overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&>*]:shrink-0 [&_[data-link-actions]>div]:shrink-0 ' +
+  'flex items-center gap-x-[calc(0.25rem+var(--scroll-more-extra,0px))] overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-px-6 [scrollbar-width:none] [&>*]:shrink-0 [&_[data-link-actions]>div]:shrink-0 ' +
   'has-[[data-link-actions]>:is(textarea,input)]:flex-wrap has-[[data-link-actions]>:is(textarea,input)]:overflow-visible';
 
 /** The Verse view's tools line takes one tap per two settle moments (mw-5r3p30.1105): a door's tap changes the line (Memorize grows into 'Memorizing · English' and 'Rehearse' appears, a sheet comes up),
@@ -160,6 +162,7 @@ const OPENING_MOMENTS = 600 / SETTLE_MS;
 export function VerseView(props: VerseViewProps) {
   const { title, book, chapter, chapterText, onLook, verse, view, immersive, text, previous, next, onClose, action: chosen, onAction, listen, checks, read, weave, wovenChapter, onRetryRead, quiz, lesson } = props;
   const backButton = useRef<HTMLButtonElement | null>(null);
+  const [attachTools, toolsMore] = useScrollMore<HTMLDivElement>();
   // ‹ Reader is no door of the screen: leaving it is what a tap right after opening may mean, and a tap on it closes the view at once (tests/e2e/double-tap-guard.spec.ts, mw-5r3p30.446)
   const dropEarlyTap = useOpeningGuard('verse-view-opened', OPENING_MOMENTS, () => backButton.current);
   // a stable ref callback: one that changed every render would focus the button again each time
@@ -260,7 +263,7 @@ export function VerseView(props: VerseViewProps) {
           scrolled out of sight when Listen was tapped. Sideways its column is 40 % of the window but never under 12.5 rem, so the widest door shows whole (a 390 px window
           cut to 400 px tall left it 74 px), and keeps the ?'s room only when the ? is at the left (toolsRoom). */}
       <div role="group" aria-label="Tools" data-verse-tools onClickCapture={oneToolTap} className={`relative mt-0.5 shrink-0 short:min-w-0 short:max-w-[max(40%,12.5rem)] ${narrow ? controlsRoom : toolsRoom}`}>
-        <div data-verse-tools-line className={TOOLS_ROW}>
+        <div ref={attachTools} data-verse-tools-line className={TOOLS_ROW}>
         <LinkActions
           url={copyLink(copyUnit)}
           title={reference}
@@ -277,9 +280,9 @@ export function VerseView(props: VerseViewProps) {
         <button type="button" aria-haspopup="dialog" data-split-door onClick={() => setSplitting(true)} className="inline-flex min-h-11 items-center justify-center rounded-lg px-2.5 text-sm font-medium text-accent active:bg-line">
           Split
         </button>
-        {/* More to the right: the row's end fades into the page while a door is past it, and this sits over empty room once the row is scrolled to its end or holds every door */}
-        <span aria-hidden data-verse-tools-more className="pointer-events-none sticky right-0 w-6 self-stretch bg-linear-to-l from-canvas to-transparent" />
         </div>
+        {/* the sign that the line scrolls: the next door peeks past the edge and a fade sits on the side with more (src/ScrollMore.tsx) */}
+        <ScrollFades start={toolsMore.start} end={toolsMore.end} />
       </div>
       <ProgressMarks canonical={memorizeRef} className="mt-1 shrink-0 px-2" />
       {/* The row of actions: the chosen one is marked, not filled (the one filled control is at the foot). Three to a row, two under 15 rem of room, one row from 30 rem; the last row's

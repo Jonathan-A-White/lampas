@@ -14,6 +14,7 @@ import { remarkBooks } from './bookLinks';
 import { remarkScripts } from './scriptRuns';
 import { ReferenceLink } from './ReferenceCard';
 import { remarkVerses, writtenOf } from './verseLinks';
+import { ScrollMore } from '../ScrollMore';
 
 const spanOf: Components['span'] = ({ lang, dir, className, children }) =>
   // A Hebrew stretch (scriptRuns.ts) is tappable: it speaks in the Hebrew voice and opens the pronunciation guide. A Greek one speaks in the Greek voice.
@@ -31,6 +32,17 @@ const spanOf: Components['span'] = ({ lang, dir, className, children }) =>
  *  only one to a host a study resource builds on. */
 const componentsFor = (onLeave: () => void, trusted: boolean): Components => ({
   span: spanOf,
+  // a table wider than the answer scrolls sideways, with the sign that there is more (src/ScrollMore.tsx)
+  table: ({ children }) => (
+    <ScrollMore peek={false} className="overflow-x-auto">
+      <table>{children}</table>
+    </ScrollMore>
+  ),
+  pre: ({ children }) => (
+    <ScrollMore peek={false} className="overflow-x-auto">
+      <pre>{children}</pre>
+    </ScrollMore>
+  ),
   a: ({ href, children }) => {
     // A reference the answer names: a card first (ReferenceCard.tsx), and its Open opens the reader there.
     const written = href === undefined ? null : writtenOf(href);

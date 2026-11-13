@@ -419,7 +419,7 @@ function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope
       {/* what he said, word for word (not the tidied line above), so a question can be handed on whole */}
       <QuestionRow shown={turn.cleanQ ?? turn.q} copyText={turn.q} />
       <YouSaid spoken={turn.spoken} said={turn.q} shown={turn.cleanQ} />
-      <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2">
+      <div data-talk-a onClick={stopOnTap} className="rounded-2xl border border-line px-3 py-2 [--scroll-more-from:var(--color-surface)]">
         <div data-answer-text className="break-words text-lg leading-snug">
           <Markdown text={turn.a} onOpen={onLeave} />
         </div>

@@ -57,6 +57,7 @@ import { useReportScreen } from './tutor/screenContext';
 import { languageFact, type ScreenFact } from './tutor/screen';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { ToolBack } from './ToolBack';
+import { ScrollMore } from './ScrollMore';
 import { HintCard } from './tips/HintCard';
 import { PARADIGMS_OPENED } from './tips/hints';
 import { GREEK_LANG, greekLang } from './script/greekLang';
@@ -280,7 +281,7 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
         const columns = cols.map((c) => table.columns[c]);
         const groups = groupsOf(columns);
         return (
-          <div key={block} className="overflow-x-auto rounded-xl border border-line">
+          <ScrollMore key={block} peek={false} wrapperClassName="overflow-hidden rounded-xl border border-line" className="overflow-x-auto">
             <table data-testid="paradigm-table" dir={rtl ? 'rtl' : undefined} className={`w-full table-fixed border-collapse text-center${rtl ? ' text-xl' : ''}`}>
               <caption className="sr-only">{table.name}</caption>
               <thead>
@@ -493,7 +494,7 @@ function Table({ table, levels, extent, mode, drill, lit, onReveal, onGrade, onF
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollMore>
         );
       })}
     </div>

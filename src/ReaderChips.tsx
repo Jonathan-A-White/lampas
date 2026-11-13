@@ -14,6 +14,8 @@ import { NewWordsChip } from './NewWordsStrip';
 import { TipChip } from './tips/TipCard';
 import { useOpenTip } from './tips/useOpenTip';
 import { TodayChip } from './today/TodayChip';
+import { ScrollFades } from './ScrollMore';
+import { useScrollMore } from './useScrollMore';
 import { useGoalProgress } from './useGoalProgress';
 
 export function ReaderChips({
@@ -38,16 +40,19 @@ export function ReaderChips({
   /** the variants chip (src/reader/VariantChip.tsx): how many units the filter shows and whether Variants is on; null on a chapter with no variants (the Immersive reader has it too: it slides away with the row, src/Away.tsx) */
   variants?: { count: number; on: boolean } | null;
 }) {
+  const [attachMore, more] = useScrollMore<HTMLDivElement>();
   const goal = useGoalProgress();
   const tip = useOpenTip();
   const any = !hidden;
   if (!any && wovenCount === null) return null;
   return (
     <>
+    <div className="relative shrink-0">
     <div
+      ref={attachMore}
       data-testid="reader-chips"
       data-reader-chips
-      className="flex h-10 shrink-0 items-stretch gap-1.5 overflow-x-auto overflow-y-hidden border-b border-line px-2 [scrollbar-width:none]"
+      className="flex h-10 items-stretch gap-[calc(0.375rem+var(--scroll-more-extra,0px))] overflow-x-auto overflow-y-hidden border-b border-line px-2 scroll-px-6 [scrollbar-width:none]"
     >
       {hidden ? null : (
         <>
@@ -63,6 +68,8 @@ export function ReaderChips({
           {wovenCount} {wovenCount === 1 ? 'word' : 'words'} in {source === 'hbo' ? 'Hebrew' : 'Greek'}
         </p>
       )}
+    </div>
+    <ScrollFades start={more.start} end={more.end} />
     </div>
     {variants && !hidden ? <VariantLessonsOffer variantsOn={variants.on} /> : null}
     </>

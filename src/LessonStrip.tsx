@@ -1,5 +1,6 @@
 // src/LessonStrip.tsx — the Lesson strip of the Verse view on a passage lesson's range (mw-z370x5.2, docs/verse-view.md): under the heading, the lesson's title, its ideas as chips (a tap opens
 // the idea sheet) and 'Read it, then Check', whose Check button opens the Check (src/CheckSheet.tsx). The view draws it and the verses as ever; it marks nothing.
+import { ScrollMore } from './ScrollMore';
 import { useState } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
 import { ideaOfAny as ideaOf } from './data/grammar/ladders';
@@ -22,7 +23,7 @@ export function LessonStrip({ title, ideas, onCheck }: { title: string; ideas: r
           </button>
         </div>
         {/* one row that scrolls sideways, so the strip stays short and the row of actions stays in reach under the text */}
-        <ul aria-label="Ideas of the lesson" className="mt-2 flex gap-2 overflow-x-auto overscroll-x-contain pb-1">
+        <ScrollMore as="ul" aria-label="Ideas of the lesson" wrapperClassName="mt-2" from="var(--color-surface)" className="flex gap-[calc(0.5rem+var(--scroll-more-extra,0px))] overflow-x-auto overscroll-x-contain scroll-px-6 pb-1">
           {ideas.map((id) => (
             <li key={id} className="shrink-0">
               <button type="button" data-idea={id} onClick={() => setIdeaId(id)} className="min-h-11 whitespace-nowrap rounded-lg border border-line px-3 text-base font-medium text-accent active:bg-line">
@@ -30,7 +31,7 @@ export function LessonStrip({ title, ideas, onCheck }: { title: string; ideas: r
               </button>
             </li>
           ))}
-        </ul>
+        </ScrollMore>
       </section>
       {ideaId ? (
         <IdeaSheet

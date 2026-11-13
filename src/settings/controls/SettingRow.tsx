@@ -35,7 +35,7 @@ export function MoreHelp({ text, id: rowKey }: { text: string; id?: string }) {
         {open ? 'Less help' : 'More help'}
       </button>
       {open ? (
-        <div id={id} data-help-panel className="mt-2 flex items-start gap-2 rounded-lg border border-l-4 border-line border-l-accent bg-surface p-3 text-base text-fg">
+        <div id={id} data-help-panel className="mt-2 flex items-start gap-2 rounded-lg border border-l-4 border-line border-l-accent bg-surface p-3 text-base text-fg [--scroll-more-from:var(--color-surface)]">
           <div data-help-text className="min-w-0 flex-1 self-center">
             <Markdown text={text} />
           </div>
