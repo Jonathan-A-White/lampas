@@ -6,6 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { keepSettings } from './keep-settings';
+import { keepImport } from './keep-import';
 import { openVerseView } from './verse-view';
 import { openSettings } from './openSettings';
 import { openGroup } from './settings-group';
@@ -185,7 +186,8 @@ test('with Greg Laurie On, Genesis 1 lists \'Who Is Man\', a link that opens in 
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=1');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  // the saved switch of the source (Settings > Study resources > Sermons is the next story)
+  // the saved switch of the source (Settings > Study resources > Sermons is the next story); the archive is his: his Library import holds it (mw-qtu3zvz.94)
+  await keepImport(page);
   await keepSettings(page, { 'sermons.greg-laurie-logos': 'on' });
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   const sheet = await openGenesisOne(page);
@@ -204,6 +206,7 @@ test('with Spurgeon\'s My Sermon Notes On, Genesis 19 lists \'Genesis 19:15\', a
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=19');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await keepImport(page);
   await keepSettings(page, { 'sermons.spurgeon-sermon-notes-logos': 'on' });
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.locator('button[data-place-line]').click();
@@ -219,9 +222,28 @@ test('with Spurgeon\'s My Sermon Notes On, Genesis 19 lists \'Genesis 19:15\', a
   await shot(page, 'sermons-notes');
 });
 
+test('with no Library import kept, an archive switched On is still not offered: Genesis 19 lists no \'Genesis 19:15\' (mw-qtu3zvz.94)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=gen&c=19');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await keepImport(page, []);
+  await keepSettings(page, { 'sermons.spurgeon-sermon-notes-logos': 'on' });
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.locator('button[data-place-line]').click();
+  await page.getByRole('region', { name: 'Verse view' }).getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Genesis 19' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.locator('a[data-sermon-row]').first()).toBeVisible();
+  await page.waitForTimeout(500);
+  await expect(sheet.getByText('Genesis 19:15')).toHaveCount(0);
+  await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'My Sermon Notes' })).toHaveCount(0);
+});
+
 test('Settings > Study resources > Sermons has a row for each bundled source, the Logos archives Off, and a source turned Off leaves its sermons out (mw-qtu3zvz.3)', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings?group=study');
+  await expect(page.locator('[data-section="sermons"]')).toBeVisible();
+  await keepImport(page); // his import holds the archives, so their rows are drawn (mw-qtu3zvz.94)
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
   const on = async (name: string, value: 'On' | 'Off') => expect(section.getByRole('group', { name, exact: true }).getByRole('button', { name: value, exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -246,6 +268,8 @@ test('Settings > Study resources > Sermons has a row for each bundled source, th
 test('with Logos On, his Pinned and On sermon archives are the In Logos group of the Sermons sheet, each a 44 px link into Logos at the verse (mw-qtu3zvz.3)', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await keepImport(page); // his import holds the archives (mw-qtu3zvz.94)
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   // Logos On, then one archive On and one Pinned from the Library's own Sermons page
   await openSettings(page);
@@ -348,7 +372,8 @@ test('online: the sheet shows the bundled rows, then the service\'s newest, and 
   const title = await sheet.getByRole('heading', { level: 2 }).boundingBox();
   expect((await line.boundingBox())!.y).toBeGreaterThanOrEqual(title!.y + title!.height - 1);
   // asked once for the chapter, by the sources that are On, with nothing of his
-  const sermons = asked.filter((a) => a.startsWith('/v1/sermons'));
+  // (the theme tier, tier=theme-only, is a second ask, for the notes' direct themes: mw-qtu3zvz.59.2)
+  const sermons = asked.filter((a) => a.startsWith('/v1/sermons') && !a.includes('tier=theme-only'));
   expect(sermons).toHaveLength(1);
   expect(sermons[0]).toMatch(/^\/v1\/sermons\?ref=rom\.5&source=[a-z,-]*spurgeon-ccel[a-z,-]*&limit=200$/);
   expect(sermons[0]).not.toContain('newbie-sermons');

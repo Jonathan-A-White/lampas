@@ -7,6 +7,7 @@ import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
 import { openVerseView } from './verse-view';
 import { openSettings } from './openSettings';
+import { keepImport } from './keep-import';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -46,6 +47,8 @@ test('the Verse view has In Logos and In another book…, and the chooser opens 
   await openUnlocked(page);
   await holdAppLinks(page);
   await page.goto('/');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await keepImport(page); // his import holds the Logos sermon archives, as a real one does (mw-qtu3zvz.94)
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await shelfHolds(page);
 
