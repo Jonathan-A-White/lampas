@@ -7,7 +7,8 @@
 // the timeout goes on running, so the next step found no turn ('Expected container to be an Element ... got null') and the clipboard step after it
 // waited on a clipboard nothing had written yet. tutor-links was mended the same way in mw-lcv9z3g.13; its copy of the step is now the shared one.
 // Recipe to see it on a calm host: `TZ=UTC npx vitest run features/steps/tutor-copy.steps.tsx --testTimeout=2000` (a step slower than 2 s then fails and
-// the two steps after it fall with it); with the fix that run passes.
+// the two steps after it fall with it); with the fix that run passes on a calm host, and beside four busy loops the first scenario's ask can still be
+// failed by the 2 s (it took 2.03 to 2.07 s in 4 runs of 10) while every step after it passes, because each waits for the answered turn.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
