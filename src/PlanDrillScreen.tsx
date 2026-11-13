@@ -10,6 +10,7 @@ import { takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
+import { StudyList } from './review/StudyList';
 import { StudyThis } from './review/StudyThis';
 import { studyOfQuestion } from './review/studyThis';
 import { FacetLabel } from './FacetLabel';
@@ -114,6 +115,8 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
               {right} of {questions.length} right
             </h3>
             <p className="mt-1 text-base text-muted">{passed ? 'This step of your plan is done.' : 'Not yet. It comes back tomorrow in Review.'}</p>
+            {/* everything the drill's misses linked to, once each, the most missed first (mw-indx1x6.8) */}
+            <StudyList studies={tries.filter((t) => t.picked !== t.question.right).map((t) => studyOfQuestion(t.question, t.picked))} screen={DRILL_SCREEN} back="Back to the drill" className="mt-4" />
           </div>
         )}
       </div>

@@ -20,6 +20,7 @@ import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
+import { StudyList } from './review/StudyList';
 import { StudyThis } from './review/StudyThis';
 import { studyOfQuestion } from './review/studyThis';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
@@ -106,7 +107,7 @@ function DrillPlan({ result, passage }: { result: DrillResult; passage: readonly
 const headlineOf = (result: DrillResult): string =>
   result.proved ? 'Proved' : result.edgeStep === 0 ? `You have not reached step 1 of ${result.topStep} yet` : `You reached step ${result.edgeStep} of ${result.topStep}`;
 
-function Result({ result, mode, passage }: { result: DrillResult; mode: DrillMode; passage: readonly Chapter[] | undefined }) {
+function Result({ result, mode, passage, tries }: { result: DrillResult; mode: DrillMode; passage: readonly Chapter[] | undefined; tries: readonly DrillTry[] }) {
   const headline = headlineOf(result);
   const note = result.proved
     ? 'It is solid now: proved by drill.'
@@ -119,6 +120,8 @@ function Result({ result, mode, passage }: { result: DrillResult; mode: DrillMod
       <p className="mt-1 text-base text-muted">{note}</p>
       <Facets title="Strong:" testId="drill-strong" facets={result.strong} />
       <Facets title="Weak:" testId="drill-weak" facets={result.weak} />
+      {/* everything the run's misses linked to, once each, the most missed first; a table opens as a layer over the run (mw-indx1x6.8) */}
+      <StudyList studies={tries.filter((t) => t.picked !== t.question.right).map((t) => studyOfQuestion(t.question, t.picked))} screen={DRILL_SCREEN} back="Back to the drill" className="mt-4" />
       <DrillPlan result={result} passage={passage} />
     </div>
   );
@@ -254,7 +257,7 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
         ) : walk === null ? (
           <p className="text-lg">Drill it could not start on this idea.</p>
         ) : result ? (
-          <Result result={result} mode={mode} passage={passage} />
+          <Result result={result} mode={mode} passage={passage} tries={tries} />
         ) : question ? (
           <>
             <GrammarCard

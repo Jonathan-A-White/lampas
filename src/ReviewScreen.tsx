@@ -25,8 +25,9 @@ import { REVIEW_OPENED } from './tips/hints';
 import { languageFact } from './tutor/screen';
 import { useReportScreen } from './tutor/screenContext';
 import { reviewFacts } from './review/reviewFacts';
+import { StudyList } from './review/StudyList';
 import { StudyThis } from './review/StudyThis';
-import { studyOfItem } from './review/studyThis';
+import { studyOfItem, type Study } from './review/studyThis';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
 import { SourceSegment } from './ui/SourceSegment';
@@ -39,7 +40,7 @@ type Round =
   | { status: 'start'; nothing?: boolean }
   | { status: 'loading' }
   | RunningRound
-  | { status: 'done'; total: number; right: number; tomorrow: number; later: number; move: MoveCard };
+  | { status: 'done'; total: number; right: number; tomorrow: number; later: number; move: MoveCard; studied: Study[] };
 
 /**
  * A right pick on a word's multiple choice that he has not graded is written as 'some' (kind of: today's right) when he goes on or leaves. Takes the round from `roundRef` and
@@ -246,6 +247,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
           </p>
           <MoveNote card={round.move} onChange={(move) => setRound({ ...round, move })} />
           {stillDue ? <p className="mt-2 text-muted">{stillDue} more {stillDue === 1 ? 'is' : 'are'} still due.</p> : null}
+          {/* everything the round's misses linked to, once each, the most missed first (mw-indx1x6.8); a table opens as a layer over this card */}
+          <StudyList studies={round.studied} screen="Review" back="Back to Review" className="mt-6" />
           <div className="mt-6 grid grid-cols-1 gap-3">
             {stillDue ? (
               <button type="button" onClick={start} className="min-h-12 rounded-xl bg-accent text-lg font-medium text-accent-fg">
@@ -279,7 +282,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     const { write, outcomes } = rowOutcome(round.outcomes, item, answer);
     if (!waits) writing.current = writing.current.then(() => kind.record(item, wasRight, write)).catch((error: unknown) => console.error('could not record the answer', error));
     // a miss on a grammar idea is remembered: when the round ends the mill is asked, in the background, for more on the weakest of them
-    setRound({ ...round, outcomes, picked: option, pending: waits, grade: undefined, right: right + (wasRight ? 1 : 0), missed: !wasRight && item.kind === 'grammar' ? [...round.missed, item.id] : round.missed });
+    setRound({ ...round, outcomes, picked: option, pending: waits, grade: undefined, right: right + (wasRight ? 1 : 0), missed: !wasRight && item.kind === 'grammar' ? [...round.missed, item.id] : round.missed, studied: wasRight ? round.studied : [...(round.studied ?? []), studyOfItem(item, option)] });
     kind.hear?.(item);
   };
   // the grade tapped after a right pick on a word's multiple choice: it is the word's one answer for the round ('Don't know' is a wrong, so the score loses the right)
@@ -287,7 +290,8 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     if (!round.pending) return;
     roundRef.current = { ...round, pending: false };
     writing.current = writing.current.then(() => kindOf(item.kind).record(item, given !== 'not', given)).catch((error: unknown) => console.error('could not record the answer', error));
-    setRound({ ...round, pending: false, grade: given, right: given === 'not' ? right - 1 : right });
+    // 'Don't know' after a right pick is a miss too: it is on the Study list
+    setRound({ ...round, pending: false, grade: given, right: given === 'not' ? right - 1 : right, studied: given === 'not' && picked !== null ? [...(round.studied ?? []), studyOfItem(item, picked)] : round.studied });
   };
   const next = async () => {
     settlePending(roundRef, writing);
@@ -298,7 +302,7 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
     await recordRound(right, items.length);
     // not waited for: the end card does not depend on the mill, and the next round starts from what is kept
     void askForMoreItems(round.missed);
-    setRound({ status: 'done', total: items.length, right, ...back, move: await moveAfter(items) });
+    setRound({ status: 'done', total: items.length, right, ...back, move: await moveAfter(items), studied: round.studied ?? [] });
   };
   // a wrong answer (a wrong pick, a flashcard graded down, 'Don't know' after a right pick) shows what teaches the question under it (src/review/StudyThis.tsx, mw-indx1x6.6); a right one shows nothing more
   const missed = picked !== null && (!kindOf(item.kind).isRight(item, picked) || round.grade === 'not');

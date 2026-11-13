@@ -2,6 +2,7 @@
 // Back returns to Review where he was. Module state, like practise.ts: a reload drops it, and a round held for more than HELD_MS is not his any more.
 import type { Grade } from '../data/schedule';
 import type { ReviewItem } from './kinds';
+import type { Study } from './studyThis';
 
 export interface RunningRound {
   status: 'running';
@@ -11,6 +12,8 @@ export interface RunningRound {
   right: number;
   /** the ideas of the grammar questions he has missed so far, one id for each miss (src/review/moreItems.ts) */
   missed: string[];
+  /** what each miss of the round links to, in the order he missed them: the Study list at the end is made from it (src/review/studyList.ts); a round kept before it existed has none */
+  studied?: Study[];
   /** the outcome each schedule row has had in this round (src/review/rowOutcome.ts); a round kept before it existed has none */
   outcomes?: Record<string, boolean>;
   /** a right pick on a word's multiple choice waits for its grade: nothing is written for it until he taps one, goes on (then it is 'some') or leaves (mw-5r3p30.787) */

@@ -1,6 +1,7 @@
 // features/steps/study-this.steps.tsx — runs features/study-this.feature (mw-indx1x6.6): after a wrong answer in Review, Drill it and the short drill a 'Study this' row links to what teaches
 // the question (the table at its cell, the idea's lesson), each opening its place; where nothing teaches it the row has Ask the tutor, and the tutor's first turn and the screen's facts name
-// the question, his answer, the right answer and the idea (src/review/studyThis.ts, src/review/StudyThis.tsx). A right answer shows no row.
+// the question, his answer, the right answer and the idea (src/review/studyThis.ts, src/review/StudyThis.tsx). A right answer shows no row. At the end of a Review or a drill the 'Study list' (mw-indx1x6.8,
+// src/review/studyList.ts, StudyList.tsx) gathers everything the session's misses linked to, one row each, most-missed first.
 import '@testing-library/react/dont-cleanup-after-each';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -15,7 +16,7 @@ import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { ideaOfAny } from '../../src/data/grammar/ladders';
 import type { Level } from '../../src/data/grammar/needs';
 import { cellsOf, paradigmById, type Levels } from '../../src/data/paradigms';
-import { drawCellQuestions } from '../../src/data/paradigms/cells';
+import { cellPrompt, drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
 import { DAY } from '../../src/data/schedule';
 import { DrillItScreen } from '../../src/DrillItScreen';
@@ -169,6 +170,84 @@ const cellQuestion = (prompt: string, n: number): DrillQuestion => {
   if (!found) throw new Error(`no cell asks ${prompt}`);
   return { ...found, facet: { id: 'ending', label: 'Its ending' }, step: 1, key: `cell-${n}` };
 };
+
+
+/** The form the table's cell asked by this prompt holds: the right answer of a question the round or the drill asked. */
+function rightFormOf(prompt: string): string {
+  for (const id of [TABLE, 'article']) {
+    const table = paradigmById(id)!;
+    for (const row of table.rows) {
+      const column = row.cells.findIndex((_, c) => cellPrompt(table, row, c) === prompt);
+      if (column >= 0) return row.cells[column].form;
+    }
+  }
+  throw new Error(`no cell is asked by ${prompt}`);
+}
+
+/** Answers the question on screen, right or with the first wrong option, and waits for the feedback. */
+async function answerHere(right: boolean): Promise<string> {
+  const prompt = (await screen.findByTestId('grammar-prompt')).textContent ?? '';
+  const form = rightFormOf(prompt);
+  await waitFor(() => expect(options().length).toBeGreaterThan(1));
+  const want = right ? form : options().find((o) => o.textContent !== form)?.textContent;
+  await user.click(options().find((o) => o.textContent === want)!);
+  await waitFor(() => expect(screen.getByTestId('feedback')).not.toBeEmptyDOMElement());
+  return prompt;
+}
+
+/** Answers every question of the Review round, then Finish, and waits for the end card. */
+async function everyQuestionOfTheRound(right: boolean): Promise<void> {
+  for (let guard = 0; guard < 12; guard += 1) {
+    const prompt = await answerHere(right);
+    const next = screen.getByTestId('next');
+    const finishing = next.textContent === 'Finish';
+    await user.click(next);
+    if (finishing) {
+      await screen.findByTestId('score');
+      return;
+    }
+    await waitFor(() => expect(screen.getByTestId('grammar-prompt')).not.toHaveTextContent(prompt));
+  }
+  throw new Error('the round does not end');
+}
+
+const studyList = (): HTMLElement => screen.getByRole('group', { name: 'Study list' });
+const noStudyList = (): void => expect(screen.queryByRole('group', { name: 'Study list' })).toBeNull();
+const listRows = (): HTMLElement[] => within(studyList()).getAllByRole('button');
+const rowNamed = (label: string): HTMLElement[] => listRows().filter((r) => r.textContent?.startsWith(label));
+
+async function finishTheRound(): Promise<void> {
+  const next = await screen.findByTestId('next');
+  expect(next).toHaveTextContent('Finish');
+  await user.click(next);
+  await screen.findByTestId('score');
+}
+
+/** The short drill's questions: the table's cells, asked in this order. */
+let shortQuestions: DrillQuestion[] = [];
+
+async function openShortDrillOfThree(): Promise<void> {
+  await freshStore();
+  const noun = (prompt: string, n: number) => cellQuestion(prompt, n);
+  const article = drawCellQuestions(paradigmById('article')!, new Map([...paradigmById('article')!.ideas, ...cellsOf(paradigmById('article')!).flatMap((c) => c.ideas)].map((id) => [id, { level: 'solid' as const }])), mulberry32(1), 100)[0];
+  shortQuestions = [
+    noun('First declension, feminine in η (φωνή) dative singular of noun endings', 1),
+    { ...article, facet: { id: 'ending', label: 'Its ending' }, step: 1, key: 'cell-2' },
+    noun('Second declension, masculine (λόγος) genitive singular of noun endings', 3),
+  ];
+  render(<PlanDrillScreen ideaId="declension-1" facetLabel="Its ending" questions={shortQuestions} onFinish={() => {}} onClose={() => {}} />);
+  await waitFor(() => expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(shortQuestions[0].prompt));
+}
+
+/** Answers every question of the short drill and waits for its result. */
+async function everyQuestionOfTheDrill(right: boolean): Promise<void> {
+  for (let n = 0; n < shortQuestions.length; n += 1) {
+    const prompt = await answerHere(right);
+    await user.click(screen.getByTestId('plan-drill-next'));
+    if (n < shortQuestions.length - 1) await waitFor(() => expect(screen.getByTestId('grammar-prompt')).not.toHaveTextContent(prompt));
+  }
+  await screen.findByTestId('plan-drill-result');
+}
 
 const feature = await loadFeature('features/study-this.feature');
 
@@ -335,6 +414,132 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Noun endings' })).toBeNull());
       expect(screen.getByTestId('plan-drill-step')).toHaveTextContent(text);
       expect(row()).toBeInTheDocument();
+    });
+  });
+  Scenario('A Review with misses ends with a Study list that shows a table once, first', ({ Given, When, And, Then }) => {
+    Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he misses every question of the round', () => everyQuestionOfTheRound(false));
+    Then('the end card shows a {string}', (_, name: string) => {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+    });
+    And('the list\'s first row is {string} for {int} misses', (_, label: string, count: number) => {
+      expect(listRows()[0].textContent).toContain(label);
+      expect(listRows()[0]).toHaveAttribute('data-misses', String(count));
+    });
+    And('the list has the link {string} once', (_, label: string) => {
+      expect(rowNamed(label)).toHaveLength(1);
+    });
+    And('the rows are ordered by how many misses pointed to them', () => {
+      const counts = listRows().map((r) => Number(r.getAttribute('data-misses')));
+      expect(counts).toEqual([...counts].sort((a, b) => b - a));
+    });
+    When('he taps the list\'s link {string}', async (_, label: string) => {
+      await user.click(rowNamed(label)[0]);
+    });
+    Then('the table {string} is open over the end card', async (_, name: string) => {
+      const table = await screen.findByRole('dialog', { name });
+      expect(table).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/review');
+      expect(screen.getByTestId('score')).toBeInTheDocument();
+    });
+    And('one cell is lit', async () => {
+      await waitFor(() => expect(document.querySelectorAll('[data-lit]')).toHaveLength(1));
+    });
+  });
+
+  Scenario('Three misses in a short drill, two on one table, show that table once, first', ({ Given, When, And, Then }) => {
+    Given('a short drill of three questions is open: two cells of {string} and one of {string}', openShortDrillOfThree);
+    When('he misses every question', () => everyQuestionOfTheDrill(false));
+    Then("the drill's result shows a {string}", (_, name: string) => {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+    });
+    And('the list\'s first row is {string} for {int} misses', (_, label: string, count: number) => {
+      expect(listRows()[0].textContent).toContain(label);
+      expect(listRows()[0]).toHaveAttribute('data-misses', String(count));
+    });
+    And('the list has the link {string} once', (_, label: string) => {
+      expect(rowNamed(label)).toHaveLength(1);
+    });
+    And('the list also has the link {string} once', (_, label: string) => {
+      expect(rowNamed(label)).toHaveLength(1);
+    });
+    And('the {string} row comes after the {string} row', (_, later: string, earlier: string) => {
+      const labels = listRows().map((r) => r.textContent ?? '');
+      expect(labels.findIndex((t) => t.startsWith(later))).toBeGreaterThan(labels.findIndex((t) => t.startsWith(earlier)));
+    });
+  });
+
+  Scenario('A drill with no misses shows no Study list', ({ Given, When, Then }) => {
+    Given('a short drill of three questions is open: two cells of {string} and one of {string}', openShortDrillOfThree);
+    When('he answers every question right', () => everyQuestionOfTheDrill(true));
+    Then("the drill's result shows no {string}", () => {
+      expect(screen.getByTestId('plan-drill-result')).toHaveTextContent('3 of 3 right');
+      noStudyList();
+    });
+  });
+
+  Scenario('A Review with no misses shows no Study list', ({ Given, When, And, Then }) => {
+    Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he answers every question of the round right', () => everyQuestionOfTheRound(true));
+    Then('the end card shows no {string}', () => {
+      expect(screen.getByTestId('score')).toHaveTextContent('3 of 3');
+      noStudyList();
+    });
+  });
+
+  Scenario('A miss that nothing teaches ends in one row that asks the tutor about it', ({ Given, When, And, Then }) => {
+    Given('a phone with a licence and a fake Postern', licensedPhone);
+    And('the English word {string} he misread is due in Review', englishWordDue);
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he says he did not know it', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Show' }));
+      await user.click(await screen.findByRole('button', { name: 'Not yet' }));
+    });
+    And('he finishes the round', finishTheRound);
+    Then('the end card shows a {string}', (_, name: string) => {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+    });
+    And('the list has only {string}', (_, label: string) => {
+      expect(listRows().map((b) => b.textContent)).toEqual([label]);
+    });
+    When('he taps {string} in the list', async (_, label: string) => {
+      await user.click(within(studyList()).getByRole('button', { name: label }));
+    });
+    Then("the tutor's talk is open", async () => {
+      expect(await screen.findByTestId('sheet-backdrop')).toBeInTheDocument();
+    });
+    And(
+      "the tutor's first turn names the question {string}, his answer {string}, the right answer {string} and the idea {string}",
+      async (_, question: string, his: string, right: string, idea: string) => {
+        await waitFor(() => expect(fake?.received.length).toBeGreaterThan(0));
+        const turn = String(fake?.received[0].input.question);
+        for (const part of [question, his, right, idea]) expect(turn).toContain(part);
+      },
+    );
+    And("the tutor is sent the misses as the screen's facts", () => {
+      expect(fake?.received[0].input.screen).toEqual({
+        name: 'Review',
+        facts: [{ label: 'Miss 1', value: 'Say this word aloud: blessed He chose: Not yet. Right answer: blessed. Idea: Saying the word blessed.' }],
+      });
+    });
+  });
+
+  Scenario('Without a licence a miss that nothing teaches leaves no Study list', ({ Given, When, And, Then }) => {
+    Given('a phone with no licence', async () => {
+      await freshStore();
+      licensed = false;
+    });
+    And('the English word {string} he misread is due in Review', englishWordDue);
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he says he did not know it', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Show' }));
+      await user.click(await screen.findByRole('button', { name: 'Not yet' }));
+    });
+    And('he finishes the round', finishTheRound);
+    Then('the end card shows no {string}', () => {
+      noStudyList();
     });
   });
 });
