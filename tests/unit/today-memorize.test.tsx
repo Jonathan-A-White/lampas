@@ -70,6 +70,49 @@ describe('the Memorize piece on Today', () => {
     expect(window.location.hash).toBe('#/lists');
   });
 
+  /** `due` verses due now, `today` answered since midnight (due again later), `yesterday` answered the day before (due again later), each a row with its last answer. */
+  async function progressDay(due: number, today: number, yesterday: number): Promise<void> {
+    const refs = Array.from({ length: due + today + yesterday }, (_, i) => `Rom.8.${i + 1}`);
+    await db.reviews.bulkPut(
+      refs.map((ref, i) => {
+        const dueNow = i < due;
+        const ago = i < due + today ? 1000 : 2 * DAY;
+        return { kind: 'verse', id: `en:${ref}`, step: 1, rights: 1, due: dueNow ? NOW - 3600_000 : NOW + DAY, lastWhen: NOW - ago, lapses: 0, recent: [{ when: NOW - ago, right: true }] };
+      }),
+    );
+  }
+
+  it('shows the day so far: 8 verses were due at midnight and 3 are reviewed', async () => {
+    await progressDay(5, 3, 0);
+    render(<Today />);
+    const piece = await screen.findByRole('region', { name: 'Memorize' });
+    expect(await within(piece).findByRole('button', { name: /Memorize: 3 of 8 done today · 5 due/ })).toBeInTheDocument();
+    const bar = within(piece).getByRole('progressbar');
+    expect(bar).toHaveAttribute('aria-valuenow', '3');
+    expect(bar).toHaveAttribute('aria-valuemax', '8');
+  });
+
+  it('does not count a verse reviewed before midnight, and what comes due later adds to the day', async () => {
+    await progressDay(2, 1, 3);
+    render(<Today />);
+    expect(await screen.findByRole('button', { name: /Memorize: 1 of 3 done today · 2 due/ })).toBeInTheDocument();
+  });
+
+  it('says nothing due, never 0 of 0, when nothing was due or done today', async () => {
+    await progressDay(0, 0, 2);
+    render(<Today />);
+    const piece = await screen.findByRole('region', { name: 'Memorize' });
+    expect(await within(piece).findByRole('button', { name: /^Memorize: nothing due/ })).toBeInTheDocument();
+    expect(within(piece).queryByRole('progressbar')).toBeNull();
+    expect(piece.textContent).not.toMatch(/0 of/);
+  });
+
+  it('keeps counting once every verse of the day is done', async () => {
+    await progressDay(0, 4, 0);
+    render(<Today />);
+    expect(await screen.findByRole('button', { name: /Memorize: 4 of 4 done today · nothing due/ })).toBeInTheDocument();
+  });
+
   it('is not on Today with the switch Off', async () => {
     await twoDue();
     await setSetting(dailyMemorizeSetting, 'off');

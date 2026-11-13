@@ -127,7 +127,7 @@ function ReviewPiece({ ticks }: { ticks: Ticks }) {
   );
 }
 
-/** Memorize: how many verses are due; a tap starts the longest overdue verse's session, or opens the Memorize home when none is due, or the lists while no verse is memorized. */
+/** Memorize: how many verses are due, and once he has answered some today, how far the day is (3 of 8 done today, with a bar; mw-indx1x6.21); a tap starts the longest overdue verse's session, or opens the Memorize home when none is due, or the lists while no verse is memorized. */
 function MemorizePiece({ ticks }: { ticks: Ticks }) {
   const today = useLatestLiveQuery(() => memorizeToday());
   if (today === undefined) return null;
@@ -144,6 +144,19 @@ function MemorizePiece({ ticks }: { ticks: Ticks }) {
         <Piece id="memorize" label="Memorize" ticks={ticks}>
           <button type="button" onClick={open} className={LINK}>
             <span className="text-lg font-medium text-accent">{line}</span>
+            {today.done > 0 ? (
+              <span
+                role="progressbar"
+                aria-label="Memorize done today"
+                aria-valuemin={0}
+                aria-valuemax={today.done + today.due}
+                aria-valuenow={today.done}
+                aria-valuetext={`${today.done} of ${today.done + today.due} done today`}
+                className="my-1 block h-2 w-full overflow-hidden rounded-full bg-line"
+              >
+                <span className="block h-full rounded-full bg-accent" style={{ width: `${Math.round((today.done / (today.done + today.due)) * 100)}%` }} />
+              </span>
+            ) : null}
             <span className="text-sm text-muted">{today.first ? 'Start the first verse' : today.any ? 'Open Memorize' : 'Open your verse lists'}</span>
           </button>
         </Piece>
