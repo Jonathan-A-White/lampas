@@ -1,7 +1,7 @@
 # One Sermons list: every sermon source in one place, clear at 100 and more
 
 A design (mw-qtu3zvz.93, Fable at xhigh, the Governor's ask of 2026-11-12) for the one list that switches every sermon source the Sermons door draws on. Design only: no product code changes here.
-It is story A of three: this document, then the Logos ownership rule (mw-qtu3zvz.94), then the build (mw-qtu3zvz.92), which builds what section 14 states. The mockups are ASCII, 38 characters wide: a 390 px phone shows GitHub's code box about 38 characters wide, so each is read whole without dragging the box sideways. A mockup writes the Back of a page as '‹ Study' to fit; the page's Back reads '‹ Study resources'. In a row, brackets mark the chosen step: 'Off [On]' is On, '[Off] On' is Off.
+It is story A of three: this document, then the Logos ownership rule (mw-qtu3zvz.94), then the build (mw-qtu3zvz.92), which builds what section 14 states. The mockups are ASCII, 30 characters wide: on a 390 px phone GitHub's code box is 280 px wide with 16 px of padding, 248 px of text, which is 30 characters at its 13.6 px monospace, so each is read whole without dragging the box sideways. A mockup shortens to fit: it writes the Back of a page as '‹ Study' (the page's Back reads '‹ Study resources'), the page's title 'Sermon sources' as 'Sources' and the Study resources page's as 'Resources', the search field's 'Search 120 sermon sources' as 'Search 120 sources', and a name that would meet its switch on a second line; the page itself wraps a name by its own width. In a row, brackets mark the chosen step: 'Off [On]' is On, '[Off] On' is Off.
 Everything in this file is **PROVISIONAL** until the Governor confirms it; the choices that are most his are gathered in 'For the Governor' at the end.
 
 His words that rule it (Postern, 2026-11-12, direct:ad77adaa...3b561b and direct:25815aac...ff4f5f): "Are these two screens redundant? I like the look and feel of the first, but don't find it useful to be able to just open the book of
@@ -78,24 +78,25 @@ What is wrong with it, beyond there being two:
 Under **Settings > Study resources > Sermons**, as a page of its own behind one row. The Sermons section of the Study resources page becomes two rows and never grows again:
 
 ```text
-┌────────────────────────────────────┐
-│ ‹ Settings  Study resources        │
-├────────────────────────────────────┤
-│ ...                                │
-│ (Study resources, Maps and Themes, │
-│  as they are today)                │
-│                                    │
-│ Sermons                            │
-│ Which sermon lists the Sermons     │
-│ door draws on.                     │
-│────────────────────────────────────│
-│ Sermon sources     17 of 120 on  › │
-│────────────────────────────────────│
-│ Open web sermons in                │
-│ Where a text sermon opens.         │
-│ Firefox works on Android only.     │
-│ [This browser]   Firefox           │
-└────────────────────────────────────┘
+┌────────────────────────────┐
+│ ‹ Settings  Resources      │
+├────────────────────────────┤
+│ ...                        │
+│ (Study resources, Maps and │
+│  Themes, as today)         │
+│                            │
+│ Sermons                    │
+│ Which sermon lists the     │
+│ Sermons door draws on.     │
+│────────────────────────────│
+│ Sermon sources     17 on › │
+│────────────────────────────│
+│ Open web sermons in        │
+│ Where a text sermon opens. │
+│ Firefox works on Android   │
+│ only.                      │
+│ [This browser]   Firefox   │
+└────────────────────────────┘
 ```
 
 - The row **Sermon sources** is a door in the shape of a Library home row ('Lexicons  19 on · 2 pinned ›'): its name, the count, a chevron, 48 px high. It opens the page **Sermon sources**, whose Back is the Study resources page at this row.
@@ -108,33 +109,38 @@ Under **Settings > Study resources > Sermons**, as a page of its own behind one 
 The top of the list as it opens. The 120 here are 23 lists (14 on the web, 9 from Logos books) and 97 Logos books; 17 are on. The numbers of the first rows are today's real sources; their names are the ones section 5 gives (Settings shows 'Spurgeon's sermons (CCEL)' today). Brackets mark the chosen step ('Off [On]' is On). This mockup shows the first group, *Listed by passage*; the second group, *Logos books, at the verse*, is drawn in the next one, after 'Scrolled past the first group'.
 
 ```text
-┌────────────────────────────────────┐
-│ ‹ Study  Sermon sources      17 on │
-├────────────────────────────────────┤
-│ The Sermons door at a verse draws  │
-│ on the sources that are on.        │
-│ [ All on ]  [ All off ]            │
-│ ┌────────────────────────────────┐ │
-│ │ Search 120 sermon sources      │ │
-│ └────────────────────────────────┘ │
-│ 17 of 120 on                       │
-│                                    │
-│ Listed by passage       6 of 23 on │
-│ Each sermon is listed at its       │
-│ verse. The count on the Sermons    │
-│ door is these.                     │
-│────────────────────────────────────│
-│ Greg Laurie's sermons     Off [On] │
-│ 1,091 sermons · in Logos           │
-│────────────────────────────────────│
-│ Matthew Henry's sermons   Off [On] │
-│ 45 sermons · on the web            │
-│────────────────────────────────────│
-│ Spurgeon's sermons        Off [On] │
-│ 3,467 sermons · on the web         │
-│────────────────────────────────────│
-│ ...                                │
-└────────────────────────────────────┘
+┌────────────────────────────┐
+│ ‹ Study  Sources     17 on │
+├────────────────────────────┤
+│ The Sermons door at a      │
+│ verse draws on the sources │
+│ that are on.               │
+│ [ All on ]  [ All off ]    │
+│ ┌────────────────────────┐ │
+│ │ Search 120 sources     │ │
+│ └────────────────────────┘ │
+│ 17 of 120 on               │
+│                            │
+│ Listed by passage          │
+│                 6 of 23 on │
+│ Each sermon is listed at   │
+│ its verse. The count on    │
+│ the Sermons door is these. │
+│────────────────────────────│
+│ Greg Laurie's     Off [On] │
+│ sermons                    │
+│ 1,091 sermons · in Logos   │
+│────────────────────────────│
+│ Matthew Henry's   Off [On] │
+│ sermons                    │
+│ 45 sermons · on the web    │
+│────────────────────────────│
+│ Spurgeon's        Off [On] │
+│ sermons                    │
+│ 3,467 sermons · on the web │
+│────────────────────────────│
+│ ...                        │
+└────────────────────────────┘
 ```
 
 Top to bottom:
@@ -154,30 +160,33 @@ The parts run in the Library's order (header, help line, buttons, search field, 
 Scrolled past the first group, the second begins:
 
 ```text
-│ Spurgeon's My Sermon      [Off] On │
-│ Notes                              │
-│ 264 sermons · in Logos             │
-│                                    │
-│ Logos books, at the verse          │
-│                        11 of 97 on │
-│ Logos opens the book at the verse  │
-│ you are reading. Lampas cannot say │
-│ which sermons it holds there.      │
-│────────────────────────────────────│
-│ The Beatitudes            Off [On] │
-│────────────────────────────────────│
-│ Fresh Sermons             Off [On] │
-│────────────────────────────────────│
-│ Princeton Sermons         Off [On] │
-│────────────────────────────────────│
-│ ...                                │
-│────────────────────────────────────│
-│ The World's Great         [Off] On │
-│ Sermons, Volume 1: Basil to Calvin │
-│────────────────────────────────────│
-│ The World's Great         [Off] On │
-│ Sermons, Volume 2: Hooker to South │
-└────────────────────────────────────┘
+│ Spurgeon's My     [Off] On │
+│ Sermon Notes               │
+│ 264 sermons · in Logos     │
+│                            │
+│ Logos books, at the verse  │
+│                11 of 97 on │
+│ Logos opens the book at    │
+│ the verse you are reading. │
+│ Lampas cannot say which    │
+│ sermons it holds there.    │
+│────────────────────────────│
+│ The Beatitudes    Off [On] │
+│────────────────────────────│
+│ Fresh Sermons     Off [On] │
+│────────────────────────────│
+│ Princeton Sermons Off [On] │
+│────────────────────────────│
+│ ...                        │
+│────────────────────────────│
+│ The World's Great [Off] On │
+│ Sermons, Volume 1: Basil   │
+│ to Calvin                  │
+│────────────────────────────│
+│ The World's Great [Off] On │
+│ Sermons, Volume 2: Hooker  │
+│ to South                   │
+└────────────────────────────┘
 ```
 
 ## 4. What a source is, and the two groups
@@ -201,8 +210,9 @@ A source is one thing he can turn on. There are three sorts, and the list names 
 Three things, always in the same places, so 120 rows read as one column of names and one column of switches:
 
 ```text
-│ Spurgeon's sermons        Off [On] │
-│ 3,467 sermons · on the web         │
+│ Spurgeon's        Off [On] │
+│ sermons                    │
+│ 3,467 sermons · on the web │
 ```
 
 | | A list on the web | A list from Logos books | A Logos book |
@@ -229,28 +239,29 @@ Three things, always in the same places, so 120 rows read as one column of names
 ## 7. Search, and All on / All off
 
 ```text
-┌────────────────────────────────────┐
-│ ‹ Study  Sermon sources      17 on │
-├────────────────────────────────────┤
-│ [ These 2 on ]  [ These 2 off ]    │
-│ ┌────────────────────────────────┐ │
-│ │ wesley                         │ │
-│ └────────────────────────────────┘ │
-│ 17 of 120 on · 2 shown             │
-│                                    │
-│ Listed by passage                  │
-│────────────────────────────────────│
-│ John Wesley's sermons     [Off] On │
-│ 137 sermons · in Logos             │
-│                                    │
-│ Logos books, at the verse          │
-│────────────────────────────────────│
-│ Sermons by the Late Rev.  Off [On] │
-│ Charles Wesley                     │
-│                                    │
-│                                    │
-│ (the keyboard)                     │
-└────────────────────────────────────┘
+┌────────────────────────────┐
+│ ‹ Study  Sources     17 on │
+├────────────────────────────┤
+│ [These 2 on] [These 2 off] │
+│ ┌────────────────────────┐ │
+│ │ wesley                 │ │
+│ └────────────────────────┘ │
+│ 17 of 120 on · 2 shown     │
+│                            │
+│ Listed by passage          │
+│────────────────────────────│
+│ John Wesley's     [Off] On │
+│ sermons                    │
+│ 137 sermons · in Logos     │
+│                            │
+│ Logos books, at the verse  │
+│────────────────────────────│
+│ Sermons by the    Off [On] │
+│ Late Rev. Charles Wesley   │
+│                            │
+│                            │
+│ (the keyboard)             │
+└────────────────────────────┘
 ```
 
 **Search.**
@@ -268,33 +279,37 @@ Three things, always in the same places, so 120 rows read as one column of names
 - After All off, with no search:
 
 ```text
-┌────────────────────────────────────┐
-│ ‹ Study  Sermon sources    none on │
-├────────────────────────────────────┤
-│ The Sermons door at a verse draws  │
-│ on the sources that are on.        │
-│ [ All on ]  [ All off ]            │
-│ Turned off 17.            [ Undo ] │
-│ No source is on, so no verse has a │
-│ Sermons door.                      │
-│ ┌────────────────────────────────┐ │
-│ │ Search 120 sermon sources      │ │
-│ └────────────────────────────────┘ │
-│ none of 120 on                     │
-│                                    │
-│ Listed by passage    none of 23 on │
-│ Each sermon is listed at its       │
-│ verse. The count on the Sermons    │
-│ door is these.                     │
-│────────────────────────────────────│
-│ Greg Laurie's sermons     [Off] On │
-│ 1,091 sermons · in Logos           │
-│────────────────────────────────────│
-│ Matthew Henry's sermons   [Off] On │
-│ 45 sermons · on the web            │
-│────────────────────────────────────│
-│ ...                                │
-└────────────────────────────────────┘
+┌────────────────────────────┐
+│ ‹ Study  Sources   none on │
+├────────────────────────────┤
+│ The Sermons door at a      │
+│ verse draws on the sources │
+│ that are on.               │
+│ [ All on ]  [ All off ]    │
+│ Turned off 17.    [ Undo ] │
+│ No source is on, so no     │
+│ verse has a Sermons door.  │
+│ ┌────────────────────────┐ │
+│ │ Search 120 sources     │ │
+│ └────────────────────────┘ │
+│ none of 120 on             │
+│                            │
+│ Listed by passage          │
+│              none of 23 on │
+│ Each sermon is listed at   │
+│ its verse. The count on    │
+│ the Sermons door is these. │
+│────────────────────────────│
+│ Greg Laurie's     [Off] On │
+│ sermons                    │
+│ 1,091 sermons · in Logos   │
+│────────────────────────────│
+│ Matthew Henry's   [Off] On │
+│ sermons                    │
+│ 45 sermons · on the web    │
+│────────────────────────────│
+│ ...                        │
+└────────────────────────────┘
 ```
 
 The rows have not moved: the three that were on are still first, now Off, so he can see what he had.
@@ -346,29 +361,33 @@ The devices, in one place: one row per source (87 rows become 73 for the sources
 None owned, at 390 px:
 
 ```text
-┌────────────────────────────────────┐
-│ ‹ Study  Sermon sources       2 on │
-├────────────────────────────────────┤
-│ The Sermons door at a verse draws  │
-│ on the sources that are on.        │
-│ [ All on ]  [ All off ]            │
-│ 2 of 2 on                          │
-│────────────────────────────────────│
-│ Matthew Henry's sermons   Off [On] │
-│ 45 sermons · on the web            │
-│────────────────────────────────────│
-│ Spurgeon's sermons        Off [On] │
-│ 3,467 sermons · on the web         │
-│────────────────────────────────────│
-│                                    │
-│ ┌────────────────────────────────┐ │
-│ │ Sermon books in Logos? Import  │ │
-│ │ your Logos list, and the ones  │ │
-│ │ Lampas can open join this      │ │
-│ │ list.                          │ │
-│ │ [ Import ]                     │ │
-│ └────────────────────────────────┘ │
-└────────────────────────────────────┘
+┌────────────────────────────┐
+│ ‹ Study  Sources      2 on │
+├────────────────────────────┤
+│ The Sermons door at a      │
+│ verse draws on the sources │
+│ that are on.               │
+│ [ All on ]  [ All off ]    │
+│ 2 of 2 on                  │
+│────────────────────────────│
+│ Matthew Henry's   Off [On] │
+│ sermons                    │
+│ 45 sermons · on the web    │
+│────────────────────────────│
+│ Spurgeon's        Off [On] │
+│ sermons                    │
+│ 3,467 sermons · on the web │
+│────────────────────────────│
+│                            │
+│ ┌────────────────────────┐ │
+│ │ Sermon books in Logos? │ │
+│ │ Import your Logos      │ │
+│ │ list, and the ones     │ │
+│ │ Lampas can open join   │ │
+│ │ this list.             │ │
+│ │ [ Import ]             │ │
+│ └────────────────────────┘ │
+└────────────────────────────┘
 ```
 
 - The card is drawn only while Logos is On. It opens the Library's Import (`#/library?import`), the one way Lampas learns what he owns: his words, "(in the import)". A sermon book cannot be ticked by hand, because an unowned one is not listed.
@@ -392,12 +411,13 @@ None owned, at 390 px:
 - In the list it is a row of the second group, with a third line that says where else it lives and goes there:
 
 ```text
-│ Homilies on the Gospel    Off [On] │
-│ according to St. John, and His…    │
-│ A Library of Fathers of the Holy   │
-│ Catholic Church                    │
-│ Also in your Library:              │
-│ Commentaries ›                     │
+│ Homilies on the   Off [On] │
+│ Gospel according to St.    │
+│ John, and His…             │
+│ A Library of Fathers of    │
+│ the Holy Catholic Church   │
+│ Also in your Library:      │
+│ Commentaries ›             │
 ```
 
 - **One book, one switch.** The list shows the shelf's own state for it (Pinned reads as On) and writes it. Off here is Off in the Library; that third line is why he will expect it. Two switches for one book would let it be On in one place and Off in the other, and then neither screen could say whether Lampas uses it.
