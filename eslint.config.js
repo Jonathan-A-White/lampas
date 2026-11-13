@@ -6,8 +6,9 @@ import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import noRawInterestWrite from './eslint-rules/no-raw-interest-write.js';
 import noRealTimeWait from './eslint-rules/no-real-time-wait.js';
+import noLayerInversion from './eslint-rules/no-layer-inversion.js';
 
-const local = { rules: { 'no-real-time-wait': noRealTimeWait, 'no-raw-interest-write': noRawInterestWrite } };
+const local = { rules: { 'no-real-time-wait': noRealTimeWait, 'no-raw-interest-write': noRawInterestWrite, 'no-layer-inversion': noLayerInversion } };
 
 export default defineConfig([
   globalIgnores(['dist', 'shots', 'test-results', 'playwright-report']),
@@ -35,5 +36,11 @@ export default defineConfig([
     files: ['tests/e2e/**/*.{ts,tsx}', 'features/steps/**/*.{ts,tsx}'],
     plugins: { local },
     rules: { 'local/no-raw-interest-write': 'error' },
+  },
+  {
+    // A lower layer does not import a higher one: data < shared (ui, services) < features (eslint-rules/layers.js). Today's breaks are listed in eslint-rules/layer-inversions.json, a list that may only get shorter (tests/unit/layers.test.ts).
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { local },
+    rules: { 'local/no-layer-inversion': 'error' },
   },
 ]);
