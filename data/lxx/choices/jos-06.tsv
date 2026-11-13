@@ -1,0 +1,210 @@
+ref	parsing	lemma	mark	confidence	note
+Jos.24:1#6	N-GSM	Ἰσραήλ		0.80	
+Jos.24:1#8	N-ASF	Σηλώ	unsure	0.50	model: unsure
+Jos.24:1#13	P-GPM	αὐτός		0.80	
+Jos.24:1#17	P-GPM	αὐτός		0.80	
+Jos.24:1#21	P-GPM	αὐτός		0.80	
+Jos.24:2#5	A-ASM	πᾶς		0.80	
+Jos.24:2#8	D-APN	ὅδε, ἥδε		0.80	
+Jos.24:2#13	N-GSM	Ἰσραήλ		0.80	
+Jos.24:2#21	T-ASN	ὁ	unsure	0.50	model: unsure
+Jos.24:2#24	N-NSM	Θάρα		0.80	
+Jos.24:2#27	N-GSM	Ἀβραάμ		0.80	
+Jos.24:2#31	N-GSM	Ναχώρ		0.80	
+Jos.24:3#2	V-2AAI-1S	λαμβάνω		0.80	
+Jos.24:3#9	T-GSN	ὁ		0.80	
+Jos.24:3#21	V-AAI-1S	πληθύνω		0.80	
+Jos.24:3#22	P-GSM	αὐτός		0.80	
+Jos.24:3#23	N-ASN	σπέρμα		0.80	
+Jos.24:3#26	P-DSM	αὐτός		0.80	
+Jos.24:4#2	T-DSM	ὁ		0.80	
+Jos.24:4#3	N-DSM	Ἰσαάκ		0.80	
+Jos.24:4#10	T-DSM	ὁ		0.80	
+Jos.24:4#11	N-DSM	Ἠσαῦ		0.80	
+Jos.24:4#12	T-ASN	ὁ		0.80	
+Jos.24:4#13	N-ASN	ὄρος		0.80	
+Jos.24:4#14	T-ASN	ὁ		0.80	
+Jos.24:4#15	N-ASM	Σηείρ	unsure	0.50	model: unsure
+Jos.24:4#17	P-DSM	αὐτός		0.80	
+Jos.24:4#19	N-NSM	Ἰακώβ		0.80	
+Jos.24:4#23	P-GSM	αὐτός		0.80	
+Jos.24:4#31	N-ASN	ἔθνος		0.80	
+Jos.24:4#32	A-ASN	μέγας		0.80	
+Jos.24:4#34	A-ASN	πολύς		0.80	
+Jos.24:4#36	A-ASN	κραταιός		0.80	
+Jos.24:5#6	R-DPN	ὅς, ἥ		0.80	
+Jos.24:5#8	P-DPM	αὐτός		0.80	
+Jos.24:5#11	D-APN	οὗτος		0.80	
+Jos.24:6#14	V-AAI-3P	καταδιώκω		0.80	
+Jos.24:6#17	PREP	ὀπίσω		0.80	
+Jos.24:7#2	V-AAI-1P	ἀναβοάω		0.80	
+Jos.24:7#11	A-ASN	μέσος		0.80	
+Jos.24:7#15	A-ASN	μέσος		0.80	
+Jos.24:7#16	T-GPM	ὁ		0.80	
+Jos.24:7#17	A-GPM	Αἰγύπτιος		0.80	
+Jos.24:7#32	K-APN	ὅσος		0.80	
+Jos.24:7#39	V-IAI-2P	εἰμί		0.80	
+Jos.24:7#43	N-APF	ἡμέρα		0.80	
+Jos.24:7#44	A-APF-C	πολύς		0.80	
+Jos.24:8#6	A-GPM	Ἀμορραῖος		0.80	
+Jos.24:8#7	T-GPM	ὁ		0.80	
+Jos.24:8#8	V-PAP-GPM	κατοικέω		0.80	
+Jos.24:8#13	V-RAI-3S	παραδίδωμι		0.80	
+Jos.24:8#24	P-GPM	αὐτός		0.80	
+Jos.24:9#3	N-NSM	Βαλάκ		0.80	
+Jos.24:9#5	T-GSM	ὁ		0.80	
+Jos.24:9#6	N-GSM	Σεπφώρ		0.80	
+Jos.24:9#8	N-GSM	Μωάβ	unsure	0.50	model: unsure
+Jos.24:9#10	V-AMI-3S	παρατάσσω		0.80	
+Jos.24:9#11	T-DSM	ὁ		0.80	
+Jos.24:9#12	N-DSM	Ἰσραήλ		0.80	
+Jos.24:9#18	V-ADN	ἀράομαι	unsure	0.50	model: unsure
+Jos.24:10#19	P-GPM	αὐτός		0.80	
+Jos.24:11#2	V-2AAI-2P	διαβαίνω		0.80	
+Jos.24:11#6	V-2AOI-2P	παραγίνομαι	unsure	0.50	model: unsure
+Jos.24:11#8	N-ASF	Ἱεριχώ		0.80	
+Jos.24:11#15	N-ASF	Ἱεριχώ		0.80	
+Jos.24:11#23	N-NSM	Φερεζαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.24:11#26	N-NSM	Εὑαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.24:11#35	N-NSM	Γεργεσαῖος	guess	0.40	guess: the model answered with no candidates
+Jos.24:12#6	N-ASF	σφηκιά		0.80	
+Jos.24:12#14	N-APM	βασιλεύς		0.80	
+Jos.24:12#15	T-GPM	ὁ		0.80	
+Jos.24:12#16	A-GPM	Ἀμορραῖος		0.80	
+Jos.24:13#8	V-AAI-2P	κοπιάω		0.80	
+Jos.24:13#12	N-APF	πόλις		0.80	
+Jos.24:13#15	V-RAI-2P	οἰκοδομέω		0.80	
+Jos.24:13#23	N-APM	ἐλαιών		0.80	
+Jos.24:13#28	V-FMI-2P	ἐσθίω	unsure	0.50	model: unsure
+Jos.24:14#6	V-AAM-2P	λατρεύω		0.80	
+Jos.24:14#7	P-DSM	αὐτός		0.80	
+Jos.24:14#14	V-2AMM-2P	περιαιρέω		0.80	
+Jos.24:14#19	R-DPM	ὅς, ἥ		0.80	
+Jos.24:14#25	T-DSN	ὁ		0.80	
+Jos.24:14#33	V-PAM-2P	λατρεύω		0.80	
+Jos.24:15#8	V-AMM-2P	ἐκλέγω		0.80	
+Jos.24:15#10	F-2DPM	ἑαυτοῦ		0.80	
+Jos.24:15#12	I-DSM	τίς		0.80	
+Jos.24:15#20	T-DPM	ὁ		0.80	
+Jos.24:15#22	T-DSN	ὁ		0.80	
+Jos.24:15#29	T-GPM	ὁ		0.80	
+Jos.24:15#30	A-GPM	Ἀμορραῖος		0.80	
+Jos.24:15#32	R-DPM	ὅς, ἥ		0.80	
+Jos.24:15#38	P-GPM	αὐτός		0.80	
+Jos.24:15#45	V-FAI-1P	λατρεύω		0.80	
+Jos.24:15#48	A-NSM	ἅγιος		0.80	
+Jos.24:17#25	V-AOI-1P	πορεύω		0.80	
+Jos.24:17#30	A-DPN	πᾶς		0.80	
+Jos.24:17#34	V-2AAI-1P	παρέρχομαι		0.80	
+Jos.24:17#36	P-GPN	αὐτός	unsure	0.50	model: unsure
+Jos.24:18#7	A-APN	πᾶς		0.80	
+Jos.24:18#8	T-APN	ὁ		0.80	
+Jos.24:18#9	N-APN	ἔθνος		0.80	
+Jos.24:18#10	T-APN	ὁ		0.80	
+Jos.24:18#11	V-PAP-APN	κατοικέω		0.80	
+Jos.24:18#20	V-FAI-1P	λατρεύω		0.80	
+Jos.24:19#9	V-PNS-2P	δύναμαι		0.80	
+Jos.24:19#20	V-FAI-3S	ἀνίημι		0.80	
+Jos.24:19#22	T-APN	ὁ		0.80	
+Jos.24:19#23	N-APN	ἁμάρτημα		0.80	
+Jos.24:19#25	T-APN	ὁ		0.80	
+Jos.24:19#26	N-APN	ἀνόμημα		0.80	
+Jos.24:20#3	V-2AAS-2P	ἐγκαταλείπω	guess	0.40	guess: the model answered with no candidates
+Jos.24:20#11	V-FAI-3S	κακόω		0.80	
+Jos.24:20#14	V-FAI-3S	ἐξαναλίσκω		0.80	
+Jos.24:20#17	R-GPN	ὅς, ἥ		0.80	
+Jos.24:21#10	V-FAI-1P	λατρεύω		0.80	
+Jos.24:22#16	P-DSM	αὐτός		0.80	
+Jos.24:23#3	V-2AMM-2P	περιαιρέω		0.80	
+Jos.24:23#19	N-GSM	Ἰσραήλ		0.80	
+Jos.24:24#8	V-FAI-1P	λατρεύω		0.80	
+Jos.24:24#12	P-GSM	αὐτός		0.80	
+Jos.24:25#14	P-DSM	αὐτός		0.80	
+Jos.24:25#19	N-DSF	Σηλώ	unsure	0.50	model: unsure
+Jos.24:25#25	N-GSM	Ἰσραήλ		0.80	
+Jos.24:26#3	T-APN	ὁ		0.80	
+Jos.24:26#4	N-APN	ῥῆμα		0.80	
+Jos.24:26#5	D-APN	οὗτος		0.80	
+Jos.24:26#7	N-ASN	βιβλίον		0.80	
+Jos.24:26#21	N-ASF	τερέμινθος	guess	0.40	guess: the model answered with no candidates
+Jos.24:27#15	N-ASN	μαρτύριον		0.80	
+Jos.24:27#19	A-APN	πᾶς		0.80	
+Jos.24:27#20	T-APN	ὁ		0.80	
+Jos.24:27#21	V-APP-APN	λέγω		0.80	
+Jos.24:27#22	P-DSM	αὐτός		0.80	
+Jos.24:27#25	R-ASN	ὅς, ἥ		0.80	
+Jos.24:27#26	X-ASN	τις		0.80	
+Jos.24:27#37	N-ASN	μαρτύριον		0.80	
+Jos.24:27#39	A-GPF	ἔσχατος		0.80	
+Jos.24:27#44	V-AMS-2P	ψεύδω		0.80	
+Jos.24:28#12	P-GSM	αὐτός		0.80	
+Jos.24:29#4	D-APN	ἐκεῖνος		0.80	
+Jos.24:29#9	N-GSM	Ναυή		0.80	
+Jos.24:30#9	P-GSM	αὐτός		0.80	
+Jos.24:30#11	N-DSF	Θαμναθασαχαρά	unsure	0.50	model: unsure
+Jos.24:30#15	T-DSN	ὁ		0.80	
+Jos.24:30#16	N-DSM	Ἐφραίμ		0.80	
+Jos.24:30#21	T-GSN	ὁ		0.80	
+Jos.24:30#22	N-GSM	Γαλαάδ	unsure	0.50	model: unsure
+Jos.24:30#26	P-GSM	αὐτός		0.80	
+Jos.24:30#28	T-ASN	ὁ		0.80	
+Jos.24:30#29	N-ASN	μνῆμα		0.80	
+Jos.24:30#31	R-ASN	ὅς, ἥ		0.80	
+Jos.24:30#44	N-GSM	Ἰσραήλ		0.80	
+Jos.24:30#46	N-DPN	Γάλγαλα	guess	0.40	guess: the model answered with no candidates
+Jos.24:30#47	CONJ	ὅτε		0.80	
+Jos.24:30#54	P-DPM	αὐτός		0.80	
+Jos.24:30#62	N-GSF	ἡμέρα		0.80	
+Jos.24:31#3	N-NSM	Ἰσραήλ		0.80	
+Jos.24:31#9	N-GSM	Ἰησοῦς		0.80	
+Jos.24:31#17	V-AAI-3P	ἐφέλκω		0.80	
+Jos.24:31#21	N-GSM	Ἰησοῦς		0.80	
+Jos.24:31#24	V-2AAI-3P	ὁράω	guess	0.40	guess: the model answered with no candidates
+Jos.24:31#25	A-APN	πᾶς		0.80	
+Jos.24:31#26	T-APN	ὁ		0.80	
+Jos.24:31#27	N-APN	ἔργον		0.80	
+Jos.24:31#29	K-APN	ὅσος		0.80	
+Jos.24:31#31	T-DSM	ὁ		0.80	
+Jos.24:31#32	N-DSM	Ἰσραήλ		0.80	
+Jos.24:32#2	T-APN	ὁ		0.80	
+Jos.24:32#3	N-APN	ὀστέον		0.80	
+Jos.24:32#4	N-GSM	Ἰωσήφ		0.80	
+Jos.24:32#8	N-GSM	Ἰσρηάλ		0.80	
+Jos.24:32#12	V-AAI-3P	κατορύσσω		0.80	
+Jos.24:32#20	R-GSM	ὅς, ἥ		0.80	
+Jos.24:32#22	N-NSM	Ἰακώβ		0.80	
+Jos.24:32#24	T-GPM	ὁ		0.80	
+Jos.24:32#25	A-GPM	Ἀμορραῖος		0.80	
+Jos.24:32#26	T-GPM	ὁ		0.80	
+Jos.24:32#27	V-PAP-GPM	κατοικέω		0.80	
+Jos.24:32#30	N-GPF	ἀμνάς		0.80	
+Jos.24:33#4	D-APN	οὗτος		0.80	
+Jos.24:33#6	N-NSM	Ἐλεάζαρ		0.80	
+Jos.24:33#8	N-GSM	Ἀαρών		0.80	
+Jos.24:33#15	N-DSF	Γαβαάρ	unsure	0.50	model: unsure
+Jos.24:33#16	N-GSM	Φινεές	guess	0.40	guess: the model answered with no candidates
+Jos.24:33#19	P-GSM	αὐτός		0.80	
+Jos.24:33#22	P-DSM	αὐτός		0.80	
+Jos.24:33#26	T-DSN	ὁ		0.80	
+Jos.24:33#27	N-DSM	Ἐφραίμ		0.80	
+Jos.24:33#35	N-GSM	Ἰσραήλ		0.80	
+Jos.24:33#40	V-IAI-3P	περιφέρω		0.80	
+Jos.24:33#42	F-3DPM	ἑαυτοῦ		0.80	
+Jos.24:33#44	N-NSM	Φινεές	guess	0.40	guess: the model answered with no candidates
+Jos.24:33#45	V-AAI-3S	ἱερατεύω		0.80	
+Jos.24:33#47	N-GSM	Ἐλεάζαρ		0.80	
+Jos.24:33#50	P-GSM	αὐτός		0.80	
+Jos.24:33#54	V-2API-3S	κατορύσσω		0.80	
+Jos.24:33#56	N-DSF	Γαβαάρ	unsure	0.50	model: unsure
+Jos.24:33#58	F-3GPM	ἑαυτοῦ		0.80	
+Jos.24:33#62	N-GSM	Ἰσραήλ		0.80	
+Jos.24:33#68	P-GPM	αὐτός		0.80	
+Jos.24:33#72	F-3GPM	ἑαυτοῦ		0.80	
+Jos.24:33#78	N-GSM	Ἰσραήλ		0.80	
+Jos.24:33#82	N-ASF	Ἀσταρώθ	unsure	0.50	model: unsure
+Jos.24:33#88	T-GPN	ὁ		0.80	
+Jos.24:33#90	P-GPM	αὐτός		0.80	
+Jos.24:33#97	N-GSM	Ἐγλώμ		0.80	
+Jos.24:33#100	N-GSM	Μωάβ	unsure	0.50	model: unsure
+Jos.24:33#103	P-GPM	αὐτός		0.80	
+Jos.24:33#104	N-APN	ἔτος		0.80	
