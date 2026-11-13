@@ -9,7 +9,8 @@
 import { chapterListedNow, chapterTimingsNow, spanOf, type ChapterTimings } from '../data/audioTimings';
 import { bookOf } from '../data/books';
 import type { Chapter } from '../data/chapter';
-import { bibleVoiceChosen, heldBackByData, recordingEligible, wantsRecording } from './recordedVoice';
+import type { BibleVoice } from '../settings/definitions/bibleVoice';
+import { bibleVoiceChosen, heldBackByData, recordingEligible, recordingWanted, wantsRecording } from './recordedVoice';
 import type { PlanVerse } from './readAloud';
 
 /** The MP3s are 192 kbps mono: 24 KB a second, 1.44 MB a minute, about 86 MB an hour. */
@@ -40,6 +41,14 @@ function keep(key: string): void {
 /** The question about data has been answered (either way): it is never asked again. Settings still changes the voice. */
 export const dataQuestionAnswered = (): boolean => kept(ASKED);
 export const markDataQuestionAnswered = (): void => keep(ASKED);
+
+/** Whether opening a chapter should load its book's timings (a small file) under this Bible voice setting (the Reader's own value; undefined until the saved one is read): when David could play
+ * (recordingWanted), and on mobile data with Recording on Wi-Fi only just while the one question about data is still to be asked (decideVoice offers Play David on data only with the timings
+ * already in, so the first Play needs them); once it is answered, data spends nothing on a recording that will not play (mw-zbgo4ep.33). */
+export function timingsWarmFor(voice: BibleVoice | undefined): boolean {
+  if (recordingWanted(voice) !== null) return true;
+  return voice === 'msb-david-wifi' && !dataQuestionAnswered();
+}
 
 /** The books the 'not recorded yet' line was said for this session. */
 const saidFor = new Set<string>();

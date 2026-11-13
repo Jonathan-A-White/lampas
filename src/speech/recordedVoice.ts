@@ -24,8 +24,13 @@ let chosen: BibleVoice = bibleVoiceSetting.default;
  * mw-zbgo4ep.30); 'phone' never.
  * It is asked when a chapter starts (the tap, and each crossing into a next chapter), never in the middle of one: a chapter that began in one voice finishes in it. */
 export function wantsRecording(): RecordedVoiceId | null {
-  if (chosen === 'msb-david') return 'msb-david';
-  if (chosen === 'msb-david-wifi' && connectionKind() !== 'other') return 'msb-david';
+  return recordingWanted(chosen);
+}
+
+/** The rule of wantsRecording for a Bible voice setting handed in (the Reader's, as it follows the setting: mw-zbgo4ep.33): whether David could play it on this connection. */
+export function recordingWanted(voice: BibleVoice | undefined): RecordedVoiceId | null {
+  if (voice === 'msb-david') return 'msb-david';
+  if (voice === 'msb-david-wifi' && connectionKind() !== 'other') return 'msb-david';
   return null;
 }
 
