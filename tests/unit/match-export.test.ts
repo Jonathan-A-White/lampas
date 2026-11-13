@@ -113,6 +113,12 @@ describe('the reasons', () => {
     expect(key({ type: 'text.monograph.sermons' })).toBe('books');
   });
 
+  it('name the books it cannot open without naming sermons, which Lampas opens (mw-qtu3zvz.104)', () => {
+    const [line] = reasonLines(['books']);
+    expect(line.label).toBe('Other books, collected works and journals');
+    expect(REASONS.map((r) => r.label.toLowerCase()).join(' ')).not.toContain('sermon');
+  });
+
   it('read a type the table lacks as books of a kind Lampas does not know', () => {
     expect(key({ type: 'something.new' })).toBe('unknown');
     const [line] = reasonLines(['unknown', 'unknown', 'unknown']);
