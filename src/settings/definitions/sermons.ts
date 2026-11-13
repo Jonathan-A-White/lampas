@@ -23,7 +23,7 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
     section: 'sermons',
     label: source.name.length > NAME_MAX ? source.name.replace(/ \([^)]*\)$/, '') : source.name,
     hint: source.describe,
-    ...(source.resources ? { help: 'Offered only when your Library import says you own this sermon collection in Logos.' } : source.needs === 'logos' ? { help: 'Used only while Logos is On in Study resources.' } : {}),
+    ...(source.resources ? { help: 'Only if your import says you own it.' } : source.needs === 'logos' ? { help: 'Used only while Logos is On in Study resources.' } : {}),
     // a Logos collection is drawn only while his import holds it (or Logos gives it free): the pseudo-key is read by rows.ts readValues
     ...(source.resources
       ? { dependsOn: { key: ownsKey(source), shown: (value: string) => value === 'on' } }
