@@ -6,6 +6,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { langOf, langOfSource } from '../script/greekLang';
 import { NO_SELECT } from '../ui/longPress';
+import { ScrollMore } from '../ScrollMore';
 import { LABEL_H, layoutDiagram, type LayoutLabel } from './layout';
 import type { Diagram, DiagramMode, DiagramWords } from './types';
 
@@ -154,7 +155,7 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
   };
 
   return (
-    <div data-diagram="" className="overflow-x-auto overflow-y-hidden overscroll-x-contain">
+    <ScrollMore data-diagram="" peek={false} className="overflow-x-auto overflow-y-hidden overscroll-x-contain">
       <div className="relative" style={{ width: layout.width, height: layout.height }}>
         <svg
           role="img"
@@ -183,6 +184,6 @@ export function ReedKellogg({ diagram, words, mode, reference, onWord, measure, 
           Hg
         </span>
       </div>
-    </div>
+    </ScrollMore>
   );
 }

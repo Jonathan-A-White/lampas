@@ -875,12 +875,9 @@ textarea,
 }
 .markdown pre {
   margin: 0.5em 0;
-  overflow-x: auto;
   white-space: pre-wrap;
 }
 .markdown table {
-  display: block;
-  overflow-x: auto;
   border-collapse: collapse;
 }
 .markdown th,
