@@ -7,6 +7,12 @@
 // pause, a seek and each 'timeupdate', and 'timeupdate' past it), and a failure (play() refused, the element's 'error', or no 'playing' within PLAYING_WAIT_MS).
 // The end is judged by where the SOUND is (soundAt, mw-82lb97i.18): the element's second moves in steps (at each 'timeupdate' on a phone, in bursts in Chromium), so a timer
 // that read it alone found it a step behind, waited again and let the next 'timeupdate' land past the end: his John 1:50 ran on into 'Then He declar…' of verse 51.
+// After that he still heard the first 'th' of 'Then' (mw-82lb97i.27). The timings were not it (verse 50's end lay in 0.4 s of digital silence before 'Then'), so the stop
+// itself came late: a reading of the element can run BEHIND the sound for a second and then jump (on a loaded page 0.82 s of the recording a second of the clock, then
+// +0.37 s in 0.175 s), and a timer aimed from such a reading fires past the end. So as the end comes near (NEAR_MS) the element is looked at every POLL_MS, the best
+// reading of the last NEAR_MS is carried on by the clock (a reading is never ahead of the sound, only behind it), and the last FADE seconds before the stop are faded
+// to silence by the element's volume, so the last of what a phone's output still holds when pause() is called was given to it quiet. How long a phone plays on after
+// pause() is not measured: the fade shortens it by FADE, it cannot end it.
 // Whether he wants it is his Bible voice setting (wantsRecording(), mw-82lb97i.6); recordingFor() is the rule a tap decides by, with no wait.
 import { sourceLanguage, type Chapter } from '../data/chapter';
 import { chapterTimingsNow, spanOf, verseAt, type ChapterTimings } from '../data/audioTimings';
@@ -84,11 +90,26 @@ const END_SLACK = 0.05;
 
 /** The end timer is aimed this many seconds of the recording BEFORE the end (inside END_SLACK, so a timer on time stops there): a timer on a busy page fires late (on the
  * Laptop at load 30 by 50-100 ms, John 11:35 +59 ms and 17:3 +74 ms past the end when it was aimed at the end itself), and the stop is at or before the end, never past it.
- * Stopping 40 ms early cuts nothing: the aligner leaves each verse's last word 0.25 s of room (scripts/audio-timings/align.py PAD_END). */
+ * Stopping in the 50 ms before the end cuts nothing: the timing maker's gap pass puts each verse's end 0.05 s after its last sound has died away (scripts/audio-timings/align.py END_AFTER_SOUND). */
 export const END_LEAD = 0.04;
 
-/** The longest the element's second is run on by the clock past its last move: a little over one 'timeupdate' (a phone fires one about every 250 ms). */
+/** The longest the element's second is run on by the clock past its last move: a little over one 'timeupdate' (a phone fires one about every 250 ms). Also the furthest
+ * the sound is ever taken to be ahead of the element's own second: a recording that stalls with no 'waiting' is cut short by no more than this. */
 export const RUN_ON_MS = 300;
+
+/** Within this many ms of the end (by the clock, at his speed) the end timer looks at the element every POLL_MS instead of waiting the whole way: a reading that fell
+ * behind the sound is caught as it jumps on. Readings older than this are forgotten: one made while the recording was still starting up says nothing of the sound now. */
+export const NEAR_MS = 700;
+export const POLL_MS = 20;
+
+/** The last seconds of the recording before the stop (END_SLACK before the span's end) are faded to silence by the element's volume: 1 until FADE before it, 0 at it. */
+export const FADE = 0.06;
+
+/** The volume the element is given with the sound `at` seconds into the recording of a span that ends at `end`: 1, then down to 0 over FADE, silent from END_SLACK before the end. */
+export const fadeVolume = (end: number, at: number): number => {
+  if (!Number.isFinite(end) || !Number.isFinite(at)) return 1;
+  return Math.min(1, Math.max(0, (end - END_SLACK - at) / FADE));
+};
 
 let element: HTMLAudioElement | null = null;
 let rate = 1;
@@ -110,27 +131,44 @@ let seenSecond = Number.NaN;
 let seenAt = 0;
 /** its second has been seen to move on since the last play, seek or wait: only a recording seen to play is run on by the clock (one that stalls is not) */
 let moving = false;
+/** each second the element was seen to move on to in the last NEAR_MS, with the clock then: [second, clock] */
+let readings: Array<[number, number]> = [];
 
-/** Forgets the element's movement: after a play, a seek, a pause or a wait for data, its second is trusted alone until it is seen to move on again. */
+/** Forgets the element's movement: after a play, a seek, a pause, a wait for data or a change of speed, its second is trusted alone until it is seen to move on again. */
 function holdStill(): void {
   moving = false;
+  readings = [];
   seenSecond = element?.currentTime ?? Number.NaN;
   seenAt = performance.now();
 }
 
-/** Where the sound is, in seconds of the recording: the element's second, run on by the clock since it last moved (at `rate`, for at most RUN_ON_MS) while it is seen
- * to play forward. Its second moves in steps (each 'timeupdate'), so read alone it can be a step behind what is heard. */
+/** Where the sound is, in seconds of the recording, while it is seen to play forward: the furthest that any reading of the last NEAR_MS, carried on by the clock at
+ * `rate`, puts it, and never more than RUN_ON_MS ahead of the element's own second. The element's second moves in steps (each 'timeupdate') and can run behind the
+ * sound and jump on, so read alone it can be well behind what is heard; it is never ahead of it. A recording not seen to move (a stall) is where its second says. */
 function soundAt(): number {
   if (!element) return Number.NaN;
   const second = element.currentTime;
   const now = performance.now();
   if (second !== seenSecond) {
-    moving = wantPlaying && !element.seeking && second > seenSecond;
+    const forward = wantPlaying && !element.seeking && second > seenSecond;
+    if (!forward || !moving) readings = [];
+    moving = forward;
     seenSecond = second;
     seenAt = now;
+    if (moving) readings.push([second, now]);
   }
   if (!moving || !wantPlaying) return second;
-  return second + (Math.min(Math.max(0, now - seenAt), RUN_ON_MS) / 1000) * rate;
+  while (readings.length > 0 && now - readings[0][1] > NEAR_MS) readings.shift();
+  let at = second + (Math.min(Math.max(0, now - seenAt), RUN_ON_MS) / 1000) * rate;
+  for (const [was, then] of readings) at = Math.max(at, was + ((now - then) / 1000) * rate);
+  return Math.min(at, second + (RUN_ON_MS / 1000) * rate);
+}
+
+/** Gives the element the volume of the fade at the second the sound is at (1 anywhere but the last moments of the span). */
+function fade(at: number): void {
+  if (!element) return;
+  const volume = wantPlaying ? fadeVolume(endSecond, at) : 1;
+  if (element.volume !== volume) element.volume = volume;
 }
 
 function clearEndTimer(): void {
@@ -144,27 +182,35 @@ function clearPlayingWatch(): void {
   playingWatch = null;
 }
 
-/** Aims the end timer at END_LEAD before the span's end from the second the sound is at, at its speed; a paused or ended recording has none. */
+/** Aims the end timer at END_LEAD before the span's end from the second the sound is at, at its speed; a paused or ended recording has none. Far from the end the
+ * timer wakes NEAR_MS before it; from there it looks again every POLL_MS, fading the volume as the end comes, until the sound is within END_SLACK of the end. */
 function aimEnd(): void {
   clearEndTimer();
   if (!element || !wantPlaying || !listener || !Number.isFinite(endSecond)) return;
-  const wait = endWaitMs(endSecond - END_LEAD, soundAt(), rate);
+  const at = soundAt();
+  fade(at);
+  const wait = endWaitMs(endSecond - END_LEAD, at, rate);
   endAimedMs = wait;
-  endTimer = setTimeout(() => {
-    endTimer = null;
-    endAimedMs = null;
-    if (!element || !wantPlaying) return;
-    // the recording stalled (buffering) or the timer came early: aim again rather than cut a word off
-    if (soundAt() < endSecond - END_SLACK) return aimEnd();
-    reach();
-  }, wait);
+  endTimer = setTimeout(
+    () => {
+      endTimer = null;
+      endAimedMs = null;
+      if (!element || !wantPlaying) return;
+      // not there yet (the look before the end, a stall, a timer that came early): aim again rather than cut a word off
+      if (soundAt() < endSecond - END_SLACK) return aimEnd();
+      reach();
+    },
+    wait > NEAR_MS ? wait - NEAR_MS : Math.min(wait, POLL_MS),
+  );
 }
 
-/** The wait the end timer is aimed at, in ms, or null when none is (a test's). */
+/** The wait from now to the span's end that the end timer is aimed by, in ms, or null when none is (a test's). */
 export const endTimerMs = (): number | null => endAimedMs;
 
 function reach(): void {
   const to = listener;
+  // silent before the pause: nothing more is given to the phone's output at any volume
+  if (element && element.volume !== 0) element.volume = 0;
   halt();
   to?.reached();
 }
@@ -195,7 +241,9 @@ function tell(): void {
     pendingStart = null;
   }
   // at the span's end the verse after it is never told (it may start on the very second the span ends)
-  if (soundAt() >= endSecond - END_SLACK) return reach();
+  const at = soundAt();
+  fade(at);
+  if (at >= endSecond - END_SLACK) return reach();
   const n = verseAt(timings, now);
   if (n !== null && n !== lastVerse) {
     lastVerse = n;
@@ -227,7 +275,10 @@ function make(): HTMLAudioElement {
     holdStill();
     aimEnd();
   });
-  audio.addEventListener('ratechange', () => aimEnd());
+  audio.addEventListener('ratechange', () => {
+    readings = []; // made at the speed before
+    aimEnd();
+  });
   audio.addEventListener('loadedmetadata', () => {
     if (pendingStart !== null && Math.abs(audio.currentTime - pendingStart) > END_SLACK) audio.currentTime = pendingStart;
   });
@@ -255,6 +306,7 @@ function play(): void {
   wantPlaying = true;
   const mine = ++playToken;
   el.playbackRate = rate;
+  if (el.volume !== 1) el.volume = 1; // a stop at a span's end left it faded to silence
   holdStill();
   clearPlayingWatch();
   playingWatch = setTimeout(() => {
@@ -330,6 +382,7 @@ export function stopRecording(): void {
 export function setRecordedRate(next: number): void {
   if (!(next > 0)) return;
   rate = next;
+  readings = []; // made at the speed before
   if (element) {
     element.playbackRate = rate;
     aimEnd();
