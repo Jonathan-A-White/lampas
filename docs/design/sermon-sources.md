@@ -1,7 +1,7 @@
 # One Sermons list: every sermon source in one place, clear at 100 and more
 
 A design (mw-qtu3zvz.93, Fable at xhigh, the Governor's ask of 2026-11-12) for the one list that switches every sermon source the Sermons door draws on. Design only: no product code changes here.
-It is story A of three: this document, then the Logos ownership rule (mw-qtu3zvz.94), then the build (mw-qtu3zvz.92), which builds what section 14 states. The mockups are ASCII at phone width (390 px, 42 characters).
+It is story A of three: this document, then the Logos ownership rule (mw-qtu3zvz.94), then the build (mw-qtu3zvz.92), which builds what section 14 states. The mockups are ASCII, 38 characters wide: a 390 px phone shows GitHub's code box about 38 characters wide, so each is read whole without dragging the box sideways. A mockup writes the Back of a page as '‹ Study' to fit; the page's Back reads '‹ Study resources'. In a row, brackets mark the chosen step: 'Off [On]' is On, '[Off] On' is Off.
 Everything in this file is **PROVISIONAL** until the Governor confirms it; the choices that are most his are gathered in 'For the Governor' at the end.
 
 His words that rule it (Postern, 2026-11-12, direct:ad77adaa...3b561b and direct:25815aac...ff4f5f): "Are these two screens redundant? I like the look and feel of the first, but don't find it useful to be able to just open the book of
@@ -35,12 +35,12 @@ where the sermons are found, not where books are opened; a book that is more tha
 
 ## In one screen
 
-- **One list.** Settings > Study resources > Sermons has one row, **Sermon sources**, with its count ('17 of 120 on'). It opens a page of its own in the look of Library > Sermons: a search field, All on / All off, a count, and one row for each source with **Off | On**.
+- **One list.** Settings > Study resources > Sermons has one row, **Sermon sources**, with its count ('17 of 120 on'). It opens a page of its own in the look of Library > Sermons: All on / All off, a search field, a count, and one row for each source with **Off | On**.
 - **One row for each source.** Today Greg Laurie is two rows on two screens (his list in Settings, his archive in the Library). In the one list he is one row. The sources bundled today go from 87 rows on two screens to 73 on one.
 - **Two groups, named by what On gives.** *Listed by passage*: each sermon is listed at its verse, and the count on the Sermons door is these. *Logos books, at the verse*: Logos opens the book at the verse, and Lampas cannot say which sermons it holds there.
 - **A row says three things:** the source's name, how many sermons and where they open ('3,467 sermons · on the web'), and Off | On. No Pin anywhere.
 - **What is on comes first** in each group, then the rest by name. Nothing moves under his thumb.
-- **Search finds a source by any word** of its name, its preacher, its series or a book under it. With a search typed, the two buttons act only on what is shown and say so: 'These 10 off'.
+- **Search finds a source by any word** of its name, its series or a book under it, and a preacher where a name holds it (no file names a preacher yet; section 17). With a search typed, the two buttons act only on what is shown and say so: 'These 10 off'.
 - **A slip is undone in one tap.** After All on or All off a line says what changed, with **Undo**.
 - **The Library loses its Sermons row.** A book that is only sermons is in this list and nowhere else. A book that is more than sermons (Augustine's Homilies on John, which is on the Commentaries page) stays in the Library and is also in this list, as one book with one switch.
 
@@ -61,41 +61,41 @@ Where each thing lives after the build:
 | | Settings > Study resources > Sermons | Library > Sermons |
 | --- | --- | --- |
 | Holds | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`) | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
-| Looks like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page: help line, All on / All off, 'Search 78 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
+| Looks like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page: header with its count at the right, help line, All on / All off, 'Search 71 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
 | Kept as | the setting `sermons.<id>` | the shelf row of the book (`db.library`, Off / On / Pinned) |
 | On gives | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at every verse, not counted; and a row behind In another book… at the verse, the Pinned ones first |
 
 What is wrong with it, beyond there being two:
 
-1. **One source, two rows.** Seven of the nine lists are made from 14 of the 78 books (Greg Laurie, J. D. Greear and Skip Heitzig one book each, My Sermon Notes two, Wesley four, Whitefield one, Moody four). Each is switched twice, on two screens, by two names ('Greg Laurie's sermons (his Logos archive)' and 'Greg Laurie Sermon Archive').
+1. **One source, two rows.** Seven of the nine lists are made from 14 of the 71 books (Greg Laurie, J. D. Greear and Skip Heitzig one book each, My Sermon Notes two, Wesley four, Whitefield one, Moody four). Each is switched twice, on two screens, by two names: Settings > Study resources > Sermons shows 'Greg Laurie's sermons' with the line 'Listed by passage; opens in Logos.', and Library > Sermons shows 'Greg Laurie Sermon Archive'. (The longer names, such as 'Greg Laurie's sermons (Logos archive)' and 'Matthew Henry's sermons (Internet Archive scans)', are in `public/sermons/index.json`; Settings drops a bracket at the end of a name that ends '(Logos archive)' or '(Logos library)' or is over 40 characters, `src/settings/definitions/sermons.ts`, so it shows 'Spurgeon's sermons (CCEL)' whole.)
 2. **The better screen holds the weaker sources.** The page with the search and the count is the one for books Lampas cannot look inside; the lists, whose sermons it can name, are plain rows under three other sections.
 3. **Pin does nothing he wants.** It puts a sermon book among the other books at a verse, "disassociated with the sermon mapper".
-4. **Neither says why the door's number is what it is.** With 78 books On and two lists On, the door can read 'Sermons · 3': nothing says that only the lists are counted.
-5. **Everyone is shown his books.** The 78 are the Governor's own; another reader sees all of them, and the seven Logos lists too (mw-qtu3zvz.94 mends this).
+4. **Neither says why the door's number is what it is.** With 71 books On and two lists On, the door can read 'Sermons · 3': nothing says that only the lists are counted.
+5. **Everyone is shown his books.** The 71 are the Governor's own; another reader sees all of them, and the seven Logos lists too (mw-qtu3zvz.94 mends this).
 
 ## 2. Where the list lives
 
 Under **Settings > Study resources > Sermons**, as a page of its own behind one row. The Sermons section of the Study resources page becomes two rows and never grows again:
 
 ```text
-┌──────────────────────────────────────────┐
-│ ‹ Settings        Study resources        │
-├──────────────────────────────────────────┤
-│ ...                                      │
-│ (Study resources, Maps and Themes,       │
-│  as they are today)                      │
-│                                          │
-│ Sermons                                  │
-│ Which sermon lists the Sermons door      │
-│ draws on.                                │
-│──────────────────────────────────────────│
-│ Sermon sources           17 of 120 on  › │
-│──────────────────────────────────────────│
-│ Open web sermons in                      │
-│ Where a text sermon opens. Firefox works │
-│ on Android only.                         │
-│ [This browser]   Firefox                 │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────┐
+│ ‹ Settings  Study resources        │
+├────────────────────────────────────┤
+│ ...                                │
+│ (Study resources, Maps and Themes, │
+│  as they are today)                │
+│                                    │
+│ Sermons                            │
+│ Which sermon lists the Sermons     │
+│ door draws on.                     │
+│────────────────────────────────────│
+│ Sermon sources     17 of 120 on  › │
+│────────────────────────────────────│
+│ Open web sermons in                │
+│ Where a text sermon opens.         │
+│ Firefox works on Android only.     │
+│ [This browser]   Firefox           │
+└────────────────────────────────────┘
 ```
 
 - The row **Sermon sources** is a door in the shape of a Library home row ('Lexicons  19 on · 2 pinned ›'): its name, the count, a chevron, 48 px high. It opens the page **Sermon sources**, whose Back is the Study resources page at this row.
@@ -105,35 +105,36 @@ Under **Settings > Study resources > Sermons**, as a page of its own behind one 
 
 ## 3. The list at 120 sources
 
-The top of the list as it opens. The 120 here are 23 lists (14 on the web, 9 from Logos books) and 97 Logos books; 17 are on. The names and numbers of the first rows are today's real sources.
+The top of the list as it opens. The 120 here are 23 lists (14 on the web, 9 from Logos books) and 97 Logos books; 17 are on. The numbers of the first rows are today's real sources; their names are the ones section 5 gives (Settings shows 'Spurgeon's sermons (CCEL)' today). Brackets mark the chosen step ('Off [On]' is On). This mockup shows the first group, *Listed by passage*; the second group, *Logos books, at the verse*, is drawn in the next one, after 'Scrolled past the first group'.
 
 ```text
-┌──────────────────────────────────────────┐
-│ ‹ Study resources  Sermon sources  17 on │
-├──────────────────────────────────────────┤
-│ The Sermons door at a verse draws on the │
-│ sources that are on.                     │
-│ ┌──────────────────────────────────────┐ │
-│ │ Search 120 sermon sources            │ │
-│ └──────────────────────────────────────┘ │
-│ 17 of 120 on                             │
-│ [ All on ]  [ All off ]                  │
-│                                          │
-│ Listed by passage             6 of 23 on │
-│ Each sermon is listed at its verse. The  │
-│ count on the Sermons door is these.      │
-│──────────────────────────────────────────│
-│ Greg Laurie's sermons           Off [On] │
-│ 1,091 sermons · in Logos                 │
-│──────────────────────────────────────────│
-│ Matthew Henry's sermons         Off [On] │
-│ 45 sermons · on the web                  │
-│──────────────────────────────────────────│
-│ Spurgeon's sermons              Off [On] │
-│ 3,467 sermons · on the web               │
-│──────────────────────────────────────────│
-│ ...                                      │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────┐
+│ ‹ Study  Sermon sources      17 on │
+├────────────────────────────────────┤
+│ The Sermons door at a verse draws  │
+│ on the sources that are on.        │
+│ [ All on ]  [ All off ]            │
+│ ┌────────────────────────────────┐ │
+│ │ Search 120 sermon sources      │ │
+│ └────────────────────────────────┘ │
+│ 17 of 120 on                       │
+│                                    │
+│ Listed by passage       6 of 23 on │
+│ Each sermon is listed at its       │
+│ verse. The count on the Sermons    │
+│ door is these.                     │
+│────────────────────────────────────│
+│ Greg Laurie's sermons     Off [On] │
+│ 1,091 sermons · in Logos           │
+│────────────────────────────────────│
+│ Matthew Henry's sermons   Off [On] │
+│ 45 sermons · on the web            │
+│────────────────────────────────────│
+│ Spurgeon's sermons        Off [On] │
+│ 3,467 sermons · on the web         │
+│────────────────────────────────────│
+│ ...                                │
+└────────────────────────────────────┘
 ```
 
 Top to bottom:
@@ -142,37 +143,41 @@ Top to bottom:
 | --- | --- | --- |
 | Header | '‹ Study resources', the title **Sermon sources**, and the count of those on ('17 on', 'none on') where the Library's page has it | no |
 | Help line | one sentence, what the list is for | yes |
+| All on / All off | two 48 px buttons under the help line and above the search field, as on the Library's page (section 7) | yes |
 | Search field | 'Search 120 sermon sources' (the number is the sources listed); 48 px; never focused by itself, so the keyboard does not open over the list | no: it stays at the top of the list |
 | Status line | '17 of 120 on'; with a search, '· 2 shown' is added | no: with the field |
-| All on / All off | two 48 px buttons under the status line (section 7) | yes |
 | A group | its heading with its own count ('6 of 23 on'), one line saying what On gives, then its rows | yes |
 | A row | section 5 | yes |
+
+The parts run in the Library's order (header, help line, buttons, search field, count, rows). Where this page differs from Library > Sermons (`src/library/KindPage.tsx`): its help line is one sentence, not a paragraph about Pin; its field says 'Search 120 sermon sources', the Library's 'Search 71 sermon archives'; while a search is typed its buttons read 'These 2 on' and 'These 2 off', the Library's 'All shown on' and 'All shown off'; its rows are in two headed groups, the Library's in one flat list; its rows are Off | On, the Library's Off | On | Pin; and the line with **Undo** (section 7) is new.
 
 Scrolled past the first group, the second begins:
 
 ```text
-│ Spurgeon's My Sermon Notes      [Off] On │
-│ 264 sermons · in Logos                   │
-│                                          │
-│ Logos books, at the verse    11 of 97 on │
-│ Logos opens the book at the verse you    │
-│ are reading. Lampas cannot say which     │
-│ sermons it holds there.                  │
-│──────────────────────────────────────────│
-│ The Beatitudes                  Off [On] │
-│──────────────────────────────────────────│
-│ Fresh Sermons                   Off [On] │
-│──────────────────────────────────────────│
-│ Princeton Sermons               Off [On] │
-│──────────────────────────────────────────│
-│ ...                                      │
-│──────────────────────────────────────────│
-│ The World's Great Sermons,      [Off] On │
-│ Volume 1: Basil to Calvin                │
-│──────────────────────────────────────────│
-│ The World's Great Sermons,      [Off] On │
-│ Volume 2: Hooker to South                │
-└──────────────────────────────────────────┘
+│ Spurgeon's My Sermon      [Off] On │
+│ Notes                              │
+│ 264 sermons · in Logos             │
+│                                    │
+│ Logos books, at the verse          │
+│                        11 of 97 on │
+│ Logos opens the book at the verse  │
+│ you are reading. Lampas cannot say │
+│ which sermons it holds there.      │
+│────────────────────────────────────│
+│ The Beatitudes            Off [On] │
+│────────────────────────────────────│
+│ Fresh Sermons             Off [On] │
+│────────────────────────────────────│
+│ Princeton Sermons         Off [On] │
+│────────────────────────────────────│
+│ ...                                │
+│────────────────────────────────────│
+│ The World's Great         [Off] On │
+│ Sermons, Volume 1: Basil to Calvin │
+│────────────────────────────────────│
+│ The World's Great         [Off] On │
+│ Sermons, Volume 2: Hooker to South │
+└────────────────────────────────────┘
 ```
 
 ## 4. What a source is, and the two groups
@@ -196,18 +201,19 @@ A source is one thing he can turn on. There are three sorts, and the list names 
 Three things, always in the same places, so 120 rows read as one column of names and one column of switches:
 
 ```text
-│ Spurgeon's sermons              Off [On] │
-│ 3,467 sermons · on the web               │
+│ Spurgeon's sermons        Off [On] │
+│ 3,467 sermons · on the web         │
 ```
 
 | | A list on the web | A list from Logos books | A Logos book |
 | --- | --- | --- | --- |
 | Line 1, the name (16 px, medium) | 'Spurgeon's sermons' | 'Greg Laurie's sermons' | the book's short name: 'Princeton Sermons' |
-| Line 2 (14 px, muted) | '3,467 sermons · on the web' | '1,091 sermons · in Logos' | its series and its preacher, where the catalogue knows them and the name does not already say them: 'Butler's Sermon Starters' under 'Sermon Starters, Volume 1'; none otherwise |
+| Line 2 (14 px, muted) | '3,467 sermons · on the web' | '1,091 sermons · in Logos' | its series, where the catalogue knows it (`series`) and the name does not already say it: 'Butler's Sermon Starters' under 'Sermon Starters, Volume 1'; none otherwise. A preacher joins it once the catalogue names preachers (section 17) |
 | Line 3, only where it applies (14 px, accent) | | 'Free with Logos' (mw-qtu3zvz.94's list) | 'Free with Logos'; 'Also in your Library: Commentaries ›' (section 11) |
 | Control | Off \| On | Off \| On | Off \| On |
 
-- **The name** is the source's name without a bracket at its end: 'Spurgeon's sermons', not 'Spurgeon's sermons (CCEL)'; line 2 says where it opens. 'his Logos archive' goes: it was written about the Governor, and another owner would read it as someone else's.
+- **The name** is the source's name without a bracket at its end: 'Spurgeon's sermons', not 'Spurgeon's sermons (CCEL)' as Settings shows it today; line 2 says where it opens.
+- **'his Logos archive'** was the index file's name for the three archives of the Governor's Logos (`public/sermons/index.json`) until mw-qtu3zvz.108 took 'his' out, now '(Logos archive)'; Settings never showed that name (it drops the bracket), and the page drops it too: it was written about the Governor, and another owner would read it as someone else's.
 - **Two lines at most for a name.** A book's name is the catalogue's short name; a title that would run past two lines ('Sermons on the Beatitudes, with Others Mostly Preached before the University of Oxford; To Which Is Added…', 169 characters) is cut with an ellipsis (25 of the 78 short names are longer than two lines today, so the rules should give those a shorter one). The whole title is what TalkBack reads and what the search looks in. The type is never made smaller to fit.
 - **How many sermons** is the index's own number of sermons listed for the source (`rows`). A source that does not say has no number: 'on the web'.
 - **The control** is the Library's segmented control with two steps (as Devotionals has it): each step 44 px, the chosen one filled, a radio group named by the source, so a screen reader says the source's name and then 'On, radio button, 2 of 2'. It sits at the right edge, under the thumb. **No Pin**: there is nothing left for it to mean.
@@ -223,33 +229,33 @@ Three things, always in the same places, so 120 rows read as one column of names
 ## 7. Search, and All on / All off
 
 ```text
-┌──────────────────────────────────────────┐
-│ ‹ Study resources  Sermon sources  17 on │
-├──────────────────────────────────────────┤
-│ ┌──────────────────────────────────────┐ │
-│ │ wesley                               │ │
-│ └──────────────────────────────────────┘ │
-│ 17 of 120 on · 2 shown                   │
-│ [ These 2 on ]  [ These 2 off ]          │
-│                                          │
-│ Listed by passage                        │
-│──────────────────────────────────────────│
-│ John Wesley's sermons           [Off] On │
-│ 137 sermons · in Logos                   │
-│                                          │
-│ Logos books, at the verse                │
-│──────────────────────────────────────────│
-│ Sermons by the Late Rev.        Off [On] │
-│ Charles Wesley                           │
-│                                          │
-│                                          │
-│ (the keyboard)                           │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────┐
+│ ‹ Study  Sermon sources      17 on │
+├────────────────────────────────────┤
+│ [ These 2 on ]  [ These 2 off ]    │
+│ ┌────────────────────────────────┐ │
+│ │ wesley                         │ │
+│ └────────────────────────────────┘ │
+│ 17 of 120 on · 2 shown             │
+│                                    │
+│ Listed by passage                  │
+│────────────────────────────────────│
+│ John Wesley's sermons     [Off] On │
+│ 137 sermons · in Logos             │
+│                                    │
+│ Logos books, at the verse          │
+│────────────────────────────────────│
+│ Sermons by the Late Rev.  Off [On] │
+│ Charles Wesley                     │
+│                                    │
+│                                    │
+│ (the keyboard)                     │
+└────────────────────────────────────┘
 ```
 
 **Search.**
 
-- It looks in a source's name, its full title, its preacher, its series, the titles of the books under a list ('several occasions' finds John Wesley's sermons), and the words 'web', 'Logos' and 'outlines' for what it is. It forgives a slip at the start of a name, as the Library's lists do (`src/ui/listFilter.ts`).
+- It looks in a source's name (`name` in `public/sermons/index.json`; a Logos book's `short` in `src/resources/catalogue/sermons.json`), its full title (`title`), its series (`series`; 35 of the 71 entries have one), the titles of the books under a list (`LOGOS_RESOURCES` in `src/sermons/sources/bundled.ts`, each book's `title` in the catalogue: 'several occasions' finds John Wesley's sermons), and the words 'web', 'Logos' and 'outlines' for what it is (the row's sort, which the page knows). **A preacher is found only where a name holds it** ('Wesley' is in the name of his list and of 'Sermons by the Late Rev. Charles Wesley'): neither file has a field for a preacher, so one that no name or title holds finds nothing until the catalogue names preachers (section 17). It forgives a slip at the start of a name, as the Library's lists do (`src/ui/listFilter.ts`).
 - It filters as he types. The groups and their order stay; a group with no match is not drawn; the headings drop their counts while a search is typed, and the status line says how many are shown. Typing brings the list back to its top.
 - **No match:** 'No sermon source matches', and under it the door **Ask for a preacher** that the Sermons sheet has at its foot (greyed, 'Needs a licence', without one). The native ✕ of the field clears it.
 - **Under eight sources there is no field** (the vault's rule gives the search to a list longer than about seven): two rows need no search.
@@ -257,37 +263,38 @@ Three things, always in the same places, so 120 rows read as one column of names
 **All on / All off.**
 
 - With no search they are **All on** and **All off** and act on every source listed.
-- **With a search typed they act only on what is shown, and their words say so:** 'These 2 on', 'These 2 off'. A button never changes a row he cannot see. This is the one tool for a series, a preacher or a kind: type 'great sermons', tap 'These 10 off'.
+- **With a search typed they act only on what is shown, and their words say so:** 'These 2 on', 'These 2 off'. A button never changes a row he cannot see. This is the one tool for a series, a preacher or a kind: type 'great sermons', tap 'These 10 off'. A preacher works the same way where a name holds it.
 - **Undo.** After either, one line stands under the buttons, 'Turned off 17.' with **Undo**, which puts back exactly what was there. It stays until his next tap on a switch or until he leaves. At 120 sources a slip on All on would otherwise cost him his whole choice, with no way to see what it was.
 - After All off, with no search:
 
 ```text
-┌──────────────────────────────────────────┐
-│ ‹ Study resources Sermon sources none on │
-├──────────────────────────────────────────┤
-│ The Sermons door at a verse draws on the │
-│ sources that are on.                     │
-│ ┌──────────────────────────────────────┐ │
-│ │ Search 120 sermon sources            │ │
-│ └──────────────────────────────────────┘ │
-│ none of 120 on                           │
-│ [ All on ]  [ All off ]                  │
-│ Turned off 17.                  [ Undo ] │
-│ No source is on, so no verse has a       │
-│ Sermons door.                            │
-│                                          │
-│ Listed by passage          none of 23 on │
-│ Each sermon is listed at its verse. The  │
-│ count on the Sermons door is these.      │
-│──────────────────────────────────────────│
-│ Greg Laurie's sermons           [Off] On │
-│ 1,091 sermons · in Logos                 │
-│──────────────────────────────────────────│
-│ Matthew Henry's sermons         [Off] On │
-│ 45 sermons · on the web                  │
-│──────────────────────────────────────────│
-│ ...                                      │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────┐
+│ ‹ Study  Sermon sources    none on │
+├────────────────────────────────────┤
+│ The Sermons door at a verse draws  │
+│ on the sources that are on.        │
+│ [ All on ]  [ All off ]            │
+│ Turned off 17.            [ Undo ] │
+│ No source is on, so no verse has a │
+│ Sermons door.                      │
+│ ┌────────────────────────────────┐ │
+│ │ Search 120 sermon sources      │ │
+│ └────────────────────────────────┘ │
+│ none of 120 on                     │
+│                                    │
+│ Listed by passage    none of 23 on │
+│ Each sermon is listed at its       │
+│ verse. The count on the Sermons    │
+│ door is these.                     │
+│────────────────────────────────────│
+│ Greg Laurie's sermons     [Off] On │
+│ 1,091 sermons · in Logos           │
+│────────────────────────────────────│
+│ Matthew Henry's sermons   [Off] On │
+│ 45 sermons · on the web            │
+│────────────────────────────────────│
+│ ...                                │
+└────────────────────────────────────┘
 ```
 
 The rows have not moved: the three that were on are still first, now Off, so he can see what he had.
@@ -316,7 +323,7 @@ A row is about 64 px (a name and one line), so 120 rows are some 7,700 px, ten s
 | --- | --- |
 | See what the door draws on | nothing: the count is in the header, and what is on leads each group |
 | Turn one source on | type three letters of it, tap On |
-| Turn a series, a preacher or the outlines off | type its name, tap 'These N off' |
+| Turn a series, a preacher (where a name holds it) or the outlines off | type its name, tap 'These N off' |
 | Start again from nothing, or from everything | All off, or All on; Undo if it was a slip |
 | Know why the door says 3 when 60 are on | the first group's line: the count on the door is these |
 | Find what is new or unknown to him | scroll one group: its rows are alike, two or three lines each, in A to Z order, the volumes of a series together |
@@ -339,28 +346,29 @@ The devices, in one place: one row per source (87 rows become 73 for the sources
 None owned, at 390 px:
 
 ```text
-┌──────────────────────────────────────────┐
-│ ‹ Study resources  Sermon sources   2 on │
-├──────────────────────────────────────────┤
-│ The Sermons door at a verse draws on the │
-│ sources that are on.                     │
-│ 2 of 2 on                                │
-│ [ All on ]  [ All off ]                  │
-│──────────────────────────────────────────│
-│ Matthew Henry's sermons         Off [On] │
-│ 45 sermons · on the web                  │
-│──────────────────────────────────────────│
-│ Spurgeon's sermons              Off [On] │
-│ 3,467 sermons · on the web               │
-│──────────────────────────────────────────│
-│                                          │
-│ ┌──────────────────────────────────────┐ │
-│ │ Sermon books in Logos? Import your   │ │
-│ │ Logos list, and the ones Lampas can  │ │
-│ │ open join this list.                 │ │
-│ │ [ Import ]                           │ │
-│ └──────────────────────────────────────┘ │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────┐
+│ ‹ Study  Sermon sources       2 on │
+├────────────────────────────────────┤
+│ The Sermons door at a verse draws  │
+│ on the sources that are on.        │
+│ [ All on ]  [ All off ]            │
+│ 2 of 2 on                          │
+│────────────────────────────────────│
+│ Matthew Henry's sermons   Off [On] │
+│ 45 sermons · on the web            │
+│────────────────────────────────────│
+│ Spurgeon's sermons        Off [On] │
+│ 3,467 sermons · on the web         │
+│────────────────────────────────────│
+│                                    │
+│ ┌────────────────────────────────┐ │
+│ │ Sermon books in Logos? Import  │ │
+│ │ your Logos list, and the ones  │ │
+│ │ Lampas can open join this      │ │
+│ │ list.                          │ │
+│ │ [ Import ]                     │ │
+│ └────────────────────────────────┘ │
+└────────────────────────────────────┘
 ```
 
 - The card is drawn only while Logos is On. It opens the Library's Import (`#/library?import`), the one way Lampas learns what he owns: his words, "(in the import)". A sermon book cannot be ticked by hand, because an unowned one is not listed.
@@ -384,11 +392,12 @@ None owned, at 390 px:
 - In the list it is a row of the second group, with a third line that says where else it lives and goes there:
 
 ```text
-│ Homilies on the Gospel          Off [On] │
-│ according to St. John, and His…          │
-│ A Library of Fathers of the Holy         │
-│ Catholic Church                          │
-│ Also in your Library: Commentaries ›     │
+│ Homilies on the Gospel    Off [On] │
+│ according to St. John, and His…    │
+│ A Library of Fathers of the Holy   │
+│ Catholic Church                    │
+│ Also in your Library:              │
+│ Commentaries ›                     │
 ```
 
 - **One book, one switch.** The list shows the shelf's own state for it (Pinned reads as On) and writes it. Off here is Off in the Library; that third line is why he will expect it. Two switches for one book would let it be On in one place and Off in the other, and then neither screen could say whether Lampas uses it.
@@ -415,7 +424,7 @@ Little changes, and one thing must:
 ## 14. The end state mw-qtu3zvz.92 must reach
 
 1. **One list.** Settings > Study resources > Sermons holds the row **Sermon sources** with 'N of M on', and under it Open web sermons in. No source has a row on the Study resources page.
-2. **The page, in the Library > Sermons look:** the header with the count of those on; the help line; a search field **'Search N sermon sources'** (from eight sources up); a status line with how many are on; **All on / All off**; the list. It keeps its own scroll place, and Back returns to the Study resources page.
+2. **The page, in the Library > Sermons look:** the header with the count of those on; the help line; **All on / All off**; a search field **'Search N sermon sources'** (from eight sources up); a status line with how many are on; the list (the Library's order). It keeps its own scroll place, and Back returns to the Study resources page.
 3. **Every source once:** the passage lists (bundled and from the service) and the Logos sermon books he owns, a list from Logos books standing for those books. Each row **Off | On**; no Pin on the page.
 4. **Two groups** with their headings, their one line and their counts; a group with no row not drawn; one group alone has no heading.
 5. **A row** says its name in two lines at most, then what section 5 gives for its sort.
@@ -474,7 +483,7 @@ Each is left out to keep the build to what was asked; each fits the page as desi
 
 - **A series as one row.** Thirty-four of his 64 books are volumes of six series (The World's Great Sermons 10, Standard Sermon Starters 8, Butler's Sermon Starters 5, Chrysostom in the Early Church Fathers 5, the Sermon Outline Series 3, Edwards on the Matthean Parables 3). A row for the series ('The World's Great Sermons · 10 volumes') with its volumes behind it would bring 64 rows to 36. It needs a third state ('3 of 10 on') and a way to open the row. Until then the volumes stand together by name, and a search with 'These 10 off' does the same work in two steps.
 - **New.** A source the service adds arrives Off, silently, somewhere in its group. A 'New' mark on its row until the page is next closed, and '· 1 new' on the Study resources row, would let him find it.
-- **The preacher of every book.** The catalogue's 78 sermon entries name no author (his Logos list has no author column), so a row cannot say who preached 'Twelve Select Sermons' and a search for 'Broadus' finds nothing. The rules can name them, by hand, once.
+- **The preacher of every book.** The catalogue's 71 sermon entries name no author (his Logos list has no author column), so a row cannot say who preached 'The Beatitudes' (a book with a row of its own, `LLS:BEATITUDES`) and a search for a preacher that no title holds finds nothing. The rules can name them, by hand, once; search and line 2 of a row (sections 5 and 7) then use them.
 - **In Logos on the sheet, at 60 books.** Every book that is On is a row there at every verse. Folding the group to a few rows and 'N more', as In another book… folds its groups, is a design for the sheet.
 - **The same two for the Library's pages:** buttons that act on what is shown, and Undo.
 

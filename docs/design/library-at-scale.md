@@ -2,7 +2,7 @@
 
 A design (mw-5r3p30.709, Fable at xhigh, the Governor's ask of 2026-10-21) for every place in Lampas that can expand: what is already known
 (his Logos library, 4,795 books, about 110 of which Lampas can use now: about 200 with the devotionals and Bibles it already lists) and what is unknown (the books and asks of other readers). Design only:
-no product code changes here. The mockups are ASCII below and, as a page that opens on a phone, `docs/design/library-at-scale.html`.
+no product code changes here. The mockups are ASCII below and, as a page that opens on a phone, `docs/design/library-at-scale.html`. The ASCII mockups and code blocks below are up to 44 characters wide and more (the code, up to 155), wider than a 390 px phone's code box on GitHub: read them in a box that scrolls sideways, or read the phone page `docs/design/library-at-scale.html`.
 Everything in this file is **PROVISIONAL** unless the section 'For the Governor' names it as his choice.
 
 His words that rule it (Postern, mw-fnvjof.5's card, 2026-10-21): "if someone could add ~1k books, the setting and import and asking for
