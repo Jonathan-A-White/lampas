@@ -57,7 +57,7 @@ export function LinkActions({
   };
   return (
     <div data-link-actions className={`${className ?? ''} ${state === 'by-hand' ? 'col-span-full w-full' : ''}`}>
-      <div className="flex flex-wrap items-center gap-x-[calc(0.25rem+var(--scroll-more-extra,0px))]">
+      <div className="flex flex-wrap items-center gap-x-1">
         <button
           type="button"
           onClick={() => {

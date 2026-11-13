@@ -137,7 +137,7 @@ const CELL_REST = 'border-line text-fg active:bg-line';
 /** The tools line pinned above the foot: one row that scrolls sideways, its doors (and Copy and Share's own row) never squeezed; while the text to copy by hand shows it wraps,
  * the field taking a line of its own (mw-fnvjof.17.32). */
 const TOOLS_ROW =
-  'flex items-center gap-x-[calc(0.25rem+var(--scroll-more-extra,0px))] overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-px-6 [scrollbar-width:none] [&>*]:shrink-0 [&_[data-link-actions]>div]:shrink-0 ' +
+  'flex items-center gap-x-[calc(0.25rem+var(--scroll-more-extra,0px))] overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-px-6 [scrollbar-width:none] [&>*]:shrink-0 [&_[data-link-actions]>div]:shrink-0 [&_[data-link-actions]>div]:gap-x-[calc(0.25rem+var(--scroll-more-extra,0px))] ' +
   'has-[[data-link-actions]>:is(textarea,input)]:flex-wrap has-[[data-link-actions]>:is(textarea,input)]:overflow-visible';
 
 /** The Verse view's tools line takes one tap per two settle moments (mw-5r3p30.1105): a door's tap changes the line (Memorize grows into 'Memorizing · English' and 'Rehearse' appears, a sheet comes up),
