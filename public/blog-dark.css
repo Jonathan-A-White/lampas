@@ -63,6 +63,13 @@
     color: #9fb0ff;
   }
 
+  /* The paywall CTA (.gh-post-upgrade-cta, mw-fnvjof.17.100) is drawn by Ghost inside the post's content: its box is the site's #1329d4 by inline style and its words white, which
+     is 9:1 and needs no change. But the rule above reaches its "Sign in" link (a link in .gh-content) and set it light blue on that blue, 4.4:1, so the link is white again, as
+     Ghost's own sheet has it. The button (a.gh-btn) keeps its inline blue words on its white. */
+  html:root .gh-content .gh-post-upgrade-cta a:not(.gh-btn) {
+    color: #ffffff;
+  }
+
   /* Quotes and code */
   html:root blockquote:not([class]) {
     border-left-color: #9fb0ff;
@@ -109,11 +116,24 @@
   /* The comments widget picks its own dark from the colour of the text around it (comments-ui, data-color-scheme="auto"); its dark theme leaves the Sign in link
      in the blog's accent (a dark blue, 2:1 on this page) inline where no stylesheet reaches. So its text is set dark here, which has it draw its light theme (dark words,
      the accent button with white words), and the iframe is then turned into a dark one with one filter: light becomes dark, the accent a light blue, the button's white
-     words dark, 4.5:1 or more for every word but Ghost's own 40% "Already a member?". */
+     words dark. Ghost's own 40% "Already a member?" would be 3.76:1 under a plain invert (the tint is mixed with the page's dark AFTER the filter), so the iframe takes an opaque
+     backdrop of its own (#d1d1d1) inside the filter, which comes out as the page's #15171a, and the filter ends with contrast(1.3): the tint is mixed first and lifted by the
+     contrast, 4.7:1, with the blue still a blue (tests/e2e/blog-dark.spec.ts holds the pixels).
+     NOT reachable from page CSS (mw-fnvjof.17.101): inside the Portal pop-ups (Subscribe, Sign in, account: a full-page white document, an inverted whole would flip the
+     site's logo) and the search popup's own white card (a filter over its iframe turns its dim scrim into a light veil); any photo in the comments iframe is inverted with
+     the rest of it, because no rule can pick one out. The paywall CTA (.gh-post-upgrade-cta) keeps Ghost's inline blue and white (9:1); only its Sign in link, which the links rule would have lightened, takes a rule. */
   html:root .gh-comments {
     color: #15171a;
   }
   html:root .gh-comments iframe {
+    background-color: #d1d1d1;
+    filter: invert(1) hue-rotate(180deg) contrast(1.3);
+  }
+
+  /* The Portal Subscribe pill: Ghost's accent #1329d4 is 2:1 on this page, so the pill takes the same treatment as the accent button above: the iframe (the pill alone) is
+     inverted and turned back to a light blue, its white words become dark. */
+  html:root iframe.gh-portal-triggerbtn-iframe,
+  html:root iframe[title="portal-trigger"] {
     filter: invert(1) hue-rotate(180deg);
   }
 
