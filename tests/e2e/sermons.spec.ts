@@ -234,7 +234,7 @@ test('with no Library import kept, an archive switched On is still not offered: 
   const sheet = page.getByRole('dialog', { name: 'Sermons for Genesis 19' });
   await expect(sheet).toBeVisible();
   await expect(sheet.locator('a[data-sermon-row]').first()).toBeVisible();
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(500); // a real-time wait: nothing must appear, so there is no condition to wait on
   await expect(sheet.getByText('Genesis 19:15')).toHaveCount(0);
   await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'My Sermon Notes' })).toHaveCount(0);
 });
