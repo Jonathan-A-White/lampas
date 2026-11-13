@@ -1,0 +1,653 @@
+ref	parsing	lemma	mark	confidence	note
+Mic.1:1#6	N-ASM	Μειχαίας	guess	0.40	guess: the model answered with no candidates
+Mic.1:1#8	T-GSM	ὁ		0.80	
+Mic.1:1#9	N-GSM	Μωρασθεί		0.80	
+Mic.1:1#12	N-GSM	Ἰωάθαμ		0.80	
+Mic.1:1#14	N-GSM	Ἀχάζ		0.80	
+Mic.1:1#18	N-GSM	Ἰούδας		0.80	
+Mic.1:1#20	R-GPN	ὅς, ἥ		0.80	
+Mic.1:1#26	N-GSF	Ἱερουσαλήμ		0.80	
+Mic.1:2#20	N-ASN	μαρτύριον		0.80	
+Mic.1:2#25	P-GSM	αὐτός		0.80	
+Mic.1:3#8	P-GSM	αὐτός		0.80	
+Mic.1:3#12	T-APN	ὁ		0.80	
+Mic.1:3#13	N-APN	ὕψος		0.80	
+Mic.1:4#3	T-NPN	ὁ		0.80	
+Mic.1:4#4	N-NPN	ὄρος		0.80	
+Mic.1:4#6	P-GSM	αὐτός		0.80	
+Mic.1:4#10	V-2FPI-3P	τήκω	guess	0.40	guess: the model answered with no candidates
+Mic.1:4#12	N-NSM	κηρός		0.80	
+Mic.1:4#18	N-NSN	ὕδωρ, ὕδατος		0.80	
+Mic.1:4#19	V-PPP-NSN	καταφέρω		0.80	
+Mic.1:5#3	N-GSM	Ἰακώβ		0.80	
+Mic.1:5#4	A-NPN	πᾶς	unsure	0.50	model: unsure
+Mic.1:5#5	D-NPN	οὗτος	unsure	0.50	model: unsure
+Mic.1:5#10	N-GSM	Ἰσραήλ		0.80	
+Mic.1:5#11	I-NSF	τίς		0.80	
+Mic.1:5#14	T-GSM	ὁ		0.80	
+Mic.1:5#15	N-GSM	Ἰακώβ		0.80	
+Mic.1:5#19	I-NSF	τίς		0.80	
+Mic.1:5#23	N-GSM	Ἰούδας		0.80	
+Mic.1:5#25	N-NSF	Ἱερουσαλήμ		0.80	
+Mic.1:6#2	V-FMI-1S	τίθημι	guess	0.40	guess: the model answered with no candidates
+Mic.1:6#5	N-ASN	ὀπωροφυλάκιον		0.80	
+Mic.1:6#9	N-ASF	φυτεία		0.80	
+Mic.1:6#12	V-FAI-1S	κατασπάω		0.80	
+Mic.1:6#14	N-ASN	χάος		0.80	
+Mic.1:6#19	T-APN	ὁ		0.80	
+Mic.1:6#20	N-APN	θεμέλιος		0.80	
+Mic.1:6#22	V-FAI-1S	ἀποκαλύπτω		0.80	
+Mic.1:7#2	A-APN	πᾶς		0.80	
+Mic.1:7#3	T-APN	ὁ		0.80	
+Mic.1:7#4	A-APN	γλυπτός		0.80	
+Mic.1:7#6	V-FAI-3P	κατακόπτω		0.80	
+Mic.1:7#8	A-APN	πᾶς		0.80	
+Mic.1:7#9	T-APN	ὁ		0.80	
+Mic.1:7#10	N-APN	μίσθωμα		0.80	
+Mic.1:7#12	V-FAI-3P	ἐμπίπρημι	guess	0.40	guess: the model answered with no candidates
+Mic.1:7#16	A-APN	πᾶς		0.80	
+Mic.1:7#17	T-APN	ὁ		0.80	
+Mic.1:7#18	N-APN	εἴδωλον		0.80	
+Mic.1:7#20	V-FMI-1S	τίθημι	guess	0.40	guess: the model answered with no candidates
+Mic.1:7#26	N-GSF	πορνεία		0.80	
+Mic.1:7#31	N-GSF	πορνεία		0.80	
+Mic.1:7#32	V-AAI-3S	συστρέφω	guess	0.40	guess: the model answered with no candidates
+Mic.1:8#2	D-GSN	οὗτος		0.80	
+Mic.1:8#3	V-FMI-3S	κόπτω	guess	0.40	guess: the model answered with no candidates
+Mic.1:8#7	A-NSF	ἀνυπόδετος	unsure	0.50	model: unsure
+Mic.1:8#9	A-NSF	γυμνός		0.80	
+Mic.1:8#10	V-FDI-3S	ποιέω		0.80	
+Mic.1:8#13	N-GPM	δράκων		0.80	
+Mic.1:8#15	N-ASN	πένθος		0.80	
+Mic.1:8#18	N-GPF	σειρήν	guess	0.40	guess: the model answered with no candidates
+Mic.1:9#9	N-GSM	Ἰούδας		0.80	
+Mic.1:9#17	N-GSF	Ἱερουσαλήμ		0.80	
+Mic.1:10#3	N-DSF	Γέθ	unsure	0.50	model: unsure
+Mic.1:10#5	V-PPM-2P	μεγαλύνω	unsure	0.50	model: unsure
+Mic.1:10#8	N-DSF	Ἀκείμ	unsure	0.50	model: unsure
+Mic.1:10#10	V-PAM-2P	ἀνοικοδομέω		0.80	
+Mic.1:10#13	N-ASM	καταγέλως	guess	0.40	guess: the model answered with no candidates
+Mic.1:10#15	V-AMM-2P	καταπάσσω	guess	0.40	guess: the model answered with no candidates
+Mic.1:10#16	N-ASM	καταγέλως	guess	0.40	guess: the model answered with no candidates
+Mic.1:11#9	N-ASF	Σενναάρ	unsure	0.50	model: unsure
+Mic.1:11#10	V-AMN	κόπτω		0.80	
+Mic.1:11#12	V-PMP-ASM	ἔχω		0.80	
+Mic.1:11#18	N-GSF	ὀδύνη		0.80	
+Mic.1:12#1	I-NSM	τίς		0.80	
+Mic.1:12#4	A-APN	ἀγαθός		0.80	
+Mic.1:12#5	V-PAP-DSF	κατοικέω		0.80	
+Mic.1:12#9	A-NPN	κακός		0.80	
+Mic.1:12#14	N-GSF	Ἱερουσαλήμ		0.80	
+Mic.1:13#1	N-NSM	ψόφος		0.80	
+Mic.1:13#4	V-PAP-GPM	ἱππεύω		0.80	
+Mic.1:13#6	N-ASF	Λαχείς	guess	0.40	guess: the model answered with no candidates
+Mic.1:13#7	N-NSM	ἀρχηγός		0.80	
+Mic.1:13#8	N-GSF	ἁμαρτία		0.80	
+Mic.1:13#13	N-GSF	Σειών		0.80	
+Mic.1:13#19	T-GSM	ὁ		0.80	
+Mic.1:13#20	N-GSM	Ἰσραήλ		0.80	
+Mic.1:14#2	D-ASN	οὗτος		0.80	
+Mic.1:14#4	V-PPP-APM	ἐξαποστέλλω		0.80	
+Mic.1:14#7	N-GSF	Γέθ	unsure	0.50	model: unsure
+Mic.1:14#11	A-ASN	κενός		0.80	
+Mic.1:14#15	T-GSM	ὁ		0.80	
+Mic.1:14#16	N-GSM	Ἰσραήλ		0.80	
+Mic.1:15#6	N-ASF	Λαχείς	guess	0.40	guess: the model answered with no candidates
+Mic.1:15#9	N-GSF	Ὀδολλάμ	unsure	0.50	model: unsure
+Mic.1:15#15	N-GSM	Ἰσραήλ		0.80	
+Mic.1:16#1	V-ADM-2S	ξυράω	unsure	0.50	model: unsure
+Mic.1:16#3	V-AAN	κείρω	unsure	0.50	model: unsure
+Mic.1:16#5	T-APN	ὁ		0.80	
+Mic.1:16#6	N-APN	τέκνον		0.80	
+Mic.1:16#7	T-APN	ὁ		0.80	
+Mic.1:16#8	A-APN	τρυφερός		0.80	
+Mic.1:16#10	V-AAM-2S	ἐμπλατύνω	guess	0.40	guess: the model answered with no candidates
+Mic.1:16#15	N-NSM	ἀετός		0.80	
+Mic.1:16#17	V-API-3P	αἰχμαλωτεύω		0.80	
+Mic.2:1#2	V-PNP-NPM	λογίζομαι		0.80	
+Mic.2:1#5	V-PNP-NPM	ἐργάζομαι		0.80	
+Mic.2:1#6	A-APN	κακός		0.80	
+Mic.2:1#10	P-GPM	αὐτός		0.80	
+Mic.2:1#15	V-IAI-3P	συντελέω		0.80	
+Mic.2:1#16	P-APN	αὐτός		0.80	
+Mic.2:1#25	P-GPM	αὐτός		0.80	
+Mic.2:2#2	V-IAI-3P	ἐπιθυμέω		0.80	
+Mic.2:2#5	V-IAI-3P	διαρπάζω		0.80	
+Mic.2:2#9	V-IAI-3P	καταδυναστεύω		0.80	
+Mic.2:2#11	V-IAI-3P	διαρπάζω		0.80	
+Mic.2:2#16	P-GSM	αὐτός		0.80	
+Mic.2:2#22	P-GSM	αὐτός		0.80	
+Mic.2:3#2	D-ASN	οὗτος		0.80	
+Mic.2:3#3	D-APN	ὅδε, ἥδε		0.80	
+Mic.2:3#13	A-APN	κακός		0.80	
+Mic.2:3#15	R-GPN	ὅς, ἥ		0.80	
+Mic.2:3#18	V-AAS-2P	αἴρω	guess	0.40	guess: the model answered with no candidates
+Mic.2:3#26	A-NPM	ὀρθός		0.80	
+Mic.2:4#5	V-FPI-3S	λαμβάνω	guess	0.40	guess: the model answered with no candidates
+Mic.2:4#15	N-DSF	ταλαιπωρία		0.80	
+Mic.2:4#20	V-API-3S	καταμετρέω		0.80	
+Mic.2:4#27	V-FAP-NSM	κωλύω		0.80	
+Mic.2:4#29	T-GSN	ὁ		0.80	
+Mic.2:4#30	V-AAN	ἀποστρέφω		0.80	
+Mic.2:5#2	D-ASN	οὗτος		0.80	
+Mic.2:5#7	N-ASN	σχοινίον		0.80	
+Mic.2:6#2	V-PAM-2P	κλαίω		0.80	
+Mic.2:6#4	CONJ-N	μηδέ		0.80	
+Mic.2:6#5	V-PAM-3P	δακρύω		0.80	
+Mic.2:6#7	D-DPN	οὗτος		0.80	
+Mic.2:6#10	V-FDI-3S	ἀπωθέω		0.80	
+Mic.2:6#11	N-APN	ὄνειδος		0.80	
+Mic.2:7#3	N-NSM	οἶκος		0.80	
+Mic.2:7#4	N-GSM	Ἰακώβ		0.80	
+Mic.2:7#6	N-ASN	πνεῦμα		0.80	
+Mic.2:7#9	D-NPN	οὗτος		0.80	
+Mic.2:7#10	T-NPN	ὁ		0.80	
+Mic.2:7#11	N-NPN	ἐπιτήδευμα		0.80	
+Mic.2:7#12	P-GSM	αὐτός		0.80	
+Mic.2:7#17	P-GSM	αὐτός		0.80	
+Mic.2:7#21	P-GSM	αὐτός		0.80	
+Mic.2:7#23	A-NPM	ὀρθός		0.80	
+Mic.2:7#24	V-RNI-3P	πορεύομαι	guess	0.40	guess: the model answered with no candidates
+Mic.2:8#9	PREP	κατέναντι		0.80	
+Mic.2:8#12	P-GSM	αὐτός		0.80	
+Mic.2:8#15	P-GSM	αὐτός		0.80	
+Mic.2:8#16	V-AAI-3P	ἐκδέρω		0.80	
+Mic.2:8#17	T-GSN	ὁ		0.80	
+Mic.2:8#18	V-2AMN	ἀφαιρέω		0.80	
+Mic.2:9#4	V-2FPI-3P	ἀπορίπτω	guess	0.40	guess: the model answered with no candidates
+Mic.2:9#8	N-GSF	τρυφή		0.80	
+Mic.2:9#9	P-GPM	αὐτός		0.80	
+Mic.2:9#11	T-APN	ὁ		0.80	
+Mic.2:9#12	A-APN	πονηρός		0.80	
+Mic.2:9#13	N-APN	ἐπιτήδευμα		0.80	
+Mic.2:9#14	P-GPM	αὐτός		0.80	
+Mic.2:10#9	N-NSF	ἀνάπαυσις		0.80	
+Mic.2:10#12	V-2API-2P	διαφθείρω	guess	0.40	guess: the model chose outside the candidates
+Mic.2:11#1	V-API-2P	καταδιώκω		0.80	
+Mic.2:11#2	A-GSM	οὐδείς		0.80	
+Mic.2:11#3	V-PAP-GSM	διώκω		0.80	
+Mic.2:11#4	N-NSN	πνεῦμα		0.80	
+Mic.2:11#6	N-ASN	ψεῦδος		0.80	
+Mic.2:11#12	N-ASN	μέθυσμα		0.80	
+Mic.2:11#16	T-GSF	ὁ		0.80	
+Mic.2:11#17	N-GSM	σταγών		0.80	
+Mic.2:11#20	D-GSM	οὗτος		0.80	
+Mic.2:12#1	V-PPP-NSM	συνάγω		0.80	
+Mic.2:12#3	N-NSM	Ἰακώβ		0.80	
+Mic.2:12#5	A-DPM	πᾶς		0.80	
+Mic.2:12#7	V-FDI-1S	ἐκδέχομαι		0.80	
+Mic.2:12#10	T-GSM	ὁ		0.80	
+Mic.2:12#11	N-GSM	Ἰσραήλ		0.80	
+Mic.2:12#13	T-ASN	ὁ		0.80	
+Mic.2:12#14	P-ASN	αὐτός		0.80	
+Mic.2:12#15	V-FMI-1S	τίθημι	guess	0.40	guess: the model answered with no candidates
+Mic.2:12#18	P-GSM	αὐτός		0.80	
+Mic.2:12#20	N-APN	πρόβατον		0.80	
+Mic.2:12#24	N-ASN	ποίμνιον		0.80	
+Mic.2:12#26	A-DSN	μέσος		0.80	
+Mic.2:12#27	N-GSF	κοίτη		0.80	
+Mic.2:12#28	P-GPM	αὐτός		0.80	
+Mic.2:12#29	V-FDI-3P	ἐξάλλομαι	guess	0.40	guess: the model answered with no candidates
+Mic.2:13#3	N-GSF	διακοπή	guess	0.40	guess: the model chose outside the candidates
+Mic.2:13#6	P-GPM	αὐτός		0.80	
+Mic.2:13#7	V-AAI-3P	διακόπτω		0.80	
+Mic.2:13#9	V-2AAI-3P	διέρχομαι		0.80	
+Mic.2:13#12	V-2AAI-3P	ἐξέρχομαι		0.80	
+Mic.2:13#19	P-GPM	αὐτός		0.80	
+Mic.2:13#22	P-GPM	αὐτός		0.80	
+Mic.2:13#26	V-FDI-3S	ἡγέομαι		0.80	
+Mic.2:13#27	P-GPM	αὐτός		0.80	
+Mic.3:1#5	D-APN	οὗτος		0.80	
+Mic.3:1#9	N-GSM	Ἰακώβ		0.80	
+Mic.3:1#14	N-GSM	Ἰσραήλ		0.80	
+Mic.3:1#20	T-ASN	ὁ		0.80	
+Mic.3:1#21	N-ASN	κρίμα		0.80	
+Mic.3:2#2	T-APN	ὁ		0.80	
+Mic.3:2#3	A-APN	καλός		0.80	
+Mic.3:2#6	T-APN	ὁ		0.80	
+Mic.3:2#7	A-APN	πονηρός		0.80	
+Mic.3:2#9	T-APN	ὁ		0.80	
+Mic.3:2#10	N-APN	δέρμα		0.80	
+Mic.3:2#11	P-GPM	αὐτός		0.80	
+Mic.3:2#13	P-GPM	αὐτός		0.80	
+Mic.3:2#17	P-GPM	αὐτός		0.80	
+Mic.3:2#21	P-GPM	αὐτός		0.80	
+Mic.3:3#10	T-APN	ὁ		0.80	
+Mic.3:3#11	N-APN	δέρμα		0.80	
+Mic.3:3#12	P-GPM	αὐτός		0.80	
+Mic.3:3#14	P-GPM	αὐτός		0.80	
+Mic.3:3#15	V-AAI-3P	ἐκδέρω		0.80	
+Mic.3:3#17	T-APN	ὁ		0.80	
+Mic.3:3#18	N-APN	ὀστέον		0.80	
+Mic.3:3#19	P-GPM	αὐτός		0.80	
+Mic.3:3#20	V-AAI-3P	συνθλάω		0.80	
+Mic.3:3#26	N-ASM	λέβης	guess	0.40	guess: the model answered with no candidates
+Mic.3:3#29	N-APN	κρέας		0.80	
+Mic.3:4#2	V-FDI-3P	κράζω	guess	0.40	guess: the model answered with no candidates
+Mic.3:4#7	V-FDI-3S	εἰσακούω		0.80	
+Mic.3:4#8	P-GPM	αὐτός		0.80	
+Mic.3:4#11	T-ASN	ὁ		0.80	
+Mic.3:4#12	N-ASN	πρόσωπον		0.80	
+Mic.3:4#13	P-GSM	αὐτός		0.80	
+Mic.3:4#15	P-GPM	αὐτός		0.80	
+Mic.3:4#19	D-DSM	ἐκεῖνος		0.80	
+Mic.3:4#21	R-GPN	ὅς, ἥ		0.80	
+Mic.3:4#22	V-ADI-3P	πονηρεύομαι		0.80	
+Mic.3:4#26	P-GPM	αὐτός		0.80	
+Mic.3:5#1	D-APN	ὅδε, ἥδε		0.80	
+Mic.3:5#17	P-GPM	αὐτός		0.80	
+Mic.3:5#27	T-ASN	ὁ		0.80	
+Mic.3:5#28	N-ASN	στόμα		0.80	
+Mic.3:5#29	P-GPM	αὐτός		0.80	
+Mic.3:6#2	D-ASN	οὗτος		0.80	
+Mic.3:6#13	N-GSF	μαντεία		0.80	
+Mic.3:6#15	V-FMI-3S	δύνω	guess	0.40	guess: the model answered with no candidates
+Mic.3:7#2	V-FPI-3P	καταισχύνω		0.80	
+Mic.3:7#5	T-APN	ὁ		0.80	
+Mic.3:7#6	N-APN	ἐνύπνιον		0.80	
+Mic.3:7#8	V-FPI-3P	καταγελάω		0.80	
+Mic.3:7#14	P-GPM	αὐτός		0.80	
+Mic.3:7#22	P-GPM	αὐτός		0.80	
+Mic.3:8#4	V-FAI-1S	ἐμπίπλημι	guess	0.40	guess: the model answered with no candidates
+Mic.3:8#12	N-GSF	δυναστεία		0.80	
+Mic.3:8#15	T-DSM	ὁ		0.80	
+Mic.3:8#16	N-DSM	Ἰακώβ		0.80	
+Mic.3:8#17	N-APF	ἀσέβεια		0.80	
+Mic.3:8#18	P-GSM	αὐτός		0.80	
+Mic.3:8#20	T-DSM	ὁ		0.80	
+Mic.3:8#21	N-DSM	Ἰσραήλ		0.80	
+Mic.3:8#22	N-APF	ἁμαρτία		0.80	
+Mic.3:8#23	P-GSM	αὐτός		0.80	
+Mic.3:9#3	D-APN	οὗτος		0.80	
+Mic.3:9#7	N-GSM	Ἰακώβ		0.80	
+Mic.3:9#12	N-GSM	Ἰσραήλ		0.80	
+Mic.3:9#14	V-PNP-NPM	βδελύσσομαι		0.80	
+Mic.3:9#15	N-ASN	κρίμα		0.80	
+Mic.3:9#17	A-APN	πᾶς		0.80	
+Mic.3:9#18	T-APN	ὁ		0.80	
+Mic.3:9#19	A-APN	ὀρθός		0.80	
+Mic.3:10#3	N-ASF	Σειών		0.80	
+Mic.3:10#7	N-ASF	Ἱερουσαλήμ		0.80	
+Mic.3:11#5	N-GPN	δῶρον		0.80	
+Mic.3:11#6	V-IAI-3P	κρίνω		0.80	
+Mic.3:11#13	V-INI-3P	ἀποκρίνω	unsure	0.50	model: unsure
+Mic.3:11#25	V-INI-3P	ἐπαναπαύομαι	guess	0.40	guess: the model answered with no candidates
+Mic.3:11#37	A-NPN	κακός		0.80	
+Mic.3:12#2	D-ASN	οὗτος		0.80	
+Mic.3:12#5	N-NSF	Σειών		0.80	
+Mic.3:12#8	V-FPI-3S	ἀροτριάω		0.80	
+Mic.3:12#10	N-NSF	Ἱερουσαλήμ		0.80	
+Mic.3:12#12	N-NSN	ὀπωροφυλάκιον		0.80	
+Mic.3:12#15	T-NSN	ὁ		0.80	
+Mic.3:12#16	N-NSN	ὄρος		0.80	
+Mic.3:12#20	N-ASN	ἄλσος		0.80	
+Mic.4:1#4	A-GPF	ἔσχατος		0.80	
+Mic.4:1#7	A-NSN	ἐμφανής		0.80	
+Mic.4:1#8	T-NSN	ὁ		0.80	
+Mic.4:1#9	N-NSN	ὄρος		0.80	
+Mic.4:1#12	A-NSN	ἕτοιμος		0.80	
+Mic.4:1#26	P-ASN	αὐτός		0.80	
+Mic.4:2#3	N-NPN	ἔθνος		0.80	
+Mic.4:2#4	A-NPN	πολύς		0.80	
+Mic.4:2#8	V-2AAS-1P	ἀναβαίνω		0.80	
+Mic.4:2#10	T-ASN	ὁ		0.80	
+Mic.4:2#11	N-ASN	ὄρος		0.80	
+Mic.4:2#19	N-GSM	Ἰακώβ		0.80	
+Mic.4:2#25	P-GSM	αὐτός		0.80	
+Mic.4:2#31	P-GSM	αὐτός		0.80	
+Mic.4:2#34	N-GSF	Σειών		0.80	
+Mic.4:2#41	N-GSF	Ἱερουσαλήμ		0.80	
+Mic.4:3#4	A-ASN	μέσος		0.80	
+Mic.4:3#8	V-FAI-3S	ἐξελέγχω		0.80	
+Mic.4:3#9	N-APN	ἔθνος		0.80	
+Mic.4:3#10	A-APN	ἰσχυρός		0.80	
+Mic.4:3#13	ADV	μακρός		0.80	
+Mic.4:3#15	V-FAI-3P	κατακόπτω		0.80	
+Mic.4:3#18	P-GPM	αὐτός		0.80	
+Mic.4:3#20	N-APN	ἄροτρον		0.80	
+Mic.4:3#22	T-APN	ὁ		0.80	
+Mic.4:3#23	N-APN	δόρυ		0.80	
+Mic.4:3#24	P-GPM	αὐτός		0.80	
+Mic.4:3#26	N-APN	δρέπανον		0.80	
+Mic.4:3#30	V-AAS-3S	ἀνταίρω		0.80	
+Mic.4:3#31	N-NSN	ἔθνος		0.80	
+Mic.4:3#33	N-ASN	ἔθνος		0.80	
+Mic.4:4#2	V-FMI-3S	ἀναπαύω		0.80	
+Mic.4:4#6	P-GSM	αὐτός		0.80	
+Mic.4:4#11	P-GSM	αὐτός		0.80	
+Mic.4:4#18	T-NSN	ὁ		0.80	
+Mic.4:4#19	N-NSN	στόμα		0.80	
+Mic.4:4#23	D-APN	οὗτος		0.80	
+Mic.4:5#9	P-GSM	αὐτός		0.80	
+Mic.4:6#16	V-ADI-1S	ἀπωθέω		0.80	
+Mic.4:7#2	V-FMI-1S	τίθημι	guess	0.40	guess: the model answered with no candidates
+Mic.4:7#6	N-ASN	ὑπόλειμμα	guess	0.40	guess: the model chose outside the candidates
+Mic.4:7#9	V-RPP-ASF	ἀπωθέω	guess	0.40	guess: the model answered with no candidates
+Mic.4:7#11	N-ASN	ἔθνος		0.80	
+Mic.4:7#12	A-ASN	δυνατός		0.80	
+Mic.4:7#20	N-GSF	Σειών		0.80	
+Mic.4:7#22	T-GSN	ὁ		0.80	
+Mic.4:8#6	N-VSF	θυγάτηρ		0.80	
+Mic.4:8#7	N-GSF	Σειών		0.80	
+Mic.4:8#16	A-NSF	πρῶτος		0.80	
+Mic.4:8#22	N-GSF	Ἱερουσαλήμ		0.80	
+Mic.4:9#4	I-ASN	τίς	unsure	0.50	model: unsure
+Mic.4:9#6	A-APN	κακός		0.80	
+Mic.4:9#20	N-NPF	ὠδίν		0.80	
+Mic.4:10#3	V-PNM-2S	ἀνδρίζω		0.80	
+Mic.4:10#6	N-VSF	θυγάτηρ		0.80	
+Mic.4:10#7	N-GSF	Σειών		0.80	
+Mic.4:10#9	V-PAP-NSF	τίκτω		0.80	
+Mic.4:10#12	V-FDI-2S	ἐξέρχομαι		0.80	
+Mic.4:10#20	V-FAI-2S	ἥκω		0.80	
+Mic.4:11#3	V-API-3S	ἐπισυνάγω		0.80	
+Mic.4:11#6	N-NPN	ἔθνος		0.80	
+Mic.4:11#7	A-NPN	πολύς		0.80	
+Mic.4:11#9	V-FMI-1P	ἐπιχαίρω	guess	0.40	guess: the model answered with no candidates
+Mic.4:11#11	V-FDI-3P	ἐφοράω	guess	0.40	guess: the model answered with no candidates
+Mic.4:11#13	N-ASF	Σειών		0.80	
+Mic.4:12#13	P-GSM	αὐτός		0.80	
+Mic.4:12#18	N-APN	δράγμα		0.80	
+Mic.4:12#19	N-GSF	ἅλων		0.80	
+Mic.4:13#3	V-PAM-2S	ἀλοάω		0.80	
+Mic.4:13#5	N-VSF	θυγάτηρ		0.80	
+Mic.4:13#6	N-GSF	Σειών		0.80	
+Mic.4:13#8	T-APN	ὁ		0.80	
+Mic.4:13#9	N-APN	κέρας		0.80	
+Mic.4:13#11	V-FMI-1S	τίθημι	guess	0.40	guess: the model answered with no candidates
+Mic.4:13#12	A-APN	σιδήρεος		0.80	
+Mic.4:13#17	V-FMI-1S	τίθημι	guess	0.40	guess: the model answered with no candidates
+Mic.4:13#18	A-APF	χάλκεος		0.80	
+Mic.4:13#20	V-FAI-2S	κατατήκω	guess	0.40	guess: the model answered with no candidates
+Mic.4:13#24	V-FAI-2S	ἀνατίθημι	guess	0.40	guess: the model answered with no candidates
+Mic.4:13#27	T-ASN	ὁ		0.80	
+Mic.4:13#28	N-ASN	πλῆθος		0.80	
+Mic.4:13#29	P-GPM	αὐτός		0.80	
+Mic.4:13#33	P-GPM	αὐτός		0.80	
+Mic.5:1#2	V-FPI-3S	ἐμφράσσω		0.80	
+Mic.5:1#3	N-NSF	θυγάτηρ		0.80	
+Mic.5:1#4	N-DSM	ἐμφραγμός		0.80	
+Mic.5:1#16	T-GSM	ὁ		0.80	
+Mic.5:1#17	N-GSM	Ἰσραήλ		0.80	
+Mic.5:2#3	N-VSF	Βηθλεέμ		0.80	
+Mic.5:2#4	N-VSM	οἶκος		0.80	
+Mic.5:2#5	N-GSF	Ἐφράθα	guess	0.40	guess: the model answered with no candidates
+Mic.5:2#6	A-NSF	ὀλιγοστός	unsure	0.50	model: unsure
+Mic.5:2#12	N-GSM	Ἰούδας		0.80	
+Mic.5:2#14	R-GSM	ὅς, ἥ	unsure	0.50	model: unsure
+Mic.5:2#21	T-GSM	ὁ		0.80	
+Mic.5:2#22	N-GSM	Ἰσραήλ		0.80	
+Mic.5:2#24	N-NPF	ἔξοδος		0.80	
+Mic.5:2#25	P-GSM	αὐτός		0.80	
+Mic.5:3#2	D-ASN	οὗτος		0.80	
+Mic.5:3#14	P-GPM	αὐτός		0.80	
+Mic.5:3#15	V-FAI-3P	ἐπιστρέφω		0.80	
+Mic.5:3#19	N-GSM	Ἰσραήλ		0.80	
+Mic.5:4#2	V-FMI-3S	ἵστημι		0.80	
+Mic.5:4#7	T-ASN	ὁ		0.80	
+Mic.5:4#8	N-ASN	ποίμνιον		0.80	
+Mic.5:4#9	P-GSM	αὐτός		0.80	
+Mic.5:4#11	N-DSF	ἰσχύς		0.80	
+Mic.5:4#20	P-GPM	αὐτός		0.80	
+Mic.5:4#21	V-FAI-3P	ὑπάρχω		0.80	
+Mic.5:5#5	N-NSM	Ἀσσούρ	guess	0.40	guess: the model answered with no candidates
+Mic.5:5#6	CONJ	ὅταν		0.80	
+Mic.5:5#13	CONJ	ὅταν		0.80	
+Mic.5:5#14	V-2AAS-3S	ἐπιβαίνω		0.80	
+Mic.5:5#20	V-FPI-3P	ἐπεγείρω		0.80	
+Mic.5:5#27	N-NPN	δῆγμα		0.80	
+Mic.5:6#2	V-FAI-3P	ποιμαίνω		0.80	
+Mic.5:6#10	T-GSM	ὁ		0.80	
+Mic.5:6#11	N-GSM	Νεβρώδ		0.80	
+Mic.5:6#19	T-GSM	ὁ		0.80	
+Mic.5:6#20	N-GSM	Ἀσσούρ		0.80	
+Mic.5:6#21	CONJ	ὅταν		0.80	
+Mic.5:6#28	CONJ	ὅταν		0.80	
+Mic.5:6#29	V-2AAS-3S	ἐπιβαίνω		0.80	
+Mic.5:6#31	T-APN	ὁ		0.80	
+Mic.5:6#32	N-APN	ὅριον		0.80	
+Mic.5:7#3	T-NSN	ὁ		0.80	
+Mic.5:7#4	N-NSN	ὑπόλειμμα		0.80	
+Mic.5:7#5	T-GSM	ὁ		0.80	
+Mic.5:7#6	N-GSM	Ἰακώβ		0.80	
+Mic.5:7#11	A-DSN	μέσος		0.80	
+Mic.5:7#15	N-NSF	δρόσος		0.80	
+Mic.5:7#18	V-PAP-NSF	πίπτω		0.80	
+Mic.5:7#21	N-NPM	ἀρήν	guess	0.40	guess: the model answered with no candidates
+Mic.5:7#28	CONJ-N	μηδέ		0.80	
+Mic.5:7#29	V-2AAS-3S	ὑφίστημι	guess	0.40	guess: the model answered with no candidates
+Mic.5:8#3	T-NSN	ὁ		0.80	
+Mic.5:8#4	N-NSN	ὑπόλειμμα		0.80	
+Mic.5:8#5	N-GSM	Ἰακώβ		0.80	
+Mic.5:8#10	A-DSN	μέσος		0.80	
+Mic.5:8#22	N-NSM	σκύμνος		0.80	
+Mic.5:8#28	CONJ	ὅταν		0.80	
+Mic.5:8#31	V-AAP-NSM	διαστέλλω		0.80	
+Mic.5:9#14	V-FPI-3P	ἐξολεθρεύω		0.80	
+Mic.5:10#8	V-FAI-1S	ἐξολεθρεύω		0.80	
+Mic.5:10#12	A-GSN	μέσος		0.80	
+Mic.5:10#16	T-APN	ὁ		0.80	
+Mic.5:10#17	N-APN	ἅρμα		0.80	
+Mic.5:11#2	V-FAI-1S	ἐξολεθρεύω		0.80	
+Mic.5:11#9	V-FAI-1S	ἐξαίρω		0.80	
+Mic.5:11#10	A-APN	πᾶς		0.80	
+Mic.5:11#11	T-APN	ὁ		0.80	
+Mic.5:11#12	N-APN	ὀχύρωμα		0.80	
+Mic.5:12#2	V-FAI-1S	ἐξολεθρεύω		0.80	
+Mic.5:12#3	T-APN	ὁ		0.80	
+Mic.5:12#4	N-APN	φάρμακον		0.80	
+Mic.5:12#11	V-PNP-NPM	ἀποφθέγγομαι		0.80	
+Mic.5:13#2	V-FAI-1S	ἐξολεθρεύω		0.80	
+Mic.5:13#3	T-APN	ὁ		0.80	
+Mic.5:13#4	A-APN	γλυπτός		0.80	
+Mic.5:13#11	A-GSN	μέσος		0.80	
+Mic.5:14#3	T-APN	ὁ		0.80	
+Mic.5:14#4	N-APN	ἄλσος		0.80	
+Mic.5:14#6	A-GSN	μέσος		0.80	
+Mic.5:14#9	V-FAI-1S	ἀφανίζω		0.80	
+Mic.5:15#2	V-FAI-1S	ποιέω		0.80	
+Mic.5:15#13	R-GPN	ὅς, ἥ		0.80	
+Mic.6:1#10	T-APN	ὁ		0.80	
+Mic.6:1#11	N-APN	ὄρος		0.80	
+Mic.6:2#10	N-NPN	θεμέλιος		0.80	
+Mic.6:2#20	P-GSM	αὐτός		0.80	
+Mic.6:2#23	T-GSM	ὁ		0.80	
+Mic.6:2#24	N-GSM	Ἰσραήλ		0.80	
+Mic.6:2#25	V-FPI-3S	διελέγχω		0.80	
+Mic.6:3#3	I-ASN	τίς		0.80	
+Mic.6:3#7	I-ASN	τίς		0.80	
+Mic.6:3#11	I-ASN	τίς		0.80	
+Mic.6:3#12	V-AAI-1S	παρενοχλέω	guess	0.40	guess: the model answered with no candidates
+Mic.6:3#14	V-AOM-2S	ἀποκρίνω		0.80	
+Mic.6:4#10	N-GSF	δουλεία		0.80	
+Mic.6:4#11	V-AMI-1S	λυτρόω	guess	0.40	guess: the model answered with no candidates
+Mic.6:4#14	V-AAI-1S	ἐξαποστέλλω		0.80	
+Mic.6:4#19	N-ASM	Μωϋσῆς	guess	0.40	guess: the model answered with no candidates
+Mic.6:4#21	N-ASM	Ἀαρών		0.80	
+Mic.6:4#23	N-ASF	Μαρία		0.80	
+Mic.6:5#5	I-ASN	τίς		0.80	
+Mic.6:5#6	V-AMI-3S	βουλεύω	unsure	0.50	model: unsure
+Mic.6:5#9	N-NSM	Βαλάκ		0.80	
+Mic.6:5#11	N-GSM	Μωάβ	unsure	0.50	model: unsure
+Mic.6:5#13	I-ASN	τίς		0.80	
+Mic.6:5#15	P-DSM	αὐτός		0.80	
+Mic.6:5#16	N-NSM	Βαλαάμ		0.80	
+Mic.6:5#18	T-GSM	ὁ		0.80	
+Mic.6:5#19	N-GSM	Βεώρ		0.80	
+Mic.6:5#24	T-GSM	ὁ		0.80	
+Mic.6:5#25	N-GSM	Γαλγάλ	unsure	0.50	model: unsure
+Mic.6:6#2	I-DSN	τίς		0.80	
+Mic.6:6#6	V-FDI-1S	ἀντιλαμβάνω		0.80	
+Mic.6:6#9	A-GSM-S	ὕψιστος		0.80	
+Mic.6:6#11	V-FDI-1S	καταλαμβάνω		0.80	
+Mic.6:6#17	A-DPM	ἐνιαύσιος		0.80	
+Mic.6:7#2	V-FDI-3S	προσδέχομαι		0.80	
+Mic.6:7#11	N-GPM	πίων		0.80	
+Mic.6:7#13	V-2AAS-1S	δίδωμι	guess	0.40	guess: the model answered with no candidates
+Mic.6:7#14	A-APN	πρωτότοκος		0.80	
+Mic.6:7#16	N-GSF	ἀσέβεια		0.80	
+Mic.6:7#21	N-GSF	ἁμαρτία		0.80	
+Mic.6:8#5	I-NSN	τίς		0.80	
+Mic.6:8#6	A-NSN	καλός		0.80	
+Mic.6:8#8	I-ASN	τίς		0.80	
+Mic.6:8#10	V-PAI-3S	ἐκζητέω		0.80	
+Mic.6:8#17	N-ASN	κρίμα		0.80	
+Mic.6:8#20	N-ASN	ἔλεος		0.80	
+Mic.6:8#22	A-ASN	ἕτοιμος		0.80	
+Mic.6:9#8	V-PPP-APM	φοβέω		0.80	
+Mic.6:9#9	T-ASN	ὁ		0.80	
+Mic.6:9#10	N-ASN	ὄνομα		0.80	
+Mic.6:9#11	P-GSM	αὐτός		0.80	
+Mic.6:9#13	N-VSF	φυλή		0.80	
+Mic.6:9#15	I-NSM	τίς		0.80	
+Mic.6:10#2	N-NSN	πῦρ		0.80	
+Mic.6:10#4	N-NSM	οἶκος		0.80	
+Mic.6:10#5	A-GSM	ἄνομος		0.80	
+Mic.6:11#9	N-NPN	στάθμιον		0.80	
+Mic.6:12#2	R-GPN	ὅς, ἥ	unsure	0.50	model: unsure
+Mic.6:12#5	P-GPM	αὐτός		0.80	
+Mic.6:12#6	N-GSF	ἀσέβεια		0.80	
+Mic.6:12#12	V-IAI-3P	λαλέω		0.80	
+Mic.6:12#13	A-APN	ψευδής		0.80	
+Mic.6:12#17	P-GPM	αὐτός		0.80	
+Mic.6:12#18	V-APM-2S	ὑψόω		0.80	
+Mic.6:12#22	P-GPM	αὐτός		0.80	
+Mic.6:13#3	V-FDI-1S	ἄρχομαι		0.80	
+Mic.6:13#7	V-FAI-1S	ἀφανίζω		0.80	
+Mic.6:14#6	V-APS-2S	ἐμπίμπλημι		0.80	
+Mic.6:14#21	V-APS-3P	διασῴζω		0.80	
+Mic.6:15#2	V-FAI-2S	σπείρω		0.80	
+Mic.6:15#6	V-AAS-2S	ἀμάω		0.80	
+Mic.6:15#8	V-FAI-2S	πιέζω		0.80	
+Mic.6:15#13	V-FDI-2S	ἀλείφω	unsure	0.50	model: unsure
+Mic.6:15#14	N-ASN	ἔλαιον		0.80	
+Mic.6:15#23	A-NPN	νόμιμος		0.80	
+Mic.6:16#2	V-AAI-2S	φυλάσσω		0.80	
+Mic.6:16#3	T-APN	ὁ		0.80	
+Mic.6:16#4	N-APN	δικαίωμα		0.80	
+Mic.6:16#5	N-GSM	Ζαμβρεί		0.80	
+Mic.6:16#7	A-APN	πᾶς		0.80	
+Mic.6:16#8	T-APN	ὁ		0.80	
+Mic.6:16#9	N-APN	ἔργον		0.80	
+Mic.6:16#11	N-GSM	Ἀχαάβ		0.80	
+Mic.6:16#13	V-AOI-2P	πορεύομαι	guess	0.40	guess: the model answered with no candidates
+Mic.6:16#17	P-GPM	αὐτός		0.80	
+Mic.6:16#30	N-APN	ὄνειδος		0.80	
+Mic.7:1#1	INJ	οἴμοι		0.80	
+Mic.7:1#15	V-PAP-GSM	ὑπάρχω		0.80	
+Mic.7:1#16	N-GSM	βότρυς		0.80	
+Mic.7:1#19	T-APN	ὁ		0.80	
+Mic.7:1#20	A-APN	πρωτόγονος		0.80	
+Mic.7:1#21	INJ	οἴμοι		0.80	
+Mic.7:1#22	N-VSF	ψυχή		0.80	
+Mic.7:2#8	V-PAP-NSM	κατορθόω		0.80	
+Mic.7:2#15	N-APN	αἷμα		0.80	
+Mic.7:2#16	V-PMI-3P	δικάζω	unsure	0.50	model: unsure
+Mic.7:2#19	ADV	πλησίον		0.80	
+Mic.7:2#20	P-GSM	αὐτός		0.80	
+Mic.7:2#21	V-PAI-3P	ἐκθλίβω		0.80	
+Mic.7:2#22	V-2APS-3S	ἐκθλίβω	guess	0.40	guess: the model chose outside the candidates
+Mic.7:3#2	T-ASN	ὁ		0.80	
+Mic.7:3#3	A-ASN	κακός		0.80	
+Mic.7:3#6	P-GPM	αὐτός		0.80	
+Mic.7:3#7	V-PAI-3P	ἑτοιμάζω		0.80	
+Mic.7:3#10	V-PAI-3S	αἰτέω		0.80	
+Mic.7:3#14	A-APM	εἰρηνικός		0.80	
+Mic.7:3#17	A-NSN	καταθύμιος		0.80	
+Mic.7:3#19	P-GSM	αὐτός		0.80	
+Mic.7:3#22	V-FMI-1S	ἐξαιρέω	guess	0.40	guess: the model answered with no candidates
+Mic.7:3#23	T-APN	ὁ		0.80	
+Mic.7:3#24	A-APN	ἀγαθός		0.80	
+Mic.7:3#25	P-GPM	αὐτός		0.80	
+Mic.7:4#10	N-GSF	σκοπιά		0.80	
+Mic.7:4#19	N-NPM	κλαυθμός		0.80	
+Mic.7:4#20	P-GPM	αὐτός		0.80	
+Mic.7:5#2	V-PAM-2P	καταπιστεύω		0.80	
+Mic.7:5#4	A-DPM	φίλος		0.80	
+Mic.7:5#9	V-PNP-DPM	ἡγέομαι		0.80	
+Mic.7:5#12	N-GSF	σύγκοιτος	guess	0.40	guess: the model answered with no candidates
+Mic.7:5#14	V-AMM-2S	φυλάσσω	guess	0.40	guess: the model chose outside the candidates
+Mic.7:5#15	T-GSN	ὁ		0.80	
+Mic.7:5#16	V-2AMN	ἀνατίθημι		0.80	
+Mic.7:5#17	X-ASN	τις		0.80	
+Mic.7:6#5	N-NSF	θυγάτηρ		0.80	
+Mic.7:6#6	V-FMI-3S	ἐπανίστημι		0.80	
+Mic.7:6#23	P-GSM	αὐτός		0.80	
+Mic.7:7#6	V-FMI-1S	ἐπιβλέπω	guess	0.40	guess: the model chose outside the candidates
+Mic.7:7#7	V-FAI-1S	ὑπομένω		0.80	
+Mic.7:7#14	V-FDI-3S	εἰσακούω		0.80	
+Mic.7:8#8	V-RAI-1S	πίπτω		0.80	
+Mic.7:8#10	V-FMI-1S	ἀνίστημι		0.80	
+Mic.7:8#13	V-AAS-1S	καθίζω		0.80	
+Mic.7:8#14	V-PAP-NSM	εἰμί		0.80	
+Mic.7:8#18	V-FAI-3S	φωτίζω		0.80	
+Mic.7:9#3	V-FAI-1S	ὑποφέρω	guess	0.40	guess: the model answered with no candidates
+Mic.7:9#5	V-2AAI-1S	ἁμαρτάνω		0.80	
+Mic.7:9#6	P-DSM	αὐτός		0.80	
+Mic.7:9#16	T-ASN	ὁ		0.80	
+Mic.7:9#17	N-ASN	κρίμα		0.80	
+Mic.7:9#20	V-FAI-2S	ἐξάγω	guess	0.40	guess: the model answered with no candidates
+Mic.7:9#23	T-ASN	ὁ		0.80	
+Mic.7:9#24	N-ASN	φῶς		0.80	
+Mic.7:9#28	P-GSM	αὐτός		0.80	
+Mic.7:10#21	V-FDI-3P	ἐφοράω	guess	0.40	guess: the model answered with no candidates
+Mic.7:10#26	N-ASN	καταπάτημα		0.80	
+Mic.7:10#28	N-NSM	πηλός		0.80	
+Mic.7:11#1	N-APF	ἡμέρα	unsure	0.50	model: unsure
+Mic.7:11#2	N-GSF	ἀλοιφή		0.80	
+Mic.7:11#4	N-NSF	ἐξάλειψις		0.80	
+Mic.7:11#10	V-FMI-3S	ἀποτρίβω	guess	0.40	guess: the model answered with no candidates
+Mic.7:11#11	A-APN	νόμιμος		0.80	
+Mic.7:12#5	V-FAI-3P	εἴκω		0.80	
+Mic.7:12#11	N-GPM	Ἀσσύριος	guess	0.40	guess: the model answered with no candidates
+Mic.7:13#8	T-DPM	ὁ		0.80	
+Mic.7:13#9	V-PAP-DPM	κατοικέω		0.80	
+Mic.7:13#14	P-GPM	αὐτός		0.80	
+Mic.7:14#7	N-APN	πρόβατον		0.80	
+Mic.7:14#10	V-PAP-APM	κατασκηνόω		0.80	
+Mic.7:14#12	F-3APM	ἑαυτοῦ		0.80	
+Mic.7:14#15	A-DSN	μέσος		0.80	
+Mic.7:14#16	T-GSM	ὁ		0.80	
+Mic.7:14#17	N-GSM	Κάρμηλος	guess	0.40	guess: the model answered with no candidates
+Mic.7:14#18	V-FMI-3P	νέμω	guess	0.40	guess: the model answered with no candidates
+Mic.7:14#20	N-ASF	Βασανεῖτις	guess	0.40	guess: the model answered with no candidates
+Mic.7:14#23	N-ASF	Γαλααδεῖτις	guess	0.40	guess: the model answered with no candidates
+Mic.7:15#5	N-GSF	ἐξοδία		0.80	
+Mic.7:15#10	A-APN	θαυμαστός		0.80	
+Mic.7:16#2	N-NPN	ἔθνος		0.80	
+Mic.7:16#4	V-FPI-3P	καταισχύνω		0.80	
+Mic.7:16#10	P-GPM	αὐτός		0.80	
+Mic.7:16#14	T-ASN	ὁ		0.80	
+Mic.7:16#15	N-ASN	στόμα		0.80	
+Mic.7:16#16	P-GPM	αὐτός		0.80	
+Mic.7:16#17	T-NPN	ὁ		0.80	
+Mic.7:16#18	N-NPN	οὖς		0.80	
+Mic.7:16#19	P-GPM	αὐτός		0.80	
+Mic.7:16#20	V-FPI-3P	ἀποκωφόω	guess	0.40	guess: the model answered with no candidates
+Mic.7:17#1	V-FAI-3P	λείχω		0.80	
+Mic.7:17#7	V-FPI-3P	συγχέω	guess	0.40	guess: the model answered with no candidates
+Mic.7:17#9	N-DSM	συγκλεισμός	guess	0.40	guess: the model answered with no candidates
+Mic.7:17#10	P-GPM	αὐτός		0.80	
+Mic.7:17#16	V-FMI-3P	ἐξίστημι	guess	0.40	guess: the model answered with no candidates
+Mic.7:17#18	V-FOI-3P	φοβέω		0.80	
+Mic.7:18#1	I-NSM	τίς		0.80	
+Mic.7:18#5	V-PAP-NSM	ἐξαίρω		0.80	
+Mic.7:18#9	N-APF	ἀσέβεια		0.80	
+Mic.7:18#10	T-DPM	ὁ		0.80	
+Mic.7:18#11	A-DPM	κατάλοιπος		0.80	
+Mic.7:18#14	P-GSM	αὐτός		0.80	
+Mic.7:18#17	V-2AAI-3S	συνέχω		0.80	
+Mic.7:18#19	N-ASN	μαρτύριον		0.80	
+Mic.7:18#21	P-GSM	αὐτός		0.80	
+Mic.7:18#23	N-NSM	θελητής		0.80	
+Mic.7:19#3	V-FAI-3S	οἰκτείρω	guess	0.40	guess: the model answered with no candidates
+Mic.7:19#5	V-FAI-3S	καταδύω		0.80	
+Mic.7:19#10	V-2FPI-3P	ἀπορίπτω	guess	0.40	guess: the model answered with no candidates
+Mic.7:19#12	T-APN	ὁ		0.80	
+Mic.7:19#13	N-APN	βάθος		0.80	
+Mic.7:20#4	T-DSM	ὁ		0.80	
+Mic.7:20#5	N-DSM	Ἰακώβ		0.80	
+Mic.7:20#6	N-ASN	ἔλεος		0.80	
+Mic.7:20#7	T-DSM	ὁ		0.80	
+Mic.7:20#8	N-DSM	Ἀβραάμ		0.80	
+Mic.7:20#10	V-AAI-2S	ὄμνυμι	guess	0.40	guess: the model chose outside the candidates
