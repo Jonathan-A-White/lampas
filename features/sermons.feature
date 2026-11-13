@@ -125,15 +125,32 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     Then no page outside the app has been asked for
 
   @uc-sermons @greek
-  Scenario: His Logos sermon archives are the In Logos group, the Pinned ones first
+  Scenario: His Logos sermon books are the In Logos group, by name, one that was Pinned no longer first
     Given Lampas is opened on "Romans 5" with Logos On and two sermon archives on his shelf
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
-    And the part "In Logos" holds "J. D. Greear Sermon Archive" and "Greg Laurie Sermon Archive"
-    And the archive "Greg Laurie Sermon Archive" reads "Opens in Logos"
-    And the archive "Greg Laurie Sermon Archive" is a link to "logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall
+    And the part "In Logos" holds "Fresh Sermons" and "Princeton Sermons"
+    And the archive "Princeton Sermons" reads "Opens in Logos"
+    And the archive "Princeton Sermons" is a link to "logosres:LLS:PRINCESERMON;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall
     And the sheet still has 4 rows
+
+  @uc-sermons @greek
+  Scenario: A book a passage list stands for has no In Logos row
+    Given Lampas is opened on "Romans 5" with Logos On and Greg Laurie’s archive On beside a sermon book
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
+    And the part "In Logos" holds "Princeton Sermons"
+
+  @uc-sermons @greek
+  Scenario: A verse with no listed sermon still has the door where a sermon book is On
+    Given Lampas is opened on "Romans 8" with Logos On and two sermon archives on his shelf
+    When he taps verse 1
+    Then the Verse view has a button "Sermons"
+    When he taps "Sermons"
+    Then the sheet says "No sermons here."
+    And the part "In Logos" holds "Fresh Sermons" and "Princeton Sermons"
 
   @uc-sermons @greek
   Scenario: An archive that is Off, or one not on his shelf, is not in the group
@@ -144,11 +161,11 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
 
   @uc-sermons @greek
   Scenario: An archive on his shelf that his Library import lacks is not in the group
-    Given Lampas is opened on "Romans 5" with two sermon archives on his shelf and an import that holds only Greg Laurie’s
+    Given Lampas is opened on "Romans 5" with two sermon archives on his shelf and an import that holds only Princeton Sermons
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the sheet opens with "On this verse", "In this chapter" and "In Logos"
-    And the part "In Logos" holds "Greg Laurie Sermon Archive"
+    And the part "In Logos" holds "Princeton Sermons"
 
   @uc-sermons @greek
   Scenario: With Logos Off there is no In Logos group
@@ -162,4 +179,4 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     Given Lampas is opened on "Romans 5" with Logos On and two sermon archives on his shelf
     When he taps the place line
     And he taps "Sermons · 4"
-    Then the archive "Greg Laurie Sermon Archive" is a link to "logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5" with the ref.ly address as its fallback and is 44 px tall
+    Then the archive "Princeton Sermons" is a link to "logosres:LLS:PRINCESERMON;ref=Bible.Ro5" with the ref.ly address as its fallback and is 44 px tall

@@ -135,6 +135,8 @@ describe('with the Septuagint Off the Hebrew and the New Testament pages are as 
       const view = await screen.findByRole('region', { name: 'Verse view' });
       await user.click(within(view).getByRole('button', { name: 'Diagram' }));
       await within(view).findByRole('region', { name: 'Diagram' });
+      // the Maps door arrives from a read of its own: where the recorded page has it, the page is taken after it (mw-qtu3zvz.92 found the pane racing the door)
+      if ((JSON.parse(readFileSync(FILE, 'utf8')) as typeof pages)[`diagram ${ref}`]?.text.includes('Maps · ')) await within(view).findByRole('button', { name: /^Maps · / });
       take(`diagram ${ref}`);
       names.push(`diagram ${ref}`);
     }

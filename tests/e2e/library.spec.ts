@@ -50,7 +50,9 @@ async function tapMiddle(page: Page, target: Locator): Promise<void> {
 
 test('the home has a row for each kind with counts, thumb-sized controls and no sideways scroll', async ({ page }) => {
   await open(page, 'library', 'Your Logos library');
-  await expect(page.getByTestId('kind-row')).toHaveCount(KINDS.length);
+  // every kind of the catalogue but the sermon books, which are switched in Settings > Study resources > Sermons > Sermon sources (mw-qtu3zvz.92)
+  await expect(page.getByTestId('kind-row')).toHaveCount(KINDS.length - 1);
+  await expect(page.getByTestId('kind-row').filter({ hasText: /^Sermon/ })).toHaveCount(0);
   await expect(page.getByTestId('library-card')).toContainText('books Lampas can open are on.');
   await expectThumbSized(page);
   await shot(page, 'library-home');

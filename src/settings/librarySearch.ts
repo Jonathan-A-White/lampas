@@ -1,5 +1,6 @@
 // src/settings/librarySearch.ts — the library as a source of the Settings search (mw-rfjjzd.5, docs/design/library-at-scale.md 8): a title typed in the search answers the books of the catalogue that
-// hold it, each opening its kind page at the book. Pure: SettingsScreen hands the query here and Found (SettingsHome.tsx) draws the answer.
+// hold it, each opening its kind page at the book. A book that is only sermons is on no page of the Library (mw-qtu3zvz.92): it is answered only when it is in the one list of sermon sources (`sermonBooks`,
+// the Resource IDs listed there), and opens that list at its row. Pure: SettingsScreen hands the query here and Found (SettingsHome.tsx) draws the answer.
 import { CATALOGUE, type CatalogueEntry } from '../resources/catalogue';
 import { matching, type ListItem } from '../ui/listFilter';
 
@@ -10,10 +11,10 @@ const ITEMS: readonly ListItem[] = CATALOGUE.map((e) => ({ id: e.resource, name:
 const byResource = new Map(CATALOGUE.map((e) => [e.resource, e]));
 
 /** The books whose short name, title, author or series holds `query` (the names that start with it first), at most MAX_BOOKS_FOUND, and how many match in all. */
-export function searchLibrary(query: string): { books: CatalogueEntry[]; total: number } {
+export function searchLibrary(query: string, sermonBooks: ReadonlySet<string> = new Set()): { books: CatalogueEntry[]; total: number } {
   const q = query.trim().toLocaleLowerCase();
   if (q === '') return { books: [], total: 0 };
-  const found = matching(ITEMS, q);
+  const found = matching(ITEMS.filter((item) => byResource.get(item.id)!.kind !== 'sermons' || sermonBooks.has(item.id)), q);
   const rank = (item: ListItem): number => (item.name.toLocaleLowerCase().startsWith(q) ? 0 : item.name.toLocaleLowerCase().includes(q) ? 1 : 2);
   const ordered = found.map((item, i) => ({ item, i })).sort((a, b) => rank(a.item) - rank(b.item) || a.i - b.i);
   return {

@@ -16,6 +16,7 @@ import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
 import { isCsvFile } from '../share/target';
 import { readText } from '../ui/readText';
+import { SERMON_SOURCES_PLACE } from './kinds';
 import { isListed } from './matchExport';
 import { readExport } from './parseExport';
 import { lineText, reasonLines } from './reasons';
@@ -35,7 +36,7 @@ const NOUNS: Record<Kind, readonly [string, string]> = {
   commentary: ['commentary', 'commentaries'],
   bible: ['Bible', 'Bibles'],
   devotional: ['devotional', 'devotionals'],
-  sermons: ['sermon archive', 'sermon archives'],
+  sermons: ['sermon book', 'sermon books'],
 };
 
 const count = (n: number, one: string, many: string): string => `${n.toLocaleString('en')} ${n === 1 ? one : many}`;
@@ -159,6 +160,11 @@ function Result({ plan, onReasons }: { plan: ImportPlan; onReasons: () => void }
         {open > 0 ? (
           <p data-testid="import-kinds" className="text-base">
             {byKind(plan)}
+          </p>
+        ) : null}
+        {plan.result.matched.some((m) => isListed(m) && m.kind === 'sermons') ? (
+          <p data-testid="import-sermons" className="mt-1 text-base text-muted">
+            The sermon books are not in Your Logos library: they are switched in {SERMON_SOURCES_PLACE}.
           </p>
         ) : null}
         {plan.turning.length > 0 ? (

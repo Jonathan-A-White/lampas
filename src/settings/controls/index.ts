@@ -1,5 +1,5 @@
 import { SCRIPTS } from '../../script/scripts';
-import { onRowsGrown, ROWS } from '../rows';
+import { ROWS } from '../rows';
 import { AppearanceControl, ChapterButtonsControl, CopyFormatControl, FontControl, HeadingsControl, ImmersiveControl, ImmersiveHintControl, LayoutControl, ReadingModeControl } from './appearance';
 import { ApproachControl } from './approach';
 import { AskDevotionalControl } from './askDevotional';
@@ -12,7 +12,7 @@ import { HandwritingControl } from './handwriting';
 import { LanguagesControl } from './languages';
 import { LinkControl } from './links';
 import { MapsControl } from './maps';
-import { OpenWebControl, SermonsControl } from './sermons';
+import { OpenWebControl, SermonSourcesControl } from './sermons';
 import { ThemesControl } from './themes';
 import { NewWordsControl } from './newWords';
 import { OfflineCopyControl } from './offlineCopy';
@@ -37,6 +37,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   textSize: AppearanceControl,
   layout: LayoutControl,
   readingMode: ReadingModeControl,
+  sermonSources: SermonSourcesControl,
   sermonsOpenWeb: OpenWebControl,
   chapterButtons: ChapterButtonsControl,
   copyReference: CopyFormatControl,
@@ -105,11 +106,5 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('resource.')).map((r) => [r.key, ResourceControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('maps.')).map((r) => [r.key, MapsControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('themes.')).map((r) => [r.key, ThemesControl])),
-  ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('sermons.')).map((r) => [r.key, SermonsControl])),
   ...Object.fromEntries(ROWS.filter((r) => r.key.startsWith('link.')).map((r) => [r.key, LinkControl])),
 };
-
-// a sermon source the index service gave grows its row later (rows.ts growSermonRows): it gets the same switch
-onRowsGrown((rows) => {
-  for (const row of rows) if (row.key.startsWith('sermons.')) (CONTROLS as Record<string, Control>)[row.key] = SermonsControl;
-});

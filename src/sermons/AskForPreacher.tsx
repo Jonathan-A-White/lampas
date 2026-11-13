@@ -23,8 +23,8 @@ export const PREACHER_SENT_LINE = 'Sent · the makers decide';
 
 const FIELD = 'w-full rounded-lg border border-line bg-surface px-3 text-base text-fg';
 
-/** `place` is where he was on the Sermons sheet: the verse (or chapter) goes with the ask. */
-export function AskForPreacher({ place, onClose }: { place: SermonPlace; onClose: () => void }) {
+/** `place` is where he was on the Sermons sheet: the verse (or chapter) goes with the ask. The list of sermon sources (SermonSourcesPage.tsx) asks from no verse, and says so. */
+export function AskForPreacher({ place, onClose }: { place?: SermonPlace; onClose: () => void }) {
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   // over the Sermons sheet (z-50): a form that sends a request and has nothing to ask about, so no ? over it
@@ -44,7 +44,7 @@ export function AskForPreacher({ place, onClose }: { place: SermonPlace; onClose
     setProblem(null);
     try {
       const sources = [...(await enabledSources()), ...(await enabledServiceSources())].map((source) => source.name);
-      await askForPreacher({ name, why, link, verse: placeName(place), sources });
+      await askForPreacher({ name, why, link, verse: place ? placeName(place) : 'the list of sermon sources (no verse)', sources });
       setSent(true);
     } catch (error) {
       setProblem(error instanceof TutorError ? `${FAILURE_TITLES[error.failure]}: ${error.message}` : 'Not sent. Try again.');

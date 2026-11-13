@@ -75,6 +75,8 @@ export interface Rules {
   series: SeriesRule[];
   /** books no type rule or series rule takes, each with its reason (a book about preaching typed as sermons, mw-qtu3zvz.108); the phone leaves them out of a matched list too */
   exclude?: ExcludeRule[];
+  /** books of another kind that also hold sermons (mw-qtu3zvz.92, docs/design/sermon-sources.md section 11): each keeps its page of the Library and is also in the one list of sermon sources. Named by Resource ID; a sermons-kind book needs no mark. */
+  alsoSermons?: { resource: string; title: string; reason: string }[];
 }
 
 // ---- The export ----
@@ -89,7 +91,7 @@ const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing'
 
 /** The entry with its fields in the one order, and none that is undefined, so the bytes written depend on the data alone. */
 function ordered(e: CatalogueEntry): CatalogueEntry {
-  const order: (keyof CatalogueEntry)[] = ['resource', 'kind', 'title', 'short', 'author', 'series', 'lang', 'opens', 'value', 'covers', 'parts', 'sections', 'starts', 'verified', 'via', 'id', 'key', 'work', 'source', 'dayOfYear'];
+  const order: (keyof CatalogueEntry)[] = ['resource', 'kind', 'title', 'short', 'author', 'series', 'lang', 'opens', 'value', 'covers', 'parts', 'sections', 'starts', 'verified', 'via', 'id', 'key', 'work', 'source', 'dayOfYear', 'alsoSermons'];
   return Object.fromEntries(order.filter((k) => e[k] !== undefined).map((k) => [k, e[k]])) as unknown as CatalogueEntry;
 }
 
@@ -192,6 +194,14 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
     ...rules.series.filter((r) => !used.has(r)).map((r) => `series ${r.series}`),
   ];
   if (unmatched.length > 0) notes.push(`${unmatched.length} of the ${rules.ids.length + rules.types.length + rules.series.length} rules match no row of this export (an id is then written from the rules alone): ${unmatched.join('; ')}`);
+
+  // a book of another kind that also holds sermons carries the mark; one the catalogue does not hold, or holds as a sermon book, is a mistake in the rules
+  for (const marked of rules.alsoSermons ?? []) {
+    const entry = KIND_LIST.flatMap((k) => byKind[k]).find((e) => e.resource === marked.resource);
+    if (!entry) notes.push(`${marked.resource}: the rules mark it as also holding sermons but no rule takes it from this export`);
+    else if (entry.kind === 'sermons') throw new Error(`${marked.resource} is a sermon book already: "alsoSermons" is for a book of another kind`);
+    else entry.alsoSermons = true;
+  }
 
   const files = Object.fromEntries(KIND_LIST.map((k) => [k, { kind: k, version: '', entries: byKind[k] }])) as Record<Kind, KindFile>;
   if (rules.works.length > 0) files.commentary.works = rules.works;

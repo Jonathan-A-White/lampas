@@ -1,15 +1,15 @@
 // tests/e2e/sermons.spec.ts — Lampas sermons on the screen (mw-qtu3zvz.2, docs/sermons.md) at 390x844: the quiet 'Sermons · N' door in the tools line of the Verse view of Romans 5:8, the Sermons sheet (On this verse,
 // In this chapter, each row 44 px with the preacher, the date and where it opens) and a row that is a plain link out. The data is the committed index (public/sermons): no sermon's page is fetched, and the spec
-// holds that no request is made to the sites the rows point at. The tests after them are mw-qtu3zvz.3's: the Sermons rows of Settings and his Logos sermon archives, In Logos, on the sheet.
+// holds that no request is made to the sites the rows point at. The tests after them are mw-qtu3zvz.3's, as mw-qtu3zvz.92 left them: the one list of sermon sources behind Settings > Study resources > Sermons, and his Logos sermon books, In Logos, on the sheet
+// (tests/e2e/sermon-sources.spec.ts holds the list itself at 120 sources).
 // The last are mw-qtu3zvz.5's: the sheet online. The sermon index service is stubbed with page.route (the live one answers only once its VPS door is up); every other test has it refuse, so a live service never changes a count.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { keepSettings } from './keep-settings';
-import { keepImport } from './keep-import';
+import { EVERY_LOGOS_SERMON, keepImport } from './keep-import';
 import { openVerseView } from './verse-view';
-import { openSettings } from './openSettings';
-import { openGroup } from './settings-group';
+import { turnLogosOn } from './settings-group';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -184,9 +184,10 @@ test('his Logos sermon archives start Off: Genesis 1 lists none of them (mw-qtu3
 
 test('with Greg Laurie On, Genesis 1 lists \'Who Is Man\', a link that opens in Logos (mw-qtu3zvz.12)', async ({ page }) => {
   await openUnlocked(page);
+  await turnLogosOn(page); // a list made from Logos books is used only while Logos is On (mw-qtu3zvz.92)
   await page.goto('/#/?b=gen&c=1');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  // the saved switch of the source (Settings > Study resources > Sermons is the next story); the archive is his: his Library import holds it (mw-qtu3zvz.94)
+  // the saved switch of the source; the archive is his: his Library import holds it (mw-qtu3zvz.94)
   await keepImport(page);
   await keepSettings(page, { 'sermons.greg-laurie-logos': 'on' });
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
@@ -204,6 +205,7 @@ test('with Greg Laurie On, Genesis 1 lists \'Who Is Man\', a link that opens in 
 
 test('with Spurgeon\'s My Sermon Notes On, Genesis 19 lists \'Genesis 19:15\', a link that opens his book in Logos (mw-qtu3zvz.18)', async ({ page }) => {
   await openUnlocked(page);
+  await turnLogosOn(page);
   await page.goto('/#/?b=gen&c=19');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await keepImport(page);
@@ -224,6 +226,7 @@ test('with Spurgeon\'s My Sermon Notes On, Genesis 19 lists \'Genesis 19:15\', a
 
 test('with no Library import kept, an archive switched On is still not offered: Genesis 19 lists no \'Genesis 19:15\' (mw-qtu3zvz.94)', async ({ page }) => {
   await openUnlocked(page);
+  await turnLogosOn(page); // Logos is On, so only the import decides
   await page.goto('/#/?b=gen&c=19');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await keepImport(page, []);
@@ -239,53 +242,56 @@ test('with no Library import kept, an archive switched On is still not offered: 
   await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'My Sermon Notes' })).toHaveCount(0);
 });
 
-test('Settings > Study resources > Sermons has a row for each bundled source, the Logos archives Off, and a source turned Off leaves its sermons out (mw-qtu3zvz.3)', async ({ page }) => {
+test('Settings > Study resources > Sermons opens the one list: a row for each bundled source, the Logos lists Off, and a source turned Off leaves its sermons out (mw-qtu3zvz.3, mw-qtu3zvz.92)', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/#/settings?group=study');
-  await expect(page.locator('[data-section="sermons"]')).toBeVisible();
-  await keepImport(page); // his import holds the archives, so their rows are drawn (mw-qtu3zvz.94)
+  await turnLogosOn(page);
+  await keepImport(page); // his import holds the archives, so their lists are in the list (mw-qtu3zvz.94)
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
-  const on = async (name: string, value: 'On' | 'Off') => expect(section.getByRole('group', { name, exact: true }).getByRole('button', { name: value, exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await on('Spurgeon\'s sermons (CCEL)', 'On');
+  // the section is the door to the list, with its count, and Open web sermons in: no source has a row here
+  await expect(section.getByTestId('sources-count')).toHaveText('2 of 9 on');
+  await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true })).toBeVisible();
+  await expect(section.getByRole('group', { name: /Spurgeon/ })).toHaveCount(0);
+  await section.getByRole('button', { name: /^Sermon sources/ }).click();
+  await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
+  const on = async (name: string, value: 'On' | 'Off') => expect(page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: value, exact: true })).toHaveAttribute('aria-checked', 'true');
+  await on('Spurgeon\'s sermons', 'On');
   await on('Matthew Henry\'s sermons', 'On');
   await on('Greg Laurie\'s sermons', 'Off');
   // his batch 2 books (mw-qtu3zvz.18)
   for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
+  // nine lists and no book: one group, so no heading; from eight sources up there is a search field
+  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0);
+  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 9 sermon sources');
   await shot(page, 'sermons-settings');
 
-  // Spurgeon Off: the sermons of Romans 5:8 are Henry's alone (or none), and none is Spurgeon's
-  const spurgeon = section.getByRole('group', { name: 'Spurgeon\'s sermons (CCEL)', exact: true });
-  await spurgeon.getByRole('button', { name: 'Off', exact: true }).click();
-  await on('Spurgeon\'s sermons (CCEL)', 'Off');
+  // Spurgeon and Henry Off: Romans 5:8 has no listed sermon, and so no door
+  for (const name of ['Spurgeon\'s sermons', 'Matthew Henry\'s sermons']) {
+    await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
+    await on(name, 'Off');
+  }
+  await expect(page.getByTestId('sources-status')).toHaveText('none on');
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
   const view = await openVerseView(page, 8);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(500); // a real-time wait: nothing must appear, so there is no condition to wait on
   await expect(view.getByRole('button', { name: /^Sermons/ })).toHaveCount(0);
 });
 
-test('with Logos On, his Pinned and On sermon archives are the In Logos group of the Sermons sheet, each a 44 px link into Logos at the verse (mw-qtu3zvz.3)', async ({ page }) => {
+test('with Logos On, the sermon books that are On in the list are the In Logos group of the Sermons sheet, by name, each a 44 px link into Logos at the verse; where nothing is listed the door is Sermons with no number (mw-qtu3zvz.3, mw-qtu3zvz.92)', async ({ page }) => {
   await openUnlocked(page);
-  await page.goto('/');
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await keepImport(page); // his import holds the archives (mw-qtu3zvz.94)
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  // Logos On, then one archive On and one Pinned from the Library's own Sermons page
-  await openSettings(page);
-  await openGroup(page, 'Study resources');
-  const logos = page.getByRole('region', { name: 'Study resources' }).getByRole('switch', { name: 'Logos', exact: true });
-  if ((await logos.getAttribute('aria-checked')) !== 'true') await logos.click();
-  await expect(logos).toHaveAttribute('aria-checked', 'true');
-  await page.goto('/#/library?kind=sermons');
-  await expect(page.getByRole('heading', { name: 'Sermons', level: 1 })).toBeVisible();
-  const choose = async (name: string, step: 'On' | 'Pin') => {
+  await turnLogosOn(page);
+  // his import holds the archives and two books of sermons that no list stands for (mw-qtu3zvz.94)
+  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:PRINCESERMON', 'LLS:BEATITUDES']);
+  // the two books On, from the one list of sermon sources: the only place a book of sermons is switched
+  await page.goto('/#/settings?sources=sermons');
+  await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
+  for (const name of ['Princeton Sermons', 'The Beatitudes']) {
     const group = page.getByRole('radiogroup', { name, exact: true });
-    await group.getByRole('radio', { name: step, exact: true }).click();
-    await expect(group.getByRole('radio', { name: step, exact: true })).toHaveAttribute('aria-checked', 'true');
-  };
-  await choose('Greg Laurie Sermon Archive', 'On');
-  await choose('J. D. Greear Sermon Archive', 'Pin');
+    await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
+    await group.getByRole('radio', { name: 'On', exact: true }).click();
+    await expect(group.getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
+  }
 
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
@@ -298,10 +304,11 @@ test('with Logos On, his Pinned and On sermon archives are the In Logos group of
   // after the bundled groups
   const heads = await sheet.locator('h3').allTextContents();
   expect(heads.at(-1)).toBe('In Logos');
+  // by name, a leading The passed over; a book a list stands for (Greg Laurie's archive) has no row
   const rows = group.locator('a[data-archive-row]');
   await expect(rows).toHaveCount(2);
-  await expect(rows.nth(0).locator('[data-sermon-title]')).toHaveText('J. D. Greear Sermon Archive');
-  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Greg Laurie Sermon Archive');
+  await expect(rows.nth(0).locator('[data-sermon-title]')).toHaveText('The Beatitudes');
+  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Princeton Sermons');
   for (let i = 0; i < 2; i++) {
     expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
     await expect(rows.nth(i).locator('[data-sermon-meta]')).toHaveText('Opens in Logos');
@@ -310,6 +317,25 @@ test('with Logos On, his Pinned and On sermon archives are the In Logos group of
   }
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'sermons-in-logos');
+
+  // Back closes the sheet
+  await page.goBack();
+  await expect(sheet).toBeHidden();
+
+  // 2 John: no list reaches it, so the door has no number, and its sheet still has In Logos
+  await page.goto('/#/?b=2jn&c=1');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  const second = await openVerseView(page, 1);
+  const door = second.getByRole('button', { name: 'Sermons', exact: true });
+  await expect(door).toBeVisible();
+  expect((await door.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await shot(page, 'sermons-door-no-number');
+  await door.click();
+  const bare = page.getByRole('dialog', { name: 'Sermons for 2 John 1' });
+  await expect(bare).toBeVisible();
+  await expect(bare.locator('[data-sermons-part="here"] a[data-sermon-row], [data-sermons-part="chapter"] a[data-sermon-row]')).toHaveCount(0);
+  await expect(bare.getByRole('group', { name: 'In Logos', exact: true }).locator('a[data-archive-row]')).toHaveCount(2);
+  await shot(page, 'sermons-sheet-books-only');
 });
 
 /** The service's answers, the examples of the sermon-index repository's docs/api.md (tests/fixtures/sermons) given the id of a bundled Spurgeon row (104, Romans 5:8) and a row the bundle lacks. */
@@ -403,7 +429,7 @@ test('online: a search is answered by the service alone, a sermon opens where it
   await shot(page, 'sermons-search');
 });
 
-test('online: a source the bundle lacks gets an Off row in Settings the first time it is seen (mw-qtu3zvz.5)', async ({ page }) => {
+test('online: a source the bundle lacks gets an Off row in the list of sermon sources the first time it is seen (mw-qtu3zvz.5)', async ({ page }) => {
   await openUnlocked(page);
   await serveService(page);
   await page.goto('/#/?b=rom&c=5');
@@ -414,12 +440,14 @@ test('online: a source the bundle lacks gets an Off row in Settings the first ti
   await expect(sheet.locator('[data-sermons-latest]')).toBeVisible();
   // its rows are not asked for while it is Off, and its credit is not on the sheet
   await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'Newbie' })).toHaveCount(0);
-  await page.goto('/#/settings?group=study');
-  const section = page.locator('[data-section="sermons"]');
-  await expect(section).toBeVisible();
-  const group = section.getByRole('group', { name: 'Newbie\'s sermons', exact: true });
-  await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  expect((await group.getByRole('button', { name: 'On', exact: true }).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await page.goto('/#/settings?sources=sermons');
+  await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
+  // named without its bracket, with where it opens under it
+  const group = page.getByRole('radiogroup', { name: 'Newbie\'s sermons', exact: true });
+  await expect(group.getByRole('radio', { name: 'Off', exact: true })).toHaveAttribute('aria-checked', 'true');
+  expect((await group.getByRole('radio', { name: 'On', exact: true }).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await expect(page.locator('[data-source="sermons.newbie-sermons"]')).toContainText('on the web');
+  await expect(page.getByTestId('sources-line')).toHaveText('2 of 3 on');
   await group.scrollIntoViewIfNeeded();
   await shot(page, 'sermons-online-source');
 });

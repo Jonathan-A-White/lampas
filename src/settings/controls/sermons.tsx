@@ -1,19 +1,29 @@
-// src/settings/controls/sermons.tsx — the switch of a sermon source (Settings > Study resources > Sermons, mw-qtu3zvz.3): the plain On/Off of 'sermons.<id>', read through the registry
-// (src/settings/definitions/sermons.ts declares it) and saved through the settings store. The rows are made from the registry of sources (src/sermons/sources/index.ts SOURCES).
-import { useLiveQuery } from 'dexie-react-hooks';
+// src/settings/controls/sermons.tsx — the two rows of Settings > Study resources > Sermons (mw-qtu3zvz.92, docs/design/sermon-sources.md section 2): Sermon sources, a door in the shape of a row of the
+// Library's home (its name, how many are on, a chevron) that opens the one list of every sermon source (src/sermons/SermonSourcesPage.tsx), and Open web sermons in. No source has a row here: a source's
+// switch `sermons.<id>` (src/settings/definitions/sermons.ts) is drawn on that page.
 import { openWebSetting, type OpenWebIn } from '../definitions/sermons';
-import { settingOf } from '../registry';
+import { openSermonSources } from '../link';
 import { setSetting, useSetting } from '../store';
+import { countLine, onCount } from '../../sermons/sourceList';
+import { useSourceList } from '../../sermons/useSourceList';
 import { Chips } from '../../ui/Chips';
-import { OnOff, RowName, SettingRow } from './SettingRow';
+import { RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
-export const SermonsControl: Control = ({ row }) => {
-  const current = useLiveQuery(async () => String(await settingOf(row.key)?.read()), [row.key]);
+/** 'Sermon sources  17 of 120 on ›': the count is of the sources listed for him, live. */
+export const SermonSourcesControl: Control = ({ row }) => {
+  const list = useSourceList();
   return (
-    <SettingRow row={row}>
-      <RowName row={row} />
-      {current === 'on' || current === 'off' ? <OnOff name={row.label} current={current} settingKey={row.key as `sermons.${string}`} /> : null}
+    <SettingRow row={row} className="border-b border-line pb-2">
+      <button type="button" onClick={() => openSermonSources()} className="flex min-h-12 w-full items-center gap-3 text-left text-base">
+        <span className="shrink-0 font-medium">{row.label}</span>{' '}
+        <span data-testid="sources-count" className="min-w-0 flex-1 text-right text-muted">
+          {list ? countLine(onCount(list.items), list.items.length) : ''}
+        </span>{' '}
+        <span aria-hidden="true" className="shrink-0 text-muted">
+          ›
+        </span>
+      </button>
     </SettingRow>
   );
 };

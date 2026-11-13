@@ -1,7 +1,7 @@
 // src/sermons/useSermons.ts — the sermons of a place for a door and its sheet (mw-qtu3zvz.2): `undefined` while sermonsFor answers, then what the place has (nothing where it has none, or every source failed).
 // It reads the module's data alone (the bundled sources' book files): nothing leaves the app for a sermon's page until a row is tapped. It asks again when a source is switched On or Off or Logos is (mw-qtu3zvz.3).
 // useLatest asks the sermon index service for the newest rows once the bundled ones are known (mw-qtu3zvz.5, docs/sermons.md 'When online'); useServiceSearch is the sheet's search field, answered by the service alone.
-// useArchives is the 'In Logos' group of the sheet: his Pinned and On sermon archives at the place, none while Logos is Off.
+// useArchives is the 'In Logos' group of the sheet: his sermon books that are On at the place (a book a passage list stands for is not among them), none while Logos is Off.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useState } from 'react';
 import { loadChapter } from '../data/chapter';
@@ -10,9 +10,9 @@ import { ownedResources, shelfOf, type ShelfState } from '../data/repositories';
 import { subscribe } from '../events/bus';
 import { useLogosOn } from '../useLogosOn';
 import { fetchThemeSermons, search, sermonsServiceKnown, type ServiceHit, type ServiceThemeSermon } from '../services/sermons';
-import { latestFor, sermonsFor, type SermonPlace, type SermonsFound } from './index';
+import { activeSources, latestFor, sermonsFor, type SermonPlace, type SermonsFound } from './index';
 import { talkSermonsFor, type ListedSermon } from './forTutor';
-import { logosArchives, type ArchiveRow } from './sources/logos';
+import { logosArchives, underLists, type ArchiveRow } from './sources/logos';
 
 export function useSermons(place: SermonPlace | null): SermonsFound | undefined {
   // a source switched On or Off (or Logos, which one can ride on) asks the place again
@@ -39,9 +39,9 @@ export function useSermons(place: SermonPlace | null): SermonsFound | undefined 
   return found?.key === key ? found.found : undefined;
 }
 
-/** His sermon archives at the place, live with his shelf and the Logos switch: `undefined` until both are read, `[]` while Logos is Off or none is On or Pinned. */
+/** His sermon books at the place, live with his shelf and the Logos switch: `undefined` until both are read, `[]` while Logos is Off or none is On. A book with more than sermons is on another kind's shelf, so the whole shelf is read. */
 export function useArchives(place: SermonPlace | null): ArchiveRow[] | undefined {
-  const held = useLiveQuery(() => shelfOf('sermons'), []);
+  const held = useLiveQuery(() => shelfOf(), []);
   const owned = useLiveQuery(ownedResources, []);
   const logos = useLogosOn();
   const book = place?.book;
@@ -50,7 +50,7 @@ export function useArchives(place: SermonPlace | null): ArchiveRow[] | undefined
   return useMemo(() => {
     if (held === undefined || owned === undefined || logos === undefined) return undefined;
     if (!logos || book === undefined || chapter === undefined) return [];
-    return logosArchives({ book, chapter, ...(from === undefined ? {} : { from }) }, new Map<string, ShelfState>(held.map((r) => [r.id, r.state])), undefined, owned);
+    return logosArchives({ book, chapter, ...(from === undefined ? {} : { from }) }, new Map<string, ShelfState>(held.map((r) => [r.id, r.state])), undefined, owned, underLists(activeSources()));
   }, [held, owned, logos, book, chapter, from]);
 }
 

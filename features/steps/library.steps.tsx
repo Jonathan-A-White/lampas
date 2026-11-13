@@ -119,7 +119,7 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const resultTitles = (): string[] => screen.queryAllByTestId('result-title').map((e) => e.textContent ?? '');
 
-  Scenario('The home shows the card and the nine kinds with counts from the shelf', ({ Given, When, Then, And }) => {
+  Scenario('The home shows the card and the eight kinds with counts from the shelf', ({ Given, When, Then, And }) => {
     Given(
       'his shelf holds the lexicons {string} On with {string} pinned, the grammar {string} On and Settings sets the Bible {string} for every part',
       async (_, lexicons: string, pinned: string, grammar: string, bible: string) => {
@@ -131,8 +131,10 @@ describeFeature(feature, ({ Scenario }) => {
       await openAt('#/library');
     });
     Then('the page {string} is open', opened);
-    And('the card counts {int} books on out of all the books of the catalogue', async (_, on: number) => {
-      await waitFor(() => expect(screen.getByTestId('library-card')).toHaveTextContent(`${on} of the ${CATALOGUE.length} books Lampas can open are on.`));
+    And('the card counts {int} books on out of all the books of the Library, a book that is only sermons not among them', async (_, on: number) => {
+      const books = CATALOGUE.filter((e) => e.kind !== 'sermons').length;
+      expect(books).toBeLessThan(CATALOGUE.length);
+      await waitFor(() => expect(screen.getByTestId('library-card')).toHaveTextContent(`${on} of the ${books} books Lampas can open are on.`));
     });
     And('the kinds listed are {string}', (_, kinds: string) => {
       expect(screen.getAllByTestId('kind-row').map((r) => r.getAttribute('data-label'))).toEqual(list(kinds));

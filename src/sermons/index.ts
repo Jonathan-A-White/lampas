@@ -18,6 +18,9 @@ export { SOURCES };
 /** The sources in use: SOURCES, or a list a test put in their place. */
 let active: readonly SermonSource[] = SOURCES;
 
+/** The passage lists in use, in registry order: what the one list of sermon sources shows beside the service's own (known.ts). */
+export const activeSources = (): readonly SermonSource[] => active;
+
 /** The test seam (tests/support/test-sermons.ts): the sources the screens ask, or `undefined` for the registered ones again. */
 export function setSermonSources(sources: readonly SermonSource[] | undefined): void {
   active = sources ?? SOURCES;

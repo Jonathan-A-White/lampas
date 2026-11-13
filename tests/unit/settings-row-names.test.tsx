@@ -43,7 +43,8 @@ describe('the names Settings draws', () => {
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);
       // Set each language on its own is On, so the two languages' rows are drawn and the Pronunciation family is not
-      const mine = ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation' && groupOf(row.section).id === group.id);
+      // a sermon source's own switch is drawn on the page of sermon sources, not on a group's page (mw-qtu3zvz.92)
+      const mine = ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation' && !row.key.startsWith('sermons.') && groupOf(row.section).id === group.id);
       await waitFor(() => expect([...document.querySelectorAll('[data-setting]')].map((el) => el.getAttribute('data-setting'))).toEqual(mine.map((r) => r.key)));
       for (const row of mine) {
         const section = SECTIONS.find((s) => s.id === row.section);

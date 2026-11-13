@@ -102,7 +102,9 @@ describe('the bundled Logos sources', () => {
     expect(sources().find((s) => s.id === 'spurgeon-ccel')!.default).toBe('on');
     const all = sources();
     expect(enabledSources(all, () => undefined).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons']);
-    expect(enabledSources(all, (key) => (key === 'sermons.greg-laurie-logos' ? 'on' : undefined)).map((s) => s.id)).toContain('greg-laurie-logos');
+    // a Logos list is used only while Logos is On (mw-qtu3zvz.92)
+    expect(enabledSources(all, (key) => (key === 'sermons.greg-laurie-logos' || key === 'resource.logos' ? 'on' : undefined)).map((s) => s.id)).toContain('greg-laurie-logos');
+    expect(enabledSources(all, (key) => (key === 'sermons.greg-laurie-logos' ? 'on' : undefined)).map((s) => s.id)).not.toContain('greg-laurie-logos');
     expect(enabledSources(all, (key) => (key === 'sermons.spurgeon-ccel' ? 'off' : undefined)).map((s) => s.id)).not.toContain('spurgeon-ccel');
   });
 

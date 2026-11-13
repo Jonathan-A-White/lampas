@@ -11,6 +11,7 @@ import { CATALOGUE, CATALOGUE_VERSION, entriesOf, entryOf, type CatalogueEntry, 
 import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS } from '../../resources/grammarBooks';
 import { LEXICONS } from '../../resources/logos';
 import { WORKS } from '../../resources/works';
+import { LOGOS_RESOURCES } from '../../sermons/sources/bundled';
 import { isListed, matchExport, type MatchResult } from '../../library/matchExport';
 import type { ExportRow } from '../../library/parseExport';
 import { db, type ExportedRow, type LibraryRow } from '../db';
@@ -24,8 +25,8 @@ export const MAX_PINS = 3;
 /** The pins a book counts against: its kind and its language, so three Greek lexicons and three Hebrew ones can be Pinned together. */
 export const pinGroup = (entry: Pick<CatalogueEntry, 'kind' | 'lang'>): string => `${entry.kind}:${entry.lang}`;
 
-/** Why the shelf did not do what it was asked: the catalogue has no such book, a kind has its pins, a Devotional cannot be Pinned, a kind holds one at a time. */
-export type ShelfRefusal = 'no-such-book' | 'too-many-pins' | 'no-pin-for-devotionals' | 'one-at-a-time';
+/** Why the shelf did not do what it was asked: the catalogue has no such book, a kind has its pins, a Devotional cannot be Pinned, nor can a sermon book (it opens only through the Sermons door, mw-qtu3zvz.92), a kind holds one at a time. */
+export type ShelfRefusal = 'no-such-book' | 'too-many-pins' | 'no-pin-for-devotionals' | 'no-pin-for-sermons' | 'one-at-a-time';
 
 export type ShelfResult = { ok: true } | { ok: false; reason: ShelfRefusal };
 
@@ -236,6 +237,7 @@ async function put(entry: CatalogueEntry, state: ShelfState, now: number): Promi
   }
   if (state === 'pinned') {
     if (entry.kind === 'devotional') return refused('no-pin-for-devotionals');
+    if (entry.kind === 'sermons') return refused('no-pin-for-sermons');
     if (entry.kind !== 'bible' && was?.state !== 'pinned') {
       const group = pinGroup(entry);
       const same = await db.library.where('kind').equals(entry.kind).filter((r) => r.state === 'pinned' && pinGroupOf(r.id) === group).count();
@@ -261,6 +263,42 @@ export async function setKind(kind: Kind, state: 'on' | 'off', now = Date.now(),
     const have = new Map((await db.library.where('kind').equals(kind).toArray()).map((r) => [r.id, r]));
     await db.library.bulkPut(entriesOf(kind).filter((e) => !within || within.has(e.resource)).map((e): LibraryRow => have.get(e.resource) ?? { id: e.resource, kind, state: 'on', since: now }));
     return OK;
+  });
+}
+
+/** Puts many books in their states in one write (the one list of sermon sources: All on, All off and its Undo, mw-qtu3zvz.92). A book the catalogue lacks is passed over; a pin that cannot be given leaves the book On. */
+export async function setShelfStates(changes: readonly { resource: string; state: ShelfState }[], now = Date.now()): Promise<void> {
+  await ensureShelf();
+  await db.transaction('rw', db.library, async () => {
+    for (const change of changes) {
+      const entry = entryOf(change.resource);
+      if (!entry) continue;
+      if (!(await put(entry, change.state, now)).ok) await put(entry, 'on', now);
+    }
+  });
+}
+
+/**
+ * What a sermon book's old place in the Library carries over to the one list of sermon sources (mw-qtu3zvz.92, docs/design/sermon-sources.md section 11): a sermon book that was Pinned is On (it has no Pin now), and a
+ * list made from Logos books (`lists`: the list's id and the Resource IDs it stands for) is On where its switch `sermons.<id>` was never touched and one of its books is On or Pinned on the shelf, so nothing he could
+ * open stops being offered without his tap. Run at each open and after an import; a second run changes nothing. Returns how many rows and switches it wrote.
+ */
+export async function carrySermonShelf(lists: Readonly<Record<string, readonly string[]>> = LOGOS_RESOURCES): Promise<number> {
+  await ensureShelf();
+  return db.transaction('rw', db.library, db.settings, async () => {
+    const rows = await db.library.where('kind').equals('sermons').toArray();
+    const pinned = rows.filter((r) => r.state === 'pinned');
+    await db.library.bulkPut(pinned.map((r): LibraryRow => ({ ...r, state: 'on' })));
+    // a row of the shelf is On or Pinned: Off is no row
+    const on = new Set(rows.map((r) => r.id));
+    let switched = 0;
+    for (const [id, resources] of Object.entries(lists)) {
+      const key = `sermons.${id}`;
+      if (!resources.some((resource) => on.has(resource)) || (await db.settings.get(key))) continue;
+      await db.settings.put({ key, value: 'on' });
+      switched += 1;
+    }
+    return pinned.length + switched;
   });
 }
 
@@ -484,6 +522,8 @@ export async function applyImport(plan: ImportPlan, now = Date.now()): Promise<n
     const note: ImportNote = { at: now, books: plan.rows.length, matched: listed.size, newSince: 0, version: CATALOGUE_VERSION };
     await db.meta.put({ key: IMPORT_KEY, value: JSON.stringify(note) });
   });
+  // a list made from Logos books follows the books the import turned on (carrySermonShelf)
+  await carrySermonShelf();
   return added;
 }
 
@@ -504,6 +544,7 @@ export async function rematchImport(now = Date.now()): Promise<number> {
     const next: ImportNote = { ...note, matched: listed.size, newSince: note.newSince + fresh, version: CATALOGUE_VERSION };
     await db.meta.put({ key: IMPORT_KEY, value: JSON.stringify(next) });
   });
+  await carrySermonShelf();
   return fresh;
 }
 

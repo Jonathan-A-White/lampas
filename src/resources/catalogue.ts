@@ -59,6 +59,8 @@ export interface CatalogueEntry {
   source?: string;
   /** a devotional: Logos flags it as opening by day of the year ('no' may only mean unflagged) */
   dayOfYear?: boolean;
+  /** a book of another kind that also holds sermons (the rules' `alsoSermons`, docs/design/sermon-sources.md section 11): it keeps its page of the Library and is also in the one list of sermon sources */
+  alsoSermons?: boolean;
 }
 
 /** A book's own reference type, which Logos opens a book at (`ref=CICR.3.24`): its library listing's ReferenceSupersets column names it ('cicr.1-4.20.32'). The Bible's own
