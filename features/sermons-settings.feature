@@ -115,6 +115,13 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
     Given Lampas is opened at "#/settings?setting=sermons.testsecond" with Logos Off
     Then the page of sermon sources is open with "2 on" in its header
     And the row of "Test Second Sermons" is marked
+    And that row is the row of the setting "sermons.testsecond", highlighted as a setting's row is
+
+  Scenario: A link to a Logos list his import lacks says why it is not listed
+    Given Lampas is opened at "#/settings?setting=sermons.testlaurie" with Logos On
+    Then the page of sermon sources is open with "3 on" in its header
+    And the list has no source "Test Laurie's sermons"
+    And a note reads "“Test Laurie's sermons” is listed only while Logos is on and your Library import says you own it in Logos. Import your Logos library first."
 
   Scenario: The Library has no Sermons row
     Given Lampas is opened at "#/library" with Logos On

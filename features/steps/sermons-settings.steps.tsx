@@ -396,6 +396,21 @@ describeFeature(feature, ({ Scenario }) => {
       const group = await sourceSwitch(name);
       await waitFor(() => expect(group.closest('[data-source]')).toHaveAttribute('aria-current', 'true'));
     });
+    And('that row is the row of the setting {string}, highlighted as a setting\'s row is', async (_, key: string) => {
+      await waitFor(() => expect(document.querySelector<HTMLElement>(`[data-setting="${key}"]`)).toHaveAttribute('data-highlighted', ''));
+      expect(document.querySelector<HTMLElement>(`[data-setting="${key}"]`)).toHaveAttribute('data-source', key);
+    });
+  });
+
+  Scenario('A link to a Logos list his import lacks says why it is not listed', ({ Given, Then, And }) => {
+    Given('Lampas is opened at {string} with Logos On', (_, hash: string) => openAt(hash, 'on'));
+    Then('the page of sermon sources is open with {string} in its header', pageOpenWith);
+    And('the list has no source {string}', async (_, name: string) => {
+      expect(within(await page()).queryByRole('radiogroup', { name })).toBeNull();
+    });
+    And('a note reads {string}', async (_, words: string) => {
+      await waitFor(() => expect(squash(document.querySelector<HTMLElement>('[data-source-needs]')?.textContent)).toBe(words));
+    });
   });
 
   Scenario('The Library has no Sermons row', ({ Given, Then }) => {

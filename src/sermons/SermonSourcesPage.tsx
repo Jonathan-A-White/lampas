@@ -227,6 +227,9 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
                 <div
                   key={item.id}
                   data-source={item.id}
+                  // a list's row is the row of its setting `sermons.<id>`: a Settings search result and the tutor's link land on it, marked as any setting's row is
+                  data-setting={item.sort === 'list' ? item.id : undefined}
+                  data-highlighted={item.id === marked ? '' : undefined}
                   ref={item.id === marked ? markedRow : undefined}
                   aria-current={item.id === marked ? 'true' : undefined}
                   className={`flex items-center gap-x-3 border-t border-line px-3 py-2 first:border-t-0 ${item.id === marked ? 'rounded-lg bg-accent/15 outline-2 outline-accent' : ''}`}

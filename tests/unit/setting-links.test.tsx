@@ -79,10 +79,13 @@ describe('settingLink', () => {
       await waitFor(() => expect(row(s.key), s.key).not.toBeNull());
       await waitFor(() => expect(row(s.key)?.hasAttribute('data-highlighted'), s.key).toBe(true));
     }
-    // no source has a row on the Study resources page (mw-qtu3zvz.92): the link to its setting is the one list, the source's row marked
+    // no source has a row on the Study resources page (mw-qtu3zvz.92): the link to its setting is the one list, where the source's row is the row of its setting, marked as any setting's row is
     await go(settingLink('sermons.spurgeon-ccel') as string);
     await waitFor(() => expect(document.querySelector('[data-source="sermons.spurgeon-ccel"]')?.getAttribute('aria-current')).toBe('true'));
-    expect(row('sermons.spurgeon-ccel')).toBeNull();
+    expect(row('sermons.spurgeon-ccel')).toBe(document.querySelector('[data-source="sermons.spurgeon-ccel"]'));
+    expect(row('sermons.spurgeon-ccel')?.hasAttribute('data-highlighted')).toBe(true);
+    expect(row('sermons.spurgeon-ccel')?.closest('[data-sermon-sources]')).not.toBeNull();
+    expect(document.querySelector('[data-section="sermons"]')).toBeNull();
     cleanup();
   }, 60_000);
 });
