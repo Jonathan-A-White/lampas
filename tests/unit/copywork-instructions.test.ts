@@ -145,6 +145,11 @@ describe("copywork's answer writes down the word as read before it marks it", ()
     expect(text).toMatch(/Fill `written` first/);
   });
 
+  // the first live run held `written: σκοτία` beside `mark: wrong, 'the model has σκοτία with no accent'` (4 of 10 runs): the mark must follow the comparison of the two
+  it('has the mark follow the comparison: the same characters are right, only a difference he can point to is wrong', () => {
+    expect(text).toMatch(/when `written` and `word` are the same characters the mark is `right`, and only a difference you can point to between the two makes it `wrong`/);
+  });
+
   it('says it once, in the general rule', () => {
     expect(text.match(/Fill `written` first/g) ?? []).toHaveLength(1);
   });
