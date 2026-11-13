@@ -1,7 +1,7 @@
 // features/steps/tutor-copy.steps.tsx — runs features/tutor-copy.feature: the copy and share links of a Bible talk answer (mw-5r3p30.1075). Postern is the fake (tests/support/fake-postern.ts) whose mill answers
 // every grist with the answer a scenario sets; the clipboard and the share view are fakes that keep what they were given; Hebrews 9 and 10 are the committed chapter files.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -12,16 +12,18 @@ import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
+import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { findButton } from '../../tests/support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openTutor } from './open-tutor';
+import { answeredTurn, askAboutVerse, verseTalk } from './ask-verse';
 import { closeDatabase } from './close-database';
 
+// The App writes on its own after a tap (the usage count): db.close() with one in flight is a DatabaseClosedError.
 afterAll(async () => {
   cleanup();
   stopReading();
+  await usageWritesSettled();
   vi.unstubAllGlobals();
   await closeDatabase();
 });
@@ -35,6 +37,7 @@ let failTen = false;
 
 async function open(_: unknown, kind: string, reference: string): Promise<void> {
   cleanup();
+  await usageWritesSettled();
   stopReading();
   clearBus();
   vi.unstubAllGlobals();
@@ -68,20 +71,17 @@ async function open(_: unknown, kind: string, reference: string): Promise<void> 
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
+  // the App seeds the grammar ideas at its first open: the ask step starts once that is written, not beside it (tutor-links waits the same way; mw-indx1x6.30)
+  await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
 
-const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const turn = () => sheet().querySelector<HTMLElement>('[data-turn]') as HTMLElement;
+/** The answered turn of the open Talk sheet, read beside the sheet's own markup; throws until the sheet has settled on it (features/steps/ask-verse.ts). */
+const turn = answeredTurn;
 
-async function askAboutVerse28(): Promise<void> {
-  await user.click(await findButton('Verse 28'));
-  await screen.findByRole('region', { name: 'Verse view' });
-  await openTutor();
-  await screen.findByRole('dialog', { name: /^Talk about / });
-  await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), 'copy from verse 11 to chapter 10 verse 4');
-  await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
-  await waitFor(() => expect(sheet().querySelector('[data-turn]')).not.toBeNull());
-}
+// the shared step (mw-indx1x6.30): it waits for the answered turn, so the chip step after it starts on a settled sheet
+const askAboutVerse28 = async (): Promise<void> => {
+  await askAboutVerse(user, 28, 'copy from verse 11 to chapter 10 verse 4');
+};
 
 const crossing = () => {
   expect(written).toHaveLength(1);
@@ -95,7 +95,8 @@ describeFeature(feature, ({ Scenario }) => {
     Object.defineProperty(window.navigator, 'share', { configurable: true, value: (data: ShareData) => (shared.push(data), Promise.resolve()) });
   };
   const tapChip = async (_: unknown, name: string) => {
-    await user.click(await within(turn()).findByRole('button', { name, exact: true }));
+    // the turn is read again on each look, so the tap waits for the chip to be drawn in the answered turn (the role query is over the turn alone)
+    await user.click(await waitFor(() => within(turn()).getByRole('button', { name, exact: true })));
   };
   const holdsTheVerses = async () => {
     await waitFor(() => expect(written).toHaveLength(1));
@@ -110,11 +111,14 @@ describeFeature(feature, ({ Scenario }) => {
     expect(lines.slice(-2)).toEqual([reference, link]);
   };
   const chipSays = async (_: unknown, words: string) => {
-    const links = () => turn().querySelector<HTMLElement>('[data-tutor-links]') as HTMLElement;
-    await waitFor(() => expect(within(links()).getByRole('button')).toHaveTextContent(words));
+    await waitFor(() => {
+      const links = turn().querySelector<HTMLElement>('[data-tutor-links]');
+      if (!links) throw new Error('the answered turn has no links row');
+      expect(within(links).getByRole('button')).toHaveTextContent(words);
+    });
   };
   const stillOpen = () => {
-    expect(screen.getByRole('dialog', { name: /^Talk about / })).toBeInTheDocument();
+    expect(verseTalk()).toBeInTheDocument();
   };
 
   Scenario('One tap on the copy chip puts a passage across a chapter boundary on the clipboard', ({ Given, When, And, Then }) => {

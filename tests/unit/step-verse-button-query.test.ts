@@ -10,8 +10,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-/** The step files that ask the tutor about a verse and hold to findButton (tests/support/find-button.ts) for its number button. */
-const FILES = ['features/steps/tutor-links.steps.tsx', 'features/steps/tutor-works.steps.tsx', 'features/steps/tutor-copy.steps.tsx'];
+/** The shared ask step (mw-indx1x6.30) and the step files that ask the tutor about a verse through it: each holds to findButton (tests/support/find-button.ts) for a verse's number button. */
+const FILES = ['features/steps/ask-verse.ts', 'features/steps/tutor-links.steps.tsx', 'features/steps/tutor-works.steps.tsx', 'features/steps/tutor-copy.steps.tsx'];
 
 describe('a step that selects a verse in the Reader', () => {
   it.each(FILES)('%s finds the verse button with findButton, not a role query over the chapter', (file) => {

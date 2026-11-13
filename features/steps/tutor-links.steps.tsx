@@ -2,7 +2,7 @@
 // chips that open in the study resources he switched on. Postern is the fake (tests/support/fake-postern.ts) whose mill answers every grist with the
 // answer a scenario sets; fetch serves the chapter files and the lexicon from disk.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -17,10 +17,9 @@ import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { usageWritesSettled } from '../../src/tips/usageLog';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { findButton } from '../../tests/support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openTutor } from './open-tutor';
+import { answeredTurn, askAboutVerse, verseTalkOpen } from './ask-verse';
 import { closeDatabase } from './close-database';
 
 // The App writes on its own after a tap (the usage count) and at its first open (the grammar ideas seeding); db.close() with one of them in flight is a DatabaseClosedError.
@@ -66,19 +65,8 @@ async function open(links: Link[]): Promise<void> {
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
 
-/**
- * The open Talk sheet, found beside its own markup: screen.getByRole('dialog', { name }) works out the role and name of every element of the Reader behind
- * it, and turn() and the waits below call this on every poll (mw-lcv9z3g.13: with the reads of the ask step that cost it 20 s under load).
- */
-const sheet = (): HTMLElement => {
-  for (const dialog of document.querySelectorAll<HTMLElement>('[role="dialog"]')) {
-    const labelledBy = dialog.getAttribute('aria-labelledby');
-    const title = dialog.getAttribute('aria-label') ?? (labelledBy ? document.getElementById(labelledBy)?.textContent : null) ?? '';
-    if (/^Talk about /.test(title.trim())) return dialog;
-  }
-  throw new Error('no Talk sheet is open');
-};
-const turn = () => sheet().querySelector<HTMLElement>('[data-turn]') as HTMLElement;
+/** The answered turn of the open Talk sheet, read beside the sheet's own markup, never by a role query over the Reader behind it; throws until the sheet has settled on it (features/steps/ask-verse.ts). */
+const turn = answeredTurn;
 const links = () => within(turn()).queryAllByRole('link');
 
 /** The one thing the links row holds is the Reader button `name`: no link of a study resource beside it. */
@@ -87,19 +75,9 @@ async function onlyButton(_: unknown, name: string): Promise<void> {
   expect(links()).toEqual([]);
 }
 
+// the shared step (mw-lcv9z3g.13, mw-indx1x6.30): the single test that carries the whole ask, so it makes no role query over the Reader and pastes the question
 async function askAboutVerse28(text = 'Tell me about love'): Promise<void> {
-  // findButton, not screen.findByRole: a role query walks every word of the chapter (1.6 s calm, a multiple under load) and a step past the 20 s testTimeout leaves its body running into the next scenario's cleanup and afterAll's db.close()
-  await user.click(await findButton('Verse 28'));
-  // the ? asks about what is open, so the Verse view must be up first (a plain query on its own attribute, not a role query)
-  await waitFor(() => expect(document.querySelector('[data-verse-view]')).not.toBeNull());
-  // openTutor waits for the Verse view's ? and for the Talk sheet and returns it: no role query over the Reader again (mw-lcv9z3g.13)
-  const talk = await openTutor();
-  const message = within(talk).getByRole('textbox', { name: 'Your message' });
-  // one paste, not a render per key: the step is the single test that carries the whole ask, and its keys were 0.8 s calm
-  await user.click(message);
-  await user.paste(text);
-  await user.click(within(talk).getByRole('button', { name: 'Send' }));
-  await waitFor(() => expect(sheet().querySelector('[data-turn]')).not.toBeNull());
+  await askAboutVerse(user, 28, text);
 }
 
 const feature = await loadFeature('features/tutor-links.feature');
@@ -156,7 +134,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(await within(turn()).findByRole('button', { name, exact: true }));
     });
     Then('the Talk sheet is closed', async () => {
-      await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
+      await waitFor(() => expect(verseTalkOpen()).toBe(false));
     });
     And('the Reader is open on verse {int} of Romans 8', async (_, n: number) => {
       await waitFor(() => expect(readerOf(window.location.hash)).toMatchObject({ book: 'rom', chapter: 8, verse: n }));

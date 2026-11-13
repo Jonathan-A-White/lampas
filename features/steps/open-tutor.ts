@@ -36,6 +36,16 @@ function dialogNamed(name: RegExp | string): HTMLElement | null {
   return null;
 }
 
+/** The open Talk sheet named `name` (by default any talk), or null: a step reads the sheet through this, never through screen.getByRole('dialog'), which walks the Reader behind it on every call (mw-lcv9z3g.13, mw-indx1x6.30). */
+export const queryTalkSheet = (name: RegExp | string = TALK_SHEET): HTMLElement | null => dialogNamed(name);
+
+/** The open Talk sheet named `name` (by default any talk); throws while none is open, so a waitFor around it waits for the sheet. */
+export function talkSheet(name: RegExp | string = TALK_SHEET): HTMLElement {
+  const found = dialogNamed(name);
+  if (!found) throw new Error('no Talk sheet is open');
+  return found;
+}
+
 /**
  * Opens the tutor with a tap on the floating ? and waits for its Talk sheet (`sheet`, by default any talk). Returns the sheet.
  */
