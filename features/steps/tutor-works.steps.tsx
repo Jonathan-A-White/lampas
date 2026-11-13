@@ -1,7 +1,7 @@
 // features/steps/tutor-works.steps.tsx — runs features/tutor-works.feature: the digest of his shelf the Bible talk is told (mw-rfjjzd.10) and the `work` link of
 // an answer, drawn only for a book on the shelf. Postern is the fake (tests/support/fake-postern.ts) whose mill answers every grist with the answer a scenario sets.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { render, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -13,10 +13,9 @@ import { clearBus } from '../../src/events/bus';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
-import { findButton } from '../../tests/support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openTutor } from './open-tutor';
+import { answeredTurn, askAboutVerse } from './ask-verse';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -55,20 +54,15 @@ async function open(work: string, reference: string): Promise<void> {
   await seedHisWords();
 }
 
-const sheet = () => screen.getByRole('dialog', { name: /^Talk about / });
-const turn = () => sheet().querySelector<HTMLElement>('[data-turn]') as HTMLElement;
+/** The answered turn of the open Talk sheet, read beside the sheet's own markup; throws until the sheet has settled on it (features/steps/ask-verse.ts). */
+const turn = answeredTurn;
 
 async function askAboutVerse28(text: string): Promise<void> {
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
-  await user.click(await findButton('Verse 28'));
-  await screen.findByRole('region', { name: 'Verse view' });
-  await openTutor();
-  await screen.findByRole('dialog', { name: /^Talk about / });
-  await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), text);
-  await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
-  await waitFor(() => expect(sheet().querySelector('[data-turn]')).not.toBeNull());
+  // the shared step (mw-indx1x6.30): no role query over the Reader, the question pasted, and a wait for the answered turn
+  await askAboutVerse(user, 28, text);
 }
 
 const feature = await loadFeature('features/tutor-works.feature');

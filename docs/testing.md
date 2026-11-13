@@ -98,6 +98,13 @@ elsewhere) and waits for a new screen with `pageTime`; a screen that waits on it
   `tests/e2e/open-tutor.ts` sends them through CDP, with or without `hasTouch`. Both send the fingers of `tests/support/two-finger.ts`, and both wait out the
   600 ms in which the app drops a click after a tap that opened the tutor, so the next click in the test lands. What the tap asks about is the app's choice
   (the newest thing a screen or sheet registered with `useDoorTarget`): open the Verse view first (`openVerseView`, or `openTalkAbout(page, n)`) for a verse, a word sheet for a word.
+- A step that asks the tutor about a verse of the open chapter calls `askAboutVerse(user, n, text)` (`features/steps/ask-verse.ts`, mw-indx1x6.30): the verse's
+  number by `findButton`, the Verse view by its own attribute, `openTutor()`, the question in one paste, Send, and a wait for `answeredTurn()` (the newest turn
+  with an answer, once the sheet shows no question waiting). A step after it reads the sheet with `answeredTurn()`, `verseTalk()` or `queryTalkSheet()`
+  (`open-tutor.ts`), inside a `waitFor` when it waits for something drawn later; never `screen.getByRole('dialog')`, which walks the Reader behind the sheet on
+  every call. vitest-cucumber gives each step its own 20 s test and a step failed by that timeout goes on running into the steps after it
+  (`tests/unit/step-ask-about-verse.test.ts` holds tutor-links, tutor-works and tutor-copy to it). A step whose next step waits on the mill, not on the answer, calls
+  `sendAboutVerse(user, n, text)`, the same step without that last wait (about-you and memory-tutor); the other tutor step files still have their own ask.
 - `tests/e2e/tutor.spec.ts` (in `npm run shots`, shots `ask.png` and `answer.png`) routes Postern's origin to the same fake
   from Playwright (`tests/support/playwright-postern.ts`); the app's real signing and sealing run.
 - `tests/e2e/tutor-live.spec.ts` is the true end-to-end test, Playwright project `live`, run by `npm run e2e:live` only. It
