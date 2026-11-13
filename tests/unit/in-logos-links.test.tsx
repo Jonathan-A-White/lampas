@@ -93,7 +93,8 @@ describe('the rows of the chooser', () => {
     for (const series of ['David Guzik’s Commentaries on the Bible', 'Barnes’ Notes on the Old and New Testaments', 'The Bible Speaks Today']) expect(romans.some((r) => r.entry.series === series), series).toBe(true);
     for (const r of romans) expect(r.entry.covers, r.entry.resource).toContain('rom');
     const psalm = inLogosRows(CATALOGUE, states, { book: 'psa', chapter: 23, verse: 1 });
-    expect(new Set(psalm.map((r) => r.entry.kind))).toEqual(new Set(['bible', 'hebrew-text', 'commentary', 'sermons']));
+    // no sermon book: it opens only through the Sermons door (mw-qtu3zvz.92)
+    expect(new Set(psalm.map((r) => r.entry.kind))).toEqual(new Set(['bible', 'hebrew-text', 'commentary']));
     for (const r of psalm.filter((x) => x.entry.kind === 'commentary')) expect(r.entry.covers, r.entry.resource).toContain('psa');
     const jonah = inLogosRows(CATALOGUE, states, { book: 'jon', chapter: 1, verse: 10 }).filter((r) => r.entry.kind === 'commentary');
     expect(jonah.map((r) => r.entry.resource)).toContain('LLS:GUZIKCOMM32JON');

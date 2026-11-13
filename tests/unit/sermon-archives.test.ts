@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { buildCatalogue, loadRules } from '../../scripts/logos-catalogue';
-import { inLogosGroups, inLogosRows } from '../../src/library/inLogos';
+import { inLogosGroups, inLogosRows, sermonBookRows } from '../../src/library/inLogos';
 import { countLine, headerCount, infoOf, KIND_INFO } from '../../src/library/kinds';
 import { readExport } from '../../src/library/parseExport';
 import { CATALOGUE, entriesOf, KINDS, type CatalogueEntry } from '../../src/resources/catalogue';
@@ -21,17 +21,14 @@ const greear = () => archives().find((e) => e.resource === 'LLS:JDGRRSRMNRCHV')!
 const states = (entries: Record<string, ShelfState>): ReadonlyMap<string, ShelfState> => new Map(Object.entries(entries));
 
 describe('the kind sermons', () => {
-  it('is the ninth kind, after the devotionals, with its own file', () => {
-    expect([...KINDS]).toEqual(['lexicon', 'grammar', 'greek-text', 'hebrew-text', 'interlinear', 'commentary', 'bible', 'devotional', 'sermons']);
-    expect(KIND_INFO.map((i) => i.kind)).toEqual([...KINDS]);
+  it('is the ninth kind of the catalogue, after the devotionals, with its own file, and no kind of the Library (mw-qtu3zvz.92)', () => {
+    expect(KINDS[KINDS.length - 1]).toBe('sermons');
+    expect(existsSync('src/resources/catalogue/sermons.json')).toBe(true);
+    expect(KIND_INFO.map((i) => i.kind)).not.toContain('sermons');
   });
 
-  it('is named for the Library and takes Off | On | Pinned like a commentary', () => {
-    const info = infoOf('sermons');
-    expect(info.plural).toBe('Sermons');
-    expect(info.singular).toBe('Sermon archive');
-    expect(info.steps).toBe('pin');
-    expect(info.help.length).toBeGreaterThan(20);
+  it('is named a sermon book and takes Off | On, with no Pin', () => {
+    expect(infoOf('sermons')).toMatchObject({ plural: 'Sermon books', singular: 'Sermon book', steps: 'on' });
   });
 
   it('counts its books on the shelf like another kind', () => {
@@ -77,21 +74,19 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('the catalogue written from his whole
 });
 
 describe('"In another book…" at a verse', () => {
-  const shelf = states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' });
 
-  it('lists the On and Pinned archives at a New Testament verse, each linked at the Bible reference with the ref.ly fallback', () => {
-    const rows = inLogosRows(archives(), shelf, { book: 'rom', chapter: 5, verse: 8 });
-    const ids = rows.map((r) => r.entry.resource);
-    expect(ids.sort()).toEqual(['LLS:GRGLRSRMNRCH', 'LLS:JDGRRSRMNRCHV']);
-    const row = rows.find((r) => r.entry.resource === 'LLS:GRGLRSRMNRCH')!;
-    expect(row.link.url).toBe('logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5.8');
-    expect(row.link.fallback).toBe('https://ref.ly/logosres/LLS%3AGRGLRSRMNRCH?ref=Bible.Ro5.8');
+  it('lists no sermon book at a New Testament verse; the Sermons door has each linked at the Bible reference with the ref.ly fallback', () => {
+    const on = states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' });
+    expect(inLogosRows(archives(), on, { book: 'rom', chapter: 5, verse: 8 })).toEqual([]);
+    const rows = sermonBookRows(archives(), on, { book: 'rom', chapter: 5, verse: 8 });
+    expect(rows.map((r) => r.entry.resource).sort()).toEqual(['LLS:GRGLRSRMNRCH', 'LLS:JDGRRSRMNRCHV']);
+    expect(rows.find((r) => r.entry === laurie())!.link).toMatchObject({ url: 'logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3AGRGLRSRMNRCH?ref=Bible.Ro5.8' });
   });
 
-  it('lists them at an Old Testament verse too: an archive is indexed by passage, whichever Testament it preaches from', () => {
-    const rows = inLogosRows(archives(), shelf, { book: 'jon', chapter: 1, verse: 1 });
-    expect(rows.map((r) => r.entry.resource).sort()).toEqual(['LLS:GRGLRSRMNRCH', 'LLS:JDGRRSRMNRCHV']);
-    expect(rows[0].link.url).toMatch(/;ref=Bible\.Jon1\.1$/);
+  it('has them at an Old Testament verse too: a sermon book is indexed by passage, whichever Testament it preaches from', () => {
+    const on = states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' });
+    expect(inLogosRows(archives(), on, { book: 'jon', chapter: 1, verse: 1 })).toEqual([]);
+    expect(sermonBookRows(archives(), on, { book: 'jon', chapter: 1, verse: 1 }).map((r) => r.link.url).sort()).toEqual(['logosres:LLS:GRGLRSRMNRCH;ref=Bible.Jon1.1', 'logosres:LLS:JDGRRSRMNRCHV;ref=Bible.Jon1.1']);
   });
 
   it('leaves out an archive that is Off or not on the shelf', () => {
@@ -99,11 +94,10 @@ describe('"In another book…" at a verse', () => {
     expect(inLogosRows(archives(), states({}), { book: 'rom', chapter: 5, verse: 8 })).toEqual([]);
   });
 
-  it('groups them as Pinned first and then Sermon archives', () => {
-    const rows = inLogosRows(archives(), shelf, { book: 'rom', chapter: 5, verse: 8 });
-    const groups = inLogosGroups(rows, { book: 'rom', chapter: 5, verse: 8 });
-    expect(groups.map((g) => g.title)).toEqual(['Pinned', 'Sermon archives (1)']);
-    expect(groups[0].rows[0].entry.resource).toBe('LLS:JDGRRSRMNRCHV');
+  it('has no group of sermon books behind In another book…, Pinned or not', () => {
+    const on = states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' });
+    const place = { book: 'rom', chapter: 5, verse: 8 };
+    expect(inLogosGroups(inLogosRows(archives(), on, place), place)).toEqual([]);
   });
 });
 
@@ -119,17 +113,17 @@ describe('the tutor’s digest of the shelf', () => {
 describe('logosArchives: the rows of the sheet’s In Logos group', () => {
   const place = { book: 'rom', chapter: 5, from: 8, to: 8 };
 
-  it('is one row for each Pinned or On archive, the Pinned first, each a link at the verse', () => {
-    const rows = logosArchives(place, states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' }));
-    expect(rows.map((r) => r.title)).toEqual(['J. D. Greear Sermon Archive', 'Greg Laurie Sermon Archive']);
-    expect(rows[0].open).toEqual({ url: 'logosres:LLS:JDGRRSRMNRCHV;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3AJDGRRSRMNRCHV?ref=Bible.Ro5.8' });
+  it('is one row for each sermon book that is On (one once Pinned reads as On), by name, each a link at the verse', () => {
+    const rows = logosArchives(place, states({ 'LLS:PRINCESERMON': 'pinned', 'LLS:FRESHSERMS': 'on' }));
+    expect(rows.map((r) => r.title)).toEqual(['Fresh Sermons', 'Princeton Sermons']);
+    expect(rows[1].open).toEqual({ url: 'logosres:LLS:PRINCESERMON;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3APRINCESERMON?ref=Bible.Ro5.8' });
     expect(rows.every((r) => r.opensIn === 'logos')).toBe(true);
   });
 
   it('opens a passage at its first verse and a whole chapter at the chapter', () => {
-    const shelf = states({ 'LLS:GRGLRSRMNRCH': 'on' });
-    expect(logosArchives({ book: 'rom', chapter: 5, from: 1, to: 11 }, shelf)[0].open.url).toBe('logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5.1');
-    expect(logosArchives({ book: 'rom', chapter: 5 }, shelf)[0].open.url).toBe('logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5');
+    const shelf = states({ 'LLS:PRINCESERMON': 'on' });
+    expect(logosArchives({ book: 'rom', chapter: 5, from: 1, to: 11 }, shelf)[0].open.url).toBe('logosres:LLS:PRINCESERMON;ref=Bible.Ro5.1');
+    expect(logosArchives({ book: 'rom', chapter: 5 }, shelf)[0].open.url).toBe('logosres:LLS:PRINCESERMON;ref=Bible.Ro5');
   });
 
   it('is none for an archive that is Off, or a book that is not a sermon archive', () => {

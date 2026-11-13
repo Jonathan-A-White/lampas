@@ -193,7 +193,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   const offers = async (names: string[], chosen: string) => {
     await waitFor(async () => expect(await buttons('Read as')).toEqual(names));
-    expect(await chosenIn('Read as')).toEqual([chosen]);
+    // the sets and the set in force are two reads that land in two draws: wait for the chosen one as isChosen does (mw-qtu3zvz.92 found the one read racing the other)
+    await waitFor(async () => expect(await chosenIn('Read as')).toEqual([chosen]));
   };
   const isChosen = (choice: string) => waitFor(async () => expect(await chosenIn('Read as')).toEqual([choice]));
   const cancel = () => tap(null, 'Cancel');

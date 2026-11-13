@@ -1,7 +1,7 @@
 // src/sermons/SermonsSheet.tsx — the Sermons sheet (mw-qtu3zvz.2, docs/sermons.md): 'Sermons for Romans 5:8' (a verse), 'Sermons for Romans 5:1-11' (a passage) or 'Sermons for Romans 5', the place's sermons grouped
 // as 'On this verse' ('On these verses') and 'In this chapter' (a group is absent when empty), each row 44 px with the title and, under it, the preacher (the source's `by` where there is none), the date and where it opens. A row is a plain link
 // to the sermon where it lives; nothing is fetched until one is tapped, and offline the rows stay and the second line says 'Needs the internet'. openSermons(place) opens it; <SermonsHost /> (mounted once in App) draws it.
-// After them, 'In Logos' lists his Pinned and On sermon archives at the place, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos').
+// After them, 'In Logos' lists his sermon books that are On at the place, by name, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos'; switched in Settings > Study resources > Sermons > Sermon sources, mw-qtu3zvz.92).
 // Online (mw-qtu3zvz.5, docs/sermons.md 'When online'): the sheet opens on the bundled rows, asks the sermon index service and says 'Latest from the index · N new' (or 'Offline: the bundled index') under the title;
 // a search field answers from the service alone ('Found'). Under the title of a verse or a passage a 'Themes' line names the topics that carry it, and after 'In this chapter' come the sermons 'On <topic>' that share a topic with it (mw-qtu3zvz.4, docs/sermons.md 'The themes').
 import { useState, type ReactNode } from 'react';
@@ -104,7 +104,7 @@ function Archive({ row }: { row: ArchiveRow }) {
   );
 }
 
-/** 'In Logos': a row for each sermon archive of his shelf that is Pinned or On, the Pinned first; absent when there are none (and while Logos is Off). */
+/** 'In Logos': a row for each sermon book that is On in the list of sermon sources, by name; absent when there are none (and while Logos is Off). */
 function InLogos({ rows }: { rows: ArchiveRow[] }) {
   if (rows.length === 0) return null;
   return (

@@ -158,13 +158,6 @@ async function tapVerseAndDoor(): Promise<void> {
   await user.click(await within(view).findByRole('button', { name: 'Sermons · 4' }));
 }
 
-const sermonsSection = async (): Promise<HTMLElement> =>
-  waitFor(() => {
-    const section = document.querySelector<HTMLElement>('[data-section="sermons"]');
-    if (!section) throw new Error('no Sermons section');
-    return section;
-  });
-
 const feature = await loadFeature('features/sermons-online.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -194,11 +187,12 @@ describeFeature(feature, ({ Scenario }) => {
   const openSettings = async () => {
     cleanup();
     closeSermons();
-    window.history.replaceState(null, '', '/#/settings?group=study');
+    window.history.replaceState(null, '', '/#/settings?sources=sermons');
     render(<App />);
-    await screen.findByRole('region', { name: 'Study resources' });
+    await screen.findByRole('heading', { name: 'Sermon sources', level: 1 });
   };
-  const sectionSwitch = async (name: string) => within(await sermonsSection()).findByRole('group', { name });
+  // a source's switch on the page of sermon sources (src/sermons/SermonSourcesPage.tsx): a radio group named by the source
+  const sectionSwitch = async (name: string) => screen.findByRole('radiogroup', { name });
 
   Scenario("The service's newer rows replace and add to the bundled ones", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with the sermon index answering', openedWith({}));
@@ -241,7 +235,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the part {string} holds {string} and {string}', holdsTwo);
   });
 
-  Scenario('A source the bundle lacks gets an Off row in Settings, and its rows show only when it is On', ({ Given, When, Then, And }) => {
+  Scenario('A source the bundle lacks gets an Off row in the list of sermon sources, and its rows show only when it is On', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with the sermon index answering', openedWith({}));
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
@@ -251,12 +245,12 @@ describeFeature(feature, ({ Scenario }) => {
       expect(asks.length).toBeGreaterThan(0);
       for (const ask of asks) expect(ask.searchParams.get('source')).toBe(source);
     });
-    When('Settings is opened at Study resources', openSettings);
-    Then('the Sermons section shows {string} Off', async (_, name: string) => {
-      await waitFor(async () => expect(within(await sectionSwitch(name)).getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true'));
+    When('the list of sermon sources is opened', openSettings);
+    Then('the list of sermon sources shows {string} Off', async (_, name: string) => {
+      await waitFor(async () => expect(within(await sectionSwitch(name)).getByRole('radio', { name: 'Off' })).toHaveAttribute('aria-checked', 'true'));
     });
-    When('he turns {string} On in the Sermons section', async (_, name: string) => {
-      await user.click(within(await sectionSwitch(name)).getByRole('button', { name: 'On' }));
+    When('he turns {string} On in the list of sermon sources', async (_, name: string) => {
+      await user.click(within(await sectionSwitch(name)).getByRole('radio', { name: 'On' }));
       await waitFor(async () => expect((await db.settings.get('sermons.spurgeon-20'))?.value).toBe('on'));
     });
     And('the Verse view of Romans 5:8 is opened again with its Sermons sheet', async () => {
@@ -280,9 +274,9 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('the part {string} holds {string}, {string} and {string}', holdsThree);
-    When('Settings is opened at Study resources', openSettings);
-    Then('the Sermons section shows {string} On', async (_, name: string) => {
-      await waitFor(async () => expect(within(await sectionSwitch(name)).getByRole('button', { name: 'On' })).toHaveAttribute('aria-pressed', 'true'));
+    When('the list of sermon sources is opened', openSettings);
+    Then('the list of sermon sources shows {string} On', async (_, name: string) => {
+      await waitFor(async () => expect(within(await sectionSwitch(name)).getByRole('radio', { name: 'On' })).toHaveAttribute('aria-checked', 'true'));
     });
   });
 

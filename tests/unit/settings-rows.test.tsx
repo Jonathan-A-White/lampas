@@ -7,7 +7,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { SETTINGS } from '../../src/settings/registry';
-import { GROUPS, ROWS, SECTIONS, foldText, groupOf, isHomeRow, rowOf, visibleRows, type Values } from '../../src/settings/rows';
+import { GROUPS, ROWS, SECTIONS, foldText, groupOf, isHomeRow, rowOf, visibleRows, type Values, isSermonSourceRow } from '../../src/settings/rows';
 import { showSettingsGroup } from '../support/settings-pages';
 import { forgetImport, keepImport } from '../support/logos-import';
 import { OWNS_PREFIX, ownsKey } from '../../src/sermons/enabled';
@@ -146,7 +146,8 @@ describe('the Settings screen', () => {
     const seen: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);
-      const mine = ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation' && groupOf(row.section).id === group.id);
+      // a sermon source's own switch is drawn on the page of sermon sources, not on a group's page (mw-qtu3zvz.92)
+      const mine = ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation' && !isSermonSourceRow(row) && groupOf(row.section).id === group.id);
       await waitFor(() => expect(drawn()).toEqual(keys(mine)));
       for (const row of mine) {
         expect(document.querySelector(`[data-setting="${row.key}"]`)?.textContent, row.key).toContain(row.hint);
@@ -154,7 +155,8 @@ describe('the Settings screen', () => {
       }
     }
     // 'Which languages?' and the dials are drawn on the home above the groups, not on a page
-    expect(seen.sort()).toEqual(keys(ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation')).sort());
+    expect(seen.sort()).toEqual(keys(ROWS.filter((row) => !isHomeRow(row) && row.key !== 'pronunciation' && !isSermonSourceRow(row))).sort());
+    expect(seen).toContain('sermonSources');
     cleanup();
   });
 
@@ -167,7 +169,7 @@ describe('the Settings screen', () => {
       { key: 'newWordsADay', value: '0' },
     ]);
     render(<SettingsScreen />);
-    const visible = visibleRows({ ...BOTH, weave: 'off', newWordsADay: '0' }, '').filter((row) => !isHomeRow(row));
+    const visible = visibleRows({ ...BOTH, weave: 'off', newWordsADay: '0' }, '').filter((row) => !isHomeRow(row) && !isSermonSourceRow(row));
     const shown: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);

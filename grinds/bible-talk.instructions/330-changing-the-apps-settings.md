@@ -67,8 +67,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `maps.biblemapper` — Bible Mapper. The maps of Bible Mapper, shown in the app.
 - `maps.logosatlas` — Logos Atlas. Used only while Logos is On in Study resources.
 - `themes.themes-tcr1934`, `themes.themes-torrey` — Thompson Chain Topics, Torrey's New Topical Textbook. Verse topics.
-- `sermons.spurgeon-ccel`, `sermons.henry-sermons` — Spurgeon's sermons (CCEL), Matthew Henry's sermons. Listed by passage.
-- `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos` — Greg Laurie's, J. D. Greear's, Skip Heitzig's, Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's, D. L. Moody's sermons. Only if your import says you own it.
+- `sermons.spurgeon-ccel`, `sermons.henry-sermons`, `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos` — Spurgeon's, Matthew Henry's, Greg Laurie's, J. D. Greear's, Skip Heitzig's, Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's, D. L. Moody's sermons. In Settings > Study resources > Sermons > Sermon sources; a Logos list needs your import.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
 - `readingPlan` — Reading plan. Read through the Bible a chapter at a time, with the audio Bible.
 - `dailyReview` — Review. Whether Today holds a Review piece: the words and ideas that are due.

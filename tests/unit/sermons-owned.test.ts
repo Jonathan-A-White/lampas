@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { ownedResources } from '../../src/data/repositories';
-import { inLogosRows } from '../../src/library/inLogos';
+import { inLogosRows, sermonBookRows } from '../../src/library/inLogos';
 import { addressOffered, FREE_LOGOS, isOffered, logosResourceOf } from '../../src/library/owned';
 import { entriesOf } from '../../src/resources/catalogue';
 import { enabledSources, sermonsFor } from '../../src/sermons';
@@ -79,9 +79,12 @@ describe('the bundled Logos sources', () => {
 
   it('are not offered while his import lacks them, but the free sources are', () => {
     const all = bundledSources();
-    const on = (key: string) => (key.startsWith('sermons.') ? 'on' : undefined);
+    const on = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
     expect(enabledOf(all, on, new Set()).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons']);
     expect(enabledOf(all, on, new Set([GREG])).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'greg-laurie-logos']);
+    // a list made from Logos books is a Logos source: while Logos is off it is not used, though his import holds it and its switch is On (mw-qtu3zvz.92)
+    const logosOff = (key: string) => (key.startsWith('sermons.') ? 'on' : undefined);
+    expect(enabledOf(all, logosOff, new Set([GREG])).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons']);
     expect(sourceOffered(all.find((s) => s.id === 'greg-laurie-logos')!, new Set([GREG]))).toBe(true);
   });
 
@@ -99,7 +102,8 @@ describe('the bundled Logos sources', () => {
 });
 
 describe('the Sermons door', () => {
-  const putOn = () => db.settings.bulkPut(['greg-laurie-logos', 'jd-greear-logos'].map((id) => ({ key: `sermons.${id}`, value: 'on' })));
+  // Logos is On: a Logos list is used only then (mw-qtu3zvz.92)
+  const putOn = () => db.settings.bulkPut([{ key: 'resource.logos', value: 'on' }, ...['greg-laurie-logos', 'jd-greear-logos'].map((id) => ({ key: `sermons.${id}`, value: 'on' }))]);
 
   it('draws on no Logos source his import lacks, whatever its switch says', async () => {
     await putOn();
@@ -139,18 +143,23 @@ describe('Settings > Study resources > Sermons', () => {
 });
 
 describe('In Logos archives', () => {
-  const states = new Map([[GREG, 'on' as const], [GREEAR, 'pinned' as const]]);
+  // two sermon books no passage list stands for (a book under a list has no In Logos row, mw-qtu3zvz.92)
+  const [FIRST, SECOND] = entriesOf('sermons').filter((e) => !Object.values(LOGOS_RESOURCES).flat().includes(e.resource)).map((e) => e.resource);
+  const states = new Map([[FIRST, 'on' as const], [SECOND, 'pinned' as const], [GREG, 'on' as const]]);
   const place = { book: 'rom', chapter: 5, from: 8 };
 
-  it('list an archive on his shelf only when his import holds it', () => {
+  it('list a sermon book on his shelf only when his import holds it', () => {
     expect(logosArchives(place, states, undefined, new Set()).map((a) => a.id)).toEqual([]);
-    expect(logosArchives(place, states, undefined, new Set([GREG])).map((a) => a.id)).toEqual([GREG]);
+    expect(logosArchives(place, states, undefined, new Set([FIRST])).map((a) => a.id)).toEqual([FIRST]);
   });
 
-  it('are filtered in the chooser too, for the sermon kind', () => {
+  it('never list the book a passage list stands for, though his import holds it: its sermons are the list’s own rows', () => {
+    expect(logosArchives(place, states, undefined, new Set([GREG, SECOND])).map((a) => a.id)).toEqual([SECOND]);
+  });
+
+  it('are the only place a sermon book opens: the chooser behind In another book… holds none, owned or not', () => {
     const entries = entriesOf('sermons');
-    const rows = (owned: Set<string>) => inLogosRows(entries, states, { book: 'rom', chapter: 5, verse: 8 }, undefined, owned).map((r) => r.entry.resource);
-    expect(rows(new Set())).toEqual([]);
-    expect(rows(new Set([GREEAR]))).toEqual([GREEAR]);
+    expect(inLogosRows(entries, states, { book: 'rom', chapter: 5, verse: 8 })).toEqual([]);
+    expect(sermonBookRows(entries, states, { book: 'rom', chapter: 5, verse: 8 }, new Set([SECOND])).map((r) => r.entry.resource)).toEqual([SECOND]);
   });
 });

@@ -16,36 +16,20 @@ import { CONTROLS } from './settings/controls';
 import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { bringRowIntoView, HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
-import { backToSettingsHome, groupIdOf, movedTool, settingKeyOf } from './settings/link';
+import { backToSettingsHome, groupIdOf, movedTool, sermonSourcesOf, settingKeyOf } from './settings/link';
 import { searchLibrary } from './settings/librarySearch';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
-import { GREEK_LEVELS, greekLevelOf } from './settings/definitions/greekInterest';
-import { HEBREW_LEVELS } from './settings/definitions/hebrewInterest';
-import { HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, isHomeRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, visibleToolRows, type GroupId, type SettingsRow, type Values } from './settings/rows';
+import { greekLevelOf } from './settings/definitions/greekInterest';
+import { HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
+import { SermonSourcesPage } from './sermons/SermonSourcesPage';
+import { useSourceList } from './sermons/useSourceList';
+import { neededText } from './settings/neededText';
 import { settingsForTutor } from './settings/tutorSettings'; import { useGrownRows } from './settings/useGrownRows';
 import { useReportScreen } from './tutor/screenContext';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 /** How long a row that a link opened Settings at is kept in view while the controls above it arrive. */
 const KEEP_IN_VIEW_MS = 2500;
-
-/** What a linked row that something else hides says: a Greek or Hebrew row names the dial's step that shows it, a row both share says to raise either dial, any other says to turn on the setting it depends on. */
-function neededText(values: Values, row: SettingsRow | undefined, needed: SettingsRow | undefined): string {
-  const dial = row && dialOf(row);
-  if (!row || (dial !== 'greekInterest' && dial !== 'hebrewInterest' && dial !== 'depth')) return needed ? `“${row?.label}” is shown once “${needed.label}” is on. Turn “${needed.label}” on first.` : `“${row?.label}” is shown only when your Library import says you own it in Logos. Import your Logos library first.`;
-  // the step is found with both languages chosen, so only the dial's level decides
-  const level = (n: number) => String(n);
-  const both = { ...values, languages: 'both' };
-  if (dial === 'depth') {
-    const step = GREEK_LEVELS.find((l) => visibleRows({ ...both, depth: level(l.level) }, '').some((r) => r.key === row.key));
-    return `“${row.label}” is shown from “${step?.name ?? 'All in'}” up: choose a language at the top of Settings, then raise “How much Greek?” or “How much Hebrew?”.`;
-  }
-  const key = dial;
-  const lang = key === 'greekInterest' ? 'Greek' : 'Hebrew';
-  const steps = key === 'greekInterest' ? GREEK_LEVELS : HEBREW_LEVELS;
-  const step = steps.find((l) => visibleRows({ ...both, [key]: level(l.level) }, '').some((r) => r.key === row.key));
-  return `“${row.label}” is ${lang}. It is shown from “${step?.name ?? 'All in'}” up: choose ${lang} at the top of Settings, then raise “How much ${lang}?”.`;
-}
 
 /** The books of his Logos library found while Logos is Off: none (the library is under the Logos switch, mw-rfjjzd.23). */
 const NO_BOOKS: ReturnType<typeof searchLibrary> = { books: [], total: 0 };
@@ -56,7 +40,13 @@ function sectionOf(hash: string): string | null {
   return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('section');
 }
 
+/** Settings: the one list of sermon sources where the address asks for it (its own page, src/sermons/SermonSourcesPage.tsx; a link to a source's setting is that page at the source's row), else the home and its pages. */
 export function SettingsScreen() {
+  const sources = sermonSourcesOf(useAddress());
+  return sources ? <SermonSourcesPage key={sources.at ?? ''} at={sources.at} /> : <SettingsPages />;
+}
+
+function SettingsPages() {
   const address = useAddress();
   const wanted = sectionOf(address);
   // an address kept from before a row moved to Tools (mw-5r3p30.754) opens that tool's screen in its place
@@ -103,12 +93,16 @@ export function SettingsScreen() {
   const grown = useGrownRows(); const values = useLiveQuery(readValues, [grown]); // a sermon source the index service gave grows its row
   // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3); the Hand row is not drawn at all (mw-5r3p30.880: no tutor door exists)
   const aiAllowed = useAiAllowed();
-  const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest)).filter((r) => aiAllowed || !r.licenceOnly);
+  // a sermon source's own switch is drawn on the page of sermon sources, not here (mw-qtu3zvz.92): the search still finds it
+  const rows = orderResourceRows(rowsAt(values ?? {}, '', linked), greekLevelOf(values?.greekInterest)).filter((r) => (aiAllowed || !r.licenceOnly) && !isSermonSourceRow(r));
   const needed = values && linked ? neededFor(values, linked) : undefined;
   // a row both languages share depends on no row (the key 'depth' is read, not drawn): it says to raise either dial though there is nothing to turn on first
   const sharedHidden = values && linked && linkedRow && dialOf(linkedRow) === 'depth' && !visibleRows(values, '').some((r) => r.key === linked);
   // the tutor is told every setting, shown or not (mw-5r3p30.107): he can say what a setting that is off would give
   const forTutor = useLiveQuery(settingsForTutor, []);
+  // the sermon books the search may answer: those in the one list of sermon sources (his import holds them)
+  const sourceList = useSourceList();
+  const listedBooks = new Set((sourceList?.items ?? []).filter((item) => item.sort === 'book').map((item) => item.id));
   useReportScreen({ name: 'Settings', facts: [], settings: forTutor ?? [] });
   const drawn = values !== undefined;
   useEffect(() => {
@@ -130,7 +124,7 @@ export function SettingsScreen() {
           <div ref={contentRef}>
             <SettingsSearch query={query} onChange={setQuery} />
             {searching ? (
-              values ? <Found rows={found} tools={foundTools} books={values['resource.logos'] === 'on' ? searchLibrary(query) : NO_BOOKS} query={query} /> : null
+              values ? <Found rows={found} tools={foundTools} books={values['resource.logos'] === 'on' ? searchLibrary(query, listedBooks) : NO_BOOKS} query={query} /> : null
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (

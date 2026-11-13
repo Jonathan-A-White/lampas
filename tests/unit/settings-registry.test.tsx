@@ -66,19 +66,28 @@ describe('the registry lists every Settings row', () => {
         .filter((label) => label !== 'Tutor door' && label !== 'Hand' && label !== 'Which hand do you hold your phone in?')
         // Open web sermons in (mw-qtu3zvz.16) is likewise a row of its own (rows.ts OPEN_WEB_ROW), kept outside the registry: the tutor's Settings request is full
         .filter((label) => label !== 'Open web sermons in');
+    // a sermon source's switch is a registry setting drawn on a page of its own, the list of sermon sources (mw-qtu3zvz.92): no group's page draws it
+    const onSourcesPage = (key: string): boolean => key.startsWith('sermons.');
     // each group's page draws the controls of the settings its sections hold, and nothing else (one grammar path: no choice to draw for the Grammar approach, mw-foy5mb.1, so the row's content is the group);
     // the study-resource switches are checkboxes, not groups: the Settings screen's other tests draw them
     const all: string[] = [];
     for (const group of GROUPS) {
       await showSettingsGroup(group.id);
-      const expected = SETTINGS.filter((s) => !isHomeRow(s) && s.key !== 'pronunciation' && groupOf(s.section).id === group.id && !s.key.startsWith('resource.'))
+      const expected = SETTINGS.filter((s) => !isHomeRow(s) && s.key !== 'pronunciation' && groupOf(s.section).id === group.id && !s.key.startsWith('resource.') && !onSourcesPage(s.key))
         .map((s) => s.label)
         .sort();
       await waitFor(() => expect(drawnOnPage().sort()).toEqual(expected));
       all.push(...drawnOnPage());
     }
     // 'Which languages?' and the dials are drawn on the home above the groups, not on a page of a group
-    expect([...all].sort()).toEqual(SETTINGS.filter((s) => !isHomeRow(s) && s.key !== 'pronunciation' && !s.key.startsWith('resource.')).map((s) => s.label).sort());
+    expect([...all].sort()).toEqual(SETTINGS.filter((s) => !isHomeRow(s) && s.key !== 'pronunciation' && !s.key.startsWith('resource.') && !onSourcesPage(s.key)).map((s) => s.label).sort());
+    // the sermon sources' switches are all on their one page, each a radio group named as the registry names it
+    cleanup();
+    window.location.hash = '#/settings?sources=sermons';
+    render(<SettingsScreen />);
+    const sources = SETTINGS.filter((s) => onSourcesPage(s.key)).map((s) => s.label).sort();
+    expect(sources.length).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.queryAllByRole('radiogroup').map((el) => el.getAttribute('aria-label') ?? '').filter((label) => sources.includes(label)).sort()).toEqual(sources));
     cleanup();
   });
 

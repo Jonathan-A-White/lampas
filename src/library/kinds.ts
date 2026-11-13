@@ -1,5 +1,6 @@
-// src/library/kinds.ts — what the Library screen says of each of the nine kinds (docs/design/library-at-scale.md 3.3 and 3.4): their names, the help line of a kind's page, what Pin means for
-// them, and the count line a row reads ('19 on · 2 pinned'). Pure: the screens read the shelf and hand the rows here.
+// src/library/kinds.ts — what the Library screen says of each of its eight kinds (docs/design/library-at-scale.md 3.3 and 3.4): their names, the help line of a kind's page, what Pin means for
+// them, and the count line a row reads ('19 on · 2 pinned'). Pure: the screens read the shelf and hand the rows here. The catalogue's ninth kind, the sermon books, is no kind of the Library
+// (mw-qtu3zvz.92, docs/design/sermon-sources.md section 11): a book that is only sermons is switched in the one list of sermon sources (SERMON_SOURCES_PLACE) and opens only through the Sermons door.
 import { MAX_PINS, type LibraryRow, type ShelfState } from '../data/repositories';
 import { entriesOf, entryOf, KINDS, type CatalogueEntry, type Kind } from '../resources/catalogue';
 import type { LogosBibles } from '../resources/logosBible';
@@ -19,6 +20,15 @@ export interface KindInfo {
   help: string;
   steps: Steps;
 }
+
+/** Where every sermon source is switched, as Help, the Library and the tutor's instructions name it. */
+export const SERMON_SOURCES_PLACE = 'Settings > Study resources > Sermons > Sermon sources';
+
+/** The kinds the Library lists, in its order: every kind of the catalogue but the sermon books. */
+export const LIBRARY_KINDS: readonly Kind[] = KINDS.filter((kind) => kind !== 'sermons');
+
+/** Whether a book is on a page of the Library: every book of the catalogue but one that is only sermons. */
+export const inLibrary = (entry: Pick<CatalogueEntry, 'kind'>): boolean => entry.kind !== 'sermons';
 
 const INFO: Record<Kind, Omit<KindInfo, 'kind'>> = {
   lexicon: {
@@ -69,17 +79,20 @@ const INFO: Record<Kind, Omit<KindInfo, 'kind'>> = {
     help: 'Opens the day in your own copy. The ones that are on are in the draw of Today; Settings > Daily chooses among them.',
     steps: 'on',
   },
+  // not a page of the Library: what an import and a search call a sermon book, and where it is switched
   sermons: {
-    plural: 'Sermons',
-    singular: 'Sermon archive',
-    help: 'Opens the verse you are reading in your own sermon archive, where Logos has it indexed. Pinned ones are among the books at the verse; the Sermons sheet lists the ones that are on under In Logos.',
-    steps: 'pin',
+    plural: 'Sermon books',
+    singular: 'Sermon book',
+    help: `A book of sermons is switched in ${SERMON_SOURCES_PLACE}, with every other sermon source, each Off or On. One that is on opens at the verse you are reading, under In Logos on the Sermons sheet.`,
+    steps: 'on',
   },
 };
 
-export const KIND_INFO: readonly KindInfo[] = KINDS.map((kind) => ({ kind, ...INFO[kind] }));
+/** The Library's kinds, in the order its home lists them. */
+export const KIND_INFO: readonly KindInfo[] = LIBRARY_KINDS.map((kind) => ({ kind, ...INFO[kind] }));
 
-export const infoOf = (kind: Kind): KindInfo => KIND_INFO.find((i) => i.kind === kind)!;
+/** What is said of a kind; the sermon books have a line too, though the Library has no page of them. */
+export const infoOf = (kind: Kind): KindInfo => ({ kind, ...INFO[kind] });
 
 /** A kind's name inside a sentence: lowercase, but a proper word keeps its capital ('Greek texts', 'Hebrew texts', 'Greek Bibles', 'lexicons'), as it does in the page's title. */
 const PROPER = new Set(['Greek', 'Hebrew', 'Bible', 'Bibles']);
@@ -118,8 +131,8 @@ export function countsOf(kind: Kind, states: ReadonlyMap<string, ShelfState>): {
   return { on: own.length, pinned: own.filter(([, state]) => state === 'pinned').length };
 }
 
-/** How many books are on across the shelf: the Bibles are left out, because Settings sets them (three parts, never none) and a phone with nothing on its shelf must not count two. */
-export const booksOn = (states: ReadonlyMap<string, ShelfState>): number => KINDS.filter((k) => k !== 'bible').reduce((sum, kind) => sum + countsOf(kind, states).on, 0);
+/** How many books of the Library are on across the shelf (a sermon book is not one of them): the Bibles are left out, because Settings sets them (three parts, never none) and a phone with nothing on its shelf must not count two. */
+export const booksOn = (states: ReadonlyMap<string, ShelfState>): number => LIBRARY_KINDS.filter((k) => k !== 'bible').reduce((sum, kind) => sum + countsOf(kind, states).on, 0);
 
 /** The count a row of the home reads: '19 on · 2 pinned', 'none on', 'LSB for all three'. */
 export function countLine(kind: Kind, states: ReadonlyMap<string, ShelfState>, bibles?: LogosBibles): string {

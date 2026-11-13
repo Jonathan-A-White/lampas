@@ -5,7 +5,7 @@ import { Found as FoundRows, GroupButton as KitGroupButton, SettingsSearch } fro
 import { openLibrary } from '../nav/route';
 import { openTool } from '../tools';
 import { detailOf, infoOf } from '../library/kinds';
-import { openFoundRow, openSettingsGroup } from './link';
+import { openFoundRow, openSermonSources, openSettingsGroup } from './link';
 import type { searchLibrary } from './librarySearch';
 import { GROUPS, HOME_SECTIONS, type GroupId, type SettingsRow } from './rows';
 
@@ -53,7 +53,8 @@ function FoundTools({ tools }: { tools: readonly SettingsRow[] }) {
   );
 }
 
-/** The books of his library that hold the search (the `library` source of the search, mw-rfjjzd.5): 'BDAG · Your Logos library', opening the kind page at the book; more than are shown are one tap away in the Library. */
+/** The books of his library that hold the search (the `library` source of the search, mw-rfjjzd.5): 'BDAG · Your Logos library', opening the kind page at the book; more than are shown are one tap away in the Library.
+ *  A book that is only sermons answers 'Princeton Sermons · Sermon sources' and opens the one list of sermon sources at its row (mw-qtu3zvz.92). */
 function FoundBooks({ books }: { books: ReturnType<typeof searchLibrary> }) {
   const more = books.total - books.books.length;
   return (
@@ -63,12 +64,12 @@ function FoundBooks({ books }: { books: ReturnType<typeof searchLibrary> }) {
           <button
             type="button"
             data-found-book={entry.resource}
-            onClick={() => openLibrary({ kind: entry.kind, book: entry.resource })}
+            onClick={() => (entry.kind === 'sermons' ? openSermonSources(entry.resource) : openLibrary({ kind: entry.kind, book: entry.resource }))}
             className="block min-h-12 w-full border-b border-line py-3 text-left"
           >
-            <span className="block text-lg font-medium">{`${entry.short} · Your Logos library`}</span>
+            <span className="block text-lg font-medium">{entry.kind === 'sermons' ? `${entry.short} · Sermon sources` : `${entry.short} · Your Logos library`}</span>
             <span className="block text-base text-muted">{detailOf(entry)}</span>
-            <span className="block text-base text-accent">{`in ${infoOf(entry.kind).plural}`}</span>
+            <span className="block text-base text-accent">{entry.kind === 'sermons' ? 'in Study resources' : `in ${infoOf(entry.kind).plural}`}</span>
           </button>
         </li>
       ))}

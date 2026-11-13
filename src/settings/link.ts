@@ -53,6 +53,40 @@ export function openSettingsSection(id: string): void {
   openHash(link);
 }
 
+/** The address of the one list of sermon sources (mw-qtu3zvz.92, src/sermons/SermonSourcesPage.tsx), a page of its own behind the row Sermon sources; `at` is the source its row is marked at: the key of a list's
+ *  setting ('sermons.<id>') or a Logos book's Resource ID. */
+export const sermonSourcesLink = (at?: string): string => (at ? `#/settings?sources=sermons&at=${encodeURIComponent(at)}` : '#/settings?sources=sermons');
+
+/** What an address says of the list of sermon sources: `{}` for the page, `{ at }` for the page at a source's row, null for any other address. A link to a source's setting ('#/settings?setting=sermons.<id>': the
+ *  tutor's link, a Settings search result) is the page at that source's row, since no source has a row on the Study resources page. */
+export function sermonSourcesOf(hash: string): { at?: string } | null {
+  if (pathOf(hash) !== '#/settings') return null;
+  const q = hash.indexOf('?');
+  const params = new URLSearchParams(q < 0 ? '' : hash.slice(q + 1));
+  const setting = params.get('setting');
+  if (setting !== null && setting.startsWith('sermons.')) return { at: setting };
+  if (params.get('sources') !== 'sermons') return null;
+  const at = params.get('at');
+  return at ? { at } : {};
+}
+
+/** Opens the list of sermon sources as a new Back step, at a source's row when one is named; it starts at the top (or the row), not where he last left it. */
+export function openSermonSources(at?: string): void {
+  const link = sermonSourcesLink(at);
+  forgetScrollsAt(link);
+  openHash(link);
+}
+
+/** The list's back arrow: a step Back when the entry behind it is the Study resources page (so he is at the row he came from), else that page at its Sermons section in place of the list. */
+export function backToStudyResources(): void {
+  const behind = previousAddress();
+  if (behind !== null && pathOf(behind) === '#/settings' && (groupIdOf(behind) === 'study' || /[?&]section=sermons\b/.test(behind))) {
+    window.history.back();
+    return;
+  }
+  replaceHash('#/settings?section=sermons');
+}
+
 /** The address of the page of the group `id` ('#/settings?group=reading', mw-3ased2.1); '#/settings' alone is the home that lists the groups. */
 export const groupLink = (id: GroupId): string => `#/settings?group=${id}`;
 

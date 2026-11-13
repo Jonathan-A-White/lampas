@@ -1,15 +1,17 @@
 // src/library/LibraryScreen.tsx — Your Logos library (#/library, docs/design/library-at-scale.md 3.3): a card that says how many of the books Lampas can open are on, a search over every
-// book's title, author and series, and nine rows, one for each kind, with their counts from his shelf. A kind's row opens its page (src/library/KindPage.tsx, #/library?kind=lexicon);
-// a search result opens the page at the book. The address picks the page: a kind it does not know is the home.
+// book's title, author and series, and eight rows, one for each kind, with their counts from his shelf. A kind's row opens its page (src/library/KindPage.tsx, #/library?kind=lexicon);
+// a search result opens the page at the book. The address picks the page: a kind it does not know is the home. A book that is only sermons is not here (mw-qtu3zvz.92): the address of the
+// page of sermon books the Library once had, '#/library?kind=sermons', opens the one list of sermon sources in its place (Settings > Study resources > Sermons > Sermon sources), at the book it named.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { importNote, verseListCount } from '../data/repositories';
 import { libraryAsked } from '../data/repositories/bookRequests';
 import { countDueVerses } from '../data/repositories/memorize';
 import { useAiAllowed } from '../gate/licenceContext';
 import { askedLine } from '../services/bookRequests';
-import { backTo, libraryOf, navigate, openLibrary, useAddress } from '../nav/route';
-import { CATALOGUE, entryOf, KINDS, type CatalogueEntry } from '../resources/catalogue';
+import { backTo, libraryOf, navigate, openLibrary, replaceHash, useAddress } from '../nav/route';
+import { CATALOGUE, entryOf, type CatalogueEntry } from '../resources/catalogue';
+import { sermonSourcesLink } from '../settings/link';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { SCREEN_NAMES } from '../tutor/screen';
 import { useReportScreen } from '../tutor/screenContext';
@@ -18,21 +20,29 @@ import { AskForBook } from './AskForBook';
 import { ImportLibrary } from './ImportLibrary';
 import { KindPage } from './KindPage';
 import { marksOf } from './bibleParts';
-import { booksOn, countLine, infoOf, KIND_INFO, STATE_LABEL } from './kinds';
+import { booksOn, countLine, infoOf, inLibrary, KIND_INFO, LIBRARY_KINDS, STATE_LABEL } from './kinds';
 import { useBibles, useShelf } from './useShelf';
 
 /** The most results the search shows at once; the line under the field says when more match. */
 const MAX_RESULTS = 50;
 
-const ITEMS = CATALOGUE.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }));
+/** The books of the Library: every book of the catalogue but those that are only sermons. */
+const BOOKS = CATALOGUE.filter(inLibrary);
+const ITEMS = BOOKS.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }));
 /** The day an import was made, as the card says it: '8 Oct'. */
 const importedOn = (at: number): string => new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
 export function LibraryScreen() {
   const { kind, book, import: importing } = libraryOf(useAddress());
+  // the page of sermon books the Library once had: the one list of sermon sources, in place of this entry so Back does not come back here
+  const moved = !importing && kind === 'sermons';
+  useEffect(() => {
+    if (moved) replaceHash(sermonSourcesLink(book));
+  }, [moved, book]);
+  if (moved) return null;
   if (importing) return <ImportLibrary />;
-  const known = KINDS.find((k) => k === kind);
+  const known = LIBRARY_KINDS.find((k) => k === kind);
   return known ? <KindPage kind={known} book={book} /> : <LibraryHome />;
 }
 
@@ -62,7 +72,7 @@ function LibraryHome() {
           {states === undefined ? null : on > 0 || note ? (
             <>
               <p className="text-base">
-                {on} of the {CATALOGUE.length} books Lampas can open are on.
+                {on} of the {BOOKS.length} books Lampas can open are on.
               </p>
               {note ? (
                 <p data-testid="import-line" className="mt-1 text-base text-muted">
@@ -88,7 +98,7 @@ function LibraryHome() {
           ) : (
             <>
               <p className="text-base">
-                Lampas opens a Logos library&rsquo;s lexicons, grammars, Greek texts, Hebrew texts, interlinears, commentaries, Bibles, devotionals and sermon archives. Import your list, or tick the ones you own.
+                Lampas opens a Logos library&rsquo;s lexicons, grammars, Greek texts, Hebrew texts, interlinears, commentaries, Bibles and devotionals. Import your list, or tick the ones you own.
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button type="button" className={BUTTON} onClick={() => openLibrary({ import: true })}>

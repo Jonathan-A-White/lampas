@@ -69,7 +69,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'resources', title: 'Study resources', hint: 'Links from a word to the tools you own. Only links are added; no lexicon text is kept in Lampas. All start off.' },
   { id: 'maps', title: 'Maps', hint: 'Which atlases the Maps door and the tutor draw on.' },
   { id: 'themes', title: 'Themes', hint: 'Which topic lists name the themes of a verse and find the sermons on the same theme.' },
-  { id: 'sermons', title: 'Sermons', hint: 'Which sermon lists the Sermons door draws on.' },
+  { id: 'sermons', title: 'Sermons', hint: 'Which sermon sources the Sermons door draws on.' },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.' },
   { id: 'tips', title: 'Tips' },
   { id: 'developer', title: 'Developer' },
@@ -231,9 +231,21 @@ const rowOfSetting = (s: (typeof SETTINGS)[number]): SettingsRow => ({
 const rowOfDefinition = (def: typeof handSetting): SettingsRow => ({ key: def.key, label: def.label, hint: def.hint, help: def.help, section: def.section, licenceOnly: true });
 const HAND_ROW: SettingsRow = rowOfDefinition(handSetting);
 /** Open web sermons in (mw-qtu3zvz.16, openWebSetting): kept out of the registry and DEFINITIONS like Hand, so the tutor does not read or change it (isTalkable). No licence needed. */
+/** Sermon sources (mw-qtu3zvz.92, docs/design/sermon-sources.md): the one row of the Sermons section that stands for every sermon source, with how many are on; it opens the page that lists them
+ *  (src/sermons/SermonSourcesPage.tsx). A door, not a setting: the tutor does not read or change it (isTalkable), and the switches it does change are still the settings `sermons.<id>`, whose rows are kept for the
+ *  search and the tutor and are not drawn on the Study resources page (isSermonSourceRow). Its key has no dot: 'sermons.<id>' is a source's switch. */
+export const SERMON_SOURCES_ROW: SettingsRow = {
+  key: 'sermonSources',
+  label: 'Sermon sources',
+  hint: 'Every list and book of sermons the Sermons door draws on, each Off or On.',
+  help: 'One list holds every sermon source: the lists of sermons by passage, and the books of sermons in your Logos library that your import holds. A source that is on gives the Sermons door its sermons at a verse; a Logos book that is on is a link under In Logos on the Sermons sheet. A book that is only sermons is switched here and not in Your Logos library.',
+  section: 'sermons',
+};
+/** Whether a row is a sermon source's own switch ('sermons.<id>'): found by the search and changed by the tutor, drawn on the page of sermon sources and not on the Study resources page. */
+export const isSermonSourceRow = (row: Pick<SettingsRow, 'key'>): boolean => row.key.startsWith('sermons.');
 const OPEN_WEB_ROW: SettingsRow = { key: openWebSetting.key, label: openWebSetting.label, hint: openWebSetting.hint, help: openWebSetting.help, section: openWebSetting.section };
 // Study resources reads: the switches, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
-const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, OPEN_WEB_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, SERMON_SOURCES_ROW, OPEN_WEB_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** The Tools screen's doors (mw-5r3p30.754, his words of 2026-10-24: "things that interact with the Bible but are not the Bible themselves", not settings): the Library, his Verse lists, Memorize, Paradigms, Words and Review, in the order
  *  the screen draws them. They are rows of the section 'tools', which no Settings group holds, so no Settings page draws them and the tutor neither reads nor changes them (isTalkable); they stay rows so that the same
@@ -270,8 +282,8 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   });
 }
 
-/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== OPEN_WEB_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isGrownSermon(key);
+/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, the door to the sermon sources, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== SERMON_SOURCES_ROW.key && key !== OPEN_WEB_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isGrownSermon(key);
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 

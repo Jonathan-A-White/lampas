@@ -40,7 +40,7 @@ interface Phone {
   maps?: boolean;
   sermons?: Parameters<typeof registerTestSermons>[0];
   /** his Logos sermon archives (the catalogue's, by Resource ID) on the shelf, and whether Logos is On: Greg Laurie's On and J. D. Greear's Pinned, or (`only: 'off'`) Skip Heitzig's Off */
-  archives?: { logos: 'on' | 'off'; only?: 'off'; /** the Resource IDs his kept Library import holds (mw-qtu3zvz.94); both archives when left out */ owned?: string[] };
+  archives?: { logos: 'on' | 'off'; only?: 'off' | 'listed'; /** the Resource IDs his kept Library import holds (mw-qtu3zvz.94); both archives when left out */ owned?: string[] };
 }
 
 let fetched: ChapterFetch;
@@ -68,9 +68,10 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   if (phone.archives) {
     await db.settings.put({ key: 'resource.logos', value: phone.archives.logos });
     const shelf: { id: string; state: 'on' | 'pinned' }[] =
-      phone.archives.only === 'off' ? [] : [{ id: 'LLS:GRGLRSRMNRCH', state: 'on' }, { id: 'LLS:JDGRRSRMNRCHV', state: 'pinned' }];
+      phone.archives.only === 'off' ? [] : phone.archives.only === 'listed' ? [{ id: 'LLS:GRGLRSRMNRCH', state: 'on' }, { id: 'LLS:PRINCESERMON', state: 'on' }] : [{ id: 'LLS:FRESHSERMS', state: 'on' }, { id: 'LLS:PRINCESERMON', state: 'pinned' }];
+    // two sermon books no passage list stands for (Greg Laurie's archive is his list's own, and has no In Logos row: mw-qtu3zvz.92); the row once Pinned is written as the Library wrote it
     await db.library.bulkPut(shelf.map((r) => ({ ...r, kind: 'sermons', since: 1 })));
-    await keepImport(phone.archives.owned ?? ['LLS:GRGLRSRMNRCH', 'LLS:JDGRRSRMNRCHV', 'LLS:SKPHTZGSRMN']);
+    await keepImport(phone.archives.owned ?? ['LLS:FRESHSERMS', 'LLS:PRINCESERMON', 'LLS:GRGLRSRMNRCH', 'LLS:SKPHTZGSRMN']);
   }
   if (phone.view) await db.settings.put({ key: 'readerView', value: phone.view });
   render(<App />);
@@ -316,14 +317,36 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  const importHolds = (_: unknown, title: string) => openOn(title, { archives: { logos: 'on', owned: ['LLS:GRGLRSRMNRCH'] } });
-  const archiveOpened = (logos: 'on' | 'off', only?: 'off') => (_: unknown, title: string) => openOn(title, { archives: { logos, ...(only ? { only } : {}) } });
+  const importHolds = (_: unknown, title: string) => openOn(title, { archives: { logos: 'on', owned: ['LLS:PRINCESERMON'] } });
+  const archiveOpened = (logos: 'on' | 'off', only?: 'off' | 'listed') => (_: unknown, title: string) => openOn(title, { archives: { logos, ...(only ? { only } : {}) } });
   const opensWithThree = async (_: unknown, first: string, second: string, third: string) => {
     await sheetEl();
     await waitFor(async () => expect(await partTitles()).toEqual([first, second, third]));
   };
 
-  Scenario('His Logos sermon archives are the In Logos group, the Pinned ones first', ({ Given, When, Then, And }) => {
+
+  Scenario('A book a passage list stands for has no In Logos row', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On and Greg Laurie’s archive On beside a sermon book', archiveOpened('on', 'listed'));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet opens with {string}, {string} and {string}', opensWithThree);
+    And('the part {string} holds {string}', holdsOne);
+  });
+
+  Scenario('A verse with no listed sermon still has the door where a sermon book is On', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with Logos On and two sermon archives on his shelf', archiveOpened('on'));
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has a button {string}', async (_, label: string) => {
+      expect(await within(screen.getByRole('region', { name: 'Verse view' })).findByRole('button', { name: label })).toBeVisible();
+    });
+    When('he taps {string}', tapDoor);
+    Then('the sheet says {string}', async (_, line: string) => {
+      expect(await within(await sheetEl()).findByText(line)).toBeVisible();
+    });
+    And('the part {string} holds {string} and {string}', holdsTwo);
+  });
+
+  Scenario('His Logos sermon books are the In Logos group, by name, one that was Pinned no longer first', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with Logos On and two sermon archives on his shelf', archiveOpened('on'));
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
@@ -348,7 +371,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('An archive on his shelf that his Library import lacks is not in the group', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on {string} with two sermon archives on his shelf and an import that holds only Greg Laurie’s', importHolds);
+    Given('Lampas is opened on {string} with two sermon archives on his shelf and an import that holds only Princeton Sermons', importHolds);
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('the sheet opens with {string}, {string} and {string}', opensWithThree);

@@ -1,7 +1,7 @@
 Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
   The Sermons sheet opens on the bundled rows at once, then asks the sermon index service (free: no licence, no key, never the mill) for the chapter with the sources that are On and merges what it gives:
   a row of the same source and id is replaced by the service's, rows the bundle lacks are added under their groups, and the line under the title says "Latest from the index · N new" (or
-  "Offline: the bundled index" when the service cannot be reached). A source the service has that the bundle lacks gets its own On | Off row in Settings the first time it is seen, Off to start unless the
+  "Offline: the bundled index" when the service cannot be reached). A source the service has that the bundle lacks gets its own Off | On row in the list of sermon sources (Settings > Study resources > Sermons > Sermon sources) the first time it is seen, Off to start unless the
   service says it is on by default. A search field at the head of the sheet is answered by the service alone. These scenarios stub the service with the examples of the sermon-index repository's docs/api.md
   (tests/fixtures/sermons) and use sermon sources of the tests' own (tests/support/test-sermons.ts); Romans 5 is a committed chapter.
 
@@ -34,15 +34,15 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
     And the part "On this verse" holds "Love Commended" and "Peace with God"
 
   @uc-sermons @greek
-  Scenario: A source the bundle lacks gets an Off row in Settings, and its rows show only when it is On
+  Scenario: A source the bundle lacks gets an Off row in the list of sermon sources, and its rows show only when it is On
     Given Lampas is opened on "Romans 5" with the sermon index answering
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the sheet says "Latest from the index · 1 new"
     And the service was asked for no source but "testsermons"
-    When Settings is opened at Study resources
-    Then the Sermons section shows "C. H. Spurgeon's sermons" Off
-    When he turns "C. H. Spurgeon's sermons" On in the Sermons section
+    When the list of sermon sources is opened
+    Then the list of sermon sources shows "C. H. Spurgeon's sermons" Off
+    When he turns "C. H. Spurgeon's sermons" On in the list of sermon sources
     And the Verse view of Romans 5:8 is opened again with its Sermons sheet
     Then the line under the title reads "Latest from the index · 2 new"
     And the part "On this verse" holds "Love Commended, Revised", "Peace with God" and "Love's Commendation"
@@ -54,8 +54,8 @@ Feature: Sermons online (mw-qtu3zvz.5, docs/sermons.md 'When online')
     When he taps verse 8
     And he taps "Sermons · 4"
     Then the part "On this verse" holds "Love Commended, Revised", "Peace with God" and "Love's Commendation"
-    When Settings is opened at Study resources
-    Then the Sermons section shows "C. H. Spurgeon's sermons" On
+    When the list of sermon sources is opened
+    Then the list of sermon sources shows "C. H. Spurgeon's sermons" On
 
   @uc-sermons @greek
   Scenario: The search is answered by the service, after a pause, with sermons and themes

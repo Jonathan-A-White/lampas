@@ -32,16 +32,16 @@ export interface InLogosGroup {
 export const SHOWN_ROWS = 3;
 
 /** The kinds a New Testament verse is opened in, and an Old Testament one (a commentary opens there when its `covers` name the book: his commentaries on the Old Testament do; the Hebrew epic adds
- *  Hebrew lexicons), in the order the groups are drawn. */
-const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear', 'sermons'];
-const OT_KINDS: readonly Kind[] = ['bible', 'hebrew-text', 'commentary', 'interlinear', 'sermons'];
+ *  Hebrew lexicons), in the order the groups are drawn. A sermon book is in neither: it opens only through the Sermons door (mw-qtu3zvz.92; src/sermons/sources/logos.ts makes its link there). */
+const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear'];
+const OT_KINDS: readonly Kind[] = ['bible', 'hebrew-text', 'commentary', 'interlinear'];
 
 export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.book) !== undefined;
 
 /** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book); a Bible holds the part of the canon the book is in
  *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one; a Hebrew text has `parts` too (the Old Testament); a sermon archive is indexed by the passage each sermon is preached on and the
  *  export cannot say which books, so it is offered at every verse (docs/sources/sermon-index.md section 2). */
-const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
+export const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
   entry.kind === 'bible' || entry.kind === 'hebrew-text'
     ? entry.parts === undefined || entry.parts.includes(partOf(place.book))
     : entry.kind === 'sermons'
@@ -51,20 +51,31 @@ const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
         : partOf(place.book) === 'nt';
 
 /** The link that opens `entry` at the place: a Bible as the Old Testament chapter links are made (logosBible.ts), any other book at the Bible reference, the way a work is (works.ts). */
-function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefined {
+export function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | undefined {
   if (entry.kind === 'bible') return verseLink(place.book, place.chapter, place.verse, entry.resource);
   const ref = bibleRef(place.book, place.chapter, place.verse);
   return ref ? resourceLink(entry.resource, `ref=${ref}`) : undefined;
 }
 
 /** The books of `entries` that are On or Pinned on the shelf (`states`, by Resource ID), cover the place and open at a verse, each with its link, in the entries' order as the dial shows them
- *  (resourcesForLevel: Greek books are hidden at Just English). With `owned` (the Resource IDs his Library import holds, src/library/owned.ts), a sermon archive is listed only if it is in his import or is a free Logos resource
- *  (mw-qtu3zvz.94); the other kinds are not checked yet (mw-qtu3zvz.94's closing comment names the bug). */
-export function inLogosRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, level: GreekLevel = GREEK_TOP, owned?: Owned): InLogosRow[] {
+ *  (resourcesForLevel: Greek books are hidden at Just English). No sermon book is among them. `owned` (the Resource IDs his Library import holds, src/library/owned.ts) is not checked for these kinds yet
+ *  (mw-qtu3zvz.94's closing comment names the bug); the sermon books, which are checked, are sermonBookRows'. */
+export function inLogosRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, level: GreekLevel = GREEK_TOP): InLogosRow[] {
   const kinds = partOf(place.book) === 'nt' ? NT_KINDS : OT_KINDS;
   return resourcesForLevel(entries, level).flatMap((entry): InLogosRow[] => {
     const state = states.get(entry.resource);
-    if (!state || state === 'off' || (owned && entry.kind === 'sermons' && !isOffered(entry.resource, owned)) || !kinds.includes(entry.kind) || (entry.kind !== 'bible' && entry.opens !== 'verse') || !covers(entry, place)) return [];
+    if (!state || state === 'off' || !kinds.includes(entry.kind) || (entry.kind !== 'bible' && entry.opens !== 'verse') || !covers(entry, place)) return [];
+    const link = linkFor(entry, place);
+    return link ? [{ entry, state, link }] : [];
+  });
+}
+
+/** The sermon books of `entries` (books of the kind sermons, and books of another kind that also hold sermons) that are On or Pinned on the shelf, are in his import or free with Logos (`owned`; not checked when absent)
+ *  and open at the place, each with its link, in the entries' order: a book of sermons opens at every verse, a book with more than sermons only at the verses it covers. */
+export function sermonBookRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, owned?: Owned): InLogosRow[] {
+  return entries.flatMap((entry): InLogosRow[] => {
+    const state = states.get(entry.resource);
+    if (!state || state === 'off' || (owned && !isOffered(entry.resource, owned)) || entry.opens !== 'verse' || !covers(entry, place)) return [];
     const link = linkFor(entry, place);
     return link ? [{ entry, state, link }] : [];
   });
@@ -88,7 +99,7 @@ const TITLES: Record<Kind, (book: string) => string> = {
   lexicon: () => 'Lexicons',
   grammar: () => 'Grammars',
   devotional: () => 'Devotionals',
-  sermons: () => 'Sermon archives',
+  sermons: () => 'Sermon books',
 };
 
 /** The groups the sheet draws for `rows`: Pinned first (a book once, not again in its kind), then the kinds in order; a group with no rows is left out. `query` keeps only the rows it matches. */

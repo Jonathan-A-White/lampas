@@ -1,4 +1,4 @@
-// Sermons (Settings > Study resources > Sermons): one On/Off switch per sermon source (src/sermons/sources/), 'sermons.<id>', made from the registry of sources the way the map switches are (definitions/maps.ts).
+// Sermons (Settings > Study resources > Sermons > Sermon sources, the one list of mw-qtu3zvz.92): one On/Off switch per sermon source (src/sermons/sources/), 'sermons.<id>', made from the registry of sources the way the map switches are (definitions/maps.ts).
 // A source that is Off gives the Sermons door and its sheet no rows. A source that needs Logos is drawn, and used, only while Logos is On; one that opens in Logos resources (`resources`) is drawn and used only while his Library import holds one (src/sermons/enabled.ts).
 import { ownsKey } from '../../sermons/enabled';
 import type { SermonSource } from '../../sermons/types';
@@ -6,10 +6,9 @@ import { defineSetting } from '../define';
 
 export type SermonSwitch = 'on' | 'off';
 
-/** The tutor is told a setting's name in this many characters (src/tutor/screen.ts SETTING_NAME_MAX); a source's name is the label, less a bracketed qualifier at its end when it would not fit. */
-const NAME_MAX = 40;
-/** A list from the Governor's Logos is named '... (Logos archive)' or '... (Logos library)' (data/sermons/sources.json "names", mw-qtu3zvz.108); its setting's label drops that qualifier as it always did, which keeps the tutor's instructions the size they were. */
-const LOGOS_QUALIFIER = / \(Logos (archive|library)\)$/;
+/** Where every sermon source is switched and when a Logos list is offered (mw-qtu3zvz.92): the help of each source's switch, so the tutor's instructions say it once for all of them (grindText.ts folds the switches
+ *  that say the same into one line; the instructions have no room for a sentence more). src/library/kinds.ts SERMON_SOURCES_PLACE is the same place. */
+export const SOURCE_HELP = 'In Settings > Study resources > Sermons > Sermon sources; a Logos list needs your import.';
 
 export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | 'describe' | 'default' | 'needs' | 'resources'>) =>
   defineSetting<SermonSwitch>({
@@ -23,9 +22,10 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
       ],
     },
     section: 'sermons',
-    label: source.name.length > NAME_MAX || LOGOS_QUALIFIER.test(source.name) ? source.name.replace(/ \([^)]*\)$/, '') : source.name,
+    // the name as the list of sermon sources says it (sourceList.ts listName): without a bracket at its end, which is where the page says it opens
+    label: source.name.replace(/ \([^)]*\)$/, ''),
     hint: source.describe,
-    ...(source.resources ? { help: 'Only if your import says you own it.' } : source.needs === 'logos' ? { help: 'Used only while Logos is On in Study resources.' } : {}),
+    help: source.needs === 'logos' && !source.resources ? 'Used only while Logos is On in Study resources.' : SOURCE_HELP,
     // a Logos collection is drawn only while his import holds it (or Logos gives it free): the pseudo-key is read by rows.ts readValues
     ...(source.resources
       ? { dependsOn: { key: ownsKey(source), shown: (value: string) => value === 'on' } }
