@@ -7,7 +7,7 @@
 <!--
   A fixture of the blog's Ghost Source theme: the markup of its page kinds (post, page, home list, tag page, author page, 404) and the theme's own rules
   that colour them, trimmed from https://allmymind.org/assets/built/screen.css and /public/cards.min.css (Source, MIT licence, TryGhost/Source), as served
-  on 2026-11-12, plus the three iframes Ghost's scripts add to a post (the comments widget's sign-up box, the Portal Subscribe pill, the search popup), built
+  on 2026-11-12, plus the iframes Ghost's scripts add to a post (the comments widget's sign-up box, the Portal Subscribe pill and the Portal popup the pill opens, the search popup) and the members-only post's paywall CTA, built
   below as the scripts build them (comments-ui, portal and sodo-search from cdn.jsdelivr.net, read 2026-11-12: an iframe with srcdoc "<!DOCTYPE html>" whose
   head and body are filled in once it has loaded), and the home page's picture banner (.gh-header.is-classic.has-image). #kind in the address picks the page kind (post, page, home, tag, author, 404); the default is post. The spec serves the dark stylesheet at
   https://lampas.allmymind.org/blog-dark.css, as the blog's Code injection names it, after the theme's sheet.
@@ -120,6 +120,14 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
 .gh-footer-signup .gh-form{margin-top:40px}
 .gh-error{padding:120px 0;text-align:center}
 .gh-error-code{font-size:8rem;font-weight:700}
+/* Ghost's own paywall CTA styles, as the live page's <style id="gh-members-styles"> serves them (read 2026-11-13); the accent and the button's words are Ghost's inline style on the markup */
+.gh-post-upgrade-cta-content,.gh-post-upgrade-cta{display:flex;flex-direction:column;align-items:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;text-align:center;width:100%;color:#fff;font-size:16px}
+.gh-post-upgrade-cta-content{border-radius:8px;padding:40px 4vw}
+.gh-post-upgrade-cta h2{color:#fff;font-size:28px;letter-spacing:-.2px;margin:0;padding:0}
+.gh-post-upgrade-cta p{margin:20px 0 0;padding:0}
+.gh-post-upgrade-cta small{font-size:16px;letter-spacing:-.2px}
+.gh-post-upgrade-cta a{color:#fff;cursor:pointer;font-weight:500;box-shadow:none;text-decoration:underline}
+.gh-post-upgrade-cta a.gh-btn{display:block;background:#fff;text-decoration:none;margin:28px 0 0;padding:8px 18px;border-radius:4px;font-size:16px;font-weight:600}
 </style>
 <link rel="stylesheet" href="https://lampas.allmymind.org/blog-dark.css">
 </head>
@@ -171,6 +179,8 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
         <div class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://biblehub.com/commentaries/mhc/john/5.htm"><div class="kg-bookmark-content"><div class="kg-bookmark-title">Matthew Henry's Concise Commentary</div><div class="kg-bookmark-description">The time was come when the dead should hear his voice.</div></div></a></div>
         <div class="kg-card kg-file-card"><a class="kg-file-card-container" href="/content/files/notes.pdf"><span class="kg-file-card-title">Sermon notes (PDF)</span></a></div>
         <div class="kg-card kg-header-card kg-style-light"><h2 class="kg-header-card-header">A light header card</h2><h3 class="kg-header-card-subheader">With its subheader</h3></div>
+        <!-- the paywall CTA of a members-only post (Ghost's content helper): the accent and the button's words are inline styles, the accent the site's #1329d4 -->
+        <aside class="gh-post-upgrade-cta" id="paywall-cta"><div class="gh-post-upgrade-cta-content" style="background-color: #1329d4"><h2>This post is for subscribers only</h2><a class="gh-btn" data-portal="signup" style="color:#1329d4">Subscribe now</a><p><small>Already have an account? <a data-portal="signin">Sign in</a></small></p></div></aside>
         <hr class="footnotes-sep">
         <section class="footnotes"><ol class="footnotes-list"><li id="fn1" class="footnote-item"><p><a href="https://lampas.allmymind.org/?ref=allmymind.org#/?ref=John.5.1-15">John 5:1-15</a>. <a href="#fnref1" class="footnote-backref">↩︎</a></p></li></ol></section>
       </section>
@@ -296,6 +306,15 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
   .card{position:absolute;top:80px;left:50%;transform:translateX(-50%);width:min(560px,90vw);height:120px;border-radius:12px;background:#fff;color:#15171a;padding:24px;box-sizing:border-box}
 </style></template>
 <template id="search-frame-body"><div class="scrim"></div><div class="card" data-testid="search-card">Search posts, tags and authors</div></template>
+<template id="portal-popup-head"><style>
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#fff;color:#15171a}
+  .page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 24px;box-sizing:border-box}
+  .logo{width:66px;height:44px;background:#181c30;margin-bottom:24px}
+  h1{margin:0 0 12px;font-size:28px;color:#15171a}
+  p{margin:0 0 24px;color:#3d3d3d}
+  .cta{border:0;border-radius:4px;padding:14px 20px;background:#1329d4;color:#fff;font:500 16px/1 sans-serif}
+</style></template>
+<template id="portal-popup-body"><div class="page" data-testid="portal-popup-page"><div class="logo" data-testid="portal-logo"></div><h1>Subscribe to All My Mind</h1><p>Sign up now to read every post.</p><button class="cta" type="button">Subscribe</button></div></template>
 <script>
   // Ghost's scripts build each widget as an iframe with srcdoc "<!DOCTYPE html>" and fill its head and body in when it has loaded
   function ghostFrame(parent, title, cls, style, head, body, onFill) {
@@ -323,7 +342,17 @@ blockquote:not([class]){border-left:4px solid var(--ghost-accent-color);padding-
     d.querySelector('.ghost-display').className = 'ghost-display ' + (dark ? 'dark' : '');
   });
   // portal: the trigger pill is a fixed iframe at the bottom right of every page
-  ghostFrame(document.body, 'portal-trigger', 'gh-portal-triggerbtn-iframe', 'z-index:3999998;position:fixed;bottom:0;right:0;width:186px;max-width:500px;height:98px;border:0;overflow:hidden', 'portal-frame-head', 'portal-frame-body');
+  // a click on the pill opens the Portal popup: a full-page document in its own iframe, inside #ghost-portal-root
+  const openPortal = () => {
+    if (document.getElementById('ghost-portal-root')) return;
+    const root = document.createElement('div');
+    root.id = 'ghost-portal-root';
+    document.body.appendChild(root);
+    ghostFrame(root, 'portal-popup', 'gh-portal-popup-iframe', 'position:fixed;inset:0;width:100%;height:100%;z-index:3999999;border:0', 'portal-popup-head', 'portal-popup-body');
+  };
+  ghostFrame(document.body, 'portal-trigger', 'gh-portal-triggerbtn-iframe', 'z-index:3999998;position:fixed;bottom:0;right:0;width:186px;max-width:500px;height:98px;border:0;overflow:hidden', 'portal-frame-head', 'portal-frame-body', (d) => {
+    d.querySelector('.trigger').addEventListener('click', openPortal);
+  });
   // sodo-search: the magnifier opens a full-screen iframe with its own scrim and card
   document.querySelector('[data-ghost-search]').addEventListener('click', () => {
     if (document.getElementById('sodo-search-root')) return;

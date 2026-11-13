@@ -121,6 +121,8 @@ const ratioOf = (a: Rgb, b: Rgb) => {
 };
 const isBlue = ([r, g, b]: Rgb) => b >= r + 60 && b >= g + 20;
 const isDark = (c: Rgb) => Math.max(...c) < 60;
+const near = (a: Rgb, b: Rgb, tol = 12) => a.every((v, i) => Math.abs(v - b[i]!) <= tol);
+const PAGE_BG: Rgb = [0x15, 0x17, 0x1a];
 
 // The element's drawn pixels: `backdrop` is the pixel at `at` (the box's corner, or just inside it for a button) and `ink` the pixel farthest from it by contrast.
 async function paint(page: Page, el: Locator, inside = false): Promise<{ backdrop: Rgb; ink: Rgb; ratio: number }> {
@@ -275,9 +277,12 @@ for (const size of WIDTHS) {
       const signUp = await paint(page, frame.getByRole('button', { name: 'Sign up now' }), true);
       expect(isBlue(signUp.backdrop), `the Sign up now button ${signUp.backdrop} is blue`).toBe(true);
       expect(signUp.ratio, `Sign up now ${signUp.ink} on ${signUp.backdrop}`).toBeGreaterThanOrEqual(AA);
-      // Ghost's own "Already a member?" is a 40% tint of the text colour: 3.5:1 here, the most a page's CSS can get from it (listed as found, not fixed)
+      // Ghost's own "Already a member?" is a 40% tint of the text colour inside the iframe (3.76:1 under a plain invert, mw-fnvjof.17.98): the filter on the iframe
+      // lifts it, because the iframe takes an opaque backdrop of its own INSIDE the filter, so the tint is mixed with it before the filter's contrast
       const hint = await paint(page, frame.getByText('Already a member?'));
-      expect(hint.ratio, `hint ${hint.ink} on ${hint.backdrop}`).toBeGreaterThanOrEqual(3.5);
+      expect(hint.ratio, `hint ${hint.ink} on ${hint.backdrop}`).toBeGreaterThanOrEqual(AA);
+      // and the seam: the filter's backdrop is the page's dark, so no box shows around the widget
+      expect(near(box.backdrop, PAGE_BG, 6), `the box's backdrop ${box.backdrop} is the page's ${PAGE_BG}`).toBe(true);
       await shot(page, `blog-dark-signup-${size.name}`);
     });
 
@@ -304,6 +309,51 @@ for (const size of WIDTHS) {
       expect(isDark(beside), `beside the pill ${beside} is dark`).toBe(true);
       const pill = await paint(page, page.frameLocator('iframe[title="portal-trigger"]').locator('[data-testid="portal-trigger-button"]'), true);
       expect(isBlue(pill.backdrop), `the pill ${pill.backdrop} keeps its blue`).toBe(true);
+      // the accent #1329d4 is 2:1 on the dark page (mw-fnvjof.17.97): the pill is lightened like the accent button, so it stands off the page by 3:1 (WCAG 1.4.11) and its words read at AA
+      expect(ratioOf(pill.backdrop, PAGE_BG), `the pill ${pill.backdrop} against the page ${PAGE_BG}`).toBeGreaterThanOrEqual(3);
+      expect(pill.ratio, `the pill's words ${pill.ink} on ${pill.backdrop}`).toBeGreaterThanOrEqual(AA);
+    });
+
+    test('post, light: the Portal pill is Ghost\'s own, with no filter on it', async ({ page }) => {
+      await open(page, 'post', 'light');
+      const trigger = page.locator('iframe[title="portal-trigger"]');
+      await expect(page.frameLocator('iframe[title="portal-trigger"]').getByText('Subscribe')).toBeVisible();
+      expect(await trigger.evaluate((f) => getComputedStyle(f).filter)).toBe('none');
+      const pill = await paint(page, page.frameLocator('iframe[title="portal-trigger"]').locator('[data-testid="portal-trigger-button"]'), true);
+      expect(pill.backdrop, 'the pill is Ghost\'s #1329d4').toEqual([0x13, 0x29, 0xd4]);
+    });
+
+    test('post, dark: a Portal pop-up (Subscribe, Sign in, account) is Ghost\'s white document, whole: nothing inverts it, so the site\'s logo is not flipped (page CSS cannot reach inside it)', async ({ page }) => {
+      await open(page, 'post', 'dark');
+      await page.frameLocator('iframe[title="portal-trigger"]').locator('[data-testid="portal-trigger-button"]').click();
+      const popup = page.locator('iframe[title="portal-popup"]');
+      const inside = page.frameLocator('iframe[title="portal-popup"]');
+      await expect(inside.getByTestId('portal-popup-page')).toBeVisible();
+      expect(await popup.evaluate((f) => getComputedStyle(f).filter), 'a filter on the whole pop-up would flip the logo').toBe('none');
+      expect(await popup.evaluate((f) => getComputedStyle(f).colorScheme)).toBe('light');
+      // the document is Ghost's white, with its words readable on it ...
+      const doc = await paint(page, inside.getByRole('heading', { name: 'Subscribe to All My Mind' }));
+      expect(doc.backdrop, 'Ghost\'s white document').toEqual([255, 255, 255]);
+      expect(doc.ratio, `heading ${doc.ink} on ${doc.backdrop}`).toBeGreaterThanOrEqual(AA);
+      // ... and the logo keeps its own dark navy
+      const logo = await paint(page, inside.getByTestId('portal-logo'), true);
+      expect(isDark(logo.backdrop), `the logo ${logo.backdrop} is still dark, not flipped to light`).toBe(true);
+      await shot(page, `blog-dark-portal-popup-${size.name}`);
+    });
+
+    test('post, dark: the paywall CTA (Ghost\'s inline accent, white words) reads: the box stays the blue with white words, the button its white with blue words, all at AA', async ({ page }) => {
+      await open(page, 'post', 'dark');
+      const cta = page.locator('#paywall-cta');
+      await cta.scrollIntoViewIfNeeded();
+      const box = await paint(page, cta.locator('.gh-post-upgrade-cta-content'), true);
+      expect(isBlue(box.backdrop), `the CTA's box ${box.backdrop} keeps Ghost's accent`).toBe(true);
+      const heading = await paint(page, cta.getByRole('heading'));
+      expect(heading.ratio, `heading ${heading.ink} on ${heading.backdrop}`).toBeGreaterThanOrEqual(AA);
+      const button = await paint(page, cta.locator('a.gh-btn'), true);
+      expect(button.ratio, `button ${button.ink} on ${button.backdrop}`).toBeGreaterThanOrEqual(AA);
+      const signIn = await paint(page, cta.getByText('Already have an account?'));
+      expect(signIn.ratio, `sign in line ${signIn.ink} on ${signIn.backdrop}`).toBeGreaterThanOrEqual(AA);
+      await shot(page, `blog-dark-paywall-${size.name}`);
     });
 
     test('post, dark: the search popup (the magnifier) shows no white card or light scrim from the iframe\'s own canvas', async ({ page }) => {
@@ -315,6 +365,9 @@ for (const size of WIDTHS) {
       // the scrim's top-left corner (far from the card): the page's header, darkened by the scrim, not a white canvas
       const px = await pixelAt(page, 2, 2);
       expect(isDark(px), `the popup's scrim corner ${px} is dark`).toBe(true);
+      // the card stays Ghost's white (a filter over the whole popup would turn its scrim into a light veil, mw-fnvjof.17.97): a light card on a dimmed page, its words at AA
+      const card = await paint(page, page.frameLocator('iframe[title="portal-popup"]').getByTestId('search-card'));
+      expect(card.ratio, `the card's words ${card.ink} on ${card.backdrop}`).toBeGreaterThanOrEqual(AA);
     });
 
     test('post, light: the Portal pill and the search popup keep their own light canvas and colour scheme (colour-scheme is untouched)', async ({ page }) => {
@@ -344,8 +397,6 @@ for (const size of WIDTHS) {
 // The pictures the theme places behind or among content (mw-fnvjof.17.102): the home banner (an <img> at z-index -1 inside .gh-header, which the page's OWN background
 // would paint over if body had one in dark), the post's feature image, the tag and author cover and the list cards' pictures. Each is read by screenshot pixel in dark
 // and in light, because a computed style cannot say whether a background is painted over a picture.
-const near = (a: Rgb, b: Rgb, tol = 12) => a.every((v, i) => Math.abs(v - b[i]!) <= tol);
-const PAGE_BG: Rgb = [0x15, 0x17, 0x1a];
 const PICTURES = [
   { kind: 'home', what: 'the banner picture', selector: '.gh-header-image' },
   { kind: 'post', what: "the post's feature image", selector: '#post-feature img' },
