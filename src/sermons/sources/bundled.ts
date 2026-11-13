@@ -2,6 +2,7 @@
 // file (public/sermons/<source>/<book>.json) the first time a place in that book is asked, once, by the fingerprinted address the worker keeps (sermonBookUrl, src/dataCache.ts), and gives the rows that touch the chapter.
 // Nothing of a sermon but its facts is held; the page where it is read is only linked.
 import { SERMON_INDEX, sermonBookUrl, type SermonBookFile, type SermonRow as FileRow, type SermonSource as IndexSource } from '../../data/sermonIndex';
+import { LOGOS_RESOURCES } from '../../data/logosSermonResources';
 import { touches } from '../sermonsFor';
 import type { SermonPlace, SermonRow, SermonSource } from '../types';
 
@@ -13,16 +14,7 @@ export const forgetSermonFiles = (): void => files.clear();
 /** A ref.ly address is a link into his Logos library: the app opens the sermon there, for an owner of the archive. */
 const opensInLogos = (url: string): boolean => /^https:\/\/ref\.ly\//.test(url);
 
-/** The Logos Resource IDs each bundled Logos source opens its sermons in (the ref.ly address of its rows; tests/unit/sermons-owned.test.ts holds this equal to the book files). */
-export const LOGOS_RESOURCES: Readonly<Record<string, readonly string[]>> = {
-  'greg-laurie-logos': ['LLS:GRGLRSRMNRCH'],
-  'jd-greear-logos': ['LLS:JDGRRSRMNRCHV'],
-  'skip-heitzig-logos': ['LLS:SKPHTZGSRMN'],
-  'spurgeon-sermon-notes-logos': ['LLS:MYSRMNOTES01', 'LLS:MYSRMNOTES03'],
-  'wesley-logos': ['LLS:36.0.11', 'LLS:WORKSWESLEY05', 'LLS:WORKSWESLEY06', 'LLS:WORKSWESLEY07'],
-  'whitefield-logos': ['LLS:36.0.12'],
-  'moody-logos': ['LLS:MENBBLMOODY', 'LLS:OVRCMNGLFMOODY', 'LLS:WAYGODMOODY', 'LLS:12SELSERMMOODY'],
-};
+export { LOGOS_RESOURCES };  // kept here for the sermon sources and their tests: the table itself is src/data/logosSermonResources.ts (the shelf in the data layer reads it)
 
 const rowOf = (source: string, row: FileRow): SermonRow => ({
   id: row.id,

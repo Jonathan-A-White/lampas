@@ -11,7 +11,7 @@ import { CATALOGUE, CATALOGUE_VERSION, entriesOf, entryOf, type CatalogueEntry, 
 import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS } from '../../resources/grammarBooks';
 import { LEXICONS } from '../../resources/logos';
 import { WORKS } from '../../resources/works';
-import { LOGOS_RESOURCES } from '../../sermons/sources/bundled';
+import { LOGOS_RESOURCES } from '../logosSermonResources';
 import { isListed, matchExport, type MatchResult } from '../../library/matchExport';
 import type { ExportRow } from '../../library/parseExport';
 import { db, type ExportedRow, type LibraryRow } from '../db';
