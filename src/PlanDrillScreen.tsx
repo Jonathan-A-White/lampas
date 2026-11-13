@@ -10,6 +10,8 @@ import { takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
+import { StudyThis } from './review/StudyThis';
+import { studyOfQuestion } from './review/studyThis';
 import { FacetLabel } from './FacetLabel';
 import { drillScreen, drillSuggestions, type DrillTry } from './tutor/drillTalk';
 import { DRILL_SCREEN } from './tutor/screen';
@@ -99,7 +101,13 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3">
         {question ? (
-          <GrammarCard key={index} question={question} mode="choice" picked={picked} onPick={pick} sideBySide />
+          <>
+            <GrammarCard key={index} question={question} mode="choice" picked={picked} onPick={pick} sideBySide />
+            {/* a wrong answer links to what teaches it, each opened over the drill so its count is kept (mw-indx1x6.6) */}
+            {picked !== null && picked !== question.right ? (
+              <StudyThis key={`study-${index}`} study={studyOfQuestion(question, picked)} screen={DRILL_SCREEN} back="Back to the drill" className="mb-3 mt-2" />
+            ) : null}
+          </>
         ) : (
           <div data-testid="plan-drill-result">
             <h3 className="text-2xl font-bold">

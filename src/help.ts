@@ -81,6 +81,7 @@ export const HELP_PAGES: HelpPage[] = [
     line: 'What is due, and Today.',
     body: [
       'In Tools, Review asks the words and ideas that are due; with both languages chosen it asks the side the switch is on. A word you pick right asks how well you knew it: Know it well moves it up a step at once, Kind of counts as a right, Don’t know brings it back tomorrow. Going on without a tap counts as Kind of.',
+      'After a wrong answer, Study this links to what teaches it: the table, the lesson, the word; or Ask the tutor.',
       'Today lists what is due: Review, Memorize and the rest. The tutor is told what is on it, and can offer Open today’s drill.',
     ],
   },
