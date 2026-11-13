@@ -941,6 +941,12 @@ textarea,
 .bk-speech {
   flex-wrap: wrap;
 }
+/* The recorded bar's Previous verse and Next verse (mw-82lb97i.19) are icons alone, each still a full tap and named by its words: with them labelled the five buttons took three rows at 390 px. */
+.bk-speech__button.lp-skip-verse {
+  font-size: 0;
+  min-width: var(--lp-tap);
+  padding-inline: 12px;
+}
 /* Past that, in a slot narrower than 20 rem of the phone's own text (390 px at 200%; the same rem measure as the Immersive column), the bar is one row of three icons
  * (mw-cwf538.9): the labels stacked to three rows left the Talk sheet's conversation a few lines tall. Each button's label is still its name (font-size 0 keeps the text in the
  * accessibility tree), and each is still a full-height tap. */

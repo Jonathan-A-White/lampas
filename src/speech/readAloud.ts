@@ -147,7 +147,13 @@ let recordedUntil = 0;
 let lockScreen = false;
 const listeners = new Set<() => void>();
 
-const lockActions = { play: () => resumeReading(), pause: () => pauseReading(), stop: () => stopReading() };
+const lockActions = {
+  play: () => resumeReading(),
+  pause: () => pauseReading(),
+  stop: () => stopReading(),
+  previous: () => void skipRecordedVerse(-1),
+  next: () => void skipRecordedVerse(1),
+};
 
 /** Shows the reading on the lock screen, or takes it off: its title is the chapter being read, or the one it is crossing into. */
 function syncLockScreen(): void {
@@ -646,6 +652,47 @@ export function restartRecorded(): boolean {
   }
   // play() again even when it plays: from the verse's start, with the span's end kept
   resumeRecording();
+  return true;
+}
+
+/** The speaking bar's Previous verse (`by` -1) and Next verse (1) on a recorded reading, and the lock screen's previous and next track (mw-82lb97i.19, PROVISIONAL): the recording
+ * seeks to the start of the verse before or after the one being read, however far into this one it is. A paused reading stays paused there, one in progress plays on from it, and the
+ * verse mark follows at once. It stays inside the span: a verse reads only itself, a Listen of a section keeps to its section (the verse after its last, or before its first, is not
+ * gone to), and the chapter's first verse has none before it. After the chapter's last verse a Play to End (Play to either) goes on into the next chapter's first verse, as it does
+ * when the recording ends by itself (a paused one plays on there: the Reader opens the chapter only for a reading that plays), else nothing happens. False when it did nothing. */
+export function skipRecordedVerse(by: -1 | 1): boolean {
+  if (!recording || state.status === 'idle' || state.verse === null || state.crossing || state.answer !== null || loading || clipping) return false;
+  const at = plan.findIndex((v) => v.n === state.verse);
+  if (at < 0) return false;
+  const last = plan.findIndex((v) => v.n === recordedUntil);
+  let first = 0;
+  if (reach === 'verse') first = last;
+  else if (reach === 'passage') {
+    for (let i = at; i > 0 && first === 0; i--) if (plan[i].heading) first = i;
+  }
+  const to = at + by;
+  if (to > last && by === 1 && at === plan.length - 1 && (reach === 'book' || reach === 'bible') && chapterAhead()) {
+    const my = epoch;
+    if (state.status === 'paused') {
+      keepAwake();
+      set({ ...state, status: 'reading' });
+    }
+    stopRecording();
+    recordingReached(my);
+    return true;
+  }
+  if (to < first || to > last) return false;
+  let target = plan[to];
+  if (queued) {
+    // the weave turned on since: a verse that would no longer be English is not skipped to, the reading goes on as it was
+    const ahead = queued.filter((v) => v.n >= target.n);
+    if (!englishOnly(ahead)) return false;
+    plan = queued;
+    queued = null;
+    target = plan.find((v) => v.n === target.n) ?? target;
+  }
+  if (!seekToVerse(target.n)) return false;
+  markVerse(target.n, plan.findIndex((v) => v.n === target.n));
   return true;
 }
 

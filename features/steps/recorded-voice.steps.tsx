@@ -371,11 +371,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     const bar = speakingBar();
     expect(bar).toHaveAttribute('data-testid', 'speaking-bar');
     expect(bar).toHaveAttribute('data-state', 'playing');
-    expect(barLabels()).toEqual(['Pause', 'Restart', 'Stop']);
+    expect(barLabels()).toEqual(['Previous verse', 'Pause', 'Restart', 'Next verse', 'Stop']);
   };
   const firstIsResume = async () => {
-    await waitFor(() => expect(barLabels()).toEqual(['Resume', 'Restart', 'Stop']));
-    const first = within(speakingBar()).getAllByRole('button')[0];
+    await waitFor(() => expect(barLabels()).toEqual(['Previous verse', 'Resume', 'Restart', 'Next verse', 'Stop']));
+    const first = within(speakingBar()).getByRole('button', { name: 'Resume', exact: true });
     expect(first).toHaveAttribute('data-primary', 'true');
     expect(first).toHaveAttribute('data-action', 'resume');
     expect(speakingBar()).toHaveAttribute('data-state', 'paused');
@@ -394,7 +394,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   };
   const playsFromStartOf = async (_: unknown, n: number) => {
     await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
-    expect(audio.playedAt.at(-1)).toBe(n === 1 ? 0 : startOf(n));
+    expect(element().currentTime).toBe(n === 1 ? 0 : startOf(n));
   };
   const tapListen = async (_: unknown, name: string) => {
     await user.click(within(footEl()).getByRole('button', { name, exact: true }));
@@ -409,7 +409,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given(opened, () => open());
     When('he taps {string}', tapHeader);
     And('the recording passes the end of verse {int}', passes);
-    Then('the speaking bar is playing and shows Pause, Restart and Stop', () => barPlaying());
+    Then('the speaking bar is playing and shows Previous verse, Pause, Restart, Next verse and Stop', () => barPlaying());
     And('the header shows no Pause or Stop', () => {
       expect(screen.getAllByRole('button', { name: 'Pause' })).toEqual([within(speakingBar()).getByRole('button', { name: 'Pause' })]);
       expect(screen.getAllByRole('button', { name: 'Stop' })).toEqual([within(speakingBar()).getByRole('button', { name: 'Stop' })]);
@@ -423,7 +423,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('the reading bar says {string}', async (_, text: string) => {
       await waitFor(() => expect(bar()).toHaveTextContent(text));
     });
-    And("the speaking bar's first button is Resume", firstIsResume);
+    And("the speaking bar offers Resume in place of Pause", firstIsResume);
     When('he taps "Resume" on the speaking bar', () => onBar(null, 'Resume'));
     Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
     When('he taps "Stop" on the speaking bar', () => onBar(null, 'Stop'));
@@ -472,12 +472,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(playingWhenSpoken.every((playing) => !playing)).toBe(true);
       await pausedHere();
     });
-    And("the speaking bar's first button is Resume", firstIsResume);
+    And("the speaking bar offers Resume in place of Pause", firstIsResume);
     When('the phone finishes the word', () => {
       act(() => synth.finish());
     });
     Then('the audio element is paused', paused);
-    And('the speaking bar still offers Resume first', firstIsResume);
+    And('the speaking bar still offers Resume', firstIsResume);
     When('he taps "Resume" on the speaking bar', () => onBar(null, 'Resume'));
     Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
   });
@@ -495,12 +495,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(playingWhenSpoken.every((playing) => !playing)).toBe(true);
       await pausedHere();
     });
-    And("the speaking bar's first button is Resume", firstIsResume);
+    And("the speaking bar offers Resume in place of Pause", firstIsResume);
     When('the phone finishes the word', () => {
       act(() => synth.finish());
     });
     Then('the audio element plays on from the second it was paused at', playsOnFromHeld);
-    And('the speaking bar is playing and shows Pause, Restart and Stop', () => barPlaying());
+    And('the speaking bar is playing and shows Previous verse, Pause, Restart, Next verse and Stop', () => barPlaying());
   });
 
   Scenario('A hold to ask pauses the recording and a Listen goes on when the hold ends', ({ Given, When, Then, And }) => {
@@ -517,7 +517,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       FakeRecognizer.last().open();
     });
     Then('the audio element was paused', pausedHere);
-    And("the speaking bar's first button is Resume", firstIsResume);
+    And("the speaking bar offers Resume in place of Pause", firstIsResume);
     When('the hold to ask ends', async () => {
       const ended = session?.stop();
       act(() => FakeRecognizer.last().onend?.());
@@ -558,7 +558,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     Then('the audio element still plays', () => expect(audio.playing()).toBe(recordingElement()));
     And('verse {int} is still the verse marked', marked);
-    And('the speaking bar is playing and shows Pause, Restart and Stop', () => barPlaying());
+    And('the speaking bar is playing and shows Previous verse, Pause, Restart, Next verse and Stop', () => barPlaying());
   });
 
   Scenario("The lock screen's Pause and Play steer a recorded reading while the page is hidden", ({ Given, When, Then, And }) => {
@@ -608,7 +608,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await goTo('#/?b=jhn&c=3');
       await screen.findByRole('heading', { name: 'John 3', level: 1 });
     });
-    Then("the speaking bar's first button is Resume", firstIsResume);
+    Then("the speaking bar offers Resume in place of Pause", firstIsResume);
     When('he opens John 4 by hand', async () => {
       await goTo('#/?b=jhn&c=4');
       await screen.findByRole('heading', { name: 'John 4', level: 1 });
@@ -628,5 +628,141 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await firstIsResume();
       expect(speakingBars()).toHaveLength(1);
     });
+  });
+
+  // Skip a verse (mw-82lb97i.19)
+  const plays = () => expect(audio.playing()).toBe(recordingElement());
+  const noSkipOnLockScreen = () => {
+    expect(session.handlers.previoustrack ?? null).toBeNull();
+    expect(session.handlers.nexttrack ?? null).toBeNull();
+  };
+  const secondsInto = (_: unknown, seconds: number | string, n: number) => {
+    act(() => audio.advanceTo(startOf(n) + Number(seconds)));
+    expect(getReading().verse).toBe(n);
+  };
+  const pausedAtStartOf = async (_: unknown, n: number) => {
+    await waitFor(() => expect(audio.playing()).toBeNull());
+    expect(element().currentTime).toBe(startOf(n));
+  };
+  const showsJohn4 = async () => {
+    await screen.findByRole('heading', { name: 'John 4', level: 1 });
+  };
+  const john4FromStart = async () => {
+    await waitFor(() => expect(audio.sources).toEqual([audioOf(3), audioOf(4)]));
+    plays();
+    expect(audio.playedAt).toEqual([startOf(36), 0]);
+  };
+  const lockScreenHasSkip = () => {
+    expect(session.handlers.previoustrack).toBeTypeOf('function');
+    expect(session.handlers.nexttrack).toBeTypeOf('function');
+  };
+
+  Scenario('Next verse skips to the start of the verse after the one being read and the reading plays on', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('the recording plays {int} seconds into verse {int}', secondsInto);
+    And('he taps "Next verse" on the speaking bar', () => onBar(null, 'Next verse'));
+    Then('the audio element plays on from the start of verse {int}', playsFromStartOf);
+    And('verse {int} is marked as being read', marked);
+    When('the recording passes the end of verse {int}', passes);
+    Then('verse {int} is marked as being read', marked);
+  });
+
+  ScenarioOutline('Previous verse goes to the start of the verse before, however far into this one the reading is', ({ Given, When, Then, And }, row) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('the recording plays <seconds> seconds into verse 5', () => secondsInto(null, row.seconds, 5));
+    And('he taps "Previous verse" on the speaking bar', () => onBar(null, 'Previous verse'));
+    Then('the audio element plays on from the start of verse {int}', playsFromStartOf);
+    And('verse {int} is marked as being read', marked);
+  });
+
+  Scenario('Next verse on a paused reading leaves it paused at the start of the next verse', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    And('the recording plays {int} seconds into verse {int}', secondsInto);
+    And('he taps "Pause" on the speaking bar', () => onBar(null, 'Pause'));
+    And('he taps "Next verse" on the speaking bar', () => onBar(null, 'Next verse'));
+    Then('the audio element is paused at the start of verse {int}', pausedAtStartOf);
+    And('verse {int} is marked as being read', marked);
+    And('the reading is paused', () => expect(getReading().status).toBe('paused'));
+    And('the speaking bar offers Resume in place of Pause', firstIsResume);
+  });
+
+  Scenario("Previous verse at the chapter's first verse changes nothing", ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording plays {int} seconds into verse {int}', secondsInto);
+    And('he taps "Previous verse" on the speaking bar', () => onBar(null, 'Previous verse'));
+    Then('nothing changes: the recording plays on 4 seconds into verse 1', () => {
+      plays();
+      expect(audio.playedAt).toEqual([0]);
+      expect(element().currentTime).toBe(startOf(1) + 4);
+      expect(getReading()).toMatchObject({ status: 'reading', verse: 1 });
+    });
+  });
+
+  Scenario('Next verse at the last verse of John 3 during Play to End plays John 4 from its first verse', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he selects verse {int} and taps {string}', selectAndReadFromHere);
+    And('he taps "Next verse" on the speaking bar', () => onBar(null, 'Next verse'));
+    Then('the Reader shows John 4', showsJohn4);
+    And('the audio element plays the recording of John 4 from its start', john4FromStart);
+    And('verse {int} is marked as being read', marked);
+  });
+
+  Scenario('A Listen of a section never leaves its section: Next verse at its last verse does nothing', ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps the heading {string}', tapSectionHeading);
+    And('he taps {string} in the Verse view', tapListen);
+    And('the recording passes the end of verse {int}', passes);
+    And('he taps "Next verse" on the speaking bar', () => onBar(null, 'Next verse'));
+    Then('the audio element plays on from the start of verse {int}', playsFromStartOf);
+    And('verse {int} is marked as being read', marked);
+    When('he taps "Next verse" on the speaking bar', () => onBar(null, 'Next verse'));
+    Then('nothing changes: the recording plays on at the start of verse 21', () => {
+      plays();
+      expect(element().currentTime).toBe(startOf(21));
+      expect(getReading()).toMatchObject({ status: 'reading', verse: 21, crossing: null });
+    });
+  });
+
+  Scenario("The lock screen's previous and next track skip a verse like the buttons and are cleared when the reading ends", ({ Given, When, Then, And }) => {
+    Given(opened, () => open());
+    When('he taps {string}', tapHeader);
+    And('the recording passes the end of verse {int}', passes);
+    Then('the lock screen offers previous and next track', lockScreenHasSkip);
+    When('he presses Next on the lock screen', () => {
+      act(() => session.handlers.nexttrack?.());
+    });
+    Then('the audio element plays on from the start of verse {int}', playsFromStartOf);
+    And('verse {int} is marked as being read', marked);
+    When('he presses Previous on the lock screen', () => {
+      act(() => session.handlers.previoustrack?.());
+    });
+    Then('the audio element then plays on from the start of verse {int}', playsFromStartOf);
+    And('verse {int} is then marked as being read', marked);
+    When('he taps "Stop" on the speaking bar', () => onBar(null, 'Stop'));
+    Then('the lock screen has no previous or next track', noSkipOnLockScreen);
+  });
+
+  Scenario("The phone's voice has no skip buttons on its bar and no previous or next track", ({ Given, And, When, Then }) => {
+    Given(opened, () => open());
+    And('the Bible voice is Phone voice', async () => {
+      await setSetting(bibleVoiceSetting, 'phone');
+      await waitFor(() => expect(wantsRecording()).toBeNull());
+    });
+    When('he taps {string}', tapHeader);
+    Then("the phone's voice bar has no Previous verse or Next verse", async () => {
+      await screen.findByRole('region', { name: 'Speaking' });
+      const names = barLabels();
+      expect(names.length).toBeGreaterThan(0);
+      expect(names).not.toContain('Previous verse');
+      expect(names).not.toContain('Next verse');
+    });
+    And('the lock screen has no previous or next track', noSkipOnLockScreen);
   });
 });

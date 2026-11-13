@@ -91,7 +91,7 @@ test('Play in John 3 is read by the recording: the speaking bar sits in the Read
   // the same bar as the phone voice's, in the Reader's foot slot: whole in the viewport, above the bottom inset, covering no verse text; the header's Pause and Stop are gone
   await expect(bar(page)).toHaveCount(1);
   await expect(page.locator('[data-testid="speaking-bar"]')).toHaveAttribute('data-state', 'playing');
-  await expect(bar(page).getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
+  await expect(bar(page).getByRole('button')).toHaveText(['Previous verse', 'Pause', 'Restart', 'Next verse', 'Stop']);
   // the only Pause and the only Stop on the page are the bar's own
   await expect(header(page, 'Pause')).toHaveCount(1);
   await expect(header(page, 'Stop')).toHaveCount(1);
@@ -111,11 +111,19 @@ test('Play in John 3 is read by the recording: the speaking bar sits in the Read
     // under the reading box, in flow: no verse is covered
     expect(main.y + main.height).toBeLessThanOrEqual(box.y + 1);
   }
-  for (const name of ['Pause', 'Restart', 'Stop']) {
+  for (const name of ['Previous verse', 'Pause', 'Restart', 'Next verse', 'Stop']) {
     const b = await onBar(page, name).boundingBox();
     expect(b?.height).toBeGreaterThanOrEqual(43.5);
     expect(b?.width).toBeGreaterThanOrEqual(43.5);
   }
+  // five buttons and no overflow: the bar holds every one of them inside its own box and inside the screen (mw-82lb97i.19)
+  if (box) {
+    for (const button of await bar(page).getByRole('button').all()) {
+      const b = await button.boundingBox();
+      expect(b && b.x >= box.x - 0.5 && b.x + b.width <= box.x + box.width + 0.5 && b.x + b.width <= 390 + 0.5).toBe(true);
+    }
+  }
+  expect(await bar(page).evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
   // each verse's part inside the reading box (the box scrolls, so a verse may run past it): none touches the bar
   const verses = await page.locator('[data-reader] [data-verse]').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON() as { top: number; bottom: number; left: number; right: number }));
   const covered = verses.filter((r) => {
@@ -133,8 +141,19 @@ test('Play in John 3 is read by the recording: the speaking bar sits in the Read
   // a real-time wait: the recording would have gone on two verses in this second if Pause had not held it
   await page.waitForTimeout(1000);
   await expect(readingBar(page)).toHaveText(pausedAt ?? '');
-  await expect(bar(page).getByRole('button')).toHaveText(['Resume', 'Restart', 'Stop']);
+  await expect(bar(page).getByRole('button')).toHaveText(['Previous verse', 'Resume', 'Restart', 'Next verse', 'Stop']);
   await expect(page.locator('[data-testid="speaking-bar"]')).toHaveCount(1);
+
+  // Next verse and Previous verse on the paused reading move the highlight one verse and keep it paused (mw-82lb97i.19, PROVISIONAL)
+  const heldVerse = Number(pausedAt?.match(/verse (\d+)/)?.[1] ?? 0);
+  await onBar(page, 'Next verse').click();
+  await expect(readingBar(page)).toContainText(`Paused at verse ${heldVerse + 1}`);
+  await expect(page.locator('[data-reader] [data-verse][data-reading]')).toHaveAttribute('data-verse', String(heldVerse + 1));
+  await shot(page, 'recorded-skip');
+  await onBar(page, 'Previous verse').click();
+  await expect(readingBar(page)).toContainText(`Paused at verse ${heldVerse}`);
+  await expect(page.locator('[data-reader] [data-verse][data-reading]')).toHaveAttribute('data-verse', String(heldVerse));
+  await expect(bar(page).getByRole('button', { name: 'Resume', exact: true })).toBeVisible();
 
   await onBar(page, 'Resume').click();
   const from = Number(pausedAt?.match(/verse (\d+)/)?.[1] ?? 0);
