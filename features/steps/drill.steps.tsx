@@ -306,6 +306,33 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('Off and + Learning on the drill\'s Words row are one choice and the screen says so', ({ Given, When, Then, And }) => {
+    const SAME = 'Off and + Learning ask the same words here';
+    const wordsRow = async () => within(screen.getByTestId('drill-settings')).findByRole('group', { name: 'Words' });
+    Given('Lampas is opened for the first time', openLampasFresh);
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    Then('the drill\'s Words row has Off chosen', async () => {
+      expect(within(await wordsRow()).getByRole('button', { name: 'Off' })).toHaveAttribute('aria-pressed', 'true');
+    });
+    And('the drill says Off and + Learning ask the same words here', () => {
+      expect(screen.getByTestId('drill-settings')).toHaveTextContent(SAME);
+    });
+    When('he taps + Learning on the drill\'s Words row', async () => {
+      await user.click(within(await wordsRow()).getByRole('button', { name: '+ Learning' }));
+      await screen.findByTestId('drill-word');
+    });
+    Then('the drill says Off and + Learning ask the same words here', async () => {
+      await waitFor(() => expect(within(screen.getByTestId('drill-settings')).getByRole('group', { name: 'Words' }).querySelector('[aria-pressed="true"]')).toHaveTextContent('+ Learning'));
+      expect(screen.getByTestId('drill-settings')).toHaveTextContent(SAME);
+    });
+    When('he taps Solid on the drill\'s Words row', async () => {
+      await user.click(within(await wordsRow()).getByRole('button', { name: 'Solid' }));
+    });
+    Then('the drill does not say Off and + Learning ask the same words here', async () => {
+      await waitFor(() => expect(screen.getByTestId('drill-settings')).not.toHaveTextContent(SAME));
+    });
+  });
+
   Scenario('With Grammar on Solid every form uses only grammar he has solid', ({ Given, And, When, Then }) => {
     Given('Lampas is opened for the first time with every idea solid but the participle, which is at the frontier', () => openWithLevels(['mood-participle']));
     And('the Weave\'s Grammar is Solid', () => setWeaveGrammar('solid'));

@@ -74,3 +74,13 @@ Feature: A parsing drill on the chapter
     And the Weave's Grammar is Solid and frontier
     When he opens the Parsing drill from the Test screen
     Then the first form asked uses the aorist
+
+  Scenario: Off and + Learning on the drill's Words row are one choice and the screen says so
+    Given Lampas is opened for the first time
+    When he opens the Parsing drill from the Test screen
+    Then the drill's Words row has Off chosen
+    And the drill says Off and + Learning ask the same words here
+    When he taps + Learning on the drill's Words row
+    Then the drill says Off and + Learning ask the same words here
+    When he taps Solid on the drill's Words row
+    Then the drill does not say Off and + Learning ask the same words here
