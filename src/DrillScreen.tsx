@@ -85,6 +85,9 @@ async function drawRound(random: Random): Promise<Round> {
   return { questions: drawDrill(chapter, words, random, undefined, tuning), narrowed: extent !== 'any' || weave === 'solid' };
 }
 
+/** Said by the Words row while Off or + Learning is chosen: the drill asks the solid and the learning words for both (drawRound), so the two are one choice here. */
+const WORDS_SAME_LINE = 'Off and + Learning ask the same words here';
+
 /** The Weave's Words and Grammar rows, the settings the round is drawn by (the same as the Reader's Weave). The Grammar row is for Greek: a Hebrew chapter is not held to it. */
 function RoundSettings({ greek, learning }: { greek: boolean; learning: string | undefined }) {
   const weave = useLiveQuery(getWeave, []);
@@ -95,6 +98,7 @@ function RoundSettings({ greek, learning }: { greek: boolean; learning: string |
         <span className="w-16 shrink-0 text-sm font-medium text-muted">Words</span>
         {weave ? <ChipRow name="Words" current={weave} options={[['off', 'Off'], ['solid', 'Solid'], ['solid+learning', '+ Learning']]} settingKey="weave" /> : null}
       </div>
+      {weave && weave !== 'solid' ? <p data-testid="drill-words-same" className="text-sm text-muted">{WORDS_SAME_LINE}</p> : null}
       {greek ? (
         <div className="flex flex-wrap items-center gap-2">
           <span className="w-16 shrink-0 text-sm font-medium text-muted">Grammar</span>
