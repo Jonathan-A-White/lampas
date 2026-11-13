@@ -62,7 +62,7 @@ export interface MarkedWord {
 }
 
 /** A word as the grind sends it: `sounds_alike` is the snake-case of `soundsAlike`. */
-type AnswerWord = Omit<MarkedWord, 'soundsAlike'> & { sounds_alike?: boolean };
+type AnswerWord = Omit<MarkedWord, 'soundsAlike'> & { sounds_alike?: boolean; written?: string };
 
 /** The grind's answer (grinds/copywork.answer.schema.json). */
 export interface CopyworkAnswer {

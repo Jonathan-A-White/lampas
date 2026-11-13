@@ -16,13 +16,18 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["word", "mark"],
+        "required": ["word", "written", "mark"],
         "properties": {
           "word": {
             "description": "The model word, copied from the request's `words` at this place.",
             "type": "string",
             "minLength": 1,
             "maxLength": 80
+          },
+          "written": {
+            "description": "Fill this first, before `mark`: the word as he wrote it on the page, read letter by letter with every accent, breathing, point and capital you can see, copied out in full and not taken from the model word. Empty string when the word is not on the page (then `mark` is 'missing').",
+            "type": "string",
+            "maxLength": 120
           },
           "mark": {
             "description": "'right' the word is written exactly as the model has it; 'missing' the word is not on the page where it belongs; 'wrong' it is on the page but not as the model has it.",
