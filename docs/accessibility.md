@@ -6,6 +6,8 @@ marks), the Talk sheet, Settings, an idea sheet, Placement, Your Logos library, 
 violation: a missing accessible name or role, a label that is not in the name, colour contrast. It names the screens in a list of its own (the first
 test) and ends with a canary: a button that loses its accessible name must make the check fail, or the check looks at nothing.
 
+The list of sermon sources (Settings > Study resources > Sermons > Sermon sources, mw-qtu3zvz.92) has the same check in its own spec, `tests/e2e/sermon-sources.spec.ts`, over 120 sources and in the same three themes, with the same rules left out.
+
 `npm run test:e2e` runs the whole e2e suite (`playwright test`; `npm run build` first). `npx playwright test tests/e2e/accessibility.spec.ts` runs this spec alone.
 
 <!-- toc -->

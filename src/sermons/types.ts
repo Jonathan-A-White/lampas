@@ -41,7 +41,7 @@ export interface SermonSource {
   homepage: string;
   /** the credit line shown with every sermon of this source */
   credit: string;
-  /** one line for the source's row in Settings > Study resources > Sermons (a later story) */
+  /** one line about the source: the hint of its setting `sermons.<id>`, which the Settings search shows (its switch is in Settings > Study resources > Sermons > Sermon sources) */
   describe: string;
   /** the study resource the source rides on: it is left out while that resource is Off */
   needs?: 'logos';
