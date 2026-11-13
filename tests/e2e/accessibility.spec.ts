@@ -167,7 +167,7 @@ const SCREENS: readonly Screen[] = [
       await openUnlocked(page);
       await page.goto('/#/library');
       await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
-      await expect(page.getByTestId('kind-row')).toHaveCount(KINDS.length);
+      await expect(page.getByTestId('kind-row')).toHaveCount(KINDS.length - 1); // every kind but the sermon books (mw-qtu3zvz.92)
     },
   },
   {
