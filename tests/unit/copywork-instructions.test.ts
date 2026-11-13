@@ -92,3 +92,23 @@ describe("copywork's Greek rule tells a breathing from an accent", () => {
     expect(text.match(/is not an accent/g) ?? []).toHaveLength(1);
   });
 });
+
+// mw-5r3p30.1154: a perfect Hebrew dictation (`hbo-dictation-perfect-genesis-1-3`) now and then marked the right last word, אוֹר, wrong: 'you wrote אור; the holam dot
+// above the ו is missing, the place is bare'. The model wrote the page's word down with no point on it (`אור`, the model's own spelling stripped) and called the point
+// missing, the rule's 'say what is bare' asking for a fault; the Greek rule that has him write his word beside the model's (mw-qtu3zvz.72) had no Hebrew twin. The live
+// proof is that example, which holds words.5 right.
+describe("copywork's Hebrew rule has him write the page's word beside the model's", () => {
+  it('has him write the word as he wrote it, with every point he saw, beside the request word copied character for character', () => {
+    expect(hebrew).toMatch(/`you wrote X; the model has Y`/);
+    expect(hebrew).toMatch(/X being the word as he wrote it with every point you saw/);
+    expect(hebrew).toMatch(/Y being the request's word copied character for character/);
+  });
+
+  it('says a fault whose two spellings come out the same is no fault', () => {
+    expect(hebrew).toMatch(/if X and Y come out the same, there is no fault and the word is `right`/);
+  });
+
+  it('no longer asks him to say what is bare, which led him to find a bare place', () => {
+    expect(hebrew).not.toMatch(/say in `problem` what is bare/);
+  });
+});
