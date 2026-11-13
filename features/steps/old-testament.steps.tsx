@@ -273,8 +273,9 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('dialog', { name: 'Word' });
       expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
     });
-    And('it has one {string} link to {string} in Webster\'s 1828', (_, name: string, word: string) => {
-      const links = within(sheet()).getAllByRole('link', { name });
+    And('it has one {string} link to {string} in Webster\'s 1828', async (_, name: string, word: string) => {
+      // the link is drawn once the Logos switch is read, a moment after the sheet: wait for it (mw-qtu3zvz.92 found the step racing that read)
+      const links = await within(sheet()).findAllByRole('link', { name });
       expect(links).toHaveLength(1);
       expect(links[0].getAttribute('href')).toBe(englishDictionaryLink(word)?.url);
     });
