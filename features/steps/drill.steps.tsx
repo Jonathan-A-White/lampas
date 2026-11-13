@@ -308,7 +308,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Off and + Learning on the drill\'s Words row are one choice and the screen says so', ({ Given, When, Then, And }) => {
     const SAME = 'Off and + Learning ask the same words here';
-    const wordsRow = async () => within(screen.getByTestId('drill-settings')).findByRole('group', { name: 'Words' });
+    const wordsRow = async () => within(await screen.findByTestId('drill-settings')).findByRole('group', { name: 'Words' });
     Given('Lampas is opened for the first time', openLampasFresh);
     When('he opens the Parsing drill from the Test screen', openDrill);
     Then('the drill\'s Words row has Off chosen', async () => {
@@ -323,7 +323,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the drill says Off and + Learning ask the same words here', async () => {
       await waitFor(() => expect(within(screen.getByTestId('drill-settings')).getByRole('group', { name: 'Words' }).querySelector('[aria-pressed="true"]')).toHaveTextContent('+ Learning'));
-      expect(screen.getByTestId('drill-settings')).toHaveTextContent(SAME);
+      await waitFor(() => expect(screen.getByTestId('drill-settings')).toHaveTextContent(SAME));
     });
     When('he taps Solid on the drill\'s Words row', async () => {
       await user.click(within(await wordsRow()).getByRole('button', { name: 'Solid' }));
