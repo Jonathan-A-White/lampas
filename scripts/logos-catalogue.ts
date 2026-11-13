@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { BOOKS, NT_BOOKS } from '../src/data/books.ts';
 import type { CatalogueEntry, Kind, KindFile, Opens, Via, WorkGroup } from '../src/resources/catalogue.ts';
 import type { BookSection, LogosPart, ResourceLang } from '../src/resources/types.ts';
-import { ruleOf } from '../src/library/exportRules.ts';
+import { ruleOf, type ExcludeRule } from '../src/library/exportRules.ts';
 import { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, readExport, type ExportRow } from '../src/library/parseExport.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -73,6 +73,8 @@ export interface Rules {
   ids: IdRule[];
   types: TypeRule[];
   series: SeriesRule[];
+  /** books no type rule or series rule takes, each with its reason (a book about preaching typed as sermons, mw-qtu3zvz.108); the phone leaves them out of a matched list too */
+  exclude?: ExcludeRule[];
 }
 
 // ---- The export ----

@@ -56,9 +56,12 @@ Only what a reader can use without a connection is bundled: the rows, by book. A
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
   "commit": "<the full 40-hex sha>",
-  "sources": ["spurgeon-ccel", "henry-sermons", "greg-laurie-logos", "jd-greear-logos", "skip-heitzig-logos", "spurgeon-sermon-notes-logos", "wesley-logos", "whitefield-logos", "moody-logos"]
+  "sources": ["spurgeon-ccel", "henry-sermons", "greg-laurie-logos", "jd-greear-logos", "skip-heitzig-logos", "spurgeon-sermon-notes-logos", "wesley-logos", "whitefield-logos", "moody-logos"],
+  "names": { "greg-laurie-logos": "Greg Laurie's sermons (Logos archive)" }
 }
 ```
+
+`names` (optional, by source id) is the name the reader sees, in place of the `name` of the source's `source.toml`: the seven Logos lists are named here, without 'his' (mw-qtu3zvz.108), so a rebuild keeps them whatever the repository's toml says.
 
 The commit is **pinned**: the build never reads a moving branch, so a run today and a run in a year write the same files. For each source it fetches `sources/<id>/source.toml` and `sources/<id>/rows.jsonl` of that
 commit from `raw.githubusercontent.com/<owner>/<name>/<sha>/…` into `data/raw/sermons/<sha>/<id>/` (git-ignored like the other raw downloads, skipped when the file is already there; **there is no other network**), then writes
@@ -144,13 +147,13 @@ Under the rows each source that answered has its credit line with a link to its 
 | --- | --- | --- | --- | --- | --- |
 | `spurgeon-ccel` | Spurgeon's sermons (CCEL) | 3,467 listed of 3,543 read (76 have no preaching text) | 65 | CCEL's copyright policy, quoted in `index.json`; the words are public domain, the pages are CCEL's. Credit: Christian Classics Ethereal Library, Calvin University | sermon-index `efac7003` |
 | `henry-sermons` | Matthew Henry's sermons (Internet Archive scans) | 45 listed of 51 read (6 have no preaching text) | 20 | The Archive's terms of use, quoted in `index.json`; the words are public domain. Credit: Matthew Henry; Internet Archive | sermon-index `8ee5cd7c` |
-| `greg-laurie-logos` | Greg Laurie's sermons (his Logos archive) | 1,091 listed of 1,196 read (105 have no preaching text) | 40 | The Governor's own library at his word (below). Credit: Greg Laurie Sermon Archive (Harvest Ministries), in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
-| `jd-greear-logos` | J. D. Greear's sermons (his Logos archive) | 207 listed of 248 read (39 have no preaching text, 2 left out) | 35 | As above. Credit: J. D. Greear Sermon Archive, in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
-| `skip-heitzig-logos` | Skip Heitzig's sermons (his Logos archive) | 158 listed of 334 read (176 have no preaching text) | 18 | As above. Credit: Skip Heitzig Sermon Archive, in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
-| `spurgeon-sermon-notes-logos` | Spurgeon's My Sermon Notes (his Logos library) | 264 listed of 264 read | 61 | As above. Credit: Charles H. Spurgeon, My Sermon Notes, Volumes 1 and 2 and Volumes 3 and 4, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
-| `wesley-logos` | John Wesley's sermons (his Logos library) | 137 listed of 164 read (27 have no preaching text) | 35 | As above. Credit: John Wesley, Sermons on Several Occasions and The Works of John Wesley, Volumes 5 to 7, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
-| `whitefield-logos` | George Whitefield's sermons (his Logos library) | 47 listed of 59 read (12 have no preaching text) | 17 | As above. Credit: George Whitefield, Selected Sermons of George Whitefield, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
-| `moody-logos` | D. L. Moody's sermons (his Logos library) | 8 listed of 32 read (24 have no preaching text) | 7 | As above. Credit: Dwight Lyman Moody, four sermon books, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
+| `greg-laurie-logos` | Greg Laurie's sermons (Logos archive) | 1,091 listed of 1,196 read (105 have no preaching text) | 40 | The Governor's own library at his word (below). Credit: Greg Laurie Sermon Archive (Harvest Ministries), in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
+| `jd-greear-logos` | J. D. Greear's sermons (Logos archive) | 207 listed of 248 read (39 have no preaching text, 2 left out) | 35 | As above. Credit: J. D. Greear Sermon Archive, in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
+| `skip-heitzig-logos` | Skip Heitzig's sermons (Logos archive) | 158 listed of 334 read (176 have no preaching text) | 18 | As above. Credit: Skip Heitzig Sermon Archive, in Logos (Faithlife). **Off to start** | sermon-index `64f9469a` |
+| `spurgeon-sermon-notes-logos` | Spurgeon's My Sermon Notes (Logos library) | 264 listed of 264 read | 61 | As above. Credit: Charles H. Spurgeon, My Sermon Notes, Volumes 1 and 2 and Volumes 3 and 4, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
+| `wesley-logos` | John Wesley's sermons (Logos library) | 137 listed of 164 read (27 have no preaching text) | 35 | As above. Credit: John Wesley, Sermons on Several Occasions and The Works of John Wesley, Volumes 5 to 7, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
+| `whitefield-logos` | George Whitefield's sermons (Logos library) | 47 listed of 59 read (12 have no preaching text) | 17 | As above. Credit: George Whitefield, Selected Sermons of George Whitefield, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
+| `moody-logos` | D. L. Moody's sermons (Logos library) | 8 listed of 32 read (24 have no preaching text) | 7 | As above. Credit: Dwight Lyman Moody, four sermon books, in Logos (Faithlife). **Off to start** | sermon-index `8ee5cd7c` |
 
 Size at that commit: about 997 KB of JSON in 65 book files, 126 KB gzipped as one stream (148 KB when each file is gzipped on its own, as a server serves them).
 

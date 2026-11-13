@@ -18,8 +18,16 @@ export interface SeriesRule {
   kind: Kind;
 }
 
-/** The rule that takes a row, a series rule before a type rule; undefined when none does. */
-export function ruleOf<S extends SeriesRule, T extends TypeRule>(row: ExportRow, rules: { series: readonly S[]; types: readonly T[] }): { by: 'series'; rule: S } | { by: 'type'; rule: T } | undefined {
+/** A book a type rule would take that is not what the type says (a book about preaching typed as sermons): no rule takes it (mw-qtu3zvz.108). */
+export interface ExcludeRule {
+  resource: string;
+  /** one line: why it is left out */
+  reason: string;
+}
+
+/** The rule that takes a row, a series rule before a type rule; undefined when none does, and always undefined for a book `exclude` names. */
+export function ruleOf<S extends SeriesRule, T extends TypeRule>(row: ExportRow, rules: { series: readonly S[]; types: readonly T[]; exclude?: readonly { resource: string }[] }): { by: 'series'; rule: S } | { by: 'type'; rule: T } | undefined {
+  if (rules.exclude?.some((x) => x.resource === row.resource)) return undefined;
   const nt = coversNewTestament(row.supersets).length > 0;
   const series = rules.series.find((s) => s.series === row.series && row.type.startsWith('text.monograph.commentary') && nt);
   if (series) return { by: 'series', rule: series };

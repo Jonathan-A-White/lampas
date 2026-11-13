@@ -73,6 +73,9 @@ describe('the setting of a source (sermonSourceSetting)', () => {
     const long = sermonSourceSetting({ ...testSource, name: 'Greg Laurie’s sermons (his Logos archive)' });
     expect(long.label).toBe('Greg Laurie’s sermons');
     expect(sermonSourceSetting({ ...testSource, name: 'Spurgeon’s sermons (CCEL)' }).label).toBe('Spurgeon’s sermons (CCEL)');
+    // a Logos list is named without 'his' (mw-qtu3zvz.108); its label stays the short one the tutor's instructions were sized for
+    expect(sermonSourceSetting({ ...testSource, name: 'Greg Laurie\'s sermons (Logos archive)' }).label).toBe('Greg Laurie\'s sermons');
+    expect(sermonSourceSetting({ ...testSource, name: 'John Wesley\'s sermons (Logos library)' }).label).toBe('John Wesley\'s sermons');
   });
 });
 

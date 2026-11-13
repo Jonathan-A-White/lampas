@@ -3,7 +3,7 @@
 // by src/library/exportRules.ts as the catalogue tool reads them. `covers` is read from the row's ReferenceSupersets then and there. A row a rule takes whose Resource ID the catalogue does
 // not list yet is `listed: false`: Lampas knows the kind of book but this version has no entry for it, so nothing is written for it until an update lists it (rematch). Every other row
 // is left with the key of a reason (src/library/reasons.ts).
-import { series, types } from '../../data/logos/catalogue-rules.json' with { type: 'json' };
+import { exclude, series, types } from '../../data/logos/catalogue-rules.json' with { type: 'json' };
 import { CATALOGUE, type CatalogueEntry, type Kind } from '../resources/catalogue';
 import { ruleOf, type SeriesRule, type TypeRule } from './exportRules';
 import { coversOfSupersets, type ExportRow } from './parseExport';
@@ -13,9 +13,11 @@ import { reasonOf } from './reasons';
 export interface MatchRules {
   series: readonly SeriesRule[];
   types: readonly TypeRule[];
+  /** the books a type rule must not take (a book about preaching typed as sermons) */
+  exclude?: readonly { resource: string }[];
 }
 
-export const RULES: MatchRules = { series, types } as unknown as MatchRules;
+export const RULES: MatchRules = { series, types, exclude } as unknown as MatchRules;
 
 export interface Matched {
   row: ExportRow;

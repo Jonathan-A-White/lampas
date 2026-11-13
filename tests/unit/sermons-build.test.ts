@@ -160,6 +160,14 @@ describe('runSermonsBuild', () => {
     expect(s.books).toEqual(['num', '1sa', 'psa', 'isa', 'mal', 'luk', 'jhn', 'rom', '1co', '1jn']);
   });
 
+  it('writes the name sources.json gives a source in "names" in place of the one its source.toml has, so a regenerated index keeps it (mw-qtu3zvz.108)', async () => {
+    const w = workspace();
+    const config = readJson<Record<string, unknown>>(w.options.configFile);
+    writeFileSync(w.options.configFile, JSON.stringify({ ...config, names: { 'spurgeon-20': 'Spurgeon’s sermons (renamed here)' } }));
+    await runSermonsBuild(w.options);
+    expect(readJson<SermonIndex>(join(w.options.outDir, 'index.json')).sources[0]?.name).toBe('Spurgeon’s sermons (renamed here)');
+  });
+
   it('splits the rows by book, in the story\'s row shape, in verse order', async () => {
     const w = workspace();
     await runSermonsBuild(w.options);

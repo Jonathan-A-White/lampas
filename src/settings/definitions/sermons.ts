@@ -8,6 +8,8 @@ export type SermonSwitch = 'on' | 'off';
 
 /** The tutor is told a setting's name in this many characters (src/tutor/screen.ts SETTING_NAME_MAX); a source's name is the label, less a bracketed qualifier at its end when it would not fit. */
 const NAME_MAX = 40;
+/** A list from the Governor's Logos is named '... (Logos archive)' or '... (Logos library)' (data/sermons/sources.json "names", mw-qtu3zvz.108); its setting's label drops that qualifier as it always did, which keeps the tutor's instructions the size they were. */
+const LOGOS_QUALIFIER = / \(Logos (archive|library)\)$/;
 
 export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | 'describe' | 'default' | 'needs' | 'resources'>) =>
   defineSetting<SermonSwitch>({
@@ -21,7 +23,7 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
       ],
     },
     section: 'sermons',
-    label: source.name.length > NAME_MAX ? source.name.replace(/ \([^)]*\)$/, '') : source.name,
+    label: source.name.length > NAME_MAX || LOGOS_QUALIFIER.test(source.name) ? source.name.replace(/ \([^)]*\)$/, '') : source.name,
     hint: source.describe,
     ...(source.resources ? { help: 'Only if your import says you own it.' } : source.needs === 'logos' ? { help: 'Used only while Logos is On in Study resources.' } : {}),
     // a Logos collection is drawn only while his import holds it (or Logos gives it free): the pseudo-key is read by rows.ts readValues

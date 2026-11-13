@@ -15,5 +15,14 @@
   "themes": [
     "themes-tcr1934",
     "themes-torrey"
-  ]
+  ],
+  "names": {
+    "greg-laurie-logos": "Greg Laurie's sermons (Logos archive)",
+    "jd-greear-logos": "J. D. Greear's sermons (Logos archive)",
+    "skip-heitzig-logos": "Skip Heitzig's sermons (Logos archive)",
+    "spurgeon-sermon-notes-logos": "Spurgeon's My Sermon Notes (Logos library)",
+    "wesley-logos": "John Wesley's sermons (Logos library)",
+    "whitefield-logos": "George Whitefield's sermons (Logos library)",
+    "moody-logos": "D. L. Moody's sermons (Logos library)"
+  }
 }

@@ -60,7 +60,7 @@ Where each thing lives after the build:
 
 | | Settings > Study resources > Sermons | Library > Sermons |
 | --- | --- | --- |
-| Holds | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`) | the Logos sermon books of the catalogue: 78 (`src/resources/catalogue/sermons.json`: 61 of type sermons, 17 of sermon outlines) |
+| Holds | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`) | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
 | Looks like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page: help line, All on / All off, 'Search 78 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
 | Kept as | the setting `sermons.<id>` | the shelf row of the book (`db.library`, Off / On / Pinned) |
 | On gives | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at every verse, not counted; and a row behind In another book… at the verse, the Pinned ones first |
@@ -189,7 +189,7 @@ A source is one thing he can turn on. There are three sorts, and the list names 
 - **The headings are about what On gives, not where a sermon opens.** Where it opens is on each row ('on the web', 'in Logos'). Grouping by Web and Logos would put the seven Logos lists among 97 books they do not behave like, and would still not explain the door's count.
 - **A group with no row is not drawn**, and when only one group has rows it has no heading: a reader with no Logos sees a plain list of web sources.
 - **One row for a list and the books under it.** A list from Logos books names its books by Resource ID (Greg Laurie's is `LLS:GRGLRSRMNRCH`; Wesley's are `LLS:36.0.11` and `LLS:WORKSWESLEY05` to `07`). Those books have no row of their own: the list's row stands for them, the search finds it by their titles, and the Sermons sheet draws no In Logos link for them (each of their sermons is already a link into the same book). This is the mapping mw-qtu3zvz.94 needs too, to know whether he owns a list's books; it is stated once, in the source's own data, not worked out from its rows (Moody's rows name two of his four books).
-- **What is not a source.** A book about preaching is not a book of sermons. Two of the 78 are such (How to Write Narrative Sermons; Transformational Preaching); Logos types them as sermons and the type rule took them. They should leave the catalogue's sermons (a line under 'Found, not fixed' in this story's closing comment).
+- **What is not a source.** A book about preaching is not a book of sermons. Two of the 78 are such (How to Write Narrative Sermons; Transformational Preaching); Logos types them as sermons and the type rule took them. They left the catalogue's sermons in mw-qtu3zvz.108: the rules' `exclude` names them, so a regenerated catalogue and a reader's matched list leave them out.
 
 ## 5. What a row says
 
