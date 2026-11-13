@@ -3,6 +3,8 @@
 // dagesh for nothing. The Hebrew section now says where each mark of a pointed letter sits (the dagesh inside the body, the shin dot above, the vowel below)
 // and worked the two words that flaked; mw-5r3p30.989 took the worked words out again (they primed a false fault) and added the letters-first count; the live proof
 // is `mw grist eval lampas copywork --example hbo-perfect-genesis-1-1`, which holds words.4 (הַשָּׁמַיִם) right.
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { instructionsOf } from '../../scripts/grind-parts';
 import '../support/grinds-in-graph';
@@ -110,5 +112,45 @@ describe("copywork's Hebrew rule has him write the page's word beside the model'
 
   it('no longer asks him to say what is bare, which led him to find a bare place', () => {
     expect(hebrew).not.toMatch(/say in `problem` what is bare/);
+  });
+});
+
+// mw-qtu3zvz.125: in `grc-dictation-sounds-alike-john-1-5` a right σκοτία (word 9) and κατέλαβεν (word 12) were marked wrong about three runs in ten, 'you wrote an
+// acute accent on the ί; the model has no accent', though the request's word carries it: the model judged before it had written down what it read. Wording alone did not
+// move it (mw-qtu3zvz.95), so each word of the answer carries `written`, the word as the model read it off the page, ahead of `mark`: the mark is then a comparison of two
+// strings in front of it. The live proof is that example, 10 runs.
+describe("copywork's answer writes down the word as read before it marks it", () => {
+  const schema = JSON.parse(readFileSync(resolve(__dirname, '../../grinds/copywork.answer.schema.json'), 'utf8')) as {
+    properties: { words: { items: { required: string[]; properties: Record<string, { type: string; description: string }> } } };
+  };
+  const item = schema.properties.words.items;
+
+  it('asks a required `written` string on each word', () => {
+    expect(item.properties.written.type).toBe('string');
+    expect(item.required).toContain('written');
+  });
+
+  it('puts `written` before `mark`, in the required list and in the properties, so the model fills it first', () => {
+    expect(item.required.indexOf('written')).toBeLessThan(item.required.indexOf('mark'));
+    const keys = Object.keys(item.properties);
+    expect(keys.indexOf('written')).toBeLessThan(keys.indexOf('mark'));
+  });
+
+  it('says in the schema that it is the word as he wrote it, letter by letter', () => {
+    expect(item.properties.written.description).toMatch(/as he wrote it/);
+  });
+
+  it('tells the instructions to fill `written` first, before `mark`', () => {
+    expect(text).toMatch(/`written`[^.]*(before|first)[^.]*`mark`|before[^.]*`mark`[^.]*`written`/);
+    expect(text).toMatch(/Fill `written` first/);
+  });
+
+  // the first live run held `written: σκοτία` beside `mark: wrong, 'the model has σκοτία with no accent'` (4 of 10 runs): the mark must follow the comparison of the two
+  it('has the mark follow the comparison: the same characters are right, only a difference he can point to is wrong', () => {
+    expect(text).toMatch(/when `written` and `word` are the same characters the mark is `right`, and only a difference you can point to between the two makes it `wrong`/);
+  });
+
+  it('says it once, in the general rule', () => {
+    expect(text.match(/Fill `written` first/g) ?? []).toHaveLength(1);
   });
 });

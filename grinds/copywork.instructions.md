@@ -40,6 +40,8 @@ lines, a stray mark): ignore them. If he copied only part of the verse, the word
 
 `words` has exactly one entry for each word of the request's `words`, in the same order, with `word` copied from the request.
 
+Fill `written` first, before `mark`: write the word as it stands on the page, letter by letter, with the marks you can see on it and no mark you cannot, then compare it with `word` character by character and give the `mark`: when `written` and `word` are the same characters the mark is `right`, and only a difference you can point to between the two makes it `wrong`. `written` is empty when the word is not on the page.
+
 - `right`: the word is on the page where it belongs, written exactly as the model has it. Handwriting is not print: a sloppy but
   recognisable letter is right; a different letter, accent, breathing or vowel point is not.
 - `missing`: the word is not on the page where it belongs (he skipped it, or stopped before it).
