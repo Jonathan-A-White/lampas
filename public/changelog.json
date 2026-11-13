@@ -1,5 +1,47 @@
 [
   {
+    "version": "0.7.244",
+    "date": "2026-11-13",
+    "story": "mw-fnvjof.17.104",
+    "kind": "new",
+    "text": "a row you can scroll sideways now shows the next item peeking past the edge and a soft fade on the side with more."
+  },
+  {
+    "version": "0.7.244",
+    "date": "2026-11-13",
+    "story": "mw-indx1x6.22",
+    "kind": "fixed",
+    "text": "The tutor now knows how many of today's Review items you have already done, not only how many are left."
+  },
+  {
+    "version": "0.7.244",
+    "date": "2026-11-13",
+    "story": "mw-indx1x6.21",
+    "kind": "new",
+    "text": "Today's Memorize row now shows how many of the day's verses you have reviewed, with a progress bar."
+  },
+  {
+    "version": "0.7.244",
+    "date": "2026-11-13",
+    "story": "mw-qtu3zvz.92",
+    "kind": "new",
+    "text": "Every sermon source, the lists and your Logos sermon books alike, is switched in one list under Settings, Study resources, Sermons; a book that is only sermons has left the Library."
+  },
+  {
+    "version": "0.7.244",
+    "date": "2026-11-13",
+    "story": "mw-indx1x6.8",
+    "kind": "new",
+    "text": "At the end of a Review or a drill, a Study list gathers everything your wrong answers pointed to, most-missed first, one row each."
+  },
+  {
+    "version": "0.7.244",
+    "date": "2026-11-13",
+    "story": "mw-82lb97i.27",
+    "kind": "fixed",
+    "text": "a verse read alone in David's voice now fades out and stops as its last word ends, so the next verse's first sound should no longer slip through."
+  },
+  {
     "version": "0.7.243",
     "date": "2026-11-13",
     "story": "mw-indx1x6.23",

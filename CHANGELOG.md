@@ -1,5 +1,14 @@
 # What's new
 
+## 0.7.244
+_2026-11-13_
+- New: a row you can scroll sideways now shows the next item peeking past the edge and a soft fade on the side with more.
+- Fixed: The tutor now knows how many of today's Review items you have already done, not only how many are left.
+- New: Today's Memorize row now shows how many of the day's verses you have reviewed, with a progress bar.
+- New: Every sermon source, the lists and your Logos sermon books alike, is switched in one list under Settings, Study resources, Sermons; a book that is only sermons has left the Library.
+- New: At the end of a Review or a drill, a Study list gathers everything your wrong answers pointed to, most-missed first, one row each.
+- Fixed: a verse read alone in David's voice now fades out and stops as its last word ends, so the next verse's first sound should no longer slip through.
+
 ## 0.7.243
 _2026-11-13_
 - Fixed: the Parsing drill now says that Off and + Learning on its Words row ask the same words.
