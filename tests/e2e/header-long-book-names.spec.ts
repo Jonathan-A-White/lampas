@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { existsSync, readFileSync } from 'node:fs';
 import { putAtLevels } from './greek-start';
 import { openUnlocked } from './unlocked';
+import { appReady } from './app-ready';
 import { shot } from './shot';
 import { BOOKS } from '../../src/data/books';
 
@@ -29,6 +30,8 @@ async function openTitled(page: Page, width: number, address: string, percent: s
   await page.reload();
   await expect(page.locator('header h1')).toContainText(title);
   await expect(page.getByRole('group', { name: 'Language', exact: true })).toBeVisible();
+  // the fonts are in and the header holds still before its boxes are measured
+  await appReady(page, { reader: { weave: 'solid' } });
 }
 
 /** The header's height, and the vertical middles of Play and the Menu (the buttons are found by their labels; Play is 44 px tall and the Menu 48, so their tops differ by 2 where their middles do not). */
@@ -121,7 +124,7 @@ for (const width of [390, 360]) {
         await page.evaluate((hash) => (window.location.hash = hash), `#/?b=${code}&c=${code === 'psa' ? 23 : 1}`);
         await expect(page.locator('header h1')).toContainText(name);
         await expect(page.getByRole('group', { name: 'Language', exact: true })).toBeVisible();
-        await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+        await appReady(page);
         const rows = await headerRows(page);
         const tall = width >= 390 ? 80 : 120;
         if (rows.header >= tall || rows.play === null || Math.abs((rows.menu ?? -99) - rows.play) > 1) bad.push(`${name}: header ${Math.round(rows.header)}, ${rows.boxes}`);

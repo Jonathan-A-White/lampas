@@ -4,6 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { holdFor } from '../support/hold';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { appReady } from './app-ready';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -47,6 +48,7 @@ test('Genesis 1 in the Hebrew view: right to left, pointed, in the Hebrew face, 
   await honestSpeech(page, { langs: ['en-US', 'el-GR', 'he-IL'] });
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=1');
+  await appReady(page);
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await expect(page.getByRole('group', { name: 'Language', exact: true }).getByRole('button')).toHaveText(['English', 'Hebrew']);
   await choice(page, 'Hebrew').click();
@@ -92,6 +94,8 @@ test('the weave lays the English against the Hebrew; a long press on Weave lays 
   await giveHebrewWords(page, ['רֵאשִׁית', 'אֱלֹהִים']);
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=1&weave=solid');
+  // the Reader has taken the link's weave from its settings (the Weave button is drawn only then), and the header has settled
+  await appReady(page, { reader: { weave: 'solid' } });
   const verse1 = page.locator('[data-verse="1"] [data-text]');
   await expect(page.getByRole('group', { name: 'Language', exact: true }).getByRole('button')).toHaveText(['English', 'Weave', 'Hebrew']);
   await expect(choice(page, 'Weave')).toHaveAttribute('aria-pressed', 'true');
@@ -121,6 +125,7 @@ test('Read from the top in the Hebrew view speaks the Hebrew in he-IL, and a Gre
   await honestSpeech(page, { langs: ['en-US', 'el-GR', 'he-IL'] });
   await openUnlocked(page);
   await page.goto('/#/?b=gen&c=1&view=greek');
+  await appReady(page);
   await expect(choice(page, 'Hebrew')).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Read from the top' }).click();
   await expect.poll(async () => (await spoken(page)).length).toBeGreaterThan(0);
@@ -129,6 +134,7 @@ test('Read from the top in the Hebrew view speaks the Hebrew in he-IL, and a Gre
   expect(first.text.startsWith('בְּרֵאשִׁית')).toBe(true);
 
   await page.goto('/#/?b=rom&c=8&view=greek');
+  await appReady(page);
   await expect(page.getByRole('group', { name: 'Language', exact: true }).getByRole('button')).toHaveText(['English', 'Greek']);
   await expect(choice(page, 'Greek')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-verse="1"]')).toHaveAttribute('lang', 'el');

@@ -3,6 +3,7 @@
 // reader with the first verse at the top (if possible). John 5:47 would bring you here."). Cold open (the page loads on the link) and with the app already open (the address changes
 // under a running Reader). 390x844.
 import { expect, test, type Page } from '@playwright/test';
+import { appReady, expectInWindow } from './app-ready';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -73,9 +74,14 @@ const topOfVerse = (page: Page, verse: number) =>
     return top.getBoundingClientRect().top - box.getBoundingClientRect().top;
   }, verse);
 
+/** What a link brings to the top stands in the first 20 px under the bars, and is waited for as the one window it ends in: the bring-to-top scroll is still arriving when a first look sees it above the box (-21 px) or below the window. */
+const expectAtTop = (distance: () => Promise<number>) => expectInWindow(distance, { min: -1, below: 20 });
+
 /** The Reader as a link leaves it: no Verse view, no sheet, nothing selected, the address the plain one. */
 async function expectPlainReader(page: Page, title: string): Promise<void> {
   await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible();
+  // the fonts and the layout have settled before any position below is measured (tests/e2e/app-ready.ts)
+  await appReady(page);
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'off');
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -95,8 +101,7 @@ for (const how of HOWS) {
     await expectPlainReader(page, 'John 5');
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'english');
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '25');
-    await expect.poll(() => below(page, '[data-verse="25"]')).toBeLessThan(20);
-    expect(await below(page, '[data-verse="25"]')).toBeGreaterThanOrEqual(-1);
+    await expectAtTop(() => below(page, '[data-verse="25"]'));
     // verse 24 ends above the box's top: verse 25's first line is the first text below the bars
     expect(await below(page, '[data-verse="24"]')).toBeLessThan(0);
     await shot(page, `link-opens-reader-${how}-verse`);
@@ -110,8 +115,7 @@ for (const how of HOWS) {
     const heading = page.locator('[data-heading]', { hasText: 'The Father and the Son' });
     await expect(heading).toBeVisible();
     // the heading is the first thing below the bars, verse 16 right under it
-    await expect.poll(() => topOfVerse(page, 16)).toBeLessThan(20);
-    expect(await topOfVerse(page, 16)).toBeGreaterThanOrEqual(-1);
+    await expectAtTop(() => topOfVerse(page, 16));
     const verse = await below(page, '[data-verse="16"]');
     expect(verse).toBeGreaterThan(0);
     expect(verse).toBeLessThan(120);
@@ -134,8 +138,7 @@ for (const how of HOWS) {
       });
     await expect.poll(inView).toBe(true);
     // the box is at its end: 47 cannot reach the top
-    const atEnd = await page.locator('[data-reader]').evaluate((box) => box.scrollHeight - box.clientHeight - box.scrollTop);
-    expect(atEnd).toBeLessThan(2);
+    await expectInWindow(() => page.locator('[data-reader]').evaluate((box) => box.scrollHeight - box.clientHeight - box.scrollTop), { min: -1, below: 2 });
     await shot(page, `link-opens-reader-${how}-end`);
   });
 }
@@ -164,8 +167,7 @@ test('Immersive On beforehand, cold: the link leaves it On, with the verse first
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   await expect(page.locator('[data-selected="true"]')).toHaveCount(0);
   expect(await storedImmersive(page)).toBe('on');
-  await expect.poll(() => below(page, '[data-verse="25"]')).toBeLessThan(20);
-  expect(await below(page, '[data-verse="25"]')).toBeGreaterThanOrEqual(-1);
+  await expectAtTop(() => below(page, '[data-verse="25"]'));
   expect(await below(page, '[data-verse="24"]')).toBeLessThan(0);
   await shot(page, 'link-opens-reader-immersive-cold');
 });
@@ -177,8 +179,7 @@ test('Immersive On beforehand, with the app open: the link leaves it On, with th
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '16');
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   expect(await storedImmersive(page)).toBe('on');
-  await expect.poll(() => topOfVerse(page, 16)).toBeLessThan(20);
-  expect(await topOfVerse(page, 16)).toBeGreaterThanOrEqual(-1);
+  await expectAtTop(() => topOfVerse(page, 16));
 });
 
 test('Immersive Off beforehand: the link leaves it Off', async ({ page }) => {
@@ -193,8 +194,7 @@ for (const how of HOWS) {
     await expectPlainReader(page, 'Jonah 1');
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'english');
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '10');
-    await expect.poll(() => below(page, '[data-verse="10"]')).toBeLessThan(20);
-    expect(await below(page, '[data-verse="10"]')).toBeGreaterThanOrEqual(-1);
+    await expectAtTop(() => below(page, '[data-verse="10"]'));
   });
 
   test(`${how}: an Old Testament range, #/?ref=Jon.1.4-9, opens Jonah 1 with verse 4 at the top`, async ({ page }) => {
@@ -202,8 +202,7 @@ for (const how of HOWS) {
     await expectPlainReader(page, 'Jonah 1');
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'english');
     await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '4');
-    await expect.poll(() => topOfVerse(page, 4)).toBeLessThan(20);
-    expect(await topOfVerse(page, 4)).toBeGreaterThanOrEqual(-1);
+    await expectAtTop(() => topOfVerse(page, 4));
   });
 }
 
