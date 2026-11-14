@@ -5,12 +5,11 @@ import { act, cleanup, render, screen, waitFor, within } from '@testing-library/
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
-import { fetchChangelog, versionLink } from 'pwa-kit/whats-new';
+import { fetchChangelog, hasNewsSince, versionLink } from 'pwa-kit/whats-new';
 import { About } from '../../src/About';
 import { APP_SEMVER, LAST_SEEN_VERSION_STORAGE_KEY, REPO, REPO_PUBLIC } from '../../src/config';
 import { startAppUpdates } from 'pwa-kit/app-update';
 import { UpdateBanner } from '../../src/UpdateBanner';
-import { hasNewsSince } from '../../src/whatsNew/hasNewsSince';
 import { WhatsNewOnUpdate } from '../../src/whatsNew/WhatsNewOnUpdate';
 import { fakeSetup, fakeWorker, type FakeWorker } from '../../tests/support/fake-registration';
 import {
