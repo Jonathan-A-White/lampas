@@ -32,7 +32,7 @@ const EXTRA: Record<string, string> = { ἀπό: 'from, away from', κτίσις
 const CHAPTERS: Record<string, [string, number]> = { 'John 1': ['jhn', 1], 'Romans 8': ['rom', 8] };
 
 /** The round's card as the Review screen holds it: the answer is the screen's state. */
-function Holder({ item }: { item: ReviewItem }) {
+export function Holder({ item }: { item: ReviewItem }) {
   const [picked, setPicked] = useState<string | null>(null);
   const [grade, setGrade] = useState<'not' | 'some' | 'well' | null>(null);
   return <ItemCard item={item} index={0} picked={picked} onPick={setPicked} grade={grade} onGrade={setGrade} />;
