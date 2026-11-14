@@ -73,6 +73,8 @@ export interface Rules {
   ids: IdRule[];
   types: TypeRule[];
   series: SeriesRule[];
+  /** the author of a book a type rule or a series rule takes, by Resource ID (the export has no author column; mw-qtu3zvz.106): written by hand, once, and only where the book names him; an id rule has its own `author` */
+  authors?: Record<string, string>;
   /** books no type rule or series rule takes, each with its reason (a book about preaching typed as sermons, mw-qtu3zvz.108); the phone leaves them out of a matched list too */
   exclude?: ExcludeRule[];
   /** books of another kind that also hold sermons (mw-qtu3zvz.92, docs/design/sermon-sources.md section 11): each keeps its page of the Library and is also in the one list of sermon sources. Named by Resource ID; a sermons-kind book needs no mark. */
@@ -167,7 +169,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
     // an archive of sermons is indexed by the passage each sermon is preached on and opens at any verse: it has no list of books (docs/sources/sermon-index.md section 2)
     const covers = kind === 'commentary' ? coversOfSupersets(row.supersets) : kind === 'sermons' ? [] : coversNewTestament(row.supersets);
     byKind[kind].push({
-      resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, series: row.series || undefined,
+      resource: row.resource, kind, title: row.title, short: row.abbreviated || row.title, author: rules.authors?.[row.resource], series: row.series || undefined,
       lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
       covers: covers.length > 0 && (covers.length < NT_BOOKS.length || kind === 'commentary') ? covers : undefined,
       parts: kind === 'bible' || kind === 'hebrew-text' ? partsOfSupersets(row.supersets) : undefined, starts: rule.starts ?? 'on', via,
@@ -194,6 +196,12 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
     ...rules.series.filter((r) => !used.has(r)).map((r) => `series ${r.series}`),
   ];
   if (unmatched.length > 0) notes.push(`${unmatched.length} of the ${rules.ids.length + rules.types.length + rules.series.length} rules match no row of this export (an id is then written from the rules alone): ${unmatched.join('; ')}`);
+
+  // an author the rules give to a Resource ID that no entry holds is a mistake in the rules
+  const everyEntry = KIND_LIST.flatMap((k) => byKind[k]);
+  for (const resource of Object.keys(rules.authors ?? {})) {
+    if (!everyEntry.some((e) => e.resource === resource)) notes.push(`${resource}: the rules give it an author but no rule takes it from this export`);
+  }
 
   // a book of another kind that also holds sermons carries the mark; one the catalogue does not hold, or holds as a sermon book, is a mistake in the rules
   for (const marked of rules.alsoSermons ?? []) {
