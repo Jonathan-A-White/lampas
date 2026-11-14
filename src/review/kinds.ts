@@ -176,7 +176,7 @@ export const WORDS: ReviewKind = {
       const word = byLemma.get(r.id);
       return word ? [{ word, step: r.step }] : [];
     });
-    const questions = await questionsOf(rows.map((r) => r.word), words, random, { grc: greek });
+    const questions = await questionsOf(rows.map((r) => r.word), words, random, { grc: greek }, true);
     return rows.map(({ word, step }, i): WordItem => ({ kind: 'word', id: word.lemma, question: questions[i], mode: modeFor(step) }));
   },
   // a flashcard is graded by its three buttons: every grade but 'Don't know' is a right
@@ -398,7 +398,7 @@ export async function fillWords(exclude: ReadonlySet<string>, size: number, rand
   // the words in play are of the languages he chose; with both chosen the Greek | Hebrew segment of Review's start screen decides
   const inPlay = wordsInPlay(words, languages, readSourceSegment()).filter((w) => !exclude.has(w.lemma));
   const drawn = drawWords(inPlay, random, size);
-  const questions = await questionsOf(drawn, words, random, { grc: greek });
+  const questions = await questionsOf(drawn, words, random, { grc: greek }, true);
   // a word that is on the schedule but not due is asked in the mode its step gives; one not scheduled yet is at step 0
   const steps = new Map((await reviewsOf(drawn.map((w) => ({ kind: 'word', id: w.lemma })))).map((r) => [r.id, r.step]));
   return drawn.map((w, i): WordItem => ({ kind: 'word', id: w.lemma, question: questions[i], mode: modeFor(steps.get(w.lemma) ?? 0) }));

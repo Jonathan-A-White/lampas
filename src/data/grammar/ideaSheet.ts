@@ -463,7 +463,7 @@ export const SOUND_EXAMPLES = 4;
 export const EASY_SCORE = 4;
 
 /** A place the examples are looked for, nearest first: the goal itself, its pericope, its chapter, its book. */
-interface Place {
+export interface Place {
   title: string;
   chapters: Chapter[];
   verse?: number;
@@ -471,7 +471,7 @@ interface Place {
   whole?: Chapter;
 }
 
-async function* placesOf(passage: IdeaPassage, load: ChapterLoader): AsyncGenerator<Place> {
+export async function* placesOf(passage: IdeaPassage, load: ChapterLoader): AsyncGenerator<Place> {
   yield { title: passage.title, chapters: passage.chapters, verse: passage.verse };
   const first = passage.chapters[0];
   if (!first) return;

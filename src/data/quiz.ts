@@ -157,17 +157,24 @@ export interface Question {
   book?: string;
   chapter?: number;
   verse?: number;
+  /** Review only: the form's verse is shown after the answer as 'Example: John 1:44 as ἀπὸ', looked for in his goal first (data/repositories/reviewExamples.ts); the Quick test says 'in John 1:44 as ἀπὸ' */
+  example?: true;
   gloss: string;
   options: string[];
 }
 
-/** The question of a word; `lexicon` (the Greek lexicon, loadLexicon) gives a Greek word's drill answer, absent it the question is asked with the gloss he has kept. */
-export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: Chapter | null, random: Random, lexicon?: LemmaLexicon): Question {
-  const others = new Set(pool.filter((p) => p.lemma !== word.lemma).map((p) => nfc(p.lemma)));
+/** The headwords (NFC) of his other words: a lemma one of them owns is no place of this word (lemmasOf, isFormOf). */
+export const othersOf = (word: Word, pool: readonly Distractor[]): Set<string> => new Set(pool.filter((p) => p.lemma !== word.lemma).map((p) => nfc(p.lemma)));
+
+/** The question of a word; `chosen` is the occurrence Review found in his goal (it stands in for the open chapter's); `lexicon` (the Greek lexicon, loadLexicon) gives a Greek word's drill answer, absent it the question is asked with the gloss he has kept. */
+export function buildQuestion(word: Word, pool: readonly Distractor[], chapter: Chapter | null, random: Random, lexicon?: LemmaLexicon, chosen?: Occurrence): Question {
+  const others = othersOf(word, pool);
   const hebrew = word.lang === 'hbo';
   // a form is shown only from a chapter in the word's own language
   const forms = chapter && sourceLanguage(chapter) === (hebrew ? 'hbo' : 'grc') ? formsOf(chapter, word, others) : [];
-  const occurrence = forms.length > 0 ? forms[Math.floor(random() * forms.length)] : undefined;
+  // the draw is made whether or not a place was chosen, so the round's random gives the same options either way
+  const drawn = forms.length > 0 ? forms[Math.floor(random() * forms.length)] : undefined;
+  const occurrence = chosen ?? drawn;
   const pos = pool.find((p) => p.lemma === word.lemma)?.pos ?? (hebrew ? word.pos : undefined);
   const gloss = drillGloss(word, lexicon);
   return {

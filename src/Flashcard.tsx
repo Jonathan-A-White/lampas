@@ -10,6 +10,7 @@ import { WordPicture } from './WordPicture';
 import { faceOf } from './script/greekLang';
 import { HeartOfWord } from './HeartOfWord';
 import { WordParts } from './WordParts';
+import { WordFormLine } from './WordFormLine';
 
 interface Props {
   question: Question;
@@ -35,6 +36,8 @@ export function Flashcard({ question, picked, onPick }: Props) {
         <p data-testid="flash-gloss" className="mt-3 min-h-8 text-2xl">
           {shown ? question.gloss : ''}
         </p>
+        {/* once graded, right or wrong, the verse the word stands in: never before (mw-indx1x6.12) */}
+        <WordFormLine question={question} answered={graded} />
       </div>
       <div className="mt-4">
         <TapToHear text={question.lemma} />

@@ -38,6 +38,8 @@ export function reviewFacts(round: FactsRound, dueLine: string | undefined): Scr
     // the note he is shown after a miss (src/HeartOfWord.tsx) is told to the tutor too, so its answer agrees with it (mw-bsf54t.14); it explains the answer, so it waits for the answer as 'Right answer' does
     const heart = item.kind === 'word' ? wordHeart(item.question.lemma) : undefined;
     if (heart) facts.push({ label: 'Heart of the word', value: heart });
+    // the verse the answered card names as its Example (mw-indx1x6.12) is told once he has answered, as the card shows it
+    if (item.kind === 'word' && item.question.example && item.question.reference && item.question.form) facts.push({ label: 'Example verse', value: `${item.question.reference} as ${item.question.form}` });
   }
   return facts;
 }
