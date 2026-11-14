@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
   await page.clock.install();
 });
 
-test('a Parsing drill question shows the verse, four choices and both links in reach at phone width', async ({ page }) => {
+test('a Parsing drill question shows the verse and four choices in reach, and both links a scroll away, at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/test');
   await page.getByRole('button', { name: 'Parsing drill: Romans 8' }).click();
@@ -42,9 +42,13 @@ test('a Parsing drill question shows the verse, four choices and both links in r
 
   const options = page.locator('[data-option]');
   await expect(options).toHaveCount(4);
-  for (const box of await options.all()) expect((await box.boundingBox())?.height).toBeGreaterThanOrEqual(48);
-  await inReach(page, 'Ask the tutor');
-  await inReach(page, 'Talk about it');
+  const boxes = await Promise.all((await options.all()).map((option) => option.boundingBox()));
+  for (const box of boxes) expect(box?.height).toBeGreaterThanOrEqual(48);
+  // all four choices stand above the fold without a scroll
+  expect(boxes.at(-1) && boxes.at(-1)!.y + boxes.at(-1)!.height).toBeLessThanOrEqual(844);
+  // at a round's start the Words and Grammar settings stand above the question (mw-indx1x6.9), so the links are a scroll of the screen's box away, as after an answer
+  await inReach(page, 'Ask the tutor', true, true);
+  await inReach(page, 'Talk about it', true, true);
 
   await options.first().click();
   await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
