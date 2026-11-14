@@ -15,19 +15,23 @@ import { start, type DrillQuestion } from '../../src/data/grammar/drillIt';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { ideaOfAny } from '../../src/data/grammar/ladders';
 import type { Level } from '../../src/data/grammar/needs';
-import { cellsOf, paradigmById, type Levels } from '../../src/data/paradigms';
+import { cellsOf, paradigmById, paradigmsOf, type Levels } from '../../src/data/paradigms';
 import { cellPrompt, drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
 import { DAY } from '../../src/data/schedule';
 import { DrillItScreen } from '../../src/DrillItScreen';
 import { clearBus } from '../../src/events/bus';
 import { LicenceContext, type LicenceDetail } from '../../src/gate/licenceContext';
+import { learnLabel, lessonsForSheet } from '../../src/hardSounds/lessons';
+import { IdeaSheetWithWord } from '../../src/IdeaSheetWithWord';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { paradigmHash } from '../../src/nav/route';
 import { PlanDrillScreen } from '../../src/PlanDrillScreen';
 import { releaseRound } from '../../src/review/heldRound';
 import { grammarRandom } from '../../src/review/kinds';
 import { tutorTimings } from '../../src/services/tutor';
+import { accentOf, DEFAULT_ACCENT } from '../../src/speech/accents';
+import { chosenPronunciation } from '../../src/speech/greek';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { closeDatabase } from './close-database';
@@ -147,6 +151,9 @@ async function litCell(_: unknown, place: string, form: string): Promise<void> {
 async function tapLink(_: unknown, label: string): Promise<void> {
   await user.click(within(row()).getByRole('button', { name: label }));
 }
+
+/** The 'Table: ...' links the idea sheet draws under its worked example, by what each says. */
+const tableLinks = (sheet: HTMLElement): string[] => [...sheet.querySelectorAll<HTMLElement>('[data-table]')].map((b) => b.textContent ?? '');
 
 async function lessonIsOpen(ideaId: string): Promise<void> {
   const sheet = await screen.findByRole('dialog', { name: 'Idea' });
@@ -378,6 +385,70 @@ describeFeature(feature, ({ Scenario }) => {
     And('the drill is still on the question he missed', () => {
       expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
       expect(screen.getByTestId('drill-next')).toBeInTheDocument();
+    });
+  });
+
+  Scenario('The lesson opened over a drill has no Table link, which would leave the drill', ({ Given, When, And, Then }) => {
+    Given('Drill it is open on the idea {string}', openDrillIt);
+    When("he answers the drill's question wrong", () => answer(false));
+    And('he taps the lesson of the idea {string}', async (_, ideaId: string) => {
+      await screen.findByRole('group', { name: 'Study this' });
+      await tapLink(_, lessonLabel(ideaId));
+    });
+    Then('the lesson of the idea {string} is open over the drill', async (_, ideaId: string) => {
+      await lessonIsOpen(ideaId);
+      expect(screen.getByRole('dialog', { name: 'Drill it' })).toContainElement(screen.getByRole('dialog', { name: 'Idea' }));
+    });
+    And('the lesson has no Table link, though {string} teaches the idea {string}', async (_, name: string, ideaId: string) => {
+      // the idea has a table, so its sheet anywhere else has the link: without one the step would prove nothing
+      expect(paradigmsOf(ideaId).map((table) => table.name)).toContain(name);
+      const sheet = screen.getByRole('dialog', { name: 'Idea' });
+      // the sheet's last part is drawn (the worked example stands just above where the tables' links go)
+      await within(sheet).findByText('Worked example');
+      expect(tableLinks(sheet)).toEqual([]);
+    });
+    And('the drill is still on the question he missed', () => {
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
+      expect(screen.getByTestId('drill-next')).toBeInTheDocument();
+    });
+  });
+
+  Scenario('The lesson opened over Review keeps its Table link', ({ Given, When, And, Then }) => {
+    Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he answers with a wrong ending', () => answer(false));
+    And('he taps the lesson of the idea {string}', (_, ideaId: string) => tapLink(_, lessonLabel(ideaId)));
+    Then('the lesson of the idea {string} is open over Review', async (_, ideaId: string) => {
+      await lessonIsOpen(ideaId);
+      expect(window.location.hash).toBe('#/review');
+    });
+    And('the lesson has the link {string}', async (_, label: string) => {
+      await waitFor(() => expect(tableLinks(screen.getByRole('dialog', { name: 'Idea' }))).toContain(label));
+    });
+  });
+
+  Scenario("A letter's lesson over a drill has no link to its Hard sounds lesson", ({ Given, When, Then }) => {
+    Given('the lesson of the idea {string} is open as it is over a drill', async (_, ideaId: string) => {
+      await freshStore();
+      // what the row draws for a lesson where a table opens as a layer (src/review/useStudyPlaces.tsx)
+      render(<IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} overRun />);
+      await lessonIsOpen(ideaId);
+    });
+    Then('the lesson has no {string} link, though the letter has that lesson', async (_, label: string) => {
+      // the letter has the lesson for his accent, so its sheet anywhere else has the link: without one the step would prove nothing
+      expect(lessonsForSheet(ideaOfAny('letter-rho'), chosenPronunciation().id, accentOf(DEFAULT_ACCENT)).map(learnLabel)).toContain(label);
+      const sheet = screen.getByRole('dialog', { name: 'Idea' });
+      await within(sheet).findByText('Worked example');
+      expect(within(sheet).queryByRole('button', { name: label })).toBeNull();
+      expect(sheet.querySelector('[data-sound-lesson]')).toBeNull();
+    });
+    When('the lesson of the idea {string} is open as it is over Review', async (_, ideaId: string) => {
+      cleanup();
+      render(<IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} />);
+      await lessonIsOpen(ideaId);
+    });
+    Then('the lesson has the {string} link', async (_, label: string) => {
+      expect(await within(screen.getByRole('dialog', { name: 'Idea' })).findByRole('button', { name: label })).toBeInTheDocument();
     });
   });
 

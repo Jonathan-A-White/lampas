@@ -497,7 +497,7 @@ function useRestoredScroll(box: RefObject<HTMLDivElement | null>, top: number): 
   }, [box, top]);
 }
 
-export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS, restoreScroll = 0 }: {
+export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS, restoreScroll = 0, overRun = false }: {
   idea: GrammarIdea;
   onClose: () => void;
   /** Done, a swipe down, a tap outside and Escape (Back stays onClose): the sheets under this one close with it. Defaults to onClose. */
@@ -512,6 +512,11 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   books?: readonly GrammarBook[];
   /** the sheet is back from a table (src/ideaReturn.ts): scroll its text this far, as the examples and cards fill in, until he touches it */
   restoreScroll?: number;
+  /**
+   * the sheet is over a run that lives only on the screen under it (a drill, an end card: src/review/useStudyPlaces.tsx): the links that open a page of their own, a table and a
+   * Hard sounds lesson, are not drawn, since the page would take the screen and the run with it (mw-indx1x6.28)
+   */
+  overRun?: boolean;
 }) {
   const dismiss = onDismiss ?? onClose;
   const { drag, handle } = useSheetDrag(dismiss);
@@ -641,14 +646,14 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
     setMoved(null);
   };
   const markKnown = (): void => oneTap(MARK_KNOWN, () => teach('known'));
-  // the tables that teach this idea (mw-svw421.5): a tap opens one in Study mode, and Back brings this sheet back (src/ideaReturn.ts)
-  const tables = paradigmsOf(idea.id);
+  // the tables that teach this idea (mw-svw421.5): a tap opens one in Study mode, and Back brings this sheet back (src/ideaReturn.ts); none over a run, which the table's page would lose
+  const tables = overRun ? [] : paradigmsOf(idea.id);
   const seeTable = (table: string): void => {
     holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
     openParadigm({ table });
   };
   // the Hard sounds lessons on this letter or pair for his accent (mw-5r3p30.361): optional, a tap opens one, and Back brings this sheet back as from a table
-  const soundLessons = lessonsForSheet(idea, scheme.id, accent);
+  const soundLessons = overRun ? [] : lessonsForSheet(idea, scheme.id, accent);
   const learnToSay = (lesson: string): void => {
     holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
     openSoundLesson(lesson);
@@ -919,7 +924,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
       />
       {trying && passage ? <TryItSheet idea={idea} passage={passage} onClose={() => setTrying(false)} /> : null}
       {letterDrill ? <LetterDrillScreen lang={lang} onClose={() => setLetterDrill(false)} /> : null}
-      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
+      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} overRun={overRun} /> : null}
     </div>
   );
 }

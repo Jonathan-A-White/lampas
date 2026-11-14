@@ -7,7 +7,12 @@ import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { IdeaSheet } from './IdeaSheet';
 import { WordSheet, type Lookup } from './WordSheet';
 
-export function IdeaSheetWithWord({ ideaId, onClose }: { ideaId: string; onClose: () => void }) {
+export function IdeaSheetWithWord({ ideaId, onClose, overRun = false }: {
+  ideaId: string;
+  onClose: () => void;
+  /** the sheet is over a run a new page would lose (a drill): it draws no link that opens a page of its own (IdeaSheet's `overRun`, mw-indx1x6.28) */
+  overRun?: boolean;
+}) {
   const [word, setWord] = useState<{ chapter: Chapter; lookup: Lookup } | null>(null);
   return (
     <>
@@ -15,6 +20,7 @@ export function IdeaSheetWithWord({ ideaId, onClose }: { ideaId: string; onClose
         idea={ideaOf(ideaId)}
         onClose={onClose}
         covered={word !== null}
+        overRun={overRun}
         onWord={(chapter: Chapter, tapped: GreekWord) => setWord({ chapter, lookup: { words: [tapped], fromEnglish: false } })}
       />
       {word ? <WordSheet chapter={word.chapter} lookup={word.lookup} onClose={() => setWord(null)} /> : null}

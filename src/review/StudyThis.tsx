@@ -1,6 +1,7 @@
 // src/review/StudyThis.tsx — the 'Study this' row under a wrong answer (mw-indx1x6.6, src/review/studyThis.ts gives its links): one button for each thing that teaches what was asked, each
 // opening its place over the question, so the round or the drill is as he left it when he closes it. A table opens at its cell: from Review on the Paradigms screen (the round is held, Back
-// returns to the question: `onParadigm`), from a full-screen drill as a layer over the drill ('Back to the drill'), since leaving the drill would lose its run. A lesson is the idea's sheet; a
+// returns to the question: `onParadigm`), from a full-screen drill as a layer over the drill ('Back to the drill'), since leaving the drill would lose its run. A lesson is the idea's sheet, over a
+// drill without its own links to a table or a Hard sounds lesson, which are pages of their own (IdeaSheet's `overRun`, mw-indx1x6.28); a
 // word is its word sheet; 'How to remember it' is the word's memory picture, the heart of the word and the parts it is built from. A layer draws its own Talk (DialogAskTutor), so the floating ?
 // asks about it, in front of it. With no link the row is 'Ask the tutor' on a phone with a
 // licence: a talk of this miss alone, whose first turn names the question, his answer, the right answer and the idea (MissTalk); with no link and no licence there is no row.

@@ -64,6 +64,32 @@ Feature: A wrong answer links to what teaches it
     Then the lesson of the idea "noun" is open over the drill
     And the drill is still on the question he missed
 
+  # mw-indx1x6.28: the lesson's own 'Table: ...' link opens the Paradigms screen, a page of its own, and the drill and its run would go with the screen under it; over a drill the
+  # lesson has no such link (the row's own Table link opens the table over the drill). The idea is one that has a table: "noun" has none, so it could not show the fault.
+  Scenario: The lesson opened over a drill has no Table link, which would leave the drill
+    Given Drill it is open on the idea "article"
+    When he answers the drill's question wrong
+    And he taps the lesson of the idea "article"
+    Then the lesson of the idea "article" is open over the drill
+    And the lesson has no Table link, though "The article" teaches the idea "article"
+    And the drill is still on the question he missed
+
+  # Review keeps its round (src/review/keptRound.ts), so leaving it for a table loses nothing: there the lesson keeps its link
+  Scenario: The lesson opened over Review keeps its Table link
+    Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
+    When he opens Review and starts the round
+    And he answers with a wrong ending
+    And he taps the lesson of the idea "declension-1"
+    Then the lesson of the idea "declension-1" is open over Review
+    And the lesson has the link "Table: Noun endings"
+
+  # the sheet's other link to a page of its own, a letter's Hard sounds lesson, goes the same way
+  Scenario: A letter's lesson over a drill has no link to its Hard sounds lesson
+    Given the lesson of the idea "letter-rho" is open as it is over a drill
+    Then the lesson has no "Learn to roll your r (optional)" link, though the letter has that lesson
+    When the lesson of the idea "letter-rho" is open as it is over Review
+    Then the lesson has the "Learn to roll your r (optional)" link
+
   Scenario: A right answer in Drill it shows no row
     Given Drill it is open on the idea "noun"
     When he answers the drill's question right
