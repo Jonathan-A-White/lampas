@@ -7,6 +7,7 @@ import { db } from '../../src/data/db';
 import { shelfOf } from '../../src/data/repositories';
 import { KindPage } from '../../src/library/KindPage';
 import { entriesOf } from '../../src/resources/catalogue';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 describe('the Sermons page names the preacher of its books', () => {
@@ -19,6 +20,8 @@ describe('the Sermons page names the preacher of its books', () => {
       { key: 'works', value: '[]' },
       { key: 'devotionalDraw', value: 'none' },
     ]);
+    // the page lists only the books his import holds (mw-qtu3zvz.126): this one holds the whole catalogue
+    await keepImport(EVERY_BOOK_IDS);
     await shelfOf();
   }, ASYNC_WAIT_MS);
   afterEach(cleanup);
