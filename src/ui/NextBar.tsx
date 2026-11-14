@@ -32,8 +32,9 @@ export function NextBar({ children, grid, where }: { children: ReactNode; grid?:
     );
   }
   return (
-    <div data-next-bar className={`sticky bottom-0 z-1 -mx-4 mt-2 pt-2 ${LOOK} px-4 ${room} ${BELOW_PHONE_BAR}${grid ? ' grid grid-cols-2 gap-3' : ''}`}>
-      {children}
+    <div data-next-bar className={`sticky bottom-0 z-1 -mx-4 mt-2 pt-2 ${LOOK} px-4 ${BELOW_PHONE_BAR}`}>
+      {/* the room is the buttons' own, inside the bar's px-4, so they end where the card's options end (the options' room is inside the screen's px-4, mw-indx1x6.13) */}
+      <div className={`${room}${grid ? ' grid grid-cols-2 gap-3' : ''}`}>{children}</div>
     </div>
   );
 }
