@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.248
+_2026-11-14_
+- Fixed: In Review, the "Right." or "Not quite" line under the answers is no longer hidden by the Next bar, and Next lines up with the answer cards.
+- Fixed: Listening to a section that starts at verse 1, such as John 1:1-5, no longer begins with "Audio Bible, chapter one".
+
 ## 0.7.247
 _2026-11-14_
 - New: Settings now shows which screens you have opened and how often, and which you have never opened; the counts stay on your phone.

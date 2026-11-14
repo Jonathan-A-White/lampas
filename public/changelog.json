@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.248",
+    "date": "2026-11-14",
+    "story": "mw-indx1x6.13",
+    "kind": "fixed",
+    "text": "In Review, the \"Right.\" or \"Not quite\" line under the answers is no longer hidden by the Next bar, and Next lines up with the answer cards."
+  },
+  {
+    "version": "0.7.248",
+    "date": "2026-11-14",
+    "story": "mw-82lb97i.40",
+    "kind": "fixed",
+    "text": "Listening to a section that starts at verse 1, such as John 1:1-5, no longer begins with \"Audio Bible, chapter one\"."
+  },
+  {
     "version": "0.7.247",
     "date": "2026-11-14",
     "story": "mw-6ww.175.15",
