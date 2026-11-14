@@ -14,6 +14,7 @@ import { tickedOf } from '../../src/resources';
 import { logos } from '../../src/resources/logos';
 import { WORKS } from '../../src/resources/works';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 afterAll(closeDatabase);
 
@@ -27,6 +28,7 @@ const TWO = DEVOTIONALS.slice(2, 4).map((d) => d.id);
 async function emptyPhone(): Promise<void> {
   await db.open();
   await Promise.all([db.settings.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
 }
 
 const rowsOf = async (kind?: Parameters<typeof shelfOf>[0]) => Object.fromEntries((await shelfOf(kind)).map((r) => [r.id, r.state]));

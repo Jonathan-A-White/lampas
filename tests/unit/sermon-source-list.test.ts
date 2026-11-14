@@ -19,6 +19,7 @@ import { countLine, filingName, GROUP_WORDS, inOrder, onLine, sourceList, type S
 import type { SermonSource } from '../../src/sermons/types';
 import '../support/grinds-in-graph';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { EVERY_BOOK } from '../support/logos-import';
 
 const source = (id: string, name: string, more: Partial<SermonSource> = {}): SermonSource => ({
   id,
@@ -231,7 +232,7 @@ describe('the Library after the change', () => {
   it('"In another book…" holds no sermon book: no Sermon archives group at a verse, in either Testament', () => {
     const shelf = new Map<string, ShelfState>(SERMONS.slice(0, 3).map((e) => [e.resource, 'on']));
     for (const place of [{ book: 'rom', chapter: 5, verse: 8 }, { book: 'psa', chapter: 23, verse: 1 }]) {
-      const rows = inLogosRows(CATALOGUE, shelf, place);
+      const rows = inLogosRows(CATALOGUE, shelf, place, EVERY_BOOK);
       expect(rows.filter((r) => r.entry.kind === 'sermons')).toEqual([]);
       expect(inLogosGroups(rows, place).map((g) => g.title).join(' ')).not.toMatch(/Sermon/);
     }

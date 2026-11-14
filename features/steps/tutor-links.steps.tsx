@@ -21,6 +21,7 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { seedHisWords } from '../../tests/support/his-words';
 import { answeredTurn, askAboutVerse, verseTalkOpen } from './ask-verse';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 // The App writes on its own after a tap (the usage count) and at its first open (the grammar ideas seeding); db.close() with one of them in flight is a DatabaseClosedError.
 afterAll(async () => {
@@ -56,6 +57,7 @@ async function open(links: Link[]): Promise<void> {
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.answers.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await setReaderView('english');
   await setWeave('off');
   await seedHisWords();

@@ -3,7 +3,7 @@
 // a search result opens the page at the book. The address picks the page: a kind it does not know is the home. A book that is only sermons is not here (mw-qtu3zvz.92): the address of the
 // page of sermon books the Library once had, '#/library?kind=sermons', opens the one list of sermon sources in its place (Settings > Study resources > Sermons > Sermon sources), at the book it named.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { importNote, verseListCount } from '../data/repositories';
 import { libraryAsked } from '../data/repositories/bookRequests';
 import { countDueVerses } from '../data/repositories/memorize';
@@ -21,14 +21,14 @@ import { ImportLibrary } from './ImportLibrary';
 import { KindPage } from './KindPage';
 import { marksOf } from './bibleParts';
 import { booksOn, countLine, infoOf, inLibrary, KIND_INFO, LIBRARY_KINDS, STATE_LABEL } from './kinds';
-import { useBibles, useShelf } from './useShelf';
+import { offeredEntries } from '../data/owned';
+import { useBibles, useOwned, useShelf } from './useShelf';
 
 /** The most results the search shows at once; the line under the field says when more match. */
 const MAX_RESULTS = 50;
 
-/** The books of the Library: every book of the catalogue but those that are only sermons. */
+/** The books the Library may list: every book of the catalogue but those that are only sermons. Which of them are his is `offeredEntries` of this (his import holds it, or Logos gives it free, mw-qtu3zvz.126). */
 const BOOKS = CATALOGUE.filter(inLibrary);
-const ITEMS = BOOKS.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }));
 /** The day an import was made, as the card says it: '8 Oct'. */
 const importedOn = (at: number): string => new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
@@ -49,6 +49,10 @@ export function LibraryScreen() {
 function LibraryHome() {
   const states = useShelf();
   const bibles = useBibles();
+  const owned = useOwned();
+  // the books he may be offered: the card counts them and the search lists them, no others
+  const books = useMemo(() => (owned === undefined ? [] : offeredEntries(BOOKS, owned)), [owned]);
+  const items = useMemo(() => books.map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') })), [books]);
   const note = useLiveQuery(async () => (await importNote()) ?? null, []);
   const lists = useLiveQuery(verseListCount, []);
   const dueVerses = useLiveQuery(() => countDueVerses(), []);
@@ -58,7 +62,7 @@ function LibraryHome() {
   const [query, setQuery] = useState('');
   const on = states ? booksOn(states) : 0;
   const searching = query.trim() !== '';
-  const found = searching ? matching(ITEMS, query) : [];
+  const found = searching ? matching(items, query) : [];
   const results = found.slice(0, MAX_RESULTS).map((item) => entryOf(item.id)!);
   useReportScreen({
     name: SCREEN_NAMES.library,
@@ -72,7 +76,7 @@ function LibraryHome() {
           {states === undefined ? null : on > 0 || note ? (
             <>
               <p className="text-base">
-                {on} of the {BOOKS.length} books Lampas can open are on.
+                {on} of the {books.length} books Lampas can open are on.
               </p>
               {note ? (
                 <p data-testid="import-line" className="mt-1 text-base text-muted">
@@ -98,14 +102,11 @@ function LibraryHome() {
           ) : (
             <>
               <p className="text-base">
-                Lampas opens a Logos library&rsquo;s lexicons, grammars, Greek texts, Hebrew texts, interlinears, commentaries, Bibles and devotionals. Import your list, or tick the ones you own.
+                Lampas opens a Logos library&rsquo;s lexicons, grammars, Greek texts, Hebrew texts, interlinears, commentaries, Bibles and devotionals. Import your list and it offers the ones you own.
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <button type="button" className={BUTTON} onClick={() => openLibrary({ import: true })}>
                   Import
-                </button>
-                <button type="button" className={BUTTON} onClick={() => openLibrary({ kind: 'lexicon' })}>
-                  Tick by hand
                 </button>
                 {ai ? (
                   <button type="button" className={BUTTON} onClick={() => setAsking(true)}>

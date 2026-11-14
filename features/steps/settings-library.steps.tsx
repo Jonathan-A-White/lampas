@@ -16,6 +16,7 @@ import { CATALOGUE } from '../../src/resources/catalogue';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 afterAll(async () => {
   cleanup();
@@ -42,6 +43,7 @@ const book = (short: string) => {
 async function shelfHolds(shorts: readonly string[], settings: Record<string, string> = {}): Promise<void> {
   await db.open();
   await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await db.settings.bulkPut([
     { key: 'resourceOption.logos', value: '[]' },
     { key: 'grammarBooks', value: '[]' },

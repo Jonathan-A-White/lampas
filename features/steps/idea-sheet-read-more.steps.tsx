@@ -15,6 +15,7 @@ import { browserEnv } from '../../src/resources/openApp';
 import type { GrammarBook } from '../../src/resources/types';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 const user = userEvent.setup();
 
@@ -52,6 +53,7 @@ async function keep(rows: readonly (readonly [string, ShelfState])[]): Promise<v
   stubChapterFetch();
   await db.open();
   await Promise.all([db.settings.clear(), db.grammarLevels.clear(), db.library.clear()]);
+  await keepImport([...EVERY_BOOK_IDS, ...rows.map(([resource]) => resource)]);
   await db.settings.bulkPut([
     { key: 'resourceOption.logos', value: '[]' },
     { key: 'grammarBooks', value: '[]' },

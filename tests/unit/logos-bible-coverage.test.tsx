@@ -11,6 +11,7 @@ import { rowOf } from '../../src/settings/rows';
 import { entryOf } from '../../src/resources/catalogue';
 import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE, bibleFor, biblesFor } from '../../src/resources/logosBible';
 import { partsOfSupersets } from '../../src/library/parseExport';
+import { EVERY_BOOK } from '../support/logos-import';
 
 const LSB = 'LLS:LGCYSTNDRDBBLSB';
 const NRSV = 'LLS:1.0.50';
@@ -120,7 +121,7 @@ describe('In another book at a place', () => {
     const { entriesOf } = await import('../../src/resources/catalogue');
     const held = [...entriesOf('bible'), ...entriesOf('hebrew-text')];
     const on = new Map(held.map((e) => [e.resource, 'on' as const]));
-    const at = (book: string): string[] => inLogosRows(held, on, { book, chapter: 1, verse: 1 }).map((r) => r.entry.resource);
+    const at = (book: string): string[] => inLogosRows(held, on, { book, chapter: 1, verse: 1 }, EVERY_BOOK).map((r) => r.entry.resource);
     expect(at('jon')).toContain('LLS:LHB');
     expect(at('rom')).not.toContain('LLS:LHB');
   });

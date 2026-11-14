@@ -7,6 +7,7 @@ import { AUDIO_BIBLES } from '../../src/resources/audioBible';
 import { accordance } from '../../src/resources/accordance';
 import { RESOURCES, optionOf, resourceOf, type StudyWord } from '../../src/resources';
 import { LEXICONS } from '../../src/resources/logos';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 const WORD: StudyWord = { form: 'συνεργεῖ', lemma: 'συνεργέω', strongs: 'G4903' };
 /** βίβλος, tapped at Acts 19:19 */
@@ -192,6 +193,7 @@ describe('the kept choices', () => {
   beforeEach(async () => {
     await db.open();
     await db.settings.clear();
+    await keepImport(EVERY_BOOK_IDS);
   });
 
   it('starts with every resource off and the default option', async () => {

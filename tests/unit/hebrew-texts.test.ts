@@ -9,6 +9,7 @@ import { infoOf, pinRefusal } from '../../src/library/kinds';
 import { usableKind } from '../../src/library/usableRows';
 import { entriesOf, KINDS } from '../../src/resources/catalogue';
 import { bibleRef } from '../../src/resources/logosBible';
+import { EVERY_BOOK } from '../support/logos-import';
 
 const hebrew = entriesOf('hebrew-text');
 const on = new Map(hebrew.map((e) => [e.resource, 'on' as const]));
@@ -37,7 +38,7 @@ describe('the hebrew-text kind', () => {
 describe('the Hebrew texts group of the chooser', () => {
   it('is drawn at Genesis 1:1 with a link to the verse in each Hebrew text that is On', () => {
     const place = { book: 'gen', chapter: 1, verse: 1 };
-    const rows = inLogosRows(hebrew, on, place);
+    const rows = inLogosRows(hebrew, on, place, EVERY_BOOK);
     expect(rows).toHaveLength(hebrew.length);
     const group = inLogosGroups(rows, place).find((g) => g.key === 'hebrew-text');
     expect(group?.title).toBe(`Hebrew texts (${hebrew.length})`);
@@ -45,13 +46,13 @@ describe('the Hebrew texts group of the chooser', () => {
   });
 
   it('is not drawn at Romans 8:1', () => {
-    expect(inLogosRows(hebrew, on, { book: 'rom', chapter: 8, verse: 1 })).toEqual([]);
+    expect(inLogosRows(hebrew, on, { book: 'rom', chapter: 8, verse: 1 }, EVERY_BOOK)).toEqual([]);
   });
 
   it('puts a pinned one first, in the Pinned group, at Psalm 23:1 with the Psalms’ own link', () => {
     const place = { book: 'psa', chapter: 23, verse: 1 };
     const states = new Map(hebrew.map((e, i) => [e.resource, i === 1 ? ('pinned' as const) : ('on' as const)]));
-    const groups = inLogosGroups(inLogosRows(hebrew, states, place), place);
+    const groups = inLogosGroups(inLogosRows(hebrew, states, place, EVERY_BOOK), place);
     expect(groups[0].key).toBe('pinned');
     expect(groups[0].rows[0].link.url).toBe(`logosres:${hebrew[1].resource};ref=Bible.Ps23.1`);
   });

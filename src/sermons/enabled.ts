@@ -1,9 +1,9 @@
 // src/sermons/enabled.ts — which sermon sources are in use (docs/sermons.md, as src/maps/enabled.ts): a source is on by its own switch ('sermons.<id>', its `default` where nothing is saved), and a source that `needs`
 // Logos is left out too while the Logos study resource ('resource.logos') is not On. A source that opens in Logos resources (`resources`) is also left out unless his Library import says he owns one of them or Logos gives it
-// free (mw-qtu3zvz.94, src/library/owned.ts), and it lists only the rows of the resources that are offered; like every Logos source it is left out while Logos is not On (mw-qtu3zvz.92: the list of sermon sources
+// free (mw-qtu3zvz.94, src/data/owned.ts), and it lists only the rows of the resources that are offered; like every Logos source it is left out while Logos is not On (mw-qtu3zvz.92: the list of sermon sources
 // does not list it then, and says it is not offered). Pure: `read(key)` gives a setting's value as text (undefined for one never saved), `owned` the Resource IDs of
 // his import; src/sermons/index.ts hands the values in.
-import { addressOffered, isOffered, type Owned } from '../library/owned';
+import { addressOffered, isOffered, type Owned } from '../data/owned';
 import type { SermonSource } from './types';
 
 /** The key a source's switch is kept under. */

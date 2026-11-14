@@ -2,7 +2,7 @@
 // Row A is the web atlas at app.logos.com, on each map of the atlas's own list that covers the verse (src/maps/logosRef.ts, src/maps/data/logosatlas.json) and centred on the verse's places (TIPNR's
 // coordinates, src/maps/places.ts); where no map covers the verse, on the base map centred on its places. Row B is the Lexham Geographic Commentary volume of his shelf at the passage, opened as
 // src/library/inLogos.ts opens a commentary. The source rides on Logos (`needs`), so it answers only while the Logos study resource is On. Every link is UNVERIFIED on a device until he taps it (docs/resources.md).
-import { shelfOf, type ShelfState } from '../../data/repositories';
+import { offeredShelfOf, type ShelfState } from '../../data/repositories';
 import { CATALOGUE } from '../../resources/catalogue';
 import { bibleRef, schemeName } from '../../resources/logosBible';
 import { resourceLink } from '../../resources/logosRes';
@@ -123,7 +123,7 @@ export const logosAtlas: MapSource = {
   async mapsFor(ref: MapRef, places?: () => Promise<Place[]>): Promise<MapCard[]> {
     // a failed read of the places leaves the atlas rows to the maps that cover the verse: the places are an aid
     const named = places ? places().catch((error: unknown): Place[] => (console.error('could not read the places of the verses', error), [])) : Promise.resolve([]);
-    const [index, found, rows] = await Promise.all([loadIndex(), named, shelfOf()]);
+    const [index, found, rows] = await Promise.all([loadIndex(), named, offeredShelfOf()]);
     return logosAtlasCards(ref, found, new Map(rows.map((row) => [row.id, row.state])), index);
   },
   imageUrl: () => null,

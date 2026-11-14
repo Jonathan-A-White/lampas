@@ -30,6 +30,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, stubSpeech } 
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 const user = userEvent.setup();
 
@@ -104,6 +105,7 @@ async function openOn(title: string, settings: Record<string, string> = {}, spea
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   // an Old Testament chapter is read by the Hebrew dial (mw-gdcyf98.3), which a phone not yet placed reads at 0: these scenarios are of a phone with Hebrew All in
   await putAtLevels({ hebrew: 5 }, ENGLISH_READER);
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });

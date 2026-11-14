@@ -13,6 +13,7 @@ import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 // No listed resource has an app link with no https fallback now (mw-5r3p30.738), so this feature lists a sample app of its own (tests/support/sample-app.ts).
 vi.mock('../../src/resources/index', async (original) => (await import('../../tests/support/sample-app')).withSampleApp(await original<typeof import('../../src/resources/index')>()));
@@ -73,6 +74,7 @@ async function openWith(agent: string, ons: string[], ticked: string[] = []): Pr
   window.history.replaceState(null, '', '/');
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   for (const id of ons) await db.settings.put({ key: `resource.${id}`, value: 'on' });
   if (ticked.length > 0) await db.settings.put({ key: 'resourceOption.logos', value: JSON.stringify(['bdag', ...ticked]) });
   stubPhone(agent);

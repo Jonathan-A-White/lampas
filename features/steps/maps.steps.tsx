@@ -17,6 +17,7 @@ import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 afterAll(async () => {
   cleanup();
@@ -49,6 +50,7 @@ async function openOn(title: string, immersive = false, atlas?: { on: boolean; b
   if (immersive) await db.settings.put({ key: 'immersiveReader', value: 'on' });
   // the real Logos Atlas rides on Logos; with Logos On the shelf holds the Lexham Geographic Commentary on the Pentateuch
   await db.library.clear();
+  await keepImport(EVERY_BOOK_IDS);
   if (logos) await setResourceOn('logos', logos === 'on');
   if (logos === 'on') await setState('LLS:LXGEOCOMMPENT', 'on');
   if (atlas) await db.settings.bulkPut([{ key: 'maps.testlinks', value: atlas.on ? 'on' : 'off' }, { key: 'maps.biblemapper', value: atlas.bibleMapper === false ? 'off' : 'on' }]);

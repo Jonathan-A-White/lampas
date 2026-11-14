@@ -17,6 +17,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 const user = userEvent.setup();
 
@@ -55,6 +56,7 @@ async function mount(): Promise<void> {
 async function openFresh(): Promise<void> {
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await mount();
   await waitFor(async () => expect(await db.words.count()).toBe(63));
 }

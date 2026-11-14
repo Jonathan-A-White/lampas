@@ -1,5 +1,5 @@
 // tests/e2e/keep-import.ts — keeps a Library import (the exportRows store) through raw IndexedDB, as tests/support/logos-import.ts keepImport does in jsdom, and reloads so the app reads it (the page must have opened once,
-// so the store exists). A Logos sermon archive is offered only when his import holds one of its resources (src/library/owned.ts, mw-qtu3zvz.94); a spec that seeds or opens an archive keeps one first.
+// so the store exists). A Logos sermon archive is offered only when his import holds one of its resources (src/data/owned.ts, mw-qtu3zvz.94); a spec that seeds or opens an archive keeps one first.
 import type { Page } from '@playwright/test';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 

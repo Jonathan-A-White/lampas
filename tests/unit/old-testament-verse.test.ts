@@ -31,7 +31,7 @@ describe('the Logos doors of Jonah 1:10', () => {
   const states = new Map(entries.map((e) => [e.resource, 'on' as const]));
 
   it('offer a commentary that covers jon and not one that covers rom', () => {
-    const rows = inLogosRows(entries, states, { book: 'jon', chapter: 1, verse: 10 });
+    const rows = inLogosRows(entries, states, { book: 'jon', chapter: 1, verse: 10 }, new Set(entries.map((e) => e.resource)));
     expect(rows.map((r) => r.entry.resource)).toEqual(['LLS:ON.JONAH']);
     expect(rows[0].link.url).toContain('Bible.Jon1.10');
   });

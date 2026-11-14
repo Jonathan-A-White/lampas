@@ -23,6 +23,7 @@ import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings, openTool } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 const user = userEvent.setup();
 
@@ -57,6 +58,7 @@ async function keep(logos: boolean, ticked: string[]): Promise<void> {
   stubChapterFetch();
   await db.open();
   await Promise.all([db.settings.clear(), db.grammarLevels.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await db.settings.put({ key: 'resource.logos', value: logos ? 'on' : 'off' });
   await db.settings.put({ key: 'grammarBooks', value: JSON.stringify(ticked) });
 }
@@ -142,6 +144,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas has Logos on and the grammar books {string} ticked, with {string} Pinned on his shelf', async (_, ids: string, name: string) => {
       await keep(true, ids.split(',').map((s) => s.trim()));
       await db.library.clear();
+      await keepImport(EVERY_BOOK_IDS);
       const entry = entriesOf('grammar').find((e) => e.title.startsWith(name))!;
       expect(entry.sections).toBeUndefined();
       expect(await setState(entry.resource, 'pinned')).toEqual({ ok: true });

@@ -17,6 +17,7 @@ vi.mock('../../src/data/daily/dailyStore', async (original) => {
 import { getDay, localDate, pickAnotherDevotional } from '../../src/data/daily/dailyStore';
 import { Today } from '../../src/today/Today';
 import { applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 afterAll(() => {
   cleanup();
@@ -28,6 +29,7 @@ beforeEach(async () => {
   vi.mocked(pickAnotherDevotional).mockClear();
   await db.open();
   await db.settings.clear();
+  await keepImport(EVERY_BOOK_IDS);
 });
 
 const timeout = ASYNC_WAIT_MS;

@@ -11,6 +11,7 @@ import { worksForTutor } from '../../src/resources/tutorLinks';
 import type { LibraryRow } from '../../src/data/db';
 import type { ShelfState } from '../../src/data/repositories';
 import { logosArchives } from '../../src/sermons/sources/logos';
+import { EVERY_BOOK } from '../support/logos-import';
 
 const VAULT_EXPORT = process.env.LAMPAS_LOGOS_EXPORT ?? '/home/jwhite/millwright-vault/plans/lampas-logos-library-2026-10-08.csv';
 const RULES = loadRules();
@@ -77,7 +78,7 @@ describe('"In another book…" at a verse', () => {
 
   it('lists no sermon book at a New Testament verse; the Sermons door has each linked at the Bible reference with the ref.ly fallback', () => {
     const on = states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' });
-    expect(inLogosRows(archives(), on, { book: 'rom', chapter: 5, verse: 8 })).toEqual([]);
+    expect(inLogosRows(archives(), on, { book: 'rom', chapter: 5, verse: 8 }, EVERY_BOOK)).toEqual([]);
     const rows = sermonBookRows(archives(), on, { book: 'rom', chapter: 5, verse: 8 });
     expect(rows.map((r) => r.entry.resource).sort()).toEqual(['LLS:GRGLRSRMNRCH', 'LLS:JDGRRSRMNRCHV']);
     expect(rows.find((r) => r.entry === laurie())!.link).toMatchObject({ url: 'logosres:LLS:GRGLRSRMNRCH;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3AGRGLRSRMNRCH?ref=Bible.Ro5.8' });
@@ -85,19 +86,19 @@ describe('"In another book…" at a verse', () => {
 
   it('has them at an Old Testament verse too: a sermon book is indexed by passage, whichever Testament it preaches from', () => {
     const on = states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' });
-    expect(inLogosRows(archives(), on, { book: 'jon', chapter: 1, verse: 1 })).toEqual([]);
+    expect(inLogosRows(archives(), on, { book: 'jon', chapter: 1, verse: 1 }, EVERY_BOOK)).toEqual([]);
     expect(sermonBookRows(archives(), on, { book: 'jon', chapter: 1, verse: 1 }).map((r) => r.link.url).sort()).toEqual(['logosres:LLS:GRGLRSRMNRCH;ref=Bible.Jon1.1', 'logosres:LLS:JDGRRSRMNRCHV;ref=Bible.Jon1.1']);
   });
 
   it('leaves out an archive that is Off or not on the shelf', () => {
-    expect(inLogosRows(archives(), states({ 'LLS:GRGLRSRMNRCH': 'off' }), { book: 'rom', chapter: 5, verse: 8 })).toEqual([]);
-    expect(inLogosRows(archives(), states({}), { book: 'rom', chapter: 5, verse: 8 })).toEqual([]);
+    expect(inLogosRows(archives(), states({ 'LLS:GRGLRSRMNRCH': 'off' }), { book: 'rom', chapter: 5, verse: 8 }, EVERY_BOOK)).toEqual([]);
+    expect(inLogosRows(archives(), states({}), { book: 'rom', chapter: 5, verse: 8 }, EVERY_BOOK)).toEqual([]);
   });
 
   it('has no group of sermon books behind In another book…, Pinned or not', () => {
     const on = states({ 'LLS:GRGLRSRMNRCH': 'on', 'LLS:JDGRRSRMNRCHV': 'pinned' });
     const place = { book: 'rom', chapter: 5, verse: 8 };
-    expect(inLogosGroups(inLogosRows(archives(), on, place), place)).toEqual([]);
+    expect(inLogosGroups(inLogosRows(archives(), on, place, EVERY_BOOK), place)).toEqual([]);
   });
 });
 

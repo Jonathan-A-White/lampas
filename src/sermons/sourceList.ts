@@ -1,9 +1,9 @@
 // src/sermons/sourceList.ts — the one list of sermon sources (mw-qtu3zvz.92, docs/design/sermon-sources.md): every source the Sermons door draws on, once, as the page Settings > Study resources > Sermons >
 // Sermon sources lists it (SermonSourcesPage.tsx). A source is a passage list (its switch is the setting `sermons.<id>`) or a Logos book (its switch is its row of the shelf, Pinned read as On); a list made from
-// Logos books stands for those books, which have no row of their own. A Logos source is listed only while Logos is On and his Library import holds it or Logos gives it free (src/library/owned.ts). Pure:
+// Logos books stands for those books, which have no row of their own. A Logos source is listed only while Logos is On and his Library import holds it or Logos gives it free (src/data/owned.ts). Pure:
 // useSourceList.ts reads the phone and hands it here.
 import type { ShelfState } from '../data/repositories';
-import { isFreeLogos, isOffered, type Owned } from '../library/owned';
+import { isFreeLogos, isOffered, type Owned } from '../data/owned';
 import type { CatalogueEntry, Kind } from '../resources/catalogue';
 import { sourceKey, sourceOffered } from './enabled';
 import type { SermonSource } from './types';

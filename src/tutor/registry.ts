@@ -13,7 +13,7 @@ import { learnerGrammar } from '../data/grammar/learnerGrammar';
 import { learnerSummary } from '../data/learnerSummary';
 import { rustyNow } from '../data/learnerRusty';
 import { todayEntries, todayNow } from '../data/learnerToday';
-import { getActiveSet, getWorks, listedWord, moveToFrontier, restoreWord, shelfOf, type ItemRef } from '../data/repositories';
+import { getActiveSet, getWorks, listedWord, moveToFrontier, restoreWord, offeredShelfOf, type ItemRef } from '../data/repositories';
 import { RUSTY_MAX } from '../data/rusty';
 import { memorizingEvidenceNow } from '../memorize/evidence';
 import { memorizeVerse, moveVerse, startSession, unmemorizeVerse } from '../memorize/commands';
@@ -149,7 +149,7 @@ const FACTS: readonly Fact[] = [
   {
     name: 'works',
     tell: 'the digest of his Logos shelf: pinned books, commentaries, grammars',
-    read: async () => worksForTutor(await shelfOf().catch(() => []), undefined, '', higherInterest(await currentSettings())),
+    read: async () => worksForTutor(await offeredShelfOf().catch(() => []), undefined, '', higherInterest(await currentSettings())),
   },
   {
     name: 'memorizing',
@@ -265,7 +265,7 @@ const workPlace: Place = {
   args: { type: 'object', required: ['id'], additionalProperties: false, properties: { id: { type: 'string', minLength: 1, maxLength: 80 } } },
   open: async (args) => {
     const id = workIdOf(args);
-    const [ticked, shelf, settings] = await Promise.all([getWorks(), shelfOf().catch(() => []), currentSettings()]);
+    const [ticked, shelf, settings] = await Promise.all([getWorks(), offeredShelfOf().catch(() => []), currentSettings()]);
     const found = workChip(id, undefined, ticked, undefined, higherInterest(settings), shelf.map((row) => row.id));
     if (!found) throw new Error('that book is not on his shelf, or Logos has nowhere to open it');
     // The app's own address; when the phone has no app for it nothing happens, so the https fallback is armed as a tap on the link arms it
