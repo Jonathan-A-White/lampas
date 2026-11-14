@@ -2,7 +2,7 @@
 // foot bars slide away while he scrolls the text down, as a browser's address bar does (not when the Reader puts his saved place back). After that the bars change ONLY on a two-finger tap
 // on the text: shown if away, away if shown (mw-5r3p30.255, his words: "2 fingers on, 2 fingers off"). Nothing else brings them back: not
 // scrolling up (mw-5r3p30.227), not the end of the chapter or scrolling past it, not a sheet closing, not reading aloud stopping. A three-finger tap
-// does nothing. (Elsewhere the same tap puts the ? away and brings it back: src/tutor/doorTap.ts; here it also brings back a ? put away that way.) With the setting Off the same tap goes INTO immersive reading: it switches the setting On and the bars go away (mw-5r3p30.934, his words: "the two finger tap bringing you into immersive
+// is no bars gesture: it turns Hands-free on or off and leaves the bars as they were (src/handsFree/HandsFreeGate.tsx, mw-rl10piw.5). (Elsewhere the same tap puts the ? away and brings it back: src/tutor/doorTap.ts; here it also brings back a ? put away that way.) With the setting Off the same tap goes INTO immersive reading: it switches the setting On and the bars go away (mw-5r3p30.934, his words: "the two finger tap bringing you into immersive
 // reading, bringing you out"). The two-finger tap opens no tutor (mw-5r3p30.882: the floating ? is the one door, src/tutor/door.ts, and it is not drawn while the bars are away). No gesture from a screen's edge: Android's gesture navigation owns the edges. The hook only decides `away`; src/Away.tsx draws the
 // sliding.
 //

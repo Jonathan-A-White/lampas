@@ -4,7 +4,7 @@ Feature: Immersive reader
   out of view, so the text has the whole screen (src/immersive.ts, src/Away.tsx). After that the bars
   change ONLY on a two-finger tap anywhere on the text (mw-5r3p30.255: "2 fingers on, 2 fingers off"): shown if away, away if shown. Nothing
   else brings them back: not scrolling up, not scrolling to or past the end of the chapter, not a sheet closing, not reading aloud stopping.
-  A three-finger tap does nothing. A two-finger tap never opens a word sheet; a one-finger tap on a word still does. With the switch Off the
+  A three-finger tap is not a bars gesture: it turns Hands-free on or off (src/handsFree/) and leaves the bars as they were. A two-finger tap never opens a word sheet; a one-finger tap on a word still does. With the switch Off the
   Reader is as it was. How it looks at 390 px is proven by tests/e2e/immersive-reader.spec.ts.
 
   Scenario: Immersive reader is Off by default and Off leaves the Reader alone when the text scrolls
@@ -44,15 +44,18 @@ Feature: Immersive reader
     And he puts two fingers on the text one after another and lifts them together
     Then the header and the chips are both in view
 
-  Scenario: A three-finger tap does nothing
+  Scenario: A three-finger tap turns Hands-free on and off and leaves the immersive reader as it was
     Given Lampas is opened on Romans 8 with Immersive reader On
     When he scrolls the text down 200 px
     And he taps the text with three fingers
     Then the header and the chips are both out of view
+    And Hands-free is now On
     When he taps the text with two fingers
     Then the header and the chips are both in view
     When he taps the text with three fingers again
     Then the header and the chips are both still in view
+    And Hands-free is now Off
+    And Immersive reader is still On
 
   Scenario: Two fingers that move are a gesture of their own, not a tap
     Given Lampas is opened on Romans 8 with Immersive reader On
