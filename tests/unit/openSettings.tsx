@@ -4,10 +4,11 @@ import { screen, within, type BoundFunctions, type queries } from '@testing-libr
 import type { UserEvent } from '@testing-library/user-event';
 
 /** Where to look: the whole screen (the default), or a box on it (the Reader's header, from `within`). */
-type Scope = Pick<BoundFunctions<typeof queries>, 'findByRole' | 'getByRole'>;
+type Scope = Pick<BoundFunctions<typeof queries>, 'findByRole' | 'getByRole' | 'findByLabelText'>;
 
-/** The Menu button, waiting for it to be drawn. */
-export const findMenuButton = (where: Scope = screen): Promise<HTMLElement> => where.findByRole('button', { name: 'Menu' });
+/** The Menu button, waiting for it to be drawn. By its aria-label, not by role and name: the first role query with a name after the Reader changes works out the name of each of its ~100 buttons through
+ * jsdom's getComputedStyle against the whole stylesheet, 2 to 4 s on a calm host (mw-indx1x6.39); the label query reads attributes only. */
+export const findMenuButton = (where: Scope = screen): Promise<HTMLElement> => where.findByLabelText('Menu', { selector: 'button' });
 
 /** The Menu button, drawn already. */
 export const getMenuButton = (where: Scope = screen): HTMLElement => where.getByRole('button', { name: 'Menu' });
