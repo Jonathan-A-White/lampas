@@ -2,7 +2,7 @@
 // Pure and seeded like the other question builders: the random comes in, the same seed gives the same cells and the same options.
 import type { GrammarQuestion } from '../grammar/questions';
 import { shuffle, type Random } from '../random';
-import { cellName, cellsOf, isAvailable, type Levels, type Paradigm, type ParadigmRow } from './index';
+import { cellsOf, isAvailable, type Levels, type Paradigm, type ParadigmRow } from './index';
 
 /** The most cells of a table that one round asks (PROVISIONAL). */
 export const CELLS_A_ROUND = 3;
@@ -28,7 +28,7 @@ function plain(text: string): string {
  */
 export function cellPrompt(table: Paradigm, row: ParadigmRow, column: number): string {
   const col = table.columns[column];
-  const place = [row.group, [row.label, col.group, col.label].filter(Boolean).join(' ')].filter(Boolean).map(plain).join(', ');
+  const place = [row.group, [row.label, col.group, col.label].filter(Boolean).join(' ')].filter((part): part is string => Boolean(part)).map(plain).join(', ');
   return `${table.name}: ${place}`;
 }
 
