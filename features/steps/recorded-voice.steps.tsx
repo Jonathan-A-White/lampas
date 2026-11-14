@@ -43,6 +43,8 @@ const EACH = 10;
 const startOf = (n: number) => TITLE + (n - 1) * EACH;
 const endOf = (n: number) => TITLE + n * EACH;
 const audioOf = (chapter: number) => `https://openbible.com/audio/test/jhn-${chapter}.mp3`;
+/** The recordings the element was given, whichever second each was told to start at (its src carries the start as a media fragment, #t=, mw-82lb97i.28). */
+const givenAudio = (): string[] => audio.sources.map((src) => src.replace(/#t=[\d.]+$/, ''));
 function chapterTimings(key: string, chapter: number): ChapterTimings {
   const verses = CHAPTERS[key].verses.map((v) => [v.n, startOf(v.n), endOf(v.n)] as [number, number, number]);
   return { audio: audioOf(chapter), duration: endOf(verses.length) + 2, verses };
@@ -210,7 +212,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(element().src).toBe(audioOf(3));
       expect(element().hasAttribute('crossorigin')).toBe(false);
       expect(element().crossOrigin).toBeNull();
-      expect(audio.sources).toEqual([audioOf(3)]);
+      expect(givenAudio()).toEqual([audioOf(3)]);
     });
     And("the phone's voice is handed nothing", () => {
       expect(synth.calls.filter((c) => c.startsWith('speak'))).toEqual([]);
@@ -282,7 +284,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await screen.findByRole('heading', { name: 'John 4', level: 1 });
     });
     And('the audio element plays the recording of John 4 from its start', async () => {
-      await waitFor(() => expect(audio.sources).toEqual([audioOf(3), audioOf(4)]));
+      await waitFor(() => expect(givenAudio()).toEqual([audioOf(3), audioOf(4)]));
       expect(audio.playing()).toBe(recordingElement());
       expect(audio.playedAt).toEqual([startOf(36), 0]);
       expect(synth.calls.filter((c) => c.startsWith('speak'))).toEqual([]);
@@ -300,7 +302,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And("the phone's voice is handed the English of John 4:1", async () => {
       await handedOnly(englishIn('jhn/4', 1));
       expect(audio.playing()).toBeNull();
-      expect(audio.sources).toEqual([audioOf(3)]);
+      expect(givenAudio()).toEqual([audioOf(3)]);
     });
   });
 
@@ -588,7 +590,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await screen.findByRole('heading', { name: 'John 4', level: 1 });
     });
     And('the audio element plays the recording of John 4 from its start', async () => {
-      await waitFor(() => expect(audio.sources).toEqual([audioOf(3), audioOf(4)]));
+      await waitFor(() => expect(givenAudio()).toEqual([audioOf(3), audioOf(4)]));
       expect(audio.playing()).toBe(recordingElement());
       expect(element().src).toBe(audioOf(4));
       expect(audio.playedAt).toEqual([startOf(36), 0]);
@@ -648,7 +650,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     await screen.findByRole('heading', { name: 'John 4', level: 1 });
   };
   const john4FromStart = async () => {
-    await waitFor(() => expect(audio.sources).toEqual([audioOf(3), audioOf(4)]));
+    await waitFor(() => expect(givenAudio()).toEqual([audioOf(3), audioOf(4)]));
     plays();
     expect(audio.playedAt).toEqual([startOf(36), 0]);
   };

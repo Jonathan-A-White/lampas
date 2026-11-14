@@ -220,3 +220,84 @@ test.describe('every verse of John stops within 50 ms of its end (LAMPAS_ALL_JOH
     });
   }
 });
+
+// mw-82lb97i.28: playing John 1:1 alone (his screenshot) first said 'Audio Bible, John chapter one': every chapter's verse 1 starts 4.5 to 6.8 s into the recording, after the
+// announcement, and a cold element sounds from second 0 until its seek lands. The element's second is logged whenever it can be HEARD (playing, not muted, volume above 0): a
+// verse's Play must never be heard before the verse's start (less END_SLACK, 50 ms), and its first 'playing' must stand at it. A chapter from its beginning still has it.
+test.describe('a verse’s Play in David’s voice is silent until its start, and has no announcement (mw-82lb97i.28)', () => {
+  /** Logs, 10 ms apart and at each 'timeupdate'/'playing', the element's second whenever it is audible, in window.lampasHeard, and its second at each 'playing' in window.lampasPlayingAt. */
+  async function logHeard(page: Page): Promise<void> {
+    await page.addInitScript(() => {
+      const w = window as unknown as { lampasHeard: number[]; lampasPlayingAt: number[]; lampasAudio?: HTMLMediaElement };
+      w.lampasHeard = [];
+      w.lampasPlayingAt = [];
+      const look = (): void => {
+        const a = w.lampasAudio;
+        if (a && !a.paused && !a.muted && a.volume > 0 && a.readyState >= 3) w.lampasHeard.push(a.currentTime);
+      };
+      setInterval(look, 10);
+      // the player's element is never in the page, so its events do not reach window: they are listened to on it, the first time it plays
+      const seen = new WeakSet<HTMLMediaElement>();
+      const { play } = HTMLMediaElement.prototype;
+      HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+        w.lampasAudio = this;
+        if (!seen.has(this)) {
+          seen.add(this);
+          for (const type of ['timeupdate', 'seeked']) this.addEventListener(type, look);
+          this.addEventListener('playing', () => {
+            w.lampasPlayingAt.push(this.currentTime);
+            look();
+          });
+        }
+        return play.call(this);
+      };
+    });
+  }
+  const heard = (page: Page): Promise<number[]> => page.evaluate(() => (window as unknown as { lampasHeard: number[] }).lampasHeard.slice());
+  const playingAt = (page: Page): Promise<number[]> => page.evaluate(() => (window as unknown as { lampasPlayingAt: number[] }).lampasPlayingAt.slice());
+
+  async function playVerse(page: Page, c: number, v: number): Promise<void> {
+    const other = await start(page);
+    await logHeard(page);
+    silentMp3(JOHN.chapters[String(c)].duration);
+    await openVerse(page, c, v);
+    const view = page.getByRole('region', { name: 'Verse view' });
+    const played = await plays(page);
+    await expect(async () => {
+      if ((await plays(page)) > played) return;
+      const play = view.getByRole('button', { name: `Play verse ${v}`, exact: true });
+      if (await play.isVisible()) await play.click();
+      expect(await plays(page), 'the Play tap was taken').toBeGreaterThan(played);
+    }).toPass({ intervals: [250, 500, 1000], timeout: 30_000 });
+    await expect(view.getByRole('button', { name: 'Play again', exact: true })).toBeVisible({ timeout: 60_000 });
+    expect(await spoken(page)).toEqual([]);
+    expect(other).toEqual([]);
+  }
+
+  for (const [c, v] of [[1, 1], [3, 16]] as const) {
+    test(`John ${c}:${v} played cold: nothing is heard before the verse's start, and it starts there`, async ({ page }) => {
+      test.setTimeout(120_000);
+      const span = JOHN.chapters[String(c)].verses.find(([n]) => n === v);
+      if (!span) throw new Error('no timing');
+      await playVerse(page, c, v);
+      const sounds = await heard(page);
+      expect(sounds.length, 'the verse was heard').toBeGreaterThan(0);
+      expect(Math.min(...sounds), `the least second heard (the verse starts at ${span[1]})`).toBeGreaterThanOrEqual(span[1] - 0.05);
+      const first = (await playingAt(page))[0];
+      expect(first, `the second at the first 'playing' (the verse starts at ${span[1]})`).toBeGreaterThanOrEqual(span[1] - 0.05);
+      expect(first).toBeLessThanOrEqual(span[1] + 0.5);
+    });
+  }
+
+  test('then the chapter from its top, on the same element (its src has a fragment), still begins with the announcement', async ({ page }) => {
+    test.setTimeout(120_000);
+    await playVerse(page, 1, 1);
+    expect(Math.min(...(await heard(page)))).toBeGreaterThanOrEqual(6.74);
+    await page.goto('/#/?b=jhn&c=1&view=english&weave=off');
+    await expect(page.getByRole('heading', { name: 'John 1', level: 1 })).toBeVisible();
+    await page.getByRole('button', { name: 'Read from the top', exact: true }).click();
+    // the announcement ('Audio Bible, John chapter one') is the recording's first seconds, before verse 1 at 6.79 s
+    await expect.poll(async () => Math.min(...(await heard(page))), { timeout: 30_000 }).toBeLessThan(5);
+    await page.getByRole('button', { name: 'Stop', exact: true }).first().click();
+  });
+});
