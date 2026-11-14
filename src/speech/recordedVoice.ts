@@ -119,6 +119,13 @@ let listener: RecordingListener | null = null;
 let lastVerse: number | null = null;
 /** where the reading asked to start: applied again once the recording's metadata is in, should the browser have dropped a seek made before it */
 let pendingStart: number | null = null;
+/** the src the element was given (without the media fragment): the chapter's recording that is loaded */
+let loadedAudio: string | null = null;
+/** the reading began at the chapter's beginning (a chapter, a book or the Bible, from its first verse; a chapter a reading goes on into): its first verse is played from
+ * second 0, the narrator's announcement ('Audio Bible, John chapter one') included. A verse, a pericope or a reading from the middle of a chapter has none (mw-82lb97i.28). */
+let withTitle = true;
+/** the element is silenced (muted) until its second reaches where the reading asked to start (mw-82lb97i.28): a cold element sounds from second 0 until its seek lands */
+let muting = false;
 /** the reading wants sound now (play() asked for and not paused since): a play() refused after a pause is not a failure */
 let wantPlaying = false;
 /** the play() asked for last: an answer to an older one is ignored */
@@ -169,6 +176,19 @@ function fade(at: number): void {
   if (!element) return;
   const volume = wantPlaying ? fadeVolume(endSecond, at) : 1;
   if (element.volume !== volume) element.volume = volume;
+}
+
+/** Silences the element, or lets it sound: the mute is the element's own flag, apart from the volume the end's fade moves. */
+function mute(on: boolean): void {
+  muting = on;
+  if (element && element.muted !== on) element.muted = on;
+}
+
+/** Lets the element sound once its second is at the start the reading asked for (and no seek is under way). Called at 'playing', 'seeked' and each 'timeupdate'. */
+function openAtStart(): void {
+  if (!muting || !element || element.seeking) return;
+  if (pendingStart !== null && element.currentTime + END_SLACK < pendingStart) return;
+  mute(false);
 }
 
 function clearEndTimer(): void {
@@ -229,6 +249,7 @@ function halt(): void {
   pendingStart = null;
   clearEndTimer();
   clearPlayingWatch();
+  mute(false);
   element?.pause();
   holdStill();
 }
@@ -240,6 +261,7 @@ function tell(): void {
     if (now + END_SLACK < pendingStart) return; // the start's seek is not in yet
     pendingStart = null;
   }
+  mute(false);
   // at the span's end the verse after it is never told (it may start on the very second the span ends)
   const at = soundAt();
   fade(at);
@@ -263,6 +285,7 @@ function make(): HTMLAudioElement {
   audio.addEventListener('playing', () => {
     clearPlayingWatch();
     holdStill();
+    openAtStart();
     aimEnd();
   });
   audio.addEventListener('seeking', () => holdStill());
@@ -273,6 +296,7 @@ function make(): HTMLAudioElement {
   });
   audio.addEventListener('seeked', () => {
     holdStill();
+    openAtStart();
     aimEnd();
   });
   audio.addEventListener('ratechange', () => {
@@ -307,6 +331,8 @@ function play(): void {
   const mine = ++playToken;
   el.playbackRate = rate;
   if (el.volume !== 1) el.volume = 1; // a stop at a span's end left it faded to silence
+  // an element with no metadata yet (or not at the start asked for) sounds from second 0 until its seek lands: it is silent until the second is there
+  mute(pendingStart !== null && pendingStart > END_SLACK && (el.readyState < 1 || Math.abs(el.currentTime - pendingStart) > END_SLACK));
   holdStill();
   clearPlayingWatch();
   playingWatch = setTimeout(() => {
@@ -325,12 +351,26 @@ function play(): void {
   aimEnd();
 }
 
-/** Plays `recording` from the start of verse `from` (second 0 for its first verse, the narrator's title included) to `until` seconds, telling `to` as it goes. The
- * element and its src are kept when it is the recording already loaded. Call it straight from the tap. */
-export function playRecording(recording: ChapterTimings, from: number, until: number, to: RecordingListener): boolean {
+/** The second verse `n` is played from: second 0 for the recording's first verse when the reading has its announcement, else the verse's own start. */
+function startOf(recording: ChapterTimings, n: number, title: boolean): number | null {
+  const span = spanOf(recording, n);
+  if (!span) return null;
+  return title && recording.verses[0]?.[0] === n ? 0 : span.start;
+}
+
+/** Plays `recording` from the start of verse `from` to `until` seconds, telling `to` as it goes. `title` (the default) plays the recording's first verse from second 0, the
+ * narrator's announcement included: a chapter, a book or the Bible from its beginning. A verse or a pericope passes false and starts at the verse's own second
+ * (mw-82lb97i.28). The src carries the start as a media fragment (#t=) where the element is loaded afresh, so the browser begins there, and the element is silent until its
+ * second is at the start. The element and its src are kept when it is the recording already loaded. Call it straight from the tap. */
+export function playRecording(recording: ChapterTimings, from: number, until: number, to: RecordingListener, title = true): boolean {
   halt();
   const el = audio();
-  if (timings !== recording || el.getAttribute('src') !== recording.audio) el.src = recording.audio;
+  withTitle = title;
+  const start = startOf(recording, from, title);
+  if (timings !== recording || loadedAudio !== recording.audio || el.getAttribute('src') === null) {
+    el.src = start !== null && start > 0 ? `${recording.audio}#t=${start}` : recording.audio;
+    loadedAudio = recording.audio;
+  }
   timings = recording;
   listener = to;
   endSecond = until;
@@ -342,12 +382,11 @@ export function playRecording(recording: ChapterTimings, from: number, until: nu
   return true;
 }
 
-/** Moves the recording to the start of verse `n` (second 0 for the recording's first verse): the start, Restart and a tapped verse all come here. False when it has no such verse. */
+/** Moves the recording to the start of verse `n` (second 0 for the recording's first verse when the reading has its announcement): the start, Restart and a tapped verse all come here. False when it has no such verse. */
 export function seekToVerse(n: number): boolean {
   if (!timings || !element) return false;
-  const span = spanOf(timings, n);
-  if (!span) return false;
-  const start = timings.verses[0]?.[0] === n ? 0 : span.start;
+  const start = startOf(timings, n, withTitle);
+  if (start === null) return false;
   pendingStart = start;
   element.currentTime = start;
   lastVerse = n;
@@ -363,6 +402,7 @@ export function pauseRecording(): void {
   playToken++;
   clearEndTimer();
   clearPlayingWatch();
+  mute(false);
   element.pause();
   holdStill();
 }
@@ -394,6 +434,9 @@ export function resetRecordedVoice(): void {
   halt();
   chosen = bibleVoiceSetting.default;
   element = null;
+  loadedAudio = null;
+  withTitle = true;
+  muting = false;
   timings = null;
   lastVerse = null;
   endSecond = Infinity;

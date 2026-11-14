@@ -384,18 +384,24 @@ function dropRecording(): void {
 }
 
 /** Plays the reading from verse `from` in `timings`; false when it cannot (the verse or the span's last verse is not in them), and the phone's voice reads instead. */
-function playFromRecording(timings: ChapterTimings, from: number, my: number): boolean {
+function playFromRecording(timings: ChapterTimings, from: number, my: number, title: boolean): boolean {
   const at = plan.findIndex((v) => v.n === from);
   const last = plan[lastIndexFrom(at)];
   const end = at >= 0 && last ? spanOf(timings, last.n)?.end : undefined;
   if (end === undefined || !englishOnly(plan.slice(at, lastIndexFrom(at) + 1))) return false;
   recording = timings;
   recordedUntil = last.n;
-  const played = playRecording(timings, from, end, {
-    verse: (n) => recordedVerse(n, my),
-    reached: () => recordingReached(my),
-    failed: () => recordingFailed(my),
-  });
+  const played = playRecording(
+    timings,
+    from,
+    end,
+    {
+      verse: (n) => recordedVerse(n, my),
+      reached: () => recordingReached(my),
+      failed: () => recordingFailed(my),
+    },
+    title,
+  );
   if (!played) {
     recording = null;
     return false;
@@ -506,7 +512,9 @@ export function startReading(options: StartOptions): void {
   const notice = noVoiceNotice(options.from, reach !== 'verse') ?? options.notice ?? null;
   set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, recorded: false, listen: options.listen ?? null });
   keepAwake();
-  if (options.recorded && playFromRecording(options.recorded, options.from, epoch)) return;
+  // the narrator's announcement ('Audio Bible, John chapter one') belongs to a chapter, a book or the Bible read from its beginning, not to one verse or a pericope (mw-82lb97i.28)
+  const title = reach !== 'verse' && reach !== 'passage' && options.plan[0]?.n === options.from;
+  if (options.recorded && playFromRecording(options.recorded, options.from, epoch, title)) return;
   readVerse(options.from, epoch);
 }
 
@@ -524,7 +532,7 @@ export function continueReading(options: { book: string; chapter: number; plan: 
   if (!first) return finish(epoch);
   const notice = noVoiceNotice(first.n, true) ?? options.notice ?? state.notice;
   set({ ...state, verse: first.n, notice, crossing: null });
-  if (options.recorded && playFromRecording(options.recorded, first.n, epoch)) return;
+  if (options.recorded && playFromRecording(options.recorded, first.n, epoch, true)) return;
   readVerse(first.n, epoch);
 }
 

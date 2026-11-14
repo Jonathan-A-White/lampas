@@ -2,7 +2,7 @@
 // aimed when it plays and aimed again after a pause, a seek and a change of speed; it never cuts the recording off before the end. The element is tests/support/fake-audio.ts.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChapterTimings } from '../../src/data/audioTimings';
-import { endTimerMs, endWaitMs, fadeVolume, pauseRecording, playRecording, recordingElement, resetRecordedVoice, resumeRecording, seekToVerse, setRecordedRate, type RecordingListener } from '../../src/speech/recordedVoice';
+import { endTimerMs, endWaitMs, fadeVolume, pauseRecording, playRecording, recordingElement, resetRecordedVoice, resumeRecording, seekToVerse, setRecordedRate, stopRecording, type RecordingListener } from '../../src/speech/recordedVoice';
 import { stubAudio, type FakeAudio } from '../support/fake-audio';
 
 const TIMINGS: ChapterTimings = {
@@ -300,5 +300,100 @@ describe('a single verse stops at or before its end, faded to silence, whatever 
     audio.advanceTo(20);
     expect(told).toEqual(['reached']);
     expect(el.volume).toBe(0);
+  });
+});
+
+// mw-82lb97i.28: playing one verse or a pericope first let out the chapter's announcement ('Audio Bible, John chapter one'). A cold element (no metadata) sounds from second 0
+// until its seek to the span's start lands, and the chapter's first verse was always played from second 0. Now the element is silent until its second is at the start, the src
+// carries the start as a media fragment, and only a reading from the chapter's beginning plays the announcement.
+describe('no sound before the start of the span (mw-82lb97i.28)', () => {
+  /** What a cold element does: it has no metadata, its second stands at 0 and the seek made before is not in until 'loadedmetadata'. */
+  const cold = (): HTMLMediaElement => {
+    const el = element();
+    el.currentTime = 0;
+    return el;
+  };
+  const metadataIn = (el: HTMLMediaElement): void => {
+    el.dispatchEvent(new Event('loadedmetadata'));
+    el.dispatchEvent(new Event('seeked'));
+  };
+
+  it('a verse played cold is muted from play() until the seek to its start is in, and unmuted then', async () => {
+    playRecording(TIMINGS, 2, 20, listener, false);
+    const el = cold();
+    expect(el.muted).toBe(true);
+    await Promise.resolve(); // 'playing' at second 0: still no sound
+    expect(el.currentTime).toBe(0);
+    expect(el.muted).toBe(true);
+    el.dispatchEvent(new Event('loadedmetadata')); // the seek is made
+    expect(el.currentTime).toBe(10);
+    expect(el.muted).toBe(true); // made, not yet in
+    el.dispatchEvent(new Event('seeked'));
+    expect(el.muted).toBe(false);
+  });
+
+  it('is unmuted by a timeupdate that finds the second at the start', () => {
+    playRecording(TIMINGS, 2, 20, listener);
+    const el = element();
+    expect(el.muted).toBe(true);
+    el.currentTime = 10.1;
+    el.dispatchEvent(new Event('timeupdate'));
+    expect(el.muted).toBe(false);
+  });
+
+  it('the src carries the start as a media fragment', () => {
+    playRecording(TIMINGS, 2, 20, listener);
+    expect(audio.sources).toEqual(['https://example.test/chapter.mp3#t=10']);
+  });
+
+  it('a verse alone has no announcement: the chapter’s first verse is played from its own start', () => {
+    playRecording(TIMINGS, 1, 10, listener, false);
+    expect(element().currentTime).toBe(2);
+    expect(audio.sources).toEqual(['https://example.test/chapter.mp3#t=2']);
+    seekToVerse(1);
+    expect(element().currentTime).toBe(2);
+  });
+
+  it('a chapter from its beginning still plays the announcement: second 0, no fragment, no mute', () => {
+    playRecording(TIMINGS, 1, 30, listener);
+    expect(element().currentTime).toBe(0);
+    expect(element().muted).toBe(false);
+    expect(audio.sources).toEqual(['https://example.test/chapter.mp3']);
+    seekToVerse(1);
+    expect(element().currentTime).toBe(0);
+  });
+
+  it('Stop during the mute leaves the element unmuted for the next play', async () => {
+    playRecording(TIMINGS, 2, 20, listener);
+    expect(element().muted).toBe(true);
+    stopRecording();
+    expect(element().muted).toBe(false);
+    playRecording(TIMINGS, 1, 30, listener);
+    expect(element().muted).toBe(false);
+  });
+
+  it('Pause during the mute unmutes, and a resume before the start is in mutes it again', () => {
+    playRecording(TIMINGS, 2, 20, listener);
+    const el = cold();
+    pauseRecording();
+    expect(el.muted).toBe(false);
+    resumeRecording();
+    expect(el.muted).toBe(true);
+    metadataIn(el);
+    expect(el.muted).toBe(false);
+  });
+
+  it('Play pressed twice leaves it unmuted once the start is in, and a play that fails does not leave it muted', () => {
+    playRecording(TIMINGS, 2, 20, listener);
+    playRecording(TIMINGS, 2, 20, listener);
+    const el = cold();
+    expect(el.muted).toBe(true);
+    metadataIn(el);
+    expect(el.muted).toBe(false);
+    stopRecording();
+    playRecording(TIMINGS, 3, 30, listener);
+    vi.advanceTimersByTime(8_000); // no 'playing' in time: the reading goes to the phone's voice
+    expect(told).toContain('failed');
+    expect(element().muted).toBe(false);
   });
 });
