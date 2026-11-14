@@ -78,6 +78,14 @@ function keyIfAny(options: MoreItemsOptions): Uint8Array | undefined {
   }
 }
 
+/** Why the mill cannot be asked from this phone now, in the order the ask checks (offline, no key, no licence), or null when it can. The one gate: askMill and the screens that promise questions read it (mw-indx1x6.16). */
+export function whyCannotAsk(options: MoreItemsOptions = {}): 'offline' | 'no-key' | 'no-licence' | null {
+  if (navigator.onLine === false) return 'offline';
+  if (!keyIfAny(options)) return 'no-key';
+  if (currentLicence() !== 'licensed') return 'no-licence';
+  return null;
+}
+
 /**
  * Asks the mill for more items on the weakest of `missed` (one id for each miss of the round), and keeps what comes back. Never throws and never needs waiting for: the caller starts it and goes on.
  * The resolved value says what became of it. It is the stock's top-up with the ideas of the round batched into one grist; at most one ask is in flight.
@@ -129,10 +137,10 @@ async function askMill(ideas: GrammarIdea[], missed: readonly string[], options:
     if (mine) mine.outcome = outcome;
     return [];
   };
-  if (navigator.onLine === false) return stop('offline');
+  const blocked = whyCannotAsk(options);
+  if (blocked) return stop(blocked);
   const key = keyIfAny(options);
   if (!key) return stop('no-key');
-  if (currentLicence() !== 'licensed') return stop('no-licence');
   try {
     const seed = Math.floor(Math.random() * 0x100000000);
     // a Hebrew idea is asked about Hebrew verses; the graded order is the Greek words' (gradedVerses.ts), so a Hebrew request takes the passage's order

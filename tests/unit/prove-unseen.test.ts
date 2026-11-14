@@ -29,6 +29,16 @@ afterAll(() => cleanup());
 /** Declension 2 is asked of the mill in these tests; case-genitive is the idea whose built questions all have a verse in Romans 8, so they are the ones the phone notes as seen. */
 const IDEA = 'declension-2';
 const PROVE = 'case-genitive';
+/** A phone that holds a key, and a mill that answers: what a reader who can be sent more questions has. */
+const withMill = (): FakePostern => {
+  const postern = makeFakePostern();
+  postern.autoReply = { status: 'answered', answer: { items: [TAP] } };
+  const chapterFetch = globalThis.fetch;
+  vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith('https://postern') ? postern.fetch(input, init) : chapterFetch(input, init)));
+  tutorTimings.pollMs = 20;
+  localStorage.setItem(DEVICE_KEY_STORAGE_KEY, '00'.repeat(31) + '0f');
+  return postern;
+};
 const KEY = Uint8Array.from(Utils.toArray('00'.repeat(31) + '0f', 'hex'));
 const chapter = JSON.parse(readFileSync('public/data/1jn/1.json', 'utf8')) as Chapter;
 const romans8 = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -115,6 +125,7 @@ describe('Prove it', () => {
   });
 
   it('does not prove an idea whose top step he has seen all but one question of: it says more questions are on their way and ends no walk', async () => {
+    withMill();
     const top = noted(topStep().questions);
     expect(top.length).toBeGreaterThanOrEqual(2);
     await keepSeen(top.slice(0, top.length - 1));
@@ -124,20 +135,18 @@ describe('Prove it', () => {
     expect(screen.queryByTestId('grammar-prompt')).toBeNull();
     expect(screen.queryByTestId('drill-result')).toBeNull();
     expect(onResult).not.toHaveBeenCalled();
+    await whenIdle();
   });
 
-  it('asks the mill in the background in that case, and proves nothing on a seen question while it waits', async () => {
+  it('asks the mill nothing and proves nothing on a seen question when the phone has no key', async () => {
     const postern = makeFakePostern();
-    postern.autoReply = { status: 'answered', answer: { items: [TAP] } };
-    postern.holds['drill-items'] = new Promise(() => undefined);
     const chapterFetch = globalThis.fetch;
     vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => (String(input).startsWith('https://postern') ? postern.fetch(input, init) : chapterFetch(input, init)));
-    tutorTimings.pollMs = 20;
     const top = noted(topStep().questions);
     await keepSeen(top);
     const onResult = vi.fn();
     open(onResult);
-    await screen.findByTestId('drill-more-on-the-way');
+    await screen.findByTestId('drill-cannot-ask');
     // no key on this phone: nothing was sent, and nothing was proved
     expect(postern.calls).toEqual([]);
     expect(onResult).not.toHaveBeenCalled();
@@ -172,6 +181,54 @@ describe('Prove it', () => {
   });
 });
 
+// Drill it promises questions only when the mill can be asked (mw-indx1x6.16): with no licence, offline or with no key no question can come, so the screen says which it is instead of 'on their way'.
+describe('Prove it when the mill cannot be asked', () => {
+  const noop = () => undefined;
+  const open = () => render(createElement(DrillItScreen, { ideaId: PROVE, mode: 'prove', passage, onResult: noop, onClose: noop }));
+  const seeAllButOne = async () => {
+    const top = noted(topStep().questions);
+    await keepSeen(top.slice(0, top.length - 1));
+  };
+  const saysNoMore = async (pattern: RegExp) => {
+    const note = await screen.findByTestId('drill-cannot-ask');
+    expect(note).toHaveTextContent(pattern);
+    expect(note).toHaveTextContent(/proves an idea on questions the mill writes/);
+    expect(screen.queryByTestId('drill-more-on-the-way')).toBeNull();
+    expect(screen.queryByTestId('grammar-prompt')).toBeNull();
+  };
+
+  it('says the reader has no licence, and promises nothing', async () => {
+    localStorage.setItem(DEVICE_KEY_STORAGE_KEY, '00'.repeat(31) + '0f');
+    setCurrentLicence('not-licensed');
+    await seeAllButOne();
+    open();
+    await saysNoMore(/licence/);
+  });
+
+  it('says the phone is offline, and promises nothing', async () => {
+    localStorage.setItem(DEVICE_KEY_STORAGE_KEY, '00'.repeat(31) + '0f');
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false });
+    await seeAllButOne();
+    open();
+    await saysNoMore(/offline/);
+  });
+
+  it('says the phone has no key, and promises nothing', async () => {
+    await seeAllButOne();
+    open();
+    await saysNoMore(/key/);
+  });
+
+  it('still says more questions are on their way with a licence, online and a key', async () => {
+    withMill();
+    await seeAllButOne();
+    open();
+    expect(await screen.findByTestId('drill-more-on-the-way')).toHaveTextContent('More questions are on their way');
+    expect(screen.queryByTestId('drill-cannot-ask')).toBeNull();
+    await whenIdle();
+  });
+});
+
 // The conjunction over 1 John 1 has one verse with a single conjunction, so its built top step holds ONE question: a proof needs PROVED_STREAK (2), and the walk asked that one twice and proved on it
 // (his feedback 2026-11-01, mw-indx1x6.5). The rule of 'the steps hold too few' holds whether or not he has been asked anything yet.
 describe('Prove it on an idea whose built top step holds one question', () => {
@@ -192,12 +249,14 @@ describe('Prove it on an idea whose built top step holds one question', () => {
   });
 
   it('says more questions are on their way and ends no walk when nothing is kept, the first time he drills it', async () => {
+    withMill();
     const onResult = vi.fn();
     open(onResult);
     expect(await screen.findByTestId('drill-more-on-the-way')).toHaveTextContent('More questions are on their way');
     expect(screen.queryByTestId('grammar-prompt')).toBeNull();
     expect(screen.queryByTestId('drill-result')).toBeNull();
     expect(onResult).not.toHaveBeenCalled();
+    await whenIdle();
   });
 
   it('makes up the number from the kept questions: no question is asked twice and the idea is proved on two different ones', async () => {
