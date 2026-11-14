@@ -184,7 +184,7 @@ At the foot of a table, beside Ask the tutor: `Drill this table` puts the table 
 (row id the table's id, step 0, due now; `ensureScheduled`), and the button then reads `In Review` (it does nothing more). Review counts
 it ('Due today: 1 idea, 1 table, 2 words') and asks it as `review/kinds.ts` PARADIGM: for each due table up to `CELLS_A_ROUND` (3,
 PROVISIONAL) of its available cells (`data/paradigms/cells.ts` `drawCellQuestions`, seeded, so one seed gives the same cells), each a
-question of kind `cell` drawn by `GrammarCard`: the cell's name and the table ('Genitive singular masculine of the article') as the
+question of kind `cell` drawn by `GrammarCard`: the table and the cell's place ('The article: genitive singular masculine'; the table leads, never glued after with 'of', mw-indx1x6.7) as the
 prompt, four forms of the same table as the options (the right one and three whose text differs: other available forms first, locked
 ones borrowed only when fewer than four are available; a locked cell is never asked itself). The form is said once it is answered, not
 before. From `FLASHCARD_STEP` up it is a flashcard: the name, Show reveals the form, I knew it / Not yet. A table with no available

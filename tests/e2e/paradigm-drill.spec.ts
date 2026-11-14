@@ -78,7 +78,7 @@ test('Drill: the cells of the extent are blank, a tap shows the form with Had it
   await expect(first).toHaveText('τῆς');
   const grade = page.getByTestId('grade-row');
   await expect(grade).toBeVisible();
-  await expect(grade).toContainText('Genitive singular feminine of the article');
+  await expect(grade).toContainText('The article: genitive singular feminine');
   for (const name of ['Had it', 'Missed']) {
     const button = grade.getByRole('button', { name, exact: true });
     await expect(button).toBeInViewport();

@@ -107,7 +107,7 @@ Feature: Paradigms
     And nothing asks Had it or Missed
     When he taps the cell "Genitive Singular Masculine"
     Then the cell "Genitive Singular Masculine" shows "τοῦ"
-    And he is asked "Had it" or "Missed" under that row, the cell named "Genitive singular masculine of the article"
+    And he is asked "Had it" or "Missed" under that row, the cell named "The article: genitive singular masculine"
     And the cell "Nominative Singular Masculine" is still blank and shows no form
     And the cell "Dative Singular Masculine" is locked and shows no form
     When he taps "Had it"
@@ -181,7 +181,7 @@ Feature: Paradigms
     Then the cell "Dative Singular Masculine" is blank and shows no form, marked not yet
     When he taps the cell "Dative Singular Masculine"
     Then the cell "Dative Singular Masculine" shows "τῷ"
-    And he is asked "Had it" or "Missed" under that row, the cell named "Dative singular masculine of the article"
+    And he is asked "Had it" or "Missed" under that row, the cell named "The article: dative singular masculine"
     And the note under the table says "Needs the dative case"
 
   Scenario: Solid only hides the frontier cells and keeps the locked ones locked

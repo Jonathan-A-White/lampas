@@ -239,7 +239,7 @@ describeFeature(feature, ({ Background, Scenario }) => {
         ),
       );
       expect(open.size).toBe(n);
-      for (const { prompt: p } of asked) expect(open.has(p.replace(/ of the article$/, '').toLowerCase())).toBe(true);
+      for (const { prompt: p } of asked) expect(open.has(p.replace(/^The article: /, '').toLowerCase())).toBe(true);
     });
     And('every option is a form of the article', () => {
       const forms = new Set(cellsOf(paradigmById('article')!).map((c) => c.form));

@@ -12,18 +12,24 @@ export const PARADIGM_KIND = 'paradigm';
 
 const GREEK = /\p{Script=Greek}/u;
 
-/** Sentence case that leaves Greek words as they are: 'Genitive Singular Masculine' -> 'Genitive singular masculine'. */
+/** Lower case that leaves Greek words as they are: 'Genitive Singular Masculine' -> 'genitive singular masculine'. */
 function plain(text: string): string {
   return text
     .split(' ')
     .map((word) => (GREEK.test(word) ? word : word.toLowerCase()))
-    .join(' ');
+    .join(' ')
+    .replace(/(^|[\s“])i(?=[\s”,.?!]|$)/g, '$1I'); // the English 'I' of a gloss ('ἀγαπάω “I love”') stays a capital
 }
 
-/** What is asked of a cell: its place in plain words, then the table: 'Genitive singular masculine of the article'. */
+/**
+ * What is asked of a cell: the table, a colon, then the cell's place in plain words ('The article: genitive singular masculine'; 'Noun endings: first
+ * declension, feminine in η (φωνή), dative singular'). The table's name is a label, so it leads: glued after the place with 'of' it read 'dative singular
+ * of noun endings' (mw-indx1x6.7). A row's heading is set off from the rest of the place by a comma.
+ */
 export function cellPrompt(table: Paradigm, row: ParadigmRow, column: number): string {
-  const text = `${plain(cellName(table, row, column))} of ${plain(table.name)}`;
-  return `${text[0].toUpperCase()}${text.slice(1)}`;
+  const col = table.columns[column];
+  const place = [row.group, [row.label, col.group, col.label].filter(Boolean).join(' ')].filter(Boolean).map(plain).join(', ');
+  return `${table.name}: ${place}`;
 }
 
 /** What the voice is handed for a form once it is answered (before, hearing it would give the answer away): the hyphens of an ending ('-ος', 'ἔλυσ-α') are not said; a form that is not Greek is not said. */

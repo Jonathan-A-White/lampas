@@ -33,8 +33,27 @@ describe('drawCellQuestions', () => {
 
   it('names the cell as the question and the table at its end', () => {
     const row = article.rows[1];
-    expect(cellPrompt(article, row, 0)).toBe('Genitive singular masculine of the article');
+    expect(cellPrompt(article, row, 0)).toBe('The article: genitive singular masculine');
     expect(cellName(article, row, 0)).toBe('Genitive Singular Masculine');
+  });
+
+  it('reads a noun-endings cell as the table, a colon, then the place, never the table glued after it with "of" (his Review screenshot of 2026-11-12)', () => {
+    const nouns = paradigmById('noun-endings')!;
+    const row = nouns.rows.find((r) => r.group === 'First declension, feminine in η (φωνή)' && r.label === 'Dative')!;
+    expect(cellPrompt(nouns, row, 0)).toBe('Noun endings: first declension, feminine in η (φωνή), dative singular');
+  });
+
+  it('never glues the table name after the place with "of", in any table', () => {
+    for (const id of ['article', 'noun-endings', 'verb-endings', 'adjective-endings']) {
+      const table = paradigmById(id)!;
+      for (const row of table.rows) {
+        for (let c = 0; c < row.cells.length; c++) {
+          const prompt = cellPrompt(table, row, c);
+          expect(prompt.startsWith(`${table.name}: `)).toBe(true);
+          expect(prompt.toLowerCase()).not.toContain(` of ${table.name.toLowerCase()}`);
+        }
+      }
+    }
   });
 
   it('asks the same cells twice from the same seed', () => {
@@ -66,8 +85,7 @@ describe('drawCellQuestions', () => {
   });
 });
 
-/** the prompt a cell of the article has: its name in sentence case, of the table */
+/** the prompt a cell of the article has: the table, a colon, its name in lower case */
 function cellPrompt2(name: string): string {
-  const lower = name.toLowerCase();
-  return `${lower[0].toUpperCase()}${lower.slice(1)} of the article`;
+  return `The article: ${name.toLowerCase()}`;
 }
