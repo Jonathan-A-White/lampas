@@ -19,7 +19,7 @@ import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
 import { PlanDrillScreen } from './PlanDrillScreen';
 import { confirmAnswer } from './review/confirm';
-import { keepStocked } from './review/moreItems';
+import { keepStocked, whyCannotAsk } from './review/moreItems';
 import { StudyList } from './review/StudyList';
 import { StudyThis } from './review/StudyThis';
 import { studyOfQuestion } from './review/studyThis';
@@ -30,6 +30,13 @@ import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
 import { useSettled } from './ui/settle';
+
+/** What Drill it says when too few unseen questions are left and no more can come (the outcomes of moreItems.ts whyCannotAsk), in plain words. */
+const CANNOT_ASK = {
+  offline: 'This phone is offline, so no more questions can be written.',
+  'no-key': 'This phone has no key for the mill yet, so no more questions can be written.',
+  'no-licence': 'There is no licence on this phone, so no more questions can be written.',
+} as const;
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
@@ -145,6 +152,8 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
   const [walk, setWalk] = useState<DrillWalk | null>(() => begin(ideaId, passage, seed));
   const [ready, setReady] = useState(false);
   const [onTheirWay, setOnTheirWay] = useState(false);
+  // too few unseen questions and the mill cannot be asked: why (the mill's own gate, moreItems.ts whyCannotAsk), so no question is promised that cannot come
+  const [cannotAsk, setCannotAsk] = useState<ReturnType<typeof whyCannotAsk>>(null);
   // the walk after the answer he has given, held until he taps Next so he can read whether he was right
   const [after, setAfter] = useState<{ walk: DrillWalk; picked: string } | null>(null);
   const [taken, setTaken] = useState<ReadonlySet<number> | null>(null);
@@ -172,7 +181,9 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
           const have = top?.title === drawn.steps[drawn.steps.length - 1].title ? top.questions.length : 0;
           if (have + (await listUnseenFetched(ideaId)).length >= PROVED_STREAK) first = addFetched(first, await takeAllFetched(ideaId), drawn.steps);
           else {
-            setOnTheirWay(true);
+            const blocked = whyCannotAsk();
+            if (blocked) setCannotAsk(blocked);
+            else setOnTheirWay(true);
             first = null;
           }
         } else if (first) {
@@ -253,6 +264,10 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
         {onTheirWay ? (
           <p role="status" data-testid="drill-more-on-the-way" className="text-lg">
             More questions are on their way. Drill it again in a little while: it proves an idea only on questions you have not been asked.
+          </p>
+        ) : cannotAsk ? (
+          <p role="status" data-testid="drill-cannot-ask" className="text-lg">
+            {CANNOT_ASK[cannotAsk]} Drill it proves an idea on questions the mill writes, and too few you have not been asked are kept for this idea.
           </p>
         ) : walk === null ? (
           <p className="text-lg">Drill it could not start on this idea.</p>
