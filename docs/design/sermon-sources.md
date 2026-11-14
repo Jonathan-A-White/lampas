@@ -36,7 +36,7 @@ where the sermons are found, not where books are opened; a book that is more tha
 ## In one screen
 
 - **One list.** Settings > Study resources > Sermons has one row, **Sermon sources**, with its count ('17 of 120 on'). It opens a page of its own in the look of Library > Sermons: All on / All off, a search field, a count, and one row for each source with **Off | On**.
-- **One row for each source.** Today Greg Laurie is two rows on two screens (his list in Settings, his archive in the Library). In the one list he is one row. The sources bundled today go from 87 rows on two screens to 73 on one.
+- **One row for each source.** Today Greg Laurie is two rows on two screens (his list in Settings, his archive in the Library). In the one list he is one row. The sources bundled today go from 87 rows on two screens to 73 on one (counted for a phone whose import holds the Logos lists' books; a phone with no import sees 2 rows in Settings and 71 in Library > Sermons today).
 - **Two groups, named by what On gives.** *Listed by passage*: each sermon is listed at its verse, and the count on the Sermons door is these. *Logos books, at the verse*: Logos opens the book at the verse, and Lampas cannot say which sermons it holds there.
 - **A row says three things:** the source's name, how many sermons and where they open ('3,467 sermons · on the web'), and Off | On. No Pin anywhere.
 - **What is on comes first** in each group, then the rest by name. Nothing moves under his thumb.
@@ -60,18 +60,18 @@ Where each thing lives after the build:
 
 | | Settings > Study resources > Sermons | Library > Sermons |
 | --- | --- | --- |
-| Holds | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`) | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
+| Holds | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`). A phone with no Logos import sees 2 of the 9 (Spurgeon's sermons (CCEL), Matthew Henry's sermons); the other 7, the Logos lists, are drawn only while his import holds one of their books (`src/settings/definitions/sermons.ts`, mw-qtu3zvz.94), so the nine are what a phone with the import sees | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
 | Looks like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page: header with its count at the right, help line, All on / All off, 'Search 71 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
 | Kept as | the setting `sermons.<id>` | the shelf row of the book (`db.library`, Off / On / Pinned) |
 | On gives | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at every verse, not counted; and a row behind In another book… at the verse, the Pinned ones first |
 
 What is wrong with it, beyond there being two:
 
-1. **One source, two rows.** Seven of the nine lists are made from 14 of the 71 books (Greg Laurie, J. D. Greear and Skip Heitzig one book each, My Sermon Notes two, Wesley four, Whitefield one, Moody four). Each is switched twice, on two screens, by two names: Settings > Study resources > Sermons shows 'Greg Laurie's sermons' with the line 'Listed by passage; opens in Logos.', and Library > Sermons shows 'Greg Laurie Sermon Archive'. (The longer names, such as 'Greg Laurie's sermons (Logos archive)' and 'Matthew Henry's sermons (Internet Archive scans)', are in `public/sermons/index.json`; Settings drops a bracket at the end of a name that ends '(Logos archive)' or '(Logos library)' or is over 40 characters, `src/settings/definitions/sermons.ts`, so it shows 'Spurgeon's sermons (CCEL)' whole.)
+1. **One source, two rows.** Seven of the nine lists are made from 14 of the 71 books (Greg Laurie, J. D. Greear and Skip Heitzig one book each, My Sermon Notes two, Wesley four, Whitefield one, Moody four). Each is switched twice, on two screens, by two names: Settings > Study resources > Sermons shows (to a phone whose import holds his book) 'Greg Laurie's sermons' with the line 'Listed by passage; opens in Logos.', and Library > Sermons shows 'Greg Laurie Sermon Archive'. (The longer names, such as 'Greg Laurie's sermons (Logos archive)' and 'Matthew Henry's sermons (Internet Archive scans)', are in `public/sermons/index.json`; Settings drops a bracket at the end of a name that ends '(Logos archive)' or '(Logos library)' or is over 40 characters, `src/settings/definitions/sermons.ts`, so it shows 'Spurgeon's sermons (CCEL)' whole.)
 2. **The better screen holds the weaker sources.** The page with the search and the count is the one for books Lampas cannot look inside; the lists, whose sermons it can name, are plain rows under three other sections.
 3. **Pin does nothing he wants.** It puts a sermon book among the other books at a verse, "disassociated with the sermon mapper".
 4. **Neither says why the door's number is what it is.** With 71 books On and two lists On, the door can read 'Sermons · 3': nothing says that only the lists are counted.
-5. **Everyone is shown his books.** The 71 are the Governor's own; another reader sees all of them, and the seven Logos lists too (mw-qtu3zvz.94 mends this).
+5. **Everyone is shown his books.** The 71 are the Governor's own, and Library > Sermons shows all 71 to every reader, with no import. Settings is already mended (mw-qtu3zvz.94, the owned-check now in `src/data/owned.ts`): it offers a Logos list only while his import holds one of its books, so a phone with no import sees 'Spurgeon's sermons (CCEL)' and 'Matthew Henry's sermons' there and not the seven Logos lists. Only Library > Sermons still shows all 71, until the build (mw-qtu3zvz.92).
 
 ## 2. Where the list lives
 
@@ -106,7 +106,7 @@ Under **Settings > Study resources > Sermons**, as a page of its own behind one 
 
 ## 3. The list at 120 sources
 
-The top of the list as it opens. The 120 here are 23 lists (14 on the web, 9 from Logos books) and 97 Logos books; 17 are on. The numbers of the first rows are today's real sources; their names are the ones section 5 gives (Settings shows 'Spurgeon's sermons (CCEL)' today). Brackets mark the chosen step ('Off [On]' is On). This mockup shows the first group, *Listed by passage*; the second group, *Logos books, at the verse*, is drawn in the next one, after 'Scrolled past the first group'.
+The top of the list as it opens. The 120 here are 23 lists (14 on the web, 9 from Logos books) and 97 Logos books; 17 are on. The numbers of the first rows are today's real sources, as a phone whose import holds the Logos lists' books sees them (one with no import sees only Spurgeon's and Matthew Henry's lists in Settings); their names are the ones section 5 gives (Settings shows 'Spurgeon's sermons (CCEL)' today). Brackets mark the chosen step ('Off [On]' is On). This mockup shows the first group, *Listed by passage*; the second group, *Logos books, at the verse*, is drawn in the next one, after 'Scrolled past the first group'.
 
 ```text
 ┌────────────────────────────┐
