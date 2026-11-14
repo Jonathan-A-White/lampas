@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.249
+_2026-11-14_
+- Fixed: A lesson opened from a wrong answer in a drill no longer shows a table button that threw the drill away.
+
 ## 0.7.248
 _2026-11-14_
 - Fixed: In Review, the "Right." or "Not quite" line under the answers is no longer hidden by the Next bar, and Next lines up with the answer cards.

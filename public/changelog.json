@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.249",
+    "date": "2026-11-14",
+    "story": "mw-indx1x6.28",
+    "kind": "fixed",
+    "text": "A lesson opened from a wrong answer in a drill no longer shows a table button that threw the drill away."
+  },
+  {
     "version": "0.7.248",
     "date": "2026-11-14",
     "story": "mw-indx1x6.13",
