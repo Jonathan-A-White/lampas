@@ -2,12 +2,11 @@ import { build, defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { readFileSync } from 'node:fs';
 import { pwaManifest } from './pwa-manifest';
 import { injectManifestOptions } from './pwa-precache';
-import { buildTime, buildVersion, shortCommit } from './build-version';
+import { buildTime, buildVersion, packageVersion, shortCommit } from './build-version';
 
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
+const version = packageVersion();
 
 // The build's version stamp (its time and commit) and the plain version are written into index.html as two globals, NOT
 // defined into the code: a define puts the stamp into whichever chunk reads it, so every build renamed that chunk and the
@@ -18,7 +17,7 @@ const versionGlobals = () => ({
   transformIndexHtml: () => [
     {
       tag: 'script',
-      children: `globalThis.__APP_VERSION__=${JSON.stringify(buildVersion(pkg.version, buildTime(), shortCommit()))};globalThis.__APP_SEMVER__=${JSON.stringify(pkg.version)};`,
+      children: `globalThis.__APP_VERSION__=${JSON.stringify(buildVersion(version, buildTime(), shortCommit()))};globalThis.__APP_SEMVER__=${JSON.stringify(version)};`,
       injectTo: 'head-prepend' as const,
     },
   ],
@@ -34,7 +33,7 @@ const reftagger = (): Plugin => ({
       configFile: false,
       publicDir: false,
       logLevel: 'warn',
-      define: { __APP_SEMVER__: JSON.stringify(pkg.version) },
+      define: { __APP_SEMVER__: JSON.stringify(version) },
       build: {
         write: false,
         target: 'es2019',
