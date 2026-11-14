@@ -140,6 +140,7 @@ docs/links.md # every link form Lampas takes in, with an example; where web+lamp
 docs/data.md # the data's JSON shape, its two sources and licences, build changes
 docs/maps.md # the maps: src/maps/, Bible Mapper's data and terms, adding an atlas
 docs/sermons.md # the sermon index: build, files, sources
+docs/audio-judge.md # David's cuts judged
 docs/hebrew.md # Hebrew in the tutor: the depth setting, the font, how a Hebrew word is drawn
 docs/language-parity.md # the golden use cases per language, the Hebrew gaps, what a new language plugs in
 docs/ask-tutor.md # the tutor: what it is told, offers, bridge, profile, memory, welcome, pictures
@@ -150,7 +151,7 @@ docs/reading-ladder.md # verses scored by pronunciation difficulty, drills
 docs/grammar.md # the grammar ladder, placement, Drill it, idea sheet, Goal screen
 docs/frontier.md # the frontier picker, the pace and the teach sheet for new words
 docs/paradigms.md # the Paradigms tables and when a form is available
-docs/paradigm-components.md # the paradigm epic's shared parts, reused by mw-irpgqi.3, .4
+docs/paradigm-components.md # the paradigm epic's shared parts
 docs/learning-workflow.md # design: the practice screens as one workflow
 docs/tips.md # the tips grind and the one-time tips written in the app
 docs/module-map.md # the module map: modules, collisions, refactors
