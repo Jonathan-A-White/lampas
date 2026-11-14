@@ -21,6 +21,7 @@ const drill: SavedDrill = {
   step: 1,
   picked: question('θεός').steps[1].right,
   missed: [0],
+  slips: [{ question: 0, step: 1, picked: question('λόγος').steps[1].options.find((o) => o !== question('λόγος').steps[1].right) ?? '' }],
   asked: 4,
   right: 3,
   away: null,
@@ -34,6 +35,15 @@ describe('a half-done Parsing drill', () => {
     expect(readDrill()).toEqual(drill);
     saveDrill({ ...drill, away: 1234 });
     expect(readDrill()?.away).toBe(1234);
+  });
+
+  it('keeps the steps he missed for the Study list, and a round kept before it has none', () => {
+    saveDrill(drill);
+    expect(readDrill()?.slips).toEqual(drill.slips);
+    localStorage.setItem('lampas.drill', JSON.stringify({ ...drill, slips: undefined }));
+    expect(readDrill()?.slips).toEqual([]);
+    saveDrill({ ...drill, slips: [{ question: 9, step: 0, picked: 'x' }, ...drill.slips] });
+    expect(readDrill()?.slips).toEqual(drill.slips);
   });
 
   it('is gone once cleared', () => {

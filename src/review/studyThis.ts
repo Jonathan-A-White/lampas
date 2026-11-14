@@ -10,7 +10,9 @@
 // Nothing: an English or Hebrew word he misread and says aloud (Review's 'sound' item with no question), and a question whose idea the ladder no longer has.
 import { askedOf } from '../tutor/drillTalk';
 import type { ScreenContext } from '../tutor/screen';
+import type { DrillQuestion, DrillStep } from '../data/drill';
 import type { GrammarQuestion } from '../data/grammar/questions';
+import { splitParse, type ParseFeature } from '../data/parseCode';
 import { ideaOfAny, ladderFor, ladderLangOf } from '../data/grammar/ladders';
 import type { GrammarIdea } from '../data/grammar/ladder';
 import { paradigmById, paradigmOfWord, paradigmsOf, type Paradigm } from '../data/paradigms';
@@ -112,6 +114,60 @@ export function studyOfQuestion(question: GrammarQuestion, picked: string): Stud
     links.push({ kind: 'word', label: `Word: ${question.lemma}`, lemma: question.lemma, ...(question.lang === 'hbo' ? { hebrew: true as const } : {}) });
   }
   return { links, miss: { asked: askedOf(question), answer: picked, right: question.right, idea: question.facet?.label ?? titleOf(question.ideaId) } };
+}
+
+/** The values a pick of a step names, one for each feature of the step in its order ('plural masculine' is plural, masculine): the choices are matched longest first, since 'middle' begins 'middle or passive'. */
+function pickedValues(features: readonly ParseFeature[], picked: string): (string | undefined)[] {
+  let rest = picked;
+  return features.map((f) => {
+    const choice = [...f.choices].sort((a, b) => b.length - a.length).find((c) => rest === c || rest.startsWith(`${c} `));
+    if (choice === undefined) return undefined;
+    rest = rest.slice(choice.length).trimStart();
+    return choice;
+  });
+}
+
+/** The terms a Hebrew step's right answer can be taught by: the answer itself, then its words ('third person masculine singular' is also 'third person'). */
+function hebrewTerms(step: DrillStep): string[] {
+  const words = step.right.split(' ');
+  const phrases = [step.right, step.right.charAt(0).toUpperCase() + step.right.slice(1), ...words.map((_, i) => words.slice(0, i + 1).join(' ')), ...words];
+  return [...new Set(phrases)];
+}
+
+/** The idea that teaches what a step of the Parsing drill asked, or undefined when the ladder has none for it: the idea of the right value the pick got wrong (a step of two features, 'number and gender', is taught by the one he missed). */
+function ideaOfStep(question: DrillQuestion, step: DrillStep, picked: string): string | undefined {
+  if (question.lang === 'hbo') {
+    const ladder = ladderFor('hbo');
+    return hebrewTerms(step).map((t) => ladder.ideaOfTerm(t)).find((id) => id !== undefined);
+  }
+  const ladder = ladderFor('grc');
+  if (step.id === 'pos') return ladder.ideaOfTerm(splitParse(question.code).pos) ?? (step.right === 'pronoun' ? 'pronoun' : undefined);
+  const ids = step.id.split('+');
+  const features = ids.flatMap((id) => splitParse(question.code).features.filter((f) => f.id === id));
+  const chosen = pickedValues(features, picked);
+  const missed = features.find((f, i) => chosen[i] !== f.value) ?? features[0];
+  return missed ? ladder.ideaOfTerm(missed.value) : undefined;
+}
+
+/**
+ * A step of the Parsing drill he answered wrong (mw-indx1x6.10): the step is the question 'what is the mood of this word', a 'parse' question of the idea its right value teaches, and the one mapping above
+ * (studyOfQuestion) does the rest: the table the word lands in with its cell lit, the idea's lesson, the word's card. A step whose idea the ladder lacks links the table and the word only.
+ */
+export function studyOfParseStep(question: DrillQuestion, step: DrillStep, picked: string): Study {
+  const ideaId = ideaOfStep(question, step, picked);
+  const asked: GrammarQuestion = {
+    kind: 'parse',
+    ideaId: ideaId ?? '',
+    prompt: `What is the ${step.label.toLowerCase()} of`,
+    options: step.options,
+    right: step.right,
+    form: question.form,
+    code: question.code,
+    lemma: question.lemma,
+    ...(question.lang ? { lang: question.lang } : {}),
+  };
+  const study = studyOfQuestion(asked, picked);
+  return { links: study.links, miss: { ...study.miss, asked: `${asked.prompt} ${question.form}? (${question.reference})` } };
 }
 
 /** A word he answered wrong (Review's word items, as multiple choice or a flashcard). */
