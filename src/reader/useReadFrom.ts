@@ -56,6 +56,9 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
     (passage: Passage) => {
       if (!listenPlan) return;
       const verses = listenPlan.filter((v) => v.n >= passage.first && v.n <= passage.last);
+      // the narrator's announcement ('Audio Bible, John chapter one') is for the chapter: a pericope, even one that starts at verse 1, starts at its own second (mw-82lb97i.40);
+      // the place line's whole chapter is the chapter
+      const wholeChapter = verses.length === listenPlan.length;
       begin(
         {
           inBook: book,
@@ -65,6 +68,7 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
           continuous: true,
           // the plan is the passage's verses and nothing more: 'chapter' reads to its end and does not stop at a heading inside it (the place line's whole chapter has several)
           span: 'chapter',
+          title: wholeChapter,
           listen: listenKeyOf(book, chapterN, unitId(passageVerse(passage))),
         },
         verses,
