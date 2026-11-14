@@ -1,5 +1,5 @@
 // src/review/ItemCard.tsx — draws one Review item: a renderer per kind, so a new kind adds its own here.
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { ParadigmAddress } from '../nav/route';
 import type { ParseStep } from '../data/drill';
 import { Flashcard } from '../Flashcard';
@@ -9,6 +9,7 @@ import { DrillPlanCard } from './DrillPlanCard';
 import { WordQuestion } from '../WordQuestion';
 import type { Grade } from '../data/schedule';
 import type { ReviewItem } from './kinds';
+import { keepAboveStack } from '../ui/reveal';
 
 export interface ItemCardProps {
   item: ReviewItem;
@@ -48,5 +49,17 @@ const RENDERERS: { [K in ReviewItem['kind']]: (props: ItemCardProps & { item: Ex
 
 export function ItemCard(props: ItemCardProps) {
   const render = RENDERERS[props.item.kind] as (p: ItemCardProps) => ReactNode;
-  return <>{render(props)}</>;
+  const around = useRef<HTMLDivElement>(null);
+  const answered = props.picked !== null;
+  // once he answers, the Next bar sticks over the foot of the screen's box and can sit on the line that says right or wrong (mw-indx1x6.13): the box scrolls so the whole line is above it
+  useEffect(() => {
+    if (!answered) return undefined;
+    return keepAboveStack(() => around.current?.querySelector<HTMLElement>('[data-testid="feedback"]') ?? null);
+  }, [answered, props.index]);
+  // `contents`: the wrapper draws no box of its own, the card's parts stay children of the screen's box
+  return (
+    <div ref={around} className="contents">
+      {render(props)}
+    </div>
+  );
 }
