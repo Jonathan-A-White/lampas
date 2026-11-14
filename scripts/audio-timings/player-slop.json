@@ -1,0 +1,5 @@
+{
+ "note": "The seconds David's player may be off by, at worst: it may start up to `lead` early or late and stop up to `tail` late or early. PROVISIONAL until the player's-margin story (mw-ar5k42b.2) measures it: these are END_SLACK (0.05 s) of src/speech/recordedVoice.ts. The judge (judge.py) reads its margin here; the timing maker and the player's test are to read theirs from this one file too.",
+ "lead": 0.05,
+ "tail": 0.05
+}
