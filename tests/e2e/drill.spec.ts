@@ -31,7 +31,7 @@ test.beforeEach(async ({ page }) => {
   await page.clock.install();
 });
 
-test('a Parsing drill question shows the verse, four choices and both links in reach at phone width', async ({ page }) => {
+test('a Parsing drill question shows the verse and four choices in reach, and both links a scroll away, at phone width', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/test');
   await page.getByRole('button', { name: 'Parsing drill: Romans 8' }).click();
@@ -42,9 +42,13 @@ test('a Parsing drill question shows the verse, four choices and both links in r
 
   const options = page.locator('[data-option]');
   await expect(options).toHaveCount(4);
-  for (const box of await options.all()) expect((await box.boundingBox())?.height).toBeGreaterThanOrEqual(48);
-  await inReach(page, 'Ask the tutor');
-  await inReach(page, 'Talk about it');
+  const boxes = await Promise.all((await options.all()).map((option) => option.boundingBox()));
+  for (const box of boxes) expect(box?.height).toBeGreaterThanOrEqual(48);
+  // all four choices stand above the fold without a scroll
+  expect(boxes.at(-1) && boxes.at(-1)!.y + boxes.at(-1)!.height).toBeLessThanOrEqual(844);
+  // at a round's start the Words and Grammar settings stand above the question (mw-indx1x6.9), so the links are a scroll of the screen's box away, as after an answer
+  await inReach(page, 'Ask the tutor', true, true);
+  await inReach(page, 'Talk about it', true, true);
 
   await options.first().click();
   await expect(page.locator('[data-option][data-result="right"]')).toHaveCount(1);
@@ -123,7 +127,15 @@ test('a double tap near the top of Next step stays in the drill, though Ask the 
   for (let k = 0; k < 12 && landed === 0; k += 1) {
     const subtitle = await page.getByRole('heading', { name: 'Parsing drill', level: 1 }).locator('xpath=..').textContent();
     await page.waitForTimeout(SETTLE_MS + 100);
-    await page.locator('[data-option]').first().click();
+    // He answers rightly: a wrong answer adds the full parsing and Study this, which pins Next at the foot with the links far below it, so the overlap
+    // only happens after a right answer; the first choice is right about one time in ten, which left a round of twelve steps with none (mw-fnvjof.17.107).
+    // The round is kept in localStorage as it is drawn (src/data/drillKeep.ts), with the right value of each step.
+    const right = await page.evaluate(() => {
+      const kept = JSON.parse(window.localStorage.getItem('lampas.drill') ?? 'null') as { question: number; step: number; questions: { steps: { right: string }[] }[] } | null;
+      return kept ? kept.questions[kept.question].steps[kept.step].right : null;
+    });
+    const choices = await page.locator('[data-option]').allTextContents();
+    await page.locator('[data-option]').nth(Math.max(0, choices.indexOf(right ?? ''))).click();
     const box = (await page.getByTestId('next').boundingBox())!;
     const x = box.x + box.width * (k % 2 === 0 ? 0.25 : 0.75);
     const y = box.y + 2;
