@@ -1215,6 +1215,10 @@ describe('answers for the ear and the eye (mw-5r3p30.928)', () => {
     expect(answerPart).toMatch(/Bold only an item's lead words/);
   });
 
+  it('says every numbered item starts on its own line, after a blank line that follows the intro (mw-5r3p30.1162: a run wrote the list inline after the intro)', () => {
+    expect(answerPart).toMatch(/every numbered item starts on its own line, after a blank line that follows the intro/);
+  });
+
   it('names a book in full at its first mention and never leaves a reference he cannot tap', () => {
     expect(answerPart).toMatch(/Name a book in full at its first mention, then short forms that lean on it \('chapters 2 and 7', 'verse 22'\)/);
     expect(answerPart).toMatch(/never a reference he cannot tap/);
