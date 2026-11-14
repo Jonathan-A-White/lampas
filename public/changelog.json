@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.246",
+    "date": "2026-11-14",
+    "story": "mw-82lb97i.28",
+    "kind": "fixed",
+    "text": "listening to one verse or a section no longer starts with the chapter's announcement (\"Audio Bible, John chapter one\")."
+  },
+  {
+    "version": "0.7.246",
+    "date": "2026-11-14",
+    "story": "mw-indx1x6.16",
+    "kind": "fixed",
+    "text": "Drill it now says plainly when no more questions can come (offline, no key or no licence) instead of promising that more are on their way."
+  },
+  {
+    "version": "0.7.246",
+    "date": "2026-11-14",
+    "story": "mw-indx1x6.12",
+    "kind": "new",
+    "text": "After you answer a word in Review, an Example line shows a verse from your goal that uses the word, and tapping it opens the verse with the word marked."
+  },
+  {
+    "version": "0.7.246",
+    "date": "2026-11-14",
+    "story": "mw-indx1x6.7",
+    "kind": "fixed",
+    "text": "A Review question about a table's ending now names the table first (\"Noun endings: first declension, feminine in η (φωνή), dative singular\") instead of ending in a clumsy \"of noun endings\"."
+  },
+  {
+    "version": "0.7.246",
+    "date": "2026-11-14",
+    "story": "mw-indx1x6.10",
+    "kind": "new",
+    "text": "The Parsing drill now links a wrong step to the lesson, table and word that teach it, and ends a round with a list to study."
+  },
+  {
     "version": "0.7.244",
     "date": "2026-11-13",
     "story": "mw-fnvjof.17.104",

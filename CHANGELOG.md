@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.246
+_2026-11-14_
+- Fixed: listening to one verse or a section no longer starts with the chapter's announcement ("Audio Bible, John chapter one").
+- Fixed: Drill it now says plainly when no more questions can come (offline, no key or no licence) instead of promising that more are on their way.
+- New: After you answer a word in Review, an Example line shows a verse from your goal that uses the word, and tapping it opens the verse with the word marked.
+- Fixed: A Review question about a table's ending now names the table first ("Noun endings: first declension, feminine in η (φωνή), dative singular") instead of ending in a clumsy "of noun endings".
+- New: The Parsing drill now links a wrong step to the lesson, table and word that teach it, and ends a round with a list to study.
+
 ## 0.7.244
 _2026-11-13_
 - New: a row you can scroll sideways now shows the next item peeking past the edge and a soft fade on the side with more.
