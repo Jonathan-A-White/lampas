@@ -40,6 +40,8 @@ const TITLE = 3;
 const EACH = 10;
 const endOf = (n: number) => TITLE + n * EACH;
 const audioOf = (chapter: number) => `https://openbible.com/audio/test/jhn-${chapter}.mp3`;
+/** The recordings the element was given, whichever second each was told to start at (its src carries the start as a media fragment, #t=, mw-82lb97i.28). */
+const givenAudio = (): string[] => audio.sources.map((src) => src.replace(/#t=[\d.]+$/, ''));
 function chapterTimings(key: string, chapter: number): ChapterTimings {
   const verses = CHAPTERS[key].verses.map((v) => [v.n, TITLE + (v.n - 1) * EACH, endOf(v.n)] as [number, number, number]);
   return { audio: audioOf(chapter), duration: endOf(verses.length) + 2, verses };
@@ -233,7 +235,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
 
   const given = 'John 3 is open in English with the Bible voice {string} on a connection of type {string}';
   const recordingGiven = async (_: unknown, element: string) => {
-    await waitFor(() => expect(audio.sources).toContain(audioOf(Number(element))));
+    await waitFor(() => expect(givenAudio()).toContain(audioOf(Number(element))));
   };
   const handedVerseOne = async () => {
     await waitFor(() => expect(spokenTexts().length).toBeGreaterThan(0));
@@ -253,7 +255,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     When('he taps {string}', tap);
     Then('<heard>', async () => {
       if (row.heard === 'the audio element is given the recording of John 3') {
-        await waitFor(() => expect(audio.sources).toEqual([audioOf(3)]));
+        await waitFor(() => expect(givenAudio()).toEqual([audioOf(3)]));
         expect(audio.playing()).toBe(recordingElement());
         expect(synth.calls.filter((c) => c.startsWith('speak'))).toEqual([]);
       } else if (row.heard === 'the phone\'s voice is handed verse 1 and the element has no src') await handedVerseOne();
@@ -283,7 +285,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(audio.playing()).toBeNull();
     });
     And('the audio element was given only John 3', () => {
-      expect(audio.sources).toEqual([audioOf(3)]);
+      expect(givenAudio()).toEqual([audioOf(3)]);
     });
   });
 
@@ -372,7 +374,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(audio.playing()).toBeNull();
     });
     And('the audio element was given only John 3', () => {
-      expect(audio.sources).toEqual([audioOf(3)]);
+      expect(givenAudio()).toEqual([audioOf(3)]);
     });
   });
 });
