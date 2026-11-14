@@ -58,7 +58,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `handwriting` | Write it: a letter by hand, traced, copied and from memory, in the letter lessons and drills | handwriting-drills | hebrew-letters | gap |
 | `words` | Words he knows: the list under its language, a segment where two languages are chosen | words | hebrew-words | gap |
 | `quick-test` | The Quick test on his words, asked in the dictionary form among words of the same language | quick-test-after-answer, quick-test-hear, quick-test-lemma, quick-test | hebrew-words | gap |
-| `review` | Review brings back the words and ideas due, on the schedule, each asked in its language | review, schedule, study-this | hebrew-verse-view, hebrew-words | gap |
+| `review` | Review brings back the words and ideas due, on the schedule, each asked in its language | review-word-example, review, schedule, study-this | hebrew-verse-view, hebrew-words | gap |
 | `new-words` | New words taught while he reads: the frontier, the pace, the teach sheet, the picker at his grammar level | frontier, hebrew-words, one-frontier, pace, picker-grammar, teach | hebrew-words | gap |
 | `pictures` | Memory pictures on the teach sheet and in the talk | pictures | hebrew-words | gap |
 | `parsing-drill` | The Parsing drill on the open chapter asks a word’s terms with the verse in its language | drill | hebrew-words | gap |
