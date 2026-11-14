@@ -115,3 +115,13 @@ Feature: A parsing drill on the chapter
     Then the drill says Off and + Learning ask the same words here
     When he taps Solid on the drill's Words row
     Then the drill does not say Off and + Learning ask the same words here
+
+  Scenario: Changing Grammar on the round left unfinished draws the round again by the new setting
+    Given Lampas is opened for the first time with every idea solid but the participle, which is at the frontier
+    When he opens the Parsing drill from the Test screen
+    And he answers one step and goes back to Test
+    And he opens the Parsing drill from the Test screen again
+    Then the drill offers Resume and New round
+    When he taps Solid on the drill's Grammar row
+    Then the drill no longer offers Resume
+    And no form asked in the whole round needs the participle

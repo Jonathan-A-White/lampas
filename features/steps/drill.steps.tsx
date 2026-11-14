@@ -433,4 +433,38 @@ describeFeature(feature, ({ Scenario }) => {
       expect(ideasOf(codeOnScreen())).toContain('tense-aorist');
     });
   });
+  Scenario('Changing Grammar on the round left unfinished draws the round again by the new setting', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened for the first time with every idea solid but the participle, which is at the frontier', () => openWithLevels(['mood-participle']));
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    And('he answers one step and goes back to Test', async () => {
+      await answer(true);
+      await user.click(await screen.findByRole('button', { name: '‹ Test' }));
+    });
+    And('he opens the Parsing drill from the Test screen again', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Parsing drill: Romans 8' }));
+      await screen.findByRole('heading', { name: 'Parsing drill' });
+    });
+    Then('the drill offers Resume and New round', async () => {
+      expect(await screen.findByText('Round left unfinished')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'New round' })).toBeInTheDocument();
+    });
+    When('he taps Solid on the drill\'s Grammar row', async () => {
+      const row = await within(screen.getByTestId('drill-settings')).findByRole('group', { name: 'Grammar' });
+      await user.click(within(row).getByRole('button', { name: 'Solid' }));
+    });
+    Then('the drill no longer offers Resume', async () => {
+      await screen.findByTestId('drill-word');
+      expect(screen.queryByRole('button', { name: 'Resume' })).toBeNull();
+      expect(screen.queryByText('Round left unfinished')).toBeNull();
+    });
+    And('no form asked in the whole round needs the participle', async () => {
+      for (let q = 0; q < 10 && !screen.queryByTestId('score'); q += 1) {
+        await screen.findByTestId('drill-word');
+        expect(ideasOf(codeOnScreen()), codeOnScreen()).not.toContain('mood-participle');
+        await answerQuestion(() => true);
+        await waitFor(() => expect(screen.queryByTestId('score') ?? screen.queryByTestId('drill-word')).not.toBeNull());
+      }
+    });
+  });
 });

@@ -209,6 +209,9 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
   const learningIdea = levelsNow ? learningNow(levelsOf(levelsNow)) : undefined;
   const atStart = s.status === 'ready' && total > 0 && s.question === 0 && s.step === 0 && s.picked === null;
   const settingsKey = weaveNow && grammarNow ? `${weaveNow}|${grammarNow}` : null;
+  // what the round is drawn by: Off and + Learning draw the same words (drawRound), so changing between them leaves a saved round as it was
+  const drawKey = weaveNow && grammarNow ? `${weaveNow === 'solid' ? 'solid' : 'solid+learning'}|${grammarNow}` : null;
+  const offeredBy = useRef<string | null>(null);
   useEffect(() => {
     if (settingsKey === null) return;
     const before = drawnBy.current;
@@ -217,6 +220,15 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
     if (before !== null && before !== settingsKey && (atStart || (s.status === 'ready' && total === 0))) another();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settingsKey]);
+  useEffect(() => {
+    // the round left unfinished was drawn by the settings of its day: a Words or Grammar change on the offer screen drops it and draws a new
+    // one by the new setting, so Resume never asks forms the row on the screen would not (mw-indx1x6.34)
+    if (drawKey === null || s.status !== 'offer') return;
+    const before = offeredBy.current;
+    offeredBy.current = drawKey;
+    if (before !== null && before !== drawKey) another();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawKey, s.status]);
   const finished = s.status === 'ready' && total > 0 && s.question >= total;
   const question = s.questions[s.question];
   const step = question?.steps[s.step];
