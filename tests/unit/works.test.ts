@@ -11,6 +11,7 @@ import { buildTalkRequest, isTalkAnswer } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
 import '../support/grinds-in-graph';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 const commentaries = WORKS.find((w) => w.id === 'calvin-commentaries');
 const institutes = WORKS.find((w) => w.id === 'calvin-institutes-lcc');
@@ -92,6 +93,7 @@ describe('the works he ticked', () => {
   beforeEach(async () => {
     await db.open();
     await db.settings.clear();
+    await keepImport(EVERY_BOOK_IDS);
   });
 
   it('are none to start with, are kept in the list\'s order and survive a reload of the store', async () => {

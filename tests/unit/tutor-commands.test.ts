@@ -15,11 +15,13 @@ import { currentSettings } from '../../src/settings/registry';
 import { hasPractise, takePractise } from '../../src/review/practise';
 import { registerTalkLeave } from '../../src/talk/rustyOffer';
 import { addWord, bibleTalkRegistry, changeSettings, lampasRegistry, tickToday, workDoor } from '../../src/tutor/registry';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 afterAll(() => db.close());
 beforeEach(async () => {
   await db.open();
   await Promise.all([db.settings.clear(), db.words.clear(), db.reviews.clear(), db.meta.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }]);
   window.location.hash = '';
   forgetLexicon();

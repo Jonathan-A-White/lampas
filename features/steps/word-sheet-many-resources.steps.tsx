@@ -13,6 +13,7 @@ import { setKind, setState } from '../../src/data/repositories';
 import { LEXICONS } from '../../src/resources/logos';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 const user = userEvent.setup();
 
@@ -35,6 +36,7 @@ async function openWithEveryLexicon(): Promise<void> {
   window.history.replaceState(null, '', '/');
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await db.settings.bulkPut([
     { key: 'resource.logos', value: 'on' },
     { key: 'resource.strongs', value: 'on' },

@@ -7,6 +7,7 @@ import { db } from '../../src/data/db';
 import { setKind, setResourceOn } from '../../src/data/repositories';
 import { ElsewhereLine } from '../../src/markdown/ReferenceCard';
 import { TutorLinks } from '../../src/TutorLinks';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 afterAll(() => db.close());
 
@@ -14,6 +15,7 @@ async function phone(kinds: readonly ('greek-text' | 'commentary')[]): Promise<v
   cleanup();
   await db.open();
   await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await db.settings.bulkPut([
     { key: 'resourceOption.logos', value: '[]' },
     { key: 'grammarBooks', value: '[]' },

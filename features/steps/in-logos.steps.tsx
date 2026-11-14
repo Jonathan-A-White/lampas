@@ -12,6 +12,7 @@ import { InLogosDoors } from '../../src/library/InLogosDoors';
 import type { CatalogueEntry, Kind } from '../../src/resources/catalogue';
 import type { StudyPlace } from '../../src/resources/types';
 import { closeDatabase } from './close-database';
+import { keepImport } from '../../tests/support/logos-import';
 
 afterAll(async () => {
   cleanup();
@@ -60,6 +61,8 @@ async function shelf(rows: readonly (readonly [CatalogueEntry, 'on' | 'pinned'])
   cleanup();
   await db.open();
   await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  // the test's own books are his too
+  await keepImport(BOOKS.map((e) => e.resource));
   await db.settings.bulkPut([
     { key: 'resourceOption.logos', value: '[]' },
     { key: 'grammarBooks', value: '[]' },

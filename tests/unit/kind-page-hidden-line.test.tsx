@@ -10,6 +10,7 @@ import { CATALOGUE, entriesOf, KINDS } from '../../src/resources/catalogue';
 import { resourcesForLevel } from '../../src/resources/resourcesForLevel';
 import type { InterestLevels } from '../../src/settings/definitions/interest';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 const DIALS: readonly InterestLevels[] = [
   { grc: 0, he: 0 },
@@ -29,6 +30,7 @@ describe('a kind page says why it lists a book the dials hide', () => {
   beforeEach(async () => {
     await db.open();
     await Promise.all([db.library.clear(), db.settings.clear(), db.exportRows.clear(), db.meta.clear()]);
+    await keepImport(EVERY_BOOK_IDS);
     await db.settings.bulkPut([
       { key: 'resourceOption.logos', value: '[]' },
       { key: 'grammarBooks', value: '[]' },

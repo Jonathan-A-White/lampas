@@ -1,11 +1,11 @@
-// A Logos resource is offered only if his Library import says he owns it, or Logos gives it free (mw-qtu3zvz.94, src/library/owned.ts): the Sermons door, the Settings > Sermons rows and the In Logos archives.
+// A Logos resource is offered only if his Library import says he owns it, or Logos gives it free (mw-qtu3zvz.94, src/data/owned.ts): the Sermons door, the Settings > Sermons rows and the In Logos archives.
 // The import is the kept list (db.exportRows); no import means only a free resource passes.
 import { readFileSync } from 'node:fs';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { ownedResources } from '../../src/data/repositories';
 import { inLogosRows, sermonBookRows } from '../../src/library/inLogos';
-import { addressOffered, FREE_LOGOS, isOffered, logosResourceOf } from '../../src/library/owned';
+import { addressOffered, FREE_LOGOS, isOffered, logosResourceOf } from '../../src/data/owned';
 import { entriesOf } from '../../src/resources/catalogue';
 import { enabledSources, sermonsFor } from '../../src/sermons';
 import { enabledSources as enabledOf, ownsKey, sourceOffered } from '../../src/sermons/enabled';
@@ -14,6 +14,7 @@ import { logosArchives } from '../../src/sermons/sources/logos';
 import { sermonSourceSetting } from '../../src/settings/definitions/sermons';
 import { readValues, visibleRows } from '../../src/settings/rows';
 import type { SermonIndex, SermonBookFile } from '../../src/data/sermonIndex';
+import { EVERY_BOOK } from '../support/logos-import';
 
 const index = JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as SermonIndex;
 const GREG = 'LLS:GRGLRSRMNRCH';
@@ -159,7 +160,7 @@ describe('In Logos archives', () => {
 
   it('are the only place a sermon book opens: the chooser behind In another book… holds none, owned or not', () => {
     const entries = entriesOf('sermons');
-    expect(inLogosRows(entries, states, { book: 'rom', chapter: 5, verse: 8 })).toEqual([]);
+    expect(inLogosRows(entries, states, { book: 'rom', chapter: 5, verse: 8 }, EVERY_BOOK)).toEqual([]);
     expect(sermonBookRows(entries, states, { book: 'rom', chapter: 5, verse: 8 }, new Set([SECOND])).map((r) => r.entry.resource)).toEqual([SECOND]);
   });
 });

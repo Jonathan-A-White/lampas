@@ -11,7 +11,7 @@ import { getStudyResources } from '../../src/data/repositories';
 import { GROUPS, isTalkable, ROWS, groupOf, isHomeRow } from '../../src/settings/rows';
 import { showSettingsGroup } from '../support/settings-pages';
 import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
-import { keepImport } from '../support/logos-import';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 afterAll(() => {
   cleanup();
@@ -23,6 +23,7 @@ beforeEach(async () => {
   clearBus();
   await db.open();
   await db.settings.clear();
+  await keepImport(EVERY_BOOK_IDS);
 });
 
 const LOGOS_PICKERS = ['New Testament', 'Old Testament', 'Apocrypha', 'Septuagint'].map((part) => `${part} Bible in Logos`);

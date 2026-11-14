@@ -11,6 +11,8 @@ import { CATALOGUE, entriesOf } from '../../src/resources/catalogue';
 import { bibleRef, verseLink } from '../../src/resources/logosBible';
 import { resourceLink } from '../../src/resources/logosRes';
 import type { StudyPlace } from '../../src/resources/types';
+import { EVERY_BOOK } from '../support/logos-import';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 afterAll(() => db.close());
 
@@ -31,6 +33,7 @@ beforeEach(async () => {
   cleanup();
   await db.open();
   await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await db.settings.bulkPut([
     { key: 'resourceOption.logos', value: '[]' },
     { key: 'grammarBooks', value: '[]' },
@@ -47,7 +50,7 @@ describe('the rows of the chooser', () => {
   it('are links logosRes.ts builds for the place (pure)', () => {
     const states = new Map(CATALOGUE.map((e) => [e.resource, 'on' as const]));
     for (const place of PLACES) {
-      const rows = inLogosRows(CATALOGUE, states, place);
+      const rows = inLogosRows(CATALOGUE, states, place, EVERY_BOOK);
       expect(rows.length).toBeGreaterThan(0);
       for (const row of rows) {
         const want = expected(row.entry.resource, row.entry.kind, place);
@@ -68,7 +71,7 @@ describe('the rows of the chooser', () => {
       const links = within(dialog).getAllByRole('link');
       expect(links.length).toBeGreaterThan(0);
       const wanted = new Map(
-        inLogosGroups(inLogosRows(CATALOGUE, new Map((await db.library.toArray()).map((r) => [r.id, r.state])), place), place).flatMap((g) =>
+        inLogosGroups(inLogosRows(CATALOGUE, new Map((await db.library.toArray()).map((r) => [r.id, r.state])), place, EVERY_BOOK), place).flatMap((g) =>
           g.rows.map((r) => [r.entry.resource, expected(r.entry.resource, r.entry.kind, place)] as const),
         ),
       );
@@ -83,20 +86,20 @@ describe('the rows of the chooser', () => {
 
   it('name no book that does not cover the place, and the Old Testament no Greek text but the Bibles, Hebrew texts, sermon archives and commentaries that cover it (mw-eup64h, mw-qtu3zvz.3)', () => {
     const states = new Map(CATALOGUE.map((e) => [e.resource, 'on' as const]));
-    const john = inLogosRows(CATALOGUE, states, { book: 'jhn', chapter: 3, verse: 16 }).filter((r) => r.entry.kind === 'commentary');
+    const john = inLogosRows(CATALOGUE, states, { book: 'jhn', chapter: 3, verse: 16 }, EVERY_BOOK).filter((r) => r.entry.kind === 'commentary');
     expect(john.map((r) => r.entry.resource)).toEqual(expect.arrayContaining(['LLS:CALCOM64JN', 'LLS:LENSKI04']));
     for (const r of john) expect(r.entry.covers, r.entry.resource).toContain('jhn');
     // Romans 8 (mw-vb8krt): every commentary of his export that is on the New Testament alone and covers Romans joins Calvin's and Lenski's (Guzik, Barnes, the Bible Speaks Today ...)
-    const romans = inLogosRows(CATALOGUE, states, { book: 'rom', chapter: 8, verse: 31 }).filter((r) => r.entry.kind === 'commentary');
+    const romans = inLogosRows(CATALOGUE, states, { book: 'rom', chapter: 8, verse: 31 }, EVERY_BOOK).filter((r) => r.entry.kind === 'commentary');
     expect(romans.length).toBeGreaterThan(50);
     expect(romans.map((r) => r.entry.resource)).toEqual(expect.arrayContaining(['LLS:CALCOM66RO', 'LLS:LENSKI06']));
     for (const series of ['David Guzik’s Commentaries on the Bible', 'Barnes’ Notes on the Old and New Testaments', 'The Bible Speaks Today']) expect(romans.some((r) => r.entry.series === series), series).toBe(true);
     for (const r of romans) expect(r.entry.covers, r.entry.resource).toContain('rom');
-    const psalm = inLogosRows(CATALOGUE, states, { book: 'psa', chapter: 23, verse: 1 });
+    const psalm = inLogosRows(CATALOGUE, states, { book: 'psa', chapter: 23, verse: 1 }, EVERY_BOOK);
     // no sermon book: it opens only through the Sermons door (mw-qtu3zvz.92)
     expect(new Set(psalm.map((r) => r.entry.kind))).toEqual(new Set(['bible', 'hebrew-text', 'commentary']));
     for (const r of psalm.filter((x) => x.entry.kind === 'commentary')) expect(r.entry.covers, r.entry.resource).toContain('psa');
-    const jonah = inLogosRows(CATALOGUE, states, { book: 'jon', chapter: 1, verse: 10 }).filter((r) => r.entry.kind === 'commentary');
+    const jonah = inLogosRows(CATALOGUE, states, { book: 'jon', chapter: 1, verse: 10 }, EVERY_BOOK).filter((r) => r.entry.kind === 'commentary');
     expect(jonah.map((r) => r.entry.resource)).toContain('LLS:GUZIKCOMM32JON');
     for (const r of jonah) expect(r.link.url, r.entry.resource).toMatch(/;ref=Bible\.Jon1\.10$/);
   });

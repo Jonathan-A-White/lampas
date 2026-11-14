@@ -17,6 +17,7 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { seedHisWords } from '../../tests/support/his-words';
 import { answeredTurn, askAboutVerse } from './ask-verse';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 afterAll(async () => {
   cleanup();
@@ -47,6 +48,7 @@ async function open(work: string, reference: string): Promise<void> {
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.talks.clear(), db.answers.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await setReaderView('english');
   await setWeave('off');
   // the shelf's links and digest need the Logos switch (mw-rfjjzd.23)

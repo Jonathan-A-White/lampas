@@ -15,6 +15,7 @@ import { LEXICONS } from '../../src/resources/logos';
 import { resourceLink } from '../../src/resources/logosRes';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 const user = userEvent.setup();
 
@@ -38,6 +39,7 @@ async function openWith(_: unknown, on: number, pinned: number): Promise<void> {
   window.history.replaceState(null, '', '/');
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  await keepImport(EVERY_BOOK_IDS);
   await db.settings.put({ key: 'resource.logos', value: 'on' });
   // setState takes the old keys first; clearing the kind then leaves only what is set here
   await setKind('lexicon', 'off');

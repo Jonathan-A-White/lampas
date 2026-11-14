@@ -8,6 +8,7 @@ import { KindPage } from '../../src/library/KindPage';
 import { shelfStates } from '../../src/library/kinds';
 import { entriesOf, KINDS, type Kind } from '../../src/resources/catalogue';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 const rankOf = (state: string | undefined): number => (state === 'pinned' ? 0 : state === 'on' ? 1 : 2);
 
@@ -21,6 +22,7 @@ describe('a kind page grouped by language', () => {
   beforeEach(async () => {
     await db.open();
     await Promise.all([db.library.clear(), db.settings.clear(), db.exportRows.clear(), db.meta.clear()]);
+    await keepImport(EVERY_BOOK_IDS);
     await db.settings.bulkPut([
       { key: 'resourceOption.logos', value: '[]' },
       { key: 'grammarBooks', value: '[]' },

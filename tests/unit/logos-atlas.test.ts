@@ -9,6 +9,7 @@ import type { LogosAtlasIndex } from '../../src/maps/logosRef';
 import { setPlaceLoader } from '../../src/maps/places';
 import { logosAtlas, logosAtlasCards, PERIOD_NAMES, viewOf } from '../../src/maps/sources/logosatlas';
 import type { MapRef, Place } from '../../src/maps/types';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 const index = data as LogosAtlasIndex;
 const place = (name: string, lat?: number, lng?: number, verses: [number, number][] = [[10, 19]]): Place => ({ id: `${name}@test`, name, names: [name], strongs: [], verses, ...(lat === undefined ? {} : { lat, lng }) });
@@ -166,6 +167,7 @@ describe('logosAtlas, the source', () => {
     beforeEach(async () => {
       await db.open();
       await db.library.clear();
+      await keepImport(EVERY_BOOK_IDS);
       setMapSources([logosAtlas]);
       setPlaceLoader(async () => GENESIS);
     });

@@ -9,6 +9,7 @@ import { KindPage } from '../../src/library/KindPage';
 import { entriesOf } from '../../src/resources/catalogue';
 import { matchingExactly } from '../../src/ui/listFilter';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 const items = () => entriesOf('commentary').map((e) => ({ id: e.resource, name: e.short, also: [e.title, e.author, e.series].filter(Boolean).join(' ') }));
 const stateOf = async (id: string) => (await db.library.get(id))?.state;
@@ -17,6 +18,7 @@ describe('a kind page: All on and All off while a search is typed', () => {
   beforeEach(async () => {
     await db.open();
     await Promise.all([db.library.clear(), db.settings.clear(), db.exportRows.clear(), db.meta.clear()]);
+    await keepImport(EVERY_BOOK_IDS);
     await db.settings.bulkPut([
       { key: 'resourceOption.logos', value: '[]' },
       { key: 'grammarBooks', value: '[]' },
