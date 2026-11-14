@@ -31,7 +31,7 @@ Feature: The recorded voice reads a chapter that has timings
     Given John 3 is open in English with the recorded voice chosen
     When he taps the heading "Jesus and Nicodemus"
     And he taps "Play verses 1-21"
-    Then the audio element plays the recording from its start
+    Then the audio element plays the section from its own first verse, with no announcement
     When the recording passes the end of verse 21
     Then the audio element is paused
     And the reading is idle
@@ -113,7 +113,7 @@ Feature: The recorded voice reads a chapter that has timings
     And he taps "Play verses 1-21" in the Verse view
     And the recording passes the end of verse 4
     And he taps "Restart" on the speaking bar
-    Then the audio element plays on from the start of verse 1
+    Then the audio element plays on from the section's own first verse, with no announcement
     And verse 1 is marked as being read
 
   Scenario: A word said alone while the recording plays pauses it first, and Resume goes on from the same second

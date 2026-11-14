@@ -256,9 +256,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('he taps {string}', async (_, name: string) => {
       await user.click(within(footEl()).getByRole('button', { name, exact: true }));
     });
-    Then('the audio element plays the recording from its start', async () => {
+    Then('the audio element plays the section from its own first verse, with no announcement', async () => {
       await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
-      expect(audio.playedAt).toEqual([0]);
+      expect(audio.playedAt).toEqual([startOf(1)]);
       expect(getReading().verse).toBe(1);
     });
     When('the recording passes the end of verse {int}', (_, n: number) => {
@@ -398,6 +398,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
     expect(element().currentTime).toBe(n === 1 ? 0 : startOf(n));
   };
+  /** a Listen on a pericope that starts at verse 1 plays from the verse's own second, never second 0 (the announcement; mw-82lb97i.40) */
+  const playsSectionFromOwnSecond = async () => {
+    await waitFor(() => expect(audio.playing()).toBe(recordingElement()));
+    expect(element().currentTime).toBe(startOf(1));
+  };
   const tapListen = async (_: unknown, name: string) => {
     await user.click(within(footEl()).getByRole('button', { name, exact: true }));
   };
@@ -455,7 +460,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('he taps {string} in the Verse view', tapListen);
     And('the recording passes the end of verse {int}', passes);
     And('he taps "Restart" on the speaking bar', () => onBar(null, 'Restart'));
-    Then('the audio element plays on from the start of verse {int}', playsFromStartOf);
+    Then('the audio element plays on from the section\'s own first verse, with no announcement', playsSectionFromOwnSecond);
     And('verse {int} is marked as being read', marked);
   });
 
