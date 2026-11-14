@@ -9,7 +9,7 @@ Feature: A wrong answer links to what teaches it
   shows no row.
 
   Scenario: A missed cell of a table in Review links to the table at that cell
-    Given the table "noun-endings" is due in Review and the round asks "First declension, feminine in η (φωνή) dative singular of noun endings" first
+    Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
     When he opens Review and starts the round
     And he answers with a wrong ending
     Then a "Study this" row is under the answer
@@ -20,17 +20,17 @@ Feature: A wrong answer links to what teaches it
     Then the Paradigms screen shows "Noun endings" in Learn
     And the cell "First declension, feminine in η (φωνή) Dative Singular" is lit and reads "-ῃ"
     When he goes Back
-    Then Review is on the question "First declension, feminine in η (φωνή) dative singular of noun endings" with its "Study this" row
+    Then Review is on the question "Noun endings: first declension, feminine in η (φωνή), dative singular" with its "Study this" row
 
   Scenario: A right answer shows no row
-    Given the table "noun-endings" is due in Review and the round asks "First declension, feminine in η (φωνή) dative singular of noun endings" first
+    Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
     When he opens Review and starts the round
     And he answers with the right ending
     Then there is no "Study this" row
     And Next is there to go on
 
   Scenario: The lesson link opens the idea's lesson over Review
-    Given the table "noun-endings" is due in Review and the round asks "First declension, feminine in η (φωνή) dative singular of noun endings" first
+    Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
     When he opens Review and starts the round
     And he answers with a wrong ending
     And he taps the lesson of the idea "declension-1"
@@ -70,7 +70,7 @@ Feature: A wrong answer links to what teaches it
     Then there is no "Study this" row
 
   Scenario: A wrong answer in a short drill opens the table over the drill, at the cell
-    Given a short drill is open on the cell "First declension, feminine in η (φωνή) dative singular of noun endings"
+    Given a short drill is open on the cell "Noun endings: first declension, feminine in η (φωνή), dative singular"
     When he answers with a wrong ending
     Then a "Study this" row is under the answer
     When he taps the link "Table: Noun endings"
@@ -81,7 +81,7 @@ Feature: A wrong answer links to what teaches it
 
   # mw-indx1x6.8: at the end of the session, a Study list of everything the misses linked to, one row each, most-missed first
   Scenario: A Review with misses ends with a Study list that shows a table once, first
-    Given the table "noun-endings" is due in Review and the round asks "First declension, feminine in η (φωνή) dative singular of noun endings" first
+    Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
     When he opens Review and starts the round
     And he misses every question of the round
     Then the end card shows a "Study list"
@@ -107,7 +107,7 @@ Feature: A wrong answer links to what teaches it
     Then the drill's result shows no "Study list"
 
   Scenario: A Review with no misses shows no Study list
-    Given the table "noun-endings" is due in Review and the round asks "First declension, feminine in η (φωνή) dative singular of noun endings" first
+    Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
     When he opens Review and starts the round
     And he answers every question of the round right
     Then the end card shows no "Study list"

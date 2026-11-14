@@ -9,7 +9,7 @@ import { wordHeart } from '../../src/data/wordHeart';
 import { KNEW_IT, NOT_PARSED, NOT_YET, type ReviewItem } from '../../src/review/kinds';
 import { missFirstTurn, missScreen, studyOfItem, studyOfQuestion, studyOfWord, type StudyLink } from '../../src/review/studyThis';
 
-const PHONE = 'First declension, feminine in η (φωνή) dative singular of noun endings';
+const PHONE = 'Noun endings: first declension, feminine in η (φωνή), dative singular';
 
 const cell: GrammarQuestion = { kind: 'cell', ideaId: 'declension-1', prompt: PHONE, options: ['-αι', '-ον', '-οις', '-ῃ'], right: '-ῃ', table: 'noun-endings' };
 

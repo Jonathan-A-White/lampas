@@ -231,9 +231,9 @@ async function openShortDrillOfThree(): Promise<void> {
   const noun = (prompt: string, n: number) => cellQuestion(prompt, n);
   const article = drawCellQuestions(paradigmById('article')!, new Map([...paradigmById('article')!.ideas, ...cellsOf(paradigmById('article')!).flatMap((c) => c.ideas)].map((id) => [id, { level: 'solid' as const }])), mulberry32(1), 100)[0];
   shortQuestions = [
-    noun('First declension, feminine in η (φωνή) dative singular of noun endings', 1),
+    noun('Noun endings: first declension, feminine in η (φωνή), dative singular', 1),
     { ...article, facet: { id: 'ending', label: 'Its ending' }, step: 1, key: 'cell-2' },
-    noun('Second declension, masculine (λόγος) genitive singular of noun endings', 3),
+    noun('Noun endings: second declension, masculine (λόγος), genitive singular', 3),
   ];
   render(<PlanDrillScreen ideaId="declension-1" facetLabel="Its ending" questions={shortQuestions} onFinish={() => {}} onClose={() => {}} />);
   await waitFor(() => expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(shortQuestions[0].prompt));
@@ -395,7 +395,7 @@ describeFeature(feature, ({ Scenario }) => {
       await freshStore();
       const first = cellQuestion(prompt, 1);
       asked = first;
-      const second = cellQuestion('Second declension, masculine (λόγος) genitive singular of noun endings', 2);
+      const second = cellQuestion('Noun endings: second declension, masculine (λόγος), genitive singular', 2);
       render(<PlanDrillScreen ideaId="declension-1" facetLabel="Its ending" questions={[first, second]} onFinish={() => {}} onClose={() => {}} />);
       await waitFor(() => expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(prompt));
     });
