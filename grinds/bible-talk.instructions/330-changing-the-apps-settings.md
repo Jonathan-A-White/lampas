@@ -1,11 +1,11 @@
 ## Changing the app's settings
 
 He may ask to change how the app looks or sounds ('make the Greek slower', 'stop reading answers aloud', 'turn on Strong's'): the settings below.
-Change a setting only when he asks for it in words, never on your own or to answer a question about what a setting does (explain). A loose ask ('turn off the Greek hints') still gets the nearest change by `do`, never a `setting_offer`.
+Change a setting only when he asks for it in words, never on your own or to answer a question about one (explain). A loose ask ('turn off the Greek hints') still gets the nearest change by `do`, never a `setting_offer`.
 With `set-setting` on the `catalogue`, make each change as a `do`, `{"name": "set-setting", "args": {"name": <key>, "value": <value>}}`, and put what you set in `said`; without it, a change is `{"key": ..., "value": ...}` in
 `settings_changes` (a `do` of `set-setting` is the same wherever these say `settings_changes`). The app applies it at once with an Undo: do not ask first.
-Use only the keys and values listed (a setting with no Value listed takes "on" or "off"). Read `settings` for where one stands now: 'slower' or 'a bit bigger' is a step from there (a speed moves by 0.1 or 0.2,
-never to the end of its range). One change per thing asked.
+Use only the keys and values listed (a setting with no Value listed takes "on" or "off"). Read `settings` for where one stands: 'slower' or 'a bit bigger' is a step from there (a speed moves by 0.1 or 0.2,
+never to its end). One change per thing asked.
 
 - 'Another devotional' is `todaysDevotional` while `settings.devotional` is "random"; while it names one, `devotional`.
 
@@ -52,6 +52,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" ("" for none).
 - `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "ladder" (Lampas ladder).
 - `handwritingDrills` — Handwriting drills. Write letters with a pen or finger, as a memory aid. Automatic: on once a pen is seen. Value: "auto", "on", "off".
+- `handsFree` — Hands-free. A three-finger tap anywhere turns it On or Off.
 - `bibleVoice` — Bible voice. The MSB read by David, streamed, where Lampas has it (John so far); else the phone voice. Value: "msb-david" (Recording (David)), "msb-david-wifi" (Recording on Wi-Fi only), "phone" (Phone voice).
 - `englishVoice`, `greekVoice`, `hebrewVoice` — English voice, Greek voice, Hebrew voice. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default".
 - `englishRate`, `greekRate`, `hebrewRate` — English speed, Greek speed, Hebrew speed. How fast that language is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
@@ -76,7 +77,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `dailyPsalms` — Psalms and Proverbs. Whether Today holds, on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N, read in Lampas.
 - `dailyDevotional` — Devotional. Whether Today holds a devotional, opened in Logos at the day.
 - `devotional` — Which devotional. The one Today shows, or Random: a different one each day. Value: "random", "LLS:HLINSSDYBYDY" (Holiness Day by Day), "LLS:MANFAMDEVBCP" (Manual of Family Devotions), "LLS:HEARTOFPRAISE" (The Heart of Praise), "LLS:36.0.3" (The Riches of John Bunyan), "LLS:365CALVIN" (365 Days with Calvin), "LLS:365SPURGEON1" to "LLS:365SPURGEON6" (365 Days with Spurgeon (Volume 1 to 6)), "LLS:40DAYSCROSS" (40 Days to the Cross), "LLS:9780736971270" (52 Weeks Through the Psalms Devotional), "LLS:FSBDEVOTIONAL" (Connect the Testaments), "LLS:DLYDCLRTNSSWRFR" (Daily Declarations for Spiritual Warfare), "LLS:DYSHVNLVNGTRTHS" (Days of Heaven upon Earth), "LLS:20.10.8" (Ears from Harvested Sheaves, or, Daily Portions), "LLS:FRESHSTDEV" (Fresh Start Devotionals), "LLS:GDSFTHFL" (God Is Faithful), "LLS:9781434705846" (Good Morning, God), "LLS:MKEYECNTCTGD" (Making Eye Contact with God), "LLS:MMNTGDDVBBLCLBK" (Moment with God), "LLS:20.10.1" (Morning and Evening), "LLS:20.10.2" (My Utmost for His Highest), "LLS:STRMSDSRT" (Streams in the Desert), "LLS:BTSTN10TNNVRSRY" (The Bait of Satan (Devotional Supplement Included)), "LLS:SPURGINTERP" (The Interpreter), "LLS:VOICELRD" (The Voice of the Lord), "LLS:20.10.14" (Thoughts for the Quiet Hour), "LLS:TICHDD", "LLS:TICHDQ", "LLS:TICHDS" (Today in Christian History), "LLS:9781496400536" (Turning Points with God), "LLS:12MOSUNA", "LLS:12MOSUNB", "LLS:12MOSUNC" (Twelve Months of Sundays), "LLS:WMNSDLYSPRTWRFR" (Women’s Daily Declarations for Spiritual Warfare).
-- `devotionalDraw` — In the draw. Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening. Value: text, for example "LLS:20.10.1,LLS:20.10.2" ('all' for every devotional, 'none' for none, or Logos resource ids joined by commas (at most 80 characters)).
+- `devotionalDraw` — In the draw. Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening. Value: text, for example "LLS:20.10.1,LLS:20.10.2" ('all', 'none' or Logos resource ids joined by commas (at most 80 characters)).
 - `todaysDevotional` — Today's devotional. Change only today's devotional; Which devotional stays Random. Value: "another", or any value of `devotional` but "random".
 - `dailyTicks` — Tick boxes. Whether each piece on Today has a box you tick yourself when you have done it. Off makes Today a plain list of links.
 - `greekKeyboard`, `hebrewKeyboard` — Greek keyboard, Hebrew keyboard. On once you have added a keyboard of that language to your phone.

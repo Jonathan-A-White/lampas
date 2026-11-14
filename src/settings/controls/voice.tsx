@@ -4,10 +4,11 @@ import { getGreekPronunciation, getReadSpan, getSpeechRates, getVoice, type Play
 import { hasVoice, noVoiceHelp, speaksLanguage, testVoice, useSpeakingKey, useVoices, voiceInUse, voiceKey, VOICE_TEST_KEY, warmVoices } from '../../speech/greek';
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLanguage } from '../../speech/languages';
 import { ACCENTS } from '../../speech/accents';
+import { setHandsFree } from '../../handsFree/switch';
 import { connectionKind } from '../../speech/connection';
 import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
 import { PLAY_TOS } from '../../speech/readSpan';
-import { bibleVoiceSetting, englishAccentSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
+import { bibleVoiceSetting, englishAccentSetting, handsFreeSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
 import { NO_WIFI_SENSE } from '../definitions/bibleVoice';
 import { PRONUNCIATION_FAMILIES } from '../definitions/pronunciation';
 import { PHONE_VOICE, writeSetting } from '../registry';
@@ -323,6 +324,17 @@ export const BibleVoiceControl: Control = ({ row }) => {
           ))}
         </div>
       ) : null}
+    </SettingRow>
+  );
+};
+
+/** Hands-free (mw-rl10piw.5): On | Off, Off to start. A choice goes through src/handsFree/switch.ts, as the three-finger tap does, so it says 'Hands-free on' or 'Hands-free off' aloud. */
+export const HandsFreeControl: Control = ({ row }) => {
+  const handsFree = useSetting(handsFreeSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {handsFree ? <OnOff name={row.label} current={handsFree} settingKey="handsFree" onChoose={(value) => void setHandsFree(value === 'on')} /> : null}
     </SettingRow>
   );
 };

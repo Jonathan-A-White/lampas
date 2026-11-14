@@ -75,6 +75,8 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   readSpan: 'speech',
   readTutor: 'speech',
   readLessons: 'speech',
+  // whether the app is run by voice and the screen left alone, and the mic mark shows: the answer is the same either way (mw-rl10piw.5)
+  handsFree: 'screen',
   talk: 'screen',
   send: 'screen',
   bibleVoice: 'speech',

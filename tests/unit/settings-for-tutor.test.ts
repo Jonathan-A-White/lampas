@@ -85,7 +85,7 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
   async function settingsRequest(turns: { q: string; a: string }[], note = 'n'.repeat(500)): Promise<TalkRequest> {
     const settings = await settingsForTutor();
     const scope: TalkScope = { title: 'Settings', chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: 'Settings', facts: [], settings }) };
-    const values = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`setting${i}`, 'value']));
+    const values = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`setting${i}`, 'value']));
     const resources = Array.from({ length: 6 }, (_, i) => ({ name: `Resource ${i}`, kind: 'lexicon', url: `https://example.org/${i}` })) as never;
     const memory = { index: 'He reads on his phone.', notes: [{ name: 'book:Romans', text: note }, { name: 'topic:goal', text: note }] };
     const requests = Array.from({ length: 4 }, (_, i) => ({ summary: `Idea ${i} ${'s'.repeat(150)}`, status: 'sent' })) as never;

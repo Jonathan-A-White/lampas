@@ -78,7 +78,7 @@ export const devotionalDrawSetting = defineSetting<string>({
     kind: 'text',
     valid: (value) => value === ALL_TICKED || value === NONE_TICKED || value.split(',').every((id) => tickedDevotionals(id).length === 1),
     example: `${DEFAULT_DEVOTIONAL},LLS:20.10.2`,
-    note: `'${ALL_TICKED}' for every devotional, '${NONE_TICKED}' for none, or Logos resource ids joined by commas (at most 80 characters)`,
+    note: `'${ALL_TICKED}', '${NONE_TICKED}' or Logos resource ids joined by commas (at most 80 characters)`,
   },
   parse: (raw) => (typeof raw === 'string' && raw !== '' ? tickedText(tickedDevotionals(raw)) : ALL_TICKED),
   // the draw is the devotionals on his shelf (library.ts)

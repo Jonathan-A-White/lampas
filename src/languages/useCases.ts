@@ -409,6 +409,7 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   tools: 'the Reader’s Menu and the Tools place: the shell',
   'tutor-does': 'what the tutor does shows on the sheet: the tutor’s mechanics',
   'hand-setting': 'the Hand setting: the shell',
+  'hands-free': 'the Hands-free switch, its three-finger tap and its mic mark: the shell, no language in it',
   'tutor-go': 'the tutor takes him to a chapter: navigation',
   'tutor-live-stream': 'an answer the moment it is ready: the tutor’s mechanics',
   'tutor-requests': 'the tutor knows his requests: the request flow',
