@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.247
+_2026-11-14_
+- New: Settings now shows which screens you have opened and how often, and which you have never opened; the counts stay on your phone.
+- Fixed: Lampas now offers a Logos book only if your imported library holds it, in the Library lists and counts, in "In another book…", in sermon search and themes, and in the lexicon, grammar, work and devotional lists.
+- New: A book of sermons now shows who preached it, and searching for a preacher's name finds his books.
+- New: Genesis can now be heard in David's voice, with the highlight following each verse.
+
 ## 0.7.246
 _2026-11-14_
 - Fixed: listening to one verse or a section no longer starts with the chapter's announcement ("Audio Bible, John chapter one").

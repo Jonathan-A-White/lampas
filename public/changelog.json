@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.247",
+    "date": "2026-11-14",
+    "story": "mw-6ww.175.15",
+    "kind": "new",
+    "text": "Settings now shows which screens you have opened and how often, and which you have never opened; the counts stay on your phone."
+  },
+  {
+    "version": "0.7.247",
+    "date": "2026-11-14",
+    "story": "mw-qtu3zvz.126",
+    "kind": "fixed",
+    "text": "Lampas now offers a Logos book only if your imported library holds it, in the Library lists and counts, in \"In another book…\", in sermon search and themes, and in the lexicon, grammar, work and devotional lists."
+  },
+  {
+    "version": "0.7.247",
+    "date": "2026-11-14",
+    "story": "mw-qtu3zvz.106",
+    "kind": "new",
+    "text": "A book of sermons now shows who preached it, and searching for a preacher's name finds his books."
+  },
+  {
+    "version": "0.7.247",
+    "date": "2026-11-14",
+    "story": "mw-zbgo4ep.1",
+    "kind": "new",
+    "text": "Genesis can now be heard in David's voice, with the highlight following each verse."
+  },
+  {
     "version": "0.7.246",
     "date": "2026-11-14",
     "story": "mw-82lb97i.28",
