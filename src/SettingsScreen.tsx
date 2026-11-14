@@ -26,6 +26,7 @@ import { useSourceList } from './sermons/useSourceList';
 import { neededText } from './settings/neededText';
 import { settingsForTutor } from './settings/tutorSettings'; import { useGrownRows } from './settings/useGrownRows';
 import { useReportScreen } from './tutor/screenContext';
+import { UsageCounted } from './tips/UsageCounted';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 /** How long a row that a link opened Settings at is kept in view while the controls above it arrive. */
@@ -140,6 +141,7 @@ function SettingsPages() {
                       <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />
                     ))}
                   </ul>
+                  <UsageCounted />
                 </>
               ) : null
             )}
