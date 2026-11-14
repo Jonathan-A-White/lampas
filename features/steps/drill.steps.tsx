@@ -13,7 +13,8 @@ import { db, type GrammarLevel } from '../../src/data/db';
 import { buildSteps } from '../../src/data/drill';
 import { formPasses } from '../../src/data/grammar/formLevel';
 import { ideasOf } from '../../src/data/grammar/ladder';
-import { ladderFor } from '../../src/data/grammar/ladders';
+import { splitParse } from '../../src/data/parseCode';
+import { ideaOfAny, ladderFor } from '../../src/data/grammar/ladders';
 import { storedId } from '../../src/data/grammar/soundScope';
 import { getWeaveGrammar, setWeaveGrammar, getGreekPronunciation } from '../../src/data/repositories';
 import { mulberry32 } from '../../src/data/quiz';
@@ -45,6 +46,8 @@ interface Asked {
 /** The questions answered so far in the scenario, and the steps answered in the one on screen. */
 let asked: Asked[] = [];
 let answeredSteps = 0;
+/** the code of the first word of the round, whose first step (its part of speech) the round misses */
+let firstCode = '';
 
 async function openLampasFresh(): Promise<void> {
   cleanup();
@@ -101,6 +104,7 @@ const nextButton = () => screen.findByTestId('next');
 /** Answers the question on screen step by step; `rightAt(step)` says whether a step is answered rightly. */
 async function answerQuestion(rightAt: (stepIndex: number) => boolean): Promise<void> {
   const lemma = wordOnScreen().dataset.lemma ?? '';
+  if (asked.length === 0) firstCode = codeOnScreen();
   const steps: string[] = [];
   for (let i = 0; ; i += 1) {
     steps.push(stepOnScreen());
@@ -163,6 +167,16 @@ async function openWithLevels(frontier: string[]): Promise<void> {
 }
 
 const levelsNow = async () => new Map((await db.grammarLevels.toArray()).map((row): [string, GrammarLevel] => [row.id, row]));
+
+/** The 'Study this' row under a wrong step, and the lesson its mood teaches (the idea of the right mood of the word on screen). */
+const studyRow = (): HTMLElement => screen.getByRole('group', { name: 'Study this' });
+const moodLesson = (): string => {
+  const mood = splitParse(codeOnScreen()).features.find((f) => f.id === 'mood');
+  const idea = mood ? ladderFor('grc').ideaOfTerm(mood.value) : undefined;
+  if (!idea) throw new Error(`the mood of ${codeOnScreen()} has no idea`);
+  return `Lesson: ${ideaOfAny(idea).title}`;
+};
+const posLesson = (word: string): string => `Lesson: ${ideaOfAny(ladderFor('grc').ideaOfTerm(splitParse(word).pos) ?? '').title}`;
 
 const feature = await loadFeature('features/drill.feature');
 
@@ -238,6 +252,63 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Talk sheet opens on the verse of that word', async () => {
       const sheet = await screen.findByRole('dialog', { name: `Talk about Romans 8:${verse}` });
       expect(sheet).toBeInTheDocument();
+    });
+  });
+
+  Scenario('A wrong step links to what teaches it, through the same mapping as Review', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened for the first time', openLampasFresh);
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    And('he goes on to a verb', () => goOnTo('V'));
+    And('he answers the part of speech rightly and goes on', answerRightlyAndGoOn);
+    And('he answers the tense rightly and goes on', answerRightlyAndGoOn);
+    And('he answers the voice rightly and goes on', answerRightlyAndGoOn);
+    Then('the verb is asked its mood', () => expectStep('mood'));
+    When('he taps a wrong choice for the mood', () => answer(false));
+    Then('a {string} row is under the answer', (_, name: string) => {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+    });
+    And('the row has the lesson of the idea of the mood', () => {
+      expect(within(studyRow()).getByRole('button', { name: moodLesson() })).toBeInTheDocument();
+    });
+    And('the row has a table of the word with its cell lit', () => {
+      expect(studyRow().querySelector('[data-study="paradigm"]')).not.toBeNull();
+    });
+    When('he taps the lesson of the idea of the mood', async () => {
+      await user.click(within(studyRow()).getByRole('button', { name: moodLesson() }));
+    });
+    Then('the lesson of the idea of the mood is open over the drill', async () => {
+      const sheet = await screen.findByRole('dialog', { name: 'Idea' });
+      expect(within(sheet).getByRole('heading', { name: moodLesson().replace('Lesson: ', '') })).toBeInTheDocument();
+    });
+    When('he closes the lesson', async () => {
+      await user.click(within(screen.getByRole('dialog', { name: 'Idea' })).getByRole('button', { name: 'Done' }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Idea' })).toBeNull());
+    });
+    Then('the drill is on the same step with its {string} row', (_, name: string) => {
+      expectStep('mood');
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+    });
+  });
+
+  Scenario('A right step shows no Study this row', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened for the first time', openLampasFresh);
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    And('he answers the step on screen rightly', () => answer(true));
+    Then('there is no {string} row', (_, name: string) => {
+      expect(screen.queryByRole('group', { name })).toBeNull();
+    });
+  });
+
+  Scenario('The end of the round has the Study list of the steps he missed', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened for the first time', openLampasFresh);
+    When('he opens the Parsing drill from the Test screen', openDrill);
+    And('he answers every step rightly except the first step of the first word', () => playRound((q, s) => !(q === 0 && s === 0)));
+    Then('the score reads one word short of the round', async () => {
+      expect(await screen.findByTestId('score')).toHaveTextContent('9 of 10');
+    });
+    And('the {string} has the lesson of the idea of the part of speech missed', (_, name: string) => {
+      const list = screen.getByRole('group', { name });
+      expect(within(list).getByRole('button', { name: posLesson(firstCode) })).toBeInTheDocument();
     });
   });
 

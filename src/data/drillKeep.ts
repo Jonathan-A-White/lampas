@@ -5,6 +5,13 @@ import type { DrillQuestion } from './drill';
 
 const KEY = 'lampas.drill';
 
+/** One step he answered wrong: the word and the step of it (by position in the round), and the choice he tapped; the end of the round's Study list is made of them (mw-indx1x6.10). */
+export interface Slip {
+  question: number;
+  step: number;
+  picked: string;
+}
+
 export interface SavedDrill {
   questions: DrillQuestion[];
   /** the word he is on */
@@ -15,6 +22,8 @@ export interface SavedDrill {
   picked: string | null;
   /** the words (by position in the round) with a step missed so far */
   missed: number[];
+  /** every step answered wrong so far, in order; a round kept before the Study list has none */
+  slips: Slip[];
   /** steps answered, and how many of them rightly */
   asked: number;
   right: number;
@@ -83,6 +92,11 @@ export function clearDrill(): void {
   }
 }
 
+const isSlip = (l: unknown, questions: readonly DrillQuestion[]): l is Slip => {
+  const slip = l as Slip;
+  return typeof l === 'object' && l !== null && count(slip.question) && slip.question < questions.length && count(slip.step) && slip.step < questions[slip.question].steps.length && typeof slip.picked === 'string';
+};
+
 const count = (n: unknown): n is number => typeof n === 'number' && Number.isInteger(n) && n >= 0;
 
 /** The unfinished round, or null when there is none (or what is stored is not a round). */
@@ -96,7 +110,8 @@ export function readDrill(): SavedDrill | null {
     if (picked !== null && (typeof picked !== 'string' || !d.questions[question].steps[step].options.includes(picked))) return null;
     if (!Array.isArray(missed) || !missed.every((m) => count(m) && m < d.questions!.length)) return null;
     if (!count(asked) || !count(right) || right > asked) return null;
-    return { questions: d.questions, question, step, picked: picked ?? null, missed, asked, right, away: count(d.away) ? d.away : null };
+    const slips = Array.isArray(d.slips) ? d.slips.filter((l): l is Slip => isSlip(l, d.questions!)) : [];
+    return { questions: d.questions, question, step, picked: picked ?? null, missed, slips, asked, right, away: count(d.away) ? d.away : null };
   } catch {
     return null;
   }

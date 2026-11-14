@@ -43,6 +43,37 @@ Feature: A parsing drill on the chapter
     And he taps Talk about it
     Then the Talk sheet opens on the verse of that word
 
+  # mw-indx1x6.10: the Governor's words (2026-11-12): "Wrong answers should (likewise to the review/drill pending change) link to the relevant resources/tools to help. Maybe there is a shared library possibility here."
+  Scenario: A wrong step links to what teaches it, through the same mapping as Review
+    Given Lampas is opened for the first time
+    When he opens the Parsing drill from the Test screen
+    And he goes on to a verb
+    And he answers the part of speech rightly and goes on
+    And he answers the tense rightly and goes on
+    And he answers the voice rightly and goes on
+    Then the verb is asked its mood
+    When he taps a wrong choice for the mood
+    Then a "Study this" row is under the answer
+    And the row has the lesson of the idea of the mood
+    And the row has a table of the word with its cell lit
+    When he taps the lesson of the idea of the mood
+    Then the lesson of the idea of the mood is open over the drill
+    When he closes the lesson
+    Then the drill is on the same step with its "Study this" row
+
+  Scenario: A right step shows no Study this row
+    Given Lampas is opened for the first time
+    When he opens the Parsing drill from the Test screen
+    And he answers the step on screen rightly
+    Then there is no "Study this" row
+
+  Scenario: The end of the round has the Study list of the steps he missed
+    Given Lampas is opened for the first time
+    When he opens the Parsing drill from the Test screen
+    And he answers every step rightly except the first step of the first word
+    Then the score reads one word short of the round
+    And the "Study list" has the lesson of the idea of the part of speech missed
+
   Scenario: The score shows at the end and results survive a reload
     Given Lampas is opened for the first time
     When he opens the Parsing drill from the Test screen

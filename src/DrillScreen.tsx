@@ -9,7 +9,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { loadChapter } from './data/chapter';
 import { drawDrill, type DrillQuestion, type DrillTuning } from './data/drill';
-import { clearDrill, readDrill, saveDrill, type SavedDrill } from './data/drillKeep';
+import { clearDrill, readDrill, saveDrill, type SavedDrill, type Slip } from './data/drillKeep';
 import type { Random } from './data/quiz';
 import { getStudyChapter } from './data/readerChapter';
 import { studyLanguage } from './data/studyLanguage';
@@ -30,6 +30,12 @@ import { useSettled } from './ui/settle';
 import { useDoorRoom } from './tutor/doorRoom';
 import { faceOf } from './script/greekLang';
 import { DrillReference } from './markdown/DrillReference';
+import { StudyList } from './review/StudyList';
+import { StudyThis } from './review/StudyThis';
+import { studyOfParseStep } from './review/studyThis';
+
+/** The screen the tutor is told he is on when a 'Study this' link opens a layer over the drill. */
+const DRILL_SCREEN = 'Parsing drill';
 
 interface Session {
   status: 'loading' | 'offer' | 'failed' | 'ready';
@@ -39,19 +45,22 @@ interface Session {
   step: number;
   picked: string | null;
   missed: number[];
+  /** every step he answered wrong, for the Study list at the end (mw-indx1x6.10) */
+  slips: Slip[];
   asked: number;
   right: number;
 }
 
-const FRESH: Omit<Session, 'status'> = { questions: [], question: 0, step: 0, picked: null, missed: [], asked: 0, right: 0 };
+const FRESH: Omit<Session, 'status'> = { questions: [], question: 0, step: 0, picked: null, missed: [], slips: [], asked: 0, right: 0 };
 
-const restored = ({ questions, question, step, picked, missed, asked, right }: SavedDrill): Session => ({
+const restored = ({ questions, question, step, picked, missed, slips, asked, right }: SavedDrill): Session => ({
   status: 'ready',
   questions,
   question,
   step,
   picked,
   missed,
+  slips,
   asked,
   right,
 });
@@ -68,7 +77,7 @@ function opening(): Session {
 }
 
 const keep = (s: Session, away: number | null = null): void =>
-  saveDrill({ questions: s.questions, question: s.question, step: s.step, picked: s.picked, missed: s.missed, asked: s.asked, right: s.right, away });
+  saveDrill({ questions: s.questions, question: s.question, step: s.step, picked: s.picked, missed: s.missed, slips: s.slips, asked: s.asked, right: s.right, away });
 
 /** A round, and whether his settings narrowed it (so that an empty one can offer the widest setting). */
 interface Round {
@@ -329,6 +338,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
           ) : (
             <p className="mt-6 text-center text-lg">All right. Well done.</p>
           )}
+          <StudyList studies={s.slips.map((l) => studyOfParseStep(s.questions[l.question], s.questions[l.question].steps[l.step], l.picked))} screen={DRILL_SCREEN} back="Back to the drill" className="mt-4" />
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button type="button" onClick={() => navigate('home')} className="min-h-12 rounded-xl border border-line text-lg font-medium">
               Done
@@ -362,6 +372,7 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
       asked: s.asked + 1,
       right: s.right + (right ? 1 : 0),
       missed: right || s.missed.includes(s.question) ? s.missed : [...s.missed, s.question],
+      slips: right ? s.slips : [...s.slips, { question: s.question, step: s.step, picked: option }],
     };
     keep(next);
     setS(next);
@@ -427,6 +438,10 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
             <span className="text-muted">Full parsing: </span>
             {question.parsing}
           </p>
+        ) : null}
+        {answered && !rightPick ? (
+          // a wrong step shows what teaches it, through the mapping Review uses (src/review/studyThis.ts, mw-indx1x6.10)
+          <StudyThis key={`study-${s.question}:${s.step}`} study={studyOfParseStep(question, step, s.picked ?? '')} screen={DRILL_SCREEN} back="Back to the drill" className="mt-3" />
         ) : null}
         {answered ? (
           <NextBar>
