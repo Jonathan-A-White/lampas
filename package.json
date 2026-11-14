@@ -68,8 +68,8 @@
   },
   "dependencies": {
     "@bsv/sdk": "^2.8.11",
-    "audible-kit": "github:Jonathan-A-White/audible-kit#ac2224ca7dedccae47df7a33f7a71136e688cb2e",
-    "bsv-kit": "github:Jonathan-A-White/bsv-kit#918c441ce443dff052470de5671c2b1c430f8ebd",
+    "audible-kit": "github:Jonathan-A-White/audible-kit#273fadf8733ab4c99fbbfcde618a8eeb6d5fb0d4",
+    "bsv-kit": "github:Jonathan-A-White/bsv-kit#4dbd874edc1f5d6c151b0980ccaa9fcc60799d6a",
     "dexie": "^4.3.0",
     "dexie-react-hooks": "^4.4.0",
     "learn-kit": "github:Jonathan-A-White/learn-kit#866354a9c617f35bf9e85159e72bab0a27b6f02e",
@@ -81,7 +81,7 @@
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5",
-    "voice-kit": "github:Jonathan-A-White/voice-kit#d87188227886ec15e7c34f674992f4a63ea69215",
+    "voice-kit": "github:Jonathan-A-White/voice-kit#c5f76b2b7044d00eaecc827a7cbdce5b802768b0",
     "workbox-precaching": "7.4.1",
     "workbox-routing": "^7.4.1",
     "workbox-strategies": "7.4.1"
@@ -116,10 +116,10 @@
     "vitest": "^4.0.18"
   },
   "allowScripts": {
-    "github:Jonathan-A-White/audible-kit#ac2224ca7dedccae47df7a33f7a71136e688cb2e": true,
-    "github:Jonathan-A-White/bsv-kit#918c441ce443dff052470de5671c2b1c430f8ebd": true,
+    "github:Jonathan-A-White/audible-kit#273fadf8733ab4c99fbbfcde618a8eeb6d5fb0d4": true,
+    "github:Jonathan-A-White/bsv-kit#4dbd874edc1f5d6c151b0980ccaa9fcc60799d6a": true,
     "github:Jonathan-A-White/learn-kit#866354a9c617f35bf9e85159e72bab0a27b6f02e": true,
     "github:Jonathan-A-White/pwa-kit#ac66874a0bdfc4bc4052390b38499594e250f567": true,
-    "github:Jonathan-A-White/voice-kit#d87188227886ec15e7c34f674992f4a63ea69215": true
+    "github:Jonathan-A-White/voice-kit#c5f76b2b7044d00eaecc827a7cbdce5b802768b0": true
   }
 }
