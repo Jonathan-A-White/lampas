@@ -12,7 +12,7 @@ const startAppUpdates = vi.fn<(deps: { registration: { update(): Promise<unknown
 vi.mock('react-dom/client', () => ({ createRoot: () => ({ render }) }));
 vi.mock('virtual:pwa-register', () => ({ registerSW: (options: never) => registerSW(options) }));
 vi.mock('pwa-kit/app-update', () => ({ startAppUpdates: (deps: never) => startAppUpdates(deps) }));
-vi.mock('pwa-kit/whats-new', () => ({ fetchChangelog: vi.fn() }));
+vi.mock('pwa-kit/whats-new', () => ({ fetchChangelog: vi.fn(), hasNewsSince: vi.fn() }));
 vi.mock('pwa-kit/whats-new/styles.css', () => ({}));
 vi.mock('pwa-kit/settings/styles.css', () => ({}));
 vi.mock('voice-kit/speech/styles.css', () => ({}));
@@ -23,7 +23,6 @@ vi.mock('../../src/gate/LicenceProvider', () => ({ LicenceProvider: () => null }
 vi.mock('../../src/gate/licenceTip', () => ({ noteVisit: vi.fn() }));
 vi.mock('../../src/tips/LicensedTips', () => ({ LicensedTips: () => null }));
 vi.mock('../../src/tutor/NightlyTuning', () => ({ NightlyTuning: () => null }));
-vi.mock('../../src/whatsNew/hasNewsSince', () => ({ hasNewsSince: vi.fn() }));
 vi.mock('../../src/appearance/appearanceSync', () => ({ restoreAppearance: vi.fn() }));
 vi.mock('../../src/nav/lastRoute', () => ({ restoreLastRoute: vi.fn() }));
 vi.mock('../../src/nav/scrollMemory', () => ({ restoreScrolls: vi.fn() }));

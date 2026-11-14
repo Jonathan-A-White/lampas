@@ -7,7 +7,7 @@ import 'voice-kit/speech/styles.css';
 import 'voice-kit/composer/styles.css';
 import { registerSW } from 'virtual:pwa-register';
 import { startAppUpdates } from 'pwa-kit/app-update';
-import { fetchChangelog } from 'pwa-kit/whats-new';
+import { fetchChangelog, hasNewsSince } from 'pwa-kit/whats-new';
 import { App } from './App';
 import { restoreAppearance } from './appearance/appearanceSync';
 import { refreshOfflineCopy, updateChecked } from './data/offlineCopy';
@@ -21,7 +21,6 @@ import { restoreScrolls } from './nav/scrollMemory';
 import { startBookRequests } from './services/bookRequests';
 import { LicensedTips } from './tips/LicensedTips';
 import { NightlyTuning } from './tutor/NightlyTuning';
-import { hasNewsSince } from './whatsNew/hasNewsSince';
 import { installScrollGuard } from './ui/scrollGuard';
 import { leaveStaleSheets } from './ui/sheetBack';
 

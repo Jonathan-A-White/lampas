@@ -2,9 +2,8 @@
 // not offered to him (mw-5r3p30.236): it takes over by itself, at start-up or while the app is hidden, never while he
 // uses it. A build with a line to show keeps the banner and waits for his tap. An unreadable changelog keeps the banner.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ChangelogEntry } from 'pwa-kit/whats-new';
+import { hasNewsSince, type ChangelogEntry } from 'pwa-kit/whats-new';
 import { getUpdateState, startAppUpdates, type AppUpdates, type UpdateState } from 'pwa-kit/app-update';
-import { hasNewsSince } from '../../src/whatsNew/hasNewsSince';
 import { fakeSetup, fakeWorker } from '../support/fake-registration';
 
 const RUNNING = '0.1.120';
