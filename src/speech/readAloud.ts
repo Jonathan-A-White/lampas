@@ -482,6 +482,9 @@ export interface StartOptions {
   /** the book `plan` is of when `book` is left out because the reading must not go on into the next chapter */
   inBook?: string;
   span?: ReadSpan;
+  /** false when this reading is not of a whole chapter, a book or the Bible, whatever its span: a Listen on a pericope is read with span 'chapter' (to the end of its own plan), and
+   * starts at its first verse's own second, with no announcement (mw-82lb97i.40). Left out, the span decides. */
+  title?: boolean;
   answer?: number;
   /** this reading is a Listen (listenKeyOf): an interruption from inside the app pauses it and it goes on by itself afterwards */
   listen?: string;
@@ -513,7 +516,7 @@ export function startReading(options: StartOptions): void {
   set({ status: 'reading', verse: options.from, notice, answer: options.answer ?? null, crossing: null, onBar: false, recorded: false, listen: options.listen ?? null });
   keepAwake();
   // the narrator's announcement ('Audio Bible, John chapter one') belongs to a chapter, a book or the Bible read from its beginning, not to one verse or a pericope (mw-82lb97i.28)
-  const title = reach !== 'verse' && reach !== 'passage' && options.plan[0]?.n === options.from;
+  const title = options.title !== false && reach !== 'verse' && reach !== 'passage' && options.plan[0]?.n === options.from;
   if (options.recorded && playFromRecording(options.recorded, options.from, epoch, title)) return;
   readVerse(options.from, epoch);
 }
