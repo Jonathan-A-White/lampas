@@ -1,10 +1,18 @@
 // tests/unit/openSettings.tsx — the one place a jsdom test or feature step names the Reader header's Menu, the doors in it (Settings, Tools) and the headings of the screens they open
 // (mw-5r3p30.839, mw-5r3p30.754). The Menu (three lines) stood where the gear was: Tools and Settings are its two rows. When a door moves again, this file changes and the steps do not. The Playwright twin is tests/e2e/openSettings.ts.
-import { screen, within, type BoundFunctions, type queries } from '@testing-library/react';
+import { screen, waitFor, within, type BoundFunctions, type queries } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 
 /** Where to look: the whole screen (the default), or a box on it (the Reader's header, from `within`). */
 type Scope = Pick<BoundFunctions<typeof queries>, 'findByRole' | 'getByRole'>;
+
+/** The Reader's header, once it is drawn: a role query inside it is small, on `screen` it works out the name of every word of the open chapter (seconds a call under load, mw-5r3p30.555). */
+export const findReaderHeader = (): Promise<HTMLElement> =>
+  waitFor(() => {
+    const found = document.querySelector<HTMLElement>('[data-reader-top]');
+    if (!found) throw new Error('the Reader header is not drawn yet');
+    return found;
+  });
 
 /** The Menu button, waiting for it to be drawn. */
 export const findMenuButton = (where: Scope = screen): Promise<HTMLElement> => where.findByRole('button', { name: 'Menu' });
@@ -27,7 +35,8 @@ export const findToolsHeading = (): Promise<HTMLElement> => screen.findByRole('h
 /** Taps the Menu (waiting for it) and then its row `name`. */
 async function chooseFromMenu(user: UserEvent, name: 'Settings' | 'Tools', where: Scope): Promise<void> {
   await user.click(await findMenuButton(where));
-  await user.click(await screen.findByRole('menuitem', { name }));
+  // inside `where`: given the Reader's header the menu panel is looked for there alone, not through the chapter behind it (mw-indx1x6.38)
+  await user.click(await where.findByRole('menuitem', { name }));
 }
 
 /** Opens Settings through the Menu and waits for the Settings heading, which it returns. */
@@ -46,4 +55,9 @@ export async function openTools(user: UserEvent, where: Scope = screen): Promise
 export async function openTool(user: UserEvent, name: string, where: Scope = screen): Promise<void> {
   await openTools(user, where);
   await user.click(await within(await screen.findByRole('list', { name: 'Tools' })).findByRole('button', { name: new RegExp(`^${name}`) }));
+}
+
+/** Opens Settings from the Reader through the Menu in its header, without a role query over the chapter, and waits for the Settings heading. */
+export async function openSettingsFromReader(user: UserEvent): Promise<HTMLElement> {
+  return openSettings(user, within(await findReaderHeader()));
 }
