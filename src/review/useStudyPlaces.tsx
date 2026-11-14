@@ -68,7 +68,8 @@ export function useStudyPlaces({ screen, back, onParadigm, facts, tutor }: {
           <TableAt table={table} cell={open.address.cell} />
         </Layer>
       ) : null}
-      {open?.kind === 'lesson' ? <IdeaSheetWithWord ideaId={open.ideaId} onClose={close} /> : null}
+      {/* where a table opens as a layer (a drill, an end card: no `onParadigm`) a new page would lose the run, so the lesson draws no link to one (mw-indx1x6.28); Review keeps its round */}
+      {open?.kind === 'lesson' ? <IdeaSheetWithWord ideaId={open.ideaId} onClose={close} overRun={!onParadigm} /> : null}
       {open?.kind === 'word' ? <WordSheet chapter={open.sheet.chapter} lookup={open.sheet.lookup} onClose={close} /> : null}
       {open?.kind === 'mnemonic' ? (
         <Layer title={`How to remember ${open.lemma}`} back={back} talk={talkOf(`How to remember the word ${open.lemma}: its picture, the heart of the word and its parts`)} onClose={close}>
