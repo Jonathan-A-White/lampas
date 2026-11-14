@@ -12,6 +12,7 @@ import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS } from '../../resources/grammarBoo
 import { LEXICONS } from '../../resources/logos';
 import { WORKS } from '../../resources/works';
 import { LOGOS_RESOURCES } from '../logosSermonResources';
+import { isOffered } from '../owned';
 import { isListed, matchExport, type MatchResult } from '../../library/matchExport';
 import type { ExportRow } from '../../library/parseExport';
 import { db, type ExportedRow, type LibraryRow } from '../db';
@@ -204,6 +205,13 @@ export async function shelfOf(kind?: Kind): Promise<LibraryRow[]> {
   return rows.sort((a, b) => rank(a, catalogueOrder) - rank(b, catalogueOrder));
 }
 
+/** The rows of the shelf (`shelfOf`) that he may be offered: those whose book is in his import or free with Logos (src/data/owned.ts isOffered, mw-qtu3zvz.126). Every place that offers a book of the shelf reads this, never `shelfOf`;
+ *  `shelfOf` is the shelf as he tapped it, for the code that writes it and the tests that read back what a tap wrote. */
+export async function offeredShelfOf(kind?: Kind): Promise<LibraryRow[]> {
+  const [rows, owned] = await Promise.all([shelfOf(kind), ownedResources()]);
+  return rows.filter((r) => isOffered(r.id, owned));
+}
+
 /** The Pinned rows of a kind, in the catalogue's order. */
 export async function pinnedOf(kind: Kind): Promise<LibraryRow[]> {
   return (await shelfOf(kind)).filter((r) => r.state === 'pinned');
@@ -360,9 +368,11 @@ async function tick(kind: Kind, owns: readonly string[], resources: readonly str
   });
 }
 
+/** The ids of `owns` that are on the shelf and that he may be offered: in his import or free with Logos (src/data/owned.ts isOffered, mw-qtu3zvz.126). A row ticked before an import, or for a book the import lacks, stays on the shelf and is not offered. */
 const heldIds = async (owns: readonly string[]): Promise<Set<string>> => {
   const wanted = new Set(owns);
-  return new Set((await rowsNow()).filter((r) => wanted.has(r.id)).map((r) => r.id));
+  const owned = await ownedResources();
+  return new Set((await rowsNow()).filter((r) => wanted.has(r.id) && isOffered(r.id, owned)).map((r) => r.id));
 };
 
 /** The ids of the lexicons on the shelf (in LEXICONS' order): what Settings > Logos ticks. */
@@ -373,7 +383,8 @@ export async function lexiconTicks(): Promise<string[]> {
 
 /** The ids of the lexicons Pinned on the shelf (in LEXICONS' order, which is the catalogue's): the first is the one the tutor's word chip names, and they are the tiles of the word sheet's Study row. */
 export async function lexiconPins(): Promise<string[]> {
-  const pinned = new Set((await rowsNow()).filter((r) => r.state === 'pinned').map((r) => r.id));
+  const owned = await ownedResources();
+  const pinned = new Set((await rowsNow()).filter((r) => r.state === 'pinned' && isOffered(r.id, owned)).map((r) => r.id));
   return LEXICONS.filter((l) => pinned.has(l.resource)).map((l) => l.id);
 }
 
@@ -451,7 +462,7 @@ export async function importNote(): Promise<ImportNote | undefined> {
   return undefined;
 }
 
-/** The Resource IDs of the kept list: what his import says he owns (src/library/owned.ts). Empty while no list is kept. */
+/** The Resource IDs of the kept list: what his import says he owns (src/data/owned.ts). Empty while no list is kept. */
 export async function ownedResources(): Promise<ReadonlySet<string>> {
   return new Set((await db.exportRows.toArray()).map((r) => r.resource));
 }

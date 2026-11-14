@@ -30,7 +30,7 @@ import { teachTiles } from './data/grammar/teachTiles';
 import { paradigmsOf } from './data/paradigms';
 import { getStudyChapter } from './data/readerChapter';
 import { cardForm } from './reader/septuagint';
-import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, shelfOf, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
+import { getGrammarBooks, getGreekPronunciation, getLevel, getSavedGoalText, getStudyResources, listLevels, offeredShelfOf, reviewsOf, teachIdea, type DrillMode, type Review, type FrontierChoice, type GrammarLevelName, type IdeaOutcome } from './data/repositories';
 import { useAiAllowed } from './gate/licenceContext';
 import { useDoorTarget } from './tutor/door';
 import { AskForBook } from './library/AskForBook';
@@ -416,7 +416,7 @@ const SHOWN_BOOKS = 3;
 function ReadMore({ ideaId, books }: { ideaId: string; books: readonly GrammarBook[] }) {
   const [all, setAll] = useState(false);
   const headingId = useId();
-  const kept = useLiveQuery(async () => ({ logos: (await getStudyResources()).on.includes('logos'), ticked: await getGrammarBooks(), rows: await shelfOf('grammar') }), []);
+  const kept = useLiveQuery(async () => ({ logos: (await getStudyResources()).on.includes('logos'), ticked: await getGrammarBooks(), rows: await offeredShelfOf('grammar') }), []);
   const level = useGreekInterest();
   const shelved = shelvedBooks(books, kept?.rows ?? []);
   const lines = kept?.logos && level !== undefined ? readMoreFor(ideaId, [...kept.ticked, ...shelved.ticked], books, level, shelved.pinned) : [];

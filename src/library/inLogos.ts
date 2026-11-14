@@ -10,7 +10,7 @@ import { bibleRef, partOf, verseLink } from '../resources/logosBible';
 import { resourceLink, type LogosLink } from '../resources/logosRes';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
 import type { StudyPlace } from '../resources/types';
-import { isOffered, type Owned } from './owned';
+import { isOffered, type Owned } from '../data/owned';
 
 /** One book that opens at the place: the catalogue's entry, its state on the shelf (never Off) and the link that opens it there. */
 export interface InLogosRow {
@@ -57,14 +57,13 @@ export function linkFor(entry: CatalogueEntry, place: StudyPlace): LogosLink | u
   return ref ? resourceLink(entry.resource, `ref=${ref}`) : undefined;
 }
 
-/** The books of `entries` that are On or Pinned on the shelf (`states`, by Resource ID), cover the place and open at a verse, each with its link, in the entries' order as the dial shows them
- *  (resourcesForLevel: Greek books are hidden at Just English). No sermon book is among them. `owned` (the Resource IDs his Library import holds, src/library/owned.ts) is not checked for these kinds yet
- *  (mw-qtu3zvz.94's closing comment names the bug); the sermon books, which are checked, are sermonBookRows'. */
-export function inLogosRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, level: GreekLevel = GREEK_TOP): InLogosRow[] {
+/** The books of `entries` that are On or Pinned on the shelf (`states`, by Resource ID), cover the place, open at a verse and are his (in his import or free with Logos: `owned`, src/data/owned.ts isOffered, mw-qtu3zvz.126),
+ *  each with its link, in the entries' order as the dial shows them (resourcesForLevel: Greek books are hidden at Just English). No sermon book is among them: those are sermonBookRows'. */
+export function inLogosRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, owned: Owned, level: GreekLevel = GREEK_TOP): InLogosRow[] {
   const kinds = partOf(place.book) === 'nt' ? NT_KINDS : OT_KINDS;
   return resourcesForLevel(entries, level).flatMap((entry): InLogosRow[] => {
     const state = states.get(entry.resource);
-    if (!state || state === 'off' || !kinds.includes(entry.kind) || (entry.kind !== 'bible' && entry.opens !== 'verse') || !covers(entry, place)) return [];
+    if (!state || state === 'off' || !isOffered(entry.resource, owned) || !kinds.includes(entry.kind) || (entry.kind !== 'bible' && entry.opens !== 'verse') || !covers(entry, place)) return [];
     const link = linkFor(entry, place);
     return link ? [{ entry, state, link }] : [];
   });

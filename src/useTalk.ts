@@ -11,7 +11,7 @@ import { focusLemmaOf, learnerMemory } from './data/learnerMemory';
 import { learnerProfile } from './data/learnerProfile';
 import { learnerSummary } from './data/learnerSummary';
 import { learnFromTalk } from './data/repositories/profile';
-import { addTurn, getActiveSet, keepFetched, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns, shelfOf } from './data/repositories';
+import { addTurn, getActiveSet, keepFetched, getGreekPronunciation, getReaderView, getQuizGoal, getStudyResources, getTalkSummary, keepTalkSummary, listLevels, listSolidHeadwords, listStudyWay, listTurns, offeredShelfOf } from './data/repositories';
 import { resourcesForTutor, worksForTutor } from './resources/tutorLinks';
 import { mapsFor } from './maps';
 import { talkSermonsFor } from './sermons/forTutor';
@@ -173,7 +173,7 @@ export function useTalk(
             getReaderView().catch(() => undefined),
             // the solid words and ideas he now slips on or has been away from: the tutor says so once and may offer to move them back (src/data/rusty.ts); not in a quiz
             scope.quiz || scope.welcome ? Promise.resolve(undefined) : rustyNow().catch(() => undefined),
-            shelfOf().catch(() => []),
+            offeredShelfOf().catch(() => []),
             // the running summary of this talk and how many of its oldest turns it holds (mw-5r3p30.700)
             getTalkSummary(ref).catch(() => undefined),
             // the items behind the Reader's chip 'Today · N of M', so 'what is on my drill today' is answered by name and Today can be offered (src/data/learnerToday.ts); not in a quiz or the welcome

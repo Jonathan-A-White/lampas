@@ -17,7 +17,8 @@ import { marksOf } from './bibleParts';
 import { countLine, detailOf, headerCount, hiddenLine, infoOf, inSentence, LANGUAGES_LABEL, pinRefusal } from './kinds';
 import { PartChoice } from './PartChoice';
 import { TypedBible } from './TypedBible';
-import { useBibles, useShelf } from './useShelf';
+import { offeredEntries } from '../data/owned';
+import { useBibles, useOwned, useShelf } from './useShelf';
 
 const OPTIONS: Record<'pin' | 'on', readonly (readonly [string, string])[]> = {
   pin: [['off', 'Off'], ['on', 'On'], ['pinned', 'Pin']],
@@ -33,13 +34,15 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   const info = infoOf(kind);
   const states = useShelf();
   const bibles = useBibles();
+  const owned = useOwned();
   const levels = useInterestLevels();
   // the Bible whose "Set for…" is open
   const [asking, setAsking] = useState<string | null>(null);
   const [refused, setRefused] = useState<string | null>(null);
   // the rows the search shows: All on / All off act on these only while a search is typed (mw-qtu3zvz.103)
   const [shown, setShown] = useState<{ ids: readonly string[]; searching: boolean }>({ ids: [], searching: false });
-  const entries = [...entriesOf(kind)].sort((a, b) => a.short.localeCompare(b.short));
+  // only the books of his import (or free with Logos) are listed, counted and ticked (mw-qtu3zvz.126)
+  const entries = [...(owned === undefined ? [] : offeredEntries(entriesOf(kind), owned))].sort((a, b) => a.short.localeCompare(b.short));
   // a kind with books in both Hebrew and Greek (Lexicons, Grammars) is grouped Hebrew, then Greek, each in the order above (mw-5r3p30.1117)
   const grouped = entries.some((e) => e.lang === 'he') && entries.some((e) => e.lang === 'grc');
   const groupRank = (id: string): number => (grouped ? Math.max(0, GROUP_LANGS.indexOf(entryOf(id)!.lang)) : 0);
@@ -59,7 +62,7 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
   };
   const all = async (to: 'on' | 'off'): Promise<void> => {
     setRefused(null);
-    await setKind(kind, to, Date.now(), shown.searching ? shown.ids : undefined);
+    await setKind(kind, to, Date.now(), shown.searching ? shown.ids : entries.map((e) => e.resource));
   };
 
   return (
@@ -76,11 +79,18 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
       <main className="screen min-h-0 flex-1 px-4">
         <p className="pt-3 text-base">{info.help}</p>
         {kind === 'bible' ? <TypedBible /> : null}
-        {entries.length === 0 ? (
-          <>
-            <p className="pt-3 text-base font-medium">No {inSentence(info.plural)} yet</p>
-            <p className="text-base text-muted">Lampas has none of these in its catalogue yet.</p>
-          </>
+        {owned === undefined ? null : entries.length === 0 ? (
+          entriesOf(kind).length === 0 ? (
+            <>
+              <p className="pt-3 text-base font-medium">No {inSentence(info.plural)} yet</p>
+              <p className="text-base text-muted">Lampas has none of these in its catalogue yet.</p>
+            </>
+          ) : (
+            <>
+              <p className="pt-3 text-base font-medium">No {inSentence(info.plural)} in your list</p>
+              <p className="text-base text-muted">Import your Logos list and the ones you own are listed here.</p>
+            </>
+          )
         ) : (
           <>
             <div className="flex flex-wrap gap-2 pt-3">

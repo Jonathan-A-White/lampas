@@ -1,7 +1,7 @@
 // src/sermons/index.ts — the sermons module's door (docs/sermons.md): the registry of sources and sermonsFor, the sermons of a place. A second source is one file in src/sermons/sources/ and one line in SOURCES.
 import { getKnownSermonSources, ownedResources, rememberSermonSources, savedSettings, type KnownSermonSource } from '../data/repositories';
 import { fetchDirectThemeSermons, fetchSermons, fetchSources, sermonsServiceKnown, type ServiceSermon } from '../services/sermons';
-import { addressOffered } from '../library/owned';
+import { addressOffered } from '../data/owned';
 import { THEME_MAX_VERSES } from '../data/themeIndex';
 import { enabledSources as enabledThemeSources, themesFor } from '../themes';
 import { enabledSources as enabledOf } from './enabled';

@@ -1,4 +1,4 @@
-// src/library/owned.ts — which Logos resources Lampas may offer (mw-qtu3zvz.94): one he says he owns in his Library import (the kept list, `exportRows`), or one on FREE_LOGOS, the resources Logos
+// src/data/owned.ts — which Logos resources Lampas may offer (mw-qtu3zvz.94): one he says he owns in his Library import (the kept list, `exportRows`), or one on FREE_LOGOS, the resources Logos
 // gives every new user. Pure: the repository (ownedResources, src/data/repositories/library.ts) reads the import and hands the set here; with no import kept the set is empty, so only a free resource passes.
 
 /** A resource Logos gives new users free (Logos Basic); each carries the page that says so. */
@@ -25,6 +25,9 @@ export const isFreeLogos = (resource: string): boolean => FREE_LOGOS.some((f) =>
 
 /** Whether a Logos resource may be offered: it is free, or his import says he owns it. */
 export const isOffered = (resource: string, owned: Owned): boolean => isFreeLogos(resource) || owned.has(resource);
+
+/** The books of `entries` that may be offered (isOffered): the Library lists, counts and ticks no others. */
+export const offeredEntries = <T extends { resource: string }>(entries: readonly T[], owned: Owned): T[] => entries.filter((entry) => isOffered(entry.resource, owned));
 
 /** The Resource ID a Logos address opens: `https://ref.ly/logosres/LLS:GRGLRSRMNRCH?art=…` or `logosres:LLS:GRGLRSRMNRCH;ref=…`; undefined for any other address. */
 export function logosResourceOf(url: string): string | undefined {

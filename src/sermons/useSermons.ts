@@ -8,6 +8,7 @@ import { loadChapter } from '../data/chapter';
 import { passagesOf } from '../data/passage';
 import { ownedResources, shelfOf, type ShelfState } from '../data/repositories';
 import { subscribe } from '../events/bus';
+import { addressOffered } from '../data/owned';
 import { useLogosOn } from '../useLogosOn';
 import { fetchThemeSermons, search, sermonsServiceKnown, type ServiceHit, type ServiceThemeSermon } from '../services/sermons';
 import { activeSources, latestFor, sermonsFor, type SermonPlace, type SermonsFound } from './index';
@@ -100,9 +101,11 @@ export const SEARCH_DEBOUNCE_MS = 300;
 
 export type FoundState = { status: 'idle' | 'searching' | 'failed' } | { status: 'found'; hits: ServiceHit[] };
 
-/** The search of the sheet: `query` is asked 300 ms after it stops changing, by the service alone (`GET /v1/search`); nothing is asked for an empty query or while `enabled` is false. */
+/** The search of the sheet: `query` is asked 300 ms after it stops changing, by the service alone (`GET /v1/search`); nothing is asked for an empty query or while `enabled` is false. A hit whose address opens a Logos resource
+ *  he does not own (src/data/owned.ts addressOffered, mw-qtu3zvz.126) is left out; `searching` stands until his import is read. */
 export function useServiceSearch(query: string, enabled: boolean): FoundState {
   const words = query.trim();
+  const owned = useLiveQuery(ownedResources, []);
   const [state, setState] = useState<{ words: string; answer: FoundState } | undefined>();
   useEffect(() => {
     if (!enabled || words === '') return;
@@ -121,17 +124,23 @@ export function useServiceSearch(query: string, enabled: boolean): FoundState {
       clearTimeout(timer);
     };
   }, [words, enabled]);
-  if (!enabled || words === '') return { status: 'idle' };
-  return state?.words === words ? state.answer : { status: 'searching' };
+  const answer = state?.words === words ? state.answer : undefined;
+  return useMemo((): FoundState => {
+    if (!enabled || words === '') return { status: 'idle' };
+    if (answer === undefined || owned === undefined) return { status: 'searching' };
+    return answer.status === 'found' ? { status: 'found', hits: answer.hits.filter((hit) => hit.url === null || addressOffered(hit.url, owned)) } : answer;
+  }, [enabled, words, answer, owned]);
 }
 
 export type ThemeSermons = { status: 'asking' | 'failed' } | { status: 'found'; rows: ServiceThemeSermon[] };
 
 /**
  * The sermons of each theme the search found (`keys`, '<theme source>:<topic>' each), asked at once when the hits arrive, so Found can leave out a theme with no sermons (mw-qtu3zvz.65) and say how many a theme has.
- * A key not answered yet is `asking`, one that could not be asked `failed`; nothing is asked for none.
+ * A key not answered yet is `asking`, one that could not be asked `failed`; nothing is asked for none. A sermon whose address opens a Logos resource he does not own (src/data/owned.ts addressOffered, mw-qtu3zvz.126) is left out,
+ * and a key stays `asking` until his import is read.
  */
 export function useThemeSermons(keys: readonly string[]): ReadonlyMap<string, ThemeSermons> {
+  const owned = useLiveQuery(ownedResources, []);
   const [answers, setAnswers] = useState<ReadonlyMap<string, ThemeSermons>>(new Map());
   const wanted = keys.join('\n');
   useEffect(() => {
@@ -151,7 +160,17 @@ export function useThemeSermons(keys: readonly string[]): ReadonlyMap<string, Th
       alive = false;
     };
   }, [wanted]);
-  return useMemo(() => new Map(keys.map((key) => [key, answers.get(key) ?? { status: 'asking' as const }])), [wanted, answers]); // eslint-disable-line react-hooks/exhaustive-deps
+  return useMemo(
+    () =>
+      new Map(
+        keys.map((key): [string, ThemeSermons] => {
+          const answer = answers.get(key);
+          if (answer === undefined || owned === undefined) return [key, { status: 'asking' }];
+          return [key, answer.status === 'found' ? { status: 'found', rows: answer.rows.filter((row) => addressOffered(row.url, owned)) } : answer];
+        }),
+      ),
+    [wanted, answers, owned], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 }
 
 /**

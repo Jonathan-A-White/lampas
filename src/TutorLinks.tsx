@@ -6,7 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import type { AnswerLink } from './data/db';
 import { lookupLemma, lookupSeptuagintLemma } from './data/lexicon';
-import { getLogosBibles, getStudyResources, getWorks, setResourceOn, shelfOf } from './data/repositories';
+import { getLogosBibles, getStudyResources, getWorks, setResourceOn, offeredShelfOf } from './data/repositories';
 import { openParadigm, openReader, paradigmHash } from './nav/route';
 import { paradigmById } from './data/paradigms';
 import { holdTalk } from './talkReturn';
@@ -152,7 +152,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
   const chosen = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
   const works = useLiveQuery(getWorks, []);
-  const shelf = useLiveQuery(shelfOf, []);
+  const shelf = useLiveQuery(offeredShelfOf, []);
   const level = useGreekInterest();
   // 'Open web sermons in' (openWeb.ts): the chip follows the choice the Sermons sheet does
   const openWeb = useOpenWebIn();
