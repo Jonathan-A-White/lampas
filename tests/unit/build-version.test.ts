@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { buildVersion, packageVersion, shortCommit } from '../../build-version';
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf-8')) as { version: string };
@@ -64,7 +65,7 @@ describe('packageVersion', () => {
   const dirs: string[] = [];
   afterEach(() => {
     for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
-  });
+  }, HOOK_TIMEOUT_MS);
 
   function checkout(): string {
     const dir = mkdtempSync(join(tmpdir(), 'lampas-version-'));
