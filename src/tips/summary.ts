@@ -113,6 +113,25 @@ export function summarize(facts: Facts, now: number): UsageSummary {
   };
 }
 
+/** The screens as the page shows them: those he opened with how many times (all days), then those he never opened. Reads only the usage rows. */
+export interface ScreensCounted {
+  opened: { id: string; label: string; count: number }[];
+  never: { id: string; label: string }[];
+}
+
+export function screensCounted(usage: readonly UsageRow[]): ScreensCounted {
+  const counts = new Map<string, number>();
+  for (const r of usage) counts.set(r.name, (counts.get(r.name) ?? 0) + r.count);
+  const opened: ScreensCounted['opened'] = [];
+  const never: ScreensCounted['never'] = [];
+  for (const s of SCREENS) {
+    const count = counts.get(`screen:${s.id}`) ?? 0;
+    if (count > 0) opened.push({ id: s.id, label: s.label, count });
+    else never.push({ id: s.id, label: s.label });
+  }
+  return { opened, never };
+}
+
 export async function gatherFacts(): Promise<Facts> {
   const [usage, counts, saved, study] = await Promise.all([listUsage(), usageCounts(), savedSettings(), getStudyResources()]);
   return { usage, counts, saved, studyOn: study.on };
