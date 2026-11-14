@@ -6,8 +6,8 @@ import { TapToHear } from './TapToHear';
 import { announce } from './ui/live';
 import { useSettled } from './ui/settle';
 import { WordPicture } from './WordPicture';
-import { faceOf, GREEK_LANG } from './script/greekLang';
-import { DrillReference } from './markdown/DrillReference';
+import { faceOf } from './script/greekLang';
+import { WordFormLine } from './WordFormLine';
 import { HeartOfWord } from './HeartOfWord';
 import { WordParts } from './WordParts';
 import type { Grade } from './data/schedule';
@@ -62,21 +62,7 @@ export function WordQuestion({ question, index, picked, onPick, onGrade, grade =
             {question.prompt}
           </p>
         </div>
-        <p
-          data-testid={answered && question.form ? 'chapter-form' : undefined}
-          data-form={answered ? question.form : undefined}
-          className="mt-1 min-h-11 text-sm text-muted"
-        >
-          {answered && question.form ? (
-            <>
-              in{' '}
-              <DrillReference reference={question.reference ?? ''} mark={question.form} linked className="inline-flex min-h-11 items-center px-1 text-accent underline underline-offset-4" />{' '}
-              as <span {...(question.lang === 'hbo' ? faceOf('hbo', { greek: '', hebrew: '' }) : GREEK_LANG)}>{question.form}</span>
-            </>
-          ) : (
-            ''
-          )}
-        </p>
+        <WordFormLine question={question} answered={answered} />
       </div>
       <div className="mt-4">
         <TapToHear text={question.prompt} />
