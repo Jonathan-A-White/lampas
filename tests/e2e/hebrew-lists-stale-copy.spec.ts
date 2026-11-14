@@ -3,20 +3,22 @@
 // fetches it once, a #/?word= link by יָרָה opens the sheet of H3384 with no notice, and a chapter the phone kept is still there (DATA_CACHE_VERSION is not raised).
 import { expect, test, type Page } from '@playwright/test';
 import { DATA_CACHE } from '../../src/dataCache';
+import { appReady, WORKER_INSTALL_MS, workerControls, workerReady } from './app-ready';
 import { openUnlocked } from './unlocked';
 
 test.use({ serviceWorkers: 'allow', viewport: { width: 390, height: 844 } });
+// the worker's install is waited for to WORKER_INSTALL_MS, so the test may take that and the rest of its steps
+test.setTimeout(WORKER_INSTALL_MS * 2);
 
 /** The worker is in control of the page, as an installed app's is. */
 async function openWithWorker(page: Page): Promise<void> {
   await openUnlocked(page);
   await page.goto('/');
-  await expect(page.locator('[data-verse]').first()).toBeVisible();
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready;
-  });
+  await appReady(page);
+  await workerReady(page);
   await page.reload();
-  await expect.poll(() => page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
+  await workerControls(page);
+  await appReady(page);
 }
 
 test('a #/?word= link by יָרָה opens the sheet of H3384 on a phone that kept the old Hebrew lexicon, and a kept chapter stays', async ({ page }) => {

@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { appReady } from './app-ready';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
@@ -23,6 +24,7 @@ async function askAbout(page: Page, reply: object) {
   await routePostern(page, fake);
   await openUnlocked(page);
   await page.goto('/');
+  await appReady(page);
   await openTalkAbout(page, 28);
   const sheet = page.getByRole('dialog', { name: 'Talk about Romans 8:28' });
   await (await talkField(sheet)).fill('Where does righteousness come from?');
@@ -76,6 +78,7 @@ test('Listening with Hebrew chosen has a Hebrew speed and voice, one Pronunciati
   await fakeSpeech(page, ['en-US', 'el-GR', 'he-IL']);
   await openUnlocked(page);
   await page.goto('/#/settings');
+  await appReady(page, { content: '[role="group"]' });
   await page.getByRole('group', { name: 'Which languages?', exact: true }).getByRole('button', { name: 'Greek and Hebrew', exact: true }).click();
   await page.getByRole('list', { name: 'Settings groups' }).getByRole('button', { name: /^Listening/ }).click();
   await expect(page.getByRole('heading', { name: 'Listening', exact: true, level: 1 })).toBeVisible();
