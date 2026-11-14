@@ -9,6 +9,16 @@ clock. This note says what the page really EMITS, measured sample by sample, and
 its start or more than 0.05 s after its end, judged at 50 dB under the voice's level. The same file says how far INTO the span its edges can be lost (`inside`): the
 start up to 25 ms late, the end up to 97 ms early. The judge's slop file (`scripts/audio-timings/player-slop.json`) is set from it by the Mayor.
 
+<!-- toc -->
+
+- [How the test hears the page](#how-the-test-hears-the-page)
+- [The numbers (before any change: the player is unchanged)](#the-numbers-before-any-change-the-player-is-unchanged)
+- [Every way the player starts or stops a span (the sweep)](#every-way-the-player-starts-or-stops-a-span-the-sweep)
+- [What was changed in the player, and what was rejected](#what-was-changed-in-the-player-and-what-was-rejected)
+- [Limits](#limits)
+
+<!-- /toc -->
+
 ## How the test hears the page
 
 `tests/e2e/recorded-voice-margin.spec.ts`:
