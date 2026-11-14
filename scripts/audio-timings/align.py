@@ -3,9 +3,10 @@
 
 Fetches each chapter MP3 of a book from the publisher, aligns it to Lampas's MSB verse text (public/data/<book>/<n>.json) with an English wav2vec2 CTC model
 (torchaudio.functional.forced_align), and writes when each verse starts and ends to public/data/audio/msb-david/<book>.json (and the book into index.json).
+Any of the 66 books of BOOKS. A run that stops part way is started again with the same command: a chapter already in the book file is skipped unless --redo.
 The MP3s stay in a scratch folder OUTSIDE the repo (default ~/.cache/lampas-audio-timings/mp3) and are never committed, copied to our server or put under public/.
 
-    python align.py --book jhn [--chapters 3,4] [--scratch <dir>] [--allow-flagged 3:5,7:12]
+    python align.py --book jhn [--chapters 3,4] [--scratch <dir>] [--allow-flagged 3:5,7:12] [--redo]
     python align.py --book jhn --check          # the sanity check: 20 verses decoded back from the audio between their start and end
     python align.py --book jhn --gaps           # the gap pass alone, on the timings already written: no model, no alignment (a minute for John)
 
@@ -73,8 +74,28 @@ CHECK_PASS = 18
 CHECK_SEED = 20261111
 SCRATCH_DEFAULT = Path.home() / '.cache' / 'lampas-audio-timings'
 
-# Lampas's book code -> (the publisher's two-digit book number, its three-letter code): a line of ~/msb-audio/src/data/books.ts. Only John is fetched.
-BOOKS = {'jhn': (43, 'Jhn')}
+# Lampas's book code -> (the publisher's two-digit book number, its three-letter code), the parts of a chapter file's name MSB_<nn>_<Abc>_<ccc>_D.mp3. Read 2026-11-13 from the
+# publisher's own list of the chapter files (https://openbible.com/audio/msb/: 1,189 files, 66 books, each book's chapters as Lampas's) and checked by one HEAD request of
+# chapter 1 of each book (all 66 answered 200 audio/mpeg). Note Titus: the publisher's code is Tts, not Tit. docs/data.md 'The book table'.
+BOOKS = {
+    'gen': (1, 'Gen'), 'exo': (2, 'Exo'), 'lev': (3, 'Lev'), 'num': (4, 'Num'),
+    'deu': (5, 'Deu'), 'jos': (6, 'Jos'), 'jdg': (7, 'Jdg'), 'rut': (8, 'Rut'),
+    '1sa': (9, '1Sa'), '2sa': (10, '2Sa'), '1ki': (11, '1Ki'), '2ki': (12, '2Ki'),
+    '1ch': (13, '1Ch'), '2ch': (14, '2Ch'), 'ezr': (15, 'Ezr'), 'neh': (16, 'Neh'),
+    'est': (17, 'Est'), 'job': (18, 'Job'), 'psa': (19, 'Psa'), 'pro': (20, 'Pro'),
+    'ecc': (21, 'Ecc'), 'sng': (22, 'Sng'), 'isa': (23, 'Isa'), 'jer': (24, 'Jer'),
+    'lam': (25, 'Lam'), 'ezk': (26, 'Ezk'), 'dan': (27, 'Dan'), 'hos': (28, 'Hos'),
+    'jol': (29, 'Jol'), 'amo': (30, 'Amo'), 'oba': (31, 'Oba'), 'jon': (32, 'Jon'),
+    'mic': (33, 'Mic'), 'nam': (34, 'Nam'), 'hab': (35, 'Hab'), 'zep': (36, 'Zep'),
+    'hag': (37, 'Hag'), 'zec': (38, 'Zec'), 'mal': (39, 'Mal'), 'mat': (40, 'Mat'),
+    'mrk': (41, 'Mrk'), 'luk': (42, 'Luk'), 'jhn': (43, 'Jhn'), 'act': (44, 'Act'),
+    'rom': (45, 'Rom'), '1co': (46, '1Co'), '2co': (47, '2Co'), 'gal': (48, 'Gal'),
+    'eph': (49, 'Eph'), 'php': (50, 'Php'), 'col': (51, 'Col'), '1th': (52, '1Th'),
+    '2th': (53, '2Th'), '1ti': (54, '1Ti'), '2ti': (55, '2Ti'), 'tit': (56, 'Tts'),
+    'phm': (57, 'Phm'), 'heb': (58, 'Heb'), 'jas': (59, 'Jas'), '1pe': (60, '1Pe'),
+    '2pe': (61, '2Pe'), '1jn': (62, '1Jn'), '2jn': (63, '2Jn'), '3jn': (64, '3Jn'),
+    'jud': (65, 'Jud'), 'rev': (66, 'Rev'),
+}
 
 # Punctuation a verse's text may carry, dropped without a word. Any other character that is not a letter is printed.
 KNOWN_PUNCTUATION = set('.,;:!?"“”„‘’\'()[]{}—–-…')
@@ -140,15 +161,67 @@ def words_of(text: str) -> tuple[list[str], list[str]]:
     return words, unconverted
 
 
+SOF_PASUQ = '\u05c3'  # the mark that ends a Hebrew verse, at the end of the last Hebrew word of it
+
+
+def title_chunks(book: str, verses: list[dict]) -> int:
+    """How many of the leading English chunks of the chapter's first verse are a Psalm's title (its superscription), as stored in public/data/psa/<n>.json.
+
+    The text holds the title INSIDE verse 1 (English numbering: 'A Psalm of David, when he fled from his son Absalom.' then 'O LORD, how my foes have increased!'),
+    with the section heading in `h`, so nothing marks where the title ends. The Hebrew words `g` do: the Hebrew Psalm has one verse more than the English for a title of one
+    verse (Psalm 3) and two more for a title of two (Psalm 51), each Hebrew verse ending in a sof pasuq. The title is the chunks whose Hebrew words lie in those first
+    verses. Only Psalms (no other book keeps a title in a verse's text); 62 of the 150 have one."""
+    if book != 'psa' or not verses:
+        return 0
+    hebrew = sum(SOF_PASUQ in w['t'] for v in verses for w in v['g'])
+    extra = hebrew - len(verses)
+    if extra <= 0:
+        return 0
+    last, seen = None, 0
+    for i, w in enumerate(verses[0]['g']):
+        if SOF_PASUQ in w['t']:
+            seen += 1
+            if seen == extra:
+                last = i
+                break
+    if last is None:
+        return 0
+    chunks = 0
+    for chunk in verses[0]['e']:
+        if any(i > last for i in chunk.get('g', [])):
+            break
+        chunks += 1
+    return chunks if chunks < len(verses[0]['e']) else 0  # a title with no verse after it is not a title
+
+
 def chapter_text(book: str, chapter: int) -> list[dict]:
-    """The verses of public/data/<book>/<chapter>.json: {n, heading, words, unconverted}."""
+    """The verses of public/data/<book>/<chapter>.json: {n, heading, words, unconverted, text, title_words}. `title_words` is how many of the first words of
+    the chapter's first verse are a Psalm's title (0 for any other verse): they stay in `words`, because the narrator reads the title as the start of verse 1."""
     data = json.loads((REPO / 'public' / 'data' / book / f'{chapter}.json').read_text(encoding='utf8'))
+    titled = title_chunks(book, data['verses'])
     verses = []
-    for v in data['verses']:
+    for k, v in enumerate(data['verses']):
         text = ' '.join(chunk['t'] for chunk in v['e'])
         words, unconverted = words_of(text)
-        verses.append({'n': v['n'], 'heading': bool(v.get('h')), 'words': words, 'unconverted': unconverted, 'text': text})
+        title_words = len(words_of(' '.join(chunk['t'] for chunk in v['e'][:titled]))[0]) if k == 0 and titled else 0
+        verses.append({'n': v['n'], 'heading': bool(v.get('h')), 'words': words, 'unconverted': unconverted, 'text': text, 'title_words': title_words})
     return verses
+
+
+def build_items(verses: list[dict], skip_title: bool = False) -> list[dict]:
+    """The sequence the aligner is given: a wildcard (the narrator's 'Audio Bible, Psalm three'), then each verse's words, with a wildcard before a verse that has a heading
+    (read or not) and one after the last verse. A Psalm's title is read as the start of verse 1 (the title's words are aligned and verse 1 begins at its first word); under
+    `skip_title` (the retry of a Psalm whose first try failed its checks, because the narrator did not read the title) the title is treated like a heading instead: the
+    opening wildcard takes it and verse 1 begins at the first word after it."""
+    items: list[dict] = [{'star': True}]
+    for v in verses:
+        if v['heading'] and v['n'] != verses[0]['n']:
+            items.append({'star': True})  # a section heading read before this verse
+        words = v['words'][v['title_words']:] if skip_title else v['words']
+        for i, w in enumerate(words):
+            items.append({'word': w, 'verse': v['n'], 'first': i == 0, 'last': i == len(words) - 1})
+    items.append({'star': True})  # a closing line
+    return items
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -402,7 +475,7 @@ def settle_ends(wave, triples: list[list]) -> tuple[list[list], list[list], list
 # One chapter
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[tuple[int, int]]) -> dict:
+def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[tuple[int, int]], skip_title: bool = False) -> dict:
     """Times one chapter. Gives {'ok', 'line', 'timings', 'problems'}."""
     verses = chapter_text(book, chapter)
     for v in verses:
@@ -411,13 +484,7 @@ def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[t
     wave = decode(mp3)
     duration = len(wave) / SAMPLE_RATE
     emission = model.emissions(wave)
-    items: list[dict] = [{'star': True}]  # the narrator's title before verse 1
-    for v in verses:
-        if v['heading'] and v['n'] != verses[0]['n']:
-            items.append({'star': True})  # a section heading read before this verse
-        for i, w in enumerate(v['words']):
-            items.append({'word': w, 'verse': v['n'], 'first': i == 0, 'last': i == len(v['words']) - 1})
-    items.append({'star': True})  # a closing line
+    items = build_items(verses, skip_title)
     frames = model.align(emission, items)
     seconds = lambda frame: frame * STRIDE / SAMPLE_RATE  # noqa: E731
     starts: dict[int, float] = {}
@@ -449,7 +516,7 @@ def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[t
         if end <= start:
             problems.append(f'verse {v["n"]}: start {start} is not before end {end}')
             continue
-        spw = (end - start) / len(v['words'])
+        spw = (end - start) / (len(v['words']) - (v['title_words'] if skip_title else 0))
         low = spw if low is None else min(low, spw)
         high = spw if high is None else max(high, spw)
         if (spw < SPW_MIN or spw > SPW_MAX) and (chapter, v['n']) not in allow:
@@ -461,7 +528,8 @@ def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[t
     lead = triples[0][1] if triples else float('nan')
     tail = duration - triples[-1][2] if triples else float('nan')
     line = (f'chapter {chapter:2d}: verses in text {len(verses):3d}, timed {len(triples):3d}, duration {duration:7.2f} s, before verse 1 {lead:6.2f} s, '
-            f'after last verse {tail:6.2f} s, s/word min {low if low is not None else float("nan"):.2f} max {high if high is not None else float("nan"):.2f}')
+            f'after last verse {tail:6.2f} s, s/word min {low if low is not None else float("nan"):.2f} max {high if high is not None else float("nan"):.2f}'
+            + (f', Psalm title {verses[0]["title_words"]} words {"NOT read: left to the opening wildcard" if skip_title else "read as the start of verse 1"}' if verses and verses[0]['title_words'] else ''))
     if len(triples) != len(verses):
         problems.append(f'verses timed {len(triples)} of {len(verses)}')
     return {'ok': not problems, 'line': line, 'problems': problems, 'quiet': quiet, 'timings': {'audio': audio_url(book, chapter), 'duration': round(duration, 2), 'verses': triples}}
@@ -607,6 +675,7 @@ def main() -> int:
     parser.add_argument('--chapters', help='comma-separated chapter numbers (default: every chapter of the book in public/data)')
     parser.add_argument('--scratch', type=Path, default=SCRATCH_DEFAULT, help='the folder of the venv, the MP3s and the weights, outside the repo')
     parser.add_argument('--allow-flagged', default='', help='chapter:verse,... whose seconds-a-word outside 0.12-1.5 has been looked at and explained')
+    parser.add_argument('--redo', action='store_true', help='align the chapters already in the book file again (default: a run that stopped part way is started again and skips them)')
     parser.add_argument('--check', action='store_true', help='run the sanity check on the written timings instead of aligning')
     parser.add_argument('--gaps', action='store_true', help="run the gap pass alone on the written timings: each verse's end by the recording's energy, nothing aligned again")
     args = parser.parse_args()
@@ -624,13 +693,21 @@ def main() -> int:
         book_dir = REPO / 'public' / 'data' / args.book
         chapters = [int(c) for c in args.chapters.split(',')] if args.chapters else sorted(int(p.stem) for p in book_dir.glob('*.json'))
         allow = {tuple(int(x) for x in pair.split(':')) for pair in args.allow_flagged.split(',') if pair}
-        model = Model(scratch)
+        done = set() if args.redo else {int(k) for k in read_json(out_dir() / f'{args.book}.json', {'chapters': {}})['chapters']}
+        todo = [c for c in chapters if c not in done]
+        if len(todo) != len(chapters):
+            log(f'skipped, already in {args.book}.json (--redo aligns them again): {[c for c in chapters if c in done]}')
+        model = Model(scratch) if todo else None
         lines = []
         left_out = []
-        for chapter in chapters:
+        for chapter in todo:
             mp3 = fetcher.get(audio_url(args.book, chapter), scratch / 'mp3' / Path(audio_url(args.book, chapter)).name)
             t0 = time.monotonic()
             result = align_chapter(model, args.book, chapter, mp3, allow)
+            if not result['ok'] and chapter_text(args.book, chapter)[0]['title_words']:
+                log(result['line'] + f'  [{time.monotonic() - t0:.0f} s]')
+                log(f'  chapter {chapter} did not pass with its Psalm title read as verse 1: {result["problems"]}; trying again with the title left to the opening wildcard')
+                result = align_chapter(model, args.book, chapter, mp3, allow, skip_title=True)
             log(result['line'] + f'  [{time.monotonic() - t0:.0f} s]')
             lines.append(result['line'])
             if result['ok']:
