@@ -2,6 +2,24 @@
 
 `scripts/audio-timings/judge.py` (mw-ar5k42b.1) hears every verse of a book the way David's player would play it and reports anything extra or missing at each edge. It is a tool: nothing of it ships in the app, it is not in the gate, and it changes no timings. The timing maker (`align.py`, docs/data.md 'The timing maker') places the cuts; the judge only says whether they are right.
 
+<!-- toc -->
+
+- [The one command](#the-one-command)
+- [What it reads, and what it never reads](#what-it-reads-and-what-it-never-reads)
+- [The clip is what he could hear, at worst](#the-clip-is-what-he-could-hear-at-worst)
+- [What it hears, and how](#what-it-hears-and-how)
+- [The report](#the-report)
+- [The judge is judged](#the-judge-is-judged)
+- [The known faults (AC 2)](#the-known-faults-ac-2)
+- [John today](#john-today)
+- [What was tried and dropped](#what-was-tried-and-dropped)
+- [Time zero, measured against Chromium](#time-zero-measured-against-chromium)
+- [What it costs](#what-it-costs)
+- [The models](#the-models)
+- [What a later story must know about the recording](#what-a-later-story-must-know-about-the-recording)
+
+<!-- /toc -->
+
 ## The one command
 
 ```bash
