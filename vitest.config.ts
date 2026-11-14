@@ -1,12 +1,11 @@
 import { configDefaults, defineConfig } from 'vitest/config';
 import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { timingFilter, vitestTimeouts } from 'pwa-kit/test-preset';
-import { buildVersion, shortCommit } from './build-version';
+import { buildVersion, packageVersion, shortCommit } from './build-version';
 
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
+const version = packageVersion();
 
 // A grinds/ .md file is text the tests read by path, which `vitest related` cannot follow; read as a module it is the file's text,
 // so a test can import it and `vitest related <that file>` selects the test (mw-5r3p30.860; a ?raw import never does, since vitest
@@ -25,9 +24,9 @@ export default defineConfig({
   // vite-plugin-pwa makes this module only in a real build: src/main.tsx imports it, and tests/unit/main-first-paint.test.ts boots main.
   resolve: { alias: { 'virtual:pwa-register': fileURLToPath(new URL('./tests/support/pwa-register.ts', import.meta.url)) } },
   define: {
-    __APP_VERSION__: JSON.stringify(buildVersion(pkg.version, new Date(), shortCommit())),
+    __APP_VERSION__: JSON.stringify(buildVersion(version, new Date(), shortCommit())),
     // The plain version number (what changelog.json's versions are compared with), without the build's time and commit.
-    __APP_SEMVER__: JSON.stringify(pkg.version),
+    __APP_SEMVER__: JSON.stringify(version),
   },
   test: {
     globals: true,
