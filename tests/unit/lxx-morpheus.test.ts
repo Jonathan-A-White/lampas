@@ -618,6 +618,17 @@ describe('Morpheus’s perfects, and Morpheus asked about a form with one thin c
       expect(weighMorpheus([rule('ἐξαρτάω', 'V-IAI-3S')], { analyses: [m('ἐξαίρω', 'V-RPI-3S'), m('ἐξαίρω', 'V-FPI-3S')], unmapped: 0 })!.note).toBe(NOTE_MORPHEUS_BESIDE);
     });
 
+    it('lists Morpheus’s readings before a lone candidate of analogy, which is a guess at a stem where Morpheus’s is a lexicon’s analysis of the form (δύνησθε: V-PNS-2P first, not the aorist V-2ADS-2P by analogy)', () => {
+      const guess = rule('δύναμαι', 'V-2ADS-2P', { support: 3, analogy: true, stemSupport: undefined });
+      const got = weighMorpheus([guess], { analyses: [m('δύναμαι', 'V-PNS-2P'), m('δύω', 'V-PMS-2P')], unmapped: 0 })!;
+      expect(got.note).toBe(NOTE_MORPHEUS_BESIDE);
+      expect(shown(got.candidates)).toEqual(['δύναμαι V-PNS-2P/morpheus+', 'δύω V-PMS-2P/morpheus+', 'δύναμαι V-2ADS-2P']);
+      // the guess stays the word's own reading and the only one: the word is still a thin lone one for the agreement check and the address rule
+      expect(isThinLone(got.candidates)).toBe(true);
+      // an ending rule's candidate keeps its place first
+      expect(shown(weighMorpheus([rule('γίνομαι', 'V-AMI-3S')], { analyses: [m('γίγνομαι', 'V-AMI-3S')], unmapped: 0 })!.candidates)).toEqual(['γίνομαι V-AMI-3S', 'γίγνομαι V-AMI-3S/morpheus+']);
+    });
+
     it('puts Morpheus’s readings beside the rule’s when it left a reading out, or shares the rule’s lemma (a spelling it writes otherwise) or its parsing', () => {
       const lone = [rule('γίνομαι', 'V-AMI-3S')];
       for (const form of [
@@ -792,6 +803,13 @@ describe('what the listing lacked (mw-u2w5klk.287): the readings of the Psalms b
       expect(shown(got[0])).toEqual(['ταλαίπωρος A-NSM', 'ταλαίπωρος A-NSF/morpheus+']);
       expect(shown(got[1])).toEqual(['ἐγκαταλείπω V-PAS-2S', 'ἐγκαταλείπω V-RAS-2S', 'ἐγκαταλείπω V-2AAS-2S/morpheus+']);
       expect(shown(got[2])).toEqual(['διαίρεσις N-NPF', 'διαίρεσις N-APF/morpheus+', 'διαίρεσις N-VPF/morpheus+']);
+      expect(got[0].notes).toContain(NOTE_COMPLETED);
+    });
+
+    it('lists Morpheus’s readings before candidates that are all analogy’s guesses (φείσησθε, Gen 45:20), after the ending rules’ (ἐγκαταλίπῃς above)', () => {
+      const outs = [pend('a', [cand('φείδομαι', 'V-AMS-2P', { support: 1, analogy: true })])];
+      const got = completeReadings(outs, forms({ a: 'φείσησθε' }), cache({ φείσησθε: [m('φείδομαι', 'V-ADS-2P')] }));
+      expect(shown(got[0])).toEqual(['φείδομαι V-ADS-2P/morpheus+', 'φείδομαι V-AMS-2P']);
       expect(got[0].notes).toContain(NOTE_COMPLETED);
     });
 

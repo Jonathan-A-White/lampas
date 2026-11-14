@@ -210,7 +210,12 @@ export function weighMorpheus(rules: readonly WordCandidate[], known: MorpheusFo
   if (known.unmapped === 0 && !kin && known.analyses.every((m) => /^V-2?R/.test(m.code))) {
     return { candidates: more.map((c) => ({ ...c, replaces: true as const })), note: NOTE_MORPHEUS_OVER, kept: false };
   }
-  return { candidates: [...rules, ...more.map((c) => ({ ...c, beside: true as const }))], note: NOTE_MORPHEUS_BESIDE, kept: true };
+  const beside = more.map((c) => ({ ...c, beside: true as const }));
+  // an analogy candidate is a guess at a stem, Morpheus's a lexicon's analysis of the form itself: Morpheus's readings are listed first (δύνησθε: δύναμαι V-PNS-2P before the
+  // aorist V-2ADS-2P by analogy, Jos 24:19; story mw-u2w5klk.371). They stay `beside`, the guess the word's own reading, so isThinLone and the agreement check read what they read before.
+  // An ending rule's candidate keeps its place first.
+  if (own.some((c) => c.analogy)) return { candidates: [...beside, ...rules], note: NOTE_MORPHEUS_BESIDE, kept: true };
+  return { candidates: [...rules, ...beside], note: NOTE_MORPHEUS_BESIDE, kept: true };
 }
 
 export const isDerived = (w: DerivedWord | PendingWord): w is DerivedWord => 'layer' in w;

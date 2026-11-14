@@ -105,11 +105,15 @@ export function completeReadings(outs: readonly Out[], formOf: (ref: string) => 
       const lemmas = new Set(word.candidates.map((c) => bareOf(c.lemma)));
       // Morpheus lists a contraction TBESG lists as a headword of its own (ᾠδός for ἀοιδός) too: no more a reading here than in the rules' candidates
       const contraction = (lemma: string): boolean => parser?.lexicon.get(bareOf(lemma))?.some((e) => e.lemma === lemma && e.contracted) === true && !parser.ntPos.has(lemma);
+      const added: WordCandidate[] = [];
       for (const m of known.analyses) {
         if (!unshown && !lemmas.has(bareOf(m.lemma))) continue;
         if (contraction(m.lemma)) continue;
-        if (!candidates.some((c) => bareOf(c.lemma) === bareOf(m.lemma) && c.morph === m.code)) candidates.push(beside(m.lemma, m.code, VIA_MORPHEUS, 'morpheus'));
+        if (!candidates.some((c) => bareOf(c.lemma) === bareOf(m.lemma) && c.morph === m.code)) added.push(beside(m.lemma, m.code, VIA_MORPHEUS, 'morpheus'));
       }
+      // candidates that are all analogy's are a guess at a stem, Morpheus's a lexicon's analysis of the form itself: his readings come first (story mw-u2w5klk.371; weighMorpheus does the same)
+      if (added.length && candidates.every((c) => c.analogy)) candidates.unshift(...added);
+      else candidates.push(...added);
     }
     for (const c of [...candidates]) {
       const cng = cngOf(c.morph);
