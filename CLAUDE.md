@@ -44,8 +44,8 @@ npm run e2e:live     # live tests against the DEPLOYED app; not in the gate (doc
 npm run grind:build  # after adding a setting to the registry; a second run changes nothing (docs/commands.md)
 npm run ladder:docs  # writes the ladder table of docs/grammar.md, rows of docs/card-audit.md
 npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from a Logos export; logos:fit prints the rest (docs/commands.md)
-npm run numerals:sweep  # writes docs/numeral-sweep.md: each numeral phrase's sum against its English (docs/layout/word-sheet.md)
-npm run split:sweep  # writes docs/split-pairing-sweep.md: the dock's Septuagint pairing, unpaired verses both ways
+npm run numerals:sweep  # writes docs/numeral-sweep.md: each numeral phrase's sum against its English
+npm run split:sweep  # writes docs/split-pairing-sweep.md: Septuagint verses unpaired
 npm run offline:sizes  # Keep on this phone: each chip's MB against a real dist/ (after lxx:ship; docs/data.md)
 npm run data:build   # also check:step, greek:edition, ladder, fixture:chapter: data tools, not in the gate
 ```
@@ -146,6 +146,7 @@ docs/ask-tutor.md # the tutor: what it is told, offers, bridge, profile, memory,
 docs/verse-view.md # the Verse view: actions, passages, Listen, Quiz me, study way
 docs/tutor-doors.md # every in-page tutor button audited against the floating ?: what each sends
 docs/read-aloud.md # read aloud: the span, speaking bar, the tutor's responses, pages of prose
+docs/audio-player-margin.md # David's player's margin, measured
 docs/reading-ladder.md # verses scored by pronunciation difficulty, drills
 docs/grammar.md # the grammar ladder, placement, Drill it, idea sheet, Goal screen
 docs/frontier.md # the frontier picker, the pace and the teach sheet for new words
