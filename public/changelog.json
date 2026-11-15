@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.253",
+    "date": "2026-11-15",
+    "story": "mw-ar5k42b.3",
+    "kind": "fixed",
+    "text": "In David's voice every verse of John and Genesis now starts on its first word and ends on its last; John 2:9 no longer ends with 'and s'."
+  },
+  {
+    "version": "0.7.253",
+    "date": "2026-11-15",
+    "story": "mw-qtu3zvz.149",
+    "kind": "fixed",
+    "text": "the count of sources that are on now sits on the same line as the title on the Sermon sources page, instead of dropping under it."
+  },
+  {
     "version": "0.7.252",
     "date": "2026-11-15",
     "story": "mw-rl10piw.5",

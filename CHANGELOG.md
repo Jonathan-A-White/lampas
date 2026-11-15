@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.253
+_2026-11-15_
+- Fixed: In David's voice every verse of John and Genesis now starts on its first word and ends on its last; John 2:9 no longer ends with 'and s'.
+- Fixed: the count of sources that are on now sits on the same line as the title on the Sermon sources page, instead of dropping under it.
+
 ## 0.7.252
 _2026-11-15_
 - New: Hands-free, a switch in Settings (Off to start) that a tap with three fingers anywhere also turns on and off, says so aloud, and shows a small microphone mark while it is on.
