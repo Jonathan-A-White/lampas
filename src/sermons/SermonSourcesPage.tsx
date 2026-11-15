@@ -79,6 +79,7 @@ export function SermonSourcesPage({ at }: { at?: string }) {
       <ScreenHeader
         title={SOURCES_TITLE}
         back={<HeaderButton onClick={backToStudyResources}>‹ Study resources</HeaderButton>}
+        slimAction
         action={
           <span data-testid="sources-status" className="chrome-small text-muted">
             {list ? onLine(on) : ''}

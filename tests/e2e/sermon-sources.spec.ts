@@ -137,6 +137,10 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
   await expect(field).not.toBeFocused();
   await expect(page.getByTestId('sources-status')).toHaveText(`${on} on`);
   await expect(page.getByTestId('sources-line')).toHaveText(`${on} of ${TOTAL} on`);
+  // the header is one row: the back button, the title and the count share one row, their middles within 4 px (a box's top differs with its height) (the count does not drop to a second line, mw-qtu3zvz.149)
+  const boxes = await Promise.all([page.getByRole('button', { name: '‹ Study resources', exact: true }), page.getByRole('heading', { name: 'Sermon sources', level: 1 }), page.getByTestId('sources-status')].map((it) => it.boundingBox()));
+  const tops = boxes.map((box) => (box ? box.y + box.height / 2 : NaN));
+  expect(Math.max(...tops) - Math.min(...tops), `the header's middles are ${tops.join(', ')}`).toBeLessThanOrEqual(4);
   await expect(page.getByText('The Sermons door at a verse draws on the sources that are on.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'All on', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'All off', exact: true })).toBeVisible();
