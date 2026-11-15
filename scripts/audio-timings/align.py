@@ -957,6 +957,19 @@ def edit_distance(a: str, b: str) -> int:
     return row[-1]
 
 
+# A proper name the model spells as it knows it, not as the text does: the text's word -> the spellings the model may give it, each a name's own other spelling and
+# so far from the text's by more than one letter (mw-zbgo4ep.37: Genesis 24:51, 'rebekah' heard as 'rebecca', an edit distance of 3). A name is added here only when
+# a FAIL line of --check shows the model hearing the right name; a misheard word is never added.
+HEARD_AS = {
+    'rebekah': {'rebecca'},
+}
+
+
+def heard_as_written(heard: str, written: str) -> bool:
+    """--check's test of one end of a verse: the word the model heard is the text's word, to one letter, or a name's other spelling the model knows."""
+    return bool(heard) and (edit_distance(heard, written) <= 1 or heard in HEARD_AS.get(written, ()))
+
+
 def run_check(book: str, scratch: Path, fetcher: Fetcher) -> bool:
     """For CHECK_VERSES verses spread over the book by a fixed seed: the audio between a verse's start and end, decoded greedily, begins with its first word and ends with its last."""
     data = read_json(out_dir() / f'{book}.json', None)
@@ -977,7 +990,7 @@ def run_check(book: str, scratch: Path, fetcher: Fetcher) -> bool:
         _, start, end = next(t for t in data['chapters'][str(chapter)]['verses'] if t[0] == n)
         heard = model.greedy(cache[chapter][int(start * SAMPLE_RATE):int(end * SAMPLE_RATE)])
         first, last = verse['words'][0], verse['words'][-1]
-        ok = bool(heard) and edit_distance(heard[0], first) <= 1 and edit_distance(heard[-1], last) <= 1
+        ok = bool(heard) and heard_as_written(heard[0], first) and heard_as_written(heard[-1], last)
         passed += ok
         log(f'{chapter:2d}:{n:<3d} {start:8.2f} {end:7.2f}   {first:>10s} ({heard[0] if heard else "-":<10s}) {last:>10s} ({heard[-1] if heard else "-":<10s}) {"ok" if ok else "FAIL"}')
     log(f'sanity check: {passed} of {len(chosen)} (needs {CHECK_PASS})')
