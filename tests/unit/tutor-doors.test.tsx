@@ -22,6 +22,12 @@ import { stubRecognizer } from '../support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../support/fake-postern';
 import { seedHisWords } from '../support/his-words';
 
+const startupRuns = vi.hoisted((): Promise<void>[] => []);
+vi.mock('../../src/data/startupWrites', async (original) => {
+  const real = await original<typeof import('../../src/data/startupWrites')>();
+  return { ...real, startBackgroundWrites: () => { const run = real.startBackgroundWrites(); startupRuns.push(run); return run; } };
+});
+
 const PHONE_KEY = '00'.repeat(31) + '02';
 const ASK = 'send this to the makers: test';
 const OFFER = 'Send this to the makers';
@@ -36,7 +42,11 @@ const OFFERING_ANSWER = {
   feedback_offer: { summary: 'He wants to send a test to the makers.' },
 };
 
-afterAll(() => db.close());
+// The App's first-open seeding (src/data/startupWrites.ts) is still writing when the last test ends: afterAll waits for every run it started and only then closes the database.
+afterAll(async () => {
+  await Promise.allSettled(startupRuns);
+  db.close();
+});
 afterEach(() => {
   cleanup();
   stopReading();
