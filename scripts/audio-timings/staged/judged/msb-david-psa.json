@@ -1,0 +1,27 @@
+{
+ "v":1,
+ "judge":"1",
+ "edition":"msb-david",
+ "book":"psa",
+ "timings":{"file":"public/data/audio/msb-david/psa.json","sha256":"57c02075a334e5a414b310cec91e5525a89b0dd87cb489672e832f0592e6971f"},
+ "slop":{"lead":0.05,"tail":0.05},
+ "tolerance":0.02,
+ "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
+ "summary":{"verses":10,"ok":6,"flagged":4,"flags":{"head-extra":1,"head-clipped":2,"tail-extra":1,"tail-clipped":2,"text-differs":0}},
+ "chapters":{
+  "3":{"announcement":"ODYOUR BIBLE PSALM THREE","between":[],"closing":"","speech":-16.1,"verses":[
+   {"n":1,"verdict":"ok","sound":[2.58,4.975,13.69,14.31]},
+   {"n":2,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":2.7,"heard":{"extra":"B","next":"BUT","letters":"M CELAB","words":"will not deliver him"}},{"kind":"tail-clipped","by":0.06,"readsOn":true,"level":-0.4,"heard":{"letters":"HIM SELL UP","words":"will not deliver him"}}],"sound":[13.69,14.31,18.18,18.18]},
+   {"n":3,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":-0.4,"heard":{"before":"SELLAH","letters":"BUT YOU O LORD ARE","words":"but you o lord"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":2.7,"heard":{"lost":"B","letters":"BUT YOU O LORD ARE","words":"but you o lord"}}],"sound":[18.18,18.18,23.825,24.815]},
+   {"n":4,"verdict":"flagged","flags":[{"kind":"tail-clipped","by":0.105,"ear":"quiet","heard":{"letters":"TON SAILOR","words":"from his holy mountain"}}],"sound":[23.825,24.815,28.825,29.48]},
+   {"n":5,"verdict":"flagged","flags":[{"kind":"head-clipped","by":0.51,"level":10.5,"heard":{"lost":"SAILOR","letters":"I LIE DOWN AND SLEEP","words":"i lie down and"}}],"sound":[28.825,29.48,34.25,34.825]},
+   {"n":6,"verdict":"ok","sound":[34.25,34.825,37.875,38.255]},
+   {"n":7,"verdict":"ok","sound":[37.875,38.255,46.15,46.63]},
+   {"n":8,"verdict":"ok","sound":[46.15,46.63,52.17,null]}
+  ]},
+  "117":{"announcement":"AUDIO BIBLE PSALM ONE HUNDRED SEVENTEEN","between":[],"closing":"","speech":-14.9,"verses":[
+   {"n":1,"verdict":"ok","sound":[4.965,7.43,12.665,13.29]},
+   {"n":2,"verdict":"ok","sound":[12.665,13.29,20.48,null]}
+  ]}
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "v":1,"edition":"msb-david","book":"psa","slop":{"lead":0.05,"tail":0.05},
+ "verses":[
+  {"verse":"3:2","edge":"tail","reason":"the narrator reads on into verse 3: no quiet between 'selah' and 'but'; cut at the quietest instant between them","room":0.0,"cut":18.17,"judge":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":2.7,"heard":{"extra":"B","next":"BUT","letters":"M CELAB","words":"will not deliver him"}},{"kind":"tail-clipped","by":0.06,"readsOn":true,"level":-0.4,"heard":{"letters":"HIM SELL UP","words":"will not deliver him"}}]},
+  {"verse":"3:3","edge":"head","reason":"the narrator reads on from verse 2: no quiet between 'selah' and 'but'; cut at the quietest instant between them","room":0.0,"cut":18.17,"judge":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":-0.4,"heard":{"before":"SELLAH","letters":"BUT YOU O LORD ARE","words":"but you o lord"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":2.7,"heard":{"lost":"B","letters":"BUT YOU O LORD ARE","words":"but you o lord"}}]},
+  {"verse":"3:4","edge":"tail","reason":"the narrator reads on into verse 5: no quiet between 'selah' and 'i'; cut at the quietest instant between them","room":0.0,"cut":29.94,"judge":[{"kind":"tail-clipped","by":0.105,"ear":"quiet","heard":{"letters":"TON SAILOR","words":"from his holy mountain"}}]},
+  {"verse":"3:5","edge":"head","reason":"the narrator reads on from verse 4: no quiet between 'selah' and 'i'; cut at the quietest instant between them","room":0.0,"cut":29.94,"judge":[{"kind":"head-clipped","by":0.51,"level":10.5,"heard":{"lost":"SAILOR","letters":"I LIE DOWN AND SLEEP","words":"i lie down and"}}]}
+ ]
+}

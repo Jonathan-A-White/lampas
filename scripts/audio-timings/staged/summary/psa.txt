@@ -1,0 +1,2 @@
+psa: 2 chapters, 10 verses, 0 flags outside the listen list, listen list 4 edges of 4 verses, 1.0 wall minutes
+  (maker 41 s, judge 19 s, listen 0 s; cores used 3.0; outside the list: none)
