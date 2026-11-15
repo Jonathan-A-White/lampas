@@ -39,7 +39,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import random
 import re
 import subprocess
@@ -649,9 +648,12 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
             ends[before], tight = place_end(died, None if first is level.to_end else first[1], tail, duration)
             if tight:
                 room = first[1] - first[0]
-                what = (f"the recording ends {room} ms after '{word(before, -1)}'" if first is level.to_end
-                        else f"a quiet of {room} ms between '{word(before, -1)}' and " + (f"'{word(after, 0)}'" if first is last and at < count else 'what is spoken next'))
-                listed(before, 'tail', f'{what}: less than the {2 * tail} ms the player\'s margin needs; cut in its middle', room, ends[before])
+                if first is level.to_end:
+                    reason = f"the recording ends {room} ms after '{word(before, -1)}': less than the {tail} ms the player's margin needs; the end is the file's"
+                else:
+                    reason = (f"a quiet of {room} ms between '{word(before, -1)}' and " + (f"'{word(after, 0)}'" if first is last and at < count else 'what is spoken next')
+                              + f": less than the {2 * tail} ms the player's margin needs; cut in its middle")
+                listed(before, 'tail', reason, room, ends[before])
         if at < count:
             starts[after], tight = place_start(None if last is level.from_start else last[0], onset, lead)
             if tight:
