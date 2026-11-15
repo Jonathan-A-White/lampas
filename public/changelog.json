@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.254",
+    "date": "2026-11-15",
+    "story": "mw-rl10piw.6",
+    "kind": "new",
+    "text": "Say 'Hey Lampas' with Hands-free on, then 'play' or 'pause', and the Bible reading starts, stops or goes on without a touch."
+  },
+  {
+    "version": "0.7.254",
+    "date": "2026-11-15",
+    "story": "mw-zbgo4ep.38",
+    "kind": "fixed",
+    "text": "Genesis now plays in David's voice instead of the phone voice."
+  },
+  {
+    "version": "0.7.254",
+    "date": "2026-11-15",
+    "story": "mw-fnvjof.17.116",
+    "kind": "fixed",
+    "text": "in a narrow or short split-screen window the Reader's chips row now scrolls sideways inside the window instead of running off its edge."
+  },
+  {
+    "version": "0.7.254",
+    "date": "2026-11-15",
+    "story": "mw-qtu3zvz.153",
+    "kind": "fixed",
+    "text": "In a copied or dictated page, a short word like ἡ or ὁ is no longer marked wrong when the tutor only mistook its breathing mark for an accent."
+  },
+  {
     "version": "0.7.253",
     "date": "2026-11-15",
     "story": "mw-ar5k42b.3",

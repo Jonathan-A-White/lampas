@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.254
+_2026-11-15_
+- New: Say 'Hey Lampas' with Hands-free on, then 'play' or 'pause', and the Bible reading starts, stops or goes on without a touch.
+- Fixed: Genesis now plays in David's voice instead of the phone voice.
+- Fixed: in a narrow or short split-screen window the Reader's chips row now scrolls sideways inside the window instead of running off its edge.
+- Fixed: In a copied or dictated page, a short word like ἡ or ὁ is no longer marked wrong when the tutor only mistook its breathing mark for an accent.
+
 ## 0.7.253
 _2026-11-15_
 - Fixed: In David's voice every verse of John and Genesis now starts on its first word and ends on its last; John 2:9 no longer ends with 'and s'.
