@@ -3,6 +3,7 @@
 // lookup is refused, so the check falls back to that memory. openUnlocked is a licensed phone; openUnlicensed is one with
 // no licence (Lampas opens for it all the same, mw-8m9dyu.1).
 import type { Page } from '@playwright/test';
+import { giveHisLibrary } from './his-library';
 import { giveHisWords } from './his-words';
 
 /** The private key 1 and its public key: the well-known generator point. */
@@ -35,8 +36,9 @@ async function dismissScreenHints(page: Page): Promise<void> {
 
 /** Past the gate: the seeded key, remembered as holding a licence a minute ago, the chain unreachable. Today's tip is marked as asked, so the
  * sitting sends no tips grist (src/tips/offer.ts), the phone holds the Governor's word list (tests/e2e/his-words.ts; `empty: true` is a new install, mw-5r3p30.385), the welcome is already done (`welcome: true` leaves it due), and a new question card takes a tap at once (`lampas.settleMs` 0); `tips: true` leaves the day free for a spec that wants the grist. */
-export async function openUnlocked(page: Page, options: { tips?: boolean; welcome?: boolean; empty?: boolean; hints?: boolean } = {}): Promise<void> {
+export async function openUnlocked(page: Page, options: { tips?: boolean; welcome?: boolean; empty?: boolean; hints?: boolean; import?: boolean } = {}): Promise<void> {
   if (!options.empty) await giveHisWords(page);
+  if (!options.empty && options.import !== false) await giveHisLibrary(page);
   if (!options.hints) await dismissScreenHints(page);
   await refuseChain(page);
   await seedDeviceKey(page);
@@ -52,8 +54,9 @@ export async function openUnlocked(page: Page, options: { tips?: boolean; welcom
 }
 
 /** A phone with no licence: the seeded key, nothing remembered, the chain unreachable (so useLicence says not-licensed). Same quiet as openUnlocked otherwise. */
-export async function openUnlicensed(page: Page, options: { tips?: boolean; empty?: boolean; hints?: boolean } = {}): Promise<void> {
+export async function openUnlicensed(page: Page, options: { tips?: boolean; empty?: boolean; hints?: boolean; import?: boolean } = {}): Promise<void> {
   if (!options.empty) await giveHisWords(page);
+  if (!options.empty && options.import !== false) await giveHisLibrary(page);
   if (!options.hints) await dismissScreenHints(page);
   await refuseChain(page);
   await seedDeviceKey(page);

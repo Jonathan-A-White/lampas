@@ -47,7 +47,7 @@ test('the library at scale end to end: import, counts, reasons, turn on, the wor
   const fake = makeFakePostern();
   fake.autoReply = { status: 'answered', answer: { status: 'sent' } };
   await routePostern(page, fake);
-  await openUnlocked(page);
+  await openUnlocked(page, { import: false });
   await holdAppLinks(page);
   await page.goto('/#/?b=rom&c=8');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
