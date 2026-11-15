@@ -23,7 +23,7 @@ function longList(): string {
 }
 
 const open = async (page: Page, hash: string, heading: string): Promise<void> => {
-  await openUnlocked(page);
+  await openUnlocked(page, { import: false });
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
   await page.goto(`/#/${hash}`);

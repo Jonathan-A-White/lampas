@@ -239,3 +239,25 @@ test('a typed Resource ID counts in use (mw-fnvjof.17.6)', async ({ page }) => {
   await expect(page.getByTestId('kind-status')).toHaveText('4 in use');
   await shot(page, 'library-bibles-typed-count');
 });
+
+// the owned-check (src/data/owned.ts, mw-qtu3zvz.126): the phone openUnlocked gives holds his import, so a kind page lists its books and draws 'All on'; a phone with no import lists none
+// of them, says so, and draws no 'All on' (mw-lexuwrk: the e2e phone had no import, so 22 specs never found the button)
+test('a kind page draws All on for a phone whose import holds the books, and the line for one that holds none (mw-lexuwrk)', async ({ browser }) => {
+  for (const imported of [true, false]) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await openUnlocked(page, { import: imported });
+    await page.goto('/');
+    await expect(page.locator('[data-verse="1"]')).toBeVisible();
+    await page.goto('/#/library?kind=lexicon');
+    await expect(page.getByRole('heading', { name: 'Lexicons', level: 1 })).toBeVisible();
+    if (imported) {
+      await expect(page.getByRole('button', { name: 'All on', exact: true })).toBeVisible();
+      await expect(page.getByText('No lexicons in your list')).toHaveCount(0);
+    } else {
+      await expect(page.getByText('No lexicons in your list')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'All on', exact: true })).toHaveCount(0);
+    }
+    await context.close();
+  }
+});
