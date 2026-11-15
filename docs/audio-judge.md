@@ -149,7 +149,9 @@ John's timings at 7e00058cc (the same bytes as today's; sha256 `34f081d58b053182
 
 ## John today
 
-879 verses judged, **858 ok, 21 flagged** (2026-11-14, timings at 7e00058cc, slop 0.05 / 0.05). The cut-rule story's work list, by cause:
+**After the cut rule (mw-ar5k42b.3, docs/data.md 'The cut rule'): 879 verses judged, 873 ok, 6 flagged, all six on John's listen list** (2:9, 2:10, 5:28, 5:29, 9:18, 9:19: the three boundaries the narrator reads on through); no flag outside it. The rest of this section, and 'The known faults' above, describe the timings BEFORE that rule, which the judge was proved on.
+
+Before the cut rule: 879 verses judged, **858 ok, 21 flagged** (2026-11-14, timings at 7e00058cc, slop 0.05 / 0.05). The cut-rule story's work list, by cause:
 
 - **The narrator reads on, no quiet (3 boundaries, 6 verses):** 2:9 `tail-extra` / 2:10 `head-clipped`; 5:28 `tail-extra` + `tail-clipped` / 5:29 `head-extra` + `head-clipped`; 9:18 `tail-extra` + `tail-clipped` / 9:19 `head-extra` + `head-clipped`. No cut is clean here with any slop: the listen list.
 - **A quiet shorter than the player needs (1 boundary, 2 verses):** 1:24 `tail-clipped` 0.025 s / 1:25 `head-clipped` 0.04 s (75 ms of quiet).
@@ -252,4 +254,5 @@ And of the judge itself:
 - **`text-differs` is not a cut's fault.** A lock that says 'no timings file ships unless its report is clean' should count the four edge kinds; a real `text-differs` can only be listened to.
 - **The slop and the tolerance are provisional**: `player-slop.json` (0.05 / 0.05) until mw-ar5k42b.2, `TOLERANCE` (20 ms) the Governor's to confirm. A larger slop makes more verses unfixable by any cut: at 0.05 a boundary needs 0.1 s of quiet.
 - **A verse with no words** (a verse the text leaves empty) has nothing for the letters to pair: both its edges are weak and Whisper's words for its clip are all 'extra'. John has none; the first book that has one must decide what its timing should be.
-- **Only John is in the maker's book table** (`align.BOOKS`), which the judge reads: a new book is added there, by the maker's story.
+- **The maker's book table** (`align.BOOKS`), which the judge reads, holds all 66 books since mw-zbgo4ep.1.
+- **The lock** (mw-ar5k42b.3, `tests/unit/audio-judged.test.ts`): a book ships only with this judge's report of its timings as committed (the sha256), judged at the slop in force, with every flag on the book's listen list. docs/data.md 'The cut rule' has the three steps.

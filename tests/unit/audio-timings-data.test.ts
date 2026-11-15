@@ -1,11 +1,12 @@
 // The committed verse timings of the recorded voice (mw-82lb97i.2): what scripts/audio-timings/align.py wrote under public/data/audio/msb-david/ holds the contract
-// against the chapter files it was aligned to. Reads only committed files; no Python and no audio runs in the gate.
+// against the chapter files it was aligned to, and to the cut rule (mw-ar5k42b.3). Reads only committed files; no model and no audio runs in the gate.
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { isBookTimings, isTimingsIndex, TIMINGS_EDITION } from '../../src/data/audioTimings';
+import { headQuiet, listenKey, readListen, readQuiet, readSlop, ruledEnd, ruledStart, tailQuiet } from '../support/audio-cuts';
 
 const root = resolve(__dirname, '../..');
 const readJson = (path: string): unknown => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -112,79 +113,135 @@ describe('the timing files the index lists', () => {
   }
 });
 
-// mw-82lb97i.27: his John 1:50 in David's voice still let the first 'th' of verse 51's 'Then' through. The narrator's recording is digital silence between two verses, and
-// the gap pass of scripts/audio-timings/align.py measured each gap from the recording's energy (scripts/audio-timings/quiet/<edition>-<book>.json: for each verse but a
-// chapter's last, the second its last sound has died away and the second the next verse's first sound begins). Each verse's end must lie IN that quiet, at its start
-// (so a stop that comes late on a phone has the whole of the quiet before the next verse's sound) and never nearer than 50 ms to the next verse's first sound.
-interface QuietFile {
-  v: 1;
-  edition: string;
-  book: string;
-  chapters: Record<string, Array<[number, number | null, number | null]>>;
-}
+// THE CUT RULE (mw-ar5k42b.3; docs/data.md 'The cut rule'). Both edges of every verse are placed from the recording's level, with the player's margin
+// (scripts/audio-timings/player-slop.json). The maker keeps what it measured in scripts/audio-timings/quiet/<edition>-<book>.json: `aligned`, the aligner's letters of
+// each verse, and `chapters`, each chapter's boundaries (one more than its verses: before the first, between each two, after the last) as
+// [the verse before, the second the sound before has died, the second the sound after begins]. These tests hold every committed timing to the rule by that measure,
+// so a number changed by hand fails here as well as at the lock (tests/unit/audio-judged.test.ts). The story folds in mw-82lb97i.27 (John 1:50 let the 'th' of verse 51
+// through), mw-82lb97i.41 (John 2:9 alone ended with 'and s') and mw-82lb97i.36 (four verses started after their own first sound).
+const slop = readSlop();
+const thousandths = (seconds: number): number => Math.round(seconds * 1000);
 
-/** The least quiet, in seconds, between a verse's end and the next verse's first sound. */
-const MIN_BEFORE_ONSET = 0.05;
-/** A verse ends this long after its last sound died away (align.py END_AFTER_SOUND), to the timings' two decimals. */
-const END_AFTER_SOUND = 0.05;
-const ROUNDING = 0.005 + 1e-9;
-
-/** The verses the narrator reads on from into the next with no quiet at all (the sentence runs across the verse number): they keep the aligner's end (the next verse's start, or a little before it where the two paddings did not meet). A new one fails until it is listed here. */
-const READS_ON: Record<string, string[]> = { gen: ['19:1', '23:14', '23:17', '24:64', '26:28', '48:3', '50:4'], jhn: ['2:9', '5:28', '9:18'] };
-
-describe("each verse's end lies in the quiet before the next verse's first sound, by the recording's energy", () => {
+describe("the cut rule: both edges of every verse lie where the recording's level and the player's margin put them", () => {
   if (!isTimingsIndex(index)) throw new Error('index fails its guard');
   for (const book of Object.keys(index.books)) {
     const timings = readJson(`public/data/audio/${TIMINGS_EDITION}/${book}.json`);
-    const quiet = readJson(`scripts/audio-timings/quiet/${TIMINGS_EDITION}-${book}.json`) as QuietFile;
+    const quiet = readQuiet(book);
     if (!isBookTimings(timings)) throw new Error('book file fails its guard');
+    const listen = readListen(book);
+    const onList = new Set(listen.verses.map((entry) => listenKey(entry.verse, entry.edge)));
 
-    /** Every pair of a verse and the next: the verse's end, the next start, and what was measured of the gap between them. */
-    const pairs = Object.entries(timings.chapters).flatMap(([chapter, timed]) => {
-      const rows = new Map((quiet.chapters[chapter] ?? []).map((row) => [row[0], row]));
-      return timed.verses.slice(0, -1).map(([n, , end], i) => ({ at: `${chapter}:${n}`, end, nextStart: timed.verses[i + 1][1], row: rows.get(n) }));
+    /** Every verse with the quiet at each of its edges, and the verse after it. */
+    const verses = Object.entries(timings.chapters).flatMap(([chapter, timed]) => {
+      const rows = quiet.chapters?.[chapter] ?? [];
+      return timed.verses.map(([n, start, end], i) => ({
+        at: `${chapter}:${n}`,
+        chapter,
+        first: i === 0,
+        start,
+        end,
+        duration: timed.duration,
+        next: timed.verses[i + 1] as [number, number, number] | undefined,
+        head: rows[i] ? headQuiet(rows[i]) : undefined,
+        tail: rows[i + 1] ? tailQuiet(rows[i + 1]) : undefined,
+      }));
     });
+    const pairs = verses.filter((v) => v.next);
 
-    it(`${book}: every pair of verses was measured, and the quiet file is this book's`, () => {
-      expect(quiet).toMatchObject({ v: 1, edition: TIMINGS_EDITION, book });
-      expect(pairs.length).toBeGreaterThan(0);
-      expect(pairs.filter((p) => !p.row).map((p) => p.at)).toEqual([]);
+    it(`${book}: the quiet file is this book's, cut at the player's margin in force, with the aligner's letters and every boundary of every chapter`, () => {
+      expect(quiet).toMatchObject({ v: 2, edition: TIMINGS_EDITION, book, slop });
       expect(Object.keys(quiet.chapters)).toEqual(Object.keys(timings.chapters));
-    });
-
-    it(`${book}: only the listed verses are read on from with no quiet, and each of those keeps the aligner's end: at the next verse's start, or no more than 0.4 s (the two paddings) before it`, () => {
-      const readsOn = pairs.filter((p) => p.row && p.row[1] === null);
-      expect(readsOn.map((p) => p.at)).toEqual(READS_ON[book] ?? []);
-      for (const p of readsOn) {
-        expect(p.end, p.at).toBeLessThanOrEqual(p.nextStart);
-        expect(p.nextStart - p.end, p.at).toBeLessThanOrEqual(0.4 + 1e-9);
+      expect(Object.keys(quiet.aligned)).toEqual(Object.keys(timings.chapters));
+      for (const [chapter, timed] of Object.entries(timings.chapters)) {
+        expect(quiet.chapters[chapter].map((row) => row[0]), `chapter ${chapter}: a boundary before the first verse and one after each`).toEqual([0, ...timed.verses.map(([n]) => n)]);
+        expect(quiet.aligned[chapter].map((row) => row[0]), `chapter ${chapter}: the letters of each verse`).toEqual(timed.verses.map(([n]) => n));
       }
     });
 
-    it(`${book}: no verse's end is within 50 ms of the next verse's first sound (the sweep: zero)`, () => {
-      const near = pairs.filter((p) => p.row && p.row[2] !== null && p.row[2] - p.end < MIN_BEFORE_ONSET - 1e-9);
-      expect(near.map((p) => `${p.at} ends ${p.end}, the next verse sounds at ${p.row?.[2]}`)).toEqual([]);
+    it(`${book}: every verse's END is where the rule puts it: the tail slop after its last sound has died; the middle of a quiet too short for the margin; the quietest instant where the narrator reads on`, () => {
+      const wrong = verses.filter((v) => !v.tail || v.end !== ruledEnd(v.tail, v.duration, slop).at).map((v) => `${v.at} ends ${v.end}, the rule says ${v.tail ? ruledEnd(v.tail, v.duration, slop).at : 'nothing: no boundary'}`);
+      expect(wrong).toEqual([]);
     });
 
-    it(`${book}: every end lies in the quiet, after the verse's last sound has died away and no more than 50 ms into it`, () => {
-      const inSound: string[] = [];
-      const deep: string[] = [];
-      for (const p of pairs) {
-        const [, quietStart, onset] = p.row ?? [0, null, null];
-        if (quietStart === null || onset === null) continue;
-        expect(quietStart, p.at).toBeLessThan(onset);
-        if (p.end < quietStart - 1e-9) inSound.push(`${p.at} ends ${p.end}, its sound dies at ${quietStart}`);
-        if (p.end > quietStart + END_AFTER_SOUND + ROUNDING) deep.push(`${p.at} ends ${p.end}, its sound dies at ${quietStart}`);
+    it(`${book}: every verse's START is where the rule puts it: the lead slop before its first sound begins; the middle of a quiet too short for the margin; the quietest instant where the narrator reads on`, () => {
+      const wrong = verses.filter((v) => !v.head || v.start !== ruledStart(v.head, slop).at).map((v) => `${v.at} starts ${v.start}, the rule says ${v.head ? ruledStart(v.head, slop).at : 'nothing: no boundary'}`);
+      expect(wrong).toEqual([]);
+    });
+
+    it(`${book}: each verse's start is at or before its first sound (mw-82lb97i.36), and by the lead slop wherever it is not on the listen list`, () => {
+      const firstSound = (v: (typeof verses)[number]): number => v.head?.cut ?? v.head?.onset ?? Number.NaN;
+      expect(verses.filter((v) => !(v.start <= firstSound(v) + 1e-9)).map((v) => `${v.at} starts ${v.start}, its first sound is at ${firstSound(v)}`)).toEqual([]);
+      const near = verses.filter((v) => !onList.has(listenKey(v.at, 'head')) && thousandths(firstSound(v)) - thousandths(v.start) < thousandths(slop.lead) && v.start > 0);
+      expect(near.map((v) => `${v.at} starts ${v.start}, its first sound is at ${firstSound(v)}`)).toEqual([]);
+    });
+
+    it(`${book}: no verse's clip, started the lead slop early, holds the last sound of the verse before or of the announcement, unless it is on the listen list`, () => {
+      const holds = verses.filter((v) => !onList.has(listenKey(v.at, 'head')) && v.head?.died != null && thousandths(v.start) - thousandths(slop.lead) < thousandths(v.head.died));
+      expect(holds.map((v) => `${v.at} starts ${v.start}, the sound before it dies at ${v.head?.died}`)).toEqual([]);
+      // verse 1 of every chapter: the announcement ('Audio Bible, John, chapter one') has died before its clip at its longest begins
+      const firsts = verses.filter((v) => v.first);
+      expect(firsts.length).toBe(Object.keys(timings.chapters).length);
+      for (const v of firsts) expect(v.head?.died ?? -1, `${v.at}: the announcement's last sound`).toBeLessThanOrEqual(v.start - slop.lead);
+    });
+
+    it(`${book}: no verse's end is after the next verse's start (mw-82lb97i.41)`, () => {
+      expect(pairs.filter((v) => v.next && v.end > v.next[1]).map((v) => `${v.at} ends ${v.end}, the next verse starts ${v.next?.[1]}`)).toEqual([]);
+    });
+
+    it(`${book}: no verse's end is within the tail slop of the next verse's start, unless it is on the listen list (mw-82lb97i.41)`, () => {
+      // Both edges keep their own margin only in a quiet of tail + tail + lead or more; in a shorter one that still has room (none in John or Genesis) the end is
+      // held to the next verse's first SOUND instead, which is what the margin is for.
+      const near: string[] = [];
+      for (const v of pairs) {
+        if (onList.has(listenKey(v.at, 'tail')) || !v.next || !v.tail) continue;
+        const { died, onset } = v.tail;
+        const short = died !== null && onset !== null && thousandths(onset) - thousandths(died) < thousandths(2 * slop.tail + slop.lead);
+        const limit = short && onset !== null ? onset : v.next[1];
+        if (thousandths(limit) - thousandths(v.end) < thousandths(slop.tail)) near.push(`${v.at} ends ${v.end}, the next verse ${short ? 'sounds' : 'starts'} at ${limit}`);
       }
-      expect(inSound).toEqual([]);
-      expect(deep).toEqual([]);
+      expect(near).toEqual([]);
     });
 
-    it(`${book}: John 1:50 ends in the quiet 0.4 s before the 'Then' of verse 51`, () => {
-      if (book !== 'jhn') return;
-      const pair = pairs.find((p) => p.at === '1:50');
-      expect(pair?.row?.[2]).toBeCloseTo(371.66, 1);
-      expect((pair?.row?.[2] ?? 0) - (pair?.end ?? 0)).toBeGreaterThanOrEqual(0.4);
+    it(`${book}: no verse's end is within the tail slop of the next sound, and none is before its own last sound has died by the tail slop, unless it is on the listen list`, () => {
+      const wrong: string[] = [];
+      for (const v of verses) {
+        if (onList.has(listenKey(v.at, 'tail')) || !v.tail || v.tail.died === null) continue;
+        if (thousandths(v.end) - thousandths(slop.tail) < thousandths(v.tail.died)) wrong.push(`${v.at} ends ${v.end}, its last sound dies at ${v.tail.died}`);
+        if (v.tail.onset !== null && thousandths(v.end) + thousandths(slop.tail) > thousandths(v.tail.onset)) wrong.push(`${v.at} ends ${v.end}, the next sound begins at ${v.tail.onset}`);
+      }
+      expect(wrong).toEqual([]);
+    });
+
+    it(`${book}: the listen list holds every edge the recording leaves no room for, by the maker's measure`, () => {
+      const missing: string[] = [];
+      for (const v of verses) {
+        if (v.tail && ruledEnd(v.tail, v.duration, slop).listed && !onList.has(listenKey(v.at, 'tail'))) missing.push(`${v.at} tail`);
+        if (v.head && ruledStart(v.head, slop).listed && !onList.has(listenKey(v.at, 'head'))) missing.push(`${v.at} head`);
+      }
+      expect(missing).toEqual([]);
+    });
+
+    it.skipIf(book !== 'jhn')("John 1:50 ends in the quiet 0.4 s before the 'Then' of verse 51 (mw-82lb97i.27)", () => {
+      const verse = verses.find((v) => v.at === '1:50');
+      expect(verse?.tail?.onset).toBeCloseTo(371.66, 1);
+      expect((verse?.tail?.onset ?? 0) - (verse?.end ?? 0)).toBeGreaterThanOrEqual(0.4);
+    });
+
+    it.skipIf(book !== 'jhn')("John 2:9 ends at the quietest instant between 'aside' and the 'and' of verse 10, where the narrator reads on (mw-82lb97i.41: it ended 30 ms later, in 'and')", () => {
+      const verse = verses.find((v) => v.at === '2:9');
+      expect(verse?.tail?.cut).toBeCloseTo(71.41, 2);
+      expect(verse?.end).toBe(71.41);
+      expect(verse?.next?.[1]).toBe(71.41);
+      expect(onList.has('2:9 tail') && onList.has('2:10 head')).toBe(true);
+    });
+
+    it.skipIf(book !== 'jhn')('John 10:14, 10:30, 17:23 and 18:8 start the lead slop before their own first sound (mw-82lb97i.36: they started 20 to 70 ms after it)', () => {
+      for (const at of ['10:14', '10:30', '17:23', '18:8']) {
+        const verse = verses.find((v) => v.at === at);
+        expect(verse?.head?.onset, at).toBeDefined();
+        expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0), at).toBeGreaterThanOrEqual(thousandths(slop.lead));
+        expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0), at).toBeLessThan(thousandths(slop.lead) + 10);
+      }
     });
   }
 });
