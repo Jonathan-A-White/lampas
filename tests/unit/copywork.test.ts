@@ -129,7 +129,7 @@ describe('a lone-breathing word the model marked wrong for an accent it read fro
     ['ἡ', 'ἥ́', 'two accents'],
     ['ἦν', 'ἦν', 'a request word with its own accent'],
     ['ἥ', 'ή', 'a request word with its own accent'],
-  ])('keeps %s written %s wrong (%s)', (word, written, why) => {
+  ])('keeps %s written %s wrong (%s)', (word, written) => {
     expect(wrongWith(word, written)).toEqual([{ word, mark: 'wrong', problem: 'extra acute accent' }]);
   });
 
