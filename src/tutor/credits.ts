@@ -60,7 +60,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'bsv-kit', use: 'The licence gate and tutor payments', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/bsv-kit' },
   { name: 'BSV SDK', use: 'Keys and signatures under bsv-kit', licence: 'Open BSV License', link: 'https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk' },
   { name: 'pwa-kit', use: 'Updates, tips, settings; learn-kit\'s graph', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/pwa-kit' },
-  { name: 'voice-kit', use: 'Read aloud, hold to talk', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/voice-kit' },
+  { name: 'voice-kit', use: 'Read aloud, hold to talk, Hands-free tap and mark', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/voice-kit' },
   { name: 'audible-kit', use: 'The Audible app link and its chapter list', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/audible-kit' },
   { name: 'react-markdown', use: 'Draws the tutor\'s answers, with remark-gfm', licence: 'MIT', link: 'https://github.com/remarkjs/react-markdown' },
   { name: 'node-qrcode', use: 'The key as a QR code', licence: 'MIT', link: 'https://github.com/soldair/node-qrcode' },

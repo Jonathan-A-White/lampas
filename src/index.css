@@ -934,6 +934,20 @@ textarea,
   --bk-speech-font-size: calc(1rem / var(--lp-scale));
 }
 
+/* voice-kit's Hands-free mark (voice-kit/handsfree, src/handsFree/HandsFreeGate.tsx) takes its colours from the palette in force: the accent for the quiet states (it must show on every theme), the good and bad
+ * colours for listening and failing. Each state also differs by its border style (the kit's), so colour is never alone. It stands in the shell's top strip, at the right. */
+:root {
+  --bk-handsfree-size: 1.75rem;
+  --bk-handsfree-surface: var(--lp-surface);
+  --bk-handsfree-off: var(--lp-muted);
+  --bk-handsfree-waiting: var(--lp-accent);
+  --bk-handsfree-listening: var(--lp-good);
+  --bk-handsfree-working: var(--lp-accent);
+  --bk-handsfree-follow-up: var(--lp-good);
+  --bk-handsfree-needs-touch: var(--lp-accent);
+  --bk-handsfree-failed: var(--lp-bad);
+}
+
 /* At the phone's largest text the three buttons do not fit one row: they wrap to a second (mw-cwf538.7), where the package's bar keeps one row and pushes Pause and Stop off the screen. */
 .bk-speech {
   flex-wrap: wrap;

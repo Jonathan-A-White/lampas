@@ -109,9 +109,9 @@ export const HELP_PAGES: HelpPage[] = [
     title: 'The tutor',
     line: 'Ask about a verse, a word or a screen.',
     body: [
-      'The floating ? on the side of the hand you hold your phone in (Settings > Hand) is the one way to the tutor. It opens a talk about what is in front of you: hold to talk, type, or send a picture. A change the tutor makes has an Undo.',
-      `Two fingers tapped on a screen put the ? away. ${DOOR_BACK_LINE} In the Reader's text it enters immersive reading.`,
-      'Every talk is kept on the phone: Settings > Conversations lists them, with a search. Under Talk in Settings you choose whether the bars are held or tapped.',
+      'The floating ? on your hand’s side (Settings > Hand) is the one way to the tutor. It opens a talk about what is in front of you: hold to talk, type, or send a picture. A change the tutor makes has an Undo.',
+      `Two fingers tapped on a screen put the ? away. ${DOOR_BACK_LINE} In the Reader's text it enters immersive reading. Three fingers tapped turn Hands-free on or off (Settings > Listening).`,
+      'Settings > Conversations lists every talk, kept on the phone, with a search; Settings > Talk chooses whether the bars are held or tapped.',
     ],
   },
   {

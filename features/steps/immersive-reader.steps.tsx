@@ -279,7 +279,10 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} in view`, inView);
   });
 
-  Scenario('A three-finger tap does nothing', ({ Given, When, And, Then }) => {
+  Scenario('A three-finger tap turns Hands-free on and off and leaves the immersive reader as it was', ({ Given, When, And, Then }) => {
+    const handsFree = async (value: 'on' | 'off') => {
+      await waitFor(async () => expect((await db.settings.get('handsFree'))?.value ?? 'off').toBe(value));
+    };
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     And('he taps the text with three fingers', async () => {
@@ -290,6 +293,7 @@ describeFeature(feature, ({ Scenario }) => {
       await sleep(50);
       await outOfView();
     });
+    And('Hands-free is now On', () => handsFree('on'));
     When('he taps the text with two fingers', twoFingerTap);
     Then(`${bars} in view`, inView);
     When('he taps the text with three fingers again', async () => {
@@ -299,6 +303,11 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} still in view`, async () => {
       await sleep(50);
       await inView();
+    });
+    And('Hands-free is now Off', () => handsFree('off'));
+    And('Immersive reader is still On', async () => {
+      expect((await db.settings.get('immersiveReader'))?.value).toBe('on');
+      expect(reader()).toHaveAttribute('data-immersive', 'on');
     });
   });
 

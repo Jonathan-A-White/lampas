@@ -86,8 +86,8 @@ export const PICKER = 'mt-1 min-h-12 w-full rounded-lg border border-line bg-sur
 
 export const ON_COLOUR = 'bg-accent text-accent-fg';
 
-/** An On | Off choice of a talkable setting. */
-export function OnOff({ name, current, settingKey }: { name: string; current: 'on' | 'off'; settingKey: 'sectionHeadings' | 'tips' | 'readTutor' | 'immersiveReader' | 'immersiveHint' | 'readLessons' | 'readingPlan' | 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'dailyTicks' | 'greekKeyboard' | 'hebrewKeyboard' | 'pronunciationSeparate' | 'ipaLesson' | 'variantLessonsOffer' | 'septuagint' | 'septuagintGaps' | `maps.${string}` | `themes.${string}` | `sermons.${string}` }) {
+/** An On | Off choice of a talkable setting. `onChoose` takes the choice in place of the plain write, for a setting that says its change aloud (Hands-free, src/handsFree/switch.ts). */
+export function OnOff({ name, current, settingKey, onChoose }: { name: string; current: 'on' | 'off'; onChoose?: (value: 'on' | 'off') => void; settingKey: 'handsFree' | 'sectionHeadings' | 'tips' | 'readTutor' | 'immersiveReader' | 'immersiveHint' | 'readLessons' | 'readingPlan' | 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'dailyTicks' | 'greekKeyboard' | 'hebrewKeyboard' | 'pronunciationSeparate' | 'ipaLesson' | 'variantLessonsOffer' | 'septuagint' | 'septuagintGaps' | `maps.${string}` | `themes.${string}` | `sermons.${string}` }) {
   return (
     <div role="group" aria-label={name} className="inline-flex rounded-xl border border-line p-0.5">
       {(['on', 'off'] as const).map((value) => (
@@ -95,7 +95,7 @@ export function OnOff({ name, current, settingKey }: { name: string; current: 'o
           key={value}
           type="button"
           aria-pressed={current === value}
-          onClick={() => void writeSetting(settingKey, value)}
+          onClick={() => (onChoose ? onChoose(value) : void writeSetting(settingKey, value))}
           className={`min-h-12 min-w-12 rounded-lg px-4 text-base font-medium ${current === value ? ON_COLOUR : 'text-fg'}`}
         >
           {value === 'on' ? 'On' : 'Off'}

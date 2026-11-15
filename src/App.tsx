@@ -5,6 +5,7 @@ import { startBackgroundWrites } from './data/startupWrites';
 import { About } from './About';
 import { Essay } from './Essay';
 import { VariantLessons } from './lessons/VariantLessons';
+import { HandsFreeGate } from './handsFree/HandsFreeGate';
 import { HelpScreen } from './HelpScreen';
 import { Preface } from './Preface';
 import { AskTutor, FloatingTutor } from './AskTutor';
@@ -100,6 +101,8 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
         <TutorWaitingBar />
         {/* after a break of a week or more: a short refresher of the solid items most overdue (mw-1vuvq6.6) */}
         <WelcomeBack hidden={route === 'review' || route === 'unlock'} />
+        {/* Hands-free: the three-finger tap that turns it On or Off, and, while it is On, the mic mark at the top right (mw-rl10piw.5) */}
+        <HandsFreeGate />
       </ShellBars>
       {/* a new licensed reader is welcomed by the tutor (mw-yrmkdf.3) */}
       <Welcome />

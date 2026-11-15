@@ -5,6 +5,7 @@ import 'pwa-kit/whats-new/styles.css';
 import 'pwa-kit/settings/styles.css';
 import 'voice-kit/speech/styles.css';
 import 'voice-kit/composer/styles.css';
+import 'voice-kit/handsfree/styles.css';
 import { registerSW } from 'virtual:pwa-register';
 import { startAppUpdates } from 'pwa-kit/app-update';
 import { fetchChangelog, hasNewsSince } from 'pwa-kit/whats-new';
