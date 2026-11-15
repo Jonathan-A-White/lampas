@@ -5,12 +5,12 @@
 // opens and opened again after, the same path as a hold-to-talk.
 //  - The wake model (voice-kit/wake/models/hey-lampas.json, about 470 KB) is not in the app's first download: it is fetched as a file the first time Hands-free is
 //    turned On (WAKE_MODEL_URL, a hashed asset of the build) and the service worker keeps it (src/sw.ts), so a later start works offline.
-//  - The command's recogniser is composer's startListening in the language and with the input a Talk hold uses (en-US, the phone's own microphone).
+//  - The command's recogniser is composer's browserSpeech, the transcriber a Talk hold listens through, in its language and input (en-US, the phone's own microphone).
 //  - While another feature has the microphone (micBusy.ts: a hold-to-talk, a recording) the session is stopped, its stream closed; it starts again after.
 //  - The mark (HandsFreeGate) shows the session's state through `handsFreeSource`. A microphone refused turns the setting Off and says MIC_REFUSED on screen and aloud.
 //  - 'needs-touch' (the audio will not start until the page is touched): the next touch anywhere starts it again; it never pretends to listen.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
-import { startListening } from 'voice-kit/composer';
+import { browserSpeech } from 'voice-kit/composer';
 import { browserWake, createChimes, createHandsFree, documentVisibility, type HandsFree, type HandsFreeClock, type HandsFreeState, type WakePort } from 'voice-kit/handsfree';
 import type { WakeModel } from 'voice-kit/wake';
 import { handsFreeSetting } from '../settings/definitions';
@@ -179,7 +179,8 @@ function sessionNow(): HandsFree {
   session ??= createHandsFree(
     {
       wake,
-      listen: startListening,
+      // the transcriber every hold of Lampas listens through (askTranscriber wraps it), so a command is heard as a Talk hold is
+      listen: (options) => browserSpeech.start(options),
       chime: chimes,
       ...(typeof document === 'undefined' ? {} : { visibility: documentVisibility(document) }),
       clock: clockNow(),
