@@ -5,6 +5,7 @@
 // word of the Parsing is a link to its Grammar sheet (src/GrammarSheet.tsx), which opens over this one: underlined until he marks
 // the term I know this, plain after. With many lexicons On the Logos group draws the pinned ones, Bible Word Study and a door, All N lexicons, to a sheet that lists every one with a search (src/library/AllLexiconsSheet.tsx). A Study link whose app did not open (src/resources/openApp.ts) opens the sheet that says the app is not on this phone: Get it, or Turn off its resource. A Study row holds the links of the study resources he switched on in Settings (src/resources/),
 // and is not drawn when none is on.
+import { Definition } from './Definition';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { bareEnglish, type Chapter, type GreekWord, isGuess, sourceLanguage, type SourceLanguage, wordGloss, wordLemma, wordParse } from './data/chapter';
@@ -377,7 +378,7 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
         </Fact>
         {definition ? (
           <Fact label="Definition" testId="sheet-definition">
-            <span className="text-sm">{definition}</span>
+            <Definition text={definition} />
           </Fact>
         ) : null}
         {strongsOn || word.s === '' ? null : (
