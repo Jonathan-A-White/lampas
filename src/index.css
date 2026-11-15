@@ -202,13 +202,15 @@
     min-width: 0;
     border-bottom-width: 0;
   }
-  .reader-top > [data-testid="reader-chips"] {
+  .reader-top > [data-reader-chips-wrap] {
     flex: 1 1 auto;
     min-width: 0;
-    border-bottom-width: 0;
     align-self: center;
   }
-  .reader-top > :not(header):not([data-testid="reader-chips"]) {
+  .reader-top > [data-reader-chips-wrap] > [data-testid="reader-chips"] {
+    border-bottom-width: 0;
+  }
+  .reader-top > :not(header):not([data-reader-chips-wrap]) {
     flex: 1 0 100%;
   }
 }
@@ -226,12 +228,14 @@
   .reader-top > header {
     display: contents;
   }
-  .reader-top > [data-testid="reader-chips"] {
+  .reader-top > [data-reader-chips-wrap] {
     flex: 1 1 0;
     order: 2;
+  }
+  .reader-top > [data-reader-chips-wrap] > [data-testid="reader-chips"] {
     padding-inline: 0;
   }
-  .reader-top > :not(header):not([data-testid="reader-chips"]) {
+  .reader-top > :not(header):not([data-reader-chips-wrap]) {
     order: 3;
   }
 }
