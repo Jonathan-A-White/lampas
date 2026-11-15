@@ -31,7 +31,8 @@ describe('the form helper section of the instructions', () => {
   it('ends the answer at the question mark, with a right and a wrong example (mw-5r3p30.158)', () => {
     const s = section();
     expect(s).toContain('ending at its question mark');
-    expect(s).toContain('right:');
+    // the right example is the question the first bullet gives; the wrong one is that question with the hint after it (mw-qtu3zvz.147)
+    expect(s.match(/who made this approach, so we can credit them\?/g)?.length).toBeGreaterThanOrEqual(2);
     expect(s).toContain('wrong:');
   });
 

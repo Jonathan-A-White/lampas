@@ -332,3 +332,23 @@ If a later story needs one of the dropped sentences in the tutor's hands, the pl
 verse-ask's instructions (`grinds/verse-ask.instructions/`) are 32,597 bytes, far from the 100,000 warning. The twins of the bible-talk parts that
 the story names, listed and not folded here: verse-ask 020 (1,624 B; bible-talk 020 says the same in 1,222) and verse-ask 090 'Other passages' (848 B; the
 same rule is the first paragraph of bible-talk 220, 904 B with its `fetch` rule, in fewer words). Folding them to the bible-talk wording would free about 400 B and 250 B of verse-ask, not of bible-talk.
+
+## A fourth trim: room for the next sentence (mw-qtu3zvz.147)
+
+The instructions were 99,784 bytes (`cat grinds/bible-talk.instructions/*.md | wc -c`) under `BIBLE_TALK_CEILING` 110,000 with `BIBLE_TALK_ROOM` 10,000 kept free, so
+one more setting with the longest help (215 bytes) left 1 byte and a sentence of any size failed `tests/unit/bible-talk-grind.test.ts`. This story brought them to 99,269
+(515 bytes freed), enough for a 500-byte line added to part 330 and one more setting after it (the new test 'still leaves the 10,000 bytes of room with a 500-byte line added'
+holds that). `BIBLE_TALK_CEILING` and `BIBLE_TALK_ROOM` are unchanged. Every rule said shorter, and where it lives now:
+
+- 060, Sound it out: 'by `pronunciation_guide` and `focus.respelling` alone' and 'describe each syllable's sound by `focus.respelling` and the rules of `pronunciation_guide`, never by English spelling habit or by any other pronunciation' were said twice → one sentence, 'by `focus.respelling` and the rules of `pronunciation_guide` alone, never by English spelling habit or any other pronunciation', in 060.
+- 060: 'never by a wrong sound to avoid' and 'never name a wrong sound in `answer`: not even in a parenthesis (...), a denial, an aside or a "because" clause' → one sentence, the parenthesis, denial, aside and "because" clause now the colon list after 'even as a warning', in 060.
+- 060: 'Never count or cut the word yourself and never work out the stress yourself' → 'Never count, cut or stress the word yourself', in 060.
+- 130, Offering the Greek, line 3: 'An English word he asks about is answered by naming the Greek word behind it, in `words`: "what does 'love' really mean?" gets no `greek_offer`' → a parenthesis on line 3 ('an English word he asks about: name the Greek word behind it, in `words`'); the 'love' example is the one at the head of 130 and in line 7.
+- 170, Quiz mode: 'Do not put a kept `quiz_goal` in `quiz_goal_offer`' (said in the opening paragraph) → the bullet 'When `quiz_goal` holds a goal, `quiz_goal_offer` is absent in every turn of the quiz (never the kept goal in it)', in 170.
+- 170: 'He can also change or clear it in Settings under Quiz goal' → the line before it and the setting `quizGoal` in the settings list of 330, which says where it is.
+- 200, Links to his study resources: 'Link only when it truly helps, never link a resource as decoration: a plain answer is the usual answer' → 'Link only when it truly helps, never as decoration', in 200.
+- 200, Links to a setting: 'must be a listed key: never invent a key' → 'must be a listed key', in 200.
+- 260, Helping him fill in a form: the 'Right:' example of the question alone is not repeated → the same question is the first bullet's example, and 'Wrong:' follows it, in 260.
+- 050, Talk from About: 'Lampas names everything it builds on' (said again by 'Lampas credits everyone it builds on and says what it changed') → dropped from the opening paragraph; the second bullet's Newton answer holds it, in 050.
+
+The tests that pinned these words (`tests/unit/bible-talk-grind.test.ts` Sound it out, `form-helper-grind`, `offer-and-setting-rules-826`, `tutor-resources`, `tutor-setting-links`) read the new words; none was deleted.

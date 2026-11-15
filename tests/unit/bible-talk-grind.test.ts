@@ -726,9 +726,9 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
 
   // mw-5r3p30.268: the rules (αυ is af or av, never "aw"; β is v ...) moved into the scheme's tutorGuide, sent as pronunciation_guide; tests/unit/one-pronunciation-scheme.test.ts holds them there
   it('they say to describe each syllable by the respelling and the rules of pronunciation_guide, never by English habit or another pronunciation', () => {
-    expect(text).toMatch(/describe each syllable's sound by `focus\.respelling` and the rules of `pronunciation_guide`/i);
+    expect(text).toMatch(/by `focus\.respelling` and the rules of `pronunciation_guide` alone/i);
     expect(text).toContain('- `pronunciation_guide`:');
-    expect(text).toMatch(/never by English spelling habit or by any other pronunciation/);
+    expect(text).toMatch(/never by English spelling habit or any other pronunciation/);
     expect(validate({ ...base, pronunciation: 'modern', pronunciation_guide: 'Modern Greek: β is v.' }, input)).toEqual([]);
     expect(validate({ ...base, pronunciation_guide: '' }, input)).not.toEqual([]);
   });
@@ -736,7 +736,7 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
   it('they say never to name a wrong sound, even as a warning, because the app reads the answer aloud (mw-5r3p30.282)', () => {
     expect(text).toMatch(/never by a wrong sound to avoid/);
     expect(text).toMatch(/not aw/);
-    expect(text).toMatch(/never name a wrong sound/i);
+    expect(text).toMatch(/never by a wrong sound to avoid[^.]*even as a warning/i);
   });
 
   // mw-5r3p30.719: the smoke saw "It is never 'aw' or 'ow'" in a right-looking answer: the guide's own 'never "aw"' was echoed as a denial
@@ -747,7 +747,7 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
 
   // mw-5r3p30.725: the smoke saw 'because the next letter, τ, is one of those that make it "af" (never "aw" or "ow")': a parenthesis repeating the guide, in an answer that explained the rule
   it('they say to give the sound alone, with no parenthesis or clause about a sound it is not, and to read the answer through for aw and ow before returning it (mw-5r3p30.725)', () => {
-    expect(text).toMatch(/not even in a parenthesis/i);
+    expect(text).toMatch(/not in a parenthesis/i);
     expect(text).toMatch(/\(never "aw" or "ow"\)/);
     expect(text).toMatch(/before you return `answer`[^.]*\baw\b[^.]*\bow\b[^.]*cut/i);
     expect(text).toMatch(/do not explain which letters make αυ af or av/i);
@@ -769,7 +769,7 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
     expect(text).toContain('`focus.syllables`');
     expect(text).toContain('`focus.stress`');
     expect(text).toMatch(/Use them exactly/);
-    expect(text).toMatch(/Never count or cut the word yourself/);
+    expect(text).toMatch(/Never count, cut or stress the word yourself/);
     expect(text).toMatch(/cluster of consonants such as σβ, πν or στ is never a syllable of its own/);
   });
 
@@ -783,7 +783,7 @@ describe('Sound it out speaks the app\'s pronunciation (mw-5r3p30.241)', () => {
 
   // mw-5r3p30.249: for ἁμάρτητε the tutor said the rough breathing makes an "h" ("ha-MAR-tee-teh"), which is Erasmian; the chosen pronunciation's breathing is silent
   it('says a breathing is told by the pronunciation guide and the respelling, never by a sound added from another pronunciation', () => {
-    expect(text).toMatch(/what the accent or breathing tells him, by `pronunciation_guide` and `focus\.respelling` alone/);
+    expect(text).toMatch(/what the accent or breathing tells him, by `focus\.respelling` and the rules of `pronunciation_guide` alone/);
     expect(text).toMatch(/never add a sound `focus\.respelling` does not write/);
     expect(text).toMatch(/a breathing mark is not a letter/i);
   });
@@ -1061,6 +1061,18 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     // an on/off setting's line: key, label and help, and no Value (the commonest kind); one with a Value costs more, but only by its values
     const next = `- \`nextSetting\` — Next setting. ${'x'.repeat(longestHelp)}\n`;
     expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING}, and a ${Buffer.byteLength(next)}-byte line more`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
+  });
+
+  it('still leaves the 10,000 bytes of room with a 500-byte line added to the settings part AND one more setting after it, so the next story adds a sentence without trimming first (mw-qtu3zvz.147; the room was 5 bytes)', () => {
+    const settingsPart = '330-changing-the-apps-settings.md';
+    const parts = instructionParts(grind.kind as string).map((p) => (p.file.endsWith(settingsPart) ? { ...p, text: `${p.text}${'x'.repeat(499)}\n` } : p));
+    expect(parts.some((p) => p.file.endsWith(settingsPart) && p.text.endsWith(`${'x'.repeat(499)}\n`))).toBe(true);
+    const bytes = parts.reduce((sum, { text: t }) => sum + Buffer.byteLength(t, 'utf8'), 0);
+    const kept = SETTINGS.filter((s) => HELP_KEPT.includes(s.key)).map((s) => Buffer.byteLength(helpPlain(s.help ?? s.hint)));
+    const longestHelp = Math.max(HELP_MAX_BYTES, ...kept);
+    const next = `- \`nextSetting\` — Next setting. ${'x'.repeat(longestHelp)}\n`;
+    expect(BIBLE_TALK_CEILING - bytes - Buffer.byteLength(next), `${bytes} bytes used of ${BIBLE_TALK_CEILING} with a 500-byte line, and a ${Buffer.byteLength(next)}-byte setting more`).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
+    expect(BIBLE_TALK_CEILING - bytes).toBeGreaterThanOrEqual(BIBLE_TALK_ROOM);
   });
 
   it('keeps every setting key and what Weave and Bible voice say in the instructions after the settings were said more tersely (mw-82lb97i.16)', () => {

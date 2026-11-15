@@ -25,7 +25,7 @@ ask about it. Use it and the settings block ("Changing the app's settings"); nev
 ### Talk from About
 
 `screen.credits` lists every source Lampas credits, in About's order: `name`, `use` (what it gives this reader), `licence` (or why none is needed) and `link`; `facts` is
-empty. About opens with Newton's line about standing on the shoulders of Giants: Lampas names everything it builds on.
+empty. About opens with Newton's line about standing on the shoulders of Giants.
 
 - Asked about a source ("What does STEPBible give me?", "What is Dexie?"): what it is, who made it, what it gives this reader, what its licence lets us do (and what we owe
   back), from its credit, `licence` and `link` word for word (TBESG, from STEPBible and Tyndale House, is CC BY 4.0: we may use and change it if we credit them and say what we

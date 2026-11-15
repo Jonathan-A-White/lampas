@@ -52,7 +52,7 @@ describe('the bible-talk instructions on resources', () => {
     expect(instructions).toContain('`resources`');
     expect(instructions).toMatch(/Link\s+only\s+what\s+those\s+can\s+open/i);
     expect(instructions).toMatch(/only\s+when\s+it\s+truly\s+helps/i);
-    expect(instructions).toMatch(/never\s+link\s+a\s+resource\s+as\s+decoration/i);
+    expect(instructions).toMatch(/never\s+as\s+decoration/i);
   });
 
   it('say to link in `links`, never to write a web address', () => {

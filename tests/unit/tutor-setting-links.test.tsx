@@ -98,6 +98,6 @@ describe('the grind instructions on setting links', () => {
     expect(instructions).toContain('`kind` `setting`');
     expect(instructions).toMatch(/`key`/);
     for (const s of SETTINGS) expect(instructions, s.key).toContain(`\`${s.key}\``);
-    expect(instructions).toMatch(/never invent a key/i);
+    expect(instructions).toMatch(/must be a listed key/i);
   });
 });
