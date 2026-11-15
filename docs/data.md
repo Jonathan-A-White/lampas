@@ -21,6 +21,7 @@ The reader, the word sheet, the voices and the drills read the chapter's `lang` 
 - [`lemma-forms/<lemma>.json` (outside `public/data`)](#lemma-formslemmajson-outside-publicdata)
 - [`frequency.json`](#frequencyjson)
 - [`<book>/<chapter>.json`](#bookchapterjson)
+- [Poetry lines](#poetry-lines)
 - [Variants](#variants)
 - [Variant English](#variant-english)
 - [The RP 2026 overlay](#the-rp-2026-overlay)
