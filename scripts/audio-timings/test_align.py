@@ -107,6 +107,16 @@ def test_a_quiet_too_short_for_the_margin_is_cut_in_its_middle_and_listed():
     assert 'less than the 100 ms' in cut['listen'][0]['reason'] and near(cut['listen'][0]['room'], 0.075, 0.006)
 
 
+def test_a_silence_shorter_than_a_quiet_is_still_where_the_cut_goes():
+    # Genesis 23:14: 45 ms of silence between two verses, less than the maker calls a quiet: cut in its middle, listed with its length, not called a read-on
+    parts = [(0.5, None), (1.0, -20), (0.045, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'answered abraham'), verse(2, 'listen to me')], {1: [0.6, 1.3], 2: [1.7, 2.4]}, SLOP)
+    (_, _, end1), (_, start2, _) = cut['verses']
+    assert near(end1, 1.5225) and near(start2, 1.5225) and end1 <= start2
+    assert len(cut['quiet'][1]) == 3 and near(cut['quiet'][1][1], 1.5) and near(cut['quiet'][1][2], 1.545)
+    assert [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail'), (2, 'head')] and 'a quiet of' in cut['listen'][0]['reason']
+
+
 def test_a_quiet_of_just_the_margin_both_ways_is_not_listed():
     parts = [(0.5, None), (1.0, -20), (0.13, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d')], {1: [0.6, 1.4], 2: [1.75, 2.4]}, SLOP)
@@ -146,6 +156,27 @@ def test_a_closing_line_after_the_last_verse_is_not_in_it():
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b')], {1: [0.6, 1.4]}, SLOP)
     assert near(cut['verses'][0][2], 1.55)
     assert near(cut['quiet'][-1][1], 1.5) and near(cut['quiet'][-1][2], 2.0)  # the next sound is the closing line's
+
+
+def test_a_word_left_in_after_the_last_verse_is_not_in_it():
+    # Genesis 14: '... take their portion.', 140 ms of quiet, then 'They' (a retake left in the recording), and the file ends 150 ms after it
+    parts = [(0.5, None), (1.0, -20), (0.14, None), (0.41, -15), (0.155, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'take their portion')], {1: [0.6, 1.35]}, SLOP)
+    assert near(cut['verses'][0][2], 1.5 + 0.05)  # before the word, with the whole margin
+    assert near(cut['quiet'][-1][1], 1.5) and near(cut['quiet'][-1][2], 1.64) and cut['listen'] == []
+
+
+def test_a_heading_read_with_short_pauses_is_still_in_neither_verse():
+    parts = [(0.5, None), (1.0, -20), (0.15, None), (0.8, -20), (0.15, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d', heading=True)], {1: [0.6, 1.4], 2: [2.7, 3.5]}, SLOP)
+    assert near(cut['verses'][0][2], 1.55) and near(cut['verses'][1][1], 2.55) and len(cut['quiet'][1]) == 5
+
+
+def test_a_stop_closure_before_a_heading_s_pause_and_a_click_after_it_stay_with_their_words():
+    # '...sent' (closure, release), a pause, [no heading read], a click 60 ms before the first word
+    parts = [(0.5, None), (1.0, -20), (0.08, None), (0.05, -25), (0.6, None), (0.01, -30), (0.06, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'had been sent'), verse(2, 'some of', heading=True)], {1: [0.6, 1.45], 2: [2.45, 3.2]}, SLOP)
+    assert near(cut['verses'][0][2], 1.63 + 0.05) and near(cut['verses'][1][1], 2.23 - 0.05) and len(cut['quiet'][1]) == 3
 
 
 def test_a_stop_closure_after_the_last_letter_stays_with_its_word():

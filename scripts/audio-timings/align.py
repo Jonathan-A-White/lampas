@@ -67,10 +67,13 @@ TORCH_THREADS = 4
 FRAME_SECONDS, HOP_SECONDS = 0.010, 0.005
 QUIET_DB = -60.0
 MIN_QUIET = 0.06
+MIN_DIP = 0.02  # where two letters have no quiet of MIN_QUIET between them, a shorter silence of at least this is still the place to cut
 REACH = 0.75  # quiet_of (the judge's proof reads the announcement's end with it) looks this far either side of the two seconds it is given
-# The cut rule. Where something else may be spoken between two verses (the announcement, a heading, a closing line: wherever the aligner was given a wildcard), a
-# quiet of STAR_QUIET or more is a pause around it: longer than a stop's closure inside a word, shorter than any pause a narrator leaves around a heading.
+# The cut rule. Where something else may be spoken between two verses (the announcement, a heading, a closing line, a word of a retake left in: wherever the aligner
+# was given a wildcard), the verse's own quiet is told from a stop's closure inside its word: a quiet of STAR_QUIET or more is a pause, and so is a shorter one
+# with more than a BLIP of sound on its far side (a stop's release is a blip; a word is not).
 STAR_QUIET = 0.2
+BLIP = 0.1
 SMOOTH_FRAMES = 3  # the quietest instant between two words is read from the level smoothed over this many frames (20 ms): one pitch period's trough is not a word boundary
 SLOP_PATH = Path(__file__).resolve().parent / 'player-slop.json'  # the player's margin, the ONE file: the judge widens each clip by the same numbers
 SPW_MIN, SPW_MAX = 0.12, 1.5  # seconds a word of a verse: outside this the chapter is left out
@@ -501,12 +504,16 @@ class Level:
         self.hop, self.frame = ms(HOP_SECONDS), ms(FRAME_SECONDS)
         quiet = (self.db < QUIET_DB).astype(np.int8)
         edges = np.flatnonzero(np.diff(np.concatenate(([0], quiet, [0]))))
-        self.quiets: list[tuple[int, int]] = []
+        self.quiets: list[tuple[int, int]] = []  # every quiet of MIN_QUIET or more
+        self.dips: list[tuple[int, int]] = []  # every silence of MIN_DIP or more, the quiets among them
         self.from_start = self.to_end = None  # the quiet the file begins with, the quiet it ends in
         for k, j in zip(edges[::2].tolist(), edges[1::2].tolist()):  # frames k .. j-1 are quiet
             # the frame before the first quiet one reaches a hop into it and is loud: the sound has died by the first quiet frame's start. The first loud frame
             # after the run starts a hop after the last quiet one, whose own length was quiet: the sound begins no earlier than that frame's end.
             run = (0 if k == 0 else k * self.hop, ms(self.duration) if j == len(quiet) else (j - 1) * self.hop + self.frame)
+            if run[1] - run[0] < ms(MIN_DIP):
+                continue
+            self.dips.append(run)
             if run[1] - run[0] < ms(MIN_QUIET):
                 continue
             self.quiets.append(run)
@@ -514,19 +521,22 @@ class Level:
                 self.from_start = run
             if j == len(quiet):
                 self.to_end = run
-        self.starts = [q[0] for q in self.quiets]
 
     def between(self, lo: int, hi: int) -> list[tuple[int, int]]:
-        """The quiets that lie between two letters, wholly or in part."""
+        """The quiets that lie between two letters, wholly or in part; where there is none of MIN_QUIET, the shorter silences there (John 1:24 has 75 ms between
+        two verses, Genesis 23:14 has 45)."""
         import bisect
 
-        found = []
-        for q in self.quiets[max(0, bisect.bisect_left(self.starts, lo) - 1):]:
-            if q[0] >= hi:
-                break
-            if q[1] > lo:
-                found.append(q)
-        return found
+        for runs in (self.quiets, self.dips):
+            found = []
+            for q in runs[max(0, bisect.bisect_left(runs, (lo, 0)) - 1):]:
+                if q[0] >= hi:
+                    break
+                if q[1] > lo:
+                    found.append(q)
+            if found:
+                return found
+        return []
 
     def quietest(self, lo: int, hi: int) -> int:
         """The quietest instant between two letters, where the narrator reads on with no quiet: the middle of the frame whose level, smoothed over SMOOTH_FRAMES,
@@ -572,7 +582,8 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     A boundary is what lies between the last letter of one verse and the first letter of the next (before the first verse: from second 0; after the last: to the
     file's end). Its quiet is the LONGEST quiet between the two letters (a stop's closure inside a word is a shorter one and stays with its word). Where something
     else may be spoken there (the announcement before the first verse, a heading, a closing line: wherever the aligner was given a wildcard) the verse before ends
-    in the FIRST quiet of STAR_QUIET or more and the verse after starts from the LAST one, so what is spoken between them is in neither verse.
+    in the FIRST quiet that is a pause and the verse after starts from the LAST one, so what is spoken between them is in neither verse. A pause is a quiet of
+    STAR_QUIET or more, or a shorter one with more than a BLIP of sound on its far side (a stop's closure has only its release there).
       1. The end is `tail` after the verse's last sound has died; the start is `lead` before its first sound begins (place_end, place_start; the two slops are the
          player's, from player-slop.json). So the clip at its longest holds nothing of a neighbour and the clip at its shortest loses nothing of its own.
       2. A quiet too short for that (less than twice the slop): the cut is the middle of the quiet, each side keeping what margin there is.
@@ -621,13 +632,17 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
                 listed(after, 'head', f'the narrator reads on from verse {verses[before]["n"]}: {between}; cut at the quietest instant between them', 0, starts[after])
             continue
         longest = max(found, key=lambda q: (q[1] - q[0], -q[0]))
-        pauses = [q for q in found if q[1] - q[0] >= ms(STAR_QUIET)] if star else []
-        first, last = (pauses[0], pauses[-1]) if pauses else (longest, longest)
+        first = last = longest
+        if star:
+            # the verse before ends in the first quiet that is a pause, the verse after starts from the last: what is spoken between the two is in neither
+            first = next(q for i, q in enumerate(found) if q[1] - q[0] >= ms(STAR_QUIET) or i + 1 == len(found) or found[i + 1][0] - q[1] > ms(BLIP))
+            last = next(q for i, q in reversed(list(enumerate(found))) if q[1] - q[0] >= ms(STAR_QUIET) or i == 0 or q[0] - found[i - 1][1] > ms(BLIP))
+            if first[0] > last[0]:
+                first = last = longest
         if at == 0:
-            first = last  # before the first verse only the last pause counts: what is spoken before it is the announcement
+            first = last  # before the first verse: what is spoken before its quiet is the announcement
         if at == count:
-            # after the last verse only the first pause counts; with none, nothing is read after it and its quiet is the one the file ends in
-            last = first = first if pauses or level.to_end not in found else level.to_end
+            last = first  # after the last verse: what is spoken after its quiet is a closing line (or nothing: the file ends in the quiet)
         died = first[0]
         onset = last[1]
         if at > 0:
