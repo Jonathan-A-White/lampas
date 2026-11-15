@@ -6,7 +6,7 @@ import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 /** Resource IDs of every bundled Logos sermon collection. */
 export const EVERY_LOGOS_SERMON: readonly string[] = Object.values(LOGOS_RESOURCES).flat();
 
-/** Clears the kept import, puts a row for each of these Resource IDs (every bundled Logos sermon collection by default; none for `[]`) and reloads. */
+/** Clears the kept import, puts a row for each of these Resource IDs (every bundled Logos sermon collection by default; none for `[]`, which keeps no import) with the import's note, and reloads. */
 export async function keepImport(page: Page, resources: readonly string[] = EVERY_LOGOS_SERMON): Promise<void> {
   await page.evaluate(
     (ids) =>
@@ -15,9 +15,13 @@ export async function keepImport(page: Page, resources: readonly string[] = EVER
         open.onerror = () => reject(open.error);
         open.onsuccess = () => {
           const db = open.result;
-          const tx = db.transaction('exportRows', 'readwrite');
+          const tx = db.transaction(['exportRows', 'meta'], 'readwrite');
           const store = tx.objectStore('exportRows');
           store.clear();
+          // the note of the import (src/data/repositories/library.ts importNote): the page treats an import as none without it, and draws its card 'Import your Logos list'
+          const meta = tx.objectStore('meta');
+          meta.delete('libraryImport');
+          if (ids.length > 0) meta.put({ key: 'libraryImport', value: JSON.stringify({ at: Date.now(), books: ids.length, matched: ids.length, newSince: 0, version: '' }) });
           for (const resource of ids) store.put({ resource, type: 'text.monograph.sermons', title: resource, series: '', languages: 'en', refs: '', matched: true });
           tx.oncomplete = () => {
             db.close();

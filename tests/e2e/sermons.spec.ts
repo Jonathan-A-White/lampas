@@ -242,6 +242,16 @@ test('with no Library import kept, an archive switched On is still not offered: 
   await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'My Sermon Notes' })).toHaveCount(0);
 });
 
+test('after a Library import is kept, the list of sermon sources does not ask him to import: no sources-import card, as an import with books is not none (mw-qtu3zvz.150)', async ({ page }) => {
+  await openUnlocked(page);
+  await turnLogosOn(page);
+  await keepImport(page); // the rows and the note of an import that holds the archives
+  await page.goto('/#/settings?sources=sermons');
+  await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
+  await expect(page.getByRole('radiogroup', { name: 'Greg Laurie\'s sermons', exact: true })).toBeVisible();
+  await expect(page.getByTestId('sources-import')).toHaveCount(0);
+});
+
 test('Settings > Study resources > Sermons opens the one list: a row for each bundled source, the Logos lists Off, and a source turned Off leaves its sermons out (mw-qtu3zvz.3, mw-qtu3zvz.92)', async ({ page }) => {
   await openUnlocked(page);
   await turnLogosOn(page);
