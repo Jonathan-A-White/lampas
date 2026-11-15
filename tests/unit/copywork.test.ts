@@ -95,3 +95,61 @@ describe('the answer', () => {
     expect(markedWords({ words: ['In', 'the'] }, answer)).toBeNull();
   });
 });
+
+describe('a lone-breathing word the model marked wrong for an accent it read from the breathing (mw-qtu3zvz.153)', () => {
+  const wrongWith = (word: string, written?: string, language: 'grc' | 'en' | 'hbo' = 'grc') =>
+    markedWords(
+      { words: [word], language },
+      { readable: true, words: [{ word, mark: 'wrong', problem: 'extra acute accent', ...(written !== undefined ? { written } : {}) }], fix_first: 'x' },
+    );
+
+  it.each([
+    ['ἡ', 'ἥ'],
+    ['ἡ', 'ἣ'],
+    ['ἡ', 'ἧ'],
+    ['ἡ', 'ή'],
+    ['ἡ', 'ὴ'],
+    ['ὁ', 'ὅ'],
+    ['οὐ', 'οὔ'],
+    ['εἰς', 'εἴς'],
+  ])('reads %s written %s as right', (word, written) => {
+    expect(wrongWith(word.normalize('NFC'), written.normalize('NFC'))).toEqual([{ word: word.normalize('NFC'), mark: 'right' }]);
+  });
+
+  it('reads the same with the written word in NFD', () => {
+    expect(wrongWith('ἡ', 'ἡ'.normalize('NFD').replace('̔', '̔́'))).toEqual([{ word: 'ἡ', mark: 'right' }]);
+  });
+
+  it.each([
+    ['ἡ', 'ἠ', 'smooth for rough'],
+    ['ἡ', 'η', 'no mark at all'],
+    ['ἡ', 'ἥν', 'a different letter count'],
+    ['ἡ', 'ἵ', 'a different letter'],
+    ['ἡ', 'ᾗ', 'an iota subscript added'],
+    ['ἡ', 'ἥ́', 'two accents'],
+    ['ἦν', 'ἦν', 'a request word with its own accent'],
+    ['ἥ', 'ή', 'a request word with its own accent'],
+  ])('keeps %s written %s wrong (%s)', (word, written) => {
+    expect(wrongWith(word, written)).toEqual([{ word, mark: 'wrong', problem: 'extra acute accent' }]);
+  });
+
+  it('keeps it wrong with no written field', () => {
+    expect(wrongWith('ἡ')).toEqual([{ word: 'ἡ', mark: 'wrong', problem: 'extra acute accent' }]);
+  });
+
+  it('keeps it wrong on an English or a Hebrew page, or one that names no language', () => {
+    expect(wrongWith('ἡ', 'ἥ', 'en')).toEqual([{ word: 'ἡ', mark: 'wrong', problem: 'extra acute accent' }]);
+    expect(wrongWith('ἡ', 'ἥ', 'hbo')).toEqual([{ word: 'ἡ', mark: 'wrong', problem: 'extra acute accent' }]);
+    expect(markedWords({ words: ['ἡ'] }, { readable: true, words: [{ word: 'ἡ', mark: 'wrong', written: 'ἥ' }], fix_first: 'x' })).toEqual([{ word: 'ἡ', mark: 'wrong' }]);
+  });
+
+  it('leaves a missing word, and a right one, as the model marked them', () => {
+    const answer: CopyworkAnswer = { readable: true, words: [{ word: 'ἡ', mark: 'missing', written: '' }, { word: 'ὁ', mark: 'right', written: 'ὁ' }], fix_first: 'x' };
+    expect(markedWords({ words: ['ἡ', 'ὁ'], language: 'grc' }, answer)).toEqual([{ word: 'ἡ', mark: 'missing' }, { word: 'ὁ', mark: 'right' }]);
+  });
+
+  it('takes a written field in an answer', () => {
+    expect(isCopyworkAnswer({ readable: true, words: [{ word: 'ἡ', mark: 'right', written: 'ἡ' }], fix_first: '' })).toBe(true);
+    expect(isCopyworkAnswer({ readable: true, words: [{ word: 'ἡ', mark: 'right', written: 7 }], fix_first: '' })).toBe(false);
+  });
+});
