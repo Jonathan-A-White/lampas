@@ -12,7 +12,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { isBookTimings, isTimingsIndex, TIMINGS_EDITION } from '../../src/data/audioTimings';
-import { cutsPath, edgeOf, hasCutsFile, hasRoom, listenKey, readJudged, readListen, readQuiet, readSlop, type Boundary, type JudgeFlag } from '../support/audio-cuts';
+import { cutsPath, edgeOf, hasCutsFile, headQuiet, listenKey, readJudged, readListen, readQuiet, readSlop, ruledEnd, ruledStart, tailQuiet, type Boundary, type JudgeFlag } from '../support/audio-cuts';
 
 const root = resolve(__dirname, '../..');
 const index: unknown = JSON.parse(readFileSync(resolve(root, `public/data/audio/${TIMINGS_EDITION}/index.json`), 'utf8'));
@@ -94,12 +94,8 @@ describe('the lock: no timings file ships unjudged', () => {
             unfounded.push(`${entry.verse} ${entry.edge}: no such boundary in the quiet file`);
             continue;
           }
-          const [, died, onset] = row;
-          const margin = entry.edge === 'head' ? slop.lead : slop.tail;
-          const readsOn = died === null && onset === null && row.length === 4;
-          const tight = died !== null && onset !== null && !hasRoom(died, onset, margin);
-          const fileEnds = entry.edge === 'tail' && died !== null && onset === null && timings.chapters[chapter].duration - died < margin;
-          if (!readsOn && !tight && !fileEnds) unfounded.push(`${entry.verse} ${entry.edge}: the quiet there is ${JSON.stringify(row)}, room enough for a margin of ${margin}`);
+          const ruled = entry.edge === 'head' ? ruledStart(headQuiet(row), slop) : ruledEnd(tailQuiet(row), timings.chapters[chapter].duration, slop);
+          if (!ruled.listed) unfounded.push(`${entry.verse} ${entry.edge}: the quiet there is ${JSON.stringify(row)}, room enough for the margin`);
         }
         expect(unfounded).toEqual([]);
         expect(new Set(listen.verses.map((entry) => listenKey(entry.verse, entry.edge))).size, 'an edge is listed once').toBe(listen.verses.length);

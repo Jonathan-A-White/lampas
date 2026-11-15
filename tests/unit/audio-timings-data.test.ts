@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { isBookTimings, isTimingsIndex, TIMINGS_EDITION } from '../../src/data/audioTimings';
-import { down2, hasRoom, listenKey, readListen, readQuiet, readSlop, up2, type Boundary } from '../support/audio-cuts';
+import { headQuiet, listenKey, readListen, readQuiet, readSlop, ruledEnd, ruledStart, tailQuiet } from '../support/audio-cuts';
 
 const root = resolve(__dirname, '../..');
 const readJson = (path: string): unknown => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -122,37 +122,6 @@ describe('the timing files the index lists', () => {
 const slop = readSlop();
 const thousandths = (seconds: number): number => Math.round(seconds * 1000);
 
-/** One edge of a verse as the maker measured it: the quiet it lies in (`died` null: nothing sounds before; `onset` null: the file ends in the quiet), or the cut of a boundary read on through. */
-interface EdgeQuiet {
-  died: number | null;
-  onset: number | null;
-  cut: number | null;
-}
-
-/** The quiet a verse's END lies in, from the boundary after it. Where something else is spoken between two verses (a heading), the row's fourth second is where that begins. */
-const tailQuiet = (row: Boundary): EdgeQuiet => (row.length === 4 ? { died: null, onset: null, cut: row[3] } : { died: row[1], onset: (row as number[])[3] ?? row[2], cut: null });
-/** The quiet a verse's START lies in, from the boundary before it; the row's fifth second is where what is spoken between ends. */
-const headQuiet = (row: Boundary): EdgeQuiet => (row.length === 4 ? { died: null, onset: null, cut: row[3] } : { died: (row as number[])[4] ?? row[1], onset: row[2], cut: null });
-
-/** Where the rule puts a verse's end, and whether the recording leaves no room for the margin there (so the edge is on the listen list). */
-function ruledEnd(quiet: EdgeQuiet, duration: number): { at: number; listed: boolean } {
-  if (quiet.cut !== null) return { at: down2(quiet.cut), listed: true };
-  if (quiet.died === null) throw new Error('a verse ends with no sound before its end');
-  const wanted = up2(quiet.died + slop.tail);
-  if (quiet.onset === null) return { at: Math.min(wanted, down2(duration)), listed: wanted > down2(duration) };
-  if (hasRoom(quiet.died, quiet.onset, slop.tail)) return { at: wanted, listed: false };
-  return { at: down2(Math.floor((thousandths(quiet.died) + thousandths(quiet.onset)) / 2) / 1000), listed: true };
-}
-
-/** Where the rule puts a verse's start, and whether the recording leaves no room for the margin there. */
-function ruledStart(quiet: EdgeQuiet): { at: number; listed: boolean } {
-  if (quiet.cut !== null) return { at: down2(quiet.cut), listed: true };
-  if (quiet.onset === null) throw new Error('a verse starts with no sound after its start');
-  const wanted = Math.max(0, down2(quiet.onset - slop.lead));
-  if (quiet.died === null || hasRoom(quiet.died, quiet.onset, slop.lead)) return { at: wanted, listed: false };
-  return { at: up2(Math.ceil((thousandths(quiet.died) + thousandths(quiet.onset)) / 2) / 1000), listed: true };
-}
-
 describe("the cut rule: both edges of every verse lie where the recording's level and the player's margin put them", () => {
   if (!isTimingsIndex(index)) throw new Error('index fails its guard');
   for (const book of Object.keys(index.books)) {
@@ -190,12 +159,12 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
     });
 
     it(`${book}: every verse's END is where the rule puts it: the tail slop after its last sound has died; the middle of a quiet too short for the margin; the quietest instant where the narrator reads on`, () => {
-      const wrong = verses.filter((v) => !v.tail || v.end !== ruledEnd(v.tail, v.duration).at).map((v) => `${v.at} ends ${v.end}, the rule says ${v.tail ? ruledEnd(v.tail, v.duration).at : 'nothing: no boundary'}`);
+      const wrong = verses.filter((v) => !v.tail || v.end !== ruledEnd(v.tail, v.duration, slop).at).map((v) => `${v.at} ends ${v.end}, the rule says ${v.tail ? ruledEnd(v.tail, v.duration, slop).at : 'nothing: no boundary'}`);
       expect(wrong).toEqual([]);
     });
 
     it(`${book}: every verse's START is where the rule puts it: the lead slop before its first sound begins; the middle of a quiet too short for the margin; the quietest instant where the narrator reads on`, () => {
-      const wrong = verses.filter((v) => !v.head || v.start !== ruledStart(v.head).at).map((v) => `${v.at} starts ${v.start}, the rule says ${v.head ? ruledStart(v.head).at : 'nothing: no boundary'}`);
+      const wrong = verses.filter((v) => !v.head || v.start !== ruledStart(v.head, slop).at).map((v) => `${v.at} starts ${v.start}, the rule says ${v.head ? ruledStart(v.head, slop).at : 'nothing: no boundary'}`);
       expect(wrong).toEqual([]);
     });
 
@@ -246,8 +215,8 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
     it(`${book}: the listen list holds every edge the recording leaves no room for, by the maker's measure`, () => {
       const missing: string[] = [];
       for (const v of verses) {
-        if (v.tail && ruledEnd(v.tail, v.duration).listed && !onList.has(listenKey(v.at, 'tail'))) missing.push(`${v.at} tail`);
-        if (v.head && ruledStart(v.head).listed && !onList.has(listenKey(v.at, 'head'))) missing.push(`${v.at} head`);
+        if (v.tail && ruledEnd(v.tail, v.duration, slop).listed && !onList.has(listenKey(v.at, 'tail'))) missing.push(`${v.at} tail`);
+        if (v.head && ruledStart(v.head, slop).listed && !onList.has(listenKey(v.at, 'head'))) missing.push(`${v.at} head`);
       }
       expect(missing).toEqual([]);
     });

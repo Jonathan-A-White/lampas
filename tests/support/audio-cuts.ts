@@ -108,3 +108,34 @@ export const down2 = (seconds: number): number => (Math.floor(ms(seconds) / 10) 
 
 /** Whether a quiet from `died` to `onset` holds an edge with the player's `slop` either side of it, to the timings' two decimals. */
 export const hasRoom = (died: number, onset: number, slop: number): boolean => ms(up2(died + slop)) <= ms(down2(onset - slop));
+
+/** One edge of a verse as the maker measured it: the quiet it lies in (`died` null: nothing sounds before; `onset` null: the file ends in the quiet), or the cut of a boundary read on through. */
+export interface EdgeQuiet {
+  died: number | null;
+  onset: number | null;
+  cut: number | null;
+}
+
+/** The quiet a verse's END lies in, from the boundary after it. Where something else is spoken between two verses (a heading), the row's fourth second is where that begins. */
+export const tailQuiet = (row: Boundary): EdgeQuiet => (row.length === 4 ? { died: null, onset: null, cut: row[3] } : { died: row[1], onset: (row as number[])[3] ?? row[2], cut: null });
+/** The quiet a verse's START lies in, from the boundary before it; the row's fifth second is where what is spoken between ends. */
+export const headQuiet = (row: Boundary): EdgeQuiet => (row.length === 4 ? { died: null, onset: null, cut: row[3] } : { died: (row as number[])[4] ?? row[1], onset: row[2], cut: null });
+
+/** Where the cut rule puts a verse's end (align.py place_end), and whether the recording leaves no room for the margin there, so the edge is on the listen list. */
+export function ruledEnd(quiet: EdgeQuiet, duration: number, slop: Slop): { at: number; listed: boolean } {
+  if (quiet.cut !== null) return { at: down2(quiet.cut), listed: true };
+  if (quiet.died === null) throw new Error('a verse ends with no sound before its end');
+  const wanted = up2(quiet.died + slop.tail);
+  if (quiet.onset === null) return { at: Math.min(wanted, down2(duration)), listed: wanted > down2(duration) };
+  if (hasRoom(quiet.died, quiet.onset, slop.tail)) return { at: wanted, listed: false };
+  return { at: down2(Math.floor((ms(quiet.died) + ms(quiet.onset)) / 2) / 1000), listed: true };
+}
+
+/** Where the cut rule puts a verse's start (align.py place_start), and whether the recording leaves no room for the margin there. */
+export function ruledStart(quiet: EdgeQuiet, slop: Slop): { at: number; listed: boolean } {
+  if (quiet.cut !== null) return { at: down2(quiet.cut), listed: true };
+  if (quiet.onset === null) throw new Error('a verse starts with no sound after its start');
+  const wanted = Math.max(0, down2(quiet.onset - slop.lead));
+  if (quiet.died === null || hasRoom(quiet.died, quiet.onset, slop.lead)) return { at: wanted, listed: false };
+  return { at: up2(Math.ceil((ms(quiet.died) + ms(quiet.onset)) / 2) / 1000), listed: true };
+}
