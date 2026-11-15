@@ -27,6 +27,8 @@ export interface PageSpec {
   replace?: Record<number, string>;
   leaveOut?: number[];
   stopAt?: number;
+  /** Words (by their place on the page) drawn bigger, as a multiple of the page's type: a lone breathing (ἡ) is a curl the model reads as an accent at the page's size (mw-qtu3zvz.153). */
+  enlarge?: Record<number, number>;
 }
 
 export const COPYWORK_PAGES: Record<string, PageSpec> = {
@@ -37,7 +39,7 @@ export const COPYWORK_PAGES: Record<string, PageSpec> = {
   'grc-perfect-john-1-1': { language: 'grc' },
   'grc-errors-john-1-1': { language: 'grc', replace: { 1: 'ἀρχή', 9: 'πρός' } },
   'grc-dictation-perfect-john-1-1': { language: 'grc' },
-  'grc-dictation-sounds-alike-john-1-5': { language: 'grc', replace: { 5: 'σκοτεία', 6: 'φένει' } },
+  'grc-dictation-sounds-alike-john-1-5': { language: 'grc', replace: { 5: 'σκοτεία', 6: 'φένει' }, enlarge: { 8: 1.4 } },
   'hbo-perfect-genesis-1-1': { language: 'hbo' },
   'hbo-errors-genesis-1-1': { language: 'hbo', replace: { 1: 'ברא' }, leaveOut: [5] },
   'hbo-dictation-perfect-genesis-1-3': { language: 'hbo' },
@@ -79,7 +81,7 @@ export function pageHtml(name: string, words: string[], spec: PageSpec): string 
     .map((f) => `@font-face{font-family:'${font.family}';font-weight:${font.weight};src:url(data:font/woff2;base64,${readFileSync(join(FONT_DIR, f)).toString('base64')}) format('woff2');}`)
     .join('\n');
   const spans = words
-    .map((w) => `<span style="transform:translateY(${rise(rand() * 20 - 10)}px) rotate(${((rand() * 3 - 1.5) * tilt).toFixed(2)}deg);margin-inline-end:${(52 + rand() * 40).toFixed(0)}px">${w}</span>`)
+    .map((w, i) => `<span style="${spec.enlarge?.[i] ? `font-size:${Math.round(font.size * spec.enlarge[i])}px;` : ''}transform:translateY(${rise(rand() * 20 - 10)}px) rotate(${((rand() * 3 - 1.5) * tilt).toFixed(2)}deg);margin-inline-end:${(52 + rand() * 40).toFixed(0)}px">${w}</span>`)
     .join('');
   return `<!doctype html><html lang="${spec.language === 'hbo' ? 'he' : spec.language === 'grc' ? 'el' : 'en'}" dir="${rtl ? 'rtl' : 'ltr'}"><meta charset="utf-8"><style>
 ${faces}
