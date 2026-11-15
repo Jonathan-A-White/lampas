@@ -39,7 +39,7 @@ export const COPYWORK_PAGES: Record<string, PageSpec> = {
   'grc-perfect-john-1-1': { language: 'grc' },
   'grc-errors-john-1-1': { language: 'grc', replace: { 1: 'ἀρχή', 9: 'πρός' } },
   'grc-dictation-perfect-john-1-1': { language: 'grc' },
-  'grc-dictation-sounds-alike-john-1-5': { language: 'grc', replace: { 5: 'σκοτεία', 6: 'φένει' }, enlarge: { 8: 1.4 } },
+  'grc-dictation-sounds-alike-john-1-5': { language: 'grc', replace: { 5: 'σκοτεία', 6: 'φένει' }, enlarge: { 8: 1.8 } },
   'hbo-perfect-genesis-1-1': { language: 'hbo' },
   'hbo-errors-genesis-1-1': { language: 'hbo', replace: { 1: 'ברא' }, leaveOut: [5] },
   'hbo-dictation-perfect-genesis-1-3': { language: 'hbo' },
