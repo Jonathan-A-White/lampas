@@ -147,7 +147,7 @@ docs/ask-tutor.md # the tutor: what it is told, offers, bridge, profile, memory,
 docs/verse-view.md # the Verse view: actions, passages, Listen, Quiz me, study way
 docs/tutor-doors.md # every in-page tutor button audited against the floating ?: what each sends
 docs/read-aloud.md # read aloud: the span, speaking bar, the tutor's responses, pages of prose
-docs/audio-player-margin.md # David's player's margin, measured
+docs/audio-player-margin.md # David's player margin
 docs/reading-ladder.md # verses scored by pronunciation difficulty, drills
 docs/grammar.md # the grammar ladder, placement, Drill it, idea sheet, Goal screen
 docs/frontier.md # the frontier picker, the pace and the teach sheet for new words
