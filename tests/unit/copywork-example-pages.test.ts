@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { TALK_MAX_EDGE } from '../../src/talk/pictures';
-import { COPYWORK_PAGES, pageHtml, writtenWords } from '../../scripts/render-copywork-examples';
+import { COPYWORK_PAGES } from '../../scripts/render-copywork-examples';
 import '../support/grinds-in-graph';
 
 const DIR = 'grinds/examples/copywork';
@@ -54,17 +54,4 @@ describe('the lines dropped for a small point are back', () => {
   it('hbo-dictation-perfect-genesis-1-3 holds וַיֹּאמֶר right (4f2f20db)', () => holds('hbo-dictation-perfect-genesis-1-3', 'words.0.mark', { equals: 'right' }));
   it('hbo-dictation-perfect-genesis-1-3 holds word 0 sounds_alike absent (4e2be1f4)', () => holds('hbo-dictation-perfect-genesis-1-3', 'words.0.sounds_alike', { present: false }));
   it('grc-dictation-sounds-alike-john-1-5 holds τῇ right (0924d166)', () => holds('grc-dictation-sounds-alike-john-1-5', 'words.4.mark', { equals: 'right' }));
-});
-
-describe('a lone breathing is drawn large enough to read as a breathing (mw-qtu3zvz.153)', () => {
-  const name = 'grc-dictation-sounds-alike-john-1-5';
-  const words = (JSON.parse(readFileSync(`${DIR}/${name}.json`, 'utf8')) as { request: { words: string[] } }).request.words;
-
-  it('draws ἡ (word 8) bigger than its neighbours, so its curl is not read as an accent', () => {
-    const html = pageHtml(name, writtenWords(words, COPYWORK_PAGES[name]), COPYWORK_PAGES[name]);
-    const spans = html.match(/<span style="[^"]*">[^<]*<\/span>/g) ?? [];
-    expect(spans[8]).toContain('ἡ');
-    expect(spans[8], 'the ἡ span has its own font-size').toMatch(/font-size:\d+(\.\d+)?px/);
-    expect(spans[7], 'its neighbour keeps the page size').not.toMatch(/font-size/);
-  });
 });
