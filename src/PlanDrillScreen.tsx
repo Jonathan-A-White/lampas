@@ -1,13 +1,14 @@
 // src/PlanDrillScreen.tsx — one short drill of Your drill plan (mw-i7xe0n.4, docs/grammar.md 'Your drill plan'): a full screen that asks 4 to 6 questions of one weak facet of an idea
 // (data/grammar/drillPlan.ts shortDrill), one at a time as Drill it draws them (GrammarCard, multiple choice), then says how many were right and whether this step of the plan is done
 // (facetPassed: one miss is allowed), with the round Ask the tutor button at the foot's right end on that result (mw-5r3p30.649, as on Drill it). It writes nothing: Done hands the verdict to onFinish (the Result of Drill it and the Review card put it on the plan, drillPlans.ts answerPlanItem).
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { DialogAskTutor } from './AskTutor';
 import { facetPassed, withFetched } from './data/grammar/drillPlan';
 import type { DrillQuestion } from './data/grammar/drillIt';
 import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
+import { OverDrill } from './overDrill';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
 import { StudyList } from './review/StudyList';
@@ -24,7 +25,7 @@ import { useSettled } from './ui/settle';
 
 const BUTTON = 'min-h-12 w-full rounded-xl border text-lg font-medium';
 
-export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish, onClose }: {
+function PlanDrillRun({ ideaId, facetLabel, questions: built, onFinish, onClose }: {
   ideaId: string;
   facetLabel: string;
   questions: readonly DrillQuestion[];
@@ -133,5 +134,14 @@ export function PlanDrillScreen({ ideaId, facetLabel, questions: built, onFinish
       </FootBar>
       <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={over ? drillSuggestions(talkScreen) : workSuggestions('this short drill')} />
     </div>
+  );
+}
+
+/** The short drill; what opens over it is told it stands over a drill, as over Drill it (src/overDrill.ts, mw-indx1x6.29). */
+export function PlanDrillScreen(props: ComponentProps<typeof PlanDrillRun>) {
+  return (
+    <OverDrill.Provider value={true}>
+      <PlanDrillRun {...props} />
+    </OverDrill.Provider>
   );
 }

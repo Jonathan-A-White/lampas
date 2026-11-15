@@ -74,6 +74,21 @@ Feature: A wrong answer links to what teaches it
     And the lesson has no Table link, though "The article" teaches the idea "article"
     And the drill is still on the question he missed
 
+  # mw-indx1x6.29: the lesson's own Drill it button would start a second drill over the one he is in, and Try it on a verse a second run of questions whose 'Read it' leaves
+  # for the verse; over a drill the lesson has neither. The level slider is left as it is: sliding to 'I know it' marks the idea, a different act.
+  Scenario: The lesson opened over a drill has no Drill it button, which would start a second drill over the first
+    Given Drill it is open on the idea "noun"
+    When he answers the drill's question wrong
+    And he taps the lesson of the idea "noun"
+    Then the lesson of the idea "noun" is open over the drill
+    And the lesson has no "Drill it" button and no "Try it on a verse" button, though it has its level slider
+    And the drill is still on the question he missed
+
+  # the same lesson anywhere else (a list of ideas such as Settings > Grammar approach, the Goal, Review) keeps both
+  Scenario: The same lesson opened from a list of ideas keeps its Drill it button
+    Given the lesson of the idea "noun" is open as it is from a list of ideas
+    Then the lesson has the buttons "Drill it" and "Try it on a verse"
+
   # Review keeps its round (src/review/keptRound.ts), so leaving it for a table loses nothing: there the lesson keeps its link
   Scenario: The lesson opened over Review keeps its Table link
     Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
@@ -82,6 +97,7 @@ Feature: A wrong answer links to what teaches it
     And he taps the lesson of the idea "declension-1"
     Then the lesson of the idea "declension-1" is open over Review
     And the lesson has the link "Table: Noun endings"
+    And the lesson also has its "Drill it" button
 
   # the sheet's other link to a page of its own, a letter's Hard sounds lesson, goes the same way
   Scenario: A letter's lesson over a drill has no link to its Hard sounds lesson

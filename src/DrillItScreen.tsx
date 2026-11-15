@@ -4,7 +4,7 @@
 // 'Weak:' by facet, and Done, with the round Ask the tutor button at the foot's right end (mw-5r3p30.649): the tutor it opens is told every question of the run, his answer, the
 // right answer and whether he was right (src/tutor/drillTalk.ts). The screen writes nothing: it hands the finished result to onResult (the sheet keeps the run and moves the level, grammarLevels.ts recordDrill).
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import type { Chapter } from './data/chapter';
 import { addFetched, answer as answerWalk, enoughToProve, PROVED_STREAK, serveFetched, start, type DrillResult, type DrillWalk } from './data/grammar/drillIt';
 import { planFrom, shortDrill, type PlanItem } from './data/grammar/drillPlan';
@@ -17,6 +17,7 @@ import { DialogAskTutor } from './AskTutor';
 import { answerPlanItem, askedKeys, getDrillPlan, listUnseenFetched, takeAllFetched, takeFetchedItems, type DrillMode } from './data/repositories';
 import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
+import { OverDrill } from './overDrill';
 import { PlanDrillScreen } from './PlanDrillScreen';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked, whyCannotAsk } from './review/moreItems';
@@ -134,7 +135,7 @@ function Result({ result, mode, passage, tries }: { result: DrillResult; mode: D
   );
 }
 
-export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
+function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
   ideaId: string;
   mode: DrillMode;
   /** the chapters the questions about forms are drawn from; none asks only what the idea says of itself */
@@ -313,5 +314,17 @@ export function DrillItScreen({ ideaId, mode, passage, onResult, onClose }: {
       </FootBar>
       <DialogAskTutor kept={talkKey} screen={talkScreen} suggestions={result ? drillSuggestions(talkScreen) : workSuggestions('this drill')} />
     </div>
+  );
+}
+
+/**
+ * Drill it. What opens over it (the lesson of a 'Study this' row, a word's sheet, the tutor's bridge) is told it stands over a drill (src/overDrill.ts), so an idea sheet there
+ * draws no Drill it of its own: it would start a second drill over this one (mw-indx1x6.29).
+ */
+export function DrillItScreen(props: ComponentProps<typeof DrillItRun>) {
+  return (
+    <OverDrill.Provider value={true}>
+      <DrillItRun {...props} />
+    </OverDrill.Provider>
   );
 }

@@ -9,7 +9,8 @@
 // a breathing ...), the items as tiles above the text, each to hear (TeachTiles). On its side the foot is a column at the right. At the foot
 // the level SLIDER (mw-i7xe0n.3: Not yet · Learning · I know it, resting on the idea's level; Learning is frontier and due tomorrow; I know it opens Drill it
 // to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button, 'Try it on a verse' (mw-emk3xt.4: the easiest verse of the
-// passage at his level that has a form of the idea, three questions on it, then 'Read it'; src/TryItSheet.tsx; left out when no verse has one) and Ask the tutor; the level shows as a chip
+// passage at his level that has a form of the idea, three questions on it, then 'Read it'; src/TryItSheet.tsx; left out when no verse has one) and Ask the tutor (over a drill,
+// src/overDrill.ts, neither Drill it nor Try it on a verse is drawn: each would start a second run of questions over the drill, mw-indx1x6.29); the level shows as a chip
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
 // Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
@@ -38,6 +39,7 @@ import { ReedKellogg } from './diagram/ReedKellogg';
 import { LessonTalk } from './AskTutor';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
+import { useOverDrill } from './overDrill';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
 import { LetterDrillScreen } from './LetterDrillScreen';
 import { learnLabel, lessonsForSheet } from './hardSounds/lessons';
@@ -520,6 +522,9 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
 }) {
   const dismiss = onDismiss ?? onClose;
   const { drag, handle } = useSheetDrag(dismiss);
+  // over a drill (src/overDrill.ts) the sheet's buttons start no run of questions of their own: no Drill it, which would be a second drill over the one he is in, and no Try it on a
+  // verse, whose 'Read it' leaves for the verse (mw-indx1x6.29). The slider is as ever: 'I know it' still proves itself with a drill, since marking the idea is a different act.
+  const overDrill = useOverDrill();
   // a tile's own idea sheet opens over this one
   const [opened, setOpened] = useState<GrammarIdea | null>(null);
   // Try it on a verse (mw-emk3xt.4): offered when a verse of the passage has a form of the idea; it takes the Escape while it is up
@@ -833,12 +838,12 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             </button>
           )}
           <div className="mt-1 flex flex-wrap gap-2">
-            {!drillable ? null : (
+            {!drillable || overDrill ? null : (
               <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
                 Drill it
               </button>
             )}
-            {passage && hasFormOf(idea.id, passage.chapters, passage.verse) ? (
+            {passage && !overDrill && hasFormOf(idea.id, passage.chapters, passage.verse) ? (
               <button type="button" onClick={() => setTrying(true)} className={`${BUTTON} border-line text-accent active:bg-line`}>
                 Try it on a verse
               </button>
