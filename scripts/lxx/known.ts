@@ -12,6 +12,7 @@ import { pathToFileURL } from 'node:url';
 import { RAW_DIR, type Fetcher } from './sources';
 import { applyChoices, isGuess, readChoices, type Choice } from './choices';
 import { deriveBook, loadInput, train, type BookResult, type DeriveInput, type Trained } from './derive';
+import { dictionaryRows } from './parser';
 import { inNa28, readTagnt, type TagntRow } from './tagnt';
 
 /** Where a chapter's choices are kept: data/lxx/known/<book>-<chapter>.tsv (jhn-1.tsv), apart from the choices for Swete's books (data/lxx/choices). */
@@ -36,7 +37,7 @@ export function parseChapter(text: string): ChapterRef {
 export function chapterRows(tagnt: readonly string[], ref: ChapterRef): TagntRow[] {
   const book = ref.book.toLowerCase();
   const seen = new Set<string>();
-  const rows = readTagnt(tagnt)
+  const rows = dictionaryRows(readTagnt(tagnt))
     .filter((r) => r.book.toLowerCase() === book && r.chapter === ref.chapter && inNa28(r))
     .filter((r) => !seen.has(`${r.verse}#${r.word}`) && !!seen.add(`${r.verse}#${r.word}`))
     .sort((a, b) => a.verse - b.verse || a.word - b.word);

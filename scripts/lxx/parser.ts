@@ -9,6 +9,37 @@ import { bareOf, keyOf } from './swete';
 import { fits, posKey, type Lexicon, type TbesgName } from './tbesg';
 import { inNa28, type Analysis, type TagntRow } from './tagnt';
 
+/**
+ * The verbs TAGNT and TBESG lemmatise under an active -ω that the New Testament has only in the middle or passive (a middle deponent): πορεύω (G4198, 153 words
+ * of TAGNT, TBESG's headword too) is πορεύομαι in every dictionary, and so are its compounds that TAGNT lemmatises so (παραπορεύομαι, συμπορεύομαι, προσπορεύομαι and
+ * ἐπιπορεύομαι it already writes with the ending the verb has). Story mw-u2w5klk.372: the Septuagint's ἐπορεύθημεν
+ * (Jos.24:17#25) was listed under πορεύω. Other -εύω verbs (πιστεύω, βασιλεύω) have an active voice and stay as they are.
+ */
+export const DEPONENT_LEMMAS: ReadonlyMap<string, string> = new Map(
+  ['πορεύω', 'ἐκπορεύω', 'εἰσπορεύω', 'διαπορεύω', 'προπορεύω'].map((l) => [l.normalize('NFC'), `${l.slice(0, -1)}ομαι`.normalize('NFC')] as const),
+);
+
+/** The dictionary lemma of a lemma as TAGNT or TBESG write it: a middle deponent's -ομαι (DEPONENT_LEMMAS), any other lemma as it is. */
+export const dictionaryLemma = (lemma: string): string => DEPONENT_LEMMAS.get(lemma.normalize('NFC')) ?? lemma;
+
+/** TAGNT's rows with each lemma as dictionaryLemma writes it, for layer 1 and layer 2 alike (the rows themselves are the New Testament's, not changed). */
+export const dictionaryRows = (rows: readonly TagntRow[]): TagntRow[] => rows.map((r) => (dictionaryLemma(r.lemma) === r.lemma ? r : { ...r, lemma: dictionaryLemma(r.lemma) }));
+
+/** TBESG's lemmas as dictionaryLemma writes them, each filed under its new bare letters (a lexicon's keys). */
+export function dictionaryLexicon(lexicon: Lexicon): Lexicon {
+  const out: Lexicon = new Map();
+  for (const entries of lexicon.values()) {
+    for (const e of entries) {
+      const lemma = dictionaryLemma(e.lemma);
+      const key = bareOf(lemma);
+      const list = out.get(key) ?? [];
+      list.push(lemma === e.lemma ? e : { ...e, lemma });
+      out.set(key, list);
+    }
+  }
+  return out;
+}
+
 /** One of a form's candidates from the parser: an analysis, and what produced it, the most support first. */
 export interface Candidate extends Analysis {
   via: string[];
@@ -435,7 +466,9 @@ export interface Parser {
 }
 
 /** Trains the parser on TAGNT's rows (a hidden book already left out) with TBESG's lemmas, and the names that do not decline (none when not given). */
-export function trainParser(rows: readonly TagntRow[], lexicon: Lexicon, names: NameIndex = NO_NAMES): Parser {
+export function trainParser(tagntRows: readonly TagntRow[], tbesgLexicon: Lexicon, names: NameIndex = NO_NAMES): Parser {
+  const rows = dictionaryRows(tagntRows);
+  const lexicon = dictionaryLexicon(tbesgLexicon);
   const ntPos = new Map<string, Set<string>>();
   for (const r of rows) {
     let s = ntPos.get(r.lemma);

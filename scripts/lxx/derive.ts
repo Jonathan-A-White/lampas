@@ -23,7 +23,7 @@ import { RAW_DIR, STEP, SWETE, SWETE_VERSIFICATION, SWETE_WORDS, TAGNT_FILES, fe
 import { AGREEMENT_LAYER, checkAgreement, type AgreementStats } from './agreement';
 import { bareOf, bookOf, hasAccent, hasLower, hasTwoAccents, keyOf, spellings, sweteTokens, type EditorSign, type SweteWord } from './swete';
 import { analysesOf, formIndex, readTagnt, settle, type Analysis, type FormIndex } from './tagnt';
-import { byAnalogy, formNameCandidates, formNameLemma, indeclinableNames, isCapital, isThinLone, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
+import { byAnalogy, dictionaryRows, formNameCandidates, formNameLemma, indeclinableNames, isCapital, isThinLone, nameCandidates, parse, settleParsed, trainParser, type Candidate, type Parser } from './parser';
 import { TBESG_FILE, lemmaCount, readTbesg, readTbesgNames } from './tbesg';
 
 export const OUT_DIR = join('data', 'lxx');
@@ -257,7 +257,7 @@ export interface Trained {
 }
 
 export function train(input: DeriveInput, hide?: string): Trained {
-  const rows = readTagnt(input.tagnt, hide);
+  const rows = dictionaryRows(readTagnt(input.tagnt, hide));
   return { index: formIndex(rows), parser: trainParser(rows, readTbesg(input.tbesg), indeclinableNames(rows, readTbesgNames(input.tbesg))), lowerCase: lowerCaseForms(input) };
 }
 

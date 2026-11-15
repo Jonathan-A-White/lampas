@@ -5,6 +5,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DerivedWord, PendingWord, WordCandidate } from './derive';
+import { dictionaryLemma } from './parser';
 
 /** unsure: the model chose among the candidates but said so; guess: its own answer, which is a guess whatever the candidates were */
 export type ChoiceMark = '' | 'unsure' | 'guess';
@@ -37,7 +38,8 @@ const MARKS: readonly string[] = ['', 'unsure', 'guess'];
  * Whether two lemmas are one name but for a diaeresis: TBESG's Καϊνάν and TAGNT's file's Καινάν (story mw-u2w5klk.19). A choice that names the one is the other's candidate;
  * the lemma written is the candidate's. Any other difference (an accent, a breathing, a letter) stays a different lemma.
  */
-export const sameLemma = (a: string, b: string): boolean => a.normalize('NFD').replaceAll('\u0308', '') === b.normalize('NFD').replaceAll('\u0308', '');
+export const sameLemma = (a: string, b: string): boolean => plain(dictionaryLemma(a)) === plain(dictionaryLemma(b));
+const plain = (lemma: string): string => lemma.normalize('NFD').replaceAll('\u0308', '');
 
 /** The choices of one file, by reference. A malformed line or a reference twice is an error naming the line. */
 export function readChoices(text: string, source = 'choices file'): Map<string, Choice> {
