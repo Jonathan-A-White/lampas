@@ -345,7 +345,10 @@ step by step, back off by halves when it is too hard, "kind of like a binary sea
   (src/DrillItScreen.tsx, below), and `known` (solid, the 30-day step, due in 30 days) is written only by a pass (how `drill`, the pill 'Proved by drill 3 Oct') or
   by the small text button **Mark known without a drill** under the slider (how `sheet`; not shown once the idea is solid). The row is put in place even if the
   idea was scheduled, keeping its lapses and rights. All publish `grammar-level-changed` and `idea-taught` (docs/events.md). A **Drill it** button sits beside
-  *Ask the tutor* (the same walk in practice mode). *Ask the tutor* is, from a word's Grammar sheet, the Talk sheet with focus `{term, kind: 'grammar-term'}`, the idea's first term (its
+  *Ask the tutor* (the same walk in practice mode). **Over a drill** (mw-indx1x6.29, PROVISIONAL: the lesson of a 'Study this' row or of a Study list in Drill it, the short drill or the
+  Parsing drill, and any idea sheet opened from a sheet over one) the sheet draws no *Drill it* and no *Try it on a verse*: either would start a second run of questions over the drill he
+  is in. The drill's screen says so through `OverDrill` (`src/overDrill.ts`; `tests/unit/over-drill.test.ts` fails on a drill screen that does not). The slider is as ever: *I know it*
+  still opens Drill it in prove mode, since marking the idea is a different act. *Ask the tutor* is, from a word's Grammar sheet, the Talk sheet with focus `{term, kind: 'grammar-term'}`, the idea's first term (its
   title for an idea with no term); on an idea sheet opened anywhere else (the Goal, Learn next, the path, the Lesson strip, Paradigms) it is a talk about the lesson itself: a Talk sheet
   inside the idea sheet whose `screen` is the lesson (its id and title, level, worked example and steps, docs/ask-tutor.md), kept under `screen.lesson.<idea id>` (mw-5r3p30.818). The level shows as a chip ('Frontier since Tuesday').
 - **Built on what is solid.** The sheet teaches only its own idea and takes every idea it needs (ladder `needs`) to be solid. When one is not (`unmetNeed`, the lowest
