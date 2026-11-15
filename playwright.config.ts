@@ -64,6 +64,8 @@ export default defineConfig({
   // The preset's budgets (tests/support/timeouts.ts re-exports them): timeout 60 s and expect.timeout 20 s, because the 5 s Playwright gives expect() was outrun on a loaded host.
   ...playwrightTimeouts,
   fullyParallel: false,
+  // mw gives a gate, an after-landing run and a Builder's test run JOBS (builder_jobs); Playwright reads workers only here. Unset is Playwright's own default (half the cores).
+  workers: process.env.JOBS ? Number(process.env.JOBS) : undefined,
   reporter: 'list',
   use: {
     baseURL: PREVIEW_BASE_URL,
