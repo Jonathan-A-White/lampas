@@ -11,11 +11,16 @@ export const EVERY_LOGOS_SERMON: readonly string[] = Object.values(LOGOS_RESOURC
 export const EVERY_BOOK_IDS: readonly string[] = CATALOGUE.map((e) => e.resource);
 export const EVERY_BOOK: ReadonlySet<string> = new Set(EVERY_BOOK_IDS);
 
-/** Keeps an import that holds these Resource IDs (every bundled Logos sermon collection by default), replacing any kept before. */
+/** Keeps an import that holds these Resource IDs (every bundled Logos sermon collection by default), replacing any kept before, with its note (importNote), as an import has: none for `[]`, which keeps no import. */
 export async function keepImport(resources: readonly string[] = EVERY_LOGOS_SERMON): Promise<void> {
   await db.exportRows.clear();
+  await db.meta.delete('libraryImport');
+  if (resources.length > 0) await db.meta.put({ key: 'libraryImport', value: JSON.stringify({ at: Date.now(), books: resources.length, matched: resources.length, newSince: 0, version: '' }) });
   await db.exportRows.bulkPut(resources.map((resource) => ({ resource, type: 'text.monograph.sermons', title: resource, series: '', languages: 'en', refs: '', matched: true })));
 }
 
 /** Forgets the kept import. */
-export const forgetImport = (): Promise<void> => db.exportRows.clear();
+export const forgetImport = async (): Promise<void> => {
+  await db.exportRows.clear();
+  await db.meta.delete('libraryImport');
+};
