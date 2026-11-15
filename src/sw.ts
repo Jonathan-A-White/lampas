@@ -89,6 +89,26 @@ registerRoute(
   new CacheFirst({ cacheName: DATA_CACHE }),
 );
 
+// The wake word's model (/assets/hey-lampas-<hash>.json, about 470 KB; src/handsFree/session.ts, mw-rl10piw.6) is not in the precache, so the app's first download is
+// as it was: it is fetched the first time Hands-free is turned On and kept here, so a later start works with no signal. Its name carries the build's hash, so the
+// copy kept is served with no fetch; a new model comes under a new name, and keeping it lets the old one go.
+const WAKE_CACHE = 'lampas-wake';
+const isWakeModel = (url: URL): boolean => url.origin === self.location.origin && /^\/assets\/hey-lampas-[\w-]+\.json$/.test(url.pathname);
+registerRoute(
+  ({ url, request }) => request.method === 'GET' && isWakeModel(url),
+  new CacheFirst({
+    cacheName: WAKE_CACHE,
+    plugins: [
+      {
+        cacheDidUpdate: async ({ request }) => {
+          const cache = await self.caches.open(WAKE_CACHE);
+          for (const key of await cache.keys()) if (key.url !== request.url) await cache.delete(key);
+        },
+      },
+    ],
+  }),
+);
+
 // A tap on the 'Update ready' banner sends {type:'SKIP_WAITING'}: this build takes over at once.
 self.addEventListener('message', (event) => {
   const data = event.data as { type?: string } | undefined;
