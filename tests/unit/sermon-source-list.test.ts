@@ -97,6 +97,16 @@ describe('the one list of sermon sources', () => {
     expect(books.find((i) => i.id === b.resource)!.on).toBe(false);
   });
 
+  it('names the preacher of a book on its row: in the second line and in what the search looks in', () => {
+    const wesley = entryOf('LLS:36.0.11')!;
+    expect(wesley.author).toBe('John Wesley');
+    // no list stands for the book here, so it has a row of its own
+    const list = sourceList(input({ sources: [SPURGEON, HENRY], owned: new Set([wesley.resource]) }));
+    const row = list.items.find((i) => i.id === wesley.resource)!;
+    expect(row.detail).toContain('John Wesley');
+    expect(row.search).toContain('John Wesley');
+  });
+
   it('lists a book with more than sermons too, saying where else it lives', () => {
     expect(MARKED.map((e) => e.resource).sort()).toEqual(['LLS:6.60.6', 'LLS:6.60.7', 'LLS:HMLSSTJHNCHRYSTM10', 'LLS:SLSRHMTRTSTGSTN']);
     expect(MARKED.every((e) => e.kind === 'commentary')).toBe(true);
