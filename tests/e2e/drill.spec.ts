@@ -115,6 +115,28 @@ test('a drill left half done is offered again after a reload, and Resume goes on
   await expect(page.getByTestId('drill-step')).toHaveAttribute('data-step-id', step ?? '');
 });
 
+// mw-indx1x6.34: the round left unfinished was drawn by the settings of its day; a changed Grammar row on its offer draws a new round by the new setting, never Resume over the old.
+test('changing Grammar on the round left unfinished drops it and draws a new round', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/drill');
+  await page.locator('[data-option]').first().click();
+  await page.getByTestId('next').click();
+  await expect(page.getByTestId('drill-step')).not.toHaveAttribute('data-step-id', 'pos');
+  await page.reload();
+  await expect(page.getByText('Round left unfinished')).toBeVisible();
+  const grammar = page.getByTestId('drill-settings').getByRole('group', { name: 'Grammar' });
+  await grammar.getByRole('button', { name: 'Solid', exact: true }).click();
+  await expect(page.getByText('Round left unfinished')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Resume', exact: true })).toHaveCount(0);
+  // a round drawn by Solid is on the screen (at its first step) or, for a learner with no solid grammar yet, the screen says no form fits; the old round is not kept either way
+  await expect(page.getByTestId('drill-step').or(page.getByTestId('drill-none'))).toBeVisible();
+  const kept = await page.evaluate(() => JSON.parse(window.localStorage.getItem('lampas.drill') ?? 'null') as { question: number; step: number; picked: string | null } | null);
+  expect(kept && [kept.question, kept.step, kept.picked]).toEqual(kept ? [0, 0, null] : null);
+  if (kept) await expect(page.getByTestId('drill-step')).toHaveAttribute('data-step-id', 'pos');
+  await expectFitsPhone(page);
+  await shot(page, 'drill-offer-grammar-changed');
+});
+
 // The sweep (mw-5r3p30.430): when the next step is drawn, Ask the tutor | Talk about it move up under the top edge of where Next stood (when the full
 // parsing line under a miss goes too), so a double tap on Next near its top left the drill for the Reader. A new step's links wait for it to settle
 // (src/ui/settle.ts). The overlap depends on his answer, so the double tap is made near Next's top, left and right, step after step until one lands on a link.
