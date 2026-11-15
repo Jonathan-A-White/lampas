@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.252
+_2026-11-15_
+- New: Hands-free, a switch in Settings (Off to start) that a tap with three fingers anywhere also turns on and off, says so aloud, and shows a small microphone mark while it is on.
+
 ## 0.7.250
 _2026-11-15_
 - Fixed: On the Parsing drill's "Round left unfinished" screen, changing Words or Grammar now draws a new round by the new setting instead of leaving the old round to be resumed.
