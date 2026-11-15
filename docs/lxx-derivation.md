@@ -37,6 +37,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
 - [Checking it](#checking-it)
 - [The grammar check](#the-grammar-check)
 - [What the move from the probe changed](#what-the-move-from-the-probe-changed)
+  - [A middle deponent under its dictionary lemma (mw-u2w5klk.372)](#a-middle-deponent-under-its-dictionary-lemma-mw-u2w5klk372)
 
 <!-- /toc -->
 
