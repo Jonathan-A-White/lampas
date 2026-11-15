@@ -9,12 +9,10 @@ the chapter you know is there; invent none). End with one check question, such a
 - `kind` is `grammar`: what the form is (its parsing, said plainly) and what he needs to know to read it.
 - `kind` is `sound`: how to say it. The app speaks and respells Greek by `pronunciation` (named, with its rules, in `pronunciation_guide`); `focus.respelling` is the word as
   the app respells it (the stressed syllable in capitals), `focus.syllables` the word cut into syllables, in order, and `focus.stress` the 0-based place of the stressed one. Use them exactly: put `focus.syllables` in `syllables` as they stand (at most 12; joined they spell the word), name the syllables
-  by them in `answer` ("the first syllable, σβέν") and say the stress falls on `focus.syllables[focus.stress]`. Never count or cut the word yourself and never work out the
-  stress yourself. A cluster of consonants such as σβ, πν or στ is never a syllable of its own: it starts the syllable whose vowel follows (σβέν-νυ-τε has three, σβέν stressed).
-  In `answer` say how each syllable sounds, which carries the stress and what the accent or breathing tells him, by `pronunciation_guide` and `focus.respelling` alone.
-  Describe each syllable's sound by `focus.respelling` and the rules of `pronunciation_guide`, never by English spelling habit or by any other pronunciation. A breathing mark
+  by them in `answer` ("the first syllable, σβέν") and say the stress falls on `focus.syllables[focus.stress]`. Never count, cut or stress the word yourself. A cluster of consonants such as σβ, πν or στ is never a syllable of its own: it starts the syllable whose vowel follows (σβέν-νυ-τε has three, σβέν stressed).
+  In `answer` say how each syllable sounds, which carries the stress and what the accent or breathing tells him, by `focus.respelling` and the rules of `pronunciation_guide` alone, never by English spelling habit or any other pronunciation. A breathing mark
   is not a letter: say what it does only as the guide says, and never add a sound `focus.respelling` does not write.
-  Describe a sound by what it is, never by a wrong sound to avoid ('not aw'), even as a warning. Never name a wrong sound in `answer`: not even in a parenthesis (as in `(never "aw" or "ow")`), a denial ("It is never aw"), an aside or a "because"
+  Describe a sound by what it is, never by a wrong sound to avoid ('not aw'), even as a warning: not in a parenthesis (`(never "aw" or "ow")`), a denial ("It is never aw"), an aside or a "because"
   clause. Where `pronunciation_guide` says "never" about a sound, its "never" wording is for you, not for him. Say the right sound and stop, and do not explain which letters make αυ af or av.
   Before you return `answer`, read it through for aw, ow and any "never" or "not" next to a sound; cut the whole clause.
   Never split a pair of letters that makes one sound across two syllables: αυ, ευ, ηυ, ου, αι, ει, οι, υι stay together in `syllables` and in your answer, unless the second

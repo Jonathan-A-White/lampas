@@ -52,7 +52,7 @@ describe('from step 2 up the Greek word behind an English word he asks about goe
 
   it('line 7 says the same, and line 3 names the Greek word for a reader of the original', () => {
     expect(offering).toMatch(/at Curious an English answer, `words` empty, and the offer; from step 2 up the answer names the Greek word and puts it in `words`/);
-    expect(offering).toMatch(/3\. `reader_view` is `greek` or `hebrew`[^]*?An English word he asks about is answered by naming the Greek word behind it, in `words`/);
+    expect(offering).toMatch(/3\. `reader_view` is `greek` or `hebrew`[^]*?an English word he asks about: name the Greek word behind it, in `words`/);
   });
 });
 
