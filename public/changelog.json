@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.255",
+    "date": "2026-11-15",
+    "story": "mw-5r3p30.1163",
+    "kind": "new",
+    "text": "Bible references in a Hebrew word's definition are now links that open that verse, and the definition is laid out in lines instead of one paragraph."
+  },
+  {
     "version": "0.7.254",
     "date": "2026-11-15",
     "story": "mw-rl10piw.6",

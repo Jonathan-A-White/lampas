@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.255
+_2026-11-15_
+- New: Bible references in a Hebrew word's definition are now links that open that verse, and the definition is laid out in lines instead of one paragraph.
+
 ## 0.7.254
 _2026-11-15_
 - New: Say 'Hey Lampas' with Hands-free on, then 'play' or 'pause', and the Bible reading starts, stops or goes on without a touch.
