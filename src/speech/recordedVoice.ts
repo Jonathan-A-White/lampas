@@ -14,7 +14,7 @@
 // to silence by the element's volume, so the last of what a phone's output still holds when pause() is called was given to it quiet. How long a phone plays on after
 // pause() is not measured: the fade shortens it by FADE, it cannot end it.
 // Whether he wants it is his Bible voice setting (wantsRecording(), mw-82lb97i.6); recordingFor() is the rule a tap decides by, with no wait.
-import { sourceLanguage, type Chapter } from '../data/chapter';
+import type { Chapter } from '../data/chapter';
 import { chapterTimingsNow, spanOf, verseAt, type ChapterTimings } from '../data/audioTimings';
 import { bibleVoiceSetting, type BibleVoice } from '../settings/definitions/bibleVoice';
 import { connectionKind } from './connection';
@@ -46,10 +46,11 @@ export const bibleVoiceChosen = (): BibleVoice => chosen;
 /** Recording on Wi-Fi only is chosen and the phone says it is on mobile data: David is held back, and the phone's voice reads (voiceDecision.ts says why). */
 export const heldBackByData = (): boolean => chosen === 'msb-david-wifi' && connectionKind() === 'other';
 
-/** Whether this chapter and these verses could be read by a recording at all, whatever he chose: the MSB's New Testament, every run English, and the phone online. */
+/** Whether this chapter and these verses could be read by a recording at all, whatever he chose: the MSB's English (the New Testament, whose source is Greek, and the Old Testament, whose
+ * source is Hebrew: David's Genesis, mw-zbgo4ep.38; never the Septuagint, whose English is Brenton's), every run English, and the phone online. Whether David recorded the chapter is the timings' say. */
 export function recordingEligible(chapter: Chapter | null, verses: readonly PlanVerse[]): chapter is Chapter {
   if (!chapter || verses.length === 0) return false;
-  if (chapter.translation !== 'msb' || sourceLanguage(chapter) !== 'grc') return false;
+  if (chapter.translation !== 'msb') return false;
   if (!verses.every((v) => v.runs.every((r) => r.language === 'english'))) return false;
   return !(typeof navigator !== 'undefined' && navigator.onLine === false);
 }
@@ -60,7 +61,7 @@ export function setBibleVoice(voice: BibleVoice): void {
 }
 
 /** The timings to read `verses` of this chapter by, or undefined for the phone's voice: decided at the tap with nothing awaited. All must hold: he wants the recording,
- * the chapter is the MSB's New Testament (no Old Testament, no Septuagint), every run of every verse to be read is English (the English view with nothing woven: the
+ * the chapter is the MSB's (no Septuagint), every run of every verse to be read is English (the English view with nothing woven: the
  * recording reads the MSB's English only), the chapter's timings are already loaded and have every verse, and the phone is not offline. */
 export function recordingFor(book: string, chapter: Chapter | null, verses: readonly PlanVerse[]): ChapterTimings | undefined {
   if (!wantsRecording() || !recordingEligible(chapter, verses)) return undefined;

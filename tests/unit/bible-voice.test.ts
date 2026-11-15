@@ -117,6 +117,30 @@ describe("the real timings of the recorded voice (public/data/audio/msb-david, m
     expect(recordingFor('act', acts, english(acts))).toBeUndefined();
   });
 
+  it("offers Genesis 1 the recording: David's Genesis chapter 1 file, though Genesis's source is Hebrew (mw-zbgo4ep.38)", async () => {
+    await loadBookTimings('gen');
+    const genesis = chapterOf('gen/1');
+    expect(genesis.lang).toBe('hbo');
+    expect(recordingFor('gen', genesis, english(genesis))?.audio).toBe('https://openbible.com/audio/msb/MSB_01_Gen_001_D.mp3');
+  });
+
+  it('offers every chapter the index lists, in every book of it, the recording at the publisher\'s file for it (mw-zbgo4ep.38)', async () => {
+    const listed = JSON.parse(read('data/audio/msb-david/index.json')) as { books: Record<string, number[]> };
+    for (const [book, chapters] of Object.entries(listed.books)) {
+      await loadBookTimings(book);
+      for (const n of chapters) {
+        const chapter = chapterOf(`${book}/${n}`);
+        expect(recordingFor(book, chapter, english(chapter))?.audio, `${book} ${n}`).toMatch(/^https:\/\/openbible\.com\/audio\/msb\/MSB_\d\d_\w{3}_\d{3}_D\.mp3$/);
+      }
+    }
+  });
+
+  it('offers a Septuagint chapter none, whatever its source language (the recording is the MSB only)', async () => {
+    await loadBookTimings('gen');
+    const genesis = { ...chapterOf('gen/1'), translation: 'lxx2012' };
+    expect(recordingFor('gen', genesis, english(genesis))).toBeUndefined();
+  });
+
   it('offers John 3 nothing when the Bible voice is the phone voice', async () => {
     await loadBookTimings('jhn');
     setBibleVoice('phone');

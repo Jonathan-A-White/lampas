@@ -108,10 +108,10 @@ second; Stop and every new reading (a tutor's answer, a page of prose, another v
 the next verse. The speaking bar holds a recorded reading too (below), so the header's Pause / Play and Stop are gone while it plays; the line under the header stays.
 
 **When the phone's voice reads instead.** `recordingFor` (`recordedVoice.ts`) decides at the tap, with nothing awaited between the tap and `play()`: the Bible voice names a recording (`wantsRecording()`), the chapter is the MSB's
-New Testament (`translation` 'msb', Greek source: no Old Testament, no Septuagint), every run of every verse to be read is English (the English view with nothing woven), the timings are already loaded
+(`translation` 'msb', Greek or Hebrew source: no Septuagint; Genesis is David's too, mw-zbgo4ep.38), every run of every verse to be read is English (the English view with nothing woven), the timings are already loaded
 and have every verse to be read, and `navigator.onLine` is not false. The Reader loads the book's timings when a chapter opens (only while the seam names a voice) so the tap finds them; the Reader that
 opens a chapter a reading crossed into decides by the same rule. **The recording reads the MSB's English only: a plan with any Greek or Hebrew run (the Greek view, the weave, a woven verse) is read by
-the phone's voices as before.** Offline, no timings, the weave or the Greek shown, an Old Testament or Septuagint chapter, or the seam at null: the phone's voice, with no notice and no `src` set.
+the phone's voices as before.** Offline, no timings, the weave or the Greek shown, a Septuagint chapter or a book David has not recorded, or the seam at null: the phone's voice, with no notice and no `src` set.
 
 **Never silence.** `play()` refused, the element's `error`, or no `playing` within 8 s (`PLAYING_WAIT_MS`) hands the reading to the phone's voice from the verse in hand, with the line
 *The recorded voice could not be reached: reading with the phone voice* (`RECORDING_FAILED_NOTICE`).
