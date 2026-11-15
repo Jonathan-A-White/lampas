@@ -2,11 +2,13 @@
 // /mic): thin wrappers, so no spec writes a fake of its own. Speech takes the time Android Chrome takes (150 ms and 60 ms a
 // word, start, a boundary a word, end; cancel() interrupts the one being spoken); the microphone hands out a stream that
 // plays a recorded clip in real time, a MediaRecorder that cuts it into chunks and a SpeechRecognition that sends interim
-// words as the clip plays. A headless Chromium has neither a Greek voice nor a microphone; how a real phone sounds is only
+// words as the clip plays; the wake word 'Hey Lampas' is the kit's fake too (voice-kit/testing/handsfree): voice-kit/wake's startWake hands itself to it, so no
+// microphone is opened for the wake and the spec says the wake word (sayWake). A headless Chromium has neither a Greek voice nor a microphone; how a real phone sounds is only
 // a phone check (docs/pwa-best-practices.md section 12).
 import type { Page } from '@playwright/test';
 import { speechInitScript, type SpeechScriptOptions } from 'voice-kit/testing/speech';
 import { clips, micInitScript, type MicScriptOptions } from 'voice-kit/testing/mic';
+import { wakeInitScript, type WakeFakeOptions } from 'voice-kit/testing/handsfree';
 
 export { clips };
 
@@ -71,3 +73,18 @@ export const isSpeaking = (page: Page): Promise<boolean> => page.evaluate(() => 
 export async function honestMic(page: Page, options: MicScriptOptions = {}): Promise<void> {
   await page.addInitScript(micInitScript({ clip: clips.english, ...options }));
 }
+
+/** The wake word on the page from the first script: startWake hands itself to the kit's fake, which opens no microphone (Hands-free, mw-rl10piw.6). */
+export async function honestWake(page: Page, options: WakeFakeOptions = {}): Promise<void> {
+  await page.addInitScript(wakeInitScript(options));
+}
+
+interface WakeHandle {
+  __bsvKitTesting: { wake: { say(): boolean; listening: boolean } };
+}
+
+/** He says 'Hey Lampas': true when a wake was listening and heard it. */
+export const sayWake = (page: Page): Promise<boolean> => page.evaluate(() => (window as unknown as WakeHandle).__bsvKitTesting.wake.say());
+
+/** Whether the wake word is being listened for now. */
+export const wakeListening = (page: Page): Promise<boolean> => page.evaluate(() => (window as unknown as WakeHandle).__bsvKitTesting.wake.listening);
