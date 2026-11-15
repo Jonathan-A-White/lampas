@@ -109,3 +109,56 @@ describe('the questions About suggests', () => {
     expect(bma?.use).toMatch(/nothing of theirs is copied/i);
   });
 });
+
+// The wake word's model ships with the app (mw-rl10piw.6, fetched when Hands-free is first turned On): its About bullet and its credit name every file, dataset and
+// tool voice-kit's packed licences.json lists as used to make it, and none it lists as not used. A voice-kit bump that adds an entry fails here until it is named.
+describe("the credit of the wake word's model", () => {
+  interface Licences {
+    model: string;
+    entries: { name: string; licence: string }[];
+    notUsed: { name: string }[];
+  }
+  const licences = JSON.parse(readFileSync('node_modules/voice-kit/packages/wake/dist/models/licences.json', 'utf8')) as Licences;
+  /** For each entry the licences list as used (by the start of its name): the words the bullet says it by, then the words the credit, at most 160 characters, says it by. */
+  const NAMED: [string, string[], string[]][] = [
+    ['scripts/wake-probe (', ['wake-probe'], ['wake-probe']],
+    ['scripts/wake-probe/handsfree.mjs', ['handsfree.mjs'], ['wake-probe']],
+    ['LibriSpeech train-clean-100', ['LibriSpeech', 'train-clean-100'], ['LibriSpeech', 'train-clean-100']],
+    ['LibriSpeech dev-clean', ['LibriSpeech', 'dev-clean'], ['LibriSpeech', 'dev-clean']],
+    ['LibriSpeech test-clean', ['LibriSpeech', 'test-clean'], ['LibriSpeech', 'test-clean']],
+    ['VCTK corpus', ['VCTK'], ['VCTK']],
+    ['Coqui TTS model', ['Coqui TTS', 'VITS'], ['Coqui VITS']],
+    ['coqui-tts', ['coqui-tts'], ['coqui-tts']],
+    ['PyTorch', ['PyTorch'], ['PyTorch']],
+    ['torchaudio', ['torchaudio'], ['torchaudio']],
+    ['NumPy', ['NumPy'], ['NumPy']],
+    ['espeak-ng', ['eSpeak NG'], ['eSpeak NG']],
+    ['FFmpeg', ['FFmpeg'], ['FFmpeg']],
+    ['Bluetooth CVSD', ['CVSD'], ['CVSD']],
+  ];
+  const credit = CREDITS.find((c) => c.name === 'Hey Lampas wake word');
+  const bullet = plainText(attribution.entries.find((e) => plainText(e).startsWith('Hey Lampas wake word')) ?? '');
+
+  it('is the model the app ships', () => {
+    expect(licences.model).toBe('hey-lampas.json');
+    expect(credit).toBeDefined();
+    expect(bullet).not.toBe('');
+  });
+
+  it.each(licences.entries.map((e) => e.name))('names %s in the bullet and the credit', (name) => {
+    const named = NAMED.find(([start]) => name.startsWith(start));
+    expect(named, `${name}: say how the credit names it`).toBeDefined();
+    const [, inBullet, inCredit] = named ?? ['', [], []];
+    for (const word of inBullet) expect(bullet).toContain(word);
+    for (const word of inCredit) expect(credit?.use).toContain(word);
+  });
+
+  it('names nothing the licences list as not used', () => {
+    expect(licences.notUsed.length).toBeGreaterThan(0);
+    for (const { name } of licences.notUsed) {
+      const word = name.split(' ')[0];
+      expect(bullet).not.toContain(word);
+      expect(JSON.stringify(credit)).not.toContain(word);
+    }
+  });
+});

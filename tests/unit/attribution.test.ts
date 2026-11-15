@@ -51,7 +51,8 @@ describe('ATTRIBUTION.md credits Biblical Mastery Academy for the ladder', () =>
 describe('About is short credits, not a tutorial', () => {
   const ENTRY_MAX = 150; // about 36 characters a line at 390 px, so four lines; the story's own guide is 200
   // the credit and licence wording a licence asks to be kept whole: CC BY 4.0 (credit, link, changes) for STEPBible's three tables, the maps' required citation and the three OFL notices; and the line of CCEL's terms the Spurgeon index is used under, quoted as the sermon-index source.toml has it
-  const LICENCE_NOTICES: [string, number][] = [['Tyndale House', 300], ['TIPNR', 260], ['Bible Mapper', 200], ['Literata', 340], ['Spurgeon', 260]];
+  // and the wake word's model (mw-rl10piw.6): CC BY 4.0 data named with its changes, and every file voice-kit's licences.json lists as used to make it
+  const LICENCE_NOTICES: [string, number][] = [['Tyndale House', 300], ['TIPNR', 260], ['Bible Mapper', 200], ['Literata', 340], ['Spurgeon', 260], ['Hey Lampas wake word', 460]];
   const plain = attribution.entries.map(plainText);
   const maxFor = (entry: string): number => LICENCE_NOTICES.find(([start]) => entry.startsWith(start))?.[1] ?? ENTRY_MAX;
 
@@ -70,7 +71,16 @@ describe('About is short credits, not a tutorial', () => {
   });
 
   it('credits only what the app ships: no trial voice, no unlinked page', () => {
-    expect(plainText(file)).not.toMatch(/Piper|Coqui|Chatterbox|sounds-trial|listening page|\btrial\b/i);
+    // the one place Coqui may stand is the wake word's bullet: the model Lampas ships was trained on sayings its VCTK VITS voice spoke (voice-kit's licences.json,
+    // mw-rl10piw.6); the letter-sound trial's voices are still credited nowhere, and the voice the model's makers did not use (Piper) nowhere at all
+    const wake = attribution.entries.find((e) => plainText(e).startsWith('Hey Lampas wake word')) ?? '';
+    const lines = file.split('\n');
+    const at = lines.findIndex((l) => l.startsWith('- **[Hey Lampas wake word]'));
+    let end = at + 1;
+    while (at >= 0 && end < lines.length && lines[end].startsWith('  ')) end++;
+    const others = at >= 0 ? [...lines.slice(0, at), ...lines.slice(end)].join('\n') : file;
+    expect(plainText(others)).not.toMatch(/Piper|Coqui|Chatterbox|sounds-trial|listening page|\btrial\b/i);
+    expect(plainText(wake)).not.toMatch(/Piper|Chatterbox|sounds-trial|listening page|\btrial\b/i);
   });
 
   it('lets Hebrew stand beside Greek under Texts and data: a text, a lexicon and a type each', () => {

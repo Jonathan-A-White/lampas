@@ -124,7 +124,13 @@ describe('the letter-sounds listening page', () => {
   it('credits the three trial voices itself, since About credits only what the app uses (mw-5r3p30.875)', () => {
     const credits = document.getElementById('credits')?.textContent ?? '';
     for (const word of ['Piper', 'MIT', 'rapunzelina', 'CC0', 'Coqui', 'MPL-2.0', 'BSD-3-Clause', 'Chatterbox', 'Resemble AI']) expect(credits, word).toContain(word);
-    expect(readFileSync('ATTRIBUTION.md', 'utf8')).not.toMatch(/Piper|Coqui|Chatterbox/);
+    // the wake word's bullet alone names Coqui: the model Lampas ships was trained on sayings Coqui TTS's VCTK VITS voice spoke (mw-rl10piw.6), not a trial voice
+    const lines = readFileSync('ATTRIBUTION.md', 'utf8').split('\n');
+    const at = lines.findIndex((l) => l.startsWith('- **[Hey Lampas wake word]'));
+    let end = at + 1;
+    while (at >= 0 && end < lines.length && lines[end].startsWith('  ')) end++;
+    expect([...lines.slice(0, Math.max(at, 0)), ...lines.slice(at >= 0 ? end : 0)].join('\n')).not.toMatch(/Piper|Coqui|Chatterbox/);
+    expect(lines.slice(Math.max(at, 0), at >= 0 ? end : 0).join('\n')).not.toMatch(/Piper|Chatterbox|rapunzelina/);
   });
 
   it('asks no index to list it', () => {
