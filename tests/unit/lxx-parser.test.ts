@@ -50,6 +50,8 @@ import {
   PARSER_DOMINANT,
   byAnalogy,
   caseOf,
+  dictionaryLemma,
+  dictionaryRows,
   formNameLemma,
   isCapital,
   isThinLone,
@@ -61,6 +63,7 @@ import {
   unaugment,
   type Candidate,
 } from '../../scripts/lxx/parser';
+import { sameLemma } from '../../scripts/lxx/choices';
 import { sweteTokens } from '../../scripts/lxx/swete';
 import { readTagnt, type TagntRow } from '../../scripts/lxx/tagnt';
 import { fits, readTbesg, readTbesgNames } from '../../scripts/lxx/tbesg';
@@ -981,5 +984,63 @@ describe("analogy's lone candidate on thin support is not settled (mw-u2w5klk.30
     ];
     expect(isThinLone(two)).toBe(false);
     expect(settleParsed(two)?.analysis.lemma).toBe('a');
+  });
+});
+
+// A middle deponent is listed under its dictionary lemma (story mw-u2w5klk.372): TAGNT writes ἐπορεύθη, πορεύονται and the rest under πορεύω (G4198, 153 words)
+// and TBESG's headword is πορεύω too, though the verb is only ever πορεύομαι (middle and passive); the same for its compounds, which TAGNT lemmatises -ω while
+// it writes παραπορεύομαι, συμπορεύομαι with the ending the verb has. Jos.24:17#25 ἐπορεύθημεν was listed under πορεύω.
+describe('a middle deponent is listed under its dictionary lemma (mw-u2w5klk.372)', () => {
+  let verseNo = 100;
+  const verse = (...words: string[]): TagntRow[] => {
+    verseNo++;
+    return words.map((w, i) => {
+      const [form, lemma, morph] = w.split(' ');
+      return { book: 'Tst', chapter: 1, verse: verseNo, word: i + 1, editions: 'NKO', form, lemma, morph, name: false };
+    });
+  };
+  const rows = [
+    ...verse('ἐπορεύθη πορεύω V-AOI-3S', 'ἐπορεύθησαν πορεύω V-AOI-3P', 'ἐκπορεύονται ἐκπορεύω V-PNI-3P', 'εἰσπορεύεται εἰσπορεύω V-PNI-3S'),
+    ...verse('ἐγενήθημεν γίνομαι V-AOI-1P', 'ἐφοβήθημεν φοβέομαι V-AOI-1P', 'ἐφοβήθη φοβέομαι V-AOI-3S'),
+    ...verse('παραπορεύονται παραπορεύομαι V-PNI-3P', 'ἀκούει ἀκούω V-PAI-3S', 'πιστεύει πιστεύω V-PAI-3S'),
+  ];
+  const lexicon = readTbesg(
+    [
+      'G4198\tG4198 =\tG4198\tπορεύω\tporeuō\tG:V\tto travel',
+      'G1607\tG1607 =\tG1607\tἐκπορεύω\tekporeuō\tG:V\tto go out',
+      'G1531\tG1531 =\tG1531\tεἰσπορεύω\teisporeuō\tG:V\tto go in',
+      'G1096\tG1096 =\tG1096\tγίνομαι\tginomai\tG:V\tto become',
+      'G5399\tG5399 =\tG5399\tφοβέομαι\tphobeomai\tG:V\tto fear',
+      'G0191\tG0191 =\tG0191\tἀκούω\takouō\tG:V\tto hear',
+      'G4100\tG4100 =\tG4100\tπιστεύω\tpisteuō\tG:V\tto believe',
+    ].join('\n'),
+  );
+
+  it('proposes πορεύομαι, not πορεύω, for a form the New Testament lacks (Jos.24:17#25 ἐπορεύθημεν)', () => {
+    const parser = trainParser(rows, lexicon);
+    // as Jos.24:17#25 is listed (a sibling form in the New Testament, analogy), then as the ending rules would read it
+    const lemmas = [...parse('ἐπορεύθημεν', parser), ...byAnalogy('ἐπορεύθημεν', parser)].map((c) => c.lemma);
+    expect(lemmas.length).toBeGreaterThan(0);
+    expect(lemmas).toContain('πορεύομαι');
+    expect(lemmas).not.toContain('πορεύω');
+  });
+
+  it('names the deponents by their dictionary lemma, the compounds as well, and leaves an active -εύω verb alone', () => {
+    expect(['πορεύω', 'ἐκπορεύω', 'εἰσπορεύω', 'διαπορεύω', 'προπορεύω'].map(dictionaryLemma)).toEqual(['πορεύομαι', 'ἐκπορεύομαι', 'εἰσπορεύομαι', 'διαπορεύομαι', 'προπορεύομαι']);
+    expect(['πιστεύω', 'ἀκούω', 'παραπορεύομαι', 'γίνομαι'].map(dictionaryLemma)).toEqual(['πιστεύω', 'ἀκούω', 'παραπορεύομαι', 'γίνομαι']);
+  });
+
+  it('has the lexicon and the New Testament rows agree on it, so the parsing fits and layer 1 reads the same lemma', () => {
+    const parser = trainParser(rows, lexicon);
+    expect(parser.lexicon.get('πορευομαι')?.map((e) => e.lemma)).toEqual(['πορεύομαι']);
+    expect(parser.lexicon.has('πορευω')).toBe(false);
+    expect(parser.ntPos.has('πορεύομαι')).toBe(true);
+    expect(dictionaryRows(rows).filter((r) => r.form === 'ἐπορεύθη').map((r) => r.lemma)).toEqual(['πορεύομαι']);
+  });
+
+  it('still reads a choice file that wrote the old lemma (sameLemma)', () => {
+    expect(sameLemma('πορεύω', 'πορεύομαι')).toBe(true);
+    expect(sameLemma('εἰσπορεύω', 'εἰσπορεύομαι')).toBe(true);
+    expect(sameLemma('πιστεύω', 'πορεύομαι')).toBe(false);
   });
 });

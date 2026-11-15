@@ -8,6 +8,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { dictionaryLemma } from './parser';
 import { bareOf, hasLower, keyOf, PUNCT } from './swete';
 
 export const MORPHEUS = {
@@ -298,7 +299,8 @@ function mapReading(raw: RawAnalysis, form?: string): Mapped[] | string {
   if (dialects.length && !dialects.includes('attic')) return 'a dialect without Attic';
   const flags = words(raw.flags);
   if (flags.includes('unaugmented')) return 'an unaugmented form';
-  const lemma = fromBeta(raw.lemma);
+  // Morpheus lists a middle deponent under its active -ω (πορεύω); the dictionary lemma has the -μαι voicesOf looks for (story mw-u2w5klk.372)
+  const lemma = dictionaryLemma(fromBeta(raw.lemma));
   if (!lemma) return 'no lemma';
   if (PRONOUN_LEMMAS.has(bareOf(lemma))) return 'a pronoun';
   const tokens = words(raw.features);
@@ -435,7 +437,7 @@ export function parseCache(text: string): MorpheusCache {
       if (r === 'unmapped') unmapped++;
       else {
         const at = r.lastIndexOf('/');
-        analyses.push({ lemma: r.slice(0, at).normalize('NFC'), code: r.slice(at + 1) });
+        analyses.push({ lemma: dictionaryLemma(r.slice(0, at).normalize('NFC')), code: r.slice(at + 1) });
       }
     }
     cache.set(form.normalize('NFC'), { analyses, unmapped });

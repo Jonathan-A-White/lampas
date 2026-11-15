@@ -868,3 +868,12 @@ differences, all small:
   three chapters or the whole of Genesis; such a candidate's support no longer counts that rule twice.
 - **Ties are ordered by code point**, lemma then parsing, where the probe used the locale's order (and, for analogy, the order of the files). That is
   the one difference left in John 1: the parser alone scores 80.9% and 69.3% here against the probe's 80.8% and 69.2%, one word more.
+
+### A middle deponent under its dictionary lemma (mw-u2w5klk.372)
+TAGNT lemmatises πορεύω (G4198, 153 words), ἐκπορεύω, εἰσπορεύω, διαπορεύω and προπορεύω under an active -ω, and TBESG's headword is πορεύω too, though the verb is only
+ever middle or passive; TAGNT already writes παραπορεύομαι, συμπορεύομαι, προσπορεύομαι, ἐπιπορεύομαι and ἐμπορεύομαι with the ending the verb has. `DEPONENT_LEMMAS` in
+`parser.ts` names the five and `dictionaryLemma` gives the -ομαι: `trainParser` reads TAGNT's rows and TBESG's lexicon through it, `train` (layer 1) and `chapterRows`
+(`lxx:known`) read the rows through `dictionaryRows`, Morpheus's lemma is read through it too (so a rebuilt cache maps the voice as a deponent's, V-AOI, not V-API), and
+`sameLemma` takes the old and the new spelling for one lemma, so the choice files that wrote πορεύω still apply (the word's lemma is then πορεύομαι). Jos.24:17#25
+ἐπορεύθημεν is listed under πορεύομαι. A lemma the New Testament shows in the middle only but that has an active voice (πιστεύω, βασιλεύω) is not in it. Not done: the other
+verbs TAGNT writes -ω though the NT has them only in the middle (ἀποκρίνω, φοβέω, προσκαλέω, κοιμάω, χαρίζω, μιμνήσκω, ἐπιλανθάνω, ἀνέχω, ὀργίζω ...).
