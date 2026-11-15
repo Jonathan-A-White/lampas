@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.250
+_2026-11-15_
+- Fixed: On the Parsing drill's "Round left unfinished" screen, changing Words or Grammar now draws a new round by the new setting instead of leaving the old round to be resumed.
+
 ## 0.7.249
 _2026-11-14_
 - Fixed: A lesson opened from a wrong answer in a drill no longer shows a table button that threw the drill away.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.250",
+    "date": "2026-11-15",
+    "story": "mw-indx1x6.34",
+    "kind": "fixed",
+    "text": "On the Parsing drill's \"Round left unfinished\" screen, changing Words or Grammar now draws a new round by the new setting instead of leaving the old round to be resumed."
+  },
+  {
     "version": "0.7.249",
     "date": "2026-11-14",
     "story": "mw-indx1x6.28",
