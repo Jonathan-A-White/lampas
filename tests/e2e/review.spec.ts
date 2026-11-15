@@ -53,7 +53,11 @@ test('the Reader shows the Today chip, Today shows Review with N due and opens i
   await expect(page.getByTestId('comes-back')).toHaveText(/^\d+ comes? back tomorrow, \d+ later$/);
   const back = page.getByRole('button', { name: 'Back to reading' });
   await expect(back).toBeVisible();
+  // the end card is the screen's own scroll box and its Study list (one row for each resource his misses linked to) makes it as tall as his misses were
+  // many, so the button is reached by scrolling the card, not on its first look; once scrolled to, it sits whole inside the window (mw-fnvjof.17.114)
+  await back.scrollIntoViewIfNeeded();
   const box = await back.boundingBox();
+  expect(box && box.y).toBeGreaterThanOrEqual(0);
   expect(box && box.y + box.height).toBeLessThanOrEqual(844);
   await expectFitsPhone(page);
 
