@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { afterEach, describe, expect, it } from 'vitest';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const root = resolve(__dirname, '../..');
 const tools = resolve(root, 'scripts/audio-timings');
@@ -79,7 +80,7 @@ describe('run-book.sh', () => {
   const made: string[] = [];
   afterEach(() => {
     for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
-  });
+  }, HOOK_TIMEOUT_MS);
   const run = (args: string[], cache?: string) => {
     const dir = mkdtempSync(join(tmpdir(), 'run-book-'));
     made.push(dir);
