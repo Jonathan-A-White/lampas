@@ -333,6 +333,25 @@ for the words of Jesus, or the first line of an indented block: `indent1stline`,
 that starts in the middle of a verse is not carried: a break is only ever at a verse. The first verse of a chapter
 starts a paragraph whether or not it has `p`; the reader treats it so.
 
+## Poetry lines
+
+The same `Par` column marks poetry line by line (mw-5r3p30.1164). A word whose tag is `indent1stline` (the first line of a block, a stanza), `indent1` or
+`indent2` (the lines inside it, the second deeper), or the `red` forms of these (`indent1stlinered`, `indentred1`, `indentred2`, the words of Jesus), **starts a line**
+at the English chunk that word opens (`poetryOfPar` in `scripts/data/bereanTable.ts`, read by `buildVerse`; a word with no English of its own passes its line to the next chunk).
+A verse with a line start has `l`, in English order:
+
+```json
+{ "n": 1, "p": 1, "l": [[0, 1, 1], [2, 2], [5, 1], [8, 2]], "g": [...], "e": [...] }
+```
+
+Each entry is `[chunk, indent]`, plus a third `1` when the line opens a block (`indent1stline`, where the stanza breaks); `chunk` is the index into `e` the line starts at, `indent` is 1
+or 2. A prose verse has no `l` and is as it was; `tab1stline`, the `list` tags, `selah`, `inscrip` and `pshdg` are not poetry lines. The chunks before a verse's first line start are
+its **lead-in** (`He said:`, `Then Mary said:`, a Psalm's title: 528 verses), prose that brings the lines in; `poetryLinesOf` (`src/data/poetry.ts`) gives it as a line of indent 0. Where the Greek and the
+Hebrew order differ the lines are the English's: nothing in `g` changes, and `l` is read only by the English view drawn with no weave (`src/reader/poetryText.ts`); the Greek, the Hebrew and the
+Weave tabs draw the verse as they always did. The Septuagint (Brenton's English has no line marks) has no `l`. 488 Old Testament chapters and 96 New Testament chapters carry it
+(7,856 and 350 verses): the Psalms, Job, Proverbs, the prophets, the Magnificat, and verses quoted as poetry such as Romans 8:36 and Genesis 1:27. The chapters are rebuilt by
+`npm run data:build` and `npm run data:build:ot` with the tables in `data/raw`; the rebuild changes no other byte of a chapter (the committed files differ from the earlier ones in `l` alone).
+
 ## Variants
 
 Each New Testament chapter carries `variants`: the apparatus of Robinson and Pierpont's 2018 edition, laid on the chapter's own Greek words
