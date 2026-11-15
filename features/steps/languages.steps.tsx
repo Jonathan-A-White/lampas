@@ -51,11 +51,12 @@ async function openOnNewPhone(): Promise<void> {
   await placeInterest();
   await seedHisWords();
   render(<App />);
-  await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
+  const title = await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBe(63));
-  await openSettings(user);
-  await screen.findByRole('group', { name: 'Which languages?' });
+  // the Menu is looked for in the Reader's header: a role query over the whole chapter (a button for each word) is the 3 s this step took (mw-indx1x6.41)
+  await openSettings(user, within(title.closest('header') as HTMLElement));
+  await findGroup('Which languages?');
 }
 
 const stepOf = (name: string): Level => {
@@ -101,8 +102,23 @@ const switchGroup = (): HTMLElement | null => screen.queryByRole('group', { name
 const talkGrists = (): ReceivedGrist[] => (fake?.received ?? []).filter((g) => g.grist.kind === 'bible-talk');
 const OPENED = 'Lampas is opened on {string} with Greek at {string} and Hebrew at {string}';
 
-const languages = (): HTMLElement => screen.getByRole('group', { name: 'Which languages?' });
-const dial = (name: string): HTMLElement | null => screen.queryByRole('group', { name });
+/**
+ * The group named `name` on the page, found by the attribute the Settings controls draw it with: a role query on `screen` computes the name of every element on the page, and the
+ * steps below ask on every poll of a waitFor, 1 s of a 2 s step on a loaded host (mw-indx1x6.41).
+ */
+const groupNamed = (name: string): HTMLElement | null => document.querySelector<HTMLElement>(`[role="group"][aria-label="${name}"]`);
+const findGroup = (name: string): Promise<HTMLElement> =>
+  waitFor(() => {
+    const found = groupNamed(name);
+    if (!found) throw new Error(`no group named ${name}`);
+    return found;
+  });
+const languages = (): HTMLElement => {
+  const found = groupNamed('Which languages?');
+  if (!found) throw new Error('no group named Which languages?');
+  return found;
+};
+const dial = (name: string): HTMLElement | null => groupNamed(name);
 const pressed = (group: HTMLElement | null, label: string): boolean => {
   if (!group) return false;
   return within(group).queryByRole('button', { name: label })?.getAttribute('aria-pressed') === 'true';
@@ -116,7 +132,7 @@ const groupButtons = (): string[] => within(screen.getByRole('list', { name: 'Se
 async function toHome(): Promise<void> {
   const back = screen.queryByRole('button', { name: '‹ Settings' });
   if (back) await user.click(back);
-  await screen.findByRole('group', { name: 'Which languages?' });
+  await findGroup('Which languages?');
 }
 
 const feature = await loadFeature('features/languages.feature');
@@ -127,7 +143,7 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(await within(languages()).findByRole('button', { name: label }));
   };
   const choosesOnDial = async (_: unknown, step: string, name: string): Promise<void> => {
-    const group = await screen.findByRole('group', { name });
+    const group = await findGroup(name);
     await user.click(within(group).getByRole('button', { name: step }));
     // the write is not awaited by the tap: the next step starts when the dial shows the step
     await waitFor(() => expect(pressed(dial(name), step), `${name} ${step}`).toBe(true));
@@ -179,7 +195,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the dial {string} has {string} chosen', dialHas);
     And('Settings draws no dial {string}', noDialNamed);
     And('the dial {string} has five steps and no {string}', async (_: unknown, name: string, step: string) => {
-      const buttons = within(await screen.findByRole('group', { name })).getAllByRole('button');
+      const buttons = within(await findGroup(name)).getAllByRole('button');
       expect(buttons).toHaveLength(5);
       expect(buttons.map((b) => b.textContent)).not.toContain(step);
       for (const b of buttons) expect(b.className).toMatch(/min-h-12/);

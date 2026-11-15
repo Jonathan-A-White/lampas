@@ -13,7 +13,8 @@ import { getGreekInterest, getHebrewInterest } from '../../src/data/repositories
 import { hebrewPointedForm } from '../../src/speech/hebrewPronunciation';
 import { TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { endScenario, fake, open, openTalk, received, send, sheet, user } from './bible-talk/support';
-import { openTutor } from './open-tutor';
+import { openTutor, talkSheet } from './open-tutor';
+import { findVerseNumber } from '../../tests/support/verse-number';
 
 const load = (rel: string) => JSON.parse(readFileSync(rel, 'utf8')) as Chapter;
 const jonah = load('tests/fixtures/data/jon/1.json');
@@ -55,10 +56,11 @@ describeFeature(
 
     // the Verse view of the verse, then the floating ? over it: the one door (mw-5r3p30.882)
     const talkAbout = async (_: unknown, n: number): Promise<void> => {
-      await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
-      await screen.findByRole('region', { name: 'Verse view' });
-      await openTutor();
-      await within(await screen.findByRole('dialog', { name: /^Talk about / })).findByRole('textbox', { name: 'Your message' });
+      // found beside their own markup: a role query on `screen` walks every word of the chapter, 3.6 s on a calm host (mw-indx1x6.41)
+      await user.click(await findVerseNumber(n));
+      await waitFor(() => expect(document.querySelector('section[aria-label="Verse view"]')).not.toBeNull());
+      await openTutor({ sheet: /^Talk about / });
+      await within(talkSheet(/^Talk about /)).findByRole('textbox', { name: 'Your message' });
     };
     const sends = (_: unknown, question: string) => send(question);
     const titled = (_: unknown, title: string) => expect(sheet()).toHaveAccessibleName(title);

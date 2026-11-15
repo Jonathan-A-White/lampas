@@ -14,7 +14,8 @@ import { navigate } from '../../src/nav/route';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
-import { openTutor } from './open-tutor';
+import { findVerseNumber, queryVerseNumber } from '../../tests/support/verse-number';
+import { openTutor, queryDialog } from './open-tutor';
 import { findSettingsHeading } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
@@ -49,7 +50,7 @@ async function open(start: string, thenReader: boolean, select = true): Promise<
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
   if (!select) return;
-  await user.click(await screen.findByRole('button', { name: 'Verse 2' }));
+  await user.click(await findVerseNumber(2));
   await waitFor(() => expect(window.location.hash).toContain('v=2'));
 }
 
@@ -66,16 +67,23 @@ const verseEl = (n: number): HTMLElement => {
   if (!el) throw new Error(`no verse ${n} on screen`);
   return el;
 };
-const wordSheet = () => screen.queryByRole('dialog', { name: 'Word' });
-const grammarSheet = () => screen.queryByRole('dialog', { name: 'Grammar' });
-const ideaSheet = () => screen.queryByRole('dialog', { name: 'Idea' });
-const talkSheet = () => screen.queryByRole('dialog', { name: /^Talk about / });
+/** The open dialog `name`, waiting for it: found beside its own markup, because a role query on `screen` walks every word of the chapter behind it (3 s on a calm host, mw-indx1x6.41). */
+const findDialog = (name: RegExp | string): Promise<HTMLElement> =>
+  waitFor(() => {
+    const found = queryDialog(name);
+    if (!found) throw new Error(`no dialog named ${String(name)} is open`);
+    return found;
+  });
+const wordSheet = () => queryDialog('Word');
+const grammarSheet = () => queryDialog('Grammar');
+const ideaSheet = () => queryDialog('Idea');
+const talkSheet = () => queryDialog(/^Talk about /);
 
 async function tapsWord(text: string, verse: number): Promise<void> {
   // in the Verse view when one is open, else in the Reader's own line
-  const scope = screen.queryByRole('region', { name: 'Verse view' }) ?? verseEl(verse);
+  const scope = document.querySelector<HTMLElement>('section[aria-label="Verse view"]') ?? verseEl(verse);
   await user.click(within(scope).getByRole('button', { name: text }));
-  await screen.findByRole('dialog', { name: 'Word' });
+  await findDialog('Word');
 }
 
 /** Closes the open sheet `which` the way `way` says: Done, a swipe down its handle, a tap on its backdrop, or Escape; then lets the page settle. */
@@ -112,7 +120,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('the Reader shows Romans 8 at verse 2', () => {
       expect(screen.getByRole('heading', { level: 1, name: /Romans 8/ })).toBeTruthy();
       expect(window.location.hash).toContain('v=2');
-      expect(screen.getByRole('button', { name: 'Verse 2' }).getAttribute('aria-pressed')).toBe('true');
+      expect(queryVerseNumber(2)?.getAttribute('aria-pressed')).toBe('true');
     });
   });
 
@@ -120,7 +128,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
     When('he taps Done on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'Done' }));
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'Done' }));
     });
     Then('the word sheet is closed', async () => {
       await waitFor(() => expect(wordSheet()).toBeNull());
@@ -136,8 +144,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
     And('he taps the term "conjunction" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'conjunction', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'conjunction', exact: true }));
+      await findDialog('Grammar');
     });
     When('he goes back', back);
     Then('the Grammar sheet is closed and the word sheet is still open', async () => {
@@ -154,12 +162,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
     And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
     And('he taps the term "genitive" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'genitive', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps Learn this idea on the Grammar sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
-      await screen.findByRole('dialog', { name: 'Idea' });
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'Learn this idea' }));
+      await findDialog('Idea');
     });
     When('he goes back', back);
     Then('the idea sheet is closed and the Grammar sheet is still open', async () => {
@@ -178,8 +186,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on 1 John 2 in Greek', () => open('#/?b=1jn&c=2&view=greek', false, false));
     And('he taps "Τεκνία" in verse 1', () => tapsWord('Τεκνία', 1));
     And('he taps the term "plural" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'plural', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'plural', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps the related term "singular" on the Grammar sheet', async () => {
       await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'singular', exact: true }));
@@ -208,12 +216,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
     And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
     And('he taps the term "genitive" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'genitive', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps Learn this idea on the Grammar sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
-      await screen.findByRole('dialog', { name: 'Idea' });
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'Learn this idea' }));
+      await findDialog('Idea');
     });
     And('he taps the first example on the idea sheet', async () => {
       wordBeforeExample = (wordSheet() as HTMLElement).textContent ?? '';
@@ -228,7 +236,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     When('he goes back', back);
     Then('the idea sheet is open again over the Grammar sheet, and the word sheet shows what it did before the example', async () => {
-      await screen.findByRole('dialog', { name: 'Idea' });
+      await findDialog('Idea');
       expect(grammarSheet()).not.toBeNull();
       expect((wordSheet() as HTMLElement).textContent).toBe(wordBeforeExample);
     });
@@ -253,8 +261,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
     And('he taps the term "conjunction" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'conjunction', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'conjunction', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps the related term "particle" on the Grammar sheet', async () => {
       await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'particle', exact: true }));
@@ -276,12 +284,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
     And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
     And('he taps the term "genitive" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'genitive', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps Learn this idea on the Grammar sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
-      await screen.findByRole('dialog', { name: 'Idea' });
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'Learn this idea' }));
+      await findDialog('Idea');
     });
     And('he taps the first example on the idea sheet', async () => {
       const [first] = await within(ideaSheet() as HTMLElement).findAllByTestId('idea-example');
@@ -304,7 +312,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Romans 8', () => open('', false, false));
     And('he opens the Talk sheet', async () => {
       await openTutor();
-      await screen.findByRole('dialog', { name: /^Talk about / });
+      await findDialog(/^Talk about /);
     });
     When('he goes back', back);
     Then('the Talk sheet is closed', async () => {
@@ -320,11 +328,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Romans 8', () => open('', false, false));
     And('he opens the teach sheet', async () => {
       await user.click(await screen.findByTestId('new-words'));
-      await screen.findByRole('dialog', { name: 'New word' });
+      await findDialog('New word');
     });
     When('he goes back', back);
     Then('the teach sheet is closed', async () => {
-      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'New word' })).toBeNull());
+      await waitFor(() => expect(queryDialog('New word')).toBeNull());
     });
     And('the Reader shows Romans 8', () => {
       expect(screen.getByRole('heading', { level: 1, name: /Romans 8/ })).toBeTruthy();
@@ -347,11 +355,11 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await seedHisWords();
       render(<App />);
       await user.click(await screen.findByRole('button', { name: 'Ask for another approach' }));
-      await screen.findByRole('dialog', { name: 'Ask for another approach' });
+      await findDialog('Ask for another approach');
     });
     When('he goes back', back);
     Then('the Ask for another approach sheet is closed', async () => {
-      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Ask for another approach' })).toBeNull());
+      await waitFor(() => expect(queryDialog('Ask for another approach')).toBeNull());
     });
     And('the Settings screen is open', async () => {
       await screen.findByRole('heading', { name: 'Learning', level: 1 });
@@ -383,8 +391,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on 1 John 2 in Greek', () => open('#/?b=1jn&c=2&view=greek', false, false));
     And('he taps "Τεκνία" in verse 1', () => tapsWord('Τεκνία', 1));
     And('he taps the term "plural" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'plural', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'plural', exact: true }));
+      await findDialog('Grammar');
     });
     When('he dismisses the Grammar sheet with <way>', () => dismiss('grammar', row.way));
     Then('no sheet is open', () => waitFor(noSheetOpen));
@@ -397,12 +405,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Romans 8 with verse 2 selected', () => open('', false));
     And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
     And('he taps the term "genitive" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'genitive', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps Learn this idea on the Grammar sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
-      await screen.findByRole('dialog', { name: 'Idea' });
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'Learn this idea' }));
+      await findDialog('Idea');
     });
     When('he dismisses the idea sheet with <way>', () => dismiss('idea', row.way));
     Then('no sheet is open', () => waitFor(noSheetOpen));
@@ -416,8 +424,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
     And('he taps "For" in verse 2', () => tapsWord('For', 2));
     And('he taps the term "conjunction" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'conjunction', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'conjunction', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps Done on the Grammar sheet', () => dismiss('grammar', 'Done'));
     When('he goes back', back);
@@ -432,12 +440,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Lampas is opened on Settings and then on Romans 8', () => open('#/settings', true, false));
     And('he taps "of the" in verse 2', () => tapsWord('of the', 2));
     And('he taps the term "genitive" on the word sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'genitive', exact: true }));
-      await screen.findByRole('dialog', { name: 'Grammar' });
+      await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'genitive', exact: true }));
+      await findDialog('Grammar');
     });
     And('he taps Learn this idea on the Grammar sheet', async () => {
-      await user.click(screen.getByRole('button', { name: 'Learn this idea' }));
-      await screen.findByRole('dialog', { name: 'Idea' });
+      await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'Learn this idea' }));
+      await findDialog('Idea');
     });
     And('he taps Done on the idea sheet', () => dismiss('idea', 'Done'));
     When('he goes back', back);

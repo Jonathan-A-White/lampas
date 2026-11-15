@@ -36,6 +36,9 @@ function dialogNamed(name: RegExp | string): HTMLElement | null {
   return null;
 }
 
+/** The open dialog named `name`, found beside its own markup (null when none is on screen): a sheet's step reads it through this, not through screen.getByRole('dialog'), which walks the Reader behind it (mw-indx1x6.41). */
+export const queryDialog = (name: RegExp | string): HTMLElement | null => dialogNamed(name);
+
 /** The open Talk sheet named `name` (by default any talk), or null: a step reads the sheet through this, never through screen.getByRole('dialog'), which walks the Reader behind it on every call (mw-lcv9z3g.13, mw-indx1x6.30). */
 export const queryTalkSheet = (name: RegExp | string = TALK_SHEET): HTMLElement | null => dialogNamed(name);
 
