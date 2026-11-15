@@ -1,0 +1,26 @@
+{
+  "about": "David's player's margin (mw-ar5k42b.2, docs/audio-player-margin.md): no sound from outside a span (a verse or a section) is emitted more than `lead` seconds before its start or `tail` seconds after its end, judged at 50 dB under the voice's level. tests/e2e/recorded-voice-margin.spec.ts holds the player to these two numbers. `inside` is how far INTO the span its edges can be lost: the start heard up to inside.lead late, the end stopped up to inside.tail early (the player stops END_SLACK before the end after a FADE). Seconds of the recording.",
+  "lead": 0.05,
+  "tail": 0.05,
+  "inside": {
+    "lead": 0.025,
+    "tail": 0.097
+  },
+  "measured": {
+    "when": "2026-11-14, src/speech/recordedVoice.ts as at e689536e6 (unchanged by this story), the Laptop under its own load (1-minute load 14.4-31.2)",
+    "how": "30 plays a case at 1x and 1.25x, half on a fresh page and half by Play again: one verse with silence either side, one verse with none, a three-verse section with none at its edges; plus pause and resume, Next verse and a chapter's crossing, once each",
+    "browsers": {
+      "chromium": {
+        "version": "Playwright 1.63.0's Chromium (chromium-1243), headless",
+        "plays": 180,
+        "start_ms": { "earliest": -17, "median_range": [-15, 23], "latest": 25 },
+        "end_ms": { "latest": -45, "median_range": [-71, -56], "earliest": -97 }
+      },
+      "webkit": "not measured: Playwright's WebKit build needs libjxl.so.0.8 and libbacktrace.so.0, which Ubuntu 24.04 on the Laptop does not have, and the Laptop has no root to install its other libraries"
+    },
+    "worst": {
+      "before_start_s": 0.017,
+      "after_end_s": 0
+    }
+  }
+}
