@@ -168,7 +168,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('{string} is selected', async (_, label: string) => {
       await ensureSettingsGroup('listening');
-      expect(await screen.findByRole('radio', { name: label })).toBeChecked();
+      // a change before this step may still be writing: wait for the radio to be checked, not only to be drawn
+      await waitFor(async () => expect(await screen.findByRole('radio', { name: label })).toBeChecked());
     });
   });
 
@@ -208,7 +209,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('{string} is selected', async (_, label: string) => {
       await ensureSettingsGroup('listening');
-      expect(await screen.findByRole('radio', { name: label })).toBeChecked();
+      // a change before this step may still be writing: wait for the radio to be checked, not only to be drawn
+      await waitFor(async () => expect(await screen.findByRole('radio', { name: label })).toBeChecked());
     });
   });
 

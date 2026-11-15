@@ -119,6 +119,9 @@ const languages = (): HTMLElement => {
   return found;
 };
 const dial = (name: string): HTMLElement | null => groupNamed(name);
+/** What a group draws pressed, for a failure's message: a dial that is not where a step expects it says where it is. */
+const pressedIn = (group: HTMLElement | null): string =>
+  group ? Array.from(group.querySelectorAll('[aria-pressed="true"]')).map((b) => b.textContent).join(', ') || 'none pressed' : 'no such group';
 const pressed = (group: HTMLElement | null, label: string): boolean => {
   if (!group) return false;
   return within(group).queryByRole('button', { name: label })?.getAttribute('aria-pressed') === 'true';
@@ -141,19 +144,23 @@ describeFeature(feature, ({ Scenario }) => {
   const GIVEN = 'Lampas is opened on Settings on a new phone';
   const chooses = async (_: unknown, label: string): Promise<void> => {
     await user.click(await within(languages()).findByRole('button', { name: label }));
+    // the tap does not await its writes (the dials move one after the other, each with the settings it brings or hides): the next step starts when Which languages? shows the choice,
+    // which it does only once both dials stand where it puts them. A step that moves a dial straight after, with the first move's writes still going, interleaves two moves of the
+    // shared settings (mw-qtu3zvz.175).
+    await waitFor(() => expect(pressed(languages(), label), `Which languages? ${label}, drawn: ${pressedIn(languages())}`).toBe(true));
   };
   const choosesOnDial = async (_: unknown, step: string, name: string): Promise<void> => {
     const group = await findGroup(name);
     await user.click(within(group).getByRole('button', { name: step }));
     // the write is not awaited by the tap: the next step starts when the dial shows the step
-    await waitFor(() => expect(pressed(dial(name), step), `${name} ${step}`).toBe(true));
+    await waitFor(() => expect(pressed(dial(name), step), `${name} ${step}, drawn: ${pressedIn(dial(name))}`).toBe(true));
   };
   const languagesHas = async (_: unknown, label: string): Promise<void> => {
     await waitFor(() => expect(pressed(languages(), label)).toBe(true));
     expect(within(languages()).getAllByRole('button')).toHaveLength(4);
   };
   const dialHas = async (_: unknown, name: string, step: string): Promise<void> => {
-    await waitFor(() => expect(pressed(dial(name), step), `${name} ${step}`).toBe(true));
+    await waitFor(() => expect(pressed(dial(name), step), `${name} ${step}, drawn: ${pressedIn(dial(name))}`).toBe(true));
   };
   const noDialNamed = async (_: unknown, name: string): Promise<void> => {
     await waitFor(() => expect(dial(name)).toBeNull());
