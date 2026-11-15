@@ -3,6 +3,8 @@
 // up to MAX_RECORDING_MS (ten minutes: the longest a reading's word times may name, services/reading.ts MAX_SECONDS; at 32 kbps that is about 2.4 MB,
 // inside the verse-read grind's 8 MB attachment limit, and the mill's local scorer takes a clip of any length). What comes out is one clip, sent as a
 // grist attachment (src/services/reading.ts). A reading the cap stops is marked `capped`, and the result says so (reading.ts cutNote).
+// While it records, Hands-free's wake listening steps aside (src/handsFree/micBusy.ts, mw-rl10piw.6).
+import { takeMic } from '../handsFree/micBusy';
 
 export interface Recording {
   blob: Blob;
@@ -52,6 +54,8 @@ export class ReadingRecorder implements HoldRecorder {
   private startedAt = 0;
   private cap: ReturnType<typeof setTimeout> | undefined;
   private readonly onLimit: ((recording: Recording) => void) | undefined;
+  /** gives the microphone back to Hands-free's wake listening (src/handsFree/micBusy.ts): set while this recorder has it */
+  private giveMic: (() => void) | null = null;
 
   /** `onLimit` gets the clip, marked `capped`, when the cap stops the recording; a stop() before the cap never calls it. */
   constructor(onLimit?: (recording: Recording) => void) {
@@ -60,9 +64,13 @@ export class ReadingRecorder implements HoldRecorder {
 
   async start(): Promise<void> {
     if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices?.getUserMedia) throw new MicUnavailable(NO_RECORDER);
+    // Hands-free's wake listening steps aside first: it closes its microphone before this one opens, and listens again when this recorder lets go
+    this.giveMic?.();
+    this.giveMic = takeMic();
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
     } catch {
+      this.release();
       throw new MicUnavailable();
     }
     const mime = pickMime();
@@ -109,6 +117,8 @@ export class ReadingRecorder implements HoldRecorder {
   private release(): void {
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = null;
+    this.giveMic?.();
+    this.giveMic = null;
     this.recorder = null;
     this.chunks = [];
   }

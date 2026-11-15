@@ -27,7 +27,7 @@ npm ci --no-audit --no-fund && TZ=UTC npm test && npm run typecheck && npm run l
 
 - `src/data/grammar` the ladder: ideas, needs, placement, questions, teaching cards. Single source `src/data/grammar/ladder.ts`. Docs `docs/grammar.md`, `docs/paradigms.md`.
 - `src/review` the Review round: item kinds, drawing and grading. Docs `docs/layout/words.md`, `docs/module-map.md`.
-- `src/speech` voices, pronunciation schemes, read aloud, Tap to hear. Docs `docs/layout/speech.md`, `docs/pronunciation.md`.
+- `src/speech` voices, pronunciation schemes, read aloud, Tap to hear; `src/handsFree` Hands-free ('Hey Lampas', play, pause). Docs `docs/layout/speech.md`, `docs/pronunciation.md`.
 - `src/settings` the settings registry and the one list of Settings rows. Docs `docs/layout/settings.md`.
 - `src/tutor` what the tutor is told (`src/tutor/knows.ts`) and the screen it is on. Docs `docs/layout/tutor.md`, `docs/ask-tutor.md`.
 - `grinds/` the tutor's instructions, schemas and examples, one per kind. Docs `docs/grinds.md`.

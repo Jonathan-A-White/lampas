@@ -376,7 +376,7 @@
         "credits": {
           "description": "Only on About: every source Lampas credits, each with its name, what it gives this reader, its licence (or why none is needed) and its link.",
           "type": "array",
-          "maxItems": 56,
+          "maxItems": 57,
           "items": {
             "type": "object",
             "additionalProperties": false,

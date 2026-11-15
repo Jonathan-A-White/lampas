@@ -36,6 +36,9 @@ Lampas stands on others' work and names every text, font, library, service and i
 - **[Thompson Chain Topics](https://crosswire.org/study/fulllibrary.jsp?show=TCR)** (Frank Charles Thompson, 1934; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[Torrey's New Topical Textbook](https://crosswire.org/study/fulllibrary.jsp?show=Torrey)** (R. A. Torrey, 1897; CrossWire): themes of a verse. Public domain. Changes: split by book.
 - **[eSpeak NG](https://github.com/espeak-ng/espeak-ng)** speech synthesizer: the clips for one-letter Greek words (ὁ, ἡ) on phones with no Greek voice. Licence: [GPL-3.0](https://github.com/espeak-ng/espeak-ng/blob/master/COPYING); sound only. Changes: MP3.
+- **[Hey Lampas wake word](https://github.com/Jonathan-A-White/voice-kit/tree/main/packages/wake)**, the model Hands-free listens with: ours ([MIT](https://github.com/Jonathan-A-White/voice-kit/blob/main/LICENSE)), made by voice-kit's wake-probe scripts and handsfree.mjs from
+  [LibriSpeech](https://www.openslr.org/12/) train-clean-100, dev-clean and test-clean and [VCTK](https://datashare.ed.ac.uk/handle/10283/3443) 0.92 ([CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), spoken by Coqui TTS's VCTK VITS voice (Apache-2.0) in coqui-tts (MPL-2.0);
+  PyTorch, torchaudio, NumPy (BSD), eSpeak NG (GPL-3.0), FFmpeg (LGPL-2.1) and Bluetooth CVSD figures as tools. Only the model ships. Changes: mixed with noise and echo.
 - **[Biblical Mastery Academy](https://biblicalmastery.academy/)** inspired the grammar ladder, ordered beside the sequence of their Greek path; no course text, image or exercise is copied.
 
 ## Type

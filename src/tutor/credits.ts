@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 8600;
+export const MAX_CREDITS_BYTES = 8900;
 
 /** One line of the sheet a Septuagint chapter's header opens (mw-u2w5klk.276): what is credited, in plain words, and a link where there is one. The one place the sheet's text is written. */
 export interface SeptuagintSource {
@@ -61,6 +61,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'BSV SDK', use: 'Keys and signatures under bsv-kit', licence: 'Open BSV License', link: 'https://github.com/bsv-blockchain/ts-stack/tree/main/packages/sdk' },
   { name: 'pwa-kit', use: 'Updates, tips, settings; learn-kit\'s graph', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/pwa-kit' },
   { name: 'voice-kit', use: 'Read aloud, hold to talk, Hands-free tap and mark', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/voice-kit' },
+  { name: 'Hey Lampas wake word', use: 'Trained on LibriSpeech (train-clean-100, dev-clean, test-clean), VCTK, Coqui VITS, coqui-tts, PyTorch, torchaudio, NumPy, eSpeak NG, FFmpeg, CVSD, wake-probe', licence: 'MIT; LibriSpeech and VCTK CC BY 4.0', link: 'https://github.com/Jonathan-A-White/voice-kit/tree/main/packages/wake' },
   { name: 'audible-kit', use: 'The Audible app link and its chapter list', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/audible-kit' },
   { name: 'react-markdown', use: 'Draws the tutor\'s answers, with remark-gfm', licence: 'MIT', link: 'https://github.com/remarkjs/react-markdown' },
   { name: 'node-qrcode', use: 'The key as a QR code', licence: 'MIT', link: 'https://github.com/soldair/node-qrcode' },
