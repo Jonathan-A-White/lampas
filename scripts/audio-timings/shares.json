@@ -1,0 +1,376 @@
+{
+ "v": 1,
+ "read": "The publisher's listing of the chapter files (https://openbible.com/audio/msb/, one GET, User-Agent lampas-audio-timings/1): each file's size to 0.1 MB; every file is a 192 kb/s constant-rate MP3, 24,000 bytes a second, so seconds = size / 24,000 (the 50 Genesis files on the Laptop: summed, 0.9994 of the measured duration). No recording was downloaded for this.",
+ "bytesASecond": 24000,
+ "totalHours": 79.11,
+ "meanHours": 15.82,
+ "shares": [
+  {
+   "share": 1,
+   "hours": 15.82,
+   "chapters": 217,
+   "books": [
+    "gen",
+    "lev",
+    "deu",
+    "jdg",
+    "ecc",
+    "sng",
+    "hag",
+    "act",
+    "1co",
+    "gal",
+    "1th",
+    "tit",
+    "jas"
+   ]
+  },
+  {
+   "share": 2,
+   "hours": 15.82,
+   "chapters": 208,
+   "books": [
+    "exo",
+    "1sa",
+    "2sa",
+    "neh",
+    "est",
+    "ezk",
+    "amo",
+    "oba",
+    "hab",
+    "mrk",
+    "col",
+    "2ti",
+    "1pe"
+   ]
+  },
+  {
+   "share": 3,
+   "hours": 15.82,
+   "chapters": 240,
+   "books": [
+    "num",
+    "ezr",
+    "job",
+    "isa",
+    "nam",
+    "mal",
+    "mat",
+    "jhn",
+    "eph",
+    "php",
+    "1ti",
+    "heb",
+    "jud"
+   ]
+  },
+  {
+   "share": 4,
+   "hours": 15.82,
+   "chapters": 309,
+   "books": [
+    "jos",
+    "rut",
+    "2ki",
+    "psa",
+    "pro",
+    "lam",
+    "jon",
+    "mic",
+    "zep",
+    "zec",
+    "luk",
+    "rom",
+    "2jn",
+    "3jn"
+   ]
+  },
+  {
+   "share": 5,
+   "hours": 15.82,
+   "chapters": 215,
+   "books": [
+    "1ki",
+    "1ch",
+    "2ch",
+    "jer",
+    "dan",
+    "hos",
+    "jol",
+    "2co",
+    "2th",
+    "phm",
+    "2pe",
+    "1jn",
+    "rev"
+   ]
+  }
+ ],
+ "books": {
+  "gen": {
+   "chapters": 50,
+   "hours": 3.83
+  },
+  "exo": {
+   "chapters": 40,
+   "hours": 3.06
+  },
+  "lev": {
+   "chapters": 27,
+   "hours": 2.24
+  },
+  "num": {
+   "chapters": 36,
+   "hours": 3.13
+  },
+  "deu": {
+   "chapters": 34,
+   "hours": 2.64
+  },
+  "jos": {
+   "chapters": 24,
+   "hours": 1.82
+  },
+  "jdg": {
+   "chapters": 21,
+   "hours": 1.81
+  },
+  "rut": {
+   "chapters": 4,
+   "hours": 0.26
+  },
+  "1sa": {
+   "chapters": 31,
+   "hours": 2.42
+  },
+  "2sa": {
+   "chapters": 24,
+   "hours": 2.02
+  },
+  "1ki": {
+   "chapters": 22,
+   "hours": 2.39
+  },
+  "2ki": {
+   "chapters": 25,
+   "hours": 2.32
+  },
+  "1ch": {
+   "chapters": 29,
+   "hours": 2.24
+  },
+  "2ch": {
+   "chapters": 36,
+   "hours": 2.62
+  },
+  "ezr": {
+   "chapters": 10,
+   "hours": 0.77
+  },
+  "neh": {
+   "chapters": 13,
+   "hours": 1.11
+  },
+  "est": {
+   "chapters": 10,
+   "hours": 0.56
+  },
+  "job": {
+   "chapters": 42,
+   "hours": 1.8
+  },
+  "psa": {
+   "chapters": 150,
+   "hours": 4.58
+  },
+  "pro": {
+   "chapters": 31,
+   "hours": 1.56
+  },
+  "ecc": {
+   "chapters": 12,
+   "hours": 0.55
+  },
+  "sng": {
+   "chapters": 8,
+   "hours": 0.29
+  },
+  "isa": {
+   "chapters": 66,
+   "hours": 3.72
+  },
+  "jer": {
+   "chapters": 52,
+   "hours": 4.25
+  },
+  "lam": {
+   "chapters": 5,
+   "hours": 0.35
+  },
+  "ezk": {
+   "chapters": 48,
+   "hours": 3.79
+  },
+  "dan": {
+   "chapters": 12,
+   "hours": 1.15
+  },
+  "hos": {
+   "chapters": 14,
+   "hours": 0.54
+  },
+  "jol": {
+   "chapters": 3,
+   "hours": 0.21
+  },
+  "amo": {
+   "chapters": 9,
+   "hours": 0.42
+  },
+  "oba": {
+   "chapters": 1,
+   "hours": 0.06
+  },
+  "jon": {
+   "chapters": 4,
+   "hours": 0.13
+  },
+  "mic": {
+   "chapters": 7,
+   "hours": 0.31
+  },
+  "nam": {
+   "chapters": 3,
+   "hours": 0.13
+  },
+  "hab": {
+   "chapters": 3,
+   "hours": 0.15
+  },
+  "zep": {
+   "chapters": 3,
+   "hours": 0.16
+  },
+  "hag": {
+   "chapters": 2,
+   "hours": 0.12
+  },
+  "zec": {
+   "chapters": 14,
+   "hours": 0.62
+  },
+  "mal": {
+   "chapters": 4,
+   "hours": 0.19
+  },
+  "mat": {
+   "chapters": 28,
+   "hours": 2.43
+  },
+  "mrk": {
+   "chapters": 16,
+   "hours": 1.55
+  },
+  "luk": {
+   "chapters": 24,
+   "hours": 2.58
+  },
+  "jhn": {
+   "chapters": 21,
+   "hours": 1.99
+  },
+  "act": {
+   "chapters": 28,
+   "hours": 2.45
+  },
+  "rom": {
+   "chapters": 16,
+   "hours": 1.05
+  },
+  "1co": {
+   "chapters": 16,
+   "hours": 1.0
+  },
+  "2co": {
+   "chapters": 13,
+   "hours": 0.64
+  },
+  "gal": {
+   "chapters": 6,
+   "hours": 0.34
+  },
+  "eph": {
+   "chapters": 6,
+   "hours": 0.33
+  },
+  "php": {
+   "chapters": 4,
+   "hours": 0.24
+  },
+  "col": {
+   "chapters": 4,
+   "hours": 0.22
+  },
+  "1th": {
+   "chapters": 5,
+   "hours": 0.2
+  },
+  "2th": {
+   "chapters": 3,
+   "hours": 0.11
+  },
+  "1ti": {
+   "chapters": 6,
+   "hours": 0.27
+  },
+  "2ti": {
+   "chapters": 4,
+   "hours": 0.19
+  },
+  "tit": {
+   "chapters": 3,
+   "hours": 0.11
+  },
+  "phm": {
+   "chapters": 1,
+   "hours": 0.05
+  },
+  "heb": {
+   "chapters": 13,
+   "hours": 0.75
+  },
+  "jas": {
+   "chapters": 5,
+   "hours": 0.25
+  },
+  "1pe": {
+   "chapters": 5,
+   "hours": 0.27
+  },
+  "2pe": {
+   "chapters": 3,
+   "hours": 0.17
+  },
+  "1jn": {
+   "chapters": 5,
+   "hours": 0.27
+  },
+  "2jn": {
+   "chapters": 1,
+   "hours": 0.03
+  },
+  "3jn": {
+   "chapters": 1,
+   "hours": 0.03
+  },
+  "jud": {
+   "chapters": 1,
+   "hours": 0.07
+  },
+  "rev": {
+   "chapters": 22,
+   "hours": 1.19
+  }
+ }
+}

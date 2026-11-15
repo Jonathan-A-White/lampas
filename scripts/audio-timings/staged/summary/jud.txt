@@ -1,0 +1,2 @@
+jud: 1 chapters, 25 verses, 0 flags outside the listen list, listen list 1 edges of 1 verses, 3.5 wall minutes
+  (maker 157 s, judge 53 s, listen 1 s; cores used 2.8; outside the list: none)
