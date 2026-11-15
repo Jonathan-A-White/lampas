@@ -47,7 +47,7 @@ export function ReaderChips({
   if (!any && wovenCount === null) return null;
   return (
     <>
-    <div className="relative shrink-0">
+    <div data-reader-chips-wrap className="relative shrink-0">
     <div
       ref={attachMore}
       data-testid="reader-chips"
