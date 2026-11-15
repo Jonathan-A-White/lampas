@@ -166,7 +166,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('the shelf holds the books {string} and Settings is open at its home', homeWith);
     Then('the Study resources group hint is {string}', async (_, hint: string) => {
       const groups = await screen.findByRole('list', { name: 'Settings groups' });
-      expect(within(groups).getByRole('button', { name: /^Study resources/ })).toHaveTextContent(hint);
+      await waitFor(() => expect(within(groups).getByRole('button', { name: /^Study resources/ })).toHaveTextContent(hint));
     });
   });
 
@@ -187,7 +187,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the search answers the row {string} under {string}', async (_, title: string, group: string) => {
       const answer = await screen.findByRole('button', { name: new RegExp(`^${title}`) });
-      expect(answer).toHaveTextContent(group);
+      await waitFor(() => expect(answer).toHaveTextContent(group));
     });
     When('he taps the answer {string}', async (_, title: string) => {
       await user.click(await screen.findByRole('button', { name: new RegExp(`^${title}`) }));
