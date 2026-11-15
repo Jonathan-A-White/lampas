@@ -37,6 +37,15 @@ const heard = (input: Record<string, unknown>) => {
   answer.words = answer.words.map((w, i) => (i === 1 ? { ...w, problem: 'you wrote ἀρχή; it sounds like ἀρχῇ', sounds_alike: true } : w));
   return answer;
 };
+/** What the mill answers when it reads the page's lone-breathing ὁ (word 4) as ὅ: it marks it wrong with 'extra acute accent' and the `written` it read (mw-qtu3zvz.153); every other word is right. */
+const curlRead = (input: Record<string, unknown>) => {
+  const words = input.words as string[];
+  return {
+    readable: true,
+    words: words.map((word, i) => (i === 3 ? { word, written: 'ὅ', mark: 'wrong', problem: 'you wrote ὅ with an extra acute accent' } : { word, written: word, mark: 'right' })),
+    fix_first: 'Every word is as the verse has it.',
+  };
+};
 const PHONE = [ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE];
 
 beforeAll(() => {
@@ -149,6 +158,23 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(resultEl().querySelector('[data-fix-first]')).toHaveTextContent('Put the small iota back under the eta of the second word.');
     });
     And('a {string} button is offered', tryAgain);
+  });
+
+  Scenario("A lone-breathing word the tutor read as carrying an accent is shown right, with no problem line", ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on John 1 with a copywork tutor that reads the breathing of ὁ as an accent', openOn('#/?b=jhn&c=1', curlRead));
+    When('he taps the number of verse {int}', tapVerse);
+    And('he chooses {string}', choose);
+    And('he opens {string}', choose);
+    When('he chooses the copywork language {string}', choose);
+    When('he attaches a picture of the page', attach);
+    Then('the result shows ὁ with no wrong mark and no problem line', async () => {
+      await waitFor(() => expect(resultEl()).not.toBeNull());
+      const marks = Array.from(resultEl().querySelectorAll('[data-copy-word]')).map((w) => w.getAttribute('data-mark'));
+      expect(marks).toHaveLength(john.verses[0].g.length);
+      expect(marks.every((m) => m === 'right')).toBe(true);
+      expect(resultEl()).toHaveTextContent('Every word is right.');
+      expect(resultEl()).not.toHaveTextContent('extra acute accent');
+    });
   });
 
   Scenario('A photo the tutor cannot read says so and offers Try again', ({ Given, When, And, Then }) => {

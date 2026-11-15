@@ -88,18 +88,62 @@ export function isCopyworkAnswer(value: unknown): value is CopyworkAnswer {
         typeof (w as AnswerWord).word === 'string' &&
         MARKS.includes((w as AnswerWord).mark) &&
         (w.problem === undefined || typeof w.problem === 'string') &&
-        (w.sounds_alike === undefined || typeof w.sounds_alike === 'boolean'),
+        (w.sounds_alike === undefined || typeof w.sounds_alike === 'boolean') &&
+        (w.written === undefined || typeof w.written === 'string'),
     )
   );
 }
 
+const SMOOTH = '\u0313';
+const ROUGH = '\u0314';
+const ACCENTS = ['\u0301', '\u0300', '\u0342'];
+const isMark = (ch: string) => /\p{M}/u.test(ch);
+
+/** A word as its letters, each with the set of marks it carries (NFD: the letter, then its combining marks). */
+function lettersWithMarks(word: string): { letter: string; marks: string[] }[] {
+  const out: { letter: string; marks: string[] }[] = [];
+  for (const ch of word.normalize('NFD')) {
+    if (isMark(ch) && out.length > 0) out[out.length - 1].marks.push(ch);
+    else out.push({ letter: ch, marks: [] });
+  }
+  return out.map((l) => ({ letter: l.letter, marks: l.marks.sort() }));
+}
+
+/** Whether `written` is the request's lone-breathing Greek word (ἡ, ὁ, οἱ, ἐν, εἰς, οὐ, ὡς, εἰ: a breathing and no accent) plus one accent the model read from the breathing's curl:
+ * the same letters and marks, and on the breathing's vowel either the same breathing and ONE accent, or one accent and no breathing. Anything else (smooth for rough, no mark, another letter,
+ * a second accent, a request word with an accent of its own) is a fault. */
+export function isBreathingReadAsAccent(word: string, written: string | undefined): boolean {
+  if (!written) return false;
+  const asked = lettersWithMarks(word);
+  const heard = lettersWithMarks(written);
+  if (asked.length !== heard.length) return false;
+  if (asked.some((l) => l.marks.some((m) => ACCENTS.includes(m)))) return false;
+  const at = asked.findIndex((l) => l.marks.includes(SMOOTH) || l.marks.includes(ROUGH));
+  if (at < 0 || asked.filter((l) => l.marks.includes(SMOOTH) || l.marks.includes(ROUGH)).length !== 1) return false;
+  for (let i = 0; i < asked.length; i++) {
+    if (asked[i].letter !== heard[i].letter) return false;
+    if (i !== at && asked[i].marks.join() !== heard[i].marks.join()) return false;
+  }
+  const breathing = asked[at].marks.filter((m) => m === SMOOTH || m === ROUGH);
+  const rest = asked[at].marks.filter((m) => m !== SMOOTH && m !== ROUGH);
+  const marks = heard[at].marks;
+  const accents = marks.filter((m) => ACCENTS.includes(m));
+  const others = marks.filter((m) => m !== SMOOTH && m !== ROUGH && !ACCENTS.includes(m));
+  const breathings = marks.filter((m) => m === SMOOTH || m === ROUGH);
+  if (accents.length !== 1 || others.join() !== rest.join()) return false;
+  return breathings.length === 0 || (breathings.length === 1 && breathings[0] === breathing[0]);
+}
+
 /** The words of the model, each with the mark the grind gave the word at its place (the model's own word is shown, whatever the answer copied); null when the answer does not
- * mark every word of the request, which it must (the count and the order are the request's). */
-export function markedWords(request: Pick<CopyworkRequest, 'words'>, answer: CopyworkAnswer): MarkedWord[] | null {
+ * mark every word of the request, which it must (the count and the order are the request's). On a Greek page a word marked wrong whose `written` is only the page's breathing read as an
+ * accent (isBreathingReadAsAccent) is right: the model misreads a small curl about one run in eight, and the page cannot be redrawn for it (mw-qtu3zvz.153). `language` is the request's; a
+ * request without one is not taken for Greek. */
+export function markedWords(request: Pick<CopyworkRequest, 'words'> & Partial<Pick<CopyworkRequest, 'language'>>, answer: CopyworkAnswer): MarkedWord[] | null {
   if (answer.words.length !== request.words.length) return null;
   return request.words.map((word, i) => {
-    const { mark, problem, sounds_alike } = answer.words[i];
+    const { mark, problem, sounds_alike, written } = answer.words[i];
     if (mark !== 'wrong') return { word, mark };
+    if (request.language === 'grc' && isBreathingReadAsAccent(word, written)) return { word, mark: 'right' };
     return { word, mark, ...(problem !== undefined ? { problem } : {}), ...(sounds_alike === true ? { soundsAlike: true } : {}) };
   });
 }

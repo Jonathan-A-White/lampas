@@ -75,7 +75,7 @@ describe("copywork's Greek rule judges each word by itself", () => {
 
 // mw-qtu3zvz.95: the same example's right ἡ (a rough breathing and no accent on the page) was marked wrong, 'you wrote ή with an acute accent', in about nine runs
 // in ten, and σκοτία and οὐ now and then: the model read a breathing's small curl as an accent. The rule says a breathing is not an accent, once and in one place
-// (a rule stated again and again primes the model to find that fault on a right word: mw-qtu3zvz.72). The live proof is that example, which holds words.8, 9 and 11 right.
+// (a rule stated again and again primes the model to find that fault on a right word: mw-qtu3zvz.72). The live proof is that example, which holds words.9 and 11 right (words.8, the lone-breathing ἡ, is held by isBreathingReadAsAccent in copywork.ts and its unit test: mw-qtu3zvz.153).
 describe("copywork's Greek rule tells a breathing from an accent", () => {
   // the curl against the stroke is the shape the model misreads, so the rule counts marks and gives the opening vowel's single mark to the breathing
   it('says a breathing is not an accent, and counts the marks on the opening vowel', () => {

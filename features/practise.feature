@@ -37,6 +37,16 @@ Feature: Practise a verse
     And a "Try again" button is offered
 
   @uc-practise @greek
+  Scenario: A lone-breathing word the tutor read as carrying an accent is shown right, with no problem line
+    Given Lampas is opened on John 1 with a copywork tutor that reads the breathing of ὁ as an accent
+    When he taps the number of verse 1
+    And he chooses "Practise"
+    And he opens "Copywork"
+    When he chooses the copywork language "Greek"
+    When he attaches a picture of the page
+    Then the result shows ὁ with no wrong mark and no problem line
+
+  @uc-practise @greek
   Scenario: A photo the tutor cannot read says so and offers Try again
     Given Lampas is opened on John 1 with a copywork tutor that cannot read the page
     When he taps the number of verse 1
