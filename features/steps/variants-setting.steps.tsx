@@ -162,8 +162,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('Settings offers Read as with the three built-in sets, Byzantine chosen, and says what Byzantine reads', ({ Given, Then, And }) => {
     Given('Settings is open at Reading with nothing chosen', () => openReading());
     Then('Read as offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, chosen: string) => {
-      expect(await buttons('Read as')).toEqual([a, b, c]);
-      expect(await chosenIn('Read as')).toEqual([chosen]);
+      // the sets and the set in force land in two draws: each is waited for (mw-qtu3zvz.151)
+      await waitFor(async () => expect(await buttons('Read as')).toEqual([a, b, c]));
+      await waitFor(async () => expect(await chosenIn('Read as')).toEqual([chosen]));
     });
     And('the Reading sets row says {string}', async (_, line: string) => {
       const row = (await rowOf('Read as')).closest<HTMLElement>('[data-setting]');
@@ -177,7 +178,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the setting {string} is kept as {string}', (_, key: string, value: string) => savedAs(key, value));
     When('Settings is opened again at Reading', reopen);
     Then('Read as has {string} chosen', async (_, choice: string) => {
-      expect(await chosenIn('Read as')).toEqual([choice]);
+      await waitFor(async () => expect(await chosenIn('Read as')).toEqual([choice]));
     });
   });
 
