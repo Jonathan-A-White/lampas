@@ -20,9 +20,10 @@ import { instructionsOf } from '../../tests/support/learner';
 import { offerSettled } from '../../tests/support/settled-offer';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup, leaveSettings } from '../../tests/support/settings-pages';
-import { openSettings } from '../../tests/unit/openSettings';
+import { openSettingsFromReader } from '../../tests/unit/openSettings';
 import '../../tests/support/grinds-in-graph';
 import { closeDatabase } from './close-database';
+import { startQuiz as startQuizOn, quizSheet } from './start-quiz';
 
 afterAll(async () => {
   cleanup();
@@ -73,7 +74,8 @@ async function open(goal: string, answer: string = QUIZ_ANSWER.answer): Promise<
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
 }
 
-const sheet = () => screen.getByRole('dialog');
+/** The open Quiz or Talk sheet, found beside its own markup: a role query for a dialog on `screen` walks the Reader behind it (mw-indx1x6.38). */
+const sheet = (): HTMLElement => quizSheet();
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 const offer = () => {
   const el = sheet().querySelector<HTMLElement>('[data-quiz-goal]');
@@ -97,16 +99,7 @@ const feature = await loadFeature('features/quiz-goal.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const openWith = (_: unknown, goal: string) => open(goal);
-  const startQuiz = async (_: unknown, heading: string) => {
-    const h = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((x) => squash(x.textContent) === heading);
-    if (!h) throw new Error(`no heading ${heading}`);
-    await user.click(within(h).getByRole('button'));
-    const view = await screen.findByRole('region', { name: 'Verse view' });
-    await user.click(within(view).getByRole('button', { name: 'Practise', exact: true }));
-    await user.click(within(view).getByRole('button', { name: 'Quiz', exact: true }));
-    await user.click(within(view).getByRole('button', { name: 'Start the quiz', exact: true }));
-    await screen.findByRole('dialog', { name: 'Quiz on Romans 8:1-11' });
-  };
+  const startQuiz = async (_: unknown, heading: string) => void (await startQuizOn(user, heading));
   const QUESTION = 'Is this how you want me to quiz you from now on?';
   const countIn = (el: HTMLElement) => (squash(el.textContent).split(QUESTION).length - 1);
   const buttonsOf = (yes: string, once: string) => {
@@ -123,11 +116,12 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const send = async (_: unknown, said: string) => {
     await waitFor(() => expect(turns()).toHaveLength(1));
-    await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), said);
+    await user.click(within(sheet()).getByRole('textbox', { name: 'Your message' }));
+    await user.paste(said);
     await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
   };
   const openSettingsPage = async () => {
-    await openSettings(user);
+    await openSettingsFromReader(user);
     await openSettingsGroup(user, 'tutor');
   };
   const goalShown = async (_: unknown, goal: string) => {

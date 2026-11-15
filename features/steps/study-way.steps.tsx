@@ -17,9 +17,11 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { openTutor } from './open-tutor';
-import { openSettings } from '../../tests/unit/openSettings';
+import { talkSheet } from './open-tutor';
+import { openSettingsFromReader } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
+import { startQuiz as startQuizOn } from './start-quiz';
+import { sendAboutVerse } from './ask-verse';
 
 afterAll(async () => {
   cleanup();
@@ -33,7 +35,6 @@ const PHONE_KEY = '00'.repeat(31) + '02';
 const SEPARATOR = ' / ';
 let fake: FakePostern;
 
-const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 const linesOf = (text: string): string[] => text.split(SEPARATOR);
 
 /** The lines the phone keeps: the settings store's 'studyWay' row, a JSON list. */
@@ -73,7 +74,8 @@ async function open(line: string): Promise<void> {
   await waitFor(async () => expect(await db.words.count()).toBeGreaterThan(0));
 }
 
-const sheet = () => screen.getByRole('dialog');
+/** The open Quiz or Talk sheet, found beside its own markup: a role query for a dialog on `screen` walks the Reader behind it (mw-indx1x6.38). */
+const sheet = (): HTMLElement => talkSheet(/^(Quiz on |Talk about )/);
 const turns = () => Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn]'));
 const proposal = () => {
   const el = sheet().querySelector<HTMLElement>('[data-study-way]');
@@ -99,16 +101,7 @@ const feature = await loadFeature('features/study-way.feature');
 describeFeature(feature, ({ Scenario }) => {
   const openWith = (_: unknown, line: string) => open(line);
   const givenKept = async (_: unknown, text: string) => keep(linesOf(text));
-  const startQuiz = async (_: unknown, heading: string) => {
-    const h = Array.from(document.querySelectorAll<HTMLElement>('[data-reader] [data-heading]')).find((x) => squash(x.textContent) === heading);
-    if (!h) throw new Error(`no heading ${heading}`);
-    await user.click(within(h).getByRole('button'));
-    const view = await screen.findByRole('region', { name: 'Verse view' });
-    await user.click(within(view).getByRole('button', { name: 'Practise', exact: true }));
-    await user.click(within(view).getByRole('button', { name: 'Quiz', exact: true }));
-    await user.click(within(view).getByRole('button', { name: 'Start the quiz', exact: true }));
-    await screen.findByRole('dialog', { name: 'Quiz on Romans 8:1-11' });
-  };
+  const startQuiz = async (_: unknown, heading: string) => void (await startQuizOn(user, heading));
   const keptIs = (_: unknown, text: string) => waitFor(async () => expect(await kept()).toEqual(linesOf(text)));
   const nothingKept = async () => {
     // give a stray save the time it would need, then look
@@ -163,7 +156,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with a quiz whose first answer proposes the line {string}', openWith);
     And('the phone was given the study way lines {string}', givenKept);
     When('he opens Settings and then {string}', async (_, name: string) => {
-      await openSettings(user);
+      await openSettingsFromReader(user);
       await openSettingsGroup(user, 'tutor');
       await user.click(screen.getByRole('button', { name }));
       await screen.findByRole('heading', { name, level: 1 });
@@ -192,7 +185,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he starts the quiz on the passage {string}', startQuiz);
     And('the quiz answer number {int} has arrived', (_, n: number) => waitFor(() => expect(turns()).toHaveLength(n)));
     And('he sends {string}', async (_, said: string) => {
-      await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), said);
+      await user.click(within(sheet()).getByRole('textbox', { name: 'Your message' }));
+      await user.paste(said);
       await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
     });
     Then('the mill received {int} grists', (_, n: number) => waitFor(() => expect(fake.received).toHaveLength(n)));
@@ -208,12 +202,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with a quiz whose first answer proposes the line {string}', openWith);
     And('the phone was given the study way lines {string}', givenKept);
     When('he opens the ordinary talk about verse 11 and sends {string}', async (_, said: string) => {
-      await user.click(await screen.findByRole('button', { name: 'Verse 11' }));
-      await screen.findByRole('region', { name: 'Verse view' });
-      await openTutor();
-      await screen.findByRole('dialog', { name: 'Talk about Romans 8:11' });
-      await user.type(within(sheet()).getByRole('textbox', { name: 'Your message' }), said);
-      await user.click(within(sheet()).getByRole('button', { name: 'Send' }));
+      await sendAboutVerse(user, 11, said);
     });
     Then('the mill received {int} grists', (_, n: number) => waitFor(() => expect(fake.received).toHaveLength(n)));
     And('grist number {int} carries no study way', (_, n: number) => {
