@@ -43,6 +43,7 @@ label is the value itself (`"on" (On)`) is written once. The answer schema still
 - [A second trim (mw-5r3p30.732)](#a-second-trim-mw-5r3p30732)
 - [The offer of the original (mw-gdcyf98.17)](#the-offer-of-the-original-mw-gdcyf9817)
 - [A third trim: the settings list (mw-gdcyf98.28)](#a-third-trim-the-settings-list-mw-gdcyf9828)
+- [A fourth trim: room for the next sentence (mw-qtu3zvz.147)](#a-fourth-trim-room-for-the-next-sentence-mw-qtu3zvz147)
 
 <!-- /toc -->
 
