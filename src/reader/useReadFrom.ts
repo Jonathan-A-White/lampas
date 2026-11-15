@@ -25,8 +25,8 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
   // Every start goes through the one decision (src/speech/voiceDecision.ts decideVoice, mw-zbgo4ep.30): David where he can be, the phone's voice with the line that says why, or, on
   // mobile data with Recording on Wi-Fi only, ONE question first. The answer's buttons start the reading, so it plays from a tap.
   const begin = useCallback(
-    (options: Omit<StartOptions, 'recorded' | 'notice'>, read: PlanVerse[]) => {
-      const say = decideVoice(book, chapter, read, true);
+    (options: Omit<StartOptions, 'recorded' | 'notice'>, read: PlanVerse[], mayAsk = true) => {
+      const say = decideVoice(book, chapter, read, mayAsk);
       if (!say.ask) return startReading({ ...options, recorded: say.recorded, notice: say.notice });
       askAboutData((choice) => {
         markDataQuestionAnswered();
@@ -43,10 +43,11 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
   );
   // The header's Play (continuous) goes on to the end of the book or of the Bible, as Play to says; a verse's play button reads that verse only.
   // Each is heard in the recorded voice when the verses it reads can be (src/speech/recordedVoice.ts recordingFor, decided here at the tap with no wait).
+  // `mayAsk` false (Hands-free, with no hand free to answer) never asks the data question first.
   const readFrom = useCallback(
-    (from: number, continuous: boolean) => {
+    (from: number, continuous: boolean, mayAsk = true) => {
       if (!plan) return;
-      begin({ book, chapter: chapterN, plan, from, continuous, span: readSpan }, plan.filter((v) => (continuous ? v.n >= from : v.n === from)));
+      begin({ book, chapter: chapterN, plan, from, continuous, span: readSpan }, plan.filter((v) => (continuous ? v.n >= from : v.n === from)), mayAsk);
     },
     [plan, book, chapterN, readSpan, begin],
   );

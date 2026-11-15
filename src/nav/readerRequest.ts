@@ -64,6 +64,27 @@ export function takeRequest(request: ReaderRequest): void {
   taken = Math.max(taken, request.id);
 }
 
+/** 'Read the chapter on screen from where he is' (Hands-free's 'play' with nothing paused, src/handsFree/commands.ts, mw-rl10piw.6): the Reader on screen answers it with its own
+ * start, as its header's Play does, so there is one player and the plan is the Reader's. The Reader registers its answer while it is open (`answerReadHere`). */
+const readHereAnswers: (() => void)[] = [];
+
+/** The Reader on screen answers 'read from here' with `read`; the function returned stops it. */
+export function answerReadHere(read: () => void): () => void {
+  readHereAnswers.push(read);
+  return () => {
+    const at = readHereAnswers.lastIndexOf(read);
+    if (at >= 0) readHereAnswers.splice(at, 1);
+  };
+}
+
+/** Asks the Reader on screen to read its chapter from where he is. False when no Reader is open (nothing is asked). */
+export function readHere(): boolean {
+  const read = readHereAnswers[readHereAnswers.length - 1];
+  if (!read) return false;
+  read();
+  return true;
+}
+
 /** A Talk sheet to open again on a chapter of the Reader (mw-t3xu9a.4): the tutor took him from it to another place, and Back has brought him to the chapter he was on, where the sheet was open
  * (src/ui/sheetBack.ts leaveSheetForTutor). `about` is what the sheet was about: a verse's number, or null for the chapter. The Reader is made afresh for each chapter, so this is not
  * the state of one Reader: a Reader that opens finds it (`pendingReturn`), and one already open is told (`watchReturn`). It is good for a moment, no longer. */
