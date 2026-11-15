@@ -17,13 +17,13 @@ interface Props {
  * row (the paradigm table's How much of a table, mw-irpgqi.2) drops to a row of its own, at the right (ml-auto; on the title's row the title's flex-1 takes the room). */
 export function ScreenHeader({ title, subtitle, back, action, slimAction }: Props) {
   return (
-    <header className={`flex shrink-0 flex-wrap items-center border-b border-line py-2 ${slimAction ? 'gap-1 px-1' : 'gap-2 px-2'}`}>
+    <header className={slimAction ? 'flex shrink-0 flex-wrap items-center gap-1 border-b border-line px-1 py-2' : 'flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-2 py-2'}>
       <div className="shrink-0">{back}</div>
       <div className="max-w-full min-w-max flex-1 text-center">
         <h1 className="chrome-title font-semibold">{title}</h1>
         {subtitle ? <p className="chrome-small text-muted">{subtitle}</p> : null}
       </div>
-      <div className={`ml-auto flex shrink-0 justify-end ${slimAction ? 'pr-1' : 'min-w-20'}`}>
+      <div className={slimAction ? 'ml-auto flex shrink-0 justify-end pr-1' : 'ml-auto flex min-w-20 shrink-0 justify-end'}>
         {action}
       </div>
     </header>
