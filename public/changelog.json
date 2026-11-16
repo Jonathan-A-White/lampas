@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.262",
+    "date": "2026-11-16",
+    "story": "mw-njqj1b0",
+    "kind": "fixed",
+    "text": "In a browser tab Lampas no longer leaves an empty band at the bottom of its screens; the installed app keeps its room above the navigation bar."
+  },
+  {
+    "version": "0.7.262",
+    "date": "2026-11-16",
+    "story": "mw-indx1x6.57",
+    "kind": "fixed",
+    "text": "A lesson, a word's sheet or a tutor's answer opened over a drill no longer offers links or buttons that take you out of the drill or start a second one."
+  },
+  {
     "version": "0.7.261",
     "date": "2026-11-16",
     "story": "mw-rl10piw.7",

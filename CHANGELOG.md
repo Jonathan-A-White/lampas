@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.262
+_2026-11-16_
+- Fixed: In a browser tab Lampas no longer leaves an empty band at the bottom of its screens; the installed app keeps its room above the navigation bar.
+- Fixed: A lesson, a word's sheet or a tutor's answer opened over a drill no longer offers links or buttons that take you out of the drill or start a second one.
+
 ## 0.7.261
 _2026-11-16_
 - New: Hands-free now opens and reads a passage you name, stops, turns to the next or previous chapter, and goes back a verse, all by voice.
