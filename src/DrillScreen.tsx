@@ -6,7 +6,7 @@
 // Weave settings, Words (solid | + Learning) and Grammar (Any | Solid | + Frontier), choose the forms, and the idea of the Goal screen's Learning now comes first; the
 // two rows sit on the screen where a round begins, and when no form fits the screen says so and offers the widest setting.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { loadChapter } from './data/chapter';
 import { drawDrill, type DrillQuestion, type DrillTuning } from './data/drill';
 import { clearDrill, readDrill, saveDrill, type SavedDrill, type Slip } from './data/drillKeep';
@@ -23,6 +23,7 @@ import { writeSetting } from './settings/registry';
 import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
 import { backTo, navigate } from './nav/route';
+import { OverDrill } from './overDrill';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
@@ -160,7 +161,7 @@ function VerseWithWord({ q }: { q: DrillQuestion }) {
   );
 }
 
-export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
+function ParsingDrill({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   const ai = useAiAllowed();
   const [s, setS] = useState<Session>(opening);
   const [narrowed, setNarrowed] = useState(false);
@@ -480,5 +481,14 @@ export function DrillScreen({ newRandom = () => Math.random }: { newRandom?: () 
         ) : null}
       </main>
     </>
+  );
+}
+
+/** The Parsing drill; what opens over it is told it stands over a drill, as over Drill it (src/overDrill.ts, mw-indx1x6.29). */
+export function DrillScreen(props: ComponentProps<typeof ParsingDrill>) {
+  return (
+    <OverDrill.Provider value={true}>
+      <ParsingDrill {...props} />
+    </OverDrill.Provider>
   );
 }

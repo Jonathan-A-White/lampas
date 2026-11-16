@@ -155,6 +155,9 @@ async function tapLink(_: unknown, label: string): Promise<void> {
 /** The 'Table: ...' links the idea sheet draws under its worked example, by what each says. */
 const tableLinks = (sheet: HTMLElement): string[] => [...sheet.querySelectorAll<HTMLElement>('[data-table]')].map((b) => b.textContent ?? '');
 
+/** What each button of the idea sheet says (a query by text: a role query would name every example word of the sheet). */
+const buttonsOf = (sheet: HTMLElement): string[] => [...sheet.querySelectorAll<HTMLElement>('button')].map((b) => b.textContent?.trim() ?? '');
+
 async function lessonIsOpen(ideaId: string): Promise<void> {
   const sheet = await screen.findByRole('dialog', { name: 'Idea' });
   expect(within(sheet).getByRole('heading', { name: ideaOfAny(ideaId).title })).toBeInTheDocument();
@@ -413,6 +416,46 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  Scenario('The lesson opened over a drill has no Drill it button, which would start a second drill over the first', ({ Given, When, And, Then }) => {
+    Given('Drill it is open on the idea {string}', openDrillIt);
+    When("he answers the drill's question wrong", () => answer(false));
+    And('he taps the lesson of the idea {string}', async (_, ideaId: string) => {
+      await screen.findByRole('group', { name: 'Study this' });
+      await tapLink(_, lessonLabel(ideaId));
+    });
+    Then('the lesson of the idea {string} is open over the drill', async (_, ideaId: string) => {
+      await lessonIsOpen(ideaId);
+      expect(screen.getByRole('dialog', { name: 'Drill it' })).toContainElement(screen.getByRole('dialog', { name: 'Idea' }));
+    });
+    And('the lesson has no {string} button and no {string} button, though it has its level slider', async (_, drillIt: string, tryIt: string) => {
+      const sheet = screen.getByRole('dialog', { name: 'Idea' });
+      // the sheet's foot is drawn and its passage is read (the slider waits for it): what the buttons wait for is there, so their absence is the sheet's choice
+      await waitFor(() => expect(within(sheet).getByRole('slider', { name: 'Your level' })).toBeEnabled());
+      expect(buttonsOf(sheet)).not.toContain(drillIt);
+      expect(buttonsOf(sheet)).not.toContain(tryIt);
+    });
+    And('the drill is still on the question he missed', () => {
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
+      expect(screen.getByTestId('drill-next')).toBeInTheDocument();
+      // one drill, the one he is in
+      expect(screen.getAllByRole('dialog', { name: 'Drill it' })).toHaveLength(1);
+    });
+  });
+
+  Scenario('The same lesson opened from a list of ideas keeps its Drill it button', ({ Given, Then }) => {
+    Given('the lesson of the idea {string} is open as it is from a list of ideas', async (_, ideaId: string) => {
+      await freshStore();
+      // what a list of ideas draws for the idea tapped (Settings > Grammar approach, src/settings/controls/approach.tsx): the sheet over no drill
+      render(<IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} />);
+      await lessonIsOpen(ideaId);
+    });
+    Then('the lesson has the buttons {string} and {string}', async (_, drillIt: string, tryIt: string) => {
+      const sheet = screen.getByRole('dialog', { name: 'Idea' });
+      // Try it on a verse is drawn once the passage is read and a verse of it has a form of the idea
+      await waitFor(() => expect(buttonsOf(sheet)).toEqual(expect.arrayContaining([drillIt, tryIt])));
+    });
+  });
+
   Scenario('The lesson opened over Review keeps its Table link', ({ Given, When, And, Then }) => {
     Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
     When('he opens Review and starts the round', openReviewAndStart);
@@ -424,6 +467,9 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the lesson has the link {string}', async (_, label: string) => {
       await waitFor(() => expect(tableLinks(screen.getByRole('dialog', { name: 'Idea' }))).toContain(label));
+    });
+    And('the lesson also has its {string} button', (_, label: string) => {
+      expect(buttonsOf(screen.getByRole('dialog', { name: 'Idea' }))).toContain(label);
     });
   });
 
