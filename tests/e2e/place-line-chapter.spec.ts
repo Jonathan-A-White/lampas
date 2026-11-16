@@ -6,6 +6,10 @@ import { makeFakePostern, QUIZ_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { asInstalledApp } from './installed';
+
+// Laid out as the installed app is (src/layout/barFloor.ts, mw-njqj1b0): a browser tab keeps no 48 px floor, which moves the lowest row and the floating ? down.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 

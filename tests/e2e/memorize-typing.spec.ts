@@ -7,8 +7,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { rowsAtLevels } from './greek-start';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { asInstalledApp } from './installed';
 
 test.use({ hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 test.describe.configure({ retries: 0 });
 
 type Lang = 'en' | 'el' | 'he';

@@ -92,8 +92,8 @@ VISION.md 'The tutor': the tutor is told, on every ask, each app setting and eac
 - Page never scrolls: html, body and `#root` are `overflow: clip` at `100dvh`; screens scroll in their own
   `.screen` box. Focus with `focusQuietly` (preventScroll); no `autoFocus`.
 - Bottom insets: never write `env(safe-area-inset-bottom)` in a component. A pinned bar or sheet pads with `var(--lp-bar-inset)`
-  and the end of a scroll box with `var(--lp-end-inset)` (src/index.css: the phone's inset with a 48 px floor (a three-button bar), because
-  Android Chrome does not always report the navigation bar). tests/e2e/bottom-reach.spec.ts holds the proof.
+  and the end of a scroll box with `var(--lp-end-inset)` (src/index.css: the phone's inset, with a 48 px floor (a three-button bar) only in the installed app, src/layout/barFloor.ts, because
+  Android Chrome does not always report the navigation bar; a browser tab has none). tests/e2e/bottom-reach.spec.ts holds the proof.
 - Raw text downloads (`data/raw`) stay out of git; the generated JSON per chapter is committed.
   `ATTRIBUTION.md` names every text and licence.
 - Credit everything we build on (mw-vtjxh4.1): `ATTRIBUTION.md` is the About screen's source and the README's Credits point at it; a new dependency, text, font, icon, service or borrowed idea gets an entry in the same commit (`[Name](url)` as the link text, never a raw URL; use, licence, `Changes:`); `tests/unit/credits.test.ts` fails on a `package.json` dependency with no entry naming its package in backticks, on a Libraries entry whose package is no longer a dependency, and on a font file (`src/fonts`) or data file (`public/data`, `public/pictures`) with no credit; a new bundled dir needs a rule in `tests/support/credits.ts`.

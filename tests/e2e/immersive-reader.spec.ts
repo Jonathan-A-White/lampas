@@ -6,11 +6,14 @@ import { openTutor } from './open-tutor';
 import { openVerseView } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
 import { openSettings, menuButton, settingsHeading } from './openSettings';
+import { asInstalledApp } from './installed';
 
 // The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header and the chips away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
 // (mw-5r3p30.255). A phone-width layout claim: it runs under --project=shots.
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 /** Puts the Immersive reader setting in the app's store through raw IndexedDB, as the app wrote it. */
 async function keepImmersive(page: Page, value: 'on' | 'off') {

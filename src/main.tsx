@@ -17,6 +17,7 @@ import { APP_SEMVER } from './config';
 import { ErrorBoundary } from './ErrorBoundary';
 import { LicenceProvider } from './gate/LicenceProvider';
 import { noteVisit } from './gate/licenceTip';
+import { watchBarFloor } from './layout/barFloor';
 import { restoreLastRoute } from './nav/lastRoute';
 import { restoreScrolls } from './nav/scrollMemory';
 import { startBookRequests } from './services/bookRequests';
@@ -26,6 +27,8 @@ import { installScrollGuard } from './ui/scrollGuard';
 import { leaveStaleSheets } from './ui/sheetBack';
 
 installScrollGuard();
+// Whether the phone's bar can cover the foot of the page (--lp-bar-floor), set on <html> before the first render.
+watchBarFloor();
 // A reload drops the open sheets but keeps their history entries: step back over them, so the first Back leaves the screen.
 leaveStaleSheets();
 // The last Theme and Text size, painted before the first render.

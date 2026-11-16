@@ -3,12 +3,15 @@ import { honestSpeech } from '../support/honest-fakes';
 import { shot } from './shot';
 import { openUnlicensed, openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
+import { asInstalledApp } from './installed';
 
 // With Immersive reader On and the bars away, one quiet line at the foot says where he is: the book and chapter and how far through the chapter's
 // text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). With the setting Off it is there all the time (mw-5r3p30.1028); with it On it is not there with the bars brought
 // back, it is smaller and dimmer than the text, and it takes a row of its own, so it covers none of the text. A phone-width layout claim: it runs
 // under --project=shots (390x844).
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 /** Puts settings in the app's store through raw IndexedDB, as the app wrote them. */
 async function keep(page: Page, values: Record<string, string>) {
