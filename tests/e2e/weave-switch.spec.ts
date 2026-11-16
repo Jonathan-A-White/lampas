@@ -304,12 +304,24 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
     await openUnlocked(page);
     await page.goto(hash);
     await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
-    await page.evaluate(() => {
-      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
-      const el = document.querySelector('[data-verse="12"]')!;
-      box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-    });
-    await expect.poll(() => firstVerse(page)).toBe(12);
+    // The chapter's lines are still laid when the first one-shot scroll lands on a loaded host (the weave and the fonts arrive late and the lines above verse 12 change height), so verse 12 is put on top
+    // again at every look until two looks in a row find it there with nothing left to move; only then do the changes under test begin.
+    const putOnTop = () =>
+      page.evaluate(() => {
+        const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+        const el = document.querySelector('[data-verse="12"]')!;
+        const gap = el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+        if (Math.abs(gap) > 1) box.scrollTop += gap;
+        return Math.round(gap);
+      });
+    let steady = 0;
+    await expect
+      .poll(async () => {
+        const gap = await putOnTop();
+        steady = gap === 0 && (await firstVerse(page)) === 12 ? steady + 1 : 0;
+        return steady >= 2 ? 'on top and still' : `looked ${steady} times, the gap was ${gap}`;
+      }, { message: 'verse 12 is on top and the page has stopped moving' })
+      .toBe('on top and still');
   }
 
   test('Text size', async ({ page }) => {
