@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.258
+_2026-11-16_
+- New: Psalms, the Magnificat and other poetry now read in indented lines on the English tab instead of one block of prose.
+- Fixed: Settings search and the Bible and devotional pickers no longer offer Logos books that are not in your Library import.
+- Fixed: a link to a verse in Turn pages mode always opens on the page that holds the verse.
+- Fixed: A lesson opened from a wrong answer inside a drill no longer offers to start another drill on top of the one you are in.
+
 ## 0.7.257
 _2026-11-16_
 - New: David's voice now reads along with the highlight in Exodus, except chapter 35.

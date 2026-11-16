@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.258",
+    "date": "2026-11-16",
+    "story": "mw-5r3p30.1164",
+    "kind": "new",
+    "text": "Psalms, the Magnificat and other poetry now read in indented lines on the English tab instead of one block of prose."
+  },
+  {
+    "version": "0.7.258",
+    "date": "2026-11-16",
+    "story": "mw-qtu3zvz.167",
+    "kind": "fixed",
+    "text": "Settings search and the Bible and devotional pickers no longer offer Logos books that are not in your Library import."
+  },
+  {
+    "version": "0.7.258",
+    "date": "2026-11-16",
+    "story": "mw-fnvjof.17.118",
+    "kind": "fixed",
+    "text": "a link to a verse in Turn pages mode always opens on the page that holds the verse."
+  },
+  {
+    "version": "0.7.258",
+    "date": "2026-11-16",
+    "story": "mw-indx1x6.29",
+    "kind": "fixed",
+    "text": "A lesson opened from a wrong answer inside a drill no longer offers to start another drill on top of the one you are in."
+  },
+  {
     "version": "0.7.257",
     "date": "2026-11-16",
     "story": "mw-zbgo4ep.2",
