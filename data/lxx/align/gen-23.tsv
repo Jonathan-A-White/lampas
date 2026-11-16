@@ -1,0 +1,117 @@
+ref	run	text	g	mark	confidence
+Gen.23:1	1	of	-		0.80
+Gen.23:1	2	one	-		0.80
+Gen.23:1	3	and	-		0.80
+Gen.23:2	1	the	-		0.80
+Gen.23:2	2	of	-		0.80
+Gen.23:2	3	the	-		0.80
+Gen.23:2	4	of	-		0.80
+Gen.23:2	5	to	-		0.80
+Gen.23:2	6	for	-		0.80
+Gen.23:2	7	to	-		0.80
+Gen.23:3	1	stood up	1		0.80
+Gen.23:3	2	before	4	unsure	0.50
+Gen.23:3	3	to	-		0.80
+Gen.23:3	4	of	-		0.80
+Gen.23:4	1	am a	-		0.80
+Gen.23:4	2	a	-		0.80
+Gen.23:4	3	me	-		0.80
+Gen.23:4	4	of a burying-place among	11,12		0.80
+Gen.23:4	5	will	-		0.80
+Gen.23:4	6	my	-		0.80
+Gen.23:4	7	away from	19	unsure	0.50
+Gen.23:5	1	of	-		0.80
+Gen.23:5	2	Not so, Sir,	-		0.80
+Gen.23:6	1	us;	4		0.80
+Gen.23:6	2	midst of us a	11		0.80
+Gen.23:6	3	our choice sepulchres,	14,15,16		0.80
+Gen.23:6	4	one of us will by any means withhold	21,23		0.80
+Gen.23:6	5	so that	30		0.80
+Gen.23:6	6	should not	-		0.80
+Gen.23:6	7	your	-		0.80
+Gen.23:7	1	rose up and did obeisance to	0,3		0.80
+Gen.23:7	2	of	-		0.80
+Gen.23:7	3	to	-		0.80
+Gen.23:7	4	of	-		0.80
+Gen.23:8	1	you⌃	-		0.80
+Gen.23:8	2	it in	8		0.80
+Gen.23:8	3	mind that	9,11		0.80
+Gen.23:8	4	should	-		0.80
+Gen.23:8	5	my	-		0.80
+Gen.23:8	6	out	-		0.80
+Gen.23:8	7	sight, listen to	17,19		0.80
+Gen.23:8	8	for	23		0.80
+Gen.23:8	9	to	-		0.80
+Gen.23:8	10	son	27		0.80
+Gen.23:9	1	let him	-		0.80
+Gen.23:9	2	has, which	-		0.80
+Gen.23:9	3	a	-		0.80
+Gen.23:9	4	of his	14		0.80
+Gen.23:9	5	let	-		0.80
+Gen.23:9	6	it	-		0.80
+Gen.23:9	7	for the	18	unsure	0.50
+Gen.23:9	8	of a burying-place	27		0.80
+Gen.23:10	1	was	-		0.80
+Gen.23:10	2	the	-		0.80
+Gen.23:10	3	of	-		0.80
+Gen.23:10	4	of	-		0.80
+Gen.23:10	5	and	-		0.80
+Gen.23:10	6	the	-		0.80
+Gen.23:10	7	of	-		0.80
+Gen.23:10	8	of	-		0.80
+Gen.23:10	9	of	-		0.80
+Gen.23:10	10	who	22		0.80
+Gen.23:11	1	Attend to	0,2	unsure	0.50
+Gen.23:11	2	my	-		0.80
+Gen.23:11	3	me,	-		0.80
+Gen.23:11	4	to	-		0.80
+Gen.23:11	5	which is	12		0.80
+Gen.23:11	6	have	-		0.80
+Gen.23:11	7	it	-		0.80
+Gen.23:11	8	before all my country men;	17,18,19		0.80
+Gen.23:12	1	did obeisance before	1,3		0.80
+Gen.23:12	2	of	-		0.80
+Gen.23:13	1	he	-		0.80
+Gen.23:13	2	of	-		0.80
+Gen.23:13	3	before	7,8		0.80
+Gen.23:13	4	of	-		0.80
+Gen.23:13	5	you	-		0.80
+Gen.23:13	6	on	14		0.80
+Gen.23:13	7	side,	-		0.80
+Gen.23:13	8	of	-		0.80
+Gen.23:13	9	will	-		0.80
+Gen.23:13	10	my	-		0.80
+Gen.23:15	1	Nay, my	0		0.80
+Gen.23:15	2	I have	-		0.80
+Gen.23:15	3	indeed,	3		0.80
+Gen.23:15	4	land is worth	-		0.80
+Gen.23:15	5	hundred silver didrachmas,	5,6		0.80
+Gen.23:15	6	what can	12,13		0.80
+Gen.23:15	7	nay, do	-		0.80
+Gen.23:15	8	your	-		0.80
+Gen.23:16	1	listened to	1,3		0.80
+Gen.23:16	2	rendered to	6,8		0.80
+Gen.23:16	3	he	-		0.80
+Gen.23:16	4	of	-		0.80
+Gen.23:16	5	of	-		0.80
+Gen.23:16	6	four	-		0.80
+Gen.23:16	7	of	-		0.80
+Gen.23:16	8	with	-		0.80
+Gen.23:17	1	of	-		0.80
+Gen.23:17	2	in	-		0.80
+Gen.23:17	3	and whatever is in its borders round about,	32,35,36,38		0.80
+Gen.23:17	4	made sure	1		0.80
+Gen.23:17	5	borders round about, were made sure	-		0.80
+Gen.23:18	1	to	0		0.80
+Gen.23:18	2	a	-		0.80
+Gen.23:18	3	before	4		0.80
+Gen.23:18	4	of	-		0.80
+Gen.23:18	5	that	10		0.80
+Gen.23:19	1	wife	5,6		0.80
+Gen.23:19	2	of	-		0.80
+Gen.23:19	3	of	-		0.80
+Gen.23:20	1	So	0		0.80
+Gen.23:20	2	in	-		0.80
+Gen.23:20	3	were made sure to	1,10		0.80
+Gen.23:20	4	of a burying place,	14		0.80
+Gen.23:20	5	of	-		0.80
