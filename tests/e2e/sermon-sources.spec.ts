@@ -1,7 +1,9 @@
 // tests/e2e/sermon-sources.spec.ts — Sermon sources (Settings > Study resources > Sermons > Sermon sources, src/sermons/SermonSourcesPage.tsx, mw-qtu3zvz.92) at 390x844 over 120 sources, the proof
 // docs/design/sermon-sources.md section 14.12 asks: the top of the list, a search, All off and Undo, a screenshot of each, and the axe check on the page. The 120 are the bundled passage lists, every sermon
 // book of the catalogue his import holds (a list standing for the books it is made from) and as many lists of the sermon index service as fill the rest, kept on the phone as the service gave them on an
-// earlier day. After it: no dead address (the old Library > Sermons, a link to a source's setting), the Library without sermon books, and a book that is in the Library too.
+// earlier day. After it: no dead address (the old Library > Sermons, a link to a source's setting), the Library without sermon books, and a book that is in the Library too. Last, on a phone as the Tester's
+// (Logos On, his import, the two lists on the web On): the count of those on said once and the header one row (mw-qtu3zvz.173), a bulk button that counts only the rows it would change and is dimmed at none
+// (mw-qtu3zvz.171), and a double tap on All off or These N off that leaves the Undo (mw-qtu3zvz.170); the three are folded in mw-qtu3zvz.174.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -99,6 +101,16 @@ async function expectThumbSized(page: Page): Promise<void> {
 
 const toTop = (page: Page) => page.locator('.screen').evaluate((box) => void (box.scrollTop = 0));
 
+/** The bar at the top of the screen: the one that holds the screen's title. */
+const headerOf = (page: Page) => page.locator('header').filter({ has: page.getByRole('heading', { level: 1 }) });
+
+/** A phone as the Tester's (mw-qtu3zvz.145): Logos On and an import that holds every sermon book, no switch touched, so the two lists on the web are the only sources On. The sermon index service is refused. */
+async function hisPhone(page: Page): Promise<void> {
+  await page.route('https://sermons.allmymind.org/**', (route) => route.abort());
+  await openUnlocked(page);
+  await turnLogosOn(page);
+}
+
 test('120 sources: the row in Settings, the top of the list, a search, All off and Undo', async ({ page }) => {
   test.setTimeout(120_000);
   await with120(page);
@@ -112,6 +124,7 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
   expect((await door.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(47.5);
   await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true })).toBeVisible();
   await expect(section.getByRole('group', { name: /Spurgeon|Matthew Henry|Greg Laurie/ })).toHaveCount(0);
+  const studyHeader = (await headerOf(page).boundingBox())!.height;
   await section.scrollIntoViewIfNeeded();
   await shot(page, 'sermon-sources-row');
   await door.click();
@@ -126,21 +139,24 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
     await expect(row.getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
   }
   const on = LISTS_ON + 3;
-  await expect(page.getByTestId('sources-status')).toHaveText(`${on} on`);
+  await expect(page.getByTestId('sources-line')).toHaveText(`${on} of ${TOTAL} on`);
   await page.getByRole('button', { name: '‹ Study resources', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Study resources', level: 1 })).toBeVisible();
   await openList(page);
 
-  // the top of the list: the count in the header, the help line, the field, the status line, the two buttons, the first group with its count and its line
+  // the top of the list: the header, the help line, the field, the status line, the two buttons, the first group with its count and its line
   const field = page.getByRole('searchbox', { name: 'Search sermon sources' });
   await expect(field).toHaveAttribute('placeholder', `Search ${TOTAL} sermon sources`);
   await expect(field).not.toBeFocused();
-  await expect(page.getByTestId('sources-status')).toHaveText(`${on} on`);
+  // the count of those on is said once, on the line under the field; the header holds no count (mw-qtu3zvz.173)
   await expect(page.getByTestId('sources-line')).toHaveText(`${on} of ${TOTAL} on`);
-  // the header is one row: the back button, the title and the count share one row, their middles within 4 px (a box's top differs with its height) (the count does not drop to a second line, mw-qtu3zvz.149)
-  const boxes = await Promise.all([page.getByRole('button', { name: '‹ Study resources', exact: true }), page.getByRole('heading', { name: 'Sermon sources', level: 1 }), page.getByTestId('sources-status')].map((it) => it.boundingBox()));
+  await expect(page.getByText(`of ${TOTAL} on`)).toHaveCount(1);
+  await expect(headerOf(page)).toHaveText('‹ Study resourcesSermon sources');
+  // the header is one row, as tall as the Study resources page's: the back button and the title share it, their middles within 4 px (a box's top differs with its height) (mw-qtu3zvz.149)
+  const boxes = await Promise.all([page.getByRole('button', { name: '‹ Study resources', exact: true }), page.getByRole('heading', { name: 'Sermon sources', level: 1 })].map((it) => it.boundingBox()));
   const tops = boxes.map((box) => (box ? box.y + box.height / 2 : NaN));
   expect(Math.max(...tops) - Math.min(...tops), `the header's middles are ${tops.join(', ')}`).toBeLessThanOrEqual(4);
+  expect((await headerOf(page).boundingBox())!.height, 'the header is as tall as the Study resources page\'s').toBe(studyHeader);
   await expect(page.getByText('The Sermons door at a verse draws on the sources that are on.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'All on', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'All off', exact: true })).toBeVisible();
@@ -195,21 +211,25 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
   const now = on - 1;
   await expect(page.getByTestId('sources-line')).toHaveText(`${now} of ${TOTAL} on`);
 
-  // a search: the rows that match, the buttons acting on what is shown and saying how many
+  // a search: the rows that match, the buttons acting on what is shown, each saying how many rows it would change (mw-qtu3zvz.171): one Wesley row is On (the list switched On above), so one would go Off and the rest On
   await field.fill('wesley');
   const shown = await page.locator('[data-source]').count();
   expect(shown).toBeGreaterThanOrEqual(2);
   expect(shown).toBeLessThan(10);
   await expect(page.getByTestId('sources-line')).toHaveText(`${now} of ${TOTAL} on · ${shown} shown`);
   await expect(page.locator('[data-source="sermons.wesley-logos"]')).toBeVisible();
-  await expect(page.getByRole('button', { name: `These ${shown} on`, exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: `These ${shown} off`, exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: `These ${shown - 1} on`, exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'These 1 off', exact: true })).toBeVisible();
   await expect(page.getByTestId('group-count')).toHaveCount(0);
   await expectThumbSized(page);
   await shot(page, 'sermon-sources-search');
-  await page.getByRole('button', { name: `These ${shown} off`, exact: true }).click();
+  await page.getByRole('button', { name: 'These 1 off', exact: true }).click();
   await expect(page.getByTestId('sources-undo')).toContainText('Turned off 1.');
   await expect(page.getByTestId('sources-line')).toHaveText(`${now - 1} of ${TOTAL} on · ${shown} shown`);
+  // every row shown is Off now: the button that turns them off says 0 and is dimmed, the other counts them all
+  await expect(page.getByRole('button', { name: 'These 0 off', exact: true })).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.getByRole('button', { name: `These ${shown} on`, exact: true })).not.toHaveAttribute('aria-disabled', 'true');
+  await expectThumbSized(page);
   await page.getByTestId('sources-undo').getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(page.getByTestId('sources-line')).toHaveText(`${now} of ${TOTAL} on · ${shown} shown`);
   // no match: the line and Ask for a preacher
@@ -222,7 +242,6 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
   // All off: none on, the line that says what changed with Undo, and why no verse has a door; the rows have not moved
   const before = await page.locator('[data-source]').evaluateAll((rows) => rows.map((row) => row.getAttribute('data-source')));
   await page.getByRole('button', { name: 'All off', exact: true }).click();
-  await expect(page.getByTestId('sources-status')).toHaveText('none on');
   await expect(page.getByTestId('sources-line')).toHaveText(`none of ${TOTAL} on`);
   await expect(page.getByTestId('sources-undo')).toContainText(`Turned off ${now}.`);
   await expect(page.getByText('No source is on, so no verse has a Sermons door.')).toBeVisible();
@@ -234,7 +253,6 @@ test('120 sources: the row in Settings, the top of the list, a search, All off a
 
   // Undo puts back exactly what was there
   await page.getByTestId('sources-undo').getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(page.getByTestId('sources-status')).toHaveText(`${now} on`);
   await expect(page.getByTestId('sources-line')).toHaveText(`${now} of ${TOTAL} on`);
   await expect(page.getByTestId('sources-undo')).toHaveCount(0);
   await expect(books.getByTestId('group-count')).toHaveText(`3 of ${BOOKS.length} on`);
@@ -329,4 +347,109 @@ test('a book with more than sermons is in the list and in the Library, one book 
   await expect(inLibrary.getByRole('radio', { name: 'Off', exact: true })).toHaveAttribute('aria-checked', 'true');
   await openList(page);
   await expect(page.locator(`[data-source="${augustine.resource}"]`).getByRole('radio', { name: 'Off', exact: true })).toHaveAttribute('aria-checked', 'true');
+});
+
+test('the count of those on is said once, under the search field, and the header is one row with no count', async ({ page }) => {
+  test.setTimeout(120_000);
+  await hisPhone(page);
+  // another page of Settings, for the height of its header
+  await expect(page.getByRole('heading', { name: 'Study resources', level: 1 })).toBeVisible();
+  const other = (await headerOf(page).boundingBox())!;
+  await openList(page);
+  const total = await page.locator('[data-source]').count();
+  await expect(page.getByTestId('sources-line')).toHaveText(`2 of ${total} on`);
+  // said once: the line under the field has it, the header does not
+  await expect(page.getByText(`of ${total} on`)).toHaveCount(1);
+  await expect(headerOf(page)).toHaveText('‹ Study resourcesSermon sources');
+  // one row: as tall as the other page's header, the back button and the title at one height
+  const here = (await headerOf(page).boundingBox())!;
+  expect(here.height, 'the header is as tall as the Study resources page\'s').toBe(other.height);
+  const [back, title] = await Promise.all([page.getByRole('button', { name: '‹ Study resources', exact: true }).boundingBox(), page.getByRole('heading', { name: 'Sermon sources', level: 1 }).boundingBox()]);
+  expect(Math.abs(back!.y + back!.height / 2 - (title!.y + title!.height / 2))).toBeLessThanOrEqual(4);
+  expect(title!.x + title!.width, 'the title ends inside the screen').toBeLessThanOrEqual(390);
+  await expectThumbSized(page);
+  await shot(page, 'sermon-sources-header');
+});
+
+test('with a search typed a button counts only the rows it would change, and one that would change none is dimmed', async ({ page }) => {
+  test.setTimeout(120_000);
+  await hisPhone(page);
+  await openList(page);
+  const total = await page.locator('[data-source]').count();
+  const line = page.getByTestId('sources-line');
+  const undo = page.getByTestId('sources-undo');
+  const states = page.locator('[data-source] [role="radio"][aria-checked="true"]');
+  // the Wesley rows, every one Off on a phone that has not switched them
+  await page.getByRole('searchbox', { name: 'Search sermon sources' }).fill('wesley');
+  await expect(line).toHaveText(new RegExp(`^2 of ${total} on · \\d+ shown$`));
+  const shown = await page.locator('[data-source]').count();
+  expect(shown).toBeGreaterThanOrEqual(2);
+  expect(shown).toBeLessThan(10);
+  const allOff = Array.from({ length: shown }, () => 'Off');
+  await expect(states).toHaveText(allOff);
+  // the button that would turn them off changes none: it says so and is dimmed, and does not count the rows shown; the other says how many it changes
+  const off = page.getByRole('button', { name: /^These \d+ off$/ });
+  const on = page.getByRole('button', { name: /^These \d+ on$/ });
+  await expect(off).toHaveText('These 0 off');
+  await expect(off).toHaveAttribute('aria-disabled', 'true');
+  await expect(on).toHaveText(`These ${shown} on`);
+  await expect(on).not.toHaveAttribute('aria-disabled', 'true');
+  await expectThumbSized(page);
+  await shot(page, 'sermon-sources-these-none');
+  // a tap on the dimmed one changes nothing and says nothing
+  await off.click({ force: true });
+  await expect(line).toHaveText(`2 of ${total} on · ${shown} shown`);
+  await expect(undo).toHaveCount(0);
+  // the other turns them On, says how many, and Undo puts them back
+  await on.click();
+  await expect(undo).toContainText(`Turned on ${shown}.`);
+  await expect(line).toHaveText(`${2 + shown} of ${total} on · ${shown} shown`);
+  await expect(on).toHaveText('These 0 on');
+  await expect(on).toHaveAttribute('aria-disabled', 'true');
+  await expect(off).toHaveText(`These ${shown} off`);
+  await expect(off).not.toHaveAttribute('aria-disabled', 'true');
+  await undo.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(line).toHaveText(`2 of ${total} on · ${shown} shown`);
+  await expect(states).toHaveText(allOff);
+});
+
+test('a double tap on All off, or on These 2 off after a search, turns them off once and leaves the Undo', async ({ page }) => {
+  test.setTimeout(120_000);
+  await hisPhone(page);
+  await openList(page);
+  const total = await page.locator('[data-source]').count();
+  const line = page.getByTestId('sources-line');
+  const undo = page.getByTestId('sources-undo');
+  const allOff = page.getByRole('button', { name: 'All off', exact: true });
+  await expect(line).toHaveText(`2 of ${total} on`);
+
+  // two taps 30 ms apart, as a thumb's: the second finds nothing left to change, and the line that says what the first changed stays
+  await allOff.dblclick({ delay: 30 });
+  await expect(line).toHaveText(`none of ${total} on`);
+  await expect(undo).toContainText('Turned off 2.');
+  // a third tap, later: the button is dimmed, and a tap on it leaves the Undo too
+  await expect(allOff).toHaveAttribute('aria-disabled', 'true');
+  await allOff.click({ force: true });
+  await expect(page.getByRole('button', { name: 'All on', exact: true })).not.toHaveAttribute('aria-disabled', 'true');
+  await expect(undo).toContainText('Turned off 2.');
+  await toTop(page);
+  await shot(page, 'sermon-sources-double-tap');
+  // Undo puts both back
+  await undo.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(line).toHaveText(`2 of ${total} on`);
+  await expect(undo).toHaveCount(0);
+  await expect(page.locator('[data-source="sermons.spurgeon-ccel"]').getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
+
+  // the same with a search typed: the two lists on the web
+  await page.getByRole('searchbox', { name: 'Search sermon sources' }).fill('on the web');
+  await expect(line).toHaveText(`2 of ${total} on · 2 shown`);
+  await page.getByRole('button', { name: 'These 2 off', exact: true }).dblclick({ delay: 30 });
+  await expect(line).toHaveText(`none of ${total} on · 2 shown`);
+  await expect(undo).toContainText('Turned off 2.');
+  await expect(page.getByRole('button', { name: 'These 0 off', exact: true })).toHaveAttribute('aria-disabled', 'true');
+  await page.getByRole('button', { name: 'These 0 off', exact: true }).click({ force: true });
+  await expect(undo).toContainText('Turned off 2.');
+  await undo.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(line).toHaveText(`2 of ${total} on · 2 shown`);
+  await expect(page.locator('[data-source] [role="radio"][aria-checked="true"]')).toHaveText(['On', 'On']);
 });

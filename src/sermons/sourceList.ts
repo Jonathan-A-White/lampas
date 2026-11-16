@@ -148,8 +148,9 @@ export function inOrder(items: readonly SourceItem[]): SourceItem[] {
 /** How many of a set are on: '17 of 120 on', 'none of 120 on'. */
 export const countLine = (on: number, total: number): string => `${on === 0 ? 'none' : on} of ${total} on`;
 
-/** The count in the page's header: '17 on', 'none on'. */
-export const onLine = (on: number): string => (on === 0 ? 'none on' : `${on} on`);
-
 /** How many items are on. */
 export const onCount = (items: readonly SourceItem[]): number => items.filter((item) => item.on).length;
+
+/** The rows of `rows` that putting them all On (`to` true) or Off would change: those that stand the other way (a Pinned book reads as On). The page's bulk buttons go by this one answer (mw-qtu3zvz.174): the number
+ *  a button says ('These 2 off'), whether it is dimmed (none), and the rows its tap writes and its Undo puts back. */
+export const rowsToChange = (rows: readonly SourceItem[], to: boolean): SourceItem[] => rows.filter((item) => item.on !== to);

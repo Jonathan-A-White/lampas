@@ -2,7 +2,7 @@
 // the page of sermon sources it opens (src/sermons/SermonSourcesPage.tsx, mw-qtu3zvz.92) and the Sermons door that follows the switches (src/sermons/useSermons.ts). The registry of sources is four of the tests' own
 // (tests/support/sermon-sources.ts), put in SOURCES by the mock below (the settings are made from SOURCES when the app loads); the third needs Logos and the fourth is a list made from Greg Laurie's Logos archive.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -145,12 +145,10 @@ describeFeature(feature, ({ Scenario }) => {
   const statusReads = async (_: unknown, line: string) => {
     await waitFor(() => expect(squash(byTest('sources-line')?.textContent)).toBe(line));
   };
-  const headerReads = async (_: unknown, count: string) => {
-    await waitFor(() => expect(squash(byTest('sources-status')?.textContent)).toBe(count));
-  };
-  const pageOpenWith = async (_: unknown, count: string) => {
+  // how many are on, as the status line under the title says it ('3 of 3 on'): the header holds no count (mw-qtu3zvz.173)
+  const pageOpenWith = async (_: unknown, on: string) => {
     await page();
-    await headerReads(_, count);
+    await waitFor(() => expect(squash(byTest('sources-line')?.textContent)).toMatch(new RegExp(`^${on} of \\d+ on$`)));
   };
   const noSource = async (_: unknown, name: string) => {
     const main = await page();
@@ -184,6 +182,37 @@ describeFeature(feature, ({ Scenario }) => {
   const undoLine = async (_: unknown, line: string) => {
     await waitFor(() => expect(squash(byTest('sources-undo')?.textContent)).toBe(`${line}Undo`));
   };
+  const buttonsRead = async (_: unknown, on: string, off: string) => {
+    const main = await page();
+    await waitFor(() => {
+      expect(within(main).getByRole('button', { name: on })).toBeVisible();
+      expect(within(main).getByRole('button', { name: off })).toBeVisible();
+    });
+  };
+  // dimmed: it says it does nothing (aria-disabled) and still takes the thumb, so the tap that follows lands on it and not on what is under it
+  const dimmed = async (_: unknown, name: string) => {
+    const main = await page();
+    await waitFor(() => expect(within(main).getByRole('button', { name })).toHaveAttribute('aria-disabled', 'true'));
+    expect(within(main).getByRole('button', { name })).not.toBeDisabled();
+  };
+  // the tap goes to the button as it stands, dimmed or not: user-event would refuse nothing here, but the step says what it taps
+  const tapsDimmed = async (_: unknown, name: string) => {
+    const button = within(await page()).getByRole('button', { name });
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(button);
+  };
+  // the tap that changed nothing has been taken, and whatever it set going has had the time a write takes: the line is looked for only then
+  const undoStill = async (_: unknown, line: string) => {
+    await sleep(60); // a real-time wait: a tap that wrongly wipes the Undo does it at once or after a write, and the line must outlast both
+    expect(squash(byTest('sources-undo')?.textContent)).toBe(`${line}Undo`);
+  };
+  const tapsTwice = async (_: unknown, name: string) => {
+    const button = within(await page()).getByRole('button', { name });
+    fireEvent.click(button);
+    await sleep(30); // a real-time wait: his double tap is two taps 30 ms apart (mw-qtu3zvz.170), the second while the first is being written or just after
+    // the same spot, whatever the button now reads: 'These 2 off' is 'These 0 off' once the first tap has landed
+    fireEvent.click(button);
+  };
   const viewHas = async (_: unknown, label: string) => {
     expect(await within(viewEl()).findByRole('button', { name: label })).toBeVisible();
   };
@@ -216,7 +245,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the row {string}', async (_, name: string) => {
       await user.click(await within(await sermonsSection()).findByRole('button', { name: new RegExp(`^${name}`) }));
     });
-    Then('the page of sermon sources is open with {string} in its header', pageOpenWith);
+    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
     And('the list shows {string} as {string}', shows);
     And('{string} is in the list too, {string}', shows);
     And('no source has a Pin', noPin);
@@ -236,7 +265,6 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the list shows {string} as {string}', shows);
     And('the setting {string} is kept as {string}', keptAs);
     And('the status line reads {string}', statusReads);
-    And('the header count reads {string}', headerReads);
   });
 
   Scenario('A Logos source is not listed while Logos is Off', ({ Given, Then, And }) => {
@@ -293,7 +321,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('that sermon book is {string} on his shelf', async (_, state: string) => {
       await waitFor(async () => expect((await db.library.get(firstBook.resource))?.state).toBe(state));
     });
-    And('the header count reads {string}', headerReads);
+    And('the status line reads {string}', statusReads);
     And('the second group {string} reads {string}', (_, title: string, count: string) => groupReads(title, count));
   });
 
@@ -301,14 +329,11 @@ describeFeature(feature, ({ Scenario }) => {
     Given('the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie\'s archive', withImport);
     When('he types {string} in the search', types);
     Then('the status line reads {string}', statusReads);
-    And('the two buttons read {string} and {string}', async (_, on: string, off: string) => {
-      const main = await page();
-      expect(within(main).getByRole('button', { name: on })).toBeVisible();
-      expect(within(main).getByRole('button', { name: off })).toBeVisible();
-    });
+    And('the two buttons read {string} and {string}', buttonsRead);
     When('he taps the button {string}', taps);
     Then('the count under the search becomes {string}', statusReads);
     And('the line {string} stands with an Undo', undoLine);
+    And('the two buttons now read {string} and {string}', buttonsRead);
     And('the source {string}, which the search does not show, is not written', async (_, key: string) => {
       await waitFor(async () => expect((await db.settings.get('sermons.testsecond'))?.value).toBe('off'));
       expect(await db.settings.get(key)).toBeUndefined();
@@ -322,7 +347,6 @@ describeFeature(feature, ({ Scenario }) => {
     Given('the page of sermon sources is open with Logos Off', pageWith('off'));
     When('he taps the button {string}', taps);
     Then('the status line reads {string}', statusReads);
-    And('the header count reads {string}', headerReads);
     And('the line {string} stands with an Undo', undoLine);
     And('the line {string} is shown', lineShown);
     When('he chooses {string}', taps);
@@ -337,6 +361,84 @@ describeFeature(feature, ({ Scenario }) => {
     And('ten sermon books are on his shelf', async () => {
       await waitFor(async () => expect((await db.library.where('kind').equals('sermons').toArray()).filter((r) => r.state === 'on').map((r) => r.id).sort()).toEqual(TEN.map((e) => e.resource).sort()));
     });
+  });
+
+  Scenario('The count of those on is said once, under the search field, and the header holds no count', ({ Given, Then, And }) => {
+    Given('the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie\'s archive', withImport);
+    Then('the status line reads {string}', statusReads);
+    And('the header holds {string} and {string} and nothing else', async (_, back: string, title: string) => {
+      await page();
+      const header = document.querySelector<HTMLElement>('header')!;
+      expect(within(header).getByRole('button', { name: back })).toBeVisible();
+      expect(within(header).getByRole('heading', { name: title, level: 1 })).toBeVisible();
+      expect(squash(header.textContent)).toBe(`${back}${title}`);
+    });
+    And('the words {string} are on the page once', async (_, words: string) => {
+      expect(document.body.textContent?.split(words)).toHaveLength(2);
+    });
+  });
+
+  Scenario('With a search typed each button counts the rows it would change, and one that would change none is dimmed', ({ Given, When, Then, And }) => {
+    Given('the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie\'s archive', withImport);
+    When('he types {string} in the search', types);
+    Then('the status line reads {string}', statusReads);
+    And('the two buttons read {string} and {string}', buttonsRead);
+    When('he taps the button {string}', taps);
+    Then('the count under the search becomes {string}', statusReads);
+    And('the line {string} stands with an Undo', undoLine);
+    And('the two buttons now read {string} and {string}', buttonsRead);
+    And('the button {string} is dimmed', dimmed);
+    When('he taps the dimmed button {string}', tapsDimmed);
+    Then('the line {string} still stands with an Undo', undoStill);
+    When('he chooses {string}', taps);
+    Then('the count is back at {string}', statusReads);
+  });
+
+  Scenario('A tap that changes nothing leaves the Undo', ({ Given, When, Then, And }) => {
+    Given('the page of sermon sources is open with Logos Off', pageWith('off'));
+    When('he taps the button {string}', taps);
+    Then('the status line reads {string}', statusReads);
+    And('the line {string} stands with an Undo', undoLine);
+    And('the button {string} is dimmed', dimmed);
+    When('he taps the dimmed button {string}', tapsDimmed);
+    Then('the line {string} still stands with an Undo', undoStill);
+    // the step the row already shows
+    When('he turns {string} to {string}', turn);
+    Then('the line {string} is still there with its Undo', undoStill);
+    When('he chooses {string}', taps);
+    Then('the count is back at {string}', statusReads);
+    And('the setting {string} is kept as {string}', keptAs);
+  });
+
+  Scenario('His own switch after All off takes the Undo away', ({ Given, When, Then, And }) => {
+    Given('the page of sermon sources is open with Logos Off', pageWith('off'));
+    When('he taps the button {string}', taps);
+    Then('the line {string} stands with an Undo', undoLine);
+    When('he turns {string} to {string}', turn);
+    Then('the status line reads {string}', statusReads);
+    And('no Undo is offered', async () => {
+      await waitFor(() => expect(byTest('sources-undo')).toBeNull());
+    });
+  });
+
+  Scenario('A double tap on All off, two taps 30 ms apart, keeps the Undo', ({ Given, When, Then, And }) => {
+    Given('the page of sermon sources is open with Logos Off', pageWith('off'));
+    When('he taps the button {string} twice, 30 ms apart', tapsTwice);
+    Then('the status line reads {string}', statusReads);
+    And('the line {string} stands with an Undo', undoLine);
+    When('he chooses {string}', taps);
+    Then('the count is back at {string}', statusReads);
+    And('the setting {string} is kept as {string}', keptAs);
+  });
+
+  Scenario('A double tap on These 2 off after a search keeps the Undo', ({ Given, When, Then, And }) => {
+    Given('the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie\'s archive', withImport);
+    When('he types {string} in the search', types);
+    And('he taps the button {string} twice, 30 ms apart', tapsTwice);
+    Then('the status line reads {string}', statusReads);
+    And('the line {string} stands with an Undo', undoLine);
+    When('he chooses {string}', taps);
+    Then('the count is back at {string}', statusReads);
   });
 
   Scenario('A search with no match offers Ask for a preacher', ({ Given, When, Then, And }) => {
@@ -383,7 +485,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The old Library > Sermons address opens the one list', ({ Given, Then, And }) => {
     Given('Lampas is opened at {string} with Logos On', (_, hash: string) => openAt(hash, 'on'));
-    Then('the page of sermon sources is open with {string} in its header', pageOpenWith);
+    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
     And('the address is {string}', (_, hash: string) => {
       expect(window.location.hash).toBe(hash);
     });
@@ -391,7 +493,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("A link to a source's setting opens the list at its row", ({ Given, Then, And }) => {
     Given('Lampas is opened at {string} with Logos Off', (_, hash: string) => openAt(hash, 'off'));
-    Then('the page of sermon sources is open with {string} in its header', pageOpenWith);
+    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
     And('the row of {string} is marked', async (_, name: string) => {
       const group = await sourceSwitch(name);
       await waitFor(() => expect(group.closest('[data-source]')).toHaveAttribute('aria-current', 'true'));
@@ -404,7 +506,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A link to a Logos list his import lacks says why it is not listed', ({ Given, Then, And }) => {
     Given('Lampas is opened at {string} with Logos On', (_, hash: string) => openAt(hash, 'on'));
-    Then('the page of sermon sources is open with {string} in its header', pageOpenWith);
+    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
     And('the list has no source {string}', async (_, name: string) => {
       expect(within(await page()).queryByRole('radiogroup', { name })).toBeNull();
     });

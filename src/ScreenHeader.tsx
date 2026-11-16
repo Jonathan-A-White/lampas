@@ -8,7 +8,7 @@ interface Props {
   back: ReactNode;
   /** An action on the right. */
   action?: ReactNode;
-  /** The action is a short line of text, not a button: it takes only the room it needs, not the 80 px a button's column holds, and the bar's gaps and sides are 4 px, not 8: with a long back label ('‹ Study resources' beside 'Sermon sources') the count would else drop to a second line at 390 px (mw-qtu3zvz.149). */
+  /** The action is a short line of text, not a button, or there is none: it takes only the room it needs, not the 80 px a button's column holds, and the bar's gaps and sides are 4 px, not 8: with a long back label ('‹ Study resources' beside 'Sermon sources') the right column would else drop to a second line at 390 px (mw-qtu3zvz.149; Sermon sources has no action since mw-qtu3zvz.173). */
   slimAction?: boolean;
 }
 

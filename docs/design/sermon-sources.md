@@ -330,6 +330,8 @@ The rows have not moved: the three that were on are still first, now Off, so he 
 | The line after All on / All off | the rows that changed | 'Turned off 17.' |
 | The door on a verse (unchanged) | the sermons listed for the place, from the lists that are on | 'Sermons · 12' |
 
+**As built since mw-qtu3zvz.174 (PROVISIONAL, the Governor to confirm):** the page's header holds no count. The Tester found the count said twice at the top ('2 on' in the header, '2 of 70 on' under the field), so the header's went and the status line says it once, with the total; the mockups above still draw it. A bulk button's number is the rows it would change, as the table says: with 'wesley' typed and every Wesley row Off the buttons read 'These 3 on' and 'These 0 off', and the one that would change none is dimmed. A tap that changes nothing (a dimmed button, the second tap of a double tap, a switch tapped on the step it already shows) leaves the Undo as it stands.
+
 Every count of sources counts what is listed: a source he does not own, or one that is hidden while Logos is off, is in none of them. All of them follow a tap at once.
 
 ## 9. How 120 stays easy

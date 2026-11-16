@@ -1,7 +1,8 @@
 // src/sermons/SermonSourcesPage.tsx — Sermon sources (#/settings?sources=sermons, mw-qtu3zvz.92, docs/design/sermon-sources.md): the one list of every sermon source the Sermons door draws on, a page of its own
-// behind the row Sermon sources of Settings > Study resources > Sermons, in the look of a page of the Library. A help line, a search field (from eight sources up) that stays at the top with the count of those on,
-// All on and All off (with a search typed: 'These N on', 'These N off', the rows shown only) and an Undo after either, then the sources in two groups named by what On gives, each row a name of two lines at most,
-// one line under it and Off | On. No Pin. What is on leads each group; the order is made when the page opens and when the search changes, never under his thumb. The list itself is sourceList.ts, read from the
+// behind the row Sermon sources of Settings > Study resources > Sermons, in the look of a page of the Library. A help line, a search field (from eight sources up) that stays at the top with the count of those on
+// (said there once: the header holds no count, mw-qtu3zvz.173), All on and All off (with a search typed: 'These N on', 'These N off', the rows shown only) and an Undo after either, then the sources in two groups
+// named by what On gives, each row a name of two lines at most, one line under it and Off | On. No Pin. A bulk button goes by the rows it would change (sourceList.ts rowsToChange, mw-qtu3zvz.174): N is their
+// number, the button is dimmed at none, and a tap that changes nothing leaves the Undo. What is on leads each group; the order is made when the page opens and when the search changes, never under his thumb. The list itself is sourceList.ts, read from the
 // phone by useSourceList.ts; a list's switch is its setting `sermons.<id>`, a Logos book's is its row of the shelf (so a book that is also on a page of the Library has one switch).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
@@ -19,7 +20,7 @@ import { matching } from '../ui/listFilter';
 import { scrollBoxOf } from '../ui/reveal';
 import { ThreeStep } from '../ui/ThreeStep';
 import { AskForPreacher } from './AskForPreacher';
-import { countLine, GROUP_ORDER, GROUP_WORDS, inOrder, onCount, onLine, type SourceItem, type SourceList } from './sourceList';
+import { countLine, GROUP_ORDER, GROUP_WORDS, inOrder, onCount, rowsToChange, type SourceItem, type SourceList } from './sourceList';
 import { useSourceList } from './useSourceList';
 
 /** The page's name, as its header, the row that opens it and the tutor say it. */
@@ -76,16 +77,8 @@ export function SermonSourcesPage({ at }: { at?: string }) {
   });
   return (
     <>
-      <ScreenHeader
-        title={SOURCES_TITLE}
-        back={<HeaderButton onClick={backToStudyResources}>‹ Study resources</HeaderButton>}
-        slimAction
-        action={
-          <span data-testid="sources-status" className="chrome-small text-muted">
-            {list ? onLine(on) : ''}
-          </span>
-        }
-      />
+      {/* no count here: the line under the search field says it once, with the total (mw-qtu3zvz.173). slimAction holds no 80 px column at the right, so the long back label and the title share one row at 390 px (mw-qtu3zvz.149) */}
+      <ScreenHeader title={SOURCES_TITLE} back={<HeaderButton onClick={backToStudyResources}>‹ Study resources</HeaderButton>} slimAction />
       <main ref={scrollRef} data-sermon-sources className="screen min-h-0 flex-1 px-4">
         <p className="pt-3 text-base">The Sermons door at a verse draws on the sources that are on.</p>
         {list && note !== undefined ? <Sources list={list} at={at} imported={note !== null} /> : null}
@@ -105,6 +98,13 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
   const [marked, setMarked] = useState(at);
   const markedRow = useRef<HTMLDivElement | null>(null);
   const box = useRef<HTMLDivElement>(null);
+  // the rows the last bulk tap put On or Off, kept until the list on screen shows them there: its writes land one by one and the list follows each, so a second tap in that time (a double tap, mw-qtu3zvz.170) would
+  // find only the rows not yet written and its Undo would put back only those. all() counts these rows as done
+  const written = useRef<{ to: boolean; ids: ReadonlySet<string> } | null>(null);
+  useEffect(() => {
+    const last = written.current;
+    if (last && !items.some((item) => last.ids.has(item.id) && item.on !== last.to)) written.current = null;
+  }, [items]);
   useEffect(() => {
     markedRow.current?.scrollIntoView?.({ block: 'center' });
   }, []);
@@ -125,16 +125,27 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
   const bothGroups = GROUP_ORDER.every((group) => items.some((item) => item.group === group));
 
   const choose = async (item: SourceItem, to: string): Promise<void> => {
-    setUndo(null);
-    // a tap on the step it already shows changes nothing (a Pinned book reads as On, and stays Pinned)
+    // a tap on the step it already shows changes nothing (a Pinned book reads as On, and stays Pinned), and leaves the Undo as it stands
     if ((to === 'on') === item.on) return;
+    // his own switch: the Undo of a bulk tap would no longer put back what he sees
+    setUndo(null);
+    written.current = null;
     if (item.sort === 'list') await writeList(item.id, to === 'on' ? 'on' : 'off');
     else await setState(item.id, to === 'on' ? 'on' : 'off');
   };
   const all = async (to: boolean): Promise<void> => {
-    const changing = shown.filter((item) => item.on !== to);
-    if (changing.length === 0) return setUndo(null);
-    await writeAll(changing, to);
+    const last = written.current;
+    const changing = rowsToChange(shown, to).filter((item) => !(last?.to === to && last.ids.has(item.id)));
+    // a tap that changes nothing (a dimmed button, the second tap of a double tap) leaves the Undo as it stands (mw-qtu3zvz.170)
+    if (changing.length === 0) return;
+    written.current = { to, ids: new Set([...(last?.to === to ? last.ids : []), ...changing.map((item) => item.id)]) };
+    try {
+      await writeAll(changing, to);
+    } catch (error) {
+      // a write that failed is not waited for: the next tap goes by the list as it stands
+      written.current = null;
+      throw error;
+    }
     setUndo({
       line: `Turned ${to ? 'on' : 'off'} ${changing.length}.`,
       lists: changing.filter((item) => item.sort === 'list').map((item) => ({ key: item.id, value: item.on ? 'on' : 'off' })),
@@ -143,9 +154,20 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
   };
   const putBack = async (): Promise<void> => {
     if (!undo) return;
+    // the rows go back the other way: nothing a bulk tap wrote is waited for any more
+    written.current = null;
     for (const { key, value } of undo.lists) await writeList(key, value);
     if (undo.books.length > 0) await setShelfStates(undo.books);
     setUndo(null);
+  };
+  /** All on or All off; with a search typed, the rows shown only. Its number is the rows it would change, and at none it is dimmed (it still takes the thumb, and the tap changes nothing). */
+  const bulkButton = (to: boolean) => {
+    const count = rowsToChange(shown, to).length;
+    return (
+      <button type="button" className={`${BUTTON} aria-disabled:opacity-50`} aria-disabled={count === 0 ? true : undefined} onClick={() => void all(to)}>
+        {searching ? `These ${count} ${to ? 'on' : 'off'}` : to ? 'All on' : 'All off'}
+      </button>
+    );
   };
   const unlisted = at !== undefined && !byId.has(at) ? nameOf(at) : undefined;
 
@@ -183,12 +205,8 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
         </p>
       </div>
       <div className="flex flex-wrap gap-2 pt-1">
-        <button type="button" className={BUTTON} disabled={shown.length === 0} onClick={() => void all(true)}>
-          {searching ? `These ${shown.length} on` : 'All on'}
-        </button>
-        <button type="button" className={BUTTON} disabled={shown.length === 0} onClick={() => void all(false)}>
-          {searching ? `These ${shown.length} off` : 'All off'}
-        </button>
+        {bulkButton(true)}
+        {bulkButton(false)}
       </div>
       {undo ? (
         <p data-testid="sources-undo" role="status" className="flex items-center justify-between gap-3 pt-2 text-base">

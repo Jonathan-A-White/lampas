@@ -280,7 +280,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
     await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
     await on(name, 'Off');
   }
-  await expect(page.getByTestId('sources-status')).toHaveText('none on');
+  await expect(page.getByTestId('sources-line')).toHaveText('none of 9 on');
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
   const view = await openVerseView(page, 8);
