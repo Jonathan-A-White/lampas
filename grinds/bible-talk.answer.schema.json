@@ -1605,6 +1605,7 @@
                   "dailyDevotional",
                   "devotional",
                   "devotionalDraw",
+                  "morningRephilOrder",
                   "todaysDevotional",
                   "dailyTicks",
                   "greekKeyboard",
@@ -2137,7 +2138,8 @@
                   "LLS:12MOSUNA",
                   "LLS:12MOSUNB",
                   "LLS:12MOSUNC",
-                  "LLS:WMNSDLYSPRTWRFR"
+                  "LLS:WMNSDLYSPRTWRFR",
+                  "rephil:morning"
                 ]
               }
             }
@@ -2147,6 +2149,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "devotionalDraw" }, "value": { "type": "string", "maxLength": 80 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "morningRephilOrder" }, "value": { "type": "string", "enum": ["oldest", "newest"] } }
           },
           {
             "type": "object",
@@ -2194,7 +2202,8 @@
                   "LLS:12MOSUNA",
                   "LLS:12MOSUNB",
                   "LLS:12MOSUNC",
-                  "LLS:WMNSDLYSPRTWRFR"
+                  "LLS:WMNSDLYSPRTWRFR",
+                  "rephil:morning"
                 ]
               }
             }

@@ -1,13 +1,14 @@
 // src/today/Today.tsx — Today (#/today, mw-1fwagb.5, the grilling mw-6ww.126): the day's pieces in one list, each a tap into its drill or Logos: Review (n due, opens Review), Memorize (n verses due, a tap starts the longest overdue verse's session; pick verses in a list while none is memorized), the
 // reading plan's next chapter (Read in Logos, Read in Lampas, Listen in Audible), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each Read in Lampas where Lampas holds the chapter, which is every one; a chapter it did not hold would keep Open in Logos), and today's
-// devotional (opens Logos at the day). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Read in Logos needs Logos On, Listen in Audible an
+// devotional (opens Logos at the day, or is the day's Morning RePhil episode with a Watch link, mw-qtu3zvz.15). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Read in Logos needs Logos On, Listen in Audible an
 // Audio Bible). A tap on the plan's place opens src/plan/PlacePicker.tsx, where he says where he is (I'm at the Reader's chapter, or Pick a place), with Undo for a few seconds. With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
 // 'opened' for the local date (dailyStore.ts). With nothing On, Today explains what it could hold, each with a link to the Settings row that turns it on; once he changes a Daily row
 // that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
-import { RANDOM, devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
-import { getDay, getExplained, localDate, markOpened, noteExplained, pickAnotherDevotional } from '../data/daily/dailyStore';
+import { MORNING_REPHIL_ID, RANDOM, devotionalForDay, tickedDevotionals } from '../data/daily/devotionals';
+import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, noteExplained, pickAnotherDevotional, pinEpisode, type DayRecord } from '../data/daily/dailyStore';
+import { DEFAULT_ORDER, anotherEpisode, episodeDate, episodeForDay, hasUnheard } from '../data/daily/morningRephil';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
 import { dayProgress, getLogosBibles, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
@@ -29,7 +30,7 @@ import { bibleFor, chapterLink, verseLink } from '../resources/logosBible';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/audioBible';
 import { armFallback } from '../resources/openApp';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, audioBibleSetting, devotionalDrawSetting, devotionalSetting } from '../settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, audioBibleSetting, devotionalDrawSetting, devotionalSetting, morningRephilOrderSetting } from '../settings/definitions';
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
@@ -328,13 +329,76 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   );
 }
 
-function DevotionalPiece({ ticks, today, pick }: { ticks: Ticks; today: Date; pick?: string }) {
+/** Morning RePhil's episode for the day (mw-qtu3zvz.15): its title (the number the church prints), its date and a Watch link to the Subsplash share link, which opens on Android, iPhone and a desktop
+ *  browser alike; playing it keeps it heard on this device (never offered again). With every episode heard it says so and offers to start again. */
+function RephilEpisode({ ticks, day, heard, choice }: { ticks: Ticks; day: DayRecord | undefined; heard: ReadonlySet<string>; choice: string }) {
+  const order = useSetting(morningRephilOrderSetting) ?? DEFAULT_ORDER;
+  const episode = episodeForDay(order, heard, day?.rephil);
+  if (!episode) {
+    return (
+      <Piece id="devotional" label="Morning RePhil" ticks={ticks}>
+        <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2">
+          <span className="text-lg font-medium">Morning RePhil</span>
+          <span className="text-base text-muted">You&apos;ve heard every Morning RePhil; new ones appear as they&apos;re posted.</span>
+          <button type="button" onClick={() => oneTap('rephil-again', () => void clearHeard(ticks.date))} className={`${ACTION} mt-1 self-start`}>
+            Start again from the top
+          </button>
+        </div>
+      </Piece>
+    );
+  }
+  const other = choice === MORNING_REPHIL_ID ? anotherEpisode(order, heard, episode.id) : undefined;
+  return (
+    <Piece id="devotional" label={episode.title} ticks={ticks}>
+      <a
+        href={episode.share}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => {
+          void markOpened(ticks.date, 'devotional');
+          void markHeard(ticks.date, episode.id);
+        }}
+        className={LINK}
+      >
+        <span className="text-lg font-medium text-accent">{episode.title}</span>
+        <span className="text-sm text-muted">{`Watch · ${episodeDate(episode.date)}`}</span>
+      </a>
+      {other ? (
+        <div className="px-2 pb-1">
+          <button type="button" aria-label="Another episode" onClick={() => oneTap('rephil-another', () => void pinEpisode(ticks.date, other.id))} className={ACTION}>
+            Another
+          </button>
+        </div>
+      ) : null}
+    </Piece>
+  );
+}
+
+function DevotionalPiece({ ticks, today, day, heard }: { ticks: Ticks; today: Date; day: DayRecord | undefined; heard: ReadonlySet<string> }) {
   const choice = useSetting(devotionalSetting);
   const draw = useSetting(devotionalDrawSetting);
   if (choice === undefined || draw === undefined) return null;
   const ticked = tickedDevotionals(draw);
-  const devotional = devotionalForDay(choice, ticked, today, pick);
+  const rephil = hasUnheard(heard);
+  const devotional = devotionalForDay(choice, ticked, today, day?.devotional, rephil);
   const link = devotionalLink(devotional.id, today);
+  if (devotional.kind === 'rephil') {
+    return (
+      <section aria-label="Devotional">
+        <h2 className={HEADING}>Devotional</h2>
+        <List>
+          <RephilEpisode ticks={ticks} day={day} heard={heard} choice={choice} />
+          {choice === RANDOM ? (
+            <li className="px-2 pb-1">
+              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil))} className={ACTION}>
+                Another devotional
+              </button>
+            </li>
+          ) : null}
+        </List>
+      </section>
+    );
+  }
   return (
     <section aria-label="Devotional">
       <h2 className={HEADING}>Devotional</h2>
@@ -346,7 +410,7 @@ function DevotionalPiece({ ticks, today, pick }: { ticks: Ticks; today: Date; pi
           </a>
           {choice === RANDOM ? (
             <div className="px-2 pb-1">
-              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked))} className={ACTION}>
+              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil))} className={ACTION}>
                 Another
               </button>
             </div>
@@ -418,9 +482,10 @@ export function Today() {
   const devotional = kept.devotional === undefined || logosOn === undefined ? undefined : logosOn ? kept.devotional : 'off';
   const tickBoxes = useSetting(dailyTicksSetting);
   const day = useLiveQuery(() => getDay(date), [date]);
+  const heard = useLiveQuery(getHeard, []);
   const scrollRef = useScrollMemory('today');
   const shown = [review, memorize, plan, psalms, devotional];
-  const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined;
+  const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined && heard !== undefined;
   const none = ready && shown.every((s) => s === 'off');
   // what the tutor is told: the date, what is On and the pieces he opened today by name (this date's list only), so it can open by naming what he read
   // the plan's next chapter (live: he can move it) names the plan piece he opened, and is told to the tutor as the plan's place (the name is not in the id)
@@ -431,7 +496,7 @@ export function Today() {
   const devotionalDraw = useSetting(devotionalDrawSetting);
   const names = {
     plan: planName,
-    devotional: devotionalChoice === undefined || devotionalDraw === undefined ? undefined : devotionalForDay(devotionalChoice, tickedDevotionals(devotionalDraw), today, day?.devotional).title,
+    devotional: devotionalChoice === undefined || devotionalDraw === undefined ? undefined : devotionalForDay(devotionalChoice, tickedDevotionals(devotionalDraw), today, day?.devotional, heard === undefined ? false : hasUnheard(heard)).title,
   };
   useReportScreen({
     name: 'Today',
@@ -448,7 +513,7 @@ export function Today() {
           {ready && memorize === 'on' ? <MemorizePiece ticks={ticks} /> : null}
           {ready && plan === 'on' ? <PlanPiece ticks={ticks} date={date} /> : null}
           {ready && psalms === 'on' ? <PsalmsPiece ticks={ticks} today={today} /> : null}
-          {ready && devotional === 'on' ? <DevotionalPiece ticks={ticks} today={today} pick={day?.devotional} /> : null}
+          {ready && devotional === 'on' ? <DevotionalPiece ticks={ticks} today={today} day={day} heard={heard} /> : null}
         </div>
       </main>
     </>

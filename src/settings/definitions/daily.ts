@@ -1,7 +1,8 @@
 // Daily (Settings > Daily): which pieces Today holds (Review, Memorize, Plan chapter, Psalms and Proverbs, Devotional; all On to start), which devotional it shows (one of the
 // 37 in src/data/daily/devotionals.ts that are On in Your Logos library, or Random among those), and whether each piece has a box he ticks himself (On to start, PROVISIONAL). Today itself
 // is a later story (mw-1fwagb.5); these are the settings it reads.
-import { ALL_TICKED, DEFAULT_DEVOTIONAL, DEVOTIONALS, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
+import { ALL_TICKED, DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL, MORNING_REPHIL_ID, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
+import { DEFAULT_ORDER, type EpisodeOrder } from '../../data/daily/morningRephil';
 import { devotionalDraw, setDevotionalDraw } from '../../data/repositories/library';
 import { defineSetting, type Allowed, type Dependency, type SectionId } from '../define';
 
@@ -25,7 +26,7 @@ export const dailyReviewSetting = piece(
   'dailyReview',
   'Review',
   'Today holds your due cards.',
-  'Whether Today holds a Review piece: the words and ideas that are due.',
+  'Whether Today holds your due words and ideas.',
 );
 
 export const dailyMemorizeSetting = piece(
@@ -39,21 +40,21 @@ export const dailyPlanSetting = piece(
   'dailyPlan',
   'Plan chapter',
   "Today holds your reading plan's chapter.",
-  "Whether Today holds the reading plan's chapter for the day, to read in Logos.",
+  "Whether Today holds the reading plan's chapter for the day.",
 );
 
 export const dailyPsalmsSetting = piece(
   'dailyPsalms',
   'Psalms and Proverbs',
   "Today holds the day's Psalms and Proverbs.",
-  "Whether Today holds, on day N, Psalms N, N+30, N+60, N+90, N+120 (up to 150) and Proverbs N, read in Lampas.",
+  "Whether Today holds the day's Psalms and Proverbs.",
 );
 
 export const dailyDevotionalSetting = piece(
   'dailyDevotional',
   'Devotional',
   'Today holds one devotional for the day.',
-  'Whether Today holds a devotional, opened in Logos at the day.',
+  'Whether Today holds a devotional.',
   LOGOS_ON,
 );
 
@@ -62,12 +63,12 @@ export const devotionalSetting = defineSetting<string>({
   default: DEFAULT_DEVOTIONAL,
   allowed: {
     kind: 'choice',
-    values: [{ value: RANDOM, label: 'Random' }, ...DEVOTIONALS.map((d) => ({ value: d.id, label: d.title }))],
+    values: [{ value: RANDOM, label: 'Random' }, ...DEVOTIONALS.map((d) => ({ value: d.id, label: d.title })), { value: MORNING_REPHIL_ID, label: MORNING_REPHIL.title }],
   },
   section: 'daily',
   label: 'Which devotional',
   hint: 'The one Today shows, or Random: a different one each day.',
-  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library, Morning and Evening (${DEFAULT_DEVOTIONAL}) to start.`,
+  help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library or Morning RePhil; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start.`,
   dependsOn: LOGOS_ON,
 });
 
@@ -78,7 +79,7 @@ export const devotionalDrawSetting = defineSetting<string>({
     kind: 'text',
     valid: (value) => value === ALL_TICKED || value === NONE_TICKED || value.split(',').every((id) => tickedDevotionals(id).length === 1),
     example: `${DEFAULT_DEVOTIONAL},LLS:20.10.2`,
-    note: `'${ALL_TICKED}', '${NONE_TICKED}' or Logos resource ids joined by commas (at most 80 characters)`,
+    note: `'${ALL_TICKED}', '${NONE_TICKED}' or Logos ids joined by commas`,
   },
   parse: (raw) => (typeof raw === 'string' && raw !== '' ? tickedText(tickedDevotionals(raw)) : ALL_TICKED),
   // the draw is the devotionals on his shelf (library.ts)
@@ -86,15 +87,32 @@ export const devotionalDrawSetting = defineSetting<string>({
   section: 'daily',
   label: 'In the draw',
   hint: 'The devotionals Random draws from.',
-  help: 'Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening. Shown only while Which devotional is Random.',
+  help: 'Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening.',
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
+});
+
+export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
+  key: 'morningRephilOrder',
+  default: DEFAULT_ORDER,
+  allowed: {
+    kind: 'choice',
+    values: [
+      { value: 'oldest', label: 'Oldest first' },
+      { value: 'newest', label: 'Newest first' },
+    ],
+  },
+  section: 'daily',
+  label: 'Morning RePhil order',
+  hint: 'Which episode comes next: the oldest or the newest you have not heard.',
+  help: 'Next Morning RePhil episode: the oldest not yet played, or the newest.',
+  dependsOn: { key: 'devotional', shown: (value) => value === RANDOM || value === MORNING_REPHIL_ID },
 });
 
 export const dailyTicksSetting = piece(
   'dailyTicks',
   'Tick boxes',
   'Each piece has a box you tick yourself.',
-  'Whether each piece on Today has a box you tick yourself when you have done it. Off makes Today a plain list of links.',
+  'Whether each Today piece has a box you tick yourself. Off: plain links.',
 );
 
 /** The value of Today's devotional that draws another one for the day (any devotional's Logos id names that one). */
@@ -119,6 +137,6 @@ export const todaysDevotionalSetting: {
   label: "Today's devotional",
   hint: "Change only today's devotional; Which devotional stays Random.",
   help: `The devotional Today shows for the rest of today, while Which devotional is Random: "${ANOTHER}" draws a different one for today (the Another button on Today does the same), and a devotional's Logos resource id shows that one today. It shows only while Which devotional is Random.`,
-  allowed: { kind: 'choice', values: [{ value: ANOTHER, label: 'Another' }, ...DEVOTIONALS.map((d) => ({ value: d.id, label: d.title }))] },
+  allowed: { kind: 'choice', values: [{ value: ANOTHER, label: 'Another' }, ...DEVOTIONALS.map((d) => ({ value: d.id, label: d.title })), { value: MORNING_REPHIL_ID, label: MORNING_REPHIL.title }] },
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
 };
