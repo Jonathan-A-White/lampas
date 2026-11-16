@@ -8,12 +8,16 @@
 //    was playing goes on.
 //  - 'next chapter' and 'previous chapter' cross with crossChapter and read the chapter from its first verse (PROVISIONAL, as above); past Revelation 22 or before Genesis 1 it says so.
 //  - 'back a verse' reads the verse before the one being read, or paused on, again and the reading goes on from it, in the recorded voice and the phone's (readAloud.ts backAVerse).
+//  - 'ask' and the words after it ('ask who was Nicodemus', 'ask the tutor ...') put the question to the tutor and speak the answer (src/handsFree/ask.ts, mw-rl10piw.8), then hold the microphone open 8 s for a
+//    follow-up with no wake word; 'tutor' and 'open the tutor' open the Talk sheet on what is on screen and listen; 'close the tutor' and 'done' put it away. In a follow-up window (info.followUp) the words
+//    of any command above run it (and put the tutor away if Hands-free opened it); any other words go to the tutor as the next turn of the same talk.
 // Any other words: it says 'Sorry, I did not get that', and what was playing goes on when the exchange closes (src/handsFree/playback.ts).
-import { defineSpoken, route } from 'voice-kit/handsfree';
+import { defineSpoken, route, type CommandDone } from 'voice-kit/handsfree';
 import { titleOf } from '../data/books';
 import { neighbours } from '../data/neighbours';
 import { crossChapter } from '../reader/crossChapter';
 import { readerOnScreen, readHere, readPassage } from '../nav/readerRequest';
+import { askTutor, closeTutor, leaveTutor, openTutor, questionAfterAsk } from './ask';
 import { placeOfWords } from './passage';
 import { backOneVerse, goOnNow, keepPaused, stopSound, takeSound } from './playback';
 
@@ -34,6 +38,10 @@ export const NOTHING_READ = 'Nothing is being read';
 
 /** The commands, by the words that are them. The chapter commands come before 'go to', which takes any words after it. 'red' and 'reed' are what a recogniser makes of 'read'. */
 export const SPOKEN_COMMANDS = defineSpoken([
+  // the tutor's phrases come before 'read', which takes 'open' and any words after it; 'tudor' is what a recogniser makes of 'tutor'
+  { name: 'close-tutor', phrases: ['close the tutor', 'close tutor', 'leave the tutor', 'close the tudor', 'done', 'i am done'] },
+  { name: 'tutor', phrases: ['tutor', 'tudor', 'the tutor', 'open the tutor', 'open tutor', 'open the tudor', 'talk to the tutor', 'talk to tutor'] },
+  { name: 'ask', phrases: ['ask the tutor', 'ask'], rest: true },
   { name: 'pause', phrases: ['pause'] },
   { name: 'play', phrases: ['play', 'resume', 'continue', 'go on'] },
   { name: 'stop', phrases: ['stop', 'stop reading', 'stop playing'] },
@@ -67,9 +75,19 @@ async function readNeighbour(by: 1 | -1, say: (text: string) => Promise<void>): 
   readPassage(to.book, to.chapter, 1, () => crossChapter(here.book, here.chapter, by));
 }
 
-/** Carries out the words of one command; `say` speaks a sentence and resolves when it has been said. Resolves when all is done and said. */
-export async function runCommand(words: string, say: (text: string) => Promise<void>): Promise<void> {
+/** What the words of a command come to: more to listen for (a follow-up, in the tutor's talk) or nothing. */
+export type Done = CommandDone | void;
+
+/** Carries out the words of one command; `say` speaks a sentence and resolves when it has been said. Resolves when all is done and said; `followUp` in the result keeps the microphone open for words with
+ * no wake word (the tutor's answer was spoken, or the tutor is open). `info.followUp` says these words came in such a window: those that are not a command go to the tutor. */
+export async function runCommand(words: string, say: (text: string) => Promise<void>, info: { followUp: boolean } = { followUp: false }): Promise<Done> {
   const command = route(words, SPOKEN_COMMANDS);
+  if (command?.name === 'ask') return askTutor(questionAfterAsk(words), say);
+  if (command?.name === 'tutor') return openTutor(say);
+  if (command?.name === 'close-tutor') return closeTutor(say);
+  if (!command && info.followUp) return askTutor(words.trim(), say, false);
+  // any other command leaves the tutor (the Talk sheet Hands-free opened is put away) and does what it says
+  leaveTutor();
   if (command?.name === 'pause') return keepPaused();
   if (command?.name === 'play') {
     if (goOnNow()) return;

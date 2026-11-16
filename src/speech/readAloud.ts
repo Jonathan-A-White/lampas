@@ -789,6 +789,24 @@ export function startAnswer(id: number, runs: Run[]): void {
   startReading({ chapter: 0, plan: [{ n: id, runs }], from: id, continuous: false, answer: id });
 }
 
+/** A chapter reading set aside while a tutor's answer takes the voice (Hands-free 'ask', src/handsFree/playback.ts): how it was started and the verse it was at. */
+export interface ParkedReading {
+  options: StartOptions;
+  verse: number;
+}
+
+/** The reading going on or paused (a chapter, a book, a Listen; not a tutor's answer), as it can be started again where it is: `startReading` for an answer replaces the plan, so the one who
+ * starts the answer keeps this and calls `resumeParked` when the answer is done. Null when nothing of the kind is under way. */
+export function parkReading(): ParkedReading | null {
+  if (state.status === 'idle' || state.answer !== null || !startedWith || state.verse === null) return null;
+  return { options: startedWith, verse: state.verse };
+}
+
+/** Starts the reading `parkReading` kept again, at the verse it was at. */
+export function resumeParked(parked: ParkedReading): void {
+  startReading({ ...parked.options, from: parked.verse });
+}
+
 /** Whether the chapter reading going on or paused is of this chapter (a Reader that opens another chapter ends a paused one). */
 export function isReadingOf(book: string, chapter: number): boolean {
   return state.status !== 'idle' && state.answer === null && chapterNumber === chapter && planBook === book;

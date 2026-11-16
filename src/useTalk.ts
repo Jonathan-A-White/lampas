@@ -17,6 +17,7 @@ import { mapsFor } from './maps';
 import { talkSermonsFor } from './sermons/forTutor';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import type { TalkSession } from './services/mill';
+import { dropVoiceTurn, tellVoiceTurn } from './handsFree/voiceTurn';
 import { TutorError } from './services/tutor';
 import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
@@ -295,16 +296,23 @@ export function useTalk(
           // the answer is kept: the message is done, even if the screen went away as it came
           setPending(key, undefined);
           void answerDrawn(sentAs);
+          // a turn Hands-free asked by voice (src/handsFree/ask.ts) is told its answer: the command speaks it, whether or not this sheet is open, and the sheet does not speak it a second time
+          const heard = tellVoiceTurn(ref, { kind: 'answered', id, answer: answer.answer });
           if (signal.aborted) return;
           if (target) {
             const reopen = going.current?.leave?.();
             if (reopen) leaveSheetForTutor(reopen);
             await bibleTalkClient().takeAnswer({ go: { name: target.name, args: target.args } }, turns.length).catch(() => undefined);
-          } else answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
+          } else if (!heard) answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
         } catch (err) {
-          if (signal.aborted) return;
+          if (signal.aborted) {
+            dropVoiceTurn(ref);
+            return;
+          }
           const failure = err instanceof TutorError ? err.failure : 'unreachable';
-          set({ phase: 'failed', question: text, failure, detail: err instanceof Error ? err.message : 'Something went wrong.', startedAt, ...(err instanceof TutorError && err.sent ? { sent: err.sent } : {}), ...withFocus });
+          const detail = err instanceof Error ? err.message : 'Something went wrong.';
+          tellVoiceTurn(ref, { kind: 'failed', failure, detail });
+          set({ phase: 'failed', question: text, failure, detail, startedAt, ...(err instanceof TutorError && err.sent ? { sent: err.sent } : {}), ...withFocus });
         } finally {
           stopRunning();
         }
