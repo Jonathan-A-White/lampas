@@ -17,7 +17,7 @@ import { DialogAskTutor } from './AskTutor';
 import { answerPlanItem, askedKeys, getDrillPlan, listUnseenFetched, takeAllFetched, takeFetchedItems, type DrillMode } from './data/repositories';
 import { FacetLabel } from './FacetLabel';
 import { GrammarCard } from './GrammarCard';
-import { OverDrill } from './overDrill';
+import { OverRun } from './overRun';
 import { PlanDrillScreen } from './PlanDrillScreen';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked, whyCannotAsk } from './review/moreItems';
@@ -318,13 +318,13 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
 }
 
 /**
- * Drill it. What opens over it (the lesson of a 'Study this' row, a word's sheet, the tutor's bridge) is told it stands over a drill (src/overDrill.ts), so an idea sheet there
- * draws no Drill it of its own: it would start a second drill over this one (mw-indx1x6.29).
+ * Drill it. What opens over it (the lesson of a 'Study this' row, a word's sheet, the tutor's Talk and its bridge) is told it stands over a run (src/overRun.ts), so an idea sheet there
+ * draws no Drill it of its own, which would start a second drill over this one (mw-indx1x6.29), and no sheet there draws a link to a page of its own, which would lose the run (mw-indx1x6.57).
  */
 export function DrillItScreen(props: ComponentProps<typeof DrillItRun>) {
   return (
-    <OverDrill.Provider value={true}>
+    <OverRun.Provider value={true}>
       <DrillItRun {...props} />
-    </OverDrill.Provider>
+    </OverRun.Provider>
   );
 }

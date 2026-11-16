@@ -1,6 +1,7 @@
 // src/review/useStudyPlaces.tsx — where a link of the 'Study this' row (src/review/StudyThis.tsx) or of the Study list (src/review/StudyList.tsx) opens (mw-indx1x6.6, .8): a table as a layer at its cell, an idea's lesson,
-// a word's sheet, how to remember a word, or the talk of the misses. One hook for both, so a link opens the same place wherever it is tapped.
-import { useState, type ReactNode } from 'react';
+// a word's sheet, how to remember a word, or the talk of the misses. One hook for both, so a link opens the same place wherever it is tapped. Where a table opens as a layer (a drill,
+// an end card: no `onParadigm`) a new page would lose what is under it, so everything opened here is drawn inside `OverRun` (src/overRun.ts) and offers no link that leaves (mw-indx1x6.28, .57).
+import { useContext, useState, type ReactNode } from 'react';
 import { MissTalk } from '../AskTutor';
 import { loadLexicon } from '../data/lexicon';
 import { paradigmById } from '../data/paradigms';
@@ -8,6 +9,7 @@ import { HeartOfWord } from '../HeartOfWord';
 import { IdeaSheetWithWord } from '../IdeaSheetWithWord';
 import { findWord, lemmaSheet } from '../nav/links';
 import type { ParadigmAddress } from '../nav/route';
+import { OverRun } from '../overRun';
 import { TableAt } from '../ParadigmsScreen';
 import { faceOf } from '../script/greekLang';
 import type { ScreenContext, ScreenFact } from '../tutor/screen';
@@ -43,6 +45,8 @@ export function useStudyPlaces({ screen, back, onParadigm, facts, tutor }: {
   tutor: { screen: ScreenContext; first: string };
 }): { follow: (link: StudyLink) => void; ask: () => void; places: ReactNode } {
   const [open, setOpen] = useState<Open | null>(null);
+  // over a run already (a drill says so itself), or where a table opens as a layer because a page of its own would lose the screen under it (an end card); Review's row keeps its round
+  const overRun = useContext(OverRun) || !onParadigm;
   // the talk of these misses alone: a key of its own, so its first turn is always these misses
   const [kept] = useState(() => `screen.miss.${Date.now()}`);
   const close = () => setOpen(null);
@@ -62,14 +66,13 @@ export function useStudyPlaces({ screen, back, onParadigm, facts, tutor }: {
     suggestions: ['Why is the right answer right?', 'How can I remember this?'],
   });
   const places = (
-    <>
+    <OverRun.Provider value={overRun}>
       {open?.kind === 'table' && table ? (
         <Layer title={table.name} back={back} talk={talkOf(`The table ${table.name}${open.address.cell ? `, at the form asked: ${open.address.cell}` : ''}`)} onClose={close}>
           <TableAt table={table} cell={open.address.cell} />
         </Layer>
       ) : null}
-      {/* where a table opens as a layer (a drill, an end card: no `onParadigm`) a new page would lose the run, so the lesson draws no link to one (mw-indx1x6.28); Review keeps its round */}
-      {open?.kind === 'lesson' ? <IdeaSheetWithWord ideaId={open.ideaId} onClose={close} overRun={!onParadigm} /> : null}
+      {open?.kind === 'lesson' ? <IdeaSheetWithWord ideaId={open.ideaId} onClose={close} /> : null}
       {open?.kind === 'word' ? <WordSheet chapter={open.sheet.chapter} lookup={open.sheet.lookup} onClose={close} /> : null}
       {open?.kind === 'mnemonic' ? (
         <Layer title={`How to remember ${open.lemma}`} back={back} talk={talkOf(`How to remember the word ${open.lemma}: its picture, the heart of the word and its parts`)} onClose={close}>
@@ -85,7 +88,7 @@ export function useStudyPlaces({ screen, back, onParadigm, facts, tutor }: {
         </Layer>
       ) : null}
       <MissTalk screen={tutor.screen} kept={kept} first={tutor.first} open={open?.kind === 'tutor'} onClose={close} />
-    </>
+    </OverRun.Provider>
   );
   return { follow, ask: () => setOpen({ kind: 'tutor' }), places };
 }

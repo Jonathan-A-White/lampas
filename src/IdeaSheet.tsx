@@ -10,7 +10,8 @@
 // the level SLIDER (mw-i7xe0n.3: Not yet · Learning · I know it, resting on the idea's level; Learning is frontier and due tomorrow; I know it opens Drill it
 // to prove it, and only a pass keeps it there), 'Mark known without a drill' (solid, the 30-day step), a Drill it button, 'Try it on a verse' (mw-emk3xt.4: the easiest verse of the
 // passage at his level that has a form of the idea, three questions on it, then 'Read it'; src/TryItSheet.tsx; left out when no verse has one) and Ask the tutor (over a drill,
-// src/overDrill.ts, neither Drill it nor Try it on a verse is drawn: each would start a second run of questions over the drill, mw-indx1x6.29); the level shows as a chip
+// or any other run, src/overRun.ts, the foot has none of them: no slider, no Mark known, no Drill it and no Try it on a verse, since each starts a second run of questions over the
+// run or changes the level he is being asked about, and the text has no link to a table or a Hard sounds lesson, which are pages of their own: mw-indx1x6.28, .29, .57); the level shows as a chip
 // ('Proved by drill' once a run proved it). He learns one idea at a time (mw-i7xe0n.6): sliding to Learning while another idea is Learning asks 'You are learning <other>.
 // Switch to <this>?' (Switch | Keep <other>). The sheet teaches only its own idea and takes the ideas under it to be solid: when one is not, it says so above the
 // text with a button to go there, and sliding up first asks 'Go to <title> first?'. Learning on The Greek alphabet opens the letter drill at once (src/LetterDrillScreen.tsx).
@@ -39,7 +40,7 @@ import { ReedKellogg } from './diagram/ReedKellogg';
 import { LessonTalk } from './AskTutor';
 import { DrillItScreen } from './DrillItScreen';
 import { holdIdea } from './ideaReturn';
-import { useOverDrill } from './overDrill';
+import { useOffRun } from './overRun';
 import { LessonWriteIt } from './handwriting/LessonWriteIt';
 import { LetterDrillScreen } from './LetterDrillScreen';
 import { learnLabel, lessonsForSheet } from './hardSounds/lessons';
@@ -499,7 +500,7 @@ function useRestoredScroll(box: RefObject<HTMLDivElement | null>, top: number): 
   }, [box, top]);
 }
 
-export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS, restoreScroll = 0, overRun = false }: {
+export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = false, books = GRAMMAR_BOOKS, restoreScroll = 0 }: {
   idea: GrammarIdea;
   onClose: () => void;
   /** Done, a swipe down, a tap outside and Escape (Back stays onClose): the sheets under this one close with it. Defaults to onClose. */
@@ -514,17 +515,15 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   books?: readonly GrammarBook[];
   /** the sheet is back from a table (src/ideaReturn.ts): scroll its text this far, as the examples and cards fill in, until he touches it */
   restoreScroll?: number;
-  /**
-   * the sheet is over a run that lives only on the screen under it (a drill, an end card: src/review/useStudyPlaces.tsx): the links that open a page of their own, a table and a
-   * Hard sounds lesson, are not drawn, since the page would take the screen and the run with it (mw-indx1x6.28)
-   */
-  overRun?: boolean;
 }) {
   const dismiss = onDismiss ?? onClose;
   const { drag, handle } = useSheetDrag(dismiss);
-  // over a drill (src/overDrill.ts) the sheet's buttons start no run of questions of their own: no Drill it, which would be a second drill over the one he is in, and no Try it on a
-  // verse, whose 'Read it' leaves for the verse (mw-indx1x6.29). The slider is as ever: 'I know it' still proves itself with a drill, since marking the idea is a different act.
-  const overDrill = useOverDrill();
+  // over a run that lives only on the screen under it (a drill, an end card: src/overRun.ts) the sheet is for reading. The one guard gives nothing there, so it draws no link to a page
+  // of its own (a table, a Hard sounds lesson: the page would take the screen and the run with it, mw-indx1x6.28) and nothing that starts a run of questions or changes the idea's
+  // level: no Drill it, which would be a second drill over the one he is in, no Try it on a verse, whose 'Read it' leaves for the verse (mw-indx1x6.29), and no level slider or
+  // Mark known, since 'I know it' starts a drill too (mw-indx1x6.57). The level still shows as the chip under the title.
+  const offRun = useOffRun();
+  const levelControls = offRun(true) ?? false;
   // a tile's own idea sheet opens over this one
   const [opened, setOpened] = useState<GrammarIdea | null>(null);
   // Try it on a verse (mw-emk3xt.4): offered when a verse of the passage has a form of the idea; it takes the Escape while it is up
@@ -652,13 +651,13 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   };
   const markKnown = (): void => oneTap(MARK_KNOWN, () => teach('known'));
   // the tables that teach this idea (mw-svw421.5): a tap opens one in Study mode, and Back brings this sheet back (src/ideaReturn.ts); none over a run, which the table's page would lose
-  const tables = overRun ? [] : paradigmsOf(idea.id);
+  const tables = offRun(paradigmsOf(idea.id)) ?? [];
   const seeTable = (table: string): void => {
     holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
     openParadigm({ table });
   };
   // the Hard sounds lessons on this letter or pair for his accent (mw-5r3p30.361): optional, a tap opens one, and Back brings this sheet back as from a table
-  const soundLessons = overRun ? [] : lessonsForSheet(idea, scheme.id, accent);
+  const soundLessons = offRun(lessonsForSheet(idea, scheme.id, accent)) ?? [];
   const learnToSay = (lesson: string): void => {
     holdIdea(idea.id, textBox.current?.scrollTop ?? 0);
     openSoundLesson(lesson);
@@ -667,6 +666,9 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   // Sideways the sound is above the slider in the column at the right, where it is in view without a drag whatever the examples and the card above take of the
   // text's box (mw-5r3p30.483); upright it is in the text after the card. One element, put where the window's shape says (useShort).
   const short = useShort();
+  // the foot is a column at the right only where there is a foot: over a run the sheet is one column on its side too, and the sound block stays in the text
+  const sideFoot = short && levelControls;
+  const bothColumns = levelControls ? 'short:col-span-2' : '';
   const soundBlock = sounds ? (
     <div data-testid="idea-sounds" className={short ? 'pb-1' : undefined}>
       <Part className={short ? 'mt-1' : 'mt-4'}>How it sounds</Part>
@@ -690,15 +692,19 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
         aria-modal="true"
         aria-label="Idea"
         style={{ transform: drag ? `translateY(${drag}px)` : undefined }}
-        className="relative flex [--lp-panel-max:92dvh] flex-col rounded-t-2xl border-t border-line bg-surface short:grid short:h-dvh short:[--lp-panel-max:100%] short:grid-cols-[minmax(0,1fr)_18rem] short:grid-rows-[auto_minmax(0,1fr)_auto]"
+        className={`relative flex [--lp-panel-max:92dvh] flex-col rounded-t-2xl border-t border-line bg-surface short:grid short:h-dvh short:[--lp-panel-max:100%] short:grid-rows-[auto_minmax(0,1fr)_auto] ${levelControls ? 'short:grid-cols-[minmax(0,1fr)_18rem]' : 'short:grid-cols-1'}`}
       >
-        <div data-testid="idea-handle" {...handle} className="flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 short:col-span-2">
+        <div data-testid="idea-handle" {...handle} className={`flex min-h-12 shrink-0 touch-none items-center justify-between gap-3 px-4 pt-2 ${bothColumns}`}>
           <span aria-hidden="true" className="mx-auto h-1.5 w-10 rounded-full bg-line" />
           <button type="button" onClick={dismiss} className="absolute right-2 top-1 min-h-11 min-w-11 rounded-lg px-3 text-base font-medium text-accent">
             Done
           </button>
         </div>
-        <div ref={textBox} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-3 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))]">
+        {/* with no foot under it (over a run) the text ends clear of the phone's own bar, as it does on its side */}
+        <div
+          ref={textBox}
+          className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-1 short:col-start-1 short:row-start-2 short:pb-[calc(0.75rem+var(--lp-end-inset))] ${levelControls ? 'pb-3' : 'pb-[calc(0.75rem+var(--lp-end-inset))]'}`}
+        >
           <div className="flex items-start justify-between gap-2">
             <h2 className="min-w-0 break-words text-2xl font-bold">{titled(idea.title)}</h2>
             <LessonReadAloud id={`idea:${idea.id}`} text={lesson} ready={hebrew || loaded !== null} />
@@ -756,7 +762,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
             {markedFor(lang, card.howToSpot)}
           </p>
           {card.table ? <TableView table={card.table} lang={lang} /> : null}
-          {short ? null : soundBlock}
+          {sideFoot ? null : soundBlock}
           {soundLessons.map((lesson) => (
             <button
               key={lesson.id}
@@ -790,66 +796,68 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
           <AskForGrammar />
         </div>
         {/* what is read aloud keeps its Pause and Stop in view: this sheet is over the Grammar and word sheets' own bars */}
-        <div className="contents short:col-span-2 short:row-start-3 short:block">
+        <div className={`contents short:row-start-3 short:block ${bothColumns}`}>
           <BarSlot level={6} />
         </div>
-        {/* on its side (a short window) the slider and buttons are a column at the right, so the examples keep the height (mw-5r3p30.369) */}
-        <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] short:col-start-2 short:row-start-2 short:overflow-y-auto short:overscroll-contain short:border-t-0 short:border-l">
-          {short ? soundBlock : null}
-          <div data-testid="level-slider">
-            <input
-              type="range"
-              aria-label="Your level"
-              aria-valuetext={STOPS[shown].label}
-              min={0}
-              max={STOPS.length - 1}
-              step={1}
-              value={shown}
-              disabled={loaded === null && !hebrew}
-              onChange={(e) => {
-                // the browser jumps the thumb to a tap on the track; until the pointer has moved that is not chosen, and the controlled value puts the thumb back
-                if (justTapped(MARK_KNOWN)) return;
-                if (!dragging.current) slideTo(Number(e.target.value));
-                else if (pressedAt.current === null) setDragged(Number(e.target.value));
-              }}
-              onKeyDown={stepBy}
-              onPointerDown={(e) => {
-                dragging.current = true;
-                pressedAt.current = e.clientX;
-              }}
-              onPointerMove={(e) => {
-                if (pressedAt.current !== null && Math.abs(e.clientX - pressedAt.current) >= DRAG_PX) pressedAt.current = null;
-              }}
-              onPointerUp={letGo}
-              onPointerCancel={letGo}
-              className="level-slider block w-full"
-            />
-            <div data-testid="level-stops" aria-hidden="true" className="flex justify-between text-sm text-muted">
-              {STOPS.map((stop, i) => (
-                <span key={stop.label} className={i === shown ? 'font-medium text-accent' : undefined}>
-                  {stop.label}
-                </span>
-              ))}
+        {/* on its side (a short window) the slider and buttons are a column at the right, so the examples keep the height (mw-5r3p30.369); over a run the sheet has no foot (src/overRun.ts) */}
+        {levelControls ? (
+          <div className="shrink-0 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))] short:col-start-2 short:row-start-2 short:overflow-y-auto short:overscroll-contain short:border-t-0 short:border-l">
+            {sideFoot ? soundBlock : null}
+            <div data-testid="level-slider">
+              <input
+                type="range"
+                aria-label="Your level"
+                aria-valuetext={STOPS[shown].label}
+                min={0}
+                max={STOPS.length - 1}
+                step={1}
+                value={shown}
+                disabled={loaded === null && !hebrew}
+                onChange={(e) => {
+                  // the browser jumps the thumb to a tap on the track; until the pointer has moved that is not chosen, and the controlled value puts the thumb back
+                  if (justTapped(MARK_KNOWN)) return;
+                  if (!dragging.current) slideTo(Number(e.target.value));
+                  else if (pressedAt.current === null) setDragged(Number(e.target.value));
+                }}
+                onKeyDown={stepBy}
+                onPointerDown={(e) => {
+                  dragging.current = true;
+                  pressedAt.current = e.clientX;
+                }}
+                onPointerMove={(e) => {
+                  if (pressedAt.current !== null && Math.abs(e.clientX - pressedAt.current) >= DRAG_PX) pressedAt.current = null;
+                }}
+                onPointerUp={letGo}
+                onPointerCancel={letGo}
+                className="level-slider block w-full"
+              />
+              <div data-testid="level-stops" aria-hidden="true" className="flex justify-between text-sm text-muted">
+                {STOPS.map((stop, i) => (
+                  <span key={stop.label} className={i === shown ? 'font-medium text-accent' : undefined}>
+                    {stop.label}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-          {level?.level === 'solid' ? null : (
-            <button type="button" onClick={markKnown} className="mx-auto mt-1 block min-h-11 px-3 text-sm text-muted underline underline-offset-4">
-              Mark known without a drill
-            </button>
-          )}
-          <div className="mt-1 flex flex-wrap gap-2">
-            {!drillable || overDrill ? null : (
-              <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
-                Drill it
+            {level?.level === 'solid' ? null : (
+              <button type="button" onClick={markKnown} className="mx-auto mt-1 block min-h-11 px-3 text-sm text-muted underline underline-offset-4">
+                Mark known without a drill
               </button>
             )}
-            {passage && !overDrill && hasFormOf(idea.id, passage.chapters, passage.verse) ? (
-              <button type="button" onClick={() => setTrying(true)} className={`${BUTTON} border-line text-accent active:bg-line`}>
-                Try it on a verse
-              </button>
-            ) : null}
+            <div className="mt-1 flex flex-wrap gap-2">
+              {!drillable ? null : (
+                <button type="button" disabled={loaded === null} onClick={() => setDrill('practice')} className={`${BUTTON} border-line text-accent active:bg-line disabled:text-muted`}>
+                  Drill it
+                </button>
+              )}
+              {passage && hasFormOf(idea.id, passage.chapters, passage.verse) ? (
+                <button type="button" onClick={() => setTrying(true)} className={`${BUTTON} border-line text-accent active:bg-line`}>
+                  Try it on a verse
+                </button>
+              ) : null}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
       {asking ? (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 px-6">
@@ -929,7 +937,7 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
       />
       {trying && passage ? <TryItSheet idea={idea} passage={passage} onClose={() => setTrying(false)} /> : null}
       {letterDrill ? <LetterDrillScreen lang={lang} onClose={() => setLetterDrill(false)} /> : null}
-      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} overRun={overRun} /> : null}
+      {opened ? <IdeaSheet idea={opened} onClose={() => setOpened(null)} onDismiss={onDismiss} onWord={onWord} onAsk={onAsk} covered={covered} books={books} /> : null}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import type { DrillQuestion } from './data/grammar/drillIt';
 import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { takeFetchedItems } from './data/repositories';
 import { GrammarCard } from './GrammarCard';
-import { OverDrill } from './overDrill';
+import { OverRun } from './overRun';
 import { confirmAnswer } from './review/confirm';
 import { keepStocked } from './review/moreItems';
 import { StudyList } from './review/StudyList';
@@ -137,11 +137,11 @@ function PlanDrillRun({ ideaId, facetLabel, questions: built, onFinish, onClose 
   );
 }
 
-/** The short drill; what opens over it is told it stands over a drill, as over Drill it (src/overDrill.ts, mw-indx1x6.29). */
+/** The short drill; what opens over it is told it stands over a run, as over Drill it (src/overRun.ts, mw-indx1x6.29, .57). */
 export function PlanDrillScreen(props: ComponentProps<typeof PlanDrillRun>) {
   return (
-    <OverDrill.Provider value={true}>
+    <OverRun.Provider value={true}>
       <PlanDrillRun {...props} />
-    </OverDrill.Provider>
+    </OverRun.Provider>
   );
 }
