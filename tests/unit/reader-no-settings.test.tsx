@@ -10,6 +10,12 @@ import { db } from '../../src/data/db';
 import { setReaderView } from '../../src/data/repositories';
 import { useViewSettings } from '../../src/reader/useViewSettings';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { chapterWait } from '../../src/data/chapterWait';
+
+// The Reader's own wait for the settings database (chapterWait.settingMs, 2 s) and then what a loaded host is given to draw (ASYNC_WAIT_MS, the shared wait): the
+// old 'within 3 s' left the host 1 s, and a load over 15 outran it (mw-qtu3zvz.155). A Reader that waited for the database drew nothing, and the waitFor above it fails.
+const DRAWN_BY_MS = chapterWait.settingMs + ASYNC_WAIT_MS;
 
 /** An older Lampas tab: the same database, an older version, holding its connection and ignoring the versionchange; the caller closes it. */
 async function holdDatabaseAsOlderTab(): Promise<IDBDatabase> {
@@ -36,14 +42,14 @@ afterEach(() => {
 });
 
 describe('a chapter while the settings database has not opened', () => {
-  it('draws the New Testament chapter within 3 s with the defaults', async () => {
+  it('draws the New Testament chapter with the defaults, without waiting on the database', async () => {
     window.location.hash = '#/?b=mat&c=7';
     const old = await holdDatabaseAsOlderTab();
     try {
       const started = Date.now();
       render(<App />);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-      expect(Date.now() - started).toBeLessThan(3000);
+      expect(Date.now() - started).toBeLessThan(DRAWN_BY_MS);
       const main = document.querySelector('[data-reader]')!;
       expect(main).toHaveAttribute('data-view', 'english');
       expect(main).toHaveAttribute('data-layout', 'verse');
@@ -53,14 +59,14 @@ describe('a chapter while the settings database has not opened', () => {
     }
   });
 
-  it('draws the Old Testament chapter within 3 s too (Genesis 15, his report)', async () => {
+  it('draws the Old Testament chapter without waiting on the database too (Genesis 15, his report)', async () => {
     window.location.hash = '#/?b=gen&c=15';
     const old = await holdDatabaseAsOlderTab();
     try {
       const started = Date.now();
       render(<App />);
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-      expect(Date.now() - started).toBeLessThan(3000);
+      expect(Date.now() - started).toBeLessThan(DRAWN_BY_MS);
     } finally {
       old.close();
     }
@@ -98,14 +104,14 @@ describe('a chapter while the settings database has not opened', () => {
 });
 
 describe('a verse on a card (ReferenceCard, the Review question) while the settings database has not opened', () => {
-  it('is drawn with the defaults within 3 s: the card does not stay on Loading', async () => {
+  it('is drawn with the defaults without waiting on the database: the card does not stay on Loading', async () => {
     const old = await holdDatabaseAsOlderTab();
     try {
       const started = Date.now();
       const { result } = renderHook(() => useViewSettings());
       expect(result.current).toBeUndefined();
       await waitFor(() => expect(result.current).toBeDefined());
-      expect(Date.now() - started).toBeLessThan(3000);
+      expect(Date.now() - started).toBeLessThan(DRAWN_BY_MS);
       expect(result.current).toMatchObject({ view: 'english', weave: 'off' });
     } finally {
       old.close();
