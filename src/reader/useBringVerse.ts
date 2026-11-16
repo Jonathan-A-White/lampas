@@ -51,14 +51,15 @@ export function settleAtTop(box: HTMLElement, inner: HTMLElement | null, verse: 
 }
 
 /** Brings the verse a request names to the top of `main` and says which on the box (data-brought-verse, for a test: the box has no other sign of a scroll, and the
- * attribute is set here, not by React, so it is not an effect's state). `show` turns the page in Turn pages mode. */
+ * attribute is set here, not by React, so it is not an effect's state). `show` turns the page in Turn pages mode. `paging` is null until the Reading mode setting has been read from the store: the
+ * request waits for it, or a Turn pages reader would be taken for a scrolling one, the verse scrolled to in a box that does not scroll and the request spent (mw-fnvjof.17.118). */
 export function useBringVerse(
   main: RefObject<HTMLElement | null>,
   inner: RefObject<HTMLElement | null>,
   book: string,
   chapterN: number,
   chapter: Chapter | null,
-  paging: boolean,
+  paging: boolean | null,
   show: (el: Element) => void,
 ): void {
   const requested = useLatest('reader-requested');
@@ -73,7 +74,7 @@ export function useBringVerse(
     // the chapter that was on screen before this one is not the one asked for
     if (!chapter || chapter.code !== book || chapter.chapter !== chapterN) return;
     const box = main.current;
-    if (!box) return;
+    if (!box || paging === null) return;
     // the verses draw once the reader's settings are read, a moment after the chapter is here: the request waits for its verse to be in the box
     let watcher: MutationObserver | undefined;
     let stop: (() => void) | undefined;

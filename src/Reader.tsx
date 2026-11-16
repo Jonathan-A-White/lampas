@@ -302,7 +302,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const pages = usePages(paging && chapter !== null && !failed, main, inner, sheetOpen, `${BOOK}/${CHAPTER}`, onTurned, cross, crossable);
   const showPage = pages.show;
   // Choose a book's Go to John 18:2: the chapter, with that verse brought to the top of the reading area (no Verse view)
-  useBringVerse(main, inner, BOOK, CHAPTER, chapter, paging, showPage);
+  useBringVerse(main, inner, BOOK, CHAPTER, chapter, readingMode === undefined ? null : paging, showPage);
   // A chapter he has read before opens at the verse he was last on in it (mw-5r3p30.1148), unless the open names a place (a verse asked for, a link, a verse in the address) or a scroll offset is kept for it
   const [placed] = useState(() => request !== undefined || link !== undefined || opened.verse !== undefined || opened.passage !== undefined || hasKeptScroll(window.location.hash, 'reader'));
   useNoteLastVerse(main, BOOK, CHAPTER, paging);
