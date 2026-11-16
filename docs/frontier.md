@@ -4,7 +4,7 @@ The Governor asked for "low-hanging fruit as I'm doing well" and for "something 
 of help around me". The frontier is the answer: as he reads a chapter, the few new words worth learning next, and for each the
 verse where it stands among the most words he already knows.
 
-Code: `src/data/frontier.ts`. It is pure: no store, no network and no screen yet. The caller hands it the chapter, the lemmas he
+Code: `src/data/frontier.ts`. It is pure: no store, no network, no screen of its own (the screen is the New words chip and the teach sheet, 'The teach sheet' below). The caller hands it the chapter, the lemmas he
 has in each state and the word counts (`loadFrequency`).
 
 <!-- toc -->
@@ -55,7 +55,7 @@ grammar; `levels` is `listLevels()`). With no test the picker is as it was.
   all pass first; then the solid share, the fewest words and the earlier verse, as before.
 - The level is the setting `pickerGrammar` (Settings > New words, **New words at**: Solid grammar | Frontier grammar, default
   Frontier grammar). A fresh install has no idea at a level yet, so at either level nothing passes until the placement or the idea sheet
-  gives some; the picker has no screen yet.
+  gives some.
 
 ### Moving the level
 
