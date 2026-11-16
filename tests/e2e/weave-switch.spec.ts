@@ -304,12 +304,24 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
     await openUnlocked(page);
     await page.goto(hash);
     await expect(page.locator('[data-verse="10"] [data-text]')).toBeVisible();
-    await page.evaluate(() => {
-      const box = document.querySelector<HTMLElement>('main[data-reader]')!;
-      const el = document.querySelector('[data-verse="12"]')!;
-      box.scrollTop += el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
-    });
-    await expect.poll(() => firstVerse(page)).toBe(12);
+    // The chapter's lines are still laid when the first one-shot scroll lands on a loaded host (the weave and the fonts arrive late and the lines above verse 12 change height), so verse 12 is put on top
+    // again until two looks 400 ms apart find it there and the page has stopped moving; only then do the changes under test begin.
+    const putOnTop = () =>
+      page.evaluate(() => {
+        const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+        const el = document.querySelector('[data-verse="12"]')!;
+        const gap = el.getBoundingClientRect().top - box.getBoundingClientRect().top - 8;
+        if (Math.abs(gap) > 1) box.scrollTop += gap;
+        return Math.round(gap);
+      });
+    await expect
+      .poll(async () => {
+        await putOnTop();
+        await page.waitForTimeout(400);
+        const first = await firstVerse(page);
+        return `${first} then ${await putOnTop()}`;
+      }, { message: 'verse 12 is on top and the page has stopped moving' })
+      .toBe('12 then 0');
   }
 
   test('Text size', async ({ page }) => {
