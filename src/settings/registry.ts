@@ -6,6 +6,7 @@
 // here, and tests/unit/settings-registry.test.tsx fails if a control of the Settings screen has no entry. A setting declared once
 // (src/settings/definitions/: theme, weave, tips, immersive so far) gets its entry from its definition (`fromDefinition`), in its place in the list.
 import { createRegistry, entryOf, MAX_CHANGES, type ChangeResult, type RowMeta as KitRowMeta, type SettingEntry as KitSettingEntry } from 'pwa-kit/settings';
+import { setHandsFree } from '../handsFree/switch';
 import type { AppliedChange } from './applied';
 import { TEXT_SIZES } from '../appearance/textSizes';
 import type { Theme } from '../appearance/themes';
@@ -602,7 +603,8 @@ export const SETTINGS: readonly SettingEntry[] = [
     { section: 'approach', dependsOn: depthFrom(3) },
   ),
   fromDefinition(handwritingSetting),
-  fromDefinition(handsFreeSetting),
+  // A tutor's change (and an undo) goes through the switch the Settings row and the three-finger tap use, so it says 'Hands-free on' or 'off' aloud too (mw-rl10piw.18).
+  { ...fromDefinition(handsFreeSetting), write: async (value) => setHandsFree(handsFreeSetting.parse(value) === 'on') },
   fromDefinition(bibleVoiceSetting),
   ...voiceEntries,
   ...rateEntries,
