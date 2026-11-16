@@ -18,7 +18,6 @@ import { forgetTestSermons, registerTestSermons } from '../../tests/support/test
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import { closeDatabase } from './close-database';
 import { keepImport } from '../../tests/support/logos-import';
-import { ASYNC_WAIT_MS } from '../../tests/support/timeouts';
 
 afterAll(async () => {
   cleanup();
@@ -94,10 +93,10 @@ const partTitles = async (): Promise<string[]> => [...(await sheetEl()).querySel
 const archiveNamed = async (title: string): Promise<HTMLAnchorElement> => {
   const named = async () => [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-archive-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
   let row: HTMLAnchorElement | undefined;
-  await vi.waitFor(async () => {
+  await waitFor(async () => {
     row = await named();
     if (!row) throw new Error(`no archive ${title} in the sheet`);
-  }, { timeout: ASYNC_WAIT_MS });
+  });
   return row!;
 };
 const partRows = async (part: string): Promise<string[]> => {
