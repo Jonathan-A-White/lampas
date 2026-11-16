@@ -10,6 +10,9 @@
 // A click on the SAME control (a button, a link that leaves the app, a role=button or role=switch) within the settle moment of the last click on it is dropped too (mw-t5shinh.8):
 // a control that acts and changes no screen (Open in the app, Save, Export) acted twice for a double tap, and each fix was one more oneTap. A control that is
 // meant to be tapped twice quickly (Next page, Larger split) carries `data-repeat`; tests/unit/repeat-guard.test.ts makes every button that steps a value choose.
+// A tap on the speaking bar that takes the bar out of the page (its Stop) is a change too (mw-82lb97i.44): the text box grows into the bar's place, and the second tap of a double tap
+// landed on a word of it, or on the place line (the whole chapter in the Verse view). So the bar's last tap is noted, and the bar going within the moment of it swallows taps; a bar
+// that ends by itself, or moves to another slot, swallows nothing.
 import { useEffect } from 'react';
 import { paradigmOf, readerOf, routeOf, watchAddress } from '../nav/route';
 import { settle, swallowTaps } from './settle';
@@ -46,6 +49,9 @@ export function leavesApp(link: HTMLAnchorElement): boolean {
 
 /** What a tap is aimed at: a button, a link, or an element that says it is one. */
 const CONTROL = 'button,a[href],[role="button"],[role="switch"]';
+/** The speaking bar, either of them: voice-kit's SpeakingBar and RecordedBar carry the same data-testid. */
+const BAR = '[data-testid="speaking-bar"]';
+const holdsBar = (node: Node): boolean => node instanceof Element && (node.matches(BAR) || node.querySelector(BAR) !== null);
 /** A control that takes quick repeats says so: itself or a group around it. */
 const REPEAT = '[data-repeat]';
 
@@ -60,8 +66,18 @@ export function startTapGuard(): () => void {
     swallowTaps();
   });
   // a sheet comes or goes (or the Open in the app strip goes) in the commit of that tap; the observer hears it a microtask later, still long before a thumb's second tap
+  let barTappedAt: number | null = null;
+  const onBar = (event: MouseEvent): void => {
+    if (event.target instanceof Element && event.target.closest(BAR)) barTappedAt = performance.now();
+  };
+  document.addEventListener('click', onBar, true);
   const observer = new MutationObserver((records) => {
     if (records.some((record) => [...record.addedNodes, ...record.removedNodes].some(holdsModal) || [...record.removedNodes].some(holdsStrip))) swallowTaps();
+    // the bar is gone (not moved to another slot) within the moment of a tap on it: that tap took it away
+    if (barTappedAt !== null && performance.now() - barTappedAt < settle.ms && records.some((record) => [...record.removedNodes].some(holdsBar)) && document.querySelector(BAR) === null) {
+      barTappedAt = null;
+      swallowTaps();
+    }
   });
   observer.observe(document.body, { childList: true, subtree: true });
   // a link that leaves the app: the tap that follows it opens it again. The tap that calls swallowTaps is already past the window, so it goes through.
@@ -91,6 +107,7 @@ export function startTapGuard(): () => void {
     stopWatching();
     document.removeEventListener('click', onLink, true);
     document.removeEventListener('click', onSame, true);
+    document.removeEventListener('click', onBar, true);
     observer.disconnect();
   };
 }

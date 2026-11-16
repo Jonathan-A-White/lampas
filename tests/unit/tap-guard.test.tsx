@@ -75,6 +75,54 @@ const wait = async (ms: number) => {
   now += ms;
 };
 
+// mw-82lb97i.44: the speaking bar's Stop takes the bar out of the page, and what lay under it is under the thumb for the second tap of a double tap
+describe('the speaking bar going away at a tap on it takes no tap in the moment after it', () => {
+  function Reading({ beneath }: { beneath: () => void }) {
+    useTapGuard();
+    const [bar, setBar] = useState(true);
+    return (
+      <>
+        <button type="button" onClick={beneath}>
+          Beneath
+        </button>
+        <button type="button" onClick={() => setBar(false)}>
+          Ends by itself
+        </button>
+        {bar ? (
+          <section data-testid="speaking-bar" aria-label="Speaking">
+            <button type="button" onClick={() => setBar(false)}>
+              Stop
+            </button>
+          </section>
+        ) : null}
+      </>
+    );
+  }
+
+  it('swallows the second tap of a double tap on Stop, and takes a tap after the moment', async () => {
+    const beneath = vi.fn();
+    render(<Reading beneath={beneath} />);
+    tap('Stop');
+    expect(screen.queryByRole('region')).toBeNull();
+    await wait(120);
+    tap('Beneath');
+    expect(beneath).not.toHaveBeenCalled();
+    await wait(SETTLE_MS);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(1);
+  });
+
+  it('swallows nothing for a bar that goes with no tap on it', async () => {
+    const beneath = vi.fn();
+    render(<Reading beneath={beneath} />);
+    tap('Ends by itself');
+    expect(screen.queryByRole('region')).toBeNull();
+    await wait(120);
+    tap('Beneath');
+    expect(beneath).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('a sheet takes no tap in the moment it opens or closes, with no code of its own', () => {
   it('swallows the second tap of a double tap on Done, and takes a tap after the moment', async () => {
     const beneath = vi.fn();
