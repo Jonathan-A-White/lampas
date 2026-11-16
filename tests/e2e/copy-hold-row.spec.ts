@@ -53,6 +53,8 @@ async function open(page: Page) {
   await page.reload();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-layout', 'paragraph');
   await expect(page.locator('[data-verse="11"] [data-verse-number]')).toBeVisible();
+  // the round tutor button is drawn once the licence and the screen's door target are known, a moment after the text: it is not the row, so the count of fixed things starts after it
+  await expect(page.locator('[data-floating-tutor]')).toBeVisible();
 }
 
 test('the row moves no line, covers one strip, dims nothing, has no close button and fits one line', async ({ page }) => {
