@@ -348,8 +348,12 @@ A verse with a line start has `l`, in English order:
 Each entry is `[chunk, indent]`, plus a third `1` when the line opens a block (`indent1stline`, where the stanza breaks); `chunk` is the index into `e` the line starts at, `indent` is 1
 or 2. A prose verse has no `l` and is as it was; `tab1stline`, the `list` tags, `selah`, `inscrip` and `pshdg` are not poetry lines. The chunks before a verse's first line start are
 its **lead-in** (`He said:`, `Then Mary said:`, a Psalm's title: 528 verses), prose that brings the lines in; `poetryLinesOf` (`src/data/poetry.ts`) gives it as a line of indent 0. Where the Greek and the
-Hebrew order differ the lines are the English's: nothing in `g` changes, and `l` is read only by the English view drawn with no weave (`src/reader/poetryText.ts`); the Greek, the Hebrew and the
-Weave tabs draw the verse as they always did. The Septuagint (Brenton's English has no line marks) has no `l`. 488 Old Testament chapters and 96 New Testament chapters carry it
+Hebrew order differ the lines are the English's: nothing in `g` changes, and `l` is read by the English view and by a Weave in the English order (its Hebrew or Greek words stand in the places of their English chunks, mw-5r3p30.1165;
+`src/reader/poetryText.ts`); a weave laid out in the source's own order, and the Greek tab, draw the verse as they always did.
+
+**The Hebrew tab's lines** are not in a file: `fillChapter` gives a Hebrew verse that has `l` an `hl`, the indexes into `g` where each of its lines starts (`hebrewLineStarts`, `src/data/poetry.ts`), from the Masoretic accents the words carry.
+A line ends at the word with a major accent: in Psalms, Job and Proverbs (the poetic accents) the oleh-weyored (U+05AB, its yored U+05A5 on the same word or the next) and the atnach (U+0591); in every other book the atnach, and in a half of more than 7 words
+(`LONG_HALF`) each zaqef (U+0594, U+0595) as well. A verse with no such accent has no `hl` and is drawn as running text; prose (no `l`) is never broken. The lines are right to left, each hung one level (indent 1), with no stanza of their own. The Septuagint (Brenton's English has no line marks) has no `l`. 488 Old Testament chapters and 96 New Testament chapters carry it
 (7,856 and 350 verses): the Psalms, Job, Proverbs, the prophets, the Magnificat, and verses quoted as poetry such as Romans 8:36 and Genesis 1:27. The chapters are rebuilt by
 `npm run data:build` and `npm run data:build:ot` with the tables in `data/raw`; the rebuild changes no other byte of a chapter (the committed files differ from the earlier ones in `l` alone).
 
