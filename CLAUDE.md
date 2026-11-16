@@ -67,11 +67,8 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
   `features/steps/*.steps.ts(x)` (@amiceli/vitest-cucumber), run inside `npm test`. Import
   `@testing-library/react/dont-cleanup-after-each` before React Testing Library in a step file.
 - Speech and the microphone are never faked by hand (mw-it6qk5.3): use voice-kit's honest fakes through `tests/support/` (docs/testing.md 'Speech and the microphone fakes').
-- Every jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS` (`tests/support/timeouts.ts`, 10 s, set in `tests/setup.ts`; a loaded host outruns the library's 1 s): never pass a shorter `timeout:` and give `vi.waitFor` one (`tests/unit/async-wait.test.ts` greps for both).
-- A step that checks what the bus heard waits for it (`tests/support/published.ts`: `expectPublished(() => list, expected)` for a list a step file fills, `expectLatest(kind, check)` for the newest event of a kind): a screen can write before it publishes (mw-5r3p30.389; `tests/unit/published-wait.test.ts` fails on an `expect(list)` or `expect(latest(...))` with no wait).
-- Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
-  service worker registration; `fake-postern.ts` is a Postern backend with a mill that opens the grist and answers it,
-  used by features/tutor.feature and, through `playwright-postern.ts`, by tests/e2e/tutor.spec.ts). Tests run in jsdom, `fake-indexeddb`, `TZ=UTC`.
+- Waits (docs/testing.md 'Waits'): a jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS`, so never pass a shorter `timeout:` and give `vi.waitFor` one; a step that checks what the bus heard waits for it through `tests/support/published.ts`.
+- Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (docs/testing.md 'The shared fakes'). Tests run in jsdom, `fake-indexeddb`, `TZ=UTC`.
 - jsdom has no layout: a layout claim is proven only by a Playwright spec in `tests/e2e/` at 390x844,
   which ends with `shot(page, name)`. Service workers are blocked in e2e (tests/e2e/share-target.spec.ts lets the built worker run, to POST a share).
 - esbuild will not run in jsdom: a test that needs a real build runs
