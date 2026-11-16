@@ -11,6 +11,7 @@ import { isSeptuagint } from '../septuagint';
 import { rowAttrs } from '../sourceText';
 import { textClass } from '../textClass';
 import { VerseText } from '../VerseText';
+import { isPoetryShown } from '../poetryText';
 import type { Lookup } from '../../WordSheet';
 import { pairVerses } from './splitPairing';
 import { notInText, splitTextView, type SplitTextKey } from './splitTexts';
@@ -48,15 +49,16 @@ export function TextDock({ text, book, lampasChapter, chapter, passage, onLook, 
         ) : (
           <div
             key={`v${row.verse.n}`}
+            data-stanza={isPoetryShown(row.verse, view, null) && row.verse.p === 1 ? '' : undefined}
             data-dock-verse={row.lampas ?? undefined}
             data-dock-extra={row.lampas === null ? '' : undefined}
             {...rowAttrs(view, source)}
-            className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${textClass(view, source)}`}
+            className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${isPoetryShown(row.verse, view, null) ? 'flex items-baseline' : ''} ${textClass(view, source)}`}
           >
-            <button type="button" data-verse-number aria-label={`Verse ${row.lampas ?? row.verse.n}`} disabled={row.lampas === null} onClick={() => row.lampas !== null && onNumber(row.lampas)} className={NUMBER}>
+            <button type="button" data-verse-number aria-label={`Verse ${row.lampas ?? row.verse.n}`} disabled={row.lampas === null} onClick={() => row.lampas !== null && onNumber(row.lampas)} className={`${NUMBER} ${isPoetryShown(row.verse, view, null) ? 'shrink-0' : ''}`}>
               <ShownNumber verse={row.verse} septuagint={septuagint ? chapter.chapter : undefined} />
             </button>
-            <VerseText verse={row.verse} view={view} source={source} gaps={gaps} woven={null} onLook={(lookup) => onLook(lookup, chapter)} onUnlinked={septuagint ? stay : undefined} />
+            <VerseText verse={row.verse} view={view} source={source} gaps={gaps} woven={null} onLook={(lookup) => onLook(lookup, chapter)} onUnlinked={septuagint ? stay : undefined} poetry />
           </div>
         ),
       )}

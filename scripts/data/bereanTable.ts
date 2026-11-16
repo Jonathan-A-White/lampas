@@ -91,6 +91,21 @@ export const unmarked = (s: string): string => s.replace(/[]/g, '');
 // A verse starts a paragraph when the table puts a paragraph tag that opens one (prose, or the first line of an
 // indented block) on its first word. The indented lines inside a poetry block (indent1, indent2) do not.
 export const PARAGRAPH_OPENER = /^<p class=\|(?:reg|red|(?:indent|tab|list)1stline(?:red)?)\|>/;
+// A poetry line starts on the word whose paragraph tag is an indent one: `indent1stline` opens a block (a stanza), `indent1` and `indent2` are the lines inside it (the second set deeper), and the red
+// forms (`indent1stlinered`, `indentred1`, `indentred2`) are the same lines in the words of Jesus. A tab, a list, a selah and the prose tags are not poetry. docs/data.md 'Poetry lines'.
+const POETRY_TAG = /^\s*<p class=\|indent(?:red)?(1stline|1|2)(?:red)?\|>/;
+export interface PoetryMark {
+  /** how deep the line stands: 1, or 2 for the deeper lines */
+  indent: 1 | 2;
+  /** true when the tag opens a block (`indent1stline`): the stanza breaks here */
+  stanza: boolean;
+}
+/** The poetry line a paragraph tag starts, or undefined when the tag is not an indent one. */
+export function poetryOfPar(par: string): PoetryMark | undefined {
+  const found = POETRY_TAG.exec(par);
+  if (!found) return undefined;
+  return { indent: found[1] === '2' ? 2 : 1, stanza: found[1] === '1stline' };
+}
 /** A heading cell as text: the tags off (a paragraph tag or a line break is a space: 'Your Word Is a Lamp' and the letter after it are two words), a numeric character reference (the Hebrew letter that heads a section of Psalm 119) written out. */
 export const headingOf = (cell: string): string =>
   stripTags(cell.replace(/<(?:p|br)\b[^>]*>/gi, ' '))

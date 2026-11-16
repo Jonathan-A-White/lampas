@@ -671,6 +671,34 @@ textarea,
   display: block;
   width: calc(100% + 1rem);
 }
+/* Poetry (mw-5r3p30.1164, docs/data.md 'Poetry lines'): a verse the Berean table sets in lines is drawn in them on the English tab. Each line is a block; a line one level in is
+ * 1.5em from the edge and a deeper one 3em, and the first line of each hangs 1.5em out (text-indent), so a line that wraps stands under its own first word, not under the line above.
+ * The lines are ragged right and never hyphenated, whatever Immersive does to the verse around them (the rule is on the line, the nearer box). The lead-in ('Then Mary said:', a Psalm's
+ * title) is indent 0: flush left and as prose. A line that opens a block after others, and a verse that opens a stanza (a Reader verse or the dock's), take the space of a stanza break. */
+[data-line] {
+  display: block;
+  text-align: start;
+  hyphens: manual;
+}
+[data-line][data-indent='1'] {
+  padding-inline-start: 1.5em;
+  text-indent: -1.5em;
+}
+[data-line][data-indent='2'] {
+  padding-inline-start: 3em;
+  text-indent: -1.5em;
+}
+[data-line][data-stanza] {
+  margin-top: 0.75em;
+}
+:is([data-verse], [data-dock-verse])[data-stanza]:not(:first-child) {
+  margin-top: 0.75rem;
+}
+[data-verse] > [data-text][data-poetry],
+[data-dock-verse] > [data-text][data-poetry] {
+  flex: 1 1 0;
+  min-width: 0;
+}
 /* The Immersive reader sets the text like a book (mw-5r3p30.297): tight lines wherever no line sits under a word (a verse with a [data-hint]
  * keeps its roomy spacing), the English in the Font he chose (the Greek face is already a serif), justified and hyphenated in the text's own language
  * (the lang on the verse or paragraph), small dim verse numbers, and pure black behind it in the dark theme. Type size is untouched. The verse

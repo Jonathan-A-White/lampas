@@ -4,8 +4,8 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { CANON } from '../../src/data/canon';
-import type { BookIndex, BookInfo, Chapter, EnglishChunk, GreekWord, SourceLanguage, Verse } from '../../src/data/chapter';
-import { PARAGRAPH_OPENER, marked, suppliedWords, tidy, unmarked, type TableVerse, type TableWord } from './bereanTable';
+import type { BookIndex, BookInfo, Chapter, EnglishChunk, GreekWord, PoetryLine, SourceLanguage, Verse } from '../../src/data/chapter';
+import { PARAGRAPH_OPENER, marked, poetryOfPar, type PoetryMark, suppliedWords, tidy, unmarked, type TableVerse, type TableWord } from './bereanTable';
 
 /** A part of speech that is only a function word: a conjunction, article, preposition, particle, conditional or interjection (RP codes). */
 const FUNCTION_PARSE = /^(CONJ|T-|PREP|PRT|COND|INJ)/;
@@ -38,12 +38,16 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
   // A pronoun after a chunk of function words only ('and', 'while') waits for the chunk after it (Luke 12:37); the other kinds take the chunk before whatever it is ('except' holds εἰ μὴ,
   // 'how' holds ἐν τίνι: a read of 25 such rows found 22 right). mw-5r3p30.997 (pronouns), mw-5r3p30.1001 (the rest); docs/sources/msb-chunk-pairs.md.
   const e: Array<{ t: string; g: number[] }> = [];
+  // Poetry: a word whose tag is an indent one starts a line at the English chunk it opens (the next chunk, when the word has no English of its own).
+  const lines: PoetryLine[] = [];
+  let line: PoetryMark | undefined;
   let ellipsis: number[] = [];
   let opening = '';
   for (const w of [...v.words].sort((a, b) => a.englishSort - b.englishSort)) {
     const raw = w.english.trim();
     const gi = sourceIndex.get(w)!;
     const tail = marked(w.tail);
+    line = poetryOfPar(w.par) ?? line;
     if (raw === '' || raw === '-' || raw === 'vvv' || raw === '. . .') {
       if (raw === '. . .') {
         const last = e[e.length - 1];
@@ -57,6 +61,10 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
         else opening += tail;
       }
       continue;
+    }
+    if (line) {
+      lines.push(line.stanza ? [e.length, line.indent, 1] : [e.length, line.indent]);
+      line = undefined;
     }
     e.push({ t: opening + tidy(w.begQ) + marked(raw) + tail, g: [...ellipsis, gi] });
     ellipsis = [];
@@ -73,11 +81,12 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
     return chunk;
   });
   const first = [...v.words].sort((a, b) => a.englishSort - b.englishSort)[0];
-  // A fixed key order: n, h, p, g, e.
+  // A fixed key order: n, h, p, l, g, e.
   return {
     n: v.n,
     ...(v.heading ? { h: v.heading } : {}),
     ...(first && PARAGRAPH_OPENER.test(first.par) ? { p: 1 as const } : {}),
+    ...(lines.length ? { l: lines } : {}),
     g: g.map(ordered),
     e: english,
   };

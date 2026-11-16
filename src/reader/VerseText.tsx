@@ -17,6 +17,8 @@ import { sayWord } from './sayWord';
 import { variantLabel, variantLookup } from './variantWords';
 import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
+import { linesShown } from './poetryText';
+import type { PoetryLineSpan } from '../data/poetry';
 import { chunkShown, gapText, septuagintChunkLinked, septuagintVerseView, withoutMarks } from './septuagint';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
 function SuppliedText({ chunk, gaps }: { chunk: EnglishChunk; gaps?: boolean }) {
@@ -113,8 +115,38 @@ const CHOSEN_RUN =
  * same kind, a brace or any other word ends the run.
  * A `run` one is a function of `bare`: the run's last word is drawn without its trailing space, which underRuns puts after the run's span (mw-9ji6ek0.28). */
 interface Drawn {
-  node: ReactNode | ((bare: boolean) => ReactNode);
+  node: ReactNode | ((bare: boolean) => ReactNode) | null;
   run?: 'variant' | 'chosen' | 'rp';
+  /** not a thing drawn but where a poetry line starts (PoetryLineSpan): the items after it, up to the next, are that line's */
+  line?: PoetryLineSpan;
+}
+
+/**
+ * A verse of poetry in its lines (mw-5r3p30.1164): each line a block that starts at its own chunk, a line one level in (`data-indent` 1) and the deeper one two, a wrapped line hung under the first word of its line,
+ * set ragged right whatever Immersive does (src/index.css [data-line]). A line that opens a block after others has `data-stanza`: the space of a stanza break.
+ * The items before the first line mark (the braces at the start) belong to the first line.
+ */
+function PoetryLines({ lines, items, lead, trail }: { lines: readonly PoetryLineSpan[]; items: readonly Drawn[]; lead?: ReactNode; trail?: ReactNode }) {
+  const drawn = lines.map(() => [] as Drawn[]);
+  const before: Drawn[] = [];
+  let at = -1;
+  for (const item of items) {
+    if (item.line) at = lines.indexOf(item.line);
+    else (at < 0 ? before : drawn[at]).push(item);
+  }
+  drawn[0].unshift(...before);
+  const intro = lines[0].indent === 0;
+  return (
+    <span data-text data-poetry className="block">
+      {lines.map((line, k) => (
+        <span key={line.from} data-line data-indent={line.indent} data-stanza={line.stanza && k > 0 && !(k === 1 && intro) ? '' : undefined} className="block">
+          {k === 0 ? lead : null}
+          {underRuns(drawn[k])}
+          {k === lines.length - 1 ? trail : null}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 /** The nodes of a row, the consecutive `run` ones of a kind wrapped in one span that draws the unit's one line. The space after the run's last word stands outside the span:
@@ -159,7 +191,16 @@ const GUESS = 'underline decoration-dotted decoration-1 underline-offset-4';
 /** The words of one verse, every one tappable: the Greek in Greek order, or the English chunks (woven or not) in the order the weave lays them out
  * (the English order, or with the Weave's Order Greek the Greek one, mw-5r3p30.250). `marked` are indices into `verse.g` drawn marked (data-marked; in the English view
  * the chunk that stands for one); `still` draws the words as plain text for a verse shown on a card, where a tap has nothing to open. */
-export function VerseText({ verse, view: chapterView, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps, onUnlinked }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps' | 'onUnlinked'> & { marked?: ReadonlySet<number>; still?: boolean }) {
+export function VerseText({ verse, view: chapterView, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps, onUnlinked, poetry, lead, trail }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps' | 'onUnlinked'> & {
+  marked?: ReadonlySet<number>;
+  still?: boolean;
+  /** draw a verse the table sets as poetry in its lines (`Verse.l`, src/data/poetry.ts) when the English view shows it with no weave; absent, as running text. Set by the places that draw a chapter's text (the Reader's two layouts, the passage, the dock), never on a card */
+  poetry?: boolean;
+  /** with `poetry`, drawn at the start of the first line when the verse is drawn in lines (the Paragraph layout's verse number, which stands in the text); a verse drawn as running text leaves it to the caller */
+  lead?: ReactNode;
+  /** with `poetry`, drawn at the end of the last line when the verse is drawn in lines (the play button) */
+  trail?: ReactNode;
+}) {
   // a verse with Greek words and no English chunk is drawn in Greek alone, where the English view would draw nothing (mw-u2w5klk.274.7)
   const view = septuagintVerseView(chapterView, verse);
   const hebrew = source === 'hbo';
@@ -262,9 +303,15 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
     };
   };
   const placements = (list: readonly Placement[] | undefined, key: string): Drawn[] => (list ?? []).map((p, k) => inPlaceOf(p, `${key}-${k}`));
-  return (
-    <span data-text>
-      {underRuns(view === 'greek'
+  // Poetry (docs/data.md 'Poetry lines'): in the English view with no weave, a verse the table sets in lines is drawn as them; a line starts at the chunk its `l` mark names
+  const lines = linesShown(verse, view, woven, poetry, still);
+  const lineAt = new Map((lines ?? []).map((line) => [line.from, line]));
+  const withLineStart = (i: number, make: () => Drawn[]): Drawn[] => {
+    const out = make();
+    const line = lineAt.get(i);
+    return line ? [{ node: null, line }, ...out] : out;
+  };
+  const items: Drawn[] = view === 'greek'
         ? verse.g.flatMap((w, i): Drawn[] => {
             // a reading laid in place stands for the unit's words: the last of them is where it is drawn, the others are not (mw-9ji6ek0.24)
             if (plan.dropped.has(i)) return bracesAt(plan.after.get(i));
@@ -283,7 +330,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
               ...bracesAt(plan.after.get(i)),
             ];
           })
-        : [-2, ...drawnOrder(verse, woven), -1].flatMap((i): Drawn[] => {
+        : [-2, ...drawnOrder(verse, woven), -1].flatMap((i): Drawn[] => withLineStart(i, () => {
             if (i === -2) return [...placements(plan.startPut, 'start'), ...bracesAt(plan.start)];
             if (i < 0) return plain(strays.end.map(strayWord));
             const braces = [...placements(plan.tail.get(i), `t${i}`), ...bracesAt(plan.after.get(i)), ...rpMark(i)];
@@ -372,7 +419,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
                 </Tap>
               </Fragment>
             ) }, ...braces];
-          }))}
-    </span>
-  );
+          }));
+  if (!lines) return <span data-text>{underRuns(items)}</span>;
+  return <PoetryLines lines={lines} items={items} lead={lead} trail={trail} />;
 }

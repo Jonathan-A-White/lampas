@@ -11,6 +11,7 @@ import type { Lookup } from '../WordSheet';
 import { READING_CLASS, textClass } from './textClass';
 import { VerseNumber, VerseText, type VerseProps } from './VerseText';
 import { isOrdered, rowAttrs } from './sourceText';
+import { isPoetryShown } from './poetryText';
 import { septuagintNumber } from './septuagint';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { ChosenUnit } from './chosenReading';
@@ -40,13 +41,17 @@ export function VerseLine(props: VerseProps) {
   const { verse, view, source = 'grc', woven, selected, reading, onSelect, onCopy, onPlay } = props;
   // an Old Testament chapter's rows run right to left in the Hebrew view and in a weave laid out in the Hebrew order; the number and the play button follow the row's direction
   const row = rowAttrs(view, source, isOrdered([woven]));
+  // a verse the table sets as poetry is drawn in its lines (mw-5r3p30.1164): the number stands beside them at the first line's baseline and the lines hang beside it, the play button ends the last line
+  const poetic = isPoetryShown(verse, view, woven);
+  const play = <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />;
   return (
     <p
       data-verse={verse.n}
       data-selected={selected}
       data-reading={reading || undefined}
+      data-stanza={poetic && verse.p === 1 && verse.h === undefined ? '' : undefined}
       {...row}
-      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${reading ? READING_CLASS : selected ? 'bg-accent/15' : ''} ${textClass(view, source)}`}
+      className={`mb-1 break-words rounded-xl px-2 leading-(--lp-leading) ${poetic ? 'flex items-baseline' : ''} ${reading ? READING_CLASS : selected ? 'bg-accent/15' : ''} ${textClass(view, source)}`}
     >
       {/* a Septuagint row's number box holds a range of two-digit verses ('15-16', englishRows) and a clear space after it, in the number's own em so Large text keeps it; every row of the chapter has it, so the text starts at one x (mw-u2w5klk.329) */}
       <VerseNumber
@@ -55,12 +60,12 @@ export function VerseLine(props: VerseProps) {
         selected={selected}
         onSelect={onSelect}
         onCopy={onCopy}
-        className={`inline-block min-h-(--lp-tap) ${props.septuagint !== undefined ? 'min-w-[max(var(--lp-tap),4.5em)]' : 'min-w-(--lp-tap)'} pe-1 text-start align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted`}
+        className={`inline-block min-h-(--lp-tap) ${props.septuagint !== undefined ? 'min-w-[max(var(--lp-tap),4.5em)]' : 'min-w-(--lp-tap)'} pe-1 text-start align-baseline font-sans text-sm font-semibold leading-(--lp-tap) text-muted ${poetic ? 'shrink-0' : ''}`}
       >
         <ShownNumber verse={verse} septuagint={props.septuagint} />
       </VerseNumber>
-      <VerseText {...props} onUnlinked={props.septuagint !== undefined ? onSelect : undefined} />
-      <VersePlay playing={reading} onPlay={onPlay} className="align-baseline font-sans" />
+      <VerseText {...props} poetry onUnlinked={props.septuagint !== undefined ? onSelect : undefined} trail={poetic ? play : undefined} />
+      {poetic ? null : play}
     </p>
   );
 }
@@ -97,8 +102,9 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
       {verses.map((verse, i) => {
         // a label with the Greek number beside it ('1 (22:1)') or a range ('15-16', a row englishRows folded: mw-u2w5klk.329) is wider than the 44 px box the -mx-3 pull-in is made for (a bare number leaves slack on each side): pulled in, the verse's words would start under it (mw-u2w5klk.279)
         const wide = septuagint !== undefined && (septuagintNumber(verse, septuagint).greek !== undefined || verse.through !== undefined);
-        return (
-        <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
+        // a verse the table sets as poetry is drawn in its lines (mw-5r3p30.1164): its number stands at the start of its first line and the play button at the end of its last
+        const poetic = isPoetryShown(verse, view, woven[i]);
+        const number = (
           <span className={wide ? 'whitespace-nowrap' : undefined}>
           <VerseNumber
             n={verse.n}
@@ -115,10 +121,14 @@ export function ParagraphView({ verses, view, source = 'grc', septuagint, gaps, 
           {/* a wide label keeps its verse's first word on its line: the nowrap span holds the label and a word joiner, which forbids a break before the first word (mw-u2w5klk.303) */}
           {wide ? '\u2060' : null}
           </span>
-          <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} onUnlinked={septuagint !== undefined ? () => onSelect(verse.n) : undefined} />
-          {selected === verse.n || reading === verse.n ? (
-            <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" />
-          ) : null}
+        );
+        const play = selected === verse.n || reading === verse.n ? <VersePlay playing={reading === verse.n} onPlay={() => onPlay(verse.n)} className="align-baseline font-sans" /> : null;
+        return (
+        <span key={verse.n} data-verse={verse.n} data-selected={selected === verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${poetic ? 'block' : ''} ${reading === verse.n ? READING_CLASS : selected === verse.n ? 'bg-accent/15' : ''}`}>
+          {/* a label with the Greek number beside it ('1 (22:1)') or a range ('15-16', a row englishRows folded: mw-u2w5klk.329) is wider than the 44 px box the -mx-3 pull-in is made for (a bare number leaves slack on each side): pulled in, the verse's words would start under it (mw-u2w5klk.279) */}
+          {poetic ? null : number}
+          <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={woven[i]} onLook={onLook} variants={variantsOf?.(verse.n)} chosen={chosenOf?.(verse.n)} onVariant={onVariant} onRp={onRp} onUnlinked={septuagint !== undefined ? () => onSelect(verse.n) : undefined} poetry lead={poetic ? number : undefined} trail={poetic ? play : undefined} />
+          {poetic ? null : play}
         </span>
         );
       })}
@@ -178,12 +188,20 @@ export function PassageText({ passage, view, source = 'grc', layout, wovenOf, re
     <div ref={box} data-passage={passage.first}>
       {blocksOf(passage.verses, layout).map((block) => (
         <p key={block[0].n} data-passage-text {...rowAttrs(view, source, isOrdered(passage.verses.map(wovenOf)))} className={`break-words leading-(--lp-leading) ${layout === 'paragraph' ? 'mb-2' : 'mb-1'} ${textClass(view, source)}`}>
-          {block.map((verse) => (
-            <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${reading === verse.n ? READING_CLASS : ''}`}>
+          {block.map((verse) => {
+            // a verse the table sets as poetry is drawn in its lines (mw-5r3p30.1164): its number stands at the start of its first line
+            const woven = wovenOf(verse);
+            const poetic = isPoetryShown(verse, view, woven);
+            const number = (
               <sup data-passage-number className="mr-1 font-sans text-xs font-semibold leading-[0] text-muted"><ShownNumber verse={verse} septuagint={septuagint} /></sup>
-              <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={wovenOf(verse)} onLook={onLook} onRp={onRp} onUnlinked={onUnlinked} />
-            </span>
-          ))}
+            );
+            return (
+              <span key={verse.n} data-passage-verse={verse.n} data-reading={reading === verse.n || undefined} className={`rounded-xl ${poetic ? 'block' : ''} ${reading === verse.n ? READING_CLASS : ''}`}>
+                {poetic ? null : number}
+                <VerseText verse={verse} view={view} source={source} gaps={gaps} woven={woven} onLook={onLook} onRp={onRp} onUnlinked={onUnlinked} poetry lead={poetic ? number : undefined} />
+              </span>
+            );
+          })}
         </p>
       ))}
     </div>

@@ -165,6 +165,12 @@ export interface VerseRef {
   verse: number;
 }
 
+/**
+ * Where a poetry line starts in a verse's English (docs/data.md 'Poetry lines'): the index of the English chunk it starts at, how deep it stands (1, or 2 for the deeper lines), and a third `1` when it opens a block
+ * (the Berean table's `indent1stline`), where the stanza breaks.
+ */
+export type PoetryLine = readonly [chunk: number, indent: 1 | 2] | readonly [chunk: number, indent: 1 | 2, stanza: 1];
+
 export interface Verse {
   n: number;
   /**
@@ -184,6 +190,8 @@ export interface Verse {
   h?: string;
   /** 1 when the MSB starts a paragraph at this verse; absent otherwise */
   p?: 1;
+  /** the lines of a verse of poetry, in English order, each where it starts (PoetryLine); absent in a prose verse. The English tab sets the verse in them (src/data/poetry.ts); the Greek, the Hebrew and the weave are not. */
+  l?: PoetryLine[];
   /** Greek words in Greek order */
   g: GreekWord[];
   /** English chunks in English order */

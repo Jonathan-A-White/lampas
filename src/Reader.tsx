@@ -863,7 +863,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
                 gaps={septuagint ? gaps : undefined}
               />
             ) : (
-              <VerseText verse={viewUnit} view={sheetView} source={source} gaps={septuagint ? gaps : undefined} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} onRp={setRpShown} onUnlinked={septuagint ? stay : undefined} />
+              <VerseText verse={viewUnit} view={sheetView} source={source} gaps={septuagint ? gaps : undefined} woven={sheetWoven?.[chapter.verses.indexOf(viewUnit)] ?? null} onLook={setLookup} onRp={setRpShown} onUnlinked={septuagint ? stay : undefined} poetry />
             )
           }
           previous={viewPassage ? stepOf(BOOK, CHAPTER, passages, arrowsFrom(passages, viewPassage), -1) : stepOfVerse(verseNeighbours(BOOK, CHAPTER, viewUnit.n).previous)}
