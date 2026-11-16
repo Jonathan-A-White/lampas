@@ -246,7 +246,7 @@ From John's 21 chapters:
 - **The narrator adds and changes no word** in John that both ears hear (`text-differs` 0).
 - **The recording is gated.** Between phrases it is digital silence, about -90 dBFS and exactly zero in places; speech is -16 to -18 dBFS in every chapter. That is what lets the quiet ear read an edge to 5 ms. A recording that is not gated (room tone between verses) would need the quiet's threshold looked at again.
 - **Gaps.** Of 858 verse boundaries, 3 have no quiet (2:9, 5:28, 9:18) and 1 has less than the 0.1 s the player needs (1:24, 75 ms). The file runs on 0.16 to 0.26 s of quiet after the last verse's sound.
-- **A click.** 9:40 has a 10 ms click at -30 dB 60 ms before its first word; the maker's gap pass takes it for the verse's onset. It is harmless to the judge now, but a cut placed 'at the first sound' lands on it.
+- **A click.** 9:40 has a 10 ms click at -30 dB 60 ms before its first word; the maker's gap pass took it for the verse's onset, and so did the cut rule until mw-ar5k42b.6: the maker now passes over a click before a verse's first word (docs/data.md 'The cut rule', rule 2), and 9:40 starts 50 ms before 'Some'. The judge's own `sound` still gives the click as where the verse's sound begins; it counts seconds of sound, so the click cut at the player's latest start is within its tolerance.
 - **The file.** 44.1 kHz mono, 192 kb/s constant bit rate, no Xing or LAME header: Chromium seeks it to a frame (26 ms), see 'Time zero'.
 
 And of the judge itself:
