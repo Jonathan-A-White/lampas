@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.259
+_2026-11-16_
+- Fixed: the line of tools under a verse now always shows that more follows at the right, even right after you memorize a verse.
+- New: searching a lexicon or a grammar of your Logos library by its author's name finds it.
+
 ## 0.7.258
 _2026-11-16_
 - New: Psalms, the Magnificat and other poetry now read in indented lines on the English tab instead of one block of prose.

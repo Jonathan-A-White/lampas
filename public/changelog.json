@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.259",
+    "date": "2026-11-16",
+    "story": "mw-fnvjof.17.121",
+    "kind": "fixed",
+    "text": "the line of tools under a verse now always shows that more follows at the right, even right after you memorize a verse."
+  },
+  {
+    "version": "0.7.259",
+    "date": "2026-11-16",
+    "story": "mw-qtu3zvz.158",
+    "kind": "new",
+    "text": "searching a lexicon or a grammar of your Logos library by its author's name finds it."
+  },
+  {
     "version": "0.7.258",
     "date": "2026-11-16",
     "story": "mw-5r3p30.1164",
