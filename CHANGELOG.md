@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.261
+_2026-11-16_
+- New: Hands-free now opens and reads a passage you name, stops, turns to the next or previous chapter, and goes back a verse, all by voice.
+
 ## 0.7.260
 _2026-11-16_
 - Fixed: when the tutor turns Hands-free on or off, the phone now says so aloud, as it does from the switch and the three-finger tap.
