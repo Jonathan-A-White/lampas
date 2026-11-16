@@ -73,6 +73,32 @@ describe('the Library screen', () => {
   });
 });
 
+describe('the Library home Bibles row (mw-qtu3zvz.184)', () => {
+  const ESV = 'LLS:1.0.710';
+  const biblesRow = async (): Promise<string> => {
+    render(<LibraryScreen />);
+    const row = (await screen.findAllByTestId('kind-row')).find((r) => r.getAttribute('data-label') === 'Bibles')!;
+    await waitFor(() => expect(row.querySelector('[data-testid="kind-count"]')!.textContent).not.toBe(''));
+    return row.querySelector('[data-testid="kind-count"]')!.textContent ?? '';
+  };
+
+  it('names no Bible with no import and the default Logos Bibles', async () => {
+    await keepImport([]);
+    const line = await biblesRow();
+    expect(line).toBe('none on');
+    expect(line).not.toMatch(/LSB|NRSV|Swete/);
+  });
+
+  it('names the Bible his import holds and not the ones it lacks', async () => {
+    const { setLogosBibleFor } = await import('../../src/data/repositories');
+    await setLogosBibleFor('nt', ESV);
+    await keepImport([ESV]);
+    const line = await biblesRow();
+    expect(line).toMatch(/ESV/);
+    expect(line).not.toMatch(/LSB|NRSV|Swete/);
+  });
+});
+
 describe('the sermon search and a theme', () => {
   const OWNED = 'LLS:GRGLRSRMNRCH';
   const mine = 'https://ref.ly/logosres/LLS:GRGLRSRMNRCH?art=1';

@@ -5,13 +5,20 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { getLogosBibles, offeredShelfOf, ownedResources, type ShelfState } from '../data/repositories';
 import type { LogosBibles } from '../resources/logosBible';
-import { withBibles } from './bibleParts';
+import { offeredBibles, withBibles } from './bibleParts';
 import { shelfStates } from './kinds';
 import { isOffered, type Owned } from '../data/owned';
 
-/** His Bible in Logos for each part, live; undefined while it is read. */
-export function useBibles(): LogosBibles | undefined {
+/** His Bible in Logos for each part, live, as set in Settings; undefined while it is read. */
+export function useSetBibles(): LogosBibles | undefined {
   return useLiveQuery(getLogosBibles, []);
+}
+
+/** His Bibles in Logos for the parts whose Bible he may be offered (his import holds it: offeredBibles), live; undefined while it is read. The Library names these and no others. */
+export function useBibles(): Partial<LogosBibles> | undefined {
+  const bibles = useSetBibles();
+  const owned = useOwned();
+  return useMemo(() => (bibles === undefined || owned === undefined ? undefined : offeredBibles(bibles, owned)), [bibles, owned]);
 }
 
 /** The Resource IDs his Library import holds, live; undefined while it is read. */
@@ -21,7 +28,7 @@ export function useOwned(): Owned | undefined {
 
 export function useShelf(): ReadonlyMap<string, ShelfState> | undefined {
   const rows = useLiveQuery(() => offeredShelfOf(), []);
-  const bibles = useBibles();
+  const bibles = useSetBibles();
   const owned = useOwned();
   return useMemo(() => {
     if (rows === undefined || bibles === undefined || owned === undefined) return undefined;
