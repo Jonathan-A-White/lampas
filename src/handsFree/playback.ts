@@ -3,8 +3,8 @@
 // engine (src/speech/readAloud.ts), whose reading is the recorded voice, the phone's voice or a tutor's answer being read. When the exchange is over (onClose) it
 // goes on from where it stopped, unless the command took the sound over (takeSound: 'pause', or a 'play' that started or resumed it itself). Nothing that was not
 // sounding at the wake is started at the close. The engine's state is read and its own pause and resume are called; nothing here plays anything of its own.
-import { getPassagePlayer, pausePassage, resumePassage } from '../speech/passagePlayer';
-import { getReading, pauseReading, resumeReading } from '../speech/readAloud';
+import { getPassagePlayer, pausePassage, resumePassage, stopPassage } from '../speech/passagePlayer';
+import { backAVerse, getReading, pauseReading, resumeReading, stopReading } from '../speech/readAloud';
 
 /** What the wake paused: the passage player, the read-aloud engine, or nothing. */
 type Held = 'passage' | 'reading' | null;
@@ -58,6 +58,24 @@ export function keepPaused(): void {
   if (getPassagePlayer().state === 'playing') pausePassage();
   else if (getReading().status === 'reading') pauseReading();
   takeSound();
+}
+
+/** 'stop', and whatever opens something else to read (a passage, the next chapter): what is sounding or paused, the passage player's or the engine's, is ended and nothing is left for
+ * the close to go on with. */
+export function stopSound(): void {
+  stopPassage();
+  stopReading();
+  held = null;
+  takeSound();
+}
+
+/** 'back a verse' (mw-rl10piw.7): the verse before the one being read, or paused on, is read again and the reading goes on from it, in the recorded voice and the phone's. False when no
+ * chapter is being read (nothing is done and the wake's pause is left to the close). */
+export function backOneVerse(): boolean {
+  if (!backAVerse()) return false;
+  held = null;
+  takeSound();
+  return true;
 }
 
 /** Forgets what the wake paused (a session stopped for good; tests). */
