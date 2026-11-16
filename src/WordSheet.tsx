@@ -24,6 +24,7 @@ import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/gram
 import { paradigmOfHebrewWord, paradigmOfWord } from './data/paradigms';
 import { accentedFormsOf, inCapitals, matchedWord } from './data/paradigms/ownForms';
 import { openHelpPage, openLibrary, openParadigm } from './nav/route';
+import { useOffRun } from './overRun';
 import { holdWord, READING_HELP_PAGE } from './wordReturn';
 import { oneTap } from './ui/settle';
 import { resourcesForLevel } from './resources/resourcesForLevel';
@@ -325,7 +326,8 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
   /** a term of the Parsing was tapped: the term, and the verse the word stands in */
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
   /** the Paradigm row was tapped: the word, to open its table */
-  onParadigm: (word: GreekWord) => void;
+  /** opens the word's table, a page of its own; without it (over a run, src/overRun.ts) the Paradigm row names the table and is no link */
+  onParadigm?: (word: GreekWord) => void;
   onMissing: (resource: StudyResource) => void;
   onAll: (word: GreekWord, door: NonNullable<StudyGroup['door']>) => void;
 }) {
@@ -363,14 +365,18 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
         ) : null}
         {table ? (
           <Fact label="Paradigm" testId="sheet-paradigm">
-            <button
-              type="button"
-              data-table={table.id}
-              onClick={() => oneTap('word:paradigm', () => onParadigm(word))}
-              className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4"
-            >
-              {table.name}
-            </button>
+            {onParadigm ? (
+              <button
+                type="button"
+                data-table={table.id}
+                onClick={() => oneTap('word:paradigm', () => onParadigm(word))}
+                className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4"
+              >
+                {table.name}
+              </button>
+            ) : (
+              table.name
+            )}
           </Fact>
         ) : null}
         <Fact label="Meaning" testId="sheet-gloss">
@@ -418,11 +424,13 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
   /** a grammar word of the Parsing was tapped: the term, and the verse the word stands in */
   onTerm: (term: string, word: GreekWord, verse: number | undefined) => void;
   /** the Paradigm row was tapped: the word, to open its table */
-  onParadigm: (word: GreekWord) => void;
+  /** opens the word's table, a page of its own; without it (over a run, src/overRun.ts) the Paradigm row names the table and is no link */
+  onParadigm?: (word: GreekWord) => void;
   /** the Paradigm row was tapped and its table waits on the lemma's forms: the row says so (mw-u2w5klk.345) */
   opening?: boolean;
   /** About this reading was tapped: Help's Words page opens, the sheet held */
-  onReading: () => void;
+  /** opens the Help page on how the Septuagint's words were read; without it (over a run) About this reading is not drawn */
+  onReading?: () => void;
   /** a Study link's app did not open */
   onMissing: (resource: StudyResource) => void;
   /** the door to every lexicon was tapped: the word, and the lexicons On with their links for it */
@@ -471,17 +479,21 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
         ) : null}
         {table ? (
           <Fact label="Paradigm" testId="sheet-paradigm">
-            <button
-              type="button"
-              data-table={table.id}
-              onClick={() => oneTap('word:paradigm', () => onParadigm(word))}
-              aria-busy={opening ? true : undefined}
-              {...greekLang(table.id === 'eimi' || table.id === 'oida')}
-              className={`inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4${opening ? ' opacity-60' : ''}`}
-            >
-              {table.name}
-              {opening ? <span className="ml-2 text-sm text-muted no-underline">Opening…</span> : null}
-            </button>
+            {onParadigm ? (
+              <button
+                type="button"
+                data-table={table.id}
+                onClick={() => oneTap('word:paradigm', () => onParadigm(word))}
+                aria-busy={opening ? true : undefined}
+                {...greekLang(table.id === 'eimi' || table.id === 'oida')}
+                className={`inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4${opening ? ' opacity-60' : ''}`}
+              >
+                {table.name}
+                {opening ? <span className="ml-2 text-sm text-muted no-underline">Opening…</span> : null}
+              </button>
+            ) : (
+              <span {...greekLang(table.id === 'eimi' || table.id === 'oida')}>{table.name}</span>
+            )}
           </Fact>
         ) : null}
         {formOnly ? null : (
@@ -516,11 +528,13 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
           <p data-reading-line="" className="text-base">
             <span className="text-sm text-muted">How Lampas read this word:</span> {reading.layer} ({reading.confidence})
           </p>
-          <div className="flex flex-wrap items-center gap-x-3">
-            <button type="button" onClick={() => oneTap('word:reading', onReading)} className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4">
-              About this reading
-            </button>
-          </div>
+          {onReading ? (
+            <div className="flex flex-wrap items-center gap-x-3">
+              <button type="button" onClick={() => oneTap('word:reading', onReading)} className="inline-flex min-h-11 items-center px-0.5 text-left text-accent underline underline-offset-4">
+                About this reading
+              </button>
+            </div>
+          ) : null}
           {reading.report && onHelp && verse !== undefined ? (
             <button
               type="button"
@@ -691,7 +705,12 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
     setGrammar({ term, word, verse });
     publish({ kind: 'grammar-term-opened', term });
   };
-  // the word's table is a page of its own: the sheet is held, with what it showed, and Back brings it back (src/wordReturn.ts)
+  // the word's table is a page of its own: the sheet is held, with what it showed, and Back brings it back (src/wordReturn.ts). Over a run that lives only on the screen under
+  // the sheet (a drill's 'Study this' row opened it, or an example of its lesson) a page would lose the run, so each opener of one below goes to its control through the one
+  // guard (src/overRun.ts, mw-indx1x6.57), and the control is not drawn there: the table, About this reading, the Library's Lexicons page. The guard is asked once, for
+  // `pages`: an opener that reads a ref (openTable) may not be handed to a function while the sheet is drawn
+  const offRun = useOffRun();
+  const pages = offRun(true) ?? false;
   // a table asked for and still waiting on the lemma's forms: the sheet stays up meanwhile, so a second tap must not open it again (mw-u2w5klk.334)
   const opening = useRef(false);
   // the word whose table waits, for its Paradigm row to say so (mw-u2w5klk.345)
@@ -807,7 +826,7 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
                 offerLogos={i === 0}
                 onHelp={help}
                 onTerm={openTerm}
-                onParadigm={openHebrewTable}
+                onParadigm={pages ? openHebrewTable : undefined}
                 onMissing={setMissing}
                 onAll={(word, door) => setAllLexicons({ word, door })}
               />
@@ -825,9 +844,9 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
                 levels={levels}
                 onHelp={help}
                 onTerm={openTerm}
-                onParadigm={openTable}
+                onParadigm={pages ? openTable : undefined}
                 opening={waiting === w}
-                onReading={openReading}
+                onReading={pages ? openReading : undefined}
                 onMissing={setMissing}
                 onAll={(word, door) => setAllLexicons({ word, door })}
               />
@@ -900,11 +919,15 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
           entries={allLexicons.door.entries}
           onClose={() => setAllLexicons(null)}
           onMissing={() => setMissing(logos)}
-          onManage={() => {
-            // the Lexicons page is a page of its own: the sheet is held with what it showed, and Back brings it back (src/wordReturn.ts)
-            holdWord(sheetChapter, lookup);
-            openLibrary({ kind: 'lexicon' });
-          }}
+          onManage={
+            pages
+              ? () => {
+                  // the Lexicons page is a page of its own: the sheet is held with what it showed, and Back brings it back (src/wordReturn.ts)
+                  holdWord(sheetChapter, lookup);
+                  openLibrary({ kind: 'lexicon' });
+                }
+              : undefined
+          }
         />
       ) : null}
       {missing ? (

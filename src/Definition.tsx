@@ -1,15 +1,18 @@
 // src/Definition.tsx — the word sheet's Definition drawn (mw-5r3p30.1163): src/definition.ts reads the text; this lays it out, each reference a link that opens the reader on that verse and
-// closes the sheets first (closeAllSheets), the who-part apart from the meaning, each sense on a line of its own.
+// closes the sheets first (closeAllSheets), the who-part apart from the meaning, each sense on a line of its own. Over a run (src/overRun.ts) a reference is plain text: the reader
+// is a page of its own, and the run would go with the screen under the sheet (mw-indx1x6.57).
 import type { ReactNode } from 'react';
 import { definitionOf, type DefinitionPiece } from './definition';
+import { useOffRun } from './overRun';
 import { closeAllSheets } from './ui/sheetBack';
 
 /** The pieces of a line: a reference a link to the reader, a '(?)' kept beside the word before it. */
 function Pieces({ pieces }: { pieces: DefinitionPiece[] }): ReactNode {
+  const offRun = useOffRun();
   return (
     <>
       {pieces.map((piece, i) =>
-        piece.ref === undefined ? (
+        offRun(piece.ref) === undefined ? (
           <span key={i}>{piece.text.replace(/ \(\?\)/g, ' (?)')}</span>
         ) : (
           <a
