@@ -19,6 +19,7 @@ import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { clearBus, subscribe, type EventOf } from '../../src/events/bus';
 import { expectPublished } from '../../tests/support/published';
 import { mulberry32 } from '../../src/data/quiz';
+import { releaseRound } from '../../src/review/heldRound';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -596,6 +597,8 @@ describeFeature(feature, ({ Scenario }) => {
       randomSeen.push(value);
       return value;
     });
+    // a day on, a round he left in the middle is not his any more (HELD_MS, KEPT_MS): the clock here has not moved, so the one the screen held is let go by hand
+    releaseRound();
     window.location.hash = '#/review';
     await user.click(await screen.findByRole('button', { name: 'Start', exact: true }));
   };

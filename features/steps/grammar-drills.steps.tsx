@@ -23,6 +23,7 @@ import { DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { paradigmOf } from '../../src/nav/route';
+import { releaseRound } from '../../src/review/heldRound';
 import { GRAMMAR, grammarRandom, gradedVersesOf } from '../../src/review/kinds';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findMenuButton, openTool } from '../../tests/unit/openSettings';
@@ -257,6 +258,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await waitFor(async () => expect((await db.settings.get('paradigmsOpened'))?.value).toContain('noun-endings'));
     });
     And('he opens Review from Settings again', async () => {
+      // a new round is what the scenario asks next: tests/setup.ts has cleared the round kept in session storage after the last step, and the round the screen held when the
+      // address left Review (mw-indx1x6.56) is let go the same way; on a phone he would be back in the round he left
+      releaseRound();
       window.location.hash = '#/review';
       await screen.findByRole('heading', { name: 'Review', level: 1 });
     });
