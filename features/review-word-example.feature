@@ -43,3 +43,18 @@ Feature: A Review word question gives an Example verse from his goal, after he h
     When he answers the word question
     Then the Example line says it is a verse of "Romans 8" that has "ἐγώ"
     And the Example shows a singular form of "ἐγώ" and none of its plural "ἡμεῖς"
+
+  Scenario: The Example of ἡμεῖς is a Romans 8 verse with a form of ἡμεῖς
+    Given his goal is "Read Romans 8" and Review asks the word "ἡμεῖς"
+    When he answers the word question
+    Then the Example says "Romans 8:4" as a form of "ἡμεῖς" and of none of "μου, ὑμεῖς"
+
+  Scenario: The Example of ὑμεῖς is a Romans 8 verse with a form of ὑμεῖς
+    Given his goal is "Read Romans 8" and Review asks the word "ὑμεῖς"
+    When he answers the word question
+    Then the Example says "Romans 8:9" as a form of "ὑμεῖς" and of none of "μου, ἡμεῖς"
+
+  Scenario: The Example of μου is a Romans 8 verse with a form of μου
+    Given his goal is "Read Romans 8" and Review asks the word "μου"
+    When he answers the word question
+    Then the Example says "Romans 8:2" as a form of "μου" and of none of "ἡμεῖς, ὑμεῖς"

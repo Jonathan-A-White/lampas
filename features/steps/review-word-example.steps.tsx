@@ -26,7 +26,13 @@ afterAll(async () => {
 });
 
 /** The lemmas the scenarios ask: not in the seed words, so the scenario puts them in. */
-const EXTRA: Record<string, string> = { ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing', σύ: 'you', ἐγώ: 'I, me, my' };
+const EXTRA: Record<string, string> = { ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing', σύ: 'you', ἐγώ: 'I, me, my', μου: 'my', ἡμεῖς: 'we', ὑμεῖς: 'you (pl)' };
+
+/** The words that are his own as the seed has them (lemmas and all), not made up for the scenario: the question finds them by their own forms. */
+const HIS_OWN = new Set(['μου', 'ἡμεῖς', 'ὑμεῖς']);
+
+/** The forms of a pronoun in Romans 8 the scenarios name, by the word: the data lists them under ἐγώ or σύ, so the lemma does not say. */
+const OWN_FORMS: Record<string, RegExp> = { μου: /^(μου|μοι|με|ἐμοῦ|ἐμοί|ἐμέ)$/, ἡμεῖς: /^ἡμ/i, ὑμεῖς: /^ὑμ/i };
 
 /** The chapters the scenarios name: the book's code and the number. */
 const CHAPTERS: Record<string, [string, number]> = { 'John 1': ['jhn', 1], 'Romans 8': ['rom', 8] }
@@ -50,7 +56,7 @@ async function drawCard(goal: string, lemma: string, last: string | undefined, s
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.reviews.clear(), db.settings.clear()]);
   await seedHisWords();
-  await db.words.put({ lemma, lang: 'grc', lemmas: [lemma], gloss: EXTRA[lemma], lesson: 1, state: 'learning', since: 0 });
+  if (!HIS_OWN.has(lemma)) await db.words.put({ lemma, lang: 'grc', lemmas: [lemma], gloss: EXTRA[lemma], lesson: 1, state: 'learning', since: 0 });
   await setGoal(goal);
   // the card marks the form in the Greek verse (the English view marks the English word instead)
   await setReaderView('greek');
@@ -160,6 +166,21 @@ describeFeature(feature, ({ Scenario }) => {
       And('the Example shows a singular form of {string} and none of its plural {string}', async (_, _word: string, plural: string) => {
         const form = (await screen.findByTestId('chapter-form')).getAttribute('data-form') ?? '';
         expect(PLURAL_FORMS[plural], `${form} is a form of ${plural}`).not.toContain(form);
+      });
+    });
+  }
+
+  for (const name of ['ἡμεῖς', 'ὑμεῖς', 'μου']) {
+    Scenario(`The Example of ${name} is a Romans 8 verse with a form of ${name}`, ({ Given, When, Then }) => {
+      Given('his goal is {string} and Review asks the word {string}', async (_, goal: string, lemma: string) => drawCard(goal, lemma, undefined, 0));
+      When('he answers the word question', answerChoice);
+      Then('the Example says {string} as a form of {string} and of none of {string}', async (_, verse: string, lemma: string, others: string) => {
+        const node = await screen.findByTestId('chapter-form');
+        expect(node.textContent).toMatch(/^Example: /);
+        expect(within(node).getByRole('link').textContent).toBe(verse);
+        const form = (node.getAttribute('data-form') ?? '').normalize('NFC');
+        expect(form, `${form} is a form of ${lemma}`).toMatch(OWN_FORMS[lemma]);
+        for (const other of others.split(', ')) expect(form, `${form} is a form of ${other}`).not.toMatch(OWN_FORMS[other]);
       });
     });
   }

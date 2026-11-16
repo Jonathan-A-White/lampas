@@ -146,14 +146,31 @@ const isOtherPluralPronoun = (g: GreekWord, others: ReadonlySet<string>): boolea
 };
 
 /**
- * Every place the chapter has a word, found by any of its lexicon lemmas. `others` are the headwords of his
+ * The personal pronouns that are found by their own forms and not by a lexicon lemma: the data lists every form of 'I' and 'we' under the lemma ἐγώ and of 'you' and 'you (pl)' under σύ,
+ * none of which μου, ἡμεῖς or ὑμεῖς equals, so a lemma match gave them no place (mw-indx1x6.74). `lexicon` is the lemma the data lists the forms under; `parse` the person, number and case
+ * that make a form of this word: ἡμεῖς and ὑμεῖς are the plural, μου the oblique cases of the singular 'my, me'.
+ */
+const OWN_PRONOUN_FORMS: Readonly<Record<string, { lexicon: string; parse: RegExp }>> = {
+  'ἡμεῖς': { lexicon: 'ἐγώ', parse: /^P-1[NGDA]P$/ },
+  'ὑμεῖς': { lexicon: 'σύ', parse: /^P-2[NGDA]P$/ },
+  'μου': { lexicon: 'ἐγώ', parse: /^P-1[GDA]S$/ },
+};
+
+/** Whether a Greek word of a chapter is one of the forms of a pronoun of OWN_PRONOUN_FORMS that `word` is. */
+const isOwnPronounForm = (g: GreekWord, word: Word, others: ReadonlySet<string>): boolean => {
+  const own = word.lang === 'hbo' ? undefined : OWN_PRONOUN_FORMS[nfc(word.lemma)];
+  return own !== undefined && !isGuess(g) && lemmaKeyOf(wordLemma(g)) === own.lexicon && own.parse.test(g.p ?? '') && !others.has(nfc(g.t));
+};
+
+/**
+ * Every place the chapter has a word, found by any of its lexicon lemmas, or by its own forms when it is a pronoun the data lists under another's lemma (OWN_PRONOUN_FORMS). `others` are the headwords of his
  * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf).
  */
 export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string> = new Set()): Occurrence[] {
   const lemmas = lemmasOf(word, others);
   return chapter.verses.flatMap((v) =>
     v.g
-      .filter((g) => isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others))
+      .filter((g) => (isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others)) || isOwnPronounForm(g, word, others))
       .map((g) => ({ form: cardForm(chapter, g), reference: `${chapter.book} ${chapter.chapter}:${v.n}`, book: chapter.code, chapter: chapter.chapter, verse: v.n })),
   );
 }
