@@ -26,10 +26,13 @@ afterAll(async () => {
 });
 
 /** The lemmas the scenarios ask: not in the seed words, so the scenario puts them in. */
-const EXTRA: Record<string, string> = { ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing' };
+const EXTRA: Record<string, string> = { ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing', σύ: 'you', ἐγώ: 'I, me, my' };
 
 /** The chapters the scenarios name: the book's code and the number. */
-const CHAPTERS: Record<string, [string, number]> = { 'John 1': ['jhn', 1], 'Romans 8': ['rom', 8] };
+const CHAPTERS: Record<string, [string, number]> = { 'John 1': ['jhn', 1], 'Romans 8': ['rom', 8] }
+
+/** The forms of a plural word, which belong to it and not to the singular word that shares its lexicon lemma. */
+const PLURAL_FORMS: Record<string, string[]> = { ὑμεῖς: ['Ὑμεῖς', 'ὑμεῖς', 'ὑμῶν', 'ὑμῖν', 'ὑμᾶς'], ἡμεῖς: ['Ἡμεῖς', 'ἡμεῖς', 'ἡμῶν', 'ἡμῖν', 'ἡμᾶς'] };
 
 /** The round's card as the Review screen holds it: the answer is the screen's state. */
 export function Holder({ item }: { item: ReviewItem }) {
@@ -146,4 +149,18 @@ describeFeature(feature, ({ Scenario }) => {
       await exampleIsAVerseOf(chapterName, lemma);
     });
   });
+
+  for (const name of ['The Example of a singular word is not a form of its plural, which is another of his words', 'The Example of ἐγώ is not a form of ἡμεῖς']) {
+    Scenario(name, ({ Given, When, Then, And }) => {
+      Given('his goal is {string} and Review asks the word {string}', async (_, goal: string, lemma: string) => drawCard(goal, lemma, undefined, 0));
+      When('he answers the word question', answerChoice);
+      Then('the Example line says it is a verse of {string} that has {string}', async (_, chapterName: string, lemma: string) => {
+        await exampleIsAVerseOf(chapterName, lemma);
+      });
+      And('the Example shows a singular form of {string} and none of its plural {string}', async (_, _word: string, plural: string) => {
+        const form = (await screen.findByTestId('chapter-form')).getAttribute('data-form') ?? '';
+        expect(PLURAL_FORMS[plural], `${form} is a form of ${plural}`).not.toContain(form);
+      });
+    });
+  }
 });
