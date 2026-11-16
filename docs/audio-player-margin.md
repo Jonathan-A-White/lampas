@@ -76,8 +76,9 @@ What the numbers say:
 - **At the start**, at 1x a cold or warm start sounds from the verse's start to 25 ms after it. The 20 to 25 ms of Titus 3:5 is the element starting at the next MP3
   frame. At 1.25x the time-stretch (WSOLA) reaches back up to 17 ms into what is before the start. That is sound of the verse before where there is no silence (3:7, 3:9).
 - **At the end** the player never plays past the end: it stops 45 to 97 ms short of it. The timer aims at `END_LEAD` 0.04 before the end and stops within `END_SLACK`
-  0.05, after a 60 ms fade, so 50 dB down is reached about 55 to 75 ms before the end. **That is sound of the verse itself lost.** The cut rule (mw-ar5k42b.3) must
-  place each end at least `inside.tail` (0.097 s) after the verse's last sound, or the fade eats into the last word. `align.py`'s `END_AFTER_SOUND` 0.05 is less than it.
+  0.05, after a 60 ms fade, so 50 dB down is reached about 55 to 75 ms before the end. **That is sound of the verse itself lost.** The cut rule places each
+  end at least `inside.tail` (0.097 s) after the verse's last sound, or the fade eats into the last word: `align.py` and `judge.py` read it from
+  `player-margin.json` as `insideTail` (mw-ar5k42b.9).
 - **WebKit was not measured.** Playwright's WebKit (26.6, build 2359) downloads, but it needs `libjxl.so.0.8` and `libbacktrace.so.0`, which Ubuntu 24.04 on the
   Laptop does not have. Its other missing libraries (GTK 4, GStreamer's base, good and libav plugins) can only be installed with root. The spec has no Chromium-only
   part: on a host with WebKit's dependencies it runs as it is under a WebKit project.

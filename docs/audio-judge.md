@@ -54,12 +54,12 @@ Three things only: the recording (the publisher's chapter MP3, fetched and decod
 
 ## The clip is what he could hear, at worst
 
-The player does not start and stop exactly. `scripts/audio-timings/player-slop.json` is the ONE file that says by how much: `lead` 0.05 s, `tail` 0.05 s, **provisional** until the player's-margin story (mw-ar5k42b.2) measures it. For a verse timed `[start, end]`:
+The player does not start and stop exactly. `scripts/audio-timings/player-slop.json` is the ONE file that says by how much it may start early or late (`lead` 0.05 s) and stop late (`tail` 0.05 s), **provisional**; how far it may stop EARLY is `inside.tail` of `scripts/audio-timings/player-margin.json` (0.097 s, measured by mw-ar5k42b.2: it pauses `END_SLACK` before the end after a 60 ms fade), read as `insideTail` by `read_slop` (mw-ar5k42b.9), never copied. For a verse timed `[start, end]`:
 
 - **extra** is judged on the clip at its longest, `[start - lead, end + tail]`;
-- **clipped** is judged on the clip at its shortest, `[start + lead, end - tail]`.
+- **clipped** is judged on the clip at its shortest, `[start + lead, end - insideTail]`: an end less than `insideTail` after the verse's last sound is `tail-clipped`, the player's early stop losing that much of the last word.
 
-So a cut is clean only where there is at least `lead + tail` (0.1 s) of quiet around it. Where the narrator leaves less, or none (he reads on), the judge flags the verse whatever the cut: those are the cut-rule story's listen list.
+So a cut is clean only where there is at least `lead + lead` (0.1 s) of quiet before a start and `insideTail + tail` (0.147 s) after an end. Where the narrator leaves less, or none (he reads on), the judge flags the verse whatever the cut: those are the cut-rule story's listen list.
 
 ## What it hears, and how
 
@@ -252,7 +252,7 @@ From John's 21 chapters:
 And of the judge itself:
 
 - **`text-differs` is not a cut's fault.** A lock that says 'no timings file ships unless its report is clean' should count the four edge kinds; a real `text-differs` can only be listened to.
-- **The slop and the tolerance are provisional**: `player-slop.json` (0.05 / 0.05) until mw-ar5k42b.2, `TOLERANCE` (20 ms) the Governor's to confirm. A larger slop makes more verses unfixable by any cut: at 0.05 a boundary needs 0.1 s of quiet.
+- **The slop and the tolerance are provisional**: `player-slop.json` (0.05 / 0.05), `player-margin.json`'s `inside.tail` (0.097), `TOLERANCE` (20 ms) the Governor's to confirm. A larger slop makes more verses unfixable by any cut: an end needs 0.147 s of quiet after it.
 - **A verse with no words** (a verse the text leaves empty) has nothing for the letters to pair: both its edges are weak and Whisper's words for its clip are all 'extra'. John has none; the first book that has one must decide what its timing should be.
 - **The maker's book table** (`align.BOOKS`), which the judge reads, holds all 66 books since mw-zbgo4ep.1.
 - **The lock** (mw-ar5k42b.3, `tests/unit/audio-judged.test.ts`): a book ships only with this judge's report of its timings as committed (the sha256), judged at the slop in force, with every flag on the book's listen list. docs/data.md 'The cut rule' has the three steps.
