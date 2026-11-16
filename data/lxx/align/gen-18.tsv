@@ -1,0 +1,193 @@
+ref	run	text	g	mark	confidence
+Gen.18:1	1	appeared	0		0.80
+Gen.18:1	2	by	-		0.80
+Gen.18:1	3	of	8	unsure	0.50
+Gen.18:1	4	as	-		0.80
+Gen.18:1	5	by	12		0.80
+Gen.18:1	6	of	15	unsure	0.50
+Gen.18:1	7	at	-		0.80
+Gen.18:2	1	lifted	-		0.80
+Gen.18:2	2	his	2	unsure	0.50
+Gen.18:2	3	and	-		0.80
+Gen.18:2	4	before	11		0.80
+Gen.18:2	5	having	-		0.80
+Gen.18:2	6	them	-		0.80
+Gen.18:2	7	of his	-		0.80
+Gen.18:2	8	did	-		0.80
+Gen.18:3	1	he	-		0.80
+Gen.18:3	2	indeed I have	4		0.80
+Gen.18:3	3	in	-		0.80
+Gen.18:3	4	sight, pass	7		0.80
+Gen.18:3	5	servant.	11,12		0.80
+Gen.18:4	1	Let	-		0.80
+Gen.18:4	2	now be brought,	0,1		0.80
+Gen.18:4	3	let them	-		0.80
+Gen.18:4	4	your	-		0.80
+Gen.18:4	5	do	-		0.80
+Gen.18:4	6	refresh yourselves	9		0.80
+Gen.18:5	1	I will	-		0.80
+Gen.18:5	2	you⌃ shall	-		0.80
+Gen.18:5	3	shall depart on your journey, on account of	8,9,10,11,14		0.80
+Gen.18:5	4	refreshment you⌃ have	-		0.80
+Gen.18:5	5	aside	-		0.80
+Gen.18:5	6	servant.	17,18		0.80
+Gen.18:5	7	he	-		0.80
+Gen.18:5	8	you have	-		0.80
+Gen.18:6	1	to	-		0.80
+Gen.18:6	2	of fine	-		0.80
+Gen.18:7	1	a young	-		0.80
+Gen.18:7	2	it to his	14	unsure	0.50
+Gen.18:7	3	he	-		0.80
+Gen.18:7	4	to	18		0.80
+Gen.18:8	1	he	-		0.80
+Gen.18:8	2	he had dressed;	-		0.80
+Gen.18:8	3	he	-		0.80
+Gen.18:8	4	them before	-		0.80
+Gen.18:8	5	they	-		0.80
+Gen.18:8	6	by	-		0.80
+Gen.18:9	1	he	-		0.80
+Gen.18:9	2	is	-		0.80
+Gen.18:9	3	wife?	6,7		0.80
+Gen.18:9	4	he	9		0.80
+Gen.18:9	5	and	-		0.80
+Gen.18:10	1	he	-		0.80
+Gen.18:10	2	I will	-		0.80
+Gen.18:10	3	and	-		0.80
+Gen.18:10	4	period seasonably,	7,8,10,11		0.80
+Gen.18:10	5	wife shall	16,17		0.80
+Gen.18:10	6	a	-		0.80
+Gen.18:10	7	at	22		0.80
+Gen.18:10	8	of	-		0.80
+Gen.18:10	9	being behind	28		0.80
+Gen.18:11	1	in	-		0.80
+Gen.18:11	2	the custom of women ceased with	7,11,12		0.80
+Gen.18:12	1	thing has	-		0.80
+Gen.18:12	2	as yet happened	-		0.80
+Gen.18:12	3	even	-		0.80
+Gen.18:12	4	is	-		0.80
+Gen.18:13	1	the	-		0.80
+Gen.18:13	2	Why is it	-		0.80
+Gen.18:13	3	has	-		0.80
+Gen.18:13	4	Shall I	11		0.80
+Gen.18:13	5	but	-		0.80
+Gen.18:13	6	am grown	-		0.80
+Gen.18:14	1	Shall anything	0,5		0.80
+Gen.18:14	2	Lord? At	4,6,7		0.80
+Gen.18:14	3	I will	-		0.80
+Gen.18:14	4	shall have a	-		0.80
+Gen.18:15	1	I did	-		0.80
+Gen.18:15	2	she was afraid.	6		0.80
+Gen.18:15	3	he	-		0.80
+Gen.18:15	4	to her, Nay,	10		0.80
+Gen.18:15	5	you did	-		0.80
+Gen.18:16	1	having risen	-		0.80
+Gen.18:16	2	thence	-		0.80
+Gen.18:16	3	them, attending	16		0.80
+Gen.18:16	4	journey.	-		0.80
+Gen.18:17	1	Shall	4		0.80
+Gen.18:17	2	servant what things	9,10,12		0.80
+Gen.18:17	3	intend to	-		0.80
+Gen.18:18	1	shall	-		0.80
+Gen.18:18	2	a	4		0.80
+Gen.18:18	3	populous nation,	5,8		0.80
+Gen.18:18	4	shall	-		0.80
+Gen.18:18	5	of	-		0.80
+Gen.18:18	6	blest.	10		0.80
+Gen.18:19	1	I know	0		0.80
+Gen.18:19	2	will	-		0.80
+Gen.18:19	3	his	-		0.80
+Gen.18:19	4	him,	-		0.80
+Gen.18:19	5	they will	-		0.80
+Gen.18:19	6	the ways of	16		0.80
+Gen.18:19	7	to	-		0.80
+Gen.18:19	8	the	-		0.80
+Gen.18:19	9	may	-		0.80
+Gen.18:19	10	things whatever	29		0.80
+Gen.18:19	11	has	-		0.80
+Gen.18:20	1	the	-		0.80
+Gen.18:20	2	The	-		0.80
+Gen.18:20	3	of	-		0.80
+Gen.18:20	4	has been increased towards me,	7		0.80
+Gen.18:20	5	are	-		0.80
+Gen.18:21	1	I will	-		0.80
+Gen.18:21	2	and	-		0.80
+Gen.18:21	3	correspond with	-		0.80
+Gen.18:21	4	cry which	5,6		0.80
+Gen.18:21	5	I may	-		0.80
+Gen.18:22	1	having departed thence,	1,2		0.80
+Gen.18:22	2	still	-		0.80
+Gen.18:22	3	before the	12		0.80
+Gen.18:23	1	drew	-		0.80
+Gen.18:23	2	and	-		0.80
+Gen.18:23	3	Wouldest you	4		0.80
+Gen.18:23	4	the	-		0.80
+Gen.18:23	5	the	-		0.80
+Gen.18:23	6	shall the righteous	11,12		0.80
+Gen.18:24	1	Should there	0		0.80
+Gen.18:24	2	righteous	6		0.80
+Gen.18:24	3	will you	-		0.80
+Gen.18:24	4	will you	-		0.80
+Gen.18:24	5	whole	-		0.80
+Gen.18:24	6	for	-		0.80
+Gen.18:24	7	sake of the	13		0.80
+Gen.18:24	8	they	-		0.80
+Gen.18:25	1	By no means shall	0		0.80
+Gen.18:25	2	thing is so as to destroy	4,5,8		0.80
+Gen.18:25	3	righteous	9		0.80
+Gen.18:25	4	the wicked, so the righteous shall	11,12,14,15		0.80
+Gen.18:25	5	wicked: by no means. You that	18,19,20		0.80
+Gen.18:25	6	whole	22		0.80
+Gen.18:25	7	shall you	-		0.80
+Gen.18:26	1	the	-		0.80
+Gen.18:26	2	there	-		0.80
+Gen.18:26	3	be	-		0.80
+Gen.18:26	4	the city, I will spare	12		0.80
+Gen.18:26	5	whole	-		0.80
+Gen.18:26	6	and	-		0.80
+Gen.18:26	7	whole	13		0.80
+Gen.18:26	8	sakes.	-		0.80
+Gen.18:27	1	and	-		0.80
+Gen.18:27	2	I have	-		0.80
+Gen.18:27	3	my	8	unsure	0.50
+Gen.18:27	4	am	-		0.80
+Gen.18:28	1	righteous should be diminished to forty-five, will you	2,5,6		0.80
+Gen.18:28	2	the whole	12	unsure	0.50
+Gen.18:28	3	of	-		0.80
+Gen.18:28	4	he	-		0.80
+Gen.18:28	5	I will	-		0.80
+Gen.18:28	6	it,	-		0.80
+Gen.18:28	7	I should	-		0.80
+Gen.18:29	1	he	-		0.80
+Gen.18:29	2	to	-		0.80
+Gen.18:29	3	there should be	-		0.80
+Gen.18:29	4	he	-		0.80
+Gen.18:29	5	I will	-		0.80
+Gen.18:29	6	it for	-		0.80
+Gen.18:29	7	sake.	18		0.80
+Gen.18:30	1	he	-		0.80
+Gen.18:30	2	Will there be anything against me,	2,3		0.80
+Gen.18:30	3	I shall	-		0.80
+Gen.18:30	4	be	-		0.80
+Gen.18:30	5	he	-		0.80
+Gen.18:30	6	I will	-		0.80
+Gen.18:30	7	it for the	-		0.80
+Gen.18:30	8	sake.	-		0.80
+Gen.18:31	1	he	-		0.80
+Gen.18:31	2	I am able to	-		0.80
+Gen.18:31	3	what	-		0.80
+Gen.18:31	4	there should	-		0.80
+Gen.18:31	5	he	-		0.80
+Gen.18:31	6	I will	-		0.80
+Gen.18:31	7	it, if I should find there	-		0.80
+Gen.18:32	1	he	-		0.80
+Gen.18:32	2	Will there be anything against me,	2,3		0.80
+Gen.18:32	3	I	-		0.80
+Gen.18:32	4	there should be	-		0.80
+Gen.18:32	5	he	-		0.80
+Gen.18:32	6	I will	-		0.80
+Gen.18:32	7	it for	-		0.80
+Gen.18:32	8	sake.	19		0.80
+Gen.18:33	1	the	-		0.80
+Gen.18:33	2	left off	4		0.80
+Gen.18:33	3	to	6		0.80
+Gen.18:33	4	his	-		0.80
