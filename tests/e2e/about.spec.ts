@@ -96,7 +96,10 @@ test.describe('at 390x844', () => {
     expect(lines.length).toBe(EXPECTED_ROWS); // the intro, the credits and the licence notices of ATTRIBUTION.md
     // the licence notices that must stay whole (CC BY 4.0, the maps' citation, the font copyrights, CCEL's terms line in the Spurgeon credit) may take a line or two more
     const LONG = /^(Tyndale House|TIPNR|Bible Mapper|Literata|Spurgeon)/;
-    const tooLong = lines.filter((l) => l.lines > (LONG.test(l.text) ? 9 : 4)).map((l) => `${l.lines} lines: ${l.text}`);
+    // the wake word's credit names the licence of every file its model was made from (LibriSpeech, VCTK, Coqui, the tools), so it takes a few lines more again
+    const WAKE = /^Hey Lampas wake word/;
+    const allowed = (text: string) => (WAKE.test(text) ? 13 : LONG.test(text) ? 9 : 4);
+    const tooLong = lines.filter((l) => l.lines > allowed(l.text)).map((l) => `${l.lines} lines: ${l.text}`);
     expect(tooLong).toEqual([]);
     await shot(page, 'about-short-credits');
   });
