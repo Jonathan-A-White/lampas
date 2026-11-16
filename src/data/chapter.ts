@@ -6,6 +6,7 @@ import { CANON_INDEX, greekBooks } from './bookIndex';
 import { isHebrewBook } from './books';
 import { forgetLxxIndex, loadSeptuagintChapter, withHeadings } from './lxxChapter';
 import { chapterWait } from './chapterWait';
+import { hebrewLineStarts } from './poetry';
 import { within } from './within';
 import type { VersionedList } from './versionedLists';
 import { getSetting } from '../settings/store';
@@ -190,8 +191,13 @@ export interface Verse {
   h?: string;
   /** 1 when the MSB starts a paragraph at this verse; absent otherwise */
   p?: 1;
-  /** the lines of a verse of poetry, in English order, each where it starts (PoetryLine); absent in a prose verse. The English tab sets the verse in them (src/data/poetry.ts); the Greek, the Hebrew and the weave are not. */
+  /** the lines of a verse of poetry, in English order, each where it starts (PoetryLine); absent in a prose verse. The English tab and a Weave in the English order set the verse in them (src/data/poetry.ts); the Hebrew tab has `hl`, the Greek tab none. */
   l?: PoetryLine[];
+  /**
+   * The Hebrew tab's lines of a verse of poetry (mw-5r3p30.1165), Old Testament only and never in a file (fillChapter sets it, from the Masoretic accents: hebrewLineStarts, src/data/poetry.ts): the indexes into `g` where each line starts, the first 0.
+   * Set only where the verse has English lines (`l`) and an accent to break at; absent otherwise, and the Hebrew is drawn as running text.
+   */
+  hl?: number[];
   /** Greek words in Greek order */
   g: GreekWord[];
   /** English chunks in English order */
@@ -280,7 +286,17 @@ export const NO_CHAPTER: Chapter = { book: '', code: '', chapter: 0, lang: 'grc'
 export const sourceLanguage = (chapter: Pick<Chapter, 'lang'>): SourceLanguage => chapter.lang ?? 'grc';
 
 /** A chapter as its file has it, with the language and translation an older file leaves out filled in ('grc', 'msb'), so a chapter kept on a phone still reads. */
-export const fillChapter = (file: Chapter): Chapter => ({ ...file, lang: file.lang ?? 'grc', translation: file.translation ?? 'msb' });
+export const fillChapter = (file: Chapter): Chapter => {
+  const chapter = { ...file, lang: file.lang ?? 'grc', translation: file.translation ?? 'msb' };
+  return chapter.lang === 'hbo' ? { ...chapter, verses: chapter.verses.map((verse) => withHebrewLines(verse, chapter.code)) } : chapter;
+};
+
+/** A verse of Hebrew poetry (it has English lines, `l`) with the lines of its own, `hl`, broken at the accents of its book (hebrewLineStarts); any other verse as it is. */
+function withHebrewLines(verse: Verse, code: string): Verse {
+  if (!verse.l?.length) return verse;
+  const starts = hebrewLineStarts(verse.g, code);
+  return starts.length > 1 ? { ...verse, hl: starts } : verse;
+}
 
 export interface BookInfo {
   code: string;

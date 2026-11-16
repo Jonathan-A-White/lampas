@@ -194,7 +194,7 @@ const GUESS = 'underline decoration-dotted decoration-1 underline-offset-4';
 export function VerseText({ verse, view: chapterView, source = 'grc', woven, onLook, marked, still, variants, onVariant, chosen, onRp, gaps, onUnlinked, poetry, lead, trail }: Pick<VerseProps, 'verse' | 'view' | 'source' | 'woven' | 'onLook' | 'variants' | 'onVariant' | 'chosen' | 'onRp' | 'gaps' | 'onUnlinked'> & {
   marked?: ReadonlySet<number>;
   still?: boolean;
-  /** draw a verse the table sets as poetry in its lines (`Verse.l`, src/data/poetry.ts) when the English view shows it with no weave; absent, as running text. Set by the places that draw a chapter's text (the Reader's two layouts, the passage, the dock), never on a card */
+  /** draw a verse the table sets as poetry in its lines (`Verse.l`, src/data/poetry.ts) when the English view shows it (a weave in the English order too), and in the Hebrew lines (`Verse.hl`) when the Hebrew view does; absent, as running text. Set by the places that draw a chapter's text (the Reader's two layouts, the passage, the dock), never on a card */
   poetry?: boolean;
   /** with `poetry`, drawn at the start of the first line when the verse is drawn in lines (the Paragraph layout's verse number, which stands in the text); a verse drawn as running text leaves it to the caller */
   lead?: ReactNode;
@@ -303,7 +303,8 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
     };
   };
   const placements = (list: readonly Placement[] | undefined, key: string): Drawn[] => (list ?? []).map((p, k) => inPlaceOf(p, `${key}-${k}`));
-  // Poetry (docs/data.md 'Poetry lines'): in the English view with no weave, a verse the table sets in lines is drawn as them; a line starts at the chunk its `l` mark names
+  // Poetry (docs/data.md 'Poetry lines'): a verse the table sets in lines is drawn as them in the English view and in the Weave (a line starts at the chunk its `l` mark names), and in the Hebrew view in the lines
+  // its accents make (`hl`, a line starts at the Hebrew word that index names)
   const lines = linesShown(verse, view, woven, poetry, still);
   const lineAt = new Map((lines ?? []).map((line) => [line.from, line]));
   const withLineStart = (i: number, make: () => Drawn[]): Drawn[] => {
@@ -312,7 +313,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
     return line ? [{ node: null, line }, ...out] : out;
   };
   const items: Drawn[] = view === 'greek'
-        ? verse.g.flatMap((w, i): Drawn[] => {
+        ? verse.g.flatMap((w, i): Drawn[] => withLineStart(i, () => {
             // a reading laid in place stands for the unit's words: the last of them is where it is drawn, the others are not (mw-9ji6ek0.24)
             if (plan.dropped.has(i)) return bracesAt(plan.after.get(i));
             const placed = plan.replace.get(i);
@@ -329,7 +330,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
               },
               ...bracesAt(plan.after.get(i)),
             ];
-          })
+          }))
         : [-2, ...drawnOrder(verse, woven), -1].flatMap((i): Drawn[] => withLineStart(i, () => {
             if (i === -2) return [...placements(plan.startPut, 'start'), ...bracesAt(plan.start)];
             if (i < 0) return plain(strays.end.map(strayWord));
