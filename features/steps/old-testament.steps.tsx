@@ -301,11 +301,11 @@ describeFeature(feature, ({ Scenario }) => {
       expect(items.map((li) => squash(li.querySelector('[lang="en"]')?.textContent))).toEqual([a, b]);
       for (const [i, word] of [a, b].entries()) expect(within(items[i]).getByRole('button', { name: `Listen: ${word}` })).toBeInTheDocument();
     });
-    And('it has the links {string} and {string}', (_, a: string, b: string) => {
-      // the Hebrew words' own Study links are on the sheet too: these are the English rows'
-      const links = within(sheet()).getAllByRole('link').filter((l) => l.textContent?.startsWith('Look it up in Logos'));
-      expect(links.map((l) => l.textContent)).toEqual([a, b]);
-      expect(links[1].getAttribute('href')).toBe(englishDictionaryLink('amittai')?.url);
+    And('it has the links {string} and {string}', async (_, a: string, b: string) => {
+      // the Hebrew words' own Study links are on the sheet too: these are the English rows'. The rows draw once the Study resources are read (a live query), so wait for them
+      const logosLinks = () => within(sheet()).queryAllByRole('link').filter((l) => l.textContent?.startsWith('Look it up in Logos'));
+      await waitFor(() => expect(logosLinks().map((l) => l.textContent)).toEqual([a, b]));
+      expect(logosLinks()[1].getAttribute('href')).toBe(englishDictionaryLink('amittai')?.url);
     });
   });
 
