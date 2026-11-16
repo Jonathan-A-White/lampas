@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
-import { getApocryphaMovedFrom, getLogosBible, getStudyResources, moveApocryphaBible, setLogosBibleFor, setResourceOn, setResourceOption } from '../../data/repositories';
+import { getApocryphaMovedFrom, getLogosBible, getStudyResources, moveApocryphaBible, ownedResources, setLogosBibleFor, setResourceOn, setResourceOption } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
 import { StartPlan } from '../../plan/StartPlan';
 import { resourceOf, type StudyResource } from '../../resources';
@@ -107,7 +107,8 @@ export const LogosBibleControl: Control = ({ row }) => {
   useEffect(() => {
     if (part === 'apocrypha') void moveApocryphaBible();
   }, [part]);
-  const bibles = biblesFor(part);
+  const owned = useLiveQuery(ownedResources, []);
+  const bibles = owned === undefined ? [] : biblesFor(part, owned);
   const picker =
     bible === undefined ? null : (
       <>

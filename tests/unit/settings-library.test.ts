@@ -3,8 +3,10 @@
 import { describe, expect, it } from 'vitest';
 import { GROUPS, groupById, HOME_SECTIONS, isHomeRow, isTalkable, ROWS, rowOf, TOOL_ROWS, visibleRows, visibleToolRows } from '../../src/settings/rows';
 import { groupIdOf, movedTool, settingKeyOf, settingLink } from '../../src/settings/link';
+import { CATALOGUE } from '../../src/resources/catalogue';
 import { MAX_BOOKS_FOUND, searchLibrary } from '../../src/settings/librarySearch';
 import { settingOf } from '../../src/settings/registry';
+import { EVERY_BOOK } from '../support/logos-import';
 
 describe('the rows of Settings after the library', () => {
   it('has no Works row any more', () => {
@@ -50,24 +52,34 @@ describe('the rows of Settings after the library', () => {
 
 describe('the Settings search over the library (searchLibrary)', () => {
   it("finds a book by its short name and says how many more there are", () => {
-    const { books, total } = searchLibrary('bdag');
+    const { books, total } = searchLibrary('bdag', EVERY_BOOK);
     expect(books[0]?.short).toBe('BDAG');
     expect(total).toBeGreaterThanOrEqual(books.length);
   });
 
   it('finds a book by its full title or its author', () => {
-    expect(searchLibrary('greek-english lexicon').books.length).toBeGreaterThan(0);
-    expect(searchLibrary('calvin').books.length).toBeGreaterThan(0);
+    expect(searchLibrary('greek-english lexicon', EVERY_BOOK).books.length).toBeGreaterThan(0);
+    expect(searchLibrary('calvin', EVERY_BOOK).books.length).toBeGreaterThan(0);
   });
 
   it('shows at most a few and counts the rest', () => {
-    const { books, total } = searchLibrary('e');
+    const { books, total } = searchLibrary('e', EVERY_BOOK);
     expect(books).toHaveLength(MAX_BOOKS_FOUND);
     expect(total).toBeGreaterThan(MAX_BOOKS_FOUND);
   });
 
+  it('answers only a book his import holds (mw-qtu3zvz.167): an import lacking BDAG finds no BDAG, none at all finds no book', () => {
+    const bdag = CATALOGUE.find((e) => e.short === 'BDAG')!;
+    const without = new Set([...EVERY_BOOK].filter((id) => id !== bdag.resource));
+    expect(searchLibrary('bdag', without).books.map((e) => e.resource)).not.toContain(bdag.resource);
+    expect(searchLibrary('bdag', without).total).toBe(0);
+    expect(searchLibrary('bdag', EVERY_BOOK).books.map((e) => e.resource)).toContain(bdag.resource);
+    expect(searchLibrary('bdag', new Set())).toEqual({ books: [], total: 0 });
+    expect(searchLibrary('e', new Set())).toEqual({ books: [], total: 0 });
+  });
+
   it('finds nothing for an empty or a meaningless search', () => {
-    expect(searchLibrary('   ')).toEqual({ books: [], total: 0 });
-    expect(searchLibrary('zzzzqqq').total).toBe(0);
+    expect(searchLibrary('   ', EVERY_BOOK)).toEqual({ books: [], total: 0 });
+    expect(searchLibrary('zzzzqqq', EVERY_BOOK).total).toBe(0);
   });
 });

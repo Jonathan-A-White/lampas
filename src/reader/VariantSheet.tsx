@@ -1,9 +1,11 @@
 // src/reader/VariantSheet.tsx — the sheet a tap on a variant's brace opens (mw-9ji6ek0.6, src/reader/VariantBrace.tsx): the text's own reading and the other reading(s) of the
 // unit, each in Greek and in English, the witness of each spelled out one line apiece (src/reader/witness.ts); its own Ask the tutor is gone (mw-5r3p30.882): the floating ? asks the tutor about this unit (src/Reader.tsx askVariant). Under the readings 'Go deeper' (src/reader/goDeeper.ts, mw-9ji6ek0.20): the lessons, the apparatus, the 2005 edition and his Logos
 // Greek texts at the verse. Each reading has 'Read this' (mw-9ji6ek0.24): it lays that reading into the text in place and closes the sheet; the one in place says 'Reading this'. Each word of a reading's Greek and English lines is a Tap like a word of the text and opens the word card over the sheet (mw-9ji6ek0.22). Done, Back, Escape, a swipe down or a tap outside close it. A portal: the brace is in the Reader's scrolling text.
-import { Fragment, useState, type ReactNode } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { SourceLanguage, Verse } from '../data/chapter';
+import { ownedResources } from '../data/repositories';
 import { wordOrderOnlyUnit } from '../data/variantVerse';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { navigate, openVariantLesson } from '../nav/route';
@@ -11,7 +13,7 @@ import { GREEK_LANG } from '../script/greekLang';
 import { focusOnMount } from '../ui/focus';
 import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
-import { APPARATUS_LABEL, EDITION_2005, GO_DEEPER_ENTRIES, GO_DEEPER_HEADING, LESSONS_LABEL, LOGOS_LABEL, apparatusUrl, goDeeperPlace } from './goDeeper';
+import { APPARATUS_LABEL, EDITION_2005, GO_DEEPER_HEADING, LESSONS_LABEL, LOGOS_LABEL, apparatusUrl, goDeeperEntries, goDeeperPlace } from './goDeeper';
 import type { Lookup } from '../WordSheet';
 import { sayWord } from './sayWord';
 import { SOURCE_CAPTION, SOURCE_LINK, SOURCE_SAYS, textReadsEnglish, unitSource, type EnglishLine, type EnglishSource } from './englishSource';
@@ -203,6 +205,9 @@ const ROW = 'flex min-h-11 items-center text-lg font-medium text-accent underlin
 function GoDeeper({ place, onLessons }: { place: VariantPlace; onLessons: () => void }) {
   const apparatus = apparatusUrl(place.book);
   const { place: studyPlace, name } = goDeeperPlace(place.book, place.chapter, place.verse);
+  // only the Greek texts his import holds (src/data/owned.ts)
+  const owned = useLiveQuery(ownedResources, []);
+  const entries = useMemo(() => (owned === undefined ? [] : goDeeperEntries(owned)), [owned]);
   return (
     <section data-go-deeper="" aria-labelledby="go-deeper-heading" className="border-t border-line py-3">
       <h3 id="go-deeper-heading" className="pb-1 text-base font-medium text-muted">
@@ -219,7 +224,7 @@ function GoDeeper({ place, onLessons }: { place: VariantPlace; onLessons: () => 
       <a href={EDITION_2005.url} target="_blank" rel="noreferrer" className={ROW}>
         {EDITION_2005.label}
       </a>
-      <AnotherBookButton place={studyPlace} name={name} entries={GO_DEEPER_ENTRIES} label={LOGOS_LABEL} className={`${ROW} w-full`} />
+      <AnotherBookButton place={studyPlace} name={name} entries={entries} label={LOGOS_LABEL} className={`${ROW} w-full`} />
     </section>
   );
 }

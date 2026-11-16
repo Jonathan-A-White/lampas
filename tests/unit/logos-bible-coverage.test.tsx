@@ -16,7 +16,7 @@ import { EVERY_BOOK } from '../support/logos-import';
 const LSB = 'LLS:LGCYSTNDRDBBLSB';
 const NRSV = 'LLS:1.0.50';
 const ESV = 'LLS:1.0.710';
-const ids = (part: 'nt' | 'ot' | 'apocrypha'): string[] => biblesFor(part).map((b) => b.id);
+const ids = (part: 'nt' | 'ot' | 'apocrypha'): string[] => biblesFor(part, EVERY_BOOK).map((b) => b.id);
 
 afterAll(() => {
   cleanup();

@@ -17,6 +17,7 @@ import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { bringRowIntoView, HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
 import { backToSettingsHome, groupIdOf, movedTool, sermonSourcesOf, settingKeyOf } from './settings/link';
+import { ownedResources } from './data/repositories';
 import { searchLibrary } from './settings/librarySearch';
 import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { greekLevelOf } from './settings/definitions/greekInterest';
@@ -103,6 +104,8 @@ function SettingsPages() {
   const forTutor = useLiveQuery(settingsForTutor, []);
   // the sermon books the search may answer: those in the one list of sermon sources (his import holds them)
   const sourceList = useSourceList();
+  // the books of his import: the search answers no other book (src/data/owned.ts)
+  const owned = useLiveQuery(ownedResources, []);
   const listedBooks = new Set((sourceList?.items ?? []).filter((item) => item.sort === 'book').map((item) => item.id));
   useReportScreen({ name: 'Settings', facts: [], settings: forTutor ?? [] });
   const drawn = values !== undefined;
@@ -125,7 +128,7 @@ function SettingsPages() {
           <div ref={contentRef}>
             <SettingsSearch query={query} onChange={setQuery} />
             {searching ? (
-              values ? <Found rows={found} tools={foundTools} books={values['resource.logos'] === 'on' ? searchLibrary(query, listedBooks) : NO_BOOKS} query={query} /> : null
+              values ? <Found rows={found} tools={foundTools} books={values['resource.logos'] === 'on' && owned !== undefined ? searchLibrary(query, owned, listedBooks) : NO_BOOKS} query={query} /> : null
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (

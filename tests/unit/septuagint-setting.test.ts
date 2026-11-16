@@ -10,6 +10,7 @@ import { septuagintView, septuagintWeaveNoted } from '../../src/reader/septuagin
 import { getLogosBible, getLogosBibles, setLogosBibleFor } from '../../src/data/repositories';
 import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { biblesFor, DEFAULT_SEPTUAGINT_BIBLE, LOGOS_PARTS, septuagintLink } from '../../src/resources/logosBible';
+import { EVERY_BOOK } from '../support/logos-import';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -89,8 +90,8 @@ const SWETE = 'LLS:OTGRKSWETETXT';
 
 describe('the Septuagint part of the Bible in Logos', () => {
   it('lists the four Septuagints of his Logos library, Swete\'s Greek first', () => {
-    expect(biblesFor('septuagint').map((b) => b.id)).toEqual([SWETE, 'LLS:OTGRKSWETEINTTXT', 'LLS:LELXX', 'LLS:BRENTONLXXEN']);
-    expect(biblesFor('septuagint')[0].name).toBe('LXX Swete (The Old Testament in Greek according to the Septuagint)');
+    expect(biblesFor('septuagint', EVERY_BOOK).map((b) => b.id)).toEqual([SWETE, 'LLS:OTGRKSWETEINTTXT', 'LLS:LELXX', 'LLS:BRENTONLXXEN']);
+    expect(biblesFor('septuagint', EVERY_BOOK)[0].name).toBe('LXX Swete (The Old Testament in Greek according to the Septuagint)');
   });
 
   it('is the fourth of the parts Settings lists, kept under logosBibleSeptuagint', () => {

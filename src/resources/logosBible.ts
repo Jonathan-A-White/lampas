@@ -4,6 +4,7 @@
 import { APOCRYPHA } from '../data/apocrypha';
 import { CANON } from '../data/canon';
 import { otBookOf } from '../data/books';
+import { offeredEntries, type Owned } from '../data/owned';
 import { entriesOf, type CatalogueEntry } from './catalogue';
 import { resourceLink } from './logosRes';
 import type { LogosPart } from './types';
@@ -32,9 +33,9 @@ export const DEFAULT_APOCRYPHA_BIBLE = 'LLS:1.0.50';
 /** The Septuagint a chapter Lampas has not shipped opens in: Swete's Greek, the text Lampas itself reads (PROVISIONAL, the Governor to confirm; mw-u2w5klk.266). */
 export const DEFAULT_SEPTUAGINT_BIBLE = 'LLS:OTGRKSWETETXT';
 
-/** The Bibles a part's picker offers: those of the catalogue that hold the part (their `parts`), in the catalogue's order. */
-export const biblesFor = (part: LogosPart): readonly { id: string; name: string }[] =>
-  readable()
+/** The Bibles a part's picker offers: those of the catalogue that hold the part (their `parts`) and that he may be offered (in his import or free with Logos: src/data/owned.ts offeredEntries, mw-qtu3zvz.167), in the catalogue's order. */
+export const biblesFor = (part: LogosPart, owned: Owned): readonly { id: string; name: string }[] =>
+  offeredEntries(readable(), owned)
     .filter((e) => e.via === 'id' && e.parts?.includes(part))
     .map((e) => ({ id: e.resource, name: `${e.short} (${e.title})` }));
 

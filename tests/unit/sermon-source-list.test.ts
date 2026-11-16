@@ -241,8 +241,8 @@ describe('the Library after the change', () => {
   it('the Settings search answers a sermon book only when it is in the one list', () => {
     const book = LOOSE.find((e) => /Princeton/.test(e.title)) ?? LOOSE[0];
     const words = book.short.split(/[,:]/)[0];
-    expect(searchLibrary(words).books.map((e) => e.resource)).not.toContain(book.resource);
-    expect(searchLibrary(words, new Set([book.resource])).books.map((e) => e.resource)).toContain(book.resource);
+    expect(searchLibrary(words, EVERY_BOOK).books.map((e) => e.resource)).not.toContain(book.resource);
+    expect(searchLibrary(words, EVERY_BOOK, new Set([book.resource])).books.map((e) => e.resource)).toContain(book.resource);
   });
 });
 
