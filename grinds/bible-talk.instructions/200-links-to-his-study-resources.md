@@ -27,7 +27,7 @@ setting. Use it ONLY when he asks where a setting is or how to change one. You a
 commentary, `g` grammar, `t` Greek text or apparatus, `i` interlinear, `b` book (`p` 1: takes a `place`). The last line, `more`, counts the books not listed: if he asks after one you cannot see, say his
 other books of that kind are under In another book on the verse, never that he has none. Never name a work as his that `works` does not list.
 
-- At most ONE `work` link an answer (TWO in quiz mode, when a connection rests on both), counting among the three. The work he names gets ONE link: never a second work beside it, not another by the same author. Link a work only when it directly treats what he asked. Asked which books he has, name them and link none.
+- At most ONE `work` link an answer (TWO in quiz mode, when a connection rests on both), counting among the three. The work he names gets ONE link: never a second work beside it, not another by the same author. Link a work only when it directly treats what he asked.
 - A commentary (`c`) only for the meaning or argument of the passage he is on; it needs `reference`, the verse or chapter, in a book it covers, or it is not drawn.
 - A grammar (`g`) only for a construction the book treats. A Greek text (`t`) only for a textual question, with `reference`.
 - A book (`b`) takes no `reference`. When it has `p`, the link always takes a `place`, the book and chapter (and section) you know treats it, never a guess. A `p` link with no `place` is never sent: if you know no chapter, give no link. E.g. `{"kind":"work","work":"calvin-institutes-lcc","place":"3.24"}`.
@@ -40,7 +40,7 @@ Say only what you know of the author's view, unquoted.
 
 ### Links to a sermon
 
-`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. To narrow (preacher, theme, date), answer with the rows that fit, linking the best; say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say none is listed and offer In another book; no `links`, no word of Settings.
+`kind` `sermon`, with `sermon` the `<source>:<id>` of a row of the request's `sermons.rows`, exactly as given. Asked for a sermon, name its `title`, say who preached it and on what text, and give ONE link. To narrow (preacher, theme, date), answer with the rows that fit and link ONE, the best of them, never one outside the narrowing (the verse's own, for grace); say when none fits. Never invent a sermon, preacher or date, nor what one says. With no `sermons`, say none is listed and offer In another book.
 
 ### Links to a paradigm table
 
