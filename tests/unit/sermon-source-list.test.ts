@@ -15,7 +15,7 @@ import { sermonSourcesLink, sermonSourcesOf } from '../../src/settings/link';
 import { ROWS, isTalkable } from '../../src/settings/rows';
 import { logosArchives, SERMON_BOOKS } from '../../src/sermons/sources/logos';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
-import { countLine, filingName, GROUP_WORDS, inOrder, onLine, sourceList, type SourceInput } from '../../src/sermons/sourceList';
+import { countLine, filingName, GROUP_WORDS, inOrder, rowsToChange, sourceList, type SourceInput } from '../../src/sermons/sourceList';
 import type { SermonSource } from '../../src/sermons/types';
 import '../support/grinds-in-graph';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
@@ -144,11 +144,19 @@ describe('the one list of sermon sources', () => {
     expect(ordered.map((i) => i.name)).toEqual(['Zion', 'Princeton Sermons', 'Anselm', 'The Beatitudes', 'Sermons, Volume 2', 'Sermons, Volume 10']);
   });
 
+  it('finds for a bulk button only the rows it would change: those that stand the other way', () => {
+    const item = (id: string, on: boolean, pinned = false) => ({ id, sort: 'book' as const, group: 'books' as const, name: id, title: id, search: '', on, ...(pinned ? { pinned: true as const } : {}) });
+    const rows = [item('on', true), item('off', false), item('pinned', true, true), item('off too', false)];
+    expect(rowsToChange(rows, true).map((i) => i.id)).toEqual(['off', 'off too']);
+    // a Pinned book reads as On: All on leaves it alone, All off takes it too
+    expect(rowsToChange(rows, false).map((i) => i.id)).toEqual(['on', 'pinned']);
+    expect(rowsToChange(rows.filter((i) => !i.on), false)).toEqual([]);
+    expect(rowsToChange([], true)).toEqual([]);
+  });
+
   it('says its counts in the words of the design', () => {
     expect(countLine(17, 120)).toBe('17 of 120 on');
     expect(countLine(0, 120)).toBe('none of 120 on');
-    expect(onLine(17)).toBe('17 on');
-    expect(onLine(0)).toBe('none on');
     expect(GROUP_WORDS.listed.title).toBe('Listed by passage');
     expect(GROUP_WORDS.books.title).toBe('Logos books, at the verse');
   });
