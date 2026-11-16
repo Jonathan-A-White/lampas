@@ -31,3 +31,15 @@ Feature: A Review word question gives an Example verse from his goal, after he h
     Then the card has no Example line and no link to a verse
     When he shows the flashcard and grades it
     Then the Example line says it is a verse of "John 1" that has "ἀπό"
+
+  Scenario: The Example of a singular word is not a form of its plural, which is another of his words
+    Given his goal is "Read Romans 8" and Review asks the word "σύ"
+    When he answers the word question
+    Then the Example line says it is a verse of "Romans 8" that has "σύ"
+    And the Example shows a singular form of "σύ" and none of its plural "ὑμεῖς"
+
+  Scenario: The Example of ἐγώ is not a form of ἡμεῖς
+    Given his goal is "Read Romans 8" and Review asks the word "ἐγώ"
+    When he answers the word question
+    Then the Example line says it is a verse of "Romans 8" that has "ἐγώ"
+    And the Example shows a singular form of "ἐγώ" and none of its plural "ἡμεῖς"

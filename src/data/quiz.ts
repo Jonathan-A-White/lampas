@@ -2,7 +2,7 @@
 // builder and the question. Nothing here touches the store or the screen; the random source is passed in.
 import { isGuess, sourceLanguage, wordLemma, type Chapter, type GreekWord, type SourceLanguage } from './chapter';
 import type { Word, WordState } from './db';
-import { holdsLemma, normaliseLemma } from './lemma';
+import { holdsLemma, lemmaKeyOf, normaliseLemma } from './lemma';
 import { SEED_WORDS } from './seed-words';
 import { SEED_WORDS_HBO } from './seed-words-hbo';
 import { choicesOf } from './choices';
@@ -120,6 +120,12 @@ export function lemmasOf(word: Word, others: ReadonlySet<string> = new Set()): S
   return new Set(word.lemmas.map(nfc).filter((l) => !others.has(l)));
 }
 
+/** The plural personal pronoun that has its own place among his words, by the lexicon lemma it shares with its singular: ὑμεῖς, ἡμεῖς are lexicon σύ, ἐγώ (mw-indx1x6.72). */
+const PLURAL_WORD: Readonly<Record<string, string>> = { 'σύ': 'ὑμεῖς', 'ἐγώ': 'ἡμεῖς' };
+
+/** A first or second person pronoun's parse in the plural ('P-2DP', 'P-1AP'): a form of ὑμεῖς or ἡμεῖς, whatever lemma the lexicon lists it under. */
+const PLURAL_PRONOUN = /^P-[12][NGDA]P$/;
+
 /**
  * Whether a Greek word of a chapter is a form of the word whose lemmas these are. A form that is another of
  * his words (ἡμεῖς has the lexicon lemma ἐγώ, but asking it for 'I' would teach the wrong gloss) is not.
@@ -130,6 +136,16 @@ export function isFormOf(g: GreekWord, lemmas: ReadonlySet<string>, others: Read
 }
 
 /**
+ * Whether the word is a plural personal pronoun (ὑμῖν, ἡμῶν) that is a place of the plural word he has (ὑμεῖς, ἡμεῖς) and not of the singular whose lexicon lemma lists it (σύ, ἐγώ):
+ * spelling alone does not say so, since only the nominative is the headword (mw-indx1x6.72). The Quick test and Review's Example leave it out of the singular; the parsing drill, which
+ * claims a place for the first word that holds it, does not ask.
+ */
+const isOtherPluralPronoun = (g: GreekWord, others: ReadonlySet<string>): boolean => {
+  const plural = PLURAL_WORD[lemmaKeyOf(wordLemma(g))];
+  return plural !== undefined && PLURAL_PRONOUN.test(g.p ?? '') && others.has(plural);
+};
+
+/**
  * Every place the chapter has a word, found by any of its lexicon lemmas. `others` are the headwords of his
  * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf).
  */
@@ -137,7 +153,7 @@ export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string
   const lemmas = lemmasOf(word, others);
   return chapter.verses.flatMap((v) =>
     v.g
-      .filter((g) => isFormOf(g, lemmas, others))
+      .filter((g) => isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others))
       .map((g) => ({ form: cardForm(chapter, g), reference: `${chapter.book} ${chapter.chapter}:${v.n}`, book: chapter.code, chapter: chapter.chapter, verse: v.n })),
   );
 }
