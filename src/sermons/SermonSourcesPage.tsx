@@ -256,6 +256,16 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 text-base font-medium [overflow-wrap:anywhere]">{item.name}</p>
                     {item.detail ? <p className="text-sm text-muted [overflow-wrap:anywhere]">{item.detail}</p> : null}
+                    {item.books ? (
+                      <ul data-testid="stands-for" className="text-sm text-muted [overflow-wrap:anywhere]">
+                        {item.books.map((book) => (
+                          <li key={book.title}>
+                            {book.title}
+                            {book.author ? ` · ${book.author}` : ''}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                     {item.free ? <p className="text-sm font-medium text-accent">Free with Logos</p> : null}
                     {item.also ? (
                       <button type="button" onClick={() => openLibrary({ kind: item.also, book: item.id })} className="min-h-11 text-left text-sm font-medium text-accent">

@@ -35,7 +35,9 @@ export interface SourceItem {
   free?: true;
   /** a book with more than sermons: the kind of the Library's page it is also on */
   also?: Kind;
-  /** more words the search looks in: the preacher, the series, the titles of the books under a list, 'web' or 'Logos' */
+  /** a list made from Logos books: each book it stands for that his import holds, with its author (the books have no row of their own, mw-qtu3zvz.181) */
+  books?: { title: string; author?: string }[];
+  /** more words the search looks in: the preacher, the series, the titles and authors of the books under a list, 'web' or 'Logos' */
   search: string;
   on: boolean;
   /** a book that is Pinned on its page of the Library: it reads as On here, and an Undo puts the pin back */
@@ -77,11 +79,13 @@ export const listName = (name: string): string => name.replace(/ \([^)]*\)$/, ''
 /** Whether a list opens its sermons in Logos: it names its Logos books, or rides on the Logos study resource. */
 const inLogos = (source: Pick<SermonSource, 'resources' | 'needs'>): boolean => source.resources !== undefined || source.needs === 'logos';
 
-function listItem(source: SermonSource, input: SourceInput, titleOf: (resource: string) => string | undefined): SourceItem {
+function listItem(source: SermonSource, input: SourceInput, byResource: ReadonlyMap<string, CatalogueEntry>): SourceItem {
   const saved = input.read(sourceKey(source));
   const count = input.sermonCount(source.id);
   const where = inLogos(source) ? 'in Logos' : 'on the web';
   const free = (source.resources ?? []).some(isFreeLogos);
+  const stands = (source.resources ?? []).filter((resource) => isOffered(resource, input.owned)).flatMap((resource) => byResource.get(resource) ?? []);
+  const books = stands.map((entry) => ({ title: entry.title, ...(entry.author ? { author: entry.author } : {}) }));
   return {
     id: sourceKey(source),
     sort: 'list',
@@ -90,7 +94,8 @@ function listItem(source: SermonSource, input: SourceInput, titleOf: (resource: 
     title: listName(source.name),
     detail: count === undefined ? where : `${count.toLocaleString('en')} ${count === 1 ? 'sermon' : 'sermons'} · ${where}`,
     ...(free ? { free: true as const } : {}),
-    search: [source.name, source.by, source.credit, ...(source.resources ?? []).map(titleOf), inLogos(source) ? 'Logos' : 'web'].filter(Boolean).join(' '),
+    ...(books.length > 0 ? { books } : {}),
+    search: [source.name, source.by, source.credit, ...stands.flatMap((entry) => [entry.title, entry.author]), inLogos(source) ? 'Logos' : 'web'].filter(Boolean).join(' '),
     on: (saved === 'on' || saved === 'off' ? saved : source.default) === 'on',
   };
 }
@@ -121,8 +126,8 @@ function bookItem(entry: CatalogueEntry, input: SourceInput): SourceItem {
 
 /** The list for a reader: the passage lists in the order given, then the Logos books in the catalogue's order (inOrder files them for the page). */
 export function sourceList(input: SourceInput): SourceList {
-  const titles = new Map(input.books.map((entry) => [entry.resource, entry.title]));
-  const lists = input.sources.map((source) => ({ source, item: listItem(source, input, (resource) => titles.get(resource)) }));
+  const byResource = new Map(input.books.map((entry) => [entry.resource, entry]));
+  const lists = input.sources.map((source) => ({ source, item: listItem(source, input, byResource) }));
   const under = new Set(input.sources.flatMap((source) => source.resources ?? []));
   const books = input.books.filter((entry) => !under.has(entry.resource) && isOffered(entry.resource, input.owned)).map((entry) => bookItem(entry, input));
   // a list that opens in Logos is listed while Logos is On and, where it names its Logos books, his import holds one of them
