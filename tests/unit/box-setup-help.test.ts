@@ -5,6 +5,7 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSyn
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const SCRIPT = resolve(__dirname, '../../scripts/audio-timings/box-setup.sh');
 const STUBBED = ['uv', 'curl', 'wget', 'tar', 'ffmpeg', 'sudo', 'apt-get', 'python3', 'python', 'pip', 'install', 'mkdir', 'mktemp', 'nice', 'rm', 'mv', 'ln'];
@@ -31,7 +32,7 @@ beforeAll(() => {
   }
 });
 
-afterAll(() => rmSync(work, { recursive: true, force: true }));
+afterAll(() => rmSync(work, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
 
 function run(...args: string[]) {
   writeFileSync(log, '');
