@@ -229,3 +229,13 @@ def test_the_quietest_instant_is_a_dip_not_one_frame_s_trough():
     level = align.Level(wave)
     assert int(np.argmin(level.db)) == 40  # the lowest single frame is the trough, at 0.200 s ...
     assert 500 <= level.quietest(100, 900) <= 540  # ... and the quietest instant is in the dip
+
+
+def test_check_takes_a_name_the_model_spells_as_it_knows_it_for_the_word_the_text_has():
+    # --check (mw-zbgo4ep.37): 24:51 of Genesis, the text's 'rebekah' heard as 'rebecca' (an edit distance of 3) was counted a miss
+    assert align.heard_as_written('rebecca', 'rebekah')
+    assert align.heard_as_written('rebekah', 'rebekah')
+    assert align.heard_as_written('rebekahs', 'rebekah')  # one letter, as before
+    assert not align.heard_as_written('rebecca', 'esau')
+    assert not align.heard_as_written('rebecca', 'laban')
+    assert not align.heard_as_written('', 'rebekah')
