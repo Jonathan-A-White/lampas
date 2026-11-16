@@ -4,8 +4,13 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'url';
 import { timingFilter, vitestTimeouts } from 'pwa-kit/test-preset';
 import { buildVersion, packageVersion, shortCommit } from './build-version';
+import { buildPartSelection } from './tests/support/build-part';
 
 const version = packageVersion();
+
+// The unit tests that run a real vite build are left out of the shards and are the whole of the gate's build part, LAMPAS_TESTS=build
+// (tests/support/build-part.ts, mw-5r3p30.1167): a build beside ~160 other files outran its shard three times.
+const buildPart = buildPartSelection(process.env);
 
 // A grinds/ .md file is text the tests read by path, which `vitest related` cannot follow; read as a module it is the file's text,
 // so a test can import it and `vitest related <that file>` selects the test (mw-5r3p30.860; a ?raw import never does, since vitest
@@ -37,15 +42,17 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     // MW_TIMING (millwright docs/timing-tests.md): the rig's timing_tests leave the gate under skip and are alone under only (mw-5r3p30.712).
     ...timingFilter({
-      include: [
-        'tests/unit/**/*.test.ts',
-        'tests/unit/**/*.test.tsx',
-        'features/steps/**/*.steps.ts',
-        'features/steps/**/*.steps.tsx',
-      ],
+      include: buildPart.only
+        ? [...buildPart.only]
+        : [
+            'tests/unit/**/*.test.ts',
+            'tests/unit/**/*.test.tsx',
+            'features/steps/**/*.steps.ts',
+            'features/steps/**/*.steps.tsx',
+          ],
       // vitest's own default exclude (giving an exclude here would otherwise replace it), and the Playwright specs: under
       // MW_TIMING=only the include is the timing globs alone, and a timing spec in tests/e2e is Playwright's, not vitest's.
-      exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+      exclude: [...configDefaults.exclude, 'tests/e2e/**', ...buildPart.exclude],
     }),
     // MW_TIMING=only with timing tests that are all Playwright specs leaves vitest no file: that is a pass, not a failure.
     passWithNoTests: process.env.MW_TIMING === 'only',
