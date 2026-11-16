@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.263
+_2026-11-16_
+- New: Poetry in the Psalms and the prophets now reads in lines in the Weave, and in the Hebrew tab it breaks into lines where the Hebrew text's own accents divide it.
+- New: David's recorded reading now covers the book of Numbers.
+- New: Hands-free now lets you ask the tutor by voice, hear the answer, and keep talking with it without the wake word until you say you are done.
+- Fixed: Tapping an English word in the Septuagint's Genesis chapters 12 to 13, 15 to 19 and 21 to 23 now opens the Greek word it renders in nearly every case, instead of the whole verse.
+- Fixed: Review now shows an Example verse for the words μου, ἡμεῖς and ὑμεῖς.
+
 ## 0.7.262
 _2026-11-16_
 - Fixed: In a browser tab Lampas no longer leaves an empty band at the bottom of its screens; the installed app keeps its room above the navigation bar.

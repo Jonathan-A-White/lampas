@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.263",
+    "date": "2026-11-16",
+    "story": "mw-5r3p30.1165",
+    "kind": "new",
+    "text": "Poetry in the Psalms and the prophets now reads in lines in the Weave, and in the Hebrew tab it breaks into lines where the Hebrew text's own accents divide it."
+  },
+  {
+    "version": "0.7.263",
+    "date": "2026-11-16",
+    "story": "mw-zbgo4ep.4",
+    "kind": "new",
+    "text": "David's recorded reading now covers the book of Numbers."
+  },
+  {
+    "version": "0.7.263",
+    "date": "2026-11-16",
+    "story": "mw-rl10piw.8",
+    "kind": "new",
+    "text": "Hands-free now lets you ask the tutor by voice, hear the answer, and keep talking with it without the wake word until you say you are done."
+  },
+  {
+    "version": "0.7.263",
+    "date": "2026-11-16",
+    "story": "mw-u2w5klk.349.3",
+    "kind": "fixed",
+    "text": "Tapping an English word in the Septuagint's Genesis chapters 12 to 13, 15 to 19 and 21 to 23 now opens the Greek word it renders in nearly every case, instead of the whole verse."
+  },
+  {
+    "version": "0.7.263",
+    "date": "2026-11-16",
+    "story": "mw-indx1x6.74",
+    "kind": "fixed",
+    "text": "Review now shows an Example verse for the words μου, ἡμεῖς and ὑμεῖς."
+  },
+  {
     "version": "0.7.262",
     "date": "2026-11-16",
     "story": "mw-njqj1b0",
