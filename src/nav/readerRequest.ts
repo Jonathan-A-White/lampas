@@ -65,24 +65,79 @@ export function takeRequest(request: ReaderRequest): void {
 }
 
 /** 'Read the chapter on screen from where he is' (Hands-free's 'play' with nothing paused, src/handsFree/commands.ts, mw-rl10piw.6): the Reader on screen answers it with its own
- * start, as its header's Play does, so there is one player and the plan is the Reader's. The Reader registers its answer while it is open (`answerReadHere`). */
-const readHereAnswers: (() => void)[] = [];
+ * start, as its header's Play does, so there is one player and the plan is the Reader's. The Reader registers its answer while it is open (`answerReadHere`), with the chapter it is of;
+ * its answer takes the verse to read from when it is told one ('read John 3:16' while John 3 is open). */
+interface ReadAnswer {
+  read: (verse?: number) => void;
+  book: string;
+  chapter: number;
+}
 
-/** The Reader on screen answers 'read from here' with `read`; the function returned stops it. */
-export function answerReadHere(read: () => void): () => void {
-  readHereAnswers.push(read);
+const readHereAnswers: ReadAnswer[] = [];
+
+/** The Reader of `chapter` of `book`, on screen, answers 'read from here' with `read`; the function returned stops it. */
+export function answerReadHere(read: (verse?: number) => void, book: string, chapter: number): () => void {
+  const answer = { read, book, chapter };
+  readHereAnswers.push(answer);
   return () => {
-    const at = readHereAnswers.lastIndexOf(read);
+    const at = readHereAnswers.lastIndexOf(answer);
     if (at >= 0) readHereAnswers.splice(at, 1);
   };
 }
 
 /** Asks the Reader on screen to read its chapter from where he is. False when no Reader is open (nothing is asked). */
 export function readHere(): boolean {
-  const read = readHereAnswers[readHereAnswers.length - 1];
-  if (!read) return false;
-  read();
+  const answer = readHereAnswers[readHereAnswers.length - 1];
+  if (!answer) return false;
+  answer.read();
   return true;
+}
+
+/** The chapter the Reader on screen is of, or null when no Reader is open (Hands-free's 'next chapter' crosses from it). */
+export function readerOnScreen(): { book: string; chapter: number } | null {
+  const answer = readHereAnswers[readHereAnswers.length - 1];
+  return answer ? { book: answer.book, chapter: answer.chapter } : null;
+}
+
+/** A reading the Reader of a chapter is to start when it has its plan (Hands-free's 'read John 3', 'next chapter', mw-rl10piw.7). The Reader is made afresh for each chapter, so the
+ * request waits here for it; it is good for a while only, so a chapter that never loads does not start a reading a minute later. */
+interface ReadWanted {
+  book: string;
+  chapter: number;
+  verse: number;
+  at: number;
+}
+
+const READ_WANTED_MS = 20_000;
+let wanted: ReadWanted | null = null;
+
+/** Opens `chapter` of `book` and reads it from `verse` (Hands-free, 'read John 3:16'): through the Reader on screen when it is of that chapter, else the Reader opens the chapter (by `open`, or
+ * with the verse brought to the top) and starts the reading as soon as it has its plan (`pendingRead`). */
+export function readPassage(book: string, chapter: number, verse: number, open?: () => unknown): void {
+  const here = readHereAnswers.filter((a) => a.book === book && a.chapter === chapter).pop();
+  if (here) {
+    if (verse > 1) bringVerse(book, chapter, verse);
+    return here.read(verse);
+  }
+  wanted = { book, chapter, verse, at: Date.now() };
+  if (open) open();
+  else if (verse > 1) openAtVerse(book, chapter, verse);
+  else openReader({ book, chapter });
+}
+
+/** The reading waiting for the Reader of this chapter, if one is. It does not take it (see `takeRead`). */
+export function pendingRead(book: string, chapter: number): ReadWanted | undefined {
+  return wanted && wanted.book === book && wanted.chapter === chapter && Date.now() - wanted.at < READ_WANTED_MS ? wanted : undefined;
+}
+
+/** Marks a waiting reading as met. */
+export function takeRead(read: ReadWanted): void {
+  if (wanted === read) wanted = null;
+}
+
+/** Forgets a waiting reading (tests). */
+export function forgetRead(): void {
+  wanted = null;
 }
 
 /** A Talk sheet to open again on a chapter of the Reader (mw-t3xu9a.4): the tutor took him from it to another place, and Back has brought him to the chapter he was on, where the sheet was open

@@ -51,7 +51,7 @@ import { blocksOf, DEFAULT_LAYOUT } from './layout/layouts';
 import { LinkOpener } from './nav/LinkOpener';
 import { pendingLink, takeLink } from './nav/linkRequest';
 import { lemmaSheet, linkOf } from './nav/links';
-import { answerReadHere, pendingRequest, reopenTalk, takeRequest } from './nav/readerRequest';
+import { answerReadHere, pendingRead, pendingRequest, reopenTalk, takeRead, takeRequest } from './nav/readerRequest';
 import { closeVerse, openPassage, openVerse, openVerseRange, readerOf, routeOf, useAddress } from './nav/route';
 import { hasKeptScroll, useScrollMemory } from './nav/scrollMemory';
 import { useReadChecks } from './useReadChecks';
@@ -453,7 +453,14 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const { plan, readFrom, listenTo, listenVerse, listenedView } = useReadFrom(BOOK, CHAPTER, chapter, view, woven, readSpan, viewUnit, sheetView ? { view: sheetView, woven: sheetWoven } : undefined);
   // Hands-free's 'play' with nothing paused (src/handsFree/commands.ts, mw-rl10piw.6) is answered here, by the same start as the header's Play, from where he is; it asks
   // no question that needs a tap (the data question waits for one: the decision's notice says which voice reads instead)
-  useEffect(() => answerReadHere(() => readFrom(selected ?? 1, true, false)), [readFrom, selected]);
+  useEffect(() => answerReadHere((verse) => readFrom(verse ?? selected ?? 1, true, false), BOOK, CHAPTER), [readFrom, selected, BOOK, CHAPTER]);
+  // A passage asked for by voice ('read John 3', 'next chapter', src/handsFree/commands.ts, mw-rl10piw.7) opened this Reader: it starts its reading, from the verse asked for, once the plan is here
+  useEffect(() => {
+    const wanted = plan ? pendingRead(BOOK, CHAPTER) : undefined;
+    if (!wanted) return;
+    takeRead(wanted);
+    readFrom(wanted.verse, true, false);
+  }, [plan, readFrom, BOOK, CHAPTER]);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
   const headerButtons = chapterReading && !reading.onBar;

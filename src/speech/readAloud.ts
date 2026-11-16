@@ -707,6 +707,39 @@ export function skipRecordedVerse(by: -1 | 1): boolean {
   return true;
 }
 
+/** The plan's index of the first verse the reading being read may go back to: the verse itself for a verse, the section's heading for a passage, else the plan's first. */
+function firstIndexFrom(at: number): number {
+  if (reach === 'verse') return at;
+  let first = 0;
+  if (reach === 'passage') {
+    for (let i = at; i > 0 && first === 0; i--) if (plan[i].heading) first = i;
+  }
+  return first;
+}
+
+/** Hands-free's 'back a verse' (mw-rl10piw.7): the verse before the one being read, or paused on, is read again and the reading goes on from it, in the recorded voice (skipRecordedVerse's
+ * seek, then it plays: a paused reading plays on) and in the phone's (the verse's speech is begun again, as afterVerse begins the next). At the first verse the reading may go back to
+ * (the chapter's, a section's) that verse is read again. False when no chapter, section or verse is being read. */
+export function backAVerse(): boolean {
+  if (state.status === 'idle' || state.verse === null || state.crossing || state.answer !== null || loading || clipping) return false;
+  const at = plan.findIndex((v) => v.n === state.verse);
+  if (at < 0) return false;
+  const to = Math.max(firstIndexFrom(at), at - 1);
+  if (recording) {
+    if (to === at) return restartRecorded();
+    if (!skipRecordedVerse(-1)) return false;
+    if (state.status === 'paused') resumeReading();
+    return true;
+  }
+  epoch++;
+  const my = epoch;
+  if (getSpeech().status !== 'idle') engineStop();
+  if (state.status !== 'reading') set({ ...state, status: 'reading', onBar: false });
+  keepAwake();
+  readVerse(plan[to].n, my);
+  return true;
+}
+
 // A page that hides does NOT pause a recording (mw-82lb97i.7, PROVISIONAL; mw-82lb97i.3's rule is taken back for it): a recording goes on with the screen locked, as an audio Bible does,
 // and the lock screen offers Play and Pause (src/speech/mediaSession.ts). The phone's voice is paused by voice-kit when the page hides, as before. A Listen an interruption paused
 // while the page is hidden still waits for his Resume (holdListen's end).
