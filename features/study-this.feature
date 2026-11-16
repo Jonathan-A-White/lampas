@@ -90,7 +90,8 @@ Feature: A wrong answer links to what teaches it
     Given the lesson of the idea "noun" is open as it is from a list of ideas
     Then the lesson has the buttons "Drill it" and "Try it on a verse"
 
-  # Review keeps its round (src/review/keptRound.ts), so leaving it for a table loses nothing: there the lesson keeps its link
+  # Review holds its round when the address leaves it (src/ReviewScreen.tsx, mw-indx1x6.56), so leaving it for a table loses nothing: there the lesson keeps its link,
+  # and Back from the table is the question he missed, not the next one
   Scenario: The lesson opened over Review keeps its Table link
     Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
     When he opens Review and starts the round
@@ -99,6 +100,9 @@ Feature: A wrong answer links to what teaches it
     Then the lesson of the idea "declension-1" is open over Review
     And the lesson has the link "Table: Noun endings"
     And the lesson also has its "Drill it" button
+    When he taps the lesson's link "Table: Noun endings", sees the table "Noun endings" and goes Back
+    Then Review is on the question "Noun endings: first declension, feminine in η (φωνή), dative singular" with its "Study this" row
+    And the round is on its first question of more than one
 
   # the sheet's other link to a page of its own, a letter's Hard sounds lesson, goes the same way
   Scenario: A letter's lesson over a drill has no link to its Hard sounds lesson

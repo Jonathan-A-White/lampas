@@ -3,7 +3,7 @@
 // the question, his answer, the right answer and the idea (src/review/studyThis.ts, src/review/StudyThis.tsx). A right answer shows no row. At the end of a Review or a drill the 'Study list' (mw-indx1x6.8,
 // src/review/studyList.ts, StudyList.tsx) gathers everything the session's misses linked to, one row each, most-missed first.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -37,6 +37,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { accentOf, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { chosenPronunciation } from '../../src/speech/greek';
 import { openDoorTarget } from '../../src/tutor/door';
+import { dropHeldIdea } from '../../src/ideaReturn';
 import { dropHeldWord } from '../../src/wordReturn';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
@@ -69,6 +70,8 @@ async function freshStore(): Promise<void> {
   forgetTrail();
   releaseRound();
   dropHeldWord();
+  // a lesson left for its table is held to come back on Back (src/ideaReturn.ts): not into the next scenario
+  dropHeldIdea();
   vi.unstubAllGlobals();
   fake = undefined;
   asked = undefined;
@@ -602,6 +605,24 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the lesson also has its {string} button', (_, label: string) => {
       expect(buttonsOf(screen.getByRole('dialog', { name: 'Idea' }))).toContain(label);
+    });
+    // one step, there and back: tests/setup.ts clears session storage after every step, and the round kept there is what Back would fall to if the screen did not hold its own
+    When("he taps the lesson's link {string}, sees the table {string} and goes Back", async (_, label: string, table: string) => {
+      await user.click(within(screen.getByRole('dialog', { name: 'Idea' })).getByRole('button', { name: label }));
+      await screen.findByRole('heading', { name: table, level: 1 });
+      expect(screen.queryByTestId('grammar-prompt')).toBeNull();
+      act(() => window.history.back());
+      await screen.findByRole('heading', { name: 'Review', level: 1 });
+    });
+    Then('Review is on the question {string} with its {string} row', async (_, prompt: string, name: string) => {
+      await waitFor(() => expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(prompt));
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+      expect(screen.getByTestId('feedback')).toHaveTextContent('Not quite.');
+    });
+    And('the round is on its first question of more than one', () => {
+      const [, at, of] = /^(\d+) of (\d+)$/.exec(screen.getByText(/^\d+ of \d+$/).textContent ?? '') ?? [];
+      expect(Number(at)).toBe(1);
+      expect(Number(of)).toBeGreaterThan(1);
     });
   });
 

@@ -7,7 +7,7 @@ import { countDue, LESSON_KIND, listDue, recordRound, reviewsOf } from './data/r
 import { parsePassageKey, passageLabel } from './approaches';
 import { DAY, type Grade } from './data/schedule';
 import { type Random } from './data/quiz';
-import { navigate, openParadigm, openVerseRange, type ParadigmAddress } from './nav/route';
+import { navigate, openParadigm, openVerseRange, routeOf, type ParadigmAddress } from './nav/route';
 import { ItemCard } from './review/ItemCard';
 import { askForMoreItems } from './review/moreItems';
 import { KINDS, flashGrade, isGradedChoice, kindOf, recordParseStep, type ReviewItem } from './review/kinds';
@@ -136,8 +136,9 @@ function DueLessons({ lessons }: { lessons: { key: string; passage: { book: stri
 
 export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: () => Random }) {
   // Items chosen to practise (rusty ones moved back to Frontier, Welcome back's) open their round at once; the rest of Review waits for Start
-  // A round he left to see a table (GrammarCard's 'See the table') is taken up again where he stood on Back (mw-svw421.5)
-  const [round, setRound] = useState<Round>(() => heldRound() ?? (hasPractise() ? { status: 'loading' } : (keptRound() ?? { status: 'start' })));
+  // A round he left for another page of the app (a table, or a link of a sheet over the question) is taken up again where he stood on Back (mw-svw421.5, mw-indx1x6.56);
+  // items he chose to practise since then come first, and a reload carries on from the round kept in session storage
+  const [round, setRound] = useState<Round>(() => (hasPractise() ? { status: 'loading' } : (heldRound() ?? keptRound() ?? { status: 'start' })));
   useEffect(() => releaseRound(), []);
   // The round in hand is kept in session storage, so a reload carries on at the next question (mw-86e9r1.32); the end card and an empty draw let it go
   useEffect(() => {
@@ -151,7 +152,17 @@ export function ReviewScreen({ newRandom = () => Math.random }: { newRandom?: ()
   useEffect(() => {
     roundRef.current = round;
   }, [round]);
-  useEffect(() => () => settlePending(roundRef, writing), []);
+  useEffect(
+    () => () => {
+      settlePending(roundRef, writing);
+      // The screen goes because the address left Review (not a reload, which takes this module's state with it): any link of a sheet over the question does that, the lesson's
+      // Table link and the word sheet's links among them, and none of them knows of the round. It is held as it stands, his answer and its Study this row with it, so Back is
+      // the question he was on; the round kept in session storage stands at the next question, which is for a reload (mw-indx1x6.56).
+      const left = roundRef.current;
+      if (left.status === 'running' && routeOf(window.location.hash) !== 'review') holdRound(left);
+    },
+    [],
+  );
   const due = useLiveQuery(() => Promise.all(KINDS.map((k) => countDue(Date.now(), k.kind))), []);
   // a due passage lesson is opened from the start screen, never asked in a round: it is not counted among the items still to ask
   const stillDue = due?.reduce((a, b, i) => a + (KINDS[i].kind === LESSON_KIND ? 0 : b), 0);

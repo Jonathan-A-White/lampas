@@ -32,9 +32,12 @@ async function put(page: Page, store: 'reviews' | 'settings' | 'grammarLevels', 
   );
 }
 
-test('a wrong ending in Review shows Study this under the answer, clear of the tutor button, and its table link opens the asked cell', async ({ page }) => {
+/**
+ * Opens Review with one row due and starts its round. The seed of tests/e2e/see-table-this-word.spec.ts: with Case: accusative due and Noun endings open the round's first question is
+ * "Fill in the ending: accusative plural of ἁμαρτία" from 1 John 1; with the table Noun endings itself due it asks cells of that table.
+ */
+async function startRound(page: Page, due: { kind: 'grammar' | 'paradigm'; id: string }): Promise<void> {
   await openUnlocked(page);
-  // the seed of tests/e2e/see-table-this-word.spec.ts: with Case: accusative due and Noun endings open it draws "Fill in the ending: accusative plural of ἁμαρτία" from 1 John 1
   await page.addInitScript(() => {
     Math.random = () => 7 / 2 ** 32;
   });
@@ -44,7 +47,7 @@ test('a wrong ending in Review shows Study this under the answer, clear of the t
     { key: 'goal', value: '1 John 1' },
     { key: 'paradigmsOpened', value: JSON.stringify(['noun-endings']) },
   ]);
-  await put(page, 'reviews', [{ kind: 'grammar', id: 'case-accusative', step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
+  await put(page, 'reviews', [{ ...due, step: 0, rights: 0, due: Date.now() - 60_000, lastWhen: Date.now() - 3 * 86_400_000, lapses: 0 }]);
   await put(
     page,
     'grammarLevels',
@@ -54,9 +57,16 @@ test('a wrong ending in Review shows Study this under the answer, clear of the t
   await page.reload();
   await page.goto('/#/review');
   await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await expect(page.getByTestId('grammar-prompt')).toBeVisible();
+}
+
+const ENDING_ASKED = 'Fill in the ending: accusative plural of ἁμαρτία';
+
+test('a wrong ending in Review shows Study this under the answer, clear of the tutor button, and its table link opens the asked cell', async ({ page }) => {
+  await startRound(page, { kind: 'grammar', id: 'case-accusative' });
 
   const prompt = page.getByTestId('grammar-prompt');
-  await expect(prompt).toHaveText('Fill in the ending: accusative plural of ἁμαρτία');
+  await expect(prompt).toHaveText(ENDING_ASKED);
   const row = page.getByRole('group', { name: 'Study this', exact: true });
   await expect(row).toHaveCount(0);
   // any ending but the right one (ίας)
@@ -88,7 +98,7 @@ test('a wrong ending in Review shows Study this under the answer, clear of the t
   await expect(lit).toBeInViewport();
 
   await page.goBack();
-  await expect(prompt).toHaveText('Fill in the ending: accusative plural of ἁμαρτία');
+  await expect(prompt).toHaveText(ENDING_ASKED);
   await expect(row).toBeVisible();
 
   // the word's card opens over the question and closes back to it
@@ -97,6 +107,52 @@ test('a wrong ending in Review shows Study this under the answer, clear of the t
   await expect(sheet.getByTestId('sheet-word')).toHaveText('ἁμαρτία');
   await expect(sheet.getByTestId('sheet-word')).toBeInViewport();
   await shot(page, 'study-this-word');
+});
+
+// Back from a page a sheet over Review opened (mw-indx1x6.56): the lesson's own Table link leaves Review as the row's does, and Back is the question he missed with its row,
+// not the next question of the round. The table Noun endings is due, so the miss is a cell of it and its lesson (The first declension) has the link 'Table: Noun endings'.
+test("Back from the lesson's Table link in Review is the question he missed, with its Study this row", async ({ page }) => {
+  await startRound(page, { kind: 'paradigm', id: 'noun-endings' });
+  const asked = 'Noun endings: first declension, feminine in η (φωνή), accusative plural';
+  const prompt = page.getByTestId('grammar-prompt');
+  await expect(prompt).toHaveText(asked);
+  // a round of more than one question: the next one is there to land on
+  await expect(page.getByText('1 of 11', { exact: true })).toBeVisible();
+
+  // any ending but the right one (-ας)
+  await page.locator('[data-option]').filter({ hasNotText: /^-ας$/ }).first().click();
+  const feedback = page.getByTestId('feedback');
+  await expect(feedback).toContainText('Not quite. It is -ας.');
+  const row = page.getByRole('group', { name: 'Study this', exact: true });
+  await expect(row.getByRole('button')).toHaveText(['Table: Noun endings', 'Lesson: The first declension']);
+
+  await row.getByRole('button', { name: 'Lesson: The first declension' }).click();
+  const lesson = page.getByRole('dialog', { name: 'Idea', exact: true });
+  await expect(lesson.getByRole('heading', { name: 'The first declension' })).toBeVisible();
+  await expect(lesson.getByTestId('idea-loading')).toHaveCount(0);
+  await lesson.getByRole('button', { name: 'Table: Noun endings', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Noun endings', level: 1 })).toBeVisible();
+  await expect(prompt).toHaveCount(0);
+
+  await page.goBack();
+  // Review is where he stood: the question he missed, his answer and its row, not question 2
+  await expect(prompt).toHaveText(asked);
+  await expect(page.getByText('1 of 11', { exact: true })).toBeVisible();
+  await expect(page.getByText('2 of 11', { exact: true })).toHaveCount(0);
+  await expect(feedback).toContainText('Not quite. It is -ας.');
+  await expect(row.getByRole('button')).toHaveText(['Table: Noun endings', 'Lesson: The first declension']);
+  // the lesson he left for the table comes back over the question (src/ideaReturn.ts), and Done closes it on the row
+  await expect(lesson.getByRole('heading', { name: 'The first declension' })).toBeVisible();
+  await lesson.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(lesson).toHaveCount(0);
+  await expect(row).toBeInViewport();
+  await expect(page.getByTestId('next')).toBeInViewport();
+  await shot(page, 'study-this-review-back-from-lesson-table');
+
+  // Next goes on from there: the question he missed is not asked twice
+  await page.getByTestId('next').click();
+  await expect(page.getByText('2 of 11', { exact: true })).toBeVisible();
+  await expect(row).toHaveCount(0);
 });
 
 test('the lesson over a drill has no Drill it, no level slider and no Mark known without a drill', async ({ page }) => {

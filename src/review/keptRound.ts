@@ -1,6 +1,7 @@
 // src/review/keptRound.ts — the Review round he is in the middle of, kept in session storage so a reload, or the phone dropping the page while he is in another app,
 // carries on at the next question instead of 'Due today ... Start' (mw-86e9r1.32). The items are plain data, so the round is kept whole. Dropped when the round ends,
-// when the tab's session does, or after KEPT_MS.
+// when the tab's session does, or after KEPT_MS. Back from another page of the app is not a reload: the screen holds the round as it stands for that (heldRound.ts, mw-indx1x6.56),
+// and what is kept here is taken up only when nothing is held.
 import type { RunningRound } from './heldRound';
 import type { Study } from './studyThis';
 

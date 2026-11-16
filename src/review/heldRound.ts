@@ -1,5 +1,7 @@
-// src/review/heldRound.ts — the Review round he left to see a table (mw-svw421.5): 'See the table' after an ending opens the Paradigms screen, a page of its own, and
-// Back returns to Review where he was. Module state, like practise.ts: a reload drops it, and a round held for more than HELD_MS is not his any more.
+// src/review/heldRound.ts — the Review round he left for another page of the app (mw-svw421.5): 'See the table' after an ending opens the Paradigms screen, a page of its own, and
+// Back returns to Review where he was. The same for any other way out in the middle of a round, a link of a sheet over the question among them (the lesson's Table link, a word
+// sheet's link): ReviewScreen holds the round when the address leaves Review (mw-indx1x6.56), so Back is the question he was on with his answer, not the next one, which is where
+// the round kept for a reload stands (keptRound.ts). Module state, like practise.ts: a reload drops it, and a round held for more than HELD_MS is not his any more.
 import type { Grade } from '../data/schedule';
 import type { ReviewItem } from './kinds';
 import type { Study } from './studyThis';
