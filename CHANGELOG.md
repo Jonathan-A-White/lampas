@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.260
+_2026-11-16_
+- Fixed: when the tutor turns Hands-free on or off, the phone now says so aloud, as it does from the switch and the three-finger tap.
+- Fixed: In Review, the example verse for "you" now shows a form of "you", not of "you (pl)", and the example for "I" no longer shows a form of "we".
+- New: David now reads Leviticus aloud, except chapter 11, with the highlight following him.
+- Fixed: On Sermon sources, All on, All off and the These N buttons now count only the sources they would change and are dimmed when there are none, a second tap no longer takes the Undo away, and the count of those on is shown once.
+
 ## 0.7.259
 _2026-11-16_
 - Fixed: the line of tools under a verse now always shows that more follows at the right, even right after you memorize a verse.
