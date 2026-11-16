@@ -11,14 +11,15 @@
 //  - 'needs-touch' (the audio will not start until the page is touched): the next touch anywhere starts it again; it never pretends to listen.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
 import { browserSpeech } from 'voice-kit/composer';
-import { browserWake, createChimes, createHandsFree, documentVisibility, type HandsFree, type HandsFreeClock, type HandsFreeState, type WakePort } from 'voice-kit/handsfree';
+import { browserWake, createChimes, createHandsFree, documentVisibility, type ChimePort, type HandsFree, type HandsFreeClock, type HandsFreeState, type WakePort } from 'voice-kit/handsfree';
 import type { WakeModel } from 'voice-kit/wake';
 import { handsFreeSetting } from '../settings/definitions';
 import { setSetting } from '../settings/store';
 import { speakText } from '../speech/greek';
+import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
 import { isMicBusy, onMicBusy } from './micBusy';
-import { forgetPlayback, goOnAtClose, silenceAtWake } from './playback';
+import { forgetPlayback, goOnAtClose, SAID_KEY, silenceAtWake } from './playback';
 
 /** Where the build serves the wake model (a hashed asset, fetched only when Hands-free is first turned On). */
 export const WAKE_MODEL_URL: string = modelUrl;
@@ -32,14 +33,11 @@ export const MIC_REFUSED = "Lampas may not use the microphone. Allow it in the b
 /** The language a command is heard in: the Talk hold's (src/talk/useTalkHold.ts). */
 const COMMAND_LANG = 'en-US';
 
-/** The key its sentences are spoken under. */
-const SAID_KEY = 'hands-free-said';
-
 /** The longest a sentence it says is waited for, should the phone never say it has ended. */
 const SAY_WAIT_MS = 8000;
 
 /** For tests: the clock the session's own waits run on (the pause, the 6 s with no words), read when the session is made. */
-export const handsFreeSeam: { clock?: HandsFreeClock } = {};
+export const handsFreeSeam: { clock?: HandsFreeClock; chime?: ChimePort } = {};
 
 const realClock: HandsFreeClock = {
   setTimeout: (fn, ms) => globalThis.setTimeout(fn, ms),
@@ -131,6 +129,11 @@ let session: HandsFree | null = null;
 let wanted = false;
 let untouch: (() => void) | null = null;
 const chimes = createChimes();
+/** The two chimes: the kit's, or the test's spy (handsFreeSeam.chime), read at each sound. */
+const chimePort: ChimePort = {
+  open: () => (handsFreeSeam.chime ?? chimes).open(),
+  close: () => (handsFreeSeam.chime ?? chimes).close(),
+};
 
 /** The wake: the model is loaded on the first start (not before), then the kit's browserWake over startWake, which the testing fake takes over in tests. */
 const wake: WakePort = {
@@ -181,11 +184,13 @@ function sessionNow(): HandsFree {
       wake,
       // the transcriber every hold of Lampas listens through (askTranscriber wraps it), so a command is heard as a Talk hold is
       listen: (options) => browserSpeech.start(options),
-      chime: chimes,
+      chime: chimePort,
       ...(typeof document === 'undefined' ? {} : { visibility: documentVisibility(document) }),
       clock: clockNow(),
       onOpen: silenceAtWake,
-      onCommand: (words) => runCommand(words, sayAloud),
+      onCommand: (words, info) => runCommand(words, sayAloud, info),
+      // a wake while the tutor's answer is waited for or spoken stops it and opens a new command; during any other command the wake is ignored, as before
+      onInterrupt: interruptAsk,
       onClose: goOnAtClose,
       onState,
     },
@@ -218,6 +223,7 @@ export function resetHandsFree(): void {
   model = null;
   untouch?.();
   forgetPlayback();
+  forgetAsk();
   setNotice(null);
   setState(OFF);
 }

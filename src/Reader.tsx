@@ -96,6 +96,8 @@ import { useReaderTutor } from './reader/useReaderTutor';
 import { READER_SUGGESTIONS } from './tutor/screen';
 import { useDoorTarget } from './tutor/door';
 import { useTalk } from './useTalk';
+import { voiceTurnWaits } from './handsFree/voiceTurn';
+import { useVoiceTutor } from './reader/useVoiceTutor';
 import { speakTutor, startAnswerWhenSeen } from './speech/tutorVoice';
 import { continueReading, getReading, isReadingOf, pauseReading, stopReading, updatePlan, useReading } from './speech/readAloud';
 import { decideVoice } from './speech/voiceDecision';
@@ -318,7 +320,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // The conversation the Talk sheet is open on (kept current by useReaderTutor); an answer that comes while its sheet is open is read aloud.
   const openTalkRef = useRef<string | null>(null);
   const closeTalk = useRef<() => void>(() => {});
-  const leaveTalk = useRef<() => () => void>(() => () => {});
+  const leaveTalk = useRef<() => (() => void) | void>(() => {});
   const talk = useTalk(BOOK, CHAPTER, (ref, id, answer, info) => {
     // an answer that comes while he holds waits: page audio can take the microphone from the recogniser
     if (openTalkRef.current !== ref || isHolding()) return;
@@ -327,7 +329,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     else speakTutor(id, answerRuns(answer), () => openTalkRef.current === ref);
   }, {
     // the tutor takes him to a chapter or another place (the answer's `go`) while this talk's sheet is open: the sheet closes, the place opens as a new Back step, and Back opens the sheet again
-    allowed: (ref) => openTalkRef.current === ref,
+    // a question asked by voice (Hands-free 'ask') is answered with the sheet closed: the place it names opens all the same
+    allowed: (ref) => openTalkRef.current === ref || voiceTurnWaits(ref),
     here: (place) => place.book === BOOK && place.chapter === CHAPTER,
     leave: () => leaveTalk.current(),
   });
@@ -418,7 +421,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
     leaveTalk.current = () => {
       const about = talkAbout;
       closeTalk.current();
-      return () => reopenTalk(BOOK, CHAPTER, about ?? null);
+      // a sheet that was not open (a question asked by voice) is not opened again by Back
+      return about === undefined ? undefined : () => reopenTalk(BOOK, CHAPTER, about ?? null);
     };
   });
   // The unit a talk was opened on from the brace sheet is forgotten when the Talk sheet closes (src/tutor/variantFacts.ts)
@@ -475,14 +479,15 @@ function ReaderBody({ open }: { open: OpenChapter }) {
           // the question mark tapped while the row of a hold is up asks about the range it holds (mw-5r3p30.1074); the row goes with it
           const range = viewUnit === undefined ? copyHold.held : null;
           copyHold.closeRow();
-          if (range && range.last > range.first) tutor.askAboutRange(range.first, range.last);
-          else setTalkAbout(viewUnit?.n ?? range?.first ?? selected);
+          tutor.openOnScreen({ unit: viewUnit, range, selected });
         }
       : undefined,
     // the immersive reader (the bars away, no sheet over it) is the one screen with no tutor door
     away && viewUnit === undefined,
   );
   useDoorTarget(ai && variantShown ? askVariant : undefined);
+  // Hands-free's 'ask', 'tutor' and 'close the tutor' (src/handsFree/ask.ts, mw-rl10piw.8): this Reader answers them, with what is on its screen
+  useVoiceTutor({ book: BOOK, chapterNumber: CHAPTER, chapter, ai, talk, tutor, about: { unit: viewUnit, range: viewUnit === undefined ? copyHold.held : null, selected }, lookup });
   // The foot of the screen keeps the phone's bottom floor on its lowest row (mw-5r3p30.473): the place line of the Immersive reader (under everything), else the
   // speaking bar's slot or the Turn pages line above it. No bar of the tutor's sits under them any more (the Talk bar is gone, mw-5r3p30.882), licensed or not.
   const barUp = useBarShown();

@@ -155,7 +155,7 @@ Speech and the microphone are never faked by hand (mw-it6qk5.3): they are voice-
   (`msPerWord`) or a long hold; `tests/e2e/fake-media.ts` also fakes playing a clip.
 The wake word 'Hey Lampas' is voice-kit's fake too (`voice-kit/testing/handsfree`; mw-rl10piw.6): vitest uses `tests/support/fake-wake.ts` (`stubWake()`, its `say()`,
   `listening`, `failWith(kind)`; `serveWakeModel()` answers the model's fetch), Playwright `honestWake(page)`, `sayWake(page)` and `wakeListening(page)` in `honest-fakes.ts`.
-  A test of the session moves its waits by `handsFreeSeam.clock` (a `ManualClock`) and calls `resetHandsFree()` between tests (`src/handsFree/session.ts`).
+  A test of the session moves its waits by `handsFreeSeam.clock` (a `ManualClock`) and calls `resetHandsFree()` between tests (`src/handsFree/session.ts`). `handsFreeSeam.chime` is a spy for the kit's two chimes (an open and a close, the lower one that ends a follow-up window); delete it afterwards (features/steps/hands-free-ask.steps.tsx).
 
 ## The Septuagint tests that read the real, git-ignored sources (mw-cv2w9um)
 

@@ -6,7 +6,7 @@
 // The refs the Reader's effects share are passed in, never copied: `openTalkRef` (the conversation the sheet is open on, which useTalk's
 // callback reads) is the Reader's, and this hook keeps it current.
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Chapter, Verse } from '../data/chapter';
 import { listTurns, talkRef } from '../data/repositories';
 import { passageVerse, rangeOf } from '../data/passage';
@@ -47,8 +47,20 @@ export interface ReaderTutor {
   openQuiz(): void;
   /** the Talk sheet opens on the run of verses `first` to `last` (the range a hold on a verse number copied, mw-5r3p30.1074): its talk holds the whole range */
   askAboutRange(first: number, last: number): void;
+  /** What the tutor is asked about now: the talk the open sheet is on, else what is on screen: the verse or passage the Verse view shows (the whole range, John 17:6-19, not only its chapter), the range a hold
+   * copied, the verse selected, else the chapter. The one function every way into the tutor takes its scope from (the floating ?, Hands-free's 'ask'); null while the chapter is not here. */
+  scopeOnScreen(about: OnScreen): TalkScope | null;
+  /** Opens the Talk sheet on what is on screen (the same `about`): the floating ?'s own opening. */
+  openOnScreen(about: OnScreen): void;
   /** the quiz of the unit the Verse view shows has a turn or a message on its way: the button then says Continue */
   quizStarted: boolean;
+}
+
+/** What is on the Reader's screen that the tutor is asked about: the unit the Verse view shows (a verse, or a passage as one Verse with `to`), the range a hold on a verse number copied, the selected verse. */
+export interface OnScreen {
+  unit: Verse | undefined;
+  range: { first: number; last: number } | null;
+  selected: number | null;
 }
 
 /** What the Reader shares with this hook besides the chapter and the talk. */
@@ -95,14 +107,17 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
   // A Reader that is gone has no talk open: an answer that came as it went, and is read a moment later (speakTutor reads the saved choice first), is not spoken (mw-5r3p30.114).
   useEffect(() => () => void (openTalkRef.current = null), [openTalkRef]);
 
-  const talkScope: TalkScope | null =
-    chapter && talkAbout !== undefined
-      ? quizUnit
-        ? { title: TITLE, chapter, verse: quizUnit, quiz: true }
-        : passageUnit
-          ? { title: TITLE, chapter, verse: passageUnit }
-          : { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null }
-      : null;
+  const talkScope = useMemo<TalkScope | null>(
+    () =>
+      chapter && talkAbout !== undefined
+        ? quizUnit
+          ? { title: TITLE, chapter, verse: quizUnit, quiz: true }
+          : passageUnit
+            ? { title: TITLE, chapter, verse: passageUnit }
+            : { title: TITLE, chapter, verse: chapter.verses.find((v) => v.n === talkAbout) ?? null }
+        : null,
+    [chapter, talkAbout, quizUnit, passageUnit, TITLE],
+  );
   const talkKey = talkScope ? scopeRef(BOOK, CHAPTER, talkScope) : null;
 
   // The Quick test's Ask the tutor: the Talk sheet is open on the word's verse; once the chapter is here the first question goes with
@@ -174,6 +189,30 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     },
     [chapter, setTalkAbout],
   );
+  // The one place that says what the tutor is about while he is on this Reader. A passage in the Verse view is asked about whole (its range), as is a copied range; a verse number or the chapter otherwise.
+  const scopeOnScreen = useCallback(
+    (about: OnScreen): TalkScope | null => {
+      if (!chapter) return null;
+      if (talkScope) return talkScope;
+      const range = about.range && about.range.last > about.range.first ? rangeOf(chapter.verses, about.range.first, about.range.last, '') : undefined;
+      if (about.unit) return { title: TITLE, chapter, verse: about.unit };
+      if (range) return { title: TITLE, chapter, verse: passageVerse(range) };
+      const n = about.range?.first ?? about.selected;
+      return { title: TITLE, chapter, verse: n === null ? null : (chapter.verses.find((v) => v.n === n) ?? null) };
+    },
+    [chapter, talkScope, TITLE],
+  );
+  const openOnScreen = useCallback(
+    (about: OnScreen) => {
+      if (about.unit && about.unit.to !== undefined && about.unit.to > about.unit.n) {
+        setQuizUnit(null);
+        setPassageUnit(about.unit);
+        setTalkAboutRaw(about.unit.n);
+      } else if (!about.unit && about.range && about.range.last > about.range.first) askAboutRange(about.range.first, about.range.last);
+      else setTalkAbout(about.unit?.n ?? about.range?.first ?? about.selected);
+    },
+    [askAboutRange, setTalkAbout],
+  );
   const quizKey = viewUnit ? scopeRef(BOOK, CHAPTER, { verse: viewUnit, quiz: true }) : null;
   const quizTurns = useLiveQuery(() => (quizKey ? listTurns(quizKey) : Promise.resolve([])), [quizKey]);
   const quizStarted = (quizTurns?.length ?? 0) > 0 || (quizKey !== null && states[quizKey] !== undefined);
@@ -187,5 +226,5 @@ export function useReaderTutor(open: OpenChapter, chapter: Chapter | null, talk:
     }
   }, [chapter, viewUnit, quizKey, quizTurns, states, say, TITLE]);
 
-  return { talkScope, talkKey, talkAbout, setTalkAbout, helpWithWord, askAboutEnglishWord, askAboutTerm, askAboutNewWord, openQuiz, askAboutRange, quizStarted };
+  return { talkScope, talkKey, talkAbout, setTalkAbout, scopeOnScreen, openOnScreen, helpWithWord, askAboutEnglishWord, askAboutTerm, askAboutNewWord, openQuiz, askAboutRange, quizStarted };
 }

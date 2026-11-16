@@ -4,12 +4,14 @@
 // goes on from where it stopped, unless the command took the sound over (takeSound: 'pause', or a 'play' that started or resumed it itself). Nothing that was not
 // sounding at the wake is started at the close. The engine's state is read and its own pause and resume are called; nothing here plays anything of its own.
 import { getPassagePlayer, pausePassage, resumePassage, stopPassage } from '../speech/passagePlayer';
-import { backAVerse, getReading, pauseReading, resumeReading, stopReading } from '../speech/readAloud';
+import { backAVerse, getReading, parkReading, pauseReading, resumeParked, resumeReading, stopReading, type ParkedReading } from '../speech/readAloud';
 
 /** What the wake paused: the passage player, the read-aloud engine, or nothing. */
 type Held = 'passage' | 'reading' | null;
 
 let held: Held = null;
+/** The reading the wake paused, set aside while a tutor's answer took the voice ('ask', src/handsFree/ask.ts): the close starts it again where it was. */
+let parked: ParkedReading | null = null;
 /** The command took the sound over: the close leaves it as the command left it. */
 let taken = false;
 
@@ -17,6 +19,7 @@ let taken = false;
 export function silenceAtWake(): void {
   taken = false;
   held = null;
+  parked = null;
   if (getPassagePlayer().state === 'playing') {
     pausePassage();
     held = 'passage';
@@ -34,18 +37,35 @@ export function takeSound(): void {
 /** When the exchange is over: goes on with what the wake paused, unless the command took the sound over or something else has meanwhile. */
 export function goOnAtClose(): void {
   const was = held;
+  const aside = parked;
   held = null;
+  parked = null;
   if (taken) {
     taken = false;
     return;
   }
-  if (was === 'passage' && getPassagePlayer().state === 'paused') resumePassage();
+  if (was === 'reading' && aside) resumeParked(aside);
+  else if (was === 'passage' && getPassagePlayer().state === 'paused') resumePassage();
   else if (was === 'reading' && getReading().status === 'paused') resumeReading();
+}
+
+/** The tutor's answer is about to take the voice ('ask', mw-rl10piw.8): the chapter the wake paused is set aside, to be started again at the close where it was. The passage player's reference is not: the
+ * answer ends it. A reading he paused himself before the wake is not kept either: it was his to resume and the answer replaces it. */
+export function parkForAnswer(): void {
+  // a second question of the same exchange finds the chapter set aside already (the first answer took the voice)
+  if (held === 'reading') parked ??= parkReading();
+  else if (held === 'passage') {
+    stopPassage();
+    held = null;
+  }
 }
 
 /** 'play': goes on with what is paused, whether the wake paused it or he did (on the bar, or by 'pause'). False when nothing is paused. */
 export function goOnNow(): boolean {
-  if (getPassagePlayer().state === 'paused') resumePassage();
+  if (parked) {
+    resumeParked(parked);
+    parked = null;
+  } else if (getPassagePlayer().state === 'paused') resumePassage();
   else if (getReading().status === 'paused') resumeReading();
   else return false;
   held = null;
@@ -55,6 +75,12 @@ export function goOnNow(): boolean {
 
 /** 'pause': what is sounding stays paused (the wake paused it already); anything that set itself going meanwhile is paused too. */
 export function keepPaused(): void {
+  if (parked) {
+    // the answer took the voice from the chapter: it is started again where it was, and stays paused there
+    resumeParked(parked);
+    parked = null;
+    pauseReading();
+  }
   if (getPassagePlayer().state === 'playing') pausePassage();
   else if (getReading().status === 'reading') pauseReading();
   takeSound();
@@ -66,6 +92,7 @@ export function stopSound(): void {
   stopPassage();
   stopReading();
   held = null;
+  parked = null;
   takeSound();
 }
 
@@ -81,5 +108,9 @@ export function backOneVerse(): boolean {
 /** Forgets what the wake paused (a session stopped for good; tests). */
 export function forgetPlayback(): void {
   held = null;
+  parked = null;
   taken = false;
 }
+
+/** The key the sentences Hands-free says are spoken under (src/handsFree/session.ts sayAloud), so a wake can cut one off. */
+export const SAID_KEY = 'hands-free-said';
