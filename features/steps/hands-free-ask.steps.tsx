@@ -24,7 +24,6 @@ import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/f
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { serveWakeModel, stubWake, type WakeFake } from '../../tests/support/fake-wake';
 import { ManualClock } from '../../tests/support/manual-clock';
-import { ASYNC_WAIT_MS } from '../../tests/support/timeouts';
 import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';
 import { queryTalkSheet } from './open-tutor';
@@ -157,7 +156,6 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
         if (engine().speaking) act(() => engine().finish());
         expect(FakeRecognizer.instances.length).toBeGreaterThan(before);
       },
-      { timeout: ASYNC_WAIT_MS },
     );
     await waitFor(() => expect(FakeRecognizer.last().startFn).toHaveBeenCalled());
     act(() => FakeRecognizer.last().open());
@@ -189,7 +187,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
   async function askedAndAnswered(): Promise<void> {
     await saysInEnglish('Asking the tutor');
     hasSaid();
-    await waitFor(() => expect(spokenTexts().join(' ')).toContain(squash(answerText)), { timeout: ASYNC_WAIT_MS });
+    await waitFor(() => expect(spokenTexts().join(' ')).toContain(squash(answerText)));
     await heardUntilListening();
   }
 
@@ -249,7 +247,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect((asked()[1].input.history as { q: string }[]).map((t) => t.q)).toEqual(['who was Nicodemus']);
     });
     And('the phone says the answer again', async () => {
-      await waitFor(() => expect(spokenTexts().filter((t) => t.includes(squash(answerText))).length).toBe(2), { timeout: ASYNC_WAIT_MS });
+      await waitFor(() => expect(spokenTexts().filter((t) => t.includes(squash(answerText))).length).toBe(2));
       await heardUntilListening();
     });
     When('{int} seconds pass with no words', async (_, seconds: number) => {
