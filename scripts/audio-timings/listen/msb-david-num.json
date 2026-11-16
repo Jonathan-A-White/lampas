@@ -1,0 +1,25 @@
+{
+ "v":1,"edition":"msb-david","book":"num","slop":{"lead":0.05,"tail":0.05},
+ "verses":[
+  {"verse":"3:39","edge":"tail","reason":"the narrator reads on into verse 40: no quiet between 'thousand' and 'then'; cut at the quietest instant between them","room":0.0,"cut":328.87},
+  {"verse":"3:40","edge":"head","reason":"the narrator reads on from verse 39: no quiet between 'thousand' and 'then'; cut at the quietest instant between them","room":0.0,"cut":328.87},
+  {"verse":"4:46","edge":"tail","reason":"the narrator reads on into verse 47: no quiet between 'levites' and 'from'; cut at the quietest instant between them","room":0.0,"cut":400.04},
+  {"verse":"4:47","edge":"head","reason":"the narrator reads on from verse 46: no quiet between 'levites' and 'from'; cut at the quietest instant between them","room":0.0,"cut":400.04},
+  {"verse":"5:12","edge":"tail","reason":"the narrator reads on into verse 13: no quiet between 'him' and 'by'; cut at the quietest instant between them","room":0.0,"cut":94.35},
+  {"verse":"5:13","edge":"head","reason":"the narrator reads on from verse 12: no quiet between 'him' and 'by'; cut at the quietest instant between them","room":0.0,"cut":94.35},
+  {"verse":"13:4","edge":"tail","reason":"the narrator reads on into verse 5: no quiet between 'zaccur' and 'from'; cut at the quietest instant between them","room":0.0,"cut":34.21},
+  {"verse":"13:5","edge":"head","reason":"the narrator reads on from verse 4: no quiet between 'zaccur' and 'from'; cut at the quietest instant between them","room":0.0,"cut":34.21},
+  {"verse":"16:1","edge":"tail","reason":"the narrator reads on into verse 2: no quiet between 'conducted' and 'a'; cut at the quietest instant between them","room":0.0,"cut":17.81},
+  {"verse":"16:2","edge":"head","reason":"the narrator reads on from verse 1: no quiet between 'conducted' and 'a'; cut at the quietest instant between them","room":0.0,"cut":17.81},
+  {"verse":"23:12","edge":"tail","reason":"the narrator reads on into verse 13: no quiet between 'mouth' and 'then'; cut at the quietest instant between them","room":0.0,"cut":119.56},
+  {"verse":"23:13","edge":"head","reason":"the narrator reads on from verse 12: no quiet between 'mouth' and 'then'; cut at the quietest instant between them","room":0.0,"cut":119.56},
+  {"verse":"27:1","edge":"tail","reason":"the narrator reads on into verse 2: no quiet between 'approached' and 'the'; cut at the quietest instant between them","room":0.0,"cut":24.9},
+  {"verse":"27:2","edge":"head","reason":"the narrator reads on from verse 1: no quiet between 'approached' and 'the'; cut at the quietest instant between them","room":0.0,"cut":24.9},
+  {"verse":"31:38","edge":"tail","reason":"a quiet of 70 ms between 'two' and 'thirty': less than the 100 ms the player's margin needs; cut in its middle","room":0.07,"cut":287.13},
+  {"verse":"31:39","edge":"head","reason":"a quiet of 70 ms between 'two' and 'thirty': less than the 100 ms the player's margin needs; cut in its middle","room":0.07,"cut":287.13},
+  {"verse":"31:39","edge":"tail","reason":"a quiet of 90 ms between 'one' and 'and': less than the 100 ms the player's margin needs; cut in its middle","room":0.09,"cut":292.4},
+  {"verse":"31:40","edge":"head","reason":"a quiet of 90 ms between 'one' and 'and': less than the 100 ms the player's margin needs; cut in its middle","room":0.09,"cut":292.41},
+  {"verse":"31:48","edge":"tail","reason":"the narrator reads on into verse 49: no quiet between 'moses' and 'and'; cut at the quietest instant between them","room":0.0,"cut":341.79},
+  {"verse":"31:49","edge":"head","reason":"the narrator reads on from verse 48: no quiet between 'moses' and 'and'; cut at the quietest instant between them","room":0.0,"cut":341.79}
+ ]
+}
