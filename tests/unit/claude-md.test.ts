@@ -29,7 +29,7 @@ function tree(body: string): string {
   return root;
 }
 
-/** A Read by need line the next story may write: the longest there is 124 bytes. */
+/** A Read by need line the next story may write: longer than any there (the longest was 116 bytes when mw-ar5k42b.5 landed). */
 const NEXT_LINE_BYTES = 125;
 /** What the story that finds the room gone frees, so the stories after it do not each cut a line to the byte. */
 const FREE_BYTES = 500;
@@ -68,7 +68,7 @@ describe('CLAUDE.md', () => {
   });
 
   // mw-ar5k42b.5: it stood at 15,995 of its 16,000 bytes, so a story that added a docs/ file could not name it in Read by need without cutting another line.
-  it('has room for the next docs/ file: one more, named in Read by need by a line as long as the longest there, still passes', () => {
+  it('has room for the next docs/ file: one more, named in Read by need by a line of 125 bytes (longer than any there), still passes', () => {
     const bytes = Buffer.byteLength(readFileSync('CLAUDE.md', 'utf8'), 'utf8');
     const { status, output } = check(treeWithOneMoreDoc(NEXT_LINE_BYTES));
     const why =
