@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { DEVOTIONALS, RANDOM, devotionalOf, tickedDevotionals } from '../../data/daily/devotionals';
+import { RANDOM, devotionalOf, pickableDevotionals, tickedDevotionals } from '../../data/daily/devotionals';
+import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
@@ -8,8 +9,6 @@ import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
-
-const ITEMS = DEVOTIONALS.map((d) => ({ id: d.id, name: d.title }));
 
 /** One On | Off switch of Settings > Daily: a piece of Today, or its Tick boxes. */
 function dailySwitch(def: typeof dailyReviewSetting | typeof greekKeyboardSetting | typeof hebrewKeyboardSetting, settingKey: 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'dailyTicks' | 'greekKeyboard' | 'hebrewKeyboard'): Control {
@@ -38,10 +37,9 @@ export const HebrewKeyboardControl = dailySwitch(hebrewKeyboardSetting, 'hebrewK
 export const DevotionalControl: Control = ({ row }) => {
   const devotional = useSetting(devotionalSetting);
   const draw = useSetting(devotionalDrawSetting);
-  if (devotional === undefined || draw === undefined) return null;
-  const on = tickedDevotionals(draw);
-  const ids = [...on, ...(devotional !== RANDOM && !on.includes(devotional) ? [devotional] : [])];
-  const items = [{ id: RANDOM, name: 'Random' }, ...ITEMS.filter((i) => ids.includes(i.id))];
+  const owned = useLiveQuery(ownedResources, []);
+  if (devotional === undefined || draw === undefined || owned === undefined) return null;
+  const items = [{ id: RANDOM, name: 'Random' }, ...pickableDevotionals(tickedDevotionals(draw), devotional, owned).map((d) => ({ id: d.id, name: d.title }))];
   return (
     <SettingRow row={row}>
       <SearchableList

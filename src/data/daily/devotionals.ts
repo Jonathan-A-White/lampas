@@ -2,6 +2,7 @@
 // Logos resource id (the 'LLS:' form a logosres: link takes) and whether Logos marks it as opening by day of year (`dayOfYear`; 'no' may only mean unflagged).
 // Settings > Daily picks one of them for Today, or Random among those ticked; `devotionalForDay` is the pure choice. A new devotional is an entry in data/logos/catalogue-rules.json (then `npm run logos:catalogue`).
 import { entriesOf } from '../../resources/catalogue';
+import { isOffered, type Owned } from '../owned';
 
 export interface Devotional {
   /** the Logos resource id: 'LLS:20.10.1' */
@@ -66,6 +67,11 @@ export function devotionalForDay(choice: string, ticked: readonly string[], date
   const pool = DEVOTIONALS.filter((d) => ticked.includes(d.id));
   return pool.length === 0 ? FALLBACK : pool[dateSeed(date) % pool.length];
 }
+
+/** The devotionals Settings > Daily's picker lists, in the catalog's order: those `ticked` for the draw that he may be offered (in his import or free with Logos: src/data/owned.ts isOffered, mw-qtu3zvz.167),
+ *  and always the one chosen now (`current`), so the picker never hides what Today shows. */
+export const pickableDevotionals = (ticked: readonly string[], current: string, owned: Owned): Devotional[] =>
+  DEVOTIONALS.filter((d) => d.id === current || (ticked.includes(d.id) && isOffered(d.id, owned)));
 
 /** The id Another draws: one of the `ticked` ones other than `current`; when the draw holds nothing else, any other in the catalog. `random` is Math.random's kind. */
 export function anotherDevotional(current: string, ticked: readonly string[], random: () => number = Math.random): string {

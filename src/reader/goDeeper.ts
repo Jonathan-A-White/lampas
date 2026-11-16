@@ -1,6 +1,7 @@
 // src/reader/goDeeper.ts — what the variant sheet's 'Go deeper' holds (mw-9ji6ek0.20, src/reader/VariantSheet.tsx): the lessons, the apparatus file of the unit's book, the 2005 edition's scan
 // and the place its Logos door opens at. Pure: the sheet draws them. The apparatus is the one the data was built from (scripts/data/variants.ts: tag and directory); a test holds the two together.
 import { bookOf } from '../data/books';
+import { offeredEntries, type Owned } from '../data/owned';
 import { entriesOf, type CatalogueEntry } from '../resources/catalogue';
 import type { StudyPlace } from '../resources/types';
 
@@ -32,6 +33,9 @@ export function apparatusUrl(book: string): string | undefined {
 
 /** The Logos door is offered the Greek texts only (the SBLGNT apparatus, the Greek New Testaments): the question is which words, not what a commentary says. */
 export const GO_DEEPER_ENTRIES: readonly CatalogueEntry[] = entriesOf('greek-text');
+
+/** The Greek texts of the door he may be offered: those in his import or free with Logos (src/data/owned.ts offeredEntries, mw-qtu3zvz.167). */
+export const goDeeperEntries = (owned: Owned): CatalogueEntry[] => offeredEntries(GO_DEEPER_ENTRIES, owned);
 
 /** The unit's place, and how it is written: 'Revelation 3:2'. */
 export function goDeeperPlace(book: string, chapter: number, verse: number): { place: StudyPlace; name: string } {
