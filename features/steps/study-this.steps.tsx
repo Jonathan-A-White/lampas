@@ -13,11 +13,13 @@ import { loadChapter, type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { start, type DrillQuestion } from '../../src/data/grammar/drillIt';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
+import { buildEnding } from '../../src/data/grammar/questions';
 import { ideaOfAny } from '../../src/data/grammar/ladders';
 import type { Level } from '../../src/data/grammar/needs';
 import { cellsOf, paradigmById, paradigmsOf, type Levels } from '../../src/data/paradigms';
 import { cellPrompt, drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
+import { setKind, setState } from '../../src/data/repositories';
 import { DAY } from '../../src/data/schedule';
 import { DrillItScreen } from '../../src/DrillItScreen';
 import { clearBus } from '../../src/events/bus';
@@ -25,15 +27,20 @@ import { LicenceContext, type LicenceDetail } from '../../src/gate/licenceContex
 import { learnLabel, lessonsForSheet } from '../../src/hardSounds/lessons';
 import { IdeaSheetWithWord } from '../../src/IdeaSheetWithWord';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { OverRun } from '../../src/overRun';
 import { paradigmHash } from '../../src/nav/route';
 import { PlanDrillScreen } from '../../src/PlanDrillScreen';
+import { LEXICONS } from '../../src/resources/logos';
 import { releaseRound } from '../../src/review/heldRound';
 import { grammarRandom } from '../../src/review/kinds';
 import { tutorTimings } from '../../src/services/tutor';
 import { accentOf, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { chosenPronunciation } from '../../src/speech/greek';
+import { openDoorTarget } from '../../src/tutor/door';
+import { dropHeldWord } from '../../src/wordReturn';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -61,6 +68,7 @@ async function freshStore(): Promise<void> {
   clearBus();
   forgetTrail();
   releaseRound();
+  dropHeldWord();
   vi.unstubAllGlobals();
   fake = undefined;
   asked = undefined;
@@ -73,7 +81,7 @@ async function freshStore(): Promise<void> {
   stubChapterFetch();
   drillSeed.next = () => SEED;
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear(), db.talks.clear(), db.drillRuns.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.results.clear(), db.reviews.clear(), db.settings.clear(), db.grammarLevels.clear(), db.talks.clear(), db.drillRuns.clear(), db.library.clear(), db.exportRows.clear()]);
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }, { key: 'grammarLevelsSeeded', value: '1' }]);
   await db.grammarLevels.bulkPut([...levelsOf().keys()].map((id) => ({ id, level: 'solid' as const, since: Date.now(), how: 'marked' as const })));
 }
@@ -163,10 +171,46 @@ async function lessonIsOpen(ideaId: string): Promise<void> {
   expect(within(sheet).getByRole('heading', { name: ideaOfAny(ideaId).title })).toBeInTheDocument();
 }
 
+/**
+ * The lesson over a run starts no run of its own and changes no level (mw-indx1x6.57 item 5): no Drill it, no Try it on a verse, no Mark known without a drill and no level
+ * slider. The sheet's examples are drawn first (they wait for the passage, as Try it on a verse and the slider's enabling do), so what the controls wait for is there and
+ * their absence is the sheet's choice.
+ */
+async function lessonStartsNothing(_: unknown, drillIt: string, tryIt: string, markKnown: string): Promise<void> {
+  const sheet = screen.getByRole('dialog', { name: 'Idea' });
+  await waitFor(() => expect(sheet.querySelectorAll('[data-testid="idea-example"]').length).toBeGreaterThan(0));
+  await within(sheet).findByText('Worked example');
+  for (const label of [drillIt, tryIt, markKnown]) expect(buttonsOf(sheet)).not.toContain(label);
+  expect(within(sheet).queryByRole('slider', { name: 'Your level' })).toBeNull();
+  expect(sheet.querySelector('[data-testid="level-slider"]')).toBeNull();
+}
+
+async function tapFirstExample(): Promise<void> {
+  const sheet = screen.getByRole('dialog', { name: 'Idea' });
+  const example = await waitFor(() => {
+    const found = sheet.querySelector<HTMLElement>('[data-testid="idea-example"]');
+    if (!found) throw new Error('the lesson has no example yet');
+    return found;
+  });
+  await user.click(example);
+  await within(await screen.findByRole('dialog', { name: 'Word' })).findByTestId('sheet-paradigm');
+}
+
+async function lessonFromAList(_: unknown, ideaId: string): Promise<void> {
+  // what a list of ideas draws for the idea tapped (Settings > Grammar approach, src/settings/controls/approach.tsx): the sheet over no drill
+  render(<IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} />);
+  await lessonIsOpen(ideaId);
+}
+
 let passage: Chapter[] = [];
 
 async function openDrillIt(_: unknown, ideaId: string): Promise<void> {
   await freshStore();
+  await drawDrillIt(ideaId);
+}
+
+/** Draws Drill it on the idea in the store as it is (a scenario that set up a licence and a fake Postern first keeps them). */
+async function drawDrillIt(ideaId: string): Promise<void> {
   passage = [await loadChapter('1jn', 2)];
   const walk = start(ideaId, new Map<string, Level>(ideaOfAny(ideaId).needs.map((id) => [id, 'solid'])), { passage, seed: SEED });
   if ('needs' in walk || !walk.current) throw new Error(`Drill it does not start on ${ideaId}`);
@@ -258,6 +302,102 @@ async function everyQuestionOfTheDrill(right: boolean): Promise<void> {
   }
   await screen.findByTestId('plan-drill-result');
 }
+
+// --- mw-indx1x6.57: what is drawn over a run offers nothing that leaves it --------------------------------------------------------------------------------------------------
+
+/** The headword of the ending the short drill asks. */
+let askedLemma = '';
+
+/** A short drill of one real ending question (buildEnding: a word of 1 John 2 in the accusative), on a phone with Logos on and 21 lexicons On, so the word's sheet has its All lexicons door. */
+async function openShortDrillOnAnEnding(): Promise<void> {
+  await freshStore();
+  await keepImport(EVERY_BOOK_IDS);
+  await db.settings.put({ key: 'resource.logos', value: 'on' });
+  await setKind('lexicon', 'off');
+  for (const lexicon of LEXICONS.slice(0, 21)) await setState(lexicon.resource, 'on');
+  passage = [await loadChapter('1jn', 2)];
+  const ending = buildEnding(ideaOfAny('case-accusative'), passage, mulberry32(1));
+  if (!ending?.lemma) throw new Error('1 John 2 gives no ending question of the accusative');
+  asked = ending;
+  askedLemma = ending.lemma;
+  render(<PlanDrillScreen ideaId="case-accusative" facetLabel="Its ending" questions={[{ ...ending, facet: { id: 'ending', label: 'Its ending' }, step: 1, key: 'ending-1' }]} onFinish={() => {}} onClose={() => {}} />);
+  await waitFor(() => expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(ending.prompt));
+}
+
+const wordSheet = (): HTMLElement => screen.getByRole('dialog', { name: 'Word' });
+
+/** The word's sheet is drawn inside the drill's own dialog, so it stands over the drill. */
+async function wordSheetIsOverTheDrill(): Promise<void> {
+  const sheet = await screen.findByRole('dialog', { name: 'Word' });
+  expect(sheet.parentElement?.closest('[role="dialog"]')?.getAttribute('aria-label')).toMatch(/^(Short drill|Drill it|Idea)$/);
+  await within(sheet).findByTestId('sheet-word');
+}
+
+/** What a control says, for a failure to name it. */
+const controlName = (control: HTMLElement): string => control.getAttribute('aria-label') ?? control.textContent?.trim() ?? '';
+
+/** The buttons that close the sheet they are on, or speak: a tap on one is no way out of the page, and the walk leaves them be (a closed sheet has no controls left to tap). */
+const NOT_TAPPED = /^(Close|Done|Back|Hear it|Listen|Read aloud|Stop)\b/;
+
+/**
+ * Taps every control of the word's sheet, and of each sheet a tap opens over it, and after each tap the page's address is as it was: no link to a page of this app
+ * (an `a` whose href is a `#/...` address) is drawn, and no button changes window.location. A sheet a tap opens is walked once, then closed with Escape.
+ */
+async function noControlLeaves(): Promise<string[]> {
+  const before = window.location.href;
+  const tapped: string[] = [];
+  const dialogs = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>('[role="dialog"]')];
+  const walk = async (sheet: HTMLElement, depth: number): Promise<void> => {
+    expect([...sheet.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].map(controlName)).toEqual([]);
+    for (const button of [...sheet.querySelectorAll<HTMLButtonElement>('button')]) {
+      const name = controlName(button);
+      if (!button.isConnected || button.disabled || NOT_TAPPED.test(name)) continue;
+      // a button of a sheet opened over this one is walked with that sheet
+      if (button.closest('[role="dialog"]') !== sheet) continue;
+      const open = dialogs();
+      await user.click(button);
+      tapped.push(name);
+      expect(window.location.href, `after a tap on "${name}"`).toBe(before);
+      const opened = dialogs().filter((d) => !open.includes(d));
+      for (const over of opened) {
+        if (depth < 2) await walk(over, depth + 1);
+        if (over.isConnected) await user.keyboard('{Escape}');
+        await waitFor(() => expect(over.isConnected, `"${name}" opened a sheet that Escape closes`).toBe(false));
+      }
+    }
+  };
+  await walk(wordSheet(), 0);
+  return tapped;
+}
+
+/** The fake tutor's answer of the scenario: a table and a verse linked under it, each a page of its own, and a copy of a verse, which is a button that leaves nothing. */
+async function licensedPhoneLinking(_: unknown, table: string, verse: string, copied: string): Promise<void> {
+  await licensedPhone();
+  if (!fake) throw new Error('no fake Postern');
+  fake.autoReply = { status: 'answered', answer: { answer: 'The article agrees with its noun.', words: [], links: [{ kind: 'paradigm', table }, { kind: 'verse', reference: verse }, { kind: 'copy', reference: copied }] } };
+}
+
+/** Opens the talk the floating ? opens here (the newest door target: the drill's, or the lesson's) and asks its first suggested question. */
+async function askTheTutor(): Promise<void> {
+  expect(openDoorTarget()).toBe(true);
+  const suggestion = await waitFor(() => {
+    const found = document.querySelector<HTMLElement>('[data-suggestion]');
+    if (!found) throw new Error('the talk has no suggested question yet');
+    return found;
+  });
+  await user.click(suggestion);
+  await waitFor(() => expect(document.querySelector('[data-talk-a]')).toHaveTextContent('The article agrees with its noun.'));
+}
+
+/** The chips under the tutor's answer are drawn: the group of the copied verse has its Copy button, so the links have been read and laid out and a chip that is missing was left out. */
+async function answerHasCopyChip(_: unknown, reference: string): Promise<void> {
+  await waitFor(() => {
+    const group = document.querySelector<HTMLElement>(`[data-tutor-link][aria-label="${reference}"]`);
+    expect([...(group?.querySelectorAll('button') ?? [])].map((b) => b.textContent?.trim())).toContain('Copy');
+  });
+}
+
+const chipNames = (): string[] => [...document.querySelectorAll<HTMLElement>('[data-tutor-link] a, [data-tutor-link] button')].map(controlName);
 
 const feature = await loadFeature('features/study-this.feature');
 
@@ -427,13 +567,7 @@ describeFeature(feature, ({ Scenario }) => {
       await lessonIsOpen(ideaId);
       expect(screen.getByRole('dialog', { name: 'Drill it' })).toContainElement(screen.getByRole('dialog', { name: 'Idea' }));
     });
-    And('the lesson has no {string} button and no {string} button, though it has its level slider', async (_, drillIt: string, tryIt: string) => {
-      const sheet = screen.getByRole('dialog', { name: 'Idea' });
-      // the sheet's foot is drawn and its passage is read (the slider waits for it): what the buttons wait for is there, so their absence is the sheet's choice
-      await waitFor(() => expect(within(sheet).getByRole('slider', { name: 'Your level' })).toBeEnabled());
-      expect(buttonsOf(sheet)).not.toContain(drillIt);
-      expect(buttonsOf(sheet)).not.toContain(tryIt);
-    });
+    And('the lesson has no {string} button, no {string} button, no {string} and no level slider', lessonStartsNothing);
     And('the drill is still on the question he missed', () => {
       expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
       expect(screen.getByTestId('drill-next')).toBeInTheDocument();
@@ -445,9 +579,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The same lesson opened from a list of ideas keeps its Drill it button', ({ Given, Then }) => {
     Given('the lesson of the idea {string} is open as it is from a list of ideas', async (_, ideaId: string) => {
       await freshStore();
-      // what a list of ideas draws for the idea tapped (Settings > Grammar approach, src/settings/controls/approach.tsx): the sheet over no drill
-      render(<IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} />);
-      await lessonIsOpen(ideaId);
+      await lessonFromAList(_, ideaId);
     });
     Then('the lesson has the buttons {string} and {string}', async (_, drillIt: string, tryIt: string) => {
       const sheet = screen.getByRole('dialog', { name: 'Idea' });
@@ -477,7 +609,11 @@ describeFeature(feature, ({ Scenario }) => {
     Given('the lesson of the idea {string} is open as it is over a drill', async (_, ideaId: string) => {
       await freshStore();
       // what the row draws for a lesson where a table opens as a layer (src/review/useStudyPlaces.tsx)
-      render(<IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} overRun />);
+      render(
+        <OverRun.Provider value={true}>
+          <IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} />
+        </OverRun.Provider>,
+      );
       await lessonIsOpen(ideaId);
     });
     Then('the lesson has no {string} link, though the letter has that lesson', async (_, label: string) => {
@@ -495,6 +631,120 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the lesson has the {string} link', async (_, label: string) => {
       expect(await within(screen.getByRole('dialog', { name: 'Idea' })).findByRole('button', { name: label })).toBeInTheDocument();
+    });
+  });
+
+  Scenario("The word's sheet opened over a drill has no link that leaves the drill", ({ Given, When, And, Then }) => {
+    Given('a short drill is open on an ending of a word of 1 John 2', openShortDrillOnAnEnding);
+    When('he answers the ending wrong', () => answer(false));
+    And("he taps the row's Word link", async () => {
+      await user.click(within(await screen.findByRole('group', { name: 'Study this' })).getByRole('button', { name: `Word: ${askedLemma}` }));
+    });
+    Then("the word's sheet is open over the drill", async () => {
+      await wordSheetIsOverTheDrill();
+      expect(within(wordSheet()).getByTestId('sheet-word')).toHaveTextContent(askedLemma);
+    });
+    And('All lexicons of the word has no {string} button, which opens the Library', async (_, label: string) => {
+      await user.click(await within(wordSheet()).findByRole('button', { name: /^All \d+ lexicons/ }));
+      const all = await screen.findByRole('dialog', { name: 'All lexicons' });
+      // its rows are drawn (each opens Logos, another app), so the foot is too
+      await waitFor(() => expect(within(all).getAllByRole('link').length).toBeGreaterThan(0));
+      expect(within(all).queryByRole('button', { name: label })).toBeNull();
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'All lexicons' })).toBeNull());
+    });
+    And("no control of the word's sheet changes the page's address", async () => {
+      const tapped = await noControlLeaves();
+      // the walk tapped the door to All lexicons, so that sheet's own controls were walked too
+      expect(tapped.some((name) => /^All \d+ lexicons/.test(name))).toBe(true);
+    });
+    And('the short drill is still on {string}', (_, text: string) => {
+      expect(screen.getByTestId('plan-drill-step')).toHaveTextContent(text);
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
+      expect(row()).toBeInTheDocument();
+    });
+  });
+
+  Scenario("A word of the lesson's examples opened over a drill names its table without a link to it", ({ Given, When, And, Then }) => {
+    Given('Drill it is open on the idea {string}', openDrillIt);
+    When("he answers the drill's question wrong", () => answer(false));
+    And('he taps the lesson of the idea {string}', async (_, ideaId: string) => {
+      await screen.findByRole('group', { name: 'Study this' });
+      await tapLink(_, lessonLabel(ideaId));
+      await lessonIsOpen(ideaId);
+    });
+    And('he taps the first example of the lesson', tapFirstExample);
+    Then("the word's sheet is open over the drill", wordSheetIsOverTheDrill);
+    And('its Paradigm row names a table and is no link', () => {
+      const paradigm = within(wordSheet()).getByTestId('sheet-paradigm');
+      expect(paradigm.textContent?.trim()).not.toBe('');
+      expect(paradigm.querySelector('button, a')).toBeNull();
+    });
+    And("no control of the word's sheet changes the page's address", async () => {
+      await noControlLeaves();
+    });
+    And('the drill is still on the question he missed', () => {
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
+      expect(screen.getByTestId('drill-next')).toBeInTheDocument();
+      expect(screen.getAllByRole('dialog', { name: 'Drill it' })).toHaveLength(1);
+    });
+  });
+
+  Scenario("A word of the lesson's examples opened from a list of ideas keeps the link to its table", ({ Given, When, Then }) => {
+    Given('the lesson of the idea {string} is open as it is from a list of ideas', async (_, ideaId: string) => {
+      await freshStore();
+      await lessonFromAList(_, ideaId);
+    });
+    When('he taps the first example of the lesson', tapFirstExample);
+    Then('its Paradigm row is a link to a table', () => {
+      expect(within(wordSheet()).getByTestId('sheet-paradigm').querySelector('button[data-table]')).not.toBeNull();
+    });
+  });
+
+  Scenario("The lesson opened from a Review's Study list has no Try it on a verse, whose Read it would leave the end card", ({ Given, When, And, Then }) => {
+    Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he misses every question of the round', () => everyQuestionOfTheRound(false));
+    And("he taps the list's lesson of the idea {string}", async (_, ideaId: string) => {
+      await user.click(rowNamed(lessonLabel(ideaId))[0]);
+    });
+    Then('the lesson of the idea {string} is open over the end card', async (_, ideaId: string) => {
+      await lessonIsOpen(ideaId);
+      expect(window.location.hash).toBe('#/review');
+    });
+    And('the lesson has no {string} button, no {string} button, no {string} and no level slider', lessonStartsNothing);
+    And('the end card still shows its {string}', (_, name: string) => {
+      expect(screen.getByTestId('score')).toBeInTheDocument();
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/review');
+    });
+  });
+
+  Scenario('A table the tutor links in a talk over a drill is no chip, which would leave the drill', ({ Given, When, And, Then }) => {
+    Given('a phone with a licence and a fake Postern whose answer links the table {string}, the verse {string} and a copy of {string}', licensedPhoneLinking);
+    And('Drill it is open there on the idea {string}', (_, ideaId: string) => drawDrillIt(ideaId));
+    When('he asks the tutor about the drill', askTheTutor);
+    Then("the tutor's answer has the Copy chip of {string}", answerHasCopyChip);
+    And('the answer has no {string} chip and no chip that opens the Reader', (_, table: string) => {
+      expect(chipNames()).not.toContain(table);
+      expect(chipNames().filter((name) => /in Lampas$/.test(name))).toEqual([]);
+    });
+    And("the page's address is as it was", () => {
+      expect(window.location.hash).toBe('');
+    });
+    And('the drill is still on its first question', () => {
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
+      expect(screen.getAllByRole('dialog', { name: 'Drill it' })).toHaveLength(1);
+    });
+  });
+
+  Scenario("The same answer in the lesson's talk from a list of ideas keeps the Table chip", ({ Given, When, And, Then }) => {
+    Given('a phone with a licence and a fake Postern whose answer links the table {string}, the verse {string} and a copy of {string}', licensedPhoneLinking);
+    And('the lesson of the idea {string} is open there as it is from a list of ideas', lessonFromAList);
+    When('he asks the tutor about the lesson', askTheTutor);
+    Then("the tutor's answer has the Copy chip of {string}", answerHasCopyChip);
+    And('the answer has the {string} chip', (_, table: string) => {
+      expect(chipNames()).toContain(table);
     });
   });
 

@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { openLibrary } from '../nav/route';
+import { useOffRun } from '../overRun';
 import type { CatalogueEntry } from '../resources/catalogue';
 import { armFallback } from '../resources/openApp';
 import type { StudyPlace } from '../resources/types';
@@ -29,6 +30,11 @@ export interface InLogosChooserProps {
 export function InLogosChooser({ place, name, onClose, entries }: InLogosChooserProps) {
   const rows = useInLogosRows(place, entries);
   const [query, setQuery] = useState('');
+  const offRun = useOffRun();
+  const manage = offRun(() => {
+    onClose();
+    afterSheetEntryGone(() => openLibrary());
+  });
   // the groups he unfolded
   const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
   const { drag, handle } = useSheetDrag(onClose);
@@ -108,16 +114,12 @@ export function InLogosChooser({ place, name, onClose, entries }: InLogosChooser
           })}
         </div>
         <div className="shrink-0 border-t border-line px-4 pt-1 pb-[calc(0.5rem+var(--lp-bar-inset))]">
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              afterSheetEntryGone(() => openLibrary());
-            }}
-            className="min-h-12 w-full rounded-xl px-4 text-base font-medium text-accent active:bg-line"
-          >
-            Manage in Your Logos library
-          </button>
+          {/* the Library is a page of its own: over a run (a tutor's chip in a talk over a drill, src/overRun.ts) the row is not drawn */}
+          {manage ? (
+            <button type="button" onClick={manage} className="min-h-12 w-full rounded-xl px-4 text-base font-medium text-accent active:bg-line">
+              Manage in Your Logos library
+            </button>
+          ) : null}
         </div>
       </div>
       <DialogAskTutor {...ask} />

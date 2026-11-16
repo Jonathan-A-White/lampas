@@ -1,6 +1,8 @@
 // The 'Study this' row under a wrong answer (mw-indx1x6.6) at 390x844: the ending card of ἁμαρτία (accusative plural, 1 John 1) answered wrong in Review shows the row under the answer with a
 // link to the table, the lesson and the word, each a full-width button clear of the floating ?, and Next still in view; the table link opens Noun endings on This word with the asked cell lit
 // and reading ἁμαρτίας, and Back returns to the card and its row. See the table is not drawn beside the row: the row's table link is the same place.
+// The lesson over a drill (mw-indx1x6.57, from the Tester's mw-indx1x6.59): opened from the row in a Drill it, the idea sheet has no Drill it, no level slider and no Mark known
+// without a drill, so a second drill cannot open over the first; it has no foot, its text ends clear of the phone's bar, and Done returns to the question he missed.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -95,4 +97,80 @@ test('a wrong ending in Review shows Study this under the answer, clear of the t
   await expect(sheet.getByTestId('sheet-word')).toHaveText('ἁμαρτία');
   await expect(sheet.getByTestId('sheet-word')).toBeInViewport();
   await shot(page, 'study-this-word');
+});
+
+test('the lesson over a drill has no Drill it, no level slider and no Mark known without a drill', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
+  // what The noun builds on, so its sheet offers Drill it at once
+  await put(
+    page,
+    'grammarLevels',
+    ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })),
+  );
+  await page.goto('/#/goal');
+  // a write behind Dexie's back is not seen by its live queries: the app starts afresh
+  await page.reload();
+  await page.getByTestId('ideas-bar').click();
+  await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
+
+  // the idea sheet on a plain screen: the slider, Mark known and Drill it are all there
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
+  await expect(idea.getByRole('heading', { name: 'The noun' })).toBeVisible();
+  await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
+  await expect(idea.getByRole('slider', { name: 'Your level' })).toBeVisible();
+  await expect(idea.getByRole('button', { name: 'Mark known without a drill', exact: true })).toBeVisible();
+  await idea.getByRole('button', { name: 'Drill it', exact: true }).click();
+  const drill = page.getByRole('dialog', { name: 'Drill it', exact: true });
+  await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
+
+  // he answers with the first answer until one is wrong: the row is under a wrong answer only
+  const row = drill.getByRole('group', { name: 'Study this', exact: true });
+  for (let asked = 0; asked < 12; asked += 1) {
+    await drill.locator('[data-option]:not(:disabled)').first().click();
+    await expect(drill.getByTestId('drill-next')).toBeVisible();
+    if (await row.isVisible()) break;
+    await drill.getByTestId('drill-next').click();
+  }
+  await expect(row).toBeVisible();
+  const missed = await drill.getByTestId('grammar-prompt').textContent();
+
+  await row.getByRole('button', { name: /^Lesson: / }).click();
+  // the lesson is drawn inside the drill's own layer, over it
+  const lesson = drill.getByRole('dialog', { name: 'Idea', exact: true });
+  await expect(lesson.getByRole('heading', { level: 2 }).first()).toBeVisible();
+  await expect(lesson.getByTestId('idea-loading')).toHaveCount(0);
+  await expect(lesson.getByText('Worked example')).toHaveCount(1);
+  await expect(lesson.getByRole('button', { name: 'Drill it', exact: true })).toHaveCount(0);
+  await expect(lesson.getByRole('slider', { name: 'Your level' })).toHaveCount(0);
+  await expect(lesson.getByTestId('level-slider')).toHaveCount(0);
+  await expect(lesson.getByRole('button', { name: 'Mark known without a drill', exact: true })).toHaveCount(0);
+  await expect(lesson.getByRole('button', { name: 'Try it on a verse', exact: true })).toHaveCount(0);
+  // one drill, the one he is in
+  await expect(page.getByRole('dialog', { name: 'Drill it', exact: true })).toHaveCount(1);
+  // with no foot the sheet still stands inside the screen, and its Done is in reach
+  const box = (await lesson.boundingBox())!;
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height).toBeLessThanOrEqual(844.5);
+  await expect(lesson.getByRole('button', { name: 'Done', exact: true })).toBeInViewport();
+
+  // on its side the sheet with no foot is one column: the text takes the width the slider's column would have had (18rem of 844)
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect.poll(async () => (await lesson.getByTestId('idea-what').boundingBox())?.width ?? 0).toBeGreaterThan(700);
+  await expect(lesson.getByRole('button', { name: 'Done', exact: true })).toBeInViewport();
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  // Done returns to the question he missed, its row still there
+  await lesson.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(lesson).toHaveCount(0);
+  await expect(drill.getByTestId('grammar-prompt')).toHaveText(missed ?? '');
+  await expect(row).toBeVisible();
+
+  // and the lesson opens again from the row, as it was
+  await row.getByRole('button', { name: /^Lesson: / }).click();
+  await expect(lesson.getByText('Worked example')).toHaveCount(1);
+  await expect(lesson.getByRole('slider', { name: 'Your level' })).toHaveCount(0);
+  await shot(page, 'study-this-lesson-over-drill');
 });

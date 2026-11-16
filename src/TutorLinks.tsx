@@ -8,6 +8,7 @@ import type { AnswerLink } from './data/db';
 import { lookupLemma, lookupSeptuagintLemma } from './data/lexicon';
 import { getLogosBibles, getStudyResources, getWorks, setResourceOn, offeredShelfOf } from './data/repositories';
 import { openParadigm, openReader, paradigmHash } from './nav/route';
+import { useOffRun } from './overRun';
 import { paradigmById } from './data/paradigms';
 import { holdTalk } from './talkReturn';
 import { rowOf } from './settings/rows';
@@ -163,6 +164,10 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
   const sermonRows = useTalkSermons(place && shown.some((l) => l.kind === 'sermon') ? { book: place.book, chapter: place.chapter, ...(verse === undefined ? {} : { from: verse }) } : null);
   const strongs = useStrongs(shown.flatMap((l) => (l.kind === 'word' ? [l.lemma.normalize('NFC')] : [])));
   const [missing, setMissing] = useState<StudyResource | null>(null);
+  // a chip that opens a page of this app (the Reader, Settings, a table, the Maps screen) leaves the screen the talk is over: in a talk over a run (a drill's floating ?, the
+  // lesson's, a miss's Ask the tutor) the one guard gives nothing for it and the chip is not drawn (src/overRun.ts, mw-indx1x6.57). The chips that open another app or a new tab,
+  // Copy and Share leave nothing, and stay.
+  const offRun = useOffRun();
   if (!chosen || bibles === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
   if (place && shown.some((l) => l.kind === 'map') && mapCards === undefined) return null;
   if (place && shown.some((l) => l.kind === 'sermon') && sermonRows === undefined) return null;
@@ -174,15 +179,16 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
       const hebrew = hebrewLinkLemma(lemma);
       groups.push({ key: `${i}`, name: lemma, greek: !hebrew, hebrew, chips: wordChips(lemma, strongs[lemma] || undefined, chosen, level) });
     } else if (link.kind === 'setting') {
-      const row = settingLink(link.key) ? rowOf(link.key) : undefined;
+      const row = offRun(settingLink(link.key) ? rowOf(link.key) : undefined);
       if (row) groups.push({ key: `${i}`, name: row.label, greek: false, setting: row.key, chips: [] });
     } else if (link.kind === 'paradigm') {
       // a table the Paradigms screen lacks draws nothing (the tutor was given the ids, but an id can be wrong)
-      const table = paradigmById(link.table);
+      const table = offRun(paradigmById(link.table));
       if (table) groups.push({ key: `${i}`, name: table.name, greek: false, paradigm: { id: table.id, name: table.name }, chips: [] });
     } else if (link.kind === 'map') {
       const found = place && mapCards ? mapChip(link.map, mapCards) : null;
-      if (found) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
+      // a map with a place of its own to open (another app, a new tab) stays; one that opens the Maps screen is a page of this app
+      if (found && (found.card.open || offRun(true))) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
     } else if (link.kind === 'sermon') {
       const found = place && sermonRows ? sermonChip(link.sermon, sermonRows) : null;
       if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, opensIn: openedRow(found.row).opensIn, open: openedRow(found.row).open }, chips: [] });
@@ -196,7 +202,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);
-      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: place.reader ? place : undefined, place, chips: verseChips(place, place.name, chosen, bibleFor(place.book, bibles), level) });
+      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: offRun(place.reader ? place : undefined), place, chips: verseChips(place, place.name, chosen, bibleFor(place.book, bibles), level) });
     }
   }
   const drawn = groups.filter((g) => g.reader || g.setting || g.paradigm || g.map || g.sermon || g.copy || (g.hebrew && onWord) || g.chips.length > 0);

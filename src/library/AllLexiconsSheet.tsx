@@ -23,7 +23,8 @@ interface Props {
   /** a row's app did not open: the word sheet then says Logos is not on the phone */
   onMissing: () => void;
   /** Manage was tapped: open the Lexicons page of the Library */
-  onManage: () => void;
+  /** opens the Lexicons page of the Library; without it (the word sheet over a run, src/overRun.ts: the page would lose the run) Manage is not drawn */
+  onManage?: () => void;
 }
 
 export function AllLexiconsSheet({ word, hebrew = false, entries, onClose, onMissing, onManage }: Props) {
@@ -89,9 +90,11 @@ export function AllLexiconsSheet({ word, hebrew = false, entries, onClose, onMis
           ))}
         </div>
         <div className="shrink-0 px-4 pb-[calc(0.5rem+var(--lp-end-inset))] pt-2">
-          <button type="button" onClick={onManage} className="min-h-12 w-full rounded-xl border border-line text-base font-medium text-accent active:bg-line">
-            Manage
-          </button>
+          {onManage ? (
+            <button type="button" onClick={onManage} className="min-h-12 w-full rounded-xl border border-line text-base font-medium text-accent active:bg-line">
+              Manage
+            </button>
+          ) : null}
         </div>
       </div>
       <DialogAskTutor {...ask} />

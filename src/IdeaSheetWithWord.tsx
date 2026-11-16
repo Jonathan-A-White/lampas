@@ -1,18 +1,13 @@
 // src/IdeaSheetWithWord.tsx — the idea sheet for one idea with the word sheet that its examples open over it (mw-5r3p30.604): a screen that lists ideas by title
 // (Settings > Grammar approach) keeps only the id of the idea tapped and draws this. The word sheet opens over the idea sheet, which stays: Back closes one sheet
-// at a time (mw-5r3p30.378).
+// at a time (mw-5r3p30.378). Over a run (a lesson of a drill's 'Study this' row) both sheets read src/overRun.ts themselves and draw no link that leaves it.
 import { useState } from 'react';
 import type { Chapter, GreekWord } from './data/chapter';
 import { ideaOfAny as ideaOf } from './data/grammar/ladders';
 import { IdeaSheet } from './IdeaSheet';
 import { WordSheet, type Lookup } from './WordSheet';
 
-export function IdeaSheetWithWord({ ideaId, onClose, overRun = false }: {
-  ideaId: string;
-  onClose: () => void;
-  /** the sheet is over a run a new page would lose (a drill): it draws no link that opens a page of its own (IdeaSheet's `overRun`, mw-indx1x6.28) */
-  overRun?: boolean;
-}) {
+export function IdeaSheetWithWord({ ideaId, onClose }: { ideaId: string; onClose: () => void }) {
   const [word, setWord] = useState<{ chapter: Chapter; lookup: Lookup } | null>(null);
   return (
     <>
@@ -20,7 +15,6 @@ export function IdeaSheetWithWord({ ideaId, onClose, overRun = false }: {
         idea={ideaOf(ideaId)}
         onClose={onClose}
         covered={word !== null}
-        overRun={overRun}
         onWord={(chapter: Chapter, tapped: GreekWord) => setWord({ chapter, lookup: { words: [tapped], fromEnglish: false } })}
       />
       {word ? <WordSheet chapter={word.chapter} lookup={word.lookup} onClose={() => setWord(null)} /> : null}

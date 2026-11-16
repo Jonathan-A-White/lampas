@@ -23,7 +23,7 @@ import { writeSetting } from './settings/registry';
 import { useAiAllowed } from './gate/licenceContext';
 import { askInReader, talkInReader } from './nav/readerRequest';
 import { backTo, navigate } from './nav/route';
-import { OverDrill } from './overDrill';
+import { OverRun } from './overRun';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 import { focusOnMount } from './ui/focus';
 import { NextBar } from './ui/NextBar';
@@ -484,11 +484,11 @@ function ParsingDrill({ newRandom = () => Math.random }: { newRandom?: () => Ran
   );
 }
 
-/** The Parsing drill; what opens over it is told it stands over a drill, as over Drill it (src/overDrill.ts, mw-indx1x6.29). */
+/** The Parsing drill; what opens over it is told it stands over a run, as over Drill it (src/overRun.ts, mw-indx1x6.29, .57). */
 export function DrillScreen(props: ComponentProps<typeof ParsingDrill>) {
   return (
-    <OverDrill.Provider value={true}>
+    <OverRun.Provider value={true}>
       <ParsingDrill {...props} />
-    </OverDrill.Provider>
+    </OverRun.Provider>
   );
 }
