@@ -3,16 +3,18 @@
 // store under 'dailyDone' (like readingPlan.ts), outside the settings registry; no Dexie version. A date is 'YYYY-MM-DD' on the phone's clock, never the UTC one, so
 // a new local date starts empty. A piece is 'review', 'memorize', 'plan', 'devotional' or a passage ('psa.5', 'pro.5'). Nothing ticks by itself: only setTicked writes a tick.
 import { db } from '../db';
-import { anotherDevotional } from './devotionals';
+import { MORNING_REPHIL_ID, anotherDevotional } from './devotionals';
+import { hasUnheard } from './morningRephil';
 
 const KEY = 'dailyDone';
 const EXPLAINED_KEY = 'todayExplained';
+const HEARD_KEY = 'morningRephilHeard';
 
 /** How many dates are kept; the oldest are let go. */
 export const KEPT_DAYS = 90;
 
 /** The keys of Settings > Daily (src/settings/definitions/daily.ts). Changing any of them answers the explanation. */
-export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'dailyTicks'];
+export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'morningRephilOrder', 'dailyTicks'];
 
 export interface DayRecord {
   /** the pieces he ticked, in the order he ticked them */
@@ -21,6 +23,8 @@ export interface DayRecord {
   opened: string[];
   /** the devotional Another drew for the day (a Logos id), only while one was; it counts only while Which devotional is Random */
   devotional?: string;
+  /** the Morning RePhil episode (its id) Today shows for the day: the one he played, or the one Another chose; else the next unheard one is shown */
+  rephil?: string;
 }
 
 const two = (n: number): string => String(n).padStart(2, '0');
@@ -38,8 +42,8 @@ async function read(): Promise<Record<string, DayRecord>> {
     if (typeof kept !== 'object' || kept === null || Array.isArray(kept)) return {};
     const days: Record<string, DayRecord> = {};
     for (const [date, day] of Object.entries(kept)) {
-      const { ticked, opened, devotional } = (day ?? {}) as Partial<DayRecord>;
-      days[date] = { ticked: strings(ticked), opened: strings(opened), ...(typeof devotional === 'string' && devotional !== '' ? { devotional } : {}) };
+      const { ticked, opened, devotional, rephil } = (day ?? {}) as Partial<DayRecord>;
+      days[date] = { ticked: strings(ticked), opened: strings(opened), ...(typeof devotional === 'string' && devotional !== '' ? { devotional } : {}), ...(typeof rephil === 'string' && rephil !== '' ? { rephil } : {}) };
     }
     return days;
   } catch {
@@ -76,10 +80,52 @@ export function setDevotionalPick(date: string, id: string): Promise<void> {
 
 /** Another: draws a devotional for `date` other than `current` (from the `ticked` ones, src/data/daily/devotionals.ts anotherDevotional), keeps it for the date and returns its id.
  *  The ONE function that switches the day's devotional while Which devotional stays Random. */
-export async function pickAnotherDevotional(date: string, current: string, ticked: readonly string[], random?: () => number): Promise<string> {
-  const id = anotherDevotional(current, ticked, random);
+export async function pickAnotherDevotional(date: string, current: string, ticked: readonly string[], random?: () => number, rephil?: boolean): Promise<string> {
+  const id = anotherDevotional(current, ticked, random, rephil);
   await setDevotionalPick(date, id);
   return id;
+}
+
+// --- Morning RePhil (mw-qtu3zvz.15) ---------------------------------------------------------------------------------------------------------
+
+const heardIds = (raw: unknown): string[] => {
+  try {
+    return typeof raw === 'string' ? strings(JSON.parse(raw)) : [];
+  } catch {
+    return [];
+  }
+};
+
+/** The ids of the Morning RePhil episodes he has played, kept on this device (one JSON list under 'morningRephilHeard', like dailyDone; no Dexie version). */
+export async function getHeard(): Promise<Set<string>> {
+  return new Set(heardIds((await db.settings.get(HEARD_KEY))?.value));
+}
+
+/** Whether Morning RePhil has an episode he has not heard: the one test for Random to draw it. */
+export async function rephilUnheard(): Promise<boolean> {
+  return hasUnheard(await getHeard());
+}
+
+/** Keeps that he played episode `id` on `date`: it is heard for good, it stays the day's episode (and, for Random, the day's devotional), so Today does not jump to the next one under his thumb. */
+export function markHeard(date: string, id: string): Promise<void> {
+  return db.transaction('rw', db.settings, async () => {
+    const heard = heardIds((await db.settings.get(HEARD_KEY))?.value);
+    if (!heard.includes(id)) await db.settings.put({ key: HEARD_KEY, value: JSON.stringify([...heard, id]) });
+    await update(date, (day) => ({ ...day, rephil: id, devotional: MORNING_REPHIL_ID }));
+  });
+}
+
+/** Keeps `id` as the Morning RePhil episode of `date` (Another's choice). */
+export function pinEpisode(date: string, id: string): Promise<void> {
+  return update(date, (day) => ({ ...day, rephil: id }));
+}
+
+/** Start again: every episode is unheard, and the day's own episode is let go, so Today shows the first. */
+export function clearHeard(date: string): Promise<void> {
+  return db.transaction('rw', db.settings, async () => {
+    await db.settings.put({ key: HEARD_KEY, value: '[]' });
+    await update(date, (day) => ({ ticked: day.ticked, opened: day.opened, ...(day.devotional === undefined ? {} : { devotional: day.devotional }) }));
+  });
 }
 
 /** Keeps that he tapped `piece`'s link on `date` (once). It is never a tick. */
