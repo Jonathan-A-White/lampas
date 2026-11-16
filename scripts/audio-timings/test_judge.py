@@ -18,7 +18,9 @@ import align  # noqa: E402
 import judge  # noqa: E402
 
 SR = judge.SAMPLE_RATE
-SLOP = {'lead': 0.05, 'tail': 0.05}
+# A player that stops as early as it may stop late (insideTail = tail): the flag rules' own tests. The real margin (read_slop: insideTail is player-margin.json's
+# inside.tail, the player stopping END_SLACK early after a FADE) is in the tests of the tail clipped by the player, below (mw-ar5k42b.9).
+SLOP = {'lead': 0.05, 'tail': 0.05, 'insideTail': 0.05}
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -273,9 +275,31 @@ def test_the_slop_is_the_one_files():
     assert kinds(judge.flags_of(EDGES, 10.25, 15.35, wide)) == ['tail-extra']  # 15.35 + 0.3 = 15.65: 50 ms into the next sound
     assert kinds(judge.flags_of(EDGES, 10.25, 15.35, SLOP)) == []
     slop = judge.read_slop()
-    assert slop == {'lead': 0.05, 'tail': 0.05}
+    margin = json.loads((Path(judge.__file__).resolve().parent / 'player-margin.json').read_text(encoding='utf8'))
+    assert slop == {'lead': 0.05, 'tail': 0.05, 'insideTail': margin['inside']['tail']} and slop['insideTail'] > slop['tail']
+    assert '0.097' not in Path(judge.__file__).read_text(encoding='utf8')
     raw = json.loads((Path(judge.__file__).resolve().parent / 'player-slop.json').read_text(encoding='utf8'))
     assert 'provisional' in raw['note'].lower()
+
+
+def test_an_end_50_ms_after_the_last_sound_is_tail_clipped_by_the_player_and_one_100_ms_after_is_not():
+    # mw-ar5k42b.9: the player stops up to inside.tail (97 ms) before a verse's end, after a FADE: an end only 50 ms after the last sound loses up to 47 ms of it
+    margin = judge.read_slop()
+    edges = dict(EDGES, end=15.0, after=15.6)
+    flags = judge.flags_of(edges, 10.25, 15.05, margin)
+    assert kinds(flags) == ['tail-clipped'] and flags[0]['by'] == pytest.approx(margin['insideTail'] - 0.05)
+    assert judge.flags_of(edges, 10.25, 15.10, margin) == []
+    # the late stop is still judged at `tail`: 100 ms after the sound and 60 ms before the next is clean, 30 ms before the next is not
+    assert kinds(judge.flags_of(dict(edges, after=15.13), 10.25, 15.10, margin)) == ['tail-extra']
+
+
+def test_a_weak_tail_is_judged_in_the_zone_from_the_inside_tail_before_it_to_the_tail_after_it(sound):
+    # an edge the letters could not settle: verse 1's own sound dies at 3.00 and verse 2's begins at 3.50
+    margin = judge.read_slop()
+    flags = judge.zone_flags('tail', sound, 3.05, margin['insideTail'], margin['tail'])
+    assert kinds(flags) == ['tail-clipped'] and flags[0]['by'] == pytest.approx(0.047, abs=0.006)
+    assert judge.zone_flags('tail', sound, 3.10, margin['insideTail'], margin['tail']) == []
+    assert kinds(judge.zone_flags('tail', sound, 3.46, margin['insideTail'], margin['tail'])) == ['tail-extra']
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------

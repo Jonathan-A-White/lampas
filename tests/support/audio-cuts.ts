@@ -1,5 +1,6 @@
 // What the two tests of the recorded voice's cuts share (mw-ar5k42b.3): the committed files of scripts/audio-timings/ read as data. No Python, no audio, no model.
 //   player-slop.json                 the seconds David's player may be off by, the ONE file the maker, the judge and these tests read
+//   player-margin.json               the player's measured margin (mw-ar5k42b.2): its inside.tail, how far BEFORE a verse's end it may stop, is read from it, never copied
 //   quiet/<edition>-<book>.json      what the maker measured: the aligner's letters of each verse, and the quiet of each boundary by the recording's level
 //   listen/<edition>-<book>.json     the listen list: the edges the recording leaves no room for, for the Governor's ear
 //   judged/<edition>-<book>.json     the judge's report of the timings file, with the file's sha256
@@ -17,14 +18,17 @@ const readJson = (path: string): unknown => JSON.parse(readFileSync(resolve(root
 export interface Slop {
   /** The seconds the player may start early or late. */
   lead: number;
-  /** The seconds the player may stop late or early. */
+  /** The seconds the player may stop late. */
   tail: number;
+  /** The seconds the player may stop EARLY: it stops END_SLACK before the end after a FADE (player-margin.json inside.tail, mw-ar5k42b.9). */
+  insideTail: number;
 }
 
-/** The player's worst case, from the one file. */
+/** The player's worst case: lead and tail from the one file, the early stop from the measured margin (align.py and judge.py read_slop read the same). */
 export function readSlop(): Slop {
-  const raw = readJson(`${TOOLS}/player-slop.json`) as Slop;
-  return { lead: raw.lead, tail: raw.tail };
+  const raw = readJson(`${TOOLS}/player-slop.json`) as { lead: number; tail: number };
+  const margin = readJson(`${TOOLS}/player-margin.json`) as { inside: { tail: number } };
+  return { lead: raw.lead, tail: raw.tail, insideTail: margin.inside.tail };
 }
 
 /** An edge of a verse: its first sound, its last, or (a judge's `text-differs`) a word in its middle. */
