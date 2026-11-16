@@ -7,8 +7,11 @@ import { honestSpeech, spoken } from '../support/honest-fakes';
 import { openGroup } from './settings-group';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { asInstalledApp } from './installed';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 const VERSES = 36;
 const EACH = 0.5;

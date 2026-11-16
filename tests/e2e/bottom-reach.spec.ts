@@ -10,6 +10,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openTalkAbout } from './verse-view';
 import { talkField } from './talk-field';
+import { asInstalledApp } from './installed';
 
 const NAV_BAR = 48;
 const MODES = [
@@ -22,6 +23,8 @@ const PHONES = [
 ];
 
 test.use({ isMobile: true, hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 async function withNavBar(page: Page, inset: number) {
   if (inset === 0) return;

@@ -7,9 +7,12 @@ import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { settingsHeading } from './openSettings';
+import { asInstalledApp } from './installed';
 
 const VIEWPORT = { width: 390, height: 844 };
 test.use({ viewport: VIEWPORT });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 const CONTROL = 'Ask the tutor about what is on screen';
 
