@@ -10,6 +10,7 @@ import { HandsFreeGate } from '../../src/handsFree/HandsFreeGate';
 import { getHandsFree, setHandsFree, toggleHandsFree } from '../../src/handsFree/switch';
 import { stopReading } from '../../src/speech/readAloud';
 import { handsFreeSetting } from '../../src/settings/definitions';
+import { applyChanges } from '../../src/settings/registry';
 import { setSetting } from '../../src/settings/store';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 
@@ -59,6 +60,18 @@ describe('the Hands-free switch', () => {
   it('says nothing when the setting is set to what it already is', async () => {
     await setHandsFree(false);
     expect(spoken()).toEqual([]);
+  });
+});
+
+describe('the tutor changing Hands-free', () => {
+  it('says so aloud, as the switch and the tap do', async () => {
+    const result = await applyChanges([{ key: 'handsFree', value: 'on' }]);
+    expect(result.applied).toHaveLength(1);
+    expect(await getHandsFree()).toBe(true);
+    await waitFor(() => expect(spoken()).toEqual(['Hands-free on']));
+    await applyChanges([{ key: 'handsFree', value: 'off' }]);
+    expect(await getHandsFree()).toBe(false);
+    await waitFor(() => expect(spoken()).toEqual(['Hands-free on', 'Hands-free off']));
   });
 });
 
