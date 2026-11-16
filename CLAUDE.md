@@ -67,11 +67,8 @@ Each grind (`grinds/<kind>.json`) has examples, an input schema and, for bible-t
   `features/steps/*.steps.ts(x)` (@amiceli/vitest-cucumber), run inside `npm test`. Import
   `@testing-library/react/dont-cleanup-after-each` before React Testing Library in a step file.
 - Speech and the microphone are never faked by hand (mw-it6qk5.3): use voice-kit's honest fakes through `tests/support/` (docs/testing.md 'Speech and the microphone fakes').
-- Every jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS` (`tests/support/timeouts.ts`, 10 s, set in `tests/setup.ts`; a loaded host outruns the library's 1 s): never pass a shorter `timeout:` and give `vi.waitFor` one (`tests/unit/async-wait.test.ts` greps for both).
-- A step that checks what the bus heard waits for it (`tests/support/published.ts`: `expectPublished(() => list, expected)` for a list a step file fills, `expectLatest(kind, check)` for the newest event of a kind): a screen can write before it publishes (mw-5r3p30.389; `tests/unit/published-wait.test.ts` fails on an `expect(list)` or `expect(latest(...))` with no wait).
-- Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
-  service worker registration; `fake-postern.ts` is a Postern backend with a mill that opens the grist and answers it,
-  used by features/tutor.feature and, through `playwright-postern.ts`, by tests/e2e/tutor.spec.ts). Tests run in jsdom, `fake-indexeddb`, `TZ=UTC`.
+- Waits (docs/testing.md 'Waits'): a jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS`, so never pass a shorter `timeout:` and give `vi.waitFor` one; a step that checks what the bus heard waits for it through `tests/support/published.ts`.
+- Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (docs/testing.md 'The shared fakes'). Tests run in jsdom, `fake-indexeddb`, `TZ=UTC`.
 - jsdom has no layout: a layout claim is proven only by a Playwright spec in `tests/e2e/` at 390x844,
   which ends with `shot(page, name)`. Service workers are blocked in e2e (tests/e2e/share-target.spec.ts lets the built worker run, to POST a share).
 - esbuild will not run in jsdom: a test that needs a real build runs
@@ -107,23 +104,23 @@ VISION.md 'The tutor': the tutor is told, on every ask, each app setting and eac
 One line per file under `docs/`: open the ones your story touches. `tests/unit/claude-md.test.ts` fails when a docs/ file is missing here.
 
 ```
-docs/layout/app.md # Layout: the shell, build, manifest, worker, updates, What's new, bus, look, src/ui/, public/
-docs/layout/reader.md # Layout: the Reader: nav, swipe, src/nav/, links in, chips, Immersive, weave, Old Testament
-docs/layout/word-sheet.md # Layout: the word sheet, Greek and Hebrew, and a word by link
-docs/layout/chapter-picker.md # Layout: the chapter picker, 66 books
-docs/layout/verse-and-reading.md # Layout: the Verse view (Listen, Quiz me, passages), Read it aloud, Reading ladder, drill
-docs/layout/tutor.md # Layout: asking the tutor: round button, Ask, services/tutor.ts, grinds/, tips, links, Hebrew
-docs/layout/talk.md # Layout: Bible talk: Talk bar and sheet, services/talk.ts, Add to my words, pictures, bridge
-docs/layout/learner.md # Layout: what the tutor knows of him: About you, Memory, welcome, learner, learner_grammar
-docs/layout/settings.md # Layout: src/settings/ (registry, rows, search, defineSetting), src/resources/
-docs/layout/speech.md # Layout: src/speech/: voices, pronunciation, accents, speaking bar, read aloud, Tap to hear
-docs/layout/words.md # Layout: Words, Quick test, Review, schedule, Parsing drill, glosses, pictures, frontier, pace
-docs/layout/diagram.md # Layout: sentence diagram, src/diagram/ (Reed-Kellogg)
-docs/layout/memorize.md # Layout: Memorize: src/memorize/, the text a verse is learned in (English, Greek, weave)
-docs/layout/grammar.md # Layout: grammar terms, ladder, inference, Drill it, idea sheet, placement, Goal, Paradigms
-docs/layout/data.md # Layout: Dexie and its versions, repositories, books, chapters, parsing codes, the data build
-docs/layout/licence.md # Layout: the licence gate, the one gated mill client, the device key
-docs/layout/share.md # Layout: Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
+docs/layout/app.md # the shell, build, manifest, worker, updates, What's new, bus, look, src/ui/, public/
+docs/layout/reader.md # the Reader: nav, swipe, src/nav/, links in, chips, Immersive, weave, Old Testament
+docs/layout/word-sheet.md # the word sheet, Greek and Hebrew, and a word by link
+docs/layout/chapter-picker.md # the chapter picker, 66 books
+docs/layout/verse-and-reading.md # the Verse view (Listen, Quiz me, passages), Read it aloud, Reading ladder, drill
+docs/layout/tutor.md # asking the tutor: round button, Ask, services/tutor.ts, grinds/, tips, links, Hebrew
+docs/layout/talk.md # Bible talk: Talk bar and sheet, services/talk.ts, Add to my words, pictures, bridge
+docs/layout/learner.md # what the tutor knows of him: About you, Memory, welcome, learner, learner_grammar
+docs/layout/settings.md # src/settings/ (registry, rows, search, defineSetting), src/resources/
+docs/layout/speech.md # src/speech/: voices, pronunciation, accents, speaking bar, read aloud, Tap to hear
+docs/layout/words.md # Words, Quick test, Review, schedule, Parsing drill, glosses, pictures, frontier, pace
+docs/layout/diagram.md # sentence diagram, src/diagram/ (Reed-Kellogg)
+docs/layout/memorize.md # Memorize: src/memorize/, the text a verse is learned in (English, Greek, weave)
+docs/layout/grammar.md # grammar terms, ladder, inference, Drill it, idea sheet, placement, Goal, Paradigms
+docs/layout/data.md # Dexie and its versions, repositories, books, chapters, parsing codes, the data build
+docs/layout/licence.md # the licence gate, the one gated mill client, the device key
+docs/layout/share.md # Share to Lampas, Your requests, Ask for another approach, Ask for more and feedback
 docs/overview.md # the one-screen overview
 docs/PREFACE.md # the Preface rule: texts, not the app
 docs/accessibility.md # the axe check over the eight main screens, what a screen must meet

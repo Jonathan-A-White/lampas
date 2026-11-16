@@ -16,8 +16,10 @@ the one place the key lives and how a test seeds it.
 - [The tutor's tests](#the-tutors-tests)
 - [Settings (`src/config.ts`)](#settings-srcconfigts)
 - [The Greek dial's start level (the test seam, mw-3ased2.2)](#the-greek-dials-start-level-the-test-seam-mw-3ased22)
+- [The shared fakes](#the-shared-fakes)
 - [Speech and the microphone fakes](#speech-and-the-microphone-fakes)
 - [The Septuagint tests that read the real, git-ignored sources (mw-cv2w9um)](#the-septuagint-tests-that-read-the-real-git-ignored-sources-mw-cv2w9um)
+- [Waits](#waits)
 - [A real-time sleep in a test (mw-t5shinh.6)](#a-real-time-sleep-in-a-test-mw-t5shinh6)
 
 <!-- /toc -->
@@ -133,6 +135,16 @@ Vite bakes these in at build time: set the variable for `npm run build`.
 
 A new phone is placed on both dials at 0, English only (`placeInterest`, `src/main.tsx`: `placeGreekInterest` and then the Hebrew dial), which hides every Greek and Hebrew setting, the Reader's Greek view and the word sheet. A spec that is not about the dial needs the whole app, so `playwright.config.ts` gives every context the localStorage key **`lampas.greekInterestStart`** = `5` (All in) through `use.storageState`; the phone is placed there instead of at 0. The Hebrew dial's seam is **`lampas.hebrewInterestStart`**, read beside it and, absent, following it (so the config's `5` places both at 5, and a spec that wants another Hebrew step sets that key as well); `startAtAllIn` is unchanged in effect. `tests/e2e/greek-dial.spec.ts` overrides it with an empty storage state and starts as a new reader does. A spec that makes its own context (`browser.newContext`, `launchPersistentContext`) does not get the config's storage state: it calls `startAtAllIn(context)` (`tests/e2e/greek-start.ts`). jsdom features and unit tests do not run `main.tsx`: an unplaced phone reads Greek 5 and Hebrew 0, so they see every Greek row until one calls `setGreekInterest` (the welcome does, for a new reader).
 
+## The shared fakes
+
+CLAUDE.md's Tests keeps one short line for this; the bullet was moved here word for word (mw-ar5k42b.5) to keep CLAUDE.md under its 16,000 bytes.
+
+- Unit tests live in `tests/unit/`; shared fakes in `tests/support/` (`fake-registration.ts` fakes a
+  service worker registration; `fake-postern.ts` is a Postern backend with a mill that opens the grist and answers it,
+  used by features/tutor.feature and, through `playwright-postern.ts`, by tests/e2e/tutor.spec.ts). Tests run in jsdom, `fake-indexeddb`, `TZ=UTC`.
+
+What `fake-postern.ts` answers is in 'The tutor's tests' above; the speech, microphone and wake-word fakes are in the next section.
+
 ## Speech and the microphone fakes
 
 Speech and the microphone are never faked by hand (mw-it6qk5.3): they are voice-kit's honest fakes (`voice-kit/testing/speech` and `/mic`: an utterance
@@ -158,6 +170,15 @@ in every gate but the Laptop's main checkout and a story that broke their invari
 - no sources anywhere (cloud hosts): skipped with that one line, never a failure; `LAMPAS_LXX_REAL=run|skip` forces it.
 
 Other `skipIf` tests in `tests/` on a git-ignored path: `tests/unit/supplied-words.test.ts` (`data/raw/msb_nt_tables.tsv`); the catalogue, sermon-archives and match-export tests wait on the vault's Logos export (outside the repo).
+
+## Waits
+
+CLAUDE.md's Tests keeps one short line for these two rules; the bullets were moved here word for word (mw-ar5k42b.5) to keep CLAUDE.md under its 16,000 bytes.
+
+- Every jsdom `findBy*`/`waitFor` waits `ASYNC_WAIT_MS` (`tests/support/timeouts.ts`, 10 s, set in `tests/setup.ts`; a loaded host outruns the library's 1 s): never pass a shorter `timeout:` and give `vi.waitFor` one (`tests/unit/async-wait.test.ts` greps for both).
+- A step that checks what the bus heard waits for it (`tests/support/published.ts`: `expectPublished(() => list, expected)` for a list a step file fills, `expectLatest(kind, check)` for the newest event of a kind): a screen can write before it publishes (mw-5r3p30.389; `tests/unit/published-wait.test.ts` fails on an `expect(list)` or `expect(latest(...))` with no wait).
+
+A wait on the clock alone (a sleep) is the next section.
 
 ## A real-time sleep in a test (mw-t5shinh.6)
 
