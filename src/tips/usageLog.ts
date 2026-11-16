@@ -5,7 +5,7 @@
 import { isClosedDatabase } from '../data/closedDatabase';
 import { recordUsage } from '../data/repositories';
 import { subscribeAll } from '../events/bus';
-import { routeOf } from '../nav/route';
+import { routeOf, watchAddress } from '../nav/route';
 
 /** Every log that has started, with its queue of writes; a stopped log leaves once its writes are kept. */
 const logs = new Set<{ queue: Promise<void> }>();
@@ -55,13 +55,12 @@ export function startUsageLog(now: () => number = Date.now): () => Promise<void>
     count(`screen:${route}`);
   };
   seeScreen();
-  window.addEventListener('hashchange', seeScreen);
-  window.addEventListener('popstate', seeScreen);
+  // watchAddress is told of the app's own moves (history.pushState fires neither hashchange nor popstate) as well as the phone's Back and a typed address (mw-6ww.175.79)
+  const offAddress = watchAddress(seeScreen);
 
   return () => {
     offBus();
-    window.removeEventListener('hashchange', seeScreen);
-    window.removeEventListener('popstate', seeScreen);
+    offAddress();
     return log.queue.finally(() => logs.delete(log));
   };
 }
