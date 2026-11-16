@@ -21,6 +21,7 @@ import { applyChanges } from '../../src/settings/registry';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
+import { waitWhileChanging } from '../../tests/support/wait-progress';
 import { openTutor } from './open-tutor';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
@@ -146,14 +147,21 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(await within(languages()).findByRole('button', { name: label }));
     // the tap does not await its writes (the dials move one after the other, each with the settings it brings or hides): the next step starts when Which languages? shows the choice,
     // which it does only once both dials stand where it puts them. A step that moves a dial straight after, with the first move's writes still going, interleaves two moves of the
-    // shared settings (mw-qtu3zvz.175).
-    await waitFor(() => expect(pressed(languages(), label), `Which languages? ${label}, drawn: ${pressedIn(languages())}`).toBe(true));
+    // shared settings (mw-qtu3zvz.175). The choice is up to two moves, one dial after the other, and a move is a run of writes that every drawn row re-reads (3-4 s for the first at
+    // load 16): each state the row passes through gets its own wait, and the step fails when one goes by with the row where it was (mw-qtu3zvz.186).
+    await waitWhileChanging(
+      () => expect(pressed(languages(), label), `Which languages? ${label}, drawn: ${pressedIn(languages())}`).toBe(true),
+      () => pressedIn(groupNamed('Which languages?')),
+    );
   };
   const choosesOnDial = async (_: unknown, step: string, name: string): Promise<void> => {
     const group = await findGroup(name);
     await user.click(within(group).getByRole('button', { name: step }));
     // the write is not awaited by the tap: the next step starts when the dial shows the step
-    await waitFor(() => expect(pressed(dial(name), step), `${name} ${step}, drawn: ${pressedIn(dial(name))}`).toBe(true));
+    await waitWhileChanging(
+      () => expect(pressed(dial(name), step), `${name} ${step}, drawn: ${pressedIn(dial(name))}`).toBe(true),
+      () => pressedIn(dial(name)),
+    );
   };
   const languagesHas = async (_: unknown, label: string): Promise<void> => {
     await waitFor(() => expect(pressed(languages(), label)).toBe(true));
