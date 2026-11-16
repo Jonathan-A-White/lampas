@@ -12,7 +12,7 @@ where the sermons are found, not where books are opened; a book that is more tha
 <!-- toc -->
 
 - [In one screen](#in-one-screen)
-- [1. Today: two screens for one door](#1-today-two-screens-for-one-door)
+- [1. Before the build: two screens for one door](#1-before-the-build-two-screens-for-one-door)
 - [2. Where the list lives](#2-where-the-list-lives)
 - [3. The list at 120 sources](#3-the-list-at-120-sources)
 - [4. What a source is, and the two groups](#4-what-a-source-is-and-the-two-groups)
@@ -36,7 +36,7 @@ where the sermons are found, not where books are opened; a book that is more tha
 ## In one screen
 
 - **One list.** Settings > Study resources > Sermons has one row, **Sermon sources**, with its count ('17 of 120 on'). It opens a page of its own in the look of Library > Sermons: All on / All off, a search field, a count, and one row for each source with **Off | On**.
-- **One row for each source.** Today Greg Laurie is two rows on two screens (his list in Settings, his archive in the Library). In the one list he is one row. The sources bundled today go from 87 rows on two screens to 73 on one (counted for a phone whose import holds the Logos lists' books; a phone with no import sees 2 rows in Settings and 71 in Library > Sermons today).
+- **One row for each source.** Before the build Greg Laurie was two rows on two screens (his list in Settings, his archive in the Library). In the one list he is one row. The sources bundled then went from 87 rows on two screens to 73 on one (counted for a phone whose import holds the Logos lists' books; before the build a phone with no import saw 2 rows in Settings and 71 in Library > Sermons).
 - **Two groups, named by what On gives.** *Listed by passage*: each sermon is listed at its verse, and the count on the Sermons door is these. *Logos books, at the verse*: Logos opens the book at the verse, and Lampas cannot say which sermons it holds there.
 - **A row says three things:** the source's name, how many sermons and where they open ('3,467 sermons · on the web'), and Off | On. No Pin anywhere.
 - **What is on comes first** in each group, then the rest by name. Nothing moves under his thumb.
@@ -49,21 +49,23 @@ Where each thing lives after the build:
 | Thing | Where he finds it |
 | --- | --- |
 | Every sermon source, Off or On | Settings > Study resources > Sermons > **Sermon sources** (the one list) |
-| Open web sermons in | Settings > Study resources > Sermons, the row under Sermon sources (where it is today) |
+| Open web sermons in | Settings > Study resources > Sermons, the row under Sermon sources (where it was before the build) |
 | A Logos book that is only sermons | the one list, and nowhere in the Library |
-| A Logos book that is more than sermons | its page of the Library (Commentaries), as now, **and** the one list |
+| A Logos book that is more than sermons | its page of the Library (Commentaries), as before, **and** the one list |
 | The theme lists | Settings > Study resources > Themes (unchanged) |
 | The sermons themselves | the Sermons door on a verse, and its sheet (unchanged) |
 | The books of a Logos library he has not imported | not shown; the list says how to import |
 
-## 1. Today: two screens for one door
+## 1. Before the build: two screens for one door
+
+This section is the app as it was before mw-qtu3zvz.92 landed. Its tense is the past of that build: at HEAD Library > Sermons is gone (its address opens the one list), and each fault below is mended except where it says otherwise.
 
 | | Settings > Study resources > Sermons | Library > Sermons |
 | --- | --- | --- |
-| Holds | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`). A phone with no Logos import sees 2 of the 9 (Spurgeon's sermons (CCEL), Matthew Henry's sermons); the other 7, the Logos lists, are drawn only while his import holds one of their books (`src/settings/definitions/sermons.ts`, mw-qtu3zvz.94), so the nine are what a phone with the import sees | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
-| Looks like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page: header with its count at the right, help line, All on / All off, 'Search 71 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
+| Holds (before the build) | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`). A phone with no Logos import sees 2 of the 9 (Spurgeon's sermons (CCEL), Matthew Henry's sermons); the other 7, the Logos lists, are drawn only while his import holds one of their books (`src/settings/definitions/sermons.ts`, mw-qtu3zvz.94), so the nine are what a phone with the import sees | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
+| Looked like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page: header with its count at the right, help line, All on / All off, 'Search 71 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
 | Kept as | the setting `sermons.<id>` | the shelf row of the book (`db.library`, Off / On / Pinned) |
-| On gives | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at every verse, not counted; and a row behind In another book… at the verse, the Pinned ones first |
+| On gave | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at every verse, not counted; and a row behind In another book… at the verse, the Pinned ones first |
 
 What is wrong with it, beyond there being two:
 
@@ -71,7 +73,7 @@ What is wrong with it, beyond there being two:
 2. **The better screen holds the weaker sources.** The page with the search and the count is the one for books Lampas cannot look inside; the lists, whose sermons it can name, are plain rows under three other sections.
 3. **Pin does nothing he wants.** It puts a sermon book among the other books at a verse, "disassociated with the sermon mapper".
 4. **Neither says why the door's number is what it is.** With 71 books On and two lists On, the door can read 'Sermons · 3': nothing says that only the lists are counted.
-5. **Everyone is shown his books.** The 71 are the Governor's own, and Library > Sermons shows all 71 to every reader, with no import. Settings is already mended (mw-qtu3zvz.94, the owned-check now in `src/data/owned.ts`): it offers a Logos list only while his import holds one of its books, so a phone with no import sees 'Spurgeon's sermons (CCEL)' and 'Matthew Henry's sermons' there and not the seven Logos lists. Only Library > Sermons still shows all 71, until the build (mw-qtu3zvz.92).
+5. **Everyone is shown his books.** The 71 are the Governor's own, and Library > Sermons showed all 71 to every reader, with no import. Settings was mended first (mw-qtu3zvz.94, the owned-check now in `src/data/owned.ts`): it offers a Logos list only while his import holds one of its books, so a phone with no import sees 'Spurgeon's sermons (CCEL)' and 'Matthew Henry's sermons' there and not the seven Logos lists. Library > Sermons showed all 71 until the build (mw-qtu3zvz.92) took the page away; at HEAD the one list offers a Logos book only while his import holds it, or Logos gives it free.
 
 ## 2. Where the list lives
 
@@ -83,7 +85,7 @@ Under **Settings > Study resources > Sermons**, as a page of its own behind one 
 ├────────────────────────────┤
 │ ...                        │
 │ (Study resources, Maps and │
-│  Themes, as today)         │
+│  Themes, unchanged)        │
 │                            │
 │ Sermons                    │
 │ Which sermon lists the     │
@@ -102,11 +104,11 @@ Under **Settings > Study resources > Sermons**, as a page of its own behind one 
 - The row **Sermon sources** is a door in the shape of a Library home row ('Lexicons  19 on · 2 pinned ›'): its name, the count, a chevron, 48 px high. It opens the page **Sermon sources**, whose Back is the Study resources page at this row.
 - **Open web sermons in** stays where it is. It is about every web sermon, not about one source, and under a list of 120 rows nobody would find it.
 - Why a page and not rows in the section: the vault's rule is that a long list is a widget, not a page of rows (quoted at the top of `src/ui/SearchableList.tsx`); the Library design found the five-row widget cramped at 110 books and gave each kind a page (`docs/design/library-at-scale.md` 3.3); and the look he likes *is* that page. A page also gives the list the header for its count, a scroll place of its own, and a search field at the top of the screen.
-- **No dead address.** `#/library?kind=sermons` (the old Library > Sermons) opens the page in its place, and with `book=<id>` at that book's row. `#/settings?section=sermons` opens the Study resources page at the section, as now. `#/settings?setting=sermons.<id>` (the tutor's link to a source, a Settings search result) opens the page at that source's row, marked until his next tap.
+- **No dead address.** `#/library?kind=sermons` (the old Library > Sermons) opens the page in its place, and with `book=<id>` at that book's row. `#/settings?section=sermons` opens the Study resources page at the section, as before. `#/settings?setting=sermons.<id>` (the tutor's link to a source, a Settings search result) opens the page at that source's row, marked until his next tap.
 
 ## 3. The list at 120 sources
 
-The top of the list as it opens. The 120 here are 23 lists (14 on the web, 9 from Logos books) and 97 Logos books; 17 are on. The numbers of the first rows are today's real sources, as a phone whose import holds the Logos lists' books sees them (one with no import sees only Spurgeon's and Matthew Henry's lists in Settings); their names are the ones section 5 gives (Settings shows 'Spurgeon's sermons (CCEL)' today). Brackets mark the chosen step ('Off [On]' is On). This mockup shows the first group, *Listed by passage*; the second group, *Logos books, at the verse*, is drawn in the next one, after 'Scrolled past the first group'.
+The top of the list as it opens. The 120 here are 23 lists (14 on the web, 9 from Logos books) and 97 Logos books; 17 are on. The numbers of the first rows are the real sources of the day the design was drawn (before the build), as a phone whose import holds the Logos lists' books sees them (one with no import sees only Spurgeon's and Matthew Henry's lists in Settings); their names are the ones section 5 gives (Settings showed 'Spurgeon's sermons (CCEL)' then). Brackets mark the chosen step ('Off [On]' is On). This mockup shows the first group, *Listed by passage*; the second group, *Logos books, at the verse*, is drawn in the next one, after 'Scrolled past the first group'.
 
 ```text
 ┌────────────────────────────┐
@@ -193,7 +195,7 @@ Scrolled past the first group, the second begins:
 
 A source is one thing he can turn on. There are three sorts, and the list names them by what On gives, because that is what he is choosing:
 
-| Sort | Example today | On gives | Group |
+| Sort | Example | On gives | Group |
 | --- | --- | --- | --- |
 | A list on the web | Spurgeon's sermons (3,467, at CCEL); Matthew Henry's (45, at the Internet Archive); each list the sermon index service adds | each sermon at its verse on the Sermons sheet, opened on the web, free to anyone; counted on the door | **Listed by passage** |
 | A list from Logos books | Greg Laurie's sermons (1,091), J. D. Greear's, Skip Heitzig's, Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's, D. L. Moody's | each sermon at its verse, opened in Logos, for an owner of the book; counted on the door | **Listed by passage** |
@@ -222,12 +224,12 @@ Three things, always in the same places, so 120 rows read as one column of names
 | Line 3, only where it applies (14 px, accent) | | 'Free with Logos' (mw-qtu3zvz.94's list) | 'Free with Logos'; 'Also in your Library: Commentaries ›' (section 11) |
 | Control | Off \| On | Off \| On | Off \| On |
 
-- **The name** is the source's name without a bracket at its end: 'Spurgeon's sermons', not 'Spurgeon's sermons (CCEL)' as Settings shows it today; line 2 says where it opens.
+- **The name** is the source's name without a bracket at its end: 'Spurgeon's sermons', not 'Spurgeon's sermons (CCEL)' as Settings showed it before the build; line 2 says where it opens.
 - **'his Logos archive'** was the index file's name for the three archives of the Governor's Logos (`public/sermons/index.json`) until mw-qtu3zvz.108 took 'his' out, now '(Logos archive)'; Settings never showed that name (it drops the bracket), and the page drops it too: it was written about the Governor, and another owner would read it as someone else's.
 - **Two lines at most for a name.** A book's name is the catalogue's short name; a title that would run past two lines ('Sermons on the Beatitudes, with Others Mostly Preached before the University of Oxford; To Which Is Added…', 169 characters) is cut with an ellipsis (25 of the 78 short names are longer than two lines today, so the rules should give those a shorter one). The whole title is what TalkBack reads and what the search looks in. The type is never made smaller to fit.
 - **How many sermons** is the index's own number of sermons listed for the source (`rows`). A source that does not say has no number: 'on the web'.
 - **The control** is the Library's segmented control with two steps (as Devotionals has it): each step 44 px, the chosen one filled, a radio group named by the source, so a screen reader says the source's name and then 'On, radio button, 2 of 2'. It sits at the right edge, under the thumb. **No Pin**: there is nothing left for it to mean.
-- **A tap is saved at once** and changes the door's count at once, as today. There is no Save.
+- **A tap is saved at once** and changes the door's count at once, as before. There is no Save.
 - **Nothing else is on a row.** The credit and the link to a source's home stay where they are, under the sermons on the Sermons sheet and in About.
 
 ## 6. The order
@@ -343,7 +345,7 @@ A row is about 64 px (a name and one line), so 120 rows are some 7,700 px, ten s
 | Know why the door says 3 when 60 are on | the first group's line: the count on the door is these |
 | Find what is new or unknown to him | scroll one group: its rows are alike, two or three lines each, in A to Z order, the volumes of a series together |
 
-The devices, in one place: one row per source (87 rows become 73 for the sources bundled today); two groups that do not change under a tap; what is on first; a name of two lines at most; one fixed place for each of the three things a row says; a search over every word; buttons that act on what is shown; Undo; counts at every level.
+The devices, in one place: one row per source (87 rows became 73 for the sources bundled at the time); two groups that do not change under a tap; what is on first; a name of two lines at most; one fixed place for each of the three things a row says; a search over every word; buttons that act on what is shown; Undo; counts at every level.
 
 ## 10. The empty and none-owned states
 
@@ -430,7 +432,7 @@ None owned, at 390 px:
 Little changes, and one thing must:
 
 - **In Logos** lists the Logos books that are On, by name; there is no 'Pinned first' any more. A book under a list is not drawn there.
-- **The door where nothing is listed.** Today the door is drawn only when the place has a listed sermon (`SermonsDoor`: no count, no door), and a sermon book can still be reached through In another book…. Once that door closes to sermon books, a place with no listed sermon (all of 2 John, which no bundled list reaches) would have no way to them at all. So: where no sermon is listed and a Logos book is On, the door is drawn as **Sermons**, with no number, and its sheet says 'No sermons here.' above In Logos. The number stays what it was: listed sermons.
+- **The door where nothing is listed.** Before the build the door was drawn only when the place had a listed sermon (`SermonsDoor`: no count, no door), and a sermon book could still be reached through In another book…. Once that door closed to sermon books, a place with no listed sermon (all of 2 John, which no bundled list reaches) would have no way to them at all. So: where no sermon is listed and a Logos book is On, the door is drawn as **Sermons**, with no number, and its sheet says 'No sermons here.' above In Logos. The number stays what it was: listed sermons.
 - The count, the groups, the search, the credits and Ask for a preacher are as they are.
 
 ## 13. The tutor, and the words that point here
