@@ -291,9 +291,9 @@ def test_a_file_with_no_announcement_starts_the_first_verse_by_its_own_sound():
 
 def test_the_two_slops_are_the_file_s_and_each_edge_keeps_its_own():
     parts = [(0.5, None), (1.0, -20), (0.15, None), (1.0, -20), (0.5, None)]
-    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d')], {1: [0.6, 1.4], 2: [1.75, 2.5]}, {'lead': 0.03, 'tail': 0.1, 'insideTail': 0.04})
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d')], {1: [0.6, 1.4], 2: [1.75, 2.5]}, {'lead': 0.03, 'tail': 0.1, 'insideTail': 0.06})
     (_, _, end1), (_, start2, _) = cut['verses']
-    assert near(end1, 1.575) and near(start2, 1.65 - 0.03) and end1 <= start2  # 150 ms is too short for 40 ms and a tail of 100, enough for a lead of 30
+    assert near(end1, 1.575) and near(start2, 1.65 - 0.03) and end1 <= start2  # 150 ms is too short for 60 ms and a tail of 100, enough for a lead of 30
     assert [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')]
     assert 'lead' in align.SLOP_PATH.read_text() and align.SLOP_PATH.name == 'player-slop.json'
 

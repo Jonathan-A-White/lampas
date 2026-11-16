@@ -11,8 +11,10 @@ middle of a verse (the narrator reads another word) is its own kind, text-differ
     python judge.py --book jhn --timings <copy>     # judges another timings file of the same book (a copy, an old commit's)
     python judge.py --book jhn --prove              # the judge is judged: faults planted in a copy of the timings, the table of caught / planted
 
-THE CLIP IS WHAT HE COULD HEAR, AT WORST. The player may start `lead` seconds early and stop `tail` seconds late (player-slop.json, the one file): extra is judged
-on the clip at its longest, [start - lead, end + tail]; clipping on the clip at its shortest, [start + lead, end - tail].
+THE CLIP IS WHAT HE COULD HEAR, AT WORST. The player may start `lead` seconds early or late and stop `tail` seconds late (player-slop.json, the one file) or
+`insideTail` seconds EARLY (inside.tail of player-margin.json: it pauses END_SLACK before the end after a FADE; mw-ar5k42b.9): extra is judged on the clip at its
+longest, [start - lead, end + tail]; clipping on the clip at its shortest, [start + lead, end - insideTail]. So an end less than insideTail after the verse's
+last sound is tail-clipped: the player's early stop would lose that much of the last word.
 
 THE EARS, cheap first:
   quiet    the recording's own level (RMS of 10 ms frames every 5 ms) against the chapter's speech level. The recording is gated: between phrases it is digital
@@ -49,7 +51,7 @@ import align  # noqa: E402  the maker: its text source, its normaliser, its poli
 
 words_of = align.words_of
 
-JUDGE_VERSION = '1'
+JUDGE_VERSION = '2'  # 2: the tail clipped by the player's early stop, judged at insideTail (mw-ar5k42b.9)
 REPO = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 EDITION = align.EDITION
@@ -98,9 +100,9 @@ def log(*parts: object) -> None:
 
 
 def read_slop(path: Path = SLOP_PATH) -> dict:
-    """The player's worst case, from the one file: {'lead': seconds it may start early or late, 'tail': seconds it may stop late or early}."""
-    raw = json.loads(path.read_text(encoding='utf8'))
-    return {'lead': float(raw['lead']), 'tail': float(raw['tail'])}
+    """The player's worst case, read as the maker reads it (align.read_slop): {'lead': seconds it may start early or late, 'tail': seconds it may stop late,
+    'insideTail': seconds it may stop early (inside.tail of player-margin.json)}."""
+    return align.read_slop(path)
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -399,7 +401,7 @@ def measure(verses: list[dict], heard: list[list], sound: Sound) -> dict:
 
 def flags_of(edges: dict, start: float, end: float, slop: dict, sound: Sound | None = None) -> list[dict]:
     """The faults of one verse's cut against its measured sound: the clip at its longest (start - lead to end + tail) must hold nothing of the sound before or
-    after the verse, the clip at its shortest (start + lead to end - tail) must lose nothing of the verse's own. `by` is the seconds of it; with the recording's
+    after the verse, the clip at its shortest (start + lead to end - insideTail: the player's early stop) must lose nothing of the verse's own. `by` is the seconds of it; with the recording's
     level (`sound`) it is the seconds of SOUND in that stretch, so a click of a few frames with silence after it is not counted as the whole stretch. A part-sound
     up to TOLERANCE is not a fault."""
     flags = []
@@ -418,14 +420,14 @@ def flags_of(edges: dict, start: float, end: float, slop: dict, sound: Sound | N
     if edges.get('after') is not None:
         flag('tail-extra', edges['after'], end + slop['tail'], edges['tailReadsOn'])
     if edges.get('end') is not None:
-        flag('tail-clipped', end - slop['tail'], edges['end'], edges['tailReadsOn'])
+        flag('tail-clipped', end - slop['insideTail'], edges['end'], edges['tailReadsOn'])
     return flags
 
 
-def zone_flags(side: str, sound: Sound, edge: float, slop: float) -> list[dict]:
-    """An edge the letters could not settle, by the quiet alone: sound anywhere the player may start or stop (edge - slop to edge + slop) is a part-sound in the
+def zone_flags(side: str, sound: Sound, edge: float, early: float, late: float) -> list[dict]:
+    """An edge the letters could not settle, by the quiet alone: sound anywhere the player may start or stop (edge - early to edge + late) is a part-sound in the
     clip or cut from it. Its kind is read from where the sound lies: running on into the clip's inside is the verse's own sound cut, otherwise it is extra."""
-    lo, hi = edge - slop, edge + slop
+    lo, hi = edge - early, edge + late
     seconds = sound.sound_seconds(lo, hi)
     if seconds <= TOLERANCE + 1e-9:
         return []
@@ -535,7 +537,7 @@ def judge_verse(verse: dict, triple: list, edges: dict, heard: list[list], sound
     """One verse's verdict: {'n', 'verdict': 'ok'} or {'n', 'verdict': 'flagged', 'flags': [...]}, with `sound` (the four measured seconds) either way."""
     n, start, end = triple
     long_start, long_end = max(0.0, start - slop['lead']), min(sound.duration, end + slop['tail'])
-    short_start, short_end = start + slop['lead'], end - slop['tail']
+    short_start, short_end = start + slop['lead'], end - slop['insideTail']
     flags = []
     for found in flags_of(edges, start, end, slop, sound):
         if not edges['headWeak' if found['kind'].startswith('head') else 'tailWeak']:
@@ -547,9 +549,9 @@ def judge_verse(verse: dict, triple: list, edges: dict, heard: list[list], sound
             }[found['kind']](), 1)
             flags.append(found)
     if edges['headWeak']:
-        flags += zone_flags('head', sound, start, slop['lead'])
+        flags += zone_flags('head', sound, start, slop['lead'], slop['lead'])
     if edges['tailWeak']:
-        flags += zone_flags('tail', sound, end, slop['tail'])
+        flags += zone_flags('tail', sound, end, slop['insideTail'], slop['tail'])
     words = None
     if flags or edges['headWeak'] or edges['tailWeak'] or edges['suspect']:
         words = ears.words(long_start, long_end)

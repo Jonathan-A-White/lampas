@@ -270,7 +270,7 @@ def test_a_read_on_boundary_cannot_be_cut_clean_and_says_so():
 
 
 def test_the_slop_is_the_one_files():
-    wide = {'lead': 0.2, 'tail': 0.3}
+    wide = {'lead': 0.2, 'tail': 0.3, 'insideTail': 0.3}
     assert judge.flags_of(EDGES, 10.25, 15.3, wide) == []  # 10.05 and 15.6 at the longest, 10.45 and 15.0 at the shortest: to the very bounds
     assert kinds(judge.flags_of(EDGES, 10.25, 15.35, wide)) == ['tail-extra']  # 15.35 + 0.3 = 15.65: 50 ms into the next sound
     assert kinds(judge.flags_of(EDGES, 10.25, 15.35, SLOP)) == []
@@ -289,8 +289,8 @@ def test_an_end_50_ms_after_the_last_sound_is_tail_clipped_by_the_player_and_one
     flags = judge.flags_of(edges, 10.25, 15.05, margin)
     assert kinds(flags) == ['tail-clipped'] and flags[0]['by'] == pytest.approx(margin['insideTail'] - 0.05)
     assert judge.flags_of(edges, 10.25, 15.10, margin) == []
-    # the late stop is still judged at `tail`: 100 ms after the sound and 60 ms before the next is clean, 30 ms before the next is not
-    assert kinds(judge.flags_of(dict(edges, after=15.13), 10.25, 15.10, margin)) == ['tail-extra']
+    # the late stop is still judged at `tail`: the next sound 20 ms after the end is 30 ms inside the clip at its longest
+    assert kinds(judge.flags_of(dict(edges, after=15.12), 10.25, 15.10, margin)) == ['tail-extra']
 
 
 def test_a_weak_tail_is_judged_in_the_zone_from_the_inside_tail_before_it_to_the_tail_after_it(sound):
@@ -299,7 +299,7 @@ def test_a_weak_tail_is_judged_in_the_zone_from_the_inside_tail_before_it_to_the
     flags = judge.zone_flags('tail', sound, 3.05, margin['insideTail'], margin['tail'])
     assert kinds(flags) == ['tail-clipped'] and flags[0]['by'] == pytest.approx(0.047, abs=0.006)
     assert judge.zone_flags('tail', sound, 3.10, margin['insideTail'], margin['tail']) == []
-    assert kinds(judge.zone_flags('tail', sound, 3.46, margin['insideTail'], margin['tail'])) == ['tail-extra']
+    assert kinds(judge.zone_flags('tail', sound, 3.48, margin['insideTail'], margin['tail'])) == ['tail-extra']
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
