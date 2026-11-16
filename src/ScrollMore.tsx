@@ -4,7 +4,7 @@
 //   - useScrollMore(options): the hook; give the first of the pair to the scroller as its ref. It says which sides have more (`start`, `end`) and, with `peek`, keeps the row's spacing such that a door is cut by the edge.
 //   - ScrollFades: the two fades, placed over the scroller's wrapper (which is `relative`).
 //   - ScrollMore: a wrapper div + scroller + fades for a row that needs no wrapper of its own.
-// Peek: the row's gap is `calc(<its own gap> + var(--scroll-more-extra, 0px))`; the hook sets --scroll-more-extra (0 to MAX_EXTRA px) on the scroller, the least that leaves the first door the
+// Peek: the row's gap is `calc(<its own gap> + var(--scroll-more-extra, 0px))`; the hook sets --scroll-more-extra (usually 0 to MAX_EXTRA px; negative or wider when no such gap leaves a door cut, so a row that overflows always shows a cue) on the scroller, the least that leaves the first door the
 // edge cuts with FADE_CLEAR px or more beyond it and a thumb-readable part inside. A row that fits, or that is wrapped (the Verse view's by-hand field), gets neither fade nor spacing.
 // The fade runs to var(--color-canvas) unless `from` says otherwise (a row on a card passes var(--color-surface); a box that holds Markdown sets --scroll-more-from), so it follows light, dark, sepia and High contrast.
 import { FADE_PX } from './scrollPeek';

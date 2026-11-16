@@ -108,3 +108,44 @@ test('a row that fits shows no fade', async ({ page }) => {
   expect(state.start?.shown ?? false).toBe(false);
   expect(state.end?.shown ?? false).toBe(false);
 });
+
+/** The door the row's right edge cuts: its part inside the row and its part past the edge, and the least gap before any door's end and the edge (mw-fnvjof.17.121). */
+async function cutOf(line: Locator) {
+  const s = await stateOf(line);
+  const cut = s.items.find((r) => r.right > s.right + 1);
+  return {
+    cut,
+    inside: cut ? s.right - cut.left : 0,
+    past: cut ? cut.right - s.right : 0,
+    nearestEnd: Math.min(...s.items.filter((r) => r.right <= s.right + 1).map((r) => Math.abs(s.right - r.right))),
+    underFade: cut ? s.right - cut.left < 20 : false,
+    state: s,
+  };
+}
+
+test('390: after Memorize the tools line still cuts a door by the edge (Memorizing · English, Rehearse)', async ({ page }) => {
+  const { line, tools } = await openLuke(page, 390);
+  await tools.getByRole('button', { name: 'Memorize', exact: true }).click();
+  await expect(tools.getByRole('button', { name: 'Memorizing · English' })).toBeVisible();
+  await expect(tools.getByRole('button', { name: 'Rehearse' })).toBeAttached();
+  await expect.poll(async () => (await stateOf(line)).max, 'the doors are wider than the row').toBeGreaterThan(10);
+  await expect.poll(async () => (await cutOf(line)).inside, 'a door is cut by the edge with 24 px inside').toBeGreaterThanOrEqual(24);
+  const c = await cutOf(line);
+  expect(c.past, 'the cut door runs 20 px or more past the edge').toBeGreaterThanOrEqual(20);
+  expect(c.nearestEnd, 'no door ends near the edge').toBeGreaterThan(8);
+  expect(c.state.end?.shown, 'a fade on the right').toBe(true);
+  await shot(page, 'scroll-more-memorizing-390');
+});
+
+for (const width of [412, 320]) {
+  test(`${width}: at rest the door cut by the edge has 24 px inside and is not under the fade`, async ({ page }) => {
+    const { line } = await openLuke(page, width, width === 412 ? 915 : 844);
+    await expect.poll(async () => (await stateOf(line)).max, 'the doors are wider than the row').toBeGreaterThan(10);
+    await expect.poll(async () => (await cutOf(line)).inside, 'a door is cut by the edge with 24 px inside').toBeGreaterThanOrEqual(24);
+    const c = await cutOf(line);
+    expect(c.underFade, 'the cut door is not wholly under the fade').toBe(false);
+    expect(c.past, 'the cut door runs 20 px or more past the edge').toBeGreaterThanOrEqual(20);
+    expect(c.nearestEnd, 'no door ends near the edge').toBeGreaterThan(8);
+    await shot(page, `scroll-more-rest-${width}`);
+  });
+}
