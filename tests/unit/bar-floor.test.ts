@@ -50,6 +50,22 @@ describe('readBarFloor', () => {
   });
 });
 
+describe('readBarFloor with a window that cannot answer', () => {
+  it('leaves the floor off and does not throw, as the page starts before its first render', () => {
+    const win = {
+      document,
+      screen: { height: 800 },
+      innerHeight: 800,
+      matchMedia: () => {
+        throw new TypeError('no media');
+      },
+    } as unknown as Window;
+    document.documentElement.removeAttribute('data-bar-checked');
+    expect(() => readBarFloor(win)).not.toThrow();
+    expect(document.documentElement.hasAttribute('data-bar-overlap')).toBe(false);
+  });
+});
+
 describe('the CSS floor', () => {
   const css = readFileSync('src/index.css', 'utf8');
 

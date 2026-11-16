@@ -2,6 +2,10 @@ import { expect, test, type Page } from '@playwright/test';
 import { drag } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
+import { asInstalledApp } from './installed';
+
+// Laid out as the installed app is (src/layout/barFloor.ts, mw-njqj1b0): a browser tab keeps no 48 px floor, which moves the lowest row and the floating ? down.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 // The Reader split, S1 (mw-5r3p30.1129.1, docs/design/reader-split.md as the Governor changed D4: "Do a, but allow for dynamic sizes (not just 3 fixed ones)"): a dock
 // below the passage whose handle row is the divider. It drags to any height and rests where it is let go; it clamps to a smallest and a largest size; pulled down past the

@@ -28,7 +28,12 @@ const MODES = ['fullscreen', 'standalone', 'minimal-ui', 'browser'] as const;
 
 function displayMode(win: Window): BarReading['displayMode'] {
   if (typeof win.matchMedia !== 'function') return 'other';
-  for (const mode of MODES) if (win.matchMedia(`(display-mode: ${mode})`).matches) return mode;
+  // a failing query leaves the floor off, never the page unstarted (this runs before the first render)
+  try {
+    for (const mode of MODES) if (win.matchMedia(`(display-mode: ${mode})`).matches) return mode;
+  } catch {
+    return 'other';
+  }
   return 'other';
 }
 
