@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Readies a fresh Ubuntu box to time and judge David's recording (mw-ar5k42b.4; docs/audio-run.md 'A fresh box'): run it once from a clone of the rig.
 #
-#   scripts/audio-timings/box-setup.sh
+#   scripts/audio-timings/box-setup.sh [-h | --help]
+#
+# It takes no other argument: -h and --help print this text and exit 0, and anything else (an unknown flag, a stray word) prints it to stderr and exits 2. Both
+# answer before the script does anything to the box (mw-ar5k42b.20).
 #
 # It makes ONE virtualenv (the judge's, which holds the maker's pinned packages too), installs the pinned requirements of the maker and the judge, fetches the
 # three models and John 2's recording to the cache, and PROVES ITSELF: it times and judges John chapter 2 through run-book.sh and compares the result with what
@@ -13,6 +16,14 @@
 #   password; else a pinned static build (the `imageio-ffmpeg` wheel) in <cache>/bin, and the proof says whether the same bytes came out. If neither works it stops
 #   and names ffmpeg: that is the one system package this tool may need.
 set -eu
+
+# The arguments come first, before anything is read, made or fetched: asking for help must never start the set-up (mw-ar5k42b.20).
+usage() { sed -n '2,/^set -eu$/p' "${BASH_SOURCE[0]}" | sed '/^set -eu$/d; s/^# \{0,1\}//'; }
+case "${1:-}" in
+  "") ;;
+  -h|--help) usage; exit 0 ;;
+  *) echo "box-setup: unknown argument '$1' (it takes none besides -h and --help)" >&2; usage >&2; exit 2 ;;
+esac
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo="$(cd "$here/../.." && pwd)"
