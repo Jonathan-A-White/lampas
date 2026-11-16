@@ -30,3 +30,43 @@ describe('every sideways scroll box shows there is more', () => {
     });
   }
 });
+
+// peekExtra over the real doors of the Verse view's tools line (widths measured at Luke 15:11, mw-fnvjof.17.121): at every row width a row that overflows ends with a door cut by the
+// edge, 24 px or more inside and 20 px or more past it, never a fall-back to 0 that leaves no cue.
+describe('peekExtra over the tools line', () => {
+  const GAP = 4;
+  const STATES: Record<string, number[]> = {
+    'at rest': [55.52, 60.41, 88.52, 79.11, 112.55, 51.05],
+    'Memorizing with Rehearse': [55.52, 60.41, 165.45, 85.45, 79.11, 112.55, 51.05],
+  };
+  /** The row is its window less the room the line keeps for the ? and the window's edge (96 px at 390: 294). */
+  const ROOM = 96;
+  for (const [state, widths] of Object.entries(STATES)) {
+    it(`${state}: a door is cut by the edge at every width from 320 to 430`, async () => {
+      const { peekExtra } = await import('../../src/scrollPeek');
+      const lefts: number[] = [];
+      const rights: number[] = [];
+      let x = 0;
+      for (const w of widths) {
+        lefts.push(x);
+        rights.push(x + w);
+        x += w + GAP;
+      }
+      const failures: string[] = [];
+      for (let vw = 320; vw <= 430; vw++) {
+        const width = vw - ROOM;
+        const extra = peekExtra(lefts, rights, width, GAP);
+        const at = (i: number) => ({ left: lefts[i] + i * extra, right: rights[i] + i * extra });
+        const cutAt = rights.findIndex((_, i) => at(i).right > width + 1);
+        if (cutAt === -1) {
+          if (rights[rights.length - 1] > width + 1) failures.push(`${vw}: extra ${extra} leaves no door cut`);
+          continue;
+        }
+        const { left, right } = at(cutAt);
+        if (width - left < 24 || right - width < 20) failures.push(`${vw}: extra ${extra}, door ${cutAt} has ${(width - left).toFixed(1)} inside and ${(right - width).toFixed(1)} past`);
+        if (cutAt > 0 && width - at(cutAt - 1).right < 8) failures.push(`${vw}: extra ${extra}, a door ends ${(width - at(cutAt - 1).right).toFixed(1)} from the edge`);
+      }
+      expect(failures).toEqual([]);
+    });
+  }
+});

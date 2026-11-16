@@ -37,7 +37,8 @@ export function useScrollMore<T extends HTMLElement = HTMLDivElement>({ peek = t
           const origin = row.getBoundingClientRect().left - row.scrollLeft;
           const lefts = items.map((el, i) => el.getBoundingClientRect().left - origin - i * current);
           const rights = items.map((el, i) => el.getBoundingClientRect().right - origin - i * current);
-          extra = peekExtra(lefts, rights, row.clientWidth);
+          const gap = parseFloat(getComputedStyle(row).columnGap) - current; // the row's own gap, without the extra
+          extra = peekExtra(lefts, rights, row.clientWidth, Number.isFinite(gap) ? Math.max(0, gap) : 0);
         }
         if (extra !== current) row.style.setProperty('--scroll-more-extra', `${extra}px`);
       }
