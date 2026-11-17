@@ -9,7 +9,8 @@
 //    and the text clear. It is not a button.
 //  - while it is On, the screen is kept awake (src/speech/wakeLock.ts, holder 'hands-free'); Off lets it go.
 // When the browser refuses the microphone the session turns the setting Off and the notice (session.ts MIC_REFUSED) shows here, in the strip, until he dismisses it or turns
-// Hands-free on again.
+// Hands-free on again. When the wake could not start for a reason that may pass (the model not fetched) the setting stays On, the notice (COULD_NOT_START) shows beside the
+// mark and goes by itself when the wake is waiting again.
 import { HandsFreeMark, useHandsFree as useSessionState, useThreeFingerTap } from 'voice-kit/handsfree/react';
 import { useEffect, useSyncExternalStore, type CSSProperties } from 'react';
 import { holdAwake, releaseAwake } from '../speech/wakeLock';
@@ -43,8 +44,8 @@ export function HandsFreeGate() {
     holdAwake(HANDS_FREE_HOLDER);
     return () => releaseAwake(HANDS_FREE_HOLDER);
   }, [on]);
-  if (notice !== null && !on) {
-    return (
+  const strip =
+    notice === null ? null : (
       <div data-hands-free-notice className="flex items-start gap-2 px-3 py-1 text-sm">
         <p role="alert" className="flex-1">
           {notice}
@@ -54,11 +55,13 @@ export function HandsFreeGate() {
         </button>
       </div>
     );
-  }
-  if (!on) return null;
+  if (!on) return strip;
   return (
-    <div data-hands-free-mark className="pointer-events-none fixed top-0 right-[env(safe-area-inset-right)]" style={MARK_SIZE}>
-      <HandsFreeMark state={session} label={HANDS_FREE_MARK_NAME} />
-    </div>
+    <>
+      {strip}
+      <div data-hands-free-mark className="pointer-events-none fixed top-0 right-[env(safe-area-inset-right)]" style={MARK_SIZE}>
+        <HandsFreeMark state={session} label={HANDS_FREE_MARK_NAME} />
+      </div>
+    </>
   );
 }

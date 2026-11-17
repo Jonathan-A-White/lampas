@@ -9,6 +9,8 @@
 //  - While another feature has the microphone (micBusy.ts: a hold-to-talk, a recording) the session is stopped, its stream closed; it starts again after.
 //  - The mark (HandsFreeGate) shows the session's state through `handsFreeSource`. A microphone refused turns the setting Off and says MIC_REFUSED on screen and aloud.
 //  - 'needs-touch' (the audio will not start until the page is touched): the next touch anywhere starts it again; it never pretends to listen.
+//  - Any other failed wake (the model cannot be fetched, no microphone, a browser with no wake) is told on screen and aloud (COULD_NOT_START); the mic-less and fetch-less kinds
+//    start again by themselves when the network is back ('online') or on the next touch anywhere, and the setting stays On; a browser that cannot do it at all turns it Off.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
 import { browserSpeech } from 'voice-kit/composer';
 import { browserWake, createChimes, createHandsFree, documentVisibility, type ChimePort, type HandsFree, type HandsFreeClock, type HandsFreeState, type WakePort } from 'voice-kit/handsfree';
@@ -47,6 +49,12 @@ const pauseNow = (): number => handsFreePauseMs(pauseValue);
 
 /** What is said, on screen and aloud, when the browser refuses the microphone. */
 export const MIC_REFUSED = "Lampas may not use the microphone. Allow it in the browser's site settings, then turn Hands-free on again.";
+
+/** What is said, on screen and aloud, when the wake could not start for a reason that may pass (the model not fetched, no microphone found): it tries again by itself. */
+export const COULD_NOT_START = "Hands-free could not start: the wake word could not be loaded or the microphone was not found. It tries again when the network is back, or when you touch the screen.";
+
+/** What is said when this browser cannot listen for the wake word at all: no retry would help, so Hands-free turns itself Off. */
+export const NOT_SUPPORTED = 'This browser cannot listen for the wake word, so Hands-free is off.';
 
 /** The language a command is heard in: the Talk hold's (src/talk/useTalkHold.ts). */
 const COMMAND_LANG = 'en-US';
@@ -166,34 +174,51 @@ const wake: WakePort = {
   },
 };
 
-/** The audio will not start until he touches the page: the next touch anywhere starts the session from it. */
-function startOnTouch(): void {
+/** The wake did not start: the next touch anywhere starts the session again; so does the network coming back when `online` (a failure that may be the network's). */
+function startOnTouch(online: boolean): void {
   if (untouch || typeof document === 'undefined') return;
-  const touched = (): void => {
+  const again = (): void => {
     untouch?.();
     if (wanted && !isMicBusy()) void session?.start();
   };
-  document.addEventListener('pointerdown', touched, true);
+  document.addEventListener('pointerdown', again, true);
+  if (online) window.addEventListener('online', again);
   untouch = () => {
-    document.removeEventListener('pointerdown', touched, true);
+    document.removeEventListener('pointerdown', again, true);
+    if (online) window.removeEventListener('online', again);
     untouch = null;
   };
 }
 
-/** The microphone was refused: Hands-free turns itself Off (in silence: the notice says why instead) and says why. */
-function refused(): void {
+/** The microphone was refused (or the browser cannot do it): Hands-free turns itself Off (in silence: the notice says why instead) and says why. */
+function refused(text: string): void {
   wanted = false;
   session?.stop();
   void setSetting(handsFreeSetting, 'off');
-  setNotice(MIC_REFUSED);
-  void sayAloud(MIC_REFUSED);
+  setNotice(text);
+  void sayAloud(text);
 }
+
+/** True once a failure has been said, until the wake is waiting again, so each touch that fails again does not say it again. */
+let toldFailure = false;
 
 function onState(next: HandsFreeState): void {
   setState(next);
-  if (next.name === 'needs-touch') startOnTouch();
-  else untouch?.();
-  if (next.name === 'failed' && next.kind === 'permission-denied') refused();
+  untouch?.();
+  if (next.name === 'needs-touch') startOnTouch(false);
+  if (next.name === 'waiting') {
+    toldFailure = false;
+    setNotice(null);
+  }
+  if (next.name !== 'failed') return;
+  if (next.kind === 'permission-denied') refused(MIC_REFUSED);
+  else if (next.kind === 'not-supported') refused(NOT_SUPPORTED);
+  else {
+    startOnTouch(true);
+    setNotice(COULD_NOT_START);
+    if (!toldFailure) void sayAloud(COULD_NOT_START);
+    toldFailure = true;
+  }
 }
 
 function sessionNow(): HandsFree {
@@ -228,7 +253,10 @@ onMicBusy(sync);
 
 /** Hands-free is On (the session runs) or Off (it ends: no wake listening, no recogniser). */
 export function runHandsFree(on: boolean): void {
-  if (on) setNotice(null);
+  if (on) {
+    setNotice(null);
+    toldFailure = false;
+  }
   if (on === wanted) return;
   wanted = on;
   sync();
@@ -243,6 +271,7 @@ export function resetHandsFree(): void {
   unfollowPause?.();
   unfollowPause = null;
   pauseValue = handsFreePauseSetting.default;
+  toldFailure = false;
   untouch?.();
   forgetPlayback();
   forgetAsk();
