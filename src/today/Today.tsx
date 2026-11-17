@@ -500,7 +500,8 @@ export function Today() {
     devotionalChoice === undefined || devotionalDraw === undefined || logosOn === undefined || day === undefined || heard === undefined
       ? undefined
       : devotionalToday({ choice: devotionalChoice, ticked: tickedDevotionals(devotionalDraw), date: today, pick: day.devotional, kept: day.rephil, heard, order: rephilOrder, backup: rephilBackup, logosOn });
-  const devotional = kept.devotional === undefined || logosOn === undefined ? undefined : kept.devotional === 'on' && todays === undefined ? 'off' : kept.devotional;
+  const devotionalRead = kept.devotional !== undefined && devotionalChoice !== undefined && devotionalDraw !== undefined && logosOn !== undefined && day !== undefined && heard !== undefined;
+  const devotional = !devotionalRead ? undefined : todays === undefined ? 'off' : kept.devotional;
   const scrollRef = useScrollMemory('today');
   const shown = [review, memorize, plan, psalms, devotional];
   const ready = !shown.includes(undefined) && tickBoxes !== undefined && day !== undefined && heard !== undefined;
