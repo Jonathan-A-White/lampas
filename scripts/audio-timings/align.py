@@ -26,7 +26,8 @@ THE CUT RULE (mw-ar5k42b.3; cut_chapter): the model only says BETWEEN WHICH LETT
 each edge is, is read from the recording's level. The narrator's recording is gated, so between two verses it is digital silence (about -90 dBFS; speech is above
 -45): the quiet of a boundary is the longest quiet between the last letter of one verse and the first letter of the next, read to 5 ms. BOTH edges are placed in it
 with the player's margin (player-slop.json, the one file the judge reads too): the end `tail` after the verse's last sound has died, the start `lead` before its
-first sound begins. Where the quiet is too short for the margin the cut is its middle; where there is none (the narrator reads on) it is the quietest instant
+first sound begins (a click before its first word is not its first sound: a sound of 20 ms or less with 30 ms or more of silence after it, John 9:40;
+mw-ar5k42b.6). Where the quiet is too short for the margin the cut is its middle; where there is none (the narrator reads on) it is the quietest instant
 between the two words; those edges go on the LISTEN LIST (scripts/audio-timings/listen/<edition>-<book>.json), for the Governor's ear. The announcement, a heading
 read aloud and a closing line are in no verse. What was measured (the aligner's letters of each verse, each boundary's quiet) is kept in
 scripts/audio-timings/quiet/<edition>-<book>.json: tests/unit/audio-timings-data.test.ts holds every timing to the rule by it, and --cut runs the rule again from
@@ -73,6 +74,13 @@ REACH = 0.75  # quiet_of (the judge's proof reads the announcement's end with it
 # with more than a BLIP of sound on its far side (a stop's release is a blip; a word is not).
 STAR_QUIET = 0.2
 BLIP = 0.1
+# A click before a verse's first word is not the verse's first sound (mw-ar5k42b.6; John 9:40: 15 ms of sound at -46 dBFS, 60 ms of silence, then 'Some'): a sound of
+# CLICK or less with CLICK_QUIET or more of silence after it. They are the judge's TOLERANCE (a part-sound that short is the measure's own grain) and its MIN_QUIET.
+# Before a word that begins with a stop (STOP_LETTERS: a c, a g, a j or a t may be one) a sound as short may be the word's own: the stop's release, or the faint
+# start of it (Exodus 4:7 'Put', Genesis 4:5 'But': 5 to 10 ms at -60 dBFS, 30 to 35 ms before the burst). There it stays the verse's first sound.
+CLICK = 0.02
+CLICK_QUIET = 0.03
+STOP_LETTERS = frozenset('bcdgjkpqt')
 SMOOTH_FRAMES = 3  # the quietest instant between two words is read from the level smoothed over this many frames (20 ms): one pitch period's trough is not a word boundary
 SLOP_PATH = Path(__file__).resolve().parent / 'player-slop.json'  # the player's margin, the ONE file: the judge widens each clip by the same numbers
 SPW_MIN, SPW_MAX = 0.12, 1.5  # seconds a word of a verse: outside this the chapter is left out
@@ -537,6 +545,24 @@ class Level:
                 return found
         return []
 
+    def past_clicks(self, onset: int, hi: int) -> int:
+        """Where a verse's own first sound begins, given `onset`, where the sound after its quiet begins: a click is not its first sound (mw-ar5k42b.6; John 9:40
+        started 50 ms before a click 75 ms before 'Some'). A click is a sound of CLICK or less (from where it begins to the next silence) with a silence of
+        CLICK_QUIET or more after it, a silence that begins before `hi`, the verse's first letter (a sound the aligner hears the first letter in is the verse's
+        own) and does not run to the file's end. Gives the millisecond the sound after the last such click begins. Only a verse's FIRST sound is read so, and
+        only of a word that does not begin with a stop (the cut rule asks): a sound as short after a silence at a verse's end is a stop's release and stays with
+        its word."""
+        import bisect
+
+        while True:
+            k = bisect.bisect_left(self.dips, (onset, 0))  # the next silence of MIN_DIP or more
+            if k == len(self.dips):
+                return onset
+            died, begins = self.dips[k]
+            if died - onset > ms(CLICK) or begins - died < ms(CLICK_QUIET) or died >= hi or begins >= ms(self.duration):
+                return onset
+            onset = begins
+
     def quietest(self, lo: int, hi: int) -> int:
         """The quietest instant between two letters, where the narrator reads on with no quiet: the middle of the frame whose level, smoothed over SMOOTH_FRAMES,
         is the lowest of the frames that lie wholly between them."""
@@ -574,7 +600,7 @@ def place_start(died: int | None, onset: int, lead: int) -> tuple[int, bool]:
     return up2(-(-(died + onset) // 2)), True
 
 
-def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop: dict) -> dict:
+def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, skip_title: bool = False) -> dict:
     """THE CUT RULE (mw-ar5k42b.3). Both edges of every verse are placed from the recording's level either side of the verse's boundary; the aligner only says
     between which two letters a boundary lies (`letters`: verse -> [its first letter's start, its last letter's end]).
 
@@ -582,7 +608,10 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     file's end). Its quiet is the LONGEST quiet between the two letters (a stop's closure inside a word is a shorter one and stays with its word). Where something
     else may be spoken there (the announcement before the first verse, a heading, a closing line: wherever the aligner was given a wildcard) the verse before ends
     in the FIRST quiet that is a pause and the verse after starts from the LAST one, so what is spoken between them is in neither verse. A pause is a quiet of
-    STAR_QUIET or more, or a shorter one with more than a BLIP of sound on its far side (a stop's closure has only its release there).
+    STAR_QUIET or more, or a shorter one with more than a BLIP of sound on its far side (a stop's closure has only its release there). The sound the verse after
+    starts from is its own first sound: a click before its first word (Level.past_clicks) is in the quiet, and the boundary's onset is the word's; but before a
+    word that begins with a stop (STOP_LETTERS) a sound as short may be the word's own release, and stays its first sound. `skip_title`: a Psalm's title was
+    left to the opening wildcard, so verse 1's first word is the first after it.
       1. The end is `tail` after the verse's last sound has died; the start is `lead` before its first sound begins (place_end, place_start; the two slops are the
          player's, from player-slop.json). So the clip at its longest holds nothing of a neighbour and the clip at its shortest loses nothing of its own.
       2. A quiet too short for that (less than twice the slop): the cut is the middle of the quiet, each side keeping what margin there is.
@@ -603,6 +632,10 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
 
     def word(index: int, which: int) -> str:
         return verses[index]['words'][which] if verses[index]['words'] else ''
+
+    def may_begin_with_a_release(index: int) -> bool:
+        words = verses[index]['words'][verses[index].get('title_words', 0) if skip_title and index == 0 else 0:]
+        return not words or words[0][0] in STOP_LETTERS
 
     def listed(index: int, edge: str, reason: str, room: int, cut: int) -> None:
         listen.append({'verse': verses[index]['n'], 'edge': edge, 'reason': reason, 'room': room / 1000, 'cut': cut / 1000})
@@ -644,10 +677,13 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
             last = first  # after the last verse: what is spoken after its quiet is a closing line (or nothing: the file ends in the quiet)
         died = first[0]
         onset = last[1]
+        if at < count and not may_begin_with_a_release(after):
+            onset = level.past_clicks(onset, hi)  # a click before the verse's first word is not its first sound
         if at > 0:
-            ends[before], tight = place_end(died, None if first is level.to_end else first[1], tail, duration)
+            next_sound = onset if first is last else first[1]  # what is spoken between two verses begins where its quiet ends, click or not
+            ends[before], tight = place_end(died, None if first is level.to_end else next_sound, tail, duration)
             if tight:
-                room = first[1] - first[0]
+                room = next_sound - first[0]
                 if first is level.to_end:
                     reason = f"the recording ends {room} ms after '{word(before, -1)}': less than the {tail} ms the player's margin needs; the end is the file's"
                 else:
@@ -657,7 +693,7 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
         if at < count:
             starts[after], tight = place_start(None if last is level.from_start else last[0], onset, lead)
             if tight:
-                room = last[1] - last[0]
+                room = onset - last[0]
                 what = f"a quiet of {room} ms between " + (f"'{word(before, -1)}'" if first is last and at > 0 else 'what is spoken before') + f" and '{word(after, 0)}'"
                 listed(after, 'head', f'{what}: less than the {2 * lead} ms the player\'s margin needs; cut in its middle', room, starts[after])
             if at > 0:
@@ -685,7 +721,7 @@ def cut_and_check(book: str, chapter: int, wave, verses: list[dict], letters: di
             problems.append(f'verse {n}: its first letter {letters[n][0]:.2f} is not before its last {letters[n][1]:.2f}')
     if problems:
         return {'ok': False, 'line': f'chapter {chapter:2d}: verses in text {len(verses):3d}, not cut', 'problems': problems + [f'verses timed 0 of {len(verses)}']}
-    cut = cut_chapter(wave, verses, letters, slop)
+    cut = cut_chapter(wave, verses, letters, slop, skip_title)
     triples = cut['verses']
     low = high = None
     for v, (n, start, end) in zip(verses, triples):

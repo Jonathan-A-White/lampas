@@ -145,10 +145,88 @@ def test_a_heading_not_read_is_one_quiet_like_any_other():
 
 
 def test_a_sound_between_two_verses_with_no_wildcard_goes_to_the_side_of_the_shorter_quiet():
-    # no heading in the text: the longest quiet between the two letters is the boundary (a click before a first word stays with that word, John 9:40)
-    parts = [(0.5, None), (1.0, -20), (0.6, None), (0.01, -30), (0.07, None), (1.0, -20), (0.5, None)]
+    # no heading in the text: the longest quiet between the two letters is the boundary, and a sound that is more than a click (40 ms here), 70 ms before the
+    # first word, stays with that word
+    parts = [(0.5, None), (1.0, -20), (0.6, None), (0.04, -30), (0.07, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'some of')], {1: [0.6, 1.4], 2: [2.3, 3.1]}, SLOP)
     assert near(cut['verses'][0][2], 1.55) and near(cut['verses'][1][1], 2.10 - 0.05)
+
+
+def test_a_click_before_a_verse_s_first_word_is_not_its_first_sound():
+    # John 9:40 (mw-ar5k42b.6): after 9:39 1.3 s of quiet, a click of 15 ms at -46 dBFS, 60 ms of silence, then 'Some'. The quiet file gave 9:39's next onset as
+    # 313.57, the click's, and 9:40 started 50 ms before the click; the word begins at 313.645.
+    parts = [(0.5, None), (1.0, -20), (1.305, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None)]  # the click 2.805-2.82, the word from 2.88
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'that those who see may become blind'), verse(2, 'some of the pharisees')], {1: [0.6, 1.3], 2: [2.95, 3.7]}, SLOP)
+    row = cut['quiet'][1]
+    assert len(row) == 3 and near(row[1], 1.5)  # the sound before has died where the verse before ends, as it did
+    assert near(row[2], 2.88), f'the next onset is {row[2]}: the click is at 2.805, the word begins at 2.88'
+    (_, _, end1), (_, start2, _) = cut['verses']
+    assert near(end1, 1.5 + 0.05)
+    assert near(start2, 2.88 - 0.05)  # the lead slop before the word, not before the click
+    assert cut['listen'] == []
+
+
+def test_a_click_is_not_the_first_sound_after_the_announcement_or_a_heading_either():
+    # the same click before verse 1 (the aligner was given a wildcard before it), and before a verse with a heading that is not read
+    parts = [(0.2, None), (0.8, -20), (0.6, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'in the'), verse(2, 'and god', heading=True)], {1: [1.75, 2.6], 2: [3.3, 4.1]}, SLOP)
+    assert near(cut['quiet'][0][1], 1.0) and near(cut['quiet'][0][2], 1.675)  # the announcement has died at 1.0; verse 1's word begins at 1.675, the click at 1.6
+    assert near(cut['quiet'][1][2], 3.25) and len(cut['quiet'][1]) == 3  # the click at 3.175 is not something spoken between the two verses
+    assert near(cut['verses'][0][1], 1.675 - 0.05) and near(cut['verses'][1][1], 3.25 - 0.05) and cut['listen'] == []
+
+
+def test_two_clicks_before_a_first_word_are_both_passed():
+    parts = [(0.5, None), (1.0, -20), (0.6, None), (0.015, -46), (0.04, None), (0.01, -46), (0.06, None), (1.0, -20), (0.5, None)]  # the word from 2.225
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'some of')], {1: [0.6, 1.4], 2: [2.3, 3.1]}, SLOP)
+    assert near(cut['quiet'][1][2], 2.225) and near(cut['verses'][1][1], 2.225 - 0.05)
+
+
+def test_a_first_sound_longer_than_a_click_is_the_verse_s_own():
+    # Genesis 10:14: 'The' (100 ms), the 20 ms closure of the p, 'Pathrusites'. And a sound of 30 ms with 60 ms of silence after it: more than a click
+    parts = [(0.5, None), (1.0, -20), (0.4, None), (0.1, -15), (0.02, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'the pathrusites')], {1: [0.6, 1.4], 2: [1.95, 2.9]}, SLOP)
+    assert near(cut['quiet'][1][2], 1.9) and near(cut['verses'][1][1], 1.9 - 0.05)
+    parts = [(0.5, None), (1.0, -20), (0.4, None), (0.03, -30), (0.06, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'some of')], {1: [0.6, 1.4], 2: [2.05, 2.9]}, SLOP)
+    assert near(cut['quiet'][1][2], 1.9) and near(cut['verses'][1][1], 1.9 - 0.05)
+
+
+def test_a_short_sound_with_less_than_a_click_s_silence_after_it_is_the_verse_s_own():
+    # Genesis 19:30: 10 ms of sound, 20 ms of silence, then 'Lot': too little silence to say the sound is not the word's
+    parts = [(0.5, None), (1.0, -20), (0.4, None), (0.01, -39), (0.02, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'lot and his')], {1: [0.6, 1.4], 2: [2.0, 2.9]}, SLOP)
+    assert near(cut['quiet'][1][2], 1.9) and near(cut['verses'][1][1], 1.9 - 0.05)
+
+
+def test_a_short_sound_the_aligner_puts_the_first_letter_at_is_the_verse_s_own():
+    # the same sound as John 9:40's click, but the aligner hears the verse's first letter in it: the silence after it is not between the two verses' letters
+    parts = [(0.5, None), (1.0, -20), (1.305, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'some of')], {1: [0.6, 1.3], 2: [2.81, 3.7]}, SLOP)
+    assert near(cut['quiet'][1][2], 2.805) and near(cut['verses'][1][1], 2.805 - 0.05)
+
+
+def test_a_short_sound_before_a_word_that_begins_with_a_stop_may_be_its_release_and_stays_its_first_sound():
+    # the same sound and silence as John 9:40's, before 'Put' (Exodus 4:7) and 'But' (Genesis 4:5): the stop's release, its breath too faint for the gate
+    parts = [(0.5, None), (1.0, -20), (1.305, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None)]
+    for words in ('put your hand', 'but he had', 'jesus said', 'the pharisees'):
+        cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, words)], {1: [0.6, 1.3], 2: [2.95, 3.7]}, SLOP)
+        assert near(cut['quiet'][1][2], 2.805) and near(cut['verses'][1][1], 2.805 - 0.05), words
+
+
+def test_a_psalm_whose_title_was_not_read_is_judged_by_the_first_word_after_the_title():
+    # 'A Psalm of David. O LORD ...': the title left to the opening wildcard, verse 1 begins at 'O', which is no stop; with the title read it begins at 'A' all the same
+    parts = [(0.2, None), (0.8, -20), (0.6, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None)]
+    psalm = {'n': 1, 'heading': True, 'words': 'to david o lord'.split(), 'title_words': 2}
+    assert near(align.cut_chapter(wave_of(parts), [psalm], {1: [1.75, 2.6]}, SLOP, True)['quiet'][0][2], 1.675)
+    assert near(align.cut_chapter(wave_of(parts), [psalm], {1: [1.75, 2.6]}, SLOP)['quiet'][0][2], 1.6)  # 'to' may begin with a release
+
+
+def test_a_stop_s_release_as_short_as_a_click_still_stays_with_its_word():
+    # '...sent': the 80 ms closure of the t, a release of 15 ms, then the gap. It is the verse's last sound: the click rule is for a verse's FIRST sound alone
+    parts = [(0.5, None), (1.0, -20), (0.08, None), (0.015, -40), (0.5, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'had been sent'), verse(2, 'and he')], {1: [0.6, 1.45], 2: [2.2, 3.0]}, SLOP)
+    assert near(cut['quiet'][1][1], 1.595) and near(cut['verses'][0][2], 1.595 + 0.05)  # after the release, not in the closure
+    assert near(cut['quiet'][1][2], 2.095) and near(cut['verses'][1][1], 2.095 - 0.05)
 
 
 def test_a_closing_line_after_the_last_verse_is_not_in_it():
@@ -172,11 +250,11 @@ def test_a_heading_read_with_short_pauses_is_still_in_neither_verse():
     assert near(cut['verses'][0][2], 1.55) and near(cut['verses'][1][1], 2.55) and len(cut['quiet'][1]) == 5
 
 
-def test_a_stop_closure_before_a_heading_s_pause_and_a_click_after_it_stay_with_their_words():
-    # '...sent' (closure, release), a pause, [no heading read], a click 60 ms before the first word
+def test_a_stop_closure_before_a_heading_s_pause_stays_with_its_word_and_a_click_after_it_is_in_neither_verse():
+    # '...sent' (closure, release), a pause, [no heading read], a click 60 ms before the first word (mw-ar5k42b.6: the click was taken for the word's first sound)
     parts = [(0.5, None), (1.0, -20), (0.08, None), (0.05, -25), (0.6, None), (0.01, -30), (0.06, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'had been sent'), verse(2, 'some of', heading=True)], {1: [0.6, 1.45], 2: [2.45, 3.2]}, SLOP)
-    assert near(cut['verses'][0][2], 1.63 + 0.05) and near(cut['verses'][1][1], 2.23 - 0.05) and len(cut['quiet'][1]) == 3
+    assert near(cut['verses'][0][2], 1.63 + 0.05) and near(cut['verses'][1][1], 2.30 - 0.05) and len(cut['quiet'][1]) == 3
 
 
 def test_a_stop_closure_after_the_last_letter_stays_with_its_word():

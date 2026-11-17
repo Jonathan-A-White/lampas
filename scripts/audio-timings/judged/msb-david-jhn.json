@@ -3,7 +3,7 @@
  "judge":"1",
  "edition":"msb-david",
  "book":"jhn",
- "timings":{"file":"public/data/audio/msb-david/jhn.json","sha256":"0e51b86a53a8c12ac1ca91e8f5673bfc0c2d01ad9739405926ba7aaa670a02f3"},
+ "timings":{"file":"public/data/audio/msb-david/jhn.json","sha256":"20172bca28b4745787fa99715245a8e5579420768c4050f12759a1bddf108af8"},
  "slop":{"lead":0.05,"tail":0.05},
  "tolerance":0.02,
  "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},

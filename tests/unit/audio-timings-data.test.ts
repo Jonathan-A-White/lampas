@@ -243,6 +243,15 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
         expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0), at).toBeLessThan(thousandths(slop.lead) + 10);
       }
     });
+
+    it.skipIf(book !== 'jhn')("John 9:40's first sound is its word 'Some', not the click 75 ms before it (mw-ar5k42b.6: the quiet file gave 9:39's next onset as 313.57, the click's)", () => {
+      const verse = verses.find((v) => v.at === '9:40');
+      expect(verse?.head?.onset).toBeGreaterThanOrEqual(313.63);
+      expect(verse?.head?.onset).toBeLessThan(313.7); // the aligner's first letter of 'Some' starts at 313.72
+      expect(verses.find((v) => v.at === '9:39')?.tail?.onset).toBe(verse?.head?.onset);
+      expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0)).toBeGreaterThanOrEqual(thousandths(slop.lead));
+      expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0)).toBeLessThan(thousandths(slop.lead) + 10);
+    });
   }
 });
 
