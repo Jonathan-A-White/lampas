@@ -1,0 +1,488 @@
+ref	run	text	g	mark	confidence
+Gen.24:1	1	in	-		0.80
+Gen.24:1	2	the	-		0.80
+Gen.24:1	3	in	11		0.80
+Gen.24:1	4	things.	-		0.80
+Gen.24:2	1	to	3		0.80
+Gen.24:2	2	servant	4		0.80
+Gen.24:2	3	of	8		0.80
+Gen.24:2	4	house,	9		0.80
+Gen.24:2	4	who had rule over	11,12		0.80
+Gen.24:2	5	possessions,	14		0.80
+Gen.24:3	1	will	-		0.80
+Gen.24:3	2	by the	-		0.80
+Gen.24:3	3	of	6		0.80
+Gen.24:3	4	God of the	-		0.80
+Gen.24:3	5	you	-		0.80
+Gen.24:3	6	a	-		0.80
+Gen.24:3	7	for my	15		0.80
+Gen.24:3	8	of	-		0.80
+Gen.24:3	9	in the midst of	28		0.80
+Gen.24:4	1	you shall go instead	-		0.80
+Gen.24:4	2	my country,	2,3		0.80
+Gen.24:4	2	where	5		0.80
+Gen.24:4	3	you shall	-		0.80
+Gen.24:4	4	thence	-		0.80
+Gen.24:4	4	a wife	15		0.80
+Gen.24:4	4	for	16		0.80
+Gen.24:5	1	the servant	5		0.80
+Gen.24:5	2	Shall I carry back your	20		0.80
+Gen.24:5	3	to	25		0.80
+Gen.24:5	4	land	26		0.80
+Gen.24:5	5	came	-		0.80
+Gen.24:5	6	if haply	7	unsure	0.50
+Gen.24:5	7	should	-		0.80
+Gen.24:5	8	be willing	9		0.80
+Gen.24:5	9	return	12,15		0.80
+Gen.24:5	10	land?	17,18		0.80
+Gen.24:6	1	Take heed to	5		0.80
+Gen.24:6	2	that you carry	8		0.80
+Gen.24:6	3	back	-		0.80
+Gen.24:7	1	The	-		0.80
+Gen.24:7	2	of	3		0.80
+Gen.24:7	3	of	-		0.80
+Gen.24:7	4	of my	16		0.80
+Gen.24:7	5	of	-		0.80
+Gen.24:7	6	land whence	22		0.80
+Gen.24:7	7	sprang,	-		0.80
+Gen.24:7	8	to	-		0.80
+Gen.24:7	9	will	-		0.80
+Gen.24:7	10	land to	34,35		0.80
+Gen.24:7	11	to your	38		0.80
+Gen.24:7	12	shall	-		0.80
+Gen.24:7	13	shall	-		0.80
+Gen.24:7	14	a	-		0.80
+Gen.24:7	15	to my	51		0.80
+Gen.24:7	16	thence.	-		0.80
+Gen.24:8	1	should	-		0.80
+Gen.24:8	2	be	-		0.80
+Gen.24:8	3	to	-		0.80
+Gen.24:8	4	you shall	-		0.80
+Gen.24:8	5	clear	-		0.80
+Gen.24:8	6	my	-		0.80
+Gen.24:8	7	carry	24		0.80
+Gen.24:8	8	again.	-		0.80
+Gen.24:9	1	the servant	2,3		0.80
+Gen.24:9	2	of	11		0.80
+Gen.24:9	3	master	12		0.80
+Gen.24:9	4	to	-		0.80
+Gen.24:9	5	matter.	18,19		0.80
+Gen.24:10	1	the servant	2,3		0.80
+Gen.24:10	2	master's	9,10		0.80
+Gen.24:10	3	took	-		0.80
+Gen.24:10	4	of	17		0.80
+Gen.24:10	5	master	18		0.80
+Gen.24:10	6	him,	-		0.80
+Gen.24:10	7	he	-		0.80
+Gen.24:10	8	and	-		0.80
+Gen.24:10	9	of	-		0.80
+Gen.24:11	1	he	-		0.80
+Gen.24:11	2	his	-		0.80
+Gen.24:11	3	without	4		0.80
+Gen.24:11	4	of	10		0.80
+Gen.24:11	5	damsels	17		0.80
+Gen.24:11	5	go forth	16		0.80
+Gen.24:11	5	to draw	-		0.80
+Gen.24:12	1	he	-		0.80
+Gen.24:12	2	O	-		0.80
+Gen.24:12	3	of my	5		0.80
+Gen.24:12	4	way	-		0.80
+Gen.24:12	4	before me	9		0.80
+Gen.24:12	4	to day,	11		0.80
+Gen.24:12	5	master	16,17		0.80
+Gen.24:13	1	by	-		0.80
+Gen.24:13	2	of	6		0.80
+Gen.24:13	3	of them that	11		0.80
+Gen.24:13	4	come forth	15		0.80
+Gen.24:14	1	it shall	-		0.80
+Gen.24:14	2	to whoever	4,5		0.80
+Gen.24:14	3	shall	-		0.80
+Gen.24:14	4	I may	-		0.80
+Gen.24:14	5	shall	-		0.80
+Gen.24:14	6	will give your	-		0.80
+Gen.24:14	7	drink,	-		0.80
+Gen.24:14	8	they shall have	25	unsure	0.50
+Gen.24:14	9	one	-		0.80
+Gen.24:14	10	have prepared	29		0.80
+Gen.24:14	10	for your servant	30,31		0.80
+Gen.24:14	11	hereby shall I	-		0.80
+Gen.24:14	12	have	-		0.80
+Gen.24:14	13	master	-		0.80
+Gen.24:15	1	came	-		0.80
+Gen.24:15	2	pass	-		0.80
+Gen.24:15	3	had done	4		0.80
+Gen.24:15	4	his	-		0.80
+Gen.24:15	5	that	-		0.80
+Gen.24:15	6	of	-		0.80
+Gen.24:15	7	the	-		0.80
+Gen.24:15	8	of	-		0.80
+Gen.24:15	9	of	-		0.80
+Gen.24:15	10	the same the	-		0.80
+Gen.24:15	11	of	-		0.80
+Gen.24:15	12	came forth,	13		0.80
+Gen.24:15	13	a	-		0.80
+Gen.24:15	14	her	-		0.80
+Gen.24:16	1	beautiful	4		0.80
+Gen.24:16	1	in appearance,	5,6		0.80
+Gen.24:16	1	she	-		0.80
+Gen.24:16	2	a	-		0.80
+Gen.24:16	3	a	-		0.80
+Gen.24:16	4	had	-		0.80
+Gen.24:16	5	she	-		0.80
+Gen.24:16	6	down	-		0.80
+Gen.24:16	7	well,	18		0.80
+Gen.24:16	7	and filled	19		0.80
+Gen.24:16	8	water-pot,	20,21		0.80
+Gen.24:16	9	came	-		0.80
+Gen.24:17	1	up	-		0.80
+Gen.24:17	2	a	-		0.80
+Gen.24:17	3	to drink	-		0.80
+Gen.24:17	4	of	-		0.80
+Gen.24:17	5	pitcher;	14,15		0.80
+Gen.24:18	1	she	0		0.80
+Gen.24:18	2	she	-		0.80
+Gen.24:18	3	let	-		0.80
+Gen.24:18	4	her	-		0.80
+Gen.24:18	5	gave	16		0.80
+Gen.24:18	6	to drink, till	-		0.80
+Gen.24:18	7	ceased drinking.	-		0.80
+Gen.24:19	1	she	-		0.80
+Gen.24:19	2	I will	-		0.80
+Gen.24:19	2	also	5		0.80
+Gen.24:19	2	draw	-		0.80
+Gen.24:19	3	for	6		0.80
+Gen.24:19	4	till they shall	10,11		0.80
+Gen.24:19	5	have	-		0.80
+Gen.24:20	1	she	-		0.80
+Gen.24:20	2	into	-		0.80
+Gen.24:20	3	again,	-		0.80
+Gen.24:20	4	drew	-		0.80
+Gen.24:20	5	for	-		0.80
+Gen.24:21	1	took great notice of	3		0.80
+Gen.24:21	2	silent to	7	unsure	0.50
+Gen.24:21	3	the	-		0.80
+Gen.24:21	4	had	-		0.80
+Gen.24:21	5	way prosperous	-		0.80
+Gen.24:22	1	it came	-		0.80
+Gen.24:22	2	pass	-		0.80
+Gen.24:22	3	that	-		0.80
+Gen.24:22	4	ear-rings,	11		0.80
+Gen.24:22	5	of a	-		0.80
+Gen.24:22	6	put	-		0.80
+Gen.24:22	7	her	-		0.80
+Gen.24:22	8	weight was	25		0.80
+Gen.24:22	9	pieces of	-		0.80
+Gen.24:23	1	asked her,	1		0.80
+Gen.24:23	2	Whose	6		0.80
+Gen.24:23	3	there	-		0.80
+Gen.24:23	4	room	16		0.80
+Gen.24:23	4	for us to	17		0.80
+Gen.24:23	5	your	-		0.80
+Gen.24:24	1	she	-		0.80
+Gen.24:24	2	am the	-		0.80
+Gen.24:24	3	of	-		0.80
+Gen.24:24	4	son of	-		0.80
+Gen.24:24	5	to	-		0.80
+Gen.24:25	1	she	-		0.80
+Gen.24:25	2	to	-		0.80
+Gen.24:25	3	have both straw	3,4,8		0.80
+Gen.24:25	4	provender,	6		0.80
+Gen.24:25	5	a	-		0.80
+Gen.24:25	6	for	12		0.80
+Gen.24:26	1	being well pleased,	1		0.80
+Gen.24:26	2	the	-		0.80
+Gen.24:27	1	and said,	-		0.80
+Gen.24:27	1	Blessed be	0		0.80
+Gen.24:27	1	the	2		0.80
+Gen.24:27	2	of	-		0.80
+Gen.24:27	3	master	-		0.80
+Gen.24:27	4	has	-		0.80
+Gen.24:27	5	his	11	unsure	0.50
+Gen.24:27	6	to fail,	-		0.80
+Gen.24:27	6	nor his	14	unsure	0.50
+Gen.24:27	7	master,	-		0.80
+Gen.24:27	8	has brought	-		0.80
+Gen.24:27	9	prosperously	21		0.80
+Gen.24:27	10	the	-		0.80
+Gen.24:27	11	of	-		0.80
+Gen.24:27	12	of	27		0.80
+Gen.24:28	1	the damsel	2,3		0.80
+Gen.24:28	2	and reported	4		0.80
+Gen.24:28	3	of	8		0.80
+Gen.24:28	4	to	-		0.80
+Gen.24:28	5	words.	12,13		0.80
+Gen.24:29	1	had a	0	unsure	0.50
+Gen.24:29	2	meet	-		0.80
+Gen.24:30	1	it came	-		0.80
+Gen.24:30	2	pass	-		0.80
+Gen.24:30	3	he	-		0.80
+Gen.24:30	4	of his	12		0.80
+Gen.24:30	5	of	-		0.80
+Gen.24:30	6	his	21	unsure	0.50
+Gen.24:30	7	that	-		0.80
+Gen.24:30	8	as	-		0.80
+Gen.24:30	9	by	-		0.80
+Gen.24:30	10	at	40		0.80
+Gen.24:31	1	he	-		0.80
+Gen.24:31	2	in hither,	3		0.80
+Gen.24:31	2	you blessed of the	5		0.80
+Gen.24:31	3	why	8		0.80
+Gen.24:31	4	you	-		0.80
+Gen.24:31	4	without,	10		0.80
+Gen.24:31	4	whereas	12		0.80
+Gen.24:31	5	have	-		0.80
+Gen.24:31	6	a	-		0.80
+Gen.24:31	7	for	-		0.80
+Gen.24:32	1	straw	13		0.80
+Gen.24:32	2	provender,	15		0.80
+Gen.24:32	3	to wash	-		0.80
+Gen.24:32	4	of	-		0.80
+Gen.24:32	5	that were	28		0.80
+Gen.24:33	1	he	-		0.80
+Gen.24:33	2	before	-		0.80
+Gen.24:33	3	to	-		0.80
+Gen.24:33	4	but he	5		0.80
+Gen.24:33	5	I will	-		0.80
+Gen.24:33	6	have	11,12	unsure	0.50
+Gen.24:33	7	errand.	-		0.80
+Gen.24:33	8	he	-		0.80
+Gen.24:33	9	on.	-		0.80
+Gen.24:34	1	he	-		0.80
+Gen.24:34	2	am a	5		0.80
+Gen.24:34	3	of	-		0.80
+Gen.24:35	1	has	-		0.80
+Gen.24:35	2	master	-		0.80
+Gen.24:35	2	greatly,	6		0.80
+Gen.24:35	3	he is	-		0.80
+Gen.24:35	4	he has	-		0.80
+Gen.24:36	1	master's wife	3,4,5,6		0.80
+Gen.24:36	2	master	10,11		0.80
+Gen.24:36	3	he had grown	14	unsure	0.50
+Gen.24:36	4	whatever	20		0.80
+Gen.24:36	5	had.	-		0.80
+Gen.24:37	1	master caused	3,4		0.80
+Gen.24:37	2	to swear,	1		0.80
+Gen.24:37	3	You shall	-		0.80
+Gen.24:37	4	a	-		0.80
+Gen.24:37	5	to	10		0.80
+Gen.24:37	6	of	-		0.80
+Gen.24:37	7	land.	23,24		0.80
+Gen.24:38	1	you shall go	8		0.80
+Gen.24:38	2	of	5		0.80
+Gen.24:38	3	you shall	-		0.80
+Gen.24:38	4	thence	20		0.80
+Gen.24:38	4	a wife	16		0.80
+Gen.24:38	4	for	17		0.80
+Gen.24:39	1	I	-		0.80
+Gen.24:39	2	to	2		0.80
+Gen.24:39	3	master,	3		0.80
+Gen.24:39	3	Haply	6		0.80
+Gen.24:39	4	will	-		0.80
+Gen.24:39	5	go	8		0.80
+Gen.24:40	1	to	-		0.80
+Gen.24:40	2	The	4		0.80
+Gen.24:40	3	to	-		0.80
+Gen.24:40	4	have been	-		0.80
+Gen.24:40	5	in	-		0.80
+Gen.24:40	6	presence,	8		0.80
+Gen.24:40	6	himself shall	-		0.80
+Gen.24:40	7	out	-		0.80
+Gen.24:40	8	shall prosper	18		0.80
+Gen.24:40	9	journey,	19,20		0.80
+Gen.24:40	10	you shall	-		0.80
+Gen.24:40	11	a	-		0.80
+Gen.24:40	12	for my	25		0.80
+Gen.24:40	13	of	36		0.80
+Gen.24:41	1	shall you	-		0.80
+Gen.24:41	2	clear	1		0.80
+Gen.24:41	3	whenever you shall have	7,9		0.80
+Gen.24:41	4	they shall	-		0.80
+Gen.24:41	5	her to	-		0.80
+Gen.24:41	6	then shall you	19		0.80
+Gen.24:41	7	oath.	23,24		0.80
+Gen.24:42	1	having	-		0.80
+Gen.24:42	2	this	-		0.80
+Gen.24:42	3	I	-		0.80
+Gen.24:42	4	of	10		0.80
+Gen.24:42	5	master	-		0.80
+Gen.24:42	6	journey	-		0.80
+Gen.24:42	7	am	-		0.80
+Gen.24:43	1	by	-		0.80
+Gen.24:43	2	of	6		0.80
+Gen.24:43	3	of	-		0.80
+Gen.24:43	4	of	-		0.80
+Gen.24:43	5	come	-		0.80
+Gen.24:43	6	it shall	-		0.80
+Gen.24:43	7	that	-		0.80
+Gen.24:43	8	to	-		0.80
+Gen.24:43	9	shall	23	unsure	0.50
+Gen.24:43	10	a	-		0.80
+Gen.24:43	11	to drink	-		0.80
+Gen.24:43	12	of	31		0.80
+Gen.24:43	13	pitcher,	32		0.80
+Gen.24:44	1	shall	-		0.80
+Gen.24:44	2	to	-		0.80
+Gen.24:44	3	Both	-		0.80
+Gen.24:44	4	I will draw	-		0.80
+Gen.24:44	5	for your	6		0.80
+Gen.24:44	6	shall be	-		0.80
+Gen.24:44	7	the	-		0.80
+Gen.24:44	8	has prepared	14		0.80
+Gen.24:44	8	for	16		0.80
+Gen.24:44	9	own	-		0.80
+Gen.24:44	10	hereby shall I	-		0.80
+Gen.24:44	11	have	-		0.80
+Gen.24:44	12	master	27,28		0.80
+Gen.24:45	1	it came	-		0.80
+Gen.24:45	2	pass	-		0.80
+Gen.24:45	3	had done	4		0.80
+Gen.24:45	4	my	-		0.80
+Gen.24:45	5	came forth,	13		0.80
+Gen.24:45	6	her	-		0.80
+Gen.24:45	7	her	-		0.80
+Gen.24:45	8	she went	-		0.80
+Gen.24:45	9	drew	-		0.80
+Gen.24:45	10	to	-		0.80
+Gen.24:45	11	to drink.	-		0.80
+Gen.24:46	1	she	-		0.80
+Gen.24:46	2	and let	-		0.80
+Gen.24:46	3	her	-		0.80
+Gen.24:46	4	head,	-		0.80
+Gen.24:46	5	I will give	-		0.80
+Gen.24:46	6	she gave	-		0.80
+Gen.24:47	1	I	-		0.80
+Gen.24:47	2	Whose	5		0.80
+Gen.24:47	3	you?	-		0.80
+Gen.24:47	4	she	10		0.80
+Gen.24:47	5	am	-		0.80
+Gen.24:47	6	of	-		0.80
+Gen.24:47	7	of	-		0.80
+Gen.24:47	8	I	-		0.80
+Gen.24:47	9	on	-		0.80
+Gen.24:48	1	I	-		0.80
+Gen.24:48	2	the	-		0.80
+Gen.24:48	3	I	-		0.80
+Gen.24:48	4	the	7		0.80
+Gen.24:48	5	of	-		0.80
+Gen.24:48	6	master	-		0.80
+Gen.24:48	7	has prospered	-		0.80
+Gen.24:48	8	a true way,	17,18		0.80
+Gen.24:48	8	so that	-		0.80
+Gen.24:48	9	should	-		0.80
+Gen.24:48	10	of	22		0.80
+Gen.24:48	10	my master's	24,25		0.80
+Gen.24:48	11	for	27		0.80
+Gen.24:49	1	will deal	2		0.80
+Gen.24:49	1	mercifully	4		0.80
+Gen.24:49	2	my	-		0.80
+Gen.24:49	3	tell	-		0.80
+Gen.24:49	4	and if not,	-		0.80
+Gen.24:49	5	I may	-		0.80
+Gen.24:49	6	the	-		0.80
+Gen.24:49	7	hand	-		0.80
+Gen.24:49	8	the	-		0.80
+Gen.24:50	1	and	-		0.80
+Gen.24:50	2	matter	9,10		0.80
+Gen.24:50	2	has come	-		0.80
+Gen.24:50	3	the	-		0.80
+Gen.24:50	4	we shall	-		0.80
+Gen.24:50	5	be	-		0.80
+Gen.24:50	6	to answer	16		0.80
+Gen.24:50	7	bad or	17		0.80
+Gen.24:51	1	is	-		0.80
+Gen.24:51	2	her	-		0.80
+Gen.24:51	2	and go away,	5		0.80
+Gen.24:51	3	let her	-		0.80
+Gen.24:51	4	to	-		0.80
+Gen.24:51	5	of	-		0.80
+Gen.24:51	6	master,	11,12		0.80
+Gen.24:51	7	the	-		0.80
+Gen.24:51	8	has said.	15		0.80
+Gen.24:52	1	it came	-		0.80
+Gen.24:52	2	pass	-		0.80
+Gen.24:52	2	when	2,3		0.80
+Gen.24:52	3	of	7		0.80
+Gen.24:52	4	these	9	unsure	0.50
+Gen.24:52	5	bowed himself	12		0.80
+Gen.24:52	6	the	-		0.80
+Gen.24:52	7	down to	-		0.80
+Gen.24:53	1	the	2		0.80
+Gen.24:53	1	servant having	-		0.80
+Gen.24:53	2	of	-		0.80
+Gen.24:53	3	them to	-		0.80
+Gen.24:53	4	to	15		0.80
+Gen.24:53	5	to	19		0.80
+Gen.24:54	1	both	-		0.80
+Gen.24:54	2	went	-		0.80
+Gen.24:54	3	he	-		0.80
+Gen.24:54	4	in the	-		0.80
+Gen.24:54	5	and	-		0.80
+Gen.24:54	6	away,	-		0.80
+Gen.24:54	7	I may	-		0.80
+Gen.24:54	8	master.	23,24		0.80
+Gen.24:55	1	brethren	2,3		0.80
+Gen.24:55	2	her	-		0.80
+Gen.24:55	3	Let	-		0.80
+Gen.24:55	4	remain	8		0.80
+Gen.24:55	5	us	12		0.80
+Gen.24:55	6	that	-		0.80
+Gen.24:55	7	shall	-		0.80
+Gen.24:56	1	he	0		0.80
+Gen.24:56	2	Hinder me	6		0.80
+Gen.24:56	3	for the	8	unsure	0.50
+Gen.24:56	4	has	-		0.80
+Gen.24:56	5	my	-		0.80
+Gen.24:56	6	for	-		0.80
+Gen.24:56	7	away,	-		0.80
+Gen.24:56	8	may	-		0.80
+Gen.24:56	9	master.	19,20		0.80
+Gen.24:57	1	they	0		0.80
+Gen.24:57	2	Let us	-		0.80
+Gen.24:57	3	at	8		0.80
+Gen.24:58	1	they	-		0.80
+Gen.24:58	2	to	-		0.80
+Gen.24:58	3	Will you	-		0.80
+Gen.24:58	4	this	-		0.80
+Gen.24:58	5	I will	-		0.80
+Gen.24:59	1	So they	0	unsure	0.50
+Gen.24:59	2	forth	-		0.80
+Gen.24:59	3	goods,	7,8		0.80
+Gen.24:59	4	of	13		0.80
+Gen.24:59	5	attendants.	16,17		0.80
+Gen.24:60	1	You	-		0.80
+Gen.24:60	2	our	10		0.80
+Gen.24:60	3	of	-		0.80
+Gen.24:60	4	let your	-		0.80
+Gen.24:60	5	possess	17		0.80
+Gen.24:60	6	of their	23		0.80
+Gen.24:61	1	rose up	0		0.80
+Gen.24:61	2	her	-		0.80
+Gen.24:61	3	and	-		0.80
+Gen.24:61	4	the servant	18,19		0.80
+Gen.24:61	4	having	-		0.80
+Gen.24:61	5	up	-		0.80
+Gen.24:62	1	of	-		0.80
+Gen.24:62	2	land toward	16		0.80
+Gen.24:63	1	forth	-		0.80
+Gen.24:63	2	toward evening	7,9		0.80
+Gen.24:63	3	having lifted	-		0.80
+Gen.24:63	4	his	-		0.80
+Gen.24:63	5	he	-		0.80
+Gen.24:64	1	lifted	-		0.80
+Gen.24:64	2	her	-		0.80
+Gen.24:64	3	and	-		0.80
+Gen.24:64	4	she alighted briskly	9		0.80
+Gen.24:65	1	to	-		0.80
+Gen.24:65	2	Who	4		0.80
+Gen.24:65	3	that	-		0.80
+Gen.24:65	4	us?	16		0.80
+Gen.24:65	5	master;	23,24		0.80
+Gen.24:65	6	she	26		0.80
+Gen.24:65	7	her veil	29,30		0.80
+Gen.24:65	7	and covered herself.	31		0.80
+Gen.24:66	1	servant told	1,3		0.80
+Gen.24:66	2	he had	-		0.80
+Gen.24:67	1	his	-		0.80
+Gen.24:67	2	she	-		0.80
+Gen.24:67	3	was	-		0.80
+Gen.24:67	4	for	-		0.80

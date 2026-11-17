@@ -86,7 +86,9 @@ Genesis 20 was done on its own (story mw-u2w5klk.349.2, the Governor's report of
 `--list` and `--from` number and check the runs at the stage `lxx:ship` applies the rows at (`alignRuns` in `scripts/lxx/align.ts`, which `alignChapter` also starts from: the chapter before the rows and before `joinSupplied`; the command asks the ship for it with `runsOnly`), so a verse with supplied words before a verb ('She will' + 'love') lists the supplied words as a run of their own, as the ship has it (mw-u2w5klk.349.16; before it the listing read the chapter after the join and its numbers were not the ship's).
 Genesis 12 to 19 and 21 to 23 were done as one batch (story mw-u2w5klk.349.3; Genesis 14 is left for a later batch): 1,453 runs in ten chapters, 1,453 chunks (1,398 chosen, 55 unsure); of their 5,320 Greek words 672 (12.6%) are now paired by the model (Genesis 12 58, 13 51, 15 43, 16 53, 17 71, 18 96, 19 112, 21 75, 22 52, 23 61), and 4,244 (79.8%) had an English chunk before the pass and 4,916 (92.4%) after it.
 The English content words that sat where a tap opened the Verse view were 607 before the pass (`npm run lxx:unpaired -- --book gen`) and are 0 after it; 189 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of three lists with why: the 14 of 'it came to pass' (ἐγένετο is a pair the aligner made to one English word), the 14 of two verses that carry the next Greek verse's English (Genesis 13:11, 22:15), and the 161 whose Greek word is a pair the aligner made to another English word or that Brenton adds to make English of a Greek phrase ('forth', 'aside', 'fine', 'aloud').
-The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 14 and 24 to 50 (28 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
+Genesis 24 to 29 were done as one batch (story mw-u2w5klk.349.4): 1,400 runs in six chapters, 1,504 chunks (1,458 chosen, 46 unsure); of their 5,224 Greek words 701 (13.4%) are now paired by the model (Genesis 24 240, 25 68, 26 125, 27 117, 28 63, 29 88), and 4,173 (79.9%) had an English chunk before the pass and 4,874 (93.3%) after it.
+The English content words that sat where a tap opened the Verse view were 566 before the pass (`npm run lxx:unpaired -- --book gen`) and are 0 after it; 187 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of three lists with why: the 26 of 'it came to pass' (ἐγένετο is a pair the aligner made to one English word), the 19 of English whose Greek is in the verse before or after or that the Greek verse does not have (Genesis 24:18 'till', 25:20 'Abraam begot Isaac', 27:44 'until your brother's anger', 27:38 and 29:20), and the 142 whose Greek word is a pair the aligner made to another English word ('master' for Κύριος, 'draw' for ὑδρεύσατο) or that Brenton adds to make English of a Greek phrase ('instead', 'just', 'hither', 'forth', 'away').
+The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 14 and 30 to 50 (22 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
 
 ## The unpaired English
 
@@ -101,7 +103,7 @@ Story mw-u2w5klk.349.1, the sweep of the pairing epic (mw-u2w5klk.349; the Gover
 | Share | Unpaired over English content words |
 
 The command reports and does not fail on a gap. A later story makes a gap a failing test once the model batches have finished a book. `tests/unit/lxx-unpaired.test.ts` holds the function-word list, the counting on a fixture verse with a known remainder, the table, and (where the git-ignored sources are on the disk, as `lxx-align-choose.test.ts`)
-the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 14 and 24 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3).
+the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 14 and 24 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3), and Genesis 24 to 29 read 0 after mw-u2w5klk.349.4.
 
 ## What reads the chunks
 
@@ -193,12 +195,12 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Genesis 21 | 34 | 662 | 615 | 92.9% | 64.8% | 75 (11.3%) |
 | Genesis 22 | 24 | 540 | 464 | 85.9% | 60.9% | 52 (9.6%) |
 | Genesis 23 | 20 | 426 | 405 | 95.1% | 68.3% | 61 (14.3%) |
-| Genesis 24 | 67 | 1,541 | 1,205 | 78.2% | 47.9% | — |
-| Genesis 25 | 34 | 627 | 503 | 80.2% | 53.7% | — |
-| Genesis 26 | 35 | 758 | 609 | 80.3% | 52.4% | — |
-| Genesis 27 | 46 | 1,044 | 832 | 79.7% | 52.3% | — |
-| Genesis 28 | 22 | 525 | 429 | 81.7% | 55.0% | — |
-| Genesis 29 | 35 | 729 | 595 | 81.6% | 55.4% | — |
+| Genesis 24 | 67 | 1,541 | 1,445 | 93.8% | 62.6% | 240 (15.6%) |
+| Genesis 25 | 34 | 627 | 571 | 91.1% | 63.8% | 68 (10.8%) |
+| Genesis 26 | 35 | 758 | 734 | 96.8% | 67.9% | 125 (16.5%) |
+| Genesis 27 | 46 | 1,044 | 949 | 90.9% | 63.1% | 117 (11.2%) |
+| Genesis 28 | 22 | 525 | 492 | 93.7% | 65.9% | 63 (12.0%) |
+| Genesis 29 | 35 | 729 | 683 | 93.7% | 66.0% | 88 (12.1%) |
 | Genesis 30 | 43 | 921 | 709 | 77.0% | 51.9% | — |
 | Genesis 31 | 55 | 1,267 | 969 | 76.5% | 49.6% | — |
 | Genesis 32 | 32 | 693 | 536 | 77.3% | 49.2% | — |
@@ -459,13 +461,13 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | --- | --- | --- | --- | --- | --- | --- |
 | Deuteronomy | 958 | 22,501 | 17,472 | 77.6% | 50.9% | — |
 | Exodus | 467 | 9,375 | 7,193 | 76.7% | 49.8% | — |
-| Genesis | 1,531 | 32,635 | 27,344 | 83.8% | 56.5% | 1,276 (3.9%) |
+| Genesis | 1,531 | 32,635 | 28,045 | 85.9% | 58.5% | 1,977 (6.1%) |
 | Isaiah | 510 | 10,326 | 7,851 | 76.0% | 50.9% | — |
 | Joshua | 623 | 13,813 | 10,311 | 74.6% | 49.8% | — |
 | Leviticus | 859 | 19,042 | 14,734 | 77.4% | 47.5% | — |
 | Numbers | 1,288 | 24,973 | 20,038 | 80.2% | 52.3% | — |
 | Psalms | 1,652 | 22,794 | 16,509 | 72.4% | 44.4% | — |
 
-334 chapters: 121,452 of 155,459 Greek words aligned (78.1%), 1,276 of them by the model pass (y `model`); 122,486 of 197,913 English words are in a chunk of Greek (61.9%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
+334 chapters: 122,153 of 155,459 Greek words aligned (78.6%), 1,977 of them by the model pass (y `model`); 123,636 of 197,913 English words are in a chunk of Greek (62.5%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
 
 <!-- lxx-align:end -->

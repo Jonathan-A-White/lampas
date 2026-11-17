@@ -1,0 +1,166 @@
+ref	run	text	g	mark	confidence
+Gen.25:1	1	again	0		0.80
+Gen.25:1	2	a	-		0.80
+Gen.25:1	3	was	-		0.80
+Gen.25:2	1	she	-		0.80
+Gen.25:2	2	to	-		0.80
+Gen.25:3	1	Jezan	0		0.80
+Gen.25:3	2	of	-		0.80
+Gen.25:3	3	the	-		0.80
+Gen.25:3	4	the	-		0.80
+Gen.25:4	1	the	-		0.80
+Gen.25:4	2	of	-		0.80
+Gen.25:4	3	were	-		0.80
+Gen.25:4	4	of	-		0.80
+Gen.25:5	1	possessions	4,5		0.80
+Gen.25:5	1	to	8		0.80
+Gen.25:6	1	But to	0	unsure	0.50
+Gen.25:6	2	of his	3		0.80
+Gen.25:6	3	away	-		0.80
+Gen.25:6	4	while	-		0.80
+Gen.25:6	5	was	-		0.80
+Gen.25:6	6	the	-		0.80
+Gen.25:6	7	the	-		0.80
+Gen.25:6	8	of the	-		0.80
+Gen.25:7	1	were	-		0.80
+Gen.25:7	2	of the	-		0.80
+Gen.25:7	3	of the	-		0.80
+Gen.25:7	4	of	-		0.80
+Gen.25:7	5	many as he	-		0.80
+Gen.25:7	6	one	-		0.80
+Gen.25:7	7	and	-		0.80
+Gen.25:8	1	a	-		0.80
+Gen.25:8	2	old age, an	5		0.80
+Gen.25:8	3	man	-		0.80
+Gen.25:8	4	of	-		0.80
+Gen.25:8	5	was	-		0.80
+Gen.25:9	1	of	-		0.80
+Gen.25:9	2	son of	-		0.80
+Gen.25:9	3	over against	25		0.80
+Gen.25:10	1	even	-		0.80
+Gen.25:10	2	bought of	6,8		0.80
+Gen.25:10	3	of	-		0.80
+Gen.25:10	4	they	-		0.80
+Gen.25:10	5	wife.	17,18		0.80
+Gen.25:11	1	came	-		0.80
+Gen.25:11	2	pass	-		0.80
+Gen.25:11	3	was dead, that	3,4		0.80
+Gen.25:11	4	his	-		0.80
+Gen.25:11	5	lived	15		0.80
+Gen.25:11	6	of	-		0.80
+Gen.25:12	1	are	-		0.80
+Gen.25:12	2	of	-		0.80
+Gen.25:12	3	of	-		0.80
+Gen.25:12	4	Agar the Egyptian	10		0.80
+Gen.25:12	5	of	-		0.80
+Gen.25:12	6	to	14		0.80
+Gen.25:13	1	are	-		0.80
+Gen.25:13	2	of	-		0.80
+Gen.25:13	3	of	-		0.80
+Gen.25:13	4	to the	-		0.80
+Gen.25:13	5	of	9		0.80
+Gen.25:13	6	The	-		0.80
+Gen.25:13	7	of	-		0.80
+Gen.25:16	1	of	-		0.80
+Gen.25:16	2	are	-		0.80
+Gen.25:16	3	dwellings,	16,17		0.80
+Gen.25:16	4	to	-		0.80
+Gen.25:16	5	nations.	22		0.80
+Gen.25:17	1	are	-		0.80
+Gen.25:17	2	of	-		0.80
+Gen.25:17	3	of	-		0.80
+Gen.25:17	4	one	-		0.80
+Gen.25:17	5	and	-		0.80
+Gen.25:17	6	he	-		0.80
+Gen.25:17	7	and	-		0.80
+Gen.25:17	8	was	-		0.80
+Gen.25:17	9	fathers.	17,18		0.80
+Gen.25:18	1	he lived	0		0.80
+Gen.25:18	2	one	-		0.80
+Gen.25:18	3	the	-		0.80
+Gen.25:18	4	he lived	-		0.80
+Gen.25:18	4	in the presence of	15,16		0.80
+Gen.25:19	1	are	-		0.80
+Gen.25:19	2	of	-		0.80
+Gen.25:19	3	of	-		0.80
+Gen.25:20	1	Abraam begot Isaac.	-		0.80
+Gen.25:20	2	old	-		0.80
+Gen.25:20	3	he	-		0.80
+Gen.25:20	4	as wife	20,21		0.80
+Gen.25:20	5	of	-		0.80
+Gen.25:20	6	of	14	unsure	0.50
+Gen.25:20	6	Syrian	-		0.80
+Gen.25:20	7	of	-		0.80
+Gen.25:21	1	the	-		0.80
+Gen.25:21	2	wife,	6,7		0.80
+Gen.25:21	3	she	-		0.80
+Gen.25:21	4	Lord heard	12,16		0.80
+Gen.25:21	5	his wife	22	unsure	0.50
+Gen.25:21	6	womb.	20		0.80
+Gen.25:22	1	the babes	2,3		0.80
+Gen.25:22	2	within her;	4		0.80
+Gen.25:22	3	it will be	-		0.80
+Gen.25:22	4	this	-		0.80
+Gen.25:22	5	to	-		0.80
+Gen.25:22	6	of the	-		0.80
+Gen.25:23	1	the	-		0.80
+Gen.25:23	2	to	-		0.80
+Gen.25:23	3	There are	-		0.80
+Gen.25:23	4	womb,	7,8		0.80
+Gen.25:23	5	shall	-		0.80
+Gen.25:23	6	separated	18		0.80
+Gen.25:23	7	one	-		0.80
+Gen.25:23	8	shall	-		0.80
+Gen.25:23	9	the	-		0.80
+Gen.25:23	10	shall	-		0.80
+Gen.25:24	1	were	-		0.80
+Gen.25:24	2	that	4		0.80
+Gen.25:24	3	should	-		0.80
+Gen.25:24	4	delivered,	5		0.80
+Gen.25:24	5	she had	8	unsure	0.50
+Gen.25:24	5	twins	10		0.80
+Gen.25:24	6	womb.	12,13		0.80
+Gen.25:25	1	came	-		0.80
+Gen.25:25	2	hairy	10		0.80
+Gen.25:25	3	over	-		0.80
+Gen.25:25	4	a	-		0.80
+Gen.25:25	5	she called	11		0.80
+Gen.25:26	1	forth	-		0.80
+Gen.25:26	2	took hold of	11		0.80
+Gen.25:26	3	of	-		0.80
+Gen.25:26	4	she	-		0.80
+Gen.25:26	5	old	-		0.80
+Gen.25:27	1	lads	-		0.80
+Gen.25:27	2	a	-		0.80
+Gen.25:27	3	in	-		0.80
+Gen.25:27	4	dwelling in the country,	10		0.80
+Gen.25:27	5	a	-		0.80
+Gen.25:27	6	in a	-		0.80
+Gen.25:28	1	was	-		0.80
+Gen.25:28	2	food,	-		0.80
+Gen.25:29	1	cooked pottage,	0,3		0.80
+Gen.25:30	1	to	3		0.80
+Gen.25:30	2	Let	-		0.80
+Gen.25:30	3	that	12		0.80
+Gen.25:30	4	pottage,	8,9		0.80
+Gen.25:30	5	am fainting;	14		0.80
+Gen.25:30	5	therefore	16,17		0.80
+Gen.25:30	6	was	-		0.80
+Gen.25:31	1	to	3		0.80
+Gen.25:31	2	this	-		0.80
+Gen.25:32	1	am	-		0.80
+Gen.25:32	2	for what good does	9	unsure	0.50
+Gen.25:32	3	belong to	-		0.80
+Gen.25:33	1	to	-		0.80
+Gen.25:33	2	to	-		0.80
+Gen.25:33	3	this	-		0.80
+Gen.25:33	4	he	-		0.80
+Gen.25:33	5	to	-		0.80
+Gen.25:33	6	sold his	10,13		0.80
+Gen.25:33	7	to	15		0.80
+Gen.25:34	1	to	3		0.80
+Gen.25:34	2	of	-		0.80
+Gen.25:34	3	he	-		0.80
+Gen.25:34	4	he arose	14		0.80
+Gen.25:34	5	so	-		0.80
+Gen.25:34	6	slighted his	-		0.80
