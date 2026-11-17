@@ -53,7 +53,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "ladder" (Lampas ladder).
 - `handwritingDrills` — Handwriting drills. Write letters with a pen or finger, as a memory aid. Automatic: on once a pen is seen. Value: "auto", "on", "off".
 - `handsFree` — Hands-free. A three-finger tap anywhere turns it On or Off.
-- `bibleVoice` — Bible voice. The MSB read by David, streamed, where Lampas has it (John so far); else the phone voice. Value: "msb-david" (Recording (David)), "msb-david-wifi" (Recording on Wi-Fi only), "phone" (Phone voice).
+- `bibleVoice` — Bible voice. The MSB read by David, streamed, where Lampas has it; else the phone voice. Value: "msb-david" (Recording (David)), "msb-david-wifi" (Recording on Wi-Fi only), "phone" (Phone voice).
 - `englishVoice`, `greekVoice`, `hebrewVoice` — English voice, Greek voice, Hebrew voice. Phone default lets the phone choose. Only the phone's own pick can be asked for; the other voices are the phone's. Value: "default".
 - `englishRate`, `greekRate`, `hebrewRate` — English speed, Greek speed, Hebrew speed. How fast that language is read aloud; 1 is normal, smaller is slower. Value: a number from 0.5 to 1.5, in steps of 0.1.
 - `pronunciation` — Pronunciation. How Greek and Hebrew are said and respelled, one choice for both. Modern says both the modern way. Value: "modern".

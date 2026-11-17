@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fillChapter, type Chapter } from '../../src/data/chapter';
 import { forgetTimings, loadBookTimings } from '../../src/data/audioTimings';
+import { BOOKS } from '../../src/data/books';
 import { bibleVoiceSetting } from '../../src/settings/definitions';
 import { setConnectionForTests, type ConnectionKind } from '../../src/speech/connection';
 import type { PlanVerse } from '../../src/speech/readAloud';
@@ -35,11 +36,20 @@ describe('the Bible voice setting', () => {
   });
 
   it('has a hint of at most 90 characters, and a help that opens with the credit line', () => {
-    expect(bibleVoiceSetting.hint).toBe('The MSB read by David, streamed, where Lampas has it (John so far); else the phone voice.');
+    expect(bibleVoiceSetting.hint).toBe('The MSB read by David, streamed, where Lampas has it; else the phone voice.');
     expect(bibleVoiceSetting.hint.length).toBeLessThanOrEqual(90);
     expect(bibleVoiceSetting.help).toMatch(/^Recording: Majority Standard Bible, read by David, streamed from openbible\.com/);
     expect(bibleVoiceSetting.help).toContain('internet');
-    expect(bibleVoiceSetting.help).toContain('John');
+  });
+
+  // mw-ar5k42b.26: the hint said David had one book 'so far' while the index listed five. Neither line names a book, so neither is behind when the next one arrives.
+  it("names no book of the Bible and nothing 'so far' in its hint or its help, while the index lists several books", () => {
+    const listed = JSON.parse(readFileSync('public/data/audio/msb-david/index.json', 'utf8')) as { books: Record<string, number[]> };
+    expect(Object.keys(listed.books).length).toBeGreaterThan(1);
+    for (const line of [bibleVoiceSetting.hint, bibleVoiceSetting.help]) {
+      expect(BOOKS.map((b) => b.name).filter((name) => new RegExp(`\\b${name.replace(/^\d /, '')}\\b`).test(line))).toEqual([]);
+      expect(line).not.toMatch(/so far/);
+    }
   });
 
   it('reads a saved value that is not a choice as the default', () => {
