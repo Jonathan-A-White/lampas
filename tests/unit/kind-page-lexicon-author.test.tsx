@@ -44,4 +44,13 @@ describe('the Lexicons page names the author of its books', () => {
   it('more than the six grammars that named an author before name one', () => {
     expect(entriesOf('grammar').filter((e) => (e.author ?? '') !== '').length).toBeGreaterThan(6);
   });
+
+  it('every one of the 29 lexicons and 18 grammars names an author (mw-qtu3zvz.190)', () => {
+    for (const kind of ['lexicon', 'grammar'] as const) {
+      const without = entriesOf(kind).filter((e) => (e.author ?? '').trim() === '').map((e) => e.title);
+      expect(without, `${kind} entries with no author`).toEqual([]);
+    }
+    expect(entriesOf('lexicon').length).toBe(29);
+    expect(entriesOf('grammar').length).toBe(18);
+  });
 });
