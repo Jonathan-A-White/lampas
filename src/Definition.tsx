@@ -4,6 +4,7 @@
 import type { ReactNode } from 'react';
 import { definitionOf, type DefinitionPiece } from './definition';
 import { useOffRun } from './overRun';
+import { openHash } from './nav/route';
 import { closeAllSheets } from './ui/sheetBack';
 
 /** The pieces of a line: a reference a link to the reader, a '(?)' kept beside the word before it. */
@@ -11,20 +12,26 @@ function Pieces({ pieces }: { pieces: DefinitionPiece[] }): ReactNode {
   const offRun = useOffRun();
   return (
     <>
-      {pieces.map((piece, i) =>
-        offRun(piece.ref) === undefined ? (
+      {pieces.map((piece, i) => {
+        const address = `#/?ref=${piece.ref}&as=${piece.text}`;
+        return offRun(piece.ref) === undefined ? (
           <span key={i}>{piece.text.replace(/ \(\?\)/g, ' (?)')}</span>
         ) : (
           <a
             key={i}
-            href={`#/?ref=${piece.ref}&as=${piece.text}`}
-            onClick={() => closeAllSheets()}
+            href={address}
+            onClick={(e) => {
+              // not the anchor's own navigation: it would change the address after the sheets' close, whose step Back (src/ui/sheetBack.ts settle) then lands over it (mw-5r3p30.1177)
+              e.preventDefault();
+              closeAllSheets();
+              openHash(address);
+            }}
             className="-my-3 inline-flex min-h-11 items-center text-accent underline underline-offset-4"
           >
             {piece.text}
           </a>
-        ),
-      )}
+        );
+      })}
     </>
   );
 }
