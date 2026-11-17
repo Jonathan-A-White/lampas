@@ -324,6 +324,8 @@ Whatever follows a sof pasuq (the פ and ס that close a section) is not read. T
 The guide settles the shewa this way: the rule above counts the shewas it says; the guide's `ə` marks count the ones the data says; where the two differ, the shewas the rule left silent are said
 (earliest first), or the ones it said are made silent (latest first), until they agree. In Genesis 1 and Jonah 1 this changes `לְאָכְלָה` only (`le-okh-LA` for the guide, `le-a-kheh-LA` for the rule),
 the qamats qatan the pointing cannot tell from a qamats.
+One shewa the guide never makes silent: the one under the first of two identical letters (`הַלְלוּ`, `חַלְלֵי`, `הִנְנִי`). The data writes `hal·lū` with no `ə`, as a grammar book closes the first syllable,
+but the Israeli voice says ha-le-LOO, so the respelling says `ha-leh-LOO` whatever the guide shows (a guide that marks it, as `rə·rîm` does, agrees; mw-fnvjof.17.176).
 
 ### The Hebrew sounds and lessons
 
