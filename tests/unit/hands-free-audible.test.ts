@@ -12,6 +12,7 @@ import type { OpenEnv } from '../../src/resources/openApp';
 import { audioBibleSetting } from '../../src/settings/definitions';
 import { setSetting } from '../../src/settings/store';
 import { ManualClock } from '../support/manual-clock';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 // Chapter 5 of John has no start known in this file: the link falls back to the book (src/resources/audioBible.ts audibleListen)
 vi.mock('../../src/resources/audibleStarts.json', async (original) => {
@@ -22,6 +23,7 @@ vi.mock('../../src/resources/audibleStarts.json', async (original) => {
 });
 
 const WORD_OF_PROMISE = AUDIO_BIBLES[0]!;
+const timeout = ASYNC_WAIT_MS;
 
 /** The OpenEnv of a test: what it is told to open, and the page going away or the wait running out when the test says so. */
 class FakeEnv implements OpenEnv {
@@ -50,7 +52,7 @@ class FakeEnv implements OpenEnv {
   }
   /** The links opened once `count` of them have been (the plan is read before each opens). */
   urls = async (count = 1): Promise<string[]> => {
-    await vi.waitFor(() => expect(this.opened.length).toBeGreaterThanOrEqual(count));
+    await vi.waitFor(() => expect(this.opened.length).toBeGreaterThanOrEqual(count), { timeout });
     return this.opened.map((o) => o.url);
   };
 }
@@ -130,7 +132,7 @@ describe('a browser that wants a touch', () => {
     await listenInAudible('jhn', 3, say);
     await env.urls();
     env.wait();
-    await vi.waitFor(() => expect(said).toEqual(['John 3, in Audible', TOUCH_TO_OPEN]));
+    await vi.waitFor(() => expect(said).toEqual(['John 3, in Audible', TOUCH_TO_OPEN]), { timeout });
     expect(TOUCH_TO_OPEN).toBe('Touch the screen once to open Audible');
     clock.advance(10_000);
     vi.spyOn(Date, 'now').mockReturnValue(61_000);
