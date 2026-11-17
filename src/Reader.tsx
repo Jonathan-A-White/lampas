@@ -307,8 +307,8 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   useBringVerse(main, inner, BOOK, CHAPTER, chapter, readingMode === undefined ? null : paging, showPage);
   // A chapter he has read before opens at the verse he was last on in it (mw-5r3p30.1148), unless the open names a place (a verse asked for, a link, a verse in the address) or a scroll offset is kept for it
   const [placed] = useState(() => request !== undefined || link !== undefined || opened.verse !== undefined || opened.passage !== undefined || hasKeptScroll(window.location.hash, 'reader'));
-  useNoteLastVerse(main, BOOK, CHAPTER, paging);
-  useBringLastVerse(main, inner, BOOK, CHAPTER, chapter, paging, placed);
+  useNoteLastVerse(main, BOOK, CHAPTER, readingMode === undefined ? null : paging);
+  useBringLastVerse(main, inner, BOOK, CHAPTER, chapter, readingMode === undefined ? null : paging, placed);
   // a hold on the header's Greek / Hebrew button flips the Septuagint and keeps the verse on top (mw-u2w5klk.293)
   useBringFlipped(main, inner, BOOK, chapter);
   const flipText = useCallback(() => flipSeptuagint({ book: BOOK, chapter: CHAPTER, shown: chapter, top: main.current && !paging ? topVerseOf(main.current) : null }), [BOOK, CHAPTER, chapter, paging]);
