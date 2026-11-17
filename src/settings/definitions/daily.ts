@@ -1,7 +1,7 @@
 // Daily (Settings > Daily): which pieces Today holds (Review, Memorize, Plan chapter, Psalms and Proverbs, Devotional; all On to start), which devotional it shows (one of the
 // 37 in src/data/daily/devotionals.ts that are On in Your Logos library, or Random among those), and whether each piece has a box he ticks himself (On to start, PROVISIONAL). Today itself
 // is a later story (mw-1fwagb.5); these are the settings it reads.
-import { ALL_TICKED, DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL, MORNING_REPHIL_ID, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
+import { ALL_TICKED, DEFAULT_BACKUP, DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL, MORNING_REPHIL_ID, NONE_TICKED, RANDOM, tickedDevotionals, tickedText } from '../../data/daily/devotionals';
 import { DEFAULT_ORDER, type EpisodeOrder } from '../../data/daily/morningRephil';
 import { devotionalDraw, setDevotionalDraw } from '../../data/repositories/library';
 import { defineSetting, type Allowed, type Dependency, type SectionId } from '../define';
@@ -15,9 +15,6 @@ const ON_OFF = {
     { value: 'off', label: 'Off' },
   ],
 } as const;
-
-/** A piece that exists only to open Logos (the devotional) is drawn, and shown on Today, only while Logos is On (mw-rfjjzd.23). The day's Psalms and Proverbs read in Lampas (mw-5r3p30.1007), so Logos does not govern them. */
-const LOGOS_ON: Dependency = { key: 'resource.logos', shown: (value) => value === 'on' };
 
 const piece = (key: string, label: string, hint: string, help: string, dependsOn?: Dependency) =>
   defineSetting<DailySwitch>({ key, default: 'on', allowed: ON_OFF, section: 'daily', label, hint, help, dependsOn });
@@ -54,8 +51,7 @@ export const dailyDevotionalSetting = piece(
   'dailyDevotional',
   'Devotional',
   'Today holds a devotional.',
-  'Whether Today holds a devotional (Logos).',
-  LOGOS_ON,
+  'Whether Today holds a devotional: a Logos book (Logos On) or Morning RePhil.',
 );
 
 export const devotionalSetting = defineSetting<string>({
@@ -69,7 +65,6 @@ export const devotionalSetting = defineSetting<string>({
   label: 'Which devotional',
   hint: 'The one Today shows, or Random.',
   help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library or Morning RePhil; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start.`,
-  dependsOn: LOGOS_ON,
 });
 
 export const devotionalDrawSetting = defineSetting<string>({
@@ -105,6 +100,20 @@ export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
   label: 'Morning RePhil order',
   hint: 'Oldest or newest episode first.',
   help: 'Next Morning RePhil episode: the oldest not yet played, or the newest.',
+  dependsOn: { key: 'devotional', shown: (value) => value === RANDOM || value === MORNING_REPHIL_ID },
+});
+
+export const morningRephilBackupSetting = defineSetting<string>({
+  key: 'morningRephilBackup',
+  default: DEFAULT_BACKUP,
+  allowed: {
+    kind: 'choice',
+    values: DEVOTIONALS.map((d) => ({ value: d.id, label: d.title })),
+  },
+  section: 'daily',
+  label: 'When all Morning RePhil are seen',
+  hint: 'The devotional Today shows instead.',
+  help: `The Logos devotional Today shows once you have seen every Morning RePhil episode, until a new one is posted; Morning and Evening (${DEFAULT_BACKUP}) to start. It follows Logos: with Logos Off Today says every episode is seen.`,
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM || value === MORNING_REPHIL_ID },
 });
 

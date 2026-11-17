@@ -3,8 +3,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL, MORNING_REPHIL_ID, RANDOM, anotherDevotional, devotionalForDay, devotionalOf, pickableDevotionals } from '../../src/data/daily/devotionals';
-import { EPISODES, anotherEpisode, episodeForDay, episodeDate, nextEpisode, orderedEpisodes, type Episode } from '../../src/data/daily/morningRephil';
-import { clearHeard, getDay, getHeard, markHeard, pinEpisode, setDevotionalPick } from '../../src/data/daily/dailyStore';
+import { EPISODES, anotherEpisode, devotionalToday, episodeForDay, episodeDate, nextEpisode, orderedEpisodes, type Episode } from '../../src/data/daily/morningRephil';
+import { clearHeard, getDay, getHeard, markHeard, markSeen, pinEpisode, setDevotionalPick } from '../../src/data/daily/dailyStore';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -155,5 +155,85 @@ describe('what he has heard, kept on the device', () => {
     await setDevotionalPick('2026-11-16', MORNING_REPHIL_ID);
     await markHeard('2026-11-16', 'a');
     expect((await getDay('2026-11-16')).devotional).toBe(MORNING_REPHIL_ID);
+  });
+});
+
+// --- Seen, the backup devotional and Logos Off (mw-r9xo1pj.2) ---------------------------------------------------------------------------
+
+const SPURGEON = DEFAULT_DEVOTIONAL;
+const OTHER = DEVOTIONALS[1].id;
+const base = { choice: MORNING_REPHIL_ID, ticked: [] as string[], date: day, heard: new Set<string>(), order: 'oldest' as const, backup: SPURGEON, logosOn: true, list: THREE };
+
+describe('Seen: marking an episode seen without playing it', () => {
+  it('keeps it in the same heard set a play does, and Today moves to the next unseen one', async () => {
+    await markSeen('2026-11-17', 'a');
+    expect([...(await getHeard())]).toEqual(['a']);
+    const kept = (await getDay('2026-11-17')).rephil;
+    expect(kept).toBeUndefined();
+    expect(episodeForDay('oldest', await getHeard(), kept, THREE)?.id).toBe('b');
+    await markSeen('2026-11-17', 'a');
+    expect([...(await getHeard())]).toEqual(['a']);
+  });
+
+  it('lets go of the day\'s own episode, so Seen on a played one moves on too, and keeps Morning RePhil as the day\'s devotional', async () => {
+    await markHeard('2026-11-17', 'a');
+    expect((await getDay('2026-11-17')).rephil).toBe('a');
+    await markSeen('2026-11-17', 'a');
+    const kept = await getDay('2026-11-17');
+    expect(kept.rephil).toBeUndefined();
+    expect(kept.devotional).toBe(MORNING_REPHIL_ID);
+  });
+
+  it('is his alone: a second profile (a fresh store) sees no Seen mark, and the bundled list carries none', async () => {
+    await markSeen('2026-11-17', EPISODES[0].id);
+    expect((await getHeard()).has(EPISODES[0].id)).toBe(true);
+    await db.settings.clear();
+    expect([...(await getHeard())]).toEqual([]);
+    expect(nextEpisode('oldest', await getHeard())?.id).toBe(EPISODES[0].id);
+    for (const e of EPISODES) expect(Object.keys(e).sort()).toEqual(['date', 'id', 'number', 'share', 'title']);
+  });
+});
+
+describe('the devotional Today shows, with the backup', () => {
+  it('is the next unseen episode while one is left, whatever the backup is', () => {
+    expect(devotionalToday({ ...base, heard: new Set(['a']) })).toMatchObject({ devotional: { id: MORNING_REPHIL_ID }, episode: { id: 'b' } });
+    expect(devotionalToday({ ...base, order: 'newest' })?.episode?.id).toBe('c');
+  });
+
+  it('is the backup devotional once every episode is seen, with the way back to start again', () => {
+    const all = new Set(['a', 'b', 'c']);
+    expect(devotionalToday({ ...base, heard: all })).toEqual({ devotional: devotionalOf(SPURGEON), backup: true });
+    expect(devotionalToday({ ...base, heard: all, backup: OTHER })).toEqual({ devotional: devotionalOf(OTHER), backup: true });
+  });
+
+  it('falls back to Spurgeon when the backup named is not a Logos devotional of the catalog', () => {
+    const all = new Set(['a', 'b', 'c']);
+    expect(devotionalToday({ ...base, heard: all, backup: 'gone' })?.devotional.id).toBe(SPURGEON);
+    expect(devotionalToday({ ...base, heard: all, backup: MORNING_REPHIL_ID })?.devotional.id).toBe(SPURGEON);
+  });
+
+  it('is taken over by a newly published episode the moment the list has it', () => {
+    const all = new Set(['a', 'b', 'c']);
+    const grown = [...THREE, ep('d', '2026-01-11', 4)];
+    expect(devotionalToday({ ...base, heard: all, list: grown })).toMatchObject({ devotional: { id: MORNING_REPHIL_ID }, episode: { id: 'd' } });
+  });
+
+  it('shows Morning RePhil with Logos Off, and with every one seen says so instead of the backup', () => {
+    expect(devotionalToday({ ...base, logosOn: false })?.episode?.id).toBe('a');
+    expect(devotionalToday({ ...base, logosOn: false, heard: new Set(['a', 'b', 'c']) })).toEqual({ devotional: MORNING_REPHIL });
+  });
+
+  it('shows no Logos devotional with Logos Off, and draws only Morning RePhil for Random', () => {
+    expect(devotionalToday({ ...base, choice: OTHER, logosOn: false })).toBeUndefined();
+    expect(devotionalToday({ ...base, choice: RANDOM, ticked: DEVOTIONALS.map((d) => d.id), logosOn: false })?.devotional.id).toBe(MORNING_REPHIL_ID);
+    expect(devotionalToday({ ...base, choice: OTHER })?.devotional.id).toBe(OTHER);
+  });
+});
+
+describe('the picker with Logos Off', () => {
+  it('lists Morning RePhil and what is chosen, not the Logos books', () => {
+    const every = DEVOTIONALS.map((d) => d.id);
+    expect(pickableDevotionals(every, SPURGEON, new Set(every), false).map((d) => d.id)).toEqual([SPURGEON, MORNING_REPHIL_ID]);
+    expect(pickableDevotionals(every, MORNING_REPHIL_ID, new Set(every), false).map((d) => d.id)).toEqual([MORNING_REPHIL_ID]);
   });
 });

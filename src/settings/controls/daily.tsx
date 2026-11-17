@@ -1,10 +1,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { RANDOM, devotionalOf, pickableDevotionals, tickedDevotionals } from '../../data/daily/devotionals';
+import { ALL_TICKED, RANDOM, devotionalOf, pickableDevotionals, tickedDevotionals } from '../../data/daily/devotionals';
 import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
+import { useLogosOn } from '../../useLogosOn';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, greekKeyboardSetting, hebrewKeyboardSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, greekKeyboardSetting, hebrewKeyboardSetting, morningRephilBackupSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
@@ -38,8 +39,10 @@ export const DevotionalControl: Control = ({ row }) => {
   const devotional = useSetting(devotionalSetting);
   const draw = useSetting(devotionalDrawSetting);
   const owned = useLiveQuery(ownedResources, []);
-  if (devotional === undefined || draw === undefined || owned === undefined) return null;
-  const items = [{ id: RANDOM, name: 'Random' }, ...pickableDevotionals(tickedDevotionals(draw), devotional, owned).map((d) => ({ id: d.id, name: d.title }))];
+  const logosOn = useLogosOn();
+  if (devotional === undefined || draw === undefined || owned === undefined || logosOn === undefined) return null;
+  // with Logos Off a Logos book opens nothing: the list is Morning RePhil and what is chosen now (mw-r9xo1pj.2)
+  const items = [...(logosOn || devotional === RANDOM ? [{ id: RANDOM, name: 'Random' }] : []), ...pickableDevotionals(tickedDevotionals(draw), devotional, owned, logosOn).map((d) => ({ id: d.id, name: d.title }))];
   return (
     <SettingRow row={row}>
       <SearchableList
@@ -84,6 +87,41 @@ export const MorningRephilOrderControl: Control = ({ row }) => {
           settingKey="morningRephilOrder"
         />
       ) : null}
+    </SettingRow>
+  );
+};
+
+/** When all Morning RePhil are seen: the Logos devotional Today shows then (shown while Which devotional is Random or Morning RePhil). The ones on his shelf, and the one chosen now, in the shared searchable list. */
+export const MorningRephilBackupControl: Control = ({ row }) => {
+  const backup = useSetting(morningRephilBackupSetting);
+  const owned = useLiveQuery(ownedResources, []);
+  if (backup === undefined || owned === undefined) return null;
+  const items = pickableDevotionals(tickedDevotionals(ALL_TICKED), backup, owned)
+    .filter((d) => d.kind === undefined)
+    .map((d) => ({ id: d.id, name: d.title }));
+  return (
+    <SettingRow row={row}>
+      <SearchableList
+        label={row.label}
+        noun="devotional"
+        items={items}
+        status={devotionalOf(backup)?.title ?? backup}
+        rankOf={(id) => (id === backup ? 0 : 1)}
+        row={(item) => (
+          <button
+            type="button"
+            role="radio"
+            aria-checked={item.id === backup}
+            onClick={() => oneTap(`rephil-backup:${item.id}`, () => void writeSetting(morningRephilBackupSetting.key, item.id))}
+            className="flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left text-base"
+          >
+            <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-line ${item.id === backup ? 'bg-accent text-accent-fg' : ''}`}>
+              {item.id === backup ? '✓' : ''}
+            </span>
+            <span className="title-wrap min-w-0 flex-1">{item.name}</span>
+          </button>
+        )}
+      />
     </SettingRow>
   );
 };

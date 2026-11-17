@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
-import { MORNING_REPHIL_ID, RANDOM } from '../../src/data/daily/devotionals';
+import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL_ID, RANDOM, type Devotional } from '../../src/data/daily/devotionals';
 import { EPISODES, episodeDate } from '../../src/data/daily/morningRephil';
 import { getDay, getHeard, localDate } from '../../src/data/daily/dailyStore';
 import { Today } from '../../src/today/Today';
@@ -87,8 +87,11 @@ describe('Today with Morning RePhil chosen', () => {
     expect([...(await getHeard())]).toEqual([]);
   });
 
-  it('says plainly that every episode is heard, and Start again begins from the top', async () => {
-    await db.settings.put({ key: 'morningRephilHeard', value: JSON.stringify(EPISODES.map((e) => e.id)) });
+  it('with Logos Off still shows Morning RePhil, and with every episode heard says so, since no backup can open; Start again begins from the top', async () => {
+    await db.settings.bulkPut([
+      { key: 'resource.logos', value: 'off' },
+      { key: 'morningRephilHeard', value: JSON.stringify(EPISODES.map((e) => e.id)) },
+    ]);
     const piece = await open();
     expect(await piece.findByText("You've heard every Morning RePhil; new ones appear as they're posted.", undefined, { timeout })).toBeInTheDocument();
     expect(piece.queryByRole('link')).toBeNull();
@@ -97,6 +100,83 @@ describe('Today with Morning RePhil chosen', () => {
     });
     expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toBeInTheDocument();
     expect([...(await getHeard())]).toEqual([]);
+  });
+
+  it('Seen marks the episode seen without playing it, and Today moves to the next unseen one', async () => {
+    const piece = await open();
+    await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout });
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Seen' }));
+    });
+    expect(await piece.findByRole('link', { name: new RegExp(EPISODES[1].title) }, { timeout })).toHaveAttribute('href', EPISODES[1].share);
+    expect(piece.queryByRole('link', { name: new RegExp(`${first.title}$`) })).toBeNull();
+    expect([...(await getHeard())]).toEqual([first.id]);
+    expect((await getDay(localDate(new Date()))).rephil).toBeUndefined();
+  });
+
+  it('Seen moves on in Newest first too', async () => {
+    await db.settings.put({ key: 'morningRephilOrder', value: 'newest' });
+    const piece = await open();
+    await piece.findByRole('link', { name: new RegExp(last.title) }, { timeout });
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Seen' }));
+    });
+    expect(await piece.findByRole('link', { name: new RegExp(EPISODES[EPISODES.length - 2].title) }, { timeout })).toBeInTheDocument();
+  });
+});
+
+describe('when all Morning RePhil are seen', () => {
+  const all = JSON.stringify(EPISODES.map((e) => e.id));
+
+  it('shows Spurgeon, the default backup, instead of the heard-every-one message, with a small way to start again', async () => {
+    await db.settings.put({ key: 'morningRephilHeard', value: all });
+    const piece = await open();
+    expect(await piece.findByRole('link', { name: /Morning and Evening/ }, { timeout })).toHaveTextContent('Open in Logos');
+    expect(piece.queryByText(/You've heard every Morning RePhil/)).toBeNull();
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Start Morning RePhil again' }));
+    });
+    expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toBeInTheDocument();
+    expect([...(await getHeard())]).toEqual([]);
+  });
+
+  it('shows the Logos devotional chosen in When all Morning RePhil are seen', async () => {
+    const other = DEVOTIONALS.find((d) => d.id !== DEFAULT_DEVOTIONAL) as Devotional;
+    await db.settings.bulkPut([
+      { key: 'morningRephilHeard', value: all },
+      { key: 'morningRephilBackup', value: other.id },
+    ]);
+    const piece = await open();
+    expect(await piece.findByRole('link', { name: new RegExp(other.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }, { timeout })).toBeInTheDocument();
+  });
+
+  it('is a setting that shows while Morning RePhil is chosen, and the tutor can change', async () => {
+    expect((await currentSettings()).morningRephilBackup).toBe(DEFAULT_DEVOTIONAL);
+    const other = DEVOTIONALS[1].id;
+    expect((await applyChanges([{ key: 'morningRephilBackup', value: other }])).refused).toEqual([]);
+    expect((await currentSettings()).morningRephilBackup).toBe(other);
+    expect((await applyChanges([{ key: 'morningRephilBackup', value: MORNING_REPHIL_ID }])).refused).toHaveLength(1);
+  });
+});
+
+describe('Morning RePhil with Logos Off', () => {
+  it('shows its episode, with its Seen button, and no Logos link', async () => {
+    await db.settings.put({ key: 'resource.logos', value: 'off' });
+    const piece = await open();
+    expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toHaveAttribute('href', first.share);
+    expect(piece.getByRole('button', { name: 'Seen' })).toBeInTheDocument();
+    expect(piece.queryByText(/Open in Logos/)).toBeNull();
+  });
+
+  it('shows no Logos devotional with Logos Off', async () => {
+    await db.settings.bulkPut([
+      { key: 'resource.logos', value: 'off' },
+      { key: 'devotional', value: DEFAULT_DEVOTIONAL },
+    ]);
+    render(<Today />);
+    await screen.findByRole('main');
+    await vi.waitFor(() => expect(screen.getByTestId('today-explained')).toBeInTheDocument(), { timeout });
+    expect(screen.queryByRole('region', { name: 'Devotional' })).toBeNull();
   });
 });
 

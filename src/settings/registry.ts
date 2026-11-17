@@ -88,7 +88,7 @@ import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
 import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
-import { ANOTHER, audioBibleSetting, bibleVoiceSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, morningRephilOrderSetting, fontSetting, greekKeyboardSetting, handsFreeSetting, handsFreePauseSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, septuagintSetting, septuagintGapsSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, audioBibleSetting, bibleVoiceSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, morningRephilOrderSetting, morningRephilBackupSetting, fontSetting, greekKeyboardSetting, handsFreeSetting, handsFreePauseSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, septuagintSetting, septuagintGapsSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -633,6 +633,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   fromDefinition(devotionalSetting),
   fromDefinition(devotionalDrawSetting),
   fromDefinition(morningRephilOrderSetting),
+  fromDefinition(morningRephilBackupSetting),
   todaysDevotionalEntry,
   fromDefinition(dailyTicksSetting),
   fromDefinition(greekKeyboardSetting),

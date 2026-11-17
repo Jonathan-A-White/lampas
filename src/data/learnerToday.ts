@@ -1,12 +1,13 @@
 // src/data/learnerToday.ts — the request's `today` (mw-5r3p30.731, docs/ask-tutor.md 'Today'): the items behind the Reader's chip 'Today · 2 of 9', each with its title and whether he
 // ticked it, in the order Today draws them. At most TODAY_MAX (Today holds ten at most). Missing when Today holds nothing (every Daily piece Off). The Bible talk's input schema
 // holds it; its instructions say how to use it. `done` is missing from every item while Tick boxes is Off: nothing is ticked then, and 'not done' would be a guess.
-import { devotionalForDay, tickedDevotionals } from './daily/devotionals';
-import { getDay, localDate, rephilUnheard } from './daily/dailyStore';
-import { dayProgress } from './repositories';
+import { DEFAULT_BACKUP, tickedDevotionals } from './daily/devotionals';
+import { getDay, getHeard, localDate } from './daily/dailyStore';
+import { DEFAULT_ORDER, devotionalToday } from './daily/morningRephil';
+import { dayProgress, getStudyResources } from './repositories';
 import { chapterName } from '../plan/chapterName';
 import { readPlan } from '../plan/usePlan';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting } from '../settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions';
 import { getSetting } from '../settings/store';
 import { memorizeLine, memorizeToday } from '../today/memorizeLine';
 import { todayPieces } from '../today/pieces';
@@ -75,7 +76,9 @@ export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[]
       title = read.length > 0 ? `Reading plan: ${read.join(', ')} read today${next ? `, next ${chapterName(next)}` : ''}` : next ? `Reading plan: ${chapterName(next)}` : 'Reading plan';
     } else if (id === 'devotional') {
       kind = 'devotional';
-      title = devotionalForDay(choice, tickedDevotionals(draw), now, day.devotional, await rephilUnheard()).title;
+      const [order, backup, study, heard] = await Promise.all([getSetting(morningRephilOrderSetting), getSetting(morningRephilBackupSetting), getStudyResources(), getHeard()]);
+      // the title Today shows: Morning RePhil's, or its backup devotional's once every episode is seen (mw-r9xo1pj.2)
+      title = devotionalToday({ choice, ticked: tickedDevotionals(draw), date: now, pick: day.devotional, kept: day.rephil, heard, order: order ?? DEFAULT_ORDER, backup: backup ?? DEFAULT_BACKUP, logosOn: study.on.includes('logos') })?.devotional.title ?? 'Devotional';
     } else if (passage) {
       kind = passage[1] === 'psa' ? 'psalm' : 'proverb';
       title = passageName(passage[1], Number(passage[2]));
