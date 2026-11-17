@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.266
+_2026-11-17_
+- New: Hands-free has a new setting, Pause before it acts, so you can make it wait 1, 1.5, 2, 3 or 4 seconds of quiet before it takes your words as a command.
+
 ## 0.7.265
 _2026-11-17_
 - Fixed: Tapping an English word in the Septuagint chapters Genesis 24 to 29 now opens the Greek word it renders in nearly every case, instead of the Verse view.

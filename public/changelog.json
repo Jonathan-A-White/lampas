@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.266",
+    "date": "2026-11-17",
+    "story": "mw-rl10piw.9",
+    "kind": "new",
+    "text": "Hands-free has a new setting, Pause before it acts, so you can make it wait 1, 1.5, 2, 3 or 4 seconds of quiet before it takes your words as a command."
+  },
+  {
     "version": "0.7.265",
     "date": "2026-11-17",
     "story": "mw-u2w5klk.349.4",
