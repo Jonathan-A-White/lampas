@@ -874,9 +874,8 @@ for (const size of [
   ]) {
     test(`with Turn pages, ${path.name}, at ${size.name}, the first open is Page 1 of a page count that holds after one turn`, async ({ page }) => {
       await page.setViewportSize({ width: size.width, height: size.height });
-      // Mark 10, not Mark 12: Mark 12's poetry (12:10-11, 12:36) puts page 2's first text mid-verse (5:12) and the turn that puts the bars away then re-cuts the pages
-      // and sometimes lands past it (Found, not fixed on mw-5r3p30.1164); Mark 10 has no poetry lines
-      await openMark12(page, 'pages', { settings: path.settings, chapter: 10 });
+      // Mark 12, whose poetry (12:10-11, 12:36) puts page 2's first text mid-verse (5:12): the turn that puts the bars away re-cuts the pages and must not land past it
+      await openMark12(page, 'pages', { settings: path.settings });
       const open = await pageOf(page);
       const openLines = Math.floor(await linesHeld(page));
       expect(open.at).toBe(1);

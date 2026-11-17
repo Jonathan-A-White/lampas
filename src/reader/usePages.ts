@@ -176,35 +176,89 @@ export function usePages(
     let count = 1;
     /** the width of a page and the gap after it */
     let step = 0;
-    /** the first verse that began on the page shown: the page is found again by it when the pages are cut afresh */
+    /** the first verse that began on the page shown: the place he keeps in this chapter, by which the page is found again when he comes back to it */
     let anchor: Element | null = null;
+    /** the first text on the page shown (a place in a text node, which may stand in the middle of a verse that began on the page before): the page is found again
+     * by it when the pages are cut afresh, so a page that begins mid-verse is not re-cut onto a page past the rest of that verse (mw-5r3p30.1172) */
+    let edge: { node: Text; offset: number } | null = null;
     /** the page kept from when he was last in this chapter: shown at each cut until he turns a page (or one is shown for him) */
     let kept = keptPage(chapter);
 
     /** The page an x on screen falls on. */
     const pageAt = (x: number): number => (step <= 0 ? 0 : Math.max(0, Math.floor((x - content.getBoundingClientRect().left + 1) / step)));
 
-    const go = (to: number, keepAnchor = false) => {
-      page = Math.max(0, Math.min(count - 1, to));
-      setPlace((was) => (was.page === page && was.count === count ? was : { page, count }));
-      el.scrollLeft = page * step;
-      if (keepAnchor) return;
-      // the first verse that begins on this page, else the one that runs across it
-      const left = content.getBoundingClientRect().left + page * step;
+    /** The left of the page shown, on screen. */
+    const pageLeft = () => content.getBoundingClientRect().left + page * step;
+
+    /** The first verse that begins on the page shown, else the one that runs across it. */
+    const verseOnPage = (): Element | null => {
+      const left = pageLeft();
       const on = (r: DOMRect) => r.width > 0 && r.left >= left - 1 && r.left < left + step - 1;
       const verses = Array.from(content.querySelectorAll('[data-verse]'));
-      anchor =
+      return (
         verses.find((v) => {
           const first = v.getClientRects()[0];
           return first !== undefined && on(first);
         }) ??
         verses.find((v) => Array.from(v.getClientRects()).some(on)) ??
-        null;
+        null
+      );
+    };
+
+    /** The rect of the character at `at`: one character of the text node, that at the place or the one before it at the node's end. */
+    const rectOf = (at: { node: Text; offset: number }): DOMRect | undefined => {
+      const { node, offset } = at;
+      if (!node.isConnected || node.length === 0) return undefined;
+      const from = Math.min(offset, node.length - 1);
+      const probe = document.createRange();
+      probe.setStart(node, from);
+      probe.setEnd(node, from + 1);
+      const r = probe.getClientRects()[0];
+      return r && r.width > 0 ? r : undefined;
+    };
+
+    /** The first text on the page shown: what the top left of the page lands on (none where the browser cannot say, or says a place that is not on the page). */
+    const edgeOnPage = (): { node: Text; offset: number } | null => {
+      if (step <= 0) return null;
+      const top = content.getBoundingClientRect().top;
+      const x = pageLeft() + 2;
+      const y = top + 2;
+      let node: Node | null = null;
+      let offset = 0;
+      try {
+        if (typeof document.caretPositionFromPoint === 'function') {
+          const c = document.caretPositionFromPoint(x, y);
+          node = c?.offsetNode ?? null;
+          offset = c?.offset ?? 0;
+        } else if (typeof document.caretRangeFromPoint === 'function') {
+          const c = document.caretRangeFromPoint(x, y);
+          node = c?.startContainer ?? null;
+          offset = c?.startOffset ?? 0;
+        }
+      } catch {
+        return null;
+      }
+      if (!(node instanceof Text) || !content.contains(node)) return null;
+      const place = { node, offset };
+      const r = rectOf(place);
+      const left = pageLeft();
+      return r && r.left >= left - 1 && r.left < left + step - 1 ? place : null;
+    };
+
+    /** Shows page `to`. The place it is found by when the pages are cut afresh is made from what is on it, unless `keep` (the pages are cut afresh and it is the same
+     * text: `true`, both kept; `'edge'`, the first text kept, and the verse he keeps as his place made from the page it is now on). */
+    const go = (to: number, keep: boolean | 'edge' = false) => {
+      page = Math.max(0, Math.min(count - 1, to));
+      setPlace((was) => (was.page === page && was.count === count ? was : { page, count }));
+      el.scrollLeft = page * step;
+      if (keep === true) return;
+      anchor = verseOnPage();
+      if (keep === false) edge = edgeOnPage();
     };
 
     /** Shows `to` and keeps it as his place, unless the kept page is still being put back. */
-    const move = (to: number, keepAnchor = false) => {
-      go(to, keepAnchor);
+    const move = (to: number, keep: boolean | 'edge' = false) => {
+      go(to, keep);
       if (!kept) keepPage(chapter, { page, count, verse: anchor instanceof HTMLElement ? (anchor.dataset.verse ?? null) : null });
     };
 
@@ -276,8 +330,11 @@ export function usePages(
         move(page, true);
         return;
       }
+      // by the first text the page showed (a page that began mid-verse is cut again to the page that text is on, not the one the next verse begins on), else by its verse
+      const at = edge ? rectOf(edge) : undefined;
       const first = anchor?.isConnected ? anchor.getClientRects()[0] : undefined;
-      if (first) move(pageAt(first.left), true);
+      if (at) move(pageAt(at.left), 'edge');
+      else if (first) move(pageAt(first.left), true);
       else move(page);
       fillArriving();
     };
