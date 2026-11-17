@@ -2,6 +2,15 @@
 
 Source: runs/greek-poetry-lines-sample.json (36 NT, 14 LXX). Each break between consecutive lines is judged once; a break after a `[lead-in]` line is counted and marked "(lead-in)".
 
+<!-- toc -->
+
+- [New Testament](#new-testament)
+- [Septuagint (Psalms)](#septuagint-psalms)
+- [Totals](#totals)
+- [Note by the Builder](#note-by-the-builder)
+
+<!-- /toc -->
+
 ## New Testament
 
 | ref | breaks | natural | not natural | note |
