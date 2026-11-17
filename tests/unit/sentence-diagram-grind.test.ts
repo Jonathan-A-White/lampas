@@ -101,8 +101,8 @@ describe('the answer schema', () => {
 describe('the instructions', () => {
   const text = instructionsOf('sentence-diagram');
 
-  it('are one file under 12,000 bytes', () => {
-    expect(Buffer.byteLength(text, 'utf8')).toBeLessThan(12_000);
+  it('are one file under 11,500 bytes, so a rule has room to be added (mw-ar5k42b.22)', () => {
+    expect(Buffer.byteLength(text, 'utf8')).toBeLessThan(11_500);
   });
 
   it('say THE RULE: every word sent exactly once, none twice, none missing, punctuation never a word', () => {
