@@ -224,7 +224,8 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   });
 
   Scenario('Hands-free On survives a reload, in silence', ({ Given, And, Then }) => {
-    Given('a phone that speaks English and keeps the screen awake', phone);
+    // the wake is heard and its model served, or Hands-free would say, truthfully, that it could not start (mw-rl10piw.31)
+    Given('a phone that speaks English and keeps the screen awake', listeningPhone);
     And('Lampas is opened on Romans 8 with Hands-free On', async () => {
       await db.settings.put({ key: 'handsFree', value: 'on' });
       await openApp();
