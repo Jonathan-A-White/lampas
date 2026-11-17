@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.268
+_2026-11-17_
+- New: Today can show Brookfield First's Morning RePhil, one episode a day with a Watch link, oldest or newest first, and never one you have already played.
+- New: In the Greek tab, a poem or song in the New Testament (the Magnificat, the quotations from the Psalms) now sits in lines, broken where the English lines break.
+
 ## 0.7.267
 _2026-11-17_
 - Fixed: turning Hands-free on or off no longer makes the whole page jump down and up; the microphone mark now sits in the corner over the page.
