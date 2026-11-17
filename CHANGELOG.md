@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.269
+_2026-11-17_
+- Fixed: In Turn pages with the Immersive reader on, turning a page no longer skips the text at the top of the next page when that page begins in the middle of a verse.
+- Fixed: Opening a chapter in Turn pages mode no longer jumps the page as if it were Scrolling while the app is still reading its settings.
+
 ## 0.7.268
 _2026-11-17_
 - New: Today can show Brookfield First's Morning RePhil, one episode a day with a Watch link, oldest or newest first, and never one you have already played.
