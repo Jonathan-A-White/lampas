@@ -11,23 +11,24 @@ import { topVerseOf } from './useKeepTopVerse';
 /** How long the box is watched for the remembered verse to be drawn before it is given up (a verse the chapter no longer has). */
 const WAIT_MS = 3000;
 
-/** Notes the verse on top of `main` as he scrolls, for this chapter. */
-export function useNoteLastVerse(main: RefObject<HTMLElement | null>, book: string, chapter: number, paging: boolean): void {
+/** Notes the verse on top of `main` as he scrolls, for this chapter. `paging` is null until the Reading mode setting has been read: a Reader not yet known to scroll notes nothing
+ * (mw-fnvjof.17.151, as useBringVerse's, mw-fnvjof.17.118). */
+export function useNoteLastVerse(main: RefObject<HTMLElement | null>, book: string, chapter: number, paging: boolean | null): void {
   useEffect(() => {
     const box = main.current;
-    if (!box || paging) return;
+    if (!box || paging !== false) return;
     const note = () => setLastVerse(book, chapter, topVerseOf(box));
     box.addEventListener('scroll', note, { passive: true });
     return () => box.removeEventListener('scroll', note);
   }, [main, book, chapter, paging]);
 }
 
-/** Brings the verse he was last on in this chapter to the top of `main` once, when the chapter is on screen and `skip` (a place already named, or a kept offset) does not apply; says which
+/** Brings the verse he was last on in this chapter to the top of `main` once, when the chapter is on screen, the Reading mode is read and Scroll, and `skip` (a place already named, or a kept offset) does not apply; says which
  * on the box (data-restored-verse, for a test). */
-export function useBringLastVerse(main: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, book: string, chapterN: number, chapter: Chapter | null, paging: boolean, skip: boolean): void {
+export function useBringLastVerse(main: RefObject<HTMLElement | null>, inner: RefObject<HTMLElement | null>, book: string, chapterN: number, chapter: Chapter | null, paging: boolean | null, skip: boolean): void {
   useEffect(() => {
     const box = main.current;
-    if (!box || skip || paging || !chapter || chapter.code !== book || chapter.chapter !== chapterN) return;
+    if (!box || skip || paging !== false || !chapter || chapter.code !== book || chapter.chapter !== chapterN) return;
     const verse = getLastVerse(book, chapterN);
     if (verse === undefined) return;
     let watcher: MutationObserver | undefined;
