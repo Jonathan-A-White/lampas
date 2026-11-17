@@ -320,6 +320,23 @@ describe('writing the files', () => {
     }
   });
 
+  it('leaves verses-<book>-<chapter>.json (scripts/verses-build.ts\'s small files) alone while it removes any other file it no longer makes', async () => {
+    const base = mkdtempSync(join(tmpdir(), 'lampas-data-'));
+    try {
+      const out = join(base, 'out');
+      mkdirSync(out, { recursive: true });
+      writeFileSync(join(out, 'verses-jhn-3.json'), '{}');
+      writeFileSync(join(out, 'verses-psa-23.json'), '{}');
+      writeFileSync(join(out, 'old.json'), '{}');
+      await run(join(base, 'raw'), out);
+      expect(existsSync(join(out, 'verses-jhn-3.json'))).toBe(true);
+      expect(existsSync(join(out, 'verses-psa-23.json'))).toBe(true);
+      expect(existsSync(join(out, 'old.json'))).toBe(false);
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
   it('downloads each raw file only when it is not already there', async () => {
     const base = mkdtempSync(join(tmpdir(), 'lampas-data-'));
     try {

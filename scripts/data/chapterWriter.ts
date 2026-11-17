@@ -150,11 +150,14 @@ export function writeIfChanged(path: string, text: string): boolean {
   return true;
 }
 
-/** Removes the .json files under outDir that `owned` says a build made and `made` does not hold: what an earlier build left. ladder/ is scripts/ladder-el.ts's and audio/ is the recorded voice's timings (src/data/audioTimings.ts): neither is ever touched. */
+/** scripts/verses-build.ts's small file of a chapter's English, made after the chapter files and never by a data build. */
+const VERSES_SMALL_FILE = /^verses-[^/]+\.json$/;
+
+/** Removes the .json files under outDir that `owned` says a build made and `made` does not hold: what an earlier build left. ladder/ is scripts/ladder-el.ts's, audio/ is the recorded voice's timings (src/data/audioTimings.ts) and the top-level verses-<book>-<chapter>.json are scripts/verses-build.ts's small files: none is ever touched. */
 export function removeStale(outDir: string, made: ReadonlySet<string>, owned: (path: string) => boolean): void {
   if (!existsSync(outDir)) return;
   for (const p of readdirSync(outDir, { recursive: true }).map(String)) {
     const path = p.split('\\').join('/');
-    if (path.endsWith('.json') && !path.startsWith('ladder/') && !path.startsWith('audio/') && owned(path) && !made.has(path)) rmSync(join(outDir, p));
+    if (path.endsWith('.json') && !path.startsWith('ladder/') && !path.startsWith('audio/') && !VERSES_SMALL_FILE.test(path) && owned(path) && !made.has(path)) rmSync(join(outDir, p));
   }
 }

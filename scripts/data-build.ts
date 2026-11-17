@@ -493,7 +493,7 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
     if (writeIfChanged(join(outDir, path), text)) written++;
     bytes += Buffer.byteLength(text);
   }
-  // Anything else under outDir is left from an earlier build, but the Old Testament's files are scripts/data-build-ot.ts's (and ladder/ is scripts/ladder-el.ts's, removeStale).
+  // Anything else under outDir is left from an earlier build, but the Old Testament's files are scripts/data-build-ot.ts's (removeStale also never touches ladder/ (scripts/ladder-el.ts's), audio/ or the top-level verses-*.json (scripts/verses-build.ts's)).
   const hebrew = new Set(OT_BOOKS.map((b) => b.code));
   removeStale(outDir, new Set(files.keys()), (path) => !(path.includes('/') ? hebrew.has(path.split('/')[0]) : path === 'lexicon-hbo.json' || path === 'frequency-hbo.json'));
   log(`${built.chapters.length} chapters, ${written} files written, ${(bytes / 1024 / 1024).toFixed(1)} MB`);
