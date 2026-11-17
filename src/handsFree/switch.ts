@@ -4,6 +4,7 @@
 import { handsFreeSetting } from '../settings/definitions';
 import { getSetting, setSetting, useSetting } from '../settings/store';
 import { speakText } from '../speech/greek';
+import { getReading, resumeReading } from '../speech/readAloud';
 
 /** The words said when the switch goes On, and when it goes Off. */
 export const HANDS_FREE_ON = 'Hands-free on';
@@ -23,9 +24,18 @@ export function useHandsFree(): boolean | undefined {
   return value === undefined ? undefined : value === 'on';
 }
 
-/** Says the new state aloud in the English voice. */
+/** Says the new state aloud in the English voice. A Bible reading under way is paused by the words (speech/greek.ts speakBeside), so when they are said it goes on from where it
+ * stopped, as the session's close does (playback.ts goOnAtClose); a reading he had paused himself, or that nothing was reading, is left as it was. */
 export function sayHandsFree(on: boolean): void {
-  speakText(on ? HANDS_FREE_ON : HANDS_FREE_OFF, SAID_KEY, { language: 'english' });
+  const wasReading = getReading().status === 'reading';
+  speakText(on ? HANDS_FREE_ON : HANDS_FREE_OFF, SAID_KEY, {
+    language: 'english',
+    onEnd: wasReading
+      ? () => {
+          if (getReading().status === 'paused') resumeReading();
+        }
+      : undefined,
+  });
 }
 
 /** Turns Hands-free On or Off: saves the setting and says so. Setting it to what it already is changes and says nothing. */
