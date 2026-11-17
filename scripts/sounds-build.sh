@@ -2,7 +2,21 @@
 # scripts/sounds-build.sh — the clips of a one-letter Greek word's sound (mw-5r3p30.347, docs/pronunciation.md): one per vowel sound a scheme's respelling
 # writes, and of an elided word of one consonant (δ', mw-5r3p30.449), made with eSpeak NG's phoneme input ([[o]]: a sound, never a letter's name, which its text input says for 'ό') and cut to the voice by ffmpeg.
 # Needs espeak-ng and ffmpeg (with libmp3lame). Run from the repo's root; the clips are committed, and a new scheme adds a line below.
+#
+#   scripts/sounds-build.sh [-h | --help]
+#
+# It takes no other argument: -h and --help print this text and exit 0, and anything else prints one line naming it and this text to stderr and exits 2. Both
+# answer before the script makes or writes a clip (mw-ar5k42b.35).
 set -eu
+
+# The arguments come first, before anything is made or written: asking for help must never rewrite the committed clips (mw-ar5k42b.35).
+usage() { sed -n '2,/^set -eu$/p' "$0" | sed '/^set -eu$/d; s/^# \{0,1\}//'; }
+case "${1:-}" in
+  "") ;;
+  -h|--help) usage; exit 0 ;;
+  *) echo "sounds-build.sh: unknown argument '$1' (it takes none besides -h and --help)" >&2; usage >&2; exit 2 ;;
+esac
+
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 clip() { # clip <scheme> <file name> <espeak-ng voice> <phoneme> [<espeak-ng amplitude> <gain>]: a consonant is quieter than a vowel, so it is made louder

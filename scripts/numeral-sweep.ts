@@ -143,7 +143,30 @@ export function runSweep(argv: readonly string[], log: (line: string) => void = 
   return { sweep, out, changed: before !== text };
 }
 
+/** The words of -h and --help; the flags are the two it takes, each with a value (mw-ar5k42b.35). */
+export const USAGE = 'usage: numeral-sweep.ts [--out <file>] [--lxx <folder>] [-h | --help]   (npm run numerals:sweep; writes docs/numeral-sweep.md unless --out says another file)';
+
+/** The first argument that is none of -h, --help, --out, --lxx or the value that follows one of those two (undefined: all are known). */
+export function unknownArgument(argv: readonly string[]): string | undefined {
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === '--out' || argv[i] === '--lxx') i += 1;
+    else if (argv[i] !== '-h' && argv[i] !== '--help') return argv[i];
+  }
+  return undefined;
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  // The arguments come first, before anything is read or written: asking for help must never rewrite the doc (mw-ar5k42b.35).
+  const args = process.argv.slice(2);
+  if (args.includes('-h') || args.includes('--help')) {
+    console.log(USAGE);
+    process.exit(0);
+  }
+  const unknown = unknownArgument(args);
+  if (unknown !== undefined) {
+    console.error(`numeral-sweep.ts: unknown argument '${unknown}'\n${USAGE}`);
+    process.exit(2);
+  }
   try {
     runSweep(process.argv.slice(2), console.log);
   } catch (error) {
