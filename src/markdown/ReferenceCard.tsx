@@ -186,6 +186,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
   const layer = useRef<HTMLDivElement>(null);
   const head = useRef<HTMLDivElement>(null);
   const foot = useRef<HTMLDivElement>(null);
+  const text = useRef<HTMLDivElement>(null);
   const [spot, setSpot] = useState<Spot | null>(null);
   // z-40 (drawn into document.body), over the Talk sheet (z-10): the ? asks about the reference the card shows, in a Talk drawn inside the card's layer so it stands in front (mw-5r3p30.1124)
   const ask = useSheetTalk({
@@ -233,7 +234,11 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
       if (!anchor.current || !box.current || !layer.current) return;
       const rect = layer.current.getBoundingClientRect();
       const inset = Number.parseFloat(getComputedStyle(layer.current).paddingBottom) || 0;
-      const next = spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight, rect, (head.current?.offsetHeight ?? 0) + (foot.current?.offsetHeight ?? 0) + 2, inset);
+      // the text's least height: three of its lines, or all of a shorter verse (a card whose side leaves less takes the whole layer, mw-indx1x6.73)
+      const verse = box.current.querySelector<HTMLElement>('[data-reference-text]');
+      const line = verse ? Number.parseFloat(getComputedStyle(verse).lineHeight) : Number.NaN;
+      const body = verse && line > 0 ? Math.min(3 * line, verse.offsetHeight) : 0;
+      const next = spotFor(anchor.current.getBoundingClientRect(), box.current.scrollHeight, rect, (head.current?.offsetHeight ?? 0) + (foot.current?.offsetHeight ?? 0) + 2, inset, body);
       setSpot((was) => (was && was.top === next.top && was.bottom === next.bottom && was.left === next.left && was.width === next.width && was.maxHeight === next.maxHeight ? was : next));
     };
     place();
@@ -244,12 +249,27 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
     const watch = typeof ResizeObserver === 'undefined' || !layer.current ? undefined : new ResizeObserver(place);
     if (watch && layer.current) watch.observe(layer.current);
     if (watch && box.current) watch.observe(box.current);
+    // the verse is drawn a moment after the card (its view settings load): a card already at its side's largest does not change size then, so the text's arrival is watched too
+    const drawn = typeof MutationObserver === 'undefined' || !box.current ? undefined : new MutationObserver(place);
+    if (drawn && box.current) drawn.observe(box.current, { childList: true, subtree: true });
     return () => {
       window.removeEventListener('resize', place);
       window.visualViewport?.removeEventListener('resize', place);
       watch?.disconnect();
+      drawn?.disconnect();
     };
   }, [anchor, passage]);
+
+  // a verse longer than the card's box scrolls inside it: the marked word is brought into the box, so it is read without a scroll (mw-indx1x6.73)
+  useLayoutEffect(() => {
+    const scroller = text.current;
+    const word = scroller?.querySelector<HTMLElement>('[data-marked]');
+    if (!scroller || !word) return;
+    const inBox = scroller.getBoundingClientRect();
+    const at = word.getBoundingClientRect();
+    if (at.top < inBox.top) scroller.scrollTop -= inBox.top - at.top;
+    else if (at.bottom > inBox.bottom) scroller.scrollTop += Math.min(at.bottom - inBox.bottom, at.top - inBox.top);
+  }, [passage, spot]);
 
   return createPortal(
     <div ref={layer} data-reference-backdrop style={{ paddingBottom: 'var(--lp-bar-inset)' }} className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); if (!onReference(anchor.current, e.clientX, e.clientY)) onClose(); }}>
@@ -268,7 +288,8 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
             Close
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-2">
+        {/* pt-1.5: a marked word's own box stands a few px above its line, and the box clips at its top edge */}
+        <div ref={text} className="min-h-0 flex-1 overflow-y-auto px-4 pb-2 pt-1.5">
           {!held ? (
             <ElsewhereLine place={place} onSettings={onSettings} />
           ) : passage === null ? (

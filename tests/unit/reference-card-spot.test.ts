@@ -55,4 +55,16 @@ describe('spotFor', () => {
     expect(spot.top).toBe(8);
     expect(spot.top! + spot.maxHeight).toBeLessThanOrEqual(300 - 48);
   });
+
+  it('takes the whole layer when a side has room for the chrome but not for three lines of the text (a phone turned sideways, mw-indx1x6.73)', () => {
+    vi.stubGlobal('innerHeight', 390);
+    const layer = { top: 40, bottom: 390 };
+    // 159 px beside the reference: enough for a 130 px heading and foot, but only a sliver of text
+    const cramped = spotFor(rect(60, 140), 400, layer, 130, 0, 0);
+    expect(cramped.top).toBeDefined();
+    expect(cramped.top).not.toBe(8);
+    const spot = spotFor(rect(60, 140), 400, layer, 130, 0, 116);
+    expect(spot.top).toBe(8);
+    expect(spot.maxHeight).toBe(390 - 40 - 16);
+  });
 });
