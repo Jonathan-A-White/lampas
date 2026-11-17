@@ -42,6 +42,46 @@ Feature: Your Logos library, a screen of its own
     Then every lexicon is set to "Off"
     And the count reads "none on"
 
+  Scenario: All on is dimmed while every book shown is On, and All off while every one is Off
+    Given his shelf holds the lexicons "BDAG" On with "BDAG" pinned
+    When he opens the Library at the kind "lexicon"
+    Then the page says "1 on"
+    And the button "All on" is not dimmed
+    And the button "All off" is bright too
+    When he taps "All on"
+    Then the count becomes "29 on"
+    And the button "All on" is dimmed
+    And the button "All off" stays bright
+    When he sets "EDNT" to "Off"
+    Then the button "All on" is bright again
+    When he then taps "All off"
+    Then the count reads "none on"
+    And the button "All off" is now dimmed
+    And the button "All on" is still bright
+
+  Scenario: A tap on a dimmed All on changes nothing, and the line of a refused pin stays
+    Given his shelf holds every lexicon On with "BDAG, Louw-Nida, DBL Greek" pinned
+    When he opens the Library at the kind "lexicon"
+    And he sets "EDNT" to "Pin"
+    Then the line "Three Greek lexicons pinned already: unpin one first" is shown
+    And the button "All on" is dimmed
+    When he taps the dimmed button "All on"
+    Then the line "Three Greek lexicons pinned already: unpin one first" still stands
+    And "EDNT" is set to "On"
+    And the page says "29 on"
+
+  Scenario: With a search typed, All shown on is dimmed when every book the search shows is On
+    Given his shelf holds the lexicons "BDAG" On with "BDAG" pinned
+    When he opens the Library at the kind "lexicon"
+    And he searches the lexicons for "BDAG"
+    Then the only book shown is "BDAG"
+    And the button "All shown on" is dimmed
+    And the button "All shown off" is not dimmed
+    When he taps "All shown off"
+    Then "BDAG" is set to "Off"
+    And the button "All shown off" is now dimmed
+    And the button "All shown on" is bright again
+
   Scenario: Search finds by title and by author across kinds and opens the kind page at the book
     Given his shelf holds nothing
     When he opens the Library

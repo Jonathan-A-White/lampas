@@ -1,7 +1,7 @@
 // features/steps/library.steps.tsx — runs features/library.feature: the Library screen (#/library, src/library/LibraryScreen.tsx) and a kind's page (#/library?kind=lexicon,
 // src/library/KindPage.tsx), proven in the whole app over the Dexie shelf (src/data/repositories/library.ts).
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -195,6 +195,82 @@ describeFeature(feature, ({ Scenario }) => {
       });
     });
     And('the count reads {string}', pageSays);
+  });
+
+  // dimmed: the button says it would change nothing (aria-disabled) and still takes the thumb (it is not disabled), so a tap lands on it and not on what is under it (mw-qtu3zvz.196)
+  const dimmed = async (_: unknown, name: string) => {
+    await waitFor(() => expect(screen.getByRole('button', { name })).toHaveAttribute('aria-disabled', 'true'));
+    expect(screen.getByRole('button', { name })).not.toBeDisabled();
+  };
+  // bright: looked at only once the shelf is read (the header's count is drawn then), since a button is bright while the page does not yet know
+  const bright = async (_: unknown, name: string) => {
+    await waitFor(() => expect(screen.getByTestId('kind-status')).not.toBeEmptyDOMElement());
+    await waitFor(() => expect(screen.getByRole('button', { name })).not.toHaveAttribute('aria-disabled'));
+  };
+  const taps = async (_: unknown, label: string) => {
+    await user.click(await screen.findByRole('button', { name: label }));
+  };
+  const onePinned = async (_: unknown, lexicons: string, pinned: string) => {
+    await shelfHolds(list(lexicons).map((l): [string, ShelfState] => [l, l === pinned ? 'pinned' : 'on']));
+  };
+
+  Scenario('All on is dimmed while every book shown is On, and All off while every one is Off', ({ Given, When, Then, And }) => {
+    Given('his shelf holds the lexicons {string} On with {string} pinned', onePinned);
+    When('he opens the Library at the kind {string}', opensKind);
+    Then('the page says {string}', pageSays);
+    And('the button {string} is not dimmed', bright);
+    And('the button {string} is bright too', bright);
+    When('he taps {string}', taps);
+    Then('the count becomes {string}', pageSays);
+    And('the button {string} is dimmed', dimmed);
+    And('the button {string} stays bright', bright);
+    When('he sets {string} to {string}', setTo);
+    Then('the button {string} is bright again', bright);
+    When('he then taps {string}', taps);
+    Then('the count reads {string}', pageSays);
+    And('the button {string} is now dimmed', dimmed);
+    And('the button {string} is still bright', bright);
+  });
+
+  Scenario('A tap on a dimmed All on changes nothing, and the line of a refused pin stays', ({ Given, When, Then, And }) => {
+    Given('his shelf holds every lexicon On with {string} pinned', async (_, pinned: string) => {
+      await shelfHolds([]);
+      for (const e of entriesOf('lexicon')) expect(await setState(e.resource, list(pinned).includes(e.short) ? 'pinned' : 'on')).toEqual({ ok: true });
+    });
+    When('he opens the Library at the kind {string}', opensKind);
+    And('he sets {string} to {string}', setTo);
+    Then('the line {string} is shown', async (_, line: string) => {
+      expect(await screen.findByRole('alert')).toHaveTextContent(line);
+    });
+    And('the button {string} is dimmed', dimmed);
+    // the tap goes to the button as it stands, dimmed: fireEvent flushes what the tap sets before the next step looks, so a line the tap wiped would be gone by then
+    When('he taps the dimmed button {string}', (_, name: string) => {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(button);
+    });
+    Then('the line {string} still stands', (_, line: string) => {
+      expect(screen.getByRole('alert')).toHaveTextContent(line);
+    });
+    And('{string} is set to {string}', isSet);
+    And('the page says {string}', pageSays);
+  });
+
+  Scenario('With a search typed, All shown on is dimmed when every book the search shows is On', ({ Given, When, Then, And }) => {
+    Given('his shelf holds the lexicons {string} On with {string} pinned', onePinned);
+    When('he opens the Library at the kind {string}', opensKind);
+    And('he searches the lexicons for {string}', async (_, text: string) => {
+      await user.type(await screen.findByRole('searchbox', { name: 'Search Lexicons' }), text);
+    });
+    Then('the only book shown is {string}', async (_, short: string) => {
+      await waitFor(() => expect(screen.getAllByRole('radiogroup').map((g) => g.getAttribute('aria-label'))).toEqual([short]));
+    });
+    And('the button {string} is dimmed', dimmed);
+    And('the button {string} is not dimmed', bright);
+    When('he taps {string}', taps);
+    Then('{string} is set to {string}', isSet);
+    And('the button {string} is now dimmed', dimmed);
+    And('the button {string} is bright again', bright);
   });
 
   Scenario('Search finds by title and by author across kinds and opens the kind page at the book', ({ Given, When, And, Then }) => {

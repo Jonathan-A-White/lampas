@@ -1,5 +1,5 @@
 // src/library/KindPage.tsx — one kind's page of the Library (#/library?kind=lexicon, docs/design/library-at-scale.md 3.4): every book of the kind in a control of Off | On | Pin, pinned
-// first, then those on, then those off (and by name within each; a kind with Hebrew and Greek books, Lexicons and Grammars, in a Hebrew group then a Greek one), All on / All off, and a search over the kind (while one is typed the buttons read All shown on / All shown off and act on the rows shown only). The list is the shared SearchableList (src/ui/SearchableList.tsx), which
+// first, then those on, then those off (and by name within each; a kind with Hebrew and Greek books, Lexicons and Grammars, in a Hebrew group then a Greek one), All on / All off, and a search over the kind (while one is typed the buttons read All shown on / All shown off and act on the rows shown only). A button that would change nothing (every book it acts on is On already, or Off) is dimmed, mw-qtu3zvz.196. The list is the shared SearchableList (src/ui/SearchableList.tsx), which
 // does not re-sort under his thumb. A fourth pin is refused with a line under the book; a Bible shows the parts it is set for (NT, OT, Apocrypha, read from the three Settings keys) and "Set for…" asks
 // which part (PartChoice.tsx); Devotionals have no Pin.
 import { useState } from 'react';
@@ -60,9 +60,16 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
     const result = await setState(entry.resource, to as ShelfState);
     setRefused(result.ok ? null : entry.resource);
   };
+  // the books All on / All off act on: the rows the search shows while one is typed, the whole kind otherwise
+  const acting = shown.searching ? shown.ids : entries.map((e) => e.resource);
+  // whether a bulk button would change nothing: every book it acts on already stands that way (a Pinned book reads as On, and All on leaves it Pinned). False while the shelf is read. The button is dimmed by this
+  // answer and its tap goes by it (mw-qtu3zvz.196)
+  const idle = (to: 'on' | 'off'): boolean => states !== undefined && acting.every((id) => ((states.get(id) ?? 'off') !== 'off') === (to === 'on'));
   const all = async (to: 'on' | 'off'): Promise<void> => {
-    setRefused(null);
-    await setKind(kind, to, Date.now(), shown.searching ? shown.ids : entries.map((e) => e.resource));
+    // a tap on a dimmed button changes nothing he can see, the line of a refused pin included. The shelf is written all the same: that changes nothing when the page is right, and loses no tap when the page is
+    // a moment behind the shelf
+    if (!idle(to)) setRefused(null);
+    await setKind(kind, to, Date.now(), acting);
   };
 
   return (
@@ -94,12 +101,13 @@ export function KindPage({ kind, book }: { kind: Kind; book?: string }) {
         ) : (
           <>
             <div className="flex flex-wrap gap-2 pt-3">
+              {/* All on and All off; with a search typed, All shown on and All shown off. One that would change nothing is dimmed: it says so (aria-disabled) and still takes the thumb, so the tap lands on it and not on what is under it */}
               {kind === 'bible' ? null : (
                 <>
-                  <button type="button" className={BUTTON} onClick={() => void all('on')}>
+                  <button type="button" className={`${BUTTON} aria-disabled:opacity-50`} aria-disabled={idle('on') ? true : undefined} onClick={() => void all('on')}>
                     {shown.searching ? 'All shown on' : 'All on'}
                   </button>
-                  <button type="button" className={BUTTON} onClick={() => void all('off')}>
+                  <button type="button" className={`${BUTTON} aria-disabled:opacity-50`} aria-disabled={idle('off') ? true : undefined} onClick={() => void all('off')}>
                     {shown.searching ? 'All shown off' : 'All off'}
                   </button>
                 </>
