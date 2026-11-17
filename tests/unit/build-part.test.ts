@@ -42,6 +42,12 @@ describe('a real vite build runs in its own gate part', () => {
     for (const file of BUILDS_IN_SHARDS) expect(builders, `${file} no longer builds: remove it from BUILDS_IN_SHARDS`).toContain(file);
   });
 
+  it('no build is left in a shard: BUILDS_IN_SHARDS is empty', () => {
+    // mw-5r3p30.1175: the install and data features' build scenarios moved to features/build.feature, one build for all of them.
+    expect(BUILDS_IN_SHARDS).toEqual([]);
+    expect(BUILD_PART_FILES).toContain('features/steps/build.steps.ts');
+  });
+
   it('sees a build in code and not in a comment', () => {
     expect(runsABuild("import { viteBuild } from '../support/child-build';\nviteBuild(dir);")).toBe(true);
     expect(runsABuild("import { build } from 'vite';")).toBe(true);

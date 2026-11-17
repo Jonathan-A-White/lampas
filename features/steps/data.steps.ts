@@ -1,10 +1,10 @@
 // features/steps/data.steps.ts — runs features/data.feature against the committed public/data, the
-// source slices in tests/fixtures/data/, and a real build of the service worker.
+// source slices in tests/fixtures/data/ (the service worker's real build: features/build.feature).
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, expect, vi } from 'vitest';
+import { afterAll, expect } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { runBuild } from '../../scripts/data-build';
 import { BSB_FILE, TBESH_FILE, runBuildOt } from '../../scripts/data-build-ot';
@@ -14,11 +14,7 @@ import type { LemmaLexicon } from '../../src/data/lexicon';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import { serveChapter } from '../../src/dataCache';
 import { dataBooks } from '../../tests/support/dataBooks';
-import { childBuildTestMs, viteBuild } from '../../tests/support/child-build';
 import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
-
-// A real vite build takes a few seconds.
-vi.setConfig({ testTimeout: childBuildTestMs(1) });
 
 const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
 const chapterPath = (code: string, n: number) => `public/data/${code}/${n}.json`;
@@ -41,7 +37,6 @@ let chapter: Chapter;
 let first: string;
 let second: string;
 let outDir: string;
-let swText: string;
 
 const feature = await loadFeature('features/data.feature');
 
@@ -405,24 +400,6 @@ describeFeature(feature, ({ Scenario }) => {
       const text = readFileSync(join(a, 'frequency.json'), 'utf8');
       expect(text.length).toBeGreaterThan(50);
       expect(readFileSync(join(b, 'frequency.json'), 'utf8')).toBe(text);
-    });
-  });
-
-  Scenario('Only the index, the lemma lexicon, the frequency table and Romans 8 are precached', ({ Given, Then, And }) => {
-    Given('the app is built', () => {
-      outDir = tmp();
-      viteBuild(outDir);
-      swText = readFileSync(join(outDir, 'sw.js'), 'utf8');
-    });
-    Then('the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter or Old Testament file', () => {
-      const urls = [...swText.matchAll(/"url":"([^"]+)"/g)].map((m) => m[1]);
-      const data = urls.filter((u) => u.startsWith('data/')).sort();
-      expect(data).toEqual(['data/frequency.json', 'data/index.json', 'data/lexicon.json', 'data/rom/8.json']);
-      expect(urls.length).toBeGreaterThan(4);
-    });
-    And('the service worker serves other chapters cache-first from a runtime cache', () => {
-      expect(readFileSync('src/sw.ts', 'utf8')).toMatch(/CacheFirst/);
-      expect(swText).toMatch(/\/data\//);
     });
   });
 

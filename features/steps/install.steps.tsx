@@ -1,47 +1,17 @@
-// features/steps/install.steps.tsx — runs features/install.feature: the manifest of a real build, the
-// zoom and scroll rules in index.html and the root css, and the update banner under a fake registration.
+// features/steps/install.steps.tsx — runs features/install.feature: the zoom and scroll rules in
+// index.html and the root css, and the update banner under a fake registration (the manifest of a real build: features/build.feature).
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterAll, expect, vi } from 'vitest';
+import { afterAll, expect } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { UpdateBanner } from '../../src/UpdateBanner';
 import { startAppUpdates, type AppUpdates } from 'pwa-kit/app-update';
 import { fakeSetup, fakeWorker, type FakeSetup, type FakeWorker } from '../../tests/support/fake-registration';
-import { childBuildTestMs, viteBuild } from '../../tests/support/child-build';
-import { HOOK_TIMEOUT_MS } from '../../tests/support/timeouts';
-
-// A real vite build takes a few seconds.
-vi.setConfig({ testTimeout: childBuildTestMs(1) });
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
-
-interface Icon {
-  sizes?: string;
-  type?: string;
-  src: string;
-}
-interface Manifest {
-  name: string;
-  short_name: string;
-  display: string;
-  icons: Icon[];
-  protocol_handlers?: { protocol: string; url: string }[];
-}
-
-const outDir = mkdtempSync(join(tmpdir(), 'lampas-build-'));
-let built = false;
-afterAll(() => rmSync(outDir, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
-
-// vite's own CLI in a child process: esbuild refuses to run inside this jsdom test environment.
-function buildOnce(): void {
-  if (built) return;
-  viteBuild(outDir);
-  built = true;
-}
 
 let html = '';
 let css = '';
@@ -57,41 +27,6 @@ afterAll(() => {
 const feature = await loadFeature('features/install.feature');
 
 describeFeature(feature, ({ Scenario }) => {
-  Scenario('The manifest makes Lampas installable', ({ Given, Then }) => {
-    Given('the app is built', () => {
-      buildOnce();
-    });
-
-    Then('the manifest names the app Lampas, display standalone, with 192 and 512 icons', () => {
-      const manifest = JSON.parse(readFileSync(join(outDir, 'manifest.webmanifest'), 'utf8')) as Manifest;
-      expect(manifest.name).toBe('Lampas');
-      expect(manifest.short_name).toBe('Lampas');
-      expect(manifest.display).toBe('standalone');
-      const png = (size: string) => manifest.icons.find((icon) => icon.sizes === size && icon.type === 'image/png');
-      expect(png('192x192')).toBeDefined();
-      expect(png('512x512')).toBeDefined();
-      for (const icon of manifest.icons) {
-        expect(readFileSync(join(outDir, icon.src.replace(/^\//, ''))).length).toBeGreaterThan(0);
-      }
-      // Served at the root of its own domain: every asset reference is root-absolute.
-      const page = readFileSync(join(outDir, 'index.html'), 'utf8');
-      expect(page).toMatch(/src="\/assets\/[^"]+\.js"/);
-      expect(page).toMatch(/href="\/assets\/[^"]+\.css"/);
-      expect(page).not.toMatch(/(src|href)="\.\/?assets/);
-    });
-  });
-
-  Scenario('The built manifest hands web+lampas: links to the app', ({ Given, Then }) => {
-    Given('the app is built', () => {
-      buildOnce();
-    });
-
-    Then('the manifest has a protocol handler for web+lampas that opens the reference in the address', () => {
-      const manifest = JSON.parse(readFileSync(join(outDir, 'manifest.webmanifest'), 'utf8')) as Manifest;
-      expect(manifest.protocol_handlers).toEqual([{ protocol: 'web+lampas', url: '/#/?ref=%s' }]);
-    });
-  });
-
   Scenario('The page cannot be zoomed or scrolled', ({ Given, Then }) => {
     Given('the document and its root stylesheet', () => {
       html = read('index.html');

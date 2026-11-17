@@ -3,14 +3,14 @@
 // the shard's budget three times (mw-gq6.986, mw-5r3p30.420, mw-82lb97i.35). So vitest.config.ts leaves these files out of the
 // shards and runs only them when LAMPAS_TESTS=build: the gate's part is `TZ=UTC LAMPAS_TESTS=build npx vitest run`.
 
-/** The unit test files that run a real vite build in a child process, run by the build part and by no shard. */
-export const BUILD_PART_FILES: readonly string[] = ['tests/unit/build-chunk-names.test.ts'];
+/** The test files (unit tests and feature steps) that run a real vite build in a child process, run by the build part and by no shard. */
+export const BUILD_PART_FILES: readonly string[] = ['tests/unit/build-chunk-names.test.ts', 'features/steps/build.steps.ts'];
 
 /**
- * Test files that run a real build and still sit in the shards: the feature steps are one scenario each in a feature spec and
- * cannot be taken out without taking the scenario. Not a place for a new file: a new test that builds goes in BUILD_PART_FILES.
+ * Test files that run a real build and still sit in the shards: none (mw-5r3p30.1175 moved the install and data features' build scenarios
+ * to features/build.feature). Not a place for a new file: a new test that builds goes in BUILD_PART_FILES.
  */
-export const BUILDS_IN_SHARDS: readonly string[] = ['features/steps/data.steps.ts', 'features/steps/install.steps.tsx'];
+export const BUILDS_IN_SHARDS: readonly string[] = [];
 
 /** The environment variable that picks the build part. */
 export const BUILD_PART_ENV = 'LAMPAS_TESTS';

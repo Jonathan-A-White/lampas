@@ -100,12 +100,6 @@ Feature: The Bible data
     And the build of the source slices writes the same frequency table twice
 
   @uc-data @greek @hebrew
-  Scenario: Only the index, the lemma lexicon, the frequency table and Romans 8 are precached
-    Given the app is built
-    Then the service worker precaches data/index.json, data/lexicon.json, data/frequency.json and data/rom/8.json and no other chapter or Old Testament file
-    And the service worker serves other chapters cache-first from a runtime cache
-
-  @uc-data @greek @hebrew
   Scenario: Every chapter in the index has a fingerprint of its file
     Given the committed index
     Then every chapter has a 12-character fingerprint, the first 12 hex of the SHA-256 of its file

@@ -365,6 +365,7 @@ export const NEUTRAL_FEATURES: Readonly<Record<string, string>> = {
   'chapter-picker': 'the 66 books: navigation',
   'chapter-swipe': 'swiping between chapters: navigation',
   'double-tap': 'a double tap on Next: the question screens’ mechanics',
+  build: 'a real build of the app, its manifest and its worker: the shell',
   events: 'the event bus: the shell',
   'feedback-offer': 'an ask offered to the makers: the request flow',
   'form-helper': 'Let the tutor do it: the tutor’s mechanics',
