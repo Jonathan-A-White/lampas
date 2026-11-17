@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
-import { DEFAULT_DEVOTIONAL, DEVOTIONALS, RANDOM, devotionalForDay, tickedDevotionals } from '../../src/data/daily/devotionals';
+import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL_ID, RANDOM, devotionalForDay, tickedDevotionals } from '../../src/data/daily/devotionals';
 
 vi.mock('../../src/data/daily/dailyStore', async (original) => {
   const real = await original<typeof import('../../src/data/daily/dailyStore')>();
@@ -50,21 +50,21 @@ describe('the Today\'s devotional setting', () => {
     await onRandom();
     const entry = settingOf('todaysDevotional');
     expect(entry?.label).toBe("Today's devotional");
-    const shown = devotionalForDay(RANDOM, TWO, new Date()).id;
+    const shown = devotionalForDay(RANDOM, TWO, new Date(), undefined, true).id;
     expect(await entry?.read()).toBe(shown);
     expect((await currentSettings()).todaysDevotional).toBe(shown);
   });
 
   it('with Random, "another" re-draws today through pickAnotherDevotional and Which devotional stays Random', async () => {
     await onRandom();
-    const before = devotionalForDay(RANDOM, TWO, new Date()).id;
+    const before = devotionalForDay(RANDOM, TWO, new Date(), undefined, true).id;
     const { applied, refused } = await applyChanges([{ key: 'todaysDevotional', value: 'another' }]);
     expect(refused).toEqual([]);
     expect(pickAnotherDevotional).toHaveBeenCalledTimes(1);
     const after = (await getDay(todayDate())).devotional;
     expect(after).toBeDefined();
     expect(after).not.toBe(before);
-    expect(TWO).toContain(after);
+    expect([...TWO, MORNING_REPHIL_ID]).toContain(after);
     expect(await kept('devotional')).toBe(RANDOM);
     expect(applied).toHaveLength(1);
     expect(applied[0]).toMatchObject({ key: 'todaysDevotional', from: before, to: 'another' });

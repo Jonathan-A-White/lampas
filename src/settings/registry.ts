@@ -65,7 +65,7 @@ import {
 import { APPROACHES, DEFAULT_APPROACH, approachOf } from '../approaches';
 import { BOOK_INDEX } from '../data/bookIndex';
 import { goalTitle, parseGoal } from '../data/goal';
-import { getDay, localDate, pickAnotherDevotional, setDevotionalPick } from '../data/daily/dailyStore';
+import { getDay, localDate, pickAnotherDevotional, rephilUnheard, setDevotionalPick } from '../data/daily/dailyStore';
 import { RANDOM, devotionalForDay, devotionalOf, tickedDevotionals } from '../data/daily/devotionals';
 import { normaliseNewWordsADay } from '../data/pace';
 import { publish, type AppEvent } from '../events/bus';
@@ -88,7 +88,7 @@ import { PRONUNCIATIONS } from '../speech/pronunciation';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS, type Depth } from '../script/scripts';
 import type { Allowed, Dependency, SectionId, SettingDef, SettingValue } from './define';
 import { extentChoices, paradigmExtentSetting } from './definitions/grammarExtent';
-import { ANOTHER, audioBibleSetting, bibleVoiceSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, fontSetting, greekKeyboardSetting, handsFreeSetting, handsFreePauseSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, septuagintSetting, septuagintGapsSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
+import { ANOTHER, audioBibleSetting, bibleVoiceSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, englishAccentSetting, morningRephilOrderSetting, fontSetting, greekKeyboardSetting, handsFreeSetting, handsFreePauseSetting, handwritingSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, septuagintSetting, septuagintGapsSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting } from './definitions';
 import type { Immersive } from './definitions/immersive';
 import type { Tips } from './definitions/tips';
 import type { Weave } from './definitions/weave';
@@ -188,12 +188,12 @@ const englishAccentEntry: SettingEntry = (() => {
 })();
 
 /** What Today shows now: Which devotional and the draw as they stand, and the id of the devotional of the phone's date (the day's pick while Random). */
-async function devotionalToday(): Promise<{ random: boolean; ticked: string[]; date: string; id: string }> {
+async function devotionalToday(): Promise<{ random: boolean; ticked: string[]; date: string; id: string; rephil: boolean }> {
   const now = new Date();
   const date = localDate(now);
-  const [choice, draw, day] = await Promise.all([getSetting(devotionalSetting), getSetting(devotionalDrawSetting), getDay(date)]);
+  const [choice, draw, day, rephil] = await Promise.all([getSetting(devotionalSetting), getSetting(devotionalDrawSetting), getDay(date), rephilUnheard()]);
   const ticked = tickedDevotionals(draw);
-  return { random: choice === RANDOM, ticked, date, id: devotionalForDay(choice, ticked, now, day.devotional).id };
+  return { random: choice === RANDOM, ticked, date, id: devotionalForDay(choice, ticked, now, day.devotional, rephil).id, rephil };
 }
 
 /**
@@ -207,7 +207,7 @@ const todaysDevotionalEntry: SettingEntry = {
   write: async (value) => {
     const today = await devotionalToday();
     if (!today.random) return;
-    if (value === ANOTHER) await pickAnotherDevotional(today.date, today.id, today.ticked);
+    if (value === ANOTHER) await pickAnotherDevotional(today.date, today.id, today.ticked, undefined, today.rephil);
     else if (devotionalOf(String(value))) await setDevotionalPick(today.date, String(value));
     else return;
     publish({ kind: 'setting-changed', key: todaysDevotionalSetting.key, value });
@@ -632,6 +632,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   fromDefinition(dailyDevotionalSetting),
   fromDefinition(devotionalSetting),
   fromDefinition(devotionalDrawSetting),
+  fromDefinition(morningRephilOrderSetting),
   todaysDevotionalEntry,
   fromDefinition(dailyTicksSetting),
   fromDefinition(greekKeyboardSetting),

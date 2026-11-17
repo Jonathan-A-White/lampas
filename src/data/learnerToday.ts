@@ -2,7 +2,7 @@
 // ticked it, in the order Today draws them. At most TODAY_MAX (Today holds ten at most). Missing when Today holds nothing (every Daily piece Off). The Bible talk's input schema
 // holds it; its instructions say how to use it. `done` is missing from every item while Tick boxes is Off: nothing is ticked then, and 'not done' would be a guess.
 import { devotionalForDay, tickedDevotionals } from './daily/devotionals';
-import { getDay, localDate } from './daily/dailyStore';
+import { getDay, localDate, rephilUnheard } from './daily/dailyStore';
 import { dayProgress } from './repositories';
 import { chapterName } from '../plan/chapterName';
 import { readPlan } from '../plan/usePlan';
@@ -75,7 +75,7 @@ export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[]
       title = read.length > 0 ? `Reading plan: ${read.join(', ')} read today${next ? `, next ${chapterName(next)}` : ''}` : next ? `Reading plan: ${chapterName(next)}` : 'Reading plan';
     } else if (id === 'devotional') {
       kind = 'devotional';
-      title = devotionalForDay(choice, tickedDevotionals(draw), now, day.devotional).title;
+      title = devotionalForDay(choice, tickedDevotionals(draw), now, day.devotional, await rephilUnheard()).title;
     } else if (passage) {
       kind = passage[1] === 'psa' ? 'psalm' : 'proverb';
       title = passageName(passage[1], Number(passage[2]));

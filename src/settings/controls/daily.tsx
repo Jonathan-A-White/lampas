@@ -4,10 +4,10 @@ import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, greekKeyboardSetting, hebrewKeyboardSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, greekKeyboardSetting, hebrewKeyboardSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
-import { OnOff, RowName, SettingRow } from './SettingRow';
+import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 /** One On | Off switch of Settings > Daily: a piece of Today, or its Tick boxes. */
@@ -67,6 +67,27 @@ export const DevotionalControl: Control = ({ row }) => {
   );
 };
 
+/** Morning RePhil order: which episode is next, the oldest one he has not heard or the newest (shown while Which devotional is Random or Morning RePhil). */
+export const MorningRephilOrderControl: Control = ({ row }) => {
+  const order = useSetting(morningRephilOrderSetting);
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {order ? (
+        <ChipRow
+          name={row.label}
+          current={order}
+          options={[
+            ['oldest', 'Oldest first'],
+            ['newest', 'Newest first'],
+          ]}
+          settingKey="morningRephilOrder"
+        />
+      ) : null}
+    </SettingRow>
+  );
+};
+
 /** In the draw: the devotionals Random may show are the ones that are On in Your Logos library, so this says how many and opens the Library's Devotionals page, where they are turned On and Off
  *  (shown only while Random is chosen). */
 export const DevotionalDrawControl: Control = ({ row }) => {
@@ -79,6 +100,7 @@ export const DevotionalDrawControl: Control = ({ row }) => {
         <span className="block text-base font-medium">{row.label}</span>
         <p className="pb-1 text-base">
           {n === 0 ? 'No devotional is on, so Random shows Morning and Evening.' : `${n} ${n === 1 ? 'devotional is' : 'devotionals are'} in the draw: the ones that are on in Your Logos library.`}
+          {' Morning RePhil is also in it while you have an episode left to hear.'}
         </p>
         <button
           type="button"

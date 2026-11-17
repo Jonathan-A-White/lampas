@@ -67,7 +67,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'node-qrcode', use: 'The key as a QR code', licence: 'MIT', link: 'https://github.com/soldair/node-qrcode' },
   { name: 'Workbox', use: 'Lets Lampas open offline', licence: 'MIT', link: 'https://developer.chrome.com/docs/workbox' },
   { name: 'WhatsOnChain', use: 'Checks your key holds a licence', licence: 'none needed; public API', link: 'https://whatsonchain.com' },
-  { name: 'Sermon index', use: 'Newest sermon rows and search; no key sent', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/sermon-index' },
+  { name: 'Sermon index', use: 'Sermon rows and search; Morning RePhil list; no key sent', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/sermon-index' },
   { name: 'Postern', use: 'Carries your questions and pictures to the tutor', licence: 'MIT', link: 'https://github.com/Jonathan-A-White/postern' },
   { name: 'Twilio Verify', use: 'Sends the codes for a licence', licence: 'none needed; its terms', link: 'https://www.twilio.com/en-us/user-authentication-identity/verify' },
   { name: 'Claude', use: 'The tutor\'s model; pictures, drills, diagrams', licence: 'none needed; its terms', link: 'https://www.anthropic.com/claude' },

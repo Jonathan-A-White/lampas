@@ -17,6 +17,8 @@ test.use({ viewport: { width: 390, height: 844 } });
 // FIXED is read when each test starts, never when the file loads: openUnlocked writes the licence as held a minute before the real now and
 // src/services/licenceCache.ts counts a licence held in the future as not held, so a clock fixed at the load time lost the Ask the tutor button
 // in any test that began more than a minute after the file loaded (mw-5r3p30.749).
+/** Every Morning RePhil episode heard, so Random draws only the Logos devotionals a spec names (mw-qtu3zvz.15): Random takes Morning RePhil into its draw while an episode is unheard. */
+const REPHIL_ALL_HEARD = { key: 'morningRephilHeard', value: JSON.stringify((JSON.parse(readFileSync('data/daily/morning-rephil.json', 'utf8')) as { id: string }[]).map((e) => e.id)) };
 let FIXED = 0;
 const DAY_MS = 86_400_000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -443,6 +445,7 @@ const TWO = [
 test('with Which devotional on Random, Another picks a different devotional for the day, keeps Random, and holds across a reload', async ({ page }) => {
   await openToday(page, [
     { key: 'devotional', value: 'random' },
+    REPHIL_ALL_HEARD,
     { key: 'devotionalDraw', value: TWO.map((d) => d.id).join(',') },
   ]);
   const card = piece(page, 'Devotional');
@@ -490,6 +493,7 @@ test('the tutor\'s "pick a different devotional" with Which devotional on Random
   await routePostern(page, fake);
   await openToday(page, [
     { key: 'devotional', value: 'random' },
+    REPHIL_ALL_HEARD,
     { key: 'devotionalDraw', value: TWO.map((d) => d.id).join(',') },
   ]);
   const card = piece(page, 'Devotional');
@@ -516,6 +520,7 @@ test('the tutor\'s "pick a different devotional" with Which devotional on Random
 test("Settings > Daily shows Today's devotional with Another only while Which devotional is Random, and Another keeps Random", async ({ page }) => {
   await openToday(page, [
     { key: 'devotional', value: 'random' },
+    REPHIL_ALL_HEARD,
     { key: 'devotionalDraw', value: TWO.map((d) => d.id).join(',') },
   ]);
   const title = async () => (await page.getByRole('region', { name: 'Devotional', exact: true }).getByRole('link').innerText()).split('\n')[0];
