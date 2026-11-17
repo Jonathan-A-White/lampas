@@ -121,7 +121,7 @@ export function markSeen(date: string, id: string): Promise<void> {
   return db.transaction('rw', db.settings, async () => {
     const heard = heardIds((await db.settings.get(HEARD_KEY))?.value);
     if (!heard.includes(id)) await db.settings.put({ key: HEARD_KEY, value: JSON.stringify([...heard, id]) });
-    await update(date, ({ rephil: _day, ...day }) => ({ ...day, devotional: MORNING_REPHIL_ID }));
+    await update(date, (day) => ({ ticked: day.ticked, opened: day.opened, devotional: MORNING_REPHIL_ID }));
   });
 }
 
