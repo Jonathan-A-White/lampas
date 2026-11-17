@@ -7,6 +7,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { waitForDue } from './today-chip';
+import { ALWAYS_NEEDED, LADDER, ideasBelow } from '../../src/data/grammar/ladder';
+import { conceptText } from '../../src/data/grammar/questions';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -230,3 +232,97 @@ test('the lesson over a drill has no Drill it, no level slider and no Mark known
   await expect(lesson.getByRole('slider', { name: 'Your level' })).toHaveCount(0);
   await shot(page, 'study-this-lesson-over-drill');
 });
+
+// A wrong answer in a Drill it whose question is long (mw-indx1x6.60, from the Tester's mw-indx1x6.27): the question of 'Which idea is this?' is a paragraph, so the row under the
+// answers began below the scroll box's fold, behind the Next bar, and nothing said it was there. After a wrong answer the drill shows the row: its first link is in view, above Next.
+
+/** Opens Drill it on an idea as he does: the Goal screen, the ideas bar, the idea, Drill it. Everything the idea builds on is solid, so its sheet offers Drill it. */
+async function openDrill(page: Page, idea: { id: string; title: string }): Promise<boolean> {
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
+  await put(
+    page,
+    'grammarLevels',
+    [...ALWAYS_NEEDED, ...ideasBelow(idea.id).map((i) => i.id)].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })),
+  );
+  await page.goto('/#/goal');
+  // a write behind Dexie's back is not seen by its live queries: the app starts afresh
+  await page.reload();
+  await page.getByTestId('ideas-bar').click();
+  // the bar lists the ideas the goal needs: an idea 1 John 2 does not need has no place to open from
+  await expect(page.getByTestId('ideas-list')).toBeVisible();
+  const entry = page.getByTestId('ideas-list').getByRole('button', { name: idea.title, exact: true });
+  if ((await entry.count()) === 0) return false;
+  await entry.click();
+  const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
+  await expect(sheet.getByRole('heading', { name: idea.title })).toBeVisible();
+  await expect(sheet.getByTestId('idea-loading')).toHaveCount(0);
+  await sheet.getByRole('button', { name: 'Drill it', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Drill it', exact: true }).getByTestId('grammar-prompt')).toBeVisible();
+  return true;
+}
+
+/** Answers with the first answer, then the next question's, until one is wrong and the row is drawn (at most `asks` questions); false if none was wrong. */
+async function answerUntilWrong(page: Page, asks = 14): Promise<boolean> {
+  const drill = page.getByRole('dialog', { name: 'Drill it', exact: true });
+  const row = drill.getByRole('group', { name: 'Study this', exact: true });
+  for (let asked = 0; asked < asks; asked += 1) {
+    await drill.locator('[data-option]:not(:disabled)').first().click();
+    const next = drill.getByTestId('drill-next');
+    await expect(next).toBeVisible();
+    if (await row.isVisible()) return true;
+    await next.click();
+    if (await drill.getByTestId('grammar-prompt').count() === 0) return false;
+  }
+  return false;
+}
+
+/**
+ * Drill it on the idea until a wrong answer draws the row. The first answers are not chosen, so a drill may be answered right to its end (an idea is proved on a streak of rights): it is
+ * then opened again, up to five times. 'unlisted' when the goal's bar does not list the idea.
+ */
+async function drillToWrong(page: Page, idea: { id: string; title: string }): Promise<'wrong' | 'unlisted' | 'never'> {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    if (!(await openDrill(page, idea))) return 'unlisted';
+    if (await answerUntilWrong(page)) return 'wrong';
+  }
+  return 'never';
+}
+
+/** The row's first link is in view and ends above the Next bar, not behind it. */
+async function expectRowAboveNext(page: Page): Promise<void> {
+  const drill = page.getByRole('dialog', { name: 'Drill it', exact: true });
+  const first = drill.getByRole('group', { name: 'Study this', exact: true }).getByRole('button').first();
+  const next = drill.getByTestId('drill-next');
+  // the answer settles and the box moves to the row: poll for the place it ends in
+  await expect(first).toBeInViewport();
+  await expect
+    .poll(async () => {
+      const link = (await first.boundingBox())!;
+      const bar = (await next.boundingBox())!;
+      return link.y + link.height <= bar.y + 0.5;
+    })
+    .toBe(true);
+}
+
+test('a wrong answer in a drill on The first declension shows its Study this row above Next', async ({ page }) => {
+  expect(await drillToWrong(page, { id: 'declension-1', title: 'The first declension' })).toBe('wrong');
+  await expect(page.getByRole('dialog', { name: 'Drill it', exact: true }).getByTestId('feedback')).toContainText('Not quite.');
+  await expectRowAboveNext(page);
+  await shot(page, 'study-this-drill-long-question');
+});
+
+// The sweep: every idea whose concept card ('Which idea is this?') reads longer than 300 letters has the row in view after a wrong answer. The letters and pairs (an item of a group)
+// are drilled from their group, not listed in the ideas bar.
+const LONG_CARDS = LADDER.filter((i) => !i.parent && !i.glyphs && conceptText(i).length > 300);
+
+for (const idea of LONG_CARDS) {
+  test(`a wrong answer in a drill on ${idea.title} shows its Study this row above Next`, async ({ page }) => {
+    const found = await drillToWrong(page, idea);
+    if (found === 'unlisted') test.skip(true, 'the goal does not list this idea');
+    expect(found).toBe('wrong');
+    await expectRowAboveNext(page);
+  });
+}
