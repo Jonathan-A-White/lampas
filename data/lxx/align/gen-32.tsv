@@ -1,0 +1,217 @@
+ref	run	text	g	mark	confidence
+Gen.32:1	1	having looked	-		0.80
+Gen.32:1	2	the	-		0.80
+Gen.32:1	3	of	-		0.80
+Gen.32:1	4	of	-		0.80
+Gen.32:1	5	him.	-		0.80
+Gen.32:2	1	he	-		0.80
+Gen.32:2	2	This is the	-		0.80
+Gen.32:2	3	of	-		0.80
+Gen.32:2	4	of	13		0.80
+Gen.32:3	1	before him	-		0.80
+Gen.32:3	2	the	-		0.80
+Gen.32:3	3	of	-		0.80
+Gen.32:3	4	the	-		0.80
+Gen.32:3	5	of	-		0.80
+Gen.32:4	1	charged them,	1		0.80
+Gen.32:4	2	shall you⌃	-		0.80
+Gen.32:4	3	to	6		0.80
+Gen.32:4	3	my	-		0.80
+Gen.32:4	4	servant	12,13		0.80
+Gen.32:4	5	have sojourned	18		0.80
+Gen.32:5	1	there	-		0.80
+Gen.32:5	2	born to	-		0.80
+Gen.32:5	3	to	-		0.80
+Gen.32:5	4	my	-		0.80
+Gen.32:5	5	servant	21,22		0.80
+Gen.32:5	5	might	-		0.80
+Gen.32:5	6	in	-		0.80
+Gen.32:5	7	sight.	25		0.80
+Gen.32:6	1	the messengers	2,3		0.80
+Gen.32:6	2	We	-		0.80
+Gen.32:6	3	behold! he	-		0.80
+Gen.32:6	4	four	-		0.80
+Gen.32:7	1	was	-		0.80
+Gen.32:7	1	greatly	3		0.80
+Gen.32:7	1	terrified,	0		0.80
+Gen.32:7	2	was	-		0.80
+Gen.32:7	3	he	-		0.80
+Gen.32:7	4	that was	10		0.80
+Gen.32:7	5	the camels, and	-		0.80
+Gen.32:8	1	should	-		0.80
+Gen.32:8	2	camp,	7		0.80
+Gen.32:8	3	the	13		0.80
+Gen.32:8	3	other	15,16		0.80
+Gen.32:8	3	camp	14		0.80
+Gen.32:8	3	shall	-		0.80
+Gen.32:9	1	of	5		0.80
+Gen.32:9	1	my	-		0.80
+Gen.32:9	2	of	12		0.80
+Gen.32:9	3	O	-		0.80
+Gen.32:9	4	you are he that	17		0.80
+Gen.32:9	5	to	-		0.80
+Gen.32:9	6	Depart quickly	20		0.80
+Gen.32:9	7	land	23		0.80
+Gen.32:9	7	of	24		0.80
+Gen.32:9	8	birth,	25		0.80
+Gen.32:9	9	will	-		0.80
+Gen.32:10	1	Let there be	-		0.80
+Gen.32:10	2	a sufficiency	0		0.80
+Gen.32:10	3	the	-		0.80
+Gen.32:10	4	the	-		0.80
+Gen.32:10	5	have wrought	10		0.80
+Gen.32:10	6	your	-		0.80
+Gen.32:10	6	servant;	11,12		0.80
+Gen.32:10	7	with this my	-		0.80
+Gen.32:10	8	passed over	19		0.80
+Gen.32:10	9	Jordan,	20,21		0.80
+Gen.32:10	10	I am	-		0.80
+Gen.32:11	1	the	-		0.80
+Gen.32:11	2	of	4		0.80
+Gen.32:11	3	from the hand of	-		0.80
+Gen.32:11	4	am afraid of	9		0.80
+Gen.32:11	5	haply	13		0.80
+Gen.32:11	5	he should	-		0.80
+Gen.32:11	6	and	-		0.80
+Gen.32:11	7	the	-		0.80
+Gen.32:11	8	the	-		0.80
+Gen.32:12	1	I will	-		0.80
+Gen.32:12	2	good,	3		0.80
+Gen.32:12	3	will	8	unsure	0.50
+Gen.32:12	4	shall	-		0.80
+Gen.32:12	5	be	-		0.80
+Gen.32:12	6	for	-		0.80
+Gen.32:13	1	he	-		0.80
+Gen.32:13	2	of the	-		0.80
+Gen.32:13	3	carried	9		0.80
+Gen.32:13	3	with him,	-		0.80
+Gen.32:13	4	out to	-		0.80
+Gen.32:13	5	his	-		0.80
+Gen.32:14	1	she-goats,	-		0.80
+Gen.32:14	2	two	-		0.80
+Gen.32:15	1	milch	1		0.80
+Gen.32:15	2	foals,	3,4		0.80
+Gen.32:15	3	kine,	7		0.80
+Gen.32:15	4	asses,	11		0.80
+Gen.32:15	4	and	-		0.80
+Gen.32:16	1	he	-		0.80
+Gen.32:16	2	them	-		0.80
+Gen.32:16	2	to	2,3		0.80
+Gen.32:16	2	his servants	4,5		0.80
+Gen.32:16	3	drove	7		0.80
+Gen.32:16	3	apart;	8,9		0.80
+Gen.32:16	4	to	-		0.80
+Gen.32:16	5	servants,	12,13		0.80
+Gen.32:16	5	Go on	15		0.80
+Gen.32:16	6	a	-		0.80
+Gen.32:17	1	he	-		0.80
+Gen.32:17	2	he	-		0.80
+Gen.32:17	3	Whose	16		0.80
+Gen.32:17	4	you?	-		0.80
+Gen.32:17	5	whither	19		0.80
+Gen.32:17	5	would you go,	20		0.80
+Gen.32:17	6	whose	22		0.80
+Gen.32:17	6	are	-		0.80
+Gen.32:17	7	possessions	-		0.80
+Gen.32:17	7	advancing before	24,25		0.80
+Gen.32:18	1	You shall	-		0.80
+Gen.32:18	2	servant	2,3		0.80
+Gen.32:18	3	he has	-		0.80
+Gen.32:18	4	to	8		0.80
+Gen.32:18	5	is	-		0.80
+Gen.32:18	6	us.	16		0.80
+Gen.32:19	1	that	12		0.80
+Gen.32:19	2	before him	-		0.80
+Gen.32:19	3	Thus	19,20,21		0.80
+Gen.32:19	3	shall you⌃	-		0.80
+Gen.32:19	4	to	24		0.80
+Gen.32:19	5	when	26,27		0.80
+Gen.32:20	1	you⌃ shall	-		0.80
+Gen.32:20	2	servant	3,4		0.80
+Gen.32:20	3	us.	-		0.80
+Gen.32:20	4	will propitiate	12		0.80
+Gen.32:20	4	his countenance	13,14		0.80
+Gen.32:20	5	before	-		0.80
+Gen.32:20	6	presence,	-		0.80
+Gen.32:20	7	afterwards	23,24		0.80
+Gen.32:20	7	I will	-		0.80
+Gen.32:20	8	his	-		0.80
+Gen.32:20	9	will	-		0.80
+Gen.32:21	1	So	0		0.80
+Gen.32:21	2	on before	1,4		0.80
+Gen.32:21	3	himself	-		0.80
+Gen.32:21	3	lodged	9		0.80
+Gen.32:22	1	rose up	0		0.80
+Gen.32:22	1	in	-		0.80
+Gen.32:22	2	and	-		0.80
+Gen.32:22	3	his	-		0.80
+Gen.32:22	4	his	-		0.80
+Gen.32:22	5	his	-		0.80
+Gen.32:22	6	over	-		0.80
+Gen.32:22	7	of	22		0.80
+Gen.32:23	1	he	-		0.80
+Gen.32:23	2	over	-		0.80
+Gen.32:23	3	brought	-		0.80
+Gen.32:23	4	possessions.	10		0.80
+Gen.32:24	1	was	-		0.80
+Gen.32:24	2	a	-		0.80
+Gen.32:24	3	till the morning.	9,10		0.80
+Gen.32:25	1	he	-		0.80
+Gen.32:25	2	prevailed	-		0.80
+Gen.32:25	3	broad part	10		0.80
+Gen.32:25	3	of his	11		0.80
+Gen.32:25	4	broad part	17		0.80
+Gen.32:25	4	of	18		0.80
+Gen.32:25	5	was benumbed	15		0.80
+Gen.32:25	6	his	-		0.80
+Gen.32:26	1	he	-		0.80
+Gen.32:26	2	to	-		0.80
+Gen.32:26	3	Let	3		0.80
+Gen.32:26	4	day has	-		0.80
+Gen.32:26	5	he	9		0.80
+Gen.32:26	6	I will	-		0.80
+Gen.32:26	7	let	15		0.80
+Gen.32:26	8	go,	-		0.80
+Gen.32:26	8	except	16,17		0.80
+Gen.32:26	8	you	-		0.80
+Gen.32:27	1	he	-		0.80
+Gen.32:27	2	to	-		0.80
+Gen.32:27	3	What	3		0.80
+Gen.32:27	4	he	8		0.80
+Gen.32:28	1	he	-		0.80
+Gen.32:28	2	to	-		0.80
+Gen.32:28	3	shall	-		0.80
+Gen.32:28	4	longer	5		0.80
+Gen.32:28	4	be	-		0.80
+Gen.32:28	5	shall	-		0.80
+Gen.32:28	6	your	-		0.80
+Gen.32:28	7	have	-		0.80
+Gen.32:28	8	shall be	-		0.80
+Gen.32:28	8	mighty	23		0.80
+Gen.32:29	1	he	-		0.80
+Gen.32:29	2	Therefore	12,13		0.80
+Gen.32:29	2	do	-		0.80
+Gen.32:29	3	after	-		0.80
+Gen.32:29	4	he	-		0.80
+Gen.32:30	1	of	5		0.80
+Gen.32:30	2	the	-		0.80
+Gen.32:30	3	of	-		0.80
+Gen.32:30	4	said he,I have	-		0.80
+Gen.32:30	5	life	19,20		0.80
+Gen.32:30	5	was preserved.	17		0.80
+Gen.32:31	1	upon him,	-		0.80
+Gen.32:31	2	of	9		0.80
+Gen.32:31	3	upon	-		0.80
+Gen.32:32	1	Therefore	0,1,2		0.80
+Gen.32:32	1	the children of	6,7		0.80
+Gen.32:32	2	will by	-		0.80
+Gen.32:32	3	means	4		0.80
+Gen.32:32	4	of	-		0.80
+Gen.32:32	5	was	-		0.80
+Gen.32:32	6	broad part	17		0.80
+Gen.32:32	6	of	-		0.80
+Gen.32:32	7	the angel	-		0.80
+Gen.32:32	8	broad part	28		0.80
+Gen.32:32	8	of	-		0.80
+Gen.32:32	9	of	-		0.80
+Gen.32:32	10	which was	-		0.80
