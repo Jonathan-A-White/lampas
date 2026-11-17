@@ -11,10 +11,11 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { setMapSources } from '../../src/maps';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { setSermonSources } from '../../src/sermons';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter-fetch';
 import { forgetTestMaps, registerTestMaps, TEST_CARDS, testSource as testMapSource } from '../../tests/support/test-maps';
-import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
+import { forgetTestSermons, registerTestSermons, testSource } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import { closeDatabase } from './close-database';
 import { keepImport } from '../../tests/support/logos-import';
@@ -39,11 +40,30 @@ interface Phone {
   /** a Maps source with a map of Romans 5, to show the Sermons door after the Maps door */
   maps?: boolean;
   sermons?: Parameters<typeof registerTestSermons>[0];
+  /** the first test source as one that can be held (holdSource): its rows then wait for letSourceAnswer */
+  slow?: boolean;
   /** his Logos sermon archives (the catalogue's, by Resource ID) on the shelf, and whether Logos is On: Greg Laurie's On and J. D. Greear's Pinned, or (`only: 'off'`) Skip Heitzig's Off */
   archives?: { logos: 'on' | 'off'; only?: 'off' | 'listed'; /** the Resource IDs his kept Library import holds (mw-qtu3zvz.94); both archives when left out */ owned?: string[] };
 }
 
 let fetched: ChapterFetch;
+
+// A source that can be slow to answer, as a real one is while its book's file is read: from holdSource() its rows wait for letSourceAnswer(). The tests' own sources answer at once, which hides a step that
+// looks at the sheet before its rows are drawn (mw-qtu3zvz.194).
+let held: Promise<void> | undefined;
+let letSourceAnswer = (): void => undefined;
+const holdSource = (): void => {
+  held = new Promise<void>((resolve) => {
+    letSourceAnswer = resolve;
+  });
+};
+const slowSource: typeof testSource = {
+  ...testSource,
+  sermonsFor: async (place) => {
+    await held;
+    return testSource.sermonsFor(place);
+  },
+};
 
 /** Opens the app on a chapter (the address names it), with the test sermons registered. */
 async function openOn(title: string, phone: Phone = {}): Promise<void> {
@@ -54,6 +74,8 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   localStorage.clear();
   vi.unstubAllGlobals();
   registerTestSermons(phone.sermons);
+  held = undefined;
+  if (phone.slow) setSermonSources([slowSource]);
   // these scenarios are about the sermons of the passage: the theme lists are none (features/themes.feature has them)
   registerTestThemes({ none: true });
   registerTestMaps();
@@ -83,26 +105,21 @@ const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const sheetEl = () => screen.findByRole('dialog', { name: /^Sermons for / });
 const sheetCount = () => document.querySelectorAll('[role="dialog"]').length;
 const doorsIn = (box: HTMLElement): HTMLElement[] => [...box.querySelectorAll<HTMLElement>('button')].filter((b) => /^Sermons\b/.test(squash(b.textContent)));
-const rowNamed = async (title: string): Promise<HTMLAnchorElement> => {
-  const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-sermon-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
-  if (!row) throw new Error(`no sermon ${title} in the sheet`);
-  return row;
-};
-const partTitles = async (): Promise<string[]> => [...(await sheetEl()).querySelectorAll('h3')].map((h) => squash(h.textContent));
-// the 'In Logos' group is drawn once his shelf and his import are read (two live queries) and the sheet is already open by then: wait for the row (mw-indx1x6.78)
-const archiveNamed = async (title: string): Promise<HTMLAnchorElement> => {
-  const named = async () => [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-archive-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
-  let row: HTMLAnchorElement | undefined;
-  await waitFor(async () => {
-    row = await named();
-    if (!row) throw new Error(`no archive ${title} in the sheet`);
+// What the sheet shows is drawn after the sheet is open: its rows once the sources have answered, its 'In Logos' group once his shelf and his import are read (two live queries; mw-indx1x6.78).
+// So no helper here looks at the sheet once: inSheet makes the look inside a waitFor, with what the step says of what it finds, and makes it again until that holds (mw-qtu3zvz.194).
+const inSheet = <T,>(look: (sheet: HTMLElement) => T): Promise<T> => waitFor(async () => look(await sheetEl()));
+const rowTitled = (kind: 'sermon' | 'archive', title: string, says: (row: HTMLAnchorElement) => void): Promise<HTMLAnchorElement> =>
+  inSheet((sheet) => {
+    const row = [...sheet.querySelectorAll<HTMLAnchorElement>(`a[data-${kind}-row]`)].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
+    if (!row) throw new Error(`no ${kind} ${title} in the sheet`);
+    says(row);
+    return row;
   });
-  return row!;
-};
-const partRows = async (part: string): Promise<string[]> => {
-  const group = await within(await sheetEl()).findByRole('group', { name: part });
-  return [...group.querySelectorAll('[data-sermon-title]')].map((t) => squash(t.textContent));
-};
+/** Waits for the sermon row titled `title` and for what the step `says` of it. */
+const rowNamed = (title: string, says: (row: HTMLAnchorElement) => void) => rowTitled('sermon', title, says);
+/** The same for a row of the 'In Logos' group. */
+const archiveNamed = (title: string, says: (row: HTMLAnchorElement) => void) => rowTitled('archive', title, says);
+const partsAre = (titles: string[]) => inSheet((sheet) => expect([...sheet.querySelectorAll('h3')].map((h) => squash(h.textContent))).toEqual(titles));
 
 const feature = await loadFeature('features/sermons.feature');
 
@@ -127,11 +144,10 @@ describeFeature(feature, ({ Scenario }) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));
   };
   const opensWith = async (_: unknown, first: string, then: string) => {
-    await sheetEl();
-    await waitFor(async () => expect(await partTitles()).toEqual(then === 'nothing' ? [first] : [first, then]));
+    await partsAre(then === 'nothing' ? [first] : [first, then]);
   };
   const holds = async (_: unknown, part: string, ...titles: string[]) => {
-    await waitFor(async () => expect(await partRows(part)).toEqual(titles));
+    await waitFor(async () => expect([...(await within(await sheetEl()).findByRole('group', { name: part })).querySelectorAll('[data-sermon-title]')].map((t) => squash(t.textContent))).toEqual(titles));
   };
   const holdsOne = (_: unknown, part: string, a: string) => holds(_, part, a);
   const holdsTwo = (_: unknown, part: string, a: string, b: string) => holds(_, part, a, b);
@@ -157,14 +173,26 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const rowReads = async (_: unknown, title: string, line: string) => {
-    await waitFor(async () => expect(squash((await rowNamed(title)).querySelector('[data-sermon-meta]')?.textContent)).toBe(line));
+    await rowNamed(title, (row) => expect(squash(row.querySelector('[data-sermon-meta]')?.textContent)).toBe(line));
+  };
+  const rowIsLink = async (_: unknown, title: string, url: string) => {
+    await rowNamed(title, (row) => {
+      expect(row).toHaveAttribute('href', url);
+      expect(row).toHaveAttribute('target', '_blank');
+      expect(row.getAttribute('rel')).toContain('noopener');
+      expect(row.className).toContain('min-h-11');
+    });
+  };
+  const stillHasRows = async (_: unknown, n: number) => {
+    await inSheet((sheet) => expect(sheet.querySelectorAll('a[data-sermon-row]')).toHaveLength(n));
   };
   const archiveIsLink = async (_: unknown, title: string, url: string) => {
-    const row = await archiveNamed(title);
-    expect(row).toHaveAttribute('href', url);
     const resource = /^logosres:([^;]+);(.*)$/.exec(url)!;
-    expect(row.getAttribute('data-fallback')).toBe(`https://ref.ly/logosres/${encodeURIComponent(resource[1])}?${resource[2]}`);
-    expect(row.className).toContain('min-h-11');
+    await archiveNamed(title, (row) => {
+      expect(row).toHaveAttribute('href', url);
+      expect(row.getAttribute('data-fallback')).toBe(`https://ref.ly/logosres/${encodeURIComponent(resource[1])}?${resource[2]}`);
+      expect(row.className).toContain('min-h-11');
+    });
   };
   const back = async () => {
     act(() => window.history.back());
@@ -241,14 +269,30 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('the row {string} reads {string}', rowReads);
-    And('the row {string} is a link to {string} that opens in a new tab and is 44 px tall', async (_, title: string, url: string) => {
-      const row = await rowNamed(title);
-      expect(row).toHaveAttribute('href', url);
-      expect(row).toHaveAttribute('target', '_blank');
-      expect(row.getAttribute('rel')).toContain('noopener');
-      expect(row.className).toContain('min-h-11');
-    });
+    And('the row {string} is a link to {string} that opens in a new tab and is 44 px tall', rowIsLink);
     And('the row {string} reads {string}', rowReads);
+  });
+
+  Scenario('The sheet opens before a slow source has answered, and its rows come when it answers', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with a source that can be slow to answer', (_, title: string) => openOn(title, { slow: true }));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string} while its source is slow to answer', async (_, label: string) => {
+      holdSource();
+      await tapDoor(_, label);
+    });
+    Then('the sheet is headed {string}', headed);
+    And('the row {string} comes when the source answers, a link to {string} that opens in a new tab and is 44 px tall', async (_, title: string, url: string) => {
+      // the look is begun while the source is still held and the sheet has no row, and the source answers only once that look has been made (it was asked for first): a look that does not wait fails here
+      const looked = rowIsLink(_, title, url).then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+      expect((await sheetEl()).querySelectorAll('a[data-sermon-row]')).toHaveLength(0);
+      letSourceAnswer();
+      const error = await looked;
+      if (error) throw error;
+    });
+    And('the sheet still has {int} rows', stillHasRows);
   });
 
   Scenario('Two sources are counted together, each in its own order', ({ Given, When, Then, And }) => {
@@ -258,8 +302,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps {string}', tapDoor);
     Then('the part {string} holds {string}, {string} and {string}', holdsThree);
     And('the sheet names the credit of {string} and {string}', async (_, a: string, b: string) => {
-      const credits = [...(await sheetEl()).querySelectorAll('[data-sermon-credit]')].map((c) => squash(c.textContent));
-      expect(credits).toEqual([`${a}: ${a}, a source of the tests’ own`, `${b}: ${b}, a source of the tests’ own`]);
+      await inSheet((sheet) => expect([...sheet.querySelectorAll('[data-sermon-credit]')].map((c) => squash(c.textContent))).toEqual([`${a}: ${a}, a source of the tests’ own`, `${b}: ${b}, a source of the tests’ own`]));
     });
   });
 
@@ -295,9 +338,7 @@ describeFeature(feature, ({ Scenario }) => {
       afterAll(() => online.mockRestore());
     });
     Then('the row {string} reads {string}', rowReads);
-    And('the sheet still has {int} rows', async (_, n: number) => {
-      expect((await sheetEl()).querySelectorAll('a[data-sermon-row]')).toHaveLength(n);
-    });
+    And('the sheet still has {int} rows', stillHasRows);
   });
 
   Scenario('Back closes the sheet and leaves the Verse view', ({ Given, When, Then, And }) => {
@@ -316,7 +357,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('no page outside the app has been asked for', async () => {
-      await sheetEl();
+      // once its rows are drawn: before that the sources have not answered, and the check would say nothing of them
+      await inSheet((sheet) => expect(sheet.querySelectorAll('a[data-sermon-row]').length).toBeGreaterThan(0));
       expect(fetched.requests.filter((url) => !url.startsWith('/'))).toEqual([]);
       expect(fetched.requests.filter((url) => url.includes('sermon'))).toEqual([]);
     });
@@ -325,8 +367,7 @@ describeFeature(feature, ({ Scenario }) => {
   const importHolds = (_: unknown, title: string) => openOn(title, { archives: { logos: 'on', owned: ['LLS:PRINCESERMON'] } });
   const archiveOpened = (logos: 'on' | 'off', only?: 'off' | 'listed') => (_: unknown, title: string) => openOn(title, { archives: { logos, ...(only ? { only } : {}) } });
   const opensWithThree = async (_: unknown, first: string, second: string, third: string) => {
-    await sheetEl();
-    await waitFor(async () => expect(await partTitles()).toEqual([first, second, third]));
+    await partsAre([first, second, third]);
   };
 
 
@@ -360,12 +401,10 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(async () => expect([...(await within(await sheetEl()).findByRole('group', { name: part })).querySelectorAll('[data-sermon-title]')].map((t) => squash(t.textContent))).toEqual([a, b]));
     });
     And('the archive {string} reads {string}', async (_, title: string, line: string) => {
-      expect(squash((await archiveNamed(title)).querySelector('[data-sermon-meta]')?.textContent)).toBe(line);
+      await archiveNamed(title, (row) => expect(squash(row.querySelector('[data-sermon-meta]')?.textContent)).toBe(line));
     });
     And('the archive {string} is a link to {string} with the ref.ly address as its fallback and is 44 px tall', archiveIsLink);
-    And('the sheet still has {int} rows', async (_, n: number) => {
-      expect((await sheetEl()).querySelectorAll('a[data-sermon-row]')).toHaveLength(n);
-    });
+    And('the sheet still has {int} rows', stillHasRows);
   });
 
   Scenario('An archive that is Off, or one not on his shelf, is not in the group', ({ Given, When, Then, And }) => {
