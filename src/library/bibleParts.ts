@@ -44,9 +44,10 @@ export function withBibles(states: ReadonlyMap<string, ShelfState>, set: Iterabl
 
 const bibleName = (id: string): string => entryOf(id)?.short ?? id;
 
-/** The Bibles he set that he may be offered (isOffered: his import holds them, or Logos gives them free): each part whose Bible is not offered is left out, so the Library names no Bible the Bibles page does not list (mw-qtu3zvz.184). */
+/** The Bibles he set that he may be offered (isOffered: his import holds them, or Logos gives them free): each part whose Bible is not offered is left out, so the Library names no Bible the Bibles page does not list (mw-qtu3zvz.184).
+ *  A Resource ID he typed, which no catalogue row names, is kept: the Bibles page has no row of it to list, and he named it himself (mw-fnvjof.17.6, mw-fnvjof.17.169). */
 export function offeredBibles(bibles: LogosBibles, owned: Owned): Partial<LogosBibles> {
-  return Object.fromEntries(LOGOS_PARTS.filter((p) => isOffered(bibles[p.part], owned)).map((p) => [p.part, bibles[p.part]]));
+  return Object.fromEntries(LOGOS_PARTS.filter((p) => entryOf(bibles[p.part]) === undefined || isOffered(bibles[p.part], owned)).map((p) => [p.part, bibles[p.part]]));
 }
 
 /** The line the Bibles row reads: 'LSB for all three · Septuagint LXX Swete', or 'NT NKJV · OT LSB · Apocrypha NRSV · Septuagint LXX Swete': the canon's three parts, in one name when they agree, then the Septuagint's.
