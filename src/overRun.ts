@@ -6,7 +6,8 @@
 //
 // The screens that hold a run draw themselves inside `OverRun` (tests/unit/over-run.test.ts keeps them to it), and so does what a Study row opens where a table opens as a layer
 // (src/review/useStudyPlaces.tsx). Everything drawn there, however deep, reads it through `useOffRun`, the ONE guard: a control that leaves the page or starts a run is offered through
-// it and is not drawn over a run. Review's own row is not over a run: Review keeps its round (src/review/keptRound.ts), so there a link to a page is as ever.
+// it and is not drawn over a run. Review's own row is not over a run: Review holds its round when the address leaves it (src/review/heldRound.ts, mw-indx1x6.56), so there a link
+// to a page is as ever and Back is the question he left.
 import { createContext, useCallback, useContext } from 'react';
 
 /** True inside a screen that holds a run, its end card included, and inside what a Study row opens over one. */
