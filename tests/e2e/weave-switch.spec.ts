@@ -356,6 +356,7 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
   // must stay on top then too (mw-fnvjof.17.159). The font files are held back longer than the settle, so the reflow comes after it.
   test('Font arriving late', async ({ page }) => {
     await page.route('**/*.woff2', async (route) => {
+      // a real-time wait: the font file is held back past the Reader's settle, which runs on the page's own clock
       await new Promise((r) => setTimeout(r, 2500));
       await route.continue();
     });
@@ -363,6 +364,7 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
     for (const stack of ['"Atkinson Hyperlegible", ui-sans-serif, sans-serif', '"Lexend", ui-sans-serif, sans-serif']) {
       await page.evaluate((s) => document.documentElement.style.setProperty('--lp-font-english', s), stack);
       await page.evaluate(() => document.fonts.ready);
+      // a real-time wait: a window in which nothing must happen, the late reflow after the font is in must not move the verse
       await page.waitForTimeout(500);
       await expect.poll(() => firstVerse(page)).toBe(12);
     }
