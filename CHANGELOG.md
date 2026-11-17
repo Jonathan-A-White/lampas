@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.264
+_2026-11-17_
+- Fixed: a quick double tap on Stop on the reading bar now just stops the reading, instead of also opening a word or the whole chapter under it.
+- Fixed: On the Sermon sources page, a list such as John Wesley's or D. L. Moody's now names the books it covers with their author, so searching the preacher shows them.
+
 ## 0.7.263
 _2026-11-16_
 - New: Poetry in the Psalms and the prophets now reads in lines in the Weave, and in the Hebrew tab it breaks into lines where the Hebrew text's own accents divide it.

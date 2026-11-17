@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.264",
+    "date": "2026-11-17",
+    "story": "mw-82lb97i.44",
+    "kind": "fixed",
+    "text": "a quick double tap on Stop on the reading bar now just stops the reading, instead of also opening a word or the whole chapter under it."
+  },
+  {
+    "version": "0.7.264",
+    "date": "2026-11-17",
+    "story": "mw-qtu3zvz.181",
+    "kind": "fixed",
+    "text": "On the Sermon sources page, a list such as John Wesley's or D. L. Moody's now names the books it covers with their author, so searching the preacher shows them."
+  },
+  {
     "version": "0.7.263",
     "date": "2026-11-16",
     "story": "mw-5r3p30.1165",
