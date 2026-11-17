@@ -82,6 +82,15 @@ Feature: Ask the tutor from any screen
     And the answer shows in the sheet under his question
     And the empty state is gone
 
+  Scenario: On Settings a request made before the settings have been read still carries every setting
+    Given Lampas is opened on #/settings with the goal "1 John 1:1" behind a fake Postern, on a phone that is slow to read its settings
+    When he opens the tutor with the floating ?
+    And he taps the suggested question "What would Logos give me?"
+    And the phone reads its settings at last
+    Then the mill received 1 grists for the lampas app, kind bible-talk
+    And the grist's screen settings name every setting and study resource with its value now and its help
+    And the grist's screen settings say Logos is Off and what it adds
+
   Scenario: After the first question the other suggestions are still there and a tap sends one
     Given Lampas is opened on #/about with the goal "1 John 1:1" behind a fake Postern
     When he opens the tutor with the floating ?
