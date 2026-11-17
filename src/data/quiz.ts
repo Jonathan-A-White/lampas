@@ -162,6 +162,10 @@ const isOwnPronounForm = (g: GreekWord, word: Word, others: ReadonlySet<string>)
   return own !== undefined && !isGuess(g) && lemmaKeyOf(wordLemma(g)) === own.lexicon && own.parse.test(g.p ?? '') && !others.has(nfc(g.t));
 };
 
+/** Whether a Greek word of a chapter is a place of `word`, whose lemmas (lemmasOf) these are: a form of its lexicon lemmas that is not another's, or one of its own pronoun forms. The Quick test, Review and the parsing drill share it (mw-indx1x6.83). */
+export const isPlaceOf = (g: GreekWord, word: Word, lemmas: ReadonlySet<string>, others: ReadonlySet<string> = new Set()): boolean =>
+  (isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others)) || isOwnPronounForm(g, word, others);
+
 /**
  * Every place the chapter has a word, found by any of its lexicon lemmas, or by its own forms when it is a pronoun the data lists under another's lemma (OWN_PRONOUN_FORMS). `others` are the headwords of his
  * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf).
@@ -170,7 +174,7 @@ export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string
   const lemmas = lemmasOf(word, others);
   return chapter.verses.flatMap((v) =>
     v.g
-      .filter((g) => (isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others)) || isOwnPronounForm(g, word, others))
+      .filter((g) => isPlaceOf(g, word, lemmas, others))
       .map((g) => ({ form: cardForm(chapter, g), reference: `${chapter.book} ${chapter.chapter}:${v.n}`, book: chapter.code, chapter: chapter.chapter, verse: v.n })),
   );
 }

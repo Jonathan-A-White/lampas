@@ -9,7 +9,7 @@ import type { GrammarExtent } from './grammar/extent';
 import { formPasses, formTier } from './grammar/formLevel';
 import { hebrewSteps, termsOf } from './hebrewDrill';
 import { PARTS_OF_SPEECH, splitParse, type ParseFeature, type ParseFeatureId } from './parseCode';
-import { isFormOf, lemmasOf, shuffle, type Random } from './quiz';
+import { isPlaceOf, lemmasOf, shuffle, type Random } from './quiz';
 
 export const DRILL_SIZE = 10;
 /** A round asks about this many learning words first, or all it has when it has fewer. */
@@ -167,7 +167,7 @@ interface Candidate {
 }
 
 /** The places in the chapter where a word he knows stands, each place claimed by one word. A Hebrew chapter's places are those of his Hebrew words with a parsing, a Greek chapter's those of his Greek ones. */
-function candidatesOf(chapter: Chapter, words: readonly Word[], fits?: (code: string) => boolean): Candidate[] {
+export function candidatesOf(chapter: Chapter, words: readonly Word[], fits?: (code: string) => boolean): Candidate[] {
   const hebrew = sourceLanguage(chapter) === 'hbo';
   const headwords = new Set(words.map((w) => nfc(w.lemma)));
   const claimed = new Set<string>();
@@ -175,11 +175,12 @@ function candidatesOf(chapter: Chapter, words: readonly Word[], fits?: (code: st
   for (const word of words.filter((w) => w.state !== 'dropped')) {
     const others = new Set(headwords);
     others.delete(nfc(word.lemma));
-    const lemmas = lemmasOf({ ...word, lemmas: [word.lemma, ...word.lemmas] }, others);
+    const own = { ...word, lemmas: [word.lemma, ...word.lemmas] };
+    const lemmas = lemmasOf(own, others);
     for (const v of chapter.verses) {
       v.g.forEach((g, at) => {
         const key = `${v.n}:${at}`;
-        if (claimed.has(key) || !isFormOf(g, lemmas, others)) return;
+        if (claimed.has(key) || !isPlaceOf(g, own, lemmas, others)) return;
         if (fits && !fits(g.p)) return;
         // a Hebrew word is parsed from the chapter's plain words for its code; one the chapter gives none cannot be drilled
         if (hebrew && termsOf(wordParse(chapter, g)).length === 0) return;
