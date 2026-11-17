@@ -81,7 +81,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `devotionalDraw` — In the draw. Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening. Value: text, for example "LLS:20.10.1,LLS:20.10.2" ('all', 'none' or Logos ids joined by commas).
 - `morningRephilOrder` — Morning RePhil order. Next Morning RePhil episode: the oldest not yet played, or the newest. Value: "oldest" (Oldest first), "newest" (Newest first).
 - `todaysDevotional` — Today's devotional. Change only today's devotional. Value: "another", or any value of `devotional` but "random".
-- `dailyTicks` — Tick boxes. Each piece has a box you tick yourself.
+- `dailyTicks` — Tick boxes. Each piece has a tick box.
 - `greekKeyboard`, `hebrewKeyboard` — Greek keyboard, Hebrew keyboard. On once you have added a keyboard of that language to your phone.
 - `quizGoal` — Quiz goal. Why you want Quiz me; the tutor quizzes to match. Empty: it asks. Value: text, for example "understanding the passage" (a short phrase in his words, at most 80 characters; "" for none).
 <!-- settings:end -->

@@ -32,14 +32,14 @@ export const dailyReviewSetting = piece(
 export const dailyMemorizeSetting = piece(
   'dailyMemorize',
   'Memorize',
-  'Today holds the verses due to recall.',
+  'Today holds verses due to recall.',
   'Whether Today holds the verses due to recall.',
 );
 
 export const dailyPlanSetting = piece(
   'dailyPlan',
   'Plan chapter',
-  "Today holds your reading plan's chapter.",
+  "Today holds the plan's chapter.",
   "Whether Today holds the reading plan's chapter, to read in Logos.",
 );
 
@@ -53,7 +53,7 @@ export const dailyPsalmsSetting = piece(
 export const dailyDevotionalSetting = piece(
   'dailyDevotional',
   'Devotional',
-  'Today holds one devotional for the day.',
+  'Today holds a devotional.',
   'Whether Today holds a devotional (Logos).',
   LOGOS_ON,
 );
@@ -111,7 +111,7 @@ export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
 export const dailyTicksSetting = piece(
   'dailyTicks',
   'Tick boxes',
-  'Each piece has a box you tick yourself.',
+  'Each piece has a tick box.',
   'Whether each Today piece has a box you tick yourself. Off: plain links.',
 );
 
