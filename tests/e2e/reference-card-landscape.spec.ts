@@ -1,5 +1,4 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { SETTLE_MS } from '../../src/ui/settle';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openReviewFromToday, waitForDue } from './today-chip';
@@ -128,7 +127,6 @@ test('the Parsing drill: the reference opens a verse card with its verse readabl
 });
 
 test('Drill it: the reference opens a verse card with its verse readable', async ({ page }) => {
-  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
   await inGreek(page);
   await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
   await put(page, 'grammarLevels', ['breathings', 'accents', 'iota-subscript'].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
@@ -138,18 +136,15 @@ test('Drill it: the reference opens a verse card with its verse readable', async
   await page.getByTestId('ideas-list').getByRole('button', { name: 'The noun', exact: true }).click();
   const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
-  await page.waitForTimeout(SETTLE_MS + 100);
   await idea.getByRole('button', { name: 'Drill it', exact: true }).click();
   const drill = page.getByRole('dialog', { name: 'Drill it' });
   // a walk of Drill it ends after a few questions, and not every question has a reference: a new walk is begun when one ends
-  for (let walk = 0; walk < 6; walk += 1) {
+  for (let walk = 0; walk < 20; walk += 1) {
     if (walk > 0) {
-      await page.waitForTimeout(SETTLE_MS + 100);
       await idea.getByRole('button', { name: 'Drill it', exact: true }).click();
     }
     await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
     for (let i = 0; i < 12; i += 1) {
-      await page.waitForTimeout(SETTLE_MS + 100);
       await drill.locator('[data-option]:not(:disabled)').first().click();
       await expect(drill.getByTestId('drill-next')).toBeVisible();
       const link = drill.getByTestId('grammar-ref').getByRole('link');

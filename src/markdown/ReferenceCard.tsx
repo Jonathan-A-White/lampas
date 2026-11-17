@@ -260,16 +260,29 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
     };
   }, [anchor, passage]);
 
-  // a verse longer than the card's box scrolls inside it: the marked word is brought into the box, so it is read without a scroll (mw-indx1x6.73)
+  // a verse longer than the card's box scrolls inside it: the marked word is brought into the box, so it is read without a scroll (mw-indx1x6.73). It is done when the verse is
+  // drawn (a moment after the card: its view settings load) and when the box is sized (the card's place is found after its text is), not on every scroll of his own.
   useLayoutEffect(() => {
     const scroller = text.current;
-    const word = scroller?.querySelector<HTMLElement>('[data-marked]');
-    if (!scroller || !word) return;
-    const inBox = scroller.getBoundingClientRect();
-    const at = word.getBoundingClientRect();
-    if (at.top < inBox.top) scroller.scrollTop -= inBox.top - at.top;
-    else if (at.bottom > inBox.bottom) scroller.scrollTop += Math.min(at.bottom - inBox.bottom, at.top - inBox.top);
-  }, [passage, spot]);
+    if (!scroller) return;
+    const bring = (): void => {
+      const word = scroller.querySelector<HTMLElement>('[data-marked]');
+      if (!word) return;
+      const inBox = scroller.getBoundingClientRect();
+      const at = word.getBoundingClientRect();
+      if (at.top < inBox.top) scroller.scrollTop -= inBox.top - at.top;
+      else if (at.bottom > inBox.bottom) scroller.scrollTop += Math.min(at.bottom - inBox.bottom, at.top - inBox.top);
+    };
+    bring();
+    const drawn = typeof MutationObserver === 'undefined' ? undefined : new MutationObserver(bring);
+    drawn?.observe(scroller, { childList: true, subtree: true });
+    const sized = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(bring);
+    sized?.observe(scroller);
+    return () => {
+      drawn?.disconnect();
+      sized?.disconnect();
+    };
+  }, []);
 
   return createPortal(
     <div ref={layer} data-reference-backdrop style={{ paddingBottom: 'var(--lp-bar-inset)' }} className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); if (!onReference(anchor.current, e.clientX, e.clientY)) onClose(); }}>
