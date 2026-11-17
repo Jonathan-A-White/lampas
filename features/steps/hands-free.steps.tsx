@@ -9,11 +9,15 @@ import { threeFingerTap } from 'voice-kit/testing/handsfree';
 import { App } from '../../src/App';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
+import { handsFreeSeam, resetHandsFree } from '../../src/handsFree/session';
 import { resetImmersive } from '../../src/immersive';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
+import { serveWakeModel, stubWake, type WakeFake } from '../../tests/support/fake-wake';
+import { ManualClock } from '../../tests/support/manual-clock';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings, openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
@@ -47,9 +51,14 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   let synth: FakeSynth | undefined;
   const getUserMedia = vi.fn();
   let map: HTMLElement | undefined;
+  let hears: WakeFake | undefined;
+  let clock = new ManualClock();
 
   BeforeEachScenario(async () => {
     cleanup();
+    resetHandsFree();
+    hears?.uninstall();
+    hears = undefined;
     resetImmersive();
     stopReading();
     clearBus();
@@ -75,6 +84,9 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     map?.remove();
     cleanup();
     stopReading();
+    resetHandsFree();
+    hears?.uninstall();
+    hears = undefined;
     vi.unstubAllGlobals();
   });
   afterAll(async () => {
@@ -92,6 +104,26 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     synth = stubSpeech([ENGLISH_VOICE]);
     fakeWakeLock();
   };
+  /** A phone whose wake word is heard (the kit's fake) and whose commands are heard by a recogniser the test drives, on a clock the test moves. */
+  const listeningPhone = (): void => {
+    phone();
+    clock = new ManualClock();
+    handsFreeSeam.clock = clock;
+    hears = stubWake();
+    stubRecognizer();
+    serveWakeModel();
+  };
+  const sayWake = async (): Promise<void> => {
+    await waitFor(() => expect(hears?.listening).toBe(true));
+    const before = FakeRecognizer.instances.length;
+    act(() => {
+      expect(hears?.say()).toBe(true);
+    });
+    await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before));
+    await waitFor(() => expect(FakeRecognizer.last().startFn).toHaveBeenCalled());
+    act(() => FakeRecognizer.last().open());
+  };
+  const taken = (): boolean => FakeRecognizer.last().stopFn.mock.calls.length + FakeRecognizer.last().abortFn.mock.calls.length > 0;
   async function openApp(): Promise<void> {
     cleanup();
     clearBus();
@@ -111,9 +143,9 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
   const noMark = async (): Promise<void> => {
     await waitFor(() => expect(screen.queryByRole('img', { name: 'Hands-free is on' })).toBeNull());
   };
-  const chosenIn = async (name: string): Promise<void> => {
+  const chosenIn = async (name: string, row = 'Hands-free'): Promise<void> => {
     await waitFor(async () => {
-      const group = await screen.findByRole('group', { name: 'Hands-free' });
+      const group = await screen.findByRole('group', { name: row });
       expect(within(group).getAllByRole('button', { pressed: true }).map((c) => c.textContent)).toEqual([name]);
     });
   };
@@ -225,6 +257,85 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario, AfterEachScenario }) =
     });
     And('Hands-free is still Off', async () => {
       expect((await db.settings.get('handsFree'))?.value ?? 'off').toBe('off');
+    });
+  });
+
+  Scenario('Pause before it acts is 1.5 seconds on a fresh install, in the row under Hands-free', ({ Given, And, When, Then }) => {
+    Given('a phone that speaks English and keeps the screen awake', phone);
+    And('Lampas is opened on Romans 8 for the first time', openApp);
+    When('he opens Settings > Listening', async () => {
+      await openSettings(user);
+      await openSettingsGroup(user, 'listening');
+    });
+    Then('Pause before it acts shows {string} as the one chosen', (_, name: string) => chosenIn(name, 'Pause before it acts'));
+    And('Pause before it acts is the row under Hands-free', () => {
+      const rows = [...document.querySelectorAll('[data-section="voices"] [data-setting]')].map((r) => r.getAttribute('data-setting'));
+      expect(rows.slice(0, 2)).toEqual(['handsFree', 'handsFreePause']);
+    });
+  });
+
+  const listeningOn = 'a phone that hears the wake word, speaks English and keeps the screen awake';
+  const opened = 'Lampas is opened on Romans 8 with Hands-free On';
+  const openOn = async (): Promise<void> => {
+    await db.settings.put({ key: 'handsFree', value: 'on' });
+    await openApp();
+    await waitFor(() => expect(hears?.listening).toBe(true));
+  };
+  const says = (words: string): void => {
+    act(() => FakeRecognizer.last().say([result(words, false)]));
+  };
+  const quiet = async (seconds: number): Promise<void> => {
+    act(() => clock.advance(seconds * 1000));
+    await act(async () => {});
+  };
+  const johnThree = (): boolean => document.querySelector('h1')?.textContent === 'John 3';
+
+  Scenario('With 3 seconds chosen a pause to think is not the end of the command', ({ Given, And, When, Then }) => {
+    Given(listeningOn, listeningPhone);
+    And(opened, openOn);
+    When('he chooses {string} for Pause before it acts and goes back to the Reader', async (_, name: string) => {
+      await openSettings(user);
+      await openSettingsGroup(user, 'listening');
+      const group = await screen.findByRole('group', { name: 'Pause before it acts' });
+      await user.click(within(group).getByRole('button', { name }));
+      await leaveSettings(user);
+      await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
+    });
+    And('he says the wake word', sayWake);
+    And('he says {string}', (_, words: string) => says(words));
+    And('he is quiet for {number} seconds', (_, seconds: number) => quiet(seconds));
+    Then('the command is not taken yet', () => expect(taken()).toBe(false));
+    When('he goes on with {string}', (_, words: string) => says(words));
+    And('he is then quiet for {number} seconds', (_, seconds: number) => quiet(seconds));
+    Then('the phone says {string} in English', (_, text: string) => said(text));
+    When('the phone has said it', () => act(() => engine().finish()));
+    Then('the Reader is at John 3 and John 3 is read from verse 1', async () => {
+      await screen.findByRole('heading', { name: 'John 3', level: 1 });
+      await waitFor(() => expect(engine().speaking).toBe(true));
+    });
+  });
+
+  Scenario("With 1.5 seconds chosen the same words are cut after 'read John'", ({ Given, And, When, Then }) => {
+    Given(listeningOn, listeningPhone);
+    And(opened, openOn);
+    When('he says the wake word', sayWake);
+    And('he says {string}', (_, words: string) => says(words));
+    And('he is quiet for {number} seconds', (_, seconds: number) => quiet(seconds));
+    Then('the command is taken before he says {string}', async (_, words: string) => {
+      expect(words).toBe('3');
+      await waitFor(() => expect(taken()).toBe(true));
+      await waitFor(() => expect(engine().spoken.length).toBeGreaterThan(0));
+    });
+    And('John 3 is not opened', async () => {
+      act(() => {
+        // the late '3' is heard by nobody: the command is done
+        says('read John 3');
+        clock.advance(10_000);
+        engine().advance(10_000);
+      });
+      await act(async () => {});
+      expect(johnThree()).toBe(false);
+      expect(engine().spoken.map((s) => s.text)).not.toContain('John 3');
     });
   });
 });

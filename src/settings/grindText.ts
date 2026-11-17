@@ -100,8 +100,9 @@ export const HELP_KEPT: readonly string[] = ['weave'];
 /**
  * The settings the instructions say by their hint, not their help, whatever the help's length (mw-82lb97i.16): Which devotional's help ('one of the 37 in your Logos library, Morning and Evening (LLS:20.10.1) to start')
  * only repeats what its Value list says with all 37 named, and that list is the line's bulk; Layout's help only spells out its two values, "Verse by verse" and "Paragraph", which its Value list gives with their labels.
+ * Weave's grammar level and Tick boxes (mw-rl10piw.9, to keep the room for a new setting): the first's help names its three values, which its Value list gives with their labels, and the second's adds only what its Off does.
  */
-const HINT_ONLY: readonly string[] = ['devotional', 'layout'];
+const HINT_ONLY: readonly string[] = ['devotional', 'layout', 'weaveGrammar', 'dailyTicks'];
 
 /** A how-to for the person at the phone ('Android: Settings > System > Languages & input > ... add Hebrew.'): the tutor sets a keyboard row, it does not walk him through the phone's own settings (mw-82lb97i.16, to keep room). */
 const PHONE_STEPS = /\s*Android: [^.]*\./g;

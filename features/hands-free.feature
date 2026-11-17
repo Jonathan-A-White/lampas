@@ -57,3 +57,37 @@ Feature: Hands-free (mw-rl10piw.5, the switch of the epic mw-rl10piw)
     Then the Hands-free mark is not on the screen
     And nothing has been said aloud
     And Hands-free is still Off
+
+  # 'Pause before it acts' (mw-rl10piw.9): the silence after his words that ends a command is a setting, 1, 1.5, 2, 3 or 4 seconds, 1.5 to start (his decision, mw-6ww.165).
+  # The row stands under Hands-free and is always drawn. The session asks for it at each command (tests/unit/hands-free-pause.test.tsx), so a change needs no restart. The wake
+  # is voice-kit's fake (tests/support/fake-wake.ts), the recogniser tests/support/fake-recognizer.ts, and time a clock the test moves.
+
+  Scenario: Pause before it acts is 1.5 seconds on a fresh install, in the row under Hands-free
+    Given a phone that speaks English and keeps the screen awake
+    And Lampas is opened on Romans 8 for the first time
+    When he opens Settings > Listening
+    Then Pause before it acts shows "1.5 seconds" as the one chosen
+    And Pause before it acts is the row under Hands-free
+
+  Scenario: With 3 seconds chosen a pause to think is not the end of the command
+    Given a phone that hears the wake word, speaks English and keeps the screen awake
+    And Lampas is opened on Romans 8 with Hands-free On
+    When he chooses "3 seconds" for Pause before it acts and goes back to the Reader
+    And he says the wake word
+    And he says "read John"
+    And he is quiet for 2 seconds
+    Then the command is not taken yet
+    When he goes on with "read John 3"
+    And he is then quiet for 3 seconds
+    Then the phone says "John 3" in English
+    When the phone has said it
+    Then the Reader is at John 3 and John 3 is read from verse 1
+
+  Scenario: With 1.5 seconds chosen the same words are cut after 'read John'
+    Given a phone that hears the wake word, speaks English and keeps the screen awake
+    And Lampas is opened on Romans 8 with Hands-free On
+    When he says the wake word
+    And he says "read John"
+    And he is quiet for 1.5 seconds
+    Then the command is taken before he says "3"
+    And John 3 is not opened

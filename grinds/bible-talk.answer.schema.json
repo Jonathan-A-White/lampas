@@ -1567,6 +1567,7 @@
                   "grammarApproach",
                   "handwritingDrills",
                   "handsFree",
+                  "handsFreePause",
                   "bibleVoice",
                   "englishVoice",
                   "greekVoice",
@@ -1874,6 +1875,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "handsFree" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "handsFreePause" }, "value": { "type": "string", "enum": ["1", "1.5", "2", "3", "4"] } }
           },
           {
             "type": "object",

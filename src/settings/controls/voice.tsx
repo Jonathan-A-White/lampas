@@ -8,12 +8,12 @@ import { setHandsFree } from '../../handsFree/switch';
 import { connectionKind } from '../../speech/connection';
 import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
 import { PLAY_TOS } from '../../speech/readSpan';
-import { bibleVoiceSetting, englishAccentSetting, handsFreeSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
+import { bibleVoiceSetting, englishAccentSetting, handsFreePauseSetting, handsFreeSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
 import { NO_WIFI_SENSE } from '../definitions/bibleVoice';
 import { PRONUNCIATION_FAMILIES } from '../definitions/pronunciation';
 import { PHONE_VOICE, writeSetting } from '../registry';
 import { getSetting, useSetting } from '../store';
-import { OnOff, RowName, SettingRow } from './SettingRow';
+import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 function ReadSpanChoice({ span }: { span: PlayTo }) {
@@ -335,6 +335,18 @@ export const HandsFreeControl: Control = ({ row }) => {
     <SettingRow row={row}>
       <RowName row={row} />
       {handsFree ? <OnOff name={row.label} current={handsFree} settingKey="handsFree" onChoose={(value) => void setHandsFree(value === 'on')} /> : null}
+    </SettingRow>
+  );
+};
+
+/** Pause before it acts (mw-rl10piw.9): 1, 1.5, 2, 3 or 4 seconds of silence end a spoken command. Always drawn: he sets it with Hands-free Off. */
+export const HandsFreePauseControl: Control = ({ row }) => {
+  const pause = useSetting(handsFreePauseSetting);
+  const choices = handsFreePauseSetting.allowed.kind === 'choice' ? handsFreePauseSetting.allowed.values : [];
+  return (
+    <SettingRow row={row}>
+      <RowName row={row} />
+      {pause ? <ChipRow name={row.label} current={pause} options={choices.map((c) => [c.value, c.label] as const)} settingKey="handsFreePause" /> : null}
     </SettingRow>
   );
 };
