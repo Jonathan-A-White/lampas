@@ -1,6 +1,7 @@
 // src/data/lxxChapter.ts — the Septuagint's chapters (mw-u2w5klk.11, the Septuagint epic's R3; docs/data.md 'The Septuagint data'): public/data-lxx/index.json says which Old Testament books are
 // shipped and, for each Greek chapter, the chapter(s) of Lampas's own Old Testament its verses are in; a shipped book's chapter is public/data-lxx/<code>/<n>.json, the Greek chapter's number,
 // which is not always Lampas's (Greek Ps 22 is Psalm 23). loadChapter (src/data/chapter.ts) opens them for an Old Testament book while Settings > Old Testament in Greek is On.
+import { hebrewLetters, septuagintLineStarts } from './poetry';
 import { within } from './within';
 import type { BookInfo, Chapter, GreekWord, LexEntry, Verse } from './chapter';
 import type { LemmaLexicon } from './lexicon';
@@ -248,4 +249,32 @@ export function withHeadings(chapter: Chapter, msb: Pick<Chapter, 'verses'> | nu
     return { ...verse, h };
   });
   return placed.size === 0 ? chapter : { ...chapter, verses };
+}
+
+/**
+ * A Septuagint chapter with the lines of its Hebrew verses laid on it (mw-5r3p30.1166): a Greek verse that answers Lampas's Hebrew verse (by its `ref`, and `refs` when it answers several) whose lines are broken (`hl`, from the
+ * Masoretic accents) gets lines of its own, `hl`, by proportion of the Hebrew's letters (septuagintLineStarts; docs/data.md 'Poetry lines'). Approximate: Lampas has no link between a Septuagint word and a Hebrew one. A verse is left as
+ * running text when its Hebrew verse is prose or has no accent to break at, when no Hebrew verse is there (`hebrew` null, a chapter that could not be fetched), when it has no `ref`, or when another Greek verse answers the same Hebrew verse
+ * (the Greek and the Hebrew divide it differently, so no proportion is right). A chapter with nothing to lay is returned as it is.
+ */
+export function withSeptuagintLines(chapter: Chapter, hebrew: Pick<Chapter, 'verses'> | null, book: string, n: number): Chapter {
+  if (!hebrew) return chapter;
+  const own = (verse: Verse): number[] =>
+    verse.ref === undefined || verse.ref === 'none' ? [] : [verse.ref, ...(verse.refs ?? [])].filter((r) => r.book === book && r.chapter === n).map((r) => r.verse);
+  const answered = new Map<number, number>();
+  for (const verse of chapter.verses) for (const at of own(verse)) answered.set(at, (answered.get(at) ?? 0) + 1);
+  const verses = chapter.verses.map((verse) => {
+    const answers = [...new Set(own(verse))];
+    if (answers.length === 0 || answers.some((at) => answered.get(at) !== 1)) return verse;
+    const source = answers.map((at) => hebrew.verses.find((v) => v.n === at));
+    if (source.some((v) => v === undefined) || !source.some((v) => v!.hl && v!.hl.length > 1)) return verse;
+    // the Hebrew letters of each of its lines, a Hebrew verse with no lines being one
+    const lengths = source.flatMap((v) => {
+      const starts = v!.hl && v!.hl.length > 1 ? v!.hl : [0];
+      return starts.map((from, k) => hebrewLetters(v!.g.slice(from, k + 1 < starts.length ? starts[k + 1] : v!.g.length)));
+    });
+    const hl = septuagintLineStarts(verse.g, lengths);
+    return hl ? { ...verse, hl } : verse;
+  });
+  return verses.some((v, i) => v !== chapter.verses[i]) ? { ...chapter, verses } : chapter;
 }
