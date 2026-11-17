@@ -14,14 +14,14 @@ export interface Devotional {
   author: string;
   /** Logos flags the resource as supporting a day-of-year reference */
   dayOfYear: boolean;
-  /** 'logos': a book of his Logos library, opened at the day; 'rephil': Morning RePhil, an episode he watches on the web */
-  kind: 'logos' | 'rephil';
+  /** absent: a book of his Logos library, opened at the day; 'rephil': Morning RePhil, an episode he watches on the web */
+  kind?: 'rephil';
 }
 
 /** The devotionals Settings > Daily picks from: a view over the catalogue's devotionals named by id (src/resources/catalogue.ts; a calendar devotional an export adds is the catalogue's, not this list's, until the shelf reads it). */
 export const DEVOTIONALS: readonly Devotional[] = entriesOf('devotional')
   .filter((e) => e.via === 'id')
-  .map((e) => ({ id: e.resource, title: e.title, author: e.author ?? '', dayOfYear: e.dayOfYear === true, kind: 'logos' as const }));
+  .map((e) => ({ id: e.resource, title: e.title, author: e.author ?? '', dayOfYear: e.dayOfYear === true }));
 
 /** The devotional Today shows to start, and the fallback: Spurgeon's Morning and Evening. */
 export const DEFAULT_DEVOTIONAL = 'LLS:20.10.1';

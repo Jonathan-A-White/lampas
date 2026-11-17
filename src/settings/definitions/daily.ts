@@ -40,7 +40,7 @@ export const dailyPlanSetting = piece(
   'dailyPlan',
   'Plan chapter',
   "Today holds your reading plan's chapter.",
-  "Whether Today holds the reading plan's chapter for the day.",
+  "Whether Today holds the reading plan's chapter, to read in Logos.",
 );
 
 export const dailyPsalmsSetting = piece(
@@ -54,7 +54,7 @@ export const dailyDevotionalSetting = piece(
   'dailyDevotional',
   'Devotional',
   'Today holds one devotional for the day.',
-  'Whether Today holds a devotional.',
+  'Whether Today holds a devotional (Logos).',
   LOGOS_ON,
 );
 

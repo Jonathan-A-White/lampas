@@ -85,7 +85,7 @@ describe('the devotional beside the Logos ones', () => {
     expect(DEVOTIONALS).toHaveLength(37);
     expect(DEVOTIONALS.map((d) => d.id)).not.toContain(MORNING_REPHIL_ID);
     expect(MORNING_REPHIL).toMatchObject({ id: MORNING_REPHIL_ID, kind: 'rephil', title: 'Morning RePhil (Brookfield First)' });
-    expect(DEVOTIONALS.every((d) => d.kind === 'logos')).toBe(true);
+    expect(DEVOTIONALS.every((d) => d.kind === undefined)).toBe(true);
     expect(devotionalOf(MORNING_REPHIL_ID)).toBe(MORNING_REPHIL);
   });
 
