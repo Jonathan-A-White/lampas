@@ -602,7 +602,8 @@ export function IdeaSheet({ idea, onClose, onDismiss, onWord, onAsk, covered = f
   const pressedAt = useRef<number | null>(null);
   const shown = dragged ?? (moved && moved.from === rest ? moved.to : rest);
   const [drill, setDrill] = useState<DrillMode | null>(null);
-  // Got it on The Greek alphabet starts the letter drill at once (mw-86e9r1.11)
+  // Got it (Learning) on an alphabet starts the letter drill at once (mw-86e9r1.11). Never over a run: every start of a run here (this, 'I know it', Drill it, Try it on a verse)
+  // is chosen in the foot, which is not drawn there (levelControls), so the lesson over a drill opens no second run (mw-indx1x6.79, features/study-this.feature)
   const [letterDrill, setLetterDrill] = useState(false);
   const [asking, setAsking] = useState<{ to: number; need: GrammarIdea } | null>(null);
   // the idea he is learning now, when he slid this one to Learning: one idea at a time, so he chooses (mw-i7xe0n.6)

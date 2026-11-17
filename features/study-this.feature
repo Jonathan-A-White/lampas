@@ -107,6 +107,20 @@ Feature: A wrong answer links to what teaches it
     When the lesson of the idea "letter-rho" is open as it is over Review
     Then the lesson has the "Learn to roll your r (optional)" link
 
+  # mw-indx1x6.79: Learning on the alphabet starts the letter drill at once (mw-86e9r1.11, features/letter-drill.feature), and over a drill that would be a second run of questions
+  # over the one he is in. Over a drill the lesson has no level slider (mw-indx1x6.57), so there is nothing to slide to Learning: this holds it for the two alphabets. Where the
+  # lesson does draw a slider the step slides it to Learning, so a slider drawn again over a drill fails here on the letter drill it opens, not only on being there. (A drill's own
+  # row links the lesson of the letter asked, src/review/studyThis.ts lessonOf, so the alphabet's lesson is drawn here as a row that names the idea itself draws it.)
+  Scenario Outline: The alphabet's lesson over a drill has no level slider, so no letter drill opens over the drill
+    Given the lesson of the idea <alphabet> is open as it is over a drill
+    Then the lesson has no "Your level" slider to slide to "Learning", and no letter drill opens
+    And the idea <alphabet> is not put to Learning
+
+    Examples:
+      | alphabet    |
+      | alphabet    |
+      | he-alphabet |
+
   # mw-indx1x6.57: one guard for whatever is drawn over a run (src/overRun.ts useOffRun): a sheet written for a plain screen, opened over a drill, offered links to pages of
   # their own, and one tap left the drill and lost the run. Over a run nothing that changes the page's address is drawn.
   Scenario: The word's sheet opened over a drill has no link that leaves the drill
