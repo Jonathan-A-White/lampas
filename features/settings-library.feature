@@ -58,7 +58,7 @@ Feature: Settings after the library
 
   Scenario: Which devotional is a searchable picker of the devotionals that are on, with Random
     Given the shelf holds the devotionals "The Heart of Praise, Manual of Family Devotions: Arranged from the Book of Common Prayer" and Settings is open at Daily with Which devotional on Random
-    Then the Which devotional picker offers "Random, The Heart of Praise, Manual of Family Devotions: Arranged from the Book of Common Prayer"
+    Then the Which devotional picker offers "Random, The Heart of Praise, Manual of Family Devotions: Arranged from the Book of Common Prayer, Morning RePhil (Brookfield First)"
     When he searches the Which devotional picker for "praise"
     Then the Which devotional picker narrows to "The Heart of Praise"
     When he picks "The Heart of Praise" in the Which devotional picker
