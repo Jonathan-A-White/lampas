@@ -3,7 +3,7 @@
 // the question, his answer, the right answer and the idea (src/review/studyThis.ts, src/review/StudyThis.tsx). A right answer shows no row. At the end of a Review or a drill the 'Study list' (mw-indx1x6.8,
 // src/review/studyList.ts, StudyList.tsx) gathers everything the session's misses linked to, one row each, most-missed first.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -20,7 +20,7 @@ import type { Level } from '../../src/data/grammar/needs';
 import { cellsOf, paradigmById, paradigmOfHebrewWord, paradigmsOf, type Levels } from '../../src/data/paradigms';
 import { cellPrompt, drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
-import { setKind, setLanguages, setState } from '../../src/data/repositories';
+import { getLevel, setKind, setLanguages, setState } from '../../src/data/repositories';
 import { DAY } from '../../src/data/schedule';
 import { DrillItScreen } from '../../src/DrillItScreen';
 import { clearBus } from '../../src/events/bus';
@@ -188,6 +188,43 @@ async function lessonStartsNothing(_: unknown, drillIt: string, tryIt: string, m
   for (const label of [drillIt, tryIt, markKnown]) expect(buttonsOf(sheet)).not.toContain(label);
   expect(within(sheet).queryByRole('slider', { name: 'Your level' })).toBeNull();
   expect(sheet.querySelector('[data-testid="level-slider"]')).toBeNull();
+}
+
+/** The stops of the lesson's level slider, as src/IdeaSheet.tsx draws them. */
+const LEVEL_STOPS = ['Not yet', 'Learning', 'I know it'];
+
+/**
+ * Over a run the alphabet's lesson has no level slider, so Learning, which starts the letter drill at once, cannot be chosen there (mw-indx1x6.79). A slider that is drawn is slid
+ * to the stop first and the letter drill it starts is waited for: the step then fails on the second run of questions over the drill, the fault itself, and not only on the slider.
+ */
+async function noSliderNoLetterDrill(_: unknown, slider: string, stop: string): Promise<void> {
+  const sheet = screen.getByRole('dialog', { name: 'Idea' });
+  await within(sheet).findByText('Worked example');
+  const drawn = within(sheet).queryByRole('slider', { name: slider });
+  if (drawn) {
+    fireEvent.change(drawn, { target: { value: String(LEVEL_STOPS.indexOf(stop)) } });
+    // the letter drill follows the level's write
+    await screen.findByRole('dialog', { name: 'Letter drill' }).catch(() => undefined);
+  }
+  expect(screen.queryByRole('dialog', { name: 'Letter drill' })).toBeNull();
+  expect(drawn).toBeNull();
+  expect(sheet.querySelector('[data-testid="level-slider"]')).toBeNull();
+}
+
+/** Learning is the level 'frontier' (src/IdeaSheet.tsx STOPS): the lesson over a run wrote none. */
+async function notPutToLearning(_: unknown, ideaId: string): Promise<void> {
+  expect((await getLevel(ideaId))?.level).not.toBe('frontier');
+}
+
+/** What a Study row draws for a lesson where a table opens as a layer (src/review/useStudyPlaces.tsx): the sheet inside the run's guard. */
+async function lessonOverADrill(_: unknown, ideaId: string): Promise<void> {
+  await freshStore();
+  render(
+    <OverRun.Provider value={true}>
+      <IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} />
+    </OverRun.Provider>,
+  );
+  await lessonIsOpen(ideaId);
 }
 
 async function tapFirstExample(): Promise<void> {
@@ -428,7 +465,7 @@ const chipNames = (): string[] => [...document.querySelectorAll<HTMLElement>('[d
 
 const feature = await loadFeature('features/study-this.feature');
 
-describeFeature(feature, ({ Scenario }) => {
+describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   Scenario('A missed cell of a table in Review links to the table at that cell', ({ Given, When, And, Then }) => {
     Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
     When('he opens Review and starts the round', openReviewAndStart);
@@ -651,16 +688,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("A letter's lesson over a drill has no link to its Hard sounds lesson", ({ Given, When, Then }) => {
-    Given('the lesson of the idea {string} is open as it is over a drill', async (_, ideaId: string) => {
-      await freshStore();
-      // what the row draws for a lesson where a table opens as a layer (src/review/useStudyPlaces.tsx)
-      render(
-        <OverRun.Provider value={true}>
-          <IdeaSheetWithWord ideaId={ideaId} onClose={() => {}} />
-        </OverRun.Provider>,
-      );
-      await lessonIsOpen(ideaId);
-    });
+    Given('the lesson of the idea {string} is open as it is over a drill', lessonOverADrill);
     Then('the lesson has no {string} link, though the letter has that lesson', async (_, label: string) => {
       // the letter has the lesson for his accent, so its sheet anywhere else has the link: without one the step would prove nothing
       expect(lessonsForSheet(ideaOfAny('letter-rho'), chosenPronunciation().id, accentOf(DEFAULT_ACCENT)).map(learnLabel)).toContain(label);
@@ -677,6 +705,12 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the lesson has the {string} link', async (_, label: string) => {
       expect(await within(screen.getByRole('dialog', { name: 'Idea' })).findByRole('button', { name: label })).toBeInTheDocument();
     });
+  });
+
+  ScenarioOutline("The alphabet's lesson over a drill has no level slider, so no letter drill opens over the drill", ({ Given, And, Then }, row) => {
+    Given('the lesson of the idea <alphabet> is open as it is over a drill', () => lessonOverADrill(null, row.alphabet));
+    Then('the lesson has no {string} slider to slide to {string}, and no letter drill opens', noSliderNoLetterDrill);
+    And('the idea <alphabet> is not put to Learning', () => notPutToLearning(null, row.alphabet));
   });
 
   Scenario("The word's sheet opened over a drill has no link that leaves the drill", ({ Given, When, And, Then }) => {
