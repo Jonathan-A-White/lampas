@@ -128,14 +128,14 @@ for (const size of [
     await threeFingers(page);
     const mark = page.getByRole('img', { name: 'Hands-free is on', exact: true });
     await expect(mark).toBeVisible();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(300); // a real-time wait: a window in which nothing must move
     expect(await top()).toBe(before);
     const markBox = (await mark.boundingBox()) as Box;
     expect(markBox.x + markBox.width).toBeLessThanOrEqual(size.width);
     await shot(page, `hands-free-no-jump-${size.width}`);
     await threeFingers(page);
     await expect(mark).toHaveCount(0);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(300); // a real-time wait: a window in which nothing must move
     expect(await top()).toBe(before);
   });
 }
