@@ -37,6 +37,37 @@ test('a bare reference in a post is a link to that passage in Lampas', async ({ 
   await shot(page, 'reftagger');
 });
 
+// mw-fnvjof.17.158: the home's hero quote is an h1 outside the post (.gh-header-title), and its reference opens the bubble like a post's; the '--' the author typed before it reads as an em dash.
+// The sweep of the blog outside a post body: the hero, an excerpt (.gh-article-excerpt, .gh-archive-description) and the site footer (.gh-footer) are tagged; a post's own title, a menu
+// and the comments are not (a title is a heading and the reference in it is the post's subject, not a quotation; the menu and comments carry no passage).
+test('the home hero\'s reference is a tagged link and its \'--\' reads as an em dash (mw-fnvjof.17.158)', async ({ page }) => {
+  await openPost(page);
+  expect(await hrefs(page, 'hero')).toEqual([`${REF}Mark.12.30`]);
+  expect(await texts(page, 'hero')).toEqual(['Mark 12:30']);
+  await expect(page.locator('#hero h1')).toHaveText('And you shall love the Lord your God with all your strength. —Mark 12:30');
+  // an excerpt is tagged, and a '--' not before a reference is left as written
+  expect(await hrefs(page, 'excerpt')).toEqual([`${REF}Acts.2.38`]);
+  await expect(page.locator('#excerpt')).toContainText('uses -- twice -- with');
+  // the footer is tagged
+  expect(await texts(page, 'gh-footer')).toEqual(['Psalm 23:1', 'Matthew 5:3']);
+  // a post's body keeps its text as written: no dash is changed there
+  expect(await page.evaluate(() => document.querySelector('.gh-content')?.textContent === (window as unknown as { __before: string }).__before)).toBe(true);
+});
+
+test.describe('on a phone, the hero', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('a tap on the hero\'s reference opens the Lampas bubble (mw-fnvjof.17.158)', async ({ page }) => {
+    await serveData(page);
+    await openPost(page);
+    await page.locator('#hero a').tap();
+    const popup = page.locator(POPUP);
+    await expect(popup).toBeVisible();
+    await expect(popup).toContainText('Mark 12:30');
+    expect(page.url()).toBe(BLOG);
+  });
+});
+
 test('a numbered book after a verse and a comma is one link to that book, not a verse of the first (mw-5r3p30.1045)', async ({ page }) => {
   await openPost(page);
   expect(await hrefs(page, 'numbered')).toEqual([
