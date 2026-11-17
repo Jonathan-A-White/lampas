@@ -1,5 +1,5 @@
 // tests/support/build-part.ts — the unit tests that run a real vite build are a gate part of their own (mw-5r3p30.1167).
-// A build in a child process takes up to CHILD_BUILD_MS (240 s) under load; beside ~160 other files in one vitest shard it outran
+// A build in a child process takes up to CHILD_BUILD_MS (240 s, more under load); beside ~160 other files in one vitest shard it outran
 // the shard's budget three times (mw-gq6.986, mw-5r3p30.420, mw-82lb97i.35). So vitest.config.ts leaves these files out of the
 // shards and runs only them when LAMPAS_TESTS=build: the gate's part is `TZ=UTC LAMPAS_TESTS=build npx vitest run`.
 
