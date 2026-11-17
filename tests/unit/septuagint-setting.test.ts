@@ -3,8 +3,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { septuagintSetting } from '../../src/settings/definitions';
-import { settingOf } from '../../src/settings/registry';
-import { ROWS, visibleRows, readValues } from '../../src/settings/rows';
+import { settingOf, ROWS, visibleRows, readValues } from '../support/settings';
 import { getSetting, setSetting } from '../../src/settings/store';
 import { septuagintView, septuagintWeaveNoted } from '../../src/reader/septuagint';
 import { getLogosBible, getLogosBibles, setLogosBibleFor } from '../../src/data/repositories';

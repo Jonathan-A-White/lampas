@@ -1,7 +1,7 @@
-// The groups of Settings (src/settings/rows.ts GROUPS, mw-3ased2.1): the home lists them and each is a page of its own. One table says which group a
+// The groups of Settings (rows.ts GROUPS of src/settings, mw-3ased2.1): the home lists them and each is a page of its own. One table says which group a
 // section is in, so a section in none or in two fails here, and so does a group with nothing in it.
 import { describe, expect, it } from 'vitest';
-import { GROUPS, HOME_SECTIONS, ROWS, SECTIONS, groupById, groupOf, isHomeRow, visibleGroups, type Values } from '../../src/settings/rows';
+import { GROUPS, HOME_SECTIONS, ROWS, SECTIONS, groupById, groupOf, isHomeRow, visibleGroups, type Values } from '../support/settings';
 import { groupIdOf, groupLink } from '../../src/settings/link';
 import { GROUP_PAGES } from '../support/settings-groups';
 

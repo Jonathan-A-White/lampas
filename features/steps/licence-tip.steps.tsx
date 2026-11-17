@@ -13,7 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { noteVisit } from '../../src/gate/licenceTip';
 import { LicenceProvider } from '../../src/gate/LicenceProvider';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
-import { ROWS } from '../../src/settings/rows';
+import { ROWS } from '../../tests/support/settings';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';

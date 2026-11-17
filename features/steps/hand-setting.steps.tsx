@@ -10,7 +10,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import type { GroupId } from '../../src/settings/rows';
+import { type GroupId } from '../../tests/support/settings';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {

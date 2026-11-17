@@ -6,8 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { DEFINITIONS, ipaCourseSetting } from '../../src/settings/definitions';
-import { applyChanges, currentSettings, settingOf, undoChange, writeSetting } from '../../src/settings/registry';
-import { readValues, visibleRows, type Values } from '../../src/settings/rows';
+import { applyChanges, currentSettings, settingOf, undoChange, writeSetting, readValues, visibleRows, type Values } from '../support/settings';
 import { getSetting } from '../../src/settings/store';
 
 beforeEach(async () => {

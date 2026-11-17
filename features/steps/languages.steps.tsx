@@ -17,7 +17,7 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern, type ReceivedGrist }
 import { placeInterest } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { applyChanges } from '../../src/settings/registry';
+import { applyChanges } from '../../tests/support/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
 import { openSettingsGroup } from '../../tests/support/settings-pages';

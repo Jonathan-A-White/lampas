@@ -10,7 +10,7 @@ import { HandsFreeGate } from '../../src/handsFree/HandsFreeGate';
 import { getHandsFree, setHandsFree, toggleHandsFree } from '../../src/handsFree/switch';
 import { stopReading } from '../../src/speech/readAloud';
 import { handsFreeSetting } from '../../src/settings/definitions';
-import { applyChanges } from '../../src/settings/registry';
+import { applyChanges } from '../support/settings';
 import { setSetting } from '../../src/settings/store';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 

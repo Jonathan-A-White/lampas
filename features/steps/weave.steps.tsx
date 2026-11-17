@@ -12,7 +12,7 @@ import { type Chapter, type GreekWord, ownEnglish, type Verse, wordLemma } from 
 import { db } from '../../src/data/db';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { getWeave, getWeaveGrammar, recordAnswer, setLevel, setWeave as saveWeave } from '../../src/data/repositories';
-import { SETTINGS } from '../../src/settings/registry';
+import { SETTINGS } from '../../tests/support/settings';
 import { stubSpeech, GREEK_VOICE, ENGLISH_VOICE, type FakeSynth } from '../../tests/support/fake-speech';
 import { asSpoken } from '../../tests/support/lone-word';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';

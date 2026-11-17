@@ -8,8 +8,7 @@ import { getTheme, getTips, getWeave, setTheme, setTips, setWeave } from '../../
 import { clearBus, latest, subscribe, type EventOf } from '../../src/events/bus';
 import { defineSetting } from '../../src/settings/define';
 import { DEFINITIONS, themeSetting, tipsSetting, weaveSetting } from '../../src/settings/definitions';
-import { SETTINGS } from '../../src/settings/registry';
-import { ROWS } from '../../src/settings/rows';
+import { SETTINGS, ROWS } from '../support/settings';
 import { getSetting, onSetting, setSetting, toldSetting, useSetting } from '../../src/settings/store';
 
 afterAll(() => {

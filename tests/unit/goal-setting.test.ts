@@ -4,7 +4,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getGoal } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
-import { applyChanges, currentSettings, settingOf, undoChange, writeSetting } from '../../src/settings/registry';
+import { applyChanges, currentSettings, settingOf, undoChange, writeSetting } from '../support/settings';
 import { settingsBlock, settingsChangesSchema } from '../../src/settings/grindText';
 
 afterAll(() => db.close());

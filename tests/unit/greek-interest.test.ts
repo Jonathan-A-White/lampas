@@ -1,5 +1,5 @@
 // The Greek dial (mw-3ased2.2): 'How much Greek?', 0 to 5, each step a real change. The table says which settings each level shows (by the ordinary dependsOn rule,
-// src/settings/rows.ts), moving the dial writes what the level brings in and turns off what it hides (keeping his own values for the way back up), a new reader
+// rows.ts of src/settings), moving the dial writes what the level brings in and turns off what it hides (keeping his own values for the way back up), a new reader
 // starts at 0 through the welcome's one English-defaults function, and an existing reader is placed by what he has, once.
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -25,11 +25,10 @@ import { getSetting, setSetting } from '../../src/settings/store';
 import { handwritingSetting, readLessonsSetting, weaveOrderSetting } from '../../src/settings/definitions';
 import { GREEK_LEVELS, greekFrom, newWordsAt, placementOf, viewAt, weaveAt, type GreekLevel } from '../../src/settings/definitions/greekInterest';
 import { languagesOf } from '../../src/settings/definitions/interest';
-import { ROWS, TOOL_ROWS, visibleRows, type Values } from '../../src/settings/rows';
+import { ROWS, TOOL_ROWS, visibleRows, type Values, settingOf } from '../support/settings';
 
 // the rows of Settings and the doors of Tools (words, review, paradigms moved there, mw-5r3p30.754) follow the same dials
 const EVERY_ROW = [...ROWS, ...TOOL_ROWS];
-import { settingOf } from '../../src/settings/registry';
 import { SEPARATE_KEYS } from '../../src/settings/definitions/pronunciation';
 
 const LEVELS: readonly GreekLevel[] = [0, 1, 2, 3, 4, 5];

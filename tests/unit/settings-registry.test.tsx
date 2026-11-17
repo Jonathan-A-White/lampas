@@ -1,4 +1,4 @@
-// The settings registry (src/settings/registry.ts): every Settings row has an entry, a talked change is checked against it,
+// The settings registry (registry.ts of src/settings): every Settings row has an entry, a talked change is checked against it,
 // applied through the same write the Settings screen uses (saved and told to the bus), and undone.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
@@ -8,9 +8,8 @@ import { getGreekPronunciation, getLayout, getLogosBible, getSectionHeadings, ge
 import { clearBus, latest } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { getStudyResources } from '../../src/data/repositories';
-import { GROUPS, isTalkable, ROWS, groupOf, isHomeRow } from '../../src/settings/rows';
+import { GROUPS, isTalkable, ROWS, groupOf, isHomeRow, SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../support/settings';
 import { showSettingsGroup } from '../support/settings-pages';
-import { SETTINGS, applyChanges, currentSettings, settingOf, undoChange } from '../../src/settings/registry';
 import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 afterAll(() => {

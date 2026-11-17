@@ -1,12 +1,11 @@
 // The sermon sources the index service has that the bundle lacks (mw-qtu3zvz.5, src/data/repositories/sermonSources.ts, src/sermons/known.ts, docs/sermons.md 'When online'): the kept list, the first time a source is seen,
-// and the On | Off row Settings grows for each (src/settings/rows.ts growSermonRows), which the tutor is not told of.
+// and the On | Off row Settings grows for each (rows.ts of src/settings growSermonRows), which the tutor is not told of.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getKnownSermonSources, rememberSermonSources, type KnownSermonSource } from '../../src/data/repositories';
 import { knownSermonSources, setKnownSermonSources } from '../../src/sermons/known';
 import { enabledServiceSources, latestFor, forgetServiceSources } from '../../src/sermons';
-import { settingOf } from '../../src/settings/registry';
-import { forgetGrownSermonRows, isTalkable, rowOf, ROWS } from '../../src/settings/rows';
+import { settingOf, forgetGrownSermonRows, isTalkable, rowOf, ROWS } from '../support/settings';
 import { settingsForTutor } from '../../src/settings/tutorSettings';
 import { setSermonsUrl } from '../../src/services/sermons';
 import { registerTestSermons, forgetTestSermons } from '../support/test-sermons';

@@ -7,7 +7,7 @@ import { getScriptDepth, setScriptDepth } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
 import { depthSettings } from '../../src/script/depthSettings';
 import { DEFAULT_DEPTH, DEPTHS, SCRIPTS } from '../../src/script/scripts';
-import { applyChanges, currentSettings, settingOf, undoChange, writeSetting } from '../../src/settings/registry';
+import { applyChanges, currentSettings, settingOf, undoChange, writeSetting } from '../support/settings';
 import { buildTalkRequest } from '../../src/services/talk';
 
 afterAll(() => db.close());

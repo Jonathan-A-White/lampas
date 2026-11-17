@@ -5,7 +5,7 @@ import { db } from '../../src/data/db';
 import { NO_CHAPTER } from '../../src/data/chapter';
 import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { isTalkable, ROWS } from '../../src/settings/rows';
+import { isTalkable, ROWS } from '../support/settings';
 import { settingsForTutor } from '../../src/settings/tutorSettings';
 import { buildTalkRequest, fitHistory, MAX_REQUEST_BYTES, type TalkRequest, type TalkScope } from '../../src/services/talk';
 import { fitScreen, MAX_SETTINGS, SETTING_HELP_MAX, SETTING_NAME_MAX, SETTING_VALUE_MAX, suggestionsFor } from '../../src/tutor/screen';

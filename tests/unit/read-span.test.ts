@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { getReadSpan, setReadSpan } from '../../src/data/repositories';
 import { DEFAULT_PLAY_TO, isPlayTo, PLAY_TOS, playToOf } from '../../src/speech/readSpan';
-import { settingOf } from '../../src/settings/registry';
+import { settingOf } from '../support/settings';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((table) => table.clear()));

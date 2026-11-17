@@ -9,7 +9,7 @@ import { enabledSources as enabledOf } from '../../src/sermons/enabled';
 import type { SermonSource } from '../../src/sermons/types';
 import { useSermons } from '../../src/sermons/useSermons';
 import { sermonSourceSetting } from '../../src/settings/definitions/sermons';
-import { settingOf } from '../../src/settings/registry';
+import { settingOf } from '../support/settings';
 import { BEARS_ON } from '../../src/tutor/knows';
 import { forgetTestSermons, offSource, registerTestSermons, secondSource, testSource } from '../support/test-sermons';
 

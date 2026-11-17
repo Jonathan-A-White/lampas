@@ -14,7 +14,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { entriesOf } from '../../src/resources/catalogue';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
-import { writeSetting } from '../../src/settings/registry';
+import { writeSetting } from '../../tests/support/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { keepImport } from '../../tests/support/logos-import';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { APPROACHES } from '../../src/approaches';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
-import { settingOf } from '../../src/settings/registry';
+import { settingOf } from '../support/settings';
 import { DEFAULT_GRAMMAR_BOOKS, GRAMMAR_BOOKS, bookLink, readMoreFor, sectionsFor } from '../../src/resources/grammarBooks';
 import type { GrammarBook } from '../../src/resources/types';
 

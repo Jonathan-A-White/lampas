@@ -8,7 +8,7 @@ import { act, waitFor } from '@testing-library/react';
 import { db } from '../../src/data/db';
 import { getSpeechRates } from '../../src/data/repositories';
 import { clearBus, latest } from '../../src/events/bus';
-import { SETTINGS, type SettingEntry, type SettingValue } from '../../src/settings/registry';
+import { SETTINGS, type SettingEntry, type SettingValue } from '../support/settings';
 import { speak, speakWord, stopSpeaking } from '../../src/speech/greek';
 import { startSpeechSettingsSync } from '../../src/speech/settingsSync';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../support/fake-speech';

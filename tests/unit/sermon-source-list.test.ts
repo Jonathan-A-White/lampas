@@ -10,9 +10,10 @@ import { HELP_PAGES } from '../../src/help';
 import { inLogosGroups, inLogosRows } from '../../src/library/inLogos';
 import { booksOn, infoOf, KIND_INFO, LIBRARY_KINDS, SERMON_SOURCES_PLACE } from '../../src/library/kinds';
 import { CATALOGUE, entriesOf, entryOf, type CatalogueEntry } from '../../src/resources/catalogue';
+import { SETTINGS_SOURCE } from '../support/settings-sources';
 import { searchLibrary } from '../../src/settings/librarySearch';
 import { sermonSourcesLink, sermonSourcesOf } from '../../src/settings/link';
-import { ROWS, isTalkable } from '../../src/settings/rows';
+import { ROWS, isTalkable } from '../support/settings';
 import { logosArchives, SERMON_BOOKS } from '../../src/sermons/sources/logos';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { countLine, filingName, GROUP_WORDS, inOrder, rowsToChange, sourceList, type SourceInput } from '../../src/sermons/sourceList';
@@ -313,7 +314,7 @@ describe('the words that point at the one list', () => {
   });
 
   it('no source file still sends him to Library > Sermons to switch a sermon source', () => {
-    const files = ['src/library/kinds.ts', 'src/help.ts', 'src/settings/rows.ts', 'src/settings/definitions/sermons.ts', 'src/sermons/SermonsSheet.tsx', 'src/library/LibraryScreen.tsx', 'src/library/ImportLibrary.tsx'];
+    const files = ['src/library/kinds.ts', 'src/help.ts', SETTINGS_SOURCE.rows, 'src/settings/definitions/sermons.ts', 'src/sermons/SermonsSheet.tsx', 'src/library/LibraryScreen.tsx', 'src/library/ImportLibrary.tsx'];
     for (const file of files) expect(readFileSync(join(root, file), 'utf8'), file).not.toMatch(/Library > Sermons(?! \(the old)/);
   });
 });

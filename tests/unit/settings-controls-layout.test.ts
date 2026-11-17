@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { SETTINGS_SOURCE } from '../support/settings-sources';
 
-const DIR = 'src/settings/controls';
+const DIR = SETTINGS_SOURCE.controlsDir;
 const FILES = [
   'types.ts',
   'index.ts',
@@ -19,7 +20,7 @@ const FILES = [
 ];
 
 describe('the Settings controls (docs/module-map.md R3)', () => {
-  it.each(FILES)('%s is in src/settings/controls/', (file) => {
+  it.each(FILES)('%s is in the settings controls directory', (file) => {
     expect(existsSync(`${DIR}/${file}`)).toBe(true);
   });
 

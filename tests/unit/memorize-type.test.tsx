@@ -134,8 +134,7 @@ describe('the Weave', () => {
 
 describe('the Greek keyboard setting', () => {
   it('is in the registry under Daily, Off to start, and shown from Curious', async () => {
-    const { settingOf } = await import('../../src/settings/registry');
-    const { ROWS, visibleRows } = await import('../../src/settings/rows');
+    const { ROWS, settingOf, visibleRows } = await import('../support/settings');
     expect(settingOf('greekKeyboard')).toMatchObject({ label: 'Greek keyboard', section: 'daily' });
     expect(ROWS.find((r) => r.key === 'greekKeyboard')?.section).toBe('daily');
     expect(greekKeyboardSetting.default).toBe('off');

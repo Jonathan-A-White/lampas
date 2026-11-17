@@ -19,7 +19,7 @@ import { passageNeeds, progressToward, type Level } from '../../src/data/grammar
 import { setGoal } from '../../src/data/repositories/settings';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { isTalkable, ROWS } from '../../src/settings/rows';
+import { isTalkable, ROWS } from '../../tests/support/settings';
 import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';

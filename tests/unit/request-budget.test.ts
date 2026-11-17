@@ -18,7 +18,7 @@ import { CATALOGUE } from '../../src/resources/catalogue';
 import { worksForTutor, type TutorWork } from '../../src/resources/tutorLinks';
 import { MAX_REQUEST_BYTES, WORKS_BYTES } from '../../src/services/requestBudget';
 import { buildTalkRequest, fitHistory, type TalkRequest } from '../../src/services/talk';
-import { SETTINGS } from '../../src/settings/registry';
+import { SETTINGS } from '../support/settings';
 import type { SettingValue } from '../../src/settings/define';
 import { QUIZ_GOAL_MAX } from '../../src/data/repositories/settings';
 import { MILL_PUBLIC_KEY, QUIZ_ANSWER } from '../support/fake-postern';

@@ -11,7 +11,7 @@ import { SermonsHost } from '../../src/sermons/SermonsSheet';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { isVideoAddress, opensNewTab, rowHref, webHref } from '../../src/sermons/openWeb';
 import { openWebSetting } from '../../src/settings/definitions/sermons';
-import { isTalkable, ROWS, rowOf } from '../../src/settings/rows';
+import { isTalkable, ROWS, rowOf } from '../support/settings';
 import { getSetting, setSetting } from '../../src/settings/store';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 

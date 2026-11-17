@@ -8,7 +8,7 @@ import { ladder } from '../../src/approaches/ladder';
 import { db } from '../../src/data/db';
 import { getGrammarApproach } from '../../src/data/repositories';
 import { listLevels, setLevel } from '../../src/data/repositories/grammarLevels';
-import { writeSetting } from '../../src/settings/registry';
+import { writeSetting } from '../support/settings';
 
 function sourceFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

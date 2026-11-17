@@ -10,7 +10,7 @@ import { resourcesForLevel } from '../../src/resources/resourcesForLevel';
 import { resourcesForTutor, verseChips, wordChips, workChip, worksForTutor } from '../../src/resources/tutorLinks';
 import type { GrammarBook, ResourceLang, StudyResource } from '../../src/resources/types';
 import { WORKS, type Work } from '../../src/resources/works';
-import { orderResourceRows, visibleRows, ROWS, type Values } from '../../src/settings/rows';
+import { orderResourceRows, visibleRows, ROWS, type Values } from '../support/settings';
 import { GREEK_LEVELS, type GreekLevel } from '../../src/settings/definitions/greekInterest';
 
 const item = (id: string, lang: ResourceLang) => ({ id, lang });

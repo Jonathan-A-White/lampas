@@ -12,7 +12,7 @@ import { enabledSources as enabledOf, ownsKey, sourceOffered } from '../../src/s
 import { bundledSources, forgetSermonFiles, LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { logosArchives } from '../../src/sermons/sources/logos';
 import { sermonSourceSetting } from '../../src/settings/definitions/sermons';
-import { readValues, visibleRows } from '../../src/settings/rows';
+import { readValues, visibleRows } from '../support/settings';
 import type { SermonIndex, SermonBookFile } from '../../src/data/sermonIndex';
 import { EVERY_BOOK } from '../support/logos-import';
 

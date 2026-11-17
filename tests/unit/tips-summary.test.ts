@@ -3,8 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus, publish } from '../../src/events/bus';
-import { SETTINGS } from '../../src/settings/registry';
-import { writeSetting } from '../../src/settings/registry';
+import { SETTINGS, writeSetting } from '../support/settings';
 import { addAsk } from '../support/tips-seed';
 import { startUsageLog } from '../../src/tips/usageLog';
 import { FEATURES, SCREENS, summarize, usageSummary, type Facts } from '../../src/tips/summary';

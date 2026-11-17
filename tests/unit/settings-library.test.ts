@@ -1,11 +1,10 @@
 // Settings after the library (mw-rfjjzd.5, docs/design/library-at-scale.md 3.8 and 8): the Works row is gone, the library has a row the tutor cannot change, and the Settings search
 // answers a book's title from the catalogue.
 import { describe, expect, it } from 'vitest';
-import { GROUPS, groupById, HOME_SECTIONS, isHomeRow, isTalkable, ROWS, rowOf, TOOL_ROWS, visibleRows, visibleToolRows } from '../../src/settings/rows';
+import { GROUPS, groupById, HOME_SECTIONS, isHomeRow, isTalkable, ROWS, rowOf, TOOL_ROWS, visibleRows, visibleToolRows, settingOf } from '../support/settings';
 import { groupIdOf, movedTool, settingKeyOf, settingLink } from '../../src/settings/link';
 import { CATALOGUE } from '../../src/resources/catalogue';
 import { MAX_BOOKS_FOUND, searchLibrary } from '../../src/settings/librarySearch';
-import { settingOf } from '../../src/settings/registry';
 import { EVERY_BOOK } from '../support/logos-import';
 
 describe('the rows of Settings after the library', () => {

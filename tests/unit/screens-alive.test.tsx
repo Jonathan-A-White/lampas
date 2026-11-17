@@ -17,8 +17,7 @@ import { GoalScreen } from '../../src/GoalScreen';
 import { MemoryScreen } from '../../src/MemoryScreen';
 import { PlacementScreen } from '../../src/PlacementScreen';
 import { QuizScreen } from '../../src/QuizScreen';
-import { QuizGoalControl } from '../../src/settings/controls/quizGoal';
-import { rowOf } from '../../src/settings/rows';
+import { QuizGoalControl, registryModule, rowOf } from '../support/settings';
 import { LinkActions } from '../../src/ui/LinkActions';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { seedHisWords } from '../support/his-words';
@@ -65,10 +64,6 @@ vi.mock('../../src/review/kinds', async (original) => {
   const actual = await original<typeof import('../../src/review/kinds')>();
   return { ...actual, loadPassage: held.wrapped('loadPassage', actual.loadPassage) };
 });
-vi.mock('../../src/settings/registry', async (original) => {
-  const actual = await original<typeof import('../../src/settings/registry')>();
-  return { ...actual, writeSetting: held.wrapped('writeSetting', actual.writeSetting) };
-});
 vi.mock('../../src/ui/clipboard', async (original) => {
   const actual = await original<typeof import('../../src/ui/clipboard')>();
   return { ...actual, copy: held.wrapped('copy', actual.copy) };
@@ -87,6 +82,8 @@ function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void; reje
 let errors: ReturnType<typeof vi.spyOn>;
 
 beforeEach(async () => {
+  const writeSetting = registryModule.writeSetting;
+  vi.spyOn(registryModule, 'writeSetting').mockImplementation(held.wrapped('writeSetting', writeSetting) as typeof writeSetting);
   for (const name of Object.keys(held.calls)) delete held.calls[name];
   held.seen.clear();
   errors = vi.spyOn(console, 'error').mockImplementation(() => {});

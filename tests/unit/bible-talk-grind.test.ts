@@ -7,7 +7,7 @@ import { pronunciationOf } from '../../src/speech/pronunciation';
 import { FEEDBACK_SUMMARY_MAX, NO_SETTING, REFUSAL, isTalkAnswer } from '../../src/services/talk';
 import { HELP_KEPT, HELP_MAX_BYTES, formatJson, settingsBlock, withSettingsBlock, withSettingsChanges } from '../../src/settings/grindText';
 import { helpPlain } from '../../src/settings/helpText';
-import { SETTINGS } from '../../src/settings/registry';
+import { SETTINGS } from '../support/settings';
 import { lampasRegistry } from '../../src/tutor/registry';
 import { TALK_PICTURE_MAX_BYTES } from '../../src/talk/pictures';
 import { validate, type Schema } from '../support/schema-validate';
