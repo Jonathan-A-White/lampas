@@ -413,6 +413,11 @@ html {
 .bk-whats-new__backdrop.bk-whats-new__backdrop > .bk-whats-new__sheet {
   max-height: min(85vh, 100%);
 }
+/* The Hands-free mark is a small dot in the top-right corner (src/handsFree/HandsFreeGate.tsx, mw-rl10piw.24): its microphone shrinks to fit the dot the gate sizes. */
+[data-hands-free-mark] .bk-handsfree__icon {
+  width: 0.625rem;
+  height: 0.625rem;
+}
 /* A toast at the top of the screen (the one line of help of a speaker button, Tap to hear, Read aloud and a word's tip) stands under the bars, or under the phone's
  * own top inset when none shows, whole and in view (mw-5r3p30.644). */
 .toast-top {

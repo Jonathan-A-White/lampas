@@ -1,6 +1,6 @@
 // tests/e2e/hands-free.spec.ts — Hands-free (mw-rl10piw.5) at 390 x 844: Settings > Listening > Reading voices has Hands-free as its first row, Off to start; a three-finger tap on the
 // Reader turns it On (the touches come through the browser, one touchstart a finger, as a phone's do) and a small microphone mark named 'Hands-free is on' stands at the top right, in the
-// shell's top strip: it overlaps no button of the Reader's header and no verse text. Shots: the Reader with the mark, and the Settings row. The speech and the wake lock are the browser's own
+// shell's top strip: it covers no word of the Reader's header and no verse text, takes no touch and no room: the first verse sits where it did (mw-rl10piw.24). Shots: the Reader with the mark, and the Settings row. The speech and the wake lock are the browser's own
 // (headless Chromium has none worth asserting on: tests/unit/hands-free-switch.test.tsx and features/hands-free.feature hold the speech and the lock). The wake word is the kit's fake
 // (tests/support/honest-fakes.ts honestWake): tests/e2e/hands-free-loop.spec.ts is the listening.
 import { expect, test, type Page } from '@playwright/test';
@@ -54,16 +54,29 @@ test('a three-finger tap turns Hands-free on, the mic mark stands clear of the h
 
   // clear of the Reader's header buttons and of every verse the screen shows
   const markBox = (await mark.boundingBox()) as Box;
-  expect(markBox.width).toBeGreaterThan(20);
+  expect(markBox.width).toBeGreaterThanOrEqual(16);
   expect(markBox.x + markBox.width).toBeLessThanOrEqual(390);
   expect(markBox.y).toBeGreaterThanOrEqual(0);
-  const buttons = page.locator('header button:visible, header a:visible');
-  const count = await buttons.count();
-  expect(count).toBeGreaterThan(0);
-  for (let i = 0; i < count; i += 1) {
-    const box = (await buttons.nth(i).boundingBox()) as Box | null;
-    if (box) expect(overlaps(markBox, box), `the mark covers the header's button ${i}`).toBe(false);
-  }
+  // the mark is drawn over the top-right corner and takes no touch, so a button's tap box may lie under it; what must stay clear is what the eye sees: a button with words, and the icon of an icon-only button
+  expect(await mark.evaluate((el) => getComputedStyle(el.closest('[data-hands-free-mark]') as Element).pointerEvents)).toBe('none');
+  // what the eye sees of each header button: its words (the text's own boxes) and its icons (not the padding of its tap box)
+  const seen = await page.evaluate(() => {
+    const out: { x: number; y: number; width: number; height: number }[] = [];
+    for (const button of document.querySelectorAll('header button, header a')) {
+      const rects: DOMRect[] = [...button.querySelectorAll('svg, img')].map((el) => el.getBoundingClientRect());
+      const walk = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+      for (let node = walk.nextNode(); node; node = walk.nextNode()) {
+        if (!(node.textContent ?? '').trim()) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        rects.push(range.getBoundingClientRect());
+      }
+      for (const r of rects) if (r.width > 0 && r.height > 0) out.push({ x: r.x, y: r.y, width: r.width, height: r.height });
+    }
+    return out;
+  });
+  expect(seen.length).toBeGreaterThan(0);
+  for (const box of seen) expect(overlaps(markBox, box), `the mark covers a word or an icon of the header at ${JSON.stringify(box)}`).toBe(false);
   const verses = page.locator('[data-verse]:visible');
   const shown = await verses.count();
   expect(shown).toBeGreaterThan(0);
@@ -96,3 +109,33 @@ test('a three-finger tap turns Hands-free on, the mic mark stands clear of the h
   await expect(page.getByRole('heading', { name: 'Listening', exact: true, level: 1 })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Hands-free', exact: true }).getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
+
+// mw-rl10piw.24: the mark takes no room in the page, so turning Hands-free On or Off moves nothing: the first verse's top is the same with it Off and On, upright and sideways.
+for (const size of [
+  { width: 390, height: 844 },
+  { width: 844, height: 390 },
+]) {
+  test(`turning Hands-free on moves nothing: the first verse stays put at ${size.width} x ${size.height}`, async ({ page }) => {
+    await page.setViewportSize(size);
+    await honestWake(page);
+    await openUnlocked(page);
+    await page.goto('/');
+    await appReady(page);
+    const first = page.locator('[data-verse]').first();
+    await expect(first).toBeVisible();
+    const top = async (): Promise<number> => ((await first.boundingBox()) as Box).y;
+    const before = await top();
+    await threeFingers(page);
+    const mark = page.getByRole('img', { name: 'Hands-free is on', exact: true });
+    await expect(mark).toBeVisible();
+    await page.waitForTimeout(300);
+    expect(await top()).toBe(before);
+    const markBox = (await mark.boundingBox()) as Box;
+    expect(markBox.x + markBox.width).toBeLessThanOrEqual(size.width);
+    await shot(page, `hands-free-no-jump-${size.width}`);
+    await threeFingers(page);
+    await expect(mark).toHaveCount(0);
+    await page.waitForTimeout(300);
+    expect(await top()).toBe(before);
+  });
+}
