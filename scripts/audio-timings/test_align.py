@@ -317,3 +317,14 @@ def test_check_takes_a_name_the_model_spells_as_it_knows_it_for_the_word_the_tex
     assert not align.heard_as_written('rebecca', 'esau')
     assert not align.heard_as_written('rebecca', 'laban')
     assert not align.heard_as_written('', 'rebekah')
+
+
+def test_check_takes_one_written_word_the_model_heard_as_two_at_either_end():
+    # --check (mw-zbgo4ep.44): John 8:35, the text's 'forever' heard as 'for ever' (the last heard word 'ever' is 3 letters away) was counted a miss
+    assert align.heard_end_as_written(['the', 'son', 'abides', 'for', 'ever'], 'forever', last=True)
+    assert align.heard_end_as_written(['for', 'ever', 'the', 'son'], 'forever', last=False)
+    assert align.heard_end_as_written(['abides', 'forever'], 'forever', last=True)  # one word, as before
+    assert align.heard_end_as_written(['rebecca'], 'rebekah', last=True)  # a name's other spelling, as before
+    assert not align.heard_end_as_written(['abides', 'ever'], 'forever', last=True)  # the two words must make the written one
+    assert not align.heard_end_as_written(['for', 'ever', 'abides'], 'forever', last=True)  # the pair is at the end asked for
+    assert not align.heard_end_as_written([], 'forever', last=True)
