@@ -6,7 +6,7 @@
 //     Governor's ear. A flag anywhere else is a fault of a cut, and the book does not ship with it.
 // And the listen list cannot be padded to pass: an edge is on it only where the maker's own measure of the recording (scripts/audio-timings/quiet/) shows no room for the
 // margin, and what it says the judge hears is the report's. Reads only committed files: no Python, no audio, no model runs in the gate.
-// The way out of a failure is never an edit here: run the maker's cut pass, the judge, then the maker's listen pass (docs/data.md 'The cut rule'), or take the book out of index.json.
+// The way out of a failure is never an edit here: run the maker's cut pass, the judge, then the maker's listen pass (docs/data.md 'The cut rule'), or take the book out (delete its public/data/audio/msb-david/<book>.json: index.json is made from those files).
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -49,7 +49,7 @@ describe('the lock: no timings file ships unjudged', () => {
         }
       }
 
-      it(`has a judged report (${cutsPath('judged', book)}): run judge.py --book ${book}, or take ${book} out of index.json`, () => {
+      it(`has a judged report (${cutsPath('judged', book)}): run judge.py --book ${book}, or delete public/data/audio/msb-david/${book}.json`, () => {
         expect(judged, `${book} is in index.json and was never judged`).not.toBeNull();
         expect(judged).toMatchObject({ v: 1, edition: TIMINGS_EDITION, book });
       });

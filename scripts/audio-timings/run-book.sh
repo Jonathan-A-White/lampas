@@ -10,7 +10,7 @@
 #
 # It NEVER writes under public/. The maker and the judge write where their own path says (public/data/audio/msb-david/ for the timings), so they are run from a
 # WORK COPY of themselves in <dir>/.work/<book>/, a tree of the same shape (the book texts are links to the repo's). Nothing of the maker or the judge is changed.
-# A book in <dir> is not played by the app: promoting it into public/data/audio/msb-david/ and index.json is another story's.
+# A book in <dir> is not played by the app: promoting it is copying its files into the repo (docs/audio-run.md 'Promoting a book'); index.json is made from them, never edited.
 #
 # Exit 0 only when the judge ran over every chapter asked for (every chapter of the book, or --chapters). Flags the judge raised outside the listen list are
 # FINDINGS and are counted in the summary line; they do not make the exit non-zero. Exit 2: a stop (a bad argument, no set-up, a fetch refused, a model failed);
