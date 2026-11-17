@@ -135,6 +135,23 @@ Feature: A wrong answer links to what teaches it
     When he taps the first example of the lesson
     Then its Paradigm row is a link to a table
 
+  # mw-indx1x6.80 (the sweep of the word sheet's openers of a page, each asked of the one guard): a Hebrew word's sheet has an opener of its own for its table, and a
+  # Septuagint word's has 'About this reading', which opens a Help page. Neither was held by a scenario; each sheet is drawn as it is over a drill (inside the run's guard) and then over no run, where the link is.
+  Scenario: A Hebrew word's sheet over a drill names its table without a link to it
+    Given the sheet of the second word of Genesis 1:1, a Hebrew verb, is open as it is over a drill for a reader of Hebrew
+    Then the word's sheet is of a Hebrew word
+    And its Paradigm row names a table and is no link
+    And no control of the word's sheet changes the page's address
+    When the sheet of the same word is open as it is over no run
+    Then its Paradigm row is a link to a table
+
+  Scenario: A Septuagint word's sheet over a drill has no About this reading link, which opens a Help page
+    Given the sheet of the word "ἐποίησεν" of the Septuagint's Genesis 1 is open as it is over a drill
+    Then the word's sheet says how Lampas read the word and has no "About this reading" button
+    And no control of the word's sheet changes the page's address
+    When the sheet of the same word is open as it is over no run
+    Then the word's sheet has the "About this reading" button
+
   # the end card of a Review is held only by the screen too (useStudyPlaces opens its table as a layer): the lesson of its Study list has no Try it on a verse, whose
   # 'Read it' closes every sheet and opens the verse, and no Drill it or level slider either
   Scenario: The lesson opened from a Review's Study list has no Try it on a verse, whose Read it would leave the end card

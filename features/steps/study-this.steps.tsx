@@ -9,17 +9,18 @@ import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
-import { loadChapter, type Chapter } from '../../src/data/chapter';
+import { loadChapter, wordParse, type Chapter, type GreekWord } from '../../src/data/chapter';
+import { loadSeptuagintChapter } from '../../src/data/lxxChapter';
 import { db } from '../../src/data/db';
 import { start, type DrillQuestion } from '../../src/data/grammar/drillIt';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { buildEnding } from '../../src/data/grammar/questions';
 import { ideaOfAny } from '../../src/data/grammar/ladders';
 import type { Level } from '../../src/data/grammar/needs';
-import { cellsOf, paradigmById, paradigmsOf, type Levels } from '../../src/data/paradigms';
+import { cellsOf, paradigmById, paradigmOfHebrewWord, paradigmsOf, type Levels } from '../../src/data/paradigms';
 import { cellPrompt, drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
-import { setKind, setState } from '../../src/data/repositories';
+import { setKind, setLanguages, setState } from '../../src/data/repositories';
 import { DAY } from '../../src/data/schedule';
 import { DrillItScreen } from '../../src/DrillItScreen';
 import { clearBus } from '../../src/events/bus';
@@ -37,6 +38,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { accentOf, DEFAULT_ACCENT } from '../../src/speech/accents';
 import { chosenPronunciation } from '../../src/speech/greek';
 import { openDoorTarget } from '../../src/tutor/door';
+import { WordSheet } from '../../src/WordSheet';
 import { dropHeldWord } from '../../src/wordReturn';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
@@ -370,6 +372,28 @@ async function noControlLeaves(): Promise<string[]> {
   return tapped;
 }
 
+/** The Paradigm row of the word's sheet over a run: the table's name, and nothing to tap. */
+function paradigmRowIsNoLink(): void {
+  const paradigm = within(wordSheet()).getByTestId('sheet-paradigm');
+  expect(paradigm.textContent?.trim()).not.toBe('');
+  expect(paradigm.querySelector('button, a')).toBeNull();
+}
+
+/** The word of the scenario, with its chapter: what a sheet over it is drawn from. */
+let sheetWord: { chapter: Chapter; word: GreekWord } | undefined;
+
+/** The word's sheet as it is drawn over a run (true) or over none, as the sheets that open one draw it (src/IdeaSheetWithWord.tsx, src/Talk.tsx). */
+async function drawWordSheet(overRun: boolean): Promise<void> {
+  if (!sheetWord) throw new Error('the scenario looked up no word');
+  cleanup();
+  render(
+    <OverRun.Provider value={overRun}>
+      <WordSheet chapter={sheetWord.chapter} lookup={{ words: [sheetWord.word], fromEnglish: false }} onClose={() => {}} />
+    </OverRun.Provider>,
+  );
+  await within(await screen.findByRole('dialog', { name: 'Word' })).findByTestId('sheet-word');
+}
+
 /** The fake tutor's answer of the scenario: a table and a verse linked under it, each a page of its own, and a copy of a verse, which is a button that leaves nothing. */
 async function licensedPhoneLinking(_: unknown, table: string, verse: string, copied: string): Promise<void> {
   await licensedPhone();
@@ -698,6 +722,56 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the first example of the lesson', tapFirstExample);
     Then('its Paradigm row is a link to a table', () => {
       expect(within(wordSheet()).getByTestId('sheet-paradigm').querySelector('button[data-table]')).not.toBeNull();
+    });
+  });
+
+  Scenario("A Hebrew word's sheet over a drill names its table without a link to it", ({ Given, When, And, Then }) => {
+    Given('the sheet of the second word of Genesis 1:1, a Hebrew verb, is open as it is over a drill for a reader of Hebrew', async () => {
+      await freshStore();
+      // a Hebrew word has a sheet only for a reader of Hebrew (the dial of the chapter's language, src/WordSheet.tsx)
+      await setLanguages('both');
+      const chapter = await loadChapter('gen', 1);
+      const word = chapter.verses[0].g[1];
+      // the word has a table of its own (the qal verb), so over no run its Paradigm row is a link
+      if (!paradigmOfHebrewWord(word, wordParse(chapter, word))) throw new Error('the second word of Genesis 1:1 has no table');
+      sheetWord = { chapter, word };
+      await drawWordSheet(true);
+    });
+    Then("the word's sheet is of a Hebrew word", () => {
+      expect(within(wordSheet()).getByTestId('sheet-word')).toHaveAttribute('data-lang', 'hbo');
+    });
+    And('its Paradigm row names a table and is no link', paradigmRowIsNoLink);
+    And("no control of the word's sheet changes the page's address", async () => {
+      // the walk does not reach the Paradigm row here: an example of the Grammar sheet a parsing term opens puts its own word on the sheet, and the buttons after
+      // the term are drawn again and no longer the ones listed. The step before holds the row; this one holds what the walk does tap
+      await noControlLeaves();
+    });
+    When('the sheet of the same word is open as it is over no run', () => drawWordSheet(false));
+    Then('its Paradigm row is a link to a table', () => {
+      expect(within(wordSheet()).getByTestId('sheet-paradigm').querySelector('button[data-table]')).not.toBeNull();
+    });
+  });
+
+  Scenario("A Septuagint word's sheet over a drill has no About this reading link, which opens a Help page", ({ Given, When, And, Then }) => {
+    Given("the sheet of the word {string} of the Septuagint's Genesis 1 is open as it is over a drill", async (_, form: string) => {
+      await freshStore();
+      const chapter = await loadSeptuagintChapter('gen', 1);
+      const word = chapter?.verses[0].g.find((w) => w.t === form);
+      if (!chapter || !word) throw new Error(`the Septuagint's Genesis 1:1 has no ${form}`);
+      sheetWord = { chapter, word };
+      await drawWordSheet(true);
+    });
+    Then("the word's sheet says how Lampas read the word and has no {string} button", (_, label: string) => {
+      // the line the button stands under is drawn, so the button's absence is the sheet's choice over a run
+      expect(within(wordSheet()).getByRole('group', { name: 'How Lampas read this word' })).toBeInTheDocument();
+      expect(within(wordSheet()).queryByRole('button', { name: label })).toBeNull();
+    });
+    And("no control of the word's sheet changes the page's address", async () => {
+      await noControlLeaves();
+    });
+    When('the sheet of the same word is open as it is over no run', () => drawWordSheet(false));
+    Then("the word's sheet has the {string} button", (_, label: string) => {
+      expect(within(wordSheet()).getByRole('button', { name: label })).toBeInTheDocument();
     });
   });
 
