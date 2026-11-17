@@ -120,6 +120,11 @@ export const USE_CASES: readonly UseCase[] = [
     status: { greek: 'has', hebrew: 'has', latin: LATIN_LATER },
   },
   {
+    id: 'hands-free-audible',
+    title: "Hands-free: 'read John 3 in Audible' opens his audio Bible in Audible at the chapter (plain 'read John 3' is the voice inside Lampas)",
+    status: { greek: 'has', hebrew: { na: 'the audio Bible in Audible (The Word of Promise, NKJV) is English; it has no Hebrew or Greek reading to open' }, latin: LATIN_LATER },
+  },
+  {
     id: 'tutor-aloud',
     title: "The tutor's answers read aloud, the source words in their own voice",
     status: {

@@ -6,6 +6,8 @@
 //  - 'read', 'open' and 'go to' a place ('read John 3', 'go to John 3 16', PROVISIONAL: open AND read, the Governor's to confirm) say the place's name and read it from its verse
 //    (src/handsFree/passage.ts says what the words are; the Reader opens there and reads, readerRequest.ts readPassage). Words that are no place: 'I could not find' and the words, and what
 //    was playing goes on.
+//  - 'read', 'open', 'go to', 'play' and 'listen to' a place that ends 'in Audible' or 'on Audible' open his audio Bible in the Audible app at the chapter instead (src/handsFree/audible.ts,
+//    mw-rl10piw.11, PROVISIONAL: the words 'in Audible' pick Audible and plain 'read John 3' stays the voice inside Lampas); Audio Bible Off says so and opens nothing.
 //  - 'next chapter' and 'previous chapter' cross with crossChapter and read the chapter from its first verse (PROVISIONAL, as above); past Revelation 22 or before Genesis 1 it says so.
 //  - 'back a verse' reads the verse before the one being read, or paused on, again and the reading goes on from it, in the recorded voice and the phone's (readAloud.ts backAVerse).
 //  - 'ask' and the words after it ('ask who was Nicodemus', 'ask the tutor ...') put the question to the tutor and speak the answer (src/handsFree/ask.ts, mw-rl10piw.8), then hold the microphone open 8 s for a
@@ -18,7 +20,8 @@ import { neighbours } from '../data/neighbours';
 import { crossChapter } from '../reader/crossChapter';
 import { readerOnScreen, readHere, readPassage } from '../nav/readerRequest';
 import { askTutor, closeTutor, leaveTutor, openTutor, questionAfterAsk } from './ask';
-import { placeOfWords } from './passage';
+import { listenInAudible } from './audible';
+import { audibleOf, placeOfWords, type SpokenPlace } from './passage';
 import { backOneVerse, goOnNow, keepPaused, stopSound, takeSound } from './playback';
 
 /** What it says to words it does not know. */
@@ -65,6 +68,13 @@ async function readPlaceOf(words: string, say: (text: string) => Promise<void>):
   readPassage(place.book, place.chapter, place.verse ?? 1);
 }
 
+/** 'read John 3 in Audible' (mw-rl10piw.11): a place as a chapter, opened in his audio Bible in Audible (src/handsFree/audible.ts). */
+async function readInAudible(words: string, place: SpokenPlace, say: (text: string) => Promise<void>): Promise<void> {
+  if (place.kind === 'bad') return say(place.message);
+  if (place.kind === 'none') return say(`I could not find ${words}`);
+  return listenInAudible(place.book, place.chapter, say);
+}
+
 /** 'next chapter' and 'previous chapter': the chapter on screen is crossed from and read from its first verse. */
 async function readNeighbour(by: 1 | -1, say: (text: string) => Promise<void>): Promise<void> {
   const here = readerOnScreen();
@@ -85,6 +95,12 @@ export async function runCommand(words: string, say: (text: string) => Promise<v
   if (command?.name === 'ask') return askTutor(questionAfterAsk(words), say);
   if (command?.name === 'tutor') return openTutor(say);
   if (command?.name === 'close-tutor') return closeTutor(say);
+  // 'read John 3 in Audible' (and 'listen to', 'play', 'open', 'go to'): his audio Bible in Audible, not the voice inside Lampas
+  const audible = audibleOf(words);
+  if (audible) {
+    leaveTutor();
+    return readInAudible(audible.said, audible.place, say);
+  }
   if (!command && info.followUp) return askTutor(words.trim(), say, false);
   // any other command leaves the tutor (the Talk sheet Hands-free opened is put away) and does what it says
   leaveTutor();
