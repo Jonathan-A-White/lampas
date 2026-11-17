@@ -17,6 +17,8 @@ data/lxx/pending
 data/lxx/morpheus
 # The lemma form files, made from the chapters by npm run build (scripts/build-lemma-forms.mjs)
 public/lemma-forms
+# The recorded voice's index, made from the book files beside it (scripts/audio-index.mjs; docs/audio-run.md 'Promoting a book')
+public/data/audio/msb-david/index.json
 
 # Playwright
 /test-results/

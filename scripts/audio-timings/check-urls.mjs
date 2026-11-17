@@ -2,9 +2,10 @@
 // Not in the gate (it needs the network): node scripts/audio-timings/check-urls.mjs  (exit 1 when any chapter's file is missing; mw-zbgo4ep.38)
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { indexText } from '../audio-index.mjs';
 
 const dir = resolve(import.meta.dirname, '../../public/data/audio/msb-david');
-const index = JSON.parse(readFileSync(resolve(dir, 'index.json'), 'utf8'));
+const index = JSON.parse(indexText(dir)); // the index is made from the book files (scripts/audio-index.mjs), not read from a committed file
 let checked = 0;
 const bad = [];
 for (const [book, chapters] of Object.entries(index.books)) {
