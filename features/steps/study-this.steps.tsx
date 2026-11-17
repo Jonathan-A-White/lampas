@@ -14,6 +14,7 @@ import { loadSeptuagintChapter } from '../../src/data/lxxChapter';
 import { db } from '../../src/data/db';
 import { start, type DrillQuestion } from '../../src/data/grammar/drillIt';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
+import { hasFormOf } from '../../src/data/grammar/ideaSheet';
 import { buildEnding } from '../../src/data/grammar/questions';
 import { ideaOfAny } from '../../src/data/grammar/ladders';
 import type { Level } from '../../src/data/grammar/needs';
@@ -21,6 +22,7 @@ import { cellsOf, paradigmById, paradigmOfHebrewWord, paradigmsOf, type Levels }
 import { cellPrompt, drawCellQuestions } from '../../src/data/paradigms/cells';
 import { mulberry32 } from '../../src/data/quiz';
 import { getLevel, setKind, setLanguages, setState } from '../../src/data/repositories';
+import { getStudyChapter } from '../../src/data/readerChapter';
 import { DAY } from '../../src/data/schedule';
 import { DrillItScreen } from '../../src/DrillItScreen';
 import { clearBus } from '../../src/events/bus';
@@ -104,6 +106,19 @@ async function tableDueAsking(_: unknown, id: string, wanted: string): Promise<v
     return;
   }
   throw new Error(`no seed asks ${wanted} first`);
+}
+
+/**
+ * The table is due with every idea of its cells solid, so each cell can be asked, and the round asks what the seed draws (answerHere reads the right form from the prompt).
+ * The lesson of a miss is then the table's first idea (src/data/paradigms/cells.ts drawCellQuestions).
+ */
+async function tableDueSolid(_: unknown, id: string): Promise<void> {
+  await freshStore();
+  const table = paradigmById(id)!;
+  const now = Date.now();
+  await db.grammarLevels.bulkPut([...new Set([...table.ideas, ...cellsOf(table).flatMap((c) => c.ideas)])].map((ideaId) => ({ id: ideaId, level: 'solid' as const, since: now, how: 'marked' as const })));
+  await db.reviews.put({ kind: 'paradigm', id, step: 0, rights: 0, due: now - 60_000, lastWhen: now - 3 * DAY, lapses: 0 });
+  seed = 1;
 }
 
 async function englishWordDue(_: unknown, word: string): Promise<void> {
@@ -842,6 +857,36 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(window.location.hash).toBe('#/review');
     });
     And('the lesson has no {string} button, no {string} button, no {string} and no level slider', lessonStartsNothing);
+    And('the end card still shows its {string}', (_, name: string) => {
+      expect(screen.getByTestId('score')).toBeInTheDocument();
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/review');
+    });
+  });
+
+  Scenario("The article's lesson opened from a Review's Study list has no Try it on a verse, though the open chapter has the article", ({ Given, When, And, Then }) => {
+    Given('the table {string} is due in Review, every idea of its cells solid', tableDueSolid);
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he misses every question of the round', () => everyQuestionOfTheRound(false));
+    And("he taps the list's lesson of the idea {string}", async (_, ideaId: string) => {
+      await user.click(rowNamed(lessonLabel(ideaId))[0]);
+    });
+    Then('the lesson of the idea {string} is open over the end card', async (_, ideaId: string) => {
+      await lessonIsOpen(ideaId);
+      expect(window.location.hash).toBe('#/review');
+    });
+    And('the lesson has no {string} button, though a verse of the open chapter has a form of the idea {string}', async (_, tryIt: string, ideaId: string) => {
+      // the sheet's passage with no goal saved is the open chapter (src/IdeaSheet.tsx usePassage), and a verse of it has a form of the idea, which is what the sheet asks
+      // (hasFormOf) before it draws the button on a plain screen: without the guard of what is over a run (src/review/useStudyPlaces.tsx) the button is here and the step fails
+      const open = getStudyChapter();
+      expect(hasFormOf(ideaId, [await loadChapter(open.book, open.chapter)])).toBe(true);
+      const sheet = screen.getByRole('dialog', { name: 'Idea' });
+      // the examples wait for the passage, as the button does: once they are drawn the button's absence is the sheet's choice
+      await waitFor(() => expect(sheet.querySelectorAll('[data-testid="idea-example"]').length).toBeGreaterThan(0));
+      await within(sheet).findByText('Worked example');
+      expect(buttonsOf(sheet)).not.toContain(tryIt);
+      expect(screen.queryByRole('dialog', { name: 'Try it' })).toBeNull();
+    });
     And('the end card still shows its {string}', (_, name: string) => {
       expect(screen.getByTestId('score')).toBeInTheDocument();
       expect(screen.getByRole('group', { name })).toBeInTheDocument();
