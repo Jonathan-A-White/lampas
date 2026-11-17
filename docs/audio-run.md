@@ -9,6 +9,7 @@ mw-ar5k42b.4. One command times, cuts and judges a book of David's recording; on
 - [The shares](#the-shares)
 - [The estimate](#the-estimate)
 - [What a share's story must do on its box](#what-a-shares-story-must-do-on-its-box)
+- [Promoting a book](#promoting-a-book)
 - [What the proof found: Psalm 3, Psalm 117 and Jude](#what-the-proof-found-psalm-3-psalm-117-and-jude)
 
 <!-- /toc -->
@@ -34,7 +35,7 @@ jhn: 21 chapters, 879 verses, 0 flags outside the listen list, listen list 8 edg
   (maker 3117 s, judge 1224 s, listen 1 s; cores used 3.2; outside the list: none)
 ```
 
-**It writes only into `--out`** (default `scripts/audio-timings/staged/`), in the repo's own layout so promotion is a copy: `audio/msb-david/<book>.json`, `quiet/`, `listen/`, `judged/` and `summary/<book>.txt` ([staged/README.md](../scripts/audio-timings/staged/README.md)). **It never writes under `public/`** (it refuses an `--out` there, and `tests/unit/audio-run.test.ts` holds it): a book in `staged/` is not played by the app, because `public/data/audio/msb-david/index.json` does not list it. Promoting a book (the copy, `index.json`, then the lock and the rule) is a later story's.
+**It writes only into `--out`** (default `scripts/audio-timings/staged/`), in the repo's own layout so promotion is a copy: `audio/msb-david/<book>.json`, `quiet/`, `listen/`, `judged/` and `summary/<book>.txt` ([staged/README.md](../scripts/audio-timings/staged/README.md)). **It never writes under `public/`** (it refuses an `--out` there, and `tests/unit/audio-run.test.ts` holds it): a book in `staged/` is not played by the app, because there is no `public/data/audio/msb-david/<book>.json` for it, and so `index.json` does not list it. Promoting a book is copying its files ([Promoting a book](#promoting-a-book)).
 
 How, with the maker and the judge unchanged: both find their repo from their own place (`Path(__file__).parents[2]`) and write where their own path says (`public/data/audio/msb-david/` for the timings), so `run-book.sh` runs them from a **work copy** of themselves in `<out>/.work/<book>/` (a tree of the same shape, git-ignored: the scripts copied, the book texts linked to the repo's, an empty `public/data/audio/msb-david/`). The reports then say `"file":"public/data/audio/msb-david/jhn.json"` as the shipped ones do. The recordings and the models stay in the cache, shared by every run on the box.
 
@@ -117,10 +118,34 @@ A share's story is one Builder session on one fresh box (`mw` makes the box; the
 1. Clone the rig at the branch the Mayor names and run `scripts/audio-timings/box-setup.sh`. It must end with `DONE`; a `THE PROOF FAILED` stops the story and goes back to the Mayor (the box makes other bytes than the Laptop).
 2. For each book of its share in `shares.json`, in the order listed, run `scripts/audio-timings/run-book.sh <book>` and read the summary line. Under the box's own time limit a book is run again with the same command, and it takes up where it stopped. One `run-book.sh` at a time for the fetching's sake (the publisher is asked for one file at a time, 2 s apart, by each box: five boxes are five polite clients); two books at once on the 8 cores is the story's choice only if the Mayor says so (the estimate assumes it, see below).
 3. Commit each book's outputs under `scripts/audio-timings/staged/` (the four JSON files and the summary), in small commits, one book to a commit; never the MP3s (`.gitignore` bars them) and never `.work/`.
-4. **Touch nothing else**: not `public/`, not `index.json`, not the maker or the judge, not `player-slop.json`, not a test. A chapter the maker leaves out, a flag outside the listen list, a `text-differs`, a verse the recording joins: each is a FINDING for the closing comment under 'For the Mayor: classes' (the verse, the book, what the judge heard), never a change of the rule in the share's story. A class that needs the rule changed is its own story.
+4. **Touch nothing else**: not `public/` (promotion is its own step, below), not the maker or the judge, not `player-slop.json`, not a test. A chapter the maker leaves out, a flag outside the listen list, a `text-differs`, a verse the recording joins: each is a FINDING for the closing comment under 'For the Mayor: classes' (the verse, the book, what the judge heard), never a change of the rule in the share's story. A class that needs the rule changed is its own story.
 5. In its closing comment: for each book the summary line, the wall minutes of the whole share against the estimate below, and the findings by class.
 
-Promotion into `public/data/audio/msb-david/` is neither the share's nor this story's: it is one later story per book (or per share) after the Governor has heard each book's listen list.
+Promotion into `public/data/audio/msb-david/` is neither the share's nor this story's: it is one later story per book (or per share) after the Governor has heard each book's listen list, and it is [Promoting a book](#promoting-a-book) below.
+
+## Promoting a book
+
+mw-zbgo4ep.49. **A book's story writes only that book's files, so any number of books are promoted at once, on any boxes, and their branches merge in any order with no conflict.** The app's list of timed books, `public/data/audio/msb-david/index.json`, is **not a file anyone edits**: it is generated from the `<book>.json` files beside it by `scripts/audio-index.mjs` and is git-ignored (`.gitignore`), so no branch carries it.
+
+To promote a book `<b>` (after `run-book.sh <b>` and the Governor's ear on its listen list), copy from `scripts/audio-timings/staged/` into the repo, and nothing else:
+
+| from `staged/` | to |
+| --- | --- |
+| `audio/msb-david/<b>.json` | `public/data/audio/msb-david/<b>.json` |
+| `quiet/msb-david-<b>.json` | `scripts/audio-timings/quiet/msb-david-<b>.json` |
+| `listen/msb-david-<b>.json` | `scripts/audio-timings/listen/msb-david-<b>.json` |
+| `judged/msb-david-<b>.json` | `scripts/audio-timings/judged/msb-david-<b>.json` |
+| `summary/<b>.txt` | stays in `staged/summary/` |
+
+Then `npm run audio:index` (the build, `npm run dev` and `npm test` run it too) lists the book, and the gate holds it: `tests/unit/audio-judged.test.ts` (the lock), `tests/unit/audio-timings-data.test.ts` (the rule), `tests/unit/audio-index.test.ts` (the index is what the book files make, no tracked `index.json`, every per-book file named for its book, two branches merge in both orders to one index). `npm run audio:index:check` says alone whether `index.json` is what the files make. **Never edit `index.json` and never `git add -f` it**: delete a book's `<b>.json` to turn its recording off. Do not change the maker, the judge, `player-slop.json`, `shares.json` or a test in a book's story.
+
+Every file a book's story writes, and who else could write it (the sweep of mw-zbgo4ep.49):
+
+- `public/data/audio/msb-david/<b>.json`: the book's own.
+- `scripts/audio-timings/quiet/`, `listen/`, `judged/` `msb-david-<b>.json`: one file a book each, named for it (the test holds the names).
+- `scripts/audio-timings/staged/{audio,quiet,listen,judged}/…`, `summary/<b>.txt`: a book's own files.
+- `public/data/audio/msb-david/index.json`: **was the one shared file; now generated and not committed.** `align.py` no longer writes it (it only wrote it to keep it, and still wrote the book's own file first); `scripts/audio-timings/check-urls.mjs` derives the list itself.
+- Nothing else: `shares.json` (the shares are fixed), `player-slop.json`, the credits (`tests/support/credits.ts` credits the folder by its path, so a new book needs no entry), `ATTRIBUTION.md` and the Preface (the Recording bullet names the voice, not the books). Checked against what the Numbers, Leviticus and Exodus stories changed: `index.json` and their own five files.
 
 ## What the proof found: Psalm 3, Psalm 117 and Jude
 

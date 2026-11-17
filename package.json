@@ -5,8 +5,11 @@
   "version": "0.7.267",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/audio-index.mjs",
     "dev": "vite",
-    "build": "node scripts/build-lemma-forms.mjs && tsc -b && vite build",
+    "build": "node scripts/audio-index.mjs && node scripts/build-lemma-forms.mjs && tsc -b && vite build",
+    "audio:index": "node scripts/audio-index.mjs",
+    "audio:index:check": "node scripts/audio-index.mjs --check",
     "forms:build": "node scripts/build-lemma-forms.mjs",
     "preview": "vite preview",
     "test": "vitest run",

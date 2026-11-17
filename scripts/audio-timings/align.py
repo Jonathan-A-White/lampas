@@ -2,7 +2,7 @@
 """The timing maker of the recorded voice (mw-82lb97i.2; docs/data.md 'Recorded audio timings').
 
 Fetches each chapter MP3 of a book from the publisher, aligns it to Lampas's MSB verse text (public/data/<book>/<n>.json) with an English wav2vec2 CTC model
-(torchaudio.functional.forced_align), and writes when each verse starts and ends to public/data/audio/msb-david/<book>.json (and the book into index.json).
+(torchaudio.functional.forced_align), and writes when each verse starts and ends to public/data/audio/msb-david/<book>.json (the app's index.json is made from the book files by scripts/audio-index.mjs, never written here).
 Any of the 66 books of BOOKS. A run that stops part way is started again with the same command: a chapter already in the book file is skipped unless --redo.
 The MP3s stay in a scratch folder OUTSIDE the repo (default ~/.cache/lampas-audio-timings/mp3) and are never committed, copied to our server or put under public/.
 
@@ -782,7 +782,8 @@ def write_json(path: Path, value) -> None:
 
 
 def write_chapters(book: str, results: dict[int, dict | None]) -> None:
-    """Puts the chapters that passed into <book>.json and index.json; a chapter that failed (None) is taken out of both."""
+    """Puts the chapters that passed into <book>.json; a chapter that failed (None) is taken out. A book left with no chapter has its file deleted. The app's index.json
+    is NOT written here: it is made from the book files by scripts/audio-index.mjs (mw-zbgo4ep.49), so two books never edit one file."""
     path = out_dir() / f'{book}.json'
     data = read_json(path, {'v': 1, 'edition': EDITION, 'book': book, 'chapters': {}})
     for chapter, timings in results.items():
@@ -790,16 +791,10 @@ def write_chapters(book: str, results: dict[int, dict | None]) -> None:
         if timings is not None:
             data['chapters'][str(chapter)] = timings
     data['chapters'] = {k: data['chapters'][k] for k in sorted(data['chapters'], key=int)}
-    index_path = out_dir() / 'index.json'
-    index = read_json(index_path, {'v': 1, 'edition': EDITION, 'voice': VOICE, 'books': {}})
     if data['chapters']:
         write_json(path, data)
-        index['books'][book] = [int(k) for k in data['chapters']]
     else:
         path.unlink(missing_ok=True)
-        index['books'].pop(book, None)
-    index['books'] = dict(sorted(index['books'].items()))
-    write_json(index_path, index)
 
 
 def tools_path(kind: str, book: str) -> Path:
