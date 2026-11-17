@@ -3,7 +3,7 @@
 // 'reed' are 'read', 'psalms 23' is Psalm 23, and 'john 3 16' or 'john 316' are John 3:16 when the chapter has that verse.
 import { describe, expect, it } from 'vitest';
 import { BOOKS } from '../../src/data/books';
-import { placeOfWords } from '../../src/handsFree/passage';
+import { audiblePlaceOf, placeOfWords } from '../../src/handsFree/passage';
 import { SPOKEN_COMMANDS } from '../../src/handsFree/commands';
 import { route } from 'voice-kit/handsfree';
 
@@ -50,5 +50,47 @@ describe('the place in the words after read, open and go to', () => {
 
   it('does not take a verse the chapter lacks for a chapter and a verse', () => {
     expect(placeOf('read john 3 99')).toBe('no place');
+  });
+});
+
+/** What a whole command comes to as an Audible command: 'Audible, John 3', 'not Audible, John 3' (story .7's), or 'Audible, no place'. */
+function audibleOf(command: string): string {
+  const audible = audiblePlaceOf(command);
+  if (audible) {
+    if (audible.kind !== 'place') return 'Audible, no place';
+    return `Audible, ${BOOKS.find((b) => b.code === audible.book)?.name} ${audible.chapter}${audible.verse === undefined ? '' : `:${audible.verse}`}`;
+  }
+  return `not Audible, ${placeOf(command)}`;
+}
+
+describe("'in Audible' at the end of a passage command (mw-rl10piw.11)", () => {
+  it.each([
+    ['read John 3 in Audible', 'Audible, John 3'],
+    ['listen to John 3 on Audible', 'Audible, John 3'],
+    ['play Psalm 23 in Audible', 'Audible, Psalms 23'],
+    ['read john three inaudible', 'Audible, John 3'],
+    ['read john 3 in audible', 'Audible, John 3'],
+    ['open John 3 on audible', 'Audible, John 3'],
+    ['go to John 3 on Audible', 'Audible, John 3'],
+    ['red John 3 in Audible', 'Audible, John 3'],
+    ['read John 3:16 in Audible', 'Audible, John 3'],
+    ['read John 3 verse 16 in Audible', 'Audible, John 3'],
+    ['read John 3', 'not Audible, John 3'],
+    ['read the weather in Audible', 'Audible, no place'],
+    ['read John 40 in Audible', 'Audible, no place'],
+  ])('%s is %s', (words, result) => {
+    expect(audibleOf(words)).toBe(result);
+  });
+
+  it('is not an Audible command without a place or a passage word before it', () => {
+    expect(audiblePlaceOf('play')).toBeUndefined();
+    expect(audiblePlaceOf('play in Audible')).toBeUndefined();
+    expect(audiblePlaceOf('ask what is in Audible')).toBeUndefined();
+    expect(audiblePlaceOf('John 3 in Audible')).toBeUndefined();
+  });
+
+  it("'play John 3' and 'listen to John 3' with no 'in Audible' are not Audible commands", () => {
+    expect(audiblePlaceOf('play John 3')).toBeUndefined();
+    expect(audiblePlaceOf('listen to John 3')).toBeUndefined();
   });
 });

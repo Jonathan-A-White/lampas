@@ -3,15 +3,17 @@
 // Audible with the fallback armed. Only the plan's next chapter (the first not done) goes through the sheet (mw-umv8sp.8: what he listens to outside his plan is not tracked, so it is
 // not asked about). Otherwise (the plan Off, none started, any other chapter) the tap is what it always was: the link is stamped with the time
 // of the tap and the phone follows it. Every Audible entry point (VerseView.tsx, ChapterPicker.tsx) takes its tap from here.
+// Hands-free's 'read John 3 in Audible' (src/handsFree/audible.ts, mw-rl10piw.11) goes through the same door without a finger: `openInAudible` is the one function that begins the session (for the
+// plan's next chapter) and then opens the link, which the sheet's Go and the voice both call; `isPlanNext` says whether a chapter is the plan's next, off the screen.
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { MouseEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { planOf } from '../data/plans';
-import { beginSession, getReadingPlan, keyOf } from '../data/repositories/readingPlan';
+import { beginSession, getReadingPlan, keyOf, nextChapter } from '../data/repositories/readingPlan';
 import { type AudioBible, audibleListen } from '../resources/audioBible';
-import { armFallback, browserEnv } from '../resources/openApp';
+import { armFallback, browserEnv, type OpenEnv } from '../resources/openApp';
 import { readingPlanSetting } from '../settings/definitions/readingPlan';
-import { useSetting } from '../settings/store';
+import { getSetting, useSetting } from '../settings/store';
 
 /** The chapter he is about to listen to and the audio Bible it opens in. */
 export interface SendOffTarget {
@@ -31,6 +33,23 @@ export interface SendOff {
   go: () => Promise<void>;
   /** the sheet is dismissed: nothing begins */
   close: () => void;
+}
+
+/** Opens Audible at the chapter: for the plan's next chapter (`inPlan`) the listening session is begun first, then the link, made at the moment it opens (Audible wants it stamped then), is opened with
+ * the fallback armed. The sheet's Go and Hands-free's 'in Audible' both come here. Resolves when the link has been handed to the phone. */
+export async function openInAudible(target: SendOffTarget, inPlan: boolean, env: OpenEnv = browserEnv): Promise<void> {
+  const startedAt = Date.now();
+  if (inPlan) await beginSession({ code: target.code, chapter: target.chapter, startedAt });
+  const listen = audibleListen(target.audio, target.code, target.chapter, startedAt);
+  if (listen.fallback !== undefined) armFallback(listen.fallback, env);
+  env.open(listen.href);
+}
+
+/** Whether this chapter is the plan's next one with the Reading plan On (what the hook reads off the live query), asked of the store: for a caller that is not a screen. */
+export async function isPlanNext(code: string, chapter: number): Promise<boolean> {
+  if ((await getSetting(readingPlanSetting)) !== 'on') return false;
+  const next = await nextChapter();
+  return next !== undefined && next.code === code && next.chapter === chapter;
 }
 
 export function useSendOff(): SendOff {
@@ -73,12 +92,8 @@ export function useSendOff(): SendOff {
 
   const go = useCallback(async () => {
     if (!offered) return;
-    const startedAt = Date.now();
     setOffered(null);
-    await beginSession({ code: offered.code, chapter: offered.chapter, startedAt });
-    const listen = audibleListen(offered.audio, offered.code, offered.chapter, startedAt);
-    if (listen.fallback !== undefined) armFallback(listen.fallback);
-    browserEnv.open(listen.href);
+    await openInAudible(offered, true);
   }, [offered]);
 
   return { tap, offer, offered, go, close };

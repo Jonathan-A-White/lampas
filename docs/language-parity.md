@@ -47,6 +47,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `sermons` | The Sermons door on the Verse view: the sermons preached on the verse, passage or chapter, each a link out | sermons-ask, sermons-online, sermons, themes | sermons | gap |
 | `listen` | Hearing a verse: Listen in the Verse view says the verse in its voice | listen | hebrew-verse-view | gap |
 | `read-aloud` | Read aloud what is shown (Read from the top, a verse, the weave in each piece’s language) with the one speaking bar | hands-free-commands, hands-free-loop, read-aloud-anywhere, read-aloud, read-span, speaking-bar, speaking-interruptions | hebrew-reader | gap |
+| `hands-free-audible` | Hands-free: 'read John 3 in Audible' opens his audio Bible in Audible at the chapter (plain 'read John 3' is the voice inside Lampas) | hands-free-audible | n/a: the audio Bible in Audible (The Word of Promise, NKJV) is English; it has no Hebrew or Greek reading to open | gap |
 | `tutor-aloud` | The tutor's answers read aloud, the source words in their own voice | hands-free-ask, tutor-aloud | hebrew-speech | gap |
 | `tutor-word` | A source word in the tutor's answer: drawn in its face, tappable, said, its guide, Add to my words | bible-talk, septuagint | hebrew-speech, hebrew-talk, hebrew-tutor | gap |
 | `voice-settings` | The language's voice and speed rows in Settings, shown from its dial's Curious | greek-voice-test, pronunciation | pronunciation | gap |
