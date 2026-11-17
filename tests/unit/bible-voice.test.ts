@@ -46,7 +46,7 @@ describe('the Bible voice setting', () => {
   it("names no book of the Bible and nothing 'so far' in its hint or its help, while the index lists several books", () => {
     const listed = JSON.parse(readFileSync('public/data/audio/msb-david/index.json', 'utf8')) as { books: Record<string, number[]> };
     expect(Object.keys(listed.books).length).toBeGreaterThan(1);
-    for (const line of [bibleVoiceSetting.hint, bibleVoiceSetting.help]) {
+    for (const line of [bibleVoiceSetting.hint, bibleVoiceSetting.help ?? '']) {
       expect(BOOKS.map((b) => b.name).filter((name) => new RegExp(`\\b${name.replace(/^\d /, '')}\\b`).test(line))).toEqual([]);
       expect(line).not.toMatch(/so far/);
     }
