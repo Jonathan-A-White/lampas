@@ -15,6 +15,7 @@ import type { GreekWord } from './data/chapter';
 import type { AnswerWord } from './data/db';
 import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
+import { useSecondFingerScroll } from './talk/secondFinger';
 import { SaveReferences } from './talk/SaveReferences';
 import { openedByTutor } from './nav/readerRequest';
 import { openRequests } from './nav/route';
@@ -627,6 +628,7 @@ export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onS
   useEscapeToClose(onClose, lookup === null && linkedWord === null);
   useSheetBack(onClose);
   const talkSettings = useTalkSettings();
+  useSecondFingerScroll(); // a second finger scrolls the conversation while the Composer's bar is held (src/talk/secondFinger.ts)
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   // Once there is a talk the suggestions he has not used are still offered, under the last answer (or the failure of the first question).
   const asked = new Set([...(turns ?? []).map((t) => t.q), ...(state ? [state.question] : [])]);

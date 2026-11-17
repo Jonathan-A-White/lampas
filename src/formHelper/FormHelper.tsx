@@ -16,6 +16,7 @@ import { FAILURE_TITLES, TutorError, type TutorFailure } from '../services/tutor
 import { currentSettings } from '../settings/registry';
 import { askTranscriber } from '../speech/askTranscriber';
 import { tapWord, useTalkSettings } from '../talkSettings';
+import { useSecondFingerScroll } from '../talk/secondFinger';
 import { refuseNonPicture } from '../talk/pictures';
 import { START_LABEL } from './startLabel';
 import { applyFormValues, argsOf, buildFormRequest, FORM_START, oneQuestion, requiredFilled, type FormSpec } from './formHelper';
@@ -67,6 +68,7 @@ export function FormHelper({ form, values, onFill, onPictures, onReady, command 
   const [done, setDone] = useState<{ said: string; of: string } | null>(null);
   const [sendProblem, setSendProblem] = useState<string | null>(null);
   const talkSettings = useTalkSettings();
+  useSecondFingerScroll(); // a second finger scrolls the form while the Composer's bar is held (src/talk/secondFinger.ts)
   const turns = useRef<TalkHistoryEntry[]>([]);
   const latest = useRef({ form, values, onFill, onReady, command });
   const live = useRef<AbortController>(new AbortController());
