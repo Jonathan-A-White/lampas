@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { isTimingsIndex, TIMINGS_EDITION } from '../../src/data/audioTimings';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { checkIndex, indexText, writeIndex } from '../../scripts/audio-index.mjs';
 
 const root = resolve(__dirname, '../..');
@@ -94,7 +95,7 @@ describe("a book's story writes only its own files", () => {
 
 describe('two books\' branches from one base merge in either order to the same index', () => {
   const work = mkdtempSync(join(tmpdir(), 'audio-index-merge-'));
-  afterAll(() => rmSync(work, { recursive: true, force: true }));
+  afterAll(() => rmSync(work, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
 
   /** A repo with the rig's own .gitignore and the books `have`, on a branch `main`. */
   function base(name: string, have: string[]): string {
