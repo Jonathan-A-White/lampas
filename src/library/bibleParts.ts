@@ -2,6 +2,7 @@
 // Library > Bibles shows and sets the same three keys. The marks and the Bibles row's line are read from them (never from a Bible row of the shelf), `withBibles` puts them in the shelf's states, and
 // `setBibleFor` writes the part he named.
 import { setLogosBibleFor, type ShelfState } from '../data/repositories';
+import { isOffered, type Owned } from '../data/owned';
 import { entryOf } from '../resources/catalogue';
 import { bibleHolds, CANON_PARTS, LOGOS_PARTS, type LogosBibles, type LogosPart } from '../resources/logosBible';
 
@@ -9,7 +10,7 @@ import { bibleHolds, CANON_PARTS, LOGOS_PARTS, type LogosBibles, type LogosPart 
 export const PART_MARKS: Record<LogosPart, string> = { nt: 'NT', ot: 'OT', apocrypha: 'Apocrypha', septuagint: 'Septuagint' };
 
 /** The parts a Bible is set for, read from the three Settings keys (his Bible in Logos for each part), in the order Settings lists them. */
-export const partsOf = (resource: string, bibles: LogosBibles): LogosPart[] => LOGOS_PARTS.filter((p) => bibles[p.part] === resource).map((p) => p.part);
+export const partsOf = (resource: string, bibles: Partial<LogosBibles>): LogosPart[] => LOGOS_PARTS.filter((p) => bibles[p.part] === resource).map((p) => p.part);
 
 /** The parts a Bible can be set for: those it holds (a Resource ID the catalogue does not list holds all). */
 export const partsFor = (resourceId: string): LogosPart[] => LOGOS_PARTS.map((p) => p.part).filter((part) => bibleHolds(resourceId, part));
@@ -32,7 +33,7 @@ export async function setBibleFor(part: LogosPart | 'all', resourceId: string): 
 }
 
 /** The marks of a Bible: 'NT · OT', or '' when it is set for no part. */
-export const marksOf = (resource: string, bibles: LogosBibles): string => partsOf(resource, bibles).map((p) => PART_MARKS[p]).join(' · ');
+export const marksOf = (resource: string, bibles: Partial<LogosBibles>): string => partsOf(resource, bibles).map((p) => PART_MARKS[p]).join(' · ');
 
 /** The shelf's states with the Bibles taken from Settings (`set`: the Resource IDs of the Bibles in Logos he set), never from a Bible row of the shelf: a Bible is On while one of them names it. */
 export function withBibles(states: ReadonlyMap<string, ShelfState>, set: Iterable<string>): Map<string, ShelfState> {
@@ -43,14 +44,22 @@ export function withBibles(states: ReadonlyMap<string, ShelfState>, set: Iterabl
 
 const bibleName = (id: string): string => entryOf(id)?.short ?? id;
 
-/** The line the Bibles row reads: 'LSB for all three · Septuagint LXX Swete', or 'NT NKJV · OT LSB · Apocrypha NRSV · Septuagint LXX Swete': the canon's three parts, in one name when they agree, then the Septuagint's. */
-export function bibleLine(bibles: LogosBibles): string {
+/** The Bibles he set that he may be offered (isOffered: his import holds them, or Logos gives them free): each part whose Bible is not offered is left out, so the Library names no Bible the Bibles page does not list (mw-qtu3zvz.184). */
+export function offeredBibles(bibles: LogosBibles, owned: Owned): Partial<LogosBibles> {
+  return Object.fromEntries(LOGOS_PARTS.filter((p) => isOffered(bibles[p.part], owned)).map((p) => [p.part, bibles[p.part]]));
+}
+
+/** The line the Bibles row reads: 'LSB for all three · Septuagint LXX Swete', or 'NT NKJV · OT LSB · Apocrypha NRSV · Septuagint LXX Swete': the canon's three parts, in one name when they agree, then the Septuagint's.
+ *  A part with no Bible (offeredBibles left it out) is not named, and 'none on' is the line when no part has one. */
+export function bibleLine(bibles: Partial<LogosBibles>): string {
   const canon = CANON_PARTS.map((part) => bibles[part]);
-  const parts =
-    new Set(canon).size === 1
-      ? `${bibleName(bibles.nt)} for all three`
-      : LOGOS_PARTS.filter((p) => CANON_PARTS.includes(p.part))
-          .map((p) => `${PART_MARKS[p.part]} ${bibleName(bibles[p.part])}`)
+  const first = bibles.nt;
+  const canonLine =
+    first !== undefined && new Set(canon).size === 1
+      ? `${bibleName(first)} for all three`
+      : LOGOS_PARTS.filter((p) => CANON_PARTS.includes(p.part) && bibles[p.part] !== undefined)
+          .map((p) => `${PART_MARKS[p.part]} ${bibleName(bibles[p.part]!)}`)
           .join(' · ');
-  return `${parts} · ${PART_MARKS.septuagint} ${bibleName(bibles.septuagint)}`;
+  const septuagint = bibles.septuagint === undefined ? '' : `${PART_MARKS.septuagint} ${bibleName(bibles.septuagint)}`;
+  return [canonLine, septuagint].filter((part) => part !== '').join(' · ') || 'none on';
 }

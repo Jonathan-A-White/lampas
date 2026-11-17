@@ -135,7 +135,7 @@ export function countsOf(kind: Kind, states: ReadonlyMap<string, ShelfState>): {
 export const booksOn = (states: ReadonlyMap<string, ShelfState>): number => LIBRARY_KINDS.filter((k) => k !== 'bible').reduce((sum, kind) => sum + countsOf(kind, states).on, 0);
 
 /** The count a row of the home reads: '19 on · 2 pinned', 'none on', 'LSB for all three'. */
-export function countLine(kind: Kind, states: ReadonlyMap<string, ShelfState>, bibles?: LogosBibles): string {
+export function countLine(kind: Kind, states: ReadonlyMap<string, ShelfState>, bibles?: Partial<LogosBibles>): string {
   const { on, pinned } = countsOf(kind, states);
   if (kind === 'bible') return bibles ? bibleLine(bibles) : 'set in Settings';
   if (on === 0) return 'none on';
@@ -144,7 +144,7 @@ export function countLine(kind: Kind, states: ReadonlyMap<string, ShelfState>, b
 
 /** The count a kind's page shows in its header: '19 on', 'none on', '3 in use' (the distinct Bibles set for some part). The Bibles are counted from the three Settings keys (`bibles`), the same
  *  fact the line under the search names, so a typed Resource ID the catalogue lacks counts too (mw-fnvjof.17.6); without them the catalogue rows of `states` are counted. */
-export function headerCount(kind: Kind, states: ReadonlyMap<string, ShelfState>, bibles?: LogosBibles): string {
+export function headerCount(kind: Kind, states: ReadonlyMap<string, ShelfState>, bibles?: Partial<LogosBibles>): string {
   const { on } = countsOf(kind, states);
   if (kind === 'bible') return `${bibles ? new Set(Object.values(bibles)).size : on} in use`;
   return on === 0 ? 'none on' : `${on} on`;
