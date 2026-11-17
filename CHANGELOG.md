@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.265
+_2026-11-17_
+- Fixed: Tapping an English word in the Septuagint chapters Genesis 24 to 29 now opens the Greek word it renders in nearly every case, instead of the Verse view.
+- New: Say "Hey Lampas", then "read John 3 in Audible" and your Audible audio Bible opens and plays that chapter.
+- Fixed: In Review, going Back from a table opened from a lesson over a missed question returns to that question with its Study this row, not to the next question.
+- Fixed: Settings now counts the screens you open by tapping, so "What Lampas has counted" shows Words, About and Goal once you have opened them.
+- Fixed: the Library's Bibles row no longer names Bibles that are not in your imported list.
+
 ## 0.7.264
 _2026-11-17_
 - Fixed: a quick double tap on Stop on the reading bar now just stops the reading, instead of also opening a word or the whole chapter under it.

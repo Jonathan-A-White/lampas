@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.265",
+    "date": "2026-11-17",
+    "story": "mw-u2w5klk.349.4",
+    "kind": "fixed",
+    "text": "Tapping an English word in the Septuagint chapters Genesis 24 to 29 now opens the Greek word it renders in nearly every case, instead of the Verse view."
+  },
+  {
+    "version": "0.7.265",
+    "date": "2026-11-17",
+    "story": "mw-rl10piw.11",
+    "kind": "new",
+    "text": "Say \"Hey Lampas\", then \"read John 3 in Audible\" and your Audible audio Bible opens and plays that chapter."
+  },
+  {
+    "version": "0.7.265",
+    "date": "2026-11-17",
+    "story": "mw-indx1x6.56",
+    "kind": "fixed",
+    "text": "In Review, going Back from a table opened from a lesson over a missed question returns to that question with its Study this row, not to the next question."
+  },
+  {
+    "version": "0.7.265",
+    "date": "2026-11-17",
+    "story": "mw-6ww.175.79",
+    "kind": "fixed",
+    "text": "Settings now counts the screens you open by tapping, so \"What Lampas has counted\" shows Words, About and Goal once you have opened them."
+  },
+  {
+    "version": "0.7.265",
+    "date": "2026-11-17",
+    "story": "mw-qtu3zvz.184",
+    "kind": "fixed",
+    "text": "the Library's Bibles row no longer names Bibles that are not in your imported list."
+  },
+  {
     "version": "0.7.264",
     "date": "2026-11-17",
     "story": "mw-82lb97i.44",
