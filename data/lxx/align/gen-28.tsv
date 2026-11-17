@@ -1,0 +1,145 @@
+ref	run	text	g	mark	confidence
+Gen.28:1	1	having	-		0.80
+Gen.28:1	2	for	-		0.80
+Gen.28:1	3	You shall	-		0.80
+Gen.28:1	4	a	-		0.80
+Gen.28:1	5	of the	-		0.80
+Gen.28:2	1	Rise and depart quickly	0,1		0.80
+Gen.28:2	2	of	-		0.80
+Gen.28:2	3	of	-		0.80
+Gen.28:2	4	to	-		0.80
+Gen.28:2	5	a	-		0.80
+Gen.28:2	6	of	-		0.80
+Gen.28:3	1	may	-		0.80
+Gen.28:3	2	you shall	-		0.80
+Gen.28:3	3	of	14	unsure	0.50
+Gen.28:4	1	may he	-		0.80
+Gen.28:4	2	of my	6,8		0.80
+Gen.28:4	3	even to	-		0.80
+Gen.28:4	4	to	11		0.80
+Gen.28:4	5	to	-		0.80
+Gen.28:4	6	land of	17,18		0.80
+Gen.28:4	7	to	26		0.80
+Gen.28:5	1	So	0	unsure	0.50
+Gen.28:5	2	away	-		0.80
+Gen.28:5	3	he	-		0.80
+Gen.28:5	4	of	-		0.80
+Gen.28:5	5	the	-		0.80
+Gen.28:5	6	of	-		0.80
+Gen.28:5	7	of	-		0.80
+Gen.28:6	1	sent him away	6,9		0.80
+Gen.28:6	2	of	-		0.80
+Gen.28:6	3	as	17,18		0.80
+Gen.28:6	4	him, to	-		0.80
+Gen.28:6	5	to	-		0.80
+Gen.28:6	6	a wife thence,	16		0.80
+Gen.28:6	7	that	-		0.80
+Gen.28:6	8	charged him,	22		0.80
+Gen.28:6	9	You shall	-		0.80
+Gen.28:6	10	a	-		0.80
+Gen.28:6	11	of the	-		0.80
+Gen.28:7	1	that	-		0.80
+Gen.28:7	2	listened to his	1,3		0.80
+Gen.28:7	3	of Syria.	-		0.80
+Gen.28:8	1	also having	-		0.80
+Gen.28:8	2	of	-		0.80
+Gen.28:8	3	before	9		0.80
+Gen.28:9	1	went	1		0.80
+Gen.28:9	2	Maeleth	8		0.80
+Gen.28:9	3	of	-		0.80
+Gen.28:9	4	of	-		0.80
+Gen.28:9	5	the	-		0.80
+Gen.28:9	6	of	-		0.80
+Gen.28:9	7	a wife in addition	20		0.80
+Gen.28:9	8	other wives.	17,18		0.80
+Gen.28:10	1	forth	-		0.80
+Gen.28:10	2	of	-		0.80
+Gen.28:11	1	came to a certain	1		0.80
+Gen.28:11	2	had gone down;	6		0.80
+Gen.28:11	3	he	-		0.80
+Gen.28:11	4	one	-		0.80
+Gen.28:11	5	of	-		0.80
+Gen.28:11	6	at his	-		0.80
+Gen.28:11	7	lay down	-		0.80
+Gen.28:12	1	a	-		0.80
+Gen.28:12	2	of	19		0.80
+Gen.28:13	1	am	-		0.80
+Gen.28:13	2	of	12		0.80
+Gen.28:13	3	of	-		0.80
+Gen.28:13	4	will I	-		0.80
+Gen.28:13	5	to	33		0.80
+Gen.28:14	1	shall	-		0.80
+Gen.28:14	2	of	-		0.80
+Gen.28:14	3	it shall spread abroad	11		0.80
+Gen.28:14	4	the	-		0.80
+Gen.28:14	5	the	-		0.80
+Gen.28:14	6	north,	-		0.80
+Gen.28:14	7	the	-		0.80
+Gen.28:14	8	shall	-		0.80
+Gen.28:14	9	of	-		0.80
+Gen.28:14	10	be	-		0.80
+Gen.28:15	1	am	-		0.80
+Gen.28:15	2	to	-		0.80
+Gen.28:15	3	continually	-		0.80
+Gen.28:15	4	the way	8,9		0.80
+Gen.28:15	4	wherein	11		0.80
+Gen.28:15	4	you shall go;	12,13		0.80
+Gen.28:15	5	I will	-		0.80
+Gen.28:15	6	back	-		0.80
+Gen.28:15	7	land;	18,19		0.80
+Gen.28:15	8	I will	-		0.80
+Gen.28:15	9	desert	25		0.80
+Gen.28:15	10	I have	-		0.80
+Gen.28:15	11	that	31		0.80
+Gen.28:15	12	have	-		0.80
+Gen.28:15	13	to	-		0.80
+Gen.28:16	1	awaked out	1		0.80
+Gen.28:16	2	his	-		0.80
+Gen.28:16	3	The	-		0.80
+Gen.28:16	4	knew	19		0.80
+Gen.28:17	1	he was	-		0.80
+Gen.28:17	2	How	4		0.80
+Gen.28:17	3	is	-		0.80
+Gen.28:17	4	none other	9,12		0.80
+Gen.28:17	5	the	-		0.80
+Gen.28:17	6	of	-		0.80
+Gen.28:17	7	is	-		0.80
+Gen.28:17	8	of	20		0.80
+Gen.28:18	1	rose up in	1		0.80
+Gen.28:18	2	he had	9	unsure	0.50
+Gen.28:18	3	by his	12		0.80
+Gen.28:18	4	up as a	-		0.80
+Gen.28:18	5	of	-		0.80
+Gen.28:19	1	he	2	unsure	0.50
+Gen.28:19	2	of	5		0.80
+Gen.28:19	3	the	-		0.80
+Gen.28:19	4	of	-		0.80
+Gen.28:19	5	the	-		0.80
+Gen.28:19	6	of	-		0.80
+Gen.28:19	7	before	16,17		0.80
+Gen.28:19	8	Ulam-luz.	11		0.80
+Gen.28:20	1	vowed a	1		0.80
+Gen.28:20	2	the	8	unsure	0.50
+Gen.28:20	3	will	-		0.80
+Gen.28:20	4	throughout	-		0.80
+Gen.28:20	5	journey, on	16,17		0.80
+Gen.28:20	6	am	-		0.80
+Gen.28:20	7	to	-		0.80
+Gen.28:20	8	to	-		0.80
+Gen.28:20	9	on,	-		0.80
+Gen.28:21	1	back in safety	3,4		0.80
+Gen.28:21	2	of	8		0.80
+Gen.28:21	3	then shall the Lord	11	unsure	0.50
+Gen.28:21	4	for a	-		0.80
+Gen.28:22	1	I have	-		0.80
+Gen.28:22	2	up for a	-		0.80
+Gen.28:22	3	shall	-		0.80
+Gen.28:22	4	to	-		0.80
+Gen.28:22	5	a	-		0.80
+Gen.28:22	6	of	-		0.80
+Gen.28:22	7	of	-		0.80
+Gen.28:22	8	whatever you shall	13,14		0.80
+Gen.28:22	9	me,	-		0.80
+Gen.28:22	10	will	-		0.80
+Gen.28:22	11	a	-		0.80
+Gen.28:22	12	for	-		0.80
