@@ -1,6 +1,9 @@
 // The tutor's answer read aloud, interrupted by a tapped Hebrew word (mw-5r3p30.122) at 412x915: the speaking bar shows Pause, Restart and Stop over
 // the answer in the Talk sheet and covers none of its text; a tap on the Hebrew word says it and leaves the answer PAUSED, the bar offering Resume,
 // which goes on from the sentence it was in. The engine is voice-kit's honest fake with a slow reader (tests/support/honest-fakes.ts).
+// A sentence is cut into runs at each change of language (docs/read-aloud.md), and the run is what Resume goes on from: the second sentence is 'The Hebrew
+// word' (750 ms), the Hebrew word, '(tsedeq) is about ...'. Which run the tap finds under way depends on how long the tap took to arrive (mw-fnvjof.17.149),
+// so each case below says which run it taps in and the Resume is checked against the run the speech log shows was interrupted, not against a fixed one.
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
@@ -19,7 +22,11 @@ const ANSWER = { answer: SENTENCES.join(' '), words: [] };
 
 const bar = (page: Page) => page.getByRole('region', { name: 'Speaking', exact: true });
 
-test('the bar sits clear of the answer, a tapped Hebrew word pauses the answer and Resume goes on from its sentence', async ({ page }) => {
+// where the tap lands: 'any' as soon as the first sentence is heard (whichever run is then under way), 'after-first-run' once 'The Hebrew word' has been said
+const TAPS = ['any', 'after-first-run'] as const;
+
+for (const tapAt of TAPS) {
+test(`the bar sits clear of the answer, a tapped Hebrew word pauses the answer and Resume goes on from its sentence (tap: ${tapAt})`, async ({ page }) => {
   await page.setViewportSize({ width: 412, height: 915 });
   await honestSpeech(page, { langs: ['en-US', 'el-GR', 'he-IL'], msPerWord: 250 });
   const fake = makeFakePostern();
@@ -54,21 +61,32 @@ test('the bar sits clear of the answer, a tapped Hebrew word pauses the answer a
 
   // the first sentence is heard; the tap on the Hebrew word interrupts the second
   await expect.poll(async () => (await spoken(page)).filter((e) => e.outcome === 'ended').length, { timeout: 15_000 }).toBeGreaterThanOrEqual(1);
-  const before = (await spoken(page)).length;
+  if (tapAt === 'after-first-run') {
+    await expect.poll(async () => (await spoken(page)).some((e) => e.text.startsWith('The Hebrew word') && e.outcome === 'ended'), { timeout: 15_000 }).toBe(true);
+  }
   await sheet.locator('[data-turn] button:has([lang="he"])').click();
   // the guide opens over the sheet: the bar is in it, in view, with Resume
   const guide = page.getByRole('dialog', { name: 'How to say it' });
   await expect(guide).toBeVisible();
   await expect(guide.getByRole('region', { name: 'Speaking', exact: true }).getByRole('button')).toHaveText(['Resume', 'Restart', 'Stop']);
-  expect((await spoken(page)).slice(before)[0]).toMatchObject({ text: 'צֶדֶק', lang: 'he-IL' });
   await shot(page, 'speaking-interruption-paused');
 
-  // Resume speaks on from the interrupted sentence, not from the start and not from the next one
-  await expect.poll(async () => (await spoken(page)).filter((e) => e.lang === 'he-IL' && e.outcome === 'ended').length, { timeout: 15_000 }).toBe(1);
-  const mark = (await spoken(page)).length;
+  // the answer's run the tap cut off (or, between two runs, the first one it cancelled) is where Resume goes on; the tapped word is the last thing said, after it
+  const said = async () => {
+    const log = await spoken(page);
+    const cut = log.findIndex((e) => e.outcome === 'interrupted' || e.outcome === 'canceled');
+    const last = log[log.length - 1];
+    return { log, cut, last, tapped: cut >= 0 && last.text === 'צֶדֶק' && last.lang === 'he-IL' && last.outcome === 'ended' };
+  };
+  await expect.poll(async () => (await said()).tapped, { timeout: 15_000 }).toBe(true);
+  const { log, cut } = await said();
+  const interrupted = log[cut].text;
+  expect(['The Hebrew word', 'צֶדֶק', '(tsedeq)'].some((start) => interrupted.startsWith(start))).toBe(true);
+  const mark = log.length;
   await bar(page).getByRole('button', { name: 'Resume', exact: true }).click();
   await expect(bar(page).getByRole('button')).toHaveText(['Pause', 'Restart', 'Stop']);
   const resumed = (await spoken(page)).slice(mark).map((e) => e.text);
-  expect(resumed[0]).toContain('The Hebrew word');
+  expect(resumed[0]).toBe(interrupted);
   expect(resumed.join(' ')).not.toContain('Paul is describing');
 });
+}
