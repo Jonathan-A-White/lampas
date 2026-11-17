@@ -1,0 +1,494 @@
+{
+ "note": "mw-5r3p30.1166: 50 verses whose Greek lines were borrowed: NT (from the English lines, evenly spaced over every NT verse that has them) and Septuagint (Psalm fixtures: Greek 9, 22, 114, 115, from the Hebrew lines)",
+ "nt": [
+  {
+   "ref": "1co 2:9",
+   "english": "Rather, as it is written:  // “No eye has seen,  // no ear has heard,  // no heart has imagined,  // what God has prepared for those who love Him.”",
+   "greekLines": [
+    "[lead-in] ἀλλὰ καθὼς γέγραπται",
+    "Ἃ ὀφθαλμὸς οὐκ εἶδεν",
+    "καὶ οὖς οὐκ ἤκουσεν",
+    "καὶ ἐπὶ καρδίαν ἀνθρώπου οὐκ ἀνέβη",
+    "ἃ ἡτοίμασεν ὁ θεὸς τοῖς ἀγαπῶσιν αὐτόν"
+   ]
+  },
+  {
+   "ref": "1pe 3:11",
+   "english": " // He must turn from evil and do good;  // he must seek peace and pursue it.",
+   "greekLines": [
+    "ἐκκλινάτω ἀπὸ κακοῦ καὶ ποιησάτω ἀγαθόν",
+    "ζητησάτω εἰρήνην καὶ διωξάτω αὐτήν"
+   ]
+  },
+  {
+   "ref": "2co 9:9",
+   "english": "As it is written:  // “He has scattered abroad His gifts to the poor;  // His righteousness endures forever.”",
+   "greekLines": [
+    "[lead-in] καθὼς γέγραπται",
+    "Ἐσκόρπισεν ἔδωκεν τοῖς πένησιν",
+    "ἡ δικαιοσύνη αὐτοῦ μένει εἰς τὸν αἰῶνα"
+   ]
+  },
+  {
+   "ref": "act 13:47",
+   "english": "For this is what the Lord has commanded us:  // ‘I have made you a light for the Gentiles,  // to bring salvation to the ends of the earth.’”",
+   "greekLines": [
+    "[lead-in] Οὕτως γὰρ ἐντέταλται ἡμῖν ὁ κύριος",
+    "Τέθεικά σε εἰς φῶς ἐθνῶν",
+    "τοῦ εἶναί σε εἰς σωτηρίαν ἕως ἐσχάτου τῆς γῆς"
+   ]
+  },
+  {
+   "ref": "act 2:26",
+   "english": " // Therefore my heart is glad and my tongue rejoices;  // my body also will dwell in hope,",
+   "greekLines": [
+    "διὰ τοῦτο εὐφράνθη ἡ καρδία μου καὶ ἠγαλλιάσατο ἡ γλῶσσά μου",
+    "ἔτι δὲ καὶ ἡ σάρξ μου κατασκηνώσει ἐπ' ἐλπίδι"
+   ]
+  },
+  {
+   "ref": "act 7:42",
+   "english": "But God turned away from them and gave them over to the worship of the host of heaven, as it is written in the book of the prophets:  // ‘Did you bring Me sacrifices and offerings  // forty years in the wilderness, O house of Israel?",
+   "greekLines": [
+    "[lead-in] Ἔστρεψεν δὲ ὁ θεός καὶ παρέδωκεν αὐτοὺς λατρεύειν τῇ στρατιᾷ τοῦ οὐρανοῦ καθὼς γέγραπται ἐν βίβλῳ τῶν προφητῶν",
+    "Μὴ σφάγια καὶ θυσίας προσηνέγκατέ μοι",
+    "ἔτη τεσσαράκοντα ἐν τῇ ἐρήμῳ οἶκος Ἰσραήλ"
+   ]
+  },
+  {
+   "ref": "heb 1:6",
+   "english": "And again, when God brings His firstborn into the world, He says:  // “Let all God’s angels worship Him.”",
+   "greekLines": [
+    "[lead-in] Ὅταν δὲ πάλιν εἰσαγάγῃ τὸν πρωτότοκον εἰς τὴν οἰκουμένην λέγει",
+    "Καὶ προσκυνησάτωσαν αὐτῷ πάντες ἄγγελοι θεοῦ"
+   ]
+  },
+  {
+   "ref": "heb 10:6",
+   "english": " // In burnt offerings and sin offerings  // You took no delight.",
+   "greekLines": [
+    "ὁλοκαυτώματα καὶ περὶ ἁμαρτίας",
+    "οὐκ εὐδόκησας"
+   ]
+  },
+  {
+   "ref": "heb 13:6",
+   "english": "So we say with confidence:  // “The Lord is my helper; I will not be afraid.  // What can man do to me?”",
+   "greekLines": [
+    "[lead-in] Ὥστε θαρροῦντας ἡμᾶς λέγειν",
+    "Κύριος ἐμοὶ βοηθός καὶ οὐ φοβηθήσομαι",
+    "τί ποιήσει μοι ἄνθρωπος"
+   ]
+  },
+  {
+   "ref": "heb 3:15",
+   "english": "As it has been said:  // “Today, if you hear His voice,  // do not harden your hearts,  // as you did in the rebellion.”",
+   "greekLines": [
+    "[lead-in] ἐν τῷ λέγεσθαι",
+    "Σήμερον ἐὰν τῆς φωνῆς αὐτοῦ ἀκούσητε",
+    "μὴ σκληρύνητε τὰς καρδίας ὑμῶν",
+    "ὡς ἐν τῷ παραπικρασμῷ"
+   ]
+  },
+  {
+   "ref": "heb 8:11",
+   "english": " // No longer will each one teach his neighbor or his brother,  // saying, ‘Know the Lord,’  // because they will all know Me,  // from the least of them to the greatest.",
+   "greekLines": [
+    "Καὶ οὐ μὴ διδάξωσιν ἕκαστος τὸν πολίτην αὐτοῦ καὶ ἕκαστος τὸν ἀδελφὸν αὐτοῦ",
+    "λέγων Γνῶθι τὸν κύριον",
+    "ὅτι πάντες εἰδήσουσίν με",
+    "ἀπὸ μικροῦ αὐτῶν ἕως μεγάλου αὐτῶν"
+   ]
+  },
+  {
+   "ref": "jud 1:14",
+   "english": "Enoch, the seventh from Adam, also prophesied about them:  // “Behold, the Lord is coming  // with myriads of His holy ones",
+   "greekLines": [
+    "[lead-in] Προεφήτευσεν δὲ καὶ τούτοις ἕβδομος ἀπὸ Ἀδὰμ Ἐνώχ",
+    "λέγων Ἰδού ἦλθεν κύριος",
+    "ἐν ἁγίαις μυριάσιν αὐτοῦ"
+   ]
+  },
+  {
+   "ref": "luk 1:54",
+   "english": " // He has helped His servant Israel,  // remembering to be merciful,",
+   "greekLines": [
+    "Ἀντελάβετο Ἰσραὴλ παιδὸς αὐτοῦ",
+    "μνησθῆναι ἐλέους"
+   ]
+  },
+  {
+   "ref": "luk 1:77",
+   "english": " // to give to His people the knowledge of salvation  // through the forgiveness of their sins,",
+   "greekLines": [
+    "τοῦ δοῦναι γνῶσιν σωτηρίας τῷ λαῷ αὐτοῦ",
+    "ἐν ἀφέσει ἁμαρτιῶν αὐτῶν"
+   ]
+  },
+  {
+   "ref": "luk 2:34",
+   "english": "Then Simeon blessed them and said to His mother Mary:  // “Behold, this Child is appointed to cause  // the rise and fall of many in Israel,  // and to be a sign that will be spoken against,",
+   "greekLines": [
+    "[lead-in] Καὶ εὐλόγησεν αὐτοὺς Συμεών καὶ εἶπεν πρὸς Μαριὰμ τὴν μητέρα αὐτοῦ",
+    "Ἰδού οὗτος κεῖται εἰς",
+    "πτῶσιν καὶ ἀνάστασιν πολλῶν ἐν τῷ Ἰσραήλ",
+    "καὶ εἰς σημεῖον ἀντιλεγόμενον"
+   ]
+  },
+  {
+   "ref": "luk 3:25",
+   "english": " // the son of Mattathias, the son of Amos, the son of Nahum,  // the son of Esli, the son of Naggai,",
+   "greekLines": [
+    "τοῦ Ματταθίου τοῦ Ἀμώς τοῦ Ναούμ",
+    "τοῦ Ἐσλί τοῦ Ναγγαί"
+   ]
+  },
+  {
+   "ref": "luk 3:35",
+   "english": " // the son of Serug, the son of Reu, the son of Peleg,  // the son of Eber, the son of Shelah,",
+   "greekLines": [
+    "τοῦ Σερούχ τοῦ Ῥαγαῦ τοῦ Φάλεγ",
+    "τοῦ Ἑβέρ τοῦ Σαλά"
+   ]
+  },
+  {
+   "ref": "luk 6:24",
+   "english": " // But woe to you who are rich,  // for you have already received your comfort.",
+   "greekLines": [
+    "Πλὴν οὐαὶ ὑμῖν τοῖς πλουσίοις",
+    "ὅτι ἀπέχετε τὴν παράκλησιν ὑμῶν"
+   ]
+  },
+  {
+   "ref": "mat 1:5",
+   "english": " // Salmon was the father of Boaz by Rahab,  // Boaz the father of Obed by Ruth,  // Obed the father of Jesse,",
+   "greekLines": [
+    "Σαλμὼν δὲ ἐγέννησεν τὸν Βοὸζ ἐκ τῆς Ῥαχάβ",
+    "Βοὸζ δὲ ἐγέννησεν τὸν Ὠβὴδ ἐκ τῆς Ῥούθ",
+    "Ὠβὴδ δὲ ἐγέννησεν τὸν Ἰεσσαί"
+   ]
+  },
+  {
+   "ref": "mat 1:14",
+   "english": " // Azor was the father of Zadok,  // Zadok the father of Achim,  // and Achim the father of Eliud.",
+   "greekLines": [
+    "Ἀζὼρ δὲ ἐγέννησεν τὸν Σαδώκ",
+    "Σαδὼκ δὲ ἐγέννησεν τὸν Ἀχείμ",
+    "Ἀχεὶμ δὲ ἐγέννησεν τὸν Ἐλιούδ"
+   ]
+  },
+  {
+   "ref": "mat 12:20",
+   "english": " // A bruised reed He will not break,  // and a smoldering wick He will not extinguish,  // till He leads justice to victory.",
+   "greekLines": [
+    "Κάλαμον συντετριμμένον οὐ κατεάξει",
+    "καὶ λίνον τυφόμενον οὐ σβέσει",
+    "ἕως ἂν ἐκβάλῃ εἰς νῖκος τὴν κρίσιν"
+   ]
+  },
+  {
+   "ref": "mat 21:5",
+   "english": " // “Say to the Daughter of Zion,  // ‘See, your King comes to you,  // gentle and riding on a donkey,  // on a colt, the foal of a donkey.’”",
+   "greekLines": [
+    "Εἴπατε τῇ θυγατρὶ Σιών",
+    "Ἰδού ὁ βασιλεύς σου ἔρχεταί σοι",
+    "πραῢς καὶ ἐπιβεβηκὼς ἐπὶ ὄνον",
+    "καὶ πῶλον υἱὸν ὑποζυγίου"
+   ]
+  },
+  {
+   "ref": "mat 3:3",
+   "english": "This is he who was spoken of through the prophet Isaiah:  // “A voice of one calling in the wilderness,  // ‘Prepare the way for the Lord,  // make straight paths for Him.’”",
+   "greekLines": [
+    "[lead-in] Οὗτος γάρ ἐστιν ὁ ῥηθεὶς ὑπὸ Ἠσαΐου τοῦ προφήτου",
+    "λέγοντος Φωνὴ βοῶντος ἐν τῇ ἐρήμῳ",
+    "Ἑτοιμάσατε τὴν ὁδὸν κυρίου",
+    "εὐθείας ποιεῖτε τὰς τρίβους αὐτοῦ"
+   ]
+  },
+  {
+   "ref": "mat 5:8",
+   "english": " // Blessed are the pure in heart,  // for they will see God.",
+   "greekLines": [
+    "Μακάριοι οἱ καθαροὶ τῇ καρδίᾳ",
+    "ὅτι αὐτοὶ τὸν θεὸν ὄψονται"
+   ]
+  },
+  {
+   "ref": "mrk 1:3",
+   "english": " // “A voice of one calling in the wilderness,  // ‘Prepare the way for the Lord,  // make straight paths for Him.’”",
+   "greekLines": [
+    "Φωνὴ βοῶντος ἐν τῇ ἐρήμῳ",
+    "Ἑτοιμάσατε τὴν ὁδὸν κυρίου",
+    "εὐθείας ποιεῖτε τὰς τρίβους αὐτοῦ"
+   ]
+  },
+  {
+   "ref": "mrk 4:12",
+   "english": "so that,  // ‘they may be ever seeing but never perceiving,  // and ever hearing but never understanding;  // otherwise they might turn  // and be forgiven their sins.’”",
+   "greekLines": [
+    "[lead-in] ἵνα",
+    "βλέποντες βλέπωσιν καὶ μὴ ἴδωσιν",
+    "καὶ ἀκούοντες ἀκούωσιν καὶ μὴ συνιῶσιν",
+    "μήποτε ἐπιστρέψωσιν",
+    "καὶ ἀφεθῇ αὐτοῖς τὰ ἁμαρτήματα"
+   ]
+  },
+  {
+   "ref": "rev 11:15",
+   "english": "Then the seventh angel sounded his trumpet, and loud voices called out in heaven:  // “The kingdom of the world  // has become the kingdom of our Lord  // and of His Christ,  // and He will reign forever and ever.”",
+   "greekLines": [
+    "[lead-in] Καὶ ὁ ἕβδομος ἄγγελος ἐσάλπισεν καὶ ἐγένοντο φωναὶ μεγάλαι ἐν τῷ οὐρανῷ λέγουσαι Ἐγένετο",
+    "ἡ βασιλεία τοῦ κόσμου τοῦ κυρίου ἡμῶν",
+    "καὶ τοῦ χριστοῦ αὐτοῦ",
+    "καὶ βασιλεύσει εἰς τοὺς αἰῶνας τῶν αἰώνων"
+   ]
+  },
+  {
+   "ref": "rev 16:6",
+   "english": " // For they have spilled the blood of saints and prophets,  // and You have given them blood to drink,  // as they deserve.”",
+   "greekLines": [
+    "ὅτι αἷμα ἁγίων καὶ προφητῶν ἐξέχεαν",
+    "καὶ αἷμα αὐτοῖς ἔδωκας πιεῖν",
+    "ἄξιοί εἰσιν"
+   ]
+  },
+  {
+   "ref": "rev 18:10",
+   "english": "In fear of her torment, they will stand at a distance and cry out:  // “Woe, woe to the great city,  // the mighty city of Babylon!  // For in a single hour  // your judgment has come.”",
+   "greekLines": [
+    "[lead-in] ἀπὸ μακρόθεν ἑστηκότες διὰ τὸν φόβον τοῦ βασανισμοῦ αὐτῆς λέγοντες",
+    "Οὐαί οὐαί ἡ πόλις ἡ μεγάλη",
+    "Βαβυλών ἡ πόλις ἡ ἰσχυρά",
+    "ὅτι μιᾷ ὥρᾳ",
+    "ἦλθεν ἡ κρίσις σου"
+   ]
+  },
+  {
+   "ref": "rev 19:1",
+   "english": "After this I heard a sound like the roar of a great multitude in heaven, shouting:  // “Hallelujah!  // Salvation and glory and power belong to our God!",
+   "greekLines": [
+    "[lead-in] Μετὰ ταῦτα ἤκουσα ὡς φωνὴν μεγάλην ὄχλου πολλοῦ ἐν τῷ οὐρανῷ λεγόντων",
+    "Ἁλληλούϊα",
+    "ἡ σωτηρία καὶ ἡ δύναμις καὶ ἡ δόξα τοῦ θεοῦ ἡμῶν"
+   ]
+  },
+  {
+   "ref": "rev 21:4",
+   "english": " // ‘He will wipe away every tear from their eyes,’  // and there will be no more death  // or mourning or crying or pain,  // for the former things have passed away.”",
+   "greekLines": [
+    "καὶ ἐξαλείψει πᾶν δάκρυον ἀπὸ τῶν ὀφθαλμῶν αὐτῶν",
+    "καὶ ὁ θάνατος οὐκ ἔσται ἔτι",
+    "οὔτε πένθος οὔτε κραυγή οὔτε πόνος",
+    "οὐκ ἔσται ἔτι ὅτι τὰ πρῶτα ἀπῆλθον"
+   ]
+  },
+  {
+   "ref": "rev 7:8",
+   "english": " // from the tribe of Zebulun 12,000 ,  // from the tribe of Joseph 12,000 ,  // and from the tribe of Benjamin 12,000 .",
+   "greekLines": [
+    "ἐκ φυλῆς Ζαβουλών δώδεκα χιλιάδες",
+    "ἐκ φυλῆς Ἰωσήφ δώδεκα χιλιάδες",
+    "ἐκ φυλῆς Βενιαμίν δώδεκα χιλιάδες ἐσφραγισμέναι"
+   ]
+  },
+  {
+   "ref": "rom 11:8",
+   "english": "as it is written:  // “God gave them a spirit of stupor,  // eyes that could not see,  // and ears that could not hear,  // to this very day.”",
+   "greekLines": [
+    "[lead-in] καθὼς γέγραπται",
+    "Ἔδωκεν αὐτοῖς ὁ θεὸς πνεῦμα κατανύξεως",
+    "ὀφθαλμοὺς τοῦ μὴ βλέπειν",
+    "καὶ ὦτα τοῦ μὴ ἀκούειν",
+    "ἕως τῆς σήμερον ἡμέρας"
+   ]
+  },
+  {
+   "ref": "rom 12:20",
+   "english": "Therefore,  // “If your enemy is hungry, feed him;  // if he is thirsty, give him a drink.  // For in so doing,  // you will heap burning coals on his head.”",
+   "greekLines": [
+    "Ἐὰν οὖν πεινᾷ ὁ ἐχθρός σου ψώμιζε αὐτόν",
+    "ἐὰν διψᾷ πότιζε",
+    "αὐτόν τοῦτο γὰρ ποιῶν",
+    "ἄνθρακας πυρὸς σωρεύσεις ἐπὶ τὴν κεφαλὴν αὐτοῦ"
+   ]
+  },
+  {
+   "ref": "rom 3:12",
+   "english": " // All have turned away,  // they have together become worthless;  // there is no one who does good,  // not even one.”",
+   "greekLines": [
+    "πάντες ἐξέκλιναν",
+    "ἅμα ἠχρειώθησαν",
+    "οὐκ ἔστιν ποιῶν χρηστότητα",
+    "οὐκ ἔστιν ἕως ἑνός"
+   ]
+  },
+  {
+   "ref": "rom 9:26",
+   "english": "and,  // “It will happen that in the very place where it was said to them,  // ‘You are not My people,’  // they will be called  // ‘sons of the living God.’”",
+   "greekLines": [
+    "[lead-in] Καὶ",
+    "ἔσται ἐν τῷ τόπῳ οὗ ἐρρήθη αὐτοῖς",
+    "Οὐ λαός μου ὑμεῖς",
+    "ἐκεῖ κληθήσονται",
+    "υἱοὶ θεοῦ ζῶντος"
+   ]
+  }
+ ],
+ "lxx": [
+  {
+   "ref": "psa(LXX 22:1 = Hebrew 23:1)",
+   "hebrewLines": [
+    "מזמור לדוד",
+    "יהוה רעי לא אחסר"
+   ],
+   "greekLines": [
+    "Ψαλμὸς τῷ Δαυείδ.",
+    "Κύριος ποιμαίνει με, καὶ οὐδέν με ὑστερήσει."
+   ]
+  },
+  {
+   "ref": "psa(LXX 22:2 = Hebrew 23:2)",
+   "hebrewLines": [
+    "בנאות דשא ירביצני",
+    "על־ מי מנחות ינהלני"
+   ],
+   "greekLines": [
+    "εἰς τόπον χλόης, ἐκεῖ με κατεσκήνωσεν·",
+    "ἐπὶ ὕδατος ἀναπαύσεως ἐξέθρεψέν με·"
+   ]
+  },
+  {
+   "ref": "psa(LXX 22:3 = Hebrew 23:3)",
+   "hebrewLines": [
+    "נפשי ישובב",
+    "ינחני במעגלי־ צדק למען שמו"
+   ],
+   "greekLines": [
+    "τὴν ψυχήν μου ἐπέστρεψεν.",
+    "ὡδήγησέν με ἐπὶ τρίβους δικαιοσύνης ἕνεκεν τοῦ ὀνόματος αὐτοῦ."
+   ]
+  },
+  {
+   "ref": "psa(LXX 22:4 = Hebrew 23:4)",
+   "hebrewLines": [
+    "גם כי־ אלך בגיא צלמות לא־ אירא רע כי־ אתה עמדי",
+    "שבטך ומשענתך המה ינחמני"
+   ],
+   "greekLines": [
+    "ἐὰν γὰρ καὶ πορευθῶ ἐν μέσῳ σκιᾶς θανάτου, οὐ φοβηθήσομαι κακά, ὅτι σὺ μετ᾽ ἐμοῦ εἶ·",
+    "ἡ ῥάβδος σου καὶ ἡ βακτηρία σου, αὐταί με παρεκάλεσαν."
+   ]
+  },
+  {
+   "ref": "psa(LXX 22:5 = Hebrew 23:5)",
+   "hebrewLines": [
+    "תערך לפני שלחן נגד צררי",
+    "דשנת בשמן ראשי כוסי רויה"
+   ],
+   "greekLines": [
+    "ἡτοίμασας ἐνώπιόν μου τράπεζαν ἐξ ἐναντίας τῶν θλιβόντων με·",
+    "ἐλίπανας ἐν ἐλαίῳ τὴν κεφαλήν μου, καὶ τὸ ποτήριόν σου μεθύσκον ὡς κράτιστον."
+   ]
+  },
+  {
+   "ref": "psa(LXX 22:6 = Hebrew 23:6)",
+   "hebrewLines": [
+    "אך טוב וחסד ירדפוני כל־ ימי חיי",
+    "ושבתי בבית־ יהוה לארך ימים"
+   ],
+   "greekLines": [
+    "καὶ τὸ ἔλεός σου καταδιώξεταί με πάσας τὰς ἡμέρας τῆς ζωῆς μου,",
+    "καὶ τὸ κατοικεῖν με ἐν οἴκῳ Κυρίου εἰς μακρότητα ἡμερῶν."
+   ]
+  },
+  {
+   "ref": "psa(LXX 9:1 = Hebrew 9:1)",
+   "hebrewLines": [
+    "למנצח עלמות לבן מזמור לדוד אודה יהוה בכל־ לבי",
+    "אספרה כל־ נפלאותיך"
+   ],
+   "greekLines": [
+    "Ἐξομολογήσομαί",
+    "σοι,"
+   ]
+  },
+  {
+   "ref": "psa(LXX 9:2 = Hebrew 9:2)",
+   "hebrewLines": [
+    "אשמחה ואעלצה בך",
+    "אזמרה שמך עליון"
+   ],
+   "greekLines": [
+    "διηγήσομαι",
+    "πάντα"
+   ]
+  },
+  {
+   "ref": "psa(LXX 9:22 = Hebrew 10:1)",
+   "hebrewLines": [
+    "למה יהוה תעמד ברחוק",
+    "תעלים לעתות בצרה"
+   ],
+   "greekLines": [
+    "Ἵνα τί,",
+    "κύριε,"
+   ]
+  },
+  {
+   "ref": "psa(LXX 9:23 = Hebrew 10:2)",
+   "hebrewLines": [
+    "בגאות רשע ידלק עני",
+    "יתפשו במזמות זו חשבו"
+   ],
+   "greekLines": [
+    "ἐν τῷ",
+    "ὑπερηφανεύεσθαι"
+   ]
+  },
+  {
+   "ref": "psa(LXX 114:1 = Hebrew 116:1)",
+   "hebrewLines": [
+    "אהבתי כי־ ישמע יהוה",
+    "את־ קולי תחנוני"
+   ],
+   "greekLines": [
+    "Ἠγάπησα,",
+    "ὅτι"
+   ]
+  },
+  {
+   "ref": "psa(LXX 114:2 = Hebrew 116:2)",
+   "hebrewLines": [
+    "כי־ הטה אזנו לי",
+    "ובימי אקרא"
+   ],
+   "greekLines": [
+    "ὅτι",
+    "ἔκλινεν"
+   ]
+  },
+  {
+   "ref": "psa(LXX 115:1 = Hebrew 116:10)",
+   "hebrewLines": [
+    "האמנתי כי אדבר",
+    "אני עניתי מאד"
+   ],
+   "greekLines": [
+    "Ἐπίστευσα,",
+    "διὸ"
+   ]
+  },
+  {
+   "ref": "psa(LXX 115:2 = Hebrew 116:11)",
+   "hebrewLines": [
+    "אני אמרתי בחפזי",
+    "כל־ האדם כזב"
+   ],
+   "greekLines": [
+    "ἐγὼ",
+    "εἶπον"
+   ]
+  }
+ ]
+}

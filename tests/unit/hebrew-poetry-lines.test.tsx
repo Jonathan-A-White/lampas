@@ -64,7 +64,7 @@ describe('the Hebrew lines of a verse of poetry', () => {
     }
   });
 
-  it('is carried by a chapter as it loads: a verse of a Hebrew chapter that has English lines has Hebrew ones, a Greek one has none', () => {
+  it('is carried by a chapter as it loads: a verse of a Hebrew chapter that has English lines has Hebrew ones, a Greek verse in prose has none (a Greek poetry verse has them, greek-poetry-lines.test.tsx)', () => {
     expect(verseOf('psa/1', 1).hl).toEqual([0, 7, 11]);
     expect(verseOf('gen/1', 1).hl).toBeUndefined();
     expect(verseOf('jhn/1', 1).hl).toBeUndefined();

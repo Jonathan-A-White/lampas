@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { isHebrewBook } from '../../data/books';
 import { fillChapter, loadOwnChapter, type Chapter } from '../../data/chapter';
-import { greekChaptersOf, loadLxxIndex, loadSeptuagintChapter } from '../../data/lxxChapter';
+import { greekChaptersOf, loadLxxIndex, loadSeptuagintChapter, withSeptuagintLines } from '../../data/lxxChapter';
 import { isSeptuagintText, type SplitTextKey } from './splitTexts';
 
 export type DockedText = { status: 'loading' } | { status: 'none' } | { status: 'failed' } | { status: 'ready'; chapter: Chapter };
@@ -19,7 +19,7 @@ export function loadSplitChapter(key: SplitTextKey, book: string, chapter: numbe
   const request: Promise<Chapter | null> =
     isSeptuagintText(key)
       ? own
-        ? loadSeptuagintChapter(book, chapter).then((greek) => (greek ? fillChapter(greek) : null))
+        ? loadSeptuagintChapter(book, chapter).then(async (greek) => (greek ? fillChapter(withSeptuagintLines(greek, await loadOwnChapter(book, chapter).catch(() => null), book, chapter)) : null))
         : Promise.resolve(null)
       : (key === 'hebrew' && !own) || (key === 'greek' && own)
         ? Promise.resolve(null)

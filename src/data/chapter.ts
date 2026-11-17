@@ -4,9 +4,9 @@
 
 import { CANON_INDEX, greekBooks } from './bookIndex';
 import { isHebrewBook } from './books';
-import { forgetLxxIndex, loadSeptuagintChapter, withHeadings } from './lxxChapter';
+import { forgetLxxIndex, loadSeptuagintChapter, withHeadings, withSeptuagintLines } from './lxxChapter';
 import { chapterWait } from './chapterWait';
-import { hebrewLineStarts } from './poetry';
+import { hebrewLineStarts, withGreekLines } from './poetry';
 import { within } from './within';
 import type { VersionedList } from './versionedLists';
 import { getSetting } from '../settings/store';
@@ -194,10 +194,13 @@ export interface Verse {
   /** the lines of a verse of poetry, in English order, each where it starts (PoetryLine); absent in a prose verse. The English tab and a Weave in the English order set the verse in them (src/data/poetry.ts); the Hebrew tab has `hl`, the Greek tab none. */
   l?: PoetryLine[];
   /**
-   * The Hebrew tab's lines of a verse of poetry (mw-5r3p30.1165), Old Testament only and never in a file (fillChapter sets it, from the Masoretic accents: hebrewLineStarts, src/data/poetry.ts): the indexes into `g` where each line starts, the first 0.
-   * Set only where the verse has English lines (`l`) and an accent to break at; absent otherwise, and the Hebrew is drawn as running text.
+   * The source tab's lines of a verse of poetry, never in a file (fillChapter sets it; the Septuagint's, loadChapter: withSeptuagintLines): the indexes into `g` where each line starts, the first 0. The Hebrew tab's are broken at the
+   * Masoretic accents (mw-5r3p30.1165, hebrewLineStarts, src/data/poetry.ts), the New Testament Greek's at the words its English lines start at (mw-5r3p30.1166, greekLineStarts), the Septuagint's where its Hebrew verse breaks, by
+   * proportion (septuagintLineStarts). Set only where the verse has lines to break at, so a verse with none is drawn as running text.
    */
   hl?: number[];
+  /** with `hl`: the first line is the verse's lead-in ('Then Mary said:'), set apart as in the English; New Testament only */
+  hlead?: true;
   /** Greek words in Greek order */
   g: GreekWord[];
   /** English chunks in English order */
@@ -288,7 +291,9 @@ export const sourceLanguage = (chapter: Pick<Chapter, 'lang'>): SourceLanguage =
 /** A chapter as its file has it, with the language and translation an older file leaves out filled in ('grc', 'msb'), so a chapter kept on a phone still reads. */
 export const fillChapter = (file: Chapter): Chapter => {
   const chapter = { ...file, lang: file.lang ?? 'grc', translation: file.translation ?? 'msb' };
-  return chapter.lang === 'hbo' ? { ...chapter, verses: chapter.verses.map((verse) => withHebrewLines(verse, chapter.code)) } : chapter;
+  if (chapter.lang === 'hbo') return { ...chapter, verses: chapter.verses.map((verse) => withHebrewLines(verse, chapter.code)) };
+  // the New Testament's Greek (not the Septuagint's, whose lines come from the Hebrew beside it) is broken where its English lines start
+  return chapter.edition === undefined && chapter.verses.some((verse) => verse.l?.length) ? { ...chapter, verses: chapter.verses.map(withGreekLines) } : chapter;
 };
 
 /** A verse of Hebrew poetry (it has English lines, `l`) with the lines of its own, `hl`, broken at the accents of its book (hebrewLineStarts); any other verse as it is. */
@@ -407,7 +412,12 @@ export async function loadChapter(book: string, n: number): Promise<Chapter> {
   const msb = septuagint ? hebrew() : null;
   msb?.catch(() => undefined);
   const request = septuagint
-    ? loadSeptuagintChapter(book, n).then(async (greek) => (greek ? fillChapter(withHeadings(greek, await msb!.catch(() => null), book, n)) : msb!))
+    ? loadSeptuagintChapter(book, n).then(async (greek) => {
+        if (!greek) return msb!;
+        const own = await msb!.catch(() => null);
+        // the headings and the lines of the Hebrew verses beside it are laid on the Greek (mw-u2w5klk.302, mw-5r3p30.1166)
+        return fillChapter(withSeptuagintLines(withHeadings(greek, own, book, n), own, book, n));
+      })
     : hebrew();
   chapters.set(key, request);
   // A failure is not kept: the next call asks again.

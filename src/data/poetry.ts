@@ -70,14 +70,98 @@ export function hebrewLineStarts(words: readonly Pick<GreekWord, 't'>[], code: s
 }
 
 /**
- * The lines of a Hebrew verse of poetry (the Hebrew tab), or null when the verse is prose or has no accent to break at. They are the verse's `hl` (fillChapter sets it, from hebrewLineStarts and the book's code), each of indent 1, hung;
- * `from` and `to` are indexes into the verse's Hebrew words, `g`. The lead-in and the stanza are the English's alone.
+ * The lines of a verse of poetry in the Greek tab (the Hebrew tab's too), or null when the verse is prose or has no break to make. They are the verse's `hl` (fillChapter sets it: hebrewLineStarts for a Hebrew verse, greekLineStarts for a
+ * New Testament one, withSeptuagintLines for a Septuagint one), each of indent 1, hung; `from` and `to` are indexes into the verse's source words, `g`. When the verse says `hlead`, its first line is the lead-in ('Then Mary said:'), a line of
+ * indent 0 set flush left as in English. The stanza is the English's alone.
  */
-export function hebrewLinesOf(verse: Pick<Verse, 'g' | 'hl'>): PoetryLineSpan[] | null {
+export function hebrewLinesOf(verse: Pick<Verse, 'g' | 'hl'> & { hlead?: true }): PoetryLineSpan[] | null {
   const starts = verse.hl;
   if (!starts || starts.length < 2) return null;
   return starts.map((from, k) => {
     const to = k + 1 < starts.length ? starts[k + 1] : verse.g.length;
-    return { indent: 1, stanza: false, from, to, text: verse.g.slice(from, to).map((w) => w.t).join(' '), continued: false };
+    const lead = k === 0 && verse.hlead === true;
+    return { indent: lead ? 0 : 1, stanza: false, from, to, text: verse.g.slice(from, to).map((w) => w.t).join(' '), continued: lead };
   });
+}
+
+/**
+ * Where the lines of a New Testament verse of poetry start in its Greek words (mw-5r3p30.1166), borrowed from the English lines (`l`): a line starts at the first Greek word of the English chunks of its line (the least index of their
+ * `g`, so a line the English turns round, 'My soul magnifies', still starts at the verse's first word of it), and at the Greek words just ahead of it that have no English of their own ('Ἰδοὺ γάρ', where the English has no 'for behold'),
+ * which belong to no earlier line. A line none of whose chunks has a Greek word, or whose word is not after the line before's start (the Greek runs the other way), is not a break: its words stay in the line before it. The chunks before
+ * the English's first line are its lead-in; when the first line starts after the verse's first word, the words ahead of it are the lead-in line (`lead`). Null when the verse is prose or ends in one line.
+ */
+export function greekLineStarts(verse: Pick<Verse, 'g' | 'e' | 'l'>): { starts: number[]; lead: boolean } | null {
+  const marks = verse.l;
+  if (!marks?.length) return null;
+  const startOf = (k: number, after: number): number | null => {
+    const end = k + 1 < marks.length ? marks[k + 1][0] : verse.e.length;
+    const placed = verse.e.slice(marks[k][0], end).flatMap((c) => c.g).filter((i) => i >= 0 && i < verse.g.length);
+    if (placed.length === 0) return null;
+    let at = Math.min(...placed);
+    while (at - 1 > after && verse.g[at - 1].e === undefined) at--;
+    return at > after ? at : null;
+  };
+  const starts = [0];
+  let lead = false;
+  marks.forEach((_, k) => {
+    // a first line that is the English's first chunk starts at the verse's first word: it is `starts[0]`
+    if (k === 0 && marks[0][0] === 0) return;
+    const at = startOf(k, starts.at(-1)!);
+    if (at === null) return;
+    // the English chunks ahead of the first line are its lead-in: the Greek words ahead of where it starts are the lead-in line
+    if (k === 0) lead = true;
+    starts.push(at);
+  });
+  return starts.length > 1 ? { starts, lead } : null;
+}
+
+/** A verse's lines for a New Testament chapter's file: Greek verses that have English lines carry `hl` (and `hlead`) as they load, as a Hebrew verse does (fillChapter). */
+export function withGreekLines<T extends Verse>(verse: T): T {
+  const lines = greekLineStarts(verse);
+  return lines ? { ...verse, hl: lines.starts, ...(lines.lead ? { hlead: true as const } : {}) } : verse;
+}
+
+/** Whether a word ends at a stop (Swete's punctuation: comma, full stop, the high stop · and its twin U+0387, a colon, the Greek question mark U+037E), where a line may fall. */
+const STOP = /[,.·\u0387:;\u037E]['’\])”"]*$/u;
+const GREEK_LETTER = /\p{L}/gu;
+/** The Hebrew consonants: the points and the accents are marks (\u0591-\u05C7), the letters are \u05D0-\u05EA. */
+const HEBREW_LETTER = /[\u05D0-\u05EA]/g;
+/** How much a break not at a stop costs, in Greek letters (about two short words): a stop up to this far from the proportional place wins over the place itself. */
+export const NO_STOP_COST = 10;
+
+/** The number of letters in a Hebrew line's words, what its length is measured in (the prefixes the Hebrew writes into a word, 'and', 'in', 'the', are letters, as the Greek's own small words are). */
+export const hebrewLetters = (words: readonly Pick<GreekWord, 't'>[]): number => words.reduce((sum, w) => sum + (w.t.match(HEBREW_LETTER)?.length ?? 0), 0);
+
+/**
+ * Where the lines of a Septuagint verse start in its Greek words (mw-5r3p30.1166), borrowed from the lines of its Hebrew verse, whose lengths in Hebrew letters are `hebrew`. Lampas has no link between a Septuagint word and a Hebrew one,
+ * so the break is by proportion: the line that is a fraction of the Hebrew's letters ends about that fraction of the Greek's letters in, at the word boundary nearest, and a boundary after a stop (Swete's punctuation) within NO_STOP_COST
+ * letters of the place is taken over it. APPROXIMATE. Always starts with 0; null when there is nothing to break (one Hebrew line, or fewer Greek words than lines).
+ */
+export function septuagintLineStarts(words: readonly Pick<GreekWord, 't'>[], hebrew: readonly number[]): number[] | null {
+  const lines = hebrew.filter((n) => n > 0);
+  const total = lines.reduce((a, b) => a + b, 0);
+  const breaks = Math.min(lines.length - 1, words.length - 1);
+  if (breaks < 1 || total === 0) return null;
+  // the Greek letters before each word, and in all
+  const before: number[] = [0];
+  words.forEach((w) => before.push(before.at(-1)! + (w.t.match(GREEK_LETTER)?.length ?? 0)));
+  const greek = before.at(-1)!;
+  const starts = [0];
+  let seen = 0;
+  for (let k = 0; k < breaks; k++) {
+    seen += lines[k];
+    const target = (seen / total) * greek;
+    let best = -1;
+    let cost = Infinity;
+    // a break leaves a word for each line still to come
+    for (let b = starts.at(-1)! + 1; b <= words.length - (breaks - k); b++) {
+      const c = Math.abs(before[b] - target) + (STOP.test(words[b - 1].t) ? 0 : NO_STOP_COST);
+      if (c < cost) {
+        cost = c;
+        best = b;
+      }
+    }
+    starts.push(best);
+  }
+  return starts;
 }
