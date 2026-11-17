@@ -146,6 +146,18 @@ Feature: A wrong answer links to what teaches it
     And the lesson has no "Drill it" button, no "Try it on a verse" button, no "Mark known without a drill" and no level slider
     And the end card still shows its "Study list"
 
+  # mw-indx1x6.81: the lesson of "declension-1" offers no Try it on a verse anywhere (a declension is a pattern, which no word's parsing names: ideaSheet.ts hasFormOf),
+  # so the scenario above cannot show that button's fault. The article's lesson offers it wherever a verse of the open chapter has an article: over the end card it
+  # must not, and the step says the chapter has one.
+  Scenario: The article's lesson opened from a Review's Study list has no Try it on a verse, though the open chapter has the article
+    Given the table "article" is due in Review, every idea of its cells solid
+    When he opens Review and starts the round
+    And he misses every question of the round
+    And he taps the list's lesson of the idea "article"
+    Then the lesson of the idea "article" is open over the end card
+    And the lesson has no "Try it on a verse" button, though a verse of the open chapter has a form of the idea "article"
+    And the end card still shows its "Study list"
+
   # the tutor may answer with a link to a table, a verse or a setting, each a page of its own: in a talk over a drill those chips are not drawn, and the links that open
   # another app or copy a text still are
   Scenario: A table the tutor links in a talk over a drill is no chip, which would leave the drill
