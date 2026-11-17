@@ -237,7 +237,7 @@ test('the lesson over a drill has no Drill it, no level slider and no Mark known
 // answers began below the scroll box's fold, behind the Next bar, and nothing said it was there. After a wrong answer the drill shows the row: its first link is in view, above Next.
 
 /** Opens Drill it on an idea as he does: the Goal screen, the ideas bar, the idea, Drill it. Everything the idea builds on is solid, so its sheet offers Drill it. */
-async function openDrill(page: Page, idea: { id: string; title: string }): Promise<boolean> {
+async function openDrill(page: Page, idea: { id: string; title: string }): Promise<'asked' | 'unlisted' | 'declined'> {
   await put(page, 'settings', [{ key: 'goal', value: '1 John 2' }]);
   await put(
     page,
@@ -251,44 +251,45 @@ async function openDrill(page: Page, idea: { id: string; title: string }): Promi
   // the bar lists the ideas the goal needs: an idea 1 John 2 does not need has no place to open from
   await expect(page.getByTestId('ideas-list')).toBeVisible();
   const entry = page.getByTestId('ideas-list').getByRole('button', { name: idea.title, exact: true });
-  if ((await entry.count()) === 0) return false;
+  if ((await entry.count()) === 0) return 'unlisted';
   await entry.click();
   const sheet = page.getByRole('dialog', { name: 'Idea', exact: true });
   await expect(sheet.getByRole('heading', { name: idea.title })).toBeVisible();
   await expect(sheet.getByTestId('idea-loading')).toHaveCount(0);
   await sheet.getByRole('button', { name: 'Drill it', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Drill it', exact: true }).getByTestId('grammar-prompt')).toBeVisible();
-  return true;
+  const drill = page.getByRole('dialog', { name: 'Drill it', exact: true });
+  // Drill it proves an idea only on questions he has not been asked: with too few it asks none and says so (docs/grammar.md 'Confirming a missed idea')
+  await expect(drill.getByTestId('grammar-prompt').or(drill.getByTestId('drill-more-on-the-way')).or(drill.getByTestId('drill-cannot-ask'))).toBeVisible();
+  return (await drill.getByTestId('grammar-prompt').count()) > 0 ? 'asked' : 'declined';
 }
 
-/** Answers with the first answer, then the next question's, until one is wrong and the row is drawn (at most `asks` questions); false if none was wrong. */
-async function answerUntilWrong(page: Page, asks = 14): Promise<boolean> {
+/**
+ * Answers every question with an answer that is not the idea's own title until one is wrong and the row is drawn (at most `asks` questions); false if none was wrong. The right answer
+ * of 'Which idea is this?' is the idea's title, so that card, the one this spec is about, is always answered wrong at once; a drill is never opened twice on one phone, which
+ * would not ask the questions it has asked (docs/grammar.md 'Confirming a missed idea').
+ */
+async function answerUntilWrong(page: Page, title: string, asks = 14): Promise<boolean> {
   const drill = page.getByRole('dialog', { name: 'Drill it', exact: true });
   const row = drill.getByRole('group', { name: 'Study this', exact: true });
   for (let asked = 0; asked < asks; asked += 1) {
-    await drill.locator('[data-option]:not(:disabled)').first().click();
+    await drill.locator('[data-option]:not(:disabled)').filter({ hasNotText: new RegExp(`^${title}$`) }).first().click();
     const next = drill.getByTestId('drill-next');
     await expect(next).toBeVisible();
     if (await row.isVisible()) return true;
     await next.click();
-    if (await drill.getByTestId('grammar-prompt').count() === 0) return false;
+    if ((await drill.getByTestId('grammar-prompt').count()) === 0) return false;
   }
   return false;
 }
 
-/**
- * Drill it on the idea until a wrong answer draws the row. The first answers are not chosen, so a drill may be answered right to its end (an idea is proved on a streak of rights): it is
- * then opened again, up to five times. 'unlisted' when the goal's bar does not list the idea.
- */
-async function drillToWrong(page: Page, idea: { id: string; title: string }): Promise<'wrong' | 'unlisted' | 'never'> {
+/** Drill it on the idea until a wrong answer draws the row. 'unlisted' when the goal's bar does not list the idea, 'declined' when Drill it asks nothing for it. */
+async function drillToWrong(page: Page, idea: { id: string; title: string }): Promise<'wrong' | 'unlisted' | 'declined' | 'never'> {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    if (!(await openDrill(page, idea))) return 'unlisted';
-    if (await answerUntilWrong(page)) return 'wrong';
-  }
-  return 'never';
+  const opened = await openDrill(page, idea);
+  if (opened !== 'asked') return opened;
+  return (await answerUntilWrong(page, idea.title)) ? 'wrong' : 'never';
 }
 
 /** The row's first link is in view and ends above the Next bar, not behind it. */
@@ -322,6 +323,7 @@ for (const idea of LONG_CARDS) {
   test(`a wrong answer in a drill on ${idea.title} shows its Study this row above Next`, async ({ page }) => {
     const found = await drillToWrong(page, idea);
     if (found === 'unlisted') test.skip(true, 'the goal does not list this idea');
+    if (found === 'declined') test.skip(true, 'Drill it has too few questions he has not been asked for this idea');
     expect(found).toBe('wrong');
     await expectRowAboveNext(page);
   });
