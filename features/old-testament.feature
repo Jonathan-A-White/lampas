@@ -56,6 +56,13 @@ Feature: Lampas reads the Old Testament in English
     And it lists the words "of" and "Amittai", each with its Listen
     And it has the links "Look it up in Logos: of" and "Look it up in Logos: amittai"
 
+  Scenario: The Logos rows of a chunk's words are drawn when the Logos setting has been read, however late
+    Given Lampas is opened on Jonah 1 with Logos on, on a phone that is slow to read its settings
+    When he taps the chunk "of Amittai," of verse 1
+    Then the word sheet opens headed "of Amittai"
+    And it has no Look it up in Logos link while the Logos setting is still being read
+    And once the setting is read it has the links "Look it up in Logos: of" and "Look it up in Logos: amittai"
+
   @uc-logos-links @hebrew
   Scenario: With Logos off the word sheet offers to turn it on
     Given Lampas is opened on Jonah 1 with Logos off

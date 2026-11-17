@@ -5,6 +5,7 @@
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import Dexie from 'dexie';
 import { afterAll, expect, vi } from 'vitest';
 import { typeQuestion } from '../../tests/support/composer';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -51,7 +52,37 @@ interface Phone {
 // The scenario's steps are tests of their own, so the stubs live until the file ends rather than until each step does.
 const real = { ...browserEnv };
 
+/** The answers of the settings reads being held (holdSettingsReads), each let go by its function. */
+const held: (() => void)[] = [];
+let holding = false;
+let unhold: (() => void) | undefined;
+
+/** Lets every held read of the settings table answer, and holds no more. */
+function letSettingsReadsGo(): void {
+  holding = false;
+  for (const answer of held.splice(0)) answer();
+}
+
+/**
+ * Holds the answer of every read of the whole settings table (what the Logos switch is read by: getStudyResources) until letSettingsReadsGo, as a loaded host holds it:
+ * whatever a sheet draws from that read is not drawn yet, however many steps run meanwhile (mw-ar5k42b.28). The real read is made at once, so a live query still watches
+ * the table; only its answer is held. The next openOn undoes it.
+ */
+function holdSettingsReads(): void {
+  const read = db.settings.toArray.bind(db.settings) as () => Promise<unknown[]>;
+  holding = true;
+  const spy = vi
+    .spyOn(db.settings, 'toArray')
+    .mockImplementation((() => read().then((rows) => (holding ? new Dexie.Promise((resolve) => held.push(() => resolve(rows))) : rows))) as unknown as typeof db.settings.toArray);
+  unhold = () => {
+    letSettingsReadsGo();
+    spy.mockRestore();
+    unhold = undefined;
+  };
+}
+
 afterAll(async () => {
+  unhold?.();
   Object.assign(browserEnv, real);
   cleanup();
   stopReading();
@@ -64,6 +95,7 @@ const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/
 
 /** Opens the app on a chapter (the address names it), with these settings saved and, when asked, a phone that speaks. */
 async function openOn(title: string, settings: Record<string, string> = {}, speaks = false, phone: Phone = {}): Promise<void> {
+  unhold?.();
   cleanup();
   stopReading();
   clearBus();
@@ -289,23 +321,53 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
+  const sheetOpensHeaded = async (_: unknown, word: string): Promise<void> => {
+    await screen.findByRole('dialog', { name: 'Word' });
+    expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
+  };
+  /** The English rows' Look it up in Logos links on the sheet; the Hebrew words' own links (a reference in a definition, the Study tiles) are on it too, and are not these. */
+  const logosLinks = (): HTMLElement[] => within(sheet()).queryAllByRole('link').filter((l) => l.textContent?.startsWith('Look it up in Logos'));
+  /**
+   * Each English row draws its link only when its own read of the Logos switch has answered (EnglishDictionaryRow's live query): after the sheet is drawn and, on a loaded host
+   * or in a scenario that is the first to open the app, after the steps before this one too. So the step waits for both rows' links, never reads them at once (mw-ar5k42b.28).
+   */
+  const hasLogosLinks = async (_: unknown, a: string, b: string): Promise<void> => {
+    await waitFor(() => expect(logosLinks().map((l) => l.textContent)).toEqual([a, b]));
+    expect(logosLinks()[1].getAttribute('href')).toBe(englishDictionaryLink('amittai')?.url);
+  };
+
   Scenario('A chunk of two words lists two rows', ({ Given, When, Then, And }) => {
     Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
     When('he taps the chunk {string} of verse {int}', tapChunk);
-    Then('the word sheet opens headed {string}', async (_, word: string) => {
-      await screen.findByRole('dialog', { name: 'Word' });
-      expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
-    });
+    Then('the word sheet opens headed {string}', sheetOpensHeaded);
     And('it lists the words {string} and {string}, each with its Listen', (_, a: string, b: string) => {
       const items = within(sheet()).getAllByRole('listitem');
       expect(items.map((li) => squash(li.querySelector('[lang="en"]')?.textContent))).toEqual([a, b]);
       for (const [i, word] of [a, b].entries()) expect(within(items[i]).getByRole('button', { name: `Listen: ${word}` })).toBeInTheDocument();
     });
-    And('it has the links {string} and {string}', async (_, a: string, b: string) => {
-      // the Hebrew words' own Study links are on the sheet too: these are the English rows'. The rows draw once the Study resources are read (a live query), so wait for them
-      const logosLinks = () => within(sheet()).queryAllByRole('link').filter((l) => l.textContent?.startsWith('Look it up in Logos'));
-      await waitFor(() => expect(logosLinks().map((l) => l.textContent)).toEqual([a, b]));
-      expect(logosLinks()[1].getAttribute('href')).toBe(englishDictionaryLink('amittai')?.url);
+    And('it has the links {string} and {string}', hasLogosLinks);
+  });
+
+  // The gate of mw-rl10piw.8 failed 'A chunk of two words lists two rows' on a loaded host: its last step read the links at once and the rows' own read of the Logos switch had not
+  // answered (mw-ar5k42b.28). Here that read is held for as long as the steps like, so the same step (hasLogosLinks) passes only if it waits for the rows.
+  Scenario('The Logos rows of a chunk\'s words are drawn when the Logos setting has been read, however late', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Jonah 1 with Logos on, on a phone that is slow to read its settings', async () => {
+      await openOn('Jonah 1', withLogos(true));
+      holdSettingsReads();
+    });
+    When('he taps the chunk {string} of verse {int}', tapChunk);
+    Then('the word sheet opens headed {string}', sheetOpensHeaded);
+    And('it has no Look it up in Logos link while the Logos setting is still being read', async () => {
+      // the rows are drawn (their words and Listens) and their reads are asked for and held; their links are not drawn: this is what the failed gate's step saw
+      expect(within(sheet()).getAllByRole('listitem')).toHaveLength(2);
+      await waitFor(() => expect(held.length).toBeGreaterThan(0));
+      expect(logosLinks()).toEqual([]);
+    });
+    And('once the setting is read it has the links {string} and {string}', async (_, a: string, b: string) => {
+      // the step begins with the read still held, and the read answers only after it has begun: a step that reads the links at once fails here, on any host
+      const checked = hasLogosLinks(_, a, b);
+      letSettingsReadsGo();
+      await checked;
     });
   });
 
