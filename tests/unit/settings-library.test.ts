@@ -78,6 +78,24 @@ describe('the Settings search over the library (searchLibrary)', () => {
     expect(searchLibrary('e', new Set())).toEqual({ books: [], total: 0 });
   });
 
+  it("answers what his import holds and no more (mw-qtu3zvz.183): an import of Louw-Nida without BDAG finds Louw-Nida, not BDAG; no import finds neither", () => {
+    const bdag = CATALOGUE.find((e) => e.short === 'BDAG')!;
+    const louw = CATALOGUE.find((e) => e.short === 'Louw-Nida')!;
+    const held = new Set([louw.resource]);
+    expect(held.has(bdag.resource)).toBe(false);
+    expect(searchLibrary('bdag', held)).toEqual({ books: [], total: 0 });
+    expect(searchLibrary('louw', held).books.map((e) => e.resource)).toEqual([louw.resource]);
+    expect(searchLibrary('louw', new Set())).toEqual({ books: [], total: 0 });
+  });
+
+  it('answers no devotional his import does not hold (mw-qtu3zvz.183): Holiness Day by Day is left out of an import without it', () => {
+    const holiness = CATALOGUE.find((e) => e.kind === 'devotional' && e.title.startsWith('Holiness Day by Day'))!;
+    expect(holiness).toBeDefined();
+    const without = new Set([...EVERY_BOOK].filter((id) => id !== holiness.resource));
+    expect(searchLibrary('holiness day', without).books.map((e) => e.resource)).not.toContain(holiness.resource);
+    expect(searchLibrary('holiness day', EVERY_BOOK).books.map((e) => e.resource)).toContain(holiness.resource);
+  });
+
   it('finds nothing for an empty or a meaningless search', () => {
     expect(searchLibrary('   ', EVERY_BOOK)).toEqual({ books: [], total: 0 });
     expect(searchLibrary('zzzzqqq', EVERY_BOOK).total).toBe(0);
