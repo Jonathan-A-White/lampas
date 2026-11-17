@@ -67,7 +67,7 @@ export const devotionalSetting = defineSetting<string>({
   },
   section: 'daily',
   label: 'Which devotional',
-  hint: 'The one Today shows, or Random: a different one each day.',
+  hint: 'The one Today shows, or Random.',
   help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library or Morning RePhil; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start.`,
   dependsOn: LOGOS_ON,
 });
@@ -103,7 +103,7 @@ export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
   },
   section: 'daily',
   label: 'Morning RePhil order',
-  hint: 'Which episode comes next: the oldest or the newest you have not heard.',
+  hint: 'Oldest or newest episode first.',
   help: 'Next Morning RePhil episode: the oldest not yet played, or the newest.',
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM || value === MORNING_REPHIL_ID },
 });
@@ -135,7 +135,7 @@ export const todaysDevotionalSetting: {
   key: 'todaysDevotional',
   section: 'daily',
   label: "Today's devotional",
-  hint: "Change only today's devotional; Which devotional stays Random.",
+  hint: "Change only today's devotional.",
   help: `The devotional Today shows for the rest of today, while Which devotional is Random: "${ANOTHER}" draws a different one for today (the Another button on Today does the same), and a devotional's Logos resource id shows that one today. It shows only while Which devotional is Random.`,
   allowed: { kind: 'choice', values: [{ value: ANOTHER, label: 'Another' }, ...DEVOTIONALS.map((d) => ({ value: d.id, label: d.title })), { value: MORNING_REPHIL_ID, label: MORNING_REPHIL.title }] },
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
