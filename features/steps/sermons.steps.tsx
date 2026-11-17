@@ -89,10 +89,15 @@ const rowNamed = async (title: string): Promise<HTMLAnchorElement> => {
   return row;
 };
 const partTitles = async (): Promise<string[]> => [...(await sheetEl()).querySelectorAll('h3')].map((h) => squash(h.textContent));
+// the 'In Logos' group is drawn once his shelf and his import are read (two live queries) and the sheet is already open by then: wait for the row (mw-indx1x6.78)
 const archiveNamed = async (title: string): Promise<HTMLAnchorElement> => {
-  const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-archive-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
-  if (!row) throw new Error(`no archive ${title} in the sheet`);
-  return row;
+  const named = async () => [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-archive-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
+  let row: HTMLAnchorElement | undefined;
+  await waitFor(async () => {
+    row = await named();
+    if (!row) throw new Error(`no archive ${title} in the sheet`);
+  });
+  return row!;
 };
 const partRows = async (part: string): Promise<string[]> => {
   const group = await within(await sheetEl()).findByRole('group', { name: part });
