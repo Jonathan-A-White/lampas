@@ -173,6 +173,38 @@ describe('the floating ?', () => {
     expect(document.querySelector('[data-floating-tutor]')).toBeNull();
   });
 
+  it('is drawn with the first render of a screen that has something to ask about, not after the Hand is read from the store (mw-fnvjof.17.153)', async () => {
+    render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} />
+      </Phone>,
+    );
+    // no waiting: the Hand is read from the database a moment later, and the ? must not be that late
+    expect(document.querySelector('[data-floating-tutor]')).not.toBeNull();
+  });
+
+  it('is drawn at once on the side he chose, not the other side first (the Hand is remembered where the first render can read it)', async () => {
+    await setHand('left');
+    cleanup();
+    render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} />
+      </Phone>,
+    );
+    expect(document.querySelector('[data-floating-tutor]')?.getAttribute('data-hand')).toBe('left');
+    cleanup();
+    await setHand('right');
+    render(
+      <Phone licence="licensed">
+        <FloatingTutor />
+        <Screen ask={() => undefined} />
+      </Phone>,
+    );
+    expect(document.querySelector('[data-floating-tutor]')?.getAttribute('data-hand')).toBe('right');
+  });
+
   it('sits at the Hand side: left puts it on the left, right on the right', async () => {
     await setHand('left');
     const { unmount } = render(
