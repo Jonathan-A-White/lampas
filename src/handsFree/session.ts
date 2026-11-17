@@ -1,6 +1,6 @@
 // src/handsFree/session.ts — the ONE Hands-free session of the app (mw-rl10piw.6): voice-kit/handsfree's session over voice-kit/wake, started while the Hands-free
 // setting is On (src/handsFree/HandsFreeGate.tsx calls runHandsFree) and stopped when it is Off. On 'Hey Lampas' it pauses what is sounding (playback.ts), sounds a
-// short soft chime as the microphone opens for the command, takes HANDS_FREE_PAUSE_MS of silence after his words as the end, and hands the words to commands.ts;
+// short soft chime as the microphone opens for the command, takes the silence he chose after his words as the end (his setting 'Pause before it acts', 1.5 s to start; the kit reads it at each command), and hands the words to commands.ts;
 // when the exchange is over what it paused goes on. The microphone is handed over ('handover', the kit's default): the wake's stream is closed before the recogniser
 // opens and opened again after, the same path as a hold-to-talk.
 //  - The wake model (voice-kit/wake/models/hey-lampas.json, about 470 KB) is not in the app's first download: it is fetched as a file the first time Hands-free is
@@ -13,8 +13,9 @@ import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
 import { browserSpeech } from 'voice-kit/composer';
 import { browserWake, createChimes, createHandsFree, documentVisibility, type ChimePort, type HandsFree, type HandsFreeClock, type HandsFreeState, type WakePort } from 'voice-kit/handsfree';
 import type { WakeModel } from 'voice-kit/wake';
-import { handsFreeSetting } from '../settings/definitions';
-import { setSetting } from '../settings/store';
+import { handsFreePauseSetting, handsFreeSetting } from '../settings/definitions';
+import { handsFreePauseMs, type HandsFreePauseValue } from '../settings/definitions/handsFreePause';
+import { getSetting, onSetting, setSetting } from '../settings/store';
 import { speakText } from '../speech/greek';
 import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
@@ -24,8 +25,25 @@ import { forgetPlayback, goOnAtClose, SAID_KEY, silenceAtWake } from './playback
 /** Where the build serves the wake model (a hashed asset, fetched only when Hands-free is first turned On). */
 export const WAKE_MODEL_URL: string = modelUrl;
 
-/** The silence after his words that ends a command (story mw-rl10piw.9 makes it his setting). */
-export const HANDS_FREE_PAUSE_MS = 1500;
+// The pause he chose, kept here because the kit asks for it at each command and cannot wait for a read of the store: the saved value is read when the session is made and a
+// later change (his tap, the tutor's, an undo) arrives on the bus (followed from when the session is made); the kit reads it at the next command, so the wake is not restarted.
+let pauseValue: HandsFreePauseValue = handsFreePauseSetting.default;
+let unfollowPause: (() => void) | null = null;
+/** Starts following the setting (the bus), and reads the saved value; once for a session. */
+function followPause(): void {
+  unfollowPause?.();
+  let changed = false;
+  unfollowPause = onSetting(handsFreePauseSetting, (value) => {
+    changed = true;
+    pauseValue = value;
+  });
+  void getSetting(handsFreePauseSetting).then((saved) => {
+    // a change that arrived while the saved value was being read is the later one
+    if (!changed) pauseValue = saved;
+  });
+}
+/** The silence that ends the next command, in milliseconds. */
+const pauseNow = (): number => handsFreePauseMs(pauseValue);
 
 /** What is said, on screen and aloud, when the browser refuses the microphone. */
 export const MIC_REFUSED = "Lampas may not use the microphone. Allow it in the browser's site settings, then turn Hands-free on again.";
@@ -179,6 +197,7 @@ function onState(next: HandsFreeState): void {
 }
 
 function sessionNow(): HandsFree {
+  if (!session) followPause();
   session ??= createHandsFree(
     {
       wake,
@@ -194,7 +213,7 @@ function sessionNow(): HandsFree {
       onClose: goOnAtClose,
       onState,
     },
-    { pauseMs: HANDS_FREE_PAUSE_MS, listenOptions: { lang: COMMAND_LANG, appName: 'Lampas' } },
+    { pauseMs: pauseNow, listenOptions: { lang: COMMAND_LANG, appName: 'Lampas' } },
   );
   return session;
 }
@@ -221,6 +240,9 @@ export function resetHandsFree(): void {
   session?.stop();
   session = null;
   model = null;
+  unfollowPause?.();
+  unfollowPause = null;
+  pauseValue = handsFreePauseSetting.default;
   untouch?.();
   forgetPlayback();
   forgetAsk();
