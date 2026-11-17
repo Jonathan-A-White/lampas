@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.267",
+    "date": "2026-11-17",
+    "story": "mw-rl10piw.24",
+    "kind": "fixed",
+    "text": "turning Hands-free on or off no longer makes the whole page jump down and up; the microphone mark now sits in the corner over the page."
+  },
+  {
     "version": "0.7.266",
     "date": "2026-11-17",
     "story": "mw-rl10piw.9",

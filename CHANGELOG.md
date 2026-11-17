@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.267
+_2026-11-17_
+- Fixed: turning Hands-free on or off no longer makes the whole page jump down and up; the microphone mark now sits in the corner over the page.
+
 ## 0.7.266
 _2026-11-17_
 - New: Hands-free has a new setting, Pause before it acts, so you can make it wait 1, 1.5, 2, 3 or 4 seconds of quiet before it takes your words as a command.
