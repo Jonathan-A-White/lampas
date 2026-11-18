@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Chapter, GreekWord } from '../../src/data/chapter';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const word = (t: string, tr: string, l: string, p: string): GreekWord => ({ t, tr, s: '', l, p, y: '2', c: 0.9 });
 const chapter = (): Chapter =>
@@ -32,7 +33,7 @@ beforeEach(() => {
   asked.length = 0;
   work = mkdtempSync(join(tmpdir(), 'lampas-lxx-list-link-'));
 });
-afterEach(() => rmSync(work, { recursive: true, force: true }));
+afterEach(() => rmSync(work, { recursive: true, force: true }), HOOK_TIMEOUT_MS);
 
 describe('lxx:align-choose --list without the Morpheus link', () => {
   it('stops at once and names npm run lxx:link, asking the ship for nothing', async () => {
