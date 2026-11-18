@@ -2,16 +2,18 @@ Feature: The Bible voice setting (mw-82lb97i.6)
   Settings > Listening has a Bible voice row above English voice: Recording on Wi-Fi only to start (mw-zbgo4ep.30), Recording (David), or Phone voice. The recording of
   David (the MSB, streamed from openbible.com) plays where Lampas has its timings; the phone's voice reads wherever it is not chosen. Recording on Wi-Fi only
   is offered only on a phone that can tell Wi-Fi from mobile data (the Network Information API's type), and the choice is taken when a chapter starts, never in
-  the middle of one. The audio element, speech and the network are fakes (tests/support).
+  the middle of one. The row's line and its help name no book (mw-ar5k42b.26): David's books arrive one by one, and a book named there is soon one of several.
+  The audio element, speech and the network are fakes (tests/support).
 
   Scenario: Bible voice stands above English voice, Recording on Wi-Fi only chosen, with its hint and its credit line
     Given Settings is open at the page of "Listening" on a phone whose connection type is "cellular"
     Then "Bible voice" is drawn above "English voice"
     And the "Bible voice" row shows "Recording on Wi-Fi only" chosen
-    And the "Bible voice" row says "The MSB read by David, streamed, where Lampas has it (John so far); else the phone voice."
+    And the "Bible voice" row says "The MSB read by David, streamed, where Lampas has it; else the phone voice."
+    And the "Bible voice" row names no book of the Bible
     When he opens the More help of the "Bible voice" row
     Then the help opens with "Recording: Majority Standard Bible, read by David, streamed from openbible.com"
-    And the help names the internet and John
+    And the help names the internet and no book of the Bible
     And the help says it uses about 1.4 MB a minute and that books arrive as they are timed
 
   Scenario: On a phone that reports its connection the row offers three choices and the Wi-Fi one is kept across a reload

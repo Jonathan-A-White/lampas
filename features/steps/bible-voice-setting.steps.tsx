@@ -11,6 +11,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import type { Chapter } from '../../src/data/chapter';
 import { chapterListedNow, chapterTimingsNow, forgetTimings, type BookTimings, type ChapterTimings, type TimingsIndex } from '../../src/data/audioTimings';
+import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus, publish } from '../../src/events/bus';
@@ -115,6 +116,8 @@ const chosenOf = async (): Promise<string[]> =>
     .filter((b) => b.getAttribute('aria-pressed') === 'true')
     .map((b) => b.textContent ?? '');
 const listOf = (a: string, b?: string, c?: string): string[] => [a, b, c].filter((x): x is string => x !== undefined);
+/** The books of the Bible a text names, each as a whole word ('1 John' by its 'John'): the row and its help name none, because David's books arrive one by one (mw-ar5k42b.26). */
+const booksNamedIn = (text: string): string[] => BOOKS.map((b) => b.name).filter((name) => new RegExp(`\\b${name.replace(/^\d /, '')}\\b`).test(text));
 
 async function openReader(voice: string, connection: string, chapterN = 3, timed: number[] = [3, 4]): Promise<void> {
   await fresh(voice === 'default' ? undefined : voice);
@@ -187,9 +190,12 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the help opens with {string}', (_, text: string) => {
       expect(helpText().startsWith(text)).toBe(true);
     });
-    And('the help names the internet and John', () => {
+    And('the {string} row names no book of the Bible', async () => {
+      expect(booksNamedIn(squash((await voiceRow()).textContent))).toEqual([]);
+    });
+    And('the help names the internet and no book of the Bible', () => {
       expect(helpText()).toContain('internet');
-      expect(helpText()).toContain('John');
+      expect(booksNamedIn(helpText())).toEqual([]);
     });
     And('the help says it uses about 1.4 MB a minute and that books arrive as they are timed', () => {
       expect(helpText()).toContain('about 1.4 MB a minute');
