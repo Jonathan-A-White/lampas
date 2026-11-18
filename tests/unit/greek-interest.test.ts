@@ -61,7 +61,7 @@ const GREEK_ROWS: Readonly<Record<string, readonly [Follows, GreekLevel]>> = {
   handwritingDrills: ['depth', 3],
   readLessons: ['depth', 3],
   quizGoal: ['depth', 3],
-  goal: ['depth', 4],
+  goal: ['depth', 3],
   hebrewDepth: ['hebrewInterest', 1],
   'link.paradigms': ['depth', 5],
   paradigmExtent: ['depth', 5],
@@ -132,6 +132,28 @@ describe('the table', () => {
       let at = row;
       while (at?.dependsOn && !reaches(at.dependsOn.key)) at = EVERY_ROW.find((r) => r.key === at?.dependsOn?.key);
       expect(reaches(at?.dependsOn?.key), `${key} reaches ${follows}`).toBe(true);
+    }
+  });
+
+  const STANDS_ALONE: ReadonlySet<string> = new Set(['link.studyway', 'link.lists', 'link.memorize', 'link.paradigms', 'link.words', 'link.review']);
+
+  it('a link row that is drawn at a level leads to a section that has a row of its own drawn at that level (no link goes round in a circle, mw-indx1x6.97)', () => {
+    const links = EVERY_ROW.filter((r) => r.key.startsWith('link.'));
+    expect(links.length).toBeGreaterThan(5);
+    for (const link of links) {
+      for (const greek of LEVELS) {
+        const values = valuesAt(greek, 0);
+        const drawn = visibleRows(values, '', EVERY_ROW);
+        if (!drawn.some((r) => r.key === link.key)) continue;
+        // a link whose page is a screen of its own (My study way lists the lines he kept; the doors of Tools open the tools) needs no setting beside it; the sweep is for a link that stands in a section of settings, where a screen sends him back to choose
+        if (STANDS_ALONE.has(link.key)) continue;
+        const own = EVERY_ROW.filter((r) => r.section === link.section && !r.key.startsWith('link.'));
+        if (own.length === 0) continue;
+        expect(
+          drawn.some((r) => r.section === link.section && !r.key.startsWith('link.')),
+          `${link.key} is drawn at Greek ${greek} but its section '${link.section}' has no row drawn there`,
+        ).toBe(true);
+      }
     }
   });
 

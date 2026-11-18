@@ -47,3 +47,9 @@ Feature: What a passage needs
     And he taps Clear
     Then the Goal says "Goal: none" and the Chapter and Verse pickers wait for a book
     And the bus has heard there is no goal
+
+  Scenario: At step 3 of How much Greek, Choose a goal leads to the Goal pickers
+    Given "How much Greek?" is at 3 and no goal is set
+    When he taps Choose a goal on the Goal screen
+    Then Settings opens at its Goal section
+    And the Goal section has the Book, Chapter and Verse pickers, not only a Goal link

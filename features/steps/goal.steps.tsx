@@ -12,12 +12,17 @@ import { passageNeeds, progressToward, type PassageNeeds } from '../../src/data/
 import type { WordState } from '../../src/data/db';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
+import { GoalScreen } from '../../src/GoalScreen';
+import { setGreekInterest } from '../../src/data/repositories';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { expectLatest } from '../../tests/support/published';
 import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
+
+// jsdom has no scrollIntoView: Settings scrolls to the section it opens at
+Element.prototype.scrollIntoView = () => {};
 
 afterAll(async () => {
   cleanup();
@@ -178,6 +183,31 @@ describeFeature(feature, ({ Scenario, BeforeEachScenario }) => {
     });
     And('the bus has heard there is no goal', async () => {
       await expectLatest('goal-changed', (e) => expect(e).toEqual({ kind: 'goal-changed', goal: null }));
+    });
+  });
+
+  Scenario('At step 3 of How much Greek, Choose a goal leads to the Goal pickers', ({ Given, When, Then, And }) => {
+    Given('{string} is at 3 and no goal is set', async () => {
+      cleanup();
+      clearBus();
+      await db.open();
+      await db.settings.clear();
+      await setGreekInterest(3);
+      window.location.hash = '#/goal';
+      render(<GoalScreen />);
+    });
+    When('he taps Choose a goal on the Goal screen', async () => {
+      await user.click(await screen.findByRole('button', { name: 'Choose a goal' }));
+    });
+    Then('Settings opens at its Goal section', async () => {
+      expect(window.location.hash).toBe('#/settings?section=goal');
+      cleanup();
+      render(<SettingsScreen />);
+      await screen.findByRole('heading', { name: 'Learning' });
+    });
+    And('the Goal section has the Book, Chapter and Verse pickers, not only a Goal link', async () => {
+      await waitFor(() => expect(group()).toBeInTheDocument());
+      for (const name of ['Book', 'Chapter', 'Verse'] as const) expect(picker(name)).toBeInTheDocument();
     });
   });
 });

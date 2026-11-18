@@ -271,7 +271,7 @@ const goalOf = (value: string) => (value.trim() === '' ? null : (parseGoal(value
 
 const goalEntry: SettingEntry = {
   section: 'goal',
-  dependsOn: depthFrom(4),
+  dependsOn: depthFrom(3),
   key: 'goal',
   label: 'Goal',
   hint: 'The passage you are working toward: a book, a chapter or a verse.',
