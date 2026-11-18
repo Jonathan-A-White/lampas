@@ -51,7 +51,7 @@ export const dailyDevotionalSetting = piece(
   'dailyDevotional',
   'Devotional',
   'Today holds a devotional.',
-  'Whether Today holds a devotional: a Logos book (Logos On) or Morning RePhil.',
+  'Whether Today holds a devotional: a Logos book, or Morning RePhil.',
 );
 
 export const devotionalSetting = defineSetting<string>({
@@ -112,7 +112,7 @@ export const morningRephilBackupSetting = defineSetting<string>({
   },
   section: 'daily',
   label: 'When all Morning RePhil are seen',
-  hint: 'The devotional Today shows instead.',
+  hint: 'Today shows it instead.',
   help: `The Logos devotional Today shows once you have seen every Morning RePhil episode, until a new one is posted; Morning and Evening (${DEFAULT_BACKUP}) to start. It follows Logos: with Logos Off Today says every episode is seen.`,
   dependsOn: { key: 'devotional', shown: (value) => value === RANDOM || value === MORNING_REPHIL_ID },
 });
