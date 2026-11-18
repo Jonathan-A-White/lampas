@@ -13,7 +13,7 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
   Scenario: The row opens the page of sermon sources, each Off or On and none with a Pin
     Given Settings is open at Study resources with Logos Off
     When he opens the row "Sermon sources"
-    Then the page of sermon sources is open, "2" of its sources on
+    Then the page of sermon sources is open, "2 of 2 on"
     And the list shows "Test Sermons" as "On"
     And "Test Second Sermons" is in the list too, "On"
     And no source has a Pin
@@ -168,18 +168,18 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
 
   Scenario: The old Library > Sermons address opens the one list
     Given Lampas is opened at "#/library?kind=sermons" with Logos On
-    Then the page of sermon sources is open, "3" of its sources on
+    Then the page of sermon sources is open, "3 of 3 on"
     And the address is "#/settings?sources=sermons"
 
   Scenario: A link to a source's setting opens the list at its row
     Given Lampas is opened at "#/settings?setting=sermons.testsecond" with Logos Off
-    Then the page of sermon sources is open, "2" of its sources on
+    Then the page of sermon sources is open, "2 of 2 on"
     And the row of "Test Second Sermons" is marked
     And that row is the row of the setting "sermons.testsecond", highlighted as a setting's row is
 
   Scenario: A link to a Logos list his import lacks says why it is not listed
     Given Lampas is opened at "#/settings?setting=sermons.testlaurie" with Logos On
-    Then the page of sermon sources is open, "3" of its sources on
+    Then the page of sermon sources is open, "3 of 3 on"
     And the list has no source "Test Laurie's sermons"
     And a note reads "“Test Laurie's sermons” is listed only while Logos is on and your Library import says you own it in Logos. Import your Logos library first."
 

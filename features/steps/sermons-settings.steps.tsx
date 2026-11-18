@@ -145,10 +145,10 @@ describeFeature(feature, ({ Scenario }) => {
   const statusReads = async (_: unknown, line: string) => {
     await waitFor(() => expect(squash(byTest('sources-line')?.textContent)).toBe(line));
   };
-  // how many are on, as the status line under the title says it ('3 of 3 on'): the header holds no count (mw-qtu3zvz.173)
-  const pageOpenWith = async (_: unknown, on: string) => {
+  // the status line under the title, whole, as it says it ('3 of 3 on'): the header holds no count (mw-qtu3zvz.173); no import is kept in these scenarios, so no row of an earlier scenario is in the total (mw-qtu3zvz.193)
+  const pageOpenWith = async (_: unknown, line: string) => {
     await page();
-    await waitFor(() => expect(squash(byTest('sources-line')?.textContent)).toMatch(new RegExp(`^${on} of \\d+ on$`)));
+    await waitFor(() => expect(squash(byTest('sources-line')?.textContent)).toBe(line));
   };
   const noSource = async (_: unknown, name: string) => {
     const main = await page();
@@ -245,7 +245,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he opens the row {string}', async (_, name: string) => {
       await user.click(await within(await sermonsSection()).findByRole('button', { name: new RegExp(`^${name}`) }));
     });
-    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
+    Then('the page of sermon sources is open, {string}', pageOpenWith);
     And('the list shows {string} as {string}', shows);
     And('{string} is in the list too, {string}', shows);
     And('no source has a Pin', noPin);
@@ -485,7 +485,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The old Library > Sermons address opens the one list', ({ Given, Then, And }) => {
     Given('Lampas is opened at {string} with Logos On', (_, hash: string) => openAt(hash, 'on'));
-    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
+    Then('the page of sermon sources is open, {string}', pageOpenWith);
     And('the address is {string}', (_, hash: string) => {
       expect(window.location.hash).toBe(hash);
     });
@@ -493,7 +493,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario("A link to a source's setting opens the list at its row", ({ Given, Then, And }) => {
     Given('Lampas is opened at {string} with Logos Off', (_, hash: string) => openAt(hash, 'off'));
-    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
+    Then('the page of sermon sources is open, {string}', pageOpenWith);
     And('the row of {string} is marked', async (_, name: string) => {
       const group = await sourceSwitch(name);
       await waitFor(() => expect(group.closest('[data-source]')).toHaveAttribute('aria-current', 'true'));
@@ -506,7 +506,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A link to a Logos list his import lacks says why it is not listed', ({ Given, Then, And }) => {
     Given('Lampas is opened at {string} with Logos On', (_, hash: string) => openAt(hash, 'on'));
-    Then('the page of sermon sources is open, {string} of its sources on', pageOpenWith);
+    Then('the page of sermon sources is open, {string}', pageOpenWith);
     And('the list has no source {string}', async (_, name: string) => {
       expect(within(await page()).queryByRole('radiogroup', { name })).toBeNull();
     });
