@@ -1,5 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useRef, useState } from 'react';
 import { ALL_TICKED, RANDOM, devotionalOf, pickableDevotionals, tickedDevotionals } from '../../data/daily/devotionals';
+import { NotWatchHistory, importMessage, importWatchHistory } from '../../data/daily/youtubeHistory';
 import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
 import { useLogosOn } from '../../useLogosOn';
@@ -70,6 +72,41 @@ export const DevotionalControl: Control = ({ row }) => {
   );
 };
 
+/** Import YouTube history (mw-r9xo1pj.3): he chooses the watch-history.json from Google Takeout and the Morning RePhil episodes in it are marked Seen. The file is read here on the phone; nothing of it is kept or sent. */
+function ImportYoutubeHistory() {
+  const input = useRef<HTMLInputElement>(null);
+  const [said, setSaid] = useState<{ text: string; problem: boolean } | undefined>();
+  const pick = async (file: File | undefined): Promise<void> => {
+    if (input.current) input.current.value = '';
+    if (!file) return;
+    try {
+      setSaid({ text: importMessage(await importWatchHistory(await file.text())), problem: false });
+    } catch (error) {
+      setSaid({ text: error instanceof NotWatchHistory ? error.message : 'This file could not be read.', problem: true });
+    }
+  };
+  return (
+    <div className="pt-3">
+      <p className="pb-1 text-base text-muted">
+        Mark the episodes you watched on YouTube as seen: in Google Takeout export YouTube and YouTube Music history as JSON, then choose its watch-history.json. It is read on this phone; nothing is kept or sent.
+      </p>
+      <button
+        type="button"
+        onClick={() => oneTap('rephil-import-history', () => input.current?.click())}
+        className="flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line"
+      >
+        Import YouTube history
+      </button>
+      <input ref={input} type="file" accept=".json,application/json" aria-label="YouTube watch history file" tabIndex={-1} className="sr-only" onChange={(e) => void pick(e.target.files?.[0])} />
+      {said ? (
+        <p role="status" className={`pt-2 text-base ${said.problem ? 'text-accent' : ''}`}>
+          {said.text}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 /** Morning RePhil order: which episode is next, the oldest one he has not heard or the newest (shown while Which devotional is Random or Morning RePhil). */
 export const MorningRephilOrderControl: Control = ({ row }) => {
   const order = useSetting(morningRephilOrderSetting);
@@ -87,6 +124,7 @@ export const MorningRephilOrderControl: Control = ({ row }) => {
           settingKey="morningRephilOrder"
         />
       ) : null}
+      <ImportYoutubeHistory />
     </SettingRow>
   );
 };

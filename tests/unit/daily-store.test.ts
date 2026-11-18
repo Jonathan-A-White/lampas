@@ -7,8 +7,11 @@ import {
   KEPT_DAYS,
   getDay,
   getExplained,
+  getHeard,
   localDate,
+  markManySeen,
   markOpened,
+  pinEpisode,
   noteExplained,
   noteDailyChange,
   pickAnotherDevotional,
@@ -134,5 +137,21 @@ describe('the devotional drawn again for a day', () => {
     const b = await pickAnotherDevotional('2026-10-05', a, ticked, () => 0);
     expect(b).toBe('LLS:20.10.1');
     expect((await getDay('2026-10-05')).devotional).toBe('LLS:20.10.1');
+  });
+});
+
+describe('markManySeen (the YouTube history import, mw-r9xo1pj.3)', () => {
+  it('keeps each id once, returns only the ones that were not seen, and lets go a day episode it marks', async () => {
+    await pinEpisode('2026-11-18', 'b');
+    expect(await markManySeen('2026-11-18', ['a', 'b', 'a'])).toEqual(['a', 'b']);
+    expect(await markManySeen('2026-11-18', ['b', 'c'])).toEqual(['c']);
+    expect([...(await getHeard())].sort()).toEqual(['a', 'b', 'c']);
+    expect((await getDay('2026-11-18')).rephil).toBeUndefined();
+  });
+
+  it('leaves the day alone when nothing is new', async () => {
+    await pinEpisode('2026-11-18', 'z');
+    expect(await markManySeen('2026-11-18', [])).toEqual([]);
+    expect((await getDay('2026-11-18')).rephil).toBe('z');
   });
 });

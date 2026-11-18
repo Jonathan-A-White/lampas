@@ -125,6 +125,20 @@ export function markSeen(date: string, id: string): Promise<void> {
   });
 }
 
+/** Seen, for many at once (the YouTube history import, mw-r9xo1pj.3): keeps each of `ids` in the heard set and returns the ones that were not in it. The day's devotional is left alone, but an episode
+ *  kept for `date` that is now seen is let go, as Seen lets it, so Today moves on to the next unseen one. Nothing leaves the device. */
+export function markManySeen(date: string, ids: readonly string[]): Promise<string[]> {
+  return db.transaction('rw', db.settings, async () => {
+    const heard = heardIds((await db.settings.get(HEARD_KEY))?.value);
+    const added = [...new Set(ids)].filter((id) => !heard.includes(id));
+    if (added.length === 0) return [];
+    await db.settings.put({ key: HEARD_KEY, value: JSON.stringify([...heard, ...added]) });
+    const kept = (await getDay(date)).rephil;
+    if (kept !== undefined && added.includes(kept)) await update(date, (day) => ({ ticked: day.ticked, opened: day.opened, ...(day.devotional === undefined ? {} : { devotional: day.devotional }) }));
+    return added;
+  });
+}
+
 /** Keeps `id` as the Morning RePhil episode of `date` (Another's choice). */
 export function pinEpisode(date: string, id: string): Promise<void> {
   return update(date, (day) => ({ ...day, rephil: id }));
