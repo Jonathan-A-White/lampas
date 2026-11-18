@@ -7,8 +7,9 @@ import type { MouseEvent } from 'react';
 import { getReadTutor } from '../data/repositories';
 import { plainQuotes } from '../services/reading';
 import { answerRuns } from './answerRuns';
+import { SETTING_SAID_KEY, whenSaid } from './greek';
 import { startAnswer, stopAnswer, type Run } from './readAloud';
-import { holdAnswer, pageHidden } from './tutorWaiting';
+import { holdAnswer, holdStart, pageHidden } from './tutorWaiting';
 
 /** The id the reading check's verdict is spoken under (reading.answer): below zero, so no stored answer's id can be it. */
 export const VERDICT_ID = -1;
@@ -19,8 +20,14 @@ export const askAnswerId = (id: number): number => -id - 1;
 /** Starts the answer `id` now, or, when the page is hidden (he is in another app), keeps it for his return: the bar at the top of the app offers it
  * (TutorWaitingBar). */
 export function startAnswerWhenSeen(id: number, runs: Run[]): void {
-  if (pageHidden()) holdAnswer(id, runs);
-  else startAnswer(id, runs);
+  // a setting the answer changed says so first ('Hands-free on'): the answer is read when that sentence is over, not over it (mw-rl10piw.39); a new question gives up the wait (dropWaiting)
+  holdStart(
+    whenSaid(SETTING_SAID_KEY, () => {
+      holdStart(null);
+      if (pageHidden()) holdAnswer(id, runs);
+      else startAnswer(id, runs);
+    }),
+  );
 }
 
 /** Speaks `runs` as the answer `id` if the setting is On. `stillWanted` is asked again once the saved choice is read, so a response whose screen
