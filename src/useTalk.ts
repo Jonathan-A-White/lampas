@@ -29,6 +29,8 @@ import { holdUndo } from './talk/doneUndo';
 import { leaveSheetForTutor } from './ui/sheetBack';
 import { currentSettings, offeredChange } from './settings/registry';
 import { chapterOfferLang, greekOfferOf } from './talk/greekOffer';
+import { settingsForTutor } from './settings/tutorSettings';
+import { fitScreen } from './tutor/screen';
 import { greekLevelOf } from './settings/definitions/greekInterest';
 import { hebrewLevelOf } from './settings/definitions/hebrewInterest';
 import { higherInterest } from './services/interestField';
@@ -201,7 +203,10 @@ export function useTalk(
           // the tutor's resources and works follow the higher of the two dials (mw-gdcyf98.3); the Greek offer, below, the Greek one
           const greekLevel = higherInterest(settings);
           // fitted here, not in askTalk, to know which turns the request carries to be folded into the summary: the fit may add the turns it drops from the history (not the ones the summary holds already, still in the window)
-          const request = fitHistory(await withTutorFacts(buildTalkRequest(scope, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, chosen.on.includes('logos') ? worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel) : [], kept && { text: kept.summary, covered: kept.covered }, today, chapterMaps, readingSet, chapterSermons?.told), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
+          // a screen that lists its settings (Settings) reported the list it had read when the sheet opened, an empty one while its read was out (mw-ar5k42b.34): the list is read again
+          // here, so a request made before that read answered still names every setting
+          const asking = scope.screen?.settings ? { ...scope, screen: fitScreen({ ...scope.screen, settings: await settingsForTutor() }) } : scope;
+          const request = fitHistory(await withTutorFacts(buildTalkRequest(asking, text, turns, solid, settings, focus, learner, grammar, way, resourcesForTutor(chosen, greekLevel), pictures.length, { kept: goal, once }, waiting?.offer, requests, profile, pronunciation, spoken, memory, missing, readerView, rusty, chosen.on.includes('logos') ? worksForTutor(works, scope.screen ? undefined : { book, chapter, ...(scope.verse ? { verse: scope.verse.n } : {}) }, text, greekLevel) : [], kept && { text: kept.summary, covered: kept.covered }, today, chapterMaps, readingSet, chapterSermons?.told), turns.length), Math.max(0, (kept?.covered ?? 0) - Math.max(0, turns.length - MAX_HISTORY_TURNS)), talk);
           const options = {
             key: getDeviceKeyBytes(),
             files: pictures.length ? filesOf(pictures) : undefined,

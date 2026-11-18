@@ -47,7 +47,7 @@ const chapterFile = (book: string, n: number) => JSON.parse(readFileSync(`public
 let fake: FakePostern;
 
 /** Opens the app at `address` with the goal saved and a fake Postern behind it; his seed words and levels are the first open's. */
-async function openAt(address: string, goal: string | undefined = '1 John 1:1', slowWriteMs = 0, slowReadMs = 0): Promise<void> {
+async function openAt(address: string, goal: string | undefined = '1 John 1:1', slowWriteMs = 0, slowReadMs = 0, slowSettings = false): Promise<void> {
   vi.restoreAllMocks();
   cleanup();
   stopReading();
@@ -70,6 +70,7 @@ async function openAt(address: string, goal: string | undefined = '1 John 1:1', 
   if (goal !== undefined) await setGoal(goal);
   if (slowWriteMs > 0) slowTalkWrites(slowWriteMs);
   if (slowReadMs > 0) slowTalkReads(slowReadMs);
+  if (slowSettings) holdSettingsReads();
   render(<App />);
   await waitFor(async () => expect(await db.meta.get('grammarLevelsSeeded')).toBeDefined());
 }
@@ -97,6 +98,25 @@ function slowTalkReads(ms: number): void {
     }) as typeof clause.between;
     return clause;
   }) as unknown as typeof db.talks.where);
+}
+
+/** The answers of the settings reads being held (holdSettingsReads), each let go by letSettingsReadsGo. */
+const heldReads: (() => void)[] = [];
+let holdingReads = false;
+
+/** Every read of the whole settings table (what the study resources are read by: getStudyResources) is made at once but answers only when letSettingsReadsGo says,
+ * as a loaded host holds it (mw-ar5k42b.34): whatever the screen draws from that read is not drawn, and a request made meanwhile must wait for it. openAt undoes it. */
+function holdSettingsReads(): void {
+  const read = db.settings.toArray.bind(db.settings) as () => Promise<unknown[]>;
+  holdingReads = true;
+  vi.spyOn(db.settings, 'toArray').mockImplementation((() =>
+    read().then((rows) => (holdingReads ? new Dexie.Promise((resolve) => heldReads.push(() => resolve(rows))) : rows))) as unknown as typeof db.settings.toArray);
+}
+
+/** Lets every held read of the settings table answer, and holds no more. */
+function letSettingsReadsGo(): void {
+  holdingReads = false;
+  for (const answer of heldReads.splice(0)) answer();
 }
 
 const control = () => screen.queryAllByRole('button', { name: CONTROL });
@@ -414,6 +434,32 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
     And('the grist carries only fields the input schema allows', () => {
       expect(validate(sent(0), inputSchema)).toEqual([]);
+    });
+  });
+
+  // The gate of mw-ar5k42b.28 saw this once with the read 300 ms late: the screen told the tutor an empty list of settings, because the sheet's request went before the screen had read them.
+  // Here the read is held for as long as the steps like, so the request must wait for it (settingsForTutor, asked again when the request is made).
+  Scenario('On Settings a request made before the settings have been read still carries every setting', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on #/settings with the goal {string} behind a fake Postern, on a phone that is slow to read its settings', (_, goal: string) =>
+      openAt('#/settings', goal, 0, 0, true),
+    );
+    When('he opens the tutor with the floating ?', taps);
+    And('he taps the suggested question {string}', (_, question: string) => tapsSuggestion(question));
+    And('the phone reads its settings at last', async () => {
+      await waitFor(() => expect(heldReads.length).toBeGreaterThan(0));
+      expect(fake.received).toHaveLength(0);
+      letSettingsReadsGo();
+    });
+    Then('the mill received {int} grists for the lampas app, kind bible-talk', async (_, count: number) => {
+      await waitFor(() => expect(fake.received).toHaveLength(count));
+    });
+    And("the grist's screen settings name every setting and study resource with its value now and its help", () => {
+      const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
+      expect(got.map((s) => s.name)).toEqual(ROWS.filter((r) => isTalkable(r.key)).map((r) => r.label));
+    });
+    And("the grist's screen settings say Logos is Off and what it adds", () => {
+      const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
+      expect(got.find((s) => s.name === 'Logos')).toMatchObject({ value: 'Off', help: expect.stringContaining('Open in Logos') });
     });
   });
 
