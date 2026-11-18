@@ -6,7 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
-import { GROUPS, ROWS, SECTIONS, groupOf, isHomeRow } from '../../src/settings/rows';
+import { GROUPS, ROWS, SECTIONS, groupOf, isHomeRow } from '../support/settings';
 import { showSettingsGroup } from '../support/settings-pages';
 import { keepImport } from '../support/logos-import';
 

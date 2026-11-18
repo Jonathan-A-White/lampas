@@ -8,7 +8,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnswerLink } from '../../src/data/db';
 import { db } from '../../src/data/db';
 import { MAX_LINKS, isTalkAnswer } from '../../src/services/talk';
-import { SETTINGS } from '../../src/settings/registry';
+import { SETTINGS } from '../support/settings';
 import { TutorLinks } from '../../src/TutorLinks';
 import { instructionsOf } from '../../scripts/grind-parts';
 import { validate, type Schema } from '../support/schema-validate';

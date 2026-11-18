@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
+import { SETTINGS_SOURCE } from '../support/settings-sources';
 const doc = readFileSync('docs/demo-library-at-scale.md', 'utf8');
 const source = (file: string): string => readFileSync(file, 'utf8');
 
@@ -18,7 +19,7 @@ const STEPS: { step: number; labels: [label: string, file: string, drawn?: strin
   {
     step: 2,
     labels: [
-      ['Study resources', 'src/settings/rows.ts'],
+      ['Study resources', SETTINGS_SOURCE.rows],
       ['Logos', 'src/resources/logos.ts'],
       ['Your Logos library', 'src/tutor/screen.ts'],
       ['Import', 'src/library/LibraryScreen.tsx'],
@@ -68,8 +69,8 @@ const STEPS: { step: number; labels: [label: string, file: string, drawn?: strin
       ['Search your other books', 'src/library/AskForBook.tsx'],
       ['Send', 'src/library/AskForBook.tsx'],
       ['Sent: the factory has it', 'src/services/formCommands.ts'],
-      ['Your requests', 'src/settings/rows.ts'],
-      ['Account', 'src/settings/rows.ts'],
+      ['Your requests', SETTINGS_SOURCE.rows],
+      ['Account', SETTINGS_SOURCE.rows],
       ['Filed', 'node_modules/pwa-kit/packages/requests/dist/status.js'],
     ],
   },

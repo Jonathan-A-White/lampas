@@ -11,7 +11,7 @@ import { wordIsListed } from '../../src/data/repositories';
 import { setWorks } from '../../src/data/repositories';
 import { setSetting } from '../../src/settings/store';
 import { dailyTicksSetting } from '../../src/settings/definitions';
-import { currentSettings } from '../../src/settings/registry';
+import { currentSettings } from '../support/settings';
 import { hasPractise, takePractise } from '../../src/review/practise';
 import { registerTalkLeave } from '../../src/talk/rustyOffer';
 import { addWord, bibleTalkRegistry, changeSettings, lampasRegistry, tickToday, workDoor } from '../../src/tutor/registry';

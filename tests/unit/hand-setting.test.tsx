@@ -7,8 +7,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { getHand, setHand } from '../../src/settings/hand';
-import { settingOf } from '../../src/settings/registry';
-import { isTalkable, rowOf } from '../../src/settings/rows';
+import { settingOf, isTalkable, rowOf } from '../support/settings';
 import { settingsForTutor } from '../../src/settings/tutorSettings';
 import { showSettingsGroup } from '../support/settings-pages';
 

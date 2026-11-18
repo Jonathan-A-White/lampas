@@ -12,7 +12,7 @@ import { clearBus } from '../../src/events/bus';
 import { crossChapter } from '../../src/reader/crossChapter';
 import { useChapterSwipe } from '../../src/reader/useChapterSwipe';
 import { chapterButtonsSetting } from '../../src/settings/definitions';
-import { writeSetting } from '../../src/settings/registry';
+import { writeSetting } from '../support/settings';
 import { setSetting } from '../../src/settings/store';
 import { chapterSwiped, hints } from '../../src/tips/hints';
 

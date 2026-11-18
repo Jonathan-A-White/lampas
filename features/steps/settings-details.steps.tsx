@@ -10,7 +10,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { seedHisWords } from '../../tests/support/his-words';
-import type { GroupId } from '../../src/settings/rows';
+import { type GroupId } from '../../tests/support/settings';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';

@@ -18,7 +18,7 @@ import { ReadAloud } from '../../src/speech/ReadAloud';
 import { stopReading } from '../../src/speech/readAloud';
 import { BarSlot, LampasSpeakingBar } from '../../src/speech/SpeakingBarSlot';
 import { TeachSheet } from '../../src/TeachSheet';
-import { SettingRow } from '../../src/settings/controls/SettingRow';
+import { SettingRow } from '../../tests/support/settings';
 import { WhatsNewOnUpdate } from '../../src/whatsNew/WhatsNewOnUpdate';
 import { WhatsNewSection } from '../../src/whatsNew/WhatsNewSection';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';

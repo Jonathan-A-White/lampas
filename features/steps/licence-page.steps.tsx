@@ -12,7 +12,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { LicenceProvider } from '../../src/gate/LicenceProvider';
 import { forgetTrail, restoreLastRoute } from '../../src/nav/lastRoute';
-import { ROWS, groupOf } from '../../src/settings/rows';
+import { ROWS, groupOf } from '../../tests/support/settings';
 import { fetchLicenceStatus } from '../../src/services/licenceCheck';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { LicenceProbe } from '../../tests/support/licence-probe';

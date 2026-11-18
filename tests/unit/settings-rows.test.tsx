@@ -1,4 +1,4 @@
-// The rows of Settings (src/settings/rows.ts): one list says what every row is called, its one-line hint, its longer help and what it
+// The rows of Settings (rows.ts of src/settings): one list says what every row is called, its one-line hint, its longer help and what it
 // depends on; the screen draws exactly those rows, the search filters them and show-when-on reads their dependencies.
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, cleanup, waitFor } from '@testing-library/react';
@@ -6,8 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
-import { SETTINGS } from '../../src/settings/registry';
-import { GROUPS, ROWS, SECTIONS, foldText, groupOf, isHomeRow, rowOf, visibleRows, type Values, isSermonSourceRow } from '../../src/settings/rows';
+import { SETTINGS, GROUPS, ROWS, SECTIONS, foldText, groupOf, isHomeRow, rowOf, visibleRows, type Values, isSermonSourceRow } from '../support/settings';
 import { showSettingsGroup } from '../support/settings-pages';
 import { forgetImport, keepImport } from '../support/logos-import';
 import { OWNS_PREFIX, ownsKey } from '../../src/sermons/enabled';

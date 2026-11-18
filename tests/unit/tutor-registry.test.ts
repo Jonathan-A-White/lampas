@@ -3,7 +3,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { todayNow } from '../../src/data/learnerToday';
-import { currentSettings } from '../../src/settings/registry';
+import { currentSettings } from '../support/settings';
 import { ROUTES, routeOf } from '../../src/nav/route';
 import { SCREEN_NAMES } from '../../src/tutor/screen';
 import { reportScreen } from '../../src/tutor/screenContext';

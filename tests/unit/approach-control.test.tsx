@@ -1,4 +1,4 @@
-// Settings > Grammar approach (src/settings/controls/approach.tsx, mw-foy5mb.1): with one approach there is no choice to draw, only the path's
+// Settings > Grammar approach (controls/approach.tsx of src/settings, mw-foy5mb.1): with one approach there is no choice to draw, only the path's
 // own name, method and lessons and 'Ask for another approach'; with two the radiogroup returns. Its Next badge sits on the lesson the Goal's Learn next
 // opens (mw-86e9r1.24).
 import '@testing-library/react/dont-cleanup-after-each';
@@ -13,8 +13,7 @@ import { db, type GrammarLevelName } from '../../src/data/db';
 import { parseGoal } from '../../src/data/goal';
 import { learnNext } from '../../src/data/grammar/goalProgress';
 import { passageNeeds } from '../../src/data/grammar/needs';
-import { ApproachPicker, ApproachControl } from '../../src/settings/controls/approach';
-import { ROWS } from '../../src/settings/rows';
+import { ApproachPicker, ApproachControl, ROWS } from '../support/settings';
 
 const stub: GrammarApproach = {
   id: 'stub',

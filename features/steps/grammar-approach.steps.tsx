@@ -21,7 +21,7 @@ import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { bmaTutor } from '../../src/approaches/bma-tutor';
 import { ladder } from '../../src/approaches/ladder';
-import { ApproachPicker } from '../../src/settings/controls/approach';
+import { ApproachPicker } from '../../tests/support/settings';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';

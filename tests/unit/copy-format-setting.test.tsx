@@ -9,8 +9,7 @@ import { db } from '../../src/data/db';
 import { setGreekInterest, setReaderView } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting } from '../../src/settings/definitions';
-import { CopyFormatControl } from '../../src/settings/controls/appearance';
-import { readValues, ROWS, rowOf } from '../../src/settings/rows';
+import { CopyFormatControl, readValues, ROWS, rowOf } from '../support/settings';
 import { DEFINITIONS } from '../../src/settings/definitions';
 import { stubChapterFetch } from '../support/chapter-fetch';
 

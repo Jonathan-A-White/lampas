@@ -10,7 +10,7 @@ import { MORNING_REPHIL_ID, RANDOM } from '../../src/data/daily/devotionals';
 import { EPISODES, episodeDate } from '../../src/data/daily/morningRephil';
 import { getDay, getHeard, localDate } from '../../src/data/daily/dailyStore';
 import { Today } from '../../src/today/Today';
-import { applyChanges, currentSettings } from '../../src/settings/registry';
+import { applyChanges, currentSettings } from '../support/settings';
 
 afterAll(() => {
   cleanup();

@@ -9,7 +9,7 @@ import { DEFAULT_FONT, ENGLISH_FONT_VAR, FONTS, PHONE_STACK, isFont, stackOf } f
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { fontSetting } from '../../src/settings/definitions';
-import { SETTINGS, writeSetting } from '../../src/settings/registry';
+import { SETTINGS, writeSetting } from '../support/settings';
 import { getSetting } from '../../src/settings/store';
 
 const root = document.documentElement;

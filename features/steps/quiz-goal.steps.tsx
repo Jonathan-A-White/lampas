@@ -9,7 +9,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { QUIZ_GOAL_DRAFT_KEY } from '../../src/settings/controls/quizGoal';
+import { QUIZ_GOAL_DRAFT_KEY } from '../../tests/support/settings';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';

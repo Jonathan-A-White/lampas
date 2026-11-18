@@ -5,7 +5,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { getQuizGoal, QUIZ_GOAL_MAX, setQuizGoal } from '../../src/data/repositories';
-import { applyChanges } from '../../src/settings/registry';
+import { applyChanges } from '../support/settings';
 import { buildTalkRequest, isTalkAnswer, MAX_REQUEST_BYTES } from '../../src/services/talk';
 import { validate, type Schema } from '../support/schema-validate';
 import '../support/grinds-in-graph';

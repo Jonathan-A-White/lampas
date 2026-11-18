@@ -8,7 +8,7 @@ import { formPasses, WEAVE_GRAMMARS } from '../../src/data/grammar/formLevel';
 import { ALWAYS_NEEDED, ideasOf } from '../../src/data/grammar/ladder';
 import { availableCount, availableText, cellName, cellsOf, isAvailable, paradigmById, standingOf, type Levels } from '../../src/data/paradigms';
 import { EXTENT_SETTINGS, extentOf, paradigmExtentSetting } from '../../src/settings/definitions/grammarExtent';
-import { SETTINGS } from '../../src/settings/registry';
+import { SETTINGS } from '../support/settings';
 
 const article = paradigmById('article')!;
 const level = (level: 'solid' | 'frontier' | 'notYet') => ({ level });

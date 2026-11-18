@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { IdeaSheetWithWord } from '../../src/IdeaSheetWithWord';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
+import { SETTINGS_SOURCE } from '../support/settings-sources';
 
 afterEach(cleanup);
 
@@ -26,7 +27,7 @@ describe('IdeaSheetWithWord opens an idea of either ladder', () => {
 });
 
 describe('no screen a Hebrew learner reaches looks an idea up on the Greek ladder alone', () => {
-  it.each(['src/IdeaSheetWithWord.tsx', 'src/settings/controls/approach.tsx', 'src/tutor/drillTalk.ts', 'src/data/repositories/reviews.ts'])('%s imports ideaOfAny, not the Greek-only ideaOf', async (file) => {
+  it.each(['src/IdeaSheetWithWord.tsx', SETTINGS_SOURCE.approachControl, 'src/tutor/drillTalk.ts', 'src/data/repositories/reviews.ts'])('%s imports ideaOfAny, not the Greek-only ideaOf', async (file) => {
     const { readFileSync } = await import('node:fs');
     const source = readFileSync(file, 'utf8');
     expect(source).not.toMatch(/import \{[^}]*\bideaOf\b[^}]*\} from '[./]*\/?(?:data\/)?(?:grammar\/)?ladder'/);

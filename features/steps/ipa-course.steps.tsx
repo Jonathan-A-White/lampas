@@ -23,7 +23,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { asSpoken } from '../../tests/support/spoken-word';
-import { GROUPS } from '../../src/settings/rows';
+import { GROUPS } from '../../tests/support/settings';
 import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();

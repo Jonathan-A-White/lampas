@@ -6,8 +6,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SettingsScreen } from '../../src/SettingsScreen';
-import { SETTINGS } from '../../src/settings/registry';
-import { ROWS, rowOf, searchSettings } from '../../src/settings/rows';
+import { SETTINGS, ROWS, rowOf, searchSettings } from '../support/settings';
 import { settingKeyOf, settingLink } from '../../src/settings/link';
 
 const scrolled = vi.fn();

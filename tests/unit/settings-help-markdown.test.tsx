@@ -5,8 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clearBus } from '../../src/events/bus';
 import { GREEK_LEVELS } from '../../src/settings/definitions/greekInterest';
-import { SettingRow } from '../../src/settings/controls/SettingRow';
-import { ROWS, rowOf, searchSettings, visibleRows } from '../../src/settings/rows';
+import { SettingRow, ROWS, rowOf, searchSettings, visibleRows } from '../support/settings';
 import { stopReading } from '../../src/speech/readAloud';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 

@@ -2,7 +2,7 @@
 // since mw-5r3p30.754) is drawn there only while it is On; no licence gates any of them.
 import { describe, expect, it } from 'vitest';
 import type { GreekLevel } from '../../src/settings/definitions/greekInterest';
-import { GROUPS, ROWS, SECTIONS, TOOL_ROWS, orderResourceRows, rowOf, visibleRows, visibleToolRows, type SettingsRow } from '../../src/settings/rows';
+import { GROUPS, ROWS, SECTIONS, TOOL_ROWS, orderResourceRows, rowOf, visibleRows, visibleToolRows, type SettingsRow } from '../support/settings';
 
 const study = (values: Record<string, string>): string[] =>
   visibleRows({ languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', ...values }, '')

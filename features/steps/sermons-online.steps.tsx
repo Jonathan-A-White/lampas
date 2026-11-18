@@ -15,7 +15,7 @@ import { forgetServiceSources } from '../../src/sermons';
 import { setKnownSermonSources } from '../../src/sermons/known';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { setSermonsUrl, type ServiceHit, type ServiceSermon } from '../../src/services/sermons';
-import { forgetGrownSermonRows } from '../../src/settings/rows';
+import { forgetGrownSermonRows } from '../../tests/support/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';

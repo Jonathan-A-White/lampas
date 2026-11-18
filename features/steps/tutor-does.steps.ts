@@ -12,7 +12,7 @@ import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { currentSettings } from '../../src/settings/registry';
+import { currentSettings } from '../../tests/support/settings';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { bibleTalkRegistry } from '../../src/tutor/registry';

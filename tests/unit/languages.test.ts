@@ -26,8 +26,7 @@ import { depthFrom, interestSetting, languagesOf, levelOf, levelsOf, type Intere
 import { viewAt, weaveAt } from '../../src/settings/definitions/greekInterest';
 import { readViewSettings, settingsFor } from '../../src/reader/useViewSettings';
 import { setReaderView, setWeave } from '../../src/data/repositories';
-import { readValues, visibleRows } from '../../src/settings/rows';
-import { settingOf } from '../../src/settings/registry';
+import { readValues, visibleRows, settingOf } from '../support/settings';
 
 beforeEach(async () => {
   window.localStorage.clear();

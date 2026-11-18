@@ -7,7 +7,7 @@ import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { addTurn, getQuizGoal, listTurns } from '../../src/data/repositories';
 import { buildTalkRequest, isTalkAnswer, type PendingOffer, type TalkScope } from '../../src/services/talk';
-import { offeredChange } from '../../src/settings/registry';
+import { offeredChange } from '../support/settings';
 import { offerOfTurn, pendingOfferOf, settleOffer } from '../../src/talk/offers';
 import { validate, type Schema } from '../support/schema-validate';
 import { instructionsOf } from '../../scripts/grind-parts';
