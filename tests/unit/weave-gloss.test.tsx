@@ -135,19 +135,20 @@ describe('Luke 20:20 in Weave, a learning pair (mw-5r3p30.991; the pair is πα�
   });
 });
 
-describe('the same in Hebrew Weave (Genesis 1:11, "plants" = עֵשֶׂב + זֶרַע)', () => {
+// mw-fnvjof.17.161: the chunk of two Hebrew words is 'seed-bearing' = מַזְרִיעַ + זֶרַע ('sowing seed'); 'plants' is עֵשֶׂב alone (the build once gave זֶרַע to 'plants', joining a '. . .' word to the chunk after it)
+describe('the same in Hebrew Weave (Genesis 1:11, "seed-bearing" = מַזְרִיעַ + זֶרַע)', () => {
   const gen = chapterOf('gen', 1);
-  const plants = gen.verses.find((v) => v.n === 11) as Verse;
-  const [herb, seed] = [5, 7].map((i) => plants.g[i].l);
+  const verse = gen.verses.find((v) => v.n === 11) as Verse;
+  const [sow, seed] = [6, 7].map((i) => verse.g[i].l);
 
   it('shows the one known Hebrew word in gold beside the English, and drops it once both are known', () => {
-    const one = draw(gen, 11, [herb], 'hbo');
+    const one = draw(gen, 11, [sow], 'hbo');
     const gold = one.querySelector('[data-beside]') as HTMLElement;
-    expect(gold.textContent?.trim()).toBe(plants.g[5].t);
+    expect(gold.textContent?.trim()).toBe(verse.g[6].t);
     expect(gold.getAttribute('dir')).toBe('rtl');
-    expect(gold.nextElementSibling?.textContent).toContain('plants');
-    const both = draw(gen, 11, [herb, seed], 'hbo');
-    expect(textOf(both)).not.toContain('plants');
+    expect(gold.nextElementSibling?.textContent).toContain('seed-bearing');
+    const both = draw(gen, 11, [sow, seed], 'hbo');
+    expect(textOf(both)).not.toContain('seed-bearing');
     expect(both.querySelectorAll('[data-beside]')).toHaveLength(0);
   });
 });

@@ -315,7 +315,7 @@ describe('the worker\'s rule for /data/audio/', () => {
   it.each(['/data/audio/msb-david/index.json', '/data/audio/msb-david/jhn.json'])('answers %s network first, in the data cache, waiting 5 s for the network', (path) => {
     const route = routeFor(path);
     expect(route?.handler).toBeInstanceOf(NetworkFirst);
-    expect(route?.handler).toMatchObject({ options: { cacheName: 'lampas-data-v4' }, networkTimeoutSeconds: 5 });
+    expect(route?.handler).toMatchObject({ options: { cacheName: 'lampas-data-v5' }, networkTimeoutSeconds: 5 });
   });
 
   it('keeps the cache-first rule for the rest of /data/, and never asks it about /data/audio/', () => {

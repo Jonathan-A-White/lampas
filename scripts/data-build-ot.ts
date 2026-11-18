@@ -58,6 +58,36 @@ const PARSE_FIXES: Readonly<Record<string, string>> = {
   'N-msc | 1cs': 'Noun - masculine singular construct | first person common singular',
 };
 
+/**
+ * Verses where the table puts an English chunk on the wrong Hebrew word (a slip of the source, not of the build): `swap` names two Strong's numbers of the verse that trade their English
+ * (its place in the English order, its text, the punctuation after it and the paragraph or poetry tag that opens its line), as scripts/data-build.ts ALIGNMENT_FIXES does for the New Testament. The words are named by Strong's number, which
+ * is unique in these verses.
+ * Isaiah 33:8 'and human life is disregarded.' (לֹא חָשַׁב אֱנוֹשׁ): the table gives 'and human life' to לֹא (H3808) and 'is disregarded' to חָשַׁב, and leaves אֱנוֹשׁ (H582, 'human') '. . .'
+ * at the end; swapped, אֱנוֹשׁ is 'and human life' and לֹא is the '. . .' that goes with 'is disregarded' (mw-fnvjof.17.161).
+ */
+interface PairingFix {
+  ref: string;
+  swap: [string, string];
+}
+export const PAIRING_FIXES: readonly PairingFix[] = [{ ref: 'Isaiah 33:8', swap: ['H3808', 'H582'] }];
+
+/** Applies the PAIRING_FIXES of this verse to its words; a fix whose words the verse lacks stops the build. */
+export function fixPairing(book: string, chapter: number, n: number, words: TableWord[]): void {
+  for (const fix of PAIRING_FIXES) {
+    if (fix.ref !== `${book} ${chapter}:${n}`) continue;
+    const [a, b] = fix.swap.map((strongs) => {
+      const found = words.filter((w) => w.strongs === strongs);
+      if (found.length !== 1) throw new Error(`${fix.ref}: the pairing fix names ${strongs}, which the table holds ${found.length} times`);
+      return found[0];
+    });
+    for (const key of ['englishSort', 'english', 'begQ', 'tail', 'par'] as const) {
+      const keep = a[key];
+      (a[key] as string | number) = b[key];
+      (b[key] as string | number) = keep;
+    }
+  }
+}
+
 export function otLexicon(text: string): Lexicon {
   return parseTbes(text, { letter: 'H', gloss: (_lemma, gloss) => cleanHebrewGloss(gloss) });
 }
@@ -150,6 +180,7 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
     await onChapter({ path: `${code}/${n}.json`, chapter });
   };
 
+  // dotsBefore: a '. . .' word's English is in the chunk BEFORE it, as in the New Testament's build ('travel' holds עֹבֵר and אֹרַח, not 'has ceased.' with אֹרַח; mw-fnvjof.17.161, docs/sources/msb-chunk-pairs.md)
   const hebrewVerse = (v: TableVerse, lexicon: Lexicon) =>
     buildVerse(v, (w) => {
       if (w.strongs === '') return { t: w.text, tr: w.translit, s: '', l: '', p: w.parse };
@@ -159,7 +190,7 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
       const stem = hebrewStem(w.parse);
       const gl = stem ? entry.stems?.[stem] : undefined;
       return { t: w.text, tr: w.translit, s: w.strongs, l: entry.lemma, p: w.parse, ...(gl && gl !== entry.gloss ? { gl } : {}) };
-    });
+    }, { dotsBefore: true });
 
   const closeGroup = async (): Promise<void> => {
     if (!group) return;
@@ -189,6 +220,7 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
         strongs: strongs === '' ? '' : `H${Number(strongs)}`,
       });
     });
+    fixPairing(target.name, chapter, n, words);
     open.verses.push({ book: target.name, chapter, n, words, heading: finished.heading });
   };
 
@@ -228,6 +260,15 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
 
 // ---------------------------------------------------------------- files
 
+/** A verse's pairing as the chapter file keeps it: each Hebrew word's `e` and each chunk's `g`. */
+const pairingOf = (v: Chapter['verses'][number]): string => JSON.stringify([v.g.map((w) => w.e ?? null), v.e.map((c) => c.g)]);
+
+/** The verses of `now` whose English-to-Hebrew pairing is not the one `before` (the chapter file the build found on disk) holds; a verse the file lacks counts as changed. */
+export function changedPairings(before: Chapter | undefined, now: Chapter): number[] {
+  const had = new Map((before?.verses ?? []).map((v) => [v.n, pairingOf(v)]));
+  return now.verses.filter((v) => had.get(v.n) !== pairingOf(v)).map((v) => v.n);
+}
+
 export interface BuildOtOptions {
   rawDir: string;
   outDir: string;
@@ -236,7 +277,7 @@ export interface BuildOtOptions {
   log?: (line: string) => void;
 }
 
-export async function runBuildOt(options: BuildOtOptions): Promise<{ chapters: number; written: number; bytes: number }> {
+export async function runBuildOt(options: BuildOtOptions): Promise<{ chapters: number; written: number; bytes: number; changedVerses: Record<string, number> }> {
   const { rawDir, outDir, download = fetchTo, log = () => undefined } = options;
   const bsbPath = join(rawDir, BSB_FILE);
   const tbeshPath = join(rawDir, TBESH_FILE);
@@ -256,8 +297,13 @@ export async function runBuildOt(options: BuildOtOptions): Promise<{ chapters: n
     bytes += Buffer.byteLength(text);
   };
   let chapters = 0;
+  // how many verses' pairing of English chunk to Hebrew word differs from the file on disk, by book (a build that changes how the table is joined says how far it reached)
+  const changedVerses: Record<string, number> = {};
   const built = await buildOt(readLines(bsbPath), lex, ({ path, chapter }) => {
     chapters++;
+    const file = join(outDir, path);
+    const changed = changedPairings(existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as Chapter) : undefined, chapter).length;
+    if (changed) changedVerses[chapter.code] = (changedVerses[chapter.code] ?? 0) + changed;
     put(path, JSON.stringify(chapter));
   });
   // index.json lists the 66 books: this build writes the 39 of the Old Testament and keeps the New Testament's from the index on disk (scripts/data-build.ts writes those)
@@ -274,7 +320,9 @@ export async function runBuildOt(options: BuildOtOptions): Promise<{ chapters: n
   const hebrew = new Set(OT_BOOKS.map((b) => b.code));
   removeStale(outDir, made, (path) => (path.includes('/') ? hebrew.has(path.split('/')[0]) : path === 'lexicon-hbo.json' || path === 'frequency-hbo.json'));
   log(`${chapters} chapters, ${written} files written, ${(bytes / 1024 / 1024).toFixed(1)} MB`);
-  return { chapters, written, bytes };
+  const total = Object.values(changedVerses).reduce((sum, n) => sum + n, 0);
+  log(`${total} verses changed their English-to-Hebrew pairing${total ? ': ' + OT_BOOKS.filter((b) => changedVerses[b.code]).map((b) => `${b.code} ${changedVerses[b.code]}`).join(', ') : ''}`);
+  return { chapters, written, bytes, changedVerses };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

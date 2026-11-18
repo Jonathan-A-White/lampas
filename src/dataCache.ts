@@ -5,7 +5,9 @@
 // fingerprint from index.json, so only a chapter whose fingerprint changed is fetched again (serveChapter). Version 3 is that key layout;
 // the unkeyed copies of version 2 cannot be told from stale ones and are dropped once. Version 4 (mw-5r3p30.892) is the Hebrew lexicon definitions rewritten
 // (no leading colon, no raw cross-reference); the shape is the same, so a reader holding a version 3 chapter still reads it, and the old cache is dropped on activate.
-export const DATA_CACHE_VERSION = 4;
+// Version 5 (mw-fnvjof.17.161) is the Old Testament's English-to-Hebrew pairing rebuilt (a '. . .' word joins the chunk before it; 896 chapters' `e` and `g` changed, the shape did not): a reader holding a version 4
+// chapter still reads it, and the old cache is dropped on activate so a phone with yesterday's cache fetches every chapter afresh, not only those it opens after index.json's new fingerprints.
+export const DATA_CACHE_VERSION = 5;
 export const DATA_CACHE = `lampas-data-v${DATA_CACHE_VERSION}`;
 
 /** Deletes every chapter-data cache but the current one (the unversioned 'lampas-data' of the first builds, older versions). */

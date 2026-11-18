@@ -32,9 +32,9 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
 
   // English order: a word with '-' or 'vvv' has no English of its own; one with '. . .' is rendered by a chunk next to it in English order. Quotes and punctuation they carry move to
   // the chunk before (punctuation) or after (opening quotes).
-  // Which chunk: in the Majority Standard Bible's table (options.dotsBefore, the New Testament build) a '. . .' word's English is already inside the chunk BEFORE it ('to hand Him over'
+  // Which chunk: in the Majority Standard Bible's table (options.dotsBefore, both the New Testament and the Old Testament build) a '. . .' word's English is already inside the chunk BEFORE it ('to hand Him over'
   // holds αὐτὸν; 'will be with child' holds ἐν γαστρὶ; 'Sabbath' holds ἡμέρᾳ), so it joins that chunk; at the head of a verse there is none and it waits for the first chunk with English.
-  // Without the option (the Old Testament's table, whose '. . .' nobody has read) only a personal or reflexive pronoun (P-, F-) goes before, and every other '. . .' word joins the NEXT chunk.
+  // Without the option only a personal or reflexive pronoun (P-, F-) goes before, and every other '. . .' word joins the NEXT chunk (both builds pass it now: the Old Testament's since mw-fnvjof.17.161).
   // A pronoun after a chunk of function words only ('and', 'while') waits for the chunk after it (Luke 12:37); the other kinds take the chunk before whatever it is ('except' holds εἰ μὴ,
   // 'how' holds ἐν τίνι: a read of 25 such rows found 22 right). mw-5r3p30.997 (pronouns), mw-5r3p30.1001 (the rest); docs/sources/msb-chunk-pairs.md.
   const e: Array<{ t: string; g: number[] }> = [];
