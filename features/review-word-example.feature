@@ -58,3 +58,9 @@ Feature: A Review word question gives an Example verse from his goal, after he h
     Given his goal is "Read Romans 8" and Review asks the word "μου"
     When he answers the word question
     Then the Example says "Romans 8:2" as a form of "μου" and of none of "ἡμεῖς, ὑμεῖς"
+
+  Scenario: The Example of εἶπεν is a John 1 verse with the form εἶπεν, though the data lists it under λέγω, another of his words
+    Given his goal is "Read John 1" and Review asks the word "εἶπεν"
+    When he answers the word question
+    Then the Example says a verse of "John 1" with the form "εἶπεν"
+    And the Quick test of "εἶπεν" in "John 1" offers the form "εἶπεν"
