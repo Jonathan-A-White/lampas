@@ -7,7 +7,8 @@ import { useState } from 'react';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { db } from '../../src/data/db';
-import { mulberry32 } from '../../src/data/quiz';
+import { buildQuestion, mulberry32 } from '../../src/data/quiz';
+import type { Chapter } from '../../src/data/chapter';
 import { readFileSync } from 'node:fs';
 import { setOpenChapter } from '../../src/data/readerChapter';
 import { setGoal, setReaderView } from '../../src/data/repositories';
@@ -26,10 +27,10 @@ afterAll(async () => {
 });
 
 /** The lemmas the scenarios ask: not in the seed words, so the scenario puts them in. */
-const EXTRA: Record<string, string> = { ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing', σύ: 'you', ἐγώ: 'I, me, my', μου: 'my', ἡμεῖς: 'we', ὑμεῖς: 'you (pl)' };
+const EXTRA: Record<string, string> = { εἶπεν: 'he/she/it said (aorist of λέγω)', ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing', σύ: 'you', ἐγώ: 'I, me, my', μου: 'my', ἡμεῖς: 'we', ὑμεῖς: 'you (pl)' };
 
 /** The words that are his own as the seed has them (lemmas and all), not made up for the scenario: the question finds them by their own forms. */
-const HIS_OWN = new Set(['μου', 'ἡμεῖς', 'ὑμεῖς']);
+const HIS_OWN = new Set(['μου', 'ἡμεῖς', 'ὑμεῖς', 'εἶπεν']);
 
 /** The forms of a pronoun in Romans 8 the scenarios name, by the word: the data lists them under ἐγώ or σύ, so the lemma does not say. */
 const OWN_FORMS: Record<string, RegExp> = { μου: /^(μου|μοι|με|ἐμοῦ|ἐμοί|ἐμέ)$/, ἡμεῖς: /^ἡμ/i, ὑμεῖς: /^ὑμ/i };
@@ -184,4 +185,24 @@ describeFeature(feature, ({ Scenario }) => {
       });
     });
   }
+
+  Scenario('The Example of εἶπεν is a John 1 verse with the form εἶπεν, though the data lists it under λέγω, another of his words', ({ Given, When, Then, And }) => {
+    Given('his goal is {string} and Review asks the word {string}', async (_, goal: string, lemma: string) => drawCard(goal, lemma, undefined, 0));
+    When('he answers the word question', answerChoice);
+    Then('the Example says a verse of {string} with the form {string}', async (_, chapterName: string, form: string) => {
+      const node = await screen.findByTestId('chapter-form');
+      expect(node.textContent).toMatch(/^Example: /);
+      const ref = within(node).getByRole('link').textContent ?? '';
+      expect(ref.replace(/:\d+$/, '')).toBe(chapterName);
+      expect((node.getAttribute('data-form') ?? '').normalize('NFC')).toBe(form);
+    });
+    And('the Quick test of {string} in {string} offers the form {string}', async (_, lemma: string, chapterName: string, form: string) => {
+      const [book, n] = CHAPTERS[chapterName];
+      const chapter = JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
+      const word = await db.words.get(lemma);
+      const pool = (await db.words.toArray()).map((w) => ({ lemma: w.lemma, gloss: w.gloss, pos: undefined }));
+      const q = buildQuestion(word!, pool as never, chapter, mulberry32(3));
+      expect(q.form?.normalize('NFC')).toBe(form);
+    });
+  });
 });

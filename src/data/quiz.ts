@@ -146,28 +146,30 @@ const isOtherPluralPronoun = (g: GreekWord, others: ReadonlySet<string>): boolea
 };
 
 /**
- * The personal pronouns that are found by their own forms and not by a lexicon lemma: the data lists every form of 'I' and 'we' under the lemma ἐγώ and of 'you' and 'you (pl)' under σύ,
- * none of which μου, ἡμεῖς or ὑμεῖς equals, so a lemma match gave them no place (mw-indx1x6.74). `lexicon` is the lemma the data lists the forms under; `parse` the person, number and case
- * that make a form of this word: ἡμεῖς and ὑμεῖς are the plural, μου the oblique cases of the singular 'my, me'.
+ * The words that are found by their own forms and not by a lexicon lemma, because the data lists their forms under the lemma of another of his words. The personal pronouns: the data lists
+ * every form of 'I' and 'we' under the lemma ἐγώ and of 'you' and 'you (pl)' under σύ, none of which μου, ἡμεῖς or ὑμεῖς equals, so a lemma match gave them no place (mw-indx1x6.74).
+ * And εἶπεν, whose forms the data lists under λέγω, which is another of his words (mw-indx1x6.106). `lexicon` is the lemma the data lists the forms under; `parse` the person, number and case
+ * (or tense, voice, mood and person) that make a form of this word: ἡμεῖς and ὑμεῖς are the plural, μου the oblique cases of the singular 'my, me', εἶπεν the second aorist active indicative, third singular.
  */
-const OWN_PRONOUN_FORMS: Readonly<Record<string, { lexicon: string; parse: RegExp }>> = {
+const OWN_FORMS: Readonly<Record<string, { lexicon: string; parse: RegExp }>> = {
   'ἡμεῖς': { lexicon: 'ἐγώ', parse: /^P-1[NGDA]P$/ },
   'ὑμεῖς': { lexicon: 'σύ', parse: /^P-2[NGDA]P$/ },
   'μου': { lexicon: 'ἐγώ', parse: /^P-1[GDA]S$/ },
+  'εἶπεν': { lexicon: 'λέγω', parse: /^V-2AAI-3S$/ },
 };
 
-/** Whether a Greek word of a chapter is one of the forms of a pronoun of OWN_PRONOUN_FORMS that `word` is. */
-const isOwnPronounForm = (g: GreekWord, word: Word, others: ReadonlySet<string>): boolean => {
-  const own = word.lang === 'hbo' ? undefined : OWN_PRONOUN_FORMS[nfc(word.lemma)];
+/** Whether a Greek word of a chapter is one of the own forms (OWN_FORMS) of `word`. */
+const isOwnForm = (g: GreekWord, word: Word, others: ReadonlySet<string>): boolean => {
+  const own = word.lang === 'hbo' ? undefined : OWN_FORMS[nfc(word.lemma)];
   return own !== undefined && !isGuess(g) && lemmaKeyOf(wordLemma(g)) === own.lexicon && own.parse.test(g.p ?? '') && !others.has(nfc(g.t));
 };
 
-/** Whether a Greek word of a chapter is a place of `word`, whose lemmas (lemmasOf) these are: a form of its lexicon lemmas that is not another's, or one of its own pronoun forms. The Quick test, Review and the parsing drill share it (mw-indx1x6.83). */
+/** Whether a Greek word of a chapter is a place of `word`, whose lemmas (lemmasOf) these are: a form of its lexicon lemmas that is not another's, or one of its own forms (OWN_FORMS). The Quick test, Review and the parsing drill share it (mw-indx1x6.83). */
 export const isPlaceOf = (g: GreekWord, word: Word, lemmas: ReadonlySet<string>, others: ReadonlySet<string> = new Set()): boolean =>
-  (isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others)) || isOwnPronounForm(g, word, others);
+  (isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others)) || isOwnForm(g, word, others);
 
 /**
- * Every place the chapter has a word, found by any of its lexicon lemmas, or by its own forms when it is a pronoun the data lists under another's lemma (OWN_PRONOUN_FORMS). `others` are the headwords of his
+ * Every place the chapter has a word, found by any of its lexicon lemmas, or by its own forms when it is a pronoun the data lists under another's lemma (OWN_FORMS). `others` are the headwords of his
  * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf).
  */
 export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string> = new Set()): Occurrence[] {
