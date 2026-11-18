@@ -148,6 +148,25 @@ Feature: Sermons in Settings: the one list of sermon sources (mw-qtu3zvz.92, doc
     When he chooses "Undo"
     Then the count is back at "3 of 14 on · 2 shown"
 
+  Scenario: All off and then All on, tapped with no wait, ends with every source On
+    Given the page of sermon sources is open with Logos Off
+    When he taps the button "All off" and then "All on" with no wait
+    Then the line "Turned on 2." stands with an Undo
+    And the status line reads "2 of 2 on"
+    And the setting "sermons.testsecond" is kept as "on"
+    When he chooses "Undo"
+    Then the count is back at "none of 2 on"
+
+  Scenario: All on and then All off, tapped with no wait, ends with every source Off, the books too
+    Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
+    When he taps the button "All on" and then "All off" with no wait
+    Then the line "Turned off 14." stands with an Undo
+    And the status line reads "none of 14 on"
+    And no sermon book is on his shelf
+    When he chooses "Undo"
+    Then the count is back at "14 of 14 on"
+    And ten sermon books are on his shelf
+
   Scenario: A search with no match offers Ask for a preacher
     Given the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie's archive
     When he types "qqqqzzzz" in the search
