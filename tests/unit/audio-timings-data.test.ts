@@ -121,6 +121,8 @@ describe('the timing files the index lists', () => {
 // through), mw-82lb97i.41 (John 2:9 alone ended with 'and s') and mw-82lb97i.36 (four verses started after their own first sound).
 const slop = readSlop();
 const thousandths = (seconds: number): number => Math.round(seconds * 1000);
+/** The most the maker moves an edge when it rounds to the timings' two decimals: the end up, the start down. */
+const ROUNDING_MS = 10;
 
 describe("the cut rule: both edges of every verse lie where the recording's level and the player's margin put them", () => {
   if (!isTimingsIndex(index)) throw new Error('index fails its guard');
@@ -191,11 +193,13 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
     it(`${book}: no verse's end is within the tail slop of the next verse's start, unless it is on the listen list (mw-82lb97i.41)`, () => {
       // Both edges keep their own margin only in a quiet of tail + tail + lead or more; in a shorter one that still has room (none in John or Genesis) the end is
       // held to the next verse's first SOUND instead, which is what the margin is for.
+      // The maker rounds the end UP and the start DOWN to the timings' two decimals, each by up to 10 ms, so a quiet within 20 ms of that (Leviticus 11:29: 150 ms,
+      // end 202.79, start 202.83) is short too: its end keeps its own margin to the first sound, and the start keeps its own (mw-zbgo4ep.48).
       const near: string[] = [];
       for (const v of pairs) {
         if (onList.has(listenKey(v.at, 'tail')) || !v.next || !v.tail) continue;
         const { died, onset } = v.tail;
-        const short = died !== null && onset !== null && thousandths(onset) - thousandths(died) < thousandths(2 * slop.tail + slop.lead);
+        const short = died !== null && onset !== null && thousandths(onset) - thousandths(died) < thousandths(2 * slop.tail + slop.lead) + 2 * ROUNDING_MS;
         const limit = short && onset !== null ? onset : v.next[1];
         if (thousandths(limit) - thousandths(v.end) < thousandths(slop.tail)) near.push(`${v.at} ends ${v.end}, the next verse ${short ? 'sounds' : 'starts'} at ${limit}`);
       }
