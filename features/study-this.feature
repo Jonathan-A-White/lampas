@@ -162,6 +162,9 @@ Feature: A wrong answer links to what teaches it
     And no control of the word's sheet changes the page's address
     When the sheet of the same word is open as it is over no run
     Then its Paradigm row is a link to a table
+    # mw-indx1x6.101: the walk above holds the row only if it reaches it (it listed the buttons once and lost those after the first parsing term, whose example draws the
+    # sheet again). Over no run, where the row is a link, the same walk must stop at it
+    And the walk of that sheet's controls stops at its Paradigm row, whose tap changes the page's address
 
   Scenario: A Septuagint word's sheet over a drill has no About this reading link, which opens a Help page
     Given the sheet of the word "ἐποίησεν" of the Septuagint's Genesis 1 is open as it is over a drill

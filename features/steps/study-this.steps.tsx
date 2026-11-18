@@ -46,6 +46,7 @@ import { dropHeldWord } from '../../src/wordReturn';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { GRAMMAR_TERM_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
+import { sheetDepth } from '../../tests/support/sheet-history';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -393,37 +394,110 @@ async function wordSheetIsOverTheDrill(): Promise<void> {
 /** What a control says, for a failure to name it. */
 const controlName = (control: HTMLElement): string => control.getAttribute('aria-label') ?? control.textContent?.trim() ?? '';
 
-/** The buttons that close the sheet they are on, or speak: a tap on one is no way out of the page, and the walk leaves them be (a closed sheet has no controls left to tap). */
-const NOT_TAPPED = /^(Close|Done|Back|Hear it|Listen|Read aloud|Stop)\b/;
+/** The buttons that close the sheet they are on, or speak (Hear it, a lesson's Hear of a form): a tap on one is no way out of the page, and the walk leaves them be (a closed sheet has no controls left to tap). */
+const NOT_TAPPED = /^(Close|Done|Back|Hear|Listen|Read aloud|Stop)\b/;
+
+const SHEETS = '[role="dialog"], [role="alertdialog"]';
+/** What a sheet is known by when it is drawn again: its name and what it is of (the words of the word's sheet; the first heading of another: the term of the Grammar
+ *  sheet, the idea of a lesson. Not its later headings, which a lesson draws when its examples have loaded). */
+const sheetMark = (sheet: HTMLElement): string => {
+  const words = [...sheet.querySelectorAll('[data-testid="sheet-word"]')].map((word) => word.textContent?.trim());
+  return `${sheet.getAttribute('aria-label') ?? ''}: ${words.length ? words.join(' | ') : (sheet.querySelector('h1, h2, h3')?.textContent?.trim() ?? '')}`;
+};
+/** No link to a page of this app (an `a` whose href is a `#/...` address) is drawn on the sheet. */
+const noLinkToAPage = (sheet: HTMLElement): void => expect([...sheet.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].map(controlName), `links to a page on the sheet ${sheetMark(sheet)}`).toEqual([]);
+/** The most taps the walk gives one sheet: a control whose name changes with every tap would otherwise be tapped for ever. */
+const MOST_TAPS = 200;
 
 /**
- * Taps every control of the word's sheet, and of each sheet a tap opens over it, and after each tap the page's address is as it was: no link to a page of this app
- * (an `a` whose href is a `#/...` address) is drawn, and no button changes window.location. A sheet a tap opens is walked once, then closed with Escape.
+ * Taps every control of the word's sheet, and after each tap the page's address is as it was: no link to a page of this app is drawn, and no button changes
+ * window.location. A sheet a tap opens over it is walked the same way the first time a sheet of its name opens (the Grammar sheet of the first parsing term, the lesson
+ * its Learn this idea opens, All lexicons), `deep` sheets up (0: the word's sheet alone); the next sheet of that name is checked for links and closed, since a walk of
+ * every term's sheet and lesson is some hundred taps a word, and a step of that length outruns its time on a loaded host. Gives the names of the controls it tapped.
+ *
+ * A tap may draw the sheet again with other things on it: an example of the Grammar sheet a parsing term opens puts its own word on the word's sheet, and the buttons that
+ * were listed after the term are gone (mw-indx1x6.101: the walk listed the buttons once, never reached those and passed). So after each tap that changes what the sheets
+ * show, the walk steps Back, as the phone's Back does (one step closes the sheet a tap opened, or undoes a move inside a sheet: src/ui/sheetBack.ts; Escape and Done on a
+ * Grammar sheet would close the word's sheet with it), until the sheets are as they were, and finds each next control again by its name. What a move put on a sheet (the
+ * example's word, a related term) is checked for links and not walked. The walk fails, naming the control, when a control the word's sheet had at the start is never
+ * tapped, when Back does not bring the sheets back, and when a tap closes the word's sheet.
  */
-async function noControlLeaves(): Promise<string[]> {
+async function noControlLeaves(deep = 2): Promise<string[]> {
   const before = window.location.href;
   const tapped: string[] = [];
-  const dialogs = (): HTMLElement[] => [...document.querySelectorAll<HTMLElement>('[role="dialog"]')];
-  const walk = async (sheet: HTMLElement, depth: number): Promise<void> => {
-    expect([...sheet.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')].map(controlName)).toEqual([]);
-    for (const button of [...sheet.querySelectorAll<HTMLButtonElement>('button')]) {
-      const name = controlName(button);
-      if (!button.isConnected || button.disabled || NOT_TAPPED.test(name)) continue;
-      // a button of a sheet opened over this one is walked with that sheet
-      if (button.closest('[role="dialog"]') !== sheet) continue;
-      const open = dialogs();
-      await user.click(button);
-      tapped.push(name);
-      expect(window.location.href, `after a tap on "${name}"`).toBe(before);
-      const opened = dialogs().filter((d) => !open.includes(d));
-      for (const over of opened) {
-        if (depth < 2) await walk(over, depth + 1);
-        if (over.isConnected) await user.keyboard('{Escape}');
-        await waitFor(() => expect(over.isConnected, `"${name}" opened a sheet that Escape closes`).toBe(false));
-      }
+  const word = (): HTMLElement => {
+    const sheet = document.querySelector<HTMLElement>('[role="dialog"][aria-label="Word"]');
+    if (!sheet) throw new Error(`the word's sheet is closed${tapped.length ? `, after a tap on "${tapped[tapped.length - 1]}"` : ''}`);
+    return sheet;
+  };
+  // what was open when the walk began (the drill, the lesson the word was opened from, the word's sheet) is under the sheets the walk opens
+  const under = [...document.querySelectorAll<HTMLElement>(SHEETS)];
+  /** The sheets the walk's taps opened over the word's sheet, in the order they came. */
+  let over: HTMLElement[] = [];
+  const sheets = (): HTMLElement[] => {
+    over = over.filter((sheet) => sheet.isConnected);
+    for (const sheet of document.querySelectorAll<HTMLElement>(SHEETS)) if (!under.includes(sheet) && !over.includes(sheet)) over.push(sheet);
+    return [word(), ...over];
+  };
+  const shown = (): string => sheets().map(sheetMark).join(' > ');
+  const top = (): HTMLElement => sheets()[sheets().length - 1];
+  /** The buttons of a sheet, each with its name and its place among the buttons of that name: what it is found by again after the sheet is drawn anew. */
+  const controls = (sheet: HTMLElement): { button: HTMLButtonElement; name: string; key: string }[] => {
+    const count = new Map<string, number>();
+    return [...sheet.querySelectorAll<HTMLButtonElement>('button')]
+      // a button of a sheet drawn inside this one is walked with that sheet
+      .filter((button) => button.closest(SHEETS) === sheet)
+      .map((button) => {
+        const name = controlName(button);
+        const nth = count.get(name) ?? 0;
+        count.set(name, nth + 1);
+        return { button, name, key: `${name} #${nth + 1}` };
+      });
+  };
+  const tappable = ({ button, name }: { button: HTMLButtonElement; name: string }): boolean => !button.disabled && !NOT_TAPPED.test(name);
+  /** The names of the sheets walked over the word's sheet: the next of a name is checked for links and not walked. */
+  const walkedUp = new Set<string>();
+  const firstOfItsName = (sheet: HTMLElement): boolean => {
+    const name = sheet.getAttribute('aria-label') ?? '';
+    if (walkedUp.has(name)) return false;
+    walkedUp.add(name);
+    return true;
+  };
+  /** Steps Back until the sheets show `here` again; `floor` is the history depth they stood at. */
+  const backTo = async (here: string, floor: number, name: string): Promise<void> => {
+    for (let was = shown(); was !== here; was = shown()) {
+      if (sheetDepth() <= floor) throw new Error(`Back does not undo the tap on "${name}": the sheets showed ${here} and now show ${was}`);
+      act(() => window.history.back());
+      await waitFor(() => expect(shown(), `Back after a tap on "${name}" changes what the sheets show`).not.toBe(was));
     }
   };
-  await walk(wordSheet(), 0);
+  const walk = async (level: number): Promise<void> => {
+    const here = shown();
+    const floor = sheetDepth();
+    noLinkToAPage(top());
+    const listed = controls(top()).filter(tappable).map(({ key }) => key);
+    const done = new Set<string>();
+    for (let taps = 0; ; taps += 1) {
+      // the controls as they are now: one a tap drew is tapped too
+      const next = controls(top()).find((control) => tappable(control) && !done.has(control.key));
+      if (!next) break;
+      if (taps === MOST_TAPS) throw new Error(`the walk tapped ${MOST_TAPS} controls of ${here} and "${next.name}" is still not tapped`);
+      done.add(next.key);
+      await user.click(next.button);
+      tapped.push(next.name);
+      expect(window.location.href, `after a tap on "${next.name}"`).toBe(before);
+      const now = shown();
+      if (now === here) continue;
+      if (now.startsWith(`${here} > `) && level < deep && firstOfItsName(top())) await walk(level + 1);
+      else sheets().forEach(noLinkToAPage);
+      await backTo(here, floor, next.name);
+    }
+    // what the sheet drew since it was reached (a lesson's examples load after it opens) has no link either
+    noLinkToAPage(top());
+    // the word's sheet was drawn before the walk began, so each control it listed then is one the walk tapped (a sheet opened over it may still be loading when it is listed)
+    if (level === 0) expect(listed.filter((key) => !done.has(key)), `controls of ${here} the walk never tapped`).toEqual([]);
+  };
+  await walk(0);
   return tapped;
 }
 
@@ -812,13 +886,18 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
     And('its Paradigm row names a table and is no link', paradigmRowIsNoLink);
     And("no control of the word's sheet changes the page's address", async () => {
-      // the walk does not reach the Paradigm row here: an example of the Grammar sheet a parsing term opens puts its own word on the sheet, and the buttons after
-      // the term are drawn again and no longer the ones listed. The step before holds the row; this one holds what the walk does tap
+      // the walk reaches the Paradigm row's place (mw-indx1x6.101): were the row a link here, its tap would change the address, as the scenario's last step shows over no run
       await noControlLeaves();
     });
     When('the sheet of the same word is open as it is over no run', () => drawWordSheet(false));
     Then('its Paradigm row is a link to a table', () => {
       expect(within(wordSheet()).getByTestId('sheet-paradigm').querySelector('button[data-table]')).not.toBeNull();
+    });
+    And("the walk of that sheet's controls stops at its Paradigm row, whose tap changes the page's address", async () => {
+      const table = within(wordSheet()).getByTestId('sheet-paradigm').querySelector<HTMLElement>('button[data-table]')!;
+      // the word's sheet alone: over no run the lesson a parsing term leads to has links of its own, which are not this step's
+      await expect(noControlLeaves(0)).rejects.toThrow(`after a tap on "${controlName(table)}"`);
+      expect(window.location.hash).toMatch(/^#\/paradigms/);
     });
   });
 
