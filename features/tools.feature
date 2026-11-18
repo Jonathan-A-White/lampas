@@ -49,3 +49,12 @@ Feature: Tools
     Then the search lists "Review" in Tools
     When he opens the found tool "Review"
     Then the screen "Review" is shown
+
+  Scenario: Your Logos library holds the kinds only, and Tools shows Memorize and Verse lists with their counts
+    Given Lampas is opened on Romans 8 with Logos on
+    When he opens Tools from the reader's Menu
+    Then the Tools row "Memorize" says "nothing due"
+    And the Tools row "Verse lists" says "none yet"
+    When he opens the tool "Your Logos library"
+    Then the screen "Your Logos library" is shown
+    And the library lists no row named "Memorize" or "Verse lists"
