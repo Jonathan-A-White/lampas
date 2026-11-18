@@ -11,6 +11,7 @@ FIXED by mw-5r3p30.997 for pronouns and mw-5r3p30.1001 for every other kind (see
 - [What a fix would need (not done here: it changes data)](#what-a-fix-would-need-not-done-here-it-changes-data)
 - [What was done (mw-5r3p30.997)](#what-was-done-mw-5r3p30997)
 - [What was done for the rest (mw-5r3p30.1001)](#what-was-done-for-the-rest-mw-5r3p301001)
+- [The Old Testament's table (mw-fnvjof.17.161)](#the-old-testaments-table-mw-fnvjof17161)
 
 <!-- /toc -->
 
