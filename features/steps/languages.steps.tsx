@@ -123,6 +123,15 @@ const dial = (name: string): HTMLElement | null => groupNamed(name);
 /** What a group draws pressed, for a failure's message: a dial that is not where a step expects it says where it is. */
 const pressedIn = (group: HTMLElement | null): string =>
   group ? Array.from(group.querySelectorAll('[aria-pressed="true"]')).map((b) => b.textContent).join(', ') || 'none pressed' : 'no such group';
+/** Everything the store holds of his settings, as text: the dials, the levels kept for the way back and what each step brings move it write by write, while on a loaded host the screen
+ * may still stand where it was for a whole wait (mw-fnvjof.17.177). */
+const storedSettings = async (): Promise<string> =>
+  (await db.settings.toArray())
+    .map((row) => `${row.key}=${row.value}`)
+    .sort()
+    .join(', ');
+/** What a step that moves the dials gives to waitWhileChanging: the screen and the store, so a wait in which only the store moved goes on. */
+const progressOf = (name: string) => async (): Promise<string> => `${pressedIn(groupNamed(name))} | ${await storedSettings()}`;
 const pressed = (group: HTMLElement | null, label: string): boolean => {
   if (!group) return false;
   return within(group).queryByRole('button', { name: label })?.getAttribute('aria-pressed') === 'true';
@@ -149,10 +158,15 @@ describeFeature(feature, ({ Scenario }) => {
     // which it does only once both dials stand where it puts them. A step that moves a dial straight after, with the first move's writes still going, interleaves two moves of the
     // shared settings (mw-qtu3zvz.175). The choice is up to two moves, one dial after the other, and a move is a run of writes that every drawn row re-reads (3-4 s for the first at
     // load 16): each state the row passes through gets its own wait, and the step fails when one goes by with the row where it was (mw-qtu3zvz.186).
-    await waitWhileChanging(
-      () => expect(pressed(languages(), label), `Which languages? ${label}, drawn: ${pressedIn(languages())}`).toBe(true),
-      () => pressedIn(groupNamed('Which languages?')),
-    );
+    try {
+      await waitWhileChanging(
+        () => expect(pressed(languages(), label), `Which languages? ${label}, drawn: ${pressedIn(languages())}`).toBe(true),
+        progressOf('Which languages?'),
+      );
+    } catch (failure) {
+      // a later failure says whether the tap never wrote (the store stands as it was) or the redraw did not come (the store holds the choice)
+      throw new Error(`${failure instanceof Error ? failure.message.split('\n')[0] : String(failure)}; the store holds: ${await storedSettings()}`);
+    }
   };
   const choosesOnDial = async (_: unknown, step: string, name: string): Promise<void> => {
     const group = await findGroup(name);
@@ -160,7 +174,7 @@ describeFeature(feature, ({ Scenario }) => {
     // the write is not awaited by the tap: the next step starts when the dial shows the step
     await waitWhileChanging(
       () => expect(pressed(dial(name), step), `${name} ${step}, drawn: ${pressedIn(dial(name))}`).toBe(true),
-      () => pressedIn(dial(name)),
+      progressOf(name),
     );
   };
   const languagesHas = async (_: unknown, label: string): Promise<void> => {

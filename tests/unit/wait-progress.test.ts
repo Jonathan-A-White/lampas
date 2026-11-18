@@ -35,4 +35,32 @@ describe('waitWhileChanging', () => {
       stuck.stop();
     }
   });
+
+  // mw-fnvjof.17.177: after "Greek and Hebrew" again the screen stood at English only for a whole wait on a loaded host: the writes were going on in the store, the redraw had not come.
+  it('goes on while what it also watches in the store moves, though the screen stands where it was', async () => {
+    const screen = 'English only';
+    const stored = moving(['0/0', '1/0', '1/1'], 250);
+    const drawn = moving(['English only', 'English only', 'Greek and Hebrew'], 300);
+    try {
+      const started = performance.now();
+      await waitWhileChanging(
+        () => expect(drawn.now()).toBe('Greek and Hebrew'),
+        async () => `${screen}|${stored.now()}`,
+        BUDGET_MS,
+      );
+      expect(performance.now() - started).toBeGreaterThan(BUDGET_MS);
+    } finally {
+      stored.stop();
+      drawn.stop();
+    }
+  });
+
+  it('fails when neither the screen nor the store moved in a whole wait, with a progress read that is asked of the store', async () => {
+    const stuck = moving(['0/0'], 10_000);
+    try {
+      await expect(waitWhileChanging(() => expect(stuck.now()).toBe('1/1'), async () => stuck.now(), BUDGET_MS)).rejects.toThrow(/1\/1/);
+    } finally {
+      stuck.stop();
+    }
+  }, 3000);
 });
