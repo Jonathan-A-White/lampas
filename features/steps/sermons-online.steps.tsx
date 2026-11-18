@@ -132,6 +132,13 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  // a phone whose shelf holds no default book: with no list kept the shelf says what he has (mw-5r3p30.1189), and the old keys' defaults would put forty books on it
+  await db.settings.bulkPut([
+    { key: 'resourceOption.logos', value: '[]' },
+    { key: 'grammarBooks', value: '[]' },
+    { key: 'works', value: '[]' },
+    { key: 'devotionalDraw', value: 'none' },
+  ]);
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));

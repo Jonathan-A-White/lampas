@@ -46,6 +46,13 @@ async function reset(): Promise<void> {
   stubChapterFetch();
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  // a phone whose shelf holds no default book: with no list kept the shelf says what he has (mw-5r3p30.1189), and the old keys' defaults would put forty books on it
+  await db.settings.bulkPut([
+    { key: 'resourceOption.logos', value: '[]' },
+    { key: 'grammarBooks', value: '[]' },
+    { key: 'works', value: '[]' },
+    { key: 'devotionalDraw', value: 'none' },
+  ]);
 }
 
 /** Opens the app on a chapter (the address names it), with the test sermons and theme lists registered. */

@@ -146,9 +146,13 @@ describe('the sermon search and a theme', () => {
 });
 
 describe('Study resources', () => {
+  // a kept list that names none of the books below (with no list kept, the shelf alone says what he has: tests/unit/owned-shelf-no-kept-list.test.ts)
+  const keepOther = (): Promise<void> => keepImport(['LLS:SOMETHINGELSE']);
+
   it('offers a lexicon only for a resource his import holds', async () => {
     const lexicon = LEXICONS[0];
     await setResourceOption('logos', JSON.stringify([lexicon.id]));
+    await keepOther();
     expect(await lexiconTicks()).toEqual([]);
     await keepImport([lexicon.resource]);
     expect(await lexiconTicks()).toEqual([lexicon.id]);
@@ -157,6 +161,7 @@ describe('Study resources', () => {
   it('offers a pinned lexicon only for a resource his import holds', async () => {
     const lexicon = LEXICONS[0];
     await setState(lexicon.resource, 'pinned');
+    await keepOther();
     expect(await lexiconPins()).toEqual([]);
     await keepImport([lexicon.resource]);
     expect(await lexiconPins()).toEqual([lexicon.id]);
@@ -165,6 +170,7 @@ describe('Study resources', () => {
   it('offers a grammar book only for a resource his import holds', async () => {
     const book = GRAMMAR_BOOKS[0];
     await setGrammarBooks([book.id]);
+    await keepOther();
     expect(await grammarBookTicks()).not.toContain(book.id);
     await keepImport([book.resource]);
     expect(await grammarBookTicks()).toContain(book.id);
@@ -175,6 +181,7 @@ describe('Study resources', () => {
     const volume = work.volumes[0];
     expect(work.volumes.length).toBeGreaterThan(0);
     await setWorks([work.id]);
+    await keepOther();
     expect(await workTicks()).toEqual([]);
     await keepImport([volume.resource]);
     expect(await workTicks()).toEqual([work.id]);
@@ -183,6 +190,7 @@ describe('Study resources', () => {
   it('offers a devotional only for a resource his import holds', async () => {
     const devotional = DEVOTIONALS[0];
     await setDevotionalDraw(devotional.id);
+    await keepOther();
     expect(await devotionalDraw()).toBe('none');
     await keepImport([devotional.id]);
     expect(await devotionalDraw()).toBe(devotional.id);

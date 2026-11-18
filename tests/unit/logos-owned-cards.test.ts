@@ -22,6 +22,8 @@ const grammar = GRAMMAR_BOOKS[0];
 beforeEach(async () => {
   await db.open();
   await Promise.all([db.exportRows.clear(), db.settings.clear(), db.library.clear(), db.meta.clear()]);
+  // a kept list that names none of the books below: with no list kept the shelf alone says what he has (tests/unit/owned-shelf-no-kept-list.test.ts, mw-5r3p30.1189)
+  await keepImport(['LLS:SOMETHINGELSE']);
   setMapSources([logosAtlas]);
   setPlaceLoader(async () => []);
   await setResourceOn('logos', true);
