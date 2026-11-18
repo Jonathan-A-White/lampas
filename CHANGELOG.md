@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.270
+_2026-11-18_
+- New: searching your lexicons and grammars by author now finds the Lexham lexicons and four more grammars.
+- Fixed: after a wrong answer in Drill it, the "Study this" links now scroll into view above Next, even when the question is long.
+- Fixed: In the Septuagint's Genesis 30 to 36, tapping an English word now opens the Greek word it renders instead of the whole verse.
+
 ## 0.7.269
 _2026-11-17_
 - Fixed: In Turn pages with the Immersive reader on, turning a page no longer skips the text at the top of the next page when that page begins in the middle of a verse.

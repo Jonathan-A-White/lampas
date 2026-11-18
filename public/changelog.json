@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.270",
+    "date": "2026-11-18",
+    "story": "mw-qtu3zvz.190",
+    "kind": "new",
+    "text": "searching your lexicons and grammars by author now finds the Lexham lexicons and four more grammars."
+  },
+  {
+    "version": "0.7.270",
+    "date": "2026-11-18",
+    "story": "mw-indx1x6.60",
+    "kind": "fixed",
+    "text": "after a wrong answer in Drill it, the \"Study this\" links now scroll into view above Next, even when the question is long."
+  },
+  {
+    "version": "0.7.270",
+    "date": "2026-11-18",
+    "story": "mw-u2w5klk.349.5",
+    "kind": "fixed",
+    "text": "In the Septuagint's Genesis 30 to 36, tapping an English word now opens the Greek word it renders instead of the whole verse."
+  },
+  {
     "version": "0.7.269",
     "date": "2026-11-17",
     "story": "mw-5r3p30.1172",
