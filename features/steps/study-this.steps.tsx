@@ -16,7 +16,7 @@ import { start, type DrillQuestion } from '../../src/data/grammar/drillIt';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { hasFormOf } from '../../src/data/grammar/ideaSheet';
 import { buildEnding } from '../../src/data/grammar/questions';
-import { ideaOfAny } from '../../src/data/grammar/ladders';
+import { ideaOfAny, ladderFor } from '../../src/data/grammar/ladders';
 import type { Level } from '../../src/data/grammar/needs';
 import { cellsOf, paradigmById, paradigmOfHebrewWord, paradigmsOf, type Levels } from '../../src/data/paradigms';
 import { cellPrompt, drawCellQuestions } from '../../src/data/paradigms/cells';
@@ -546,6 +546,28 @@ function paradigmRowIsNoLink(): void {
   expect(paradigm.querySelector('button, a')).toBeNull();
 }
 
+/** The terms of the word's parsing the scenario taps, and the idea each opened. */
+let terms: string[] = [];
+let opened: Array<[string, string]> = [];
+
+/** Taps a parsing term on the word's sheet, then Learn this idea on the Grammar sheet it opens. */
+async function learnThisIdeaOf(term: string): Promise<void> {
+  await user.click(within(wordSheet()).getByRole('button', { name: term, exact: true } as never));
+  const grammar = await screen.findByRole('dialog', { name: 'Grammar' });
+  await user.click(within(grammar).getByRole('button', { name: 'Learn this idea' }));
+}
+
+/** The id of the Hebrew idea whose title is on the Idea dialog that is open, or '' when none is. */
+async function ideaOpened(): Promise<string> {
+  const dialog = await screen.findByRole('dialog', { name: 'Idea' });
+  const heading = within(dialog).getByRole('heading', { level: 2 }).textContent?.trim();
+  return [...ladderFor('hbo').ideas, ...ladderFor('grc').ideas].find((i) => i.title === heading)?.id ?? '';
+}
+
+async function ideaIsOpen(id: string): Promise<void> {
+  expect(await ideaOpened()).toBe(id);
+}
+
 /** The word of the scenario, with its chapter: what a sheet over it is drawn from. */
 let sheetWord: { chapter: Chapter; word: GreekWord } | undefined;
 
@@ -989,6 +1011,38 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       // the word's sheet alone: over no run the lesson a parsing term leads to has links of its own, which are not this step's
       await expect(noControlLeaves(0)).rejects.toThrow(`after a tap on "${controlName(table)}"`);
       expect(window.location.hash).toMatch(/^#\/paradigms/);
+    });
+  });
+
+  Scenario('Learn this idea on the Grammar sheet of a Hebrew parsing term opens the Hebrew idea that teaches it', ({ Given, When, Then }) => {
+    Given('the sheet of the second word of Genesis 1:1, a Hebrew verb, is open as it is over no run', async () => {
+      await freshStore();
+      await setLanguages('both');
+      const chapter = await loadChapter('gen', 1);
+      sheetWord = { chapter, word: chapter.verses[0].g[1] };
+      await drawWordSheet(false);
+    });
+    When("he taps the parsing term {string} on the word's sheet and then Learn this idea on the Grammar sheet", async (_, term: string) => {
+      await learnThisIdeaOf(term);
+    });
+    Then('a dialog named Idea is open and it is the Hebrew idea {string}', async (_, id: string) => {
+      await ideaIsOpen(id);
+    });
+    When('he taps each other parsing term of that word the same way', async () => {
+      terms = [...wordSheet().querySelectorAll<HTMLElement>('[data-term]')].map((b) => b.dataset.term!).filter((t, i, all) => t !== 'Qal' && all.indexOf(t) === i);
+      expect(terms.length).toBeGreaterThan(2);
+      opened = [];
+      for (const term of terms) {
+        await drawWordSheet(false);
+        await learnThisIdeaOf(term);
+        opened.push([term, await ideaOpened()]);
+      }
+    });
+    Then('each opened a dialog named Idea of the Hebrew idea its term belongs to, never a Greek one', () => {
+      for (const [term, id] of opened) {
+        expect(id, `Learn this idea of "${term}"`).toBe(ladderFor('hbo').ideaOfTerm(term));
+        expect(id).toMatch(/^he-/);
+      }
     });
   });
 
