@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.279
+_2026-11-18_
+- Fixed: About names the poetry lines among what Lampas keeps from the Majority Standard and Berean tables.
+- Fixed: In Genesis 14 of the Septuagint, tapping an English word of Brenton's text now opens the Greek word that renders it, not the whole verse.
+- Fixed: When you ask the tutor to turn Hands-free on or off, you now hear "Hands-free on" or "Hands-free off" to the end before the tutor reads its answer.
+
 ## 0.7.278
 _2026-11-18_
 - Fixed: Lampas no longer offers to open a Bible in Logos that your Library import does not show you own.

@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.279",
+    "date": "2026-11-18",
+    "story": "mw-5r3p30.1186",
+    "kind": "fixed",
+    "text": "About names the poetry lines among what Lampas keeps from the Majority Standard and Berean tables."
+  },
+  {
+    "version": "0.7.279",
+    "date": "2026-11-18",
+    "story": "mw-u2w5klk.349.23",
+    "kind": "fixed",
+    "text": "In Genesis 14 of the Septuagint, tapping an English word of Brenton's text now opens the Greek word that renders it, not the whole verse."
+  },
+  {
+    "version": "0.7.279",
+    "date": "2026-11-18",
+    "story": "mw-rl10piw.39",
+    "kind": "fixed",
+    "text": "When you ask the tutor to turn Hands-free on or off, you now hear \"Hands-free on\" or \"Hands-free off\" to the end before the tutor reads its answer."
+  },
+  {
     "version": "0.7.278",
     "date": "2026-11-18",
     "story": "mw-qtu3zvz.208",
