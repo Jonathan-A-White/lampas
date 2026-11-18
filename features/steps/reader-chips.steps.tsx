@@ -105,6 +105,8 @@ describeFeature(feature, ({ Scenario }) => {
     openSeeded(async () => {
       await makeDue(3);
       await setGoal(goal);
+      // Today draws the devotional only with Logos On (a Logos book is the default one), so 'everything' needs it (mw-r9xo1pj.6)
+      await db.settings.put({ key: 'resource.logos', value: 'on' });
     });
 
   Scenario('Each chip opens what its strip opened', ({ Given, When, Then, And }) => {

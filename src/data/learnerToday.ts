@@ -50,9 +50,12 @@ export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[]
     getSetting(devotionalSetting),
     getSetting(devotionalDrawSetting),
   ]);
-  const pieces = todayPieces({ review, plan, psalms, devotional, memorize }, now);
-  if (pieces.length === 0) return undefined;
   const day = await getDay(localDate(now));
+  const [order, backup, study, heard] = await Promise.all([getSetting(morningRephilOrderSetting), getSetting(morningRephilBackupSetting), getStudyResources(), getHeard()]);
+  // the devotional Today draws: none with Logos Off and a Logos book chosen, and then it has no piece (mw-r9xo1pj.6)
+  const shown = devotionalToday({ choice, ticked: tickedDevotionals(draw), date: now, pick: day.devotional, kept: day.rephil, heard, order: order ?? DEFAULT_ORDER, backup: backup ?? DEFAULT_BACKUP, logosOn: study.on.includes('logos') });
+  const pieces = todayPieces({ review, plan, psalms, devotional, memorize }, now, shown !== undefined);
+  if (pieces.length === 0) return undefined;
   const items: TodayEntry[] = [];
   for (const id of pieces.slice(0, TODAY_MAX)) {
     const passage = /^(psa|pro)\.(\d+)$/.exec(id);
@@ -76,9 +79,8 @@ export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[]
       title = read.length > 0 ? `Reading plan: ${read.join(', ')} read today${next ? `, next ${chapterName(next)}` : ''}` : next ? `Reading plan: ${chapterName(next)}` : 'Reading plan';
     } else if (id === 'devotional') {
       kind = 'devotional';
-      const [order, backup, study, heard] = await Promise.all([getSetting(morningRephilOrderSetting), getSetting(morningRephilBackupSetting), getStudyResources(), getHeard()]);
       // the title Today shows: Morning RePhil's, or its backup devotional's once every episode is seen (mw-r9xo1pj.2)
-      title = devotionalToday({ choice, ticked: tickedDevotionals(draw), date: now, pick: day.devotional, kept: day.rephil, heard, order: order ?? DEFAULT_ORDER, backup: backup ?? DEFAULT_BACKUP, logosOn: study.on.includes('logos') })?.devotional.title ?? 'Devotional';
+      title = shown?.devotional.title ?? 'Devotional';
     } else if (passage) {
       kind = passage[1] === 'psa' ? 'psalm' : 'proverb';
       title = passageName(passage[1], Number(passage[2]));

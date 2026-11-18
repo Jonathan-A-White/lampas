@@ -25,6 +25,8 @@ beforeEach(async () => {
   await db.open();
   await Promise.all([db.reviews.clear(), db.recalls.clear(), db.settings.clear(), db.meta.clear()]);
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }]);
+  // Today draws the devotional only with Logos On (a Logos book is the default one): the chip count below holds every piece (mw-r9xo1pj.6)
+  await db.settings.put({ key: 'resource.logos', value: 'on' });
   window.history.replaceState(null, '', '/#/today');
 });
 afterEach(cleanup);
