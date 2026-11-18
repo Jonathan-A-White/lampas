@@ -6,7 +6,7 @@
 //     one-time DATA_NOTICE; where he has not, the phone's voice and the notice.
 // The recorded voice's own rule (recordedVoice.ts wantsRecording / recordingFor) is unchanged; this file only adds what is said. What he answered and what was said is kept in
 // localStorage (lampas.dataVoiceAsked, lampas.dataVoiceNoticed); the line about a book is kept for the session only.
-import { chapterListedNow, chapterTimingsNow, spanOf, type ChapterTimings } from '../data/audioTimings';
+import { chapterListedNow, chapterTimingsNow, loadBookTimings, spanOf, type ChapterTimings } from '../data/audioTimings';
 import { bookOf } from '../data/books';
 import type { Chapter } from '../data/chapter';
 import type { BibleVoice } from '../settings/definitions/bibleVoice';
@@ -48,6 +48,29 @@ export const markDataQuestionAnswered = (): void => keep(ASKED);
 export function timingsWarmFor(voice: BibleVoice | undefined): boolean {
   if (recordingWanted(voice) !== null) return true;
   return voice === 'msb-david-wifi' && !dataQuestionAnswered();
+}
+
+/** The longest a reading that starts by itself (Hands-free's 'read John 17', a crossing into a next book) waits for the book's timings before the phone's voice reads it. */
+export const TIMINGS_WAIT_MS = 4000;
+
+/** Resolves when decideVoice can look at this book's timings: they are in, or will not come (David could not play under this voice, the fetch failed, or TIMINGS_WAIT_MS went by). A tap on Play
+ * finds them loaded already (the Reader warms them as a chapter opens, timingsWarmFor), but a reading that starts the moment a chapter opens (mw-rl10piw.29: Hands-free's 'read John 17' from another
+ * book) decides before the fetch is back, finds none and reads in the phone's voice: it waits here first. `voice` undefined (the setting not read yet) is no answer: the caller waits for it. */
+export function timingsReady(book: string, voice: BibleVoice | undefined): Promise<void> {
+  if (!timingsWarmFor(voice)) return Promise.resolve();
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, TIMINGS_WAIT_MS);
+    void loadBookTimings(book).then(
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+    );
+  });
 }
 
 /** The books the 'not recorded yet' line was said for this session. */
