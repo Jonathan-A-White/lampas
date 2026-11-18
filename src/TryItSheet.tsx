@@ -16,7 +16,7 @@ import { openVerseAt } from './nav/route';
 import { gradingOf } from './review/kinds';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
-import { useSettled } from './ui/settle';
+import { SCREEN_OPENING_MOMENTS, useSettled } from './ui/settle';
 import { closeAllSheets, useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose } from './ui/sheetDrag';
 import { questionFact, TRY_IT_SCREEN, workKept, workScreen, workSuggestions } from './tutor/workTalk';
@@ -65,6 +65,8 @@ export function TryItSheet({ idea, passage, onClose }: { idea: GrammarIdea; pass
   const question = tried && !over ? tried.questions[index] : null;
   // Done and Read it stand where Finish was: a second tap of a double tap on Finish waits for the card to settle (src/ui/settle.ts)
   const settled = useSettled(index);
+  // the Done of 'no verse has a form of this idea' stands where the Try it that opened the screen stood (mw-indx1x6.69)
+  const opening = useSettled('opened', SCREEN_OPENING_MOMENTS);
   const told = useRef(false);
 
   useEffect(() => {
@@ -159,7 +161,7 @@ export function TryItSheet({ idea, passage, onClose }: { idea: GrammarIdea; pass
             </button>
           </div>
         ) : found === 'none' ? (
-          <button type="button" ref={focusOnMount} onClick={onClose} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
+          <button type="button" ref={focusOnMount} onClick={() => opening() && onClose()} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
           </button>
         ) : picked !== null ? (

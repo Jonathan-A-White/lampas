@@ -15,7 +15,7 @@ import { GrammarCard } from './GrammarCard';
 import { drawCheck } from './review/lessonCheck';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
-import { useSettled } from './ui/settle';
+import { SCREEN_OPENING_MOMENTS, useSettled } from './ui/settle';
 import { useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose } from './ui/sheetDrag';
 import { CHECK_SCREEN, questionFact, workKept, workScreen, workSuggestions } from './tutor/workTalk';
@@ -49,6 +49,8 @@ export function CheckSheet({ lesson, onClose, onQuiz }: { lesson: CheckLesson; o
   const writing = useRef<Promise<unknown>>(Promise.resolve());
   const marked = useRef(false);
   const settled = useSettled(index);
+  // the Done of 'no question to ask' stands where the Check that opened the screen stood (mw-indx1x6.69)
+  const opening = useSettled('opened', SCREEN_OPENING_MOMENTS);
   const questions = drawn && drawn !== 'none' ? drawn : null;
   const total = questions?.length ?? 0;
   const over = questions !== null && index >= total;
@@ -200,7 +202,7 @@ export function CheckSheet({ lesson, onClose, onQuiz }: { lesson: CheckLesson; o
             </button>
           </div>
         ) : drawn === 'none' ? (
-          <button type="button" ref={focusOnMount} onClick={onClose} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
+          <button type="button" ref={focusOnMount} onClick={() => opening() && onClose()} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
           </button>
         ) : picked !== null ? (

@@ -30,7 +30,7 @@ import { questionFact, workScreen, workSuggestions } from './tutor/workTalk';
 import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
-import { useSettled } from './ui/settle';
+import { SCREEN_OPENING_MOMENTS, useSettled } from './ui/settle';
 
 /** What Drill it says when too few unseen questions are left and no more can come (the outcomes of moreItems.ts whyCannotAsk), in plain words. */
 const CANNOT_ASK = {
@@ -204,6 +204,9 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
   // Hint (and Done, after Finish) stands where Next was: a second tap of a double tap on Next lands on it, so it waits for the new card to settle
   // as the card's options do (src/ui/settle.ts, mw-5r3p30.430)
   const settled = useSettled(walk?.asked.length ?? 0);
+  // Done of the screen that has nothing to ask (too few questions, the phone offline) stands where the Drill it that opened this screen stood, and a thumb's second tap comes up to
+  // 800 ms after the first: it takes no tap for two settle moments after the screen opens (src/ui/settle.ts, mw-indx1x6.69)
+  const opening = useSettled('opened', SCREEN_OPENING_MOMENTS);
   useEffect(() => {
     if (result && !reported.current) {
       reported.current = true;
@@ -305,7 +308,7 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
       </div>
       <FootBar>
         {result || walk === null ? (
-          <button type="button" ref={focusOnMount} onClick={() => settled() && onClose()} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
+          <button type="button" ref={focusOnMount} onClick={() => settled() && opening() && onClose()} className={`${BUTTON} border-accent bg-accent text-accent-fg`}>
             Done
           </button>
         ) : after ? (

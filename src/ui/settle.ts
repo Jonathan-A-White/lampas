@@ -19,6 +19,10 @@ import { useCallback, useEffect, useRef, type SyntheticEvent } from 'react';
  * than this. PROVISIONAL */
 export const SETTLE_MS = 450;
 
+/** How many settle moments a full-screen dialog that a tap opened takes no tap on its lone bottom button (its Done, when it has nothing to ask), which stands where the control that opened it stood:
+ * 2 x SETTLE_MS (900 ms) outlasts the Tester's slowest second tap, 800 ms (mw-indx1x6.69). Read through `useSettled('opened', SCREEN_OPENING_MOMENTS)`. PROVISIONAL */
+export const SCREEN_OPENING_MOMENTS = 2;
+
 /** The moment a card settles for. A seam: tests/setup.ts sets 0 so a step may tap the instant a card is drawn; a test of the guard puts SETTLE_MS back,
  * and a browser spec starts at 0 through tests/e2e/unlocked.ts (localStorage 'lampas.settleMs'). */
 export const settle = { ms: readStored() };
