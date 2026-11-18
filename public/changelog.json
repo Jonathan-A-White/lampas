@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.276",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.180",
+    "kind": "fixed",
+    "text": "after you tap a Hebrew or Greek word while the tutor is reading an answer, Resume no longer reads the rest of the answer in the Hebrew voice."
+  },
+  {
+    "version": "0.7.276",
+    "date": "2026-11-18",
+    "story": "mw-rl10piw.51",
+    "kind": "fixed",
+    "text": "after Lampas asks you to touch the screen to open Audible, going to Audible yourself and coming back no longer lets your next touch restart the chapter."
+  },
+  {
+    "version": "0.7.276",
+    "date": "2026-11-18",
+    "story": "mw-6ww.175.87",
+    "kind": "fixed",
+    "text": "Settings no longer lays out what Lampas has counted on its first page; it is one row at the bottom that opens a page of its own."
+  },
+  {
+    "version": "0.7.276",
+    "date": "2026-11-18",
+    "story": "mw-qtu3zvz.197",
+    "kind": "fixed",
+    "text": "On the Sermon sources page, tapping All off and then All on quickly now leaves every source On; before, some could stay Off."
+  },
+  {
     "version": "0.7.275",
     "date": "2026-11-18",
     "story": "mw-fnvjof.17.161",

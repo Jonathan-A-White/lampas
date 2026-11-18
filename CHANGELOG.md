@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.276
+_2026-11-18_
+- Fixed: after you tap a Hebrew or Greek word while the tutor is reading an answer, Resume no longer reads the rest of the answer in the Hebrew voice.
+- Fixed: after Lampas asks you to touch the screen to open Audible, going to Audible yourself and coming back no longer lets your next touch restart the chapter.
+- Fixed: Settings no longer lays out what Lampas has counted on its first page; it is one row at the bottom that opens a page of its own.
+- Fixed: On the Sermon sources page, tapping All off and then All on quickly now leaves every source On; before, some could stay Off.
+
 ## 0.7.275
 _2026-11-18_
 - Fixed: In the Old Testament, tapping an English phrase now opens the Hebrew word it translates (Isaiah 33:8 and many more verses), and a Hebrew word shows its own English.
