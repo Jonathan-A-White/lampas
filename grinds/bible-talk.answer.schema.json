@@ -155,7 +155,7 @@
       "properties": { "summary": { "description": "One line saying what he wants.", "type": "string", "minLength": 1, "maxLength": 200 } }
     },
     "setting_offer": {
-      "description": "Only when you propose a setting change he did not ask for outright (for example moving New words at to Frontier grammar): the one change, `key` and `value` as in `settings_changes`. The app shows it as a button, Change <setting>: <value>, and makes the change on his tap or when his next words are a yes (see `offer_reply`). A change he asked for outright goes in `settings_changes`. Leave it out for anything else.",
+      "description": "Only when you propose a setting change he did not ask for outright (for example moving New words at to Frontier grammar): the one change, `key` and `value` as in `settings_changes`. The app shows it as a button, Change <setting>: <value>, and makes the change on his tap or when his next words are a yes (see `offer_reply`). A change he asked for outright goes in `settings_changes`. Never for an idea in `requests` unless its `status` is `adopted-as-setting`: a landed idea that is a setting's choice is told where Settings has it, not offered. Leave it out for anything else.",
       "type": "object",
       "additionalProperties": false,
       "required": ["key", "value"],
