@@ -48,10 +48,10 @@ Never claim a change the list does not have. For a setting the app does not have
 - `newWordsADay` — New words a day. From the chapter you are reading, most common first. Off offers none; none while many reviews are due or the last round went badly; a clean week adds a notch. Value: "0", "3", "5", "10".
 - `pickerGrammar` — New words at. Offer only new words whose form uses grammar you have at this level. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
 - `grammarMove` — Move it. Whether New words at moves by how your grammar reviews go: Ask: offers. Auto: moves and says so. Off: never. Value: "ask", "auto", "off".
-- `paradigmExtent` — How much of a table. Which forms a paradigm table shows: all of them, yours, or only the solid ones. Value: "any", "solid+frontier" (Solid and frontier), "solid" (Solid only).
+- `paradigmExtent` — How much of a table. Which forms a paradigm table shows. Value: "any", "solid+frontier" (Solid and frontier), "solid" (Solid only).
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" ("" for none).
 - `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "ladder" (Lampas ladder).
-- `handwritingDrills` — Handwriting drills. Write letters with a pen or finger, as a memory aid. Automatic: on once a pen is seen. Value: "auto", "on", "off".
+- `handwritingDrills` — Handwriting drills. Write letters by hand, as a memory aid. Automatic: on once a pen is seen. Value: "auto", "on", "off".
 - `handsFree` — Hands-free. A three-finger tap anywhere turns it On or Off.
 - `handsFreePause` — Pause before it acts. How long it waits after you stop speaking. Value: "1" (1 second), "1.5" (1.5 seconds), "2" to "4" (2 to 4 seconds).
 - `bibleVoice` — Bible voice. The MSB read by David, streamed, where Lampas has it; else the phone voice. Value: "msb-david" (Recording (David)), "msb-david-wifi" (Recording on Wi-Fi only), "phone" (Phone voice).
@@ -61,7 +61,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `pronunciationSeparate` — Set each language on its own. On shows a Greek pronunciation and a Hebrew pronunciation to choose on their own. Off puts both back on Pronunciation.
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced when it is read aloud. Value: "modern" (Modern Greek).
 - `hebrewPronunciation` — Hebrew pronunciation. How Hebrew is pronounced when it is read aloud. Value: "israeli".
-- `englishAccent` — English accent. The English your sound hints and the tutor use: American, British, or IPA. Value: "american", "british", "ipa" (IPA (the standard)).
+- `englishAccent` — English accent. The English your sound hints and the tutor use. Value: "american", "british", "ipa" (IPA (the standard)).
 - `ipaLesson` — IPA lesson. The optional IPA lesson, for Greek and for Hebrew.
 - `resource.strongs` — Strong's. Shows the word's Strong's number, a link to its entry on STEPBible.
 - `resource.logos` — Logos. Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.
@@ -72,14 +72,15 @@ Never claim a change the list does not have. For a setting the app does not have
 - `sermons.spurgeon-ccel`, `sermons.henry-sermons`, `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos` — Spurgeon's, Matthew Henry's, Greg Laurie's, J. D. Greear's, Skip Heitzig's, Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's, D. L. Moody's sermons. In Settings > Study resources > Sermons > Sermon sources; a Logos list needs your import.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
 - `readingPlan` — Reading plan. Read through the Bible a chapter at a time, with the audio Bible.
-- `dailyReview` — Review. Whether Today holds your due words and ideas.
-- `dailyMemorize` — Memorize. Whether Today holds the verses due to recall.
-- `dailyPlan` — Plan chapter. Whether Today holds the reading plan's chapter, to read in Logos.
-- `dailyPsalms` — Psalms and Proverbs. Whether Today holds the day's Psalms and Proverbs.
-- `dailyDevotional` — Devotional. Whether Today holds a devotional (Logos).
+- `dailyReview` — Review. Today holds your due cards.
+- `dailyMemorize` — Memorize. Today holds verses due to recall.
+- `dailyPlan` — Plan chapter. Today holds the plan's chapter.
+- `dailyPsalms` — Psalms and Proverbs. Today holds the day's Psalms and Proverbs.
+- `dailyDevotional` — Devotional. Today holds a devotional.
 - `devotional` — Which devotional. The one Today shows, or Random. Value: "random", "LLS:HLINSSDYBYDY" (Holiness Day by Day), "LLS:MANFAMDEVBCP" (Manual of Family Devotions), "LLS:HEARTOFPRAISE" (The Heart of Praise), "LLS:36.0.3" (The Riches of John Bunyan), "LLS:365CALVIN" (365 Days with Calvin), "LLS:365SPURGEON1" to "LLS:365SPURGEON6" (365 Days with Spurgeon (Volume 1 to 6)), "LLS:40DAYSCROSS" (40 Days to the Cross), "LLS:9780736971270" (52 Weeks Through the Psalms Devotional), "LLS:FSBDEVOTIONAL" (Connect the Testaments), "LLS:DLYDCLRTNSSWRFR" (Daily Declarations for Spiritual Warfare), "LLS:DYSHVNLVNGTRTHS" (Days of Heaven upon Earth), "LLS:20.10.8" (Ears from Harvested Sheaves, or, Daily Portions), "LLS:FRESHSTDEV" (Fresh Start Devotionals), "LLS:GDSFTHFL" (God Is Faithful), "LLS:9781434705846" (Good Morning, God), "LLS:MKEYECNTCTGD" (Making Eye Contact with God), "LLS:MMNTGDDVBBLCLBK" (Moment with God), "LLS:20.10.1" (Morning and Evening), "LLS:20.10.2" (My Utmost for His Highest), "LLS:STRMSDSRT" (Streams in the Desert), "LLS:BTSTN10TNNVRSRY" (The Bait of Satan (Devotional Supplement Included)), "LLS:SPURGINTERP" (The Interpreter), "LLS:VOICELRD" (The Voice of the Lord), "LLS:20.10.14" (Thoughts for the Quiet Hour), "LLS:TICHDD", "LLS:TICHDQ", "LLS:TICHDS" (Today in Christian History), "LLS:9781496400536" (Turning Points with God), "LLS:12MOSUNA", "LLS:12MOSUNB", "LLS:12MOSUNC" (Twelve Months of Sundays), "LLS:WMNSDLYSPRTWRFR" (Women’s Daily Declarations for Spiritual Warfare), "rephil:morning" (Morning RePhil (Brookfield First)).
-- `devotionalDraw` — In the draw. Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening. Value: text, for example "LLS:20.10.1,LLS:20.10.2" ('all', 'none' or Logos ids joined by commas).
-- `morningRephilOrder` — Morning RePhil order. Next Morning RePhil episode: the oldest not yet played, or the newest. Value: "oldest" (Oldest first), "newest" (Newest first).
+- `devotionalDraw` — In the draw. The devotionals Random draws from. Value: text, for example "LLS:20.10.1,LLS:20.10.2" ('all', 'none' or Logos ids joined by commas).
+- `morningRephilOrder` — Morning RePhil order. Oldest or newest episode first. Value: "oldest" (Oldest first), "newest" (Newest first).
+- `morningRephilBackup` — When all Morning RePhil are seen. Today shows it instead. Value: any value of `devotional` but "random", "rephil:morning".
 - `todaysDevotional` — Today's devotional. Change only today's devotional. Value: "another", or any value of `devotional` but "random".
 - `dailyTicks` — Tick boxes. Each piece has a tick box.
 - `greekKeyboard`, `hebrewKeyboard` — Greek keyboard, Hebrew keyboard. On once you have added a keyboard of that language to your phone.

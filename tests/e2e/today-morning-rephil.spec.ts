@@ -79,3 +79,28 @@ test('choosing Morning RePhil shows its oldest episode on Today, Watch opens the
   expect(await keptRaw(page, 'morningRephilOrder')).toBe('newest');
   expect(newest.id).not.toBe(oldest.id);
 });
+
+test('with Logos Off Morning RePhil can be chosen and shows, Seen moves Today to the next episode, and the backup row is there (mw-r9xo1pj.2)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings?group=daily');
+  const daily = page.locator('section[data-section="daily"]');
+  const picker = daily.getByRole('group', { name: 'Which devotional', exact: true });
+  const backup = daily.getByRole('group', { name: 'When all Morning RePhil are seen', exact: true });
+  await expect(backup).toHaveCount(0);
+  await picker.getByRole('radio', { name: 'Morning RePhil (Brookfield First)', exact: true }).click();
+  await expect(backup).toBeVisible();
+  await expect(backup.getByRole('radio', { name: /Morning and Evening/ })).toHaveAttribute('aria-checked', 'true');
+
+  await page.goto('/#/today');
+  const devotional = page.getByRole('region', { name: 'Devotional', exact: true });
+  await expect(devotional.getByRole('link', { name: new RegExp(oldest.title) })).toBeVisible();
+  const seen = devotional.getByRole('button', { name: 'Seen', exact: true });
+  expect((await seen.boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  await shot(page, 'today-morning-rephil-seen');
+  await seen.click();
+  await expect(devotional.getByRole('link', { name: new RegExp(EPISODES[1].title) })).toHaveAttribute('href', EPISODES[1].share);
+  await expect.poll(async () => await keptRaw(page, 'morningRephilHeard')).toBe(JSON.stringify([oldest.id]));
+  // still the next one after a reload: Seen is kept on this phone
+  await page.reload();
+  await expect(devotional.getByRole('link', { name: new RegExp(EPISODES[1].title) })).toBeVisible();
+});

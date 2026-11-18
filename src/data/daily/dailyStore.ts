@@ -14,7 +14,7 @@ const HEARD_KEY = 'morningRephilHeard';
 export const KEPT_DAYS = 90;
 
 /** The keys of Settings > Daily (src/settings/definitions/daily.ts). Changing any of them answers the explanation. */
-export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'morningRephilOrder', 'dailyTicks'];
+export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'morningRephilOrder', 'morningRephilBackup', 'dailyTicks'];
 
 export interface DayRecord {
   /** the pieces he ticked, in the order he ticked them */
@@ -112,6 +112,16 @@ export function markHeard(date: string, id: string): Promise<void> {
     const heard = heardIds((await db.settings.get(HEARD_KEY))?.value);
     if (!heard.includes(id)) await db.settings.put({ key: HEARD_KEY, value: JSON.stringify([...heard, id]) });
     await update(date, (day) => ({ ...day, rephil: id, devotional: MORNING_REPHIL_ID }));
+  });
+}
+
+/** Seen: keeps that he has seen episode `id` without playing it, in the same heard set a play uses. Unlike a play it lets the day's own episode go, so Today moves on to the next unseen one
+ *  (it keeps Morning RePhil as the day's devotional, so Random does not jump to another under his thumb). Nothing leaves the device: the set is this phone's own (mw-r9xo1pj.2). */
+export function markSeen(date: string, id: string): Promise<void> {
+  return db.transaction('rw', db.settings, async () => {
+    const heard = heardIds((await db.settings.get(HEARD_KEY))?.value);
+    if (!heard.includes(id)) await db.settings.put({ key: HEARD_KEY, value: JSON.stringify([...heard, id]) });
+    await update(date, (day) => ({ ticked: day.ticked, opened: day.opened, devotional: MORNING_REPHIL_ID }));
   });
 }
 

@@ -43,6 +43,15 @@ const FALLBACK = byId.get(DEFAULT_DEVOTIONAL) as Devotional;
 
 export const devotionalOf = (id: string): Devotional | undefined => byId.get(id);
 
+/** The devotional Today shows when every Morning RePhil episode is seen, to start (Settings > Daily > When all Morning RePhil are seen): Spurgeon, Lampas's default devotional. */
+export const DEFAULT_BACKUP = DEFAULT_DEVOTIONAL;
+
+/** The backup devotional named by `id`: a Logos devotional of the catalog, else Spurgeon's Morning and Evening. */
+export const backupDevotional = (id: string): Devotional => {
+  const d = byId.get(id);
+  return d && d.kind === undefined ? d : FALLBACK;
+};
+
 /** The ids ticked for Random, from the setting's text ('all', or the ids joined by commas): only those in the catalog, in the catalog's order. */
 export function tickedDevotionals(raw: string): string[] {
   if (raw === ALL_TICKED) return DEVOTIONALS.map((d) => d.id);
@@ -79,9 +88,10 @@ export function devotionalForDay(choice: string, ticked: readonly string[], date
 }
 
 /** The devotionals Settings > Daily's picker lists, in the catalog's order: those `ticked` for the draw that he may be offered (in his import or free with Logos: src/data/owned.ts isOffered, mw-qtu3zvz.167),
- *  Morning RePhil last (a web page, always offered), and always the one chosen now (`current`), so the picker never hides what Today shows. */
-export const pickableDevotionals = (ticked: readonly string[], current: string, owned: Owned): Devotional[] => [
-  ...DEVOTIONALS.filter((d) => d.id === current || (ticked.includes(d.id) && isOffered(d.id, owned))),
+ *  Morning RePhil last (a web page, always offered), and always the one chosen now (`current`), so the picker never hides what Today shows. With Logos Off (`logosOn` false) only the one chosen now
+ *  and Morning RePhil are listed: a Logos book opens nothing then (mw-r9xo1pj.2). */
+export const pickableDevotionals = (ticked: readonly string[], current: string, owned: Owned, logosOn = true): Devotional[] => [
+  ...DEVOTIONALS.filter((d) => d.id === current || (logosOn && ticked.includes(d.id) && isOffered(d.id, owned))),
   MORNING_REPHIL,
 ];
 

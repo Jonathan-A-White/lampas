@@ -69,6 +69,7 @@ export const BEARS_ON: Readonly<Record<string, Bearing>> = {
   devotional: 'screen',
   devotionalDraw: 'screen',
   morningRephilOrder: 'screen',
+  morningRephilBackup: 'screen',
   todaysDevotional: 'screen',
   dailyTicks: 'screen',
   greekKeyboard: 'screen',

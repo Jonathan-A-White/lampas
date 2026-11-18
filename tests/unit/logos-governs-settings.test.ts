@@ -45,11 +45,13 @@ describe('Study resources with Logos On', () => {
 
 describe('the Daily rows that exist only to open Logos', () => {
   const DAILY = ['dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'request.devotional'];
+  // Morning RePhil is a web page, so the devotional switch and the picker stay while Logos is Off (mw-r9xo1pj.2); only the ask for another Logos devotional goes
+  const ONLY_LOGOS = ['request.devotional'];
 
-  it('are hidden while Logos is Off, the rest of Daily is not', () => {
+  it('are hidden while Logos is Off, the rest of Daily is not, and the devotional switch and picker stay for Morning RePhil', () => {
     const off = keysOf({ 'resource.logos': 'off', devotional: 'random' });
-    for (const key of DAILY) expect(off).not.toContain(key);
-    expect(off).toEqual(expect.arrayContaining(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyTicks']));
+    for (const key of ONLY_LOGOS) expect(off).not.toContain(key);
+    expect(off).toEqual(expect.arrayContaining(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyTicks', 'dailyDevotional', 'devotional']));
   });
 
   it('are drawn while Logos is On', () => {
