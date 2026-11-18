@@ -88,7 +88,9 @@ Genesis 12 to 19 and 21 to 23 were done as one batch (story mw-u2w5klk.349.3; Ge
 The English content words that sat where a tap opened the Verse view were 607 before the pass (`npm run lxx:unpaired -- --book gen`) and are 0 after it; 189 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of three lists with why: the 14 of 'it came to pass' (ἐγένετο is a pair the aligner made to one English word), the 14 of two verses that carry the next Greek verse's English (Genesis 13:11, 22:15), and the 161 whose Greek word is a pair the aligner made to another English word or that Brenton adds to make English of a Greek phrase ('forth', 'aside', 'fine', 'aloud').
 Genesis 24 to 29 were done as one batch (story mw-u2w5klk.349.4): 1,400 runs in six chapters, 1,504 chunks (1,458 chosen, 46 unsure); of their 5,224 Greek words 701 (13.4%) are now paired by the model (Genesis 24 240, 25 68, 26 125, 27 117, 28 63, 29 88), and 4,173 (79.9%) had an English chunk before the pass and 4,874 (93.3%) after it.
 The English content words that sat where a tap opened the Verse view were 566 before the pass (`npm run lxx:unpaired -- --book gen`) and are 0 after it; 187 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of three lists with why: the 26 of 'it came to pass' (ἐγένετο is a pair the aligner made to one English word), the 19 of English whose Greek is in the verse before or after or that the Greek verse does not have (Genesis 24:18 'till', 25:20 'Abraam begot Isaac', 27:44 'until your brother's anger', 27:38 and 29:20), and the 142 whose Greek word is a pair the aligner made to another English word ('master' for Κύριος, 'draw' for ὑδρεύσατο) or that Brenton adds to make English of a Greek phrase ('instead', 'just', 'hither', 'forth', 'away').
-The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 14 and 30 to 50 (22 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
+Genesis 30 to 36 were done as one batch (story mw-u2w5klk.349.5): 1,385 runs in seven chapters, 1,590 chunks (1,568 chosen, 22 unsure); of their 5,270 Greek words 663 (12.6%) are now paired by the model (Genesis 30 106, 31 179, 32 116, 33 56, 34 85, 35 57, 36 64), and 4,197 (79.6%) had an English chunk before the pass and 4,860 (92.2%) after it.
+The English content words that sat where a tap opened the Verse view were 584 before the pass (`npm run lxx:unpaired -- --book gen`) and are 0 after it; 167 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of three lists with why: the 17 of 'it came to pass' (ἐγένετο is a pair the aligner made to one English word), the 21 of English whose Greek is in the verse before or after or that the Greek verse does not have (Genesis 31:51 is a whole verse with no Greek, 31:50 and 31:53 share a clause, 36:18's 'daughter of Ana, wife of Esau'), and the 129 whose Greek word is a pair the aligner made to another English word (Genesis 30:37's 'storax tree', 'plane', 'stripes' are crossed with their Greek neighbours) or that Brenton adds to make English of a Greek phrase ('forth', 'away', 'back', 'hard', 'very').
+The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 14 and 37 to 50 (15 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
 
 ## The unpaired English
 
@@ -103,7 +105,7 @@ Story mw-u2w5klk.349.1, the sweep of the pairing epic (mw-u2w5klk.349; the Gover
 | Share | Unpaired over English content words |
 
 The command reports and does not fail on a gap. A later story makes a gap a failing test once the model batches have finished a book. `tests/unit/lxx-unpaired.test.ts` holds the function-word list, the counting on a fixture verse with a known remainder, the table, and (where the git-ignored sources are on the disk, as `lxx-align-choose.test.ts`)
-the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 14 and 24 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3), and Genesis 24 to 29 read 0 after mw-u2w5klk.349.4.
+the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 14 and 24 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3), Genesis 24 to 29 read 0 after mw-u2w5klk.349.4, and Genesis 30 to 36 after mw-u2w5klk.349.5.
 
 ## What reads the chunks
 
@@ -120,21 +122,28 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 
 | Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Deuteronomy 1 | 46 | 987 | 775 | 78.5% | 54.6% | — |
+| Amos 1 | 15 | 344 | 279 | 81.1% | 57.0% | — |
+| Amos 2 | 16 | 365 | 280 | 76.7% | 49.9% | — |
+| Amos 3 | 15 | 309 | 221 | 71.5% | 50.5% | — |
+| Amos 4 | 13 | 332 | 250 | 75.3% | 52.1% | — |
+| Amos 5 | 27 | 495 | 384 | 77.6% | 55.6% | — |
+| Amos 6 | 14 | 288 | 162 | 56.3% | 35.8% | — |
+| Amos 7 | 17 | 351 | 270 | 76.9% | 55.8% | — |
+| Amos 8 | 14 | 296 | 219 | 74.0% | 51.4% | — |
+| Deuteronomy 1 | 46 | 987 | 777 | 78.7% | 54.3% | — |
 | Deuteronomy 2 | 37 | 834 | 653 | 78.3% | 50.7% | — |
-| Deuteronomy 3 | 29 | 703 | 546 | 77.7% | 53.2% | — |
+| Deuteronomy 3 | 29 | 703 | 545 | 77.5% | 53.1% | — |
 | Deuteronomy 4 | 49 | 1,245 | 980 | 78.7% | 54.5% | — |
 | Deuteronomy 5 | 33 | 769 | 593 | 77.1% | 53.4% | — |
-| Deuteronomy 6 | 25 | 538 | 403 | 74.9% | 53.5% | — |
+| Deuteronomy 6 | 25 | 538 | 402 | 74.7% | 53.3% | — |
 | Deuteronomy 7 | 26 | 699 | 524 | 75.0% | 49.1% | — |
 | Deuteronomy 8 | 20 | 480 | 365 | 76.0% | 52.1% | — |
-| Deuteronomy 9 | 29 | 788 | 652 | 82.7% | 56.6% | — |
+| Deuteronomy 9 | 29 | 788 | 652 | 82.7% | 56.5% | — |
 | Deuteronomy 10 | 22 | 504 | 421 | 83.5% | 56.0% | — |
 | Deuteronomy 11 | 32 | 806 | 631 | 78.3% | 48.0% | — |
 | Deuteronomy 12 | 32 | 868 | 651 | 75.0% | 48.5% | — |
 | Deuteronomy 13 | 18 | 484 | 382 | 78.9% | 50.0% | — |
 | Deuteronomy 14 | 28 | 535 | 314 | 58.7% | 31.8% | — |
-| Deuteronomy 15 | 23 | 580 | 439 | 75.7% | 52.6% | — |
 | Deuteronomy 16 | 22 | 558 | 449 | 80.5% | 51.4% | — |
 | Deuteronomy 17 | 20 | 524 | 410 | 78.2% | 48.3% | — |
 | Deuteronomy 18 | 22 | 465 | 348 | 74.8% | 45.4% | — |
@@ -142,7 +151,7 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Deuteronomy 20 | 20 | 495 | 385 | 77.8% | 47.9% | — |
 | Deuteronomy 21 | 23 | 547 | 446 | 81.5% | 50.1% | — |
 | Deuteronomy 22 | 30 | 664 | 516 | 77.7% | 44.4% | — |
-| Deuteronomy 23 | 25 | 462 | 360 | 77.9% | 47.4% | — |
+| Deuteronomy 23 | 25 | 462 | 359 | 77.7% | 47.2% | — |
 | Deuteronomy 24 | 22 | 516 | 395 | 76.6% | 48.4% | — |
 | Deuteronomy 25 | 19 | 408 | 313 | 76.7% | 46.8% | — |
 | Deuteronomy 26 | 19 | 527 | 429 | 81.4% | 54.1% | — |
@@ -150,17 +159,15 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Deuteronomy 28 | 68 | 1,607 | 1,229 | 76.5% | 49.6% | — |
 | Deuteronomy 29 | 29 | 700 | 525 | 75.0% | 51.4% | — |
 | Deuteronomy 30 | 20 | 589 | 463 | 78.6% | 52.1% | — |
-| Deuteronomy 31 | 30 | 844 | 670 | 79.4% | 49.5% | — |
 | Deuteronomy 32 | 52 | 971 | 776 | 79.9% | 52.1% | — |
 | Deuteronomy 33 | 29 | 551 | 435 | 78.9% | 55.5% | — |
 | Deuteronomy 34 | 12 | 246 | 198 | 80.5% | 60.6% | — |
 | Exodus 1 | 22 | 374 | 293 | 78.3% | 49.2% | — |
 | Exodus 6 | 30 | 569 | 506 | 88.9% | 64.7% | — |
 | Exodus 8 | 32 | 823 | 677 | 82.3% | 54.7% | — |
-| Exodus 11 | 10 | 258 | 201 | 77.9% | 55.4% | — |
-| Exodus 14 | 31 | 786 | 668 | 85.0% | 54.5% | — |
+| Exodus 14 | 31 | 786 | 668 | 85.0% | 54.3% | — |
 | Exodus 15 | 27 | 512 | 446 | 87.1% | 57.0% | — |
-| Exodus 17 | 16 | 377 | 327 | 86.7% | 61.8% | — |
+| Exodus 17 | 16 | 377 | 327 | 86.7% | 61.5% | — |
 | Exodus 18 | 27 | 582 | 469 | 80.6% | 55.5% | — |
 | Exodus 19 | 25 | 570 | 474 | 83.2% | 57.5% | — |
 | Exodus 20 | 26 | 506 | 390 | 77.1% | 49.6% | — |
@@ -201,13 +208,13 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Genesis 27 | 46 | 1,044 | 949 | 90.9% | 63.1% | 117 (11.2%) |
 | Genesis 28 | 22 | 525 | 492 | 93.7% | 65.9% | 63 (12.0%) |
 | Genesis 29 | 35 | 729 | 683 | 93.7% | 66.0% | 88 (12.1%) |
-| Genesis 30 | 43 | 921 | 709 | 77.0% | 51.9% | — |
-| Genesis 31 | 55 | 1,267 | 969 | 76.5% | 49.6% | — |
-| Genesis 32 | 32 | 693 | 536 | 77.3% | 49.2% | — |
-| Genesis 33 | 20 | 416 | 338 | 81.3% | 53.6% | — |
-| Genesis 34 | 31 | 703 | 565 | 80.4% | 52.1% | — |
-| Genesis 35 | 29 | 588 | 497 | 84.5% | 58.5% | — |
-| Genesis 36 | 43 | 682 | 583 | 85.5% | 53.5% | — |
+| Genesis 30 | 43 | 921 | 815 | 88.5% | 62.0% | 106 (11.5%) |
+| Genesis 31 | 55 | 1,267 | 1,148 | 90.6% | 63.2% | 179 (14.1%) |
+| Genesis 32 | 32 | 693 | 652 | 94.1% | 65.8% | 116 (16.7%) |
+| Genesis 33 | 20 | 416 | 394 | 94.7% | 66.8% | 56 (13.5%) |
+| Genesis 34 | 31 | 703 | 650 | 92.5% | 63.6% | 85 (12.1%) |
+| Genesis 35 | 29 | 588 | 554 | 94.2% | 68.2% | 57 (9.7%) |
+| Genesis 36 | 43 | 682 | 647 | 94.9% | 62.9% | 64 (9.4%) |
 | Genesis 37 | 36 | 768 | 581 | 75.7% | 45.8% | — |
 | Genesis 38 | 30 | 678 | 537 | 79.2% | 49.7% | — |
 | Genesis 39 | 23 | 562 | 426 | 75.8% | 49.1% | — |
@@ -222,6 +229,9 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Genesis 48 | 22 | 560 | 460 | 82.1% | 55.7% | — |
 | Genesis 49 | 33 | 573 | 431 | 75.2% | 48.2% | — |
 | Genesis 50 | 26 | 559 | 452 | 80.9% | 54.7% | — |
+| Hosea 1 | 11 | 263 | 223 | 84.8% | 58.2% | — |
+| Hosea 5 | 15 | 286 | 213 | 74.5% | 48.3% | — |
+| Hosea 6 | 11 | 168 | 126 | 75.0% | 50.0% | — |
 | Isaiah 2 | 21 | 436 | 344 | 78.9% | 51.4% | — |
 | Isaiah 3 | 26 | 491 | 309 | 62.9% | 36.9% | — |
 | Isaiah 4 | 6 | 140 | 109 | 77.9% | 62.1% | — |
@@ -232,7 +242,6 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Isaiah 12 | 6 | 110 | 87 | 79.1% | 47.3% | — |
 | Isaiah 15 | 9 | 186 | 148 | 79.6% | 48.9% | — |
 | Isaiah 18 | 7 | 184 | 138 | 75.0% | 54.9% | — |
-| Isaiah 20 | 6 | 149 | 123 | 82.6% | 62.4% | — |
 | Isaiah 23 | 18 | 305 | 231 | 75.7% | 50.2% | — |
 | Isaiah 24 | 23 | 392 | 309 | 78.8% | 49.7% | — |
 | Isaiah 25 | 12 | 231 | 174 | 75.3% | 50.6% | — |
@@ -245,34 +254,38 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Isaiah 40 | 31 | 529 | 397 | 75.0% | 48.0% | — |
 | Isaiah 41 | 29 | 557 | 437 | 78.5% | 54.4% | — |
 | Isaiah 46 | 13 | 243 | 178 | 73.3% | 51.4% | — |
-| Isaiah 52 | 15 | 300 | 236 | 78.7% | 52.3% | — |
+| Isaiah 52 | 15 | 300 | 235 | 78.3% | 52.0% | — |
 | Isaiah 55 | 13 | 305 | 239 | 78.4% | 48.2% | — |
 | Isaiah 56 | 11 | 251 | 191 | 76.1% | 48.2% | — |
 | Isaiah 63 | 19 | 397 | 308 | 77.6% | 50.1% | — |
 | Isaiah 64 | 12 | 216 | 150 | 69.4% | 47.7% | — |
+| Judges 1 | 36 | 936 | 716 | 76.5% | 46.6% | — |
+| Judges 2 | 23 | 584 | 445 | 76.2% | 50.0% | — |
+| Judges 3 | 31 | 756 | 601 | 79.5% | 54.4% | — |
+| Judges 4 | 24 | 657 | 552 | 84.0% | 60.0% | — |
+| Joel 1 | 20 | 356 | 262 | 73.6% | 44.7% | — |
+| Joel 2 | 32 | 768 | 602 | 78.4% | 51.4% | — |
+| Joel 3 | 21 | 449 | 351 | 78.2% | 46.3% | — |
+| Jonah 1 | 16 | 395 | 315 | 79.7% | 49.4% | — |
+| Jonah 2 | 11 | 184 | 139 | 75.5% | 47.8% | — |
+| Jonah 3 | 10 | 237 | 182 | 76.8% | 52.3% | — |
+| Jonah 4 | 11 | 264 | 203 | 76.9% | 54.5% | — |
 | Joshua 1 | 18 | 440 | 333 | 75.7% | 49.8% | — |
-| Joshua 2 | 24 | 582 | 476 | 81.8% | 51.0% | — |
-| Joshua 3 | 17 | 440 | 362 | 82.3% | 54.1% | — |
+| Joshua 2 | 24 | 582 | 476 | 81.8% | 50.9% | — |
+| Joshua 3 | 17 | 440 | 361 | 82.0% | 53.0% | — |
 | Joshua 4 | 24 | 542 | 416 | 76.8% | 53.1% | — |
 | Joshua 5 | 15 | 384 | 288 | 75.0% | 45.8% | — |
-| Joshua 6 | 27 | 617 | 470 | 76.2% | 49.1% | — |
+| Joshua 6 | 27 | 617 | 470 | 76.2% | 48.9% | — |
 | Joshua 7 | 26 | 644 | 506 | 78.6% | 51.4% | — |
 | Joshua 8 | 29 | 647 | 505 | 78.1% | 50.5% | — |
-| Joshua 9 | 33 | 844 | 248 | 29.4% | 14.7% | — |
-| Joshua 10 | 42 | 1,075 | 879 | 81.8% | 55.6% | — |
-| Joshua 11 | 23 | 572 | 456 | 79.7% | 51.0% | — |
-| Joshua 12 | 24 | 321 | 279 | 86.9% | 61.7% | — |
 | Joshua 13 | 32 | 707 | 565 | 79.9% | 54.0% | — |
-| Joshua 14 | 15 | 386 | 299 | 77.5% | 52.3% | — |
-| Joshua 15 | 63 | 937 | 778 | 83.0% | 62.6% | — |
 | Joshua 16 | 10 | 238 | 203 | 85.3% | 57.6% | — |
 | Joshua 17 | 18 | 473 | 371 | 78.4% | 54.1% | — |
 | Joshua 18 | 28 | 554 | 442 | 79.8% | 52.5% | — |
-| Joshua 19 | 51 | 778 | 613 | 78.8% | 56.3% | — |
-| Joshua 20 | 9 | 159 | 43 | 27.0% | 17.0% | — |
-| Joshua 21 | 45 | 981 | 641 | 65.3% | 41.5% | — |
+| Joshua 19 | 51 | 778 | 611 | 78.5% | 56.0% | — |
 | Joshua 22 | 34 | 1,044 | 829 | 79.4% | 53.2% | — |
 | Joshua 23 | 16 | 448 | 309 | 69.0% | 46.4% | — |
+| Joshua 24 | 33 | 1,002 | 780 | 77.8% | 52.1% | — |
 | Leviticus 1 | 17 | 400 | 336 | 84.0% | 47.5% | — |
 | Leviticus 2 | 16 | 317 | 265 | 83.6% | 56.2% | — |
 | Leviticus 3 | 17 | 386 | 306 | 79.3% | 45.3% | — |
@@ -282,13 +295,13 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Leviticus 7 | 28 | 562 | 429 | 76.3% | 44.7% | — |
 | Leviticus 8 | 36 | 895 | 615 | 68.7% | 40.2% | — |
 | Leviticus 9 | 24 | 520 | 453 | 87.1% | 55.6% | — |
-| Leviticus 10 | 20 | 529 | 429 | 81.1% | 56.3% | — |
+| Leviticus 10 | 20 | 529 | 428 | 80.9% | 56.1% | — |
 | Leviticus 11 | 47 | 927 | 745 | 80.4% | 50.5% | — |
 | Leviticus 12 | 8 | 193 | 152 | 78.8% | 52.8% | — |
 | Leviticus 13 | 59 | 1,493 | 1,145 | 76.7% | 44.8% | — |
 | Leviticus 14 | 57 | 1,333 | 1,069 | 80.2% | 48.5% | — |
 | Leviticus 15 | 33 | 794 | 575 | 72.4% | 48.0% | — |
-| Leviticus 16 | 34 | 916 | 729 | 79.6% | 44.5% | — |
+| Leviticus 16 | 34 | 916 | 728 | 79.5% | 44.5% | — |
 | Leviticus 17 | 16 | 452 | 355 | 78.5% | 46.5% | — |
 | Leviticus 18 | 30 | 528 | 376 | 71.2% | 42.0% | — |
 | Leviticus 19 | 37 | 697 | 519 | 74.5% | 46.2% | — |
@@ -300,6 +313,12 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Leviticus 25 | 55 | 1,185 | 906 | 76.5% | 44.9% | — |
 | Leviticus 26 | 46 | 1,002 | 740 | 73.9% | 47.4% | — |
 | Leviticus 27 | 34 | 684 | 521 | 76.2% | 44.9% | — |
+| Micah 1 | 16 | 320 | 257 | 80.3% | 53.1% | — |
+| Micah 2 | 13 | 289 | 216 | 74.7% | 43.9% | — |
+| Micah 3 | 12 | 292 | 212 | 72.6% | 46.9% | — |
+| Micah 5 | 15 | 332 | 256 | 77.1% | 53.6% | — |
+| Micah 6 | 16 | 334 | 256 | 76.6% | 54.5% | — |
+| Micah 7 | 20 | 430 | 317 | 73.7% | 44.2% | — |
 | Numbers 1 | 54 | 991 | 802 | 80.9% | 52.7% | — |
 | Numbers 2 | 34 | 511 | 417 | 81.6% | 53.8% | — |
 | Numbers 3 | 51 | 950 | 793 | 83.5% | 50.9% | — |
@@ -309,8 +328,8 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Numbers 7 | 89 | 1,391 | 1,253 | 90.1% | 62.0% | — |
 | Numbers 8 | 26 | 502 | 416 | 82.9% | 51.8% | — |
 | Numbers 9 | 23 | 508 | 361 | 71.1% | 42.5% | — |
-| Numbers 10 | 36 | 613 | 492 | 80.3% | 53.0% | — |
-| Numbers 11 | 35 | 827 | 697 | 84.3% | 56.7% | — |
+| Numbers 10 | 36 | 613 | 492 | 80.3% | 52.9% | — |
+| Numbers 11 | 35 | 827 | 696 | 84.2% | 56.6% | — |
 | Numbers 12 | 15 | 277 | 233 | 84.1% | 60.3% | — |
 | Numbers 13 | 34 | 573 | 500 | 87.3% | 56.7% | — |
 | Numbers 14 | 45 | 966 | 762 | 78.9% | 50.0% | — |
@@ -332,17 +351,18 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Numbers 30 | 17 | 442 | 300 | 67.9% | 37.1% | — |
 | Numbers 31 | 54 | 1,009 | 788 | 78.1% | 50.7% | — |
 | Numbers 32 | 42 | 855 | 677 | 79.2% | 54.5% | — |
-| Numbers 33 | 56 | 784 | 705 | 89.9% | 60.6% | — |
-| Numbers 34 | 29 | 432 | 353 | 81.7% | 54.4% | — |
+| Numbers 33 | 56 | 784 | 704 | 89.8% | 60.5% | — |
+| Numbers 34 | 29 | 432 | 352 | 81.5% | 53.9% | — |
 | Numbers 35 | 34 | 730 | 551 | 75.5% | 46.6% | — |
 | Numbers 36 | 13 | 318 | 246 | 77.4% | 52.5% | — |
+| Obadiah 1 | 21 | 456 | 356 | 78.1% | 51.8% | — |
 | Psalms 2 | 12 | 164 | 127 | 77.4% | 43.3% | — |
 | Psalms 3 | 9 | 108 | 84 | 77.8% | 42.6% | — |
 | Psalms 4 | 9 | 129 | 88 | 68.2% | 38.8% | — |
 | Psalms 5 | 13 | 201 | 137 | 68.2% | 41.3% | — |
 | Psalms 6 | 11 | 147 | 98 | 66.7% | 37.4% | — |
 | Psalms 7 | 18 | 255 | 184 | 72.2% | 46.7% | — |
-| Psalms 8 | 10 | 134 | 108 | 80.6% | 50.0% | — |
+| Psalms 8 | 10 | 134 | 107 | 79.9% | 49.3% | — |
 | Psalms 11 | 9 | 126 | 91 | 72.2% | 46.8% | — |
 | Psalms 12 | 6 | 99 | 61 | 61.6% | 32.3% | — |
 | Psalms 13 | 7 | 167 | 128 | 76.6% | 51.5% | — |
@@ -353,13 +373,11 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Psalms 22 | 6 | 104 | 77 | 74.0% | 44.2% | — |
 | Psalms 23 | 10 | 153 | 121 | 79.1% | 54.9% | — |
 | Psalms 25 | 12 | 145 | 115 | 79.3% | 47.6% | — |
-| Psalms 26 | 14 | 262 | 197 | 75.2% | 43.1% | — |
 | Psalms 28 | 11 | 134 | 106 | 79.1% | 55.2% | — |
 | Psalms 29 | 13 | 189 | 138 | 73.0% | 46.6% | — |
 | Psalms 31 | 11 | 189 | 135 | 71.4% | 41.3% | — |
 | Psalms 32 | 22 | 269 | 205 | 76.2% | 45.4% | — |
 | Psalms 33 | 23 | 285 | 214 | 75.1% | 49.5% | — |
-| Psalms 34 | 28 | 403 | 286 | 71.0% | 41.9% | — |
 | Psalms 37 | 23 | 316 | 229 | 72.5% | 40.2% | — |
 | Psalms 38 | 14 | 230 | 157 | 68.3% | 43.9% | — |
 | Psalms 39 | 18 | 327 | 234 | 71.6% | 42.2% | — |
@@ -377,7 +395,7 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Psalms 54 | 24 | 326 | 244 | 74.8% | 46.0% | — |
 | Psalms 55 | 14 | 203 | 142 | 70.0% | 40.4% | — |
 | Psalms 56 | 12 | 198 | 154 | 77.8% | 47.0% | — |
-| Psalms 57 | 12 | 156 | 115 | 73.7% | 47.4% | — |
+| Psalms 57 | 12 | 156 | 113 | 72.4% | 46.8% | — |
 | Psalms 58 | 18 | 284 | 212 | 74.6% | 43.0% | — |
 | Psalms 59 | 14 | 185 | 110 | 59.5% | 37.3% | — |
 | Psalms 60 | 9 | 119 | 89 | 74.8% | 43.7% | — |
@@ -387,14 +405,14 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Psalms 64 | 14 | 187 | 140 | 74.9% | 41.7% | — |
 | Psalms 65 | 20 | 270 | 196 | 72.6% | 44.8% | — |
 | Psalms 66 | 8 | 93 | 66 | 71.0% | 45.2% | — |
-| Psalms 67 | 36 | 528 | 360 | 68.2% | 44.1% | — |
+| Psalms 67 | 36 | 528 | 359 | 68.0% | 43.9% | — |
 | Psalms 68 | 37 | 532 | 395 | 74.2% | 43.6% | — |
 | Psalms 69 | 6 | 85 | 58 | 68.2% | 38.8% | — |
 | Psalms 70 | 24 | 377 | 265 | 70.3% | 41.1% | — |
 | Psalms 71 | 20 | 292 | 230 | 78.8% | 49.3% | — |
 | Psalms 73 | 23 | 326 | 235 | 72.1% | 42.9% | — |
 | Psalms 75 | 13 | 162 | 115 | 71.0% | 48.1% | — |
-| Psalms 76 | 21 | 273 | 199 | 72.9% | 49.5% | — |
+| Psalms 76 | 21 | 273 | 198 | 72.5% | 49.1% | — |
 | Psalms 77 | 72 | 994 | 742 | 74.6% | 48.5% | — |
 | Psalms 78 | 13 | 230 | 150 | 65.2% | 35.7% | — |
 | Psalms 79 | 20 | 263 | 182 | 69.2% | 44.5% | — |
@@ -402,15 +420,18 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 | Psalms 81 | 8 | 85 | 69 | 81.2% | 63.5% | — |
 | Psalms 82 | 19 | 222 | 166 | 74.8% | 50.5% | — |
 | Psalms 83 | 13 | 207 | 148 | 71.5% | 44.4% | — |
+| Psalms 84 | 14 | 176 | 120 | 68.2% | 44.3% | — |
 | Psalms 85 | 17 | 262 | 208 | 79.4% | 50.4% | — |
 | Psalms 86 | 7 | 85 | 70 | 82.4% | 57.6% | — |
 | Psalms 87 | 19 | 258 | 199 | 77.1% | 49.2% | — |
+| Psalms 88 | 53 | 715 | 516 | 72.2% | 41.8% | — |
 | Psalms 90 | 16 | 202 | 151 | 74.8% | 43.6% | — |
 | Psalms 91 | 16 | 196 | 135 | 68.9% | 42.3% | — |
 | Psalms 92 | 5 | 78 | 51 | 65.4% | 35.9% | — |
 | Psalms 93 | 23 | 268 | 182 | 67.9% | 42.5% | — |
 | Psalms 94 | 11 | 167 | 127 | 76.0% | 46.1% | — |
 | Psalms 95 | 13 | 196 | 159 | 81.1% | 46.4% | — |
+| Psalms 96 | 12 | 166 | 115 | 69.3% | 46.4% | — |
 | Psalms 97 | 9 | 128 | 102 | 79.7% | 51.6% | — |
 | Psalms 98 | 9 | 141 | 108 | 76.6% | 53.9% | — |
 | Psalms 99 | 5 | 74 | 62 | 83.8% | 47.3% | — |
@@ -459,15 +480,22 @@ The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter an
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Deuteronomy | 958 | 22,501 | 17,472 | 77.6% | 50.9% | — |
-| Exodus | 467 | 9,375 | 7,193 | 76.7% | 49.8% | — |
-| Genesis | 1,531 | 32,635 | 28,045 | 85.9% | 58.5% | 1,977 (6.1%) |
-| Isaiah | 510 | 10,326 | 7,851 | 76.0% | 50.9% | — |
-| Joshua | 623 | 13,813 | 10,311 | 74.6% | 49.8% | — |
-| Leviticus | 859 | 19,042 | 14,734 | 77.4% | 47.5% | — |
-| Numbers | 1,288 | 24,973 | 20,038 | 80.2% | 52.3% | — |
-| Psalms | 1,652 | 22,794 | 16,509 | 72.4% | 44.4% | — |
+| Amos | 131 | 2,780 | 2,065 | 74.3% | 51.5% | — |
+| Deuteronomy | 905 | 21,077 | 16,362 | 77.6% | 50.9% | — |
+| Exodus | 457 | 9,117 | 6,992 | 76.7% | 49.6% | — |
+| Genesis | 1,531 | 32,635 | 28,708 | 88.0% | 60.4% | 2,640 (8.1%) |
+| Hosea | 37 | 717 | 562 | 78.4% | 52.3% | — |
+| Isaiah | 504 | 10,177 | 7,727 | 75.9% | 50.7% | — |
+| Judges | 114 | 2,933 | 2,314 | 78.9% | 52.3% | — |
+| Joel | 73 | 1,573 | 1,215 | 77.2% | 48.4% | — |
+| Jonah | 48 | 1,080 | 839 | 77.7% | 51.0% | — |
+| Joshua | 402 | 9,540 | 7,465 | 78.2% | 52.0% | — |
+| Leviticus | 859 | 19,042 | 14,732 | 77.4% | 47.5% | — |
+| Micah | 92 | 1,997 | 1,514 | 75.8% | 49.3% | — |
+| Numbers | 1,288 | 24,973 | 20,035 | 80.2% | 52.2% | — |
+| Obadiah | 21 | 456 | 356 | 78.1% | 51.8% | — |
+| Psalms | 1,689 | 23,186 | 16,772 | 72.3% | 44.4% | — |
 
-334 chapters: 122,153 of 155,459 Greek words aligned (78.6%), 1,977 of them by the model pass (y `model`); 123,636 of 197,913 English words are in a chunk of Greek (62.5%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
+353 chapters: 127,658 of 161,283 Greek words aligned (79.2%), 2,640 of them by the model pass (y `model`); 129,452 of 205,954 English words are in a chunk of Greek (62.9%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
 
 <!-- lxx-align:end -->

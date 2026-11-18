@@ -1,0 +1,262 @@
+ref	run	text	g	mark	confidence
+Gen.30:1	1	having	-		0.80
+Gen.30:1	2	she	-		0.80
+Gen.30:1	3	was	-		0.80
+Gen.30:1	4	of	-		0.80
+Gen.30:1	5	to	-		0.80
+Gen.30:1	6	shall die.	24		0.80
+Gen.30:2	1	was angry with	0		0.80
+Gen.30:2	2	Am	8	unsure	0.50
+Gen.30:2	3	in	-		0.80
+Gen.30:2	4	place of	9		0.80
+Gen.30:2	5	has	-		0.80
+Gen.30:2	6	of the	-		0.80
+Gen.30:2	7	of the	-		0.80
+Gen.30:3	1	handmaid	7		0.80
+Gen.30:3	2	in	-		0.80
+Gen.30:3	3	she shall	-		0.80
+Gen.30:3	4	my	-		0.80
+Gen.30:3	5	also shall have	-		0.80
+Gen.30:3	6	by	22		0.80
+Gen.30:4	1	she	-		0.80
+Gen.30:4	2	for a wife	8		0.80
+Gen.30:4	2	to	-		0.80
+Gen.30:4	3	in	-		0.80
+Gen.30:5	1	a	-		0.80
+Gen.30:6	1	has given	-		0.80
+Gen.30:6	2	to	-		0.80
+Gen.30:6	3	has	-		0.80
+Gen.30:6	4	a	-		0.80
+Gen.30:6	5	therefore	-		0.80
+Gen.30:7	1	yet again,	2		0.80
+Gen.30:7	2	a	-		0.80
+Gen.30:7	3	to	-		0.80
+Gen.30:8	1	has helped	3		0.80
+Gen.30:8	2	with my	-		0.80
+Gen.30:8	3	she	-		0.80
+Gen.30:9	1	she	-		0.80
+Gen.30:9	2	from	-		0.80
+Gen.30:9	3	she	-		0.80
+Gen.30:9	4	her	-		0.80
+Gen.30:9	5	to	-		0.80
+Gen.30:9	6	for a wife;	18		0.80
+Gen.30:9	6	and	-		0.80
+Gen.30:9	7	went in to her.	-		0.80
+Gen.30:10	1	of	-		0.80
+Gen.30:10	2	a	-		0.80
+Gen.30:11	1	is	3	unsure	0.50
+Gen.30:11	2	she	-		0.80
+Gen.30:11	3	his	-		0.80
+Gen.30:12	1	of Lea	6		0.80
+Gen.30:12	2	yet again,	2		0.80
+Gen.30:12	3	a	-		0.80
+Gen.30:13	1	am	-		0.80
+Gen.30:13	2	will pronounce	-		0.80
+Gen.30:13	3	she	-		0.80
+Gen.30:14	1	went	0		0.80
+Gen.30:14	2	the	-		0.80
+Gen.30:14	3	of barley	6		0.80
+Gen.30:14	4	of	-		0.80
+Gen.30:14	5	Lea;	18		0.80
+Gen.30:14	6	to	-		0.80
+Gen.30:14	7	her sister,	-		0.80
+Gen.30:14	8	of	-		0.80
+Gen.30:15	1	Is	-		0.80
+Gen.30:15	2	for	-		0.80
+Gen.30:15	3	you have	-		0.80
+Gen.30:15	4	husband,	9		0.80
+Gen.30:15	4	will	11	unsure	0.50
+Gen.30:15	5	also	12		0.80
+Gen.30:15	6	let him	-		0.80
+Gen.30:15	7	your	-		0.80
+Gen.30:16	1	in	-		0.80
+Gen.30:16	2	of the	-		0.80
+Gen.30:16	3	at	-		0.80
+Gen.30:16	4	forth	-		0.80
+Gen.30:16	5	You shall	-		0.80
+Gen.30:16	6	in	-		0.80
+Gen.30:16	7	me	-		0.80
+Gen.30:16	7	this day,	17		0.80
+Gen.30:16	8	have	-		0.80
+Gen.30:16	9	he	-		0.80
+Gen.30:17	1	to Lea,	-		0.80
+Gen.30:17	2	and	-		0.80
+Gen.30:17	3	a	-		0.80
+Gen.30:18	1	has	-		0.80
+Gen.30:18	2	my reward,	7,8		0.80
+Gen.30:18	2	because	10,11		0.80
+Gen.30:18	3	to	-		0.80
+Gen.30:18	4	she	-		0.80
+Gen.30:19	1	again,	2		0.80
+Gen.30:19	2	a	-		0.80
+Gen.30:20	1	has	-		0.80
+Gen.30:20	2	a	-		0.80
+Gen.30:20	3	this	11		0.80
+Gen.30:20	4	my	-		0.80
+Gen.30:20	4	husband	15,16		0.80
+Gen.30:20	4	will	-		0.80
+Gen.30:20	5	have	-		0.80
+Gen.30:20	6	she	-		0.80
+Gen.30:21	1	she	-		0.80
+Gen.30:21	2	a	-		0.80
+Gen.30:21	3	her	-		0.80
+Gen.30:22	1	to	-		0.80
+Gen.30:22	2	he	-		0.80
+Gen.30:23	1	she	-		0.80
+Gen.30:23	2	and	-		0.80
+Gen.30:23	3	a	-		0.80
+Gen.30:23	4	has taken away	9		0.80
+Gen.30:24	1	she	-		0.80
+Gen.30:24	2	Let	-		0.80
+Gen.30:24	3	to	-		0.80
+Gen.30:24	4	another	12		0.80
+Gen.30:25	1	it came	-		0.80
+Gen.30:25	2	pass	-		0.80
+Gen.30:25	3	had	-		0.80
+Gen.30:25	4	to	-		0.80
+Gen.30:25	5	away,	-		0.80
+Gen.30:25	6	may	-		0.80
+Gen.30:25	7	my	-		0.80
+Gen.30:25	8	land.	22		0.80
+Gen.30:26	1	my	-		0.80
+Gen.30:26	2	for	7		0.80
+Gen.30:26	3	I have	-		0.80
+Gen.30:26	4	I may	-		0.80
+Gen.30:26	5	service	17		0.80
+Gen.30:26	5	wherewith	18		0.80
+Gen.30:26	5	I have served	19		0.80
+Gen.30:27	1	to	-		0.80
+Gen.30:27	2	I have	-		0.80
+Gen.30:27	3	in	-		0.80
+Gen.30:27	4	sight,	7		0.80
+Gen.30:27	4	I would augur well,	9,10		0.80
+Gen.30:27	5	the Lord	14,15		0.80
+Gen.30:27	5	has	-		0.80
+Gen.30:27	6	at	-		0.80
+Gen.30:27	7	in.	-		0.80
+Gen.30:28	1	me	4	unsure	0.50
+Gen.30:28	2	will	-		0.80
+Gen.30:28	3	them.	-		0.80
+Gen.30:29	1	in what things	6		0.80
+Gen.30:29	1	I have served	7		0.80
+Gen.30:29	2	many	-		0.80
+Gen.30:29	2	cattle	12		0.80
+Gen.30:29	2	of	-		0.80
+Gen.30:30	1	it	-		0.80
+Gen.30:30	2	little	0		0.80
+Gen.30:30	2	you had	3		0.80
+Gen.30:30	2	before	5		0.80
+Gen.30:30	3	time,	-		0.80
+Gen.30:30	4	it	-		0.80
+Gen.30:30	5	a	-		0.80
+Gen.30:30	6	the Lord	-		0.80
+Gen.30:30	7	has	-		0.80
+Gen.30:30	8	coming;	15,16	unsure	0.50
+Gen.30:30	9	shall	-		0.80
+Gen.30:30	10	set up	22		0.80
+Gen.30:30	10	also	-		0.80
+Gen.30:30	10	my own	24		0.80
+Gen.30:31	1	to	-		0.80
+Gen.30:31	2	What	4		0.80
+Gen.30:31	2	shall I	-		0.80
+Gen.30:31	3	to	-		0.80
+Gen.30:31	4	You shall	-		0.80
+Gen.30:31	5	you will	-		0.80
+Gen.30:31	6	thing	19		0.80
+Gen.30:31	6	for me,	-		0.80
+Gen.30:31	7	will	-		0.80
+Gen.30:31	8	tend	22		0.80
+Gen.30:31	9	flocks	23,24		0.80
+Gen.30:31	10	them.	-		0.80
+Gen.30:32	1	Let	-		0.80
+Gen.30:32	2	by	-		0.80
+Gen.30:32	3	thence	7		0.80
+Gen.30:32	3	every	-		0.80
+Gen.30:32	3	grey	10		0.80
+Gen.30:32	4	every one	15		0.80
+Gen.30:32	4	that is	-		0.80
+Gen.30:32	4	speckled	16		0.80
+Gen.30:32	5	shall	-		0.80
+Gen.30:33	1	shall answer for	1		0.80
+Gen.30:33	2	it	-		0.80
+Gen.30:33	3	reward	14		0.80
+Gen.30:33	4	shall	19,20	unsure	0.50
+Gen.30:33	5	spotted	25		0.80
+Gen.30:33	6	rams,	33		0.80
+Gen.30:33	6	shall	-		0.80
+Gen.30:33	7	stolen	34		0.80
+Gen.30:34	1	to him, Let	-		0.80
+Gen.30:34	2	to	-		0.80
+Gen.30:34	3	word.	7		0.80
+Gen.30:35	1	spotted	12		0.80
+Gen.30:35	2	she-goats,	-		0.80
+Gen.30:35	3	grey	33		0.80
+Gen.30:35	4	the rams,	35,36		0.80
+Gen.30:35	5	every one	30		0.80
+Gen.30:35	6	them,	-		0.80
+Gen.30:35	7	them	-		0.80
+Gen.30:35	7	into the	39	unsure	0.50
+Gen.30:35	8	of his	-		0.80
+Gen.30:36	1	he	-		0.80
+Gen.30:36	2	a	-		0.80
+Gen.30:36	3	of a	-		0.80
+Gen.30:36	4	journey	-		0.80
+Gen.30:36	5	of	-		0.80
+Gen.30:36	6	that were	-		0.80
+Gen.30:36	7	behind.	-		0.80
+Gen.30:37	1	to himself	-		0.80
+Gen.30:37	2	of storax tree	-		0.80
+Gen.30:37	3	plane	-		0.80
+Gen.30:37	4	in them	-		0.80
+Gen.30:37	5	stripes;	-		0.80
+Gen.30:37	6	as	-		0.80
+Gen.30:37	7	drew off	17		0.80
+Gen.30:37	8	stripe	-		0.80
+Gen.30:37	9	had made	28	unsure	0.50
+Gen.30:37	10	alternate	29		0.80
+Gen.30:38	1	he	-		0.80
+Gen.30:38	2	had	-		0.80
+Gen.30:38	3	of	-		0.80
+Gen.30:38	4	whenever	15	unsure	0.50
+Gen.30:38	4	the cattle	17,18		0.80
+Gen.30:38	4	should	-		0.80
+Gen.30:38	5	they should have	-		0.80
+Gen.30:38	6	cattle	31		0.80
+Gen.30:38	6	might conceive	29		0.80
+Gen.30:38	6	at	-		0.80
+Gen.30:39	1	So the cattle conceived at the rods,	-		0.80
+Gen.30:39	2	cattle	3		0.80
+Gen.30:39	2	brought forth young	1		0.80
+Gen.30:39	3	spotted	4	unsure	0.50
+Gen.30:39	3	with ash-colored spots.	8		0.80
+Gen.30:40	1	separated	3		0.80
+Gen.30:40	2	before	7		0.80
+Gen.30:40	3	a	-		0.80
+Gen.30:40	3	speckled	11		0.80
+Gen.30:40	4	every	13		0.80
+Gen.30:40	4	variegated one	14		0.80
+Gen.30:40	5	he	-		0.80
+Gen.30:40	6	alone,	22	unsure	0.50
+Gen.30:40	7	did	-		0.80
+Gen.30:40	8	with	-		0.80
+Gen.30:40	9	of	-		0.80
+Gen.30:41	1	it came	-		0.80
+Gen.30:41	2	pass	-		0.80
+Gen.30:41	3	cattle	8		0.80
+Gen.30:41	3	became pregnant,	-		0.80
+Gen.30:41	3	conceiving	11		0.80
+Gen.30:41	4	the	-		0.80
+Gen.30:41	5	before	16		0.80
+Gen.30:41	6	troughs,	21		0.80
+Gen.30:41	7	might conceive	22,23		0.80
+Gen.30:42	1	But he did	-		0.80
+Gen.30:42	2	them in indiscriminately	-		0.80
+Gen.30:42	2	whenever	0		0.80
+Gen.30:42	2	the cattle	3,4		0.80
+Gen.30:42	2	happened	-		0.80
+Gen.30:42	3	bring forth,	2		0.80
+Gen.30:42	4	unmarked ones	9,10		0.80
+Gen.30:42	4	were	-		0.80
+Gen.30:42	5	marked ones	13,15		0.80
+Gen.30:42	5	were	-		0.80
+Gen.30:43	1	had	-		0.80
