@@ -462,9 +462,21 @@ export async function importNote(): Promise<ImportNote | undefined> {
   return undefined;
 }
 
-/** The Resource IDs of the kept list: what his import says he owns (src/data/owned.ts). Empty while no list is kept. */
+/** The Resource IDs he owns (src/data/owned.ts): those of the kept list, his import. While no list is kept on the device (an import from before the list was kept, or storage cleared) there is nothing to narrow by, so
+ *  the books already on his shelf (On or Pinned: he turned them on, or an import did) stay his, and no other book is offered; once a list is kept it alone says (mw-5r3p30.1189). */
 export async function ownedResources(): Promise<ReadonlySet<string>> {
-  return new Set((await db.exportRows.toArray()).map((r) => r.resource));
+  const kept = await db.exportRows.toArray();
+  return sameSet(kept.length > 0 ? kept.map((r) => r.resource) : splitTaken(await db.library.toArray()).rows.map((r) => r.id));
+}
+
+/** The set of `ids`, the very one given last when it holds the same ids: a screen that asks again when the set it holds is a new object (the sermon door, the pickers) then does not ask again for a shelf
+ *  write that changed nothing in it (the old keys taken into rows a moment after the first read, a book changing its state). */
+let lastOwned: ReadonlySet<string> = new Set();
+function sameSet(ids: readonly string[]): ReadonlySet<string> {
+  const next = new Set(ids);
+  if (next.size === lastOwned.size && [...next].every((id) => lastOwned.has(id))) return lastOwned;
+  lastOwned = next;
+  return next;
 }
 
 /** The books of the kept list that Lampas does not open (not matched at the last import or re-match): what Ask for a book searches. Empty while no list is kept. */

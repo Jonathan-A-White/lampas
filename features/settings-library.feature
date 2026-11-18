@@ -64,6 +64,10 @@ Feature: Settings after the library
     When he picks "The Heart of Praise" in the Which devotional picker
     Then the setting "devotional" holds "LLS:HEARTOFPRAISE"
 
+  Scenario: Which devotional lists the shelf while no Logos list is kept
+    Given the shelf holds the devotionals "The Heart of Praise, Manual of Family Devotions (Book of Common Prayer)" with no Logos list kept and Settings is open at Daily with Which devotional on Random
+    Then the Which devotional picker offers "Random, The Heart of Praise, Manual of Family Devotions: Arranged from the Book of Common Prayer, Morning RePhil (Brookfield First)"
+
   Scenario: In the draw follows the shelf
     Given the shelf holds the devotionals "The Heart of Praise, Manual of Family Devotions (Book of Common Prayer)" and Settings is open at Daily with Which devotional on Random
     Then In the draw says "2 devotionals are in the draw"

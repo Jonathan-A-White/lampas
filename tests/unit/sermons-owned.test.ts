@@ -57,8 +57,12 @@ describe('the rule', () => {
     expect(addressOffered('https://ref.ly/logosres/LLS:GRGLRSRMNRCH?art=1', new Set([GREG]))).toBe(true);
   });
 
-  it('is empty with no import: ownedResources reads the kept list', async () => {
+  it('is the kept list; with none kept it is the books on his shelf (mw-5r3p30.1189), and empty on an empty shelf', async () => {
+    // the old keys' defaults would put forty books on the shelf: tick none
+    await db.settings.bulkPut(['resourceOption.logos', 'grammarBooks', 'works'].map((key) => ({ key, value: '[]' })).concat({ key: 'devotionalDraw', value: 'none' }));
     expect([...(await ownedResources())]).toEqual([]);
+    await db.library.put({ id: GREEAR, kind: 'sermons', state: 'on', since: 1 });
+    expect([...(await ownedResources())]).toEqual([GREEAR]);
     await importOf(GREG);
     expect([...(await ownedResources())]).toEqual([GREG]);
   });

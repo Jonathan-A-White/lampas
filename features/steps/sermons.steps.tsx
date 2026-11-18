@@ -87,6 +87,13 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.library.clear()]);
+  // a phone whose shelf holds no default book: with no list kept the shelf says what he has (mw-5r3p30.1189), and the old keys' defaults would put forty books on it
+  await db.settings.bulkPut([
+    { key: 'resourceOption.logos', value: '[]' },
+    { key: 'grammarBooks', value: '[]' },
+    { key: 'works', value: '[]' },
+    { key: 'devotionalDraw', value: 'none' },
+  ]);
   if (phone.archives) {
     await db.settings.put({ key: 'resource.logos', value: phone.archives.logos });
     const shelf: { id: string; state: 'on' | 'pinned' }[] =
@@ -277,6 +284,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on {string} with a source that can be slow to answer', (_, title: string) => openOn(title, { slow: true }));
     When('he taps verse {int}', tapVerse);
     And('he taps {string} while its source is slow to answer', async (_, label: string) => {
+      // the door is drawn from the answer the source gave before it was held: wait for it, then hold the source, so the sheet's own ask is the slow one (the owned-check reads the shelf too, mw-5r3p30.1189, so the door may come after this step began)
+      await within(viewEl()).findByRole('button', { name: label });
       holdSource();
       await tapDoor(_, label);
     });
