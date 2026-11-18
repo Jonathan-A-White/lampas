@@ -39,6 +39,29 @@ for (const scheme of ['light', 'dark'] as const) {
   });
 }
 
+// mw-5r3p30.1177: a reference outside the chapter he is reading must open its verse, not leave him where he was: the sheet's closing step went Back over the link's address.
+const FAR_REFERENCES = [
+  { name: 'Moses', verse: 10, word: 10, link: 'Jdg.18.30', heading: /Judges 18/, chapter: 'jdg', at: 30 },
+  { name: 'Abraham', verse: 24, word: 9, link: 'Gen.11.26', heading: /Genesis 11/, chapter: 'gen', at: 26 },
+];
+for (const far of FAR_REFERENCES) {
+  test(`${far.name}'s Definition link ${far.link} opens its chapter, not Exodus 2`, async ({ page }) => {
+    await openUnlocked(page);
+    await page.goto('/#/?b=exo&c=2');
+    await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Hebrew', exact: true }).click();
+    await page.locator(`[data-verse="${far.verse}"] [data-word="${far.word}"]`).click();
+    const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+    const link = sheet.getByTestId('sheet-definition').getByRole('link', { name: far.link }).first();
+    await link.scrollIntoViewIfNeeded();
+    await link.click();
+    await expect(sheet).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: far.heading }).first()).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`b=${far.chapter}&c=`));
+    await expect(page.locator(`[data-verse="${far.at}"]`).first()).toBeInViewport();
+    await shot(page, `definition-far-${far.chapter}`);
+  });
+}
+
 for (const scheme of ['light', 'dark'] as const) {
   test(`a Greek word's sheet is as it was: the Greek card draws no Definition (${scheme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: scheme });
