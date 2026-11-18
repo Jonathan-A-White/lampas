@@ -94,3 +94,14 @@ describe('About is short credits, not a tutorial', () => {
     expect(plainText(file)).not.toMatch(/Hebrew twin|its Hebrew/i);
   });
 });
+
+// the poetry lines (mw-5r3p30.1166): the MSB and Berean tables' lines and indents are drawn in the English tab and borrowed for the Greek tab, so About names them
+// (mw-5r3p30.1186: a revert for the 150-character limit had dropped the credit; the two entries are worded to hold both)
+describe('ATTRIBUTION.md credits the tables for the poetry lines', () => {
+  it('says the MSB and the Berean entries keep the table\'s poetry lines', () => {
+    for (const name of ['Majority Standard Bible', 'Berean Standard Bible']) {
+      const entry = attribution.entries.map(plainText).find((e) => e.startsWith(name)) ?? '';
+      expect(entry, name).toMatch(/poetry lines/);
+    }
+  });
+});
