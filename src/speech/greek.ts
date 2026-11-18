@@ -281,6 +281,10 @@ function speakBeside(synth: SpeechSynthesis, text: string, key: string, onEnd?: 
     }
     synth.speak(utterance);
   });
+  // every sentence of the word has been handed over with its language and speed (applyChoices ran in speak()): they are not the reading's, which Resume goes on with
+  // and which tells its own sentences by their letters (mw-fnvjof.17.180)
+  forced = null;
+  slow = false;
   return true;
 }
 
