@@ -117,7 +117,7 @@ export const logosAtlas: MapSource = {
   name: 'Logos Atlas',
   homepage: 'https://www.logos.com/features/atlas',
   credit: 'Logos Atlas and the Lexham Geographic Commentary, Faithlife; opens in your own Logos',
-  describe: 'The Logos Atlas at the verse’s places, and the Lexham commentary, in your Logos.',
+  describe: 'The Logos Atlas at the verse’s places, and the Lexham commentary.',
   needs: 'logos',
   default: 'on',
   async mapsFor(ref: MapRef, places?: () => Promise<Place[]>): Promise<MapCard[]> {
