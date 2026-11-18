@@ -11,7 +11,7 @@
 // still opens the word, verse or heading; so does a long press (the word's own click guard drops its click; a held number talks, or with no licence opens
 // its verse), and so does Enter on a focused number (a click with no short press before it). A swipe is a drag (below); no drag starts within the chapter swipe's EDGE_PX of the screen's edge (src/reader/useChapterSwipe.ts, off while pages are on).
 // When the box changes size (text size, the hint card closed, the bars brought back) the pages are cut afresh and the page shown is the one where the
-// first verse that was in view begins, so no text is skipped. A scroll the browser makes of itself at such a change (turning the phone clamps the box's scrollLeft
+// first text that was in view is (a taller box with as many pages is cut afresh too, mw-5r3p30.1199), so no text is skipped. A scroll the browser makes of itself at such a change (turning the phone clamps the box's scrollLeft
 // to the shorter text before the pages are cut afresh) is not him moving to a page: onScroll waits for the cut (mw-fnvjof.17.163).
 // A turn he makes (a tap, a swipe, the Next and Previous page buttons) is told to `onTurned`: with the Immersive reader On the next page puts the bars
 // away, as scrolling down does with Scroll (mw-5r3p30.611, src/Reader.tsx); a page the app shows for him (read aloud, a put-back) is not his turn.
@@ -177,6 +177,8 @@ export function usePages(
     let count = 1;
     /** the width of a page and the gap after it */
     let step = 0;
+    /** how tall a page is: a box that grows taller (the bars put away) holds more lines on a page, so the same width and count are not the same cut (mw-5r3p30.1199) */
+    let tall = 0;
     /** the first verse that began on the page shown: the place he keeps in this chapter, by which the page is found again when he comes back to it */
     let anchor: Element | null = null;
     /** the first text on the page shown (a place in a text node, which may stand in the middle of a verse that began on the page before): the page is found again
@@ -240,10 +242,18 @@ export function usePages(
         return null;
       }
       if (!(node instanceof Text) || !content.contains(node)) return null;
-      const place = { node, offset };
-      const r = rectOf(place);
       const left = pageLeft();
-      return r && r.left >= left - 1 && r.left < left + step - 1 ? place : null;
+      const here = (o: number): boolean => {
+        const r = rectOf({ node, offset: o });
+        return r !== undefined && o < node.length && r.left >= left - 1 && r.left < left + step - 1;
+      };
+      // a caret at a line that breaks inside a word (a hyphenated one) may name the last letter of the page before, or a letter into the first line: the first
+      // letter on the page is the edge (mw-5r3p30.1199)
+      let o = offset;
+      if (!here(o)) o += 1;
+      if (!here(o)) return null;
+      while (o > 0 && here(o - 1)) o -= 1;
+      return { node, offset: o };
     };
 
     /** Shows page `to`. The place it is found by when the pages are cut afresh is made from what is on it, unless `keep` (the pages are cut afresh and it is the same
@@ -331,16 +341,17 @@ export function usePages(
       forget();
       const width = content.clientWidth;
       if (width <= 0) return;
-      const before = { step, count };
+      const before = { step, count, tall };
       step = width + (parseFloat(getComputedStyle(content).columnGap) || 0);
       count = pagesIn(step);
+      tall = content.clientHeight;
       if (kept) {
         putBack(kept);
         fillArriving();
         return;
       }
-      // nothing moved between pages: the page shown stays
-      if (step === before.step && count === before.count) {
+      // nothing moved between pages (as wide, as tall, as many): the page shown stays; a taller box with as many pages is cut otherwise, so it is found by its text
+      if (step === before.step && count === before.count && tall === before.tall) {
         move(page, true);
         return;
       }
