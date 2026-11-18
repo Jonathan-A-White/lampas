@@ -3,7 +3,9 @@
 // (said there once: the header holds no count, mw-qtu3zvz.173), All on and All off (with a search typed: 'These N on', 'These N off', the rows shown only) and an Undo after either, then the sources in two groups
 // named by what On gives, each row a name of two lines at most, one line under it and Off | On. No Pin. A bulk button goes by the rows it would change (sourceList.ts rowsToChange, mw-qtu3zvz.174): N is their
 // number, the button is dimmed at none, and a tap that changes nothing leaves the Undo. What is on leads each group; the order is made when the page opens and when the search changes, never under his thumb. The list itself is sourceList.ts, read from the
-// phone by useSourceList.ts; a list's switch is its setting `sermons.<id>`, a Logos book's is its row of the shelf (so a book that is also on a page of the Library has one switch).
+// phone by useSourceList.ts; a list's switch is its setting `sermons.<id>`, a Logos book's is its row of the shelf (so a book that is also on a page of the Library has one switch). The list on screen follows a
+// write a moment late, so a tap (a bulk button, a row's switch, the Undo) waits its turn behind the taps before it (inTurn) and then goes by the phone (asNow), never by the rows as drawn: the same taps end at
+// the same place however fast they come (mw-qtu3zvz.197).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { importNote, setShelfStates, setState, type ShelfState } from '../data/repositories';
@@ -21,7 +23,7 @@ import { scrollBoxOf } from '../ui/reveal';
 import { ThreeStep } from '../ui/ThreeStep';
 import { AskForPreacher } from './AskForPreacher';
 import { countLine, GROUP_ORDER, GROUP_WORDS, inOrder, onCount, rowsToChange, type SourceItem, type SourceList } from './sourceList';
-import { useSourceList } from './useSourceList';
+import { readSourceList, useSourceList } from './useSourceList';
 
 /** The page's name, as its header, the row that opens it and the tutor say it. */
 export const SOURCES_TITLE = 'Sermon sources';
@@ -49,6 +51,16 @@ async function writeAll(items: readonly SourceItem[], on: boolean): Promise<void
   for (const item of items) if (item.sort === 'list') await writeList(item.id, on ? 'on' : 'off');
   const books = items.filter((item) => item.sort === 'book').map((item) => ({ resource: item.id, state: (on ? 'on' : 'off') as ShelfState }));
   if (books.length > 0) await setShelfStates(books);
+}
+
+// The page's taps, one after the other in the order he made them. One line for the app, not one for each time the page is drawn, so a tap made after leaving the page and coming back still waits for those before it.
+let line: Promise<unknown> = Promise.resolve();
+
+/** Runs `job` once every tap before it has been written, so the writes land in the order of his taps and a tap reads the phone only after them (mw-qtu3zvz.197). A job that fails does not hold up those after it. */
+function inTurn(job: () => Promise<void>): Promise<void> {
+  const done = line.then(job);
+  line = done.catch(() => undefined);
+  return done;
 }
 
 /** The name of a source the address asks for that is not listed: the setting's label, a book's short name. */
@@ -98,13 +110,6 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
   const [marked, setMarked] = useState(at);
   const markedRow = useRef<HTMLDivElement | null>(null);
   const box = useRef<HTMLDivElement>(null);
-  // the rows the last bulk tap put On or Off, kept until the list on screen shows them there: its writes land one by one and the list follows each, so a second tap in that time (a double tap, mw-qtu3zvz.170) would
-  // find only the rows not yet written and its Undo would put back only those. all() counts these rows as done
-  const written = useRef<{ to: boolean; ids: ReadonlySet<string> } | null>(null);
-  useEffect(() => {
-    const last = written.current;
-    if (last && !items.some((item) => last.ids.has(item.id) && item.on !== last.to)) written.current = null;
-  }, [items]);
   useEffect(() => {
     markedRow.current?.scrollIntoView?.({ block: 'center' });
   }, []);
@@ -124,42 +129,42 @@ function Sources({ list, at, imported }: { list: SourceList; at?: string; import
   const on = onCount(items);
   const bothGroups = GROUP_ORDER.every((group) => items.some((item) => item.group === group));
 
-  const choose = async (item: SourceItem, to: string): Promise<void> => {
-    // a tap on the step it already shows changes nothing (a Pinned book reads as On, and stays Pinned), and leaves the Undo as it stands
-    if ((to === 'on') === item.on) return;
-    // his own switch: the Undo of a bulk tap would no longer put back what he sees
-    setUndo(null);
-    written.current = null;
-    if (item.sort === 'list') await writeList(item.id, to === 'on' ? 'on' : 'off');
-    else await setState(item.id, to === 'on' ? 'on' : 'off');
+  /** The rows of `rows` as the phone has them now. A bulk tap's writes land one by one and the list on screen follows each a moment late, so what a tap changes is read from the phone when its turn comes (inTurn):
+   *  All on straight after All off finds the rows Off and puts them On, though they are still drawn On (mw-qtu3zvz.197), and the second tap of a double tap finds nothing left to change (mw-qtu3zvz.170). */
+  const asNow = async (rows: readonly SourceItem[]): Promise<SourceItem[]> => {
+    const now = new Map((await readSourceList(list.logosOn)).items.map((item) => [item.id, item]));
+    return rows.flatMap((item) => now.get(item.id) ?? []);
   };
-  const all = async (to: boolean): Promise<void> => {
-    const last = written.current;
-    const changing = rowsToChange(shown, to).filter((item) => !(last?.to === to && last.ids.has(item.id)));
-    // a tap that changes nothing (a dimmed button, the second tap of a double tap) leaves the Undo as it stands (mw-qtu3zvz.170)
-    if (changing.length === 0) return;
-    written.current = { to, ids: new Set([...(last?.to === to ? last.ids : []), ...changing.map((item) => item.id)]) };
-    try {
-      await writeAll(changing, to);
-    } catch (error) {
-      // a write that failed is not waited for: the next tap goes by the list as it stands
-      written.current = null;
-      throw error;
-    }
-    setUndo({
-      line: `Turned ${to ? 'on' : 'off'} ${changing.length}.`,
-      lists: changing.filter((item) => item.sort === 'list').map((item) => ({ key: item.id, value: item.on ? 'on' : 'off' })),
-      books: changing.filter((item) => item.sort === 'book').map((item) => ({ resource: item.id, state: item.pinned ? 'pinned' : item.on ? 'on' : 'off' })),
+  const choose = (drawn: SourceItem, to: string): Promise<void> =>
+    inTurn(async () => {
+      const item = (await asNow([drawn]))[0] ?? drawn;
+      // a tap on the step it already stands at changes nothing (a Pinned book reads as On, and stays Pinned), and leaves the Undo as it stands
+      if ((to === 'on') === item.on) return;
+      // his own switch: the Undo of a bulk tap would no longer put back what he sees
+      setUndo(null);
+      if (item.sort === 'list') await writeList(item.id, to === 'on' ? 'on' : 'off');
+      else await setState(item.id, to === 'on' ? 'on' : 'off');
     });
-  };
-  const putBack = async (): Promise<void> => {
-    if (!undo) return;
-    // the rows go back the other way: nothing a bulk tap wrote is waited for any more
-    written.current = null;
-    for (const { key, value } of undo.lists) await writeList(key, value);
-    if (undo.books.length > 0) await setShelfStates(undo.books);
-    setUndo(null);
-  };
+  const all = (to: boolean): Promise<void> =>
+    inTurn(async () => {
+      // the rows shown when he tapped, each as it stands now
+      const changing = rowsToChange(await asNow(shown), to);
+      // a tap that changes nothing (a dimmed button, the second tap of a double tap) leaves the Undo as it stands (mw-qtu3zvz.170)
+      if (changing.length === 0) return;
+      await writeAll(changing, to);
+      setUndo({
+        line: `Turned ${to ? 'on' : 'off'} ${changing.length}.`,
+        lists: changing.filter((item) => item.sort === 'list').map((item) => ({ key: item.id, value: item.on ? 'on' : 'off' })),
+        books: changing.filter((item) => item.sort === 'book').map((item) => ({ resource: item.id, state: item.pinned ? 'pinned' : item.on ? 'on' : 'off' })),
+      });
+    });
+  const putBack = (): Promise<void> =>
+    inTurn(async () => {
+      if (!undo) return;
+      for (const { key, value } of undo.lists) await writeList(key, value);
+      if (undo.books.length > 0) await setShelfStates(undo.books);
+      setUndo(null);
+    });
   /** All on or All off; with a search typed, the rows shown only. Its number is the rows it would change, and at none it is dimmed (it still takes the thumb, and the tap changes nothing). */
   const bulkButton = (to: boolean) => {
     const count = rowsToChange(shown, to).length;
