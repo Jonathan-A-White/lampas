@@ -90,11 +90,13 @@ const groupRows = async (name: string): Promise<string[]> => {
   return [...group.querySelectorAll('[data-sermon-title]')].map((t) => squash(t.textContent));
 };
 const themeGroups = async (): Promise<string[]> => [...(await sheetEl()).querySelectorAll('[data-theme-topic]')].map((g) => g.getAttribute('aria-label') ?? '');
-const rowNamed = async (title: string): Promise<HTMLAnchorElement> => {
-  const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-sermon-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
-  if (!row) throw new Error(`no sermon ${title} in the sheet`);
-  return row;
-};
+// The sheet's rows are drawn after the sheet is open (the sources answer later), so the row is waited for, not looked for once (mw-indx1x6.92).
+const rowNamed = (title: string): Promise<HTMLAnchorElement> =>
+  waitFor(async () => {
+    const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-sermon-row]')].find((r) => r.querySelector('[data-sermon-title]')?.textContent === title);
+    if (!row) throw new Error(`no sermon ${title} in the sheet`);
+    return row;
+  });
 
 const feature = await loadFeature('features/themes.feature');
 
@@ -189,13 +191,15 @@ describeFeature(feature, ({ Scenario }) => {
     And('the theme {string} holds {string}', themeHolds);
     And('after it the theme {string} holds {string}', afterIt);
     And('no sermon of the passage is repeated on the same theme', async () => {
-      const sheet = await sheetEl();
-      const hrefs = (selector: string) => [...sheet.querySelectorAll<HTMLAnchorElement>(`${selector} a[data-sermon-row]`)].map((a) => a.getAttribute('href'));
-      const passage = [...hrefs('[data-sermons-part="here"]'), ...hrefs('[data-sermons-part="chapter"]')];
-      const themed = hrefs('[data-sermons-part="theme"]');
-      expect(passage).toHaveLength(4);
-      expect(themed.length).toBeGreaterThan(0);
-      for (const href of themed) expect(passage).not.toContain(href);
+      await waitFor(async () => {
+        const sheet = await sheetEl();
+        const hrefs = (selector: string) => [...sheet.querySelectorAll<HTMLAnchorElement>(`${selector} a[data-sermon-row]`)].map((a) => a.getAttribute('href'));
+        const passage = [...hrefs('[data-sermons-part="here"]'), ...hrefs('[data-sermons-part="chapter"]')];
+        const themed = hrefs('[data-sermons-part="theme"]');
+        expect(passage).toHaveLength(4);
+        expect(themed.length).toBeGreaterThan(0);
+        for (const href of themed) expect(passage).not.toContain(href);
+      });
     });
   });
 
