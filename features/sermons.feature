@@ -71,6 +71,15 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     And the row "Reigning in Life" reads "Test Preacher · 1872 · Opens on the web"
 
   @uc-sermons @greek
+  Scenario: The sheet opens before a slow source has answered, and its rows come when it answers
+    Given Lampas is opened on "Romans 5" with a source that can be slow to answer
+    When he taps verse 8
+    And he taps "Sermons · 4" while its source is slow to answer
+    Then the sheet is headed "Sermons for Romans 5:8"
+    And the row "Love Commended" comes when the source answers, a link to "https://sermons.test/testsermons/love" that opens in a new tab and is 44 px tall
+    And the sheet still has 4 rows
+
+  @uc-sermons @greek
   Scenario: Two sources are counted together, each in its own order
     Given Lampas is opened on "Romans 5" with the second test source
     When he taps verse 8
