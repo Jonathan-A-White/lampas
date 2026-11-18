@@ -108,6 +108,8 @@ describe('the Today tick: his tap on a box runs the tick-today command (mw-t3xu9
     await db.open();
     await Promise.all([db.settings.clear(), db.words.clear(), db.reviews.clear(), db.meta.clear()]);
     await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }]);
+    // Today draws the devotional only with Logos On (a Logos book is the default one), so it holds a devotional item (mw-r9xo1pj.6)
+    await db.settings.put({ key: 'resource.logos', value: 'on' });
   });
 
   it('tickToday runs tick-today for the piece, ticking and unticking it', async () => {
