@@ -195,7 +195,8 @@ async function lessonIsOpen(ideaId: string): Promise<void> {
 /**
  * The lesson over a run starts no run of its own and changes no level (mw-indx1x6.57 item 5): no Drill it, no Try it on a verse, no Mark known without a drill and no level
  * slider. The sheet's examples are drawn first (they wait for the passage, as Try it on a verse and the slider's enabling do), so what the controls wait for is there and
- * their absence is the sheet's choice.
+ * their absence is the sheet's choice. Of Mark known it says nothing where the idea is solid, as in its two scenarios (the sheet draws that button for no solid idea): noMarkKnown
+ * holds it, over a drill and over the end card, for an idea that is not (mw-indx1x6.102).
  */
 async function lessonStartsNothing(_: unknown, drillIt: string, tryIt: string, markKnown: string): Promise<void> {
   const sheet = screen.getByRole('dialog', { name: 'Idea' });
@@ -204,6 +205,32 @@ async function lessonStartsNothing(_: unknown, drillIt: string, tryIt: string, m
   for (const label of [drillIt, tryIt, markKnown]) expect(buttonsOf(sheet)).not.toContain(label);
   expect(within(sheet).queryByRole('slider', { name: 'Your level' })).toBeNull();
   expect(sheet.querySelector('[data-testid="level-slider"]')).toBeNull();
+}
+
+/** He is still learning the idea: Learning on the lesson's slider is the level 'frontier' (src/IdeaSheet.tsx STOPS), which the lesson's chip names 'Frontier'. */
+async function stillLearning(ideaId: string): Promise<void> {
+  await db.grammarLevels.put({ id: ideaId, level: 'frontier', since: Date.now(), how: 'marked' });
+}
+
+/**
+ * The open lesson, once it is known to be of an idea that is not solid: the sheet draws 'Mark known without a drill' only for such an idea (src/IdeaSheet.tsx), so a step about
+ * that button says nothing for a solid one (mw-indx1x6.102: lessonStartsNothing's two scenarios are of solid ideas). The level is read first, from the store and from the sheet's
+ * own chip (the sheet has read it, and an unread level draws no chip), and the sheet's last part is waited for: what is or is not in its foot is then the sheet's choice.
+ */
+async function lessonOfUnsolidIdea(ideaId: string, levelName: string): Promise<HTMLElement> {
+  const level = (await getLevel(ideaId))?.level;
+  expect(level).toBeDefined();
+  expect(level).not.toBe('solid');
+  const sheet = screen.getByRole('dialog', { name: 'Idea' });
+  expect(within(sheet).getByRole('heading', { name: ideaOfAny(ideaId).title })).toBeInTheDocument();
+  await waitFor(() => expect(within(sheet).getByTestId('idea-level')).toHaveTextContent(`${levelName} since`));
+  await within(sheet).findByText('Worked example');
+  return sheet;
+}
+
+/** Over a run the lesson of an idea that is not solid has no Mark known without a drill: without the guard of what is over a run (src/overRun.ts) the button is here. */
+async function noMarkKnown(_: unknown, markKnown: string, levelName: string, ideaId: string): Promise<void> {
+  expect(buttonsOf(await lessonOfUnsolidIdea(ideaId, levelName))).not.toContain(markKnown);
 }
 
 /** The stops of the lesson's level slider, as src/IdeaSheet.tsx draws them. */
@@ -741,6 +768,40 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     });
   });
 
+  Scenario('The lesson of an idea he is still learning, opened over a drill, has no Mark known without a drill', ({ Given, When, And, Then }) => {
+    Given('Drill it is open on the idea {string}, which he is still learning', async (_, ideaId: string) => {
+      await freshStore();
+      await stillLearning(ideaId);
+      await drawDrillIt(ideaId);
+    });
+    When("he answers the drill's question wrong", () => answer(false));
+    And('he taps the lesson of the idea {string}', async (_, ideaId: string) => {
+      await screen.findByRole('group', { name: 'Study this' });
+      await tapLink(_, lessonLabel(ideaId));
+    });
+    Then('the lesson of the idea {string} is open over the drill', async (_, ideaId: string) => {
+      await lessonIsOpen(ideaId);
+      expect(screen.getByRole('dialog', { name: 'Drill it' })).toContainElement(screen.getByRole('dialog', { name: 'Idea' }));
+    });
+    And('the lesson has no {string}, though its level reads {string} and the idea {string} is not solid', noMarkKnown);
+    And('the drill is still on the question he missed', () => {
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
+      expect(screen.getByTestId('drill-next')).toBeInTheDocument();
+    });
+  });
+
+  Scenario('The same lesson of an idea he is still learning, opened from a list of ideas, keeps Mark known without a drill', ({ Given, Then }) => {
+    Given('the lesson of the idea {string}, which he is still learning, is open as it is from a list of ideas', async (_, ideaId: string) => {
+      await freshStore();
+      await stillLearning(ideaId);
+      await lessonFromAList(_, ideaId);
+    });
+    Then('the lesson has {string}, its level reading {string} and the idea {string} not solid', async (_, markKnown: string, levelName: string, ideaId: string) => {
+      const sheet = await lessonOfUnsolidIdea(ideaId, levelName);
+      await waitFor(() => expect(buttonsOf(sheet)).toContain(markKnown));
+    });
+  });
+
   Scenario('The lesson opened over Review keeps its Table link', ({ Given, When, And, Then }) => {
     Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
     When('he opens Review and starts the round', openReviewAndStart);
@@ -966,6 +1027,26 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       expect(buttonsOf(sheet)).not.toContain(tryIt);
       expect(screen.queryByRole('dialog', { name: 'Try it' })).toBeNull();
     });
+    And('the end card still shows its {string}', (_, name: string) => {
+      expect(screen.getByTestId('score')).toBeInTheDocument();
+      expect(screen.getByRole('group', { name })).toBeInTheDocument();
+      expect(window.location.hash).toBe('#/review');
+    });
+  });
+
+  Scenario("The lesson of an idea he is still learning, opened from a Review's Study list, has no Mark known without a drill", ({ Given, When, And, Then }) => {
+    Given('the table {string} is due in Review and the round asks {string} first', tableDueAsking);
+    And('he is still learning the idea {string}', (_, ideaId: string) => stillLearning(ideaId));
+    When('he opens Review and starts the round', openReviewAndStart);
+    And('he misses every question of the round', () => everyQuestionOfTheRound(false));
+    And("he taps the list's lesson of the idea {string}", async (_, ideaId: string) => {
+      await user.click(rowNamed(lessonLabel(ideaId))[0]);
+    });
+    Then('the lesson of the idea {string} is open over the end card', async (_, ideaId: string) => {
+      await lessonIsOpen(ideaId);
+      expect(window.location.hash).toBe('#/review');
+    });
+    And('the lesson has no {string}, though its level reads {string} and the idea {string} is not solid', noMarkKnown);
     And('the end card still shows its {string}', (_, name: string) => {
       expect(screen.getByTestId('score')).toBeInTheDocument();
       expect(screen.getByRole('group', { name })).toBeInTheDocument();

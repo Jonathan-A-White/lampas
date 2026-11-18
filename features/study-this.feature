@@ -90,6 +90,22 @@ Feature: A wrong answer links to what teaches it
     Given the lesson of the idea "noun" is open as it is from a list of ideas
     Then the lesson has the buttons "Drill it" and "Try it on a verse"
 
+  # mw-indx1x6.102: 'Mark known without a drill' is drawn only for an idea that is not solid yet (src/IdeaSheet.tsx), and the store of these scenarios has "noun" solid, so the
+  # scenario two above holds nothing of that button: it passes with the guard of what is over a run taken out. Here the idea is one he is still learning, and the step reads
+  # that first, from the store and from the lesson's own level chip.
+  Scenario: The lesson of an idea he is still learning, opened over a drill, has no Mark known without a drill
+    Given Drill it is open on the idea "article", which he is still learning
+    When he answers the drill's question wrong
+    And he taps the lesson of the idea "article"
+    Then the lesson of the idea "article" is open over the drill
+    And the lesson has no "Mark known without a drill", though its level reads "Frontier" and the idea "article" is not solid
+    And the drill is still on the question he missed
+
+  # the same lesson at the same level over no run has the button
+  Scenario: The same lesson of an idea he is still learning, opened from a list of ideas, keeps Mark known without a drill
+    Given the lesson of the idea "article", which he is still learning, is open as it is from a list of ideas
+    Then the lesson has "Mark known without a drill", its level reading "Frontier" and the idea "article" not solid
+
   # Review holds its round when the address leaves it (src/ReviewScreen.tsx, mw-indx1x6.56), so leaving it for a table loses nothing: there the lesson keeps its link,
   # and Back from the table is the question he missed, not the next one
   Scenario: The lesson opened over Review keeps its Table link
@@ -194,6 +210,18 @@ Feature: A wrong answer links to what teaches it
     And he taps the list's lesson of the idea "article"
     Then the lesson of the idea "article" is open over the end card
     And the lesson has no "Try it on a verse" button, though a verse of the open chapter has a form of the idea "article"
+    And the end card still shows its "Study list"
+
+  # mw-indx1x6.102: nor can the two scenarios above show the fault of 'Mark known without a drill' over the end card, their ideas being solid. A cell is asked once its ideas are
+  # at the frontier (src/data/paradigms isAvailable), so the round is asked the same with "declension-1" still being learned, and its lesson is in the Study list.
+  Scenario: The lesson of an idea he is still learning, opened from a Review's Study list, has no Mark known without a drill
+    Given the table "noun-endings" is due in Review and the round asks "Noun endings: first declension, feminine in η (φωνή), dative singular" first
+    And he is still learning the idea "declension-1"
+    When he opens Review and starts the round
+    And he misses every question of the round
+    And he taps the list's lesson of the idea "declension-1"
+    Then the lesson of the idea "declension-1" is open over the end card
+    And the lesson has no "Mark known without a drill", though its level reads "Frontier" and the idea "declension-1" is not solid
     And the end card still shows its "Study list"
 
   # the tutor may answer with a link to a table, a verse or a setting, each a page of its own: in a talk over a drill those chips are not drawn, and the links that open
