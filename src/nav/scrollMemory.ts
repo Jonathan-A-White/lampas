@@ -24,7 +24,10 @@ export function scrollAddress(hash: string): string {
     if (section) return `#/settings?section=${section}`;
     // and each group's page keeps its own place (mw-3ased2.1), apart from the home that lists the groups
     const group = params.get('group');
-    return group ? `#/settings?group=${group}` : '#/settings';
+    if (group) return `#/settings?group=${group}`;
+    // and so does a page behind a row of the home (What Lampas has counted, mw-6ww.175.87): opening it at the top must not forget where the home was left
+    const page = params.get('page');
+    return page ? `#/settings?page=${page}` : '#/settings';
   }
   if (pathOf(hash) !== '#/') return pathOf(hash);
   return readerHash({ ...readerOf(hash), verse: undefined, view: undefined, weave: undefined });

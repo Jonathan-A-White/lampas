@@ -6,7 +6,7 @@
 // (src/settings/controls/, one file per section) names for its key. A row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens the
 // page holding that section, scrolled to it (a link from elsewhere, such as the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts,
 // docs/links.md) opens the page holding that row, at the row: it is drawn whatever its dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that
-// depends on a setting that is off says to turn that on first. Words, Review, Paradigms, Verse lists, Memorize and Your Logos library left for the Tools screen (src/ToolsScreen.tsx, mw-5r3p30.754); the search still finds them, 'in Tools'. docs/layout/settings.md.
+// depends on a setting that is off says to turn that on first. The home lays out no block under the groups: What Lampas has counted is a row of that list, last before Developer, and opens its own page, '#/settings?page=counted' (mw-6ww.175.87). Words, Review, Paradigms, Verse lists, Memorize and Your Logos library left for the Tools screen (src/ToolsScreen.tsx, mw-5r3p30.754); the search still finds them, 'in Tools'. docs/layout/settings.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
@@ -16,18 +16,18 @@ import { CONTROLS } from './settings/controls';
 import { NeedsLicenceRow } from './settings/controls/NeedsLicence';
 import { bringRowIntoView, HighlightedSetting } from './settings/controls/highlighted';
 import { Section } from './settings/controls/SettingRow';
-import { backToSettingsHome, groupIdOf, movedTool, sermonSourcesOf, settingKeyOf } from './settings/link';
+import { backToSettingsHome, groupIdOf, isCountedPage, movedTool, openCounted, sermonSourcesOf, settingKeyOf } from './settings/link';
 import { ownedResources } from './data/repositories';
 import { searchLibrary } from './settings/librarySearch';
-import { Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
+import { DoorButton, Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { greekLevelOf } from './settings/definitions/greekInterest';
-import { HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleGroups, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
+import { COUNTED_DOOR, HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, homeEntries, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
 import { SermonSourcesPage } from './sermons/SermonSourcesPage';
 import { useSourceList } from './sermons/useSourceList';
 import { neededText } from './settings/neededText';
 import { settingsForTutor } from './settings/tutorSettings'; import { useGrownRows } from './settings/useGrownRows';
 import { useReportScreen } from './tutor/screenContext';
-import { UsageCounted } from './tips/UsageCounted';
+import { UsageCountedPage } from './tips/UsageCounted';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
 
 /** How long a row that a link opened Settings at is kept in view while the controls above it arrive. */
@@ -42,10 +42,12 @@ function sectionOf(hash: string): string | null {
   return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('section');
 }
 
-/** Settings: the one list of sermon sources where the address asks for it (its own page, src/sermons/SermonSourcesPage.tsx; a link to a source's setting is that page at the source's row), else the home and its pages. */
+/** Settings: the one list of sermon sources where the address asks for it (its own page, src/sermons/SermonSourcesPage.tsx; a link to a source's setting is that page at the source's row), What Lampas has counted where it asks for that (its own page, src/tips/UsageCounted.tsx), else the home and its pages. */
 export function SettingsScreen() {
-  const sources = sermonSourcesOf(useAddress());
-  return sources ? <SermonSourcesPage key={sources.at ?? ''} at={sources.at} /> : <SettingsPages />;
+  const address = useAddress();
+  const sources = sermonSourcesOf(address);
+  if (sources) return <SermonSourcesPage key={sources.at ?? ''} at={sources.at} />;
+  return isCountedPage(address) ? <UsageCountedPage /> : <SettingsPages />;
 }
 
 function SettingsPages() {
@@ -140,11 +142,10 @@ function SettingsPages() {
                     })}
                   </HighlightedSetting.Provider>
                   <ul aria-label="Settings groups">
-                    {visibleGroups(values).map((g) => (
-                      <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />
-                    ))}
+                    {homeEntries(values).map((g) =>
+                      g.id === COUNTED_DOOR.id ? <DoorButton key={g.id} id={g.id} title={g.title} hint={g.hint} onOpen={openCounted} /> : <GroupButton key={g.id} id={g.id} title={g.title} hint={g.hint} />,
+                    )}
                   </ul>
-                  <UsageCounted />
                 </>
               ) : null
             )}

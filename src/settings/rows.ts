@@ -105,6 +105,11 @@ export const GROUPS: readonly SettingsGroup[] = [
 
 export const groupById = (id: string): SettingsGroup | undefined => GROUPS.find((g) => g.id === id);
 
+/** What Lampas has counted (mw-6ww.175.87, his words: "This should be behind a tap. Not off the main settings."): a row of the home that opens a page of its own (src/tips/UsageCounted.tsx), drawn in the list of groups
+ *  last before Developer (homeEntries). A door, not a group: it holds no section, no row and no setting, so the search, the tutor and the tests that count the groups do not see it.
+ *  PROVISIONAL: its own row on the home, and where it sits, are the Mayor's reading of 'behind a tap', the Governor to confirm. */
+export const COUNTED_DOOR = { id: 'counted', title: 'What Lampas has counted', hint: 'How often you opened each screen.' } as const;
+
 /** The group a section is in. */
 export const groupOf = (section: SectionId): SettingsGroup => groupIn(GROUPS, section, HOME_SECTIONS);
 
@@ -399,6 +404,13 @@ export const visibleToolRows = (values: Values, query: string): SettingsRow[] =>
 
 /** The groups the home lists: those with a row drawn, given the values read. Developer is not listed until Developer mode is found (its only row hides until then). */
 export const visibleGroups = (values: Values, rows: readonly SettingsRow[] = ROWS): SettingsGroup[] => visibleGroupsIn(rows, GROUPS, values, HOME_SECTIONS);
+
+/** What the home lists under the dials, in order: the groups with a row drawn, and the door to What Lampas has counted last before Developer (last of all until Developer mode is found). */
+export function homeEntries(values: Values, rows: readonly SettingsRow[] = ROWS): (SettingsGroup | typeof COUNTED_DOOR)[] {
+  const groups = visibleGroups(values, rows);
+  const at = groups.findIndex((g) => g.id === 'developer');
+  return at < 0 ? [...groups, COUNTED_DOOR] : [...groups.slice(0, at), COUNTED_DOOR, ...groups.slice(at)];
+}
 
 /** The settings (the rows with a link, src/settings/link.ts) whose name, hint or help holds `query`, ignoring capitals and accents, for the search that is
  *  one tap away from every screen. A detail that is hidden while its setting is off is found too: its link says what to turn on first. Nothing for an empty query. */
