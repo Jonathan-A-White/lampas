@@ -258,6 +258,8 @@ export interface AgreementWord {
   held?: boolean;
   /** the text puts a mark of punctuation after the word: no link reaches past it */
   pause?: boolean;
+  /** a noun the parser settled (layer 2): the genders ('M', 'F', 'N') the New Testament shows its lemma with, for `regender` (story mw-u2w5klk.349.34) */
+  genders?: readonly string[];
 }
 
 /** A comma, a colon or high point, a full stop, a question mark: what ends a word's links (brackets, Swete's supplied letters, are read past). */
@@ -344,6 +346,39 @@ function linksOf(v: readonly AgreementWord[]): Link[] {
 }
 
 const settledIn = (w: AgreementWord): w is AgreementWord & { out: DerivedWord } => isSettled(w.out) && !w.held;
+
+export const NOTE_REGENDERED = 'agreement: the gender of the article before it (the parser read the ending of other nouns)';
+
+/**
+ * A noun the parser settled (layer 2) whose ending rule was learned from nouns of one gender, with an article that does not agree (Gen 24:2 τῷ παιδὶ: παῖς read N-DSF
+ * from feminine nouns in -ις, the article τῷ DSM or DSN; story mw-u2w5klk.349.34): the lemma is a noun the New Testament has in another gender too (`genders`), so the noun takes
+ * it, as layer 2a, when exactly one of those genders makes it agree with one of the article's readings (the article settled, or still pending with its candidates). Two or none
+ * leave it as the parser read it, for the break or the model. A noun of layer 1 is the New Testament's own form and is never changed.
+ */
+function regender(v: ReadonlyArray<AgreementWord>, links: readonly Link[]): void {
+  for (const l of links) {
+    if (l.kind !== LINKS.article) continue;
+    const [article, noun] = [v[l.a], v[l.b]];
+    if (!noun.genders || noun.held || article.held || !isSettled(noun.out) || noun.out.layer !== 2 || partOf(noun.out.morph) !== 'N') continue;
+    const own = cngOf(noun.out.morph);
+    if (!own) continue;
+    const wanted = new Set(roleReadings(article, 'article').map((r) => cngOf(r.morph)));
+    if (wanted.has(own)) continue;
+    const options = [...new Set(noun.genders)].filter((g) => g !== own[2] && wanted.has(`${own.slice(0, 2)}${g}`));
+    if (options.length !== 1) continue;
+    const morph = withCng(noun.out.morph, `${own.slice(0, 2)}${options[0]}`);
+    const was = noun.out;
+    noun.out = {
+      ref: was.ref,
+      lemma: was.lemma,
+      morph,
+      layer: AGREEMENT_LAYER,
+      confidence: AGREEMENT_CONFIDENCE,
+      candidates: [{ lemma: was.lemma, morph, support: 0, share: 0, via: [NOTE_REGENDERED] }, ...was.candidates],
+      notes: [...was.notes, NOTE_REGENDERED],
+    };
+  }
+}
 const dedupe = (rs: readonly Reading[]): Reading[] => [...new Map(rs.map((r) => [`${r.lemma}|${r.morph}`, r])).values()];
 
 export interface AgreementOutcome {
@@ -380,6 +415,7 @@ export function agree(words: readonly AgreementWord[]): AgreementOutcome {
   const breakVerses: string[] = [];
   const breakPairs: Array<[string, string]> = [];
   const perVerse = [...verses.values()].map((v) => ({ v, links: linksOf(v) }));
+  for (const { v, links } of perVerse) regender(v, links);
   for (const { v, links } of perVerse) {
     const broken = new Map<number, string[]>();
     for (const l of links) {
@@ -732,6 +768,8 @@ export interface CheckContext {
   parse: (form: string) => Candidate[];
   /** a preposition's lemma -> the cases it governs (Parser.governs); none given, the preposition rule reads nothing */
   governs?: ReadonlyMap<string, readonly string[]>;
+  /** the genders ('M', 'F', 'N') the New Testament shows a noun's lemma with (Parser.ntPos); none given, no noun is given another gender (`regender`) */
+  genders?: (lemma: string) => readonly string[];
 }
 
 export interface AgreementStats {
@@ -797,6 +835,7 @@ export function checkAgreement(words: ReadonlyArray<{ ref: string; verse: string
   const items: AgreementWord[] = words.map((word, i) => {
     const out = outs[i];
     const item: AgreementWord = { ref: word.ref, verse: word.verse, out, pause: pauseAfter(word.display) };
+    if (isSettled(out) && out.layer === 2 && ctx.genders && partOf(out.morph) === 'N') item.genders = ctx.genders(out.lemma);
     if (!isSettled(out)) {
       if (prep.held.has(out.ref)) item.held = true;
       if (ctx.names.has(keyOf(word.form)) && isLowerCase(word.form)) {
