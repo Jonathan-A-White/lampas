@@ -5,10 +5,10 @@
 // So do the wrappers of buttons of every width (mw-5r3p30.998): the Reading check's parts, the Reading drill's scroll box (NextBar's 'sheet' bar stands in it and adds none) and Memorize's rows. The Verse view's tools line and its action block take it too (mw-5r3p30.1002), except the Reading check's, whose parts take it one by one (padded as a block too, its Next word card was a line too tall to sit above the bar at 360x740, mw-5r3p30.1037).
 // Reading text takes none (mw-5r3p30.1005, the Governor's word: 'Always use full like before'): a column kept clear for the ? beside the Reader's and the Verse view's text (mw-5r3p30.992) cost a fifth of the line, and a word under the ? is
 // his choice, a two-finger tap hides the ? and brings it back.
-import { useHand } from '../settings/hand';
+import { useHandAtOnce } from '../settings/hand';
 
 /** The padding class that keeps a foot row out from under the ?: the Hand's side, 4.5 rem. */
 export function useDoorRoom(): string {
-  return useHand() === 'left' ? 'pl-[4.5rem]' : 'pr-[4.5rem]';
+  return useHandAtOnce() === 'left' ? 'pl-[4.5rem]' : 'pr-[4.5rem]';
 }
 

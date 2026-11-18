@@ -20,7 +20,7 @@ import { isHolding } from './talk/holding';
 import { openDoorTarget, useDoorTarget, useHasDoorTarget, useTalkOpen } from './tutor/door';
 import { DOOR_BACK_LINE, bringDoorBack, useDoorAwayByHand, useDoorAwayNote } from './tutor/doorHidden';
 import { useDoorTwoFingerTap } from './tutor/doorTap';
-import { useHand } from './settings/hand';
+import { useHandAtOnce } from './settings/hand';
 import { focusQuietly } from './ui/focus';
 
 /** The speech bubble with a ? that is the tutor's mark on the floating button. */
@@ -257,13 +257,13 @@ const takeFocusBack = (button: HTMLButtonElement | null): void => {
  */
 export function FloatingTutor() {
   const licensed = useAiAllowed();
-  const hand = useHand();
+  const hand = useHandAtOnce();
   const anything = useHasDoorTarget();
   const talking = useTalkOpen();
   const away = useDoorAwayByHand();
   const note = useDoorAwayNote();
   // a two-finger tap anywhere it has no use of its own takes the ? away and brings it back (mw-5r3p30.1006): only while the ? is the screen's to show
-  const shown = licensed && !!hand && anything && !talking;
+  const shown = licensed && anything && !talking;
   useDoorTwoFingerTap(shown);
   if (!shown) return null;
   if (away) {
