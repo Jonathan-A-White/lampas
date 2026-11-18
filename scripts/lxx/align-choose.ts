@@ -15,6 +15,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { CONFIDENCE_CHOSEN, CONFIDENCE_GUESS, CONFIDENCE_UNSURE, type ChoiceMark } from './choices';
+import { MORPHEUS_DIR, morpheusBuildCommand } from './morpheus';
 import type { ShipOptions } from './ship';
 
 /** Where the model pass's rows are kept: `<book>-<chapter>.tsv`, one file a chapter, so the stories of one book never touch the same file. */
@@ -428,6 +429,13 @@ export class AlignChooseRefused extends Error {
   }
 }
 
+/** The one line for a book with no Morpheus cache in `dir`, or undefined when it has one. A fresh worktree gets the cache by `npm run lxx:link`; `--no-morpheus` goes on without it. */
+export function missingMorpheusLink(book: string, dir: string): string | undefined {
+  const file = join(dir, `${book.toLowerCase()}.tsv`);
+  if (existsSync(file)) return undefined;
+  return `lxx:align-choose: no Morpheus cache for ${book} (${file}): run npm run lxx:link (or build it: ${morpheusBuildCommand(book)}); --no-morpheus goes on without it. Nothing was downloaded.`;
+}
+
 /** The chapter as the aligner leaves it, at the stage `lxx:ship` applies the rows at: no rows, and before joinSupplied (align.ts alignRuns; a ship into a temporary directory). */
 async function chapterWithoutModel(args: AlignChooseArgs, options: AlignChooseOptions): Promise<Chapter> {
   const { scratch = tmpdir(), ...ship } = options.ship ?? {};
@@ -446,6 +454,9 @@ async function chapterWithoutModel(args: AlignChooseArgs, options: AlignChooseOp
 export async function runAlignChoose(argv: readonly string[], options: AlignChooseOptions = {}): Promise<{ path?: string; rows: ModelRow[] }> {
   const { outDir = ALIGN_CHOICES_DIR, print = console.log, log = () => undefined } = options;
   const args = parseAlignChooseArgs(argv);
+  // before anything is read or downloaded: no cache, and the ship would fetch data/raw into this worktree and then call real chapters 'not a shipped chapter' (mw-u2w5klk.349.25)
+  const missing = args.rest.includes('--no-morpheus') ? undefined : missingMorpheusLink(args.book, options.ship?.morpheusDir ?? MORPHEUS_DIR);
+  if (missing) throw new Error(missing);
   let text = '';
   if (args.from) {
     try {

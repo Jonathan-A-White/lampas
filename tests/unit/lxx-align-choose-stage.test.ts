@@ -35,13 +35,17 @@ describe('lxx:align-choose asks the ship for the stage the rows are applied at',
     const { tmpdir } = await import('node:os');
     const dir = mkdtempSync(join(tmpdir(), 'lampas-lxx-stage-'));
     try {
+      // the book has its Morpheus cache (mw-u2w5klk.349.25: without one the command stops before it asks the ship)
+      const morpheusDir = join(dir, 'morpheus');
+      mkdirSync(morpheusDir, { recursive: true });
+      writeFileSync(join(morpheusDir, 'gen.tsv'), 'form\tanalyses\n');
       const listed: string[] = [];
-      await runAlignChoose(['--list', '--book', 'gen', '--chapter', '20'], { outDir: dir, print: (t) => listed.push(t) });
+      await runAlignChoose(['--list', '--book', 'gen', '--chapter', '20'], { outDir: dir, ship: { morpheusDir }, print: (t) => listed.push(t) });
       expect(asked).toEqual([{ runsOnly: true, alignDir: '' }]);
       expect(listed.join('\n')).toContain('{#2 She will} love.');
       const file = join(dir, 'session.txt');
       write(file, ['Gen.20:2#1 of @-', 'Gen.20:2#2 She will @-'].join('\n'));
-      const done = await runAlignChoose(['--book', 'gen', '--chapter', '20', '--from', file], { outDir: dir });
+      const done = await runAlignChoose(['--book', 'gen', '--chapter', '20', '--from', file], { outDir: dir, ship: { morpheusDir } });
       expect(done.rows.map((r) => `${r.run}:${r.text}`)).toEqual(['1:of', '2:She will']);
     } finally {
       rmSync(dir, { recursive: true, force: true });
