@@ -13,8 +13,9 @@
 //  - 'ask' and the words after it ('ask who was Nicodemus', 'ask the tutor ...') put the question to the tutor and speak the answer (src/handsFree/ask.ts, mw-rl10piw.8), then hold the microphone open 8 s for a
 //    follow-up with no wake word; 'tutor' and 'open the tutor' open the Talk sheet on what is on screen and listen; 'close the tutor' and 'done' put it away. In a follow-up window (info.followUp) the words
 //    of any command above run it (and put the tutor away if Hands-free opened it); any other words go to the tutor as the next turn of the same talk.
+//  - 'help' and 'what can I say' say what he can say, from the one table below (HELP_LINES); tapping the mic mark shows the same list (HandsFreeGate.tsx, HelpSheet.tsx).
 // Any other words: it says 'Sorry, I did not get that', and what was playing goes on when the exchange closes (src/handsFree/playback.ts).
-import { defineSpoken, route, type CommandDone } from 'voice-kit/handsfree';
+import { defineSpoken, route, type CommandDone, type SpokenRule } from 'voice-kit/handsfree';
 import { titleOf } from '../data/books';
 import { neighbours } from '../data/neighbours';
 import { crossChapter } from '../reader/crossChapter';
@@ -39,20 +40,55 @@ export const NO_PREVIOUS_CHAPTER = 'There is no chapter before this';
 /** What it says to 'back a verse' when no chapter is being read. */
 export const NOTHING_READ = 'Nothing is being read';
 
-/** The commands, by the words that are them. The chapter commands come before 'go to', which takes any words after it. 'red' and 'reed' are what a recogniser makes of 'read'. */
-export const SPOKEN_COMMANDS = defineSpoken([
+/** One command of the table: the router's rule and what the help says of it (mw-rl10piw.43). */
+interface CommandEntry extends SpokenRule {
+  help: {
+    /** Where it stands in the list he hears and sees (the table's own order is the router's: what comes before what matters there). */
+    rank: number;
+    /** Words he can say for it, as the help gives them: read aloud and shown. The router must take them as this command (tests/unit/hands-free-commands.test.tsx). */
+    example: string;
+    /** What it does, in a few plain words, as the sheet shows it. */
+    does: string;
+  };
+}
+
+/** The commands, by the words that are them: the router's ONE table, and the help (spoken and shown) is made from it, so a command added here cannot be left out of it. The chapter commands come
+ * before 'go to', which takes any words after it. 'red' and 'reed' are what a recogniser makes of 'read'. */
+const COMMAND_TABLE: readonly CommandEntry[] = [
   // the tutor's phrases come before 'read', which takes 'open' and any words after it; 'tudor' is what a recogniser makes of 'tutor'
-  { name: 'close-tutor', phrases: ['close the tutor', 'close tutor', 'leave the tutor', 'close the tudor', 'done', 'i am done'] },
-  { name: 'tutor', phrases: ['tutor', 'tudor', 'the tutor', 'open the tutor', 'open tutor', 'open the tudor', 'talk to the tutor', 'talk to tutor'] },
-  { name: 'ask', phrases: ['ask the tutor', 'ask'], rest: true },
-  { name: 'pause', phrases: ['pause'] },
-  { name: 'play', phrases: ['play', 'resume', 'continue', 'go on'] },
-  { name: 'stop', phrases: ['stop', 'stop reading', 'stop playing'] },
-  { name: 'next-chapter', phrases: ['next chapter', 'go to next chapter', 'go to the next chapter'] },
-  { name: 'previous-chapter', phrases: ['previous chapter', 'go to previous chapter', 'go to the previous chapter', 'go back a chapter', 'back a chapter'] },
-  { name: 'back-verse', phrases: ['back a verse', 'back one verse', 'go back a verse', 'go back one verse', 'previous verse', 'last verse again'] },
-  { name: 'read', phrases: ['read', 'red', 'reed', 'open', 'go to'], rest: true },
-]);
+  { name: 'close-tutor', phrases: ['close the tutor', 'close tutor', 'leave the tutor', 'close the tudor', 'done', 'i am done'], help: { rank: 10, example: 'done', does: 'puts the tutor away' } },
+  { name: 'tutor', phrases: ['tutor', 'tudor', 'the tutor', 'open the tutor', 'open tutor', 'open the tudor', 'talk to the tutor', 'talk to tutor'], help: { rank: 9, example: 'tutor', does: 'opens the tutor and listens' } },
+  { name: 'ask', phrases: ['ask the tutor', 'ask'], rest: true, help: { rank: 8, example: 'ask who was Nicodemus', does: 'puts your question to the tutor and reads the answer' } },
+  { name: 'help', phrases: ['help', 'what can i say', 'what can i say to you', 'what can you do', 'what do i say'], help: { rank: 11, example: 'help', does: 'tells you what you can say' } },
+  { name: 'pause', phrases: ['pause'], help: { rank: 2, example: 'pause', does: 'pauses the reading' } },
+  { name: 'play', phrases: ['play', 'resume', 'continue', 'go on'], help: { rank: 1, example: 'play', does: 'goes on with what is paused, or reads this chapter' } },
+  { name: 'stop', phrases: ['stop', 'stop reading', 'stop playing'], help: { rank: 3, example: 'stop', does: 'ends the reading' } },
+  { name: 'next-chapter', phrases: ['next chapter', 'go to next chapter', 'go to the next chapter'], help: { rank: 5, example: 'next chapter', does: 'reads the next chapter' } },
+  { name: 'previous-chapter', phrases: ['previous chapter', 'go to previous chapter', 'go to the previous chapter', 'go back a chapter', 'back a chapter'], help: { rank: 6, example: 'previous chapter', does: 'reads the chapter before' } },
+  { name: 'back-verse', phrases: ['back a verse', 'back one verse', 'go back a verse', 'go back one verse', 'previous verse', 'last verse again'], help: { rank: 7, example: 'back a verse', does: 'reads the last verse again' } },
+  { name: 'read', phrases: ['read', 'red', 'reed', 'open', 'go to'], rest: true, help: { rank: 4, example: 'read John 3', does: 'opens a chapter and reads it' } },
+];
+
+/** The router's rules, from the table. */
+export const SPOKEN_COMMANDS = defineSpoken(COMMAND_TABLE.map(({ name, phrases, rest }) => ({ name, phrases, ...(rest === undefined ? {} : { rest }) })));
+
+/** One line of the help: the command's name in the router, the words to say for it and what it does. */
+export interface HelpLine {
+  name: string;
+  example: string;
+  does: string;
+}
+
+/** What he can say, one line a command of the router's table, in the order the help gives them. Shown on the sheet the mic mark opens and read aloud by 'help'. */
+export const HELP_LINES: readonly HelpLine[] = [...COMMAND_TABLE].sort((a, b) => a.help.rank - b.help.rank).map(({ name, help }) => ({ name, example: help.example, does: help.does }));
+
+/** The title of the sheet the mic mark opens (PROVISIONAL, the Governor to confirm). */
+export const HELP_TITLE = 'What you can say';
+
+/** What 'help' says: each command's example, as a list (PROVISIONAL wording, the Governor to confirm). */
+export const HELP_SPOKEN = `You can say: ${HELP_LINES.slice(0, -1)
+  .map((line) => line.example)
+  .join(', ')}, or ${HELP_LINES[HELP_LINES.length - 1].example}.`;
 
 /** The words said of a place: 'John 3', 'John 3, verse 16'. */
 const nameOfPlace = (book: string, chapter: number, verse: number | undefined): string => `${titleOf(book, chapter)}${verse === undefined ? '' : `, verse ${verse}`}`;
@@ -104,6 +140,7 @@ export async function runCommand(words: string, say: (text: string) => Promise<v
   if (!command && info.followUp) return askTutor(words.trim(), say, false);
   // any other command leaves the tutor (the Talk sheet Hands-free opened is put away) and does what it says
   leaveTutor();
+  if (command?.name === 'help') return say(HELP_SPOKEN);
   if (command?.name === 'pause') return keepPaused();
   if (command?.name === 'play') {
     if (goOnNow()) return;
