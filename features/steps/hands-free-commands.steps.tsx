@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
+import { forgetTimings, type BookTimings, type ChapterTimings, type TimingsIndex } from '../../src/data/audioTimings';
 import { BOOKS } from '../../src/data/books';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
@@ -17,6 +18,8 @@ import { handsFreeSeam, resetHandsFree } from '../../src/handsFree/session';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { forgetRead } from '../../src/nav/readerRequest';
 import { getReading, stopReading } from '../../src/speech/readAloud';
+import { resetRecordedVoice } from '../../src/speech/recordedVoice';
+import { stubAudio, type FakeAudio } from '../../tests/support/fake-audio';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -39,8 +42,25 @@ function englishOf(place: string, n: number): string {
   return squash((chapters.get(file)?.verses.find((v) => v.n === n)?.e ?? []).map((c) => c.t).join(' '));
 }
 
+/** David's recording of a chapter of John, as the timings stub serves it: a three-second title, then each verse ten seconds. */
+const TITLE = 3;
+const EACH = 10;
+const audioOf = (chapter: number): string => `https://openbible.com/audio/test/jhn-${chapter}.mp3`;
+const startOf = (n: number): number => TITLE + (n - 1) * EACH;
+function chapterTimings(chapter: number): ChapterTimings {
+  const file = JSON.parse(readFileSync(`public/data/jhn/${chapter}.json`, 'utf8')) as Chapter;
+  const verses = file.verses.map((v) => [v.n, startOf(v.n), startOf(v.n) + EACH] as [number, number, number]);
+  return { audio: audioOf(chapter), duration: startOf(verses.length + 1) + 2, verses };
+}
+/** The recordings the element was given, whichever second each was told to start at (its src carries the start as a media fragment, #t=). */
+const fragmentOf = (src: string): { audio: string; at: number } => {
+  const [audio, at] = src.split('#t=');
+  return { audio, at: at === undefined ? 0 : Number(at) };
+};
+
 describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
   let synth: FakeSynth | undefined;
+  let audio: FakeAudio | undefined;
   let wake: WakeFake | undefined;
   let clock = new ManualClock();
   /** How many things the phone had been handed when John 1 was last read from, to tell what came after. */
@@ -72,7 +92,13 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
   const mark = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-hands-free-mark] [data-state]');
   const title = (): string => screen.getByRole('heading', { level: 1 }).textContent ?? '';
 
-  async function open(place: string): Promise<void> {
+  const recording = (): FakeAudio => {
+    if (!audio) throw new Error('the phone has no audio element');
+    return audio;
+  };
+
+  /** `david`: Bible voice is Recording (David) and the timings of John 17 and 18 are served beside the chapters (the index lists only those two). */
+  async function open(place: string, david = false): Promise<void> {
     const [name, chapter] = [place.slice(0, place.lastIndexOf(' ')), place.slice(place.lastIndexOf(' ') + 1)];
     const code = BOOKS.find((b) => b.name === name)?.code;
     cleanup();
@@ -87,7 +113,22 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     wake = stubWake();
     stubRecognizer();
     synth = stubSpeech([ENGLISH_VOICE]);
+    audio = stubAudio();
+    resetRecordedVoice();
+    forgetTimings();
     stubChapterFetch();
+    if (david) {
+      const index: TimingsIndex = { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: [17, 18] } };
+      const book: BookTimings = { v: 1, edition: 'msb-david', book: 'jhn', chapters: { '17': chapterTimings(17), '18': chapterTimings(18) } };
+      const chapterFetch = globalThis.fetch;
+      vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.startsWith('http')) throw new Error(`the app asked the network for ${url}`);
+        if (url === '/data/audio/msb-david/index.json') return Promise.resolve(Response.json(index));
+        if (url === '/data/audio/msb-david/jhn.json') return Promise.resolve(Response.json(book));
+        return chapterFetch(input, init);
+      });
+    }
     serveWakeModel();
     Object.defineProperty(navigator, 'wakeLock', {
       configurable: true,
@@ -101,6 +142,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     await setReaderView('english');
     await setWeave('off');
     await db.settings.put({ key: 'handsFree', value: 'on' });
+    if (david) await db.settings.put({ key: 'bibleVoice', value: 'msb-david' });
     window.location.hash = `#/?b=${code}&c=${chapter}`;
     render(<App />);
     await screen.findByRole('heading', { name: place, level: 1 });
@@ -266,5 +308,69 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And(says, (_, words: string) => command(words));
     Then(phoneSays, (_, text: string) => saysInEnglish(text));
     And('the Reader is still at Genesis 1', () => atScreen('Genesis 1'));
+  });
+
+  const givenDavid = "Hands-free is On and {string} is open in English with Bible voice set to Recording and David's timings of John 17 and 18";
+  /** David's recording of `chapter` is the sound now: the element was last given that chapter, from `from` (second 0 for its beginning, with the title), and is playing. */
+  const davidPlays = async (chapter: number, verse?: number): Promise<void> => {
+    await waitFor(() => expect(recording().playing()).not.toBeNull());
+    const given = fragmentOf(recording().sources[recording().sources.length - 1]);
+    expect(given.audio).toBe(audioOf(chapter));
+    expect(given.at).toBe(verse === undefined || verse === 1 ? 0 : startOf(verse));
+    expect(getReading().status).toBe('reading');
+    expect(engine().speaking).toBe(false);
+  };
+  const atChapter = async (place: string, chapter: number, verse?: number): Promise<void> => {
+    await screen.findByRole('heading', { name: place, level: 1 });
+    await davidPlays(chapter, verse);
+  };
+
+  Scenario("Bible voice is Recording (David): 'read John 17' from Mark plays David's recording, and 'next chapter' and 'previous chapter' keep it", ({ Given, And, When, Then }) => {
+    Given(givenDavid, (_, place: string) => open(place, true));
+    When('he says the wake word', sayWake);
+    And(says, (_, words: string) => command(words));
+    Then(phoneSays, (_, text: string) => saysInEnglish(text));
+    When('the phone has said it', hasSaid);
+    Then("the Reader is at John 17 and David's recording of John 17 plays from its beginning", () => atChapter('John 17', 17));
+    And('verse 1 is marked as being read', async () => {
+      await waitFor(() => expect(document.querySelector('[data-reader] [data-verse="1"]')?.hasAttribute('data-reading')).toBe(true));
+    });
+    And("the phone's voice reads nothing of John 17", () => {
+      expect(engine().spoken.map((s) => squash(s.text))).not.toContain(englishOf('John 17', 1));
+    });
+    When('he says the wake word again', sayWake);
+    And('he then says {string} and is quiet for 1.5 seconds', (_, words: string) => command(words));
+    Then("the Reader goes on to John 18 and David's recording of John 18 plays from its beginning", () => atChapter('John 18', 18));
+    When('he says the wake word once more', sayWake);
+    And('he next says {string} and is quiet for 1.5 seconds', (_, words: string) => command(words));
+    Then("the Reader turns back to John 17 and David's recording of John 17 plays from its beginning", () => atChapter('John 17', 17));
+  });
+
+  Scenario("Bible voice is Recording (David): 'read John 17 verse 5' plays David from verse 5, and 'back a verse' keeps David", ({ Given, And, When, Then }) => {
+    Given(givenDavid, (_, place: string) => open(place, true));
+    When('he says the wake word', sayWake);
+    And(says, (_, words: string) => command(words));
+    Then(phoneSays, (_, text: string) => saysInEnglish(text));
+    When('the phone has said it', hasSaid);
+    Then("the Reader is at John 17 and David's recording of John 17 plays from verse 5", () => atChapter('John 17', 17, 5));
+    When('he says the wake word again', sayWake);
+    And('he then says {string} and is quiet for 1.5 seconds', (_, words: string) => command(words));
+    Then("David's recording of John 17 plays from verse 4", async () => {
+      await waitFor(() => expect(getReading()).toMatchObject({ status: 'reading', verse: 4 }));
+      expect(recording().playing()).not.toBeNull();
+      expect(engine().speaking).toBe(false);
+    });
+  });
+
+  Scenario("Bible voice is Recording (David): a book David has not recorded, 'read Mark 1', is read in the phone's voice", ({ Given, And, When, Then }) => {
+    Given(givenDavid, (_, place: string) => open(place, true));
+    When('he says the wake word', sayWake);
+    And(says, (_, words: string) => command(words));
+    Then(phoneSays, (_, text: string) => saysInEnglish(text));
+    When('the phone has said it', hasSaid);
+    Then("the Reader is at Mark 1 and Mark 1 is read from verse 1 in the phone's voice", async () => {
+      await readsFrom('Mark 1', 1);
+      expect(recording().playing()).toBeNull();
+    });
   });
 });

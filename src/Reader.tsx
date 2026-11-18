@@ -38,7 +38,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { sourceLanguage, type SourceLanguage, type Verse } from './data/chapter';
 import { loadBookTimings } from './data/audioTimings';
 import { onConnectionChange } from './speech/connection';
-import { timingsWarmFor } from './speech/voiceDecision';
+import { timingsReady, timingsWarmFor } from './speech/voiceDecision';
 import { chooseReading, getGrammarApproach, getGreekPronunciation, setReaderView, talkRef, type ReaderView } from './data/repositories';
 import { chapterOf, getOpenChapter, setOpenChapter, setOpenReadLanguage, type OpenChapter } from './data/readerChapter';
 import { neighbours, verseNeighbours } from './data/neighbours';
@@ -458,13 +458,6 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   // Hands-free's 'play' with nothing paused (src/handsFree/commands.ts, mw-rl10piw.6) is answered here, by the same start as the header's Play, from where he is; it asks
   // no question that needs a tap (the data question waits for one: the decision's notice says which voice reads instead)
   useEffect(() => answerReadHere((verse) => readFrom(verse ?? selected ?? 1, true, false), BOOK, CHAPTER), [readFrom, selected, BOOK, CHAPTER]);
-  // A passage asked for by voice ('read John 3', 'next chapter', src/handsFree/commands.ts, mw-rl10piw.7) opened this Reader: it starts its reading, from the verse asked for, once the plan is here
-  useEffect(() => {
-    const wanted = plan ? pendingRead(BOOK, CHAPTER) : undefined;
-    if (!wanted) return;
-    takeRead(wanted);
-    readFrom(wanted.verse, true, false);
-  }, [plan, readFrom, BOOK, CHAPTER]);
   const chapterReading = reading.status !== 'idle' && reading.answer === null;
   const readingVerse = chapterReading ? reading.verse : null;
   const headerButtons = chapterReading && !reading.onBar;
@@ -519,24 +512,47 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const crossingHere = crossing !== null && crossing.book === BOOK && crossing.chapter === CHAPTER;
   const readingStatus = reading.status;
   // It is heard in the recorded voice by the rule a tap goes by (src/speech/voiceDecision.ts decideVoice), else in the phone's.
+  // A crossing into another book (Genesis 50 into Exodus 1) waits, as a spoken start does, for that book's timings (timingsReady): the chapter is here before its timings file is (mw-rl10piw.29).
+  const bibleVoice = useSetting(bibleVoiceSetting);
   useEffect(() => {
-    if (plan && crossingHere && readingStatus === 'reading') {
+    if (!(plan && crossingHere && readingStatus === 'reading' && bibleVoice !== undefined)) return;
+    let live = true;
+    void timingsReady(BOOK, bibleVoice).then(() => {
+      if (!live) return;
       // a crossing asks nothing (decideVoice's mayAsk is false): the phone's voice reads on data, with the one-time notice
       const say = decideVoice(BOOK, chapter, plan, false);
       continueReading({ book: BOOK, chapter: CHAPTER, plan, recorded: say.recorded, notice: say.notice });
-    }
-  }, [plan, crossingHere, readingStatus, BOOK, CHAPTER, chapter]);
+    });
+    return () => {
+      live = false;
+    };
+  }, [plan, crossingHere, readingStatus, BOOK, CHAPTER, chapter, bibleVoice]);
   // The recorded voice's timings for this book are loaded when a chapter opens, so a tap on Play finds them with no wait (mw-82lb97i.3).
   // They are warmed only when David could play (timingsWarmFor, src/speech/voiceDecision.ts: Recording (David); Recording on Wi-Fi only unless the phone says it is on mobile data, where only until the one
   // question about data is answered), never for the phone voice nor before the saved setting is read, so mobile data spends nothing on a recording that will not play (mw-zbgo4ep.33). It follows his Bible voice setting (Settings > Listening) and the connection
   // (a change from data to Wi-Fi warms them), so choosing the recording while a chapter is open brings its timings too.
-  const bibleVoice = useSetting(bibleVoiceSetting);
   const [, setConnectionTick] = useState(0); // a change of connection draws again, so recordingWanted is asked again
   useEffect(() => onConnectionChange(() => setConnectionTick((n) => n + 1)), []);
   const warmTimings = timingsWarmFor(bibleVoice);
   useEffect(() => {
     if (warmTimings) void loadBookTimings(BOOK);
   }, [BOOK, warmTimings]);
+  // A passage asked for by voice ('read John 3', 'next chapter', src/handsFree/commands.ts, mw-rl10piw.7) opened this Reader: it starts its reading, from the verse asked for, once the plan is here
+  // AND the book's timings are (timingsReady): the chapter opens a moment before the timings file is fetched, and a start that decided at once found none and read in the phone's voice though
+  // Bible voice was Recording (David) (mw-rl10piw.29). The request is taken as the reading starts, so a Reader made again meets it again.
+  useEffect(() => {
+    const wanted = plan && bibleVoice !== undefined ? pendingRead(BOOK, CHAPTER) : undefined;
+    if (!wanted) return;
+    let live = true;
+    void timingsReady(BOOK, bibleVoice).then(() => {
+      if (!live || pendingRead(BOOK, CHAPTER) !== wanted) return;
+      takeRead(wanted);
+      readFrom(wanted.verse, true, false);
+    });
+    return () => {
+      live = false;
+    };
+  }, [plan, readFrom, BOOK, CHAPTER, bibleVoice]);
   // A chapter that cannot be fetched ends the reading that was going on into it.
   useEffect(() => {
     if (failed && crossingHere) stopReading();

@@ -62,3 +62,38 @@ Feature: Hands-free reads a passage, stops, and turns chapters: 'read John 3', '
     And he says "previous chapter" and is quiet for 1.5 seconds
     Then the phone says "There is no chapter before this" in English
     And the Reader is still at Genesis 1
+
+  Scenario: Bible voice is Recording (David): 'read John 17' from Mark plays David's recording, and 'next chapter' and 'previous chapter' keep it
+    Given Hands-free is On and "Mark 1" is open in English with Bible voice set to Recording and David's timings of John 17 and 18
+    When he says the wake word
+    And he says "read John 17" and is quiet for 1.5 seconds
+    Then the phone says "John 17" in English
+    When the phone has said it
+    Then the Reader is at John 17 and David's recording of John 17 plays from its beginning
+    And verse 1 is marked as being read
+    And the phone's voice reads nothing of John 17
+    When he says the wake word again
+    And he then says "next chapter" and is quiet for 1.5 seconds
+    Then the Reader goes on to John 18 and David's recording of John 18 plays from its beginning
+    When he says the wake word once more
+    And he next says "previous chapter" and is quiet for 1.5 seconds
+    Then the Reader turns back to John 17 and David's recording of John 17 plays from its beginning
+
+  Scenario: Bible voice is Recording (David): 'read John 17 verse 5' plays David from verse 5, and 'back a verse' keeps David
+    Given Hands-free is On and "Mark 1" is open in English with Bible voice set to Recording and David's timings of John 17 and 18
+    When he says the wake word
+    And he says "read John 17 verse 5" and is quiet for 1.5 seconds
+    Then the phone says "John 17, verse 5" in English
+    When the phone has said it
+    Then the Reader is at John 17 and David's recording of John 17 plays from verse 5
+    When he says the wake word again
+    And he then says "back a verse" and is quiet for 1.5 seconds
+    Then David's recording of John 17 plays from verse 4
+
+  Scenario: Bible voice is Recording (David): a book David has not recorded, 'read Mark 1', is read in the phone's voice
+    Given Hands-free is On and "John 3" is open in English with Bible voice set to Recording and David's timings of John 17 and 18
+    When he says the wake word
+    And he says "read Mark 1" and is quiet for 1.5 seconds
+    Then the phone says "Mark 1" in English
+    When the phone has said it
+    Then the Reader is at Mark 1 and Mark 1 is read from verse 1 in the phone's voice
