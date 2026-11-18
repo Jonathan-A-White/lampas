@@ -466,8 +466,17 @@ export async function importNote(): Promise<ImportNote | undefined> {
  *  the books already on his shelf (On or Pinned: he turned them on, or an import did) stay his, and no other book is offered; once a list is kept it alone says (mw-5r3p30.1189). */
 export async function ownedResources(): Promise<ReadonlySet<string>> {
   const kept = await db.exportRows.toArray();
-  if (kept.length > 0) return new Set(kept.map((r) => r.resource));
-  return new Set((await rowsNow()).map((r) => r.id));
+  return sameSet(kept.length > 0 ? kept.map((r) => r.resource) : splitTaken(await db.library.toArray()).rows.map((r) => r.id));
+}
+
+/** The set of `ids`, the very one given last when it holds the same ids: a screen that asks again when the set it holds is a new object (the sermon door, the pickers) then does not ask again for a shelf
+ *  write that changed nothing in it (the old keys taken into rows a moment after the first read, a book changing its state). */
+let lastOwned: ReadonlySet<string> = new Set();
+function sameSet(ids: readonly string[]): ReadonlySet<string> {
+  const next = new Set(ids);
+  if (next.size === lastOwned.size && [...next].every((id) => lastOwned.has(id))) return lastOwned;
+  lastOwned = next;
+  return next;
 }
 
 /** The books of the kept list that Lampas does not open (not matched at the last import or re-match): what Ask for a book searches. Empty while no list is kept. */
