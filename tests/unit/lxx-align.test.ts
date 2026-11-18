@@ -463,4 +463,29 @@ describe('npm run lxx:ship carries the chunks to the directory', () => {
     await runAlign(['--out', tmp(), '--no-morpheus'], { ...options(), doc, log: () => undefined });
     expect(readFileSync(doc, 'utf8')).toBe(first);
   });
+
+  // mw-u2w5klk.349.24: which chapters ship (the chapter bar) and so the report depend on which books have a Morpheus cache, and a worktree borrows a partial one
+  it('the report records which books were derived without a Morpheus cache', async () => {
+    const doc = join(tmp(), 'lxx-align.md');
+    writeFileSync(doc, `# Align\n\n${ALIGN_START}\nold\n${ALIGN_END}\n`);
+    await runAlign(['--out', tmp(), '--no-morpheus'], { ...options(), doc, log: () => undefined });
+    expect(readFileSync(doc, 'utf8')).toContain('Derived without a Morpheus cache: gen.');
+  });
+
+  it('leaves the report as it is, and says why, on a host whose Morpheus caches are not the ones it was written with', async () => {
+    const doc = join(tmp(), 'lxx-align.md');
+    const before = `# Align\n\n${ALIGN_START}\n\nDerived without a Morpheus cache: none.\n\n| Genesis 1 | 1 |\n\n${ALIGN_END}\n`;
+    writeFileSync(doc, before);
+    await expect(runAlign(['--out', tmp(), '--no-morpheus'], { ...options(), doc, log: () => undefined })).rejects.toThrow(/without a Morpheus cache: none.*without a cache for: gen.*--force/s);
+    expect(readFileSync(doc, 'utf8')).toBe(before);
+  });
+
+  it('--force writes it anyway, and records the new state', async () => {
+    const doc = join(tmp(), 'lxx-align.md');
+    writeFileSync(doc, `# Align\n\n${ALIGN_START}\n\nDerived without a Morpheus cache: none.\n\n${ALIGN_END}\n`);
+    await runAlign(['--out', tmp(), '--no-morpheus', '--force'], { ...options(), doc, log: () => undefined });
+    const text = readFileSync(doc, 'utf8');
+    expect(text).toContain('Derived without a Morpheus cache: gen.');
+    expect(text).not.toContain('cache: none.');
+  });
 });
