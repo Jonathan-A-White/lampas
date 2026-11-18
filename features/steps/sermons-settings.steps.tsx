@@ -213,6 +213,14 @@ describeFeature(feature, ({ Scenario }) => {
     // the same spot, whatever the button now reads: 'These 2 off' is 'These 0 off' once the first tap has landed
     fireEvent.click(button);
   };
+  // two buttons, one tap each, the second before anything the first set going has been written (mw-qtu3zvz.197): both clicks are made in one turn of the loop. The steps after it wait for the Undo line of the
+  // SECOND tap first, which stands only once its writes have landed: the status line alone reads '2 of 2 on' before the first write too
+  const tapsBoth = async (_: unknown, first: string, second: string) => {
+    const main = await page();
+    const buttons = [within(main).getByRole('button', { name: first }), within(main).getByRole('button', { name: second })];
+    for (const button of buttons) fireEvent.click(button);
+  };
+  const booksOn = async (): Promise<string[]> => (await db.library.where('kind').equals('sermons').toArray()).filter((r) => r.state === 'on').map((r) => r.id).sort();
   const viewHas = async (_: unknown, label: string) => {
     expect(await within(viewEl()).findByRole('button', { name: label })).toBeVisible();
   };
@@ -359,7 +367,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the status line reads {string}', statusReads);
     And('the line {string} stands with an Undo', undoLine);
     And('ten sermon books are on his shelf', async () => {
-      await waitFor(async () => expect((await db.library.where('kind').equals('sermons').toArray()).filter((r) => r.state === 'on').map((r) => r.id).sort()).toEqual(TEN.map((e) => e.resource).sort()));
+      await waitFor(async () => expect(await booksOn()).toEqual(TEN.map((e) => e.resource).sort()));
     });
   });
 
@@ -439,6 +447,31 @@ describeFeature(feature, ({ Scenario }) => {
     And('the line {string} stands with an Undo', undoLine);
     When('he chooses {string}', taps);
     Then('the count is back at {string}', statusReads);
+  });
+
+  Scenario('All off and then All on, tapped with no wait, ends with every source On', ({ Given, When, Then, And }) => {
+    Given('the page of sermon sources is open with Logos Off', pageWith('off'));
+    When('he taps the button {string} and then {string} with no wait', tapsBoth);
+    Then('the line {string} stands with an Undo', undoLine);
+    And('the status line reads {string}', statusReads);
+    And('the setting {string} is kept as {string}', keptAs);
+    When('he chooses {string}', taps);
+    Then('the count is back at {string}', statusReads);
+  });
+
+  Scenario('All on and then All off, tapped with no wait, ends with every source Off, the books too', ({ Given, When, Then, And }) => {
+    Given('the page of sermon sources is open with Logos On and an import of ten sermon books and Greg Laurie\'s archive', withImport);
+    When('he taps the button {string} and then {string} with no wait', tapsBoth);
+    Then('the line {string} stands with an Undo', undoLine);
+    And('the status line reads {string}', statusReads);
+    And('no sermon book is on his shelf', async () => {
+      await waitFor(async () => expect(await booksOn()).toEqual([]));
+    });
+    When('he chooses {string}', taps);
+    Then('the count is back at {string}', statusReads);
+    And('ten sermon books are on his shelf', async () => {
+      await waitFor(async () => expect(await booksOn()).toEqual(TEN.map((e) => e.resource).sort()));
+    });
   });
 
   Scenario('A search with no match offers Ask for a preacher', ({ Given, When, Then, And }) => {
