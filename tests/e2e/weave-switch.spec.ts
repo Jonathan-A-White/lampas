@@ -289,6 +289,36 @@ test('the layout changed under an open Reader keeps the verse that is on top', a
   await expect.poll(firstVerse).toBe(12);
 });
 
+// What a fixed sleep before a check stood for: the lines have been laid again and have stopped moving. Two animation frames pass between looks, and the Reader's height, its scroll place
+// and the verse on top must be the same for three looks in a row, with that verse the one expected, before the check is passed (the Reader restores the place after a reflow, in a frame).
+async function stillOnTop(page: Page, verse: number) {
+  let last = '';
+  let steady = 0;
+  await expect
+    .poll(
+      async () => {
+        const now = await page.evaluate(
+          () =>
+            new Promise<string>((done) =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => {
+                  const box = document.querySelector<HTMLElement>('main[data-reader]')!;
+                  const top = box.getBoundingClientRect().top;
+                  const el = [...document.querySelectorAll<HTMLElement>('[data-verse]')].find((v) => v.getBoundingClientRect().top >= top - 1);
+                  done(`${Math.round(box.scrollHeight)}/${Math.round(box.scrollTop)}/${el?.dataset.verse}`);
+                }),
+              ),
+            ),
+        );
+        steady = now === last ? steady + 1 : 0;
+        last = now;
+        return steady >= 3 ? `verse ${last.split('/')[2]} on top and still` : `looked ${steady} times in a row alike (${now})`;
+      },
+      { message: `verse ${verse} is on top and the lines have stopped moving` },
+    )
+    .toBe(`verse ${verse} on top and still`);
+}
+
 // Text size and Font reach an open Reader at the root (src/appearance/appearanceSync.ts: html's --lp-scale and --lp-font-english), a change by the tutor or in Settings in another window,
 // and every line is laid again at its new size: the verse on top stays on top (mw-9ji6ek0.46). A number of pixels is not a place.
 test.describe('Text size, Font, the weave’s Grammar and the Immersive reader changed under an open Reader keep the verse that is on top', () => {
@@ -329,8 +359,7 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
     // what the tutor's change does to the page: applyTextSize writes --lp-scale on html and nothing else reaches the Reader
     for (const scale of ['1.6', '0.85', '1']) {
       await page.evaluate((s) => document.documentElement.style.setProperty('--lp-scale', s), scale);
-      await page.waitForTimeout(300);
-      await expect.poll(() => firstVerse(page)).toBe(12);
+      await stillOnTop(page, 12);
     }
     await shot(page, 'weave-switch-text-size');
   });
@@ -346,8 +375,7 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
     for (const stack of stacks) {
       await page.evaluate((s) => document.documentElement.style.setProperty('--lp-font-english', s), stack);
       await page.evaluate(() => document.fonts.ready);
-      await page.waitForTimeout(500);
-      await expect.poll(() => firstVerse(page)).toBe(12);
+      await stillOnTop(page, 12);
     }
     await shot(page, 'weave-switch-font');
   });
@@ -383,8 +411,7 @@ test.describe('Text size, Font, the weave’s Grammar and the Immersive reader c
       for (const name of buttons) {
         await row.getByRole('button', { name, exact: true }).click();
         await expect(row.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
-        await page.waitForTimeout(1500);
-        await expect.poll(() => firstVerse(page)).toBe(12);
+        await stillOnTop(page, 12);
       }
     });
   }
@@ -422,8 +449,7 @@ test('a word gaining or losing its hint line under an open Reader keeps the vers
   const lemmas = await solid.evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.lemma!));
   for (const lemma of lemmas) await other.locator(`button[data-lemma="${lemma}"]`).click();
   await expect.poll(hints).toBeGreaterThan(before);
-  await page.waitForTimeout(1500);
-  await expect.poll(firstVerse).toBe(12);
+  await stillOnTop(page, 12);
   await shot(page, 'weave-switch-hints-gained');
 
   const learning = other.locator('button[data-lemma][data-state="learning"]');
@@ -433,6 +459,5 @@ test('a word gaining or losing its hint line under an open Reader keeps the vers
     await other.getByRole('button', { name: /^Drop/ }).click();
   }
   await expect.poll(hints).toBe(0);
-  await page.waitForTimeout(1500);
-  await expect.poll(firstVerse).toBe(12);
+  await stillOnTop(page, 12);
 });
