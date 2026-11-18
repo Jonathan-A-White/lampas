@@ -495,7 +495,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 13, 15 to 36 with the model pass', (
   });
 
   // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3): the English content words (`contentWordsOf`, scripts/lxx/unpaired.ts) that sit in a chunk with no Greek word after the pass, 189 of 2,560 (607 had none
-  // before it, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.32 fixed 57 of the 189 that were a Greek word paired to its neighbour's English, so 133 are left), keyed chapter:verse:word and read by hand from `--list`. Each is in one of three lists, with why. A tap on one opens the Verse view, never a wrong word.
+  // before it, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.32 gave a Greek word to 58 of the 189, a Greek word paired to its neighbour's English, and two went to a name of their own (12:11 'came', 17:19 'God'), so 133 are left), keyed chapter:verse:word and read by hand from `--list`. Each is in one of three lists, with why. A tap on one opens the Verse view, never a wrong word.
   // 'it came to pass' renders ἐγένετο (Hebrew's 'and it was'), which the aligner paired to one English word; the model re-chooses remainders, not pairs, so the others have no Greek word left.
   const IDIOM_NO_GREEK = [
     '12:11:came', '12:11:pass', '12:12:pass', '12:14:came', '12:14:pass', '19:17:came', '19:17:pass', '19:29:came', '19:34:came', '19:34:pass', '21:22:came', '22:1:came',
