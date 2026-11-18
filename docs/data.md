@@ -60,7 +60,7 @@ npm run data:build     # downloads data/raw/msb_nt_tables.tsv, data/raw/tbesg.tx
 the output is deterministic and a file is rewritten only when its bytes differ. Files in `public/data` that the
 build no longer produces are deleted. Tests use the small slices in `tests/fixtures/data/` and never the network.
 A fresh checkout or host needs nothing copied in: `npm run data:build` on an empty `data/raw` fetches every source at its pinned bytes ('Pinned sources'), and on a clean tree
-ends `260 chapters, 0 files written`. It rewrites `data/drill-report.json` in another line order, so run `npm run drill:build` after it (it restores that file and `lexicon.json`'s `q`).
+ends `260 chapters, 0 files written`, and `git status` stays clean (the drill report's lines are in code-unit order, as `npm run drill:build` writes them). A build with fewer inputs (`variants`, `rp2026`, `tagnt` or `pinSources` off) writes its drill report and untagged and guessed lists beside the raw downloads, not over the committed files (`reportFiles`, `isFullBuild` in scripts/data-build.ts).
 
 ## Sources and licences
 

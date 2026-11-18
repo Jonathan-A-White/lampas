@@ -11,7 +11,8 @@ import type { LemmaLexicon } from '../../src/data/lexicon';
 import { normaliseLemma } from '../../src/data/lemma';
 import { meaningsOf, shareMeaning } from '../../src/data/meanings';
 import { buildQuestion, distractorsFor, mulberry32, seedDistractors } from '../../src/data/quiz';
-import { MAX_MEANINGS, SHARE_LINE, type DrillReport } from '../../scripts/data/drillAnswers';
+import { MAX_MEANINGS, SHARE_LINE, drillAnswers, type DrillReport } from '../../scripts/data/drillAnswers';
+import { drillReportText } from '../../scripts/data-build';
 
 const lexicon = JSON.parse(readFileSync('public/data/lexicon.json', 'utf8')) as LemmaLexicon;
 const report = JSON.parse(readFileSync('data/drill-report.json', 'utf8')) as DrillReport;
@@ -113,5 +114,18 @@ describe('the report of the build', () => {
       expect(r.reason, lemma).toBeTruthy();
       expect(lexicon[lemma].q ?? lexicon[lemma].g).toBe(r.answer);
     }
+  });
+});
+
+describe('the order of the report (mw-5r3p30.1193)', () => {
+  it('lists the lemmas by code unit whatever order the lexicon came in, so data:build and drill:build write the same bytes', () => {
+    const entry = (g: string) => ({ g, s: '', f: 1 }) as unknown as LemmaLexicon[string];
+    const scrambled: LemmaLexicon = { ἀγάπη: entry('love'), Αἰγύπτιος: entry('Egyptian'), βάλλω: entry('to throw'), Βαβυλών: entry('Babylon') };
+    const sorted = Object.fromEntries(Object.entries(scrambled).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+    const args = { chapters: [], seeds: new Map<string, string>(), corrections: {} };
+    const a = drillAnswers({ ...args, lexicon: scrambled });
+    const b = drillAnswers({ ...args, lexicon: sorted });
+    expect(Object.keys(a.lemmas)).toEqual(Object.keys(sorted));
+    expect(drillReportText(a)).toBe(drillReportText(b));
   });
 });

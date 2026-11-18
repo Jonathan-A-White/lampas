@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildData, chapterFingerprint, cleanDefinition, lemmaFor, parseLexicon, runBuild, suppliedWords } from '../../scripts/data-build';
+import { buildData, chapterFingerprint, cleanDefinition, lemmaFor, parseLexicon, reportFiles, runBuild, suppliedWords } from '../../scripts/data-build';
 import type { Chapter, Verse } from '../../src/data/chapter';
 
 const msb = readFileSync('tests/fixtures/data/msb-slice.tsv', 'utf8');
@@ -112,6 +112,33 @@ describe('the chapter fingerprints (mw-5r3p30.276)', () => {
     } finally {
       rmSync(base, { recursive: true, force: true });
     }
+  });
+});
+
+describe('where the build writes its reports (mw-5r3p30.1193)', () => {
+  const into = { rawDir: 'data/raw', outDir: 'public/data' };
+  const committed = { drill: 'data/drill-report.json', untagged: 'data/variant-untagged.txt', guessed: 'data/variant-guessed.txt' };
+
+  it('writes the committed reports for the full build into public/data', () => {
+    expect(reportFiles(into)).toEqual(committed);
+  });
+
+  it.each([
+    ['variants off', { variants: false }],
+    ['TAGNT off', { tagnt: false }],
+    ['the RP 2026 overlay off', { rp2026: false }],
+    ['the sources unpinned', { pinSources: false }],
+  ])('does not write the committed reports when %s', (_, fewer) => {
+    const files = reportFiles({ ...into, ...fewer });
+    expect(files).toEqual({ drill: 'data/raw/drill-report.json', untagged: 'data/raw/variant-untagged.txt', guessed: 'data/raw/variant-guessed.txt' });
+  });
+
+  it('still writes where it is told, even for a build with fewer inputs', () => {
+    expect(reportFiles({ ...into, variants: false, drillReportFile: 'x/d.json', untaggedFile: 'x/u.txt' })).toEqual({ drill: 'x/d.json', untagged: 'x/u.txt', guessed: 'x/variant-guessed.txt' });
+  });
+
+  it('keeps the drill report out of the committed file for a build into another folder', () => {
+    expect(reportFiles({ rawDir: 'raw', outDir: 'out' }).drill).toBe('raw/drill-report.json');
   });
 });
 
