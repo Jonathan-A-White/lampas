@@ -12,6 +12,7 @@ import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { pendingRequest } from '../../src/nav/readerRequest';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 beforeEach(async () => {
   clearBus();
@@ -110,6 +111,7 @@ describe('a held Old Testament reference', () => {
   it('has Open in Logos after Open once Logos is linked, at the first verse', async () => {
     await setResourceOn('logos', true);
     await setLogosBible(DEFAULT_LOGOS_BIBLE);
+    await keepImport(EVERY_BOOK_IDS);
     const card = await openDaniel();
     const open = within(card).getByRole('button', { name: 'Open' });
     const logos = await within(card).findByRole('link', { name: 'Open in Logos' });

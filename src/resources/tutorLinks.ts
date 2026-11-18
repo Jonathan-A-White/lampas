@@ -93,8 +93,10 @@ export function wordChips(lemma: string, strongs: string | undefined, chosen: St
 }
 
 /** The chips of a verse link in the apps that are on and can show a Bible (`name` is the reference as written, 'Romans 8:31'); `bible` is his Bible in Logos. */
-export function verseChips(place: StudyPlace, name: string, chosen: StudyResources, bible: string, level: GreekLevel = GREEK_TOP): LinkChip[] {
+export function verseChips(place: StudyPlace, name: string, chosen: StudyResources, bible: string | undefined, level: GreekLevel = GREEK_TOP): LinkChip[] {
   const chips: LinkChip[] = [];
+  // the Bible he set is not offered (his import lacks it): no chip opens a verse in it (mw-qtu3zvz.208)
+  if (bible === undefined) return chips;
   for (const resource of switchedOn(chosen, level)) {
     const [link] = resource.versesFor?.(place, bible) ?? [];
     if (link) chips.push({ resource, label: link.label.replace(/^Open /, `Open ${name} `), tile: link.tile ?? link.label, url: link.url, fallback: link.fallback });

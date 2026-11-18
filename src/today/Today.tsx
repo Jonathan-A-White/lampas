@@ -10,7 +10,7 @@ import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, tickedDevotionals } from '..
 import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, markSeen, noteExplained, pickAnotherDevotional, pinEpisode } from '../data/daily/dailyStore';
 import { DEFAULT_ORDER, anotherEpisode, devotionalToday, episodeDate, hasUnheard, type Episode, type EpisodeOrder, type TodaysDevotional } from '../data/daily/morningRephil';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
-import { dayProgress, getLogosBibles, getStudyResources, markChapterRead, unmarkChaptersRead } from '../data/repositories';
+import { dayProgress, getLogosBibles, getStudyResources, markChapterRead, ownedResources, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
 import { backTo, navigate, openMemorizeSession, openReader } from '../nav/route';
@@ -26,7 +26,8 @@ import { useSendOff } from '../plan/useSendOff';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { useLogosOn } from '../useLogosOn';
 import { devotionalLink } from '../resources/logosDevotional';
-import { bibleFor, chapterLink, verseLink } from '../resources/logosBible';
+import { chapterLink, verseLink } from '../resources/logosBible';
+import { offeredBibleFor } from '../library/bibleParts';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/audioBible';
 import { armFallback } from '../resources/openApp';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
@@ -170,13 +171,14 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   const plan = usePlan();
   const resources = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
+  const owned = useLiveQuery(ownedResources, []);
   const audioId = useSetting(audioBibleSetting);
   const sendOff = useSendOff();
   const [starting, setStarting] = useState(false);
   const [placing, setPlacing] = useState(false);
   const place = useMovePlace();
   const runs = readRuns(plan?.started?.readOn(date) ?? []);
-  if (!plan || !resources || bibles === undefined || audioId === undefined) return null;
+  if (!plan || !resources || bibles === undefined || owned === undefined || audioId === undefined) return null;
   const { started } = plan;
   const next = started?.next;
   // what he read today (chapters marked done on this date), each run with a ticked box that un-marks it, above Next (mw-5r3p30.630)
@@ -215,7 +217,8 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   } else {
     const name = chapterName(next);
     const logosOn = resources.on.includes('logos');
-    const logos = logosOn ? verseLink(next.code, next.chapter, undefined, bibleFor(next.code, bibles)) : undefined;
+    const nextBible = offeredBibleFor(next.code, bibles, owned);
+    const logos = logosOn && nextBible !== undefined ? verseLink(next.code, next.chapter, undefined, nextBible) : undefined;
     const audio = audioBibleOf(audioId);
     const inLampas = bookOf(next.code) !== undefined;
     const listen = audio && audibleChapterLabel(next.code, next.chapter) !== undefined ? audio : undefined;
@@ -288,7 +291,8 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
 function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   const bibles = useLiveQuery(getLogosBibles, []);
   const logosOn = useLogosOn();
-  if (bibles === undefined) return null;
+  const owned = useLiveQuery(ownedResources, []);
+  if (bibles === undefined || owned === undefined) return null;
   return (
     <section aria-label="Psalms and Proverbs">
       <h2 className={HEADING}>Psalms and Proverbs</h2>
@@ -306,7 +310,8 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
               </Piece>
             );
           }
-          const link = logosOn ? chapterLink(reading.code, reading.chapter, bibleFor(reading.code, bibles)) : undefined;
+          const bible = offeredBibleFor(reading.code, bibles, owned);
+          const link = logosOn && bible !== undefined ? chapterLink(reading.code, reading.chapter, bible) : undefined;
           return (
             <Piece key={id} id={id} label={name} ticks={ticks}>
               {link ? (

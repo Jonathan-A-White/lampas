@@ -16,6 +16,7 @@ import { findReferences } from '../../src/nav/refsInText';
 import { DEFAULT_APOCRYPHA_BIBLE, DEFAULT_LOGOS_BIBLE, DEFAULT_SEPTUAGINT_BIBLE, bibleFor, verseLink } from '../../src/resources/logosBible';
 import { placeOf, verseChips } from '../../src/resources/tutorLinks';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 beforeEach(async () => {
   clearBus();
@@ -133,6 +134,7 @@ describe('a tutor answer naming Sirach 1:1', () => {
 
   it('opens in Logos from the card with Logos on; the card says Not in Lampas yet and has no Open', async () => {
     await setResourceOn('logos', true);
+    await keepImport(EVERY_BOOK_IDS);
     render(<Markdown text="Look at Sirach 1:1 for it." />);
     await userEvent.click(screen.getByRole('link', { name: 'Sirach 1:1' }));
     const card = await screen.findByRole('dialog', { name: 'Sirach 1:1' });

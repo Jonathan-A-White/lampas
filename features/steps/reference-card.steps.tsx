@@ -11,6 +11,7 @@ import { Markdown } from '../../src/markdown/Markdown';
 import { pendingRequest } from '../../src/nav/readerRequest';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
 
 const user = userEvent.setup();
 let answer: HTMLElement;
@@ -36,6 +37,8 @@ async function answerSays(text: string): Promise<void> {
 async function linkLogos(): Promise<void> {
   await setResourceOn('logos', true);
   await setLogosBible(DEFAULT_LOGOS_BIBLE);
+  // the Bibles he set are in his import (mw-qtu3zvz.208)
+  await keepImport(EVERY_BOOK_IDS);
 }
 
 const feature = await loadFeature('features/reference-card.feature');
