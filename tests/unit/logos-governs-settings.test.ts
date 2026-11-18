@@ -2,6 +2,8 @@
 // since mw-5r3p30.754) is drawn there only while it is On; no licence gates any of them.
 import { describe, expect, it } from 'vitest';
 import type { GreekLevel } from '../../src/settings/definitions/greekInterest';
+import { db } from '../../src/data/db';
+import { readValues } from '../support/settings';
 import { GROUPS, ROWS, SECTIONS, TOOL_ROWS, orderResourceRows, rowOf, visibleRows, visibleToolRows, type SettingsRow } from '../support/settings';
 
 const study = (values: Record<string, string>): string[] =>
@@ -10,7 +12,7 @@ const study = (values: Record<string, string>): string[] =>
     .map((r) => r.key)
     // the Audio Bible and the Reading plan are the section's other rows: no Logos in them
     .filter((key) => key !== 'audioBible' && key !== 'readingPlan');
-const keysOf = (values: Record<string, string>): string[] => visibleRows({ languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', ...values }, '').map((r) => r.key);
+const keysOf = (values: Record<string, string>): string[] => visibleRows({ 'devotional.logosRandom': values['resource.logos'] === 'on' && values.devotional === 'random' ? 'on' : 'off', languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', ...values }, '').map((r) => r.key);
 
 const UNDER_LOGOS = ['logosBible', 'logosBibleOt', 'logosBibleApocrypha', 'logosBibleSeptuagint'];
 
@@ -52,6 +54,26 @@ describe('the Daily rows that exist only to open Logos', () => {
     const off = keysOf({ 'resource.logos': 'off', devotional: 'random' });
     for (const key of ONLY_LOGOS) expect(off).not.toContain(key);
     expect(off).toEqual(expect.arrayContaining(['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyTicks', 'dailyDevotional', 'devotional']));
+  });
+
+  it('hide the Logos draw (In the draw, Todays devotional) with Logos Off and Random chosen, though Random is still picked', async () => {
+    const LOGOS_RANDOM = 'devotional.logosRandom';
+    // the values as the screen reads them (readValues), not as a test writes them
+    const read = async (logos: 'on' | 'off', devotional: string): Promise<Record<string, string>> => {
+      await db.settings.bulkPut([{ key: 'resource.logos', value: logos }, { key: 'devotional', value: devotional }]);
+      return { ...(await readValues()), languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5' };
+    };
+    const drawn = (values: Record<string, string>) => visibleRows(values, '').map((r) => r.key);
+    const off = await read('off', 'random');
+    expect(off[LOGOS_RANDOM]).toBe('off');
+    expect(drawn(off)).not.toContain('devotionalDraw');
+    expect(drawn(off)).not.toContain('todaysDevotional');
+    const on = await read('on', 'random');
+    expect(drawn(on)).toEqual(expect.arrayContaining(['devotionalDraw', 'todaysDevotional']));
+    // a picked devotional hides them with Logos On
+    const picked = await read('on', 'rephil:morning');
+    expect(drawn(picked)).not.toContain('devotionalDraw');
+    expect(drawn(picked)).not.toContain('todaysDevotional');
   });
 
   it('are drawn while Logos is On', () => {
