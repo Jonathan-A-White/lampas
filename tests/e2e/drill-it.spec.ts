@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { tapTwice } from '../support/gesture';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
@@ -342,14 +342,14 @@ test('a double tap on Drill it offline leaves the screen open, saying no more qu
   await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
   await context.setOffline(true);
   for (const gap of [60, 150, 300, 500, 800]) {
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     await tapTwice(page, idea.getByRole('button', { name: 'Drill it', exact: true }), gap);
     const drill = page.getByRole('dialog', { name: 'Drill it' });
     await expect(drill.getByTestId('drill-cannot-ask'), `${gap} ms`).toContainText('This phone is offline, so no more questions can be written.');
     await expect(drill, `${gap} ms`).toHaveCount(1);
     if (gap === 800) await shot(page, 'drill-it-offline');
     // a Done he taps after reading it closes the screen (the moment after a screen opens is two settle moments)
-    await page.waitForTimeout(2 * SETTLE_MS + 100);
+    await pageTime(page, 2 * SETTLE_MS + 100);
     await drill.getByRole('button', { name: 'Done', exact: true }).click();
     await expect(drill).toHaveCount(0);
   }
