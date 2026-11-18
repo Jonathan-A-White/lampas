@@ -63,6 +63,12 @@
     color: #9fb0ff;
   }
 
+  /* The home hero's reference (mw-fnvjof.17.158) is a link the tagger makes inside the quote over the picture, which stays white: the link keeps the quote's colour, underlined, so it reads on the picture */
+  html:root .gh-header-title a[data-lampas-ref] {
+    color: inherit;
+    text-decoration: underline;
+  }
+
   /* The paywall CTA (.gh-post-upgrade-cta, mw-fnvjof.17.100) is drawn by Ghost inside the post's content: its box is the site's #1329d4 by inline style and its words white, which
      is 9:1 and needs no change. But the rule above reaches its "Sign in" link (a link in .gh-content) and set it light blue on that blue, 4.4:1, so the link is white again, as
      Ghost's own sheet has it. The button (a.gh-btn) keeps its inline blue words on its white. */

@@ -32,7 +32,8 @@ const addressOf = (ref: string, lastVerse: number | undefined): string => {
 
 const isLeft = (node: Node, root: Element): boolean => {
   for (let at = node.parentElement; at; at = at.parentElement) {
-    if (LEAVE.test(at.tagName.toUpperCase()) || at.hasAttribute(MARK) || (at as HTMLElement).isContentEditable) return true;
+    // a root that is itself a heading (the home hero, an h1) is read: only what is inside it stands in LEAVE's way
+    if ((at !== root && LEAVE.test(at.tagName.toUpperCase())) || at.hasAttribute(MARK) || (at as HTMLElement).isContentEditable) return true;
     if (at === root) return false;
   }
   return false;
@@ -50,8 +51,11 @@ export function adoptLinks(root: Element): number {
   return adopted;
 }
 
-/** Links every reference in the text of `root`; returns how many links it made. */
-export function tagReferences(root: Element): number {
+/** The author's typed '--' just before a reference ('strength. --Mark 12:30'), which the home hero shows as an em dash. */
+const TYPED_DASH = /(?<!-)--$/;
+
+/** Links every reference in the text of `root`; returns how many links it made. With `dash`, a '--' typed right before a reference becomes an em dash '—' (a hero's attribution; a post's own text is never changed). */
+export function tagReferences(root: Element, options: { dash?: boolean } = {}): number {
   const walker = root.ownerDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const texts: Text[] = [];
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -65,7 +69,9 @@ export function tagReferences(root: Element): number {
     const pieces = root.ownerDocument.createDocumentFragment();
     let at = 0;
     for (const span of spans) {
-      if (span.start > at) pieces.append(text.slice(at, span.start));
+      let before = text.slice(at, span.start);
+      if (options.dash) before = before.replace(TYPED_DASH, '—');
+      if (before) pieces.append(before);
       const link = root.ownerDocument.createElement('a');
       link.href = addressOf(span.ref, span.lastVerse);
       link.target = '_blank';
@@ -86,3 +92,10 @@ export function tagReferences(root: Element): number {
 
 /** The text of a post: Ghost's `.gh-content`. The title, the menus, the footer and the comments are outside it. */
 export const POST_TEXT = '.gh-content';
+
+/** The home page's hero quote (an h1 over the picture banner, mw-fnvjof.17.158): tagged, and its '--' before a reference read as an em dash. */
+export const HERO_TEXT = '.gh-header-title';
+
+/** Other places outside a post body that carry a reference as prose: a page or post's excerpt, a tag or author's description and the site footer. A post's title is left (it is a heading, its reference
+ *  the post's subject); the menus and the comments hold no passage. */
+export const SITE_TEXT = '.gh-article-excerpt, .gh-archive-description, .gh-footer';
