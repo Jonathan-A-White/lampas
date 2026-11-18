@@ -57,7 +57,7 @@ Feature: Settings after the library
     Then the setting "logosBible" holds "LLS:1.0.710"
 
   Scenario: Which devotional is a searchable picker of the devotionals that are on, with Random
-    Given the shelf holds the devotionals "The Heart of Praise, Manual of Family Devotions: Arranged from the Book of Common Prayer" and Settings is open at Daily with Which devotional on Random
+    Given the shelf holds the devotionals "The Heart of Praise, Manual of Family Devotions (Book of Common Prayer)" and Settings is open at Daily with Which devotional on Random
     Then the Which devotional picker offers "Random, The Heart of Praise, Manual of Family Devotions: Arranged from the Book of Common Prayer, Morning RePhil (Brookfield First)"
     When he searches the Which devotional picker for "praise"
     Then the Which devotional picker narrows to "The Heart of Praise"
@@ -65,9 +65,9 @@ Feature: Settings after the library
     Then the setting "devotional" holds "LLS:HEARTOFPRAISE"
 
   Scenario: In the draw follows the shelf
-    Given the shelf holds the devotionals "The Heart of Praise, Manual of Family Devotions: Arranged from the Book of Common Prayer" and Settings is open at Daily with Which devotional on Random
+    Given the shelf holds the devotionals "The Heart of Praise, Manual of Family Devotions (Book of Common Prayer)" and Settings is open at Daily with Which devotional on Random
     Then In the draw says "2 devotionals are in the draw"
-    When he turns the devotional "Manual of Family Devotions: Arranged from the Book of Common Prayer" Off in the Library
+    When he turns the devotional "Manual of Family Devotions (Book of Common Prayer)" Off in the Library
     And Settings is open at Daily with Which devotional on Random
     Then In the draw now says "1 devotional is in the draw"
 
