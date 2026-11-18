@@ -110,7 +110,8 @@ export function drillAnswers(inputs: DrillInputs): DrillReport {
   }
 
   const lemmas: Record<string, LemmaDrill> = {};
-  for (const [lemma, entry] of Object.entries(lexicon)) {
+  // by code unit, as lexicon.json is written (sortedKeys): the report's lines are in the same order whether the build or `npm run drill:build` made it (mw-5r3p30.1193)
+  for (const [lemma, entry] of Object.entries(lexicon).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     const own = chunks.get(lemma) ?? [];
     const candidates = candidatesOf(entry.g, senses(entry.s), seeds.get(lemma));
     const counts = candidates.map((c) => own.filter((stems) => hasRun(stems, c.stems)).length);
