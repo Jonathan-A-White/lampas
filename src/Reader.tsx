@@ -58,7 +58,7 @@ import { useReadChecks } from './useReadChecks';
 import { stepOf, stepOfVerse } from './reader/steps';
 import { LinkNotice } from './reader/LinkNotice';
 import { SwipeNote } from './reader/SwipeNote';
-import { type SwipeEnd, useChapterSwipe } from './reader/useChapterSwipe';
+import { type SwipeEnd, swipeBlocked, useChapterSwipe } from './reader/useChapterSwipe';
 import { canCross, crossChapter } from './reader/crossChapter';
 import { flipSeptuagint, useBringFlipped } from './reader/flipSeptuagint';
 import { useBringLastVerse, useNoteLastVerse } from './reader/lastPlace';
@@ -290,7 +290,7 @@ function ReaderBody({ open }: { open: OpenChapter }) {
   const paging = readingMode === 'pages';
   // how far through the chapter he is, for the place line (Scroll only: Turn pages says the page)
   const percent = useScrolledPercent(!paging, main);
-  useChapterSwipe(main, inner, BOOK, CHAPTER, sheetOpen || paging, setSwipeEnd);
+  useChapterSwipe(main, inner, BOOK, CHAPTER, swipeBlocked(sheetOpen, readingMode), setSwipeEnd);
   // with the Immersive reader On, turning to the next page puts the bars away, as scrolling down does (src/immersive.ts, mw-5r3p30.611)
   const hideBars = bars.hide;
   const onTurned = useCallback((by: 1 | -1) => {

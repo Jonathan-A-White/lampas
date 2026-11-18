@@ -7,6 +7,7 @@ import { type RefObject, useEffect } from 'react';
 import { neighbours } from '../data/neighbours';
 import type { OpenChapter } from '../data/readerChapter';
 import { openReader } from '../nav/route';
+import type { ReadingMode } from '../settings/definitions/readingMode';
 import { noteChapterSwipe } from '../tips/hints';
 
 export const SWIPE_MIN_PX = 60;
@@ -31,6 +32,11 @@ function ignoredStart(target: EventTarget | null, box: HTMLElement): boolean {
     if (el.scrollWidth > el.clientWidth + 1 && /auto|scroll/.test(getComputedStyle(el).overflowX)) return true;
   }
   return false;
+}
+
+/** The chapter swipe is on only in Scroll, and with no sheet open: while the Reading mode is still being read (undefined) it is off, as a Turn pages Reader's swipe turns pages (mw-fnvjof.17.181). */
+export function swipeBlocked(sheetOpen: boolean, readingMode: ReadingMode | undefined): boolean {
+  return sheetOpen || readingMode !== 'scroll';
 }
 
 /** Listens on `box`; `inner` is what moves with the finger. `blocked` (a sheet is open) turns it off; `onEnd` hears a swipe past the first or last chapter. */
