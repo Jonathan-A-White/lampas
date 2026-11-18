@@ -322,8 +322,8 @@ In the MSB table a word whose English is `-` or `vvv` has no English (no `e`, no
 ("[and] went out" holds the dotted καὶ ἀπῆλθεν; Luke 20:20 'to hand Him over' holds αὐτὸν; Luke 4:8 'answered' holds εἶπεν; Acts 16:13 'Sabbath' holds ἡμέρᾳ): its index joins that chunk's `g` array.
 At the head of a verse there is no chunk before, and it joins the first chunk with English. A personal or reflexive pronoun (parse `P-`, `F-`) after a chunk of only conjunctions, articles,
 prepositions, particles or conditionals ('and', 'while') waits for the chunk after instead (Luke 12:37); every other kind joins the chunk before whatever it holds ('except' holds εἰ μὴ).
-The Old Testament's build does not turn this on (`buildVerse`'s `dotsBefore`): there only a pronoun goes before and every other `. . .` word still joins the chunk that completes it later in the English
-(mw-5r3p30.997, mw-5r3p30.1001; `docs/sources/msb-chunk-pairs.md`). Quotation marks and punctuation that sit on a word
+The Old Testament's build turns it on too (`buildVerse`'s `dotsBefore`, mw-fnvjof.17.161): Isaiah 33:8 'travel' holds עֹבֵר and its '. . .' אֹרַח, not 'has ceased.' (before this the Old Testament's `. . .` words joined the chunk after them and 9,141 verses were paired wrong; `docs/sources/msb-chunk-pairs.md`).
+A verse where the table itself puts an English chunk on the wrong Hebrew word is put right in `PAIRING_FIXES` of `scripts/data-build-ot.ts` (two Strong's numbers that trade their English; Isaiah 33:8: לֹא and אֱנוֹשׁ). Quotation marks and punctuation that sit on a word
 with no English of its own move to the neighbouring chunk. Footnotes in the table (column 21, `footnotes`) are not carried into the chapters' words; the 'CT …' ones give the English of the New Testament's variant units ('Variant English' below).
 
 Headings and paragraphs come from two columns of the table. `Hdg` (`<p class=|hdg|>Walking by the Spirit`) is on

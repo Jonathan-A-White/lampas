@@ -336,6 +336,42 @@ describeFeature(feature, ({ Scenario }) => {
     expect(logosLinks()[1].getAttribute('href')).toBe(englishDictionaryLink('amittai')?.url);
   };
 
+  // mw-fnvjof.17.161: the committed chapter public/data/isa/33.json, verse 8, whose pairing the Old Testament build once shifted
+  const sheetHeaded = async (_: unknown, word: string): Promise<void> => {
+    await screen.findByRole('dialog', { name: 'Word' });
+    expect(within(sheet()).getByTestId('sheet-heading')).toHaveTextContent(word);
+  };
+  const hebrewWordsAre = (_: unknown, ...lemmas: string[]): void => {
+    expect(within(sheet()).getAllByTestId('sheet-lemma').map((el) => squash(el.textContent))).toEqual(lemmas);
+  };
+
+  Scenario('In Isaiah 33:8 a tapped "and human life" opens אֱנוֹשׁ, not לֹא', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Isaiah 33 with Logos on', () => openOn('Isaiah 33', withLogos(true)));
+    When('he taps the chunk {string} of verse {int}', tapChunk);
+    Then('the word sheet opens headed {string}', sheetHeaded);
+    And('the Hebrew words of the chunk are {string}', hebrewWordsAre);
+  });
+
+  Scenario('In Isaiah 33:8 a tapped "is disregarded." opens לֹא and חָשַׁב', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Isaiah 33 with Logos on', () => openOn('Isaiah 33', withLogos(true)));
+    When('he taps the chunk {string} of verse {int}', tapChunk);
+    Then('the word sheet opens headed {string}', sheetHeaded);
+    And('the Hebrew words of the chunk are {string} and {string}', hebrewWordsAre);
+  });
+
+  Scenario('In Isaiah 33:8 a tapped Hebrew word shows the English of its own chunk', ({ Given, When, Then }) => {
+    Given('Lampas is opened on Isaiah 33 with the saved view {string}', (_, view: string) => openOn('Isaiah 33', { readerView: view }));
+    When('he taps the Hebrew word {string} of verse {int}', async (_, word: string, n: number) => {
+      const found = [...verseEl(n).querySelectorAll<HTMLElement>('[data-word]')].find((el) => squash(el.textContent) === word);
+      if (!found) throw new Error(`no word "${word}" in verse ${n}`);
+      await user.click(found);
+    });
+    Then('the Hebrew word sheet shows the English {string}', async (_, english: string) => {
+      await screen.findByRole('dialog', { name: 'Word' });
+      expect(squash((await within(sheet()).findByTestId('sheet-english')).textContent)).toBe(english);
+    });
+  });
+
   Scenario('A chunk of two words lists two rows', ({ Given, When, Then, And }) => {
     Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
     When('he taps the chunk {string} of verse {int}', tapChunk);

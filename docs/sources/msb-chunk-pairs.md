@@ -78,7 +78,7 @@ Not changed: `. . .` demonstratives (`D-`, 120 rows), relatives (`R-`, 80) and e
 
 ## What was done for the rest (mw-5r3p30.1001)
 
-mw-5r3p30.997 read 30 of the other 3,175 `. . .` rows: 25 had their English in the chunk before. `buildVerse(v, source, { dotsBefore: true })` (the New Testament build; the Old Testament's does not
+mw-5r3p30.997 read 30 of the other 3,175 `. . .` rows: 25 had their English in the chunk before. `buildVerse(v, source, { dotsBefore: true })` (the New Testament build; the Old Testament's did not
 pass it, its table not being read) now joins EVERY `. . .` word to the chunk before it in English order; at the head of a verse it waits for the first chunk. Only a pronoun (`P-`, `F-`) after a
 chunk of function words alone still waits for the chunk after (`and` + αὐτούς, Luke 12:37). For the other kinds the exception was tried and dropped: of 25 rows read after a function-word chunk
 (`how` + ἐν τίνι, `except` + εἰ μὴ, `unless` + ἐὰν μὴ, `Why` + διὰ τί) 22 had the English in that chunk, 1 in the next ('because' + οὐκ, whose 'not' is in 'he does not accompany') and 2 were open.
@@ -87,3 +87,14 @@ Tests: `tests/unit/msb-dots-pronoun.test.ts` (Matthew 1:23, Luke 4:8, Acts 16:13
 `npm run drill:build`, `node scripts/check-msb-chunk-pairs.ts` finds 4 chunks in 4 verses (Mark 1:5, Luke 2:48, 12:35, Acts 5:17; was 7): a run of `. . .` words (αὐτὸν ἡ εἶπεν 'asked', αἱ ὀσφύες περιεζωσμέναι) whose English the table gives no better home, not the Luke 20:20 shape. 256 chapters changed (2,010 verses' chunks, 2,991 words moved), and
 six lemmas' drill answers, because the aligned uses changed (καταλύω, πειρασμός, στρατηγός, συλλαμβάνω, χωρίζω, ἀναβλέπω).
 Not read: the Old Testament's BSB table (its `. . .` may mean either way), and any other table the build reads: the TBESG, the byz text and the TAGNT carry no such marker.
+
+## The Old Testament's table (mw-fnvjof.17.161)
+
+The Old Testament's build passed no `dotsBefore`, so every `. . .` Hebrew word joined the chunk AFTER it. In Isaiah 33:8 the table has עֹבֵר 'travel', אֹרַח `. . .`, שָׁבַת 'has ceased', and the build gave אֹרַח to 'has ceased.'
+(עֹבֵר אֹרַח is 'one passing the way'). It now passes `{ dotsBefore: true }` as the New Testament's build does. Read against the Hebrew, in the table's own rows: of 16,400 `. . .` rows 13,307 stand beside the Hebrew word of the chunk before them in the Hebrew text
+(6,227 of them not also beside the chunk after), 1,222 beside the one after only, and chunks whose Hebrew words are not side by side in the Hebrew text fell from 6,306 to 1,292. A rule that picks the side by Hebrew adjacency was tried and dropped: it broke
+'twenty years of age' (מִבֶּן ... שָׁנָה, with עֶשְׂרִים between them in the Hebrew) in Numbers 1:22 and 1 Chronicles 23:27, and Proverbs 6:1 'struck hands' (תָּקַעְתָּ ... כַּפֶּיךָ). 9,141 of 23,144 verses changed their pairing (896 of the 929 chapters).
+The few the rule still gets wrong are the table's own: a `. . .` word whose English the table puts in the chunk after it ('distressed [in the eyes of] Abraham', Genesis 21:11: בְּעֵינֵי).
+
+A slip of the SOURCE is not a join the build can read: Isaiah 33:8 'and human life is disregarded.' (לֹא חָשַׁב אֱנוֹשׁ) has 'and human life' on לֹא, 'is disregarded' on חָשַׁב and `. . .` on אֱנוֹשׁ. `PAIRING_FIXES` in `scripts/data-build-ot.ts`
+trades the English of לֹא and אֱנוֹשׁ for that verse, as `ALIGNMENT_FIXES` does for 1 John 2:6. Finding others means reading chunks against the Hebrew; there is no check for it yet.

@@ -56,6 +56,23 @@ Feature: Lampas reads the Old Testament in English
     And it lists the words "of" and "Amittai", each with its Listen
     And it has the links "Look it up in Logos: of" and "Look it up in Logos: amittai"
 
+  Scenario: In Isaiah 33:8 a tapped "and human life" opens אֱנוֹשׁ, not לֹא
+    Given Lampas is opened on Isaiah 33 with Logos on
+    When he taps the chunk "and human life" of verse 8
+    Then the word sheet opens headed "and human life"
+    And the Hebrew words of the chunk are "אֱנוֹשׁ"
+
+  Scenario: In Isaiah 33:8 a tapped "is disregarded." opens לֹא and חָשַׁב
+    Given Lampas is opened on Isaiah 33 with Logos on
+    When he taps the chunk "is disregarded." of verse 8
+    Then the word sheet opens headed "is disregarded"
+    And the Hebrew words of the chunk are "לֹא" and "חָשַׁב"
+
+  Scenario: In Isaiah 33:8 a tapped Hebrew word shows the English of its own chunk
+    Given Lampas is opened on Isaiah 33 with the saved view "greek"
+    When he taps the Hebrew word "אֱנֽוֹשׁ׃" of verse 8
+    Then the Hebrew word sheet shows the English "and human life"
+
   Scenario: The Logos rows of a chunk's words are drawn when the Logos setting has been read, however late
     Given Lampas is opened on Jonah 1 with Logos on, on a phone that is slow to read its settings
     When he taps the chunk "of Amittai," of verse 1

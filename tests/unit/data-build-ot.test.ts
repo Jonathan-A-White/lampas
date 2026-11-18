@@ -11,7 +11,7 @@ import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { runBuild } from '../../scripts/data-build';
 import { checkHeader } from '../../scripts/data/bereanTable';
 import { cleanHebrewGloss, parseTbes } from '../../scripts/data/tbes';
-import { BSB_FILE, OT_EXPECTED_HEADER, TBESH_FILE, addSpellings, buildOt, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
+import { BSB_FILE, OT_EXPECTED_HEADER, TBESH_FILE, addSpellings, buildOt, changedPairings, fixPairing, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
 import { wordGloss, type BookIndex, type Chapter } from '../../src/data/chapter';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import type { LemmaLexicon } from '../../src/data/lexicon';
@@ -360,5 +360,43 @@ describe('the other spellings of a number (mw-fnvjof.17.40)', () => {
     expect(addSpellings(base, tb)['יָרָה']).toEqual({ g: 'x', s: 'H1', c: 'verb' });
     const only: LemmaLexicon = { 'יָרָא': { g: 'to shoot', s: 'H3384', c: 'verb' } };
     expect(addSpellings(only, tb)).toEqual({ ...only, 'יָרָה': { g: 'to show', s: 'H3384', c: 'verb', v: true } });
+  });
+});
+
+// mw-fnvjof.17.161: Isaiah 33:8, the rows of the real table (tests/fixtures/data/bsb_isa33_8.tsv, tbesh_isa33_8.txt: the verse group 18288 and the TBESH lines of its numbers).
+// "travel . . . has ceased." is עֹבֵר, then אֹרַח ('. . .'), then שָׁבַת: the '. . .' word's English is in the chunk BEFORE it. "and human life" is on לֹא in the table, a slip of the source
+// (אֱנוֹשׁ is 'human'; the '. . .' is on it), which the build corrects (PAIRING_FIXES).
+describe("Isaiah 33:8: a chunk lists the Hebrew words it renders, not its neighbour's (mw-fnvjof.17.161)", () => {
+  const isaiahTable = readFileSync('tests/fixtures/data/bsb_isa33_8.tsv', 'utf8');
+  const isaiahLex = otLexicon(readFileSync('tests/fixtures/data/tbesh_isa33_8.txt', 'utf8'));
+  const strongsOfChunk = async (text: string): Promise<string[]> => {
+    const chapters: BuiltChapter[] = [];
+    await buildOt(linesOf(isaiahTable), isaiahLex, (c) => void chapters.push(c));
+    const verse = find(chapters, 'isa/33.json').verses.find((v) => v.n === 8)!;
+    const chunk = verse.e.find((c) => c.t === text);
+    if (!chunk) throw new Error(`no chunk ${text}: ${verse.e.map((c) => c.t).join(' | ')}`);
+    return chunk.g.map((i) => verse.g[i].s);
+  };
+
+  it('"and human life" holds אֱנוֹשׁ (H582) alone', async () => expect(await strongsOfChunk('and human life')).toEqual(['H582']));
+  it('"is disregarded." holds לֹא (H3808) and חָשַׁב (H2803)', async () => expect(await strongsOfChunk('is disregarded.')).toEqual(['H3808', 'H2803']));
+  it('"travel" holds עֹבֵר (H5674) and אֹרַח (H734)', async () => expect(await strongsOfChunk('travel')).toEqual(['H5674', 'H734']));
+  it('"has ceased." holds שָׁבַת (H7673) alone', async () => expect(await strongsOfChunk('has ceased.')).toEqual(['H7673']));
+});
+
+describe('the build says how far a change of pairing reached (mw-fnvjof.17.161)', () => {
+  const chapterOf = (pairs: Array<[number, number[]]>): Chapter =>
+    ({ verses: pairs.map(([n, g]) => ({ n, g: [{ t: 'a', tr: '', s: 'H1', l: 'a', p: 'x', e: 0 }, { t: 'b', tr: '', s: 'H2', l: 'b', p: 'x', e: g.includes(1) ? 0 : 1 }], e: [{ t: 'x', g }] })) }) as unknown as Chapter;
+
+  it('counts the verses whose chunks list other words, and a verse the file lacks', () => {
+    const before = chapterOf([[1, [0, 1]], [2, [0]]]);
+    expect(changedPairings(before, chapterOf([[1, [0, 1]], [2, [0]]]))).toEqual([]);
+    expect(changedPairings(before, chapterOf([[1, [0]], [2, [0]], [3, [0]]]))).toEqual([1, 3]);
+    expect(changedPairings(undefined, chapterOf([[1, [0]]]))).toEqual([1]);
+  });
+
+  it('a pairing fix whose words the verse lacks stops the build, naming the verse', () => {
+    expect(() => fixPairing('Isaiah', 33, 8, [])).toThrow(/Isaiah 33:8: the pairing fix names H3808/);
+    expect(() => fixPairing('Isaiah', 33, 9, [])).not.toThrow();
   });
 });

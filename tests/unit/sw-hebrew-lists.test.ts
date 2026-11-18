@@ -165,9 +165,9 @@ describe('a phone that holds yesterday\'s Hebrew lexicon', () => {
     expect(Object.keys(await loadLexicon('hbo')).length).toBe(Object.keys(oldLexicon()).length);
   });
 
-  it('keeps a chapter already read: the cache is the same one', async () => {
-    expect(DATA_CACHE_VERSION).toBe(4);
-    expect(DATA_CACHE).toBe('lampas-data-v4');
+  it('keeps a chapter already read: loading a list leaves the cache it is in alone', async () => {
+    expect(DATA_CACHE_VERSION).toBe(5); // raised by mw-fnvjof.17.161 (the Old Testament's pairing rebuilt)
+    expect(DATA_CACHE).toBe('lampas-data-v5');
     const cache = keepOld();
     const chapter = 'http://localhost/data/jhn/1.json?v=' + CANON_INDEX.books.find((b) => b.code === 'jhn')!.fingerprints[0];
     cache.entries.set(chapter, '{"kept":true}');
