@@ -22,6 +22,8 @@ beforeEach(async () => {
   await db.open();
   await Promise.all([db.settings.clear(), db.words.clear(), db.reviews.clear(), db.meta.clear()]);
   await keepImport(EVERY_BOOK_IDS);
+  // Today draws the devotional only with Logos On (a Logos book is the default one), so the items it holds include it (mw-r9xo1pj.6)
+  await db.settings.put({ key: 'resource.logos', value: 'on' });
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }]);
   window.location.hash = '';
   forgetLexicon();
