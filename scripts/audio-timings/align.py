@@ -1001,6 +1001,16 @@ def heard_as_written(heard: str, written: str) -> bool:
     return bool(heard) and (edit_distance(heard, written) <= 1 or heard in HEARD_AS.get(written, ()))
 
 
+def heard_end_as_written(heard: list[str], written: str, last: bool) -> bool:
+    """One end of a verse (the last words if `last`, else the first): the word the model heard there is the text's word, or the model heard it as two words (mw-zbgo4ep.44:
+    John 8:35, 'forever' heard as 'for ever') that together are the text's word."""
+    if not heard:
+        return False
+    ends = heard[-2:] if last else heard[:2]
+    one = ends[-1] if last else ends[0]
+    return heard_as_written(one, written) or (len(ends) == 2 and heard_as_written(''.join(ends), written))
+
+
 def run_check(book: str, scratch: Path, fetcher: Fetcher) -> bool:
     """For CHECK_VERSES verses spread over the book by a fixed seed: the audio between a verse's start and end, decoded greedily, begins with its first word and ends with its last."""
     data = read_json(out_dir() / f'{book}.json', None)
@@ -1021,7 +1031,7 @@ def run_check(book: str, scratch: Path, fetcher: Fetcher) -> bool:
         _, start, end = next(t for t in data['chapters'][str(chapter)]['verses'] if t[0] == n)
         heard = model.greedy(cache[chapter][int(start * SAMPLE_RATE):int(end * SAMPLE_RATE)])
         first, last = verse['words'][0], verse['words'][-1]
-        ok = bool(heard) and heard_as_written(heard[0], first) and heard_as_written(heard[-1], last)
+        ok = heard_end_as_written(heard, first, last=False) and heard_end_as_written(heard, last, last=True)
         passed += ok
         log(f'{chapter:2d}:{n:<3d} {start:8.2f} {end:7.2f}   {first:>10s} ({heard[0] if heard else "-":<10s}) {last:>10s} ({heard[-1] if heard else "-":<10s}) {"ok" if ok else "FAIL"}')
     log(f'sanity check: {passed} of {len(chosen)} (needs {CHECK_PASS})')
