@@ -172,7 +172,7 @@ def test_a_click_before_a_verse_s_first_word_is_not_its_first_sound():
     assert len(row) == 3 and near(row[1], 1.5)  # the sound before has died where the verse before ends, as it did
     assert near(row[2], 2.88), f'the next onset is {row[2]}: the click is at 2.805, the word begins at 2.88'
     (_, _, end1), (_, start2, _) = cut['verses']
-    assert near(end1, 1.5 + 0.05)
+    assert near(end1, 1.5 + 0.10)  # the inside tail (0.097) after the last sound, to two decimals up
     assert near(start2, 2.88 - 0.05)  # the lead slop before the word, not before the click
     assert cut['listen'] == []
 
@@ -236,7 +236,7 @@ def test_a_stop_s_release_as_short_as_a_click_still_stays_with_its_word():
     # '...sent': the 80 ms closure of the t, a release of 15 ms, then the gap. It is the verse's last sound: the click rule is for a verse's FIRST sound alone
     parts = [(0.5, None), (1.0, -20), (0.08, None), (0.015, -40), (0.5, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'had been sent'), verse(2, 'and he')], {1: [0.6, 1.45], 2: [2.2, 3.0]}, SLOP)
-    assert near(cut['quiet'][1][1], 1.595) and near(cut['verses'][0][2], 1.595 + 0.05)  # after the release, not in the closure
+    assert near(cut['quiet'][1][1], 1.595) and near(cut['verses'][0][2], 1.70)  # after the release, not in the closure: 1.595 + the inside tail, to two decimals up
     assert near(cut['quiet'][1][2], 2.095) and near(cut['verses'][1][1], 2.095 - 0.05)
 
 
