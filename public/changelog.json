@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.271",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.158",
+    "kind": "new",
+    "text": "On the blog's home page, the Bible reference in the big quote now opens the Lampas verse card when you tap it, and the double hyphen before it is drawn as a proper dash."
+  },
+  {
+    "version": "0.7.271",
+    "date": "2026-11-18",
+    "story": "mw-qtu3zvz.196",
+    "kind": "fixed",
+    "text": "On a page of your Logos library, All on and All off now turn pale when every book shown is already on (or off), so you can see that a tap would change nothing."
+  },
+  {
+    "version": "0.7.271",
+    "date": "2026-11-18",
+    "story": "mw-5r3p30.1177",
+    "kind": "fixed",
+    "text": "a Bible reference in a Hebrew word's Definition now opens its verse, even in another chapter or book."
+  },
+  {
+    "version": "0.7.271",
+    "date": "2026-11-18",
+    "story": "mw-indx1x6.83",
+    "kind": "fixed",
+    "text": "The Parsing drill no longer gives \"you\" and \"I\" a plural form such as ὑμῖν, and \"you (pl)\" and \"we\" now get their own drill places."
+  },
+  {
+    "version": "0.7.271",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.153",
+    "kind": "fixed",
+    "text": "The round tutor button now shows up with the text instead of a moment after it."
+  },
+  {
     "version": "0.7.270",
     "date": "2026-11-18",
     "story": "mw-qtu3zvz.190",

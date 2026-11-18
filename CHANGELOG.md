@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.271
+_2026-11-18_
+- New: On the blog's home page, the Bible reference in the big quote now opens the Lampas verse card when you tap it, and the double hyphen before it is drawn as a proper dash.
+- Fixed: On a page of your Logos library, All on and All off now turn pale when every book shown is already on (or off), so you can see that a tap would change nothing.
+- Fixed: a Bible reference in a Hebrew word's Definition now opens its verse, even in another chapter or book.
+- Fixed: The Parsing drill no longer gives "you" and "I" a plural form such as ὑμῖν, and "you (pl)" and "we" now get their own drill places.
+- Fixed: The round tutor button now shows up with the text instead of a moment after it.
+
 ## 0.7.270
 _2026-11-18_
 - New: searching your lexicons and grammars by author now finds the Lexham lexicons and four more grammars.
