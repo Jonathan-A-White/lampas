@@ -167,6 +167,21 @@ describe('a browser that wants a touch', () => {
     expect(said).toEqual(['John 3, in Audible']);
     expect(env.opened).toHaveLength(1);
   });
+
+  it('touch window is released when the page goes away', async () => {
+    await listenInAudible('jhn', 3, say);
+    const [firstUrl] = await env.urls();
+    env.wait();
+    await vi.waitFor(() => expect(said).toEqual(['John 3, in Audible', TOUCH_TO_OPEN]), { timeout });
+    // he opened Audible himself and came back within 30 s: the page went away and is in front again
+    clock.advance(5_000);
+    env.away();
+    touch();
+    await flush();
+    expect(env.opened).toHaveLength(1);
+    // the one link opened is still the first, the one made at the command
+    expect(env.opened.map((o) => o.url)).toEqual([firstUrl]);
+  });
 });
 
 describe('a chapter with no start known', () => {
