@@ -15,6 +15,7 @@ and `data/lxx/LICENSE` (MIT for Lampas's own data; STEPBible credited, CC BY 4.0
   - [The two books over the bar on words with no candidate (B9)](#the-two-books-over-the-bar-on-words-with-no-candidate-b9)
   - [A name written with a capital mid-clause is not the common word its letters spell](#a-name-written-with-a-capital-mid-clause-is-not-the-common-word-its-letters-spell)
 - [The agreement check](#the-agreement-check)
+  - [A noun takes its article's gender (mw-u2w5klk.349.34)](#a-noun-takes-its-articles-gender-mw-u2w5klk34934)
   - [Analogy's readings beside a thin lone candidate](#analogys-readings-beside-a-thin-lone-candidate)
   - [An address: the vocative read from the verse](#an-address-the-vocative-read-from-the-verse)
   - [A preposition's case: the word it governs](#a-prepositions-case-the-word-it-governs)
