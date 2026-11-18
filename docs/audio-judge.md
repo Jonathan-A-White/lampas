@@ -149,7 +149,7 @@ John's timings at 7e00058cc (the same bytes as today's; sha256 `34f081d58b053182
 
 ## John today
 
-**After the cut rule (mw-ar5k42b.3, docs/data.md 'The cut rule'): 879 verses judged, 873 ok, 6 flagged, all six on John's listen list** (2:9, 2:10, 5:28, 5:29, 9:18, 9:19: the three boundaries the narrator reads on through); no flag outside it. The rest of this section, and 'The known faults' above, describe the timings BEFORE that rule, which the judge was proved on.
+**After the cut rule (mw-ar5k42b.3, docs/data.md 'The cut rule'): 879 verses judged, 873 ok, 6 flagged, all six on John's listen list** (2:9, 2:10, 5:28, 5:29, 9:18, 9:19: the three boundaries the narrator reads on through); no flag outside it. **After the inside tail (mw-ar5k42b.9, each end `insideTail` after its last sound): 872 ok, 7 flagged**, the seventh 1:24 (`tail-clipped`: its 75 ms of quiet is cut in its middle, already on the list); the list is the same 8 verses. The rest of this section, and 'The known faults' above, describe the timings BEFORE that rule, which the judge was proved on.
 
 Before the cut rule: 879 verses judged, **858 ok, 21 flagged** (2026-11-14, timings at 7e00058cc, slop 0.05 / 0.05). The cut-rule story's work list, by cause:
 
