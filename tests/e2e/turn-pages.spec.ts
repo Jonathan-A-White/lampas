@@ -1360,7 +1360,7 @@ async function firstTurnSkipsNothing(page: Page, code: string, title: string, si
   const opened = await placeOf(page);
   await tapAt(page, 0.85);
   await expect(page.locator('header').first()).toBeHidden();
-  await page.waitForTimeout(400);
+  await expect(turning(page)).toHaveCount(0);
   await settled(page);
   const now = await placeOf(page);
   expect(await characterOnScreen(page, before.index), `${title}, ${size.width}x${size.height}: the text after page 1 (…${before.words}…) is on the screen after the first turn (page ${opened.at} of ${opened.of}, now ${now.at} of ${now.of})`).toBe(true);
