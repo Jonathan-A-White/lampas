@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.281
+_2026-11-18_
+- Fixed: the word εἶπεν ("he said") now shows an example verse and a form in the Quick test, where before it showed none.
+
 ## 0.7.279
 _2026-11-18_
 - Fixed: About names the poetry lines among what Lampas keeps from the Majority Standard and Berean tables.

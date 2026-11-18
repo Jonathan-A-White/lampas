@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.281",
+    "date": "2026-11-18",
+    "story": "mw-indx1x6.106",
+    "kind": "fixed",
+    "text": "the word εἶπεν (\"he said\") now shows an example verse and a form in the Quick test, where before it showed none."
+  },
+  {
     "version": "0.7.279",
     "date": "2026-11-18",
     "story": "mw-5r3p30.1186",
