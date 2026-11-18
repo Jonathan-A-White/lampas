@@ -476,10 +476,12 @@ export async function runAlignChoose(argv: readonly string[], options: AlignChoo
   if (offences.length > 0) throw new AlignChooseRefused(`--book ${args.book} --chapter ${args.chapter}`, offences);
   mkdirSync(outDir, { recursive: true });
   const path = join(outDir, alignChoicesName(args.book, args.chapter));
-  writeFileSync(path, modelRowsTsv(checked.rows));
+  // the file may already hold the chapter's fix rows (applyFixes, mw-u2w5klk.349.32): the session's file has runs only, so they are read back and kept, after the runs (mw-u2w5klk.349.39)
+  const fixes = existsSync(path) ? readModelRows(readFileSync(path, 'utf8'), path).filter((r) => r.run === FIX_RUN) : [];
+  writeFileSync(path, modelRowsTsv([...checked.rows, ...fixes]));
   const count = (mark: ChoiceMark): number => checked.rows.filter((r) => r.mark === mark).length;
-  log(`wrote ${path}: ${checked.rows.length} chunks of ${runsOfChapter(chapter)} runs; ${count('')} chosen (0.8), ${count('unsure')} unsure (0.5), ${count('guess')} guesses (0.4)`);
-  return { path, rows: checked.rows };
+  log(`wrote ${path}: ${checked.rows.length} chunks of ${runsOfChapter(chapter)} runs; ${count('')} chosen (0.8), ${count('unsure')} unsure (0.5), ${count('guess')} guesses (0.4)${fixes.length > 0 ? `; kept ${fixes.length} fix rows` : ''}`);
+  return { path, rows: [...checked.rows, ...fixes] };
 }
 
 const runsOfChapter = (chapter: Chapter): number => chapter.verses.reduce((a, v) => a + runsOf(v).length, 0);

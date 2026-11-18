@@ -17,6 +17,7 @@ import {
   applyFixes,
   applyModel,
   FIX_RUN,
+  MODEL_HEADER,
   checkModelLines,
   listRemainders,
   parseModelLines,
@@ -747,6 +748,35 @@ describe('the command', () => {
       expect(done.rows.length).toBeGreaterThan(50);
       expect(done.rows.every((r) => r.g.length === 0 && r.confidence === 0.8)).toBe(true);
       expect(readModelRows(readFileSync(join(dir, alignChoicesName('gen', 5)), 'utf8'))).toEqual(done.rows);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 10 * HOOK_TIMEOUT_MS);
+
+  it.skipIf(!haveSources)('keeps the fix rows of a chapter\'s file when --from writes the runs again, after the runs (mw-u2w5klk.349.39)', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'lampas-lxx-model-fix-'));
+    try {
+      const listed: string[] = [];
+      await runAlignChoose(['--list', '--book', 'gen', '--chapter', '5'], { outDir: dir, ship: sources, print: (t) => listed.push(t) });
+      const verses = [...listed.join('\n').matchAll(/^Gen\.5:(\d+)$/gm)].map((m) => `Gen.5:${m[1]} *`);
+      const file = join(dir, 'session.txt');
+      writeFileSync(file, verses.join('\n'));
+      const path = join(dir, alignChoicesName('gen', 5));
+      const fix = ['Gen.5:3\tfix\tlived and\t1\t\t0.80', 'Gen.5:9\tfix\tbegat\t2,3\tunsure\t0.50'].join('\n');
+      writeFileSync(path, `${MODEL_HEADER.join('\t')}\nGen.5:1\t1\told row\t-\t\t0.80\n${fix}\n`);
+      const done = await runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir, ship: sources });
+      const written = readModelRows(readFileSync(path, 'utf8'));
+      expect(written.filter((r) => r.run === FIX_RUN).map((r) => [r.ref, r.text, r.g, r.mark, r.confidence])).toEqual([
+        ['Gen.5:3', 'lived and', [1], '', 0.8],
+        ['Gen.5:9', 'begat', [2, 3], 'unsure', 0.5],
+      ]);
+      // the runs are the new ones (the old run row is gone), and every fix comes after them
+      expect(written.some((r) => r.text === 'old row')).toBe(false);
+      expect(written.findIndex((r) => r.run === FIX_RUN)).toBe(written.length - 2);
+      expect(done.rows).toEqual(written);
+      // a second --from keeps them, too
+      await runAlignChoose(['--book', 'gen', '--chapter', '5', '--from', file], { outDir: dir, ship: sources });
+      expect(readModelRows(readFileSync(path, 'utf8'))).toEqual(written);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
