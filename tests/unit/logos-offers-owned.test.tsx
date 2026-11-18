@@ -97,6 +97,13 @@ describe('the Library home Bibles row (mw-qtu3zvz.184)', () => {
     expect(line).toMatch(/ESV/);
     expect(line).not.toMatch(/LSB|NRSV|Swete/);
   });
+
+  it('keeps a Resource ID he typed, which no catalogue row names, in the line (mw-fnvjof.17.6)', async () => {
+    const { setLogosBibleFor } = await import('../../src/data/repositories');
+    await setLogosBibleFor('ot', 'LLS:MYTYPEDBIBLE');
+    await keepImport([]);
+    expect(await biblesRow()).toBe('OT LLS:MYTYPEDBIBLE');
+  });
 });
 
 describe('the sermon search and a theme', () => {
