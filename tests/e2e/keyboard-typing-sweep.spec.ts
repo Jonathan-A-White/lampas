@@ -5,9 +5,12 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { asInstalledApp } from './installed';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none, and this spec's room counts on it.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 test.describe.configure({ retries: 0 });
 
 interface Screen {

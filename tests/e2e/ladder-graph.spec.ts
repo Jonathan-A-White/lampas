@@ -6,9 +6,12 @@ import { expect, test, type CDPSession, type Page } from '@playwright/test';
 import { EXCLUDED_RULES } from '../support/axe-excluded';
 import { LADDER } from '../../src/data/grammar/ladder';
 import { shot } from './shot';
+import { asInstalledApp } from './installed';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none, and this spec's room counts on it.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 type Touch = { x: number; y: number; id: number };
 

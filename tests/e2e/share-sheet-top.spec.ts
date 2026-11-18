@@ -6,9 +6,12 @@ import { readFileSync } from 'node:fs';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
+import { asInstalledApp } from './installed';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 412, height: 892 }, hasTouch: true });
+// The 48 px floor under the foot is the installed app's (src/layout/barFloor.ts, mw-njqj1b0): a browser tab has none, and this spec's room counts on it.
+test.beforeEach(async ({ page }) => asInstalledApp(page));
 
 const PICTURE = readFileSync('grinds/examples/bible-talk/lexicon-entry.png');
 const ANSWER = { references: [{ printed: 'Deut. 7:9', ref: 'Deut.7.9' }, { printed: 'Lam. 3:22-23', ref: 'Lam.3.22' }, { printed: '2 Pet. 3:9', ref: '2Pet.3.9' }] };
