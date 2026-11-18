@@ -20,7 +20,7 @@ import { GrammarCard } from './GrammarCard';
 import { OverRun } from './overRun';
 import { PlanDrillScreen } from './PlanDrillScreen';
 import { confirmAnswer } from './review/confirm';
-import { keepStocked, whyCannotAsk } from './review/moreItems';
+import { askForIdea, canBeWritten, keepStocked, whyCannotAsk } from './review/moreItems';
 import { StudyList } from './review/StudyList';
 import { StudyThis } from './review/StudyThis';
 import { studyOfQuestion } from './review/studyThis';
@@ -31,6 +31,9 @@ import { useSheetBack } from './ui/sheetBack';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
 import { SCREEN_OPENING_MOMENTS, useSettled } from './ui/settle';
+
+/** What Drill it says when too few unseen questions are left and the mill writes none for this idea (a letter, a pair or a sound is drilled from items the app makes). */
+const NONE_WRITTEN = 'Too few questions you have not been asked can be made for this idea, and the mill writes none for it, so Drill it cannot prove it yet.';
 
 /** What Drill it says when too few unseen questions are left and no more can come (the outcomes of moreItems.ts whyCannotAsk), in plain words. */
 const CANNOT_ASK = {
@@ -154,7 +157,7 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
   const [ready, setReady] = useState(false);
   const [onTheirWay, setOnTheirWay] = useState(false);
   // too few unseen questions and the mill cannot be asked: why (the mill's own gate, moreItems.ts whyCannotAsk), so no question is promised that cannot come
-  const [cannotAsk, setCannotAsk] = useState<ReturnType<typeof whyCannotAsk>>(null);
+  const [cannotAsk, setCannotAsk] = useState<ReturnType<typeof whyCannotAsk> | 'not-written'>(null);
   // the walk after the answer he has given, held until he taps Next so he can read whether he was right
   const [after, setAfter] = useState<{ walk: DrillWalk; picked: string } | null>(null);
   const [taken, setTaken] = useState<ReadonlySet<number> | null>(null);
@@ -182,9 +185,13 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
           const have = top?.title === drawn.steps[drawn.steps.length - 1].title ? top.questions.length : 0;
           if (have + (await listUnseenFetched(ideaId)).length >= PROVED_STREAK) first = addFetched(first, await takeAllFetched(ideaId), drawn.steps);
           else {
-            const blocked = whyCannotAsk();
+            // questions are promised only when an ask goes out for this idea (mw-indx1x6.70): keepStocked leaves an idea he has never been asked alone, so this asks itself
+            const blocked = canBeWritten(ideaId) ? whyCannotAsk() : 'not-written';
             if (blocked) setCannotAsk(blocked);
-            else setOnTheirWay(true);
+            else {
+              setOnTheirWay(true);
+              void askForIdea(ideaId);
+            }
             first = null;
           }
         } else if (first) {
@@ -282,7 +289,7 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
           </p>
         ) : cannotAsk ? (
           <p role="status" data-testid="drill-cannot-ask" className="text-lg">
-            {CANNOT_ASK[cannotAsk]} Drill it proves an idea on questions the mill writes, and too few you have not been asked are kept for this idea.
+            {cannotAsk === 'not-written' ? NONE_WRITTEN : `${CANNOT_ASK[cannotAsk]} Drill it proves an idea on questions the mill writes, and too few you have not been asked are kept for this idea.`}
           </p>
         ) : walk === null ? (
           <p className="text-lg">Drill it could not start on this idea.</p>

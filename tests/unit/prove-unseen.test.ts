@@ -12,8 +12,10 @@ import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { drillSteps, enoughToProve } from '../../src/data/grammar/drillIt';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
-import { buildDrillItemsRequest, checkedItems, seenKey, type AnsweredItem, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
-import { ideaOf } from '../../src/data/grammar/ladder';
+import { buildDrillItemsRequest, isFetchable, checkedItems, seenKey, type AnsweredItem, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
+import { ideaOf, LADDER } from '../../src/data/grammar/ladder';
+import { ideaOfAny } from '../../src/data/grammar/ladders';
+import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
 import { countFetchedItems, saveFetchedItems } from '../../src/data/repositories';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
@@ -285,6 +287,63 @@ describe('Prove it on an idea whose built top step holds one question', () => {
   function prompt_(): string {
     return document.querySelector('[data-testid="grammar-prompt"]')?.textContent ?? '';
   }
+});
+
+// mw-indx1x6.70: Drill it said 'More questions are on their way' on an idea he had never been asked, and no ask went to the mill (keepStocked leaves such an idea alone). The screen promises questions only
+// when an ask goes out for this idea.
+describe('Drill it promises questions only when an ask goes out', () => {
+  const noop = () => undefined;
+  const SHORT = 'conjunction';
+  /** the screen has decided it has too few questions and says so (the first walk drawn at once is replaced when the list of seen ones is read) */
+  const settledOn = () => screen.findByTestId(/^(drill-more-on-the-way|drill-cannot-ask)$/);
+  const openOn = (ideaId: string, passage: readonly Chapter[]) => render(createElement(DrillItScreen, { ideaId, mode: 'prove', passage, onResult: noop, onClose: noop }));
+
+  it('asks the mill, or does not say questions are on their way, on an idea never asked: licensed, online, with a key', async () => {
+    const postern = withMill();
+    openOn(SHORT, [chapter]);
+    await settledOn();
+    const promised = screen.queryByTestId('drill-more-on-the-way') !== null;
+    if (promised) await waitFor(() => expect(postern.received.length).toBeGreaterThan(0));
+    else expect(screen.queryByText(/More questions are on their way/)).toBeNull();
+    if (promised) {
+      expect(postern.received[0].grist).toMatchObject({ kind: 'drill-items' });
+      expect((postern.received[0].input as unknown as DrillItemsRequest).ideas.map((i) => i.id)).toEqual([SHORT]);
+    }
+    await whenIdle();
+  });
+
+  it('says plainly, and asks nothing, on a short idea the mill writes none for', async () => {
+    const postern = withMill();
+    openOn('syllables', []);
+    const note = await screen.findByTestId('drill-cannot-ask');
+    expect(note).toHaveTextContent(/the mill writes none for it/);
+    expect(screen.queryByTestId('drill-more-on-the-way')).toBeNull();
+    await whenIdle();
+    expect(postern.received).toEqual([]);
+  });
+
+  // every idea of the Greek and the Hebrew ladder whose built top step is too short to prove on, as a fresh phone draws it
+  const short = [...LADDER, ...HEBREW_LADDER].flatMap((idea) =>
+    [[chapter], []].flatMap((p) => {
+      const steps = drillSteps(idea.id, { passage: p, seed: SEED });
+      return enoughToProve(steps) ? [] : [{ id: idea.id, passage: p as Chapter[] }];
+    }),
+  );
+  it('has short ideas to sweep', () => {
+    expect(short.length).toBeGreaterThan(10);
+  });
+  it.each(short.map((s) => [`${s.id} (${s.passage.length} chapters)`, s] as const))('%s: onTheirWay is shown only when an ask goes out', async (_name, one) => {
+    const postern = withMill();
+    await Promise.all([db.settings.clear(), db.reviews.clear()]);
+    openOn(one.id, one.passage);
+    await settledOn();
+    await whenIdle();
+    const promised = screen.queryByTestId('drill-more-on-the-way') !== null;
+    if (isFetchable(ideaOfAny(one.id))) expect(promised).toBe(true);
+    if (promised) expect(postern.received.length).toBeGreaterThan(0);
+    else expect(screen.queryByTestId('drill-cannot-ask')).not.toBeNull();
+    cleanup();
+  });
 });
 
 describe('asking ahead', () => {

@@ -169,6 +169,24 @@ async function askMill(ideas: GrammarIdea[], missed: readonly string[], options:
 
 connectMill((ideaId) => millAsk(ideaId));
 
+/** Whether the mill writes questions for this idea at all (a letter, a pair or a sound is drilled from items the app makes, so none can be asked for it). */
+export const canBeWritten = (ideaId: string): boolean => fetchable(ideaId);
+
+/**
+ * Asks the mill for questions on one idea he has opened Drill it on and has too few unseen ones for (mw-indx1x6.70): unlike keepStocked it asks for an idea he has never been asked too, because
+ * Drill it has just said questions are coming and nothing else would ask. Waits for an ask already out, then asks; asks nothing for an idea the mill writes none for. Never throws.
+ */
+export async function askForIdea(ideaId: string, options: MoreItemsOptions = {}): Promise<MoreItems> {
+  if (!fetchable(ideaId)) return 'nothing';
+  try {
+    if (fetchedStock.inFlight()) await whenIdle();
+    return await askForMoreItems([ideaId], options);
+  } catch (error) {
+    console.warn('could not ask for more drill items', error);
+    return 'failed';
+  }
+}
+
 /**
  * Asks the mill ahead of need (mw-indx1x6.2; the kit's `opened`): for the ideas of `ideaIds` that he may be proved on or asked to confirm (he has been asked questions on it, it is marked to confirm or the mill wrote items for it) and whose kept items he has not been asked are fewer than LOW_KEPT, in the background, so Prove it and the confirm rarely wait. Called when a drill, a Review round or Prove it
  * opens on an idea (a kept item served starts the same in the stock). Never throws, never waits for the mill: it resolves once the stock is counted. An idea he has never been asked is left alone (every built question
