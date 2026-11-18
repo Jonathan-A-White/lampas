@@ -88,5 +88,13 @@ test(`the bar sits clear of the answer, a tapped Hebrew word pauses the answer a
   const resumed = (await spoken(page)).slice(mark).map((e) => e.text);
   expect(resumed[0]).toBe(interrupted);
   expect(resumed.join(' ')).not.toContain('Paul is describing');
+  // the rest of the answer is English and is said in the English voice: the Hebrew word said beside it does not leave its language on what Resume goes on with (mw-fnvjof.17.180)
+  await expect.poll(async () => (await spoken(page)).slice(mark).some((e) => e.text.startsWith('That is why the next verses')), { timeout: 20_000 }).toBe(true);
+  const after = (await spoken(page)).slice(mark);
+  for (const start of ['(tsedeq) is about', 'That is why the next verses']) {
+    const runs = after.filter((e) => e.text.startsWith(start));
+    expect(runs.length, start).toBeGreaterThan(0);
+    for (const run of runs) expect(run.lang, run.text).toBe('en-US');
+  }
 });
 }
