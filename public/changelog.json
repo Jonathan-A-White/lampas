@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.273",
+    "date": "2026-11-18",
+    "story": "mw-06ggew.16",
+    "kind": "new",
+    "text": "While you hold the talk bar, a second finger can scroll the passage without ending what you are saying."
+  },
+  {
+    "version": "0.7.273",
+    "date": "2026-11-18",
+    "story": "mw-indx1x6.73",
+    "kind": "fixed",
+    "text": "Turned sideways, tapping a verse reference in a drill now opens a card tall enough to read the verse and the marked word."
+  },
+  {
+    "version": "0.7.273",
+    "date": "2026-11-18",
+    "story": "mw-rl10piw.32",
+    "kind": "fixed",
+    "text": "Turning Hands-free On or Off with the three-finger tap no longer leaves the Bible reading paused."
+  },
+  {
     "version": "0.7.272",
     "date": "2026-11-18",
     "story": "mw-ar5k42b.26",

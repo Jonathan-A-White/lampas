@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.273
+_2026-11-18_
+- New: While you hold the talk bar, a second finger can scroll the passage without ending what you are saying.
+- Fixed: Turned sideways, tapping a verse reference in a drill now opens a card tall enough to read the verse and the marked word.
+- Fixed: Turning Hands-free On or Off with the three-finger tap no longer leaves the Bible reading paused.
+
 ## 0.7.272
 _2026-11-18_
 - Fixed: The Bible voice setting no longer says David's recording covers only John; it says he reads wherever Lampas has his recording, which stays true as books arrive.
