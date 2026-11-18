@@ -30,6 +30,7 @@
     "data:build:lxx": "tsx scripts/data-build-lxx.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
     "data:verses": "tsx scripts/verses-build.ts",
+    "lxx:article-gender": "tsx scripts/lxx/article-gender.ts",
     "lxx:align": "tsx scripts/lxx/align.ts",
     "lxx:align-choose": "tsx scripts/lxx/align-choose.ts",
     "lxx:batches": "tsx scripts/lxx/batches.ts",

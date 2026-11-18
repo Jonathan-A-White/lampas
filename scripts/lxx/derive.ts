@@ -362,7 +362,7 @@ export function deriveBook(
   const cache: ParseCache = new Map();
   const parsed = (form: string): Candidate[] => parsedOnce(form, parser, cache);
   const layers = withCapitalNames(words, withFormNames(words, words.map((word) => deriveWord(word, index, parser, cache, morpheus))), trained, parsed);
-  const checked = checkAgreement(words, layers, { names: index.names, parse: parsed, governs: parser.governs });
+  const checked = checkAgreement(words, layers, { names: index.names, parse: parsed, governs: parser.governs, genders: (lemma) => [...(parser.ntPos.get(lemma) ?? [])].filter((k) => k.startsWith('N:')).map((k) => k.slice(2)) });
   // readings a rule can add to a word still waiting (complete.ts): after the check, so no word's answer changes
   const formOfRef = new Map(words.map((w) => [w.ref, w.form]));
   const completed = completeReadings(checked.outs, (ref) => formOfRef.get(ref) ?? '', morpheus, parser);

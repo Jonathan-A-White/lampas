@@ -341,6 +341,15 @@ above 5 per 1,000 in any book (Susanna 3.4, the Letter of Jeremiah 3.1); read in
 `οἱ παῖδες` given feminine, `τὴν ἵππον` (the cavalry) masculine, `τῆς ὑδρίας` accusative plural, `τὴν Ῥαχήλ` nominative, `οἱ ψευδεῖς` accusative,
 `ὁ αἰώνιος` feminine, `ὁ δεσπότης` vocative.
 
+### A noun takes its article's gender (mw-u2w5klk.349.34)
+
+The parser reads a noun's ending from the New Testament's rules, and a rule is learned from the nouns that show it, so it carries their gender: παιδὶ (Gen 24:2, τῷ παιδὶ αὐτοῦ, the elder servant) was read N-DSF from
+the feminine nouns in -ις beside a masculine article. `regender` (`agreement.ts`, run first in `agree`) gives a noun the parser settled (layer 2, never layer 1, whose form is the New Testament's own) the gender of its
+article when the lemma has that gender in the New Testament too (`CheckContext.genders`, from `Parser.ntPos`) and exactly one of its genders agrees with one of the article's readings, the article settled or still pending
+with its candidates (τῷ is DSM or DSN). The noun is then layer 2a, with a note, and the article settles on it as any word does. Two genders that agree, or none, leave the noun as it was. The sweep
+`npm run lxx:article-gender` (`scripts/lxx/article-gender.ts`) lists the articles still before a noun of another gender: 46 of the 353 shipped chapters on 2026-11-18 (the παῖς datives gone, 8 words), 13 of them in another case
+than the article's (no agreement claimed), 33 open: names with no gender of their own, and nouns whose gender in the Septuagint is not the New Testament's (ἵππος, κάμηλος, παῖς of a girl in Gen 24:28, 24:57).
+
 ### Analogy's readings beside a thin lone candidate
 
 Story mw-u2w5klk.31. Analogy holds the right reading for many of the thin lone candidates that are wrong, and the model can only choose among the candidates it is given (`ἄφρονος`,
@@ -798,6 +807,7 @@ npm run lxx:pending -- --book gen --batch 1    # a batch's pending words with th
 npm run lxx:choose -- --book gen --batch 1 --from <file>  # a model session's choices, checked, as data/lxx/choices/gen-01.tsv
 npm run lxx:release -- --book gen              # data/lxx/annotations/gen.tsv: the rows of the chapters that pass the chapter bar ('The chapter bar'), under `# shipped chapters: 1-6 of 50`
 npm run lxx:ship -- --out <dir> [--no-morpheus] [--build <n>] [--lemma-forms <dir>]   # for each book with a choices file: derive, release its shippable chapters and build the chapter files, index.json, lexicon and notices into <dir>; no tracked file changes ('The deploy')
+npm run lxx:article-gender [-- --dir <folder>]  # every shipped article directly before a noun of another gender, each with why ('A noun takes its article's gender'); prints `0 articles stand before a noun of another gender` when none; exits 1 while one is open
 npm run lxx:report                             # docs/lxx-report.md: where every book of the Old Testament stands
 npx tsx scripts/lxx/audit-sample.ts [--seed <n>]    # the hand audit's sample of settled words (6 a pool a book; seed 20261103 unless given), each with its verses; --count <file> [--section <heading>] counts the verdicts
 ```
