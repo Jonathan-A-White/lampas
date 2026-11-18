@@ -13,10 +13,11 @@ import { TRANSLATION_NAME } from '../reader/englishSource';
 import { apocryphaBookOf } from '../data/apocrypha';
 import { isHebrewBook, otBookOf } from '../data/books';
 import { AnotherBookButton } from '../library/InLogosDoors';
-import { getLogosBibles, getStudyResources } from '../data/repositories';
+import { getLogosBibles, getStudyResources, ownedResources } from '../data/repositories';
+import { offeredBibleFor } from '../library/bibleParts';
 import { openAtVerse } from '../nav/readerRequest';
 import { openSettingsSection } from '../settings/link';
-import { bibleFor, verseLink } from '../resources/logosBible';
+import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage } from '../speech/passagePlayer';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
@@ -90,7 +91,9 @@ export interface ElsewherePlace {
 function LogosDoor({ place, className }: { place: ElsewherePlace; className: string }) {
   const resources = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
-  const link = resources?.on.includes('logos') && bibles !== undefined ? verseLink(place.book, place.chapter, place.verse ?? 1, bibleFor(place.book, bibles)) : undefined;
+  const owned = useLiveQuery(ownedResources, []);
+  const bible = bibles !== undefined && owned !== undefined ? offeredBibleFor(place.book, bibles, owned) : undefined;
+  const link = resources?.on.includes('logos') && bible !== undefined ? verseLink(place.book, place.chapter, place.verse ?? 1, bible) : undefined;
   if (!link) return null;
   return (
     <a href={link.url} data-fallback={link.fallback} onClick={() => armFallback(link.fallback)} className={className}>
@@ -104,9 +107,11 @@ function LogosDoor({ place, className }: { place: ElsewherePlace; className: str
 export function ElsewhereLine({ place, said = true, onSettings }: { place: ElsewherePlace | null; said?: boolean; onSettings: () => void }) {
   const resources = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
+  const owned = useLiveQuery(ownedResources, []);
   const not = said ? 'Not in Lampas yet' : null;
-  if (!resources || bibles === undefined) return not ? <p className="py-1 text-lg text-muted">{not}</p> : null;
-  const link = resources.on.includes('logos') && place ? verseLink(place.book, place.chapter, place.verse ?? 1, bibleFor(place.book, bibles)) : undefined;
+  if (!resources || bibles === undefined || owned === undefined) return not ? <p className="py-1 text-lg text-muted">{not}</p> : null;
+  const bible = place ? offeredBibleFor(place.book, bibles, owned) : undefined;
+  const link = resources.on.includes('logos') && place && bible !== undefined ? verseLink(place.book, place.chapter, place.verse ?? 1, bible) : undefined;
   if (!link) {
     return (
       <p className="py-1 text-lg text-muted">

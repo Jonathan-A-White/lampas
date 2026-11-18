@@ -6,7 +6,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import type { AnswerLink } from './data/db';
 import { lookupLemma, lookupSeptuagintLemma } from './data/lexicon';
-import { getLogosBibles, getStudyResources, getWorks, setResourceOn, offeredShelfOf } from './data/repositories';
+import { getLogosBibles, getStudyResources, getWorks, setResourceOn, offeredShelfOf, ownedResources } from './data/repositories';
+import { offeredBibleFor } from './library/bibleParts';
 import { openParadigm, openReader, paradigmHash } from './nav/route';
 import { useOffRun } from './overRun';
 import { paradigmById } from './data/paradigms';
@@ -14,7 +15,6 @@ import { holdTalk } from './talkReturn';
 import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS, type TalkScope } from './services/talk';
-import { bibleFor } from './resources/logosBible';
 import { armFallback } from './resources/openApp';
 import { openedRow } from './sermons/merge';
 import { opensNewTab, rowHref, useOpenWebIn } from './sermons/openWeb';
@@ -152,6 +152,7 @@ interface Group {
 export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { links: AnswerLink[]; onLeave: () => void; onWord?: (lemma: string) => void; place?: MapRef; verse?: number; scope?: TalkScope }) {
   const chosen = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
+  const owned = useLiveQuery(ownedResources, []);
   const works = useLiveQuery(getWorks, []);
   const shelf = useLiveQuery(offeredShelfOf, []);
   const level = useGreekInterest();
@@ -168,7 +169,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
   // lesson's, a miss's Ask the tutor) the one guard gives nothing for it and the chip is not drawn (src/overRun.ts, mw-indx1x6.57). The chips that open another app or a new tab,
   // Copy and Share leave nothing, and stay.
   const offRun = useOffRun();
-  if (!chosen || bibles === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
+  if (!chosen || bibles === undefined || owned === undefined || works === undefined || shelf === undefined || !strongs || level === undefined) return null;
   if (place && shown.some((l) => l.kind === 'map') && mapCards === undefined) return null;
   if (place && shown.some((l) => l.kind === 'sermon') && sermonRows === undefined) return null;
 
@@ -202,7 +203,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
       if (found) groups.push({ key: `${i}`, name: found.name, greek: false, chips: [found.chip] });
     } else {
       const place = placeOf(link.reference);
-      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: offRun(place.reader ? place : undefined), place, chips: verseChips(place, place.name, chosen, bibleFor(place.book, bibles), level) });
+      if (place) groups.push({ key: `${i}`, name: place.name, greek: false, reader: offRun(place.reader ? place : undefined), place, chips: verseChips(place, place.name, chosen, offeredBibleFor(place.book, bibles, owned), level) });
     }
   }
   const drawn = groups.filter((g) => g.reader || g.setting || g.paradigm || g.map || g.sermon || g.copy || (g.hebrew && onWord) || g.chips.length > 0);

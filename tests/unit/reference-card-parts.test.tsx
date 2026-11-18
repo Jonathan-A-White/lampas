@@ -18,6 +18,7 @@ import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { InLogosDoors } from '../../src/library/InLogosDoors';
 import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 beforeEach(async () => {
   clearBus();
@@ -27,6 +28,7 @@ beforeEach(async () => {
   await setResourceOn('logos', true);
   await setLogosBible(DEFAULT_LOGOS_BIBLE);
   await setLogosBibleFor('ot', 'LLS:NASB95');
+  await keepImport(EVERY_BOOK_IDS);
 });
 afterEach(() => {
   cleanup();

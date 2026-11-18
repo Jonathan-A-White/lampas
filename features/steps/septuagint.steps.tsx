@@ -27,6 +27,8 @@ import { asSpoken } from '../../tests/support/lone-word';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { closeDatabase } from './close-database';
+import { DEFAULT_SEPTUAGINT_BIBLE } from '../../src/resources/logosBible';
+import { keepImport } from '../../tests/support/logos-import';
 
 const GENESIS_GREEK_DIAGRAM = (JSON.parse(readFileSync('tests/fixtures/diagrams/gen-1-1-septuagint.json', 'utf8')) as { diagram: unknown }).diagram;
 const user = userEvent.setup();
@@ -148,7 +150,11 @@ async function openOn(title: string, septuagint: 'on' | 'off', settings: Record<
   await db.settings.put({ key: 'septuagint', value: septuagint });
   for (const [key, value] of Object.entries(settings)) await db.settings.put({ key, value });
   if (extras.strongs) await setResourceOn('strongs', true);
-  if (extras.logos) await setResourceOn('logos', true);
+  if (extras.logos) {
+    await setResourceOn('logos', true);
+    // the Septuagint he chose in Logos is in his import: the door names and opens it only then (mw-qtu3zvz.208)
+    await keepImport([DEFAULT_SEPTUAGINT_BIBLE, ...(settings.logosBibleSeptuagint ? [String(settings.logosBibleSeptuagint)] : [])]);
+  }
   if (extras.diagram) window.localStorage.setItem('lampas.welcome', 'done');
   if (extras.memorize) {
     await db.reviews.put({ kind: 'verse', id: extras.memorize.id, step: extras.memorize.step, due: Date.now() - 1000, lastWhen: Date.now() - 86_400_000, lapses: 0, rights: 0 });

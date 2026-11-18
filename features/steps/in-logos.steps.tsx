@@ -10,6 +10,7 @@ import { setLogosBibleFor, setResourceOn, shelfOf } from '../../src/data/reposit
 import { InLogosChooser } from '../../src/library/InLogosChooser';
 import { InLogosDoors } from '../../src/library/InLogosDoors';
 import type { CatalogueEntry, Kind } from '../../src/resources/catalogue';
+import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import type { StudyPlace } from '../../src/resources/types';
 import { closeDatabase } from './close-database';
 import { keepImport } from '../../tests/support/logos-import';
@@ -62,7 +63,8 @@ async function shelf(rows: readonly (readonly [CatalogueEntry, 'on' | 'pinned'])
   await db.open();
   await Promise.all([db.meta.clear(), db.settings.clear(), db.library.clear()]);
   // the test's own books are his too
-  await keepImport(BOOKS.map((e) => e.resource));
+  // and his Bible in Logos, which the door 'In Logos' opens only while his import holds it (mw-qtu3zvz.208)
+  await keepImport([...BOOKS.map((e) => e.resource), DEFAULT_LOGOS_BIBLE]);
   await db.settings.bulkPut([
     { key: 'resourceOption.logos', value: '[]' },
     { key: 'grammarBooks', value: '[]' },
