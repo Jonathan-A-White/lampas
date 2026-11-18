@@ -1,4 +1,5 @@
 // Settings shows what Lampas has counted (mw-6ww.175.15): two screens opened, then the page: both are under what he opened and a third is under never opened.
+// The page is behind its own row of the Settings home, last in the list of groups (mw-6ww.175.87): the home draws the row and not the lists.
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
 import { openSettings, openTool, settingsHeading } from './openSettings';
@@ -8,6 +9,18 @@ import { openUnlocked } from './unlocked';
 test.use({ viewport: { width: 390, height: 844 } });
 
 const listed = (page: Page, name: string) => page.getByRole('list', { name, exact: true });
+const TITLE = 'What Lampas has counted';
+const door = (page: Page) => page.getByRole('list', { name: 'Settings groups' }).getByRole('button', { name: new RegExp(`^${TITLE}`) });
+
+/** On the Settings home: the row is there and the lists are not; a tap on it opens the page. */
+async function openCounted(page: Page): Promise<void> {
+  await door(page).scrollIntoViewIfNeeded();
+  await expect(door(page)).toBeVisible();
+  await expect(listed(page, 'Opened')).toHaveCount(0);
+  await expect(listed(page, 'Never opened')).toHaveCount(0);
+  await door(page).click();
+  await expect(page.getByRole('heading', { name: TITLE, exact: true, level: 1 })).toBeVisible();
+}
 
 test('Settings lists the screens he opened and the ones he never opened', async ({ page }) => {
   await openUnlocked(page);
@@ -18,8 +31,19 @@ test('Settings lists the screens he opened and the ones he never opened', async 
   await page.goto('/#/settings');
   await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
 
+  // the row is the last of the home's list (Developer mode is not found on this phone) and is a thumb tall
+  await door(page).scrollIntoViewIfNeeded();
+  await expect(page.getByRole('list', { name: 'Settings groups' }).getByRole('button').last()).toHaveAttribute('data-door', 'counted');
+  expect((await door(page).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(48);
+  await shot(page, 'usage-row');
+  await openCounted(page);
+  expect(page.url()).toContain('#/settings?page=counted');
+  // the back arrow and the long title share the header's one row
+  const back = page.getByRole('button', { name: '‹ Settings', exact: true });
+  const [backBox, titleBox] = [await back.boundingBox(), await page.getByRole('heading', { name: TITLE, exact: true, level: 1 }).boundingBox()];
+  expect(backBox && titleBox && titleBox.y < backBox.y + backBox.height && titleBox.y + titleBox.height > backBox.y).toBe(true);
+
   const opened = listed(page, 'Opened');
-  await opened.scrollIntoViewIfNeeded();
   await expect(opened.getByRole('listitem').filter({ hasText: /^Words/ })).toBeVisible();
   await expect(opened.getByRole('listitem').filter({ hasText: /^About/ })).toBeVisible();
   await expect(opened.getByRole('listitem').filter({ hasText: /^Goal/ })).toHaveCount(0);
@@ -30,6 +54,12 @@ test('Settings lists the screens he opened and the ones he never opened', async 
   const { scrollWidth, clientWidth } = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
   await shot(page, 'usage-page');
+
+  // ‹ Settings is the home again, where he left it (the row he tapped is on screen), with the row and without the lists
+  await back.click();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true, level: 1 })).toBeVisible();
+  await expect(door(page)).toBeInViewport({ ratio: 1 });
+  await expect(listed(page, 'Opened')).toHaveCount(0);
 });
 
 // mw-6ww.175.79: the screens above were reached by an address typed in; he reaches them by tapping, which pushes the address without a hashchange.
@@ -54,8 +84,8 @@ test('Settings counts the screens he opened by tapping, as he opens them', async
 
   await openSettings(page);
   await expect(settingsHeading(page)).toBeVisible();
+  await openCounted(page);
   const opened = listed(page, 'Opened');
-  await opened.scrollIntoViewIfNeeded();
   await expect(opened.getByRole('listitem').filter({ hasText: /^Words/ })).toBeVisible();
   await expect(opened.getByRole('listitem').filter({ hasText: /^About/ })).toBeVisible();
   await expect(opened.getByRole('listitem').filter({ hasText: /^Goal/ })).toHaveCount(0);

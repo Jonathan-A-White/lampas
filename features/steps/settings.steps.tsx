@@ -1,7 +1,7 @@
 // features/steps/settings.steps.tsx — runs features/settings.feature: the Menu, the Settings screen, the weave moved
 // there, the voice pickers and the Greek pronunciation list. speech synthesis is the honest fake of tests/support/fake-speech.ts, with named voices.
 import '@testing-library/react/dont-cleanup-after-each';
-import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
+import { act, render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -41,7 +41,7 @@ async function openWith(voices: FakeVoice[]): Promise<void> {
   stubChapterFetch();
   synth = stubSpeech(voices);
   await db.open();
-  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear()]);
+  await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.usage.clear()]);
   window.history.replaceState(null, '', '/');
   await seedHisWords();
   render(<App />);
@@ -224,5 +224,44 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the About screen is shown', async () => {
       await screen.findByRole('heading', { name: 'About', level: 1 });
     });
+  });
+
+  // mw-6ww.175.87: the counts are a page of their own behind a row of the home, not laid out on the home
+  Scenario('What Lampas has counted is behind its own row', ({ Given, When, Then, And }) => {
+    const homeGroups = () => screen.findByRole('list', { name: 'Settings groups' });
+    const homeShowsRow = async (_: unknown, label: string) => {
+      expect(within(await homeGroups()).getByRole('button', { name: new RegExp(`^${label}`) })).toBeVisible();
+    };
+    const homeShowsNoList = async (_: unknown, name: string) => {
+      await homeGroups();
+      // the lists drew once their read of the usage store came back: reads asked for after it have come back by here
+      for (let round = 0; round < 3; round++) await act(async () => void (await db.usage.toArray()));
+      expect(screen.queryByRole('list', { name })).toBeNull();
+      expect(screen.queryByRole('heading', { name })).toBeNull();
+    };
+    const listNames = (name: string) => async (_: unknown, item: string) => {
+      const list = await screen.findByRole('list', { name });
+      await waitFor(() => expect(within(list).getAllByRole('listitem').map((li) => li.textContent)).toContain(item));
+    };
+    Given('Lampas is opened on a phone with a Greek voice', () => openWith([ENGLISH, GREEK]));
+    And('he has opened Words {int} times', async (_, count: number) => {
+      await db.usage.put({ key: '2026-10-01|screen:words', day: '2026-10-01', name: 'screen:words', count });
+    });
+    When("he opens Settings from the reader's Menu", openSettingsPage);
+    Then('the Settings home shows a {string} row', homeShowsRow);
+    And('the Settings home shows no {string} list', homeShowsNoList);
+    When('he taps the {string} row', async (_, label: string) => {
+      await user.click(within(await homeGroups()).getByRole('button', { name: new RegExp(`^${label}`) }));
+    });
+    Then('the page {string} is shown', async (_, title: string) => {
+      await screen.findByRole('heading', { name: title, level: 1 });
+    });
+    And('the Opened list names {string}', listNames('Opened'));
+    And('the Never opened list names {string}', listNames('Never opened'));
+    When('he taps Back to the Settings home', async () => {
+      await user.click(screen.getByRole('button', { name: '‹ Settings' }));
+    });
+    Then('the Settings home shows the {string} row again', homeShowsRow);
+    And('the Settings home still shows no {string} list', homeShowsNoList);
   });
 });

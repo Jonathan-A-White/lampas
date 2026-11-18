@@ -61,3 +61,17 @@ Feature: Settings
     When he opens Settings from the reader's Menu
     And he taps "About" on the Settings screen
     Then the About screen is shown
+
+  Scenario: What Lampas has counted is behind its own row
+    Given Lampas is opened on a phone with a Greek voice
+    And he has opened Words 4 times
+    When he opens Settings from the reader's Menu
+    Then the Settings home shows a "What Lampas has counted" row
+    And the Settings home shows no "Opened" list
+    When he taps the "What Lampas has counted" row
+    Then the page "What Lampas has counted" is shown
+    And the Opened list names "Words · 4"
+    And the Never opened list names "Goal"
+    When he taps Back to the Settings home
+    Then the Settings home shows the "What Lampas has counted" row again
+    And the Settings home still shows no "Opened" list

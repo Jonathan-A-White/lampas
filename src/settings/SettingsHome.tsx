@@ -1,4 +1,4 @@
-// src/settings/SettingsHome.tsx — the pieces of the Settings home (mw-3ased2.1): the search field pinned at the top, a group's button and the rows the search found.
+// src/settings/SettingsHome.tsx — the pieces of the Settings home (mw-3ased2.1): the search field pinned at the top, a group's button, a door's button (mw-6ww.175.87) and the rows the search found.
 // The search field, the group button and the found rows are the kit's (pwa-kit/settings; its look is themed in src/index.css, 'Settings home'); what is here is Lampas's:
 // where a tap goes, and the books of his library the search finds beside the settings. src/SettingsScreen.tsx draws them; docs/layout/settings.md.
 import { Found as FoundRows, GroupButton as KitGroupButton, SettingsSearch } from 'pwa-kit/settings';
@@ -15,6 +15,23 @@ export { SettingsSearch };
 /** One group on the home: a thumb-sized button that opens its page. */
 export function GroupButton({ id, title, hint }: { id: GroupId; title: string; hint: string }) {
   return <KitGroupButton id={id} title={title} hint={hint} onOpen={openSettingsGroup} />;
+}
+
+/** A row of the home that is no group (What Lampas has counted, rows.ts COUNTED_DOOR): drawn as the kit draws a group's button (its classes: title, hint, chevron) but marked data-door, not data-group, since it is no group. */
+export function DoorButton({ id, title, hint, onOpen }: { id: string; title: string; hint: string; onOpen: () => void }) {
+  return (
+    <li>
+      <button type="button" data-door={id} onClick={onOpen} className="bk-settings__group">
+        <span className="bk-settings__group-text">
+          <span className="bk-settings__group-title">{title}</span>
+          <span className="bk-settings__group-hint">{hint}</span>
+        </span>
+        <span aria-hidden="true" className="bk-settings__chevron">
+          ›
+        </span>
+      </button>
+    </li>
+  );
 }
 
 /** Opens a row found by the search on its page, at the row, scrolled to and marked: a setting, the library door and a row that is no setting alike (mw-5r3p30.877). */

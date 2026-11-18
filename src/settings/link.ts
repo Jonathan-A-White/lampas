@@ -98,6 +98,22 @@ export function groupIdOf(hash: string): GroupId | null {
   return id !== null ? (groupById(id)?.id ?? null) : null;
 }
 
+/** The address of What Lampas has counted (mw-6ww.175.87, src/tips/UsageCounted.tsx), a page of its own behind its row of the Settings home (rows.ts COUNTED_DOOR). */
+export const COUNTED_LINK = '#/settings?page=counted';
+
+/** Whether an address is the page What Lampas has counted. */
+export function isCountedPage(hash: string): boolean {
+  if (pathOf(hash) !== '#/settings') return false;
+  const q = hash.indexOf('?');
+  return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('page') === 'counted';
+}
+
+/** Opens What Lampas has counted as a new Back step, from the home; it starts at the top, not where he last left it. */
+export function openCounted(): void {
+  forgetScrollsAt(COUNTED_LINK);
+  openHash(COUNTED_LINK);
+}
+
 /** The screen an old Settings address for a row that has moved to Tools now belongs to ('#/settings?setting=library' is the Library, '#/settings?setting=link.words' Words), or null when it names no such row.
  *  The Settings screen replaces such an address by that screen's, so a link kept from before the move still lands on the tool (mw-5r3p30.754). */
 export function movedTool(hash: string): Route | null {
@@ -114,7 +130,7 @@ export function openSettingsGroup(id: GroupId): void {
   openHash(link);
 }
 
-/** The group page's back arrow: a step Back when the entry behind this one is the Settings home (so the phone's Back after it leaves Settings, as
+/** The back arrow of a group's page and of What Lampas has counted: a step Back when the entry behind this one is the Settings home (so the phone's Back after it leaves Settings, as
  *  the header back buttons do, mw-5r3p30.458), else (a link or a reload put him on the page) the home in place of this page. */
 export function backToSettingsHome(): void {
   const behind = previousAddress();
