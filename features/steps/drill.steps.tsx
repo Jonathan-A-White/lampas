@@ -176,7 +176,11 @@ const moodLesson = (): string => {
   if (!idea) throw new Error(`the mood of ${codeOnScreen()} has no idea`);
   return `Lesson: ${ideaOfAny(idea).title}`;
 };
-const posLesson = (word: string): string => `Lesson: ${ideaOfAny(ladderFor('grc').ideaOfTerm(splitParse(word).pos) ?? '').title}`;
+// a pronoun has no term of its own on the ladder: the idea is 'pronoun' (review/studyThis.ts ideaOfStep)
+const posLesson = (word: string): string => {
+  const pos = splitParse(word).pos;
+  return `Lesson: ${ideaOfAny(ladderFor('grc').ideaOfTerm(pos) ?? (pos === 'pronoun' ? 'pronoun' : '')).title}`;
+};
 
 const feature = await loadFeature('features/drill.feature');
 
