@@ -43,6 +43,8 @@ export interface TableWord {
   tail: string; // pnc + endQ + endText
   par: string; // the table's paragraph markup on this word, '' when none
   note: string; // the table's footnote on this word as the cell has it (HTML), '' when none
+  /** a '. . .' word whose English the table put in the chunk AFTER it (a build's pairing fix sets it; the chunk writer then never joins it to the chunk before) */
+  waits?: boolean;
 }
 
 export interface TableVerse {

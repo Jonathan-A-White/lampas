@@ -61,25 +61,33 @@ const PARSE_FIXES: Readonly<Record<string, string>> = {
 /**
  * Verses where the table puts an English chunk on the wrong Hebrew word (a slip of the source, not of the build): `swap` names two Strong's numbers of the verse that trade their English
  * (its place in the English order, its text, the punctuation after it and the paragraph or poetry tag that opens its line), as scripts/data-build.ts ALIGNMENT_FIXES does for the New Testament. The words are named by Strong's number, which
- * is unique in these verses.
+ * is unique in these verses. `waits` names one '. . .' word of the verse whose English the table meant for the chunk AFTER it, which every other '. . .' word's join to the chunk before it would miss:
+ * Genesis 21:11 'distressed [in the eyes of] Abraham' (H5869 בְּעֵינֵי; mw-fnvjof.17.193). A rule that picks the side by Hebrew adjacency was tried and dropped (docs/sources/msb-chunk-pairs.md), so each is named.
  * Isaiah 33:8 'and human life is disregarded.' (לֹא חָשַׁב אֱנוֹשׁ): the table gives 'and human life' to לֹא (H3808) and 'is disregarded' to חָשַׁב, and leaves אֱנוֹשׁ (H582, 'human') '. . .'
  * at the end; swapped, אֱנוֹשׁ is 'and human life' and לֹא is the '. . .' that goes with 'is disregarded' (mw-fnvjof.17.161).
  */
-interface PairingFix {
-  ref: string;
-  swap: [string, string];
-}
-export const PAIRING_FIXES: readonly PairingFix[] = [{ ref: 'Isaiah 33:8', swap: ['H3808', 'H582'] }];
+type PairingFix = { ref: string } & ({ swap: [string, string]; waits?: undefined } | { waits: string; swap?: undefined });
+export const PAIRING_FIXES: readonly PairingFix[] = [
+  { ref: 'Isaiah 33:8', swap: ['H3808', 'H582'] },
+  { ref: 'Genesis 21:11', waits: 'H5869' },
+];
 
 /** Applies the PAIRING_FIXES of this verse to its words; a fix whose words the verse lacks stops the build. */
 export function fixPairing(book: string, chapter: number, n: number, words: TableWord[]): void {
   for (const fix of PAIRING_FIXES) {
     if (fix.ref !== `${book} ${chapter}:${n}`) continue;
-    const [a, b] = fix.swap.map((strongs) => {
+    const named = (strongs: string): TableWord => {
       const found = words.filter((w) => w.strongs === strongs);
       if (found.length !== 1) throw new Error(`${fix.ref}: the pairing fix names ${strongs}, which the table holds ${found.length} times`);
       return found[0];
-    });
+    };
+    if (fix.waits !== undefined) {
+      const word = named(fix.waits);
+      if (word.english.trim() !== '. . .') throw new Error(`${fix.ref}: the pairing fix says ${fix.waits} is a '. . .' word, and the table gives it ${JSON.stringify(word.english.trim())}`);
+      word.waits = true;
+      continue;
+    }
+    const [a, b] = fix.swap.map(named);
     for (const key of ['englishSort', 'english', 'begQ', 'tail', 'par'] as const) {
       const keep = a[key];
       (a[key] as string | number) = b[key];

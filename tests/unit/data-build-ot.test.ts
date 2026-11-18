@@ -384,6 +384,32 @@ describe("Isaiah 33:8: a chunk lists the Hebrew words it renders, not its neighb
   it('"has ceased." holds שָׁבַת (H7673) alone', async () => expect(await strongsOfChunk('has ceased.')).toEqual(['H7673']));
 });
 
+// mw-fnvjof.17.193: Genesis 21:11 'Now this matter distressed [in the eyes of] Abraham greatly': the table's '. . .' is on בְּעֵינֵי and its English ('in the eyes of') is meant for 'Abraham', the chunk
+// AFTER it, not for 'distressed'. tests/fixtures/data/bsb_gen21_11.tsv has the verse's eight rows (the sorts and words of the published table; the table itself is not in a worktree).
+describe("Genesis 21:11: a '. . .' word the table meant for the chunk after it (mw-fnvjof.17.193)", () => {
+  const verseLex = otLexicon(`${tbesh}\n${readFileSync('tests/fixtures/data/tbesh_gen21_11.txt', 'utf8')}`);
+  const verseOf = async () => {
+    const chapters: BuiltChapter[] = [];
+    await buildOt(linesOf(readFileSync('tests/fixtures/data/bsb_gen21_11.tsv', 'utf8')), verseLex, (c) => void chapters.push(c));
+    return find(chapters, 'gen/21.json').verses.find((v) => v.n === 11)!;
+  };
+  const strongsOfChunk = async (text: string): Promise<string[]> => {
+    const verse = await verseOf();
+    const chunk = verse.e.find((c) => c.t === text);
+    if (!chunk) throw new Error(`no chunk ${text}: ${verse.e.map((c) => c.t).join(' | ')}`);
+    return chunk.g.map((i) => verse.g[i].s);
+  };
+
+  it('"Abraham" holds בְּעֵינֵי (H5869) and אַבְרָהָם (H85)', async () => expect(await strongsOfChunk('Abraham')).toEqual(['H5869', 'H85']));
+  it('"distressed" holds וַיֵּרַע (H7489) alone', async () => expect(await strongsOfChunk('distressed')).toEqual(['H7489']));
+  it("every other '. . .' word still joins the chunk before it: only the verse named in PAIRING_FIXES waits", async () => {
+    const chapters: BuiltChapter[] = [];
+    await buildOt(linesOf(readFileSync('tests/fixtures/data/bsb_isa33_8.tsv', 'utf8')), otLexicon(readFileSync('tests/fixtures/data/tbesh_isa33_8.txt', 'utf8')), (c) => void chapters.push(c));
+    const verse = find(chapters, 'isa/33.json').verses.find((v) => v.n === 8)!;
+    expect(verse.e.find((c) => c.t === 'travel')!.g.map((i) => verse.g[i].s)).toEqual(['H5674', 'H734']);
+  });
+});
+
 describe('the build says how far a change of pairing reached (mw-fnvjof.17.161)', () => {
   const chapterOf = (pairs: Array<[number, number[]]>): Chapter =>
     ({ verses: pairs.map(([n, g]) => ({ n, g: [{ t: 'a', tr: '', s: 'H1', l: 'a', p: 'x', e: 0 }, { t: 'b', tr: '', s: 'H2', l: 'b', p: 'x', e: g.includes(1) ? 0 : 1 }], e: [{ t: 'x', g }] })) }) as unknown as Chapter;
