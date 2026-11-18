@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.277
+_2026-11-18_
+- Fixed: Your Logos library no longer shows the Memorize and Verse lists rows; they live in Tools.
+- Fixed: In the Greek Old Testament, the word for servant in Genesis 24:2 and seven other verses is now shown as masculine, as its article says.
+- Fixed: Drill it no longer promises more questions on an idea you have never been asked without actually asking for them.
+
 ## 0.7.276
 _2026-11-18_
 - Fixed: after you tap a Hebrew or Greek word while the tutor is reading an answer, Resume no longer reads the rest of the answer in the Hebrew voice.

@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.277",
+    "date": "2026-11-18",
+    "story": "mw-5r3p30.1190",
+    "kind": "fixed",
+    "text": "Your Logos library no longer shows the Memorize and Verse lists rows; they live in Tools."
+  },
+  {
+    "version": "0.7.277",
+    "date": "2026-11-18",
+    "story": "mw-u2w5klk.349.34",
+    "kind": "fixed",
+    "text": "In the Greek Old Testament, the word for servant in Genesis 24:2 and seven other verses is now shown as masculine, as its article says."
+  },
+  {
+    "version": "0.7.277",
+    "date": "2026-11-18",
+    "story": "mw-indx1x6.70",
+    "kind": "fixed",
+    "text": "Drill it no longer promises more questions on an idea you have never been asked without actually asking for them."
+  },
+  {
     "version": "0.7.276",
     "date": "2026-11-18",
     "story": "mw-fnvjof.17.180",
