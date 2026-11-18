@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.274
+_2026-11-18_
+- Fixed: Turning the phone sideways and back in Turn pages now keeps you on the page you were reading.
+- Fixed: A quick double tap on Drill it no longer closes the screen at once, so you can read why no more questions are available.
+- Fixed: Saying "read John 17" with the Bible voice set to David now plays David's recording instead of the phone voice.
+- Fixed: a Bible you type in by its Resource ID shows again in the Bibles line of your Logos library and counts as in use.
+
 ## 0.7.273
 _2026-11-18_
 - New: While you hold the talk bar, a second finger can scroll the passage without ending what you are saying.

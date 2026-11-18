@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.274",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.163",
+    "kind": "fixed",
+    "text": "Turning the phone sideways and back in Turn pages now keeps you on the page you were reading."
+  },
+  {
+    "version": "0.7.274",
+    "date": "2026-11-18",
+    "story": "mw-indx1x6.69",
+    "kind": "fixed",
+    "text": "A quick double tap on Drill it no longer closes the screen at once, so you can read why no more questions are available."
+  },
+  {
+    "version": "0.7.274",
+    "date": "2026-11-18",
+    "story": "mw-rl10piw.29",
+    "kind": "fixed",
+    "text": "Saying \"read John 17\" with the Bible voice set to David now plays David's recording instead of the phone voice."
+  },
+  {
+    "version": "0.7.274",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.169",
+    "kind": "fixed",
+    "text": "a Bible you type in by its Resource ID shows again in the Bibles line of your Logos library and counts as in use."
+  },
+  {
     "version": "0.7.273",
     "date": "2026-11-18",
     "story": "mw-06ggew.16",
