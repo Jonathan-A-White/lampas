@@ -53,6 +53,8 @@ async function openOn(bookName: string, n: number): Promise<void> {
   render(<App />);
   await screen.findByRole('heading', { name: `${bookName} ${n}`, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
+  // the chapter swipe is off until the Reader has read its Reading mode (mw-fnvjof.17.181); in Scroll the place line then says the percent
+  await waitFor(() => expect(document.body.textContent).toMatch(/\d+%/));
 }
 
 /**
