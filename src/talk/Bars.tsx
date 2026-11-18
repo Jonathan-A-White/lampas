@@ -4,10 +4,12 @@
 //                shorter than the hold's delay is a tap (no screen uses it since the Reader's Talk bar went, mw-5r3p30.882); the click that ends a hold is not one.
 //   RecordBar    the kit's HoldToTalkBar for a hold that records rather than listens (the reading check's Read buttons, the Try it step): a hold from the first
 //                touch, or Space / Enter held, `onAbort` when the finger slides off the bar or the phone takes the touch.
+// Every bar (and the Composer's, Talk.tsx and FormHelper.tsx) calls useSecondFingerScroll (secondFinger.ts), so a second finger can scroll the page while the first holds.
 // In a short window (a phone held sideways) a bar can be `compact` (a 56 px row, the icon beside the label) or `round` (a round mic button, the label hidden;
 // its name stays) for a sheet that needs the height or the width for its text.
 import { DEFAULT_TALK_LABELS, HoldToTalkBar, TalkBar, type TalkLabels } from 'voice-kit/composer';
 import { tapWord, useTalkSettings } from '../talkSettings';
+import { useSecondFingerScroll } from './secondFinger';
 import type { TalkHold } from './useTalkHold';
 
 export type BarFit = 'wide' | 'compact' | 'round';
@@ -26,6 +28,7 @@ export function HeldTalkBar({ hold, labels, disabled = false, fit = 'wide', onPr
   /** a press that is no hold (let go before the hold's delay) is this */
   onTap?: () => void;
 }) {
+  useSecondFingerScroll();
   // with Talk set to Tap the bar's resting words say Tap (Hold to talk, Tap to talk); the Reader's bar says Talk and keeps it
   const asked = { hold: DEFAULT_TALK_LABELS.hold, tryAgain: DEFAULT_TALK_LABELS.tryAgain, ...labels };
   const words = { ...labels, hold: tapWord(asked.hold, hold.talk), tryAgain: tapWord(asked.tryAgain, hold.talk) };
@@ -59,5 +62,6 @@ export function RecordBar({ label, listening, disabled = false, fit = 'wide', on
   onAbort: () => void;
 }) {
   const settings = useTalkSettings();
+  useSecondFingerScroll();
   return <HoldToTalkBar label={tapWord(label, settings.talk)} listening={listening} disabled={disabled} onPress={onPress} onRelease={onRelease} onAbort={onAbort} dropOnSlideOff settings={settings} className={classOf(fit)} />;
 }
