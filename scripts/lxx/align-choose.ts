@@ -24,6 +24,9 @@ export const alignChoicesName = (code: string, chapter: number): string => `${co
 
 export const MODEL_HEADER = ['ref', 'run', 'text', 'g', 'mark', 'confidence'];
 
+/** The `run` of a row that is a fix, not a run's chunk; the file writes it `fix` (applyFixes, mw-u2w5klk.349.32). */
+export const FIX_RUN = 0;
+
 /** One chunk of a run, as the session wrote it. `text` is absent where a run of one chunk leaves it out. */
 export interface ModelChunk {
   text: string | undefined;
@@ -40,11 +43,11 @@ export interface ModelLine {
   line: number;
 }
 
-/** A row of the model's file: one chunk of one run. */
+/** A row of the model's file: one chunk of one run, or (`run` FIX_RUN, written `fix`) one fix of the aligner's pairing (applyFixes). */
 export interface ModelRow {
   /** the verse, `Gen.1:2` */
   ref: string;
-  /** which remainder of the verse, from 1 */
+  /** which remainder of the verse, from 1; FIX_RUN (0) for a fix */
   run: number;
   text: string;
   g: number[];
@@ -179,7 +182,7 @@ export function checkModelLines(chapter: Chapter, lines: readonly ModelLine[]): 
 
 /** The model's file: tab-separated, a header row, one row a chunk in the chapter's order, a newline at the end. */
 export const modelRowsTsv = (rows: readonly ModelRow[]): string =>
-  [MODEL_HEADER, ...rows.map((r) => [r.ref, String(r.run), r.text, r.g.length > 0 ? r.g.join(',') : '-', r.mark, r.confidence.toFixed(2)])].map((r) => r.join('\t')).join('\n') + '\n';
+  [MODEL_HEADER, ...rows.map((r) => [r.ref, r.run === FIX_RUN ? 'fix' : String(r.run), r.text, r.g.length > 0 ? r.g.join(',') : '-', r.mark, r.confidence.toFixed(2)])].map((r) => r.join('\t')).join('\n') + '\n';
 
 /** The rows of a model's file. A malformed line is an error naming it. */
 export function readModelRows(text: string, source = 'model file'): ModelRow[] {
@@ -194,13 +197,13 @@ export function readModelRows(text: string, source = 'model file'): ModelRow[] {
     }
     const where = `${source}, line ${i + 1}`;
     const [ref, run, t, g, mark = '', confidence] = c;
-    if (!ref || !/^[1-3A-Za-z]{3}\.\d+:\d+$/.test(ref) || !/^\d+$/.test(run ?? '')) throw new Error(`${where}: '${raw}' is not a row like Gen.1:2<TAB>1<TAB>text<TAB>3,4<TAB>mark<TAB>0.80`);
+    if (!ref || !/^[1-3A-Za-z]{3}\.\d+:\d+$/.test(ref) || !/^(\d+|fix)$/.test(run ?? '')) throw new Error(`${where}: '${raw}' is not a row like Gen.1:2<TAB>1<TAB>text<TAB>3,4<TAB>mark<TAB>0.80 (run a number, or fix)`);
     if (!t?.trim()) throw new Error(`${where}: ${ref}#${run} has no text`);
     if (g !== '-' && !/^\d+(,\d+)*$/.test(g ?? '')) throw new Error(`${where}: the positions '${g}' are not a list like 3,4 or -`);
     if (mark !== '' && mark !== 'unsure' && mark !== 'guess') throw new Error(`${where}: the mark '${mark}' is not unsure or guess`);
     const conf = Number(confidence);
     if (!(conf > 0 && conf <= 1)) throw new Error(`${where}: the confidence '${confidence}' is not above 0 and at most 1`);
-    rows.push({ ref, run: Number(run), text: t, g: g === '-' ? [] : g.split(',').map(Number), mark: mark as ChoiceMark, confidence: conf });
+    rows.push({ ref, run: run === 'fix' ? FIX_RUN : Number(run), text: t, g: g === '-' ? [] : g.split(',').map(Number), mark: mark as ChoiceMark, confidence: conf });
   });
   return rows;
 }
@@ -227,7 +230,9 @@ export interface Modelled {
  * are in one chunk only); a run whose rows do not, a run with no rows in a chapter that has some, and rows for a run that is not there, leave the aligner's chunk as it was and are named as stale. A chunk's
  * supplied words (`s`) go to the chunk they fall in. Each Greek word's `e` is then the position of its chunk. A chapter given no rows is given back as it is.
  */
-export function applyModel(chapter: Chapter, rows: readonly ModelRow[]): Modelled {
+export function applyModel(chapter: Chapter, allRows: readonly ModelRow[]): Modelled {
+  // a fix is not a run's chunk: applyFixes has it, after the runs
+  const rows = allRows.filter((r) => r.run !== FIX_RUN);
   if (rows.length === 0) return { chapter, stale: [] };
   const stale: string[] = [];
   const byRun = new Map<string, ModelRow[]>();
@@ -279,6 +284,79 @@ export function applyModel(chapter: Chapter, rows: readonly ModelRow[]): Modelle
     return { ...verse, g, e };
   });
   for (const key of byRun.keys()) if (!known.has(key)) stale.push(`${key.replace(/^(.)/, (c) => c.toUpperCase())} is no run of this chapter: its rows are not used`);
+  return { chapter: { ...chapter, verses }, stale };
+}
+
+/**
+ * The fixes of the aligner's own pairs (mw-u2w5klk.349.32). The model pass re-chooses remainders and never a pair, but the aligner sometimes pairs a Greek word to the wrong English word of a phrase
+ * ('tent,' to ἀποσκηνώσας in 'having removed his tent,', 'up' to ἀναβλέψας in 'lifted up', 'Return' to κυρίαν, 'offering' to ὁλοκάρπωσιν in 'a whole burnt offering'), and then the English word that
+ * renders it has no Greek and a tap on it opens the Verse view, or the Greek word of a neighbour. A fix row (`run` written `fix`) names English words of the verse, as they read in a row of its chunks, and
+ * the Greek positions they render: the chunks that read so are replaced by ONE chunk `{ t, g, s?, c, y: 'model' }` (the supplied words go to it); `g` `-` makes of them a chunk that renders no Greek word.
+ * Fixes come after the runs and before joinSupplied, so a run's number is still the aligner's own. A verse's fixes are applied together and kept only if every one finds its words once in the verse, no
+ * Greek word is then in two chunks, and no Greek word that had English is left without; otherwise the verse is kept as it was and named as stale (the aligner changed since the fix), never dropped.
+ */
+export function applyFixes(chapter: Chapter, rows: readonly ModelRow[]): Modelled {
+  const fixes = rows.filter((r) => r.run === FIX_RUN);
+  if (fixes.length === 0) return { chapter, stale: [] };
+  const stale: string[] = [];
+  const verses = chapter.verses.map((verse) => {
+    const ref = verseRef(chapter, verse);
+    const mine = fixes.filter((r) => r.ref.toLowerCase() === ref.toLowerCase());
+    if (mine.length === 0) return verse;
+    const stalled = (why: string): Verse => {
+      stale.push(`${ref} fixes are stale (${why}): the verse is kept as the model pass left it`);
+      return verse;
+    };
+    let e = verse.e.map((c) => ({ ...c }));
+    for (const r of mine) {
+      const want = words(r.text).split(' ');
+      const at: number[] = [];
+      for (let i = 0; i < e.length; i++) {
+        let got: string[] = [];
+        for (let j = i; j < e.length && got.length < want.length; j++) got = got.concat(words(e[j].t).split(' '));
+        if (got.length === want.length && got.every((w, k) => w === want[k])) at.push(i);
+      }
+      if (at.length !== 1) {
+        stale.push(`${ref} fix '${r.text}' ${at.length === 0 ? 'finds no such chunks' : 'finds them in several places'}: the verse is kept as the model pass left it`);
+        return verse;
+      }
+      let end = at[0];
+      let count = 0;
+      while (count < want.length) count += words(e[end++].t).split(' ').length;
+      const span = e.slice(at[0], end);
+      // the supplied words of the span, by their place among its words
+      const supplied: number[] = [];
+      let place = 0;
+      for (const c of span) {
+        for (const k of c.s ?? []) supplied.push(place + k);
+        place += words(c.t).split(' ').length;
+      }
+      const chunk: EnglishChunk = { t: want.join(' '), g: [...r.g].sort((a, b) => a - b) };
+      if (supplied.length > 0) chunk.s = supplied;
+      chunk.c = round2(r.confidence);
+      chunk.y = 'model';
+      e = [...e.slice(0, at[0]), chunk, ...e.slice(end)];
+    }
+    const seen = new Set<number>();
+    for (const c of e) {
+      for (const k of c.g) {
+        if (!Number.isInteger(k) || k < 0 || k >= verse.g.length) return stalled(`Greek word ${k} is outside the verse's word positions`);
+        if (seen.has(k)) return stalled(`Greek word ${k} (${verse.g[k].t}) is in two chunks`);
+        seen.add(k);
+      }
+    }
+    const lost = verse.g.findIndex((w, k) => w.e !== undefined && !seen.has(k));
+    if (lost >= 0) return stalled(`Greek word ${lost} (${verse.g[lost].t}) is left with no English`);
+    const g = verse.g.map((w) => {
+      const word: GreekWord = { ...w };
+      delete word.e;
+      return word;
+    });
+    e.forEach((chunk, i) => chunk.g.forEach((k) => (g[k].e = i)));
+    return { ...verse, g, e };
+  });
+  const refs = new Set(chapter.verses.map((v) => verseRef(chapter, v).toLowerCase()));
+  for (const r of fixes) if (!refs.has(r.ref.toLowerCase())) stale.push(`${r.ref} fix '${r.text}' is for no verse of this chapter: not used`);
   return { chapter: { ...chapter, verses }, stale };
 }
 

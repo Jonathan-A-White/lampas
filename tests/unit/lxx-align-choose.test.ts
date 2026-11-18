@@ -14,7 +14,9 @@ import {
   ALIGN_CHOICES_DIR,
   AlignChooseRefused,
   alignChoicesName,
+  applyFixes,
   applyModel,
+  FIX_RUN,
   checkModelLines,
   listRemainders,
   parseModelLines,
@@ -307,6 +309,68 @@ describe('the report names the share the model pass settled', () => {
   });
 });
 
+/**
+ * A fix of the aligner's own pair (mw-u2w5klk.349.32), Genesis 13:18 in miniature: the lexicon's gloss for ἀποσκηνόω is 'pitch a tent', so the aligner pairs ἀποσκηνώσας to 'tent,' and the English that
+ * renders it ('having removed his') has no Greek word. A `fix` row gives the whole phrase to the Greek word.
+ */
+describe('a fix row moves a Greek word the aligner paired to the wrong English word of its phrase', () => {
+  const GREEK_TENT = [word('ἀποσκηνώσας', 'aposkēnōsas', 'ἀποσκηνόω', 'V-AAP-NSM'), word('ἐλθὼν', 'elthōn', 'ἔρχομαι', 'V-2AAP-NSM')];
+  const glossTent = (l: string): string => ({ ἀποσκηνόω: 'to pitch a tent', ἔρχομαι: 'to come' })[l] ?? '';
+  const TENT = 'having removed his tent, came';
+  const build = (rows: Parameters<typeof alignChapter>[2]): ReturnType<typeof alignChapter> =>
+    alignChapter({ code: 'gen', book: 'Genesis', chapter: 13, verses: [{ ...verseOf(TENT, GREEK_TENT.map((w) => ({ ...w }))), n: 18 }] } as Chapter, glossTent, rows);
+  const run = { ref: 'Gen.13:18', run: 1, text: 'having removed his', g: [] as number[], mark: '' as const, confidence: 0.8 };
+  const fix = { ref: 'Gen.13:18', run: FIX_RUN, text: 'having removed his tent,', g: [0], mark: '' as const, confidence: 0.8 };
+
+  it('shows the fault first: the aligner gives ἀποσκηνώσας to "tent," and "having removed his" no Greek word', () => {
+    const verse = build([run]).chapter.verses[0];
+    expect(verse.e.map((c) => [c.t, c.g])).toEqual([['having removed his', []], ['tent,', [0]], ['came', [1]]]);
+  });
+
+  it('makes of the phrase one model chunk that holds the Greek word, and points the Greek word at it', () => {
+    const done = build([run, fix]);
+    const verse = done.chapter.verses[0];
+    expect(done.stale).toEqual([]);
+    expect(verse.e.map((c) => [c.t, c.g, c.y, c.c])).toEqual([['having removed his tent,', [0], 'model', 0.8], ['came', [1], 'align', 0.85]]);
+    expect(verse.g[0].e).toBe(0);
+    expect(septuagintChunkLinked(verse.e[0])).toBe(true);
+  });
+
+  it('can give a Greek word to a chunk of its own and release the word the aligner had paired there (g -)', () => {
+    const split = [
+      { ref: 'Gen.13:18', run: FIX_RUN, text: 'tent,', g: [], mark: '' as const, confidence: 0.8 },
+      { ref: 'Gen.13:18', run: FIX_RUN, text: 'having removed his', g: [0], mark: '' as const, confidence: 0.8 },
+    ];
+    const done = build([run, ...split]);
+    expect(done.stale).toEqual([]);
+    expect(done.chapter.verses[0].e.map((c) => [c.t, c.g])).toEqual([['having removed his', [0]], ['tent,', []], ['came', [1]]]);
+  });
+
+  it('keeps the verse as the model pass left it, and names it, when a fix finds no such words, finds them twice, puts a Greek word in two chunks or leaves one with no English', () => {
+    const plain = build([run]).chapter.verses[0];
+    for (const [rows, why] of [
+      [[{ ...fix, text: 'having removed her tent,' }], 'finds no such chunks'],
+      [[{ ...fix, g: [0, 1] }], 'is in two chunks'],
+      [[{ ...fix, g: [] }], 'is left with no English'],
+      [[{ ...fix, g: [5] }], "outside the verse's word positions"],
+    ] as Array<[typeof fix[], string]>) {
+      const done = build([run, ...rows]);
+      expect(done.chapter.verses[0], why).toEqual(plain);
+      expect(done.stale.join(' '), why).toContain(why);
+    }
+    expect(build([run, { ...fix, ref: 'Gen.13:19' }]).stale.join(' ')).toContain('is for no verse of this chapter');
+  });
+
+  it('is a row of the file like any other: written `fix`, read back as run FIX_RUN, and no run of the model pass', () => {
+    const tsv = modelRowsTsv([run, fix]);
+    expect(tsv).toContain('Gen.13:18\tfix\thaving removed his tent,\t0\t\t0.80');
+    expect(readModelRows(tsv)).toEqual([run, fix]);
+    expect(applyFixes(build([run]).chapter, [fix]).chapter.verses[0].e.map((c) => c.t)).toEqual(['having removed his tent,', 'came']);
+    const { stale } = applyModel(alignRuns({ code: 'gen', book: 'Genesis', chapter: 13, verses: [{ ...verseOf(TENT, GREEK_TENT.map((w) => ({ ...w }))), n: 18 }] } as Chapter, glossTent).chapter, [run, fix]);
+    expect(stale).toEqual([]);
+  });
+});
+
 // the real Genesis 1 to 13 and 15 to 36 (the chapters the model pass has been run for): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
 // the gate's log says in one line when it is skipped and why. Sources found elsewhere than the cwd are given to runShip, so no symlink is needed.
 // Genesis 20 is his own report (2026-11-10, mw-u2w5klk.349.2: a tap on 'removed' in Genesis 20:1 opened the Verse view); the chapters of the model pass are listed here, and a chapter is added when its file is
@@ -361,6 +425,9 @@ describe.skipIf(!haveSources)('Genesis 1 to 13, 15 to 36 with the model pass', (
     }
   });
 
+  const fixRows = (n: number): ReturnType<typeof readModelRows> =>
+    readModelRows(readFileSync(join(ALIGN_CHOICES_DIR, alignChoicesName('gen', n)), 'utf8')).filter((r) => r.run === FIX_RUN);
+
   it('drops no word and no English: the chunks joined are Brenton\'s whole verse as the aligner had it, the Greek words are the same, and an aligned chunk is untouched, bar the supplied words the model paired with a Greek word of their own', () => {
     for (const [n, chapter] of withModel) {
       const was = base.get(n)!;
@@ -371,7 +438,10 @@ describe.skipIf(!haveSources)('Genesis 1 to 13, 15 to 36 with the model pass', (
         expect(verse.g.map((w) => w.t)).toEqual(prior.g.map((w) => w.t));
         const supplied = (v: Verse): number => v.e.reduce((a, c) => a + (c.s?.length ?? 0), 0);
         expect(supplied(verse)).toBe(supplied(prior));
-        expect(alignedDiffs(prior, verse), `Gen ${n}:${verse.n}`).toEqual([]);
+        // an aligner chunk a fix row names (mw-u2w5klk.349.32) is one the fix changed on purpose; every other aligned chunk is untouched
+        const fixText = fixRows(n).filter((r) => r.ref === `Gen.${n}:${verse.n}`).map((r) => r.text.split(/\s+/));
+        const unmeant = alignedDiffs(prior, verse).filter((d) => !fixText.some((words) => d.split('|')[0].split(/\s+/).some((w) => words.includes(w))));
+        expect(unmeant, `Gen ${n}:${verse.n}`).toEqual([]);
       });
     }
   });
@@ -425,37 +495,29 @@ describe.skipIf(!haveSources)('Genesis 1 to 13, 15 to 36 with the model pass', (
   });
 
   // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3): the English content words (`contentWordsOf`, scripts/lxx/unpaired.ts) that sit in a chunk with no Greek word after the pass, 189 of 2,560 (607 had none
-  // before it, read with `npm run lxx:unpaired -- --book gen`), keyed chapter:verse:word and read by hand from `--list`. Each is in one of three lists, with why. A tap on one opens the Verse view, never a wrong word.
+  // before it, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.32 gave a Greek word to 58 of the 189, a Greek word paired to its neighbour's English, and two went to a name of their own (12:11 'came', 17:19 'God'), so 133 are left), keyed chapter:verse:word and read by hand from `--list`. Each is in one of three lists, with why. A tap on one opens the Verse view, never a wrong word.
   // 'it came to pass' renders ἐγένετο (Hebrew's 'and it was'), which the aligner paired to one English word; the model re-chooses remainders, not pairs, so the others have no Greek word left.
   const IDIOM_NO_GREEK = [
-    '12:11:pass', '12:12:pass', '12:14:came', '12:14:pass', '19:17:came', '19:17:pass', '19:29:came', '19:34:came', '19:34:pass', '21:22:came',
-    '22:1:came', '22:1:pass', '22:20:came', '22:20:pass',
+    '12:11:came', '12:11:pass', '12:12:pass', '12:14:came', '12:14:pass', '19:17:came', '19:17:pass', '19:29:came', '19:34:came', '19:34:pass', '21:22:came', '22:1:came',
+    '22:1:pass', '22:20:came', '22:20:pass',
   ];
   // LXX2012 carries English of the next Greek verse in these two (Genesis 13:11 'And Abram lived in the land of Chanaan' is Swete's 13:12; Genesis 22:15 runs into 22:16): the Greek words are in the other verse.
   const NEXT_VERSE_NO_GREEK = [
     '13:11:abram', '13:11:lived', '13:11:land', '13:11:chanaan', '22:15:saying', '22:15:sworn', '22:15:says', '22:15:lord', '22:15:because',
     '22:15:thing', '22:15:account', '22:15:spared', '22:15:beloved', '22:15:son',
   ];
-  // Either the Greek word that renders it is a pair the aligner made to another English word ('large enough' for ἐχώρει, paired to 'for'; 'mistress' for κυρίαν, paired to 'Return'; 'whole burnt' for
-  // ὁλοκάρπωσιν, paired to 'offering'), or Brenton's English adds it to turn a Greek phrase into English ('forth', 'aside', 'early', 'fine', 'aloud', 'only', 'still', 'drink', 'journey').
+  // Either the Greek word that renders it is a pair the aligner made to another English word that no fix row (`fix` rows of data/lxx/align, applyFixes) has yet moved ('God' for αἰώνιον in 17:19, paired to the
+  // word before it: the Greek has no 'God' there), or Brenton's English adds it to turn a Greek phrase into English ('forth', 'aside', 'early', 'fine', 'aloud', 'only', 'still', 'drink', 'journey').
   const PAIRED_OR_ADDED_NO_GREEK = [
-    '12:1:forth', '12:1:come', '12:5:many', '12:5:got', '12:11:drew', '12:11:near', '12:12:come', '12:12:save', '12:14:wife', '12:17:because',
-    '12:20:forward', '13:3:place', '13:6:large', '13:6:enough', '13:6:land', '13:7:cattle', '13:9:go', '13:9:go', '13:9:go', '13:9:go', '13:14:look',
-    '13:18:removed', '15:1:great', '15:2:heir', '15:3:grieved', '15:3:homeborn', '15:5:look', '15:5:fully', '15:9:third', '15:9:third', '15:13:four',
-    '15:17:divided', '16:1:children', '16:2:get', '16:9:mistress', '16:13:god', '16:13:appeared', '16:16:old', '17:6:exceedingly', '17:7:god',
-    '17:10:fully', '17:12:old', '17:12:born', '17:12:money', '17:13:money', '17:17:one', '17:17:years', '17:17:old', '17:17:old', '17:17:bear',
-    '17:19:everlasting', '17:23:homeborn', '17:23:bought', '17:23:money', '17:23:according', '17:24:old', '17:25:old', '17:27:money', '18:2:lifted',
-    '18:5:refreshment', '18:5:aside', '18:6:fine', '18:7:young', '18:8:dressed', '18:12:thing', '18:12:happened', '18:13:why', '18:13:grown',
-    '18:16:risen', '18:16:thence', '18:16:journey', '18:17:intend', '18:21:correspond', '18:22:still', '18:23:drew', '18:24:whole', '18:26:whole',
-    '18:26:sakes', '18:30:sake', '18:31:able', '18:31:find', '19:2:aside', '19:2:early', '19:2:journey', '19:3:aside', '19:3:cakes', '19:4:went',
-    '19:6:porch', '19:7:villanously', '19:9:drew', '19:10:forth', '19:13:going', '19:14:depart', '19:15:forth', '19:15:destroyed', '19:17:round',
-    '19:20:one', '19:27:go', '19:28:went', '19:32:drink', '19:33:drink', '19:33:knew', '19:34:drink', '19:35:drink', '19:35:knew', '19:38:saying',
-    '21:2:old', '21:2:set', '21:2:according', '21:5:one', '21:5:old', '21:5:born', '21:6:rejoice', '21:13:nation', '21:16:surely', '21:16:aloud',
-    '21:19:drink', '21:22:host', '21:22:things', '21:22:whatever', '21:25:because', '21:26:tell', '21:26:only', '22:2:one', '22:2:whole', '22:2:burnt',
-    '22:3:whole', '22:3:burnt', '22:4:lifted', '22:6:burnt', '22:6:offering', '22:7:whole', '22:7:burnt', '22:8:whole', '22:8:burnt', '22:9:feet',
-    '22:9:together', '22:10:forth', '22:12:sake', '22:13:lifted', '22:13:offered', '22:13:whole', '22:13:burnt', '22:15:time', '22:18:earth',
-    '22:19:arose', '22:21:chazad', '22:22:bathuel', '22:22:begot', '22:22:rebecca', '23:1:one', '23:5:sir', '23:13:side', '23:15:land', '23:15:worth',
-    '23:15:nay', '23:16:four', '23:17:borders', '23:17:round', '23:17:made', '23:17:sure',
+    '12:1:come', '12:12:come', '12:20:forward', '13:3:place', '13:6:land', '13:7:cattle', '13:9:go', '13:9:go', '13:9:go', '13:9:go', '15:1:great', '15:2:heir', '15:3:grieved',
+    '15:3:homeborn', '15:5:look', '15:5:fully', '15:9:third', '15:9:third', '15:13:four', '15:17:divided', '16:1:children', '16:13:god', '16:13:appeared', '17:7:god', '17:12:old',
+    '17:12:born', '17:12:money', '17:13:money', '17:17:old', '17:17:bear', '17:19:god', '18:5:refreshment', '18:5:aside', '18:12:thing', '18:16:journey', '18:17:intend',
+    '18:22:still', '18:24:whole', '18:26:whole', '18:30:sake', '18:31:able', '18:31:find', '19:2:aside', '19:2:early', '19:2:journey', '19:3:aside', '19:3:cakes', '19:4:went',
+    '19:6:porch', '19:7:villanously', '19:9:drew', '19:10:forth', '19:13:going', '19:14:depart', '19:15:forth', '19:15:destroyed', '19:17:round', '19:20:one', '19:27:go',
+    '19:28:went', '19:32:drink', '19:33:drink', '19:33:knew', '19:34:drink', '19:35:drink', '19:35:knew', '19:38:saying', '21:2:old', '21:2:set', '21:2:according', '21:5:one',
+    '21:5:old', '21:5:born', '21:6:rejoice', '21:13:nation', '21:16:surely', '21:16:aloud', '21:19:drink', '21:22:host', '21:22:things', '21:22:whatever', '21:25:because',
+    '21:26:tell', '21:26:only', '22:2:one', '22:9:feet', '22:9:together', '22:12:sake', '22:18:earth', '22:21:chazad', '22:22:bathuel', '22:22:begot', '22:22:rebecca', '23:1:one',
+    '23:5:sir', '23:13:side', '23:15:land', '23:15:worth', '23:15:nay', '23:16:four', '23:17:borders', '23:17:round', '23:17:made', '23:17:sure',
   ];
   const noGreek = (chapter: Chapter): string[] =>
     chapter.verses.flatMap((v) => v.e.filter((c) => !septuagintChunkLinked(c)).flatMap((c) => contentWordsOf(c.t).map((w) => `${chapter.chapter}:${v.n}:${w}`)));
@@ -464,7 +526,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 13, 15 to 36 with the model pass', (
     const named = [...IDIOM_NO_GREEK, ...NEXT_VERSE_NO_GREEK, ...PAIRED_OR_ADDED_NO_GREEK].sort();
     const found = [12, 13, 15, 16, 17, 18, 19, 21, 22, 23].flatMap((n) => noGreek(withModel.get(n)!)).sort();
     expect(found).toEqual(named);
-    expect(named).toHaveLength(189);
+    expect(named).toHaveLength(133);
     for (const n of [12, 13, 15, 16, 17, 18, 19, 21, 22, 23]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
   });
 
@@ -474,6 +536,46 @@ describe.skipIf(!haveSources)('Genesis 1 to 13, 15 to 36 with the model pass', (
       const chunk = chunkOf(n, v, text);
       expect(chunk, `${n}:${v} ${text}`).toBeDefined();
       expect(septuagintChunkLinked(chunk), `${n}:${v} ${text}`).toBe(true);
+    }
+  });
+
+  // Genesis 13:18, 16:9 and 22:13 (mw-u2w5klk.349.32; the Governor's own 'removed' of 2026-11-10): the aligner paired a Greek word to its neighbour's English ('tent,' to ἀποσκηνώσας, κυρίαν to 'Return', 'up' to
+  // ἀναβλέψας and ἀνήνεγκεν) and a tap on the English word that renders it opened the Verse view or the wrong word. The fix rows (`fix` in data/lxx/align/gen-NN.tsv) give each Greek word to the words it renders.
+  const chunkWith = (n: number, v: number, word: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(word))!;
+  const greekOf = (n: number, v: number, chunk: EnglishChunk): string[] => chunk.g.map((i) => withModel.get(n)!.verses.find((x) => x.n === v)!.g[i].t);
+
+  it("links Genesis 13:18's 'removed' to ἀποσκηνώσας, in the one chunk that holds 'tent,' as well: no other chunk of the verse holds that Greek word, so 'tent,' no longer opens it for 'removed'", () => {
+    const chunk = chunkWith(13, 18, 'removed');
+    expect(greekOf(13, 18, chunk)).toEqual(['ἀποσκηνώσας']);
+    expect(chunk.t).toBe('having removed his tent,');
+    expect(septuagintChunkLinked(chunk)).toBe(true);
+    const verse = withModel.get(13)!.verses.find((x) => x.n === 18)!;
+    expect(verse.e.filter((c) => c.g.some((i) => verse.g[i].t === 'ἀποσκηνώσας'))).toHaveLength(1);
+  });
+
+  it("links Genesis 16:9's 'Return' to Ἀποστράφηθι and 'mistress,' to κυρίαν, each to its own", () => {
+    expect(greekOf(16, 9, chunkWith(16, 9, 'Return'))).toEqual(['Ἀποστράφηθι']);
+    expect(greekOf(16, 9, chunkWith(16, 9, 'mistress,'))).toEqual(['κυρίαν']);
+  });
+
+  it("links Genesis 22:13's 'lifted' to ἀναβλέψας and 'offered' to ἀνήνεγκεν, and 'whole burnt offering' to ὁλοκάρπωσιν; the same 'lifted up' in 18:2 and 22:4", () => {
+    expect(greekOf(22, 13, chunkWith(22, 13, 'lifted'))).toEqual(['ἀναβλέψας']);
+    expect(greekOf(22, 13, chunkWith(22, 13, 'offered'))).toEqual(['ἀνήνεγκεν']);
+    expect(chunkWith(22, 13, 'burnt').t).toBe('a whole burnt offering');
+    expect(greekOf(22, 13, chunkWith(22, 13, 'burnt'))).toEqual(['ὁλοκάρπωσιν']);
+    expect(greekOf(18, 2, chunkWith(18, 2, 'lifted'))).toEqual(['ἀναβλέψας']);
+    expect(greekOf(22, 4, chunkWith(22, 4, 'lifted'))).toEqual(['ἀναβλέψας']);
+  });
+
+  it('applies every fix row it has: none is stale, and none of a chapter leaves a Greek word it had paired without English', () => {
+    expect(stale).toEqual([]);
+    for (const n of MODELLED) {
+      const rows = fixRows(n);
+      if (rows.length === 0) continue;
+      for (const r of rows) {
+        const verse = withModel.get(n)!.verses.find((x) => `Gen.${n}:${x.n}` === r.ref)!;
+        expect(verse.e.some((c) => c.y === 'model' && c.t === r.text && c.g.join(',') === r.g.join(',')), `${r.ref} ${r.text}`).toBe(true);
+      }
     }
   });
 

@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
-import { applyModel, type ModelRow } from './align-choose';
+import { applyFixes, applyModel, type ModelRow } from './align-choose';
 import type { ShipOptions } from './ship';
 
 export const ALIGN_DOC = join('docs', 'lxx-align.md');
@@ -519,6 +519,10 @@ export function alignRuns(chapter: Chapter, gloss: (lemma: string) => string): {
 export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string, model: readonly ModelRow[] = []): { chapter: Chapter; share: AlignShare; stale: string[] } {
   const { chapter: runs, share } = alignRuns(chapter, gloss);
   const modelled = applyModel(runs, model);
+  // the fixes of the aligner's own pairs (applyFixes) come after the runs, so a run's number is the aligner's own, and before joinSupplied
+  const fixed = applyFixes(modelled.chapter, model);
+  modelled.chapter = fixed.chapter;
+  modelled.stale.push(...fixed.stale);
   // after the model pass, so the runs it numbers are the aligner's own: the words Brenton supplies for a verb join its chunk
   modelled.chapter = { ...modelled.chapter, verses: modelled.chapter.verses.map(joinSupplied) };
   if (model.length > 0) {
