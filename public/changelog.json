@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.272",
+    "date": "2026-11-18",
+    "story": "mw-ar5k42b.26",
+    "kind": "fixed",
+    "text": "The Bible voice setting no longer says David's recording covers only John; it says he reads wherever Lampas has his recording, which stays true as books arrive."
+  },
+  {
+    "version": "0.7.272",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.159",
+    "kind": "fixed",
+    "text": "The verse you are reading now stays at the top of the screen even when a newly chosen font finishes loading late."
+  },
+  {
+    "version": "0.7.272",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.176",
+    "kind": "fixed",
+    "text": "the written say-it of the Hebrew word \"Hallelu\" now shows the vowel sound in the middle (ha-leh-LOO), as the voice says it."
+  },
+  {
+    "version": "0.7.272",
+    "date": "2026-11-18",
+    "story": "mw-rl10piw.31",
+    "kind": "fixed",
+    "text": "Hands-free turned on with no network now says it could not start and starts by itself when the network is back or on the next touch."
+  },
+  {
     "version": "0.7.271",
     "date": "2026-11-18",
     "story": "mw-fnvjof.17.158",

@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.272
+_2026-11-18_
+- Fixed: The Bible voice setting no longer says David's recording covers only John; it says he reads wherever Lampas has his recording, which stays true as books arrive.
+- Fixed: The verse you are reading now stays at the top of the screen even when a newly chosen font finishes loading late.
+- Fixed: the written say-it of the Hebrew word "Hallelu" now shows the vowel sound in the middle (ha-leh-LOO), as the voice says it.
+- Fixed: Hands-free turned on with no network now says it could not start and starts by itself when the network is back or on the next touch.
+
 ## 0.7.271
 _2026-11-18_
 - New: On the blog's home page, the Bible reference in the big quote now opens the Lampas verse card when you tap it, and the double hyphen before it is drawn as a proper dash.
