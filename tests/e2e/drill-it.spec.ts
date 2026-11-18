@@ -3,6 +3,7 @@ import { tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
+import { ALWAYS_NEEDED, ideasBelow } from '../../src/data/grammar/ladder';
 
 // Drill it on the idea sheet (mw-i7xe0n.3): the level slider, the question and its answers all stand inside the screen, upright (390x844) and sideways (844x390).
 // tapTwice (tests/support/gesture.ts) times the two taps on the page's clock, so it is installed before the page opens.
@@ -321,4 +322,35 @@ test('a double tap on Finish the round leaves the round result of the letter dri
 test('on a slow host the letter drill round still reaches Finish the round', async ({ page }) => {
   const drill = await playLetterRoundToItsEnd(page, 1500);
   await expect(drill.getByTestId('letter-next')).toHaveText('Finish the round');
+});
+
+// The Tester (mw-indx1x6.48, on mw-indx1x6.16): a double tap on Drill it with the phone offline showed him nothing: the screen's Done stands where Drill it stood, so the
+// second tap closed the screen before it could say 'This phone is offline, so no more questions can be written.' (the conjunction over 1 John 1 has a top step of one question).
+test('a double tap on Drill it offline leaves the screen open, saying no more questions can be written', async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openUnlocked(page);
+  await page.addInitScript((ms) => window.localStorage.setItem('lampas.settleMs', ms), String(SETTLE_MS));
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await put(page, 'settings', [{ key: 'goal', value: '1 John 1' }]);
+  await put(page, 'grammarLevels', [...ALWAYS_NEEDED, ...ideasBelow('conjunction').map((i) => i.id)].map((id) => ({ id, level: 'solid', since: Date.now(), how: 'placement' })));
+  await page.goto('/#/goal');
+  await page.reload();
+  await page.getByTestId('ideas-bar').click();
+  await page.getByTestId('ideas-list').getByRole('button', { name: 'The conjunction', exact: true }).click();
+  const idea = page.getByRole('dialog', { name: 'Idea', exact: true });
+  await expect(idea.getByTestId('idea-loading')).toHaveCount(0);
+  await context.setOffline(true);
+  for (const gap of [60, 150, 300, 500, 800]) {
+    await page.waitForTimeout(SETTLE_MS + 100);
+    await tapTwice(page, idea.getByRole('button', { name: 'Drill it', exact: true }), gap);
+    const drill = page.getByRole('dialog', { name: 'Drill it' });
+    await expect(drill.getByTestId('drill-cannot-ask'), `${gap} ms`).toContainText('This phone is offline, so no more questions can be written.');
+    await expect(drill, `${gap} ms`).toHaveCount(1);
+    if (gap === 800) await shot(page, 'drill-it-offline');
+    // a Done he taps after reading it closes the screen (the moment after a screen opens is two settle moments)
+    await page.waitForTimeout(2 * SETTLE_MS + 100);
+    await drill.getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(drill).toHaveCount(0);
+  }
 });
