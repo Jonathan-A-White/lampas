@@ -237,6 +237,17 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
     if (question?.options.includes(option)) pick(option);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+  // a wrong answer to a long question leaves its 'Study this' row below the box's fold, behind Next, and nothing says it is there (mw-indx1x6.60): the box moves to show it, as
+  // far as the row's own foot, so the answer and his feedback stay as near as they can
+  const box = useRef<HTMLDivElement>(null);
+  const missed = after !== null && question !== null && after.picked !== question.right;
+  useEffect(() => {
+    const scroller = box.current;
+    const row = scroller?.querySelector<HTMLElement>('[data-testid="study-this"]');
+    if (!missed || !scroller || !row) return;
+    const over = row.getBoundingClientRect().bottom - scroller.getBoundingClientRect().bottom;
+    if (over > 0) scroller.scrollTop += over + 12;
+  }, [missed, walk?.asked.length]);
   const next = () => {
     if (!after) return;
     setWalk(after.walk);
@@ -261,7 +272,7 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
           </button>
         )}
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3">
+      <div ref={box} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3">
         {onTheirWay ? (
           <p role="status" data-testid="drill-more-on-the-way" className="text-lg">
             More questions are on their way. Drill it again in a little while: it proves an idea only on questions you have not been asked.
