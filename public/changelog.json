@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.278",
+    "date": "2026-11-18",
+    "story": "mw-qtu3zvz.208",
+    "kind": "fixed",
+    "text": "Lampas no longer offers to open a Bible in Logos that your Library import does not show you own."
+  },
+  {
+    "version": "0.7.278",
+    "date": "2026-11-18",
+    "story": "mw-r9xo1pj.3",
+    "kind": "new",
+    "text": "Morning RePhil can mark the episodes you have already watched on YouTube as seen, from the history file Google Takeout gives you."
+  },
+  {
     "version": "0.7.277",
     "date": "2026-11-18",
     "story": "mw-5r3p30.1190",

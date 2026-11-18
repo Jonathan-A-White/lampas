@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.278
+_2026-11-18_
+- Fixed: Lampas no longer offers to open a Bible in Logos that your Library import does not show you own.
+- New: Morning RePhil can mark the episodes you have already watched on YouTube as seen, from the history file Google Takeout gives you.
+
 ## 0.7.277
 _2026-11-18_
 - Fixed: Your Logos library no longer shows the Memorize and Verse lists rows; they live in Tools.
