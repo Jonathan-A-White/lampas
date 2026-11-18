@@ -136,10 +136,14 @@ function foldMatres(clusters: Cluster[]): void {
 const LONG: ReadonlySet<Vowel | undefined> = new Set<Vowel | undefined>(['qamats', 'tsere', 'holam', 'shuruq']);
 
 /** Which shewas are said: the first letter of a word, a letter after a long vowel, the second of two, a letter the dagesh doubles, and one before the same letter; not the last letter. `guide`
- * is the data's transliteration, whose ə marks the said ones: where the rule's count and the guide's differ, the guide settles which shewas (earliest first). */
+ * is the data's transliteration, whose ə marks the said ones: where the rule's count and the guide's differ, the guide settles which shewas (earliest first). The shewa before the same
+ * letter (הַלְלוּ) is the exception: the data writes it 'hal·lū', closing the syllable as a grammar book does, but the Israeli voice says ha-le-LOO, so the guide neither unsays it nor
+ * is counted against it (mw-fnvjof.17.176). */
 function vocalShewas(clusters: Cluster[], guide?: string): ReadonlySet<number> {
   const vocal = new Set<number>();
   const silentShewas: number[] = [];
+  /** the shewas said only because the letter after them is the same: the guide does not settle these */
+  const doubledLetter = new Set<number>();
   let prevShewa: 'vocal' | 'silent' | null = null;
   let longBefore = false;
   let heardVowel = false;
@@ -150,8 +154,10 @@ function vocalShewas(clusters: Cluster[], guide?: string): ReadonlySet<number> {
         i === 0 ||
         (i < clusters.length - 1 &&
           (prevShewa === 'silent' || (prevShewa === null && (longBefore || doubled || clusters[i + 1]?.letter === c.letter))));
-      if (says) vocal.add(i);
-      else if (i > 0) silentShewas.push(i);
+      if (says) {
+        vocal.add(i);
+        if (i > 0 && i < clusters.length - 1 && clusters[i + 1]?.letter === c.letter) doubledLetter.add(i);
+      } else if (i > 0) silentShewas.push(i);
       prevShewa = says ? 'vocal' : 'silent';
     } else if (!c.silent) {
       prevShewa = null;
@@ -166,11 +172,13 @@ function vocalShewas(clusters: Cluster[], guide?: string): ReadonlySet<number> {
     }
   });
   const said = guide === undefined ? null : [...guide].filter((ch) => ch === 'ə').length;
-  if (said !== null && said !== vocal.size) {
+  // the guide may or may not mark the shewa before the same letter ('rə·rîm' does, 'hal·lū' does not): either count is taken as agreeing, and that shewa is never unsaid
+  const kept = [...vocal].filter((v) => !doubledLetter.has(v)).length;
+  if (said !== null && said !== vocal.size && said !== kept) {
     if (said > vocal.size) {
       for (const i of silentShewas) if (vocal.size < said && i < clusters.length - 1) vocal.add(i);
     } else {
-      for (const i of [...vocal].filter((v) => v > 0).reverse()) if (vocal.size > said) vocal.delete(i);
+      for (const i of [...vocal].filter((v) => v > 0 && !doubledLetter.has(v)).reverse()) if (vocal.size > said) vocal.delete(i);
     }
   }
   return vocal;
