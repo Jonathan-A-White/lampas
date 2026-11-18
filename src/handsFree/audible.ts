@@ -6,7 +6,7 @@
 //    plan's next chapter the listening session is begun before the link opens, with no send-off sheet (he cannot tap); for any other chapter there is none. A chapter with no start known
 //    opens what the link opens today and names the Audible chapter to pick (audibleChapterLabel).
 //  - A browser may refuse to open another app when no finger touched the screen (NOT KNOWN on his phone). When the page is still in front after openApp's wait it says
-//    'Touch the screen once to open Audible', and the next touch anywhere in the following 30 s opens the same link, made anew at that touch. After 30 s it lets go.
+//    'Touch the screen once to open Audible', and the next touch anywhere in the following 30 s opens the same link, made anew at that touch. After 30 s, or when the page goes away, it lets go.
 //  - While Audible is in front Lampas is behind it and does not hear 'Hey Lampas' (a known limit). When Lampas is in front again the wake listening runs again (src/handsFree/session.ts, the
 //    document's visibility, which tests/unit/hands-free-session.test.tsx and features/hands-free-audible.feature hold).
 import { titleOf } from '../data/books';
@@ -44,9 +44,11 @@ export function forgetAudible(): void {
 function askForTouch(target: SendOffTarget, env: OpenEnv, say: (text: string) => Promise<void>): void {
   void say(TOUCH_TO_OPEN);
   const clock = audibleSeam.clock ?? { setTimeout: (fn: () => void, ms: number) => globalThis.setTimeout(fn, ms), clearTimeout: (h: unknown) => globalThis.clearTimeout(h as number) };
+  let stopAway = (): void => {};
   const stop = (): void => {
     document.removeEventListener('pointerup', touched, true);
     clock.clearTimeout(timer);
+    stopAway();
     if (release === stop) release = null;
   };
   // pointerup, not pointerdown: a touch counts as a user's tap for opening another app when the finger lifts (and a swipe, which ends in pointercancel, is not a tap)
@@ -56,6 +58,8 @@ function askForTouch(target: SendOffTarget, env: OpenEnv, say: (text: string) =>
   }
   document.addEventListener('pointerup', touched, true);
   const timer = clock.setTimeout(stop, TOUCH_WINDOW_MS);
+  // the page going away (he opened Audible himself) lets go of the touch too: a touch after he comes back must not open the link again from the start
+  stopAway = env.onAway(stop);
   release = stop;
 }
 
