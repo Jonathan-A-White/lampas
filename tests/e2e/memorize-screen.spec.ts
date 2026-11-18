@@ -48,14 +48,14 @@ async function seed(page: Page): Promise<void> {
   );
 }
 
-test('the Library row opens Memorize: the verses due with Start, then every verse by list with its mark', async ({ page }) => {
+test('the Tools row opens Memorize: the verses due with Start, then every verse by list with its mark', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
   await seed(page);
 
-  await page.goto('/#/library');
-  const row = page.getByTestId('memorize-row').getByRole('button', { name: /^Memorize/ });
+  await page.goto('/#/tools');
+  const row = page.locator('[data-tool="link.memorize"]');
   await expect(row).toContainText('2 due');
   await row.click();
 

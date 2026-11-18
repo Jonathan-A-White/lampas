@@ -30,15 +30,15 @@ async function seedList(page: Page, name: string, refs: string[]): Promise<void>
   );
 }
 
-test('open a list from the Library, rename it, delete it and bring it back with Undo', async ({ page }) => {
+test('open a list from Tools, rename it, delete it and bring it back with Undo', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
   await seedList(page, 'Refuge', REFS);
 
-  // the Library's row says how many lists, and opens them
-  await page.goto('/#/library');
-  const row = page.getByTestId('verse-lists-row').getByRole('button', { name: /Verse lists/ });
+  // the Tools row says how many lists, and opens them
+  await page.goto('/#/tools');
+  const row = page.locator('[data-tool="link.lists"]');
   await expect(row).toContainText('1 list');
   await row.click();
   await expect(page.getByRole('heading', { name: 'Verse lists', level: 1 })).toBeVisible();

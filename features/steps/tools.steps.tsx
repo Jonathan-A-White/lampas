@@ -95,6 +95,34 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('the address is {string}', (_, hash: string) => expect(window.location.hash).toBe(hash));
   });
 
+  Scenario('Your Logos library holds the kinds only, and Tools shows Memorize and Verse lists with their counts', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Romans 8 with Logos on', () => openReader(true));
+    When("he opens Tools from the reader's Menu", async () => {
+      await openTools(user);
+    });
+    Then('the Tools row {string} says {string}', async (_, tool: string, line: string) => {
+      const button = within(await toolsList()).getByRole('button', { name: new RegExp(`^${tool}`) });
+      await waitFor(() => expect(button).toHaveTextContent(line));
+    });
+    And('the Tools row {string} says {string}', async (_, tool: string, line: string) => {
+      const button = within(await toolsList()).getByRole('button', { name: new RegExp(`^${tool}`) });
+      await waitFor(() => expect(button).toHaveTextContent(line));
+    });
+    When('he opens the tool {string}', async (_, tool: string) => {
+      await user.click(within(await toolsList()).getByRole('button', { name: new RegExp(`^${tool}`) }));
+    });
+    Then('the screen {string} is shown', async (_, name: string) => {
+      expect(await screen.findByRole('heading', { name, level: 1 })).toBeVisible();
+    });
+    And('the library lists no row named "Memorize" or "Verse lists"', async () => {
+      await screen.findAllByTestId('kind-row');
+      expect(screen.queryByTestId('memorize-row')).toBeNull();
+      expect(screen.queryByTestId('verse-lists-row')).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Memorize/ })).toBeNull();
+      expect(screen.queryByRole('button', { name: /^Verse lists/ })).toBeNull();
+    });
+  });
+
   ScenarioOutline('Each tool opens its screen and Back returns to Tools', ({ Given, When, And, Then }, row: { tool: string; screen: string; back: string }) => {
     Given('Lampas is opened on Romans 8 with Logos on', () => openReader(true));
     When("he opens Tools from the reader's Menu", async () => {

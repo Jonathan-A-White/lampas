@@ -9,6 +9,7 @@ import { createVerseList, getVerseList, listVerseLists } from '../../src/data/re
 import { memorize } from '../../src/data/repositories/memorize';
 import { clearBus } from '../../src/events/bus';
 import { LibraryScreen } from '../../src/library/LibraryScreen';
+import { ToolsScreen } from '../../src/ToolsScreen';
 import { VerseListsScreen } from '../../src/lists/VerseListsScreen';
 import { UNDO_MS } from '../../src/lists/deleted';
 import { routeOf } from '../../src/nav/route';
@@ -171,41 +172,55 @@ describe('delete and Undo', () => {
   });
 });
 
-describe('the Library', () => {
+describe('Tools', () => {
+  // the Memorize and Verse lists rows were the Library's until Tools listed them (mw-5r3p30.754); the Library carries neither (mw-5r3p30.1190)
+  const row = async (name: RegExp) => within(await screen.findByRole('list', { name: 'Tools' })).findByRole('button', { name });
+
   it('has a Verse lists row with the number of lists, which opens #/lists', async () => {
-    window.history.replaceState(null, '', '/#/library');
+    window.history.replaceState(null, '', '/#/tools');
     await createVerseList('Refuge', REFUGE, 1);
     await createVerseList('Peace', ['John.14.27'], 2);
-    render(<LibraryScreen />);
-    const row = await screen.findByRole('button', { name: /^Verse lists/ });
-    await waitFor(() => expect(row).toHaveTextContent('2 lists'));
-    expect(row.closest('[data-testid="kind-row"]')).toBeNull();
-    await userEvent.click(row);
+    render(<ToolsScreen />);
+    const button = await row(/^Verse lists/);
+    await waitFor(() => expect(button).toHaveTextContent('2 lists'));
+    await userEvent.click(button);
     expect(window.location.hash).toBe('#/lists');
   });
 
   it('has a Memorize row with the verses due, which opens #/memorize', async () => {
-    window.history.replaceState(null, '', '/#/library');
+    window.history.replaceState(null, '', '/#/tools');
     await memorize('Rom.8.28', ['en']);
     await memorize('John.3.16', ['en']);
-    render(<LibraryScreen />);
-    const row = await screen.findByRole('button', { name: /^Memorize/ });
-    await waitFor(() => expect(row).toHaveTextContent('Memorize 2 due'));
-    await userEvent.click(row);
+    render(<ToolsScreen />);
+    const button = await row(/^Memorize/);
+    await waitFor(() => expect(button).toHaveTextContent('2 due'));
+    await userEvent.click(button);
     expect(window.location.hash).toBe('#/memorize');
   });
 
   it('the Memorize row says nothing due when no verse is', async () => {
-    window.history.replaceState(null, '', '/#/library');
-    render(<LibraryScreen />);
-    const row = await screen.findByRole('button', { name: /^Memorize/ });
-    await waitFor(() => expect(row).toHaveTextContent('nothing due'));
+    window.history.replaceState(null, '', '/#/tools');
+    render(<ToolsScreen />);
+    const button = await row(/^Memorize/);
+    await waitFor(() => expect(button).toHaveTextContent('nothing due'));
   });
 
-  it('says none when there is no list', async () => {
+  it('the Verse lists row says none yet when there is no list', async () => {
+    window.history.replaceState(null, '', '/#/tools');
+    render(<ToolsScreen />);
+    const button = await row(/^Verse lists/);
+    await waitFor(() => expect(button).toHaveTextContent('none yet'));
+  });
+});
+
+describe('the Library', () => {
+  it('has neither a Verse lists row nor a Memorize row, whatever he holds', async () => {
     window.history.replaceState(null, '', '/#/library');
+    await createVerseList('Refuge', REFUGE, 1);
+    await memorize('Rom.8.28', ['en']);
     render(<LibraryScreen />);
-    const row = await screen.findByRole('button', { name: /^Verse lists/ });
-    await waitFor(() => expect(row).toHaveTextContent('none'));
+    await screen.findAllByTestId('kind-row');
+    expect(screen.queryByRole('button', { name: /^Verse lists/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Memorize/ })).toBeNull();
   });
 });

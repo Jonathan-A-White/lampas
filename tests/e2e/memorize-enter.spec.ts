@@ -36,8 +36,8 @@ test('turn Memorize this list on, then see the verse as memorized in the Verse v
   await expect(page.locator('[data-verse]').first()).toBeVisible();
   await seedList(page, 'Refuge', REFS);
 
-  await page.goto('/#/library');
-  await page.getByTestId('verse-lists-row').getByRole('button', { name: /Verse lists/ }).click();
+  await page.goto('/#/tools');
+  await page.locator('[data-tool="link.lists"]').click();
   await page.getByRole('button', { name: /^Refuge/ }).click();
   await expect(page.getByRole('heading', { name: 'Refuge', level: 1 })).toBeVisible();
 
