@@ -11,7 +11,8 @@
 // still opens the word, verse or heading; so does a long press (the word's own click guard drops its click; a held number talks, or with no licence opens
 // its verse), and so does Enter on a focused number (a click with no short press before it). A swipe is a drag (below); no drag starts within the chapter swipe's EDGE_PX of the screen's edge (src/reader/useChapterSwipe.ts, off while pages are on).
 // When the box changes size (text size, the hint card closed, the bars brought back) the pages are cut afresh and the page shown is the one where the
-// first verse that was in view begins, so no text is skipped.
+// first verse that was in view begins, so no text is skipped. A scroll the browser makes of itself at such a change (turning the phone clamps the box's scrollLeft
+// to the shorter text before the pages are cut afresh) is not him moving to a page: onScroll waits for the cut (mw-fnvjof.17.163).
 // A turn he makes (a tap, a swipe, the Next and Previous page buttons) is told to `onTurned`: with the Immersive reader On the next page puts the bars
 // away, as scrolling down does with Scroll (mw-5r3p30.611, src/Reader.tsx); a page the app shows for him (read aloud, a put-back) is not his turn.
 // The page he is on is kept per chapter (src/nav/scrollMemory.ts keepPage, mw-5r3p30.608): a Reader opened on the chapter again (back from Settings or any
@@ -310,6 +311,21 @@ export function usePages(
     };
     whenIconsLoad(forget);
 
+    /** How many pages the text is laid out in now, pages `width` apart. */
+    const pagesIn = (width: number): number => {
+      const last = content.lastElementChild;
+      const rects = last ? last.getClientRects() : null;
+      return rects && rects.length > 0 ? Math.max(0, Math.floor((rects[rects.length - 1].left - content.getBoundingClientRect().left + 1) / width)) + 1 : 1;
+    };
+
+    /** Whether the text is still laid out as the pages were cut: not when the box has just changed size and the observer has yet to tell the cut. */
+    const laidOutAsCut = (): boolean => {
+      const width = content.clientWidth;
+      if (width <= 0 || step <= 0) return false;
+      const now = width + (parseFloat(getComputedStyle(content).columnGap) || 0);
+      return now === step && pagesIn(now) === count;
+    };
+
     /** Cuts the pages afresh: how wide one is, how many there are, and which one shows the anchor. */
     const measure = () => {
       forget();
@@ -317,9 +333,7 @@ export function usePages(
       if (width <= 0) return;
       const before = { step, count };
       step = width + (parseFloat(getComputedStyle(content).columnGap) || 0);
-      const last = content.lastElementChild;
-      const rects = last ? last.getClientRects() : null;
-      count = rects && rects.length > 0 ? pageAt(rects[rects.length - 1].left) + 1 : 1;
+      count = pagesIn(step);
       if (kept) {
         putBack(kept);
         fillArriving();
@@ -383,6 +397,9 @@ export function usePages(
     // the box scrolled by something else (focus moved to a word on another page): the page follows it
     const onScroll = () => {
       if (step <= 0 || kept) return;
+      // the box turned to another size (the phone turned over) and the browser has clamped its scrollLeft to the new, shorter text before the pages are cut afresh:
+      // that is not him moving to a page, and taking it for one would lose his place (mw-fnvjof.17.163); measure shows his page again
+      if (!laidOutAsCut()) return;
       const shown = Math.round(el.scrollLeft / step);
       if (shown !== page) move(shown);
     };

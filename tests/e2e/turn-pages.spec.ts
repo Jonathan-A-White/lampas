@@ -1202,3 +1202,87 @@ test('with Turn pages, Words, Review, Paradigms, About and the Talk sheet each k
   await expect(sheet).toHaveCount(0);
   await backOnPage(page, 6, verses);
 });
+
+// mw-fnvjof.17.163: turning the phone to landscape and back cuts the pages twice; he comes back to the page he was reading, not one near the chapter's end.
+/** The first verse that begins on the page shown (its first line's left edge inside the reading box). */
+const firstVerseHere = async (page: Page): Promise<number> => {
+  const verses = await versesInView(page);
+  if (verses.length === 0) throw new Error('no verse begins on the page shown');
+  return verses[0];
+};
+
+/** Whether verse `n` begins inside the reading box as it stands: its left edge is within the box. */
+const verseBeginsHere = (page: Page, n: number) =>
+  page.evaluate((verse) => {
+    const b = (document.querySelector('[data-reader]') as HTMLElement).getBoundingClientRect();
+    const first = document.querySelector<HTMLElement>(`[data-reader] [data-verse="${verse}"]`)?.getClientRects()[0];
+    return first !== undefined && first.left >= b.left - 1 && first.left < b.right - 1;
+  }, n);
+
+/** Turns the phone to landscape (844x390) and back to portrait (390x844), the pages settled after each. */
+async function rotateAndBack(page: Page) {
+  // On the phone the browser lays the narrower text out and clamps the box's scrollLeft, and tells the page it scrolled, before the page has cut its pages afresh
+  // (headless Chromium tells it after). The scroll event is sent at the window's resize here, so the page hears of the clamped box first, as the phone does.
+  await page.evaluate(() => {
+    const w = window as unknown as { scrollBeforeCut?: boolean };
+    if (w.scrollBeforeCut) return;
+    w.scrollBeforeCut = true;
+    window.addEventListener('resize', () => {
+      const box = document.querySelector<HTMLElement>('[data-reader]');
+      if (!box) return;
+      void box.scrollLeft;
+      box.dispatchEvent(new Event('scroll'));
+    });
+  });
+  await page.setViewportSize({ width: 844, height: 390 });
+  await settled(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await settled(page);
+}
+
+const ROTATE: { name: string; hash: string; title: string; settings: Record<string, string> }[] = [
+  { name: 'John 5, verse by verse', hash: '#/?b=jhn&c=5', title: 'John 5', settings: {} },
+  { name: 'John 5, Paragraph', hash: '#/?b=jhn&c=5', title: 'John 5', settings: { layout: 'paragraph' } },
+  { name: 'Psalms 119', hash: '#/?b=psa&c=119', title: 'Psalms 119', settings: {} },
+  { name: 'Matthew 5', hash: '#/?b=mat&c=5', title: 'Matthew 5', settings: {} },
+];
+
+test('with Turn pages, a link to John 5:25, rotate to landscape and back, is still on the page that holds verse 25', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await keep(page, { readingMode: 'pages' });
+  await openChapter(page, '#/?ref=John.5.25', 'John 5');
+  expect(await verseBeginsHere(page, 25), 'verse 25 is on the page the link opens').toBe(true);
+  const before = await placeOf(page);
+
+  await rotateAndBack(page);
+  expect(await verseBeginsHere(page, 25), `verse 25 is on the page after the turn (was page ${before.at} of ${before.of}, now ${(await placeOf(page)).at} of ${(await placeOf(page)).of})`).toBe(true);
+  await shot(page, 'turn-pages-rotate-link');
+});
+
+for (const look of ROTATE) {
+  test(`with Turn pages, rotate to landscape and back keeps the page he was on, at pages 3, 6, 9 and 12 (${look.name})`, async ({ page }) => {
+    test.setTimeout(240_000);
+    await openUnlocked(page);
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    await keep(page, { ...look.settings, readingMode: 'pages' });
+    await openChapter(page, look.hash, look.title);
+    const { of } = await placeOf(page);
+    for (const to of [3, 6, 9, 12]) {
+      if (to > of) continue;
+      while ((await at(page)) < to) {
+        const was = await at(page);
+        await swipeText(page, 'left');
+        await expect.poll(() => at(page)).toBe(was + 1);
+      }
+      const verse = await firstVerseHere(page);
+      const was = await placeOf(page);
+      await rotateAndBack(page);
+      const now = await placeOf(page);
+      expect(await verseBeginsHere(page, verse), `page ${was.at} of ${was.of} began at verse ${verse}; after the turn it is page ${now.at} of ${now.of}`).toBe(true);
+    }
+    await shot(page, `turn-pages-rotate-${look.name.replace(/\W+/g, '-').toLowerCase()}`);
+  });
+}
