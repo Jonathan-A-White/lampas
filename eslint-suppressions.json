@@ -554,11 +554,6 @@
       "count": 1
     }
   },
-  "tests/e2e/weave-switch.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 5
-    }
-  },
   "tests/e2e/word-tip-overlap.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
