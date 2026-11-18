@@ -557,6 +557,25 @@ async function licensedPhoneLinking(_: unknown, table: string, verse: string, co
   fake.autoReply = { status: 'answered', answer: { answer: 'The article agrees with its noun.', words: [], links: [{ kind: 'paradigm', table }, { kind: 'verse', reference: verse }, { kind: 'copy', reference: copied }] } };
 }
 
+/** A fake tutor whose answer writes a reference in its text: the link the Markdown makes of it opens the reference card. */
+async function licensedPhoneSaying(_: unknown, said: string): Promise<void> {
+  await licensedPhone();
+  if (!fake) throw new Error('no fake Postern');
+  fake.autoReply = { status: 'answered', answer: { answer: `The article agrees with its noun. ${said}.`, words: [], links: [] } };
+}
+
+async function tapReferenceInAnswer(_: unknown, reference: string): Promise<void> {
+  const answer = document.querySelector<HTMLElement>('[data-talk-a]');
+  if (!answer) throw new Error('the talk has no answer');
+  await user.click(await within(answer).findByRole('link', { name: reference }));
+}
+
+const referenceCard = (): HTMLElement => {
+  const card = document.querySelector<HTMLElement>('[data-reference-card]');
+  if (!card) throw new Error('no reference card is open');
+  return card;
+};
+
 /** Opens the talk the floating ? opens here (the newest door target: the drill's, or the lesson's) and asks its first suggested question. */
 async function askTheTutor(): Promise<void> {
   expect(openDoorTarget()).toBe(true);
@@ -1079,6 +1098,42 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then("the tutor's answer has the Copy chip of {string}", answerHasCopyChip);
     And('the answer has the {string} chip', (_, table: string) => {
       expect(chipNames()).toContain(table);
+    });
+  });
+
+  Scenario('A reference the tutor writes in a talk over a drill opens a card that does not leave the drill', ({ Given, When, And, Then }) => {
+    Given('a phone with a licence and a fake Postern whose answer says {string}', licensedPhoneSaying);
+    And('Drill it is open there on the idea {string}', (_, ideaId: string) => drawDrillIt(ideaId));
+    When('he asks the tutor about the drill', askTheTutor);
+    And('he taps the reference {string} in the answer', tapReferenceInAnswer);
+    Then('the reference card of {string} is open', async (_, reference: string) => {
+      await screen.findByRole('dialog', { name: reference });
+    });
+    And("the card draws no control that changes the page's address", async () => {
+      const card = referenceCard();
+      expect(within(card).queryByRole('button', { name: /^Open/ })).toBeNull();
+      expect(card.querySelector('a[href^="#"]')).toBeNull();
+      expect(window.location.hash).toBe('');
+    });
+    And("the page's address is as it was", () => {
+      expect(window.location.hash).toBe('');
+    });
+    And('the drill is still on its first question', () => {
+      expect(screen.getByTestId('grammar-prompt')).toHaveTextContent(asked?.prompt ?? '');
+      expect(screen.getAllByRole('dialog', { name: 'Drill it' })).toHaveLength(1);
+    });
+  });
+
+  Scenario("The same reference in the lesson's talk from a list of ideas keeps the card's Open", ({ Given, When, And, Then }) => {
+    Given('a phone with a licence and a fake Postern whose answer says {string}', licensedPhoneSaying);
+    And('the lesson of the idea {string} is open there as it is from a list of ideas', lessonFromAList);
+    When('he asks the tutor about the lesson', askTheTutor);
+    And('he taps the reference {string} in the answer', tapReferenceInAnswer);
+    Then('the reference card of {string} is open', async (_, reference: string) => {
+      await screen.findByRole('dialog', { name: reference });
+    });
+    And('the card has the {string} button', (_, label: string) => {
+      expect(within(referenceCard()).getByRole('button', { name: label })).toBeInTheDocument();
     });
   });
 
