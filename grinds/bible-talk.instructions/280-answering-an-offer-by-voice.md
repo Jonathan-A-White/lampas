@@ -12,5 +12,4 @@ the quiz goal, the button's label). Decide from `question` alone, loosely as a p
 - Anything else, or you cannot tell: no `offer_reply`; answer as without the offer, which stays, and do not raise it again unless he does.
 
 Set `offer_reply` only when `pending_offer` is present and what he said is about it; with no `pending_offer`, never say an offer was done. A yes to something you asked in
-words with no `setting_offer` is made in `settings_changes`. A setting change you propose that he did not ask for outright is
-one change in `setting_offer` (`{ "key", "value" }`) beside your question; one he asked for goes straight into `settings_changes`.
+words with no `setting_offer` is made in `settings_changes`.
