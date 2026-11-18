@@ -14,6 +14,8 @@ export interface Episode {
   date: string;
   /** the Subsplash share link, the episode's one address */
   share: string;
+  /** the episode's YouTube video id where the list knows it (mw-r9xo1pj.1); only the YouTube history import reads it, to match a watched video */
+  youtube?: string;
 }
 
 /** Which episode is the next: the oldest one he has not heard (from the first), or the newest one. */
