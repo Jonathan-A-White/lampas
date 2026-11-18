@@ -141,4 +141,41 @@ describe('the Hands-free session', () => {
     expect(wake.listening).toBe(false);
     expect(mark()).toBeNull();
   });
+  it('says on screen and aloud that it could not start when the model cannot be fetched, and starts by itself when the network is back', async () => {
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('Failed to fetch')));
+    render(<HandsFreeGate />);
+    await act(async () => {
+      await setHandsFree(true);
+    });
+    await waitFor(() => expect(markState()).toBe('failed'));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not start/i);
+    await waitFor(() => expect(synth.spoken.map((s) => s.text).join(' ')).toMatch(/could not start/i));
+    expect(wake.listening).toBe(false);
+    // the network comes back: the model is served and the browser says it is online
+    model = serveWakeModel();
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitFor(() => expect(wake.listening).toBe(true));
+    await waitFor(() => expect(markState()).toBe('waiting'));
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(await savedSetting()).toBe('on');
+  });
+
+  it('starts again on the next touch when the model cannot be fetched and the network gave no word', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('gone', { status: 503 })));
+    render(<HandsFreeGate />);
+    await act(async () => {
+      await setHandsFree(true);
+    });
+    await waitFor(() => expect(markState()).toBe('failed'));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/could not start/i);
+    model = serveWakeModel();
+    act(() => {
+      document.dispatchEvent(new Event('pointerdown'));
+    });
+    await waitFor(() => expect(wake.listening).toBe(true));
+    await waitFor(() => expect(markState()).toBe('waiting'));
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
 });

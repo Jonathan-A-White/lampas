@@ -13,12 +13,14 @@ import { handsFreeSetting } from '../../src/settings/definitions';
 import { applyChanges } from '../../src/settings/registry';
 import { setSetting } from '../../src/settings/store';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
+import { serveWakeModel, stubWake, type WakeFake } from '../support/fake-wake';
 
 const wake = vi.hoisted(() => ({ holdAwake: vi.fn(), releaseAwake: vi.fn() }));
 vi.mock('../../src/speech/wakeLock', async (original) => ({ ...(await original<typeof import('../../src/speech/wakeLock')>()), ...wake }));
 
 const getUserMedia = vi.fn();
 let synth: FakeSynth;
+let wakeFake: WakeFake;
 
 beforeEach(async () => {
   cleanup();
@@ -30,11 +32,15 @@ beforeEach(async () => {
   getUserMedia.mockClear();
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia } });
   synth = stubSpeech([ENGLISH_VOICE]);
+  // the session behind the gate starts its wake: an honest wake and its model served, or it would say, truthfully, that it could not start (mw-rl10piw.31)
+  wakeFake = stubWake();
+  serveWakeModel();
   await db.open();
   await db.settings.clear();
 });
 
 afterAll(() => {
+  wakeFake.uninstall();
   cleanup();
   vi.unstubAllGlobals();
   db.close();
