@@ -13,22 +13,59 @@ const run = promisify(execFile);
 
 // The gate's selection, asked of vitest itself: `vitest related` picks the test files whose import graph holds the changed file, then runs them;
 // this stops after the picking (running the ninety-odd tests a grinds edit selects takes minutes, the picking seconds).
+// Six createVitest children, one for each file, each transformed every test's graph and took about 20 s to the first answer (mw-5r3p30.1196).
+// The work is the transforming of ~2,600 modules, which the six files share, so ONE child does it once: it reads each module's imports the way
+// vitest's getTestDependencies does (the transformed module's deps and dynamicDeps, outside node_modules, that exist), keeps them, and then asks
+// of every test, from the kept imports, which of the files its graph holds. (getTestDependencies itself, asked per test, walks and checks the
+// disk again for every test: 14 s against 8.)
 const SELECT = `
 import { createVitest } from 'vitest/node';
-const v = await createVitest('test', { watch: false, run: true, related: [process.argv[1]], reporters: [] });
-const specs = await v.getRelevantTestSpecifications();
-console.log(JSON.stringify(specs.map((s) => s.moduleId)));
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+const names = process.argv.slice(1);
+const v = await createVitest('test', { watch: false, run: true, related: [], reporters: [] });
+const specs = await v.globTestSpecifications();
+const root = v.config.root;
+const ssr = specs[0].project.vite.environments.ssr;
+const imports = new Map();
+const load = async (file) => {
+  const t = ssr.moduleGraph.getModuleById(file)?.transformResult || (await ssr.transformRequest(file));
+  const deps = t ? [...(t.deps || []), ...(t.dynamicDeps || [])].map((d) => (d.startsWith('/@fs/') ? d.slice(4) : join(root, d))).filter((f) => !f.includes('node_modules') && existsSync(f)) : [];
+  imports.set(file, deps);
+  return deps;
+};
+let frontier = [...new Set(specs.map((spec) => spec.moduleId))];
+const queued = new Set(frontier);
+while (frontier.length) {
+  const next = [];
+  for (let i = 0; i < frontier.length; i += 16) {
+    for (const deps of await Promise.all(frontier.slice(i, i + 16).map(load))) for (const dep of deps) if (!queued.has(dep)) { queued.add(dep); next.push(dep); }
+  }
+  frontier = next;
+}
+const out = Object.fromEntries(names.map((name) => [name, []]));
+for (const spec of specs) {
+  const seen = new Set([spec.moduleId]);
+  const stack = [spec.moduleId];
+  while (stack.length) for (const dep of imports.get(stack.pop())) if (!seen.has(dep)) { seen.add(dep); stack.push(dep); }
+  for (const name of names) if (seen.has(root + '/' + name)) out[name].push(spec.moduleId);
+}
+console.log(JSON.stringify(out));
 await v.close();
 process.exit(0);
 `;
 
-/** The test files `vitest related <file>` selects. */
-const selected = async (file: string): Promise<string[]> => {
-  const { stdout } = await run(process.execPath, ['--input-type=module', '-e', SELECT, file], { env: { ...process.env, TZ: 'UTC' }, maxBuffer: 64 * 1024 * 1024 });
-  return (JSON.parse(stdout.slice(stdout.indexOf('['))) as string[]).map((name) => name.replace(/^.*\/(tests|features)\//, '$1/'));
+/** How many vitest child processes this file has started. */
+let children = 0;
+/** The test files `vitest related <file>` selects, for each file. */
+const selectedFor = async (files: string[]): Promise<Record<string, string[]>> => {
+  children++;
+  const { stdout } = await run(process.execPath, ['--input-type=module', '-e', SELECT, ...files], { env: { ...process.env, TZ: 'UTC' }, maxBuffer: 64 * 1024 * 1024 });
+  const found = JSON.parse(stdout.slice(stdout.indexOf('{'))) as Record<string, string[]>;
+  return Object.fromEntries(files.map((file) => [file, found[file].map((name) => name.replace(/^.*\/(tests|features)\//, '$1/'))]));
 };
 
-// One run of the gate's command for each of these (some seconds each, so they run together): what each grinds file must select.
+// The gate's selection for each of these (made together): what each grinds file must select.
 const PINNED: Record<string, string[]> = {
   'grinds/bible-talk.instructions/340-how-to-answer.md': ['tests/unit/bible-talk-grind.test.ts', 'tests/unit/grind-instructions-size.test.ts', 'tests/unit/grind-parts.test.ts'],
   'grinds/bible-talk.answer.schema.json': ['tests/unit/bible-talk-grind.test.ts', 'tests/unit/answer-schema-no-empty-arrays.test.ts'],
@@ -40,13 +77,18 @@ const PINNED: Record<string, string[]> = {
 };
 
 describe('vitest related for a grinds file', () => {
-  const runs = new Map<string, Promise<string[]>>();
+  let all: Promise<Record<string, string[]>>;
   beforeAll(() => {
-    for (const file of Object.keys(PINNED)) runs.set(file, selected(file));
+    all = selectedFor(Object.keys(PINNED));
+  });
+
+  it('asks one vitest process for all the selections, not one for each file', () => {
+    // Six createVitest children starting at once took about 20 s for the first answer and were the file's casualty on a loaded shard (mw-5r3p30.1196).
+    expect(children).toBe(1);
   });
 
   it.each(Object.entries(PINNED))('%s selects the tests that pin it', async (grindsFile, tests) => {
-    expect(await runs.get(grindsFile)).toEqual(expect.arrayContaining(tests));
+    expect((await all)[grindsFile]).toEqual(expect.arrayContaining(tests));
   }, 240_000);
 });
 
