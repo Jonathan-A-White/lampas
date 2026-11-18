@@ -63,7 +63,7 @@ This section is the app as it was before mw-qtu3zvz.92 landed. Its tense is the 
 | | Settings > Study resources > Sermons | Library > Sermons |
 | --- | --- | --- |
 | Holds (before the build) | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`). A phone with no Logos import sees 2 of the 9 (Spurgeon's sermons (CCEL), Matthew Henry's sermons); the other 7, the Logos lists, are drawn only while his import holds one of their books (`src/settings/definitions/sermons.ts`, mw-qtu3zvz.94), so the nine are what a phone with the import sees | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
-| Looked like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page: header with its count at the right, help line, All on / All off, 'Search 71 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
+| Looked like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page (before the build; at HEAD its address opens Sermon sources): header with its count at the right, help line, All on / All off, 'Search 71 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
 | Kept as | the setting `sermons.<id>` | the shelf row of the book (`db.library`, Off / On / Pinned) |
 | On gave | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at every verse, not counted; and a row behind In another book… at the verse, the Pinned ones first |
 
@@ -101,6 +101,7 @@ Under **Settings > Study resources > Sermons**, as a page of its own behind one 
 └────────────────────────────┘
 ```
 
+- As built (mw-qtu3zvz.92): the row reads **Sermon sources** with '17 of 120 on ›' (the mockup shortens it to fit 30 characters); a phone with no Logos import sees '2 of 2 on' and the page lists two rows (Matthew Henry's sermons, Spurgeon's sermons), a phone whose import holds the nine lists' books '2 of 9 on' and nine rows. No screen shows 71 books.
 - The row **Sermon sources** is a door in the shape of a Library home row ('Lexicons  19 on · 2 pinned ›'): its name, the count, a chevron, 48 px high. It opens the page **Sermon sources**, whose Back is the Study resources page at this row.
 - **Open web sermons in** stays where it is. It is about every web sermon, not about one source, and under a list of 120 rows nobody would find it.
 - Why a page and not rows in the section: the vault's rule is that a long list is a widget, not a page of rows (quoted at the top of `src/ui/SearchableList.tsx`); the Library design found the five-row widget cramped at 110 books and gave each kind a page (`docs/design/library-at-scale.md` 3.3); and the look he likes *is* that page. A page also gives the list the header for its count, a scroll place of its own, and a search field at the top of the screen.
@@ -157,7 +158,7 @@ Top to bottom:
 | A group | its heading with its own count ('6 of 23 on'), one line saying what On gives, then its rows | yes |
 | A row | section 5 | yes |
 
-The parts run in the Library's order (header, help line, buttons, search field, count, rows). Where this page differs from Library > Sermons (`src/library/KindPage.tsx`): its help line is one sentence, not a paragraph about Pin; its field says 'Search 120 sermon sources', the Library's 'Search 71 sermon archives'; while a search is typed its buttons read 'These 2 on' and 'These 2 off', the Library's 'All shown on' and 'All shown off'; its rows are in two headed groups, the Library's in one flat list; its rows are Off | On, the Library's Off | On | Pin; and the line with **Undo** (section 7) is new.
+The parts run in the Library's order (header, help line, buttons, search field, count, rows). Where this page differs from Library > Sermons as it was before the build (mw-qtu3zvz.92; `src/library/KindPage.tsx`): its help line is one sentence, not a paragraph about Pin; its field says 'Search 120 sermon sources', the Library's 'Search 71 sermon archives' before the build; while a search is typed its buttons read 'These 2 on' and 'These 2 off', the Library's 'All shown on' and 'All shown off'; its rows are in two headed groups, the Library's in one flat list; its rows are Off | On, the Library's Off | On | Pin; and the line with **Undo** (section 7) is new.
 
 Scrolled past the first group, the second begins:
 
