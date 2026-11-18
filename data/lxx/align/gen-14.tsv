@@ -1,0 +1,145 @@
+ref	run	text	g	mark	confidence
+Gen.14:1	1	it came	-		0.80
+Gen.14:1	2	pass	-		0.80
+Gen.14:1	3	reign of	3,4		0.80
+Gen.14:1	4	of	-		0.80
+Gen.14:1	5	of	-		0.80
+Gen.14:1	6	that	13	unsure	0.50
+Gen.14:1	7	of	-		0.80
+Gen.14:1	8	of	-		0.80
+Gen.14:2	1	of	-		0.80
+Gen.14:2	2	of	-		0.80
+Gen.14:2	3	with	-		0.80
+Gen.14:2	4	of	-		0.80
+Gen.14:2	5	of	-		0.80
+Gen.14:2	6	the	-		0.80
+Gen.14:2	7	of	-		0.80
+Gen.14:3	1	met	-		0.80
+Gen.14:3	2	one consent	-		0.80
+Gen.14:3	2	at	3		0.80
+Gen.14:3	3	is now	-		0.80
+Gen.14:3	4	of	11		0.80
+Gen.14:4	1	they	-		0.80
+Gen.14:4	2	they	-		0.80
+Gen.14:5	1	to pieces	-		0.80
+Gen.14:5	2	and	-		0.80
+Gen.14:5	3	with	-		0.80
+Gen.14:5	4	Save.	31		0.80
+Gen.14:6	1	of	-		0.80
+Gen.14:6	2	turpentine tree of	10,11		0.80
+Gen.14:7	1	having turned back	1		0.80
+Gen.14:7	1	they	-		0.80
+Gen.14:7	2	well	4,5		0.80
+Gen.14:7	2	of	-		0.80
+Gen.14:7	3	they	-		0.80
+Gen.14:7	4	in pieces	-		0.80
+Gen.14:7	5	of	-		0.80
+Gen.14:7	6	Amorites	18,19		0.80
+Gen.14:7	7	Asasonthamar.	23,24		0.80
+Gen.14:8	1	the	-		0.80
+Gen.14:8	2	of	-		0.80
+Gen.14:8	3	out,	-		0.80
+Gen.14:8	4	the	-		0.80
+Gen.14:8	5	of	-		0.80
+Gen.14:8	6	of	-		0.80
+Gen.14:8	7	of	-		0.80
+Gen.14:8	8	of	-		0.80
+Gen.14:8	9	they	-		0.80
+Gen.14:8	10	array against them for	-		0.80
+Gen.14:8	11	valley,	25,26		0.80
+Gen.14:9	1	against	0		0.80
+Gen.14:9	2	of	-		0.80
+Gen.14:9	3	of	-		0.80
+Gen.14:9	4	of	-		0.80
+Gen.14:9	5	of	-		0.80
+Gen.14:9	6	against	20		0.80
+Gen.14:10	1	of	-		0.80
+Gen.14:10	2	the	-		0.80
+Gen.14:10	3	of	-		0.80
+Gen.14:10	4	fled	-		0.80
+Gen.14:10	5	the	-		0.80
+Gen.14:10	6	of	-		0.80
+Gen.14:10	7	they	-		0.80
+Gen.14:10	8	in	-		0.80
+Gen.14:10	9	they that were	17		0.80
+Gen.14:10	10	fled	-		0.80
+Gen.14:11	1	they	-		0.80
+Gen.14:11	2	cavalry	2,3		0.80
+Gen.14:11	2	of	-		0.80
+Gen.14:11	3	provisions,	11,12		0.80
+Gen.14:12	1	they	-		0.80
+Gen.14:12	2	also	1	unsure	0.50
+Gen.14:12	3	the	3		0.80
+Gen.14:12	4	of	6		0.80
+Gen.14:12	5	baggage,	10,11		0.80
+Gen.14:12	6	departed,	14		0.80
+Gen.14:12	7	he	15	unsure	0.50
+Gen.14:13	1	And	-		0.80
+Gen.14:13	2	of them that had been rescued	2,3		0.80
+Gen.14:13	3	told	5		0.80
+Gen.14:13	4	of	-		0.80
+Gen.14:13	5	of	-		0.80
+Gen.14:13	6	of	-		0.80
+Gen.14:13	7	with	-		0.80
+Gen.14:14	1	having	-		0.80
+Gen.14:14	2	nephew	6,7		0.80
+Gen.14:14	2	had been	-		0.80
+Gen.14:14	3	captive,	-		0.80
+Gen.14:14	4	home-born	-		0.80
+Gen.14:15	1	he came	-		0.80
+Gen.14:15	2	by	4	unsure	0.50
+Gen.14:15	3	servants,	8,9		0.80
+Gen.14:15	4	he	-		0.80
+Gen.14:15	5	as far as	17		0.80
+Gen.14:15	5	Choba,	18		0.80
+Gen.14:15	6	the	-		0.80
+Gen.14:15	7	of	-		0.80
+Gen.14:16	1	he	-		0.80
+Gen.14:16	2	of	-		0.80
+Gen.14:16	3	he recovered	-		0.80
+Gen.14:16	4	possessions,	14,15		0.80
+Gen.14:17	1	the	-		0.80
+Gen.14:17	2	of	-		0.80
+Gen.14:17	3	out	-		0.80
+Gen.14:17	4	of	14		0.80
+Gen.14:17	5	of	-		0.80
+Gen.14:17	6	of the	-		0.80
+Gen.14:18	1	of	-		0.80
+Gen.14:18	2	forth	-		0.80
+Gen.14:18	2	loaves	5		0.80
+Gen.14:18	3	he	-		0.80
+Gen.14:18	4	the	-		0.80
+Gen.14:18	5	of	-		0.80
+Gen.14:18	6	most	-		0.80
+Gen.14:19	1	he	-		0.80
+Gen.14:19	2	be	-		0.80
+Gen.14:19	3	of	-		0.80
+Gen.14:19	4	most	-		0.80
+Gen.14:20	1	be	-		0.80
+Gen.14:20	2	most	-		0.80
+Gen.14:20	3	your	-		0.80
+Gen.14:20	4	into	-		0.80
+Gen.14:20	5	Abram	-		0.80
+Gen.14:21	1	the	-		0.80
+Gen.14:21	2	of	-		0.80
+Gen.14:21	3	to	-		0.80
+Gen.14:22	1	the	-		0.80
+Gen.14:22	2	of	-		0.80
+Gen.14:22	3	will	-		0.80
+Gen.14:22	4	out my	-		0.80
+Gen.14:22	5	Lord	-		0.80
+Gen.14:22	6	most	-		0.80
+Gen.14:23	1	I will not	0	unsure	0.50
+Gen.14:23	2	goods	9		0.80
+Gen.14:23	3	a string	2		0.80
+Gen.14:23	4	a shoe-latchet,	4,5		0.80
+Gen.14:23	5	you should	-		0.80
+Gen.14:23	6	have	-		0.80
+Gen.14:23	7	rich.	-		0.80
+Gen.14:24	1	Except	0		0.80
+Gen.14:24	1	what things	-		0.80
+Gen.14:24	2	young	-		0.80
+Gen.14:24	3	have	-		0.80
+Gen.14:24	4	of	-		0.80
+Gen.14:24	5	shall	-		0.80
+Gen.14:24	6	a	-		0.80
