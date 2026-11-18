@@ -856,6 +856,32 @@ describe('a setting is offered only when the turn asks for one', () => {
     expect(requests.match(/shall I set it/g) ?? []).toHaveLength(1);
   });
 
+  // mw-5r3p30.1184: three longer rules (.582, .951, .1153) did not hold: request-landed still offered `theme: sepia` 1 run in 3 of a smoke. The
+  // section's one worked answer was the adopted idea WITH an offer, so the only answer shape the model saw for a request carried `setting_offer`.
+  // The lever is a worked answer of the other shape, a landed idea that is a setting's choice answered with none, set beside the rule, and the
+  // answer schema's own description of `setting_offer`, read where the model writes the field.
+  it('shows a worked answer for a landed idea that is a setting\'s choice, with no setting_offer, before the adopted one', () => {
+    const block = /<!-- landed-example:start -->\s*```json\s*([\s\S]*?)```\s*<!-- landed-example:end -->/.exec(requests);
+    expect(block, 'the landed example answer block in part 290').not.toBeNull();
+    const answer = JSON.parse((block as RegExpExecArray)[1]) as Record<string, unknown>;
+    expect(validate(answer, schema as Schema)).toEqual([]);
+    expect(isTalkAnswer(answer)).toBe(true);
+    expect(answer).not.toHaveProperty('setting_offer');
+    expect(answer).not.toHaveProperty('settings_changes');
+    expect(String(answer.answer)).toMatch(/\d+\.\d+\.\d+/);
+    expect(String(answer.answer)).toMatch(/Settings/);
+    expect(String(answer.answer)).not.toMatch(/\?/);
+    const rule = requests.indexOf('Offer a setting only for an idea');
+    expect(rule).toBeGreaterThan(-1);
+    expect(requests.indexOf('<!-- landed-example:start -->')).toBeGreaterThan(rule);
+    expect(requests.indexOf('<!-- landed-example:start -->')).toBeLessThan(requests.indexOf('<!-- requests-example:start -->'));
+  });
+
+  it('says in the answer schema\'s own setting_offer description that an idea in requests is offered only at adopted-as-setting', () => {
+    const offer = (schema as { properties: Record<string, { description: string }> }).properties.setting_offer;
+    expect(offer.description).toMatch(/[Nn]ever for an idea in `requests` unless its `status` is `adopted-as-setting`/);
+  });
+
   // The examples that are about a setting: the offer waits and is answered, the offer is made, or he asks for the change in words.
   const ABOUT_SETTINGS = ['request-adopted-as-setting'];
   const dir = 'grinds/examples/bible-talk';
