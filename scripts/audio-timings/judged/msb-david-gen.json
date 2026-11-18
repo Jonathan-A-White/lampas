@@ -1,13 +1,13 @@
 {
  "v":1,
- "judge":"1",
+ "judge":"2",
  "edition":"msb-david",
  "book":"gen",
- "timings":{"file":"public/data/audio/msb-david/gen.json","sha256":"042bb8fb5b0fef66a0fe8693189df396ed802a487b297e7a6426a8bd88231ff3"},
- "slop":{"lead":0.05,"tail":0.05},
+ "timings":{"file":"public/data/audio/msb-david/gen.json","sha256":"b20923e483e4173e372ee4001606cb3e8145b948ce91d51b0e20e5fc9629b641"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
  "tolerance":0.02,
  "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
- "summary":{"verses":1533,"ok":1516,"flagged":17,"flags":{"head-extra":5,"head-clipped":7,"tail-extra":6,"tail-clipped":6,"text-differs":3}},
+ "summary":{"verses":1533,"ok":1515,"flagged":18,"flags":{"head-extra":5,"head-clipped":7,"tail-extra":6,"tail-clipped":8,"text-differs":3}},
  "chapters":{
   "1":{"announcement":"AUDIO BIBLE GENESIS CHAPTER ONE","between":[],"closing":"","speech":-16.6,"verses":[
    {"n":1,"verdict":"ok","sound":[5.22,8.31,10.745,11.24]},
@@ -396,7 +396,7 @@
    {"n":21,"verdict":"ok","sound":[204.685,205.695,211.08,212.11]},
    {"n":22,"verdict":"ok","sound":[211.08,212.11,219.84,220.39]},
    {"n":23,"verdict":"ok","sound":[219.84,220.39,230.65,231.39]},
-   {"n":24,"verdict":"ok","sound":[230.65,231.39,239.83,239.97]}
+   {"n":24,"verdict":"flagged","flags":[{"kind":"tail-clipped","by":0.027,"level":-28.7,"heard":{"letters":"THEY MAY TAKE THEIR PORTION","words":"may take their portion"}}],"sound":[230.65,231.39,239.83,239.97]}
   ]},
   "15":{"announcement":"ODUR BIBLE GENESIS CHAPTER FIFTEEN","between":[],"closing":"","speech":-17.5,"verses":[
    {"n":1,"verdict":"ok","sound":[2.945,5.48,14.975,16.065]},
@@ -504,7 +504,7 @@
    {"n":33,"verdict":"ok","sound":[310.99,312.47,317.675,null]}
   ]},
   "19":{"announcement":"AUDIO BIBLE GENESIS CHAPTER NINETEEN","between":[],"closing":"","speech":-16.6,"verses":[
-   {"n":1,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.08,"readsOn":true,"level":-1.4,"heard":{"next":"AND","letters":"BOWED FACE DOWN","words":"them bowed face down"}}],"sound":[4.285,6.795,16.42,16.42]},
+   {"n":1,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.08,"readsOn":true,"level":-1.4,"heard":{"next":"AND","letters":"BOWED FACE DOWN","words":"them bowed face down"}},{"kind":"tail-clipped","by":0.067,"readsOn":true,"level":0.6,"heard":{"lost":"N","letters":"THEM BOWED FACE DOWN","words":"them bowed face down"}}],"sound":[4.285,6.795,16.42,16.42]},
    {"n":2,"verdict":"flagged","flags":[{"kind":"head-clipped","by":0.08,"readsOn":true,"level":-1.4,"heard":{"letters":"AND SAID","words":"and said my lord's"}}],"sound":[16.42,16.42,31.18,32.425]},
    {"n":3,"verdict":"ok","sound":[31.18,32.425,41.52,42.85]},
    {"n":4,"verdict":"ok","sound":[41.52,42.85,49.28,50.18]},
@@ -639,11 +639,11 @@
    {"n":11,"verdict":"ok","sound":[87.69,88.305,100.015,101.105]},
    {"n":12,"verdict":"ok","sound":[100.015,101.105,105.01,105.33]},
    {"n":13,"verdict":"ok","sound":[105.01,105.33,116.29,117.235]},
-   {"n":14,"verdict":"flagged","flags":[{"kind":"tail-clipped","by":0.06,"ear":"quiet","heard":{"letters":"FROM ANSWERED ABRAHAM","words":"ephron answer abraham"}}],"sound":[116.29,117.235,118.89,118.94]},
+   {"n":14,"verdict":"flagged","flags":[{"kind":"tail-clipped","by":0.105,"ear":"quiet","heard":{"letters":"FROM ANSWERED ABRAHAM","words":"afron answer abraham"}}],"sound":[116.29,117.235,118.89,118.94]},
    {"n":15,"verdict":"flagged","flags":[{"kind":"head-clipped","by":0.06,"ear":"quiet","heard":{"letters":"LISTEN TO ME MY LORD","words":"listen to me my"}}],"sound":[118.89,118.94,126.665,127.925]},
    {"n":16,"verdict":"ok","sound":[126.665,127.925,138.87,139.44]},
-   {"n":17,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.05,"readsOn":true,"level":1.9,"heard":{"extra":"T","next":"TO","letters":"ILD WERE DEEDED OVER IT","words":"deeded over to the"}},{"kind":"tail-clipped","by":0.05,"readsOn":true,"level":2.1,"heard":{"letters":"FIELD WERE DEEDED OVER","words":"field were deeded over"}}],"sound":[138.87,139.44,148.74,148.74]},
-   {"n":18,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.05,"readsOn":true,"level":2.1,"heard":{"before":"OVER","letters":"BUT TO ABRAHAM'S POSSESSION","words":"abraham's possession in the"}},{"kind":"head-clipped","by":0.05,"readsOn":true,"level":1.9,"heard":{"lost":"T","letters":"THE ABRAHAM'S POSSESSION","words":"abraham's possession in the"}}],"sound":[148.74,148.74,154.435,155.195]},
+   {"n":17,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.05,"readsOn":true,"level":1.9,"heard":{"extra":"T","next":"TO","letters":"ILD WERE DEEDED OVER IT","words":"over to the sea"}},{"kind":"tail-clipped","by":0.097,"readsOn":true,"level":6.7,"heard":{"lost":"R","letters":"FIELD WER DEEDED OVER","words":"field were deeded over"}}],"sound":[138.87,139.44,148.74,148.74]},
+   {"n":18,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.05,"readsOn":true,"level":2.1,"heard":{"before":"OVER","letters":"BUT TO ABRAHAM'S POSSESSION","words":"to abraham's possession in"}},{"kind":"head-clipped","by":0.05,"readsOn":true,"level":1.9,"heard":{"lost":"T","letters":"THE ABRAHAM'S POSSESSION","words":"abraham's possession in the"}}],"sound":[148.74,148.74,154.435,155.195]},
    {"n":19,"verdict":"ok","sound":[154.435,155.195,165.135,166.095]},
    {"n":20,"verdict":"ok","sound":[165.135,166.095,171.03,null]}
   ]},
@@ -711,7 +711,7 @@
    {"n":61,"verdict":"ok","sound":[563.295,564.16,573.14,574.085]},
    {"n":62,"verdict":"ok","sound":[573.14,574.085,579.3,580.435]},
    {"n":63,"verdict":"ok","sound":[579.3,580.435,586.675,587.365]},
-   {"n":64,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.07,"readsOn":true,"level":0.6,"heard":{"next":"AND","letters":"SHE GOT DOWN FROM HER CAMEL","words":"down from her camera"}},{"kind":"tail-clipped","by":0.03,"readsOn":true,"level":0.4,"heard":{"lost":"L","letters":"SHE GOT DOWN FROM HER CAMEL","words":"down from her camel"}}],"sound":[586.675,587.365,591.19,591.19]},
+   {"n":64,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.07,"readsOn":true,"level":0.6,"heard":{"next":"AND","letters":"SHE GOT DOWN FROM HER CAMEL","words":"down from her camera"}},{"kind":"tail-clipped","by":0.077,"readsOn":true,"level":1.0,"heard":{"lost":"EL","letters":"SHE GOT DOWN FROM HER CAM","words":"down from her camp"}}],"sound":[586.675,587.365,591.19,591.19]},
    {"n":65,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.03,"readsOn":true,"level":0.4,"heard":{"extra":"L","before":"CAMEL","letters":"LLAND ASK THE SERVANT","words":"and ask the servant"}},{"kind":"head-clipped","by":0.07,"readsOn":true,"level":0.6,"heard":{"letters":"AND ASK THE SERVANT","words":"ask the servant who"}}],"sound":[591.19,591.19,601.705,602.17]},
    {"n":66,"verdict":"ok","sound":[601.705,602.17,604.55,605.245]},
    {"n":67,"verdict":"ok","sound":[604.55,605.245,614.32,null]}
@@ -780,7 +780,7 @@
    {"n":25,"verdict":"ok","sound":[225.055,225.665,234.135,234.88]},
    {"n":26,"verdict":"ok","sound":[234.135,234.88,242.445,243.435]},
    {"n":27,"verdict":"ok","sound":[242.445,243.435,249.055,249.915]},
-   {"n":28,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":2.0,"heard":{"extra":"T","next":"THAT","letters":"LET US MAKE A COVENANT WITH YOU","words":"a covenant with you"}},{"kind":"tail-clipped","by":0.06,"readsOn":true,"level":3.4,"heard":{"letters":"LET US MAKE A COVENANT WITH YOU","words":"a covenant with you"}}],"sound":[249.055,249.915,260.16,260.16]},
+   {"n":28,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":2.0,"heard":{"extra":"T","next":"THAT","letters":"LET US MAKE A COVENANT WITH YOU","words":"a covenant with you"}},{"kind":"tail-clipped","by":0.107,"readsOn":true,"level":3.5,"heard":{"letters":"LET US MAKE A COVENANT WITH YOU","words":"a covenant with you"}}],"sound":[249.055,249.915,260.16,260.16]},
    {"n":29,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":3.4,"heard":{"before":"YOU","letters":"WHO THAT YOU WILL NOT HARM US","words":"that you will not"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":2.0,"heard":{"lost":"T","letters":"BUT YOU WILL NOT HARM US","words":"that you will not"}}],"sound":[260.16,260.16,269.875,270.64]},
    {"n":30,"verdict":"ok","sound":[269.875,270.64,274.655,275.215]},
    {"n":31,"verdict":"ok","sound":[274.655,275.215,282.295,283.62]},
@@ -1558,7 +1558,7 @@
   "48":{"announcement":"AUDIO BIBLE GENESIS CHAPTER FORTY EIGHT","between":[],"closing":"","speech":-18.4,"verses":[
    {"n":1,"verdict":"ok","sound":[3.185,5.525,13.105,13.585]},
    {"n":2,"verdict":"ok","sound":[13.105,13.585,19.78,20.315]},
-   {"n":3,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.05,"readsOn":true,"level":-1.6,"heard":{"extra":"A","next":"AND","letters":"AND THERE HE BLEST ME AND","words":"he blessed me at"}},{"kind":"tail-clipped","by":0.05,"readsOn":true,"level":-0.5,"heard":{"letters":"AND THERE HE BLEST ME","words":"there he blessed me"}}],"sound":[19.78,20.315,27.03,27.03]},
+   {"n":3,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.05,"readsOn":true,"level":-1.6,"heard":{"extra":"A","next":"AND","letters":"AND THERE HE BLEST ME AND","words":"he blessed me at"}},{"kind":"tail-clipped","by":0.097,"readsOn":true,"level":-0.5,"heard":{"letters":"AND THERE HE BLESSD ME","words":"there he blessed me"}}],"sound":[19.78,20.315,27.03,27.03]},
    {"n":4,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.05,"readsOn":true,"level":-0.5,"heard":{"before":"ME","letters":"AND TOLD ME BEHOLD","words":"and told me behold"}},{"kind":"head-clipped","by":0.05,"readsOn":true,"level":-1.6,"heard":{"lost":"A","letters":"AND TOLD ME BEHOLD","words":"told me behold i"}}],"sound":[27.03,27.03,40.12,41.665]},
    {"n":5,"verdict":"ok","sound":[40.12,41.665,53.19,53.835]},
    {"n":6,"verdict":"ok","sound":[53.19,53.835,61.265,62.36]},
@@ -1618,7 +1618,7 @@
    {"n":1,"verdict":"ok","sound":[3.715,6.63,11.48,12.155]},
    {"n":2,"verdict":"ok","sound":[11.48,12.155,19.365,19.75]},
    {"n":3,"verdict":"ok","sound":[19.365,19.75,27.11,28.0]},
-   {"n":4,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":4.1,"heard":{"next":"MY","letters":"PLEASE TELL PHAROH THAT","words":"said to pharaoh's court"}},{"kind":"tail-clipped","by":0.06,"readsOn":true,"level":-6.4,"heard":{"lost":"AT","letters":"PLEASE TELL PHAROH THAT","words":"said to pharaoh's court"}}],"sound":[27.11,28.0,37.27,37.27]},
+   {"n":4,"verdict":"flagged","flags":[{"kind":"tail-extra","by":0.04,"readsOn":true,"level":4.1,"heard":{"next":"MY","letters":"PLEASE TELL PHAROH THAT","words":"said to pharaoh's court"}},{"kind":"tail-clipped","by":0.107,"readsOn":true,"level":4.7,"heard":{"lost":"HAT","letters":"PLEASE TELL PHAROH THE","words":"said to pharaoh's court"}}],"sound":[27.11,28.0,37.27,37.27]},
    {"n":5,"verdict":"flagged","flags":[{"kind":"head-extra","by":0.06,"readsOn":true,"level":-6.4,"heard":{"extra":"AT","before":"THAT","letters":"BUT MY FATHER MADE ME SWEAR","words":"but my father made"}},{"kind":"head-clipped","by":0.04,"readsOn":true,"level":4.1,"heard":{"letters":"MY FATHER MADE ME SWEAR AT","words":"my father made me"}}],"sound":[37.27,37.27,52.06,53.06]},
    {"n":6,"verdict":"ok","sound":[52.06,53.06,58.105,59.445]},
    {"n":7,"verdict":"ok","sound":[58.105,59.445,68.155,68.84]},

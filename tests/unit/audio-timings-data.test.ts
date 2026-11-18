@@ -225,10 +225,11 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
       expect(missing).toEqual([]);
     });
 
-    it.skipIf(book !== 'jhn')("John 1:50 ends in the quiet 0.4 s before the 'Then' of verse 51 (mw-82lb97i.27)", () => {
+    it.skipIf(book !== 'jhn')("John 1:50 ends in the quiet, the inside tail after its last word and 0.35 s before the 'Then' of verse 51 (mw-82lb97i.27; mw-ar5k42b.9 moved it 50 ms later)", () => {
       const verse = verses.find((v) => v.at === '1:50');
       expect(verse?.tail?.onset).toBeCloseTo(371.66, 1);
-      expect((verse?.tail?.onset ?? 0) - (verse?.end ?? 0)).toBeGreaterThanOrEqual(0.4);
+      expect((verse?.tail?.onset ?? 0) - (verse?.end ?? 0)).toBeGreaterThanOrEqual(0.35);
+      expect(thousandths(verse?.end ?? 0) - thousandths(verse?.tail?.died ?? Infinity)).toBeGreaterThanOrEqual(thousandths(slop.insideTail));
     });
 
     it.skipIf(book !== 'jhn')("John 2:9 ends at the quietest instant between 'aside' and the 'and' of verse 10, where the narrator reads on (mw-82lb97i.41: it ended 30 ms later, in 'and')", () => {
