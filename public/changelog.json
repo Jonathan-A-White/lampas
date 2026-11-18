@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.275",
+    "date": "2026-11-18",
+    "story": "mw-fnvjof.17.161",
+    "kind": "fixed",
+    "text": "In the Old Testament, tapping an English phrase now opens the Hebrew word it translates (Isaiah 33:8 and many more verses), and a Hebrew word shows its own English."
+  },
+  {
+    "version": "0.7.275",
+    "date": "2026-11-18",
+    "story": "mw-qtu3zvz.148",
+    "kind": "fixed",
+    "text": "Long book names in the Sermons list (and in the other Library lists) are shortened so they are no longer cut off."
+  },
+  {
+    "version": "0.7.275",
+    "date": "2026-11-18",
+    "story": "mw-u2w5klk.349.32",
+    "kind": "fixed",
+    "text": "In the Septuagint's English, tapping words like 'removed', 'Return', 'mistress', 'lifted' and 'offered' now opens the right Greek word, not the whole verse or a neighbour's word."
+  },
+  {
+    "version": "0.7.275",
+    "date": "2026-11-18",
+    "story": "mw-r9xo1pj.2",
+    "kind": "new",
+    "text": "Morning RePhil now has a Seen button that moves Today to the next episode, shows with Logos Off, and a devotional of your choice takes over when you have seen them all."
+  },
+  {
     "version": "0.7.274",
     "date": "2026-11-18",
     "story": "mw-fnvjof.17.163",

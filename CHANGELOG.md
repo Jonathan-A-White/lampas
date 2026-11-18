@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.275
+_2026-11-18_
+- Fixed: In the Old Testament, tapping an English phrase now opens the Hebrew word it translates (Isaiah 33:8 and many more verses), and a Hebrew word shows its own English.
+- Fixed: Long book names in the Sermons list (and in the other Library lists) are shortened so they are no longer cut off.
+- Fixed: In the Septuagint's English, tapping words like 'removed', 'Return', 'mistress', 'lifted' and 'offered' now opens the right Greek word, not the whole verse or a neighbour's word.
+- New: Morning RePhil now has a Seen button that moves Today to the next episode, shows with Logos Off, and a devotional of your choice takes over when you have seen them all.
+
 ## 0.7.274
 _2026-11-18_
 - Fixed: Turning the phone sideways and back in Turn pages now keeps you on the page you were reading.
