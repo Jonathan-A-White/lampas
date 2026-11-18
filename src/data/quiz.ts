@@ -164,20 +164,52 @@ const isOwnForm = (g: GreekWord, word: Word, others: ReadonlySet<string>): boole
   return own !== undefined && !isGuess(g) && lemmaKeyOf(wordLemma(g)) === own.lexicon && own.parse.test(g.p ?? '') && !others.has(nfc(g.t));
 };
 
-/** Whether a Greek word of a chapter is a place of `word`, whose lemmas (lemmasOf) these are: a form of its lexicon lemmas that is not another's, or one of its own forms (OWN_FORMS). The Quick test, Review and the parsing drill share it (mw-indx1x6.83). */
-export const isPlaceOf = (g: GreekWord, word: Word, lemmas: ReadonlySet<string>, others: ReadonlySet<string> = new Set()): boolean =>
-  (isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others)) || isOwnForm(g, word, others);
+/**
+ * The lemmas a phrase is made of, in order, when the word is a phrase: a Greek headword of several words ('εἰ μή'), each of which is a word of the text. A phrase is found only where all its words
+ * stand together in order, not by its last word alone, since its first is often another of his words (εἰ), which lemmasOf drops (mw-indx1x6.107).
+ */
+const phraseOf = (word: Word): string[] | undefined => {
+  const parts = word.lang === 'hbo' ? [] : nfc(word.lemma).split(' ').filter((p) => p !== '');
+  return parts.length > 1 ? parts : undefined;
+};
+
+/** Whether `g` is the last word of the phrase `parts`, the words before it (`before`, nearest last) being the rest in order: the places of a phrase are the places of its words together. */
+const endsPhrase = (g: GreekWord, before: readonly GreekWord[], parts: readonly string[]): boolean => {
+  const lead = before.slice(Math.max(0, before.length - (parts.length - 1)));
+  const all = [...lead, g];
+  return lead.length === parts.length - 1 && all.every((w, i) => !isGuess(w) && lemmaKeyOf(wordLemma(w)) === parts[i]);
+};
+
+/**
+ * Whether a Greek word of a chapter is a place of `word`, whose lemmas (lemmasOf) these are: a form of its lexicon lemmas that is not another's, or one of its own forms (OWN_FORMS). A phrase
+ * (εἰ μή) has its places at the last of its words when the others stand right before it in the verse, `before` being the verse's words ahead of `g`. The Quick test, Review and the parsing drill
+ * share it (mw-indx1x6.83).
+ */
+export const isPlaceOf = (g: GreekWord, word: Word, lemmas: ReadonlySet<string>, others: ReadonlySet<string> = new Set(), before: readonly GreekWord[] = []): boolean => {
+  const phrase = phraseOf(word);
+  if (phrase) return endsPhrase(g, before, phrase);
+  return (isFormOf(g, lemmas, others) && !isOtherPluralPronoun(g, others)) || isOwnForm(g, word, others);
+};
 
 /**
  * Every place the chapter has a word, found by any of its lexicon lemmas, or by its own forms when it is a pronoun the data lists under another's lemma (OWN_FORMS). `others` are the headwords of his
- * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf).
+ * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf). A phrase's place is shown with all its words ('εἰ μὴ').
  */
 export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string> = new Set()): Occurrence[] {
   const lemmas = lemmasOf(word, others);
+  const phrase = phraseOf(word);
   return chapter.verses.flatMap((v) =>
-    v.g
-      .filter((g) => isPlaceOf(g, word, lemmas, others))
-      .map((g) => ({ form: cardForm(chapter, g), reference: `${chapter.book} ${chapter.chapter}:${v.n}`, book: chapter.code, chapter: chapter.chapter, verse: v.n })),
+    v.g.flatMap((g, at) =>
+      isPlaceOf(g, word, lemmas, others, v.g.slice(0, at))
+        ? [{
+            form: v.g.slice(at - (phrase ? phrase.length - 1 : 0), at + 1).map((w) => cardForm(chapter, w)).join(' '),
+            reference: `${chapter.book} ${chapter.chapter}:${v.n}`,
+            book: chapter.code,
+            chapter: chapter.chapter,
+            verse: v.n,
+          }]
+        : [],
+    ),
   );
 }
 

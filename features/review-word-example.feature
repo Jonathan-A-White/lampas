@@ -64,3 +64,10 @@ Feature: A Review word question gives an Example verse from his goal, after he h
     When he answers the word question
     Then the Example says a verse of "John 1" with the form "εἶπεν"
     And the Quick test of "εἶπεν" in "John 1" offers the form "εἶπεν"
+
+  Scenario: The Example of εἰ μή is a John 10 verse with εἰ followed by μή, not an earlier verse that has only μή
+    Given his goal is "Read John 10" and Review asks the word "εἰ μή"
+    When he answers the word question
+    Then the Example says a verse of "John 10" that has "εἰ" followed by "μή"
+    And the Example link opens that verse with "εἰ" and "μὴ" marked
+    And the Quick test of "εἰ μή" in "John 10" offers the form of "εἰ" followed by "μή"

@@ -27,16 +27,16 @@ afterAll(async () => {
 });
 
 /** The lemmas the scenarios ask: not in the seed words, so the scenario puts them in. */
-const EXTRA: Record<string, string> = { εἶπεν: 'he/she/it said (aorist of λέγω)', ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing', σύ: 'you', ἐγώ: 'I, me, my', μου: 'my', ἡμεῖς: 'we', ὑμεῖς: 'you (pl)' };
+const EXTRA: Record<string, string> = { εἶπεν: 'he/she/it said (aorist of λέγω)', ἀπό: 'from, away from', κτίσις: 'creation', ζζζζ: 'nothing', σύ: 'you', ἐγώ: 'I, me, my', μου: 'my', ἡμεῖς: 'we', ὑμεῖς: 'you (pl)', 'εἰ μή': 'except; if not' };
 
 /** The words that are his own as the seed has them (lemmas and all), not made up for the scenario: the question finds them by their own forms. */
-const HIS_OWN = new Set(['μου', 'ἡμεῖς', 'ὑμεῖς', 'εἶπεν']);
+const HIS_OWN = new Set(['μου', 'ἡμεῖς', 'ὑμεῖς', 'εἶπεν', 'εἰ μή']);
 
 /** The forms of a pronoun in Romans 8 the scenarios name, by the word: the data lists them under ἐγώ or σύ, so the lemma does not say. */
 const OWN_FORMS: Record<string, RegExp> = { μου: /^(μου|μοι|με|ἐμοῦ|ἐμοί|ἐμέ)$/, ἡμεῖς: /^ἡμ/i, ὑμεῖς: /^ὑμ/i };
 
 /** The chapters the scenarios name: the book's code and the number. */
-const CHAPTERS: Record<string, [string, number]> = { 'John 1': ['jhn', 1], 'Romans 8': ['rom', 8] }
+const CHAPTERS: Record<string, [string, number]> = { 'John 1': ['jhn', 1], 'John 10': ['jhn', 10], 'Romans 8': ['rom', 8] }
 
 /** The forms of a plural word, which belong to it and not to the singular word that shares its lexicon lemma. */
 const PLURAL_FORMS: Record<string, string[]> = { ὑμεῖς: ['Ὑμεῖς', 'ὑμεῖς', 'ὑμῶν', 'ὑμῖν', 'ὑμᾶς'], ἡμεῖς: ['Ἡμεῖς', 'ἡμεῖς', 'ἡμῶν', 'ἡμῖν', 'ἡμᾶς'] };
@@ -78,6 +78,15 @@ function verseHas(ref: string, lemma: string): boolean {
   const [book, n] = CHAPTERS[name] ?? [];
   const chapter = JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as { verses: { n: number; g: { l: string }[] }[] };
   return (chapter.verses.find((v) => v.n === Number(verse))?.g ?? []).some((w) => w.l.normalize('NFC') === lemma);
+}
+
+/** Whether the verse a reference names has a word of the lemma `first` right before a word of the lemma `second`, read from the chapter file on disk. */
+function followsInVerse(ref: string, first: string, second: string): boolean {
+  const [, name, verse] = /^(.+):(\d+)$/.exec(ref) ?? [];
+  const [book, n] = CHAPTERS[name] ?? [];
+  const chapter = JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as { verses: { n: number; g: { l: string }[] }[] };
+  const words = (chapter.verses.find((v) => v.n === Number(verse))?.g ?? []).map((w) => w.l.normalize('NFC'));
+  return words.some((l, i) => l === second && words[i - 1] === first);
 }
 
 async function answerChoice(): Promise<void> {
@@ -203,6 +212,35 @@ describeFeature(feature, ({ Scenario }) => {
       const pool = (await db.words.toArray()).map((w) => ({ lemma: w.lemma, gloss: w.gloss, pos: undefined }));
       const q = buildQuestion(word!, pool as never, chapter, mulberry32(3));
       expect(q.form?.normalize('NFC')).toBe(form);
+    });
+  });
+
+  Scenario('The Example of εἰ μή is a John 10 verse with εἰ followed by μή, not an earlier verse that has only μή', ({ Given, When, Then, And }) => {
+    Given('his goal is {string} and Review asks the word {string}', async (_, goal: string, lemma: string) => drawCard(goal, lemma, undefined, 0));
+    When('he answers the word question', answerChoice);
+    Then('the Example says a verse of {string} that has {string} followed by {string}', async (_, chapterName: string, first: string, second: string) => {
+      const node = await screen.findByTestId('chapter-form');
+      expect(node.textContent).toMatch(/^Example: /);
+      const ref = within(node).getByRole('link').textContent ?? '';
+      expect(ref.replace(/:\d+$/, '')).toBe(chapterName);
+      expect(followsInVerse(ref, first, second), `${ref} has ${first} followed by ${second}`).toBe(true);
+      expect((node.getAttribute('data-form') ?? '').normalize('NFC')).toMatch(/^εἰ μ[ήὴ]$/i);
+    });
+    And('the Example link opens that verse with {string} and {string} marked', async (_, first: string, second: string) => {
+      const ref = within(screen.getByTestId('chapter-form')).getByRole('link').textContent ?? '';
+      await user.click(screen.getByRole('link', { name: ref }));
+      const dialog = await screen.findByRole('dialog', { name: ref });
+      await waitFor(() => expect([...dialog.querySelectorAll('[data-marked]')].map((m) => m.textContent?.trim())).toEqual([first, second]));
+    });
+    And('the Quick test of {string} in {string} offers the form of {string} followed by {string}', async (_, lemma: string, chapterName: string, first: string, second: string) => {
+      const [book, n] = CHAPTERS[chapterName];
+      const chapter = JSON.parse(readFileSync(`public/data/${book}/${n}.json`, 'utf8')) as Chapter;
+      const word = await db.words.get(lemma);
+      const pool = (await db.words.toArray()).map((w) => ({ lemma: w.lemma, gloss: w.gloss, pos: undefined }));
+      const q = buildQuestion(word!, pool as never, chapter, mulberry32(3));
+      expect(q.reference, `${q.reference} has ${first} followed by ${second}`).toBeDefined();
+      expect(followsInVerse(q.reference!, first, second)).toBe(true);
+      expect(q.form?.normalize('NFC')).toMatch(/^εἰ μ[ήὴ]$/i);
     });
   });
 });
