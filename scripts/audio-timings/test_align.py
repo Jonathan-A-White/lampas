@@ -110,6 +110,16 @@ def test_a_quiet_too_short_for_the_margin_is_cut_in_its_middle_and_listed():
     assert 'less than the 147 ms' in cut['listen'][0]['reason'] and 'less than the 100 ms' in cut['listen'][1]['reason'] and near(cut['listen'][0]['room'], 0.075, 0.006)
 
 
+def test_a_quiet_long_enough_for_the_margin_but_not_at_two_decimals_is_listed_without_calling_it_short():
+    # Leviticus 11:29 (mw-ar5k42b.9): 150 ms between 'lizard' and 'the', the margin needs 147, but the end rounded up (to 1.61) and the start rounded down (1.60)
+    # do not both fit. It is cut in its middle and listed; its reason must not say 150 ms is less than 147.
+    parts = [(0.505, None), (1.0, -20), (0.15, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'great lizard'), verse(2, 'the gecko')], {1: [0.6, 1.4], 2: [1.75, 2.55]}, SLOP)
+    assert [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')] and near(cut['listen'][0]['room'], 0.15, 0.006)
+    reason = cut['listen'][0]['reason']
+    assert 'less than' not in reason and "room for the 147 ms the player's margin needs, but not once it is put to the timings' two decimals" in reason, reason
+
+
 def test_a_silence_shorter_than_a_quiet_is_still_where_the_cut_goes():
     # Genesis 23:14: 45 ms of silence between two verses, less than the maker calls a quiet: cut in its middle, listed with its length, not called a read-on
     parts = [(0.5, None), (1.0, -20), (0.045, None), (1.0, -20), (0.5, None)]

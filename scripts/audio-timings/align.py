@@ -595,6 +595,14 @@ def place_end(died: int, onset: int | None, inside: int, tail: int, duration: in
     return down2((died + onset) // 2), True
 
 
+def short_of(room: int, need: int) -> str:
+    """Why a quiet of `room` ms holds no edge with the player's margin of `need` ms: shorter, or (Leviticus 11:29: 150 ms against 147) long enough until the end
+    is rounded up and the next start down to the timings' two decimals."""
+    if room < need:
+        return f"less than the {need} ms the player's margin needs"
+    return f"room for the {need} ms the player's margin needs, but not once it is put to the timings' two decimals"
+
+
 def place_start(died: int | None, onset: int, lead: int) -> tuple[int, bool]:
     """A verse's start, in milliseconds, in the quiet from `died` (the sound before it has died; None: nothing sounds before it) to `onset` (its own first sound),
     and whether the quiet is too short for the margin. With room: `lead` before its first sound, so the player starting `lead` late still plays the whole of it.
@@ -695,14 +703,14 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
                     reason = f"the recording ends {room} ms after '{word(before, -1)}': less than the {inside} ms the player's margin needs; the end is the file's"
                 else:
                     reason = (f"a quiet of {room} ms between '{word(before, -1)}' and " + (f"'{word(after, 0)}'" if first is last and at < count else 'what is spoken next')
-                              + f": less than the {inside + tail} ms the player's margin needs; cut in its middle")
+                              + f": {short_of(room, inside + tail)}; cut in its middle")
                 listed(before, 'tail', reason, room, ends[before])
         if at < count:
             starts[after], tight = place_start(None if last is level.from_start else last[0], onset, lead)
             if tight:
                 room = onset - last[0]
                 what = f"a quiet of {room} ms between " + (f"'{word(before, -1)}'" if first is last and at > 0 else 'what is spoken before') + f" and '{word(after, 0)}'"
-                listed(after, 'head', f'{what}: less than the {2 * lead} ms the player\'s margin needs; cut in its middle', room, starts[after])
+                listed(after, 'head', f'{what}: {short_of(room, 2 * lead)}; cut in its middle', room, starts[after])
             if at > 0:
                 starts[after] = max(starts[after], ends[before])
         row = [number, None if at == 0 and last is level.from_start else seconds(died), None if at == count and first is level.to_end else seconds(onset)]
