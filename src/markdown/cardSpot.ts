@@ -24,8 +24,10 @@ export function visibleBottom(inset = 0): number {
 /** Where the card goes: below the reference when it fits, else above it, else on the roomier side with its text scrolling. `chrome` is the height of what must always show
  * (the heading and the footer). `layer` is the layer it is placed in (its top is the foot of the shell's bars, mw-5r3p30.644: the card does not go above it, and its `top` is counted
  * from it; its bottom is where a card above its reference hangs from). `inset` is the floor of the navigation bar under the visible area (visibleBottom). The card never reaches below
- * the visible area (mw-5r3p30.872): the one placing the tutor's cards, the Share sheet's and the Verse lists' share. */
-export function spotFor(anchor: DOMRect, natural: number, layer: { top: number; bottom: number }, chrome: number, inset = 0): Spot {
+ * the visible area (mw-5r3p30.872): the one placing the tutor's cards, the Share sheet's and the Verse lists' share. `body` is the least height of the text between the heading and the
+ * footer that the card must give it (three lines of the verse, or all of it when shorter, mw-indx1x6.73): a side that leaves less is no room, so a sideways phone, whose sides are a
+ * sliver, gets the whole layer rather than a verse cut to half a line. */
+export function spotFor(anchor: DOMRect, natural: number, layer: { top: number; bottom: number }, chrome: number, inset = 0, body = 0): Spot {
   const vw = window.innerWidth;
   const vh = visibleBottom(inset);
   const floor = layer.top;
@@ -33,9 +35,9 @@ export function spotFor(anchor: DOMRect, natural: number, layer: { top: number; 
   const left = Math.min(Math.max(anchor.left, MARGIN), vw - width - MARGIN);
   const below = vh - anchor.bottom - GAP - MARGIN;
   const above = anchor.top - floor - GAP - MARGIN;
-  // a window so short that neither side has room for the card's heading and its Play and Open (a third of a phone's height, split-screen, mw-5r3p30.773): the card
+  // a window so short that neither side has room for the card's heading, its text and its Play and Open (a third of a phone's height, split-screen, mw-5r3p30.773): the card
   // takes the whole layer, over the reference, rather than be cut off at the window's foot
-  if (Math.max(below, above) < chrome) return { top: MARGIN, left, width, maxHeight: Math.max(vh - floor - 2 * MARGIN, 0) };
+  if (Math.max(below, above) < chrome + body) return { top: MARGIN, left, width, maxHeight: Math.max(vh - floor - 2 * MARGIN, 0) };
   if (natural <= below || (natural > above && below >= above)) return { top: anchor.bottom + GAP - floor, left, width, maxHeight: Math.max(below, 0) };
   return { bottom: layer.bottom - (anchor.top - GAP), left, width, maxHeight: Math.max(above, 0) };
 }
