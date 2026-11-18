@@ -410,9 +410,9 @@ export interface BuildOptions {
   englishFile?: string;
   /** the English of the RP 2026 changes (data/rp2026-english.json: whether the English changes, and Lampas's own where it does); default RP2026_ENGLISH_FILE */
   rp2026EnglishFile?: string;
-  /** where the forms of the readings that stay untagged are listed; default UNTAGGED_FILE */
+  /** where the forms of the readings that stay untagged are listed; default UNTAGGED_FILE for a full build (isFullBuild), else beside the raw downloads */
   untaggedFile?: string;
-  /** where the report of the drill answers is written; default DRILL_REPORT_FILE when the build writes public/data, else beside the raw downloads (a test's build must not rewrite the committed report) */
+  /** where the report of the drill answers is written; default DRILL_REPORT_FILE when the build is full (isFullBuild) and writes public/data, else beside the raw downloads (a test's build must not rewrite the committed report) */
   drillReportFile?: string;
   /** where the forms given a guessed number are listed; default GUESSED_FILE, or variant-guessed.txt beside `untaggedFile` when that is given */
   guessedFile?: string;
@@ -461,6 +461,24 @@ export async function loadInputs(
   return { msbTsv, lex: parseLexicon(tbesgText), apparatus, overlay, tagnt: tagntWords };
 }
 
+/** True when the build had every input the committed reports are made from (the 2018 apparatus, the RP 2026 overlay, TAGNT, the pinned sources): with fewer, the reports differ from the committed ones (mw-5r3p30.1193). */
+export function isFullBuild(options: Pick<BuildOptions, 'variants' | 'rp2026' | 'tagnt' | 'pinSources'>): boolean {
+  const { variants = true } = options;
+  const { rp2026 = variants, tagnt = variants, pinSources = variants } = options;
+  return variants && rp2026 && tagnt && pinSources;
+}
+
+/** Where a build writes the drill report and the untagged and guessed lists: the committed files (data/) only for a full build (the drill report also only into public/data); else beside the raw downloads or the given untaggedFile, so a build with fewer inputs never rewrites a committed report. */
+export function reportFiles(options: Pick<BuildOptions, 'rawDir' | 'outDir' | 'variants' | 'rp2026' | 'tagnt' | 'pinSources' | 'drillReportFile' | 'untaggedFile' | 'guessedFile'>): { drill: string; untagged: string; guessed: string } {
+  const full = isFullBuild(options);
+  const untagged = options.untaggedFile ?? (full ? UNTAGGED_FILE : join(options.rawDir, 'variant-untagged.txt'));
+  return {
+    drill: options.drillReportFile ?? (full && resolve(options.outDir) === resolve('public/data') ? DRILL_REPORT_FILE : join(options.rawDir, 'drill-report.json')),
+    untagged,
+    guessed: options.guessedFile ?? (options.untaggedFile || !full ? join(dirname(untagged), 'variant-guessed.txt') : GUESSED_FILE),
+  };
+}
+
 export async function runBuild(options: BuildOptions): Promise<{ chapters: number; written: number; bytes: number }> {
   const { outDir, log = () => undefined } = options;
   const { msbTsv, lex, apparatus, overlay, tagnt } = await loadInputs(options);
@@ -474,13 +492,14 @@ export async function runBuild(options: BuildOptions): Promise<{ chapters: numbe
     checkRp2026English(overlay, rp2026English);
     for (const line of rp2026EnglishReport(overlay, rp2026English)) log(line);
   }
+  const reports = reportFiles(options);
   if (built.tagged) {
     log(taggedLine(built.tagged));
-    writeIfChanged(options.untaggedFile ?? UNTAGGED_FILE, untaggedText(built.tagged));
-    writeIfChanged(options.guessedFile ?? (options.untaggedFile ? join(dirname(options.untaggedFile), 'variant-guessed.txt') : GUESSED_FILE), guessedText(built.tagged));
+    writeIfChanged(reports.untagged, untaggedText(built.tagged));
+    writeIfChanged(reports.guessed, guessedText(built.tagged));
   }
 
-  writeIfChanged(options.drillReportFile ?? (resolve(outDir) === resolve('public/data') ? DRILL_REPORT_FILE : join(options.rawDir, 'drill-report.json')), drillReportText(built.drill));
+  writeIfChanged(reports.drill, drillReportText(built.drill));
 
   // index.json lists the 66 books: this build writes the 27 read in Greek and keeps the Old Testament's from the index on disk (scripts/data-build-ot.ts writes those)
   const index = mergeIndex(readIndex(outDir), built.index.books, 'grc');
