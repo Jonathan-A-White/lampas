@@ -61,7 +61,9 @@ describe('every test that reads grinds/ has it in its import graph', () => {
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(dir, e.name), keep) : keep.test(e.name) ? [join(dir, e.name)] : []));
 
   /** The string and template text of a file, without its comments: what it says to the file system, not what it says to a reader. */
+  let parses = 0;
   const literals = (source: string): string[] => {
+    parses++;
     const out: string[] = [];
     const visit = (node: ts.Node): void => {
       if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node)) out.push(node.text);
@@ -70,8 +72,16 @@ describe('every test that reads grinds/ has it in its import graph', () => {
     visit(ts.createSourceFile('x.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX));
     return out;
   };
-  const namesGrinds = (source: string): boolean => literals(source).some((t) => /(^|[/\\])grinds([/\\]|$)/.test(t));
-  const relativeImports = (source: string): string[] => literals(source).filter((t) => t.startsWith('.'));
+  // Parsing every test and step file with typescript took 33 s alone and 63 s under load (mw-5r3p30.1176), so a file is parsed only when its raw text
+  // could say what is asked (a literal naming grinds/ holds the word 'grinds'; an import of a helper holds the helper's file name), and once only.
+  const parsed = new Map<string, string[]>();
+  const literalsOnce = (source: string): string[] => {
+    let found = parsed.get(source);
+    if (!found) parsed.set(source, (found = literals(source)));
+    return found;
+  };
+  const namesGrinds = (source: string): boolean => source.includes('grinds') && literalsOnce(source).some((t) => /(^|[/\\])grinds([/\\]|$)/.test(t));
+  const relativeImports = (source: string): string[] => literalsOnce(source).filter((t) => t.startsWith('.'));
 
   /** Helper modules (scripts/, tests/support/) that read grinds/ with the file system, themselves or through another helper. */
   const helpers = ((): Set<string> => {
@@ -92,10 +102,13 @@ describe('every test that reads grinds/ has it in its import graph', () => {
     return found;
   })();
 
+  const helperNames = new Set([...helpers].map((key) => key.slice(key.lastIndexOf('/') + 1)));
+
   /** Why `source` (the text of `file`) must import the grinds module, or null when it needn't or already does. */
   const missing = (file: string, source: string): string | null => {
     if (GRAPH_IMPORT.test(source)) return null;
     if (namesGrinds(source)) return 'names a path under grinds/';
+    if (![...helperNames].some((name) => source.includes(name))) return null;
     const helper = relativeImports(source).find((rel) => helpers.has(resolve(dirname(file), rel).replace(/\.tsx?$/, '')));
     return helper ? `imports ${helper}, which reads grinds/` : null;
   };
@@ -113,6 +126,12 @@ describe('every test that reads grinds/ has it in its import graph', () => {
     expect(missing(resolve('features/steps/scratch.steps.ts'), `import '../../tests/support/grinds-in-graph';\nreadFileSync('grinds/tips.json');`)).toBeNull();
   });
 
+  it('parses a file only when its text could name grinds/ or a helper', () => {
+    const before = parses;
+    expect(missing(resolve('tests/unit/scratch.test.ts'), `import { a } from '../../src/a';\nexport const b = a + 'x';`)).toBeNull();
+    expect(parses).toBe(before);
+  });
+
   it('finds the import in every unit test and step file that reads grinds/', () => {
     const files = [...walk('tests/unit', /\.test\.tsx?$/), ...walk('features/steps', /\.steps\.tsx?$/)];
     const lacking = files.flatMap((f) => {
@@ -120,5 +139,5 @@ describe('every test that reads grinds/ has it in its import graph', () => {
       return why ? [`${f}: ${why}`] : [];
     });
     expect(lacking, `add the line  import '../support/grinds-in-graph';  (features/steps: '../../tests/support/grinds-in-graph') to:`).toEqual([]);
-  });
+  }, 120_000);
 });
