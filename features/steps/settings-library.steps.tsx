@@ -16,7 +16,7 @@ import { CATALOGUE } from '../../src/resources/catalogue';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
-import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
+import { EVERY_BOOK_IDS, forgetImport, keepImport } from '../../tests/support/logos-import';
 
 afterAll(async () => {
   cleanup();
@@ -91,8 +91,18 @@ describeFeature(feature, ({ Scenario }) => {
     await openAt('#/settings?group=daily');
     await screen.findByRole('group', { name: 'Which devotional' });
   };
+  // the same, with no Logos list kept on the device (an import from before the list was kept): the shelf alone says what he has (mw-5r3p30.1189)
+  const dailyWithNoList = async (_: unknown, shelf: string) => {
+    await shelfHolds(list(shelf), { devotional: 'random', 'resource.logos': 'on' });
+    await forgetImport();
+    await openAt('#/settings?group=daily');
+    await screen.findByRole('group', { name: 'Which devotional' });
+  };
   const picker = () => screen.findByRole('group', { name: 'Which devotional' });
   const offered = async () => (await within(await picker()).findAllByRole('radio')).map((r) => r.textContent?.replace('✓', '').trim() ?? '').sort();
+  const picks = async (_: unknown, names: string) => {
+    await waitFor(async () => expect(await offered()).toEqual(list(names).sort()));
+  };
 
   const homeWith = async (_: unknown, shelf: string) => {
     await shelfHolds(list(shelf), { 'resource.logos': 'on' });
@@ -235,9 +245,6 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('Which devotional is a searchable picker of the devotionals that are on, with Random', ({ Given, Then, When }) => {
     Given('the shelf holds the devotionals {string} and Settings is open at Daily with Which devotional on Random', dailyWith);
-    const picks = async (_: unknown, names: string) => {
-      await waitFor(async () => expect(await offered()).toEqual(list(names).sort()));
-    };
     Then('the Which devotional picker offers {string}', picks);
     When('he searches the Which devotional picker for {string}', async (_, text: string) => {
       await user.type(await screen.findByRole('searchbox', { name: 'Search Which devotional' }), text);
@@ -249,6 +256,11 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the setting {string} holds {string}', async (_, key: string, value: string) => {
       await waitFor(async () => expect(await kept(key)).toBe(value));
     });
+  });
+
+  Scenario('Which devotional lists the shelf while no Logos list is kept', ({ Given, Then }) => {
+    Given('the shelf holds the devotionals {string} with no Logos list kept and Settings is open at Daily with Which devotional on Random', dailyWithNoList);
+    Then('the Which devotional picker offers {string}', picks);
   });
 
   Scenario('In the draw follows the shelf', ({ Given, Then, When, And }) => {

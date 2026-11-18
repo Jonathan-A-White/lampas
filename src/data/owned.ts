@@ -1,5 +1,5 @@
 // src/data/owned.ts — which Logos resources Lampas may offer (mw-qtu3zvz.94): one he says he owns in his Library import (the kept list, `exportRows`), or one on FREE_LOGOS, the resources Logos
-// gives every new user. Pure: the repository (ownedResources, src/data/repositories/library.ts) reads the import and hands the set here; with no import kept the set is empty, so only a free resource passes.
+// gives every new user. Pure: the repository (ownedResources, src/data/repositories/library.ts) reads the import and hands the set here; with no import kept the set is the books already on his shelf (mw-5r3p30.1189), so only those and a free resource pass.
 
 /** A resource Logos gives new users free (Logos Basic); each carries the page that says so. */
 export interface FreeLogos {
