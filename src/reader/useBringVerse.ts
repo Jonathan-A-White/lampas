@@ -36,13 +36,29 @@ export function settleAtTop(box: HTMLElement, inner: HTMLElement | null, verse: 
   bring();
   const touches = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
   let observer: ResizeObserver | undefined;
+  let ended = false;
   const done = () => {
+    ended = true;
     observer?.disconnect();
     clearTimeout(timer);
     for (const type of touches) box.removeEventListener(type, done);
   };
   for (const type of touches) box.addEventListener(type, done, { passive: true });
-  const timer = setTimeout(done, SETTLE_MS);
+  // A face still being fetched when SETTLE_MS is up (a loaded host, a slow phone, the first use of a font) lays the lines again when it arrives: the settle waits for it, once, and
+  // the verse is put back then. His own hand on the box still ends it.
+  const timer = setTimeout(() => {
+    const fonts = typeof document !== 'undefined' ? document.fonts : undefined;
+    if (!fonts || fonts.status !== 'loading') return done();
+    void fonts.ready.then(() => {
+      if (ended) return;
+      // the lines are laid again a frame after the face is in
+      requestAnimationFrame(() => {
+        if (ended) return;
+        bring();
+        done();
+      });
+    });
+  }, SETTLE_MS);
   if (typeof ResizeObserver !== 'undefined') {
     observer = new ResizeObserver(bring);
     observer.observe(inner ?? box);
