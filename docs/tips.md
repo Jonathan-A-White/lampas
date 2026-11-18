@@ -35,9 +35,11 @@ kept: never a verse, a word or a question.
 | `turned_off` | registry settings he saved as `off` |
 | `counts` | words learning and solid, and the rows of the tutor, talk, quiz, drill, reading and grammar tables |
 
-The Settings home ends with 'What Lampas has counted' (`src/tips/UsageCounted.tsx`, mw-6ww.175.15): `screensCounted(usage)` (pure) lists the screens he opened
+'What Lampas has counted' (`src/tips/UsageCounted.tsx`, mw-6ww.175.15) is a page of its own, `#/settings?page=counted`, behind its row of the Settings home
+(mw-6ww.175.87, his words: "This should be behind a tap. Not off the main settings."; the row is `COUNTED_DOOR` in `src/settings/rows.ts`, last before Developer,
+docs/layout/settings.md 'The home and the groups'): `screensCounted(usage)` (pure) lists the screens he opened
 with their counts over all days (`Opened`) and the rest of `SCREENS` (`Never opened`). It reads only the `usage` table (`listUsage`) and makes no request;
-`tests/unit/usage-page.test.tsx` holds both, `tests/e2e/usage-page.spec.ts` the screen.
+`tests/unit/usage-page.test.tsx` holds both, the row and the page, `features/settings.feature` the tap, `tests/e2e/usage-page.spec.ts` the screen.
 
 A new feature he can take up is one entry in `FEATURES` (and a line in `grinds/tips.instructions.md`, which a test keeps level); a new
 screen is one entry in `SCREENS` (the answer schema's action enum follows it, and a test holds them equal).
