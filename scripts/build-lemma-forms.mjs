@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // scripts/build-lemma-forms.mjs — the index from a lemma to every form of it the New Testament text uses (mw-irpgqi.4, docs/paradigms.md 'This word').
 //
-//   node scripts/build-lemma-forms.mjs     reads public/data/<book>/<n>.json (and the Septuagint's public/data-lxx/<book>/<n>.json) and writes public/lemma-forms/<lemma>.json, one file a lemma
+//   node scripts/build-lemma-forms.mjs     (--help prints this usage and writes nothing; any other argument stops with exit 2) reads public/data/<book>/<n>.json (and the Septuagint's public/data-lxx/<book>/<n>.json) and writes public/lemma-forms/<lemma>.json, one file a lemma
 //
 // The files are made from the chapter data the Reader loads, so they are generated, not committed (public/lemma-forms is in .gitignore; it is not under public/data, whose every file the tests read as a chapter);
 // `npm run build` makes them before it bundles, `npm run forms:build` makes them alone. A form is only ever one the text has: the text's
@@ -219,7 +219,22 @@ export function writeLemmaForms(dataDir, outDir, lxxDir) {
   return { lemmas: lemmas.size, bytes, largest, capitals: capitals.length, unmatched: capitals.filter((c) => c.form === undefined) };
 }
 
+const USAGE = `usage: node scripts/build-lemma-forms.mjs [--help]
+
+Reads public/data (and public/data-lxx) and writes public/lemma-forms/<lemma>.json, one file a lemma; the folder is emptied first.
+It takes no other argument. -h and --help print this and write nothing.
+`;
+
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  const args = process.argv.slice(2);
+  if (args.includes('--help') || args.includes('-h')) {
+    process.stdout.write(USAGE);
+    process.exit(0);
+  }
+  if (args.length > 0) {
+    process.stderr.write(`build-lemma-forms.mjs: unknown argument ${args[0]}\n${USAGE}`);
+    process.exit(2);
+  }
   const done = writeLemmaForms('public/data', 'public/lemma-forms', 'public/data-lxx');
   console.log(`${done.lemmas} lemma files, ${(done.bytes / 1024).toFixed(0)} KB in all, the largest ${done.largest.lemma} at ${done.largest.bytes} bytes`);
   // the Septuagint's words printed in capitals take their accent from a form of the lemma the text has; those with none are left out of the files
