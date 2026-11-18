@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.282
+_2026-11-18_
+- Fixed: devotionals and other Logos books already on your shelf show again in the Library and in Settings when no Logos list is kept on this phone.
+
 ## 0.7.281
 _2026-11-18_
 - Fixed: the word εἶπεν ("he said") now shows an example verse and a form in the Quick test, where before it showed none.
