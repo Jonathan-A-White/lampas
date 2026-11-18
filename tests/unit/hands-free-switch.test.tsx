@@ -1,7 +1,7 @@
 // The Hands-free switch (mw-rl10piw.5): src/handsFree/switch.ts writes the setting and says it; src/handsFree/HandsFreeGate.tsx draws the mark and holds the screen awake
 // while it is On. This story opens no microphone, so getUserMedia is a spy that is never called. The whole of it, over the app, is features/hands-free.feature.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { threeFingerTap } from 'voice-kit/testing/handsfree';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
@@ -13,8 +13,15 @@ import { handsFreeSetting } from '../../src/settings/definitions';
 import { applyChanges } from '../support/settings';
 import { setSetting } from '../../src/settings/store';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
+import { readFileSync } from 'node:fs';
+import type { Chapter } from '../../src/data/chapter';
+import { answerRuns } from '../../src/speech/answerRuns';
+import { speakTutor } from '../../src/speech/tutorVoice';
+import { useTalk } from '../../src/useTalk';
 import { serveWakeModel, stubWake, type WakeFake } from '../support/fake-wake';
 
+const asked = vi.hoisted(() => vi.fn());
+vi.mock('../../src/services/talk', async (original) => ({ ...(await original<typeof import('../../src/services/talk')>()), askTalk: asked }));
 const wake = vi.hoisted(() => ({ holdAwake: vi.fn(), releaseAwake: vi.fn() }));
 vi.mock('../../src/speech/wakeLock', async (original) => ({ ...(await original<typeof import('../../src/speech/wakeLock')>()), ...wake }));
 
@@ -79,6 +86,33 @@ describe('the tutor changing Hands-free', () => {
     expect(await getHandsFree()).toBe(false);
     await waitFor(() => expect(spoken()).toEqual(['Hands-free on', 'Hands-free off']));
   });
+});
+
+describe('the tutor changing Hands-free spoken with the answer read aloud', () => {
+  // mw-rl10piw.39: Settings > Read the tutor's responses aloud is On by default; the answer that changed the setting is read as it comes, and used to cut off 'Hands-free on' in the same instant
+  const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+  const scope = { title: 'Romans 8', chapter, verse: null };
+  const outcomes = (text: string): string[] => synth.honest.log.filter((e) => e.text === text).map((e) => e.outcome);
+
+  for (const [value, said, answer] of [['on', 'Hands-free on', 'Done: Hands-free is on.'], ['off', 'Hands-free off', 'Done: Hands-free is off.']] as const) {
+    it(`says '${said}' to its end, and reads the answer after it`, async () => {
+      if (value === 'off') await setSetting(handsFreeSetting, 'on');
+      asked.mockReset();
+      asked.mockResolvedValue({ answer, words: [], settings_changes: [{ key: 'handsFree', value }] });
+      const { result } = renderHook(() => useTalk('rom', 8, (_ref, id, text) => speakTutor(id, answerRuns(text))));
+      act(() => result.current.say(scope, `Turn Hands-free ${value}`));
+      await waitFor(() => expect(spoken()).toContain(said));
+      // the sentence is not cut off: it plays out, and only then does the answer take the voice
+      await waitFor(() => expect(synth.speaking).toBe(true));
+      expect(spoken()).not.toContain(answer);
+      synth.finishAll();
+      await waitFor(() => expect(spoken()).toContain(answer));
+      synth.finishAll();
+      expect(outcomes(said)).toEqual(['ended']);
+      expect(outcomes(answer)).toEqual(['ended']);
+      expect(await getHandsFree()).toBe(value === 'on');
+    });
+  }
 });
 
 describe('the Hands-free gate', () => {

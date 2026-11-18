@@ -228,6 +228,42 @@ export const READ_KEY = 'read-aloud';
 /** The key a word said by a long press speaks under (the sheet's and the Words speakers have their own). */
 const WORD_KEY = 'word-press';
 
+/** The key a setting's sentence is said under ('Hands-free on', src/handsFree/switch.ts): the tutor's answer that made the change waits for it (tutorVoice.ts, mw-rl10piw.39). */
+export const SETTING_SAID_KEY = 'hands-free';
+
+/** the longest the answer waits for the setting's sentence to end */
+const SAID_WAIT_MS = 5000;
+
+/** Calls `then` once the text said under `key` (speakText) is over: at once when none is, or when it ends, is stopped or is cut off. A setting's sentence ('Hands-free on', src/handsFree/switch.ts)
+ * is heard whole when the tutor's answer that made the change waits for it, not cuts it off (mw-rl10piw.39). Returns the way to give up waiting, which never calls `then`. */
+export function whenSaid(key: string, then: () => void): () => void {
+  const saying = (): boolean => (getSpeech().key === key && getSpeech().status !== 'idle') || beside?.key === key;
+  if (!saying()) {
+    then();
+    return () => undefined;
+  }
+  let over = false;
+  const offs: Array<() => void> = [];
+  const give = () => {
+    over = true;
+    clearTimeout(limit);
+    offs.forEach((off) => off());
+  };
+  const check = () => {
+    if (over || saying()) return;
+    give();
+    then();
+  };
+  // a phone that never says the sentence is over must not keep the answer silent
+  const limit = setTimeout(() => {
+    if (over) return;
+    give();
+    then();
+  }, SAID_WAIT_MS);
+  offs.push(subscribeEngine(check), subscribeBeside(check));
+  return give;
+}
+
 /** Asks the speech package to say `text` under `key`, in his speed and voice: it cancels what is speaking, cuts the text into sentences
  * (one per line break too) and reads each in the language of its letters. `slowly` is the speed of a word being sounded out. Returns false
  * when the phone cannot speak at all. */

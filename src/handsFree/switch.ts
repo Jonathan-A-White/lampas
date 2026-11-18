@@ -3,7 +3,7 @@
 // app's own speech (src/speech/greek.ts speakText: beside a reading, if one is under way). Saying it is a plain sentence the phone speaks; this opens no microphone.
 import { handsFreeSetting } from '../settings/definitions';
 import { getSetting, setSetting, useSetting } from '../settings/store';
-import { speakText } from '../speech/greek';
+import { SETTING_SAID_KEY, speakText } from '../speech/greek';
 import { getReading, resumeReading } from '../speech/readAloud';
 
 /** The words said when the switch goes On, and when it goes Off. */
@@ -11,7 +11,7 @@ export const HANDS_FREE_ON = 'Hands-free on';
 export const HANDS_FREE_OFF = 'Hands-free off';
 
 /** The key the sentence is spoken under (a second tap says its own sentence at once). */
-const SAID_KEY = 'hands-free';
+const SAID_KEY = SETTING_SAID_KEY;
 
 /** Whether Hands-free is On now, as saved. */
 export async function getHandsFree(): Promise<boolean> {

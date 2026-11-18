@@ -20,6 +20,14 @@ const subscribe = (listener: () => void): (() => void) => {
 /** Whether the page is in another app or behind the phone's lock (document.visibilityState 'hidden'). */
 export const pageHidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden';
 
+let starting: (() => void) | null = null;
+
+/** Keeps the way to give up an answer's start that waits for the setting sentence being said (tutorVoice.ts); a newer one gives up the older. */
+export function holdStart(cancel: (() => void) | null): void {
+  starting?.();
+  starting = cancel;
+}
+
 /** Holds a response for his return; a newer one replaces it. */
 export function holdAnswer(id: number, runs: Run[]): void {
   waiting = { id, runs };
@@ -31,6 +39,7 @@ export const waitingAnswer = (): WaitingAnswer | null => waiting;
 
 /** Drops the waiting response (a new question, a tap on the response or on the bar). Leaving the screen does not: the bar stays over the Reader. */
 export function dropWaiting(): void {
+  holdStart(null);
   if (waiting === null) return;
   waiting = null;
   emit();
