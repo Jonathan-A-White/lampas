@@ -105,7 +105,7 @@ test('a second finger that touches the bar and lifts leaves the hold: it is sent
     const second: Finger = { x: box.x + 12, y: hold.y, id: 2 };
     await touch.send('touchStart', [first, second]);
     await touch.send('touchEnd', [second]);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(300); // a real-time wait: a window in which nothing must happen (the lift of the second finger must not send)
     await expect(bar).toHaveText(/Release to send/);
     await expect(page.getByTestId('judgement')).toHaveCount(0);
     expect((await barSeen(page)).cancel).toBe(0);
@@ -254,7 +254,7 @@ test('on the letter drill a second finger that touches the bar and lifts leaves 
     const second: Finger = { x: box.x + 12, y: hold.y, id: 2 };
     await touch.send('touchStart', [first, second]);
     await touch.send('touchEnd', [second]);
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(300); // a real-time wait: a window in which nothing must happen (the lift of the second finger must not send)
     await expect(bar).toHaveText(/Let go when you have said it/);
     await expect(drill.getByTestId('say-result')).toHaveCount(0);
     await page.waitForTimeout(4200); // a real-time wait: the clip is heard in real time while the finger holds
