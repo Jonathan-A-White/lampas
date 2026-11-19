@@ -6,7 +6,7 @@
 import type { ScreenCredit } from './screen';
 
 /** The most the credits weigh as JSON in UTF-8, so the screen, his words and a little history still fit MAX_REQUEST_BYTES (src/services/talk.ts). */
-export const MAX_CREDITS_BYTES = 9930;
+export const MAX_CREDITS_BYTES = 9980;
 
 /** One line of the sheet a Septuagint chapter's header opens (mw-u2w5klk.276): what is credited, in plain words, and a link where there is one. The one place the sheet's text is written. */
 export interface SeptuagintSource {
@@ -40,19 +40,29 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
   { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
   { name: 'Matthew Henry\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org' },
-  { name: 'Greg Laurie Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'J. D. Greear Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Skip Heitzig Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Spurgeon\'s My Sermon Notes', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Wesley\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'George Whitefield\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'D. L. Moody\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Augustine\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Chrysostom\'s homilies', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Piper\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Bunyan\'s last sermon', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Charles Wesley\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Jimmy Evans Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
+  { name: 'Greg Laurie Sermon Archive', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'J. D. Greear Sermon Archive', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Skip Heitzig Sermon Archive', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Spurgeon\'s My Sermon Notes', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'John Wesley\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'George Whitefield\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'D. L. Moody\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Augustine\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'John Chrysostom\'s homilies', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'John Piper\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'John Bunyan\'s last sermon', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Charles Wesley\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Jimmy Evans Sermon Archive', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Shedd\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Burroughs\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Keach\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Maclaren\'s sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Kuyper\'s Rooted & Grounded', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Broadus\'s Sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'The World\'s Great Sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Princeton Sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'McPherson\'s Healing Sermons', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
+  { name: 'Strong\'s Philosophy and Religion', use: 'Sermons', licence: 'Yours', link: 'https://www.logos.com' },
   { name: 'Thompson Chain Topics', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=TCR' },
   { name: 'Torrey\'s New Topical Textbook', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=Torrey' },
   { name: 'eSpeak NG', use: 'The sound of ὁ and of δ\'', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
