@@ -1,10 +1,11 @@
 // mw-fnvjof.17.176: a shewa between two identical letters is said ('הַלְלוּ' is 'ha-leh-LOO', as the Hebrew voice says it), whatever the data's transliteration (`tr`, the guide the
 // Word sheet hands the respelling) shows: the data writes 'hal·lū' with no ə, the way a grammar book closes the first syllable, and the guide must not make the shewa silent.
 // A shewa between two different letters that the guide marks silent stays silent. Each word below is found in the data at the reference named.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { pronunciationsOf } from '../../src/speech/pronunciation';
+import { hebrewStress } from '../../src/speech/schemes/hebrew-israeli';
 
 const israeli = pronunciationsOf('he')[0];
 
@@ -29,6 +30,14 @@ describe('the say-it of a Hebrew word whose shewa stands between two identical l
     expect(syllables(said)).toHaveLength(3);
     expect(syllables(said)[2]).toBe('LOO');
     expect(israeli.respell(word.t)).toBe(said);
+  });
+
+  // mw-fnvjof.17.200: the data writes a merkha on the first letter of הַלְלוּ (Psalms 111:1, 112:1, 113:1, 135:1, 150:1); it is not the stress, the voice stresses the last syllable
+  it.each(['psa 111:1', 'psa 112:1', 'psa 113:1', 'psa 135:1', 'psa 150:1'])('%s הַ֥לְלוּ with a merkha on its first letter is ha-leh-LOO', (ref) => {
+    const word = dataWord(ref, 'הַלְלוּ');
+    expect(word.t).toContain('֥');
+    expect(israeli.respell(word.t, word.tr)).toBe('ha-leh-LOO');
+    expect(israeli.respell(word.t)).toBe('ha-leh-LOO');
   });
 
   it('הַלְלוּ־יָהּ keeps that middle syllable', () => {
@@ -64,5 +73,62 @@ describe('the say-it of a Hebrew word whose shewa stands between two identical l
   it.each(SILENT)('%s %s has its shewa silent', (ref, text, expected) => {
     const word = dataWord(ref, text);
     expect(israeli.respell(word.t, word.tr)).toBe(expected);
+  });
+});
+
+// mw-fnvjof.17.200: every distinct word (its pointing and its tr) of the 39 Old Testament books of the shipped data
+function oldTestamentWords(): { t: string; tr?: string; s?: string; l?: string }[] {
+  const seen = new Map<string, { t: string; tr?: string; s?: string; l?: string }>();
+  for (const dir of readdirSync('public/data').filter((d) => /^[0-9a-z]{3}$/.test(d))) {
+    for (const file of readdirSync(`public/data/${dir}`).filter((f) => /^\d+\.json$/.test(f))) {
+      const data = JSON.parse(readFileSync(`public/data/${dir}/${file}`, 'utf8')) as Chapter;
+      for (const verse of data.verses) {
+        for (const w of verse.g) if (/[\u05D0-\u05EA]/.test(w.t)) seen.set(`${w.t}|${w.tr ?? ''}`, w);
+      }
+    }
+  }
+  return [...seen.values()];
+}
+
+describe('a conjunctive accent that is not the stress (mw-fnvjof.17.200)', () => {
+  const words = oldTestamentWords();
+
+  it('the data holds the Hebrew books', () => {
+    expect(words.length).toBeGreaterThan(100000);
+  });
+
+  it('the respelled stress leaves the accent in exactly these eight words (before the fix: none)', () => {
+    const differ = words
+      .filter((w) => {
+        const at = hebrewStress(w.t, w.tr);
+        return at.accented >= 0 && at.stressed >= 0 && at.accented !== at.stressed;
+      })
+      .map((w) => `${w.t} ${israeli.respell(w.t, w.tr)}`);
+    expect(differ.sort()).toEqual(
+      [
+        'וַעֲבִ֥ידְתָּא va-a-vee-deh-TA',
+        'יִ֣ירְשׁוּ yee-reh-SHOO',
+        'לְ֭הַצִּ֣ילְךָ le-ha-tsee-leh-KHA',
+        'מְחֻ֣לְלֵי me-khoo-leh-LAY',
+        'מֵֽ֭הַשְׁפִּ֣ילְךָ meh-hash-pee-leh-KHA',
+        'אַ֣לְלַי a-leh-LAI',
+        'תְּקִ֥ילְתָּה te-kee-leh-TA',
+        'הַ֥לְלוּ ha-leh-LOO',
+      ].sort(),
+    );
+  });
+
+  it('the words of the lemma הָלַל stressed off the last syllable are the 26 with a suffix or an accent of their own there (ha-leh-LOO-hoo), and the bare הַלְלוּ is never one', () => {
+    const family = words.filter((w) => w.s === 'H1984' || w.l === 'הָלַל');
+    expect(family.length).toBeGreaterThan(50);
+    const offLast = family.filter((w) => {
+      const said = [israeli.respell(w.t, w.tr), israeli.respell(w.t)].map((r) => r.split('-'));
+      return said.some((syl) => syl.length > 1 && syl.findIndex((x) => /[A-Z]/.test(x)) !== syl.length - 1 && syl.some((x) => /[A-Z]/.test(x)));
+    });
+    expect(offLast).toHaveLength(26);
+    expect(offLast.filter((w) => w.t.replace(/[\u0591-\u05AF\u05BD]/g, '') === 'הַלְלוּ')).toEqual([]);
+    for (const w of family.filter((f) => f.t.replace(/[\u0591-\u05AF\u05BD]/g, '') === 'הַלְלוּ')) {
+      for (const said of [israeli.respell(w.t, w.tr), israeli.respell(w.t)]) expect(said).toBe('ha-leh-LOO');
+    }
   });
 });
