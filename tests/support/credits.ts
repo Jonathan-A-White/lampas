@@ -93,6 +93,13 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sermons/wesley-logos/')) return 'John Wesley\'s sermons'; // likewise
   if (path.startsWith('public/sermons/whitefield-logos/')) return 'George Whitefield\'s sermons'; // likewise
   if (path.startsWith('public/sermons/moody-logos/')) return 'D. L. Moody\'s sermons'; // likewise
+  // batch 3 (mw-qtu3zvz.20); piper-logos, bunyan-logos and jimmy-evans-logos have no book file (their rows name no passage), the rules are for the form
+  if (path.startsWith('public/sermons/augustine-logos/')) return 'Augustine\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/chrysostom-logos/')) return 'John Chrysostom\'s homilies'; // likewise
+  if (path.startsWith('public/sermons/piper-logos/')) return 'John Piper\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/bunyan-logos/')) return 'John Bunyan\'s last sermon'; // likewise
+  if (path.startsWith('public/sermons/charles-wesley-logos/')) return 'Charles Wesley\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/jimmy-evans-logos/')) return 'Jimmy Evans Sermon Archive'; // likewise
   if (path.startsWith('public/themes/themes-tcr1934/')) return 'Thompson'; // the theme index's book files (scripts/sermons-build.ts): topics, part labels and passages of CrossWire's TCR module (Thompson's 1934 subject index), facts only
   if (path.startsWith('public/themes/themes-torrey/')) return 'Torrey'; // the same of CrossWire's Torrey module (R. A. Torrey's New Topical Textbook, 1897)
   if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)

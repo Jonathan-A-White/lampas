@@ -89,7 +89,8 @@ describe('About is short credits, not a tutorial', () => {
     let end = at + 1;
     while (at >= 0 && end < lines.length && lines[end].startsWith('  ')) end++;
     const others = at >= 0 ? [...lines.slice(0, at), ...lines.slice(end)].join('\n') : file;
-    expect(plainText(others)).not.toMatch(/Piper|Coqui|Chatterbox|sounds-trial|listening page|\btrial\b/i);
+    // the voice engine Piper, not John Piper, whose sermons are credited (mw-qtu3zvz.20)
+    expect(plainText(others)).not.toMatch(/(?<!John )Piper|Coqui|Chatterbox|sounds-trial|listening page|\btrial\b/i);
     expect(plainText(wake)).not.toMatch(/Piper|Chatterbox|sounds-trial|listening page|\btrial\b/i);
   });
 
