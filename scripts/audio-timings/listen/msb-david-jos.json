@@ -1,0 +1,425 @@
+{
+ "v": 1,
+ "edition": "msb-david",
+ "book": "jos",
+ "slop": {
+  "lead": 0.05,
+  "tail": 0.05,
+  "insideTail": 0.097
+ },
+ "verses": [
+  {
+   "verse": "8:3",
+   "edge": "tail",
+   "reason": "a quiet of 25 ms between 'night' and 'with': less than the 147 ms the player's margin needs; cut in its middle",
+   "room": 0.025,
+   "cut": 40.23,
+   "judge": [
+    {
+     "kind": "tail-extra",
+     "by": 0.03,
+     "level": -8.8,
+     "heard": {
+      "next": "WITH",
+      "letters": "AND SENT THEM OUT AT NIGHT",
+      "words": "them out at night"
+     }
+    },
+    {
+     "kind": "tail-clipped",
+     "by": 0.087,
+     "level": -6.3,
+     "heard": {
+      "lost": "HT",
+      "letters": "AND SENT THEM OUT AT NIGHT",
+      "words": "them out at night"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "8:4",
+   "edge": "head",
+   "reason": "a quiet of 25 ms between 'night' and 'with': less than the 100 ms the player's margin needs; cut in its middle",
+   "room": 0.025,
+   "cut": 40.24,
+   "judge": [
+    {
+     "kind": "head-extra",
+     "by": 0.03,
+     "level": -23.4,
+     "heard": {
+      "before": "NIGHT",
+      "letters": "TWITH THESE ORDERS",
+      "words": "with these orders pay"
+     }
+    },
+    {
+     "kind": "head-clipped",
+     "by": 0.04,
+     "level": -8.8,
+     "heard": {
+      "letters": "WITH THESE ORDERS",
+      "words": "with these orders pay"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "15:37",
+   "edge": "tail",
+   "reason": "a quiet of 130 ms between 'gad' and 'dilan': less than the 147 ms the player's margin needs; cut in its middle",
+   "room": 0.13,
+   "cut": 271.79,
+   "judge": [
+    {
+     "kind": "tail-clipped",
+     "by": 0.032,
+     "level": -24.9,
+     "heard": {
+      "letters": "DASHA MIGDALGOD",
+      "words": "zinnan hadasha mcdull god"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "15:38",
+   "edge": "tail",
+   "reason": "a quiet of 135 ms between 'joktheel' and 'lachish': less than the 147 ms the player's margin needs; cut in its middle",
+   "room": 0.135,
+   "cut": 274.21,
+   "judge": [
+    {
+     "kind": "tail-clipped",
+     "by": 0.032,
+     "level": -29.3,
+     "heard": {
+      "letters": "MISPAY JOCTELE",
+      "words": "dilan ms pei jockfield"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "15:40",
+   "edge": "tail",
+   "reason": "a quiet of 140 ms between 'chitlish' and 'gederoth': less than the 147 ms the player's margin needs; cut in its middle",
+   "room": 0.14,
+   "cut": 279.06,
+   "judge": [
+    {
+     "kind": "tail-clipped",
+     "by": 0.027,
+     "level": -23.6,
+     "heard": {
+      "letters": "LAMAS CHITLISH",
+      "words": "kabon llamas chitlish"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "15:52",
+   "edge": "tail",
+   "reason": "a quiet of 135 ms between 'eshan' and 'janim': less than the 147 ms the player's margin needs; cut in its middle",
+   "room": 0.135,
+   "cut": 334.63,
+   "judge": [
+    {
+     "kind": "tail-clipped",
+     "by": 0.037,
+     "level": -20.9,
+     "heard": {
+      "letters": "DUMA ESHAN",
+      "words": "arab duma asian"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "17:15",
+   "edge": "text",
+   "judge": [
+    {
+     "kind": "text-differs",
+     "heard": {
+      "expected": "rephaim",
+      "words": "refaim"
+     }
+    }
+   ],
+   "reason": "the judge's two ears heard 'refaim' where the text has 'rephaim': not a cut's fault"
+  },
+  {
+   "verse": "19:7",
+   "edge": "text",
+   "judge": [
+    {
+     "kind": "text-differs",
+     "heard": {
+      "expected": "ain",
+      "words": "iain"
+     }
+    }
+   ],
+   "reason": "the judge's two ears heard 'iain' where the text has 'ain': not a cut's fault"
+  },
+  {
+   "verse": "19:29",
+   "edge": "tail",
+   "reason": "a quiet of 105 ms between 'achzib' and 'ummah': less than the 147 ms the player's margin needs; cut in its middle",
+   "room": 0.105,
+   "cut": 197.9,
+   "judge": [
+    {
+     "kind": "tail-clipped",
+     "by": 0.05,
+     "ear": "quiet",
+     "heard": {
+      "letters": "BE IN THE REGION OF AXIB",
+      "words": "the region of aaxib"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "19:39",
+   "edge": "tail",
+   "reason": "the narrator reads on into verse 40: no quiet between 'villages' and 'the'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 263.95,
+   "judge": [
+    {
+     "kind": "tail-clipped",
+     "by": 0.242,
+     "level": -2.5,
+     "heard": {
+      "lost": "S",
+      "letters": "ITIES AND THEIR VILLAGES",
+      "words": "cities and their villages"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "19:40",
+   "edge": "head",
+   "reason": "the narrator reads on from verse 39: no quiet between 'villages' and 'the'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 263.95,
+   "judge": [
+    {
+     "kind": "head-extra",
+     "by": 0.195,
+     "level": -5.2,
+     "heard": {
+      "extra": "S",
+      "before": "VILLAGES",
+      "letters": "THE STEP",
+      "words": "the seventh lot came"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "21:1",
+   "edge": "tail",
+   "reason": "the narrator reads on into verse 2: no quiet between 'israel' and 'at'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 15.17,
+   "judge": [
+    {
+     "kind": "tail-extra",
+     "by": 0.05,
+     "readsOn": true,
+     "level": 6.8,
+     "heard": {
+      "next": "AT",
+      "letters": "S OF THE OTHER TRIBES OF ISRAEL",
+      "words": "other tribes of israel"
+     }
+    },
+    {
+     "kind": "tail-clipped",
+     "by": 0.097,
+     "readsOn": true,
+     "level": 6.5,
+     "heard": {
+      "lost": "EL",
+      "letters": "HEADS OF THE OTHER TRIBES OF ISRAEL",
+      "words": "other tribes of israel"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "21:2",
+   "edge": "head",
+   "reason": "the narrator reads on from verse 1: no quiet between 'israel' and 'at'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 15.17,
+   "judge": [
+    {
+     "kind": "head-extra",
+     "by": 0.05,
+     "readsOn": true,
+     "level": 5.8,
+     "heard": {
+      "extra": "L",
+      "before": "ISRAEL",
+      "letters": "OLET SHILO IN THE LAND OF KING",
+      "words": "at shiloh in the"
+     }
+    },
+    {
+     "kind": "head-clipped",
+     "by": 0.05,
+     "readsOn": true,
+     "level": 6.8,
+     "heard": {
+      "letters": "BUT SHILO IN THE LAND OF CAN",
+      "words": "a chiloh in the"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "21:9",
+   "edge": "tail",
+   "reason": "the narrator reads on into verse 10: no quiet between 'name' and 'to'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 91.29,
+   "judge": [
+    {
+     "kind": "tail-extra",
+     "by": 0.045,
+     "readsOn": true,
+     "level": -0.8,
+     "heard": {
+      "extra": "T",
+      "next": "TO",
+      "letters": "NATED THESE CITIES BY NAMED",
+      "words": "these cities by name"
+     }
+    },
+    {
+     "kind": "tail-clipped",
+     "by": 0.102,
+     "readsOn": true,
+     "level": 1.3,
+     "heard": {
+      "lost": "E",
+      "letters": "IGNATED THESE CITIES BY NAME",
+      "words": "these cities by name"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "21:10",
+   "edge": "head",
+   "reason": "the narrator reads on from verse 9: no quiet between 'name' and 'to'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 91.29,
+   "judge": [
+    {
+     "kind": "head-extra",
+     "by": 0.055,
+     "readsOn": true,
+     "level": 1.0,
+     "heard": {
+      "before": "NAME",
+      "letters": "TO THE DESCENDANTS OF ARAN",
+      "words": "to the descendants of"
+     }
+    },
+    {
+     "kind": "head-clipped",
+     "by": 0.045,
+     "readsOn": true,
+     "level": -0.8,
+     "heard": {
+      "lost": "T",
+      "letters": "TO THE DESCENDANTS OF ARIN",
+      "words": "the descendants of aaron"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "21:16",
+   "edge": "text",
+   "judge": [
+    {
+     "kind": "text-differs",
+     "heard": {
+      "expected": "ain",
+      "words": "aine"
+     }
+    }
+   ],
+   "reason": "the judge's two ears heard 'aine' where the text has 'ain': not a cut's fault"
+  },
+  {
+   "verse": "22:7",
+   "edge": "tail",
+   "reason": "the narrator reads on into verse 8: no quiet between 'them' and 'saying'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 82.93,
+   "judge": [
+    {
+     "kind": "tail-extra",
+     "by": 0.045,
+     "readsOn": true,
+     "level": -6.7,
+     "heard": {
+      "next": "SAYING",
+      "letters": "HOMES HE BLESSED THEMS",
+      "words": "homes he blessed them"
+     }
+    },
+    {
+     "kind": "tail-clipped",
+     "by": 0.102,
+     "readsOn": true,
+     "level": -2.3,
+     "heard": {
+      "letters": "THEIR HOMES HE BLESSED THEM",
+      "words": "homes he blessed them"
+     }
+    }
+   ]
+  },
+  {
+   "verse": "22:8",
+   "edge": "head",
+   "reason": "the narrator reads on from verse 7: no quiet between 'them' and 'saying'; cut at the quietest instant between them",
+   "room": 0.0,
+   "cut": 82.93,
+   "judge": [
+    {
+     "kind": "head-extra",
+     "by": 0.055,
+     "readsOn": true,
+     "level": -3.5,
+     "heard": {
+      "before": "THEM",
+      "letters": "SAYING RETURNED",
+      "words": "saying return to your"
+     }
+    },
+    {
+     "kind": "head-clipped",
+     "by": 0.045,
+     "readsOn": true,
+     "level": -6.7,
+     "heard": {
+      "letters": "SAYING RETURN TO YOU",
+      "words": "saying"
+     }
+    }
+   ]
+  }
+ ]
+}
