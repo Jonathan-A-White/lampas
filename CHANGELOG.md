@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.290
+_2026-11-19_
+- Fixed: Today's Psalms and Proverbs rows now show just the passage, without "Read in Lampas" under each.
+- Fixed: David's recording no longer cuts off the last sound of a verse when you play one verse or a passage.
+- Fixed: the Memorize bar you hold to say a verse now runs the full width of the verse, and a hidden word keeps the comma or full stop after it.
+- New: Hands-free now tells you what you can say when you ask for help, and tapping the microphone mark shows the same list.
+- Fixed: A verse you learn from nothing in one sitting now comes back for review tomorrow instead of months later.
+
 ## 0.7.289
 _2026-11-19_
 - Fixed: the Today chip no longer counts a Devotional that Today does not show when Logos is off.

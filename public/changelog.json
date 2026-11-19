@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.290",
+    "date": "2026-11-19",
+    "story": "mw-5r3p30.1206",
+    "kind": "fixed",
+    "text": "Today's Psalms and Proverbs rows now show just the passage, without \"Read in Lampas\" under each."
+  },
+  {
+    "version": "0.7.290",
+    "date": "2026-11-19",
+    "story": "mw-ar5k42b.9",
+    "kind": "fixed",
+    "text": "David's recording no longer cuts off the last sound of a verse when you play one verse or a passage."
+  },
+  {
+    "version": "0.7.290",
+    "date": "2026-11-19",
+    "story": "mw-5r3p30.1202",
+    "kind": "fixed",
+    "text": "the Memorize bar you hold to say a verse now runs the full width of the verse, and a hidden word keeps the comma or full stop after it."
+  },
+  {
+    "version": "0.7.290",
+    "date": "2026-11-19",
+    "story": "mw-rl10piw.43",
+    "kind": "new",
+    "text": "Hands-free now tells you what you can say when you ask for help, and tapping the microphone mark shows the same list."
+  },
+  {
+    "version": "0.7.290",
+    "date": "2026-11-19",
+    "story": "mw-5r3p30.1200",
+    "kind": "fixed",
+    "text": "A verse you learn from nothing in one sitting now comes back for review tomorrow instead of months later."
+  },
+  {
     "version": "0.7.289",
     "date": "2026-11-19",
     "story": "mw-r9xo1pj.6",
