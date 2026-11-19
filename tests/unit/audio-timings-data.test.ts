@@ -124,6 +124,35 @@ const thousandths = (seconds: number): number => Math.round(seconds * 1000);
 /** The most the maker moves an edge when it rounds to the timings' two decimals: the end up, the start down. */
 const ROUNDING_MS = 10;
 
+// THE TIME BASE (mw-ar5k42b.25; align.py 'THE TIME BASE'). The player starts every verse by a SEEK, and the browser seeks the publisher's header-less constant-rate
+// file by byte position. The Old Testament files are spliced from pieces, each piece's ID3 tag left inside the file (Genesis 24: 35 of them); ffmpeg, decoding the
+// file through, drops the frame after each. Timings on ffmpeg's clock played early in the app by 28 ms a tag: Genesis 24:64, cut at 591.21, was played to the
+// recording's 'she got', and 24:65 began 'down from her camel' (0.955 s early, measured in Chromium).
+describe('the time base: every timing is on the clock the browser seeks by', () => {
+  if (!isTimingsIndex(index)) throw new Error('index fails its guard');
+
+  it("his report: Genesis 24:64 ends, and 24:65 starts, after 'camel' (591.9 s or later on the clock the app seeks by), not at 591.21, where a seek plays 'down'", () => {
+    const gen = readJson(`public/data/audio/${TIMINGS_EDITION}/gen.json`);
+    if (!isBookTimings(gen)) throw new Error('book file fails its guard');
+    const chapter = gen.chapters['24'];
+    const end64 = chapter.verses.find(([n]) => n === 64)?.[2];
+    const start65 = chapter.verses.find(([n]) => n === 65)?.[1];
+    expect(end64).not.toBe(591.21);
+    expect(end64).toBeGreaterThanOrEqual(591.9);
+    expect(start65).toBeGreaterThanOrEqual(591.9);
+    // the chapter is as long as the browser says the file is (its audio element: 615.536 s), not the 614.56 s ffmpeg plays of it
+    expect(chapter.duration).toBeGreaterThan(615.4);
+  });
+
+  for (const book of Object.keys(index.books)) {
+    it(`${book}: no chapter's letters are left on the clock of a file played through (run align.py --book ${book} --cut, then the judge and --listen)`, () => {
+      const quiet = readQuiet(book);
+      expect(quiet.v).toBe(3);
+      expect(quiet.through).toEqual([]);
+    });
+  }
+});
+
 describe("the cut rule: both edges of every verse lie where the recording's level and the player's margin put them", () => {
   if (!isTimingsIndex(index)) throw new Error('index fails its guard');
   for (const book of Object.keys(index.books)) {
@@ -151,7 +180,7 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
     const pairs = verses.filter((v) => v.next);
 
     it(`${book}: the quiet file is this book's, cut at the player's margin in force, with the aligner's letters and every boundary of every chapter`, () => {
-      expect(quiet).toMatchObject({ v: 2, edition: TIMINGS_EDITION, book, slop });
+      expect(quiet).toMatchObject({ v: 3, edition: TIMINGS_EDITION, book, slop });
       expect(Object.keys(quiet.chapters)).toEqual(Object.keys(timings.chapters));
       expect(Object.keys(quiet.aligned)).toEqual(Object.keys(timings.chapters));
       for (const [chapter, timed] of Object.entries(timings.chapters)) {

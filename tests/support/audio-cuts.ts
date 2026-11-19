@@ -92,10 +92,13 @@ export const edgeOf = (kind: JudgeFlag['kind']): Edge => (kind === 'text-differs
 export type Boundary = [number, number | null, number | null] | [number, null, null, number];
 
 export interface QuietFile {
-  v: 2;
+  /** 3: the letters and the boundaries are on the clock the browser SEEKS by (mw-ar5k42b.25; align.py 'THE TIME BASE'). 2 was the clock of a file played through. */
+  v: 3;
   edition: string;
   book: string;
   slop: Slop;
+  /** The chapters whose letters are still on the clock of a file played through, until align.py --cut moves them: none in a book that ships. */
+  through: number[];
   /** By chapter: each verse as `[verse, the second its first letter starts, the second its last letter ends]`, the aligner's. */
   aligned: Record<string, Array<[number, number, number]>>;
   /** By chapter: its boundaries, one more than its verses. */
