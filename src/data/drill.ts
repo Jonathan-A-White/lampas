@@ -180,7 +180,7 @@ export function candidatesOf(chapter: Chapter, words: readonly Word[], fits?: (c
     for (const v of chapter.verses) {
       v.g.forEach((g, at) => {
         const key = `${v.n}:${at}`;
-        if (claimed.has(key) || !isPlaceOf(g, own, lemmas, others)) return;
+        if (claimed.has(key) || !isPlaceOf(g, own, lemmas, others, v.g.slice(0, at))) return;
         if (fits && !fits(g.p)) return;
         // a Hebrew word is parsed from the chapter's plain words for its code; one the chapter gives none cannot be drilled
         if (hebrew && termsOf(wordParse(chapter, g)).length === 0) return;

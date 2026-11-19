@@ -44,11 +44,12 @@ const HEBREW_TEXT = 'Westminster Leningrad Codex';
 /** `null` while the chapter loads, `'failed'` when it cannot be had. */
 type Passage = Chapter | 'failed' | null;
 
-/** The indices of the Greek words of `verse` that are `form`: the first one, which a card marks (a form that stands twice in a verse is marked at its first place). */
+/** The indices of the Greek words of `verse` that are `form`: the first place it stands (a form that stands twice in a verse is marked at its first place). A phrase's form ('εἰ μὴ', Review's εἰ μή) marks each of its words. */
 const markedIn = (chapter: Chapter, verse: Verse, form: string): ReadonlySet<number> => {
   // a Septuagint form is asked about without Swete's mark (cardForm), so it is found the same way
-  const at = verse.g.findIndex((w) => cardForm(chapter, w) === form);
-  return new Set(at < 0 ? [] : [at]);
+  const parts = form.split(' ');
+  const at = verse.g.findIndex((_, i) => parts.every((part, k) => verse.g[i + k] !== undefined && cardForm(chapter, verse.g[i + k]) === part));
+  return new Set(at < 0 ? [] : parts.map((_, k) => at + k));
 };
 
 /** The passage as the Reader would draw it, in his view and Weave, with the Greek word `mark` marked when there is one (mw-5r3p30.652). The words are plain text: a tap on a card opens nothing. */
