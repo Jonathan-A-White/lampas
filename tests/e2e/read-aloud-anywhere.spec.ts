@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import { honestSpeech, spoken } from '../support/honest-fakes';
+import { FLOATING, twoFingers } from './open-tutor';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { openGroup } from './settings-group';
@@ -88,6 +89,10 @@ test("the What's new sheet shown after an update has a speaker on each version, 
   expect(button!.height).toBeGreaterThanOrEqual(43.5);
   expect(button!.x + button!.width).toBeLessThanOrEqual(box!.x + box!.width);
   expect(Math.abs(button!.y + button!.height / 2 - (head!.y + head!.height / 2))).toBeLessThan(24);
+  // the floating ? is drawn with the first render now (mw-5r3p30.1006: it may cover a sheet, and a two-finger tap puts it away) and sits over this speaker: he puts it away first
+  await twoFingers(page, { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 }); // on the sheet, not on the page behind it: a tap there would close the sheet
+  await expect(page.locator(FLOATING)).toHaveCount(0);
+  await page.waitForTimeout(700); // a real-time wait: a click within 600 ms of a two-finger tap is dropped as its stray click (src/immersive.ts CLICK_GUARD_MS)
   await speakers.first().click();
   await expect(sheet.getByRole('button', { name: 'Stop reading', exact: true })).toBeVisible();
   expect((await spoken(page)).map((s) => s.text).join(' ')).toContain('Hear the whole chapter read to you');
