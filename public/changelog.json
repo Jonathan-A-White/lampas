@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.285",
+    "date": "2026-11-19",
+    "story": "mw-indx1x6.98",
+    "kind": "fixed",
+    "text": "a Bible reference in the tutor's answer over a drill no longer offers a button that leaves the drill."
+  },
+  {
     "version": "0.7.284",
     "date": "2026-11-19",
     "story": "mw-indx1x6.97",

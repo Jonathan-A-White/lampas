@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.285
+_2026-11-19_
+- Fixed: a Bible reference in the tutor's answer over a drill no longer offers a button that leaves the drill.
+
 ## 0.7.284
 _2026-11-19_
 - Fixed: at the Learning step of How much Greek, Choose a goal on the Goal screen now opens the pickers to choose a goal instead of going round in a circle.
