@@ -580,12 +580,12 @@ describe.skipIf(!haveSources)('Genesis 1 to 36 with the model pass', () => {
     }
   });
 
-  // Genesis 24 to 29 (mw-u2w5klk.349.4): the English content words that sit in a chunk with no Greek word after the pass, 187 of 2,535 (566 had none before it, read with `npm run lxx:unpaired -- --book gen`),
+  // Genesis 24 to 29 (mw-u2w5klk.349.4): the English content words that sit in a chunk with no Greek word after the pass, 168 of 2,535 (566 had none before it; 187 after it, 19 fewer after the fix rows of mw-u2w5klk.349.33, read with `npm run lxx:unpaired -- --book gen`),
   // keyed chapter:verse:word and read by hand from `--list`, each in one of three lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs are not touched, so the first and third
   // lists are the same kind as those of Genesis 12 to 23 above: 'it came to pass' renders ἐγένετο (paired to one English word), and the Greek word of the rest is a pair the aligner made to another English word
   // ('master' for Κύριος, 'draw' for ὑδρεύσατο) or English Brenton adds to make a Greek phrase English ('instead', 'just', 'hither', 'forth', 'away').
   const IDIOM_NO_GREEK_24_TO_29 = [
-    '24:15:came', '24:15:pass', '24:22:came', '24:22:pass', '24:30:came', '24:30:pass', '24:45:came', '24:45:pass', '24:52:came', '24:52:pass', '25:11:came',
+    '24:22:came', '24:22:pass', '24:30:came', '24:30:pass', '24:45:came', '24:45:pass', '24:52:came', '24:52:pass', '25:11:came',
     '25:11:pass', '26:32:came', '26:32:pass', '27:1:came', '27:1:pass', '27:30:came', '27:30:pass', '27:30:came', '27:30:pass', '27:34:came', '27:34:pass', '29:10:came',
     '29:10:pass', '29:13:came', '29:13:pass',
   ];
@@ -596,26 +596,27 @@ describe.skipIf(!haveSources)('Genesis 1 to 36 with the model pass', () => {
     '27:38:aloud', '27:38:wept', '27:44:until', '27:44:brother', '27:44:anger', '29:20:few', '29:20:days', '29:20:reason', '29:20:loving',
   ];
   const PAIRED_OR_ADDED_NO_GREEK_24_TO_29 = [
-    '24:1:things', '24:3:god', '24:4:go', '24:4:instead', '24:4:thence', '24:5:came', '24:6:back', '24:7:sprang', '24:7:thence', '24:8:clear', '24:8:again', '24:10:took',
-    '24:11:draw', '24:12:way', '24:14:give', '24:14:drink', '24:14:one', '24:14:hereby', '24:14:master', '24:15:same', '24:16:came', '24:17:drink', '24:18:drink',
-    '24:19:draw', '24:20:again', '24:20:drew', '24:21:way', '24:21:prosperous', '24:22:put', '24:22:pieces', '24:24:son', '24:27:master', '24:27:fail', '24:27:master',
-    '24:27:brought', '24:29:meet', '24:32:wash', '24:33:errand', '24:35:master', '24:42:master', '24:42:journey', '24:43:come', '24:43:drink', '24:44:draw', '24:44:own',
+    '24:1:things', '24:3:god', '24:4:thence', '24:5:came', '24:6:back', '24:7:sprang', '24:7:thence', '24:8:again', '24:10:took',
+    '24:11:draw', '24:12:way', '24:14:give', '24:14:drink', '24:14:one', '24:15:same', '24:16:came', '24:17:drink', '24:18:drink',
+    '24:19:draw', '24:20:again', '24:20:drew', '24:22:put', '24:22:pieces', '24:24:son', '24:27:master', '24:27:fail', '24:27:master',
+    '24:27:brought', '24:29:meet', '24:32:wash', '24:35:master', '24:42:master', '24:43:come', '24:43:drink', '24:44:draw', '24:44:own',
     '24:44:hereby', '24:45:went', '24:45:drew', '24:45:drink', '24:46:head', '24:46:give', '24:46:gave', '24:48:master', '24:48:prospered', '24:49:tell', '24:49:hand',
-    '24:50:come', '24:53:servant', '24:54:went', '24:54:away', '24:56:away', '24:59:forth', '24:63:forth', '24:63:lifted', '24:64:lifted', '25:6:away', '25:7:many',
-    '25:7:one', '25:8:man', '25:9:son', '25:17:one', '25:18:one', '25:18:lived', '25:20:old', '25:20:syrian', '25:23:one', '25:25:came', '25:26:forth', '25:26:old',
-    '25:27:lads', '25:28:food', '25:32:belong', '25:34:slighted', '26:2:go', '26:8:remained', '26:8:leaned', '26:8:look', '26:10:sin', '26:12:one', '26:14:envied',
-    '26:16:become', '26:24:sake', '26:25:valley', '26:25:gerara', '26:27:away', '26:29:forth', '26:31:forth', '26:34:old', '27:2:old', '27:6:younger', '27:12:feel',
-    '27:21:draw', '27:22:drew', '27:25:hither', '27:25:near', '27:26:draw', '27:27:drew', '27:30:just', '27:36:time', '27:37:strengthened', '27:40:time', '27:41:because',
+    '24:50:come', '24:54:went', '24:54:away', '24:56:away', '24:59:forth', '24:63:forth', '24:63:lifted', '24:64:lifted', '25:6:away', '25:7:many',
+    '25:7:one', '25:8:man', '25:9:son', '25:17:one', '25:18:one', '25:20:old', '25:20:syrian', '25:23:one', '25:25:came', '25:26:forth', '25:26:old',
+    '25:27:lads', '25:32:belong', '26:2:go', '26:10:sin', '26:12:one',
+    '26:16:become', '26:24:sake', '26:25:valley', '26:25:gerara', '26:27:away', '26:29:forth', '26:31:forth', '26:34:old', '27:2:old',
+    '27:21:draw', '27:22:drew', '27:25:hither', '27:25:near', '27:26:draw', '27:27:drew', '27:30:just', '27:36:time', '27:40:time', '27:41:because',
     '27:41:blessed', '27:41:draw', '28:5:away', '28:7:syria', '28:10:forth', '28:11:one', '28:11:lay', '28:14:north', '28:15:continually', '28:15:back',
-    '28:20:throughout', '29:3:used', '29:3:away', '29:3:again', '29:7:flocks', '29:8:together', '29:8:away', '29:10:mother', '29:10:sheep', '29:10:laban',
-    '29:10:brother', '29:10:away', '29:15:surely', '29:15:reward', '29:22:together', '29:27:return', '29:32:given', '29:32:son', '29:33:one', '29:35:time',
+    '28:20:throughout', '29:3:used', '29:3:away', '29:3:again', '29:8:together', '29:8:away', '29:10:mother', '29:10:sheep', '29:10:laban',
+    '29:10:brother', '29:10:away', '29:15:surely', '29:22:together', '29:27:return', '29:32:given', '29:32:son', '29:33:one', '29:35:time',
+    '24:33:told', '24:53:forth', '26:8:time', '27:38:only', '29:7:together',
   ];
 
   it('leaves in Genesis 24 to 29 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
     const named = [...IDIOM_NO_GREEK_24_TO_29, ...OTHER_VERSE_NO_GREEK_24_TO_29, ...PAIRED_OR_ADDED_NO_GREEK_24_TO_29].sort();
     const found = [24, 25, 26, 27, 28, 29].flatMap((n) => noGreek(withModel.get(n)!)).sort();
     expect(found).toEqual(named);
-    expect(named).toHaveLength(187);
+    expect(named).toHaveLength(168);
     for (const n of [24, 25, 26, 27, 28, 29]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
   });
 

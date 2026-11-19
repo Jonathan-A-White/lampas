@@ -363,19 +363,60 @@ export function applyFixes(chapter: Chapter, rows: readonly ModelRow[]): Modelle
 
 // ---------------------------------------------------------------- the listing
 
-/** The verses that still have a run, for a session to read: the Greek words with the ones that have no English marked, and the English with each run numbered. */
-export function listRemainders(chapter: Chapter): string {
+/**
+ * What a verse's fix rows say of the aligner's own chunks, as a session reads them in the listing (mw-u2w5klk.349.33): a fix whose English is, word for word, a run of the aligner's own chunks (none a remainder,
+ * so the run numbers stay the ship's) is shown at the first of them with the Greek positions the fix gives, `Peradventure⟨0,1 fix⟩` for the aligner's `Peradventure⟨2⟩`. A fix that finds its words in more than
+ * one place, in none, or among a remainder is not shown: the ship applies it after the runs (applyFixes), where the model pass's chunks are the ones it names.
+ */
+export function previewFixes(verse: Verse, ref: string, rows: readonly ModelRow[]): Map<number, { text: string; span: number; g: number[] }> {
+  const out = new Map<number, { text: string; span: number; g: number[] }>();
+  const taken = new Set<number>();
+  for (const r of rows) {
+    if (r.run !== FIX_RUN || r.ref.toLowerCase() !== ref.toLowerCase()) continue;
+    const want = words(r.text).split(' ');
+    const at: Array<{ i: number; span: number }> = [];
+    for (let i = 0; i < verse.e.length; i++) {
+      let got: string[] = [];
+      let j = i;
+      for (; j < verse.e.length && got.length < want.length && verse.e[j].y !== 'align?'; j++) got = got.concat(words(verse.e[j].t).split(' '));
+      if (got.length === want.length && got.every((w, k) => w === want[k])) at.push({ i, span: j - i });
+    }
+    if (at.length !== 1) continue;
+    const { i, span } = at[0];
+    const cover = Array.from({ length: span }, (_, k) => i + k);
+    if (cover.some((k) => taken.has(k))) continue;
+    cover.forEach((k) => taken.add(k));
+    out.set(i, { text: words(r.text), span, g: [...r.g].sort((x, y) => x - y) });
+  }
+  return out;
+}
+
+/**
+ * The verses that still have a run, for a session to read: the Greek words with the ones that have no English marked, and the English with each run numbered. `fixes` are the rows of the chapter's file
+ * (applyFixes): an aligner pair a fix row moves is shown on the Greek positions the fix gives and marked `fix`.
+ */
+export function listRemainders(chapter: Chapter, fixes: readonly ModelRow[] = []): string {
   const out: string[] = [];
   for (const verse of chapter.verses) {
     const runs = runsOf(verse);
     if (runs.length === 0) continue;
     const ref = verseRef(chapter, verse);
     const free = verse.g.map((w, i) => ({ w, i })).filter(({ w }) => w.e === undefined);
+    const fixed = previewFixes(verse, ref, fixes);
+    const english: string[] = [];
+    for (let i = 0; i < verse.e.length; i++) {
+      const c = verse.e[i];
+      const fix = fixed.get(i);
+      if (fix) {
+        english.push(`${fix.text}⟨${fix.g.length > 0 ? fix.g.join(',') : '-'} fix⟩`);
+        i += fix.span - 1;
+      } else english.push(c.y === 'align?' ? `{#${runs.find((r) => r.chunk === i)!.run} ${c.t}}` : `${c.t}⟨${c.g.join(',')}⟩`);
+    }
     out.push(
       ref,
       `  Greek: ${verse.g.map((w, i) => `${i}:${w.t}${w.e === undefined ? '*' : ''}`).join(' ')}`,
       `  no English yet: ${free.length === 0 ? '(none)' : free.map(({ w, i }) => `${i} ${w.l} ${w.p}`).join(' · ')}`,
-      `  English: ${verse.e.map((c, i) => (c.y === 'align?' ? `{#${runs.find((r) => r.chunk === i)!.run} ${c.t}}` : `${c.t}⟨${c.g.join(',')}⟩`)).join(' ')}`,
+      `  English: ${english.join(' ')}`,
     );
   }
   return out.join('\n');
@@ -467,7 +508,10 @@ export async function runAlignChoose(argv: readonly string[], options: AlignChoo
   }
   const chapter = await chapterWithoutModel(args, options);
   if (args.list) {
-    print(listRemainders(chapter));
+    // the chapter's file may hold fix rows (applyFixes): the listing shows the aligner pairs they move (previewFixes)
+    const file = join(outDir, alignChoicesName(args.book, args.chapter));
+    const fixes = existsSync(file) ? readModelRows(readFileSync(file, 'utf8'), file).filter((r) => r.run === FIX_RUN) : [];
+    print(listRemainders(chapter, fixes));
     return { rows: [] };
   }
   const parsed = parseModelLines(text);
