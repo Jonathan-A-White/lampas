@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.288",
+    "date": "2026-11-19",
+    "story": "mw-5r3p30.1199",
+    "kind": "fixed",
+    "text": "With Turn pages and the Immersive reader on, the first page turn no longer skips a line or two of the chapter."
+  },
+  {
     "version": "0.7.285",
     "date": "2026-11-19",
     "story": "mw-indx1x6.98",

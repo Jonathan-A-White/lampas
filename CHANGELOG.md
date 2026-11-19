@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.288
+_2026-11-19_
+- Fixed: With Turn pages and the Immersive reader on, the first page turn no longer skips a line or two of the chapter.
+
 ## 0.7.285
 _2026-11-19_
 - Fixed: a Bible reference in the tutor's answer over a drill no longer offers a button that leaves the drill.
