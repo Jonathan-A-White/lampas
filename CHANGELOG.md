@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.295
+_2026-11-19_
+- New: Sermon lists from Augustine, Chrysostom, Charles Wesley (and Piper, Bunyan and Jimmy Evans, which have no passages yet) can now be switched on in Settings.
+
 ## 0.7.294
 _2026-11-19_
 - Fixed: In the Septuagint, a tap on a few English words of Genesis 24 to 29 (such as 'it came to pass', 'Peradventure', 'departed;') now opens the Greek word that renders them, not a neighbour's.
