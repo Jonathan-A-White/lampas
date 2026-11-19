@@ -1,4 +1,4 @@
-@uc-word-sheet @uc-frontier @greek
+@uc-word-sheet @uc-tutor-word @greek
 Feature: The word sheet adds the word to his words with the tutor's own control
   The word sheet carries the same Add to my words button the tutor draws under an explained word (src/AddWordButton.tsx, one component for both, mw-5r3p30.1203):
   the same look, the same labels (Add to my words, then On my list, disabled once listed), the same write path (the tutor's add-word command) and the same line for a word Lampas
