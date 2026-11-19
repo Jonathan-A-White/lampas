@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.293",
+    "date": "2026-11-19",
+    "story": "mw-fnvjof.17.207",
+    "kind": "fixed",
+    "text": "Books in the Library that share a short name, like two commentaries both called \"Revelation\", now show their series under the name so you can tell them apart."
+  },
+  {
     "version": "0.7.292",
     "date": "2026-11-19",
     "story": "mw-indx1x6.100",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.293
+_2026-11-19_
+- Fixed: Books in the Library that share a short name, like two commentaries both called "Revelation", now show their series under the name so you can tell them apart.
+
 ## 0.7.292
 _2026-11-19_
 - Fixed: the example shown under μου ("my") in Review is now a form that means "my", not "me".
