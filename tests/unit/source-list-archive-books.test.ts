@@ -6,7 +6,7 @@ import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { SERMON_BOOKS } from '../../src/sermons/sources/logos';
 import { sourceList, type SourceInput } from '../../src/sermons/sourceList';
 import type { SermonSource } from '../../src/sermons/types';
-import { EVERY_BOOK } from '../support/logos-import';
+import { EVERY_BOOK, EVERY_LOGOS_SERMON } from '../support/logos-import';
 
 const list = (id: string, name: string): SermonSource => ({
   id,
@@ -20,7 +20,8 @@ const list = (id: string, name: string): SermonSource => ({
 });
 
 const ids = Object.keys(LOGOS_RESOURCES);
-const input = (owned: ReadonlySet<string> = EVERY_BOOK): SourceInput => ({
+// his import keeps the books Lampas does not open too, so the books of every list are in it (four of batch 4's are in no catalogue kind, mw-qtu3zvz.24)
+const input = (owned: ReadonlySet<string> = new Set([...EVERY_BOOK, ...EVERY_LOGOS_SERMON])): SourceInput => ({
   sources: ids.map((id) => list(id, `${id} (Logos library)`)),
   books: SERMON_BOOKS,
   sermonCount: () => undefined,
@@ -50,11 +51,12 @@ describe('a list made from Logos books names them, with their authors', () => {
   });
 
   // the five volumes of Chrysostom's homilies are 'commentary' in the catalogue, not sermon books (mw-qtu3zvz.108): his list stands for them but names none
-  const COMMENTARY = new Set(['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14']);
+  // and four of batch 4's books are in no kind of the catalogue (mw-qtu3zvz.24): Burroughs's Rare Jewel (WRKSBURROUGHS01) and Difference between the Spots (07), Keach's Ax Laid to the Root (BPTSTCVNTTHLGYAX) and Kuyper's Rooted & Grounded
+  const COMMENTARY = new Set(['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14', 'LLS:WRKSBURROUGHS01', 'LLS:WRKSBURROUGHS07', 'LLS:BPTSTCVNTTHLGYAX', 'LLS:TEASELEXKUYPROOT']);
 
-  it('every list names every sermon book it stands for, and the count is the 25 of logosSermonResources.ts, 20 of them sermon books', () => {
+  it('every list names every sermon book it stands for, and the count is the 49 of logosSermonResources.ts, 40 of them sermon books', () => {
     const source = readFileSync('src/data/logosSermonResources.ts', 'utf8');
-    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(25);
+    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(49);
     let named = 0;
     for (const id of ids) {
       const row = items.get(`sermons.${id}`)!;
@@ -62,7 +64,7 @@ describe('a list made from Logos books names them, with their authors', () => {
       named += row.books?.length ?? 0;
       for (const b of row.books ?? []) expect(b.author, `${id}: ${b.title}`).toBeTruthy();
     }
-    expect(named).toBe(20);
+    expect(named).toBe(40);
   });
 
   it("a search for the preacher finds the list through its books' author", () => {

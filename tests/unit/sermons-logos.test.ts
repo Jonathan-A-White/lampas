@@ -25,11 +25,19 @@ const ARCHIVES = [
   { id: 'augustine-logos', resource: 'AGSTNSRMNS04', param: 'off', preacher: /Augustine/, credit: 'Augustine of Hippo, Sermons 94A-147A on the New Testament, in Logos (Faithlife)', minRows: 50 },
   { id: 'chrysostom-logos', resource: '6\\.60\\.1[0-4]', param: 'off', preacher: /Chrysostom/, credit: 'John Chrysostom, Homilies, in the Nicene and Post-Nicene Fathers, First Series, Volumes 10 to 14 (ed. Philip Schaff), in Logos (Faithlife)', minRows: 400 },
   { id: 'charles-wesley-logos', resource: 'SERMSCWESLEY|SERM1742WESLEY', param: 'off', preacher: /Charles Wesley/, credit: 'Charles Wesley, Sermons by the Late Rev. Charles Wesley; A Sermon Preached on Sunday, April 4, 1742, before the University of Oxford, in Logos (Faithlife)', minRows: 10 },
+  // batch 4 (mw-qtu3zvz.24): the books with a preaching text (some rows of Burroughs, Maclaren and Broadus take the one passage they cite)
+  { id: 'shedd-logos', resource: 'SRMNATMAN|SRMSPRTMAN', param: 'off', preacher: /Shedd/, credit: 'William G. T. Shedd, Sermons to the Natural Man; Sermons to the Spiritual Man, in Logos (Faithlife)', minRows: 40 },
+  { id: 'burroughs-logos', resource: 'WRKSBURROUGHS0[1247]', param: 'off', preacher: /Burroughs/, credit: "Jeremiah Burroughs, The Rare Jewel of Christian Contentment; The Saints' Treasury; The Saints' Happiness; The Difference between the Spots of the Godly and of the Wicked, in Logos (Faithlife)", minRows: 50 },
+  { id: 'keach-logos', resource: 'BPTSTCVNTTHLGY03|BPTSTCVNTTHLGYAX', param: 'off', preacher: /Keach/, credit: 'Benjamin Keach, The Display of Glorious Grace, or The Covenant of Peace Opened in Fourteen Sermons; The Ax Laid to the Root, Parts I and II, in Logos (Faithlife)', minRows: 15 },
+  { id: 'maclaren-logos', resource: 'BTTDSTHRSRMNS', param: 'off', preacher: /Maclaren/, credit: 'Alexander Maclaren, The Beatitudes and Other Sermons, in Logos (Faithlife)', minRows: 15 },
+  { id: 'broadus-logos', resource: 'JABSERMADDR', param: 'off', preacher: /Broadus/, credit: 'John Albert Broadus, Sermons and Addresses, in Logos (Faithlife)', minRows: 10 },
+  { id: 'princeton-sermons-logos', resource: 'PRINCESERMON', param: 'off', preacher: /Warfield|Hodge|Aiken|Patton|Murray|Davis|Green|Paxton/, credit: 'Princeton Theological Seminary, Princeton Sermons, in Logos (Faithlife)', minRows: 15 },
 ];
-// batch 3's lists whose rows name no preaching text (Piper's and Bunyan's only cite passages; Jimmy Evans's have dates and series, no Scripture): bundled, Off, and on no verse (tests/unit/sermons-no-ref.test.ts)
-const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos'];
+// the lists whose rows name no preaching text (Piper's, Bunyan's, Kuyper's, The World's Great Sermons' and McPherson's only cite passages; Jimmy Evans's have dates and series, and Strong's are addresses and essays, no Scripture):
+// bundled, Off, and on no verse (tests/unit/sermons-no-ref.test.ts)
+const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos', 'kuyper-logos', 'worlds-great-sermons-logos', 'mcpherson-logos', 'strong-logos'];
 // every Logos list, in the index's order
-const ALL = ['greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos'];
+const ALL = ['greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos', 'shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos'];
 
 describe('the Logos archives in the sermon bundle', () => {
   it('are listed in sources.json at a commit that has them', () => {
@@ -142,5 +150,18 @@ describe('the bundled Logos sources', () => {
     const everyOn = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
     expect(enabledSources(all, everyOn, new Set(['LLS:6.60.10'])).map((s) => s.id)).toContain('chrysostom-logos');
     expect(enabledSources(all, everyOn, new Set()).map((s) => s.id)).not.toContain('chrysostom-logos');
+  });
+
+  it('give Maclaren’s The First Beatitude on Matthew 5:3 as a row that opens in Logos, and no batch 4 list is used until its switch and his library say so', async () => {
+    const maclaren = logos().find((s) => s.id === 'maclaren-logos')!;
+    const rows = await maclaren.sermonsFor({ book: 'mat', chapter: 5, from: 3 });
+    expect(rows.map((r) => r.title)).toContain('The First Beatitude');
+    for (const row of rows) expect(row).toMatchObject({ source: 'maclaren-logos', opensIn: 'logos', preacher: 'Alexander Maclaren', open: { url: expect.stringMatching(/^https:\/\/ref\.ly\/logosres\/LLS:BTTDSTHRSRMNS\?off=/) } });
+    const batch4 = ['shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos'];
+    const logosOn = (key: string) => (key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(sources(), logosOn).map((s) => s.id).filter((id) => batch4.includes(id))).toEqual([]);
+    const everyOn = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(sources(), everyOn, new Set(['LLS:BTTDSTHRSRMNS'])).map((s) => s.id)).toContain('maclaren-logos');
+    expect(enabledSources(sources(), everyOn, new Set()).map((s) => s.id)).not.toContain('maclaren-logos');
   });
 });

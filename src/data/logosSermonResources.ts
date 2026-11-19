@@ -16,4 +16,15 @@ export const LOGOS_RESOURCES: Readonly<Record<string, readonly string[]>> = {
   'bunyan-logos': ['LLS:WJB_BYNLST'],
   'charles-wesley-logos': ['LLS:SERMSCWESLEY', 'LLS:SERM1742WESLEY'],
   'jimmy-evans-logos': ['LLS:JIMMYEVANSSA'],
+  // batch 4 (mw-qtu3zvz.24); Kuyper's, The World's Great Sermons', McPherson's and Strong's rows name no passage (and so have no book file), the rest only some
+  'shedd-logos': ['LLS:SRMNATMAN', 'LLS:SRMSPRTMAN'],
+  'burroughs-logos': ['LLS:WRKSBURROUGHS01', 'LLS:WRKSBURROUGHS02', 'LLS:WRKSBURROUGHS04', 'LLS:WRKSBURROUGHS07'],
+  'keach-logos': ['LLS:BPTSTCVNTTHLGY03', 'LLS:BPTSTCVNTTHLGYAX'],
+  'maclaren-logos': ['LLS:BTTDSTHRSRMNS'],
+  'kuyper-logos': ['LLS:TEASELEXKUYPROOT'],
+  'broadus-logos': ['LLS:JABSERMADDR'],
+  'worlds-great-sermons-logos': ['LLS:WRLDGRTSERM01', 'LLS:WRLDGRTSERM02', 'LLS:WRLDGRTSERM03', 'LLS:WRLDGRTSERM04', 'LLS:WRLDGRTSERM05', 'LLS:WRLDGRTSERM06', 'LLS:WRLDGRTSERM07', 'LLS:WRLDGRTSERM08', 'LLS:WRLDGRTSERM09', 'LLS:WRLDGRTSERM10'],
+  'princeton-sermons-logos': ['LLS:PRINCESERMON'],
+  'mcpherson-logos': ['LLS:DVNHLNGSRMNS'],
+  'strong-logos': ['LLS:PHILANDREL'],
 };
