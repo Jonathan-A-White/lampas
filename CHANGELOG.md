@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.294
+_2026-11-19_
+- Fixed: In the Septuagint, a tap on a few English words of Genesis 24 to 29 (such as 'it came to pass', 'Peradventure', 'departed;') now opens the Greek word that renders them, not a neighbour's.
+
 ## 0.7.293
 _2026-11-19_
 - Fixed: Books in the Library that share a short name, like two commentaries both called "Revelation", now show their series under the name so you can tell them apart.
