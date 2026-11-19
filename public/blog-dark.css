@@ -6,8 +6,8 @@
 
     <link rel="stylesheet" href="https://lampas.allmymind.org/blog-dark.css">
 
-  EVERY rule is inside the one @media (prefers-color-scheme: dark) block: with the phone or computer set to light the file changes
-  nothing (tests/e2e/blog-dark.spec.ts holds both). Source colours its page through custom properties on :root (--background-color,
+  EVERY rule is inside the one @media (prefers-color-scheme: dark) block, except the last rule of the file (mw-fnvjof.17.197), which is for both schemes: with the phone or
+  computer set to light the file changes nothing else (tests/e2e/blog-dark.spec.ts holds both). Source colours its page through custom properties on :root (--background-color,
   --color-darker-gray for text and links, --color-secondary-text, --color-lighter-gray for code, --color-border) and the Ghost accent
   (--ghost-accent-color, the link colour in a post and the quote's rule); the card styles (cards.min.css) fix a few colours of their
   own, which are set again below, and the iframes of Ghost's widgets (comments, Portal, search) are given back a transparent canvas (see the iframe rules at the end). `:root:root` lifts each custom property over the theme's own `:root` rule whichever sheet loads
@@ -61,12 +61,6 @@
   html:root .gh-article-tag,
   html:root figcaption a {
     color: #9fb0ff;
-  }
-
-  /* The home hero's reference (mw-fnvjof.17.158) is a link the tagger makes inside the quote over the picture, which stays white: the link keeps the quote's colour, underlined, so it reads on the picture */
-  html:root .gh-header-title a[data-lampas-ref] {
-    color: inherit;
-    text-decoration: underline;
   }
 
   /* The paywall CTA (.gh-post-upgrade-cta, mw-fnvjof.17.100) is drawn by Ghost inside the post's content: its box is the site's #1329d4 by inline style and its words white, which
@@ -176,4 +170,13 @@
     background: #9fb0ff;
     color: #15171a;
   }
+}
+
+/* The reference links the tagger makes outside a post's body (mw-fnvjof.17.158, mw-fnvjof.17.197): the home hero's (inside the quote over the picture, which is white in light
+   and dark), an excerpt's, a tag or author description's and the footer's. The theme draws a link there in its own dark text colour with no underline, which in light was dark on
+   the white quote over the picture and, in an excerpt or the footer, no different from the words around it. So the link takes the colour of the words it stands in and is
+   underlined, in BOTH schemes: this rule is outside the dark block on purpose. A link in a post's body (.gh-content) keeps the theme's own link style. */
+html:root :is(.gh-header-title, .gh-article-excerpt, .gh-archive-description, .gh-footer) a[data-lampas-ref] {
+  color: inherit;
+  text-decoration: underline;
 }

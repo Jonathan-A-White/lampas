@@ -182,18 +182,18 @@ async function pixelAt(page: Page, x: number, y: number): Promise<Rgb> {
   }, png.toString('base64'));
 }
 
-// What the page looks like, for every element: the colours a stylesheet could change.
+// What the page looks like, for every element: the colours a stylesheet could change (but the tagged links outside a post, which the file's last rule changes in light too, mw-fnvjof.17.197).
 const snapshot = (page: Page) =>
   page.evaluate(() => {
     const props = ['color', 'backgroundColor', 'borderTopColor', 'borderLeftColor', 'borderBottomColor', 'outlineColor', 'textDecorationColor', 'boxShadow', 'opacity', 'fill', 'colorScheme', 'filter'] as const;
-    return [...document.querySelectorAll('*')].map((el) => {
+    return [...document.querySelectorAll('*')].filter((el) => !(el.matches('a[data-lampas-ref]') && !el.closest('.gh-content'))).map((el) => {
       const s = getComputedStyle(el);
       return [el.tagName, ...props.map((p) => s[p]), el instanceof HTMLInputElement ? getComputedStyle(el, '::placeholder').color : ''].join('|');
     });
   });
 
 test.describe('the file', () => {
-  test('every rule of public/blog-dark.css is inside the one @media (prefers-color-scheme: dark) block, so in light it changes nothing', () => {
+  test('every rule of public/blog-dark.css is inside the one @media (prefers-color-scheme: dark) block, but the one last rule for tagged links, so in light it changes nothing else', () => {
     const rules = DARK_CSS.replace(/\/\*[\s\S]*?\*\//g, '').trim();
     const head = rules.match(/^@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{/);
     expect(head, 'the file starts with the @media (prefers-color-scheme: dark) block').not.toBeNull();
@@ -206,7 +206,9 @@ test.describe('the file', () => {
         break;
       }
     }
-    expect(closedAt, 'the block closes at the end of the file, and nothing follows it').toBe(rules.length - 1);
+    // after the block comes one rule, for the tagger's links (mw-fnvjof.17.197), and nothing else
+    const after = rules.slice(closedAt + 1).trim();
+    expect(after, 'after the block: one rule, for the tagged links outside a post').toMatch(/^html:root :is\([^)]*\) a\[data-lampas-ref\]\s*\{[^{}]*\}$/);
   });
 });
 
@@ -440,6 +442,50 @@ for (const size of WIDTHS) {
     });
   });
 }
+
+// The reference links the tagger makes outside a post's body (mw-fnvjof.17.197): the home hero's, an excerpt's, a tag or author description's and the footer's. The theme gives a link
+// the colour of the heading's own text or none at all (a{color:darker-gray;text-decoration:none}, and .gh-footer a{color:inherit}), and over the picture the hero's dark link
+// was lost on the white quote in LIGHT. Each is read in light and dark, on a phone: the hero's link is its heading's colour, underlined, and every one of them differs from the
+// words around it by an underline or a colour.
+test.describe('tagged links outside the post body, at 390x844', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  const outside = (page: Page) =>
+    page.locator('a[data-lampas-ref]').evaluateAll((links) =>
+      links
+        .filter((a) => !a.closest('.gh-content') && a.getClientRects().length > 0)
+        .map((a) => {
+          const s = getComputedStyle(a);
+          const around = getComputedStyle(a.parentElement!);
+          return { where: a.parentElement!.className || a.parentElement!.tagName, color: s.color, around: around.color, line: s.textDecorationLine, aroundLine: around.textDecorationLine };
+        }),
+    );
+
+  for (const scheme of ['light', 'dark'] as const) {
+    test(`home, ${scheme}: the hero's reference is its heading's colour and underlined`, async ({ page }) => {
+      await open(page, 'home', scheme);
+      const link = page.locator('.gh-header-title a[data-lampas-ref]');
+      await expect(link).toHaveText('Mark 12:30');
+      const [color, heading, line] = await link.evaluate((a) => [getComputedStyle(a).color, getComputedStyle(a.closest('.gh-header-title')!).color, getComputedStyle(a).textDecorationLine]);
+      expect(color, 'the link is the heading\'s colour').toBe(heading);
+      expect(color).toBe('rgb(255, 255, 255)');
+      expect(line).toBe('underline');
+      await shot(page, `blog-hero-link-${scheme}`);
+    });
+
+    for (const kind of KINDS) {
+      test(`${kind}, ${scheme}: every tagged link outside the post body is told from the words around it`, async ({ page }) => {
+        await open(page, kind, scheme);
+        const links = await outside(page);
+        expect(links.length, 'the fixture holds a tagged link here (the footer\'s, at least)').toBeGreaterThan(0);
+        for (const l of links) {
+          const underlined = l.line.includes('underline') && !l.aroundLine.includes('underline');
+          expect(underlined || l.color !== l.around, `a link in ${l.where} is ${l.color} ${l.line} on text ${l.around}`).toBe(true);
+        }
+      });
+    }
+  }
+});
 
 test('the check fails on a stylesheet that does not meet AA: one that only darkens the page leaves the accent links and the quote unreadable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
