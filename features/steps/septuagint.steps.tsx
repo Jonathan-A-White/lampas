@@ -472,9 +472,6 @@ describeFeature(feature, ({ Scenario }) => {
   const cardHas = (_: unknown, name: string): void => {
     expect(within(sheet()).getByRole('button', { name })).toBeInTheDocument();
   };
-  const cardLacks = (_: unknown, name: string): void => {
-    expect(within(sheet()).queryByRole('button', { name })).toBeNull();
-  };
   const cardReads = (_: unknown, text: string): void => {
     expect(squash(within(sheet()).getByRole('group', { name: 'How Lampas read this word' }).querySelector('[data-reading-line]')?.textContent)).toBe(text);
   };
@@ -515,8 +512,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario('A guessed word is drawn with a mark, its card says it is a guess and cannot be added to his words', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on Genesis 1 with the Septuagint on and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }));
+  Scenario('A guessed word is drawn with a mark, its card says it is a guess and the shared Add to my words says why it adds nothing', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Genesis 1 with the Septuagint on, every γίνομαι read only as a guess and the saved view {string}', (_: unknown, view: string) => openOn('Genesis 1', 'on', { readerView: view }, { guessed: 'γίνομαι' }));
     Then('the word {string} in verse {int} is drawn with the mark {string}', async (_: unknown, text: string, verse: number, label: string) => {
       await waitFor(() => expect(within(verseEl(verse)).getByRole('button', { name: new RegExp(`^${text}`) }).querySelector(`[role="img"][aria-label="${label}"]`)).not.toBeNull());
     });
@@ -531,7 +528,16 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the card reads {string}', cardReads);
     And('the card has {string}', cardHas);
-    And('the card has no {string}', cardLacks);
+    When('he taps {string} on the card', async (_: unknown, name: string) => {
+      // the control draws once it knows whether the lemma is listed
+      await user.click(await within(sheet()).findByRole('button', { name }));
+    });
+    Then('the card says {string}', async (_: unknown, text: string) => {
+      await waitFor(() => expect(squash(within(sheet()).getByRole('status').textContent)).toBe(text));
+    });
+    And('the word {string} is not on his list', async (_: unknown, lemma: string) => {
+      expect((await db.words.toArray()).filter((w) => w.lemma === lemma)).toEqual([]);
+    });
   });
 
   // Swete's lacuna brackets (mw-u2w5klk.280)

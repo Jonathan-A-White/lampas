@@ -151,7 +151,7 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     And the status reads "The Septuagint of Isaiah is not ready yet"
 
   # The word card of a Septuagint word (mw-u2w5klk.12): the lemma, parsing and meaning come from the lemma lexicon (public/data-lxx/lexicon-grc-lxx.json; a word of this text has no Strong's number),
-  # the card says how Lampas read the word (the layer and the confidence in words), a word the derivation only guessed is drawn with a mark and told as a guess, never offered to learn, and can be reported.
+  # the card says how Lampas read the word (the layer and the confidence in words), a word the derivation only guessed is drawn with a mark and told as a guess, never put on his list (the word sheet's Add to my words, the tutor's own control, says why: mw-5r3p30.1203), and can be reported.
   @uc-word-sheet @greek
   Scenario: A tap on ἐποίησεν opens its card from the lemma lexicon, with no Strong's row and no empty Study tile
     Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek" and the Strong's resource on
@@ -171,15 +171,17 @@ Feature: The Reader reads an Old Testament book in the Septuagint
     Then the phone is told to speak "ἐποίησεν" in Greek
 
   @uc-word-sheet @greek
-  Scenario: A guessed word is drawn with a mark, its card says it is a guess and cannot be added to his words
-    Given Lampas is opened on Genesis 1 with the Septuagint on and the saved view "greek"
+  Scenario: A guessed word is drawn with a mark, its card says it is a guess and the shared Add to my words says why it adds nothing
+    Given Lampas is opened on Genesis 1 with the Septuagint on, every γίνομαι read only as a guess and the saved view "greek"
     Then the word "Γενηθήτωσαν" in verse 14 is drawn with the mark "a guess"
     And the word "ἐποίησεν" in verse 1 is drawn without it
     When he taps the word "Γενηθήτωσαν" in verse 14
     Then the card begins "A guess: Lampas derived this reading and is not sure"
     And the card reads "How Lampas read this word: A guess (unsure)"
     And the card has "Report this reading"
-    And the card has no "Add to my words"
+    When he taps "Add to my words" on the card
+    Then the card says "Not added: Lampas only guessed this word, and a guessed word is not learned until it is checked."
+    And the word "γίνομαι" is not on his list
 
   @uc-word-sheet @greek
   Scenario: Report this reading asks the tutor about the word in its verse

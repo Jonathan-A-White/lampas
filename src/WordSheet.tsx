@@ -41,6 +41,7 @@ import { pushSheetStep, sheetsAbove, useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from './ui/sheetDrag';
 import { wordUrl } from './nav/links';
 import { LinkActions } from './ui/LinkActions';
+import { AddWord } from './AddWordButton';
 import { AllLexiconsSheet } from './library/AllLexiconsSheet';
 import { hebrewPronunciationSetting } from './settings/definitions/pronunciation';
 import { useSetting } from './settings/store';
@@ -398,6 +399,7 @@ function HebrewCard({ chapter, word, english, known, study, levels, offerLogos, 
           </Fact>
         ) : null}
       </dl>
+      <AddWord scope={{ title: '', chapter, verse: null }} lemma={wordLemma(word)} gloss={wordGloss(chapter, word)} />
       <StudyRow groups={studyGroupsOf(chapter, word, study, levels)} onMissing={onMissing} onAll={(door) => onAll(word, door)} />
       {onHelp && verse !== undefined ? (
         <HelpRow hebrew help={(kind) => onHelp({ kind, form: hebrewPointedForm(word.t), lemma: wordLemma(word), parse: wordParse(chapter, word), verse, language: 'he' })} />
@@ -523,6 +525,7 @@ function WordCard({ chapter, word, verseOf, english, wholeVerse, pronunciation, 
           </Fact>
         ) : null}
       </dl>
+      {formOnly ? null : <AddWord scope={{ title: '', chapter, verse: null }} lemma={wordLemma(word)} gloss={wordGloss(chapter, word)} />}
       {reading ? (
         <div role="group" aria-label="How Lampas read this word" className="mt-2">
           <p data-reading-line="" className="text-base">
