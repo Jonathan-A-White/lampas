@@ -396,11 +396,11 @@ test('with Logos On, the sermon books that are On in the list are the In Logos g
   await openUnlocked(page);
   await turnLogosOn(page);
   // his import holds the archives and two books of sermons that no list stands for (mw-qtu3zvz.94)
-  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:PRINCESERMON', 'LLS:BEATITUDES']);
+  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:SO1COR', 'LLS:BEATITUDES']);
   // the two books On, from the one list of sermon sources: the only place a book of sermons is switched
   await page.goto('/#/settings?sources=sermons');
   await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
-  for (const name of ['Princeton Sermons', 'The Beatitudes']) {
+  for (const name of ['Sermon Outlines on 1 Corinthians', 'The Beatitudes']) {
     const group = page.getByRole('radiogroup', { name, exact: true });
     await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
     await group.getByRole('radio', { name: 'On', exact: true }).click();
@@ -422,7 +422,7 @@ test('with Logos On, the sermon books that are On in the list are the In Logos g
   const rows = group.locator('a[data-archive-row]');
   await expect(rows).toHaveCount(2);
   await expect(rows.nth(0).locator('[data-sermon-title]')).toHaveText('The Beatitudes');
-  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Princeton Sermons');
+  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Sermon Outlines on 1 Corinthians');
   for (let i = 0; i < 2; i++) {
     expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
     await expect(rows.nth(i).locator('[data-sermon-meta]')).toHaveText('Opens in Logos');

@@ -101,10 +101,10 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   if (phone.archives) {
     await db.settings.put({ key: 'resource.logos', value: phone.archives.logos });
     const shelf: { id: string; state: 'on' | 'pinned' }[] =
-      phone.archives.only === 'off' ? [] : phone.archives.only === 'listed' ? [{ id: 'LLS:GRGLRSRMNRCH', state: 'on' }, { id: 'LLS:PRINCESERMON', state: 'on' }] : [{ id: 'LLS:FRESHSERMS', state: 'on' }, { id: 'LLS:PRINCESERMON', state: 'pinned' }];
+      phone.archives.only === 'off' ? [] : phone.archives.only === 'listed' ? [{ id: 'LLS:GRGLRSRMNRCH', state: 'on' }, { id: 'LLS:SO1COR', state: 'on' }] : [{ id: 'LLS:FRESHSERMS', state: 'on' }, { id: 'LLS:SO1COR', state: 'pinned' }];
     // two sermon books no passage list stands for (Greg Laurie's archive is his list's own, and has no In Logos row: mw-qtu3zvz.92); the row once Pinned is written as the Library wrote it
     await db.library.bulkPut(shelf.map((r) => ({ ...r, kind: 'sermons', since: 1 })));
-    await keepImport(phone.archives.owned ?? ['LLS:FRESHSERMS', 'LLS:PRINCESERMON', 'LLS:GRGLRSRMNRCH', 'LLS:SKPHTZGSRMN']);
+    await keepImport(phone.archives.owned ?? ['LLS:FRESHSERMS', 'LLS:SO1COR', 'LLS:GRGLRSRMNRCH', 'LLS:SKPHTZGSRMN']);
   }
   if (phone.view) await db.settings.put({ key: 'readerView', value: phone.view });
   render(<App />);
@@ -379,7 +379,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  const importHolds = (_: unknown, title: string) => openOn(title, { archives: { logos: 'on', owned: ['LLS:PRINCESERMON'] } });
+  const importHolds = (_: unknown, title: string) => openOn(title, { archives: { logos: 'on', owned: ['LLS:SO1COR'] } });
   const archiveOpened = (logos: 'on' | 'off', only?: 'off' | 'listed') => (_: unknown, title: string) => openOn(title, { archives: { logos, ...(only ? { only } : {}) } });
   const opensWithThree = async (_: unknown, first: string, second: string, third: string) => {
     await partsAre([first, second, third]);
@@ -430,7 +430,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('An archive on his shelf that his Library import lacks is not in the group', ({ Given, When, Then, And }) => {
-    Given('Lampas is opened on {string} with two sermon archives on his shelf and an import that holds only Princeton Sermons', importHolds);
+    Given('Lampas is opened on {string} with two sermon archives on his shelf and an import that holds only Sermon Outlines on 1 Corinthians', importHolds);
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('the sheet opens with {string}, {string} and {string}', opensWithThree);
