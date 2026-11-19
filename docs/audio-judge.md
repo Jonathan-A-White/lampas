@@ -50,7 +50,7 @@ The two models download into `~/.cache/lampas-audio-timings/` on the first run (
 
 ## What it reads, and what it never reads
 
-Three things only: the recording (the publisher's chapter MP3, fetched and decoded by the maker's own polite `Fetcher` and `decode`), the timings file, and each verse's text (the maker's own source and normaliser, `align.chapter_text` and `align.words_of`, imported: `test_judge.py` holds that it is the same function). It never reads the maker's alignment, and its two recognisers are not the maker's model. Only `--prove` reads the maker's measure of the gaps (`scripts/audio-timings/quiet/`), and only to decide where to plant a fault.
+Three things only: the recording (the publisher's chapter MP3, fetched and decoded by the maker's own polite `Fetcher` and `decode`, so on the clock the browser seeks by: 'A file with tags inside it' below), the timings file, and each verse's text (the maker's own source and normaliser, `align.chapter_text` and `align.words_of`, imported: `test_judge.py` holds that it is the same function). It never reads the maker's alignment, and its two recognisers are not the maker's model. Only `--prove` reads the maker's measure of the gaps (`scripts/audio-timings/quiet/`), and only to decide where to plant a fault.
 
 ## The clip is what he could hear, at worst
 
@@ -98,7 +98,7 @@ A part-sound of 20 ms or less (`TOLERANCE`) is not a fault: that is the measure'
 
 **The same input gives the same bytes.** The report holds no time and no host. A second `--fresh` run of John, hearing everything again, wrote the same file byte for byte (2026-11-14: both reports sha256 `44dd1a64ff12552ea9112d54583e50f5a1b9c1caedb1fea16cc1af2cf8504405`).
 
-**A run stopped halfway is taken up where it stopped.** Each finished chapter is kept in `~/.cache/lampas-audio-timings/judge/done/`, under a key of the timings' bytes, the judge's version, the slops, the tolerance and the models; other timings or another slop start afresh. What the ears heard of a recording is kept too (`judge/heard`, `judge/clips`, keyed by the MP3's sha256), so judging NEW timings of a recording already heard costs seconds, not minutes: the cut-rule story can re-judge John after every change.
+**A run stopped halfway is taken up where it stopped.** Each finished chapter is kept in `~/.cache/lampas-audio-timings/judge/done/`, under a key of the timings' bytes, the judge's version, the slops, the tolerance and the models; other timings or another slop start afresh. What the ears heard of a recording is kept too (`judge/heard`, `judge/clips`, keyed by the MP3's sha256, with `.seek` for a file with tags inside it, so what was heard of one on the old clock is not read), so judging NEW timings of a recording already heard costs seconds, not minutes: the cut-rule story can re-judge John after every change.
 
 ## The judge is judged
 
@@ -182,6 +182,19 @@ Measured 2026-11-14 for John 2 (`MSB_43_Jhn_002_D.mp3`: 44.1 kHz mono, 192 kb/s 
 
 **After a seek** (30 seeks to seconds in the middle of speech, each played 1.2 s): at the pause `currentTime` was from 2.9 ms behind to **24.8 ms AHEAD** of the sound (median 14 ms ahead), and the first sample given was the recording's second from 11.7 ms before to 27.9 ms after the second asked for. One MP3 frame here is 26.1 ms: Chromium seeks this header-less constant-rate file to a frame, not to a sample. **This is not a constant the judge can correct; it is the player's** (every verse is started by a seek), so it belongs in `player-slop.json` when mw-ar5k42b.2 measures the page: a verse can start up to 12 ms early or 28 ms late and stop up to 25 ms early, before the player's own timer is counted. Measured through Web Audio on the Laptop, not through a phone's speaker.
 
+**A file with tags inside it: the seek clock is not ffmpeg's** (mw-ar5k42b.25). John 2 has nothing between its frames, so the measure above could not see it. The publisher's Old Testament files are spliced from pieces, each piece's own 45-byte ID3 tag (`TSSE`, the encoder's name) left inside the file: Genesis 24 has 35 after its head. ffmpeg decoding the file through says 'Header missing' at each and drops the frame after it (its decode is 614.557 s; the file's 23,561 frames are 615.471 s, and the audio element's `duration` is 615.536 s, the bytes past the head at 24,000 a second). Chromium seeks the file by byte position and loses nothing. Genesis 24, 2026-11-19, the same method (Chromium 1243, six seeks, 2.5 s each), the second asked for against the second of each decode whose sound was played:
+
+| second asked for | ffmpeg's play-through decode | tags before it | the maker's decode now |
+| --- | --- | --- | --- |
+| 16.45 | 16.422 (-0.028 s) | 1 | 16.450 (0.000) |
+| 148.74 | 148.587 (-0.153) | 6 | 148.755 (+0.015) |
+| 260.15 | 259.790 (-0.360) | 13 | 260.154 (+0.004) |
+| 400.00 | 399.443 (-0.557) | 21 | 400.031 (+0.031) |
+| 587.31 | 586.361 (-0.949) | 34 | 587.312 (+0.002) |
+| 591.21 | 590.255 (-0.955) | 34 | 591.207 (-0.003) |
+
+28.0 ms a tag: a frame (26.1 ms) and the tag's own bytes (1.9 ms). So a verse cut on ffmpeg's clock was played that much early: Genesis 24:64, `[587.31, 591.21]` then, was heard as the recording's 586.36 to 590.26, ending 'she got', and 24:65 began 'down from her camel' (the Tester's report; in the recording as ffmpeg decodes it the cut 591.21 is the boundary, Whisper's 'camel' ending at 591.24). **The maker's `decode`, which the judge hears by, is now on the seek clock** (docs/data.md 'The time base'), and what is left, 0 to 31 ms, is the frame the seek lands on: the player's margin, as in John 2. The judge's version is 3 for it. **Played on with no seek, a file with tags still slips 28 ms at each** (the browser's decoder is ffmpeg's): the judge does not hear that, because the player seeks to every verse; a passage of several verses played from one seek ends 28 ms late for each tag it crosses.
+
 The page's part (run with Playwright's Chromium, `--autoplay-policy=no-user-gesture-required`, the MP3 served over HTTP with byte ranges):
 
 ```js
@@ -247,7 +260,7 @@ From John's 21 chapters:
 - **The recording is gated.** Between phrases it is digital silence, about -90 dBFS and exactly zero in places; speech is -16 to -18 dBFS in every chapter. That is what lets the quiet ear read an edge to 5 ms. A recording that is not gated (room tone between verses) would need the quiet's threshold looked at again.
 - **Gaps.** Of 858 verse boundaries, 3 have no quiet (2:9, 5:28, 9:18) and 1 has less than the 0.1 s the player needs (1:24, 75 ms). The file runs on 0.16 to 0.26 s of quiet after the last verse's sound.
 - **A click.** 9:40 has a 10 ms click at -30 dB 60 ms before its first word; the maker's gap pass took it for the verse's onset, and so did the cut rule until mw-ar5k42b.6: the maker now passes over a click before a verse's first word (docs/data.md 'The cut rule', rule 2), and 9:40 starts 50 ms before 'Some'. The judge's own `sound` still gives the click as where the verse's sound begins; it counts seconds of sound, so the click cut at the player's latest start is within its tolerance.
-- **The file.** 44.1 kHz mono, 192 kb/s constant bit rate, no Xing or LAME header: Chromium seeks it to a frame (26 ms), see 'Time zero'.
+- **The file.** 44.1 kHz mono, 192 kb/s constant bit rate, no Xing or LAME header: Chromium seeks it to a frame (26 ms), see 'Time zero'. John's and Jude's files are one piece; every Old Testament file looked at (Genesis, Exodus, Leviticus, Numbers, Joshua, Judges, Ruth, two Psalms) is spliced, a 45-byte ID3 tag inside it at each join, and is decoded on the seek clock ('A file with tags inside it').
 
 And of the judge itself:
 
