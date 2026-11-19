@@ -621,6 +621,14 @@ function textFields(hold: TextHold, source: SourceLanguage, hebrewOn: boolean): 
   return source === 'grc' ? { greek, english } : hebrewOn ? { hebrew: greek, english } : { english };
 }
 
+/**
+ * The settings the request carries: all but the switches of the sermon and theme sources (`sermons.<id>`, `themes.<id>`), which bear on what the app offers on a sheet and not on an answer (BEARS_ON says `screen`),
+ * and which the Settings screen carries, with their values, when he talks from Settings (mw-qtu3zvz.24: the ten sources of batch 4 took the request over its headroom, and it cannot grow: the sealed record leaves 6 KiB of the 20 KiB).
+ */
+function withoutSourceSwitches(settings: Record<string, SettingValue>): Record<string, SettingValue> {
+  return Object.fromEntries(Object.entries(settings).filter(([key]) => !key.startsWith('sermons.') && !key.startsWith('themes.')));
+}
+
 /** The request for what he just said: the verse's or the passage's whole text, the verses his words or the last answer's links name, or the chapter's first three verses (src/services/talkVerses.ts); the last 10 turns, oldest first, the talk's running summary and the next turns to fold into it; the settings as they stand; the word he asked help with, if he did. */
 export function buildTalkRequest(
   scope: TalkScope,
@@ -684,7 +692,7 @@ export function buildTalkRequest(
     ...(folding.length > 0 && waiting > 0 ? { unfolded: waiting } : {}),
     // a talk with credits sends no words and no count: a count of 0 would tell the tutor he knows nothing
     ...(aboutCredits ? { solid_words: [] } : solidWordsField(solidWords)),
-    settings,
+    settings: withoutSourceSwitches(settings),
     pronunciation,
     pronunciation_guide: tutorGuideOf(pronunciationOf(pronunciation)),
     ...hebrewGuideField(settings),

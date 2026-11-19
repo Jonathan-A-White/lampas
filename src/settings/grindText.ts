@@ -102,9 +102,10 @@ export const HELP_KEPT: readonly string[] = ['weave'];
  * only repeats what its Value list says with all 37 named, and that list is the line's bulk; Layout's help only spells out its two values, "Verse by verse" and "Paragraph", which its Value list gives with their labels.
  * Weave's grammar level and Tick boxes (mw-rl10piw.9, to keep the room for a new setting): the first's help names its three values, which its Value list gives with their labels, and the second's adds only what its Off does.
  * Morning RePhil order (its help only spells out its two values, which its Value list gives with their labels) and In the draw (its help repeats its row, and the Value note names 'all', 'none' and the ids), and the five Today switches (their help only says their hint again with 'Whether'), to keep the room for When all Morning RePhil are seen (mw-r9xo1pj.2).
+ * New words at and Witnesses (mw-qtu3zvz.24, to make room for the ten sermon switches of batch 4): the first's help repeats its row and its Value list, and the second's only spells out its three values, which its Value list gives with their labels.
  * New words a day and Offer the lessons (mw-qtu3zvz.20, to make room for the six sermon switches of batch 3): the first's help only spells out what its Value list says (0 offers none), and the second's repeats its row, whose On and Off say the rest.
  */
-const HINT_ONLY: readonly string[] = ['devotional', 'layout', 'weaveGrammar', 'dailyTicks', 'morningRephilOrder', 'devotionalDraw', 'dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'newWordsADay', 'variantLessonsOffer'];
+const HINT_ONLY: readonly string[] = ['devotional', 'layout', 'weaveGrammar', 'dailyTicks', 'morningRephilOrder', 'devotionalDraw', 'dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'newWordsADay', 'variantLessonsOffer', 'pickerGrammar', 'variantWitnesses'];
 
 /** A how-to for the person at the phone ('Android: Settings > System > Languages & input > ... add Hebrew.'): the tutor sets a keyboard row, it does not walk him through the phone's own settings (mw-82lb97i.16, to keep room). */
 const PHONE_STEPS = /\s*Android: [^.]*\./g;
@@ -145,12 +146,10 @@ export function settingsBlock(): string {
       last.labels.push(s.label);
     } else lines.push({ keys: [s.key], labels: [s.label], body, same });
   }
-  // the labels of a family line that all end in the same word ("Greg Laurie's sermons, J. D. Greear's sermons, ...") say it once, at the last (mw-qtu3zvz.18)
+  // the labels of a family line of sermon sources are not said at all (mw-qtu3zvz.24, to keep the room for the ten sources of batch 4): each key names its source ('sermons.maclaren-logos'), so its label said it again
   for (const l of lines) {
-    const ends = l.labels.filter((label) => label.endsWith(' sermons'));
-    if (l.keys.length < 4 || ends.length < 4) continue;
-    const last = ends[ends.length - 1];
-    l.labels = l.labels.map((label) => (label !== last && ends.includes(label) ? label.slice(0, -' sermons'.length) : label));
+    if (l.keys.length < 4 || !l.keys.every((k) => k.startsWith('sermons.'))) continue;
+    l.labels = ['One switch for each source of sermons, named by its key'];
   }
   return [SETTINGS_BEGIN, ...lines.map((l) => `- ${l.keys.map((k) => `\`${k}\``).join(', ')} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`), SETTINGS_END].join('\n');
 }

@@ -42,11 +42,11 @@ Never claim a change the list does not have. For a setting the app does not have
 - `weaveGrammar` — Grammar. Keep only forms whose grammar you have. Value: "any", "solid", "solid+frontier" (+ Frontier).
 - `weaveOrder` — Order. Lay the woven verse out in the English or in the original word order. Value: "english", "greek" (Original).
 - `variants` — Variants. Where manuscripts differ: Those that change the English keeps readings that change it; All, every one. Value: "off", "english", "all".
-- `variantWitnesses` — Witnesses. Whose readings count: the Byzantine split, Nestle-Aland 27/28, ECM. Value: "byz" (Byzantine splits only), "na" (also Nestle-Aland), "ecm" (also ECM).
+- `variantWitnesses` — Witnesses. Whose readings count. Value: "byz" (Byzantine splits only), "na" (also Nestle-Aland), "ecm" (also ECM).
 - `rp2026English` — English from the 2026 Greek. On shows Lampas’s English, marked RP 2026, where the 2026 Greek changes it.
 - `variantLessonsOffer` — Offer the lessons. A card that offers the lessons on variant readings the first time Variants is On.
 - `newWordsADay` — New words a day. How many new words are offered a day. Value: "0" (Off), "3", "5", "10".
-- `pickerGrammar` — New words at. Offer only new words whose form uses grammar you have at this level. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
+- `pickerGrammar` — New words at. Offer new words by the grammar of their form. Value: "solid" (Solid grammar), "frontier" (Frontier grammar).
 - `grammarMove` — Move it. Whether New words at moves by how your grammar reviews go: Ask: offers. Auto: moves and says so. Off: never. Value: "ask", "auto", "off".
 - `paradigmExtent` — How much of a table. Which forms a paradigm table shows. Value: "any", "solid+frontier" (Solid and frontier), "solid" (Solid only).
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" ("" for none).
@@ -69,7 +69,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `maps.biblemapper` — Bible Mapper. The maps of Bible Mapper, shown in the app.
 - `maps.logosatlas` — Logos Atlas. Used only while Logos is On in Study resources.
 - `themes.themes-tcr1934`, `themes.themes-torrey` — Thompson Chain Topics, Torrey's New Topical Textbook. Verse topics.
-- `sermons.spurgeon-ccel`, `sermons.henry-sermons`, `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos`, `sermons.augustine-logos`, `sermons.chrysostom-logos`, `sermons.piper-logos`, `sermons.bunyan-logos`, `sermons.charles-wesley-logos`, `sermons.jimmy-evans-logos` — Spurgeon's, Matthew Henry's, Greg Laurie's, J. D. Greear's, Skip Heitzig's, Spurgeon's My Sermon Notes, John Wesley's, George Whitefield's, D. L. Moody's, Augustine's, Chrysostom's homilies, John Piper's, John Bunyan's last sermon, Charles Wesley's, Jimmy Evans's sermons. In Settings > Study resources > Sermons > Sermon sources; a Logos list needs your import.
+- `sermons.spurgeon-ccel`, `sermons.henry-sermons`, `sermons.greg-laurie-logos`, `sermons.jd-greear-logos`, `sermons.skip-heitzig-logos`, `sermons.spurgeon-sermon-notes-logos`, `sermons.wesley-logos`, `sermons.whitefield-logos`, `sermons.moody-logos`, `sermons.augustine-logos`, `sermons.chrysostom-logos`, `sermons.piper-logos`, `sermons.bunyan-logos`, `sermons.charles-wesley-logos`, `sermons.jimmy-evans-logos`, `sermons.shedd-logos`, `sermons.burroughs-logos`, `sermons.keach-logos`, `sermons.maclaren-logos`, `sermons.kuyper-logos`, `sermons.broadus-logos`, `sermons.worlds-great-sermons-logos`, `sermons.princeton-sermons-logos`, `sermons.mcpherson-logos`, `sermons.strong-logos` — One switch for each source of sermons, named by its key. In Settings > Study resources > Sermons > Sermon sources; a Logos list needs your import.
 - `audioBible` — Audio Bible. The Word of Promise in Audible: the Verse view links to it. Value: "off", "word-of-promise" (The Word of Promise (NKJV), in Audible).
 - `readingPlan` — Reading plan. Read through the Bible a chapter at a time, with the audio Bible.
 - `dailyReview` — Review. Today holds your due cards.
