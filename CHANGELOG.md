@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.296
+_2026-11-19_
+- New: David's recording now reads Joshua (except chapter 2), Judges and Ruth with the highlight following.
+
 ## 0.7.295
 _2026-11-19_
 - New: Sermon lists from Augustine, Chrysostom, Charles Wesley (and Piper, Bunyan and Jimmy Evans, which have no passages yet) can now be switched on in Settings.
