@@ -101,8 +101,13 @@ export const inSentence = (name: string): string => name.split(' ').map((w) => (
 /** What the line under a kind's All on / All off calls the Settings row that turns a language on; KindPage draws it as a button to that row (hiddenLine). */
 export const LANGUAGES_LABEL = 'Which languages?';
 
-/** What a book is called under its name: the full title when the name is a short one, and its author. */
-export const detailOf = (entry: CatalogueEntry): string => [entry.title === entry.short ? '' : entry.title, entry.author ?? ''].filter(Boolean).join(' · ');
+/** What a book is called under its name: the full title when the name is a short one, its author, and its series (the export has no author column, so a commentary often has only a series: mw-fnvjof.17.207);
+ *  a series the title already holds is not said twice. The Library's pages, the Open list and the search results all say it this way. */
+export const detailOf = (entry: CatalogueEntry): string => {
+  const title = entry.title === entry.short ? '' : entry.title;
+  const series = entry.series && !entry.title.toLocaleLowerCase().includes(entry.series.toLocaleLowerCase()) ? entry.series : '';
+  return [title, entry.author ?? '', series].filter(Boolean).join(' · ');
+};
 
 /** What a book's control shows. */
 export const STATE_LABEL = { off: 'Off', on: 'On', pinned: 'Pinned' } as const;
