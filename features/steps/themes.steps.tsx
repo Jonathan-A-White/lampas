@@ -13,6 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
@@ -76,7 +77,6 @@ async function openStudy(): Promise<void> {
   await screen.findByRole('region', { name: 'Study resources' });
 }
 
-const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const sheetEl = () => screen.findByRole('dialog', { name: /^Sermons for / });
 const themesSection = async (): Promise<HTMLElement> =>
   waitFor(() => {
@@ -132,14 +132,10 @@ describeFeature(feature, ({ Scenario }) => {
     );
     await screen.findByRole('region', { name: 'Verse view' });
   };
+  // findButton, not a role query: the Verse view of a whole chapter holds the chapter's ~hundreds of chunk buttons, and findByRole works out each one's name at every poll, outrunning the wait on a loaded host and, by
+  // hogging the event loop, starving the database the door's sermons are read from, so the door came after the wait had ended (mw-indx1x6.118)
   const tapDoor = async (_: unknown, label: string) => {
-    // the door is drawn once the sermons of the place are found; it is waited for by its text, since a role query over the whole chapter's text is slow enough to outrun the wait
-    const door = await waitFor(() => {
-      const found = [...viewEl().querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent === label);
-      if (!found) throw new Error(`no ${label} button`);
-      return found;
-    });
-    await user.click(door);
+    await user.click(await findButton(label));
   };
   const headed = async (_: unknown, title: string) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));
