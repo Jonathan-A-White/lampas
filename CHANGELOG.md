@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.289
+_2026-11-19_
+- Fixed: the Today chip no longer counts a Devotional that Today does not show when Logos is off.
+- Fixed: the words "εἰ μή" are now found only where εἰ is followed by μή, instead of by μή alone.
+- Fixed: In Genesis 21:11, tapping Abraham now also opens the Hebrew word "in the eyes of", which belongs with it.
+- Fixed: With Logos off, Settings no longer shows the Logos devotional draw rows that did nothing.
+
 ## 0.7.288
 _2026-11-19_
 - Fixed: With Turn pages and the Immersive reader on, the first page turn no longer skips a line or two of the chapter.
