@@ -414,6 +414,10 @@ html {
   max-height: min(85vh, 100%);
 }
 /* The Hands-free mark is a small dot in the top-right corner (src/handsFree/HandsFreeGate.tsx, mw-rl10piw.24): its microphone shrinks to fit the dot the gate sizes. */
+[data-hands-free-mark] {
+  /* the top of the Reader's header row, in every display mode: under the shell's bars, or under the phone's top inset (#root pads it) when no bar shows (mw-5r3p30.1212) */
+  top: max(var(--lp-bars-h, 0px), env(safe-area-inset-top));
+}
 [data-hands-free-mark] .bk-handsfree__icon {
   width: 0.625rem;
   height: 0.625rem;
@@ -622,7 +626,7 @@ textarea,
  * until focus is inside, so the buttons keep their real size and place (a screen reader finds them; nothing is squeezed) and only the clip hides them. */
 .reveal-on-focus {
   position: fixed;
-  top: calc(var(--lp-bars-h, 0px) + 0.5rem);
+  top: calc(max(var(--lp-bars-h, 0px), env(safe-area-inset-top)) + 0.5rem);
   left: 0.5rem;
   right: 0.5rem;
   z-index: 60;

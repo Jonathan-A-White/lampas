@@ -9,6 +9,7 @@ import { openGroup } from './settings-group';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { honestWake } from '../support/honest-fakes';
+import { setDisplayMode } from './installed';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -139,5 +140,48 @@ for (const size of [
     await expect(mark).toHaveCount(0);
     await page.waitForTimeout(300); // a real-time wait: a window in which nothing must move
     expect(await top()).toBe(before);
+  });
+}
+
+// mw-5r3p30.1212: the mark stands in the Reader's header row at the header's right edge in every display mode, whatever top inset the phone reports (a notch or a camera cutout in full screen
+// moves the header down by the inset: the mark, fixed at top 0, was left alone in the strip above it) and is the size --bk-handsfree-size sets (1 rem), cut by no edge.
+const DISPLAYS = [
+  { mode: 'browser', top: 0 },
+  { mode: 'fullscreen', top: 0 },
+  { mode: 'fullscreen', top: 40 },
+  { mode: 'standalone', top: 32 },
+] as const;
+for (const display of DISPLAYS) {
+  test(`the mic mark stands in the header row of Hebrews 12 at 1080 x 2340 in ${display.mode} with a top inset of ${display.top} px`, async ({ page }) => {
+    await page.setViewportSize({ width: 1080, height: 2340 });
+    await setDisplayMode(page, display.mode);
+    if (display.top > 0) {
+      const session = await page.context().newCDPSession(page);
+      await session.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: display.top, left: 0, bottom: 0, right: 0 } });
+    }
+    await honestWake(page);
+    await openUnlocked(page);
+    await page.goto('/#/?b=heb&c=12');
+    await appReady(page);
+    await expect(page.getByRole('heading', { name: 'Hebrews 12', level: 1 })).toBeVisible();
+    await threeFingers(page);
+    const mark = page.getByRole('img', { name: 'Hands-free is on', exact: true });
+    await expect(mark).toBeVisible();
+    const markBox = (await mark.boundingBox()) as Box;
+    const tap = (await page.locator('[data-hands-free-mark]').boundingBox()) as Box;
+    const header = (await page.locator('header').first().boundingBox()) as Box;
+    const inside = (inner: Box, outer: Box): boolean =>
+      inner.x >= outer.x - 0.5 && inner.y >= outer.y - 0.5 && inner.x + inner.width <= outer.x + outer.width + 0.5 && inner.y + inner.height <= outer.y + outer.height + 0.5;
+    expect(inside(markBox, header), `the mark ${JSON.stringify(markBox)} is not inside the header row ${JSON.stringify(header)}`).toBe(true);
+    expect(inside(tap, header), `the tap box ${JSON.stringify(tap)} is not inside the header row ${JSON.stringify(header)}`).toBe(true);
+    expect(inside(markBox, { x: 0, y: 0, width: 1080, height: 2340 })).toBe(true);
+    // the size --bk-handsfree-size sets: 1 rem, the dot the kit draws
+    const sized = await page.evaluate(() => {
+      const el = document.querySelector('[data-hands-free-mark]') as HTMLElement;
+      return { rem: parseFloat(getComputedStyle(document.documentElement).fontSize), size: parseFloat(getComputedStyle(el).getPropertyValue('--bk-handsfree-size')) || 0 };
+    });
+    expect(sized.size).toBeGreaterThan(0);
+    expect(markBox.width).toBeCloseTo(sized.rem, 0);
+    await shot(page, `hands-free-header-row-${display.mode}-${display.top}`);
   });
 }

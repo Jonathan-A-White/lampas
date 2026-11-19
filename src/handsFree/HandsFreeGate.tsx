@@ -6,7 +6,9 @@
 //  - while it is On, a small microphone mark (voice-kit's HandsFreeMark) stands at the top right with the name 'Hands-free is on', drawn by the session's state (data-state:
 //    waiting, listening, working, needs-touch, failed). It is fixed over the top-right corner and out of the page flow, so turning Hands-free On or Off moves no text (it took a 36 px
 //    strip before, mw-rl10piw.24); it is small enough to leave the buttons' icons and the text clear. A tap on it opens the sheet 'What you can say' (HelpSheet.tsx, the same list 'help' reads aloud;
-//    mw-rl10piw.43): the mark is inside a button, a 1.25 rem tap box in the corner, so it takes the corner of the header's menu button's tap box.
+//    mw-rl10piw.43): the mark is inside a button, a 1.25 rem tap box in the corner, so it takes the corner of the header's menu button's tap box. Its top is the header's top, in every
+//    display mode (src/index.css, [data-hands-free-mark]): the foot of the shell's bars or the phone's top inset, whichever is lower, as a toast's is; fixed at top 0 it was left alone in the
+//    strip the inset opens above the header once the phone reported one, in full screen (mw-5r3p30.1212).
 //  - while it is On, the screen is kept awake (src/speech/wakeLock.ts, holder 'hands-free'); Off lets it go.
 // When the browser refuses the microphone the session turns the setting Off and the notice (session.ts MIC_REFUSED) shows here, in the strip, until he dismisses it or turns
 // Hands-free on again. When the wake could not start for a reason that may pass (the model not fetched) the setting stays On, the notice (COULD_NOT_START) shows beside the
@@ -43,7 +45,7 @@ function MarkButton({ state }: { state: HandsFreeState }) {
         aria-haspopup="dialog"
         aria-label={HELP_TITLE}
         onClick={() => setHelping(true)}
-        className="fixed top-0 right-[env(safe-area-inset-right)] pb-1 pl-1"
+        className="fixed right-[env(safe-area-inset-right)] pb-1 pl-1"
         style={MARK_SIZE}
       >
         <HandsFreeMark state={state} label={HANDS_FREE_MARK_NAME} />
