@@ -33,7 +33,7 @@ const EXTRA: Record<string, string> = { εἶπεν: 'he/she/it said (aorist of 
 const HIS_OWN = new Set(['μου', 'ἡμεῖς', 'ὑμεῖς', 'εἶπεν', 'εἰ μή']);
 
 /** The forms of a pronoun in Romans 8 the scenarios name, by the word: the data lists them under ἐγώ or σύ, so the lemma does not say. */
-const OWN_FORMS: Record<string, RegExp> = { μου: /^(μου|μοι|με|ἐμοῦ|ἐμοί|ἐμέ)$/, ἡμεῖς: /^ἡμ/i, ὑμεῖς: /^ὑμ/i };
+const OWN_FORMS: Record<string, RegExp> = { μου: /^(μου|μού|ἐμοῦ)$/, ἡμεῖς: /^ἡμ/i, ὑμεῖς: /^ὑμ/i };
 
 /** The chapters the scenarios name: the book's code and the number. */
 const CHAPTERS: Record<string, [string, number]> = { 'John 1': ['jhn', 1], 'John 10': ['jhn', 10], 'Romans 8': ['rom', 8] }
@@ -180,8 +180,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
   }
 
-  for (const name of ['ἡμεῖς', 'ὑμεῖς', 'μου']) {
-    Scenario(`The Example of ${name} is a Romans 8 verse with a form of ${name}`, ({ Given, When, Then }) => {
+  for (const [name, title] of [['ἡμεῖς', 'a Romans 8 verse with a form of ἡμεῖς'], ['ὑμεῖς', 'a Romans 8 verse with a form of ὑμεῖς'], ['μου', 'a verse of Romans with a genitive form of μου, as Romans 8 has none']]) {
+    Scenario(`The Example of ${name} is ${title}`, ({ Given, When, Then }) => {
       Given('his goal is {string} and Review asks the word {string}', async (_, goal: string, lemma: string) => drawCard(goal, lemma, undefined, 0));
       When('he answers the word question', answerChoice);
       Then('the Example says {string} as a form of {string} and of none of {string}', async (_, verse: string, lemma: string, others: string) => {

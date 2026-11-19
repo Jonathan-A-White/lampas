@@ -149,12 +149,13 @@ const isOtherPluralPronoun = (g: GreekWord, others: ReadonlySet<string>): boolea
  * The words that are found by their own forms and not by a lexicon lemma, because the data lists their forms under the lemma of another of his words. The personal pronouns: the data lists
  * every form of 'I' and 'we' under the lemma ἐγώ and of 'you' and 'you (pl)' under σύ, none of which μου, ἡμεῖς or ὑμεῖς equals, so a lemma match gave them no place (mw-indx1x6.74).
  * And εἶπεν, whose forms the data lists under λέγω, which is another of his words (mw-indx1x6.106). `lexicon` is the lemma the data lists the forms under; `parse` the person, number and case
- * (or tense, voice, mood and person) that make a form of this word: ἡμεῖς and ὑμεῖς are the plural, μου the oblique cases of the singular 'my, me', εἶπεν the second aorist active indicative, third singular.
+ * (or tense, voice, mood and person) that make a form of this word; `show`, when there is one, is the part of those a chapter's Example takes first, where it has any (μου asks for 'my', the genitive, so με and μοι
+ * stand in only for a chapter with no genitive, mw-indx1x6.100): ἡμεῖς and ὑμεῖς are the plural, μου the oblique cases of the singular 'my, me', εἶπεν the second aorist active indicative, third singular.
  */
-const OWN_FORMS: Readonly<Record<string, { lexicon: string; parse: RegExp }>> = {
+const OWN_FORMS: Readonly<Record<string, { lexicon: string; parse: RegExp; show?: RegExp }>> = {
   'ἡμεῖς': { lexicon: 'ἐγώ', parse: /^P-1[NGDA]P$/ },
   'ὑμεῖς': { lexicon: 'σύ', parse: /^P-2[NGDA]P$/ },
-  'μου': { lexicon: 'ἐγώ', parse: /^P-1[GDA]S$/ },
+  'μου': { lexicon: 'ἐγώ', parse: /^P-1[GDA]S$/, show: /^P-1GS$/ },
   'εἶπεν': { lexicon: 'λέγω', parse: /^V-2AAI-3S$/ },
 };
 
@@ -162,6 +163,12 @@ const OWN_FORMS: Readonly<Record<string, { lexicon: string; parse: RegExp }>> = 
 const isOwnForm = (g: GreekWord, word: Word, others: ReadonlySet<string>): boolean => {
   const own = word.lang === 'hbo' ? undefined : OWN_FORMS[nfc(word.lemma)];
   return own !== undefined && !isGuess(g) && lemmaKeyOf(wordLemma(g)) === own.lexicon && own.parse.test(g.p ?? '') && !others.has(nfc(g.t));
+};
+
+/** Whether `g` is of the part of `word`'s own forms its Example prefers (OWN_FORMS `show`): true for a word with no preference. */
+const showsOwn = (word: Word, g: GreekWord): boolean => {
+  const show = word.lang === 'hbo' ? undefined : OWN_FORMS[nfc(word.lemma)]?.show;
+  return show === undefined || show.test(g.p ?? '');
 };
 
 /**
@@ -196,12 +203,30 @@ export const isPlaceOf = (g: GreekWord, word: Word, lemmas: ReadonlySet<string>,
  * other words: a lemma one of them owns is left out, and so is a form that is another of them (see lemmasOf, isFormOf). A phrase's place is shown with all its words ('εἰ μὴ').
  */
 export function formsOf(chapter: Chapter, word: Word, others: ReadonlySet<string> = new Set()): Occurrence[] {
+  const places = placesWithPreference(chapter, word, others);
+  // a word with a preferred part of its forms (μου: the genitive) shows only those where the chapter has any
+  const preferred = places.filter((p) => p.shown);
+  return (preferred.length > 0 ? preferred : places).map(withoutShown);
+}
+
+/** Whether the word's Example prefers a part of its forms (μου: the genitive, OWN_FORMS `show`), so a form of the rest is shown only where no place has one of the part. */
+export const prefersForms = (word: Word): boolean => word.lang !== 'hbo' && OWN_FORMS[nfc(word.lemma)]?.show !== undefined;
+
+/** The places in the chapter of the part of the word's forms its Example prefers (see prefersForms); none where the chapter has no such form, whatever other forms it has. */
+export function preferredFormsOf(chapter: Chapter, word: Word, others: ReadonlySet<string> = new Set()): Occurrence[] {
+  return placesWithPreference(chapter, word, others).filter((p) => p.shown).map(withoutShown);
+}
+
+const withoutShown = (p: Occurrence & { shown: boolean }): Occurrence => ({ form: p.form, reference: p.reference, book: p.book, chapter: p.chapter, verse: p.verse });
+
+function placesWithPreference(chapter: Chapter, word: Word, others: ReadonlySet<string>): (Occurrence & { shown: boolean })[] {
   const lemmas = lemmasOf(word, others);
   const phrase = phraseOf(word);
   return chapter.verses.flatMap((v) =>
     v.g.flatMap((g, at) =>
       isPlaceOf(g, word, lemmas, others, v.g.slice(0, at))
         ? [{
+            shown: showsOwn(word, g),
             form: v.g.slice(at - (phrase ? phrase.length - 1 : 0), at + 1).map((w) => cardForm(chapter, w)).join(' '),
             reference: `${chapter.book} ${chapter.chapter}:${v.n}`,
             book: chapter.code,
