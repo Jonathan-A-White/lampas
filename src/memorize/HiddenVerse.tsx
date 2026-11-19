@@ -16,12 +16,28 @@ function splitFirst(text: string): [string, string] {
   return [letters.slice(0, end).join(''), letters.slice(end).join('')];
 }
 
+/** A word with what is round it: the marks before it (an opening quote), the word, and the marks after it (a comma, a closing quote, a full stop, Hebrew's sof pasuq). A letter's own marks (points) stay in the word.
+ * A token with no letter or digit has no word to hide: all of it is the word. */
+function splitAround(text: string): [string, string, string] {
+  const letters = Array.from(text);
+  const isWord = (c: string): boolean => /[\p{L}\p{N}\p{M}]/u.test(c);
+  const from = letters.findIndex(isWord);
+  if (from < 0) return ['', text, ''];
+  let to = letters.length;
+  while (to > from && !isWord(letters[to - 1])) to--;
+  return [letters.slice(0, from).join(''), letters.slice(from, to).join(''), letters.slice(to).join('')];
+}
+
+/** The word a rung hides is a line the width of its letters; the marks before and after it are drawn as they were. */
 function Blank({ text, firstLetter }: { text: string; firstLetter: boolean }) {
-  const [first, rest] = firstLetter ? splitFirst(text) : ['', text];
+  const [before, word, after] = splitAround(text);
+  const [first, rest] = firstLetter ? splitFirst(word) : ['', word];
   return (
     <>
+      {before}
       {first}
       <span aria-hidden="true" className="inline-block border-b-2 border-muted align-baseline" style={{ width: `${Math.max(1, Array.from(rest.replace(/\p{M}/gu, '')).length) * 0.7}ch` }} />
+      {after}
     </>
   );
 }
