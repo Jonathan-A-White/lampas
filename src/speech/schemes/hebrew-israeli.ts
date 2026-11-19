@@ -260,10 +260,30 @@ function textOf(s: Syllable, stressed: boolean): string {
   return s.onset + vowel + s.coda;
 }
 
+/** The conjunctive accents (munach, mahpakh, merkha, mereka kefula, darga, azla, telisha qetana, yerah ben yomo): the ones the data may write on a syllable the stress does not fall on. */
+const CONJUNCTIVE = new Set([0x5a3, 0x5a4, 0x5a5, 0x5a6, 0x5a7, 0x5a8, 0x5a9, 0x5aa]);
+
+/** The short vowels: a stressed open syllable lengthens them, so one that stays short and is followed by a said shewa is not where the stress falls. */
+const SHORT: ReadonlySet<Syllable['vowel']> = new Set<Syllable['vowel']>(['patach', 'segol', 'hiriq', 'qubuts']);
+
+/** Whether the accent on syllable `i` is not a sign of the stress: a conjunctive accent on an open syllable with a short vowel, just before a said shewa and not on the last syllable
+ * (the merkha on the first letter of הַ֥לְלוּ, which the voice says ha-le-LOO, mw-fnvjof.17.200). The word's own stress, its last syllable or the segolate's, is then left to stand. */
+function accentIsNotStress(syllables: Syllable[], i: number): boolean {
+  const s = syllables[i];
+  return (
+    s.accent !== undefined &&
+    CONJUNCTIVE.has(s.accent) &&
+    i < syllables.length - 1 &&
+    s.coda === '' &&
+    SHORT.has(s.vowel) &&
+    syllables[i + 1].vowel === 'shewa'
+  );
+}
+
 /** The syllable the cantillation puts the stress on, or -1. A word with two different marks (a munach on a secondary stress, a zaqef on the main one) is stressed by the last; the
- * same mark twice (the pashta, written on the stress and again on the last letter) is the first. */
-function markedSyllable(syllables: Syllable[]): number {
-  const marks = syllables.flatMap((s, i) => (s.accent === undefined ? [] : [{ at: i, code: s.accent }]));
+ * same mark twice (the pashta, written on the stress and again on the last letter) is the first. A conjunctive accent that is not a sign of the stress (accentIsNotStress) is no mark. */
+function markedSyllable(syllables: Syllable[], keepAll = false): number {
+  const marks = syllables.flatMap((s, i) => (s.accent === undefined || (!keepAll && accentIsNotStress(syllables, i)) ? [] : [{ at: i, code: s.accent }]));
   if (marks.length === 0) return -1;
   return (marks.every((m) => m.code === marks[0].code) ? marks[0] : marks[marks.length - 1]).at;
 }
@@ -272,6 +292,20 @@ function markedSyllable(syllables: Syllable[]): number {
  * accent (or the silluq at a verse's end), the last syllable of a word with none, and the first of one that ends as a segolate; a word joined to the next by a maqaf, and a word of
  * one syllable, has none. A text with no Hebrew letter comes back as it is. */
 export function respellHebrew(word: string, guide?: string): string {
+  const spelt = spellHebrew(word, guide);
+  if (typeof spelt === 'string') return spelt;
+  const { syllables, stressed } = spelt;
+  return syllables
+    .map((s, i) => {
+      const text = textOf(s, i === stressed);
+      return syllables.length > 1 && i === stressed ? text.toUpperCase() : text;
+    })
+    .filter((s) => s !== '')
+    .join('-');
+}
+
+/** The syllables of a word and the one the stress falls on (-1 for none), or the word as it is when it has no Hebrew letter. */
+function spellHebrew(word: string, guide?: string): string | { syllables: Syllable[]; stressed: number; accented: number } {
   const { clusters, maqaf, verseEnd } = clustersOf(word);
   if (clusters.length === 0) return word;
   foldMatres(clusters);
@@ -280,13 +314,14 @@ export function respellHebrew(word: string, guide?: string): string {
   const marked = markedSyllable(syllables);
   const silluq = verseEnd ? syllables.findIndex((s) => s.meteg) : -1;
   const stressed = maqaf ? -1 : marked >= 0 ? marked : silluq >= 0 ? silluq : segolate(syllables) ? syllables.length - 2 : syllables.length - 1;
-  return syllables
-    .map((s, i) => {
-      const text = textOf(s, i === stressed);
-      return syllables.length > 1 && i === stressed ? text.toUpperCase() : text;
-    })
-    .filter((s) => s !== '')
-    .join('-');
+  return { syllables, stressed, accented: markedSyllable(syllables, true) };
+}
+
+/** Which syllable of a word (counted from 0) the respelling stresses (`stressed`, -1 for none) and which one the cantillation's accent is written on (`accented`, -1 for none): they
+ * differ when a word has no accent, a maqaf takes the stress away, or the accent is not a sign of the stress (accentIsNotStress). */
+export function hebrewStress(word: string, guide?: string): { stressed: number; accented: number } {
+  const spelt = spellHebrew(word, guide);
+  return typeof spelt === 'string' ? { stressed: -1, accented: -1 } : { stressed: spelt.stressed, accented: spelt.accented };
 }
 
 /** The standard sounds the Israeli respelling writes (./hebrew-israeli-lessons.ts teaches them; the optional course 'Learn the IPA sounds' teaches them as IPA, mw-gdcyf98.24). The h, r, sh, ts and
