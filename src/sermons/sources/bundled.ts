@@ -55,7 +55,7 @@ function sourceOf(entry: IndexSource): SermonSource {
     homepage: entry.homepage,
     credit: entry.credit,
     // one short line: the Settings row's hint, and a line of what the tutor is told (the credit is on the sheet)
-    describe: `Listed by passage${/logos\.com/.test(entry.homepage) ? '; opens in Logos' : ''}.`,
+    describe: /logos\.com/.test(entry.homepage) ? 'Opens in Logos.' : 'Listed by passage.',
     default: entry.onByDefault === false ? 'off' : 'on',
     ...(LOGOS_RESOURCES[entry.id] ? { resources: LOGOS_RESOURCES[entry.id] } : {}),
     async sermonsFor(place: SermonPlace): Promise<SermonRow[]> {

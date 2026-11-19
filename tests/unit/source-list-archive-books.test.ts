@@ -49,17 +49,20 @@ describe('a list made from Logos books names them, with their authors', () => {
     expect(row.books?.map((b) => b.title)).toContain('The Way to God and How to Find It');
   });
 
-  it('every list names every book it stands for, and the count is the 14 of logosSermonResources.ts', () => {
+  // the five volumes of Chrysostom's homilies are 'commentary' in the catalogue, not sermon books (mw-qtu3zvz.108): his list stands for them but names none
+  const COMMENTARY = new Set(['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14']);
+
+  it('every list names every sermon book it stands for, and the count is the 25 of logosSermonResources.ts, 20 of them sermon books', () => {
     const source = readFileSync('src/data/logosSermonResources.ts', 'utf8');
-    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(14);
+    expect(source.match(/'LLS:[^']+'/g)).toHaveLength(25);
     let named = 0;
     for (const id of ids) {
       const row = items.get(`sermons.${id}`)!;
-      expect(row.books?.length).toBe(LOGOS_RESOURCES[id].length);
+      expect(row.books?.length ?? 0).toBe(LOGOS_RESOURCES[id].filter((resource) => !COMMENTARY.has(resource)).length);
       named += row.books?.length ?? 0;
       for (const b of row.books ?? []) expect(b.author, `${id}: ${b.title}`).toBeTruthy();
     }
-    expect(named).toBe(14);
+    expect(named).toBe(20);
   });
 
   it("a search for the preacher finds the list through its books' author", () => {

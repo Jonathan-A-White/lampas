@@ -10,7 +10,13 @@
     "spurgeon-sermon-notes-logos",
     "wesley-logos",
     "whitefield-logos",
-    "moody-logos"
+    "moody-logos",
+    "augustine-logos",
+    "chrysostom-logos",
+    "piper-logos",
+    "bunyan-logos",
+    "charles-wesley-logos",
+    "jimmy-evans-logos"
   ],
   "themes": [
     "themes-tcr1934",
@@ -23,6 +29,12 @@
     "spurgeon-sermon-notes-logos": "Spurgeon's My Sermon Notes (Logos library)",
     "wesley-logos": "John Wesley's sermons (Logos library)",
     "whitefield-logos": "George Whitefield's sermons (Logos library)",
-    "moody-logos": "D. L. Moody's sermons (Logos library)"
+    "moody-logos": "D. L. Moody's sermons (Logos library)",
+    "augustine-logos": "Augustine's sermons (Logos library)",
+    "chrysostom-logos": "Chrysostom's homilies (Logos library)",
+    "piper-logos": "John Piper's sermons (Logos library)",
+    "bunyan-logos": "John Bunyan's last sermon (Logos library)",
+    "charles-wesley-logos": "Charles Wesley's sermons (Logos library)",
+    "jimmy-evans-logos": "Jimmy Evans's sermons (Logos library)"
   }
 }

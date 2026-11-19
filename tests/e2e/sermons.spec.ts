@@ -224,6 +224,27 @@ test('with Spurgeon\'s My Sermon Notes On, Genesis 19 lists \'Genesis 19:15\', a
   await shot(page, 'sermons-notes');
 });
 
+test('with Chrysostom On, Matthew 8:5 lists a homily on it, a link that opens his volume in Logos (mw-qtu3zvz.20)', async ({ page }) => {
+  await openUnlocked(page);
+  await turnLogosOn(page);
+  await page.goto('/#/?b=mat&c=8');
+  await expect(page.locator('[data-verse="5"]')).toBeVisible();
+  await keepImport(page);
+  await keepSettings(page, { 'sermons.chrysostom-logos': 'on' });
+  await expect(page.locator('[data-verse="5"]')).toBeVisible();
+  const view = await openVerseView(page, 5);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Matthew 8:5' });
+  await expect(sheet).toBeVisible();
+  const row = sheet.locator('a[data-sermon-row]').filter({ hasText: 'Homily XXVI' }).first();
+  await expect(row).toBeVisible();
+  await expect(row.locator('[data-sermon-meta]')).toContainText('John Chrysostom');
+  await expect(row.locator('[data-sermon-meta]')).toContainText('Opens in Logos');
+  await expect(row).toHaveAttribute('href', /^https:\/\/ref\.ly\/logosres\/LLS:6\.60\.10\?off=\d+$/);
+  await expect(sheet.locator('[data-sermon-credit]').filter({ hasText: 'John Chrysostom, Homilies' })).toBeVisible();
+  await shot(page, 'sermons-chrysostom');
+});
+
 test('with no Library import kept, an archive switched On is still not offered: Genesis 19 lists no \'Genesis 19:15\' (mw-qtu3zvz.94)', async ({ page }) => {
   await openUnlocked(page);
   await turnLogosOn(page); // Logos is On, so only the import decides
@@ -259,7 +280,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
   // the section is the door to the list, with its count, and Open web sermons in: no source has a row here
-  await expect(section.getByTestId('sources-count')).toHaveText('2 of 9 on');
+  await expect(section.getByTestId('sources-count')).toHaveText('2 of 15 on');
   await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true })).toBeVisible();
   await expect(section.getByRole('group', { name: /Spurgeon/ })).toHaveCount(0);
   await section.getByRole('button', { name: /^Sermon sources/ }).click();
@@ -270,9 +291,11 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   await on('Greg Laurie\'s sermons', 'Off');
   // his batch 2 books (mw-qtu3zvz.18)
   for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
-  // nine lists and no book: one group, so no heading; from eight sources up there is a search field
+  // his batch 3 books (mw-qtu3zvz.20), Jimmy Evans's archive among them, which names no passage
+  for (const name of ['Augustine\'s sermons', 'Chrysostom\'s homilies', 'John Piper\'s sermons', 'John Bunyan\'s last sermon', 'Charles Wesley\'s sermons', 'Jimmy Evans\'s sermons']) await on(name, 'Off');
+  // fifteen lists and no book: one group, so no heading; from eight sources up there is a search field
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0);
-  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 9 sermon sources');
+  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 15 sermon sources');
   await shot(page, 'sermons-settings');
 
   // Spurgeon and Henry Off: Romans 5:8 has no listed sermon, and so no door
@@ -280,7 +303,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
     await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
     await on(name, 'Off');
   }
-  await expect(page.getByTestId('sources-line')).toHaveText('none of 9 on');
+  await expect(page.getByTestId('sources-line')).toHaveText('none of 15 on');
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
   const view = await openVerseView(page, 8);

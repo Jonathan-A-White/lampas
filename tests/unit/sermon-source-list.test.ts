@@ -43,6 +43,8 @@ const SERVICE = source('brookfield', 'Brookfield First', { default: 'off', descr
 const SERMONS = entriesOf('sermons');
 const UNDER = new Set(Object.values(LOGOS_RESOURCES).flat());
 /** Sermon books of the catalogue that no bundled list stands for. */
+/** A name as the sheet files it: a leading A, An or The passed over (src/sermons/sources/logos.ts). */
+const filed = (name: string): string => name.replace(/^(a|an|the)\s+/i, '');
 const LOOSE = SERMONS.filter((e) => !UNDER.has(e.resource));
 const MARKED = CATALOGUE.filter((e) => e.kind !== 'sermons' && e.alsoSermons);
 const COUNTS: Record<string, number> = { 'spurgeon-ccel': 3467, 'henry-sermons': 45, 'greg-laurie-logos': 1091 };
@@ -278,7 +280,7 @@ describe('In Logos on the Sermons sheet', () => {
   const owned = (entries: readonly CatalogueEntry[]): Set<string> => new Set(entries.map((e) => e.resource));
 
   it('lists the sermon books that are On by name, a once-Pinned one in its place and not first', () => {
-    const [a, b] = [...LOOSE.slice(0, 2)].sort((x, y) => x.short.localeCompare(y.short));
+    const [a, b] = [...LOOSE.slice(0, 2)].sort((x, y) => filed(x.short).localeCompare(filed(y.short)));
     const rows = logosArchives(place, new Map<string, ShelfState>([[b.resource, 'pinned'], [a.resource, 'on']]), SERMON_BOOKS, owned([a, b]));
     expect(rows.map((r) => r.id)).toEqual([a.resource, b.resource]);
   });
