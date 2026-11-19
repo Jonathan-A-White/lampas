@@ -115,5 +115,5 @@ export function inLogosGroups(rows: readonly InLogosRow[], place: StudyPlace, qu
   return groups.filter((g) => g.rows.length > 0);
 }
 
-/** How a row names its book under the name: the full title when the name is a short one, and its author. */
-export const detailOf = (entry: CatalogueEntry): string => [entry.title === entry.short ? '' : entry.title, entry.author ?? ''].filter(Boolean).join(' · ');
+/** How a row names its book under the name: the one rule of the Library's pages (kinds.ts detailOf: title, author, series). */
+export { detailOf } from './kinds';
