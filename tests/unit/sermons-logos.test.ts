@@ -21,13 +21,21 @@ const ARCHIVES = [
   { id: 'wesley-logos', resource: '36\\.0\\.11|WORKSWESLEY0[567]', param: 'off', preacher: /Wesley/, credit: 'John Wesley, Sermons on Several Occasions, and The Works of John Wesley, Volumes 5, 6 and 7 (the sermons not in Sermons on Several Occasions), in Logos (Faithlife)', minRows: 100 },
   { id: 'whitefield-logos', resource: '36\\.0\\.12', param: 'off', preacher: /Whitefield/, credit: 'George Whitefield, Selected Sermons of George Whitefield, in Logos (Faithlife)', minRows: 40 },
   { id: 'moody-logos', resource: 'MENBBLMOODY|OVRCMNGLFMOODY|WAYGODMOODY|12SELSERMMOODY', param: 'off', preacher: /Moody/, credit: 'Dwight Lyman Moody, Men of the Bible; The Overcoming Life and Other Sermons; The Way to God and How to Find It; Twelve Select Sermons, in Logos (Faithlife)', minRows: 5 },
+  // batch 3 (mw-qtu3zvz.20): the books with a preaching text, each linking the book at the sermon's offset
+  { id: 'augustine-logos', resource: 'AGSTNSRMNS04', param: 'off', preacher: /Augustine/, credit: 'Augustine of Hippo, Sermons 94A-147A on the New Testament, in Logos (Faithlife)', minRows: 50 },
+  { id: 'chrysostom-logos', resource: '6\\.60\\.1[0-4]', param: 'off', preacher: /Chrysostom/, credit: 'John Chrysostom, Homilies, in the Nicene and Post-Nicene Fathers, First Series, Volumes 10 to 14 (ed. Philip Schaff), in Logos (Faithlife)', minRows: 400 },
+  { id: 'charles-wesley-logos', resource: 'SERMSCWESLEY|SERM1742WESLEY', param: 'off', preacher: /Charles Wesley/, credit: 'Charles Wesley, Sermons by the Late Rev. Charles Wesley; A Sermon Preached on Sunday, April 4, 1742, before the University of Oxford, in Logos (Faithlife)', minRows: 10 },
 ];
+// batch 3's lists whose rows name no preaching text (Piper's and Bunyan's only cite passages; Jimmy Evans's have dates and series, no Scripture): bundled, Off, and on no verse (tests/unit/sermons-no-ref.test.ts)
+const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos'];
+// every Logos list, in the index's order
+const ALL = ['greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos'];
 
 describe('the Logos archives in the sermon bundle', () => {
   it('are listed in sources.json at a commit that has them', () => {
     expect(config.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(config.commit).not.toBe(STALE_PIN);
-    expect(config.sources).toEqual(expect.arrayContaining(ARCHIVES.map((a) => a.id)));
+    expect(config.sources).toEqual(expect.arrayContaining([...ARCHIVES.map((a) => a.id), ...NO_REF]));
   });
 
   for (const archive of ARCHIVES) {
@@ -94,10 +102,10 @@ describe('the bundled Logos sources', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   const sources = () => bundledSources();
-  const logos = () => sources().filter((s) => ARCHIVES.some((a) => a.id === s.id));
+  const logos = () => sources().filter((s) => ALL.includes(s.id));
 
   it('are all Off to start, and On only where their switch says so', () => {
-    expect(logos().map((s) => s.id)).toEqual(ARCHIVES.map((a) => a.id));
+    expect(logos().map((s) => s.id)).toEqual(ALL);
     for (const source of logos()) expect(source.default).toBe('off');
     expect(sources().find((s) => s.id === 'spurgeon-ccel')!.default).toBe('on');
     const all = sources();
@@ -120,5 +128,19 @@ describe('the bundled Logos sources', () => {
     const rows = await notes.sermonsFor({ book: 'gen', chapter: 19 });
     const row = rows.find((r) => r.title === 'Genesis 19:15');
     expect(row).toMatchObject({ source: 'spurgeon-sermon-notes-logos', opensIn: 'logos', open: { url: 'https://ref.ly/logosres/LLS:MYSRMNOTES01?off=14522' } });
+  });
+
+  it('give Chrysostom’s homily on Matthew 8:5 as a row that opens in Logos, and no batch 3 list is used until its switch and his library say so', async () => {
+    const chrysostom = logos().find((s) => s.id === 'chrysostom-logos')!;
+    const rows = await chrysostom.sermonsFor({ book: 'mat', chapter: 8, from: 5 });
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) expect(row).toMatchObject({ source: 'chrysostom-logos', opensIn: 'logos', preacher: 'John Chrysostom', open: { url: expect.stringMatching(/^https:\/\/ref\.ly\/logosres\/LLS:6\.60\.10\?off=/) } });
+    const all = sources();
+    const batch3 = ['augustine-logos', 'chrysostom-logos', ...NO_REF, 'charles-wesley-logos'];
+    const logosOn = (key: string) => (key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(all, logosOn).map((s) => s.id).filter((id) => batch3.includes(id))).toEqual([]);
+    const everyOn = (key: string) => (key.startsWith('sermons.') || key === 'resource.logos' ? 'on' : undefined);
+    expect(enabledSources(all, everyOn, new Set(['LLS:6.60.10'])).map((s) => s.id)).toContain('chrysostom-logos');
+    expect(enabledSources(all, everyOn, new Set()).map((s) => s.id)).not.toContain('chrysostom-logos');
   });
 });
