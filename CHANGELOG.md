@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.291
+_2026-11-19_
+- Fixed: On a verse list, tapping Memorize this list a second time while the first tap is still being saved now turns it off again; before, it could stay on.
+- Fixed: Touching the talk bar with a second finger and lifting it no longer sends what you are saying while your first thumb is still holding.
+- New: The word sheet now has the same "Add to my words" button the tutor shows, so you can put a word on your list as you read.
+- Fixed: the sounded-out line for הַלְלוּ ("Hallelu") in the Psalms now puts the stress on the last part, as the voice does.
+- Fixed: on the blog's home page in light mode, the reference at the end of the big quote is white and underlined like a link, and references in the page's footer and summaries are underlined.
+
 ## 0.7.290
 _2026-11-19_
 - Fixed: Today's Psalms and Proverbs rows now show just the passage, without "Read in Lampas" under each.
