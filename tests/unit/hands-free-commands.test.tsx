@@ -4,12 +4,14 @@
 // 'previous chapter' take the sound over and leave nothing for the close to go on with (what src/handsFree/playback.ts did to it at the wake and at the close, as in hands-free-playback.test.ts).
 import 'fake-indexeddb/auto';
 import { readFileSync } from 'node:fs';
+import { route } from 'voice-kit/handsfree';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChapterTimings } from '../../src/data/audioTimings';
 import { forgetChapters, type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
+import { HELP_LINES, HELP_SPOKEN, SPOKEN_COMMANDS } from '../../src/handsFree/commands';
 import { handsFreeSeam, resetHandsFree, runHandsFree } from '../../src/handsFree/session';
 import { cardOf } from '../../src/markdown/verseLinks';
 import { answerReadHere, forgetRead, pendingRead } from '../../src/nav/readerRequest';
@@ -286,5 +288,26 @@ describe('the ends of the Bible and the Reader that is not open', () => {
     await says(recogniser, 'red john three');
     await saidAloud('John 3');
     expect(pendingRead('jhn', 3)).toMatchObject({ verse: 1 });
+  });
+});
+
+// mw-rl10piw.43: 'help' and 'what can I say' say what he can say, made from the router's one table
+describe('help', () => {
+  it('has a line for every command the router knows, and the router takes each line\'s example as that command', () => {
+    const lines = HELP_LINES.map((line) => line.name).sort();
+    expect(lines).toEqual(SPOKEN_COMMANDS.map((rule) => rule.name).sort());
+    for (const line of HELP_LINES) expect(route(line.example, SPOKEN_COMMANDS)?.name, `'${line.example}'`).toBe(line.name);
+  });
+
+  it('is said with every example in it and not as words it did not get', async () => {
+    for (const asked of ['help', 'what can I say']) {
+      const recogniser = await wakeUp();
+      await says(recogniser, asked);
+      await saidAloud(HELP_SPOKEN);
+      for (const line of HELP_LINES) expect(HELP_SPOKEN).toContain(line.example);
+      expect(synth.spoken.map((s) => s.text)).not.toContain('Sorry, I did not get that');
+      await vi.waitFor(() => expect(wake.listening).toBe(true), { timeout });
+    }
+    for (const word of ['play', 'pause', 'stop', 'read John 3', 'next chapter', 'previous chapter', 'ask']) expect(HELP_SPOKEN).toContain(word);
   });
 });

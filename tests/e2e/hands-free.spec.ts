@@ -1,6 +1,6 @@
 // tests/e2e/hands-free.spec.ts — Hands-free (mw-rl10piw.5) at 390 x 844: Settings > Listening > Reading voices has Hands-free as its first row, Off to start; a three-finger tap on the
 // Reader turns it On (the touches come through the browser, one touchstart a finger, as a phone's do) and a small microphone mark named 'Hands-free is on' stands at the top right, in the
-// shell's top strip: it covers no word of the Reader's header and no verse text, takes no touch and no room: the first verse sits where it did (mw-rl10piw.24). Shots: the Reader with the mark, and the Settings row. The speech and the wake lock are the browser's own
+// shell's top strip: it covers no word of the Reader's header and no verse text and takes no room: the first verse sits where it did (mw-rl10piw.24). Shots: the Reader with the mark, and the Settings row. The speech and the wake lock are the browser's own
 // (headless Chromium has none worth asserting on: tests/unit/hands-free-switch.test.tsx and features/hands-free.feature hold the speech and the lock). The wake word is the kit's fake
 // (tests/support/honest-fakes.ts honestWake): tests/e2e/hands-free-loop.spec.ts is the listening.
 import { expect, test, type Page } from '@playwright/test';
@@ -57,8 +57,10 @@ test('a three-finger tap turns Hands-free on, the mic mark stands clear of the h
   expect(markBox.width).toBeGreaterThanOrEqual(16);
   expect(markBox.x + markBox.width).toBeLessThanOrEqual(390);
   expect(markBox.y).toBeGreaterThanOrEqual(0);
-  // the mark is drawn over the top-right corner and takes no touch, so a button's tap box may lie under it; what must stay clear is what the eye sees: a button with words, and the icon of an icon-only button
-  expect(await mark.evaluate((el) => getComputedStyle(el.closest('[data-hands-free-mark]') as Element).pointerEvents)).toBe('none');
+  // the mark is drawn over the top-right corner and its button is a small tap box (mw-rl10piw.43: a tap opens 'What you can say'); what must stay clear is what the eye sees: a button with words, and the icon of an icon-only button
+  const tap = (await page.locator('[data-hands-free-mark]').boundingBox()) as Box;
+  expect(tap.width).toBeLessThanOrEqual(32);
+  expect(tap.height).toBeLessThanOrEqual(32);
   // what the eye sees of each header button: its words (the text's own boxes) and its icons (not the padding of its tap box)
   const seen = await page.evaluate(() => {
     const out: { x: number; y: number; width: number; height: number }[] = [];

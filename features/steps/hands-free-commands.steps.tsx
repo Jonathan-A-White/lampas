@@ -294,6 +294,26 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     });
   });
 
+  Scenario("'help' says what he can say and does not say it did not get that", ({ Given, When, And, Then }) => {
+    Given(given, (_, place: string) => open(place));
+    When('he says the wake word', sayWake);
+    And(says, (_, words: string) => command(words));
+    Then(phoneSays, (_, text: string) => saysInEnglish(text));
+    And('the phone does not say {string}', (_, text: string) => {
+      expect(engine().spoken.map((s) => s.text)).not.toContain(text);
+    });
+  });
+
+  Scenario("'what can I say' says what he can say and does not say it did not get that", ({ Given, When, And, Then }) => {
+    Given(given, (_, place: string) => open(place));
+    When('he says the wake word', sayWake);
+    And(says, (_, words: string) => command(words));
+    Then(phoneSays, (_, text: string) => saysInEnglish(text));
+    And('the phone does not say {string}', (_, text: string) => {
+      expect(engine().spoken.map((s) => s.text)).not.toContain(text);
+    });
+  });
+
   Scenario("At the end of the Bible 'next chapter' says there is none", ({ Given, When, And, Then }) => {
     Given(given, (_, place: string) => open(place));
     When('he says the wake word', sayWake);
