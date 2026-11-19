@@ -263,6 +263,8 @@ export function VerseView(props: VerseViewProps) {
           scrolled out of sight when Listen was tapped. Sideways its column is 40 % of the window but never under 12.5 rem, so the widest door shows whole (a 390 px window
           cut to 400 px tall left it 74 px), and keeps the ?'s room only when the ? is at the left (toolsRoom). */}
       <div role="group" aria-label="Tools" data-verse-tools onClickCapture={oneToolTap} className={`relative mt-0.5 shrink-0 short:min-w-0 short:max-w-[max(40%,12.5rem)] ${narrow ? controlsRoom : toolsRoom}`}>
+        {/* the wrapper of the row and its cues: the group's own padding (the ?'s room) is outside it, so the fades sit at the row's visible edges (mw-fnvjof.17.157) */}
+        <div className="relative">
         <div ref={attachTools} data-verse-tools-line className={TOOLS_ROW}>
         <LinkActions
           url={copyLink(copyUnit)}
@@ -283,6 +285,7 @@ export function VerseView(props: VerseViewProps) {
         </div>
         {/* the sign that the line scrolls: the next door peeks past the edge and a fade sits on the side with more (src/ScrollMore.tsx) */}
         <ScrollFades start={toolsMore.start} end={toolsMore.end} />
+        </div>
       </div>
       <ProgressMarks canonical={memorizeRef} className="mt-1 shrink-0 px-2" />
       {/* The row of actions: the chosen one is marked, not filled (the one filled control is at the foot). Three to a row, two under 15 rem of room, one row from 30 rem; the last row's

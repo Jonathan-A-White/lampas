@@ -1,5 +1,5 @@
 // src/ScrollMore.tsx — how a row that scrolls sideways shows there is more (mw-fnvjof.17.104, the Governor's 2026-11-12 ask: "a subtle and elegant way of knowing they can scroll to get more
-// options"). Two quiet signs, no arrows, no text, no bounce: a PEEK (the next item is cut by the edge, never ending on it) and a soft FADE into the background on the side that has more.
+// options"). Two signs, no text, no bounce: a PEEK (the next item is cut by the edge, never ending on it) and a FADE into the background on the side that has more, 28 px wide, with a small chevron over it (mw-fnvjof.17.157: the Governor did not see the soft fade alone).
 // One hook and two parts, shared by every row that scrolls sideways in src/ (tests/unit/scroll-more-sweep.test.ts fails on an overflow-x scroll box that is not wired to them):
 //   - useScrollMore(options): the hook; give the first of the pair to the scroller as its ref. It says which sides have more (`start`, `end`) and, with `peek`, keeps the row's spacing such that a door is cut by the edge.
 //   - ScrollFades: the two fades, placed over the scroller's wrapper (which is `relative`).
@@ -13,16 +13,30 @@ import { type CSSProperties, type ElementType, type HTMLAttributes, type ReactNo
 
 /** The fade's colour: the background in force, which a box on a card sets for what is inside it by `--scroll-more-from` (a table of the tutor's Markdown), else the page's. */
 const FROM = 'var(--scroll-more-from, var(--color-canvas))';
-/** The two fades, over the edges of the scroller's wrapper (which stands `relative`): each only on a side that has more. They take no tap. */
+/** The fade is solid at the edge for its first third, so it hides what is under the chevron, then clears. */
+const stops = (dir: 'right' | 'left', from: string) => `linear-gradient(to ${dir}, ${from} 0%, ${from} 35%, transparent)`;
+/** A small chevron drawn in a path (no text), pointing the way the row scrolls to more. */
+function Chevron({ side }: { side: 'start' | 'end' }) {
+  return (
+    <svg data-scroll-chevron={side} viewBox="0 0 8 14" width="8" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted">
+      <path d={side === 'end' ? 'M1.5 1.5 6.5 7 1.5 12.5' : 'M6.5 1.5 1.5 7 6.5 12.5'} />
+    </svg>
+  );
+}
+/** The two cues, over the edges of the scroller's wrapper (which stands `relative`): each a fade with a chevron, only on a side that has more. They take no tap and are hidden from a screen reader. */
 export function ScrollFades({ start, end, from = FROM }: Sides & { from?: string }) {
   const base: CSSProperties = { width: FADE_PX };
   return (
     <>
       {start ? (
-        <span aria-hidden="true" data-scroll-fade="start" className="pointer-events-none absolute inset-y-0 left-0 z-1" style={{ ...base, backgroundImage: `linear-gradient(to right, ${from}, transparent)` }} />
+        <span aria-hidden="true" data-scroll-fade="start" className="pointer-events-none absolute inset-y-0 left-0 z-1 flex items-center justify-start pl-1.5" style={{ ...base, backgroundImage: stops('right', from) }}>
+          <Chevron side="start" />
+        </span>
       ) : null}
       {end ? (
-        <span aria-hidden="true" data-scroll-fade="end" className="pointer-events-none absolute inset-y-0 right-0 z-1" style={{ ...base, backgroundImage: `linear-gradient(to left, ${from}, transparent)` }} />
+        <span aria-hidden="true" data-scroll-fade="end" className="pointer-events-none absolute inset-y-0 right-0 z-1 flex items-center justify-end pr-1.5" style={{ ...base, backgroundImage: stops('left', from) }}>
+          <Chevron side="end" />
+        </span>
       ) : null}
     </>
   );
