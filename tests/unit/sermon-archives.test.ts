@@ -115,16 +115,16 @@ describe('logosArchives: the rows of the sheet’s In Logos group', () => {
   const place = { book: 'rom', chapter: 5, from: 8, to: 8 };
 
   it('is one row for each sermon book that is On (one once Pinned reads as On), by name, each a link at the verse', () => {
-    const rows = logosArchives(place, states({ 'LLS:PRINCESERMON': 'pinned', 'LLS:FRESHSERMS': 'on' }));
-    expect(rows.map((r) => r.title)).toEqual(['Fresh Sermons', 'Princeton Sermons']);
-    expect(rows[1].open).toEqual({ url: 'logosres:LLS:PRINCESERMON;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3APRINCESERMON?ref=Bible.Ro5.8' });
+    const rows = logosArchives(place, states({ 'LLS:SO1COR': 'pinned', 'LLS:FRESHSERMS': 'on' }));
+    expect(rows.map((r) => r.title)).toEqual(['Fresh Sermons', 'Sermon Outlines on 1 Corinthians']);
+    expect(rows[1].open).toEqual({ url: 'logosres:LLS:SO1COR;ref=Bible.Ro5.8', fallback: 'https://ref.ly/logosres/LLS%3ASO1COR?ref=Bible.Ro5.8' });
     expect(rows.every((r) => r.opensIn === 'logos')).toBe(true);
   });
 
   it('opens a passage at its first verse and a whole chapter at the chapter', () => {
-    const shelf = states({ 'LLS:PRINCESERMON': 'on' });
-    expect(logosArchives({ book: 'rom', chapter: 5, from: 1, to: 11 }, shelf)[0].open.url).toBe('logosres:LLS:PRINCESERMON;ref=Bible.Ro5.1');
-    expect(logosArchives({ book: 'rom', chapter: 5 }, shelf)[0].open.url).toBe('logosres:LLS:PRINCESERMON;ref=Bible.Ro5');
+    const shelf = states({ 'LLS:SO1COR': 'on' });
+    expect(logosArchives({ book: 'rom', chapter: 5, from: 1, to: 11 }, shelf)[0].open.url).toBe('logosres:LLS:SO1COR;ref=Bible.Ro5.1');
+    expect(logosArchives({ book: 'rom', chapter: 5 }, shelf)[0].open.url).toBe('logosres:LLS:SO1COR;ref=Bible.Ro5');
   });
 
   it('is none for an archive that is Off, or a book that is not a sermon archive', () => {

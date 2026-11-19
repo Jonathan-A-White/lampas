@@ -11,7 +11,7 @@ import { runSermonsBuild } from '../../scripts/sermons-build';
 import { bundledSources, forgetSermonFiles, LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { sermonsForSources } from '../../src/sermons/sermonsFor';
 
-const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos'];
+const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos', 'kuyper-logos', 'worlds-great-sermons-logos', 'mcpherson-logos', 'strong-logos'];
 const index = JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as SermonIndex;
 const canonIndex = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: Array<{ code: string; verses: number[] }> };
 
@@ -59,7 +59,7 @@ describe('the build, for a source whose rows name no passage', () => {
   });
 });
 
-describe('the committed bundle, for Piper, Bunyan and Jimmy Evans', () => {
+describe('the committed bundle, for Piper, Bunyan, Jimmy Evans, Kuyper, The World’s Great Sermons, McPherson and Strong', () => {
   for (const id of NO_REF) {
     it(`${id} is in the index with no rows and no book, Off to start, and has no book file`, () => {
       const entry = index.sources.find((s) => s.id === id);
@@ -77,6 +77,10 @@ describe('the committed bundle, for Piper, Bunyan and Jimmy Evans', () => {
     expect(LOGOS_RESOURCES['jimmy-evans-logos']).toEqual(['LLS:JIMMYEVANSSA']);
     expect(LOGOS_RESOURCES['piper-logos']).toEqual(['LLS:86BDFD4BE2316756AFB52F8937D86322']);
     expect(LOGOS_RESOURCES['bunyan-logos']).toEqual(['LLS:WJB_BYNLST']);
+    expect(LOGOS_RESOURCES['kuyper-logos']).toEqual(['LLS:TEASELEXKUYPROOT']);
+    expect(LOGOS_RESOURCES['mcpherson-logos']).toEqual(['LLS:DVNHLNGSRMNS']);
+    expect(LOGOS_RESOURCES['strong-logos']).toEqual(['LLS:PHILANDREL']);
+    expect(LOGOS_RESOURCES['worlds-great-sermons-logos']).toHaveLength(10);
   });
 
   describe('on a verse', () => {
@@ -88,7 +92,7 @@ describe('the committed bundle, for Piper, Bunyan and Jimmy Evans', () => {
 
     it('answers nothing for any chapter of any book, and asks for no file', async () => {
       const sources = bundledSources().filter((s) => NO_REF.includes(s.id));
-      expect(sources.map((s) => s.id)).toEqual(['piper-logos', 'bunyan-logos', 'jimmy-evans-logos']);
+      expect(sources.map((s) => s.id)).toEqual(NO_REF);
       for (const source of sources) {
         for (const book of CANON) expect(await source.sermonsFor({ book: book.code, chapter: 1 }), `${source.id} ${book.code}`).toEqual([]);
         expect(await source.sermonsFor({ book: 'luk', chapter: 8, from: 4 })).toEqual([]);
