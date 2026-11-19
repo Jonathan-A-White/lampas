@@ -151,7 +151,7 @@ test('Today lists the five pieces by default, and the Psalms and Proverbs are th
   for (const name of ['Review', 'Memorize', 'Reading plan', 'Psalms and Proverbs', 'Devotional']) await expect(piece(page, name)).toBeVisible();
 
   const psalms = piece(page, 'Psalms and Proverbs');
-  await expect(psalms.locator('[data-piece]')).toHaveText(readingsOn(TODAY.day).map((name) => `${name}Read in Lampas`));
+  await expect(psalms.locator('[data-piece]')).toHaveText(readingsOn(TODAY.day).map((name) => name));
   await expect(piece(page, 'Reading plan').getByRole('button', { name: 'Start a plan' })).toBeVisible();
   await expect(piece(page, 'Devotional')).toContainText('Morning and Evening');
   await expect(piece(page, 'Review')).toContainText(/\d+ due|Nothing due/);
@@ -195,6 +195,7 @@ test('a tap on a passage opens it in the Reader, with no Logos door or In anothe
   const psalms = piece(page, 'Psalms and Proverbs');
   await expect(psalms.getByRole('link')).toHaveCount(0);
   await expect(psalms.getByText('Open in Logos')).toHaveCount(0);
+  await expect(psalms.getByText('Read in Lampas')).toHaveCount(0);
   await expect(psalms.getByRole('button', { name: /In another book/ })).toHaveCount(0);
   await psalms.getByRole('button', { name: startsWith(`Proverbs ${TODAY.day}`) }).click();
   await expect(page.getByRole('heading', { name: `Proverbs ${TODAY.day}`, level: 1 })).toBeVisible();
@@ -227,7 +228,7 @@ test('with Tick boxes off Today has no boxes, only a plain list of links', async
   await openToday(page, [{ key: 'dailyTicks', value: 'off' }]);
   await expect(piece(page, 'Psalms and Proverbs')).toBeVisible();
   await expect(boxes(page)).toHaveCount(0);
-  await expect(piece(page, 'Psalms and Proverbs').getByRole('button', { name: /Read in Lampas/ })).toHaveCount(readingsOn(TODAY.day).length);
+  await expect(piece(page, 'Psalms and Proverbs').getByRole('button', { name: /opens in the Reader/ })).toHaveCount(readingsOn(TODAY.day).length);
 });
 
 test('each piece rests on its own switch: Devotional off and Review off take them away', async ({ page }) => {
@@ -267,10 +268,10 @@ test('the plan row offers Read in Logos only with Logos on and Listen in Audible
   await shot(page, 'today-plan');
 });
 
-test('with Logos Off the Psalms and Proverbs are still drawn, each Read in Lampas, and the devotional is not', async ({ page }) => {
+test('with Logos Off the Psalms and Proverbs are still drawn, each opening in the Reader, and the devotional is not', async ({ page }) => {
   await openToday(page, [{ key: 'resource.logos', value: 'off' }]);
   const psalms = piece(page, 'Psalms and Proverbs');
-  await expect(psalms.getByRole('button', { name: /Read in Lampas/ })).toHaveCount(readingsOn(TODAY.day).length);
+  await expect(psalms.getByRole('button', { name: /opens in the Reader/ })).toHaveCount(readingsOn(TODAY.day).length);
   await expect(piece(page, 'Devotional')).toHaveCount(0);
   await psalms.getByRole('button', { name: startsWith(`Psalm ${TODAY.day}`) }).click();
   await expect(page.getByRole('heading', { name: `Psalms ${TODAY.day}`, level: 1 })).toBeVisible();
