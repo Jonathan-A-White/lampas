@@ -13,6 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
@@ -37,6 +38,8 @@ const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/
 
 async function reset(): Promise<void> {
   cleanup();
+  // a scenario that ended with the Sermons sheet open: its step Back lands before the next scenario sets its address, or the app opens on the verse beneath (mw-qtu3zvz.227, tests/support/sheet-history.ts)
+  await sheetEntriesGone();
   closeSermons();
   clearBus();
   forgetTrail();
