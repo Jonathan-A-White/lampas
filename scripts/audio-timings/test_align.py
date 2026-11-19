@@ -213,6 +213,20 @@ def test_a_first_sound_longer_than_a_click_is_the_verse_s_own():
     assert near(cut['quiet'][1][2], 1.9) and near(cut['verses'][1][1], 1.9 - 0.05)
 
 
+def test_a_silence_that_holds_a_tag_is_as_short_as_it_plays_and_the_sound_before_it_is_the_verse_s_own():
+    # Genesis 19:30 on the seek clock (mw-ar5k42b.25): the last sound of a spliced piece (15 ms), 50 ms of silence, then 'Lot'. A tag lies in that silence, and
+    # the tag and the frame after it (28 ms) are in no player's sound: as played the silence is 22 ms, too little to say the sound is not the word's (the test
+    # below, which is the same verse on the clock of a file played through). Passed over as a click, the verse started after it and the judge flagged the start.
+    parts = [(0.5, None), (1.0, -20), (0.4, None), (0.015, -39), (0.05, None), (1.0, -20), (0.5, None)]  # the sound 1.90-1.915, the word from 1.965
+    verses, letters = [verse(1, 'a b'), verse(2, 'lot and his')], {1: [0.6, 1.4], 2: [2.0, 2.9]}
+    cut = align.cut_chapter(wave_of(parts), verses, letters, SLOP, slips=[(1.915, 0.028)])
+    assert near(cut['quiet'][1][2], 1.9) and near(cut['verses'][1][1], 1.9 - 0.05), cut['quiet'][1]
+    # the same sound and silence with no tag in it is a click, as John 9:40's: and so is one with a tag elsewhere
+    for slips in ([], [(1.0, 0.028), (2.5, 0.028)]):
+        cut = align.cut_chapter(wave_of(parts), verses, letters, SLOP, slips=slips)
+        assert near(cut['quiet'][1][2], 1.965) and near(cut['verses'][1][1], 1.965 - 0.05), cut['quiet'][1]
+
+
 def test_a_short_sound_with_less_than_a_click_s_silence_after_it_is_the_verse_s_own():
     # Genesis 19:30: 10 ms of sound, 20 ms of silence, then 'Lot': too little silence to say the sound is not the word's
     parts = [(0.5, None), (1.0, -20), (0.4, None), (0.01, -39), (0.02, None), (1.0, -20), (0.5, None)]

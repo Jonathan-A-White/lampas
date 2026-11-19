@@ -85,6 +85,9 @@ STAR_QUIET = 0.2
 BLIP = 0.1
 # A click before a verse's first word is not the verse's first sound (mw-ar5k42b.6; John 9:40: 15 ms of sound at -46 dBFS, 60 ms of silence, then 'Some'): a sound of
 # CLICK or less with CLICK_QUIET or more of silence after it. They are the judge's TOLERANCE (a part-sound that short is the measure's own grain) and its MIN_QUIET.
+# The silence is measured AS IT PLAYS (mw-ar5k42b.25): a tag inside the file, and the frame after it, are on the seek clock and in no player's sound (THE TIME
+# BASE), so a silence that holds one plays 28 ms shorter. Genesis 19:30: the last sound of a spliced piece, 50 ms of silence with a tag in it, then 'Lot': 22 ms
+# as played, too little to say the sound is not the word's; passed over as a click it had the judge flag the start.
 # Before a word that begins with a stop (STOP_LETTERS: a c, a g, a j or a t may be one) a sound as short may be the word's own: the stop's release, or the faint
 # start of it (Exodus 4:7 'Put', Genesis 4:5 'But': 5 to 10 ms at -60 dBFS, 30 to 35 ms before the burst). There it stays the verse's first sound.
 CLICK = 0.02
@@ -635,10 +638,11 @@ class Level:
     """A chapter's recording as its level: every frame's dBFS, and every quiet of it as (the millisecond the sound has died by, the millisecond it begins again).
     The narrator's recording is gated: between phrases it is digital silence (about -90 dBFS; speech is above -45), so both are read to a frame's hop, 5 ms."""
 
-    def __init__(self, wave) -> None:
+    def __init__(self, wave, slips: list[tuple[float, float]] | tuple = ()) -> None:
         import numpy as np
 
         self.np = np
+        self.slips = [(ms(at), ms(at + gone)) for at, gone in slips]  # what no player plays, in ms of the seek clock: each tag inside the file and the frame after it
         self.duration = len(wave) / SAMPLE_RATE
         _, self.db = frame_levels(wave, 0.0, self.duration)
         self.hop, self.frame = ms(HOP_SECONDS), ms(FRAME_SECONDS)
@@ -678,10 +682,15 @@ class Level:
                 return found
         return []
 
+    def unplayed(self, lo: int, hi: int) -> int:
+        """The milliseconds of lo..hi that are on the seek clock and in no player's sound: where a tag lies inside the file the browser's decoder drops it and the
+        frame after it (slips_of), whether it plays on from a seek before the tag or from second 0."""
+        return sum(min(hi, b) - max(lo, a) for a, b in self.slips if a < hi and b > lo)
+
     def past_clicks(self, onset: int, hi: int) -> int:
         """Where a verse's own first sound begins, given `onset`, where the sound after its quiet begins: a click is not its first sound (mw-ar5k42b.6; John 9:40
         started 50 ms before a click 75 ms before 'Some'). A click is a sound of CLICK or less (from where it begins to the next silence) with a silence of
-        CLICK_QUIET or more after it, a silence that begins before `hi`, the verse's first letter (a sound the aligner hears the first letter in is the verse's
+        CLICK_QUIET or more after it as it plays (less what of it no player plays: `unplayed`), a silence that begins before `hi`, the verse's first letter (a sound the aligner hears the first letter in is the verse's
         own) and does not run to the file's end. Gives the millisecond the sound after the last such click begins. Only a verse's FIRST sound is read so, and
         only of a word that does not begin with a stop (the cut rule asks): a sound as short after a silence at a verse's end is a stop's release and stays with
         its word."""
@@ -692,7 +701,7 @@ class Level:
             if k == len(self.dips):
                 return onset
             died, begins = self.dips[k]
-            if died - onset > ms(CLICK) or begins - died < ms(CLICK_QUIET) or died >= hi or begins >= ms(self.duration):
+            if died - onset > ms(CLICK) or begins - died - self.unplayed(died, begins) < ms(CLICK_QUIET) or died >= hi or begins >= ms(self.duration):
                 return onset
             onset = begins
 
@@ -742,7 +751,7 @@ def place_start(died: int | None, onset: int, lead: int) -> tuple[int, bool]:
     return up2(-(-(died + onset) // 2)), True
 
 
-def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, skip_title: bool = False) -> dict:
+def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, skip_title: bool = False, slips: list[tuple[float, float]] | tuple = ()) -> dict:
     """THE CUT RULE (mw-ar5k42b.3). Both edges of every verse are placed from the recording's level either side of the verse's boundary; the aligner only says
     between which two letters a boundary lies (`letters`: verse -> [its first letter's start, its last letter's end]).
 
@@ -751,7 +760,8 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     else may be spoken there (the announcement before the first verse, a heading, a closing line: wherever the aligner was given a wildcard) the verse before ends
     in the FIRST quiet that is a pause and the verse after starts from the LAST one, so what is spoken between them is in neither verse. A pause is a quiet of
     STAR_QUIET or more, or a shorter one with more than a BLIP of sound on its far side (a stop's closure has only its release there). The sound the verse after
-    starts from is its own first sound: a click before its first word (Level.past_clicks) is in the quiet, and the boundary's onset is the word's; but before a
+    starts from is its own first sound: a click before its first word (Level.past_clicks; `slips`, the chapter file's, say what of a silence no player plays) is
+    in the quiet, and the boundary's onset is the word's; but before a
     word that begins with a stop (STOP_LETTERS) a sound as short may be the word's own release, and stays its first sound. `skip_title`: a Psalm's title was
     left to the opening wildcard, so verse 1's first word is the first after it.
       1. The end is `insideTail` after the verse's last sound has died and `tail` before the next sound; the start is `lead` before its first sound begins
@@ -765,7 +775,7 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     Gives {'verses': [[n, start, end]], 'quiet': the boundaries as measured, one more than the verses, 'listen': the listed edges}. A boundary is
     [the verse before it (0: before the first), the second the sound before it has died, the second the sound after it begins]; either is None where nothing sounds
     on that side; where something else is spoken between two verses two more seconds say from when to when; a boundary read on through is [verse, None, None, the cut]."""
-    level = Level(wave)
+    level = Level(wave, slips)
     lead, tail, inside, duration = ms(slop['lead']), ms(slop['tail']), ms(slop['insideTail']), ms(level.duration)
     count = len(verses)
     starts: list[int] = [0] * count
@@ -853,7 +863,8 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
 # One chapter
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def cut_and_check(book: str, chapter: int, wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, allow: set[tuple[int, int]], skip_title: bool = False) -> dict:
+def cut_and_check(book: str, chapter: int, wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, allow: set[tuple[int, int]], skip_title: bool = False,
+                  slips: list[tuple[float, float]] | tuple = ()) -> dict:
     """One chapter cut by the rule from the aligner's letters, and checked. Gives {'ok', 'line', 'problems', 'timings', 'quiet', 'listen', 'aligned'}."""
     duration = len(wave) / SAMPLE_RATE
     problems = []
@@ -865,7 +876,7 @@ def cut_and_check(book: str, chapter: int, wave, verses: list[dict], letters: di
             problems.append(f'verse {n}: its first letter {letters[n][0]:.2f} is not before its last {letters[n][1]:.2f}')
     if problems:
         return {'ok': False, 'line': f'chapter {chapter:2d}: verses in text {len(verses):3d}, not cut', 'problems': problems + [f'verses timed 0 of {len(verses)}']}
-    cut = cut_chapter(wave, verses, letters, slop, skip_title)
+    cut = cut_chapter(wave, verses, letters, slop, skip_title, slips)
     triples = cut['verses']
     low = high = None
     for v, (n, start, end) in zip(verses, triples):
@@ -902,7 +913,7 @@ def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[t
     emission = model.emissions(wave)
     items = build_items(verses, skip_title)
     letters = letters_of(model.align(emission, items), items)
-    return cut_and_check(book, chapter, wave, verses, letters, slop, allow, skip_title)
+    return cut_and_check(book, chapter, wave, verses, letters, slop, allow, skip_title, slips_of(mp3_layout(mp3.read_bytes())))
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1107,7 +1118,7 @@ def run_cut(book: str, chapters: list[int] | None, scratch: Path, fetcher: Fetch
         if chapter in kept['through']:  # aligned on the clock of a file played through: moved onto the seek clock, and kept so
             letters = onto_seek_clock(mp3, wave, letters)
             moved_chapters.append(chapter)
-        result = cut_and_check(book, chapter, wave, verses, letters, slop, allow, chapter in kept['titleSkipped'])
+        result = cut_and_check(book, chapter, wave, verses, letters, slop, allow, chapter in kept['titleSkipped'], slips_of(mp3_layout(mp3.read_bytes())))
         log(result['line'])
         if not result['ok']:
             left_out.append(chapter)
