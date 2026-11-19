@@ -25,9 +25,10 @@ The method is that of https://github.com/BSB-publishing/bsb-align (MIT); none of
 THE CUT RULE (mw-ar5k42b.3; cut_chapter): the model only says BETWEEN WHICH LETTERS each verse lies (a CTC model puts a letter near the middle of its sound); where
 each edge is, is read from the recording's level. The narrator's recording is gated, so between two verses it is digital silence (about -90 dBFS; speech is above
 -45): the quiet of a boundary is the longest quiet between the last letter of one verse and the first letter of the next, read to 5 ms. BOTH edges are placed in it
-with the player's margin (player-slop.json, the one file the judge reads too): the end `tail` after the verse's last sound has died, the start `lead` before its
-first sound begins (a click before its first word is not its first sound: a sound of 20 ms or less with 30 ms or more of silence after it, John 9:40;
-mw-ar5k42b.6). Where the quiet is too short for the margin the cut is its middle; where there is none (the narrator reads on) it is the quietest instant
+with the player's margin (player-slop.json, the one file the judge reads too, and inside.tail of player-margin.json): the end `insideTail` after the verse's last
+sound has died (the player stops up to that much EARLY, after a fade; mw-ar5k42b.9) and `tail` before the next sound, the start `lead` before its first sound
+begins (a click before its first word is not its first sound: a sound of 20 ms or less with 30 ms or more of silence after it, John 9:40; mw-ar5k42b.6). Where
+the quiet is too short for the margin the cut is its middle; where there is none (the narrator reads on) it is the quietest instant
 between the two words; those edges go on the LISTEN LIST (scripts/audio-timings/listen/<edition>-<book>.json), for the Governor's ear. The announcement, a heading
 read aloud and a closing line are in no verse. What was measured (the aligner's letters of each verse, each boundary's quiet) is kept in
 scripts/audio-timings/quiet/<edition>-<book>.json: tests/unit/audio-timings-data.test.ts holds every timing to the rule by it, and --cut runs the rule again from
@@ -83,6 +84,7 @@ CLICK_QUIET = 0.03
 STOP_LETTERS = frozenset('bcdgjkpqt')
 SMOOTH_FRAMES = 3  # the quietest instant between two words is read from the level smoothed over this many frames (20 ms): one pitch period's trough is not a word boundary
 SLOP_PATH = Path(__file__).resolve().parent / 'player-slop.json'  # the player's margin, the ONE file: the judge widens each clip by the same numbers
+MARGIN_PATH = Path(__file__).resolve().parent / 'player-margin.json'  # the player's measured margin (mw-ar5k42b.2): its inside.tail is how far BEFORE an end it may stop
 SPW_MIN, SPW_MAX = 0.12, 1.5  # seconds a word of a verse: outside this the chapter is left out
 CHECK_VERSES = 20
 CHECK_PASS = 18
@@ -427,10 +429,12 @@ def letters_of(frames: dict[int, tuple[int, int]], items: list[dict]) -> dict[in
 # The cut rule: both edges of every verse by the recording's level, with the player's margin
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def read_slop(path: Path = SLOP_PATH) -> dict:
-    """The player's margin, from the one file (the judge reads the same): {'lead': the seconds it may start early or late, 'tail': the seconds it may stop late or early}."""
+def read_slop(path: Path = SLOP_PATH, margin: Path = MARGIN_PATH) -> dict:
+    """The player's margin (the judge reads the same): {'lead': the seconds it may start early or late, 'tail': the seconds it may stop late (player-slop.json),
+    'insideTail': the seconds it may stop EARLY (inside.tail of player-margin.json: it pauses END_SLACK before the end after a FADE; mw-ar5k42b.9)}."""
     raw = json.loads(path.read_text(encoding='utf8'))
-    return {'lead': float(raw['lead']), 'tail': float(raw['tail'])}
+    measured = json.loads(margin.read_text(encoding='utf8'))
+    return {'lead': float(raw['lead']), 'tail': float(raw['tail']), 'insideTail': float(measured['inside']['tail'])}
 
 
 def frame_levels(wave, a: float, b: float):
@@ -578,16 +582,25 @@ class Level:
         return k * self.hop + self.frame // 2
 
 
-def place_end(died: int, onset: int | None, tail: int, duration: int) -> tuple[int, bool]:
+def place_end(died: int, onset: int | None, inside: int, tail: int, duration: int) -> tuple[int, bool]:
     """A verse's end, in milliseconds, in the quiet from `died` (its last sound has died) to `onset` (the next sound begins; None: the file ends in the quiet), and
-    whether the quiet is too short for the margin. With room: `tail` after its last sound, so the player stopping `tail` early still plays the whole of it and a
-    stop that comes late has all the rest of the quiet. Too short: the middle of the quiet, each way keeping what there is."""
-    wanted = up2(died + tail)
+    whether the quiet is too short for the margin. With room: `inside` after its last sound, so the player stopping `inside` early (its END_SLACK after a FADE,
+    player-margin.json inside.tail) still plays the whole of it, and `tail` before the next sound, so a stop that comes late hears none of it. Too short: the
+    middle of the quiet, each way keeping what there is."""
+    wanted = up2(died + inside)
     if onset is None:
         return min(wanted, down2(duration)), wanted > down2(duration)
     if wanted <= down2(onset - tail):
         return wanted, False
     return down2((died + onset) // 2), True
+
+
+def short_of(room: int, need: int) -> str:
+    """Why a quiet of `room` ms holds no edge with the player's margin of `need` ms: shorter, or (Leviticus 11:29: 150 ms against 147) long enough until the end
+    is rounded up and the next start down to the timings' two decimals."""
+    if room < need:
+        return f"less than the {need} ms the player's margin needs"
+    return f"room for the {need} ms the player's margin needs, but not once it is put to the timings' two decimals"
 
 
 def place_start(died: int | None, onset: int, lead: int) -> tuple[int, bool]:
@@ -612,9 +625,11 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     starts from is its own first sound: a click before its first word (Level.past_clicks) is in the quiet, and the boundary's onset is the word's; but before a
     word that begins with a stop (STOP_LETTERS) a sound as short may be the word's own release, and stays its first sound. `skip_title`: a Psalm's title was
     left to the opening wildcard, so verse 1's first word is the first after it.
-      1. The end is `tail` after the verse's last sound has died; the start is `lead` before its first sound begins (place_end, place_start; the two slops are the
-         player's, from player-slop.json). So the clip at its longest holds nothing of a neighbour and the clip at its shortest loses nothing of its own.
-      2. A quiet too short for that (less than twice the slop): the cut is the middle of the quiet, each side keeping what margin there is.
+      1. The end is `insideTail` after the verse's last sound has died and `tail` before the next sound; the start is `lead` before its first sound begins
+         (place_end, place_start; the slops are the player's, from player-slop.json and player-margin.json inside.tail). So the clip at its longest holds nothing
+         of a neighbour and the clip at its shortest (the player stopping early, after its fade) loses nothing of its own.
+      2. A quiet too short for that (less than insideTail + tail before an end, twice the lead after a start): the cut is the middle of the quiet, each side
+         keeping what margin there is.
       3. No quiet at all (the narrator reads on): the cut is the quietest instant between the two words, for the end and for the next start alike.
     The edges of 2 and 3 are the LISTEN LIST: no cut is clean there, and they are for the Governor's ear.
 
@@ -622,7 +637,7 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     [the verse before it (0: before the first), the second the sound before it has died, the second the sound after it begins]; either is None where nothing sounds
     on that side; where something else is spoken between two verses two more seconds say from when to when; a boundary read on through is [verse, None, None, the cut]."""
     level = Level(wave)
-    lead, tail, duration = ms(slop['lead']), ms(slop['tail']), ms(level.duration)
+    lead, tail, inside, duration = ms(slop['lead']), ms(slop['tail']), ms(slop['insideTail']), ms(level.duration)
     count = len(verses)
     starts: list[int] = [0] * count
     ends: list[int] = [0] * count
@@ -681,21 +696,21 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
             onset = level.past_clicks(onset, hi)  # a click before the verse's first word is not its first sound
         if at > 0:
             next_sound = onset if first is last else first[1]  # what is spoken between two verses begins where its quiet ends, click or not
-            ends[before], tight = place_end(died, None if first is level.to_end else next_sound, tail, duration)
+            ends[before], tight = place_end(died, None if first is level.to_end else next_sound, inside, tail, duration)
             if tight:
                 room = next_sound - first[0]
                 if first is level.to_end:
-                    reason = f"the recording ends {room} ms after '{word(before, -1)}': less than the {tail} ms the player's margin needs; the end is the file's"
+                    reason = f"the recording ends {room} ms after '{word(before, -1)}': less than the {inside} ms the player's margin needs; the end is the file's"
                 else:
                     reason = (f"a quiet of {room} ms between '{word(before, -1)}' and " + (f"'{word(after, 0)}'" if first is last and at < count else 'what is spoken next')
-                              + f": less than the {2 * tail} ms the player's margin needs; cut in its middle")
+                              + f": {short_of(room, inside + tail)}; cut in its middle")
                 listed(before, 'tail', reason, room, ends[before])
         if at < count:
             starts[after], tight = place_start(None if last is level.from_start else last[0], onset, lead)
             if tight:
                 room = onset - last[0]
                 what = f"a quiet of {room} ms between " + (f"'{word(before, -1)}'" if first is last and at > 0 else 'what is spoken before') + f" and '{word(after, 0)}'"
-                listed(after, 'head', f'{what}: less than the {2 * lead} ms the player\'s margin needs; cut in its middle', room, starts[after])
+                listed(after, 'head', f'{what}: {short_of(room, 2 * lead)}; cut in its middle', room, starts[after])
             if at > 0:
                 starts[after] = max(starts[after], ends[before])
         row = [number, None if at == 0 and last is level.from_start else seconds(died), None if at == count and first is level.to_end else seconds(onset)]

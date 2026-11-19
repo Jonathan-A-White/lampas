@@ -1,5 +1,6 @@
 // What the two tests of the recorded voice's cuts share (mw-ar5k42b.3): the committed files of scripts/audio-timings/ read as data. No Python, no audio, no model.
 //   player-slop.json                 the seconds David's player may be off by, the ONE file the maker, the judge and these tests read
+//   player-margin.json               the player's measured margin (mw-ar5k42b.2): its inside.tail, how far BEFORE a verse's end it may stop, is read from it, never copied
 //   quiet/<edition>-<book>.json      what the maker measured: the aligner's letters of each verse, and the quiet of each boundary by the recording's level
 //   listen/<edition>-<book>.json     the listen list: the edges the recording leaves no room for, for the Governor's ear
 //   judged/<edition>-<book>.json     the judge's report of the timings file, with the file's sha256
@@ -17,14 +18,17 @@ const readJson = (path: string): unknown => JSON.parse(readFileSync(resolve(root
 export interface Slop {
   /** The seconds the player may start early or late. */
   lead: number;
-  /** The seconds the player may stop late or early. */
+  /** The seconds the player may stop late. */
   tail: number;
+  /** The seconds the player may stop EARLY: it stops END_SLACK before the end after a FADE (player-margin.json inside.tail, mw-ar5k42b.9). */
+  insideTail: number;
 }
 
-/** The player's worst case, from the one file. */
+/** The player's worst case: lead and tail from the one file, the early stop from the measured margin (align.py and judge.py read_slop read the same). */
 export function readSlop(): Slop {
-  const raw = readJson(`${TOOLS}/player-slop.json`) as Slop;
-  return { lead: raw.lead, tail: raw.tail };
+  const raw = readJson(`${TOOLS}/player-slop.json`) as { lead: number; tail: number };
+  const margin = readJson(`${TOOLS}/player-margin.json`) as { inside: { tail: number } };
+  return { lead: raw.lead, tail: raw.tail, insideTail: margin.inside.tail };
 }
 
 /** An edge of a verse: its first sound, its last, or (a judge's `text-differs`) a word in its middle. */
@@ -106,8 +110,8 @@ export const up2 = (seconds: number): number => (Math.ceil(ms(seconds) / 10) * 1
 /** Seconds to the timings' two decimals, never above the value. */
 export const down2 = (seconds: number): number => (Math.floor(ms(seconds) / 10) * 10) / 1000;
 
-/** Whether a quiet from `died` to `onset` holds an edge with the player's `slop` either side of it, to the timings' two decimals. */
-export const hasRoom = (died: number, onset: number, slop: number): boolean => ms(up2(died + slop)) <= ms(down2(onset - slop));
+/** Whether a quiet from `died` to `onset` holds an edge `after` the sound before it and `before` the sound after it (by default the same slop both ways), to the timings' two decimals. */
+export const hasRoom = (died: number, onset: number, after: number, before = after): boolean => ms(up2(died + after)) <= ms(down2(onset - before));
 
 /** One edge of a verse as the maker measured it: the quiet it lies in (`died` null: nothing sounds before; `onset` null: the file ends in the quiet), or the cut of a boundary read on through. */
 export interface EdgeQuiet {
@@ -121,13 +125,13 @@ export const tailQuiet = (row: Boundary): EdgeQuiet => (row.length === 4 ? { die
 /** The quiet a verse's START lies in, from the boundary before it; the row's fifth second is where what is spoken between ends. */
 export const headQuiet = (row: Boundary): EdgeQuiet => (row.length === 4 ? { died: null, onset: null, cut: row[3] } : { died: (row as number[])[4] ?? row[1], onset: row[2], cut: null });
 
-/** Where the cut rule puts a verse's end (align.py place_end), and whether the recording leaves no room for the margin there, so the edge is on the listen list. */
+/** Where the cut rule puts a verse's end (align.py place_end: `insideTail` after its last sound, `tail` before the next), and whether the recording leaves no room for the margin there, so the edge is on the listen list. */
 export function ruledEnd(quiet: EdgeQuiet, duration: number, slop: Slop): { at: number; listed: boolean } {
   if (quiet.cut !== null) return { at: down2(quiet.cut), listed: true };
   if (quiet.died === null) throw new Error('a verse ends with no sound before its end');
-  const wanted = up2(quiet.died + slop.tail);
+  const wanted = up2(quiet.died + slop.insideTail);
   if (quiet.onset === null) return { at: Math.min(wanted, down2(duration)), listed: wanted > down2(duration) };
-  if (hasRoom(quiet.died, quiet.onset, slop.tail)) return { at: wanted, listed: false };
+  if (hasRoom(quiet.died, quiet.onset, slop.insideTail, slop.tail)) return { at: wanted, listed: false };
   return { at: down2(Math.floor((ms(quiet.died) + ms(quiet.onset)) / 2) / 1000), listed: true };
 }
 

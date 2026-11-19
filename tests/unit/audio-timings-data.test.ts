@@ -114,7 +114,7 @@ describe('the timing files the index lists', () => {
 });
 
 // THE CUT RULE (mw-ar5k42b.3; docs/data.md 'The cut rule'). Both edges of every verse are placed from the recording's level, with the player's margin
-// (scripts/audio-timings/player-slop.json). The maker keeps what it measured in scripts/audio-timings/quiet/<edition>-<book>.json: `aligned`, the aligner's letters of
+// (scripts/audio-timings/player-slop.json; the early stop, insideTail, is inside.tail of player-margin.json). The maker keeps what it measured in scripts/audio-timings/quiet/<edition>-<book>.json: `aligned`, the aligner's letters of
 // each verse, and `chapters`, each chapter's boundaries (one more than its verses: before the first, between each two, after the last) as
 // [the verse before, the second the sound before has died, the second the sound after begins]. These tests hold every committed timing to the rule by that measure,
 // so a number changed by hand fails here as well as at the lock (tests/unit/audio-judged.test.ts). The story folds in mw-82lb97i.27 (John 1:50 let the 'th' of verse 51
@@ -160,7 +160,7 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
       }
     });
 
-    it(`${book}: every verse's END is where the rule puts it: the tail slop after its last sound has died; the middle of a quiet too short for the margin; the quietest instant where the narrator reads on`, () => {
+    it(`${book}: every verse's END is where the rule puts it: the inside tail (the player's early stop) after its last sound has died; the middle of a quiet too short for the margin; the quietest instant where the narrator reads on`, () => {
       const wrong = verses.filter((v) => !v.tail || v.end !== ruledEnd(v.tail, v.duration, slop).at).map((v) => `${v.at} ends ${v.end}, the rule says ${v.tail ? ruledEnd(v.tail, v.duration, slop).at : 'nothing: no boundary'}`);
       expect(wrong).toEqual([]);
     });
@@ -191,26 +191,26 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
     });
 
     it(`${book}: no verse's end is within the tail slop of the next verse's start, unless it is on the listen list (mw-82lb97i.41)`, () => {
-      // Both edges keep their own margin only in a quiet of tail + tail + lead or more; in a shorter one that still has room (none in John or Genesis) the end is
-      // held to the next verse's first SOUND instead, which is what the margin is for.
+      // Both edges keep their own margin only in a quiet of insideTail + tail + lead or more; in a shorter one that still has room the end is held to the next
+      // verse's first SOUND instead, which is what the margin is for.
       // The maker rounds the end UP and the start DOWN to the timings' two decimals, each by up to 10 ms, so a quiet within 20 ms of that (Leviticus 11:29: 150 ms,
       // end 202.79, start 202.83) is short too: its end keeps its own margin to the first sound, and the start keeps its own (mw-zbgo4ep.48).
       const near: string[] = [];
       for (const v of pairs) {
         if (onList.has(listenKey(v.at, 'tail')) || !v.next || !v.tail) continue;
         const { died, onset } = v.tail;
-        const short = died !== null && onset !== null && thousandths(onset) - thousandths(died) < thousandths(2 * slop.tail + slop.lead) + 2 * ROUNDING_MS;
+        const short = died !== null && onset !== null && thousandths(onset) - thousandths(died) < thousandths(slop.insideTail + slop.tail + slop.lead) + 2 * ROUNDING_MS;
         const limit = short && onset !== null ? onset : v.next[1];
         if (thousandths(limit) - thousandths(v.end) < thousandths(slop.tail)) near.push(`${v.at} ends ${v.end}, the next verse ${short ? 'sounds' : 'starts'} at ${limit}`);
       }
       expect(near).toEqual([]);
     });
 
-    it(`${book}: no verse's end is within the tail slop of the next sound, and none is before its own last sound has died by the tail slop, unless it is on the listen list`, () => {
+    it(`${book}: no verse's end is within the tail slop of the next sound, and none is before its own last sound has died by the inside tail (the player stops up to inside.tail early, mw-ar5k42b.9), unless it is on the listen list`, () => {
       const wrong: string[] = [];
       for (const v of verses) {
         if (onList.has(listenKey(v.at, 'tail')) || !v.tail || v.tail.died === null) continue;
-        if (thousandths(v.end) - thousandths(slop.tail) < thousandths(v.tail.died)) wrong.push(`${v.at} ends ${v.end}, its last sound dies at ${v.tail.died}`);
+        if (thousandths(v.end) - thousandths(slop.insideTail) < thousandths(v.tail.died)) wrong.push(`${v.at} ends ${v.end}, its last sound dies at ${v.tail.died}`);
         if (v.tail.onset !== null && thousandths(v.end) + thousandths(slop.tail) > thousandths(v.tail.onset)) wrong.push(`${v.at} ends ${v.end}, the next sound begins at ${v.tail.onset}`);
       }
       expect(wrong).toEqual([]);
@@ -225,10 +225,11 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
       expect(missing).toEqual([]);
     });
 
-    it.skipIf(book !== 'jhn')("John 1:50 ends in the quiet 0.4 s before the 'Then' of verse 51 (mw-82lb97i.27)", () => {
+    it.skipIf(book !== 'jhn')("John 1:50 ends in the quiet, the inside tail after its last word and 0.35 s before the 'Then' of verse 51 (mw-82lb97i.27; mw-ar5k42b.9 moved it 50 ms later)", () => {
       const verse = verses.find((v) => v.at === '1:50');
       expect(verse?.tail?.onset).toBeCloseTo(371.66, 1);
-      expect((verse?.tail?.onset ?? 0) - (verse?.end ?? 0)).toBeGreaterThanOrEqual(0.4);
+      expect((verse?.tail?.onset ?? 0) - (verse?.end ?? 0)).toBeGreaterThanOrEqual(0.35);
+      expect(thousandths(verse?.end ?? 0) - thousandths(verse?.tail?.died ?? Infinity)).toBeGreaterThanOrEqual(thousandths(slop.insideTail));
     });
 
     it.skipIf(book !== 'jhn')("John 2:9 ends at the quietest instant between 'aside' and the 'and' of verse 10, where the narrator reads on (mw-82lb97i.41: it ended 30 ms later, in 'and')", () => {

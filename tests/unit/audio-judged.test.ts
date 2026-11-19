@@ -1,7 +1,7 @@
 // THE LOCK (mw-ar5k42b.3): no timings file of the recorded voice ships unjudged. For every book public/data/audio/msb-david/index.json lists (so every book David reads):
 //   - scripts/audio-timings/judged/msb-david-<book>.json exists: the judge (scripts/audio-timings/judge.py, docs/audio-judge.md) has heard every verse of it;
 //   - the report's sha256 is the timings file's: a number changed by hand, or a file made again and not judged again, fails here;
-//   - the report was judged at the player's margin in force (scripts/audio-timings/player-slop.json);
+//   - the report was judged at the player's margin in force (scripts/audio-timings/player-slop.json, and inside.tail of player-margin.json: how early it stops);
 //   - every flag in it is on that book's listen list (scripts/audio-timings/listen/msb-david-<book>.json): the edges the recording leaves no room for, which are for the
 //     Governor's ear. A flag anywhere else is a fault of a cut, and the book does not ship with it.
 // And the listen list cannot be padded to pass: an edge is on it only where the maker's own measure of the recording (scripts/audio-timings/quiet/) shows no room for the
@@ -23,9 +23,12 @@ const slop = readSlop();
 const JOHN_MOST = 8;
 
 describe('the lock: no timings file ships unjudged', () => {
-  it('reads the player\'s margin from the one file', () => {
+  it('reads the player\'s margin from the one file, and its early stop from the measured margin (player-margin.json inside.tail, mw-ar5k42b.9)', () => {
     expect(slop.lead).toBeGreaterThan(0);
     expect(slop.tail).toBeGreaterThan(0);
+    const margin = JSON.parse(readFileSync(resolve(root, 'scripts/audio-timings/player-margin.json'), 'utf8')) as { inside: { tail: number } };
+    expect(slop.insideTail).toBe(margin.inside.tail);
+    expect(slop.insideTail).toBeGreaterThan(slop.tail);
   });
 
   for (const book of Object.keys(index.books)) {

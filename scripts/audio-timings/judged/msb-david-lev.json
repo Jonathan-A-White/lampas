@@ -1,13 +1,13 @@
 {
  "v":1,
- "judge":"1",
+ "judge":"2",
  "edition":"msb-david",
  "book":"lev",
- "timings":{"file":"public/data/audio/msb-david/lev.json","sha256":"054ab45ef55807e7ef6e43e08648b390b410194adbc0a5635c825b2e6c934e91"},
- "slop":{"lead":0.05,"tail":0.05},
+ "timings":{"file":"public/data/audio/msb-david/lev.json","sha256":"36eb2a7d7a2923002294059248166122c223a2fe7ce72031d1f42c7105c8e99b"},
+ "slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
  "tolerance":0.02,
  "ears":{"letters":"torchaudio WAV2VEC2_ASR_BASE_960H, greedy","words":"faster-whisper tiny.en","timeZero":0.0},
- "summary":{"verses":859,"ok":859,"flagged":0,"flags":{"head-extra":0,"head-clipped":0,"tail-extra":0,"tail-clipped":0,"text-differs":0}},
+ "summary":{"verses":859,"ok":858,"flagged":1,"flags":{"head-extra":0,"head-clipped":0,"tail-extra":0,"tail-clipped":1,"text-differs":0}},
  "chapters":{
   "1":{"announcement":"AUDIO BIBLE LEVITICUS CHAPTER ONE","between":[],"closing":"","speech":-17.6,"verses":[
    {"n":1,"verdict":"ok","sound":[5.895,9.06,13.37,14.015]},
@@ -310,7 +310,7 @@
    {"n":26,"verdict":"ok","sound":[165.41,166.025,176.195,176.875]},
    {"n":27,"verdict":"ok","sound":[176.195,176.875,185.24,185.785]},
    {"n":28,"verdict":"ok","sound":[185.24,185.785,194.365,195.05]},
-   {"n":29,"verdict":"ok","sound":[194.365,195.05,202.735,202.89]},
+   {"n":29,"verdict":"flagged","flags":[{"kind":"tail-clipped","by":0.022,"level":-33.1,"heard":{"letters":"ANY KIND OF GREAT LIZARD","words":"kind of great lizard"}}],"sound":[194.365,195.05,202.735,202.89]},
    {"n":30,"verdict":"ok","sound":[202.735,202.89,208.185,208.62]},
    {"n":31,"verdict":"ok","sound":[208.185,208.62,217.01,217.64]},
    {"n":32,"verdict":"ok","sound":[217.01,217.64,235.29,235.785]},

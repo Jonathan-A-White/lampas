@@ -5,6 +5,7 @@ aligner would put them. Run by hand in the judge's venv (it has numpy and pytest
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -16,7 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import align  # noqa: E402
 
 SR = align.SAMPLE_RATE
-SLOP = {'lead': 0.05, 'tail': 0.05}
+# The player's margin as the maker reads it (read_slop): it starts up to `lead` early or late, stops up to `tail` late and up to `insideTail` EARLY (player-margin.json
+# inside.tail: it stops END_SLACK before the end after a FADE, mw-ar5k42b.9), so an end needs `insideTail` after the last sound and `tail` before the next.
+SLOP = {'lead': 0.05, 'tail': 0.05, 'insideTail': 0.097}
 
 
 def wave_of(parts) -> np.ndarray:
@@ -61,12 +64,12 @@ def cut():
     return align.cut_chapter(wave_of(PARTS), VERSES, LETTERS, SLOP)
 
 
-def test_each_end_is_the_tail_slop_after_the_last_sound_and_each_start_the_lead_slop_before_the_first(cut):
+def test_each_end_is_the_inside_tail_after_the_last_sound_and_each_start_the_lead_slop_before_the_first(cut):
     (_, start1, end1), (_, start2, _), (_, _, end3) = cut['verses']
     assert near(start1, 1.60 - 0.05)  # not at the announcement, not at the pause inside the verse
-    assert near(end1, 3.00 + 0.05)  # not at the pause inside the verse
+    assert near(end1, 3.00 + 0.10)  # not at the pause inside the verse; 3.097 to two decimals
     assert near(start2, 3.50 - 0.05)
-    assert near(end3, 6.00 + 0.05)
+    assert near(end3, 6.00 + 0.10)
 
 
 def test_the_margin_is_kept_both_ways_to_two_decimals(cut):
@@ -76,7 +79,7 @@ def test_the_margin_is_kept_both_ways_to_two_decimals(cut):
         if n == 1:
             assert start - SLOP['lead'] >= before[1] - 1e-9  # the clip at its longest holds nothing of the announcement
             assert start + SLOP['lead'] <= before[2] + 1e-9  # the clip at its shortest loses nothing of the verse
-            assert end - SLOP['tail'] >= after[1] - 1e-9 and end + SLOP['tail'] <= after[2] + 1e-9
+            assert end - SLOP['insideTail'] >= after[1] - 1e-9 and end + SLOP['tail'] <= after[2] + 1e-9  # the player stopping early loses none of it
 
 
 def test_the_announcement_is_in_no_verse(cut):
@@ -104,7 +107,17 @@ def test_a_quiet_too_short_for_the_margin_is_cut_in_its_middle_and_listed():
     (_, _, end1), (_, start2, _) = cut['verses']
     assert near(end1, 1.5375) and near(start2, 1.5375) and end1 <= start2
     assert [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail'), (2, 'head')]
-    assert 'less than the 100 ms' in cut['listen'][0]['reason'] and near(cut['listen'][0]['room'], 0.075, 0.006)
+    assert 'less than the 147 ms' in cut['listen'][0]['reason'] and 'less than the 100 ms' in cut['listen'][1]['reason'] and near(cut['listen'][0]['room'], 0.075, 0.006)
+
+
+def test_a_quiet_long_enough_for_the_margin_but_not_at_two_decimals_is_listed_without_calling_it_short():
+    # Leviticus 11:29 (mw-ar5k42b.9): 150 ms between 'lizard' and 'the', the margin needs 147, but the end rounded up (to 1.61) and the start rounded down (1.60)
+    # do not both fit. It is cut in its middle and listed; its reason must not say 150 ms is less than 147.
+    parts = [(0.505, None), (1.0, -20), (0.15, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'great lizard'), verse(2, 'the gecko')], {1: [0.6, 1.4], 2: [1.75, 2.55]}, SLOP)
+    assert [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')] and near(cut['listen'][0]['room'], 0.15, 0.006)
+    reason = cut['listen'][0]['reason']
+    assert 'less than' not in reason and "room for the 147 ms the player's margin needs, but not once it is put to the timings' two decimals" in reason, reason
 
 
 def test_a_silence_shorter_than_a_quiet_is_still_where_the_cut_goes():
@@ -118,11 +131,19 @@ def test_a_silence_shorter_than_a_quiet_is_still_where_the_cut_goes():
 
 
 def test_a_quiet_of_just_the_margin_both_ways_is_not_listed():
-    parts = [(0.5, None), (1.0, -20), (0.13, None), (1.0, -20), (0.5, None)]
+    parts = [(0.5, None), (1.0, -20), (0.15, None), (1.0, -20), (0.5, None)]  # 97 ms (to two decimals 100) for the early stop, 50 for the late one
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d')], {1: [0.6, 1.4], 2: [1.75, 2.4]}, SLOP)
     assert cut['listen'] == []
     (_, _, end1), (_, start2, _) = cut['verses']
-    assert near(end1, 1.55) and near(start2, 1.58) and end1 <= start2
+    assert near(end1, 1.60) and near(start2, 1.60) and end1 <= start2
+
+
+def test_a_quiet_with_room_for_the_tail_slop_but_not_the_inside_tail_is_listed():
+    # Genesis 14:24: 140 ms of quiet. Ending 50 ms after the sound left the player's early stop up to 47 ms of the last word; now it is the Governor's to hear
+    parts = [(0.5, None), (1.0, -20), (0.14, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d')], {1: [0.6, 1.4], 2: [1.75, 2.4]}, SLOP)
+    assert [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')]
+    assert near(cut['verses'][0][2], 1.57)  # the middle of the quiet
 
 
 def test_a_heading_read_aloud_between_two_verses_is_in_neither():
@@ -130,7 +151,7 @@ def test_a_heading_read_aloud_between_two_verses_is_in_neither():
     parts = [(0.5, None), (1.0, -20), (0.4, None), (0.8, -20), (0.5, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d', heading=True)], {1: [0.6, 1.4], 2: [3.3, 4.1]}, SLOP)
     (_, _, end1), (_, start2, _) = cut['verses']
-    assert near(end1, 1.5 + 0.05)  # before the heading
+    assert near(end1, 1.5 + 0.10)  # before the heading
     assert near(start2, 3.2 - 0.05)  # after it
     row = cut['quiet'][1]
     assert len(row) == 5 and near(row[1], 1.5) and near(row[2], 3.2) and near(row[3], 1.9) and near(row[4], 2.7)  # ..., the heading from 1.9 to 2.7
@@ -141,7 +162,7 @@ def test_a_heading_not_read_is_one_quiet_like_any_other():
     parts = [(0.5, None), (1.0, -20), (0.9, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d', heading=True)], {1: [0.6, 1.4], 2: [2.5, 3.3]}, SLOP)
     assert len(cut['quiet'][1]) == 3
-    assert near(cut['verses'][0][2], 1.55) and near(cut['verses'][1][1], 2.35)
+    assert near(cut['verses'][0][2], 1.60) and near(cut['verses'][1][1], 2.35)
 
 
 def test_a_sound_between_two_verses_with_no_wildcard_goes_to_the_side_of_the_shorter_quiet():
@@ -149,7 +170,7 @@ def test_a_sound_between_two_verses_with_no_wildcard_goes_to_the_side_of_the_sho
     # first word, stays with that word
     parts = [(0.5, None), (1.0, -20), (0.6, None), (0.04, -30), (0.07, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'some of')], {1: [0.6, 1.4], 2: [2.3, 3.1]}, SLOP)
-    assert near(cut['verses'][0][2], 1.55) and near(cut['verses'][1][1], 2.10 - 0.05)
+    assert near(cut['verses'][0][2], 1.60) and near(cut['verses'][1][1], 2.10 - 0.05)
 
 
 def test_a_click_before_a_verse_s_first_word_is_not_its_first_sound():
@@ -161,7 +182,7 @@ def test_a_click_before_a_verse_s_first_word_is_not_its_first_sound():
     assert len(row) == 3 and near(row[1], 1.5)  # the sound before has died where the verse before ends, as it did
     assert near(row[2], 2.88), f'the next onset is {row[2]}: the click is at 2.805, the word begins at 2.88'
     (_, _, end1), (_, start2, _) = cut['verses']
-    assert near(end1, 1.5 + 0.05)
+    assert near(end1, 1.5 + 0.10)  # the inside tail (0.097) after the last sound, to two decimals up
     assert near(start2, 2.88 - 0.05)  # the lead slop before the word, not before the click
     assert cut['listen'] == []
 
@@ -225,14 +246,14 @@ def test_a_stop_s_release_as_short_as_a_click_still_stays_with_its_word():
     # '...sent': the 80 ms closure of the t, a release of 15 ms, then the gap. It is the verse's last sound: the click rule is for a verse's FIRST sound alone
     parts = [(0.5, None), (1.0, -20), (0.08, None), (0.015, -40), (0.5, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'had been sent'), verse(2, 'and he')], {1: [0.6, 1.45], 2: [2.2, 3.0]}, SLOP)
-    assert near(cut['quiet'][1][1], 1.595) and near(cut['verses'][0][2], 1.595 + 0.05)  # after the release, not in the closure
+    assert near(cut['quiet'][1][1], 1.595) and near(cut['verses'][0][2], 1.70)  # after the release, not in the closure: 1.595 + the inside tail, to two decimals up
     assert near(cut['quiet'][1][2], 2.095) and near(cut['verses'][1][1], 2.095 - 0.05)
 
 
 def test_a_closing_line_after_the_last_verse_is_not_in_it():
     parts = [(0.5, None), (1.0, -20), (0.5, None), (0.9, -20), (0.3, None)]  # the verse, a pause, a closing line, the file's end
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b')], {1: [0.6, 1.4]}, SLOP)
-    assert near(cut['verses'][0][2], 1.55)
+    assert near(cut['verses'][0][2], 1.60)
     assert near(cut['quiet'][-1][1], 1.5) and near(cut['quiet'][-1][2], 2.0)  # the next sound is the closing line's
 
 
@@ -240,37 +261,37 @@ def test_a_word_left_in_after_the_last_verse_is_not_in_it():
     # Genesis 14: '... take their portion.', 140 ms of quiet, then 'They' (a retake left in the recording), and the file ends 150 ms after it
     parts = [(0.5, None), (1.0, -20), (0.14, None), (0.41, -15), (0.155, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'take their portion')], {1: [0.6, 1.35]}, SLOP)
-    assert near(cut['verses'][0][2], 1.5 + 0.05)  # before the word, with the whole margin
-    assert near(cut['quiet'][-1][1], 1.5) and near(cut['quiet'][-1][2], 1.64) and cut['listen'] == []
+    assert near(cut['verses'][0][2], 1.57)  # before the word: 140 ms is too short for the whole margin (147 ms), so its middle, and listed
+    assert near(cut['quiet'][-1][1], 1.5) and near(cut['quiet'][-1][2], 1.64) and [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')]
 
 
 def test_a_heading_read_with_short_pauses_is_still_in_neither_verse():
     parts = [(0.5, None), (1.0, -20), (0.15, None), (0.8, -20), (0.15, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d', heading=True)], {1: [0.6, 1.4], 2: [2.7, 3.5]}, SLOP)
-    assert near(cut['verses'][0][2], 1.55) and near(cut['verses'][1][1], 2.55) and len(cut['quiet'][1]) == 5
+    assert near(cut['verses'][0][2], 1.60) and near(cut['verses'][1][1], 2.55) and len(cut['quiet'][1]) == 5
 
 
 def test_a_stop_closure_before_a_heading_s_pause_stays_with_its_word_and_a_click_after_it_is_in_neither_verse():
     # '...sent' (closure, release), a pause, [no heading read], a click 60 ms before the first word (mw-ar5k42b.6: the click was taken for the word's first sound)
     parts = [(0.5, None), (1.0, -20), (0.08, None), (0.05, -25), (0.6, None), (0.01, -30), (0.06, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'had been sent'), verse(2, 'some of', heading=True)], {1: [0.6, 1.45], 2: [2.45, 3.2]}, SLOP)
-    assert near(cut['verses'][0][2], 1.63 + 0.05) and near(cut['verses'][1][1], 2.30 - 0.05) and len(cut['quiet'][1]) == 3
+    assert near(cut['verses'][0][2], 1.63 + 0.10) and near(cut['verses'][1][1], 2.30 - 0.05) and len(cut['quiet'][1]) == 3
 
 
 def test_a_stop_closure_after_the_last_letter_stays_with_its_word():
     # '...sent': the letters end before the closure of the t; its burst comes 80 ms later; then the real gap
     parts = [(0.5, None), (1.0, -20), (0.08, None), (0.05, -25), (0.5, None), (1.0, -20), (0.5, None)]
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'had been sent'), verse(2, 'c d')], {1: [0.6, 1.45], 2: [2.25, 3.0]}, SLOP)
-    assert near(cut['verses'][0][2], 1.63 + 0.05)  # after the burst, not in the closure
+    assert near(cut['verses'][0][2], 1.63 + 0.10)  # after the burst, not in the closure
 
 
 def test_the_last_verse_ends_by_its_own_sound_and_a_file_that_ends_too_soon_is_listed():
     cut = align.cut_chapter(wave_of([(0.5, None), (1.0, -20), (0.2, None)]), [verse(1, 'a b')], {1: [0.6, 1.2]}, SLOP)  # the letters end 0.3 s before the sound does
-    assert near(cut['verses'][0][2], 1.55) and cut['listen'] == []
+    assert near(cut['verses'][0][2], 1.60) and cut['listen'] == []
+    cut = align.cut_chapter(wave_of([(0.5, None), (1.0, -20), (0.1, None)]), [verse(1, 'a b')], {1: [0.6, 1.2]}, SLOP)
+    assert near(cut['verses'][0][2], 1.60) and cut['verses'][0][2] <= 1.60 and cut['listen'] == []  # 100 ms: room for the 97 ms inside tail
     cut = align.cut_chapter(wave_of([(0.5, None), (1.0, -20), (0.07, None)]), [verse(1, 'a b')], {1: [0.6, 1.2]}, SLOP)
-    assert near(cut['verses'][0][2], 1.55) and cut['verses'][0][2] <= 1.57 and cut['listen'] == []  # 70 ms: room for the 50 ms tail
-    cut = align.cut_chapter(wave_of([(0.5, None), (1.0, -20), (0.065, None)]), [verse(1, 'a b')], {1: [0.6, 1.2]}, {'lead': 0.05, 'tail': 0.1})
-    assert cut['verses'][0][2] <= 1.565 and [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')]
+    assert cut['verses'][0][2] <= 1.57 and [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')]  # 70 ms: the file's end, listed
 
 
 def test_a_file_with_no_announcement_starts_the_first_verse_by_its_own_sound():
@@ -280,21 +301,42 @@ def test_a_file_with_no_announcement_starts_the_first_verse_by_its_own_sound():
 
 def test_the_two_slops_are_the_file_s_and_each_edge_keeps_its_own():
     parts = [(0.5, None), (1.0, -20), (0.15, None), (1.0, -20), (0.5, None)]
-    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d')], {1: [0.6, 1.4], 2: [1.75, 2.5]}, {'lead': 0.03, 'tail': 0.1})
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'c d')], {1: [0.6, 1.4], 2: [1.75, 2.5]}, {'lead': 0.03, 'tail': 0.1, 'insideTail': 0.06})
     (_, _, end1), (_, start2, _) = cut['verses']
-    assert near(end1, 1.575) and near(start2, 1.65 - 0.03) and end1 <= start2  # 150 ms is too short for a tail of 100 either way, enough for a lead of 30
+    assert near(end1, 1.575) and near(start2, 1.65 - 0.03) and end1 <= start2  # 150 ms is too short for 60 ms and a tail of 100, enough for a lead of 30
     assert [(e['verse'], e['edge']) for e in cut['listen']] == [(1, 'tail')]
-    assert align.read_slop() == {'lead': float(align.read_slop()['lead']), 'tail': float(align.read_slop()['tail'])}
     assert 'lead' in align.SLOP_PATH.read_text() and align.SLOP_PATH.name == 'player-slop.json'
 
 
+def test_the_inside_tail_is_read_from_the_player_s_margin_file_not_copied():
+    raw = json.loads(align.MARGIN_PATH.read_text(encoding='utf8'))
+    slop = json.loads(align.SLOP_PATH.read_text(encoding='utf8'))
+    assert align.MARGIN_PATH.name == 'player-margin.json'
+    assert align.read_slop() == {'lead': float(slop['lead']), 'tail': float(slop['tail']), 'insideTail': float(raw['inside']['tail'])}
+    assert '0.097' not in Path(align.__file__).read_text(encoding='utf8')
+
+
+def test_an_end_with_room_lands_at_least_the_inside_tail_after_the_last_sound_and_one_with_none_at_the_quietest_instant():
+    inside, tail = align.ms(align.read_slop()['insideTail']), align.ms(align.read_slop()['tail'])
+    for died in range(10000, 10100, 5):  # the level is read to a hop of 5 ms
+        end, tight = align.place_end(died, died + 400, inside, tail, 99999)
+        assert not tight and end - died >= inside and end % 10 == 0 and end - died < inside + 10
+    # the player stopped up to inside.tail early: an end only `tail` after the sound lost up to 47 ms of the last word
+    assert align.place_end(10000, 10400, inside, tail, 99999)[0] >= 10000 + inside
+    # the narrator reads straight on: no quiet, and the end is the quietest instant between the two words, as before
+    cut = align.cut_chapter(wave_of(PARTS), VERSES, LETTERS, align.read_slop())
+    level = align.Level(wave_of(PARTS))
+    assert cut['verses'][1][2] == align.down2(level.quietest(align.ms(LETTERS[2][1]), align.ms(LETTERS[3][0]))) / 1000
+    assert (2, 'tail') in [(e['verse'], e['edge']) for e in cut['listen']]
+
+
 def test_place_end_and_place_start_round_away_from_the_sound():
-    assert align.place_end(12115, 12500, 50, 99999) == (12170, False)  # 12.165 is not 12.16: the clip at its shortest would lose 5 ms
+    assert align.place_end(12115, 12500, 97, 50, 99999) == (12220, False)  # 12.212 is not 12.21: the clip at its shortest would lose 2 ms
     assert align.place_start(12115, 12505, 50) == (12450, False)  # 12.455 is not 12.46
-    assert align.place_end(163365, 163440, 50, 999999) == (163400, True) and align.place_start(163365, 163440, 50) == (163410, True)  # John 1:24 and 1:25
-    assert align.place_end(1000, 1100, 50, 99999) == (1050, False) and align.place_start(1000, 1100, 50) == (1050, False)  # exactly twice the slop: room
-    assert align.place_end(1000, 1095, 50, 99999)[1] and align.place_start(1000, 1095, 50)[1]
-    assert align.place_end(1000, None, 50, 1100) == (1050, False) and align.place_end(1000, None, 50, 1043) == (1040, True)  # the file's end
+    assert align.place_end(163365, 163440, 97, 50, 999999) == (163400, True) and align.place_start(163365, 163440, 50) == (163410, True)  # John 1:24 and 1:25
+    assert align.place_end(1000, 1150, 97, 50, 99999) == (1100, False) and align.place_start(1000, 1100, 50) == (1050, False)  # just the margin: room
+    assert align.place_end(1000, 1145, 97, 50, 99999)[1] and align.place_start(1000, 1095, 50)[1]
+    assert align.place_end(1000, None, 97, 50, 1100) == (1100, False) and align.place_end(1000, None, 97, 50, 1093) == (1090, True)  # the file's end
     assert align.place_start(None, 30, 50) == (0, False)  # nothing before: never below second 0
 
 
