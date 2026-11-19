@@ -428,6 +428,8 @@ describe('practising any time, again and on to the next step (mw-5r3p30.1145)', 
 
   it('Next step shows step N+1 at once and moves the verse to that step with its due day', async () => {
     await seedResting(2, 1);
+    // a verse he recalled on an earlier day is on a real review: the climb earns the step's gap (a verse learned today is due tomorrow, memorize-first-interval.test.ts)
+    await db.recalls.add({ ref: REF, lang: 'en', when: Date.now() - 2 * DAY, rung: 2, score: 1, missed: [], asked: [], gap: 0, how: 'said' });
     await open(REF, 'en');
     await sayIt(WORDS.join(' '));
     await wait();
@@ -442,8 +444,22 @@ describe('practising any time, again and on to the next step (mw-5r3p30.1145)', 
     // the next recall is of the new step and, the verse not being due, leaves its schedule
     await sayIt(WORDS.join(' '));
     await wait();
-    expect((await recallsOf(REF, 'en')).map((r) => r.rung)).toEqual([2, 3]);
+    expect((await recallsOf(REF, 'en')).map((r) => r.rung)).toEqual([2, 2, 3]);
     expect((await listMemorized())[0]).toMatchObject({ step: 3, due: row.due });
+  });
+
+  it('Next step on a verse learned today (no earlier recall) puts it due tomorrow, not a step\'s gap out (mw-5r3p30.1200)', async () => {
+    await seed('en', 5);
+    await open(REF, 'en');
+    await sayIt(WORDS.join(' '));
+    await wait();
+    const before = Date.now();
+    fireEvent.click(screen.getByRole('button', { name: 'Next step' }));
+    await waitFor(() => expect(screen.getByText(/From nothing · step 7 of 7/)).toBeTruthy());
+    const [row] = await listMemorized();
+    expect(row.step).toBe(6);
+    expect(row.due).toBeGreaterThanOrEqual(before + DAY - 1000);
+    expect(row.due).toBeLessThan(before + 2 * DAY);
   });
 
   it('a due verse that is practised, passed twice over, still moves once as the schedule says', async () => {

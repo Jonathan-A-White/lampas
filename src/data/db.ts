@@ -6,6 +6,7 @@ import { withAoristNote } from './irregular-aorists';
 import { isItemId, legacyStoredId, plainIdOf } from './grammar/soundScope';
 import { setDbBlocked } from './dbBlocked';
 import { moveCompoundLemmas } from './compoundLemma';
+import { holdFirstSittings } from './firstSittingUpgrade';
 
 export type WordState = 'solid' | 'learning' | 'dropped';
 
@@ -1356,6 +1357,44 @@ class LampasDB extends Dexie {
         readingSets: 'id',
       })
       .upgrade(moveCompoundLemmas);
+
+    // v35: same tables. A verse learned from nothing in one sitting was due a step's gap out (90 days for step 7 of 7); the upgrade brings such a verse row to the day after it was
+    // learned (src/data/firstSittingUpgrade.ts, mw-5r3p30.1200).
+    this.version(35)
+      .stores({
+        words: 'lemma, lesson, state, *lemmas',
+        meta: 'key',
+        settings: 'key',
+        results: '++id, [lemma+when]',
+        answers: '++id, [ref+when]',
+        talks: '++id, [ref+when]',
+        drills: '++id, lemma, [lemma+step]',
+        readings: 'ref',
+        grammarKnown: 'term',
+        reviews: '[kind+id], due, kind',
+        grammarLevels: 'id, level',
+        usage: 'key, day, name',
+        tips: 'id, status',
+        talkPictures: '++id, turnId',
+        shares: 'id, createdAt',
+        requests: 'txid, sentAt, status',
+        readingHistory: '++id, ref, [lang+at]',
+        missTally: '[lang+unit], lang',
+        ladder: 'lang',
+        drillRuns: '++id, ideaId, at',
+        passageLessons: 'key, state',
+        pictureRefs: 'hash, at',
+        talkSummaries: 'ref',
+        library: 'id, kind',
+        exportRows: 'resource',
+        verseLists: '++id, created',
+        recalls: '++id, [ref+lang], when',
+        diagrams: '[ref+lang+version]',
+        readingSets: 'id',
+      })
+      .upgrade(async (tx) => {
+        await holdFirstSittings(tx);
+      });
   }
 }
 

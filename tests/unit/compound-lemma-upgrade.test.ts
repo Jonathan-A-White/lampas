@@ -81,7 +81,7 @@ describe('the v34 upgrade of the compound lemmas', () => {
     });
 
     await db.open();
-    expect(db.verno).toBe(34);
+    expect(db.verno).toBe(35);
 
     expect(await db.words.get(COMPOUND)).toBeUndefined();
     expect(await db.words.get(CLEAN)).toEqual(word(CLEAN, { lemmas: [CLEAN, 'λόγος'], since: 20 }));

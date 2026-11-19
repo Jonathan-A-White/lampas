@@ -180,9 +180,9 @@ describe('practising before the due day (mw-5r3p30.1145)', () => {
 });
 
 describe('advanceStep: Next step', () => {
-  it('moves the verse to the step after the one practised, due after that step\'s gap, and counts no right', async () => {
-    await memorize(ref, ['en'], NOW);
-    await recordRecall(recall(1), NOW);
+  it('moves a verse recalled on an earlier day (a real review) to the step after the one practised, due after that step\'s gap, and counts no right', async () => {
+    await memorize(ref, ['en'], NOW - 2 * DAY);
+    await recordRecall(recall(1), NOW - 2 * DAY);
     await advanceStep(ref, 'en', 0, NOW + 1000);
     // step 1 waits three days
     expect(await db.reviews.get(['verse', 'en:Rom.8.28'])).toMatchObject({ step: 1, rights: 0, due: NOW + 1000 + 3 * DAY });

@@ -5,7 +5,7 @@
 //   hearing  useRecallHold(lang): dictation (en-US, el-GR, he-IL) judged by judgeSaid ('said'), a Weave recording sent by sendWeaveRecall and judged by judgeReading ('mill'); typed(text) is judged by judgeTyped ('typed', never for the Weave); a phone that cannot hear that language, is
 //            offline or has no microphone says so (`note`) and lets him grade himself (I had it / Not yet, 'self')
 //   keeping  recordRecall writes the recall and moves the verse on the schedule (a verse practised before its due day keeps its row); the row is read again for its due day
-//   going on again() puts the same step back (hidden again, a new recall); nextStep() after a pass moves the verse to the step after this one (advanceStep) and the session shows that step (mw-5r3p30.1145)
+//   going on again() puts the same step back (hidden again, a new recall); nextStep() after a pass moves the verse to the step after this one (advanceStep; in the sitting he began learning the verse in it is due tomorrow whatever the step, mw-5r3p30.1200) and the session shows that step (mw-5r3p30.1145)
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { foldWords, hideWords } from 'learn-kit/recall';
 import type { Verses } from './refs';
