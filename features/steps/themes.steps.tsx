@@ -133,7 +133,13 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapDoor = async (_: unknown, label: string) => {
-    await user.click(await within(viewEl()).findByRole('button', { name: label }));
+    // the door is drawn once the sermons of the place are found; it is waited for by its text, since a role query over the whole chapter's text is slow enough to outrun the wait
+    const door = await waitFor(() => {
+      const found = [...viewEl().querySelectorAll<HTMLButtonElement>('button')].find((b) => b.textContent === label);
+      if (!found) throw new Error(`no ${label} button`);
+      return found;
+    });
+    await user.click(door);
   };
   const headed = async (_: unknown, title: string) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));
