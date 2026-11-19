@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.292
+_2026-11-19_
+- Fixed: the example shown under μου ("my") in Review is now a form that means "my", not "me".
+
 ## 0.7.291
 _2026-11-19_
 - Fixed: On a verse list, tapping Memorize this list a second time while the first tap is still being saved now turns it off again; before, it could stay on.

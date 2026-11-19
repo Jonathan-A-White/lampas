@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.292",
+    "date": "2026-11-19",
+    "story": "mw-indx1x6.100",
+    "kind": "fixed",
+    "text": "the example shown under μου (\"my\") in Review is now a form that means \"my\", not \"me\"."
+  },
+  {
     "version": "0.7.291",
     "date": "2026-11-19",
     "story": "mw-qtu3zvz.227",
