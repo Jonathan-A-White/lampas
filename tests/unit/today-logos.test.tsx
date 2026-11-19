@@ -31,11 +31,11 @@ const settings = (logos: 'on' | 'off') =>
   ]);
 
 describe('Today with Logos Off', () => {
-  it('draws the Psalms and Proverbs, each read in Lampas, but not the devotional, and keeps what he set for them', async () => {
+  it('draws the Psalms and Proverbs, each opening in the Reader, but not the devotional, and keeps what he set for them', async () => {
     await settings('off');
     render(<Today />);
     const psalms = await screen.findByRole('region', { name: 'Psalms and Proverbs' });
-    expect(within(psalms).getAllByRole('button', { name: /Read in Lampas/ }).length).toBeGreaterThan(1);
+    expect(within(psalms).getAllByRole('button', { name: /opens in the Reader/ }).length).toBeGreaterThan(1);
     expect(screen.queryByRole('region', { name: 'Devotional' })).toBeNull();
     expect(screen.queryAllByText('Open in Logos')).toHaveLength(0);
     expect((await db.settings.get('dailyPsalms'))?.value).toBe('on');
@@ -68,18 +68,21 @@ describe('Today with Logos Off', () => {
 });
 
 describe('Today: a Psalms and Proverbs row opens in Lampas', () => {
-  it('has Read in Lampas that opens the chapter in the Reader and counts as opened, and no Open in Logos or In another book', async () => {
+  it('is just the passage name, a button that opens the chapter in the Reader and counts as opened without ticking, with no Read in Lampas, no Open in Logos or In another book', async () => {
     await settings('on');
     const user = userEvent.setup();
     render(<Today />);
     const psalms = await screen.findByRole('region', { name: 'Psalms and Proverbs' });
     const rows = within(psalms).getAllByRole('listitem');
+    expect(psalms).not.toHaveTextContent(/Read in Lampas/);
     for (const row of rows) {
-      expect(within(row).getByRole('button', { name: /Read in Lampas/ })).toBeInTheDocument();
+      expect(within(row).getByRole('button', { name: /opens in the Reader/ })).toBeInTheDocument();
+      const label = within(row).getByRole('button', { name: /opens in the Reader/ }).getAttribute('aria-label')!;
+      expect(row.textContent).toBe(label.replace(', opens in the Reader', ''));
       expect(within(row).queryByText('Open in Logos')).toBeNull();
       expect(within(row).queryByRole('button', { name: /In another book/ })).toBeNull();
     }
-    const first = within(rows[0]!).getByRole('button', { name: /Read in Lampas/ });
+    const first = within(rows[0]!).getByRole('button', { name: /opens in the Reader/ });
     const name = rows[0]!.getAttribute('data-piece')!;
     const [code, chapter] = name.split('.');
     await user.click(first);

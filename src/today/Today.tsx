@@ -287,7 +287,7 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   );
 }
 
-/** The day's Psalms and Proverbs (mw-5r3p30.1007): a chapter Lampas holds is one button, Read in Lampas, that opens it in the Reader (a tap is kept as 'opened', like the plan's, and never ticks the box); a chapter it does not hold keeps Open in Logos and In another book…. */
+/** The day's Psalms and Proverbs (mw-5r3p30.1007): a chapter Lampas holds is one button, just the passage name (no 'Read in Lampas' under it, since he said so 2026-11-18; its aria-label says 'opens in the Reader'), that opens it in the Reader (a tap is kept as 'opened', like the plan's, and never ticks the box); a chapter it does not hold keeps Open in Logos and In another book…. */
 function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   const bibles = useLiveQuery(getLogosBibles, []);
   const logosOn = useLogosOn();
@@ -303,9 +303,8 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
           if (heldInLampas(reading)) {
             return (
               <Piece key={id} id={id} label={name} ticks={ticks}>
-                <button type="button" onClick={() => { void markOpened(ticks.date, id); openReader({ book: reading.code, chapter: reading.chapter }); }} className={LINK}>
+                <button type="button" onClick={() => { void markOpened(ticks.date, id); openReader({ book: reading.code, chapter: reading.chapter }); }} aria-label={`${name}, opens in the Reader`} className={LINK}>
                   <span className="text-lg font-medium text-accent">{name}</span>
-                  <span className="text-sm text-muted">Read in Lampas</span>
                 </button>
               </Piece>
             );
