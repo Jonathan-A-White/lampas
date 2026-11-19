@@ -7,13 +7,13 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Composer, type ComposerLabels, type ComposerMessage, type SendSlot } from 'voice-kit/composer';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Waiting } from './ui/Waiting';
+import { AddWord } from './AddWordButton';
 import { findGreekWord, glossOf, lookupFor as lookupOf } from './data/answerWord';
 import { languageOfLemma } from './data/lemma';
 import { loadLexicon } from './data/lexicon';
 import { findWord, lemmaSheet } from './nav/links';
 import type { GreekWord } from './data/chapter';
-import type { AnswerWord } from './data/db';
-import { addTurnChanges, addWordToLearn, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, wordIsListed, type TalkTurn } from './data/repositories';
+import { addTurnChanges, keepStudyWayLine, deleteTurns, listStudyWay, listTurns, markChangeUndone, markQuizGoalChoice, markUnopenedOpened, setQuizGoal, STUDY_WAY_MAX, type TalkTurn } from './data/repositories';
 import { Markdown } from './markdown/Markdown';
 import { useSecondFingerScroll } from './talk/secondFinger';
 import { SaveReferences } from './talk/SaveReferences';
@@ -66,7 +66,6 @@ import { setPending, talkKey, type AskState } from './pending/pendingAsks';
 import { WordSheet, type Lookup, type TermAsk, type WordHelp } from './WordSheet';
 import { faceOf } from './script/greekLang';
 import { announce, plainText } from './ui/live';
-import { addWord } from './tutor/registry';
 import { useDoorBusy } from './tutor/door';
 
 /** A picture in flight: what draws it under his question. */
@@ -141,44 +140,6 @@ function ChangeRow({ turn, change, index }: { turn: TalkTurn; change: AppliedCha
         </>
       )}
     </li>
-  );
-}
-
-/** Add to my words under an explained word: puts its lemma on his words-to-learn list; once it is there the button reads On my list. */
-function AddWord({ scope, word }: { scope: TalkScope; word: AnswerWord }) {
-  const listed = useLiveQuery(() => wordIsListed(word.lemma), [word.lemma]);
-  const [busy, setBusy] = useState(false);
-  // why a tap did nothing: a lemma the Septuagint's derivation only guessed is not put on his list (mw-u2w5klk.16)
-  const [guessed, setGuessed] = useState(false);
-  if (listed === undefined) return null;
-  const add = async (): Promise<void> => {
-    setBusy(true);
-    try {
-      // The lexicon's gloss and part of speech; a word it lacks still goes in with the gloss the chapter has, as he asked.
-      const { result } = await addWord(scope, word.lemma);
-      if (result === 'unknown') await addWordToLearn(word.lemma, glossOf(scope, word), Date.now(), '', languageOfLemma(word.lemma));
-      setGuessed(result === 'ignored');
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <>
-      <button
-        type="button"
-        data-add-word={word.lemma}
-        disabled={listed || busy}
-        onClick={() => void add()}
-        className={`mt-1 block min-h-11 rounded-lg border px-3 text-base font-medium ${listed ? 'border-line text-muted' : 'border-accent text-accent active:bg-line'}`}
-      >
-        {listed ? 'On my list' : 'Add to my words'}
-      </button>
-      {guessed && !listed ? (
-        <p role="status" data-add-word-why={word.lemma} className="mt-1 text-base text-muted">
-          Not added: Lampas only guessed this word, and a guessed word is not learned until it is checked.
-        </p>
-      ) : null}
-    </>
   );
 }
 
@@ -497,7 +458,7 @@ function Turn({ turn, scope, onLook, onLemma, onLeave }: { turn: TalkTurn; scope
                       {w.lemma}
                     </span>
                     <span className="text-muted"> — {w.note}</span>
-                    <AddWord scope={scope} word={w} />
+                    <AddWord scope={scope} lemma={w.lemma} gloss={glossOf(scope, w)} />
                   </dd>
                 </div>
               );
