@@ -54,10 +54,10 @@ Feature: A Review word question gives an Example verse from his goal, after he h
     When he answers the word question
     Then the Example says "Romans 8:9" as a form of "ὑμεῖς" and of none of "μου, ἡμεῖς"
 
-  Scenario: The Example of μου is a Romans 8 verse with a form of μου
+  Scenario: The Example of μου is a verse of Romans with a genitive form of μου, as Romans 8 has none
     Given his goal is "Read Romans 8" and Review asks the word "μου"
     When he answers the word question
-    Then the Example says "Romans 8:2" as a form of "μου" and of none of "ἡμεῖς, ὑμεῖς"
+    Then the Example says "Romans 1:8" as a form of "μου" and of none of "ἡμεῖς, ὑμεῖς"
 
   Scenario: The Example of εἶπεν is a John 1 verse with the form εἶπεν, though the data lists it under λέγω, another of his words
     Given his goal is "Read John 1" and Review asks the word "εἶπεν"
