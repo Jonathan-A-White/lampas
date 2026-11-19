@@ -67,6 +67,10 @@ export const devotionalSetting = defineSetting<string>({
   help: `The devotional Today shows, one of the ${DEVOTIONALS.length} in your Logos library or Morning RePhil; Morning and Evening (${DEFAULT_DEVOTIONAL}) to start.`,
 });
 
+/** The key of the dependency the Logos draw hangs from (no setting of its own, read in rows.ts readValues): 'on' while Which devotional is Random and the Logos switch is On, since a Logos draw does nothing with Logos Off. */
+export const LOGOS_RANDOM_KEY = 'devotional.logosRandom';
+export const logosRandom: Dependency = { key: LOGOS_RANDOM_KEY, shown: (value) => value === 'on' };
+
 export const devotionalDrawSetting = defineSetting<string>({
   key: 'devotionalDraw',
   default: ALL_TICKED,
@@ -83,7 +87,7 @@ export const devotionalDrawSetting = defineSetting<string>({
   label: 'In the draw',
   hint: 'The devotionals Random draws from.',
   help: 'Random draws from the devotionals On in Your Logos library; none On shows Morning and Evening.',
-  dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
+  dependsOn: logosRandom,
 });
 
 export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
@@ -145,7 +149,7 @@ export const todaysDevotionalSetting: {
   section: 'daily',
   label: "Today's devotional",
   hint: "Change only today's devotional.",
-  help: `The devotional Today shows for the rest of today, while Which devotional is Random: "${ANOTHER}" draws a different one for today (the Another button on Today does the same), and a devotional's Logos resource id shows that one today. It shows only while Which devotional is Random.`,
+  help: `The devotional Today shows for the rest of today, while Which devotional is Random: "${ANOTHER}" draws a different one for today (the Another button on Today does the same), and a devotional's Logos resource id shows that one today. It shows only while Which devotional is Random and Logos is On.`,
   allowed: { kind: 'choice', values: [{ value: ANOTHER, label: 'Another' }, ...DEVOTIONALS.map((d) => ({ value: d.id, label: d.title })), { value: MORNING_REPHIL_ID, label: MORNING_REPHIL.title }] },
-  dependsOn: { key: 'devotional', shown: (value) => value === RANDOM },
+  dependsOn: logosRandom,
 };

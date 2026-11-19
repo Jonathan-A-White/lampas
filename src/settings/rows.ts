@@ -30,6 +30,8 @@ import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
+import { LOGOS_RANDOM_KEY } from './definitions/daily';
+import { RANDOM } from '../data/daily/devotionals';
 import { handSetting } from './hand';
 import { openWebSetting } from './definitions/sermons';
 import { helpPlain } from './helpText';
@@ -349,6 +351,11 @@ export async function readValues(): Promise<Values> {
         const [on, dial] = await Promise.all([settingOf('pronunciationSeparate')?.read(), settingOf(separate === 'grc' ? 'greekInterest' : 'hebrewInterest')?.read()]);
         const level = separate === 'grc' ? greekLevelOf(dial) : hebrewLevelOf(dial);
         return [key, on === 'on' && level >= 1 ? 'on' : 'off'] as const;
+      }
+      // the key of the Logos draw's rows: On while Which devotional is Random and the Logos switch is On (no setting of its own)
+      if (key === LOGOS_RANDOM_KEY) {
+        const [which, logos] = await Promise.all([settingOf('devotional')?.read(), settingOf('resource.logos')?.read()]);
+        return [key, which === RANDOM && logos === 'on' ? 'on' : 'off'] as const;
       }
       // a Logos sermon collection: On while his Library import holds one of its resources or Logos gives it free (mw-qtu3zvz.94)
       if (key.startsWith(OWNS_PREFIX)) {

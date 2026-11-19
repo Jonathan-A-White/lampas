@@ -28,11 +28,11 @@ beforeEach(async () => {
 const keys = (rows: readonly { key: string }[]) => rows.map((r) => r.key);
 /** Every Logos sermon collection is in his import (readValues reads each as owns.<id>). */
 const OWNED_ALL = Object.fromEntries(SERMON_SOURCES.filter((s) => s.resources).map((s) => [ownsKey(s), 'on']));
-const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', septuagint: 'on', depth: '5', weave: 'solid', variants: 'all', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', ...OWNED_ALL, devotional: 'random', developerMode: 'on', pronunciationSeparate: 'on', 'pronunciationSeparate.grc': 'on', 'pronunciationSeparate.he': 'on' };
+const ALL_ON: Values = { languages: 'both', greekInterest: '5', hebrewInterest: '5', septuagint: 'on', depth: '5', weave: 'solid', variants: 'all', immersiveReader: 'on', newWordsADay: '3', 'resource.logos': 'on', ...OWNED_ALL, devotional: 'random', 'devotional.logosRandom': 'on', developerMode: 'on', pronunciationSeparate: 'on', 'pronunciationSeparate.grc': 'on', 'pronunciationSeparate.he': 'on' };
 /** Every row ALL_ON shows: all but the Pronunciation family, which gives way to the Greek and the Hebrew row while Set each language on its own is On (the one pair of rows that exclude each other). */
 const ALL_SHOWN = (): string[] => keys(ROWS).filter((k) => k !== 'pronunciation');
 /** Values a row may read that are not rows of their own: Developer mode is found on About, and `depth` is the higher of the two dials (readValues); neither is a setting of the list; the last two say Set each language on its own is On and that language's dial is at Curious or above (readValues). */
-const NOT_ROWS = ['developerMode', 'depth', 'pronunciationSeparate.grc', 'pronunciationSeparate.he'];
+const NOT_ROWS = ['developerMode', 'depth', 'devotional.logosRandom', 'pronunciationSeparate.grc', 'pronunciationSeparate.he'];
 const BOTH = { languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5', pronunciationSeparate: 'off' };
 
 describe('the rows', () => {
