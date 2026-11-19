@@ -1,4 +1,4 @@
-// scripts/lxx/align.ts — npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>] (story mw-u2w5klk.274.1; docs/lxx-align.md)
+// scripts/lxx/align.ts — npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>] [--force] (story mw-u2w5klk.274.1; docs/lxx-align.md)
 // Cuts Brenton's verse (LXX2012, one chunk a verse as the build makes it) into English chunks aligned to the Greek words of Swete's verse, the shape the Hebrew weave reads
 // (src/data/chapter.ts EnglishChunk, src/data/weave.ts), deterministically and with no model: the lexicon's gloss of a word's lemma, a proper name's transliteration, and a function word's place.
 // Each Greek word is paired with at most one English word and each English word with at most one Greek word. The pairs are the heaviest chain that keeps the two verses' order (the
@@ -545,16 +545,25 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
   return { chapter: modelled.chapter, share, stale: modelled.stale };
 }
 
+/**
+ * Which chapters ship (the chapter bar) depends on which books have a Morpheus cache, and the cache is git-ignored: a worktree borrows the Laptop's (lxx:link), a host may have none. The report
+ * therefore says which books it was derived without a cache, and a run on a host whose answer is another leaves the report alone (mw-u2w5klk.349.24).
+ */
+const MORPHEUS_LINE = /^Derived without a Morpheus cache: (.*)\.$/m;
+const withoutList = (without: readonly string[]): string => (without.length > 0 ? [...without].sort().join(', ') : 'none');
+const morpheusLine = (without: readonly string[]): string => `Derived without a Morpheus cache: ${withoutList(without)}.`;
+const recordedWithout = (text: string): string | undefined => MORPHEUS_LINE.exec(text)?.[1];
+
 const pct = (part: number, whole: number): string => (whole === 0 ? '—' : `${((100 * part) / whole).toFixed(1)}%`);
 const num = (n: number): string => n.toLocaleString('en-US');
 
 /** The report's text between the markers: one row for each chapter shipped, and one for each book. */
-export function renderAlignReport(shares: readonly AlignShare[]): string {
+export function renderAlignReport(shares: readonly AlignShare[], withoutMorpheus?: readonly string[]): string {
   const rows = [...shares].sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : a.chapter - b.chapter));
   const header = ['| Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |', '| --- | --- | --- | --- | --- | --- | --- |'];
   const line = (name: string, s: { verses: number; words: number; paired: number; sure: number; model: number }): string =>
     `| ${name} | ${num(s.verses)} | ${num(s.words)} | ${num(s.paired)} | ${pct(s.paired, s.words)} | ${pct(s.sure, s.words)} | ${s.model === 0 ? '—' : `${num(s.model)} (${pct(s.model, s.words)})`} |`;
-  const out = ['### Each chapter shipped', '', ...header, ...rows.map((s) => line(`${s.book} ${s.chapter}`, s))];
+  const out = [...(withoutMorpheus ? [morpheusLine(withoutMorpheus), ''] : []), '### Each chapter shipped', '', ...header, ...rows.map((s) => line(`${s.book} ${s.chapter}`, s))];
   const books = new Map<string, AlignShare[]>();
   for (const s of rows) books.set(s.code, [...(books.get(s.code) ?? []), s]);
   out.push('', '### Each book', '', ...header.map((h, i) => (i === 0 ? h.replace('Chapter', 'Book') : h)));
@@ -568,12 +577,19 @@ export function renderAlignReport(shares: readonly AlignShare[]): string {
 }
 
 /** Writes the report between the markers of the doc, leaving the rest of the file as it is; false where the file already says it. */
-export function writeAlignReport(doc: string, shares: readonly AlignShare[]): boolean {
+export function writeAlignReport(doc: string, shares: readonly AlignShare[], withoutMorpheus?: readonly string[], force = false): boolean {
   const text = readFileSync(doc, 'utf8');
   const start = text.indexOf(ALIGN_START);
   const end = text.indexOf(ALIGN_END);
   if (start < 0 || end < start) throw new Error(`${doc} has no ${ALIGN_START} and ${ALIGN_END} markers`);
-  const next = `${text.slice(0, start + ALIGN_START.length)}\n\n${renderAlignReport(shares)}\n\n${text.slice(end)}`;
+  const recorded = recordedWithout(text.slice(start, end));
+  if (withoutMorpheus && !force && recorded !== undefined && recorded !== withoutList(withoutMorpheus)) {
+    throw new Error(
+      `${doc} was written from books derived without a Morpheus cache: ${recorded}; this run was without a cache for: ${withoutList(withoutMorpheus)}. ` +
+        `The chapters that ship, and so the report, differ with the caches, so it is left as it was. Run \`npm run lxx:link\` (the Laptop's caches) and again; \`--force\` writes it anyway.`,
+    );
+  }
+  const next = `${text.slice(0, start + ALIGN_START.length)}\n\n${renderAlignReport(shares, withoutMorpheus)}\n\n${text.slice(end)}`;
   if (next === text) return false;
   writeFileSync(doc, next);
   return true;
@@ -581,7 +597,7 @@ export function writeAlignReport(doc: string, shares: readonly AlignShare[]): bo
 
 // ---------------------------------------------------------------- the command
 
-const USAGE = 'usage: npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>]';
+const USAGE = 'usage: npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>] [--force]';
 
 export interface AlignOptions extends ShipOptions {
   /** the report to write; default docs/lxx-align.md */
@@ -593,8 +609,10 @@ export async function runAlign(argv: readonly string[], options: AlignOptions = 
   const { doc = ALIGN_DOC, log = () => undefined, scratch = tmpdir(), ...ship } = options;
   const rest: string[] = [];
   let out: string | undefined;
+  let force = false;
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--out') {
+    if (argv[i] === '--force') force = true;
+    else if (argv[i] === '--out') {
       out = argv[++i];
       if (!out || out.startsWith('--')) throw new Error(USAGE);
     } else rest.push(argv[i]);
@@ -604,7 +622,7 @@ export async function runAlign(argv: readonly string[], options: AlignOptions = 
     // ship.ts reaches this file through the build, so it is loaded when it is needed
     const { runShip } = await import('./ship');
     const shipped = await runShip(['--out', dir, ...rest], { ...ship, scratch, log });
-    const changed = writeAlignReport(doc, shipped.aligned);
+    const changed = writeAlignReport(doc, shipped.aligned, shipped.withoutMorpheus, force);
     log(`lxx:align: ${shipped.aligned.length} chapter${shipped.aligned.length === 1 ? '' : 's'} aligned; ${doc} ${changed ? 'written' : 'is as it was'}`);
     return shipped.aligned;
   } finally {

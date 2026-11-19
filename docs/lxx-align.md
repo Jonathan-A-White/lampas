@@ -26,6 +26,8 @@ and a Builder's own session cuts and pairs those ([The model pass](#the-model-pa
 - `npm run lxx:ship -- --out dist/data-lxx` aligns every chapter it ships (the Laptop's deploy step, docs/lxx-derivation.md 'The commands'). `npm run data:build:lxx` (public/data-lxx) is unchanged: one chunk a verse.
 - `npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>]` is that ship into `<dir>` (a temporary directory by default) and writes the aligned share of each chapter shipped between the markers below.
   Both read the choices under `data/lxx/choices`, so the chapters are the ones the ship ships, and both apply the model pass's files under `data/lxx/align`.
+  Which chapters ship depends on which books have a Morpheus cache (git-ignored; a worktree borrows the Laptop's with `npm run lxx:link`), so [the report](#the-report) opens with the line 'Derived without a Morpheus cache: ...'.
+  A run on a host whose books without a cache are other than that line's leaves the report as it was and fails, naming both; `--force` writes it anyway (story mw-u2w5klk.349.24).
 - `npm run lxx:unpaired [-- --book <code>] [--no-morpheus]` is the same ship into a temporary directory and a count of the English content words that sit where a tap opens no Greek word, per chapter and book ([The unpaired English](#the-unpaired-english)). It prints, writes nothing and never fails on a gap.
 - `npm run lxx:align-choose -- --list --book gen --chapter 1` prints the verses of a chapter that still have a remainder; `npm run lxx:align-choose -- --book gen --chapter 1 --from <file>` checks a model session's file and writes `data/lxx/align/gen-01.tsv`.
 
@@ -121,6 +123,8 @@ The Reader's English view draws each chunk as a tap, so a verse now has several 
 The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter and TBESG's rows for its lemmas) aligns 630 of 751 words (83.9%); `tests/unit/lxx-align.test.ts` holds the floor at 83%.
 
 <!-- lxx-align:start -->
+
+Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 
 ### Each chapter shipped
 
