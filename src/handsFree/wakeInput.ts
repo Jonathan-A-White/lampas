@@ -1,5 +1,5 @@
 // src/handsFree/wakeInput.ts — which microphone 'Hey Lampas' is listened for on (mw-5r3p30.1213). voice-kit/wake's startWake opens the phone's default input
-// (getUserMedia with audio: true), and with the phone on his car's Bluetooth the default is the car's route, which carries no sound: the wake never heard him.
+// (audio: true), and with the phone on his car's Bluetooth the default is the car's route, which carries no sound: the wake never heard him.
 // Here the wake is given a stream of a LIVE input instead, chosen as Postern's hold chooses (voice-kit/composer chooseInput, the shared chooser):
 //  1. the Bluetooth or hands-free input the shared chooser picks (the car's hands-free microphone; never Android's 'Headset earpiece' or 'Speakerphone');
 //  2. the default (audio: true, as before), unless its route is known silent or is Android's 'Headset earpiece' or 'Speakerphone' (by its name, or a listed
@@ -10,6 +10,7 @@
 // is marked silent and left for the next; the marks are kept until the phone's list of inputs changes (the car connects or goes). When every input is silent
 // the wake listens on the default as before. A log line names the input it listens on: "Hands-free: listening for 'Hey Lampas' on <name>".
 import { chooseInput, type InputDevice } from 'voice-kit/composer';
+import { openMicInput } from '../audio/recorder';
 import { startWake as kitStartWake, type RunningWake, type StartWakeResult, type WakeFailure, type WakeOptions } from 'voice-kit/wake';
 
 /** How long an input may give only silence before it is left for the next. A car's route that carries no sound gives exact zeros from the start. */
@@ -18,7 +19,7 @@ export const QUIET_MS = 3000;
 /** The least sound a 16-bit sample can carry: a live microphone's own noise passes it, a route that carries no sound never does. */
 const LEAST_SOUND = 1 / 32768;
 
-/** The default input, opened with audio: true. */
+/** The default input, opened with audio: true (src/audio/recorder.ts openMicInput, the one place in src/ that opens the microphone). */
 const DEFAULT_ID = 'default';
 
 /** The pseudo-inputs the browser adds for 'whatever the system default is' (composer's micInput PSEUDO_IDS). */
@@ -154,7 +155,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
   const listenOn = async (id: string, name: string, watch: boolean): Promise<RunningWake | WakeFailure | null> => {
     let stream: MediaStream;
     try {
-      stream = await media.getUserMedia(id === DEFAULT_ID ? { audio: true } : { audio: { deviceId: { exact: id } } });
+      stream = await openMicInput(id);
     } catch (err) {
       return refusedByThePhone(err) ? { ok: false, kind: 'permission-denied', message: 'The microphone was not allowed.' } : null;
     }

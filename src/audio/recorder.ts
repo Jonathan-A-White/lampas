@@ -4,7 +4,17 @@
 // inside the verse-read grind's 8 MB attachment limit, and the mill's local scorer takes a clip of any length). What comes out is one clip, sent as a
 // grist attachment (src/services/reading.ts). A reading the cap stops is marked `capped`, and the result says so (reading.ts cutNote).
 // While it records, Hands-free's wake listening steps aside (src/handsFree/micBusy.ts, mw-rl10piw.6).
+// This file is the one place in src/ that opens the microphone (tests/unit/try-it-one-recorder.test.ts): openMicInput opens the input Hands-free's wake listens
+// on (src/handsFree/wakeInput.ts, mw-5r3p30.1213).
 import { takeMic } from '../handsFree/micBusy';
+
+/**
+ * Opens one input for Hands-free's wake (src/handsFree/wakeInput.ts): 'default' is the phone's default input with the browser's own settings (audio: true, as
+ * voice-kit/wake opens it), any other id that input exactly (an input enumerateDevices listed). Rejects as getUserMedia does.
+ */
+export function openMicInput(deviceId: string): Promise<MediaStream> {
+  return navigator.mediaDevices.getUserMedia(deviceId === 'default' ? { audio: true } : { audio: { deviceId: { exact: deviceId } } });
+}
 
 export interface Recording {
   blob: Blob;
