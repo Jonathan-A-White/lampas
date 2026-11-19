@@ -124,7 +124,7 @@ describe.skipIf(!real.run)('the real Genesis 1 to 36', () => {
     const thirtySeven = rows.find((r) => r.code === 'gen' && r.chapter === 37);
     expect(thirtySeven?.gaps).toBeGreaterThan(0);
     expect(thirtySeven?.model).toBe(0);
-    // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3), Genesis 14 (mw-u2w5klk.349.23), Genesis 20 (mw-u2w5klk.349.2) and Genesis 24 to 29 (mw-u2w5klk.349.4) and Genesis 30 to 36 (mw-u2w5klk.349.5): 0 gaps, and the content words settled as rendering no Greek, each named in lxx-align-choose.test.ts
+    // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3), Genesis 14 (mw-u2w5klk.349.23), Genesis 20 (mw-u2w5klk.349.2) and Genesis 24 to 29 (mw-u2w5klk.349.4) and Genesis 30 to 36 (mw-u2w5klk.349.5): 0 gaps, and the content words settled as rendering no Greek, each named in lxx-align-choose.test.ts (Genesis 24 to 29 hold 168 after the fix rows of mw-u2w5klk.349.33, 187 before)
     const done = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
     const got = done.map((n) => rows.find((r) => r.code === 'gen' && r.chapter === n));
     expect(got.map((r) => r?.gaps)).toEqual(done.map(() => 0));
@@ -133,5 +133,5 @@ describe.skipIf(!real.run)('the real Genesis 1 to 36', () => {
 });
 
 const MODEL_NO_GREEK_GEN_1_TO_11 = [11, 9, 13, 17, 33, 18, 23, 40, 12, 6, 31];
-/** Genesis 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36. Genesis 12, 13, 16, 17, 18 and 22 fell (15, 15, 6, 20, 23, 41 before) when mw-u2w5klk.349.32 gave 58 of the English words a Greek word. */
-const MODEL_NO_GREEK_GEN_12_TO_36 = [8, 11, 24, 10, 3, 8, 11, 30, 15, 18, 23, 11, 79, 23, 17, 32, 9, 27, 30, 47, 16, 17, 20, 28, 9];
+/** Genesis 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36. Genesis 12, 13, 16, 17, 18 and 22 fell (15, 15, 6, 20, 23, 41 before) when mw-u2w5klk.349.32 gave 58 of the English words a Greek word; Genesis 24, 25, 26, 27 and 29 fell (79, 23, 17, 32, 27 before) when mw-u2w5klk.349.33 moved 33 low-confidence pairs. */
+const MODEL_NO_GREEK_GEN_12_TO_36 = [8, 11, 24, 10, 3, 8, 11, 30, 15, 18, 23, 11, 69, 20, 14, 30, 9, 26, 30, 47, 16, 17, 20, 28, 9];

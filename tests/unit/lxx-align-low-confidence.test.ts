@@ -111,7 +111,7 @@ describe('the listing of lxx:align-choose with the fix rows of a chapter', () =>
 
 // Genesis 24 to 29, as reviewed by hand (this story's Builder) against Swete's Greek and the lexicon's entry of each lemma: the pairs by place (placePairs) of the chapters after the fix rows, each `chapter:verse English @position`,
 // that DO render the English. The ones that did not are fixed and are not here: the fix rows of data/lxx/align/gen-24 to gen-29 moved 33 of the 212 the same function found before them. A pair by place that is not in
-// this list fails the test, naming it: it is to be read by hand, and either fixed (a `fix` row, applyFixes) or added here; so does an entry no chunk has any more. Brenton's English sometimes has another word than
+// this list fails the test, naming it (29:26 younger @12, νεωτέραν, is read and right; added by the batch fixer of batch 585, the lexicon having no entry of νεώτερος): it is to be read by hand, and either fixed (a `fix` row, applyFixes) or added here; so does an entry no chunk has any more. Brenton's English sometimes has another word than
 // Swete's Greek ('Chettite.' for Εὑαίου, 26:34): the Greek word that sits there is the one a tap should open.
 const REVIEWED: Record<number, string[]> = {
   24: [
@@ -148,7 +148,7 @@ const REVIEWED: Record<number, string[]> = {
   ],
   29: [
     '29:2 he looks, @1', '29:3 flocks, @18', '29:3 set @20', '29:4 Brethren, @4', '29:6 well? @3', '29:7 flocks, @14', '29:8 flocks. @23', '29:9 While @0', '29:13 told @29', '29:14 month. @20',
-    '29:16 elder @8', '29:17 Lea @3', '29:18 I will serve @7', '29:26 country, @8', '29:27 labor, @12', '29:27 you labor @14', '29:30 Lea; @9', '29:35 ceased @20',
+    '29:16 elder @8', '29:17 Lea @3', '29:18 I will serve @7', '29:26 country, @8', '29:26 younger @12', '29:27 labor, @12', '29:27 you labor @14', '29:30 Lea; @9', '29:35 ceased @20',
   ],
 };
 
