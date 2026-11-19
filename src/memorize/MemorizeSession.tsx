@@ -106,6 +106,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
     </button>
   );
 
+  // the foot's bar is the column's width, a button plainly: no gutter for the floating ? (he hides it with a double tap); it stands on --lp-bar-inset, the phone's navigation area (mw-5r3p30.1202)
   return (
     <>
       <ScreenHeader title={session.heading} subtitle={typingOpen ? undefined : subtitle} back={back} />
@@ -208,7 +209,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
         )}
       </main>
       {judged || selfGraded || typingOpen ? null : (
-        <footer className="shrink-0 px-4 pb-[calc(0.5rem+var(--lp-bar-inset))] pr-[calc(var(--spacing)*18)] pt-2">
+        <footer className="shrink-0 px-4 pb-[calc(0.5rem+var(--lp-bar-inset))] pt-2">
           {lang === 'weave' ? (
             <RecordBar label="Hold to say it" listening={hold.record.listening} disabled={phase === 'sending'} onPress={hold.record.press} onRelease={hold.record.release} onAbort={hold.record.drop} />
           ) : (
