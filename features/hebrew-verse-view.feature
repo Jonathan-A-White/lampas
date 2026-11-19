@@ -2,7 +2,7 @@ Feature: The Verse view of an Old Testament verse reads in the Hebrew
   A verse of an Old Testament chapter opened from the Reader's Hebrew view shows the Hebrew, as big as the Greek is, right to left, in the app's Hebrew face. Listen says it in the
   phone's Hebrew voice (the cantillation marks taken off), and says "No Hebrew voice on this phone" where there is none. From the English view the verse is English, as it was. The Verse view
   follows the Reader's view and weave for a Hebrew chapter as for a Greek one; at Hebrew 0 the Reader reads the English, so the verse is English. Read it aloud is offered on the English
-  verse only (its Hebrew is scored in a later story). A Review card's verse shows in the Hebrew too, its Tap to hear says the Hebrew word, and Today's Read in Lampas opens an Old
+  verse only (its Hebrew is scored in a later story). A Review card's verse shows in the Hebrew too, its Tap to hear says the Hebrew word, and Today's Read opens an Old
   Testament plan chapter. Jonah 1 is the copy in tests/fixtures/data/jon/1.json. A Greek verse's Verse view is as it was (features/verse-view.feature).
 
   @uc-verse-view @hebrew
@@ -83,8 +83,8 @@ Feature: The Verse view of an Old Testament verse reads in the Hebrew
     Then the phone speaks "יוֹנָה" in "he-IL"
 
   @uc-verse-view @hebrew
-  Scenario: Today's Read in Lampas opens the Old Testament chapter of the plan
+  Scenario: Today's Read opens the Old Testament chapter of the plan
     Given Lampas is opened with a reading plan started at Psalms 23
     When he opens Today from the Reader
-    And he taps Read in Lampas on Today
+    And he taps Read on Today
     Then the Reader is showing "Psalms 23"

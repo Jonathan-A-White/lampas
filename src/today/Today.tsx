@@ -1,6 +1,6 @@
 // src/today/Today.tsx — Today (#/today, mw-1fwagb.5, the grilling mw-6ww.126): the day's pieces in one list, each a tap into its drill or Logos: Review (n due, opens Review), Memorize (n verses due, a tap starts the longest overdue verse's session; pick verses in a list while none is memorized), the
-// reading plan's next chapter (Read in Logos, Read in Lampas, Listen in Audible), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each Read in Lampas where Lampas holds the chapter, which is every one; a chapter it did not hold would keep Open in Logos), and today's
-// devotional (opens Logos at the day, or is the day's Morning RePhil episode with a Watch link, mw-qtu3zvz.15). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Read in Logos needs Logos On, Listen in Audible an
+// reading plan's next chapter (Read, Listen in Audible; Logos is reached by selecting a passage, mw-5r3p30.1214), the day's Psalms and Proverbs (src/data/daily/psalmsProverbs.ts, each Read in Lampas where Lampas holds the chapter, which is every one; a chapter it did not hold would keep Open in Logos), and today's
+// devotional (opens Logos at the day, or is the day's Morning RePhil episode with a Watch link, mw-qtu3zvz.15). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Listen in Audible needs an
 // Audio Bible). A tap on the plan's place opens src/plan/PlacePicker.tsx, where he says where he is (I'm at the Reader's chapter, or Pick a place), with Undo for a few seconds. With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
 // 'opened' for the local date (dailyStore.ts). With nothing On, Today explains what it could hold, each with a link to the Settings row that turns it on; once he changes a Daily row
 // that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front.
@@ -10,7 +10,7 @@ import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, tickedDevotionals } from '..
 import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, markSeen, noteExplained, pickAnotherDevotional, pinEpisode } from '../data/daily/dailyStore';
 import { DEFAULT_ORDER, anotherEpisode, devotionalToday, episodeDate, hasUnheard, type Episode, type EpisodeOrder, type TodaysDevotional } from '../data/daily/morningRephil';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
-import { dayProgress, getLogosBibles, getStudyResources, markChapterRead, ownedResources, unmarkChaptersRead } from '../data/repositories';
+import { dayProgress, getLogosBibles, markChapterRead, ownedResources, unmarkChaptersRead } from '../data/repositories';
 import { useLatestLiveQuery } from '../data/useLatestLiveQuery';
 import { bookOf } from '../data/books';
 import { backTo, navigate, openMemorizeSession, openReader } from '../nav/route';
@@ -26,7 +26,7 @@ import { useSendOff } from '../plan/useSendOff';
 import { AnotherBookButton } from '../library/InLogosDoors';
 import { useLogosOn } from '../useLogosOn';
 import { devotionalLink } from '../resources/logosDevotional';
-import { chapterLink, verseLink } from '../resources/logosBible';
+import { chapterLink } from '../resources/logosBible';
 import { offeredBibleFor } from '../library/bibleParts';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/audioBible';
 import { armFallback } from '../resources/openApp';
@@ -169,16 +169,13 @@ function MemorizePiece({ ticks }: { ticks: Ticks }) {
 
 function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
   const plan = usePlan();
-  const resources = useLiveQuery(getStudyResources, []);
-  const bibles = useLiveQuery(getLogosBibles, []);
-  const owned = useLiveQuery(ownedResources, []);
   const audioId = useSetting(audioBibleSetting);
   const sendOff = useSendOff();
   const [starting, setStarting] = useState(false);
   const [placing, setPlacing] = useState(false);
   const place = useMovePlace();
   const runs = readRuns(plan?.started?.readOn(date) ?? []);
-  if (!plan || !resources || bibles === undefined || owned === undefined || audioId === undefined) return null;
+  if (!plan || audioId === undefined) return null;
   const { started } = plan;
   const next = started?.next;
   // what he read today (chapters marked done on this date), each run with a ticked box that un-marks it, above Next (mw-5r3p30.630)
@@ -216,9 +213,6 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
     );
   } else {
     const name = chapterName(next);
-    const logosOn = resources.on.includes('logos');
-    const nextBible = offeredBibleFor(next.code, bibles, owned);
-    const logos = logosOn && nextBible !== undefined ? verseLink(next.code, next.chapter, undefined, nextBible) : undefined;
     const audio = audioBibleOf(audioId);
     const inLampas = bookOf(next.code) !== undefined;
     const listen = audio && audibleChapterLabel(next.code, next.chapter) !== undefined ? audio : undefined;
@@ -234,14 +228,9 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
           </button>
         </div>
         <div className="flex flex-wrap gap-2 px-2 pb-1 pt-2">
-          {logos ? (
-            <a href={logos.url} data-fallback={logos.fallback} onClick={() => { opened(); armFallback(logos.fallback); }} className={ACTION}>
-              Read in Logos
-            </a>
-          ) : null}
           {inLampas ? (
             <button type="button" onClick={() => { opened(); openReader({ book: next.code, chapter: next.chapter }); }} className={ACTION}>
-              Read in Lampas
+              Read
             </button>
           ) : null}
           {listen ? (
@@ -255,11 +244,8 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
             </a>
           ) : null}
         </div>
-        {logos || inLampas || listen ? null : (
+        {inLampas || listen ? null : (
           <div className="flex flex-wrap gap-2 px-2 pb-1 pt-1">
-            <button type="button" onClick={() => openSetting('resource.logos')} className={ACTION}>
-              Turn on Logos to read it
-            </button>
             <button type="button" onClick={() => openSetting('audioBible')} className={ACTION}>
               Choose an Audio Bible
             </button>

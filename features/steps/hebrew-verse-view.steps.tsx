@@ -1,6 +1,6 @@
 // features/steps/hebrew-verse-view.steps.tsx — runs features/hebrew-verse-view.feature: the Verse view of an Old Testament verse reads in the Hebrew when the Reader does (Jonah 1 is the copy in
 // tests/fixtures/data/jon/1.json): the Hebrew big and right to left, Listen in the Hebrew voice, the weave as the Reader's, English at Hebrew 0, Read it aloud on the English only; a Review card's
-// verse and Tap to hear in Hebrew; Today's Read in Lampas on an Old Testament plan chapter. Speech is voice-kit's honest fake (tests/support/fake-speech.ts).
+// verse and Tap to hear in Hebrew; Today's Read on an Old Testament plan chapter. Speech is voice-kit's honest fake (tests/support/fake-speech.ts).
 import '@testing-library/react/dont-cleanup-after-each';
 import { render, screen, cleanup, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -324,7 +324,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   });
 
-  Scenario("Today's Read in Lampas opens the Old Testament chapter of the plan", ({ Given, When, And, Then }) => {
+  Scenario("Today's Read opens the Old Testament chapter of the plan", ({ Given, When, And, Then }) => {
     Given('Lampas is opened with a reading plan started at Psalms 23', async () => {
       cleanup();
       await sheetEntriesGone();
@@ -343,9 +343,9 @@ describeFeature(feature, ({ Scenario }) => {
       await screen.findByRole('heading', { name: 'Romans 8', level: 1 });
     });
     When('he opens Today from the Reader', openToday);
-    And('he taps Read in Lampas on Today', async () => {
+    And('he taps Read on Today', async () => {
       const piece = await screen.findByRole('region', { name: 'Reading plan', exact: true });
-      await user.click(await within(piece).findByRole('button', { name: 'Read in Lampas' }));
+      await user.click(await within(piece).findByRole('button', { name: 'Read' }));
     });
     Then('the Reader is showing {string}', async (_, title: string) => {
       expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeInTheDocument();

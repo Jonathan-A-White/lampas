@@ -110,5 +110,5 @@ result on the bus (`link-opened`, docs/events.md) and replaces the address with 
 | Copy link / Share in the Verse view | write the same https form | no (what they write opens as above) |
 | a tutor answer's verse link, a lesson's, Share to Lampas's reference | the card over the screen (`ReferenceLink` stops the link), whose Open is `openAtVerse` (the Reader, verse at the top) | no; a long press or a new tab has the https form, which opens as above |
 | Choose a book's Go to, the Paradigms' own-verse button | `openAtVerse` | no |
-| Today's and the plan's Read in Lampas | `openReader` on the chapter (no ref= address) | no |
+| Today's plan's Read | `openReader` on the chapter (no ref= address) | no |
 | the Verse view's doors (a verse number, a heading, the place line, Review, Goal, Try it, the hard sounds lesson, the Reading ladder) | `openVerse`, `openPassage`, `openVerseRange`, `openVerseAt`: the Verse view | no |
