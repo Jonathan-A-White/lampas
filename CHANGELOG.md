@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.284
+_2026-11-19_
+- Fixed: at the Learning step of How much Greek, Choose a goal on the Goal screen now opens the pickers to choose a goal instead of going round in a circle.
+
 ## 0.7.282
 _2026-11-18_
 - Fixed: devotionals and other Logos books already on your shelf show again in the Library and in Settings when no Logos list is kept on this phone.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.284",
+    "date": "2026-11-19",
+    "story": "mw-indx1x6.97",
+    "kind": "fixed",
+    "text": "at the Learning step of How much Greek, Choose a goal on the Goal screen now opens the pickers to choose a goal instead of going round in a circle."
+  },
+  {
     "version": "0.7.282",
     "date": "2026-11-18",
     "story": "mw-5r3p30.1189",
