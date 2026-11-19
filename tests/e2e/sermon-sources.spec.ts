@@ -309,18 +309,18 @@ test('no dead address: the old Library > Sermons opens the list, a link to a sou
   await expect(page.getByRole('heading', { name: 'Your Logos library', level: 1 })).toBeVisible();
   await expect(page.getByTestId('kind-row')).toHaveCount(KINDS.length - 1);
   await expect(page.getByTestId('kind-row').filter({ hasText: /^Sermon/ })).toHaveCount(0);
-  await page.getByRole('searchbox', { name: 'Search your books' }).fill('Princeton Sermons');
-  await expect(page.getByRole('button', { name: /^Princeton Sermons/ })).toHaveCount(0);
+  await page.getByRole('searchbox', { name: 'Search your books' }).fill('Sermon Outlines on 1 Corinthians');
+  await expect(page.getByRole('button', { name: /^Sermon Outlines on 1 Corinthians/ })).toHaveCount(0);
   await shot(page, 'library-no-sermons');
 
   // the Settings search answers the book, and opens the list at its row
   await page.goto('/#/settings');
-  await page.getByRole('searchbox', { name: 'Search settings' }).fill('Princeton Sermons');
-  const found = page.getByRole('button', { name: /^Princeton Sermons · Sermon sources/ });
+  await page.getByRole('searchbox', { name: 'Search settings' }).fill('Sermon Outlines on 1 Corinthians');
+  const found = page.getByRole('button', { name: /^Sermon Outlines on 1 Corinthians · Sermon sources/ });
   await expect(found).toBeVisible();
   await found.click();
   await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
-  await expect(page.locator('[data-source][aria-current="true"]')).toContainText('Princeton Sermons');
+  await expect(page.locator('[data-source][aria-current="true"]')).toContainText('Sermon Outlines on 1 Corinthians');
   await expect(page.locator('[data-source][aria-current="true"]')).toBeInViewport({ ratio: 1 });
 });
 
