@@ -235,6 +235,25 @@ Feature: A wrong answer links to what teaches it
     And the page's address is as it was
     And the drill is still on its first question
 
+  # a reference in the answer opens a card whose Open leaves for the verse (mw-indx1x6.98): over a run the card reads the verse and has no control that leaves
+  Scenario: A reference the tutor writes in a talk over a drill opens a card that does not leave the drill
+    Given a phone with a licence and a fake Postern whose answer says "See John 3:16"
+    And Drill it is open there on the idea "article"
+    When he asks the tutor about the drill
+    And he taps the reference "John 3:16" in the answer
+    Then the reference card of "John 3:16" is open
+    And the card draws no control that changes the page's address
+    And the page's address is as it was
+    And the drill is still on its first question
+
+  Scenario: The same reference in the lesson's talk from a list of ideas keeps the card's Open
+    Given a phone with a licence and a fake Postern whose answer says "See John 3:16"
+    And the lesson of the idea "article" is open there as it is from a list of ideas
+    When he asks the tutor about the lesson
+    And he taps the reference "John 3:16" in the answer
+    Then the reference card of "John 3:16" is open
+    And the card has the "Open" button
+
   # the same answer in a talk over no run keeps the chip
   Scenario: The same answer in the lesson's talk from a list of ideas keeps the Table chip
     Given a phone with a licence and a fake Postern whose answer links the table "article", the verse "1 John 2:1" and a copy of "1 John 2:2"

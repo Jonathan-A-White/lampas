@@ -16,6 +16,7 @@ import { AnotherBookButton } from '../library/InLogosDoors';
 import { getLogosBibles, getStudyResources, ownedResources } from '../data/repositories';
 import { offeredBibleFor } from '../library/bibleParts';
 import { openAtVerse } from '../nav/readerRequest';
+import { useOffRun } from '../overRun';
 import { openSettingsSection } from '../settings/link';
 import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
@@ -104,7 +105,7 @@ function LogosDoor({ place, className }: { place: ElsewherePlace; className: str
 
 /** What a card for a place Lampas holds no data for says under its heading: that Lampas lacks it and where to read it instead. `onSettings` opens Settings. `said` is false where the
  *  words 'Not in Lampas yet' are already said above it (the notice a link leaves under the header). */
-export function ElsewhereLine({ place, said = true, onSettings }: { place: ElsewherePlace | null; said?: boolean; onSettings: () => void }) {
+export function ElsewhereLine({ place, said = true, onSettings }: { place: ElsewherePlace | null; said?: boolean; onSettings?: () => void }) {
   const resources = useLiveQuery(getStudyResources, []);
   const bibles = useLiveQuery(getLogosBibles, []);
   const owned = useLiveQuery(ownedResources, []);
@@ -116,7 +117,7 @@ export function ElsewhereLine({ place, said = true, onSettings }: { place: Elsew
     return (
       <p className="py-1 text-lg text-muted">
         {not ? `${not}. ` : null}
-        <a href={LINK_LOGOS_HASH} onClick={(e) => { e.preventDefault(); onSettings(); }} className="text-accent underline">Link Logos in Settings</a> to open it there.
+        {onSettings ? <a href={LINK_LOGOS_HASH} onClick={(e) => { e.preventDefault(); onSettings(); }} className="text-accent underline">Link Logos in Settings</a> : 'Link Logos in Settings'} to open it there.
       </p>
     );
   }
@@ -179,7 +180,7 @@ function PlayControls({ card }: { card: Card }) {
   );
 }
 
-function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen: () => void; onSettings: () => void }) {
+function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSettings }: { card: Card; place: ElsewherePlace | null; mark?: string; anchor: RefObject<HTMLElement | null>; onClose: () => void; onOpen?: () => void; onSettings?: () => void }) {
   useSheetBack(onClose);
   const { held } = card;
   const online = useOnline();
@@ -315,7 +316,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
           ) : passage === 'failed' ? (
             <div role="status" className="py-1 text-base text-muted">
               <p>{online ? 'This passage could not be fetched.' : 'This passage is not on this phone yet, and you are offline.'}</p>
-              <KeepOnPhoneLink onOpen={onClose} className="mt-1 block min-h-11 content-center text-base text-accent underline" />
+              {onSettings ? <KeepOnPhoneLink onOpen={onClose} className="mt-1 block min-h-11 content-center text-base text-accent underline" /> : null}
             </div>
           ) : (
             <MarkedPassage chapter={passage} held={held} mark={mark} />
@@ -327,7 +328,7 @@ function ReferenceCardView({ card, place, mark, anchor, onClose, onOpen, onSetti
             <div className="flex items-center gap-2">
               <PlayControls card={card} />
             </div>
-            {held ? (
+            {held && onOpen ? (
               <button type="button" onClick={onOpen} className="min-h-11 rounded-lg bg-accent px-5 text-base font-medium text-accent-fg">
                 Open<span aria-hidden="true"> ›</span>
               </button>
@@ -359,6 +360,8 @@ export function ReferenceLink({ written, onLeave, replacing, old, found, mark, c
   const card = useMemo(() => (old ? { heading: old.heading, held: null } : found ?? cardOf(written, mark !== undefined)), [written, old, found, mark]);
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLAnchorElement>(null);
+  // Open leaves for the Reader and the Settings link for Settings: over a run (a talk over a drill) the one guard gives nothing and the card only reads the verse (src/overRun.ts, mw-indx1x6.98)
+  const offRun = useOffRun();
   if (!card) return <>{children}</>;
   const held = card.held;
   return (
@@ -383,18 +386,18 @@ export function ReferenceLink({ written, onLeave, replacing, old, found, mark, c
           mark={mark}
           anchor={anchor}
           onClose={() => setOpen(false)}
-          onOpen={() => {
+          onOpen={offRun(() => {
             if (!held) return;
             onLeave?.();
             setOpen(false);
             if (replacing) afterSheetEntryGone(() => openAtVerse(held.book, held.chapter, held.first, true));
             else openAtVerse(held.book, held.chapter, held.first);
-          }}
-          onSettings={() => {
+          })}
+          onSettings={offRun(() => {
             onLeave?.();
             setOpen(false);
             openSettingsSection('resources');
-          }}
+          })}
         />
       ) : null}
     </>
