@@ -498,25 +498,36 @@ async function noControlLeaves(deep = 2): Promise<string[]> {
       await waitFor(() => expect(shown(), `Back after a tap on "${name}" changes what the sheets show`).not.toBe(was));
     }
   };
+  /** A lesson draws 'Finding examples…' until its passage is here, and its examples and what they lead to after: the walk lists and taps a sheet's controls once it is gone. */
+  const loaded = async (sheet: HTMLElement): Promise<void> => {
+    await waitFor(() => expect(sheet.querySelector('[data-testid="idea-loading"]'), `the sheet ${sheetMark(sheet)} is still finding its examples`).toBeNull());
+  };
   const walk = async (level: number): Promise<void> => {
+    await loaded(top());
     const here = shown();
     const floor = sheetDepth();
     noLinkToAPage(top());
     const listed = controls(top()).filter(tappable).map(({ key }) => key);
     const done = new Set<string>();
     for (let taps = 0; ; taps += 1) {
-      // the controls as they are now: one a tap drew is tapped too
+      // the controls as they are now: one a tap drew is tapped too (a lesson drawn anew by a Back finds its examples again first)
+      await loaded(top());
       const next = controls(top()).find((control) => tappable(control) && !done.has(control.key));
       if (!next) break;
       if (taps === MOST_TAPS) throw new Error(`the walk tapped ${MOST_TAPS} controls of ${here} and "${next.name}" is still not tapped`);
       done.add(next.key);
+      // a lesson's examples load after it opens, and the controls it draws with them are not there yet: a tap before then is a walk of other controls than the next run's
+      expect(top().querySelector('[data-testid="idea-loading"]'), `a tap on "${next.name}" of ${here} while the sheet is still finding its examples`).toBeNull();
       await user.click(next.button);
       tapped.push(next.name);
       expect(window.location.href, `after a tap on "${next.name}"`).toBe(before);
       const now = shown();
       if (now === here) continue;
       if (now.startsWith(`${here} > `) && level < deep && firstOfItsName(top())) await walk(level + 1);
-      else sheets().forEach(noLinkToAPage);
+      else {
+        await loaded(top());
+        sheets().forEach(noLinkToAPage);
+      }
       await backTo(here, floor, next.name);
     }
     // what the sheet drew since it was reached (a lesson's examples load after it opens) has no link either
