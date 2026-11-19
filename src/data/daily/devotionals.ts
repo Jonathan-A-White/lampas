@@ -77,28 +77,61 @@ function dateSeed(date: Date): number {
   return (h ^ (h >>> 16)) >>> 0;
 }
 
-/** The devotional for `date`: the one he chose; with Random, the day's `pick` (what Another drew, kept for the date) when the catalog has it, else one of the `ticked` ids
- *  (and Morning RePhil, only while `rephil` says an episode is unheard) drawn by the LOCAL date (the same all day). Nothing in the draw, or a choice the catalog lacks, gives Morning and Evening. */
-export function devotionalForDay(choice: string, ticked: readonly string[], date: Date, pick?: string, rephil = false): Devotional {
+/** A source of devotionals (mw-r9xo1pj.4): who gives them, and how they come. A new church feed is one more entry here and one switch in Settings > Daily > Devotional sources, not a new bolt.
+ *  `logos`: books of his Logos library, drawn from the ones that are On in Your Logos library; `episodes`: a feed of episodes he hears one by one. */
+export interface DevotionalSource {
+  id: 'logos' | 'rephil';
+  provider: string;
+  title: string;
+  kind: 'logos' | 'episodes';
+}
+
+export const DEVOTIONAL_SOURCES: readonly DevotionalSource[] = [
+  { id: 'logos', provider: 'Logos', title: 'Logos devotionals', kind: 'logos' },
+  { id: 'rephil', provider: 'Brookfield First', title: 'Morning RePhil', kind: 'episodes' },
+];
+
+/** Which sources the draw may use: `logos` is true only while Logos is On AND 'Logos devotionals' is On; `rephil` is Brookfield First's switch. */
+export type DrawSources = Record<DevotionalSource['id'], boolean>;
+
+/** Every source on (what a caller that knows no switches means). */
+export const ALL_SOURCES: DrawSources = { logos: true, rephil: true };
+
+/** The sources he has on, from the three things that decide it: Logos itself (Settings > Study resources), and the two switches of Settings > Daily > Devotional sources ('on' or 'off'; absent reads as On). */
+export const drawSourcesOf = (logosOn: boolean, logosDevotionals?: string, rephil?: string): DrawSources => ({ logos: logosOn && logosDevotionals !== 'off', rephil: rephil !== 'off' });
+
+/** Whether the source `d` comes from is on. */
+export const sourceOn = (d: Devotional, sources: DrawSources): boolean => (d.kind === 'rephil' ? sources.rephil : sources.logos);
+
+/** THE draw: the devotionals Random may show or Another may draw, in the catalog's order: the `ticked` Logos ones while the Logos source is on, and Morning RePhil while its source is on and `rephil` says an episode is
+ *  unheard. Every reader of the draw (Today, its chip, Another, the tutor's Today's devotional) comes here (mw-r9xo1pj.4). */
+export function drawPool(ticked: readonly string[], rephil: boolean, sources: DrawSources = ALL_SOURCES): Devotional[] {
+  return [...(sources.logos ? DEVOTIONALS.filter((d) => ticked.includes(d.id)) : []), ...(sources.rephil && rephil ? [MORNING_REPHIL] : [])];
+}
+
+/** The devotional for `date`: the one he chose; with Random, the day's `pick` (what Another drew, kept for the date) when the catalog has it and its source is on, else one of the draw (drawPool) by the LOCAL date (the same
+ *  all day). Nothing in the draw, or a choice the catalog lacks, gives Morning and Evening. */
+export function devotionalForDay(choice: string, ticked: readonly string[], date: Date, pick?: string, rephil = false, sources: DrawSources = ALL_SOURCES): Devotional {
   if (choice !== RANDOM) return byId.get(choice) ?? FALLBACK;
   const picked = pick === undefined ? undefined : byId.get(pick);
-  if (picked) return picked;
-  const pool = [...DEVOTIONALS.filter((d) => ticked.includes(d.id)), ...(rephil ? [MORNING_REPHIL] : [])];
+  if (picked && sourceOn(picked, sources)) return picked;
+  const pool = drawPool(ticked, rephil, sources);
   return pool.length === 0 ? FALLBACK : pool[dateSeed(date) % pool.length];
 }
 
-/** The devotionals Settings > Daily's picker lists, in the catalog's order: those `ticked` for the draw that he may be offered (in his import or free with Logos: src/data/owned.ts isOffered, mw-qtu3zvz.167),
- *  Morning RePhil last (a web page, always offered), and always the one chosen now (`current`), so the picker never hides what Today shows. With Logos Off (`logosOn` false) only the one chosen now
- *  and Morning RePhil are listed: a Logos book opens nothing then (mw-r9xo1pj.2). */
-export const pickableDevotionals = (ticked: readonly string[], current: string, owned: Owned, logosOn = true): Devotional[] => [
-  ...DEVOTIONALS.filter((d) => d.id === current || (logosOn && ticked.includes(d.id) && isOffered(d.id, owned))),
-  MORNING_REPHIL,
+/** The devotionals Settings > Daily's picker lists, in the catalog's order: those `ticked` for the draw that he may be offered (in his import or free with Logos: src/data/owned.ts isOffered, mw-qtu3zvz.167) while the Logos
+ *  source is on, Morning RePhil last while its source is on (a web page, always offered), and always the one chosen now (`current`), so the picker never hides what Today shows. With the Logos source off (Logos Off, or
+ *  'Logos devotionals' Off) only the one chosen now and Morning RePhil are listed: a Logos book opens nothing then (mw-r9xo1pj.2). */
+export const pickableDevotionals = (ticked: readonly string[], current: string, owned: Owned, sources: DrawSources = ALL_SOURCES): Devotional[] => [
+  ...DEVOTIONALS.filter((d) => d.id === current || (sources.logos && ticked.includes(d.id) && isOffered(d.id, owned))),
+  ...(sources.rephil || current === MORNING_REPHIL_ID ? [MORNING_REPHIL] : []),
 ];
 
-/** The id Another draws: one of the `ticked` ones other than `current` (Morning RePhil too, while `rephil` says an episode is unheard); when the draw holds nothing else, any other in the catalog. `random` is Math.random's kind. */
-export function anotherDevotional(current: string, ticked: readonly string[], random: () => number = Math.random, rephil = false): string {
-  const extra = rephil ? [MORNING_REPHIL] : [];
-  let pool = [...DEVOTIONALS.filter((d) => ticked.includes(d.id)), ...extra].filter((d) => d.id !== current);
-  if (pool.length === 0) pool = [...DEVOTIONALS, ...extra].filter((d) => d.id !== current);
+/** The id Another draws: one of the draw (drawPool) other than `current`; when the draw holds nothing else, any other of the sources that are on (Morning RePhil only while `rephil` says an episode is unheard); with every
+ *  source off, `current` stays. `random` is Math.random's kind. */
+export function anotherDevotional(current: string, ticked: readonly string[], random: () => number = Math.random, rephil = false, sources: DrawSources = ALL_SOURCES): string {
+  let pool = drawPool(ticked, rephil, sources).filter((d) => d.id !== current);
+  if (pool.length === 0) pool = drawPool(DEVOTIONALS.map((d) => d.id), rephil, sources).filter((d) => d.id !== current);
+  if (pool.length === 0) return current;
   return pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))].id;
 }

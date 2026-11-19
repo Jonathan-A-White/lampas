@@ -3,7 +3,7 @@
 // store under 'dailyDone' (like readingPlan.ts), outside the settings registry; no Dexie version. A date is 'YYYY-MM-DD' on the phone's clock, never the UTC one, so
 // a new local date starts empty. A piece is 'review', 'memorize', 'plan', 'devotional' or a passage ('psa.5', 'pro.5'). Nothing ticks by itself: only setTicked writes a tick.
 import { db } from '../db';
-import { MORNING_REPHIL_ID, anotherDevotional } from './devotionals';
+import { MORNING_REPHIL_ID, anotherDevotional, type DrawSources } from './devotionals';
 import { hasUnheard } from './morningRephil';
 
 const KEY = 'dailyDone';
@@ -14,7 +14,7 @@ const HEARD_KEY = 'morningRephilHeard';
 export const KEPT_DAYS = 90;
 
 /** The keys of Settings > Daily (src/settings/definitions/daily.ts). Changing any of them answers the explanation. */
-export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'todaysDevotional', 'morningRephilOrder', 'morningRephilBackup', 'dailyTicks'];
+export const DAILY_KEYS: readonly string[] = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional', 'devotional', 'devotionalDraw', 'devotionalLogos', 'devotionalRephil', 'todaysDevotional', 'morningRephilOrder', 'morningRephilBackup', 'dailyTicks'];
 
 export interface DayRecord {
   /** the pieces he ticked, in the order he ticked them */
@@ -78,10 +78,10 @@ export function setDevotionalPick(date: string, id: string): Promise<void> {
   return update(date, (day) => ({ ...day, devotional: id }));
 }
 
-/** Another: draws a devotional for `date` other than `current` (from the `ticked` ones, src/data/daily/devotionals.ts anotherDevotional), keeps it for the date and returns its id.
+/** Another: draws a devotional for `date` other than `current` (from the draw over `sources`, src/data/daily/devotionals.ts anotherDevotional), keeps it for the date and returns its id.
  *  The ONE function that switches the day's devotional while Which devotional stays Random. */
-export async function pickAnotherDevotional(date: string, current: string, ticked: readonly string[], random?: () => number, rephil?: boolean): Promise<string> {
-  const id = anotherDevotional(current, ticked, random, rephil);
+export async function pickAnotherDevotional(date: string, current: string, ticked: readonly string[], random?: () => number, rephil?: boolean, sources?: DrawSources): Promise<string> {
+  const id = anotherDevotional(current, ticked, random, rephil, sources);
   await setDevotionalPick(date, id);
   return id;
 }
