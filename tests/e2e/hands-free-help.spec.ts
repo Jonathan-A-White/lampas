@@ -80,7 +80,7 @@ test("a tap on the mic mark opens the sheet 'What you can say': every command, o
   // a tap in the moments after the page settles may be dropped by the page's own guard against a double tap: tap again until the sheet is up, never once it is
   await expect(async () => {
     if (!(await sheet.isVisible())) await mark(page).click();
-    await expect(sheet).toBeVisible({ timeout: 1500 });
+    await expect(sheet).toBeVisible({ timeout: 1500 }); // short on purpose: each pass of this retry taps again if the sheet is not up, the loop's own budget is the toPass below
   }).toPass({ timeout: 20_000 });
   await expect(sheet.getByRole('heading', { name: 'What you can say', level: 2 })).toBeVisible();
   const lines = sheet.locator('[data-help-line]');
