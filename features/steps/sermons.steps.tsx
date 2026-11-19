@@ -14,6 +14,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { setSermonSources } from '../../src/sermons';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { forgetTestMaps, registerTestMaps, TEST_CARDS, testSource as testMapSource } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons, testSource } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
@@ -137,15 +138,17 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const viewHas = async (_: unknown, label: string) => {
-    expect(await within(viewEl()).findByRole('button', { name: label })).toBeVisible();
+    expect(await findButton(label)).toBeVisible();
   };
   const viewHasNone = async () => {
     // the door is drawn as soon as its count comes back
     await sleep(100);
     expect(doorsIn(viewEl())).toHaveLength(0);
   };
+  // findButton, not a role query: the Verse view of a whole chapter holds the chapter's ~hundreds of chunk buttons, and findByRole works out each one's name at every poll, so on a loaded host it outran the wait and starved
+  // the database the door's count is read from (mw-indx1x6.118)
   const tapDoor = async (_: unknown, label: string) => {
-    await user.click(await within(viewEl()).findByRole('button', { name: label }));
+    await user.click(await findButton(label));
   };
   const headed = async (_: unknown, title: string) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));
@@ -235,7 +238,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on {string} with the Maps door', (_, title: string) => openOn(title, { maps: true }));
     When('he taps verse {int}', tapVerse);
     Then('the tools line reads {string} and then {string}', async (_, first: string, then: string) => {
-      await within(viewEl()).findByRole('button', { name: then });
+      await findButton(then);
       const tools = within(screen.getByRole('group', { name: 'Tools' })).getAllByRole('button');
       const names = tools.map((b) => squash(b.textContent));
       expect(names.indexOf(first)).toBeGreaterThanOrEqual(0);
@@ -285,7 +288,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps verse {int}', tapVerse);
     And('he taps {string} while its source is slow to answer', async (_, label: string) => {
       // the door is drawn from the answer the source gave before it was held: wait for it, then hold the source, so the sheet's own ask is the slow one (the owned-check reads the shelf too, mw-5r3p30.1189, so the door may come after this step began)
-      await within(viewEl()).findByRole('button', { name: label });
+      await findButton(label);
       holdSource();
       await tapDoor(_, label);
     });
