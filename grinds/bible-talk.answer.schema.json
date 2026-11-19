@@ -1597,6 +1597,12 @@
                   "sermons.wesley-logos",
                   "sermons.whitefield-logos",
                   "sermons.moody-logos",
+                  "sermons.augustine-logos",
+                  "sermons.chrysostom-logos",
+                  "sermons.piper-logos",
+                  "sermons.bunyan-logos",
+                  "sermons.charles-wesley-logos",
+                  "sermons.jimmy-evans-logos",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2057,6 +2063,42 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.moody-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.augustine-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.chrysostom-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.piper-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.bunyan-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.charles-wesley-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.jimmy-evans-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
