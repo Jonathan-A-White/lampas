@@ -37,6 +37,7 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
   // Without the option only a personal or reflexive pronoun (P-, F-) goes before, and every other '. . .' word joins the NEXT chunk (both builds pass it now: the Old Testament's since mw-fnvjof.17.161).
   // A pronoun after a chunk of function words only ('and', 'while') waits for the chunk after it (Luke 12:37); the other kinds take the chunk before whatever it is ('except' holds εἰ μὴ,
   // 'how' holds ἐν τίνι: a read of 25 such rows found 22 right). mw-5r3p30.997 (pronouns), mw-5r3p30.1001 (the rest); docs/sources/msb-chunk-pairs.md.
+  // A word marked `waits` (the Old Testament's PAIRING_FIXES, Genesis 21:11 בְּעֵינֵי) is a '. . .' word the table meant for the chunk AFTER it: it joins that one whatever the option (mw-fnvjof.17.193).
   const e: Array<{ t: string; g: number[] }> = [];
   // Poetry: a word whose tag is an indent one starts a line at the English chunk it opens (the next chunk, when the word has no English of its own).
   const lines: PoetryLine[] = [];
@@ -52,7 +53,7 @@ export function buildVerse(v: TableVerse, source: (w: TableWord, v: TableVerse) 
       if (raw === '. . .') {
         const last = e[e.length - 1];
         const pronoun = /^[PF]-/.test(w.parse);
-        if (last && (pronoun ? last.g.some((i) => !FUNCTION_PARSE.test(g[i].p)) : options.dotsBefore)) last.g.push(gi);
+        if (last && !w.waits && (pronoun ? last.g.some((i) => !FUNCTION_PARSE.test(g[i].p)) : options.dotsBefore)) last.g.push(gi);
         else ellipsis.push(gi);
       }
       opening += tidy(w.begQ);

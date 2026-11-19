@@ -1,0 +1,7 @@
+H7489	H7489G =	H7489G	רָעַע	ra.a	H:V	be evil	1) to be bad, be evil<br>1a) (Qal) to be bad, be evil
+H3966	H3966G =	H3966G	מְאֹד	me.od	H:Adv	much	1) exceedingly, much, force, abundance
+H5869	H5869G =	H5869G	עַ֫יִן	a.yin	H:N-F	eye	1) eye<br>1a) eye (physical organ)<br>1d) in the eyes of
+H0085	H0085G =	H0085G	אַבְרָהָם	av.ra.ham	H:N-M-P	Abraham	Abraham = "father of a multitude" 1) the son of Terah, the patriarch
+H5921	H5921G =	H5921G	עַל	al	H:Prep	upon	1) upon, on the ground of, on account of, concerning
+H0182	H0182G =	H0182G	אוֹדָה	o.da	H:N-F	because	1) cause, matter (only in the construct, on account of)
+H1121	H1121G =	H1121G	בֵּן	ben	H:N-M	son	1) son, grandson, child, member of a guild
