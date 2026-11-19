@@ -1286,3 +1286,117 @@ for (const look of ROTATE) {
     await shot(page, `turn-pages-rotate-${look.name.replace(/\W+/g, '-').toLowerCase()}`);
   });
 }
+
+// mw-5r3p30.1199: with Turn pages and the Immersive reader On, the first tap (the one that puts the bars away and so grows the box) landed on a page that began
+// past text he had not seen (Luke 15 upright: "there will be more joy in heaven ..." was on neither page; Matthew 5 sideways: "Blessed are the meek,"). The
+// character after the last one wholly on the page shown is noted by its place in all the text of the chapter (which a re-cut does not change), and after the
+// one tap it must be on the screen: on the page he left or on the next.
+
+/** Notes the first character that is not wholly on the reading box and begins after it (the first of the next page): its index among all the characters of the
+ * reading text and the words round it. */
+const unseenAfter = (page: Page) =>
+  page.evaluate(() => {
+    const reader = document.querySelector('[data-reader]') as HTMLElement;
+    const b = reader.getBoundingClientRect();
+    const walker = document.createTreeWalker(reader, NodeFilter.SHOW_TEXT);
+    let index = 0;
+    let text = '';
+    const next: { index: number } | { index: -1 } = { index: -1 };
+    const range = document.createRange();
+    const marks: { index: number; left: number }[] = [];
+    for (let node = walker.nextNode() as Text | null; node; node = walker.nextNode() as Text | null) {
+      for (let i = 0; i < node.length; i++, index++) {
+        text += node.data[i];
+        if (/\s/.test(node.data[i])) continue;
+        range.setStart(node, i);
+        range.setEnd(node, i + 1);
+        const r = range.getClientRects()[0];
+        if (!r || r.width <= 0) continue;
+        marks.push({ index, left: r.left });
+        if (next.index < 0 && r.left >= b.right - 1) next.index = index;
+      }
+    }
+    return { index: next.index, words: next.index < 0 ? '' : text.slice(Math.max(0, next.index - 30), next.index) + '|' + text.slice(next.index, next.index + 30) };
+  });
+
+/** Whether the character at `index` among all the reading text's characters is wholly on the reading box as it stands now. */
+const characterOnScreen = (page: Page, index: number) =>
+  page.evaluate((want) => {
+    const reader = document.querySelector('[data-reader]') as HTMLElement;
+    const b = reader.getBoundingClientRect();
+    const walker = document.createTreeWalker(reader, NodeFilter.SHOW_TEXT);
+    let at = 0;
+    for (let node = walker.nextNode() as Text | null; node; node = walker.nextNode() as Text | null) {
+      if (want >= at + node.length) {
+        at += node.length;
+        continue;
+      }
+      const range = document.createRange();
+      range.setStart(node, want - at);
+      range.setEnd(node, want - at + 1);
+      const r = range.getClientRects()[0];
+      return !!r && r.left >= b.left - 1 && r.right <= b.right + 1 && r.top >= b.top - 1 && r.bottom <= b.bottom + 1;
+    }
+    return false;
+  }, index);
+
+/** Opens a chapter in Turn pages with the Immersive reader On (the card dismissed, or showing), its pages cut for good. */
+async function openImmersiveChapter(page: Page, code: string, title: string, card: 'dismissed' | 'showing') {
+  await openUnlocked(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+  await keep(page, { readingMode: 'pages', immersiveReader: 'on', ...(card === 'dismissed' ? { immersiveHint: 'off' } : {}) });
+  const chapter = title.replace(/^\D+/, '');
+  await openChapter(page, `#/?b=${code}&c=${chapter}`, title);
+  await expect(page.locator('header').first()).toBeVisible();
+}
+
+/** The one tap that puts the bars away, and the text round the first character of page 2 is still on the screen after it. */
+async function firstTurnSkipsNothing(page: Page, code: string, title: string, size: { width: number; height: number }, card: 'dismissed' | 'showing') {
+  await page.setViewportSize({ width: size.width, height: size.height });
+  await openImmersiveChapter(page, code, title, card);
+  const before = await unseenAfter(page);
+  expect(before.index, `some text of ${title} begins on page 2`).toBeGreaterThanOrEqual(0);
+  const opened = await placeOf(page);
+  await tapAt(page, 0.85);
+  await expect(page.locator('header').first()).toBeHidden();
+  await expect(turning(page)).toHaveCount(0);
+  await settled(page);
+  const now = await placeOf(page);
+  expect(await characterOnScreen(page, before.index), `${title}, ${size.width}x${size.height}: the text after page 1 (…${before.words}…) is on the screen after the first turn (page ${opened.at} of ${opened.of}, now ${now.at} of ${now.of})`).toBe(true);
+}
+
+for (const open of [
+  { title: 'Luke 15', code: 'luk', width: 390, height: 844 },
+  { title: 'Matthew 5', code: 'mat', width: 844, height: 390 },
+]) {
+  test(`with Turn pages and the Immersive reader On, the text not skipped by the first turn: ${open.title} at ${open.width}x${open.height}`, async ({ page }) => {
+    await firstTurnSkipsNothing(page, open.code, open.title, open, 'dismissed');
+    await shot(page, `turn-pages-first-turn-${open.code}`);
+  });
+}
+
+// The sweep of mw-5r3p30.1199: every chapter of the four Gospels, upright and sideways, with the card dismissed and showing. 356 first turns, so it runs only when
+// LAMPAS_TURN_SWEEP is set (`LAMPAS_TURN_SWEEP=1 npx playwright test turn-pages.spec.ts --project=shots -g "first turn sweep" --repeat-each=3`).
+const GOSPELS: [string, string, number][] = [
+  ['mat', 'Matthew', 28],
+  ['mrk', 'Mark', 16],
+  ['luk', 'Luke', 24],
+  ['jhn', 'John', 21],
+];
+if (process.env.LAMPAS_TURN_SWEEP) {
+  for (const [code, name, chapters] of GOSPELS) {
+    for (let c = 1; c <= chapters; c++) {
+      for (const size of [
+        { name: '390x844', width: 390, height: 844 },
+        { name: '844x390', width: 844, height: 390 },
+      ]) {
+        for (const card of ['dismissed', 'showing'] as const) {
+          test(`first turn sweep: ${name} ${c} at ${size.name}, card ${card}`, async ({ page }) => {
+            await firstTurnSkipsNothing(page, code, `${name} ${c}`, size, card);
+          });
+        }
+      }
+    }
+  }
+}
