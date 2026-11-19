@@ -10,14 +10,15 @@ export interface DailySwitches {
   memorize: string;
 }
 
-/** The ids of the pieces with a box on `today`, in the order Today draws them. */
-export function todayPieces(on: DailySwitches, today: Date): string[] {
+/** The ids of the pieces with a box on `today`, in the order Today draws them. `devotionalDrawn` is whether Today draws a devotional (devotionalToday gave one): with Logos Off and a Logos book
+ *  chosen it draws none, so the switch being On leaves no box (mw-r9xo1pj.6). */
+export function todayPieces(on: DailySwitches, today: Date, devotionalDrawn = true): string[] {
   return [
     ...(on.review === 'on' ? ['review'] : []),
     ...(on.memorize === 'on' ? ['memorize'] : []),
     ...(on.plan === 'on' ? ['plan'] : []),
     ...(on.psalms === 'on' ? dailyReadings(today).map((r) => `${r.code}.${r.chapter}`) : []),
-    ...(on.devotional === 'on' ? ['devotional'] : []),
+    ...(on.devotional === 'on' && devotionalDrawn ? ['devotional'] : []),
   ];
 }
 

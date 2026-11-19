@@ -7,6 +7,8 @@ import { menuButton } from './openSettings';
 // The Reader's Today chip (src/today/TodayChip.tsx, mw-1fwagb.6): it replaced the Due and Plan chips, counts the pieces Today holds and those he ticked, and opens Today.
 test.use({ viewport: { width: 390, height: 844 } });
 
+/** Today draws the devotional only with Logos On (the default devotional is a Logos book, src/today/pieces.ts, mw-r9xo1pj.6), so these specs turn Logos On to hold every piece. */
+const LOGOS_ON = { key: 'resource.logos', value: 'on' };
 const DAILY = ['dailyReview', 'dailyMemorize', 'dailyPlan', 'dailyPsalms', 'dailyDevotional'];
 /** The day's pieces with a box: Review, Memorize, plan, devotional and each of the Psalms and Proverbs (on day N: Psalms N, N+30, ... up to 150, and Proverbs N). */
 const piecesToday = (): number => {
@@ -49,7 +51,7 @@ async function openReader(page: Page, rows: { key: string; value: string }[] = [
 }
 
 test('the Reader shows the Today chip and no Due or Plan chip; it opens Today and ticking a piece changes its count', async ({ page }) => {
-  await openReader(page);
+  await openReader(page, [LOGOS_ON]);
   const chip = todayChip(page);
   const n = piecesToday();
   await expect(chip).toHaveText(`Today · 0 of ${n}`);
@@ -80,7 +82,7 @@ test('the Reader shows the Today chip and no Due or Plan chip; it opens Today an
 });
 
 test('a piece switched off is not counted, and with Tick boxes off the chip says just Today', async ({ page }) => {
-  await openReader(page, [{ key: 'dailyPsalms', value: 'off' }]);
+  await openReader(page, [LOGOS_ON, { key: 'dailyPsalms', value: 'off' }]);
   await expect(todayChip(page)).toHaveText('Today · 0 of 4');
 
   await putSettings(page, [{ key: 'dailyTicks', value: 'off' }]);
@@ -92,7 +94,7 @@ test('a piece switched off is not counted, and with Tick boxes off the chip says
 });
 
 test('with every Daily piece off the Reader has no Today chip', async ({ page }) => {
-  await openReader(page, DAILY.map((key) => ({ key, value: 'off' })));
+  await openReader(page, [LOGOS_ON, ...DAILY.map((key) => ({ key, value: 'off' }))]);
   await expect(page.getByTestId('new-words').or(page.getByTestId('weave-count')).or(menuButton(page)).first()).toBeVisible();
   await expect(todayChip(page)).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Due:/ })).toHaveCount(0);

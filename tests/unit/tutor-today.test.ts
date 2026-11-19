@@ -27,6 +27,8 @@ beforeEach(async () => {
   await db.open();
   await Promise.all([db.settings.clear(), db.words.clear(), db.reviews.clear(), db.meta.clear()]);
   await db.meta.bulkPut([{ key: 'wordsSeeded', value: '1' }, { key: 'reviewsSeeded', value: '1' }]);
+  // Today draws the devotional only with Logos On (a Logos book is the default one): these tests hold every piece (mw-r9xo1pj.6)
+  await db.settings.put({ key: 'resource.logos', value: 'on' });
   window.location.hash = '';
 });
 
