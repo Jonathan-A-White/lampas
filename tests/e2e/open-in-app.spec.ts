@@ -1,14 +1,14 @@
 // tests/e2e/open-in-app.spec.ts — 'Open in the app' (mw-5r3p30.1041): in a Chrome tab on Android where navigator.getInstalledRelatedApps (stubbed here: a real install
 // cannot be made in a test) reports the app, one labelled control shows at 360x740 and 390x844, at 100 % and at larger text. It is clear of the floating ? and floats over the top edge (mw-5r3p30.1051: arriving late it moves neither the Reader's
 // verse nor its box, at 390x844 and 844x390), no wider than the phone, and 'Not now' puts it away for the session. Nothing leaves the page by itself: the address is as it was opened. The tap
-// opens the plain address in a new tab with no opener and no referrer (mw-5r3p30.1082; the form, and why not an intent: URL, are in src/openInApp.ts goTo); the last test reads that tab's address
-// and Referer and opens the address in a fresh context, to prove the verse survives the hand-over (mw-5r3p30.1050). Whether Android's installed app takes it is not provable in a test. Ends with a shot.
+// opens the plain address in a new tab with no opener and no referrer (mw-5r3p30.1082; the form, and why not an intent: URL, are in src/openInApp.ts goTo); the last test reads that tab's address and Referer and opens the address in a fresh context, to prove the verse survives the hand-over (mw-5r3p30.1050). Whether Android's installed app takes it is not provable in a test. Ends with a shot.
 import { expect, test, type Page } from '@playwright/test';
 import { openWithTextSize, PHONES } from './next-in-view';
 import { FLOATING } from './open-tutor';
 import { pageTime, tapTwice } from '../support/gesture';
 import { makeFakePostern, TIP_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { setDisplayMode } from './installed';
 import { menuButton } from './openSettings';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
@@ -127,10 +127,7 @@ test('never shows inside the installed app (display-mode standalone)', async ({ 
   await page.setViewportSize({ width: 390, height: 844 });
   await stubApi(page, WEBAPP);
   await page.emulateMedia({ media: null });
-  await page.addInitScript(() => {
-    const real = window.matchMedia.bind(window);
-    window.matchMedia = (query: string) => (/display-mode:\s*standalone/.test(query) ? Object.assign(real('all'), { matches: true, media: query }) : real(query));
-  });
+  await setDisplayMode(page, 'standalone'); // matches is a getter-only property of a MediaQueryList: Object.assign on it throws (mw-zdfsc2w), so the shared helper defines it
   await openUnlocked(page);
   await page.goto('/#/?ref=Rom.8.28');
   await expect(page.locator('[data-shell]')).toBeVisible();
@@ -144,6 +141,14 @@ test('never shows inside the installed app (display-mode standalone)', async ({ 
  * Chrome). A desktop Chromium has no installed app to take it, so the new tab is read, not followed to an app; the page that was tapped has not moved.
  */
 async function tapAndRead(page: Page): Promise<{ address: string; referer: string | undefined; opener: boolean }> {
+  // the Reader writes its own defaults into the address (&view=english&weave=off) a moment after it opens: read the address only once it has stopped moving
+  await expect
+    .poll(async () => {
+      const seen = page.url();
+      await page.waitForTimeout(400); // a real-time wait: the address must be seen not to move for a while
+      return page.url() === seen;
+    })
+    .toBe(true);
   const before = page.url();
   const requests: { url: string; referer: string | undefined }[] = [];
   page.context().on('request', (request) => request.isNavigationRequest() && requests.push({ url: request.url(), referer: request.headers()['referer'] }));
