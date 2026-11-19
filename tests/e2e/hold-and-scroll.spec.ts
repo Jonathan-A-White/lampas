@@ -91,6 +91,32 @@ test('a second finger scrolls the passage while Hold to say it is held: the hold
   expect(seen.up).toBe(1);
 });
 
+// mw-06ggew.20: a second touch that lands on the bar itself and lifts must not end the hold: only the holding finger's lift sends.
+test('a second finger that touches the bar and lifts leaves the hold: it is sent once, when the first finger lifts', async ({ page }) => {
+  const { bar } = await openPassage(page);
+  await watchBar(bar);
+  const hold = await middle(bar);
+  const box = (await bar.boundingBox())!;
+  const touch = await fingers(page);
+  try {
+    const first: Finger = { ...hold, id: 1 };
+    await touch.send('touchStart', [first]);
+    await expect(bar).toHaveText(/Release to send/);
+    const second: Finger = { x: box.x + 12, y: hold.y, id: 2 };
+    await touch.send('touchStart', [first, second]);
+    await touch.send('touchEnd', [second]);
+    await page.waitForTimeout(300);
+    await expect(bar).toHaveText(/Release to send/);
+    await expect(page.getByTestId('judgement')).toHaveCount(0);
+    expect((await barSeen(page)).cancel).toBe(0);
+    await touch.send('touchEnd', [first]);
+  } finally {
+    await touch.done();
+  }
+  await expect(page.getByTestId('judgement')).toHaveCount(1);
+  expect((await barSeen(page)).cancel).toBe(0);
+});
+
 test('the holding finger sliding off the bar still drops the hold unsent', async ({ page }) => {
   const { bar, area } = await openPassage(page);
   await watchBar(bar);
@@ -210,6 +236,32 @@ test('on the letter drill a second finger on the card leaves the hold alone, and
     await touch.done();
   }
   await expect(drill.getByTestId('say-result')).toBeVisible();
+  await expect(drill.getByTestId('say-result')).toHaveCount(1);
+  expect((await barSeen(page)).cancel).toBe(0);
+});
+
+test('on the letter drill a second finger that touches the bar and lifts leaves the hold, and lifting the first sends once', async ({ page }) => {
+  const drill = await openSayIt(page);
+  const bar = drill.locator('.lp-bar');
+  await watchBar(bar);
+  const hold = await middle(bar);
+  const box = (await bar.boundingBox())!;
+  const touch = await fingers(page);
+  try {
+    const first: Finger = { ...hold, id: 1 };
+    await touch.send('touchStart', [first]);
+    await expect(bar).toHaveText(/Let go when you have said it/);
+    const second: Finger = { x: box.x + 12, y: hold.y, id: 2 };
+    await touch.send('touchStart', [first, second]);
+    await touch.send('touchEnd', [second]);
+    await page.waitForTimeout(300);
+    await expect(bar).toHaveText(/Let go when you have said it/);
+    await expect(drill.getByTestId('say-result')).toHaveCount(0);
+    await page.waitForTimeout(4200); // a real-time wait: the clip is heard in real time while the finger holds
+    await touch.send('touchEnd', [first]);
+  } finally {
+    await touch.done();
+  }
   await expect(drill.getByTestId('say-result')).toHaveCount(1);
   expect((await barSeen(page)).cancel).toBe(0);
 });
