@@ -34,6 +34,7 @@ export type SectionId =
   | 'themes'
   | 'sermons'
   | 'daily'
+  | 'devotionalSources'
   | 'tips'
   | 'developer'
   | 'aboutYou'

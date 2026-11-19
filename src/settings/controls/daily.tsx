@@ -1,26 +1,27 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { ALL_TICKED, RANDOM, devotionalOf, pickableDevotionals, tickedDevotionals } from '../../data/daily/devotionals';
+import { useDrawSources } from '../devotionalSources';
 import { NotWatchHistory, importMessage, importWatchHistory } from '../../data/daily/youtubeHistory';
 import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
-import { useLogosOn } from '../../useLogosOn';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, greekKeyboardSetting, hebrewKeyboardSetting, morningRephilBackupSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, greekKeyboardSetting, hebrewKeyboardSetting, morningRephilBackupSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 /** One On | Off switch of Settings > Daily: a piece of Today, or its Tick boxes. */
-function dailySwitch(def: typeof dailyReviewSetting | typeof greekKeyboardSetting | typeof hebrewKeyboardSetting, settingKey: 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'dailyTicks' | 'greekKeyboard' | 'hebrewKeyboard'): Control {
+function dailySwitch(def: typeof dailyReviewSetting | typeof greekKeyboardSetting | typeof hebrewKeyboardSetting | typeof devotionalLogosSetting | typeof devotionalRephilSetting, settingKey: 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'devotionalLogos' | 'devotionalRephil' | 'dailyTicks' | 'greekKeyboard' | 'hebrewKeyboard', more?: (current: 'on' | 'off') => ReactNode): Control {
   return function DailySwitch({ row }) {
     const current = useSetting(def);
     return (
       <SettingRow row={row}>
         <RowName row={row} />
         {current ? <OnOff name={row.label} current={current} settingKey={settingKey} /> : null}
+        {current && more ? more(current) : null}
       </SettingRow>
     );
   };
@@ -31,6 +32,20 @@ export const DailyMemorizeControl = dailySwitch(dailyMemorizeSetting, 'dailyMemo
 export const DailyPlanControl = dailySwitch(dailyPlanSetting, 'dailyPlan');
 export const DailyPsalmsControl = dailySwitch(dailyPsalmsSetting, 'dailyPsalms');
 export const DailyDevotionalControl = dailySwitch(dailyDevotionalSetting, 'dailyDevotional');
+/** Devotional sources (mw-r9xo1pj.4): 'Logos devotionals' On/Off, with how many of Your Logos library are in the draw; Brookfield First On/Off, naming Morning RePhil. */
+function LogosDevotionalsCount({ current }: { current: 'on' | 'off' }) {
+  const draw = useSetting(devotionalDrawSetting);
+  if (draw === undefined) return null;
+  const n = tickedDevotionals(draw).length;
+  return (
+    <p className="pt-1 text-base">
+      {current === 'off' ? `${n} ${n === 1 ? 'devotional is' : 'devotionals are'} in Your Logos library, but none is listed or drawn.` : `${n} ${n === 1 ? 'devotional' : 'devotionals'}, the ones that are on in Your Logos library.`}
+    </p>
+  );
+}
+
+export const DevotionalLogosControl = dailySwitch(devotionalLogosSetting, 'devotionalLogos', (current) => <LogosDevotionalsCount current={current} />);
+export const DevotionalRephilControl = dailySwitch(devotionalRephilSetting, 'devotionalRephil');
 export const DailyTicksControl = dailySwitch(dailyTicksSetting, 'dailyTicks');
 export const GreekKeyboardControl = dailySwitch(greekKeyboardSetting, 'greekKeyboard');
 export const HebrewKeyboardControl = dailySwitch(hebrewKeyboardSetting, 'hebrewKeyboard');
@@ -41,10 +56,10 @@ export const DevotionalControl: Control = ({ row }) => {
   const devotional = useSetting(devotionalSetting);
   const draw = useSetting(devotionalDrawSetting);
   const owned = useLiveQuery(ownedResources, []);
-  const logosOn = useLogosOn();
-  if (devotional === undefined || draw === undefined || owned === undefined || logosOn === undefined) return null;
-  // with Logos Off a Logos book opens nothing: the list is Morning RePhil and what is chosen now (mw-r9xo1pj.2)
-  const items = [...(logosOn || devotional === RANDOM ? [{ id: RANDOM, name: 'Random' }] : []), ...pickableDevotionals(tickedDevotionals(draw), devotional, owned, logosOn).map((d) => ({ id: d.id, name: d.title }))];
+  const sources = useDrawSources();
+  if (devotional === undefined || draw === undefined || owned === undefined || sources === undefined) return null;
+  // with Logos Off, or 'Logos devotionals' Off, a Logos book opens nothing: the list is what is chosen now and Morning RePhil while Brookfield First is On (mw-r9xo1pj.2, mw-r9xo1pj.4)
+  const items = [...(sources.logos || devotional === RANDOM ? [{ id: RANDOM, name: 'Random' }] : []), ...pickableDevotionals(tickedDevotionals(draw), devotional, owned, sources).map((d) => ({ id: d.id, name: d.title }))];
   return (
     <SettingRow row={row}>
       <SearchableList
@@ -168,7 +183,8 @@ export const MorningRephilBackupControl: Control = ({ row }) => {
  *  (shown only while Random is chosen). */
 export const DevotionalDrawControl: Control = ({ row }) => {
   const draw = useSetting(devotionalDrawSetting);
-  if (draw === undefined) return null;
+  const sources = useDrawSources();
+  if (draw === undefined || sources === undefined) return null;
   const n = tickedDevotionals(draw).length;
   return (
     <SettingRow row={row}>
@@ -176,7 +192,7 @@ export const DevotionalDrawControl: Control = ({ row }) => {
         <span className="block text-base font-medium">{row.label}</span>
         <p className="pb-1 text-base">
           {n === 0 ? 'No devotional is on, so Random shows Morning and Evening.' : `${n} ${n === 1 ? 'devotional is' : 'devotionals are'} in the draw: the ones that are on in Your Logos library.`}
-          {' Morning RePhil is also in it while you have an episode left to hear.'}
+          {sources.rephil ? ' Morning RePhil is also in it while you have an episode left to hear.' : ' Morning RePhil is not in it: Brookfield First is Off.'}
         </p>
         <button
           type="button"

@@ -10,7 +10,7 @@ import { navigate } from '../nav/route';
 import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions';
 import { useSetting } from '../settings/store';
 import { todayPieces, tickedCount } from './pieces';
-import { useLogosOn } from '../useLogosOn';
+import { useDrawSources } from '../settings/devotionalSources';
 import { useToday } from './useToday';
 
 export function TodayChip() {
@@ -26,13 +26,13 @@ export function TodayChip() {
   const draw = useSetting(devotionalDrawSetting);
   const order = useSetting(morningRephilOrderSetting) ?? DEFAULT_ORDER;
   const backup = useSetting(morningRephilBackupSetting) ?? DEFAULT_BACKUP;
-  const logosOn = useLogosOn();
+  const sources = useDrawSources();
   const day = useLiveQuery(() => getDay(date), [date]);
   const heard = useLiveQuery(getHeard, []);
-  if (choice === undefined || draw === undefined || logosOn === undefined || heard === undefined) return null;
+  if (choice === undefined || draw === undefined || sources === undefined || heard === undefined) return null;
   if (review === undefined || memorize === undefined || plan === undefined || psalms === undefined || devotional === undefined || tickBoxes === undefined || day === undefined) return null;
   // Today draws no devotional with Logos Off and a Logos book chosen, so the chip does not count one (mw-r9xo1pj.6)
-  const drawn = devotionalToday({ choice, ticked: tickedDevotionals(draw), date: today, pick: day.devotional, kept: day.rephil, heard, order, backup, logosOn }) !== undefined;
+  const drawn = devotionalToday({ choice, ticked: tickedDevotionals(draw), date: today, pick: day.devotional, kept: day.rephil, heard, order, backup, logosOn: sources.logos, rephilOn: sources.rephil }) !== undefined;
   const pieces = todayPieces({ review, plan, psalms, devotional, memorize }, today, drawn);
   if (pieces.length === 0) return null;
   const text = tickBoxes === 'on' ? `Today · ${tickedCount(pieces, day.ticked)} of ${pieces.length}` : 'Today';

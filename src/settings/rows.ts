@@ -73,6 +73,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'themes', title: 'Themes', hint: 'Which topic lists name the themes of a verse and find the sermons on the same theme.' },
   { id: 'sermons', title: 'Sermons', hint: 'Which sermon sources the Sermons door draws on.' },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.' },
+  { id: 'devotionalSources', title: 'Devotional sources', hint: 'Which sources a devotional comes from: your Logos library, and Brookfield First.' },
   { id: 'tips', title: 'Tips' },
   { id: 'developer', title: 'Developer' },
   { id: 'aboutYou', title: 'About you' },
@@ -99,7 +100,7 @@ export const GROUPS: readonly SettingsGroup[] = [
   { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'hebrew'] },
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how the talk bars work, tips and your study way.', sections: ['readTutor', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
-  { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily'] },
+  { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily', 'devotionalSources'] },
   { id: 'study', title: 'Study resources', hint: 'Links to the study tools you own, Bible in Logos, maps, themes and sermons.', sections: ['resources', 'maps', 'themes', 'sermons'] },
   { id: 'account', title: 'Account', hint: 'About you, Memory, asking for more, your requests, Help and About.', sections: ['aboutYou', 'memory', 'more'] },
   { id: 'developer', title: 'Developer', hint: 'For finding faults.', sections: ['developer'] },
@@ -352,10 +353,10 @@ export async function readValues(): Promise<Values> {
         const level = separate === 'grc' ? greekLevelOf(dial) : hebrewLevelOf(dial);
         return [key, on === 'on' && level >= 1 ? 'on' : 'off'] as const;
       }
-      // the key of the Logos draw's rows: On while Which devotional is Random and the Logos switch is On (no setting of its own)
+      // the key of the Logos draw's rows: On while Which devotional is Random, the Logos switch is On and 'Logos devotionals' is On (no setting of its own)
       if (key === LOGOS_RANDOM_KEY) {
-        const [which, logos] = await Promise.all([settingOf('devotional')?.read(), settingOf('resource.logos')?.read()]);
-        return [key, which === RANDOM && logos === 'on' ? 'on' : 'off'] as const;
+        const [which, logos, source] = await Promise.all([settingOf('devotional')?.read(), settingOf('resource.logos')?.read(), settingOf('devotionalLogos')?.read()]);
+        return [key, which === RANDOM && logos === 'on' && source !== 'off' ? 'on' : 'off'] as const;
       }
       // a Logos sermon collection: On while his Library import holds one of its resources or Logos gives it free (mw-qtu3zvz.94)
       if (key.startsWith(OWNS_PREFIX)) {
