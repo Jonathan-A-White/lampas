@@ -8,6 +8,7 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
+import { setDevotionalDraw } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { setMapSources } from '../../src/maps';
 import { forgetTrail } from '../../src/nav/lastRoute';
@@ -94,6 +95,8 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
     { key: 'works', value: '[]' },
     { key: 'devotionalDraw', value: 'none' },
   ]);
+  // the shelf takes those old keys into rows before the app draws: left to the first reader it is written while the door asks for his books, and on a busy machine the door waited on that write past a step's 10 s
+  await setDevotionalDraw('none');
   if (phone.archives) {
     await db.settings.put({ key: 'resource.logos', value: phone.archives.logos });
     const shelf: { id: string; state: 'on' | 'pinned' }[] =
