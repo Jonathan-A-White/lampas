@@ -8,6 +8,15 @@ Feature: I choose which verses to memorize
     Then Romans 8:28, Psalm 62:1-2 and 2 Thessalonians 3:3 are memorized in English
     And each row reads "Memorizing · English"
 
+  Scenario: A second tap on Memorize this list, made while the first is still being written, turns it off again
+    Given my Greek setting is step 3 and I have a list "Refuge" holding "Rom.8.28, Ps.62.1-2, 2Thess.3.3"
+    And the phone is slow to write what I memorize
+    When I tap Memorize this list, and again 500 ms later while the first tap is still being written
+    And the phone writes what it held
+    Then a screen reader is told "Stopped memorizing 3 references"
+    And the switch Memorize this list reads "Off"
+    And nothing of the list is memorized
+
   Scenario: I pick one verse in the Verse view
     Given my Greek setting is step 3 and the Verse view is open on Romans 8:28
     When I tap Memorize

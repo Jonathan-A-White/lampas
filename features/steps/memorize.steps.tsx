@@ -1,6 +1,7 @@
 // features/steps/memorize.steps.tsx — runs features/memorize.feature: a whole list, or one verse in the Verse view, enters memorizing in English, and the languages beyond follow the Greek dial.
+// A second tap on a list's switch while the first is still being written (mw-qtu3zvz.227) is made on a phone slow to write (holdScheduleWrites), with the app-wide tap guard on and its clock driven.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -11,10 +12,13 @@ import { listMemorized } from '../../src/data/repositories/memorize';
 import { clearBus } from '../../src/events/bus';
 import type { GreekLevel } from '../../src/settings/definitions/greekInterest';
 import { stopReading } from '../../src/speech/readAloud';
+import { settle, SETTLE_MS } from '../../src/ui/settle';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
+  settle.ms = 0;
+  vi.restoreAllMocks();
   cleanup();
   stopReading();
   vi.unstubAllGlobals();
@@ -27,6 +31,9 @@ async function start(step: number, hash: (listId: number) => string, list?: stri
   cleanup();
   stopReading();
   clearBus();
+  // a scenario that failed half-way leaves no held write, held clock or settle moment to the next one
+  settle.ms = 0;
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   window.localStorage.clear();
   stubChapterFetch();
@@ -39,6 +46,31 @@ async function start(step: number, hash: (listId: number) => string, list?: stri
 }
 
 const memorized = async (): Promise<string[]> => (await listMemorized()).map((r) => `${r.lang}:${r.ref}`).sort();
+const listSwitch = () => screen.getByRole('switch', { name: 'Memorize this list' });
+
+/** A phone slow to write (mw-qtu3zvz.227): a write of the schedule alone (a transaction on db.reviews and no other table, which is how a verse is memorized) does not start until the step lets it go, so
+ *  what the screen draws stays behind the tap. A write that names other tables too is let through: the app's own start-up (seedLevelsIfFirstOpen) writes the schedule with three more, after the screen
+ *  is drawn. `waiting()` is how many writes are held: a step looks at it, so a hold that holds nothing, or something else, fails the step instead of passing it. */
+function holdScheduleWrites(): { waiting: () => number; letGo: () => void } {
+  let waiting = 0;
+  let open: () => void = () => undefined;
+  const gate = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+  const real = db.transaction.bind(db) as unknown as (...args: unknown[]) => Promise<unknown>;
+  const spy = vi.spyOn(db, 'transaction').mockImplementation(((...args: unknown[]) => {
+    if (args.length !== 3 || args[1] !== db.reviews) return real(...args);
+    waiting += 1;
+    return gate.then(() => real(...args));
+  }) as never);
+  return {
+    waiting: () => waiting,
+    letGo: () => {
+      spy.mockRestore();
+      open();
+    },
+  };
+}
 const verseView = () => screen.findByRole('region', { name: 'Verse view' });
 const VIEW_HASH = '#/?b=rom&c=8&view=english&weave=off&v=28';
 
@@ -61,6 +93,52 @@ describeFeature(feature, ({ Scenario }) => {
         const row = screen.getByRole('link', { name }).closest('li') as HTMLElement;
         expect(await within(row).findByRole('button', { name: label })).toBeInTheDocument();
       }
+    });
+  });
+
+  Scenario('A second tap on Memorize this list, made while the first is still being written, turns it off again', ({ Given, When, Then, And }) => {
+    let slow: ReturnType<typeof holdScheduleWrites>;
+    Given('my Greek setting is step {int} and I have a list {string} holding {string}', async (_, step: number, __: string, refs: string) => {
+      await start(step, (id) => `#/lists/${id}`, refs.split(', '));
+      await screen.findByRole('switch', { name: 'Memorize this list' });
+    });
+    And('the phone is slow to write what I memorize', () => {
+      slow = holdScheduleWrites();
+    });
+    When('I tap Memorize this list, and again {int} ms later while the first tap is still being written', async (_, ms: number) => {
+      // the app-wide guard is on, as on his phone, and drops a second tap on the switch within its moment: this one comes after it, by the guard's own clock
+      expect(ms).toBeGreaterThan(SETTLE_MS);
+      settle.ms = SETTLE_MS;
+      let now = performance.now();
+      const clock = vi.spyOn(performance, 'now').mockImplementation(() => now);
+      try {
+        await user.click(listSwitch());
+        // the first tap's three writes have reached the phone and wait there
+        await waitFor(() => expect(slow.waiting()).toBe(3));
+        await act(async () => {});
+        now += ms;
+        // nothing is written yet, so the switch is still drawn Off when he taps it again
+        expect(await memorized()).toEqual([]);
+        expect(listSwitch()).toHaveAttribute('aria-checked', 'false');
+        await user.click(listSwitch());
+      } finally {
+        clock.mockRestore();
+        settle.ms = 0;
+      }
+    });
+    And('the phone writes what it held', () => {
+      slow.letGo();
+    });
+    Then('a screen reader is told {string}', async (_, said: string) => {
+      // the words of the SECOND tap, once it has been written: the switch reads Off before anything is written too, so the steps after this one look only now
+      await waitFor(() => expect(document.querySelector('[data-live-region]')?.textContent?.trim()).toBe(said));
+    });
+    And('the switch Memorize this list reads {string}', async (_, label: string) => {
+      await waitFor(() => expect(listSwitch()).toHaveTextContent(label));
+      expect(listSwitch()).toHaveAttribute('aria-checked', label === 'On' ? 'true' : 'false');
+    });
+    And('nothing of the list is memorized', async () => {
+      expect(await memorized()).toEqual([]);
     });
   });
 
