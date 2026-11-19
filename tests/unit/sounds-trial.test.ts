@@ -129,7 +129,7 @@ describe('the letter-sounds listening page', () => {
     const at = lines.findIndex((l) => l.startsWith('- **[Hey Lampas wake word]'));
     let end = at + 1;
     while (at >= 0 && end < lines.length && lines[end].startsWith('  ')) end++;
-    expect([...lines.slice(0, Math.max(at, 0)), ...lines.slice(at >= 0 ? end : 0)].join('\n')).not.toMatch(/Piper|Coqui|Chatterbox/);
+    expect([...lines.slice(0, Math.max(at, 0)), ...lines.slice(at >= 0 ? end : 0)].join('\n')).not.toMatch(/(?<!John )Piper|Coqui|Chatterbox/); // the voice Piper, not John Piper, whose sermons are credited (mw-qtu3zvz.20)
     expect(lines.slice(Math.max(at, 0), at >= 0 ? end : 0).join('\n')).not.toMatch(/Piper|Chatterbox|rapunzelina/);
   });
 
