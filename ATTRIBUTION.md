@@ -9,14 +9,14 @@ Lampas stands on others' work and names every text, font, library, service and i
 
 ## Texts and data
 
-- **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. Byzantine Greek with English: what you read. Changes: chapters, poetry lines.
+- **[Majority Standard Bible (MSB), New Testament tables](https://majoritybible.com).** Public domain. What you read. Changes: chapters, poetry lines.
 - **[Recording: Majority Standard Bible](https://openbible.com/audio.htm)**, read by David, streamed from openbible.com. Public downloads. Changes: our timings ([wav2vec 2.0](https://docs.pytorch.org/audio/stable/generated/torchaudio.pipelines.WAV2VEC2_ASR_LARGE_LV60K_960H.html), [bsb-align](https://github.com/BSB-publishing/bsb-align); MIT).
-- **[Berean Standard Bible tables](https://berean.bible/licensing.htm).** Public domain. Old Testament: Westminster Leningrad Codex Hebrew aligned to English. Changes: pairs fixed, poetry lines.
+- **[Berean Standard Bible tables](https://berean.bible/licensing.htm).** Public domain. Hebrew: Westminster Leningrad Codex. Changes: pairs fixed, poetry lines.
 - **[Tyndale House's TBESG, TBESH, TIPNR and TVTMS, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit: STEPBible, Tyndale House,
   Cambridge. Greek and Hebrew words and parts, TAGNT's variants, the maps' places ([OpenBible.info](https://www.openbible.info/geo/) coordinates), the verse map. Changes: first entry per Strong's number; cut near 300 letters.
 - **[TAGNT and TBESG, from STEPBible](https://www.stepbible.org).** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The
   [Septuagint derivation](https://github.com/Jonathan-A-White/lampas/blob/main/docs/lxx-derivation.md) learns from them. Changes: applied to the Septuagint by Lampas's derivation.
-- **[Swete's Septuagint, from eliranwong's LXX-Swete-1930](https://github.com/eliranwong/LXX-Swete-1930)**: Greek Old Testament. Public domain; packaging
+- **[Swete's Septuagint, from eliranwong's LXX-Swete](https://github.com/eliranwong/LXX-Swete-1930)**. Public domain; packaging
   [GPL-3.0](https://github.com/eliranwong/LXX-Swete-1930/blob/1d3efc3c63bd384a4f3f07ed37eef54b0d45ac33/LICENSE). Changes: by chapter; brackets hidden.
 - **[LXX2012, from eBible](https://ebible.org/eng-lxx2012/)**: Brenton's English (1851) of the Vatican text, not Swete's; spelling by M. P. Johnson. Public domain. Changes: footnotes dropped.
 - **[byztxt Byzantine text](https://github.com/byztxt/byzantine-majority-text)** and the [Robinson-Pierpont 2026 release](https://byzantinetext.com/study/editions/robinson-pierpont/). Public domain. Variant readings and sentence ends. Changes: laid on the words.

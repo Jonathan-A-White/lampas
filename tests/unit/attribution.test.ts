@@ -66,6 +66,16 @@ describe('About is short credits, not a tutorial', () => {
     expect(plain.filter((entry) => entry.length > ENTRY_MAX).length).toBeLessThanOrEqual(LICENCE_NOTICES.length + 1);
   });
 
+  // mw-5r3p30.1187: the MSB, Berean and Swete entries sat at 145, 150 and 146, so a change to what a text is used for (the poetry lines) had no room;
+  // each keeps 30 characters free, so a longer Changes line still passes
+  it('leaves the MSB, Berean and Swete entries 30 characters of room under the limit for a longer Changes line', () => {
+    for (const name of ['Majority Standard Bible', 'Berean Standard Bible', 'Swete\'s Septuagint']) {
+      const entry = plain.find((e) => e.startsWith(name)) ?? '';
+      expect(entry, name).not.toBe('');
+      expect(entry.length, name).toBeLessThanOrEqual(ENTRY_MAX - 30);
+    }
+  });
+
   it('holds no how-to: no step in Settings, no tap, no switch to turn on', () => {
     for (const text of [plainText(attribution.intro), ...plain]) expect(text, text.slice(0, 60)).not.toMatch(/Settings >|\bin Settings\b|\b[Tt]ap\b|switch(ed)? (it )?on|turn(s|ed)? (it )?on/);
   });
