@@ -1,11 +1,12 @@
 // src/lists/VerseListScreen.tsx — one verse list (#/lists/<id>, mw-9q8wp1.1): its name and its references in the order saved, each the link the Share sheet's references are (a tap opens the
 // pop-up with the verse; Open goes to the Reader and Back comes here). Rename is in place: the name becomes a field with Save and Cancel. Delete takes the list away, goes back to the lists
 // and leaves Undo there for a few seconds (src/lists/deleted.ts). Play all (PlayAllBar.tsx, mw-9q8wp1.5) reads the references in order above them. Edit swaps the references for src/lists/EditRefs.tsx (add by typing, remove, move, sort, move or copy to another list; mw-9q8wp1.3, .8). A list that is not there (deleted, then Back) says so and offers the lists.
+// 'Memorize this list' is the switch above them: its taps are written one after the other, each going by the phone as it stands when its turn comes (flipList, mw-qtu3zvz.227).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useRef, useState, type FormEvent } from 'react';
 import { getVerseList, removeVerseList, renameVerseList } from '../data/repositories';
 import { memorizedOf } from '../data/repositories/memorize';
-import { memorizable, memorizeList, unmemorizeList } from '../memorize/commands';
+import { memorizable, memorizeList, unmemorizeList, type CommandResult } from '../memorize/commands';
 import { MemorizeControl } from '../memorize/MemorizeControl';
 import { ProgressMarks } from '../memorize/ProgressMark';
 import { backTo } from '../nav/route';
@@ -22,13 +23,31 @@ import { PlayAll } from './PlayAllBar';
 
 const ACTION = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
-/** 'Memorize this list' (mw-fu7dqf.5): On while every reference the list holds, of either testament, is memorized in English; a tap goes through the memorize commands. */
+/** Whether every one of these references is memorized in English (none held is not all): what the switch reads, and what a tap of it goes by. */
+const allInEnglish = (held: readonly string[], found: Awaited<ReturnType<typeof memorizedOf>>): boolean => held.length > 0 && held.every((ref) => found.get(ref)?.includes('en'));
+
+// The switch's taps, one after the other in the order he made them. One line for the app, not one for each time the switch is drawn, so a tap made after leaving the list and coming back still waits for those before it.
+let line: Promise<unknown> = Promise.resolve();
+
+/** One tap of 'Memorize this list' (mw-qtu3zvz.227). It waits until every tap before it has been written, and then goes by the phone as it stands (the list as it is kept, and what is memorized of it), never by
+ *  the switch as drawn: a list's writes land one by one and the switch follows the last of them, so a second tap made meanwhile, after the app-wide guard's moment (src/ui/tapGuard.ts), found the switch still
+ *  Off and memorized again where it should have stopped. A tap that fails does not hold up those after it. */
+function flipList(listId: number): Promise<CommandResult> {
+  const done = line.then(async () => {
+    const held = memorizable((await getVerseList(listId))?.refs ?? []);
+    return allInEnglish(held, await memorizedOf(held)) ? unmemorizeList({ listId }) : memorizeList({ listId });
+  });
+  line = done.catch(() => undefined);
+  return done;
+}
+
+/** 'Memorize this list' (mw-fu7dqf.5): On while every reference the list holds, of either testament, is memorized in English; a tap goes through the memorize commands, in its turn (flipList). */
 function MemorizeList({ listId, refs }: { listId: number; refs: readonly string[] }) {
   const held = memorizable(refs);
   const found = useLiveQuery(() => memorizedOf(held), [held.join(' ')]);
   if (found === undefined) return null;
-  const on = held.length > 0 && held.every((ref) => found.get(ref)?.includes('en'));
-  const flip = () => void (on ? unmemorizeList({ listId }) : memorizeList({ listId })).then(({ said }) => announce(said)).catch((error) => console.error('could not change what is memorized', error));
+  const on = allInEnglish(held, found);
+  const flip = () => void flipList(listId).then(({ said }) => announce(said)).catch((error) => console.error('could not change what is memorized', error));
   return (
     <div className="mt-3">
       <div className="flex min-h-12 items-center justify-between gap-3">
