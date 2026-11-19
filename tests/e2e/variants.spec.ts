@@ -3,7 +3,7 @@
 // line is full at 390 px). A tap on the chip turns Variants on; a long press opens the filter sheet. Shots: shots/variants-<view>-<off|on>.png (verses 1 to 3, in a
 // window made tall enough to hold them), variants-header-<off|on>.png (the header and the chips row), variants-sheet.png, variants-on-dark.png, and the whole page last.
 import { expect, test, type Page } from '@playwright/test';
-import { openTutor } from './open-tutor';
+import { FLOATING, openTutor, twoFingers } from './open-tutor';
 import { holdFor } from '../support/hold';
 import { shot } from './shot';
 import { talkField } from './talk-field';
@@ -419,6 +419,10 @@ test.describe('a variant unit is opened by its siglum, and its words open the wo
   test('English: the B after "and you live" is the target; 8 px either side of it opens the sheet; a word inside opens the word popup', async ({ page }) => {
     await open(page, 'English');
     await expect(unit(page).locator('[data-brace-text]').first()).toHaveText('and you live');
+    // the floating ? is drawn at once at the right edge now and lies over this siglum (mw-5r3p30.1006: it may cover text, a two-finger tap on the bar puts it away); the hit-test is of the siglum, so he puts it away first
+    await twoFingers(page, { x: 200, y: 30 });
+    await expect(page.locator(FLOATING)).toHaveCount(0);
+    await page.waitForTimeout(700); // a real-time wait: a click within 600 ms of a two-finger tap is dropped as its stray click (src/immersive.ts CLICK_GUARD_MS)
     const box = (await siglum(page).boundingBox())!;
     expect(box.width).toBeGreaterThanOrEqual(43.5);
     expect(box.height).toBeGreaterThanOrEqual(43.5);
