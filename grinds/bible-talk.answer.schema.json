@@ -1605,6 +1605,16 @@
                   "sermons.bunyan-logos",
                   "sermons.charles-wesley-logos",
                   "sermons.jimmy-evans-logos",
+                  "sermons.shedd-logos",
+                  "sermons.burroughs-logos",
+                  "sermons.keach-logos",
+                  "sermons.maclaren-logos",
+                  "sermons.kuyper-logos",
+                  "sermons.broadus-logos",
+                  "sermons.worlds-great-sermons-logos",
+                  "sermons.princeton-sermons-logos",
+                  "sermons.mcpherson-logos",
+                  "sermons.strong-logos",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2113,6 +2123,66 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.jimmy-evans-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.shedd-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.burroughs-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.keach-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.maclaren-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.kuyper-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.broadus-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.worlds-great-sermons-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.princeton-sermons-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.mcpherson-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.strong-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
