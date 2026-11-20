@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { runBuild } from '../../scripts/data-build';
-import { checkHeader } from '../../scripts/data/bereanTable';
+import { checkHeader, type TableWord } from '../../scripts/data/bereanTable';
 import { cleanHebrewGloss, parseTbes } from '../../scripts/data/tbes';
 import { BSB_FILE, MISPLACED_READ_RIGHT, OT_EXPECTED_HEADER, TBESH_FILE, addSpellings, buildOt, changedPairings, dotsRows, fixPairing, markWaitingByGloss, misplacedChunks, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
 import { wordGloss, type BookIndex, type Chapter, type Verse } from '../../src/data/chapter';
@@ -453,7 +453,7 @@ describe("a '. . .' word whose gloss is in the chunk after it (mw-fnvjof.17.210)
     expect(strongsOf(gen, 'years old,')).toEqual(['H8141']);
   });
   it('markWaitingByGloss marks the word and says how many; a second call marks none', () => {
-    const word = (over: object) => ({ sourceSort: 1, englishSort: 1, text: 'x', translit: '', parse: '', strongs: 'H1', english: '', begQ: '', tail: '', par: '', note: '', ...over });
+    const word = (over: Partial<TableWord>): TableWord => ({ sourceSort: 1, englishSort: 1, text: 'x', translit: '', parse: '', strongs: 'H1', english: '', begQ: '', tail: '', par: '', note: '', ...over });
     const words = [word({ sourceSort: 1, englishSort: 1, english: 'for' }), word({ sourceSort: 2, englishSort: 2, english: '. . .', strongs: 'H5869' }), word({ sourceSort: 3, englishSort: 3, english: 'the eye.' })];
     const gloss = (s: string) => (s === 'H5869' ? 'eye' : '');
     expect(markWaitingByGloss(words, gloss)).toBe(1);
@@ -463,7 +463,7 @@ describe("a '. . .' word whose gloss is in the chunk after it (mw-fnvjof.17.210)
     expect(markWaitingByGloss(other, gloss)).toBe(0);
   });
   it('dotsRows lists the waiting word with the English before and after it, and the Genesis 21:11 shape still joined before', () => {
-    const word = (over: object) => ({ sourceSort: 1, englishSort: 1, text: 'x', translit: '', parse: '', strongs: 'H1', english: '', begQ: '', tail: '', par: '', note: '', ...over });
+    const word = (over: Partial<TableWord>): TableWord => ({ sourceSort: 1, englishSort: 1, text: 'x', translit: '', parse: '', strongs: 'H1', english: '', begQ: '', tail: '', par: '', note: '', ...over });
     const words = [word({ sourceSort: 1, englishSort: 1, english: 'for', text: 'a' }), word({ sourceSort: 2, englishSort: 2, english: '. . .', strongs: 'H5869', text: 'b', waits: true }), word({ sourceSort: 3, englishSort: 3, english: 'the eye.', text: 'c' })];
     expect(dotsRows('Exodus 21:26', words, () => 'eye').map((r) => [r.kind, r.before, r.after])).toEqual([['waits', 'for', 'the eye.']]);
     // Genesis 21:11: 'distressed' (Hebrew word 1) 'greatly' (2) then the '. . .' word (3) and 'Abraham' (4) in the Hebrew; in English 'distressed', the '. . .', 'Abraham', 'greatly'
