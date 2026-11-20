@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.300
+_2026-11-20_
+- New: David's recording now plays through Deuteronomy, except chapter 23.
+
 ## 0.7.298
 _2026-11-20_
 - Fixed: 'Hey Lampas' now wakes while the phone is on the car's Bluetooth: it listens on a microphone that hears you instead of the car's silent one.
