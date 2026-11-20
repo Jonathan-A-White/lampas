@@ -464,6 +464,26 @@ export function readMorpheusCache(dir: string, book: string): MorpheusCache | un
   return existsSync(file) ? parseCache(readFileSync(file, 'utf8')) : undefined;
 }
 
+/**
+ * A generated doc that depends on which books have a Morpheus cache (the chapter bar reads a book's guess share high without one) records the books it was derived without, in one line, and a run on a
+ * host whose list is another refuses to rewrite it (mw-u2w5klk.349.24 for docs/lxx-align.md, .52 for docs/lxx-report.md); `--force` writes it anyway.
+ */
+export const MORPHEUS_LINE = /^Derived without a Morpheus cache: (.*)\.$/m;
+export const withoutList = (without: readonly string[]): string => (without.length > 0 ? [...without].sort().join(', ') : 'none');
+export const morpheusLine = (without: readonly string[]): string => `Derived without a Morpheus cache: ${withoutList(without)}.`;
+/** The list a doc's text (the part between its markers) records, or undefined where it records none. */
+export const recordedWithout = (text: string): string | undefined => MORPHEUS_LINE.exec(text)?.[1];
+
+/** Throws, naming both lists and `--force`, when the text between a doc's markers records another list of books without a cache than this run's; does nothing without `without`, with `force`, or with no record. */
+export function refuseOtherCaches(doc: string, between: string, without: readonly string[] | undefined, force: boolean): void {
+  const recorded = recordedWithout(between);
+  if (!without || force || recorded === undefined || recorded === withoutList(without)) return;
+  throw new Error(
+    `${doc} was written from books derived without a Morpheus cache: ${recorded}; this run was without a cache for: ${withoutList(without)}. ` +
+      `The chapters that ship, and so the report, differ with the caches, so it is left as it was. Run \`npm run lxx:link\` (the Laptop's caches) and again; \`--force\` writes it anyway.`,
+  );
+}
+
 // -------------------------------------------------------------------------------------------------------------------------------- running it
 
 /** Morpheus as the step runs it. */

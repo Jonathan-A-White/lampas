@@ -473,6 +473,47 @@ describe('lxx:report', async () => {
     expect(genOnly.rows[0].failures.map((f) => f.key)).toEqual(['pending']);
   });
 
+  // mw-u2w5klk.349.52: the report is written from the Morpheus caches the host has (a worktree borrows the Laptop's, lxx:link), so it records which books had none and refuses a host whose list is another
+  describe('the Morpheus caches the report was written from', () => {
+    const genOnly = (doc: string, morpheusDir: string, args: string[] = []) =>
+      runReport(['--build', '55', ...args], { input: GEN_1, doc, choicesDir: tmp(), recheckDir: tmp(), morpheusDir, known: passing([]), books: [['Gen', 'Genesis']] });
+    const cacheDir = (): string => {
+      const dir = tmp();
+      writeFileSync(join(dir, 'gen.tsv'), 'form\tanalyses\n');
+      return dir;
+    };
+
+    it('says which books it had no cache for, or none, between the markers', async () => {
+      const without = join(tmp(), 'lxx-report.md');
+      await genOnly(without, tmp());
+      expect(readFileSync(without, 'utf8')).toContain('Derived without a Morpheus cache: gen.');
+      const withCache = join(tmp(), 'lxx-report.md');
+      await genOnly(withCache, cacheDir());
+      expect(readFileSync(withCache, 'utf8')).toContain('Derived without a Morpheus cache: none.');
+      const all = await report(55, passing([]));
+      expect(all.text).toContain(`Derived without a Morpheus cache: ${OLD_TESTAMENT.map(([c]) => c.toLowerCase()).sort().join(', ')}.`);
+    });
+
+    it('leaves the doc as it is, naming both lists and --force, on a host whose caches are not the ones it was written with', async () => {
+      const doc = join(tmp(), 'lxx-report.md');
+      await genOnly(doc, cacheDir());
+      const before = readFileSync(doc, 'utf8');
+      await expect(genOnly(doc, tmp())).rejects.toThrow(/without a Morpheus cache: none.*without a cache for: gen.*lxx:link.*--force/s);
+      expect(readFileSync(doc, 'utf8')).toBe(before);
+    });
+
+    it('--force writes it anyway and records the new list; the same caches again change nothing', async () => {
+      const doc = join(tmp(), 'lxx-report.md');
+      await genOnly(doc, cacheDir());
+      await genOnly(doc, tmp(), ['--force']);
+      const forced = readFileSync(doc, 'utf8');
+      expect(forced).toContain('Derived without a Morpheus cache: gen.');
+      expect(forced).not.toContain('cache: none.');
+      await genOnly(doc, tmp());
+      expect(readFileSync(doc, 'utf8')).toBe(forced);
+    });
+  });
+
   it('names a different second known-answer chapter for two builds', async () => {
     const a = await report(55, passing([]));
     const b = await report(56, passing([]));
