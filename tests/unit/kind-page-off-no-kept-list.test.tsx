@@ -30,7 +30,7 @@ describe('no kept list: a devotional on the shelf turned Off', () => {
     expect((await ownedResources()).has(first.id)).toBe(true);
 
     render(<KindPage kind="devotional" />);
-    const group = await screen.findByRole('radiogroup', { name: entryOf(first.id)!.short }, { timeout: ASYNC_WAIT_MS });
+    const group = await screen.findByRole('radiogroup', { name: entryOf(first.id)!.short });
     expect(within(group).getByRole('radio', { name: 'Off' }).getAttribute('aria-checked')).toBe('true');
     await userEvent.click(within(group).getByRole('radio', { name: 'On' }));
     await within(screen.getByRole('radiogroup', { name: entryOf(first.id)!.short })).findByRole('radio', { name: 'On', checked: true });
