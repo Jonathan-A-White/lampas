@@ -1,6 +1,7 @@
 // src/memorize/MemorizeSession.tsx — one Memorize session (#/memorize/<ref>/<lang>, mw-fu7dqf.8, docs/layout/memorize.md): the verse at the rung its schedule step gives (HiddenVerse), Hear it, the hold
 // to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold) or Type it (TypeIt.tsx: English always, Greek while Settings > Greek keyboard is On, Hebrew while Hebrew keyboard is On, never the Weave), the judgement with the missed words marked, the recall kept and 'Due <day>', I had it / Not yet when the phone
-// cannot hear him, and Next verse (or Done). The screen reports the verse, its language, its rung and the last score to the tutor.
+// cannot hear him, and Next verse (or Done). A long passage is cut into pieces (pieces.ts): each is shown, said and judged on its own with Next piece after a pass (the last, Join the pieces), then the whole passage
+// is said once and that recall is the one kept. The screen reports the verse, its piece, its language, its rung and the last score to the tutor.
 import { useEffect, useState } from 'react';
 import { ScreenHeader } from '../ScreenHeader';
 import { ToolBack } from '../ToolBack';
@@ -61,7 +62,8 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
     name: SCREEN_NAMES.memorize,
     facts: ready
       ? [
-          { label: 'Verse', value: ready.heading },
+          { label: 'Verse', value: ready.passage },
+          ...(ready.pieces ? [{ label: 'Piece', value: ready.pieces.joined ? `All ${ready.pieces.count} pieces together` : `${ready.pieces.at + 1} of ${ready.pieces.count} (${ready.heading})` }] : []),
           { label: 'Language', value: langName(lang) },
           { label: 'Rung', value: rungName(ready.rung) },
           { label: 'Step', value: `${ready.step + 1} of ${STEPS}` },
@@ -88,14 +90,17 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
     );
   }
 
-  const { rung, tokens, hidden, phase, note, kept, hold, next, selfGraded, canAdvance } = session;
+  const { rung, tokens, hidden, phase, note, kept, hold, next, selfGraded, canAdvance, canNextPiece, pieces } = session;
+  // a piece of a passage is practice: it is not kept, so it has no due day and no next verse until the pieces are joined
+  const onPiece = pieces !== null && !pieces.joined;
   const judged = phase === 'judged' && kept !== null;
   const hearing = reading.answer === HEAR_ID && reading.status !== 'idle';
   const hear = () => (hearing ? stopAnswerSpeech() : startAnswer(HEAR_ID, runsOfTokens(tokens)));
   const missed = new Set(judged && kept.how !== 'self' ? kept.judgement.misses : []);
   // 'nothing' shows no word until the recall is judged; a judged verse shows every word, with the missed ones marked
   const shown = rung.kind === 'nothing' && !judged ? [] : tokens;
-  const subtitle = `${langName(lang)} · ${rungName(rung)} · step ${session.step + 1} of ${STEPS}`;
+  const where = pieces === null ? '' : pieces.joined ? `All ${pieces.count} pieces together · ` : `Piece ${pieces.at + 1} of ${pieces.count} · `;
+  const subtitle = `${where}${langName(lang)} · ${rungName(rung)} · step ${session.step + 1} of ${STEPS}`;
   // Type it: English always, Greek or Hebrew only once he says his phone has that keyboard (the switch reads undefined until it is read: neither Type it nor the line to turn it on), the Weave never
   const canType = lang === 'en' || (lang === 'el' && greekKeyboard === 'on') || (lang === 'he' && hebrewKeyboard === 'on');
   // the box is open: the screen serves typing (docs/layout/memorize.md 'Typing'): the verse in its own scrolling area, the box, Check at the foot, no Hold to say it
@@ -119,9 +124,11 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
             <p data-testid="judgement" role="status" className={`text-lg font-semibold ${kept.judgement.passed ? 'text-good' : 'text-bad'}`}>
               {judgementLine(kept, tokens)}
             </p>
-            <p data-testid="due" className="text-base text-muted">
-              {kept.due}
-            </p>
+            {onPiece ? null : (
+              <p data-testid="due" className="text-base text-muted">
+                {kept.due}
+              </p>
+            )}
             <div className={`flex flex-wrap gap-2 pb-[var(--lp-end-inset)] ${room}`}>
               {hearIt}
               <button
@@ -146,7 +153,18 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
                   Next step
                 </button>
               ) : null}
-              {next ? (
+              {canNextPiece && pieces ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTyping(false);
+                    session.nextPiece();
+                  }}
+                  className={PRIMARY}
+                >
+                  {pieces.at + 1 === pieces.count ? 'Join the pieces' : 'Next piece'}
+                </button>
+              ) : onPiece ? null : next ? (
                 <button type="button" onClick={() => openMemorizeSession(next.ref, next.lang, { replace: true })} className={PRIMARY}>
                   Next verse
                 </button>

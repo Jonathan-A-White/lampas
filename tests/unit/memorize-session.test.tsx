@@ -15,7 +15,7 @@ import { clearBus } from '../../src/events/bus';
 import { MemorizeScreen } from '../../src/memorize/MemorizeScreen';
 import type { MemorizeLang } from '../../src/memorize/languages';
 import { versesOf } from '../../src/memorize/refs';
-import { tokensOf } from '../../src/memorize/target';
+import { memorizeTarget, tokensOf } from '../../src/memorize/target';
 import { memorizeSessionOf, openMemorizeSession, routeOf } from '../../src/nav/route';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
@@ -482,5 +482,148 @@ describe('practising any time, again and on to the next step (mw-5r3p30.1145)', 
     await wait();
     expect(screen.queryByRole('button', { name: 'Next step' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Again' })).toBeTruthy();
+  });
+});
+
+describe('a long passage is learned in pieces, one at a time and then joined (mw-5r3p30.1205)', () => {
+  const LONG = 'Exod.20.1-17';
+  const PIECES = [[1, 2], [3], [4, 5, 6], [7], [8, 9, 10, 11], [12], [13], [14], [15], [16], [17]];
+
+  /** The words of the passage's verses `from`..`to`, as the English target says them. */
+  async function wordsOf(ref: string, verses: number[], lang: 'en' | 'el' | 'he' | 'weave' = 'en'): Promise<string[]> {
+    const target = (await memorizeTarget(ref, lang))!;
+    return target.tokens.filter((t) => verses.includes(t.verse)).map((t) => t.text);
+  }
+  const nextPiece = async (name: string | RegExp = /^(Next piece|Join the pieces)$/) => {
+    fireEvent.click(await screen.findByRole('button', { name }));
+    await waitFor(() => expect(screen.queryByTestId('judgement')).toBeNull());
+  };
+
+  it('opens on the first piece alone: the preface, verses 1-2, not the whole passage', async () => {
+    await seed('en', 0, LONG);
+    await open(LONG, 'en');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Exodus 20:1-2');
+    expect(screen.getByText(/Piece 1 of 11 · English · Read and say · step 1 of 7/)).toBeTruthy();
+    expect(shownWords()).toEqual(await wordsOf(LONG, [1, 2]));
+    expect(shownWords().length).toBeLessThan((await wordsOf(LONG, PIECES.flat())).length / 4);
+  });
+
+  it('each piece is said on its own: a pass leaves the schedule and the recalls alone and offers Next piece, not Next step, Next verse or Done', async () => {
+    await seed('en', 0, LONG);
+    await open(LONG, 'en');
+    await sayIt((await wordsOf(LONG, [1, 2])).join(' '));
+    expect((await screen.findByTestId('judgement')).textContent).toMatch(/^Got it: \d+ of \d+ words$/);
+    expect(screen.getByRole('button', { name: 'Next piece' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Again' })).toBeTruthy();
+    for (const gone of ['Next step', 'Next verse', 'Done']) expect(screen.queryByRole('button', { name: gone })).toBeNull();
+    expect(screen.queryByTestId('due')).toBeNull();
+    expect(await recallsOf(LONG, 'en')).toHaveLength(0);
+    expect(await db.reviews.get(['verse', `en:${LONG}`])).toMatchObject({ step: 0, rights: 0 });
+    // the second piece is the first commandment alone
+    await nextPiece('Next piece');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Exodus 20:3');
+    expect(screen.getByText(/Piece 2 of 11/)).toBeTruthy();
+    expect(shownWords()).toEqual(await wordsOf(LONG, [3]));
+  });
+
+  it('a piece missed is Not yet with no Next piece: it is said again until it passes', async () => {
+    await seed('en', 0, LONG);
+    await open(LONG, 'en');
+    const words = await wordsOf(LONG, [1, 2]);
+    await sayIt(words.slice(0, words.length - 4).join(' '));
+    expect((await screen.findByTestId('judgement')).textContent).toMatch(/^Not yet: \d+ words? missed$/);
+    expect(screen.queryByRole('button', { name: 'Next piece' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Again' }));
+    await waitFor(() => expect(screen.queryByTestId('judgement')).toBeNull());
+    expect(screen.getByText(/Piece 1 of 11/)).toBeTruthy();
+    await sayIt(words.join(' '));
+    await screen.findByRole('button', { name: 'Next piece' });
+  });
+
+  it('the pieces are joined at the end: the whole passage is said once in its order and that one recall is kept on the passage\'s one row', async () => {
+    await seed('en', 0, LONG);
+    await open(LONG, 'en');
+    for (const [i, verses] of PIECES.entries()) {
+      expect(screen.getByText(new RegExp(`Piece ${i + 1} of 11`))).toBeTruthy();
+      await sayIt((await wordsOf(LONG, verses)).join(' '));
+      await screen.findByTestId('judgement');
+      await nextPiece(i === PIECES.length - 1 ? 'Join the pieces' : 'Next piece');
+    }
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Exodus 20:1-17');
+    expect(screen.getByText(/All 11 pieces together · English · Read and say · step 1 of 7/)).toBeTruthy();
+    const all = await wordsOf(LONG, PIECES.flat());
+    expect(shownWords()).toEqual(all);
+    expect(await recallsOf(LONG, 'en')).toHaveLength(0);
+    await sayIt(all.join(' '));
+    expect((await screen.findByTestId('judgement')).textContent).toBe(`Got it: ${all.length} of ${all.length} words`);
+    const recalls = await recallsOf(LONG, 'en');
+    expect(recalls).toHaveLength(1);
+    expect(recalls[0]).toMatchObject({ ref: LONG, lang: 'en', how: 'said', score: 1, rung: 0 });
+    expect(recalls[0].asked.map((a) => a.token)).toEqual(all);
+    expect(screen.getByTestId('due').textContent).toBe('Due tomorrow');
+    expect(await db.reviews.where('kind').equals('verse').count()).toBe(1);
+    for (const shown of ['Next step', 'Done']) expect(screen.getByRole('button', { name: shown })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Next piece' })).toBeNull();
+  });
+
+  it('Next step starts the passage over at its first piece, at the next step\'s rung', async () => {
+    await seed('en', 0, LONG);
+    await open(LONG, 'en');
+    for (const [i, verses] of PIECES.entries()) {
+      await sayIt((await wordsOf(LONG, verses)).join(' '));
+      await screen.findByTestId('judgement');
+      await nextPiece(i === PIECES.length - 1 ? 'Join the pieces' : 'Next piece');
+    }
+    await sayIt((await wordsOf(LONG, PIECES.flat())).join(' '));
+    await screen.findByTestId('judgement');
+    fireEvent.click(screen.getByRole('button', { name: 'Next step' }));
+    await waitFor(() => expect(screen.getByText(/Piece 1 of 11 · English · A quarter of the words gone · step 2 of 7/)).toBeTruthy());
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Exodus 20:1-2');
+    expect((await db.reviews.get(['verse', `en:${LONG}`]))!.step).toBe(1);
+  });
+
+  it('a verse or a short passage has no pieces: it is one session as it was', async () => {
+    await seed('en', 0, 'Rom.8.28');
+    await open('Rom.8.28', 'en');
+    expect(screen.getByText(/^English · Read and say · step 1 of 7$/)).toBeTruthy();
+    expect(screen.queryByText(/Piece 1 of/)).toBeNull();
+    await seed('en', 0, 'Rom.8.28-30');
+    cleanup();
+    await open('Rom.8.28-30', 'en');
+    expect(screen.queryByText(/Piece 1 of/)).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Romans 8:28-30');
+  });
+
+  it('the Greek of a long passage is cut the same way: Romans 8:1-17 in Greek opens on verses 1-4', async () => {
+    await seed('el', 0, 'Rom.8.1-17');
+    await open('Rom.8.1-17', 'el');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Romans 8:1-4');
+    expect(screen.getByText(/Piece 1 of 5 · Greek · Read and say/)).toBeTruthy();
+    expect(shownWords()).toEqual(await wordsOf('Rom.8.1-17', [1, 2, 3, 4], 'el'));
+  });
+
+  it('an Old Testament passage in Hebrew is cut the same way: Psalm 119:1-16 opens on verses 1-4', async () => {
+    await seed('he', 0, 'Ps.119.1-16');
+    await open('Ps.119.1-16', 'he');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Psalm 119:1-4');
+    expect(screen.getByText(/Piece 1 of 4 · Hebrew · Read and say/)).toBeTruthy();
+    expect(shownWords()).toEqual(await wordsOf('Ps.119.1-16', [1, 2, 3, 4], 'he'));
+  });
+
+  it('the Weave of a long passage is cut the same way, over the woven verses of the piece', async () => {
+    await setWeave('solid');
+    await db.words.put({ lemma: 'χάρις', lemmas: ['χάρις'], gloss: 'grace', lesson: 0, state: 'solid', since: 1 } as unknown as Word);
+    await seed('weave', 0, 'Rom.8.1-17');
+    await open('Rom.8.1-17', 'weave');
+    expect(screen.getByText(/Piece 1 of 5 · Weave · Read and say/)).toBeTruthy();
+    expect(verse().querySelectorAll('[data-token]').length).toBeGreaterThan(0);
+    expect(verse().querySelectorAll('[data-token]').length).toBeLessThan((await wordsOf('Rom.8.1-17', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], 'weave')).length / 2);
+  });
+
+  it('is reported to the tutor: the passage, its piece and the step', async () => {
+    await seed('en', 0, LONG);
+    await open(LONG, 'en');
+    await waitFor(() => expect(screenContextNow()?.facts).toContainEqual({ label: 'Piece', value: '1 of 11 (Exodus 20:1-2)' }));
+    expect(screenContextNow()!.facts).toContainEqual({ label: 'Verse', value: 'Exodus 20:1-17' });
   });
 });
