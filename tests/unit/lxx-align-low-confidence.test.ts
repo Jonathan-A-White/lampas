@@ -155,7 +155,7 @@ const REVIEWED: Record<number, string[]> = {
 // Genesis 30 to 36 (story mw-u2w5klk.349.36; the Tester's finding on mw-u2w5klk.349.5: 'pillar.' of 31:52, 'offered' of 31:54, 'considered' and 'strangers' of 31:15, 'foolishly.' and 'wrought' of 31:28, 'jealous' of 30:1,
 // 'many' and 'cattle,' of 30:43 each opened another Greek word): the same sweep. `placePairs` found 251 pairs by place in the seven chapters, each read by hand against Swete's Greek and the lexicon's entry of its lemma. 36 were
 // wrong (an English word on its neighbour's Greek word, as above; 'put' and 'space' of 32:16, 'do' and 'good.' of 32:9, 'man' and 'folly' of 34:7, 'land,' of 35:21, 'stead.' of 36:36) and are moved, with the pairs that came
-// with them, by 61 `fix` rows in data/lxx/align/gen-30 to gen-36. The 215 left render their English and are named here, each `chapter:verse English @position`: names (the lexicon has no gloss of 'Balla' or
+// with them, by 61 `fix` rows in data/lxx/align/gen-30 to gen-36. The 216 left render their English and are named here, each `chapter:verse English @position`: names (the lexicon has no gloss of 'Balla' or
 // 'Chorrhite,'; it says 'ruler' where Brenton says 'chief'), a Greek word whose lemma's entry says another word than Brenton's ('rams,' for ἄρνασιν, 'spotted' for λευκόν where Brenton's text has διάλευκον and
 // Swete's does not, 'happily:' for τύχῃ, 'tonight' for νύκτα, 'Heap' for Βουνὸς) and an English phrase that renders one Greek word ('I have served', 'they had defiled', 'let them trade'). Like the list above, a pair by
 // place that is not in it fails the test, naming it: it is to be read by hand and either fixed (a `fix` row) or added here; so does an entry no chunk has any more.
@@ -169,7 +169,7 @@ const REVIEWED_30_TO_36: Record<number, string[]> = {
   31: [
     '31:6 have served @9', '31:7 deceived @4', '31:8 speckled @4', '31:9 cattle @6', '31:10 leaping @21', '31:13 appeared @5', '31:13 vowed @16', '31:17 wives @5',
     '31:18 had gotten @12', '31:20 tell @8', '31:21 passed @8', '31:21 went @12', '31:25 stationed @16', '31:26 pillage @12', '31:27 you had told @2', '31:27 mirth, @8',
-    '31:27 songs, @11', '31:27 timbrels, @12', '31:28 embrace @2', '31:30 stolen @16', '31:33 Lea, @7', '31:33 Lea, @16', '31:36 strove @4', '31:36 you have pursued @23',
+    '31:27 songs, @11', '31:27 timbrels, @12', '31:28 embrace @2', '31:30 way, @2', '31:30 stolen @16', '31:33 Lea, @7', '31:33 Lea, @16', '31:36 strove @4', '31:36 you have pursued @23',
     '31:37 you have searched @2', '31:37 let them decide @29', '31:45 pillar. @6', '31:46 they gathered @9', '31:46 heap, @13', '31:46 heap; @21', '31:48 pillar, @11',
     '31:48 Heap @35', '31:50 one @13',
   ],
@@ -250,7 +250,7 @@ describe.skipIf(!real.run)('Genesis 24 to 36 with the model pass and the fix row
     const reviewed = Object.values(REVIEWED_30_TO_36).flat();
     expect(found.filter((p) => !reviewed.includes(p)), 'a pair by place nobody has read').toEqual([]);
     expect(reviewed.filter((p) => !found.includes(p)), 'a reviewed pair that is no longer there').toEqual([]);
-    expect(reviewed).toHaveLength(215);
+    expect(reviewed).toHaveLength(216);
     expect(stale).toEqual([]);
   });
 
