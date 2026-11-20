@@ -33,7 +33,7 @@ between the two words; those edges go on the LISTEN LIST (scripts/audio-timings/
 read aloud and a closing line are in no verse. What was measured (the aligner's letters of each verse, each boundary's quiet) is kept in
 scripts/audio-timings/quiet/<edition>-<book>.json: tests/unit/audio-timings-data.test.ts holds every timing to the rule by it, and --cut runs the rule again from
 it with no model (after a change of the slop). THE LOCK (tests/unit/audio-judged.test.ts): a book ships only with a judged report (judge.py) of its timings as
-they are, with no flag outside its listen list.
+they are, with no flag outside its listen list. THE JUDGE (judge.py; docs/audio-judge.md) is the other half: it hears every verse as the player would play it.
 
 One process, one chapter at a time, torch on 4 threads: start it as `nice -n 10 ~/.cache/lampas-audio-timings/venv/bin/python scripts/audio-timings/align.py --book jhn`.
 """
