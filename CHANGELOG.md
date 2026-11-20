@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.301
+_2026-11-20_
+- Fixed: Today's reading plan card no longer offers Read in Logos, and its Lampas button just says Read.
+
 ## 0.7.300
 _2026-11-20_
 - New: David's recording now plays through Deuteronomy, except chapter 23.

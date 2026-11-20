@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.301",
+    "date": "2026-11-20",
+    "story": "mw-5r3p30.1214",
+    "kind": "fixed",
+    "text": "Today's reading plan card no longer offers Read in Logos, and its Lampas button just says Read."
+  },
+  {
     "version": "0.7.300",
     "date": "2026-11-20",
     "story": "mw-zbgo4ep.5",
