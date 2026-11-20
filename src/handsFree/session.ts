@@ -9,10 +9,12 @@
 //  - While another feature has the microphone (micBusy.ts: a hold-to-talk, a recording) the session is stopped, its stream closed; it starts again after.
 //  - The mark (HandsFreeGate) shows the session's state through `handsFreeSource`. A microphone refused turns the setting Off and says MIC_REFUSED on screen and aloud.
 //  - 'needs-touch' (the audio will not start until the page is touched): the next touch anywhere starts it again; it never pretends to listen.
+//  - The wake listens on a live input, not simply the phone's default (wakeInput.ts, mw-5r3p30.1213): on his car's Bluetooth the default is the car's route,
+//    which carries no sound; the shared chooser's Bluetooth pick is tried first, an input that gives only silence is left for the next, and a log line names it.
 //  - Any other failed wake (the model cannot be fetched, no microphone, a browser with no wake) is told on screen and aloud (COULD_NOT_START); the mic-less and fetch-less kinds
 //    start again by themselves when the network is back ('online') or on the next touch anywhere, and the setting stays On; a browser that cannot do it at all turns it Off.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
-import { browserSpeech } from 'voice-kit/composer';
+import { browserSpeech, canChooseInput } from 'voice-kit/composer';
 import { browserWake, createChimes, createHandsFree, documentVisibility, type ChimePort, type HandsFree, type HandsFreeClock, type HandsFreeState, type WakePort } from 'voice-kit/handsfree';
 import type { WakeModel } from 'voice-kit/wake';
 import { handsFreePauseSetting, handsFreeSetting } from '../settings/definitions';
@@ -23,6 +25,7 @@ import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
 import { isMicBusy, onMicBusy } from './micBusy';
 import { forgetPlayback, goOnAtClose, SAID_KEY, silenceAtWake } from './playback';
+import { forgetWakeInputs, startOnLiveInput } from './wakeInput';
 
 /** Where the build serves the wake model (a hashed asset, fetched only when Hands-free is first turned On). */
 export const WAKE_MODEL_URL: string = modelUrl;
@@ -62,8 +65,9 @@ const COMMAND_LANG = 'en-US';
 /** The longest a sentence it says is waited for, should the phone never say it has ended. */
 const SAY_WAIT_MS = 8000;
 
-/** For tests: the clock the session's own waits run on (the pause, the 6 s with no words), read when the session is made. */
-export const handsFreeSeam: { clock?: HandsFreeClock; chime?: ChimePort } = {};
+/** For tests: the clock the session's own waits run on (the pause, the 6 s with no words), read when the session is made; `quietMs`, the silence that leaves
+ * a wake's input (wakeInput.ts QUIET_MS), read at each start. */
+export const handsFreeSeam: { clock?: HandsFreeClock; chime?: ChimePort; quietMs?: number } = {};
 
 const realClock: HandsFreeClock = {
   setTimeout: (fn, ms) => globalThis.setTimeout(fn, ms),
@@ -161,7 +165,8 @@ const chimePort: ChimePort = {
   close: () => (handsFreeSeam.chime ?? chimes).close(),
 };
 
-/** The wake: the model is loaded on the first start (not before), then the kit's browserWake over startWake, which the testing fake takes over in tests. */
+/** The wake: the model is loaded on the first start (not before), then the kit's browserWake over startWake, which the testing fake takes over in tests; where the
+ * browser can list its inputs, startWake is given a live one (wakeInput.ts) rather than opening the default. */
 const wake: WakePort = {
   async start(onWake) {
     let loaded: WakeModel;
@@ -170,7 +175,12 @@ const wake: WakePort = {
     } catch (err) {
       return { ok: false, kind: 'other', message: err instanceof Error ? err.message : String(err) };
     }
-    return browserWake({ model: loaded, ready: () => chimes.ready() }).start(onWake);
+    const quietMs = handsFreeSeam.quietMs;
+    return browserWake({
+      model: loaded,
+      ready: () => chimes.ready(),
+      ...(canChooseInput() ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
+    }).start(onWake);
   },
 };
 
@@ -275,6 +285,7 @@ export function resetHandsFree(): void {
   untouch?.();
   forgetPlayback();
   forgetAsk();
+  forgetWakeInputs();
   setNotice(null);
   setState(OFF);
 }

@@ -25,3 +25,56 @@ export function stubMic(options: Omit<MicOptions, 'clock'> = {}): StubbedMic {
   vi.stubGlobal('MediaRecorder', host.MediaRecorder);
   return { honest, clock, transcript: clip.transcript, advance: (ms) => clock.advance(ms) };
 }
+
+/** One input of the phone as enumerateDevices names it; `silent` makes it give nothing but silence for good (a car's route that carries no sound). */
+export interface PhoneInput {
+  deviceId: string;
+  label: string;
+  groupId?: string;
+  silent?: boolean;
+}
+
+export interface PhoneInputs {
+  readonly honest: MicFake;
+  /** The labels of the microphone tracks open now, in the order they were opened. */
+  openLabels(): string[];
+  /** Puts back the navigator.mediaDevices that was there. */
+  uninstall(): void;
+}
+
+/**
+ * A phone with several inputs (mw-5r3p30.1213): voice-kit's honest microphone, whose enumerateDevices lists the one input it plays, is given this list
+ * instead, and each getUserMedia opens the input it names (its exact deviceId, or 'default' for `audio: true`) with that input's name and silence, so a
+ * test can say which input a feature opened. The streams are the honest fake's: they play the clip in real time, or silence.
+ */
+export function stubPhoneInputs(inputs: readonly PhoneInput[], options: Omit<MicOptions, 'clock' | 'label' | 'silent'> = {}): PhoneInputs {
+  const host: { navigator?: { mediaDevices: MediaDevices } } = {};
+  const honest = installMic(host, { ...options, clip: options.clip ?? clips.english });
+  const fake = host.navigator!.mediaDevices;
+  const before = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices');
+  const named = (constraints: MediaStreamConstraints | undefined): PhoneInput | undefined => {
+    const audio = constraints?.audio;
+    const wanted = typeof audio === 'object' && audio.deviceId && typeof audio.deviceId === 'object' && 'exact' in audio.deviceId ? audio.deviceId.exact : 'default';
+    return inputs.find((input) => input.deviceId === wanted);
+  };
+  const mediaDevices = {
+    enumerateDevices: () => Promise.resolve(inputs.map((input) => ({ kind: 'audioinput', deviceId: input.deviceId, label: input.label, groupId: input.groupId ?? '' }))),
+    getUserMedia: (constraints?: MediaStreamConstraints) => {
+      const input = named(constraints);
+      if (!input) return Promise.reject(Object.assign(new Error('Requested device not found'), { name: 'OverconstrainedError' }));
+      honest.options.label = input.label;
+      honest.options.silent = input.silent ? Infinity : false;
+      return fake.getUserMedia(constraints);
+    },
+  };
+  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: mediaDevices });
+  return {
+    honest,
+    openLabels: () => honest.streams.flatMap((stream) => stream.getAudioTracks()).filter((track) => track.readyState === 'live').map((track) => track.label),
+    uninstall() {
+      honest.uninstall();
+      if (before) Object.defineProperty(navigator, 'mediaDevices', before);
+      else delete (navigator as { mediaDevices?: unknown }).mediaDevices;
+    },
+  };
+}

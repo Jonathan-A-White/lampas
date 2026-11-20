@@ -42,3 +42,58 @@ export function serveWakeModel(): ModelServer {
 declare global {
   var __bsvKitTesting: { wake?: WakeFake } | undefined;
 }
+
+/** A stream as voice-kit's honest microphone hands it out: it can say what it played (16-bit PCM) between two times since it opened. */
+interface PlayingStream {
+  getAudioTracks(): { label: string }[];
+  elapsedMs(): number;
+  read(fromMs: number, toMs: number): Uint8Array;
+}
+
+const playing = (stream: unknown): stream is PlayingStream =>
+  typeof stream === 'object' && stream !== null && typeof (stream as PlayingStream).read === 'function' && typeof (stream as PlayingStream).elapsedMs === 'function';
+
+/** How often the samples of a given stream are handed on, as an AudioWorklet batches them. */
+const FEED_MS = 50;
+
+export interface HeardStreams {
+  /** The name of the track each started wake listened on, in order: a stream it was given, or the fake's own microphone. */
+  readonly heardOn: string[];
+}
+
+/**
+ * Makes the fake wake hand on what it hears (mw-5r3p30.1213): voice-kit's real startWake calls `onInput` with each batch of samples the microphone captured,
+ * and the kit's fake calls it never. With this, a wake given one of the honest microphone's streams (tests/support/fake-mic.ts) hands its samples to
+ * `onInput` as they play, every FEED_MS, at the clip's rate, until it is stopped; so the app's own check of a silent input runs on real silence.
+ */
+export function hearStreams(wake: WakeFake, sampleRate: number): HeardStreams {
+  const heardOn: string[] = [];
+  const start = wake.start.bind(wake);
+  wake.start = async (options) => {
+    const result = (await start(options)) as { ok: boolean; track?: { label: string }; stop?: () => void };
+    if (!result.ok) return result;
+    heardOn.push(result.track?.label ?? '');
+    const stream = options.stream;
+    const onInput = (options as { onInput?: (samples: Float32Array, rate: number) => void }).onInput;
+    if (!playing(stream) || !onInput || !result.stop) return result;
+    let at = stream.elapsedMs();
+    const feed = setInterval(() => {
+      const now = stream.elapsedMs();
+      const pcm = stream.read(at, now);
+      at = now;
+      const view = new DataView(pcm.buffer, pcm.byteOffset, pcm.byteLength);
+      const samples = new Float32Array(Math.floor(pcm.byteLength / 2));
+      for (let i = 0; i < samples.length; i++) samples[i] = view.getInt16(i * 2, true) / 32768;
+      if (samples.length > 0) onInput(samples, sampleRate);
+    }, FEED_MS);
+    const stop = result.stop;
+    return {
+      ...result,
+      stop() {
+        clearInterval(feed);
+        stop();
+      },
+    };
+  };
+  return { heardOn };
+}
