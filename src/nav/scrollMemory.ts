@@ -27,7 +27,16 @@ export function scrollAddress(hash: string): string {
     if (group) return `#/settings?group=${group}`;
     // and so does a page behind a row of the home (What Lampas has counted, mw-6ww.175.87): opening it at the top must not forget where the home was left
     const page = params.get('page');
-    return page ? `#/settings?page=${page}` : '#/settings';
+    if (page) return `#/settings?page=${page}`;
+    // and so does the list of sermon sources behind a row of Study resources (src/settings/link.ts sermonSourcesLink, mw-6ww.175.102), the list opened at a source's row ('&at=') apart from the plain list:
+    // with no place of its own, opening it at the top forgot where the home was left. A param added to a Settings address needs a line here before its opener calls forgetScrollsAt
+    // (tests/unit/scroll-memory.test.ts runs every opener of link.ts against a kept place of the home).
+    const sources = params.get('sources');
+    if (sources) {
+      const at = params.get('at');
+      return at ? `#/settings?sources=${sources}&at=${encodeURIComponent(at)}` : `#/settings?sources=${sources}`;
+    }
+    return '#/settings';
   }
   if (pathOf(hash) !== '#/') return pathOf(hash);
   return readerHash({ ...readerOf(hash), verse: undefined, view: undefined, weave: undefined });
