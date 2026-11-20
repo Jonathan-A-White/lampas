@@ -16,6 +16,7 @@ import { closeSermons } from '../../src/sermons/openSermons';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { writeSetting } from '../../tests/support/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { keepImport } from '../../tests/support/logos-import';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
@@ -222,7 +223,8 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const booksOn = async (): Promise<string[]> => (await db.library.where('kind').equals('sermons').toArray()).filter((r) => r.state === 'on').map((r) => r.id).sort();
   const viewHas = async (_: unknown, label: string) => {
-    expect(await within(viewEl()).findByRole('button', { name: label })).toBeVisible();
+    // findButton, not a role query on the Verse view of a whole chapter (mw-fnvjof.17.206)
+    expect(await findButton(label)).toBeVisible();
   };
   const turnOffInSettings = async (_: unknown, name: string) => {
     await writeSetting(IDS[name] as 'sermons.testsecond', 'off');

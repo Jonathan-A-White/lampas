@@ -15,6 +15,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
@@ -70,8 +71,9 @@ async function openSheet(licensed: boolean): Promise<void> {
   await screen.findByRole('heading', { name: 'Romans 5', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
   await user.click(await screen.findByRole('button', { name: 'Verse 8', exact: true }));
-  const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(await within(view).findByRole('button', { name: /^Sermons · \d/ }));
+  await screen.findByRole('region', { name: 'Verse view' });
+  // findButton, not a role query: the Verse view of a whole chapter holds hundreds of chunk buttons, and findByRole works out each one's name at every poll, so on a loaded host it outran the wait (mw-fnvjof.17.206)
+  await user.click(await findButton(/^Sermons · \d/));
   await screen.findByRole('dialog', { name: 'Sermons for Romans 5:8' });
 }
 
