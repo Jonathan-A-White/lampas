@@ -149,6 +149,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
   const media = navigator.mediaDevices;
   const tried = new Set<string>();
   let stopped = false;
+  let refused = false;
   let current: RunningWake | null = null;
 
   /** Opens `id` and starts the wake on it; `watch` false listens without the silence check. Null when it would not open or start. */
@@ -157,7 +158,10 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
     try {
       stream = await openMicInput(id);
     } catch (err) {
-      return refusedByThePhone(err) ? { ok: false, kind: 'permission-denied', message: 'The microphone was not allowed.' } : null;
+      // a refusal is the page's, not one input's: no other input is tried, and startWake's own open of the default says it (permission-denied), or, where the
+      // kit's fake stands in for the wake (the e2e specs' honestWake), opens nothing and listens
+      if (refusedByThePhone(err)) refused = true;
+      return null;
     }
     if (stopped) {
       closeStream(stream);
@@ -210,7 +214,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
   /** The next input that opens, in the order of wakeInputs (read afresh: a silent input has just been marked, or the list has changed). */
   const next = async (): Promise<RunningWake | WakeFailure | null> => {
     for (;;) {
-      if (stopped) return null;
+      if (stopped || refused) return null;
       const devices = await listInputs(media);
       const id = wakeInputs(devices).find((each) => !tried.has(each));
       if (id === undefined) return null;
