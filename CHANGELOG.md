@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.304
+_2026-11-20_
+- Fixed: On a phone with no saved Logos list, a book you turn Off in the Library now stays in the list so you can turn it back On.
+
 ## 0.7.303
 _2026-11-20_
 - New: Settings > Daily now has a Devotional sources section where each source of devotionals, your Logos library and Brookfield First's Morning RePhil, can be turned On or Off, and Today and Random use only the ones that are on.
