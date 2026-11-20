@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.305
+_2026-11-20_
+- New: Memorize now breaks a long passage into smaller pieces, such as one commandment at a time, and has you say them together at the end.
+
 ## 0.7.304
 _2026-11-20_
 - Fixed: On a phone with no saved Logos list, a book you turn Off in the Library now stays in the list so you can turn it back On.
