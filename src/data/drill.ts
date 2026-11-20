@@ -167,9 +167,10 @@ interface Candidate {
 }
 
 /** The places in the chapter where a word he knows stands, each place claimed by one word. A Hebrew chapter's places are those of his Hebrew words with a parsing, a Greek chapter's those of his Greek ones. */
-export function candidatesOf(chapter: Chapter, words: readonly Word[], fits?: (code: string) => boolean): Candidate[] {
+export function candidatesOf(chapter: Chapter, words: readonly Word[], fits?: (code: string) => boolean, known: readonly Word[] = words): Candidate[] {
   const hebrew = sourceLanguage(chapter) === 'hbo';
-  const headwords = new Set(words.map((w) => nfc(w.lemma)));
+  // `known` is all his words of the language, not only those the Weave's Words keeps: a plural pronoun that is only learning still keeps its forms from the singular (mw-indx1x6.115)
+  const headwords = new Set(known.map((w) => nfc(w.lemma)));
   const claimed = new Set<string>();
   const found: Candidate[] = [];
   for (const word of words.filter((w) => w.state !== 'dropped')) {
@@ -209,9 +210,10 @@ export function drawDrill(chapter: Chapter, allWords: readonly Word[], random: R
   const hebrew = sourceLanguage(chapter) === 'hbo';
   // a chapter is drilled on the words of its own language (a word stored with no language is Greek)
   const states = tuning ? statesOf(tuning.words) : undefined;
-  const words = allWords.filter((w) => (w.lang ?? 'grc') === (hebrew ? 'hbo' : 'grc') && (!states || states.includes(w.state)));
+  const ofLanguage = allWords.filter((w) => (w.lang ?? 'grc') === (hebrew ? 'hbo' : 'grc'));
+  const words = ofLanguage.filter((w) => !states || states.includes(w.state));
   const fits = tuning && !hebrew ? (code: string) => formPasses(code, tuning.levels, tuning.extent) : undefined;
-  const all = candidatesOf(chapter, words, fits);
+  const all = candidatesOf(chapter, words, fits, ofLanguage);
   if (tuning) return tunedRound(chapter, all, tuning, random, size);
   const group = (list: Candidate[]) => {
     const byWord = new Map<string, Candidate[]>();
