@@ -25,6 +25,8 @@ export interface HeldPlace {
 export interface ReferenceCard {
   heading: string;
   held: HeldPlace | null;
+  /** a chapter alone or a range of chapters ('Judges 1-5') is read whole by the passage player, from `held.chapter` through this chapter (the card itself shows its first verse) */
+  through?: number;
 }
 
 /** A reference found in a text: where it stands (`start` to `end`, the characters written, which `written` repeats) and its card. */
@@ -60,7 +62,7 @@ function cardFrom([, name, chapter, verse, end, chapterEnd]: RegExpExecArray | R
   // A range ends at the chapter's last verse at most; one that does not run forward is its first verse alone.
   const last = place.verse !== undefined && end !== undefined ? Math.max(first, Math.min(Number(end), verses)) : first;
   const heading = place.verse === undefined ? (through !== undefined ? `${title}-${through}` : `${title}:1`) : last > first ? `${title}-${last}` : title;
-  return { heading, held: { book: place.book, chapter: place.chapter, first, last } };
+  return { heading, held: { book: place.book, chapter: place.chapter, first, last }, ...(place.verse === undefined ? { through: through === undefined ? place.chapter : Number(through) } : {}) };
 }
 
 /** The card of one reference as written ('Heb 7:1-3'), or null when it names no place in the Bible. With `every` the card holds an Old Testament passage too (a Review question's

@@ -16,6 +16,8 @@ export interface FoundReference {
   chapter: number;
   verse?: number;
   lastVerse?: number;
+  /** the last chapter of a range of whole chapters ('Judges 1–5': chapter 1, lastChapter 5); never set with a verse (mw-fnvjof.18) */
+  lastChapter?: number;
 }
 
 /** A reference as listed: the first of its kind in the text, and how many times the text names it. */
@@ -138,7 +140,7 @@ export function referenceSpans(text: string, { semicolons = false }: { semicolon
         continue;
       }
       const printed = whole.trim() + (rangeLast ? rangeLast[0] : '');
-      found.push(make(printed, chapter, undefined, m.index, m.index + printed.length));
+      found.push({ ...make(printed, chapter, undefined, m.index, m.index + printed.length), ...(rangeLast ? { lastChapter: Number(rangeLast[1]) } : {}) });
       if (rangeLast) FIND.lastIndex = reached;
       continue;
     }
@@ -191,7 +193,7 @@ export function findReferences(text: string): FoundReference[] {
 /** Where a book stands in the Bible: canon order, the Old Testament's books first, then the New's. */
 const bookPlace = (r: Pick<FoundReference, 'book'>): number => BOOKS.findIndex((b) => b.code === r.book);
 
-const sameReference = (a: FoundReference, b: FoundReference): boolean => a.ref === b.ref && a.lastVerse === b.lastVerse;
+const sameReference = (a: FoundReference, b: FoundReference): boolean => a.ref === b.ref && a.lastVerse === b.lastVerse && a.lastChapter === b.lastChapter;
 
 /** The references as a list: each distinct one once, at its first place in the text with how many times it was named ('page'), or sorted by book, chapter and
  *  verse ('bible', a chapter alone before its verses). */
@@ -204,14 +206,15 @@ export function listReferences(found: readonly FoundReference[], order: RefsOrde
   }
   if (order === 'page') return listed;
   return listed.sort(
-    (a, b) => bookPlace(a) - bookPlace(b) || a.chapter - b.chapter || (a.verse ?? 0) - (b.verse ?? 0) || (a.lastVerse ?? 0) - (b.lastVerse ?? 0),
+    (a, b) => bookPlace(a) - bookPlace(b) || a.chapter - b.chapter || (a.verse ?? 0) - (b.verse ?? 0) || (a.lastVerse ?? 0) - (b.lastVerse ?? 0) || (a.lastChapter ?? 0) - (b.lastChapter ?? 0),
   );
 }
 
 /** What a reference is called on its card: in words ('Genesis 1:28', 'Psalm 23', a range 'Genesis 1:28-30'), as the tutor's cards head it. */
-export function headingOf(r: Pick<FoundReference, 'ref' | 'lastVerse'>): string {
+export function headingOf(r: Pick<FoundReference, 'ref' | 'lastVerse' | 'lastChapter'>): string {
   const words = inWords(r.ref).replace(/^Psalms /, 'Psalm ');
-  return r.lastVerse === undefined ? words : `${words}-${r.lastVerse}`;
+  const last = r.lastVerse ?? r.lastChapter;
+  return last === undefined ? words : `${words}-${last}`;
 }
 
 /** A book's name as the lists write it. */

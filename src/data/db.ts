@@ -104,6 +104,7 @@ export interface KeptReference {
   chapter: number;
   verse?: number;
   lastVerse?: number;
+  lastChapter?: number;
 }
 
 /** The running summary of one talk (src/data/repositories/talks.ts, mw-5r3p30.700): what the tutor wrote of every turn that fell out of the 10-turn window, and how many of the talk's

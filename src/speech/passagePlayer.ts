@@ -17,6 +17,8 @@ import { getReading, listenCompletedNow, pauseReading, planOf, resumeReading, st
 export interface PassageRef {
   heading: string;
   held: HeldPlace | null;
+  /** read whole chapters, from `held.chapter` through this one (a chapter alone, or 'Judges 1-5'), instead of the verses `held` names (mw-fnvjof.18) */
+  through?: number;
 }
 
 export type PassageState = 'idle' | 'playing' | 'paused';
@@ -62,13 +64,23 @@ function set(next: PassagePlayer): void {
   [...listeners].forEach((l) => l(next.state, next.current));
 }
 
-/** The verses `held` names, as read aloud reads them in the Reader's view and weave now. */
-async function planOfReference(held: HeldPlace): Promise<PlanVerse[]> {
+/** Each chapter after the first of a reference read through, its verses numbered from here up so that one plan holds them all (read aloud finds a verse by its number). */
+const CHAPTER_STEP = 1000;
+
+/** The verses `ref` names, as read aloud reads them in the Reader's view and weave now: the verses of one chapter, or, for a reference read through, every verse of each chapter. */
+async function planOfReference(ref: PassageRef, held: HeldPlace): Promise<PlanVerse[]> {
+  if (ref.through === undefined || ref.through <= held.chapter) return planOfChapter(held, ref.through !== undefined);
+  const chapters = Array.from({ length: ref.through - held.chapter + 1 }, (_, i) => held.chapter + i);
+  const plans = await Promise.all(chapters.map((chapter) => planOfChapter({ ...held, chapter }, true)));
+  return plans.flatMap((plan, k) => plan.map((v) => ({ ...v, n: k * CHAPTER_STEP + v.n })));
+}
+
+async function planOfChapter(held: HeldPlace, whole: boolean): Promise<PlanVerse[]> {
   const [chapter, saved] = await Promise.all([loadChapter(held.book, held.chapter), readViewSettings()]);
   const settings = settingsFor(saved, chapter);
   const woven = wovenOf(chapter, settings);
   // a reference is in Lampas's verses: a Septuagint chapter's are its `ref`s (Greek 9:22 is Psalm 10:1), not the Greek numbers (mw-u2w5klk.18)
-  const wanted = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => lampasNumber(chapter, v) >= held.first && lampasNumber(chapter, v) <= held.last);
+  const wanted = chapter.verses.map((v, i) => ({ v, i })).filter(({ v }) => whole || (lampasNumber(chapter, v) >= held.first && lampasNumber(chapter, v) <= held.last));
   return planOf(
     wanted.map(({ v }) => v),
     settings.view,
@@ -106,7 +118,7 @@ function readNext(mine: number): void {
   set({ state: gapPaused ? 'paused' : 'playing', current: ref });
   const { held } = ref;
   if (!held) return startOrHold(mine, () => say(skippedLine(ref.heading)));
-  planOfReference(held).then(
+  planOfReference(ref, held).then(
     (plan) => startOrHold(mine, () => begin(ref, plan, held)),
     () => startOrHold(mine, () => say(OFFLINE(ref.heading))),
   );

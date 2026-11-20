@@ -5,14 +5,14 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { ListedReference } from '../nav/refsInText';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage, type PassageRef } from '../speech/passagePlayer';
-import { passageOf } from './passageOf';
+import { playableOf } from './passageOf';
 
 const BUTTON = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
 /** 'Play all' for `refs` (listed references, in the order to be read), or, while they are being read, the bar. */
 export function PlayAll({ refs }: { refs: readonly ListedReference[] }) {
   const player = useSyncExternalStore(onPassageChange, getPassagePlayer, getPassagePlayer);
-  const passages = useMemo(() => refs.map(passageOf), [refs]);
+  const passages = useMemo(() => refs.map(playableOf), [refs]);
   // the passages the player was given by this screen: a change of the list while it plays (the other order) does not take the bar away
   const [started, setStarted] = useState<PassageRef[] | null>(null);
   // what the unmount reads: the state's value is stale in a cleanup that was made once

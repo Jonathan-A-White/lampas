@@ -4,12 +4,16 @@ import { OSIS, OT_OSIS } from '../nav/links';
 import { chaptersOf, headingOf, type FoundReference, type ListedReference } from '../nav/refsInText';
 
 /** The canonical string of a reference: its OSIS ref and, for a range, `-<last verse>`. */
-export const canonicalOf = (r: Pick<FoundReference, 'ref' | 'lastVerse'>): string => (r.lastVerse === undefined ? r.ref : `${r.ref}-${r.lastVerse}`);
+export const canonicalOf = (r: Pick<FoundReference, 'ref' | 'lastVerse' | 'lastChapter'>): string => {
+  const last = r.lastVerse ?? r.lastChapter;
+  return last === undefined ? r.ref : `${r.ref}-${last}`;
+};
 
 /** '1 reference', '5 references'. */
 export const referencesLine = (n: number): string => `${n} ${n === 1 ? 'reference' : 'references'}`;
 
-const SHAPE = /^([1-3]?[A-Za-z]+)\.(\d{1,3})(?:\.(\d{1,3})(?:-(\d{1,3}))?)?$/;
+// 'Rom.8.28', 'Ps.62.1-2', 'Ps.23', and a range of whole chapters 'Judg.1-5'
+const SHAPE = /^([1-3]?[A-Za-z]+)\.(\d{1,3})(?:-(\d{1,3})|\.(\d{1,3})(?:-(\d{1,3}))?)?$/;
 
 const codeOf = (table: Readonly<Record<string, string>>, osis: string): string | undefined => Object.keys(table).find((code) => table[code] === osis);
 
@@ -17,7 +21,7 @@ const codeOf = (table: Readonly<Record<string, string>>, osis: string): string |
 export function listedOf(canonical: string): ListedReference | null {
   const m = SHAPE.exec(canonical.trim());
   if (!m) return null;
-  const [, osis, chapterText, verseText, lastText] = m;
+  const [, osis, chapterText, chaptersText, verseText, lastText] = m;
   const nt = codeOf(OSIS, osis);
   const book = nt ?? codeOf(OT_OSIS, osis);
   if (!book) return null;
@@ -27,6 +31,7 @@ export function listedOf(canonical: string): ListedReference | null {
   if (!limit || chapter < 1 || chapter > limit) return null;
   const verse = verseText === undefined ? undefined : Number(verseText);
   const last = lastText === undefined ? undefined : Number(lastText);
+  const lastChapter = chaptersText === undefined ? undefined : Number(chaptersText);
   const listed: ListedReference = {
     printed: '',
     ref: `${osis}.${chapter}${verse === undefined ? '' : `.${verse}`}`,
@@ -35,6 +40,7 @@ export function listedOf(canonical: string): ListedReference | null {
     chapter,
     ...(verse === undefined || verse < 1 ? {} : { verse }),
     ...(verse === undefined || last === undefined || last <= verse ? {} : { lastVerse: last }),
+    ...(lastChapter === undefined || lastChapter <= chapter || lastChapter > limit ? {} : { lastChapter }),
     count: 1,
   };
   return { ...listed, printed: headingOf(listed) };

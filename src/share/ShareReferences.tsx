@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import { ReferenceLink } from '../markdown/ReferenceCard';
 import { referenceUrl } from '../nav/links';
 import { canonicalOf } from '../lists/canonical';
-import { passageOf } from '../lists/passageOf';
+import { playableOf } from '../lists/passageOf';
 import { findReferences, groupedByBook, listReferences, type FoundReference, type ListedReference, type RefsOrder } from '../nav/refsInText';
 import type { PictureRefs } from './findRefs';
 import { PlayAll } from '../lists/PlayAllBar';
@@ -58,8 +58,8 @@ function Printed({ r }: { r: ListedReference }) {
 export function RefLink({ r, replacing = true }: { r: ListedReference; replacing?: boolean }) {
   const href = referenceUrl(r.book, r.chapter, r.verse);
   const common = { written: r.printed, replacing, href, className: LINK_CLASS, data: { 'data-share-ref': r.ref } };
-  // a chapter alone is headed, as the tutor's cards head it, by the first verse it shows
-  const found = passageOf(r);
+  // the card shows the first verse of a chapter or of a range of chapters, and its Play reads them whole (mw-fnvjof.18)
+  const found = playableOf(r);
   return (
     <ReferenceLink {...common} found={found}>
       <Printed r={r} />
@@ -120,7 +120,7 @@ export function ShareReferences({ text, picture, retry }: { text?: string; pictu
       {order === 'page' ? (
         <ul className="space-y-2">
           {listed.map((r) => (
-            <li key={`${r.ref}-${r.lastVerse ?? ''}`}>
+            <li key={`${r.ref}-${r.lastVerse ?? r.lastChapter ?? ''}`}>
               <RefLink r={r} />
             </li>
           ))}
@@ -131,7 +131,7 @@ export function ShareReferences({ text, picture, retry }: { text?: string; pictu
             <h4 className="pt-1 text-base font-semibold text-muted">{g.name}</h4>
             <ul className="space-y-2">
               {g.refs.map((r) => (
-                <li key={`${r.ref}-${r.lastVerse ?? ''}`}>
+                <li key={`${r.ref}-${r.lastVerse ?? r.lastChapter ?? ''}`}>
                   <RefLink r={r} />
                 </li>
               ))}

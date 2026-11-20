@@ -38,7 +38,7 @@ export function isFindRefsAnswer(value: unknown): value is FindRefsAnswer {
 }
 
 /** The answer's references that Lampas can place: the book is one of the Bible's, the chapter is in it and the verse is 1 or more. A range written in `printed`
- *  ('Rom 8:28-30') keeps its last verse. Each is written as links.ts writes a ref ('Gen.1.28'), with the page's words. */
+ *  ('Rom 8:28-30') keeps its last verse, and a range of chapters ('Judges 1–5') its last chapter (mw-fnvjof.18). Each is written as links.ts writes a ref ('Gen.1.28'), with the page's words. */
 export function checkedReferences(answered: readonly AnsweredReference[]): FoundReference[] {
   const found: FoundReference[] = [];
   for (const { printed, ref } of answered) {
@@ -48,7 +48,10 @@ export function checkedReferences(answered: readonly AnsweredReference[]): Found
     const limit = chaptersOf(book, testament);
     if (!limit || chapter < 1 || chapter > limit || (verse !== undefined && verse < 1)) continue;
     const words = printed.trim() || ref.trim();
-    const range = verse === undefined ? undefined : findReferences(words).find((r) => r.book === book && r.chapter === chapter && r.verse === verse)?.lastVerse;
+    // the grist keeps the first verse (or chapter) in `ref` and the range whole in `printed`, so the range's end is read from the page's words
+    const spoken = findReferences(words).find((r) => r.book === book && r.chapter === chapter && r.verse === verse);
+    const range = verse === undefined ? undefined : spoken?.lastVerse;
+    const lastChapter = verse === undefined ? spoken?.lastChapter : undefined;
     found.push({
       printed: words,
       ref: `${osisOf(book)}.${chapter}${verse === undefined ? '' : `.${verse}`}`,
@@ -57,6 +60,7 @@ export function checkedReferences(answered: readonly AnsweredReference[]): Found
       chapter,
       ...(verse === undefined ? {} : { verse }),
       ...(range === undefined ? {} : { lastVerse: range }),
+      ...(lastChapter === undefined ? {} : { lastChapter }),
     });
   }
   return found;
@@ -67,7 +71,8 @@ export function checkedReferences(answered: readonly AnsweredReference[]): Found
 export async function findRefsInPicture(picture: File, place: number, signal?: AbortSignal): Promise<FoundReference[]> {
   const hash = await fingerprintOf(picture).catch(() => undefined);
   const kept = hash === undefined ? undefined : await keptPictureRefs(hash).catch(() => undefined);
-  if (kept) return kept;
+  // a reading kept before a range of chapters was kept whole ('Judges 1–5') is read again from its words, with no grist
+  if (kept) return checkedReferences(kept);
   const sent = await preparePicture(picture, place);
   const answer = await askGrind(FIND_REFS_KIND, buildFindRefsRequest(), isFindRefsAnswer, { key: getDeviceKeyBytes(), files: filesOf([sent]), signal, untimed: true });
   const found = checkedReferences(answer.references);
