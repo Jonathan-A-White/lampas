@@ -182,6 +182,14 @@ Feature: A wrong answer links to what teaches it
     # sheet again). Over no run, where the row is a link, the same walk must stop at it
     And the walk of that sheet's controls stops at its Paradigm row, whose tap changes the page's address
 
+  # mw-indx1x6.111: 'Learn this idea' on the Grammar sheet of a Hebrew parsing term asked the Greek terms (ideaOfTerm of ladder.ts), so Qal opened nothing and masculine opened the Greek lesson over a Hebrew word
+  Scenario: Learn this idea on the Grammar sheet of a Hebrew parsing term opens the Hebrew idea that teaches it
+    Given the sheet of the second word of Genesis 1:1, a Hebrew verb, is open as it is over no run
+    When he taps the parsing term "Qal" on the word's sheet and then Learn this idea on the Grammar sheet
+    Then a dialog named Idea is open and it is the Hebrew idea "he-qal"
+    When he taps each other parsing term of that word the same way
+    Then each opened a dialog named Idea of the Hebrew idea its term belongs to, never a Greek one
+
   Scenario: A Septuagint word's sheet over a drill has no About this reading link, which opens a Help page
     Given the sheet of the word "ἐποίησεν" of the Septuagint's Genesis 1 is open as it is over a drill
     Then the word's sheet says how Lampas read the word and has no "About this reading" button

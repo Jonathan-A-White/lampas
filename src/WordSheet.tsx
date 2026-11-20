@@ -21,6 +21,7 @@ import { useLogosOn } from './useLogosOn';
 import { GrammarSheet } from './GrammarSheet';
 import { IdeaSheet } from './IdeaSheet';
 import { ideaOf, ideaOfTerm, ownIdeaOfWord, type GrammarIdea } from './data/grammar/ladder';
+import { ladderFor } from './data/grammar/ladders';
 import { paradigmOfHebrewWord, paradigmOfWord } from './data/paradigms';
 import { accentedFormsOf, inCapitals, matchedWord } from './data/paradigms/ownForms';
 import { openHelpPage, openLibrary, openParadigm } from './nav/route';
@@ -893,6 +894,12 @@ function WordSheetBody({ chapter, lookup: opened, onClose, onHelp, onAskEnglish,
           }
           onAsk={ask}
           onLearn={(term) => {
+            // a Hebrew term is taught by the Hebrew ladder's idea, never the Greek one the same word ('masculine') names (mw-indx1x6.111)
+            if (hebrew) {
+              const hebrewId = ladderFor('hbo').ideaOfTerm(term);
+              if (hebrewId) setIdea(ladderFor('hbo').ideaOf(hebrewId));
+              return;
+            }
             // the term of the word's own part of speech teaches the word's own idea when it has one (περί: "The preposition περί")
             const id = ideaOfTerm(term);
             const own = ownIdeaOfWord(grammar.word);
