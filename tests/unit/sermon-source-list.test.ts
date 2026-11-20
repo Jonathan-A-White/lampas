@@ -68,6 +68,18 @@ describe('the one list of sermon sources', () => {
     expect(list.hidden).toBe(0);
   });
 
+  it('lists a source once when the bundled list and the one the service told of share an id, the bundled one winning (mw-qtu3zvz.229)', () => {
+    const twin = source('wesley-logos', "John Wesley's sermons (web)", { default: 'on' });
+    const list = sourceList(input({ sources: [SPURGEON, WESLEY, SERVICE, twin], owned: new Set(LOGOS_RESOURCES['wesley-logos']) }));
+    const ids = list.items.map((i) => i.id);
+    expect(ids.filter((id) => id === 'sermons.wesley-logos')).toHaveLength(1);
+    expect(new Set(ids).size).toBe(ids.length);
+    const row = list.items.find((i) => i.id === 'sermons.wesley-logos');
+    expect(row?.detail).toMatch(/in Logos$/);
+    expect(row?.on).toBe(false);
+    expect(list.held).toBe(1);
+  });
+
   it('names a list without its bracket and says how many sermons and where they open', () => {
     const list = sourceList(input({ owned: new Set([GREG]) }));
     const byId = new Map(list.items.map((i) => [i.id, i]));
