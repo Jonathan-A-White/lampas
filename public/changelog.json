@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.298",
+    "date": "2026-11-20",
+    "story": "mw-5r3p30.1213",
+    "kind": "fixed",
+    "text": "'Hey Lampas' now wakes while the phone is on the car's Bluetooth: it listens on a microphone that hears you instead of the car's silent one."
+  },
+  {
     "version": "0.7.297",
     "date": "2026-11-20",
     "story": "mw-5r3p30.1212",

@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.298
+_2026-11-20_
+- Fixed: 'Hey Lampas' now wakes while the phone is on the car's Bluetooth: it listens on a microphone that hears you instead of the car's silent one.
+
 ## 0.7.297
 _2026-11-20_
 - Fixed: the Hands-free microphone mark now stays in the header row beside the menu after full screen, instead of drifting up alone above it.
