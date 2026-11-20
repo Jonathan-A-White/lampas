@@ -247,7 +247,7 @@ Gen.24:25#7	N-NSN	χόρτασμα		0.80
 Gen.24:25#8	A-NSN	πολύς		0.80	
 Gen.24:27#8	N-GSM	Ἀβραάμ		0.80	
 Gen.24:27#22	V-RAI-3S	εὐοδόω	guess	0.40	guess: the model answered with no candidates
-Gen.24:28#4	N-NSM	παῖς	unsure	0.50	model: unsure
+Gen.24:28#4	N-NSF	παῖς	guess	0.40	guess: the model chose outside the candidates
 Gen.24:28#13	T-APN	ὁ		0.80	
 Gen.24:28#14	N-APN	ῥῆμα		0.80	
 Gen.24:28#15	D-APN	οὗτος		0.80	
@@ -370,7 +370,7 @@ Gen.24:56#7	V-PAM-2P	κατέχω		0.80
 Gen.24:56#15	V-AAM-2P	ἐκπέμπω		0.80	
 Gen.24:57#4	V-AAS-1P	καλέω		0.80	
 Gen.24:57#5	T-ASF	ὁ		0.80	
-Gen.24:57#6	N-ASM	παῖς	unsure	0.50	model: unsure
+Gen.24:57#6	N-ASF	παῖς	guess	0.40	guess: the model chose outside the candidates
 Gen.24:57#8	V-AAS-1P	ἐπερωτάω		0.80	
 Gen.24:57#9	T-ASN	ὁ		0.80	
 Gen.24:57#10	N-ASN	στόμα		0.80	
