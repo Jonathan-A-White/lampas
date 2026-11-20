@@ -678,22 +678,56 @@ describe.skipIf(!haveSources)('Genesis 1 to 36 with the model pass', () => {
 
   // Genesis 14 (mw-u2w5klk.349.23; 349.3 left it, and `lxx:unpaired` listed it with 50 English content words where a tap opened the Verse view): the English content words that sit in a chunk with no Greek word
   // after the pass, keyed verse:word and read by hand from `--list --chapter 14`. A tap on one opens the Verse view, never a wrong word.
-  // 24 of 278 content words (50 had none before it, read with `npm run lxx:unpaired -- --book gen`), each in one of two lists with why. The aligner's pairs are not touched.
-  // 'it came to pass' (14:1) renders ἐγένετο, paired to one English word by the aligner, and 14:15's 'he came upon' has ἐπέπεσεν paired to 'upon'.
-  const IDIOM_NO_GREEK_14 = ['1:came', '1:pass', '15:came'];
-  // Either the Greek word that renders it is a pair the aligner made to another English word ('most' of 'the most high God' is the superlative of ὕψιστος, paired to 'high'; 'fled' of 14:10 is ἔφυγον, paired to 'country.';
-  // 'recovered' of 14:16's 'he recovered Lot' is the second ἀπέστρεψεν, paired to 'nephew,'; 'met' is συνεφώνησαν, paired to 'with'), or Brenton adds it to make English of a Greek phrase ('forth', 'array', 'pieces', 'Lord', 'rich').
-  const PAIRED_OR_ADDED_NO_GREEK_14 = [
-    '3:met', '3:one', '3:consent', '5:pieces', '7:pieces', '8:array', '10:fled', '10:fled', '14:captive', '14:homeborn', '16:recovered', '18:forth', '18:most', '19:most', '20:most', '20:abram',
-    '22:lord', '22:most', '23:rich', '24:things', '24:young',
-  ];
+  // 3 of 278 content words (50 had none before it, 24 after the pass, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.46 moved 21 of them with the fix rows of data/lxx/align/gen-14.tsv, the aligner's
+  // pairs that gave a Greek word to a neighbouring English word), each in one of two lists with why. 'it came to pass' (14:1) renders ἐγένετο, paired to one English word by the aligner.
+  const IDIOM_NO_GREEK_14 = ['1:came', '1:pass'];
+  // Brenton adds 'Lord' of 14:22 to make English of a Greek phrase (τὸν θεὸν τὸν ὕψιστον has no κύριον).
+  const PAIRED_OR_ADDED_NO_GREEK_14 = ['22:lord'];
   const NO_GREEK_14 = [...IDIOM_NO_GREEK_14, ...PAIRED_OR_ADDED_NO_GREEK_14];
 
   it('leaves in Genesis 14 no English content word without a Greek word but those named, and no remainder (y "align?") at all', () => {
     const chapter = withModel.get(14)!;
     expect(noGreek(chapter).map((w) => w.replace(/^14:/, '')).sort()).toEqual([...NO_GREEK_14].sort());
-    expect(NO_GREEK_14).toHaveLength(24);
+    expect(NO_GREEK_14).toHaveLength(3);
     for (const verse of chapter.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen 14:${verse.n}`).toEqual([]);
+  });
+
+  // mw-u2w5klk.349.46: the aligner's pairs of Genesis 14 gave a Greek word to a neighbouring English word ('nations' on ἅμα, 'with' on συνεφώνησαν, 'country.' on ἔφυγον, 'nephew,' on the second
+  // ἀπέστρεψεν, 'upon' on ἐπέπεσεν), so the word that renders it had no Greek. Each is the chunk the fix row of gen-14.tsv gives its own Greek word.
+  it('gives the English of Genesis 14 that the aligner paired to a neighbour its own Greek word: nations, met with one consent, cut to pieces, fled, nephew, he recovered Lot, he came upon, most high, made Abram rich', () => {
+    const verse = (v: number): Verse => withModel.get(14)!.verses.find((x) => x.n === v)!;
+    const greek = (v: number, text: string): string[] => {
+      const chunks = verse(v).e.filter((c) => c.t === text);
+      expect(chunks, `14:${v} '${text}' is one chunk`).toHaveLength(1);
+      return chunks[0].g.map((i) => verse(v).g[i].t);
+    };
+    expect(greek(3, 'met with one consent')).toEqual(['συνεφώνησαν']);
+    expect(greek(5, 'strong nations')).toEqual(['ἔθνη', 'ἰσχυρὰ']);
+    expect(greek(5, 'with them,')).toEqual(['ἅμα', 'αὐτοῖς,']);
+    expect(greek(5, 'cut to pieces')).toEqual(['κατέκοψαν']);
+    expect(greek(7, 'they cut in pieces')).toEqual(['κατέκοψαν']);
+    expect(greek(8, 'they set themselves in array against them for')).toEqual(['παρετάξαντο', 'αὐτοῖς', 'εἰς']);
+    expect(greek(10, 'the salt valley')).toEqual(['ἡ', 'κοιλὰς', 'ἡ', 'ἁλυκὴ']);
+    expect(greek(10, 'consists of slime-pits.')).toEqual(['φρέατα', 'ἀσφάλτου.']);
+    expect(greek(10, 'Sodom fled')).toEqual(['ἔφυγεν', 'Σοδόμων']);
+    expect(greek(10, 'they that were left fled')).toEqual(['οἱ', 'καταλειφθέντες', 'ἔφυγον.']);
+    expect(greek(10, 'mountain country.')).toEqual(['ὀρινὴν']);
+    expect(greek(14, 'nephew had been')).toEqual(['ὁ', 'ἀδελφὸς']);
+    expect(greek(14, 'taken captive,')).toEqual(['ᾐχμαλωτεύθη']);
+    expect(greek(14, 'home-born servants')).toEqual(['οἰκογενεῖς']);
+    expect(greek(15, 'he came upon')).toEqual(['ἐπέπεσεν', 'ἐπ᾽']);
+    expect(greek(16, 'he recovered Lot')).toEqual(['Λὼτ', 'ἀπέστρεψεν']);
+    expect(greek(16, 'nephew,')).toEqual(['ἀδελφὸν']);
+    expect(greek(18, 'brought forth')).toEqual(['ἐξήνεγκεν']);
+    expect(greek(18, 'most high')).toEqual(['ὑψίστου.']);
+    expect(greek(19, 'most high')).toEqual(['ὑψίστῳ,']);
+    expect(greek(20, 'most high')).toEqual(['ὕψιστος,']);
+    expect(greek(20, 'Abram gave')).toEqual(['ἔδωκεν']);
+    expect(greek(22, 'most high')).toEqual(['ὕψιστον,']);
+    expect(greek(23, 'have made Abram rich.')).toEqual(['ἐπλούτισα', 'τὸν', 'Ἀβράμ.']);
+    expect(greek(24, 'Except what things')).toEqual(['πλήν', 'ὧν']);
+    expect(greek(24, 'young men')).toEqual(['νεανίσκοι']);
+    expect(greek(24, 'that went')).toEqual(['τῶν', 'συμπορευθέντων']);
   });
 
   it('pairs a content word of each kind in Genesis 14 (11 cavalry, 18 loaves, 13 told, 7 Amorites, 15 servants, 23 string) to a Greek word the Reader links', () => {
