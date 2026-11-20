@@ -10,7 +10,7 @@ import Dexie from 'dexie';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { attribution, plainText } from '../../src/attribution';
-import { CREDITS } from '../../src/tutor/credits';
+import { CREDITS, LOGOS_SERMON_BULLET, LOGOS_SERMONS_CREDIT } from '../../src/tutor/credits';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import type { Chapter } from '../../src/data/chapter';
@@ -584,6 +584,11 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       const got = (sent(0).screen as { credits: { name: string; use: string; licence: string; link: string }[] }).credits;
       expect(got).toEqual(CREDITS);
       for (const entry of attribution.entries) {
+        // the Logos sermon sources are one family credit (mw-qtu3zvz.236)
+        if (LOGOS_SERMON_BULLET.test(plainText(entry))) {
+          expect(got, plainText(entry).slice(0, 50)).toContainEqual(LOGOS_SERMONS_CREDIT);
+          continue;
+        }
         expect(got.some((c) => plainText(entry).includes(c.name) && entry.includes(c.link)), plainText(entry).slice(0, 50)).toBe(true);
       }
     });
