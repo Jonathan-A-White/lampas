@@ -24,6 +24,13 @@ Feature: Ask the tutor about a word, holding what the app knows
     Then the Reader is open with the sheet titled "Talk about Romans 8:1"
     And the grist carries the quiz focus for the word "ἀμήν" with no form, no parsing and no earlier answers
 
+  Scenario: Ask the tutor on a Quick test question of a phrase word sends the parsing of its last word
+    Given Lampas is opened on the Quick test behind a fake Postern, on the word "εἰ μή" of John 10
+    When he taps a wrong gloss
+    And he taps Ask the tutor on the question
+    Then the Reader is open with the sheet titled "Talk about John 10:10"
+    And the grist carries the quiz focus for the phrase "εἰ μή" as "εἰ μὴ" with the parsing of the word "μὴ" in John 10:10
+
   Scenario: Ask the tutor on the sheet of a Hebrew word sends the word with its language
     Given Lampas is opened on Jonah 1 in the Hebrew view behind a fake Postern
     And he taps the Hebrew word "נִֽינְוֵ֛ה" in verse 2
