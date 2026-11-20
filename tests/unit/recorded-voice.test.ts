@@ -201,12 +201,13 @@ describe('a single verse stops at or before its end, faded to silence, whatever 
   }
 
   /** Plays verse 2 (10 s to 20 s) alone. The sound runs by the clock; the element's second is `reading(the sound's second)` whenever it is read, and a 'timeupdate' comes every 266 ms. */
-  async function stopWith(reading: (sound: number) => number): Promise<Stop> {
+  async function stopWith(reading: (sound: number) => number, how: { speed?: number } = {}): Promise<Stop> {
     let at: number | null = null;
+    const { speed = 1 } = how;
     playRecording(TIMINGS, 2, 20, { ...listener, reached: () => told.push('reached') });
     await Promise.resolve();
     const began = Date.now();
-    const sound = (): number => 10 + (Date.now() - began) / 1000;
+    const sound = (): number => 10 + ((Date.now() - began) / 1000) * speed;
     const el = element();
     let volume = el.volume;
     let volumeAtPause = Number.NaN;
@@ -250,6 +251,18 @@ describe('a single verse stops at or before its end, faded to silence, whatever 
     expect(stop.at).toBeLessThanOrEqual(20);
     expect(stop.at).toBeGreaterThanOrEqual(20 - 0.07);
     expect(told).toEqual(['reached']);
+  });
+
+  // mw-ar5k42b.23: under host load headless Chromium's audio ran slower than its speed (1.03 s of the recording a second of the clock at 1.25x) and its second told the sound
+  // truly at every look; carrying the readings of the last 700 ms on by the clock at 1.25x put the sound 0.14 s ahead of where it was, and David stopped 111 to 185 ms before a span's end.
+  it('an element whose second is read at every look and is true, though the audio runs slower than his speed (1.25x asked, 1.0x played): stopped in the 70 ms before the end, not early', async () => {
+    setRecordedRate(1.25);
+    const stop = await stopWith((sound) => sound, { speed: 1 });
+    expect(stop.at).toBeLessThanOrEqual(20);
+    expect(stop.at).toBeGreaterThanOrEqual(20 - 0.07);
+    expect(stop.volume).toBe(0);
+    // the carry on by the clock runs at the element's own speed (a little over 1.0x), not his 1.25x: the fade starts at most 20 ms before its 110 ms
+    expect(Math.min(...stop.volumes.map(([at]) => at))).toBeGreaterThanOrEqual(20 - 0.11 - 0.02);
   });
 
   it('the last 60 ms before the stop are faded to silence: the volume is 1 until then, only goes down, and is 0 when pause() is called', async () => {

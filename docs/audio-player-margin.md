@@ -98,7 +98,16 @@ Each was measured once by the same spec, in Chromium:
 
 ## What was changed in the player, and what was rejected
 
-Nothing was changed: today's player holds 0.05 s each side in every row measured. Rejected, because nothing failed:
+**mw-ar5k42b.23 (2026-11-19).** Under host load 6 plays of 360 stopped 111 to 183 ms before the end (past `inside.tail`), and one 30-play run on cloud1 at load 5 gave two
+more (-119 and -185 ms, at 1.25x, on Play again). Traced in the page: the element's second was true at every look (20 ms apart), but it advanced 1.03 s of the recording a second
+of the clock at a speed of 1.25, so the stop's carry of the last 700 ms of readings on by the clock at 1.25x put the sound 0.14 s ahead of itself (the heard sound ended where the
+element's second stood). `soundAt` now carries those readings at the element's own speed (`carrySpeed`: a second read at every look and slower than his speed over the readings, never
+slower than real time, times 1.02); a second that moves in steps (a phone's) and a speed of 1x or less are carried as before. After it, two runs of the 180-play spec at load 5 held
+every row (the earliest end -90 ms, inside `inside.tail`), and `inside.tail` is unchanged. The case it does not separate: a second at 1.25x that is slow because it LAGS the sound
+(not because the audio is slow) and jumps on later is stopped late, as the element's own second says; it was seen only in headless Chromium within two seconds of a seek
+(tests/e2e/recorded-voice-stop.spec.ts).
+
+Before that, nothing was changed: today's player holds 0.05 s each side in every row measured. Rejected, because nothing failed:
 
 - **A fade that ends at the verse's end**, instead of one that starts 0.11 s before it. It would give back up to about 60 ms of each verse's own last sound. But it
   needs a timer that fires on time where a loaded page fires late (the reason for `END_LEAD`), and nothing past the end was ever heard to make room for.

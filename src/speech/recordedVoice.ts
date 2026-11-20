@@ -13,6 +13,9 @@
 // reading of the last NEAR_MS is carried on by the clock (a reading is never ahead of the sound, only behind it), and the last FADE seconds before the stop are faded
 // to silence by the element's volume, so the last of what a phone's output still holds when pause() is called was given to it quiet. How long a phone plays on after
 // pause() is not measured: the fade shortens it by FADE, it cannot end it.
+// The clock carries a reading on at his speed, but where the element's second is read at every look (headless Chromium's) and runs slower than that speed (under host
+// load 1.03 s a second at 1.25x, the audio itself slow) it is carried at the second's own speed, never slower than real time, or the sound was put 0.14 s ahead of itself
+// and David stopped 111 to 185 ms before a span's end (mw-ar5k42b.23, carrySpeed).
 // Whether he wants it is his Bible voice setting (wantsRecording(), mw-82lb97i.6); recordingFor() is the rule a tap decides by, with no wait.
 import type { Chapter } from '../data/chapter';
 import { chapterTimingsNow, spanOf, verseAt, type ChapterTimings } from '../data/audioTimings';
@@ -150,9 +153,34 @@ function holdStill(): void {
   seenAt = performance.now();
 }
 
-/** Where the sound is, in seconds of the recording, while it is seen to play forward: the furthest that any reading of the last NEAR_MS, carried on by the clock at
- * `rate`, puts it, and never more than RUN_ON_MS ahead of the element's own second. The element's second moves in steps (each 'timeupdate') and can run behind the
- * sound and jump on, so read alone it can be well behind what is heard; it is never ahead of it. A recording not seen to move (a stall) is where its second says. */
+/** An element whose second moves at least this often (the middle of the gaps between its last readings, ms) is read at every look: it is no step behind the sound. */
+export const FINE_GAP_MS = 60;
+/** How many of the last gaps between readings are taken to say how often the element's second moves. */
+const GAPS = 8;
+/** The speed, in seconds of the recording a second, that a reading is carried on at is the element's own over the last NEAR_MS once that is measured from at least this many ms of readings. */
+const SPEED_SPAN_MS = 300;
+/** The element's own speed is carried a little over (a fraction): a reading is never ahead of the sound, so the carry errs short of it, not past. */
+const SPEED_MARGIN = 1.02;
+
+/** The speed, in seconds of the recording a second of the clock, that the readings of the last NEAR_MS are carried on at: his speed (`rate`), except where the element's second
+ * is read at every look (moving at least every FINE_GAP_MS) and has run slower than his speed over these readings, and never slower than real time: then its own speed.
+ * Under host load headless Chromium played 1.25x at 1.03 s a second and its second told the sound truly at every look; carried on at 1.25x the sound was put 0.14 s ahead of
+ * itself and David stopped 111 to 185 ms before a span's end (mw-ar5k42b.23). An audio output does not play slower than real time and keep sounding, so a second that runs slower
+ * than 1x at 1x lags the sound (mw-82lb97i.27) and is carried at his speed; and a second that moves in steps (a phone's, each 'timeupdate') has no speed to read, only its steps. */
+function carrySpeed(): number {
+  if (readings.length < 4) return rate;
+  const recent = readings.slice(-(GAPS + 1));
+  const gaps = recent.map(([, then], i) => (i === 0 ? 0 : then - recent[i - 1][1])).slice(1).sort((x, y) => x - y);
+  if (gaps[Math.floor(gaps.length / 2)] > FINE_GAP_MS) return rate;
+  const [first, last] = [readings[0], readings[readings.length - 1]];
+  if (last[1] - first[1] < SPEED_SPAN_MS) return rate;
+  const own = ((last[0] - first[0]) / (last[1] - first[1])) * 1000;
+  return Math.min(rate, Math.max(Math.min(rate, 1), own * SPEED_MARGIN));
+}
+
+/** Where the sound is, in seconds of the recording, while it is seen to play forward: the furthest that any reading of the last NEAR_MS, carried on by the clock at carrySpeed(),
+ * puts it, and never more than RUN_ON_MS ahead of the element's own second. The element's second moves in steps (each 'timeupdate') and can run behind the sound and jump on, so
+ * read alone it can be well behind what is heard; it is never ahead of it. A recording not seen to move (a stall) is where its second says. */
 function soundAt(): number {
   if (!element) return Number.NaN;
   const second = element.currentTime;
@@ -167,8 +195,9 @@ function soundAt(): number {
   }
   if (!moving || !wantPlaying) return second;
   while (readings.length > 0 && now - readings[0][1] > NEAR_MS) readings.shift();
-  let at = second + (Math.min(Math.max(0, now - seenAt), RUN_ON_MS) / 1000) * rate;
-  for (const [was, then] of readings) at = Math.max(at, was + ((now - then) / 1000) * rate);
+  const speed = carrySpeed();
+  let at = second + (Math.min(Math.max(0, now - seenAt), RUN_ON_MS) / 1000) * speed;
+  for (const [was, then] of readings) at = Math.max(at, was + ((now - then) / 1000) * speed);
   return Math.min(at, second + (RUN_ON_MS / 1000) * rate);
 }
 
