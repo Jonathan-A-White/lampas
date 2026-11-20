@@ -5,6 +5,8 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
+import { startPlan } from '../../src/data/repositories';
+import { DEFAULT_LOGOS_BIBLE } from '../../src/resources/logosBible';
 import { getDay, localDate } from '../../src/data/daily/dailyStore';
 import { Today } from '../../src/today/Today';
 
@@ -17,6 +19,7 @@ beforeEach(async () => {
   cleanup();
   await db.open();
   await db.settings.clear();
+  await db.exportRows.clear();
   window.location.hash = '#/today';
 });
 
@@ -99,5 +102,38 @@ describe('Today with Logos On', () => {
     expect(await screen.findByRole('region', { name: 'Psalms and Proverbs' })).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Devotional' })).toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByText(/Open in Logos/)).toHaveLength(1));
+  });
+});
+
+describe('Today: the reading plan card (mw-5r3p30.1214)', () => {
+  const planSettings = async (logos: 'on' | 'off', audio: string | undefined) => {
+    await startPlan('whole-bible', { code: 'rev', chapter: 15 });
+    // his import holds the default Bible, so the old card would offer Read in Logos
+    await db.exportRows.put({ resource: DEFAULT_LOGOS_BIBLE, type: 'text.bible', title: 'Bible', series: '', refs: 'bible.66.1.1', matched: true, languages: 'en' });
+    await db.settings.bulkPut([
+      { key: 'dailyReview', value: 'off' },
+      { key: 'dailyMemorize', value: 'off' },
+      { key: 'readingPlan', value: 'on' },
+      { key: 'dailyPlan', value: 'on' },
+      { key: 'dailyPsalms', value: 'off' },
+      { key: 'dailyDevotional', value: 'off' },
+      { key: 'resource.logos', value: logos },
+      ...(audio ? [{ key: 'audioBible', value: audio }] : []),
+    ]);
+  };
+
+  it('with Logos On has no Read in Logos, keeps Listen in Audible, and its Lampas button says Read and opens the chapter in the Reader', async () => {
+    await planSettings('on', 'word-of-promise');
+    const user = userEvent.setup();
+    render(<Today />);
+    const plan = await screen.findByRole('region', { name: 'Reading plan' });
+    await screen.findByText('Next: Revelation 15');
+    expect(within(plan).queryByRole('link', { name: /Read in Logos/ })).toBeNull();
+    expect(plan).not.toHaveTextContent(/Read in Logos|Read in Lampas|Turn on Logos/);
+    expect(within(plan).getByRole('link', { name: /Listen in Audible/ })).toBeInTheDocument();
+    await user.click(within(plan).getByRole('button', { name: 'Read' }));
+    const query = new URLSearchParams(window.location.hash.split('?')[1]);
+    expect(query.get('b')).toBe('rev');
+    expect(query.get('c')).toBe('15');
   });
 });

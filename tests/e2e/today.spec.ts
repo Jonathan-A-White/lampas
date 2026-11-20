@@ -199,7 +199,7 @@ test('a tap on a passage opens it in the Reader, with no Logos door or In anothe
   await expect(psalms.getByRole('button', { name: /In another book/ })).toHaveCount(0);
   await psalms.getByRole('button', { name: startsWith(`Proverbs ${TODAY.day}`) }).click();
   await expect(page.getByRole('heading', { name: `Proverbs ${TODAY.day}`, level: 1 })).toBeVisible();
-  // Back returns to Today, as the plan's Read in Lampas does
+  // Back returns to Today, as the plan's Read does
   await page.goBack();
   await expect(page.getByRole('heading', { name: 'Today', exact: true, level: 1 })).toBeVisible();
   await piece(page, 'Devotional').getByRole('link', { name: /Morning and Evening/ }).click();
@@ -246,25 +246,28 @@ test('each piece rests on its own switch: Devotional off and Review off take the
 const STATE = 'readingPlanState';
 const planAt = (code: string, chapter: number) => ({ key: STATE, value: JSON.stringify({ planId: 'whole-bible', start: { code, chapter }, done: [] }) });
 
-test('the plan row offers Read in Logos only with Logos on and Listen in Audible only with an Audio Bible', async ({ page }) => {
+test('the plan row offers Read, never Read in Logos, and Listen in Audible only with an Audio Bible', async ({ page }) => {
   await openToday(page, [{ key: 'readingPlan', value: 'on' }, { key: 'resource.logos', value: 'off' }, planAt('gen', 1)]);
   const plan = piece(page, 'Reading plan');
   await expect(plan).toContainText('Next: Genesis 1');
-  // neither is on: no link to open; an Old Testament chapter is read in Lampas (mw-gdcyf98.4), so it has no 'Turn on Logos to read it' either
+  // no Audio Bible: no link to open; an Old Testament chapter is read in Lampas (mw-gdcyf98.4), so it has no 'Turn on Logos to read it' either
   await expect(plan.getByRole('link')).toHaveCount(0);
-  await expect(plan.getByRole('button', { name: 'Read in Lampas' })).toBeVisible();
+  await expect(plan.getByRole('button', { name: 'Read', exact: true })).toBeVisible();
+  await expect(plan.getByRole('button', { name: 'Read in Lampas' })).toHaveCount(0);
   await expect(plan.getByRole('button', { name: 'Turn on Logos to read it' })).toHaveCount(0);
 
+  // Logos On adds nothing here: Logos is reached by selecting a passage (mw-5r3p30.1214)
   await putSettings(page, [{ key: 'resource.logos', value: 'on' }]);
   await page.reload();
-  await expect(plan.getByRole('link', { name: 'Read in Logos' })).toBeVisible();
+  await expect(plan.getByRole('button', { name: 'Read', exact: true })).toBeVisible();
+  await expect(plan.getByRole('link', { name: 'Read in Logos' })).toHaveCount(0);
   await expect(plan.getByRole('link', { name: /Listen in Audible/ })).toHaveCount(0);
-  await plan.getByRole('link', { name: 'Read in Logos' }).click();
-  expect(await opened(page)).toEqual(['logosres:lgcystndrdbblsb;ref=Bible.Ge1']);
 
   await putSettings(page, [{ key: 'audioBible', value: 'word-of-promise' }]);
   await page.reload();
   await expect(plan.getByRole('link', { name: /Listen in Audible/ })).toBeVisible();
+  await expect(plan.getByRole('button', { name: 'Read', exact: true })).toBeVisible();
+  await expect(plan.getByRole('link', { name: 'Read in Logos' })).toHaveCount(0);
   await shot(page, 'today-plan');
 });
 
