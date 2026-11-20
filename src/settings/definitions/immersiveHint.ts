@@ -16,7 +16,7 @@ export const immersiveHintSetting = defineSetting<ImmersiveHint>({
   },
   section: 'immersive',
   label: 'Immersive reader card',
-  hint: 'A card that says how to bring the bars back.',
+  hint: 'Says how to bring the bars back.',
   help: 'While Immersive reader is On, the Reader opens with a small card above the text that says how the bars slide away, how to bring them back and how to leave. Its button "Got it" closes it until the next time the Reader opens; "Don\'t show this again" switches this to Off. Switch it back On to see the card again. On by default.',
   dependsOn: { key: 'immersiveReader', shown: (value) => value === 'on' },
 });

@@ -30,7 +30,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `copyNumbers` — Copy: verse numbers. Number each verse of a passage or chapter; a single verse never is.
 - `copyLink` — Copy: link. End with the https link that opens it in Lampas; Share sends the link too.
 - `immersiveReader` — Immersive reader. While you read, the top slides away.
-- `immersiveHint` — Immersive reader card. A card that says how to bring the bars back.
+- `immersiveHint` — Immersive reader card. Says how to bring the bars back.
 - `readSpan` — Play to. Play goes on from here. To hear less, tap a verse, a section heading or the place line. Value: "book" (End of the book), "bible" (End of the Bible).
 - `readLessons` — Read lessons to me. A lesson reads itself aloud as it opens.
 - `readTutor` — Read the tutor's responses aloud. The tutor's answers and verdicts are spoken as they arrive.
@@ -62,7 +62,7 @@ Never claim a change the list does not have. For a setting the app does not have
 - `greekPronunciation` — Greek pronunciation. How Greek is pronounced. Value: "modern" (Modern Greek).
 - `hebrewPronunciation` — Hebrew pronunciation. How Hebrew is pronounced. Value: "israeli".
 - `englishAccent` — English accent. English for sound hints and the tutor. Value: "american", "british", "ipa" (IPA (the standard)).
-- `ipaLesson` — IPA lesson. The optional IPA lesson.
+- `ipaLesson` — IPA lesson. Optional IPA lesson: Greek and Hebrew.
 - `resource.strongs` — Strong's. The word's Strong's number, linked to STEPBible.
 - `resource.logos` — Logos. Adds Open in Logos for each lexicon in Your Logos library, and Bible Word Study.
 - `logosBible` — Bible in Logos. The Bible New Testament verses open in. Value: text, for example "LLS:LGCYSTNDRDBBLSB" (a Resource ID; "" for none).

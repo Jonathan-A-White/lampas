@@ -33,7 +33,7 @@ export const copyNumbersSetting = defineSetting<OnOffChoice>({
   },
   section: 'reading',
   label: 'Copy: verse numbers',
-  hint: 'Copying several verses: each led by its number.',
+  hint: 'Several verses: each led by its number.',
   help: 'Number each verse of a passage or chapter; a single verse never is.',
 });
 
