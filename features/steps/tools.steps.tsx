@@ -44,6 +44,8 @@ afterAll(async () => {
 const menu = () => screen.queryByRole('menu', { name: 'Menu' });
 const toolsList = () => screen.findByRole('list', { name: 'Tools' });
 const namesIn = (list: HTMLElement) => within(list).getAllByRole('button').map((b) => b.querySelector('[data-tool-name]')?.textContent ?? '');
+// The rows of Tools follow the Logos switch, which is read after the list is drawn ('Your Logos library' is there only once it has been read): a step waits for the row it wants.
+const toolButton = async (tool: string) => within(await toolsList()).findByRole('button', { name: new RegExp(`^${tool}`) });
 
 const feature = await loadFeature('features/tools.feature');
 
@@ -90,7 +92,8 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await openTools(user);
     });
     Then('the Tools screen lists "Your Logos library", "Verse lists", "Memorize", "Paradigms", "Words" and "Review" in that order', async () => {
-      expect(namesIn(await toolsList())).toEqual(['Your Logos library', 'Verse lists', 'Memorize', 'Paradigms', 'Words', 'Review']);
+      const list = await toolsList();
+      await waitFor(() => expect(namesIn(list)).toEqual(['Your Logos library', 'Verse lists', 'Memorize', 'Paradigms', 'Words', 'Review']));
     });
     And('the address is {string}', (_, hash: string) => expect(window.location.hash).toBe(hash));
   });
@@ -101,15 +104,15 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await openTools(user);
     });
     Then('the Tools row {string} says {string}', async (_, tool: string, line: string) => {
-      const button = within(await toolsList()).getByRole('button', { name: new RegExp(`^${tool}`) });
+      const button = await toolButton(tool);
       await waitFor(() => expect(button).toHaveTextContent(line));
     });
     And('the Tools row {string} says {string}', async (_, tool: string, line: string) => {
-      const button = within(await toolsList()).getByRole('button', { name: new RegExp(`^${tool}`) });
+      const button = await toolButton(tool);
       await waitFor(() => expect(button).toHaveTextContent(line));
     });
     When('he opens the tool {string}', async (_, tool: string) => {
-      await user.click(within(await toolsList()).getByRole('button', { name: new RegExp(`^${tool}`) }));
+      await user.click(await toolButton(tool));
     });
     Then('the screen {string} is shown', async (_, name: string) => {
       expect(await screen.findByRole('heading', { name, level: 1 })).toBeVisible();
@@ -129,7 +132,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
       await openTools(user);
     });
     And('he opens the tool "<tool>"', async () => {
-      await user.click(within(await toolsList()).getByRole('button', { name: new RegExp(`^${row.tool}`) }));
+      await user.click(await toolButton(row.tool));
     });
     Then('the screen "<screen>" is shown', async () => {
       expect(await screen.findByRole('heading', { name: String(row.screen), level: 1 })).toBeVisible();
