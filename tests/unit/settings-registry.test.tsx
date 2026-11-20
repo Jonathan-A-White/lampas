@@ -117,7 +117,10 @@ describe('the allow-list is the Settings screen\'s own list (mw-5r3p30.100)', ()
       expect(entry, `${row.key} is a setting on the screen but not on the allow-list`).toBeDefined();
       expect(entry?.label).toBe(row.label);
     }
-    expect(SETTINGS.map((s) => s.key).sort()).toEqual(talkable.map((r) => r.key).sort());
+    // the one named exception (mw-qtu3zvz.236): the sermon sources' switches, the sermons.* family, are settings the registry holds but rows the tutor is told of as one summary line, not a row each
+    const SERMON_FAMILY = (key: string): boolean => key.startsWith('sermons.');
+    expect(ROWS.filter((r) => SERMON_FAMILY(r.key) && !NOT_TALKABLE(r.key))).toEqual([]);
+    expect(SETTINGS.filter((s) => !SERMON_FAMILY(s.key)).map((s) => s.key).sort()).toEqual(talkable.map((r) => r.key).sort());
   });
 
   it('refuses the rows that are left out', async () => {

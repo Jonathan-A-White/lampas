@@ -5,10 +5,12 @@ import { db } from '../../src/data/db';
 import { NO_CHAPTER } from '../../src/data/chapter';
 import { setResourceOn } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { isTalkable, ROWS } from '../support/settings';
+import { isSermonSourceRow, isTalkable, ROWS, type SettingsRow } from '../support/settings';
 import { settingsForTutor } from '../../src/settings/tutorSettings';
 import { buildTalkRequest, fitHistory, MAX_REQUEST_BYTES, type TalkRequest, type TalkScope } from '../../src/services/talk';
 import { fitScreen, MAX_SETTINGS, SETTING_HELP_MAX, SETTING_NAME_MAX, SETTING_VALUE_MAX, suggestionsFor } from '../../src/tutor/screen';
+
+const SOURCES_LINE = 'Sermon sources';
 
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -21,7 +23,8 @@ describe('settingsForTutor', () => {
   it('names every setting and study resource of Settings with its value and its hint, and no link', async () => {
     const got = await settingsForTutor();
     const wanted = ROWS.filter((r) => isTalkable(r.key));
-    expect(got.map((s) => s.name)).toEqual(wanted.map((r) => r.label));
+    // the sermon sources are one summary line, not a row each (mw-qtu3zvz.236)
+    expect(got.map((s) => s.name).filter((n) => n !== SOURCES_LINE)).toEqual(wanted.map((r) => r.label));
     for (const row of wanted) expect(got.find((s) => s.name === row.label)?.help, row.key).toBe(row.hint);
     for (const s of got) expect(s.value, s.name).not.toBe('');
   });
@@ -121,5 +124,46 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
     expect(fitted.requests ?? []).toEqual([]);
     expect(fitted.memory?.notes ?? []).toEqual([]);
     expect(fitted.memory?.index).toBe('He reads on his phone.');
+  });
+});
+
+describe('the sermon sources (mw-qtu3zvz.236): one summary line, however many there are', () => {
+  const SYNTHETIC = 40;
+  const synthetic: SettingsRow[] = Array.from({ length: SYNTHETIC }, (_, i) => ({ key: `sermons.x${i}-logos`, label: `Sermons of preacher ${String(i).padStart(2, '0')} xx`, hint: 'The sermon list, if on: titles, passages, links into your Logos', section: 'sermons' }));
+  const size = (value: unknown): number => new TextEncoder().encode(JSON.stringify(value)).length;
+  const sourceRows = (): readonly SettingsRow[] => ROWS.filter((r) => isSermonSourceRow(r));
+
+  it('names how many are on and where they are set, and carries no sermons.<id> row', async () => {
+    await db.settings.put({ key: 'sermons.spurgeon-ccel', value: 'on' });
+    await db.settings.put({ key: 'sermons.henry-sermons', value: 'off' });
+    const got = await settingsForTutor();
+    const line = got.filter((s) => s.name === SOURCES_LINE);
+    expect(line).toHaveLength(1);
+    const total = sourceRows().length;
+    expect(total).toBeGreaterThan(0);
+    expect(line[0].value).toBe(`1 of ${total} on`);
+    expect(line[0].help).toContain('Settings > Study resources > Sermons > Sermon sources');
+    for (const row of sourceRows()) expect(got.some((s) => s.name === row.label), row.key).toBe(false);
+  });
+
+  it('weighs the same with 40 more Off sources: the Settings screen, and turn 1 of a Settings talk, inside MAX_REQUEST_BYTES', async () => {
+    const screenOf = async () => fitScreen({ name: 'Settings', facts: [], settings: await settingsForTutor() });
+    const talk = async () => {
+      const scope: TalkScope = { title: 'Settings', chapter: NO_CHAPTER, verse: null, screen: await screenOf() };
+      return fitHistory(buildTalkRequest(scope, 'Here are the others', [{ q: 'What does each give me?', a: 'Here is how each one compares.' }], ['λόγος'], {}, undefined, 'He has 40 solid words.'));
+    };
+    const before = { screen: size(await screenOf()), turn: size(await talk()) };
+    const rows = ROWS as SettingsRow[];
+    const at = rows.findIndex((r) => r.section === 'sermons');
+    rows.splice(at, 0, ...synthetic);
+    try {
+      const after = { screen: size(await screenOf()), turn: size(await talk()) };
+      // the count's digits ('1 of 15 on' becomes '1 of 55 on') are all that may differ
+      expect(after.screen - before.screen).toBeLessThanOrEqual(2);
+      expect(after.turn - before.turn).toBeLessThanOrEqual(2);
+      expect(after.turn).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
+    } finally {
+      for (const row of synthetic) rows.splice(rows.indexOf(row), 1);
+    }
   });
 });

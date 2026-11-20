@@ -7,7 +7,7 @@ import { About } from '../../src/About';
 import { attribution, plainText } from '../../src/attribution';
 import { NO_CHAPTER } from '../../src/data/chapter';
 import { MAX_REQUEST_BYTES, buildTalkRequest, fitHistory, type TalkScope } from '../../src/services/talk';
-import { CREDITS, MAX_CREDITS_BYTES } from '../../src/tutor/credits';
+import { CREDITS, LOGOS_SERMON_BULLET, LOGOS_SERMONS_CREDIT, MAX_CREDITS_BYTES, creditsForTutor } from '../../src/tutor/credits';
 import { CREDIT_LICENCE_MAX, CREDIT_LINK_MAX, CREDIT_NAME_MAX, CREDIT_USE_MAX, MAX_CREDITS, fitScreen, suggestionsFor } from '../../src/tutor/screen';
 import { screenContextNow } from '../../src/tutor/screenContext';
 
@@ -36,9 +36,15 @@ describe('the credits the tutor is told', () => {
   it('cover every bullet of ATTRIBUTION.md, and each credit is found in a bullet: its name, its link and its licence', () => {
     const entries = attribution.entries;
     for (const entry of entries) {
+      // the Logos sermon sources are one family credit (mw-qtu3zvz.236): their bullets are covered by it, named here
+      if (LOGOS_SERMON_BULLET.test(plainText(entry))) {
+        expect(linksOf(entry), plainText(entry).slice(0, 60)).toContain(LOGOS_SERMONS_CREDIT.link);
+        continue;
+      }
       expect(CREDITS.some((c) => linksOf(entry).includes(c.link) && plainText(entry).includes(c.name)), plainText(entry).slice(0, 60)).toBe(true);
     }
     for (const c of CREDITS) {
+      if (c === LOGOS_SERMONS_CREDIT) continue; // the family credit has no bullet of its own: each Logos sermon bullet is one of its sources
       const home = entries.find((e) => linksOf(e).includes(c.link) && plainText(e).includes(c.name));
       expect(home, `${c.name} (${c.link}) is in no bullet of ATTRIBUTION.md`).toBeDefined();
     }
@@ -65,6 +71,24 @@ describe('the credits the tutor is told', () => {
   });
 });
 
+describe('the Logos sermon sources (mw-qtu3zvz.236): one credit for the family', () => {
+  const logosSermonBullets = attribution.entries.filter((e) => LOGOS_SERMON_BULLET.test(plainText(e)));
+
+  it('has bullets in ATTRIBUTION.md, one credit in CREDITS and no credit per source', () => {
+    expect(logosSermonBullets.length).toBeGreaterThan(5);
+    expect(CREDITS.filter((c) => c.link === LOGOS_SERMONS_CREDIT.link && c.licence === LOGOS_SERMONS_CREDIT.licence && c.use.startsWith('The sermon list'))).toEqual([LOGOS_SERMONS_CREDIT]);
+    for (const entry of logosSermonBullets) expect(CREDITS.some((c) => plainText(entry).startsWith(c.name) && c !== LOGOS_SERMONS_CREDIT), plainText(entry).slice(0, 40)).toBe(false);
+  });
+
+  it('weighs the same on About with 40 more such sources', () => {
+    const more = Array.from({ length: 40 }, (_, i) => ({ ...LOGOS_SERMONS_CREDIT, name: `Preacher ${i} Sermon Archive` }));
+    const told = creditsForTutor([...CREDITS, ...more]);
+    expect(told).toEqual(CREDITS);
+    const scope = (credits: typeof CREDITS): TalkScope => ({ title: 'About', chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: 'About', facts: [], credits }) });
+    expect(bytes(buildTalkRequest(scope(told), 'Why?', [], []))).toBe(bytes(buildTalkRequest(scope(CREDITS), 'Why?', [], [])));
+  });
+});
+
 describe('the request built on About', () => {
   const scope: TalkScope = { title: 'About', chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: 'About', facts: [], credits: CREDITS }) };
 
@@ -83,7 +107,9 @@ describe('the request built on About', () => {
     const context = screenContextNow();
     expect(context?.name).toBe('About');
     expect(context?.credits).toEqual(CREDITS);
-    const bullets = readFileSync('ATTRIBUTION.md', 'utf8').split('\n').filter((l) => l.startsWith('- ')).length;
+    const lines = readFileSync('ATTRIBUTION.md', 'utf8').split('\n').filter((l) => l.startsWith('- '));
+    // the Logos sermon bullets are one credit between them (mw-qtu3zvz.236)
+    const bullets = lines.filter((l) => !LOGOS_SERMON_BULLET.test(plainText(l))).length + 1;
     expect(CREDITS.length).toBeGreaterThanOrEqual(bullets);
   });
 
