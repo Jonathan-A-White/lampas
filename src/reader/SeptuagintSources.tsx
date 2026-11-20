@@ -56,7 +56,7 @@ function Sheet({ onClose }: { onClose: () => void }) {
             </section>
           ))}
           {/* the one mark the English carries that is not a stop (mw-u2w5klk.378): the same line a tap on the mark shows */}
-          <section data-lxx-source={SEPTUAGINT_YOU_LABEL} className="border-t border-line py-3">
+          <section data-lxx-note={SEPTUAGINT_YOU_LABEL} className="border-t border-line py-3">
             <h3 className="text-base font-semibold text-muted">{SEPTUAGINT_YOU_LABEL}</h3>
             <p lang="en" className="text-base">
               {SEPTUAGINT_YOU_TIP}

@@ -150,6 +150,6 @@ test("the Septuagint's sources sheet says the same, in a line of its own", async
   await openIsaiah(page, 'English');
   await page.locator('[data-reader-subtitle]').tap();
   const sheet = page.getByRole('dialog', { name: 'Whose texts these are' });
-  await expect(sheet.locator('[data-lxx-source]').filter({ hasText: SEPTUAGINT_YOU_TIP })).toHaveCount(1);
+  await expect(sheet.locator('[data-lxx-note]').filter({ hasText: SEPTUAGINT_YOU_TIP })).toHaveCount(1);
   await shot(page, 'septuagint-caret-tip-sources');
 });
