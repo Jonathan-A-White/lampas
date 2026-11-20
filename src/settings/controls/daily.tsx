@@ -87,15 +87,19 @@ export const DevotionalControl: Control = ({ row }) => {
   );
 };
 
-/** Import YouTube history (mw-r9xo1pj.3): he chooses the watch-history.json from Google Takeout and the Morning RePhil episodes in it are marked Seen. The file is read here on the phone; nothing of it is kept or sent. */
+/** Import YouTube history (mw-r9xo1pj.3; drawn below the order's help, with a status line while the file is read and a plain word when no episode matched, mw-r9xo1pj.16): he chooses the watch-history.json from Google Takeout and the Morning RePhil episodes in it are marked Seen. The file is read here on the phone; nothing of it is kept or sent. */
 function ImportYoutubeHistory() {
   const input = useRef<HTMLInputElement>(null);
   const [said, setSaid] = useState<{ text: string; problem: boolean } | undefined>();
   const pick = async (file: File | undefined): Promise<void> => {
     if (input.current) input.current.value = '';
     if (!file) return;
+    setSaid({ text: 'Reading the file...', problem: false });
     try {
-      setSaid({ text: importMessage(await importWatchHistory(await file.text())), problem: false });
+      const text = await file.text();
+      // a frame for the status line to be drawn before a big file is parsed, which holds the page
+      await new Promise<void>((done) => (typeof requestAnimationFrame === 'function' ? requestAnimationFrame(() => setTimeout(done, 0)) : setTimeout(done, 0)));
+      setSaid({ text: importMessage(await importWatchHistory(text)), problem: false });
     } catch (error) {
       setSaid({ text: error instanceof NotWatchHistory ? error.message : 'This file could not be read.', problem: true });
     }
@@ -126,7 +130,7 @@ function ImportYoutubeHistory() {
 export const MorningRephilOrderControl: Control = ({ row }) => {
   const order = useSetting(morningRephilOrderSetting);
   return (
-    <SettingRow row={row}>
+    <SettingRow row={row} details={<ImportYoutubeHistory />}>
       <RowName row={row} />
       {order ? (
         <ChipRow
@@ -139,7 +143,6 @@ export const MorningRephilOrderControl: Control = ({ row }) => {
           settingKey="morningRephilOrder"
         />
       ) : null}
-      <ImportYoutubeHistory />
     </SettingRow>
   );
 };

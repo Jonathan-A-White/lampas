@@ -53,6 +53,14 @@ test('choosing Morning RePhil shows its oldest episode on Today, Watch opens the
   await expect(order.getByRole('button', { name: 'Oldest first', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(order.getByRole('button', { name: 'Newest first', exact: true })).toHaveAttribute('aria-pressed', 'false');
   expect((await order.getByRole('button', { name: 'Newest first', exact: true }).boundingBox())?.height).toBeGreaterThanOrEqual(43.5);
+  // the Import button is drawn below the order's help line, not between the choices and it (mw-r9xo1pj.15)
+  const helpLine = daily.getByText('Oldest or newest episode first.');
+  const importButton = daily.getByRole('button', { name: 'Import YouTube history', exact: true });
+  await expect(helpLine).toBeVisible();
+  await expect(importButton).toBeVisible();
+  const helpBox = await helpLine.boundingBox();
+  const importBox = await importButton.boundingBox();
+  expect(helpBox?.y).toBeLessThan(importBox?.y ?? 0);
 
   await page.goto('/#/today');
   const devotional = page.getByRole('region', { name: 'Devotional', exact: true });

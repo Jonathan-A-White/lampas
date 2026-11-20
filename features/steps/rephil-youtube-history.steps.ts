@@ -10,7 +10,7 @@ import { db } from '../../src/data/db';
 import { MORNING_REPHIL_ID } from '../../src/data/daily/devotionals';
 import { getHeard } from '../../src/data/daily/dailyStore';
 import { EPISODES, type Episode } from '../../src/data/daily/morningRephil';
-import { importWatchHistory } from '../../src/data/daily/youtubeHistory';
+import { importMessage, importWatchHistory } from '../../src/data/daily/youtubeHistory';
 import { SettingsScreen } from '../../src/SettingsScreen';
 import { closeDatabase } from './close-database';
 import { groupHash } from '../../tests/support/settings-pages';
@@ -153,6 +153,47 @@ describeFeature(feature, ({ Scenario }) => {
     s.Then('it says "This is not a YouTube watch-history.json. Choose the file from Google Takeout."', () => says('This is not a YouTube watch-history.json. Choose the file from Google Takeout.'));
     s.And('no episode is seen', async () => {
       expect((await getHeard()).size).toBe(0);
+    });
+  });
+
+  Scenario('A file with no Morning RePhil episode in it says so', (s) => {
+    s.Given('Settings > Daily is open with Morning RePhil chosen and no episode seen', openDaily);
+    s.And('his watch-history.json lists two videos, neither of them Morning RePhil', () => {
+      importFile = historyFile([watched('How to bake bread', 'ccccccccccc'), watched('How to knit', 'ddddddddddd')]);
+    });
+    s.When('he taps "Import YouTube history" and chooses the file', async () => {
+      await user.click(screen.getByRole('button', { name: 'Import YouTube history' }));
+      await choose(importFile);
+    });
+    s.Then('it says "No Morning RePhil episode was found in this file."', async () => {
+      await says('No Morning RePhil episode was found in this file.');
+    });
+    s.And('it does not say "0 marked seen, 0 already seen"', () => {
+      expect(screen.getByRole('status')).not.toHaveTextContent('0 marked seen, 0 already seen');
+      expect(importMessage({ marked: 0, already: 0 })).not.toBe('0 marked seen, 0 already seen');
+    });
+    s.And('no episode is seen', async () => {
+      expect((await getHeard()).size).toBe(0);
+    });
+  });
+
+  Scenario('While a file is being read the screen says so, and the result replaces it', (s) => {
+    let finishReading: (text: string) => void = () => {};
+    s.Given('Settings > Daily is open with Morning RePhil chosen and no episode seen', openDaily);
+    s.When('he chooses a file that is slow to read', async () => {
+      const slow = historyFile(THREE_ENTRIES);
+      const text = JSON.stringify(THREE_ENTRIES);
+      slow.text = () => new Promise<string>((resolve) => (finishReading = resolve)).then(() => text);
+      await user.click(screen.getByRole('button', { name: 'Import YouTube history' }));
+      await choose(slow);
+    });
+    s.Then('a status line says "Reading the file..."', () => says('Reading the file...'));
+    s.When('the file has been read', () => {
+      finishReading('');
+    });
+    s.Then('it says "2 marked seen, 0 already seen"', () => says('2 marked seen, 0 already seen'));
+    s.And('the status line no longer says "Reading the file..."', () => {
+      expect(screen.getAllByRole('status').map((e) => e.textContent).join(' ')).not.toContain('Reading the file...');
     });
   });
 });

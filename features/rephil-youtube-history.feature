@@ -41,3 +41,19 @@ Feature: Import YouTube history to mark Morning RePhil episodes seen
     When he chooses a file that is not a watch history
     Then it says "This is not a YouTube watch-history.json. Choose the file from Google Takeout."
     And no episode is seen
+
+  Scenario: A file with no Morning RePhil episode in it says so
+    Given Settings > Daily is open with Morning RePhil chosen and no episode seen
+    And his watch-history.json lists two videos, neither of them Morning RePhil
+    When he taps "Import YouTube history" and chooses the file
+    Then it says "No Morning RePhil episode was found in this file."
+    And it does not say "0 marked seen, 0 already seen"
+    And no episode is seen
+
+  Scenario: While a file is being read the screen says so, and the result replaces it
+    Given Settings > Daily is open with Morning RePhil chosen and no episode seen
+    When he chooses a file that is slow to read
+    Then a status line says "Reading the file..."
+    When the file has been read
+    Then it says "2 marked seen, 0 already seen"
+    And the status line no longer says "Reading the file..."
