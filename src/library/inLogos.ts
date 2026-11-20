@@ -6,6 +6,7 @@ import { bookOf, otBookOf } from '../data/books';
 import type { ShelfState } from '../data/repositories';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
 import type { CatalogueEntry, Kind } from '../resources/catalogue';
+import { spanHolds } from './parseExport';
 import { bibleRef, partOf, verseLink } from '../resources/logosBible';
 import { resourceLink, type LogosLink } from '../resources/logosRes';
 import { resourcesForLevel } from '../resources/resourcesForLevel';
@@ -36,9 +37,11 @@ export const SHOWN_ROWS = 3;
 const NT_KINDS: readonly Kind[] = ['commentary', 'greek-text', 'interlinear'];
 const OT_KINDS: readonly Kind[] = ['bible', 'hebrew-text', 'commentary', 'interlinear'];
 
+export { spanHolds };
+
 export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.book) !== undefined;
 
-/** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book); a Bible holds the part of the canon the book is in
+/** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book), and `within` the span of a book it holds only in part (Be Skillful is Proverbs 1:8 to 9:18 only: elsewhere Logos opens its contents and fails to navigate, mw-qtu3zvz.238); a Bible holds the part of the canon the book is in
  *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one; a Hebrew text has `parts` too (the Old Testament); a sermon archive is indexed by the passage each sermon is preached on and the
  *  export cannot say which books, so it is offered at every verse (docs/sources/sermon-index.md section 2). */
 export const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
@@ -47,7 +50,7 @@ export const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
     : entry.kind === 'sermons'
       ? true
       : entry.covers
-        ? entry.covers.includes(place.book)
+        ? entry.covers.includes(place.book) && spanHolds(entry.within?.[place.book] ?? '-', place.chapter, place.verse)
         : partOf(place.book) === 'nt';
 
 /** The link that opens `entry` at the place: a Bible as the Old Testament chapter links are made (logosBible.ts), any other book at the Bible reference, the way a work is (works.ts). */

@@ -11,7 +11,7 @@ import { BOOKS, NT_BOOKS } from '../src/data/books.ts';
 import type { CatalogueEntry, Kind, KindFile, Opens, Via, WorkGroup } from '../src/resources/catalogue.ts';
 import type { BookSection, LogosPart, ResourceLang } from '../src/resources/types.ts';
 import { ruleOf, type ExcludeRule } from '../src/library/exportRules.ts';
-import { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, readExport, type ExportRow } from '../src/library/parseExport.ts';
+import { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, readExport, spansOfSupersets, type ExportRow } from '../src/library/parseExport.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const RULES_FILE = join(ROOT, 'data/logos/catalogue-rules.json');
@@ -86,7 +86,7 @@ export interface Rules {
 // ---- The export ----
 
 // Read by the phone too (src/library/parseExport.ts): the same parser reads an export in both places.
-export { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, readExport, type ExportRow };
+export { coversNewTestament, coversOfSupersets, parseCsv, partsOfSupersets, readExport, spansOfSupersets, type ExportRow };
 
 // ---- The catalogue ----
 
@@ -95,9 +95,15 @@ const DEFAULT_OPENS: Record<Kind, Opens> = { lexicon: 'word', grammar: 'parsing'
 
 /** The entry with its fields in the one order, and none that is undefined, so the bytes written depend on the data alone. */
 function ordered(e: CatalogueEntry): CatalogueEntry {
-  const order: (keyof CatalogueEntry)[] = ['resource', 'kind', 'title', 'short', 'author', 'series', 'lang', 'opens', 'value', 'covers', 'parts', 'sections', 'starts', 'verified', 'via', 'id', 'key', 'work', 'source', 'dayOfYear', 'alsoSermons'];
+  const order: (keyof CatalogueEntry)[] = ['resource', 'kind', 'title', 'short', 'author', 'series', 'lang', 'opens', 'value', 'covers', 'within', 'parts', 'sections', 'starts', 'verified', 'via', 'id', 'key', 'work', 'source', 'dayOfYear', 'alsoSermons'];
   return Object.fromEntries(order.filter((k) => e[k] !== undefined).map((k) => [k, e[k]])) as unknown as CatalogueEntry;
 }
+
+/** The spans of a commentary's partly held books, or none. */
+const withinOf = (supersets: string): Record<string, string> | undefined => {
+  const spans = spansOfSupersets(supersets);
+  return Object.keys(spans).length > 0 ? spans : undefined;
+};
 
 /** The version stamp: a hash of every entry and work of the nine kinds, so a file left behind by an edit shows. */
 export function versionOf(files: Record<Kind, Pick<KindFile, 'entries' | 'works'>>): string {
@@ -153,6 +159,9 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
   const byResource = new Map(rows.map((r) => [r.resource, r]));
   for (const rule of rules.ids) {
     const row = byResource.get(rule.resource);
+    // a commentary named by id holds the part of a book its export names too
+    const entry = rule.kind === 'commentary' && row ? byKind.commentary.find((e) => e.resource === rule.resource) : undefined;
+    if (entry && row) entry.within = withinOf(row.supersets);
     if (!row || !rule.covers) continue;
     const found = coversOfSupersets(row.supersets);
     if (found.join() !== rule.covers.join()) notes.push(`${rule.resource}: the rules cover ${rule.covers.join(' ')} but the export's ReferenceSupersets read ${found.join(' ') || 'nothing'}`);
@@ -174,6 +183,7 @@ export function buildCatalogue(rules: Rules, rows: readonly ExportRow[]): Built 
       resource: row.resource, kind, title: row.title, short: rules.shorts?.[row.resource] ?? (row.abbreviated || row.title), author: rules.authors?.[row.resource], series: row.series || undefined,
       lang: rule.lang ?? DEFAULT_LANG[kind], opens: DEFAULT_OPENS[kind], value: valueOf({ value: rule.value, kind }, what),
       covers: covers.length > 0 && (covers.length < NT_BOOKS.length || kind === 'commentary') ? covers : undefined,
+      within: kind === 'commentary' ? withinOf(row.supersets) : undefined,
       parts: kind === 'bible' || kind === 'hebrew-text' ? partsOfSupersets(row.supersets) : undefined, starts: rule.starts ?? 'on', via,
       dayOfYear: kind === 'devotional' ? row.supersets.split('\t').some((t) => t.startsWith('dayofyear')) : undefined,
     });

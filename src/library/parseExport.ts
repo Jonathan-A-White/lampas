@@ -111,6 +111,47 @@ export function coversOfSupersets(supersets: string): string[] {
   return BOOKS.filter((b) => covered.has(b.code)).map((b) => b.code);
 }
 
+/** The span a ReferenceSupersets cell gives each book it holds only in part, by our codes, written `<from>-<to>` where a bound is `<chapter>` or `<chapter>.<verse>` and a bound that is the book's own start or end is
+ *  left empty: `bible.20.1.8-20.9.18` (Be Skillful) is `{ pro: '1.8-9.18' }`. A book held whole, or named by more than one token, is not in it. An end in the book's last chapter is read as the book's end, as the export
+ *  gives no verse count. A place outside the span has no page in the book: Logos opens its contents and then fails to navigate (mw-qtu3zvz.238). */
+export function spansOfSupersets(supersets: string): Record<string, string> {
+  const found = new Map<string, string[]>();
+  for (const token of supersets.split('\t')) {
+    const m = /^bible(?:\+[a-z0-9]+)?\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-(\d+)(?:\.(\d+))?(?:\.(\d+))?)?$/.exec(token.trim());
+    if (!m) continue;
+    const [from, to] = [Number(m[1]), Number(m[4] ?? m[1])];
+    for (let n = from; n <= Math.min(to, LAST_NT_BOOK); n++) {
+      const code = codeOfLogosBook(n);
+      if (!code) continue;
+      const [startChapter, startVerse] = n === from ? [m[2], m[3]] : [undefined, undefined];
+      const [endChapter, endVerse] = n === to && m[4] !== undefined ? [m[5], m[6]] : [undefined, undefined];
+      const start = startChapter !== undefined && (Number(startChapter) > 1 || Number(startVerse ?? 1) > 1) ? (startVerse !== undefined ? `${startChapter}.${startVerse}` : startChapter) : '';
+      const last = BOOKS.find((b) => b.code === code)?.chapters ?? 0;
+      const end = endChapter !== undefined && Number(endChapter) < last ? (endVerse !== undefined ? `${endChapter}.${endVerse}` : endChapter) : '';
+      found.set(code, [...(found.get(code) ?? []), `${start}-${end}`]);
+    }
+  }
+  return Object.fromEntries([...found].filter(([, spans]) => spans.length === 1 && spans[0] !== '-').map(([code, spans]) => [code, spans[0]]));
+}
+
+/** Whether a place is in a span (`spansOfSupersets`): a chapter alone is in it when any of the chapter is. */
+export function spanHolds(span: string, chapter: number, verse?: number): boolean {
+  const [from = '', to = ''] = span.split('-');
+  const bound = (b: string): [number, number | undefined] => {
+    const [c, v] = b.split('.');
+    return [Number(c), v === undefined ? undefined : Number(v)];
+  };
+  if (from !== '') {
+    const [c, v = 1] = bound(from);
+    if (chapter < c || (chapter === c && verse !== undefined && verse < v)) return false;
+  }
+  if (to !== '') {
+    const [c, v] = bound(to);
+    if (chapter > c || (chapter === c && verse !== undefined && v !== undefined && verse > v)) return false;
+  }
+  return true;
+}
+
 /** The parts of the canon a ReferenceSupersets cell holds a Bible in, in the order New Testament, Old Testament, Apocrypha (Logos numbers the Apocrypha 40 to 60). A range that begins or ends inside the Apocrypha
  *  holds it (`bible+lxx2.1.1.1-58.14.46`: Old Testament and Apocrypha); a range that runs from the Old Testament across to the New says nothing of the Apocrypha, as a Bible without it and a Bible with it
  *  are written alike (`bible+nrsv.1.1.1-87.22.21`, `bible+niv.1.1.1-87.22.21`), so the rules file says it. A range that ends before it begins (`52` to `51`) stands for the book it begins at. */
