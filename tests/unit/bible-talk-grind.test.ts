@@ -1118,7 +1118,7 @@ describe('the tutor client in the bible-talk grind (mw-t3xu9a.5)', () => {
     const block = settingsBlock();
     for (const s of SETTINGS) expect(block, s.key).toContain(`\`${s.key}\``);
     expect(block.match(/Phone default lets the phone choose/g)).toHaveLength(1);
-    expect(block.match(/is read aloud; 1 is normal/g)).toHaveLength(1);
+    expect(block.match(/Read-aloud speed; 1 is normal/g)).toHaveLength(1);
     expect(block.match(/365 Days with Spurgeon/g)).toHaveLength(1);
   });
 

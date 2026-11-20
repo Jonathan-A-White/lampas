@@ -17,6 +17,6 @@ export const handsFreeSetting = defineSetting<HandsFreeValue>({
   },
   section: 'voices',
   label: 'Hands-free',
-  hint: 'A three-finger tap anywhere turns it On or Off.',
+  hint: 'A three-finger tap turns it On or Off.',
   help: 'Hands-free is Off until you turn it On, and stays On until you turn it Off. This switch and a tap with three fingers anywhere in the app do the same thing; each says "Hands-free on" or "Hands-free off" aloud. While it is On a small microphone mark shows at the top right and the screen stays awake.',
 });

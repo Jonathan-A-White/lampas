@@ -16,6 +16,6 @@ export const rp2026EnglishSetting = defineSetting<Rp2026English>({
   },
   section: 'variants',
   label: 'English from the 2026 Greek',
-  hint: 'Show Lampas’s English where the 2026 Greek changes it.',
+  hint: 'Lampas’s English where the 2026 Greek changes it.',
   help: 'On shows Lampas’s English, marked RP 2026, where the 2026 Greek changes it.',
 });

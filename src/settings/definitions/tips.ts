@@ -15,6 +15,6 @@ export const tipsSetting = defineSetting<Tips>({
   },
   section: 'tips',
   label: 'Tips',
-  hint: 'One small tip a day, from what you use.',
+  hint: 'One small tip a day.',
   help: 'Whether Lampas may offer one small tip a day, from what you use, to help you get more from the app. Once a day at most, when you open Lampas and are online. On by default; Off sends nothing.',
 });

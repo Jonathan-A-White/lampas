@@ -46,7 +46,7 @@ export const strongs: StudyResource = {
   lang: 'grc',
   name: "Strong's",
   kind: 'number',
-  describe: "Shows the word's Strong's number, a link to its entry on STEPBible.",
+  describe: "The word's Strong's number, linked to STEPBible.",
   linksFor: (word) => {
     const url = strongsUrl(word.strongs);
     return url ? [{ label: word.strongs, url }] : [];

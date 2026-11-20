@@ -17,7 +17,7 @@ export const weaveOrderSetting = defineSetting<WeaveOrder>({
   },
   section: 'weave',
   label: 'Order',
-  hint: 'Lay the woven verse out in the English or in the original word order.',
+  hint: 'The woven verse in the English or the original word order.',
   help: 'In the English view with the Weave on, the order the verse is laid out in:\n\n- **English**: the English translation\'s own order.\n- **Original**: the order of the Greek or Hebrew words. Each English word or phrase stands where its original word stands in the verse, so the original of his words is read where the original has it and the rest are their English glosses. An original word the translation gives no English of its own is not shown.\n\nEnglish by default; it shows only while the Weave is not Off.',
   dependsOn: { key: 'weave', shown: (value) => value !== 'off' },
 });

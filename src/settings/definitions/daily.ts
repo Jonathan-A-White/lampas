@@ -43,7 +43,7 @@ export const dailyPlanSetting = piece(
 export const dailyPsalmsSetting = piece(
   'dailyPsalms',
   'Psalms and Proverbs',
-  "Today holds the day's Psalms and Proverbs.",
+  "Today's Psalms and Proverbs.",
   "Whether Today holds the day's Psalms and Proverbs.",
 );
 

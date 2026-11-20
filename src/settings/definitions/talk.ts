@@ -18,7 +18,7 @@ export const talkSetting = defineSetting<TalkHow>({
   },
   section: 'talk',
   label: 'Talk',
-  hint: 'Hold the bar to speak, or tap to start and stop.',
+  hint: 'Hold to speak, or tap to start and stop.',
   help: 'How the talk bars are worked:\n\n- **Hold**: keep your finger on the bar while you speak, and let go when you are done.\n- **Tap**: tap the bar to keep the microphone on and tap it again to stop (holding still works too).\n\nHold by default.',
 });
 

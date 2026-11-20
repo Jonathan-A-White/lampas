@@ -20,7 +20,7 @@ export const variantsSetting = defineSetting<Variants>({
   },
   section: 'variants',
   label: 'Variants',
-  hint: 'Whether the Reader shows where the manuscripts differ.',
+  hint: 'Show where the manuscripts differ.',
   help: 'Where manuscripts differ: **Those that change the English** keeps readings that change it; **All**, every one.',
 });
 
@@ -56,6 +56,6 @@ export const variantLessonsOfferSetting = defineSetting<VariantLessonsOffer>({
   },
   section: 'variants',
   label: 'Offer the lessons',
-  hint: 'A card that offers the lessons on variant readings the first time Variants is On.',
+  hint: 'Offers the variant lessons when Variants is first On.',
   help: 'Whether a card offers the five lessons on variant readings the first time Variants is On. **Not now** turns this Off; On shows it again.',
 });

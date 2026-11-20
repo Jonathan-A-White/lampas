@@ -18,6 +18,6 @@ export const readLessonsSetting = defineSetting<ReadLessons>({
   section: 'readAloud',
   dependsOn: depthFrom(3),
   label: 'Read lessons to me',
-  hint: 'A lesson reads itself aloud when it opens; the words stay on screen.',
+  hint: 'A lesson reads itself aloud as it opens.',
   help: 'When On, an idea sheet, a Grammar sheet and a new word\'s sheet start reading themselves aloud as soon as they open, Greek or Hebrew in its own voice and the rest in the English one, at your speed. The speaker on the sheet stops the voice, and so does closing the sheet. Off by default: then a lesson is read only when you tap its speaker.',
 });

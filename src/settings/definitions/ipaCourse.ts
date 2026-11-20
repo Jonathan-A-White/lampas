@@ -19,7 +19,7 @@ export const ipaCourseSetting = defineSetting<IpaLesson>({
   },
   section: 'pronunciation',
   label: 'IPA lesson',
-  hint: 'The optional IPA lesson, for Greek and for Hebrew.',
+  hint: 'The optional IPA lesson.',
   help: 'Whether the Goal screen offers the optional lesson on IPA, the standard symbols for sounds, for Greek and, while you read Hebrew, for Hebrew too. It is never needed for Lampas. On by default; Off takes it off the Goal screen and keeps what you have done.',
   dependsOn: depthFrom(1),
 });

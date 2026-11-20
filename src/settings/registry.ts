@@ -160,7 +160,7 @@ const depthEntries = SCRIPTS.map((script) =>
   choice(
     script.settingKey,
     script.settingLabel,
-    `How the tutor writes a ${script.label} word: its sound, the letters, or both.`,
+    `How the tutor writes ${script.label}: its sound, the letters, or both.`,
     DEPTHS.map((d) => ({ value: d.id, label: d.label })),
     () => getScriptDepth(script),
     async (value) => {
@@ -252,7 +252,7 @@ const rateEntries = LANGUAGES.map(
     dependsOn: languageFrom(l.id),
     key: `${l.id}Rate`,
     label: `${l.label} speed`,
-    hint: `How fast ${l.label} is read aloud; ${DEFAULT_RATE} is normal, smaller is slower.`,
+    hint: `Read-aloud speed; ${DEFAULT_RATE} is normal, smaller is slower.`,
     allowed: { kind: 'number', min: RATE_MIN, max: RATE_MAX, step: RATE_STEP },
     read: () => getSpeechRate(l.id),
     write: async (value) => {
@@ -293,7 +293,7 @@ const quizGoalEntry: SettingEntry = {
   dependsOn: depthFrom(3),
   key: 'quizGoal',
   label: 'Quiz goal',
-  hint: 'Why you want Quiz me; the tutor quizzes to match. Empty: it asks.',
+  hint: 'Why you want Quiz me; the tutor quizzes to match. Empty: asks.',
   help: 'What you want from a quiz, in your own words, such as understanding the passage, learning Greek or Hebrew, learning English or just reading the Bible. A kept goal is sent with every quiz and the tutor quizzes to match; with none kept, Quiz me opens by asking you.',
   allowed: { kind: 'text', valid: (value) => value.trim().length <= QUIZ_GOAL_MAX, example: 'understanding the passage', note: `a short phrase in his words, at most ${QUIZ_GOAL_MAX} characters; "" for none` },
   read: getQuizGoal,
@@ -310,7 +310,7 @@ const logosBibleEntry: SettingEntry = {
   dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
   key: 'logosBible',
   label: 'Bible in Logos',
-  hint: 'The Bible that New Testament verses open in, in Logos.',
+  hint: 'The Bible New Testament verses open in.',
   help: `The Bible in your Logos library that New Testament verses open in, named by its Resource ID, such as ${DEFAULT_LOGOS_BIBLE} (the Legacy Standard Bible). It shows only while Logos is On. The Old Testament and the Apocrypha have a Bible of their own below it; Library > Bibles sets all three at once.`,
   allowed: { kind: 'text', valid: isResourceId, example: DEFAULT_LOGOS_BIBLE, note: 'a Resource ID; "" for none' },
   read: getLogosBible,
@@ -371,7 +371,7 @@ const languagesEntry: SettingEntry = {
   section: 'dial',
   label: 'Which languages?',
   // PROVISIONAL (the Mayor's words, the Governor to confirm)
-  hint: 'The Bible in English, or with its Greek, its Hebrew, or both',
+  hint: 'English, or with its Greek, its Hebrew, or both',
   allowed: { kind: 'choice', values: LANGUAGES_CHOICES },
   read: async () => languagesOf(await getGreekInterest(), await getHebrewInterest()),
   write: (value) => setLanguages(String(value) as Languages),
@@ -429,7 +429,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   choice(
     'textSize',
     'Text size',
-    "How big the text is, in steps of the phone's own size.",
+    "In steps of the phone's own size.",
     TEXT_SIZES.map((t) => ({ value: t.id, label: t.label })),
     async () => textSizeId(await getTextSize()),
     async (value) => {
@@ -457,7 +457,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   choice(
     'sectionHeadings',
     'Section headings',
-    "The Bible's headings above their verses, shown or not.",
+    'Headings above their verses, shown or not.',
     ON_OFF,
     getSectionHeadings,
     async (value) => {
@@ -492,7 +492,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   choice(
     'readTutor',
     "Read the tutor's responses aloud",
-    'The tutor\'s answers and reading verdicts are spoken as they arrive.',
+    'The tutor\'s answers and verdicts are spoken as they arrive.',
     [
       { value: 'on', label: 'On' },
       { value: 'off', label: 'Off' },
@@ -571,7 +571,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   choice(
     'grammarMove',
     'Move it',
-    'Whether the app moves that level for you.',
+    'Whether the app moves that level.',
     [
       { value: 'ask', label: 'Ask' },
       { value: 'auto', label: 'Auto' },
@@ -611,7 +611,7 @@ export const SETTINGS: readonly SettingEntry[] = [
   ...rateEntries,
   pronunciationEntry,
   pronunciationSeparateEntry,
-  choice('greekPronunciation', 'Greek pronunciation', 'How Greek is pronounced when it is read aloud.', PRONUNCIATIONS.map((p) => ({ value: p.id, label: p.label })), getGreekPronunciation, writeGreekPronunciation, {
+  choice('greekPronunciation', 'Greek pronunciation', 'How Greek is pronounced.', PRONUNCIATIONS.map((p) => ({ value: p.id, label: p.label })), getGreekPronunciation, writeGreekPronunciation, {
     section: 'pronunciation',
     dependsOn: separateFrom('grc'),
   }),

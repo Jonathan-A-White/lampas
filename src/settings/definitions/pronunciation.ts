@@ -30,7 +30,7 @@ export const pronunciationSetting = defineSetting<string>({
   allowed: { kind: 'choice', values: PRONUNCIATION_FAMILIES.map((f) => ({ value: f.id, label: f.label })) },
   section: 'pronunciation',
   label: 'Pronunciation',
-  hint: 'How Greek and Hebrew are said and spelled out: one way for both',
+  hint: 'How Greek and Hebrew are said: one way for both',
   help: 'How Greek and Hebrew are said and respelled, one choice for both. **Modern** says both the modern way. It shows while Set each language on its own is Off.',
   // the family is shown while each language is not set on its own (and, through the switch, from Curious up)
   dependsOn: { key: 'pronunciationSeparate', shown: (value) => value !== 'on' },
@@ -65,6 +65,6 @@ export const hebrewPronunciationSetting = defineSetting<string>({
   allowed: { kind: 'choice', values: pronunciationsOf('he').map((p) => ({ value: p.id, label: p.label })) },
   section: 'pronunciation',
   label: 'Hebrew pronunciation',
-  hint: 'How Hebrew is pronounced when it is read aloud.',
+  hint: 'How Hebrew is pronounced.',
   dependsOn: separateFrom('he'),
 });

@@ -17,7 +17,7 @@ export const copyReferenceSetting = defineSetting<CopyReference>({
   },
   section: 'reading',
   label: 'Copy: reference',
-  hint: 'When you copy: the reference after the words, before them, or left out.',
+  hint: 'The reference: after the words, before them, or left out.',
   help: 'Where Copy puts the reference, such as Colossians 3:1 (MSB): **After**, the default; **Before**; or **Off**.',
 });
 
@@ -33,7 +33,7 @@ export const copyNumbersSetting = defineSetting<OnOffChoice>({
   },
   section: 'reading',
   label: 'Copy: verse numbers',
-  hint: 'When you copy more than one verse: each verse led by its number.',
+  hint: 'Copying several verses: each led by its number.',
   help: 'Number each verse of a passage or chapter; a single verse never is.',
 });
 
@@ -49,6 +49,6 @@ export const copyLinkSetting = defineSetting<OnOffChoice>({
   },
   section: 'reading',
   label: 'Copy: link',
-  hint: 'When you copy: the link to the verse on a last line of its own.',
+  hint: 'The link to the verse, on a last line of its own.',
   help: 'End with the https link that opens it in Lampas; Share sends the link too.',
 });
