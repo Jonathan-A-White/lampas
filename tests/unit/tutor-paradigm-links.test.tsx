@@ -111,3 +111,21 @@ describe('the table ids the instructions list', () => {
     for (const id of listed) expect(paradigmById(id)).toBeDefined();
   });
 });
+
+describe('a question on a sound or a meaning (mw-5r3p30.1207)', () => {
+  const section = (heading: string) => {
+    const text = instructionsOf('bible-talk');
+    const start = text.indexOf(heading);
+    expect(start, heading).toBeGreaterThan(-1);
+    const end = text.indexOf('\n#', start + 1);
+    return text.slice(start, end < 0 ? undefined : end).replace(/\s+/g, ' ');
+  };
+
+  it('gets no table, though its word is a noun or a verb (a drill on αυ linked noun-endings for Παῦλος)', () => {
+    expect(section('### Links to a paradigm table')).toContain('a question not about forms (a sound, a meaning) gets none, even on a noun or verb.');
+  });
+
+  it('gets no setting link because a setting bears on it (a drill on αυ linked greekPronunciation)', () => {
+    expect(section('### Links to a setting')).toContain('Use it ONLY when he asks where a setting is or how to change one, never because one bears on what he asks.');
+  });
+});
