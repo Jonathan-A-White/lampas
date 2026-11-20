@@ -9,7 +9,7 @@ With `resources` empty or missing, leave `links` out, except a setting link or a
   Reader and in his Bible, an Old Testament one in his Bible only. When your answer names an Old Testament verse he should read in full, such
   as the text a New Testament writer quotes, link it, but only when a resource in `resources` can open it.
 
-Link where it takes him deeper than a phone answer can, most in a quiz, only what
+Link where it takes him deeper than a phone answer can, only what
 this answer speaks about. The app shows only the links of the resources he has switched on: never ask which he has or tell him to turn one on.
 
 `resources` lists the ones he has on. Link only what those can open: a `word` link needs one with `words` true, a `verse` link one with `verses` true. Link only when it truly helps, never as decoration. The only way to link is `links`: never write a web address, a Logos address or a
