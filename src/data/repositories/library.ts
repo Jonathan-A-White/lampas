@@ -44,6 +44,8 @@ const WORKS_KEY = 'works';
 const DRAW_KEY = 'devotionalDraw';
 /** The row that remembers the text of each old key as the shelf took it (kind 'taken', never a book): the meta store is busy while the words are seeded, and the settings store must stay as it was. */
 const TAKEN_ID = '#taken';
+/** The row that remembers the books he turned Off (kind 'off', never a book; its `taken` is a JSON array of Resource IDs): Off is no row, so with no kept list nothing else says a book was once his (mw-5r3p30.1211). */
+const OFF_ID = '#off';
 
 /** What each old key owns: the books it spoke for. A key's books are replaced when the key is taken again; any other row of the kind is his alone. */
 interface Part {
@@ -125,7 +127,7 @@ async function oldKeys(): Promise<(string | undefined)[]> {
 
 /** Every row but the one that remembers the old keys, and the text it holds. */
 function splitTaken(all: readonly LibraryRow[]): { rows: LibraryRow[]; taken: string | undefined } {
-  return { rows: all.filter((r) => r.id !== TAKEN_ID), taken: all.find((r) => r.id === TAKEN_ID)?.taken };
+  return { rows: all.filter((r) => r.id !== TAKEN_ID && r.id !== OFF_ID), taken: all.find((r) => r.id === TAKEN_ID)?.taken };
 }
 
 const takenRow = (drift: Drift): LibraryRow => ({ id: TAKEN_ID, kind: 'taken', state: 'on', since: 0, taken: JSON.stringify(drift.next) });
@@ -231,6 +233,21 @@ export async function setState(resource: string, state: ShelfState, now = Date.n
   return db.transaction('rw', db.library, async () => put(entry, state, now));
 }
 
+/** Adds books to the ones he turned Off (OFF_ID). Inside a write transaction on the shelf. */
+async function rememberOff(ids: readonly string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const before = offIds((await db.library.get(OFF_ID))?.taken);
+  const next = [...new Set([...before, ...ids])];
+  if (next.length === before.length) return;
+  await db.library.put({ id: OFF_ID, kind: 'off', state: 'on', since: 0, taken: JSON.stringify(next) });
+}
+
+/** The Resource IDs in the text of the off row. */
+function offIds(raw: string | undefined): string[] {
+  const ids = jsonIds(raw);
+  return ids ?? [];
+}
+
 const pinGroupOf = (resource: string): string | undefined => {
   const entry = entryOf(resource);
   return entry ? pinGroup(entry) : undefined;
@@ -241,6 +258,7 @@ async function put(entry: CatalogueEntry, state: ShelfState, now: number): Promi
   const was = await db.library.get(entry.resource);
   if (state === 'off') {
     await db.library.delete(entry.resource);
+    if (was) await rememberOff([entry.resource]);
     return OK;
   }
   if (state === 'pinned') {
@@ -265,7 +283,9 @@ export async function setKind(kind: Kind, state: 'on' | 'off', now = Date.now(),
   const within = only ? new Set(only) : undefined;
   return db.transaction('rw', db.library, async () => {
     if (state === 'off') {
-      await db.library.where('kind').equals(kind).filter((r) => !within || within.has(r.id)).delete();
+      const going = await db.library.where('kind').equals(kind).filter((r) => !within || within.has(r.id)).toArray();
+      await db.library.bulkDelete(going.map((r) => r.id));
+      await rememberOff(going.map((r) => r.id));
       return OK;
     }
     const have = new Map((await db.library.where('kind').equals(kind).toArray()).map((r) => [r.id, r]));
@@ -463,10 +483,13 @@ export async function importNote(): Promise<ImportNote | undefined> {
 }
 
 /** The Resource IDs he owns (src/data/owned.ts): those of the kept list, his import. While no list is kept on the device (an import from before the list was kept, or storage cleared) there is nothing to narrow by, so
- *  the books already on his shelf (On or Pinned: he turned them on, or an import did) stay his, and no other book is offered; once a list is kept it alone says (mw-5r3p30.1189). */
+ *  the books already on his shelf (On or Pinned: he turned them on, or an import did) stay his, and so do those he turned Off from it (Off is no row: OFF_ID remembers them, so the Library page still lists a book
+ *  he turned Off and he can turn it back On, mw-5r3p30.1211); no other book is offered. Once a list is kept it alone says (mw-5r3p30.1189). */
 export async function ownedResources(): Promise<ReadonlySet<string>> {
   const kept = await db.exportRows.toArray();
-  return sameSet(kept.length > 0 ? kept.map((r) => r.resource) : splitTaken(await db.library.toArray()).rows.map((r) => r.id));
+  if (kept.length > 0) return sameSet(kept.map((r) => r.resource));
+  const all = await db.library.toArray();
+  return sameSet([...splitTaken(all).rows.map((r) => r.id), ...offIds(all.find((r) => r.id === OFF_ID)?.taken)]);
 }
 
 /** The set of `ids`, the very one given last when it holds the same ids: a screen that asks again when the set it holds is a new object (the sermon door, the pickers) then does not ask again for a shelf
