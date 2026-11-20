@@ -1,5 +1,40 @@
 [
   {
+    "version": "0.7.303",
+    "date": "2026-11-20",
+    "story": "mw-r9xo1pj.4",
+    "kind": "new",
+    "text": "Settings > Daily now has a Devotional sources section where each source of devotionals, your Logos library and Brookfield First's Morning RePhil, can be turned On or Off, and Today and Random use only the ones that are on."
+  },
+  {
+    "version": "0.7.303",
+    "date": "2026-11-20",
+    "story": "mw-indx1x6.111",
+    "kind": "fixed",
+    "text": "On a Hebrew word, \"Learn this idea\" on a grammar term now opens the Hebrew lesson for it, where before it opened nothing or a Greek lesson."
+  },
+  {
+    "version": "0.7.303",
+    "date": "2026-11-20",
+    "story": "mw-ar5k42b.25",
+    "kind": "fixed",
+    "text": "David's recording now starts and ends each verse of Genesis, Exodus, Leviticus and Numbers on its own words; late in a long chapter a verse had played up to a second early (Genesis 24:64 ended 'she got')."
+  },
+  {
+    "version": "0.7.303",
+    "date": "2026-11-20",
+    "story": "mw-zbgo4ep.8",
+    "kind": "new",
+    "text": "David's recording now reads 2 Samuel and 1 Kings, with the highlight following (1 Kings 13 not yet)."
+  },
+  {
+    "version": "0.7.303",
+    "date": "2026-11-20",
+    "story": "mw-zbgo4ep.7",
+    "kind": "new",
+    "text": "David's recording now plays through the whole of 1 Samuel with the highlight following along."
+  },
+  {
     "version": "0.7.301",
     "date": "2026-11-20",
     "story": "mw-5r3p30.1214",

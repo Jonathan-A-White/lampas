@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.303
+_2026-11-20_
+- New: Settings > Daily now has a Devotional sources section where each source of devotionals, your Logos library and Brookfield First's Morning RePhil, can be turned On or Off, and Today and Random use only the ones that are on.
+- Fixed: On a Hebrew word, "Learn this idea" on a grammar term now opens the Hebrew lesson for it, where before it opened nothing or a Greek lesson.
+- Fixed: David's recording now starts and ends each verse of Genesis, Exodus, Leviticus and Numbers on its own words; late in a long chapter a verse had played up to a second early (Genesis 24:64 ended 'she got').
+- New: David's recording now reads 2 Samuel and 1 Kings, with the highlight following (1 Kings 13 not yet).
+- New: David's recording now plays through the whole of 1 Samuel with the highlight following along.
+
 ## 0.7.301
 _2026-11-20_
 - Fixed: Today's reading plan card no longer offers Read in Logos, and its Lampas button just says Read.
