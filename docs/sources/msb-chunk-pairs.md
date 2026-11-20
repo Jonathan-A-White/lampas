@@ -12,6 +12,7 @@ FIXED by mw-5r3p30.997 for pronouns and mw-5r3p30.1001 for every other kind (see
 - [What was done (mw-5r3p30.997)](#what-was-done-mw-5r3p30997)
 - [What was done for the rest (mw-5r3p30.1001)](#what-was-done-for-the-rest-mw-5r3p301001)
 - [The Old Testament's table (mw-fnvjof.17.161)](#the-old-testaments-table-mw-fnvjof17161)
+- [The Old Testament's '. . .' words that wait for the chunk after (mw-fnvjof.17.210)](#the-old-testaments----words-that-wait-for-the-chunk-after-mw-fnvjof17210)
 
 <!-- /toc -->
 
