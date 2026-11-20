@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.297
+_2026-11-20_
+- Fixed: the Hands-free microphone mark now stays in the header row beside the menu after full screen, instead of drifting up alone above it.
+
 ## 0.7.296
 _2026-11-19_
 - New: David's recording now reads Joshua (except chapter 2), Judges and Ruth with the highlight following.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.297",
+    "date": "2026-11-20",
+    "story": "mw-5r3p30.1212",
+    "kind": "fixed",
+    "text": "the Hands-free microphone mark now stays in the header row beside the menu after full screen, instead of drifting up alone above it."
+  },
+  {
     "version": "0.7.296",
     "date": "2026-11-19",
     "story": "mw-zbgo4ep.6",
