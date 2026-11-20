@@ -6,6 +6,7 @@ aligner would put them. Run by hand in the judge's venv (it has numpy and pytest
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -212,6 +213,20 @@ def test_a_first_sound_longer_than_a_click_is_the_verse_s_own():
     assert near(cut['quiet'][1][2], 1.9) and near(cut['verses'][1][1], 1.9 - 0.05)
 
 
+def test_a_silence_that_holds_a_tag_is_as_short_as_it_plays_and_the_sound_before_it_is_the_verse_s_own():
+    # Genesis 19:30 on the seek clock (mw-ar5k42b.25): the last sound of a spliced piece (15 ms), 50 ms of silence, then 'Lot'. A tag lies in that silence, and
+    # the tag and the frame after it (28 ms) are in no player's sound: as played the silence is 22 ms, too little to say the sound is not the word's (the test
+    # below, which is the same verse on the clock of a file played through). Passed over as a click, the verse started after it and the judge flagged the start.
+    parts = [(0.5, None), (1.0, -20), (0.4, None), (0.015, -39), (0.05, None), (1.0, -20), (0.5, None)]  # the sound 1.90-1.915, the word from 1.965
+    verses, letters = [verse(1, 'a b'), verse(2, 'lot and his')], {1: [0.6, 1.4], 2: [2.0, 2.9]}
+    cut = align.cut_chapter(wave_of(parts), verses, letters, SLOP, slips=[(1.915, 0.028)])
+    assert near(cut['quiet'][1][2], 1.9) and near(cut['verses'][1][1], 1.9 - 0.05), cut['quiet'][1]
+    # the same sound and silence with no tag in it is a click, as John 9:40's: and so is one with a tag elsewhere
+    for slips in ([], [(1.0, 0.028), (2.5, 0.028)]):
+        cut = align.cut_chapter(wave_of(parts), verses, letters, SLOP, slips=slips)
+        assert near(cut['quiet'][1][2], 1.965) and near(cut['verses'][1][1], 1.965 - 0.05), cut['quiet'][1]
+
+
 def test_a_short_sound_with_less_than_a_click_s_silence_after_it_is_the_verse_s_own():
     # Genesis 19:30: 10 ms of sound, 20 ms of silence, then 'Lot': too little silence to say the sound is not the word's
     parts = [(0.5, None), (1.0, -20), (0.4, None), (0.01, -39), (0.02, None), (1.0, -20), (0.5, None)]
@@ -370,3 +385,90 @@ def test_check_takes_one_written_word_the_model_heard_as_two_at_either_end():
     assert not align.heard_end_as_written(['abides', 'ever'], 'forever', last=True)  # the two words must make the written one
     assert not align.heard_end_as_written(['for', 'ever', 'abides'], 'forever', last=True)  # the pair is at the end asked for
     assert not align.heard_end_as_written([], 'forever', last=True)
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+# The time base (mw-ar5k42b.25): the samples are on the clock the browser SEEKS by, because the player starts every verse by a seek.
+# The publisher's Old Testament files are spliced from pieces, each piece's own ID3 tag left inside the file (Genesis 24: 35 of them). ffmpeg, decoding the file
+# through, drops the frame after each tag; the browser seeks such a file by byte position and loses nothing. Genesis 24:64, cut on ffmpeg's clock, played 0.95 s
+# early in the app: it ended 'she got' and 24:65 began 'down from her camel'.
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RATE = 44100
+
+
+def piece(tmp_path: Path, name: str, parts, xing: bool = False) -> Path:
+    """One piece as the publisher's encoder writes it: 192 kb/s constant, mono, an ID3 tag at its head, no Xing header."""
+    rng = np.random.default_rng(11)
+    pcm = np.concatenate([np.zeros(int(s * RATE), dtype='<f4') if level is None else (rng.standard_normal(int(s * RATE)) * 10 ** (level / 20)).astype('<f4') for s, level in parts])
+    path = tmp_path / name
+    made = subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', str(RATE), '-ac', '1', '-i', '-', '-c:a', 'libmp3lame', '-b:a', '192k',
+                           '-write_xing', '1' if xing else '0', '-f', 'mp3', str(path)], input=pcm.tobytes(), capture_output=True)
+    if made.returncode != 0:
+        pytest.skip(f'this ffmpeg writes no MP3 (libmp3lame): {made.stderr.decode()[:200]}')
+    return path
+
+
+def tag_length(data: bytes) -> int:
+    """The length of the ID3v2 tag a piece begins with."""
+    assert data[:3] == b'ID3'
+    return 10 + ((data[6] << 21) | (data[7] << 14) | (data[8] << 7) | data[9])
+
+
+def first_sound(wave: np.ndarray, which: int = 0) -> float:
+    """The second the sound after the `which`-th quiet begins."""
+    return align.Level(wave).quiets[which][1] / 1000
+
+
+@pytest.fixture()
+def spliced(tmp_path):
+    """Three pieces laid end to end, as the publisher's file is: the second and third piece's tags are INSIDE the file. Gives (the file, the second on the
+    browser's seek clock at which the third piece's sound begins)."""
+    pieces = [piece(tmp_path, 'one.mp3', [(0.3, None), (0.6, -20), (0.3, None)]),
+              piece(tmp_path, 'two.mp3', [(0.4, None), (0.5, -20), (0.3, None)]),
+              piece(tmp_path, 'three.mp3', [(0.5, None), (0.6, -20), (0.4, None)])]
+    data = [p.read_bytes() for p in pieces]
+    whole = tmp_path / 'whole.mp3'
+    whole.write_bytes(b''.join(data))
+    # the browser seeks to byte (second x the byte rate) past the head's tag: the third piece's first frame is at this second of its clock ...
+    third_begins = (len(data[0]) + len(data[1]) + tag_length(data[2]) - tag_length(data[0])) / 24000
+    # ... and its sound begins this long after its first frame (the piece decoded alone: nothing is inside it to lose)
+    return whole, third_begins + first_sound(align.decode_through(pieces[2]))
+
+
+def test_a_sound_after_two_tags_inside_the_file_is_at_the_second_the_browser_seeks_to(spliced):
+    whole, wanted = spliced
+    got = first_sound(align.decode(whole), 2)
+    assert abs(got - wanted) <= 0.006, f'the third sound is at {got:.3f} s of the decode, and at {wanted:.3f} s of the clock the browser seeks by: a verse cut here plays {wanted - got:+.3f} s off'
+
+
+def test_played_through_ffmpeg_loses_a_frame_and_the_tag_at_each_tag_inside_the_file(spliced):
+    whole, wanted = spliced
+    layout = align.mp3_layout(whole.read_bytes())
+    slips = align.slips_of(layout)
+    assert len(slips) == 2 and all(abs(lost - (1152 / RATE + 45 / 24000)) < 1e-6 for _, lost in slips)
+    through = first_sound(align.decode_through(whole), 2)
+    assert abs(wanted - through - sum(lost for _, lost in slips)) <= 0.006  # the clock of a file played on from second 0: what the timings were on
+    assert abs(align.rebase(through, slips) - wanted) <= 0.006  # a second of that clock, moved onto the seek clock
+    assert abs(len(align.decode(whole)) - len(align.decode_through(whole)) - sum(lost for _, lost in slips) * SR) <= 8
+
+
+def test_a_file_with_nothing_between_its_frames_is_decoded_as_ever(tmp_path):
+    one = piece(tmp_path, 'one.mp3', [(0.3, None), (0.6, -20), (0.3, None)])
+    assert align.slips_of(align.mp3_layout(one.read_bytes())) == []
+    assert np.array_equal(align.decode(one), align.decode_through(one))
+
+
+def test_a_second_of_the_played_through_clock_moves_by_what_was_lost_before_it():
+    slips = [(10.0, 0.028), (20.0, 0.028)]
+    assert align.rebase(5.0, slips) == 5.0
+    assert align.rebase(9.99, slips) == 9.99
+    assert align.rebase(10.0, slips) == pytest.approx(10.028)  # the first sample after the lost stretch
+    assert align.rebase(19.97, slips) == pytest.approx(19.998)  # the second slip is at 19.972 of the played-through clock
+    assert align.rebase(19.98, slips) == pytest.approx(20.036)
+    assert align.rebase(600.0, slips) == pytest.approx(600.056)
+
+
+def test_a_file_the_browser_would_not_seek_by_bytes_stops_the_run(tmp_path):
+    with pytest.raises(align.Stop, match='Xing'):
+        align.decode(piece(tmp_path, 'xing.mp3', [(0.3, None), (0.6, -20), (0.3, None)], xing=True))

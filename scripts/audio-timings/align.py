@@ -35,6 +35,14 @@ scripts/audio-timings/quiet/<edition>-<book>.json: tests/unit/audio-timings-data
 it with no model (after a change of the slop). THE LOCK (tests/unit/audio-judged.test.ts): a book ships only with a judged report (judge.py) of its timings as
 they are, with no flag outside its listen list.
 
+THE TIME BASE (mw-ar5k42b.25; decode): every second here is a second of the clock the browser SEEKS by, because the player starts each verse by a seek. The
+publisher's file is constant-rate with no Xing header, and Chromium seeks such a file by BYTE position: second x the byte rate, past the tags at its head (ffmpeg's
+mp3 demuxer under AVFMT_FLAG_FAST_SEEK). The Old Testament files are spliced from pieces and each piece's own 45-byte ID3 tag is left INSIDE the file (Genesis 24:
+35 of them; John's files have none). ffmpeg decoding such a file through says 'Header missing' at each tag and drops the frame after it, so its clock falls 28 ms
+(a frame and the tag) behind the seek clock at every tag: 0.955 s by Genesis 24:64, measured in Chromium, where a verse cut on ffmpeg's clock ended 'she got' and
+the next began 'down from her camel'. So the frames are decoded with nothing between them and each stray's own time is laid back in: a sound's second here is the
+second a seek finds it at. A file played THROUGH (decode_through) still slips at each tag; the letters of a book aligned on that clock are moved by --cut.
+
 One process, one chapter at a time, torch on 4 threads: start it as `nice -n 10 ~/.cache/lampas-audio-timings/venv/bin/python scripts/audio-timings/align.py --book jhn`.
 """
 from __future__ import annotations
@@ -77,6 +85,9 @@ STAR_QUIET = 0.2
 BLIP = 0.1
 # A click before a verse's first word is not the verse's first sound (mw-ar5k42b.6; John 9:40: 15 ms of sound at -46 dBFS, 60 ms of silence, then 'Some'): a sound of
 # CLICK or less with CLICK_QUIET or more of silence after it. They are the judge's TOLERANCE (a part-sound that short is the measure's own grain) and its MIN_QUIET.
+# The silence is measured AS IT PLAYS (mw-ar5k42b.25): a tag inside the file, and the frame after it, are on the seek clock and in no player's sound (THE TIME
+# BASE), so a silence that holds one plays 28 ms shorter. Genesis 19:30: the last sound of a spliced piece, 50 ms of silence with a tag in it, then 'Lot': 22 ms
+# as played, too little to say the sound is not the word's; passed over as a click it had the judge flag the start.
 # Before a word that begins with a stop (STOP_LETTERS: a c, a g, a j or a t may be one) a sound as short may be the word's own: the stop's release, or the faint
 # start of it (Exodus 4:7 'Put', Genesis 4:5 'But': 5 to 10 ms at -60 dBFS, 30 to 35 ms before the burst). There it stays the verse's first sound.
 CLICK = 0.02
@@ -310,12 +321,133 @@ class Fetcher:
         raise Stop(url)
 
 
-def decode(path: Path):
-    """The MP3 as 16 kHz mono float32 samples (ffmpeg)."""
+MP3_BITRATES = (0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 0)  # kb/s of an MPEG-1 Layer III frame, by its header's four bits
+MP3_RATES = (44100, 48000, 32000, 0)
+MP3_FRAME_SAMPLES = 1152
+
+
+def id3_length(data: bytes, at: int) -> int:
+    """The length of the ID3v2 tag that begins at byte `at`, or 0 when none does."""
+    if data[at:at + 3] != b'ID3' or len(data) < at + 10 or any(b & 0x80 for b in data[at + 6:at + 10]):
+        return 0
+    return 10 + ((data[at + 6] << 21) | (data[at + 7] << 14) | (data[at + 8] << 7) | data[at + 9]) + (10 if data[at + 5] & 0x10 else 0)
+
+
+def frame_at(data: bytes, at: int) -> tuple[int, int, int] | None:
+    """The MPEG-1 Layer III frame whose header is at byte `at`: (its bytes, its bit rate in kb/s, its sample rate), or None when no whole frame begins there."""
+    if at + 4 > len(data) or data[at] != 0xFF or (data[at + 1] & 0xFE) != 0xFA:
+        return None
+    bitrate, rate = MP3_BITRATES[data[at + 2] >> 4], MP3_RATES[(data[at + 2] >> 2) & 3]
+    if not bitrate or not rate:
+        return None
+    size = 144000 * bitrate // rate + ((data[at + 2] >> 1) & 1)
+    return (size, bitrate, rate) if at + size <= len(data) else None
+
+
+def mp3_layout(data: bytes) -> dict:
+    """How a chapter file's bytes lie (THE TIME BASE): {'head': the bytes of ID3 tags before the first frame, 'frames': [(byte, bytes)], 'strays': [(byte, bytes,
+    the frames before it)], whatever lies BETWEEN two frames (a spliced piece's own tag), 'byte_rate': the bytes a second the browser seeks by (the first frame's
+    bit rate), 'frame_seconds'}. Stops at a file whose seek clock is not the measured one: frames of more than one bit rate, or a Xing, Info or VBRI header
+    (the browser then seeks by the header's table and trims the encoder's delay)."""
+    head = 0
+    while (length := id3_length(data, head)):
+        head += length
+    frames: list[tuple[int, int]] = []
+    strays: list[tuple[int, int, int]] = []
+    kinds: set[tuple[int, int]] = set()
+    at = head
+    while at < len(data):
+        frame = frame_at(data, at)
+        if frame:
+            frames.append((at, frame[0]))
+            kinds.add(frame[1:])
+            at += frame[0]
+            continue
+        start = at
+        while at < len(data):  # to the next frame that another frame, a tag or the file's end follows: a chance 0xFFFB inside a stray is not a frame
+            found = frame_at(data, at)
+            if found and (at + found[0] == len(data) or frame_at(data, at + found[0]) or id3_length(data, at + found[0])):
+                break
+            at += id3_length(data, at) or 1
+        if at < len(data):  # what lies after the last frame (an ID3v1 tag) is no time before any sound
+            strays.append((start, at - start, len(frames)))
+    if not frames:
+        raise Stop('no MPEG-1 Layer III frame in the file')
+    if len(kinds) > 1:
+        raise Stop(f'frames of more than one kind {sorted(kinds)} (kb/s, Hz): the browser does not seek such a file by one byte rate, and its clock is not measured')
+    first = data[frames[0][0]:frames[0][0] + frames[0][1]]
+    if any(mark in first for mark in (b'Xing', b'Info', b'VBRI')):
+        raise Stop('the file has a Xing, Info or VBRI header: the browser seeks it by that header, not by bytes, and its clock is not measured (docs/audio-judge.md)')
+    bitrate, rate = next(iter(kinds))
+    return {'head': head, 'frames': frames, 'strays': strays, 'byte_rate': bitrate * 1000 / 8, 'frame_seconds': MP3_FRAME_SAMPLES / rate}
+
+
+def slips_of(layout: dict) -> list[tuple[float, float]]:
+    """Where a file PLAYED THROUGH falls behind the clock the browser seeks by: (the second of the seek clock a stray begins at, the seconds lost there: the stray's
+    own bytes, which the seek clock counts as time, and the frame after it, which ffmpeg drops with 'Header missing')."""
+    return [((at - layout['head']) / layout['byte_rate'], length / layout['byte_rate'] + layout['frame_seconds']) for at, length, _ in layout['strays']]
+
+
+def rebase(second: float, slips: list[tuple[float, float]]) -> float:
+    """A second of the clock of a file played through, as the second of the seek clock the same sound lies at: later by what was lost before it."""
+    lost = 0.0
+    for at, gone in slips:
+        if at - lost > second + 1e-9:
+            break
+        lost += gone
+    return second + lost
+
+
+def ffmpeg_samples(source: list[str], data: bytes | None = None):
     import numpy as np
 
-    result = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(path), '-ac', '1', '-ar', str(SAMPLE_RATE), '-f', 'f32le', '-'], capture_output=True, check=True)
+    result = subprocess.run(['ffmpeg', '-v', 'error', *source, '-ac', '1', '-ar', str(SAMPLE_RATE), '-f', 'f32le', '-'], input=data, capture_output=True, check=True)
     return np.frombuffer(result.stdout, dtype='<f4').copy()
+
+
+def decode_through(path: Path):
+    """The MP3 as ffmpeg decodes the file as it lies: the clock of a file PLAYED THROUGH from second 0, which loses the frame after every tag inside the file.
+    Not a clock a verse is cut on (THE TIME BASE): only what a book aligned before mw-ar5k42b.25 was cut on, read to move its letters (onto_seek_clock)."""
+    return ffmpeg_samples(['-i', str(path)])
+
+
+def decode(path: Path):
+    """The MP3 as 16 kHz mono float32 samples ON THE CLOCK THE BROWSER SEEKS BY (THE TIME BASE): sample n is second n / 16000 of that clock. The frames are
+    decoded with nothing between them, so none is lost, and the time of each stray's bytes is laid back in as silence. A file with nothing between its frames is
+    decoded as it lies: the two clocks are one."""
+    import numpy as np
+
+    data = path.read_bytes()
+    layout = mp3_layout(data)
+    if not layout['strays']:
+        return decode_through(path)
+    wave = ffmpeg_samples(['-f', 'mp3', '-i', 'pipe:0'], b''.join(data[at:at + size] for at, size in layout['frames']))
+    whole = len(layout['frames']) * layout['frame_seconds']
+    if abs(len(wave) / SAMPLE_RATE - whole) > 0.01:
+        raise Stop(f'{path.name}: ffmpeg gave {len(wave) / SAMPLE_RATE:.3f} s of {len(layout["frames"])} frames ({whole:.3f} s): a frame was lost, the clock is not the seek clock')
+    pieces = []
+    taken = laid = stray_bytes = 0
+    for _, length, before in layout['strays']:
+        index = min(len(wave), int(round(before * layout['frame_seconds'] * SAMPLE_RATE)))
+        stray_bytes += length
+        silence = int(round(stray_bytes / layout['byte_rate'] * SAMPLE_RATE)) - laid
+        pieces += [wave[taken:index], np.zeros(silence, dtype=wave.dtype)]
+        taken, laid = index, laid + silence
+    return np.concatenate(pieces + [wave[taken:]])
+
+
+def onto_seek_clock(mp3: Path, wave, letters: dict[int, list[float]]) -> dict[int, list[float]]:
+    """The letters of a chapter aligned on the clock of a file played through (a quiet file of v 2, before mw-ar5k42b.25), moved onto the seek clock `wave` is on:
+    each later by the slips before it. Checked by the two decodes' lengths: the played-through one is shorter by exactly what the slips say it lost."""
+    slips = slips_of(mp3_layout(mp3.read_bytes()))
+    if not slips:
+        return letters
+    lost = sum(gone for _, gone in slips)
+    through = len(decode_through(mp3)) / SAMPLE_RATE
+    if abs(len(wave) / SAMPLE_RATE - through - lost) > 0.01:
+        raise Stop(f'{mp3.name}: played through it is {through:.3f} s, on the seek clock {len(wave) / SAMPLE_RATE:.3f} s, and its {len(slips)} tags account for {lost:.3f} s: '
+                   'its letters cannot be moved, align the chapter again (--chapters, --redo)')
+    return {n: [round(rebase(first, slips), 2), round(rebase(last, slips), 2)] for n, (first, last) in letters.items()}
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -506,10 +638,11 @@ class Level:
     """A chapter's recording as its level: every frame's dBFS, and every quiet of it as (the millisecond the sound has died by, the millisecond it begins again).
     The narrator's recording is gated: between phrases it is digital silence (about -90 dBFS; speech is above -45), so both are read to a frame's hop, 5 ms."""
 
-    def __init__(self, wave) -> None:
+    def __init__(self, wave, slips: list[tuple[float, float]] | tuple = ()) -> None:
         import numpy as np
 
         self.np = np
+        self.slips = [(ms(at), ms(at + gone)) for at, gone in slips]  # what no player plays, in ms of the seek clock: each tag inside the file and the frame after it
         self.duration = len(wave) / SAMPLE_RATE
         _, self.db = frame_levels(wave, 0.0, self.duration)
         self.hop, self.frame = ms(HOP_SECONDS), ms(FRAME_SECONDS)
@@ -549,10 +682,15 @@ class Level:
                 return found
         return []
 
+    def unplayed(self, lo: int, hi: int) -> int:
+        """The milliseconds of lo..hi that are on the seek clock and in no player's sound: where a tag lies inside the file the browser's decoder drops it and the
+        frame after it (slips_of), whether it plays on from a seek before the tag or from second 0."""
+        return sum(min(hi, b) - max(lo, a) for a, b in self.slips if a < hi and b > lo)
+
     def past_clicks(self, onset: int, hi: int) -> int:
         """Where a verse's own first sound begins, given `onset`, where the sound after its quiet begins: a click is not its first sound (mw-ar5k42b.6; John 9:40
         started 50 ms before a click 75 ms before 'Some'). A click is a sound of CLICK or less (from where it begins to the next silence) with a silence of
-        CLICK_QUIET or more after it, a silence that begins before `hi`, the verse's first letter (a sound the aligner hears the first letter in is the verse's
+        CLICK_QUIET or more after it as it plays (less what of it no player plays: `unplayed`), a silence that begins before `hi`, the verse's first letter (a sound the aligner hears the first letter in is the verse's
         own) and does not run to the file's end. Gives the millisecond the sound after the last such click begins. Only a verse's FIRST sound is read so, and
         only of a word that does not begin with a stop (the cut rule asks): a sound as short after a silence at a verse's end is a stop's release and stays with
         its word."""
@@ -563,7 +701,7 @@ class Level:
             if k == len(self.dips):
                 return onset
             died, begins = self.dips[k]
-            if died - onset > ms(CLICK) or begins - died < ms(CLICK_QUIET) or died >= hi or begins >= ms(self.duration):
+            if died - onset > ms(CLICK) or begins - died - self.unplayed(died, begins) < ms(CLICK_QUIET) or died >= hi or begins >= ms(self.duration):
                 return onset
             onset = begins
 
@@ -613,7 +751,7 @@ def place_start(died: int | None, onset: int, lead: int) -> tuple[int, bool]:
     return up2(-(-(died + onset) // 2)), True
 
 
-def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, skip_title: bool = False) -> dict:
+def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, skip_title: bool = False, slips: list[tuple[float, float]] | tuple = ()) -> dict:
     """THE CUT RULE (mw-ar5k42b.3). Both edges of every verse are placed from the recording's level either side of the verse's boundary; the aligner only says
     between which two letters a boundary lies (`letters`: verse -> [its first letter's start, its last letter's end]).
 
@@ -622,7 +760,8 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     else may be spoken there (the announcement before the first verse, a heading, a closing line: wherever the aligner was given a wildcard) the verse before ends
     in the FIRST quiet that is a pause and the verse after starts from the LAST one, so what is spoken between them is in neither verse. A pause is a quiet of
     STAR_QUIET or more, or a shorter one with more than a BLIP of sound on its far side (a stop's closure has only its release there). The sound the verse after
-    starts from is its own first sound: a click before its first word (Level.past_clicks) is in the quiet, and the boundary's onset is the word's; but before a
+    starts from is its own first sound: a click before its first word (Level.past_clicks; `slips`, the chapter file's, say what of a silence no player plays) is
+    in the quiet, and the boundary's onset is the word's; but before a
     word that begins with a stop (STOP_LETTERS) a sound as short may be the word's own release, and stays its first sound. `skip_title`: a Psalm's title was
     left to the opening wildcard, so verse 1's first word is the first after it.
       1. The end is `insideTail` after the verse's last sound has died and `tail` before the next sound; the start is `lead` before its first sound begins
@@ -636,7 +775,7 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
     Gives {'verses': [[n, start, end]], 'quiet': the boundaries as measured, one more than the verses, 'listen': the listed edges}. A boundary is
     [the verse before it (0: before the first), the second the sound before it has died, the second the sound after it begins]; either is None where nothing sounds
     on that side; where something else is spoken between two verses two more seconds say from when to when; a boundary read on through is [verse, None, None, the cut]."""
-    level = Level(wave)
+    level = Level(wave, slips)
     lead, tail, inside, duration = ms(slop['lead']), ms(slop['tail']), ms(slop['insideTail']), ms(level.duration)
     count = len(verses)
     starts: list[int] = [0] * count
@@ -724,7 +863,8 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
 # One chapter
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def cut_and_check(book: str, chapter: int, wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, allow: set[tuple[int, int]], skip_title: bool = False) -> dict:
+def cut_and_check(book: str, chapter: int, wave, verses: list[dict], letters: dict[int, list[float]], slop: dict, allow: set[tuple[int, int]], skip_title: bool = False,
+                  slips: list[tuple[float, float]] | tuple = ()) -> dict:
     """One chapter cut by the rule from the aligner's letters, and checked. Gives {'ok', 'line', 'problems', 'timings', 'quiet', 'listen', 'aligned'}."""
     duration = len(wave) / SAMPLE_RATE
     problems = []
@@ -736,7 +876,7 @@ def cut_and_check(book: str, chapter: int, wave, verses: list[dict], letters: di
             problems.append(f'verse {n}: its first letter {letters[n][0]:.2f} is not before its last {letters[n][1]:.2f}')
     if problems:
         return {'ok': False, 'line': f'chapter {chapter:2d}: verses in text {len(verses):3d}, not cut', 'problems': problems + [f'verses timed 0 of {len(verses)}']}
-    cut = cut_chapter(wave, verses, letters, slop, skip_title)
+    cut = cut_chapter(wave, verses, letters, slop, skip_title, slips)
     triples = cut['verses']
     low = high = None
     for v, (n, start, end) in zip(verses, triples):
@@ -773,7 +913,7 @@ def align_chapter(model: Model, book: str, chapter: int, mp3: Path, allow: set[t
     emission = model.emissions(wave)
     items = build_items(verses, skip_title)
     letters = letters_of(model.align(emission, items), items)
-    return cut_and_check(book, chapter, wave, verses, letters, slop, allow, skip_title)
+    return cut_and_check(book, chapter, wave, verses, letters, slop, allow, skip_title, slips_of(mp3_layout(mp3.read_bytes())))
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -832,10 +972,15 @@ def read_quiet(book: str, slop: dict) -> dict:
     """What the maker measured of a book (scripts/audio-timings/quiet/<edition>-<book>.json): `aligned`, by chapter, the aligner's letters of each verse as
     [verse, its first letter's start, its last letter's end] (all the cut rule takes from the model, kept so the rule can be run again with no model); and
     `chapters`, by chapter, the boundaries as the recording's level gives them (cut_chapter), which the tests hold the timings to and the judge's proof plants its
-    faults by. A file of the gap pass before the cut rule (v 1: no letters kept) is not read: the book is aligned again."""
+    faults by. A file of the gap pass before the cut rule (v 1: no letters kept) is not read: the book is aligned again. v 3 (mw-ar5k42b.25): every second is of
+    the clock the browser seeks by (THE TIME BASE), but for the chapters `through` names, whose letters are still on the clock of a file played through until the
+    cut pass moves them (every chapter of a v 2 file). A book ships with none."""
     data = read_json(quiet_path(book), None)
-    if not data or data.get('v') != 2:
-        return {'v': 2, 'edition': EDITION, 'book': book, 'quietDb': QUIET_DB, 'frame': FRAME_SECONDS, 'slop': slop, 'titleSkipped': [], 'aligned': {}, 'chapters': {}}
+    if not data or data.get('v') not in (2, 3):
+        return {'v': 3, 'edition': EDITION, 'book': book, 'quietDb': QUIET_DB, 'frame': FRAME_SECONDS, 'slop': slop, 'titleSkipped': [], 'through': [], 'aligned': {}, 'chapters': {}}
+    if data['v'] == 2:
+        data = {**{k: v for k, v in data.items() if k not in ('aligned', 'chapters')}, 'v': 3, 'through': sorted(int(c) for c in data['aligned']),
+                'aligned': data['aligned'], 'chapters': data['chapters']}
     return data
 
 
@@ -847,6 +992,7 @@ def write_quiet(book: str, slop: dict, results: dict[int, dict | None]) -> None:
         for key in ('aligned', 'chapters'):
             data[key].pop(str(chapter), None)
         data['titleSkipped'] = sorted(set(data['titleSkipped']) - {chapter})
+        data['through'] = sorted(set(data['through']) - {chapter})  # what is written now was aligned, or moved by the cut pass, on the seek clock
         if result is not None:
             data['aligned'][str(chapter)] = result['aligned']
             data['chapters'][str(chapter)] = result['quiet']
@@ -925,6 +1071,9 @@ def run_listen(book: str, slop: dict) -> bool:
         raise Stop(f'the judged report is of other timings ({report["timings"]["sha256"][:12]}..., the file is {sha[:12]}...): run judge.py --book {book} again')
     if report['slop'] != slop:
         raise Stop(f'the judged report was judged at the slop {report["slop"]}, player-slop.json says {slop}: cut again (--cut) and judge again')
+    through = read_quiet(book, slop)['through']
+    if through:
+        raise Stop(f'chapters {through} are still cut on the clock of a file played through, not the clock the browser seeks by: cut the book again (--cut) and judge again')
     flags: dict[tuple[str, str], list] = {}
     for chapter, result in report['chapters'].items():
         for verse in result['verses']:
@@ -957,13 +1106,19 @@ def run_cut(book: str, chapters: list[int] | None, scratch: Path, fetcher: Fetch
     moved_starts = moved_ends = verses_cut = 0
     widest = (0.0, '')
     left_out = []
+    moved_chapters: list[int] = []
     for key in sorted(kept['aligned'], key=int):
         chapter = int(key)
         if chapters is not None and chapter not in chapters:
             continue
         mp3 = fetcher.get(audio_url(book, chapter), scratch / 'mp3' / Path(audio_url(book, chapter)).name)
         verses = chapter_text(book, chapter)
-        result = cut_and_check(book, chapter, decode(mp3), verses, {row[0]: row[1:] for row in kept['aligned'][key]}, slop, allow, chapter in kept['titleSkipped'])
+        wave = decode(mp3)
+        letters = {row[0]: row[1:] for row in kept['aligned'][key]}
+        if chapter in kept['through']:  # aligned on the clock of a file played through: moved onto the seek clock, and kept so
+            letters = onto_seek_clock(mp3, wave, letters)
+            moved_chapters.append(chapter)
+        result = cut_and_check(book, chapter, wave, verses, letters, slop, allow, chapter in kept['titleSkipped'], slips_of(mp3_layout(mp3.read_bytes())))
         log(result['line'])
         if not result['ok']:
             left_out.append(chapter)
@@ -985,6 +1140,8 @@ def run_cut(book: str, chapters: list[int] | None, scratch: Path, fetcher: Fetch
         write_chapters(book, {chapter: result['timings']})
         write_quiet(book, slop, {chapter: result})
         write_listen(book, slop, {chapter: result['listen']})
+    if moved_chapters:
+        log(f"letters moved from the clock of a file played through onto the clock the browser seeks by: chapters {moved_chapters}")
     log(f'verses cut {verses_cut}; starts moved {moved_starts}, ends moved {moved_ends}, the widest move {widest[0]} s at {widest[1] or "-"}; left out: {left_out or "none"}')
     return not left_out
 

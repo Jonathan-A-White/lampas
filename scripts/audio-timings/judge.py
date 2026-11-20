@@ -51,7 +51,7 @@ import align  # noqa: E402  the maker: its text source, its normaliser, its poli
 
 words_of = align.words_of
 
-JUDGE_VERSION = '2'  # 2: the tail clipped by the player's early stop, judged at insideTail (mw-ar5k42b.9)
+JUDGE_VERSION = '3'  # 2: the tail clipped by the player's early stop, judged at insideTail (mw-ar5k42b.9); 3: heard on the clock the browser SEEKS by (mw-ar5k42b.25)
 REPO = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 EDITION = align.EDITION
@@ -731,7 +731,7 @@ def file_sha(path: Path) -> str:
 
 
 def load_wave(path: Path):
-    """The MP3 as 16 kHz mono samples whose second 0 is the browser's (TIME_ZERO)."""
+    """The MP3 as 16 kHz mono samples on the clock the browser seeks by (the maker's decode: align.py 'THE TIME BASE'), whose second 0 is the browser's (TIME_ZERO)."""
     import numpy as np
 
     wave = align.decode(path)
@@ -849,6 +849,8 @@ class Recording:
         url = align.audio_url(book, chapter)
         mp3 = fetcher.get(url, scratch / 'mp3' / Path(url).name)
         sha = file_sha(mp3)[:16]
+        if align.slips_of(align.mp3_layout(mp3.read_bytes())):
+            sha += '.seek'  # a file with tags inside it was heard, before mw-ar5k42b.25, on the clock of a file played through: what is kept of that is not read
         self.wave = load_wave(mp3)
         self.sound = sound_of(self.wave)
         kept = scratch / 'judge' / 'heard' / f'{mp3.stem}.{sha}.{LETTERS_MODEL}.json'

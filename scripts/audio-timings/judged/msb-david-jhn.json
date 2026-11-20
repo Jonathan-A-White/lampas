@@ -1,6 +1,6 @@
 {
  "v":1,
- "judge":"2",
+ "judge":"3",
  "edition":"msb-david",
  "book":"jhn",
  "timings":{"file":"public/data/audio/msb-david/jhn.json","sha256":"cf4ebd904cb0f2c50ffb77f0b0bdf2839452e3ab6eb8820d1a8eb0f8a224f8ad"},

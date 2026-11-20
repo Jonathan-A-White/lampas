@@ -137,6 +137,8 @@ To promote a book `<b>` (after `run-book.sh <b>` and the Governor's ear on its l
 | `judged/msb-david-<b>.json` | `scripts/audio-timings/judged/msb-david-<b>.json` |
 | `summary/<b>.txt` | stays in `staged/summary/` |
 
+**A book staged before mw-ar5k42b.25** (its quiet file says `"v":2`) was cut on the clock of a file played through, not the clock the browser seeks by (docs/data.md 'The time base'), and the gate refuses it. Move it first, in its work copy (`<out>/.work/<b>/`): `align.py --book <b> --cut` there, then `judge.py --book <b>` and `align.py --book <b> --listen`, and copy the four files out again. `staged/` holds two such today (Psalms 3 and 117; Jude's file has no tag inside it, so only its versions would change).
+
 Then `npm run audio:index` (the build, `npm run dev` and `npm test` run it too) lists the book, and the gate holds it: `tests/unit/audio-judged.test.ts` (the lock), `tests/unit/audio-timings-data.test.ts` (the rule), `tests/unit/audio-index.test.ts` (the index is what the book files make, no tracked `index.json`, every per-book file named for its book, two branches merge in both orders to one index). `npm run audio:index:check` says alone whether `index.json` is what the files make. **Never edit `index.json` and never `git add -f` it**: delete a book's `<b>.json` to turn its recording off. Do not change the maker, the judge, `player-slop.json`, `shares.json` or a test in a book's story.
 
 Every file a book's story writes, and who else could write it (the sweep of mw-zbgo4ep.49):
