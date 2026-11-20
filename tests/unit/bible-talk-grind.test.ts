@@ -582,6 +582,14 @@ describe('the feedback offer', () => {
     expect(instructions).toContain('only when');
   });
 
+  // mw-5r3p30.1208: offer-ordinary-question gave an unasked feedback_offer about 1 run in 15: the section's one worked answer carries the offer and
+  // its example's history holds that very ask. The rule says, where the offer is taught, that a waiting feedback offer is not made again.
+  it('says a feedback offer that waits is not made again on his next ordinary question (mw-5r3p30.1208)', () => {
+    const rule = instructions.replace(/\s+/g, ' ');
+    expect(rule).toContain('`pending_offer` is `feedback`: his next ordinary question gets no `feedback_offer`');
+    expect(rule.indexOf('`pending_offer` is `feedback`')).toBeLessThan(rule.indexOf('<!-- feedback-offer-example:start -->'));
+  });
+
   it('answers a question about what a screen shows or means and never takes it for a wish (mw-5r3p30.854)', () => {
     const rule = instructions.replace(/\s+/g, ' ');
     expect(rule).toContain('what a screen shows or means');
