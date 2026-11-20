@@ -167,7 +167,7 @@ function SettingsPages() {
           ) : null}
           <HighlightedSetting.Provider value={highlighted}>
             {drawnSections.map((section) => (
-              <Section key={section.id} id={section.id} title={section.title} hint={section.hint} labelled={section.id === 'resources'}>
+              <Section key={section.id} id={section.id} title={section.title} hint={section.hint} labelled={section.id === 'resources' || section.id === 'devotionalSources'}>
                 {rows
                   .filter((r) => r.section === section.id)
                   .map((row) => {

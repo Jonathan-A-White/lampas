@@ -1612,6 +1612,8 @@
                   "dailyDevotional",
                   "devotional",
                   "devotionalDraw",
+                  "devotionalLogos",
+                  "devotionalRephil",
                   "morningRephilOrder",
                   "morningRephilBackup",
                   "todaysDevotional",
@@ -2199,6 +2201,18 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "devotionalDraw" }, "value": { "type": "string", "maxLength": 80 } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "devotionalLogos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "devotionalRephil" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

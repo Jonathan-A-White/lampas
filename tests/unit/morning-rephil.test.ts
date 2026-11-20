@@ -233,7 +233,7 @@ describe('the devotional Today shows, with the backup', () => {
 describe('the picker with Logos Off', () => {
   it('lists Morning RePhil and what is chosen, not the Logos books', () => {
     const every = DEVOTIONALS.map((d) => d.id);
-    expect(pickableDevotionals(every, SPURGEON, new Set(every), false).map((d) => d.id)).toEqual([SPURGEON, MORNING_REPHIL_ID]);
-    expect(pickableDevotionals(every, MORNING_REPHIL_ID, new Set(every), false).map((d) => d.id)).toEqual([MORNING_REPHIL_ID]);
+    expect(pickableDevotionals(every, SPURGEON, new Set(every), { logos: false, rephil: true }).map((d) => d.id)).toEqual([SPURGEON, MORNING_REPHIL_ID]);
+    expect(pickableDevotionals(every, MORNING_REPHIL_ID, new Set(every), { logos: false, rephil: true }).map((d) => d.id)).toEqual([MORNING_REPHIL_ID]);
   });
 });

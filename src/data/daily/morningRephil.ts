@@ -79,14 +79,17 @@ export interface TodaysDevotionalInput {
   order: EpisodeOrder;
   /** Settings > Daily > When all Morning RePhil are seen: a Logos devotional's id */
   backup: string;
+  /** whether the Logos source is on: Logos is On AND 'Logos devotionals' is On (Settings > Daily > Devotional sources, mw-r9xo1pj.4; src/settings/devotionalSources.ts) */
   logosOn: boolean;
+  /** whether Brookfield First is On there; absent reads as On */
+  rephilOn?: boolean;
   list?: readonly Episode[];
 }
 
-/** The devotional Today shows (mw-r9xo1pj.2): the day's devotional as devotionalForDay draws it, but with Logos Off only Morning RePhil (a Logos book opens nothing then, so none is drawn or shown: undefined);
+/** The devotional Today shows (mw-r9xo1pj.2): the day's devotional as devotionalForDay draws it, but with Logos Off, or 'Logos devotionals' Off, only Morning RePhil (a Logos book opens nothing then, so none is drawn or shown: undefined);
  *  Morning RePhil with no episode left to see is the backup devotional while Logos is On. A newly published episode in `list` takes over from the backup at once. */
-export function devotionalToday({ choice, ticked, date, pick, kept, heard, order, backup, logosOn, list = EPISODES }: TodaysDevotionalInput): TodaysDevotional | undefined {
-  const devotional = devotionalForDay(choice, logosOn ? ticked : [], date, pick, hasUnheard(heard, list));
+export function devotionalToday({ choice, ticked, date, pick, kept, heard, order, backup, logosOn, rephilOn = true, list = EPISODES }: TodaysDevotionalInput): TodaysDevotional | undefined {
+  const devotional = devotionalForDay(choice, ticked, date, pick, hasUnheard(heard, list), { logos: logosOn, rephil: rephilOn });
   if (devotional.kind !== 'rephil') return logosOn ? { devotional } : undefined;
   const episode = episodeForDay(order, heard, kept, list);
   if (episode) return { devotional, episode };

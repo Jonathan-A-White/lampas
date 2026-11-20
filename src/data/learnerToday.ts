@@ -1,13 +1,13 @@
 // src/data/learnerToday.ts — the request's `today` (mw-5r3p30.731, docs/ask-tutor.md 'Today'): the items behind the Reader's chip 'Today · 2 of 9', each with its title and whether he
 // ticked it, in the order Today draws them. At most TODAY_MAX (Today holds ten at most). Missing when Today holds nothing (every Daily piece Off). The Bible talk's input schema
 // holds it; its instructions say how to use it. `done` is missing from every item while Tick boxes is Off: nothing is ticked then, and 'not done' would be a guess.
-import { DEFAULT_BACKUP, tickedDevotionals } from './daily/devotionals';
+import { DEFAULT_BACKUP, drawSourcesOf, tickedDevotionals } from './daily/devotionals';
 import { getDay, getHeard, localDate } from './daily/dailyStore';
 import { DEFAULT_ORDER, devotionalToday } from './daily/morningRephil';
 import { dayProgress, getStudyResources } from './repositories';
 import { chapterName } from '../plan/chapterName';
 import { readPlan } from '../plan/usePlan';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions';
 import { getSetting } from '../settings/store';
 import { memorizeLine, memorizeToday } from '../today/memorizeLine';
 import { todayPieces } from '../today/pieces';
@@ -51,9 +51,10 @@ export async function todayEntries(now: Date = new Date()): Promise<TodayEntry[]
     getSetting(devotionalDrawSetting),
   ]);
   const day = await getDay(localDate(now));
-  const [order, backup, study, heard] = await Promise.all([getSetting(morningRephilOrderSetting), getSetting(morningRephilBackupSetting), getStudyResources(), getHeard()]);
+  const [order, backup, study, heard, logosSource, rephilSource] = await Promise.all([getSetting(morningRephilOrderSetting), getSetting(morningRephilBackupSetting), getStudyResources(), getHeard(), getSetting(devotionalLogosSetting), getSetting(devotionalRephilSetting)]);
+  const sources = drawSourcesOf(study.on.includes('logos'), logosSource, rephilSource);
   // the devotional Today draws: none with Logos Off and a Logos book chosen, and then it has no piece (mw-r9xo1pj.6)
-  const shown = devotionalToday({ choice, ticked: tickedDevotionals(draw), date: now, pick: day.devotional, kept: day.rephil, heard, order: order ?? DEFAULT_ORDER, backup: backup ?? DEFAULT_BACKUP, logosOn: study.on.includes('logos') });
+  const shown = devotionalToday({ choice, ticked: tickedDevotionals(draw), date: now, pick: day.devotional, kept: day.rephil, heard, order: order ?? DEFAULT_ORDER, backup: backup ?? DEFAULT_BACKUP, logosOn: sources.logos, rephilOn: sources.rephil });
   const pieces = todayPieces({ review, plan, psalms, devotional, memorize }, now, shown !== undefined);
   if (pieces.length === 0) return undefined;
   const items: TodayEntry[] = [];

@@ -63,8 +63,8 @@ describe('the Settings request', () => {
 
   it('is within the size a request may weigh with a full history left to cut', async () => {
     const settings = await settingsForTutor();
-    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional, 4900 with Talk and Send, 5100 with the Greek dial, 5200 with How much of a table, 5400 with Chapter buttons, 5900 with When you copy's four, 6000 with the map sources' switches, 6200 with the Logos Atlas's, 6400 with Which languages? and How much Hebrew?, 7000 with the Pronunciation family, its switch, Hebrew pronunciation, voice, speed and keyboard, 7200 with IPA lesson, 7400 with Variants and Witnesses, 7600 with English from the 2026 Greek, 7800 with Show manuscript gaps, 8100 with the five sermon sources, 8900 with the Bible voice, 9500 with the six sermon sources of batch 3, the room for ten more and Morning RePhil order): fitHistory cuts the history to make room
-    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(9500);
+    // raised with each setting the tutor is told (3200, 3500 with the English accent, 3700 with Handwriting drills, 3800 with Reading plan, 3950 with Font, 4600 with Daily's seven, 4800 with Today's devotional, 4900 with Talk and Send, 5100 with the Greek dial, 5200 with How much of a table, 5400 with Chapter buttons, 5900 with When you copy's four, 6000 with the map sources' switches, 6200 with the Logos Atlas's, 6400 with Which languages? and How much Hebrew?, 7000 with the Pronunciation family, its switch, Hebrew pronunciation, voice, speed and keyboard, 7200 with IPA lesson, 7400 with Variants and Witnesses, 7600 with English from the 2026 Greek, 7800 with Show manuscript gaps, 8100 with the five sermon sources, 8900 with the Bible voice, 9500 with the six sermon sources of batch 3, the room for ten more and Morning RePhil order, 9700 with the two devotional sources): fitHistory cuts the history to make room
+    expect(new TextEncoder().encode(JSON.stringify({ name: 'Settings', facts: [], settings })).length).toBeLessThan(9700);
   });
 });
 
@@ -85,7 +85,8 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
   async function settingsRequest(turns: { q: string; a: string }[], note = 'n'.repeat(500)): Promise<TalkRequest> {
     const settings = await settingsForTutor();
     const scope: TalkScope = { title: 'Settings', chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: 'Settings', facts: [], settings }) };
-    const values = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`setting${i}`, 'value']));
+    // three app-setting values, not ten (mw-r9xo1pj.4): the two devotional source switches took the 180 bytes the fixture had left under the cap, so each setting added makes this fixture give a value up
+    const values = Object.fromEntries(Array.from({ length: 3 }, (_, i) => [`setting${i}`, 'value']));
     const resources = Array.from({ length: 6 }, (_, i) => ({ name: `Resource ${i}`, kind: 'lexicon', url: `https://example.org/${i}` })) as never;
     const memory = { index: 'He reads on his phone.', notes: [{ name: 'book:Romans', text: note }, { name: 'topic:goal', text: note }] };
     const requests = Array.from({ length: 4 }, (_, i) => ({ summary: `Idea ${i} ${'s'.repeat(150)}`, status: 'sent' })) as never;

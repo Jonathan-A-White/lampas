@@ -32,6 +32,7 @@ import { audibleChapterLabel, audibleListen, audioBibleOf } from '../resources/a
 import { armFallback } from '../resources/openApp';
 import { HeaderButton, ScreenHeader } from '../ScreenHeader';
 import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, audioBibleSetting, devotionalDrawSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions';
+import { useDrawSources } from '../settings/devotionalSources';
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';
 import { useReportScreen } from '../tutor/screenContext';
@@ -370,7 +371,8 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
   const choice = useSetting(devotionalSetting);
   const draw = useSetting(devotionalDrawSetting);
   const order = useSetting(morningRephilOrderSetting) ?? DEFAULT_ORDER;
-  if (choice === undefined || draw === undefined) return null;
+  const sources = useDrawSources();
+  if (choice === undefined || draw === undefined || sources === undefined) return null;
   const ticked = tickedDevotionals(draw);
   const rephil = hasUnheard(heard);
   const { devotional } = shown;
@@ -383,7 +385,7 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
           <RephilEpisode ticks={ticks} episode={shown.episode} heard={heard} choice={choice} order={order} />
           {choice === RANDOM ? (
             <li className="px-2 pb-1">
-              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil))} className={ACTION}>
+              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil, sources))} className={ACTION}>
                 Another devotional
               </button>
             </li>
@@ -403,7 +405,7 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
           </a>
           {choice === RANDOM && !shown.backup ? (
             <div className="px-2 pb-1">
-              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil))} className={ACTION}>
+              <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil, sources))} className={ACTION}>
                 Another
               </button>
             </div>
@@ -477,6 +479,7 @@ export function Today() {
   const plan = useSetting(dailyPlanSetting);
   const kept = { psalms: useSetting(dailyPsalmsSetting), devotional: useSetting(dailyDevotionalSetting) };
   const logosOn = useLogosOn();
+  const sources = useDrawSources();
   const psalms = kept.psalms;
   const tickBoxes = useSetting(dailyTicksSetting);
   const day = useLiveQuery(() => getDay(date), [date]);
@@ -487,10 +490,10 @@ export function Today() {
   const rephilBackup = useSetting(morningRephilBackupSetting) ?? DEFAULT_BACKUP;
   // the devotional is a Logos book (drawn only while Logos is On, what he set is kept; mw-rfjjzd.23) or Morning RePhil, a web page that needs no Logos (mw-r9xo1pj.2). The Psalms and Proverbs read in Lampas, so Logos does not govern them
   const todays =
-    devotionalChoice === undefined || devotionalDraw === undefined || logosOn === undefined || day === undefined || heard === undefined
+    devotionalChoice === undefined || devotionalDraw === undefined || sources === undefined || day === undefined || heard === undefined
       ? undefined
-      : devotionalToday({ choice: devotionalChoice, ticked: tickedDevotionals(devotionalDraw), date: today, pick: day.devotional, kept: day.rephil, heard, order: rephilOrder, backup: rephilBackup, logosOn });
-  const devotionalRead = kept.devotional !== undefined && devotionalChoice !== undefined && devotionalDraw !== undefined && logosOn !== undefined && day !== undefined && heard !== undefined;
+      : devotionalToday({ choice: devotionalChoice, ticked: tickedDevotionals(devotionalDraw), date: today, pick: day.devotional, kept: day.rephil, heard, order: rephilOrder, backup: rephilBackup, logosOn: sources.logos, rephilOn: sources.rephil });
+  const devotionalRead = kept.devotional !== undefined && devotionalChoice !== undefined && devotionalDraw !== undefined && sources !== undefined && day !== undefined && heard !== undefined;
   const devotional = !devotionalRead ? undefined : todays === undefined ? 'off' : kept.devotional;
   const scrollRef = useScrollMemory('today');
   const shown = [review, memorize, plan, psalms, devotional];

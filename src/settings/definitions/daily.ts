@@ -90,6 +90,29 @@ export const devotionalDrawSetting = defineSetting<string>({
   dependsOn: logosRandom,
 });
 
+/** Devotional sources (mw-r9xo1pj.4): one On/Off per source of devotionals. Which devotional lists, and Random and Another draw, only from the sources that are On (src/data/daily/devotionals.ts drawPool).
+ *  'Logos devotionals' shows only while Logos is On: with Logos Off no Logos devotional is drawn at all. */
+export const devotionalLogosSetting = defineSetting<DailySwitch>({
+  key: 'devotionalLogos',
+  default: 'on',
+  allowed: ON_OFF,
+  section: 'devotionalSources',
+  label: 'Logos devotionals',
+  hint: 'Those in Logos.',
+  help: 'Whether Which devotional lists, and Random and Another draw, the devotionals that are On in Your Logos library. Off: none of them is listed or drawn, and Morning RePhil still is. It shows only while Logos is On; with Logos Off none is drawn.',
+  dependsOn: { key: 'resource.logos', shown: (value) => value === 'on' },
+});
+
+export const devotionalRephilSetting = defineSetting<DailySwitch>({
+  key: 'devotionalRephil',
+  default: 'on',
+  allowed: ON_OFF,
+  section: 'devotionalSources',
+  label: 'Brookfield First',
+  hint: 'Morning RePhil.',
+  help: "Whether Which devotional lists, and Random and Another draw, Morning RePhil, the Brookfield First church's devotional (an episode he has not heard, from its web page). Off: it is not listed or drawn.",
+});
+
 export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
   key: 'morningRephilOrder',
   default: DEFAULT_ORDER,
