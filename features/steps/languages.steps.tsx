@@ -4,6 +4,7 @@ import { render, screen, cleanup, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
+import Dexie from 'dexie';
 import { App } from '../../src/App';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
@@ -28,6 +29,10 @@ import { closeDatabase } from './close-database';
 
 const user = userEvent.setup();
 
+// The step that puts both dials back in the scenario 'English only hides both dials ...' takes 9-10 s on a calm host (Greek at Learning and Hebrew at Reading in Hebrew bring a run of writes, each
+// re-read by every live query drawn) and the step before it 4-5 s: a full-suite run on a loaded host multiplies that toward the preset's 40 s (mw-ar5k42b.36).
+vi.setConfig({ testTimeout: 90_000 });
+
 // jsdom draws no layout and has no scrollIntoView
 Element.prototype.scrollIntoView = function scrollIntoView() {};
 
@@ -40,6 +45,7 @@ afterAll(async () => {
 
 async function openOnNewPhone(): Promise<void> {
   cleanup();
+  vi.restoreAllMocks();
   clearBus();
   forgetTrail();
   localStorage.clear();
@@ -148,6 +154,20 @@ async function toHome(): Promise<void> {
   await findGroup('Which languages?');
 }
 
+/** How long the Settings home's re-read of what the dials brought is held (holdHomeReads). */
+const HOME_READ_MS = 2500;
+
+/**
+ * The read of 'Set each language on its own' (a key only the Settings home's list of values reads while a page is not open; db.settings.get answers late) is made at once and answers
+ * HOME_READ_MS later, as a loaded host holds it: the home still lists the groups of the choice before, while Which languages? (read key by key, and quicker) already shows the new one
+ * (mw-ar5k42b.36). The hold is put on the spy this file's next openOnNewPhone replaces: it is undone by vi.restoreAllMocks in openOnNewPhone.
+ */
+async function holdHomeReads(): Promise<void> {
+  const get = db.settings.get.bind(db.settings) as (key: unknown) => Promise<unknown>;
+  vi.spyOn(db.settings, 'get').mockImplementation(((key: unknown) =>
+    get(key).then((row) => (key === 'pronunciationSeparate' ? new Dexie.Promise((resolve) => setTimeout(() => resolve(row), HOME_READ_MS)) : row))) as unknown as typeof db.settings.get);
+}
+
 const feature = await loadFeature('features/languages.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -194,14 +214,19 @@ describeFeature(feature, ({ Scenario }) => {
     await toHome();
     await waitFor(() => expect(groupButtons().filter((t) => t.startsWith(title))).toEqual([]));
   };
-  const pageHas = async (_: unknown, title: string, name: string): Promise<void> => {
+  /** Opens the page `title` from the Settings home. The home lists its groups from values it reads after the dials move, later than Which languages? shows the choice (a loaded host
+   * holds that read): the list may still be the one of the choice before, so the step waits for the group to be listed, not asks for its button the moment the list is drawn (mw-ar5k42b.36). */
+  const openPage = async (title: string): Promise<void> => {
     await toHome();
+    await waitFor(() => expect(groupButtons().filter((t) => t.startsWith(title)), `the Settings home lists ${title}: ${groupButtons().join(' | ')}`).not.toEqual([]));
     await openSettingsGroup(user, title === 'Learning' ? 'greek' : 'listening');
+  };
+  const pageHas = async (_: unknown, title: string, name: string): Promise<void> => {
+    await openPage(title);
     await waitFor(() => expect(rowDrawn(name), name).toBe(true));
   };
   const pageHasNo = async (_: unknown, title: string, name: string): Promise<void> => {
-    await toHome();
-    await openSettingsGroup(user, title === 'Learning' ? 'greek' : 'listening');
+    await openPage(title);
     await waitFor(() => expect(rowDrawn(name), name).toBe(false));
   };
 
@@ -240,6 +265,13 @@ describeFeature(feature, ({ Scenario }) => {
     And('Settings draws no dial {string}', noDialNamed);
     And('the {string} page draws {string}', pageHas);
     And('the {string} page draws no {string}', pageHasNo);
+  });
+
+  Scenario('A page opened straight after the choice waits for the Settings home to list it', ({ Given, When, Then, And }) => {
+    Given(GIVEN, openOnNewPhone);
+    And('the Settings home is slow to read what he chose', holdHomeReads);
+    When('he chooses {string} under Which languages?', chooses);
+    Then('the {string} page draws {string}', pageHas);
   });
 
   Scenario('Choosing Greek and Hebrew shows both dials', ({ Given, When, Then, And }) => {
