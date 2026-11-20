@@ -19,9 +19,10 @@ import { wordAtPoint } from './tappedWord';
 import { Tap, TAP_PAD } from './Tap';
 import { linesShown } from './poetryText';
 import type { PoetryLineSpan } from '../data/poetry';
+import { EnglishText } from './YouMark';
 import { chunkShown, gapText, septuagintChunkLinked, septuagintVerseView, withoutMarks } from './septuagint';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
-function SuppliedText({ chunk, gaps }: { chunk: EnglishChunk; gaps?: boolean }) {
+function SuppliedText({ chunk, gaps, still }: { chunk: EnglishChunk; gaps?: boolean; still?: boolean }) {
   return (
     <>
       {englishRuns(chunk).map((run, i) => (
@@ -29,10 +30,10 @@ function SuppliedText({ chunk, gaps }: { chunk: EnglishChunk; gaps?: boolean }) 
           {i > 0 ? ' ' : ''}
           {run.supplied ? (
             <i data-supplied className="italic">
-              {chunkShown(run.text, gaps)}
+              <EnglishText text={run.text} gaps={gaps} still={still} />
             </i>
           ) : (
-            chunkShown(run.text, gaps)
+            <EnglishText text={run.text} gaps={gaps} still={still} />
           )}
         </Fragment>
       ))}
@@ -363,7 +364,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
                       <span className="inline-flex flex-col items-center align-top leading-tight">
                         <span data-greek>{words(true)}</span>
                         <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
-                          {chunkShown(c.t, gaps)}
+                          <EnglishText text={c.t} gaps={gaps} still={still} />
                         </Tap>
                       </span>
                       {/* the space after the chunk stands outside the stack: inside it, at the end of the Greek line, it collapses (mw-5r3p30.991) */}
@@ -405,7 +406,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
                   <span className="inline-flex flex-col items-center align-top leading-tight">
                     <span data-greek>{weft.words.map((w) => w.t).join(' ')}</span>
                     <span data-hint lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted">
-                      {chunkShown(c.t, gaps)}
+                      <EnglishText text={c.t} gaps={gaps} still={still} />
                     </span>
                   </span>
                 ) : (
@@ -416,7 +417,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
               <Fragment key={i}>
                 {known()}
                 <Tap bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
-                  {c.s ? <SuppliedText chunk={c} gaps={gaps} /> : chunkShown(c.t, gaps)}
+                  {c.s ? <SuppliedText chunk={c} gaps={gaps} still={still} /> : <EnglishText text={c.t} gaps={gaps} still={still} />}
                 </Tap>
               </Fragment>
             ) }, ...braces];
