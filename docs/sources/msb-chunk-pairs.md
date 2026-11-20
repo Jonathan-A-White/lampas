@@ -99,3 +99,12 @@ The few the rule still gets wrong are the table's own: a `. . .` word whose Engl
 
 A slip of the SOURCE is not a join the build can read: Isaiah 33:8 'and human life is disregarded.' (לֹא חָשַׁב אֱנוֹשׁ) has 'and human life' on לֹא, 'is disregarded' on חָשַׁב and `. . .` on אֱנוֹשׁ. `PAIRING_FIXES` in `scripts/data-build-ot.ts`
 trades the English of לֹא and אֱנוֹשׁ for that verse, as `ALIGNMENT_FIXES` does for 1 John 2:6. Finding others means reading chunks against the Hebrew; there is no check for it yet.
+
+## The Old Testament's '. . .' words that wait for the chunk after (mw-fnvjof.17.210)
+
+The Old Testament table has 16,431 '. . .' rows; the build joins each to the chunk before it (above). `markWaitingByGloss` (scripts/data-build-ot.ts) makes a word wait for the chunk AFTER when its lexicon gloss is in the English of
+the next row and not in the one before, and the one before holds no digit: 156 words matched, 29 of them numerals ('105' [שָׁנִים] 'years old,'), which are right as joined and are left; the other 127 (126 verses) were read in full
+and are right as waiting ('as compensation for [עֵינוֹ] the eye.', 'of Your fame [לֵאמֹר] will say,', 'In the twenty-seventh [שָׁנָה] year'). `npm run pairing:sweep -- --dots` lists them with the English before and after.
+The rest are not decided by a rule: the 'next' kind (the Hebrew word beside the '. . .' word owns the chunk after and the one before is not beside it, the Genesis 21:11 shape, `אֶל־ ... the serpent`) numbers 436 rows,
+22 of them read (every 20th), none that I would move; Genesis 21:11 (no English for 'in the eyes of' at all) stays named in PAIRING_FIXES. A gloss that never matches because the English inflects it ('sees' for 'see') is not found: the sweep errs towards leaving a word before.
+`npm run pairing:sweep -- --glosses` (two chunks that hold each other's gloss) finds 10 verses, all read right (Hebrew parallelism rendered by near synonyms; MISPLACED_READ_RIGHT), and 24 of the 341 verses a looser form of it finds were read: none a swap.

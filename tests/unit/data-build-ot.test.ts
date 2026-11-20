@@ -11,8 +11,8 @@ import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 import { runBuild } from '../../scripts/data-build';
 import { checkHeader } from '../../scripts/data/bereanTable';
 import { cleanHebrewGloss, parseTbes } from '../../scripts/data/tbes';
-import { BSB_FILE, OT_EXPECTED_HEADER, TBESH_FILE, addSpellings, buildOt, changedPairings, fixPairing, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
-import { wordGloss, type BookIndex, type Chapter } from '../../src/data/chapter';
+import { BSB_FILE, MISPLACED_READ_RIGHT, OT_EXPECTED_HEADER, TBESH_FILE, addSpellings, buildOt, changedPairings, dotsRows, fixPairing, markWaitingByGloss, misplacedChunks, otLexicon, runBuildOt, type BuiltChapter } from '../../scripts/data-build-ot';
+import { wordGloss, type BookIndex, type Chapter, type Verse } from '../../src/data/chapter';
 import type { FrequencyEntry } from '../../src/data/frequency';
 import type { LemmaLexicon } from '../../src/data/lexicon';
 
@@ -424,5 +424,69 @@ describe('the build says how far a change of pairing reached (mw-fnvjof.17.161)'
   it('a pairing fix whose words the verse lacks stops the build, naming the verse', () => {
     expect(() => fixPairing('Isaiah', 33, 8, [])).toThrow(/Isaiah 33:8: the pairing fix names H3808/);
     expect(() => fixPairing('Isaiah', 33, 9, [])).not.toThrow();
+  });
+});
+
+// mw-fnvjof.17.210: a '. . .' word whose gloss is in the chunk after it and not in the one before waits for that chunk (markWaitingByGloss). tests/fixtures/data/bsb_waits_gloss.tsv has the rows of the real table for
+// Exodus 21:26 ('as compensation for' [תַּחַת, עֵינוֹ '. . .'] 'the eye.' [עַיִן]) and Genesis 5:6 ('105' with שָׁנִים '. . .', then 'years old,'), tbesh_waits_gloss.txt their numbers' lines.
+describe("a '. . .' word whose gloss is in the chunk after it (mw-fnvjof.17.210)", () => {
+  const waitsLex = otLexicon(readFileSync('tests/fixtures/data/tbesh_waits_gloss.txt', 'utf8'));
+  const versesOf = async () => {
+    const chapters: BuiltChapter[] = [];
+    await buildOt(linesOf(readFileSync('tests/fixtures/data/bsb_waits_gloss.tsv', 'utf8')), waitsLex, (c) => void chapters.push(c));
+    return { exo: find(chapters, 'exo/21.json').verses.find((v) => v.n === 26)!, gen: find(chapters, 'gen/5.json').verses.find((v) => v.n === 6)! };
+  };
+  const strongsOf = (verse: Verse, text: string): string[] => {
+    const chunk = verse.e.find((c) => c.t === text);
+    if (!chunk) throw new Error(`no chunk ${text}: ${verse.e.map((c) => c.t).join(' | ')}`);
+    return chunk.g.map((i) => verse.g[i].s);
+  };
+
+  it('"the eye." holds both עַיִן words, and "as compensation for" holds תַּחַת alone', async () => {
+    const { exo } = await versesOf();
+    expect(strongsOf(exo, 'the eye.')).toEqual(['H5869', 'H5869']);
+    expect(strongsOf(exo, 'as compensation for')).toEqual(['H8478']);
+  });
+  it('a numeral before it leaves it there: "105" keeps שָׁנִים, "years old," holds שָׁנָה alone', async () => {
+    const { gen } = await versesOf();
+    expect(strongsOf(gen, '105')).toContain('H8141');
+    expect(strongsOf(gen, 'years old,')).toEqual(['H8141']);
+  });
+  it('markWaitingByGloss marks the word and says how many; a second call marks none', () => {
+    const word = (over: object) => ({ sourceSort: 1, englishSort: 1, text: 'x', translit: '', parse: '', strongs: 'H1', english: '', begQ: '', tail: '', par: '', note: '', ...over });
+    const words = [word({ sourceSort: 1, englishSort: 1, english: 'for' }), word({ sourceSort: 2, englishSort: 2, english: '. . .', strongs: 'H5869' }), word({ sourceSort: 3, englishSort: 3, english: 'the eye.' })];
+    const gloss = (s: string) => (s === 'H5869' ? 'eye' : '');
+    expect(markWaitingByGloss(words, gloss)).toBe(1);
+    expect(words[1].waits).toBe(true);
+    expect(markWaitingByGloss(words, gloss)).toBe(0);
+    const other = [words[0], { ...words[1], waits: undefined }, { ...words[2], english: 'the tooth.' }];
+    expect(markWaitingByGloss(other, gloss)).toBe(0);
+  });
+  it('dotsRows lists the waiting word with the English before and after it, and the Genesis 21:11 shape still joined before', () => {
+    const word = (over: object) => ({ sourceSort: 1, englishSort: 1, text: 'x', translit: '', parse: '', strongs: 'H1', english: '', begQ: '', tail: '', par: '', note: '', ...over });
+    const words = [word({ sourceSort: 1, englishSort: 1, english: 'for', text: 'a' }), word({ sourceSort: 2, englishSort: 2, english: '. . .', strongs: 'H5869', text: 'b', waits: true }), word({ sourceSort: 3, englishSort: 3, english: 'the eye.', text: 'c' })];
+    expect(dotsRows('Exodus 21:26', words, () => 'eye').map((r) => [r.kind, r.before, r.after])).toEqual([['waits', 'for', 'the eye.']]);
+    // Genesis 21:11: 'distressed' (Hebrew word 1) 'greatly' (2) then the '. . .' word (3) and 'Abraham' (4) in the Hebrew; in English 'distressed', the '. . .', 'Abraham', 'greatly'
+    const same = [word({ sourceSort: 1, englishSort: 1, english: 'distressed' }), word({ sourceSort: 2, englishSort: 4, english: 'greatly' }), word({ sourceSort: 3, englishSort: 2, english: '. . .' }), word({ sourceSort: 4, englishSort: 3, english: 'Abraham' })];
+    expect(dotsRows('Genesis 21:11', same, () => '').map((r) => [r.kind, r.before, r.after])).toEqual([['next', 'distressed', 'Abraham']]);
+  });
+});
+
+describe('two chunks that sit on each other\'s Hebrew word (mw-fnvjof.17.210, npm run pairing:sweep -- --glosses)', () => {
+  const glosses: Record<string, string> = { H1: 'to look', H2: 'house' };
+  const verse = (a: string, b: string): Verse => ({
+    n: 1,
+    g: [{ t: 'a', tr: '', s: 'H1', l: 'a', p: 'V-Qal', e: 0 }, { t: 'b', tr: '', s: 'H2', l: 'b', p: 'N-ms', e: 1 }],
+    e: [{ t: a, g: [0] }, { t: b, g: [1] }],
+  } as unknown as Verse);
+  it('finds two words whose English is on each other', () => {
+    expect(misplacedChunks('Test 1:1', verse('the house', 'he looks'), (s) => glosses[s]).map((m) => m.strongs)).toEqual(['H1', 'H2']);
+  });
+  it('finds nothing where each chunk holds its own word', () => {
+    expect(misplacedChunks('Test 1:1', verse('he looks', 'the house'), (s) => glosses[s])).toEqual([]);
+  });
+  it('the verses read and found right are named, and none is Isaiah 33:8 (fixed in PAIRING_FIXES)', () => {
+    expect(MISPLACED_READ_RIGHT.has('Psalms 78:1')).toBe(true);
+    expect(MISPLACED_READ_RIGHT.has('Isaiah 33:8')).toBe(false);
   });
 });

@@ -29,6 +29,7 @@
     "drill:build": "tsx scripts/drill-build.ts",
     "data:build:lxx": "tsx scripts/data-build-lxx.ts",
     "data:build:ot": "tsx scripts/data-build-ot.ts",
+    "pairing:sweep": "tsx scripts/pairing-sweep.ts",
     "data:verses": "tsx scripts/verses-build.ts",
     "lxx:article-gender": "tsx scripts/lxx/article-gender.ts",
     "lxx:align": "tsx scripts/lxx/align.ts",
