@@ -15,6 +15,7 @@ import { forgetServiceSources } from '../../src/sermons';
 import { setKnownSermonSources } from '../../src/sermons/known';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { setSermonsUrl, type ServiceHit, type ServiceSermon } from '../../src/services/sermons';
+import { findButton } from '../../tests/support/find-button';
 import { forgetGrownSermonRows } from '../../tests/support/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
@@ -161,8 +162,9 @@ const searchField = async () => within(await sheetEl()).findByRole('searchbox', 
 
 async function tapVerseAndDoor(): Promise<void> {
   await user.click(await screen.findByRole('button', { name: 'Verse 8', exact: true }));
-  const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(await within(view).findByRole('button', { name: 'Sermons · 4' }));
+  await screen.findByRole('region', { name: 'Verse view' });
+  // findButton, not a role query: the Verse view holds the chapter's chunk buttons, and findByRole works out each one's name at every poll (mw-indx1x6.118)
+  await user.click(await findButton('Sermons · 4'));
 }
 
 const feature = await loadFeature('features/sermons-online.feature');
@@ -174,7 +176,7 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapDoor = async (_: unknown, label: string) => {
-    await user.click(await within(screen.getByRole('region', { name: 'Verse view' })).findByRole('button', { name: label }));
+    await user.click(await findButton(label));
   };
   const headed = async (_: unknown, title: string) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));
