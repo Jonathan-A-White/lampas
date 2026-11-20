@@ -472,3 +472,12 @@ def test_a_second_of_the_played_through_clock_moves_by_what_was_lost_before_it()
 def test_a_file_the_browser_would_not_seek_by_bytes_stops_the_run(tmp_path):
     with pytest.raises(align.Stop, match='Xing'):
         align.decode(piece(tmp_path, 'xing.mp3', [(0.3, None), (0.6, -20), (0.3, None)], xing=True))
+
+
+def test_a_long_sound_before_the_quiet_the_next_first_letter_begins_at_is_in_neither_verse():  # 1 Kings 13:26 (mw-zbgo4ep.60)
+    # the longest quiet (0.4 s) comes first, then 0.32 s of sound that is no word of either verse, then a shorter quiet (0.15 s) the aligner's first letter of verse 2
+    # begins at the end of: the start is in the LAST quiet, the sound is in neither verse
+    parts = [(0.5, None), (1.0, -20), (0.4, None), (0.32, -20), (0.15, None), (1.0, -20), (0.5, None)]
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'when the')], {1: [0.6, 1.4], 2: [2.37, 3.1]}, SLOP)
+    assert near(cut['verses'][0][2], 1.60)
+    assert near(cut['verses'][1][1], 2.37 - 0.05)
