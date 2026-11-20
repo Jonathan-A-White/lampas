@@ -133,9 +133,9 @@ const goesOn = async (sound: Sound): Promise<void> => {
   if (sound === 'the passage player') expect(getPassagePlayer().state).toBe('playing');
 };
 
-/** 'Sorry, I did not get that' is said, and said to its end. */
+/** 'Sorry, I did not get that' is said with the words it heard (mw-rl10piw.44), and said to its end. */
 async function sorrySaid(): Promise<void> {
-  await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Sorry, I did not get that'), { timeout });
+  await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Sorry, I did not get that, I heard "banana"'), { timeout });
   synth.finish();
 }
 

@@ -11,6 +11,7 @@ import { forgetChapters, type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
+import { questionAfterAsk } from '../../src/handsFree/ask';
 import { HELP_LINES, HELP_SPOKEN, SPOKEN_COMMANDS } from '../../src/handsFree/commands';
 import { handsFreeSeam, resetHandsFree, runHandsFree } from '../../src/handsFree/session';
 import { cardOf } from '../../src/markdown/verseLinks';
@@ -309,5 +310,65 @@ describe('help', () => {
       await vi.waitFor(() => expect(wake.listening).toBe(true), { timeout });
     }
     for (const word of ['play', 'pause', 'stop', 'read John 3', 'next chapter', 'previous chapter', 'ask']) expect(HELP_SPOKEN).toContain(word);
+  });
+});
+
+// mw-rl10piw.44: 'please read Proverbs 2 to me' in one breath did nothing: the words around the command ('please', 'to me', 'for me', 'read me') are filler, and words it cannot act on are said back
+describe('filler words around a command', () => {
+  it.each([
+    'read Proverbs 2',
+    'please read Proverbs 2',
+    'please read Proverbs chapter 2',
+    'read me Proverbs 2',
+    'please read Proverbs 2 to me',
+    'read Proverbs 2 for me',
+    'please read me Proverbs chapter two for me please',
+    'could you please read Proverbs 2 to me',
+    'can you read Proverbs 2 for me',
+  ])("'%s' says Proverbs 2 and asks the Reader to read it from verse 1", async (words) => {
+    const recogniser = await wakeUp();
+    await says(recogniser, words);
+    await saidAloud('Proverbs 2');
+    expect(readerOf(window.location.hash)).toMatchObject({ book: 'pro', chapter: 2 });
+    expect(pendingRead('pro', 2)).toMatchObject({ verse: 1 });
+  });
+
+  it.each([
+    ['go to John 3 16 for me', 'John 3, verse 16', 'jhn', 3, 16],
+    ['please open John 3 to me', 'John 3', 'jhn', 3, 1],
+    ['please red john three for me', 'John 3', 'jhn', 3, 1],
+  ])("'%s' is read as the place it names", async (words, said, book, chapter, verse) => {
+    const recogniser = await wakeUp();
+    await says(recogniser, words);
+    await saidAloud(said);
+    expect(pendingRead(book, chapter)).toMatchObject({ verse });
+  });
+
+  it.each([
+    ['please next chapter for me', 'There is no next chapter'],
+    ['please go back a chapter to me', 'There is no chapter before this'],
+  ])("'%s' is the chapter command it names", async (words, said) => {
+    const recogniser = await wakeUp();
+    readerOn(said.includes('next') ? 'rev' : 'gen', said.includes('next') ? 22 : 1);
+    await says(recogniser, words);
+    await saidAloud(said);
+  });
+
+  it.each(['please pause for me', 'please stop reading for me', 'please back a verse for me', 'please help me', 'please play for me'])("'%s' is not words it did not get", async (words) => {
+    await play("the phone's voice", 5);
+    const recogniser = await wakeUp();
+    await says(recogniser, words);
+    await vi.waitFor(() => expect(wake.listening).toBe(true), { timeout });
+    expect(synth.spoken.map((s) => s.text).filter((t) => t.startsWith('Sorry'))).toEqual([]);
+  });
+
+  it("keeps 'for me' in a question put to the tutor", () => {
+    expect(questionAfterAsk('please ask what is grace for me')).toBe('what is grace for me');
+  });
+
+  it("words it cannot act on are said back: 'two to me' is said back as what it heard", async () => {
+    const recogniser = await wakeUp();
+    await says(recogniser, 'two to me');
+    await saidAloud('Sorry, I did not get that, I heard "two to me"');
   });
 });

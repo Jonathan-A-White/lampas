@@ -34,7 +34,7 @@ Feature: Hands-free listens: 'Hey Lampas', a chime, his words to the end of his 
     And John 1 is being read aloud at verse 2
     When he says the wake word
     And he says "banana" and is quiet for 1.5 seconds
-    Then the phone says "Sorry, I did not get that" in English
+    Then the phone says 'Sorry, I did not get that, I heard "banana"' in English
     When the phone has said it
     Then the reading goes on at verse 2
 
