@@ -51,6 +51,18 @@ async function begin(verse: string, step: number): Promise<void> {
 }
 
 const verse = () => screen.getByTestId('memorize-verse');
+const shownWords = () => [...verse().querySelectorAll('[data-token]:not([data-blank])')].map((t) => t.textContent ?? '');
+
+/** Holds the bar and says `words`, then lets go. */
+async function holdAndSay(words: string): Promise<void> {
+  const before = FakeRecognizer.instances.length;
+  fireEvent.pointerDown(await screen.findByRole('button', { name: /Hold to say it/ }), { pointerId: 1, clientX: 10, clientY: 10 });
+  await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before));
+  const recogniser = FakeRecognizer.last();
+  recogniser.open();
+  recogniser.say([result(words, false)]);
+  fireEvent.pointerUp(await screen.findByRole('button', { name: /Release|Say it|Hold to say it|talk/i }), { pointerId: 1, clientX: 10, clientY: 10 });
+}
 const text = (t: string) => screen.getByText(new RegExp(t));
 
 const feature = await loadFeature('features/memorize-session.feature');
@@ -122,6 +134,51 @@ describeFeature(feature, ({ Scenario }) => {
       const [recall] = await recallsOf(ref, 'en');
       expect(recall.how).toBe('said');
       expect(recall.score).toBeCloseTo(score);
+    });
+  });
+
+  Scenario('A long passage is learned in pieces, one commandment at a time, and then joined', ({ Given, When, Then, And }) => {
+    Given('the passage {string} is new in English', (_, v: string) => begin(v, 0));
+    opens(When);
+    Then('the session offers {string} as piece {int} of {int}', async (_, heading: string, piece: number, of: number) => {
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(heading);
+      expect(text(`Piece ${piece} of ${of} · English`)).toBeTruthy();
+    });
+    And('only the words of verses {int} and {int} are shown', (_, first: number, last: number) => {
+      expect(first).toBe(1);
+      expect(last).toBe(2);
+      // Exodus 20:1-2: 'And God spoke all these words, saying: I am the LORD your God, who brought you out of the land of Egypt, out of the house of slavery.'
+      const words = shownWords();
+      expect(words.slice(0, 3)).toEqual(['And', 'God', 'spoke']);
+      expect(words.join(' ')).toContain('out of the house of slavery.');
+      expect(words.length).toBeLessThan(40);
+    });
+    When('I say each piece in turn and go on', async () => {
+      for (let piece = 1; piece <= 11; piece++) {
+        await screen.findByText(new RegExp(`Piece ${piece} of 11`));
+        await holdAndSay(shownWords().join(' '));
+        await screen.findByTestId('judgement');
+        fireEvent.click(await screen.findByRole('button', { name: piece === 11 ? 'Join the pieces' : 'Next piece' }));
+        await waitFor(() => expect(screen.queryByTestId('judgement')).toBeNull());
+      }
+    });
+    Then('the session offers {string} with all {int} pieces together', (_, heading: string, count: number) => {
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(heading);
+      expect(text(`All ${count} pieces together · English`)).toBeTruthy();
+    });
+    And('every word of the passage is shown', () => {
+      expect(verse().querySelectorAll('[data-blank]')).toHaveLength(0);
+      expect(shownWords().length).toBeGreaterThan(200);
+    });
+    When('I hold the bar and say the whole passage', async () => {
+      await holdAndSay(shownWords().join(' '));
+    });
+    Then('the judgement starts with {string}', async (_, words: string) => {
+      expect((await screen.findByTestId('judgement')).textContent).toMatch(new RegExp(`^${words}`));
+    });
+    And('the passage has one recall kept, on its one schedule row', async () => {
+      expect(await recallsOf(ref, 'en')).toHaveLength(1);
+      expect(await db.reviews.where('kind').equals('verse').count()).toBe(1);
     });
   });
 });

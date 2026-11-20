@@ -29,3 +29,15 @@ Feature: A Memorize session takes me from reading a verse to saying it from noth
     And the words "fullness" and "upon" are marked
     And the session says "Due tomorrow"
     And the recall is kept as said with a score of 0.8
+
+  Scenario: A long passage is learned in pieces, one commandment at a time, and then joined
+    Given the passage "Exod.20.1-17" is new in English
+    When I open its Memorize session
+    Then the session offers "Exodus 20:1-2" as piece 1 of 11
+    And only the words of verses 1 and 2 are shown
+    When I say each piece in turn and go on
+    Then the session offers "Exodus 20:1-17" with all 11 pieces together
+    And every word of the passage is shown
+    When I hold the bar and say the whole passage
+    Then the judgement starts with "Got it"
+    And the passage has one recall kept, on its one schedule row
