@@ -83,6 +83,7 @@ REACH = 0.75  # quiet_of (the judge's proof reads the announcement's end with it
 # with more than a BLIP of sound on its far side (a stop's release is a blip; a word is not).
 STAR_QUIET = 0.2
 BLIP = 0.1
+LATE_LETTER = 0.03  # the aligner's first letter of a verse begins this close to where a quiet ends: the quiet is the one before the verse's own first sound
 # A click before a verse's first word is not the verse's first sound (mw-ar5k42b.6; John 9:40: 15 ms of sound at -46 dBFS, 60 ms of silence, then 'Some'): a sound of
 # less than CLICK with CLICK_QUIET or more of silence after it. They are the judge's TOLERANCE (a part-sound that short is the measure's own grain) and its MIN_QUIET.
 # The silence is measured AS IT PLAYS (mw-ar5k42b.25): a tag inside the file, and the frame after it, are on the seek clock and in no player's sound (THE TIME
@@ -825,6 +826,13 @@ def cut_chapter(wave, verses: list[dict], letters: dict[int, list[float]], slop:
             last = next(q for i, q in reversed(list(enumerate(found))) if q[1] - q[0] >= ms(STAR_QUIET) or i == 0 or q[0] - found[i - 1][1] > ms(BLIP))
             if first[0] > last[0]:
                 first = last = longest
+        elif at < count and last is longest:
+            # no wildcard here, but the aligner puts the next verse's first letter at the end of a LATER quiet than the longest, with more than a BLIP of sound
+            # between them: that sound is no word of the verse after (1 Kings 13:26: 0.32 s of 'HOM' before 'When'), nor of the one before; the verse after starts
+            # from that later quiet and the one before ends in the longest. Only where the letter is there (LATE_LETTER) is a sound before a quiet not a first word.
+            later = [q for q in found if q[0] > longest[0] and abs(q[1] - hi) <= ms(LATE_LETTER) and q[0] - longest[1] > ms(BLIP)]
+            if later:
+                last = later[-1]
         if at == 0:
             first = last  # before the first verse: what is spoken before its quiet is the announcement
         if at == count:
