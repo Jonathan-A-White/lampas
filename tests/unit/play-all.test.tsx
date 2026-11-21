@@ -2,6 +2,7 @@
 // passage player; an Old Testament one is read in English like the rest; the bar says 'Reading <reference> · k of N' and has Pause/Play and Stop; leaving the screen stops it.
 // The engine is the honest fake on a manual clock.
 import 'fake-indexeddb/auto';
+import { readFileSync } from 'node:fs';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -36,6 +37,15 @@ afterEach(() => {
   stopReading();
   vi.unstubAllGlobals();
 });
+
+const englishOfJudges = (chapter: number, verse: number): string =>
+  (JSON.parse(readFileSync(`public/data/jdg/${chapter}.json`, 'utf8')) as { verses: { n: number; e: { t: string }[] }[] }).verses
+    .find((v) => v.n === verse)!
+    .e.map((c) => c.t)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 40);
 
 const bar = () => screen.findByRole('status', { name: 'Playing the list' });
 const reading = (text: string) => waitFor(() => expect(screen.getByRole('status', { name: 'Playing the list' })).toHaveTextContent(text), { timeout });
@@ -116,6 +126,20 @@ describe('Play all on a verse list', () => {
     expect(getPassagePlayer().state).toBe('idle');
     expect(synth.speaking).toBe(false);
   });
+
+  it("a saved range of chapters ('Judges 1-5') and a whole chapter are read whole, not as their first verse (mw-fnvjof.18)", async () => {
+    const list = await createVerseList('Judges', ['Judg.1-5', '1Sam.8'], 1);
+    render(<VerseListScreen id={list.id} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Play all' }));
+    await reading('Reading Judges 1-5 · 1 of 2');
+    await listenUntil('Reading 1 Samuel 8 · 2 of 2');
+    // the first chapter's first verse and the last chapter's last verse were both read before the second reference began
+    const said = synth.spoken.map((s) => s.text.replace(/\s+/g, ' ')).join(' ');
+    expect(said).toContain('Judges 1-5');
+    expect(said).toContain(englishOfJudges(1, 1));
+    expect(said).toContain(englishOfJudges(5, 31));
+    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+  }, 60_000);
 
   it('offers no Play all on a list with no references', async () => {
     const list = await createVerseList('Empty', [], 1);
