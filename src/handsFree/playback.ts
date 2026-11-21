@@ -34,7 +34,11 @@ export function takeSound(): void {
   taken = true;
 }
 
-/** When the exchange is over: goes on with what the wake paused, unless the command took the sound over or something else has meanwhile. */
+/** Whether the page is hidden (he left the app, or the screen went off): a reading is not set going then, as hiding a plain reading leaves it paused. */
+const pageHidden = (): boolean => typeof document !== 'undefined' && document.visibilityState === 'hidden';
+
+/** When the exchange is over: goes on with what the wake paused, unless the command took the sound over or something else has meanwhile, or the page is hidden (the reading stays paused,
+ * as hiding a plain reading leaves it: mw-rl10piw.46). */
 export function goOnAtClose(): void {
   const was = held;
   const aside = parked;
@@ -44,6 +48,7 @@ export function goOnAtClose(): void {
     taken = false;
     return;
   }
+  if (pageHidden()) return;
   if (was === 'reading' && aside) resumeParked(aside);
   else if (was === 'passage' && getPassagePlayer().state === 'paused') resumePassage();
   else if (was === 'reading' && getReading().status === 'paused') resumeReading();
@@ -60,8 +65,14 @@ export function parkForAnswer(): void {
   }
 }
 
-/** 'play': goes on with what is paused, whether the wake paused it or he did (on the bar, or by 'pause'). False when nothing is paused. */
+/** 'play': goes on with what is paused, whether the wake paused it or he did (on the bar, or by 'pause'). False when nothing is paused. A hidden page is not read on: what is paused
+ * stays paused (true: nothing is left for 'play' to open or start). */
 export function goOnNow(): boolean {
+  if (pageHidden() && (parked || getPassagePlayer().state === 'paused' || getReading().status === 'paused')) {
+    held = null;
+    takeSound();
+    return true;
+  }
   if (parked) {
     resumeParked(parked);
     parked = null;
