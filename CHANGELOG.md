@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.310
+_2026-11-21_
+- Fixed: Asking the tutor from a Quick test question of a two-word entry like "εἰ μή" now tells it the grammar of the word, as it does for any other word.
+
 ## 0.7.309
 _2026-11-21_
 - Fixed: The Parsing drill no longer gives σύ and ἐγώ the plural forms (ὑμῖν, ἡμῶν) when you only practise your solid words and ὑμεῖς and ἡμεῖς are still being learned.
