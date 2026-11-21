@@ -9,8 +9,9 @@
 // An input that carries no sound for QUIET_MS is marked silent and left for the next; the marks are kept until the phone's list of inputs changes (the car connects
 // or goes). When every input is silent the wake listens on the default as before. No sound is (mw-5r3p30.1231, a route need not give exact zeros):
 //  - a batch of samples that spans less than LEAST_SPAN from its lowest to its highest: exact zeros, a route's constant offset, or the least wobble of dither;
-//  - sound that stops before HEARD_MS in all: a pop as the route connects is not a live microphone;
-//  - no samples at all in QUIET_MS (a route that never connects).
+//  - sound that stops before HEARD_MS in all: a pop as the route connects is not a live microphone.
+// No samples at all in QUIET_MS is told in the log and the input is kept: a route that carries nothing still gives zeros (a muted track plays silence into the
+// audio graph), so no samples means the audio is not running, which no other input mends (and the e2e specs' fake wake is handed no samples at all).
 // Everything it does goes to the wake log (wakeLog.ts): the inputs listed, each one tried and what it gave, where it settled, and every REPORT_MS what it hears
 // there with the wake model's best score; a line also goes to the console ("Hands-free: listening for 'Hey Lampas' on ...").
 import { chooseInput, type InputDevice } from 'voice-kit/composer';
@@ -154,7 +155,7 @@ function watchForSilence(quietMs: number, onVerdict: (verdict: Verdict) => void)
 function trackText(track: MediaStreamTrack | undefined, inputRate: number): string {
   const settings = (track?.getSettings?.() ?? {}) as MediaTrackSettings;
   const said = (value: unknown): string => (value === undefined ? '-' : String(value));
-  return `track ${said(settings.sampleRate)} Hz, ${said(settings.channelCount)} ch, echoCancellation ${said(settings.echoCancellation)}, noiseSuppression ${said(settings.noiseSuppression)}, autoGainControl ${said(settings.autoGainControl)}; the wake hears it at ${inputRate} Hz`;
+  return `track ${said(settings.sampleRate)} Hz, muted ${said(track?.muted)}, ${said(settings.channelCount)} ch, echoCancellation ${said(settings.echoCancellation)}, noiseSuppression ${said(settings.noiseSuppression)}, autoGainControl ${said(settings.autoGainControl)}; the wake hears it at ${inputRate} Hz`;
 }
 
 const errorText = (err: unknown): string => {
@@ -206,7 +207,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
     const track = stream.getAudioTracks()[0];
     const label = track?.label || name;
     let running: RunningWake | null = null;
-    let verdict: Verdict | 'stalled' | null = watch ? null : 'live';
+    let verdict: Verdict | null = watch ? null : 'live';
     const openedAt = Date.now();
     const trial = new Meter();
     const report = new Meter();
@@ -226,11 +227,10 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
       if (stopped || !running || current !== running) return;
       silentInputs.add(id);
       const seconds = ((Date.now() - openedAt) / 1000).toFixed(1);
-      const what = verdict === 'stalled' ? `gave no samples in ${seconds} s` : `gave only silence in ${seconds} s: ${levelsText(trial.take())}`;
-      logWake(`${named(label)} ${what}; trying the next input`);
+      logWake(`${named(label)} gave only silence in ${seconds} s: ${levelsText(trial.take())}; trying the next input`);
       void moveOn(running);
     };
-    const judged = (next: Verdict | 'stalled'): void => {
+    const judged = (next: Verdict): void => {
       if (verdict !== null) return;
       verdict = next;
       if (next === 'live') {
@@ -294,8 +294,12 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
         });
       }, every),
     );
-    // a route that never connects gives no samples at all: left as one that gives no sound
-    if (watch) timers.push(setTimeout(() => samplesSeen === 0 && judged('stalled'), quietMs));
+    // no samples at all: the audio is not running (told, not left: every other input would give none either)
+    timers.push(
+      setTimeout(() => {
+        if (samplesSeen === 0 && current === wake && !stopped) logWake(`no samples from ${named(label)} in ${(quietMs / 1000).toFixed(1)} s: the audio is not running`);
+      }, quietMs),
+    );
     if (verdict === 'live') settle();
     else if (verdict !== null) queueMicrotask(leave);
     return wake;
