@@ -22,6 +22,14 @@ import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps'
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import { closeDatabase } from './close-database';
 
+// every run of the App's startup writes (src/data/startupWrites.ts, started with nobody waiting) is kept, so a scenario can wait for them: one still running when the next scenario has reset the phone writes its rows back
+// or turns its books On, and a group then reads '10 of 10 on' for '1 of 10 on' (mw-ar5k42b.31, mw-qtu3zvz.174)
+const startupRuns = vi.hoisted((): Promise<void>[] => []);
+vi.mock('../../src/data/startupWrites', async (original) => {
+  const real = await original<typeof import('../../src/data/startupWrites')>();
+  return { ...real, startBackgroundWrites: () => { const run = real.startBackgroundWrites(); startupRuns.push(run); return run; } };
+});
+
 vi.mock('../../src/sermons/sources', async () => {
   const { logosSource, secondSource, sourceOf, testSource } = await import('../../tests/support/sermon-sources');
   return { SOURCES: [testSource, secondSource, logosSource, { ...sourceOf('testlaurie', "Test Laurie's sermons (Logos archive)", {}, 'off'), resources: ['LLS:GRGLRSRMNRCH'] }] };
@@ -29,6 +37,7 @@ vi.mock('../../src/sermons/sources', async () => {
 
 afterAll(async () => {
   cleanup();
+  await Promise.allSettled(startupRuns);
   closeSermons();
   forgetTestThemes();
   forgetTestMaps();
@@ -44,8 +53,14 @@ const user = userEvent.setup();
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
+/** Waits for every run of the App's startup writes begun so far: none is left to land in the scenario that follows. */
+const startupSettled = async (): Promise<void> => {
+  await Promise.allSettled(startupRuns);
+};
+
 async function reset(): Promise<void> {
   cleanup();
+  await startupSettled();
   closeSermons();
   clearBus();
   forgetTrail();
@@ -64,6 +79,7 @@ async function openStudy(logos: 'on' | 'off'): Promise<void> {
   await db.settings.put({ key: 'resource.logos', value: logos });
   window.history.replaceState(null, '', '/#/settings?group=study');
   render(<App />);
+  await startupSettled();
   await screen.findByRole('region', { name: 'Study resources' });
 }
 
@@ -82,6 +98,7 @@ async function openAt(hash: string, logos: 'on' | 'off', seed: () => Promise<unk
   await seed();
   window.history.replaceState(null, '', `/${hash}`);
   render(<App />);
+  await startupSettled();
 }
 
 const PAGE = '#/settings?sources=sermons';
@@ -109,6 +126,7 @@ async function openOn(title: string): Promise<void> {
   if (!book) throw new Error(`no book ${title}`);
   window.history.replaceState(null, '', `/#/?b=${book.code}&c=${title.slice(at + 1)}`);
   render(<App />);
+  await startupSettled();
   await screen.findByRole('heading', { name: title, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
