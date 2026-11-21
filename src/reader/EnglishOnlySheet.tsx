@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import type { GreekWord } from '../data/chapter';
 import { GREEK_LANG } from '../script/greekLang';
 import { focusOnMount } from '../ui/focus';
+import { DialogAskTutor } from '../AskTutor';
+import { useSheetTalk } from '../tutor/sheetTalk';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { ENGLISH_ADDED, ENGLISH_NOT_MATCHED, withoutMarks, type NearGreek } from './septuagint';
@@ -21,6 +23,17 @@ function Sheet({ tap, onClose, onGreek }: { tap: EnglishOnly; onClose: () => voi
   useEscapeToClose(onClose);
   useSheetBack(onClose);
   const near = tap.near;
+  const line = tap.kind === 'added' ? ENGLISH_ADDED : ENGLISH_NOT_MATCHED;
+  // z-30, above the Talk sheet (z-10): the ? asks about the English word the sheet shows, in a Talk drawn inside this layer so it stands in front (as Rp2026Sheet does)
+  const ask = useSheetTalk({
+    name: tap.word,
+    facts: [
+      { label: 'English word', value: tap.word },
+      { label: 'What the sheet says', value: line },
+      ...(near ? [{ label: near.before ? 'Nearest Greek word before it' : 'Next Greek word', value: withoutMarks(near.word.t) }] : []),
+    ],
+    suggestions: tap.kind === 'added' ? ['Why does the English add this word?'] : ['Which Greek word does this English word stand for?'],
+  });
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end">
       <div data-testid="sheet-backdrop" aria-hidden="true" onClick={onClose} className="lp-fade-in absolute inset-0 bg-black/60" />
@@ -44,7 +57,7 @@ function Sheet({ tap, onClose, onGreek }: { tap: EnglishOnly; onClose: () => voi
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <p data-english-only={tap.kind} className="pb-3 text-base">
-            {tap.kind === 'added' ? ENGLISH_ADDED : ENGLISH_NOT_MATCHED}
+            {line}
           </p>
           {near ? (
             <button type="button" onClick={() => onGreek(near.word)} className="block min-h-11 w-full border-t border-line py-2 text-start text-base font-medium leading-8 text-accent">
@@ -56,6 +69,7 @@ function Sheet({ tap, onClose, onGreek }: { tap: EnglishOnly; onClose: () => voi
           ) : null}
         </div>
       </div>
+      <DialogAskTutor {...ask} />
     </div>
   );
 }
