@@ -8,6 +8,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { ReferenceLink } from '../../src/markdown/ReferenceCard';
 import { getPassagePlayer, stopPassage } from '../../src/speech/passagePlayer';
+import { getPlace, refKey, savePlace } from '../../src/speech/passagePlace';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
@@ -18,6 +19,7 @@ import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../suppo
 let synth: FakeSynth;
 beforeEach(async () => {
   clearBus();
+  localStorage.clear();
   stubChapterFetch();
   window.history.replaceState(null, '', '/');
   await Promise.all(db.tables.map((table) => table.clear()));
@@ -115,5 +117,57 @@ describe('closing the card', () => {
     const card = await openCard('Heb 7:2', 'Heb 7:2', 'Hebrews 7:2');
     await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
     expect(getPassagePlayer().state).toBe('idle');
+  });
+});
+
+describe('Play resumes where he stopped (mw-5r3p30.1236)', () => {
+  const HEB = { heading: 'Hebrews 7:1-3', verse: 2, label: 'Hebrews 7:2' };
+
+  it('with a kept place the button reads Resume with where, and reads from that verse', async () => {
+    savePlace(refKey('Hebrews 7:1-3'), HEB);
+    const card = await openCard('Heb 7:1-3', 'Heb 7:1-3', 'Hebrews 7:1-3');
+    expect(within(card).queryByRole('button', { name: 'Play' })).toBeNull();
+    await userEvent.click(await within(card).findByRole('button', { name: 'Resume · Hebrews 7:2' }));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    expect(synth.spoken[0].text).toContain('Abraham apportioned');
+    expect(synth.spoken.some((s) => s.text === 'Hebrews 7:1-3')).toBe(false);
+  });
+
+  it("'From the start' reads from the heading and clears the place", async () => {
+    savePlace(refKey('Hebrews 7:1-3'), HEB);
+    const card = await openCard('Heb 7:1-3', 'Heb 7:1-3', 'Hebrews 7:1-3');
+    await userEvent.click(await within(card).findByRole('button', { name: 'From the start' }));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    expect(synth.spoken[0].text).toBe('Hebrews 7:1-3');
+    expect(getPlace(refKey('Hebrews 7:1-3'))?.verse ?? 0).toBeLessThan(2);
+  });
+
+  it('with none it reads Play, and a card left partway offers Resume at that verse when it is opened again', async () => {
+    const card = await openCard('Heb 7:1-3', 'Heb 7:1-3', 'Hebrews 7:1-3');
+    expect(within(card).queryByRole('button', { name: 'From the start' })).toBeNull();
+    await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    synth.finish();
+    await vi.waitFor(() => expect(getPlace(refKey('Hebrews 7:1-3'))?.verse).toBe(1), { timeout });
+    // the voice goes on until verse 2 is the one being read
+    const atTwo = () => {
+      if (getPlace(refKey('Hebrews 7:1-3'))?.verse !== 2 && synth.speaking) synth.finish();
+      expect(getPlace(refKey('Hebrews 7:1-3'))?.verse).toBe(2);
+    };
+    await vi.waitFor(atTwo, { timeout });
+    await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
+    expect(getPassagePlayer().state).toBe('idle');
+    cleanup();
+    const again = await openCard('Heb 7:1-3', 'Heb 7:1-3', 'Hebrews 7:1-3');
+    expect(await within(again).findByRole('button', { name: 'Resume · Hebrews 7:2' })).toBeInTheDocument();
+  });
+
+  it('reading a card to its end clears the place', async () => {
+    const card = await openCard('Heb 7:2', 'Heb 7:2', 'Hebrews 7:2');
+    await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    synth.finishAll();
+    await within(card).findByRole('button', { name: 'Play' });
+    expect(getPlace(refKey('Hebrews 7:2'))).toBeNull();
   });
 });

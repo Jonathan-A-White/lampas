@@ -13,6 +13,7 @@ import { clearBus } from '../../src/events/bus';
 import { VerseListScreen } from '../../src/lists/VerseListScreen';
 import { ShareReferences } from '../../src/share/ShareReferences';
 import { getPassagePlayer, stopPassage } from '../../src/speech/passagePlayer';
+import { getPlace, listKey, savePlace } from '../../src/speech/passagePlace';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
@@ -146,6 +147,80 @@ describe('Play all on a verse list', () => {
     render(<VerseListScreen id={list.id} />);
     await screen.findByText('This list holds no references yet.');
     expect(screen.queryByRole('button', { name: 'Play all' })).toBeNull();
+  });
+});
+
+describe('Play all resumes where he stopped (mw-5r3p30.1236)', () => {
+  const HEB = { heading: 'Hebrews 7:24-25', verse: 25, label: 'Hebrews 7:25' };
+
+  it('says Play all when no place is kept, and no From the start', async () => {
+    const list = await createVerseList('Refuge', ['Rom.8.1', 'Heb.7.24-25'], 1);
+    render(<VerseListScreen id={list.id} />);
+    expect(await screen.findByRole('button', { name: 'Play all' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'From the start' })).toBeNull();
+  });
+
+  it('with a kept place the button reads Resume with where, and starts the rest of the list at that verse', async () => {
+    const list = await createVerseList('Refuge', ['Rom.8.1', 'Heb.7.24-25'], 1);
+    savePlace(listKey(list.id), HEB);
+    render(<VerseListScreen id={list.id} />);
+    expect(screen.queryByRole('button', { name: 'Play all' })).toBeNull();
+    await userEvent.click(await screen.findByRole('button', { name: 'Resume · Hebrews 7:25' }));
+    await reading('Reading Hebrews 7:24-25 · 2 of 2');
+    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
+    // it goes straight to the verse: neither Romans nor the heading is said first
+    expect(synth.spoken[0].text).toContain('able to save');
+    expect(synth.spoken.some((s) => s.text.includes('Romans'))).toBe(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+  });
+
+  it("'From the start' starts at the first reference and clears the place", async () => {
+    const list = await createVerseList('Refuge', ['Rom.8.1', 'Heb.7.24-25'], 1);
+    savePlace(listKey(list.id), HEB);
+    render(<VerseListScreen id={list.id} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'From the start' }));
+    await reading('Reading Romans 8:1 · 1 of 2');
+    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
+    expect(synth.spoken[0].text).toBe('Romans 8:1');
+    expect(getPlace(listKey(list.id))?.heading).not.toBe('Hebrews 7:24-25');
+    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+  });
+
+  it('a place for a reference the list no longer holds is not offered', async () => {
+    const list = await createVerseList('Refuge', ['Rom.8.1'], 1);
+    savePlace(listKey(list.id), HEB);
+    render(<VerseListScreen id={list.id} />);
+    expect(await screen.findByRole('button', { name: 'Play all' })).toBeInTheDocument();
+  });
+
+  it('play, stop partway by leaving the screen, come back: Resume at the verse where it stopped', async () => {
+    const list = await createVerseList('Refuge', ['Rom.8.1', 'Heb.7.24-25'], 1);
+    const view = render(<VerseListScreen id={list.id} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Play all' }));
+    await listenUntil('Reading Hebrews 7:24-25 · 2 of 2');
+    // the heading is said, then verse 24 is being read
+    await vi.waitFor(() => expect(getPlace(listKey(list.id))?.heading).toBe('Hebrews 7:24-25'), { timeout });
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    act(() => synth.finish());
+    await vi.waitFor(() => expect(getPlace(listKey(list.id))?.verse).toBe(24), { timeout });
+    view.unmount();
+    expect(getPassagePlayer().state).toBe('idle');
+    expect(getPlace(listKey(list.id))).toMatchObject({ heading: 'Hebrews 7:24-25', verse: 24, label: 'Hebrews 7:24' });
+    render(<VerseListScreen id={list.id} />);
+    expect(await screen.findByRole('button', { name: 'Resume · Hebrews 7:24' })).toBeInTheDocument();
+  }, 60_000);
+
+  it('reaching the end of the list clears the place', async () => {
+    const list = await createVerseList('Refuge', ['Rom.8.1'], 1);
+    render(<VerseListScreen id={list.id} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Play all' }));
+    await reading('Reading Romans 8:1 · 1 of 1');
+    await vi.waitFor(() => expect(getPlace(listKey(list.id))).not.toBeNull(), { timeout });
+    await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
+    act(() => synth.finishAll());
+    await waitFor(() => expect(screen.queryByRole('status', { name: 'Playing the list' })).toBeNull(), { timeout });
+    expect(getPlace(listKey(list.id))).toBeNull();
+    expect(screen.getByRole('button', { name: 'Play all' })).toBeInTheDocument();
   });
 });
 
