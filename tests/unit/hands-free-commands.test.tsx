@@ -13,6 +13,7 @@ import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { questionAfterAsk } from '../../src/handsFree/ask';
 import { HELP_LINES, HELP_SPOKEN, SPOKEN_COMMANDS } from '../../src/handsFree/commands';
+import { goOnNow } from '../../src/handsFree/playback';
 import { handsFreeSeam, resetHandsFree, runHandsFree } from '../../src/handsFree/session';
 import { cardOf } from '../../src/markdown/verseLinks';
 import { answerReadHere, forgetRead, pendingRead } from '../../src/nav/readerRequest';
@@ -370,5 +371,46 @@ describe('filler words around a command', () => {
     const recogniser = await wakeUp();
     await says(recogniser, 'two to me');
     await saidAloud('Sorry, I did not get that, I heard "two to me"');
+  });
+});
+
+// mw-rl10piw.46: the page hides right after the wake word, before the command is heard: the session closes, and what the wake paused is left paused, as hiding a plain reading leaves it
+// (src/handsFree/playback.ts goOnAtClose and goOnNow are the two callers that resume; neither does when the page is hidden)
+describe('the page is hidden after the wake', () => {
+  function pageIs(state: 'hidden' | 'visible'): void {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state });
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => state === 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
+  afterEach(() => {
+    delete (document as unknown as Record<string, unknown>).visibilityState;
+    delete (document as unknown as Record<string, unknown>).hidden;
+  });
+
+  it.each(["the phone's voice", 'the passage player'] as const)('leaves %s paused at the close and speaks nothing', async (sound) => {
+    await play(sound, 5);
+    await wakeUp();
+    await vi.waitFor(() => expect(sounding()).toBe(false), { timeout });
+    expect(sound === 'the passage player' ? getPassagePlayer().state : getReading().status).toBe('paused');
+    pageIs('hidden');
+    await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
+    clock.advance(10_000);
+    synth.advance(10_000);
+    await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
+    expect(sounding()).toBe(false);
+    expect(sound === 'the passage player' ? getPassagePlayer().state : getReading().status).toBe('paused');
+    pageIs('visible');
+  });
+
+  it("'play' does not go on with a paused reading while the page is hidden", async () => {
+    await play("the phone's voice", 5);
+    pauseReading();
+    await vi.waitFor(() => expect(getReading().status).toBe('paused'), { timeout });
+    pageIs('hidden');
+    expect(goOnNow()).toBe(true);
+    await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
+    expect(getReading().status).toBe('paused');
+    expect(synth.speaking).toBe(false);
+    pageIs('visible');
   });
 });
