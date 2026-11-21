@@ -97,6 +97,7 @@ A fix of the aligner's own pair (story mw-u2w5klk.349.32; the Governor's 'remove
 `applyFixes` (`scripts/lxx/align-choose.ts`) applies a verse's fixes together and keeps the verse as the model pass left it, naming it in the ship's notes as stale, when a fix finds its words no longer in the chunks (or in two places), puts a Greek word in two chunks, or leaves a Greek word that had English with none. The words must begin and end at chunk boundaries of the verse after the model pass (a remainder run cut as 'money shall' cannot be cut after 'money'). `lxx:align-choose --from` writes the runs of a session's file and keeps the fix rows the chapter's file already holds, after the runs (mw-u2w5klk.349.39).
 The 58 content words of Genesis 12 to 18 and 22 that this moved from no Greek word to one (the 189 named in the batch above are 133 now; 'God' in 17:19 and 'came' in 12:11 moved the other way, to a name of their own) include 13:18 'removed' (the whole 'having removed his tent,' is ἀποσκηνώσας's), 16:9 'Return' (Ἀποστράφηθι) and 'mistress,' (κυρίαν), 18:2, 22:4 and 22:13 'lifted up' (ἀναβλέψας), 22:13 'offered' (ἀνήνεγκεν) and 'a whole burnt offering' (ὁλοκάρπωσιν, also 22:2, 3, 6, 7 and 8). Genesis 15, 19, 21 and 23 were not swept (the Morpheus cache that a sweep needs is not on the host this story ran on); their lists in `tests/unit/lxx-align-choose.test.ts` are as they were.
 The low-confidence pairs of Genesis 24 to 29 (story mw-u2w5klk.349.33; the Tester's four of mw-u2w5klk.349.4: a tap on 'it' of 24:15, 'well.' of 29:6, 'departed;' of 25:34 and 'Peradventure' of 27:12 opened αὐτῆς, λαλοῦντος, ἐφαύλισεν and ψηλαφήσῃ): the aligner's pairs by place (c 0.3 to 0.5, step 5 above) are the ones that can sit on the wrong Greek word. `placePairs` of `tests/unit/lxx-align-low-confidence.test.ts` lists the aligner's chunks of a chapter with c below 0.6 whose Greek word is a noun, adjective, verb or adverb and whose English neither the gloss nor the definition of its lemma in the shipped lexicon says (the lead chunks of supplied words, 'I will', are left out). Genesis 24 to 29 had 212; 33 of them were wrong and are moved, with the pairs that came with them, by 65 `fix` rows in `data/lxx/align/gen-24` to `gen-29` (the four above among them: 'it came to pass' is ἐγένετο's, 'is well.' Ὑγιαίνει.'s, 'departed;' ᾤχετο's, 'Peradventure' μή ποτε's), and the 179 left (180 with 29:26 'younger' on νεωτέραν, which the lexicon has no entry for and which is right) were read by hand against the verse and are named in that test, which fails on a pair it does not name and on a name no chunk has. `lxx:align-choose --list` shows an aligner pair that a fix row of the chapter's file moves on the Greek positions the fix gives and marks it `fix` (`Peradventure⟨0,1 fix⟩`, never a remainder, so the run numbers are the ship's); a fix whose words take in a remainder is not shown, because only the ship has the model's chunks. What this does not cover: the pairs of function words (a 'my' on the wrong μου, a 'he' on the wrong αὐτοῦ) and a pair made by gloss that is wrong in its phrase (24:14 'water-pot,' on ποτιῶ), and Genesis 12 to 23 and 30 to 36, where `placePairs` finds 450 by place and nobody has read them (a later story).
+The aligner's own pairs of Genesis 14 (story mw-u2w5klk.349.46; the finding of mw-u2w5klk.349.23: 14:5 'nations' sat on ἅμα with ἔθνη left with no English, 14:3 'with' on συνεφώνησαν, 14:10 'country.' on ἔφυγον and 'slime-pits.' on ἔφυγεν, 14:16 'nephew,' on the second ἀπέστρεψεν, 14:15 'upon' on ἐπέπεσεν): 27 `fix` rows in `data/lxx/align/gen-14.tsv` give each of them to its words ('met with one consent', 'strong nations' and 'with them,', 'Sodom fled', 'they that were left fled', 'he recovered Lot' and 'nephew,', 'he came upon', the four 'most high', 'have made Abram rich.', 'young men' and 'Except what things' among them). Reading the verses for them found three more pairs of the same kind that the fixes had to move with them (14:10 'valley' on φρέατα, 14:14 'nephew' on ὁ and ἀδελφὸς, 14:24 'that' on ὧν). 21 of the chapter's 24 English content words that had no Greek word have one now; `npm run lxx:unpaired -- --book gen` still reads 0 for Genesis 14, and the 3 left ('came' and 'pass' of 'it came to pass', 'Lord' of 14:22, which Brenton adds) are named in `tests/unit/lxx-align-choose.test.ts`. A fix row names a chunk as it reads after `joinSupplied`, so a supplied 'they' before the words is part of its text ('they cut in pieces', 14:7).
 The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 37 to 50 (14 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
 
 ## The unpaired English
@@ -201,7 +202,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Genesis 11 | 32 | 601 | 558 | 92.8% | 77.2% | 42 (7.0%) |
 | Genesis 12 | 20 | 432 | 404 | 93.5% | 66.9% | 69 (16.0%) |
 | Genesis 13 | 18 | 396 | 359 | 90.7% | 60.9% | 54 (13.6%) |
-| Genesis 14 | 24 | 522 | 492 | 94.3% | 66.3% | 51 (9.8%) |
+| Genesis 14 | 24 | 522 | 499 | 95.6% | 70.3% | 92 (17.6%) |
 | Genesis 15 | 21 | 363 | 348 | 95.9% | 65.6% | 43 (11.8%) |
 | Genesis 16 | 16 | 356 | 332 | 93.3% | 64.0% | 57 (16.0%) |
 | Genesis 17 | 27 | 582 | 526 | 90.4% | 64.1% | 82 (14.1%) |
@@ -211,12 +212,12 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Genesis 21 | 34 | 662 | 615 | 92.9% | 64.8% | 75 (11.3%) |
 | Genesis 22 | 24 | 540 | 464 | 85.9% | 61.3% | 65 (12.0%) |
 | Genesis 23 | 20 | 426 | 405 | 95.1% | 68.3% | 61 (14.3%) |
-| Genesis 24 | 67 | 1,541 | 1,445 | 93.8% | 62.6% | 240 (15.6%) |
-| Genesis 25 | 34 | 627 | 571 | 91.1% | 63.8% | 68 (10.8%) |
-| Genesis 26 | 35 | 758 | 734 | 96.8% | 67.9% | 125 (16.5%) |
-| Genesis 27 | 46 | 1,044 | 949 | 90.9% | 63.1% | 117 (11.2%) |
-| Genesis 28 | 22 | 525 | 492 | 93.7% | 65.9% | 63 (12.0%) |
-| Genesis 29 | 35 | 729 | 683 | 93.7% | 66.0% | 88 (12.1%) |
+| Genesis 24 | 67 | 1,541 | 1,453 | 94.3% | 63.8% | 263 (17.1%) |
+| Genesis 25 | 34 | 627 | 579 | 92.3% | 66.8% | 89 (14.2%) |
+| Genesis 26 | 35 | 758 | 736 | 97.1% | 68.9% | 133 (17.5%) |
+| Genesis 27 | 46 | 1,044 | 955 | 91.5% | 64.6% | 132 (12.6%) |
+| Genesis 28 | 22 | 525 | 492 | 93.7% | 66.3% | 66 (12.6%) |
+| Genesis 29 | 35 | 729 | 685 | 94.0% | 66.8% | 94 (12.9%) |
 | Genesis 30 | 43 | 921 | 815 | 88.5% | 62.0% | 106 (11.5%) |
 | Genesis 31 | 55 | 1,267 | 1,148 | 90.6% | 63.2% | 179 (14.1%) |
 | Genesis 32 | 32 | 693 | 652 | 94.1% | 65.8% | 116 (16.7%) |
@@ -492,7 +493,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Amos | 131 | 2,780 | 2,065 | 74.3% | 51.5% | — |
 | Deuteronomy | 905 | 21,077 | 16,362 | 77.6% | 50.9% | — |
 | Exodus | 457 | 9,117 | 6,992 | 76.7% | 49.6% | — |
-| Genesis | 1,531 | 32,635 | 28,762 | 88.1% | 60.6% | 2,746 (8.4%) |
+| Genesis | 1,531 | 32,635 | 28,795 | 88.2% | 60.9% | 2,863 (8.8%) |
 | Hosea | 37 | 717 | 562 | 78.4% | 52.3% | — |
 | Isaiah | 504 | 10,177 | 7,727 | 75.9% | 50.7% | — |
 | Judges | 114 | 2,933 | 2,314 | 78.9% | 52.3% | — |
@@ -505,6 +506,6 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Obadiah | 21 | 456 | 356 | 78.1% | 51.8% | — |
 | Psalms | 1,689 | 23,186 | 16,772 | 72.3% | 44.4% | — |
 
-353 chapters: 127,712 of 161,283 Greek words aligned (79.2%), 2,746 of them by the model pass (y `model`); 129,605 of 205,954 English words are in a chunk of Greek (62.9%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
+353 chapters: 127,745 of 161,283 Greek words aligned (79.2%), 2,863 of them by the model pass (y `model`); 129,679 of 205,954 English words are in a chunk of Greek (63.0%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
 
 <!-- lxx-align:end -->
