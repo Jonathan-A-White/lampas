@@ -225,7 +225,9 @@ function PlanPiece({ ticks, date }: { ticks: Ticks; date: string }) {
           <TickBox label={`Mark ${name} read`} checked={false} onToggle={() => place.move({ run: () => markChapterRead(next, date), said: `Marked ${name} read.` })} />
           <button type="button" data-testid="plan-place" onClick={() => setPlacing(true)} className={LINK}>
             <span className="text-lg font-medium">{`Next: ${name}`}</span>
-            <span className="text-sm text-muted">{`${started!.count.toLocaleString('en-US')} of ${started!.total.toLocaleString('en-US')} chapters done · Change where you are`}</span>
+            <span className="text-sm text-muted">{`${started!.count.toLocaleString('en-US')} of ${started!.total.toLocaleString('en-US')} chapters done`}</span>
+            {/* its own line, not after a ' · ': a wrapped line must not end in the separator (mw-indx1x6.15) */}
+            <span className="text-sm text-muted">Change where you are</span>
           </button>
         </div>
         <div className="flex flex-wrap gap-2 px-2 pb-1 pt-2">
