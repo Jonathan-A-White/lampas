@@ -33,7 +33,7 @@ between the two words; those edges go on the LISTEN LIST (scripts/audio-timings/
 read aloud and a closing line are in no verse. What was measured (the aligner's letters of each verse, each boundary's quiet) is kept in
 scripts/audio-timings/quiet/<edition>-<book>.json: tests/unit/audio-timings-data.test.ts holds every timing to the rule by it, and --cut runs the rule again from
 it with no model (after a change of the slop). THE LOCK (tests/unit/audio-judged.test.ts): a book ships only with a judged report (judge.py) of its timings as
-they are, with no flag outside its listen list.
+they are, with no flag outside its listen list. THE JUDGE (judge.py; docs/audio-judge.md) is the other half: it hears every verse as the player would play it.
 
 THE TIME BASE (mw-ar5k42b.25; decode): every second here is a second of the clock the browser SEEKS by, because the player starts each verse by a seek. The
 publisher's file is constant-rate with no Xing header, and Chromium seeks such a file by BYTE position: second x the byte rate, past the tags at its head (ffmpeg's
