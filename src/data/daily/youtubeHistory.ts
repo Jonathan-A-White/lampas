@@ -78,5 +78,6 @@ export async function importWatchHistory(text: string, list: readonly Episode[] 
   return { marked: marked.length, already: matched.length - marked.length };
 }
 
-/** 'N marked seen, M already seen' */
-export const importMessage = ({ marked, already }: ImportResult): string => `${marked} marked seen, ${already} already seen`;
+/** 'N marked seen, M already seen'; when the file listed no Morning RePhil episode at all, says so instead of two zeros. */
+export const importMessage = ({ marked, already }: ImportResult): string =>
+  marked === 0 && already === 0 ? 'No Morning RePhil episode was found in this file.' : `${marked} marked seen, ${already} already seen`;
