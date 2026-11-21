@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.317",
+    "date": "2026-11-21",
+    "story": "mw-5r3p30.1198",
+    "kind": "fixed",
+    "text": "In the Greek tab, poetry lines no longer leave a small word like \"οὐχ\" or \"εἰς\" alone or hanging at the end of a line."
+  },
+  {
+    "version": "0.7.317",
+    "date": "2026-11-21",
+    "story": "mw-indx1x6.64",
+    "kind": "fixed",
+    "text": "After a wrong answer in the Parsing drill, the Study this box now moves into view above the Next step button, so its lesson link can be tapped at once."
+  },
+  {
+    "version": "0.7.317",
+    "date": "2026-11-21",
+    "story": "mw-rl10piw.69",
+    "kind": "fixed",
+    "text": "pausing the reading yourself while \"Hands-free on\" or \"Hands-free off\" is being said now keeps it paused instead of starting it again."
+  },
+  {
     "version": "0.7.316",
     "date": "2026-11-21",
     "story": "mw-5r3p30.1201",

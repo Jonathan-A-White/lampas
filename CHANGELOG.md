@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.317
+_2026-11-21_
+- Fixed: In the Greek tab, poetry lines no longer leave a small word like "οὐχ" or "εἰς" alone or hanging at the end of a line.
+- Fixed: After a wrong answer in the Parsing drill, the Study this box now moves into view above the Next step button, so its lesson link can be tapped at once.
+- Fixed: pausing the reading yourself while "Hands-free on" or "Hands-free off" is being said now keeps it paused instead of starting it again.
+
 ## 0.7.316
 _2026-11-21_
 - New: On a Memorize result, tap a word marked wrong to see what the app heard in its place.
