@@ -1,0 +1,15 @@
+{
+  "description": "What Hands-free heard, sent by Send what Hands-free heard or a three-finger long press: the browser, then the wake log of the last two minutes (the inputs listed, each tried with its levels, where it settled, each 10 s its levels and the wake model's best score); the mill forwards it to the Mayor and answers {\"status\":\"sent\"}.",
+  "schemaVersion": "1",
+  "request": {
+    "kind": "hands-free-log",
+    "text": "Browser: Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36\n11:08:01 state: starting\n11:08:01 the phone lists 4 inputs\n11:08:01 input \"\" group 047458e1 id default\n11:08:01 input \"Speakerphone\" group 9a1c03be id 6f20d1aa\n11:08:01 input \"Headset earpiece\" group 51e0b7c2 id 0c7d93e4\n11:08:01 input \"Bluetooth headset\" group 047458e1 id f7c90932\n11:08:01 trying \"Bluetooth headset\" (id f7c90932)\n11:08:01 state: waiting\n11:08:04 \"Bluetooth headset\" gave only silence in 3.0 s: peak silence, mean silence, 144000 samples; trying the next input\n11:08:04 trying \"Speakerphone\" (id 6f20d1aa)\n11:08:04 \"Speakerphone\" hears: peak -31.2 dBFS, mean -52.8 dBFS, 12288 samples\n11:08:04 listening for 'Hey Lampas' on \"Speakerphone\" since 11:08:04; track 48000 Hz, 1 ch, echoCancellation true, noiseSuppression true, autoGainControl true; the wake hears it at 48000 Hz\n11:08:14 on \"Speakerphone\", the last 10.0 s: peak -12.4 dBFS, mean -41.0 dBFS, 480000 samples, best score 0.412",
+    "summary": "Hands-free: listening for 'Hey Lampas' on \"Speakerphone\" since 11:08:04",
+    "app_version": "0.7.319"
+  },
+  "expect": {
+    "status": {
+      "equals": "sent"
+    }
+  }
+}
