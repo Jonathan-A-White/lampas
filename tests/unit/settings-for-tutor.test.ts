@@ -88,8 +88,8 @@ describe('a Settings talk across turns (mw-5r3p30.615)', () => {
   async function settingsRequest(turns: { q: string; a: string }[], note = 'n'.repeat(500)): Promise<TalkRequest> {
     const settings = await settingsForTutor();
     const scope: TalkScope = { title: 'Settings', chapter: NO_CHAPTER, verse: null, screen: fitScreen({ name: 'Settings', facts: [], settings }) };
-    // three app-setting values, not ten (mw-r9xo1pj.4): the two devotional source switches took the 180 bytes the fixture had left under the cap, so each setting added makes this fixture give a value up
-    const values = Object.fromEntries(Array.from({ length: 3 }, (_, i) => [`setting${i}`, 'value']));
+    // ten app-setting values, as a real ask carries (mw-r9xo1pj.18): the sermon sources being one summary line (mw-qtu3zvz.236) and the cap at 10360 left this fixture about 495 bytes under MAX_REQUEST_BYTES with turn 1 kept; a story that adds a setting and trips it trims the settings' help or raises the cap, it does not cut this back
+    const values = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`setting${i}`, 'value']));
     const resources = Array.from({ length: 6 }, (_, i) => ({ name: `Resource ${i}`, kind: 'lexicon', url: `https://example.org/${i}` })) as never;
     const memory = { index: 'He reads on his phone.', notes: [{ name: 'book:Romans', text: note }, { name: 'topic:goal', text: note }] };
     const requests = Array.from({ length: 4 }, (_, i) => ({ summary: `Idea ${i} ${'s'.repeat(150)}`, status: 'sent' })) as never;
