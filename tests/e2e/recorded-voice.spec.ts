@@ -245,6 +245,33 @@ test('Recording on Wi-Fi only on mobile data asks once about data, and Keep the 
   expect(network.asked).toEqual([]);
 });
 
+test('Back with the data question up closes the card and stays on the chapter (mw-zbgo4ep.42)', async ({ page }) => {
+  await connectionIs(page, 'cellular');
+  await openJohn3WithVoice(page, null);
+  // David has recorded John 4 too (later routes win over stubRecording's)
+  // (John 4 has 54 verses: the recording must give each one a span)
+  const john4 = { audio: AUDIO, duration: TITLE + 54 * EACH + 0.5, verses: Array.from({ length: 54 }, (_, i) => [i + 1, TITLE + i * EACH, TITLE + (i + 1) * EACH]) };
+  const chapters = { ...timings.chapters, '4': john4 };
+  await page.route('**/data/audio/msb-david/index.json', (route) => route.fulfill({ json: { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: [3, 4] } } }));
+  await page.route('**/data/audio/msb-david/jhn.json', (route) => route.fulfill({ json: { ...timings, chapters } }));
+  await page.goto('/#/?b=jhn&c=4&view=english&weave=off');
+  await page.reload(); // the book's timings were read for John 3; the reload reads them again
+  await expect(page.getByRole('heading', { name: 'John 4', level: 1 })).toBeVisible();
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').some((e) => e.name.endsWith('/data/audio/msb-david/jhn.json')))).toBe(true);
+  await header(page, 'Read from the top').click();
+  const question = page.getByRole('alertdialog', { name: 'Bible voice on mobile data' });
+  await expect(question).toBeVisible();
+  await page.goBack();
+  await expect(question).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'John 4', level: 1 })).toBeVisible();
+  await expect(readingBar(page)).toHaveCount(0);
+  // asked again at the next Play
+  await header(page, 'Read from the top').click();
+  await expect(question).toBeVisible();
+  await shot(page, 'bible-voice-data-question-back');
+});
+
 test('Phone voice reads John 3 in the phone voice and makes no request for an openbible.com URL at all', async ({ page }) => {
   await connectionIs(page, 'wifi');
   const network = await openJohn3WithVoice(page, 'phone');
