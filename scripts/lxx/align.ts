@@ -16,6 +16,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { applyFixes, applyModel, type ModelRow } from './align-choose';
+import { morpheusLine, refuseOtherCaches } from './morpheus';
 import type { ShipOptions } from './ship';
 
 export const ALIGN_DOC = join('docs', 'lxx-align.md');
@@ -545,14 +546,8 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
   return { chapter: modelled.chapter, share, stale: modelled.stale };
 }
 
-/**
- * Which chapters ship (the chapter bar) depends on which books have a Morpheus cache, and the cache is git-ignored: a worktree borrows the Laptop's (lxx:link), a host may have none. The report
- * therefore says which books it was derived without a cache, and a run on a host whose answer is another leaves the report alone (mw-u2w5klk.349.24).
- */
-const MORPHEUS_LINE = /^Derived without a Morpheus cache: (.*)\.$/m;
-const withoutList = (without: readonly string[]): string => (without.length > 0 ? [...without].sort().join(', ') : 'none');
-const morpheusLine = (without: readonly string[]): string => `Derived without a Morpheus cache: ${withoutList(without)}.`;
-const recordedWithout = (text: string): string | undefined => MORPHEUS_LINE.exec(text)?.[1];
+// Which chapters ship (the chapter bar) depends on which books have a Morpheus cache, and the cache is git-ignored: a worktree borrows the Laptop's (lxx:link), a host may have none. The report
+// therefore says which books it was derived without a cache, and a run on a host whose answer is another leaves the report alone (mw-u2w5klk.349.24; morpheus.ts refuseOtherCaches).
 
 const pct = (part: number, whole: number): string => (whole === 0 ? '—' : `${((100 * part) / whole).toFixed(1)}%`);
 const num = (n: number): string => n.toLocaleString('en-US');
@@ -582,13 +577,7 @@ export function writeAlignReport(doc: string, shares: readonly AlignShare[], wit
   const start = text.indexOf(ALIGN_START);
   const end = text.indexOf(ALIGN_END);
   if (start < 0 || end < start) throw new Error(`${doc} has no ${ALIGN_START} and ${ALIGN_END} markers`);
-  const recorded = recordedWithout(text.slice(start, end));
-  if (withoutMorpheus && !force && recorded !== undefined && recorded !== withoutList(withoutMorpheus)) {
-    throw new Error(
-      `${doc} was written from books derived without a Morpheus cache: ${recorded}; this run was without a cache for: ${withoutList(withoutMorpheus)}. ` +
-        `The chapters that ship, and so the report, differ with the caches, so it is left as it was. Run \`npm run lxx:link\` (the Laptop's caches) and again; \`--force\` writes it anyway.`,
-    );
-  }
+  refuseOtherCaches(doc, text.slice(start, end), withoutMorpheus, force);
   const next = `${text.slice(0, start + ALIGN_START.length)}\n\n${renderAlignReport(shares, withoutMorpheus)}\n\n${text.slice(end)}`;
   if (next === text) return false;
   writeFileSync(doc, next);

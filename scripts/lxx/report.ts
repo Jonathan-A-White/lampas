@@ -1,11 +1,11 @@
-// scripts/lxx/report.ts — npm run lxx:report [-- --build <n>]
+// scripts/lxx/report.ts — npm run lxx:report [-- --build <n>] [--force]
 // Writes docs/lxx-report.md between its markers (docs/lxx-derivation.md, 'The report'; story mw-u2w5klk.4): this build's known-answer scores, then one row for
 // each of the 39 books of Swete's Old Testament: its words, the share each layer settled, the words still pending, guesses, agreement breaks per 1,000
 // words, the second pass's disagreement rate (from B4's recheck files, when there are any), the Greek chapters that would ship (the chapter bar, bar.ts chapterVerdict;
 // mw-u2w5klk.265), and SHIPPABLE or NOT with the failing bar lines named (bar.ts: the whole book's). It is the build's one place to see a book fall short. A second run on the same inputs writes the same bytes.
 // Network only to fetch the pinned sources into data/raw (skipped when present); no paid API is called.
 // A book with a Morpheus cache (data/lxx/morpheus/<book>.tsv, morpheus.ts) also shows how many of its guesses Morpheus agreed with, differed from and did not
-// know (release.ts, morpheusCounts); a book with none shows a dash.
+// know (release.ts, morpheusCounts); a book with none shows a dash. The block names the books derived without a cache, and a host whose list is another refuses to rewrite it unless --force (mw-u2w5klk.349.52).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -13,7 +13,7 @@ import { BAR, verdict, type Failure } from './bar';
 import { readChoiceDir, readRecheckDir, type Choice } from './choices';
 import { deriveBook, loadInput, splitBooks, train, type DeriveInput } from './derive';
 import { KNOWN_DIR, knownScores, type KnownScore } from './known';
-import { readMorpheusCache } from './morpheus';
+import { morpheusLine, readMorpheusCache, refuseOtherCaches } from './morpheus';
 import { RECHECK_DIR, CHOICES_DIR, currentBuild, figuresOf, joinChoices, knownChaptersOf, morpheusOf, planBook, shippedWords, type MorpheusCounts } from './release';
 import { RAW_DIR, type Fetcher } from './sources';
 import { OUT_DIR } from './derive';
@@ -105,8 +105,10 @@ const shortLines = (failures: readonly Failure[]): string =>
 const num = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 /** The block between the markers: the build's known-answer scores, the bar, and the table of books. */
-export function reportBlock(build: number, known: readonly KnownScore[], rows: readonly BookRow[], knownNote?: string): string {
+export function reportBlock(build: number, known: readonly KnownScore[], rows: readonly BookRow[], knownNote?: string, withoutMorpheus?: readonly string[]): string {
   const out: string[] = [REPORT_START, ''];
+  // which chapters ship, and so the last column, depend on which books have a Morpheus cache: a host with other caches would write other numbers (mw-u2w5klk.349.52)
+  if (withoutMorpheus) out.push(morpheusLine(withoutMorpheus), '');
   out.push(`Build ${build}. The bar (\`scripts/lxx/bar.ts\`): known-answer lemma at least ${BAR.knownLemma}% and full parsing at least ${BAR.knownParsing}% on each chapter below; no word pending; guesses at most ${BAR.guesses}% of the book's words; agreement breaks at most ${BAR.breaks} per 1,000 words.`);
   out.push('', `The chapter is what ships: a Greek chapter with no word pending and breaks at most ${BAR.breaks} per 1,000 of its words, under the known-answer lines and the book's guess line, goes into the annotation file and the app (\`npm run lxx:ship\`). Shipped chapters shows which.`);
   out.push('', '### The known-answer chapters of this build', '');
@@ -161,15 +163,19 @@ Written by \`npm run lxx:report\` (scripts/lxx/report.ts) between the markers be
 
 export interface ReportArgs {
   build?: number;
+  /** write the doc even where it was written from other Morpheus caches */
+  force?: boolean;
 }
 
-const USAGE = 'usage: npm run lxx:report [-- --build <n>]';
+const USAGE = 'usage: npm run lxx:report [-- --build <n>] [--force]';
 
 export function parseArgs(argv: readonly string[]): ReportArgs {
-  if (argv.length === 0) return {};
-  const build = argv[1];
-  if (argv.length !== 2 || argv[0] !== '--build' || !/^\d+$/.test(build ?? '')) throw new Error(USAGE);
-  return { build: Number(build) };
+  const rest = argv.filter((a) => a !== '--force');
+  const force = rest.length !== argv.length;
+  if (rest.length === 0) return force ? { force } : {};
+  const build = rest[1];
+  if (rest.length !== 2 || rest[0] !== '--build' || !/^\d+$/.test(build ?? '')) throw new Error(USAGE);
+  return { build: Number(build), ...(force ? { force } : {}) };
 }
 
 export interface ReportOptions {
@@ -200,10 +206,12 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
   const trained = train(input);
   const tokens = splitBooks(input);
   const rows: BookRow[] = [];
+  const without: string[] = [];
   for (const [code, name] of books) {
     const book = tokens.get(code);
     if (!book || book.words.length === 0) throw new Error(`no book '${code}' in Swete's file`);
     const cache = readMorpheusCache(morpheusDir, code);
+    if (!cache) without.push(code.toLowerCase());
     const result = deriveBook(input, code, undefined, trained, book, cache);
     const { choices } = readChoiceDir(choicesDir, `${result.book}-`);
     const joined = joinChoices(result, choices);
@@ -228,8 +236,10 @@ export async function runReport(argv: readonly string[], options: ReportOptions 
     });
     log(`${code}: ${figures.words} words, chapters shipped: ${shippedWords(plan.shipped, plan.all)}, ${v.shippable ? 'SHIPPABLE' : `NOT: ${shortLines(v.failures)}`}`);
   }
-  const block = reportBlock(build, known, rows, asked.note);
-  const text = withReport(existsSync(doc) ? readFileSync(doc, 'utf8') : `${REPORT_INTRO}${REPORT_START}\n${REPORT_END}\n`, block);
+  const block = reportBlock(build, known, rows, asked.note, without);
+  const before = existsSync(doc) ? readFileSync(doc, 'utf8') : `${REPORT_INTRO}${REPORT_START}\n${REPORT_END}\n`;
+  refuseOtherCaches(doc, before.slice(Math.max(0, before.indexOf(REPORT_START)), Math.max(0, before.indexOf(REPORT_END))), without, args.force === true);
+  const text = withReport(before, block);
   writeFileSync(doc, text);
   log(`wrote ${doc}`);
   return { rows, known, text };
