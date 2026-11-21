@@ -49,7 +49,11 @@ export async function openSettings(user: UserEvent, where: Scope = screen): Prom
 /** Opens Tools through the Menu and waits for the Tools heading, which it returns. */
 export async function openTools(user: UserEvent, where: Scope = screen): Promise<HTMLElement> {
   await chooseFromMenu(user, 'Tools', where);
-  return findToolsHeading();
+  const heading = await findToolsHeading();
+  // the doors are drawn once the settings are read, a moment after the screen: the Menu's row opens Tools when the Menu's history entry has gone (leaveSheetsThen), so a step that
+  // looks at a door the moment the heading is there would find none
+  await within(await screen.findByRole('list', { name: 'Tools' })).findAllByRole('button');
+  return heading;
 }
 
 /** Opens Tools through the Menu and taps its door `name` ('Words', 'Review', 'Paradigms', 'Verse lists', 'Memorize', 'Your Logos library'); the screen's own heading is for the step to wait for. */
