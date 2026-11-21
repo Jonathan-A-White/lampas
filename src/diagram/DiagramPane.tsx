@@ -26,6 +26,7 @@ import { keepInviteDismissed, lessonInvited } from './lesson';
 import { diagramLogosLinks } from './logosLinks';
 import { foldNumerals, numeralBoxes } from './numeral';
 import type { DiagramMode, DiagramWord } from './types';
+import { repairEmptied } from './emptied';
 import { weaveDiagramWords } from './weave';
 import { isSeptuagint, septuagintChunkLinked } from '../reader/septuagint';
 
@@ -205,15 +206,18 @@ function SentenceDiagram({ chapter, sentence, caption, first, last, view, woven,
   }, [chapter, verses, mode, run, sentence]);
 
   // the words as the Weave shows them: the tree is the English one, so a change of Weave redraws with no new ask
-  const words = useMemo(
+  const woveWords = useMemo(
     () => (drawn && mode === 'english' && woven && chapter.lang !== 'hbo' ? weaveDiagramWords(drawn.words, verses, (v) => woven[chapter.verses.indexOf(v)] ?? null) : drawn?.words),
     [drawn, mode, woven, verses, chapter],
   );
+  // a place the Weave left with no word ('we have heard' -> ἀκηκόαμεν in the subject's place, nothing in the verb's) is drawn as Reed-Kellogg writes it (emptied.ts, mw-5r3p30.1233)
+  const repaired = useMemo(() => (drawn && woveWords ? repairEmptied(drawn.diagram, woveWords, drawn.words) : null), [drawn, woveWords]);
+  const words = repaired?.words;
 
   // a compound numeral ('eight, ten, and three, hundred') is one box that says its sum until he opens it (numeral.ts, mw-5r3p30.1128); the boxes he has opened are kept by the id of their first word
   const [open, setOpen] = useState<ReadonlySet<number>>(new Set());
   const boxes = useMemo(() => (drawn && words ? numeralBoxes(verses, words, mode) : []), [drawn, words, verses, mode]);
-  const folded = useMemo(() => (drawn && words ? foldNumerals(drawn.diagram, words, boxes, open) : null), [drawn, words, boxes, open]);
+  const folded = useMemo(() => (drawn && repaired && words ? foldNumerals(repaired.diagram, words, boxes, open) : null), [drawn, repaired, words, boxes, open]);
   const toggle = (id: number, on: boolean): void =>
     setOpen((was) => {
       const next = new Set(was);

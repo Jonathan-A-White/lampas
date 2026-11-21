@@ -1,9 +1,9 @@
 // src/diagram/validate.ts — the exactly-once rule of the sentence diagram (mw-souyao.1): every word sent appears once across the tree, none twice, none missing,
 // and a clause has a subject and a verb. Every fault is named, so the grind can ask once more with what was wrong. An implied-only subject is allowed (a Greek verb's ending,
 // an English imperative); so is an implied-only verb (an understood 'is'): an empty slot is one with no word of any kind.
-import type { Clause, Diagram, Modifier, Slot, TokenRef } from './types';
+import type { Clause, Diagram, DiagramWords, Modifier, Slot, TokenRef } from './types';
 
-export type FaultKind = 'out-of-range' | 'used-twice' | 'missing' | 'empty-subject' | 'empty-verb' | 'empty-independent' | 'bad-apart';
+export type FaultKind = 'out-of-range' | 'used-twice' | 'missing' | 'empty-subject' | 'empty-verb' | 'empty-independent' | 'bad-apart' | 'bare-verb' | 'bare-leg';
 
 export interface Fault {
   kind: FaultKind;
@@ -86,4 +86,47 @@ export function validateDiagram(tree: Diagram, wordCount: number): Validation {
     if (!first.has(i)) faults.push({ kind: 'missing', index: i, at: 'the tree', message: `word ${i} is missing from the tree` });
   }
   return faults.length === 0 ? { ok: true } : { ok: false, faults };
+}
+
+/**
+ * THE SECOND RULE (mw-5r3p30.1233): what is DRAWN has a word in every place. The tree can keep THE RULE and still draw a bare place, because the Weave (weave.ts) draws the English words
+ * of a chunk it shows in Greek as nothing (text ''): the verb 'have heard' of 'we have heard' becomes an empty verb slot, and 'own' of 'our own' a leg with no word. `words` are the words as drawn.
+ * A fault for a verb slot with no drawn word ('bare-verb') and for each other place left with no drawn word ('bare-leg': a subject, an object or a complement slot, a word modifier,
+ * a preposition or the object it takes); an understood word, in parentheses, is drawn and counts. repairEmptied (emptied.ts) is what leaves none.
+ */
+export function drawnFaults(tree: Diagram, words: DiagramWords): Fault[] {
+  const faults: Fault[] = [];
+  let clauses = 0;
+  const blank = (ref: TokenRef): boolean => 'i' in ref && words[ref.i]?.text === '';
+  const bare = (s: Slot): boolean => s.words.every(blank);
+
+  const slot = (s: Slot, at: string): void => {
+    if (bare(s)) faults.push({ kind: 'bare-leg', at, message: `nothing is drawn in the place at ${at}` });
+    modifiers(s.modifiers, at);
+  };
+  const modifiers = (list: Modifier[], at: string): void => {
+    list.forEach((m, k) => {
+      const here = `${at} > modifier ${k + 1}`;
+      if (m.kind === 'word') {
+        if (blank(m.word)) faults.push({ kind: 'bare-leg', at: here, message: `a line is drawn with no word on it, at ${here}` });
+        modifiers(m.modifiers, here);
+      } else if (m.kind === 'prepositional') {
+        if (blank(m.preposition)) faults.push({ kind: 'bare-leg', at: here, message: `a preposition's line is drawn with no word on it, at ${here}` });
+        slot(m.object, `${here} > object`);
+      } else {
+        clause(m.clause, `${here} > clause`);
+      }
+    });
+  };
+  const clause = (c: Clause, at: string): void => {
+    clauses += 1;
+    const place = `${at} ${clauses}`;
+    if (bare(c.verb)) faults.push({ kind: 'bare-verb', at: place, message: `the verb's place is drawn with no word, at ${place}` });
+    slot(c.subject, `${place} > subject`);
+    modifiers(c.verb.modifiers, `${place} > verb`);
+    if (c.complement) slot(c.complement.slot, `${place} > ${c.complement.kind}`);
+    c.independent?.forEach((e, k) => slot(e.slot, `${place} > ${e.kind} ${k + 1}`));
+  };
+  tree.clauses.forEach((entry) => clause(entry.clause, 'clause'));
+  return faults;
 }

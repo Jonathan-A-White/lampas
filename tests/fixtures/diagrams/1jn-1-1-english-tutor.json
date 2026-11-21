@@ -1,0 +1,300 @@
+{
+  "reference": "1 John 1:1",
+  "mode": "english",
+  "diagram": {
+    "clauses": [
+      {
+        "clause": {
+          "subject": {
+            "words": [
+              {
+                "i": 29
+              }
+            ],
+            "modifiers": [
+              {
+                "kind": "word",
+                "word": {
+                  "i": 0
+                },
+                "modifiers": [
+                  {
+                    "kind": "clause",
+                    "connector": {
+                      "i": 1
+                    },
+                    "clause": {
+                      "subject": {
+                        "words": [
+                          {
+                            "implied": "which"
+                          }
+                        ],
+                        "modifiers": []
+                      },
+                      "verb": {
+                        "words": [
+                          {
+                            "i": 2
+                          }
+                        ],
+                        "modifiers": [
+                          {
+                            "kind": "prepositional",
+                            "preposition": {
+                              "i": 3
+                            },
+                            "object": {
+                              "words": [
+                                {
+                                  "i": 5
+                                }
+                              ],
+                              "modifiers": [
+                                {
+                                  "kind": "word",
+                                  "word": {
+                                    "i": 4
+                                  },
+                                  "modifiers": []
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "kind": "clause",
+                    "connector": {
+                      "i": 6
+                    },
+                    "clause": {
+                      "subject": {
+                        "words": [
+                          {
+                            "i": 7
+                          }
+                        ],
+                        "modifiers": []
+                      },
+                      "verb": {
+                        "words": [
+                          {
+                            "i": 8
+                          },
+                          {
+                            "i": 9
+                          }
+                        ],
+                        "modifiers": []
+                      },
+                      "complement": {
+                        "kind": "direct-object",
+                        "slot": {
+                          "words": [
+                            {
+                              "implied": "which"
+                            }
+                          ],
+                          "modifiers": []
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "kind": "clause",
+                    "connector": {
+                      "i": 10
+                    },
+                    "clause": {
+                      "subject": {
+                        "words": [
+                          {
+                            "i": 11
+                          }
+                        ],
+                        "modifiers": []
+                      },
+                      "verb": {
+                        "words": [
+                          {
+                            "i": 12
+                          },
+                          {
+                            "i": 13
+                          }
+                        ],
+                        "modifiers": [
+                          {
+                            "kind": "prepositional",
+                            "preposition": {
+                              "i": 14
+                            },
+                            "object": {
+                              "words": [
+                                {
+                                  "i": 17
+                                }
+                              ],
+                              "modifiers": [
+                                {
+                                  "kind": "word",
+                                  "word": {
+                                    "i": 15
+                                  },
+                                  "modifiers": []
+                                },
+                                {
+                                  "kind": "word",
+                                  "word": {
+                                    "i": 16
+                                  },
+                                  "modifiers": []
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "complement": {
+                        "kind": "direct-object",
+                        "slot": {
+                          "words": [
+                            {
+                              "implied": "which"
+                            }
+                          ],
+                          "modifiers": []
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "kind": "clause",
+                    "connector": {
+                      "i": 18
+                    },
+                    "clause": {
+                      "subject": {
+                        "words": [
+                          {
+                            "i": 19
+                          }
+                        ],
+                        "modifiers": []
+                      },
+                      "verb": {
+                        "words": [
+                          {
+                            "i": 20
+                          },
+                          {
+                            "i": 21
+                          },
+                          {
+                            "i": 22
+                          },
+                          {
+                            "i": 23
+                          },
+                          {
+                            "i": 24
+                          }
+                        ],
+                        "modifiers": [
+                          {
+                            "kind": "prepositional",
+                            "preposition": {
+                              "i": 25
+                            },
+                            "object": {
+                              "words": [
+                                {
+                                  "i": 28
+                                }
+                              ],
+                              "modifiers": [
+                                {
+                                  "kind": "word",
+                                  "word": {
+                                    "i": 26
+                                  },
+                                  "modifiers": []
+                                },
+                                {
+                                  "kind": "word",
+                                  "word": {
+                                    "i": 27
+                                  },
+                                  "modifiers": []
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "complement": {
+                        "kind": "direct-object",
+                        "slot": {
+                          "words": [
+                            {
+                              "implied": "which"
+                            }
+                          ],
+                          "modifiers": []
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "verb": {
+            "words": [
+              {
+                "i": 30
+              }
+            ],
+            "modifiers": []
+          },
+          "complement": {
+            "kind": "predicate-nominative",
+            "slot": {
+              "words": [
+                {
+                  "i": 32
+                }
+              ],
+              "modifiers": [
+                {
+                  "kind": "word",
+                  "word": {
+                    "i": 31
+                  },
+                  "modifiers": []
+                },
+                {
+                  "kind": "prepositional",
+                  "preposition": {
+                    "i": 33
+                  },
+                  "object": {
+                    "words": [
+                      {
+                        "i": 34
+                      }
+                    ],
+                    "modifiers": []
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}
