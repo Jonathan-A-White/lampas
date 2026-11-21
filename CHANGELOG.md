@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.322
+_2026-11-21_
+- Fixed: "In Logos" under a verse is no longer cut off to "In Log" on a narrow phone.
+
 ## 0.7.321
 _2026-11-21_
 - Fixed: Tapping an English word in the Septuagint's Genesis 37 to 39 opens that word's Greek in the Word sheet instead of the whole verse.
