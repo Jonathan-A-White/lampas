@@ -17,7 +17,7 @@ import { gradingOf } from './review/kinds';
 import { focusOnMount } from './ui/focus';
 import { FootBar } from './ui/NextBar';
 import { SCREEN_OPENING_MOMENTS, useSettled } from './ui/settle';
-import { closeAllSheets, useSheetBack } from './ui/sheetBack';
+import { leaveSheetsThen, useSheetBack } from './ui/sheetBack';
 import { useEscapeToClose } from './ui/sheetDrag';
 import { questionFact, TRY_IT_SCREEN, workKept, workScreen, workSuggestions } from './tutor/workTalk';
 
@@ -99,8 +99,7 @@ export function TryItSheet({ idea, passage, onClose }: { idea: GrammarIdea; pass
   };
   const readIt = (): void => {
     if (!tried) return;
-    closeAllSheets();
-    openVerseAt({ book: tried.verse.code, chapter: tried.verse.chapter, verse: tried.verse.verse });
+    leaveSheetsThen(() => openVerseAt({ book: tried.verse.code, chapter: tried.verse.chapter, verse: tried.verse.verse }));
   };
 
   return (

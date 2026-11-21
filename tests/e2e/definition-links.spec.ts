@@ -62,6 +62,26 @@ for (const far of FAR_REFERENCES) {
   });
 }
 
+// mw-5r3p30.1210: Back from the far chapter returns to Exodus 2 and Forward returns to the far chapter: the word sheet's own entry is taken off before the link's place is pushed, so each is one step.
+test("Moses' Definition link Jdg.18.30: Back returns to Exodus 2 and Forward to Judges 18", async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=exo&c=2');
+  await page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'Hebrew', exact: true }).click();
+  await page.locator('[data-verse="10"] [data-word="10"]').click();
+  const sheet = page.getByRole('dialog', { name: 'Word', exact: true });
+  const link = sheet.getByTestId('sheet-definition').getByRole('link', { name: 'Jdg.18.30' }).first();
+  await link.scrollIntoViewIfNeeded();
+  await link.click();
+  await expect(page.getByRole('heading', { name: /Judges 18/ }).first()).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: /Exodus 2/ }).first()).toBeVisible();
+  await expect(sheet).toHaveCount(0);
+  await page.goForward();
+  await expect(page.getByRole('heading', { name: /Judges 18/ }).first()).toBeVisible();
+  await expect(page).toHaveURL(/b=jdg&c=18/);
+  await shot(page, 'definition-far-forward');
+});
+
 for (const scheme of ['light', 'dark'] as const) {
   test(`a Greek word's sheet is as it was: the Greek card draws no Definition (${scheme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: scheme });

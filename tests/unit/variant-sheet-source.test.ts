@@ -1,7 +1,7 @@
 // tests/unit/variant-sheet-source.test.ts — every English line of the variant card names where it comes from (mw-9ji6ek0.29, src/reader/VariantSheet.tsx): 'MSB' for the Majority
 // Standard Bible's words, 'BSB' for the Berean Standard Bible's (the Old Testament), 'Lampas (AI)' for English made by the tutor's model. 'The text reads' shows the English the verse itself
 // has under the unit's words (Matthew 3:3 'through'); the unit's own word-for-word rendering ('by') shows only as a captioned line of its own.
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { GreekWord, VariantEnglishSource, VariantUnit, Verse } from '../../src/data/chapter';
@@ -72,7 +72,7 @@ describe('the English lines of the variant card name their source', () => {
     expect(captions()).toEqual([['Lampas (AI)'], ['Lampas (AI)']]);
   });
 
-  it('a tap on a caption says in one line what the source is, and links to the Preface; a second tap puts it away', () => {
+  it('a tap on a caption says in one line what the source is, and links to the Preface; a second tap puts it away', async () => {
     draw(unit('lampas'));
     const first = document.querySelector<HTMLElement>('[data-english-source]')!;
     expect(first.getAttribute('aria-expanded')).toBe('false');
@@ -82,7 +82,8 @@ describe('the English lines of the variant card name their source', () => {
     expect(says.textContent).toMatch(/Majority Standard Bible/);
     expect(first.getAttribute('aria-expanded')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: /Preface/ }));
-    expect(window.location.hash).toBe('#/preface');
+    // the Preface opens once the sheet's history entry has gone (leaveSheetsThen)
+    await waitFor(() => expect(window.location.hash).toBe('#/preface'));
   });
 
   it('says what each of the three sources is', () => {

@@ -8,7 +8,7 @@ import { GREEK_LANG } from '../script/greekLang';
 import { focusOnMount } from '../ui/focus';
 import { DialogAskTutor } from '../AskTutor';
 import { useSheetTalk } from '../tutor/sheetTalk';
-import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
+import { leaveSheetsThen, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { SOURCE_LINK } from './englishSource';
 import { RP_LABEL } from './Rp2026Mark';
@@ -83,8 +83,7 @@ function Sheet({ entry, onClose }: { entry: Rp2026Entry; onClose: () => void }) 
           <button
             type="button"
             onClick={() => {
-              closeAllSheets();
-              navigate('preface');
+              leaveSheetsThen(() => navigate('preface'));
             }}
             className="flex min-h-11 items-center border-t border-line text-base font-medium text-accent underline"
           >

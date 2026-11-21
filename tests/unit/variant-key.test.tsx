@@ -1,7 +1,7 @@
 // The key to the marks of a variant brace (mw-9ji6ek0.43, src/reader/VariantKey.tsx): the quiet line under the Reader's first braces, put away for good by its ×, and the sheet one tap from a
 // brace that says what each mark means. The samples take their look from variantEnglishClass (src/reader/englishSource.ts), so a later change of look changes the key.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
@@ -81,12 +81,13 @@ describe('putting the key away', () => {
 });
 
 describe('the sheet', () => {
-  it('names every mark, and its link opens the lesson Where the English comes from', () => {
+  it('names every mark, and its link opens the lesson Where the English comes from', async () => {
     render(createElement(VariantKeySheet, { onClose: () => {} }));
     const sheet = screen.getByRole('dialog', { name: 'What the marks in a brace mean' });
     for (const name of ['NA', 'B', 'ECM', 'RP']) expect(within(sheet).getByText(name, { selector: '[data-key-chip]' })).toBeTruthy();
     fireEvent.click(within(sheet).getByRole('button', { name: KEY_LINK }));
-    expect(window.location.hash).toBe('#/lessons/variants/4');
+    // the lesson opens once the sheet's history entry has gone (leaveSheetsThen)
+    await waitFor(() => expect(window.location.hash).toBe('#/lessons/variants/4'));
   });
 });
 
