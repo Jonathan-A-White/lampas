@@ -1,15 +1,15 @@
 // src/sermons/index.ts — the sermons module's door (docs/sermons.md): the registry of sources and sermonsFor, the sermons of a place. A second source is one file in src/sermons/sources/ and one line in SOURCES.
 import { getKnownSermonSources, ownedResources, rememberSermonSources, savedSettings, type KnownSermonSource } from '../data/repositories';
-import { fetchDirectThemeSermons, fetchSermons, fetchSources, sermonsServiceKnown, type ServiceSermon } from '../services/sermons';
+import { fetchDirectThemeSermons, fetchSermons, fetchSources, fetchThemeSermons, sermonsServiceKnown, type ServiceSermon, type ServiceThemeSermon } from '../services/sermons';
 import { addressOffered } from '../data/owned';
 import { THEME_MAX_VERSES } from '../data/themeIndex';
-import { enabledSources as enabledThemeSources, themesFor } from '../themes';
+import { enabledSources as enabledThemeSources, themesFor, type Theme } from '../themes';
 import { enabledSources as enabledOf } from './enabled';
 import { SOURCES } from './sources';
 import { knownSources, setKnownSermonSources } from './known';
-import { directRowOfService, mergeServiceRows } from './merge';
-import { sermonsForSources, THEME_ROW_LIMIT, themeTier, type TopicLinks } from './sermonsFor';
-import type { DirectRow, SameTheme, SermonPlace, SermonRow, SermonsFound, SermonSource, ThemeRow } from './types';
+import { directRowOfService, linkRowOf, mergeServiceRows, type LinkRow } from './merge';
+import { refsOverlap, sermonsForSources, THEME_ROW_LIMIT, themeTier, type TopicLinks } from './sermonsFor';
+import type { DirectRow, SameTheme, SermonPlace, SermonRef, SermonRow, SermonsFound, SermonSource, ThemeRow } from './types';
 
 export type { DirectRow, SameTheme, SermonPlace, SermonRow, SermonSource, SermonsFound, ThemeRow } from './types';
 
@@ -126,6 +126,74 @@ export async function directThemeRows(place: SermonPlace): Promise<DirectRow[]> 
     if (!was || theme.verses < was.topic.verses) taken.set(key, { row, topic: { source: theme.source, id: theme.topic, label: theme.label, verses: theme.verses } });
   }
   return [...taken.values()];
+}
+
+/**
+ * The sermons on one topic, in the sources that are On, from the bundled index alone (mw-qtu3zvz.81, docs/sermons.md 'The Themes line'): a sermon whose preaching text overlaps a link of the topic, in each of the topic's books in
+ * canon order, each source's rows in verse order, a sermon once. No ranking: the order is the index's. A topic with no `books` (over THEME_MAX_VERSES: the join does not use it) has none; a theme source that fails is logged and answers nothing.
+ */
+export async function bundledThemeSermons(theme: Pick<Theme, 'source' | 'topic' | 'books'>): Promise<SermonRow[]> {
+  const books = theme.books ?? [];
+  if (books.length === 0) return [];
+  const [sermonSources, themeSources] = await Promise.all([enabledSources(), enabledThemeSources()]);
+  const themeSource = themeSources.find((source) => source.id === theme.source);
+  if (sermonSources.length === 0 || !themeSource) return [];
+  const taken = new Map<string, SermonRow>();
+  for (const book of books) {
+    let links: SermonRef[];
+    try {
+      links = (await themeSource.book(book)).links.filter((link) => link.topic === theme.topic).map((link) => link.ref);
+    } catch (error) {
+      console.warn(`could not read the themes of ${theme.source}: ${error instanceof Error ? error.message : String(error)}`);
+      continue;
+    }
+    if (links.length === 0) continue;
+    const answers = await Promise.all(
+      sermonSources.map((source) =>
+        (source.sermonsInBook?.(book) ?? Promise.resolve<SermonRow[]>([])).catch((error: unknown) => {
+          console.warn(`could not read the sermons of ${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+          return [];
+        }),
+      ),
+    );
+    for (const row of answers.flat()) {
+      const key = `${row.source}:${row.id}`;
+      if (row.role === 'text' && !taken.has(key) && links.some((link) => refsOverlap(link, row.ref))) taken.set(key, row);
+    }
+  }
+  return [...taken.values()];
+}
+
+/**
+ * The service's sermons on one topic (`GET /v1/sermons?tier=theme-only&theme=…&source=`), asked with the sources he has On, the bundled and the service's own, so a sermon of a source that is Off never comes. A row whose address
+ * is no https page, or opens a Logos resource he does not own, is left out. [] when no source is On; throws when the service does not answer (2 seconds).
+ */
+export async function serviceThemeSermons(source: string, topic: string): Promise<ServiceThemeSermon[]> {
+  await loadKnownSermonSources();
+  const asked = [...new Set([...(await enabledSources()), ...(await enabledServiceSources())].map((s) => s.id))];
+  if (asked.length === 0) return [];
+  const owned = await ownedResources();
+  return (await fetchThemeSermons(source, topic, 50, asked)).rows.filter((row) => asked.includes(row.source) && addressOffered(row.url, owned));
+}
+
+/**
+ * The sermons a theme of the Themes line lists (mw-qtu3zvz.81): those of the sources that are On in the bundled index and, `online`, the service's with the same sources, after them, a sermon once. No ranking: the index's order.
+ * The service failing leaves the bundled rows. A row with no web address is not here (it could not be opened).
+ */
+export async function sermonsOnTheme(theme: Pick<Theme, 'source' | 'topic' | 'books'>, online: boolean): Promise<LinkRow[]> {
+  const rows = new Map<string, LinkRow>();
+  for (const row of await bundledThemeSermons(theme)) rows.set(`${row.source}:${row.id}`, row);
+  if (online && sermonsServiceKnown()) {
+    try {
+      for (const sermon of await serviceThemeSermons(theme.source, theme.topic)) {
+        const row = linkRowOf(sermon);
+        if (row && !rows.has(`${row.source}:${row.id}`)) rows.set(`${row.source}:${row.id}`, row);
+      }
+    } catch (error) {
+      console.warn(`could not read the sermons of a theme from the service: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  return [...rows.values()];
 }
 
 /** The number of sermons a found set holds. */

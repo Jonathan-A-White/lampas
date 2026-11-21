@@ -84,7 +84,13 @@ async function answer(url: URL): Promise<Response> {
   if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only' && url.searchParams.get('direct') === 'only') return json(service.notes ? NOTES_ANSWER : { ref: 'Rom.5.8', passage: null, theme: { total: 0, rows: [] } });
   // mw-qtu3zvz.65: a theme the search finds that holds no sermon at all (his 'Business Life')
   if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only' && url.searchParams.get('theme') === 'themes-demo:business-life') return json({ ref: 'Gen.1.1-Rev.22.21', passage: null, theme: { total: 0, rows: [] } });
-  if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only') return json(api['GET /v1/sermons?ref=rom.5.8&tier=theme-only&theme=themes-demo:atonement']);
+  if (url.pathname === '/v1/sermons' && url.searchParams.get('tier') === 'theme-only') {
+    // the theme's sermon is the tests' own source's (mw-qtu3zvz.81: a theme lists only the sermons of the sources that are On, asked as `source=`); the service keeps to the sources it is asked for
+    const answer = api['GET /v1/sermons?ref=rom.5.8&tier=theme-only&theme=themes-demo:atonement'];
+    const asked = (url.searchParams.get('source') ?? 'testsermons').split(',');
+    const rows = answer.theme.rows.map((r) => ({ ...r, source: 'testsermons' })).filter((r) => asked.includes(r.source));
+    return json({ ...answer, theme: { ...answer.theme, total: rows.length, rows } });
+  }
   if (url.pathname === '/v1/sermons') {
     const rows = (url.searchParams.get('source') ?? '').split(',').flatMap((id) => ROWS[id] ?? []);
     return json({ ref: 'Rom.5', total: rows.length, rows });
@@ -335,7 +341,10 @@ describeFeature(feature, ({ Scenario }) => {
         expect(theme).toBeTruthy();
         expect([...theme!.querySelectorAll('a[data-sermon-row] [data-sermon-title]')].map((t) => t.textContent)).toEqual([sermon]);
       });
-      expect(askedFor('/v1/sermons').some((u) => u.searchParams.get('theme') === 'themes-demo:atonement' && u.searchParams.get('tier') === 'theme-only')).toBe(true);
+      // asked with the sources that are On (mw-qtu3zvz.81), not every source the service has
+      const theme = askedFor('/v1/sermons').filter((u) => u.searchParams.get('theme') === 'themes-demo:atonement' && u.searchParams.get('tier') === 'theme-only');
+      expect(theme.length).toBeGreaterThan(0);
+      for (const ask of theme) expect(ask.searchParams.get('source')).toBe('testsermons');
     });
   });
 

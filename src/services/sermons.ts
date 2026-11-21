@@ -107,9 +107,18 @@ export async function fetchSermons(ref: string, sources?: readonly string[], lim
   return get('/v1/sermons', { ref, source: sources === undefined ? undefined : sources.join(','), limit: limit === undefined ? undefined : String(limit) });
 }
 
-/** The sermons of one topic, by the theme tier asked over the whole Bible (`GET /v1/sermons?tier=theme-only&theme=<source>:<topic>`): the sheet's list under a theme found by the search. */
-export async function fetchThemeSermons(source: string, topic: string, limit = 50): Promise<{ total: number; rows: ServiceThemeSermon[] }> {
-  const answer = await get<{ theme: { total: number; rows: ServiceThemeSermon[] } }>('/v1/sermons', { ref: 'Gen.1.1-Rev.22.21', tier: 'theme-only', theme: `${source}:${topic}`, limit: String(limit) });
+/**
+ * The sermons of one topic, by the theme tier asked over the whole Bible (`GET /v1/sermons?tier=theme-only&theme=<source>:<topic>`): the sheet's list under a theme, found by the search or named on the Themes line.
+ * `sources` (their ids) keeps it to the sermon sources he has On (mw-qtu3zvz.81); none given means every source the service has.
+ */
+export async function fetchThemeSermons(source: string, topic: string, limit = 50, sources?: readonly string[]): Promise<{ total: number; rows: ServiceThemeSermon[] }> {
+  const answer = await get<{ theme: { total: number; rows: ServiceThemeSermon[] } }>('/v1/sermons', {
+    ref: 'Gen.1.1-Rev.22.21',
+    tier: 'theme-only',
+    theme: `${source}:${topic}`,
+    ...(sources === undefined ? {} : { source: sources.join(',') }),
+    limit: String(limit),
+  });
   return answer.theme;
 }
 

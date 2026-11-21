@@ -139,6 +139,85 @@ test('Romans 5:8 names its themes under the title, and the sheet has the sermons
   await shot(page, 'sermons-themes');
 });
 
+test('Romans 5:8: each theme on the Themes line is a button that lists its sermons, and a way back leaves the sheet as it was (mw-qtu3zvz.81)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  await expect(sheet).toBeVisible();
+  const line = sheet.locator('[data-sermons-themes]');
+  await expect(line).toBeVisible();
+  const chips = line.locator('[data-theme-chip]');
+  expect(await chips.count()).toBeGreaterThan(0);
+  const before = await sheet.locator('h3').allTextContents();
+
+  // a theme is a button named by the theme; a tap lists its sermons (the same rows as 'On the same theme'), in this sheet
+  const chip = line.getByRole('button', { name: 'Love-Hatred: Of God' });
+  await expect(chip).toBeVisible();
+  expect((await chip.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await chip.click();
+  const listed = sheet.locator('[data-sermons-part="theme-list"]');
+  await expect(listed.getByRole('group', { name: /^On Love-Hatred/ })).toBeVisible();
+  const rows = listed.locator('a[data-sermon-row]');
+  expect(await rows.count()).toBeGreaterThan(0);
+  for (let i = 0; i < Math.min(await rows.count(), 5); i++) expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
+  await expect(line).toHaveCount(0);
+  await shot(page, 'sermons-theme-list');
+
+  // back: the sheet is as it was, its Themes line and its groups
+  await sheet.getByRole('button', { name: /Back to the sheet/ }).click();
+  await expect(line).toBeVisible();
+  await expect(listed).toHaveCount(0);
+  await expect(sheet.locator('h3')).toHaveText(before);
+
+  // and the phone's own Back does the same, leaving the sheet open
+  await chip.click();
+  await expect(listed).toBeVisible();
+  await page.goBack();
+  await expect(line).toBeVisible();
+  await expect(sheet).toBeVisible();
+});
+
+test('2 Corinthians 13:1-10: the Themes line wraps whole chips, never fills more than a third of the sheet, and More shows the rest (mw-qtu3zvz.55)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=2co&c=13');
+  await expect(page.locator('[data-verse="1"]')).toBeVisible();
+  await page.locator('[data-heading]', { hasText: 'Examine Yourselves' }).getByRole('button').click();
+  await page.getByRole('region', { name: 'Verse view' }).getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for 2 Corinthians 13:1-10' });
+  await expect(sheet).toBeVisible();
+  const line = sheet.locator('[data-sermons-themes]');
+  await expect(line).toBeVisible();
+  const third = async () => {
+    const sheetBox = (await sheet.boundingBox())!;
+    const lineBox = (await line.boundingBox())!;
+    expect(lineBox.height).toBeLessThanOrEqual(sheetBox.height / 3 + 1);
+  };
+  const chips = line.locator('[data-theme-chip]');
+  const more = line.getByRole('button', { name: 'More', exact: true });
+  await expect(more).toBeVisible();
+  expect(await chips.count()).toBe(4);
+  // a whole chip each: none is wider than the line or cut by it
+  const lineBox = (await line.boundingBox())!;
+  for (let i = 0; i < (await chips.count()); i++) {
+    const box = (await chips.nth(i).boundingBox())!;
+    expect(box.x + box.width).toBeLessThanOrEqual(lineBox.x + lineBox.width + 1);
+    expect(box.y + box.height).toBeLessThanOrEqual(lineBox.y + lineBox.height + 1);
+  }
+  await third();
+  await shot(page, 'sermons-themes-more-closed');
+  await more.click();
+  await expect(line.getByRole('button', { name: 'Fewer', exact: true })).toBeVisible();
+  expect(await chips.count()).toBeGreaterThan(4);
+  // the rest is in the line's own box, which still fills no more than a third
+  await third();
+  await shot(page, 'sermons-themes-more-open');
+  await line.getByRole('button', { name: 'Fewer', exact: true }).click();
+  expect(await chips.count()).toBe(4);
+});
+
 test('a theme list turned Off in Settings leaves no Themes line', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings?group=study');

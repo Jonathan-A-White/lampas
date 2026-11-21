@@ -13,7 +13,9 @@ import { GRAMMAR_BOOKS } from '../../src/resources/grammarBooks';
 import { LEXICONS } from '../../src/resources/logos';
 import { WORKS } from '../../src/resources/works';
 import { setSermonsUrl } from '../../src/services/sermons';
+import { setSermonSources } from '../../src/sermons';
 import { useServiceSearch, useThemeSermons } from '../../src/sermons/useSermons';
+import { sourceOf } from '../support/sermon-sources';
 import { keepImport } from '../support/logos-import';
 
 const EVERY = CATALOGUE.map((e) => e.resource);
@@ -27,6 +29,7 @@ beforeEach(async () => {
 });
 afterEach(() => {
   setSermonsUrl(undefined);
+  setSermonSources(undefined);
   vi.unstubAllGlobals();
 });
 
@@ -129,6 +132,8 @@ describe('the sermon search and a theme', () => {
 
   it("drops a theme's sermon that opens in an un-owned Logos resource, and keeps it once owned", async () => {
     setSermonsUrl('https://sermons.test');
+    // a theme lists only the sermons of a source that is On (mw-qtu3zvz.81): the rows below are of one the tests register
+    setSermonSources([sourceOf('s', 'A source of the tests', {})]);
     vi.stubGlobal('fetch', async () => new Response(JSON.stringify({ theme: { total: 2, rows: [theme('logos', mine), theme('web', web)] } }), { status: 200 }));
     const rows = (map: ReturnType<typeof useThemeSermons>): string[] => {
       const got = map.get('t:grace');
