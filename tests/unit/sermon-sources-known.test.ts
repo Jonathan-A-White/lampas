@@ -45,6 +45,17 @@ describe('the kept list', () => {
     ]);
   });
 
+  it('prunes a kept source whose id the bundle now holds, when the list is remembered (mw-qtu3zvz.229)', async () => {
+    const twin: KnownSermonSource = { id: 'moody-logos', name: 'D. L. Moody’s sermons', credit: 'D. L. Moody', homepage: 'https://moody.example', onByDefault: false };
+    await rememberSermonSources([twin, NEW]);
+    expect((await getKnownSermonSources()).map((k) => k.id)).toEqual(['moody-logos', 'newbie-sermons']);
+    expect(await rememberSermonSources([NEW], ['moody-logos'])).toEqual([]);
+    expect((await getKnownSermonSources()).map((k) => k.id)).toEqual(['newbie-sermons']);
+    // even when the service tells of nothing else, and a bundled id it names is never kept
+    expect(await rememberSermonSources([twin], ['moody-logos'])).toEqual([]);
+    expect((await getKnownSermonSources()).map((k) => k.id)).toEqual(['newbie-sermons']);
+  });
+
   it('reads a kept list that is damaged as none', async () => {
     await db.meta.put({ key: 'sermonSources', value: '{not json' });
     expect(await getKnownSermonSources()).toEqual([]);

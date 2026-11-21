@@ -45,7 +45,7 @@ export interface SourceItem {
 }
 
 export interface SourceInput {
-  /** every passage list: the bundled ones, then those the sermon index service added */
+  /** every passage list: the bundled ones, then those the sermon index service added; a source whose id came earlier is left out */
   sources: readonly SermonSource[];
   /** every Logos book that can be a source (src/sermons/sources/logos.ts SERMON_BOOKS) */
   books: readonly CatalogueEntry[];
@@ -127,8 +127,10 @@ function bookItem(entry: CatalogueEntry, input: SourceInput): SourceItem {
 /** The list for a reader: the passage lists in the order given, then the Logos books in the catalogue's order (inOrder files them for the page). */
 export function sourceList(input: SourceInput): SourceList {
   const byResource = new Map(input.books.map((entry) => [entry.resource, entry]));
-  const lists = input.sources.map((source) => ({ source, item: listItem(source, input, byResource) }));
-  const under = new Set(input.sources.flatMap((source) => source.resources ?? []));
+  // a source once by id, the first given: the bundled lists come before the service's, so a remembered source the bundle has since gained is not listed a second time (mw-qtu3zvz.229)
+  const once = input.sources.filter((source, at) => input.sources.findIndex((other) => other.id === source.id) === at);
+  const lists = once.map((source) => ({ source, item: listItem(source, input, byResource) }));
+  const under = new Set(once.flatMap((source) => source.resources ?? []));
   const books = input.books.filter((entry) => !under.has(entry.resource) && isOffered(entry.resource, input.owned)).map((entry) => bookItem(entry, input));
   // a list that opens in Logos is listed while Logos is On and, where it names its Logos books, his import holds one of them
   const shown = lists.filter(({ source }) => !inLogos(source) || (input.logosOn && sourceOffered(source, input.owned))).map(({ item }) => item);

@@ -40,14 +40,16 @@ export async function getKnownSermonSources(): Promise<KnownSermonSource[]> {
 }
 
 /**
- * Keeps `listed` (the service's sermon sources the bundle lacks): a source not kept yet is added at the end, and the ones that are told its details again are refreshed. Returns the sources seen for the first time.
+ * Keeps `listed` (the service's sermon sources the bundle lacks): a source not kept yet is added at the end, and the ones that are told its details again are refreshed. A kept source whose id is in `bundled`
+ * (the ids the bundle now holds) is dropped, so the bundled one is the only one (mw-qtu3zvz.229). Returns the sources seen for the first time.
  */
-export async function rememberSermonSources(listed: readonly KnownSermonSource[]): Promise<KnownSermonSource[]> {
+export async function rememberSermonSources(listed: readonly KnownSermonSource[], bundled: Iterable<string> = []): Promise<KnownSermonSource[]> {
+  const own = new Set(bundled);
   return db.transaction('rw', db.meta, async () => {
     const kept = await getKnownSermonSources();
     const ids = new Set(kept.map((k) => k.id));
-    const fresh = listed.filter((source, i) => !ids.has(source.id) && listed.findIndex((s) => s.id === source.id) === i);
-    const next = [...kept.map((k) => listed.find((s) => s.id === k.id) ?? k), ...fresh];
+    const fresh = listed.filter((source, i) => !own.has(source.id) && !ids.has(source.id) && listed.findIndex((s) => s.id === source.id) === i);
+    const next = [...kept.filter((k) => !own.has(k.id)).map((k) => listed.find((s) => s.id === k.id) ?? k), ...fresh];
     if (JSON.stringify(next) !== JSON.stringify(kept)) await db.meta.put({ key: KEY, value: JSON.stringify(next) });
     return fresh;
   });

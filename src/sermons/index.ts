@@ -183,8 +183,9 @@ function noteServiceSources(): Promise<void> {
     const found: KnownSermonSource[] = (await fetchSources())
       .filter((source) => source.kind === 'sermons' && !own.has(source.id))
       .map((source) => ({ id: source.id, name: source.name, credit: source.credit, homepage: source.homepage, onByDefault: source.on_by_default, ...(typeof source.by === 'string' && source.by !== '' ? { by: source.by } : {}) }));
-    const fresh = await rememberSermonSources(found);
-    if (fresh.length > 0 || found.length > 0) setKnownSermonSources(await getKnownSermonSources());
+    // a kept source the bundle now holds is pruned (mw-qtu3zvz.229), so the list is read again whatever the service told of
+    await rememberSermonSources(found, own);
+    setKnownSermonSources(await getKnownSermonSources());
   })();
   listed = { at: Date.now(), asked };
   asked.catch(() => {
@@ -205,7 +206,7 @@ async function askServiceRows(place: SermonPlace): Promise<ServiceRows | undefin
   await loadKnownSermonSources();
   const bundled = (await enabledSources()).map((source) => source.id);
   const own = (await enabledServiceSources()).map((source) => source.id);
-  const asked = [...bundled, ...own];
+  const asked = [...new Set([...bundled, ...own])];
   if (asked.length === 0) return undefined;
   const ref = chapterRef(place);
   const owned = await ownedResources();
