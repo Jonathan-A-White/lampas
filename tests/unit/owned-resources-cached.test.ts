@@ -5,6 +5,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { DEVOTIONALS } from '../../src/data/daily/devotionals';
 import { ownedResources, setState } from '../../src/data/repositories';
+import { ASYNC_WAIT_MS } from '../support/timeouts';
 import { keepImport } from '../support/logos-import';
 
 const [first, second] = DEVOTIONALS;
@@ -52,9 +53,9 @@ describe('ownedResources inside a live query', () => {
     await ownedResources();
     const seen: string[][] = [];
     const subscription = liveQuery(ownedResources).subscribe((owned) => seen.push([...owned]));
-    await vi.waitFor(() => expect(seen).toEqual([[]]));
+    await vi.waitFor(() => expect(seen).toEqual([[]]), { timeout: ASYNC_WAIT_MS });
     await setState(first.id, 'on');
-    await vi.waitFor(() => expect(seen.at(-1)).toEqual([first.id]));
+    await vi.waitFor(() => expect(seen.at(-1)).toEqual([first.id]), { timeout: ASYNC_WAIT_MS });
     subscription.unsubscribe();
   });
 });
