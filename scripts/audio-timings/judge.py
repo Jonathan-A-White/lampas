@@ -315,7 +315,6 @@ def measure(verses: list[dict], heard: list[list], sound: Sound, maker: dict[int
         if vi is not None:
             spans.setdefault(vi, [k, k])[1] = k
     added: dict[int, list[str]] = {}
-
     for vi, (first, last) in spans.items():
         run: list[int] = []
         for k in range(first, last + 2):
