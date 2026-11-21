@@ -5,8 +5,10 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { parseLinkRef, THEME_INDEX, themeBookUrl } from '../../src/data/themeIndex';
 import { enabledSources, sourceKey } from '../../src/themes/enabled';
 import { bookOf, bundledSources, forgetThemeFiles } from '../../src/themes/sources/bundled';
-import { themesForSources, themeText } from '../../src/themes/themesFor';
+import { chipsOf } from '../../src/sermons/useThemes';
+import { joinThemes, themeKey, themesForSources, themeText } from '../../src/themes/themesFor';
 import { secondThemes, testThemes } from '../support/test-themes';
+import { row } from '../support/sermon-sources';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -163,5 +165,65 @@ describe('the bundled sources: one for each source of public/themes/index.json',
       expect(s.credit.length).toBeGreaterThan(20);
       expect(s.books).toHaveLength(66);
     }
+  });
+});
+
+describe('a theme both lists name is one theme (mw-qtu3zvz.90)', () => {
+  /** A list whose only topic on Romans 5:8 is `label` (id `id`, with a part where given). */
+  const listOf = (id: string, label: string, part?: string) => ({
+    ...secondThemes,
+    id,
+    name: id,
+    book: async () => ({
+      topics: [{ id: 't', label, parts: part === undefined ? [] : [{ n: 1, label: part }], verses: 9, books: ['rom'] }],
+      links: [{ topic: 't', ...(part === undefined ? {} : { part: 1 }), ref: { book: 'rom', chapter: 5, from: 8, to: 8 } }],
+    }),
+  });
+  const place = { book: 'rom', chapter: 5, from: 8 };
+  const sermon = (id: string) => row('spurgeon-ccel', id, `Sermon ${id}`, ['rom', 5, 8, 8]);
+
+  it('keys a label by its letters: case, accents, punctuation and spacing do not tell two apart; other words do', () => {
+    expect(themeKey("Sinner's  Friend")).toBe(themeKey('sinners friend'));
+    expect(themeKey('Atonement, The')).toBe(themeKey('ATONEMENT; the'));
+    expect(themeKey('Love-Hatred')).toBe(themeKey('Love Hatred'));
+    expect(themeKey('Grace')).not.toBe(themeKey('Graces'));
+    expect(themeKey('Christ, the Sinner\'s Friend')).not.toBe(themeKey("Sinner's Friend, Christ the"));
+  });
+
+  it('gives a joined theme one entry in the Themes line, with the sermons of both lists, each sermon once', async () => {
+    const thompson = listOf('thompson', 'Faith', 'Of Abraham');
+    const torrey = listOf('torrey', 'FAITH.');
+    const themes = await themesForSources([thompson, torrey], place);
+    expect(themes.map((t) => `${t.source}:${t.topic}`)).toEqual(['thompson:t', 'torrey:t']);
+    const lists = new Map([
+      ['thompson:t', [sermon('a'), sermon('b')]],
+      ['torrey:t', [sermon('b'), sermon('c')]],
+    ]);
+    const chips = chipsOf(themes, lists);
+    expect(chips).toHaveLength(1);
+    expect(chips[0].text).toBe('Faith: Of Abraham');
+    expect(chips[0].sources).toEqual(['thompson', 'torrey']);
+    expect(chips[0].rows.map((r) => r.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('joins on the label whatever the part says', async () => {
+    const themes = await themesForSources([listOf('thompson', 'Faith', 'Of Abraham'), listOf('torrey', 'faith', 'Exhibited in: works')], place);
+    expect(chipsOf(themes, new Map(themes.map((t) => [`${t.source}:${t.topic}`, [sermon('a')]])))).toHaveLength(1);
+  });
+
+  it('leaves two topics of different names as two', async () => {
+    const themes = await themesForSources([listOf('thompson', 'Faith'), listOf('torrey', 'Faithfulness')], place);
+    expect(chipsOf(themes, new Map(themes.map((t) => [`${t.source}:${t.topic}`, [sermon('a')]])))).toHaveLength(2);
+  });
+
+  it('with one list On the line is as it was: each topic its own', async () => {
+    expect(await texts([testThemes], { book: 'rom', chapter: 5, from: 8 })).toEqual(['Atonement: Doctrine of', 'Love-Hatred: Of God', 'God']);
+    const one = await themesForSources([listOf('torrey', 'Faith')], place);
+    expect(chipsOf(one, new Map([['torrey:t', [sermon('a')]]])).map((c) => c.text)).toEqual(['Faith']);
+  });
+
+  it('joinThemes keeps the first of each name, in order, for the tutor', async () => {
+    const themes = await themesForSources([listOf('thompson', 'Faith'), listOf('torrey', 'faith'), testThemes], { book: 'rom', chapter: 5, from: 8 });
+    expect(joinThemes(themes).map((t) => `${t.source}:${t.topic}`)).toEqual(['thompson:t', 'testthemes:atonement', 'testthemes:love-hatred', 'testthemes:god']);
   });
 });

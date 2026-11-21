@@ -5,6 +5,7 @@
 import { bookOf } from '../data/books';
 import { latestFor, sameThemeFor, sermonsFor, sermonsOnTheme } from './index';
 import { themesFor, type Theme } from '../themes';
+import { themeKey } from '../themes/themesFor';
 import type { SermonPlace, SermonRef, SermonRow } from './types';
 
 /** The most sermon rows a request lists. */
@@ -74,9 +75,11 @@ export function sermonsForTutor(rows: readonly ListedSermon[], themes: readonly 
   const seen = new Set<string>();
   const topics: TutorTheme[] = [];
   for (const theme of themes) {
+    // a theme two lists name, however written, is told once (mw-qtu3zvz.90, themeKey)
+    const name = themeKey(theme.label);
+    if (seen.has(name)) continue;
+    seen.add(name);
     const key = `${theme.source}:${theme.topic}`;
-    if (seen.has(key) || topics.some((t) => t.label === theme.label)) continue;
-    seen.add(key);
     topics.push({ topic: key, label: theme.label });
     if (topics.length === MAX_TUTOR_THEMES) break;
   }
