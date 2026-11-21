@@ -6,10 +6,12 @@
 // word is its word sheet, over a drill without its links to a table, the Library or a verse; all of it by the one guard of src/overRun.ts, which the Talk's link chips read too; 'How to remember it' is the word's memory picture, the heart of the word and the parts it is built from. A layer draws its own Talk (DialogAskTutor), so the floating ?
 // asks about it, in front of it. With no link the row is 'Ask the tutor' on a phone with a
 // licence: a talk of this miss alone, whose first turn names the question, his answer, the right answer and the idea (MissTalk); with no link and no licence there is no row.
+import { useEffect, useRef } from 'react';
 import { useAiAllowed } from '../gate/licenceContext';
 import { GreekRuns } from '../FacetLabel';
 import type { ParadigmAddress } from '../nav/route';
 import { useDoorRoom } from '../tutor/doorRoom';
+import { keepAboveStack } from '../ui/reveal';
 import { missFirstTurn, missScreen, type Study } from './studyThis';
 import { useStudyPlaces } from './useStudyPlaces';
 
@@ -23,7 +25,7 @@ const LINK = 'min-h-12 w-full rounded-xl border border-line px-4 py-2 text-left 
 /** The class of a button of the row or of the Study list. */
 export const STUDY_LINK = LINK;
 
-export function StudyThis({ study, screen, back, onParadigm, className = '' }: {
+export function StudyThis({ study, screen, back, onParadigm, className = '', keepInView = false }: {
   study: Study;
   /** the screen he is on, as the tutor is told it: 'Review', 'Drill it' */
   screen: string;
@@ -32,14 +34,18 @@ export function StudyThis({ study, screen, back, onParadigm, className = '' }: {
   /** Review only: the table opens on the Paradigms screen (the screen holds its round first); without it the table opens as a layer over the question */
   onParadigm?: (address: ParadigmAddress) => void;
   className?: string;
+  /** the box sits in a screen's scroll box under a pinned Next bar (the drill): the box scrolls so the whole row, its links too, is above the bar (mw-indx1x6.64) */
+  keepInView?: boolean;
 }) {
   const ai = useAiAllowed();
   const room = useDoorRoom();
+  const row = useRef<HTMLDivElement>(null);
+  useEffect(() => (keepInView ? keepAboveStack(() => row.current) : undefined), [keepInView]);
   const { links, miss } = study;
   const { follow, ask, places } = useStudyPlaces({ screen, back, onParadigm, facts: missScreen(screen, miss).facts, tutor: { screen: missScreen(screen, miss), first: missFirstTurn(miss) } });
   if (links.length === 0 && !ai) return null;
   return (
-    <div role="group" aria-label={STUDY_THIS} data-testid="study-this" className={`rounded-xl border border-line p-3 text-left ${className}`}>
+    <div ref={row} role="group" aria-label={STUDY_THIS} data-testid="study-this" className={`rounded-xl border border-line p-3 text-left ${className}`}>
       <p className="text-base font-medium text-muted">{STUDY_THIS}</p>
       <div className={`mt-2 flex flex-col gap-2 ${room}`}>
         {links.map((link, i) => (

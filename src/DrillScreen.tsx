@@ -454,7 +454,7 @@ function ParsingDrill({ newRandom = () => Math.random }: { newRandom?: () => Ran
         ) : null}
         {answered && !rightPick ? (
           // a wrong step shows what teaches it, through the mapping Review uses (src/review/studyThis.ts, mw-indx1x6.10)
-          <StudyThis key={`study-${s.question}:${s.step}`} study={studyOfParseStep(question, step, s.picked ?? '')} screen={DRILL_SCREEN} back="Back to the drill" className="mt-3" />
+          <StudyThis key={`study-${s.question}:${s.step}`} study={studyOfParseStep(question, step, s.picked ?? '')} screen={DRILL_SCREEN} back="Back to the drill" className="mt-3" keepInView />
         ) : null}
         {answered ? (
           <NextBar>
