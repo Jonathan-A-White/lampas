@@ -129,7 +129,7 @@ describe("a tap on 'removed' in Genesis 20:1 (the English view)", () => {
   const draw = (verse: Verse, looks: Lookup[], opened: number[]) =>
     render(<VerseText verse={verse} view="english" woven={null} onLook={(l) => looks.push(l)} onUnlinked={() => opened.push(verse.n)} />);
 
-  it('is why it opened the Verse view: the aligner paired it to no Greek word', () => {
+  it("is why no word sheet opened: the aligner paired it to no Greek word, so the tap opens the small 'added in English' sheet (mw-u2w5klk.349.67), not the Verse view", () => {
     const verse = aligner().verses[0];
     expect(verse.e[2].g).toEqual([]);
     const looks: Lookup[] = [];
@@ -137,7 +137,8 @@ describe("a tap on 'removed' in Genesis 20:1 (the English view)", () => {
     draw(verse, looks, opened);
     fireEvent.click(screen.getByText('removed thence'));
     expect(looks).toEqual([]);
-    expect(opened).toEqual([1]);
+    expect(opened).toEqual([]);
+    expect(screen.getByText('Added in English: the Greek has no word here')).toBeTruthy();
   });
 
   it('opens the Word sheet of ἐκίνησεν once the model pass has paired it, not the Verse view', async () => {

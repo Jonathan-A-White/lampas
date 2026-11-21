@@ -158,6 +158,37 @@ export const septuagintAligned = (chapter: Pick<Chapter, 'verses'> | null | unde
  */
 export const septuagintChunkLinked = (chunk: Pick<EnglishChunk, 'g' | 'y'>): boolean => (chunk.y === 'align' || chunk.y === 'model') && chunk.g.length > 0;
 
+/** What the sheet of a tapped English chunk with no Greek word of its own says (mw-u2w5klk.349.67, the Governor's report: Genesis 1:1 'the' opened the Verse view). */
+export const ENGLISH_ADDED = 'Added in English: the Greek has no word here';
+export const ENGLISH_NOT_MATCHED = 'Not matched to its Greek word yet';
+
+/** The Greek word a button of that sheet opens, and which side of the English chunk it stands on. */
+export interface NearGreek {
+  word: GreekWord;
+  /** true when it is the word of the nearest chunk before this one (no chunk after it is paired) */
+  before: boolean;
+}
+
+/**
+ * What a tap on the English chunk `index` of a Septuagint verse is, when the chunk names no Greek word (septuagintChunkLinked is false): `added` when the aligner knows it has none (`g` empty: Brenton's 'the' of 'In the
+ * beginning', which Swete's Ἐν ἀρχῇ has no word for), with `near`, the first Greek word of the next paired chunk (else the last of the nearest one before it); `unmatched` when the chunk is not paired yet (`data:build:lxx`'s
+ * one chunk a verse, `g` holding every word), which has no nearer word to offer.
+ */
+export function englishOnlyOf(verse: Pick<Verse, 'e' | 'g'>, index: number): { kind: 'added' | 'unmatched'; near?: NearGreek } {
+  const chunk = verse.e[index];
+  if (chunk.g.length > 0) return { kind: 'unmatched' };
+  const pick = (c: EnglishChunk | undefined, at: 'first' | 'last'): GreekWord | undefined => (c && septuagintChunkLinked(c) ? verse.g[c.g[at === 'first' ? 0 : c.g.length - 1]] : undefined);
+  for (let i = index + 1; i < verse.e.length; i += 1) {
+    const word = pick(verse.e[i], 'first');
+    if (word) return { kind: 'added', near: { word, before: false } };
+  }
+  for (let i = index - 1; i >= 0; i -= 1) {
+    const word = pick(verse.e[i], 'last');
+    if (word) return { kind: 'added', near: { word, before: true } };
+  }
+  return { kind: 'added' };
+}
+
 /**
  * The settings a Septuagint chapter is woven by (mw-u2w5klk.274.3): the reader's own where its verses carry aligned chunks (`weaveShown` follows them as for the New Testament), the Weave off where they do not.
  */
