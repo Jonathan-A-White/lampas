@@ -9,7 +9,7 @@ import { forgetChapters, type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { setHandsFree, toggleHandsFree } from '../../src/handsFree/switch';
-import { getReading, pauseReading, planOf, startReading, stopReading } from '../../src/speech/readAloud';
+import { getReading, pauseReading, planOf, resumeReading, startReading, stopReading } from '../../src/speech/readAloud';
 import { resetRecordedVoice } from '../../src/speech/recordedVoice';
 import { stubAudio, type FakeAudio } from '../support/fake-audio';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
@@ -86,6 +86,31 @@ describe('turning Hands-free On when the reading was paused by him', () => {
     await toggleHandsFree();
     await vi.waitFor(() => expect(spoken()).toContain('Hands-free on'), { timeout });
     synth.finish();
+    await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
+    expect(getReading().status).toBe('paused');
+    expect(synth.speaking).toBe(false);
+  });
+});
+
+describe.each([
+  ['on', true],
+  ['off', false],
+] as const)('pausing by hand while Hands-free %s is being said', (word, on) => {
+  it('pauses it again and the words ending leave it paused', async () => {
+    if (!on) await db.settings.put({ key: 'handsFree', value: 'on' });
+    await reading();
+    await setHandsFree(on);
+    await vi.waitFor(() => expect(spoken()).toContain(`Hands-free ${word}`), { timeout });
+    await vi.waitFor(() => expect(getReading().status).toBe('paused'), { timeout });
+    resumeReading(); // he taps Resume while the words are still being said
+    await vi.waitFor(() => expect(getReading().status).toBe('reading'), { timeout });
+    pauseReading(); // and Pause again, still before the words end
+    await vi.waitFor(() => expect(getReading().status).toBe('paused'), { timeout });
+    // the engine's Pause cancels its queue, the words with it, and a phone that reports a cancelled utterance as ended (Chrome does, the tester saw it) calls the words' onend
+    // all the same: nothing but the words paused the reading now, so it must stay paused
+    const words = synth.spoken.find((s) => s.text === `Hands-free ${word}`);
+    expect(words).toBeDefined();
+    words?.utterance.onend?.({ type: 'end', target: words.utterance, utterance: words.utterance, charIndex: 0, charLength: 0, elapsedTime: 0, name: '' });
     await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
     expect(getReading().status).toBe('paused');
     expect(synth.speaking).toBe(false);
