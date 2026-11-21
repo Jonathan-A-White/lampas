@@ -3,6 +3,7 @@
 // It reads every shipped chapter (dist/data-lxx or public/data-lxx as lxx:grammar-gaps does, or --dir, e.g. the folder `npm run lxx:ship -- --out <dir>` wrote) and lists each
 // article (T-xxx) standing directly before a noun (N-xxx) of another gender, within a verse. It prints `0 articles stand before a noun of another gender` when none does; each
 // one found is a line with why (`why`): the noun's case is not the article's (no pair for agreement, not claimed), or the parsing's gender is the New Testament's or a guess (open). Exits 1 while any is open. A mismatch in another case is listed, not claimed.
+// Every shipped noun is read whatever layer gave its parsing, the model's choices (data/lxx/choices, layer 3 and guesses) included; each line names who gave the noun its parsing (mw-u2w5klk.349.53).
 // Writes nothing. Since mw-u2w5klk.349.34 a settled parser noun whose lemma has another gender in the New Testament takes the article's (agreement.ts `regender`), which cleared παιδί.
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -20,7 +21,13 @@ export interface Mismatch {
   nounParse: string;
   /** the article's place among the verse's Greek words, 0-based */
   index: number;
+  /** the layer that gave the noun its parsing as the chapter file records it (`y`: '1', '2', '2a', '3', or 'g' for a guess); a noun the model chose is '3' or 'g' (mw-u2w5klk.349.53) */
+  layer?: string;
 }
+
+/** Who gave the noun its parsing, in words: the sweep reads every shipped noun whatever its layer, the model's choices (data/lxx/choices) included. */
+export const parsedBy = (layer: string | undefined): string =>
+  layer === '3' ? "the model's choice" : layer === 'g' ? "the model's guess" : layer === '2a' ? 'the agreement check' : layer === '1' || layer === '2' ? 'the parser' : 'unrecorded';
 
 /** Why an article stands before a noun of another gender, and whether that is a fault of the parsing. Every mismatch gets one: the check does not stay silent on any. */
 export interface Why {
@@ -33,7 +40,7 @@ export interface Why {
 /** Lemmas whose gender in the Septuagint is known to differ from the New Testament's, with the reason a mismatch is named so. */
 export const LEMMA_WHY: Readonly<Record<string, string>> = {
   ἵππος: 'the cavalry, feminine here: Genesis 14 was answered N-ASF by hand (mw-u2w5klk.298), the New Testament has only the masculine',
-  παῖς: 'a girl here (Rebekah, the maid), feminine: layer 1 has the New Testament masculine for παῖδα and the model kept it',
+  παῖς: 'a girl here (Rebekah, the maid), feminine: layer 1 has the New Testament masculine for παῖδα and the model kept it; Genesis 24:28 and 24:57 were set feminine by hand in data/lxx/choices/gen-05.tsv (mw-u2w5klk.349.53)',
 };
 
 const caseOf = (morph: string): string | undefined => /^[TN]-([NGDAV])/.exec(morph)?.[1];
@@ -62,7 +69,7 @@ export function genderMismatches(chapters: readonly ShippedChapter[]): Mismatch[
         if (!next || !word.p.startsWith('T-') || !next.p.startsWith('N-')) return;
         const [a, n] = [genderOf(word.p), genderOf(next.p)];
         if (!a || !n || a === n) return;
-        found.push({ ref: `${bookName(chapter.code)} ${chapter.chapter}:${verse.n}`, article: word.t, articleParse: word.p, noun: next.t, lemma: next.l, nounParse: next.p, index: i });
+        found.push({ ref: `${bookName(chapter.code)} ${chapter.chapter}:${verse.n}`, article: word.t, articleParse: word.p, noun: next.t, lemma: next.l, nounParse: next.p, index: i, layer: (next as { y?: string }).y });
       });
   return found;
 }
@@ -72,7 +79,7 @@ export function mismatchLines(found: readonly Mismatch[]): string[] {
   if (found.length === 0) return ['0 articles stand before a noun of another gender'];
   const lines = found.map((m) => {
     const w = why(m);
-    return `${m.ref} #${m.index + 1} ${m.article} ${m.noun} (${m.lemma}): ${m.articleParse} before ${m.nounParse}; ${w.fault ? 'open' : 'no fault'}: ${w.text}`;
+    return `${m.ref} #${m.index + 1} ${m.article} ${m.noun} (${m.lemma}): ${m.articleParse} before ${m.nounParse} (by ${parsedBy(m.layer)}); ${w.fault ? 'open' : 'no fault'}: ${w.text}`;
   });
   const faults = found.filter((m) => why(m).fault).length;
   return [...lines, `${found.length} articles stand before a noun of another gender: ${found.length - faults} not claimed (another case), ${faults} open`];

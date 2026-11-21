@@ -5,6 +5,8 @@
 import { describe, expect, it } from 'vitest';
 import { checkAgreement } from '../../scripts/lxx/agreement';
 import { isDerived, type DerivedWord, type PendingWord } from '../../scripts/lxx/derive';
+import { CHOICES_DIR } from '../../scripts/lxx/release';
+import { readChoiceDir } from '../../scripts/lxx/choices';
 import { genderMismatches, mismatchLines, why, type ShippedChapter } from '../../scripts/lxx/article-gender';
 
 type Out = DerivedWord | PendingWord;
@@ -85,5 +87,24 @@ describe('the sweep of articles before nouns of another gender', () => {
   it('is no fault when the noun is in another case than the article (τὸ ἑσπέρας)', () => {
     const [m] = genderMismatches([{ code: 'gen', chapter: 49, verses: [{ n: 27, g: [w('τὸ', 'ὁ', 'T-ASN'), w('ἑσπέρας', 'ἑσπέρα', 'N-GSF')] }] }]);
     expect(why(m).fault).toBe(false);
+  });
+});
+
+// Genesis 24:28 ἡ παῖς and 24:57 τὴν παῖδα (Rebekah the maid, mw-u2w5klk.349.53): the model's choices (layer 3, 'unsure') kept the masculine of the New Testament's παῖδα beside a
+// feminine article, so the word sheet read 'noun, masculine'. The choices file is what ships for these two (the parser's regender only touches layer 2).
+describe('Genesis 24: the maid Rebekah is feminine in the model\'s choices', () => {
+  const { choices } = readChoiceDir(CHOICES_DIR, 'gen-');
+
+  it('has ἡ παῖς in 24:28 as N-NSF and τὴν παῖδα in 24:57 as N-ASF (a guess: the parser offers only the masculine)', () => {
+    expect(choices.get('Gen.24:28#4')).toMatchObject({ parsing: 'N-NSF', lemma: 'παῖς', mark: 'guess' });
+    expect(choices.get('Gen.24:57#6')).toMatchObject({ parsing: 'N-ASF', lemma: 'παῖς', mark: 'guess' });
+  });
+
+  it('lists a noun the model chose beside an article of another gender, by the shipped words alone (no layer is read)', () => {
+    const w = (t: string, l: string, p: string, y?: string) => ({ t, l, p, y });
+    const found = genderMismatches([{ code: 'gen', chapter: 24, verses: [{ n: 28, g: [w('δραμοῦσα', 'τρέχω', 'V-AAP-NSF'), w('ἡ', 'ὁ', 'T-NSF'), w('παῖς', 'παῖς', 'N-NSM', '3')] }] }]);
+    expect(found.map((m) => `${m.ref} ${m.noun}`)).toEqual(['Gen 24:28 παῖς']);
+    expect(why(found[0]).text).toContain('model');
+    expect(mismatchLines(found)[0]).toContain("by the model's choice");
   });
 });

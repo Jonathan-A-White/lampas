@@ -349,7 +349,7 @@ the feminine nouns in -ις beside a masculine article. `regender` (`agreement.t
 article when the lemma has that gender in the New Testament too (`CheckContext.genders`, from `Parser.ntPos`) and exactly one of its genders agrees with one of the article's readings, the article settled or still pending
 with its candidates (τῷ is DSM or DSN). The noun is then layer 2a, with a note, and the article settles on it as any word does. Two genders that agree, or none, leave the noun as it was. The sweep
 `npm run lxx:article-gender` (`scripts/lxx/article-gender.ts`) lists the articles still before a noun of another gender: 46 of the 353 shipped chapters on 2026-11-18 (the παῖς datives gone, 8 words), 13 of them in another case
-than the article's (no agreement claimed), 33 open: names with no gender of their own, and nouns whose gender in the Septuagint is not the New Testament's (ἵππος, κάμηλος, παῖς of a girl in Gen 24:28, 24:57).
+than the article's (no agreement claimed), 33 open: names with no gender of their own, and nouns whose gender in the Septuagint is not the New Testament's (ἵππος, κάμηλος). Gen 24:28 ἡ παῖς and 24:57 τὴν παῖδα (Rebekah the maid) were the model's choices, masculine beside a feminine article; they are N-NSF and N-ASF guesses now (the parser offers only the masculine, data/lxx/choices/gen-05.tsv; mw-u2w5klk.349.53). The sweep reads every shipped noun whatever layer gave its parsing, the model's choices included, and each line says which (`by the model's choice`).
 
 ### Analogy's readings beside a thin lone candidate
 
