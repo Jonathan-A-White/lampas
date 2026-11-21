@@ -1,5 +1,5 @@
 // src/memorize/MemorizeSession.tsx — one Memorize session (#/memorize/<ref>/<lang>, mw-fu7dqf.8, docs/layout/memorize.md): the verse at the rung its schedule step gives (HiddenVerse), Hear it, the hold
-// to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold) or Type it (TypeIt.tsx: English always, Greek while Settings > Greek keyboard is On, Hebrew while Hebrew keyboard is On, never the Weave), the judgement with the missed words marked, the recall kept and 'Due <day>', I had it / Not yet when the phone
+// to say it from memory (HeldTalkBar for English and Greek, RecordBar for the Weave: useRecallHold) or Type it (TypeIt.tsx: English always, Greek while Settings > Greek keyboard is On, Hebrew while Hebrew keyboard is On, never the Weave), the judgement with the missed words marked (tap one: what was heard in its place), the recall kept and 'Due <day>', I had it / Not yet when the phone
 // cannot hear him, and Next verse (or Done). A long passage is cut into pieces (pieces.ts): each is shown, said and judged on its own with Next piece after a pass (the last, Join the pieces), then the whole passage
 // is said once and that recall is the one kept. The screen reports the verse, its piece, its language, its rung and the last score to the tutor.
 import { useEffect, useState } from 'react';
@@ -117,7 +117,7 @@ export function MemorizeSession({ refName, lang }: { refName: string; lang: Memo
       <ScreenHeader title={session.heading} subtitle={typingOpen ? undefined : subtitle} back={back} />
       <main data-typing={typingOpen ? '' : undefined} className={typingOpen ? 'flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4' : 'screen min-h-0 flex-1 px-4'}>
         <div data-verse-area={typingOpen ? '' : undefined} className={typingOpen ? 'mt-3 min-h-[4.5rem] flex-1 overflow-y-auto overscroll-contain' : 'mt-3 min-h-24'}>
-          <HiddenVerse tokens={shown} hidden={judged ? new Set() : hidden} firstLetters={rung.kind === 'gaps' && rung.share === 1} missed={missed} />
+          <HiddenVerse key={judged ? 'judged' : 'asking'} tokens={shown} hidden={judged ? new Set() : hidden} firstLetters={rung.kind === 'gaps' && rung.share === 1} missed={missed} heardAt={judged && kept.how !== 'self' ? kept.judgement.heardAt : undefined} />
         </div>
         {judged ? (
           <div className="mt-4 space-y-3">
