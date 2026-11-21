@@ -61,6 +61,7 @@ export const SECTIONS: readonly SettingsSection[] = [
   { id: 'goal', title: 'Goal' },
   { id: 'approach', title: 'Grammar approach' },
   { id: 'handwriting', title: 'Handwriting' },
+  { id: 'keyboards', title: 'Keyboards' },
   { id: 'readAloud', title: 'Read aloud' },
   { id: 'readTutor', title: "The tutor's responses" },
   { id: 'talk', title: 'Talk' },
@@ -97,7 +98,7 @@ export type SettingsGroup = KitGroup<SectionId, GroupId>;
  *  PROVISIONAL: the grouping is the Builder's, to be amended by the Governor. */
 export const GROUPS: readonly SettingsGroup[] = [
   { id: 'reading', title: 'Reading', hint: 'Theme, text size, layout, headings and the Immersive reader.', sections: ['appearance', 'layout', 'reading', 'headings', 'immersive', 'weave', 'variants'] },
-  { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'hebrew'] },
+  { id: 'greek', title: 'Learning', hint: 'New words, how much of a paradigm table, your goal, the grammar approach, handwriting, keyboards and Hebrew in the tutor.', sections: ['newWords', 'paradigms', 'goal', 'approach', 'handwriting', 'keyboards', 'hebrew'] },
   { id: 'tutor', title: 'The tutor', hint: 'How the tutor answers, how the talk bars work, tips and your study way.', sections: ['readTutor', 'talk', 'tips', 'studyWay'] },
   { id: 'listening', title: 'Listening', hint: 'Read aloud, the voices, how fast and the accents.', sections: ['readAloud', 'voices', 'speed', 'pronunciation'] },
   { id: 'daily', title: 'Daily', hint: 'What Today holds, and which devotional.', sections: ['daily', 'devotionalSources'] },

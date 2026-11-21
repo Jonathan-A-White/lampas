@@ -1,4 +1,4 @@
-// Hebrew keyboard (Settings > Daily, beside the Greek one; PROVISIONAL, mw-gdcyf98.6): whether the phone has a Hebrew keyboard, for a field marked lang="he".
+// Hebrew keyboard (Settings > Learning > Keyboards, beside the Greek one; PROVISIONAL, mw-gdcyf98.6, moved from Daily by mw-5r3p30.1191): whether the phone has a Hebrew keyboard, for a field marked lang="he".
 // Lampas draws no keyboard of its own: the phone's offers it. Off to start, so a phone that has none is never asked to type Hebrew; he turns it On once he has added one.
 import { defineSetting } from '../define';
 import { hebrewFrom } from './hebrewInterest';
@@ -15,7 +15,7 @@ export const hebrewKeyboardSetting = defineSetting<HebrewKeyboard>({
       { value: 'off', label: 'Off' },
     ],
   },
-  section: 'daily',
+  section: 'keyboards',
   label: 'Hebrew keyboard',
   hint: 'On once you have added a Hebrew keyboard to your phone',
   help: 'On once you have added a Hebrew keyboard to your phone. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Hebrew.',
