@@ -26,6 +26,25 @@ export const SEPTUAGINT_SOURCES: SeptuagintSource[] = [
   { label: 'Versification', text: "The Greek chapters and verses laid on Lampas's: STEPBible TVTMS, CC BY 4.0." },
 ];
 
+/** The bullets of ATTRIBUTION.md that credit one Logos sermon source ('... in Logos: titles, passages and links, listed and opening only for an owner.'): the tutor is told ONE credit for all of them, not one each (mw-qtu3zvz.236,
+ *  his choice, 2026-11-20), so any number of sources fits the request ceiling. A new Logos sermon source adds its bullet to ATTRIBUTION.md and nothing here. */
+export const LOGOS_SERMON_BULLET = /in Logos: titles, passages and links, listed and opening only for an owner/;
+
+/** The one credit for the Logos sermon family. It has no bullet of its own: each bullet LOGOS_SERMON_BULLET matches is one of its sources (tests/unit/credits-for-tutor.test.tsx). */
+export const LOGOS_SERMONS_CREDIT: ScreenCredit = {
+  name: 'Logos sermon archives',
+  use: 'The sermon lists, if on: titles, passages, links into your Logos; each is switched under Sermon sources',
+  licence: 'yours; nothing copied',
+  link: 'https://www.logos.com',
+};
+
+/** The credits as the tutor is told them: any credit of the Logos sermon family (the family's link, licence and a use that begins 'The sermon list') is the one family credit, at the first one's place. */
+export function creditsForTutor(credits: readonly ScreenCredit[]): ScreenCredit[] {
+  const inFamily = (c: ScreenCredit): boolean => c.link === LOGOS_SERMONS_CREDIT.link && c.licence === LOGOS_SERMONS_CREDIT.licence && c.use.startsWith('The sermon list');
+  const first = credits.findIndex(inFamily);
+  return credits.flatMap((c, i) => (!inFamily(c) ? [c] : i === first ? [LOGOS_SERMONS_CREDIT] : []));
+}
+
 export const CREDITS: ScreenCredit[] = [
   { name: 'Majority Standard Bible', use: 'The New Testament\'s Greek, aligned to the English', licence: 'Public domain', link: 'https://majoritybible.com' },
   { name: 'Recording: Majority Standard Bible', use: 'The English read aloud in David\'s voice, streamed; verse timings are ours', licence: 'Public downloads; text public domain', link: 'https://openbible.com/audio.htm' },
@@ -40,19 +59,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
   { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
   { name: 'Matthew Henry\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org' },
-  { name: 'Greg Laurie Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'J. D. Greear Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Skip Heitzig Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Spurgeon\'s My Sermon Notes', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Wesley\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'George Whitefield\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'D. L. Moody\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Augustine\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Chrysostom\'s homilies', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Piper\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'John Bunyan\'s last sermon', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Charles Wesley\'s sermons', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
-  { name: 'Jimmy Evans Sermon Archive', use: 'The sermon list, if on: titles, passages, links into your Logos', licence: 'yours; nothing copied', link: 'https://www.logos.com' },
+  LOGOS_SERMONS_CREDIT,
   { name: 'Thompson Chain Topics', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=TCR' },
   { name: 'Torrey\'s New Topical Textbook', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=Torrey' },
   { name: 'eSpeak NG', use: 'The sound of ὁ and of δ\'', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },

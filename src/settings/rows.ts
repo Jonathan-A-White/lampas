@@ -290,8 +290,8 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
   });
 }
 
-/** Whether the tutor may read and change the row: a setting or a resource switch, not a link, a request box, the door to his library, the door to the sermon sources, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== SERMON_SOURCES_ROW.key && key !== OPEN_WEB_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isGrownSermon(key);
+/** Whether the tutor is told the row as a row of its own: a setting or a resource switch, not a link, a sermon source's switch (sermons.<id>: the tutor is told ONE summary line for all of them, tutorSettings.ts, mw-qtu3zvz.236), a request box, the door to his library, the door to the sermon sources, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== SERMON_SOURCES_ROW.key && key !== OPEN_WEB_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isSermonSourceRow({ key });
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 

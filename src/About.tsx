@@ -12,7 +12,7 @@ import { useScrollMemory } from './nav/scrollMemory';
 import { usePageActions } from './PageActions';
 import { lastAnswerLine } from './services/clientTiming';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
-import { CREDITS } from './tutor/credits';
+import { CREDITS, creditsForTutor } from './tutor/credits';
 import { useReportScreen } from './tutor/screenContext';
 import { VersionLink } from './whatsNew/VersionLink';
 import { WhatsNewSection } from './whatsNew/WhatsNewSection';
@@ -62,7 +62,7 @@ function TutorTuned({ tuned }: { tuned: Tuned }) {
 }
 
 export function About() {
-  useReportScreen({ name: 'About', facts: [], credits: CREDITS });
+  useReportScreen({ name: 'About', facts: [], credits: creditsForTutor(CREDITS) });
   const scrollRef = useScrollMemory('about');
   const { quote, intro, sections } = attribution;
   const { buttons, notice } = usePageActions('#/about', 'About');

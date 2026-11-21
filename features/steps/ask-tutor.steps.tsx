@@ -10,7 +10,7 @@ import Dexie from 'dexie';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { attribution, plainText } from '../../src/attribution';
-import { CREDITS } from '../../src/tutor/credits';
+import { CREDITS, LOGOS_SERMON_BULLET, LOGOS_SERMONS_CREDIT } from '../../src/tutor/credits';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { BOOK_INDEX } from '../../src/data/bookIndex';
 import type { Chapter } from '../../src/data/chapter';
@@ -422,10 +422,11 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     And("the grist's screen settings name every setting and study resource with its value now and its help", () => {
       const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
       const wanted = ROWS.filter((r) => isTalkable(r.key));
-      expect(got.map((s) => s.name)).toEqual(wanted.map((r) => r.label));
+      // the sermon sources are one line, 'Sermon sources' (mw-qtu3zvz.236)
+      expect(got.map((s) => s.name).filter((n) => n !== 'Sermon sources')).toEqual(wanted.map((r) => r.label));
       for (const s of got) {
         expect(s.value, s.name).not.toBe('');
-        expect(s.help, s.name).toBe(wanted.find((r) => r.label === s.name)?.hint);
+        if (s.name !== 'Sermon sources') expect(s.help, s.name).toBe(wanted.find((r) => r.label === s.name)?.hint);
       }
     });
     And("the grist's screen settings say Logos is Off and what it adds", () => {
@@ -455,7 +456,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     });
     And("the grist's screen settings name every setting and study resource with its value now and its help", () => {
       const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
-      expect(got.map((s) => s.name)).toEqual(ROWS.filter((r) => isTalkable(r.key)).map((r) => r.label));
+      expect(got.map((s) => s.name).filter((n) => n !== 'Sermon sources')).toEqual(ROWS.filter((r) => isTalkable(r.key)).map((r) => r.label));
     });
     And("the grist's screen settings say Logos is Off and what it adds", () => {
       const got = (sent(0).screen as { settings: { name: string; value: string; help: string }[] }).settings;
@@ -583,6 +584,11 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
       const got = (sent(0).screen as { credits: { name: string; use: string; licence: string; link: string }[] }).credits;
       expect(got).toEqual(CREDITS);
       for (const entry of attribution.entries) {
+        // the Logos sermon sources are one family credit (mw-qtu3zvz.236)
+        if (LOGOS_SERMON_BULLET.test(plainText(entry))) {
+          expect(got, plainText(entry).slice(0, 50)).toContainEqual(LOGOS_SERMONS_CREDIT);
+          continue;
+        }
         expect(got.some((c) => plainText(entry).includes(c.name) && entry.includes(c.link)), plainText(entry).slice(0, 50)).toBe(true);
       }
     });
