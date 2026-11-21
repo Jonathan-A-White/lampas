@@ -20,6 +20,7 @@ import { useOffRun } from '../overRun';
 import { openSettingsSection } from '../settings/link';
 import { verseLink } from '../resources/logosBible';
 import { armFallback } from '../resources/openApp';
+import { clearPlace, getPlace, refKey, subscribePlace } from '../speech/passagePlace';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage } from '../speech/passagePlayer';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { VerseText } from '../reader/VerseText';
@@ -162,11 +163,30 @@ function PlayControls({ card }: { card: Card }) {
     getPassagePlayer,
     getPassagePlayer,
   );
+  const key = refKey(card.heading);
+  const place = useSyncExternalStore(subscribePlace, () => getPlace(key), () => null);
   if (player.state === 'idle' || player.current !== card) {
+    // where he stopped reading this reference is kept: Resume goes on from that verse, 'From the start' clears it (mw-5r3p30.1236)
+    const kept = place && place.heading === card.heading && place.verse > 0 ? place : null;
     return (
-      <button type="button" onClick={() => playPassages([card])} className={PLAY_BUTTON}>
-        <span aria-hidden="true">▶ </span>Play
-      </button>
+      <>
+        <button type="button" onClick={() => playPassages([card], kept ? { verse: kept.verse, place: key } : { place: key })} className={PLAY_BUTTON}>
+          <span aria-hidden="true">▶ </span>
+          {kept ? `Resume · ${kept.label}` : 'Play'}
+        </button>
+        {kept ? (
+          <button
+            type="button"
+            onClick={() => {
+              clearPlace(key);
+              playPassages([card], { place: key });
+            }}
+            className="inline-flex min-h-11 items-center rounded-lg px-3 text-base text-muted underline"
+          >
+            From the start
+          </button>
+        ) : null}
+      </>
     );
   }
   return (

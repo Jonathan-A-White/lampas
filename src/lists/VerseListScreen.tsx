@@ -20,6 +20,7 @@ import { listedOf, referencesLine } from './canonical';
 import { noteDeleted } from './deleted';
 import { EditRefs } from './EditRefs';
 import { PlayAll } from './PlayAllBar';
+import { listKey } from '../speech/passagePlace';
 
 const ACTION = 'min-h-12 rounded-lg border border-line px-4 text-base font-medium';
 
@@ -157,7 +158,7 @@ export function VerseListScreen({ id }: { id: number }) {
           <>
             <MemorizeList listId={list.id} refs={list.refs} />
             <div className="mt-3">
-              <PlayAll refs={shown.flatMap(({ listed }) => (listed ? [listed] : []))} />
+              <PlayAll refs={shown.flatMap(({ listed }) => (listed ? [listed] : []))} placeKey={listKey(list.id)} />
             </div>
             <ul className="mt-3 space-y-2">
               {shown.map(({ canonical, listed }, i) => (

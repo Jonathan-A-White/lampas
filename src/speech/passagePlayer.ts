@@ -11,6 +11,7 @@ import { loadChapter, sourceLanguage } from '../data/chapter';
 import { lampasNumber } from '../reader/septuagint';
 import { readViewSettings, settingsFor } from '../reader/useViewSettings';
 import { wovenOf } from '../reader/useWoven';
+import { clearPlace, labelOf, savePlace } from './passagePlace';
 import { getReading, listenCompletedNow, pauseReading, planOf, resumeReading, startReading, stopReading, subscribeReading, type PlanVerse } from './readAloud';
 
 /** A reference to read: its heading ('Hebrews 7:1-3') and its place when Lampas holds the text: what src/markdown/verseLinks.ts gives (null for an Old Testament reference the tutor named, until its card holds it too). */
@@ -48,6 +49,10 @@ let gapPaused = false;
 let startNext: (() => void) | null = null;
 /** the reading that ended by itself has been handed on to the next reference, whose own reading has not begun */
 let handedOff = false;
+/** where this play() keeps its place (passagePlace.ts), or null: the key of the verse list or of the reference */
+let placeKey: string | null = null;
+/** the verse the first reference is to be read from, instead of its start: the place he left it at (mw-5r3p30.1236) */
+let startVerse: number | null = null;
 const listeners = new Set<(state: PassageState, current: PassageRef | null) => void>();
 
 export const getPassagePlayer = (): PassagePlayer => player;
@@ -101,7 +106,10 @@ const HEADING_N = 0;
 function begin(ref: PassageRef, plan: PlanVerse[], held: HeldPlace): void {
   if (!plan[0]) return say(OFFLINE(ref.heading));
   const heading: PlanVerse = { n: HEADING_N, runs: [{ text: ref.heading, language: 'english' }] };
-  startReading({ chapter: held.chapter, plan: [heading, ...plan], from: HEADING_N, continuous: true, inBook: held.book, span: 'chapter', answer: PASSAGE_ID, listen: KEY });
+  // read on from the verse he left off at when it is still in the plan (the view or weave may have changed it since), without saying the heading again
+  const from = startVerse !== null && ref === queue[0] && at === 0 && plan.some((v) => v.n === startVerse) ? startVerse : HEADING_N;
+  startVerse = null;
+  startReading({ chapter: held.chapter, plan: [heading, ...plan], from, continuous: true, inBook: held.book, span: 'chapter', answer: PASSAGE_ID, listen: KEY });
 }
 
 /** Starts a reference's reading now, or, when Pause was pressed in the wait before it, when Resume is. */
@@ -114,7 +122,10 @@ function startOrHold(mine: number, start: () => void): void {
 function readNext(mine: number): void {
   if (mine !== turn) return;
   const ref = queue[at];
-  if (!ref) return set(IDLE);
+  if (!ref) {
+    if (placeKey) clearPlace(placeKey);
+    return set(IDLE);
+  }
   set({ state: gapPaused ? 'paused' : 'playing', current: ref });
   const { held } = ref;
   if (!held) return startOrHold(mine, () => say(skippedLine(ref.heading)));
@@ -136,13 +147,27 @@ function onReading(): void {
     handedOff = true;
     const mine = turn;
     at++;
+    // the next reference is where he is now, at its start; past the last one the list or reference is done
+    const next = queue[at];
+    if (placeKey) {
+      if (next) savePlace(placeKey, { heading: next.heading, verse: 0, label: next.heading });
+      else clearPlace(placeKey);
+    }
     // the reading that just ended finishes announcing itself first
     queueMicrotask(() => readNext(mine));
     return;
   }
   if (reading.listen !== KEY) return end();
   handedOff = false;
+  keepPlace(reading.verse);
   set({ state: reading.status === 'paused' ? 'paused' : 'playing', current: player.current });
+}
+
+/** The verse of the reference being read is where he is: kept, for Resume (a reading of the heading is its verse 0, a line said alone has none). */
+function keepPlace(verse: number | null): void {
+  const ref = player.current;
+  if (!placeKey || !ref?.held || verse === null || verse < 0) return;
+  savePlace(placeKey, { heading: ref.heading, verse, label: labelOf(ref.heading, ref.held.chapter, ref.through !== undefined, verse) });
 }
 
 function end(): void {
@@ -151,15 +176,26 @@ function end(): void {
   gapPaused = false;
   startNext = null;
   handedOff = false;
+  startVerse = null;
+  placeKey = null;
   set(IDLE);
 }
 
 subscribeReading(onReading);
 
+export interface PlayOptions {
+  /** the verse (in the reading's plan: passagePlace.ts) the first reference is read from, instead of its start */
+  verse?: number;
+  /** the key (passagePlace.ts listKey, refKey) the place is kept under as the voice reads, so a later Play can resume there; the end of `refs` clears it */
+  place?: string;
+}
+
 /** Reads `refs` aloud in order, from the first; whatever was being read gives way. Call it straight from the tap. */
-export function playPassages(refs: PassageRef[]): void {
+export function playPassages(refs: PassageRef[], options: PlayOptions = {}): void {
   turn++;
   queue = refs;
+  placeKey = options.place ?? null;
+  startVerse = options.verse !== undefined && options.verse > HEADING_N ? options.verse : null;
   at = 0;
   gapPaused = false;
   startNext = null;
