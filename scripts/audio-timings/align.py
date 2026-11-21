@@ -84,7 +84,7 @@ REACH = 0.75  # quiet_of (the judge's proof reads the announcement's end with it
 STAR_QUIET = 0.2
 BLIP = 0.1
 # A click before a verse's first word is not the verse's first sound (mw-ar5k42b.6; John 9:40: 15 ms of sound at -46 dBFS, 60 ms of silence, then 'Some'): a sound of
-# CLICK or less with CLICK_QUIET or more of silence after it. They are the judge's TOLERANCE (a part-sound that short is the measure's own grain) and its MIN_QUIET.
+# less than CLICK with CLICK_QUIET or more of silence after it. They are the judge's TOLERANCE (a part-sound that short is the measure's own grain) and its MIN_QUIET.
 # The silence is measured AS IT PLAYS (mw-ar5k42b.25): a tag inside the file, and the frame after it, are on the seek clock and in no player's sound (THE TIME
 # BASE), so a silence that holds one plays 28 ms shorter. Genesis 19:30: the last sound of a spliced piece, 50 ms of silence with a tag in it, then 'Lot': 22 ms
 # as played, too little to say the sound is not the word's; passed over as a click it had the judge flag the start.
@@ -689,7 +689,7 @@ class Level:
 
     def past_clicks(self, onset: int, hi: int) -> int:
         """Where a verse's own first sound begins, given `onset`, where the sound after its quiet begins: a click is not its first sound (mw-ar5k42b.6; John 9:40
-        started 50 ms before a click 75 ms before 'Some'). A click is a sound of CLICK or less (from where it begins to the next silence) with a silence of
+        started 50 ms before a click 75 ms before 'Some'). A click is a sound SHORTER than CLICK (from where it begins to the next silence; Deuteronomy 23:2, 20 ms, was counted 25 by the judge's frames and flagged: mw-zbgo4ep.59) with a silence of
         CLICK_QUIET or more after it as it plays (less what of it no player plays: `unplayed`), a silence that begins before `hi`, the verse's first letter (a sound the aligner hears the first letter in is the verse's
         own) and does not run to the file's end. Gives the millisecond the sound after the last such click begins. Only a verse's FIRST sound is read so, and
         only of a word that does not begin with a stop (the cut rule asks): a sound as short after a silence at a verse's end is a stop's release and stays with
@@ -701,7 +701,7 @@ class Level:
             if k == len(self.dips):
                 return onset
             died, begins = self.dips[k]
-            if died - onset > ms(CLICK) or begins - died - self.unplayed(died, begins) < ms(CLICK_QUIET) or died >= hi or begins >= ms(self.duration):
+            if died - onset >= ms(CLICK) or begins - died - self.unplayed(died, begins) < ms(CLICK_QUIET) or died >= hi or begins >= ms(self.duration):
                 return onset
             onset = begins
 

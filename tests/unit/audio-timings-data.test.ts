@@ -286,6 +286,14 @@ describe("the cut rule: both edges of every verse lie where the recording's leve
       expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0)).toBeGreaterThanOrEqual(thousandths(slop.lead));
       expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0)).toBeLessThan(thousandths(slop.lead) + 10);
     });
+
+    it.skipIf(book !== 'deu')("Deuteronomy 23 is timed, and 23:2's first sound is the 20 ms sound 70 ms before 'No', not the word (mw-zbgo4ep.59: passed over as a click, the start was 0.03 s late for the judge)", () => {
+      const verse = verses.find((v) => v.at === '23:2');
+      expect(verse?.head?.onset).toBeGreaterThanOrEqual(9.85);
+      expect(verse?.head?.onset).toBeLessThan(9.9); // the word begins at 9.95
+      expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0)).toBeGreaterThanOrEqual(thousandths(slop.lead));
+      expect(thousandths(verse?.head?.onset ?? 0) - thousandths(verse?.start ?? 0)).toBeLessThan(thousandths(slop.lead) + 10);
+    });
   }
 });
 

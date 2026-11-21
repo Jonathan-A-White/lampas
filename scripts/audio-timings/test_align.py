@@ -188,6 +188,16 @@ def test_a_click_before_a_verse_s_first_word_is_not_its_first_sound():
     assert cut['listen'] == []
 
 
+def test_a_sound_of_exactly_a_click_s_length_is_the_verse_s_own_because_the_judge_counts_it_longer():
+    # Deuteronomy 23:2 (mw-zbgo4ep.59): 'No one of illegitimate birth': 410 ms of quiet, a sound of 20 ms at -25 dBFS, 70 ms of silence, then 'No'. The maker measures the
+    # sound to the frame (20 ms) and the judge counts the frames that light (25 to 30 ms, over its 20 ms tolerance): passed over as a click, the verse started
+    # 40 ms after it and the judge said the start was 0.03 s late. A sound of the click's full length stays the verse's first sound, so the start is before it.
+    parts = [(0.5, None), (1.0, -20), (0.41, None), (0.02, -25), (0.07, None), (1.0, -20), (0.5, None)]  # the sound 1.91-1.93, the word from 2.0
+    cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'no one of illegitimate birth')], {1: [0.6, 1.4], 2: [2.0, 2.9]}, SLOP)
+    assert near(cut['quiet'][1][2], 1.91), f'the next onset is {cut["quiet"][1][2]}: the sound at 1.91 is the verse\'s own'
+    assert near(cut['verses'][1][1], 1.91 - 0.05) and cut['listen'] == []
+
+
 def test_a_click_is_not_the_first_sound_after_the_announcement_or_a_heading_either():
     # the same click before verse 1 (the aligner was given a wildcard before it), and before a verse with a heading that is not read
     parts = [(0.2, None), (0.8, -20), (0.6, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None), (0.015, -46), (0.06, None), (1.0, -20), (0.5, None)]
