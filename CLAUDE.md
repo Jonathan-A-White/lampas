@@ -46,6 +46,7 @@ npm run ladder:docs  # writes the ladder table of docs/grammar.md, rows of docs/
 npm run logos:catalogue -- <csv>  # writes src/resources/catalogue/ from a Logos export; logos:fit prints the rest (docs/commands.md)
 npm run numerals:sweep  # writes docs/numeral-sweep.md: each numeral phrase's sum against its English
 npm run split:sweep  # writes docs/split-pairing-sweep.md: Septuagint verses unpaired
+npm run greek-lines:sweep  # lists New Testament poetry verses with a stranded small word in a Greek line (0; docs/data.md)
 npm run offline:sizes  # Keep on this phone: each chip's MB against a real dist/ (after lxx:ship; docs/data.md)
 npm run data:build   # also check:step, greek:edition, ladder, fixture:chapter: data tools, not in the gate
 ```

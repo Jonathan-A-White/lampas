@@ -49,6 +49,7 @@
     "lxx:report": "tsx scripts/lxx/report.ts",
     "numerals:sweep": "tsx scripts/numeral-sweep.ts",
     "split:sweep": "tsx scripts/split-pairing-sweep.ts",
+    "greek-lines:sweep": "tsx scripts/greek-lines-sweep.ts",
     "offline:sizes": "tsx scripts/offline-sizes.ts",
     "lxx:ship": "tsx scripts/lxx/ship.ts",
     "lxx:unpaired": "tsx scripts/lxx/unpaired.ts",
