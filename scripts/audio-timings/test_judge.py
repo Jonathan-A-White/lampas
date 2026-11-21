@@ -459,6 +459,77 @@ def test_a_middle_difference_both_ears_hear_is_text_differs_and_never_an_edge_fl
 
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+# mw-ar5k42b.51: what is right and was flagged: a number read with 'and', a hard name, a word the letters cannot spell (Selah)
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+AGE = ['he', 'lived', 'two', 'hundred', 'nine', 'years']
+
+
+def test_a_narrators_and_in_a_number_is_no_difference_but_an_and_elsewhere_is():
+    # Genesis 11:19 and 11:21 (mw-ar5k42b.14): 'two hundred nine' read 'two hundred and nine'
+    assert judge.compare_words(AGE, ['he', 'lived', 'two', 'hundred', 'and', 'nine', 'years']) == {
+        'headExtra': [], 'headMissing': [], 'tailExtra': [], 'tailMissing': [], 'middle': []}
+    assert judge.compare_words(AGE, ['he', 'lived', 'two', 'hundred', 'and', 'nine', 'years'])['middle'] == []
+    assert judge.compare_words(['one', 'hundred', 'fifty', 'three'], ['one', 'hundred', 'and', 'fifty', 'three'])['middle'] == []
+    # an 'and' that is not a number's is still a word the narrator added
+    assert judge.compare_words(AGE, ['he', 'and', 'lived', 'two', 'hundred', 'nine', 'years'])['middle'] == [[[], ['and']]]
+    assert judge.compare_words(AGE, ['he', 'lived', 'two', 'and', 'hundred', 'nine', 'years'])['middle'] == [[[], ['and']]]
+
+
+def test_the_letters_ears_and_in_a_number_is_nobodys_extra_word_but_one_elsewhere_still_is(sound):
+    verses = [VERSES[0], {'n': 2, 'words': ['one', 'hundred', 'nine']}, VERSES[2]]
+    heard = say('CHAPTER ONE', 0.2, 1.0) + say('IN THE', 1.6, 2.2) + say('BEGINNING', 2.4, 3.0) + say('ONE HUNDRED AND NINE', 3.5, 4.98) + say('AND GOD', 5.02, 6.0)
+    assert judge.measure(verses, heard, sound)['verses'][1]['suspect'] == []
+    other = [VERSES[0], {'n': 2, 'words': ['one', 'hundred', 'word']}, VERSES[2]]
+    heard = heard[:-len(say('AND GOD', 5.02, 6.0))]
+    assert judge.measure(other, heard + say('AND GOD', 5.02, 6.0), sound)['verses'][1]['suspect'] != []  # 'AND' before 'word' is no number's
+
+
+def test_a_hard_name_both_ears_hear_alike_is_no_difference_of_text(sound):
+    # Genesis 46:24 (mw-ar5k42b.15): 'Jahzeel' heard 'JAZIL' by the letters ear and 'jazil' by the words ear
+    verses = [{'n': 1, 'words': ['in', 'the', 'jahzeel'], 'text': 'In the Jahzeel'}, VERSES[1], VERSES[2]]
+    heard = say('CHAPTER ONE', 0.2, 1.0) + say('IN THE', 1.6, 2.2) + say('JAZIL', 2.4, 3.0) + say('WAS THE WORD', 3.5, 4.98) + say('AND GOD', 5.02, 6.0)
+    alike = FakeEars({(1.45, 3.1): ['in', 'the', 'jazil']})
+    result = judge.judge_chapter(verses, CLEAN, sound, heard, SLOP, alike)
+    assert verdicts(result)[1] == []
+    # a name the narrator did not say is still a difference: 'Jacob' for 'Jahzeel'
+    other = FakeEars({(1.45, 3.1): ['in', 'the', 'jacob']})
+    assert verdicts(judge.judge_chapter(verses, CLEAN, sound, heard, SLOP, other))[1] == ['text-differs']
+    # and a word that is no name is not read by its sound ('beginning' is not capitalised)
+    plain = [{'n': 1, 'words': ['in', 'the', 'jahzeel'], 'text': 'In the jahzeel'}, VERSES[1], VERSES[2]]
+    assert verdicts(judge.judge_chapter(plain, CLEAN, sound, heard, SLOP, alike))[1] == ['text-differs']
+
+
+SELAH_PARTS = [(0.20, None), (0.80, -20), (0.60, None), (0.60, -20), (0.20, None), (0.60, -20), (0.20, None), (0.50, -20), (0.04, -40), (1.26, -20), (0.40, None)]
+SELAH_VERSES = [{'n': 1, 'words': ['in', 'the', 'beginning', 'selah']}, {'n': 2, 'words': ['was', 'the', 'word']}]
+# 1.6-3.0 'in the beginning', 0.2 quiet, 3.2-3.7 'selah' (the letters ear hears 'ZOLA'), a dip, 3.74-5.0 verse 2
+SELAH_HEARD = say('CHAPTER ONE', 0.2, 1.0) + say('IN THE', 1.6, 2.2) + say('BEGINNING', 2.4, 3.0) + say('ZOLA', 3.2, 3.7) + say('WAS THE WORD', 3.74, 5.0)
+MAKER = {1: (1.6, 3.7), 2: (3.74, 5.0)}
+
+
+def test_a_word_the_letters_cannot_spell_is_the_verse_the_makers_alignment_has_it_in():
+    # Psalm 3:4 ends 'Selah' (mw-ar5k42b.17): its letters are nobody's, and with no quiet between them and 3:5's first letter they were taken for 3:5's
+    sound = judge.sound_of(wave_of(SELAH_PARTS))
+    alone = judge.measure(SELAH_VERSES, SELAH_HEARD, sound)['verses']
+    assert alone[1]['onset'] == pytest.approx(3.2, abs=0.011)  # the bug: verse 2 begins where Selah does, and a cut at 3.74 clips it
+    assert alone[0]['tailWeak']
+    helped = judge.measure(SELAH_VERSES, SELAH_HEARD, sound, MAKER)['verses']
+    assert helped[1]['onset'] == pytest.approx(3.72, abs=0.03) and helped[1]['headReadsOn']
+    assert not helped[0]['tailWeak'] and helped[0]['suspect'] == [] and helped[0]['end'] == pytest.approx(3.72, abs=0.03)
+    assert not helped[1]['headWeak'] and helped[1]['suspect'] == []
+
+
+def test_the_makers_alignment_gives_a_sound_only_to_a_letter_nobody_owns_and_never_to_a_heard_word():
+    sound = judge.sound_of(wave_of(SELAH_PARTS))
+    # a maker whose span for verse 1 runs far into verse 2 takes none of verse 2's letters, which the letters ear heard as its words
+    far = {1: (1.6, 5.0), 2: (3.74, 5.0)}
+    helped = judge.measure(SELAH_VERSES, SELAH_HEARD, sound, far)['verses']
+    assert helped[1]['suspect'] == [] and helped[1]['onset'] == pytest.approx(3.72, abs=0.03)
+    # no chapter of the maker's: nothing changes
+    assert judge.measure(SELAH_VERSES, SELAH_HEARD, sound, None) == judge.measure(SELAH_VERSES, SELAH_HEARD, sound)
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Planting: where a fault is put, from the maker's measure of each gap
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 

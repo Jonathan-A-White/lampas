@@ -491,3 +491,93 @@ def test_a_long_sound_before_the_quiet_the_next_first_letter_begins_at_is_in_nei
     cut = align.cut_chapter(wave_of(parts), [verse(1, 'a b'), verse(2, 'when the')], {1: [0.6, 1.4], 2: [2.37, 3.1]}, SLOP)
     assert near(cut['verses'][0][2], 1.60)
     assert near(cut['verses'][1][1], 2.37 - 0.05)
+
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+# mw-ar5k42b.51: one rule each for a number read with 'and', a hard name, and a Psalm title the narrator did not read
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def test_spell_allows_the_narrators_and_in_a_number_over_a_hundred():
+    # Genesis 11:19, 11:21: the text is spelled 'two hundred nine'; the narrator reads 'two hundred and nine' (mw-ar5k42b.14)
+    assert align.spell(209) == ['two', 'hundred', 'nine']
+    assert align.spell(209, narrator_and=True) == ['two', 'hundred', 'and', 'nine']
+    assert align.spell(153, narrator_and=True) == ['one', 'hundred', 'and', 'fifty', 'three']
+    assert align.spell(200, narrator_and=True) == ['two', 'hundred']  # nothing after the hundred, no 'and'
+    assert align.spell(1005, narrator_and=True) == ['one', 'thousand', 'and', 'five']
+    assert align.spell(1500, narrator_and=True) == ['one', 'thousand', 'five', 'hundred']
+    assert align.spell(42, narrator_and=True) == ['forty', 'two']
+    assert align.words_of('He lived 209 years.')[0] == ['he', 'lived', 'two', 'hundred', 'nine', 'years']  # the maker's text stays as it was
+
+
+def test_the_and_of_a_number_is_after_a_magnitude_and_before_the_smaller_part_only():
+    assert align.number_and('hundred', 'nine') and align.number_and('hundred', 'fifty') and align.number_and('thousand', 'five') and align.number_and('million', 'two')
+    assert not align.number_and('two', 'hundred') and not align.number_and('nine', 'years') and not align.number_and('hundred', 'years')
+    assert not align.number_and('called', 'nine')
+
+
+def test_a_hard_name_is_a_capitalised_word_that_is_no_common_one():
+    text = 'Hazar-gaddah, Heshmon, Beth-pelet, and the LORD said to Asher: "Then God came."'
+    assert align.name_tokens(text) == {'hazar': 'hazargaddah', 'gaddah': 'hazargaddah', 'heshmon': 'heshmon', 'beth': 'bethpelet', 'pelet': 'bethpelet', 'asher': 'asher'}
+    assert align.name_words(text) == {'hazar', 'gaddah', 'heshmon', 'beth', 'pelet', 'asher'}  # a hyphenated name is a name in each part; LORD, God, Then, and are not
+    assert align.name_words('they went in') == frozenset()
+
+
+def test_a_name_heard_alike_by_a_model_sounds_like_the_written_one():
+    # Genesis 46:24 'Jahzeel' heard 'jazil'; Joshua's place names (mw-ar5k42b.15, mw-zbgo4ep.58)
+    for heard, written in [('jazil', 'jahzeel'), ('refaim', 'rephaim'), ('iain ramin', 'ain rimmon'), ('pure', 'peor'), ('lus', 'luz'), ('neir', 'ner'), ('sela', 'selah'),
+                           ('osher', 'asher'), ('asha', 'asher'), ('hazargada', 'hazargaddah'), ('beth palet', 'bethpelet')]:
+        assert align.sounds_like(heard, written), (heard, written)
+    for heard, written in [('jacob', 'jahzeel'), ('esau', 'asher'), ('jacob', 'isaac'), ('', 'asher'), ('world', 'church')]:
+        assert not align.sounds_like(heard, written), (heard, written)
+
+
+def test_check_takes_a_name_by_its_sound_but_a_common_word_only_as_written():
+    assert not align.heard_as_written('palat', 'pelet')  # a word that is no name: one letter, as before
+    assert align.heard_as_written('palat', 'pelet', name=True)
+    assert align.heard_as_written('asha', 'asher', name=True)
+    assert align.heard_end_as_written(['they', 'went', 'to', 'beth', 'palat'], 'pelet', last=True, name=True)
+    assert not align.heard_end_as_written(['they', 'went', 'to', 'jacob'], 'pelet', last=True, name=True)  # another name is still a miss
+    assert not align.heard_end_as_written(['they', 'went', 'to', 'beth', 'palat'], 'pelet', last=True)
+
+
+def psalm_check(monkeypatch, tmp_path, heard: list[str], skipped: bool, capsys) -> str:
+    """run_check over one verse of a Psalm whose title (the first 3 words of verse 1) the narrator did not read (skipped) or read."""
+    (tmp_path / 'psa.json').write_text(json.dumps({'chapters': {'3': {'verses': [[1, 1.0, 5.0]]}}}), encoding='utf8')
+    psalm = {'n': 1, 'heading': True, 'words': 'psalm of david o lord how many'.split(), 'unconverted': [], 'text': 'Psalm of David. O LORD, how many', 'title_words': 3}
+
+    class Fake:
+        def __init__(self, scratch):
+            pass
+
+        def greedy(self, wave):
+            return heard
+
+    class Fetcher:
+        def get(self, url, dest):
+            return dest
+
+    monkeypatch.setattr(align, 'out_dir', lambda: tmp_path)
+    monkeypatch.setattr(align, 'read_slop', lambda: SLOP)
+    monkeypatch.setattr(align, 'read_quiet', lambda book, slop: {'titleSkipped': [3] if skipped else []})
+    monkeypatch.setattr(align, 'chapter_text', lambda book, chapter: [psalm])
+    monkeypatch.setattr(align, 'decode', lambda mp3: np.zeros(8 * SR, dtype='float32'))
+    monkeypatch.setattr(align, 'Model', Fake)
+    align.run_check('psa', tmp_path, Fetcher())
+    return capsys.readouterr().out
+
+
+def test_check_of_a_psalm_timed_without_its_title_looks_for_the_first_word_after_it(monkeypatch, tmp_path, capsys):
+    # the narrator did not read 'Psalm of David.' (mw-zbgo4ep.36): the verse's timing begins at 'O', and the title's 'psalm' is not what --check listens for
+    out = psalm_check(monkeypatch, tmp_path, ['o', 'lord', 'how', 'many'], True, capsys)
+    assert ' ok' in out.splitlines()[-2] and 'FAIL' not in out
+    # a Psalm timed with its title read still wants the title's first word, and misses it when the audio begins at 'O'
+    out = psalm_check(monkeypatch, tmp_path, ['psalm', 'of', 'david', 'o', 'lord', 'how', 'many'], False, capsys)
+    assert ' ok' in out.splitlines()[-2]
+    out = psalm_check(monkeypatch, tmp_path, ['o', 'lord', 'how', 'many'], False, capsys)
+    assert 'FAIL' in out
+
+
+def test_check_words_drop_the_title_only_of_a_chapter_timed_without_it():
+    psalm = {'n': 1, 'words': 'a psalm of o lord'.split(), 'title_words': 3}
+    assert align.check_words(psalm, True) == ['o', 'lord'] and align.check_words(psalm, False) == psalm['words']
+    assert align.check_words({'n': 2, 'words': ['hear', 'me']}, True) == ['hear', 'me']
