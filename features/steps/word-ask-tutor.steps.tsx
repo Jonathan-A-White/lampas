@@ -9,7 +9,9 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { db } from '../../src/data/db';
-import { forgetChapters } from '../../src/data/chapter';
+import { forgetChapters, type Chapter } from '../../src/data/chapter';
+import { setOpenChapter } from '../../src/data/readerChapter';
+import { readFileSync } from 'node:fs';
 import { forgetLexicon } from '../../src/data/lexicon';
 import { mulberry32, type Question } from '../../src/data/quiz';
 import { clearBus } from '../../src/events/bus';
@@ -166,6 +168,37 @@ describeFeature(feature, ({ Scenario }) => {
       expect(sent).toMatchObject({ kind: 'quiz', lemma, answers: [] });
       expect(sent).not.toHaveProperty('form');
       expect(sent).not.toHaveProperty('parse');
+    });
+  });
+
+  Scenario('Ask the tutor on a Quick test question of a phrase word sends the parsing of its last word', ({ Given, When, And, Then }) => {
+    Given('Lampas is opened on the Quick test behind a fake Postern, on the word {string} of John 10', async (_, lemma: string) => {
+      const john = JSON.parse(readFileSync('public/data/jhn/10.json', 'utf8')) as Chapter;
+      const verse = john.verses.find((v) => v.g.some((w, i) => i > 0 && w.l.normalize('NFC') === 'μή' && v.g[i - 1].l.normalize('NFC') === 'εἰ'));
+      if (!verse) throw new Error('John 10 has no εἰ μή');
+      const phrase: Question = {
+        lemma, prompt: lemma, form: 'εἰ μὴ', reference: `John 10:${verse.n}`, book: 'jhn', chapter: 10, verse: verse.n,
+        gloss: 'except; if not', options: ['except; if not', 'law', 'sin', 'spirit'],
+      };
+      await open('#/test', { questions: [phrase, AMEN], index: 0, picked: null, missed: [] });
+      setOpenChapter('jhn', 10);
+      await resume();
+    });
+    When('he taps a wrong gloss', async () => {
+      await user.click([...document.querySelectorAll<HTMLElement>('[data-option]')].find((o) => o.textContent !== 'except; if not')!);
+    });
+    And('he taps Ask the tutor on the question', tapsAskOnQuestion);
+    Then('the Reader is open with the sheet titled {string}', async (_, title: string) => {
+      await screen.findByRole('dialog', { name: /^Talk about / });
+      await titled(title);
+    });
+    And('the grist carries the quiz focus for the phrase {string} as {string} with the parsing of the word {string} in John 10:10', async (_, lemma: string, form: string, last: string) => {
+      await grists(1);
+      const john = JSON.parse(readFileSync('public/data/jhn/10.json', 'utf8')) as Chapter;
+      const word = john.verses.find((v) => v.n === 10)!.g.find((w) => w.t === last)!;
+      const parse = john.parse[word.p];
+      expect(parse).toBeTruthy();
+      expect(focus()).toMatchObject({ kind: 'quiz', lemma, form, parse });
     });
   });
 

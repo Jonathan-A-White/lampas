@@ -3,7 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAlive } from 'pwa-kit/alive';
 import { useEffect, useState } from 'react';
-import { wordLemma, wordParse } from './data/chapter';
+import { wordLemma, wordParse, type Chapter, type GreekWord } from './data/chapter';
 import { holdsLemma } from './data/lemma';
 import { lookupLemma } from './data/lexicon';
 import { getLanguages, listWords, recordAnswer } from './data/repositories';
@@ -27,6 +27,20 @@ import { useSettled } from './ui/settle';
 import { faceOf } from './script/greekLang';
 
 type Round = { status: 'loading' } | { status: 'offer' } | { status: 'ready'; questions: Question[] };
+
+/**
+ * The word of a verse that is the place a question's form shows: the one whose card form is the form and which holds the lemma. A phrase ('εἰ μή', form 'εἰ μὴ') is a place of several words together
+ * (mw-indx1x6.107), so its place is its last word, the words before it making up the rest of the form: that word is the one whose parsing is sent (mw-indx1x6.120).
+ */
+function placeOfForm(chapter: Chapter, words: readonly GreekWord[], lemma: string, form: string, hebrew: boolean): GreekWord | undefined {
+  const parts = hebrew ? [lemma] : lemma.normalize('NFC').split(' ').filter((p) => p !== '');
+  const size = parts.length > 1 ? parts.length : 1;
+  const last = parts.length > 1 ? parts[parts.length - 1] : lemma;
+  return words.find((w, at) => {
+    if (at < size - 1 || !holdsLemma(new Set([last]), wordLemma(w))) return false;
+    return words.slice(at - size + 1, at + 1).map((x) => cardForm(chapter, x)).join(' ') === form;
+  });
+}
 
 /** A round: words of the languages he chose, each asked among the glosses of words of its own language and showing its form from the chapter of its own (src/data/quizWords.ts). */
 async function drawRound(random: Random): Promise<Question[]> {
@@ -122,7 +136,7 @@ export function QuizScreen({ newRandom = () => Math.random }: { newRandom?: () =
     const about = askAbout(question, { book: open.book, chapter: open.chapter, verse: 1 });
     const [forms, entry] = await Promise.all([loadForms(hebrew ? 'hbo' : 'grc'), lookupLemma(question.lemma, hebrew ? 'hbo' : 'grc')]);
     const verse = forms?.verses.find((v) => v.n === question.verse);
-    const word = question.form === undefined ? undefined : verse?.g.find((w) => forms && cardForm(forms, w) === question.form && holdsLemma(new Set([question.lemma]), wordLemma(w)));
+    const word = forms && verse && question.form !== undefined ? placeOfForm(forms, verse.g, question.lemma, question.form, hebrew) : undefined;
     const focus: QuizFocus = {
       kind: 'quiz',
       lemma: question.lemma,
