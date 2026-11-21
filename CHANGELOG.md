@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.311
+_2026-11-21_
+- Fixed: Sermon sources no longer lists Moody, Whitefield and John Wesley twice.
+- Fixed: In another book no longer offers a commentary at a verse the commentary does not cover, such as Be Skillful at Proverbs 19:3.
+
 ## 0.7.310
 _2026-11-21_
 - Fixed: Asking the tutor from a Quick test question of a two-word entry like "εἰ μή" now tells it the grammar of the word, as it does for any other word.

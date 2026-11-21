@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.311",
+    "date": "2026-11-21",
+    "story": "mw-qtu3zvz.229",
+    "kind": "fixed",
+    "text": "Sermon sources no longer lists Moody, Whitefield and John Wesley twice."
+  },
+  {
+    "version": "0.7.311",
+    "date": "2026-11-21",
+    "story": "mw-qtu3zvz.238",
+    "kind": "fixed",
+    "text": "In another book no longer offers a commentary at a verse the commentary does not cover, such as Be Skillful at Proverbs 19:3."
+  },
+  {
     "version": "0.7.310",
     "date": "2026-11-21",
     "story": "mw-indx1x6.120",
