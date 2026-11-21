@@ -12,6 +12,8 @@
 //  - 'needs-touch' (the audio will not start until the page is touched): the next touch anywhere starts it again; it never pretends to listen.
 //  - The wake listens on a live input, not simply the phone's default (wakeInput.ts, mw-5r3p30.1213): on his car's Bluetooth the default is the car's route,
 //    which carries no sound; the shared chooser's Bluetooth pick is tried first, an input that gives only silence is left for the next, and a log line names it.
+//  - What the wake does is kept in the wake log (wakeLog.ts, mw-5r3p30.1231): its inputs, what each heard, where it settled, the session's states and the command's
+//    input; Settings, Hands-free 'Send what Hands-free heard' and a three-finger long press send it to the makers (sendLog.ts).
 //  - Any other failed wake (the model cannot be fetched, no microphone, a browser with no wake) is told on screen and aloud (COULD_NOT_START); the mic-less and fetch-less kinds
 //    start again by themselves when the network is back ('online') or on the next touch anywhere, and the setting stays On; a browser that cannot do it at all turns it Off.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
@@ -27,6 +29,7 @@ import { runCommand } from './commands';
 import { isMicBusy, onMicBusy } from './micBusy';
 import { forgetPlayback, goOnAtClose, SAID_KEY, silenceAtWake } from './playback';
 import { forgetWakeInputs, startOnLiveInput } from './wakeInput';
+import { logWake } from './wakeLog';
 
 /** Where the build serves the wake model (a hashed asset, fetched only when Hands-free is first turned On). */
 export const WAKE_MODEL_URL: string = modelUrl;
@@ -177,10 +180,12 @@ const wake: WakePort = {
       return { ok: false, kind: 'other', message: err instanceof Error ? err.message : String(err) };
     }
     const quietMs = handsFreeSeam.quietMs;
+    const choosing = canChooseInput();
+    if (!choosing) logWake('this browser cannot list its inputs: the wake opens the default microphone');
     return browserWake({
       model: loaded,
       ready: () => chimes.ready(),
-      ...(canChooseInput() ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
+      ...(choosing ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
     }).start(onWake);
   },
 };
@@ -213,7 +218,18 @@ function refused(text: string): void {
 /** True once a failure has been said, until the wake is waiting again, so each touch that fails again does not say it again. */
 let toldFailure = false;
 
+/** The state as the wake log says it: its name, and a failure's kind and message. */
+const stateText = (next: HandsFreeState): string => ('kind' in next ? `${next.name} (${String(next.kind)}${'message' in next && next.message ? `: ${String(next.message)}` : ''})` : next.name);
+
+/** The command's recogniser listens on the input a hold chooses; the log says which (the car's hands-free microphone, or the default). */
+async function commandInput(): ReturnType<typeof openBluetoothInput> {
+  const input = await openBluetoothInput();
+  logWake(input ? `the command listens on "${input.label}"` : 'the command listens on the default microphone');
+  return input;
+}
+
 function onState(next: HandsFreeState): void {
+  if (next.name !== state.name) logWake(`state: ${stateText(next)}`);
   setState(next);
   untouch?.();
   if (next.name === 'needs-touch') startOnTouch(false);
@@ -240,7 +256,7 @@ function sessionNow(): HandsFree {
       // the transcriber every hold of Lampas listens through (askTranscriber wraps it), so a command is heard as a Talk hold is
       // the command is heard on the car's Bluetooth or hands-free input when the phone lists one, as a hold-to-talk is (composer's chooser); a recogniser handed no
       // input takes whatever microphone Android picks, which on his car's Bluetooth is the route that carries no sound (mw-5r3p30.1224). No such input: the default, as before.
-      listen: (options) => browserSpeech.start({ ...options, ...(canChooseInput() ? { openInput: openBluetoothInput } : {}) }),
+      listen: (options) => browserSpeech.start({ ...options, ...(canChooseInput() ? { openInput: commandInput } : {}) }),
       chime: chimePort,
       ...(typeof document === 'undefined' ? {} : { visibility: documentVisibility(document) }),
       clock: clockNow(),
