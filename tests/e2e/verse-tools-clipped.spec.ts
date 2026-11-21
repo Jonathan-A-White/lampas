@@ -18,18 +18,26 @@ for (const size of SIZES) {
     await page.addInitScript(() => Object.defineProperty(navigator, 'share', { value: () => Promise.resolve(), configurable: true }));
     await routePostern(page, makeFakePostern());
     await openUnlocked(page);
-    await page.addInitScript(() => {
-      const open = IDBFactory.prototype.open;
-      IDBFactory.prototype.open = function (this: IDBFactory, name: string, version?: number) {
-        const request = version === undefined ? open.call(this, name) : open.call(this, name, version);
-        if (name !== 'lampas') return request;
-        request.addEventListener('success', () => {
-          const tx = request.result.transaction(['settings'], 'readwrite');
-          tx.objectStore('settings').put({ key: 'resource.logos', value: 'on' });
-        });
-        return request;
-      } as typeof IDBFactory.prototype.open;
-    });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
+    // Logos On: the setting is put in the app's store through raw IndexedDB, as the app wrote it, once the first page has made the store
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          const open = indexedDB.open('lampas');
+          open.onerror = () => reject(open.error);
+          open.onsuccess = () => {
+            const db = open.result;
+            const tx = db.transaction('settings', 'readwrite');
+            tx.objectStore('settings').put({ key: 'resource.logos', value: 'on' });
+            tx.oncomplete = () => {
+              db.close();
+              resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+          };
+        }),
+    );
     await page.goto('/#/?b=1jn&c=2&v=1');
     await page.reload();
     const view = page.getByRole('region', { name: 'Verse view' });
