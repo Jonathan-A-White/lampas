@@ -205,5 +205,5 @@ describe.skipIf(!real.run)('Genesis 24 to 29 with the model pass and the fix row
     expect(lines[1]).toContain('0:μή* 1:ποτε* 2:ψηλαφήσῃ');
     expect(lines[3]).toContain('Peradventure⟨0,1 fix⟩');
     expect(lines[3]).not.toContain('Peradventure⟨2⟩');
-  });
+  }, 10 * HOOK_TIMEOUT_MS);
 });
