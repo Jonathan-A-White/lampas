@@ -376,7 +376,7 @@ generated file for each of nine kinds (`lexicon`, `grammar`, `greek-text`, `hebr
 `entriesOf(kind)`, `WORK_GROUPS`, and `CATALOGUE_VERSION`, the one stamp in every file: a hash of all the entries, so a library kept on a phone can be re-matched when it changes).
 An entry (`CatalogueEntry`) is a Logos resource by its true Resource ID, a kind, a `title` and `short`, where Lampas opens it (`opens`: a word, a parsing, a verse, a chapter, a day, its start, or a place in
 its own index), one line of `value` (what it adds beyond Logos alone: an entry with none is not in the catalogue), `covers` (a commentary volume's or interlinear's books, read from the export's
-ReferenceSupersets; absent means the whole New Testament), a grammar's `sections`, `starts` (`on` or `pinned`; Off is never a default) and `via` (`id`, `type` or `series`: how it joined).
+ReferenceSupersets; absent means the whole New Testament), `within` (a commentary that holds only part of a book it covers: the book's code and its span, `pro: 1.8-9.18`; `npm run logos:catalogue` writes it), a grammar's `sections`, `starts` (`on` or `pinned`; Off is never a default) and `via` (`id`, `type` or `series`: how it joined).
 
 **The rules** are `data/logos/catalogue-rules.json`, the factory's file: `values` (the value line a kind falls back on), `works` (the groups of volumes the tutor links to as one work), `ids` (a Resource ID, its kind
 and every field the export cannot give, so an id is written from the rules alone and comes out the same whichever export is read), `types` (every row of the export of a Logos type joins: reverse interlinears

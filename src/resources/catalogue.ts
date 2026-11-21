@@ -40,6 +40,8 @@ export interface CatalogueEntry {
   value: string;
   /** a commentary volume or an interlinear: our book codes (src/data/books.ts), read from the export's ReferenceSupersets; absent means the whole New Testament */
   covers?: string[];
+  /** a commentary that holds only part of a book it covers: that book's code and the span it holds, `1.8-9.18` (src/library/parseExport.ts spansOfSupersets); the volume is offered only at a place inside it */
+  within?: Record<string, string>;
   /** a Bible or a Hebrew text: the parts of the canon it holds (New Testament, Old Testament, Apocrypha), from the export's ReferenceSupersets or, where those cannot say, from the rules (scripts/logos-catalogue.ts) */
   parts?: LogosPart[];
   /** a grammar only: its parts and the ladder ideas each teaches (today's GrammarBook.sections) */
