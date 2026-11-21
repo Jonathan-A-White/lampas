@@ -328,3 +328,29 @@ for (const idea of LONG_CARDS) {
     await expectRowAboveNext(page);
   });
 }
+
+// Turning the phone after a wrong answer (mw-indx1x6.114, from the Tester's mw-indx1x6.103): the scroll that shows the row ran once, when the answer was marked, so a turn to landscape and
+// back left the row behind Next again. The box shows it again whenever it is resized.
+async function turnAndBack(page: Page): Promise<void> {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.setViewportSize({ width: 390, height: 844 });
+}
+
+test('a drill on The first declension still shows its Study this row above Next after the phone is turned to landscape and back', async ({ page }) => {
+  expect(await drillToWrong(page, { id: 'declension-1', title: 'The first declension' })).toBe('wrong');
+  await expectRowAboveNext(page);
+  await turnAndBack(page);
+  await expectRowAboveNext(page);
+  await shot(page, 'study-this-drill-turned');
+});
+
+for (const idea of LONG_CARDS) {
+  test(`a drill on ${idea.title} still shows its Study this row above Next after the phone is turned`, async ({ page }) => {
+    const found = await drillToWrong(page, idea);
+    if (found === 'unlisted') test.skip(true, 'the goal does not list this idea');
+    if (found === 'declined') test.skip(true, 'Drill it has too few questions he has not been asked for this idea');
+    expect(found).toBe('wrong');
+    await turnAndBack(page);
+    await expectRowAboveNext(page);
+  });
+}
