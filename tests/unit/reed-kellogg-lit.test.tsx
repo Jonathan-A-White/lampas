@@ -46,3 +46,26 @@ describe('ReedKellogg lights words', () => {
     expect(litWords()).toEqual([]);
   });
 });
+
+// A word outside the clause (mw-5r3p30.1227): ReedKellogg draws its short line and a button on the word, above the base line, and the word under it.
+describe('ReedKellogg draws an address above the base line', () => {
+  const tree: Diagram = {
+    clauses: [{ clause: { subject: slotOf(1), verb: slotOf(2), independent: [{ kind: 'address', slot: { words: [{ i: 3 }], modifiers: [{ kind: 'word', word: { i: 0 }, modifiers: [] }] } }] } }],
+  };
+  const top = (el: Element): number => Number.parseFloat((el as HTMLElement).style.top);
+
+  it('has a line of its own, a button for Τεκνία above the base line, and μου under it', () => {
+    render(<ReedKellogg diagram={tree} words={wordsOf('μου', 'I', 'write', 'Τεκνία')} mode="english" reference="1 John 2:1" onWord={() => undefined} measure={measure} />);
+    const lines = document.querySelectorAll('[data-kind="independent"]');
+    expect(lines).toHaveLength(1);
+    const base = document.querySelector('[data-kind="base"]')!;
+    const y = (el: Element, k: 'y1' | 'y2') => Number.parseFloat(el.getAttribute(k) ?? '');
+    expect(y(lines[0], 'y1')).toBeLessThan(y(base, 'y1'));
+    const address = document.querySelector('button[data-word="3"]')!;
+    const mou = document.querySelector('button[data-word="0"]')!;
+    const verb = document.querySelector('button[data-word="2"]')!;
+    expect(top(address)).toBeLessThan(top(mou));
+    expect(top(mou)).toBeLessThan(top(verb));
+  });
+});
+

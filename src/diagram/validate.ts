@@ -3,7 +3,7 @@
 // an English imperative); so is an implied-only verb (an understood 'is'): an empty slot is one with no word of any kind.
 import type { Clause, Diagram, Modifier, Slot, TokenRef } from './types';
 
-export type FaultKind = 'out-of-range' | 'used-twice' | 'missing' | 'empty-subject' | 'empty-verb' | 'bad-apart';
+export type FaultKind = 'out-of-range' | 'used-twice' | 'missing' | 'empty-subject' | 'empty-verb' | 'empty-independent' | 'bad-apart';
 
 export interface Fault {
   kind: FaultKind;
@@ -70,6 +70,11 @@ export function validateDiagram(tree: Diagram, wordCount: number): Validation {
     slot(c.subject, `${place} > subject`);
     slot(c.verb, `${place} > verb`);
     if (c.complement) slot(c.complement.slot, `${place} > ${c.complement.kind}`);
+    c.independent?.forEach((e, k) => {
+      const here = `${place} > ${e.kind} ${k + 1}`;
+      if (e.slot.words.length === 0) faults.push({ kind: 'empty-independent', at: here, message: `the ${e.kind} has no word, at ${here}` });
+      slot(e.slot, here);
+    });
   };
 
   tree.clauses.forEach((entry, k) => {

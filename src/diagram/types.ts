@@ -42,10 +42,20 @@ export interface Complement {
   slot: Slot;
 }
 
+/** A word that stands outside the clause's grammar (mw-5r3p30.1227): a word of direct address (a vocative, 'Τεκνία μου') or an interjection ('Behold', ἰδού). Reed-Kellogg draws it on a line of its own above the base line, joined to nothing; its modifiers hang beneath it. */
+export type IndependentKind = 'address' | 'interjection';
+
+export interface IndependentElement {
+  kind: IndependentKind;
+  slot: Slot;
+}
+
 export interface Clause {
   subject: Slot;
   verb: Slot;
   complement?: Complement;
+  /** the words outside the clause (an address, an interjection); left out when there are none, so a diagram kept before this field existed draws unchanged */
+  independent?: IndependentElement[];
 }
 
 /** A clause of the verse; the second and later are coordinate with the one before, stacked under it and joined by a dotted step line carrying `joinedBy` (the conjunction). */

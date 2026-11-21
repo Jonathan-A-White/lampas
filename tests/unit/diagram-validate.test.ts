@@ -122,3 +122,32 @@ describe('the two fixtures of Colossians 3:1', () => {
     }
   });
 });
+
+describe('validateDiagram: a word outside the clause (an address or an interjection)', () => {
+  const withAddress = (slot: Diagram['clauses'][number]['clause']['subject']): Diagram =>
+    sentence({ subject: slotOf(0), verb: slotOf(1), independent: [{ kind: 'address', slot }] });
+
+  it('counts its words as placed: each once, with its modifiers', () => {
+    const tree = withAddress({ words: [{ i: 2 }], modifiers: [{ kind: 'word', word: { i: 3 }, modifiers: [] }] });
+    expect(validateDiagram(tree, 4)).toEqual({ ok: true });
+  });
+
+  it('faults a word placed both as an independent element and elsewhere', () => {
+    const faults = faultsOf(withAddress(slotOf(1)), 2);
+    expect(faults).toEqual([expect.objectContaining({ kind: 'used-twice', index: 1 })]);
+    expect(faults[0].at).toMatch(/address/);
+  });
+
+  it('faults a word twice inside the independent elements', () => {
+    const tree = sentence({ subject: slotOf(0), verb: slotOf(1), independent: [{ kind: 'address', slot: slotOf(2) }, { kind: 'interjection', slot: slotOf(2) }] });
+    expect(faultsOf(tree, 3).map((f) => f.kind)).toEqual(['used-twice']);
+  });
+
+  it('faults a word missing when the independent element is left out', () => {
+    expect(faultsOf(sentence({ subject: slotOf(0), verb: slotOf(1) }), 3).map((f) => f.kind)).toEqual(['missing']);
+  });
+
+  it('faults an independent element with no word', () => {
+    expect(faultsOf(withAddress({ words: [], modifiers: [] }), 2).map((f) => f.kind)).toEqual(['empty-independent']);
+  });
+});

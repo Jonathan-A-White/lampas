@@ -1,0 +1,144 @@
+{
+  "description": "1 John 2:1 in Greek: Τεκνία μου is a vocative, a word of direct address, so it stands in the main clause's `independent` list as an address (μου hanging under Τεκνία), never as a modifier of γράφω.",
+  "schemaVersion": "1",
+  "request": {
+    "ref": "1 John 2:1",
+    "lang": "greek",
+    "words": [
+      {
+        "i": 0,
+        "text": "Τεκνία",
+        "lemma": "τεκνίον",
+        "parse": "N-VPN"
+      },
+      {
+        "i": 1,
+        "text": "μου",
+        "lemma": "ἐγώ",
+        "parse": "P-1GS"
+      },
+      {
+        "i": 2,
+        "text": "ταῦτα",
+        "lemma": "οὗτος",
+        "parse": "D-APN"
+      },
+      {
+        "i": 3,
+        "text": "γράφω",
+        "lemma": "γράφω",
+        "parse": "V-PAI-1S"
+      },
+      {
+        "i": 4,
+        "text": "ὑμῖν",
+        "lemma": "σύ",
+        "parse": "P-2DP"
+      },
+      {
+        "i": 5,
+        "text": "ἵνα",
+        "lemma": "ἵνα",
+        "parse": "CONJ"
+      },
+      {
+        "i": 6,
+        "text": "μὴ",
+        "lemma": "μή",
+        "parse": "PRT-N"
+      },
+      {
+        "i": 7,
+        "text": "ἁμάρτητε",
+        "lemma": "ἁμαρτάνω",
+        "parse": "V-2AAS-2P"
+      },
+      {
+        "i": 8,
+        "text": "Καὶ",
+        "lemma": "καί",
+        "parse": "CONJ"
+      },
+      {
+        "i": 9,
+        "text": "ἐάν",
+        "lemma": "ἐάν",
+        "parse": "COND"
+      },
+      {
+        "i": 10,
+        "text": "τις",
+        "lemma": "τις",
+        "parse": "X-NSM"
+      },
+      {
+        "i": 11,
+        "text": "ἁμάρτῃ",
+        "lemma": "ἁμαρτάνω",
+        "parse": "V-2AAS-3S"
+      },
+      {
+        "i": 12,
+        "text": "παράκλητον",
+        "lemma": "παράκλητος",
+        "parse": "N-ASM"
+      },
+      {
+        "i": 13,
+        "text": "ἔχομεν",
+        "lemma": "ἔχω",
+        "parse": "V-PAI-1P"
+      },
+      {
+        "i": 14,
+        "text": "πρὸς",
+        "lemma": "πρός",
+        "parse": "PREP"
+      },
+      {
+        "i": 15,
+        "text": "τὸν",
+        "lemma": "ὁ",
+        "parse": "T-ASM"
+      },
+      {
+        "i": 16,
+        "text": "πατέρα",
+        "lemma": "πατήρ",
+        "parse": "N-ASM"
+      },
+      {
+        "i": 17,
+        "text": "Ἰησοῦν",
+        "lemma": "Ἰησοῦς",
+        "parse": "N-ASM"
+      },
+      {
+        "i": 18,
+        "text": "χριστὸν",
+        "lemma": "Χριστός",
+        "parse": "N-ASM"
+      },
+      {
+        "i": 19,
+        "text": "δίκαιον",
+        "lemma": "δίκαιος",
+        "parse": "A-ASM"
+      }
+    ]
+  },
+  "expect": {
+    "clauses.0.clause.verb.words.0.i": {
+      "equals": 3
+    },
+    "clauses.0.clause.independent.0.kind": {
+      "equals": "address"
+    },
+    "clauses.0.clause.independent.0.slot.words.0.i": {
+      "equals": 0
+    },
+    "clauses.0.clause.independent.0.slot.modifiers.0.word.i": {
+      "equals": 1
+    }
+  }
+}

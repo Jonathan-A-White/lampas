@@ -9,6 +9,9 @@
 //     last the subordinate clauses (a base line a drop below, a dotted line from the word down to its verb, the connector beside it). Later ones attach further left, so
 //     a long slant never crosses an earlier one; a clause that would reach left past a later one's line is moved right, and its dotted line slants to its verb.
 //     A slot's hangings push the next slot of the clause right of them, as far as they share a row with it.
+//   - A word outside the clause (an address, an interjection; Clause.independent, mw-5r3p30.1227) stands on a short line of its own ABOVE the base line, at the left,
+//     joined to nothing; what modifies it hangs beneath that line as usual, clear of the base line's labels. The clause reaches that much higher (`rise`), and what is
+//     placed above it (a clause stacked on it, or the dotted line to a subordinate clause) is given the room.
 //   - Coordinate clauses are stacked, joined by a dotted step line in the left margin carrying the conjunction.
 import type { Clause, ClauseEntry, Diagram, DiagramWords, Modifier, Slot, TokenRef } from './types';
 
@@ -31,6 +34,8 @@ const STAGGER = { min: 6, max: 14 };
 const CLAUSE_DROP = 2 * ROW;
 const STACK_GAP = 2 * ROW;
 const STEP_X = 20;
+/** The room between the lowest line of an independent element and the top of the base line's labels. */
+const INDEPENDENT_GAP = 8;
 
 export type SegmentKind =
   | 'base'
@@ -43,7 +48,8 @@ export type SegmentKind =
   | 'object-line'
   | 'indirect-slant'
   | 'join'
-  | 'step';
+  | 'step'
+  | 'independent';
 
 export interface LayoutSegment {
   kind: SegmentKind;
@@ -60,7 +66,7 @@ export interface LayoutSegment {
   attachesTo?: number;
 }
 
-export type LabelRole = 'subject' | 'verb' | 'complement' | 'modifier' | 'preposition' | 'object' | 'indirect' | 'connector' | 'conjunction';
+export type LabelRole = 'subject' | 'verb' | 'complement' | 'modifier' | 'preposition' | 'object' | 'indirect' | 'connector' | 'conjunction' | 'address' | 'interjection';
 
 export interface LayoutLabel {
   id: number;
@@ -211,7 +217,7 @@ function hang(ctx: Ctx, scene: Scene, list: Hanger[], head: LayoutLabel | null, 
       cur += 2 * ROW + object.depth;
     } else {
       const sub = clauseScene(ctx, h.clause, clause);
-      const yc = y0 + cur + CLAUSE_DROP;
+      const yc = y0 + cur + CLAUSE_DROP + sub.rise;
       // verb under the word it hangs on, unless that would reach left past a later hanger's line: then the join slants to the verb
       const dx = Math.max(ax - sub.anchor, keep - boundsOf(sub.scene).minX);
       merge(scene, sub.scene, dx, yc);
@@ -220,7 +226,7 @@ function hang(ctx: Ctx, scene: Scene, list: Hanger[], head: LayoutLabel | null, 
       scene.segments.push({ kind: 'join', x1: ax, y1: y0, x2, y2, dotted: true, clause: sub.id, attachesTo });
       const row = y0 + cur + ROW;
       if (h.connector) scene.labels.push(labelFor(ctx, h.connector, 'connector', sub.id, ax + ((x2 - ax) * (row - y0)) / (y2 - y0) + 8, row));
-      cur += CLAUSE_DROP + sub.depth;
+      cur += CLAUSE_DROP + sub.rise + sub.depth;
     }
   });
   return { depth: cur, attachMax };
@@ -262,6 +268,8 @@ interface ClauseScene {
   anchor: number;
   /** how far below the base line the clause reaches */
   depth: number;
+  /** how far above the room a clause has by itself (its labels' height) the clause reaches: what stands on its own lines above the base line */
+  rise: number;
 }
 
 /** A clause on a base line at y 0 from x 0. */
@@ -296,7 +304,17 @@ function clauseScene(ctx: Ctx, clause: Clause, parent: number | null): ClauseSce
     if (part.role === 'verb') anchor = slot.head ? x + slot.head.x + slot.head.width / 2 : x;
   });
   scene.segments.unshift({ kind: 'base', x1: 0, y1: 0, x2: Math.max(wordsRight, attachMax), y2: 0, clause: id, parent }, ...bars);
-  return { id, scene, anchor, depth: Math.max(0, boundsOf(scene).maxY) };
+  // the words outside the clause, side by side at its left, each on its own line high enough that what hangs under it clears the base line's labels
+  let across = 0;
+  for (const element of clause.independent ?? []) {
+    const part = slotScene(ctx, element.slot, element.kind, id, [], -Infinity);
+    const y = -(LABEL_H + INDEPENDENT_GAP + part.depth);
+    merge(scene, part.scene, across + PAD, y);
+    scene.segments.push({ kind: 'independent', x1: across, y1: y, x2: across + PAD + part.wordsRight + PAD, y2: y, clause: id });
+    across = Math.max(across + PAD + part.wordsRight + PAD, boundsOf(part.scene).maxX + PAD) + WORD_GAP;
+  }
+  const rise = Math.max(0, -boundsOf(scene).minY - LABEL_H);
+  return { id, scene, anchor, depth: Math.max(0, boundsOf(scene).maxY), rise };
 }
 
 /** The picture of `tree`: lines and labels, from `words` (what {i} indexes) and `measure` (a label's width). `rtl`: a Hebrew diagram, whose slots read right to left. */
@@ -307,7 +325,7 @@ export function layoutDiagram(tree: Diagram, words: DiagramWords, measure: (text
   tree.clauses.forEach((entry: ClauseEntry) => {
     const sub = clauseScene(ctx, entry.clause, null);
     const bounds = boundsOf(sub.scene);
-    const y: number = previous ? previous.bottom + STACK_GAP : 0;
+    const y: number = previous ? previous.bottom + STACK_GAP + sub.rise : 0;
     merge(scene, sub.scene, 0, y);
     if (previous && entry.joinedBy) {
       const xs = Math.min(previous.minX, bounds.minX) - STEP_X;
