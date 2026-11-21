@@ -21,7 +21,7 @@ import type { WakeModel } from 'voice-kit/wake';
 import { handsFreePauseSetting, handsFreeSetting } from '../settings/definitions';
 import { handsFreePauseMs, type HandsFreePauseValue } from '../settings/definitions/handsFreePause';
 import { getSetting, onSetting, setSetting } from '../settings/store';
-import { speakText } from '../speech/greek';
+import { SETTING_SAID_KEY, speakText, whenSaid } from '../speech/greek';
 import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
 import { isMicBusy, onMicBusy } from './micBusy';
@@ -75,6 +75,60 @@ const realClock: HandsFreeClock = {
   clearTimeout: (handle) => globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
 };
 const clockNow = (): HandsFreeClock => handsFreeSeam.clock ?? realClock;
+
+// --- the microphone the wake holds ----------------------------------------------------------------------------------------------------------------
+
+/** How long after the wake lets go of the microphone a sentence waits, for the phone's audio to settle back from the call route (a sentence started in the same instant is clipped at both ends, mw-rl10piw.50). */
+const MIC_SETTLE_MS = 150;
+
+/** The longest a sentence waits for the microphone to be let go, should the wake never say it has stopped. */
+const MIC_WAIT_MS = 2000;
+
+let wakesOpen = 0;
+let closedAt = Number.NEGATIVE_INFINITY;
+const closeWaiters = new Set<() => void>();
+
+function wakeClosed(): void {
+  wakesOpen = Math.max(0, wakesOpen - 1);
+  if (wakesOpen > 0) return;
+  closedAt = Date.now();
+  [...closeWaiters].forEach((waiter) => waiter());
+}
+
+/** Calls `then` once the wake has let go of the microphone and the phone's audio has had MIC_SETTLE_MS to settle: at once when no wake is open and none closed just now.
+ * A sentence said at the moment the microphone closes is clipped at both ends on a phone (mw-rl10piw.50). Returns the way to give up waiting, which never calls `then`. */
+export function whenMicClosed(then: () => void): () => void {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let over = false;
+  const give = (): void => {
+    over = true;
+    clearTimeout(timer);
+    closeWaiters.delete(check);
+  };
+  const go = (): void => {
+    if (over) return;
+    give();
+    then();
+  };
+  function check(): void {
+    if (over || wakesOpen > 0) return;
+    clearTimeout(timer);
+    timer = setTimeout(go, MIC_SETTLE_MS);
+  }
+  if (wakesOpen === 0) {
+    const left = MIC_SETTLE_MS - (Date.now() - closedAt);
+    if (left <= 0) {
+      then();
+      return () => undefined;
+    }
+    timer = setTimeout(go, left);
+    return give;
+  }
+  closeWaiters.add(check);
+  // a wake that never says it has stopped must not keep the sentence silent
+  timer = setTimeout(go, MIC_WAIT_MS);
+  return give;
+}
 
 // --- the model, fetched once -------------------------------------------------------------------------------------------------------------------
 
@@ -177,11 +231,37 @@ const wake: WakePort = {
       return { ok: false, kind: 'other', message: err instanceof Error ? err.message : String(err) };
     }
     const quietMs = handsFreeSeam.quietMs;
-    return browserWake({
-      model: loaded,
-      ready: () => chimes.ready(),
-      ...(canChooseInput() ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
-    }).start(onWake);
+    wakesOpen++;
+    let result: Awaited<ReturnType<WakePort['start']>>;
+    try {
+      result = await browserWake({
+        model: loaded,
+        ready: () => chimes.ready(),
+        ...(canChooseInput() ? { startWake: (options) => startOnLiveInput(options, quietMs === undefined ? {} : { quietMs }) } : {}),
+      }).start(onWake);
+    } catch (err) {
+      wakeClosed();
+      throw err;
+    }
+    if (!result.ok) {
+      wakeClosed();
+      return result;
+    }
+    // the sentence 'Hands-free off' waits for this stop (whenMicClosed)
+    let stopped = false;
+    return {
+      ...result,
+      stop() {
+        try {
+          result.stop();
+        } finally {
+          if (!stopped) {
+            stopped = true;
+            wakeClosed();
+          }
+        }
+      },
+    };
   },
 };
 
@@ -256,10 +336,20 @@ function sessionNow(): HandsFree {
   return session;
 }
 
-/** Starts the session when Hands-free is wanted and no other feature has the microphone; stops it otherwise. */
+/** Gives up a start that waits for the sentence 'Hands-free on' to end. */
+let cancelStart: (() => void) | null = null;
+
+/** Starts the session when Hands-free is wanted and no other feature has the microphone; stops it otherwise. A start waits for the sentence the switch is saying ('Hands-free on'):
+ * the microphone opening in the same instant clips it at both ends on a phone (mw-rl10piw.50). */
 function sync(): void {
-  if (wanted && !isMicBusy()) void sessionNow().start();
-  else session?.stop();
+  cancelStart?.();
+  cancelStart = null;
+  if (wanted && !isMicBusy()) {
+    cancelStart = whenSaid(SETTING_SAID_KEY, () => {
+      cancelStart = null;
+      if (wanted && !isMicBusy()) void sessionNow().start();
+    });
+  } else session?.stop();
 }
 
 onMicBusy(sync);
@@ -278,6 +368,8 @@ export function runHandsFree(on: boolean): void {
 /** Ends the session and forgets it, the model and the notice (tests: the next start is made afresh, with the seam's clock). */
 export function resetHandsFree(): void {
   wanted = false;
+  cancelStart?.();
+  cancelStart = null;
   session?.stop();
   session = null;
   model = null;
@@ -289,6 +381,9 @@ export function resetHandsFree(): void {
   forgetPlayback();
   forgetAsk();
   forgetWakeInputs();
+  wakesOpen = 0;
+  closedAt = Number.NEGATIVE_INFINITY;
+  closeWaiters.clear();
   setNotice(null);
   setState(OFF);
 }
