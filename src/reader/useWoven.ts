@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { sourceLanguage, type Chapter, type GreekWord } from '../data/chapter';
 import { formPasses } from '../data/grammar/formLevel';
-import { weaveVerse, withBeside, withWordRule, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../data/weave';
+import { weaveVerse, withBeside, withGone, withWordRule, wovenInOrder, type WeaveLemmas, type WovenVerse } from '../data/weave';
 import type { ReaderSettings } from './useReaderSettings';
 
 const EMPTY_LEMMAS: ReadonlySet<string> = new Set();
@@ -25,10 +25,10 @@ export function wovenOf(chapter: Chapter | null, settings: Partial<ReaderSetting
         : (w: GreekWord) => formPasses(w.p, levels, weaveGrammar);
   const lemmas: WeaveLemmas = { solid: solid ?? EMPTY_LEMMAS, learning: withLearning ? learning ?? EMPTY_LEMMAS : undefined, formPasses: formOk };
   // each verse's weave carries the rule for a single Greek word, which a variant chip follows word by word (mw-9ji6ek0.37)
-  // and the Greek words he knows that an English chunk still hides are shown beside it (mw-5r3p30.878)
+  // and the Greek words he knows that an English chunk still hides are shown beside it (mw-5r3p30.878); an English word added by design falls away between woven chunks (mw-u2w5klk.349.69)
   return chapter.verses.map((v) => {
     const woven = weaveVerse(v, lemmas);
-    return withWordRule(withBeside(wovenInOrder(v, woven, weaveOrder ?? 'english'), v, lemmas), lemmas);
+    return withWordRule(withGone(withBeside(wovenInOrder(v, woven, weaveOrder ?? 'english'), v, lemmas), v), lemmas);
   });
 }
 

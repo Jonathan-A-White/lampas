@@ -17,6 +17,8 @@ export type WovenVerse = Woven[] & {
   readonly word?: (word: GreekWord) => 'solid' | 'learning' | null;
   /** per chunk, the Greek words he knows that the chunk stands for while the chunk itself stays English (mw-5r3p30.878); see besideVerse */
   readonly beside?: readonly (readonly GreekWord[] | undefined)[];
+  /** per chunk, true when an English word added by design is not drawn because the chunks drawn on either side of it are woven (mw-u2w5klk.349.69); see goneVerse */
+  readonly gone?: readonly boolean[];
 };
 
 /** The lemmas the weave knows (NFC): the solid ones, and with Weave 'Solid and learning words' the learning ones too. */
@@ -81,6 +83,40 @@ export function besideVerse(verse: Verse, woven: readonly Woven[], lemmas: Weave
 /** The weave `woven` of `verse` knows the Greek words known beside its English chunks (besideVerse). It is not an element of the weave. */
 export const withBeside = <T extends Woven[]>(woven: T, verse: Verse, lemmas: WeaveLemmas): T & Pick<WovenVerse, 'beside'> =>
   Object.defineProperty(woven, 'beside', { value: besideVerse(verse, woven, lemmas), enumerable: false, configurable: true }) as T & Pick<WovenVerse, 'beside'>;
+
+/**
+ * The English words added by design that fall away (mw-u2w5klk.349.69, the Governor: they go once the words on both sides are in Greek), chunk by chunk in `verse.e`'s own indexes. A chunk is English by design when it has no
+ * Greek of its own (`g` empty, not a '-'), or when its English is supplied words only ('While' of Acts 18:12): the Greek is not there to be shown in its place. It is gone when the nearest chunk on each side of it, in the order
+ * the weave draws them (`woven.order`, else the English order), that is not itself English by design is woven; at a verse's start or end the one neighbour decides, and a verse with none has no word to fall away
+ * after. A chunk English for any other reason (its Greek not known yet, a Septuagint chunk not paired yet, a '-') is a neighbour that is not woven, so the word beside it stays; so does a design-English chunk that has a known
+ * Greek word drawn in gold beside it (besideVerse), for that word would go with it.
+ */
+export function goneVerse(verse: Verse, woven: WovenVerse): boolean[] {
+  const order = drawnOrder(verse, woven);
+  const design = (i: number): boolean => {
+    const chunk = verse.e[i];
+    if (woven[i] || chunk.t.trim() === '-' || woven.beside?.[i]) return false;
+    return chunk.g.length === 0 || (chunk.s !== undefined && ownEnglish(chunk) === '');
+  };
+  const gone = verse.e.map(() => false);
+  order.forEach((i, p) => {
+    if (!design(i)) return;
+    const near = (step: 1 | -1): number | undefined => {
+      for (let q = p + step; q >= 0 && q < order.length; q += step) if (!design(order[q])) return order[q];
+      return undefined;
+    };
+    const sides = [near(-1), near(1)].filter((j): j is number => j !== undefined);
+    gone[i] = sides.length > 0 && sides.every((j) => woven[j] !== null);
+  });
+  return gone;
+}
+
+/** The weave `woven` of `verse` knows which of its added English words fall away (goneVerse); call it after withBeside. It is not an element of the weave. */
+export const withGone = <T extends WovenVerse>(woven: T, verse: Verse): T =>
+  Object.defineProperty(woven, 'gone', { value: goneVerse(verse, woven), enumerable: false, configurable: true });
+
+/** Whether chunk `i` is an added English word the weave does not draw (goneVerse). */
+export const goneOf = (woven: WovenVerse | null | undefined, i: number): boolean => woven?.gone?.[i] === true;
 
 /** The Greek words drawn in gold before the English of chunk `i` (besideVerse); none when the chunk is woven or knows none. */
 export const besideOf = (woven: WovenVerse | null | undefined, i: number): readonly GreekWord[] => woven?.beside?.[i] ?? [];
