@@ -150,13 +150,11 @@ describe('Play resumes where he stopped (mw-5r3p30.1236)', () => {
     synth.finish();
     await vi.waitFor(() => expect(getPlace(refKey('Hebrews 7:1-3'))?.verse).toBe(1), { timeout });
     // the voice goes on until verse 2 is the one being read
-    await vi.waitFor(
-      () => {
-        if (getPlace(refKey('Hebrews 7:1-3'))?.verse !== 2 && synth.speaking) synth.finish();
-        expect(getPlace(refKey('Hebrews 7:1-3'))?.verse).toBe(2);
-      },
-      { timeout },
-    );
+    const atTwo = () => {
+      if (getPlace(refKey('Hebrews 7:1-3'))?.verse !== 2 && synth.speaking) synth.finish();
+      expect(getPlace(refKey('Hebrews 7:1-3'))?.verse).toBe(2);
+    };
+    await vi.waitFor(atTwo, { timeout });
     await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
     expect(getPassagePlayer().state).toBe('idle');
     cleanup();
