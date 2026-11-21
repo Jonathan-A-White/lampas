@@ -1,6 +1,8 @@
 // src/memorize/HiddenVerse.tsx — a verse drawn token by token for a Memorize session (docs/layout/memorize.md): a word the rung hides is a blank the width of the word (at share 1 its first letter is
 // left), a word he missed is marked once the recall is judged (the Reader's miss colour, as the reading check marks a word to fix), Greek in the Greek face, Hebrew in the Hebrew face right to left (a verse of Hebrew words alone is set right to left as a whole; a word of one in the Weave is an isolated right-to-left word
-// in the English line). 'nothing' draws no token: only the reference is shown.
+// in the English line). 'nothing' draws no token: only the reference is shown. A missed word can be tapped: a small box under it says what was heard in its place ('Heard: an')
+// or 'Heard nothing here' (mw-5r3p30.1201); a tap anywhere else, or on the word again, puts it away.
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { HEBREW_LANG_ATTRS } from '../reader/sourceText';
 import type { Token } from './target';
 
@@ -42,7 +44,25 @@ function Blank({ text, firstLetter }: { text: string; firstLetter: boolean }) {
   );
 }
 
-export function HiddenVerse({ tokens, hidden, firstLetters, missed }: {
+const HEARD = 'absolute left-0 top-full z-10 mt-1 w-max max-w-[16rem] rounded-lg border border-line bg-surface px-3 py-2 text-base font-normal text-fg no-underline shadow-md';
+
+/** The box under a tapped word. It stays inside the screen: one that would run off the right edge is slid left by what overflows. */
+function Heard({ words }: { words: readonly string[] | undefined }) {
+  const box = useRef<HTMLSpanElement>(null);
+  const [shift, setShift] = useState(0);
+  useLayoutEffect(() => {
+    const right = box.current?.getBoundingClientRect().right ?? 0;
+    const room = document.documentElement.clientWidth - 8;
+    setShift(right > room ? room - right : 0);
+  }, [words]);
+  return (
+    <span ref={box} data-testid="heard" role="status" dir="auto" style={shift === 0 ? undefined : { transform: `translateX(${shift}px)` }} className={HEARD}>
+      {words && words.length > 0 ? `Heard: ${words.join(' ')}` : 'Heard nothing here'}
+    </span>
+  );
+}
+
+export function HiddenVerse({ tokens, hidden, firstLetters, missed, heardAt }: {
   tokens: readonly Token[];
   /** the indexes of the tokens that are blank */
   hidden: ReadonlySet<number>;
@@ -50,21 +70,47 @@ export function HiddenVerse({ tokens, hidden, firstLetters, missed }: {
   firstLetters: boolean;
   /** the indexes marked as missed (after the judgement) */
   missed: ReadonlySet<number>;
+  /** for each missed token, the words said where it stood; none kept for a token: nothing to show but 'Heard nothing here' */
+  heardAt?: Readonly<Record<number, readonly string[]>>;
 }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const verse = useRef<HTMLParagraphElement>(null);
+  // a tap anywhere outside the verse puts the box away; a tap on a word is the word's own to handle
+  useEffect(() => {
+    if (open === null) return;
+    const away = (e: Event): void => {
+      if (!verse.current?.contains(e.target as Node)) setOpen(null);
+    };
+    document.addEventListener('pointerdown', away, true);
+    return () => document.removeEventListener('pointerdown', away, true);
+  }, [open]);
   // a verse of Hebrew words alone runs right to left; a Weave verse stays an English line with its Hebrew words isolated in it
   const hebrewOnly = tokens.length > 0 && tokens.every((t) => t.lang === 'he');
   return (
-    <p data-testid="memorize-verse" dir={hebrewOnly ? 'rtl' : undefined} className={hebrewOnly ? 'reader-hebrew' : 'text-[length:var(--lp-english-size)] leading-[var(--lp-leading)]'}>
+    <p ref={verse} data-testid="memorize-verse" dir={hebrewOnly ? 'rtl' : undefined} className={hebrewOnly ? 'reader-hebrew' : 'text-[length:var(--lp-english-size)] leading-[var(--lp-leading)]'}>
       {tokens.map((t, i) => {
         const greek = t.lang === 'el';
         const hebrew = t.lang === 'he';
         const blank = hidden.has(i);
         const mark = missed.has(i);
         return (
-          <span key={i}>
+          <span key={i} className={mark ? 'relative' : undefined}>
             {i > 0 ? ' ' : ''}
             <span
               data-token={i}
+              role={mark ? 'button' : undefined}
+              tabIndex={mark ? 0 : undefined}
+              aria-expanded={mark ? open === i : undefined}
+              onClick={() => setOpen(mark && open !== i ? i : null)}
+              onKeyDown={
+                mark
+                  ? (e) => {
+                      if (e.key !== 'Enter' && e.key !== ' ') return;
+                      e.preventDefault();
+                      setOpen(open === i ? null : i);
+                    }
+                  : undefined
+              }
               data-blank={blank ? '' : undefined}
               data-missed={mark ? '' : undefined}
               {...(hebrew ? { ...HEBREW_LANG_ATTRS, dir: 'rtl' } : { lang: greek ? 'el' : undefined })}
@@ -73,6 +119,7 @@ export function HiddenVerse({ tokens, hidden, firstLetters, missed }: {
             >
               {blank ? <Blank text={t.text} firstLetter={firstLetters} /> : t.text}
             </span>
+            {open === i && mark ? <Heard words={heardAt?.[i]} /> : null}
           </span>
         );
       })}
