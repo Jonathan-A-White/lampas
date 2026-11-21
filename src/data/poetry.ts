@@ -84,6 +84,31 @@ export function hebrewLinesOf(verse: Pick<Verse, 'g' | 'hl'> & { hlead?: true })
   });
 }
 
+/** A Greek word as the small-word list has it: lower case, its punctuation off, the grave written as the acute ('Εἰς,' is 'εἰς', 'καὶ' is 'καί'); the breathings and the circumflex stay, so 'εἰς' (into) is not 'εἷς' (one) nor 'εἰ' 'εἶ' (you are). */
+export const smallKey = (t: string): string =>
+  t.normalize('NFD').toLowerCase().replace(/[^\p{L}\p{M}]/gu, '').replace(/\u0300/g, '\u0301').normalize('NFC');
+
+/**
+ * The small words a line of Greek poetry does not end on (mw-5r3p30.1198), by smallKey: the prepositions, the article, the negations and the conjunctions, each of which goes with the word that follows it, so a break
+ * between it and that word strands it. The English word order differs from the Greek, so a break borrowed from the English line often falls there. The postpositives (γάρ, δέ, τε, οὖν) are not here: they stand
+ * second in their clause and belong with the word before them, so a line may end on one and may not start with one.
+ */
+export const SMALL_WORDS: ReadonlySet<string> = new Set(
+  [
+    // prepositions
+    'εἰς ἐν ἐπί ἐκ ἐξ πρός ἀπό διά κατά μετά περί ὑπό ὑπέρ παρά σύν ἀνά ἀντί πρό',
+    // negations
+    'οὐ οὐκ οὐχ μή',
+    // the article
+    'ὁ ἡ τό τοῦ τῆς τῷ τῇ τόν τήν τῶν τοῖς ταῖς τούς τάς τά οἱ αἱ',
+    // conjunctions
+    'καί ὅτι ἀλλά ἵνα εἰ ὡς ὅτε οὐδέ μηδέ ἐάν ἤ',
+  ]
+    .join(' ')
+    .split(' ')
+    .map(smallKey),
+);
+
 /**
  * Where the lines of a New Testament verse of poetry start in its Greek words (mw-5r3p30.1166), borrowed from the English lines (`l`): a line starts at the first Greek word of the English chunks of its line (the least index of their
  * `g`, so a line the English turns round, 'My soul magnifies', still starts at the verse's first word of it), and at the Greek words just ahead of it that have no English of their own ('Ἰδοὺ γάρ', where the English has no 'for behold'),
@@ -112,7 +137,34 @@ export function greekLineStarts(verse: Pick<Verse, 'g' | 'e' | 'l'>): { starts: 
     if (k === 0) lead = true;
     starts.push(at);
   });
-  return starts.length > 1 ? { starts, lead } : null;
+  return mendStrandedWords(verse.g, starts, lead);
+}
+
+/** The most letters a word has to be a 'small word' alone on a line (Νῦν, οὐχ, Καὶ, Ἔφη). */
+const LINE_OF_ONE_MAX = 4;
+const lettersOf = (t: string): number => t.match(GREEK_LETTER)?.length ?? 0;
+
+/**
+ * Takes the stranded small words out of a verse's borrowed line starts (mw-5r3p30.1198): a line does not end on a preposition, article, negation or conjunction (SMALL_WORDS), whose word starts the next line (the English
+ * word order differs), so the break moves back to before it (Luke 1:50 'εἰς' goes with 'γενεὰς'); and a line is not one word of LINE_OF_ONE_MAX letters or fewer (Philippians 2:6 'οὐχ', Luke 2:29 'Νῦν'), so its break is
+ * dropped and the word joins the line after it (the line before, for the last line). A first line (the lead-in) that goes this way is no lead-in any more. Null when no break is left.
+ */
+function mendStrandedWords(words: readonly Pick<GreekWord, 't'>[], starts: readonly number[], lead: boolean): { starts: number[]; lead: boolean } | null {
+  const kept = [0];
+  let leadLeft = lead;
+  starts.slice(1).forEach((raw, k) => {
+    let at = raw;
+    while (at - 1 > kept.at(-1)! && SMALL_WORDS.has(smallKey(words[at - 1].t))) at--;
+    // the line [kept.at(-1), at) is one small word: no break here, it runs on into the next line
+    if (at - kept.at(-1)! === 1 && lettersOf(words[at - 1].t) <= LINE_OF_ONE_MAX) {
+      if (k === 0) leadLeft = false;
+      return;
+    }
+    kept.push(at);
+  });
+  // the last line is one small word: it joins the line before it
+  if (kept.length > 1 && words.length - kept.at(-1)! === 1 && lettersOf(words.at(-1)!.t) <= LINE_OF_ONE_MAX) kept.pop();
+  return kept.length > 1 ? { starts: kept, lead: leadLeft } : null;
 }
 
 /** A verse's lines for a New Testament chapter's file: Greek verses that have English lines carry `hl` (and `hlead`) as they load, as a Hebrew verse does (fillChapter). */
