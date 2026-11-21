@@ -393,10 +393,10 @@ describe('the page is hidden after the wake', () => {
     await vi.waitFor(() => expect(sounding()).toBe(false), { timeout });
     expect(sound === 'the passage player' ? getPassagePlayer().state : getReading().status).toBe('paused');
     pageIs('hidden');
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
     clock.advance(10_000);
     synth.advance(10_000);
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
     expect(sounding()).toBe(false);
     expect(sound === 'the passage player' ? getPassagePlayer().state : getReading().status).toBe('paused');
     pageIs('visible');
@@ -408,7 +408,7 @@ describe('the page is hidden after the wake', () => {
     await vi.waitFor(() => expect(getReading().status).toBe('paused'), { timeout });
     pageIs('hidden');
     expect(goOnNow()).toBe(true);
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 50)); // a real-time wait: nothing may start in this window
     expect(getReading().status).toBe('paused');
     expect(synth.speaking).toBe(false);
     pageIs('visible');
