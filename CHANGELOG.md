@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.309
+_2026-11-21_
+- Fixed: The Parsing drill no longer gives σύ and ἐγώ the plural forms (ὑμῖν, ἡμῶν) when you only practise your solid words and ὑμεῖς and ἡμεῖς are still being learned.
+
 ## 0.7.308
 _2026-11-21_
 - Fixed: In Genesis 24 in Greek, Rebekah the maid (ἡ παῖς, τὴν παῖδα) now opens as a feminine noun like her article.

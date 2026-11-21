@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.309",
+    "date": "2026-11-21",
+    "story": "mw-indx1x6.115",
+    "kind": "fixed",
+    "text": "The Parsing drill no longer gives σύ and ἐγώ the plural forms (ὑμῖν, ἡμῶν) when you only practise your solid words and ὑμεῖς and ἡμεῖς are still being learned."
+  },
+  {
     "version": "0.7.308",
     "date": "2026-11-21",
     "story": "mw-u2w5klk.349.53",
