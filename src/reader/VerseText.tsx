@@ -1,5 +1,5 @@
 // src/reader/VerseText.tsx — how one verse's words are drawn (moved as is from src/Reader.tsx, module map R1a).
-import { Fragment, type MouseEvent, type ReactNode } from 'react';
+import { Fragment, useState, type MouseEvent, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns, isGuess } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
 import { besideOf, chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
@@ -20,7 +20,8 @@ import { Tap, TAP_PAD } from './Tap';
 import { linesShown } from './poetryText';
 import type { PoetryLineSpan } from '../data/poetry';
 import { EnglishText } from './YouMark';
-import { chunkShown, gapText, septuagintChunkLinked, septuagintVerseView, withoutMarks } from './septuagint';
+import { chunkShown, englishOnlyOf, gapText, septuagintChunkLinked, septuagintVerseView, withoutMarks } from './septuagint';
+import { EnglishOnlySheet, type EnglishOnly } from './EnglishOnlySheet';
 /** An English chunk with only the words the translators supplied in italics ('was' of 'was king'): [data-supplied]. */
 function SuppliedText({ chunk, gaps, still }: { chunk: EnglishChunk; gaps?: boolean; still?: boolean }) {
   return (
@@ -96,7 +97,7 @@ export interface VerseProps {
   onRp?: (key: string) => void;
   /** Settings > Show manuscript gaps is On: the Greek view draws a Septuagint word as Swete printed it, with his lacuna brackets (`d`, src/reader/septuagint.ts gapText); absent or false, the bare `t` (mw-u2w5klk.280). Set for a Septuagint chapter only (false when Off): the English view then drops Brenton's square brackets too, keeping their words (chunkShown, mw-u2w5klk.331); absent, a text that is not the Septuagint, nothing is dropped */
   gaps?: boolean;
-  /** given for a verse of the Septuagint only (mw-u2w5klk.278): what a tap on an English chunk paired to no Greek word does (septuagintChunkLinked), in place of opening a word sheet; the Reader opens the verse, the Verse view does nothing */
+  /** given for a verse of the Septuagint only (mw-u2w5klk.278): its being given marks the verse as one: a tap on an English chunk paired to no Greek word (septuagintChunkLinked) opens VerseText's own small sheet (EnglishOnlySheet, mw-u2w5klk.349.67) in place of a word sheet, and the function is not called (it was what the Reader did with the verse until then: open the Verse view) */
   onUnlinked?: () => void;
 }
 
@@ -216,11 +217,27 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
     onLook({ words: [w], english: w.e === undefined ? undefined : verse.e[w.e]?.t, fromEnglish: false });
   const lookWord = (w: GreekWord, c: EnglishChunk) => onLook({ words: [w], english: c.t, fromEnglish: false, inChunk: true });
   // `tapped` is the one English word of the chunk his finger was on, when the chunk is drawn in English and holds more than one (the sheet then looks up that word alone, mw-5r3p30.782)
-  // A Septuagint chunk paired to no Greek word (septuagintChunkLinked) names no word to open: `onUnlinked`, given for a Septuagint verse only, is what the tap does instead (mw-u2w5klk.278)
-  const lookEnglish = (c: EnglishChunk, e?: MouseEvent<HTMLElement>) => {
-    if (onUnlinked && !septuagintChunkLinked(c)) return onUnlinked();
-    onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true, verse: verse.n, tapped: e ? wordAtPoint(e.currentTarget, e.clientX, e.clientY) : undefined });
+  // A Septuagint chunk paired to no Greek word (septuagintChunkLinked) names no word to open, and a tap never opens a wrong one (mw-u2w5klk.278): it opens a small sheet of its own instead, EnglishOnlySheet, which says
+  // the English adds the word or that it is not matched yet and, for an added word, offers the nearest Greek word's sheet (mw-u2w5klk.349.67). `onUnlinked`, given for a Septuagint verse only, is what marks the verse as one.
+  const [englishOnly, setEnglishOnly] = useState<EnglishOnly | null>(null);
+  const lookEnglish = (c: EnglishChunk, i: number, e?: MouseEvent<HTMLElement>) => {
+    const tapped = e ? wordAtPoint(e.currentTarget, e.clientX, e.clientY) : undefined;
+    if (onUnlinked && !septuagintChunkLinked(c)) {
+      const { kind, near } = englishOnlyOf(verse, i);
+      return setEnglishOnly({ word: tapped ?? c.t.trim(), kind, near });
+    }
+    onLook({ words: c.g.map((i) => verse.g[i]), english: c.t, fromEnglish: true, verse: verse.n, tapped });
   };
+  const englishOnlySheet = englishOnly ? (
+    <EnglishOnlySheet
+      tap={englishOnly}
+      onClose={() => setEnglishOnly(null)}
+      onGreek={(w) => {
+        setEnglishOnly(null);
+        lookGreek(w);
+      }}
+    />
+  ) : null;
   // A long press says the word alone, in its own language, straight from the press (docs/pwa-best-practices.md section 12).
   // A reading under way is paused by the word (speech/greek.ts speakBeside): a Listen goes on by itself when the word is over.
   const say = (text: string, language: SpeechLanguage) => sayWord(text, language, verse.n);
@@ -363,7 +380,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
                     <>
                       <span className="inline-flex flex-col items-center align-top leading-tight">
                         <span data-greek>{words(true)}</span>
-                        <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
+                        <Tap still={still} data-hint="" lang="en" dir={chunkDir} className="whitespace-nowrap font-sans text-sm font-normal text-muted" onTap={(e) => lookEnglish(c, i, e)} onLongPress={() => say(c.t, 'english')}>
                           <EnglishText text={c.t} gaps={gaps} still={still} />
                         </Tap>
                       </span>
@@ -399,7 +416,7 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
                 {...own}
                 dir={ownDir}
                 className={`${face} text-accent ${TAP_PAD} ${isMarked(c) ? MARKED : ''}`}
-                onTap={() => lookEnglish(c)}
+                onTap={() => lookEnglish(c, i)}
                 onLongPress={() => say(weft.words.map((w) => w.t).join(' '), ownSpeech)}
               >
                 {weft.learning ? (
@@ -416,12 +433,19 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
             ) : (
               <Fragment key={i}>
                 {known()}
-                <Tap bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, e)} onLongPress={() => say(c.t, 'english')}>
+                <Tap bare={bare} still={still} dir={chunkDir} data-chunk={String(i)} data-marked={isMarked(c) ? '' : undefined} data-variant={plan.marked.has(i) ? '' : undefined} data-chosen={kept} data-rp2026={rp} className={`${TAP_PAD} ${isMarked(c) ? `${MARKED} text-accent` : ''}`} onTap={(e) => lookEnglish(c, i, e)} onLongPress={() => say(c.t, 'english')}>
                   {c.s ? <SuppliedText chunk={c} gaps={gaps} still={still} /> : <EnglishText text={c.t} gaps={gaps} still={still} />}
                 </Tap>
               </Fragment>
             ) }, ...braces];
           }));
-  if (!lines) return <span data-text>{underRuns(items)}</span>;
-  return <PoetryLines lines={lines} items={items} lead={lead} trail={trail} />;
+  const drawn = lines ? <PoetryLines lines={lines} items={items} lead={lead} trail={trail} /> : <span data-text>{underRuns(items)}</span>;
+  return englishOnlySheet ? (
+    <>
+      {drawn}
+      {englishOnlySheet}
+    </>
+  ) : (
+    drawn
+  );
 }

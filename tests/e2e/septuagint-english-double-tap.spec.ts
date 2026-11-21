@@ -1,6 +1,7 @@
 // A quick double tap on an English word of a Septuagint chapter ends where one tap does (mw-u2w5klk.322). Genesis 1:5 in the English view: a tap on a word of the verse's chunk (paired to no
-// Greek word) opens the Verse view, and the second tap, up to half a second later, fell on the Diagram button (Night at 663 px) or Listen (Night at 715 px) of the view the first tap had just
-// opened and pressed it: Diagram asked the tutor to draw the verse. At 390x844 with a touch screen, the settle moment as on his phone (SETTLE_MS), both taps timed on the page's clock
+// Greek word) opened the Verse view, and the second tap, up to half a second later, fell on the Diagram button (Night at 663 px) or Listen (Night at 715 px) of the view the first tap had just
+// opened and pressed it: Diagram asked the tutor to draw the verse. Since mw-u2w5klk.349.67 that tap opens the small sheet 'Not matched to its Greek word yet' (a tap never opens the Verse view), and the
+// second tap must not close it or press anything; the Verse view is opened by the verse's number, and the doors test below is run on that way. At 390x844 with a touch screen, the settle moment as on his phone (SETTLE_MS), both taps timed on the page's clock
 // (tests/support/gesture.ts). Genesis 1 is tests/fixtures/data-lxx, routed as septuagint-word-sheet-english.spec.ts routes it, with verses 1-4 lengthened so verse 5 can be scrolled to any height.
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -24,7 +25,7 @@ test.beforeEach(async ({ page }) => {
     let body = readFileSync(`tests/fixtures/data-lxx/${path}`, 'utf8');
     if (path === 'gen/1.json') {
       const chapter = JSON.parse(body) as { verses: { n: number; e: Chunk[] }[] };
-      // verse 5's one chunk is paired to no Greek word, so a tap on it opens the Verse view; the verses above it are long enough for verse 5 to be scrolled down the screen
+      // verse 5's one chunk is paired to no Greek word, so a tap on it opens the not-matched sheet (EnglishOnlySheet); the verses above it are long enough for verse 5 to be scrolled down the screen
       for (const verse of chapter.verses) if (verse.n < 5) for (const chunk of verse.e) chunk.t = `${chunk.t} ${'And so it was. '.repeat(40)}`;
       body = JSON.stringify(chapter);
     }
@@ -78,17 +79,14 @@ const isDiagram = (fake: FakePostern) => fake.received.filter((r) => r.grist.kin
 // the Verse view's Actions sit at 663 (Diagram) and 715 (Listen) at this size; a double tap on Night there once pressed them. The app-wide guard's moment is 450 ms and a thumb's second tap
 // came as late as 500 ms, so the gaps include 480.
 for (const y of [663, 715, 760]) for (const gap of [250, 480]) {
-  test(`a double tap on Night at ${y} px, ${gap} ms apart, opens the Verse view of verse 5 and presses nothing in it`, async ({ page }) => {
+  test(`a double tap on Night at ${y} px, ${gap} ms apart, opens the not-matched sheet (kept when the second tap is inside the settle moment) and nothing else`, async ({ page }) => {
     const fake = await openGenesis(page);
     const night = await placeNight(page, y);
     await tapTwice(page, night, gap, { touch: true });
     await pageTime(page, SETTLE_MS + 100);
-    const view = page.getByRole('region', { name: 'Verse view' });
-    await expect(view).toBeVisible();
-    await expect(view.getByRole('button', { name: 'Diagram', exact: true })).toHaveAttribute('aria-pressed', 'false');
-    await expect(view.getByRole('button', { name: 'Listen', exact: true })).toHaveAttribute('aria-pressed', 'true');
-    await expect(view.getByRole('button', { name: 'Read it aloud', exact: true })).toHaveAttribute('aria-pressed', 'false');
-    await expect(view.getByRole('button', { name: 'Practise', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    // a second tap inside the settle moment is dropped, so the sheet stays; one that comes after it (480 ms) is a tap like any other on the sheet's backdrop or its Done, and may close it: only the Verse view and the diagram are ruled out then
+    if (gap < SETTLE_MS) await expect(page.getByRole('dialog').getByText('Not matched to its Greek word yet')).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
     expect(isDiagram(fake), 'no diagram was asked for').toHaveLength(0);
     await shot(page, `septuagint-english-double-tap-${y}-${gap}`);
   });
@@ -96,7 +94,6 @@ for (const y of [663, 715, 760]) for (const gap of [250, 480]) {
 
 // every door of the Verse view, by each way into it: a tap within SETTLE_MS of the view opening is dropped
 const WAYS: { name: string; open: (page: Page) => Promise<void> }[] = [
-  { name: 'a tap on a Septuagint English chunk', open: async (page) => { await page.locator('[data-verse="5"]').getByText('Night', { exact: false }).first().tap(); } },
   { name: 'a verse number', open: async (page) => { await page.getByRole('button', { name: 'Verse 5', exact: true }).tap(); } },
 ];
 

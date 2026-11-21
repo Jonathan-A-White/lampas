@@ -1,6 +1,6 @@
 // Brenton's plural "you^" keeps its caret and says what it means (mw-u2w5klk.378) at 390x844. Isaiah 12 in the Septuagint's English and Weave views: the mark after 'you' in verses 3 and 6 is a small raised
 // mark of its own, at least 44 px tall to touch; a tap on it shows the tip, a tap elsewhere closes it, and the word beside it still does what a tap on it did (verse 3 is aligned, so its word opens the
-// word sheet; verse 6 is one chunk with no pairing, so its word opens the Verse view). public/data-lxx ships no chapter in the gate: Isaiah 12 is the fixture of Genesis 1 (tests/fixtures/data-lxx)
+// word sheet; verse 6 is one chunk with no pairing, so its word opens the not-matched sheet, mw-u2w5klk.349.67). public/data-lxx ships no chapter in the gate: Isaiah 12 is the fixture of Genesis 1 (tests/fixtures/data-lxx)
 // made into Isaiah's, its two verses given the English of the Governor's screenshot, carrying the caret as LXX2012 writes it (U+2303).
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -135,14 +135,15 @@ for (const view of ['English', 'Weave'] as const) {
   });
 }
 
-test("a tap on the word beside the mark does what it did: verse 3's opens the word sheet, verse 6's the Verse view, and neither shows the tip", async ({ page }) => {
+test("a tap on the word beside the mark does what it did: verse 3's opens the word sheet, verse 6's the not-matched sheet, and neither shows the tip", async ({ page }) => {
   await openIsaiah(page, 'English');
   await tapWord(page, 3, 'Draw');
   await expect(page.getByRole('dialog', { name: 'Word' })).toBeVisible();
   await expect(page.locator('[data-you-tip]')).toHaveCount(0);
   await page.getByRole('dialog', { name: 'Word' }).getByRole('button', { name: 'Done' }).click();
   await tapWord(page, 6, 'rejoice');
-  await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
+  await expect(page.getByRole('dialog').getByText('Not matched to its Greek word yet')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
   await expect(page.locator('[data-you-tip]')).toHaveCount(0);
 });
 
