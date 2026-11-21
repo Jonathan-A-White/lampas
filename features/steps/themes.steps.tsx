@@ -2,7 +2,7 @@
 // (src/settings/controls/themes.tsx). The sheet's scenarios use theme lists and sermon sources of the tests' own (tests/support/test-themes.ts, test-sermons.ts) over the committed Romans 5 and Jonah 1; the
 // Settings scenarios use the two lists the app bundles.
 import '@testing-library/react/dont-cleanup-after-each';
-import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -14,6 +14,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';
+import { tapPlaceLine as tapLine } from '../../tests/support/place-line';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
@@ -113,7 +114,8 @@ const feature = await loadFeature('features/themes.feature');
 describeFeature(feature, ({ Scenario }) => {
   const opened = (_: unknown, title: string) => openOn(title);
   const tapVerse = async (_: unknown, n: number) => {
-    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    // findButton, not a role query over the chapter's hundreds of buttons (mw-indx1x6.125, tests/unit/step-verse-button-query.test.ts)
+    await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapHeading = async (_: unknown, text: string) => {
@@ -126,13 +128,7 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapPlaceLine = async () => {
-    await user.click(
-      await waitFor(() => {
-        const line = document.querySelector<HTMLElement>('button[data-place-line]');
-        if (!line) throw new Error('no place line');
-        return line;
-      }),
-    );
+    await tapLine();
     await screen.findByRole('region', { name: 'Verse view' });
   };
   // findButton, not a role query: the Verse view of a whole chapter holds the chapter's ~hundreds of chunk buttons, and findByRole works out each one's name at every poll, outrunning the wait on a loaded host and, by
@@ -147,9 +143,9 @@ describeFeature(feature, ({ Scenario }) => {
     await waitFor(async () => expect(squash((await sheetEl()).querySelector('[data-sermons-themes]')?.textContent)).toBe(line));
   };
   const noThemesLine = async () => {
-    // the line comes as soon as the themes are read, after the sermons of the passage
+    // the line comes as soon as the themes are read, after the sermons of the passage: the sheet says when they are (data-themes-read on its title), so the absence is looked at once they are, not after a clock
     await waitFor(async () => expect(await partTitles()).not.toEqual([]));
-    await act(() => new Promise<void>((resolve) => setTimeout(resolve, 100)));
+    await waitFor(async () => expect((await sheetEl()).querySelector('[data-themes-read]')).not.toBeNull());
     expect((await sheetEl()).querySelector('[data-sermons-themes]')).toBeNull();
   };
   const opensWithTwo = async (_: unknown, first: string, then: string) => {

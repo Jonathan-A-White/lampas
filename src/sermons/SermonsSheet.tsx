@@ -357,7 +357,9 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
       }}
       heading={
         <>
-          <h2 className="text-xl font-semibold">{title}</h2>
+          <h2 className="text-xl font-semibold" data-themes-read={themes === undefined ? undefined : ''}>
+            {title}
+          </h2>
           <LatestLine latest={latest} online={online} />
           {themes ? <ThemesLine themes={themes} /> : null}
           {serviceKnown ? <SearchField query={query} onChange={setQuery} offline={offline} /> : null}
