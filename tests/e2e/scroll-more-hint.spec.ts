@@ -29,7 +29,18 @@ async function stateOf(line: Locator) {
       const el = row.parentElement?.querySelector(`[data-scroll-fade="${side}"]`);
       if (!el) return null;
       const style = getComputedStyle(el);
-      return { shown: Number(style.opacity) > 0.5 && style.display !== 'none', image: style.backgroundImage };
+      const fbox = el.getBoundingClientRect();
+      const chevron = el.querySelector('[data-scroll-chevron]');
+      const c = chevron?.getBoundingClientRect();
+      return {
+        shown: Number(style.opacity) > 0.5 && style.display !== 'none',
+        image: style.backgroundImage,
+        left: fbox.left,
+        right: fbox.right,
+        width: fbox.width,
+        pointer: style.pointerEvents,
+        chevron: chevron && c ? { left: c.left, right: c.right, width: c.width, hidden: chevron.closest('[aria-hidden="true"]') !== null, text: (chevron.textContent ?? '').trim() } : null,
+      };
     };
     return {
       left: box.left,
@@ -43,7 +54,7 @@ async function stateOf(line: Locator) {
   });
 }
 
-for (const width of [390, 360]) {
+for (const width of [390, 360, 320]) {
   test(`${width}: the tools line peeks the next door past the edge and fades on the side with more`, async ({ page }) => {
     const { line } = await openLuke(page, width);
     await expect.poll(async () => (await stateOf(line)).max, 'the doors are wider than the row').toBeGreaterThan(10);
@@ -58,6 +69,16 @@ for (const width of [390, 360]) {
     for (const r of rest.items) expect(Math.abs(r.right - rest.right), 'no door ends at the edge').toBeGreaterThan(8);
     expect(rest.end?.shown, 'a fade on the right').toBe(true);
     expect(rest.start?.shown ?? false, 'none on the left at the start').toBe(false);
+    // the cue is clear: a fade 24 px or wider at the row's own right edge, with a › over it that takes no tap
+    expect(rest.end?.width ?? 0, 'the fade is 24 px or wider').toBeGreaterThanOrEqual(24);
+    expect(Math.abs((rest.end?.right ?? 0) - rest.right), 'the fade sits at the row\'s visible right edge').toBeLessThanOrEqual(1);
+    expect(rest.end?.pointer, 'the fade takes no tap').toBe('none');
+    const right = rest.end?.chevron;
+    if (!right) throw new Error('no › over the right fade');
+    expect(right.hidden, 'the › is aria-hidden').toBe(true);
+    expect(right.left, 'the › is inside the fade').toBeGreaterThanOrEqual((rest.end?.left ?? 0) - 1);
+    expect(right.right, 'the › is inside the row').toBeLessThanOrEqual(rest.right + 1);
+    expect(rest.start, 'no ‹ at the start').toBeNull();
     await shot(page, `scroll-more-start-${width}`);
 
     // mid-scroll: both
@@ -71,9 +92,16 @@ for (const width of [390, 360]) {
     await expect.poll(async () => (await stateOf(line)).end?.shown ?? false, 'the right fade goes').toBe(false);
     const end = await stateOf(line);
     expect(end.start?.shown, 'a fade on the left at the end').toBe(true);
+    expect(end.start?.width ?? 0, 'the left fade is 24 px or wider').toBeGreaterThanOrEqual(24);
+    expect(Math.abs((end.start?.left ?? 0) - end.left), 'the left fade sits at the row\'s visible left edge').toBeLessThanOrEqual(1);
+    const left = end.start?.chevron;
+    if (!left) throw new Error('no ‹ over the left fade');
+    expect(left.hidden, 'the ‹ is aria-hidden').toBe(true);
+    expect(left.left, 'the ‹ is inside the row').toBeGreaterThanOrEqual(end.left - 1);
+    expect(end.end, 'no › at the end').toBeNull();
     await shot(page, `scroll-more-end-${width}`);
 
-    // no arrows, no text in the fades
+    // the cues are drawn, not typed: no text in the fades
     const texts = await line.evaluate((row) => [...(row.parentElement?.querySelectorAll('[data-scroll-fade]') ?? [])].map((el) => (el.textContent ?? '').trim()));
     expect(texts.every((t) => t === '')).toBe(true);
   });

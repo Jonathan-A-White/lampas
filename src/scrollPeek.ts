@@ -1,6 +1,6 @@
 // src/scrollPeek.ts — the arithmetic of the peek of src/ScrollMore.tsx: how much wider than its own the gaps of a sideways row must be for a door to be cut by the edge.
 /** The fade's width. */
-export const FADE_PX = 20;
+export const FADE_PX = 28;
 /** The least a door runs past the edge for the peek, beyond the fade's own width, so a piece of it still reads. */
 const FADE_CLEAR = 16;
 const CUT_MIN = FADE_PX + FADE_CLEAR;
