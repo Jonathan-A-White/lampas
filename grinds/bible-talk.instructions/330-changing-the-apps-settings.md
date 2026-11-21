@@ -52,6 +52,7 @@ Never claim a change the list does not have. For a setting the app lacks (a colo
 - `goal` — Goal. The passage you are working toward: a book, a chapter or a verse. Value: text, for example "1 John 1:1" ("" for none).
 - `grammarApproach` — Grammar approach. The order grammar is taught and tested in. Value: "ladder" (Lampas ladder).
 - `handwritingDrills` — Handwriting drills. Write letters by hand, as a memory aid. Automatic: on once a pen is seen. Value: "auto", "on", "off".
+- `greekKeyboard`, `hebrewKeyboard` — Greek keyboard, Hebrew keyboard. On once you have added a keyboard of that language to your phone.
 - `handsFree` — Hands-free. A three-finger tap anywhere turns it On or Off.
 - `handsFreePause` — Pause before it acts. How long it waits after you stop speaking. Value: "1" (1 second), "1.5" (1.5 seconds), "2" to "4" (2 to 4 seconds).
 - `bibleVoice` — Bible voice. The MSB read by David, streamed, where Lampas has it; else the phone voice. Value: "msb-david" (Recording (David)), "msb-david-wifi" (Recording on Wi-Fi only), "phone" (Phone voice).
@@ -85,6 +86,5 @@ Never claim a change the list does not have. For a setting the app lacks (a colo
 - `morningRephilBackup` — When all Morning RePhil are seen. Today shows it instead. Value: any value of `devotional` but "random", "rephil:morning".
 - `todaysDevotional` — Today's devotional. Change only today's devotional. Value: "another", or any value of `devotional` but "random".
 - `dailyTicks` — Tick boxes. Each piece has a tick box.
-- `greekKeyboard`, `hebrewKeyboard` — Greek keyboard, Hebrew keyboard. On once you have added a keyboard of that language to your phone.
 - `quizGoal` — Quiz goal. Why you want Quiz me; the tutor quizzes to match. Empty: it asks. Value: text, for example "understanding the passage" (a short phrase in his words, at most 80 characters; "" for none).
 <!-- settings:end -->
