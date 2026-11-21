@@ -3,7 +3,7 @@
 // themes {topic, label}, at most MAX_TUTOR_THEMES. The tutor may link a row (`sermon`: '<source>:<id>') or narrow ('only Spurgeon', 'on grace') by answering with the rows that fit. The rows the chip opens are these same
 // rows (tutorSermonRows), so a link names only what the request listed.
 import { bookOf } from '../data/books';
-import { latestFor, sameThemeFor, sermonsFor } from './index';
+import { latestFor, sameThemeFor, sermonsFor, sermonsOnTheme } from './index';
 import { themesFor, type Theme } from '../themes';
 import type { SermonPlace, SermonRef, SermonRow } from './types';
 
@@ -97,8 +97,11 @@ export async function talkSermonsFor(place: SermonPlace): Promise<TalkSermons | 
   try {
     const bundled = await sermonsFor(place);
     // the service's rows the bundle lacks (mw-qtu3zvz.63, the same chapter ask the door and the sheet share); offline or failing, the bundled rows stand
-    const found = (await latestFor(place, bundled).catch(() => undefined))?.found ?? bundled;
-    const themes = place.from === undefined ? [] : await themesFor(place).catch(() => []);
+    const latest = await latestFor(place, bundled).catch(() => undefined);
+    const found = latest?.found ?? bundled;
+    // the verse's themes the tutor is told of are those with a sermon in a source that is On, as the Themes line has them (mw-qtu3zvz.81)
+    const named = place.from === undefined ? [] : await themesFor(place).catch(() => []);
+    const themes = (await Promise.all(named.map(async (theme) => ((await sermonsOnTheme(theme, latest !== undefined).catch(() => [])).length > 0 ? [theme] : [])))).flat();
     const same = await sameThemeFor(place, found).catch(() => ({ groups: [], more: 0 }));
     const rows: ListedSermon[] = [...found.here, ...found.chapter, ...same.groups.flatMap((group) => group.rows.map((row): ListedSermon => ({ ...row, theme: group.topic.label })))];
     const listed = listedSermons(rows);

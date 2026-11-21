@@ -11,12 +11,15 @@ import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { setSermonSources } from '../../src/sermons';
 import { closeSermons } from '../../src/sermons/openSermons';
+import type { SermonSource } from '../../src/sermons/types';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
-import { forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
+import { sourceOf } from '../../tests/support/sermon-sources';
+import { offSource, TEST_ROWS, forgetTestSermons, registerTestSermons } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import { closeDatabase } from './close-database';
 
@@ -60,9 +63,11 @@ async function reset(): Promise<void> {
 }
 
 /** Opens the app on a chapter (the address names it), with the test sermons and theme lists registered. */
-async function openOn(title: string, themes: Parameters<typeof registerTestThemes>[0] = {}): Promise<void> {
+async function openOn(title: string, themes: Parameters<typeof registerTestThemes>[0] = {}, sources?: SermonSource[], turnedOn: string[] = []): Promise<void> {
   await reset();
-  registerTestSermons();
+  if (sources) setSermonSources(sources);
+  else registerTestSermons();
+  await db.settings.bulkPut(turnedOn.map((id) => ({ key: `sermons.${id}`, value: 'on' })));
   registerTestThemes(themes);
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
@@ -108,6 +113,9 @@ const rowNamed = (title: string): Promise<HTMLAnchorElement> =>
     return row;
   });
 
+/** A source that is On and has only the Romans 5:12-21 sermons, away from verse 8, and the Off source that has every row: Atonement links 5:12-21, Love-Hatred only 5:6-8 and Jonah 1:4-10. */
+const farSources = (): SermonSource[] => [sourceOf('testsermons', 'Test Sermons', { rom: TEST_ROWS.rom.filter((r) => r.id === 'reign' || r.id === 'adam') }), offSource];
+
 const feature = await loadFeature('features/themes.feature');
 
 describeFeature(feature, ({ Scenario }) => {
@@ -143,12 +151,16 @@ describeFeature(feature, ({ Scenario }) => {
   const headed = async (_: unknown, title: string) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));
   };
-  const themesLineReads = async (_: unknown, line: string) => {
-    await waitFor(async () => expect(squash((await sheetEl()).querySelector('[data-sermons-themes]')?.textContent)).toBe(line));
+  const chipNames = async (): Promise<string[]> => [...(await sheetEl()).querySelectorAll('[data-sermons-themes] [data-theme-chip]')].map((c) => squash(c.textContent));
+  const themesLineOffers = async (_: unknown, line: string) => {
+    await waitFor(async () => expect((await chipNames()).join(' · ')).toBe(line));
+  };
+  const hasButton = async (_: unknown, label: string) => {
+    await waitFor(async () => expect(within((await sheetEl()).querySelector('[data-sermons-themes]') as HTMLElement).getByRole('button', { name: label })).toBeTruthy());
   };
   const noThemesLine = async () => {
     // the line comes as soon as the themes are read, after the sermons of the passage
-    await waitFor(async () => expect(await partTitles()).not.toEqual([]));
+    await waitFor(async () => expect((await sheetEl()).querySelector('[role="status"], h3')).not.toBeNull());
     await act(() => new Promise<void>((resolve) => setTimeout(resolve, 100)));
     expect((await sheetEl()).querySelector('[data-sermons-themes]')).toBeNull();
   };
@@ -173,7 +185,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     Then('the sheet is headed {string}', headed);
-    And('the Themes line reads {string}', themesLineReads);
+    And('the Themes line offers {string}', themesLineOffers);
   });
 
   Scenario('A passage names the topics of any of its verses', ({ Given, When, Then, And }) => {
@@ -181,7 +193,56 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the heading {string}', tapHeading);
     And('he taps {string}', tapDoor);
     Then('the sheet is headed {string}', headed);
-    And('the Themes line reads {string}', themesLineReads);
+    And('the Themes line offers {string}', themesLineOffers);
+  });
+
+  Scenario('A theme whose sermons are all in a source that is Off is not on the Themes line', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with a source On whose sermons are far from verse 8, and an Off source that has the rest', (_, title: string) => openOn(title, {}, farSources()));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the Themes line offers {string}', themesLineOffers);
+  });
+
+  Scenario('The same Off source turned On puts its themes on the Themes line', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with a source On whose sermons are far from verse 8, and an Off source that has the rest turned On', (_, title: string) => openOn(title, {}, farSources(), ['testoff']));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the sheet is headed {string}', headed);
+    And('the Themes line offers {string}', themesLineOffers);
+  });
+
+  Scenario('A theme is a button that lists its sermons, with a way back', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string}', opened);
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    And('he taps the theme {string}', async (_, name: string) => {
+      await user.click(await waitFor(async () => within(await sheetEl()).getByRole('button', { name })));
+    });
+    Then('the theme {string} holds {string}, {string} and {string}', async (_, group: string, a: string, b: string, c: string) => {
+      await waitFor(async () => expect(await groupRows(group)).toEqual([a, b, c]));
+    });
+    And('the Themes line is gone', async () => {
+      expect((await sheetEl()).querySelector('[data-sermons-themes]')).toBeNull();
+    });
+    When('he goes back to the sheet', async () => {
+      await user.click(within(await sheetEl()).getByRole('button', { name: /Back to the sheet/ }));
+    });
+    Then('the Themes line now offers {string}', themesLineOffers);
+    And('the sheet opens with {string}, {string} and {string}', async (_, a: string, b: string, c: string) => {
+      await waitFor(async () => expect(await partTitles()).toEqual([a, b, c]));
+    });
+  });
+
+  Scenario('Past four themes the Themes line says More, and More shows the rest', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with five themes', (_, title: string) => openOn(title, { more: true }));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the Themes line offers {string}', themesLineOffers);
+    And('the Themes line has a {string} button', hasButton);
+    When('he taps {string}', tapDoor);
+    Then('the Themes line now offers {string}', themesLineOffers);
+    And('the Themes line then has a {string} button', hasButton);
   });
 
   Scenario('A whole chapter has no Themes line and no sermons on the same theme', ({ Given, When, Then, And }) => {

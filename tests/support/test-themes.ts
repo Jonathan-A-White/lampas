@@ -40,6 +40,12 @@ export const TEST_THEME_BOOKS_SECOND: Record<string, ThemeBook> = {
   jon: { topics: [topic('commendation', 'Commendation', 5, ['rom', 'jon'])], links: [link('commendation', 'jon', 1, 3, 3)] },
 };
 
+/** A third source's: two more topics of Romans 5:8, each with a sermon (Jonah 1:1-3) so the Themes line has five. */
+export const TEST_THEME_BOOKS_MORE: Record<string, ThemeBook> = {
+  rom: { topics: [topic('grace', 'Grace', 6, ['rom', 'jon']), topic('mercy', 'Mercy', 7, ['rom', 'jon'])], links: [link('grace', 'rom', 5, 8, 8), link('mercy', 'rom', 5, 7, 9)] },
+  jon: { topics: [topic('grace', 'Grace', 6, ['rom', 'jon']), topic('mercy', 'Mercy', 7, ['rom', 'jon'])], links: [link('grace', 'jon', 1, 1, 3), link('mercy', 'jon', 1, 1, 3)] },
+};
+
 const sourceOf = (id: string, name: string, books: Record<string, ThemeBook>, default_: 'on' | 'off' = 'on'): ThemeSource => ({
   id,
   name,
@@ -52,13 +58,14 @@ const sourceOf = (id: string, name: string, books: Record<string, ThemeBook>, de
 
 export const testThemes = sourceOf('testthemes', 'Test Themes', TEST_THEME_BOOKS);
 export const secondThemes = sourceOf('testthemes2', 'Test More Themes', TEST_THEME_BOOKS_SECOND);
+export const moreThemes = sourceOf('testthemes3', 'Test Even More Themes', TEST_THEME_BOOKS_MORE);
 /** A source whose switch starts Off: nothing of it is used while nothing is saved. */
 export const offThemes = sourceOf('testthemesoff', 'Test Off Themes', TEST_THEME_BOOKS, 'off');
 
-/** Registers the tests' first source (with `second`, the other one after it; with `off`, only a source that starts Off; with `none`, no source at all). */
-export const registerTestThemes = ({ second = false, off = false, none = false }: { second?: boolean; off?: boolean; none?: boolean } = {}): void => {
+/** Registers the tests' first source (with `second`, the other one after it, with `more` a third after those; with `off`, only a source that starts Off; with `none`, no source at all). */
+export const registerTestThemes = ({ second = false, more = false, off = false, none = false }: { second?: boolean; more?: boolean; off?: boolean; none?: boolean } = {}): void => {
   if (none) return setThemeSources([]);
   if (off) return setThemeSources([offThemes]);
-  setThemeSources([testThemes, ...(second ? [secondThemes] : [])]);
+  setThemeSources([testThemes, ...(second || more ? [secondThemes] : []), ...(more ? [moreThemes] : [])]);
 };
 export const forgetTestThemes = (): void => setThemeSources(undefined);

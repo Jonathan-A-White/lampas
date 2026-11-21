@@ -4,16 +4,16 @@
 // After them, 'In Logos' lists his sermon books that are On at the place, by name, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos'; switched in Settings > Study resources > Sermons > Sermon sources, mw-qtu3zvz.92).
 // Online (mw-qtu3zvz.5, docs/sermons.md 'When online'): the sheet opens on the bundled rows, asks the sermon index service and says 'Latest from the index · N new' (or 'Offline: the bundled index') under the title;
 // a search field answers from the service alone ('Found'). Under the title of a verse or a passage a 'Themes' line names the topics that carry it, and after 'In this chapter' come the sermons 'On <topic>' that share a topic with it (mw-qtu3zvz.4, docs/sermons.md 'The themes').
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { placeName } from '../maps/placeName';
 import { armFallback } from '../resources/openApp';
 import { DialogAskTutor } from '../AskTutor';
 import { listFact, useSheetTalk, type SheetTalk } from '../tutor/sheetTalk';
-import { useSheetBack } from '../ui/sheetBack';
+import { pushSheetStep, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useOnline } from '../ui/online';
-import { sourceOf as themeSourceOf, type Theme } from '../themes';
+import { sourceOf as themeSourceOf } from '../themes';
 import { sermonsServiceKnown } from '../services/sermons';
 import { useAiAllowed } from '../gate/licenceContext';
 import { AskForPreacher } from './AskForPreacher';
@@ -27,7 +27,7 @@ import { opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } fro
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
 import { rankHits, type FoundRankContext } from './foundRank';
 import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
-import { useSameTheme, useThemes } from './useThemes';
+import { useSameTheme, useThemeChips, useThemes, type ThemeChip } from './useThemes';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
 /** The second line of a row: the preacher (else the source's `by`, the church, where the preacher is unknown: mw-qtu3zvz.89), the date, and where it opens (a web page needs the internet while the phone is offline). */
@@ -119,14 +119,56 @@ function InLogos({ rows }: { rows: ArchiveRow[] }) {
   );
 }
 
-/** The Themes line under the title: the verse's topics as the module names them ('Atonement', 'Love-Hatred: Of God'), a name once however many lists give it. */
-function ThemesLine({ themes }: { themes: Theme[] }) {
-  const names = [...new Set(themes.map((theme) => theme.text))];
-  if (names.length === 0) return null;
+/** How many themes the Themes line shows before 'More' (mw-qtu3zvz.81): four whole chips keep it to about a third of the sheet. */
+export const THEMES_SHOWN = 4;
+
+/**
+ * The Themes line under the title: the themes of the verse that have sermons in his turned-on sources (useThemeChips), each a button that lists them (mw-qtu3zvz.81), a name once however many lists give it. The chips wrap whole; past
+ * THEMES_SHOWN a 'More' button shows the rest, and the line never grows past a third of the sheet (it scrolls inside its own box).
+ */
+function ThemesLine({ chips, onOpen }: { chips: ThemeChip[]; onOpen: (chip: ThemeChip) => void }) {
+  const [all, setAll] = useState(false);
+  if (chips.length === 0) return null;
+  const shown = all ? chips : chips.slice(0, THEMES_SHOWN);
   return (
-    <p data-sermons-themes className="max-h-[30dvh] overflow-y-auto overscroll-contain pt-1 text-sm text-muted">
-      <span className="font-semibold text-fg">Themes</span> {names.join(' · ')}
-    </p>
+    <div data-sermons-themes role="group" aria-label="Themes" className="max-h-[30dvh] overflow-y-auto overscroll-contain pt-1 text-sm">
+      <p className="pb-1 font-semibold">Themes</p>
+      <div className="flex flex-wrap gap-2">
+        {shown.map((chip) => (
+          <button key={chip.text} type="button" data-theme-chip onClick={() => onOpen(chip)} className="min-h-11 max-w-full rounded-xl border border-line px-3 py-1 text-left text-sm font-medium text-accent active:bg-line">
+            {chip.text}
+          </button>
+        ))}
+        {chips.length > THEMES_SHOWN ? (
+          <button type="button" data-themes-more aria-expanded={all} onClick={() => setAll(!all)} className="min-h-11 rounded-xl px-3 py-1 text-sm font-medium text-accent active:bg-line">
+            {all ? 'Fewer' : 'More'}
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/** One topic's sermons under its heading, 'On <topic>': the group of 'On the same theme' and of a theme opened from the Themes line. */
+function TopicGroup({ id, label, rows, online }: { id: string; label: string; rows: ReadonlyArray<LinkRow & { notes?: true; ref?: ThemeRow['ref'] }>; online: boolean }) {
+  return (
+    <div role="group" aria-label={`On ${label}`} data-theme-topic={id} className="pb-3">
+      <h4 className="pb-1 text-sm font-semibold text-muted">{`On ${label}`}</h4>
+      <div className="flex flex-col gap-2">
+        {rows.map((row) => (
+          <Row key={`${row.source}:${row.id}`} row={row} online={online} why={row.notes ? whyOf(row) : undefined} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A theme of the Themes line opened: its sermons in the sources that are On, in the index's order (no ranking), under 'Back'. */
+function ThemeView({ chip, online }: { chip: ThemeChip; online: boolean }) {
+  return (
+    <div data-sermons-part="theme-list" className="pb-3">
+      <TopicGroup id={`${chip.sources[0]}:${chip.text}`} label={chip.label} rows={chip.rows} online={online} />
+    </div>
   );
 }
 
@@ -137,14 +179,7 @@ export function SameThemeGroups({ same, online }: { same: SameTheme<ThemeRow>; o
     <div role="group" aria-label="On the same theme" data-sermons-part="theme" className="pb-3">
       <h3 className="pb-1 text-base font-semibold">On the same theme</h3>
       {same.groups.map((group) => (
-        <div key={`${group.topic.source}:${group.topic.id}`} role="group" aria-label={`On ${group.topic.label}`} data-theme-topic={`${group.topic.source}:${group.topic.id}`} className="pb-3">
-          <h4 className="pb-1 text-sm font-semibold text-muted">{`On ${group.topic.label}`}</h4>
-          <div className="flex flex-col gap-2">
-            {group.rows.map((row) => (
-              <Row key={`${row.source}:${row.id}`} row={row} online={online} why={row.notes ? whyOf(row) : undefined} />
-            ))}
-          </div>
-        </div>
+        <TopicGroup key={`${group.topic.source}:${group.topic.id}`} id={`${group.topic.source}:${group.topic.id}`} label={group.topic.label} rows={group.rows} online={online} />
       ))}
       {same.more > 0 ? (
         <p data-sermons-more className="text-sm text-muted">
@@ -270,10 +305,14 @@ function AskRow({ place }: { place: SermonPlace }) {
 }
 
 /** The bottom sheet the Sermons sheet is drawn in: the backdrop, the handle and Close, the heading, the scroll box. It takes the phone's Back, Escape and a swipe down on the handle as every sheet does. */
-function SermonsFrame({ label, onClose, children, heading, talk }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode; talk: SheetTalk }) {
+function SermonsFrame({ label, onClose, children, heading, talk, stepRef }: { label: string; onClose: () => void; children: ReactNode; heading: ReactNode; talk: SheetTalk; stepRef: MutableRefObject<(undo: () => void) => void> }) {
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, true);
-  useSheetBack(onClose);
+  const levelNow = useSheetBack(onClose);
+  // a move inside the sheet (a theme opened) is one Back step: the phone's Back puts the sheet as it was (mw-qtu3zvz.81)
+  useEffect(() => {
+    stepRef.current = (undo) => pushSheetStep(undo, levelNow());
+  }, [stepRef, levelNow]);
   // z-50, over the Talk sheet (z-10): the ? asks about the passage, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1122)
   const ask = useSheetTalk(talk);
   return createPortal(
@@ -346,10 +385,22 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
   // and of each theme source that named a topic of the line or a group, once
   const named = [...new Set([...(themes ?? []).map((theme) => theme.source), ...(same?.groups ?? []).map((group) => group.topic.source)])].flatMap((id) => themeSourceOf({ source: id }) ?? []);
   const sameRows = same ? same.groups.reduce((n, group) => n + group.rows.length, 0) : 0;
+  // the Themes line: only the themes that have sermons in his On sources (mw-qtu3zvz.81); the service's answer may add some
+  const chips = useThemeChips(themes, latest.status === 'latest');
+  const [opened, setOpened] = useState<string | null>(null);
+  const chip = chips?.find((c) => c.text === opened);
+  const step = useRef<(undo: () => void) => void>(() => undefined);
+  const openChip = (c: ThemeChip) => {
+    step.current(() => setOpened(null));
+    setOpened(c.text);
+  };
+  const themeCredits = chip ? chip.sources.flatMap((id) => themeSourceOf({ source: id }) ?? []) : [];
+  const chipSources = chip ? [...new Set(chip.rows.map((row) => row.source))].flatMap((id) => sourceOf({ source: id }) ?? []) : [];
   return (
     <SermonsFrame
       label={title}
       onClose={onClose}
+      stepRef={step}
       talk={{
         name: 'Sermons',
         facts: [{ label: 'Passage', value: placeName(place) }, listFact('Sermons listed', rows.map((row) => row.title))],
@@ -358,21 +409,40 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
       heading={
         <>
           <h2 className="text-xl font-semibold">{title}</h2>
-          <LatestLine latest={latest} online={online} />
-          {themes ? <ThemesLine themes={themes} /> : null}
-          {serviceKnown ? <SearchField query={query} onChange={setQuery} offline={offline} /> : null}
+          {chip ? (
+            <button type="button" data-theme-back onClick={() => window.history.back()} className="min-h-11 rounded-lg pr-3 text-base font-medium text-accent">
+              ‹ Back to the sheet
+            </button>
+          ) : (
+            <>
+              <LatestLine latest={latest} online={online} />
+              {chips ? <ThemesLine chips={chips} onOpen={openChip} /> : null}
+              {serviceKnown ? <SearchField query={query} onChange={setQuery} offline={offline} /> : null}
+            </>
+          )}
         </>
       }
     >
-      {serviceKnown ? <FoundGroup query={query} offline={offline} online={online} rank={{ place, themes: new Set((themes ?? []).map((theme) => `${theme.source}:${theme.topic}`)), themeSermons: new Set(sameListed.map((row) => `${row.source}:${row.id}`)) }} /> : null}
-      {found && rows.length === 0 && same && sameRows === 0 ? <p role="status" className="py-2 text-base text-muted">No sermons here.</p> : null}
-      {found ? <Group title={passage ? 'On these verses' : 'On this verse'} rows={found.here} online={online} part="here" /> : null}
-      {found ? <Group title="In this chapter" rows={found.chapter} online={online} part="chapter" /> : null}
-      {same ? <SameThemeGroups same={same} online={online} /> : null}
-      {archives ? <InLogos rows={archives} /> : null}
-      {[...sources, ...named].map((source) => (
-        <Credit key={source.id} source={source} />
-      ))}
+      {chip ? (
+        <>
+          <ThemeView chip={chip} online={online} />
+          {[...chipSources, ...themeCredits].map((source) => (
+            <Credit key={source.id} source={source} />
+          ))}
+        </>
+      ) : (
+        <>
+        {serviceKnown ? <FoundGroup query={query} offline={offline} online={online} rank={{ place, themes: new Set((themes ?? []).map((theme) => `${theme.source}:${theme.topic}`)), themeSermons: new Set(sameListed.map((row) => `${row.source}:${row.id}`)) }} /> : null}
+        {found && rows.length === 0 && same && sameRows === 0 ? <p role="status" className="py-2 text-base text-muted">No sermons here.</p> : null}
+        {found ? <Group title={passage ? 'On these verses' : 'On this verse'} rows={found.here} online={online} part="here" /> : null}
+        {found ? <Group title="In this chapter" rows={found.chapter} online={online} part="chapter" /> : null}
+        {same ? <SameThemeGroups same={same} online={online} /> : null}
+        {archives ? <InLogos rows={archives} /> : null}
+        {[...sources, ...named].map((source) => (
+          <Credit key={source.id} source={source} />
+        ))}
+        </>
+      )}
       <AskRow place={place} />
     </SermonsFrame>
   );

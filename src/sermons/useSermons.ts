@@ -10,8 +10,8 @@ import { ownedResources, shelfOf, type ShelfState } from '../data/repositories';
 import { subscribe } from '../events/bus';
 import { addressOffered } from '../data/owned';
 import { useLogosOn } from '../useLogosOn';
-import { fetchThemeSermons, search, sermonsServiceKnown, type ServiceHit, type ServiceThemeSermon } from '../services/sermons';
-import { activeSources, latestFor, sermonsFor, type SermonPlace, type SermonsFound } from './index';
+import { search, sermonsServiceKnown, type ServiceHit, type ServiceThemeSermon } from '../services/sermons';
+import { activeSources, latestFor, serviceThemeSermons, sermonsFor, type SermonPlace, type SermonsFound } from './index';
 import { talkSermonsFor, type ListedSermon } from './forTutor';
 import { logosArchives, underLists, type ArchiveRow } from './sources/logos';
 
@@ -148,8 +148,8 @@ export function useThemeSermons(keys: readonly string[]): ReadonlyMap<string, Th
     let alive = true;
     for (const key of wanted.split('\n')) {
       const at = key.indexOf(':');
-      fetchThemeSermons(key.slice(0, at), key.slice(at + 1)).then(
-        (answer) => alive && setAnswers((held) => new Map(held).set(key, { status: 'found', rows: answer.rows })),
+      serviceThemeSermons(key.slice(0, at), key.slice(at + 1)).then(
+        (rows) => alive && setAnswers((held) => new Map(held).set(key, { status: 'found', rows })),
         (error: unknown) => {
           console.warn(`could not read the sermons of a theme: ${error instanceof Error ? error.message : String(error)}`);
           if (alive) setAnswers((held) => new Map(held).set(key, { status: 'failed' }));

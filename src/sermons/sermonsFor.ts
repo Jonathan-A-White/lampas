@@ -57,7 +57,7 @@ export interface TopicLinks extends ThemeTopic {
 }
 
 /** Whether two passages of one book overlap. */
-const refsOverlap = (a: SermonRef, b: SermonRef): boolean => a.book === b.book && at(a.chapter, a.from) <= endOf(b) && endOf(a) >= at(b.chapter, b.from);
+export const refsOverlap = (a: SermonRef, b: SermonRef): boolean => a.book === b.book && at(a.chapter, a.from) <= endOf(b) && endOf(a) >= at(b.chapter, b.from);
 
 /** Orders ids as numbers where they are numbers ('9' before '10'), as the sermon-index service does. */
 const byId = (a: string, b: string): number => a.localeCompare(b, 'en', { numeric: true });
