@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.320
+_2026-11-21_
+- New: Play all and a reference's Play now remember where you stopped, and offer Resume from that verse after you leave and come back.
+- Fixed: The Greek keyboard and Hebrew keyboard settings moved from Daily to Learning, beside Handwriting.
+- Fixed: Today left open past midnight now shows the new day's Memorize and Review progress when you come back to it, instead of yesterday's.
+
 ## 0.7.319
 _2026-11-21_
 - Fixed: Tapping Play on a slow connection now waits for David's recording (or asks about mobile data) instead of reading at once in the phone voice.
