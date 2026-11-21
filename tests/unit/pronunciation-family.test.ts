@@ -114,12 +114,12 @@ describe('the Hebrew voice, speed and keyboard', () => {
     expect(english.filter((k) => k.startsWith('hebrew'))).toEqual([]);
   });
 
-  it('has a Hebrew keyboard row like the Greek one: section daily, On | Off, Off to start', () => {
+  it('has a Hebrew keyboard row like the Greek one: section keyboards (Learning), On | Off, Off to start', () => {
     expect(hebrewKeyboardSetting.key).toBe('hebrewKeyboard');
-    expect(hebrewKeyboardSetting.section).toBe('daily');
+    expect(hebrewKeyboardSetting.section).toBe('keyboards');
     expect(hebrewKeyboardSetting.default).toBe('off');
     expect(hebrewKeyboardSetting.allowed).toMatchObject({ kind: 'choice', values: [{ value: 'on' }, { value: 'off' }] });
-    expect(ROWS.find((r) => r.key === 'hebrewKeyboard')?.section).toBe('daily');
+    expect(ROWS.find((r) => r.key === 'hebrewKeyboard')?.section).toBe('keyboards');
   });
 
   it('saves the Hebrew voice and tells the bus every language in voices-changed', async () => {

@@ -68,6 +68,7 @@ const labelsOf = (group: HTMLElement): (string | undefined)[] => within(group).g
 const comboNamed = (name: string): HTMLElement | null => screen.queryByRole('combobox', { name });
 const ensureListening = (): Promise<void> => ensureSettingsGroup('listening');
 const ensureDaily = (): Promise<void> => ensureSettingsGroup('daily');
+const ensureLearning = (): Promise<void> => ensureSettingsGroup('greek');
 const sliderNamed = (name: string): HTMLElement | null => screen.queryByRole('slider', { name });
 
 const feature = await loadFeature('features/pronunciation.feature');
@@ -192,10 +193,13 @@ describeFeature(feature, ({ Scenario }) => {
       expect(comboNamed('Greek voice')).toBeNull();
       expect(sliderNamed('Greek speed')).toBeNull();
     });
-    And('Daily has the Hebrew keyboard, and no Greek keyboard', async () => {
-      await ensureDaily();
+    And('Learning has the Hebrew keyboard, and no Greek keyboard, and Daily has neither', async () => {
+      await ensureLearning();
       expect(await screen.findByRole('group', { name: 'Hebrew keyboard' })).toBeInTheDocument();
       expect(screen.queryByRole('group', { name: 'Greek keyboard' })).toBeNull();
+      await ensureDaily();
+      expect(await screen.findByRole('group', { name: 'Review' })).toBeInTheDocument();
+      for (const name of ['Hebrew keyboard', 'Greek keyboard']) expect(screen.queryByRole('group', { name }), name).toBeNull();
     });
   });
 

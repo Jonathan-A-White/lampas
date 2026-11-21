@@ -1566,6 +1566,8 @@
                   "goal",
                   "grammarApproach",
                   "handwritingDrills",
+                  "greekKeyboard",
+                  "hebrewKeyboard",
                   "handsFree",
                   "handsFreePause",
                   "bibleVoice",
@@ -1618,8 +1620,6 @@
                   "morningRephilBackup",
                   "todaysDevotional",
                   "dailyTicks",
-                  "greekKeyboard",
-                  "hebrewKeyboard",
                   "quizGoal"
                 ]
               }
@@ -1879,6 +1879,18 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "handwritingDrills" }, "value": { "type": "string", "enum": ["auto", "on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "greekKeyboard" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "hebrewKeyboard" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
@@ -2327,18 +2339,6 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "dailyTicks" }, "value": { "type": "string", "enum": ["on", "off"] } }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["key", "value"],
-            "properties": { "key": { "const": "greekKeyboard" }, "value": { "type": "string", "enum": ["on", "off"] } }
-          },
-          {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["key", "value"],
-            "properties": { "key": { "const": "hebrewKeyboard" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",

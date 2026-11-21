@@ -604,6 +604,8 @@ export const SETTINGS: readonly SettingEntry[] = [
     { section: 'approach', dependsOn: depthFrom(3) },
   ),
   fromDefinition(handwritingSetting),
+  fromDefinition(greekKeyboardSetting),
+  fromDefinition(hebrewKeyboardSetting),
   // A tutor's change (and an undo) goes through the switch the Settings row and the three-finger tap use, so it says 'Hands-free on' or 'off' aloud too (mw-rl10piw.18).
   { ...fromDefinition(handsFreeSetting), write: async (value) => setHandsFree(handsFreeSetting.parse(value) === 'on') },
   fromDefinition(handsFreePauseSetting),
@@ -639,8 +641,6 @@ export const SETTINGS: readonly SettingEntry[] = [
   fromDefinition(morningRephilBackupSetting),
   todaysDevotionalEntry,
   fromDefinition(dailyTicksSetting),
-  fromDefinition(greekKeyboardSetting),
-  fromDefinition(hebrewKeyboardSetting),
   quizGoalEntry,
 ];
 

@@ -22,6 +22,7 @@ export type SectionId =
   | 'goal'
   | 'approach'
   | 'handwriting'
+  | 'keyboards'
   | 'readAloud'
   | 'readTutor'
   | 'talk'

@@ -1,4 +1,4 @@
-// Greek keyboard (Settings > Daily, beside Memorize; PROVISIONAL, mw-fu7dqf.9): whether the phone has a Greek keyboard, which the Memorize session's Type it needs to type a verse in Greek.
+// Greek keyboard (Settings > Learning > Keyboards, beside Handwriting; placed beside Memorize in Daily by mw-fu7dqf.9, moved by mw-5r3p30.1191; PROVISIONAL): whether the phone has a Greek keyboard, which the Memorize session's Type it needs to type a verse in Greek.
 // Lampas draws no keyboard of its own: the phone's offers it for a field marked lang="el". Off to start, so a phone that has none is never asked to type Greek; he turns it On once he has added one.
 import { defineSetting } from '../define';
 import { greekFrom } from './greekInterest';
@@ -15,7 +15,7 @@ export const greekKeyboardSetting = defineSetting<GreekKeyboard>({
       { value: 'off', label: 'Off' },
     ],
   },
-  section: 'daily',
+  section: 'keyboards',
   label: 'Greek keyboard',
   hint: 'On once you have added a Greek keyboard to your phone',
   help: 'On once you have added a Greek keyboard to your phone, so Memorize offers Type it for a verse in Greek. Android: Settings > System > Languages & input > On-screen keyboard > Gboard > Languages, add Greek.',

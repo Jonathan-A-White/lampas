@@ -7,14 +7,14 @@ import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
 import { oneTap } from '../../ui/settle';
 import { SearchableList } from '../../ui/SearchableList';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, greekKeyboardSetting, hebrewKeyboardSetting, morningRephilBackupSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting, todaysDevotionalSetting, ANOTHER } from '../definitions';
 import { settingOf, writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { ChipRow, OnOff, RowName, SettingRow } from './SettingRow';
 import type { Control } from './types';
 
 /** One On | Off switch of Settings > Daily: a piece of Today, or its Tick boxes. */
-function dailySwitch(def: typeof dailyReviewSetting | typeof greekKeyboardSetting | typeof hebrewKeyboardSetting | typeof devotionalLogosSetting | typeof devotionalRephilSetting, settingKey: 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'devotionalLogos' | 'devotionalRephil' | 'dailyTicks' | 'greekKeyboard' | 'hebrewKeyboard', more?: (current: 'on' | 'off') => ReactNode): Control {
+function dailySwitch(def: typeof dailyReviewSetting | typeof devotionalLogosSetting | typeof devotionalRephilSetting, settingKey: 'dailyReview' | 'dailyMemorize' | 'dailyPlan' | 'dailyPsalms' | 'dailyDevotional' | 'devotionalLogos' | 'devotionalRephil' | 'dailyTicks', more?: (current: 'on' | 'off') => ReactNode): Control {
   return function DailySwitch({ row }) {
     const current = useSetting(def);
     return (
@@ -47,8 +47,6 @@ function LogosDevotionalsCount({ current }: { current: 'on' | 'off' }) {
 export const DevotionalLogosControl = dailySwitch(devotionalLogosSetting, 'devotionalLogos', (current) => <LogosDevotionalsCount current={current} />);
 export const DevotionalRephilControl = dailySwitch(devotionalRephilSetting, 'devotionalRephil');
 export const DailyTicksControl = dailySwitch(dailyTicksSetting, 'dailyTicks');
-export const GreekKeyboardControl = dailySwitch(greekKeyboardSetting, 'greekKeyboard');
-export const HebrewKeyboardControl = dailySwitch(hebrewKeyboardSetting, 'hebrewKeyboard');
 
 /** Which devotional: Random, or one of the devotionals that are On in Your Logos library (the shelf, mw-rfjjzd.5), in the shared searchable list as a choice of one. The one chosen now is always
  *  listed, though it has been turned Off in the library since, so the picker never hides what Today shows. */

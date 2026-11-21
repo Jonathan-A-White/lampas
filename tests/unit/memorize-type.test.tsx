@@ -133,10 +133,15 @@ describe('the Weave', () => {
 });
 
 describe('the Greek keyboard setting', () => {
-  it('is in the registry under Daily, Off to start, and shown from Curious', async () => {
+  it('is in the registry under Learning (Keyboards, beside Handwriting), not Daily, Off to start, and shown from Curious', async () => {
     const { ROWS, settingOf, visibleRows } = await import('../support/settings');
-    expect(settingOf('greekKeyboard')).toMatchObject({ label: 'Greek keyboard', section: 'daily' });
-    expect(ROWS.find((r) => r.key === 'greekKeyboard')?.section).toBe('daily');
+    const { GROUPS, groupOf } = await import('../../src/settings/rows');
+    expect(settingOf('greekKeyboard')).toMatchObject({ label: 'Greek keyboard', section: 'keyboards' });
+    expect(ROWS.find((r) => r.key === 'greekKeyboard')?.section).toBe('keyboards');
+    expect(groupOf('keyboards').title).toBe('Learning');
+    expect(groupOf('keyboards').sections).toEqual(expect.arrayContaining(['handwriting', 'keyboards']));
+    const daily = GROUPS.find((g) => g.id === 'daily');
+    expect(ROWS.filter((r) => daily?.sections.includes(r.section)).map((r) => r.key)).not.toContain('greekKeyboard');
     expect(greekKeyboardSetting.default).toBe('off');
     expect(visibleRows({ languages: 'english', greekInterest: '0' }, '').some((r) => r.key === 'greekKeyboard')).toBe(false);
     expect(visibleRows({ languages: 'greek', greekInterest: '1' }, '').some((r) => r.key === 'greekKeyboard')).toBe(true);

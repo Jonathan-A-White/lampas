@@ -1,5 +1,5 @@
 // src/memorize/TypeIt.tsx — the field a Memorize recall is typed in (mw-fu7dqf.9, docs/layout/memorize.md): one text box and Check. For Greek the box says lang="el" so the phone offers the Greek keyboard
-// he added (Settings > Daily > Greek keyboard); for Hebrew lang="he", right to left, in the Hebrew face (Settings > Daily > Hebrew keyboard); Lampas draws no keyboard of its own. The words go to the session's onTyped, which judges them the way a said recall is judged (accents, breathings, case,
+// he added (Settings > Learning > Greek keyboard); for Hebrew lang="he", right to left, in the Hebrew face (Settings > Learning > Hebrew keyboard); Lampas draws no keyboard of its own. The words go to the session's onTyped, which judges them the way a said recall is judged (accents, breathings, case,
 // punctuation and a final sigma do not count; a Hebrew word's points and cantillation do not count, its consonants do).
 import { useEffect, useId, useRef, useState } from 'react';
 import { useDoorRoom } from '../tutor/doorRoom';

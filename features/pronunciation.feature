@@ -55,7 +55,7 @@ Feature: Respelling a Greek word
     Given Lampas is opened with the Greek dial at 0 and the Hebrew dial at 1
     When he opens Settings from the reader's Menu
     Then Listening has the Hebrew voice and the Hebrew speed, and no Greek voice or Greek speed
-    And Daily has the Hebrew keyboard, and no Greek keyboard
+    And Learning has the Hebrew keyboard, and no Greek keyboard, and Daily has neither
 
   @uc-pronunciation @greek
   Scenario: Neither language's voice, speed or keyboard rows show at English only
