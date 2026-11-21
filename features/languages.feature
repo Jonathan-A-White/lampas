@@ -33,6 +33,14 @@ Feature: Which languages he reads, and how far into each
     And the "Learning" page draws "Hebrew in the tutor"
     And the "Listening" page draws no "Greek voice"
 
+  # A page is opened the moment the choice shows, while the Settings home may still list the groups of the choice before it (mw-ar5k42b.36).
+  @uc-languages-dial @hebrew
+  Scenario: A page opened straight after the choice waits for the Settings home to list it
+    Given Lampas is opened on Settings on a new phone
+    And the Settings home is slow to read what he chose
+    When he chooses "Hebrew" under Which languages?
+    Then the "Learning" page draws "Hebrew in the tutor"
+
   @uc-languages-dial @greek @hebrew
   Scenario: Choosing Greek and Hebrew shows both dials
     Given Lampas is opened on Settings on a new phone
