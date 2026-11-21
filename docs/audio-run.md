@@ -5,6 +5,8 @@ mw-ar5k42b.4. One command times, cuts and judges a book of David's recording; on
 <!-- toc -->
 
 - [The commands](#the-commands)
+- [The summary line](#the-summary-line)
+- [A book story](#a-book-story)
 - [A fresh box](#a-fresh-box)
 - [The shares](#the-shares)
 - [The estimate](#the-estimate)
@@ -18,30 +20,66 @@ mw-ar5k42b.4. One command times, cuts and judges a book of David's recording; on
 
 ```bash
 scripts/audio-timings/box-setup.sh                       # once on a box: the venv, the models, John 2 as proof (about 4 minutes)
-scripts/audio-timings/run-book.sh jhn                    # a book, into scripts/audio-timings/staged/
+scripts/audio-timings/run-book.sh jhn                    # a book, into <cache>/staged/ (outside the worktree)
 scripts/audio-timings/run-book.sh jhn --out /tmp/jhn     # ... or into another folder
+scripts/audio-timings/run-book.sh jhn --summary-only     # runs nothing: prints the summary line again from the files already staged
 scripts/audio-timings/run-book.sh psa --chapters 3,117   # only these chapters (the judge hears what was timed)
 scripts/audio-timings/run-book.sh jhn --fresh            # the judge hears everything again (for timing it); --no-nice for a box that does nothing else
 ```
 
-`run-book.sh <book>` does the three steps of docs/data.md 'The cut rule' in order and prints ONE summary line:
+`run-book.sh <book>` does the three steps of docs/data.md 'The cut rule' in order and prints ONE summary line ([The summary line](#the-summary-line)):
 
 1. the maker fetches the chapters' MP3s (its own rule: one request a file, 2 s between files, the User-Agent `lampas-audio-timings/1`, a file already kept never again, a 4xx or 5xx stops it) and times and cuts them (`align.py`);
 2. the judge hears every verse (`judge.py`);
 3. the maker's listen pass writes what the judge heard at each listed edge (`align.py --listen`).
 
 ```
-jhn: 21 chapters, 879 verses, 0 flags outside the listen list, listen list 8 edges of 8 verses, 72.4 wall minutes
+SUMMARY book=jhn chapters=21/21 left_out=none not_judged=none verses=879 flags=8 flags_outside_list=0 every_flag_on_list=yes listen_edges=8 minutes=72.4
   (maker 3117 s, judge 1224 s, listen 1 s; cores used 3.2; outside the list: none)
 ```
 
-**It writes only into `--out`** (default `scripts/audio-timings/staged/`), in the repo's own layout so promotion is a copy: `audio/msb-david/<book>.json`, `quiet/`, `listen/`, `judged/` and `summary/<book>.txt` ([staged/README.md](../scripts/audio-timings/staged/README.md)). **It never writes under `public/`** (it refuses an `--out` there, and `tests/unit/audio-run.test.ts` holds it): a book in `staged/` is not played by the app, because there is no `public/data/audio/msb-david/<book>.json` for it, and so `index.json` does not list it. Promoting a book is copying its files ([Promoting a book](#promoting-a-book)).
+**It writes only into `--out`** (default `<cache>/staged/`, that is `~/.cache/lampas-audio-timings/staged/`: OUTSIDE the worktree since mw-zbgo4ep.61, so a run leaves the tree clean and `mw check` does not call it dirty; before that the default was `scripts/audio-timings/staged/` and its untracked files made 8 of 8 book stories re-run the gate at the close-out), in the repo's own layout so promotion is a copy: `audio/msb-david/<book>.json`, `quiet/`, `listen/`, `judged/` and `summary/<book>.txt` ([staged/README.md](../scripts/audio-timings/staged/README.md)). **It never writes under `public/`** (it refuses an `--out` there, and `tests/unit/audio-run.test.ts` holds it): a book in `staged/` is not played by the app, because there is no `public/data/audio/msb-david/<book>.json` for it, and so `index.json` does not list it. Promoting a book is copying its files ([Promoting a book](#promoting-a-book)).
 
 How, with the maker and the judge unchanged: both find their repo from their own place (`Path(__file__).parents[2]`) and write where their own path says (`public/data/audio/msb-david/` for the timings), so `run-book.sh` runs them from a **work copy** of themselves in `<out>/.work/<book>/` (a tree of the same shape, git-ignored: the scripts copied, the book texts linked to the repo's, an empty `public/data/audio/msb-david/`). The reports then say `"file":"public/data/audio/msb-david/jhn.json"` as the shipped ones do. The recordings and the models stay in the cache, shared by every run on the box.
 
 **Run again after a stop.** The same command with the same `--out` takes up where it stopped: the maker skips a chapter already timed (nothing fetched, no model loaded when none is left), the judge keeps each finished chapter (docs/audio-judge.md 'The report').
 
-**Exit codes.** 0 only when the judge ran over every chapter asked for (every chapter of the book, or `--chapters`). 2: a stop (a bad argument, no set-up, a fetch refused, a model failed): run it again. 3: a chapter was left out by the maker's own checks (a verse count that differs, seconds a word outside 0.12 to 1.5) or was not judged; the summary line says which. **Flags outside the listen list are findings, not failures**: they are counted in the line (and named under it) and the exit stays 0; a book that ships needs none (the lock).
+**Exit codes.** 0 only when the judge ran over every chapter asked for (every chapter of the book, or `--chapters`). 2: a stop (a bad argument, no set-up, a fetch refused, a model failed): run it again. 3: a chapter was left out by the maker's own checks (a verse count that differs, seconds a word outside 0.12 to 1.5) or was not judged; the summary line's `left_out` and `not_judged` say which. **Flags outside the listen list are findings, not failures**: they are counted in the line (and named under it) and the exit stays 0; a book that ships needs none (the lock).
+
+## The summary line
+
+The run prints ONE line of a fixed form, `key=value` after the word `SUMMARY`, and writes it with one indented detail line to `<out>/summary/<book>.txt`. `tests/unit/audio-run.test.ts` parses it (a run with a chapter left out and a run with none, through `--summary-only`, which reads the files already in the folder and runs no model):
+
+```
+SUMMARY book=rut chapters=4/4 left_out=none not_judged=none verses=85 flags=4 flags_outside_list=0 every_flag_on_list=yes listen_edges=2 minutes=6.0
+SUMMARY book=rut chapters=3/4 left_out=4 not_judged=none verses=63 flags=1 flags_outside_list=1 every_flag_on_list=no listen_edges=0 minutes=6.0
+  (maker 362 s, judge 0 s, listen 1 s; cores used 3.4; outside the list: 1:1 head)
+```
+
+| key | is |
+| --- | --- |
+| `book` | the book's three-character code |
+| `chapters=<timed>/<of>` | the chapters the maker timed, of the chapters asked for (the book's, or `--chapters`) |
+| `left_out` | the chapters the maker left out by its own checks, named (`4`, `4,7`), or `none` |
+| `not_judged` | chapters timed and not judged, named, or `none` |
+| `verses` | verses the judge heard |
+| `flags`, `flags_outside_list`, `every_flag_on_list` | the judge's flags in all; those whose verse and edge are not on the listen list (a finding the lock refuses, the detail line names each); `yes` only when none is outside |
+| `listen_edges` | edges on the listen list, for the Governor's ear |
+| `minutes` | wall minutes of the run (`0.0` for `--summary-only`) |
+
+A run is clean when `left_out=none`, `not_judged=none` and `every_flag_on_list=yes`; the exit is 0 only when no chapter is left out or not judged.
+
+## A book story
+
+The template the held book stories follow (mw-zbgo4ep.61; measured on the first eight, mw-zbgo4ep.1 to .8: a story was 13.4 hours at the median from claim to landed, 3.3 of them the session, and every close-out ran the gate again because the old default folder left untracked files in the tree).
+
+1. **The host.** Any box `box-setup.sh` has prepared (`host=auto`): a cloud box needs about 4 minutes of set-up and times a book about **twice as fast** as the Laptop (mw-zbgo4ep.6 on `cloud2`: 0.51 hours a hour of audio against the Laptop's 1.10 on a loaded host). A box must end `box-setup.sh` with `DONE`; `THE PROOF FAILED` stops the story.
+2. **Run** `scripts/audio-timings/run-book.sh <book>` with no `--out`, and take it up with the same command after a stop. Staging is under the cache, so the worktree has nothing of the run in it.
+3. **Promote** ([Promoting a book](#promoting-a-book)): copy the four files from `<cache>/staged/` into the repo, run `npm run audio:index`. A book's story writes only that book's files.
+4. **The acceptance is the summary line plus the lock.** The line says `chapters=<n>/<n>`, `not_judged=none` and `every_flag_on_list=yes` (and `left_out` is `none` or named, below), and `npx vitest run tests/unit/audio-judged.test.ts tests/unit/audio-timings-data.test.ts` is green with the book in. Paste the line in the closing comment.
+5. **A chapter left out** (a name in `left_out`, or a chapter the lock refuses because a flag is outside the listen list) is not fixed in the story and is not a failure: ship the rest, and NAME the chapter in the closing comment (the verse and flag, or the maker's reason) for a re-cut story. To take a chapter out of the book you promote: delete it from `<b>.json` and from the quiet file's `chapters` and `aligned` (and its listen entries), in the work copy `<cache>/staged/.work/<b>/`, run `judge.py --book <b>` and `align.py --book <b> --listen` there, and copy the four files out again. The rule is never changed in a book's story.
+6. **`align.py --check` is a hint, not the acceptance.** It fails on names and spellings the recording rightly differs from the text on (3 of the 8 first stories' found-at-close bugs were that): a failure of it that the summary line and the lock do not share is a finding for the closing comment, never a reason to change a cut rule or to drop a chapter.
+7. **Close-out.** Nothing of the run is untracked in the tree, so there is nothing to explain; say in the closing comment that `git status --short` showed only the book's own files.
 
 ## A fresh box
 
@@ -80,6 +118,8 @@ Every share is within 0.1% of the mean (15.82 hours), against the 10% asked; `te
 
 **Measured**, 2026-11-15, John through `run-book.sh jhn --out /tmp/jhn --fresh` (every chapter timed and judged afresh, the recordings already kept so no fetch is in it): 21 chapters, 879 verses, 119.6 minutes (7,176 s) of audio, **72.4 wall minutes**; the output is the shipped file byte for byte (below).
 
+(Printed in the first form of the line, `jhn: 21 chapters, 879 verses, 0 flags outside the listen list, ...`, which the fixed one of 'The summary line' replaced.)
+
 ```
 start  13:32:19 up 32 days,  7:48,  2 users,  load average: 57.56, 53.39, 41.09
 end    14:44:58 up 32 days,  9:01,  2 users,  load average: 28.01, 22.11, 22.51
@@ -116,8 +156,8 @@ judged 119.6 minutes of audio in 1223 s: 10.22 wall seconds a minute of audio (l
 A share's story is one Builder session on one fresh box (`mw` makes the box; the Mayor words the story). It must:
 
 1. Clone the rig at the branch the Mayor names and run `scripts/audio-timings/box-setup.sh`. It must end with `DONE`; a `THE PROOF FAILED` stops the story and goes back to the Mayor (the box makes other bytes than the Laptop).
-2. For each book of its share in `shares.json`, in the order listed, run `scripts/audio-timings/run-book.sh <book>` and read the summary line. Under the box's own time limit a book is run again with the same command, and it takes up where it stopped. One `run-book.sh` at a time for the fetching's sake (the publisher is asked for one file at a time, 2 s apart, by each box: five boxes are five polite clients); two books at once on the 8 cores is the story's choice only if the Mayor says so (the estimate assumes it, see below).
-3. Commit each book's outputs under `scripts/audio-timings/staged/` (the four JSON files and the summary), in small commits, one book to a commit; never the MP3s (`.gitignore` bars them) and never `.work/`.
+2. For each book of its share in `shares.json`, in the order listed, run `scripts/audio-timings/run-book.sh <book>` and read the summary line ([A book story](#a-book-story) is the template). Under the box's own time limit a book is run again with the same command, and it takes up where it stopped. One `run-book.sh` at a time for the fetching's sake (the publisher is asked for one file at a time, 2 s apart, by each box: five boxes are five polite clients); two books at once on the 8 cores is the story's choice only if the Mayor says so (the estimate assumes it, see below).
+3. Promote each book's outputs ([Promoting a book](#promoting-a-book)), in small commits, one book to a commit; the run's folder is `<cache>/staged/`, outside the tree, and the MP3s stay in the cache (`.gitignore` bars them).
 4. **Touch nothing else**: not `public/` (promotion is its own step, below), not the maker or the judge, not `player-slop.json`, not a test. A chapter the maker leaves out, a flag outside the listen list, a `text-differs`, a verse the recording joins: each is a FINDING for the closing comment under 'For the Mayor: classes' (the verse, the book, what the judge heard), never a change of the rule in the share's story. A class that needs the rule changed is its own story.
 5. In its closing comment: for each book the summary line, the wall minutes of the whole share against the estimate below, and the findings by class.
 
@@ -127,17 +167,17 @@ Promotion into `public/data/audio/msb-david/` is neither the share's nor this st
 
 mw-zbgo4ep.49. **A book's story writes only that book's files, so any number of books are promoted at once, on any boxes, and their branches merge in any order with no conflict.** The app's list of timed books, `public/data/audio/msb-david/index.json`, is **not a file anyone edits**: it is generated from the `<book>.json` files beside it by `scripts/audio-index.mjs` and is git-ignored (`.gitignore`), so no branch carries it.
 
-To promote a book `<b>` (after `run-book.sh <b>` and the Governor's ear on its listen list), copy from `scripts/audio-timings/staged/` into the repo, and nothing else:
+To promote a book `<b>` (after `run-book.sh <b>` and the Governor's ear on its listen list), copy from `<cache>/staged/` (`~/.cache/lampas-audio-timings/staged/`, or the `--out` you gave) into the repo, and nothing else:
 
-| from `staged/` | to |
+| from `<cache>/staged/` | to |
 | --- | --- |
 | `audio/msb-david/<b>.json` | `public/data/audio/msb-david/<b>.json` |
 | `quiet/msb-david-<b>.json` | `scripts/audio-timings/quiet/msb-david-<b>.json` |
 | `listen/msb-david-<b>.json` | `scripts/audio-timings/listen/msb-david-<b>.json` |
 | `judged/msb-david-<b>.json` | `scripts/audio-timings/judged/msb-david-<b>.json` |
-| `summary/<b>.txt` | stays in `staged/summary/` |
+| `summary/<b>.txt` | stays in `<cache>/staged/summary/` |
 
-**A book staged before mw-ar5k42b.25** (its quiet file says `"v":2`) was cut on the clock of a file played through, not the clock the browser seeks by (docs/data.md 'The time base'), and the gate refuses it. Move it first, in its work copy (`<out>/.work/<b>/`): `align.py --book <b> --cut` there, then `judge.py --book <b>` and `align.py --book <b> --listen`, and copy the four files out again. `staged/` holds two such today (Psalms 3 and 117; Jude's file has no tag inside it, so only its versions would change).
+**A book staged before mw-ar5k42b.25** (its quiet file says `"v":2`) was cut on the clock of a file played through, not the clock the browser seeks by (docs/data.md 'The time base'), and the gate refuses it. Move it first, in its work copy (`<out>/.work/<b>/`): `align.py --book <b> --cut` there, then `judge.py --book <b>` and `align.py --book <b> --listen`, and copy the four files out again. The repo's `scripts/audio-timings/staged/` holds two such today (Psalms 3 and 117; Jude's file has no tag inside it, so only its versions would change).
 
 Then `npm run audio:index` (the build, `npm run dev` and `npm test` run it too) lists the book, and the gate holds it: `tests/unit/audio-judged.test.ts` (the lock), `tests/unit/audio-timings-data.test.ts` (the rule), `tests/unit/audio-index.test.ts` (the index is what the book files make, no tracked `index.json`, every per-book file named for its book, two branches merge in both orders to one index). `npm run audio:index:check` says alone whether `index.json` is what the files make. **Never edit `index.json` and never `git add -f` it**: delete a book's `<b>.json` to turn its recording off. Do not change the maker, the judge, `player-slop.json`, `shares.json` or a test in a book's story.
 
@@ -145,7 +185,7 @@ Every file a book's story writes, and who else could write it (the sweep of mw-z
 
 - `public/data/audio/msb-david/<b>.json`: the book's own.
 - `scripts/audio-timings/quiet/`, `listen/`, `judged/` `msb-david-<b>.json`: one file a book each, named for it (the test holds the names).
-- `scripts/audio-timings/staged/{audio,quiet,listen,judged}/…`, `summary/<b>.txt`: a book's own files.
+- `<cache>/staged/{audio,quiet,listen,judged}/…`, `summary/<b>.txt`: a book's own files, outside the tree (the default folder of mw-zbgo4ep.61; `box-setup.sh`'s proof already used its own `--out` under the cache). The repo's `scripts/audio-timings/staged/` is the old default's Psalms 3 and 117 and Jude, kept.
 - `public/data/audio/msb-david/index.json`: **was the one shared file; now generated and not committed.** `align.py` no longer writes it (it only wrote it to keep it, and still wrote the book's own file first); `scripts/audio-timings/check-urls.mjs` derives the list itself.
 - Nothing else: `shares.json` (the shares are fixed), `player-slop.json`, the credits (`tests/support/credits.ts` credits the folder by its path, so a new book needs no entry), `ATTRIBUTION.md` and the Preface (the Recording bullet names the voice, not the books). Checked against what the Numbers, Leviticus and Exodus stories changed: `index.json` and their own five files.
 
