@@ -14,7 +14,7 @@ import { handsFreeSeam, resetHandsFree } from '../../src/handsFree/session';
 import { setHandsFree } from '../../src/handsFree/switch';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubPhoneInputs, type PhoneInput, type PhoneInputs } from '../support/fake-mic';
-import { stubRecognizer } from '../support/fake-recognizer';
+import { FakeRecognizer, stubRecognizer } from '../support/fake-recognizer';
 import { ENGLISH_VOICE, stubSpeech } from '../support/fake-speech';
 import { hearStreams, serveWakeModel, stubWake, type HeardStreams, type WakeFake } from '../support/fake-wake';
 
@@ -156,5 +156,35 @@ describe("'Hey Lampas' over the car's Bluetooth", () => {
     expect(asked()).toEqual({ ids: [], defaults: 1 });
     expect(phone?.openLabels()).toEqual(['Default - Phone microphone']);
     expect(wake.say()).toBe(true);
+  });
+
+  // mw-5r3p30.1224: the command after the wake is heard on the same kind of live input, not on whatever Android's own recogniser picks
+  it("hears the command on the car's hands-free microphone's track when the phone lists one, not on whatever the recogniser picks", async () => {
+    await turnOnWith([
+      { deviceId: 'default', label: 'Default', groupId: 'phone-route' },
+      { deviceId: 'car-hf', label: 'Car kit (hands-free)', groupId: 'car' },
+      { deviceId: 'phone-mic', label: 'Phone microphone', groupId: 'phone' },
+    ]);
+    const before = FakeRecognizer.instances.length;
+    await act(async () => {
+      expect(wake.say()).toBe(true);
+    });
+    await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before));
+    const recogniser = FakeRecognizer.last();
+    await waitFor(() => expect(recogniser.startFn).toHaveBeenCalled());
+    const track = recogniser.startFn.mock.calls[0]?.[0] as MediaStreamTrack | undefined;
+    // the recogniser was started on a chosen input's track (not with none, which is Android's own pick) and it is the car's
+    expect(track?.label).toBe('Car kit (hands-free)');
+  });
+
+  it('with no Bluetooth or hands-free input the command recogniser starts as before, on the default microphone (no track)', async () => {
+    await turnOnWith([{ deviceId: 'default', label: 'Default - Phone microphone', groupId: 'phone' }]);
+    const before = FakeRecognizer.instances.length;
+    await act(async () => {
+      expect(wake.say()).toBe(true);
+    });
+    await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before));
+    await waitFor(() => expect(FakeRecognizer.last().startFn).toHaveBeenCalled());
+    expect(FakeRecognizer.last().startFn.mock.calls[0]?.[0]).toBeUndefined();
   });
 });

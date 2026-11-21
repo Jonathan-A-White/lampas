@@ -5,7 +5,8 @@
 // opens and opened again after, the same path as a hold-to-talk.
 //  - The wake model (voice-kit/wake/models/hey-lampas.json, about 470 KB) is not in the app's first download: it is fetched as a file the first time Hands-free is
 //    turned On (WAKE_MODEL_URL, a hashed asset of the build) and the service worker keeps it (src/sw.ts), so a later start works offline.
-//  - The command's recogniser is composer's browserSpeech, the transcriber a Talk hold listens through, in its language and input (en-US, the phone's own microphone).
+//  - The command's recogniser is composer's browserSpeech, the transcriber a Talk hold listens through, in its language (en-US) and on the input a hold chooses: the car's Bluetooth or hands-free microphone
+//    when the phone lists one (openBluetoothInput), else the phone's default (mw-5r3p30.1224).
 //  - While another feature has the microphone (micBusy.ts: a hold-to-talk, a recording) the session is stopped, its stream closed; it starts again after.
 //  - The mark (HandsFreeGate) shows the session's state through `handsFreeSource`. A microphone refused turns the setting Off and says MIC_REFUSED on screen and aloud.
 //  - 'needs-touch' (the audio will not start until the page is touched): the next touch anywhere starts it again; it never pretends to listen.
@@ -14,7 +15,7 @@
 //  - Any other failed wake (the model cannot be fetched, no microphone, a browser with no wake) is told on screen and aloud (COULD_NOT_START); the mic-less and fetch-less kinds
 //    start again by themselves when the network is back ('online') or on the next touch anywhere, and the setting stays On; a browser that cannot do it at all turns it Off.
 import modelUrl from 'voice-kit/wake/models/hey-lampas.json?url';
-import { browserSpeech, canChooseInput } from 'voice-kit/composer';
+import { browserSpeech, canChooseInput, openBluetoothInput } from 'voice-kit/composer';
 import { browserWake, createChimes, createHandsFree, documentVisibility, type ChimePort, type HandsFree, type HandsFreeClock, type HandsFreeState, type WakePort } from 'voice-kit/handsfree';
 import type { WakeModel } from 'voice-kit/wake';
 import { handsFreePauseSetting, handsFreeSetting } from '../settings/definitions';
@@ -237,7 +238,9 @@ function sessionNow(): HandsFree {
     {
       wake,
       // the transcriber every hold of Lampas listens through (askTranscriber wraps it), so a command is heard as a Talk hold is
-      listen: (options) => browserSpeech.start(options),
+      // the command is heard on the car's Bluetooth or hands-free input when the phone lists one, as a hold-to-talk is (composer's chooser); a recogniser handed no
+      // input takes whatever microphone Android picks, which on his car's Bluetooth is the route that carries no sound (mw-5r3p30.1224). No such input: the default, as before.
+      listen: (options) => browserSpeech.start({ ...options, ...(canChooseInput() ? { openInput: openBluetoothInput } : {}) }),
       chime: chimePort,
       ...(typeof document === 'undefined' ? {} : { visibility: documentVisibility(document) }),
       clock: clockNow(),
