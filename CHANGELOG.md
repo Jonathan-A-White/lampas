@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.314
+_2026-11-21_
+- Fixed: Play all on a shared chapter range such as Judges 1–5, or on a whole chapter, now reads every chapter instead of only the first verse.
+- Fixed: Deuteronomy 23 now plays in David's voice, like the rest of the book.
+- Fixed: After you open Sermon sources and go back, the Settings list is where you left it instead of jumping to the bottom.
+- Fixed: Today's reading plan card no longer leaves a stray dot at the end of the "chapters done" line.
+
 ## 0.7.313
 _2026-11-21_
 - Fixed: Import YouTube history now says when it found no Morning RePhil episode, shows that it is reading a big file, and sits below the order help line.
