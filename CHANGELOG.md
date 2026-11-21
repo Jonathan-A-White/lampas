@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.316
+_2026-11-21_
+- New: On a Memorize result, tap a word marked wrong to see what the app heard in its place.
+- Fixed: In a sentence diagram, a word of direct address such as "Τεκνία μου" (my little children) now stands on its own line above the sentence, as in a Reed-Kellogg diagram, instead of hanging off the verb.
+
 ## 0.7.315
 _2026-11-21_
 - Fixed: David's reading of 1 Kings chapter 13 now plays, with verse 26 starting cleanly.

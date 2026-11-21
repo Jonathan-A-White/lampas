@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.316",
+    "date": "2026-11-21",
+    "story": "mw-5r3p30.1201",
+    "kind": "new",
+    "text": "On a Memorize result, tap a word marked wrong to see what the app heard in its place."
+  },
+  {
+    "version": "0.7.316",
+    "date": "2026-11-21",
+    "story": "mw-5r3p30.1227",
+    "kind": "fixed",
+    "text": "In a sentence diagram, a word of direct address such as \"Τεκνία μου\" (my little children) now stands on its own line above the sentence, as in a Reed-Kellogg diagram, instead of hanging off the verb."
+  },
+  {
     "version": "0.7.315",
     "date": "2026-11-21",
     "story": "mw-zbgo4ep.60",
