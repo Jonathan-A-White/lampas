@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.312
+_2026-11-21_
+- New: In the Septuagint's English, the small mark after "you" now explains itself when you tap it.
+- Fixed: In 126 Old Testament verses an English phrase now points to the right Hebrew word (for example 'the eye' in Exodus 21:26).
+- New: Rows that scroll sideways now show a clear fade with a small arrow on the side that has more.
+
 ## 0.7.311
 _2026-11-21_
 - Fixed: Sermon sources no longer lists Moody, Whitefield and John Wesley twice.

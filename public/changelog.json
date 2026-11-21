@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.312",
+    "date": "2026-11-21",
+    "story": "mw-u2w5klk.378",
+    "kind": "new",
+    "text": "In the Septuagint's English, the small mark after \"you\" now explains itself when you tap it."
+  },
+  {
+    "version": "0.7.312",
+    "date": "2026-11-21",
+    "story": "mw-fnvjof.17.210",
+    "kind": "fixed",
+    "text": "In 126 Old Testament verses an English phrase now points to the right Hebrew word (for example 'the eye' in Exodus 21:26)."
+  },
+  {
+    "version": "0.7.312",
+    "date": "2026-11-21",
+    "story": "mw-fnvjof.17.157",
+    "kind": "new",
+    "text": "Rows that scroll sideways now show a clear fade with a small arrow on the side that has more."
+  },
+  {
     "version": "0.7.311",
     "date": "2026-11-21",
     "story": "mw-qtu3zvz.229",
