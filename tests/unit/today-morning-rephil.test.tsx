@@ -93,7 +93,7 @@ describe('Today with Morning RePhil chosen', () => {
       { key: 'morningRephilHeard', value: JSON.stringify(EPISODES.map((e) => e.id)) },
     ]);
     const piece = await open();
-    expect(await piece.findByText("You've heard every Morning RePhil; new ones appear as they're posted.", undefined, { timeout })).toBeInTheDocument();
+    expect(await piece.findByText("You've heard every Morning RePhil in this version of Lampas; new ones come with an update.", undefined, { timeout })).toBeInTheDocument();
     expect(piece.queryByRole('link')).toBeNull();
     await act(async () => {
       await userEvent.click(piece.getByRole('button', { name: 'Start again from the top' }));

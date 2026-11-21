@@ -331,7 +331,7 @@ function RephilEpisode({ ticks, episode, heard, choice, order }: { ticks: Ticks;
       <Piece id="devotional" label="Morning RePhil" ticks={ticks}>
         <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2">
           <span className="text-lg font-medium">Morning RePhil</span>
-          <span className="text-base text-muted">You&apos;ve heard every Morning RePhil; new ones appear as they&apos;re posted.</span>
+          <span className="text-base text-muted">You&apos;ve heard every Morning RePhil in this version of Lampas; new ones come with an update.</span>
           <button type="button" onClick={() => oneTap('rephil-again', () => void clearHeard(ticks.date))} className={`${ACTION} mt-1 self-start`}>
             Start again from the top
           </button>
