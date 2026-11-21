@@ -1,0 +1,230 @@
+ref	run	text	g	mark	confidence
+Gen.38:1	1	it came	-		0.80
+Gen.38:1	2	pass	-		0.80
+Gen.38:1	2	at	2,3		0.80
+Gen.38:1	2	that	-		0.80
+Gen.38:1	3	down	-		0.80
+Gen.38:1	4	brethren,	9,10		0.80
+Gen.38:1	5	came as far as	13,14		0.80
+Gen.38:1	6	a certain	17		0.80
+Gen.38:1	7	of	-		0.80
+Gen.38:1	8	was	-		0.80
+Gen.38:2	1	the	-		0.80
+Gen.38:2	2	of a	-		0.80
+Gen.38:2	2	Chananitish	6		0.80
+Gen.38:2	3	was	-		0.80
+Gen.38:2	4	he	-		0.80
+Gen.38:2	5	in	-		0.80
+Gen.38:3	1	she	-		0.80
+Gen.38:3	2	and	-		0.80
+Gen.38:3	3	a	-		0.80
+Gen.38:4	1	she	-		0.80
+Gen.38:4	2	and	-		0.80
+Gen.38:4	3	a	-		0.80
+Gen.38:4	4	again;	2		0.80
+Gen.38:5	1	she	-		0.80
+Gen.38:5	1	again	1,2		0.80
+Gen.38:5	2	a	-		0.80
+Gen.38:5	3	she	-		0.80
+Gen.38:6	1	a	-		0.80
+Gen.38:6	2	for	-		0.80
+Gen.38:6	3	was	-		0.80
+Gen.38:7	1	the	-		0.80
+Gen.38:7	2	of	-		0.80
+Gen.38:7	3	before the	6		0.80
+Gen.38:8	1	to	3		0.80
+Gen.38:8	2	in	-		0.80
+Gen.38:8	3	wife,	7,8,9		0.80
+Gen.38:8	4	her as	-		0.80
+Gen.38:8	5	brother-in-law,	-		0.80
+Gen.38:8	6	up	-		0.80
+Gen.38:8	7	to	18		0.80
+Gen.38:9	1	should	-		0.80
+Gen.38:9	2	his—it came	-		0.80
+Gen.38:9	3	pass	-		0.80
+Gen.38:9	4	in	-		0.80
+Gen.38:9	5	his	-		0.80
+Gen.38:9	6	wife,	13,14,15		0.80
+Gen.38:9	6	that he spilled	18		0.80
+Gen.38:9	7	ground,	21,22		0.80
+Gen.38:9	7	so that	-		0.80
+Gen.38:9	8	should	-		0.80
+Gen.38:9	9	to his	26		0.80
+Gen.38:9	10	wife.	-		0.80
+Gen.38:10	1	his doing	8,9		0.80
+Gen.38:10	2	before	5,6		0.80
+Gen.38:10	3	him	-		0.80
+Gen.38:10	3	also.	13		0.80
+Gen.38:11	1	to	4		0.80
+Gen.38:11	2	daughter-in-law,	5		0.80
+Gen.38:11	3	a	-		0.80
+Gen.38:11	4	of your	12		0.80
+Gen.38:11	5	grown;	16		0.80
+Gen.38:11	6	also	-		0.80
+Gen.38:11	7	brethren;	30,31		0.80
+Gen.38:11	8	of her	40		0.80
+Gen.38:12	1	were fulfilled,	0		0.80
+Gen.38:12	2	Sava the wife of Judas	6,7,8,9		0.80
+Gen.38:12	3	being	-		0.80
+Gen.38:12	4	that	15		0.80
+Gen.38:12	5	himself	-		0.80
+Gen.38:13	1	was	-		0.80
+Gen.38:13	2	daughter-in-law,	3,4		0.80
+Gen.38:13	3	goes	-		0.80
+Gen.38:13	4	to	-		0.80
+Gen.38:13	5	his	15		0.80
+Gen.38:14	1	having	-		0.80
+Gen.38:14	2	off	-		0.80
+Gen.38:14	3	of her	4		0.80
+Gen.38:14	4	she	-		0.80
+Gen.38:14	5	on a	-		0.80
+Gen.38:14	6	ornamented her face,	11		0.80
+Gen.38:14	7	of	-		0.80
+Gen.38:14	8	the way	-		0.80
+Gen.38:14	9	to	-		0.80
+Gen.38:14	10	for a	-		0.80
+Gen.38:15	1	when	-		0.80
+Gen.38:15	2	her,	-		0.80
+Gen.38:15	3	to	-		0.80
+Gen.38:15	4	a harlot;	6		0.80
+Gen.38:15	5	she	-		0.80
+Gen.38:15	6	her	-		0.80
+Gen.38:16	1	he went out of	0		0.80
+Gen.38:16	1	his way	4,5		0.80
+Gen.38:16	2	to	-		0.80
+Gen.38:16	3	Let	9		0.80
+Gen.38:16	4	in	-		0.80
+Gen.38:16	5	he	-		0.80
+Gen.38:16	6	his daughter-in-law;	18,19		0.80
+Gen.38:16	7	she	22		0.80
+Gen.38:16	8	What will you	25		0.80
+Gen.38:16	9	you should	-		0.80
+Gen.38:16	10	in	-		0.80
+Gen.38:17	1	he	0		0.80
+Gen.38:17	2	will	-		0.80
+Gen.38:17	3	a	-		0.80
+Gen.38:17	4	of the	9		0.80
+Gen.38:17	5	my	-		0.80
+Gen.38:17	6	she	11		0.80
+Gen.38:17	7	Well,	-		0.80
+Gen.38:17	8	you will	-		0.80
+Gen.38:17	9	me an	-		0.80
+Gen.38:17	10	it.	-		0.80
+Gen.38:18	1	he	0		0.80
+Gen.38:18	2	What is	3		0.80
+Gen.38:18	3	that I shall	-		0.80
+Gen.38:18	4	she	8		0.80
+Gen.38:18	5	your	15	unsure	0.50
+Gen.38:18	6	he	-		0.80
+Gen.38:18	7	to her,	-		0.80
+Gen.38:18	8	in	-		0.80
+Gen.38:18	9	she conceived	34,35		0.80
+Gen.38:19	1	she	-		0.80
+Gen.38:19	2	and	-		0.80
+Gen.38:19	3	her	5		0.80
+Gen.38:19	4	off	-		0.80
+Gen.38:19	5	on	-		0.80
+Gen.38:19	6	of	13		0.80
+Gen.38:20	1	the	-		0.80
+Gen.38:20	2	the	-		0.80
+Gen.38:20	3	of his	9		0.80
+Gen.38:20	4	to	-		0.80
+Gen.38:21	1	he asked	0		0.80
+Gen.38:21	2	of	4,5		0.80
+Gen.38:21	3	who	12		0.80
+Gen.38:21	4	by	16		0.80
+Gen.38:21	5	they	-		0.80
+Gen.38:21	6	There	-		0.80
+Gen.38:21	7	harlot	24		0.80
+Gen.38:22	1	he	-		0.80
+Gen.38:22	2	I have	-		0.80
+Gen.38:22	3	her;	-		0.80
+Gen.38:22	4	There	-		0.80
+Gen.38:22	5	harlot	19		0.80
+Gen.38:23	1	Let her	-		0.80
+Gen.38:23	2	let us	-		0.80
+Gen.38:23	3	be	-		0.80
+Gen.38:23	4	kid,	12,13		0.80
+Gen.38:23	5	have	-		0.80
+Gen.38:23	6	her.	-		0.80
+Gen.38:24	1	it came	-		0.80
+Gen.38:24	2	pass	-		0.80
+Gen.38:24	3	months,	-		0.80
+Gen.38:24	3	that it was told	4		0.80
+Gen.38:24	3	Judas,	5,6		0.80
+Gen.38:24	4	daughter-in-law has grievously played	-		0.80
+Gen.38:24	5	she	-		0.80
+Gen.38:24	6	child	16		0.80
+Gen.38:24	6	by whoredom;	19		0.80
+Gen.38:24	7	let her be	-		0.80
+Gen.38:25	1	as	-		0.80
+Gen.38:25	2	her, she	-		0.80
+Gen.38:25	3	am with child	-		0.80
+Gen.38:25	4	whose	-		0.80
+Gen.38:25	5	she	-		0.80
+Gen.38:25	6	whose is	22		0.80
+Gen.38:26	1	them,	-		0.80
+Gen.38:26	2	is cleared rather	5		0.80
+Gen.38:26	3	forasmuch as	9,10		0.80
+Gen.38:26	4	to	15		0.80
+Gen.38:26	5	my	-		0.80
+Gen.38:26	6	he	-		0.80
+Gen.38:26	7	again.	21		0.80
+Gen.38:27	1	came	-		0.80
+Gen.38:27	2	pass	-		0.80
+Gen.38:27	3	she	-		0.80
+Gen.38:27	4	in labor,	3		0.80
+Gen.38:27	4	that she also had	5		0.80
+Gen.38:27	4	twins	7		0.80
+Gen.38:27	5	her	9		0.80
+Gen.38:28	1	it came	-		0.80
+Gen.38:28	2	as	2,3		0.80
+Gen.38:28	3	was bringing forth,	-		0.80
+Gen.38:28	4	thrust	-		0.80
+Gen.38:28	5	his	9	unsure	0.50
+Gen.38:28	6	having	-		0.80
+Gen.38:28	7	hold of	-		0.80
+Gen.38:28	8	his	17	unsure	0.50
+Gen.38:28	9	a	-		0.80
+Gen.38:28	10	thread,	-		0.80
+Gen.38:28	11	one shall come	-		0.80
+Gen.38:29	1	drew back	2		0.80
+Gen.38:29	1	his	3	unsure	0.50
+Gen.38:29	2	forth	-		0.80
+Gen.38:29	2	his	8	unsure	0.50
+Gen.38:29	3	Why	14		0.80
+Gen.38:29	3	has the barrier	18		0.80
+Gen.38:29	3	been	-		0.80
+Gen.38:29	4	because of	-		0.80
+Gen.38:29	5	she	-		0.80
+Gen.38:29	6	his	21	unsure	0.50
+Gen.38:30	1	forth	-		0.80
+Gen.38:30	2	thread;	-		0.80
+Gen.38:8	fix	marry her as her brother-in-law,	13,14		0.80
+Gen.38:18	fix	she conceived by	33,34,35,36		0.80
+Gen.38:24	fix	daughter-in-law has grievously played the	10,11		0.80
+Gen.38:24	fix	harlot,	8		0.80
+Gen.38:25	fix	were bringing	2		0.80
+Gen.38:25	fix	by the man	9,10,11		0.80
+Gen.38:25	fix	whose these things are;	12,13,14		0.80
+Gen.38:25	fix	am with child	16,17,18		0.80
+Gen.38:28	fix	it came to pass	0		0.80
+Gen.38:28	fix	was bringing forth,	4		0.80
+Gen.38:28	fix	thrust forth	8		0.80
+Gen.38:28	fix	scarlet thread,	20		0.80
+Gen.38:30	fix	scarlet thread;	14,15		0.80
+Gen.38:13	fix	goes up	11		0.80
+Gen.38:14	fix	by	14		0.80
+Gen.38:14	fix	in the way	20,21		0.80
+Gen.38:14	fix	to Thamna,	22		0.80
+Gen.38:24	fix	three months,	3		0.80
+Gen.38:28	fix	having taken hold of	11		0.80
+Gen.38:28	fix	one shall come out	23		0.80
+Gen.38:29	fix	came forth	7		0.80
+Gen.38:29	fix	through because of	16		0.80
+Gen.38:30	fix	came forth	3		0.80
+Gen.38:1	fix	it came to pass	0		0.80
+Gen.38:9	fix	his—it came to pass	9		0.80
+Gen.38:24	fix	it came to pass	0		0.80
+Gen.38:27	fix	it came to pass	0		0.80
+Gen.38:27	fix	her womb.	9,10,11		0.80
