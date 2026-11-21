@@ -1,9 +1,9 @@
 // The whole-Bible run's parts (mw-ar5k42b.4, docs/audio-run.md): the shares of the 66 books for 5 boxes, the staged books (made by run-book.sh, NOT played by the app),
 // and the one command's refusals. Reads committed files and runs the script only where it stops before any Python (no audio, no model).
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { afterEach, describe, expect, it } from 'vitest';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
@@ -109,5 +109,77 @@ describe('run-book.sh', () => {
     expect(refused.status).toBe(2);
     expect(refused.output).toMatch(/may not be under public/);
     expect(readdirSync(resolve(root, 'public/data/audio/msb-david')).sort()).toEqual(before);
+  });
+
+  // mw-zbgo4ep.61: the default staging folder is the cache's, outside the worktree, and the summary line is of one fixed form.
+  // --summary-only runs nothing: it reads the book's files already in the folder, so these need no audio and no model.
+  const SUMMARY = /^SUMMARY book=([0-9a-z]{3}) chapters=(\d+)\/(\d+) left_out=(none|\d+(?:,\d+)*) not_judged=(none|\d+(?:,\d+)*) verses=(\d+) flags=(\d+) flags_outside_list=(\d+) every_flag_on_list=(yes|no) listen_edges=(\d+) minutes=(\d+\.\d)$/;
+  const parse = (line: string) => {
+    const m = SUMMARY.exec(line);
+    if (!m) throw new Error(`not the fixed summary line: ${line}`);
+    return { book: m[1], timed: +m[2], of: +m[3], leftOut: m[4], notJudged: m[5], verses: +m[6], flags: +m[7], outside: +m[8], onList: m[9] === 'yes', edges: +m[10], minutes: +m[11] };
+  };
+  // a cache that looks set up: the judge's python is the box's python3, the only part --summary-only runs
+  const fakeCache = () => {
+    const cache = mkdtempSync(join(tmpdir(), 'run-book-cache-'));
+    made.push(cache);
+    mkdirSync(join(cache, 'judge-venv/bin'), { recursive: true });
+    symlinkSync(spawnSync('bash', ['-c', 'command -v python3'], { encoding: 'utf8' }).stdout.trim(), join(cache, 'judge-venv/bin/python'));
+    return cache;
+  };
+  const rutChapters = readdirSync(resolve(root, 'public/data/rut')).filter((f) => /^\d+\.json$/.test(f)).map((f) => parseInt(f, 10)).sort((a, b) => a - b);
+  // the three files the summary reads, for Ruth with the given chapters timed and judged and the given verses' flags
+  const stageRut = (folder: string, timed: number[], flags: { chapter: number; verse: number; kind: string }[], listen: { verse: string; edge: string }[]) => {
+    for (const d of ['audio/msb-david', 'judged', 'listen']) mkdirSync(join(folder, d), { recursive: true });
+    const chapters: Record<string, unknown> = {};
+    const judged: Record<string, { verses: { n: number; flags?: { kind: string }[] }[] }> = {};
+    for (const c of timed) {
+      chapters[String(c)] = {};
+      judged[String(c)] = { verses: [1, 2].map((n) => ({ n, flags: flags.filter((f) => f.chapter === c && f.verse === n).map((f) => ({ kind: f.kind })) })) };
+    }
+    writeFileSync(join(folder, 'audio/msb-david/rut.json'), JSON.stringify({ chapters }));
+    writeFileSync(join(folder, 'judged/msb-david-rut.json'), JSON.stringify({ chapters: judged, summary: { verses: timed.length * 2 } }));
+    writeFileSync(join(folder, 'listen/msb-david-rut.json'), JSON.stringify({ verses: listen }));
+  };
+
+  it('stages in the cache by default, outside the worktree, and a run with no --out leaves nothing under staged/ in the tree', () => {
+    const cache = fakeCache();
+    stageRut(join(cache, 'staged'), rutChapters, [], []);
+    const before = spawnSync('git', ['status', '--short', '--', 'scripts/audio-timings/staged'], { cwd: root, encoding: 'utf8' }).stdout;
+    const done = run(['rut', '--summary-only'], cache);
+    expect(done.status).toBe(0);
+    // the summary was read from <cache>/staged: the default folder is there, and so outside the repo
+    expect(parse(done.output.split('\n')[0]).timed).toBe(rutChapters.length);
+    expect(existsSync(join(cache, 'staged/summary/rut.txt'))).toBe(true);
+    expect(relative(root, join(cache, 'staged')).startsWith('..')).toBe(true);
+    const after = spawnSync('git', ['status', '--short', '--', 'scripts/audio-timings/staged'], { cwd: root, encoding: 'utf8' }).stdout;
+    expect(after).toBe(before);
+    expect(readFileSync(join(tools, 'run-book.sh'), 'utf8')).toMatch(/out="\$cache\/staged"/);
+  });
+
+  it('prints the fixed summary line for a run with no chapter left out', () => {
+    const cache = fakeCache();
+    const folder = join(cache, 'out');
+    stageRut(folder, rutChapters, [{ chapter: 1, verse: 2, kind: 'tail-extra' }], [{ verse: '1:2', edge: 'tail' }]);
+    const done = run(['rut', '--out', folder, '--summary-only'], cache);
+    expect(done.status).toBe(0);
+    expect(parse(done.output.split('\n')[0])).toEqual({
+      book: 'rut', timed: rutChapters.length, of: rutChapters.length, leftOut: 'none', notJudged: 'none', verses: rutChapters.length * 2,
+      flags: 1, outside: 0, onList: true, edges: 1, minutes: 0,
+    });
+  });
+
+  it('prints the fixed summary line for a run with a chapter left out, naming it, and a flag outside the listen list', () => {
+    const cache = fakeCache();
+    const folder = join(cache, 'out');
+    const last = rutChapters[rutChapters.length - 1];
+    stageRut(folder, rutChapters.filter((c) => c !== last), [{ chapter: 1, verse: 1, kind: 'head-clipped' }], []);
+    const done = run(['rut', '--out', folder, '--summary-only'], cache);
+    expect(done.status).toBe(3);
+    expect(parse(done.output.split('\n')[0])).toEqual({
+      book: 'rut', timed: rutChapters.length - 1, of: rutChapters.length, leftOut: String(last), notJudged: 'none', verses: (rutChapters.length - 1) * 2,
+      flags: 1, outside: 1, onList: false, edges: 0, minutes: 0,
+    });
+    expect(done.output).toMatch(/outside the list: 1:1 head/);
   });
 });
