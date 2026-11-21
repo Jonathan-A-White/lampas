@@ -9,6 +9,30 @@ const width = (link: Link): number => (link.ref.toChapter ?? link.ref.chapter) *
 /** The Themes line's words for a topic: its label, then ': ' and the part's where the link names one ('Love-Hatred: Of God'). */
 export const themeText = (label: string, partLabel: string | undefined): string => (partLabel === undefined ? label : `${label}: ${partLabel}`);
 
+/**
+ * The key two lists' topics are one theme by (mw-qtu3zvz.90): the label's letters and numbers, lower case, with accents, apostrophes and the module's trailing punctuation dropped and any other punctuation read as a space.
+ * An inverted form ('Sinner's Friend, Christ the') or a different word ('Faithfulness') is a different key: the rule joins what is the same name written two ways, and no more.
+ */
+export const themeKey = (label: string): string =>
+  label
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/['’‘`]/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+
+/** The themes with a theme two lists give once: the first of each name (`themeKey`), in the order given. Each theme keeps its own source and topic, so a caller that wants the sermons of both reads them from `themes`, not from this. */
+export function joinThemes<T extends Pick<Theme, 'label'>>(themes: readonly T[]): T[] {
+  const seen = new Set<string>();
+  return themes.filter((theme) => {
+    const key = themeKey(theme.label);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /** A source that fails leaves the others to answer: the failure is logged, and its topics are none. */
 async function themesOf(source: ThemeSource, place: ThemePlace & { from: number }): Promise<Theme[]> {
   try {

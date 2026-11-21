@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { subscribe } from '../events/bus';
 import { themesFor, type Theme } from '../themes';
+import { themeKey } from '../themes/themesFor';
 import { directThemeRows, sameThemeFor, sermonsOnTheme, type SameTheme, type SermonPlace, type SermonsFound, type ThemeRow } from './index';
 import type { LinkRow } from './merge';
 
@@ -78,14 +79,16 @@ export interface ThemeChip {
   rows: LinkRow[];
 }
 
-/** The chips of the themes that have at least one sermon, in the line's order; a name given by two lists has the rows of both, a sermon once. */
+/** The chips of the themes that have at least one sermon, in the line's order; a theme two lists name (themeKey) has the rows of both, a sermon once. */
 export function chipsOf(themes: readonly Theme[], lists: ReadonlyMap<string, readonly LinkRow[]>): ThemeChip[] {
   const chips = new Map<string, ThemeChip>();
   for (const theme of themes) {
     const rows = lists.get(`${theme.source}:${theme.topic}`) ?? [];
     if (rows.length === 0) continue;
-    const held = chips.get(theme.text);
-    if (!held) chips.set(theme.text, { text: theme.text, label: theme.label, sources: [theme.source], rows: [...rows] });
+    // a name two lists write two ways (case, punctuation) is one theme: the first list's words stand (mw-qtu3zvz.90)
+    const key = themeKey(theme.label);
+    const held = chips.get(key);
+    if (!held) chips.set(key, { text: theme.text, label: theme.label, sources: [theme.source], rows: [...rows] });
     else if (!held.sources.includes(theme.source)) held.sources.push(theme.source);
     if (held) for (const row of rows) if (!held.rows.some((r) => r.source === row.source && r.id === row.id)) held.rows.push(row);
   }

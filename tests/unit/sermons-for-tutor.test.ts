@@ -46,6 +46,11 @@ describe('sermonsForTutor', () => {
     expect(told.themes[0]).toEqual({ topic: 'tcr:a2'.replace('tcr', 'torrey'), label: 'A' });
     expect(told.themes.map((t) => t.label)).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
   });
+
+  it('names a theme both lists give once, however it is cased or pointed (mw-qtu3zvz.90)', () => {
+    const told = sermonsForTutor([], [theme('faith', 'Faith', 'tcr'), theme('f', "FAITH.", 'torrey'), theme('s', "Sinner's Friend", 'tcr'), theme('s2', 'sinners  friend', 'torrey')]);
+    expect(told.themes).toEqual([{ topic: 'tcr:faith', label: 'Faith' }, { topic: 'tcr:s', label: "Sinner's Friend" }]);
+  });
 });
 
 describe('the request', () => {
