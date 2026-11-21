@@ -180,3 +180,47 @@ test('a double tap near the top of Next step stays in the drill, though Ask the 
   await page.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 })).toHaveCount(0);
 });
+
+// mw-indx1x6.64: after a wrong step the Study this box is drawn at the foot under the pinned Next bar; the screen's box scrolls (src/ui/reveal.ts) so its links are in reach
+// without a scroll of his: the Lesson link (the one the check steps send him to) is what he taps, so its centre is hit-testable.
+test('after a wrong mood step the Study this box stands above Next and its Lesson link takes a tap, with no scroll of his', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/drill');
+  await expect(page.getByTestId('drill-step')).toHaveAttribute('data-step-id', 'pos');
+  // answer rightly until a verb's mood step is asked; the round is kept in localStorage as it is drawn (src/data/drillKeep.ts), with the right value of each step
+  for (let k = 0; k < 200; k += 1) {
+    const id = await page.getByTestId('drill-step').getAttribute('data-step-id');
+    const right = await page.evaluate(() => {
+      const kept = JSON.parse(window.localStorage.getItem('lampas.drill') ?? 'null') as { question: number; step: number; questions: { steps: { right: string }[] }[] } | null;
+      return kept ? kept.questions[kept.question].steps[kept.step].right : null;
+    });
+    const choices = await page.locator('[data-option]').allTextContents();
+    const at = choices.indexOf(right ?? '');
+    if (id === 'mood') {
+      await page.locator('[data-option]').nth(at === 0 ? 1 : 0).click();
+      break;
+    }
+    await page.locator('[data-option]').nth(Math.max(0, at)).click();
+    const next = page.getByTestId('next');
+    const label = await next.textContent();
+    await next.click();
+    // a round drawn with no verb in it ends: another round is drawn (the words are random)
+    if (label === 'Finish') await page.getByRole('button', { name: 'Another round' }).click();
+  }
+  await expect(page.locator('[data-option][data-result="wrong"]')).toHaveCount(1);
+  const lesson = page.locator('[data-testid="study-this"] [data-study="lesson"]');
+  await expect(lesson).toBeVisible();
+  // no scroll by the test: the box has moved itself (it follows the box for a moment while the screen settles, so wait for the point to be the button's)
+  await expect
+    .poll(() =>
+      lesson.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+        return hit === el || el.contains(hit);
+      }),
+    )
+    .toBe(true);
+  await expect(page.getByTestId('next')).toBeInViewport();
+  await expectFitsPhone(page);
+  await shot(page, 'drill-study-this-wrong-mood');
+});
