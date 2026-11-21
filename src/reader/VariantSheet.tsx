@@ -11,7 +11,7 @@ import { AnotherBookButton } from '../library/InLogosDoors';
 import { navigate, openVariantLesson } from '../nav/route';
 import { GREEK_LANG } from '../script/greekLang';
 import { focusOnMount } from '../ui/focus';
-import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
+import { leaveSheetsThen, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { APPARATUS_LABEL, EDITION_2005, GO_DEEPER_HEADING, LESSONS_LABEL, LOGOS_LABEL, apparatusUrl, goDeeperEntries, goDeeperPlace } from './goDeeper';
 import type { Lookup } from '../WordSheet';
@@ -99,8 +99,7 @@ function SourceCaption({ source, open, onToggle }: { source: EnglishSource; open
           <button
             type="button"
             onClick={() => {
-              closeAllSheets();
-              navigate('preface');
+              leaveSheetsThen(() => navigate('preface'));
             }}
             className="flex min-h-11 items-center text-base font-medium text-accent underline"
           >
@@ -325,8 +324,7 @@ function Sheet({ shown, reference, place, verse, lang, onLook, onClose, onRead }
             <GoDeeper
               place={place}
               onLessons={() => {
-                closeAllSheets();
-                openVariantLesson();
+                leaveSheetsThen(() => openVariantLesson());
               }}
             />
           ) : null}

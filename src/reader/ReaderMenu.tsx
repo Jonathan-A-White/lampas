@@ -5,7 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { navigate } from '../nav/route';
 import { useNoDoor } from '../tutor/door';
 import { focusOnMount } from '../ui/focus';
-import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
+import { leaveSheetsThen, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose } from '../ui/sheetDrag';
 
 const ICON = { viewBox: '0 0 24 24', width: 24, height: 24, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
@@ -54,10 +54,9 @@ function MenuPanel({ onClose }: { onClose: () => void }) {
   useSheetBack(onClose);
   useEscapeToClose(onClose);
   useNoDoor(); // keeps no door (mw-5r3p30.1124): a menu of buttons, nothing on it to ask about
-  // a row takes him to a screen of its own: the menu closes first (its history entry is left beneath, which Back steps over, src/ui/sheetBack.ts closeAllSheets)
+  // a row takes him to a screen of its own: the menu closes first (its history entry is left beneath, which Back steps over, src/ui/sheetBack.ts leaveSheetsThen)
   const go = (route: 'tools' | 'settings') => () => {
-    closeAllSheets();
-    navigate(route);
+    leaveSheetsThen(() => navigate(route));
   };
   return (
     <>

@@ -186,6 +186,21 @@ export function closeAllSheets(): void {
   for (const [, close] of [...closers].sort((a, b) => b[0] - a[0])) close.current();
 }
 
+/**
+ * Takes him from the open sheets to a place of its own (a Definition link, 'Read it' on Try it, a menu row): closes every sheet as closeAllSheets does, waits until their entries have
+ * gone (the one step Back that closing them takes off), then runs `go`, which pushes the place. The place then follows the screen he was on directly, so Back and Forward are one step each:
+ * pushed above the sheets' leftover entries, Forward from the screen he returned to would land on a stale sheet entry and bounce back (mw-5r3p30.1210). With no sheet open, `go` runs at once.
+ */
+export function leaveSheetsThen(go: () => void): void {
+  const hadEntries = mounted.length > 0 && depthOf() > 0;
+  closeAllSheets();
+  if (!hadEntries) {
+    go();
+    return;
+  }
+  afterSheetEntryGone(go);
+}
+
 /** The headings of the sheets open now, the newest last ('Talk', 'Word'): where-he-is (src/tutor/registry.ts) tells the tutor which are on screen. */
 export function openSheetTitles(): string[] {
   return [...document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]')]

@@ -12,7 +12,7 @@ import { useSetting } from '../settings/store';
 import { focusOnMount } from '../ui/focus';
 import { DialogAskTutor } from '../AskTutor';
 import { useSheetTalk } from '../tutor/sheetTalk';
-import { closeAllSheets, useSheetBack } from '../ui/sheetBack';
+import { leaveSheetsThen, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { variantEnglishClass, type EnglishSource } from './englishSource';
 
@@ -122,8 +122,7 @@ export function VariantKeySheet({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={() => {
-              closeAllSheets();
-              openVariantLesson(LESSON);
+              leaveSheetsThen(() => openVariantLesson(LESSON));
             }}
             className="flex min-h-11 items-center border-t border-line text-base font-medium text-accent underline"
           >
