@@ -112,6 +112,8 @@ async function readJson(url: string): Promise<{ value: unknown; retry: boolean }
 let indexRequest: Promise<TimingsIndex | null> | undefined;
 const bookRequests = new Map<string, Promise<BookTimings | null>>();
 const loaded = new Map<string, BookTimings>();
+/** The books whose file was answered for good (loaded, or not listed, missing or refused): what chapterTimingsNow says of them will not change this session. */
+const settled = new Set<string>();
 let loadedIndex: TimingsIndex | null = null;
 
 /** Forgets everything loaded (a test's). */
@@ -120,7 +122,11 @@ export function forgetTimings(): void {
   loadedIndex = null;
   bookRequests.clear();
   loaded.clear();
+  settled.clear();
 }
+
+/** Whether this book's timings are still to come: asked for or not yet, and not answered for good. A start that decides the voice waits while this is true (voiceDecision.ts timingsReady). */
+export const bookTimingsPending = (book: string): boolean => !settled.has(book);
 
 /** The index of the recordings that have timings, or null when there is none (no file, not JSON, fails its guard, no network). Fetched once a session. */
 export function loadTimingsIndex(): Promise<TimingsIndex | null> {
@@ -152,6 +158,7 @@ export function loadBookTimings(book: string): Promise<BookTimings | null> {
   if (known) return known;
   const request = fetchBook(book).then(({ value, again }) => {
     if (again && bookRequests.get(book) === request) bookRequests.delete(book);
+    if (!again) settled.add(book);
     return value;
   });
   bookRequests.set(book, request);

@@ -1,12 +1,12 @@
 // src/speech/voiceDecision.ts — the Bible voice explains itself (mw-zbgo4ep.30). Every place a Bible reading starts (the header's Play, a verse's play button, Play to, a Listen, and
-// the crossing into the next chapter) asks decideVoice() ONCE, with no wait, and is told which voice reads and what to say about it:
+// the crossing into the next chapter) asks decideVoice() ONCE (a tap before the book's timings arrive waits for them first, useReadFrom begin: mw-zbgo4ep.43), and is told which voice reads and what to say about it:
 //   * on Wi-Fi (or Recording (David)) where David has recorded the chapter: the recording;
 //   * on Wi-Fi (or Recording (David)) where the index says he has not recorded the chapter yet: the phone's voice, and the line DAVID_NOT_RECORDED (once a book a session);
 //   * on mobile data with Recording on Wi-Fi only: where David has the chapter, ONE question the first time (DATA_QUESTION; the answer is remembered), and the phone's voice with the
 //     one-time DATA_NOTICE; where he has not, the phone's voice and the notice.
 // The recorded voice's own rule (recordedVoice.ts wantsRecording / recordingFor) is unchanged; this file only adds what is said. What he answered and what was said is kept in
 // localStorage (lampas.dataVoiceAsked, lampas.dataVoiceNoticed); the line about a book is kept for the session only.
-import { chapterListedNow, chapterTimingsNow, loadBookTimings, spanOf, type ChapterTimings } from '../data/audioTimings';
+import { bookTimingsPending, chapterListedNow, chapterTimingsNow, loadBookTimings, spanOf, type ChapterTimings } from '../data/audioTimings';
 import { bookOf } from '../data/books';
 import type { Chapter } from '../data/chapter';
 import type { BibleVoice } from '../settings/definitions/bibleVoice';
@@ -53,13 +53,19 @@ export function timingsWarmFor(voice: BibleVoice | undefined): boolean {
 /** The longest a reading that starts by itself (Hands-free's 'read John 17', a crossing into a next book) waits for the book's timings before the phone's voice reads it. */
 export const TIMINGS_WAIT_MS = 4000;
 
+/** The longest a Play tapped before the book's timings arrived waits for them (mw-zbgo4ep.43): a slow connection takes seconds, and the phone's voice that reads instead never turns into David. */
+export const TAP_TIMINGS_WAIT_MS = 15000;
+
+/** Whether a start that decides the voice now would find the book's timings still on their way: David could play (or the data question is still to ask) and the file is not in yet. */
+export const timingsOnTheWay = (book: string, voice: BibleVoice | undefined): boolean => timingsWarmFor(voice) && bookTimingsPending(book);
+
 /** Resolves when decideVoice can look at this book's timings: they are in, or will not come (David could not play under this voice, the fetch failed, or TIMINGS_WAIT_MS went by). A tap on Play
  * finds them loaded already (the Reader warms them as a chapter opens, timingsWarmFor), but a reading that starts the moment a chapter opens (mw-rl10piw.29: Hands-free's 'read John 17' from another
  * book) decides before the fetch is back, finds none and reads in the phone's voice: it waits here first. `voice` undefined (the setting not read yet) is no answer: the caller waits for it. */
-export function timingsReady(book: string, voice: BibleVoice | undefined): Promise<void> {
+export function timingsReady(book: string, voice: BibleVoice | undefined, waitMs = TIMINGS_WAIT_MS): Promise<void> {
   if (!timingsWarmFor(voice)) return Promise.resolve();
   return new Promise((resolve) => {
-    const timer = setTimeout(resolve, TIMINGS_WAIT_MS);
+    const timer = setTimeout(resolve, waitMs);
     void loadBookTimings(book).then(
       () => {
         clearTimeout(timer);

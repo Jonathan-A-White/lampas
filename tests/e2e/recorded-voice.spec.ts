@@ -54,10 +54,18 @@ const timings = {
 };
 
 /** Serves the stub timings and the WAV; fails and counts every other request to openbible.com. Returns the count. */
-async function stubRecording(page: Page): Promise<{ reached: string[]; asked: string[] }> {
+async function stubRecording(page: Page, delayMs = 0): Promise<{ reached: string[]; asked: string[] }> {
   const counted = { reached: [] as string[], asked: [] as string[] };
-  await page.route('**/data/audio/msb-david/index.json', (route) => route.fulfill({ json: { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: [3] } } }));
-  await page.route('**/data/audio/msb-david/jhn.json', (route) => route.fulfill({ json: timings }));
+  // `delayMs`: a slow connection, the timings files taking seconds (mw-zbgo4ep.43)
+  const slow = () => (delayMs === 0 ? Promise.resolve() : new Promise<void>((resolve) => setTimeout(resolve, delayMs))); // a real-time wait: a slow network
+  await page.route('**/data/audio/msb-david/index.json', async (route) => {
+    await slow();
+    await route.fulfill({ json: { v: 1, edition: 'msb-david', voice: 'David', books: { jhn: [3] } } });
+  });
+  await page.route('**/data/audio/msb-david/jhn.json', async (route) => {
+    await slow();
+    await route.fulfill({ json: timings });
+  });
   const wav = silence(DURATION);
   await page.route(/^https?:\/\/([a-z0-9-]+\.)*openbible\.com\//, (route) => {
     counted.asked.push(route.request().url());
@@ -201,10 +209,10 @@ async function connectionIs(page: Page, type: string | null): Promise<void> {
   await page.addInitScript((t) => Object.defineProperty(navigator, 'connection', { value: t === null ? undefined : { type: t }, configurable: true }), type);
 }
 
-async function openJohn3WithVoice(page: Page, voice: string | null): Promise<{ reached: string[]; asked: string[] }> {
+async function openJohn3WithVoice(page: Page, voice: string | null, delayMs = 0): Promise<{ reached: string[]; asked: string[] }> {
   await openUnlocked(page);
   await honestSpeech(page, { msPerWord: 5 });
-  const network = await stubRecording(page);
+  const network = await stubRecording(page, delayMs);
   await page.goto('/');
   if (voice !== null) await keep(page, 'bibleVoice', voice);
   await page.goto('/#/?b=jhn&c=3&view=english&weave=off');
@@ -281,4 +289,29 @@ test('Phone voice reads John 3 in the phone voice and makes no request for an op
   // the book's timings are not even asked for: nothing of the recording is wanted
   expect(network.asked).toEqual([]);
   expect(network.reached).toEqual([]);
+});
+
+test('a Play tapped before the timings arrive (6 s) waits for them and on Wi-Fi David reads (mw-zbgo4ep.43)', async ({ page }) => {
+  test.setTimeout(60_000);
+  await connectionIs(page, 'wifi');
+  const network = await openJohn3WithVoice(page, null, 6000);
+  // at once: the timings are still on their way
+  await header(page, 'Read from the top').click();
+  await expect(readingBar(page)).toContainText('Reading verse 1', { timeout: 20_000 });
+  // David, not the phone voice: the recording was asked for, nothing was spoken, and no line says the phone voice reads
+  await expect.poll(() => network.asked.includes(AUDIO), { timeout: 15_000 }).toBe(true);
+  expect(await spoken(page)).toEqual([]);
+  await expect(page.getByRole('status').filter({ hasText: 'the phone voice' })).toHaveCount(0);
+});
+
+test('on mobile data a Play tapped before the timings arrive (6 s) asks the data question, not the phone voice (mw-zbgo4ep.43)', async ({ page }) => {
+  test.setTimeout(60_000);
+  await connectionIs(page, 'cellular');
+  await openJohn3WithVoice(page, null, 6000);
+  await header(page, 'Read from the top').click();
+  const question = page.getByRole('alertdialog', { name: 'Bible voice on mobile data' });
+  await expect(question).toBeVisible({ timeout: 20_000 });
+  await expect(readingBar(page)).toHaveCount(0);
+  expect(await spoken(page)).toEqual([]);
+  await shot(page, 'bible-voice-data-question-slow');
 });

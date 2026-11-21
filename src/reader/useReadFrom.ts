@@ -1,14 +1,14 @@
 // src/reader/useReadFrom.ts — how the Reader starts Read aloud (docs/module-map.md R1): the plan (what is read is what is shown: it follows the view and
 // the weave), readFrom for the header's Play (Play to) and a verse's play button, and listenTo for a passage.
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { sourceLanguage, type Chapter } from '../data/chapter';
 import type { PlayTo, ReaderView } from '../data/repositories';
 import { passageVerse, unitId, type Passage } from '../data/passage';
 import type { Verse } from '../data/chapter';
 import { getReading, listenKeyOf, pauseReading, planOf, startReading, useListenCompleted, type PlanVerse, type StartOptions } from '../speech/readAloud';
-import { setBibleVoice } from '../speech/recordedVoice';
+import { bibleVoiceChosen, setBibleVoice } from '../speech/recordedVoice';
 import { askAboutData } from '../speech/dataQuestion';
-import { markDataQuestionAnswered, decideVoice } from '../speech/voiceDecision';
+import { markDataQuestionAnswered, decideVoice, TAP_TIMINGS_WAIT_MS, timingsOnTheWay, timingsReady } from '../speech/voiceDecision';
 import { writeSetting } from '../settings/registry';
 import type { WovenVerse } from '../data/weave';
 
@@ -24,19 +24,35 @@ export function useReadFrom(book: string, chapterN: number, chapter: Chapter | n
   );
   // Every start goes through the one decision (src/speech/voiceDecision.ts decideVoice, mw-zbgo4ep.30): David where he can be, the phone's voice with the line that says why, or, on
   // mobile data with Recording on Wi-Fi only, ONE question first. The answer's buttons start the reading, so it plays from a tap.
+  // A start tapped before the book's timings arrived (a slow connection: the Reader warms them as the chapter opens) waits for them, up to TAP_TIMINGS_WAIT_MS, and decides then: deciding at once
+  // found none and read in the phone's voice with no word, never David and never the data question (mw-zbgo4ep.43). The latest start wins; leaving the screen drops the waiting one.
+  const latest = useRef(0);
+  useEffect(
+    () => () => {
+      latest.current = -1;
+    },
+    [],
+  );
   const begin = useCallback(
     (options: Omit<StartOptions, 'recorded' | 'notice'>, read: PlanVerse[], mayAsk = true) => {
-      const say = decideVoice(book, chapter, read, mayAsk);
-      if (!say.ask) return startReading({ ...options, recorded: say.recorded, notice: say.notice });
-      askAboutData((choice) => {
-        markDataQuestionAnswered();
-        if (choice === 'david') {
-          // the setting is changed now, so the reading below finds the recording wanted; saved behind it
-          setBibleVoice('msb-david');
-          void writeSetting('bibleVoice', 'msb-david');
-        }
-        const after = decideVoice(book, chapter, read, false);
-        startReading({ ...options, recorded: after.recorded, notice: after.notice });
+      const go = () => {
+        const say = decideVoice(book, chapter, read, mayAsk);
+        if (!say.ask) return startReading({ ...options, recorded: say.recorded, notice: say.notice });
+        askAboutData((choice) => {
+          markDataQuestionAnswered();
+          if (choice === 'david') {
+            // the setting is changed now, so the reading below finds the recording wanted; saved behind it
+            setBibleVoice('msb-david');
+            void writeSetting('bibleVoice', 'msb-david');
+          }
+          const after = decideVoice(book, chapter, read, false);
+          startReading({ ...options, recorded: after.recorded, notice: after.notice });
+        });
+      };
+      if (!timingsOnTheWay(book, bibleVoiceChosen())) return go();
+      const mine = latest.current >= 0 ? ++latest.current : -1;
+      void timingsReady(book, bibleVoiceChosen(), TAP_TIMINGS_WAIT_MS).then(() => {
+        if (mine >= 0 && latest.current === mine) go();
       });
     },
     [book, chapter],
