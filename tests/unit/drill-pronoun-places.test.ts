@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import type { Word } from '../../src/data/db';
-import { candidatesOf } from '../../src/data/drill';
+import { candidatesOf, drawDrill, type DrillTuning } from '../../src/data/drill';
 import { lemmaKeyOf, normaliseLemma } from '../../src/data/lemma';
 import { SEED_WORDS } from '../../src/data/seed-words';
 
@@ -34,5 +34,22 @@ describe('candidatesOf in Romans 8 for σύ, ὑμεῖς, ἐγώ and ἡμε�
     expect(placesOf('ἡμεῖς').length).toBeGreaterThan(0);
     for (const g of placesOf('ἡμεῖς')) expect(g.p).toMatch(/^P-1[NGDA]P$/);
     expect(rom8.verses.some((v) => v.g.some((g) => lemmaKeyOf(g.l) === 'σύ' && /^P-2[NGDA]P$/.test(g.p ?? '')))).toBe(true);
+  });
+});
+
+describe('drawDrill with Words: Solid while the plural pronouns are only learning (mw-indx1x6.115)', () => {
+  const words: Word[] = [
+    { ...seed('σύ'), state: 'solid' },
+    { ...seed('ἐγώ'), state: 'solid' },
+    { ...seed('ὑμεῖς'), state: 'learning' },
+    { ...seed('ἡμεῖς'), state: 'learning' },
+  ];
+  const tuning: DrillTuning = { extent: 'any', words: 'solid', levels: new Map() };
+
+  it('draws no plural place for σύ or ἐγώ', () => {
+    for (let i = 1; i <= 30; i++) {
+      const round = drawDrill(rom8, words, () => (i * 0.037) % 1, 50, tuning);
+      for (const q of round) expect(q.code, `${q.form} drilled as ${q.lemma}`).not.toMatch(/^P-[12][NGDA]P$/);
+    }
   });
 });
