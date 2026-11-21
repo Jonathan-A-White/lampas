@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.318
+_2026-11-21_
+- New: The themes on the Sermons sheet now show only when you have sermons for them in your turned-on sources, and each theme is a button that lists its sermons.
+- Fixed: after following a reference from a word's definition and going Back, Forward now takes you to the place you followed.
+
 ## 0.7.317
 _2026-11-21_
 - Fixed: In the Greek tab, poetry lines no longer leave a small word like "οὐχ" or "εἰς" alone or hanging at the end of a line.
