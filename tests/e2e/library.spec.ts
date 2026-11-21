@@ -240,8 +240,9 @@ test('a typed Resource ID counts in use (mw-fnvjof.17.6)', async ({ page }) => {
   await shot(page, 'library-bibles-typed-count');
 });
 
-// the owned-check (src/data/owned.ts, mw-qtu3zvz.126): the phone openUnlocked gives holds his import, so a kind page lists its books and draws 'All on'; a phone with no import lists none
-// of them, says so, and draws no 'All on' (mw-lexuwrk: the e2e phone had no import, so 22 specs never found the button)
+// the owned-check (src/data/owned.ts, mw-qtu3zvz.126, and mw-5r3p30.1189 for a phone with no kept list): the phone openUnlocked gives holds his import, so a kind page lists its books and draws 'All on' enabled; a phone with
+// no import lists only the books already on its shelf (Lexicons: BDAG, on and pinned by default, so 'All on' has nothing left to turn on and is dimmed), and a kind with none of its books on the shelf (Commentaries) says so and
+// draws no 'All on' (mw-lexuwrk: the e2e phone had no import, so 22 specs never found the button)
 test('a kind page draws All on for a phone whose import holds the books, and the line for one that holds none (mw-lexuwrk)', async ({ browser }) => {
   for (const imported of [true, false]) {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -253,9 +254,16 @@ test('a kind page draws All on for a phone whose import holds the books, and the
     await expect(page.getByRole('heading', { name: 'Lexicons', level: 1 })).toBeVisible();
     if (imported) {
       await expect(page.getByRole('button', { name: 'All on', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'All on', exact: true })).not.toHaveAttribute('aria-disabled', 'true');
       await expect(page.getByText('No lexicons in your list')).toHaveCount(0);
     } else {
-      await expect(page.getByText('No lexicons in your list')).toBeVisible();
+      // the shelf's own default is all it offers: BDAG, not the lexicons of the catalogue
+      await expect(page.getByText('BDAG', { exact: true })).toBeVisible();
+      await expect(page.getByTestId('kind-status')).toHaveText('1 on');
+      await expect(page.getByRole('button', { name: 'All on', exact: true })).toHaveAttribute('aria-disabled', 'true');
+      await page.goto('/#/library?kind=commentary');
+      await expect(page.getByRole('heading', { name: 'Commentaries', level: 1 })).toBeVisible();
+      await expect(page.getByText('No commentaries in your list')).toBeVisible();
       await expect(page.getByRole('button', { name: 'All on', exact: true })).toHaveCount(0);
     }
     await context.close();
