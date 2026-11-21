@@ -710,6 +710,11 @@ textarea,
 [data-line][data-stanza] {
   margin-top: 0.75em;
 }
+/* A woven word's stack (the Hebrew or Greek over its gloss) is a block inside the line, and text-indent inherits: the hanging -1.5em narrowed the stack's Hebrew by 24 px, so
+ * the word was drawn wider than its box, centred, spilling over the next English word and past the column's edge (mw-5r3p30.1221). The stack hangs from nothing. */
+[data-line] [data-woven] {
+  text-indent: 0;
+}
 :is([data-verse], [data-dock-verse])[data-stanza]:not(:first-child) {
   margin-top: 0.75rem;
 }
@@ -742,6 +747,11 @@ textarea,
 }
 :is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text])[lang='el'] {
   --lp-book-line: var(--lp-book-greek);
+}
+/* A line that wraps because the next stack (a woven word over its gloss, [data-hint]) did not fit would be stretched to the full width: CSS cannot tell that line from one that wrapped at a word,
+ * so a verse or paragraph with a gloss in it is set ragged right, as the last line of a paragraph is (mw-5r3p30.1221). Hyphenation stays. */
+:is([data-reader], [data-verse-view])[data-immersive='on'] :is([data-verse], [data-paragraph], [data-passage-text]):has([data-hint]) {
+  text-align: start;
 }
 /* A verse inside a paragraph is a span with its own line height (1.4 where no hint sits in it): the passage's verse spans are set so too (mw-5r3p30.499), so a
  * verse's computed line height is the same in the Reader and in the passage view; the lines are as roomy as the block's strut, the same on both. */
