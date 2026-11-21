@@ -14,18 +14,9 @@ export const MAX_EXAMPLES = 3;
 
 /** Up to `max` words of `chapter` whose parsing has `term`, one word for each lemma, in the order of the text. `term` is matched
  * as a whole term, so middle does not find 'middle or passive'. The lemma of `except` (the word he is looking at) is left out:
- * it is no example of itself. A word the Septuagint derivation only guessed (isGuess) is no example of a term (mw-5r3p30.963). */
+ * it is no example of itself; when no other lemma has the term, the other places of that lemma are the examples. A word the Septuagint derivation only guessed (isGuess) is no example of a term (mw-5r3p30.963). */
 export function grammarExamples(chapter: Chapter, term: string, except?: GreekWord, max = MAX_EXAMPLES): GrammarExample[] {
-  const cut = sourceLanguage(chapter) === 'hbo' ? hebrewParseSegments : parseSegments;
-  const has = new Map<string, boolean>();
-  const hasTerm = (code: string): boolean => {
-    let found = has.get(code);
-    if (found === undefined) {
-      found = cut(chapter.parse[code] ?? '').some((s) => s.term === term);
-      has.set(code, found);
-    }
-    return found;
-  };
+  const hasTerm = termTest(chapter, term);
   const chosen: GrammarExample[] = [];
   const lemmas = new Set<string>(except ? [lemmaKeyOf(except.l)] : []);
   for (const verse of chapter.verses) {
@@ -36,5 +27,33 @@ export function grammarExamples(chapter: Chapter, term: string, except?: GreekWo
       chosen.push({ word, verse: verse.n });
     }
   }
+  if (chosen.length || !except || !hasTerm(except.p)) return chosen;
+  // no other lemma has the term, so every word that does is a form of his own lemma (every imperfect of 1 John 1 is a form of εἰμί): show his lemma's
+  // other places rather than nothing, in the order of the text, never the word he is looking at (mw-5r3p30.1232)
+  const own = lemmaKeyOf(except.l);
+  for (const verse of chapter.verses) {
+    for (const word of verse.g) {
+      if (chosen.length >= max) return chosen;
+      if (word !== except && !isGuess(word) && hasTerm(word.p) && lemmaKeyOf(word.l) === own) chosen.push({ word, verse: verse.n });
+    }
+  }
   return chosen;
+}
+
+/** Whether `word`'s own parsing has `term`: what the Grammar sheet checks before it says that no word of the chapter has it. */
+export function hasGrammarTerm(chapter: Chapter, term: string, word: GreekWord): boolean {
+  return termTest(chapter, term)(word.p);
+}
+
+function termTest(chapter: Chapter, term: string): (code: string) => boolean {
+  const cut = sourceLanguage(chapter) === 'hbo' ? hebrewParseSegments : parseSegments;
+  const has = new Map<string, boolean>();
+  return (code) => {
+    let found = has.get(code);
+    if (found === undefined) {
+      found = cut(chapter.parse[code] ?? '').some((s) => s.term === term);
+      has.set(code, found);
+    }
+    return found;
+  };
 }

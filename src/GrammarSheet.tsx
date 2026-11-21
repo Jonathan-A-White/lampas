@@ -6,7 +6,7 @@
 import { sourceLanguage, type Chapter, type GreekWord } from './data/chapter';
 import { exampleMeaning } from './data/grammar/ideaSheet';
 import { conceptOf, hebrewConceptOf } from './data/grammar-concepts';
-import { grammarExamples } from './data/grammarExamples';
+import { grammarExamples, hasGrammarTerm } from './data/grammarExamples';
 import { cardForm } from './reader/septuagint';
 import { proseOf } from './speech/proseOf';
 import { LessonReadAloud } from './speech/ReadAloud';
@@ -112,7 +112,11 @@ export function GrammarSheet({ chapter, term, word, known, covered, onClose, onD
                 ))}
               </ul>
             ) : (
-              <p className="pt-1 text-base text-muted">No word of {title} has this in its parsing.</p>
+              <p className="pt-1 text-base text-muted">
+                {hasGrammarTerm(chapter, term, word)
+                  ? `Only ${hebrew ? word.t : cardForm(chapter, word)} in ${title} has this.`
+                  : `No word of ${title} has this in its parsing.`}
+              </p>
             )}
           </div>
           {concept ? (
