@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.319",
+    "date": "2026-11-21",
+    "story": "mw-zbgo4ep.43",
+    "kind": "fixed",
+    "text": "Tapping Play on a slow connection now waits for David's recording (or asks about mobile data) instead of reading at once in the phone voice."
+  },
+  {
+    "version": "0.7.319",
+    "date": "2026-11-21",
+    "story": "mw-rl10piw.46",
+    "kind": "fixed",
+    "text": "Hiding the app right after saying \"Hey Lampas\" now leaves the reading paused instead of reading on while out of sight."
+  },
+  {
+    "version": "0.7.319",
+    "date": "2026-11-21",
+    "story": "mw-u2w5klk.349.67",
+    "kind": "fixed",
+    "text": "In the Septuagint, tapping an English word that has no Greek word of its own now opens a small sheet saying so, with a link to the nearest Greek word, instead of jumping to the Verse view."
+  },
+  {
+    "version": "0.7.319",
+    "date": "2026-11-21",
+    "story": "mw-5r3p30.1226",
+    "kind": "fixed",
+    "text": "when the tutor helps fill in a form, it now asks only its one question instead of tacking a guess on after it."
+  },
+  {
     "version": "0.7.318",
     "date": "2026-11-21",
     "story": "mw-qtu3zvz.81",

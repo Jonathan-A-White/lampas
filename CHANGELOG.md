@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.319
+_2026-11-21_
+- Fixed: Tapping Play on a slow connection now waits for David's recording (or asks about mobile data) instead of reading at once in the phone voice.
+- Fixed: Hiding the app right after saying "Hey Lampas" now leaves the reading paused instead of reading on while out of sight.
+- Fixed: In the Septuagint, tapping an English word that has no Greek word of its own now opens a small sheet saying so, with a link to the nearest Greek word, instead of jumping to the Verse view.
+- Fixed: when the tutor helps fill in a form, it now asks only its one question instead of tacking a guess on after it.
+
 ## 0.7.318
 _2026-11-21_
 - New: The themes on the Sermons sheet now show only when you have sermons for them in your turned-on sources, and each theme is a button that lists its sermons.
