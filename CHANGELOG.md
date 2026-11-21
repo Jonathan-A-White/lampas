@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.307
+_2026-11-21_
+- Fixed: Saying "Hey Lampas, please read Proverbs 2 to me" in one breath now opens Proverbs 2 and reads it, and when Lampas cannot act on your words it tells you what it heard.
+
 ## 0.7.305
 _2026-11-20_
 - New: Memorize now breaks a long passage into smaller pieces, such as one commandment at a time, and has you say them together at the end.

@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.307",
+    "date": "2026-11-21",
+    "story": "mw-rl10piw.44",
+    "kind": "fixed",
+    "text": "Saying \"Hey Lampas, please read Proverbs 2 to me\" in one breath now opens Proverbs 2 and reads it, and when Lampas cannot act on your words it tells you what it heard."
+  },
+  {
     "version": "0.7.305",
     "date": "2026-11-20",
     "story": "mw-5r3p30.1205",
