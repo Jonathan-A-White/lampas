@@ -382,11 +382,11 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
   // a source that gave a row only on the same theme has its credit too
   const sameListed = same ? same.groups.flatMap((group) => group.rows) : [];
   const sources = [...new Set([...rows, ...sameListed].map((row) => row.source))].flatMap((id) => sourceOf({ source: id }) ?? []);
-  // and of each theme source that named a topic of the line or a group, once
-  const named = [...new Set([...(themes ?? []).map((theme) => theme.source), ...(same?.groups ?? []).map((group) => group.topic.source)])].flatMap((id) => themeSourceOf({ source: id }) ?? []);
-  const sameRows = same ? same.groups.reduce((n, group) => n + group.rows.length, 0) : 0;
   // the Themes line: only the themes that have sermons in his On sources (mw-qtu3zvz.81); the service's answer may add some
   const chips = useThemeChips(themes, latest.status === 'latest');
+  // and of each theme source that named a topic of the line (one with a sermon) or a group, once
+  const named = [...new Set([...(chips ?? []).flatMap((c) => c.sources), ...(same?.groups ?? []).map((group) => group.topic.source)])].flatMap((id) => themeSourceOf({ source: id }) ?? []);
+  const sameRows = same ? same.groups.reduce((n, group) => n + group.rows.length, 0) : 0;
   const [opened, setOpened] = useState<string | null>(null);
   const chip = chips?.find((c) => c.text === opened);
   const step = useRef<(undo: () => void) => void>(() => undefined);
