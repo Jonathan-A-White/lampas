@@ -225,6 +225,31 @@
               "$ref": "#/$defs/slot"
             }
           }
+        },
+        "independent": {
+          "description": "Words that stand outside the clause: a word of direct address (a vocative, 'Τεκνία μου', 'Lord') or an interjection ('Behold', ἰδού, ὦ). Each is drawn on a line of its own above the base line, joined to nothing, never as a modifier. Left out when the clause has none.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "slot"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "address",
+                  "interjection"
+                ]
+              },
+              "slot": {
+                "$ref": "#/$defs/slot"
+              }
+            }
+          }
         }
       }
     }

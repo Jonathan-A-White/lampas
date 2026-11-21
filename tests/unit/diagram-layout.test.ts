@@ -311,3 +311,71 @@ describe('the Reed-Kellogg marks', () => {
     expect(layout.labels.map((l) => l.text)).toEqual(['(dogs)', 'bark']);
   });
 });
+
+// A word of direct address (a vocative) or an interjection stands outside the clause (mw-5r3p30.1227): in Reed-Kellogg on a short line of its own ABOVE the base line,
+// at the left, joined to nothing; what modifies it hangs beneath it as usual. 1 John 2:1: Τεκνία μου, ταῦτα γράφω ὑμῖν.
+describe('a word outside the clause (an address or an interjection)', () => {
+  const words = wordsOf('Τεκνία', 'μου', 'γράφω', 'ταῦτα', 'ὑμῖν');
+  const clause: Clause = {
+    subject: { words: [{ implied: 'ἐγώ' }], modifiers: [] },
+    verb: { words: [{ i: 2 }], modifiers: [{ kind: 'word', word: { i: 4 }, modifiers: [] }] },
+    complement: { kind: 'direct-object', slot: slotOf(3) },
+    independent: [{ kind: 'address', slot: { words: [{ i: 0 }], modifiers: [{ kind: 'word', word: { i: 1 }, modifiers: [] }] } }],
+  };
+  const layout = layoutDiagram({ clauses: [{ clause }] }, words, measure);
+  const byIndex = (i: number): LayoutLabel => layout.labels.find((l) => l.index === i)!;
+
+  it('puts Τεκνία on a line of its own above the base line, and μου under it', () => {
+    const address = byIndex(0);
+    expect(address.role).toBe('address');
+    const base = baseOf(layout, address.clause);
+    expect(address.y).toBeLessThan(base.y1 - LABEL_H);
+    const line = ofKind(layout, 'independent');
+    expect(line).toHaveLength(1);
+    expect(line[0].y1).toBe(address.y);
+    expect(line[0].y2).toBe(address.y);
+    expect(line[0].x1).toBeLessThanOrEqual(address.x);
+    expect(line[0].x2).toBeGreaterThanOrEqual(address.x + address.width);
+    expect(byIndex(1).role).toBe('modifier');
+    expect(byIndex(1).y).toBeGreaterThan(address.y);
+    expect(byIndex(1).y).toBeLessThan(base.y1 - LABEL_H);
+  });
+
+  it('joins it to nothing: its only slant is μου\'s, and no line runs between it and the base line', () => {
+    const address = byIndex(0);
+    const base = baseOf(layout, address.clause);
+    expect(layout.segments.filter((s) => s.attachesTo === address.id).map((s) => [s.kind, s.y2])).toEqual([['modifier', byIndex(1).y]]);
+    expect(ofKind(layout, 'join', 'step')).toEqual([]);
+    // nothing but the base line's own marks (bars, which reach 40 above it) stands between the address's lowest line and the base line
+    const between = layout.segments.filter((s) => Math.max(s.y1, s.y2) > byIndex(1).y && Math.min(s.y1, s.y2) < base.y1 - 40);
+    expect(between).toEqual([]);
+    const verb = byIndex(2);
+    expect(layout.segments.filter((s) => s.attachesTo === verb.id).map((s) => byIndex(4).y === s.y2)).toEqual([true]);
+  });
+
+  it('stands at the left of the clause, over its subject', () => {
+    const base = baseOf(layout, byIndex(0).clause);
+    expect(byIndex(0).x).toBeLessThan(byIndex(2).x);
+    expect(byIndex(0).x).toBeLessThanOrEqual(base.x1 + 2 * MARGIN);
+  });
+
+  it('draws an interjection the same way, with its own role', () => {
+    const tree: Diagram = { clauses: [{ clause: { ...dogsBark, independent: [{ kind: 'interjection', slot: slotOf(2) }] } }] };
+    const l = layoutDiagram(tree, wordsOf('Dogs', 'bark', 'Behold'), measure);
+    const behold = l.labels.find((x) => x.index === 2)!;
+    expect(behold.role).toBe('interjection');
+    expect(behold.y).toBeLessThan(baseOf(l, behold.clause).y1 - LABEL_H);
+  });
+
+  it('stays clear of a coordinate clause stacked under it, and of the clause above', () => {
+    const tree: Diagram = { clauses: [{ clause: dogsBark }, { clause: { subject: slotOf(2), verb: slotOf(3), independent: [{ kind: 'address', slot: slotOf(4) }] } }] };
+    const l = layoutDiagram(tree, wordsOf('Dogs', 'bark', 'cats', 'purr', 'friends'), measure);
+    const friends = l.labels.find((x) => x.index === 4)!;
+    const first = Math.max(...l.labels.filter((x) => x.index === 0 || x.index === 1).map((x) => x.y));
+    expect(friends.y - LABEL_H).toBeGreaterThan(first);
+  });
+
+  it('draws a tree without one exactly as before (the line kind is never made)', () => {
+    expect(ofKind(layoutDiagram({ clauses: [{ clause: dogsBark }] }, wordsOf('Dogs', 'bark'), measure), 'independent')).toEqual([]);
+  });
+});

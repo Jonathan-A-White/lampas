@@ -112,6 +112,15 @@ describe('isDiagramAnswer', () => {
     expect(isDiagramAnswer(null)).toBe(false);
     expect(isDiagramAnswer('x')).toBe(false);
   });
+
+  it('takes a clause with an `independent` list of well-formed elements, and refuses a malformed one (the layout would stop on it)', () => {
+    const slot = { words: [{ i: 0 }], modifiers: [] };
+    const withIndependent = (independent: unknown) => ({ clauses: [{ clause: { subject: slot, verb: slot, independent } }] });
+    expect(isDiagramAnswer(withIndependent([{ kind: 'address', slot }, { kind: 'interjection', slot }]))).toBe(true);
+    expect(isDiagramAnswer(withIndependent([{ kind: 'modifier', slot }]))).toBe(false);
+    expect(isDiagramAnswer(withIndependent([{ kind: 'address' }]))).toBe(false);
+    expect(isDiagramAnswer(withIndependent('Τεκνία'))).toBe(false);
+  });
 });
 
 describe('fetchDiagram', () => {

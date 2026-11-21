@@ -9,7 +9,7 @@ import { askGrind, type AskOptions } from '../services/tutor';
 import { expandApart, type WireDiagram } from './apart';
 import { buildDiagramRequest, type DiagramRequest } from './request';
 import type { Sentence } from './sentence';
-import type { Clause, Diagram, DiagramMode, DiagramWords, Modifier, Slot, TokenRef } from './types';
+import type { Clause, Diagram, DiagramMode, DiagramWords, IndependentElement, Modifier, Slot, TokenRef } from './types';
 import { validateDiagram, type Fault } from './validate';
 
 /** The kind the mill runs the grind under (grinds/sentence-diagram.json). */
@@ -36,12 +36,16 @@ function isModifier(value: unknown): value is Modifier {
   return false;
 }
 
+const isIndependent = (value: unknown): value is IndependentElement =>
+  isObject(value) && (value.kind === 'address' || value.kind === 'interjection') && isSlot(value.slot);
+
 const COMPLEMENTS = ['direct-object', 'indirect-object', 'predicate-nominative', 'predicate-adjective'];
 
 function isClause(value: unknown): value is Clause {
   if (!isObject(value) || !isSlot(value.subject) || !isSlot(value.verb)) return false;
   const c = value.complement;
-  return c === undefined || (isObject(c) && typeof c.kind === 'string' && COMPLEMENTS.includes(c.kind) && isSlot(c.slot));
+  if (c !== undefined && !(isObject(c) && typeof c.kind === 'string' && COMPLEMENTS.includes(c.kind) && isSlot(c.slot))) return false;
+  return value.independent === undefined || isList(value.independent, isIndependent);
 }
 
 /** A tree of the shape types.ts gives (whether it keeps THE RULE is validateDiagram's to say). */

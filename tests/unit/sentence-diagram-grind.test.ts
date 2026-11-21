@@ -6,7 +6,7 @@ import { instructionsOf } from '../../scripts/grind-parts';
 import { describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { buildDiagramRequest } from '../../src/diagram/request';
-import type { Diagram, DiagramMode, Modifier, Slot, TokenRef } from '../../src/diagram/types';
+import type { Clause, Diagram, DiagramMode, Modifier, Slot, TokenRef } from '../../src/diagram/types';
 import { validateDiagram } from '../../src/diagram/validate';
 import { checkExpect, type GrindExample } from '../support/grind-examples';
 import { loadFixture } from '../support/diagram-fixtures';
@@ -241,5 +241,93 @@ describe('the Genesis 1:1 diagram in Hebrew', () => {
     expect(example.request).toEqual(buildDiagramRequest(gen1, [gen1.verses[0]], 'hebrew').request);
     expect(example.expect['clauses.0.clause.verb.words.0.i']).toEqual({ equals: 2 });
     expect(checkExpect(example.expect, fixture.diagram)).toEqual([]);
+  });
+});
+
+// A word of direct address stands outside the clause (mw-5r3p30.1227): 1 John 2:1's Τεκνία μου was hung on γράφω as a modifier. The schema has an `independent` list on a clause,
+// the instructions say a vocative and an interjection go there, and the example expects Τεκνία as an address with μου under it.
+describe('a vocative or an interjection (1 John 2:1, mw-5r3p30.1227)', () => {
+  const text = instructionsOf('sentence-diagram');
+  const jn = read<Chapter>('public/data/1jn/2.json');
+  const { request, words } = buildDiagramRequest(jn, [jn.verses.find((v) => v.n === 1)!], 'greek');
+  const example = read<GrindExample>('grinds/examples/sentence-diagram/1jn-2-1-greek.json');
+  const one = (i: number): Slot => ({ words: [{ i }], modifiers: [] });
+  /** 1 John 2:1 as the instructions ask for it: Τεκνία μου an address, then ταῦτα γράφω ὑμῖν [ἵνα μὴ ἁμάρτητε] and, joined by Καὶ, the second sentence. */
+  const tree: Diagram = {
+    clauses: [
+      {
+        clause: {
+          subject: { words: [{ implied: 'ἐγώ' }], modifiers: [] },
+          verb: {
+            words: [{ i: 3 }],
+            modifiers: [
+              { kind: 'word', word: { i: 4 }, modifiers: [] },
+              { kind: 'clause', connector: { i: 5 }, clause: { subject: { words: [{ implied: 'ὑμεῖς' }], modifiers: [] }, verb: { words: [{ i: 7 }], modifiers: [{ kind: 'word', word: { i: 6 }, modifiers: [] }] } } },
+            ],
+          },
+          complement: { kind: 'direct-object', slot: one(2) },
+          independent: [{ kind: 'address', slot: { words: [{ i: 0 }], modifiers: [{ kind: 'word', word: { i: 1 }, modifiers: [] }] } }],
+        },
+      },
+      {
+        joinedBy: { i: 8 },
+        clause: {
+          subject: { words: [{ implied: 'ἡμεῖς' }], modifiers: [] },
+          verb: {
+            words: [{ i: 13 }],
+            modifiers: [{ kind: 'clause', connector: { i: 9 }, clause: { subject: one(10), verb: one(11) } }],
+          },
+          complement: {
+            kind: 'direct-object',
+            slot: {
+              words: [{ i: 12 }],
+              modifiers: [
+                { kind: 'prepositional', preposition: { i: 14 }, object: { words: [{ i: 16 }], modifiers: [{ kind: 'word', word: { i: 15 }, modifiers: [] }] } },
+                { kind: 'word', word: { i: 17 }, modifiers: [{ kind: 'word', word: { i: 18 }, modifiers: [] }, { kind: 'word', word: { i: 19 }, modifiers: [] }] },
+              ],
+            },
+          },
+        },
+      },
+    ],
+  };
+
+  it('has a schema that takes an `independent` list of addresses and interjections, and refuses a kind it does not know', () => {
+    expect(validate(tree, answerSchema)).toEqual([]);
+    const clause = tree.clauses[0].clause;
+    const bad = { clauses: [{ clause: { ...clause, independent: [{ kind: 'modifier', slot: one(0) }] } }] };
+    expect(validate(bad, answerSchema)).not.toEqual([]);
+    expect(validate({ clauses: [{ clause: { ...clause, independent: [] } }] }, answerSchema)).not.toEqual([]);
+  });
+
+  it('still takes an answer with none (a diagram kept yesterday)', () => {
+    const without: Clause = { ...tree.clauses[0].clause };
+    delete without.independent;
+    expect(validate({ clauses: [{ clause: without }] }, answerSchema)).toEqual([]);
+  });
+
+  it('keeps THE RULE for the worked tree, the address included', () => {
+    expect(validateDiagram(tree, words.length)).toEqual({ ok: true });
+  });
+
+  it('tells the tutor a vocative and an interjection go in `independent`, never as a modifier', () => {
+    expect(text).toMatch(/vocative/i);
+    expect(text).toMatch(/interjection/i);
+    expect(text).toMatch(/`independent`/);
+    expect(text).toMatch(/no modifier/i);
+  });
+
+  it('has an example that is what buildDiagramRequest makes, and the worked tree meets it', () => {
+    expect(example.request).toEqual(request);
+    expect(example.expect['clauses.0.clause.independent.0.kind']).toEqual({ equals: 'address' });
+    expect(checkExpect(example.expect, tree)).toEqual([]);
+  });
+
+  it('is not met by Τεκνία hung on γράφω as a modifier (the fault he saw)', () => {
+    const clause = tree.clauses[0].clause;
+    const rest: Clause = { ...clause };
+    delete rest.independent;
+    const hung: Diagram = { clauses: [{ clause: { ...rest, verb: { ...clause.verb, modifiers: [...clause.verb.modifiers, { kind: 'word', word: { i: 0 }, modifiers: [{ kind: 'word', word: { i: 1 }, modifiers: [] }] }] } } }] };
+    expect(checkExpect(example.expect, hung)).not.toEqual([]);
   });
 });
