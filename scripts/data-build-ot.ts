@@ -9,10 +9,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { OT_BOOKS } from '../src/data/books';
-import type { BookInfo, Chapter, LexEntry } from '../src/data/chapter';
+import type { BookInfo, Chapter, LexEntry, Verse } from '../src/data/chapter';
 import type { FrequencyEntry } from '../src/data/frequency';
 import type { LemmaLexicon } from '../src/data/lexicon';
-import { COLUMNS, addRow, checkHeader, readLines, splitReference, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
+import { COLUMNS, addRow, checkHeader, readLines, splitReference, tidy, wordOf, type TableGroup, type TableVerse, type TableWord } from './data/bereanTable';
 import { buildVerse, chapterFingerprint, fetchTo, listFingerprint, mergeIndex, numeric, readIndex, removeStale, sortedKeys, writeIfChanged } from './data/chapterWriter';
 import type { VersionedList } from '../src/data/versionedLists';
 import { cleanHebrewGloss, hebrewStem, parseTbes, type Lexicon } from './data/tbes';
@@ -96,6 +96,135 @@ export function fixPairing(book: string, chapter: number, n: number, words: Tabl
   }
 }
 
+// ---------------------------------------------------------------- the sweep (mw-fnvjof.17.210)
+
+const GLOSS_STOP = new Set(['to', 'be', 'the', 'one', 'who', 'that', 'for', 'and', 'with', 'his', 'her', 'its', 'this', 'out', 'up', 'off', 'not', 'any', 'some', 'of']);
+/** A word of English as its stem: letters only, lower case, a plural or a past tense or '-ing' taken off ('eyes' and 'eye' meet). */
+const stemOf = (word: string): string => word.toLowerCase().replace(/[^a-z]/g, '').replace(/(?:ing|ed|es|s|d)$/, '');
+const stemsOf = (text: string): Set<string> => new Set(text.split(/[^A-Za-z]+/).map(stemOf).filter((s) => s.length >= 3));
+/** The stems a lexicon gloss ('to be evil, bad') answers to, each in the English that would carry it: the words of the gloss but its function words. */
+export function glossStems(gloss: string): Set<string> {
+  return new Set(gloss.split(/[^A-Za-z]+/).filter((w) => w.length >= 3 && !GLOSS_STOP.has(w.toLowerCase())).map(stemOf).filter((s) => s.length >= 3));
+}
+
+export interface MisplacedChunk {
+  /** 'Isaiah 33:8' */
+  ref: string;
+  strongs: string;
+  /** the Hebrew word of `chunk` whose gloss is not in it */
+  word: string;
+  gloss: string;
+  /** the English chunk the table gave the word, which does not hold its gloss */
+  chunk: string;
+  /** another chunk of the verse that does */
+  holder: string;
+}
+
+/** A word that is not a noun, verb or adjective (a preposition, conjunction, article, particle, pronoun, adverb): the English for these varies too much for a gloss to say where it belongs. */
+const FUNCTION_WORD = /^(?:Prep|Conj|Art|Adv|Pro|Interj|Prt|Rel|Interrog|Neg|Dem|Part)/;
+
+/**
+ * A word of a verse whose gloss (`glossOf`, the lexicon's) is not in the English chunk it is in, while another chunk of the verse holds it and that other chunk also holds a word of its own whose gloss it lacks:
+ * the sign of two chunks put on each other's Hebrew word (Isaiah 33:8: 'and human life' sat on לֹא while אֱנוֹשׁ 'human' was in 'is disregarded.'; mw-fnvjof.17.192). Only nouns, verbs and adjectives
+ * are asked (a preposition's English varies too much). `npm run pairing:sweep` prints these; the fix for one the sweep rightly finds is a PAIRING_FIXES entry, and the sweep prints none once each is fixed or read right.
+ */
+export function misplacedChunks(ref: string, verse: Verse, glossOf: (strongs: string) => string): MisplacedChunk[] {
+  const stems = verse.e.map((c) => stemsOf(c.t));
+  const holds = (j: number, own: Set<string>): boolean => [...own].some((s) => stems[j].has(s));
+  const off = (w: Verse['g'][number], j: number): Set<string> | undefined => {
+    if (!w.s) return undefined;
+    const own = glossStems(glossOf(w.s));
+    return own.size && !holds(j, own) ? own : undefined;
+  };
+  const out: MisplacedChunk[] = [];
+  verse.e.forEach((chunk, j) => {
+    for (const gi of chunk.g) {
+      const w = verse.g[gi];
+      if (FUNCTION_WORD.test(w.p)) continue;
+      const own = off(w, j);
+      if (!own) continue;
+      // the other chunk holds this word's gloss, and has a word of its own that is off whose gloss THIS chunk holds: the two chunks sit on each other's Hebrew
+      const at = verse.e.findIndex(
+        (c, k) => k !== j && holds(k, own) && !c.g.some((i) => verse.g[i].s === w.s) && c.g.some((i) => { const o = off(verse.g[i], k); return !FUNCTION_WORD.test(verse.g[i].p) && o !== undefined && holds(j, o); }),
+      );
+      if (at < 0) continue;
+      out.push({ ref, strongs: w.s, word: w.t, gloss: glossOf(w.s), chunk: chunk.t, holder: verse.e[at].t });
+    }
+  });
+  return out;
+}
+
+/**
+ * The verses misplacedChunks finds that were read against the table and are right as they stand (mw-fnvjof.17.210): each is Hebrew parallelism whose two words the English renders by the other's near synonym
+ * ('Give ear,' / 'listen' for הַאֲזִינָה and אָזְנְכֶם, Psalm 78:1), or a word the English renders as two ('deserve to die' / 'put you to death', 1 Kings 2:26). `npm run pairing:sweep` leaves them out.
+ */
+export const MISPLACED_READ_RIGHT: ReadonlySet<string> = new Set([
+  '1 Kings 2:26', 'Daniel 9:19', 'Ezekiel 17:24', 'Isaiah 22:2', 'Isaiah 33:10', 'Isaiah 49:10', 'Jeremiah 21:7', 'Jeremiah 42:11', 'Proverbs 21:24', 'Psalms 78:1',
+]);
+
+/** A row whose English is a real chunk of its own (not blank, '-', 'vvv' or '. . .'). */
+const hasEnglish = (w: TableWord): boolean => !['', '-', 'vvv', '. . .'].includes(w.english.trim());
+
+/** The nearest rows with English before and after `word` in English order. */
+function neighbours(word: TableWord, inEnglish: readonly TableWord[]): { before?: TableWord; after?: TableWord } {
+  const at = inEnglish.indexOf(word);
+  return { before: inEnglish.slice(0, at).reverse().find(hasEnglish), after: inEnglish.slice(at + 1).find(hasEnglish) };
+}
+
+/**
+ * The shared fix for a '. . .' word the table meant for the chunk AFTER it (mw-fnvjof.17.210, the Genesis 21:11 kind; every other '. . .' word joins the chunk before, buildVerse). A '. . .' word waits when its
+ * lexicon gloss (`glossOf`) is in the English of the next chunk and not in the English of the one before: Exodus 21:26 'as compensation for [עֵינוֹ] / the eye.', Numbers 14:15 'of Your fame [לֵאמֹר] / will say,',
+ * 2 Kings 15:1 'In the twenty-seventh [שָׁנָה] / year'. A chunk before that holds a digit is left (Genesis 5:6 '105 [שָׁנִים] / years old': the numeral's English counts the years). A read of the 156 words this
+ * matched in the whole Old Testament found them right but those of the numerals; the words it does not match stay joined to the chunk before, and PAIRING_FIXES names the ones read by hand.
+ */
+export function markWaitingByGloss(words: readonly TableWord[], glossOf: (strongs: string) => string): number {
+  const inEnglish = [...words].sort((a, b) => a.englishSort - b.englishSort);
+  let marked = 0;
+  for (const word of inEnglish) {
+    if (word.english.trim() !== '. . .' || word.waits || !word.strongs) continue;
+    const { before, after } = neighbours(word, inEnglish);
+    if (!before || !after || /\d/.test(before.english)) continue;
+    const own = glossStems(glossOf(word.strongs));
+    if (own.size === 0) continue;
+    const inBefore = stemsOf(before.english);
+    const inAfter = stemsOf(after.english);
+    if ([...own].some((s) => inAfter.has(s)) && ![...own].some((s) => inBefore.has(s))) {
+      word.waits = true;
+      marked++;
+    }
+  }
+  return marked;
+}
+
+export interface DotsRow {
+  ref: string;
+  strongs: string;
+  /** the Hebrew word whose English the table gave as '. . .' */
+  word: string;
+  gloss: string;
+  /** the English of the nearest row before it and the nearest row after it, in English order */
+  before: string;
+  after: string;
+  /** 'waits' when the build joins the word to the chunk after (PAIRING_FIXES or markWaitingByGloss); 'next' when it joins the chunk before though the Hebrew word next to it is the owner of the chunk after and the one before it is not (the Genesis 21:11 shape, unresolved) */
+  kind: 'waits' | 'next';
+}
+
+/** The '. . .' words of a verse (after fixPairing and markWaitingByGloss) the sweep lists, with the English before and after them: `npm run pairing:sweep -- --dots` (mw-fnvjof.17.208). */
+export function dotsRows(ref: string, words: readonly TableWord[], glossOf: (strongs: string) => string): DotsRow[] {
+  const inEnglish = [...words].sort((a, b) => a.englishSort - b.englishSort);
+  const inHebrew = [...words].sort((a, b) => a.sourceSort - b.sourceSort);
+  const out: DotsRow[] = [];
+  for (const word of inEnglish) {
+    if (word.english.trim() !== '. . .') continue;
+    const { before, after } = neighbours(word, inEnglish);
+    if (!before || !after) continue;
+    const at = inHebrew.indexOf(word);
+    const kind = word.waits ? 'waits' : inHebrew[at + 1] === after && inHebrew[at - 1] !== before && inHebrew[at - 1]?.english.trim() !== '. . .' ? 'next' : undefined;
+    if (kind) out.push({ ref, strongs: word.strongs, word: word.text, gloss: glossOf(word.strongs), before: tidy(before.english), after: tidy(after.english), kind });
+  }
+  return out;
+}
+
 export function otLexicon(text: string): Lexicon {
   return parseTbes(text, { letter: 'H', gloss: (_lemma, gloss) => cleanHebrewGloss(gloss) });
 }
@@ -133,7 +262,12 @@ type Lines = AsyncIterable<string> | Iterable<string>;
  * Reads the table's lines and hands each chapter to `onChapter` as soon as the next one begins. Hebrew and Aramaic rows are the Old Testament; the table's Greek rows (the New
  * Testament follows it) and its closing sentinel row are left. An Aramaic word is a word of its chapter, like the Hebrew ones.
  */
-export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: BuiltChapter) => void | Promise<void>): Promise<BuiltOt> {
+export async function buildOt(
+  lines: Lines,
+  lex: Lexicon,
+  onChapter: (chapter: BuiltChapter) => void | Promise<void>,
+  options: { onVerse?: (table: TableVerse, built: Verse) => void } = {},
+): Promise<BuiltOt> {
   const longs = new Map<string, string>(Object.entries(PARSE_FIXES));
   const lexicon: LemmaLexicon = {};
   const seen = new Map<string, { count: number; chapters: number }>();
@@ -153,7 +287,13 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
       seenVerses.add(v.n);
     }
     // A verse the Hebrew text lacks (Nehemiah 7:68) has a row in the table and no words.
-    const built = verses.filter((v) => v.words.length > 0).map((v) => hebrewVerse(v, lex));
+    const built = verses
+      .filter((v) => v.words.length > 0)
+      .map((v) => {
+        const made = hebrewVerse(v, lex);
+        options.onVerse?.(v, made);
+        return made;
+      });
     const words = built.flatMap((v) => v.g);
     const strongs = [...new Set(words.map((w) => w.s).filter(Boolean))].sort(numeric);
     const codes = [...new Set(words.map((w) => w.p).filter(Boolean))].sort();
@@ -229,6 +369,7 @@ export async function buildOt(lines: Lines, lex: Lexicon, onChapter: (chapter: B
       });
     });
     fixPairing(target.name, chapter, n, words);
+    markWaitingByGloss(words, (strongs) => lex.get(strongs)?.gloss ?? '');
     open.verses.push({ book: target.name, chapter, n, words, heading: finished.heading });
   };
 
