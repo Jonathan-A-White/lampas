@@ -4,7 +4,7 @@
 import { handsFreeSetting } from '../settings/definitions';
 import { getSetting, setSetting, useSetting } from '../settings/store';
 import { SETTING_SAID_KEY, speakText } from '../speech/greek';
-import { getReading, resumeReading } from '../speech/readAloud';
+import { getReading, resumeReading, subscribeReading } from '../speech/readAloud';
 
 /** The words said when the switch goes On, and when it goes Off. */
 export const HANDS_FREE_ON = 'Hands-free on';
@@ -24,15 +24,34 @@ export function useHandsFree(): boolean | undefined {
   return value === undefined ? undefined : value === 'on';
 }
 
+/** Stops watching the reading for the words last said (a second sentence replaces it, or the words are over). */
+let unwatch: (() => void) | null = null;
+
 /** Says the new state aloud in the English voice. A Bible reading under way is paused by the words (speech/greek.ts speakBeside), so when they are said it goes on from where it
- * stopped, as the session's close does (playback.ts goOnAtClose); a reading he had paused himself, or that nothing was reading, is left as it was. */
+ * stopped, as the session's close does (playback.ts goOnAtClose); a reading he had paused himself, or that nothing was reading, is left as it was. A reading he takes in hand while
+ * the words are said (Resume, Pause, Stop, another reading) is his from then on: the words' end does not touch it. */
 export function sayHandsFree(on: boolean): void {
+  unwatch?.();
+  unwatch = null;
   const wasReading = getReading().status === 'reading';
+  let touched = false;
+  if (wasReading) {
+    // the words' own Pause is the one change to 'paused' that is not his; any other status afterwards (reading again, or idle) is his hand
+    const off = subscribeReading(() => {
+      if (getReading().status !== 'paused') touched = true;
+    });
+    unwatch = off;
+  }
+  const done = () => {
+    if (unwatch !== null && wasReading) unwatch();
+    unwatch = null;
+  };
   speakText(on ? HANDS_FREE_ON : HANDS_FREE_OFF, SAID_KEY, {
     language: 'english',
     onEnd: wasReading
       ? () => {
-          if (getReading().status === 'paused') resumeReading();
+          done();
+          if (!touched && getReading().status === 'paused') resumeReading();
         }
       : undefined,
   });
