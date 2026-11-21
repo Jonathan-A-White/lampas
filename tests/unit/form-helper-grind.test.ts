@@ -42,6 +42,13 @@ describe('the form helper section of the instructions', () => {
     expect(s).toContain('wrong: `who made this approach, so we can credit them? give a name');
   });
 
+  it('keeps a guess out of the question even when his words hint at the answer (mw-5r3p30.1226)', () => {
+    const s = section();
+    // the credit ask flaked as 'Who made the approach, so we can credit them? If it is the Greek Colour Method...': a guess from his own words
+    expect(s).toContain('if it is the greek colour method');
+    expect(s).toContain('even when his words hint at the answer');
+  });
+
   it('fills fields from what he said, keeps his meaning, and never sends the form', () => {
     const s = section();
     expect(s).toContain('whole new value');
