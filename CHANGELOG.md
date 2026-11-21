@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.308
+_2026-11-21_
+- Fixed: In Genesis 24 in Greek, Rebekah the maid (ἡ παῖς, τὴν παῖδα) now opens as a feminine noun like her article.
+
 ## 0.7.307
 _2026-11-21_
 - Fixed: Saying "Hey Lampas, please read Proverbs 2 to me" in one breath now opens Proverbs 2 and reads it, and when Lampas cannot act on your words it tells you what it heard.
