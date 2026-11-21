@@ -12,7 +12,8 @@
 // +0.37 s in 0.175 s), and a timer aimed from such a reading fires past the end. So as the end comes near (NEAR_MS) the element is looked at every POLL_MS, the best
 // reading of the last NEAR_MS is carried on by the clock (a reading is never ahead of the sound, only behind it), and the last FADE seconds before the stop are faded
 // to silence by the element's volume, so the last of what a phone's output still holds when pause() is called was given to it quiet. How long a phone plays on after
-// pause() is not measured: the fade shortens it by FADE, it cannot end it.
+// pause() is not measured: the fade shortens it by FADE, it cannot end it. The fade ends at SILENT_VOLUME, never 0 (mw-ar5k42b.46): headless Chromium takes an element at
+// volume 0 or muted for silent and snaps its second to the wall clock, so a stop on time was read 0.84 to 1.1 s past the end.
 // The clock carries a reading on at his speed, but where the element's second is read at every look (headless Chromium's) and runs slower than that speed (under host
 // load 1.03 s a second at 1.25x, the audio itself slow) it is carried at the second's own speed, never slower than real time, or the sound was put 0.14 s ahead of itself
 // and David stopped 111 to 185 ms before a span's end (mw-ar5k42b.23, carrySpeed).
@@ -106,13 +107,18 @@ export const RUN_ON_MS = 300;
 export const NEAR_MS = 700;
 export const POLL_MS = 20;
 
-/** The last seconds of the recording before the stop (END_SLACK before the span's end) are faded to silence by the element's volume: 1 until FADE before it, 0 at it. */
+/** The last seconds of the recording before the stop (END_SLACK before the span's end) are faded to silence by the element's volume: 1 until FADE before it, SILENT_VOLUME at it. */
 export const FADE = 0.06;
 
-/** The volume the element is given with the sound `at` seconds into the recording of a span that ends at `end`: 1, then down to 0 over FADE, silent from END_SLACK before the end. */
+/** The volume the stop ends in: -60 dB, which nothing can hear, and never exactly 0. Headless Chromium treats an element at volume 0 (or muted) as silent and its second then
+ * snaps from the audio clock, which can run 0.8 to 1.1 s behind the sound for two seconds after a seek, to the wall clock: a stop on time by the clock was paused 0.84 to
+ * 1.1 s past the end (John 6:11, 7:50, 2:18, 15:23; on a plain page volume 0 or muted jumped the second +0.98 s in 19 of 19, volume 0.0001 and above in 0 of 40, mw-ar5k42b.46). */
+export const SILENT_VOLUME = 0.001;
+
+/** The volume the element is given with the sound `at` seconds into the recording of a span that ends at `end`: 1, then down to SILENT_VOLUME over FADE, silent from END_SLACK before the end. */
 export const fadeVolume = (end: number, at: number): number => {
   if (!Number.isFinite(end) || !Number.isFinite(at)) return 1;
-  return Math.min(1, Math.max(0, (end - END_SLACK - at) / FADE));
+  return Math.min(1, Math.max(SILENT_VOLUME, (end - END_SLACK - at) / FADE));
 };
 
 let element: HTMLAudioElement | null = null;
@@ -259,8 +265,8 @@ export const endTimerMs = (): number | null => endAimedMs;
 
 function reach(): void {
   const to = listener;
-  // silent before the pause: nothing more is given to the phone's output at any volume
-  if (element && element.volume !== 0) element.volume = 0;
+  // silent before the pause: nothing more is given to the phone's output at any volume (SILENT_VOLUME, never 0)
+  if (element && element.volume > SILENT_VOLUME) element.volume = SILENT_VOLUME;
   halt();
   to?.reached();
 }
