@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.315
+_2026-11-21_
+- Fixed: David's reading of 1 Kings chapter 13 now plays, with verse 26 starting cleanly.
+- Fixed: In Genesis 14 of the Septuagint, tapping words like "nations", "fled", "nephew" and "most high" now opens their own Greek word instead of a neighbour's or the whole verse.
+
 ## 0.7.314
 _2026-11-21_
 - Fixed: Play all on a shared chapter range such as Judges 1–5, or on a whole chapter, now reads every chapter instead of only the first verse.

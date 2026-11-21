@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.315",
+    "date": "2026-11-21",
+    "story": "mw-zbgo4ep.60",
+    "kind": "fixed",
+    "text": "David's reading of 1 Kings chapter 13 now plays, with verse 26 starting cleanly."
+  },
+  {
+    "version": "0.7.315",
+    "date": "2026-11-21",
+    "story": "mw-u2w5klk.349.46",
+    "kind": "fixed",
+    "text": "In Genesis 14 of the Septuagint, tapping words like \"nations\", \"fled\", \"nephew\" and \"most high\" now opens their own Greek word instead of a neighbour's or the whole verse."
+  },
+  {
     "version": "0.7.314",
     "date": "2026-11-21",
     "story": "mw-fnvjof.18",
