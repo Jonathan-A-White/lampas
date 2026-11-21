@@ -94,7 +94,7 @@ export function HiddenVerse({ tokens, hidden, firstLetters, missed, heardAt }: {
         const blank = hidden.has(i);
         const mark = missed.has(i);
         return (
-          <span key={i} className="relative">
+          <span key={i} className={mark ? 'relative' : undefined}>
             {i > 0 ? ' ' : ''}
             <span
               data-token={i}
