@@ -7,7 +7,7 @@ import { useSheetTalk } from '../tutor/sheetTalk';
 import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { SEPTUAGINT_SOURCES } from '../tutor/credits';
-import { SEPTUAGINT_SHEET_TITLE } from './septuagint';
+import { SEPTUAGINT_SHEET_TITLE, SEPTUAGINT_YOU_LABEL, SEPTUAGINT_YOU_TIP } from './septuagint';
 
 function Sheet({ onClose }: { onClose: () => void }) {
   const { drag, handle } = useSheetDrag(onClose);
@@ -16,7 +16,7 @@ function Sheet({ onClose }: { onClose: () => void }) {
   // z-30, above the Talk sheet (z-10): the ? asks about the texts the sheet names, in a Talk drawn inside this layer so it stands in front (mw-5r3p30.1124)
   const ask = useSheetTalk({
     name: SEPTUAGINT_SHEET_TITLE,
-    facts: SEPTUAGINT_SOURCES.map((source) => ({ label: source.label, value: source.text })),
+    facts: [...SEPTUAGINT_SOURCES.map((source) => ({ label: source.label, value: source.text })), { label: SEPTUAGINT_YOU_LABEL, value: SEPTUAGINT_YOU_TIP }],
     suggestions: ['Where do these Septuagint texts come from?', 'Why is the Septuagint numbered differently from my English Bible?'],
   });
   return (
@@ -55,6 +55,13 @@ function Sheet({ onClose }: { onClose: () => void }) {
               </p>
             </section>
           ))}
+          {/* the one mark the English carries that is not a stop (mw-u2w5klk.378): the same line a tap on the mark shows */}
+          <section data-lxx-note={SEPTUAGINT_YOU_LABEL} className="border-t border-line py-3">
+            <h3 className="text-base font-semibold text-muted">{SEPTUAGINT_YOU_LABEL}</h3>
+            <p lang="en" className="text-base">
+              {SEPTUAGINT_YOU_TIP}
+            </p>
+          </section>
         </div>
       </div>
       <DialogAskTutor {...ask} />

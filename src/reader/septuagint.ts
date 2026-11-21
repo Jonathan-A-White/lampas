@@ -23,6 +23,42 @@ export const gapText = (word: Pick<GreekWord, 't' | 'd'>, gaps: boolean | undefi
  */
 export const chunkShown = (text: string, gaps: boolean | undefined): string => (gaps === false ? withoutGaps(text) : text);
 
+/** The mark LXX2012 puts after Brenton's plural "ye" (its intro: "we have translated 'ye' as 'you^', like you-all, y'all"): the file carries U+2303 (⌃), the intro's own ASCII "^" is read the same. */
+const YOU_MARK = /([\^\u2303])/u;
+
+/** What a tap on that mark says (mw-u2w5klk.378), and the line the Septuagint's sources sheet carries beside it. */
+export const SEPTUAGINT_YOU_TIP = "you^ = you, plural (Brenton's 'ye'). The 2012 spelling update marks it this way.";
+
+/** The label of that line on the sources sheet (src/reader/SeptuagintSources.tsx). */
+export const SEPTUAGINT_YOU_LABEL = 'The ^ after you';
+
+/** A piece of a Septuagint English chunk: its text, or the plural mark (`mark` true) the reader gives a tip of its own. */
+export type YouPiece = { text: string; mark: boolean };
+
+/**
+ * A Septuagint English chunk's text cut at the plural mark: 'you^, therefore' is 'you', the mark, ', therefore', so a tap on the mark and a tap on the word are different targets and the stop beside it stays
+ * with the text. A mark with no word before it is not one (a stray caret stays text). Text with no mark is the one piece it was; the pieces joined are the text again.
+ */
+export function splitYouMarks(text: string): YouPiece[] {
+  const parts = text.split(YOU_MARK);
+  const out: YouPiece[] = [];
+  parts.forEach((part, i) => {
+    if (part === '') return;
+    const isMark = i % 2 === 1;
+    const before = out.length > 0 ? out[out.length - 1] : undefined;
+    // a caret not right after a letter is plain text
+    if (isMark && !(before && !before.mark && /\p{L}$/u.test(before.text))) {
+      if (before && !before.mark) before.text += part;
+      else out.push({ text: part, mark: false });
+      return;
+    }
+    const prev = out[out.length - 1];
+    if (!isMark && prev && !prev.mark) prev.text += part;
+    else out.push({ text: part, mark: isMark });
+  });
+  return out;
+}
+
 /** Swete's marks at the edge of a word: his stops ('.' ',' ';' ':'), the high stop '·' (the Greek ano teleia too), the Greek question mark and his brackets. A koronis or an apostrophe (ἀπ᾽) is the word's own and stays. */
 const SWETE_MARKS = /^[.,;:·\u0387\u037E()[\]]+|[.,;:·\u0387\u037E()[\]]+$/gu;
 
