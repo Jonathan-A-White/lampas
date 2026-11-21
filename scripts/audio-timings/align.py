@@ -148,18 +148,32 @@ ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 
 TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
 
 
-def spell(n: int) -> list[str]:
-    """A whole number as English words ('153' -> one hundred fifty three)."""
+MAGNITUDES = frozenset({'hundred', 'thousand', 'million'})
+NUMBER_WORDS = frozenset(ONES[1:] + TENS[2:])  # the words a number's smaller part is spelled with
+
+
+def number_and(before: str, after: str) -> bool:
+    """May the narrator say 'and' between these two words of a spelled number (mw-ar5k42b.51)? He reads 209 'two hundred AND nine' where `spell` writes 'two hundred nine'
+    (Genesis 11:19, 11:21): after hundred, thousand or million, before a word of the number's smaller part. The one rule the judge reads (the maker's text stays without it)."""
+    return before in MAGNITUDES and after in NUMBER_WORDS
+
+
+def spell(n: int, narrator_and: bool = False) -> list[str]:
+    """A whole number as English words ('153' -> one hundred fifty three). The text is spelled without 'and'; `narrator_and=True` spells it as the narrator reads it,
+    with the 'and' `number_and` allows (209 -> two hundred and nine)."""
     if n < 20:
         return [ONES[n]]
     if n < 100:
         return [TENS[n // 10]] + ([ONES[n % 10]] if n % 10 else [])
     if n < 1000:
-        return [ONES[n // 100], 'hundred'] + (spell(n % 100) if n % 100 else [])
+        rest = spell(n % 100, narrator_and) if n % 100 else []
+        return [ONES[n // 100], 'hundred'] + (['and'] if narrator_and and rest else []) + rest
     if n < 1_000_000:
-        return spell(n // 1000) + ['thousand'] + (spell(n % 1000) if n % 1000 else [])
+        rest = spell(n % 1000, narrator_and) if n % 1000 else []
+        return spell(n // 1000, narrator_and) + ['thousand'] + (['and'] if narrator_and and rest and n % 1000 < 100 else []) + rest
     if n < 1_000_000_000:
-        return spell(n // 1_000_000) + ['million'] + (spell(n % 1_000_000) if n % 1_000_000 else [])
+        rest = spell(n % 1_000_000, narrator_and) if n % 1_000_000 else []
+        return spell(n // 1_000_000, narrator_and) + ['million'] + (['and'] if narrator_and and rest and n % 1_000_000 < 100 else []) + rest
     raise ValueError(n)
 
 
@@ -188,6 +202,58 @@ def words_of(text: str) -> tuple[list[str], list[str]]:
         if kept:
             words.append(kept)
     return words, unconverted
+
+
+# A word capitalised only because it begins a sentence or a quoted speech is no name: the commonest of them (a name that spells like one of these is heard as written).
+COMMON_CAPITALISED = frozenset(
+    'a about after again all also an and any are as at be because before behold but by can do for from god had has have he her here him his how i if in into is it its let '
+    'lord me my no nor not now o of on one only or our out say so some than that the their them then there these they this those thus to up us was we were what when where '
+    'which while who whom why will with would yes yet you your'.split())
+
+
+def name_tokens(text: str) -> dict[str, str]:
+    """The proper names of a verse's text (a capitalised token that is no common word and not all capitals: LORD, Then): each of the words `words_of` makes of one, to the
+    whole token it is a part of, lower-cased, with its hyphen kept out ('hazar' and 'gaddah' of Hazar-gaddah to 'hazargaddah'): a model hears Hazar-gaddah as one word."""
+    decomposed = ''.join(c for c in unicodedata.normalize('NFKD', text) if not unicodedata.combining(c)).replace('’', "'").replace('‘', "'")
+    names: dict[str, str] = {}
+    for token in re.split(r'[\s—–…/]+', decomposed):
+        bare = token.strip('.,;:!?"“”\'()[]{}')
+        if len(bare) < 3 or not bare[0].isupper() or bare.isupper() or bare.lower() in COMMON_CAPITALISED:
+            continue
+        parts = [''.join(c for c in part.lower() if ('a' <= c <= 'z') or c == "'").strip("'") for part in bare.split('-')]
+        for part in parts:
+            if len(part) >= 3:
+                names[part] = ''.join(parts)
+    return names
+
+
+def name_words(text: str) -> frozenset[str]:
+    """The words of a verse's text that are a proper name, as `words_of` spells them (every part of a hyphenated name, 'pelet' of Beth-pelet, counts). A name is a word the
+    narrator and the models spell differently, so --check and the judge read it by sound (`sounds_like`)."""
+    return frozenset(name_tokens(text))
+
+
+def phonetic(word: str) -> str:
+    """A word as a recogniser might spell it other ways: ph as f, c and ck as k, z as s, y as i, h (but not after s, k or t) and a doubled letter dropped, a run of vowels as one, a last vowel and an r after it dropped. Jahzeel
+    and jazil are both 'jasal'; rephaim and refaim 'rafam'."""
+    w = re.sub(r'[^a-z]', '', word.lower())
+    w = w.replace('ph', 'f').replace('ck', 'k').replace('c', 'k').replace('z', 's').replace('y', 'i')
+    w = re.sub(r'(?<![skt])h', '', w)  # an h is silent but for sh, kh (ch) and th: Asher is not Esau
+    w = re.sub(r'(.)\1+', r'\1', w)
+    w = re.sub(r'[aeiou]+', 'a', w)
+    for ending in ('a', 'ar', 'a'):  # a name's last vowel is the one the models most disagree on (peor, pure), and an r after it (asher, asha; ner, neir)
+        if len(w) > 3 and w.endswith(ending):
+            w = w[:-1]
+    return w
+
+
+def sounds_like(heard: str, written: str) -> bool:
+    """Is `heard` a recogniser's spelling of the name `written` (mw-ar5k42b.51)? The same by `phonetic`, or one letter off a longer name's. Both are joined (Beth-pelet
+    heard 'beth pelet', 'ain rimmon' 'iain ramin')."""
+    a, b = phonetic(heard), phonetic(written)
+    if not a or not b:
+        return False
+    return a == b or (min(len(a), len(b)) >= 5 and edit_distance(a, b) <= 1)
 
 
 SOF_PASUQ = '\u05c3'  # the mark that ends a Hebrew verse, at the end of the last Hebrew word of it
@@ -1176,19 +1242,26 @@ HEARD_AS = {
 }
 
 
-def heard_as_written(heard: str, written: str) -> bool:
-    """--check's test of one end of a verse: the word the model heard is the text's word, to one letter, or a name's other spelling the model knows."""
-    return bool(heard) and (edit_distance(heard, written) <= 1 or heard in HEARD_AS.get(written, ()))
+def heard_as_written(heard: str, written: str, name: bool = False) -> bool:
+    """--check's test of one end of a verse: the word the model heard is the text's word, to one letter, or a name's other spelling the model knows (HEARD_AS). A word
+    that is a proper name (`name`, from `name_words`) is also heard as written when it sounds like it (`sounds_like`, mw-ar5k42b.51: Joshua's 'Beth-pelet', 'Asher')."""
+    return bool(heard) and (edit_distance(heard, written) <= 1 or heard in HEARD_AS.get(written, ()) or (name and sounds_like(heard, written)))
 
 
-def heard_end_as_written(heard: list[str], written: str, last: bool) -> bool:
+def heard_end_as_written(heard: list[str], written: str, last: bool, name: bool = False) -> bool:
     """One end of a verse (the last words if `last`, else the first): the word the model heard there is the text's word, or the model heard it as two words (mw-zbgo4ep.44:
     John 8:35, 'forever' heard as 'for ever') that together are the text's word."""
     if not heard:
         return False
     ends = heard[-2:] if last else heard[:2]
     one = ends[-1] if last else ends[0]
-    return heard_as_written(one, written) or (len(ends) == 2 and heard_as_written(''.join(ends), written))
+    return heard_as_written(one, written, name) or (len(ends) == 2 and heard_as_written(''.join(ends), written, name))
+
+
+def check_words(verse: dict, title_skipped: bool) -> list[str]:
+    """The words --check looks for the ends of in a verse: all of them, but for a Psalm's title the narrator did not read (a chapter timed under skip_title: its quiet file
+    names it in `titleSkipped`), whose words the verse's timing does not hold (mw-zbgo4ep.36)."""
+    return verse['words'][verse.get('title_words', 0) if title_skipped else 0:]
 
 
 def run_check(book: str, scratch: Path, fetcher: Fetcher) -> bool:
@@ -1198,6 +1271,8 @@ def run_check(book: str, scratch: Path, fetcher: Fetcher) -> bool:
         raise Stop(f'no timings for {book} to check')
     pairs = [(int(c), v[0]) for c, ch in data['chapters'].items() for v in ch['verses']]
     chosen = sorted(random.Random(CHECK_SEED).sample(pairs, min(CHECK_VERSES, len(pairs))))
+    skipped = set(read_quiet(book, read_slop())['titleSkipped'])  # Psalms timed with the title left to the opening wildcard: verse 1 begins after it
+    first_verse = {int(c): ch['verses'][0][0] for c, ch in data['chapters'].items()}
     model = Model(scratch)
     cache: dict[int, object] = {}
     passed = 0
@@ -1210,8 +1285,11 @@ def run_check(book: str, scratch: Path, fetcher: Fetcher) -> bool:
         verse = next(v for v in chapter_text(book, chapter) if v['n'] == n)
         _, start, end = next(t for t in data['chapters'][str(chapter)]['verses'] if t[0] == n)
         heard = model.greedy(cache[chapter][int(start * SAMPLE_RATE):int(end * SAMPLE_RATE)])
-        first, last = verse['words'][0], verse['words'][-1]
-        ok = heard_end_as_written(heard, first, last=False) and heard_end_as_written(heard, last, last=True)
+        words = check_words(verse, chapter in skipped and n == first_verse[chapter])
+        first, last = words[0], words[-1]
+        names = name_tokens(verse['text'])
+        ok = (heard_end_as_written(heard, names.get(first, first) if first in names and words[0] == first else first, last=False, name=first in names)
+              and heard_end_as_written(heard, last, last=True, name=last in names))
         passed += ok
         log(f'{chapter:2d}:{n:<3d} {start:8.2f} {end:7.2f}   {first:>10s} ({heard[0] if heard else "-":<10s}) {last:>10s} ({heard[-1] if heard else "-":<10s}) {"ok" if ok else "FAIL"}')
     log(f'sanity check: {passed} of {len(chosen)} (needs {CHECK_PASS})')

@@ -51,7 +51,7 @@ import align  # noqa: E402  the maker: its text source, its normaliser, its poli
 
 words_of = align.words_of
 
-JUDGE_VERSION = '3'  # 2: the tail clipped by the player's early stop, judged at insideTail (mw-ar5k42b.9); 3: heard on the clock the browser SEEKS by (mw-ar5k42b.25)
+JUDGE_VERSION = '4'  # 4: a number's 'and', a hard name heard alike, a word the letters cannot spell paired by the maker's alignment (mw-ar5k42b.51); 2: the tail clipped by the player's early stop, judged at insideTail (mw-ar5k42b.9); 3: heard on the clock the browser SEEKS by (mw-ar5k42b.25)
 REPO = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 EDITION = align.EDITION
@@ -72,6 +72,8 @@ STRIDE = 320  # samples a frame of the letters model: 20 ms
 WINDOW_SECONDS, CONTEXT_SECONDS = 20, 2
 WORD_QUIET = 0.2  # the letters of one word are never this long a quiet apart: a longer one means the pairing took a look-alike letter from elsewhere
 LETTERLESS = 0.4  # more sound than this between a verse's edge letter and its gap, with no letter heard in it, and the edge is not settled by the letters
+MAKER_PAD = 0.02  # a sound the letters ear could not spell belongs to the verse the maker's alignment has it in, to within the two models' own difference in where a letter lies
+MAKER_AGREES = 0.05  # a verse's first or last word the letters did not hear is heard when its own sound begins or dies this close to where the maker's alignment has it
 BETWEEN_LETTERS = 4  # letters nobody owns between two verses are reported from this many: fewer is a word's first letter heard otherwise, not a heading read aloud
 EDGE_SECONDS = 1.5  # the cut clip's edge the letters model decodes for a flag's report
 # The words ear.
@@ -256,14 +258,18 @@ def text_between(heard: list[list], a: float | None, b: float | None) -> str:
     return text_of([h for h in heard if a <= (h[1] + h[2]) / 2 <= b])
 
 
-def measure(verses: list[dict], heard: list[list], sound: Sound) -> dict:
+def measure(verses: list[dict], heard: list[list], sound: Sound, maker: dict[int, tuple[float, float]] | None = None) -> dict:
     """Where each verse's own sound begins and has died, and the sound either side of it, from the letters heard (whose is each sound) and the quiets (where it
     begins and dies). `verses` are {'n', 'words'}; `heard` is the letters ear's hearing of the chapter, [label, start, end] with '|' between words.
 
     Gives {'verses': [{'n', 'before', 'onset', 'end', 'after', 'headReadsOn', 'tailReadsOn', 'headWeak', 'tailWeak', 'suspect'}], 'announcement', 'between',
     'closing'}: `before` is the second the sound before the verse (not its own) has died, None when there is none; `onset` the second its own sound begins; `end`
     the second its own sound has died; `after` the second the next sound begins, None when there is none. Where the narrator reads on with no quiet, the two
-    seconds of that edge are one: the quietest instant between the two words. An edge is weak when the letters did not hear its word: its seconds are a guess."""
+    seconds of that edge are one: the quietest instant between the two words. An edge is weak when the letters did not hear its word: its seconds are a guess.
+
+    `maker` (mw-ar5k42b.51) is the maker's own alignment of the chapter, verse -> (its first letter's start, its last letter's end), read only for what the letters ear
+    could not spell: a letter nobody owns that lies inside a verse's span is that verse's (Psalm 3:4's 'Selah' is not 3:5's), and a first or last word the letters did not
+    hear is heard when the verse's own sound then begins or dies where the maker's span does."""
     letters = [h for h in heard if h[0] != '|']
     expected: list[str] = []
     where: list[tuple[int, int]] = []
@@ -272,6 +278,10 @@ def measure(verses: list[dict], heard: list[list], sound: Sound) -> dict:
             for c in word.upper():
                 expected.append(c)
                 where.append((vi, wi))
+            if wi + 1 < len(verse['words']) and align.number_and(word, verse['words'][wi + 1]):
+                for c in 'AND':  # the narrator's 'and' in a number (Genesis 11:19, 'two hundred AND nine'): a word he may say, written as word -(wi + 1)
+                    expected.append(c)
+                    where.append((vi, -(wi + 1)))
     pairs = pair_letters(''.join(expected), ''.join(h[0] for h in letters))
     matched: dict[tuple[int, int], list[int]] = {}
     for k, e in enumerate(pairs):
@@ -282,7 +292,7 @@ def measure(verses: list[dict], heard: list[list], sound: Sound) -> dict:
     own: list[int | None] = [None] * len(letters)
     heard_words: set[tuple[int, int]] = set()
     for (vi, wi), got in matched.items():
-        word = verses[vi]['words'][wi]
+        word = 'and' if wi < 0 else verses[vi]['words'][wi]
         clusters: list[list[int]] = [[got[0]]]
         for a, b in zip(got, got[1:]):
             if b - a > 3 or sound.quiet_between(letters[a][2], letters[b][1], WORD_QUIET):
@@ -293,11 +303,19 @@ def measure(verses: list[dict], heard: list[list], sound: Sound) -> dict:
             heard_words.add((vi, wi))
             for k in best:
                 own[k] = vi
+    if maker:
+        for vi, verse in enumerate(verses):
+            span = maker.get(verse['n'])
+            if span is not None:
+                for k, h in enumerate(letters):
+                    if own[k] is None and span[0] - MAKER_PAD <= (h[1] + h[2]) / 2 <= span[1] + MAKER_PAD:
+                        own[k] = vi  # a sound the letters ear could not spell, inside the verse the maker's alignment has it in (Selah)
     spans: dict[int, list[int]] = {}
     for k, vi in enumerate(own):
         if vi is not None:
             spans.setdefault(vi, [k, k])[1] = k
     added: dict[int, list[str]] = {}
+
     for vi, (first, last) in spans.items():
         run: list[int] = []
         for k in range(first, last + 2):
@@ -321,6 +339,16 @@ def measure(verses: list[dict], heard: list[list], sound: Sound) -> dict:
             own[k] = vi
             spans[vi][0] = k
             k -= 1
+
+    if maker:
+        for vi, (first, last) in spans.items():
+            span = maker.get(verses[vi]['n'])
+            count = len(verses[vi]['words'])
+            if span is not None and count:
+                if abs(letters[first][1] - span[0]) <= MAKER_AGREES:
+                    heard_words.add((vi, 0))
+                if abs(letters[last][2] - span[1]) <= MAKER_AGREES:
+                    heard_words.add((vi, count - 1))
 
     def near(a: float, b: float) -> bool:
         return sound.sound_seconds(a, b) <= LETTERLESS
@@ -509,6 +537,8 @@ def compare_words(expected: list[str], heard: list[str]) -> dict:
         k = e
         if theirs and ours and close(''.join(theirs), ''.join(ours)):
             continue  # one word written as two, or two as one
+        if not theirs and ours == ['and'] and around[0][0] and around[1][0] and align.number_and(around[0][0], around[1][0]):
+            continue  # the narrator's 'and' in a number: 'two hundred and nine' for the text's 'two hundred nine' (Genesis 11:19)
         if squeezed(around[0][0] + ''.join(theirs) + around[1][0]) == squeezed(around[0][1] + ''.join(ours) + around[1][1]):
             continue  # a sound two words share, written once: 'its sound' heard 'it sound'
         if at_head and not theirs:
@@ -568,11 +598,18 @@ def judge_verse(verse: dict, triple: list, edges: dict, heard: list[list], sound
         def both_ears(middle: list) -> list:
             return [[theirs, ours] for theirs, ours in middle if any(w in edges['suspect'] for w in theirs) or (not theirs and added)]
 
-        both = both_ears(differs['middle'])
+        names = align.name_words(verse.get('text', ''))
+
+        def a_name_heard_otherwise(theirs: list[str], ours: list[str]) -> bool:
+            """A proper name the words ear spelt as it sounds (Genesis 46:24 'Jahzeel' heard 'jazil'): a name is spelt many ways, the narrator said it."""
+            return bool(theirs and ours) and all(w in names for w in theirs) and align.sounds_like(''.join(ours), ''.join(theirs))
+
+        both = [[theirs, ours] for theirs, ours in both_ears(differs['middle']) if not a_name_heard_otherwise(theirs, ours)]
         if both:
             # ... and it is heard again TOLD the verse's words: a hard word both ears stumble on (John 19:39 'myrrh', heard 'MUR' and 'muh') is then heard as
             # written, while a word that really is another is still heard as it was said (John 3:16 told 'church' still gives 'world')
-            both = both_ears(compare_words(verse['words'], ears.words(long_start, long_end, ' '.join(verse['words'])))['middle'])
+            both = [[theirs, ours] for theirs, ours in both_ears(compare_words(verse['words'], ears.words(long_start, long_end, ' '.join(verse['words'])))['middle'])
+                    if not a_name_heard_otherwise(theirs, ours)]
         if both:
             flags.append({'kind': 'text-differs', 'heard': {'expected': ' … '.join(' '.join(theirs) for theirs, _ in both),
                                                             'words': ' … '.join(' '.join(ours) for _, ours in both)}})
@@ -609,9 +646,9 @@ def judge_verse(verse: dict, triple: list, edges: dict, heard: list[list], sound
     return {'n': n, 'verdict': 'flagged', 'flags': flags, 'sound': measured_seconds}
 
 
-def judge_chapter(verses: list[dict], triples: list[list], sound: Sound, heard: list[list], slop: dict, ears) -> dict:
+def judge_chapter(verses: list[dict], triples: list[list], sound: Sound, heard: list[list], slop: dict, ears, maker: dict[int, tuple[float, float]] | None = None) -> dict:
     """A chapter's verdicts: {'announcement', 'between', 'closing', 'speech', 'verses': [...]}."""
-    measured = measure(verses, heard, sound)
+    measured = measure(verses, heard, sound, maker)
     numbers = [v['n'] for v in verses]
     if [t[0] for t in triples] != numbers:
         raise align.Stop(f'the timings have verses {[t[0] for t in triples][:5]}... and the text {numbers[:5]}...: not the same verses')
@@ -863,7 +900,22 @@ class Recording:
             part.write_text(compact(self.heard), encoding='utf8')
             part.replace(kept)
         self.ears = ClipEars(models, self.wave, scratch / 'judge' / 'clips' / f'{mp3.stem}.{sha}.json', fresh)
-        self.verses = [{'n': v['n'], 'words': v['words']} for v in align.chapter_text(book, chapter)]
+        self.verses = [{'n': v['n'], 'words': v['words'], 'text': v['text']} for v in align.chapter_text(book, chapter)]
+        self.maker = maker_spans(book, chapter)
+
+
+def maker_spans(book: str, chapter: int) -> dict[int, tuple[float, float]] | None:
+    """The maker's own alignment of a chapter (scripts/audio-timings/quiet/): verse -> (its first letter's start, its last letter's end), or None where it is not kept or not
+    on the clock the judge hears by (a chapter of `through`: aligned on a file played through, moved only by the cut pass). `measure` reads it only for what the letters
+    ear could not spell (mw-ar5k42b.51)."""
+    path = align.quiet_path(book)
+    if not path.exists():
+        return None
+    kept = json.loads(path.read_text(encoding='utf8'))
+    rows = kept.get('aligned', {}).get(str(chapter))
+    if rows is None or chapter in kept.get('through', []):
+        return None
+    return {row[0]: (row[1], row[2]) for row in rows}
 
 
 def maker_gaps(book: str, chapter: int) -> dict[int, tuple[float, float]]:
@@ -988,7 +1040,7 @@ def main() -> int:
         def judge_one(chapter: int, triples: list[list]) -> dict:
             t0 = time.monotonic()
             recording = Recording(args.book, chapter, scratch, models, fetcher, args.fresh)
-            result = judge_chapter(recording.verses, triples, recording.sound, recording.heard, slop, recording.ears)
+            result = judge_chapter(recording.verses, triples, recording.sound, recording.heard, slop, recording.ears, recording.maker)
             recording.ears.save()
             audio['seconds'] += recording.sound.duration
             audio['asked'] += recording.ears.asked
