@@ -5,6 +5,7 @@ import { hasVoice, noVoiceHelp, speaksLanguage, testVoice, useSpeakingKey, useVo
 import { DEFAULT_RATE, LANGUAGES, RATE_MAX, RATE_MIN, RATE_STEP, type SettableLanguage } from '../../speech/languages';
 import { ACCENTS } from '../../speech/accents';
 import { setHandsFree } from '../../handsFree/switch';
+import { SEND_LOG_LABEL, SENT_ALOUD, sendWhatHandsFreeHeard } from '../../handsFree/sendLog';
 import { connectionKind } from '../../speech/connection';
 import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
 import { PLAY_TOS } from '../../speech/readSpan';
@@ -328,13 +329,40 @@ export const BibleVoiceControl: Control = ({ row }) => {
   );
 };
 
-/** Hands-free (mw-rl10piw.5): On | Off, Off to start. A choice goes through src/handsFree/switch.ts, as the three-finger tap does, so it says 'Hands-free on' or 'Hands-free off' aloud. */
+/** What the send of the wake log is doing: nothing yet, sending, sent, or the reason it was not. */
+type LogSend = { state: 'idle' | 'sending' | 'sent' } | { state: 'failed'; message: string };
+
+/** Send what Hands-free heard (mw-5r3p30.1231): the wake log of the last two minutes to the makers (src/handsFree/sendLog.ts), then 'Sent' or why not. */
+function SendLogButton() {
+  const [send, setSend] = useState<LogSend>({ state: 'idle' });
+  const go = (): void => {
+    setSend({ state: 'sending' });
+    sendWhatHandsFreeHeard().then(
+      () => setSend({ state: 'sent' }),
+      (err: unknown) => setSend({ state: 'failed', message: err instanceof Error ? err.message : 'Something went wrong.' }),
+    );
+  };
+  return (
+    <div className="mt-2 flex flex-col gap-1">
+      <button type="button" onClick={go} disabled={send.state === 'sending'} className="min-h-12 self-start rounded-lg border border-line px-4 text-base font-medium text-fg">
+        {SEND_LOG_LABEL}
+      </button>
+      <p role="status" className="text-sm text-muted">
+        {send.state === 'sending' ? 'Sending…' : send.state === 'sent' ? SENT_ALOUD : send.state === 'failed' ? send.message : ''}
+      </p>
+    </div>
+  );
+}
+
+/** Hands-free (mw-rl10piw.5): On | Off, Off to start. A choice goes through src/handsFree/switch.ts, as the three-finger tap does, so it says 'Hands-free on' or 'Hands-free off' aloud.
+ * Under it, Send what Hands-free heard (mw-5r3p30.1231). */
 export const HandsFreeControl: Control = ({ row }) => {
   const handsFree = useSetting(handsFreeSetting);
   return (
     <SettingRow row={row}>
       <RowName row={row} />
       {handsFree ? <OnOff name={row.label} current={handsFree} settingKey="handsFree" onChoose={(value) => void setHandsFree(value === 'on')} /> : null}
+      <SendLogButton />
     </SettingRow>
   );
 };

@@ -12,6 +12,8 @@
 //    Sideways (a window under 500 px tall) the Reader's chips row shares the header's line and would reach that corner, so src/index.css gives the row a right padding that stops it short of the dot,
 //    On or Off (the "‡13" variants chip's corner lay under it before, mw-rl10piw.49); tests/e2e/hands-free.spec.ts checks the dot lies on no chip's box.
 //  - while it is On, the screen is kept awake (src/speech/wakeLock.ts, holder 'hands-free'); Off lets it go.
+//  - while it is On, three fingers held on the screen for a second send what Hands-free heard to the makers and say "Sent" (sendLog.ts, mw-5r3p30.1231): longer than the
+//    three-finger tap, so lifting them is no tap. A touch on something with finger gestures of its own is left alone, as for the tap.
 // When the browser refuses the microphone the session turns the setting Off and the notice (session.ts MIC_REFUSED) shows here, in the strip, until he dismisses it or turns
 // Hands-free on again. When the wake could not start for a reason that may pass (the model not fetched) the setting stays On, the notice (COULD_NOT_START) shows beside the
 // mark and goes by itself when the wake is waiting again.
@@ -20,6 +22,7 @@ import { HandsFreeMark, useHandsFree as useSessionState, useThreeFingerTap } fro
 import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { holdAwake, releaseAwake } from '../speech/wakeLock';
 import { HELP_TITLE } from './commands';
+import { sendAndSay, watchThreeFingerHold } from './sendLog';
 import { HelpSheet } from './HelpSheet';
 import { dismissHandsFreeNotice, handsFreeNotice, handsFreeSource, onHandsFreeNotice, runHandsFree } from './session';
 import { toggleHandsFree, useHandsFree } from './switch';
@@ -66,6 +69,10 @@ export function HandsFreeGate() {
     if (on === undefined) return undefined;
     runHandsFree(on);
     return () => runHandsFree(false);
+  }, [on]);
+  useEffect(() => {
+    if (!on || typeof document === 'undefined') return undefined;
+    return watchThreeFingerHold(document, () => void sendAndSay(), { skip: ownFingers });
   }, [on]);
   useEffect(() => {
     if (!on) return undefined;
