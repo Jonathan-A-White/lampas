@@ -77,18 +77,19 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const doesNotSay = async (_: unknown, text: string): Promise<void> => {
     await settled();
-    expect(screen.queryByText(text)).toBeNull();
+    await waitFor(() => expect(screen.queryByText(text)).toBeNull());
   };
   const noField = async (_: unknown, label: string): Promise<void> => {
     await settled();
-    expect(screen.queryByLabelText(label)).toBeNull();
+    // after a tap on the switch the field is still drawn until the study-resources read that hides it has answered: wait for it to go
+    await waitFor(() => expect(screen.queryByLabelText(label)).toBeNull());
   };
   const field = async (_: unknown, label: string, value: string): Promise<void> => {
     expect(await screen.findByLabelText(label)).toHaveValue(value);
   };
   const noLink = async (_: unknown, name: string): Promise<void> => {
     await settled();
-    expect(screen.queryByRole('link', { name })).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('link', { name })).toBeNull());
   };
   const tapsUnder = async (_: unknown, chip: string, group: string): Promise<void> => {
     await user.click(within(await screen.findByRole('group', { name: group })).getByRole('button', { name: chip }));
