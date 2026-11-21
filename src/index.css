@@ -217,6 +217,8 @@
   }
   .reader-top > [data-reader-chips-wrap] > [data-testid="reader-chips"] {
     border-bottom-width: 0;
+    /* the Hands-free mark stands over the top-right corner (src/handsFree/HandsFreeGate.tsx): the row, which now reaches that corner, stops short of it, On or Off, so the dot lies on no chip's box (mw-rl10piw.49) */
+    padding-right: 1.5rem;
   }
   .reader-top > :not(header):not([data-reader-chips-wrap]) {
     flex: 1 0 100%;

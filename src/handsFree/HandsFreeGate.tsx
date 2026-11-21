@@ -9,6 +9,8 @@
 //    mw-rl10piw.43): the mark is inside a button, a 1.25 rem tap box in the corner, so it takes the corner of the header's menu button's tap box. Its top is the header's top, in every
 //    display mode (src/index.css, [data-hands-free-mark]): the foot of the shell's bars or the phone's top inset, whichever is lower, as a toast's is; fixed at top 0 it was left alone in the
 //    strip the inset opens above the header once the phone reported one, in full screen (mw-5r3p30.1212).
+//    Sideways (a window under 500 px tall) the Reader's chips row shares the header's line and would reach that corner, so src/index.css gives the row a right padding that stops it short of the dot,
+//    On or Off (the "‡13" variants chip's corner lay under it before, mw-rl10piw.49); tests/e2e/hands-free.spec.ts checks the dot lies on no chip's box.
 //  - while it is On, the screen is kept awake (src/speech/wakeLock.ts, holder 'hands-free'); Off lets it go.
 // When the browser refuses the microphone the session turns the setting Off and the notice (session.ts MIC_REFUSED) shows here, in the strip, until he dismisses it or turns
 // Hands-free on again. When the wake could not start for a reason that may pass (the model not fetched) the setting stays On, the notice (COULD_NOT_START) shows beside the

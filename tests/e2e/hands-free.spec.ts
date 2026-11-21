@@ -135,6 +135,13 @@ for (const size of [
     expect(await top()).toBe(before);
     const markBox = (await mark.boundingBox()) as Box;
     expect(markBox.x + markBox.width).toBeLessThanOrEqual(size.width);
+    // mw-rl10piw.49: sideways the chips row shares the header's line, so the dot stands over the end of it: it must not lie on any chip's box (not only its number), the corner of the "‡13" chip included
+    const chips = page.locator('[data-reader-chips] button:visible');
+    const chipCount = await chips.count();
+    for (let i = 0; i < chipCount; i += 1) {
+      const box = (await chips.nth(i).boundingBox()) as Box | null;
+      if (box) expect(overlaps(markBox, box), `the mark ${JSON.stringify(markBox)} lies on the box of chip ${i} ${JSON.stringify(box)}`).toBe(false);
+    }
     await shot(page, `hands-free-no-jump-${size.width}`);
     await threeFingers(page);
     await expect(mark).toHaveCount(0);
