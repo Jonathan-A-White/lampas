@@ -10,18 +10,22 @@
 //   4. and, going the other way, the junk the ending rules' candidates carry (`tidy`): a contraction TBESG lists as a headword (ᾠδός, 'a singer, contracted for ἀοιδός') beside the lemma that is one's own (ᾠδή); a part of speech the shape of a lemma with none cannot be (κατώτατος as a noun); and an adverb, indeclinable, comparative or superlative
 //      parsing no ending of the form allows (αἰνετός came with 20 parsings for the 2 it can be). Only the listing: the layers settle on the candidates they had (the shares of the rules'
 //      candidates are what PARSER_DOMINANT was measured on), so no word's answer changes.
+//   5. the paradigm readings of a verb form the layers' stem guess misses (story mw-u2w5klk.379; `paradigmReadings`): the perfect passive of a verb in -αίρω (ἐξῆρται) and of ἀπωθέω (ἀπῶσμαι), the aorist of a verb in -αίω
+//      (ἔκλαυσαν), the indicative beside the imperative (ἀνταποδίδοτε), the future middle of a present passive (ἀποδώσομαι, ἐπιβλέψομαι), the first person beside the third plural (ἀνέσχον), the feminine genitive
+//      plural of an adjective (πονηρῶν), the third plural beside a dative plural participle (κατοικοῦσιν) and the infinitive of a verb in -άω (ζῆν), each only for a verb TBESG has and only beside the candidates.
 // Not here: ἐμοῦ as the personal pronoun (P-1GS): TAGNT writes ἐμοῦ S-1SGSN in all its 114 words (mw-u2w5klk.284 holds the recheck), so the candidates are TAGNT's.
 import { cngOf, withCng } from './agreement';
-import { NOTE_NOT_IN_NT, type DerivedWord, type PendingWord, type WordCandidate } from './derive';
+import { NOTE_NO_CANDIDATE, NOTE_NOT_IN_NT, type DerivedWord, type PendingWord, type WordCandidate } from './derive';
 import { morpheusKey, type MorpheusCache } from './morpheus';
 import type { Parser } from './parser';
 import { bareOf } from './swete';
-import { posOf, type LexEntry } from './tbesg';
+import { posOf, type LexEntry, type Lexicon } from './tbesg';
 
-export const NOTE_COMPLETED = 'readings added beside the candidates (Morpheus, the vocative, the feminine), junk left out: for the model';
+export const NOTE_COMPLETED = 'readings added beside the candidates (Morpheus, the vocative, the feminine, the paradigm), junk left out: for the model';
 const VIA_MORPHEUS = 'Morpheus: the second method, a build tool';
 export const VIA_VOCATIVE = 'the vocative beside the nominative: the same form in the plural and in the neuter';
 export const VIA_FEMININE = 'the feminine beside the masculine: the Septuagint writes this noun feminine';
+export const VIA_PARADIGM = 'the paradigm of the verb: the same form, or the form of a stem the ending rules do not offer';
 
 /** Nouns the lexicon (TBESG, the New Testament) gives masculine that the Septuagint writes feminine: σχοῖνος is ἡ σχοῖνος, a line (Ps 138:3). By bare letters. */
 export const SEPTUAGINT_FEMININE: ReadonlySet<string> = new Set(['σχοῖνος'].map(bareOf));
@@ -90,12 +94,103 @@ function tidy(candidates: readonly WordCandidate[], form: string, parser: Pick<P
   return kept.length ? kept : [...candidates];
 }
 
+/** The perfect middle/passive endings of a verb in -αίρω and -ωθέω, in bare letters: ἦρμαι, ἦρσαι, ἦρται, ἤρμεθα, ἦρνται. */
+const PERFECT_ENDINGS: ReadonlyArray<readonly [string, string]> = [['μαι', '1S'], ['σαι', '2S'], ['ται', '3S'], ['μεθα', '1P'], ['νται', '3P']];
+/** The endings of the aorist active indicative that follow -υσ- (ἔκλαυσα, ἔκλαυσας, ἔκλαυσεν, ἐκλαύσαμεν, ἐκλαύσατε, ἔκλαυσαν), bare. */
+const AORIST_ENDINGS: ReadonlyArray<readonly [string, string]> = [['α', '1S'], ['ασ', '2S'], ['ε', '3S'], ['εν', '3S'], ['αμεν', '1P'], ['ατε', '2P'], ['αν', '3P']];
+/** The endings of the future middle indicative, bare (the second person singular ῃ or ει). */
+const FUTURE_ENDINGS: ReadonlyArray<readonly [string, string]> = [['ομαι', '1S'], ['η', '2S'], ['ει', '2S'], ['εται', '3S'], ['ομεθα', '1P'], ['εσθε', '2P'], ['ονται', '3P']];
+
+/** What the form's tense stem is when the present stem `stem` (bare, without -ω) takes -σ-: a labial gives ψ, a guttural ξ, a dental σ; a vowel stem σ, lengthened or not. */
+function futureStems(stem: string): string[] {
+  const last = stem.slice(-1);
+  const head = stem.slice(0, -1);
+  if ('πβφ'.includes(last)) return [`${head}ψ`];
+  if ('κγχ'.includes(last)) return [`${head}ξ`];
+  if ('τδθζ'.includes(last)) return [`${head}σ`];
+  const longer: Record<string, string> = { ε: 'η', α: 'η', ο: 'ω' };
+  if (longer[last]) return [`${stem}σ`, `${head}${longer[last]}σ`];
+  return [];
+}
+
+/** The nth reading of a verb TBESG has with these bare letters, as its NFC lemma; undefined when TBESG has no such verb. */
+const verbOf = (lexicon: Lexicon, bare: string): string | undefined => lexicon.get(bare)?.find((e) => e.pos.includes('V'))?.lemma;
+
+/**
+ * The readings of a form that a rule on the form itself gives and the layers' stem guess misses (story mw-u2w5klk.379: the Joel, Amos and Jonah batches had to guess ἐξῆρται, ἔκλαυσαν,
+ * ἀνταποδίδοτε, ἀποδώσομαι, ἐπιβλέψομαι, ἀνέσχον, πονηρῶν, κατοικοῦσιν, ζῇν and ἀπῶσμαι). Each is a reading the form really has, never one a choice depends on; `paradigmReadings`' result is
+ * added beside the candidates (see completeReadings). A verb is offered only when `lexicon` (TBESG) has it. `form` is in any spelling, `candidates` the word's, `drop` the junk the infinitive replaces.
+ */
+export function paradigmReadings(form: string, candidates: readonly WordCandidate[], lexicon: Lexicon): { add: Array<{ lemma: string; morph: string }>; drop: WordCandidate[] } {
+  const bare = bareOf(form);
+  const add: Array<{ lemma: string; morph: string }> = [];
+  const offer = (lemma: string | undefined, morph: string): void => {
+    if (lemma && !add.some((a) => a.lemma === lemma && a.morph === morph)) add.push({ lemma, morph });
+  };
+  const drop: WordCandidate[] = [];
+  // 1. the perfect middle/passive of a verb in -αίρω: the stem is ἠρ-, the compound's prefix gives up its vowel (ἐξῆρται, ἀπῆρται, ἦρμαι)
+  for (const [ending, person] of PERFECT_ENDINGS) {
+    if (!bare.endsWith(`ηρ${ending}`)) continue;
+    const lemma = verbOf(lexicon, `${bare.slice(0, -(2 + ending.length))}αιρω`);
+    offer(lemma, `V-RPI-${person}`);
+    offer(lemma, `V-RMI-${person}`);
+  }
+  // 2. the perfect middle/passive of a verb in -ωθέω, which takes ὠσ- (ἀπῶσμαι, ἐξῶσται, ἔωσμαι)
+  for (const [ending, person] of PERFECT_ENDINGS) {
+    if (!bare.endsWith(`ωσ${ending}`)) continue;
+    const prefix = bare.slice(0, -(2 + ending.length));
+    for (const lemma of new Set([verbOf(lexicon, `${prefix}ωθεω`), prefix === 'ε' ? verbOf(lexicon, 'ωθεω') : undefined])) {
+      offer(lemma, `V-RPI-${person}`);
+      offer(lemma, `V-RMI-${person}`);
+    }
+  }
+  // 3. the aorist active of a verb in -αίω (κλαίω, καίω and their compounds): ἔκλαυσαν, ἔκαυσα, κατέκαυσαν; the stem has no iota in it
+  for (const [ending, person] of AORIST_ENDINGS) {
+    const m = new RegExp(`^(.*?)(κλ|κ)αυσ${ending}$`).exec(bare);
+    if (!m || !m[1].endsWith('ε')) continue;
+    const before = m[1].slice(0, -1);
+    const prefixes = new Set([before, ...['α', 'ο', 'ε', 'ι'].map((v) => `${before}${v}`), before.endsWith('εξ') ? `${before.slice(0, -2)}εκ` : before]);
+    for (const prefix of prefixes) offer(verbOf(lexicon, `${prefix}${m[2]}αιω`), `V-AAI-${person}`);
+  }
+  // 4. the infinitive of a verb in -άω (ζῆν, πεινῆν, διψῆν, τιμᾶν): the rules read -ῆν as a noun of a stem without it
+  if (/(ην|αν)$/.test(bare)) {
+    const lemma = verbOf(lexicon, `${bare.slice(0, -2)}αω`);
+    if (lemma) {
+      offer(lemma, 'V-PAN');
+      drop.push(...candidates.filter((c) => c.via?.[0]?.startsWith('rule:') === true && bareOf(c.lemma) === bare.slice(0, -1) && /^[NA]-/.test(c.morph)));
+    }
+  }
+  const verbs = [...new Set(candidates.filter((c) => c.morph.startsWith('V-')).map((c) => c.lemma))];
+  for (const c of candidates) {
+    const [, tail] = /^V-(.*)$/.exec(c.morph) ?? [];
+    // 5. the indicative and the imperative of the present active second plural are one form (ἀνταποδίδοτε, λύετε)
+    if (tail === 'PAI-2P' && bare.endsWith('τε')) offer(c.lemma, 'V-PAM-2P');
+    if (tail === 'PAM-2P' && bare.endsWith('τε')) offer(c.lemma, 'V-PAI-2P');
+    // 6. the first person singular and the third plural of a second aorist and an imperfect are one form (ἀνέσχον, ἔλυον)
+    if ((tail === '2AAI-3P' || tail === 'IAI-3P') && /(ον|ουν|ων)$/.test(bare)) offer(c.lemma, `V-${tail.replace('3P', '1S')}`);
+    if ((tail === '2AAI-1S' || tail === 'IAI-1S') && /(ον|ουν|ων)$/.test(bare)) offer(c.lemma, `V-${tail.replace('1S', '3P')}`);
+    // 7. a dative plural participle of the present and the third plural of the present are one form (κατοικοῦσιν)
+    if (/^PAP-DP[MN]$/.test(tail ?? '') && /(ουσιν|ουσι|ωσιν|ωσι|ασιν|ασι)$/.test(bare)) offer(c.lemma, 'V-PAI-3P');
+    // 8. an adjective's genitive plural is one form in all three genders (πονηρῶν)
+    const gp = /^A-GP([MFN])$/.exec(c.morph);
+    if (gp) for (const gender of 'MFN') if (gender !== gp[1]) offer(c.lemma, `A-GP${gender}`);
+  }
+  // 9. the future middle of a verb the candidates read as a present: ἀποδώσομαι (-δίδωμι), ἐπιβλέψομαι (the stem takes -σ-, ψ, ξ)
+  for (const lemma of verbs) {
+    const letters = bareOf(lemma);
+    const stems = letters.endsWith('διδωμι') ? [`${letters.slice(0, -6)}δωσ`] : letters.endsWith('ω') ? futureStems(letters.slice(0, -1)) : [];
+    for (const stem of stems) for (const [ending, person] of FUTURE_ENDINGS) if (bare === `${stem}${ending}`) offer(lemma, `V-FMI-${person}`);
+  }
+  return { add, drop };
+}
+
 const beside = (lemma: string, morph: string, via: string, source?: 'morpheus'): WordCandidate => ({ lemma, morph, support: 0, share: 0, via: [via], beside: true, ...(source ? { source } : {}) });
 
 /** The words after the pending ones have been offered what a rule can add (`formOf` is the Greek form of a word's reference; `morpheus` the book's cache, when there is one). */
 export function completeReadings(outs: readonly Out[], formOf: (ref: string) => string, morpheus?: MorpheusCache, parser?: Pick<Parser, 'lexicon' | 'ntPos'>): Out[] {
   return outs.map((word) => {
-    if (!isPending(word) || word.candidates.length === 0) return word;
+    if (!isPending(word)) return word;
+    if (word.candidates.length === 0) return parser ? withParadigm(word, [], formOf(word.ref), parser) : word;
     const candidates = parser ? tidy(word.candidates, formOf(word.ref), parser) : [...word.candidates];
     const has = (morph: string): boolean => candidates.some((c) => c.morph === morph);
     const known = morpheus?.get(morpheusKey(formOf(word.ref)));
@@ -127,6 +222,18 @@ export function completeReadings(outs: readonly Out[], formOf: (ref: string) => 
       const feminine = withCng(c.morph, `${cng.slice(0, 2)}F`);
       if (!candidates.some((x) => x.morph === feminine && x.lemma === c.lemma)) candidates.push(beside(c.lemma, feminine, VIA_FEMININE));
     }
-    return candidates.length === word.candidates.length && candidates.every((c, i) => c === word.candidates[i]) ? word : { ...word, candidates, notes: [...word.notes, NOTE_COMPLETED] };
+    return parser ? withParadigm(word, candidates, formOf(word.ref), parser) : changed(word, candidates);
   });
+}
+
+const changed = (word: PendingWord, candidates: WordCandidate[]): PendingWord =>
+  candidates.length === word.candidates.length && candidates.every((c, i) => c === word.candidates[i]) ? word : { ...word, candidates, notes: [...word.notes, NOTE_COMPLETED] };
+
+/** The word with the paradigm readings (`paradigmReadings`) beside its `candidates`, the invented lemmas the infinitive replaces left out; a word that had none and gains one is no longer 'no candidate'. */
+function withParadigm(word: PendingWord, candidates: WordCandidate[], form: string, parser: Pick<Parser, 'lexicon'>): PendingWord {
+  const { add, drop } = paradigmReadings(form, candidates, parser.lexicon);
+  const kept = candidates.filter((c) => !drop.includes(c));
+  for (const a of add) if (!kept.some((c) => bareOf(c.lemma) === bareOf(a.lemma) && c.morph === a.morph)) kept.push(beside(a.lemma, a.morph, VIA_PARADIGM));
+  const done = changed(word, kept);
+  return word.candidates.length || done === word ? done : { ...done, notes: done.notes.filter((n) => n !== NOTE_NO_CANDIDATE) };
 }

@@ -693,7 +693,9 @@ describe('Morpheus’s perfects, and Morpheus asked about a form with one thin c
       const off = await runDerive(['--book', 'nah', '--no-morpheus'], { input, outDir: tmp(), morpheus: engine() });
       const w = wordOf(off, 'ἐξῆρται.');
       expect(isDerived(w)).toBe(false);
-      expect(w.candidates.map((c) => `${c.lemma} ${c.morph}`)).toEqual([nfc('ἐξαρτάω V-IAI-3S')]);
+      // the candidates the layers have are as they were; the perfect passive of ἐξαίρω is beside them, a reading nothing depends on (story mw-u2w5klk.379)
+      expect(w.candidates.filter((c) => !c.beside).map((c) => `${c.lemma} ${c.morph}`)).toEqual([nfc('ἐξαρτάω V-IAI-3S')]);
+      expect(w.candidates.filter((c) => c.beside).map((c) => `${c.lemma} ${c.morph}`)).toEqual([nfc('ἐξαίρω V-RPI-3S'), nfc('ἐξαίρω V-RMI-3S')]);
       expect(w.notes).toContain(NOTE_THIN);
       const gen = await runDerive(['--book', 'gen', '--no-morpheus'], { input, outDir: tmp() });
       expect(isDerived(wordOf(gen, 'ἐφίλει'))).toBe(true);
@@ -932,6 +934,119 @@ describe('what the listing lacked (mw-u2w5klk.287): the readings of the Psalms b
       expect(got.filter((x) => /ADV|-C$|-S$|NUI/.test(x))).toEqual([]);
       // an adverb in -ως is one
       expect(shownP('αἰνετῶς')).toContain(nfc('αἰνετός ADV'));
+    });
+  });
+
+  describe('completeReadings: the paradigm readings the model stories had to guess (mw-u2w5klk.379)', () => {
+    const cand = (lemma: string, morph: string, extra: Partial<WordCandidate> = {}): WordCandidate => ({ lemma: nfc(lemma), morph, support: 1, share: 1, via: ['a rule'], ...extra });
+    const row = (n: number, lemma: string, pos: string): string => `G${9100 + n}\tG${9100 + n} =\tG${9100 + n}\t${lemma}\tx\tG:${pos}\tgloss`;
+    const lexicon = readTbesg(
+      [
+        ['ἐξαίρω', 'V'], ['αἴρω', 'V'], ['ἐπαίρω', 'V'], ['ἀπαίρω', 'V'], ['κλαίω', 'V'], ['καίω', 'V'], ['κατακαίω', 'V'], ['ζάω', 'V'], ['πεινάω', 'V'], ['ἀπωθέω', 'V'],
+        ['ἀνταποδίδωμι', 'V'], ['ἀποδίδωμι', 'V'], ['ἐπιβλέπω', 'V'], ['κατοικέω', 'V'], ['πονηρός', 'A'], ['ἀνέχω', 'V'], ['ἀκάθαρτος', 'A'], ['καλέω', 'V'],
+      ]
+        .map(([l, p], i) => row(i, l, p))
+        .join('\n'),
+    );
+    const parser = { lexicon, ntPos: new Map<string, Set<string>>() };
+    const cacheOf = (forms: Record<string, Array<{ lemma: string; code: string }>>) => new Map(Object.entries(forms).map(([f, analyses]) => [nfc(f), { analyses, unmapped: 0 }]));
+    const listed = (form: string, candidates: WordCandidate[], morpheus?: ReturnType<typeof cacheOf>): string[] => {
+      const word = { ref: 'x', candidates, notes: ['not in the New Testament: for the parser'] };
+      return completeReadings([word], () => nfc(form), morpheus, parser)[0].candidates.map((c) => `${c.lemma} ${c.morph}`);
+    };
+
+    it('offers the perfect passive of a verb in -αίρω: ἐξῆρται (Joe 1:9) is ἐξαίρω V-RPI-3S, not only ἐξαρτάω V-IAI-3S', () => {
+      const got = listed('ἐξῆρται', [cand('ἐξαρτάω', 'V-IAI-3S', { support: 33 })]);
+      expect(got).toContain(nfc('ἐξαίρω V-RPI-3S'));
+      expect(got).toContain(nfc('ἐξαίρω V-RMI-3S'));
+      expect(got[0]).toBe(nfc('ἐξαρτάω V-IAI-3S'));
+    });
+
+    it('does the same for the plain verb and a compound whose prefix gives up its vowel: ἦρται, ἀπῆρται, ἐπῆρμαι', () => {
+      expect(listed('ἦρται', [cand('ἄρω', 'V-IAI-3S')])).toContain(nfc('αἴρω V-RPI-3S'));
+      expect(listed('ἀπῆρται', [cand('ἀπάρω', 'V-IAI-3S')])).toContain(nfc('ἀπαίρω V-RPI-3S'));
+      expect(listed('ἐπῆρμαι', [cand('ἐπάρω', 'V-IAI-1S')])).toContain(nfc('ἐπαίρω V-RPI-1S'));
+    });
+
+    it('offers no -αίρω verb for a form that is not its perfect: ἐξῆρται keeps no ἀπαίρω', () => {
+      expect(listed('ἐξῆρται', [cand('ἐξαρτάω', 'V-IAI-3S')]).some((x) => x.startsWith(nfc('ἀπαίρω')))).toBe(false);
+    });
+
+    it('offers the aorist of a verb in -αίω: ἔκλαυσαν (Joe 1:18) is κλαίω V-AAI-3P, not only κλάω', () => {
+      const got = listed('ἔκλαυσαν', [cand('κλάω', 'V-AAI-3P', { support: 3 }), cand('κλάω', 'V-IAI-3P')]);
+      expect(got).toContain(nfc('κλαίω V-AAI-3P'));
+      expect(got.some((x) => x.startsWith(nfc('κλαίω V-IAI')))).toBe(false);
+    });
+
+    it('offers the aorist of καίω and a compound of it: ἔκαυσα, κατέκαυσαν', () => {
+      expect(listed('ἔκαυσα', [cand('κάω', 'V-AAI-1S')])).toContain(nfc('καίω V-AAI-1S'));
+      expect(listed('κατέκαυσαν', [cand('κατακάω', 'V-AAI-3P')])).toContain(nfc('κατακαίω V-AAI-3P'));
+    });
+
+    it('offers the indicative beside the imperative of the present: ἀνταποδίδοτε (Joe 3:4) is V-PAI-2P as well as V-PAM-2P', () => {
+      expect(listed('ἀνταποδίδοτέ', [cand('ἀνταποδίδωμι', 'V-PAM-2P')])).toContain(nfc('ἀνταποδίδωμι V-PAI-2P'));
+      expect(listed('ἀνταποδίδοτε', [cand('ἀνταποδίδωμι', 'V-PAI-2P')])).toContain(nfc('ἀνταποδίδωμι V-PAM-2P'));
+    });
+
+    it('offers the future middle of a verb in -δίδωμι that came as a present passive: ἀποδώσομαι (Joe 3:8)', () => {
+      expect(listed('ἀποδώσομαι', [cand('ἀποδίδωμι', 'V-PPI-1S')])).toContain(nfc('ἀποδίδωμι V-FMI-1S'));
+      expect(listed('ἀποδώσεται', [cand('ἀποδίδωμι', 'V-PPI-3S')])).toContain(nfc('ἀποδίδωμι V-FMI-3S'));
+    });
+
+    it('offers the future middle of an ordinary verb that came as a present passive: ἐπιβλέψομαι (Amo 5:22)', () => {
+      expect(listed('ἐπιβλέψομαι', [cand('ἐπιβλέπω', 'V-PPI-1S', { support: 2 })])).toContain(nfc('ἐπιβλέπω V-FMI-1S'));
+    });
+
+    it('does not make a future of a present passive: ἐπιβλέπομαι stays as it is', () => {
+      expect(listed('ἐπιβλέπομαι', [cand('ἐπιβλέπω', 'V-PPI-1S')]).some((x) => x.includes('V-FMI'))).toBe(false);
+    });
+
+    it('offers the first person singular beside the third plural of a second aorist and an imperfect: ἀνέσχον (Amo 4:7)', () => {
+      expect(listed('ἀνέσχον', [cand('ἀνέχω', 'V-2AAI-3P', { support: 2 })])).toContain(nfc('ἀνέχω V-2AAI-1S'));
+      expect(listed('ἐκάλουν', [cand('καλέω', 'V-IAI-3P')])).toContain(nfc('καλέω V-IAI-1S'));
+    });
+
+    it('offers the feminine genitive plural of an adjective: πονηρῶν (Jon 3:10) is A-GPF beside A-GPM and A-GPN', () => {
+      expect(listed('πονηρῶν', [cand('πονηρός', 'A-GPN', { support: 4 }), cand('πονηρός', 'A-GPM', { support: 2 })])).toContain(nfc('πονηρός A-GPF'));
+    });
+
+    it('offers no feminine genitive plural of a participle: its own is -ουσῶν', () => {
+      expect(listed('κατοικούντων', [cand('κατοικέω', 'V-PAP-GPM')]).some((x) => x.includes('GPF'))).toBe(false);
+    });
+
+    it('offers the third plural of the present beside a dative plural participle: κατοικοῦσιν (Jon 4:11) is V-PAI-3P', () => {
+      expect(listed('κατοικοῦσιν', [cand('κατοικέω', 'V-PAP-DPM', { support: 6 }), cand('κατοικέω', 'V-PAP-DPN', { support: 0 })])).toContain(nfc('κατοικέω V-PAI-3P'));
+    });
+
+    it('offers the infinitive of a verb in -άω that came as junk nouns: ζῇν (Jon 4:3) is ζάω V-PAN, and the invented noun ζῆ is left out', () => {
+      const got = listed('ζῇν', [cand('ζῆ', 'N-ASF', { support: 388, via: ['rule: a'] }), cand('ζῆ', 'N-ASM', { support: 1, via: ['rule: a'] })]);
+      expect(got).toContain(nfc('ζάω V-PAN'));
+      expect(got.some((x) => x.startsWith(nfc('ζῆ N')))).toBe(false);
+      expect(listed('πεινῆν', [cand('πεινῆ', 'N-ASF')])).toContain(nfc('πεινάω V-PAN'));
+    });
+
+    it('offers the perfect passive of ἀπωθέω, which has no regular stem: ἀπῶσμαι (Amo 5:21, Jon 2:5) is V-RPI-1S, not only the noun ἀπωσμός', () => {
+      const got = listed('Ἀπῶσμαι', [cand('ἀπωσμός', 'A-NPF', { support: 19 }), cand('ἀπωσμός', 'A-VPF', { support: 0 })]);
+      expect(got).toContain(nfc('ἀπωθέω V-RPI-1S'));
+      expect(got).toContain(nfc('ἀπωθέω V-RMI-1S'));
+    });
+
+    it('still lists Morpheus’s readings of φύγῃ (Amo 5:19) and ἀκαθάρτῳ (Amo 7:17) beside the rules’', () => {
+      const cache = cacheOf({ φύγῃ: [{ lemma: 'φεύγω', code: 'V-2AAS-3S' }], ἀκαθάρτῳ: [{ lemma: 'ἀκάθαρτος', code: 'A-DSF' }] });
+      expect(listed('φύγῃ', [cand('φυγή', 'N-DSF', { support: 219 })], cache)).toContain(nfc('φεύγω V-2AAS-3S'));
+      expect(listed('ἀκαθάρτῳ', [cand('ἀκάθαρτος', 'A-DSN', { support: 5 })], cache)).toContain(nfc('ἀκάθαρτος A-DSF'));
+    });
+
+    it('marks every added reading beside the candidates, so no word is settled or unsettled by it, and leaves the first candidates in place', () => {
+      const first = cand('ἐξαρτάω', 'V-IAI-3S', { support: 33 });
+      const got = completeReadings([{ ref: 'x', candidates: [first], notes: [] }], () => nfc('ἐξῆρται'), undefined, parser)[0];
+      expect(got.candidates[0]).toBe(first);
+      expect(got.candidates.slice(1).every((c) => c.beside === true)).toBe(true);
+    });
+
+    it('adds nothing without a lexicon to check the verb against', () => {
+      const word = { ref: 'x', candidates: [cand('ἐξαρτάω', 'V-IAI-3S')], notes: [] };
+      expect(completeReadings([word], () => nfc('ἐξῆρται'))[0].candidates).toHaveLength(1);
     });
   });
 
