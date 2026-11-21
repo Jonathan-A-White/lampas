@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.313
+_2026-11-21_
+- Fixed: Import YouTube history now says when it found no Morning RePhil episode, shows that it is reading a big file, and sits below the order help line.
+- Fixed: Sideways in the Reader, the small Hands-free microphone dot no longer sits on the corner of the variants chip.
+- Fixed: Hands-free now hears your spoken command through the car's Bluetooth microphone after "Hey Lampas".
+- Fixed: Back on the mobile-data question for David's voice now closes the question and keeps you on the chapter, instead of taking you to the previous chapter.
+
 ## 0.7.312
 _2026-11-21_
 - New: In the Septuagint's English, the small mark after "you" now explains itself when you tap it.

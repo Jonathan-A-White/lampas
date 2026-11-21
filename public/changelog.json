@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.313",
+    "date": "2026-11-21",
+    "story": "mw-r9xo1pj.16",
+    "kind": "fixed",
+    "text": "Import YouTube history now says when it found no Morning RePhil episode, shows that it is reading a big file, and sits below the order help line."
+  },
+  {
+    "version": "0.7.313",
+    "date": "2026-11-21",
+    "story": "mw-rl10piw.49",
+    "kind": "fixed",
+    "text": "Sideways in the Reader, the small Hands-free microphone dot no longer sits on the corner of the variants chip."
+  },
+  {
+    "version": "0.7.313",
+    "date": "2026-11-21",
+    "story": "mw-5r3p30.1224",
+    "kind": "fixed",
+    "text": "Hands-free now hears your spoken command through the car's Bluetooth microphone after \"Hey Lampas\"."
+  },
+  {
+    "version": "0.7.313",
+    "date": "2026-11-21",
+    "story": "mw-zbgo4ep.42",
+    "kind": "fixed",
+    "text": "Back on the mobile-data question for David's voice now closes the question and keeps you on the chapter, instead of taking you to the previous chapter."
+  },
+  {
     "version": "0.7.312",
     "date": "2026-11-21",
     "story": "mw-u2w5klk.378",
