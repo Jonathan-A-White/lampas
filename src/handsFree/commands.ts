@@ -14,8 +14,10 @@
 //    follow-up with no wake word; 'tutor' and 'open the tutor' open the Talk sheet on what is on screen and listen; 'close the tutor' and 'done' put it away. In a follow-up window (info.followUp) the words
 //    of any command above run it (and put the tutor away if Hands-free opened it); any other words go to the tutor as the next turn of the same talk.
 //  - 'help' and 'what can I say' say what he can say, from the one table below (HELP_LINES); tapping the mic mark shows the same list (HandsFreeGate.tsx, HelpSheet.tsx).
-// Any other words: it says 'Sorry, I did not get that', and what was playing goes on when the exchange closes (src/handsFree/playback.ts).
-import { defineSpoken, route, type CommandDone, type SpokenRule } from 'voice-kit/handsfree';
+//  - Filler words around a command are dropped before it is routed (mw-rl10piw.44, withoutFiller): 'please', 'could you', 'can you' before it, 'me' right after 'read', and 'to me', 'for me' and 'please'
+//    after it, so 'please read Proverbs 2 to me' is 'read Proverbs 2'. A question put to the tutor is not trimmed: 'for me' there is part of what he asks.
+// Any other words: it says 'Sorry, I did not get that, I heard "<his words>"' so he can tell what the phone made of them, and what was playing goes on when the exchange closes (src/handsFree/playback.ts).
+import { defineSpoken, normaliseSpoken, route, type CommandDone, type SpokenRule } from 'voice-kit/handsfree';
 import { titleOf } from '../data/books';
 import { neighbours } from '../data/neighbours';
 import { crossChapter } from '../reader/crossChapter';
@@ -27,6 +29,44 @@ import { backOneVerse, goOnNow, keepPaused, stopSound, takeSound } from './playb
 
 /** What it says to words it does not know. */
 export const NOT_UNDERSTOOD = 'Sorry, I did not get that';
+
+/** What it says to words it does not know, with the words it heard (mw-rl10piw.44): 'Sorry, I did not get that, I heard "two to me"'. Words with no letter in them say only NOT_UNDERSTOOD. */
+export function notUnderstood(words: string): string {
+  const heard = words.replace(/\s+/g, ' ').replace(/"/g, '').trim();
+  return /[\p{L}\p{N}]/u.test(heard) ? `${NOT_UNDERSTOOD}, I heard "${heard}"` : NOT_UNDERSTOOD;
+}
+
+/** Words before a command that ask for it politely and are no part of it ('could you please read John 3'); each is dropped, in any order, once the router's own leading 'please' is off. */
+const LEADING_FILLER = ['please', 'could you', 'can you', 'would you', 'will you', 'would you mind', 'i would like you to', 'i want you to'];
+/** Words after a command that say for whom ('read John 3 to me', 'read it for me please'); dropped from the end, in any order. */
+const TRAILING_FILLER = ['please', 'to me', 'for me', 'to us', 'for us', 'out loud', 'aloud'];
+/** The words that open a command of reading, after which 'me' is filler ('read me John 3', 'play me John 3'). */
+const MEANT_FOR_HIM = /^(read|red|reed|open|play|listen to) me\b/;
+
+/** `words` as the router should read them: the router's own plain words (lower case, no punctuation, numbers as digits), then the filler of LEADING_FILLER dropped from the start, the filler of
+ * TRAILING_FILLER from the end, and the 'me' after 'read' ('please read Proverbs 2 to me' is 'read proverbs 2'). A command made only of filler is left as it was heard. */
+export function withoutFiller(words: string): string {
+  let plain = normaliseSpoken(words);
+  const strip = (): boolean => {
+    for (const filler of LEADING_FILLER) {
+      if (plain.startsWith(`${filler} `)) {
+        plain = plain.slice(filler.length + 1);
+        return true;
+      }
+    }
+    for (const filler of TRAILING_FILLER) {
+      if (plain.endsWith(` ${filler}`)) {
+        plain = plain.slice(0, -(filler.length + 1));
+        return true;
+      }
+    }
+    return false;
+  };
+  while (strip());
+  const me = MEANT_FOR_HIM.exec(plain);
+  if (me) plain = `${me[1]}${plain.slice(me[0].length)}`;
+  return plain === '' ? normaliseSpoken(words) : plain;
+}
 
 /** What it says to 'play' with nothing paused and no chapter open. */
 export const OPEN_A_CHAPTER = 'Open a chapter first';
@@ -59,7 +99,7 @@ const COMMAND_TABLE: readonly CommandEntry[] = [
   { name: 'close-tutor', phrases: ['close the tutor', 'close tutor', 'leave the tutor', 'close the tudor', 'done', 'i am done'], help: { rank: 10, example: 'done', does: 'puts the tutor away' } },
   { name: 'tutor', phrases: ['tutor', 'tudor', 'the tutor', 'open the tutor', 'open tutor', 'open the tudor', 'talk to the tutor', 'talk to tutor'], help: { rank: 9, example: 'tutor', does: 'opens the tutor and listens' } },
   { name: 'ask', phrases: ['ask the tutor', 'ask'], rest: true, help: { rank: 8, example: 'ask who was Nicodemus', does: 'puts your question to the tutor and reads the answer' } },
-  { name: 'help', phrases: ['help', 'what can i say', 'what can i say to you', 'what can you do', 'what do i say'], help: { rank: 11, example: 'help', does: 'tells you what you can say' } },
+  { name: 'help', phrases: ['help', 'help me', 'what can i say', 'what can i say to you', 'what can you do', 'what do i say'], help: { rank: 11, example: 'help', does: 'tells you what you can say' } },
   { name: 'pause', phrases: ['pause'], help: { rank: 2, example: 'pause', does: 'pauses the reading' } },
   { name: 'play', phrases: ['play', 'resume', 'continue', 'go on'], help: { rank: 1, example: 'play', does: 'goes on with what is paused, or reads this chapter' } },
   { name: 'stop', phrases: ['stop', 'stop reading', 'stop playing'], help: { rank: 3, example: 'stop', does: 'ends the reading' } },
@@ -126,8 +166,11 @@ export type Done = CommandDone | void;
 
 /** Carries out the words of one command; `say` speaks a sentence and resolves when it has been said. Resolves when all is done and said; `followUp` in the result keeps the microphone open for words with
  * no wake word (the tutor's answer was spoken, or the tutor is open). `info.followUp` says these words came in such a window: those that are not a command go to the tutor. */
-export async function runCommand(words: string, say: (text: string) => Promise<void>, info: { followUp: boolean } = { followUp: false }): Promise<Done> {
-  const command = route(words, SPOKEN_COMMANDS);
+export async function runCommand(heard: string, say: (text: string) => Promise<void>, info: { followUp: boolean } = { followUp: false }): Promise<Done> {
+  // a question put to the tutor keeps every word he said; any other command is read without its filler ('please read Proverbs 2 to me')
+  const asked = route(heard, SPOKEN_COMMANDS);
+  const words = asked?.name === 'ask' ? heard : withoutFiller(heard);
+  const command = asked?.name === 'ask' ? asked : route(words, SPOKEN_COMMANDS);
   if (command?.name === 'ask') return askTutor(questionAfterAsk(words), say);
   if (command?.name === 'tutor') return openTutor(say);
   if (command?.name === 'close-tutor') return closeTutor(say);
@@ -137,7 +180,7 @@ export async function runCommand(words: string, say: (text: string) => Promise<v
     leaveTutor();
     return readInAudible(audible.said, audible.place, say);
   }
-  if (!command && info.followUp) return askTutor(words.trim(), say, false);
+  if (!command && info.followUp) return askTutor(heard.trim(), say, false);
   // any other command leaves the tutor (the Talk sheet Hands-free opened is put away) and does what it says
   leaveTutor();
   if (command?.name === 'help') return say(HELP_SPOKEN);
@@ -152,5 +195,5 @@ export async function runCommand(words: string, say: (text: string) => Promise<v
   if (command?.name === 'next-chapter') return readNeighbour(1, say);
   if (command?.name === 'previous-chapter') return readNeighbour(-1, say);
   if (command?.name === 'back-verse') return backOneVerse() ? undefined : say(NOTHING_READ);
-  return say(NOT_UNDERSTOOD);
+  return say(notUnderstood(heard));
 }
