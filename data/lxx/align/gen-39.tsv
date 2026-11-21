@@ -1,0 +1,220 @@
+ref	run	text	g	mark	confidence
+Gen.39:1	1	was	-		0.80
+Gen.39:1	2	down	-		0.80
+Gen.39:1	3	of	-		0.80
+Gen.39:1	4	the captain of	-		0.80
+Gen.39:1	5	an	14		0.80
+Gen.39:1	6	bought	6		0.80
+Gen.39:1	7	the	-		0.80
+Gen.39:1	8	of the	-		0.80
+Gen.39:1	9	down	-		0.80
+Gen.39:2	1	the	-		0.80
+Gen.39:2	2	he	-		0.80
+Gen.39:2	3	a prosperous	8		0.80
+Gen.39:2	4	he	-		0.80
+Gen.39:2	5	his	15		0.80
+Gen.39:3	1	master	2,3		0.80
+Gen.39:3	1	knew	0		0.80
+Gen.39:3	2	the	-		0.80
+Gen.39:3	3	was	-		0.80
+Gen.39:3	4	the	-		0.80
+Gen.39:3	5	his	16		0.80
+Gen.39:3	6	whatever	10,11		0.80
+Gen.39:3	7	happens to	-		0.80
+Gen.39:4	1	in	-		0.80
+Gen.39:4	2	presence of	-		0.80
+Gen.39:4	3	was well-pleasing	8		0.80
+Gen.39:4	4	set him	12		0.80
+Gen.39:4	5	his	15	unsure	0.50
+Gen.39:4	6	that	20		0.80
+Gen.39:4	7	had	-		0.80
+Gen.39:4	8	into the	24		0.80
+Gen.39:4	9	of	-		0.80
+Gen.39:5	1	came	-		0.80
+Gen.39:5	2	pass	-		0.80
+Gen.39:5	3	that	3		0.80
+Gen.39:5	4	set	4		0.80
+Gen.39:5	5	his	7		0.80
+Gen.39:5	6	that	13		0.80
+Gen.39:5	7	had, that the	-		0.80
+Gen.39:5	8	of	-		0.80
+Gen.39:5	9	sake;	-		0.80
+Gen.39:5	10	the	-		0.80
+Gen.39:5	11	of the	-		0.80
+Gen.39:5	12	possessions	31,32		0.80
+Gen.39:5	13	his	39	unsure	0.50
+Gen.39:6	1	he	-		0.80
+Gen.39:6	2	that	3		0.80
+Gen.39:6	3	had	-		0.80
+Gen.39:6	4	the	-		0.80
+Gen.39:6	5	of	-		0.80
+Gen.39:6	6	he knew	11		0.80
+Gen.39:6	7	of anything that belonged	12,13,15		0.80
+Gen.39:6	8	him,	-		0.80
+Gen.39:6	8	save	16		0.80
+Gen.39:6	9	in	26		0.80
+Gen.39:6	10	exceedingly	32		0.80
+Gen.39:6	11	in countenance.	30,31		0.80
+Gen.39:7	1	came	-		0.80
+Gen.39:7	2	pass	-		0.80
+Gen.39:7	3	things,	3,4		0.80
+Gen.39:7	3	that	6		0.80
+Gen.39:7	3	his master's wife	8,9,10,11		0.80
+Gen.39:7	3	cast	7		0.80
+Gen.39:8	1	would	3		0.80
+Gen.39:8	2	to	6		0.80
+Gen.39:8	3	master's wife,	7,8,9		0.80
+Gen.39:8	4	of	-		0.80
+Gen.39:8	5	master	12,13		0.80
+Gen.39:8	6	his	21	unsure	0.50
+Gen.39:8	7	has	-		0.80
+Gen.39:8	8	things that belong	26		0.80
+Gen.39:9	1	this	4		0.80
+Gen.39:9	1	house	5,6		0.80
+Gen.39:9	1	there is nothing above	1,2,7		0.80
+Gen.39:9	2	has anything been kept back	10,13		0.80
+Gen.39:9	3	wife—how	19,23		0.80
+Gen.39:9	3	then	22		0.80
+Gen.39:9	3	shall I	-		0.80
+Gen.39:9	4	wicked thing,	25,26,27,28		0.80
+Gen.39:9	5	against	32,33		0.80
+Gen.39:10	1	she	-		0.80
+Gen.39:10	2	with	-		0.80
+Gen.39:10	3	by	5		0.80
+Gen.39:10	4	he listened	9		0.80
+Gen.39:10	5	to	-		0.80
+Gen.39:10	6	to	-		0.80
+Gen.39:10	7	so as to be	14		0.80
+Gen.39:11	1	it came	-		0.80
+Gen.39:11	2	pass	-		0.80
+Gen.39:11	3	a certain	2		0.80
+Gen.39:11	4	that	-		0.80
+Gen.39:11	5	house	8,9		0.80
+Gen.39:11	5	to	-		0.80
+Gen.39:11	6	business,	12,13		0.80
+Gen.39:11	7	there	-		0.80
+Gen.39:11	8	no	16		0.80
+Gen.39:11	9	of	-		0.80
+Gen.39:12	1	caught hold of him by	1,3		0.80
+Gen.39:12	2	and	-		0.80
+Gen.39:12	3	having	-		0.80
+Gen.39:12	4	his	12	unsure	0.50
+Gen.39:12	5	in her hands,	-		0.80
+Gen.39:12	6	forth.	18		0.80
+Gen.39:13	1	came	-		0.80
+Gen.39:13	2	pass,	-		0.80
+Gen.39:13	3	she	-		0.80
+Gen.39:13	4	had	-		0.80
+Gen.39:13	5	his	6	unsure	0.50
+Gen.39:13	6	her	10	unsure	0.50
+Gen.39:13	7	forth,	17		0.80
+Gen.39:14	1	that she	0	unsure	0.50
+Gen.39:14	2	those that	2		0.80
+Gen.39:14	3	to	-		0.80
+Gen.39:14	4	he has	-		0.80
+Gen.39:14	5	in to us a	13		0.80
+Gen.39:14	6	to	-		0.80
+Gen.39:14	7	us—he	-		0.80
+Gen.39:14	8	in	-		0.80
+Gen.39:14	9	with a loud	28		0.80
+Gen.39:15	1	when	0,2		0.80
+Gen.39:15	2	lifted	-		0.80
+Gen.39:15	3	my	7		0.80
+Gen.39:15	4	having	-		0.80
+Gen.39:15	5	his	13	unsure	0.50
+Gen.39:15	6	forth	-		0.80
+Gen.39:16	1	So she	0	unsure	0.50
+Gen.39:16	2	the master	8,9		0.80
+Gen.39:17	1	she	-		0.80
+Gen.39:17	2	to	-		0.80
+Gen.39:17	3	to	-		0.80
+Gen.39:17	4	words,	4,5		0.80
+Gen.39:17	5	you	-		0.80
+Gen.39:17	6	in	-		0.80
+Gen.39:17	7	us,	-		0.80
+Gen.39:17	8	in	-		0.80
+Gen.39:17	9	to	-		0.80
+Gen.39:17	10	to	-		0.80
+Gen.39:17	11	will	-		0.80
+Gen.39:17	12	you.	-		0.80
+Gen.39:18	1	he	-		0.80
+Gen.39:18	2	up	-		0.80
+Gen.39:18	2	my	5	unsure	0.50
+Gen.39:18	3	having	-		0.80
+Gen.39:18	4	his	11	unsure	0.50
+Gen.39:18	5	departed	-		0.80
+Gen.39:19	1	it came	-		0.80
+Gen.39:19	2	pass,	-		0.80
+Gen.39:19	3	his master	4,5		0.80
+Gen.39:19	4	all	-		0.80
+Gen.39:19	5	of	-		0.80
+Gen.39:19	6	wife,	-		0.80
+Gen.39:19	6	that she	-		0.80
+Gen.39:19	7	servant	19,20		0.80
+Gen.39:19	7	to	-		0.80
+Gen.39:19	8	that he was	-		0.80
+Gen.39:19	8	very angry.	23,24		0.80
+Gen.39:20	1	his master	2,3		0.80
+Gen.39:20	2	where	14,15		0.80
+Gen.39:20	3	are	-		0.80
+Gen.39:21	1	the	-		0.80
+Gen.39:21	2	down	-		0.80
+Gen.39:21	3	upon him;	-		0.80
+Gen.39:21	4	favor	12		0.80
+Gen.39:21	4	in the sight of	13		0.80
+Gen.39:21	5	keeper of the prison.	-		0.80
+Gen.39:22	1	keeper of the prison	-		0.80
+Gen.39:22	2	into the	6		0.80
+Gen.39:22	3	of	-		0.80
+Gen.39:22	4	prisoners	12		0.80
+Gen.39:22	5	many	-		0.80
+Gen.39:22	6	were	-		0.80
+Gen.39:22	7	things whatever they	-		0.80
+Gen.39:22	8	he did them.	-		0.80
+Gen.39:23	1	of	-		0.80
+Gen.39:23	2	keeper of the prison	-		0.80
+Gen.39:23	3	nothing,	0,7		0.80
+Gen.39:23	4	things	-		0.80
+Gen.39:23	5	in the	-		0.80
+Gen.39:23	6	of	-		0.80
+Gen.39:23	7	whatever things	22		0.80
+Gen.39:23	8	the	-		0.80
+Gen.39:23	9	made them	-		0.80
+Gen.39:23	10	prosper	26		0.80
+Gen.39:1	fix	the captain of the guard,	12,13		0.80
+Gen.39:4	fix	in the presence of	4,5		0.80
+Gen.39:12	fix	she caught hold of him by	1,2,3		0.80
+Gen.39:14	fix	Hebrew	15		0.80
+Gen.39:14	fix	servant	14		0.80
+Gen.39:15	fix	lifted up	6		0.80
+Gen.39:17	fix	Hebrew	14		0.80
+Gen.39:17	fix	servant,	12		0.80
+Gen.39:18	fix	departed forth.	19,20		0.80
+Gen.39:19	fix	all the words	6,7,11		0.80
+Gen.39:19	fix	of his wife,	8,9,10		0.80
+Gen.39:21	fix	chief keeper of the prison.	15		0.80
+Gen.39:22	fix	chief keeper of the prison	3		0.80
+Gen.39:23	fix	chief keeper of the prison	3		0.80
+Gen.39:3	fix	happens to do.	12		0.80
+Gen.39:4	fix	to him;	10		0.80
+Gen.39:4	fix	had	21		0.80
+Gen.39:5	fix	for Joseph's sake;	23,24		0.80
+Gen.39:6	fix	had	4		0.80
+Gen.39:6	fix	of anything that belonged to	12,13,15		0.80
+Gen.39:14	fix	and I cried	25,26		0.80
+Gen.39:14	fix	mock us—he	16,17		0.80
+Gen.39:15	fix	forth out.	21		0.80
+Gen.39:22	fix	as many as	13		0.80
+Gen.39:22	fix	things whatever they	19		0.80
+Gen.39:23	fix	knew nothing,	0,1,4,7		0.80
+Gen.39:23	fix	all things	8		0.80
+Gen.39:23	fix	made them to prosper	26		0.80
+Gen.39:5	fix	it came to pass	0		0.80
+Gen.39:5	fix	his house,	7,8,9		0.80
+Gen.39:7	fix	it came to pass	1		0.80
+Gen.39:7	fix	his master's wife	8,9,10,11,12		0.80
+Gen.39:7	fix	her eyes	13,14,15		0.80
+Gen.39:11	fix	it came to pass	0		0.80
+Gen.39:13	fix	it came to pass,	1		0.80
+Gen.39:13	fix	her hands,	10,11,12		0.80
+Gen.39:19	fix	it came to pass,	0		0.80
