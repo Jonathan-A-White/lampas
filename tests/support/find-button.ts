@@ -9,15 +9,16 @@ const labelOf = (button: Element): string => (button.getAttribute('aria-label') 
 
 const matches = (name: string | RegExp, label: string): boolean => (typeof name === 'string' ? label === name : name.test(label));
 
-export function queryButton(name: string | RegExp): HTMLElement | null {
-  const found = [...document.querySelectorAll<HTMLElement>('button, [role="button"]')].filter((b) => matches(name, labelOf(b)));
+export function queryButton(name: string | RegExp, root: ParentNode = document): HTMLElement | null {
+  const found = [...root.querySelectorAll<HTMLElement>('button, [role="button"]')].filter((b) => matches(name, labelOf(b)));
   if (found.length > 1) throw new Error(`${found.length} buttons are named ${String(name)}`);
   return found[0] ?? null;
 }
 
-export async function findButton(name: string | RegExp): Promise<HTMLElement> {
+/** `root` narrows the search to one box (the Verse view): it is read each time, so a box that is redrawn is looked in again. Pass a function for a box that may not be there yet. */
+export async function findButton(name: string | RegExp, root?: ParentNode | (() => ParentNode)): Promise<HTMLElement> {
   return waitFor(() => {
-    const button = queryButton(name);
+    const button = queryButton(name, typeof root === 'function' ? root() : root);
     if (!button) throw new Error(`no button named ${String(name)}`);
     return button;
   });

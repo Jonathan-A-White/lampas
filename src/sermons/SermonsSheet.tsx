@@ -408,7 +408,9 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
       }}
       heading={
         <>
-          <h2 className="text-xl font-semibold">{title}</h2>
+          <h2 className="text-xl font-semibold" data-themes-read={chips === undefined ? undefined : ''}>
+            {title}
+          </h2>
           {chip ? (
             <button type="button" data-theme-back onClick={() => window.history.back()} className="min-h-11 rounded-lg pr-3 text-base font-medium text-accent">
               ‹ Back to the sheet
