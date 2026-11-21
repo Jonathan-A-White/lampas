@@ -88,7 +88,7 @@ test('choosing Morning RePhil shows its oldest episode on Today, Watch opens the
   expect(newest.id).not.toBe(oldest.id);
 });
 
-test('with Logos Off Morning RePhil can be chosen and shows, Seen moves Today to the next episode, and the backup row is there (mw-r9xo1pj.2)', async ({ page }) => {
+test('with Logos Off Morning RePhil can be chosen and shows, Seen moves Today to the next episode, and the backup row is not there, for Today shows no backup with Logos Off (mw-r9xo1pj.2, mw-r9xo1pj.11)', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings?group=daily');
   const daily = page.locator('section[data-section="daily"]');
@@ -96,8 +96,8 @@ test('with Logos Off Morning RePhil can be chosen and shows, Seen moves Today to
   const backup = daily.getByRole('group', { name: 'When all Morning RePhil are seen', exact: true });
   await expect(backup).toHaveCount(0);
   await picker.getByRole('radio', { name: 'Morning RePhil (Brookfield First)', exact: true }).click();
-  await expect(backup).toBeVisible();
-  await expect(backup.getByRole('radio', { name: /Morning and Evening/ })).toHaveAttribute('aria-checked', 'true');
+  await expect(picker.getByRole('radio', { name: 'Morning RePhil (Brookfield First)', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await expect(backup).toHaveCount(0);
 
   await page.goto('/#/today');
   const devotional = page.getByRole('region', { name: 'Devotional', exact: true });

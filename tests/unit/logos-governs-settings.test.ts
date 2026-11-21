@@ -76,6 +76,21 @@ describe('the Daily rows that exist only to open Logos', () => {
     expect(drawn(picked)).not.toContain('todaysDevotional');
   });
 
+  it('hides When all Morning RePhil are seen with Logos Off, whichever devotional is chosen: Today shows no backup then (mw-r9xo1pj.11)', async () => {
+    const read = async (logos: 'on' | 'off', devotional: string): Promise<Record<string, string>> => {
+      await db.settings.bulkPut([{ key: 'resource.logos', value: logos }, { key: 'devotional', value: devotional }]);
+      return { ...(await readValues()), languages: 'both', greekInterest: '5', hebrewInterest: '5', depth: '5' };
+    };
+    const drawn = (values: Record<string, string>) => visibleRows(values, '').map((r) => r.key);
+    expect(drawn(await read('off', 'rephil:morning'))).not.toContain('morningRephilBackup');
+    expect(drawn(await read('off', 'random'))).not.toContain('morningRephilBackup');
+    // Logos On: drawn while Random or Morning RePhil is chosen, as before
+    expect(drawn(await read('on', 'rephil:morning'))).toContain('morningRephilBackup');
+    expect(drawn(await read('on', 'random'))).toContain('morningRephilBackup');
+    // the order row is a Morning RePhil row with no Logos in it: it stays
+    expect(drawn(await read('off', 'rephil:morning'))).toContain('morningRephilOrder');
+  });
+
   it('are drawn while Logos is On', () => {
     const on = keysOf({ 'resource.logos': 'on', devotional: 'random' });
     for (const key of DAILY) expect(on).toContain(key);

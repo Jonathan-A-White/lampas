@@ -124,7 +124,7 @@ function ImportYoutubeHistory() {
   );
 }
 
-/** Morning RePhil order: which episode is next, the oldest one he has not heard or the newest (shown while Which devotional is Random or Morning RePhil). */
+/** Morning RePhil order: which episode is next, the oldest one he has not heard or the newest (shown while Which devotional is Random or Morning RePhil and Logos is On: with Logos Off Today shows no backup, mw-r9xo1pj.11). */
 export const MorningRephilOrderControl: Control = ({ row }) => {
   const order = useSetting(morningRephilOrderSetting);
   return (
@@ -145,7 +145,7 @@ export const MorningRephilOrderControl: Control = ({ row }) => {
   );
 };
 
-/** When all Morning RePhil are seen: the Logos devotional Today shows then (shown while Which devotional is Random or Morning RePhil). The ones on his shelf, and the one chosen now, in the shared searchable list. */
+/** When all Morning RePhil are seen: the Logos devotional Today shows then (shown while Which devotional is Random or Morning RePhil and Logos is On: with Logos Off Today shows no backup, mw-r9xo1pj.11). The ones on his shelf, and the one chosen now, in the shared searchable list. */
 export const MorningRephilBackupControl: Control = ({ row }) => {
   const backup = useSetting(morningRephilBackupSetting);
   const owned = useLiveQuery(ownedResources, []);

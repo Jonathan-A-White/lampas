@@ -71,6 +71,10 @@ export const devotionalSetting = defineSetting<string>({
 export const LOGOS_RANDOM_KEY = 'devotional.logosRandom';
 export const logosRandom: Dependency = { key: LOGOS_RANDOM_KEY, shown: (value) => value === 'on' };
 
+/** The key of the dependency the Morning RePhil backup hangs from (no setting of its own, read in rows.ts readValues): 'on' while Which devotional is Random or Morning RePhil and the Logos switch is On, since with Logos Off Today shows no backup (mw-r9xo1pj.11). */
+export const LOGOS_REPHIL_KEY = 'devotional.logosRephil';
+export const logosRephil: Dependency = { key: LOGOS_REPHIL_KEY, shown: (value) => value === 'on' };
+
 export const devotionalDrawSetting = defineSetting<string>({
   key: 'devotionalDraw',
   default: ALL_TICKED,
@@ -140,8 +144,8 @@ export const morningRephilBackupSetting = defineSetting<string>({
   section: 'daily',
   label: 'When all Morning RePhil are seen',
   hint: 'Today shows it instead.',
-  help: `The Logos devotional Today shows once you have seen every Morning RePhil episode, until a new one is posted; Morning and Evening (${DEFAULT_BACKUP}) to start. It follows Logos: with Logos Off Today says every episode is seen.`,
-  dependsOn: { key: 'devotional', shown: (value) => value === RANDOM || value === MORNING_REPHIL_ID },
+  help: `The Logos devotional Today shows once you have seen every Morning RePhil episode, until a new one is posted; Morning and Evening (${DEFAULT_BACKUP}) to start. It shows only while Logos is On: with Logos Off Today says you have heard every episode and none is shown instead.`,
+  dependsOn: logosRephil,
 });
 
 export const dailyTicksSetting = piece(
