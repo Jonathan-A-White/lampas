@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.323
+_2026-11-21_
+- Fixed: A theme that both topic books name now shows once on a verse's Themes line, with the sermons of both.
+
 ## 0.7.322
 _2026-11-21_
 - Fixed: "In Logos" under a verse is no longer cut off to "In Log" on a narrow phone.
