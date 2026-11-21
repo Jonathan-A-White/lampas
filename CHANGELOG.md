@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.321
+_2026-11-21_
+- Fixed: Tapping an English word in the Septuagint's Genesis 37 to 39 opens that word's Greek in the Word sheet instead of the whole verse.
+
 ## 0.7.320
 _2026-11-21_
 - New: Play all and a reference's Play now remember where you stopped, and offer Resume from that verse after you leave and come back.

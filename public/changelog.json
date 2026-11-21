@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.321",
+    "date": "2026-11-21",
+    "story": "mw-u2w5klk.349.47",
+    "kind": "fixed",
+    "text": "Tapping an English word in the Septuagint's Genesis 37 to 39 opens that word's Greek in the Word sheet instead of the whole verse."
+  },
+  {
     "version": "0.7.320",
     "date": "2026-11-21",
     "story": "mw-5r3p30.1236",
