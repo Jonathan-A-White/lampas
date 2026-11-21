@@ -3,17 +3,23 @@
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { SermonsDoor } from '../../src/sermons/SermonsDoor';
 import { SermonsHost } from '../../src/sermons/SermonsSheet';
 import { closeSermons } from '../../src/sermons/openSermons';
-import { isVideoAddress, opensNewTab, rowHref, webHref } from '../../src/sermons/openWeb';
+import { creditAddress, isLogosAddress, isVideoAddress, opensNewTab, rowHref, webHref } from '../../src/sermons/openWeb';
 import { openWebSetting } from '../../src/settings/definitions/sermons';
 import { isTalkable, ROWS, rowOf } from '../support/settings';
 import { getSetting, setSetting } from '../../src/settings/store';
-import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
+import { setSermonSources } from '../../src/sermons';
+import { sourceOf as testSourceOf } from '../support/sermon-sources';
+import { forgetTestSermons, registerTestSermons, TEST_ROWS } from '../support/test-sermons';
+
+const testSermonRow = () => TEST_ROWS.rom[1];
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 16; SM-S938B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36';
 const DESKTOP = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
@@ -124,15 +130,80 @@ describe('a video address (mw-qtu3zvz.62): YouTube and Subsplash open as they ar
   });
 });
 
+const LOGOS_ROW = 'https://ref.ly/logosres/LLS%3AGRGLRSRMNRCH?art=12';
+const LOGOS_INTENT = `intent://ref.ly/logosres/LLS%3AGRGLRSRMNRCH?art=12#Intent;scheme=https;package=com.logos.androidlogos;S.browser_fallback_url=${encodeURIComponent(LOGOS_ROW)};end`;
+
+describe('a Logos address (mw-qtu3zvz.86): the Logos app opens it, never Firefox, and nothing asks', () => {
+  // Package: Logos Bible, https://play.google.com/store/apps/details?id=com.logos.androidlogos (the Play listing; Faithlife's community post of Android Suite links the same id)
+  it('knows a ref.ly address, and not a look-alike', () => {
+    expect(isLogosAddress(LOGOS_ROW)).toBe(true);
+    expect(isLogosAddress('https://ref.ly/x')).toBe(true);
+    expect(isLogosAddress('https://ref.ly.evil.example/x')).toBe(false);
+    expect(isLogosAddress('https://notref.ly/x')).toBe(false);
+    expect(isLogosAddress('logosres:logos-1;ref=bible:Ro5.8')).toBe(false);
+    expect(isLogosAddress('nonsense')).toBe(false);
+  });
+
+  it.each(['firefox', 'browser'] as const)('is an intent naming the Logos app, the https address its fallback, on Android with %s chosen', (choice) => {
+    expect(webHref(LOGOS_ROW, choice, true)).toBe(LOGOS_INTENT);
+    expect(webHref(LOGOS_ROW, choice, true)).not.toContain('org.mozilla.firefox');
+  });
+
+  it('is the plain https address off Android', () => {
+    expect(webHref(LOGOS_ROW, 'firefox', false)).toBe(LOGOS_ROW);
+    expect(webHref(LOGOS_ROW, 'browser', false)).toBe(LOGOS_ROW);
+  });
+
+  it('keeps the page’s own #fragment in the fallback only', () => {
+    expect(webHref('https://ref.ly/logosres/LLS%3AX#top', 'browser', true)).toBe(
+      `intent://ref.ly/logosres/LLS%3AX#Intent;scheme=https;package=com.logos.androidlogos;S.browser_fallback_url=${encodeURIComponent('https://ref.ly/logosres/LLS%3AX#top')};end`,
+    );
+  });
+});
+
+describe('the Firefox intent (mw-qtu3zvz.86): names the package and a fallback, so Android asks nothing', () => {
+  it('is intent://host/path#Intent;scheme=https;package=org.mozilla.firefox;S.browser_fallback_url=...;end', () => {
+    const href = webHref('https://www.ccel.org/ccel/spurgeon/sermons1.i.html', 'firefox', true);
+    expect(href).toMatch(/^intent:\/\/www\.ccel\.org\/ccel\/spurgeon\/sermons1\.i\.html#Intent;/);
+    expect(href).toContain(';scheme=https;');
+    expect(href).toContain(';package=org.mozilla.firefox;');
+    expect(href).toContain(';S.browser_fallback_url=https%3A%2F%2Fwww.ccel.org%2Fccel%2Fspurgeon%2Fsermons1.i.html;');
+    expect(href.endsWith(';end')).toBe(true);
+    expect(opensNewTab(href)).toBe(false);
+  });
+});
+
 describe('rowHref', () => {
-  it('leaves a Logos row alone, even with Firefox chosen on Android', () => {
+  it('leaves a Logos app link (logosres:) alone, even with Firefox chosen on Android', () => {
     const logos = { opensIn: 'logos' as const, open: { url: 'logosres:logos-1;ref=bible:Ro5.8', fallback: 'https://ref.ly/logosres/logos-1?ref=bible.Ro5.8' } };
     expect(rowHref(logos, 'firefox', true)).toBe('logosres:logos-1;ref=bible:Ro5.8');
-    expect(rowHref({ ...logos, open: { url: 'https://ref.ly/x' } }, 'firefox', true)).toBe('https://ref.ly/x');
+  });
+
+  it('opens a Logos row (its ref.ly address) in the Logos app on Android, not in Firefox', () => {
+    const row = { opensIn: 'logos' as const, open: { url: LOGOS_ROW } };
+    expect(rowHref(row, 'firefox', true)).toBe(LOGOS_INTENT);
+    expect(rowHref(row, 'browser', true)).toBe(LOGOS_INTENT);
+    expect(rowHref(row, 'firefox', false)).toBe(LOGOS_ROW);
+    expect(opensNewTab(rowHref(row, 'firefox', true))).toBe(false);
   });
 
   it('turns a web row’s address', () => {
     expect(rowHref({ opensIn: 'web', open: { url: ADDR } }, 'firefox', true)).toBe(INTENT);
+  });
+});
+
+describe('creditAddress (mw-qtu3zvz.86): a Logos archive’s credit opens the archive, not the Logos home page', () => {
+  it('is the ref.ly address of the archive’s first resource for a source that has resources', () => {
+    expect(creditAddress({ homepage: 'https://www.logos.com/', resources: ['LLS:GRGLRSRMNRCH'] })).toBe('https://ref.ly/logosres/LLS%3AGRGLRSRMNRCH');
+  });
+
+  it('is the homepage for a source with none', () => {
+    expect(creditAddress({ homepage: 'https://www.youtube.com/@x' })).toBe('https://www.youtube.com/@x');
+    expect(creditAddress({ homepage: 'https://www.ccel.org/', resources: [] })).toBe('https://www.ccel.org/');
+  });
+
+  it('opens in the Logos app on Android through webHref', () => {
+    expect(webHref(creditAddress({ homepage: 'https://www.logos.com/', resources: ['LLS:GRGLRSRMNRCH'] }), 'firefox', true)).toMatch(/^intent:\/\/ref\.ly\/logosres\/LLS%3AGRGLRSRMNRCH#Intent;scheme=https;package=com\.logos\.androidlogos;/);
   });
 });
 
@@ -176,5 +247,41 @@ describe('the Sermons sheet', () => {
     const sheet = await open();
     await act(() => new Promise<void>((resolve) => setTimeout(resolve, 100)));
     expect(hrefs(sheet)[0]).toBe('https://sermons.test/testsermons/love');
+  });
+
+  it('gives a Logos row (a ref.ly address) the Logos app intent on Android, with either choice, and never the Firefox one', async () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(ANDROID);
+    const logosRow = { ...testSermonRow(), open: { url: 'https://ref.ly/logosres/LLS%3AGRGLRSRMNRCH?art=12' }, opensIn: 'logos' as const };
+    setSermonSources([testSourceOf('testsermons', 'Test Sermons', { rom: [logosRow] })]);
+    for (const choice of ['firefox', 'browser'] as const) {
+      await setSetting(openWebSetting, choice);
+      const sheet = await open();
+      await waitFor(() => expect(hrefs(sheet)[0]).toMatch(/^intent:\/\/ref\.ly\/logosres\/LLS%3AGRGLRSRMNRCH\?art=12#Intent;scheme=https;package=com\.logos\.androidlogos;S\.browser_fallback_url=/));
+      expect(hrefs(sheet)[0]).not.toContain('org.mozilla.firefox');
+      expect(sheet.querySelector('a[data-sermon-row]')?.getAttribute('target')).toBeNull();
+      cleanup();
+      closeSermons();
+    }
+  });
+});
+
+describe('the sweep (mw-qtu3zvz.86): every sermon link goes through the one webHref', () => {
+  const read = (file: string): string => readFileSync(resolve(__dirname, '../../src', file), 'utf8');
+
+  it('the Sermons sheet’s rows and credits take their href from openWeb', () => {
+    const sheet = read('sermons/SermonsSheet.tsx');
+    expect(sheet).toMatch(/useRowHref\(\)\(row\)/);
+    expect(sheet).toMatch(/useWebHref\(\)\(creditAddress\(source\)\)/);
+    expect(sheet).not.toMatch(/href=\{source\.homepage\}/);
+  });
+
+  it('the tutor’s Sermon chip takes its href from rowHref', () => {
+    expect(read('TutorLinks.tsx')).toMatch(/href=\{rowHref\(group\.sermon, openWeb, onAndroid\(\)\)\}/);
+  });
+
+  it('webHref, rowHref and the hooks are the only makers of an intent: they alone name a package', () => {
+    const withPackage = ['sermons/openWeb.ts'];
+    for (const file of ['sermons/SermonsSheet.tsx', 'TutorLinks.tsx', 'settings/controls/resources.tsx', 'settings/controls/sermons.tsx']) expect(read(file)).not.toMatch(/package=/);
+    expect(withPackage.every((file) => /package=/.test(read(file)))).toBe(true);
   });
 });
