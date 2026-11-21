@@ -3,7 +3,7 @@
 // devotional (opens Logos at the day, or is the day's Morning RePhil episode with a Watch link, mw-qtu3zvz.15). A piece shows only while its Settings > Daily switch is On AND the settings it rests on are (Listen in Audible needs an
 // Audio Bible). A tap on the plan's place opens src/plan/PlacePicker.tsx, where he says where he is (I'm at the Reader's chapter, or Pick a place), with Undo for a few seconds. With Tick boxes On each piece has a box HE ticks (nothing ticks by itself, not even by opening the link); Off, Today is a plain list of links. A link tap is also kept as
 // 'opened' for the local date (dailyStore.ts). With nothing On, Today explains what it could hold, each with a link to the Settings row that turns it on; once he changes a Daily row
-// that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front.
+// that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front; Review's and Memorize's day figures are asked again then too, and at his local midnight (useLatestLiveQuery, mw-indx1x6.58).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
 import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, tickedDevotionals } from '../data/daily/devotionals';
