@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.334",
+    "date": "2026-11-22",
+    "story": "mw-qtu3zvz.239",
+    "kind": "fixed",
+    "text": "The Sermons sheet no longer lists Logos sermon books at verses where they have no sermon, and so no longer opens Logos at a blank page with 'Navigation failed'."
+  },
+  {
     "version": "0.7.333",
     "date": "2026-11-22",
     "story": "mw-5r3p30.1242",

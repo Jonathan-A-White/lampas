@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.334
+_2026-11-22_
+- Fixed: The Sermons sheet no longer lists Logos sermon books at verses where they have no sermon, and so no longer opens Logos at a blank page with 'Navigation failed'.
+
 ## 0.7.333
 _2026-11-22_
 - Fixed: when the car's Bluetooth microphone goes quiet partway through a drive, 'Hey Lampas' moves to the phone's own microphone instead of going deaf, and a phone call no longer leaves it stuck on a silent input.
