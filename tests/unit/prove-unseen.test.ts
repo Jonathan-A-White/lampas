@@ -14,10 +14,10 @@ import { drillSteps, enoughToProve } from '../../src/data/grammar/drillIt';
 import { drillSeed } from '../../src/data/grammar/drillSeed';
 import { buildDrillItemsRequest, isFetchable, checkedItems, seenKey, type AnsweredItem, type DrillItemsRequest } from '../../src/data/grammar/fetchedItems';
 import { ideaOf, LADDER } from '../../src/data/grammar/ladder';
-import { ideaOfAny } from '../../src/data/grammar/ladders';
+import { ideaOfAny, ladderLangOf } from '../../src/data/grammar/ladders';
 import { HEBREW_LADDER } from '../../src/data/grammar/hebrew/ladder';
 import type { GrammarQuestion } from '../../src/data/grammar/questions';
-import { countFetchedItems, saveFetchedItems } from '../../src/data/repositories';
+import { countFetchedItems, listUnseenFetched, saveFetchedItems, setGoal } from '../../src/data/repositories';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { DrillItScreen } from '../../src/DrillItScreen';
 import { keepStocked, whenIdle } from '../../src/review/moreItems';
@@ -322,6 +322,48 @@ describe('Drill it promises questions only when an ask goes out', () => {
     expect(postern.received).toEqual([]);
   });
 
+  // mw-indx1x6.119: Drill it opened again while its first ask is out waited for that ask and then sent its own, for an idea the first ask had already stocked
+  /** A mill that writes two good tap questions for each idea asked, on the verses the request sent, whichever they are: the right word is the verse's use of the idea, the others its words of other parsings. */
+  const twoGoodQuestions = (input: Record<string, unknown>): { status: 'answered'; answer: { items: AnsweredItem[] } } => {
+    const request = input as unknown as DrillItemsRequest;
+    const items = request.ideas.flatMap((idea) =>
+      request.verses
+        .filter((v) => v.uses.some((u) => u.idea === idea.id))
+        .slice(0, 2)
+        .map((v, i): AnsweredItem => {
+          const right = v.uses.find((u) => u.idea === idea.id)?.form as string;
+          const others = [...new Set((v.greek ?? '').split(' ').filter((w) => !v.uses.some((u) => u.form === w)))].slice(0, 3);
+          return { idea: idea.id, kind: 'tap-form', ref: v.ref, prompt: `Which word shows ${idea.title}? (${i + 1})`, options: [right, ...others], right };
+        }),
+    );
+    return { status: 'answered', answer: { items } };
+  };
+
+  it('asks the mill once when Drill it is opened again while the first ask is out', async () => {
+    const postern = withMill();
+    await setGoal('Read 1 John 1');
+    postern.replyFor = twoGoodQuestions;
+    const release = Promise.withResolvers<void>();
+    postern.holds['drill-items'] = release.promise;
+    openOn(SHORT, [chapter]);
+    await screen.findByTestId('drill-more-on-the-way');
+    await waitFor(() => expect(postern.calls.length).toBeGreaterThan(0));
+    cleanup();
+    openOn(SHORT, [chapter]);
+    await screen.findByTestId('drill-more-on-the-way');
+    release.resolve();
+    await whenIdle();
+    // the second screen's own ask, if it makes one, starts a moment after the first one is answered
+    await new Promise((r) => setTimeout(r, 150)); // a real-time wait: a window in which no second ask must go out
+    await whenIdle();
+    expect(postern.received.filter((r) => r.grist.kind === 'drill-items')).toHaveLength(1);
+    expect((await listUnseenFetched(SHORT)).length).toBeGreaterThanOrEqual(2);
+    cleanup();
+    openOn(SHORT, [chapter]);
+    expect(await screen.findByTestId('grammar-prompt')).toBeInTheDocument();
+    await whenIdle();
+  });
+
   // every idea of the Greek and the Hebrew ladder whose built top step is too short to prove on, as a fresh phone draws it
   const short = [...LADDER, ...HEBREW_LADDER].flatMap((idea) =>
     [[chapter], []].flatMap((p) => {
@@ -343,6 +385,41 @@ describe('Drill it promises questions only when an ask goes out', () => {
     if (promised) expect(postern.received.length).toBeGreaterThan(0);
     else expect(screen.queryByTestId('drill-cannot-ask')).not.toBeNull();
     cleanup();
+  });
+
+  // every fetchable idea whose built top step is short: opening Drill it twice while the first ask is out sends one grist when that ask stocked the idea
+  const fetchableShort = short.filter((s) => s.passage.length > 0 && isFetchable(ideaOfAny(s.id)) && ladderLangOf(s.id) !== 'hbo');
+  const sweptStocked: string[] = [];
+  it('has fetchable short ideas to sweep', () => {
+    expect(fetchableShort.length).toBeGreaterThan(3);
+  });
+  it.each(fetchableShort.map((s) => [s.id, s] as const))('%s: opening Drill it twice while an ask is out sends one grist', async (_name, one) => {
+    const postern = withMill();
+    await Promise.all([db.settings.clear(), db.reviews.clear()]);
+    await setGoal('Read 1 John 1');
+    postern.replyFor = twoGoodQuestions;
+    const release = Promise.withResolvers<void>();
+    postern.holds['drill-items'] = release.promise;
+    openOn(one.id, one.passage);
+    await settledOn();
+    await waitFor(() => expect(postern.calls.length).toBeGreaterThan(0));
+    cleanup();
+    openOn(one.id, one.passage);
+    await settledOn();
+    release.resolve();
+    await whenIdle();
+    await new Promise((r) => setTimeout(r, 150)); // a real-time wait: a window in which no second ask must go out
+    await whenIdle();
+    const stocked = (await listUnseenFetched(one.id)).length >= 2;
+    // an idea whose first answer the phone kept enough of is not asked a second time; one it kept too little of may be
+    if (stocked) {
+      sweptStocked.push(one.id);
+      expect(postern.received.filter((r) => r.grist.kind === 'drill-items')).toHaveLength(1);
+    }
+    cleanup();
+  });
+  it('swept ideas the first ask stocked', () => {
+    expect(sweptStocked.length).toBeGreaterThan(0);
   });
 });
 
