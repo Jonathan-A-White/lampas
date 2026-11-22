@@ -2,7 +2,7 @@
 // the page of sermon sources it opens (src/sermons/SermonSourcesPage.tsx, mw-qtu3zvz.92) and the Sermons door that follows the switches (src/sermons/useSermons.ts). The registry of sources is four of the tests' own
 // (tests/support/sermon-sources.ts), put in SOURCES by the mock below (the settings are made from SOURCES when the app loads); the third needs Logos and the fourth is a list made from Greg Laurie's Logos archive.
 import '@testing-library/react/dont-cleanup-after-each';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
@@ -12,7 +12,10 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { entriesOf } from '../../src/resources/catalogue';
+import { ownedResources, shelfOf } from '../../src/data/repositories';
+import { activeSources, enabledSources, setSermonSources } from '../../src/sermons';
 import { closeSermons } from '../../src/sermons/openSermons';
+import type { SermonSource } from '../../src/sermons/types';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { writeSetting } from '../../tests/support/settings';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -119,8 +122,27 @@ const chosen = async (name: string): Promise<string[]> =>
 const byTest = (id: string): HTMLElement | null => document.querySelector<HTMLElement>(`[data-testid="${id}"]`);
 
 
+// The sign that the sources have answered: each source the Verse view asks counts its asks and its answers, so a step that says 'no door' waits until every ask made has been answered, not for a clock (as sermons.steps.tsx does,
+// mw-qtu3zvz.218). Asks and answers are counted from the opening of the chapter.
+let asked = 0;
+let answered = 0;
+const watched = (source: SermonSource): SermonSource => ({
+  ...source,
+  sermonsFor: async (...args) => {
+    asked += 1;
+    try {
+      return await source.sermonsFor(...args);
+    } finally {
+      answered += 1;
+    }
+  },
+});
+
 async function openOn(title: string): Promise<void> {
   await reset();
+  setSermonSources(activeSources().map(watched));
+  asked = 0;
+  answered = 0;
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
   if (!book) throw new Error(`no book ${title}`);
@@ -587,7 +609,15 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the door now reads {string}', viewHas);
     When('he also turns {string} Off in Settings', turnOffInSettings);
     Then('the Verse view has no Sermons door', async () => {
-      await sleep(150);
+      // the switch's write has landed and the Verse view has asked again: a source it asks is waited for until it has answered, and an answer is drawn after the source has given it, with the shelf and his import read
+      expect(await enabledSources()).toHaveLength(0);
+      await act(async () => {
+        await Promise.all([shelfOf(), ownedResources()]);
+      });
+      await waitFor(() => expect(answered).toBe(asked));
+      await act(async () => {
+        await Promise.all([shelfOf(), ownedResources()]);
+      });
       expect(doorsIn(viewEl())).toHaveLength(0);
     });
   });
