@@ -557,7 +557,9 @@ describeFeature(feature, ({ Scenario }) => {
     };
     Given('Lampas is opened on Romans 8 with Immersive reader On', () => open({ immersive: 'on' }));
     Then('there is no place line', async () => {
-      await sleep(50);
+      // the Reader has taken its setting and the bars are in view (open() waited for data-immersive): the line is wanted only while they are away, so it is not drawn
+      await inView();
+      expect(reader()).not.toHaveAttribute('data-place-below');
       expect(placeLine()).toBeNull();
     });
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
