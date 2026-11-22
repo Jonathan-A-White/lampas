@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { startAtAllIn } from './greek-start';
 import { shot } from './shot';
+import { handleClicksLate } from './late-clicks';
 import { openUnlocked } from './unlocked';
 
 import { toolsHeading, openTool } from './openSettings';
@@ -59,9 +60,13 @@ test('closing the app and opening it again puts him back, and Back walks the pla
 });
 
 test('a reload keeps him on the same screen, verse and view', async ({ page }) => {
+  await handleClicksLate(page, '[data-verse-number]');
   await openUnlocked(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Verse 5', exact: true }).click();
+  // the place is kept after the press is handled: a reload straight after the click can cut it off (mw-fnvjof.17.246); wait on the kept place
+  await expect(page.locator('[data-verse="5"]')).toHaveAttribute('data-selected', 'true');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('lampas.lastRoute'))).toContain('v=5');
   await page.reload();
   await expect(page.locator('[data-verse="5"]')).toHaveAttribute('data-selected', 'true');
 });
