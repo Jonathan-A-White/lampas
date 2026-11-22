@@ -54,13 +54,18 @@ async function open(start: string, thenReader: boolean, select = true): Promise<
   await waitFor(() => expect(window.location.hash).toContain('v=2'));
 }
 
-/** The phone's Back, and the page settling after it. */
+/** The phone's Back, and the page settling after it: the popstate it brings has been heard (the sheets' own listeners run on it). */
 async function back(): Promise<void> {
+  const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
   await act(async () => {
     window.history.back();
-    await new Promise((resolve) => setTimeout(resolve, 30));
+    await popped;
   });
 }
+
+/** Waits until the history is on an entry no sheet owns: every sheet's entry (and each move's) has been taken off. */
+const waitForNoSheetEntry = (): Promise<void> =>
+  waitFor(() => expect((window.history.state as { sheet?: number } | null)?.sheet ?? 0).toBe(0));
 
 const verseEl = (n: number): HTMLElement => {
   const el = document.querySelector<HTMLElement>(`[data-verse="${n}"]`);
@@ -98,7 +103,7 @@ async function dismiss(which: 'grammar' | 'idea', way: string): Promise<void> {
   } else if (way === 'a tap outside') await user.click(screen.getByTestId(`${which}-backdrop`));
   else if (way === 'Escape') await user.keyboard('{Escape}');
   else throw new Error(`no way called ${way}`);
-  await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+  await waitForNoSheetEntry();
 }
 
 const noSheetOpen = (): void => {
@@ -271,7 +276,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('he taps Done on the Grammar sheet', async () => {
       await user.click(within(grammarSheet() as HTMLElement).getByRole('button', { name: 'Done' }));
       await waitFor(() => expect(grammarSheet()).toBeNull());
-      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+      await waitForNoSheetEntry();
     });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
@@ -299,7 +304,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('he taps Done on the word sheet', async () => {
       await user.click(within(wordSheet() as HTMLElement).getByRole('button', { name: 'Done' }));
       await waitFor(() => expect(wordSheet()).toBeNull());
-      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+      await waitForNoSheetEntry();
     });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {
@@ -373,13 +378,13 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     And('he taps outside the word sheet', async () => {
       await user.click(screen.getByTestId('sheet-backdrop'));
       await waitFor(() => expect(wordSheet()).toBeNull());
-      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+      await waitForNoSheetEntry();
     });
     And('he taps "For" in verse 2 again', () => tapsWord('For', 2));
     And('he presses Escape', async () => {
       await user.keyboard('{Escape}');
       await waitFor(() => expect(wordSheet()).toBeNull());
-      await act(() => new Promise((resolve) => setTimeout(resolve, 30)));
+      await waitForNoSheetEntry();
     });
     When('he goes back', back);
     Then('the Settings screen is open', async () => {

@@ -46,7 +46,7 @@ const lastCopied = (): string => {
 const row = (): HTMLElement => document.querySelector<HTMLElement>('[data-copy-row]')!;
 const sleep = (ms: number) =>
   act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, ms));
+    await new Promise((resolve) => setTimeout(resolve, ms)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
   });
 
 // The row's ROW_MS timer on a clock the test moves (mw-indx1x6.25): 'after two seconds' and 'two more seconds' slept on the real clock, and a loaded
@@ -60,15 +60,15 @@ const stopRowClock = () => {
 const startRowClock = () => {
   stopRowClock();
   const clock = { now: 0, timers: new Map<unknown, { fn: () => void; at: number }>(), spies: [] as { mockRestore: () => void }[] };
-  const realSet = globalThis.setTimeout;
+  const realSet = globalThis.setTimeout; // clock: the row clock keeps the real timer for every delay but ROW_MS
   const realClear = globalThis.clearTimeout;
   clock.spies.push(
-    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: TimerHandler, ms?: number, ...args: unknown[]) => {
+    vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: TimerHandler, ms?: number, ...args: unknown[]) => { // clock: the row clock's step: only a timer set for ROW_MS is held back
       if (ms !== ROW_MS || typeof fn !== 'function') return realSet(fn, ms, ...args);
       const id = {};
       clock.timers.set(id, { fn: () => fn(...args), at: clock.now + ms });
       return id;
-    }) as unknown as typeof setTimeout),
+    }) as unknown as typeof setTimeout), // clock: the type of the row clock's setTimeout
     vi.spyOn(globalThis, 'clearTimeout').mockImplementation(((id?: unknown) => {
       if (clock.timers.delete(id)) return;
       realClear(id as Parameters<typeof clearTimeout>[0]);

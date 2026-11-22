@@ -20,6 +20,54 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { findSettingsHeading } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
+// Every pull the screen starts is kept until it ends, so a step waits on the pull itself (pullsSettled), not on a guess at how long one takes.
+const pulls = vi.hoisted(() => new Set<Promise<unknown>>());
+vi.mock('../../src/services/requestStatus', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/services/requestStatus')>();
+  return {
+    ...actual,
+    pullStatuses: (options: Parameters<typeof actual.pullStatuses>[0]) => {
+      const pull = actual.pullStatuses(options);
+      pulls.add(pull);
+      const done = () => void pulls.delete(pull);
+      pull.then(done, done);
+      return pull;
+    },
+  };
+});
+/** Resolves when no pull is on its way (the one a screen that just went was making ends at once: it is aborted). */
+async function pullsSettled(): Promise<void> {
+  while (pulls.size > 0) await Promise.allSettled([...pulls]);
+}
+
+/**
+ * The poll timers of a scenario that must see that nothing is asked for a stretch of time (the screen's own: the ones set for HELD_POLL_MS) are kept here and run by
+ * tick(), a fake clock's step, instead of by the wall clock; every other timer, the waits of findBy* among them, stays real (vi's fake timers would stop those).
+ */
+const HELD_POLL_MS = 7_001;
+const held = new Map<number, () => void>();
+let heldId = 0;
+const realSetTimeout = globalThis.setTimeout; // clock: the held clock keeps the real timer for every delay but HELD_POLL_MS
+const realClearTimeout = globalThis.clearTimeout;
+function holdPollTimers(): void {
+  held.clear();
+  vi.spyOn(globalThis, 'setTimeout').mockImplementation(((run: TimerHandler, ms?: number, ...args: unknown[]) => { // clock: the held clock's step: a poll timer is kept for tick() to run
+    if (ms !== HELD_POLL_MS) return realSetTimeout(run as () => void, ms, ...args);
+    heldId += 1;
+    held.set(heldId, run as () => void);
+    return heldId as unknown as ReturnType<typeof setTimeout>; // clock: the held timer's handle
+  }) as unknown as typeof setTimeout); // clock: the type of the held clock's setTimeout
+  vi.spyOn(globalThis, 'clearTimeout').mockImplementation(((id?: number) => {
+    if (typeof id === 'number' && held.delete(id)) return;
+    realClearTimeout(id);
+  }) as unknown as typeof clearTimeout);
+}
+function releasePollTimers(): void {
+  vi.mocked(globalThis.setTimeout).mockRestore?.(); // clock: the held clock is put away
+  vi.mocked(globalThis.clearTimeout).mockRestore?.();
+  held.clear();
+}
+
 const user = userEvent.setup();
 const PHONE_KEY = '00'.repeat(31) + '02';
 const STRANGER_KEY = '00'.repeat(31) + '09';
@@ -31,6 +79,7 @@ let txids = new Map<string, string>();
 let clock = 0;
 
 afterAll(async () => {
+  releasePollTimers();
   cleanup();
   clearBus();
   vi.unstubAllGlobals();
@@ -47,16 +96,17 @@ function statusFor(txid: string, status: string, more: Record<string, unknown> =
 
 type Seed = { kind: string; text: string; sentAt: number; words?: string };
 
-async function openWith(summaries: string[], pollMs = 20): Promise<void> {
+async function openWith(summaries: string[], pollMs = 20, fakeClock = false): Promise<void> {
   let sentAt = 1_780_000_000_000;
-  await openWithRows(summaries.map((summary) => ({ kind: 'tutor-ask', text: summary, sentAt: (sentAt += 60_000) })), pollMs);
+  await openWithRows(summaries.map((summary) => ({ kind: 'tutor-ask', text: summary, sentAt: (sentAt += 60_000) })), pollMs, fakeClock);
 }
 
 /** Opens the screen over `seeds`: a tutor-ask keeps its words as the summary, every other kind as its text, as src/services/feedback.ts keeps them. */
-async function openWithRows(seeds: Seed[], pollMs = 20): Promise<void> {
+async function openWithRows(seeds: Seed[], pollMs = 20, fakeClock = false): Promise<void> {
+  releasePollTimers();
   cleanup();
   // the screen of the last scenario may be in the middle of a pull: let it end before the tables are cleared
-  await new Promise((r) => setTimeout(r, 100));
+  await pullsSettled();
   clearBus();
   vi.unstubAllGlobals();
   window.localStorage.clear();
@@ -75,8 +125,19 @@ async function openWithRows(seeds: Seed[], pollMs = 20): Promise<void> {
     txids.set(text, txidOf(text));
     await keepRequest({ txid: txidOf(text), kind, ...(kind === 'tutor-ask' ? { summary: text, ...(words ? { words } : {}) } : { text }), app_version: '0.1.80', sentAt });
   }
+  if (fakeClock) holdPollTimers();
   render(<RequestsScreen />);
   await screen.findByRole('heading', { name: 'Your requests', level: 1 });
+}
+
+/** Runs `polls` rounds of the screen's held poll timers, each round's pull ended before the next (a scenario opened with fakeClock). */
+async function tick(polls: number): Promise<void> {
+  for (let round = 0; round < polls; round += 1) {
+    const due = [...held.values()];
+    held.clear();
+    for (const run of due) run();
+    await pullsSettled();
+  }
 }
 
 const row = (summary: string): HTMLElement => {
@@ -320,7 +381,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('the request {string} reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
     And('he leaves the screen and opens it again', async () => {
       cleanup();
-      await new Promise((r) => setTimeout(r, 60));
+      await pullsSettled();
       before = fake.sinces.length;
       render(<RequestsScreen />);
     });
@@ -333,15 +394,16 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
 
   Scenario('The pulling stops when he leaves the screen', ({ Given, When, Then }) => {
     let calls = 0;
-    Given(open, (_, summary: string) => openWith([summary]));
+    Given(open, (_, summary: string) => openWith([summary], HELD_POLL_MS, true));
     When('he leaves the screen', async () => {
       await pulledSince(0);
       cleanup();
-      await new Promise((r) => setTimeout(r, 100));
+      await pullsSettled();
       calls = fake.calls.length;
     });
     Then('the backend is not asked again', async () => {
-      await new Promise((r) => setTimeout(r, 200));
+      // ten polls on the held clock: a screen that kept polling would have asked
+      await tick(10);
       expect(fake.calls.length).toBe(calls);
     });
   });
@@ -354,7 +416,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     And('the first pull has been made', async () => {
       await pulledSince(0);
       // let that pull end (it reads the empty page and writes nothing), so the next one is the visible page's
-      await new Promise((r) => setTimeout(r, 100));
+      await pullsSettled();
     });
     When('the phone hides Lampas', () => setHidden(true));
     And('the mill sends the status {string} for {string}', (_, status: string, summary: string) => {
@@ -365,7 +427,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     Then('one pull is made at once', async () => {
       // the next tick is a minute away: only becoming visible can explain a pull now
       await pulledSince(before);
-      await new Promise((r) => setTimeout(r, 200));
+      await pullsSettled();
       // one pull reads pages until one is empty: the page with the record, then the empty page after it
       expect(fake.sinces.slice(before)).toEqual([0, 1]);
     });
@@ -374,17 +436,18 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
 
   Scenario('While the app is hidden the screen pulls nothing', ({ Given, When, Then, And }) => {
     let calls = 0;
-    Given(open, (_, summary: string) => openWith([summary]));
+    Given(open, (_, summary: string) => openWith([summary], HELD_POLL_MS, true));
     And('the first pull has been made', () => pulledSince(0));
     When('the phone hides Lampas', async () => {
       setHidden(true);
       // a pull already on its way when the page was hidden may end; none starts after it
-      await new Promise((r) => setTimeout(r, 100));
+      await pullsSettled();
       calls = fake.calls.length;
     });
     And('the mill sends the status {string} for {string}', (_, status: string, summary: string) => sendStatus(summary, status));
     Then('the backend is not asked while the app is hidden', async () => {
-      await new Promise((r) => setTimeout(r, 300));
+      // fifteen polls on the held clock
+      await tick(15);
       expect(fake.calls.length).toBe(calls);
     });
     And('the request {string} still reads {string}', (_, summary: string, line: string) => readsAs(summary, line));
