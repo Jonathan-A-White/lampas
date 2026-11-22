@@ -121,4 +121,13 @@ describe('grammarExamples for a Hebrew chapter', () => {
     expect(grammarExamples(gen1, 'aorist')).toEqual([]);
     expect(grammarExamples(gen1, 'Piel')[0]?.word.p).toContain('Piel');
   });
+
+  it('gives the other places of the tapped word’s own lemma when no other lemma of the chapter has the term (mw-5r3p30.1232)', () => {
+    const tapped = gen1.verses[0].g.find((w) => hebrewParseSegments(gen1.parse[w.p] ?? '').some((x) => x.term === 'Qal'));
+    if (!tapped) throw new Error('no Qal word in Genesis 1:1');
+    const mine: Chapter = { ...gen1, verses: gen1.verses.map((v) => ({ ...v, g: v.g.filter((w) => w.l === tapped.l) })) };
+    const found = grammarExamples(mine, 'Qal', tapped);
+    expect(found.length).toBeGreaterThan(0);
+    expect(found.every((e) => e.word !== tapped && e.word.l === tapped.l)).toBe(true);
+  });
 });
