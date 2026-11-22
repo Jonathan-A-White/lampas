@@ -96,7 +96,7 @@
   },
   "features/steps/maps.steps.tsx": {
     "local/no-real-time-wait": {
-      "count": 5
+      "count": 4
     }
   },
   "features/steps/offline-copy.steps.tsx": {

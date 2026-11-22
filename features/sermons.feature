@@ -40,6 +40,13 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     Then the Verse view has no Sermons door
 
   @uc-sermons @greek
+  Scenario: A chapter whose source is slow to answer has no door until it has answered, and then still none
+    Given Lampas is opened on "Romans 8" with a source that can be slow to answer
+    And the source is held
+    When he taps verse 1
+    Then the Verse view has no Sermons door once the source has answered
+
+  @uc-sermons @greek
   Scenario: Sources that answer nothing leave no door
     Given Lampas is opened on "Romans 5" with sources that have no sermons
     When he taps verse 8

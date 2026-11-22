@@ -47,6 +47,8 @@ const rowOf = (name: string) => screen.findByRole('group', { name });
 const labelsOf = async (name: string): Promise<string[]> => within(await rowOf(name)).getAllByRole('button').map((b) => b.textContent ?? '');
 const chosenIn = async (name: string): Promise<string[]> =>
   (await labelsOf(name)).filter((_, i) => within(screen.getByRole('group', { name })).getAllByRole('button')[i].getAttribute('aria-pressed') === 'true');
+/** Waits for the chips of the row `name` to show `expected` chosen: the row is drawn before its chips take the saved value, so a read made once at the open can see none chosen (mw-qtu3zvz.177). */
+const chosenAre = (name: string, expected: string[]) => waitFor(async () => expect(await chosenIn(name)).toEqual(expected));
 /** Opens the More help of the row named `name` and gives the help it shows. */
 const helpOf = async (name: string): Promise<string> => {
   const row = (await rowOf(name)).closest<HTMLElement>('[data-setting]');
@@ -73,7 +75,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Settings is open at Reading with nothing chosen', () => openReading());
     Then('Variants offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, chosen: string) => {
       expect(await labelsOf('Variants')).toEqual([a, b, c]);
-      expect(await chosenIn('Variants')).toEqual([chosen]);
+      await chosenAre('Variants', [chosen]);
     });
     And('Variants has its help line', async () => {
       const text = await helpOf('Variants');
@@ -90,7 +92,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the setting "variants" is kept as <kept>', () => savedAs('variants', row.kept));
     When('Settings is opened again at Reading', reopen);
     Then('Variants has <choice> chosen', async () => {
-      expect(await chosenIn('Variants')).toEqual([row.choice]);
+      await chosenAre('Variants', [row.choice]);
     });
   });
 
@@ -99,7 +101,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     When('he chooses {string} in the group {string}', choose);
     Then('Witnesses offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, chosen: string) => {
       expect(await labelsOf('Witnesses')).toEqual([a, b, c]);
-      expect(await chosenIn('Witnesses')).toEqual([chosen]);
+      await chosenAre('Witnesses', [chosen]);
     });
     And('Witnesses has its help line naming the Byzantine split, Nestle-Aland 27/28 and ECM', async () => {
       const text = await helpOf('Witnesses');
@@ -115,7 +117,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the setting "variantWitnesses" is kept as <kept>', () => savedAs('variantWitnesses', row.kept));
     When('Settings is opened again at Reading', reopen);
     Then('Witnesses has <choice> chosen', async () => {
-      expect(await chosenIn('Witnesses')).toEqual([row.choice]);
+      await chosenAre('Witnesses', [row.choice]);
     });
   });
 
@@ -130,7 +132,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Given('Settings is open at Reading with nothing chosen', () => openReading());
     Then('Offer the lessons offers {string} and {string} with {string} chosen', async (_, a: string, b: string, chosen: string) => {
       expect(await labelsOf('Offer the lessons')).toEqual([a, b]);
-      expect(await chosenIn('Offer the lessons')).toEqual([chosen]);
+      await chosenAre('Offer the lessons', [chosen]);
     });
     And('there is a row {string} that opens the lessons', async (_, name: string) => {
       expect(await screen.findByRole('button', { name })).toBeTruthy();
@@ -143,7 +145,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the setting {string} is kept as {string}', (_, key: string, value: string) => savedAs(key, value));
     When('Settings is opened again at Reading', reopen);
     Then('Offer the lessons has {string} chosen', async (_, choice: string) => {
-      expect(await chosenIn('Offer the lessons')).toEqual([choice]);
+      await chosenAre('Offer the lessons', [choice]);
     });
   });
 
@@ -164,7 +166,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('Read as offers {string}, {string} and {string} with {string} chosen', async (_, a: string, b: string, c: string, chosen: string) => {
       // the sets and the set in force land in two draws: each is waited for (mw-qtu3zvz.151)
       await waitFor(async () => expect(await buttons('Read as')).toEqual([a, b, c]));
-      await waitFor(async () => expect(await chosenIn('Read as')).toEqual([chosen]));
+      await chosenAre('Read as', [chosen]);
     });
     And('the Reading sets row says {string}', async (_, line: string) => {
       const row = (await rowOf('Read as')).closest<HTMLElement>('[data-setting]');
@@ -178,7 +180,7 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
     Then('the setting {string} is kept as {string}', (_, key: string, value: string) => savedAs(key, value));
     When('Settings is opened again at Reading', reopen);
     Then('Read as has {string} chosen', async (_, choice: string) => {
-      await waitFor(async () => expect(await chosenIn('Read as')).toEqual([choice]));
+      await chosenAre('Read as', [choice]);
     });
   });
 
@@ -195,9 +197,9 @@ describeFeature(feature, ({ Scenario, ScenarioOutline }) => {
   const offers = async (names: string[], chosen: string) => {
     await waitFor(async () => expect(await buttons('Read as')).toEqual(names));
     // the sets and the set in force are two reads that land in two draws: wait for the chosen one as isChosen does (mw-qtu3zvz.92 found the one read racing the other)
-    await waitFor(async () => expect(await chosenIn('Read as')).toEqual([chosen]));
+    await chosenAre('Read as', [chosen]);
   };
-  const isChosen = (choice: string) => waitFor(async () => expect(await chosenIn('Read as')).toEqual([choice]));
+  const isChosen = (choice: string) => chosenAre('Read as', [choice]);
   const cancel = () => tap(null, 'Cancel');
   const noOwnButtons = () => {
     expect(screen.queryByRole('button', { name: 'Rename', exact: true })).toBeNull();

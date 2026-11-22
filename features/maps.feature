@@ -92,6 +92,14 @@ Feature: Maps on the screen (mw-zbjgn3r.2, docs/maps.md)
     When he taps the map's picture again
     Then the picture is shown at the width of the box
 
+  Scenario: The sheet opens before a slow source has answered, and a step that taps a map waits for its row
+    Given Lampas is opened on "Genesis 10" with a source that can be slow to answer
+    When he taps verse 19
+    And he taps "Maps · 6" while its source is slow to answer
+    Then the sheet is headed "Maps for Genesis 10:19"
+    And he taps the map "Sodom and Gomorrah Are Destroyed" before the source answers
+    Then the map is headed "Sodom and Gomorrah Are Destroyed" with the period "2100 to 2090 BC"
+
   Scenario: Back from the map returns to the sheet, then to the verse
     Given Lampas is opened on "Genesis 10"
     When he taps verse 19
