@@ -21,3 +21,18 @@ export const themeSourceSetting = (source: Pick<ThemeSource, 'id' | 'name' | 'de
     label: source.name.replace(/ \([^)]*\)$/, ''),
     hint: source.describe,
   });
+
+/**
+ * The themes he has hidden (mw-qtu3zvz.91, docs/sermons.md 'Hiding a theme'): their names a line each, '' where none is. 'Hide this theme' on a theme's sermon list adds one and 'Show again' under Settings > Study resources > Themes > Hidden themes takes it off
+ * (src/themes/index.ts hideTheme, showTheme). A hidden theme is left out of every verse's Themes line, of 'On the same theme', of the search's themes and of the tutor's. Not in the registry or DEFINITIONS (the names are his own to
+ * look after, as Open web sermons in is): a row of its own, rows.ts HIDDEN_THEMES_ROW.
+ */
+export const hiddenThemesSetting = defineSetting<string>({
+  key: 'themesHidden',
+  default: '',
+  allowed: { kind: 'text', valid: () => true, example: 'Atonement\nGrace', note: 'the names of the hidden themes, one a line, or empty for none' },
+  parse: (raw) => (typeof raw === 'string' ? raw : ''),
+  section: 'themes',
+  label: 'Hidden themes',
+  hint: 'Themes you hid from a verse\'s Themes line. Show again brings one back.',
+});

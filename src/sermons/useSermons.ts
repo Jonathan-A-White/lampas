@@ -9,6 +9,7 @@ import { passagesOf } from '../data/passage';
 import { ownedResources, shelfOf, type ShelfState } from '../data/repositories';
 import { subscribe } from '../events/bus';
 import { addressOffered } from '../data/owned';
+import { HIDDEN_KEY } from '../themes/hidden';
 import { useLogosOn } from '../useLogosOn';
 import { search, sermonsServiceKnown, type ServiceHit, type ServiceThemeSermon } from '../services/sermons';
 import { activeSources, latestFor, serviceThemeSermons, sermonsFor, type SermonPlace, type SermonsFound } from './index';
@@ -179,7 +180,7 @@ export function useThemeSermons(keys: readonly string[]): ReadonlyMap<string, Th
  */
 export function useTalkSermons(place: SermonPlace | null): ListedSermon[] | undefined {
   const [switches, setSwitches] = useState(0);
-  useEffect(() => subscribe('setting-changed', (event) => (event.key.startsWith('sermons.') || event.key.startsWith('themes.') || event.key === 'resource.logos') && setSwitches((n) => n + 1)), []);
+  useEffect(() => subscribe('setting-changed', (event) => (event.key.startsWith('sermons.') || event.key.startsWith('themes.') || event.key === HIDDEN_KEY || event.key === 'resource.logos') && setSwitches((n) => n + 1)), []);
   const key = place ? `${place.book}.${place.chapter}.${place.from ?? ''}.${switches}` : '';
   const [held, setHeld] = useState<{ key: string; rows: ListedSermon[] } | undefined>();
   useEffect(() => {

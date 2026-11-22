@@ -34,6 +34,7 @@ import { LOGOS_RANDOM_KEY, LOGOS_REPHIL_KEY } from './definitions/daily';
 import { MORNING_REPHIL_ID, RANDOM } from '../data/daily/devotionals';
 import { handSetting } from './hand';
 import { openWebSetting } from './definitions/sermons';
+import { hiddenThemesSetting } from './definitions/themes';
 import { helpPlain } from './helpText';
 import { forgetGrownSermonEntries, growSermonEntries, isGrownSermon, SETTINGS, settingOf, type SectionId } from './registry';
 import { knownSermonSources, onKnownSermonSources } from '../sermons/known';
@@ -252,9 +253,11 @@ export const SERMON_SOURCES_ROW: SettingsRow = {
 };
 /** Whether a row is a sermon source's own switch ('sermons.<id>'): found by the search and changed by the tutor, drawn on the page of sermon sources and not on the Study resources page. */
 export const isSermonSourceRow = (row: Pick<SettingsRow, 'key'>): boolean => row.key.startsWith('sermons.');
+/** Hidden themes (mw-qtu3zvz.91, hiddenThemesSetting): the list of themes he hid from a verse's Themes line, each with 'Show again'; kept out of the registry like Open web sermons in, so the tutor does not read or change it (isTalkable). It follows the theme lists' own switches. */
+export const HIDDEN_THEMES_ROW: SettingsRow = { key: hiddenThemesSetting.key, label: hiddenThemesSetting.label, hint: hiddenThemesSetting.hint, help: hiddenThemesSetting.help, section: hiddenThemesSetting.section };
 const OPEN_WEB_ROW: SettingsRow = { key: openWebSetting.key, label: openWebSetting.label, hint: openWebSetting.hint, help: openWebSetting.help, section: openWebSetting.section };
 // Study resources reads: the switches, then the three Bibles in Logos (PART_ROWS follow the setting's own row)
-const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, SERMON_SOURCES_ROW, OPEN_WEB_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
+const unordered: readonly SettingsRow[] = [...SETTINGS.flatMap((s) => (s.key === 'logosBible' ? [rowOfSetting(s), ...PART_ROWS] : [rowOfSetting(s)])), HAND_ROW, HIDDEN_THEMES_ROW, SERMON_SOURCES_ROW, OPEN_WEB_ROW, READING_SET_ROW, OFFLINE_COPY_ROW, ...REQUESTS, DEVELOPER, ...LINKS];
 
 /** The Tools screen's doors (mw-5r3p30.754, his words of 2026-10-24: "things that interact with the Bible but are not the Bible themselves", not settings): the Library, his Verse lists, Memorize, Paradigms, Words and Review, in the order
  *  the screen draws them. They are rows of the section 'tools', which no Settings group holds, so no Settings page draws them and the tutor neither reads nor changes them (isTalkable); they stay rows so that the same
@@ -292,7 +295,7 @@ export function orderResourceRows(rows: readonly SettingsRow[], level: GreekLeve
 }
 
 /** Whether the tutor is told the row as a row of its own: a setting or a resource switch, not a link, a sermon source's switch (sermons.<id>: the tutor is told ONE summary line for all of them, tutorSettings.ts, mw-qtu3zvz.236), a request box, the door to his library, the door to the sermon sources, Read as, Keep on this phone, Hand, the Old Testament's and the Apocrypha's Bible in Logos or Developer mode. */
-export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== SERMON_SOURCES_ROW.key && key !== OPEN_WEB_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isSermonSourceRow({ key });
+export const isTalkable = (key: string): boolean => !key.startsWith('link.') && !key.startsWith('request.') && key !== 'developer' && key !== 'library' && key !== READING_SET_ROW.key && key !== OFFLINE_COPY_ROW.key && key !== HAND_ROW.key && key !== SERMON_SOURCES_ROW.key && key !== OPEN_WEB_ROW.key && key !== HIDDEN_THEMES_ROW.key && !PART_ROWS.some((r) => r.key === key) && !isSermonSourceRow({ key });
 
 export const rowOf = (key: string): SettingsRow | undefined => ROWS.find((r) => r.key === key);
 

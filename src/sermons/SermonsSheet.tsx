@@ -13,7 +13,8 @@ import { listFact, useSheetTalk, type SheetTalk } from '../tutor/sheetTalk';
 import { pushSheetStep, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useOnline } from '../ui/online';
-import { sourceOf as themeSourceOf } from '../themes';
+import { hideTheme, sourceOf as themeSourceOf } from '../themes';
+import { isHidden } from '../themes/hidden';
 import { sermonsServiceKnown } from '../services/sermons';
 import { useAiAllowed } from '../gate/licenceContext';
 import { AskForPreacher } from './AskForPreacher';
@@ -27,7 +28,7 @@ import { creditAddress, opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, u
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
 import { rankHits, type FoundRankContext } from './foundRank';
 import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
-import { useSameTheme, useThemeChips, useThemes, type ThemeChip } from './useThemes';
+import { useHiddenThemes, useSameTheme, useThemeChips, useThemes, type ThemeChip } from './useThemes';
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
 /** The second line of a row: the preacher (else the source's `by`, the church, where the preacher is unknown: mw-qtu3zvz.89), the date, and where it opens (a web page needs the internet while the phone is offline). */
@@ -163,10 +164,16 @@ function TopicGroup({ id, label, rows, online }: { id: string; label: string; ro
   );
 }
 
-/** A theme of the Themes line opened: its sermons in the sources that are On, in the index's order (no ranking), under 'Back'. */
-function ThemeView({ chip, online }: { chip: ThemeChip; online: boolean }) {
+/** What 'Hide this theme' says it did (mw-qtu3zvz.91): where the theme is brought back. */
+export const HIDDEN_NOTICE = 'Hidden. Settings > Study resources > Themes brings it back.';
+
+/** A theme of the Themes line opened: 'Hide this theme' (one tap, mw-qtu3zvz.91), then its sermons in the sources that are On, in the index's order (no ranking), under 'Back'. */
+function ThemeView({ chip, online, onHide }: { chip: ThemeChip; online: boolean; onHide: () => void }) {
   return (
     <div data-sermons-part="theme-list" className="pb-3">
+      <button type="button" data-hide-theme onClick={onHide} className="mb-2 min-h-11 rounded-xl border border-line px-3 py-1 text-sm font-medium text-accent active:bg-line">
+        Hide this theme
+      </button>
       <TopicGroup id={`${chip.sources[0]}:${chip.text}`} label={chip.label} rows={chip.rows} online={online} />
     </div>
   );
@@ -260,7 +267,9 @@ function FoundGroup({ query, offline, online, rank }: { query: string; offline: 
   const [open, setOpen] = useState<string | null>(null);
   const pericope = usePericope(rank.place, found.status !== 'idle');
   // mw-qtu3zvz.66: what is on the open verse, its pericope, its chapter or a theme of it comes first (PROVISIONAL, the Governor to confirm); the rest stand in the service's order
-  const hits = found.status === 'found' ? rankHits(found.hits, { ...rank, pericope }) : [];
+  // a theme he has hidden (mw-qtu3zvz.91) is not offered, whatever the search found; until the hidden set is read no theme is
+  const hidden = useHiddenThemes();
+  const hits = found.status === 'found' ? rankHits(found.hits, { ...rank, pericope }).filter((hit) => hit.kind !== 'theme' || (hidden !== undefined && !isHidden(hit.title, hidden))) : [];
   const lists = useThemeSermons(hits.flatMap((hit) => (hit.kind === 'theme' ? [`${hit.source}:${hit.id}`] : [])));
   if (found.status === 'idle') return null;
   const shown = hits.flatMap((hit) => {
@@ -388,11 +397,21 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
   const named = [...new Set([...(chips ?? []).flatMap((c) => c.sources), ...(same?.groups ?? []).map((group) => group.topic.source)])].flatMap((id) => themeSourceOf({ source: id }) ?? []);
   const sameRows = same ? same.groups.reduce((n, group) => n + group.rows.length, 0) : 0;
   const [opened, setOpened] = useState<string | null>(null);
+  // what Hide this theme did, said on the sheet it goes back to (mw-qtu3zvz.91)
+  const [notice, setNotice] = useState<string | null>(null);
   const chip = chips?.find((c) => c.text === opened);
   const step = useRef<(undo: () => void) => void>(() => undefined);
   const openChip = (c: ThemeChip) => {
     step.current(() => setOpened(null));
+    setNotice(null);
     setOpened(c.text);
+  };
+  // one tap: the theme goes (every list that names it, themesFor), the sheet says so and goes back to where it was
+  const hideChip = (c: ThemeChip) => {
+    void hideTheme(c.label).then(() => {
+      setNotice(HIDDEN_NOTICE);
+      window.history.back();
+    });
   };
   const themeCredits = chip ? chip.sources.flatMap((id) => themeSourceOf({ source: id }) ?? []) : [];
   const chipSources = chip ? [...new Set(chip.rows.map((row) => row.source))].flatMap((id) => sourceOf({ source: id }) ?? []) : [];
@@ -418,6 +437,11 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
           ) : (
             <>
               <LatestLine latest={latest} online={online} />
+              {notice ? (
+                <p data-theme-hidden-notice role="status" className="pt-1 text-sm text-muted">
+                  {notice}
+                </p>
+              ) : null}
               {chips ? <ThemesLine chips={chips} onOpen={openChip} /> : null}
               {serviceKnown ? <SearchField query={query} onChange={setQuery} offline={offline} /> : null}
             </>
@@ -427,7 +451,7 @@ function SermonsSheetBody({ place, onClose }: { place: SermonPlace; onClose: () 
     >
       {chip ? (
         <>
-          <ThemeView chip={chip} online={online} />
+          <ThemeView chip={chip} online={online} onHide={() => hideChip(chip)} />
           {[...chipSources, ...themeCredits].map((source) => (
             <Credit key={source.id} source={source} />
           ))}
