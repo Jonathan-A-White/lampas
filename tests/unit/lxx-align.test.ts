@@ -138,6 +138,31 @@ describe('how a word is paired', () => {
     expect(honoured.c).toBeLessThan(0.5);
   });
 
+  it('pairs Κύριος with \'Lord\' and the small-letter κύριον with \'master\' in one verse (Genesis 24:35, mw-u2w5klk.349.27), not both with \'Lord\'', () => {
+    const kyrios = (t: string, p: string): GreekWord => word(t, '', 'κύριος', p);
+    const verse = verseOf('and the Lord has blessed my master greatly,', [
+      kyrios('Κύριος', 'N-NSM'),
+      word('δὲ', 'de', 'δέ', 'CONJ'),
+      word('εὐλόγησεν', 'eulogēsen', 'εὐλογέω', 'V-AAI-3S'),
+      word('τὸν', 'ton', 'ὁ', 'T-ASM'),
+      kyrios('κύριόν', 'N-ASM'),
+      word('μου', 'mou', 'ἐγώ', 'P-1GS'),
+      word('σφόδρα', 'sphodra', 'σφόδρα', 'ADV'),
+    ]);
+    const out = alignVerse(verse, (l) => ({ κύριος: 'lord', εὐλογέω: 'to bless', σφόδρα: 'greatly' })[l] ?? '').verse;
+    const at = (t: string) => out.e.find((c) => c.t === t)!;
+    expect(at('Lord').g).toEqual([0]);
+    expect(at('master').g).toEqual([4]);
+  });
+
+  it('a κύριος with a small letter takes \'master\' over \'Lord\' and one with a capital takes \'Lord\' over \'master\', whatever their places', () => {
+    const gloss = (l: string): string => ({ κύριος: 'lord' })[l] ?? '';
+    const small = alignVerse(verseOf('my master', [word('κυρίου', '', 'κύριος', 'N-GSM')]), gloss).verse;
+    expect(small.e.find((c) => c.t === 'master')?.g).toEqual([0]);
+    const capital = alignVerse(verseOf('the Lord', [word('Κύριος', '', 'κύριος', 'N-NSM')]), gloss).verse;
+    expect(capital.e.find((c) => c.t === 'Lord')?.g).toEqual([0]);
+  });
+
   it('carries the supplied words of Brenton\'s brackets to the chunk they fall in', () => {
     const verse = verseOf('God was good', [word('θεὸς', 'theos', 'θεός', 'N-NSM')], [1]);
     const out = alignVerse(verse, () => 'God').verse;
