@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.329
+_2026-11-22_
+- New: You can hide a single theme from a verse's Themes line, and bring it back from Settings.
+- Fixed: Opening Drill it again while the phone is still waiting for questions no longer asks the mill a second time for the same idea.
+
 ## 0.7.328
 _2026-11-22_
 - New: Ten more of your Logos sermon books (Shedd, Burroughs, Keach, Maclaren, Kuyper, Broadus, The World's Great Sermons, Princeton Sermons, McPherson, Strong) can be switched on in Settings.

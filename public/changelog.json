@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.329",
+    "date": "2026-11-22",
+    "story": "mw-qtu3zvz.91",
+    "kind": "new",
+    "text": "You can hide a single theme from a verse's Themes line, and bring it back from Settings."
+  },
+  {
+    "version": "0.7.329",
+    "date": "2026-11-22",
+    "story": "mw-indx1x6.119",
+    "kind": "fixed",
+    "text": "Opening Drill it again while the phone is still waiting for questions no longer asks the mill a second time for the same idea."
+  },
+  {
     "version": "0.7.328",
     "date": "2026-11-22",
     "story": "mw-qtu3zvz.24",
