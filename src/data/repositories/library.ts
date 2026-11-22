@@ -15,6 +15,7 @@ import { LOGOS_RESOURCES } from '../logosSermonResources';
 import { isOffered } from '../owned';
 import { isListed, matchExport, type MatchResult } from '../../library/matchExport';
 import type { ExportRow } from '../../library/parseExport';
+import Dexie from 'dexie';
 import { db, type ExportedRow, type LibraryRow } from '../db';
 import { getLogosBibles, hasSetBible } from './settings';
 
@@ -485,7 +486,36 @@ export async function importNote(): Promise<ImportNote | undefined> {
 /** The Resource IDs he owns (src/data/owned.ts): those of the kept list, his import. While no list is kept on the device (an import from before the list was kept, or storage cleared) there is nothing to narrow by, so
  *  the books already on his shelf (On or Pinned: he turned them on, or an import did) stay his, and so do those he turned Off from it (Off is no row: OFF_ID remembers them, so the Library page still lists a book
  *  he turned Off and he can turn it back On, mw-5r3p30.1211); no other book is offered. Once a list is kept it alone says (mw-5r3p30.1189). */
-export async function ownedResources(): Promise<ReadonlySet<string>> {
+export function ownedResources(): Promise<ReadonlySet<string>> {
+  // a live query must see the tables read, or it never runs again when the shelf changes: it reads each time (Dexie's own query cache answers a repeat that nothing has written to)
+  if (inLiveQuery()) return readOwned();
+  if (heldOwned && heldOwned.version === shelfVersion) return heldOwned.answer;
+  const answer = readOwned();
+  const held = { version: shelfVersion, answer };
+  heldOwned = held;
+  // a read that failed (the database closed under it) is not kept for the next caller
+  answer.catch(() => {
+    if (heldOwned === held) heldOwned = undefined;
+  });
+  return answer;
+}
+
+/** The shelf's version: one more each time a transaction wrote the shelf or the kept list (Dexie's storagemutated fires as the transaction completes, before the writer's own await returns). Every call of
+ *  `ownedResources` outside a live query between two writes shares one read, where each used to wait its own turn behind the shelf's write transactions (mw-indx1x6.123). */
+let shelfVersion = 0;
+let heldOwned: { version: number; answer: Promise<ReadonlySet<string>> } | undefined;
+Dexie.on('storagemutated', (parts) => {
+  const shelf = `idb://${db.name}/library/`;
+  const list = `idb://${db.name}/exportRows/`;
+  if (Object.keys(parts).some((part) => part.startsWith(shelf) || part.startsWith(list))) shelfVersion++;
+});
+
+/** True while the caller runs inside a Dexie live query (useLiveQuery): the zone Dexie gives its querier carries `subscr`, where the tables it reads are noted. Dexie keeps no public test for it. */
+function inLiveQuery(): boolean {
+  return Boolean((Dexie.Promise as unknown as { PSD?: { subscr?: unknown } }).PSD?.subscr);
+}
+
+async function readOwned(): Promise<ReadonlySet<string>> {
   const kept = await db.exportRows.toArray();
   if (kept.length > 0) return sameSet(kept.map((r) => r.resource));
   const all = await db.library.toArray();

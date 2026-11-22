@@ -13,6 +13,8 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { closeMaps } from '../../src/maps/openMaps';
 import { setResourceOn, setState } from '../../src/data/repositories';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
+import { tapPlaceLine as tapLine } from '../../tests/support/place-line';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
 import { openSettings } from '../../tests/unit/openSettings';
@@ -81,11 +83,11 @@ describeFeature(feature, ({ Scenario }) => {
   const openedWithLogos = (_: unknown, title: string) => openOn(title, false, undefined, 'on');
   const openedWithoutLogos = (_: unknown, title: string) => openOn(title, false, undefined, 'off');
   const tapVerse = async (_: unknown, n: number) => {
-    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const viewHas = async (_: unknown, label: string) => {
-    expect(await within(viewEl()).findByRole('button', { name: label })).toBeVisible();
+    expect(await findButton(label, viewEl)).toBeVisible();
   };
   const viewHasNone = async () => {
     await sleep(100);
@@ -97,15 +99,11 @@ describeFeature(feature, ({ Scenario }) => {
     expect(doorsIn(readerEl())).toHaveLength(0);
   };
   const tapPlaceLine = async () => {
-    await user.click(await waitFor(() => {
-      const line = document.querySelector<HTMLElement>('button[data-place-line]');
-      if (!line) throw new Error('no place line');
-      return line;
-    }));
+    await tapLine();
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapDoor = async (_: unknown, label: string) => {
-    await user.click(await within(viewEl()).findByRole('button', { name: label }));
+    await user.click(await findButton(label, viewEl));
   };
   const headed = async (_: unknown, title: string) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));

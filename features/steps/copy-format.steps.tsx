@@ -16,7 +16,9 @@ import { passageUrl, referenceUrl } from '../../src/nav/links';
 import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { seedHisWords } from '../../tests/support/his-words';
+import { placeLineButton, tapPlaceLine } from '../../tests/support/place-line';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -104,7 +106,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   };
   const tapNumber = async (_: unknown, n: number) => {
-    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapHeading = async (_: unknown, text: string) => {
@@ -114,7 +116,7 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapCopy = async (_: unknown, name: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+    await user.click(await findButton(name, viewEl));
     await waitFor(() => expect(copied).toHaveLength(1));
   };
   const says = async (_: unknown, words: string) => {
@@ -232,7 +234,6 @@ describeFeature(feature, ({ Scenario }) => {
     if (!heading) throw new Error(`no heading ${text}`);
     return within(heading).getByRole('button');
   };
-  const placeLine = () => document.querySelector<HTMLElement>('[data-place-line]')!;
   const readerSays = async (_: unknown, words: string) => {
     expect(await screen.findByText(words, { selector: '[role="status"]' })).toBeInTheDocument();
   };
@@ -271,7 +272,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Holding the place line copies the whole chapter', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults', pages);
     When('he holds the place line', async () => {
-      await holdOn(placeLine());
+      await holdOn(await placeLineButton());
       await waitCopied();
     });
     Then("the phone's clipboard starts with {string}", starts);
@@ -332,7 +333,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A tap on the place line still opens the Verse view', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with Turn pages and When you copy at its defaults', pages);
     When('he taps the place line', async () => {
-      await user.click(placeLine());
+      await tapPlaceLine();
     });
     Then('the Verse view is open and nothing was copied', openedAndNothingCopied);
   });
@@ -384,7 +385,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Holding the place line with Variants shown copies the braces', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on 1 Peter 4 with Variants shown and Turn pages and When you copy at its defaults', peterPages);
     When('he holds the place line', async () => {
-      await holdOn(placeLine());
+      await holdOn(await placeLineButton());
       await waitCopied();
     });
     Then("the phone's clipboard starts with {string}", starts);
@@ -462,7 +463,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
   };
   const tapShare = async () => {
-    await user.click(within(viewEl()).getByRole('button', { name: 'Share', exact: true }));
+    await user.click(await findButton('Share', viewEl));
   };
   const sheet = () => screen.findByRole('dialog', { name: /^Share / });
   const tapPiece = async (_: unknown, row: string) => {
