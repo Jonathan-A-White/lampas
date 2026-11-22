@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.328",
+    "date": "2026-11-22",
+    "story": "mw-qtu3zvz.24",
+    "kind": "new",
+    "text": "Ten more of your Logos sermon books (Shedd, Burroughs, Keach, Maclaren, Kuyper, Broadus, The World's Great Sermons, Princeton Sermons, McPherson, Strong) can be switched on in Settings."
+  },
+  {
+    "version": "0.7.328",
+    "date": "2026-11-22",
+    "story": "mw-6ww.175.103",
+    "kind": "fixed",
+    "text": "The Settings search now finds What Lampas has counted, and tapping it there opens its page."
+  },
+  {
+    "version": "0.7.328",
+    "date": "2026-11-22",
+    "story": "mw-r9xo1pj.9",
+    "kind": "fixed",
+    "text": "With Logos Off, Today no longer offers an Another devotional button that does nothing."
+  },
+  {
     "version": "0.7.327",
     "date": "2026-11-22",
     "story": "mw-rl10piw.70",

@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.328
+_2026-11-22_
+- New: Ten more of your Logos sermon books (Shedd, Burroughs, Keach, Maclaren, Kuyper, Broadus, The World's Great Sermons, Princeton Sermons, McPherson, Strong) can be switched on in Settings.
+- Fixed: The Settings search now finds What Lampas has counted, and tapping it there opens its page.
+- Fixed: With Logos Off, Today no longer offers an Another devotional button that does nothing.
+
 ## 0.7.327
 _2026-11-22_
 - Fixed: Undoing a Hands-free change the tutor made no longer has the tutor then read out that Hands-free is on.
