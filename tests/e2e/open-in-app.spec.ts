@@ -13,6 +13,7 @@ import { menuButton } from './openSettings';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
+import { afterFrames, untilSettled, untilStill } from '../support/settled';
 
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
 test.use({ hasTouch: true, userAgent: ANDROID });
@@ -26,15 +27,18 @@ async function stubApi(page: Page, apps: unknown[]): Promise<void> {
   }, apps);
 }
 
-/** The API answering late, as the real one does: after `ms`. */
-async function stubSlowApi(page: Page, apps: unknown[], ms: number): Promise<void> {
-  await page.addInitScript(
-    ([list, wait]) => {
-      Object.defineProperty(navigator, 'getInstalledRelatedApps', { value: () => new Promise((resolve) => setTimeout(() => resolve(list), wait as number)), configurable: true });
-    },
-    [apps, ms] as const,
-  );
+/** The API answering late, as the real one does: not until the spec calls `answerApi` (the page's own clock and the host's load do not decide when). */
+async function stubSlowApi(page: Page, apps: unknown[]): Promise<void> {
+  await page.addInitScript((list) => {
+    let answer: () => void = () => undefined;
+    const held = new Promise<void>((resolve) => (answer = resolve));
+    Object.assign(window, { answerApi: answer });
+    Object.defineProperty(navigator, 'getInstalledRelatedApps', { value: () => held.then(() => list), configurable: true });
+  }, apps);
 }
+
+/** Lets the stubbed API (stubSlowApi) answer now. */
+const answerApi = (page: Page) => page.evaluate(() => (window as unknown as { answerApi: () => void }).answerApi());
 
 const WEBAPP = [{ platform: 'webapp', url: 'https://lampas.allmymind.org/manifest.webmanifest' }];
 
@@ -69,7 +73,7 @@ for (const phone of PHONES.filter((p) => p.size.width < 400)) {
       // the strip floats over the top of the screen and takes no room from the reading box (mw-5r3p30.1051): it sits at the top edge, under the phone's own inset
       expect(stripBox.y, 'the strip is at the top of the screen').toBeLessThan(view.height / 4);
       // nothing left the page by itself: no top-level navigation to another document or an intent: address, still the app's own origin, and no new tab
-      await page.waitForTimeout(500); // a short hold so an automatic hand-over would have happened
+      await afterFrames(page, 10); // frames of the page, not a time: an automatic hand-over would have been made by now
       expect(navigations.filter((url) => !url.startsWith(origin)), 'left the app').toEqual([]);
       expect(tabs, 'no tab opened by itself').toEqual([]);
       await shot(page, `open-in-app-${phone.name}-${percent}`);
@@ -88,9 +92,9 @@ for (const size of [
   { width: 390, height: 844 },
   { width: 844, height: 390 },
 ]) {
-  test(`${size.width}x${size.height}: the strip arriving after 3 s moves neither verse 28 nor the reading box`, async ({ page }) => {
+  test(`${size.width}x${size.height}: the strip arriving late moves neither verse 28 nor the reading box`, async ({ page }) => {
     await page.setViewportSize(size);
-    await stubSlowApi(page, WEBAPP, 3000);
+    await stubSlowApi(page, WEBAPP);
     await openUnlocked(page);
     await page.goto('/#/?ref=Rom.8.28');
     const strip = page.locator('[data-open-in-app]');
@@ -98,11 +102,14 @@ for (const size of [
     const reader = page.locator('[data-reader]');
     await expect(verse).toBeVisible();
     await expect(reader).toHaveAttribute('data-brought-verse', '28');
-    await page.waitForTimeout(1000); // the verse has settled at the top, and the API has not answered yet
+    // the verse has settled at the top, and the API has not answered yet (it answers when this spec says)
+    await untilStill(page, ['[data-reader]', '[data-reader] [data-verse="28"]']);
     await expect(strip, 'the strip is not here yet').toHaveCount(0);
     const before = { verse: (await verse.boundingBox())!, reader: (await reader.boundingBox())!, scroll: await reader.evaluate((el) => el.scrollTop) };
-    await expect(strip).toBeVisible({ timeout: 10_000 });
-    await page.waitForTimeout(500); // anything the strip would push has moved by now
+    await answerApi(page);
+    await expect(strip).toBeVisible();
+    // anything the strip would push has moved once the page has stopped moving
+    await untilStill(page, ['[data-reader]', '[data-reader] [data-verse="28"]', '[data-open-in-app]']);
     const after = { verse: (await verse.boundingBox())!, reader: (await reader.boundingBox())!, scroll: await reader.evaluate((el) => el.scrollTop) };
     expect(Math.abs(after.verse.y - before.verse.y), `verse 28 top ${before.verse.y} -> ${after.verse.y}`).toBeLessThanOrEqual(1);
     expect(Math.abs(after.reader.height - before.reader.height), `reading box height ${before.reader.height} -> ${after.reader.height}`).toBeLessThanOrEqual(1);
@@ -142,13 +149,15 @@ test('never shows inside the installed app (display-mode standalone)', async ({ 
  */
 async function tapAndRead(page: Page): Promise<{ address: string; referer: string | undefined; opener: boolean }> {
   // the Reader writes its own defaults into the address (&view=english&weave=off) a moment after it opens: read the address only once it has stopped moving
-  await expect
-    .poll(async () => {
+  await untilSettled(
+    async () => {
       const seen = page.url();
-      await page.waitForTimeout(400); // a real-time wait: the address must be seen not to move for a while
-      return page.url() === seen;
-    })
-    .toBe(true);
+      await afterFrames(page, 20);
+      return { seen, now: page.url() };
+    },
+    (look) => (look.now === look.seen ? null : `the address moved from ${look.seen} to ${look.now}`),
+    { message: 'the address stops moving' },
+  );
   const before = page.url();
   const requests: { url: string; referer: string | undefined }[] = [];
   page.context().on('request', (request) => request.isNavigationRequest() && requests.push({ url: request.url(), referer: request.headers()['referer'] }));
@@ -173,7 +182,7 @@ for (const opened of ['/#/?ref=Rom.8.28', '/#/?ref=Rom.8.28&view=greek', '/#/?b=
     await expect(page.locator('[data-open-in-app]')).toBeVisible();
     await expect(page.locator('[data-verse="28"]').first()).toBeVisible();
     if (!opened.includes('v=28')) await expect(page.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
-    await page.waitForTimeout(1500); // the verse has settled at the top
+    await untilStill(page, ['[data-reader]', '[data-reader] [data-verse="28"]']); // the verse has settled at the top
     const { address: handed, referer, opener } = await tapAndRead(page);
     expect(handed.startsWith('intent:'), 'a plain address, not an intent: URL').toBe(false);
     expect(referer, 'no Referer: the page the tap came from is not named').toBeUndefined();
@@ -187,7 +196,7 @@ for (const opened of ['/#/?ref=Rom.8.28', '/#/?ref=Rom.8.28&view=greek', '/#/?b=
       await app.goto(handed);
       const reader = app.locator('[data-reader]');
       await expect(reader).toHaveAttribute('data-brought-verse', '28');
-      await app.waitForTimeout(1500);
+      await untilStill(app, ['[data-reader]', '[data-reader] [data-verse="28"]']);
       const verse = app.locator('[data-reader] [data-verse="28"]').first();
       await expect(verse).toBeAttached();
       const box = (await reader.boundingBox())!;
@@ -230,7 +239,7 @@ test('tapped while Romans 8 is still loading, the hand-over still names verse 28
       await openUnlocked(app);
       await app.goto(handed);
       await expect(app.locator('[data-reader]')).toHaveAttribute('data-brought-verse', '28');
-      await app.waitForTimeout(1500);
+      await untilStill(app, ['[data-reader]', '[data-reader] [data-verse="28"]']);
       const box = (await app.locator('[data-reader]').boundingBox())!;
       const at = (await app.locator('[data-reader] [data-verse="28"]').first().boundingBox())!;
       expect(at.y, 'verse 28 is not scrolled away above the Reader box').toBeGreaterThanOrEqual(box.y - 1);
@@ -266,9 +275,11 @@ test('390x844: a fast double tap on Open in the app opens one new tab', async ({
   const at = (await button.boundingBox())!;
   await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
   await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
-  await page.waitForTimeout(1000);
+  // the page's own count is read at once: it is made in the click, so a second hand-over is already in it
+  await expect.poll(() => page.evaluate(() => (window as unknown as { handOvers: number }).handOvers), 'one hand-over for two taps').toBe(1);
+  await page.waitForTimeout(1000); // a real-time wait: a second tab would be opened by the browser, which no frame of this page orders, so the tab list is read once the window in which one would have come is over
   expect(tabs, 'one new tab for two taps').toHaveLength(1);
-  expect(await page.evaluate(() => (window as unknown as { handOvers: number }).handOvers), 'one hand-over for two taps').toBe(1);
+  expect(await page.evaluate(() => (window as unknown as { handOvers: number }).handOvers), 'still one hand-over for two taps').toBe(1);
   // he can tap again once the moment has passed: the tap that opened nothing is not locked out for good
   await button.click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { handOvers: number }).handOvers), 'a later tap hands over again').toBe(2);
@@ -322,7 +333,20 @@ for (const size of SIZES) {
     await page.goto('/#/?ref=Rom.8.28');
     await expect(page.locator('[data-open-in-app]')).toBeVisible();
     await putBarsIn(page);
-    await page.waitForTimeout(300); // the bars' foot is measured again
+    // the bars' foot is measured again: look until the strip stands clear of them
+    await untilSettled(
+      async () => ({
+        hits: await page.locator('[data-update-banner] button, [data-tutor-waiting] button, [data-welcome-back] button').evaluateAll((els) =>
+          els.map((el) => {
+            const r = el.getBoundingClientRect();
+            const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+            return !!top?.closest('[data-open-in-app]');
+          }),
+        ),
+        under: await underStrip(page, '[data-shell-bars] button'),
+      }),
+      (look) => (look.hits.some(Boolean) || look.under.length > 0 ? `the strip is still over a bar: ${JSON.stringify(look)}` : null),
+    );
     for (const attr of ['data-update-banner', 'data-tutor-waiting', 'data-welcome-back']) {
       const button = page.locator(`[${attr}] button`);
       const hit = await button.evaluate((el) => {
@@ -351,9 +375,9 @@ for (const size of SIZES) {
       await openUnlocked(page);
       await page.goto(`/${hash}`);
       await expect(page.locator('[data-open-in-app]')).toBeVisible();
-      await page.waitForTimeout(500);
       const header = page.locator('[data-shell] header').first();
       await expect(header).toBeVisible();
+      await untilStill(page, ['[data-shell] header', '[data-open-in-app]']);
       const strip = (await page.locator('[data-open-in-app]').boundingBox())!;
       const bar = (await header.boundingBox())!;
       expect(strip.y, 'the strip starts at or under the foot of the top bar').toBeGreaterThanOrEqual(bar.y + bar.height - 1);
@@ -397,12 +421,12 @@ for (const size of SIZES) {
     await page.goto('/#/?ref=Rom.8.28&view=greek');
     const strip = page.locator('[data-open-in-app]');
     await expect(strip).toBeVisible();
-    await page.waitForTimeout(500);
     const row = page.getByTestId('reader-chips');
     const today = row.getByRole('button', { name: /^Today/ });
     const variants = row.getByRole('button', { name: /^Variants/ });
     await expect(today).toBeVisible();
     await expect(variants).toBeVisible();
+    await untilStill(page, ['[data-testid="reader-chips"]', '[data-open-in-app]']);
     for (const [name, chip] of [['Today', today], ['Variants', variants]] as const) {
       expect(await chip.evaluate(isOnTop), `the ${name} chip is the element at its own centre`).toBe(true);
     }
@@ -422,7 +446,7 @@ for (const size of SIZES) {
       await openUnlocked(page);
       await page.goto(`/${hash}`);
       await expect(page.locator('[data-open-in-app]')).toBeVisible();
-      await page.waitForTimeout(500);
+      await untilStill(page, ['[data-open-in-app]', '[data-shell]']);
       const covered = await page.evaluate(() => {
         const strip = document.querySelector<HTMLElement>('[data-open-in-app]')!;
         const room = strip.getBoundingClientRect();
@@ -457,9 +481,9 @@ for (const [hash, name, locate] of [
     await openUnlocked(page);
     await page.goto(`/${hash}`);
     await expect(page.locator('[data-open-in-app]')).toBeVisible();
-    await page.waitForTimeout(500);
     const target = locate(page);
     await expect(target).toBeVisible();
+    await untilStill(page, ['[data-open-in-app]', '[data-shell]']);
     const strip = (await page.locator('[data-open-in-app]').boundingBox())!;
     const at = (await target.boundingBox())!;
     expect(at.y, `'${name}' starts at or under the strip's foot`).toBeGreaterThanOrEqual(strip.y + strip.height - 1);
@@ -550,7 +574,7 @@ for (const size of SIZES) {
     await page.getByTestId('reader-chips').getByRole('button', { name: /^Variants/ }).click();
     const offer = page.getByTestId('variant-lessons-offer');
     await expect(offer).toBeVisible();
-    await page.waitForTimeout(500);
+    await untilStill(page, ['[data-testid="variant-lessons-offer"]', '[data-open-in-app]']);
     const question = offer.getByText('New to variant readings?');
     const read = offer.getByRole('button', { name: 'Read the lessons', exact: true });
     const notNow = offer.getByRole('button', { name: 'Not now', exact: true });
@@ -584,7 +608,7 @@ for (const size of SIZES) {
         if (what === 'key') await page.getByTestId('variant-lessons-offer').getByRole('button', { name: 'Not now', exact: true }).click();
       }
       await expect(page.locator(scope)).toBeVisible();
-      await page.waitForTimeout(500);
+      await untilStill(page, [scope, '[data-open-in-app]']);
       expect(await coveredIn(page, scope), 'the strip is over none of these').toEqual([]);
       const foot = (await page.locator(scope).boundingBox())!;
       const stripBox = (await strip.boundingBox())!;

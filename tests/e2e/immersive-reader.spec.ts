@@ -8,6 +8,7 @@ import { leaveSettings, openGroup } from './settings-group';
 import { openSettings, menuButton, settingsHeading } from './openSettings';
 import { asInstalledApp } from './installed';
 import { handleClicksLate } from './late-clicks';
+import { afterFrames, afterRestore, afterTwoFingerTap, untilPlaceKept, untilStill } from '../support/settled';
 
 // The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header and the chips away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
@@ -64,16 +65,9 @@ const scrollText = (page: Page, by: number) =>
 const scrollTop = (page: Page) => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
 const textHeight = (page: Page) => page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).getBoundingClientRect().height);
 
-/** The text box's height once the page has stopped moving (a row that arrives late, such as a tip, changes it): two reads 400 ms apart agree. */
+/** The text box's height once the page has stopped moving (a row that arrives late, such as a tip, changes it, and the bars slide for 200 ms): no animation is running and the box is the same over five frames. */
 async function settledHeight(page: Page) {
-  let last = await textHeight(page);
-  for (let i = 0; i < 25; i++) {
-    await page.waitForTimeout(400);
-    const now = await textHeight(page);
-    if (now === last) return now;
-    last = now;
-  }
-  throw new Error(`the text box never stopped changing height (last ${last})`);
+  return (await untilStill(page, '[data-reader]'))[0].height;
 }
 
 async function expectAll(page: Page, state: 'visible' | 'hidden') {
@@ -115,7 +109,7 @@ test('scrolling down slides the bars away, scrolling up leaves them away', async
   await shot(page, 'immersive-hidden');
 
   await scrollText(page, -200);
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   await expectAll(page, 'hidden');
   expect(await scrollTop(page)).toBeGreaterThan(0);
   await shot(page, 'immersive-scroll-up');
@@ -132,7 +126,8 @@ test('a two-finger tap shows the bars and a second one puts them away', async ({
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(() => textHeight(page)).toBeCloseTo(before, 0);
 
-  await page.waitForTimeout(700);
+  // the bars have finished sliding in before the second tap
+  await untilStill(page);
   await twoFingerTap(page);
   await expectAll(page, 'hidden');
   await shot(page, 'immersive-two-finger-away');
@@ -143,7 +138,7 @@ test('a three-finger tap does nothing', async ({ page }) => {
   await scrollText(page, 200);
   await expectAll(page, 'hidden');
   await threeFingerTap(page);
-  await page.waitForTimeout(300);
+  await afterFrames(page);
   await expectAll(page, 'hidden');
 });
 
@@ -160,7 +155,7 @@ test('a two-finger tap opens no word sheet; a one-finger tap on a word still ope
   await expectAll(page, 'hidden');
   // two fingers that wander are not a tap
   await twoFingerTap(page, { x: 150, y: 450 }, 60);
-  await page.waitForTimeout(300);
+  await afterFrames(page);
   await expectAll(page, 'hidden');
 
   // a finger on a word opens its sheet as ever
@@ -183,6 +178,7 @@ test('with the bars away there is no floating ?; a two-finger tap brings the bar
   await twoFingerTap(page);
   await expectAll(page, 'visible');
   await expect(page.locator('[data-floating-tutor]')).toHaveCount(1);
+  await afterTwoFingerTap(page);
   await openTutor(page, { sheet: 'Talk about Romans 8' });
 });
 
@@ -191,13 +187,13 @@ test('scrolling to the chapter\'s end and past the bottom leaves the bars away',
   await scrollText(page, 300);
   await expectAll(page, 'hidden');
   await scrollText(page, 100000);
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   expect(await scrollTop(page)).toBeGreaterThan(300);
   await expectAll(page, 'hidden');
   // further down, past the bottom: it cannot go, and nothing changes
   await scrollText(page, 500);
   await page.mouse.wheel(0, 500);
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   await expectAll(page, 'hidden');
   await shot(page, 'immersive-chapter-end');
 });
@@ -205,10 +201,10 @@ test('scrolling to the chapter\'s end and past the bottom leaves the bars away',
 test('with Immersive reader Off scrolling leaves the bars where they are', async ({ page }) => {
   await openReader(page, 'off');
   await scrollText(page, 300);
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   await expectAll(page, 'visible');
   await scrollText(page, 400);
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   await expectAll(page, 'visible');
 });
 
@@ -237,15 +233,17 @@ async function shownAtAScrolledPlace(page: Page): Promise<number> {
   await twoFingerTap(page);
   await expectAll(page, 'visible');
   await settledHeight(page);
+  // a click is dropped for a moment after a two-finger tap: the specs below click next
+  await afterTwoFingerTap(page);
   const at = await scrollTop(page);
   expect(at).toBeGreaterThan(500);
   return at;
 }
 
-/** After a return the saved place is put back and the page is given time to react to it (the restore waits 400 ms for the text to stay still). */
+/** After a return the saved place is put back and the page is given time to react to it (the restore waits 400 ms for the text to stay still: afterRestore). */
 async function expectStillShown(page: Page, at: number, what: string) {
   await expect.poll(() => scrollTop(page), { message: `${what}: the saved place comes back` }).toBeGreaterThan(at - 50);
-  await page.waitForTimeout(900);
+  await afterRestore(page);
   await expectAll(page, 'visible');
   await expect(page.locator('[data-place-line]'), `${what}: no place line`).toHaveCount(0);
 }
@@ -303,8 +301,8 @@ test('with the bars shown, a Verse view closed leaves them shown', async ({ page
 
 test('with the bars shown, a reload keeps them shown at the saved place', async ({ page }) => {
   const at = await shownAtAScrolledPlace(page);
-  // the place is written to the phone 250 ms after the last scroll
-  await page.waitForTimeout(600);
+  // the place is written to the phone 250 ms after the last scroll: wait for it to be there
+  await untilPlaceKept(page, at - 50);
   await page.reload();
   await expectStillShown(page, at, 'a reload');
 });
@@ -313,11 +311,12 @@ test('with the bars shown, the next chapter opens shown, and Back to this one ke
   const at = await shownAtAScrolledPlace(page);
   // the end of the chapter: scrolling there with the bars shown does not take them away
   await scrollText(page, 100000);
-  await page.waitForTimeout(600);
+  await afterFrames(page);
   await expectAll(page, 'visible');
   await page.getByRole('navigation', { name: 'Chapters', exact: true }).getByRole('button', { name: /Romans 9/ }).click();
   await expect(page.getByRole('heading', { name: 'Romans 9', level: 1 })).toBeVisible();
-  await page.waitForTimeout(900);
+  await untilStill(page);
+  await afterFrames(page);
   await expectAll(page, 'visible');
   await page.goBack();
   await expectStillShown(page, at, 'Back from the next chapter');
@@ -353,7 +352,6 @@ test('with the bars shown, Read from the top moves the text to follow the voice 
     .toBeGreaterThan(200);
   // and well past the 1.5 s the bars used to take to go
   await page.clock.runFor(2000);
-  await page.waitForTimeout(400);
   await expect(page.locator('[data-verse][data-reading="true"]')).toHaveCount(1);
   // the chips row is not drawn while a chapter is read aloud (ReaderChips hidden), so it is the other two that stay
   for (const el of [header(page)]) await expect(el).toBeVisible();

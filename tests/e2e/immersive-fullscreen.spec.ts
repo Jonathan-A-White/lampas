@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { honestMic } from '../support/honest-fakes';
 import { openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
+import { afterFrames } from '../support/settled';
 
 // The Immersive reader asks the browser for full screen (mw-5r3p30.296): on his first tap or scroll in the text, so the phone's status and
 // navigation bars go away, and keeps it (mw-5r3p30.316: Chrome shows "To exit full screen" at every entry, so a two-finger tap that only brings
@@ -134,7 +135,7 @@ async function twoFingerTap(page: Page) {
 
 test('with Immersive reader On, the first tap in the text asks for full screen, once', async ({ page }) => {
   await openReader(page, 'on');
-  await page.waitForTimeout(500);
+  await afterFrames(page);
   expect(await counts(page)).toEqual({ requests: 0, exits: 0 });
 
   await tapText(page);
@@ -144,7 +145,7 @@ test('with Immersive reader On, the first tap in the text asks for full screen, 
   // more taps and scrolling, already full screen: no second request
   await tapText(page);
   await scrollText(page, 400);
-  await page.waitForTimeout(500);
+  await afterFrames(page);
   expect((await counts(page)).requests).toBe(1);
 });
 
@@ -164,14 +165,14 @@ test('two-finger taps bring the bars back and put them away, and full screen is 
 
   await twoFingerTap(page);
   await expect(page.locator('header').first()).toBeVisible();
-  await page.waitForTimeout(500);
+  await afterFrames(page);
   expect(await counts(page)).toEqual({ requests: 1, exits: 0 });
   expect(await fullScreen(page)).toBe(true);
 
   await twoFingerTap(page);
   await expect(page.locator('header').first()).toBeHidden();
   await scrollText(page, 300);
-  await page.waitForTimeout(500);
+  await afterFrames(page);
   expect(await counts(page)).toEqual({ requests: 1, exits: 0 });
   expect(await fullScreen(page)).toBe(true);
 });
@@ -194,7 +195,7 @@ test('leaving the Reader leaves full screen, and with Immersive reader Off nothi
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-immersive', 'off');
   await tapText(page);
   await scrollText(page, 400);
-  await page.waitForTimeout(600);
+  await afterFrames(page);
   expect((await counts(page)).requests).toBe(0);
 });
 
@@ -203,7 +204,7 @@ test('with Immersive reader Off the Reader never asks for full screen', async ({
   await tapText(page);
   await scrollText(page, 400);
   await page.mouse.wheel(0, 300);
-  await page.waitForTimeout(600);
+  await afterFrames(page);
   expect(await counts(page)).toEqual({ requests: 0, exits: 0 });
   await expect(page.locator('header').first()).toBeVisible();
 });
@@ -247,7 +248,7 @@ test('after the phone leaves full screen by itself, the next tap asks for it aga
 
   await leaveByItself(page);
   expect(await fullScreen(page)).toBe(false);
-  await page.waitForTimeout(300);
+  await afterFrames(page);
   expect((await counts(page)).requests).toBe(1);
 
   await tapText(page);
@@ -257,7 +258,7 @@ test('after the phone leaves full screen by itself, the next tap asks for it aga
   // and asked for once more, not on every tap after it
   await tapText(page);
   await scrollText(page, 300);
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   expect((await counts(page)).requests).toBe(2);
 });
 
@@ -275,7 +276,7 @@ test('after the browser leaves full screen by itself, a two-finger tap asks for 
   // full screen again: more two-finger taps change only Lampas's bars and ask no more
   await twoFingerTap(page);
   await twoFingerTap(page);
-  await page.waitForTimeout(500);
+  await afterFrames(page);
   expect(await counts(page)).toEqual({ requests: 2, exits: 0 });
   expect(await fullScreen(page)).toBe(true);
 });
@@ -296,6 +297,6 @@ test('a full screen the Reader leaves itself is not asked for again', async ({ p
   await openSettings(page);
   await expect(settingsHeading(page)).toBeVisible();
   await expect.poll(() => counts(page)).toEqual({ requests: 1, exits: 1 });
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   expect(await counts(page)).toEqual({ requests: 1, exits: 1 });
 });
