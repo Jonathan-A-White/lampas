@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.337
+_2026-11-22_
+- New: Ask the Bible talk to play a sermon, out loud or typed, and it starts playing in the app after the tutor says its title and preacher.
+- New: David's recording of Job now plays with the highlight following along.
+
 ## 0.7.336
 _2026-11-22_
 - New: A Spurgeon sermon can now be read to you inside Lampas, starting by itself, with play, pause, back and forward by paragraph, restart, the time left, and your place remembered.
