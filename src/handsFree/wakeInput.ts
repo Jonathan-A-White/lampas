@@ -10,6 +10,9 @@
 // or goes). When every input is silent the wake listens on the default as before. No sound is (mw-5r3p30.1231, a route need not give exact zeros):
 //  - a batch of samples that spans less than LEAST_SPAN from its lowest to its highest: exact zeros, a route's constant offset, or the least wobble of dither;
 //  - sound that stops before HEARD_MS in all: a pop as the route connects is not a live microphone.
+// An input stays watched while the wake listens on it (mw-5r3p30.1242): one found live that then carries no sound for QUIET_MS in a row (the car's Bluetooth SCO torn
+// down, or the phone's microphone muted by a call) is marked silent and the inputs are looked at afresh; when none of them hears, the wake listens on that input
+// again, not on the default, and its mark is taken off once it hears again (the call ended).
 // No samples at all in QUIET_MS is told in the log and the input is kept: a route that carries nothing still gives zeros (a muted track plays silence into the
 // audio graph), so no samples means the audio is not running, which no other input mends (and the e2e specs' fake wake is handed no samples at all).
 // Everything it does goes to the wake log (wakeLog.ts): the inputs listed, each one tried and what it gave, where it settled, and every REPORT_MS what it hears
@@ -133,13 +136,21 @@ const refusedByThePhone = (err: unknown): boolean => {
   return name === 'NotAllowedError' || name === 'SecurityError' || name === 'PermissionDeniedError';
 };
 
-/** What an input gave while it was watched. */
-type Verdict = 'live' | 'silent';
+/** What an input gave while it was watched: 'live' once it has carried sound, 'silent' when it carried none first, 'dropped' when it stopped after it was live. */
+type Verdict = 'live' | 'silent' | 'dropped';
 
-/** Calls `onVerdict` once: 'live' when HEARD_MS of samples have carried sound, 'silent' when `quietMs` of samples have come that carried none first. */
-function watchForSilence(quietMs: number, onVerdict: (verdict: Verdict) => void): (samples: Float32Array, inputRate: number) => void {
+/** How an input is listened on: 'trial', watched and left when silent; 'regain', the input last heard, listened on until it hears again and watched from then;
+ * 'off', the default as before, without the check. */
+type Watch = 'trial' | 'regain' | 'off';
+
+/**
+ * Calls `onVerdict` with 'live' when HEARD_MS of samples have carried sound; before that, on a trial, 'silent' when `quietMs` of samples have come that carried
+ * none. Once live it watches on, and calls 'dropped' when `quietMs` of samples in a row carry none (mw-5r3p30.1242); nothing is called after 'silent' or 'dropped'.
+ */
+function watchForSilence(quietMs: number, trial: boolean, onVerdict: (verdict: Verdict) => void): (samples: Float32Array, inputRate: number) => void {
   let quiet = 0;
   let sound = 0;
+  let live = false;
   let done = false;
   return (samples, inputRate) => {
     if (done || samples.length === 0) return;
@@ -150,17 +161,23 @@ function watchForSilence(quietMs: number, onVerdict: (verdict: Verdict) => void)
       if (samples[i] > high) high = samples[i];
     }
     if (high - low >= LEAST_SPAN) {
+      if (live) {
+        quiet = 0;
+        return;
+      }
       sound += samples.length;
       if (sound >= (inputRate * HEARD_MS) / 1000) {
-        done = true;
+        live = true;
+        quiet = 0;
         onVerdict('live');
       }
       return;
     }
     quiet += samples.length;
-    if (quiet >= (inputRate * quietMs) / 1000) {
+    if (quiet < (inputRate * quietMs) / 1000) return;
+    if (live || trial) {
       done = true;
-      onVerdict('silent');
+      onVerdict(live ? 'dropped' : 'silent');
     }
   };
 }
@@ -200,10 +217,13 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
   let current: RunningWake | null = null;
   /** The name of the input listened on now, for the line of a wake. */
   let currentName = '';
+  /** The input that was heard and then fell silent: listened on again when no other input hears, rather than the default without the check. */
+  let lastHeard: { id: string; name: string } | null = null;
 
-  /** Opens `id` and starts the wake on it; `watch` false listens without the silence check. Null when it would not open or start. */
-  const listenOn = async (id: string, name: string, watch: boolean): Promise<RunningWake | WakeFailure | null> => {
-    logWake(`trying ${named(name)} (id ${id === DEFAULT_ID ? id : shortHash(id)})${watch ? '' : ', without the silence check'}`);
+  /** Opens `id` and starts the wake on it, watched as `watch` says. Null when it would not open or start. */
+  const listenOn = async (id: string, name: string, watch: Watch): Promise<RunningWake | WakeFailure | null> => {
+    const how = watch === 'off' ? ', without the silence check' : watch === 'regain' ? ', until it hears again' : '';
+    logWake(`trying ${named(name)} (id ${id === DEFAULT_ID ? id : shortHash(id)})${how}`);
     let stream: MediaStream;
     try {
       stream = await openMicInput(id);
@@ -221,7 +241,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
     const track = stream.getAudioTracks()[0];
     const label = track?.label || name;
     let running: RunningWake | null = null;
-    let verdict: Verdict | null = watch ? null : 'live';
+    let verdict: Verdict | null = watch === 'off' ? 'live' : null;
     const openedAt = Date.now();
     const trial = new Meter();
     const report = new Meter();
@@ -249,15 +269,32 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
       logWake(`${named(label)} gave only silence in ${seconds} s: ${levelsText(trial.take())}; trying the next input`);
       void moveOn(running);
     };
+    /** The input was heard and has stopped (a route torn down, or a call muting it): it is marked and the inputs are looked at afresh (mw-5r3p30.1242). */
+    const drop = (): void => {
+      if (stopped || !running || current !== running) return;
+      silentInputs.add(id);
+      lastHeard = { id, name };
+      logWake(`${named(label)} went silent: no sound for ${(quietMs / 1000).toFixed(1)} s after it was heard; trying the other inputs`);
+      void moveOn(running, true);
+    };
     const judged = (next: Verdict): void => {
+      if (next === 'dropped') {
+        drop();
+        return;
+      }
       if (verdict !== null) return;
       verdict = next;
-      if (next === 'live') {
+      if (next === 'silent') leave();
+      else if (watch === 'regain') {
+        silentInputs.delete(id);
+        logWake(`${named(label)} hears again: ${levelsText(trial.take())}`);
+        if (!stopped && running && current === running) markLive();
+      } else {
         logWake(`${named(label)} hears: ${levelsText(trial.take())}`);
         settle();
-      } else leave();
+      }
     };
-    const silence = watchForSilence(quietMs, judged);
+    const silence = watchForSilence(quietMs, watch === 'trial', judged);
     let samplesSeen = 0;
     const result = await start({
       ...options,
@@ -274,7 +311,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
         report.add(samples);
         if (scorer === undefined) scorer = options.model ? startScorer(options.model, inputRate) : null;
         scorer?.push(samples);
-        if (watch) silence(samples, inputRate);
+        if (watch !== 'off') silence(samples, inputRate);
       },
     });
     if (!result.ok) {
@@ -320,7 +357,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
         if (samplesSeen === 0 && current === wake && !stopped) logWake(`no samples from ${named(label)} in ${(quietMs / 1000).toFixed(1)} s: the audio is not running`);
       }, quietMs),
     );
-    if (verdict === 'live') settle();
+    if (verdict === 'live' || watch === 'regain') settle();
     else if (verdict !== null) queueMicrotask(leave);
     return wake;
   };
@@ -335,18 +372,24 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
       if (id === undefined) return null;
       tried.add(id);
       const name = devices.find((device) => device.deviceId === id)?.label || (id === DEFAULT_ID ? 'the default microphone' : id);
-      const opened = await listenOn(id, name, true);
+      const opened = await listenOn(id, name, 'trial');
       if (opened) return opened;
     }
   };
 
-  /** The silent `from` is ended and the next input taken; when none is left, the default without the check, as before. */
-  const moveOn = async (from: RunningWake): Promise<void> => {
+  /** The silent `from` is ended and the next input taken (every input not marked silent, when `afresh`: `from` fell silent after it was heard); when none
+   * is left, the input that was heard last until it hears again, or, when none was, the default without the check, as before. */
+  const moveOn = async (from: RunningWake, afresh = false): Promise<void> => {
     from.stop();
+    if (afresh) tried.clear();
     let opened = await next();
+    if (!stopped && !(opened && opened.ok) && lastHeard) {
+      logWake(`no other input hears anything; listening on ${named(lastHeard.name)} again, the input heard last`);
+      opened = await listenOn(lastHeard.id, lastHeard.name, 'regain');
+    }
     if (!stopped && !(opened && opened.ok)) {
       logWake('no input heard anything; listening on the default microphone');
-      opened = await listenOn(DEFAULT_ID, 'the default microphone', false);
+      opened = await listenOn(DEFAULT_ID, 'the default microphone', 'off');
     }
     if (!stopped && !(opened && opened.ok)) logWake('the wake word is not listened for: no input would open');
   };
