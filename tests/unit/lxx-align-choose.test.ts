@@ -580,10 +580,10 @@ describe.skipIf(!haveSources)('Genesis 1 to 42 with the model pass', () => {
     }
   });
 
-  // Genesis 24 to 29 (mw-u2w5klk.349.4): the English content words that sit in a chunk with no Greek word after the pass, 168 of 2,535 (566 had none before it; 187 after it, 19 fewer after the fix rows of mw-u2w5klk.349.33, read with `npm run lxx:unpaired -- --book gen`),
+  // Genesis 24 to 29 (mw-u2w5klk.349.4): the English content words that sit in a chunk with no Greek word after the pass, 163 of 2,535 (566 had none before it; 187 after it, 19 fewer after the fix rows of mw-u2w5klk.349.33, 5 fewer after pairLords of mw-u2w5klk.349.27, read with `npm run lxx:unpaired -- --book gen`),
   // keyed chapter:verse:word and read by hand from `--list`, each in one of three lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs are not touched, so the first and third
   // lists are the same kind as those of Genesis 12 to 23 above: 'it came to pass' renders ἐγένετο (paired to one English word), and the Greek word of the rest is a pair the aligner made to another English word
-  // ('master' for Κύριος, 'draw' for ὑδρεύσατο) or English Brenton adds to make a Greek phrase English ('instead', 'just', 'hither', 'forth', 'away').
+  // ('draw' for ὑδρεύσατο) or English Brenton adds to make a Greek phrase English ('instead', 'just', 'hither', 'forth', 'away').
   const IDIOM_NO_GREEK_24_TO_29 = [
     '24:22:came', '24:22:pass', '24:30:came', '24:30:pass', '24:45:came', '24:45:pass', '24:52:came', '24:52:pass', '25:11:came',
     '25:11:pass', '26:32:came', '26:32:pass', '27:1:came', '27:1:pass', '27:30:came', '27:30:pass', '27:30:came', '27:30:pass', '27:34:came', '27:34:pass', '29:10:came',
@@ -598,9 +598,9 @@ describe.skipIf(!haveSources)('Genesis 1 to 42 with the model pass', () => {
   const PAIRED_OR_ADDED_NO_GREEK_24_TO_29 = [
     '24:1:things', '24:3:god', '24:4:thence', '24:5:came', '24:6:back', '24:7:sprang', '24:7:thence', '24:8:again', '24:10:took',
     '24:11:draw', '24:12:way', '24:14:give', '24:14:drink', '24:14:one', '24:15:same', '24:16:came', '24:17:drink', '24:18:drink',
-    '24:19:draw', '24:20:again', '24:20:drew', '24:22:put', '24:22:pieces', '24:24:son', '24:27:master', '24:27:fail', '24:27:master',
-    '24:27:brought', '24:29:meet', '24:32:wash', '24:35:master', '24:42:master', '24:43:come', '24:43:drink', '24:44:draw', '24:44:own',
-    '24:44:hereby', '24:45:went', '24:45:drew', '24:45:drink', '24:46:head', '24:46:give', '24:46:gave', '24:48:master', '24:48:prospered', '24:49:tell', '24:49:hand',
+    '24:19:draw', '24:20:again', '24:20:drew', '24:22:put', '24:22:pieces', '24:24:son', '24:27:fail',
+    '24:27:brought', '24:29:meet', '24:32:wash', '24:43:come', '24:43:drink', '24:44:draw', '24:44:own',
+    '24:44:hereby', '24:45:went', '24:45:drew', '24:45:drink', '24:46:head', '24:46:give', '24:46:gave', '24:48:prospered', '24:49:tell', '24:49:hand',
     '24:50:come', '24:54:went', '24:54:away', '24:56:away', '24:59:forth', '24:63:forth', '24:63:lifted', '24:64:lifted', '25:6:away', '25:7:many',
     '25:7:one', '25:8:man', '25:9:son', '25:17:one', '25:18:one', '25:20:old', '25:20:syrian', '25:23:one', '25:25:came', '25:26:forth', '25:26:old',
     '25:27:lads', '25:32:belong', '26:2:go', '26:10:sin', '26:12:one',
@@ -616,7 +616,9 @@ describe.skipIf(!haveSources)('Genesis 1 to 42 with the model pass', () => {
     const named = [...IDIOM_NO_GREEK_24_TO_29, ...OTHER_VERSE_NO_GREEK_24_TO_29, ...PAIRED_OR_ADDED_NO_GREEK_24_TO_29].sort();
     const found = [24, 25, 26, 27, 28, 29].flatMap((n) => noGreek(withModel.get(n)!)).sort();
     expect(found).toEqual(named);
-    expect(named).toHaveLength(168);
+    expect(named).toHaveLength(163);
+    // 'master' renders κύριος (pairLords, mw-u2w5klk.349.27): no 'master' of these chapters is left with no Greek word
+    expect(found.filter((w) => w.endsWith(':master'))).toEqual([]);
     for (const n of [24, 25, 26, 27, 28, 29]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
   });
 

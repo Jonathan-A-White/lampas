@@ -474,6 +474,44 @@ function joinSupplied(verse: Verse): Verse {
   return { ...verse, g, e };
 }
 
+/** The English words Brenton renders κύριος by. */
+const LORD_WORDS = new Set(['lord', 'master', 'sir']);
+
+/**
+ * The Greek word each 'Lord', 'master' and 'sir' of a verse renders, where the aligner and the model left them with none (mw-u2w5klk.349.27, found by mw-u2w5klk.349.4 in Genesis 24:27, 35, 42 and 48). TBESG's gloss
+ * of κύριος is 'lord, God', so the aligner, pairing by the gloss, gives κύριος to 'Lord' and to 'God' alike and θεός to nothing: in 'Lord God of my master Abraam' κυρίου takes 'God', θεός has no English and 'master'
+ * no Greek word, and in 'the Lord has blessed my master' the Κύριος that stands first has none while 'Lord' takes the κύριον that follows it. The model pass re-chooses remainders and never a pair, and the English
+ * that renders the Greek word is a remainder it settled as rendering none, so a tap on 'master' opened the Verse view.
+ *
+ * Where a verse has as many chunks holding 'Lord', 'master' or 'sir' as it has Greek words of the lemma κύριος, the n-th of the one renders the n-th of the other (the two keep their order, as the whole verse
+ * does). The stage acts only on a verse where that is not so already, and only when every chunk it takes a κύριος word from can be put right: the English 'God' it displaces goes to a θεός word that has no English
+ * (one for one). Any other verse is given back as it is. It comes after the model pass and its fixes, which number the runs by the aligner's own chunks, and so is no stage of `lxx:align-choose`.
+ */
+export function pairLords(verse: Verse): Verse {
+  if (verse.e.some((c) => c.y === 'align?')) return verse;
+  const kyrios = verse.g.flatMap((w, k) => (w.l.normalize('NFC') === 'κύριος' ? [k] : []));
+  if (kyrios.length === 0) return verse;
+  const lords = verse.e.flatMap((c, i) => ((c.y === 'align' || c.y === 'model') && c.t.split(/\s+/).some((w) => LORD_WORDS.has(lettersOf(w))) ? [i] : []));
+  if (lords.length !== kyrios.length) return verse;
+  if (lords.every((i, n) => verse.e[i].g.includes(kyrios[n]))) return verse;
+  const isKyrios = new Set(kyrios);
+  const e = verse.e.map((c) => ({ ...c, g: c.g.filter((k) => !isKyrios.has(k)) }));
+  // the English a κύριος word is taken from, and left with none, is 'God' (θεός's own) or the case is not one this stage knows
+  const displaced = e.flatMap((c, i) => (c.g.length === 0 && verse.e[i].g.length > 0 && !lords.includes(i) ? [i] : []));
+  const freeTheos = verse.g.flatMap((w, k) => (w.l.normalize('NFC') === 'θεός' && w.e === undefined ? [k] : []));
+  if (displaced.length !== freeTheos.length || displaced.some((i) => lettersOf(verse.e[i].t) !== 'god')) return verse;
+  displaced.forEach((i, n) => e[i].g.push(freeTheos[n]));
+  lords.forEach((i, n) => e[i].g.push(kyrios[n]));
+  for (const c of e) c.g.sort((a, b) => a - b);
+  const g = verse.g.map((w) => {
+    const word: GreekWord = { ...w };
+    delete word.e;
+    return word;
+  });
+  e.forEach((chunk, i) => chunk.g.forEach((k) => (g[k].e = i)));
+  return { ...verse, g, e };
+}
+
 /** What the report says of one chapter. */
 export interface AlignShare {
   /** Swete's code, lower case */
@@ -525,7 +563,7 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
   modelled.chapter = fixed.chapter;
   modelled.stale.push(...fixed.stale);
   // after the model pass, so the runs it numbers are the aligner's own: the words Brenton supplies for a verb join its chunk
-  modelled.chapter = { ...modelled.chapter, verses: modelled.chapter.verses.map(joinSupplied) };
+  modelled.chapter = { ...modelled.chapter, verses: modelled.chapter.verses.map((verse) => joinSupplied(pairLords(verse))) };
   if (model.length > 0) {
     // the share of a chapter the model cut is read from the chapter itself
     share.paired = 0;

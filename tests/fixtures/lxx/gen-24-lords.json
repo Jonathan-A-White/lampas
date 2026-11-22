@@ -1,0 +1,1125 @@
+{
+ "about": "Genesis 24:27, 35, 42 and 48 as lxx:align reads them (mw-u2w5klk.349.27): Swete words [form, transliteration, lemma, parsing], Brenton text, TBESG glosses of their lemmas, and the rows of data/lxx/align/gen-24.tsv for those verses",
+ "verses": [
+  {
+   "n": 27,
+   "text": "and said, Blessed be the Lord the God of my master Abraam, who has not suffered his righteousness to fail, nor his truth from my master, and the Lord has brought me prosperously to the house of the brother of my lord.",
+   "g": [
+    [
+     "Εὐλογητὸς",
+     "eulogētos",
+     "εὐλογητός",
+     "A-NSM"
+    ],
+    [
+     "Κύριος",
+     "kyrios",
+     "κύριος",
+     "N-NSM"
+    ],
+    [
+     "ὁ",
+     "ho",
+     "ὁ",
+     "T-NSM"
+    ],
+    [
+     "θεὸς",
+     "theos",
+     "θεός",
+     "N-NSM"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "κυρίου",
+     "kyriou",
+     "κύριος",
+     "N-GSM"
+    ],
+    [
+     "μου",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ],
+    [
+     "Ἀβραάμ,",
+     "abraam",
+     "Ἀβραάμ",
+     "N-GSM"
+    ],
+    [
+     "ὃς",
+     "hos",
+     "ὅς, ἥ",
+     "R-NSM"
+    ],
+    [
+     "οὐκ",
+     "ouk",
+     "οὐ",
+     "PRT-N"
+    ],
+    [
+     "ἐγκατέλειπεν",
+     "enkateleipen",
+     "ἐγκαταλείπω",
+     "V-2AAI-3S"
+    ],
+    [
+     "τὴν",
+     "tēn",
+     "ὁ",
+     "T-ASF"
+    ],
+    [
+     "δικαιοσύνην",
+     "dikaiosynēn",
+     "δικαιοσύνη",
+     "N-ASF"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "τὴν",
+     "tēn",
+     "ὁ",
+     "T-ASF"
+    ],
+    [
+     "ἀλήθειαν",
+     "alētheian",
+     "ἀλήθεια",
+     "N-ASF"
+    ],
+    [
+     "ἀπὸ",
+     "apo",
+     "ἀπό",
+     "PREP"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "κυρίου",
+     "kyriou",
+     "κύριος",
+     "N-GSM"
+    ],
+    [
+     "μου·",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ],
+    [
+     "ἐμὲ",
+     "eme",
+     "ἐγώ",
+     "P-1AS"
+    ],
+    [
+     "εὐόδωκεν",
+     "euodōken",
+     "εὐοδόω",
+     "V-RAI-3S"
+    ],
+    [
+     "Κύριος",
+     "kyrios",
+     "κύριος",
+     "N-NSM"
+    ],
+    [
+     "εἰς",
+     "eis",
+     "εἰς",
+     "PREP"
+    ],
+    [
+     "οἶκον",
+     "oikon",
+     "οἶκος",
+     "N-ASM"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "ἀδελφοῦ",
+     "adelphou",
+     "ἀδελφός",
+     "N-GSM"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "κυρίου",
+     "kyriou",
+     "κύριος",
+     "N-GSM"
+    ],
+    [
+     "μου.",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ]
+   ]
+  },
+  {
+   "n": 35,
+   "text": "and the Lord has blessed my master greatly, and he is exalted, and he has given him sheep, and calves, and silver, and gold, servants and servant-maids, camels, and asses.",
+   "g": [
+    [
+     "Κύριος",
+     "kyrios",
+     "κύριος",
+     "N-NSM"
+    ],
+    [
+     "δὲ",
+     "de",
+     "δέ",
+     "CONJ"
+    ],
+    [
+     "εὐλόγησεν",
+     "eulogēsen",
+     "εὐλογέω",
+     "V-AAI-3S"
+    ],
+    [
+     "τὸν",
+     "ton",
+     "ὁ",
+     "T-ASM"
+    ],
+    [
+     "κύριόν",
+     "kyrion",
+     "κύριος",
+     "N-ASM"
+    ],
+    [
+     "μου",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ],
+    [
+     "σφόδρα,",
+     "sphodra",
+     "σφόδρα",
+     "ADV"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "ὑψώθη·",
+     "hypsōthē",
+     "ὑψόω",
+     "V-APS-3S"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "ἔδωκεν",
+     "edōken",
+     "δίδωμι",
+     "V-AAI-3S"
+    ],
+    [
+     "αὐτῷ",
+     "autō",
+     "αὐτός",
+     "P-DSM"
+    ],
+    [
+     "πρόβατα",
+     "probata",
+     "πρόβατον",
+     "N-APN"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "μόσχους",
+     "moschous",
+     "μόσχος",
+     "N-APM"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "ἀργύριον",
+     "argyrion",
+     "ἀργύριον",
+     "N-ASN"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "χρυσίον,",
+     "chrysion",
+     "χρυσίον",
+     "N-ASN"
+    ],
+    [
+     "παῖδας",
+     "paidas",
+     "παῖς",
+     "N-APM"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "παιδίσκας,",
+     "paidiskas",
+     "παιδίσκη",
+     "N-APF"
+    ],
+    [
+     "καμήλους",
+     "kamēlous",
+     "κάμηλος",
+     "N-APF"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "ὄνους.",
+     "onous",
+     "ὄνος",
+     "N-APM"
+    ]
+   ]
+  },
+  {
+   "n": 42,
+   "text": "And having come this day to the well, I said, Lord God of my master Abraam, if you prosper my journey on which I am now going,",
+   "g": [
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "ἐλθὼν",
+     "elthōn",
+     "ἔρχομαι",
+     "V-2AAP-NSM"
+    ],
+    [
+     "σήμερον",
+     "sēmeron",
+     "σήμερον",
+     "ADV"
+    ],
+    [
+     "ἐπὶ",
+     "epi",
+     "ἐπί",
+     "PREP"
+    ],
+    [
+     "τὴν",
+     "tēn",
+     "ὁ",
+     "T-ASF"
+    ],
+    [
+     "πηγὴν",
+     "pēgēn",
+     "πηγή",
+     "N-ASF"
+    ],
+    [
+     "εἶπα",
+     "eipa",
+     "ἔπω, ἐρῶ, εἶπον",
+     "V-2AAI-1S"
+    ],
+    [
+     "Κύριε",
+     "kyrie",
+     "κύριος",
+     "N-VSM"
+    ],
+    [
+     "ὁ",
+     "ho",
+     "ὁ",
+     "T-NSM"
+    ],
+    [
+     "θεὸς",
+     "theos",
+     "θεός",
+     "N-NSM"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "κυρίου",
+     "kyriou",
+     "κύριος",
+     "N-GSM"
+    ],
+    [
+     "μου",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ],
+    [
+     "Ἀβραάμ,",
+     "abraam",
+     "Ἀβραάμ",
+     "N-GSM"
+    ],
+    [
+     "εἰ",
+     "ei",
+     "εἰ",
+     "COND"
+    ],
+    [
+     "σὺ",
+     "sy",
+     "σύ",
+     "P-2NS"
+    ],
+    [
+     "εὐοδοῖς",
+     "euodois",
+     "εὐοδόω",
+     "V-PAI-2S"
+    ],
+    [
+     "τὴν",
+     "tēn",
+     "ὁ",
+     "T-ASF"
+    ],
+    [
+     "ὁδόν",
+     "hodon",
+     "ὁδός",
+     "N-ASF"
+    ],
+    [
+     "μου,",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ],
+    [
+     "ἣν",
+     "hēn",
+     "ὅς, ἥ",
+     "R-ASF"
+    ],
+    [
+     "νῦν",
+     "nyn",
+     "νῦν",
+     "ADV"
+    ],
+    [
+     "ἐγὼ",
+     "egō",
+     "ἐγώ",
+     "P-1NS"
+    ],
+    [
+     "πορεύομαι",
+     "poreuomai",
+     "πορεύομαι",
+     "V-PNI-1S"
+    ],
+    [
+     "ἐπ᾽",
+     "ep",
+     "ἐπί",
+     "PREP"
+    ],
+    [
+     "αὐτήν·",
+     "autēn",
+     "αὐτός",
+     "P-ASF"
+    ]
+   ]
+  },
+  {
+   "n": 48,
+   "text": "And being well-pleased I worshipped the Lord, and I blessed the Lord the God of my master Abraam, who has prospered me in a true way, so that I should take the daughter of my master's brother for his son.",
+   "g": [
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "εὐδοκήσας",
+     "eudokēsas",
+     "εὐδοκέω",
+     "V-AAP-NSM"
+    ],
+    [
+     "προσεκύνησα",
+     "prosekynēsa",
+     "προσκυνέω",
+     "V-AAI-1S"
+    ],
+    [
+     "Κυρίῳ,",
+     "kyriō",
+     "κύριος",
+     "N-DSM"
+    ],
+    [
+     "καὶ",
+     "kai",
+     "καί",
+     "CONJ"
+    ],
+    [
+     "εὐλόγησα",
+     "eulogēsa",
+     "εὐλογέω",
+     "V-AAI-1S"
+    ],
+    [
+     "Κύριον",
+     "kyrion",
+     "κύριος",
+     "N-ASM"
+    ],
+    [
+     "τὸν",
+     "ton",
+     "ὁ",
+     "T-ASM"
+    ],
+    [
+     "θεὸν",
+     "theon",
+     "θεός",
+     "N-ASM"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "κυρίου",
+     "kyriou",
+     "κύριος",
+     "N-GSM"
+    ],
+    [
+     "μου",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ],
+    [
+     "Ἀβραάμ,",
+     "abraam",
+     "Ἀβραάμ",
+     "N-GSM"
+    ],
+    [
+     "ὃς",
+     "hos",
+     "ὅς, ἥ",
+     "R-NSM"
+    ],
+    [
+     "εὐόδωσέν",
+     "euodōsen",
+     "εὐοδόω",
+     "V-AAI-3S"
+    ],
+    [
+     "μοι",
+     "moi",
+     "ἐγώ",
+     "P-1DS"
+    ],
+    [
+     "ἐν",
+     "en",
+     "ἐν",
+     "PREP"
+    ],
+    [
+     "ὁδῷ",
+     "hodō",
+     "ὁδός",
+     "N-DSF"
+    ],
+    [
+     "ἀληθείας,",
+     "alētheias",
+     "ἀλήθεια",
+     "N-GSF"
+    ],
+    [
+     "λαβεῖν",
+     "labein",
+     "λαμβάνω",
+     "V-2AAN"
+    ],
+    [
+     "τὴν",
+     "tēn",
+     "ὁ",
+     "T-ASF"
+    ],
+    [
+     "θυγατέρα",
+     "thygatera",
+     "θυγάτηρ",
+     "N-ASF"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "ἀδελφοῦ",
+     "adelphou",
+     "ἀδελφός",
+     "N-GSM"
+    ],
+    [
+     "τοῦ",
+     "tou",
+     "ὁ",
+     "T-GSM"
+    ],
+    [
+     "κυρίου",
+     "kyriou",
+     "κύριος",
+     "N-GSM"
+    ],
+    [
+     "μου",
+     "mou",
+     "ἐγώ",
+     "P-1GS"
+    ],
+    [
+     "τῷ",
+     "tō",
+     "ὁ",
+     "T-DSM"
+    ],
+    [
+     "υἱῷ",
+     "huiō",
+     "υἱός",
+     "N-DSM"
+    ],
+    [
+     "αὐτοῦ.",
+     "autou",
+     "αὐτός",
+     "P-GSM"
+    ]
+   ]
+  }
+ ],
+ "gloss": {
+  "εὐλογητός": "praiseworthy",
+  "κύριος": "lord, God",
+  "ὁ": "the/this/who",
+  "θεός": "God",
+  "ἐγώ": "I/we",
+  "Ἀβραάμ": "Abraham",
+  "ὅς, ἥ": "which",
+  "οὐ": "no",
+  "ἐγκαταλείπω": "to leave behind",
+  "δικαιοσύνη": "righteousness",
+  "καί": "and",
+  "ἀλήθεια": "truth",
+  "ἀπό": "away from",
+  "εὐοδόω": "to get along well",
+  "εἰς": "toward",
+  "οἶκος": "house, home",
+  "ἀδελφός": "brother",
+  "δέ": "then",
+  "εὐλογέω": "to praise/bless",
+  "σφόδρα": "very",
+  "ὑψόω": "to lift up",
+  "δίδωμι": "to give",
+  "αὐτός": "it/s/he",
+  "πρόβατον": "sheep",
+  "μόσχος": "calf",
+  "ἀργύριον": "money",
+  "χρυσίον": "gold",
+  "παῖς": "child",
+  "παιδίσκη": "maidservant",
+  "κάμηλος": "camel",
+  "ὄνος": "donkey",
+  "ἔρχομαι": "to come/go (aorist ἦλθον)",
+  "σήμερον": "today",
+  "ἐπί": "upon/to/against",
+  "πηγή": "flow",
+  "ἔπω, ἐρῶ, εἶπον": "to say",
+  "εἰ": "if",
+  "σύ": "you",
+  "ὁδός": "road",
+  "νῦν": "now",
+  "πορεύομαι": "",
+  "εὐδοκέω": "to delight",
+  "προσκυνέω": "to worship",
+  "ἐν": "in/on/among",
+  "λαμβάνω": "to take (aorist ἔλαβον)",
+  "θυγάτηρ": "daughter",
+  "υἱός": "son"
+ },
+ "rows": [
+  {
+   "ref": "Gen.24:27",
+   "run": 1,
+   "text": "and said,",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 1,
+   "text": "Blessed be",
+   "g": [
+    0
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 1,
+   "text": "the",
+   "g": [
+    2
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 2,
+   "text": "of",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 3,
+   "text": "master",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 4,
+   "text": "has",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 5,
+   "text": "his",
+   "g": [
+    11
+   ],
+   "mark": "unsure",
+   "confidence": 0.5
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 6,
+   "text": "to fail,",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 6,
+   "text": "nor his",
+   "g": [
+    14
+   ],
+   "mark": "unsure",
+   "confidence": 0.5
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 7,
+   "text": "master,",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 8,
+   "text": "has brought",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 9,
+   "text": "prosperously",
+   "g": [
+    21
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 10,
+   "text": "the",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 11,
+   "text": "of",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:27",
+   "run": 12,
+   "text": "of",
+   "g": [
+    27
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:35",
+   "run": 1,
+   "text": "has",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:35",
+   "run": 2,
+   "text": "master",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:35",
+   "run": 2,
+   "text": "greatly,",
+   "g": [
+    6
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:35",
+   "run": 3,
+   "text": "he is",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:35",
+   "run": 4,
+   "text": "he has",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 1,
+   "text": "having",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 2,
+   "text": "this",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 3,
+   "text": "I",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 4,
+   "text": "of",
+   "g": [
+    10
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 5,
+   "text": "master",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 6,
+   "text": "journey",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 7,
+   "text": "am",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 1,
+   "text": "I",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 2,
+   "text": "the",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 3,
+   "text": "I",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 4,
+   "text": "the",
+   "g": [
+    7
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 5,
+   "text": "of",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 6,
+   "text": "master",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 7,
+   "text": "has prospered",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 8,
+   "text": "a true way,",
+   "g": [
+    17,
+    18
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 8,
+   "text": "so that",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 9,
+   "text": "should",
+   "g": [],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 10,
+   "text": "of",
+   "g": [
+    22
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 10,
+   "text": "my master's",
+   "g": [
+    24,
+    25
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:48",
+   "run": 11,
+   "text": "for",
+   "g": [
+    27
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 0,
+   "text": "prosper",
+   "g": [
+    16
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 0,
+   "text": "well,",
+   "g": [
+    5
+   ],
+   "mark": "",
+   "confidence": 0.8
+  },
+  {
+   "ref": "Gen.24:42",
+   "run": 0,
+   "text": "journey",
+   "g": [
+    17,
+    18
+   ],
+   "mark": "",
+   "confidence": 0.8
+  }
+ ]
+}
