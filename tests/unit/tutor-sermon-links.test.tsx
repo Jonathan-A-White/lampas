@@ -9,6 +9,7 @@ import { db } from '../../src/data/db';
 import { sermonChip } from '../../src/resources/tutorLinks';
 import { TutorLinks } from '../../src/TutorLinks';
 import { setSermonSources } from '../../src/sermons';
+import { closeSermonText, useOpenedText } from '../../src/sermons/sermonText';
 import { openWebSetting } from '../../src/settings/definitions/sermons';
 import { setSetting } from '../../src/settings/store';
 import { row, sourceOf } from '../support/sermon-sources';
@@ -30,6 +31,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   cleanup();
+  closeSermonText();
   vi.restoreAllMocks();
   forgetTestSermons();
 });
@@ -102,6 +104,68 @@ describe('the sermon chip', () => {
       const chip = await screen.findByRole('link', { name: 'Sermon: Love Commended ↗' });
       expect(chip).toHaveAttribute('href', 'https://sermons.test/testsermons/love');
       expect(chip).toHaveAttribute('target', '_blank');
+    });
+  });
+
+  describe('under "Lampas, read aloud" (mw-ecpivg5.4)', () => {
+    const spurgeon = row('spurgeon-ccel', '311', 'The Beginning, Increase, and End of the Divine Life', ['rom', 5, 8, 8], 'C. H. Spurgeon');
+    const video = { ...row('spurgeon-ccel', 'v1', 'A Video One', ['rom', 5, 8, 8]), open: { url: 'https://www.youtube.com/watch?v=abcdefghijk' } };
+    const other = row('henry-sermons', 'h1', 'Henry on Love', ['rom', 5, 8, 8], 'Matthew Henry');
+    // what the reader's host listens to: the sermon open in the reader
+    const Reader = () => <span data-testid="reader">{useOpenedText()?.id ?? 'none'}</span>;
+    const draw = (sermon: string) =>
+      render(
+        <>
+          <TutorLinks links={[{ kind: 'sermon', sermon }]} place={place} verse={8} onLeave={() => undefined} />
+          <Reader />
+        </>,
+      );
+    beforeEach(() => {
+      setSermonSources([sourceOf('spurgeon-ccel', 'Spurgeon Sermons', { rom: [spurgeon, video] }), sourceOf('henry-sermons', 'Henry Sermons', { rom: [other] })]);
+    });
+
+    it('opens the reader on a text sermon of a served source, and does not follow the link or leave the Talk sheet', async () => {
+      await setSetting(openWebSetting, 'lampas');
+      const onLeave = vi.fn();
+      render(
+        <>
+          <TutorLinks links={[{ kind: 'sermon', sermon: 'spurgeon-ccel:311' }]} place={place} verse={8} onLeave={onLeave} />
+          <Reader />
+        </>,
+      );
+      const chip = await screen.findByRole('link', { name: /^Sermon: The Beginning/ });
+      const followed = vi.fn();
+      // the document sees the click after the chip's own handler (React listens on the root): a prevented click follows no link
+      const see = (event: Event): void => followed(event.defaultPrevented);
+      document.addEventListener('click', see);
+      await userEvent.click(chip);
+      document.removeEventListener('click', see);
+      expect(screen.getByTestId('reader')).toHaveTextContent('311');
+      expect(followed).toHaveBeenCalledWith(true);
+      expect(onLeave).not.toHaveBeenCalled();
+    });
+
+    it('keeps the web link for a video of the source and for a source the index serves no words of', async () => {
+      await setSetting(openWebSetting, 'lampas');
+      for (const id of ['spurgeon-ccel:v1', 'henry-sermons:h1']) {
+        draw(id);
+        const chip = await screen.findByRole('link', { name: /^Sermon:/ });
+        chip.addEventListener('click', (event) => event.preventDefault());
+        await userEvent.click(chip);
+        expect(screen.getByTestId('reader')).toHaveTextContent('none');
+        expect(chip).toHaveAttribute('target', '_blank');
+        cleanup();
+      }
+    });
+
+    it.each(['browser', 'firefox'] as const)('keeps the web link under %s', async (choice) => {
+      await setSetting(openWebSetting, choice);
+      draw('spurgeon-ccel:311');
+      const chip = await screen.findByRole('link', { name: /^Sermon: The Beginning/ });
+      chip.addEventListener('click', (event) => event.preventDefault());
+      await userEvent.click(chip);
+      expect(screen.getByTestId('reader')).toHaveTextContent('none');
+      expect(chip).toHaveAttribute('href', 'https://sermons.test/spurgeon-ccel/311');
     });
   });
 
