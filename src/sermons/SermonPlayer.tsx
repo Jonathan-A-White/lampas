@@ -3,6 +3,7 @@
 // (autoplay blocked, or a play that never starts in 3 seconds), the video stands on one big Play button and nothing is lost. <SermonPlayerHost /> is mounted once, in App.
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNoDoor } from '../tutor/door';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
 import { closeSermon, useOpenedSermon } from './player';
@@ -116,6 +117,7 @@ function PlayerSheet({ title, children, onClose }: { title: string; children: Re
   const { drag, handle } = useSheetDrag(onClose);
   useEscapeToClose(onClose, true);
   useSheetBack(onClose);
+  useNoDoor(); // video: nothing on it to ask about, so no ? over it
   return createPortal(
     <div className="fixed inset-0 z-[60] flex flex-col justify-end">
       <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-black/60" />
