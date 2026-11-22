@@ -611,7 +611,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he long presses the woven Greek word {string} in verse {int}', async (_, form: string) => {
       const el = wovenWord(form);
       await user.pointer({ keys: '[MouseLeft>]', target: el, coords: { clientX: 100, clientY: 100 } });
-      await new Promise<void>((resolve) => setTimeout(resolve, HOLD_MS));
+      await new Promise<void>((resolve) => setTimeout(resolve, HOLD_MS)); // clock: a press's own hold time (HOLD_MS), the finger staying down
       await user.pointer({ keys: '[/MouseLeft]', target: el, coords: { clientX: 100, clientY: 100 } });
     });
     Then('the phone is told to speak only {string}', (_, form: string) => {

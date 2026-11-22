@@ -12,7 +12,7 @@ const MILL_KEY = PrivateKey.fromHex(MILL_KEY_HEX);
 export const MILL_PUBLIC_KEY = MILL_KEY.toPublicKey().toString();
 const millBytes = Uint8Array.from(Utils.toArray(MILL_KEY_HEX, 'hex'));
 // the bound on answer()'s wait is real time even where a test fakes the clock: taken before any test can install fake timers
-const realSetTimeout = globalThis.setTimeout;
+const realSetTimeout = globalThis.setTimeout; // clock: keeps the real timer for answer()'s bound where a test fakes the clock
 const realClearTimeout = globalThis.clearTimeout;
 
 /** What the fake opened of a grist: the header, the app's request, the attachments. */

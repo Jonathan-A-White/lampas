@@ -66,7 +66,7 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)); // clock: a press's own hold time: sleep() is used only by press()
 /** past the app's 500 ms hold */
 const HOLD_MS = 650;
 

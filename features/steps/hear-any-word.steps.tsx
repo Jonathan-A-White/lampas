@@ -61,7 +61,7 @@ afterAll(() => {
 });
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)); // clock: a press's own hold time: sleep() is used only by press()
 const HOLD_MS = 650;
 
 /** The text node holding `word` and the offset of its middle; the stand-in caret answers with it. */
