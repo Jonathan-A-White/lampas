@@ -2,6 +2,7 @@
 // and a search for the preacher finds the list.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { CATALOGUE } from '../../src/resources/catalogue';
 import { LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { SERMON_BOOKS } from '../../src/sermons/sources/logos';
 import { sourceList, type SourceInput } from '../../src/sermons/sourceList';
@@ -20,7 +21,7 @@ const list = (id: string, name: string): SermonSource => ({
 });
 
 const ids = Object.keys(LOGOS_RESOURCES);
-// his import keeps the books Lampas does not open too, so the books of every list are in it (four of batch 4's are in no catalogue kind, mw-qtu3zvz.24)
+// his import keeps the books Lampas does not open too, so the books of every list are in it
 const input = (owned: ReadonlySet<string> = new Set([...EVERY_BOOK, ...EVERY_LOGOS_SERMON])): SourceInput => ({
   sources: ids.map((id) => list(id, `${id} (Logos library)`)),
   books: SERMON_BOOKS,
@@ -51,10 +52,24 @@ describe('a list made from Logos books names them, with their authors', () => {
   });
 
   // the five volumes of Chrysostom's homilies are 'commentary' in the catalogue, not sermon books (mw-qtu3zvz.108): his list stands for them but names none
-  // and four of batch 4's books are in no kind of the catalogue (mw-qtu3zvz.24): Burroughs's Rare Jewel (WRKSBURROUGHS01) and Difference between the Spots (07), Keach's Ax Laid to the Root (BPTSTCVNTTHLGYAX) and Kuyper's Rooted & Grounded
-  const COMMENTARY = new Set(['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14', 'LLS:WRKSBURROUGHS01', 'LLS:WRKSBURROUGHS07', 'LLS:BPTSTCVNTTHLGYAX', 'LLS:TEASELEXKUYPROOT']);
+  const COMMENTARY = new Set(['LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14']);
 
-  it('every list names every sermon book it stands for, and the count is the 49 of logosSermonResources.ts, 40 of them sermon books', () => {
+  // four of batch 4's books are 'text.monograph' in the export, so no type rule takes them: the rules name them by id as sermon books (mw-qtu3zvz.237)
+  it("the four batch 4 books the export types 'text.monograph' are in the catalogue as sermon books", () => {
+    for (const resource of ['LLS:WRKSBURROUGHS01', 'LLS:WRKSBURROUGHS07', 'LLS:BPTSTCVNTTHLGYAX', 'LLS:TEASELEXKUYPROOT']) {
+      const entry = CATALOGUE.find((e) => e.resource === resource);
+      expect(entry, resource).toBeDefined();
+      expect(entry?.kind).toBe('sermons');
+      expect(entry?.author, resource).toBeTruthy();
+    }
+  });
+
+  it('every book of every list is in the catalogue, but the five volumes of Chrysostom', () => {
+    const missing = ids.flatMap((id) => LOGOS_RESOURCES[id]).filter((resource) => !COMMENTARY.has(resource) && !CATALOGUE.some((e) => e.resource === resource));
+    expect(missing).toEqual([]);
+  });
+
+  it('every list names every sermon book it stands for, and the count is the 49 of logosSermonResources.ts, 44 of them sermon books', () => {
     const source = readFileSync('src/data/logosSermonResources.ts', 'utf8');
     expect(source.match(/'LLS:[^']+'/g)).toHaveLength(49);
     let named = 0;
@@ -64,7 +79,7 @@ describe('a list made from Logos books names them, with their authors', () => {
       named += row.books?.length ?? 0;
       for (const b of row.books ?? []) expect(b.author, `${id}: ${b.title}`).toBeTruthy();
     }
-    expect(named).toBe(40);
+    expect(named).toBe(44);
   });
 
   it("a search for the preacher finds the list through its books' author", () => {

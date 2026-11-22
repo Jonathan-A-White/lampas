@@ -145,7 +145,11 @@
     {"resource":"LLS:6.60.11","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.11: Saint Chrysostom: Homilies on the Acts of the Apostles and the Epistle to the Romans","short":"NPNF1.11","series":"Early Church Fathers (Protestant Edition)","covers":["act","rom"]},
     {"resource":"LLS:6.60.12","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.12: Saint Chrysostom: Homilies on the Epistles of Paul to the Corinthians","short":"NPNF1.12","series":"Early Church Fathers (Protestant Edition)","covers":["1co","2co"]},
     {"resource":"LLS:6.60.13","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.13: Saint Chrysostom: Homilies on Galatians, Ephesians, Philippians, Colossians, Thessalonians, Timothy, Titus, and Philemon","short":"NPNF1.13","series":"Early Church Fathers (Protestant Edition)","covers":["gal","eph","php","col","1th","2th","1ti","2ti","tit","phm"]},
-    {"resource":"LLS:6.60.14","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.14: Saint Chrysostom: Homilies on the Gospel of St. John and Epistle to the Hebrews","short":"NPNF1.14","series":"Early Church Fathers (Protestant Edition)","covers":["jhn","heb"]}
+    {"resource":"LLS:6.60.14","kind":"commentary","title":"Nicene and Post-Nicene Fathers 1.14: Saint Chrysostom: Homilies on the Gospel of St. John and Epistle to the Hebrews","short":"NPNF1.14","series":"Early Church Fathers (Protestant Edition)","covers":["jhn","heb"]},
+    {"resource":"LLS:WRKSBURROUGHS01","kind":"sermons","title":"The Rare Jewel of Christian Contentment","short":"The Rare Jewel of Christian Contentment","author":"Jeremiah Burroughs"},
+    {"resource":"LLS:WRKSBURROUGHS07","kind":"sermons","title":"The Difference between the Spots of the Godly, and of the Wicked","short":"The Difference between the Spots of the Godly and Wicked","author":"Jeremiah Burroughs"},
+    {"resource":"LLS:BPTSTCVNTTHLGYAX","kind":"sermons","title":"The Ax Laid to the Root, Parts I & II","short":"Keach: The Ax Laid to the Root, Parts I and II","author":"Benjamin Keach"},
+    {"resource":"LLS:TEASELEXKUYPROOT","kind":"sermons","title":"Rooted & Grounded: The Church as Organism and Institution","short":"Kuyper: Rooted & Grounded","author":"Abraham Kuyper"}
   ],
   "types": [
     {"type":"lbx.reverse-interlinear","kind":"interlinear","needs":"nt"},
