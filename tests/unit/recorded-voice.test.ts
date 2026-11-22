@@ -358,6 +358,25 @@ describe('no sound before the start of the span (mw-82lb97i.28)', () => {
     expect(el.muted).toBe(false);
   });
 
+  // mw-fnvjof.17.248: the unmute came at 'seeked' and 'playing', which Chromium fires as the sound begins, so a page task that ran late on a busy host (24 ms) lost the start of the
+  // span (first sound 53 ms after it, the margin spec's 50 ms). A media fragment puts the element's second at the start by 'loadedmetadata', and nothing sounds until its seek is in:
+  // that is when it is let sound, ahead of the events that come with the sound.
+  it('a cold element whose media fragment already has its second at the start is unmuted at loadedmetadata, before its seek is in', () => {
+    playRecording(TIMINGS, 2, 20, listener, false);
+    const el = element();
+    expect(el.muted).toBe(true);
+    el.currentTime = 10; // the fragment's start, as Chromium reports it at loadedmetadata
+    el.dispatchEvent(new Event('loadedmetadata'));
+    expect(el.muted).toBe(false);
+  });
+
+  it('a cold element whose second is short of the start stays muted at loadedmetadata (the seek is made, not in)', () => {
+    playRecording(TIMINGS, 2, 20, listener, false);
+    const el = cold();
+    el.dispatchEvent(new Event('loadedmetadata'));
+    expect(el.muted).toBe(true);
+  });
+
   it('is unmuted by a timeupdate that finds the second at the start', () => {
     playRecording(TIMINGS, 2, 20, listener);
     const el = element();

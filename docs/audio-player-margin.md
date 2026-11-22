@@ -136,4 +136,7 @@ Before that, nothing was changed: today's player holds 0.05 s each side in every
 - The start's mute does not snap the second (mw-ar5k42b.58): a play on a freshly loaded element seeks it short of the start and mutes it until its second is there, and the spec
   (`recorded-voice-margin.spec.ts`, `holdStartWhole`) logs the element's second at each mute-then-unmute. In 60 plays (10 a case, 1x and 1.25x; 30 of them muted) the element read
   0 to 5 ms from the start at the unmute and the first sound was 17 ms before to 25 ms after the start, so nothing of the end's volume-0 snap shows at the start. Play again is never muted.
+- The unmute is lifted at `loadedmetadata` (mw-fnvjof.17.248), not only at 'seeked' and 'playing': those come as the sound does, and a page task run late on a busy host (24 ms) lost the start of the span
+  (first sound 53 ms from it, 1 run in 24 under `contrib/mw-under-load`, 8 workers; the unmutes then read 0 to 20 ms from the start). The media fragment (`#t=`) has the second at the start by
+  `loadedmetadata` and nothing sounds until its seek is in. After it: 24 of 24, every unmute 0 ms from the start, the first sound 20 to 33 ms; the spec holds the first unmute to 20 ms (`UNMUTE_WITHIN`).
 - Headless Chromium on the Laptop is not his phone's Chrome. The margin holds there with 33 ms to spare at the start and 45 ms at the end.
