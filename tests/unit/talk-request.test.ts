@@ -369,7 +369,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
   };
 
   it('fits the grist with the facts in it: the tell lines go first and the turns stay', async () => {
-    const { plain, built } = await padded(1560);
+    const { plain, built } = await padded(1850);
     expect(size(plain)).toBeLessThanOrEqual(MAX_REQUEST_BYTES);
     expect(size(built)).toBeGreaterThan(MAX_REQUEST_BYTES);
     const fitted = fitHistory(built, 0, 'rom.8@1');
@@ -381,7 +381,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
   });
 
   it('then drops the facts that repeat a field of the request, and still keeps the turns', async () => {
-    const { plain, built } = await padded(3660);
+    const { plain, built } = await padded(3960);
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.settings).toEqual(plain.settings);
@@ -392,11 +392,11 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
   });
 
   it('keeps no more of the client’s part than the room it leaves: the catalogue goes, then the facts', async () => {
-    const { plain, built } = await padded(5760);
+    const { plain, built } = await padded(6060);
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.catalogue).toBeUndefined();
-    const { plain: tight, built: tightest } = await padded(9880);
+    const { plain: tight, built: tightest } = await padded(10180);
     const none = fitHistory(tightest, 0, 'rom.8@1');
     expect(none.facts).toBeUndefined();
     expect(none.history).toEqual(tight.history);

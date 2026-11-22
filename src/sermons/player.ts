@@ -27,6 +27,31 @@ export function openSermon(row: LinkRow, options: { auto?: boolean } = {}): bool
   return true;
 }
 
+/** The sermon a spoken or typed ask chose (the tutor's play-sermon, src/tutor/registry.ts): held until the answer that names it has been said, then started with no tap by playQueuedSermon. */
+let queued: LinkRow | null = null;
+
+/** Holds `row` to play as the answer ends (the latest one wins). False, and nothing held, for a row that is no video the app plays. */
+export function queueSermon(row: LinkRow): boolean {
+  if (videoOfRow(row) === undefined) return false;
+  queued = row;
+  return true;
+}
+
+/** Plays the held sermon, started with no tap (openSermon's auto), and forgets it. False when none was held. */
+export function playQueuedSermon(): boolean {
+  const row = queued;
+  queued = null;
+  return row !== null && openSermon(row, { auto: true });
+}
+
+/** Forgets the held sermon without playing it (the answer was cut short, or another one came). */
+export function dropQueuedSermon(): void {
+  queued = null;
+}
+
+/** Whether a sermon is held to play (tests). */
+export const hasQueuedSermon = (): boolean => queued !== null;
+
 export function closeSermon(): void {
   if (current === null) return;
   current = null;
