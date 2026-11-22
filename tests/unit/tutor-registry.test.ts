@@ -106,7 +106,8 @@ describe('the catalogue and the screen key', () => {
     // then the fact variants (mw-9ji6ek0.7), about 150
     // then the command save-answer-references (mw-5r3p30.929), about 260
     // then the place tools (mw-5r3p30.754), about 70
-    expect(JSON.stringify(catalogue).length).toBeLessThan(6900);
+    // then the command play-sermon (mw-qtu3zvz.84), about 230
+    expect(JSON.stringify(catalogue).length).toBeLessThan(7200);
   });
 
   it('keys the up-front list by the screen name, the Reader for the plain address', () => {

@@ -18,12 +18,13 @@ import { talkSermonsFor } from './sermons/forTutor';
 import { getDeviceKeyBytes } from './services/deviceKey';
 import type { TalkSession } from './services/mill';
 import { dropVoiceTurn, tellVoiceTurn } from './handsFree/voiceTurn';
+import { dropQueuedSermon, playQueuedSermon } from './sermons/player';
 import { TutorError } from './services/tutor';
 import { checkedSyllables } from './speech/greekSyllables';
 import { stopAnswer } from './speech/readAloud';
 import { wasSpoken } from './speech/spoken';
 import { readTarget, type GoPlace } from './talk/go';
-import { addWord, askBack, askedNames, bibleTalkClient, bibleTalkRegistry, changeSettings, lookingLine, noteLateAsks, withPreviousAnswer, withTutorFacts } from './tutor/registry';
+import { addWord, askBack, askedNames, bibleTalkClient, bibleTalkRegistry, changeSettings, lookingLine, noteLateAsks, withPreviousAnswer, withTalkSermons, withTutorFacts } from './tutor/registry';
 import { doneLinesOf } from './talk/doneLines';
 import { holdUndo } from './talk/doneUndo';
 import { leaveSheetForTutor } from './ui/sheetBack';
@@ -269,7 +270,9 @@ export function useTalk(
           const { added, already, unknown } = await addWords(scope, answer.words_to_add ?? []);
           // The commands the answer names (`do`), run by the tutor client in order through the registry; a refused name or args is recorded as a miss, as are the misses the answer names. What each did is a line of the turn:
           // the app's own words for it, with its Undo when it can be undone, or for a command that needs his yes the question and a button (src/talk/DoneLine.tsx). It never fails the talk.
-          const taken = answer.do?.length || answer.misses?.length ? await withPreviousAnswer(turns.at(-1) && { answer: turns[turns.length - 1].a, question: turns[turns.length - 1].cleanQ ?? turns[turns.length - 1].q }, () => bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length)).catch(() => undefined) : undefined;
+          // a sermon held by an earlier answer is not this one's (play-sermon holds one to start once the answer is said, src/sermons/player.ts)
+          dropQueuedSermon();
+          const taken = answer.do?.length || answer.misses?.length ? await withTalkSermons(chapterSermons?.rows ?? [], () => withPreviousAnswer(turns.at(-1) && { answer: turns[turns.length - 1].a, question: turns[turns.length - 1].cleanQ ?? turns[turns.length - 1].q }, () => bibleTalkClient().takeAnswer({ do: answer.do, misses: answer.misses }, turns.length))).catch(() => undefined) : undefined;
           const ranDo = taken ? doneLinesOf(answer.do ?? [], taken, bibleTalkRegistry()) : undefined;
           if (ranDo) refused.push(...ranDo.refused);
           // A place he asked to be taken to (a chapter, or a screen the registry names): opened only while this talk's sheet is open. The chapter he is on stays (said so); a chapter that came after he closed the
@@ -303,12 +306,19 @@ export function useTalk(
           void answerDrawn(sentAs);
           // a turn Hands-free asked by voice (src/handsFree/ask.ts) is told its answer: the command speaks it, whether or not this sheet is open, and the sheet does not speak it a second time
           const heard = tellVoiceTurn(ref, { kind: 'answered', id, answer: answer.answer });
-          if (signal.aborted) return;
+          if (signal.aborted) {
+            dropQueuedSermon();
+            return;
+          }
           if (target) {
             const reopen = going.current?.leave?.();
             if (reopen) leaveSheetForTutor(reopen);
             await bibleTalkClient().takeAnswer({ go: { name: target.name, args: target.args } }, turns.length).catch(() => undefined);
-          } else if (!heard) answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
+          } else if (!heard) {
+            answered.current(ref, id, answer.answer, { focus, syllables: readableSyllables(focus, answer.syllables) });
+            // a sermon he asked for by typing starts now; one he asked for by voice starts when Hands-free has said the answer (src/handsFree/ask.ts)
+            playQueuedSermon();
+          }
         } catch (err) {
           if (signal.aborted) {
             dropVoiceTurn(ref);

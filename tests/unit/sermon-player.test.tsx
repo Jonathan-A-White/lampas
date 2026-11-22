@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { closeSermon, openSermon as openSermonNow } from '../../src/sermons/player';
+import { closeSermon, dropQueuedSermon, hasQueuedSermon, openSermon as openSermonNow, playQueuedSermon, queueSermon } from '../../src/sermons/player';
 import { ASYNC_WAIT_MS as timeout } from '../support/timeouts';
 import { SermonPlayerHost } from '../../src/sermons/SermonPlayer';
 import { videoOf } from '../../src/sermons/video';
@@ -146,5 +146,32 @@ describe('openSermon', () => {
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(made[0].destroyed).toBe(true);
+  });
+});
+
+describe('a held sermon (the tutor\'s play-sermon, mw-qtu3zvz.84)', () => {
+  afterEach(() => dropQueuedSermon());
+
+  it('is held until the answer is said, then starts with no tap, and is forgotten', async () => {
+    render(<SermonPlayerHost />);
+    expect(queueSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF'))).toBe(true);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    let played = false;
+    act(() => {
+      played = playQueuedSermon();
+    });
+    expect(played).toBe(true);
+    await screen.findByRole('dialog', { name: 'The Day of the Lord' });
+    await vi.waitFor(() => expect(made[0]?.played).toBe(1), { timeout });
+    expect(hasQueuedSermon()).toBe(false);
+    expect(playQueuedSermon()).toBe(false);
+  });
+
+  it('holds nothing for a row that is no video, and plays nothing once dropped', () => {
+    expect(queueSermon(yt('https://example.org/sermon.html'))).toBe(false);
+    expect(hasQueuedSermon()).toBe(false);
+    queueSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF'));
+    dropQueuedSermon();
+    expect(playQueuedSermon()).toBe(false);
   });
 });

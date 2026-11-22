@@ -31,6 +31,8 @@ import { memorizeSessionOf, navigate, openVerseList, ROUTES, readerOf, routeOf, 
 import { CATALOGUE } from '../resources/catalogue';
 import { armFallback } from '../resources/openApp';
 import { worksForTutor, workChip } from '../resources/tutorLinks';
+import { queueSermon, videoOfRow } from '../sermons/player';
+import type { LinkRow } from '../sermons/merge';
 import { workOf } from '../resources/works';
 import { setPractise } from '../review/practise';
 import { higherInterest } from '../services/interestField';
@@ -439,9 +441,40 @@ const saveAnswerReferencesCommand: Command = {
   },
 };
 
-/** The Bible talk's registry: eleven facts (three core), the nine commands, a place for every screen, for a chapter and for a book of his shelf. */
+// The sermons of the talk being answered (the rows its request listed), set only around one takeAnswer, by withTalkSermons: play-sermon plays only a row among them.
+let talkSermons: readonly (LinkRow & { id: string; source: string })[] = [];
+
+/** Runs `run` (the client taking an answer's `do`) with `rows`, the sermons the talk's request listed, for play-sermon to find the one the tutor names. */
+export async function withTalkSermons<T>(rows: readonly (LinkRow & { id: string; source: string })[], run: () => Promise<T>): Promise<T> {
+  const kept = talkSermons;
+  talkSermons = rows;
+  try {
+    return await run();
+  } finally {
+    talkSermons = kept;
+  }
+}
+
+/** Plays a sermon of the talk's request (its `sermons.rows`, named '<source>:<id>', one the request says plays) in the app's player, with no tap (mw-qtu3zvz.84, docs/sermons.md 'Play by asking'). The sermon is held and
+ *  starts as the answer that names it has been said (src/sermons/player.ts playQueuedSermon: Hands-free's ask, or the Talk sheet), so the title and preacher are heard first. A sermon the request did not list, or a text one, is refused. */
+const playSermonCommand: Command = {
+  name: 'play-sermon',
+  tell: 'Plays a sermon (sermons.rows source:id, with plays) in the app after the answer',
+  args: { type: 'object', required: ['sermon'], additionalProperties: false, properties: { sermon: { type: 'string' } } },
+  kind: 'free',
+  run: async (args): Promise<CommandResult> => {
+    const { sermon } = args as { sermon: string };
+    const row = talkSermons.find((r) => `${r.source}:${r.id}` === sermon);
+    if (!row) throw new Error('that sermon is not one the request listed');
+    if (videoOfRow(row) === undefined) throw new Error(`${row.title} is not a video the app plays`);
+    queueSermon(row);
+    return { said: `Playing ${row.title}` };
+  },
+};
+
+/** The Bible talk's registry: eleven facts (three core), the ten commands, a place for every screen, for a chapter and for a book of his shelf. */
 export const lampasRegistry = (): Registry =>
-  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, saveAnswerReferencesCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
+  defineRegistry({ facts: FACTS, commands: [setSettingCommand, tickTodayCommand, startReviewCommand, addWordCommand, saveAnswerReferencesCommand, playSermonCommand, ...memorizeCommands], places: [...ROUTES.map((route) => (route === 'memorize' ? memorizePlace : route === 'lists' ? listsPlace : placeForRoute(route))), chapterPlace, workPlace] });
 
 /** The tutor's record (the ask-backs and misses of each screen) and the up-front list of each screen are kept on the phone, in a database of their own (the kit's Dexie store; its talks table is not used: the Bible talks are Lampas's own,
  * src/data/repositories/talks.ts), so that the counts last from one launch to the next and the nightly run (src/tutor/weightsRun.ts) has a week of them to read. The clients of both grinds and the nightly one write to it. */

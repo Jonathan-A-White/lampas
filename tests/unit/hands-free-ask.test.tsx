@@ -26,6 +26,9 @@ import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speec
 import { seedHisWords } from '../support/his-words';
 import { serveWakeModel, stubWake, type WakeFake } from '../support/fake-wake';
 import { ManualClock } from '../support/manual-clock';
+import { row, sourceOf } from '../support/sermon-sources';
+import { setSermonSources } from '../../src/sermons';
+import { closeSermon } from '../../src/sermons/player';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 const timeout = ASYNC_WAIT_MS;
@@ -115,6 +118,8 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  act(() => closeSermon());
+  setSermonSources(undefined);
   cleanup();
   stopReading();
   resetHandsFree();
@@ -173,6 +178,42 @@ describe('Hands-free ask', () => {
     const [turn] = await db.talks.toArray();
     expect(turn.done).toEqual([{ name: 'delete-note', kind: 'confirm', said: 'Delete the note?', args: {} }]);
     expect(ran).toBe(0);
+  });
+
+  describe('a sermon the answer plays (the tutor\'s play-sermon, mw-qtu3zvz.84)', () => {
+    const clay = { ...row('tv', 'clay', 'Lightning in Clay Pots', ['jhn', 3, 1, 21], 'Phil Morgan'), open: { url: 'https://www.youtube.com/watch?v=clay_pots_1' } };
+    const SAYS = 'Lightning in Clay Pots, preached by Phil Morgan.';
+    const playing = { answer: SAYS, words: [], do: [{ name: 'play-sermon', args: { sermon: 'tv:clay' } }] };
+    const player = (): HTMLElement | null => document.querySelector<HTMLElement>('[data-sermon-player]');
+
+    it('starts in the player only after the answer has been spoken, with no tap', async () => {
+      setSermonSources([sourceOf('tv', 'Test Video', { jhn: [clay] })]);
+      await openJohn3(playing);
+      const first = await wakeUp();
+      await says(first, 'ask play a sermon on this chapter');
+      await untilAnswerIsSpoken();
+      await waitFor(() => expect(spoken().join(' ')).toContain(SAYS), { timeout });
+      // the title and preacher are being said: nothing plays over them
+      expect(synth.speaking).toBe(true);
+      expect(player()).toBeNull();
+      act(() => synth.finish());
+      await waitFor(() => expect(player()).not.toBeNull(), { timeout });
+      expect(player()).toHaveAttribute('aria-label', 'Lightning in Clay Pots');
+    });
+
+    it('does not start when a wake cut the answer short', async () => {
+      setSermonSources([sourceOf('tv', 'Test Video', { jhn: [clay] })]);
+      await openJohn3(playing);
+      const first = await wakeUp();
+      await says(first, 'ask play a sermon on this chapter');
+      await untilAnswerIsSpoken();
+      await waitFor(() => expect(spoken().join(' ')).toContain(SAYS), { timeout });
+      act(() => void wake.say());
+      await waitFor(() => expect(synth.speaking).toBe(false), { timeout });
+      // a real-time wait: a window in which nothing must happen (the sermon must stay unopened)
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(player()).toBeNull();
+    });
   });
 
   it("a tutor that cannot answer is said so with the Talk's own reason, and the session waits again with the Bible going on", async () => {

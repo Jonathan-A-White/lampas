@@ -34,6 +34,7 @@ Reading needs no licence.
   - [The search](#the-search)
   - [What Lampas fetches from other hosts](#what-lampas-fetches-from-other-hosts)
 - [The player](#the-player)
+- [Play by asking](#play-by-asking)
 - [Open web sermons in](#open-web-sermons-in)
 - [The reader](#the-reader)
 - [The tutor](#the-tutor)
@@ -335,6 +336,10 @@ A row is played from the address the sheet opens (`openedRow`: the Subsplash alt
 `openSermon(row, { auto? })` (`src/sermons/player.ts`; `<SermonPlayerHost />` in `src/sermons/SermonPlayer.tsx`, mounted in App) is the one way in; false for a row that is no video. **With `auto: true`**, which is for Lampas opening a sermon itself (a voice ask), YouTube is started with no tap
 (`playVideo()` on ready; Chrome allows autoplay with sound for a site added to the home screen). If the browser refuses (the player's `onAutoplayBlocked`, or nothing playing within `PLAY_WAIT_MS`, 3 s, the NotAllowedError a rejected play() gives) the sheet shows one big **Play** button over the video, and a tap on it plays. Subsplash's embed cannot be started from outside its frame, so `auto` only opens it.
 Tests: `tests/unit/sermon-player.test.tsx` (a fake `window.YT`) and the last two tests of `tests/e2e/sermons.spec.ts` (the IFrame API script served as a fake). Nothing of the sermon's own words or pictures is copied; the credit is in ATTRIBUTION.md.
+
+## Play by asking
+
+He asks the Bible talk to play a sermon, typed or by voice through Hands-free ('ask play a sermon on 2 Corinthians 13', or 'play Lightning in Clay Pots' in the tutor's follow-up window), and it plays in the player above (mw-qtu3zvz.84; his answer A to the grill mw-qtu3zvz.82). The request's `sermons.rows` carry `plays: true` on a row the app plays in its own player (`videoOfRow`, src/sermons/forTutor.ts), so the tutor picks only among those. It answers in one short line, the title and the preacher, and runs the command **`play-sermon`** (`{sermon: '<source>:<id>'}`, kind `free`, src/tutor/registry.ts) in its `do`: no new answer field, no chip. The command looks the row up among the rows that request listed (`withTalkSermons`, set around the client's `takeAnswer` in `src/useTalk.ts`) and refuses a sermon the request did not list or one that is no video; the Talk sheet then says `Could not play ...` and nothing opens. A passed command only HOLDS the row (`queueSermon`, `src/sermons/player.ts`): it starts with `openSermon(row, { auto: true })` as the answer ends, so the title and preacher are heard first, never over the sermon. In Hands-free (`src/handsFree/ask.ts`) that is when the answer's speech ends (`playQueuedSermon`), and a wake that cut the speech short drops it (`dropQueuedSermon`); typed in the Talk sheet it starts as the answer is kept. No match: the tutor says so and runs nothing; several close matches: it names up to three ('Also: ...') and plays the first unless he named another. The rule is the `plays` description of the input schema (the bible-talk instructions are at their room, so part 200's sermon paragraph only points to it); the examples `play-sermon`, `play-sermon-text-only` and `play-sermon-none`. Only the rows the request lists (the passage's own, then those on the same theme, at most 8): a title of another chapter is not found. A Subsplash row opens the embed and waits on its own Play button (see 'The player'). Tests: `features/sermons-play.feature` (the fake mill), `tests/unit/hands-free-ask.test.tsx`, `tests/unit/tutor-commands.test.ts`.
 
 ## Open web sermons in
 
