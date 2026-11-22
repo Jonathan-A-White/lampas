@@ -85,13 +85,24 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
   );
 }
 
+/** The rows with a sermon that is listed twice (the same source and id) once, the first kept: a list is keyed by them (mw-qtu3zvz.252). */
+function once<T extends { source: string; id: string }>(rows: ReadonlyArray<T>): T[] {
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    const key = `${row.source}:${row.id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function Group({ title, rows, online, part }: { title: string; rows: SermonRow[]; online: boolean; part: 'here' | 'chapter' }) {
   if (rows.length === 0) return null;
   return (
     <div role="group" aria-label={title} data-sermons-part={part} className="pb-3">
       <h3 className="pb-1 text-base font-semibold">{title}</h3>
       <div className="flex flex-col gap-2">
-        {rows.map((row) => (
+        {once(rows).map((row) => (
           <Row key={`${row.source}:${row.id}`} row={row} online={online} />
         ))}
       </div>
@@ -168,7 +179,7 @@ function TopicGroup({ id, label, rows, online }: { id: string; label: string; ro
     <div role="group" aria-label={`On ${label}`} data-theme-topic={id} className="pb-3">
       <h4 className="pb-1 text-sm font-semibold text-muted">{`On ${label}`}</h4>
       <div className="flex flex-col gap-2">
-        {rows.map((row) => (
+        {once(rows).map((row) => (
           <Row key={`${row.source}:${row.id}`} row={row} online={online} why={row.notes ? whyOf(row) : undefined} />
         ))}
       </div>
@@ -261,7 +272,7 @@ function ThemeHit({ source, id, title, rows, open, onToggle, online }: { source:
       </button>
       {open ? (
         <div className="flex flex-col gap-2 pt-2 pl-3">
-          {rows.map((row) => (
+          {once(rows).map((row) => (
             <Row key={`${row.source}:${row.id}`} row={row} online={online} />
           ))}
         </div>

@@ -2,12 +2,12 @@
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SermonsDoor } from '../../src/sermons/SermonsDoor';
 import { SermonsHost } from '../../src/sermons/SermonsSheet';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { setSermonSources } from '../../src/sermons';
-import { row, sourceOf } from '../support/sermon-sources';
+import { row, sourceOf, TEST_ROWS } from '../support/sermon-sources';
 import { forgetTestSermons, registerTestSermons } from '../support/test-sermons';
 
 afterEach(() => {
@@ -135,6 +135,26 @@ describe('the Sermons sheet', () => {
     // one link a row, and no YouTube link beside a Subsplash one
     expect(sheet.querySelectorAll('a[data-sermon-row]')).toHaveLength(4);
     expect([...sheet.querySelectorAll('a')].filter((a) => a.getAttribute('href')?.includes('youtube')).map((a) => a.closest('[data-sermon-row]')?.querySelector('[data-sermon-title]')?.textContent)).toEqual(['A PDF', 'No alt']);
+  });
+
+  it('shows a sermon once when two sources list the same source and id (mw-qtu3zvz.252), with no duplicate-key warning', async () => {
+    // the tests' Off source carries the rows of 'testsermons' too, so with both On the sheet is given each of them twice
+    setSermonSources([sourceOf('testsermons', 'Test Sermons', TEST_ROWS), sourceOf('testtwin', 'Test Twin Sermons', TEST_ROWS)]);
+    const warn = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const sheet = await openFor({ book: 'rom', chapter: 5, from: 8, to: 8 });
+      const titles = [...sheet.querySelectorAll('a[data-sermon-row]')].map((r) => r.querySelector('[data-sermon-title]')?.textContent);
+      expect(titles).toEqual(['Love Commended', 'Peace with God', 'Reigning in Life', 'Death in Adam, Life in Christ']);
+      expect(warn.mock.calls.map((call) => String(call[0]) + String(call[1] ?? '')).filter((text) => text.includes('same key'))).toEqual([]);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('counts a sermon once at the door when two sources list it', async () => {
+    setSermonSources([sourceOf('testsermons', 'Test Sermons', TEST_ROWS), sourceOf('testtwin', 'Test Twin Sermons', TEST_ROWS)]);
+    render(<SermonsDoor place={{ book: 'rom', chapter: 5, from: 8, to: 8 }} />);
+    expect(await screen.findByRole('button', { name: 'Sermons · 4' })).toBeInTheDocument();
   });
 
   it('closes with Close', async () => {

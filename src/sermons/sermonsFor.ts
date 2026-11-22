@@ -34,6 +34,16 @@ export async function sermonsForSources(sources: readonly SermonSource[], place:
 
 /** The groups of a place from each source's rows (in the sources' order, each source's rows together): the rows whose text overlaps the verse or passage first, the rest of the chapter after them. The merge with the service's rows (merge.ts) groups again with it. */
 export function groupAnswers(answers: readonly (readonly SermonRow[])[], place: SermonPlace): SermonsFound {
+  // a sermon two sources both list (the same source and id) is one row, the first one's (mw-qtu3zvz.252)
+  const seen = new Set<string>();
+  answers = answers.map((rows) =>
+    rows.filter((row) => {
+      const key = `${row.source}:${row.id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }),
+  );
   const from = place.from;
   if (from === undefined) return { here: [], chapter: answers.flat() };
   const to = place.to ?? from;
