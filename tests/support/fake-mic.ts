@@ -28,7 +28,9 @@ export function stubMic(options: Omit<MicOptions, 'clock'> = {}): StubbedMic {
 
 /** One input of the phone as enumerateDevices names it; `silent` makes it give nothing but silence for good (a car's route that carries no sound). The three
  * others are routes that carry no sound either, in the ways a real one can (mw-5r3p30.1231): `floor`, every sample sits that many 16-bit steps off zero and
- * wobbles by the least step (a route's offset and dither); `click`, a pop of 20 ms as the route connects, then silence; `stalled`, no samples come at all. */
+ * wobbles by the least step (a route's offset and dither); `click`, a pop of 20 ms as the route connects, then silence; `stalled`, no samples come at all.
+ * Any other input is live: it plays the clip over the room's own noise, which never stops (a real microphone never gives exact zeros), unless `soundMs` says it
+ * falls silent (mw-5r3p30.1242). */
 export interface PhoneInput {
   deviceId: string;
   label: string;
@@ -37,6 +39,23 @@ export interface PhoneInput {
   floor?: number;
   click?: boolean;
   stalled?: boolean;
+  /** A live input that gives only exact zeros once it has carried sound for this many ms from when it was first read, by any stream: a route torn down (the
+   * car's Bluetooth SCO), or the phone's microphone muted by a call. */
+  soundMs?: number;
+  /** With `soundMs`: the sound comes back this many ms after it stopped (the call ended). */
+  soundAgainMs?: number;
+}
+
+/** The room's noise under a live input: a wobble of ROOM_STEPS 16-bit steps either side of the clip (about -70 dBFS), well above a dead route's least wobble. */
+const ROOM_STEPS = 12;
+
+/** A route that carries no sound in one of the ways other than exact zeros. */
+const routeOnly = (input: PhoneInput): boolean => input.floor !== undefined || !!input.click || !!input.stalled;
+
+/** Whether a live input carries sound `elapsedMs` after it was first read (`soundMs`, `soundAgainMs`). */
+function soundingAt(input: PhoneInput, elapsedMs: number): boolean {
+  if (input.soundMs === undefined || elapsedMs < input.soundMs) return true;
+  return input.soundAgainMs !== undefined && elapsedMs >= input.soundMs + input.soundAgainMs;
 }
 
 /** How long the pop of a `click` input lasts, from the first samples read of it (the route connecting as it is first listened to). */
@@ -47,14 +66,18 @@ interface ReadableStream16 {
   read(fromMs: number, toMs: number): Uint8Array;
 }
 
-/** Makes the honest stream of a silent route give what `input` says it carries instead of exact zeros. */
-function carry(stream: ReadableStream16, input: PhoneInput): void {
+/** Makes the honest stream of an input give what `input` says it carries: a silent route's offset, pop or nothing instead of exact zeros, and a live input's
+ * room under its clip (or exact zeros while it is muted). `firstRead` is when the input was first read, by any of its streams (Date.now()). */
+function carry(stream: ReadableStream16, input: PhoneInput, firstRead: Map<PhoneInput, number>): void {
   const read = stream.read.bind(stream);
+  const live = !routeOnly(input) && !input.silent;
   let first: number | undefined;
   stream.read = (fromMs, toMs) => {
     const pcm = read(fromMs, toMs);
     first ??= fromMs;
     if (input.stalled) return new Uint8Array(0);
+    if (!firstRead.has(input)) firstRead.set(input, Date.now());
+    const sounding = soundingAt(input, Date.now() - (firstRead.get(input) ?? Date.now()));
     const view = new DataView(pcm.buffer, pcm.byteOffset, pcm.byteLength);
     const frames = pcm.byteLength / 2;
     const msPer = frames > 0 ? (toMs - fromMs) / frames : 0;
@@ -63,6 +86,7 @@ function carry(stream: ReadableStream16, input: PhoneInput): void {
       let value = view.getInt16(i * 2, true);
       if (input.floor !== undefined) value += input.floor + (i % 2);
       if (input.click && at < first + CLICK_MS) value = i % 2 === 0 ? 16_000 : -16_000;
+      if (live) value = sounding ? Math.max(-32768, Math.min(32767, value + ((i * 7) % (2 * ROOM_STEPS + 1)) - ROOM_STEPS)) : 0;
       view.setInt16(i * 2, value, true);
     }
     return pcm;
@@ -87,6 +111,7 @@ export function stubPhoneInputs(inputs: readonly PhoneInput[], options: Omit<Mic
   const honest = installMic(host, { ...options, clip: options.clip ?? clips.english });
   const fake = host.navigator!.mediaDevices;
   const before = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices');
+  const firstRead = new Map<PhoneInput, number>();
   const named = (constraints: MediaStreamConstraints | undefined): PhoneInput | undefined => {
     const audio = constraints?.audio;
     const wanted = typeof audio === 'object' && audio.deviceId && typeof audio.deviceId === 'object' && 'exact' in audio.deviceId ? audio.deviceId.exact : 'default';
@@ -98,10 +123,9 @@ export function stubPhoneInputs(inputs: readonly PhoneInput[], options: Omit<Mic
       const input = named(constraints);
       if (!input) return Promise.reject(Object.assign(new Error('Requested device not found'), { name: 'OverconstrainedError' }));
       honest.options.label = input.label;
-      const routeOnly = input.floor !== undefined || input.click || input.stalled;
-      honest.options.silent = input.silent || routeOnly ? Infinity : false;
+      honest.options.silent = input.silent || routeOnly(input) ? Infinity : false;
       const opened = fake.getUserMedia(constraints);
-      return routeOnly ? opened.then((stream) => (carry(stream as unknown as ReadableStream16, input), stream)) : opened;
+      return input.silent ? opened : opened.then((stream) => (carry(stream as unknown as ReadableStream16, input, firstRead), stream));
     },
   };
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: mediaDevices });

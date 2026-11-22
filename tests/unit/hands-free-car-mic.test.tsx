@@ -12,6 +12,8 @@ import { db } from '../../src/data/db';
 import { HandsFreeGate } from '../../src/handsFree/HandsFreeGate';
 import { handsFreeSeam, resetHandsFree } from '../../src/handsFree/session';
 import { setHandsFree } from '../../src/handsFree/switch';
+import { wakeFoundSilent } from '../../src/handsFree/wakeInput';
+import { wakeLogSeam } from '../../src/handsFree/wakeLog';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubPhoneInputs, type PhoneInput, type PhoneInputs } from '../support/fake-mic';
 import { FakeRecognizer, stubRecognizer } from '../support/fake-recognizer';
@@ -51,6 +53,7 @@ afterEach(() => {
   stopReading();
   resetHandsFree();
   delete handsFreeSeam.quietMs;
+  delete wakeLogSeam.reportMs;
   wake.uninstall();
   phone?.uninstall();
   phone = null;
@@ -189,6 +192,48 @@ describe("'Hey Lampas' over the car's Bluetooth", () => {
     await waitFor(() => expect(logged().some((line) => line.includes('no samples from "Bluetooth headset"'))).toBe(true));
     expect(heard.heardOn).toEqual(['Bluetooth headset']);
     expect(wake.listening).toBe(true);
+  });
+
+  // mw-5r3p30.1242: an input found live was never watched again, so a route that fell silent later (the car's Bluetooth SCO torn down) kept the wake on it
+  it("leaves the car's Bluetooth route for the phone's microphone when it carries sound for a second and then only zeros (the route torn down)", async () => {
+    await turnOnWith([
+      { deviceId: 'default', label: 'Default', groupId: 'car', soundMs: 1000 },
+      { deviceId: 'car-bt', label: 'Bluetooth headset', groupId: 'car', soundMs: 1000 },
+      { deviceId: 'phone-mic', label: 'Phone microphone', groupId: 'phone' },
+    ]);
+    // the car's route is live at first: the wake settles there
+    await waitFor(() => expect(logged().some((line) => line.includes(`listening for 'Hey Lampas' on "Bluetooth headset"`))).toBe(true));
+    // then it gives only zeros, and the wake moves to the phone's microphone
+    await waitFor(() => expect(heard.heardOn.at(-1)).toBe('Phone microphone'));
+    expect(heard.heardOn).toEqual(['Bluetooth headset', 'Phone microphone']);
+    expect(phone?.openLabels()).toEqual(['Phone microphone']);
+    expect(wakeFoundSilent('car-bt')).toBe(true);
+    expect(wake.listening).toBe(true);
+    expect(wake.say()).toBe(true);
+  });
+
+  it("stays on the phone's microphone while a call mutes it, never on the car's silent default, and hears there when the call ends", async () => {
+    wakeLogSeam.reportMs = 300;
+    await turnOnWith([
+      { deviceId: 'default', label: 'Default', groupId: 'car', silent: true },
+      { deviceId: 'car-bt', label: 'Bluetooth headset', groupId: 'car', silent: true },
+      // live for a second, then muted by a call for 1.5 s, then live again
+      { deviceId: 'phone-mic', label: 'Phone microphone', groupId: 'phone', soundMs: 1000, soundAgainMs: 1500 },
+    ]);
+    await waitFor(() => expect(heard.heardOn.at(-1)).toBe('Phone microphone'));
+    const reports = (pattern: RegExp): number => logged().findLastIndex((line) => pattern.test(line));
+    // the call: what the wake hears on the phone's microphone is silence
+    await waitFor(() => expect(reports(/on "Phone microphone", the last [\d.]+ s: peak silence/)).toBeGreaterThanOrEqual(0));
+    const muted = reports(/on "Phone microphone", the last [\d.]+ s: peak silence/);
+    // the call ends: it hears again, on the phone's microphone
+    await waitFor(() => expect(reports(/on "Phone microphone", the last [\d.]+ s: peak -?[\d.]+ dBFS/)).toBeGreaterThan(muted));
+    // a report may show the first sound before HEARD_MS of it is heard: the mark is off once it is
+    await waitFor(() => expect(wakeFoundSilent('phone-mic')).toBe(false));
+    expect(heard.heardOn).not.toContain('Default');
+    expect(heard.heardOn.at(-1)).toBe('Phone microphone');
+    expect(phone?.openLabels()).toEqual(['Phone microphone']);
+    expect(wake.listening).toBe(true);
+    expect(wake.say()).toBe(true);
   });
 
   // mw-5r3p30.1224: the command after the wake is heard on the same kind of live input, not on whatever Android's own recogniser picks
