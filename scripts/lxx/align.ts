@@ -6,22 +6,22 @@
 //   { t, g: [the Greek word], s?, c: its confidence 0 to 1, y: 'align' }       an aligned chunk; the paired word's `e` is the chunk's position
 //   { t, g: [], s?, y: 'align?' }                                              a run of English words the aligner could not pair, for the model pass; the Greek words with no `e` are the ones it has to place
 // The chunks, joined by a space, are Brenton's whole verse, and no Greek word is dropped: one with no `e` has no English yet. `lxx:ship` aligns every chapter it ships (ship.ts);
-// `lxx:align` runs that ship into a directory (default a temporary one) and writes the aligned share of each chapter between the markers of docs/lxx-align.md. PROVISIONAL, Governor to confirm: the shape, `c`, `y`.
+// `lxx:align` runs that ship into a directory (default a temporary one) and writes the aligned share of each chapter into the file of its book, docs/lxx-align/<code>.txt (mw-u2w5klk.349.73). PROVISIONAL, Governor to confirm: the shape, `c`, `y`.
 // The model pass (align-choose.ts, mw-u2w5klk.274.2) then replaces each remainder by chunks `{ t, g, s?, c, y: 'model' }` where a Builder session has cut it (data/lxx/align); alignChapter applies its rows.
 // Last, the words Brenton supplies for a verb ('Let there', 'there', 'he', 'it') join the chunk of the verb after them ('Let there be'), so a tap on them finds the Greek (mw-u2w5klk.274.9).
 // No network beyond what the ship fetches; no paid API is called.
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { applyFixes, applyModel, type ModelRow } from './align-choose';
 import { morpheusLine, refuseOtherCaches } from './morpheus';
 import type { ShipOptions } from './ship';
 
-export const ALIGN_DOC = join('docs', 'lxx-align.md');
-export const ALIGN_START = '<!-- lxx-align:start -->';
-export const ALIGN_END = '<!-- lxx-align:end -->';
+/** Where the aligned share of each book's chapters is written, one file a book (mw-u2w5klk.349.73): docs/lxx-align/<code>.txt. Not .md: CLAUDE.md names every .md under docs/. */
+export const ALIGN_REPORT_DIR = join('docs', 'lxx-align');
+export const alignReportFile = (code: string, dir: string = ALIGN_REPORT_DIR): string => join(dir, `${code.toLowerCase()}.txt`);
 
 /** A chunk at or above this confidence is "sure" in the report: a gloss or a name that matched, not a guess by place. */
 export const SURE = 0.6;
@@ -552,12 +552,15 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
 const pct = (part: number, whole: number): string => (whole === 0 ? '—' : `${((100 * part) / whole).toFixed(1)}%`);
 const num = (n: number): string => n.toLocaleString('en-US');
 
-/** The report's text between the markers: one row for each chapter shipped, and one for each book. */
+const ALIGN_HEADER = ['| Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |', '| --- | --- | --- | --- | --- | --- | --- |'];
+const alignLine = (name: string, s: { verses: number; words: number; paired: number; sure: number; model: number }): string =>
+  `| ${name} | ${num(s.verses)} | ${num(s.words)} | ${num(s.paired)} | ${pct(s.paired, s.words)} | ${pct(s.sure, s.words)} | ${s.model === 0 ? '—' : `${num(s.model)} (${pct(s.model, s.words)})`} |`;
+
+/** The report's text for any shares: one row for each chapter shipped, one for each book and the sum (a book's own file is renderBookReport). */
 export function renderAlignReport(shares: readonly AlignShare[], withoutMorpheus?: readonly string[]): string {
   const rows = [...shares].sort((a, b) => (a.code < b.code ? -1 : a.code > b.code ? 1 : a.chapter - b.chapter));
-  const header = ['| Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |', '| --- | --- | --- | --- | --- | --- | --- |'];
-  const line = (name: string, s: { verses: number; words: number; paired: number; sure: number; model: number }): string =>
-    `| ${name} | ${num(s.verses)} | ${num(s.words)} | ${num(s.paired)} | ${pct(s.paired, s.words)} | ${pct(s.sure, s.words)} | ${s.model === 0 ? '—' : `${num(s.model)} (${pct(s.model, s.words)})`} |`;
+  const header = ALIGN_HEADER;
+  const line = alignLine;
   const out = [...(withoutMorpheus ? [morpheusLine(withoutMorpheus), ''] : []), '### Each chapter shipped', '', ...header, ...rows.map((s) => line(`${s.book} ${s.chapter}`, s))];
   const books = new Map<string, AlignShare[]>();
   for (const s of rows) books.set(s.code, [...(books.get(s.code) ?? []), s]);
@@ -571,17 +574,49 @@ export function renderAlignReport(shares: readonly AlignShare[], withoutMorpheus
   return out.join('\n');
 }
 
-/** Writes the report between the markers of the doc, leaving the rest of the file as it is; false where the file already says it. */
-export function writeAlignReport(doc: string, shares: readonly AlignShare[], withoutMorpheus?: readonly string[], force = false): boolean {
-  const text = readFileSync(doc, 'utf8');
-  const start = text.indexOf(ALIGN_START);
-  const end = text.indexOf(ALIGN_END);
-  if (start < 0 || end < start) throw new Error(`${doc} has no ${ALIGN_START} and ${ALIGN_END} markers`);
-  refuseOtherCaches(doc, text.slice(start, end), withoutMorpheus, force);
-  const next = `${text.slice(0, start + ALIGN_START.length)}\n\n${renderAlignReport(shares, withoutMorpheus)}\n\n${text.slice(end)}`;
-  if (next === text) return false;
-  writeFileSync(doc, next);
+/** The one book's file as it is written: its chapters' shares, the line that says whether the book was derived without a Morpheus cache, and the book's own row. Nothing in it reads another book. */
+export function renderBookReport(shares: readonly AlignShare[], without: boolean): string {
+  const rows = [...shares].sort((a, b) => a.chapter - b.chapter);
+  const { code, book } = rows[0];
+  const sum = rows.reduce((a, s) => ({ verses: a.verses + s.verses, words: a.words + s.words, paired: a.paired + s.paired, sure: a.sure + s.sure, model: a.model + s.model }), { verses: 0, words: 0, paired: 0, sure: 0, model: 0 });
+  return [
+    `${book}: the aligned share of each chapter shipped`,
+    '',
+    `GENERATED by \`npm run lxx:align-expect -- --book ${code}\` (and by \`npm run lxx:align\`, for every book): do not edit it. The columns are those of docs/lxx-align.md, 'The report'.`,
+    '',
+    morpheusLine(without ? [code] : []),
+    '',
+    ...ALIGN_HEADER,
+    ...rows.map((s) => alignLine(`${s.book} ${s.chapter}`, s)),
+    '',
+    ...ALIGN_HEADER.map((h, i) => (i === 0 ? h.replace('Chapter', 'Book') : h)),
+    alignLine(book, sum),
+    '',
+  ].join('\n');
+}
+
+/**
+ * Writes the book's file (docs/lxx-align/<code>.txt), where `shares` are its chapters; false where the file already says it. A file written on a host whose Morpheus cache for the book was another is
+ * left as it was and the run fails, naming both (mw-u2w5klk.349.24); `force` writes it anyway.
+ */
+export function writeBookReport(file: string, shares: readonly AlignShare[], without: boolean, force = false): boolean {
+  if (shares.length === 0) throw new Error(`no chapter of the book was shipped, so ${file} is left as it was`);
+  const now = existsSync(file) ? readFileSync(file, 'utf8') : undefined;
+  if (now !== undefined) refuseOtherCaches(file, now, without ? [shares[0].code] : [], force);
+  const next = renderBookReport(shares, without);
+  if (next === now) return false;
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, next);
   return true;
+}
+
+/** Writes the file of each book that has chapters among `shares`; the codes of the books whose file changed. */
+export function writeBookReports(dir: string, shares: readonly AlignShare[], withoutMorpheus: readonly string[], force = false): string[] {
+  const books = new Map<string, AlignShare[]>();
+  for (const s of shares) books.set(s.code, [...(books.get(s.code) ?? []), s]);
+  const changed: string[] = [];
+  for (const [code, list] of books) if (writeBookReport(alignReportFile(code, dir), list, withoutMorpheus.includes(code), force)) changed.push(code);
+  return changed;
 }
 
 // ---------------------------------------------------------------- the command
@@ -589,13 +624,13 @@ export function writeAlignReport(doc: string, shares: readonly AlignShare[], wit
 const USAGE = 'usage: npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>] [--force]';
 
 export interface AlignOptions extends ShipOptions {
-  /** the report to write; default docs/lxx-align.md */
-  doc?: string;
+  /** the directory of the books' files to write; default docs/lxx-align */
+  reportDir?: string;
 }
 
 /** Ships into `--out` (a temporary directory by default, removed after) and writes the aligned share of each chapter shipped. */
 export async function runAlign(argv: readonly string[], options: AlignOptions = {}): Promise<AlignShare[]> {
-  const { doc = ALIGN_DOC, log = () => undefined, scratch = tmpdir(), ...ship } = options;
+  const { reportDir = ALIGN_REPORT_DIR, log = () => undefined, scratch = tmpdir(), ...ship } = options;
   const rest: string[] = [];
   let out: string | undefined;
   let force = false;
@@ -611,8 +646,8 @@ export async function runAlign(argv: readonly string[], options: AlignOptions = 
     // ship.ts reaches this file through the build, so it is loaded when it is needed
     const { runShip } = await import('./ship');
     const shipped = await runShip(['--out', dir, ...rest], { ...ship, scratch, log });
-    const changed = writeAlignReport(doc, shipped.aligned, shipped.withoutMorpheus, force);
-    log(`lxx:align: ${shipped.aligned.length} chapter${shipped.aligned.length === 1 ? '' : 's'} aligned; ${doc} ${changed ? 'written' : 'is as it was'}`);
+    const changed = writeBookReports(reportDir, shipped.aligned, shipped.withoutMorpheus, force);
+    log(`lxx:align: ${shipped.aligned.length} chapter${shipped.aligned.length === 1 ? '' : 's'} aligned; ${reportDir}: ${changed.length === 0 ? 'every book is as it was' : `written for ${changed.join(', ')}`}`);
     return shipped.aligned;
   } finally {
     if (!out) rmSync(dir, { recursive: true, force: true });

@@ -34,6 +34,7 @@
     "lxx:article-gender": "tsx scripts/lxx/article-gender.ts",
     "lxx:align": "tsx scripts/lxx/align.ts",
     "lxx:align-choose": "tsx scripts/lxx/align-choose.ts",
+    "lxx:align-expect": "tsx scripts/lxx/align-expect.ts",
     "lxx:batches": "tsx scripts/lxx/batches.ts",
     "lxx:choose": "tsx scripts/lxx/choose.ts",
     "lxx:derive": "tsx scripts/lxx/derive.ts",
