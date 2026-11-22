@@ -7,7 +7,7 @@ clock. This note says what the page really EMITS, measured sample by sample, and
 
 **The margin: 0.05 s each side** (`scripts/audio-timings/player-margin.json`, `lead` and `tail`). No sound from outside the span is emitted more than 0.05 s before
 its start or more than 0.05 s after its end, judged at 50 dB under the voice's level. The same file says how far INTO the span its edges can be lost (`inside`): the
-start up to 25 ms late, the end up to 97 ms early. The judge's slop file (`scripts/audio-timings/player-slop.json`) is set from it by the Mayor.
+start up to 50 ms late (the margin's `lead`: a start later than that loses the span's own tone, which the spec fails; mw-ar5k42b.59), the end up to 97 ms early. The judge's slop file (`scripts/audio-timings/player-slop.json`) is set from it by the Mayor.
 
 <!-- toc -->
 
@@ -75,7 +75,10 @@ same table, because nothing in the player was changed. Every row holds the 0.05 
 -110 ms (`lostMs`). `margin-table.ts` now gives each row its `end: room to the limit` (the earliest end less -110), the plays within 20 ms of it and the plays past it, and
 exits non-zero when any play is past. After mw-ar5k42b.23, 360 plays (`LAMPAS_MARGIN_PLAYS=60`, 60 a row, under `contrib/mw-under-load`, the 1-minute load 2.1 to 35.5 over the run)
 gave every row 33 to 53 ms of room, none within 20 ms of the limit and none past it; the earliest end was -77 ms (Titus 3:7 at 1.25x). The latest end was +10 ms, inside `tail`.
-The latest start was 43 and 46 ms after the span's start at 1.25x (one verse alone, and Titus 3:7), against `inside.lead` 25 ms: the spec asks only for the tone from start + `lead` (50 ms).
+The latest start was 43 and 46 ms after the span's start at 1.25x (one verse alone, and Titus 3:7), against `inside.lead` 25 ms, which nothing held: the spec asked only for the tone from
+start + `lead` (50 ms). **mw-ar5k42b.59 (2026-11-22):** `inside.lead` is now 0.05, the number the spec already held in effect, and the spec (`hold()`) fails a start heard later than it;
+`margin-table.ts` gives each row `start: plays past inside.lead` and exits non-zero when any play is past. The 25 ms was the 180-play run's latest start (the 1x rows reach 22 to 27 ms
+in the 360-play run: the element starts at the next MP3 frame, 26 ms); the few plays at 43 to 46 ms were not traced to a cause, and they leave 4 ms to the 50 ms.
 
 What the numbers say:
 

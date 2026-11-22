@@ -1,9 +1,9 @@
 {
-  "about": "David's player's margin (mw-ar5k42b.2, docs/audio-player-margin.md): no sound from outside a span (a verse or a section) is emitted more than `lead` seconds before its start or `tail` seconds after its end, judged at 50 dB under the voice's level. tests/e2e/recorded-voice-margin.spec.ts holds the player to these two numbers. `inside` is how far INTO the span its edges can be lost: the start heard up to inside.lead late, the end stopped up to inside.tail early (the player stops END_SLACK before the end after a FADE). Seconds of the recording.",
+  "about": "David's player's margin (mw-ar5k42b.2, docs/audio-player-margin.md): no sound from outside a span (a verse or a section) is emitted more than `lead` seconds before its start or `tail` seconds after its end, judged at 50 dB under the voice's level. tests/e2e/recorded-voice-margin.spec.ts holds the player to these two numbers. `inside` is how far INTO the span its edges can be lost: the start heard up to inside.lead late (0.05: the latest of 360 plays was 46 ms, mw-ar5k42b.59; the spec fails a start later than lead, which would lose the span's own tone), the end stopped up to inside.tail early (the player stops END_SLACK before the end after a FADE). Seconds of the recording.",
   "lead": 0.05,
   "tail": 0.05,
   "inside": {
-    "lead": 0.025,
+    "lead": 0.05,
     "tail": 0.097
   },
   "measured": {

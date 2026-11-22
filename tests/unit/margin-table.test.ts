@@ -9,14 +9,14 @@ import { FADE } from '../../src/speech/recordedVoice';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const SCRIPT = resolve(__dirname, '../../tests/e2e/fixtures/margin-table.ts');
-const MARGIN = JSON.parse(readFileSync(resolve(__dirname, '../../scripts/audio-timings/player-margin.json'), 'utf8')) as { tail: number };
+const MARGIN = JSON.parse(readFileSync(resolve(__dirname, '../../scripts/audio-timings/player-margin.json'), 'utf8')) as { lead: number; tail: number; inside: { lead: number } };
 const LIMIT = -Math.round((MARGIN.tail + FADE) * 1000);
 
 const dirs: string[] = [];
 afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
-const play = (endMs: number, kase = 'one verse alone', rate = 1) => ({
-  case: kase, rate, browser: 'chromium', startMs: 10, endMs, lostMs: 0, load: '16.00 12.00 8.00',
+const play = (endMs: number, kase = 'one verse alone', rate = 1, startMs = 10) => ({
+  case: kase, rate, browser: 'chromium', startMs, endMs, lostMs: 0, load: '16.00 12.00 8.00',
 });
 
 function table(lines: object[]) {
@@ -57,5 +57,32 @@ describe('margin-table: how near the own-tone limit the ends came', () => {
     const { out, err, status } = table([play(-60), play(-125), play(-111)]);
     expect(status).not.toBe(0);
     expect(out + err).toMatch(/2 of 3 plays ended earlier than -110 ms/);
+  });
+});
+
+// mw-ar5k42b.59: the 360-play run had starts heard 43 and 46 ms after the span's start at 1.25x while player-margin.json said the start is lost up to inside.lead, 25 ms, and
+// nothing held a play to it (the spec asks the own tone from start + lead). The number and the table now agree: inside.lead is what the spec holds, and a play past it is counted.
+describe('margin-table: how late the starts came', () => {
+  const INSIDE_MS = Math.round(MARGIN.inside.lead * 1000);
+
+  it('holds inside.lead to the margin the spec asks the own tone from: a start later than lead loses own tone', () => {
+    expect(INSIDE_MS).toBe(Math.round(MARGIN.lead * 1000));
+  });
+
+  it('gives each row the plays whose start was heard later than inside.lead, and exits non-zero naming how many', () => {
+    const { out, err, status } = table([play(-60, 'one verse alone', 1.25, INSIDE_MS - 4), play(-60, 'one verse alone', 1.25, INSIDE_MS + 1), play(-60, 'a section', 1, 20)]);
+    expect(status).not.toBe(0);
+    expect(out + err).toMatch(new RegExp(`1 of 3 plays started later than ${INSIDE_MS} ms`));
+    const cells = (row: string) => row.split('|').map((c) => c.trim());
+    const head = cells(out.split('\n').find((l) => l.startsWith('| browser'))!);
+    const late = head.indexOf('start: plays past inside.lead');
+    expect(late).toBeGreaterThan(0);
+    const alone = cells(out.split('\n').find((l) => l.startsWith('| chromium') && l.includes('one verse alone'))!);
+    expect(alone[late]).toBe('1');
+  });
+
+  it('passes a table whose latest start is inside.lead', () => {
+    const { status } = table([play(-60, 'one verse alone', 1.25, INSIDE_MS), play(-60, 'a section', 1, 20)]);
+    expect(status).toBe(0);
   });
 });
