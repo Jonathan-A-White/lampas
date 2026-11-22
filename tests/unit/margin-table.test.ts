@@ -6,13 +6,14 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { FADE } from '../../src/speech/recordedVoice';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const SCRIPT = resolve(__dirname, '../../tests/e2e/fixtures/margin-table.ts');
 const MARGIN = JSON.parse(readFileSync(resolve(__dirname, '../../scripts/audio-timings/player-margin.json'), 'utf8')) as { tail: number };
 const LIMIT = -Math.round((MARGIN.tail + FADE) * 1000);
 
 const dirs: string[] = [];
-afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
+afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
 const play = (endMs: number, kase = 'one verse alone', rate = 1) => ({
   case: kase, rate, browser: 'chromium', startMs: 10, endMs, lostMs: 0, load: '16.00 12.00 8.00',
