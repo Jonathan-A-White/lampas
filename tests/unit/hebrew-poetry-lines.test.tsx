@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 import { fillChapter, type Chapter, type Verse } from '../../src/data/chapter';
 import { hebrewLinesOf } from '../../src/data/poetry';
-import { weaveVerse, type WovenVerse } from '../../src/data/weave';
+import { weaveVerse, wovenInOrder, type WovenVerse } from '../../src/data/weave';
 import { linesShown } from '../../src/reader/poetryText';
 import { VerseText } from '../../src/reader/VerseText';
 import type { Lookup } from '../../src/WordSheet';
@@ -129,9 +129,27 @@ describe('VerseText in the Weave', () => {
     expect(looks).toHaveLength(2);
   });
 
-  it('is running text in a weave laid out in the source order (its chunks no longer stand where the lines name them)', () => {
-    const ordered = Object.assign([...woven()], { order: verse.e.map((_, i) => verse.e.length - 1 - i) }) as unknown as WovenVerse;
-    expect(linesShown(verse, 'english', ordered, true)).toBeNull();
+  it('draws the source-order Weave in the lines of the Hebrew accents, each chunk once, a line at the chunk its first Hebrew word stands in (mw-5r3p30.1195)', () => {
+    const ordered = wovenInOrder(verse, woven(), 'greek');
+    expect(ordered.order).toBeDefined();
+    const { container } = render(<VerseText verse={verse} view="english" source="hbo" woven={ordered} onLook={none} poetry />);
+    const lines = [...container.querySelectorAll<HTMLElement>('[data-line]')];
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines).toHaveLength(3);
+    expect(lines.map((l) => l.getAttribute('data-indent'))).toEqual(['1', '1', '1']);
+    // every drawn chunk is in one line, in the drawn order
+    const drawn = lines.flatMap((l) => [...l.querySelectorAll('[data-chunk]')].map((c) => Number(c.getAttribute('data-chunk'))));
+    expect(drawn).toEqual([...ordered.order!].filter((i) => drawn.includes(i)));
+    expect(drawn.length).toBe(verse.e.length);
+    // the second line starts at the chunk that holds the verse's 8th Hebrew word (hl [0, 7, 11])
+    const first = Number(lines[1].querySelector('[data-chunk]')!.getAttribute('data-chunk'));
+    expect(verse.e[first].g.length ? Math.min(...verse.e[first].g) : -1).toBeGreaterThanOrEqual(verse.hl![1]);
     expect(linesShown(verse, 'english', woven(), true)).toHaveLength(4);
+  });
+
+  it('is running text in a source-order Weave of a verse with no Hebrew lines', () => {
+    const plain = { ...verse, hl: undefined };
+    const ordered = wovenInOrder(plain, weaveVerse(plain, { solid: new Set(['אִישׁ']) }), 'greek');
+    expect(linesShown(plain, 'english', ordered, true)).toBeNull();
   });
 });
