@@ -358,6 +358,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     expect(Object.keys(built).filter((k) => !(k in before)).sort()).toEqual(['catalogue', 'facts']);
   });
 
+  // The last `over` went from 9820 to 9880 with the ten Logos sources of batch 4 (mw-qtu3zvz.24): each rides in the settings fact, which the sizes above are measured with.
   // The first `over` went from 800 to 900 with When you copy: its four settings ride in settings and in the settings fact, ~170 bytes the request already carried. The three `over` sizes below are hand-sized to the catalogue (the cut of tells, then the catalogue, then the facts): memorizing's seven entries (mw-fu7dqf.12) moved them by 1,712 bytes (the first from 500 to 800: the request is already over the cap before its padding; then 900, the place diagram-lesson of mw-q6t5tvn.1 adding about 75; then the command save-answer-references of mw-5r3p30.929, 262 bytes, each `over` below 262 higher)
   // a request of the size the tutor's part leaves `over` bytes beyond the cap: its learner line (which no cut touches) pads it
   const padded = async (over: number) => {
@@ -395,7 +396,7 @@ describe('the request through the tutor client (mw-t3xu9a.4)', () => {
     const fitted = fitHistory(built, 0, 'rom.8@1');
     expect(fitted.history).toEqual(plain.history);
     expect(fitted.catalogue).toBeUndefined();
-    const { plain: tight, built: tightest } = await padded(9820);
+    const { plain: tight, built: tightest } = await padded(9880);
     const none = fitHistory(tightest, 0, 'rom.8@1');
     expect(none.facts).toBeUndefined();
     expect(none.history).toEqual(tight.history);
