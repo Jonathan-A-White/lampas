@@ -100,6 +100,17 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sermons/bunyan-logos/')) return 'John Bunyan\'s last sermon'; // likewise
   if (path.startsWith('public/sermons/charles-wesley-logos/')) return 'Charles Wesley\'s sermons'; // likewise
   if (path.startsWith('public/sermons/jimmy-evans-logos/')) return 'Jimmy Evans Sermon Archive'; // likewise
+  // batch 4 (mw-qtu3zvz.24); kuyper-logos, worlds-great-sermons-logos, mcpherson-logos and strong-logos have no book file (their rows name no passage), the rules are for the form
+  if (path.startsWith('public/sermons/shedd-logos/')) return 'Shedd\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/burroughs-logos/')) return 'Burroughs\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/keach-logos/')) return 'Keach\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/maclaren-logos/')) return 'Maclaren\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/kuyper-logos/')) return 'Kuyper\'s Rooted & Grounded'; // likewise
+  if (path.startsWith('public/sermons/broadus-logos/')) return 'Broadus\'s Sermons'; // likewise
+  if (path.startsWith('public/sermons/worlds-great-sermons-logos/')) return 'The World\'s Great Sermons'; // likewise
+  if (path.startsWith('public/sermons/princeton-sermons-logos/')) return 'Princeton Sermons'; // likewise
+  if (path.startsWith('public/sermons/mcpherson-logos/')) return 'McPherson\'s Healing Sermons'; // likewise
+  if (path.startsWith('public/sermons/strong-logos/')) return 'Strong\'s Philosophy and Religion'; // likewise
   if (path.startsWith('public/themes/themes-tcr1934/')) return 'Thompson'; // the theme index's book files (scripts/sermons-build.ts): topics, part labels and passages of CrossWire's TCR module (Thompson's 1934 subject index), facts only
   if (path.startsWith('public/themes/themes-torrey/')) return 'Torrey'; // the same of CrossWire's Torrey module (R. A. Torrey's New Topical Textbook, 1897)
   if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)

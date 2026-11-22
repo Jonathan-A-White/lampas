@@ -1,6 +1,6 @@
 {
   "repo": "https://github.com/Jonathan-A-White/sermon-index",
-  "commit": "8ee5cd7c1f3f175936b87b53785c7de371ef7113",
+  "commit": "94b519eb22b77668f595a4bb8ee1d419a3371144",
   "sources": [
     "spurgeon-ccel",
     "henry-sermons",
@@ -16,7 +16,17 @@
     "piper-logos",
     "bunyan-logos",
     "charles-wesley-logos",
-    "jimmy-evans-logos"
+    "jimmy-evans-logos",
+    "shedd-logos",
+    "burroughs-logos",
+    "keach-logos",
+    "maclaren-logos",
+    "kuyper-logos",
+    "broadus-logos",
+    "worlds-great-sermons-logos",
+    "princeton-sermons-logos",
+    "mcpherson-logos",
+    "strong-logos"
   ],
   "themes": [
     "themes-tcr1934",
@@ -35,6 +45,16 @@
     "piper-logos": "John Piper's sermons (Logos library)",
     "bunyan-logos": "John Bunyan's last sermon (Logos library)",
     "charles-wesley-logos": "Charles Wesley's sermons (Logos library)",
-    "jimmy-evans-logos": "Jimmy Evans's sermons (Logos library)"
+    "jimmy-evans-logos": "Jimmy Evans's sermons (Logos library)",
+    "shedd-logos": "Shedd's sermons (Logos library)",
+    "burroughs-logos": "Burroughs's sermons (Logos library)",
+    "keach-logos": "Keach's sermons (Logos library)",
+    "maclaren-logos": "Maclaren's sermons (Logos library)",
+    "kuyper-logos": "Kuyper's Rooted & Grounded (Logos library)",
+    "broadus-logos": "Broadus's Sermons (Logos library)",
+    "worlds-great-sermons-logos": "The World's Great Sermons (Logos library)",
+    "princeton-sermons-logos": "Princeton Sermons (Logos library)",
+    "mcpherson-logos": "McPherson's Healing Sermons (Logos library)",
+    "strong-logos": "Strong's Philosophy and Religion (Logos library)"
   }
 }

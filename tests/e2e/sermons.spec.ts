@@ -359,7 +359,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
   // the section is the door to the list, with its count, and Open web sermons in: no source has a row here
-  await expect(section.getByTestId('sources-count')).toHaveText('2 of 15 on');
+  await expect(section.getByTestId('sources-count')).toHaveText('2 of 25 on');
   await expect(section.getByRole('group', { name: 'Open web sermons in', exact: true })).toBeVisible();
   await expect(section.getByRole('group', { name: /Spurgeon/ })).toHaveCount(0);
   await section.getByRole('button', { name: /^Sermon sources/ }).click();
@@ -372,9 +372,11 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   for (const name of ['Spurgeon\'s My Sermon Notes', 'John Wesley\'s sermons', 'George Whitefield\'s sermons', 'D. L. Moody\'s sermons']) await on(name, 'Off');
   // his batch 3 books (mw-qtu3zvz.20), Jimmy Evans's archive among them, which names no passage
   for (const name of ['Augustine\'s sermons', 'Chrysostom\'s homilies', 'John Piper\'s sermons', 'John Bunyan\'s last sermon', 'Charles Wesley\'s sermons', 'Jimmy Evans\'s sermons']) await on(name, 'Off');
-  // fifteen lists and no book: one group, so no heading; from eight sources up there is a search field
+  // his batch 4 books (mw-qtu3zvz.24), among them four lists that name no passage (Kuyper, The World's Great Sermons, McPherson, Strong)
+  for (const name of ['Shedd\'s sermons', 'Burroughs\'s sermons', 'Keach\'s sermons', 'Maclaren\'s sermons', 'Kuyper\'s Rooted & Grounded', 'Broadus\'s Sermons', 'The World\'s Great Sermons', 'Princeton Sermons', 'McPherson\'s Healing Sermons', 'Strong\'s Philosophy and Religion']) await on(name, 'Off');
+  // twenty-five lists and no book: one group, so no heading; from eight sources up there is a search field
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0);
-  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 15 sermon sources');
+  await expect(page.getByRole('searchbox', { name: 'Search sermon sources' })).toHaveAttribute('placeholder', 'Search 25 sermon sources');
   await shot(page, 'sermons-settings');
 
   // Spurgeon and Henry Off: Romans 5:8 has no listed sermon, and so no door
@@ -382,7 +384,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
     await page.getByRole('radiogroup', { name, exact: true }).getByRole('radio', { name: 'Off', exact: true }).click();
     await on(name, 'Off');
   }
-  await expect(page.getByTestId('sources-line')).toHaveText('none of 15 on');
+  await expect(page.getByTestId('sources-line')).toHaveText('none of 25 on');
   await page.goto('/#/?b=rom&c=5');
   await expect(page.locator('[data-verse="8"]')).toBeVisible();
   const view = await openVerseView(page, 8);
@@ -394,11 +396,11 @@ test('with Logos On, the sermon books that are On in the list are the In Logos g
   await openUnlocked(page);
   await turnLogosOn(page);
   // his import holds the archives and two books of sermons that no list stands for (mw-qtu3zvz.94)
-  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:PRINCESERMON', 'LLS:BEATITUDES']);
+  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:SO1COR', 'LLS:BEATITUDES']);
   // the two books On, from the one list of sermon sources: the only place a book of sermons is switched
   await page.goto('/#/settings?sources=sermons');
   await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
-  for (const name of ['Princeton Sermons', 'The Beatitudes']) {
+  for (const name of ['Sermon Outlines on 1 Corinthians', 'The Beatitudes']) {
     const group = page.getByRole('radiogroup', { name, exact: true });
     await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
     await group.getByRole('radio', { name: 'On', exact: true }).click();
@@ -420,7 +422,7 @@ test('with Logos On, the sermon books that are On in the list are the In Logos g
   const rows = group.locator('a[data-archive-row]');
   await expect(rows).toHaveCount(2);
   await expect(rows.nth(0).locator('[data-sermon-title]')).toHaveText('The Beatitudes');
-  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Princeton Sermons');
+  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Sermon Outlines on 1 Corinthians');
   for (let i = 0; i < 2; i++) {
     expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
     await expect(rows.nth(i).locator('[data-sermon-meta]')).toHaveText('Opens in Logos');
