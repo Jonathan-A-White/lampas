@@ -27,7 +27,7 @@ const real = { ...browserEnv };
 // A loaded host lands a closed sheet's history traversal late; jsdom lands it at once, which hides a step that does not wait for it. Every traversal the app asks for lands this late here.
 const realGo = window.history.go.bind(window.history);
 const LATE_TRAVERSAL_MS = 150;
-window.history.go = (delta?: number): void => void setTimeout(() => realGo(delta), LATE_TRAVERSAL_MS);
+window.history.go = (delta?: number): void => void setTimeout(() => realGo(delta), LATE_TRAVERSAL_MS); // clock: the fake history's own late traversal, a step of the fake's clock (LATE_TRAVERSAL_MS)
 
 afterAll(async () => {
   Object.assign(browserEnv, real);

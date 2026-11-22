@@ -98,7 +98,7 @@ async function openReader(voices: FakeVoice[], saved: Record<string, string>): P
 
 async function longPress(target: HTMLElement): Promise<void> {
   await user.pointer({ keys: '[MouseLeft>]', target });
-  await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150));
+  await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
   await user.pointer({ keys: '[/MouseLeft]', target });
 }
 

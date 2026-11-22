@@ -6,7 +6,7 @@ export class ManualClock {
   private serial = 0;
   private timers: { at: number; id: number; fn: () => void }[] = [];
   now = () => this.time;
-  setTimeout = (fn: () => void, ms: number): number => {
+  setTimeout = (fn: () => void, ms: number): number => { // clock: the manual clock's own setTimeout: a timer that runs only when the test advances it
     const id = ++this.serial;
     this.timers.push({ at: this.time + Math.max(0, ms), id, fn });
     return id;

@@ -132,7 +132,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he turns the switch {string} On', async (_, name: string) => {
       const control = await switchOf(name);
       // the page's own clock, under the test's hand, from the tap on
-      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] }); // clock: installs the fake clock the page runs on, stepped by the test
       act(() => {
         fireEvent.click(control);
       });
