@@ -6,9 +6,9 @@ import userEvent from '@testing-library/user-event';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
-import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL_ID, RANDOM, type Devotional } from '../../src/data/daily/devotionals';
+import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL_ID, RANDOM, anotherDevotional, canDrawAnother, type Devotional } from '../../src/data/daily/devotionals';
 import { EPISODES, episodeDate } from '../../src/data/daily/morningRephil';
-import { getDay, getHeard, localDate } from '../../src/data/daily/dailyStore';
+import { getDay, getHeard, localDate, pickAnotherDevotional } from '../../src/data/daily/dailyStore';
 import { Today } from '../../src/today/Today';
 import { applyChanges, currentSettings } from '../support/settings';
 
@@ -190,6 +190,62 @@ describe('Random and Morning RePhil on Today', () => {
     const piece = await open();
     expect(await piece.findByRole('link', { name: /Morning and Evening/ }, { timeout })).toBeInTheDocument();
     expect(piece.queryByText(/Morning RePhil/)).toBeNull();
+  });
+});
+
+describe('Random with Logos Off: Another devotional (mw-r9xo1pj.9)', () => {
+  const unseenOne = JSON.stringify(EPISODES.slice(1).map((e) => e.id));
+
+  it('offers no button that draws a Logos devotional, and the Devotional piece still shows a Morning RePhil episode after any Another', async () => {
+    await db.settings.bulkPut([
+      { key: 'resource.logos', value: 'off' },
+      { key: 'devotional', value: RANDOM },
+      { key: 'morningRephilHeard', value: unseenOne },
+    ]);
+    const piece = await open();
+    expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toBeInTheDocument();
+    // nothing else to draw with Logos Off: no Another devotional that would do nothing
+    expect(piece.queryByRole('button', { name: 'Another devotional' })).toBeNull();
+    for (const another of piece.queryAllByRole('button', { name: 'Another devotional' })) {
+      await act(async () => {
+        await userEvent.click(another);
+      });
+    }
+    const day = await getDay(localDate(new Date()));
+    expect(day.devotional === undefined || day.devotional === MORNING_REPHIL_ID).toBe(true);
+    expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toBeInTheDocument();
+    expect(piece.queryByText(/Open in Logos/)).toBeNull();
+    expect(screen.getByRole('region', { name: 'Devotional' })).toBeInTheDocument();
+  });
+
+  it('with Logos On, Another devotional is there and draws a Logos devotional', async () => {
+    await db.settings.bulkPut([
+      { key: 'devotional', value: RANDOM },
+      { key: 'morningRephilHeard', value: unseenOne },
+    ]);
+    const piece = await open();
+    await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout });
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Another devotional' }, { timeout }));
+    });
+    await vi.waitFor(async () => expect((await getDay(localDate(new Date()))).devotional).not.toBe(MORNING_REPHIL_ID), { timeout });
+  });
+
+  it('with Logos Off, every caller of Another draws only Morning RePhil', async () => {
+    const off = { logos: false, rephil: true };
+    for (const current of [MORNING_REPHIL_ID, DEFAULT_DEVOTIONAL, DEVOTIONALS[1].id]) {
+      for (let i = 0; i < 20; i++) {
+        expect(anotherDevotional(current, DEVOTIONALS.map((d) => d.id), () => i / 20, true, off)).toBe(MORNING_REPHIL_ID);
+      }
+    }
+    const all = DEVOTIONALS.map((d) => d.id);
+    expect(canDrawAnother(MORNING_REPHIL_ID, all, true, off)).toBe(false);
+    expect(canDrawAnother(MORNING_REPHIL_ID, all, true)).toBe(true);
+    const date = '2026-11-22';
+    await pickAnotherDevotional(date, MORNING_REPHIL_ID, DEVOTIONALS.map((d) => d.id), () => 0, true, off);
+    expect((await getDay(date)).devotional).toBe(MORNING_REPHIL_ID);
+    await pickAnotherDevotional(date, DEFAULT_DEVOTIONAL, DEVOTIONALS.map((d) => d.id), () => 0, true, off);
+    expect((await getDay(date)).devotional).toBe(MORNING_REPHIL_ID);
   });
 });
 
