@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.336
+_2026-11-22_
+- New: A Spurgeon sermon can now be read to you inside Lampas, starting by itself, with play, pause, back and forward by paragraph, restart, the time left, and your place remembered.
+
 ## 0.7.335
 _2026-11-22_
 - New: David's recording now follows the text in Nehemiah (except chapter 7) and Esther.
