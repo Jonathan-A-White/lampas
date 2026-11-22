@@ -5,6 +5,7 @@ import { handsFreeSetting } from '../settings/definitions';
 import { getSetting, setSetting, useSetting } from '../settings/store';
 import { SETTING_SAID_KEY, speakText } from '../speech/greek';
 import { getReading, resumeReading, subscribeReading } from '../speech/readAloud';
+import { whenMicClosed } from './session';
 
 /** The words said when the switch goes On, and when it goes Off. */
 export const HANDS_FREE_ON = 'Hands-free on';
@@ -31,6 +32,18 @@ let unwatch: (() => void) | null = null;
  * stopped, as the session's close does (playback.ts goOnAtClose); a reading he had paused himself, or that nothing was reading, is left as it was. A reading he takes in hand while
  * the words are said (Resume, Pause, Stop, another reading) is his from then on: the words' end does not touch it. */
 export function sayHandsFree(on: boolean): void {
+  cancelSay?.();
+  cancelSay = null;
+  // 'Hands-free off' waits for the session to let go of the microphone: said as it closes it is clipped to 'Free oh' (mw-rl10piw.50); 'Hands-free on' is said at once and the
+  // session waits for it (session.ts sync) before it opens the microphone
+  if (on) say(true);
+  else cancelSay = whenMicClosed(() => say(false));
+}
+
+/** Gives up the Off sentence that waits for the microphone (a newer sentence replaces it). */
+let cancelSay: (() => void) | null = null;
+
+function say(on: boolean): void {
   unwatch?.();
   unwatch = null;
   const wasReading = getReading().status === 'reading';
@@ -60,8 +73,10 @@ export function sayHandsFree(on: boolean): void {
 /** Turns Hands-free On or Off: saves the setting and says so. Setting it to what it already is changes and says nothing. */
 export async function setHandsFree(on: boolean): Promise<void> {
   if ((await getHandsFree()) === on) return;
+  // On is said first, so the session that the setting starts finds the sentence under way and waits for it (session.ts sync); Off is said after the session has stopped
+  if (on) sayHandsFree(true);
   await setSetting(handsFreeSetting, on ? 'on' : 'off');
-  sayHandsFree(on);
+  if (!on) sayHandsFree(false);
 }
 
 /** The other way: On if it is Off, Off if it is On. */
