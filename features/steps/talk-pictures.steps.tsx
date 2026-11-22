@@ -350,4 +350,73 @@ describeFeature(feature, ({ Scenario }) => {
       expect(sheet()).toBeInTheDocument();
     });
   });
+  Scenario('A tap on a picture waiting in the composer opens it full size and closing leaves it waiting', ({ Given, When, And, Then }) => {
+    Given(Given0, () => open());
+    When('he attaches a picture', () => attach());
+    And('he types {string} in the message', async (_, text: string) => {
+      await user.type(field(), text);
+    });
+    And('he taps the waiting picture {string}', async (_, name: string) => {
+      await user.click(within(sheet()).getByRole('button', { name: `View ${name}` }));
+    });
+    Then('the picture {string} is open full screen', async (_, name: string) => {
+      const viewer = await screen.findByRole('dialog', { name });
+      expect(within(viewer).getByRole('img', { name: `${name} (full screen)` })).toBeInTheDocument();
+    });
+    When('he closes the picture', async () => {
+      const viewer = screen.getByRole('dialog', { name: 'shot-1.png' });
+      await user.click(within(viewer).getByRole('button', { name: 'Close picture' }));
+    });
+    Then('no picture is open full screen', () => {
+      expect(screen.queryByRole('dialog', { name: 'shot-1.png' })).toBeNull();
+    });
+    And('the composer shows one thumbnail, {string}, with a remove x', async (_, name: string) => {
+      await waitFor(() => expect(composerThumbs()).toHaveLength(1));
+      expect(composerThumbs()[0]).toHaveAccessibleName(name);
+      expect(within(sheet()).getByRole('button', { name: `Remove ${name}` })).toBeInTheDocument();
+    });
+    And('the message still says {string}', (_, text: string) => {
+      expect(field()).toHaveValue(text);
+    });
+  });
+
+  Scenario('Back closes a picture waiting in the composer and leaves it waiting', ({ Given, When, And, Then }) => {
+    Given(Given0, () => open());
+    When('he attaches a picture', () => attach());
+    And('he taps the waiting picture {string}', async (_, name: string) => {
+      await user.click(within(sheet()).getByRole('button', { name: `View ${name}` }));
+    });
+    Then('the picture {string} is open full screen', async (_, name: string) => {
+      await screen.findByRole('dialog', { name });
+    });
+    When('he presses Back', async () => {
+      await act(async () => {
+        window.history.back();
+      });
+    });
+    Then('no picture is open full screen', async () => {
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: 'shot-1.png' })).toBeNull());
+    });
+    And('the composer shows one thumbnail, {string}, with a remove x', async (_, name: string) => {
+      await waitFor(() => expect(composerThumbs()).toHaveLength(1));
+      expect(within(sheet()).getByRole('button', { name: `Remove ${name}` })).toBeInTheDocument();
+    });
+    And('the Talk sheet is still open', () => {
+      expect(sheet()).toBeInTheDocument();
+    });
+  });
+
+  Scenario('The x on a waiting picture removes it and does not open the viewer', ({ Given, When, And, Then }) => {
+    Given(Given0, () => open());
+    When('he attaches a picture', () => attach());
+    And('he removes the first picture', async () => {
+      await user.click(within(sheet()).getByRole('button', { name: 'Remove shot-1.png' }));
+    });
+    Then('no picture is open full screen', () => {
+      expect(screen.queryByRole('dialog', { name: 'shot-1.png' })).toBeNull();
+    });
+    And('the composer shows no thumbnails', () => {
+      expect(composerThumbs()).toHaveLength(0);
+    });
+  });
 });

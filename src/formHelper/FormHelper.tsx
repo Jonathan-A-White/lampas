@@ -16,6 +16,7 @@ import { FAILURE_TITLES, TutorError, type TutorFailure } from '../services/tutor
 import { currentSettings } from '../settings/registry';
 import { askTranscriber } from '../speech/askTranscriber';
 import { tapWord, useTalkSettings } from '../talkSettings';
+import { useWaitingPictureViewer } from '../talk/useWaitingPictureViewer';
 import { useSecondFingerScroll } from '../talk/secondFinger';
 import { refuseNonPicture } from '../talk/pictures';
 import { START_LABEL } from './startLabel';
@@ -68,6 +69,7 @@ export function FormHelper({ form, values, onFill, onPictures, onReady, command 
   const [done, setDone] = useState<{ said: string; of: string } | null>(null);
   const [sendProblem, setSendProblem] = useState<string | null>(null);
   const talkSettings = useTalkSettings();
+  const waitingPictures = useWaitingPictureViewer();
   useSecondFingerScroll(); // a second finger scrolls the form while the Composer's bar is held (src/talk/secondFinger.ts)
   const turns = useRef<TalkHistoryEntry[]>([]);
   const latest = useRef({ form, values, onFill, onReady, command });
@@ -242,8 +244,10 @@ export function FormHelper({ form, values, onFill, onPictures, onReady, command 
           labels={{ ...ANSWER_LABELS, hold: tapWord('Hold to answer', talkSettings.talk) }}
           disabled={sending}
           onSend={reply}
+          onFileTap={waitingPictures.onFileTap}
         />
       ) : null}
+      {waitingPictures.viewer}
       <button type="button" onClick={stop} className="min-h-12 w-full rounded-xl px-4 text-base font-medium text-accent">
         Stop helping
       </button>

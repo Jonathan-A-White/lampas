@@ -88,3 +88,31 @@ Feature: The tutor talk takes pictures
     When he presses Back
     Then no picture is open full screen
     And the Talk sheet is still open
+
+  Scenario: A tap on a picture waiting in the composer opens it full size and closing leaves it waiting
+    Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern
+    When he attaches a picture
+    And he types "Look at this" in the message
+    And he taps the waiting picture "shot-1.png"
+    Then the picture "shot-1.png" is open full screen
+    When he closes the picture
+    Then no picture is open full screen
+    And the composer shows one thumbnail, "shot-1.png", with a remove x
+    And the message still says "Look at this"
+
+  Scenario: Back closes a picture waiting in the composer and leaves it waiting
+    Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern
+    When he attaches a picture
+    And he taps the waiting picture "shot-1.png"
+    Then the picture "shot-1.png" is open full screen
+    When he presses Back
+    Then no picture is open full screen
+    And the composer shows one thumbnail, "shot-1.png", with a remove x
+    And the Talk sheet is still open
+
+  Scenario: The x on a waiting picture removes it and does not open the viewer
+    Given Lampas is opened on Romans 8 with the Talk sheet open behind a fake Postern
+    When he attaches a picture
+    And he removes the first picture
+    Then no picture is open full screen
+    And the composer shows no thumbnails

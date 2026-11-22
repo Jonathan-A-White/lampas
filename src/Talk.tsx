@@ -40,6 +40,7 @@ import { HebrewAskContext } from './script/hebrewSpeech';
 import { FAILURE_TITLES, TutorError, type TutorFailure } from './services/tutor';
 import { dataUrlOf, PICTURE_ONLY_QUESTION, preparePictures, refuseNonPicture, TALK_MAX_PICTURES, TOO_MANY_TO_SEND_LINE, type OutgoingPicture } from './talk/pictures';
 import { PictureThumbs, TurnPictures } from './talk/TurnPictures';
+import { useWaitingPictureViewer } from './talk/useWaitingPictureViewer';
 import { holdBegan, holdEnded } from './talk/holding';
 import { registerKeeper } from './talk/keptWords';
 import { askTranscriber } from './speech/askTranscriber';
@@ -589,6 +590,7 @@ export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onS
   useEscapeToClose(onClose, lookup === null && linkedWord === null);
   useSheetBack(onClose);
   const talkSettings = useTalkSettings();
+  const waitingPictures = useWaitingPictureViewer();
   useSecondFingerScroll(); // a second finger scrolls the conversation while the Composer's bar is held (src/talk/secondFinger.ts)
   const busy = state?.phase === 'sending' || state?.phase === 'waiting';
   // Once there is a talk the suggestions he has not used are still offered, under the last answer (or the failure of the first question).
@@ -895,7 +897,9 @@ export function TalkSheet({ scope, talkRef: ref, state, suggestions, shared, onS
               onHoldStart={holdBegan}
               onHoldEnd={holdEnded}
               onSend={sendMessage}
+              onFileTap={waitingPictures.onFileTap}
             />
+            {waitingPictures.viewer}
           </div>
         </div>
       </div>

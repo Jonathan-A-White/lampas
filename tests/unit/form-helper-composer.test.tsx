@@ -70,6 +70,16 @@ describe('the form helper answers through the shared Composer', () => {
     expect([files[0].name, files[0].type, files[0].size]).toEqual(['shot.png', 'image/png', 3]);
   });
 
+  it('opens a waiting picture full size on a tap, and closing leaves it waiting', async () => {
+    await open({ onPictures: vi.fn() });
+    await user.upload(attachInput(), new File([new Uint8Array([1, 2, 3])], 'shot.png', { type: 'image/png' }));
+    await user.click(within(helper()).getByRole('button', { name: 'View shot.png' }));
+    const viewer = await screen.findByRole('dialog', { name: 'shot.png' });
+    await user.click(within(viewer).getByRole('button', { name: 'Close picture' }));
+    expect(screen.queryByRole('dialog', { name: 'shot.png' })).toBeNull();
+    expect(within(helper()).getByRole('button', { name: 'Remove shot.png' })).toBeInTheDocument();
+  });
+
   it('refuses a picture, in the Composer, when the form has no place for one', async () => {
     await open({ form: BOOK_FORM });
     await user.upload(attachInput(), new File([new Uint8Array([1, 2, 3])], 'shot.png', { type: 'image/png' }));
