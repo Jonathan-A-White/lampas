@@ -277,7 +277,8 @@
               "title": { "description": "The sermon's title.", "type": "string" },
               "preacher": { "description": "Who preached it, when the index says.", "type": "string" },
               "ref": { "description": "The passage the sermon was preached on.", "type": "string" },
-              "theme": { "description": "The topic the sermon came in by; present only on a row preached on another passage than the one held.", "type": "string" }
+              "theme": { "description": "The topic the sermon came in by; present only on a row preached on another passage than the one held.", "type": "string" },
+              "plays": { "description": "True on a sermon the app plays in its own player (a video): the only rows the command `play-sermon` takes. Missing on a sermon that opens on the web or is text.", "const": true }
             }
           }
         },
