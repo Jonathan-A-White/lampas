@@ -15,7 +15,7 @@ export interface ShownPicture {
 }
 
 /** The shared viewer (pwa-kit/picture-viewer), one Back step of its own: Back calls onClose through useSheetBack, and Close and Escape call it too. */
-function Viewer({ name, url, onClose }: { name: string; url: string; onClose: () => void }) {
+export function Viewer({ name, url, onClose }: { name: string; url: string; onClose: () => void }) {
   useSheetBack(onClose);
   return <PictureViewer src={url} name={name} label={name} onClose={onClose} />;
 }
