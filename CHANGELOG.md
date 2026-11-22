@@ -1,5 +1,12 @@
 # What's new
 
+## 0.7.332
+_2026-11-22_
+- Fixed: In Copywork, a Greek word you wrote correctly is no longer sometimes shown as wrong when the reader of your page says it saw exactly the right word.
+- New: David now reads 2 Chronicles and most of Ezra aloud, with the highlight following.
+- Fixed: A verse range such as Acts 2:29-36 is now read aloud as "verses 29 through 36" instead of "29 minus 36".
+- New: 1 Chronicles can now be played in David's recording, with the highlight following the reading.
+
 ## 0.7.331
 _2026-11-22_
 - New: David's recording now plays through 2 Kings with the highlight following, except chapter 9.

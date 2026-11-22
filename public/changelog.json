@@ -1,5 +1,33 @@
 [
   {
+    "version": "0.7.332",
+    "date": "2026-11-22",
+    "story": "mw-qtu3zvz.254",
+    "kind": "fixed",
+    "text": "In Copywork, a Greek word you wrote correctly is no longer sometimes shown as wrong when the reader of your page says it saw exactly the right word."
+  },
+  {
+    "version": "0.7.332",
+    "date": "2026-11-22",
+    "story": "mw-zbgo4ep.11",
+    "kind": "new",
+    "text": "David now reads 2 Chronicles and most of Ezra aloud, with the highlight following."
+  },
+  {
+    "version": "0.7.332",
+    "date": "2026-11-22",
+    "story": "mw-fnvjof.17.199",
+    "kind": "fixed",
+    "text": "A verse range such as Acts 2:29-36 is now read aloud as \"verses 29 through 36\" instead of \"29 minus 36\"."
+  },
+  {
+    "version": "0.7.332",
+    "date": "2026-11-22",
+    "story": "mw-zbgo4ep.10",
+    "kind": "new",
+    "text": "1 Chronicles can now be played in David's recording, with the highlight following the reading."
+  },
+  {
     "version": "0.7.331",
     "date": "2026-11-22",
     "story": "mw-zbgo4ep.9",
