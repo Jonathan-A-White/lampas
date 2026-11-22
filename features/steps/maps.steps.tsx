@@ -53,9 +53,11 @@ const slowSource: typeof testSource = {
 
 // The sign that the sources have answered: each source the screens ask counts its answers, so a step that wants to say 'no door' waits until the sources it asked have given theirs, not for a clock (mw-qtu3zvz.217).
 let answered = 0;
+let started = 0;
 const watched = (source: typeof testSource): typeof testSource => ({
   ...source,
   mapsFor: async (ref, places) => {
+    started += 1;
     try {
       return await source.mapsFor(ref, places);
     } finally {
@@ -92,6 +94,7 @@ async function openOn(title: string, immersive = false, atlas?: { on: boolean; b
   // the sources that are on, each counting its answers (a source that is Off is never asked)
   setMapSources((await enabledSources()).map(watched));
   answered = 0;
+  started = 0;
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -121,6 +124,7 @@ describeFeature(feature, ({ Scenario }) => {
   const openedWithoutLogos = (_: unknown, title: string) => openOn(title, false, undefined, 'off');
   const tapVerse = async (_: unknown, n: number) => {
     answered = 0;
+    started = 0;
     await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
@@ -135,9 +139,16 @@ describeFeature(feature, ({ Scenario }) => {
     await act(async () => {});
     expect(doorsIn(viewEl())).toHaveLength(0);
   };
+  // Every source the screens have asked has answered, and what it answered is drawn: the look for a 'nothing opened' step is made after this, never after a clock. A screen that asks no source has nothing to wait for.
+  // A screen's ask first reads which sources are on (enabledSources) and only then asks them: reading it again here queues behind that read, so an ask begun is counted in `started` before the wait.
+  const sourcesAnswered = async () => {
+    await enabledSources();
+    await waitFor(() => expect(answered).toBeGreaterThanOrEqual(started));
+    await act(async () => {});
+  };
   const footHasNone = async () => {
-    // the door was drawn as soon as its count came back
-    await sleep(300);
+    // a door at the foot would be drawn from a source's answer: wait for every source asked since the page opened, then look
+    await sourcesAnswered();
     expect(doorsIn(readerEl())).toHaveLength(0);
   };
   const tapPlaceLine = async () => {
@@ -463,7 +474,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('he taps {string}', tapDoor);
     And('he taps the link row {string}', tapLinkRow);
     Then('only the sheet is open', async () => {
-      await sleep(60);
+      // a map view opened by the tap would be drawn from the sources' answers: wait for them, then look
+      await sourcesAnswered();
       expect(sheetCount()).toBe(1);
       expect(document.querySelector('[data-map-zoom]')).toBeNull();
     });
