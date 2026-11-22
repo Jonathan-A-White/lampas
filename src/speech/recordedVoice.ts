@@ -340,7 +340,11 @@ function make(): HTMLAudioElement {
     aimEnd();
   });
   audio.addEventListener('loadedmetadata', () => {
-    if (pendingStart !== null && Math.abs(audio.currentTime - pendingStart) > END_SLACK) audio.currentTime = pendingStart;
+    if (pendingStart === null) return;
+    if (Math.abs(audio.currentTime - pendingStart) > END_SLACK) audio.currentTime = pendingStart;
+    // The media fragment (#t=) has put the second at the start already: nothing sounds until its seek is in, so the mute is lifted now, a task before 'seeked' and 'playing',
+    // which come as the sound does and, run late on a busy host, lost its first 24 ms (mw-fnvjof.17.248).
+    else if (muting) mute(false);
   });
   audio.addEventListener('ended', () => {
     if (listener && wantPlaying) reach();

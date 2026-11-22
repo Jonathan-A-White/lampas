@@ -454,6 +454,9 @@ function hold(m: Measure, what: string): void {
  * and can snap its second to the wall clock (mw-ar5k42b.46), so the first sound heard must be within START_WITHIN of the span's start both ways, not only not before it by more than the
  * margin, and the play must have had its unmute (the second the element read then is logged, relative to the start, for each play). */
 const START_WITHIN = 0.05;
+/** The first unmute is lifted at 'loadedmetadata', before the seek is in and the sound begins (mw-fnvjof.17.248): 0 to 3 ms from the start in 24 plays under load, 0 to 20 ms when it waited for 'seeked'
+ * (a page task run 24 ms late on a busy host lost the start of the span: the first sound 53 ms from it). */
+const UNMUTE_WITHIN = 0.02;
 function holdStartWhole(m: Measure, cold: boolean, after: { unmutes: Unmute[]; mutes: number }, before: { unmutes: Unmute[]; mutes: number }, start: number, what: string): void {
   const unmutes = after.unmutes.slice(before.unmutes.length);
   const mutes = after.mutes - before.mutes;
@@ -463,8 +466,8 @@ function holdStartWhole(m: Measure, cold: boolean, after: { unmutes: Unmute[]; m
   expect.soft(mutes, `${what}: the play ${cold ? 'seeked the element short of the start and muted it' : 'was not muted'}`).toBe(cold ? 1 : 0);
   expect.soft(unmutes.length, `${what}: every mute was followed by an unmute`).toBe(mutes);
   expect.soft(Math.abs(m.startMs), `${what}: first second heard less the start, ms (within ${ms(START_WITHIN)})`).toBeLessThanOrEqual(ms(START_WITHIN));
-  // the first unmute is where the element's second was at the start (END_SLACK short of it at the least): never a second that was snapped on or back
-  if (unmutes.length > 0) expect.soft(Math.abs(unmutes[0].second - start), `${what}: the element's second at the first unmute less the start, ms`).toBeLessThanOrEqual(ms(START_WITHIN) * 2);
+  // the first unmute is where the element's second was at the start: never a second that was snapped on or back, and never later than UNMUTE_WITHIN after it
+  if (unmutes.length > 0) expect.soft(Math.abs(unmutes[0].second - start), `${what}: the element's second at the first unmute less the start, ms (within ${ms(UNMUTE_WITHIN)})`).toBeLessThanOrEqual(ms(UNMUTE_WITHIN));
 }
 
 /** Saves his English speed through raw IndexedDB, as the app writes it. */
