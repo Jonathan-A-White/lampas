@@ -84,10 +84,27 @@ export function setSermonsUrl(url: string | undefined): void {
 /** Whether there is a service to ask at all. */
 export const sermonsServiceKnown = (): boolean => base !== '';
 
+/** How long the text of a sermon is waited for (mw-ecpivg5.2): the service fetches a page from its source on the first request, politely (10 s apart per host), so a sermon not yet kept can take a while. */
+export const TEXT_WAIT_MS = 25000;
+
+/** A public-domain text sermon as `GET /v1/text` answers it (sermon-index docs/api.md): its title and its plain paragraphs. */
+export interface ServiceText {
+  id: string;
+  title: string;
+  source: string;
+  url: string;
+  paragraphs: string[];
+}
+
+/** The words of a sermon (`GET /v1/text?id=<id>&source=<source>`); only a source the index marks public-domain text answers, any other is a 404. Throws as the other calls do, after TEXT_WAIT_MS. */
+export async function fetchSermonText(source: string, id: string): Promise<ServiceText> {
+  return get('/v1/text', { id, source }, TEXT_WAIT_MS);
+}
+
 /** The words the sheet's search sends at most (the service refuses a longer query, docs/api.md 'GET /v1/search'). */
 export const SEARCH_MAX = 200;
 
-async function get<T>(path: string, query: Record<string, string | undefined>): Promise<T> {
+async function get<T>(path: string, query: Record<string, string | undefined>, wait: number = SERVICE_WAIT_MS): Promise<T> {
   if (base === '') throw new Error('no sermon index service');
   const params = Object.entries(query).flatMap(([name, value]) => (value === undefined ? [] : [`${encodeURIComponent(name)}=${encodeURIComponent(value).replace(/%2C/gi, ',').replace(/%3A/gi, ':')}`]));
   const url = `${base}${path}${params.length > 0 ? `?${params.join('&')}` : ''}`;
@@ -96,7 +113,7 @@ async function get<T>(path: string, query: Record<string, string | undefined>): 
     const response = await fetch(url, { signal, credentials: 'omit' });
     if (!response.ok) throw new Error(`the sermon index answered ${response.status}`);
     return (await response.json()) as T;
-  }, SERVICE_WAIT_MS);
+  }, wait);
 }
 
 /**
