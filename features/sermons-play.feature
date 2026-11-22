@@ -4,7 +4,7 @@ Feature: Ask the Bible talk for a sermon and it plays in the app (mw-qtu3zvz.84,
   '<source>:<id>'. The command opens S1's player with openSermon(row, {auto: true}) once the answer has been said, so the sermon starts with no tap. With no match the tutor says so and runs
   nothing; a sermon the app cannot play (a text sermon, or one the request did not list) is refused, and the line under the answer says so. Postern is the fake, whose mill answers as a scenario sets.
 
-  @uc-sermons
+  @uc-sermons @greek
   Scenario: He asks for a sermon on the chapter and the best match plays with no tap
     Given Lampas is opened on Romans 8 with video sermons, and the tutor answers a sermon ask by playing "testvideo:clay"
     And he opens Talk
@@ -14,7 +14,7 @@ Feature: Ask the Bible talk for a sermon and it plays in the app (mw-qtu3zvz.84,
     And the sheet says "Lightning in Clay Pots, preached by Phil Morgan"
     And the request told the tutor that "testvideo:clay" plays in the app and "testvideo:notes" does not
 
-  @uc-sermons
+  @uc-sermons @greek
   Scenario: Several sermons fit, the tutor names them and the first plays
     Given Lampas is opened on Romans 8 with video sermons, and the tutor answers a sermon ask by playing "testvideo:faith"
     And he opens Talk
@@ -22,7 +22,7 @@ Feature: Ask the Bible talk for a sermon and it plays in the app (mw-qtu3zvz.84,
     Then the sermon player opens on "Faith that Works"
     And the sheet says "Also: Lightning in Clay Pots"
 
-  @uc-sermons
+  @uc-sermons @greek
   Scenario: No sermon fits, the tutor says so and nothing plays
     Given Lampas is opened on Romans 8 with video sermons, and the tutor answers a sermon ask with none listed
     And he opens Talk
@@ -30,7 +30,7 @@ Feature: Ask the Bible talk for a sermon and it plays in the app (mw-qtu3zvz.84,
     Then the sheet says "No sermon of the tabernacle is listed"
     And no sermon player is open
 
-  @uc-sermons
+  @uc-sermons @greek
   Scenario: A text sermon, or one that was never listed, is refused and nothing plays
     Given Lampas is opened on Romans 8 with video sermons, and the tutor answers a sermon ask by playing "testvideo:notes"
     And he opens Talk
