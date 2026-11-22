@@ -27,6 +27,13 @@ describe('sermonsForTutor', () => {
     ]);
   });
 
+  it('marks a row the app plays in its own player with plays: true, and no other (mw-qtu3zvz.84)', () => {
+    const video = { ...row('brookfield', 'day', 'The Day of the Lord', ['2pe', 3, 1, 13], 'Phil Morgan'), open: { url: 'https://www.youtube.com/watch?v=abcdefghijk' } };
+    const logos = { ...row('brookfield', 'logos', 'In Logos', ['2pe', 3, 1, 13]), opensIn: 'logos' as const, open: { url: 'https://www.youtube.com/watch?v=abcdefghijk' } };
+    const told = sermonsForTutor([video, logos, row('spurgeon-ccel', '1', 'A text sermon', ['2pe', 3, 1, 13])], []);
+    expect(told.rows.map((r) => r.plays)).toEqual([true, undefined, undefined]);
+  });
+
   it('writes the preaching text as a reader would', () => {
     expect(refText({ book: 'rom', chapter: 5, from: 6, to: 11 })).toBe('Romans 5:6-11');
     expect(refText({ book: 'rom', chapter: 5, from: 12, to: 4, toChapter: 6 })).toBe('Romans 5:12-6:4');

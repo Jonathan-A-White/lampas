@@ -14,7 +14,9 @@ import { dailyTicksSetting } from '../../src/settings/definitions';
 import { currentSettings } from '../support/settings';
 import { hasPractise, takePractise } from '../../src/review/practise';
 import { registerTalkLeave } from '../../src/talk/rustyOffer';
-import { addWord, bibleTalkRegistry, changeSettings, lampasRegistry, tickToday, workDoor } from '../../src/tutor/registry';
+import { addWord, bibleTalkRegistry, changeSettings, lampasRegistry, tickToday, withTalkSermons, workDoor } from '../../src/tutor/registry';
+import { dropQueuedSermon, hasQueuedSermon } from '../../src/sermons/player';
+import { row } from '../support/sermon-sources';
 import { EVERY_BOOK_IDS, keepImport } from '../support/logos-import';
 
 afterAll(() => db.close());
@@ -48,7 +50,7 @@ describe('the registry lists the commands and the work place', () => {
       ['start-review', 'free'],
       ['add-word', 'undoable'],
     ]);
-    expect(registry.commands).toHaveLength(9);
+    expect(registry.commands).toHaveLength(10);
     expect(registry.place('open-work')).toBeDefined();
     for (const command of registry.commands) expect(command.tell.length).toBeGreaterThan(10);
   });
@@ -238,3 +240,25 @@ describe('open-work', () => {
   });
 });
 
+describe('play-sermon (mw-qtu3zvz.84)', () => {
+  const video = { ...row('brookfield', 'clay', 'Lightning in Clay Pots', ['2co', 4, 7, 7], 'Phil Morgan'), open: { url: 'https://www.youtube.com/watch?v=clay_pots_1' } };
+  const text = row('spurgeon-ccel', '1', 'A text sermon', ['2co', 4, 7, 7]);
+  afterEach(() => dropQueuedSermon());
+
+  it('is a free command that holds a listed video row to play once the answer is said', async () => {
+    expect(registry.command('play-sermon')?.kind).toBe('free');
+    const ran = await withTalkSermons([video, text], () => registry.run('play-sermon', { sermon: 'brookfield:clay' }));
+    expect(ran).toMatchObject({ ok: true, said: 'Playing Lightning in Clay Pots' });
+    expect(hasQueuedSermon()).toBe(true);
+  });
+
+  it('refuses a sermon the request did not list, a text sermon, and bad args, and holds nothing', async () => {
+    for (const sermon of ['brookfield:nope', 'spurgeon-ccel:1']) {
+      const ran = await withTalkSermons([video, text], () => registry.run('play-sermon', { sermon }));
+      expect(ran.ok, sermon).toBe(false);
+    }
+    expect((await registry.run('play-sermon', {})).ok).toBe(false);
+    expect((await registry.run('play-sermon', { sermon: 'brookfield:clay' })).ok).toBe(false);
+    expect(hasQueuedSermon()).toBe(false);
+  });
+});

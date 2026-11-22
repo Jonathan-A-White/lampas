@@ -1,11 +1,12 @@
 // src/sermons/forTutor.ts — the sermons as the Bible talk's request tells the tutor of them (mw-qtu3zvz.6, `sermons`, docs/sermons.md 'The tutor'): the sermons of the passage the talk holds, as sermonsFor and sameThemeFor
-// answer them for the verse (or the chapter), each {id, source, title, preacher, ref, theme?}, at most MAX_TUTOR_SERMONS (the passage's own rows first, then the rows on the same theme, which name the topic they came in by), and the verse's
+// answer them for the verse (or the chapter), each {id, source, title, preacher, ref, theme?, plays?}, at most MAX_TUTOR_SERMONS (the passage's own rows first, then the rows on the same theme, which name the topic they came in by), and the verse's
 // themes {topic, label}, at most MAX_TUTOR_THEMES. The tutor may link a row (`sermon`: '<source>:<id>') or narrow ('only Spurgeon', 'on grace') by answering with the rows that fit. The rows the chip opens are these same
 // rows (tutorSermonRows), so a link names only what the request listed.
 import { bookOf } from '../data/books';
 import { latestFor, sameThemeFor, sermonsFor, sermonsOnTheme } from './index';
 import { themesFor, type Theme } from '../themes';
 import { themeKey } from '../themes/themesFor';
+import { videoOfRow } from './player';
 import type { SermonPlace, SermonRef, SermonRow } from './types';
 
 /** The most sermon rows a request lists. */
@@ -22,6 +23,8 @@ export interface TutorSermon {
   preacher?: string;
   ref: string;
   theme?: string;
+  /** true on a row the app plays in its own player (a video), the only rows the tutor's play-sermon takes (mw-qtu3zvz.84); left out on any other */
+  plays?: true;
 }
 
 /** A topic of the verse, as the Themes line has it: `topic` is its id within its list, `label` the name the tutor says it by. */
@@ -70,6 +73,7 @@ export function sermonsForTutor(rows: readonly ListedSermon[], themes: readonly 
       ...(row.preacher ? { preacher: row.preacher } : {}),
       ref: refText(row.ref),
       ...(row.theme ? { theme: row.theme } : {}),
+      ...(videoOfRow(row) ? { plays: true as const } : {}),
     }),
   );
   const seen = new Set<string>();

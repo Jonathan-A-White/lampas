@@ -7,6 +7,7 @@
 //  - 'tutor' (or 'open the tutor', or 'ask' with no question) opens the Talk sheet on what is on screen through the tutor's one door (the floating ?'s own function) and listens.
 //  - What the answer asks the app to do runs as it does for a typed question (useTalk): a free or undoable command, or a place; a command that needs his tap is not run, its offer waits in the Talk, and the words are still spoken.
 //  - When the tutor cannot answer it says 'The tutor could not answer' and the reason the Talk shows, and the exchange closes. With no Reader on screen it says 'Open a chapter first'.
+//  - A sermon the answer plays (the tutor's play-sermon, docs/sermons.md 'Play by asking') starts in the app's player when the speaking ends, with no tap.
 //  - A wake while the answer is spoken (the kit's onInterrupt, `interruptAsk`) stops the speaking and opens a new command; the Talk keeps the turn.
 import type { CommandDone } from 'voice-kit/handsfree';
 import { tutorSeat } from '../nav/tutorSeat';
@@ -15,6 +16,7 @@ import { answerRuns } from '../speech/answerRuns';
 import { stopIfSpeaking } from '../speech/greek';
 import { getReading, stopReading, subscribeReading } from '../speech/readAloud';
 import { startAnswerWhenSeen } from '../speech/tutorVoice';
+import { dropQueuedSermon, playQueuedSermon } from '../sermons/player';
 import { parkForAnswer, SAID_KEY } from './playback';
 import { forgetVoiceTurns } from './voiceTurn';
 
@@ -141,10 +143,16 @@ export async function askTutor(question: string, say: (text: string) => Promise<
     return say(`${TUTOR_FAILED}: ${FAILURE_TITLES['no-licence']}`);
   }
   const outcome = await turn;
-  if (mine.cancelled) return;
+  if (mine.cancelled) {
+    dropQueuedSermon();
+    return;
+  }
   if (outcome.kind === 'answered') {
     await speakAnswer(outcome.id, outcome.answer, mine);
     finish();
+    // the sermon the answer named (play-sermon) starts as the answer ends, with no tap; a wake that cut the answer short leaves it
+    if (mine.cancelled) dropQueuedSermon();
+    else playQueuedSermon();
     return mine.cancelled ? undefined : { followUp: true };
   }
   finish();
