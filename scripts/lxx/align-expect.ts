@@ -256,7 +256,7 @@ export function checkLeftovers(code: string, expect: BookExpect, measured: Reado
     if (only.length > 0) problems.push(`${code} ${key}: ${only.length} English content word(s) have no Greek word and ${where(code, dir)} does not name them (${some(only)}): run \`${expectCommand(code)}\`, then write each one's reason`);
     if (other.length > 0) problems.push(`${code} ${key}: ${where(code, dir)} names ${other.length} word(s) that no chunk has without Greek any more (${some(other)}): run \`${expectCommand(code)}\``);
     const bare = want.leftovers.filter(([, why]) => why.trim() === '').map(([k]) => k);
-    if (bare.length > 0) problems.push(`${code} ${key}: ${bare.length} leftover word(s) have no reason in ${where(code, dir)} (${some(bare)}): read each against the verse (npm run lxx:align-choose -- --list) and write why it has no Greek word, a key of "reasons" or a sentence`);
+    if (bare.length > 0) problems.push(`${code} ${key}: ${bare.length} leftover word(s) have no reason in ${where(code, dir)} (${some(bare)}): read each against the verse (npm run lxx:align-choose -- --list) and write why it has no Greek word (a key of "reasons" or a sentence), then run \`${expectCommand(code)}\`, which keeps it`);
     for (const [k, why] of want.leftovers) {
       if (why.trim() !== '' && expect.reasons[why] === undefined && /^[a-z0-9]+(-[a-z0-9]+)+$/.test(why)) problems.push(`${code} ${key}: ${k} names the reason '${why}', which ${where(code, dir)} has no "reasons" entry for`);
     }
@@ -275,7 +275,7 @@ export function checkPlacePairs(code: string, expect: BookExpect, measured: Read
     if (only.length > 0) problems.push(`${code} ${key}: ${only.length} pair(s) by place nobody has read (${some(only)}): read each against the verse and the lexicon's entry; fix it with a \`fix\` row or run \`${expectCommand(code)}\` and mark it "read" in ${where(code, dir)}`);
     if (other.length > 0) problems.push(`${code} ${key}: ${where(code, dir)} names ${other.length} pair(s) by place that no chunk has any more (${some(other)}): run \`${expectCommand(code)}\``);
     const unread = want.placePairs.filter(([, why]) => why !== 'read').map(([k]) => k);
-    if (unread.length > 0) problems.push(`${code} ${key}: ${unread.length} pair(s) by place are not marked "read" in ${where(code, dir)} (${some(unread)}): read each, then mark it`);
+    if (unread.length > 0) problems.push(`${code} ${key}: ${unread.length} pair(s) by place are not marked "read" in ${where(code, dir)} (${some(unread)}): read each, mark it, then run \`${expectCommand(code)}\`, which keeps it`);
   }
   return problems;
 }

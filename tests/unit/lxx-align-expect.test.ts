@@ -184,7 +184,7 @@ describe('a stale sidecar fails in one line that names the command', () => {
     const measured = new Map([[12, { gaps: 0, model: 2, leftovers: ['12:3:removed', '12:3:thence'], placePairs: [] }]]);
     const problems = checkLeftovers('gen', bare, measured);
     expect(problems).toHaveLength(2);
-    expect(problems[0]).toMatch(/have no reason in .*gen\.expect\.json \(12:3:removed\)/);
+    expect(problems[0]).toMatch(/have no reason in .*gen\.expect\.json \(12:3:removed\).*npm run lxx:align-expect -- --book gen/);
     expect(problems[1]).toContain("'no-such-key'");
   });
 
