@@ -1,17 +1,33 @@
 // src/sermons/useThemes.ts — the Themes line and 'On the same theme' for the Sermons sheet (mw-qtu3zvz.4, docs/sermons.md 'The themes'): `undefined` while they are read, then what the place has. They come after the
 // sermons of the passage, and a failure leaves them empty: the sheet's own rows never wait on a theme file.
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { subscribe } from '../events/bus';
+import { useSetting } from '../settings/store';
+import { hiddenThemesSetting } from '../settings/definitions/themes';
 import { themesFor, type Theme } from '../themes';
+import { HIDDEN_KEY, parseHidden } from '../themes/hidden';
 import { themeKey } from '../themes/themesFor';
 import { directThemeRows, sameThemeFor, sermonsOnTheme, type SameTheme, type SermonPlace, type SermonsFound, type ThemeRow } from './index';
 import type { LinkRow } from './merge';
 
 const keyOf = (place: SermonPlace): string => `${place.book}.${place.chapter}.${place.from ?? ''}.${place.to ?? ''}`;
 
+/** The themes he has hidden (mw-qtu3zvz.91), live: `undefined` until they are read. */
+export function useHiddenThemes(): string[] | undefined {
+  const saved = useSetting(hiddenThemesSetting);
+  return useMemo(() => (saved === undefined ? undefined : parseHidden(saved)), [saved]);
+}
+
+/** A count that goes up each time the hidden set changes, so a list made from the themes is made again (mw-qtu3zvz.91). */
+function useHiddenChanges(): number {
+  const [changes, setChanges] = useState(0);
+  useEffect(() => subscribe('setting-changed', (event) => event.key === HIDDEN_KEY && setChanges((n) => n + 1)), []);
+  return changes;
+}
+
 /** The topics of the verse or passage (none for a whole chapter), in the order the Themes line names them. */
 export function useThemes(place: SermonPlace): Theme[] | undefined {
-  const key = keyOf(place);
+  const key = `${keyOf(place)}.${useHiddenChanges()}`;
   const [themes, setThemes] = useState<{ key: string; themes: Theme[] } | undefined>();
   useEffect(() => {
     let alive = true;
@@ -37,7 +53,7 @@ export function useThemes(place: SermonPlace): Theme[] | undefined {
  * Offline, with no service, or when the call fails, it stays as it was, and no line says so.
  */
 export function useSameTheme(place: SermonPlace, found: SermonsFound | undefined, online = false): SameTheme<ThemeRow> | undefined {
-  const key = keyOf(place);
+  const key = `${keyOf(place)}.${useHiddenChanges()}`;
   const [same, setSame] = useState<{ key: string; same: SameTheme<ThemeRow> } | undefined>();
   useEffect(() => {
     if (!found) return;
@@ -103,7 +119,7 @@ export function chipsOf(themes: readonly Theme[], lists: ReadonlyMap<string, rea
 export function useThemeChips(themes: readonly Theme[] | undefined, online: boolean): ThemeChip[] | undefined {
   const [switches, setSwitches] = useState(0);
   useEffect(
-    () => subscribe('setting-changed', (event) => (event.key.startsWith('sermons.') || event.key.startsWith('themes.') || event.key === 'resource.logos') && setSwitches((n) => n + 1)),
+    () => subscribe('setting-changed', (event) => (event.key.startsWith('sermons.') || event.key.startsWith('themes.') || event.key === HIDDEN_KEY || event.key === 'resource.logos') && setSwitches((n) => n + 1)),
     [],
   );
   const [held, setHeld] = useState<{ themes: readonly Theme[]; online: boolean; switches: number; chips: ThemeChip[] } | undefined>();

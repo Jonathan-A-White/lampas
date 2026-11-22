@@ -633,3 +633,62 @@ test.describe('on an Android phone', () => {
     await shot(page, 'sermons-open-web-firefox');
   });
 });
+
+test('Romans 5:8: Hide this theme is one 44 px tap that says where it comes back, and Settings > Study resources > Themes > Hidden themes lists it with Show again (mw-qtu3zvz.91)', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  await expect(sheet).toBeVisible();
+  const line = sheet.locator('[data-sermons-themes]');
+  const chip = line.getByRole('button', { name: 'Love-Hatred: Of God' });
+  await expect(chip).toBeVisible();
+  await chip.click();
+
+  // Hide this theme: 44 px, at the top of the theme's sermons, nothing cut off at its right
+  const hide = sheet.getByRole('button', { name: 'Hide this theme', exact: true });
+  await expect(hide).toBeVisible();
+  const box = (await hide.boundingBox())!;
+  expect(box.height).toBeGreaterThanOrEqual(43.5);
+  expect(box.x + box.width).toBeLessThanOrEqual(390);
+  expect(await hide.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await shot(page, 'theme-hide');
+
+  // one tap: back on the sheet, the theme gone from the line, and the sheet says where it comes back
+  await hide.click();
+  const said = sheet.locator('[data-theme-hidden-notice]');
+  await expect(said).toHaveText('Hidden. Settings > Study resources > Themes brings it back.');
+  await expect(line.getByRole('button', { name: 'Love-Hatred: Of God' })).toHaveCount(0);
+  await expect(sheet.getByRole('group', { name: /^On Love-Hatred/ })).toHaveCount(0);
+  expect(await said.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await shot(page, 'theme-hidden');
+  // it stays hidden after a reload
+  await page.reload();
+  // the reload keeps the Verse view open on verse 8
+  const again = page.getByRole('region', { name: 'Verse view' });
+  await expect(again).toBeVisible();
+  await again.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const kept = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' }).locator('[data-sermons-themes]');
+  await expect(kept.locator('[data-theme-chip]').first()).toBeVisible();
+  await expect(kept.getByRole('button', { name: /^Love-Hatred/ })).toHaveCount(0);
+
+  // Settings > Study resources > Themes: Hidden themes lists it, and Show again is one 44 px tap that says what happened
+  await page.goto('/#/settings?group=study');
+  const row = page.locator('[data-section="themes"] [data-setting="themesHidden"]');
+  await row.scrollIntoViewIfNeeded();
+  await expect(row).toBeVisible();
+  await expect(row.locator('[data-hidden-themes] li')).toHaveText([/Love-Hatred/]);
+  const show = row.getByRole('button', { name: /^Show again/ });
+  const showBox = (await show.boundingBox())!;
+  expect(showBox.height).toBeGreaterThanOrEqual(43.5);
+  expect(showBox.x + showBox.width).toBeLessThanOrEqual(390);
+  expect(await row.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await shot(page, 'themes-hidden-list');
+  await show.click();
+  await expect(row.locator('[data-hidden-said]')).toHaveText('Shown again: Love-Hatred.');
+  await expect(row.locator('[data-hidden-none]')).toBeVisible();
+  await row.scrollIntoViewIfNeeded();
+  await shot(page, 'themes-shown-again');
+});

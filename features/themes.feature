@@ -117,3 +117,37 @@ Feature: Themes on the Sermons sheet (mw-qtu3zvz.4, docs/sermons.md 'The themes'
     When he turns "Torrey's New Topical Textbook" Off in the Themes section
     Then the Themes section shows "Torrey's New Topical Textbook" Off
     And the setting "themes.themes-torrey" is kept as "off"
+
+  @uc-sermons @greek
+  Scenario: Hide this theme is one tap, and the sheet says where it comes back
+    Given Lampas is opened on "Romans 5"
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    And he taps the theme "Love-Hatred: Of God"
+    And he taps the button "Hide this theme"
+    Then the sheet says "Hidden. Settings > Study resources > Themes brings it back."
+    And the Themes line now offers "Atonement: Doctrine of"
+    And the sheet no longer has the theme "On Love-Hatred"
+    And the setting "themesHidden" is kept as "Love-Hatred"
+
+  @uc-sermons @greek
+  Scenario: A theme he hid stays out of the verse's themes after a reload
+    Given Lampas is opened on "Romans 5" with the theme "Love-Hatred" hidden
+    When he taps verse 8
+    And he taps "Sermons · 4"
+    Then the Themes line offers "Atonement: Doctrine of"
+    And the sheet no longer has the theme "On Love-Hatred"
+
+  @uc-sermons @greek
+  Scenario: Settings lists the hidden themes, and Show again brings one back
+    Given Settings is open at Study resources with the theme "Atonement" hidden
+    Then the Hidden themes row lists "Atonement"
+    When he taps "Show again" in the Hidden themes row
+    Then the Hidden themes row says "Shown again: Atonement."
+    And the Hidden themes row lists nothing
+    And the setting "themesHidden" is kept as ""
+
+  @uc-sermons @greek
+  Scenario: With no theme hidden the Hidden themes row says so
+    Given Settings is open at Study resources
+    Then the Hidden themes row lists nothing

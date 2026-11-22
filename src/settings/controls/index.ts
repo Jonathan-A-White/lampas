@@ -14,7 +14,7 @@ import { LanguagesControl } from './languages';
 import { LinkControl } from './links';
 import { MapsControl } from './maps';
 import { OpenWebControl, SermonSourcesControl } from './sermons';
-import { ThemesControl } from './themes';
+import { HiddenThemesControl, ThemesControl } from './themes';
 import { NewWordsControl } from './newWords';
 import { OfflineCopyControl } from './offlineCopy';
 import { QuizGoalControl } from './quizGoal';
@@ -40,6 +40,7 @@ export const CONTROLS: Readonly<Record<string, Control>> = {
   readingMode: ReadingModeControl,
   sermonSources: SermonSourcesControl,
   sermonsOpenWeb: OpenWebControl,
+  themesHidden: HiddenThemesControl,
   chapterButtons: ChapterButtonsControl,
   copyReference: CopyFormatControl,
   copyNumbers: CopyFormatControl,

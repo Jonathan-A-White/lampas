@@ -64,8 +64,9 @@ async function reset(): Promise<void> {
 }
 
 /** Opens the app on a chapter (the address names it), with the test sermons and theme lists registered. */
-async function openOn(title: string, themes: Parameters<typeof registerTestThemes>[0] = {}, sources?: SermonSource[], turnedOn: string[] = []): Promise<void> {
+async function openOn(title: string, themes: Parameters<typeof registerTestThemes>[0] = {}, sources?: SermonSource[], turnedOn: string[] = [], hidden?: string): Promise<void> {
   await reset();
+  if (hidden !== undefined) await db.settings.put({ key: 'themesHidden', value: hidden });
   if (sources) setSermonSources(sources);
   else registerTestSermons();
   await db.settings.bulkPut(turnedOn.map((id) => ({ key: `sermons.${id}`, value: 'on' })));
@@ -79,13 +80,20 @@ async function openOn(title: string, themes: Parameters<typeof registerTestTheme
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
 }
 
-async function openStudy(): Promise<void> {
+async function openStudy(hidden?: string): Promise<void> {
   await reset();
+  if (hidden !== undefined) await db.settings.put({ key: 'themesHidden', value: hidden });
   window.history.replaceState(null, '', '/#/settings?group=study');
   render(<App />);
   await screen.findByRole('region', { name: 'Study resources' });
 }
 
+const hiddenRow = async (): Promise<HTMLElement> =>
+  waitFor(() => {
+    const row = document.querySelector<HTMLElement>('[data-setting="themesHidden"]');
+    if (!row) throw new Error('no Hidden themes row');
+    return row;
+  });
 const sheetEl = () => screen.findByRole('dialog', { name: /^Sermons for / });
 const themesSection = async (): Promise<HTMLElement> =>
   waitFor(() => {
@@ -310,7 +318,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Settings has an On or Off row for each theme list, both On to start', ({ Given, Then, And }) => {
-    Given('Settings is open at Study resources', openStudy);
+    Given('Settings is open at Study resources', () => openStudy());
     Then('the Themes section shows {string} On', async (_, name: string) => {
       await waitFor(async () => expect(await pressed(name)).toEqual(['On']));
     });
@@ -320,7 +328,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario('Turning a theme list Off is kept', ({ Given, When, Then, And }) => {
-    Given('Settings is open at Study resources', openStudy);
+    Given('Settings is open at Study resources', () => openStudy());
     When('he turns {string} Off in the Themes section', async (_, name: string) => {
       await user.click(within(await switchOf(name)).getByRole('button', { name: 'Off' }));
     });
@@ -329,6 +337,64 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the setting {string} is kept as {string}', async (_, key: string, value: string) => {
       await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
+    });
+  });
+
+  Scenario('Hide this theme is one tap, and the sheet says where it comes back', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string}', opened);
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    And('he taps the theme {string}', async (_, name: string) => {
+      await user.click(await waitFor(async () => within(await sheetEl()).getByRole('button', { name })));
+    });
+    And('he taps the button {string}', async (_, name: string) => {
+      await user.click(await waitFor(async () => within(await sheetEl()).getByRole('button', { name })));
+    });
+    Then('the sheet says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(squash((await sheetEl()).querySelector('[data-theme-hidden-notice]')?.textContent)).toBe(text));
+    });
+    And('the Themes line now offers {string}', themesLineOffers);
+    And('the sheet no longer has the theme {string}', async (_, group: string) => {
+      await waitFor(async () => expect(await themeGroups()).not.toContain(group));
+    });
+    And('the setting {string} is kept as {string}', async (_, key: string, value: string) => {
+      await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
+    });
+  });
+
+  Scenario("A theme he hid stays out of the verse's themes after a reload", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with the theme {string} hidden', (_, title: string, name: string) => openOn(title, {}, undefined, [], name));
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string}', tapDoor);
+    Then('the Themes line offers {string}', themesLineOffers);
+    And('the sheet no longer has the theme {string}', async (_, group: string) => {
+      await waitFor(async () => expect(await themeGroups()).not.toContain(group));
+    });
+  });
+
+  Scenario('Settings lists the hidden themes, and Show again brings one back', ({ Given, When, Then, And }) => {
+    Given('Settings is open at Study resources with the theme {string} hidden', (_, name: string) => openStudy(name));
+    Then('the Hidden themes row lists {string}', async (_, name: string) => {
+      await waitFor(async () => expect([...(await hiddenRow()).querySelectorAll('[data-hidden-themes] li span')].map((n) => squash(n.textContent))).toEqual([name]));
+    });
+    When('he taps {string} in the Hidden themes row', async (_, label: string) => {
+      await user.click(await waitFor(async () => within(await hiddenRow()).getByRole('button', { name: new RegExp(`^${label}`) })));
+    });
+    Then('the Hidden themes row says {string}', async (_, text: string) => {
+      await waitFor(async () => expect(squash((await hiddenRow()).querySelector('[data-hidden-said]')?.textContent)).toBe(text));
+    });
+    And('the Hidden themes row lists nothing', async () => {
+      await waitFor(async () => expect((await hiddenRow()).querySelector('[data-hidden-none]')).not.toBeNull());
+    });
+    And('the setting {string} is kept as {string}', async (_, key: string, value: string) => {
+      await waitFor(async () => expect((await db.settings.get(key))?.value).toBe(value));
+    });
+  });
+
+  Scenario('With no theme hidden the Hidden themes row says so', ({ Given, Then }) => {
+    Given('Settings is open at Study resources', () => openStudy());
+    Then('the Hidden themes row lists nothing', async () => {
+      await waitFor(async () => expect((await hiddenRow()).querySelector('[data-hidden-none]')).not.toBeNull());
     });
   });
 });
