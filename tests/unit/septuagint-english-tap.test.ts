@@ -140,7 +140,8 @@ describe("an English-only word's sheet (mw-u2w5klk.349.67)", () => {
   const the = first.e.findIndex((c) => c.t === 'the' && c.g.length === 0);
   const weaving: Partial<ReaderSettings> = {
     view: 'english', weave: 'solid', weaveShown: true, weaveGrammar: 'any', weaveOrder: 'english',
-    solid: new Set(plain.verses.flatMap((v) => v.g.map((w) => w.l))), learning: new Set(), levels: new Map(),
+    // every word but ἀρχή: with Ἐν and ἀρχή both in Greek the 'the' between them is not drawn (mw-u2w5klk.349.69), and there would be nothing to tap
+    solid: new Set(plain.verses.flatMap((v) => v.g.map((w) => w.l)).filter((l) => l !== 'ἀρχή')), learning: new Set(), levels: new Map(),
   };
   const woven = wovenOf(aligned, weaving)?.[aligned.verses.indexOf(first)] ?? null;
   const tapThe = (looks: Lookup[], opened: number[], weave: boolean) => {

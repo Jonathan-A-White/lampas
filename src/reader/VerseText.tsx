@@ -2,7 +2,7 @@
 import { Fragment, useState, type MouseEvent, type ReactNode } from 'react';
 import { type EnglishChunk, type GreekWord, type SourceLanguage, type Verse, englishRuns, isGuess } from '../data/chapter';
 import type { ReaderView } from '../data/repositories';
-import { besideOf, chunkText, drawnOrder, strayMarks, type WovenVerse } from '../data/weave';
+import { besideOf, chunkText, drawnOrder, goneOf, strayMarks, type WovenVerse } from '../data/weave';
 import { NO_SELECT, useLongPress } from '../ui/longPress';
 import type { SpeechLanguage } from '../speech/languages';
 import type { Lookup } from '../WordSheet';
@@ -358,6 +358,8 @@ export function VerseText({ verse, view: chapterView, source = 'grc', woven, onL
             if (plan.dropped.has(i)) return [...before, ...braces];
             const placed = plan.replace.get(i);
             if (placed) return [...before, inPlaceOf(placed, `c${i}`), ...braces];
+            // an English word added by design ('the' of 'In the beginning' in the Septuagint) falls away once the chunks on both sides of it are in Greek (weave.ts goneVerse, mw-u2w5klk.349.69); a word a variant or a reading marks stays
+            if (goneOf(woven, i) && !plan.marked.has(i) && !plan.inPlace.has(i)) return [...before, ...braces];
             const run = plan.marked.has(i) ? ('variant' as const) : plan.inPlace.has(i) ? ('chosen' as const) : verse.e[i].rp ? ('rp' as const) : undefined;
             const kept = plan.inPlace.has(i) ? '' : undefined;
             const rp = verse.e[i].rp ? '' : undefined;

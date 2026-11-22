@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
-import { chunkOrder, chunkText, drawnOrder, weaveVerse, wovenInOrder } from '../../src/data/weave';
+import { chunkOrder, chunkText, drawnOrder, goneOf, weaveVerse, wovenInOrder } from '../../src/data/weave';
 import { wovenOf } from '../../src/reader/useWoven';
+import { alignChapter } from '../../scripts/lxx/align';
 
 const word = (t: string, l: string): GreekWord => ({ t, tr: '', s: 'G1', l, p: 'N-NSM' });
 
@@ -163,5 +164,87 @@ describe('wovenOf on a Hebrew chapter', () => {
   it('does not let the grammar dial (which knows the Greek parsing codes) hold a Hebrew form back', () => {
     const woven = wovenOf(genesis1, { ...weaving, weaveGrammar: 'solid' });
     expect(woven?.[0][0]?.words[0].t).toBe('בְּרֵאשִׁ֖ית');
+  });
+});
+
+// mw-u2w5klk.349.69 (the Governor: "In weave mode, when would the added English words fall away?" Yes: once the words on both sides are in Greek): an English chunk
+// with no Greek of its own, or only supplied words, is not drawn when the nearest drawn chunk on each side of it is woven; at a verse's end the one neighbour decides.
+describe('an added English word falls away once the words around it are in Greek', () => {
+  const read = <T,>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
+  const plain = read<Chapter>('tests/fixtures/data-lxx/gen/1.json');
+  const lexicon = read<Record<string, { g?: string }>>('tests/fixtures/data-lxx/lexicon-grc-lxx.json');
+  const lxx = alignChapter(plain, (lemma) => lexicon[lemma]?.g ?? '').chapter;
+  const weaving = { view: 'english' as const, weave: 'solid' as const, weaveShown: true, weaveGrammar: 'any' as const, learning: new Set<string>(), levels: new Map() };
+  const goneIn = (chapter: Chapter, solid: string[], weaveOrder: 'english' | 'greek' = 'english', n = 0): boolean[] => {
+    const woven = wovenOf(chapter, { ...weaving, solid: new Set(solid), weaveOrder });
+    return (woven?.[n] ?? []).map((_, i) => goneOf(woven?.[n], i));
+  };
+  const the = lxx.verses[0].e.findIndex((c) => c.t === 'the' && c.g.length === 0);
+
+  it("Genesis 1:1 'the' of 'In the beginning' has no Greek: the aligner knows it is added", () => {
+    expect(the).toBe(1);
+    expect(lxx.verses[0].e[the].y).toBe('align?');
+  });
+
+  it("draws no 'the' when Ἐν and ἀρχή are both known, in either order", () => {
+    for (const order of ['english', 'greek'] as const) expect(goneIn(lxx, ['ἐν', 'ἀρχή'], order)[the]).toBe(true);
+  });
+
+  it("draws the 'the' when ἀρχή is not known (a neighbour is English), or Ἐν is not", () => {
+    expect(goneIn(lxx, ['ἐν'])[the]).toBe(false);
+    expect(goneIn(lxx, ['ἀρχή'])[the]).toBe(false);
+    expect(goneIn(lxx, [])[the]).toBe(false);
+  });
+
+  it('drops only chunks that have no Greek of their own: woven and English chunks are never gone', () => {
+    const gone = goneIn(lxx, ['ἐν', 'ἀρχή', 'ποιέω', 'θεός', 'ὁ', 'οὐρανός', 'καί', 'γῆ']);
+    expect(gone.map((g, i) => (g ? lxx.verses[0].e[i].t : null)).filter((t) => t !== null)).toEqual(['the']);
+  });
+
+  it('a chunk English because its Greek is not paired yet (data:build:lxx\'s one chunk with every word) is drawn as before', () => {
+    const everything = plain.verses[0].g.map((w) => w.l);
+    expect(goneIn(plain, everything)).toEqual([false]);
+  });
+
+  describe("an English-only chunk of the New Testament made of supplied words", () => {
+    const base: Verse = { n: 1, g: [word('ἐν', 'ἐν'), word('τοῦ', 'ὁ'), word('χριστῷ', 'Χριστός')], e: [{ t: 'in', g: [0] }, { t: 'is', g: [1], s: [0] }, { t: 'Christ', g: [2] }] };
+    const chapterOf = (verses: Verse[]): Chapter => ({ ...lxx, verses });
+
+    it('falls away between two woven chunks', () => {
+      expect(goneIn(chapterOf([base]), ['ἐν', 'Χριστός'])).toEqual([false, true, false]);
+    });
+
+    it('stays between a woven chunk and an English one, and when neither is woven', () => {
+      expect(goneIn(chapterOf([base]), ['ἐν'])).toEqual([false, false, false]);
+      expect(goneIn(chapterOf([base]), ['Χριστός'])).toEqual([false, false, false]);
+      expect(goneIn(chapterOf([base]), [])).toEqual([false, false, false]);
+    });
+
+    it('stays when it stands for a Greek word he knows, which is drawn in gold beside it', () => {
+      expect(goneIn(chapterOf([base]), ['ἐν', 'ὁ', 'Χριστός'])).toEqual([false, false, false]);
+    });
+
+    it('is not a chunk that has English of its own with supplied words: that one is woven or English, never gone', () => {
+      const own: Verse = { ...base, e: [{ t: 'in', g: [0] }, { t: 'the beginning', g: [1], s: [0] }, { t: 'Christ', g: [2] }] };
+      expect(goneIn(chapterOf([own]), ['ἐν', 'Χριστός'])).toEqual([false, false, false]);
+    });
+  });
+
+  describe("the Order he has set decides who the neighbours are (an English chunk with no Greek stands behind the chunk before it in the English)", () => {
+    // Greek: A=ἐν(0) B=Χριστός(1); English: B, the, A. English order draws B the A; Greek order draws A B the
+    const swapped: Verse = { n: 1, g: [word('ἐν', 'ἐν'), word('χριστῷ', 'Χριστός')], e: [{ t: 'Christ', g: [1] }, { t: 'the', g: [] }, { t: 'in', g: [0] }] };
+    const chapter: Chapter = { ...lxx, verses: [swapped] };
+
+    it('English order: its English neighbours, so it falls away only when both are woven', () => {
+      expect(goneIn(chapter, ['ἐν', 'Χριστός'], 'english')[1]).toBe(true);
+      expect(goneIn(chapter, ['ἐν'], 'english')[1]).toBe(false);
+      expect(goneIn(chapter, ['Χριστός'], 'english')[1]).toBe(false);
+    });
+
+    it('Greek order: it stands at the verse end after Christ, so the one neighbour (Christ, drawn last) decides', () => {
+      expect(chunkOrder(swapped, 'greek')).toEqual([2, 0, 1]);
+      expect(goneIn(chapter, ['Χριστός'], 'greek')[1]).toBe(true);
+      expect(goneIn(chapter, ['ἐν'], 'greek')[1]).toBe(false);
+    });
   });
 });
