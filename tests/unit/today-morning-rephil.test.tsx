@@ -98,6 +98,9 @@ describe('Today with Morning RePhil chosen', () => {
     await act(async () => {
       await userEvent.click(piece.getByRole('button', { name: 'Start again from the top' }));
     });
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Forget them' }, { timeout }));
+    });
     expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toBeInTheDocument();
     expect([...(await getHeard())]).toEqual([]);
   });
@@ -125,6 +128,99 @@ describe('Today with Morning RePhil chosen', () => {
   });
 });
 
+describe('Seen can be taken back, and Start again asks first (mw-r9xo1pj.10)', () => {
+  const all = JSON.stringify(EPISODES.map((e) => e.id));
+
+  it('offers Undo after Seen; Undo restores the episode and takes it out of the heard set', async () => {
+    const piece = await open();
+    await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout });
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Seen' }));
+    });
+    expect(await piece.findByRole('link', { name: new RegExp(EPISODES[1].title) }, { timeout })).toBeInTheDocument();
+    expect([...(await getHeard())]).toEqual([first.id]);
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Undo' }, { timeout }));
+    });
+    expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toHaveAttribute('href', first.share);
+    expect([...(await getHeard())]).toEqual([]);
+    expect(piece.queryByRole('button', { name: 'Undo' })).toBeNull();
+  });
+
+  it('Undo gives back an episode that Another had pinned for the day', async () => {
+    const piece = await open();
+    await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout });
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Another episode' }));
+    });
+    await piece.findByRole('link', { name: new RegExp(EPISODES[1].title) }, { timeout });
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Seen' }));
+    });
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Undo' }, { timeout }));
+    });
+    expect(await piece.findByRole('link', { name: new RegExp(EPISODES[1].title) }, { timeout })).toBeInTheDocument();
+    expect([...(await getHeard())]).toEqual([]);
+  });
+
+  it('offers Undo after the last Seen too, where Today falls to the backup', async () => {
+    await db.settings.put({ key: 'morningRephilHeard', value: JSON.stringify(EPISODES.slice(0, -1).map((e) => e.id)) });
+    await setDevotionalPick(localDate(new Date()), MORNING_REPHIL_ID);
+    const piece = await open();
+    await piece.findByRole('link', { name: new RegExp(last.title) }, { timeout });
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Seen' }));
+    });
+    await piece.findByRole('link', { name: /Morning and Evening/ }, { timeout });
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Undo' }, { timeout }));
+    });
+    expect(await piece.findByRole('link', { name: new RegExp(last.title) }, { timeout })).toBeInTheDocument();
+    expect([...(await getHeard())]).not.toContain(last.id);
+  });
+
+  it('Start Morning RePhil again asks first, clears nothing on Cancel, and clears the heard set only on the confirming tap', async () => {
+    await db.settings.put({ key: 'morningRephilHeard', value: all });
+    const piece = await open();
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Start Morning RePhil again' }, { timeout }));
+    });
+    expect(await piece.findByText('Forget all your Seen marks?', undefined, { timeout })).toBeInTheDocument();
+    expect([...(await getHeard())]).toHaveLength(EPISODES.length);
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Cancel' }));
+    });
+    expect(piece.queryByText('Forget all your Seen marks?')).toBeNull();
+    expect(piece.getByRole('button', { name: 'Start Morning RePhil again' })).toBeInTheDocument();
+    expect([...(await getHeard())]).toHaveLength(EPISODES.length);
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Start Morning RePhil again' }));
+    });
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Forget them' }, { timeout }));
+    });
+    await vi.waitFor(async () => expect([...(await getHeard())]).toEqual([]), { timeout });
+  });
+
+  it('Start again from the top (Logos Off) asks first and clears nothing until the confirming tap', async () => {
+    await db.settings.bulkPut([
+      { key: 'resource.logos', value: 'off' },
+      { key: 'morningRephilHeard', value: all },
+    ]);
+    const piece = await open();
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Start again from the top' }, { timeout }));
+    });
+    expect(await piece.findByText('Forget all your Seen marks?', undefined, { timeout })).toBeInTheDocument();
+    expect([...(await getHeard())]).toHaveLength(EPISODES.length);
+    await act(async () => {
+      await userEvent.click(piece.getByRole('button', { name: 'Forget them' }));
+    });
+    await vi.waitFor(async () => expect([...(await getHeard())]).toEqual([]), { timeout });
+  });
+});
+
 describe('when all Morning RePhil are seen', () => {
   const all = JSON.stringify(EPISODES.map((e) => e.id));
 
@@ -135,6 +231,9 @@ describe('when all Morning RePhil are seen', () => {
     expect(piece.queryByText(/You've heard every Morning RePhil/)).toBeNull();
     await act(async () => {
       await userEvent.click(piece.getByRole('button', { name: 'Start Morning RePhil again' }));
+    });
+    await act(async () => {
+      await userEvent.click(await piece.findByRole('button', { name: 'Forget them' }, { timeout }));
     });
     expect(await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout })).toBeInTheDocument();
     expect([...(await getHeard())]).toEqual([]);
