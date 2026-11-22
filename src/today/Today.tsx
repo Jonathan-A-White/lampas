@@ -6,7 +6,7 @@
 // that explanation is not shown again (an empty Today then names only where to choose). The day is the LOCAL date, read again when the app comes back to the front; Review's and Memorize's day figures are asked again then too, and at his local midnight (useLatestLiveQuery, mw-indx1x6.58).
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
-import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, tickedDevotionals } from '../data/daily/devotionals';
+import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, canDrawAnother, tickedDevotionals } from '../data/daily/devotionals';
 import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, markSeen, noteExplained, pickAnotherDevotional, pinEpisode } from '../data/daily/dailyStore';
 import { DEFAULT_ORDER, anotherEpisode, devotionalToday, episodeDate, hasUnheard, type Episode, type EpisodeOrder, type TodaysDevotional } from '../data/daily/morningRephil';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
@@ -378,6 +378,7 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
   const ticked = tickedDevotionals(draw);
   const rephil = hasUnheard(heard);
   const { devotional } = shown;
+  const another = canDrawAnother(devotional.id, ticked, rephil, sources);
   const link = devotionalLink(devotional.id, today);
   if (devotional.kind === 'rephil') {
     return (
@@ -385,7 +386,7 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
         <h2 className={HEADING}>Devotional</h2>
         <List>
           <RephilEpisode ticks={ticks} episode={shown.episode} heard={heard} choice={choice} order={order} />
-          {choice === RANDOM ? (
+          {choice === RANDOM && another ? (
             <li className="px-2 pb-1">
               <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil, sources))} className={ACTION}>
                 Another devotional
@@ -405,7 +406,7 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
             <span className="text-lg font-medium text-accent">{devotional.title}</span>
             <span className="text-sm text-muted">{devotional.author ? `${devotional.author} · Open in Logos` : 'Open in Logos'}</span>
           </a>
-          {choice === RANDOM && !shown.backup ? (
+          {choice === RANDOM && !shown.backup && another ? (
             <div className="px-2 pb-1">
               <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil, sources))} className={ACTION}>
                 Another

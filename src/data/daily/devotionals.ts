@@ -135,3 +135,7 @@ export function anotherDevotional(current: string, ticked: readonly string[], ra
   if (pool.length === 0) return current;
   return pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))].id;
 }
+
+/** Whether Another has anything to draw: a devotional other than `current` in the sources that are on (what anotherDevotional would return is not `current`). With Logos Off and only Morning RePhil showing it is
+ *  false, so Today offers no Another that would do nothing (mw-r9xo1pj.9). */
+export const canDrawAnother = (current: string, ticked: readonly string[], rephil = false, sources: DrawSources = ALL_SOURCES): boolean => anotherDevotional(current, ticked, () => 0, rephil, sources) !== current;

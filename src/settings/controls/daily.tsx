@@ -1,8 +1,9 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useRef, useState, type ReactNode } from 'react';
-import { ALL_TICKED, RANDOM, devotionalOf, pickableDevotionals, tickedDevotionals } from '../../data/daily/devotionals';
+import { ALL_TICKED, RANDOM, canDrawAnother, devotionalOf, pickableDevotionals, tickedDevotionals } from '../../data/daily/devotionals';
 import { useDrawSources } from '../devotionalSources';
 import { NotWatchHistory, importMessage, importWatchHistory } from '../../data/daily/youtubeHistory';
+import { rephilUnheard } from '../../data/daily/dailyStore';
 import { ownedResources } from '../../data/repositories';
 import { openLibrary } from '../../nav/route';
 import { oneTap } from '../../ui/settle';
@@ -210,20 +211,26 @@ export const DevotionalDrawControl: Control = ({ row }) => {
 /** Today's devotional: the one Today shows now and Another, which draws a different one for today and leaves Which devotional on Random (the row shows only while it is Random). */
 export const TodaysDevotionalControl: Control = ({ row }) => {
   const id = useLiveQuery(async () => String(await settingOf(todaysDevotionalSetting.key)?.read()), []);
-  if (id === undefined) return null;
+  const draw = useSetting(devotionalDrawSetting);
+  const sources = useDrawSources();
+  const rephil = useLiveQuery(rephilUnheard, []);
+  if (id === undefined || draw === undefined || sources === undefined || rephil === undefined) return null;
+  const another = canDrawAnother(id, tickedDevotionals(draw), rephil, sources);
   return (
     <SettingRow row={row}>
       <div role="group" aria-label={row.label}>
         <span className="block text-base font-medium">{row.label}</span>
         <span className="block pb-1 text-base text-muted">{devotionalOf(id)?.title ?? id}</span>
-        <button
-          type="button"
-          aria-label="Another devotional for today"
-          onClick={() => oneTap('todays-devotional-another', () => void writeSetting(todaysDevotionalSetting.key, ANOTHER))}
-          className="flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line"
-        >
-          Another
-        </button>
+        {another ? (
+          <button
+            type="button"
+            aria-label="Another devotional for today"
+            onClick={() => oneTap('todays-devotional-another', () => void writeSetting(todaysDevotionalSetting.key, ANOTHER))}
+            className="flex min-h-12 items-center rounded-lg bg-surface px-3 text-base font-medium text-accent active:bg-line"
+          >
+            Another
+          </button>
+        ) : null}
       </div>
     </SettingRow>
   );
