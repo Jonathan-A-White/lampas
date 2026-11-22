@@ -40,13 +40,14 @@ afterEach(() => {
 });
 
 describe('the setting', () => {
-  it('is in Settings > Study resources > Sermons as Open web sermons in: This browser (default) or Firefox', () => {
+  it('is in Settings > Study resources > Sermons as Open web sermons in: Lampas, read aloud (default), This browser or Firefox', () => {
     expect(openWebSetting.section).toBe('sermons');
     expect(openWebSetting.label).toBe('Open web sermons in');
-    expect(openWebSetting.default).toBe('browser');
+    expect(openWebSetting.default).toBe('lampas');
     expect(openWebSetting.allowed).toMatchObject({
       kind: 'choice',
       values: [
+        { value: 'lampas', label: 'Lampas, read aloud' },
         { value: 'browser', label: 'This browser' },
         { value: 'firefox', label: 'Firefox' },
       ],
@@ -57,11 +58,11 @@ describe('the setting', () => {
     expect(ROWS.filter((r) => r.section === 'sermons').map((r) => r.key)).toContain(openWebSetting.key);
   });
 
-  it('is This browser to start, and a saved Firefox is kept across a reload', async () => {
-    expect(await getSetting(openWebSetting)).toBe('browser');
+  it('is Lampas, read aloud to start, and a saved Firefox is kept across a reload', async () => {
+    expect(await getSetting(openWebSetting)).toBe('lampas');
     await setSetting(openWebSetting, 'firefox');
     expect(await getSetting(openWebSetting)).toBe('firefox');
-        expect(openWebSetting.parse('nonsense')).toBe('browser');
+    expect(openWebSetting.parse('nonsense')).toBe('lampas');
   });
 });
 

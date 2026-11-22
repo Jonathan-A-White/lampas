@@ -1,9 +1,12 @@
 // src/sermons/openWeb.ts — 'Open web sermons in' (Settings > Study resources > Sermons, mw-qtu3zvz.16, docs/sermons.md 'Open web sermons in'): a web sermon opens in this browser (the plain https link, as
 // ever) or in Firefox. Chrome's Reading mode read-aloud plays on the phone's speaker, Firefox's goes over his Bluetooth. Firefox is reached by an Android intent:// address that names its package and
-// carries the https address as its browser_fallback_url, so a phone without Firefox opens the page where it was going to anyway. Off Android the choice does nothing.
+// carries the https address as its browser_fallback_url, so a phone without Firefox opens the page where it was going to anyway. Off Android the choice does nothing. 'Lampas, read aloud' (the default, mw-ecpivg5.2)
+// reads a text sermon of a source the sermon index serves the words of in Lampas's own sheet (SermonReader.tsx); every other address is opened as This browser does.
 import { createContext, useContext } from 'react';
 import { onAndroid } from '../openInApp';
 import { isSubsplashHost } from './merge';
+import type { LinkRow } from './merge';
+import { readsHere } from './sermonText';
 import { openWebSetting } from '../settings/definitions/sermons';
 import type { OpenWebIn } from '../settings/definitions/sermons';
 import { useSetting } from '../settings/store';
@@ -85,6 +88,15 @@ export function useWebHref(): (url: string) => string {
 export function useRowHref(): (row: { opensIn: 'web' | 'logos'; open: { url: string } }) => string {
   const choice = useContext(OpenWebContext);
   return (row) => rowHref(row, choice, onAndroid());
+}
+
+/** Whether a sermon row is read aloud in Lampas's own reader (mw-ecpivg5.2) under this choice: 'Lampas, read aloud' and a row of a source the sermon index serves the words of (sermonText.ts readsHere). Any other row, a video and a Logos row included, keeps its own path. */
+export const readsAloud = (row: LinkRow, choice: OpenWebIn): boolean => choice === 'lampas' && readsHere(row);
+
+/** Whether a row is read aloud in Lampas, under the sheet's choice. */
+export function useReadsAloud(): (row: LinkRow) => boolean {
+  const choice = useContext(OpenWebContext);
+  return (row) => readsAloud(row, choice);
 }
 
 /** Whether a link is for a new tab: an https address is; the Firefox intent is not (it hands the page to another app and a blank tab would be left behind). */

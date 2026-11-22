@@ -27,6 +27,9 @@ const SITES = /^https:\/\/(www\.)?(ccel\.org|archive\.org|spurgeongems\.org)\//;
 
 test('Romans 5:8 has Sermons · N; the sheet groups the sermons; a row is a link out and nothing is fetched until it is tapped', async ({ page, context }) => {
   await openUnlocked(page);
+  // under This browser: the default, Lampas, read aloud, opens a Spurgeon row in its own reader (tests/e2e/sermon-reader.spec.ts)
+  await page.goto('/');
+  await keepSettings(page, { sermonsOpenWeb: 'browser' });
   const asked: string[] = [];
   await page.route(SITES, (route) => {
     asked.push(route.request().url());
@@ -569,13 +572,13 @@ async function webRows(page: Page) {
   return { sheet, rows };
 }
 
-test('Open web sermons in is This browser to start, Firefox is kept across a reload, and off Android a row stays an https link (mw-qtu3zvz.16)', async ({ page }) => {
+test('Open web sermons in is Lampas, read aloud to start, Firefox is kept across a reload, and off Android a row stays an https link (mw-qtu3zvz.16, mw-ecpivg5.2)', async ({ page }) => {
   await openUnlocked(page);
   await page.goto('/#/settings?group=study');
   const section = page.locator('[data-section="sermons"]');
   await expect(section).toBeVisible();
   const row = section.getByRole('group', { name: 'Open web sermons in', exact: true });
-  await expect(row.getByRole('button', { name: 'This browser', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(row.getByRole('button', { name: 'Lampas, read aloud', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await row.getByRole('button', { name: 'Firefox', exact: true }).click();
   await expect(row.getByRole('button', { name: 'Firefox', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'sermons-open-web-setting');

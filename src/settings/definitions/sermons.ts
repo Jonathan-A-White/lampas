@@ -34,21 +34,22 @@ export const sermonSourceSetting = (source: Pick<SermonSource, 'id' | 'name' | '
         : {}),
   });
 
-export type OpenWebIn = 'browser' | 'firefox';
+export type OpenWebIn = 'lampas' | 'browser' | 'firefox';
 
 /** Where a web sermon opens (mw-qtu3zvz.16, src/sermons/openWeb.ts). Its key has no dot: 'sermons.<id>' is a source's On/Off switch. Not in the registry or DEFINITIONS (the tutor's Settings request is full): a row of its own, rows.ts OPEN_WEB_ROW, as Hand is. */
 export const openWebSetting = defineSetting<OpenWebIn>({
   key: 'sermonsOpenWeb',
-  default: 'browser',
+  default: 'lampas',
   allowed: {
     kind: 'choice',
     values: [
+      { value: 'lampas', label: 'Lampas, read aloud' },
       { value: 'browser', label: 'This browser' },
       { value: 'firefox', label: 'Firefox' },
     ],
   },
   section: 'sermons',
   label: 'Open web sermons in',
-  hint: 'Where a text sermon opens. Firefox works on Android only.',
-  help: 'A text sermon opens in **This browser**, the default, or in **Firefox**. Firefox is for Android, where its read-aloud works over a Bluetooth speaker or earbuds when Chrome\'s plays on the phone. On a phone with no Firefox, or off Android, the sermon opens in this browser as before. A video sermon (YouTube or Subsplash) always opens as it is, in this browser, and a sermon in your Logos library always opens in Logos.',
+  hint: 'Where a text sermon opens. Lampas reads it aloud. Firefox works on Android only.',
+  help: 'A text sermon opens in **Lampas, read aloud**, the default, in **This browser** or in **Firefox**. **Lampas, read aloud** is for the sermons Lampas can read to you (Spurgeon\'s, from the sermon index): they open in a Lampas sheet that starts reading at once, marks the paragraph being read, has Play, Pause, Back, Forward, Restart and Stop, says the time left and keeps your place; any other text sermon opens in this browser. Firefox is for Android, where its read-aloud works over a Bluetooth speaker or earbuds when Chrome\'s plays on the phone. On a phone with no Firefox, or off Android, the sermon opens in this browser as before. If Lampas cannot get the words of a sermon, it opens in this browser and says so. A video sermon (YouTube or Subsplash) always opens as it is, in this browser, and a sermon in your Logos library always opens in Logos.',
 });

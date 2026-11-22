@@ -57,7 +57,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Learn to Read New Testament Greek', use: 'Lesson titles, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Learn_to_Read_New_Testament_Greek.html?id=41j7siCRS0QC' },
   { name: 'Biblical Hebrew Step by Step', use: 'Lesson titles, for links', licence: 'nothing copied', link: 'https://books.google.com/books/about/Biblical_Hebrew_Step_by_Step.html?id=-qeAAAAAIAAJ' },
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
-  { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
+  { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links; the words Lampas reads aloud', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
   { name: 'Matthew Henry\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org' },
   LOGOS_SERMONS_CREDIT,
   { name: 'Thompson Chain Topics', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=TCR' },

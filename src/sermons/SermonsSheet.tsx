@@ -25,7 +25,8 @@ import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
 import { openSermon, videoOfRow } from './player';
-import { creditAddress, opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } from './openWeb';
+import { creditAddress, opensNewTab, OpenWebContext, useOpenWebIn, useReadsAloud, useRowHref, useWebHref } from './openWeb';
+import { openSermonText } from './sermonText';
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
 import { rankHits, type FoundRankContext } from './foundRank';
 import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
@@ -33,8 +34,8 @@ import { useHiddenThemes, useSameTheme, useThemeChips, useThemes, type ThemeChip
 
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
 /** The second line of a row: the preacher (else the source's `by`, the church, where the preacher is unknown: mw-qtu3zvz.89), the date, and where it opens (a web page needs the internet while the phone is offline). */
-function metaOf(row: LinkRow, online: boolean, by?: string): string {
-  const opens = row.opensIn === 'logos' ? 'Opens in Logos' : !online ? 'Needs the internet' : videoOfRow(row) ? 'Plays here' : 'Opens on the web';
+function metaOf(row: LinkRow, online: boolean, by?: string, reads = false): string {
+  const opens = row.opensIn === 'logos' ? 'Opens in Logos' : !online ? 'Needs the internet' : videoOfRow(row) ? 'Plays here' : reads ? 'Read aloud here' : 'Opens on the web';
   return [row.preacher ? row.preacher : by, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
 }
 
@@ -49,18 +50,25 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
   const href = useRowHref()(row);
   // a video plays here, in the player sheet (mw-qtu3zvz.83); its link stays for a long press and for a page that cannot play it
   const plays = videoOfRow(row) !== undefined;
+  // a text sermon of a source the index serves the words of is read aloud in Lampas's own sheet under 'Lampas, read aloud' (mw-ecpivg5.2); its link stays for a long press, and the sheet opens it on the web if it cannot get the words
+  const reads = useReadsAloud()(row);
   const onClick = plays
     ? (event: MouseEvent<HTMLAnchorElement>) => {
         event.preventDefault();
         openSermon(row);
       }
+    : reads
+      ? (event: MouseEvent<HTMLAnchorElement>) => {
+          event.preventDefault();
+          openSermonText(row);
+        }
     : fallback
       ? () => armFallback(fallback)
       : undefined;
   return (
     <a
       data-sermon-row
-      {...(plays ? { 'data-sermon-plays': '' } : {})}
+      {...(plays ? { 'data-sermon-plays': '' } : reads ? { 'data-sermon-reads': '' } : {})}
       href={href}
       data-fallback={fallback}
       onClick={onClick}
@@ -72,7 +80,7 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
           {row.title}
         </span>
         <span data-sermon-meta className="block break-words text-sm font-normal text-muted">
-          {metaOf(row, online, sourceOf(row)?.by)}
+          {metaOf(row, online, sourceOf(row)?.by, reads)}
         </span>
         {why === undefined ? null : (
           <span data-sermon-why className="block break-words text-sm font-normal text-muted">
@@ -80,7 +88,7 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
           </span>
         )}
       </span>
-      <span aria-hidden="true">{plays ? '▶' : '↗'}</span>
+      <span aria-hidden="true">{plays || reads ? '▶' : '↗'}</span>
     </a>
   );
 }
