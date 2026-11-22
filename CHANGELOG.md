@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.342
+_2026-11-22_
+- Fixed: saying "next chapter", "previous chapter" or "read" a place while a sermon is open no longer changes the Bible behind it; it tells you to close the sermon first.
+- Fixed: the tutor's Sermon chip now opens a Spurgeon sermon in Lampas's own read-aloud sheet instead of the web page.
+
 ## 0.7.341
 _2026-11-22_
 - New: David's recorded reading now follows along word by word for most of Psalms 1-50.

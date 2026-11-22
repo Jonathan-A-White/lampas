@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.342",
+    "date": "2026-11-22",
+    "story": "mw-ecpivg5.6",
+    "kind": "fixed",
+    "text": "saying \"next chapter\", \"previous chapter\" or \"read\" a place while a sermon is open no longer changes the Bible behind it; it tells you to close the sermon first."
+  },
+  {
+    "version": "0.7.342",
+    "date": "2026-11-22",
+    "story": "mw-ecpivg5.4",
+    "kind": "fixed",
+    "text": "the tutor's Sermon chip now opens a Spurgeon sermon in Lampas's own read-aloud sheet instead of the web page."
+  },
+  {
     "version": "0.7.341",
     "date": "2026-11-22",
     "story": "mw-zbgo4ep.14",
