@@ -71,6 +71,12 @@ There were 30 plays a row, half cold and half by Play again. The errors are in m
 Over all 180 plays the worst start was −17 ms (17 ms of the verse before, at 1.25x), and the worst end −45 ms: no sound after the end in any play. **After**: the
 same table, because nothing in the player was changed. Every row holds the 0.05 s margin, and the own tone was heard whole in every play.
 
+**The own-tone limit and how near the plays come (mw-ar5k42b.47, 2026-11-22).** The spec fails a play whose end is heard earlier than its span's end less `tail` and the fade,
+-110 ms (`lostMs`). `margin-table.ts` now gives each row its `end: room to the limit` (the earliest end less -110), the plays within 20 ms of it and the plays past it, and
+exits non-zero when any play is past. After mw-ar5k42b.23, 360 plays (`LAMPAS_MARGIN_PLAYS=60`, 60 a row, under `contrib/mw-under-load`, the 1-minute load 2.1 to 35.5 over the run)
+gave every row 33 to 53 ms of room, none within 20 ms of the limit and none past it; the earliest end was -77 ms (Titus 3:7 at 1.25x). The latest end was +10 ms, inside `tail`.
+The latest start was 43 and 46 ms after the span's start at 1.25x (one verse alone, and Titus 3:7), against `inside.lead` 25 ms: the spec asks only for the tone from start + `lead` (50 ms).
+
 What the numbers say:
 
 - **At the start**, at 1x a cold or warm start sounds from the verse's start to 25 ms after it. The 20 to 25 ms of Titus 3:5 is the element starting at the next MP3
