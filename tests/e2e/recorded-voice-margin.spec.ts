@@ -37,7 +37,7 @@ const TONES = JSON.parse(readFileSync(join(process.cwd(), 'tests/e2e/fixtures/to
 const MP3 = readFileSync(join(process.cwd(), 'tests/e2e/fixtures/tone-verses.mp3'));
 
 /** The margin the player is held to, seconds each side: the one place for the number (the judge and the timing maker read it too). */
-const MARGIN = JSON.parse(readFileSync(join(process.cwd(), 'scripts/audio-timings/player-margin.json'), 'utf8')) as { lead: number; tail: number };
+const MARGIN = JSON.parse(readFileSync(join(process.cwd(), 'scripts/audio-timings/player-margin.json'), 'utf8')) as { lead: number; tail: number; inside: { lead: number } };
 /** The fade the player ends a span with (src/speech/recordedVoice.ts FADE): the tone may be quiet in it. */
 const FADE = 0.06;
 
@@ -445,6 +445,7 @@ function hold(m: Measure, what: string): void {
   expect.soft(m.unplaced, `${what}: windows heard that no step of the recording explains`).toBe(0);
   expect.soft(m.sureMs, `${what}: how sure the placing is, ms`).toBeLessThanOrEqual(15);
   expect.soft(m.startMs, `${what}: first second heard less the start, ms`).toBeGreaterThanOrEqual(-ms(MARGIN.lead));
+  expect.soft(m.startMs, `${what}: first second heard less the start, ms (inside.lead: the start lost to the player)`).toBeLessThanOrEqual(ms(MARGIN.inside.lead));
   expect.soft(m.endMs, `${what}: last second heard less the end, ms`).toBeLessThanOrEqual(ms(MARGIN.tail));
   expect.soft(m.lostMs, `${what}: ms of the span's own tone not heard`).toBeLessThanOrEqual(0);
 }
