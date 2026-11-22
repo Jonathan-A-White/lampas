@@ -4,6 +4,7 @@ import { shot } from './shot';
 import { openUnlicensed, openUnlocked } from './unlocked';
 import { openSettings, settingsHeading } from './openSettings';
 import { asInstalledApp } from './installed';
+import { afterFrames, afterRestore, afterTwoFingerTap, untilPlaceKept, untilStill } from '../support/settled';
 
 // With Immersive reader On and the bars away, one quiet line at the foot says where he is: the book and chapter and how far through the chapter's
 // text he has scrolled, like a Kindle's "Page 9 of 187 · 12%" (mw-5r3p30.298). With the setting Off it is there all the time (mw-5r3p30.1028); with it On it is not there with the bars brought
@@ -94,7 +95,8 @@ test('the place line is there only with Immersive reader On and the bars away', 
   await expect(place(page)).toHaveCount(0);
   await expect(page.getByTestId('reader-chips')).toBeVisible();
 
-  await page.waitForTimeout(700);
+  // the bars have finished sliding in before the second tap
+  await untilStill(page);
   await twoFingerTap(page);
   await expect(place(page)).toBeVisible();
 });
@@ -104,7 +106,7 @@ test('with Immersive reader Off the place line is there, and the bars stay', asy
   await openMark12(page, 'off');
   await expect(place(page)).toBeVisible();
   await scrollText(page, 600);
-  await page.waitForTimeout(400);
+  await afterFrames(page);
   await expect(place(page)).toHaveText(/^Mark 12 · \d+%$/);
   await expect(page.getByTestId('reader-chips')).toBeVisible();
 });
@@ -132,7 +134,8 @@ test('with the last verse of Mark 12 scrolled to the foot the line reads 100%, t
   await openMark12(page, 'on');
   await scrollText(page, 300);
   await expect(place(page)).toBeVisible();
-  await page.waitForTimeout(700);
+  // the bars have finished sliding away before the last verse is measured
+  await untilStill(page);
   // the last verse's bottom to the box's bottom
   const left = await page.evaluate(() => {
     const box = document.querySelector('[data-reader]') as HTMLElement;
@@ -160,7 +163,7 @@ test('it is small and dim, and covers none of the text', async ({ page }) => {
   await scrollText(page, 600);
   await expect(place(page)).toBeVisible();
   // the row slides in with the bars going: measured once it has
-  await page.waitForTimeout(400);
+  await untilStill(page);
 
   const look = await page.evaluate(() => {
     const line = document.querySelector('[data-place-line]') as HTMLElement;
@@ -211,7 +214,7 @@ for (const licensed of [true, false]) {
       await scrollText(page, 300);
       await expect(place(page)).toBeVisible();
       await expect(page.locator('header').first()).toBeHidden();
-      await page.waitForTimeout(400);
+      await untilStill(page);
 
       const rows = await page.evaluate(() => {
         const out: Array<{ name: string; bottom: number }> = [];
@@ -237,7 +240,7 @@ for (const licensed of [true, false]) {
       if (size.height < size.width) return;
       await twoFingerTap(page, size.height / 2);
       await expect(place(page)).toHaveCount(0);
-      await page.waitForTimeout(400);
+      await untilStill(page);
       const shown = await page.evaluate(() => {
         const out: Array<{ name: string; bottom: number }> = [];
         for (const el of document.querySelectorAll<HTMLElement>('[data-speaking-slot] button')) {
@@ -265,7 +268,7 @@ for (const licensed of [true, false]) {
     await expect(page.getByRole('heading', { name: 'Mark 12', level: 1 })).toBeVisible();
     await expect(page.locator('[data-verse="1"]')).toBeVisible();
     const top = () => readerTop(page);
-    const settle = () => page.waitForTimeout(700);
+    const settle = () => untilStill(page);
 
     // the end first: it is where the bug was seen
     await scrollText(page, 300);
@@ -317,10 +320,12 @@ for (const licensed of [true, false]) {
 
     await scrollText(page, 1000);
     await expect(place(page)).toBeVisible();
-    await page.waitForTimeout(700);
+    await untilStill(page);
     await twoFingerTap(page);
     await shown('after the tap');
-    await page.waitForTimeout(700);
+    await untilStill(page);
+    // a click is dropped for a moment after a two-finger tap: Settings is tapped next
+    await afterTwoFingerTap(page);
     const at = await top();
     expect(at).toBeGreaterThan(500);
 
@@ -329,15 +334,15 @@ for (const licensed of [true, false]) {
     await page.getByRole('button', { name: '‹ Reader' }).click();
     await expect.poll(top).toBeGreaterThan(at - 50);
     // the saved place is back; the restore waits for the text to stay still before it lets go
-    await page.waitForTimeout(900);
+    await afterRestore(page);
     await shown('after Settings');
     await shot(page, `immersive-return-${licensed ? 'licensed' : 'free'}`);
 
-    // the place is written to the phone 250 ms after the last scroll
-    await page.waitForTimeout(600);
+    // the place is written to the phone 250 ms after the last scroll: wait for it to be there
+    await untilPlaceKept(page, at - 50);
     await page.reload();
     await expect.poll(top).toBeGreaterThan(at - 50);
-    await page.waitForTimeout(900);
+    await afterRestore(page);
     await shown('after a reload');
   });
 }
