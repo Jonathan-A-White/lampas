@@ -1,0 +1,45 @@
+// src/sermons/player.ts — the one way to play a sermon in the app (mw-qtu3zvz.83, docs/sermons.md 'The player'): openSermon(row) from a row of the sheet, openSermon(row, { auto: true }) from Lampas itself (a voice ask),
+// which starts the video with no tap. The sheet is drawn by <SermonPlayerHost /> (src/sermons/SermonPlayer.tsx, mounted once in App).
+import { useSyncExternalStore } from 'react';
+import { openedRow, type LinkRow } from './merge';
+import { videoOf, type Video } from './video';
+
+export interface OpenedSermon {
+  title: string;
+  video: Video;
+  /** Lampas opened it itself: start it with no tap. */
+  auto: boolean;
+}
+
+let current: OpenedSermon | null = null;
+const listeners = new Set<() => void>();
+const tell = (): void => listeners.forEach((l) => l());
+
+/** The video a row plays in the app (its Subsplash address where it has one, as the sheet opens it), or undefined: the row opens on the web. */
+export const videoOfRow = (row: LinkRow): Video | undefined => (row.opensIn === 'logos' ? undefined : videoOf(openedRow(row).open.url));
+
+/** Plays a row's video in the player sheet. False, and nothing opened, for a row that is no video the app plays. */
+export function openSermon(row: LinkRow, options: { auto?: boolean } = {}): boolean {
+  const video = videoOfRow(row);
+  if (video === undefined) return false;
+  current = { title: row.title, video, auto: options.auto === true };
+  tell();
+  return true;
+}
+
+export function closeSermon(): void {
+  if (current === null) return;
+  current = null;
+  tell();
+}
+
+/** The sermon being played, or null. */
+export function useOpenedSermon(): OpenedSermon | null {
+  return useSyncExternalStore(
+    (listener) => {
+      listeners.add(listener);
+      return () => void listeners.delete(listener);
+    },
+    () => current,
+  );
+}
