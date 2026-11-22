@@ -15,6 +15,7 @@ import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 const timeout = ASYNC_WAIT_MS;
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
+import { spokenReference } from '../../src/speech/spokenReference';
 
 let synth: FakeSynth;
 beforeEach(async () => {
@@ -53,7 +54,7 @@ describe('Play on a New Testament card', () => {
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     // the pop-up's Play says the reference first (mw-9q8wp1.9), then the verse
-    expect(synth.spoken[0]).toMatchObject({ text: 'Hebrews 7:2', lang: 'en-US' });
+    expect(synth.spoken[0]).toMatchObject({ text: spokenReference('Hebrews 7:2'), lang: 'en-US' });
     synth.finish();
     await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(1), { timeout });
     expect(synth.spoken[1].text).toContain('Abraham apportioned');
@@ -93,7 +94,7 @@ describe('Play on an Old Testament card Lampas holds (mw-5r3p30.840)', () => {
     const card = await openCard('Isa 30:21', 'Isa 30:21', 'Isaiah 30:21');
     await userEvent.click(within(card).getByRole('button', { name: 'Play' }));
     await vi.waitFor(() => expect(synth.spoken.length).toBe(1), { timeout });
-    expect(synth.spoken[0].text).toBe('Isaiah 30:21');
+    expect(synth.spoken[0].text).toBe(spokenReference('Isaiah 30:21'));
     synth.finish();
     await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(1), { timeout });
     expect(synth.spoken[1].text).not.toContain('skipping');
@@ -130,7 +131,7 @@ describe('Play resumes where he stopped (mw-5r3p30.1236)', () => {
     await userEvent.click(await within(card).findByRole('button', { name: 'Resume · Hebrews 7:2' }));
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     expect(synth.spoken[0].text).toContain('Abraham apportioned');
-    expect(synth.spoken.some((s) => s.text === 'Hebrews 7:1-3')).toBe(false);
+    expect(synth.spoken.some((s) => s.text === spokenReference('Hebrews 7:1-3'))).toBe(false);
   });
 
   it("'From the start' reads from the heading and clears the place", async () => {
@@ -138,7 +139,7 @@ describe('Play resumes where he stopped (mw-5r3p30.1236)', () => {
     const card = await openCard('Heb 7:1-3', 'Heb 7:1-3', 'Hebrews 7:1-3');
     await userEvent.click(await within(card).findByRole('button', { name: 'From the start' }));
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
-    expect(synth.spoken[0].text).toBe('Hebrews 7:1-3');
+    expect(synth.spoken[0].text).toBe(spokenReference('Hebrews 7:1-3'));
     expect(getPlace(refKey('Hebrews 7:1-3'))?.verse ?? 0).toBeLessThan(2);
   });
 

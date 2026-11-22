@@ -13,6 +13,7 @@ import { readViewSettings, settingsFor } from '../reader/useViewSettings';
 import { wovenOf } from '../reader/useWoven';
 import { clearPlace, labelOf, savePlace } from './passagePlace';
 import { getReading, listenCompletedNow, pauseReading, planOf, resumeReading, startReading, stopReading, subscribeReading, type PlanVerse } from './readAloud';
+import { spokenReference } from './spokenReference';
 
 /** A reference to read: its heading ('Hebrews 7:1-3') and its place when Lampas holds the text: what src/markdown/verseLinks.ts gives (null for an Old Testament reference the tutor named, until its card holds it too). */
 export interface PassageRef {
@@ -96,7 +97,7 @@ async function planOfChapter(held: HeldPlace, whole: boolean): Promise<PlanVerse
 
 /** One line said in English, as a reading of its own. */
 function say(line: string): void {
-  startReading({ chapter: 0, plan: [{ n: PASSAGE_ID, runs: [{ text: line, language: 'english' }] }], from: PASSAGE_ID, continuous: false, answer: PASSAGE_ID, listen: KEY });
+  startReading({ chapter: 0, plan: [{ n: PASSAGE_ID, runs: [{ text: spokenReference(line), language: 'english' }] }], from: PASSAGE_ID, continuous: false, answer: PASSAGE_ID, listen: KEY });
 }
 
 /** The reference's heading as the first entry of its plan, said in English before the verses. It is a plan entry of its own (verse 0, which no chapter has), so
@@ -105,7 +106,7 @@ const HEADING_N = 0;
 
 function begin(ref: PassageRef, plan: PlanVerse[], held: HeldPlace): void {
   if (!plan[0]) return say(OFFLINE(ref.heading));
-  const heading: PlanVerse = { n: HEADING_N, runs: [{ text: ref.heading, language: 'english' }] };
+  const heading: PlanVerse = { n: HEADING_N, runs: [{ text: spokenReference(ref.heading), language: 'english' }] };
   // read on from the verse he left off at when it is still in the plan (the view or weave may have changed it since), without saying the heading again
   const from = startVerse !== null && ref === queue[0] && at === 0 && plan.some((v) => v.n === startVerse) ? startVerse : HEADING_N;
   startVerse = null;

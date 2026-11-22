@@ -17,6 +17,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { spokenReference } from '../../src/speech/spokenReference';
 
 const timeout = ASYNC_WAIT_MS;
 const flat = (text: string) => text.replace(/\s+/g, ' ').trim();
@@ -85,9 +86,9 @@ describe('a chapter range is handed to the player whole', () => {
       }
     }
     // Judges 1:1 to 5:31 and 1 Samuel 12:1 to 17:58, in that order, with each heading before its passage
-    expect(all.indexOf('Judges 1-5')).toBeLessThan(all.indexOf(englishOf('jdg', 1, 1).slice(0, 40)));
-    expect(all.indexOf(englishOf('jdg', 5, 31).slice(0, 40))).toBeLessThan(all.indexOf('1 Samuel 12-17'));
-    expect(all.indexOf('1 Samuel 12-17')).toBeLessThan(all.indexOf(englishOf('1sa', 12, 1).slice(0, 40)));
+    expect(all.indexOf(spokenReference('Judges 1-5'))).toBeLessThan(all.indexOf(englishOf('jdg', 1, 1).slice(0, 40)));
+    expect(all.indexOf(englishOf('jdg', 5, 31).slice(0, 40))).toBeLessThan(all.indexOf(spokenReference('1 Samuel 12-17')));
+    expect(all.indexOf(spokenReference('1 Samuel 12-17'))).toBeLessThan(all.indexOf(englishOf('1sa', 12, 1).slice(0, 40)));
     expect(all.indexOf(englishOf('1sa', 12, 1).slice(0, 40))).toBeLessThan(all.indexOf(englishOf('1sa', 17, 58).slice(0, 40)));
   }, 120_000);
 
