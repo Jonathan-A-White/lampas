@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.325
+_2026-11-22_
+- Fixed: the grammar sheet for a term such as imperfect now shows the same word's other places in the chapter instead of wrongly saying no word has it.
+- Fixed: With Logos Off, Settings no longer shows a "When all Morning RePhil are seen" choice that Today could not honour.
+- Fixed: When you have heard every Morning RePhil, Today no longer says new episodes appear as they're posted; it says they come with an app update.
+
 ## 0.7.324
 _2026-11-22_
 - Fixed: Sermon links open straight in Firefox or the Logos app with no app question, and the Greg Laurie credit opens his Logos archive.

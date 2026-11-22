@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.325",
+    "date": "2026-11-22",
+    "story": "mw-5r3p30.1232",
+    "kind": "fixed",
+    "text": "the grammar sheet for a term such as imperfect now shows the same word's other places in the chapter instead of wrongly saying no word has it."
+  },
+  {
+    "version": "0.7.325",
+    "date": "2026-11-22",
+    "story": "mw-r9xo1pj.11",
+    "kind": "fixed",
+    "text": "With Logos Off, Settings no longer shows a \"When all Morning RePhil are seen\" choice that Today could not honour."
+  },
+  {
+    "version": "0.7.325",
+    "date": "2026-11-22",
+    "story": "mw-qtu3zvz.224",
+    "kind": "fixed",
+    "text": "When you have heard every Morning RePhil, Today no longer says new episodes appear as they're posted; it says they come with an app update."
+  },
+  {
     "version": "0.7.324",
     "date": "2026-11-22",
     "story": "mw-qtu3zvz.86",
