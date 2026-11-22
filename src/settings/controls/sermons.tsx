@@ -28,7 +28,7 @@ export const SermonSourcesControl: Control = ({ row }) => {
   );
 };
 
-/** 'Open web sermons in' (mw-qtu3zvz.16): This browser or Firefox, two chips; Firefox does something on Android only (src/sermons/openWeb.ts). */
+/** 'Open web sermons in' (mw-qtu3zvz.16): Lampas, read aloud (the default), This browser or Firefox, three chips; Firefox does something on Android only (src/sermons/openWeb.ts). */
 export const OpenWebControl: Control = ({ row }) => {
   const current = useSetting(openWebSetting);
   return (
@@ -39,6 +39,7 @@ export const OpenWebControl: Control = ({ row }) => {
           name={row.label}
           current={current}
           options={[
+            ['lampas', 'Lampas, read aloud'],
             ['browser', 'This browser'],
             ['firefox', 'Firefox'],
           ]}

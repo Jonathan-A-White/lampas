@@ -25,6 +25,7 @@ import { IpaCourse } from './ipa/IpaCourse';
 import { MapsHost } from './maps/MapsSheet';
 import { SermonsHost } from './sermons/SermonsSheet';
 import { SermonPlayerHost } from './sermons/SermonPlayer';
+import { SermonReaderHost } from './sermons/SermonReader';
 import { LadderGraph } from './LadderGraph';
 import { LibraryScreen } from './library/LibraryScreen';
 import { VerseListsScreen } from './lists/VerseListsScreen';
@@ -185,6 +186,7 @@ export function App({ newRandom }: { newRandom?: () => Random } = {}) {
       {/* the Sermons sheet, opened by a Sermons door (src/sermons/openSermons.ts) */}
       <SermonsHost />
       <SermonPlayerHost />
+      <SermonReaderHost />
       {/* the word sheet he left for the word's table comes back on Back (mw-irpgqi.1) */}
       <WordReturn />
       {/* the Talk sheet he left for a table the tutor linked comes back on Back (mw-5r3p30.990) */}
