@@ -4,6 +4,7 @@
 // goes on from where it stopped, unless the command took the sound over (takeSound: 'pause', or a 'play' that started or resumed it itself). Nothing that was not
 // sounding at the wake is started at the close. The engine's state is read and its own pause and resume are called; nothing here plays anything of its own.
 import { getPassagePlayer, pausePassage, resumePassage, stopPassage } from '../speech/passagePlayer';
+import type { SermonControls } from '../sermons/voiceControls';
 import { backAVerse, getReading, parkReading, pauseReading, resumeParked, resumeReading, stopReading, type ParkedReading } from '../speech/readAloud';
 
 /** What the wake paused: the passage player, the read-aloud engine, or nothing. */
@@ -114,6 +115,24 @@ export function backOneVerse(): boolean {
   held = null;
   takeSound();
   return true;
+}
+
+/** What a spoken command asks of the sermon sheet that is open. */
+export type SermonAction = 'play' | 'pause' | 'back' | 'forward' | 'restart' | 'stop';
+
+/** 'pause', 'play', 'back', 'forward', 'restart' and 'stop' on the sermon reader or player that is open (mw-ecpivg5.3): its own control is called, and the sound is the command's, so the close does not go on with what
+ * the wake paused. False, and the close left to go on, when that sheet cannot do it (a Subsplash video). The reader's reading is the one engine's, so the wake paused it already; one the tutor's answer set aside
+ * is started again where it was first, as 'play' and 'pause' do for a chapter. */
+export function driveSermon(sermon: SermonControls, action: SermonAction): boolean {
+  const aside = parked;
+  parked = null;
+  if (aside && (action === 'play' || action === 'pause')) resumeParked(aside);
+  const done = sermon[action]();
+  if (done) {
+    held = null;
+    takeSound();
+  }
+  return done;
 }
 
 /** Forgets what the wake paused (a session stopped for good; tests). */

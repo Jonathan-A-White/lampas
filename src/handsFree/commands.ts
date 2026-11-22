@@ -16,6 +16,9 @@
 //  - 'help' and 'what can I say' say what he can say, from the one table below (HELP_LINES); tapping the mic mark shows the same list (HandsFreeGate.tsx, HelpSheet.tsx).
 //  - Filler words around a command are dropped before it is routed (mw-rl10piw.44, withoutFiller): 'please', 'could you', 'can you' before it, 'me' right after 'read', and 'to me', 'for me' and 'please'
 //    after it, so 'please read Proverbs 2 to me' is 'read Proverbs 2'. A question put to the tutor is not trimmed: 'for me' there is part of what he asks.
+//  - 'pause', 'play' (and 'resume', 'continue', 'go on'), 'back', 'forward', 'restart' and 'stop' act on the sermon sheet that is open, on top of any Bible reading (mw-ecpivg5.3, src/sermons/voiceControls.ts, playback.ts
+//    driveSermon): the reader reads a paragraph back or forward, the player moves 30 s (PROVISIONAL, the Governor to confirm); 'restart' starts over from the top; a Subsplash video cannot be driven and it says so.
+//    With no sermon open 'pause', 'play' and 'stop' are the Bible reading's as above, and 'back', 'forward' and 'restart' say 'No sermon is open'.
 // Any other words: it says 'Sorry, I did not get that, I heard "<his words>"' so he can tell what the phone made of them, and what was playing goes on when the exchange closes (src/handsFree/playback.ts).
 import { defineSpoken, normaliseSpoken, route, type CommandDone, type SpokenRule } from 'voice-kit/handsfree';
 import { titleOf } from '../data/books';
@@ -25,7 +28,8 @@ import { readerOnScreen, readHere, readPassage } from '../nav/readerRequest';
 import { askTutor, closeTutor, leaveTutor, openTutor, questionAfterAsk } from './ask';
 import { listenInAudible } from './audible';
 import { audibleOf, placeOfWords, type SpokenPlace } from './passage';
-import { backOneVerse, goOnNow, keepPaused, stopSound, takeSound } from './playback';
+import { sermonControls } from '../sermons/voiceControls';
+import { backOneVerse, driveSermon, goOnNow, keepPaused, stopSound, takeSound, type SermonAction } from './playback';
 
 /** What it says to words it does not know. */
 export const NOT_UNDERSTOOD = 'Sorry, I did not get that';
@@ -80,6 +84,15 @@ export const NO_PREVIOUS_CHAPTER = 'There is no chapter before this';
 /** What it says to 'back a verse' when no chapter is being read. */
 export const NOTHING_READ = 'Nothing is being read';
 
+/** What it says to 'back', 'forward' or 'restart' when no sermon is open (they are the sermon sheets' words; a Bible reading has 'back a verse' and the chapter commands). */
+export const NO_SERMON_OPEN = 'No sermon is open';
+
+/** What it says when the sermon sheet that is open cannot do what he said by voice (a Subsplash video has no player to call). */
+export const NO_SERMON_CONTROL = 'Use the video’s own buttons for that';
+
+/** The commands that act on the sermon reader or the sermon player when one is open (mw-ecpivg5.3). */
+const SERMON_ACTIONS: ReadonlySet<string> = new Set<SermonAction>(['play', 'pause', 'back', 'forward', 'restart', 'stop']);
+
 /** One command of the table: the router's rule and what the help says of it (mw-rl10piw.43). */
 interface CommandEntry extends SpokenRule {
   help: {
@@ -103,6 +116,9 @@ const COMMAND_TABLE: readonly CommandEntry[] = [
   { name: 'pause', phrases: ['pause'], help: { rank: 2, example: 'pause', does: 'pauses the reading' } },
   { name: 'play', phrases: ['play', 'resume', 'continue', 'go on'], help: { rank: 1, example: 'play', does: 'goes on with what is paused, or reads this chapter' } },
   { name: 'stop', phrases: ['stop', 'stop reading', 'stop playing'], help: { rank: 3, example: 'stop', does: 'ends the reading' } },
+  { name: 'back', phrases: ['back', 'go back', 'rewind'], help: { rank: 3.1, example: 'back', does: 'goes back a paragraph of a sermon, or 30 seconds of a video' } },
+  { name: 'forward', phrases: ['forward', 'go forward', 'skip', 'fast forward'], help: { rank: 3.2, example: 'forward', does: 'goes forward a paragraph of a sermon, or 30 seconds of a video' } },
+  { name: 'restart', phrases: ['restart', 'start over', 'start again', 'from the beginning'], help: { rank: 3.3, example: 'restart', does: 'starts the sermon over' } },
   { name: 'next-chapter', phrases: ['next chapter', 'go to next chapter', 'go to the next chapter'], help: { rank: 5, example: 'next chapter', does: 'reads the next chapter' } },
   { name: 'previous-chapter', phrases: ['previous chapter', 'go to previous chapter', 'go to the previous chapter', 'go back a chapter', 'back a chapter'], help: { rank: 6, example: 'previous chapter', does: 'reads the chapter before' } },
   { name: 'back-verse', phrases: ['back a verse', 'back one verse', 'go back a verse', 'go back one verse', 'previous verse', 'last verse again'], help: { rank: 7, example: 'back a verse', does: 'reads the last verse again' } },
@@ -184,6 +200,12 @@ export async function runCommand(heard: string, say: (text: string) => Promise<v
   // any other command leaves the tutor (the Talk sheet Hands-free opened is put away) and does what it says
   leaveTutor();
   if (command?.name === 'help') return say(HELP_SPOKEN);
+  // a sermon sheet that is open (the reader, or the player over it) is what these words are for; with none open they are the Bible reading's
+  if (command && SERMON_ACTIONS.has(command.name)) {
+    const sermon = sermonControls();
+    if (sermon) return driveSermon(sermon, command.name as SermonAction) ? undefined : say(NO_SERMON_CONTROL);
+  }
+  if (command?.name === 'back' || command?.name === 'forward' || command?.name === 'restart') return say(NO_SERMON_OPEN);
   if (command?.name === 'pause') return keepPaused();
   if (command?.name === 'play') {
     if (goOnNow()) return;

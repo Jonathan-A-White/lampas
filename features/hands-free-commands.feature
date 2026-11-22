@@ -102,12 +102,12 @@ Feature: Hands-free reads a passage, stops, and turns chapters: 'read John 3', '
     Given Hands-free is On and "John 1" is open in English on a phone that speaks English
     When he says the wake word
     And he says "help" and is quiet for 1.5 seconds
-    Then the phone says "You can say: play, pause, stop, read John 3, next chapter, previous chapter, back a verse, ask who was Nicodemus, tutor, done, or help." in English
+    Then the phone says "You can say: play, pause, stop, back, forward, restart, read John 3, next chapter, previous chapter, back a verse, ask who was Nicodemus, tutor, done, or help." in English
     And the phone does not say "Sorry, I did not get that"
 
   Scenario: 'what can I say' says what he can say and does not say it did not get that
     Given Hands-free is On and "John 1" is open in English on a phone that speaks English
     When he says the wake word
     And he says "what can I say" and is quiet for 1.5 seconds
-    Then the phone says "You can say: play, pause, stop, read John 3, next chapter, previous chapter, back a verse, ask who was Nicodemus, tutor, done, or help." in English
+    Then the phone says "You can say: play, pause, stop, back, forward, restart, read John 3, next chapter, previous chapter, back a verse, ask who was Nicodemus, tutor, done, or help." in English
     And the phone does not say "Sorry, I did not get that"

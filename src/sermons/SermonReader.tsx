@@ -17,6 +17,7 @@ import { useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { oneTap } from '../ui/settle';
 import { webHref } from './openWeb';
+import { registerSermonControls } from './voiceControls';
 import { closeSermonText, forgetPlace, keepPlace, minutesLeft, parseText, readPlace, stepParagraph, timeLeftLine, useOpenedText, type OpenedText, type SermonText } from './sermonText';
 
 /** The id the sermon's reading goes under (reading.answer): far below any stored answer's, a page's (PageActions) or a named one's (ReadAloud), so no Talk turn takes it for its own. */
@@ -186,6 +187,41 @@ function Reading({ opened, text }: { opened: OpenedText; text: SermonText }) {
     byItself.current = false;
     stopReading();
   };
+
+  // Hands-free drives the reader (src/handsFree/commands.ts): the same moves as the buttons, read from the engine as it is now and from the latest render's place
+  const voice = useRef({ play: () => {}, pause: () => {}, back: () => {}, forward: () => {}, restart: () => {}, stop: () => {} });
+  useEffect(() => {
+    const now = () => {
+      const r = getReading();
+      const live = r.status !== 'idle' && r.answer === SERMON_READING_ID;
+      return { live, paused: live && r.status === 'paused' };
+    };
+    voice.current = {
+      play: () => {
+        const { live, paused: isPaused } = now();
+        if (live) return isPaused ? resumeReading() : undefined;
+        byItself.current = false;
+        if (finished) {
+          forgetPlace(source, id);
+          setAt(0);
+          return begin(0);
+        }
+        begin(current);
+      },
+      pause: () => (now().live && !now().paused ? pauseReading() : undefined),
+      back: () => go(-1),
+      forward: () => go(1),
+      restart,
+      stop,
+    };
+  });
+  useEffect(() => {
+    const run = (move: keyof typeof voice.current) => (): boolean => {
+      voice.current[move]();
+      return true;
+    };
+    return registerSermonControls({ kind: 'reader', play: run('play'), pause: run('pause'), back: run('back'), forward: run('forward'), restart: run('restart'), stop: run('stop') });
+  }, []);
 
   const playing = mine && !paused;
   const left = timeLeftLine(finished ? 0 : minutesLeft(text.paragraphs, current, rate));

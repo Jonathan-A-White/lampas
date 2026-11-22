@@ -7,6 +7,7 @@ import { useNoDoor } from '../tutor/door';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
 import { useSheetBack } from '../ui/sheetBack';
 import { closeSermon, useOpenedSermon } from './player';
+import { registerSermonControls, SKIP_SECONDS } from './voiceControls';
 import { loadYouTube, type YouTubePlayer } from './youtubeApi';
 
 /** How long a started video has to begin before the browser is taken to have refused it. */
@@ -53,6 +54,39 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
     };
     target.playVideo();
   };
+
+  // Hands-free drives the video (src/handsFree/commands.ts): the player is there once the API has made it
+  const startRef = useRef(start);
+  useEffect(() => {
+    startRef.current = start;
+  });
+  useEffect(() => {
+    const seek = (by: number): boolean => {
+      const target = player.current;
+      if (target === null) return false;
+      target.seekTo(Math.max(0, target.getCurrentTime() + by), true);
+      return true;
+    };
+    const act = (what: (target: YouTubePlayer) => void): boolean => {
+      const target = player.current;
+      if (target === null) return false;
+      what(target);
+      return true;
+    };
+    return registerSermonControls({
+      kind: 'player',
+      play: () => act(() => startRef.current()),
+      pause: () => act((target) => target.pauseVideo()),
+      back: () => seek(-SKIP_SECONDS),
+      forward: () => seek(SKIP_SECONDS),
+      restart: () =>
+        act((target) => {
+          target.seekTo(0, true);
+          startRef.current();
+        }),
+      stop: () => act((target) => target.stopVideo()),
+    });
+  }, []);
 
   useEffect(() => {
     let gone = false;
@@ -106,6 +140,11 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
 }
 
 function SubsplashStage({ embed, title }: { embed: string; title: string }) {
+  // Subsplash's embed page has no player API to call: Hands-free is told so
+  useEffect(() => {
+    const no = (): boolean => false;
+    return registerSermonControls({ kind: 'player', play: no, pause: no, back: no, forward: no, restart: no, stop: no });
+  }, []);
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
       <iframe data-sermon-video src={embed} title={title} allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen className="absolute inset-0 h-full w-full border-0" />

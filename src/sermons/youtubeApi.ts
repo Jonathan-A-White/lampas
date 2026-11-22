@@ -2,6 +2,10 @@
 // The player it makes is drawn from youtube-nocookie.com (the `host` option). Nothing is loaded until then.
 export interface YouTubePlayer {
   playVideo(): void;
+  pauseVideo(): void;
+  stopVideo(): void;
+  seekTo(seconds: number, allowSeekAhead?: boolean): void;
+  getCurrentTime(): number;
   destroy(): void;
 }
 export interface YouTubeEvents {
