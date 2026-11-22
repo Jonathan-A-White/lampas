@@ -210,6 +210,29 @@ describe("'Hey Lampas' over the car's Bluetooth", () => {
     expect(track?.label).toBe('Car kit (hands-free)');
   });
 
+  // mw-5r3p30.1235: the wake left the car's silent Bluetooth route for the phone's microphone; the command must not choose that route again (it would wait out the
+  // silence limit on every command), but start on the input the wake found live
+  it("hears the command on the phone microphone's track at once when the car's Bluetooth input is silent and the wake left it, not on the silent route", async () => {
+    await turnOnWith([
+      { deviceId: 'default', label: 'Default', groupId: 'car', silent: true },
+      { deviceId: 'car-bt', label: 'Bluetooth headset', groupId: 'car', silent: true },
+      { deviceId: 'phone-mic', label: 'Phone microphone', groupId: 'phone' },
+    ]);
+    await waitFor(() => expect(heard.heardOn.at(-1)).toBe('Phone microphone'));
+    const before = FakeRecognizer.instances.length;
+    await act(async () => {
+      expect(wake.say()).toBe(true);
+    });
+    await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before));
+    const recogniser = FakeRecognizer.last();
+    await waitFor(() => expect(recogniser.startFn).toHaveBeenCalled());
+    // the first start is on the phone's microphone: no start on the silent route came first
+    const track = recogniser.startFn.mock.calls[0]?.[0] as MediaStreamTrack | undefined;
+    expect(track?.label).toBe('Phone microphone');
+    expect(FakeRecognizer.instances.length).toBe(before + 1);
+    expect(logged().some((line) => line.includes('the command listens on "Phone microphone"'))).toBe(true);
+  });
+
   it('with no Bluetooth or hands-free input the command recogniser starts as before, on the default microphone (no track)', async () => {
     await turnOnWith([{ deviceId: 'default', label: 'Default - Phone microphone', groupId: 'phone' }]);
     const before = FakeRecognizer.instances.length;

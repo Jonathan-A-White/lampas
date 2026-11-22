@@ -23,12 +23,13 @@ import type { WakeModel } from 'voice-kit/wake';
 import { handsFreePauseSetting, handsFreeSetting } from '../settings/definitions';
 import { handsFreePauseMs, type HandsFreePauseValue } from '../settings/definitions/handsFreePause';
 import { getSetting, onSetting, setSetting } from '../settings/store';
+import { openMicInput } from '../audio/recorder';
 import { SETTING_SAID_KEY, speakText, whenSaid } from '../speech/greek';
 import { forgetAsk, interruptAsk } from './ask';
 import { runCommand } from './commands';
 import { isMicBusy, onMicBusy } from './micBusy';
 import { forgetPlayback, goOnAtClose, SAID_KEY, silenceAtWake } from './playback';
-import { forgetWakeInputs, startOnLiveInput } from './wakeInput';
+import { forgetWakeInputs, startOnLiveInput, wakeFoundSilent, wakeLiveInput } from './wakeInput';
 import { logWake } from './wakeLog';
 
 /** Where the build serves the wake model (a hashed asset, fetched only when Hands-free is first turned On). */
@@ -301,11 +302,40 @@ let toldFailure = false;
 /** The state as the wake log says it: its name, and a failure's kind and message. */
 const stateText = (next: HandsFreeState): string => ('kind' in next ? `${next.name} (${String(next.kind)}${'message' in next && next.message ? `: ${String(next.message)}` : ''})` : next.name);
 
-/** The command's recogniser listens on the input a hold chooses; the log says which (the car's hands-free microphone, or the default). */
+/** The command's recogniser listens on the input a hold chooses, less any input the wake found silent (mw-5r3p30.1235: the wake left the car's route for the phone's
+ * microphone, and the command is heard there, not on the route again); the log says which (the car's hands-free microphone, the one the wake found live, or the default). */
 async function commandInput(): ReturnType<typeof openBluetoothInput> {
-  const input = await openBluetoothInput();
+  let input = await openBluetoothInput();
+  // a chosen input the wake found silent is marked for the shared chooser too and let go; the chooser then picks another, or none
+  for (let tries = 0; input && wakeFoundSilent(input.deviceId) && tries < 4; tries++) {
+    input.silent?.();
+    input.close();
+    input = await openBluetoothInput();
+  }
+  if (input && wakeFoundSilent(input.deviceId)) {
+    input.close();
+    input = undefined;
+  }
+  if (!input) input = await openWakeLiveInput();
   logWake(input ? `the command listens on "${input.label}"` : 'the command listens on the default microphone');
   return input;
+}
+
+/** The input the wake settled on, opened by id for the command (nothing when the wake is on the default, or the input would not open). */
+async function openWakeLiveInput(): ReturnType<typeof openBluetoothInput> {
+  const live = wakeLiveInput();
+  if (!live) return undefined;
+  try {
+    const stream = await openMicInput(live.id);
+    const track = stream.getAudioTracks()[0];
+    if (!track) {
+      stream.getTracks().forEach((each) => each.stop());
+      return undefined;
+    }
+    return { label: track.label || live.label, track, deviceId: live.id, close: () => stream.getTracks().forEach((each) => each.stop()) };
+  } catch {
+    return undefined;
+  }
 }
 
 function onState(next: HandsFreeState): void {

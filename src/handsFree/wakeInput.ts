@@ -41,11 +41,24 @@ const BUILT_IN_LABEL = /earpiece|speaker/i;
 /** The inputs that gave only silence, by deviceId ('default' for the default), and the list of inputs they were found among. */
 const silentInputs = new Set<string>();
 let silentAmong = '';
+/** The input the wake last settled on as live (not the default, which is whatever the phone picks), kept with the marks for the command that follows. */
+let liveInput: { id: string; label: string } | null = null;
 
 /** Forgets every silent input (tests; a reload does the same). */
 export function forgetWakeInputs(): void {
   silentInputs.clear();
   silentAmong = '';
+  liveInput = null;
+}
+
+/** Whether the wake found this input (by deviceId) silent: the command's own choice leaves it too (mw-5r3p30.1235). */
+export function wakeFoundSilent(deviceId: string | undefined): boolean {
+  return deviceId !== undefined && silentInputs.has(deviceId);
+}
+
+/** The input the wake listens on or last listened on, when it is a chosen input by id (nothing for the default), for the command to hear on too. */
+export function wakeLiveInput(): { id: string; label: string } | null {
+  return liveInput;
 }
 
 /** The marks hold only for the list they were made among: the car connecting or going changes the list, and every input may be heard again. */
@@ -56,6 +69,7 @@ function keepMarksFor(devices: readonly InputDevice[]): void {
     .join('|');
   if (print === silentAmong) return;
   silentInputs.clear();
+  liveInput = null;
   silentAmong = print;
 }
 
@@ -215,11 +229,16 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
     let scorer: WakeScorer | null | undefined;
     let timers: ReturnType<typeof setTimeout>[] = [];
     let settled = false;
+    /** The input is where the wake is heard: the command that follows is heard there too. */
+    const markLive = (): void => {
+      liveInput = id === DEFAULT_ID ? null : { id, label };
+    };
     /** Says where it listens, once the input is known live (or is listened on without the check). */
     const settle = (): void => {
       if (settled || stopped || !running || current !== running) return;
       settled = true;
       currentName = label;
+      markLive();
       logSettled(`listening for 'Hey Lampas' on ${named(label)} since ${timeNow()}; ${trackText(running.track, running.inputRate)}`);
     };
     /** The input gave no sound: it is marked and left for the next (once it is the one listened on). */
@@ -244,6 +263,7 @@ export async function startOnLiveInput(options: WakeOptions, live: LiveInputOpti
       ...options,
       stream,
       onWake: (wake) => {
+        if (!stopped && current === running) markLive();
         logWake(`heard 'Hey Lampas' on ${named(currentName || label)}${typeof wake?.score === 'number' ? ` (score ${wake.score.toFixed(3)})` : ''}`);
         options.onWake(wake);
       },
