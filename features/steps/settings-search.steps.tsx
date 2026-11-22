@@ -180,4 +180,56 @@ describeFeature(feature, ({ Scenario }) => {
       expect(found(label)).toBeNull();
     });
   });
+
+  // mw-6ww.175.108: the counted page and the sermon sources page are drawn in the home's place, and the home must find what he typed when he is back, as it does after a group's page
+  const tapsBack = async (_: unknown, label: string): Promise<void> => {
+    await user.click(await screen.findByRole('button', { name: label }));
+  };
+  const searchHolds = async (_: unknown, text: string): Promise<void> => {
+    expect(await searchField()).toHaveValue(text);
+  };
+
+  Scenario('The search keeps what he typed when he comes back from What Lampas has counted', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    And('he chooses {string} among the found', chooses);
+    Then('the {string} page is open', pageOpen);
+    When('he taps the back arrow {string}', tapsBack);
+    Then('the Settings search holds {string}', searchHolds);
+    And('Settings finds {string} in {string}', findsIn);
+    And('Settings lists no groups', listsNoGroups);
+  });
+
+  Scenario('The search keeps what he typed when he comes back from the sermon sources', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    And('he chooses a sermon source among the found', async () => {
+      // a source's own switch ('sermons.<id>') is drawn on the page of sermon sources, so its found row opens that page at the source
+      const hit = await waitFor(() => {
+        const el = document.querySelector<HTMLElement>('[data-found^="sermons."]');
+        expect(el, 'a found sermon source').not.toBeNull();
+        return el!;
+      });
+      await user.click(hit);
+    });
+    Then('the {string} page is open', pageOpen);
+    // the list's back arrow puts the Study resources page in the list's place, and that page's arrow is a step Back to the home
+    When('he taps the back arrow {string}', tapsBack);
+    And('he taps the next back arrow {string}', async (_, label: string) => {
+      await pageOpen(_, 'Study resources');
+      await tapsBack(_, label);
+    });
+    Then('the Settings search holds {string}', searchHolds);
+    And('Settings lists no groups', listsNoGroups);
+  });
+
+  Scenario("The search keeps what he typed when he comes back from a group's page", ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    And('he chooses {string} among the found', chooses);
+    Then('the {string} page is open', pageOpen);
+    When('he taps the back arrow {string}', tapsBack);
+    Then('the Settings search holds {string}', searchHolds);
+    And('Settings finds {string} in {string}', findsIn);
+  });
 });

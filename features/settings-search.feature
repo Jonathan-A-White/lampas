@@ -69,3 +69,32 @@ Feature: Settings has a search field and one registry behind every row
     When he types "OPENED each" in the Settings search
     Then Settings finds "What Lampas has counted" in "Settings"
     And Settings finds no "Theme"
+
+  Scenario: The search keeps what he typed when he comes back from What Lampas has counted
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "counted" in the Settings search
+    And he chooses "What Lampas has counted" among the found
+    Then the "What Lampas has counted" page is open
+    When he taps the back arrow "‹ Settings"
+    Then the Settings search holds "counted"
+    And Settings finds "What Lampas has counted" in "Settings"
+    And Settings lists no groups
+
+  Scenario: The search keeps what he typed when he comes back from the sermon sources
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "sermon" in the Settings search
+    And he chooses a sermon source among the found
+    Then the "Sermon sources" page is open
+    When he taps the back arrow "‹ Study resources"
+    And he taps the next back arrow "‹ Settings"
+    Then the Settings search holds "sermon"
+    And Settings lists no groups
+
+  Scenario: The search keeps what he typed when he comes back from a group's page
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "text size" in the Settings search
+    And he chooses "Text size" among the found
+    Then the "Reading" page is open
+    When he taps the back arrow "‹ Settings"
+    Then the Settings search holds "text size"
+    And Settings finds "Text size" in "Reading"
