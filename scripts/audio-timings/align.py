@@ -295,11 +295,16 @@ def chapter_text(book: str, chapter: int) -> list[dict]:
     data = json.loads((REPO / 'public' / 'data' / book / f'{chapter}.json').read_text(encoding='utf8'))
     titled = title_chunks(book, data['verses'])
     verses = []
+    previous = None
     for k, v in enumerate(data['verses']):
+        # A verse number the text skips (Nehemiah 7:68: the Hebrew has no such verse, the recording reads it) is something else spoken between two verses: a wildcard
+        # stands there like a heading's, so the next verse is not made to match the skipped verse's words (mw-zbgo4ep.66).
+        skipped = previous is not None and str(v['n']).isdigit() and str(previous).isdigit() and int(v['n']) > int(previous) + 1
+        previous = v['n']
         text = ' '.join(chunk['t'] for chunk in v['e'])
         words, unconverted = words_of(text)
         title_words = len(words_of(' '.join(chunk['t'] for chunk in v['e'][:titled]))[0]) if k == 0 and titled else 0
-        verses.append({'n': v['n'], 'heading': bool(v.get('h')), 'words': words, 'unconverted': unconverted, 'text': text, 'title_words': title_words})
+        verses.append({'n': v['n'], 'heading': bool(v.get('h')) or skipped, 'words': words, 'unconverted': unconverted, 'text': text, 'title_words': title_words})
     return verses
 
 
