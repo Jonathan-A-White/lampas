@@ -26,6 +26,7 @@ import { SermonSourcesPage } from './sermons/SermonSourcesPage';
 import { useSourceList } from './sermons/useSourceList';
 import { neededText } from './settings/neededText';
 import { settingsForTutor } from './settings/tutorSettings'; import { useGrownRows } from './settings/useGrownRows';
+import { useHomeSearch } from './settings/useHomeSearch';
 import { useReportScreen } from './tutor/screenContext';
 import { UsageCountedPage } from './tips/UsageCounted';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -42,15 +43,17 @@ function sectionOf(hash: string): string | null {
   return new URLSearchParams(q < 0 ? '' : hash.slice(q + 1)).get('section');
 }
 
-/** Settings: the one list of sermon sources where the address asks for it (its own page, src/sermons/SermonSourcesPage.tsx; a link to a source's setting is that page at the source's row), What Lampas has counted where it asks for that (its own page, src/tips/UsageCounted.tsx), else the home and its pages. */
+/** Settings: the one list of sermon sources where the address asks for it (its own page, src/sermons/SermonSourcesPage.tsx; a link to a source's setting is that page at the source's row), What Lampas has counted where it asks for that (its own page, src/tips/UsageCounted.tsx), else the home and its pages. It holds the home's search text for all of them. */
 export function SettingsScreen() {
   const address = useAddress();
+  // the home's search text is held here, above the pages drawn in the home's place, so their back arrow brings him back to what he searched for (useHomeSearch, mw-6ww.175.108)
+  const [query, setQuery] = useHomeSearch(address);
   const sources = sermonSourcesOf(address);
   if (sources) return <SermonSourcesPage key={sources.at ?? ''} at={sources.at} />;
-  return isCountedPage(address) ? <UsageCountedPage /> : <SettingsPages />;
+  return isCountedPage(address) ? <UsageCountedPage /> : <SettingsPages query={query} setQuery={setQuery} />;
 }
 
-function SettingsPages() {
+function SettingsPages({ query, setQuery }: { query: string; setQuery: (query: string) => void }) {
   const address = useAddress();
   const wanted = sectionOf(address);
   // an address kept from before a row moved to Tools (mw-5r3p30.754) opens that tool's screen in its place
@@ -87,13 +90,6 @@ function SettingsPages() {
     groupIdOf(address) ?? (linkedRow && !isHomeRow(linkedRow) ? groupOf(linkedRow.section).id : sectionGroup && !HOME_SECTIONS.includes(sectionGroup.id) ? groupOf(sectionGroup.id).id : null);
   const page = pageId ? groupById(pageId) : undefined;
   const scrollRef = useScrollMemory('settings');
-  const [query, setQuery] = useState('');
-  // a link that names a row of the home (the dial) clears the search that found it, so the home shows the row marked and not the list of answers
-  const [linkSeen, setLinkSeen] = useState(linked);
-  if (linkSeen !== linked) {
-    setLinkSeen(linked);
-    if (linked !== null && linkedRow && isHomeRow(linkedRow)) setQuery('');
-  }
   const grown = useGrownRows(); const values = useLiveQuery(readValues, [grown]); // a sermon source the index service gave grows its row
   // with no licence each AI option is drawn off and greyed with 'Needs a licence', a link to the Licence page (mw-8m9dyu.3); the Hand row is not drawn at all (mw-5r3p30.880: no tutor door exists)
   const aiAllowed = useAiAllowed();
