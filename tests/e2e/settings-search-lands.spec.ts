@@ -30,7 +30,7 @@ for (const key of ['textSize', 'greekRate', 'offlineCopy', 'request.devotional',
   });
 }
 
-// every result, not only these: none opens a page without its row marked and in view; a tool the search finds ('in Tools', mw-5r3p30.754) opens the tool's own screen
+// every result, not only these: none opens a page without its row marked and in view; a tool the search finds ('in Tools', mw-5r3p30.754) opens the tool's own screen and the door What Lampas has counted ('in Settings', mw-6ww.175.103) its own page
 test('every result of a search lands on its row', async ({ page }) => {
   test.setTimeout(240_000);
   // a phone with no import: with one, the search also finds the seven Logos sermon rows (sermons.<id>-logos) and none of them lands (reported on mw-lexuwrk, not fixed here)
@@ -47,6 +47,11 @@ test('every result of a search lands on its row', async ({ page }) => {
     await page.locator(`[data-found="${key}"]`).scrollIntoViewIfNeeded();
     await page.locator(`[data-found="${key}"]`).tap();
     await page.waitForTimeout(500);
+    // the door of the home (rows.ts COUNTED_DOOR) is no row of a page: it opens its own page (link.ts COUNTED_LINK)
+    if (key === 'counted') {
+      if (new URL(page.url()).hash !== '#/settings?page=counted') missed.push(key);
+      continue;
+    }
     const tool = TOOL_SCREENS[key];
     if (tool) {
       if (new URL(page.url()).hash !== `#/${tool}`) missed.push(key);

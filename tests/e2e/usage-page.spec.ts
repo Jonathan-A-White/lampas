@@ -62,6 +62,24 @@ test('Settings lists the screens he opened and the ones he never opened', async 
   await expect(listed(page, 'Opened')).toHaveCount(0);
 });
 
+// mw-6ww.175.103: the search is his other way to a setting, and the row is the last of a long home: typing its name lists it, and a tap opens the page.
+test('the Settings search finds What Lampas has counted and a tap on it opens the page', async ({ page }) => {
+  await openUnlocked(page);
+  await page.goto('/#/settings');
+  await page.getByRole('searchbox', { name: 'Search settings' }).fill('counted');
+  const found = page.locator('[data-found="counted"]');
+  await expect(found).toBeVisible();
+  await expect(found).toContainText(TITLE);
+  await expect(found).toContainText('in Settings');
+  await expect(page.getByText('Nothing in Settings matches')).toHaveCount(0);
+  expect((await found.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+  await shot(page, 'usage-found');
+  await found.click();
+  await expect(page.getByRole('heading', { name: TITLE, exact: true, level: 1 })).toBeVisible();
+  expect(page.url()).toContain('#/settings?page=counted');
+  await expect(listed(page, 'Never opened')).toBeVisible();
+});
+
 // mw-6ww.175.79: the screens above were reached by an address typed in; he reaches them by tapping, which pushes the address without a hashchange.
 test('Settings counts the screens he opened by tapping, as he opens them', async ({ page }) => {
   await openUnlocked(page);
