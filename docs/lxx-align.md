@@ -96,13 +96,14 @@ The English content words that sat where a tap opened the Verse view were 584 be
 Genesis 37 to 39 were done as one batch (story mw-u2w5klk.349.47; the first of the groups of mw-u2w5klk.349.45, Genesis 37 to 50): 547 runs in three chapters, 618 chunks (593 chosen, 25 unsure); of their 2,008 Greek words 477 (23.8%) are now paired by the model (Genesis 37 170, 38 142, 39 165), and 1,544 (76.9%) had an English chunk before the pass and 1,911 (95.2%) after it, with 96 `fix` rows (37 31, 38 28, 39 37) that give a Greek word the aligner had put on a neighbouring English word to its own: 'brought' (37:2) sat on ψόγον and 'having' (37:21) on ἐξείλατο, 'Hebrew' and 'servant' (39:14, 39:17) each on the other's word, 'harlot,' (38:24) on a word of the next phrase, and the 'it' of every 'it came to pass' on a Greek word of the phrase after it.
 The English content words that sat where a tap opened the Verse view were 268 before the pass (`npm run lxx:unpaired -- --book gen`: 106, 76 and 86) and are 0 after it; 19 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of two lists with why: the 12 of 37:32's 'And he recognized it, and said, It is my son's coat, an evil wild beast has devoured him; a wild beast has carried off Joseph.', which renders the Greek verse 37:33 (LXX2012's 37:32 holds both Greek verses, and 37:33 has no English chunk to point at), and the 7 Brenton adds to make English of a Greek phrase ('of his father' of 37:2, 'indeed' and 'more' of 37:8, 'empty' of 37:24, 'wife' of 38:9, 'Well,' of 38:17, 'hands' of 39:12). No 'it came to pass' is left without a Greek word in these chapters: each is one chunk of ἐγένετο.
 Genesis 40 to 42 were done as one batch (story mw-u2w5klk.349.48; the second of the groups of mw-u2w5klk.349.45): 673 runs in three chapters, 757 chunks (756 chosen, 1 unsure); of their 2,432 Greek words 691 (28.4%) are now paired by the model (Genesis 40 119, 41 289, 42 283), and 1,941 (79.8%) had an English chunk before the pass and 2,324 (95.6%) after it, with 246 `fix` rows (40 48, 41 81, 42 117) that give a Greek word the aligner had put on a neighbouring English word to its own: 'cows' (41:4) sat on σαρξὶν and 'cows;' on ἠγέρθη, 'interpreted' and 'aright;' (40:16) each on the other's word, 'Nay,' and 'Sir,' (42:10) each on the other's, the two 'are' of 42:11 and 42:31, 'understood' (42:23) on ᾔδεισαν, 'tell' (40:8) on διασάφησις, and the 'it' of every 'it came to pass' on a Greek word of the phrase after it.
+Genesis 43 to 45 were done as one batch (story mw-u2w5klk.349.49; the third of the groups of mw-u2w5klk.349.45): 613 runs in three chapters, 691 chunks (689 chosen, 2 unsure); of their 2,172 Greek words 484 (22.3%) are now paired by the model (Genesis 43 184, 44 204, 45 96), and 1,667 (76.7%) had an English chunk before the pass and 2,054 (94.6%) after it, with 71 `fix` rows (43 31, 44 27, 45 13) that give a Greek word the aligner had put on a neighbouring English word to its own: 'presents,' (43:15) sat on 'having', 'rose up' and 'went' (43:15) each on the other's word, 'looked' (43:33) on ἕκαστος, 'wife' and 'sons;' (44:27) crossed on γυνή, 'drew near' (44:18) on 'near', 'Joseph's brethren' and 'was glad,' (45:16) crossed on ἐχάρη, 'sent' and 'away' (45:24), and the 'it' of every 'it came to pass' on a Greek word of the phrase after it. The English content words that sat where a tap opened the Verse view were 258 before the pass (`npm run lxx:unpaired -- --book gen`: 92, 104 and 62) and are 0 after it; 15 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of three lists with why: the 4 Brenton adds to make English of a Greek phrase ('the lord of the country,' of 43:3, 'inasmuch as' of 43:6, 'on bread for' of 43:32), the 4 of 44:5's 'Why have you stolen my silver cup?', which renders the end of the Greek verse 44:4, and the 7 of 45:4's 'Joseph said to his brethren, Draw near to me; and they drew near; and he said,', which is Brenton's from the Hebrew. A fix row's text includes the supplied word that leads its chunk ('I have enough of', 'he brought Symeon out', 'he sent away'): it reads the chunk after `joinSupplied`.
 The English content words that sat where a tap opened the Verse view were 307 before the pass (`npm run lxx:unpaired -- --book gen`: 63, 159 and 85) and are 0 after it; 6 more are settled as rendering no Greek word, each named in `tests/unit/lxx-align-choose.test.ts` in one of two lists with why: the 2 of 41:27's 'are seven years;', a clause LXX2012 adds to a Greek verse that says it once, and the 4 Brenton adds to make English of a Greek phrase ('dreams' of 41:12, 'given' of 41:16, 'said' of 41:52, 'Jacob' of 42:4). Brenton's compounds ('chief cupbearer', 'chief baker', 'the bank of the river', 'sale of corn', 'a fifth part') are one chunk of the one Greek word that renders them, by a `fix` row, so a tap on 'cupbearer' opens ἀρχιοινοχόος and not the Verse view.
 A fix of the aligner's own pair (story mw-u2w5klk.349.32; the Governor's 'removed', Genesis 13:18): the model pass re-chooses remainders and never a pair, but the aligner's gloss match gives a Greek word to the wrong English word of its phrase ('tent,' to ἀποσκηνώσας, 'up' to ἀναβλέψας and ἀνήνεγκεν, κυρίαν to 'Return', 'offering' to ὁλοκάρπωσιν), so the word that renders it had no Greek and a tap on it opened the Verse view or a neighbour's word. A row whose `run` is `fix` in the same file (`Gen.13:18<TAB>fix<TAB>having removed his tent,<TAB>1<TAB><TAB>0.80`) names English words of the verse, as they read in a row of its chunks (after the runs, before `joinSupplied`), and the Greek positions they render: those chunks become ONE model chunk holding those words (`g` `-`: a chunk that renders no Greek), and each Greek word's `e` follows its chunk.
 `applyFixes` (`scripts/lxx/align-choose.ts`) applies a verse's fixes together and keeps the verse as the model pass left it, naming it in the ship's notes as stale, when a fix finds its words no longer in the chunks (or in two places), puts a Greek word in two chunks, or leaves a Greek word that had English with none. The words must begin and end at chunk boundaries of the verse after the model pass (a remainder run cut as 'money shall' cannot be cut after 'money'). `lxx:align-choose --from` writes the runs of a session's file and keeps the fix rows the chapter's file already holds, after the runs (mw-u2w5klk.349.39).
 The 58 content words of Genesis 12 to 18 and 22 that this moved from no Greek word to one (the 189 named in the batch above are 133 now; 'God' in 17:19 and 'came' in 12:11 moved the other way, to a name of their own) include 13:18 'removed' (the whole 'having removed his tent,' is ἀποσκηνώσας's), 16:9 'Return' (Ἀποστράφηθι) and 'mistress,' (κυρίαν), 18:2, 22:4 and 22:13 'lifted up' (ἀναβλέψας), 22:13 'offered' (ἀνήνεγκεν) and 'a whole burnt offering' (ὁλοκάρπωσιν, also 22:2, 3, 6, 7 and 8). Genesis 15, 19, 21 and 23 were not swept (the Morpheus cache that a sweep needs is not on the host this story ran on); their lists in `tests/unit/lxx-align-choose.test.ts` are as they were.
 The low-confidence pairs of Genesis 24 to 29 (story mw-u2w5klk.349.33; the Tester's four of mw-u2w5klk.349.4: a tap on 'it' of 24:15, 'well.' of 29:6, 'departed;' of 25:34 and 'Peradventure' of 27:12 opened αὐτῆς, λαλοῦντος, ἐφαύλισεν and ψηλαφήσῃ): the aligner's pairs by place (c 0.3 to 0.5, step 5 above) are the ones that can sit on the wrong Greek word. `placePairs` of `tests/unit/lxx-align-low-confidence.test.ts` lists the aligner's chunks of a chapter with c below 0.6 whose Greek word is a noun, adjective, verb or adverb and whose English neither the gloss nor the definition of its lemma in the shipped lexicon says (the lead chunks of supplied words, 'I will', are left out). Genesis 24 to 29 had 212; 33 of them were wrong and are moved, with the pairs that came with them, by 65 `fix` rows in `data/lxx/align/gen-24` to `gen-29` (the four above among them: 'it came to pass' is ἐγένετο's, 'is well.' Ὑγιαίνει.'s, 'departed;' ᾤχετο's, 'Peradventure' μή ποτε's), and the 179 left (180 with 29:26 'younger' on νεωτέραν, which the lexicon has no entry for and which is right) were read by hand against the verse and are named in that test, which fails on a pair it does not name and on a name no chunk has. `lxx:align-choose --list` shows an aligner pair that a fix row of the chapter's file moves on the Greek positions the fix gives and marks it `fix` (`Peradventure⟨0,1 fix⟩`, never a remainder, so the run numbers are the ship's); a fix whose words take in a remainder is not shown, because only the ship has the model's chunks. What this does not cover: the pairs of function words (a 'my' on the wrong μου, a 'he' on the wrong αὐτοῦ) and a pair made by gloss that is wrong in its phrase (24:14 'water-pot,' on ποτιῶ), and Genesis 12 to 23 and 30 to 36, where `placePairs` finds 450 by place and nobody has read them (a later story).
 The aligner's own pairs of Genesis 14 (story mw-u2w5klk.349.46; the finding of mw-u2w5klk.349.23: 14:5 'nations' sat on ἅμα with ἔθνη left with no English, 14:3 'with' on συνεφώνησαν, 14:10 'country.' on ἔφυγον and 'slime-pits.' on ἔφυγεν, 14:16 'nephew,' on the second ἀπέστρεψεν, 14:15 'upon' on ἐπέπεσεν): 27 `fix` rows in `data/lxx/align/gen-14.tsv` give each of them to its words ('met with one consent', 'strong nations' and 'with them,', 'Sodom fled', 'they that were left fled', 'he recovered Lot' and 'nephew,', 'he came upon', the four 'most high', 'have made Abram rich.', 'young men' and 'Except what things' among them). Reading the verses for them found three more pairs of the same kind that the fixes had to move with them (14:10 'valley' on φρέατα, 14:14 'nephew' on ὁ and ἀδελφὸς, 14:24 'that' on ὧν). 21 of the chapter's 24 English content words that had no Greek word have one now; `npm run lxx:unpaired -- --book gen` still reads 0 for Genesis 14, and the 3 left ('came' and 'pass' of 'it came to pass', 'Lord' of 14:22, which Brenton adds) are named in `tests/unit/lxx-align-choose.test.ts`. A fix row names a chunk as it reads after `joinSupplied`, so a supplied 'they' before the words is part of its text ('they cut in pieces', 14:7).
-The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 43 to 50 (8 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
+The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 46 to 50 (5 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
 
 ## The unpaired English
 
@@ -117,7 +118,7 @@ Story mw-u2w5klk.349.1, the sweep of the pairing epic (mw-u2w5klk.349; the Gover
 | Share | Unpaired over English content words |
 
 The command reports and does not fail on a gap. A later story makes a gap a failing test once the model batches have finished a book. `tests/unit/lxx-unpaired.test.ts` holds the function-word list, the counting on a fixture verse with a known remainder, the table, and (where the git-ignored sources are on the disk, as `lxx-align-choose.test.ts`)
-the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 40 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3), Genesis 24 to 29 read 0 after mw-u2w5klk.349.4, and Genesis 30 to 36 after mw-u2w5klk.349.5, and Genesis 37 to 39 after mw-u2w5klk.349.47, and Genesis 40 to 42 after mw-u2w5klk.349.48.
+the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 40 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3), Genesis 24 to 29 read 0 after mw-u2w5klk.349.4, and Genesis 30 to 36 after mw-u2w5klk.349.5, and Genesis 37 to 39 after mw-u2w5klk.349.47, and Genesis 40 to 42 after mw-u2w5klk.349.48, and Genesis 43 to 45 after mw-u2w5klk.349.49.
 
 ## What reads the chunks
 
@@ -235,9 +236,9 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Genesis 40 | 23 | 478 | 453 | 94.8% | 68.4% | 119 (24.9%) |
 | Genesis 41 | 57 | 1,153 | 1,101 | 95.5% | 72.8% | 289 (25.1%) |
 | Genesis 42 | 38 | 801 | 770 | 96.1% | 72.4% | 283 (35.3%) |
-| Genesis 43 | 34 | 801 | 614 | 76.7% | 45.9% | — |
-| Genesis 44 | 34 | 760 | 562 | 73.9% | 43.7% | — |
-| Genesis 45 | 28 | 611 | 491 | 80.4% | 54.3% | — |
+| Genesis 43 | 34 | 801 | 760 | 94.9% | 65.9% | 184 (23.0%) |
+| Genesis 44 | 34 | 760 | 725 | 95.4% | 67.4% | 204 (26.8%) |
+| Genesis 45 | 28 | 611 | 569 | 93.1% | 68.2% | 96 (15.7%) |
 | Genesis 46 | 34 | 672 | 568 | 84.5% | 61.3% | — |
 | Genesis 47 | 31 | 839 | 629 | 75.0% | 48.0% | — |
 | Genesis 48 | 22 | 560 | 460 | 82.1% | 55.7% | — |
@@ -254,6 +255,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Isaiah 7 | 25 | 505 | 398 | 78.8% | 57.2% | — |
 | Isaiah 8 | 22 | 475 | 371 | 78.1% | 53.5% | — |
 | Isaiah 12 | 6 | 110 | 87 | 79.1% | 47.3% | — |
+| Isaiah 13 | 22 | 404 | 293 | 72.5% | 50.2% | — |
 | Isaiah 15 | 9 | 186 | 148 | 79.6% | 48.9% | — |
 | Isaiah 18 | 7 | 184 | 138 | 75.0% | 54.9% | — |
 | Isaiah 23 | 18 | 305 | 231 | 75.7% | 50.2% | — |
@@ -267,10 +269,12 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Isaiah 38 | 22 | 436 | 347 | 79.6% | 53.0% | — |
 | Isaiah 40 | 31 | 529 | 397 | 75.0% | 48.0% | — |
 | Isaiah 41 | 29 | 557 | 437 | 78.5% | 54.4% | — |
+| Isaiah 42 | 25 | 490 | 373 | 76.1% | 50.2% | — |
 | Isaiah 46 | 13 | 243 | 178 | 73.3% | 51.4% | — |
 | Isaiah 52 | 15 | 300 | 235 | 78.3% | 52.0% | — |
 | Isaiah 55 | 13 | 305 | 239 | 78.4% | 48.2% | — |
 | Isaiah 56 | 11 | 251 | 191 | 76.1% | 48.2% | — |
+| Isaiah 62 | 12 | 275 | 206 | 74.9% | 48.7% | — |
 | Isaiah 63 | 19 | 397 | 308 | 77.6% | 50.1% | — |
 | Isaiah 64 | 12 | 216 | 150 | 69.4% | 47.7% | — |
 | Judges 1 | 36 | 936 | 716 | 76.5% | 46.6% | — |
@@ -392,6 +396,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Psalms 31 | 11 | 189 | 135 | 71.4% | 41.3% | — |
 | Psalms 32 | 22 | 269 | 205 | 76.2% | 45.4% | — |
 | Psalms 33 | 23 | 285 | 214 | 75.1% | 49.5% | — |
+| Psalms 36 | 40 | 525 | 391 | 74.5% | 41.9% | — |
 | Psalms 37 | 23 | 316 | 229 | 72.5% | 40.2% | — |
 | Psalms 38 | 14 | 230 | 157 | 68.3% | 43.9% | — |
 | Psalms 39 | 18 | 327 | 234 | 71.6% | 42.2% | — |
@@ -425,6 +430,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Psalms 70 | 24 | 377 | 265 | 70.3% | 41.1% | — |
 | Psalms 71 | 20 | 292 | 230 | 78.8% | 49.3% | — |
 | Psalms 73 | 23 | 326 | 235 | 72.1% | 42.9% | — |
+| Psalms 74 | 11 | 139 | 107 | 77.0% | 54.0% | — |
 | Psalms 75 | 13 | 162 | 115 | 71.0% | 48.1% | — |
 | Psalms 76 | 21 | 273 | 198 | 72.5% | 49.1% | — |
 | Psalms 77 | 72 | 994 | 742 | 74.6% | 48.5% | — |
@@ -460,6 +466,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Psalms 114 | 9 | 102 | 67 | 65.7% | 37.3% | — |
 | Psalms 115 | 10 | 81 | 59 | 72.8% | 54.3% | — |
 | Psalms 116 | 2 | 28 | 20 | 71.4% | 35.7% | — |
+| Psalms 117 | 29 | 302 | 245 | 81.1% | 48.0% | — |
 | Psalms 119 | 7 | 74 | 51 | 68.9% | 45.9% | — |
 | Psalms 120 | 8 | 95 | 68 | 71.6% | 46.3% | — |
 | Psalms 122 | 4 | 69 | 47 | 68.1% | 42.0% | — |
@@ -497,9 +504,9 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Amos | 131 | 2,780 | 2,065 | 74.3% | 51.5% | — |
 | Deuteronomy | 905 | 21,077 | 16,362 | 77.6% | 50.9% | — |
 | Exodus | 457 | 9,117 | 6,992 | 76.7% | 49.6% | — |
-| Genesis | 1,531 | 32,635 | 29,545 | 90.5% | 63.6% | 4,031 (12.4%) |
+| Genesis | 1,531 | 32,635 | 29,932 | 91.7% | 64.9% | 4,515 (13.8%) |
 | Hosea | 37 | 717 | 562 | 78.4% | 52.3% | — |
-| Isaiah | 504 | 10,177 | 7,727 | 75.9% | 50.7% | — |
+| Isaiah | 563 | 11,346 | 8,599 | 75.8% | 50.6% | — |
 | Judges | 114 | 2,933 | 2,314 | 78.9% | 52.3% | — |
 | Joel | 73 | 1,573 | 1,215 | 77.2% | 48.4% | — |
 | Jonah | 48 | 1,080 | 839 | 77.7% | 51.0% | — |
@@ -508,8 +515,8 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Micah | 92 | 1,997 | 1,514 | 75.8% | 49.3% | — |
 | Numbers | 1,288 | 24,973 | 20,035 | 80.2% | 52.2% | — |
 | Obadiah | 21 | 456 | 356 | 78.1% | 51.8% | — |
-| Psalms | 1,689 | 23,186 | 16,772 | 72.3% | 44.4% | — |
+| Psalms | 1,769 | 24,152 | 17,515 | 72.5% | 44.4% | — |
 
-353 chapters: 128,495 of 161,283 Greek words aligned (79.7%), 4,031 of them by the model pass (y `model`); 131,023 of 205,954 English words are in a chunk of Greek (63.6%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
+359 chapters: 130,497 of 163,418 Greek words aligned (79.9%), 4,515 of them by the model pass (y `model`); 133,280 of 208,971 English words are in a chunk of Greek (63.8%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
 
 <!-- lxx-align:end -->

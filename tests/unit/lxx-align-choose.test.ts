@@ -372,12 +372,12 @@ describe('a fix row moves a Greek word the aligner paired to the wrong English w
   });
 });
 
-// the real Genesis 1 to 42 (the chapters the model pass has been run for): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
+// the real Genesis 1 to 45 (the chapters the model pass has been run for): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
 // the gate's log says in one line when it is skipped and why. Sources found elsewhere than the cwd are given to runShip, so no symlink is needed.
 // Genesis 20 is his own report (2026-11-10, mw-u2w5klk.349.2: a tap on 'removed' in Genesis 20:1 opened the Verse view); the chapters of the model pass are listed here, and a chapter is added when its file is
-// Genesis 12 to 19 and 21 to 23 are the pass of mw-u2w5klk.349.3 (Genesis 14 was left, and is the pass of mw-u2w5klk.349.23); Genesis 24 to 29 are that of mw-u2w5klk.349.4, Genesis 30 to 36 that of mw-u2w5klk.349.5, Genesis 37 to 39 that of mw-u2w5klk.349.47, Genesis 40 to 42 that of mw-u2w5klk.349.48.
-const MODELLED = [...Array.from({ length: 11 }, (_, i) => i + 1), 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42];
-describe.skipIf(!haveSources)('Genesis 1 to 42 with the model pass', () => {
+// Genesis 12 to 19 and 21 to 23 are the pass of mw-u2w5klk.349.3 (Genesis 14 was left, and is the pass of mw-u2w5klk.349.23); Genesis 24 to 29 are that of mw-u2w5klk.349.4, Genesis 30 to 36 that of mw-u2w5klk.349.5, Genesis 37 to 39 that of mw-u2w5klk.349.47, Genesis 40 to 42 that of mw-u2w5klk.349.48, Genesis 43 to 45 that of mw-u2w5klk.349.49.
+const MODELLED = [...Array.from({ length: 11 }, (_, i) => i + 1), 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45];
+describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
   const dirs: string[] = [];
   let withModel: Map<number, Chapter>;
   let base: Map<number, Chapter>;
@@ -400,7 +400,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 42 with the model pass', () => {
   }, 10 * HOOK_TIMEOUT_MS);
   afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
-  it('has a model file for each of Genesis 1 to 42, and none of its runs is stale', () => {
+  it('has a model file for each of Genesis 1 to 45, and none of its runs is stale', () => {
     const files = readdirSync(ALIGN_CHOICES_DIR).filter((f) => f.startsWith('gen-'));
     expect(files).toEqual(MODELLED.map((n) => alignChoicesName('gen', n)));
     expect(stale).toEqual([]);
@@ -870,6 +870,89 @@ describe.skipIf(!haveSources)('Genesis 1 to 42 with the model pass', () => {
     expect(greek(42, 35, 'it came to pass')).toEqual(['ἐγένετο']);
     expect(greek(42, 36, 'to them,')).toEqual(['αὐτοῖς']);
     expect(greek(42, 37, 'and I will bring him back')).toEqual(['κἀγὼ', 'ἀνάξω', 'αὐτὸν']);
+  });
+
+  // Genesis 43 to 45 (mw-u2w5klk.349.49; `lxx:unpaired` listed them with 92, 104 and 62 English content words where a tap opened the Verse view): the English content words that sit in a chunk with no Greek word after
+  // the pass, 15 of 982 content words, keyed chapter:verse:word and read by hand from `--list`, each in one of three lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs that gave a
+  // Greek word to a neighbouring English word (the class of mw-u2w5klk.349.46) are moved by the 71 fix rows of data/lxx/align/gen-43.tsv to gen-45.tsv; the sweep read every pair of the three chapters against its verse.
+  // Brenton adds them to make English of a Greek phrase: 43:3 'the lord of the country,' (Swete has only 'ὁ ἄνθρωπος'), 43:6 'inasmuch as' (εἰ) and 43:32 'on bread for' (Swete's ἄρτους is the 'bread' of 'eat bread', later in the verse).
+  const ADDED_NO_GREEK_43_TO_45 = ['43:3:country', '43:3:lord', '43:6:inasmuch', '43:32:bread'];
+  // LXX2012's 44:5 'Why have you stolen my silver cup?' renders the end of the Greek verse 44:4 (ἵνα τί ἐκλέψατέ μου τὸ κόνδυ τὸ ἀργυροῦν), which has no English chunk of its own to point at (the like of Genesis 37:32 above).
+  const PREVIOUS_VERSE_NO_GREEK_44 = ['44:5:why', '44:5:stolen', '44:5:silver', '44:5:cup'];
+  // 45:4 'Joseph said to his brethren, Draw near to me; and they drew near; and he said,' is Brenton's from the Hebrew: Swete's Greek has only 'And he said, I am Joseph your brother'.
+  const HEBREW_ONLY_NO_GREEK_45 = ['45:4:joseph', '45:4:brethren', '45:4:draw', '45:4:near', '45:4:drew', '45:4:near', '45:4:said'];
+
+  it('leaves in Genesis 43 to 45 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
+    const named = [...ADDED_NO_GREEK_43_TO_45, ...PREVIOUS_VERSE_NO_GREEK_44, ...HEBREW_ONLY_NO_GREEK_45].sort();
+    const found = [43, 44, 45].flatMap((n) => noGreek(withModel.get(n)!)).sort();
+    expect(found).toEqual(named);
+    expect(named).toHaveLength(15);
+    for (const n of [43, 44, 45]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
+  });
+
+  it('pairs a content word of each kind (Genesis 43:11 turpentine, 43:30 chamber, 44:12 youngest, 44:17 safety, 45:6 plowing, 45:27 chariots) to a Greek word the Reader links', () => {
+    const chunkOf = (n: number, v: number, text: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(text))!;
+    for (const [n, v, text] of [[43, 11, 'turpentine,'], [43, 30, 'chamber,'], [44, 12, 'youngest;'], [44, 17, 'safety'], [45, 6, 'plowing,'], [45, 27, 'chariots']] as const) {
+      const chunk = chunkOf(n, v, text);
+      expect(chunk, `${n}:${v} ${text}`).toBeDefined();
+      expect(septuagintChunkLinked(chunk), `${n}:${v} ${text}`).toBe(true);
+    }
+  });
+
+  // mw-u2w5klk.349.49's sweep of the aligner's pairs in Genesis 43 to 45: a Greek word the aligner gave to a neighbouring English word, so the word that renders it had no Greek ('presents,' of 43:15 on 'having's δῶρα,
+  // 'rose up' and 'went' of 43:15, 'looked' and 'every one' of 43:33, 'drew near' of 44:18, 'wife' and 'sons;' of 44:27, 'Joseph's brethren' and 'was glad,' of 45:16, 'sent' and 'away' of 45:24, the 'it came to pass' of 43:2).
+  // Each is the chunk a fix row gives its own Greek word.
+  it('gives the English of Genesis 43 to 45 that the aligner paired to a neighbour its own Greek word: it came to pass, presents, rose up, every one at, drew near, wife, Joseph\'s brethren, was glad, sent away', () => {
+    const greek = (n: number, v: number, text: string): string[] => {
+      const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+      const chunks = verse.e.filter((c) => c.t === text);
+      expect(chunks, `${n}:${v} '${text}' is one chunk`).toHaveLength(1);
+      return chunks[0].g.map((i) => verse.g[i].t);
+    };
+    expect(greek(43, 2, 'it came to pass,')).toEqual(['ἐγένετο']);
+    expect(greek(43, 9, 'engage for')).toEqual(['ἐκδέχομαι']);
+    expect(greek(43, 10, 'should now have')).toEqual(['ἤδη', 'ἂν']);
+    expect(greek(43, 12, 'lest perhaps')).toEqual(['μή', 'ποτε']);
+    expect(greek(43, 12, 'a mistake.')).toEqual(['ἀγνόημά']);
+    expect(greek(43, 14, 'send away')).toEqual(['ἀποστείλαι']);
+    expect(greek(43, 14, 'accordingly as')).toEqual(['καθὰ']);
+    expect(greek(43, 15, 'presents,')).toEqual(['τὰ', 'δῶρα']);
+    expect(greek(43, 15, 'rose up')).toEqual(['ἀναστάντες']);
+    expect(greek(43, 15, 'went down')).toEqual(['κατέβησαν']);
+    expect(greek(43, 16, 'to the steward of his household,')).toEqual(['τῷ', 'ἐπὶ', 'τῆς', 'οἰκίας', 'αὐτοῦ']);
+    expect(greek(43, 16, 'make ready,')).toEqual(['ἑτοίμασον·']);
+    expect(greek(43, 18, 'lay it to our charge;')).toEqual(['ἐπιθέσθαι', 'ἡμῖν,']);
+    expect(greek(43, 23, 'he brought Symeon out')).toEqual(['ἐξήγαγεν', 'Συμεών·']);
+    expect(greek(43, 32, 'feasting with')).toEqual(['τοῖς', 'συνδειπνοῦσιν', 'μετ᾽']);
+    expect(greek(43, 33, 'looked with amazement')).toEqual(['ἐξίσταντο']);
+    expect(greek(43, 33, 'every one at')).toEqual(['ἕκαστος', 'πρὸς', 'τὸν']);
+    expect(greek(43, 34, 'were filled with drink')).toEqual(['ἐμεθύσθησαν']);
+    expect(greek(43, 34, 'the others.')).toEqual(['πρὸς', 'τὰς', 'ἐκείνων.']);
+    expect(greek(44, 2, 'was done')).toEqual(['ἐγενήθη']);
+    expect(greek(44, 3, 'sent away,')).toEqual(['ἀπεστάλησαν,']);
+    expect(greek(44, 4, 'had gone')).toEqual(['ἐξελθόντων']);
+    expect(greek(44, 4, 'far off,')).toEqual(['ἀπέσχον', 'μακράν,']);
+    expect(greek(44, 7, 'according to this word.')).toEqual(['τὸ', 'ῥῆμα', 'τοῦτο.']);
+    expect(greek(44, 11, 'every man his sack')).toEqual(['ἕκαστος', 'τὸν', 'μάρσιππον', 'αὐτοῦ']);
+    expect(greek(44, 18, 'drew near')).toEqual(['Ἐγγίσας']);
+    expect(greek(44, 18, 'with your servant,')).toEqual(['τῷ', 'παιδί', 'σου,']);
+    expect(greek(44, 18, 'next to Pharao.')).toEqual(['μετὰ', 'Φαραώ.']);
+    expect(greek(44, 20, 'left behind to his mother,')).toEqual(['ὑπελείφθη', 'τῷ', 'πατρὶ', 'αὐτοῦ,']);
+    expect(greek(44, 26, 'if our younger brother go down')).toEqual(['εἰ', 'μὲν', 'ὁ', 'ἀδελφὸς', 'ὁ', 'νεώτερος', 'καταβαίνει']);
+    expect(greek(44, 27, 'wife')).toEqual(['ἡ', 'γυνή.']);
+    expect(greek(44, 27, 'two sons;')).toEqual(['δύο']);
+    expect(greek(44, 28, 'devoured of wild beasts,')).toEqual(['Θηριόβρωτος']);
+    expect(greek(44, 31, 'the old age')).toEqual(['τὸ', 'γῆρας']);
+    expect(greek(44, 31, 'servant,')).toEqual(['τοῦ', 'παιδός']);
+    expect(greek(44, 32, 'has received the boy in charge')).toEqual(['ἐκδέδεκται', 'τὸ', 'παιδίον']);
+    expect(greek(44, 32, 'for ever.')).toEqual(['πάσας', 'τὰς', 'ἡμέρας.']);
+    expect(greek(45, 1, 'stood near')).toEqual(['παριστήκει']);
+    expect(greek(45, 16, 'Joseph\'s brethren')).toEqual(['οἱ', 'ἀδελφοὶ', 'Ἰωσήφ·']);
+    expect(greek(45, 16, 'was glad,')).toEqual(['ἐχάρη']);
+    expect(greek(45, 22, 'three hundred pieces of gold,')).toEqual(['τριακοσίους', 'χρυσοῦς']);
+    expect(greek(45, 23, 'presents at the same rate,')).toEqual(['κατὰ', 'τὰ', 'αὐτά,']);
+    expect(greek(45, 24, 'he sent away')).toEqual(['ἐξαπέστειλεν']);
+    expect(greek(45, 24, 'his brethren,')).toEqual(['τοὺς', 'ἀδελφοὺς', 'αὐτοῦ']);
   });
 
   it('Genesis 1 reads woven through weaveVerse with the model\'s chunks', () => {
