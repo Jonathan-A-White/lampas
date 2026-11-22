@@ -28,7 +28,7 @@ import { serveWakeModel, stubWake, type WakeFake } from '../support/fake-wake';
 import { ManualClock } from '../support/manual-clock';
 import { row, sourceOf } from '../support/sermon-sources';
 import { setSermonSources } from '../../src/sermons';
-import { closeSermon } from '../../src/sermons/player';
+import { closeSermon, hasQueuedSermon } from '../../src/sermons/player';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
 const timeout = ASYNC_WAIT_MS;
@@ -213,6 +213,29 @@ describe('Hands-free ask', () => {
       // a real-time wait: a window in which nothing must happen (the sermon must stay unopened)
       await new Promise((resolve) => setTimeout(resolve, 100));
       expect(player()).toBeNull();
+    });
+
+    it('does not start when a wake came before the answer did (the late answer is not a typed one)', async () => {
+      setSermonSources([sourceOf('tv', 'Test Video', { jhn: [clay] })]);
+      await openJohn3(playing);
+      // the tutor holds its answer: the wake comes while 'Asking the tutor' is said and the answer is waited for
+      fake.autoReply = undefined;
+      const first = await wakeUp();
+      await says(first, 'ask play a sermon on this chapter');
+      await waitFor(() => expect(spoken()).toContain(ASKING), { timeout });
+      act(() => synth.finish());
+      await waitFor(() => expect(wake.listening).toBe(true), { timeout });
+      const before = FakeRecognizer.instances.length;
+      act(() => void wake.say());
+      await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(before), { timeout });
+      // the answer arrives late
+      await fake.answer({ status: 'answered', answer: playing });
+      await waitFor(async () => expect(await db.talks.count()).toBeGreaterThan(0), { timeout });
+      // a real-time wait: a window in which nothing must happen (the sermon must stay unopened)
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(player()).toBeNull();
+      // and the sermon the late answer named is not left held for a later answer to start
+      expect(hasQueuedSermon()).toBe(false);
     });
   });
 
