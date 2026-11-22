@@ -397,15 +397,15 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   await expect(view.getByRole('button', { name: /^Sermons/ })).toHaveCount(0);
 });
 
-test('with Logos On and two sermon books On that hold no sermon by passage, the Sermons sheet has no In Logos group: Galatians 1:4 lists neither The Beatitudes nor Sermon Outlines on 1 Corinthians (mw-qtu3zvz.239)', async ({ page }) => {
+test('with Logos On and two sermon books On that hold no sermon by passage, the Sermons sheet has no In Logos group: Galatians 1:4 lists neither Sermon Outlines on Acts nor Sermon Outlines on 1 Corinthians (mw-qtu3zvz.239; The Beatitudes was one until batch 5 Eyton list stood for it, mw-qtu3zvz.26)', async ({ page }) => {
   await openUnlocked(page);
   await turnLogosOn(page);
   // his import holds the archives and two books of sermons that no list stands for (mw-qtu3zvz.94)
-  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:SO1COR', 'LLS:BEATITUDES']);
+  await keepImport(page, [...EVERY_LOGOS_SERMON, 'LLS:SO1COR', 'LLS:SOACTS']);
   // the two books On, from the one list of sermon sources: the only place a book of sermons is switched
   await page.goto('/#/settings?sources=sermons');
   await expect(page.getByRole('heading', { name: 'Sermon sources', level: 1 })).toBeVisible();
-  for (const name of ['Sermon Outlines on 1 Corinthians', 'The Beatitudes']) {
+  for (const name of ['Sermon Outlines on 1 Corinthians', 'Sermon Outlines on Acts']) {
     const group = page.getByRole('radiogroup', { name, exact: true });
     await expect(group.getByRole('radio', { name: 'Pin', exact: true })).toHaveCount(0);
     await group.getByRole('radio', { name: 'On', exact: true }).click();
