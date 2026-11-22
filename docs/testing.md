@@ -158,7 +158,9 @@ The wake word 'Hey Lampas' is voice-kit's fake too (`voice-kit/testing/handsfree
   A test of the session moves its waits by `handsFreeSeam.clock` (a `ManualClock`) and calls `resetHandsFree()` between tests (`src/handsFree/session.ts`). `handsFreeSeam.chime` is a spy for the kit's two chimes (an open and a close, the lower one that ends a follow-up window); delete it afterwards (features/steps/hands-free-ask.steps.tsx).
   Which input the wake opens (src/handsFree/wakeInput.ts) is tested on a phone with several inputs: `stubPhoneInputs(inputs)` (`tests/support/fake-mic.ts`) gives the honest
   microphone a list for enumerateDevices and opens each by its id with its own name and silence; `hearStreams(wake, rate)` (`fake-wake.ts`) makes the fake wake hand the
-  given stream's samples to `onInput`, as the real startWake does (tests/unit/hands-free-car-mic.test.tsx).
+  given stream's samples to `onInput`, as the real startWake does (tests/unit/hands-free-car-mic.test.tsx). A live input plays the clip over the room's noise, which never
+  stops (a real microphone never gives exact zeros, so the wake's watch on a live input does not take the clip's end for a dropped route); `soundMs` and `soundAgainMs`
+  make it fall to exact zeros after that long and come back (a route torn down, a call muting the phone's microphone: mw-5r3p30.1242).
 
 ## The Septuagint tests that read the real, git-ignored sources (mw-cv2w9um)
 
