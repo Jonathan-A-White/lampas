@@ -136,22 +136,48 @@ describeFeature(feature, ({ Scenario }) => {
     And('Settings finds no {string}', findsNo);
   });
 
+  const chooses = async (_: unknown, label: string): Promise<void> => {
+    const hit = await waitFor(() => {
+      const el = found(label);
+      expect(el, label).not.toBeNull();
+      return el!;
+    });
+    await user.click(hit);
+  };
+  const pageOpen = async (_: unknown, title: string): Promise<void> => {
+    expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeInTheDocument();
+  };
+
   Scenario('Choosing a found setting opens its page at that row', ({ Given, When, And, Then }) => {
     Given('Lampas is opened on Settings with nothing chosen', openNothing);
     When('he types {string} in the Settings search', typed);
-    And('he chooses {string} among the found', async (_, label: string) => {
-      const hit = await waitFor(() => {
-        const el = found(label);
-        expect(el, label).not.toBeNull();
-        return el!;
-      });
-      await user.click(hit);
-    });
-    Then('the {string} page is open', async (_, title: string) => {
-      expect(await screen.findByRole('heading', { name: title, level: 1 })).toBeInTheDocument();
-    });
+    And('he chooses {string} among the found', chooses);
+    Then('the {string} page is open', pageOpen);
     And('the group {string} is shown', async (_, name: string) => {
       expect(await screen.findByRole('group', { name })).toBeInTheDocument();
+    });
+  });
+
+  // What Lampas has counted is a door of the home, no row of a group (mw-6ww.175.103): the search lists it 'in Settings' and a tap opens its own page
+  Scenario('Typing counted finds What Lampas has counted and choosing it opens its page', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    Then('Settings finds {string} in {string}', findsIn);
+    And('Settings lists no groups', listsNoGroups);
+    When('he chooses {string} among the found', chooses);
+    Then('the {string} page is open', async (_, title: string) => {
+      await pageOpen(_, title);
+      expect(window.location.hash).toBe('#/settings?page=counted');
+    });
+  });
+
+  Scenario('The search matches the hint of What Lampas has counted', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on Settings with nothing chosen', openNothing);
+    When('he types {string} in the Settings search', typed);
+    Then('Settings finds {string} in {string}', findsIn);
+    // the door is the only thing found, so there is no list of matching settings for findsNo to wait on: the step before has waited for the answer
+    And('Settings finds no {string}', (_, label: string) => {
+      expect(found(label)).toBeNull();
     });
   });
 });

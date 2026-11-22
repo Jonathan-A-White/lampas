@@ -55,3 +55,17 @@ Feature: Settings has a search field and one registry behind every row
     And he chooses "Text size" among the found
     Then the "Reading" page is open
     And the group "Text size" is shown
+
+  Scenario: Typing counted finds What Lampas has counted and choosing it opens its page
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "counted" in the Settings search
+    Then Settings finds "What Lampas has counted" in "Settings"
+    And Settings lists no groups
+    When he chooses "What Lampas has counted" among the found
+    Then the "What Lampas has counted" page is open
+
+  Scenario: The search matches the hint of What Lampas has counted
+    Given Lampas is opened on Settings with nothing chosen
+    When he types "OPENED each" in the Settings search
+    Then Settings finds "What Lampas has counted" in "Settings"
+    And Settings finds no "Theme"

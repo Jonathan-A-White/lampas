@@ -1,13 +1,13 @@
-// src/settings/SettingsHome.tsx — the pieces of the Settings home (mw-3ased2.1): the search field pinned at the top, a group's button, a door's button (mw-6ww.175.87) and the rows the search found.
+// src/settings/SettingsHome.tsx — the pieces of the Settings home (mw-3ased2.1): the search field pinned at the top, a group's button, a door's button (mw-6ww.175.87) and the rows the search found (a door among them, mw-6ww.175.103).
 // The search field, the group button and the found rows are the kit's (pwa-kit/settings; its look is themed in src/index.css, 'Settings home'); what is here is Lampas's:
 // where a tap goes, and the books of his library the search finds beside the settings. src/SettingsScreen.tsx draws them; docs/layout/settings.md.
 import { Found as FoundRows, GroupButton as KitGroupButton, SettingsSearch } from 'pwa-kit/settings';
 import { openLibrary } from '../nav/route';
 import { openTool } from '../tools';
 import { detailOf, infoOf } from '../library/kinds';
-import { openFoundRow, openSermonSources, openSettingsGroup } from './link';
+import { openCounted, openFoundRow, openSermonSources, openSettingsGroup } from './link';
 import type { searchLibrary } from './librarySearch';
-import { GROUPS, HOME_SECTIONS, type GroupId, type SettingsRow } from './rows';
+import { GROUPS, HOME_SECTIONS, type COUNTED_DOOR, type GroupId, type SettingsRow } from './rows';
 
 /** The search field at the top: it filters the rows by name and hint as he types. It is pinned under the header (sticky), so it is in view however far he scrolls (mw-5r3p30.617). */
 export { SettingsSearch };
@@ -39,17 +39,49 @@ function openFound(row: SettingsRow): void {
   openFoundRow(row.key);
 }
 
-/** What the search found among the settings, the Tools and the books of his library: each setting with the group it is in; choosing one opens its page at that row. A tool (Words, Verse lists, Your Logos library…
- *  moved out of Settings to the Tools screen, mw-5r3p30.754) is listed 'in Tools' and opens its own screen; a book opens its kind page at it. */
-export function Found({ rows, tools, books, query }: { rows: readonly SettingsRow[]; tools: readonly SettingsRow[]; books: ReturnType<typeof searchLibrary>; query: string }) {
+/** What the search found among the settings, the doors of the home, the Tools and the books of his library: each setting with the group it is in; choosing one opens its page at that row. A door of the home
+ *  (What Lampas has counted, rows.ts foundDoors) is listed 'in Settings' and opens its own page. A tool (Words, Verse lists, Your Logos library… moved out of Settings to the Tools screen, mw-5r3p30.754) is listed
+ *  'in Tools' and opens its own screen; a book opens its kind page at it. */
+export function Found({
+  rows,
+  doors,
+  tools,
+  books,
+  query,
+}: {
+  rows: readonly SettingsRow[];
+  doors: readonly (typeof COUNTED_DOOR)[];
+  tools: readonly SettingsRow[];
+  books: ReturnType<typeof searchLibrary>;
+  query: string;
+}) {
   // with nothing found among any, the kit's list says so
-  if (rows.length === 0 && tools.length === 0 && books.total === 0) return <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} />;
+  if (rows.length === 0 && doors.length === 0 && tools.length === 0 && books.total === 0) return <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} />;
   return (
     <>
       {rows.length > 0 ? <FoundRows rows={rows} query={query} groups={GROUPS} homeSections={HOME_SECTIONS} onOpen={openFound} /> : null}
+      {doors.length > 0 ? <FoundDoors doors={doors} /> : null}
       {tools.length > 0 ? <FoundTools tools={tools} /> : null}
       {books.total > 0 ? <FoundBooks books={books} /> : null}
     </>
+  );
+}
+
+/** The doors of the home that hold the search (What Lampas has counted, mw-6ww.175.103), drawn as the kit draws a found setting (its classes) but saying 'in Settings', since a door is in no group:
+ *  it is a row of the Settings home itself. A tap opens the door's own page, as its row of the home does. */
+function FoundDoors({ doors }: { doors: readonly (typeof COUNTED_DOOR)[] }) {
+  return (
+    <ul aria-label="Matching pages" className="bk-settings__list">
+      {doors.map((door) => (
+        <li key={door.id}>
+          <button type="button" data-found={door.id} onClick={openCounted} className="bk-settings__found">
+            <span className="bk-settings__found-label">{door.title}</span>
+            <span className="bk-settings__found-hint">{door.hint}</span>
+            <span className="bk-settings__found-where">in Settings</span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 
