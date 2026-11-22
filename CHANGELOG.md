@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.331
+_2026-11-22_
+- New: David's recording now plays through 2 Kings with the highlight following, except chapter 9.
+- New: Tap a picture waiting in the message box to see it full size before you send it.
+- New: A video sermon now plays inside Lampas instead of opening a web page.
+
 ## 0.7.330
 _2026-11-22_
 - Fixed: a list of Logos sermon books now names all the books it stands for, including four that were left out.
