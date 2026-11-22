@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.335
+_2026-11-22_
+- New: David's recording now follows the text in Nehemiah (except chapter 7) and Esther.
+
 ## 0.7.334
 _2026-11-22_
 - Fixed: The Sermons sheet no longer lists Logos sermon books at verses where they have no sermon, and so no longer opens Logos at a blank page with 'Navigation failed'.
