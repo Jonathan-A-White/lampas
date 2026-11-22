@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.333
+_2026-11-22_
+- Fixed: when the car's Bluetooth microphone goes quiet partway through a drive, 'Hey Lampas' moves to the phone's own microphone instead of going deaf, and a phone call no longer leaves it stuck on a silent input.
+
 ## 0.7.332
 _2026-11-22_
 - Fixed: In Copywork, a Greek word you wrote correctly is no longer sometimes shown as wrong when the reader of your page says it saw exactly the right word.

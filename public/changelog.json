@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.333",
+    "date": "2026-11-22",
+    "story": "mw-5r3p30.1242",
+    "kind": "fixed",
+    "text": "when the car's Bluetooth microphone goes quiet partway through a drive, 'Hey Lampas' moves to the phone's own microphone instead of going deaf, and a phone call no longer leaves it stuck on a silent input."
+  },
+  {
     "version": "0.7.332",
     "date": "2026-11-22",
     "story": "mw-qtu3zvz.254",
