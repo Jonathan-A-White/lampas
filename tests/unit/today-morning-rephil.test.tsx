@@ -157,8 +157,10 @@ describe('Seen can be taken back, and Start again asks first (mw-r9xo1pj.10)', (
     await act(async () => {
       await userEvent.click(piece.getByRole('button', { name: 'Seen' }));
     });
+    // found outside act: Seen finishes after its act ends, and a state update that lands inside a second, open act waits there for the act to close
+    const undo = await piece.findByRole('button', { name: 'Undo' }, { timeout });
     await act(async () => {
-      await userEvent.click(await piece.findByRole('button', { name: 'Undo' }, { timeout }));
+      await userEvent.click(undo);
     });
     expect(await piece.findByRole('link', { name: new RegExp(EPISODES[1].title) }, { timeout })).toBeInTheDocument();
     expect([...(await getHeard())]).toEqual([]);
