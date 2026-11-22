@@ -289,11 +289,35 @@ export function applyModel(chapter: Chapter, allRows: readonly ModelRow[]): Mode
 }
 
 /**
+ * Cuts the chunks so a fix row's words (from the word `from` to the word `to` of `e`, each its chunk's index `i` and its place `k` among that chunk's words) begin and end at a chunk's edge
+ * (mw-u2w5klk.349.40). A chunk cut in two keeps its `y` and `c`; the part that is not the row's has no Greek word (`g` empty): the row gives its part the Greek it renders, and a Greek
+ * word the cut chunk held that no row of the verse takes is left with no English, which applyFixes names as stale. The supplied words (`s`) go to the part they are in, by their place.
+ */
+function cutChunks(e: readonly EnglishChunk[], from: { i: number; k: number }, to: { i: number; k: number }): EnglishChunk[] {
+  const out: EnglishChunk[] = [];
+  e.forEach((c, i) => {
+    const ws = words(c.t).split(' ');
+    const cuts = [i === from.i ? from.k : 0, i === to.i ? to.k + 1 : ws.length].filter((k) => k > 0 && k < ws.length);
+    const edges = [0, ...new Set(cuts), ws.length];
+    if (edges.length === 2) return void out.push(c);
+    for (let p = 0; p + 1 < edges.length; p++) {
+      const [a, b] = [edges[p], edges[p + 1]];
+      const part: EnglishChunk = { ...c, t: ws.slice(a, b).join(' '), g: [] };
+      delete part.s;
+      const s = (c.s ?? []).filter((k) => k >= a && k < b).map((k) => k - a);
+      if (s.length > 0) part.s = s;
+      out.push(part);
+    }
+  });
+  return out;
+}
+
+/**
  * The fixes of the aligner's own pairs (mw-u2w5klk.349.32). The model pass re-chooses remainders and never a pair, but the aligner sometimes pairs a Greek word to the wrong English word of a phrase
  * ('tent,' to ἀποσκηνώσας in 'having removed his tent,', 'up' to ἀναβλέψας in 'lifted up', 'Return' to κυρίαν, 'offering' to ὁλοκάρπωσιν in 'a whole burnt offering'), and then the English word that
  * renders it has no Greek and a tap on it opens the Verse view, or the Greek word of a neighbour. A fix row (`run` written `fix`) names English words of the verse, as they read in a row of its chunks, and
  * the Greek positions they render: the chunks that read so are replaced by ONE chunk `{ t, g, s?, c, y: 'model' }` (the supplied words go to it); `g` `-` makes of them a chunk that renders no Greek word.
- * Fixes come after the runs and before joinSupplied, so a run's number is still the aligner's own. A verse's fixes are applied together and kept only if every one finds its words once in the verse, no
+ * The words may begin or end inside a chunk (mw-u2w5klk.349.40, cutChunks): when no run of whole chunks reads so, the one place they are found is cut at their edge. Fixes come after the runs and before joinSupplied, so a run's number is still the aligner's own. A verse's fixes are applied together and kept only if every one finds its words once in the verse, no
  * Greek word is then in two chunks, and no Greek word that had English is left without; otherwise the verse is kept as it was and named as stale (the aligner changed since the fix), never dropped.
  */
 export function applyFixes(chapter: Chapter, rows: readonly ModelRow[]): Modelled {
@@ -316,6 +340,23 @@ export function applyFixes(chapter: Chapter, rows: readonly ModelRow[]): Modelle
         let got: string[] = [];
         for (let j = i; j < e.length && got.length < want.length; j++) got = got.concat(words(e[j].t).split(' '));
         if (got.length === want.length && got.every((w, k) => w === want[k])) at.push(i);
+      }
+      // the words may begin or end inside a chunk (mw-u2w5klk.349.40): only when no run of whole chunks reads so, the chunk is cut there
+      if (at.length === 0) {
+        const flat = e.flatMap((c, i) => words(c.t).split(' ').map((w, k) => ({ w, i, k })));
+        const found: number[] = [];
+        for (let p = 0; p + want.length <= flat.length; p++) if (want.every((w, k) => flat[p + k].w === w)) found.push(p);
+        if (found.length === 1) {
+          e = cutChunks(e, flat[found[0]], flat[found[0] + want.length - 1]);
+          for (let i = 0; i < e.length && at.length === 0; i++) {
+            let got: string[] = [];
+            for (let j = i; j < e.length && got.length < want.length; j++) got = got.concat(words(e[j].t).split(' '));
+            if (got.length === want.length && got.every((w, k) => w === want[k])) at.push(i);
+          }
+        } else if (found.length > 1) {
+          stale.push(`${ref} fix '${r.text}' finds them in several places: the verse is kept as the model pass left it`);
+          return verse;
+        }
       }
       if (at.length !== 1) {
         stale.push(`${ref} fix '${r.text}' ${at.length === 0 ? 'finds no such chunks' : 'finds them in several places'}: the verse is kept as the model pass left it`);

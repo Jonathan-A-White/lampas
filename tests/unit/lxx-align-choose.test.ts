@@ -372,6 +372,60 @@ describe('a fix row moves a Greek word the aligner paired to the wrong English w
   });
 });
 
+/**
+ * A fix row that cuts inside a model run's chunk (mw-u2w5klk.349.40), Genesis 17:13 in miniature: the model pass cut 'he that is bought' (ὁ) and 'money shall' (no Greek), the aligner paired
+ * 'with' to ἀργυρώνητος, so 'money' (a word of the phrase that renders ἀργυρώνητος) sat in a chunk with 'shall' and no fix row could name it without taking 'shall' too.
+ */
+describe('a fix row may begin or end inside a chunk: the chunk is cut there', () => {
+  const GREEK = [word('ὁ', 'ho', 'ὁ', 'T-NSM'), word('ἀργυρώνητος', 'argyrōnētos', 'ἀργυρώνητος', 'A-NSM'), word('περιτομῇ', 'peritomē', 'περιτομή', 'N-DSF')];
+  const chunk = (t: string, g: number[], y: 'align' | 'model', s?: number[]): EnglishChunk => ({ t, g, ...(s ? { s } : {}), c: 0.8, y });
+  const chapterOf = (e: EnglishChunk[]): Chapter => {
+    const g = GREEK.map((w) => ({ ...w }));
+    e.forEach((c, i) => c.g.forEach((k) => (g[k].e = i)));
+    return { code: 'gen', book: 'Genesis', chapter: 17, verses: [{ n: 13, g, e }] } as Chapter;
+  };
+  const start = (): EnglishChunk[] => [chunk('he that is bought', [0], 'model'), chunk('with', [1], 'align'), chunk('money shall', [], 'model', [1]), chunk('surely', [2], 'align')];
+  const row = (text: string, g: number[]) => ({ ref: 'Gen.17:13', run: FIX_RUN, text, g, mark: '' as const, confidence: 0.8 });
+  const shape = (c: Chapter): Array<[string, number[]]> => c.verses[0].e.map((x) => [x.t, x.g]);
+
+  it('names "money" with its phrase: "bought with money" takes the end of one chunk, the aligner\'s "with" and the first word of the next, which keeps the rest', () => {
+    const done = applyFixes(chapterOf(start()), [row('he that is', [0]), row('bought with money', [1])]);
+    expect(done.stale).toEqual([]);
+    expect(shape(done.chapter)).toEqual([['he that is', [0]], ['bought with money', [1]], ['shall', []], ['surely', [2]]]);
+    expect(done.chapter.verses[0].e.map((x) => x.y)).toEqual(['model', 'model', 'model', 'align']);
+    expect(done.chapter.verses[0].g.map((w) => w.e)).toEqual([0, 1, 3]);
+    expect(septuagintChunkLinked(done.chapter.verses[0].e[1])).toBe(true);
+  });
+
+  it('keeps the supplied words of the cut chunk by their place: "money shall" with `shall` supplied leaves "shall" supplied', () => {
+    const e = start();
+    e[2] = chunk('money shall', [], 'model', [1]);
+    const done = applyFixes(chapterOf(e), [row('he that is', [0]), row('bought with money', [1])]);
+    expect(done.chapter.verses[0].e[2].s).toEqual([0]);
+    expect(done.chapter.verses[0].e[1].s).toBeUndefined();
+  });
+
+  it('makes a cut-off part a chunk with no Greek word, so the Greek word the chunk had must be given by a row of the verse or the verse is stale', () => {
+    const done = applyFixes(chapterOf(start()), [row('he that is', [])]);
+    expect(done.chapter.verses[0].e.map((x) => x.t)).toEqual(['he that is bought', 'with', 'money shall', 'surely']);
+    expect(done.stale.join(' ')).toContain('is left with no English');
+  });
+
+  it('is stale, and the verse is kept as it was, when the words are found in several places inside the chunks', () => {
+    const e = [chunk('he that is bought', [0], 'model'), chunk('he that is', [1], 'model'), chunk('surely', [2], 'align')];
+    const done = applyFixes(chapterOf(e), [row('that is', [0])]);
+    expect(done.stale.join(' ')).toContain('finds them in several places');
+    expect(shape(done.chapter)).toEqual(shape(chapterOf(e)));
+  });
+
+  it('still prefers the chunks that read as the row does: a row of whole chunks finds them once even when its words are also inside another chunk', () => {
+    const e = [chunk('he that is', [0], 'model'), chunk('he that is bought', [], 'model'), chunk('surely', [1, 2], 'align')];
+    const done = applyFixes(chapterOf(e), [row('he that is', [0])]);
+    expect(done.stale).toEqual([]);
+    expect(shape(done.chapter)).toEqual([['he that is', [0]], ['he that is bought', []], ['surely', [1, 2]]]);
+  });
+});
+
 // the real Genesis 1 to 45 (the chapters the model pass has been run for): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
 // the gate's log says in one line when it is skipped and why. Sources found elsewhere than the cwd are given to runShip, so no symlink is needed.
 // Genesis 20 is his own report (2026-11-10, mw-u2w5klk.349.2: a tap on 'removed' in Genesis 20:1 opened the Verse view); the chapters of the model pass are listed here, and a chapter is added when its file is
@@ -496,7 +550,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
   });
 
   // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3): the English content words (`contentWordsOf`, scripts/lxx/unpaired.ts) that sit in a chunk with no Greek word after the pass, 189 of 2,560 (607 had none
-  // before it, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.32 gave a Greek word to 58 of the 189, a Greek word paired to its neighbour's English, and two went to a name of their own (12:11 'came', 17:19 'God'), so 133 are left), keyed chapter:verse:word and read by hand from `--list`. Each is in one of three lists, with why. A tap on one opens the Verse view, never a wrong word.
+  // before it, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.32 gave a Greek word to 58 of the 189, a Greek word paired to its neighbour's English, and two went to a name of their own (12:11 'came', 17:19 'God'), so 132 are left, mw-u2w5klk.349.40 gave 17:13 'money' its Greek word), keyed chapter:verse:word and read by hand from `--list`. Each is in one of three lists, with why. A tap on one opens the Verse view, never a wrong word.
   // 'it came to pass' renders ἐγένετο (Hebrew's 'and it was'), which the aligner paired to one English word; the model re-chooses remainders, not pairs, so the others have no Greek word left.
   const IDIOM_NO_GREEK = [
     '12:11:came', '12:11:pass', '12:12:pass', '12:14:came', '12:14:pass', '19:17:came', '19:17:pass', '19:29:came', '19:34:came', '19:34:pass', '21:22:came', '22:1:came',
@@ -512,7 +566,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
   const PAIRED_OR_ADDED_NO_GREEK = [
     '12:1:come', '12:12:come', '12:20:forward', '13:3:place', '13:6:land', '13:7:cattle', '13:9:go', '13:9:go', '13:9:go', '13:9:go', '15:1:great', '15:2:heir', '15:3:grieved',
     '15:3:homeborn', '15:5:look', '15:5:fully', '15:9:third', '15:9:third', '15:13:four', '15:17:divided', '16:1:children', '16:13:god', '16:13:appeared', '17:7:god', '17:12:old',
-    '17:12:born', '17:12:money', '17:13:money', '17:17:old', '17:17:bear', '17:19:god', '18:5:refreshment', '18:5:aside', '18:12:thing', '18:16:journey', '18:17:intend',
+    '17:12:born', '17:12:money', '17:17:old', '17:17:bear', '17:19:god', '18:5:refreshment', '18:5:aside', '18:12:thing', '18:16:journey', '18:17:intend',
     '18:22:still', '18:24:whole', '18:26:whole', '18:30:sake', '18:31:able', '18:31:find', '19:2:aside', '19:2:early', '19:2:journey', '19:3:aside', '19:3:cakes', '19:4:went',
     '19:6:porch', '19:7:villanously', '19:9:drew', '19:10:forth', '19:13:going', '19:14:depart', '19:15:forth', '19:15:destroyed', '19:17:round', '19:20:one', '19:27:go',
     '19:28:went', '19:32:drink', '19:33:drink', '19:33:knew', '19:34:drink', '19:35:drink', '19:35:knew', '19:38:saying', '21:2:old', '21:2:set', '21:2:according', '21:5:one',
@@ -527,7 +581,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     const named = [...IDIOM_NO_GREEK, ...NEXT_VERSE_NO_GREEK, ...PAIRED_OR_ADDED_NO_GREEK].sort();
     const found = [12, 13, 15, 16, 17, 18, 19, 21, 22, 23].flatMap((n) => noGreek(withModel.get(n)!)).sort();
     expect(found).toEqual(named);
-    expect(named).toHaveLength(133);
+    expect(named).toHaveLength(132);
     for (const n of [12, 13, 15, 16, 17, 18, 19, 21, 22, 23]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
   });
 
@@ -566,6 +620,15 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     expect(greekOf(22, 13, chunkWith(22, 13, 'burnt'))).toEqual(['ὁλοκάρπωσιν']);
     expect(greekOf(18, 2, chunkWith(18, 2, 'lifted'))).toEqual(['ἀναβλέψας']);
     expect(greekOf(22, 4, chunkWith(22, 4, 'lifted'))).toEqual(['ἀναβλέψας']);
+  });
+
+  it("links Genesis 17:13's 'money' with 'bought with' to ἀργυρώνητος, in a chunk cut from 'money shall' (mw-u2w5klk.349.40), and 'he that is' to ὁ", () => {
+    const chunk = chunkWith(17, 13, 'money');
+    expect(chunk.t).toBe('bought with money');
+    expect(greekOf(17, 13, chunk)).toEqual(['ἀργυρώνητος']);
+    expect(septuagintChunkLinked(chunk)).toBe(true);
+    expect(greekOf(17, 13, chunkWith(17, 13, 'bought'))).toEqual(['ἀργυρώνητος']);
+    expect(chunkWith(17, 13, 'shall').t).toBe('shall');
   });
 
   it('applies every fix row it has: none is stale, and none of a chapter leaves a Greek word it had paired without English', () => {
