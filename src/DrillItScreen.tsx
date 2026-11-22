@@ -253,10 +253,19 @@ function DrillItRun({ ideaId, mode, passage, onResult, onClose }: {
   const missed = after !== null && question !== null && after.picked !== question.right;
   useEffect(() => {
     const scroller = box.current;
-    const row = scroller?.querySelector<HTMLElement>('[data-testid="study-this"]');
-    if (!missed || !scroller || !row) return;
-    const over = row.getBoundingClientRect().bottom - scroller.getBoundingClientRect().bottom;
-    if (over > 0) scroller.scrollTop += over + 12;
+    if (!missed || !scroller) return;
+    const show = () => {
+      const row = scroller.querySelector<HTMLElement>('[data-testid="study-this"]');
+      if (!row) return;
+      const over = row.getBoundingClientRect().bottom - scroller.getBoundingClientRect().bottom;
+      if (over > 0) scroller.scrollTop += over + 12;
+    };
+    show();
+    // turning the phone resizes the box, and the row is behind Next again (mw-indx1x6.114): the box shows it again whenever it is resized, as long as the answer stays wrong
+    if (typeof ResizeObserver === 'undefined') return;
+    const watch = new ResizeObserver(show);
+    watch.observe(scroller);
+    return () => watch.disconnect();
   }, [missed, walk?.asked.length]);
   const next = () => {
     if (!after) return;
