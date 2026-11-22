@@ -14,6 +14,7 @@ import { getVerseReading, keepVerseReading, setDeveloper } from '../../src/data/
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, TIMED_READING_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -109,7 +110,7 @@ async function openReadingCheck(): Promise<void> {
   const number = await within(verse28).findByRole('button', { name: 'Verse 28', exact: true });
   await user.click(number);
   const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view).getByRole('button', { name: 'Read it aloud', exact: true }));
+  await user.click(await findButton('Read it aloud', view));
   await screen.findByRole('region', { name: 'Reading check' });
 }
 

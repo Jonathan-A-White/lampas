@@ -18,13 +18,54 @@ const FILES = [
   'features/steps/tutor-copy.steps.tsx',
   'features/steps/about-you.steps.tsx',
   'features/steps/memory-tutor.steps.tsx',
+  // mw-indx1x6.129: the step files that took a verse's number or a Verse view button through a role query (named in mw-npxuw9n and mw-indx1x6.126)
+  'features/steps/tutor.steps.tsx',
+  'features/steps/tutor-aloud.steps.tsx',
+  'features/steps/reading-check.steps.tsx',
+  'features/steps/reading-ladder.steps.tsx',
+  'features/steps/reading-drill.steps.tsx',
+  'features/steps/reopen.steps.tsx',
+  'features/steps/verse-sheet.steps.tsx',
+  'features/steps/sentence-diagram.steps.tsx',
+  'features/steps/sermons-online.steps.tsx',
+  'features/steps/hebrew-diagram.steps.tsx',
+  'features/steps/septuagint.steps.tsx',
+  'features/steps/bible-talk/sheet.steps.tsx',
+  'features/steps/sermons-ask.steps.tsx',
+  'tests/unit/lxx-off-unchanged.test.tsx',
+  'tests/unit/tutor-doors.test.tsx',
+];
+
+/** The step files that took a button of the Verse view of a whole chapter with within(<the view>).getByRole('button', ...) (mw-indx1x6.126, .129). */
+const VIEW_FILES = [
+  'features/steps/ai-needs-licence.steps.tsx',
+  'features/steps/audio-bible.steps.tsx',
+  'features/steps/hebrew-diagram.steps.tsx',
+  'features/steps/hebrew-reading-ladder.steps.tsx',
+  'features/steps/my-reading.steps.tsx',
+  'features/steps/reading-check.steps.tsx',
+  'features/steps/reading-ladder.steps.tsx',
+  'features/steps/reading-drill.steps.tsx',
+  'features/steps/sentence-diagram.steps.tsx',
+  'features/steps/septuagint.steps.tsx',
+  'features/steps/tutor-aloud.steps.tsx',
+  'tests/unit/lxx-off-unchanged.test.tsx',
 ];
 
 describe('a step that selects a verse in the Reader', () => {
   it.each(FILES)('%s finds the verse button with findButton, not a role query over the chapter', (file) => {
     const offences = readFileSync(file, 'utf8')
       .split('\n')
-      .flatMap((line, i) => (/screen\.(find|get|query)(All)?ByRole\('button', \{ name: '[^']*Verse \d+'/.test(line) ? [`${file}:${i + 1} ${line.trim()}`] : []));
+      .flatMap((line, i) => (/screen\.(find|get|query)(All)?ByRole\('button', \{ name: ('[^']*Verse \d+'|`Verse \$\{)/.test(line) ? [`${file}:${i + 1} ${line.trim()}`] : []));
+    expect(offences).toEqual([]);
+  });
+});
+
+describe('a step that takes a button of the Verse view of a whole chapter', () => {
+  it.each(VIEW_FILES)('%s finds it with findButton, not within(<the view>).getByRole', (file) => {
+    const offences = readFileSync(file, 'utf8')
+      .split('\n')
+      .flatMap((line, i) => (/within\((verseView\(\)|viewEl\(\)|view)\)\.(get|getAll)ByRole\('button'/.test(line) ? [`${file}:${i + 1} ${line.trim()}`] : []));
     expect(offences).toEqual([]);
   });
 });

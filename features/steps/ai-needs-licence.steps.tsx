@@ -187,15 +187,15 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('With a licence the Verse view offers Diagram', ({ Given, Then }) => {
     Given('this phone has a licence and the Verse view of verse 28 is open', () => openVerseView(true, 'listen'));
-    Then('the Verse view has a button named Diagram', () => {
-      expect(within(verseView()).getByRole('button', { name: 'Diagram' })).toBeInTheDocument();
+    Then('the Verse view has a button named Diagram', async () => {
+      expect(await findButton('Diagram', verseView)).toBeInTheDocument();
     });
   });
 
   Scenario('With a licence the Verse view has Read it aloud, its Hold to read bar and the Reading ladder', ({ Given, Then }) => {
     Given('this phone has a licence and the Verse view of verse 28 is open, last left on Read it aloud', () => openVerseView(true, 'read'));
     Then('the Verse view has Read it aloud, a Hold to read bar and a Reading ladder', async () => {
-      expect(within(verseView()).getByRole('button', { name: 'Read it aloud', pressed: true })).toBeInTheDocument();
+      expect(await findButton('Read it aloud', verseView)).toHaveAttribute('aria-pressed', 'true');
       await waitFor(() => expect(document.querySelector('.lp-bar')).not.toBeNull());
       expect(await findButton('Reading ladder', verseView)).toBeInTheDocument();
     });
@@ -263,12 +263,12 @@ describeFeature(feature, ({ Scenario }) => {
   });
 });
 
-function offersOnlyListen(_: unknown, only: string): void {
+async function offersOnlyListen(_: unknown, only: string): Promise<void> {
   expect(actionNames().slice(0, 1)).toEqual([only]);
   expect(actionNames()).not.toContain('Read it aloud');
   expect(actionNames()).not.toContain('Ask the tutor');
   expect(actionNames()).not.toContain('Practise');
-  expect(within(verseView()).getByRole('button', { name: 'Copy' })).toBeInTheDocument();
+  expect(await findButton('Copy', verseView)).toBeInTheDocument();
 }
 
 async function tapWord(_: unknown, verse: number): Promise<void> {

@@ -17,6 +17,7 @@ import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { hebrewPointedForm } from '../../src/speech/pronunciation';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -147,8 +148,8 @@ describeFeature(feature, ({ Scenario }) => {
       expect(verse).toHaveAttribute('lang', 'he');
       expect(verse).toHaveAttribute('dir', 'rtl');
     });
-    And('the Read it aloud action is chosen', () => {
-      expect(within(verseView()).getByRole('button', { name: 'Read it aloud', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    And('the Read it aloud action is chosen', async () => {
+      expect(await findButton('Read it aloud', verseView)).toHaveAttribute('aria-pressed', 'true');
     });
     And('the reading panel says {string} and the number of verses on the Hebrew list', async (_, text: string) => {
       await waitFor(() => expect(panel()).toHaveTextContent(`${text} ${hebrew.length}`));

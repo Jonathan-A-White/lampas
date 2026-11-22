@@ -17,6 +17,7 @@ import { tutorTimings } from '../../src/services/tutor';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { composerIn, messageBox } from '../support/composer';
+import { findButton } from '../support/find-button';
 import { openTutor } from '../../features/steps/open-tutor';
 import { stubRecognizer } from '../support/fake-recognizer';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../support/fake-postern';
@@ -84,7 +85,7 @@ const questionsAsked = () => fake.received.filter((g) => g.grist.kind === 'bible
 
 /** Selects verse 28: its Verse view opens. */
 async function openVerse28(): Promise<void> {
-  const number = await screen.findByRole('button', { name: 'Verse 28' });
+  const number = await findButton('Verse 28');
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
   await screen.findByRole('region', { name: 'Verse view' });
 }

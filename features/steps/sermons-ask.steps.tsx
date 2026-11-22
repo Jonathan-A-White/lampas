@@ -70,7 +70,7 @@ async function openSheet(licensed: boolean): Promise<void> {
   );
   await screen.findByRole('heading', { name: 'Romans 5', level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-  await user.click(await screen.findByRole('button', { name: 'Verse 8', exact: true }));
+  await user.click(await findButton('Verse 8'));
   await screen.findByRole('region', { name: 'Verse view' });
   // findButton, not a role query: the Verse view of a whole chapter holds hundreds of chunk buttons, and findByRole works out each one's name at every poll, so on a loaded host it outran the wait (mw-fnvjof.17.206)
   await user.click(await findButton(/^Sermons · \d/));

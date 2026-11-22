@@ -16,6 +16,7 @@ import { layoutDiagram } from '../../src/diagram/layout';
 import { ReedKellogg } from '../../src/diagram/ReedKellogg';
 import type { DiagramMode } from '../../src/diagram/types';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { loadFixture, type DiagramFixture } from '../../tests/support/diagram-fixtures';
 import { seedHisWords } from '../../tests/support/his-words';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
@@ -129,9 +130,9 @@ async function drawnWithRedraw(_: unknown, line: string): Promise<void> {
 
 /** The Verse view closed by its ‹ Reader and opened again on the same verse. */
 async function reopen(): Promise<void> {
-  await user.click(within(verseView()).getByRole('button', { name: /Reader/ }));
+  await user.click(await findButton(/Reader/, verseView));
   await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
-  await user.click(await screen.findByRole('button', { name: 'Verse 1', exact: true }));
+  await user.click(await findButton('Verse 1'));
   await screen.findByRole('region', { name: 'Verse view' });
 }
 
@@ -139,7 +140,7 @@ async function reopen(): Promise<void> {
 const INVITATION = 'New to diagrams? Learn to read one, about 3 minutes';
 
 async function tapsDiagram(): Promise<void> {
-  await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+  await user.click(await findButton('Diagram', verseView));
 }
 
 async function tapsInPane(_: unknown, label: string): Promise<void> {
@@ -253,7 +254,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Diagram draws the verse once the tutor has worked it out', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor is slow to answer', () => openVerse('slow'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     Then('the pane says {string}', async (_, text: string) => {
       expect(await within(pane()).findByText(text)).toBeInTheDocument();
@@ -273,7 +274,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A tap on a word of the diagram opens its word sheet and Back returns to the diagram', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     And('he taps the first {string} of the diagram', async (_, text: string) => {
       await user.click((await within(pane()).findAllByRole('button', { name: text }))[0]);
@@ -295,7 +296,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A diagram the tutor could not make shows why and offers Try again', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers a tree that leaves words out', () => openVerse('unable'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     Then('the pane says {string} and offers Try again', async (_, text: string) => {
       expect(await within(pane()).findByText(text)).toBeInTheDocument();
@@ -313,7 +314,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('A kept diagram opens with no ask', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     Then('the pane draws the English diagram of Colossians 3:1 with Redraw and the line {string}', drawnWithRedraw);
     When('he leaves the Verse view and opens it again on Diagram', async () => {
@@ -330,7 +331,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Redraw asks the tutor again and Greek is drawn for the Greek', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English, and the tutor answers at once', () => openVerse('at once'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     And('he taps Redraw', async () => {
       await user.click(await within(pane()).findByRole('button', { name: 'Redraw', exact: true }));
@@ -353,7 +354,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('With the Weave on, a word it shows in Greek is drawn in Greek and opens its word sheet', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once', () => openVerse('at once', 'solid'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     Then('the diagram draws the Greek {string} and {string} in Greek and not the English "Christ"', async (_, first: string, second: string) => {
       for (const greek of [first, second]) {
@@ -381,7 +382,7 @@ describeFeature(feature, ({ Scenario }) => {
       await openVerse('at once', 'off');
     });
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     Then('every word of the diagram is English', async () => {
       expect(await within(pane()).findAllByRole('button', { name: 'Christ' })).toHaveLength(2);
@@ -392,7 +393,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('Switching the Weave redraws the diagram from the same tree', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once', () => openVerse('at once', 'solid'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     And('the diagram draws the Greek {string}', async (_, greek: string) => {
       expect(await within(pane()).findByRole('button', { name: greek })).toBeInTheDocument();
@@ -420,7 +421,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('In the Greek view the Greek tree is drawn whatever the Weave', ({ Given, When, Then, And }) => {
     Given('a licensed phone has the Verse view of Colossians 3:1 open in English with the Weave on for his solid words, and the tutor answers at once', () => openVerse('at once', 'solid'));
     When('he taps Diagram', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', verseView));
     });
     And('he switches the Reader to Greek', async () => {
       await act(async () => {

@@ -14,6 +14,7 @@ import { keepVerseReading, setReaderView, setWeave } from '../../src/data/reposi
 import { clearBus } from '../../src/events/bus';
 import { readingText } from '../../src/services/reading';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';
 
@@ -65,7 +66,7 @@ const feature = await loadFeature('features/verse-sheet.feature');
 
 describeFeature(feature, ({ Scenario }) => {
   const tapNumber = async () => {
-    await user.click(await screen.findByRole('button', { name: 'Verse 22', exact: true }));
+    await user.click(await findButton('Verse 22'));
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const headed = (_: unknown, reference: string) => {
@@ -116,7 +117,7 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   const tapNumberOf = (n: number) => async () => {
-    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const sameWords = () => waitFor(() => expect(squash(sheetVerse().textContent)).toBe(squash(readerLine(1).textContent)));

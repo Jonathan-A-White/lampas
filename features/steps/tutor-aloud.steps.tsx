@@ -84,12 +84,12 @@ async function open({ aloud, hash = '', reply }: { aloud: boolean; hash?: string
 }
 
 async function openVerse28(action: 'Read it aloud' | 'Ask the tutor'): Promise<void> {
-  const number = await screen.findByRole('button', { name: 'Verse 28', exact: true });
+  const number = await findButton('Verse 28');
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
   const view = await screen.findByRole('region', { name: 'Verse view' });
   // the Verse view's Ask the tutor action is gone (mw-5r3p30.882): a question goes to the Talk sheet the floating ? opens (typeQuestion)
   if (action === 'Read it aloud') {
-    await user.click(within(view).getByRole('button', { name: action, exact: true }));
+    await user.click(await findButton(action, view));
     await screen.findByRole('region', { name: 'Reading check' });
   }
 }

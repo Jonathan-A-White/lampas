@@ -15,6 +15,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { setVerseAction } from '../../src/verse/action';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { loadFixture } from '../../tests/support/diagram-fixtures';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { closeDatabase } from './close-database';
@@ -59,12 +60,12 @@ async function openVerse(): Promise<void> {
   window.history.replaceState(null, '', '/#/?b=gen&c=1');
   render(<App />);
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-  await user.click(await screen.findByRole('button', { name: 'Verse 1', exact: true }));
+  await user.click(await findButton('Verse 1'));
   await screen.findByRole('region', { name: 'Verse view' });
 }
 
 const tapsDiagram = async (): Promise<void> => {
-  await user.click(within(verseView()).getByRole('button', { name: 'Diagram', exact: true }));
+  await user.click(await findButton('Diagram', verseView));
 };
 
 const drawn = async (): Promise<void> => {

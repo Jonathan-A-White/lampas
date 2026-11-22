@@ -12,6 +12,7 @@ import { LicenceProvider } from '../../src/gate/LicenceProvider';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { browserEnv } from '../../src/resources/openApp';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { ISSUER_PUB } from '../../tests/support/licence-chain';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
 import { openSettings } from '../../tests/unit/openSettings';
@@ -177,7 +178,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(await within(verseView()).findByRole('link', { name: new RegExp(`^${name}`) })).toBeTruthy();
     });
     When('he goes back to the Reader and switches it to Greek', async () => {
-      await user.click(within(verseView()).getByRole('button', { name: /‹ Reader/ }));
+      await user.click(await findButton(/‹ Reader/, verseView));
       await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
       await user.click(screen.getByRole('button', { name: 'Greek' }));
       await waitFor(() => expect(document.querySelector('[data-reader]')?.getAttribute('data-view')).toBe('greek'));

@@ -14,6 +14,7 @@ import { db } from '../../src/data/db';
 import { readerOf } from '../../src/nav/route';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { typeQuestion } from '../../tests/support/composer';
 import { expectKeepsItShort, expectLearnerField, expectTeachesNewWord, instructionsOf } from '../../tests/support/learner';
@@ -63,7 +64,7 @@ async function open(configure: (f: FakePostern) => void = (f) => void (f.autoRep
 }
 
 async function selectVerse28(): Promise<void> {
-  const number = await screen.findByRole('button', { name: 'Verse 28' });
+  const number = await findButton('Verse 28');
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
   await screen.findByRole('region', { name: 'Verse view' });
 }

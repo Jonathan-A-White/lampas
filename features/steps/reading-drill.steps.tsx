@@ -17,6 +17,7 @@ import { STEP_DAYS, DAY } from '../../src/data/schedule';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -89,10 +90,10 @@ const panel = () => screen.getByRole('region', { name: 'Reading check' });
 const drill = () => screen.getByRole('dialog', { name: 'Reading drill' });
 
 async function openReadCheck(): Promise<void> {
-  const number = await screen.findByRole('button', { name: 'Verse 28', exact: true });
+  const number = await findButton('Verse 28');
   await user.click(number);
   const region = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(region).getByRole('button', { name: 'Read it aloud', exact: true }));
+  await user.click(await findButton('Read it aloud', region));
   await screen.findByRole('region', { name: 'Reading check' });
 }
 
