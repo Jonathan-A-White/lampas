@@ -16,8 +16,9 @@ import { rowOf } from './settings/rows';
 import { openSetting, settingLink } from './settings/link';
 import { MAX_LINKS, type TalkScope } from './services/talk';
 import { armFallback } from './resources/openApp';
-import { openedRow } from './sermons/merge';
-import { opensNewTab, rowHref, useOpenWebIn } from './sermons/openWeb';
+import { openedRow, type LinkRow } from './sermons/merge';
+import { opensNewTab, readsAloud, rowHref, useOpenWebIn } from './sermons/openWeb';
+import { openSermonText } from './sermons/sermonText';
 import { onAndroid } from './openInApp';
 import { copyChip, hebrewLinkLemma, mapChip, placeOf, sermonChip, verseChips, wordChips, workChip, type LinkChip } from './resources/tutorLinks';
 import { openMaps } from './maps/openMaps';
@@ -141,8 +142,8 @@ interface Group {
   paradigm?: { id: string; name: string };
   /** a map link: its chip opens that map in the app (openMaps), or, for a card of a link-only source (`open`), is a link to it */
   map?: { id: string; label: string; open?: { url: string; fallback?: string } };
-  /** a sermon link: its chip is a plain link to where the sermon lives (a Logos row arms its fallback), and does not close the Talk sheet */
-  sermon?: { label: string; opensIn: 'web' | 'logos'; open: { url: string; fallback?: string } };
+  /** a sermon link: its chip is a plain link to where the sermon lives (a Logos row arms its fallback; a text sermon read aloud opens the reader), and does not close the Talk sheet */
+  sermon?: { label: string; opensIn: 'web' | 'logos'; open: { url: string; fallback?: string }; row: LinkRow };
   /** a copy or share link: its chip puts the range's text on the clipboard or opens the share sheet, and does not close the Talk sheet */
   copy?: { kind: 'copy' | 'share'; label: string; range: CopyRange };
   chips: LinkChip[];
@@ -192,7 +193,7 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
       if (found && (found.card.open || offRun(true))) groups.push({ key: `${i}`, name: found.card.title, greek: false, map: { id: found.card.id, label: found.label, open: found.card.open }, chips: [] });
     } else if (link.kind === 'sermon') {
       const found = place && sermonRows ? sermonChip(link.sermon, sermonRows) : null;
-      if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, opensIn: openedRow(found.row).opensIn, open: openedRow(found.row).open }, chips: [] });
+      if (found) groups.push({ key: `${i}`, name: found.row.title, greek: false, sermon: { label: found.label, opensIn: openedRow(found.row).opensIn, open: openedRow(found.row).open, row: openedRow(found.row) }, chips: [] });
     } else if (link.kind === 'copy' || link.kind === 'share') {
       // a reference Lampas has no text for (the Apocrypha, a chapter the book lacks) draws nothing
       const found = copyChip(link.kind, link.reference);
@@ -301,7 +302,17 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
                 href={rowHref(group.sermon, openWeb, onAndroid())}
                 aria-label={group.sermon.label}
                 data-fallback={group.sermon.open.fallback}
-                onClick={group.sermon.open.fallback ? () => armFallback((group.sermon as NonNullable<Group['sermon']>).open.fallback) : undefined}
+                onClick={
+                  readsAloud(group.sermon.row, openWeb)
+                    ? (event) => {
+                        // a text sermon of a served source is read aloud in Lampas's own sheet (mw-ecpivg5.4), as the Sermons sheet's row does; the link stays for a long press
+                        event.preventDefault();
+                        openSermonText((group.sermon as NonNullable<Group['sermon']>).row);
+                      }
+                    : group.sermon.open.fallback
+                      ? () => armFallback((group.sermon as NonNullable<Group['sermon']>).open.fallback)
+                      : undefined
+                }
                 {...(opensNewTab(rowHref(group.sermon, openWeb, onAndroid())) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                 className={CHIP}
               >
