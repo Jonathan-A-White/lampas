@@ -8,11 +8,11 @@ import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
-import { setDevotionalDraw } from '../../src/data/repositories';
+import { ownedResources, setDevotionalDraw, shelfOf } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { setMapSources } from '../../src/maps';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { setSermonSources } from '../../src/sermons';
+import { activeSources, enabledSources, setSermonSources } from '../../src/sermons';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';
@@ -68,6 +68,19 @@ const slowSource: typeof testSource = {
   },
 };
 
+// The sign that the sources have answered: each source the screens ask counts its answers, so a step that wants to say 'no door' can wait until the sources it asked have given theirs, not for a clock (mw-qtu3zvz.218).
+let answered = 0;
+const watched = (source: typeof testSource): typeof testSource => ({
+  ...source,
+  sermonsFor: async (place) => {
+    try {
+      return await source.sermonsFor(place);
+    } finally {
+      answered += 1;
+    }
+  },
+});
+
 /** Opens the app on a chapter (the address names it), with the test sermons registered. */
 async function openOn(title: string, phone: Phone = {}): Promise<void> {
   cleanup();
@@ -79,6 +92,8 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   registerTestSermons(phone.sermons);
   held = undefined;
   if (phone.slow) setSermonSources([slowSource]);
+  setSermonSources(activeSources().map(watched));
+  answered = 0;
   // these scenarios are about the sermons of the passage: the theme lists are none (features/themes.feature has them)
   registerTestThemes({ none: true });
   registerTestMaps();
@@ -138,6 +153,7 @@ const feature = await loadFeature('features/sermons.feature');
 describeFeature(feature, ({ Scenario }) => {
   const opened = (_: unknown, title: string) => openOn(title);
   const tapVerse = async (_: unknown, n: number) => {
+    answered = 0;
     await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
     await screen.findByRole('region', { name: 'Verse view' });
   };
@@ -145,8 +161,13 @@ describeFeature(feature, ({ Scenario }) => {
     expect(await findButton(label)).toBeVisible();
   };
   const viewHasNone = async () => {
-    // the door is drawn as soon as its count comes back
-    await sleep(100);
+    // the sources the app asks are the ones enabledSources gives, as it does for the door; none On means nothing is asked. The answers are counted from the tap that opened the Verse view (tapVerse)
+    const asked = (await enabledSources()).length;
+    await waitFor(() => expect(answered).toBeGreaterThanOrEqual(asked));
+    // an answer is drawn after the source has given it: a state set, and for a door of a Logos book the shelf and his import read: let those be read and drawn before the look
+    await act(async () => {
+      await Promise.all([shelfOf(), ownedResources()]);
+    });
     expect(doorsIn(viewEl())).toHaveLength(0);
   };
   // findButton, not a role query: the Verse view of a whole chapter holds the chapter's ~hundreds of chunk buttons, and findByRole works out each one's name at every poll, so on a loaded host it outran the wait and starved
@@ -248,6 +269,30 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on {string}', opened);
     When('he taps verse {int}', tapVerse);
     Then('the Verse view has no Sermons door', viewHasNone);
+  });
+
+  Scenario('A chapter whose source is slow to answer has no door until it has answered, and then still none', ({ Given, And, When, Then }) => {
+    Given('Lampas is opened on {string} with a source that can be slow to answer', (_, title: string) => openOn(title, { slow: true }));
+    And('the source is held', holdSource);
+    When('he taps verse {int}', tapVerse);
+    Then('the Verse view has no Sermons door once the source has answered', async () => {
+      // the look is begun while the source is held and may not end before the source has answered: a look that waits on a clock, or on nothing, ends here
+      let ended = false;
+      const looked = viewHasNone().then(
+        () => {
+          ended = true;
+        },
+        (error: unknown) => {
+          ended = true;
+          return error;
+        },
+      );
+      await sleep(300);
+      expect(ended).toBe(false);
+      letSourceAnswer();
+      const error = await looked;
+      if (error) throw error;
+    });
   });
 
   Scenario('Sources that answer nothing leave no door', ({ Given, When, Then }) => {

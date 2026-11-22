@@ -10,13 +10,14 @@ import { BOOKS } from '../../src/data/books';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
+import { enabledSources, setMapSources } from '../../src/maps';
 import { closeMaps } from '../../src/maps/openMaps';
 import { setResourceOn, setState } from '../../src/data/repositories';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';
 import { tapPlaceLine as tapLine } from '../../tests/support/place-line';
 import { openSettingsGroup } from '../../tests/support/settings-pages';
-import { forgetTestMaps, registerTestMaps } from '../../tests/support/test-maps';
+import { forgetTestMaps, registerTestMaps, testSource } from '../../tests/support/test-maps';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 import { EVERY_BOOK_IDS, keepImport } from '../../tests/support/logos-import';
@@ -33,8 +34,38 @@ const user = userEvent.setup();
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
+// A source that can be slow to answer, as a real one is while its data is read: from holdSource() its maps wait for letSourceAnswer(). The test source answers at once, which hides a step that looks at the
+// sheet before its rows are drawn (mw-qtu3zvz.217).
+let held: Promise<void> | undefined;
+let letSourceAnswer = (): void => undefined;
+const holdSource = (): void => {
+  held = new Promise<void>((resolve) => {
+    letSourceAnswer = resolve;
+  });
+};
+const slowSource: typeof testSource = {
+  ...testSource,
+  mapsFor: async (ref) => {
+    await held;
+    return testSource.mapsFor(ref);
+  },
+};
+
+// The sign that the sources have answered: each source the screens ask counts its answers, so a step that wants to say 'no door' waits until the sources it asked have given theirs, not for a clock (mw-qtu3zvz.217).
+let answered = 0;
+const watched = (source: typeof testSource): typeof testSource => ({
+  ...source,
+  mapsFor: async (ref, places) => {
+    try {
+      return await source.mapsFor(ref, places);
+    } finally {
+      answered += 1;
+    }
+  },
+});
+
 /** Opens the app on a chapter (the address names it), with the test maps registered. */
-async function openOn(title: string, immersive = false, atlas?: { on: boolean; bibleMapper?: boolean }, logos?: 'on' | 'off'): Promise<void> {
+async function openOn(title: string, immersive = false, atlas?: { on: boolean; bibleMapper?: boolean }, logos?: 'on' | 'off', slow = false): Promise<void> {
   cleanup();
   closeMaps();
   clearBus();
@@ -42,6 +73,8 @@ async function openOn(title: string, immersive = false, atlas?: { on: boolean; b
   localStorage.clear();
   vi.unstubAllGlobals();
   registerTestMaps({ links: atlas !== undefined, logos: logos !== undefined });
+  held = undefined;
+  if (slow) setMapSources([slowSource]);
   stubChapterFetch();
   const at = title.lastIndexOf(' ');
   const book = BOOKS.find((b) => b.name === title.slice(0, at));
@@ -56,6 +89,9 @@ async function openOn(title: string, immersive = false, atlas?: { on: boolean; b
   if (logos) await setResourceOn('logos', logos === 'on');
   if (logos === 'on') await setState('LLS:LXGEOCOMMPENT', 'on');
   if (atlas) await db.settings.bulkPut([{ key: 'maps.testlinks', value: atlas.on ? 'on' : 'off' }, { key: 'maps.biblemapper', value: atlas.bibleMapper === false ? 'off' : 'on' }]);
+  // the sources that are on, each counting its answers (a source that is Off is never asked)
+  setMapSources((await enabledSources()).map(watched));
+  answered = 0;
   render(<App />);
   await screen.findByRole('heading', { name: title, level: 1 });
   await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
@@ -81,8 +117,10 @@ describeFeature(feature, ({ Scenario }) => {
   const openedWithAtlasAlone = (_: unknown, title: string) => openOn(title, false, { on: true, bibleMapper: false });
   const openedImmersive = (_: unknown, title: string) => openOn(title, true);
   const openedWithLogos = (_: unknown, title: string) => openOn(title, false, undefined, 'on');
+  const openedSlow = (_: unknown, title: string) => openOn(title, false, undefined, undefined, true);
   const openedWithoutLogos = (_: unknown, title: string) => openOn(title, false, undefined, 'off');
   const tapVerse = async (_: unknown, n: number) => {
+    answered = 0;
     await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
@@ -90,7 +128,11 @@ describeFeature(feature, ({ Scenario }) => {
     expect(await findButton(label, viewEl)).toBeVisible();
   };
   const viewHasNone = async () => {
-    await sleep(100);
+    // the sources the app asks are the ones enabledSources gives; the answers are counted from the tap that opened the Verse view (tapVerse)
+    const asked = (await enabledSources()).length;
+    await waitFor(() => expect(answered).toBeGreaterThanOrEqual(asked));
+    // an answer is drawn after the source has given it (a state set): let it be drawn before the look
+    await act(async () => {});
     expect(doorsIn(viewEl())).toHaveLength(0);
   };
   const footHasNone = async () => {
@@ -108,11 +150,21 @@ describeFeature(feature, ({ Scenario }) => {
   const headed = async (_: unknown, title: string) => {
     await waitFor(async () => expect((await sheetEl()).getAttribute('aria-label')).toBe(title));
   };
+  // The sheet's rows are drawn after the sheet is open, once the sources have answered: a step that wants a row waits for it (waitFor, looking in the sheet again each time), never looks once (mw-qtu3zvz.217).
+  const mapRow = (title: string): Promise<HTMLElement> =>
+    waitFor(async () => {
+      const row = [...(await sheetEl()).querySelectorAll<HTMLElement>('[data-map-row]')].find((r) => r.querySelector('[data-map-title]')?.textContent === title);
+      if (!row) throw new Error(`no map ${title} in the sheet`);
+      return row;
+    });
   const tapMap = async (_: unknown, title: string) => {
-    const row = [...(await sheetEl()).querySelectorAll<HTMLElement>('[data-map-row]')].find((r) => r.querySelector('[data-map-title]')?.textContent === title);
-    if (!row) throw new Error(`no map ${title} in the sheet`);
-    await user.click(row);
+    await user.click(await mapRow(title));
     await mapEl();
+  };
+  const mapHeaded = async (_: unknown, title: string, when: string) => {
+    const box = await mapEl();
+    expect(within(box).getByRole('heading', { name: title })).toBeVisible();
+    expect(squash(box.querySelector('[data-map-period]')?.textContent)).toBe(when);
   };
   const creditReads = async (_: unknown, credit: string, host: string, url: string) => {
     const box = await mapEl();
@@ -165,11 +217,12 @@ describeFeature(feature, ({ Scenario }) => {
   };
 
   const blockEl = async (name: string) => within(await sheetEl()).findByRole('group', { name });
-  const linkRow = async (title: string): Promise<HTMLAnchorElement> => {
-    const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-map-row]')].find((r) => r.querySelector('[data-map-title]')?.textContent === title);
-    if (!row) throw new Error(`no link row ${title} in the sheet`);
-    return row;
-  };
+  const linkRow = (title: string): Promise<HTMLAnchorElement> =>
+    waitFor(async () => {
+      const row = [...(await sheetEl()).querySelectorAll<HTMLAnchorElement>('a[data-map-row]')].find((r) => r.querySelector('[data-map-title]')?.textContent === title);
+      if (!row) throw new Error(`no link row ${title} in the sheet`);
+      return row;
+    });
   const blockHolds = async (_: unknown, name: string, a: string, b?: string) => {
     expect(rowsOf(await blockEl(name))).toEqual(b === undefined ? [a] : [a, b]);
   };
@@ -310,11 +363,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps verse {int}', tapVerse);
     And('he taps {string}', tapDoor);
     And('he taps the map {string}', tapMap);
-    Then('the map is headed {string} with the period {string}', async (_, title: string, when: string) => {
-      const box = await mapEl();
-      expect(within(box).getByRole('heading', { name: title })).toBeVisible();
-      expect(squash(box.querySelector('[data-map-period]')?.textContent)).toBe(when);
-    });
+    Then('the map is headed {string} with the period {string}', mapHeaded);
     And("the map's picture is {string}", async (_, src: string) => {
       expect((await mapEl()).querySelector('img')).toHaveAttribute('src', src);
     });
@@ -334,6 +383,30 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the picture is shown at the width of the box', async () => {
       expect((await mapEl()).querySelector<HTMLElement>('[data-map-zoom]')).toHaveAttribute('data-map-zoom', 'fit');
     });
+  });
+
+  Scenario('The sheet opens before a slow source has answered, and a step that taps a map waits for its row', ({ Given, When, Then, And }) => {
+    Given('Lampas is opened on {string} with a source that can be slow to answer', openedSlow);
+    When('he taps verse {int}', tapVerse);
+    And('he taps {string} while its source is slow to answer', async (_, label: string) => {
+      // the door is drawn from the answer the source gave before it was held: wait for it, then hold the source, so the sheet's own ask is the slow one
+      await findButton(label, viewEl);
+      holdSource();
+      await tapDoor(_, label);
+    });
+    Then('the sheet is headed {string}', headed);
+    And('he taps the map {string} before the source answers', async (_, title: string) => {
+      // the tap is begun while the source is still held and the sheet has no row, and the source answers only once the sheet has been looked at and found empty: a tap that looks once fails here
+      const tapped = tapMap(_, title).then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+      expect((await sheetEl()).querySelectorAll('[data-map-row]')).toHaveLength(0);
+      letSourceAnswer();
+      const error = await tapped;
+      if (error) throw error;
+    });
+    Then('the map is headed {string} with the period {string}', mapHeaded);
   });
 
   Scenario('Back from the map returns to the sheet, then to the verse', ({ Given, When, Then, And }) => {
