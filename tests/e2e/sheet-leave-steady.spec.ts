@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { tapTwice } from '../support/gesture';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -54,7 +54,7 @@ async function openLearnSheet(page: Page): Promise<Locator> {
   const learn = ideas(page).first();
   await expect(learn.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   await expect(learn.getByRole('slider', { name: 'Your level' })).toBeEnabled();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   return learn;
 }
 
@@ -65,7 +65,7 @@ async function openRho(page: Page, learn: Locator): Promise<Locator> {
   const rho = ideas(page).nth(1);
   await expect(rho.getByRole('heading', { name: 'Rho', exact: true })).toBeVisible();
   await expect(rho.getByRole('slider', { name: 'Your level' })).toBeEnabled();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   return rho;
 }
 
@@ -94,7 +94,7 @@ async function thumbDoubleTap(page: Page, target: Locator, drawn: () => Promise<
       expect(hit).toBe(under.name);
     },
   });
-  await page.waitForTimeout(SETTLE_MS);
+  await pageTime(page, SETTLE_MS);
 }
 
 test('a double tap on the Learn sheet\'s Done closes it and leaves the Goal in Greek and Settings shut', async ({ page }) => {
@@ -136,7 +136,7 @@ test('one deliberate tap on the Learn sheet\'s Done closes it at once, and Chang
   const learn = await openLearnSheet(page);
   await learn.getByRole('button', { name: 'Done', exact: true }).tap();
   await expect(ideas(page)).toHaveCount(0);
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Change', exact: true }).tap();
   await expect(page).toHaveURL(/#\/settings/);
 });

@@ -76,4 +76,13 @@ describe('a swipe or a double tap in an e2e spec', () => {
     const sleeps = [...text.matchAll(/waitForTimeout\(/g)].map((sleep) => `${E2E}/drill-it.spec.ts:${lineOf(text, sleep.index ?? 0)}`);
     expect(sleeps).toEqual([]);
   });
+
+  it("waits out the settle moment on the page's clock in every spec, never by a sleep of SETTLE_MS (mw-fnvjof.17.252)", () => {
+    const offences: string[] = [];
+    for (const { name, text } of files()) {
+      for (const sleep of text.matchAll(/waitForTimeout\([^\n]*SETTLE/g)) offences.push(`${E2E}/${name}:${lineOf(text, sleep.index ?? 0)} sleeps SETTLE_MS by the host's clock`);
+      if (/pageTime\(/.test(text) && !text.includes('page.clock.install(')) offences.push(`${E2E}/${name} waits with pageTime but never installs the page clock`);
+    }
+    expect(offences).toEqual([]);
+  });
 });

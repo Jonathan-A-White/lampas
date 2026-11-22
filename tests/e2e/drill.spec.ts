@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { tapTwice } from '../support/gesture';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { SETTLE_MS } from '../../src/ui/settle';
 import { openUnlocked } from './unlocked';
@@ -148,7 +148,7 @@ test('a double tap near the top of Next step stays in the drill, though Ask the 
   let landed = 0;
   for (let k = 0; k < 12 && landed === 0; k += 1) {
     const subtitle = await page.getByRole('heading', { name: 'Parsing drill', level: 1 }).locator('xpath=..').textContent();
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     // He answers rightly: a wrong answer adds the full parsing and Study this, which pins Next at the foot with the links far below it, so the overlap
     // only happens after a right answer; the first choice is right about one time in ten, which left a round of twelve steps with none (mw-fnvjof.17.107).
     // The round is kept in localStorage as it is drawn (src/data/drillKeep.ts), with the right value of each step.
@@ -176,7 +176,7 @@ test('a double tap near the top of Next step stays in the drill, though Ask the 
   // the second tap did land on a link at least once, so the guard was tried
   expect(landed).toBeGreaterThan(0);
   // a link he taps after reading the step still leaves for the Reader
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Ask the tutor', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Parsing drill', level: 1 })).toHaveCount(0);
 });

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { tapTwice } from '../support/gesture';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { SETTLE_MS } from '../../src/ui/settle';
@@ -45,12 +45,12 @@ async function openEndCard(page: Page) {
   await page.goto('/#/goal');
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   // a new screen takes no tap in its first moment (src/ui/tapGuard.ts): he reads it first
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Place me' }).click();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await page.getByRole('button', { name: 'Start from the letters' }).click();
   await expect(page.getByTestId('where')).toBeVisible();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
 }
 
 const centre = async (page: Page, name: string) => {
@@ -74,7 +74,7 @@ test('a double tap on Back to the goal shows the Goal and leaves its ideas list 
     },
   });
 
-  await page.waitForTimeout(SETTLE_MS);
+  await pageTime(page, SETTLE_MS);
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
   await expect(bar).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByTestId('ideas-list')).toHaveCount(0);
@@ -88,7 +88,7 @@ test('one deliberate tap on Back to the goal leaves at once, and the Goal takes 
   // the tap leaves (an end state, waited on under the config's budget): it is not swallowed for want of an earlier tap
   await expect(page.getByTestId('goal-title')).toHaveText('Read 1 John 1:1');
 
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await page.getByTestId('ideas-bar').tap();
   await expect(page.getByTestId('ideas-bar')).toHaveAttribute('aria-expanded', 'true');
   await expect(page.getByTestId('ideas-list')).toBeVisible();
