@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.324
+_2026-11-22_
+- Fixed: Sermon links open straight in Firefox or the Logos app with no app question, and the Greg Laurie credit opens his Logos archive.
+- New: In the Weave, a word the translators added that has no Greek of its own now disappears once the words on both sides of it are shown in Greek.
+- Fixed: Turning Hands-free off or on by a three-finger tap now says the whole words, not a clipped fragment.
+
 ## 0.7.323
 _2026-11-21_
 - Fixed: A theme that both topic books name now shows once on a verse's Themes line, with the sermons of both.

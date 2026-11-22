@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.324",
+    "date": "2026-11-22",
+    "story": "mw-qtu3zvz.86",
+    "kind": "fixed",
+    "text": "Sermon links open straight in Firefox or the Logos app with no app question, and the Greg Laurie credit opens his Logos archive."
+  },
+  {
+    "version": "0.7.324",
+    "date": "2026-11-22",
+    "story": "mw-u2w5klk.349.69",
+    "kind": "new",
+    "text": "In the Weave, a word the translators added that has no Greek of its own now disappears once the words on both sides of it are shown in Greek."
+  },
+  {
+    "version": "0.7.324",
+    "date": "2026-11-22",
+    "story": "mw-rl10piw.50",
+    "kind": "fixed",
+    "text": "Turning Hands-free off or on by a three-finger tap now says the whole words, not a clipped fragment."
+  },
+  {
     "version": "0.7.323",
     "date": "2026-11-21",
     "story": "mw-qtu3zvz.90",
