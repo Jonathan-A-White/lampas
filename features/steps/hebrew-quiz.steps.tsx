@@ -28,6 +28,7 @@ import { hebrewPointedForm } from '../../src/speech/hebrewPronunciation';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER } from '../../tests/support/fake-postern';
 import { seedHisWords } from '../../tests/support/his-words';
+import { findButton } from '../../tests/support/find-button';
 import { endScenario, fake, open, received, user } from './bible-talk/support';
 
 const load = (rel: string) => JSON.parse(readFileSync(rel, 'utf8')) as Chapter;
@@ -134,9 +135,9 @@ describeFeature(
     // the Verse view reads the Hebrew dial when it opens (useHebrewOn: unread counts as 0, so Quiz me is left out) and draws it a moment later: a read taken at once on a loaded host races that read
     const offers = (...names: string[]) => () => waitFor(() => expect(actionNames()).toEqual(names));
     const quizOn = async (): Promise<void> => {
-      await user.click(within(viewEl()).getByRole('button', { name: 'Practise', exact: true }));
-      await user.click(within(viewEl()).getByRole('button', { name: 'Quiz', exact: true }));
-      await user.click(within(viewEl()).getByRole('button', { name: 'Start the quiz', exact: true }));
+      await user.click(await findButton('Practise', viewEl));
+      await user.click(await findButton('Quiz', viewEl));
+      await user.click(await findButton('Start the quiz', viewEl));
     };
     const titled = async (_: unknown, title: string) => expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
     const inQuizMode = async (_: unknown, reference: string) => {
@@ -170,7 +171,7 @@ describeFeature(
       When('he taps the number of verse {int}', tapVerse);
       Then('the Verse view offers the actions {string}, {string}, {string} and {string}', (_, a: string, b: string, c: string, d: string) => offers(a, b, c, d)());
       When('he chooses {string}', async (_, name: string) => {
-        await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+        await user.click(await findButton(name, viewEl));
       });
       Then('the Practise door lists {string}, {string}, {string} and {string} and no Quiz', async (_, a: string, b: string, c: string, d: string) => {
         const door = await within(viewEl()).findByRole('list', { name: 'Ways to practise' });

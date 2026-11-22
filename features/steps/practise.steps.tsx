@@ -13,6 +13,7 @@ import { greekLang } from '../../src/speech/greek';
 import { hebrewPointedForm } from '../../src/speech/hebrewPronunciation';
 import { FakeRecognizer, result, stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE } from '../../tests/support/fake-speech';
+import { findButton } from '../../tests/support/find-button';
 import { endScenario, fake, open, received, synth, user } from './bible-talk/support';
 
 const load = (rel: string) => JSON.parse(readFileSync(rel, 'utf8')) as Chapter;
@@ -79,7 +80,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const choose = async (_: unknown, name: string) => {
-    await user.click(await within(viewEl()).findByRole('button', { name, exact: true }));
+    await user.click(await findButton(name, viewEl));
   };
   const attach = async () => {
     const picker = await waitFor(() => {
@@ -94,7 +95,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(names);
   };
   const tryAgain = async () => {
-    expect(await within(viewEl()).findByRole('button', { name: 'Try again' })).toBeEnabled();
+    expect(await findButton('Try again', viewEl)).toBeEnabled();
   };
   const dictationGroup = () => within(viewEl()).findByRole('group', { name: 'Dictate in' });
   const lastSaid = () => {
@@ -225,8 +226,8 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
   const says = async (_: unknown, line: string) => {
     await waitFor(() => expect(viewEl()).toHaveTextContent(line));
   };
-  const offered = (_: unknown, name: string, other: string) => {
-    expect(within(viewEl()).getByRole('button', { name, exact: true })).toBeEnabled();
+  const offered = async (_: unknown, name: string, other: string) => {
+    expect(await findButton(name, viewEl)).toBeEnabled();
     expect(within(viewEl()).queryByRole('button', { name: other, exact: true })).toBeNull();
   };
   const listenThrough = async (_: unknown, count: number) => {
@@ -342,7 +343,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     When('he taps {string}', choose);
     Then('the verse is hidden while he writes', hidden);
     And('{string} is offered', async (_, name: string) => {
-      expect(await within(viewEl()).findByRole('button', { name, exact: true })).toBeEnabled();
+      expect(await findButton(name, viewEl)).toBeEnabled();
     });
   });
 
@@ -361,7 +362,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     });
     And('the verse is still hidden while he writes', hidden);
     And('a {string} button is offered', async (_, name: string) => {
-      expect(await within(viewEl()).findByRole('button', { name, exact: true })).toBeEnabled();
+      expect(await findButton(name, viewEl)).toBeEnabled();
     });
   });
 
@@ -390,12 +391,12 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
     stubRecognizer();
   };
   const holdAndSay = async (_: unknown, words: string) => {
-    fireEvent.pointerDown(await within(viewEl()).findByRole('button', { name: /Hold and tell it back|Hold to tell it again/ }), { pointerId: 1, clientX: 10, clientY: 10 });
+    fireEvent.pointerDown(await findButton(/Hold and tell it back|Hold to tell it again/, viewEl), { pointerId: 1, clientX: 10, clientY: 10 });
     await waitFor(() => expect(FakeRecognizer.instances.length).toBeGreaterThan(0));
     const recogniser = FakeRecognizer.last();
     recogniser.open();
     recogniser.say([result(words, false)]);
-    fireEvent.pointerUp(await within(viewEl()).findByRole('button', { name: /Release|Let go|Hold and tell it back|Hold to tell it again|talk/i }), { pointerId: 1, clientX: 10, clientY: 10 });
+    fireEvent.pointerUp(await findButton(/Release|Let go|Hold and tell it back|Hold to tell it again|talk/i, viewEl), { pointerId: 1, clientX: 10, clientY: 10 });
   };
   const englishOnly = () => {
     expect(narrationEl().querySelector('[data-narration-scope]')).toHaveTextContent('Narration is in English. Telling it back in Greek or Hebrew is not offered yet.');
@@ -432,7 +433,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(text.textContent).toBe(ENGLISH_JOHN);
     });
     And('the bar {string} is offered', async (_, name: string) => {
-      expect(await within(viewEl()).findByRole('button', { name: new RegExp(name) })).toBeEnabled();
+      expect(await findButton(new RegExp(name), viewEl)).toBeEnabled();
     });
     And('nothing has been sent to the tutor', () => {
       expect(fake.received).toHaveLength(0);
@@ -504,7 +505,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
       expect(received(0).input).toMatchObject({ language: 'en', reference, words: WRITTEN.split(' ') });
     });
     When('he goes back with {string}', async (_, name: string) => {
-      await user.click(await within(viewEl()).findByRole('button', { name }));
+      await user.click(await findButton(name, viewEl));
     });
     Then('narration is open again with his narration and the tutor\'s answer', async () => {
       await waitFor(() => expect(narrationEl().querySelector('[data-narration-written]')).toHaveTextContent(WRITTEN));
@@ -577,7 +578,7 @@ describeFeature(feature, ({ Scenario, AfterEachScenario }) => {
   const summaryPoints = (selector: string) => Array.from(summaryEl().querySelectorAll(`${selector} li`)).map((li) => li.textContent);
   const summaryResultShown = () => waitFor(() => expect(summaryResult()).not.toBeNull());
   const summaryFoot = async (_: unknown, shown: string, other: string) => {
-    expect(await within(viewEl()).findByRole('button', { name: shown, exact: true })).toBeEnabled();
+    expect(await findButton(shown, viewEl)).toBeEnabled();
     expect(within(viewEl()).queryByRole('button', { name: other, exact: true })).toBeNull();
   };
   const present = async (_: unknown, a: string, b: string) => {

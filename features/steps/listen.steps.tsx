@@ -22,6 +22,7 @@ import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type 
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
 import { leaveSettings } from '../../tests/support/settings-pages';
+import { findButton } from '../../tests/support/find-button';
 import { openSettings } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
@@ -148,7 +149,7 @@ describeFeature(feature, ({ Scenario }) => {
     expect(viewEl().querySelectorAll('[data-reading]')).toHaveLength(1);
   };
   const chooseAction = async (_: unknown, action: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
+    await user.click(await findButton(action, viewEl));
   };
   const holdBar = async () => {
     expect(holdBars()).toHaveLength(1);

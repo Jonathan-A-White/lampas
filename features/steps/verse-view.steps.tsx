@@ -23,6 +23,7 @@ import { stubMic } from '../../tests/support/fake-mic';
 import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { findButton } from '../../tests/support/find-button';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -114,7 +115,7 @@ describeFeature(feature, ({ Scenario }) => {
     await sleep(30);
   };
   const choose = async (_: unknown, action: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
+    await user.click(await findButton(action, viewEl));
   };
   const labelled = (_: unknown, label: string) => {
     // the bar says its words: a Read bar and the composer's alike
@@ -125,10 +126,10 @@ describeFeature(feature, ({ Scenario }) => {
     expect(viewEl().contains(bars()[0])).toBe(true);
   };
   const step = (name: 'next' | 'previous') => async () => {
-    await user.click(within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} verse` }));
+    await user.click(await findButton(`${name === 'next' ? 'Next' : 'Previous'} verse`, viewEl));
   };
-  const arrow = (name: 'next' | 'previous', on: boolean) => () => {
-    const button = within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} verse` });
+  const arrow = (name: 'next' | 'previous', on: boolean) => async () => {
+    const button = await findButton(`${name === 'next' ? 'Next' : 'Previous'} verse`, viewEl);
     if (on) expect(button).toBeEnabled();
     else expect(button).toBeDisabled();
   };
@@ -241,7 +242,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the number of verse 11', (ctx) => tapNumber(ctx, 11));
     And('he taps {string}', async (_, name: string) => {
-      await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+      await user.click(await findButton(name, viewEl));
     });
     Then("the phone's clipboard ends with the link of Romans 8:11", () => {
       expect(copied).toHaveLength(1);

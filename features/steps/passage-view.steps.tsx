@@ -23,6 +23,7 @@ import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { seedHisWords } from '../../tests/support/his-words';
+import { findButton } from '../../tests/support/find-button';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -125,7 +126,7 @@ describeFeature(feature, ({ Scenario }) => {
     await sleep(30);
   };
   const choose = async (_: unknown, action: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
+    await user.click(await findButton(action, viewEl));
   };
   const labelled = (_: unknown, label: string) => {
     // the bar says its words: a Read bar and the composer's alike
@@ -136,10 +137,10 @@ describeFeature(feature, ({ Scenario }) => {
     expect(viewEl().contains(bars()[0])).toBe(true);
   };
   const step = (name: 'next' | 'previous') => async () => {
-    await user.click(within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} passage` }));
+    await user.click(await findButton(`${name === 'next' ? 'Next' : 'Previous'} passage`, viewEl));
   };
-  const arrowOff = (name: 'next' | 'previous') => () => {
-    expect(within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} passage` })).toBeDisabled();
+  const arrowOff = (name: 'next' | 'previous') => async () => {
+    expect(await findButton(`${name === 'next' ? 'Next' : 'Previous'} passage`, viewEl)).toBeDisabled();
   };
   Scenario('Tapping the heading of Romans 8:1-11 opens the Verse view headed with the heading and its range', ({ Given, And, When, Then }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
@@ -293,7 +294,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 in the English view with the weave {string}', openWith);
     When('he taps the heading {string}', tapHeading);
     And('he taps {string}', async (_, name: string) => {
-      await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+      await user.click(await findButton(name, viewEl));
     });
     Then("the phone's clipboard ends with the link of Romans 8:1-11", () => {
       expect(copied).toHaveLength(1);
@@ -315,8 +316,8 @@ describeFeature(feature, ({ Scenario }) => {
 
   const openAt = (_: unknown, book: string, chapter: number, first: number) =>
     open({ hash: `#/?b=${book}&c=${chapter}&view=english&weave=off&p=${first}` });
-  const arrowOn = (name: 'next' | 'previous') => () => {
-    expect(within(viewEl()).getByRole('button', { name: `${name === 'next' ? 'Next' : 'Previous'} passage` })).toBeEnabled();
+  const arrowOn = (name: 'next' | 'previous') => async () => {
+    expect(await findButton(`${name === 'next' ? 'Next' : 'Previous'} passage`, viewEl)).toBeEnabled();
   };
 
   Scenario("At a chapter's first passage the previous arrow goes to the last passage of the chapter before", ({ Given, When, Then, And }) => {
