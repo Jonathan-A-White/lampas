@@ -1,5 +1,10 @@
 # What's new
 
+## 0.7.327
+_2026-11-22_
+- Fixed: Undoing a Hands-free change the tutor made no longer has the tutor then read out that Hands-free is on.
+- Fixed: In Genesis chapters 40 to 42 of the Septuagint, tapping an English word now opens that word's Greek word sheet instead of the Verse view.
+
 ## 0.7.326
 _2026-11-22_
 - Fixed: A poetry verse in the Weave now stays in lines when you switch to the Hebrew word order.

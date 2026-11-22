@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.7.327",
+    "date": "2026-11-22",
+    "story": "mw-rl10piw.70",
+    "kind": "fixed",
+    "text": "Undoing a Hands-free change the tutor made no longer has the tutor then read out that Hands-free is on."
+  },
+  {
+    "version": "0.7.327",
+    "date": "2026-11-22",
+    "story": "mw-u2w5klk.349.48",
+    "kind": "fixed",
+    "text": "In Genesis chapters 40 to 42 of the Septuagint, tapping an English word now opens that word's Greek word sheet instead of the Verse view."
+  },
+  {
     "version": "0.7.326",
     "date": "2026-11-22",
     "story": "mw-5r3p30.1195",
