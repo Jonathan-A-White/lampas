@@ -354,7 +354,7 @@ describe('Drill it promises questions only when an ask goes out', () => {
     release.resolve();
     await whenIdle();
     // the second screen's own ask, if it makes one, starts a moment after the first one is answered
-    await new Promise((r) => setTimeout(r, 150));
+    await new Promise((r) => setTimeout(r, 150)); // a real-time wait: a window in which no second ask must go out
     await whenIdle();
     expect(postern.received.filter((r) => r.grist.kind === 'drill-items')).toHaveLength(1);
     expect((await listUnseenFetched(SHORT)).length).toBeGreaterThanOrEqual(2);
@@ -408,7 +408,7 @@ describe('Drill it promises questions only when an ask goes out', () => {
     await settledOn();
     release.resolve();
     await whenIdle();
-    await new Promise((r) => setTimeout(r, 150));
+    await new Promise((r) => setTimeout(r, 150)); // a real-time wait: a window in which no second ask must go out
     await whenIdle();
     const stocked = (await listUnseenFetched(one.id)).length >= 2;
     // an idea whose first answer the phone kept enough of is not asked a second time; one it kept too little of may be
