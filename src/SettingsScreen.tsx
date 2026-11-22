@@ -26,6 +26,7 @@ import { SermonSourcesPage } from './sermons/SermonSourcesPage';
 import { useSourceList } from './sermons/useSourceList';
 import { neededText } from './settings/neededText';
 import { settingsForTutor } from './settings/tutorSettings'; import { useGrownRows } from './settings/useGrownRows';
+import { useHomeSearch } from './settings/useHomeSearch';
 import { useReportScreen } from './tutor/screenContext';
 import { UsageCountedPage } from './tips/UsageCounted';
 import { HeaderButton, ScreenHeader } from './ScreenHeader';
@@ -45,17 +46,8 @@ function sectionOf(hash: string): string | null {
 /** Settings: the one list of sermon sources where the address asks for it (its own page, src/sermons/SermonSourcesPage.tsx; a link to a source's setting is that page at the source's row), What Lampas has counted where it asks for that (its own page, src/tips/UsageCounted.tsx), else the home and its pages. It holds the home's search text for all of them. */
 export function SettingsScreen() {
   const address = useAddress();
-  // what he typed in the home's search is held here, above every page of Settings: the sermon sources and What Lampas has counted are drawn in the home's place, and the home must still
-  // list what he searched for when their back arrow brings him back, as it does after a group's page (mw-6ww.175.108). Leaving Settings lets it go.
-  const [query, setQuery] = useState('');
-  // a link that names a row of the home (the dial) clears the search that found it, so the home shows the row marked and not the list of answers
-  const linked = settingKeyOf(address);
-  const [linkSeen, setLinkSeen] = useState(linked);
-  if (linkSeen !== linked) {
-    setLinkSeen(linked);
-    const linkedRow = linked ? rowOf(linked) : undefined;
-    if (linkedRow && isHomeRow(linkedRow)) setQuery('');
-  }
+  // the home's search text is held here, above the pages drawn in the home's place, so their back arrow brings him back to what he searched for (useHomeSearch, mw-6ww.175.108)
+  const [query, setQuery] = useHomeSearch(address);
   const sources = sermonSourcesOf(address);
   if (sources) return <SermonSourcesPage key={sources.at ?? ''} at={sources.at} />;
   return isCountedPage(address) ? <UsageCountedPage /> : <SettingsPages query={query} setQuery={setQuery} />;
