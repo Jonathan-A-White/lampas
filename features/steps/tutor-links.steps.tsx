@@ -108,7 +108,8 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const quietly = async () => {
     await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // the links row draws nothing until six live queries have answered, and a row with no chip draws nothing at all: no signal on the page says the lookups are done, so a late chip is given the time it would take
+    await new Promise((resolve) => setTimeout(resolve, 100)); // clock: a window in which nothing must show (no event to wait on: the lookups end silently)
     expect(turn().querySelector('[data-tutor-links]')).toBeNull();
   };
 
@@ -166,12 +167,7 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('With no study resource on, a word link shows nothing and the answer is still there', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Romans 8 and the tutor answers with a link to the word {string}', word);
     When('he asks the tutor about verse 28', ask);
-    Then('the answer shows no study links', async () => {
-      await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
-      // the links are looked up first, so give a late chip the time it would take
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(turn().querySelector('[data-tutor-links]')).toBeNull();
-    });
+    Then('the answer shows no study links', quietly);
     And('the answer text is shown', () => {
       expect(turn()).toHaveTextContent('Love is the word Paul keeps coming back to.');
     });
@@ -182,8 +178,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('the study resource {string} is switched on', switchOn);
     When('he asks the tutor about verse 28', ask);
     Then('the answer shows no study links', async () => {
+      // the answer carries no link at all: the row has nothing to draw whatever the lookups say, so the answer's text is the whole of the wait
       await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
-      await new Promise((resolve) => setTimeout(resolve, 100));
       expect(turn().querySelector('[data-tutor-links]')).toBeNull();
     });
     And('the answer text is shown', () => {
@@ -198,9 +194,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('the study resource {string} is switched on', switchOn);
     When('he asks the tutor about verse 28', ask);
     Then('the answer shows {int} study links', async (_, count: number) => {
+      // the row is drawn in one render from the first three links, so a fourth cannot arrive after the third
       await waitFor(() => expect(links()).toHaveLength(count));
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(links()).toHaveLength(count);
     });
   });
 

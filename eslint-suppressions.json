@@ -31,7 +31,7 @@
   },
   "features/steps/copy-hold.steps.tsx": {
     "local/no-real-time-wait": {
-      "count": 4
+      "count": 2
     }
   },
   "features/steps/fresh-install.steps.tsx": {
@@ -164,11 +164,6 @@
       "count": 1
     }
   },
-  "features/steps/reading-check.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 6
-    }
-  },
   "features/steps/reading-drill.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
@@ -197,16 +192,6 @@
   "features/steps/share-references.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 2
-    }
-  },
-  "features/steps/share-target.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 4
-    }
-  },
-  "features/steps/sheet-back.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 6
     }
   },
   "features/steps/speaking-interruptions.steps.tsx": {
@@ -241,7 +226,7 @@
   },
   "features/steps/tutor-links.steps.tsx": {
     "local/no-real-time-wait": {
-      "count": 4
+      "count": 1
     }
   },
   "features/steps/tutor-works.steps.tsx": {
@@ -287,11 +272,6 @@
   "features/steps/word-tip.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/your-requests.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 8
     }
   },
   "tests/e2e/appearance.spec.ts": {

@@ -119,7 +119,7 @@ const panel = () => screen.getByRole('region', { name: 'Reading check' });
 /** The true position of the clip when pause() came under the coarse clock: what he heard up to; and what the element's clock showed then. */
 let heardTo = -1;
 let shownAtPause = -1;
-let coarseTimer: ReturnType<typeof setTimeout> | undefined;
+let coarseTimer: ReturnType<typeof setTimeout> | undefined; // clock: the fake audio element's own tick clock (the element's timeupdate), not a wait of a step
 /** A phone's audio element (mw-5r3p30.139): the sound plays in real time, but currentTime moves only when a timeupdate comes, every `step`
  * seconds, the first `first` seconds in; 'playing' comes as the sound starts, with currentTime right at that moment, as the element has it.
  * pause() keeps where the sound was. */
@@ -130,7 +130,7 @@ function coarseClock(step: number, first: number): void {
     const from = this.currentTime;
     const playedAt = performance.now();
     position = () => from + (performance.now() - playedAt) / 1000;
-    setTimeout(() => {
+    setTimeout(() => { // clock: the fake element's 'playing' event, one turn after play(), as the real one comes
       this.currentTime = position();
       this.dispatchEvent(new Event('playing'));
     }, 0);
@@ -140,9 +140,9 @@ function coarseClock(step: number, first: number): void {
       this.currentTime = Math.min(position(), from + first + tick * step);
       tick += 1;
       this.dispatchEvent(new Event('timeupdate'));
-      coarseTimer = setTimeout(update, step * 1000);
+      coarseTimer = setTimeout(update, step * 1000); // clock: the fake element's next timeupdate, `step` seconds on
     };
-    coarseTimer = setTimeout(update, first * 1000);
+    coarseTimer = setTimeout(update, first * 1000); // clock: the fake element's first timeupdate, `first` seconds in
     return Promise.resolve();
   });
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(function (this: HTMLMediaElement) {

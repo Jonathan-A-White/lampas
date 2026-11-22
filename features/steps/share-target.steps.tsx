@@ -17,7 +17,6 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech } from '../../tests/support/fake-speech';
-import { ASYNC_WAIT_MS } from '../../tests/support/timeouts';
 import { closeDatabase } from './close-database';
 
 const realSeam = { ...imageSeam };
@@ -87,17 +86,7 @@ const thumbs = (sheet: HTMLElement): HTMLElement[] => {
 async function back(): Promise<void> {
   await waitFor(() => expect((window.history.state as { sheet?: number } | null)?.sheet ?? 0).toBeGreaterThan(0));
   await act(async () => {
-    const popped = new Promise<void>((resolve) => {
-      const timer = setTimeout(resolve, ASYNC_WAIT_MS);
-      window.addEventListener(
-        'popstate',
-        () => {
-          clearTimeout(timer);
-          resolve();
-        },
-        { once: true },
-      );
-    });
+    const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
     window.history.back();
     await popped;
   });
@@ -118,8 +107,8 @@ describeFeature(feature, ({ Scenario }) => {
     expect(field(sheet)).toHaveValue(words);
   };
   const nothingSent = async (): Promise<void> => {
-    // the mill has had time to be called, and was sent nothing of the talk (the pictures are read for Bible references by the find-refs grind, mw-s1dc0n.2: that is no message)
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // the mill has been called (the pictures are read for Bible references by the find-refs grind, mw-s1dc0n.2: that is no message) and was sent nothing of the talk
+    await waitFor(() => expect(fake.received.some((r) => r.grist.kind === 'find-refs')).toBe(true));
     expect(fake.received.filter((r) => r.grist.kind !== 'find-refs')).toHaveLength(0);
     await waitFor(async () => expect(await db.shares.count()).toBe(0));
   };
@@ -194,15 +183,31 @@ describeFeature(feature, ({ Scenario }) => {
   });
 
   Scenario("The phone's Back drops the share on a slow host", ({ Given, And, When, Then }) => {
+    const late: { deliver?: () => void; drop?: () => void } = {};
     Given(TWO_AND_WORDS, openFull);
     And('the host is slow to deliver Back and to forget the share', () => {
-      // a loaded host: the Back lands long after it was pressed, and the write that drops the share after that
+      // a loaded host: the Back lands long after it was pressed, and the write that drops the share after that; each is held here until the step that checks the screen has not moved lets it go
       const realBack = window.history.back.bind(window.history);
-      vi.spyOn(window.history, 'back').mockImplementationOnce(() => void setTimeout(realBack, 300));
+      vi.spyOn(window.history, 'back').mockImplementationOnce(() => void (late.deliver = realBack));
       const clear = db.shares.clear.bind(db.shares);
-      vi.spyOn(db.shares, 'clear').mockImplementationOnce(() => new Promise<void>((resolve) => setTimeout(() => void clear().then(() => resolve()), 300)));
+      vi.spyOn(db.shares, 'clear').mockImplementationOnce(() => new Promise<void>((resolve) => void (late.drop = () => void clear().then(() => resolve()))));
     });
-    When("he presses the phone's Back", back);
+    When("he presses the phone's Back", async () => {
+      await waitFor(() => expect((window.history.state as { sheet?: number } | null)?.sheet ?? 0).toBeGreaterThan(0));
+      await act(async () => {
+        const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }));
+        window.history.back();
+        // the Back is pressed and not delivered: the chooser is still up and the share still waits
+        expect(late.deliver).toBeDefined();
+        expect(chooser()).toBeInTheDocument();
+        late.deliver?.();
+        await popped;
+      });
+      // the Back has landed and the write that drops the share is on its way, held: the share still waits
+      await waitFor(() => expect(late.drop).toBeDefined());
+      expect(await db.shares.count()).toBe(1);
+      late.drop?.();
+    });
     Then('no share is waiting and the Reader is open', readerIsOpen);
   });
 
@@ -277,7 +282,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the sheet offers no {string}, {string} or {string}, only {string}', (_, a: string, b: string, c: string, d: string) => onlyCancel(_, a, b, c, d));
     And('no picture was sent to the mill to be read', async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // a share with no picture Lampas reads starts no reading at all (the hook has nothing to read, at once), so nothing is on its way to be waited for
+      expect(fake.calls).toHaveLength(0);
       expect(fake.received).toHaveLength(0);
     });
   });

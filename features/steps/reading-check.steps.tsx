@@ -11,7 +11,7 @@ import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
 import { type Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
-import { getMissTally, setReaderView, setWeave } from '../../src/data/repositories';
+import { getMissTally, getVerseReading, setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
@@ -101,6 +101,12 @@ const TIMINGS = { ...tutorTimings };
 let dead = false;
 const DOOR_MS = 2000;
 const LATE_MS = 3000;
+/** Every send the fake Postern took, so a step can wait for the late one to land instead of for a time. */
+const sendsMade = new Set<Promise<unknown>>();
+const trackSend = (send: Promise<Response>): Promise<Response> => {
+  sendsMade.add(send);
+  return send;
+};
 const CONTACT_MS = 3000;
 /** every 'Could not reach' the reading check showed, so a scenario can say it never did */
 let alerts: string[] = [];
@@ -117,6 +123,7 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
   Object.assign(tutorTimings, TIMINGS);
   tutorTimings.pollMs = 20;
   fake = makeFakePostern();
+  sendsMade.clear();
   dead = send === 'dead';
   watching?.disconnect();
   alerts = [];
@@ -139,7 +146,9 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
       ? chapterFetch(input, init)
       : dead && sending(input, init)
         ? fake.fetch(input, init).then(() => new Promise<Response>(() => undefined))
-        : fake.fetch(input, init),
+        : sending(input, init)
+          ? trackSend(fake.fetch(input, init))
+          : fake.fetch(input, init),
   );
   await db.open();
   await Promise.all([db.words.clear(), db.meta.clear(), db.settings.clear(), db.readings.clear(), db.readingHistory.clear(), db.missTally.clear()]);
@@ -210,7 +219,8 @@ const greekMarkedSteps = async () => {
   await waitFor(() => expect(marked().map((m) => m.textContent)).toEqual(['συνεργεῖ', 'πρόθεσιν']));
 };
 const noGrist = async () => {
-  await new Promise((r) => setTimeout(r, 150));
+  // a send puts the bar to Waiting (disabled) in the handler that starts it, so a bar that is up again with the mill still unasked is a reading that was not sent
+  await waitFor(() => expect(readButton()).toBeEnabled());
   expect(fake.received).toHaveLength(0);
 };
 const says = (text: string) => async () => {
@@ -438,7 +448,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the reading check says {string}', (_, text: string) => says(text)());
     And('the reading check does not say {string}', async (_, text: string) => {
-      await new Promise((r) => setTimeout(r, 50));
+      // the lines above are the result drawn whole: what it does not say is not on its way
       expect(panel()).not.toHaveTextContent(text);
     });
     And('there is no Read these again button', () => {
@@ -454,7 +464,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the reading check says {string}', (_, text: string) => says(text)());
     And('the reading check does not say {string}', async (_, text: string) => {
-      await new Promise((r) => setTimeout(r, 50));
+      // the lines above are the result drawn whole: what it does not say is not on its way
       expect(panel()).not.toHaveTextContent(text);
     });
     And('the marked words are {string}', async (_, names: string) => {
@@ -536,7 +546,7 @@ describeFeature(feature, ({ Scenario }) => {
     When(holdRead, async () => holdAndLetGo(readButton(), 2000));
     Then('the reading check says {string}', (_, text: string) => says(text)());
     And('the reading check does not say {string}', async (_, text: string) => {
-      await new Promise((r) => setTimeout(r, 50));
+      // the lines above are the result drawn whole: what it does not say is not on its way
       expect(panel()).not.toHaveTextContent(text);
     });
   });
@@ -636,7 +646,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the late send has landed and the mill received the reading once', async () => {
       // the phone sent the same bytes again after the door gave up; the first send, landing late, is the same record
       await waitFor(() => expect(fake.calls.filter((c) => c === 'POST /api/messages').length).toBeGreaterThanOrEqual(2));
-      await new Promise((r) => setTimeout(r, LATE_MS));
+      await Promise.allSettled([...sendsMade]);
       await millOnce();
     });
     And('the reading check never said {string}', (_, text: string) => {
@@ -796,7 +806,10 @@ describeFeature(feature, ({ Scenario }) => {
       await selectVerse28();
     });
     Then('the reading check has no result yet', async () => {
-      await new Promise((r) => setTimeout(r, 100));
+      // the bar of the Greek reading check is drawn; the Greek verse has no reading kept, the English one has: kept apart
+      await waitFor(() => expect(readButton()).toBeEnabled());
+      expect(await getVerseReading('rom.8.28', 'el')).toBeUndefined();
+      expect(await getVerseReading('rom.8.28', 'en')).toBeDefined();
       expect(panel().querySelector('[data-reading-result]')).toBeNull();
     });
     When('he holds the bar again in Greek for 2 seconds and lets go', async () => holdAndLetGo(readButton(), 2000));
