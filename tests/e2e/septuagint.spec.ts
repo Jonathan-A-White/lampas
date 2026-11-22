@@ -122,7 +122,11 @@ test('a tap on a Septuagint word opens its card from the lemma lexicon, and a gu
   await guessed.click();
   await expect(sheet.getByTestId('sheet-guess')).toHaveText('A guess: Lampas derived this reading and is not sure');
   await expect(sheet.locator('[data-reading-line]')).toHaveText('How Lampas read this word: A guess (unsure)');
-  await expect(sheet.getByRole('button', { name: 'Add to my words' })).toHaveCount(0);
+  // the word sheet carries the shared Add to my words (mw-5r3p30.1203). A guess on its own card does not stop it: the lemma γίνομαι is read sure elsewhere in the chapter (ἐγένετο), so
+  // the add goes in and the button turns to On my list with no 'Not added' line; a lemma the chapter has only as guesses is added nothing and says why (features/septuagint.feature)
+  await sheet.getByRole('button', { name: 'Add to my words' }).click();
+  await expect(sheet.getByRole('button', { name: 'On my list' })).toBeDisabled();
+  await expect(sheet.getByRole('status')).toHaveCount(0);
   // its Parsing row (a term is a button, a comma plain text) never wraps a line that holds only a comma (mw-u2w5klk.17)
   const lines = await sheet.getByTestId('sheet-parse').evaluate((dd) => {
     const walker = document.createTreeWalker(dd, NodeFilter.SHOW_TEXT);
