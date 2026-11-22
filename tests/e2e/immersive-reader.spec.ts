@@ -7,6 +7,7 @@ import { openVerseView } from './verse-view';
 import { leaveSettings, openGroup } from './settings-group';
 import { openSettings, menuButton, settingsHeading } from './openSettings';
 import { asInstalledApp } from './installed';
+import { handleClicksLate } from './late-clicks';
 
 // The Immersive reader (mw-5r3p30.120) at 390x844: scrolling the text down slides the header and the chips away;
 // scrolling up, the chapter's end and scrolling past it leave them away; only a two-finger tap shows them and a second one puts them away
@@ -212,6 +213,7 @@ test('with Immersive reader Off scrolling leaves the bars where they are', async
 });
 
 test('the setting is kept across a reload', async ({ page }) => {
+  await handleClicksLate(page, '[aria-label="Immersive reader"] button');
   await openReader(page, 'off');
   await openSettings(page);
   await openGroup(page, 'Reading');

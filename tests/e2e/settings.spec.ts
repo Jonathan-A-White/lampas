@@ -1,6 +1,7 @@
 import { expect, test, type Locator } from '@playwright/test';
 import { shot } from './shot';
 import { leaveSettings, openGroup, turnLogosOn } from './settings-group';
+import { handleClicksLate } from './late-clicks';
 import { openUnlocked } from './unlocked';
 import { openSettings, menuButton, settingsHeading } from './openSettings';
 
@@ -36,6 +37,7 @@ test('the reader header holds the chapter, English | Greek and the Menu, in one 
 });
 
 test('Settings at phone width: the weave, the voices, the Greek pronunciation, and About, each on its group page', async ({ page }) => {
+  await handleClicksLate(page, '[aria-label="Weave"] button');
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
