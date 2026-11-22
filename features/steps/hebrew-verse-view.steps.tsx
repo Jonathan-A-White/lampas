@@ -29,6 +29,7 @@ import { makeFakePostern, POSTERN_ORIGIN, SYNERGEI_ANSWER } from '../../tests/su
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { ENGLISH_VOICE, GREEK_VOICE, HEBREW_VOICE, type FakeSynth, type FakeVoice, stubSpeech } from '../../tests/support/fake-speech';
 import { sheetEntriesGone } from '../../tests/support/sheet-history';
+import { findButton } from '../../tests/support/find-button';
 import { closeDatabase } from './close-database';
 
 const jonah1 = JSON.parse(readFileSync('tests/fixtures/data/jon/1.json', 'utf8')) as Chapter;
@@ -132,7 +133,7 @@ describeFeature(feature, ({ Scenario }) => {
     await waitFor(() => expect(within(viewEl()).getByRole('heading', { name: reference })).toBeInTheDocument());
   };
   const play = async (): Promise<void> => {
-    await user.click(await within(viewEl()).findByRole('button', { name: /^Play / }));
+    await user.click(await findButton(/^Play /, viewEl));
   };
   const english = (): void => {
     const verse = sheetVerse();
@@ -250,7 +251,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(actionNames()).toEqual([a, b, c, d]));
     });
     When('he closes the Verse view and chooses {string} in the language switch', async (_, name: string) => {
-      await user.click(within(viewEl()).getByRole('button', { name: '‹ Reader' }));
+      await user.click(await findButton('‹ Reader', viewEl));
       await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
       await user.click(within(screen.getByRole('group', { name: 'Language' })).getByRole('button', { name }));
     });

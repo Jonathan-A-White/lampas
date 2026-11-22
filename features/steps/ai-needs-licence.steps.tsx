@@ -24,6 +24,7 @@ import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/s
 import { stubRecognizer } from '../../tests/support/fake-recognizer';
 import { LicenceProbe } from '../../tests/support/licence-probe';
 import { addMint, HOLDER, ISSUER_PUB, newChain } from '../../tests/support/licence-chain';
+import { findButton } from '../../tests/support/find-button';
 import { closeDatabase } from './close-database';
 
 afterAll(async () => {
@@ -196,7 +197,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the Verse view has Read it aloud, a Hold to read bar and a Reading ladder', async () => {
       expect(within(verseView()).getByRole('button', { name: 'Read it aloud', pressed: true })).toBeInTheDocument();
       await waitFor(() => expect(document.querySelector('.lp-bar')).not.toBeNull());
-      expect(await within(verseView()).findByRole('button', { name: 'Reading ladder' })).toBeInTheDocument();
+      expect(await findButton('Reading ladder', verseView)).toBeInTheDocument();
     });
   });
 

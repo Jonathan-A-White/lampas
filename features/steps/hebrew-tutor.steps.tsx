@@ -5,6 +5,7 @@ import { render, screen, cleanup, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { afterAll, expect, vi } from 'vitest';
 import { typeQuestion } from '../../tests/support/composer';
+import { findButton } from '../../tests/support/find-button';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { readFileSync } from 'node:fs';
 import { App } from '../../src/App';
@@ -175,7 +176,7 @@ describeFeature(feature, ({ Scenario }) => {
       expect(names).toEqual([a, b, c, d]);
     });
     When('he chooses {string}', async (_, name: string) => {
-      await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+      await user.click(await findButton(name, viewEl));
     });
     Then('the Practise door has no {string}', async (_, name: string) => {
       const door = await within(viewEl()).findByRole('list', { name: 'Ways to practise' });

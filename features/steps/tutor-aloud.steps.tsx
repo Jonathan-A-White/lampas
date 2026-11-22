@@ -25,6 +25,7 @@ import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { makeFakePostern, POSTERN_ORIGIN, READING_ANSWER, SYNERGEI_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { expectLatest } from '../../tests/support/published';
 import { seedHisWords } from '../../tests/support/his-words';
+import { findButton } from '../../tests/support/find-button';
 import { closeDatabase } from './close-database';
 
 const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
@@ -372,7 +373,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he closes the Verse view', async () => {
       // the answer is the Talk sheet's (mw-5r3p30.842), open over the Verse view: Done closes it, then the view
       await user.click(within(screen.getByRole('dialog', { name: /^Talk about / })).getByRole('button', { name: 'Done' }));
-      await user.click(within(viewEl()).getByRole('button', { name: '‹ Reader' }));
+      await user.click(await findButton('‹ Reader', viewEl));
       await waitFor(() => expect(screen.queryByRole('region', { name: 'Verse view' })).toBeNull());
     });
     Then('the bar at the top says {string}', barSays);

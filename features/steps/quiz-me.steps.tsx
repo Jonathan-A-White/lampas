@@ -18,6 +18,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, QUIZ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
+import { findButton } from '../../tests/support/find-button';
 import { SOLID_WORDS_SENT } from '../../src/services/solidWords';
 import { seedHisWords } from '../../tests/support/his-words';
 import { closeDatabase } from './close-database';
@@ -99,10 +100,10 @@ describeFeature(feature, ({ Scenario }) => {
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const choose = async (_: unknown, action: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name: action, exact: true }));
+    await user.click(await findButton(action, viewEl));
   };
   const tapsInView = async (_: unknown, name: string) => {
-    await user.click(within(viewEl()).getByRole('button', { name, exact: true }));
+    await user.click(await findButton(name, viewEl));
   };
   const titled = async (_: unknown, title: string) => {
     expect(await screen.findByRole('dialog', { name: title })).toBeInTheDocument();
@@ -118,8 +119,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the heading {string}', tapHeading);
     And('he chooses {string}', choose);
     And('he opens {string}', choose);
-    Then('the Verse view shows a {string} button and no hold bar', (_, name: string) => {
-      expect(within(viewEl()).getByRole('button', { name, exact: true })).toBeInTheDocument();
+    Then('the Verse view shows a {string} button and no hold bar', async (_, name: string) => {
+      expect(await findButton(name, viewEl)).toBeInTheDocument();
       expect(bars()).toHaveLength(0);
     });
     When('he taps {string}', tapsInView);
@@ -206,7 +207,7 @@ describeFeature(feature, ({ Scenario }) => {
       await user.click(within(sheet()).getByRole('button', { name: 'Done' }));
     });
     Then('the Verse view shows a {string} button and no hold bar', async (_, name: string) => {
-      expect(await within(viewEl()).findByRole('button', { name, exact: true })).toBeInTheDocument();
+      expect(await findButton(name, viewEl)).toBeInTheDocument();
       expect(bars()).toHaveLength(0);
     });
     When('he taps {string}', tapsInView);

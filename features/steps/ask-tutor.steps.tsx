@@ -26,6 +26,7 @@ import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, TALK_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
 import { validate, type Schema } from '../../tests/support/schema-validate';
 import '../../tests/support/grinds-in-graph';
+import { findButton } from '../../tests/support/find-button';
 import { openTutor } from './open-tutor';
 import { closeDatabase } from './close-database';
 
@@ -280,7 +281,7 @@ describeFeature(feature, ({ ScenarioOutline, Scenario }) => {
     Given('Lampas is opened on #/?b=rom&c=8&view=english&weave=off&v=28 with the goal {string} behind a fake Postern', (_, goal: string) => openAt('#/?b=rom&c=8&view=english&weave=off&v=28', goal));
     When('he memorizes the verse and opens its language sheet', async () => {
       const view = await screen.findByRole('region', { name: 'Verse view' });
-      await user.click(await within(view).findByRole('button', { name: 'Memorize' }));
+      await user.click(await findButton('Memorize', view));
       await user.click(await within(view).findByRole('button', { name: 'Memorizing · English' }));
       expect(await screen.findByRole('dialog', { name: 'Memorize Rom 8:28' })).toBeInTheDocument();
     });

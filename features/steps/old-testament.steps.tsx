@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import Dexie from 'dexie';
 import { afterAll, expect, vi } from 'vitest';
 import { typeQuestion } from '../../tests/support/composer';
+import { findButton } from '../../tests/support/find-button';
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { App } from '../../src/App';
 import { DEVICE_KEY_STORAGE_KEY } from '../../src/config';
@@ -700,7 +701,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then("the Verse view's link is {string}", async (_, url: string) => {
       const written: string[] = [];
       Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: (text: string) => (written.push(text), Promise.resolve()) } });
-      await user.click(within(viewEl()).getByRole('button', { name: 'Copy' }));
+      await user.click(await findButton('Copy', viewEl));
       await waitFor(() => expect(written).toHaveLength(1));
       expect(written[0].split('\n').at(-1)).toBe(url);
     });
@@ -734,10 +735,10 @@ describeFeature(feature, ({ Scenario }) => {
     Given(jonahLogos, () => openOn('Jonah 1', withLogos(true)));
     When('he taps the number of verse {int}', tapVerseNumber);
     And('he taps Memorize on the Verse view', async () => {
-      await user.click(await within(viewEl()).findByRole('button', { name: 'Memorize' }));
+      await user.click(await findButton('Memorize', viewEl));
     });
     Then('the Verse view says {string}', async (_, text: string) => {
-      await waitFor(() => expect(within(viewEl()).getByRole('button', { name: text })).toBeInTheDocument());
+      expect(await findButton(text, viewEl)).toBeInTheDocument();
     });
     When('he opens the Memorize session of {string} in English', async (_, ref: string) => {
       cleanup();
