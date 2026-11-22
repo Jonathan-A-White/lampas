@@ -49,6 +49,17 @@ async function leaveTools(page: Page) {
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
 }
 
+/** On the Settings home, before step 3: the Learning page is listed (the Greek keyboard is its from Curious, mw-5r3p30.1191) and holds only Keyboards, none of the daily path. */
+async function expectLearningOnlyKeyboards(page: Page) {
+  await expect(page.getByRole('list', { name: 'Settings groups' }).getByRole('button', { name: /^Learning/ })).toHaveCount(1);
+  await openGroup(page, 'Learning');
+  await expect(page.getByRole('heading', { name: 'Keyboards', exact: true, level: 2 })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Greek keyboard', exact: true })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'New words a day', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Handwriting drills', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
+}
+
 async function pageText(page: Page, group: string): Promise<string> {
   await openGroup(page, group);
   const text = (await page.locator('main').textContent()) ?? '';
@@ -123,7 +134,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
   expect(listening).toMatch(/Greek speed/);
   expect(listening).toMatch(/Pronunciation/);
   expect(await pageText(page, 'Reading')).not.toMatch(/Weave/);
-  await expect(page.getByRole('list', { name: 'Settings groups' }).getByRole('button', { name: /^Learning/ })).toHaveCount(0);
+  await expectLearningOnlyKeyboards(page);
   await leaveSettings(page);
 
   // 2 Dipping a toe: the Weave, with its Order and Grammar
@@ -133,7 +144,7 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
   await expect(page.getByRole('heading', { name: 'Weave', exact: true, level: 2 })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Weave', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
-  await expect(page.getByRole('list', { name: 'Settings groups' }).getByRole('button', { name: /^Learning/ })).toHaveCount(0);
+  await expectLearningOnlyKeyboards(page);
   await leaveSettings(page);
   await expect(language(page).getByRole('button')).toHaveText(['English', 'Weave', 'Greek']);
 
@@ -143,12 +154,13 @@ test('each step up brings in what it says, from Curious to All in', async ({ pag
   await openGroup(page, 'Learning');
   await expect(page.getByRole('group', { name: 'New words a day', exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Handwriting drills', exact: true })).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Goal', exact: true })).toHaveCount(0);
+  // the Goal picker is drawn from step 3, where the Goal link is (f46813fd6), so Choose a goal does not go round in a circle
+  await expect(page.getByRole('group', { name: 'Goal', exact: true })).toBeVisible();
   await shot(page, 'greek-dial-3');
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
   await leaveSettings(page);
 
-  // 4 Reading in Greek: the Reader opens in the Greek, and the Goal is there to set
+  // 4 Reading in Greek: the Reader opens in the Greek
   await setStep(page, 'Reading in Greek');
   await expect(language(page).getByRole('button', { name: 'Greek', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
