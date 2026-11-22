@@ -39,8 +39,44 @@ for (const size of SIZES) {
     await expectFits(page, size.width);
 
     await group.getByRole('button', { name: 'British', exact: true }).click();
+    await choiceKept(page, 'British');
     await page.reload();
     await expect(page.getByRole('group', { name: 'English accent' }).getByRole('button', { name: 'British', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await shot(page, `english-accent-${size.name}`);
   });
 }
+
+// The press is handled, and its setting written to IndexedDB, after the click returns, and a reload straight after the click can
+// cut it off (mw-fnvjof.17.237: failed in the whole suite on a loaded host, passed alone). Here the page handles each click 1.5 s late,
+// as a loaded host can: the choice shows as pressed only once it is written, and only then may a spec reload.
+async function choiceKept(page: Page, name: string) {
+  await expect(page.getByRole('group', { name: 'English accent' }).getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
+}
+
+test('a reload after a press keeps the choice when the page handles the press late', async ({ page }) => {
+  await page.addInitScript(() => {
+    const passing = new WeakSet<Event>();
+    document.addEventListener(
+      'click',
+      (event) => {
+        if (passing.has(event) || !(event.target instanceof Element)) return;
+        const button = event.target.closest('[aria-label="English accent"] button');
+        if (!button) return;
+        event.stopImmediatePropagation();
+        setTimeout(() => {
+          const again = new MouseEvent('click', { bubbles: true, cancelable: true });
+          passing.add(again);
+          button.dispatchEvent(again);
+        }, 1500);
+      },
+      true,
+    );
+  });
+  await openUnlocked(page);
+  await page.goto('/#/settings?group=listening');
+  const group = page.getByRole('group', { name: 'English accent' });
+  await group.getByRole('button', { name: 'British', exact: true }).click();
+  await choiceKept(page, 'British');
+  await page.reload();
+  await choiceKept(page, 'British');
+});
