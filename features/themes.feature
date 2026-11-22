@@ -33,7 +33,7 @@ Feature: Themes on the Sermons sheet (mw-qtu3zvz.4, docs/sermons.md 'The themes'
   Scenario: The same Off source turned On puts its themes on the Themes line
     Given Lampas is opened on "Romans 5" with a source On whose sermons are far from verse 8, and an Off source that has the rest turned On
     When he taps verse 8
-    And he taps "Sermons · 6"
+    And he taps "Sermons · 4"
     Then the sheet is headed "Sermons for Romans 5:8"
     And the Themes line offers "Atonement: Doctrine of · Love-Hatred: Of God"
 
