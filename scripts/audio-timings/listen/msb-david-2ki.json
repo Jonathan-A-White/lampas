@@ -1,0 +1,10 @@
+{
+ "v":1,"edition":"msb-david","book":"2ki","slop":{"lead":0.05,"tail":0.05,"insideTail":0.097},
+ "verses":[
+  {"verse":"11:4","edge":"tail","reason":"the narrator reads on into verse 5: no quiet between 'son' and 'and'; cut at the quietest instant between them","room":0.0,"cut":55.67,"judge":[{"kind":"tail-clipped","by":0.127,"readsOn":true,"level":2.4,"heard":{"lost":"N","letters":"HE SHOWED THEM THE KING'S SON","words":"them the king's son"}}]},
+  {"verse":"11:5","edge":"head","reason":"the narrator reads on from verse 4: no quiet between 'son' and 'and'; cut at the quietest instant between them","room":0.0,"cut":55.67,"judge":[{"kind":"head-extra","by":0.08,"readsOn":true,"level":1.2,"heard":{"before":"SON","letters":"AND COMMANDED THEM","words":"and commanded them this"}}]},
+  {"verse":"19:19","edge":"text","judge":[{"kind":"text-differs","heard":{"expected":"are","words":"our"}}],"reason":"the judge's two ears heard 'our' where the text has 'are': not a cut's fault"},
+  {"verse":"22:15","edge":"tail","reason":"the narrator reads on into verse 16: no quiet between 'you' and 'that'; cut at the quietest instant between them","room":0.0,"cut":163.02,"judge":[{"kind":"tail-extra","by":0.05,"readsOn":true,"level":-1.2,"heard":{"extra":"T","next":"THAT","letters":"TELL THE MAN WHO SENT YOU THE","words":"who sent you the"}},{"kind":"tail-clipped","by":0.097,"readsOn":true,"level":2.3,"heard":{"letters":"TELL THE MAN WHO SENT YOU","words":"man who sent you"}}]},
+  {"verse":"22:16","edge":"head","reason":"the narrator reads on from verse 15: no quiet between 'you' and 'that'; cut at the quietest instant between them","room":0.0,"cut":163.02,"judge":[{"kind":"head-extra","by":0.05,"readsOn":true,"level":1.9,"heard":{"before":"YOU","letters":"THAT THIS IS WHAT THE LORD SAID","words":"that this is what"}},{"kind":"head-clipped","by":0.05,"readsOn":true,"level":-1.2,"heard":{"lost":"T","letters":"THAT THIS IS WHAT THE LORD SAID","words":"that this is what"}}]}
+ ]
+}
