@@ -29,6 +29,8 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
   const holder = useRef<HTMLDivElement>(null);
   const player = useRef<YouTubePlayer | null>(null);
   const waiting = useRef<{ done: () => void; refused: () => void } | null>(null);
+  // whether the player says it is playing (it is not asked: the YouTube player reports each change), for the wake to pause it (src/handsFree/playback.ts)
+  const sounding = useRef(false);
   const [blocked, setBlocked] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -75,6 +77,7 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
     };
     return registerSermonControls({
       kind: 'player',
+      playing: () => player.current !== null && sounding.current,
       play: () => act(() => startRef.current()),
       pause: () => act((target) => target.pauseVideo()),
       back: () => seek(-SKIP_SECONDS),
@@ -106,6 +109,7 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
               if (auto && !gone) start();
             },
             onStateChange: (event) => {
+              sounding.current = event.data === PLAYING || event.data === BUFFERING;
               if (event.data === PLAYING || event.data === BUFFERING) waiting.current?.done();
             },
             onAutoplayBlocked: () => waiting.current?.refused(),
@@ -118,6 +122,7 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
     );
     return () => {
       gone = true;
+      sounding.current = false;
       waiting.current?.done();
       player.current?.destroy();
       player.current = null;

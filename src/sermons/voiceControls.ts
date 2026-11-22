@@ -13,6 +13,8 @@ export interface SermonControls {
   forward(): boolean;
   /** From the beginning, and playing. */
   restart(): boolean;
+  /** Whether this sheet is making a sound of its own right now (a video playing); the reader's reading is the speech engine's and is not asked here. Absent: no sound of its own. */
+  playing?(): boolean;
   /** Ends the reading or the video (the sheet stays). */
   stop(): boolean;
 }

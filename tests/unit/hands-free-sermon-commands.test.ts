@@ -36,18 +36,24 @@ const hear = (words: string) => runCommand(words, say);
 class FakeVideo {
   calls: string[] = [];
   time = 100;
-  constructor(_target: unknown, opts: { events?: { onReady?: (e: { target: FakeVideo }) => void } }) {
+  /** The player's own report of its state (YT.PlayerState: 1 playing, 2 paused), as the real IFrame player sends it. */
+  onState?: (e: { data: number }) => void;
+  constructor(_target: unknown, opts: { events?: { onReady?: (e: { target: FakeVideo }) => void; onStateChange?: (e: { data: number }) => void } }) {
+    this.onState = opts.events?.onStateChange;
     videos.push(this);
     queueMicrotask(() => opts.events?.onReady?.({ target: this }));
   }
   playVideo() {
     this.calls.push('play');
+    this.onState?.({ data: 1 });
   }
   pauseVideo() {
     this.calls.push('pause');
+    this.onState?.({ data: 2 });
   }
   stopVideo() {
     this.calls.push('stop');
+    this.onState?.({ data: 0 });
   }
   seekTo(seconds: number) {
     this.calls.push(`seek ${seconds}`);
@@ -218,6 +224,62 @@ describe('the sermon player is open', () => {
     expect(video.calls).toEqual(['seek 0', 'play']);
     await act(() => hear('stop'));
     expect(video.calls.at(-1)).toBe('stop');
+  });
+
+  it('the wake pauses a playing video so the microphone does not hear it, and the close plays it again', async () => {
+    const video = await openPlayer();
+    await act(() => hear('play'));
+    video.calls.length = 0;
+    act(() => silenceAtWake());
+    expect(video.calls).toEqual(['pause']);
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual(['pause', 'play']);
+  });
+
+  it('the wake leaves a video that is not playing alone, and the close does not start it', async () => {
+    const video = await openPlayer();
+    act(() => silenceAtWake());
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual([]);
+    await act(() => hear('play'));
+    await act(() => hear('pause'));
+    video.calls.length = 0;
+    act(() => silenceAtWake());
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual([]);
+  });
+
+  it("after the wake paused it, 'pause' keeps it paused and 'play' plays it once, and the close undoes neither", async () => {
+    const video = await openPlayer();
+    await act(() => hear('play'));
+    act(() => silenceAtWake());
+    await act(() => hear('pause'));
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual(['play', 'pause', 'pause']);
+    await act(() => hear('play'));
+    video.calls.length = 0;
+    act(() => silenceAtWake());
+    await act(() => hear('play'));
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual(['pause', 'play']);
+  });
+
+  it("the close does not play a video the wake paused when he closed the player meanwhile, or the page is hidden", async () => {
+    const video = await openPlayer();
+    await act(() => hear('play'));
+    act(() => silenceAtWake());
+    act(() => closeSermon());
+    video.calls.length = 0;
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual([]);
+    const second = await openPlayer('https://www.youtube.com/watch?v=zzz_DEF-123');
+    await act(() => hear('play'));
+    act(() => silenceAtWake());
+    const hidden = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    second.calls.length = 0;
+    act(() => goOnAtClose());
+    hidden.mockRestore();
+    expect(second.calls).toEqual([]);
   });
 
   it('a Subsplash video has no controls to call: it says so', async () => {
