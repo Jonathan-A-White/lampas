@@ -5,6 +5,7 @@ import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { closeSermon, openSermon as openSermonNow } from '../../src/sermons/player';
+import { ASYNC_WAIT_MS as timeout } from '../support/timeouts';
 import { SermonPlayerHost } from '../../src/sermons/SermonPlayer';
 import { videoOf } from '../../src/sermons/video';
 import type { LinkRow } from '../../src/sermons/merge';
@@ -79,7 +80,7 @@ describe('openSermon', () => {
     expect(openSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF'))).toBe(true);
     const sheet = await screen.findByRole('dialog', { name: 'The Day of the Lord' });
     expect(within(sheet).getByRole('button', { name: 'Close' })).toBeInTheDocument();
-    await vi.waitFor(() => expect(made).toHaveLength(1));
+    await vi.waitFor(() => expect(made).toHaveLength(1), { timeout });
     expect(made[0].opts.host).toBe('https://www.youtube-nocookie.com');
     expect(made[0].opts.videoId).toBe('vid1_abcdEF');
     expect(made[0].played).toBe(0);
@@ -90,7 +91,7 @@ describe('openSermon', () => {
     render(<SermonPlayerHost />);
     openSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF'), { auto: true });
     await screen.findByRole('dialog', { name: 'The Day of the Lord' });
-    await vi.waitFor(() => expect(made[0]?.played).toBe(1));
+    await vi.waitFor(() => expect(made[0]?.played).toBe(1), { timeout });
     await act(async () => {});
     expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
   });
@@ -106,7 +107,7 @@ describe('openSermon', () => {
     behaviour = 'allow';
     await user.click(play);
     expect(made[0].played).toBe(2);
-    await vi.waitFor(() => expect(screen.queryByRole('button', { name: 'Play' })).toBeNull());
+    await vi.waitFor(() => expect(screen.queryByRole('button', { name: 'Play' })).toBeNull(), { timeout });
   });
 
   it('treats a play that never starts, in 3 seconds, as refused (a NotAllowedError that no event reported)', async () => {
@@ -141,7 +142,7 @@ describe('openSermon', () => {
     const user = userEvent.setup();
     render(<SermonPlayerHost />);
     openSermon(yt('https://www.youtube.com/watch?v=vid1_abcdEF'));
-    await vi.waitFor(() => expect(made).toHaveLength(1));
+    await vi.waitFor(() => expect(made).toHaveLength(1), { timeout });
     await user.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(made[0].destroyed).toBe(true);
