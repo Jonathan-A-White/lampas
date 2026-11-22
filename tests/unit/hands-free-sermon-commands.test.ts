@@ -7,7 +7,7 @@ import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { route } from 'voice-kit/handsfree';
 import { clearBus } from '../../src/events/bus';
-import { HELP_LINES, NOT_UNDERSTOOD, NO_SERMON_CONTROL, NO_SERMON_OPEN, OPEN_A_CHAPTER, runCommand, SPOKEN_COMMANDS } from '../../src/handsFree/commands';
+import { CLOSE_THE_SERMON, HELP_LINES, NOT_UNDERSTOOD, NO_SERMON_CONTROL, NO_SERMON_OPEN, OPEN_A_CHAPTER, runCommand, SPOKEN_COMMANDS } from '../../src/handsFree/commands';
 import { forgetPlayback, goOnAtClose, silenceAtWake } from '../../src/handsFree/playback';
 import type { LinkRow } from '../../src/sermons/merge';
 import { closeSermon, openSermon } from '../../src/sermons/player';
@@ -187,6 +187,24 @@ describe('the sermon reader is open', () => {
     await act(() => hear('play'));
     expect(spoken).not.toContain(OPEN_A_CHAPTER);
     expect(getReading().answer).not.toBeNull();
+  });
+});
+
+describe('a sermon sheet is open over the Bible', () => {
+  it("'next chapter', 'previous chapter' and 'read <place>' leave the sheet's reading alone and say to close the sermon (mw-ecpivg5.6)", async () => {
+    await openReader();
+    await act(() => hear('forward'));
+    expect(verse()).toBe(2);
+    const reading = getReading();
+    for (const words of ['next chapter', 'previous chapter', 'read John 3', 'go to Romans 8']) await act(() => hear(words));
+    expect(spoken).toEqual([CLOSE_THE_SERMON, CLOSE_THE_SERMON, CLOSE_THE_SERMON, CLOSE_THE_SERMON]);
+    expect(getReading()).toEqual(reading);
+  });
+  it("the same words over the player leave the video alone", async () => {
+    const video = await openPlayer();
+    for (const words of ['next chapter', 'read John 3']) await act(() => hear(words));
+    expect(spoken).toEqual([CLOSE_THE_SERMON, CLOSE_THE_SERMON]);
+    expect(video.calls).toEqual([]);
   });
 });
 
