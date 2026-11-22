@@ -26,6 +26,17 @@ export type LexiconKey = 'lemma' | 'commonLemma' | 'strongs' | 'topic';
 /** How an entry joined the catalogue: its Resource ID is named in the rules, or a type rule or a series rule took it from an export. Only what is named by id is in the old lists (LEXICONS ... DEVOTIONALS). */
 export type Via = 'id' | 'type' | 'series';
 
+/** One sermon of a sermon book the catalogue knows the passage of (mw-qtu3zvz.239): where its preaching text stands, in Lampas's book codes, and the query that opens Logos at that sermon in its book, in the form the book's
+ *  own row names (`off=21041`, an offset of the book, or `ref=Bible.Ga1.4`, where the book is indexed by the Bible reference there). `toChapter` is left out when the text stays in `chapter`. */
+export interface SermonAt {
+  book: string;
+  chapter: number;
+  from: number;
+  to: number;
+  toChapter?: number;
+  at: string;
+}
+
 export interface CatalogueEntry {
   /** the Logos Resource ID, the natural key: 'LLS:46.30.18'. Never guessed (mw-5r3p30.64). */
   resource: string;
@@ -61,6 +72,8 @@ export interface CatalogueEntry {
   source?: string;
   /** a devotional: Logos flags it as opening by day of the year ('no' may only mean unflagged) */
   dayOfYear?: boolean;
+  /** a sermon book (kind `sermons`) only: the sermons it is known to hold by passage. Logos cannot say which sermons of a book preach a verse, so a book with none listed here is offered at no verse (mw-qtu3zvz.239, docs/sermons.md 'In Logos') */
+  sermonsAt?: SermonAt[];
   /** a book of another kind that also holds sermons (the rules' `alsoSermons`, docs/design/sermon-sources.md section 11): it keeps its page of the Library and is also in the one list of sermon sources */
   alsoSermons?: boolean;
 }

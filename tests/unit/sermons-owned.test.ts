@@ -7,6 +7,7 @@ import { ownedResources } from '../../src/data/repositories';
 import { inLogosRows, sermonBookRows } from '../../src/library/inLogos';
 import { addressOffered, FREE_LOGOS, isOffered, logosResourceOf } from '../../src/data/owned';
 import { entriesOf } from '../../src/resources/catalogue';
+import { sermonAt, toldOf } from '../support/test-sermons';
 import { enabledSources, sermonsFor } from '../../src/sermons';
 import { enabledSources as enabledOf, ownsKey, sourceOffered } from '../../src/sermons/enabled';
 import { bundledSources, forgetSermonFiles, LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
@@ -152,18 +153,19 @@ describe('In Logos archives', () => {
   const [FIRST, SECOND] = entriesOf('sermons').filter((e) => !Object.values(LOGOS_RESOURCES).flat().includes(e.resource)).map((e) => e.resource);
   const states = new Map([[FIRST, 'on' as const], [SECOND, 'pinned' as const], [GREG, 'on' as const]]);
   const place = { book: 'rom', chapter: 5, from: 8 };
-
+  // each told of a sermon at Romans 5:8 (the catalogue holds none by passage, mw-qtu3zvz.239)
+  const books = [FIRST, SECOND, GREG].map((resource) => toldOf(resource, [sermonAt('rom', 5, 8, 'ref=Bible.Ro5.8')]));
   it('list a sermon book on his shelf only when his import holds it', () => {
-    expect(logosArchives(place, states, undefined, new Set()).map((a) => a.id)).toEqual([]);
-    expect(logosArchives(place, states, undefined, new Set([FIRST])).map((a) => a.id)).toEqual([FIRST]);
+    expect(logosArchives(place, states, books, new Set()).map((a) => a.id)).toEqual([]);
+    expect(logosArchives(place, states, books, new Set([FIRST])).map((a) => a.id)).toEqual([FIRST]);
   });
 
   it('never list the book a passage list stands for, though his import holds it: its sermons are the list’s own rows', () => {
-    expect(logosArchives(place, states, undefined, new Set([GREG, SECOND])).map((a) => a.id)).toEqual([SECOND]);
+    expect(logosArchives(place, states, books, new Set([GREG, SECOND])).map((a) => a.id)).toEqual([SECOND]);
   });
 
   it('are the only place a sermon book opens: the chooser behind In another book… holds none, owned or not', () => {
-    const entries = entriesOf('sermons');
+    const entries = books;
     expect(inLogosRows(entries, states, { book: 'rom', chapter: 5, verse: 8 }, EVERY_BOOK)).toEqual([]);
     expect(sermonBookRows(entries, states, { book: 'rom', chapter: 5, verse: 8 }, new Set([SECOND])).map((r) => r.entry.resource)).toEqual([SECOND]);
   });

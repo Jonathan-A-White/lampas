@@ -49,11 +49,12 @@ export function useArchives(place: SermonPlace | null): ArchiveRow[] | undefined
   const book = place?.book;
   const chapter = place?.chapter;
   const from = place?.from;
+  const to = place?.to;
   return useMemo(() => {
     if (held === undefined || owned === undefined || logos === undefined) return undefined;
     if (!logos || book === undefined || chapter === undefined) return [];
-    return logosArchives({ book, chapter, ...(from === undefined ? {} : { from }) }, new Map<string, ShelfState>(held.map((r) => [r.id, r.state])), undefined, owned, underLists(activeSources()));
-  }, [held, owned, logos, book, chapter, from]);
+    return logosArchives({ book, chapter, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }) }, new Map<string, ShelfState>(held.map((r) => [r.id, r.state])), undefined, owned, underLists(activeSources()));
+  }, [held, owned, logos, book, chapter, from, to]);
 }
 
 

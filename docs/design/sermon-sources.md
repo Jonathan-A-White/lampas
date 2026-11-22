@@ -65,7 +65,7 @@ This section is the app as it was before mw-qtu3zvz.92 landed. Its tense is the 
 | Holds (before the build) | the passage lists: 9 bundled (`public/sermons/index.json`) and each one the sermon index service adds (`growSermonRows`). A phone with no Logos import sees 2 of the 9 (Spurgeon's sermons (CCEL), Matthew Henry's sermons); the other 7, the Logos lists, are drawn only while his import holds one of their books (`src/settings/definitions/sermons.ts`, mw-qtu3zvz.94), so the nine are what a phone with the import sees | the Logos sermon books of the catalogue: 71 (`src/resources/catalogue/sermons.json`: of the 78 books Logos types as sermons or sermon outlines, 7 are left out, mw-qtu3zvz.108) |
 | Looked like | a section of rows at the foot of a Settings page, On / Off each, no search, no count | a page (before the build; at HEAD its address opens Sermon sources): header with its count at the right, help line, All on / All off, 'Search 71 sermon archives', a count, Off / On / Pin each (`src/library/KindPage.tsx`) |
 | Kept as | the setting `sermons.<id>` | the shelf row of the book (`db.library`, Off / On / Pinned) |
-| On gave | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at every verse, not counted; and a row behind In another book… at the verse, the Pinned ones first |
+| On gave | its sermons at their verses on the Sermons sheet, counted on the door | one link under **In Logos** on the Sermons sheet, at each verse the catalogue knows a sermon of it on (mw-qtu3zvz.239; first built at every verse), not counted; and a row behind In another book… at the verse, the Pinned ones first |
 
 What is wrong with it, beyond there being two:
 

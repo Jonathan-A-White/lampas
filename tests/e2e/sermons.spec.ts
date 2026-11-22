@@ -392,7 +392,7 @@ test('Settings > Study resources > Sermons opens the one list: a row for each bu
   await expect(view.getByRole('button', { name: /^Sermons/ })).toHaveCount(0);
 });
 
-test('with Logos On, the sermon books that are On in the list are the In Logos group of the Sermons sheet, by name, each a 44 px link into Logos at the verse; where nothing is listed the door is Sermons with no number (mw-qtu3zvz.3, mw-qtu3zvz.92)', async ({ page }) => {
+test('with Logos On and two sermon books On that hold no sermon by passage, the Sermons sheet has no In Logos group: Galatians 1:4 lists neither The Beatitudes nor Sermon Outlines on 1 Corinthians (mw-qtu3zvz.239)', async ({ page }) => {
   await openUnlocked(page);
   await turnLogosOn(page);
   // his import holds the archives and two books of sermons that no list stands for (mw-qtu3zvz.94)
@@ -407,49 +407,20 @@ test('with Logos On, the sermon books that are On in the list are the In Logos g
     await expect(group.getByRole('radio', { name: 'On', exact: true })).toHaveAttribute('aria-checked', 'true');
   }
 
-  await page.goto('/#/?b=rom&c=5');
-  await expect(page.locator('[data-verse="8"]')).toBeVisible();
-  const view = await openVerseView(page, 8);
-  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
-  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
-  await expect(sheet).toBeVisible();
-  const group = sheet.getByRole('group', { name: 'In Logos', exact: true });
-  await expect(group).toBeVisible();
-  // after the bundled groups
-  const heads = await sheet.locator('h3').allTextContents();
-  expect(heads.at(-1)).toBe('In Logos');
-  // by name, a leading The passed over; a book a list stands for (Greg Laurie's archive) has no row
-  const rows = group.locator('a[data-archive-row]');
-  await expect(rows).toHaveCount(2);
-  await expect(rows.nth(0).locator('[data-sermon-title]')).toHaveText('The Beatitudes');
-  await expect(rows.nth(1).locator('[data-sermon-title]')).toHaveText('Sermon Outlines on 1 Corinthians');
-  for (let i = 0; i < 2; i++) {
-    expect((await rows.nth(i).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
-    await expect(rows.nth(i).locator('[data-sermon-meta]')).toHaveText('Opens in Logos');
-    await expect(rows.nth(i)).toHaveAttribute('href', /^logosres:LLS:[A-Z0-9.]+;ref=Bible\.Ro5\.8$/);
-    await expect(rows.nth(i)).toHaveAttribute('data-fallback', /^https:\/\/ref\.ly\/logosres\/LLS%3A[A-Z0-9.]+\?ref=Bible\.Ro5\.8$/);
+  // Logos cannot open such a book at a verse it has no sermon indexed at ('Navigation failed'), and the catalogue knows no sermon of either: no row, at any verse
+  for (const [book, chapter, verse, title] of [['gal', 1, 4, 'Sermons for Galatians 1:4'], ['rom', 5, 8, 'Sermons for Romans 5:8']] as const) {
+    await page.goto(`/#/?b=${book}&c=${chapter}`);
+    await expect(page.locator(`[data-verse="${verse}"]`)).toBeVisible();
+    const view = await openVerseView(page, verse);
+    await view.getByRole('button', { name: /^Sermons(?: · \d+)?$/ }).click();
+    const sheet = page.getByRole('dialog', { name: title });
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('group', { name: 'In Logos', exact: true })).toHaveCount(0);
+    await expect(sheet.locator('a[data-archive-row]')).toHaveCount(0);
+    if (book === 'gal') await shot(page, 'sermons-no-in-logos-row');
+    await page.goBack();
+    await expect(sheet).toBeHidden();
   }
-  await group.scrollIntoViewIfNeeded();
-  await shot(page, 'sermons-in-logos');
-
-  // Back closes the sheet
-  await page.goBack();
-  await expect(sheet).toBeHidden();
-
-  // 2 John: no list reaches it, so the door has no number, and its sheet still has In Logos
-  await page.goto('/#/?b=2jn&c=1');
-  await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  const second = await openVerseView(page, 1);
-  const door = second.getByRole('button', { name: 'Sermons', exact: true });
-  await expect(door).toBeVisible();
-  expect((await door.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(43.5);
-  await shot(page, 'sermons-door-no-number');
-  await door.click();
-  const bare = page.getByRole('dialog', { name: 'Sermons for 2 John 1' });
-  await expect(bare).toBeVisible();
-  await expect(bare.locator('[data-sermons-part="here"] a[data-sermon-row], [data-sermons-part="chapter"] a[data-sermon-row]')).toHaveCount(0);
-  await expect(bare.getByRole('group', { name: 'In Logos', exact: true }).locator('a[data-archive-row]')).toHaveCount(2);
-  await shot(page, 'sermons-sheet-books-only');
 });
 
 /** The service's answers, the examples of the sermon-index repository's docs/api.md (tests/fixtures/sermons) given the id of a bundled Spurgeon row (104, Romans 5:8) and a row the bundle lacks. */
