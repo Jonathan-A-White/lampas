@@ -24,6 +24,7 @@ import { ClipPlayer } from '../audio/clipPlayer';
 import { isElided, joinElidedLetters, withoutElision } from './elision';
 import { DEFAULT_RATES, LANGUAGES, normaliseRate, type SettableLanguage, type SpeechLanguage, type SpeechRates } from './languages';
 import { DEFAULT_PRONUNCIATION, chosenHebrewPronunciation, hebrewVoiceForm, pronunciationOf, type GreekPronunciation, type Pronunciation } from './pronunciation';
+import { spokenText } from './spokenReference';
 
 /** how long warmVoices() waits for the phone to list its voices */
 const VOICES_WAIT_MS = 1500;
@@ -267,7 +268,9 @@ export function whenSaid(key: string, then: () => void): () => void {
 /** Asks the speech package to say `text` under `key`, in his speed and voice: it cancels what is speaking, cuts the text into sentences
  * (one per line break too) and reads each in the language of its letters. `slowly` is the speed of a word being sounded out. Returns false
  * when the phone cannot speak at all. */
-export function speakText(text: string, key: string, options: { onEnd?: () => void; slowly?: boolean; language?: SpeechLanguage } = {}): boolean {
+export function speakText(written: string, key: string, options: { onEnd?: () => void; slowly?: boolean; language?: SpeechLanguage } = {}): boolean {
+  // the one door of the phone's voice: a reference or number range is words here ('Acts 2:29-36' is not said 'minus 36', mw-fnvjof.17.199)
+  const text = spokenText(written, options.language);
   const synth = synthesis();
   if (!synth) return false;
   chooseVoices(synth);

@@ -12,6 +12,7 @@ import { clearBus } from '../../src/events/bus';
 import { cardOf } from '../../src/markdown/verseLinks';
 import { getPassagePlayer, onPassageChange, pausePassage, playPassages, resumePassage, stopPassage, type PassageRef, type PassageState } from '../../src/speech/passagePlayer';
 import { stopReading } from '../../src/speech/readAloud';
+import { spokenReference } from '../../src/speech/spokenReference';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 
@@ -64,6 +65,15 @@ async function listenToTheEnd(): Promise<void> {
 }
 
 describe('the passage player reads references in order', () => {
+  it('says a range\'s heading as through, never as a hyphen the voice reads as minus (mw-fnvjof.17.199)', async () => {
+    playPassages([refOf('Acts 2:29-36')]);
+    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
+    const heading = flat(synth.spoken[0].text);
+    expect(heading).toBe('Acts 2, verses 29 through 36');
+    expect(synth.spoken.map((s) => s.text).join(' ')).not.toMatch(/\d\s*[-\u2013]\s*\d/);
+    expect(getPassagePlayer().current?.heading).toBe('Acts 2:29-36');
+  });
+
   it('reads every verse of each reference, one after the other, in English', async () => {
     playPassages([refOf('Heb 7:1-2'), refOf('Rom 8:1')]);
     await listenToTheEnd();
@@ -75,7 +85,7 @@ describe('the passage player reads references in order', () => {
     expect(at.every((i) => i >= 0)).toBe(true);
     expect([...at].sort((a, b) => a - b)).toEqual(at);
     expect(synth.spoken.every((s) => s.lang === 'en-US')).toBe(true);
-    expect(synth.spoken.map((s) => flat(s.text))).toEqual(expect.arrayContaining(['Hebrews 7:1-2', 'Romans 8:1']));
+    expect(synth.spoken.map((s) => flat(s.text))).toEqual(expect.arrayContaining([say('Hebrews 7:1-2'), say('Romans 8:1')]));
     expect(changes.at(-1)).toEqual(['idle', null]);
   });
 
@@ -99,15 +109,17 @@ describe('the passage player reads references in order', () => {
 });
 
 const flat = (text: string) => text.replace(/\s+/g, ' ').trim();
+/** What the voice is handed for a written reference: its range said as words (src/speech/spokenReference.ts). */
+const say = spokenReference;
 
 describe('a New Testament reference is announced by its heading first (mw-9q8wp1.9)', () => {
   it('says the heading in English, then the verses, and a book with no data only its skip line', async () => {
     playPassages([refOf('John 10:27'), unheldOf('Psalm 62:1-2'), refOf('Heb 7:24-25')]);
     await listenToTheEnd();
     const said = synth.spoken.map((s) => flat(s.text));
-    const john = said.indexOf('John 10:27');
-    const skip = said.indexOf('Psalm 62:1-2: skipping, no Old Testament present');
-    const heb = said.indexOf('Hebrews 7:24-25');
+    const john = said.indexOf(say('John 10:27'));
+    const skip = said.indexOf(say('Psalm 62:1-2: skipping, no Old Testament present'));
+    const heb = said.indexOf(say('Hebrews 7:24-25'));
     expect(john).toBe(0);
     expect(synth.spoken[john].lang).toBe('en-US');
     expect(said.slice(john + 1, skip).join(' ')).toContain(englishOf('jhn', 10, 27).slice(0, 40));
@@ -123,14 +135,14 @@ describe('a New Testament reference is announced by its heading first (mw-9q8wp1
     await setReaderView('greek');
     playPassages([refOf('Rom 8:1')]);
     await listenToTheEnd();
-    expect(synth.spoken[0]).toMatchObject({ text: 'Romans 8:1', lang: 'en-US' });
+    expect(synth.spoken[0]).toMatchObject({ text: say('Romans 8:1'), lang: 'en-US' });
     expect(synth.spoken.slice(1).every((s) => s.lang === 'el-GR')).toBe(true);
   });
 
   it('keeps the heading and the verses one reference: the end of the heading does not move on to the next', async () => {
     playPassages([refOf('Rom 8:1'), refOf('Heb 7:1')]);
     await vi.waitFor(() => expect(synth.spoken.length).toBe(1), { timeout });
-    expect(flat(synth.spoken[0].text)).toBe('Romans 8:1');
+    expect(flat(synth.spoken[0].text)).toBe(say('Romans 8:1'));
     expect(getPassagePlayer()).toMatchObject({ state: 'playing', current: { heading: 'Romans 8:1' } });
     synth.finish();
     await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(1), { timeout });
@@ -142,7 +154,7 @@ describe('a New Testament reference is announced by its heading first (mw-9q8wp1
   it('Pause during a heading pauses; Resume reads on into the verses', async () => {
     playPassages([refOf('Rom 8:1')]);
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
-    expect(flat(synth.spoken[0].text)).toBe('Romans 8:1');
+    expect(flat(synth.spoken[0].text)).toBe(say('Romans 8:1'));
     pausePassage();
     await vi.waitFor(() => expect(getPassagePlayer().state).toBe('paused'), { timeout });
     expect(getSpeech().status).toBe('paused');
@@ -156,20 +168,20 @@ describe('a New Testament reference is announced by its heading first (mw-9q8wp1
   it('Stop during a heading ends the player, and the verses are never said', async () => {
     playPassages([refOf('Rom 8:1'), refOf('Heb 7:1')]);
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
-    expect(flat(synth.spoken[0].text)).toBe('Romans 8:1');
+    expect(flat(synth.spoken[0].text)).toBe(say('Romans 8:1'));
     stopPassage();
     expect(getPassagePlayer()).toMatchObject({ state: 'idle', current: null });
     await quiet();
     expect(synth.speaking).toBe(false);
-    expect(synth.spoken.map((s) => flat(s.text))).toEqual(['Romans 8:1']);
+    expect(synth.spoken.map((s) => flat(s.text))).toEqual([say('Romans 8:1')]);
   });
 
   it('the player bar names the reference whose heading is being said', async () => {
     playPassages([refOf('John 10:27'), refOf('Heb 7:24-25')]);
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
-    expect(flat(synth.spoken.at(-1)!.text)).toBe('John 10:27');
+    expect(flat(synth.spoken.at(-1)!.text)).toBe(say('John 10:27'));
     expect(getPassagePlayer().current?.heading).toBe('John 10:27');
-    await finishUntil(() => synth.spoken.some((s) => flat(s.text) === 'Hebrews 7:24-25'));
+    await finishUntil(() => synth.spoken.some((s) => flat(s.text) === say('Hebrews 7:24-25')));
     expect(getPassagePlayer().current?.heading).toBe('Hebrews 7:24-25');
   });
 });
@@ -178,7 +190,7 @@ describe('a reference to a book Lampas holds no data for', () => {
   it('is announced as skipped, and the player goes on to the next one', async () => {
     playPassages([unheldOf('Isaiah 30:21'), refOf('Rom 8:1')]);
     await listenToTheEnd();
-    expect(synth.spoken[0].text).toBe('Isaiah 30:21: skipping, no Old Testament present');
+    expect(synth.spoken[0].text).toBe(say('Isaiah 30:21: skipping, no Old Testament present'));
     expect(synth.spoken[0].lang).toBe('en-US');
     expect(synth.spoken.slice(1).map((s) => s.text).join(' ')).toContain(englishOf('rom', 8, 1).slice(0, 40));
   });
@@ -186,13 +198,13 @@ describe('a reference to a book Lampas holds no data for', () => {
   it('speaks only the announcement when it is the whole list', async () => {
     playPassages([unheldOf('Psalm 62:1-2')]);
     await listenToTheEnd();
-    expect(synth.spoken.map((s) => s.text)).toEqual(['Psalm 62:1-2: skipping, no Old Testament present']);
+    expect(synth.spoken.map((s) => s.text)).toEqual([say('Psalm 62:1-2: skipping, no Old Testament present')]);
   });
 
   it('is read like any other when Lampas holds the book (mw-5r3p30.840)', async () => {
     playPassages([refOf('Isa 30:21')]);
     await listenToTheEnd();
-    expect(synth.spoken[0]).toMatchObject({ text: 'Isaiah 30:21', lang: 'en-US' });
+    expect(synth.spoken[0]).toMatchObject({ text: say('Isaiah 30:21'), lang: 'en-US' });
     expect(synth.spoken.slice(1).map((s) => s.text).join(' ')).toContain(englishOf('isa', 30, 21).slice(0, 30));
   });
 });
@@ -242,7 +254,7 @@ describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)',
     expect(getPassagePlayer()).toMatchObject({ state: 'playing', current: { heading: 'Romans 8:1' } });
     await vi.waitFor(() => expect(synth.speaking).toBe(true), { timeout });
     // the reference starts from its heading
-    expect(flat(synth.spoken[heard].text)).toBe('Romans 8:1');
+    expect(flat(synth.spoken[heard].text)).toBe(say('Romans 8:1'));
     await listenToTheEnd();
     expect(synth.spoken.slice(heard + 1).map((s) => flat(s.text)).join(' ')).toContain(englishOf('rom', 8, 1).slice(0, 40));
   });
@@ -300,7 +312,7 @@ describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)',
     await quiet();
     expect(getPassagePlayer().state).toBe('idle');
     // the paused announcement may be said again from its start on Resume; the next reference is never said
-    expect(new Set(synth.spoken.map((s) => s.text))).toEqual(new Set(['Isaiah 30:21: skipping, no Old Testament present']));
+    expect(new Set(synth.spoken.map((s) => s.text))).toEqual(new Set([say('Isaiah 30:21: skipping, no Old Testament present')]));
   });
 
   it('the hand-off to an Old Testament reference: Pause just as one ends holds its announcement until Resume', async () => {
@@ -310,10 +322,10 @@ describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)',
     pausePassage();
     expect(getPassagePlayer()).toMatchObject({ state: 'paused', current: { heading: 'Psalm 62:1' } });
     await quiet();
-    expect(synth.spoken.map((s) => s.text)).toEqual(['Isaiah 30:21: skipping, no Old Testament present']);
+    expect(synth.spoken.map((s) => s.text)).toEqual([say('Isaiah 30:21: skipping, no Old Testament present')]);
     resumePassage();
     await vi.waitFor(() => expect(synth.spoken.length).toBe(2), { timeout });
-    expect(synth.spoken[1].text).toBe('Psalm 62:1: skipping, no Old Testament present');
+    expect(synth.spoken[1].text).toBe(say('Psalm 62:1: skipping, no Old Testament present'));
     await listenToTheEnd();
   });
 
@@ -324,7 +336,7 @@ describe('Pause or Stop pressed in a wait between two references (mw-9q8wp1.7)',
     stopPassage();
     await quiet();
     expect(getPassagePlayer().state).toBe('idle');
-    expect(synth.spoken.map((s) => s.text)).toEqual(['Isaiah 30:21: skipping, no Old Testament present']);
+    expect(synth.spoken.map((s) => s.text)).toEqual([say('Isaiah 30:21: skipping, no Old Testament present')]);
   });
 });
 
@@ -362,7 +374,7 @@ describe('Pause, Resume and Stop', () => {
     synth.finishAll();
     stopPassage();
     await new Promise((r) => setTimeout(r, 50));
-    expect(synth.spoken.map((s) => s.text)).toEqual(['Isaiah 30:21: skipping, no Old Testament present']);
+    expect(synth.spoken.map((s) => s.text)).toEqual([say('Isaiah 30:21: skipping, no Old Testament present')]);
   });
 
   it('is over for the player when something else takes the voice', async () => {
@@ -382,7 +394,7 @@ describe('a reference to a Septuagint chapter (the Septuagint On, Psalms 10, whi
     playPassages([{ heading: 'Psalms 10:1-2', held: { book: 'psa', chapter: 10, first: 1, last: 2 } }]);
     await listenToTheEnd();
     const said = synth.spoken.map((s) => flat(s.text));
-    expect(said[0]).toBe('Psalms 10:1-2');
+    expect(said[0]).toBe(say('Psalms 10:1-2'));
     const verses = synth.spoken.slice(1);
     expect(verses.length).toBeGreaterThan(0);
     expect(verses.every((s) => s.lang === 'el-GR')).toBe(true);

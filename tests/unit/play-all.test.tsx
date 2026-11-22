@@ -18,6 +18,7 @@ import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../support/chapter-fetch';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
+import { spokenReference } from '../../src/speech/spokenReference';
 
 const timeout = ASYNC_WAIT_MS;
 let synth: FakeSynth;
@@ -72,16 +73,16 @@ describe('Play all on a verse list', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Play all' }));
     await reading('Reading Romans 8:1 · 1 of 3');
     await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
-    expect(synth.spoken[0]).toMatchObject({ text: 'Romans 8:1', lang: 'en-US' });
+    expect(synth.spoken[0]).toMatchObject({ text: spokenReference('Romans 8:1'), lang: 'en-US' });
 
     // the Old Testament reference is read in English like the rest (mw-uqlxea.3), its heading first, and nothing is skipped
     await listenUntil('Reading Isaiah 30:21 · 2 of 3');
-    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Isaiah 30:21'), { timeout });
-    const isaiahAt = synth.spoken.findIndex((s) => s.text === 'Isaiah 30:21');
+    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain(spokenReference('Isaiah 30:21')), { timeout });
+    const isaiahAt = synth.spoken.findIndex((s) => s.text === spokenReference('Isaiah 30:21'));
     expect(isaiahAt).toBeGreaterThan(0);
     expect(synth.spoken.every((s) => !s.text.includes('skipping'))).toBe(true);
     await listenUntil('Reading Hebrews 7:24-25 · 3 of 3');
-    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Hebrews 7:24-25'), { timeout });
+    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain(spokenReference('Hebrews 7:24-25')), { timeout });
     expect(synth.spoken[isaiahAt + 1]).toMatchObject({ lang: 'en-US', text: expect.stringContaining('This is the way') });
     expect(synth.spoken.every((s) => s.text !== '' && !s.text.includes('skipping'))).toBe(true);
 
@@ -136,9 +137,22 @@ describe('Play all on a verse list', () => {
     await listenUntil('Reading 1 Samuel 8 · 2 of 2');
     // the first chapter's first verse and the last chapter's last verse were both read before the second reference began
     const said = synth.spoken.map((s) => s.text.replace(/\s+/g, ' ')).join(' ');
-    expect(said).toContain('Judges 1-5');
+    expect(said).toContain(spokenReference('Judges 1-5'));
     expect(said).toContain(englishOfJudges(1, 1));
     expect(said).toContain(englishOfJudges(5, 31));
+    await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
+  }, 60_000);
+
+  it("says a range's heading as 'through', never as a hyphen read 'minus' (mw-fnvjof.17.199)", async () => {
+    const list = await createVerseList("God's kingdom through God's covenants", ['Acts.2.29-36', '2Pet.1.11'], 1);
+    render(<VerseListScreen id={list.id} />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Play all' }));
+    await reading('Reading Acts 2:29-36 · 1 of 2');
+    await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
+    expect(synth.spoken[0].text).toBe('Acts 2, verses 29 through 36');
+    await listenUntil('Reading 2 Peter 1:11 · 2 of 2');
+    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('2 Peter 1, verse 11'), { timeout });
+    expect(synth.spoken.some((s) => /\d\s*[-\u2013]\s*\d/.test(s.text.slice(0, 40)) && s.text.includes('Acts'))).toBe(false);
     await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
   }, 60_000);
 
@@ -181,7 +195,7 @@ describe('Play all resumes where he stopped (mw-5r3p30.1236)', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'From the start' }));
     await reading('Reading Romans 8:1 · 1 of 2');
     await vi.waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0), { timeout });
-    expect(synth.spoken[0].text).toBe('Romans 8:1');
+    expect(synth.spoken[0].text).toBe(spokenReference('Romans 8:1'));
     expect(getPlace(listKey(list.id))?.heading).not.toBe('Hebrews 7:24-25');
     await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
   });
@@ -232,11 +246,11 @@ describe("Play all on the Share sheet's Bible references", () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Play all' }));
     await reading('Reading Romans 8:1 · 1 of 3');
     await listenUntil('Reading Isaiah 30:21 · 2 of 3');
-    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain('Isaiah 30:21'), { timeout });
+    await vi.waitFor(() => expect(synth.spoken.map((s) => s.text)).toContain(spokenReference('Isaiah 30:21')), { timeout });
     await listenUntil('Reading Hebrews 7:24-25 · 3 of 3');
     expect(synth.spoken.every((s) => !s.text.includes('skipping'))).toBe(true);
     // the Share sheet's Play all says each reference's heading first too
-    expect(synth.spoken.map((s) => s.text)).toContain('Romans 8:1');
+    expect(synth.spoken.map((s) => s.text)).toContain(spokenReference('Romans 8:1'));
     await userEvent.click(screen.getByRole('button', { name: 'Stop' }));
     await waitFor(() => expect(screen.queryByRole('status', { name: 'Playing the list' })).toBeNull(), { timeout });
   });
