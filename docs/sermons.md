@@ -23,6 +23,7 @@ Reading needs no licence.
   - [The build](#the-build-1)
   - [The Themes line](#the-themes-line)
   - [On the same theme](#on-the-same-theme)
+  - [Hiding a theme](#hiding-a-theme)
   - [Settings](#settings)
   - [Credits](#credits)
 - [When online](#when-online)
