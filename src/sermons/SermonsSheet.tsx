@@ -4,7 +4,7 @@
 // After them, 'In Logos' lists his sermon books that are On at the place, by name, one link each, while Logos is On (mw-qtu3zvz.3, docs/sermons.md 'In Logos'; switched in Settings > Study resources > Sermons > Sermon sources, mw-qtu3zvz.92).
 // Online (mw-qtu3zvz.5, docs/sermons.md 'When online'): the sheet opens on the bundled rows, asks the sermon index service and says 'Latest from the index · N new' (or 'Offline: the bundled index') under the title;
 // a search field answers from the service alone ('Found'). Under the title of a verse or a passage a 'Themes' line names the topics that carry it, and after 'In this chapter' come the sermons 'On <topic>' that share a topic with it (mw-qtu3zvz.4, docs/sermons.md 'The themes').
-import { useEffect, useRef, useState, type MutableRefObject, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type MutableRefObject, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { placeName } from '../maps/placeName';
 import { armFallback } from '../resources/openApp';
@@ -24,6 +24,7 @@ import { linkRowOf, linkRowOfHit, openedRow, type LinkRow } from './merge';
 import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
+import { openSermon, videoOfRow } from './player';
 import { creditAddress, opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } from './openWeb';
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
 import { rankHits, type FoundRankContext } from './foundRank';
@@ -33,7 +34,7 @@ import { useHiddenThemes, useSameTheme, useThemeChips, useThemes, type ThemeChip
 const ROW = 'flex min-h-11 w-full items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
 /** The second line of a row: the preacher (else the source's `by`, the church, where the preacher is unknown: mw-qtu3zvz.89), the date, and where it opens (a web page needs the internet while the phone is offline). */
 function metaOf(row: LinkRow, online: boolean, by?: string): string {
-  const opens = row.opensIn === 'logos' ? 'Opens in Logos' : online ? 'Opens on the web' : 'Needs the internet';
+  const opens = row.opensIn === 'logos' ? 'Opens in Logos' : !online ? 'Needs the internet' : videoOfRow(row) ? 'Plays here' : 'Opens on the web';
   return [row.preacher ? row.preacher : by, row.date === undefined ? undefined : plainDate(row.date), opens].filter((p) => p !== undefined && p !== '').join(' · ');
 }
 
@@ -46,12 +47,23 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
   const { fallback } = row.open;
   // the Firefox intent when he chose Firefox on Android (openWeb.ts); a Logos row's link is never turned
   const href = useRowHref()(row);
+  // a video plays here, in the player sheet (mw-qtu3zvz.83); its link stays for a long press and for a page that cannot play it
+  const plays = videoOfRow(row) !== undefined;
+  const onClick = plays
+    ? (event: MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        openSermon(row);
+      }
+    : fallback
+      ? () => armFallback(fallback)
+      : undefined;
   return (
     <a
       data-sermon-row
+      {...(plays ? { 'data-sermon-plays': '' } : {})}
       href={href}
       data-fallback={fallback}
-      onClick={fallback ? () => armFallback(fallback) : undefined}
+      onClick={onClick}
       {...(opensNewTab(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className={ROW}
     >
@@ -68,7 +80,7 @@ function Row({ row: given, online, why }: { row: LinkRow; online: boolean; why?:
           </span>
         )}
       </span>
-      <span aria-hidden="true">↗</span>
+      <span aria-hidden="true">{plays ? '▶' : '↗'}</span>
     </a>
   );
 }

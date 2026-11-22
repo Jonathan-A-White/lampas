@@ -453,7 +453,7 @@ test('with Logos On, the sermon books that are On in the list are the In Logos g
 });
 
 /** The service's answers, the examples of the sermon-index repository's docs/api.md (tests/fixtures/sermons) given the id of a bundled Spurgeon row (104, Romans 5:8) and a row the bundle lacks. */
-async function serveService(page: Page, { down = false }: { down?: boolean } = {}): Promise<{ asked: string[] }> {
+async function serveService(page: Page, { down = false, extra = [] }: { down?: boolean; extra?: object[] } = {}): Promise<{ asked: string[] }> {
   const asked: string[] = [];
   await page.route(`${SERVICE}/**`, async (route) => {
     const url = new URL(route.request().url());
@@ -483,8 +483,8 @@ async function serveService(page: Page, { down = false }: { down?: boolean } = {
     }
     return json({
       ref: 'Rom.5',
-      total: 2,
-      rows: [sermon('104', 'Love\'s Commendation, Revised', 'Rom.5.8', 'https://ccel.org/ccel/spurgeon/sermons02/revised.html'), sermon('9999', 'Reigning Grace, Newly Found', 'Rom.5.21', 'https://ccel.org/ccel/spurgeon/sermons06/new.html')],
+      total: 2 + extra.length,
+      rows: [sermon('104', 'Love\'s Commendation, Revised', 'Rom.5.8', 'https://ccel.org/ccel/spurgeon/sermons02/revised.html'), sermon('9999', 'Reigning Grace, Newly Found', 'Rom.5.21', 'https://ccel.org/ccel/spurgeon/sermons06/new.html'), ...extra],
     });
   });
   return { asked };
@@ -693,4 +693,102 @@ test('Romans 5:8: Hide this theme is one 44 px tap that says where it comes back
   await expect(row.locator('[data-hidden-none]')).toBeVisible();
   await row.scrollIntoViewIfNeeded();
   await shot(page, 'themes-shown-again');
+});
+
+/** The YouTube IFrame API as a fake (the real one is youtube.com's script): a Player that draws a box in its target, says it is ready, and counts playVideo; window.__ytBlock makes it report autoplay blocked. */
+const FAKE_YOUTUBE = `
+window.__yt = { made: [], played: 0 };
+window.YT = { PlayerState: { PLAYING: 1, BUFFERING: 3 }, Player: class {
+  constructor(target, opts) {
+    this.opts = opts;
+    const box = document.createElement('iframe');
+    box.setAttribute('data-fake-youtube', opts.videoId);
+    box.setAttribute('src', 'about:blank');
+    target.appendChild(box);
+    window.__yt.made.push({ host: opts.host, videoId: opts.videoId });
+    setTimeout(() => opts.events.onReady({ target: this }), 0);
+  }
+  playVideo() {
+    window.__yt.played++;
+    if (window.__ytBlock) this.opts.events.onAutoplayBlocked({});
+    else this.opts.events.onStateChange({ data: 1 });
+  }
+  destroy() { window.__yt.destroyed = true; }
+} };
+window.onYouTubeIframeAPIReady && window.onYouTubeIframeAPIReady();
+`;
+
+const VIDEO_ROWS = [
+  { source: 'spurgeon-ccel', id: '9101', title: 'The Day of the Lord', preacher: 'Brookfield First', date: '2026-11-01', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', alt_url: null, kind: 'video', ref: 'Rom.5.8', role: 'text', width: 1 },
+  { source: 'spurgeon-ccel', id: '9102', title: 'Like Precious Faith', preacher: 'Phil Morgan', date: '2026-10-25', url: 'https://www.youtube.com/watch?v=aaaaaaaaaaa', alt_url: 'https://brookfieldfirst.subspla.sh/q59d572', kind: 'video', ref: 'Rom.5.8', role: 'text', width: 1 },
+];
+
+test('a video sermon plays in the app: a YouTube row opens the player sheet over the sermons with Close, not the web (mw-qtu3zvz.83)', async ({ page }) => {
+  await openUnlocked(page);
+  await serveService(page, { extra: VIDEO_ROWS });
+  await page.route('https://www.youtube.com/iframe_api', (route) => route.fulfill({ status: 200, contentType: 'application/javascript', body: FAKE_YOUTUBE }));
+  let leftTheApp = 0;
+  page.on('popup', () => leftTheApp++);
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  const row = sheet.locator('a[data-sermon-row]').filter({ hasText: 'The Day of the Lord' });
+  await expect(row).toHaveCount(1);
+  // the play label, not 'Opens on the web'
+  await expect(row.locator('[data-sermon-meta]')).toContainText('Plays here');
+  await expect(row.locator('[data-sermon-meta]')).not.toContainText('Opens on the web');
+  await row.click();
+
+  const player = page.getByRole('dialog', { name: 'The Day of the Lord' });
+  await expect(player).toBeVisible();
+  await expect(player.locator('[data-fake-youtube="dQw4w9WgXcQ"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { __yt: { made: object[] } }).__yt.made)).toEqual([{ host: 'https://www.youtube-nocookie.com', videoId: 'dQw4w9WgXcQ' }]);
+  // a tap opens it; nothing starts by itself
+  expect(await page.evaluate(() => (window as unknown as { __yt: { played: number } }).__yt.played)).toBe(0);
+  expect(leftTheApp).toBe(0);
+  // 16:9 inside the 390 px screen, Close a 44 px target
+  const box = (await player.locator('[data-sermon-video]').boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(390.5);
+  expect(box.width / box.height).toBeCloseTo(16 / 9, 1);
+  const close = player.getByRole('button', { name: 'Close' });
+  expect((await close.boundingBox())!.height).toBeGreaterThanOrEqual(43.5);
+  await shot(page, 'sermon-player-youtube');
+
+  await close.click();
+  await expect(player).toBeHidden();
+  await expect(sheet).toBeVisible();
+  // the phone's Back closes the player first, then the sheet
+  await row.click();
+  await expect(player).toBeVisible();
+  await page.goBack();
+  await expect(player).toBeHidden();
+  await expect(sheet).toBeVisible();
+});
+
+test('a Subsplash row plays in Subsplash\'s own embed player in the same sheet (mw-qtu3zvz.83)', async ({ page }) => {
+  await openUnlocked(page);
+  await serveService(page, { extra: VIDEO_ROWS });
+  const embedded: string[] = [];
+  await page.route('https://subsplash.com/**', (route) => {
+    embedded.push(route.request().url());
+    return route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>embed</title><body style="background:#222">embed</body>' });
+  });
+  await page.goto('/#/?b=rom&c=5');
+  await expect(page.locator('[data-verse="8"]')).toBeVisible();
+  const view = await openVerseView(page, 8);
+  await view.getByRole('button', { name: /^Sermons · \d+$/ }).click();
+  const sheet = page.getByRole('dialog', { name: 'Sermons for Romans 5:8' });
+  const row = sheet.locator('a[data-sermon-row]').filter({ hasText: 'Like Precious Faith' });
+  await expect(row.locator('[data-sermon-meta]')).toContainText('Plays here');
+  await row.click();
+  const player = page.getByRole('dialog', { name: 'Like Precious Faith' });
+  await expect(player).toBeVisible();
+  await expect(player.locator('iframe')).toHaveAttribute('src', 'https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572');
+  await expect.poll(() => embedded).toEqual(['https://subsplash.com/u/brookfieldfirst/media/embed/d/q59d572']);
+  await shot(page, 'sermon-player-subsplash');
+  await player.getByRole('button', { name: 'Close' }).click();
+  await expect(player).toBeHidden();
 });
