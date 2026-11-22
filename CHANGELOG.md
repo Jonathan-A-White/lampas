@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.338
+_2026-11-22_
+- Fixed: David's recording of Nehemiah chapter 7 now plays verse 69 from its start to its end.
+
 ## 0.7.337
 _2026-11-22_
 - New: Ask the Bible talk to play a sermon, out loud or typed, and it starts playing in the app after the tutor says its title and preacher.
