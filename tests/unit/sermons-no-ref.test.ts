@@ -11,7 +11,7 @@ import { runSermonsBuild } from '../../scripts/sermons-build';
 import { bundledSources, forgetSermonFiles, LOGOS_RESOURCES } from '../../src/sermons/sources/bundled';
 import { sermonsForSources } from '../../src/sermons/sermonsFor';
 
-const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos', 'kuyper-logos', 'worlds-great-sermons-logos', 'mcpherson-logos', 'strong-logos'];
+const NO_REF = ['piper-logos', 'bunyan-logos', 'jimmy-evans-logos', 'kuyper-logos', 'worlds-great-sermons-logos', 'mcpherson-logos', 'strong-logos', 'eyton-logos', 'chapin-logos', 'pope-logos', 'smale-logos'];
 const index = JSON.parse(readFileSync('public/sermons/index.json', 'utf8')) as SermonIndex;
 const canonIndex = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: Array<{ code: string; verses: number[] }> };
 
@@ -59,7 +59,7 @@ describe('the build, for a source whose rows name no passage', () => {
   });
 });
 
-describe('the committed bundle, for Piper, Bunyan, Jimmy Evans, Kuyper, The World’s Great Sermons, McPherson and Strong', () => {
+describe('the committed bundle, for Piper, Bunyan, Jimmy Evans, Kuyper, The World’s Great Sermons, McPherson, Strong, Eyton, Chapin, Pope and Smale', () => {
   for (const id of NO_REF) {
     it(`${id} is in the index with no rows and no book, Off to start, and has no book file`, () => {
       const entry = index.sources.find((s) => s.id === id);
@@ -81,6 +81,10 @@ describe('the committed bundle, for Piper, Bunyan, Jimmy Evans, Kuyper, The Worl
     expect(LOGOS_RESOURCES['mcpherson-logos']).toEqual(['LLS:DVNHLNGSRMNS']);
     expect(LOGOS_RESOURCES['strong-logos']).toEqual(['LLS:PHILANDREL']);
     expect(LOGOS_RESOURCES['worlds-great-sermons-logos']).toHaveLength(10);
+    expect(LOGOS_RESOURCES['eyton-logos']).toEqual(['LLS:BEATITUDES']);
+    expect(LOGOS_RESOURCES['chapin-logos']).toEqual(['LLS:DSCRSSBTTDS']);
+    expect(LOGOS_RESOURCES['pope-logos']).toEqual(['LLS:WITOTHERDISC']);
+    expect(LOGOS_RESOURCES['smale-logos']).toEqual(['LLS:PNTCSTLBLSSNG']);
   });
 
   describe('on a verse', () => {

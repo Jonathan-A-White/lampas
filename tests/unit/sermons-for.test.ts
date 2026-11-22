@@ -94,7 +94,7 @@ describe('the registry', () => {
   afterEach(forgetTestSermons);
 
   it('registers the bundled sources, the free ones On and his Logos archives Off', async () => {
-    expect(SOURCES.map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos', 'shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos']);
+    expect(SOURCES.map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons', 'greg-laurie-logos', 'jd-greear-logos', 'skip-heitzig-logos', 'spurgeon-sermon-notes-logos', 'wesley-logos', 'whitefield-logos', 'moody-logos', 'augustine-logos', 'chrysostom-logos', 'piper-logos', 'bunyan-logos', 'charles-wesley-logos', 'jimmy-evans-logos', 'shedd-logos', 'burroughs-logos', 'keach-logos', 'maclaren-logos', 'kuyper-logos', 'broadus-logos', 'worlds-great-sermons-logos', 'princeton-sermons-logos', 'mcpherson-logos', 'strong-logos', 'sedgwick-logos', 'moberly-logos', 'eyton-logos', 'chapin-logos', 'watson-logos', 'pope-logos', 'smale-logos', 'wi-evans-logos', 'calvin-pt-logos']);
     expect((await enabledSources()).map((s) => s.id)).toEqual(['spurgeon-ccel', 'henry-sermons']);
   });
 

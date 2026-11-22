@@ -111,6 +111,16 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sermons/princeton-sermons-logos/')) return 'Princeton Sermons'; // likewise
   if (path.startsWith('public/sermons/mcpherson-logos/')) return 'McPherson\'s Healing Sermons'; // likewise
   if (path.startsWith('public/sermons/strong-logos/')) return 'Strong\'s Philosophy and Religion'; // likewise
+  // batch 5 (mw-qtu3zvz.26); eyton-logos, chapin-logos, pope-logos and smale-logos have no book file (their rows name no passage), the rules are for the form
+  if (path.startsWith('public/sermons/sedgwick-logos/')) return 'Sedgwick\'s sermons'; // likewise
+  if (path.startsWith('public/sermons/moberly-logos/')) return 'Moberly\'s Sermons on the Beatitudes'; // likewise
+  if (path.startsWith('public/sermons/eyton-logos/')) return 'Eyton\'s The Beatitudes'; // likewise
+  if (path.startsWith('public/sermons/chapin-logos/')) return 'Chapin\'s Discourses on the Beatitudes'; // likewise
+  if (path.startsWith('public/sermons/watson-logos/')) return 'Watson\'s sermons on the Beatitudes'; // likewise
+  if (path.startsWith('public/sermons/pope-logos/')) return 'Pope\'s The Inward Witness'; // likewise
+  if (path.startsWith('public/sermons/smale-logos/')) return 'Smale\'s The Pentecostal Blessing'; // likewise
+  if (path.startsWith('public/sermons/wi-evans-logos/')) return 'W. I. Evans\'s This River Must Flow!'; // likewise
+  if (path.startsWith('public/sermons/calvin-pt-logos/')) return 'Calvin\'s sermons in Portuguese'; // likewise
   if (path.startsWith('public/themes/themes-tcr1934/')) return 'Thompson'; // the theme index's book files (scripts/sermons-build.ts): topics, part labels and passages of CrossWire's TCR module (Thompson's 1934 subject index), facts only
   if (path.startsWith('public/themes/themes-torrey/')) return 'Torrey'; // the same of CrossWire's Torrey module (R. A. Torrey's New Topical Textbook, 1897)
   if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)

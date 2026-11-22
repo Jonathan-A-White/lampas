@@ -27,4 +27,14 @@ export const LOGOS_RESOURCES: Readonly<Record<string, readonly string[]>> = {
   'princeton-sermons-logos': ['LLS:PRINCESERMON'],
   'mcpherson-logos': ['LLS:DVNHLNGSRMNS'],
   'strong-logos': ['LLS:PHILANDREL'],
+  // batch 5 (mw-qtu3zvz.26); Eyton's, Chapin's, Pope's and Smale's rows name no passage (and so have no book file), the rest only some (Sedgwick's 4 of 7, W. I. Evans's 1 of 10)
+  'sedgwick-logos': ['LLS:THNKSGVNGSRMNWS', 'LLS:NARKADELUGE', 'LLS:LSHHSTRNSLTNLJH', 'LLS:NTRDNGRHRSS', 'LLS:HMNSVNTYCDVRSRS', 'LLS:NGLNDSPRJDGMNTS'],
+  'moberly-logos': ['LLS:SRMNSBTTD'],
+  'eyton-logos': ['LLS:BEATITUDES'],
+  'chapin-logos': ['LLS:DSCRSSBTTDS'],
+  'watson-logos': ['LLS:SRMNSBTTDWATSON'],
+  'pope-logos': ['LLS:WITOTHERDISC'],
+  'smale-logos': ['LLS:PNTCSTLBLSSNG'],
+  'wi-evans-logos': ['LLS:THSRVRMSTFLW'],
+  'calvin-pt-logos': ['LLS:SRMSSBRLRPRV'],
 };
