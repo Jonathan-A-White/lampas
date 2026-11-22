@@ -64,18 +64,15 @@ Gen.24:8	7	carry	24		0.80
 Gen.24:8	8	again.	-		0.80
 Gen.24:9	1	the servant	2,3		0.80
 Gen.24:9	2	of	11		0.80
-Gen.24:9	3	master	12		0.80
-Gen.24:9	4	to	-		0.80
-Gen.24:9	5	matter.	18,19		0.80
+Gen.24:9	3	to	-		0.80
+Gen.24:9	4	matter.	18,19		0.80
 Gen.24:10	1	the servant	2,3		0.80
-Gen.24:10	2	master's	9,10		0.80
+Gen.24:10	2	his	-		0.80
 Gen.24:10	3	took	-		0.80
 Gen.24:10	4	of	17		0.80
-Gen.24:10	5	master	18		0.80
-Gen.24:10	6	him,	-		0.80
-Gen.24:10	7	he	-		0.80
-Gen.24:10	8	and	-		0.80
-Gen.24:10	9	of	-		0.80
+Gen.24:10	5	him,	-		0.80
+Gen.24:10	6	and	-		0.80
+Gen.24:10	7	of	-		0.80
 Gen.24:11	1	he	-		0.80
 Gen.24:11	2	his	-		0.80
 Gen.24:11	3	without	4		0.80
@@ -89,7 +86,6 @@ Gen.24:12	3	of my	5		0.80
 Gen.24:12	4	way	-		0.80
 Gen.24:12	4	before me	9		0.80
 Gen.24:12	4	to day,	11		0.80
-Gen.24:12	5	master	16,17		0.80
 Gen.24:13	1	by	-		0.80
 Gen.24:13	2	of	6		0.80
 Gen.24:13	3	of them that	11		0.80
@@ -105,9 +101,10 @@ Gen.24:14	8	they shall have	25	unsure	0.50
 Gen.24:14	9	one	-		0.80
 Gen.24:14	10	have prepared	29		0.80
 Gen.24:14	10	for your servant	30,31		0.80
-Gen.24:14	11	hereby shall I	-		0.80
-Gen.24:14	12	have	-		0.80
-Gen.24:14	13	master	-		0.80
+Gen.24:14	11	hereby shall	-		0.80
+Gen.24:14	12	have dealt	-		0.80
+Gen.24:14	12	mercifully	40		0.80
+Gen.24:14	13	my	-		0.80
 Gen.24:15	1	came	-		0.80
 Gen.24:15	2	pass	-		0.80
 Gen.24:15	3	had done	4		0.80
@@ -193,19 +190,16 @@ Gen.24:26	1	being well pleased,	1		0.80
 Gen.24:26	2	the	-		0.80
 Gen.24:27	1	and said,	-		0.80
 Gen.24:27	1	Blessed be	0		0.80
-Gen.24:27	1	the	2		0.80
+Gen.24:27	1	the	-		0.80
 Gen.24:27	2	of	-		0.80
-Gen.24:27	3	master	-		0.80
-Gen.24:27	4	has	-		0.80
-Gen.24:27	5	his	11	unsure	0.50
-Gen.24:27	6	to fail,	-		0.80
-Gen.24:27	6	nor his	14	unsure	0.50
-Gen.24:27	7	master,	-		0.80
-Gen.24:27	8	has brought	-		0.80
-Gen.24:27	9	prosperously	21		0.80
-Gen.24:27	10	the	-		0.80
-Gen.24:27	11	of	-		0.80
-Gen.24:27	12	of	27		0.80
+Gen.24:27	3	has	-		0.80
+Gen.24:27	4	his	11	unsure	0.50
+Gen.24:27	5	to fail,	-		0.80
+Gen.24:27	5	nor his	14	unsure	0.50
+Gen.24:27	6	has brought	-		0.80
+Gen.24:27	7	the	-		0.80
+Gen.24:27	8	of	-		0.80
+Gen.24:27	9	of	27		0.80
 Gen.24:28	1	the damsel	2,3		0.80
 Gen.24:28	2	and reported	4		0.80
 Gen.24:28	3	of	8		0.80
@@ -250,17 +244,15 @@ Gen.24:33	9	on.	-		0.80
 Gen.24:34	1	he	-		0.80
 Gen.24:34	2	am a	5		0.80
 Gen.24:34	3	of	-		0.80
-Gen.24:35	1	has	-		0.80
-Gen.24:35	2	master	-		0.80
-Gen.24:35	2	greatly,	6		0.80
+Gen.24:35	1	the	-		0.80
+Gen.24:35	2	has	-		0.80
 Gen.24:35	3	he is	-		0.80
 Gen.24:35	4	he has	-		0.80
-Gen.24:36	1	master's wife	3,4,5,6		0.80
-Gen.24:36	2	master	10,11		0.80
-Gen.24:36	3	he had grown	14	unsure	0.50
-Gen.24:36	4	whatever	20		0.80
-Gen.24:36	5	had.	-		0.80
-Gen.24:37	1	master caused	3,4		0.80
+Gen.24:36	1	wife	3,4		0.80
+Gen.24:36	2	he had grown	14	unsure	0.50
+Gen.24:36	3	whatever	20		0.80
+Gen.24:36	4	had.	-		0.80
+Gen.24:37	1	caused	-		0.80
 Gen.24:37	2	to swear,	1		0.80
 Gen.24:37	3	You shall	-		0.80
 Gen.24:37	4	a	-		0.80
@@ -273,12 +265,9 @@ Gen.24:38	3	you shall	-		0.80
 Gen.24:38	4	thence	20		0.80
 Gen.24:38	4	a wife	16		0.80
 Gen.24:38	4	for	17		0.80
-Gen.24:39	1	I	-		0.80
-Gen.24:39	2	to	2		0.80
-Gen.24:39	3	master,	3		0.80
-Gen.24:39	3	Haply	6		0.80
-Gen.24:39	4	will	-		0.80
-Gen.24:39	5	go	8		0.80
+Gen.24:39	1	to my	-		0.80
+Gen.24:39	2	will	-		0.80
+Gen.24:39	3	go	-		0.80
 Gen.24:40	1	to	-		0.80
 Gen.24:40	2	The	4		0.80
 Gen.24:40	3	to	-		0.80
@@ -302,11 +291,9 @@ Gen.24:41	6	then shall you	19		0.80
 Gen.24:41	7	oath.	23,24		0.80
 Gen.24:42	1	having	-		0.80
 Gen.24:42	2	this	-		0.80
-Gen.24:42	3	I	-		0.80
-Gen.24:42	4	of	10		0.80
-Gen.24:42	5	master	-		0.80
-Gen.24:42	6	journey	-		0.80
-Gen.24:42	7	am	-		0.80
+Gen.24:42	3	of my	-		0.80
+Gen.24:42	4	journey	-		0.80
+Gen.24:42	5	am	-		0.80
 Gen.24:43	1	by	-		0.80
 Gen.24:43	2	of	6		0.80
 Gen.24:43	3	of	-		0.80
@@ -330,9 +317,9 @@ Gen.24:44	7	the	-		0.80
 Gen.24:44	8	has prepared	14		0.80
 Gen.24:44	8	for	16		0.80
 Gen.24:44	9	own	-		0.80
-Gen.24:44	10	hereby shall I	-		0.80
+Gen.24:44	10	hereby shall	-		0.80
 Gen.24:44	11	have	-		0.80
-Gen.24:44	12	master	27,28		0.80
+Gen.24:44	12	my	-		0.80
 Gen.24:45	1	it came	-		0.80
 Gen.24:45	2	pass	-		0.80
 Gen.24:45	3	had done	4		0.80
@@ -361,17 +348,14 @@ Gen.24:47	8	I	-		0.80
 Gen.24:47	9	on	-		0.80
 Gen.24:48	1	I	-		0.80
 Gen.24:48	2	the	-		0.80
-Gen.24:48	3	I	-		0.80
-Gen.24:48	4	the	7		0.80
-Gen.24:48	5	of	-		0.80
-Gen.24:48	6	master	-		0.80
-Gen.24:48	7	has prospered	-		0.80
-Gen.24:48	8	a true way,	17,18		0.80
-Gen.24:48	8	so that	-		0.80
-Gen.24:48	9	should	-		0.80
-Gen.24:48	10	of	22		0.80
-Gen.24:48	10	my master's	24,25		0.80
-Gen.24:48	11	for	27		0.80
+Gen.24:48	3	the	-		0.80
+Gen.24:48	4	of my	-		0.80
+Gen.24:48	5	has prospered	-		0.80
+Gen.24:48	6	a true way,	17,18		0.80
+Gen.24:48	6	so that	-		0.80
+Gen.24:48	7	should	-		0.80
+Gen.24:48	8	of my	-		0.80
+Gen.24:48	9	for	27		0.80
 Gen.24:49	1	will deal	2		0.80
 Gen.24:49	1	mercifully	4		0.80
 Gen.24:49	2	my	-		0.80
@@ -395,9 +379,8 @@ Gen.24:51	2	and go away,	5		0.80
 Gen.24:51	3	let her	-		0.80
 Gen.24:51	4	to	-		0.80
 Gen.24:51	5	of	-		0.80
-Gen.24:51	6	master,	11,12		0.80
-Gen.24:51	7	the	-		0.80
-Gen.24:51	8	has said.	15		0.80
+Gen.24:51	6	the	-		0.80
+Gen.24:51	7	has said.	15		0.80
 Gen.24:52	1	it came	-		0.80
 Gen.24:52	2	pass	-		0.80
 Gen.24:52	2	when	2,3		0.80
@@ -418,8 +401,8 @@ Gen.24:54	3	he	-		0.80
 Gen.24:54	4	in the	-		0.80
 Gen.24:54	5	and	-		0.80
 Gen.24:54	6	away,	-		0.80
-Gen.24:54	7	I may	-		0.80
-Gen.24:54	8	master.	23,24		0.80
+Gen.24:54	7	may	-		0.80
+Gen.24:54	8	my	-		0.80
 Gen.24:55	1	brethren	2,3		0.80
 Gen.24:55	2	her	-		0.80
 Gen.24:55	3	Let	-		0.80
@@ -428,14 +411,14 @@ Gen.24:55	5	us	12		0.80
 Gen.24:55	6	that	-		0.80
 Gen.24:55	7	shall	-		0.80
 Gen.24:56	1	he	0		0.80
-Gen.24:56	2	Hinder me	6		0.80
+Gen.24:56	2	Hinder	6		0.80
 Gen.24:56	3	for the	8	unsure	0.50
 Gen.24:56	4	has	-		0.80
 Gen.24:56	5	my	-		0.80
 Gen.24:56	6	for	-		0.80
 Gen.24:56	7	away,	-		0.80
 Gen.24:56	8	may	-		0.80
-Gen.24:56	9	master.	19,20		0.80
+Gen.24:56	9	my	-		0.80
 Gen.24:57	1	they	0		0.80
 Gen.24:57	2	Let us	-		0.80
 Gen.24:57	3	at	8		0.80
@@ -476,10 +459,9 @@ Gen.24:65	1	to	-		0.80
 Gen.24:65	2	Who	4		0.80
 Gen.24:65	3	that	-		0.80
 Gen.24:65	4	us?	16		0.80
-Gen.24:65	5	master;	23,24		0.80
-Gen.24:65	6	she	26		0.80
-Gen.24:65	7	her veil	29,30		0.80
-Gen.24:65	7	and covered herself.	31		0.80
+Gen.24:65	5	she	26		0.80
+Gen.24:65	6	her veil	29,30		0.80
+Gen.24:65	6	and covered herself.	31		0.80
 Gen.24:66	1	servant told	1,3		0.80
 Gen.24:66	2	he had	-		0.80
 Gen.24:67	1	his	-		0.80
@@ -491,20 +473,41 @@ Gen.24:4	fix	you shall go instead	7		0.80
 Gen.24:8	fix	land,	11		0.80
 Gen.24:8	fix	clear	13		0.80
 Gen.24:14	fix	done	26		0.80
-Gen.24:14	fix	have dealt	39		0.80
-Gen.24:14	fix	mercifully	40		0.80
 Gen.24:14	fix	with	-		0.80
 Gen.24:14	fix	hereby shall I	35		0.80
-Gen.24:14	fix	master	41,42		0.80
+Gen.24:14	fix	have dealt	39		0.80
+Gen.24:14	fix	my master	41,42,43		0.80
 Gen.24:15	fix	it came to pass	1		0.80
 Gen.24:15	fix	her	31		0.80
 Gen.24:21	fix	whether	9		0.80
 Gen.24:21	fix	had made	10		0.80
 Gen.24:21	fix	way prosperous	12,13		0.80
+Gen.24:27	fix	my master,	17,18,19		0.80
+Gen.24:27	fix	and the Lord	13,22		0.80
 Gen.24:33	fix	told	-		0.80
 Gen.24:33	fix	errand.	14,15		0.80
+Gen.24:36	fix	my master's	5,6,7		0.80
+Gen.24:36	fix	my master	10,11,12		0.80
+Gen.24:37	fix	my master	3,4,5		0.80
+Gen.24:37	fix	caused me to swear,	1,2		0.80
+Gen.24:39	fix	I said	0		0.80
+Gen.24:39	fix	to my master,	2,3,4		0.80
+Gen.24:39	fix	Haply	6		0.80
+Gen.24:39	fix	go	8		0.80
 Gen.24:42	fix	prosper	16		0.80
 Gen.24:42	fix	well,	5		0.80
 Gen.24:42	fix	journey	17,18		0.80
+Gen.24:42	fix	I said,	6		0.80
+Gen.24:42	fix	of my master	10,11,12		0.80
+Gen.24:44	fix	hereby shall I know	23		0.80
+Gen.24:44	fix	my master	27,28,29		0.80
+Gen.24:48	fix	I blessed	5		0.80
+Gen.24:48	fix	of my master	9,10,11		0.80
+Gen.24:48	fix	I should	-		0.80
+Gen.24:48	fix	of my master's	24,25,26		0.80
 Gen.24:53	fix	servant having	3		0.80
 Gen.24:53	fix	forth	-		0.80
+Gen.24:54	fix	I may go	21		0.80
+Gen.24:54	fix	my master.	23,24,25		0.80
+Gen.24:56	fix	I may depart	17		0.80
+Gen.24:56	fix	my master.	19,20,21		0.80

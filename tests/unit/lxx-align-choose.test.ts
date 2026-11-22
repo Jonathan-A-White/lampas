@@ -142,6 +142,40 @@ describe('the listing numbers the runs at the stage the ship applies the rows', 
   });
 });
 
+/**
+ * Genesis 24:35 in miniature (mw-u2w5klk.349.27): κύριος is glossed 'lord: God' by the lexicon, which has no 'master', so the aligner paired the Lord of 'the Lord has blessed my master' to the later κύριόν, and
+ * the 'master' that renders it was left with no Greek word; in 24:27 'God' was paired to a κυρίου. The English a κύριος is rendered by, 'lord' and 'master', pairs it, and 'God' stays with θεός.
+ */
+describe('κύριος pairs to the English that renders it: Lord and master', () => {
+  const kyrios = (t: string, tr: string, p: string): GreekWord => word(t, tr, 'κύριος', p);
+  const lexicon = (lemma: string): string => ({ κύριος: 'lord: God', θεός: 'God', εὐλογέω: 'bless', ἐγώ: 'I', Ἀβραάμ: 'Abraham', σφόδρα: 'greatly' })[lemma] ?? '';
+  const verseAt = (text: string, g: GreekWord[]): Chapter => ({ book: 'Genesis', code: 'gen', chapter: 24, verses: [{ n: 35, g, e: [{ t: text, g: [] }] }] }) as unknown as Chapter;
+  const pairedTo = (v: Verse, english: string): string[] => v.e.filter((c) => c.t.replace(/[^a-z]/gi, '') === english).flatMap((c) => c.g.map((k) => `${v.g[k].t}`));
+
+  it('Genesis 24:35: the Lord is Κύριος and my master is κύριόν, so master has a Greek word', () => {
+    const g = [kyrios('Κύριος', 'kurios', 'N-NSM'), word('δὲ', 'de', 'δέ', 'CONJ'), word('εὐλόγησεν', 'eulogēsen', 'εὐλογέω', 'V-AAI-3S'), word('τὸν', 'ton', 'ὁ', 'T-ASM'), kyrios('κύριόν', 'kurion', 'N-ASM'), word('μου', 'mou', 'ἐγώ', 'P-1GS'), word('σφόδρα', 'sphodra', 'σφόδρα', 'ADV')];
+    const verse = alignChapter(verseAt('and the Lord has blessed my master greatly,', g), lexicon).chapter.verses[0];
+    expect(pairedTo(verse, 'Lord')).toEqual(['Κύριος']);
+    expect(pairedTo(verse, 'master')).toEqual(['κύριόν']);
+  });
+
+  it('Genesis 24:27: God is θεός, and my master is a κυρίου rather than an unpaired word', () => {
+    const g = [
+      kyrios('Κύριος', 'kurios', 'N-NSM'),
+      word('ὁ', 'ho', 'ὁ', 'T-NSM'),
+      word('θεὸς', 'theos', 'θεός', 'N-NSM'),
+      word('τοῦ', 'tou', 'ὁ', 'T-GSM'),
+      kyrios('κυρίου', 'kuriou', 'N-GSM'),
+      word('μου', 'mou', 'ἐγώ', 'P-1GS'),
+      word('Ἀβραάμ,', 'abraam', 'Ἀβραάμ', 'N-GSM'),
+    ];
+    const verse = alignChapter(verseAt('Blessed be the Lord God of my master Abraham,', g), lexicon).chapter.verses[0];
+    expect(pairedTo(verse, 'Lord')).toEqual(['Κύριος']);
+    expect(pairedTo(verse, 'God')).toEqual(['θεὸς']);
+    expect(pairedTo(verse, 'master')).toEqual(['κυρίου']);
+  });
+});
+
 describe('the session file', () => {
   it('reads a run as text and Greek positions between slashes, a mark after the positions, and a run of one chunk with no text', () => {
     const { lines, offences } = parseModelLines(
@@ -580,10 +614,10 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     }
   });
 
-  // Genesis 24 to 29 (mw-u2w5klk.349.4): the English content words that sit in a chunk with no Greek word after the pass, 168 of 2,535 (566 had none before it; 187 after it, 19 fewer after the fix rows of mw-u2w5klk.349.33, read with `npm run lxx:unpaired -- --book gen`),
+  // Genesis 24 to 29 (mw-u2w5klk.349.4): the English content words that sit in a chunk with no Greek word after the pass, 162 of 2,535 (566 had none before it; 187 after it, 19 fewer after the fix rows of mw-u2w5klk.349.33, 6 fewer after the aligner paired κύριος to 'master' (mw-u2w5klk.349.27), read with `npm run lxx:unpaired -- --book gen`),
   // keyed chapter:verse:word and read by hand from `--list`, each in one of three lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs are not touched, so the first and third
   // lists are the same kind as those of Genesis 12 to 23 above: 'it came to pass' renders ἐγένετο (paired to one English word), and the Greek word of the rest is a pair the aligner made to another English word
-  // ('master' for Κύριος, 'draw' for ὑδρεύσατο) or English Brenton adds to make a Greek phrase English ('instead', 'just', 'hither', 'forth', 'away').
+  // ('draw' for ὑδρεύσατο) or English Brenton adds to make a Greek phrase English ('instead', 'just', 'hither', 'forth', 'away').
   const IDIOM_NO_GREEK_24_TO_29 = [
     '24:22:came', '24:22:pass', '24:30:came', '24:30:pass', '24:45:came', '24:45:pass', '24:52:came', '24:52:pass', '25:11:came',
     '25:11:pass', '26:32:came', '26:32:pass', '27:1:came', '27:1:pass', '27:30:came', '27:30:pass', '27:30:came', '27:30:pass', '27:34:came', '27:34:pass', '29:10:came',
@@ -598,9 +632,9 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
   const PAIRED_OR_ADDED_NO_GREEK_24_TO_29 = [
     '24:1:things', '24:3:god', '24:4:thence', '24:5:came', '24:6:back', '24:7:sprang', '24:7:thence', '24:8:again', '24:10:took',
     '24:11:draw', '24:12:way', '24:14:give', '24:14:drink', '24:14:one', '24:15:same', '24:16:came', '24:17:drink', '24:18:drink',
-    '24:19:draw', '24:20:again', '24:20:drew', '24:22:put', '24:22:pieces', '24:24:son', '24:27:master', '24:27:fail', '24:27:master',
-    '24:27:brought', '24:29:meet', '24:32:wash', '24:35:master', '24:42:master', '24:43:come', '24:43:drink', '24:44:draw', '24:44:own',
-    '24:44:hereby', '24:45:went', '24:45:drew', '24:45:drink', '24:46:head', '24:46:give', '24:46:gave', '24:48:master', '24:48:prospered', '24:49:tell', '24:49:hand',
+    '24:19:draw', '24:20:again', '24:20:drew', '24:22:put', '24:22:pieces', '24:24:son', '24:27:fail',
+    '24:27:brought', '24:29:meet', '24:32:wash', '24:43:come', '24:43:drink', '24:44:draw', '24:44:own',
+    '24:45:went', '24:45:drew', '24:45:drink', '24:46:head', '24:46:give', '24:46:gave', '24:48:prospered', '24:49:tell', '24:49:hand',
     '24:50:come', '24:54:went', '24:54:away', '24:56:away', '24:59:forth', '24:63:forth', '24:63:lifted', '24:64:lifted', '25:6:away', '25:7:many',
     '25:7:one', '25:8:man', '25:9:son', '25:17:one', '25:18:one', '25:20:old', '25:20:syrian', '25:23:one', '25:25:came', '25:26:forth', '25:26:old',
     '25:27:lads', '25:32:belong', '26:2:go', '26:10:sin', '26:12:one',
@@ -616,7 +650,7 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     const named = [...IDIOM_NO_GREEK_24_TO_29, ...OTHER_VERSE_NO_GREEK_24_TO_29, ...PAIRED_OR_ADDED_NO_GREEK_24_TO_29].sort();
     const found = [24, 25, 26, 27, 28, 29].flatMap((n) => noGreek(withModel.get(n)!)).sort();
     expect(found).toEqual(named);
-    expect(named).toHaveLength(168);
+    expect(named).toHaveLength(162);
     for (const n of [24, 25, 26, 27, 28, 29]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
   });
 

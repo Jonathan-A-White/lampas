@@ -103,7 +103,7 @@ const CURATED_TABLE: Readonly<Record<string, string>> = {
   'καλέω': 'call called name named', 'τίθημι': 'put set lay', 'ἀποστέλλω': 'send sent', 'ἐξέρχομαι': 'go went come came forth out', 'εἰσέρχομαι': 'go went enter entered come came', 'ἀναβαίνω': 'go went up',
   'καταβαίνω': 'go went down', 'ἵστημι': 'stand stood set', 'τίκτω': 'bear bore beget begat', 'γεννάω': 'beget begat bear bore', 'ἀποθνήσκω': 'die died', 'ζάω': 'live lived', 'ἐσθίω': 'eat ate', 'πίνω': 'drink drank',
   'ἀπέρχομαι': 'go went depart departed', 'ἐξάγω': 'bring brought lead led forth', 'συνάγω': 'gather gathered', 'διαχωρίζω': 'divide divided separate', 'ἰδού': 'behold lo', 'υἱός': 'son sons', 'πατήρ': 'father fathers',
-  'κύριος': 'lord', 'βασιλεύς': 'king', 'λαός': 'people', 'ἄνθρωπος': 'man men human', 'ἡμέρα': 'day days', 'νύξ': 'night', 'μέσος': 'between midst middle', 'ὕδωρ, ὕδατος': 'water waters',
+  'κύριος': 'lord master', 'βασιλεύς': 'king', 'λαός': 'people', 'ἄνθρωπος': 'man men human', 'ἡμέρα': 'day days', 'νύξ': 'night', 'μέσος': 'between midst middle', 'ὕδωρ, ὕδατος': 'water waters',
   'ἐγώ': 'i me my', 'σύ': 'thou thee thy you your', 'ἡμεῖς': 'we us our', 'ὑμεῖς': 'ye you your', 'ἑαυτοῦ': 'himself herself themselves their his her',
 };
 const CURATED = new Map(Object.entries(CURATED_TABLE).map(([lemma, words]) => [lemma.normalize('NFC'), new Set(words.split(' ').map((w) => stemOf(w)))]));

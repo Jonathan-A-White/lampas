@@ -13,7 +13,6 @@ Gen.39:2	2	he	-		0.80
 Gen.39:2	3	a prosperous	8		0.80
 Gen.39:2	4	he	-		0.80
 Gen.39:2	5	his	15		0.80
-Gen.39:3	1	master	2,3		0.80
 Gen.39:3	1	knew	0		0.80
 Gen.39:3	2	the	-		0.80
 Gen.39:3	3	was	-		0.80
@@ -59,16 +58,15 @@ Gen.39:7	1	came	-		0.80
 Gen.39:7	2	pass	-		0.80
 Gen.39:7	3	things,	3,4		0.80
 Gen.39:7	3	that	6		0.80
-Gen.39:7	3	his master's wife	8,9,10,11		0.80
-Gen.39:7	3	cast	7		0.80
+Gen.39:7	3	his	-		0.80
+Gen.39:7	4	wife	8,9		0.80
+Gen.39:7	4	cast	7		0.80
 Gen.39:8	1	would	3		0.80
-Gen.39:8	2	to	6		0.80
-Gen.39:8	3	master's wife,	7,8,9		0.80
+Gen.39:8	2	to his	6		0.80
+Gen.39:8	3	wife,	7,8		0.80
 Gen.39:8	4	of	-		0.80
-Gen.39:8	5	master	12,13		0.80
-Gen.39:8	6	his	21	unsure	0.50
-Gen.39:8	7	has	-		0.80
-Gen.39:8	8	things that belong	26		0.80
+Gen.39:8	5	has	-		0.80
+Gen.39:8	6	things that belong	26		0.80
 Gen.39:9	1	this	4		0.80
 Gen.39:9	1	house	5,6		0.80
 Gen.39:9	1	there is nothing above	1,2,7		0.80
@@ -124,7 +122,6 @@ Gen.39:15	4	having	-		0.80
 Gen.39:15	5	his	13	unsure	0.50
 Gen.39:15	6	forth	-		0.80
 Gen.39:16	1	So she	0	unsure	0.50
-Gen.39:16	2	the master	8,9		0.80
 Gen.39:17	1	she	-		0.80
 Gen.39:17	2	to	-		0.80
 Gen.39:17	3	to	-		0.80
@@ -145,7 +142,7 @@ Gen.39:18	4	his	11	unsure	0.50
 Gen.39:18	5	departed	-		0.80
 Gen.39:19	1	it came	-		0.80
 Gen.39:19	2	pass,	-		0.80
-Gen.39:19	3	his master	4,5		0.80
+Gen.39:19	3	his	4		0.80
 Gen.39:19	4	all	-		0.80
 Gen.39:19	5	of	-		0.80
 Gen.39:19	6	wife,	-		0.80
@@ -154,7 +151,7 @@ Gen.39:19	7	servant	19,20		0.80
 Gen.39:19	7	to	-		0.80
 Gen.39:19	8	that he was	-		0.80
 Gen.39:19	8	very angry.	23,24		0.80
-Gen.39:20	1	his master	2,3		0.80
+Gen.39:20	1	his	2		0.80
 Gen.39:20	2	where	14,15		0.80
 Gen.39:20	3	are	-		0.80
 Gen.39:21	1	the	-		0.80

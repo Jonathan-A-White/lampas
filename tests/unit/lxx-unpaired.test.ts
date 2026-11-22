@@ -134,4 +134,4 @@ describe.skipIf(!real.run)('the real Genesis 1 to 45', () => {
 
 const MODEL_NO_GREEK_GEN_1_TO_11 = [11, 9, 13, 17, 33, 18, 23, 40, 12, 6, 31];
 /** Genesis 12 to 45. Genesis 43, 44 and 45 (mw-u2w5klk.349.49) read 4, 4 and 7. Genesis 40, 41 and 42 (mw-u2w5klk.349.48) read 0, 5 and 1. Genesis 37, 38 and 39 (mw-u2w5klk.349.47) read 16, 2 and 1. Genesis 12, 13, 16, 17, 18 and 22 fell (15, 15, 6, 20, 23, 41 before) when mw-u2w5klk.349.32 gave 58 of the English words a Greek word; Genesis 14 fell (24 before) to 3 when mw-u2w5klk.349.46 gave 21 of its English words a Greek word; Genesis 24, 25, 26, 27 and 29 fell (79, 23, 17, 32, 27 before) when mw-u2w5klk.349.33 moved 33 low-confidence pairs. */
-const MODEL_NO_GREEK_GEN_12_TO_45 = [8, 11, 3, 10, 3, 8, 11, 30, 15, 18, 23, 11, 69, 20, 14, 30, 9, 26, 30, 47, 16, 17, 20, 28, 9, 16, 2, 1, 0, 5, 1, 4, 4, 7];
+const MODEL_NO_GREEK_GEN_12_TO_45 = [8, 11, 3, 10, 3, 8, 11, 30, 15, 18, 23, 11, 63, 20, 14, 30, 9, 26, 30, 47, 16, 17, 20, 28, 9, 16, 2, 1, 0, 5, 1, 4, 4, 7];
