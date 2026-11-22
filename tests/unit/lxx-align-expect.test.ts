@@ -26,6 +26,7 @@ import {
   type Measure,
 } from '../../scripts/lxx/align-expect';
 import type { Shipped } from '../../scripts/lxx/ship';
+import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
 const dirs: string[] = [];
 const tmp = (): string => {
@@ -33,7 +34,7 @@ const tmp = (): string => {
   dirs.push(d);
   return d;
 };
-afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })));
+afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
 const word = (t: string, p = 'N-NSM'): GreekWord => ({ t, tr: t, s: '', l: t, p, y: '2', c: 0.9 });
 /** A verse with a model chunk that has no Greek ('there', content), a remainder ('removed thence'), a paired chunk, and a function word with no Greek ('and'). */
