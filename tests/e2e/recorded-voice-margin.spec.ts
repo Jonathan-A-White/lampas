@@ -111,8 +111,30 @@ async function hearThePage(page: Page): Promise<void> {
       element: HTMLMediaElement | null;
       plays: number;
       failed: string | null;
+      /** each time the element's muted flag went from true to false: its second then (mw-ar5k42b.58) */
+      unmutes: Array<{ second: number; readyState: number; seeking: boolean }>;
+      /** how many times it went from false to true */
+      mutes: number;
     }
-    const ear: Ear = { sampleRate: 0, window: 0, heard: [], ready: false, element: null, plays: 0, failed: null };
+    const ear: Ear = { sampleRate: 0, window: 0, heard: [], ready: false, element: null, plays: 0, failed: null, unmutes: [], mutes: 0 };
+    // the element's muted flag is logged where it is set: the page's own code sets it, the test only watches
+    const flag = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'muted');
+    if (flag?.get && flag.set) {
+      const { get, set } = flag;
+      Object.defineProperty(HTMLMediaElement.prototype, 'muted', {
+        configurable: true,
+        enumerable: flag.enumerable,
+        get(this: HTMLMediaElement) {
+          return get.call(this) as boolean;
+        },
+        set(this: HTMLMediaElement, on: boolean) {
+          const was = get.call(this) as boolean;
+          set.call(this, on);
+          if (was && !on) ear.unmutes.push({ second: this.currentTime, readyState: this.readyState, seeking: this.seeking });
+          if (!was && on) ear.mutes++;
+        },
+      });
+    }
     (window as unknown as { lampasEar: Ear }).lampasEar = ear;
     // the publisher's server sends no CORS and the app's element asks none: here the route sends it and the element asks, or Web Audio would hear only silence
     const Original = window.Audio;
@@ -195,6 +217,18 @@ const earState = (page: Page): Promise<EarState> =>
   page.evaluate(() => {
     const ear = (window as unknown as { lampasEar: { heard: number[]; plays: number } }).lampasEar;
     return { heard: ear.heard.length / 2, plays: ear.plays };
+  });
+
+interface Unmute {
+  second: number;
+  readyState: number;
+  seeking: boolean;
+}
+/** The unmutes the element has had since `skip` of them, and how many mutes it has had in all. */
+const unmutesOf = (page: Page): Promise<{ unmutes: Unmute[]; mutes: number }> =>
+  page.evaluate(() => {
+    const ear = (window as unknown as { lampasEar: { unmutes: Unmute[]; mutes: number } }).lampasEar;
+    return { unmutes: ear.unmutes.slice(), mutes: ear.mutes };
   });
 
 /** The windows heard since window `from`, once the ear has heard a quarter second more than it had (the worklet sends its windows in batches, and a stop's last sound comes after it). */
@@ -415,6 +449,23 @@ function hold(m: Measure, what: string): void {
   expect.soft(m.lostMs, `${what}: ms of the span's own tone not heard`).toBeLessThanOrEqual(0);
 }
 
+/** The start of a play seeks the element and mutes it until its second is at the span's start, then unmutes it (mw-ar5k42b.58). Headless Chromium takes a muted element for silent
+ * and can snap its second to the wall clock (mw-ar5k42b.46), so the first sound heard must be within START_WITHIN of the span's start both ways, not only not before it by more than the
+ * margin, and the play must have had its unmute (the second the element read then is logged, relative to the start, for each play). */
+const START_WITHIN = 0.05;
+function holdStartWhole(m: Measure, cold: boolean, after: { unmutes: Unmute[]; mutes: number }, before: { unmutes: Unmute[]; mutes: number }, start: number, what: string): void {
+  const unmutes = after.unmutes.slice(before.unmutes.length);
+  const mutes = after.mutes - before.mutes;
+  console.log(`unmute: ${what}: muted ${mutes}x, unmuted ${unmutes.length}x at element second ${unmutes.map((u) => `${ms(u.second - start)} ms from the start (readyState ${u.readyState}, seeking ${u.seeking})`).join('; ')}; first sound ${m.startMs} ms from the start`);
+  if (OUT) appendFileSync(OUT, `${JSON.stringify({ unmute: what, startMs: m.startMs, mutes, unmutesMs: unmutes.map((u) => ms(u.second - start)), readyStates: unmutes.map((u) => u.readyState) })}\n`);
+  // a play on a freshly loaded element (cold) is seeked short of the start and muted; Play again seeks the element to the start before it plays, so it is never short of it and never muted
+  expect.soft(mutes, `${what}: the play ${cold ? 'seeked the element short of the start and muted it' : 'was not muted'}`).toBe(cold ? 1 : 0);
+  expect.soft(unmutes.length, `${what}: every mute was followed by an unmute`).toBe(mutes);
+  expect.soft(Math.abs(m.startMs), `${what}: first second heard less the start, ms (within ${ms(START_WITHIN)})`).toBeLessThanOrEqual(ms(START_WITHIN));
+  // the first unmute is where the element's second was at the start (END_SLACK short of it at the least): never a second that was snapped on or back
+  if (unmutes.length > 0) expect.soft(Math.abs(unmutes[0].second - start), `${what}: the element's second at the first unmute less the start, ms`).toBeLessThanOrEqual(ms(START_WITHIN) * 2);
+}
+
 /** Saves his English speed through raw IndexedDB, as the app writes it. */
 async function keepRate(page: Page, rate: number): Promise<void> {
   await page.evaluate(
@@ -503,13 +554,16 @@ for (const rate of [1, 1.25]) {
         const [, from] = spanOf(kase.from);
         const [, , to] = spanOf(kase.to);
         let view: Locator | null = null;
+        let ran = 0;
         for (let play = 1; play <= PLAYS; play++) {
           // odd plays on a freshly loaded page (the element made cold, its src new), even ones by Play again on the element just played
           const cold = play % 2 === 1;
           if (cold || !view) view = await openListen(page, kase.hash);
+          const before = await unmutesOf(page);
           const mark = await tapPlay(page, view);
           await expect(view.getByRole('button', { name: 'Play again', exact: true })).toBeVisible({ timeout: 60_000 });
           const got = await windowsSince(page, mark);
+          const after = await unmutesOf(page);
           if (process.env.LAMPAS_MARGIN_DEBUG) {
             const loud = got.findIndex((w) => w.rms >= HEARD_RMS);
             console.log(got.slice(Math.max(0, loud - 2), loud + 12).map((w) => `${w.t.toFixed(3)} rms ${w.rms.toFixed(4)} hz ${w.hz.toFixed(1)} step ${stepOf(w.hz)}`).join('\n'));
@@ -520,7 +574,11 @@ for (const rate of [1, 1.25]) {
           console.log(`margin: ${JSON.stringify(m)}`);
           if (process.env.LAMPAS_MARGIN_DEBUG) console.log(heardOf.detail.join('\n'));
           hold(m, `${kase.name} at ${rate}x, play ${play}`);
+          holdStartWhole(m, cold, after, before, from, `${kase.name} at ${rate}x, play ${play}`);
+          ran++;
         }
+        console.log(`start: ${ran} plays of ${kase.name} at ${rate}x, each with its seek-then-unmute second logged`);
+        expect(ran, 'plays run').toBe(PLAYS);
         expect(await spoken(page), 'the recording read it, not the phone').toEqual([]);
         expect(other).toEqual([]);
       });
