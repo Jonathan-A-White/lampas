@@ -1,5 +1,11 @@
 # What's new
 
+## 0.7.326
+_2026-11-22_
+- Fixed: A poetry verse in the Weave now stays in lines when you switch to the Hebrew word order.
+- Fixed: Turning the phone after a wrong answer in a Drill it no longer hides the Study this box behind Next.
+- Fixed: In the sentence diagram with the Weave on, a Greek verb now stands in the verb's place with the subject understood, and no empty slot or bare line is drawn.
+
 ## 0.7.325
 _2026-11-22_
 - Fixed: the grammar sheet for a term such as imperfect now shows the same word's other places in the chapter instead of wrongly saying no word has it.

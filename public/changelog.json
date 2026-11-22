@@ -1,5 +1,26 @@
 [
   {
+    "version": "0.7.326",
+    "date": "2026-11-22",
+    "story": "mw-5r3p30.1195",
+    "kind": "fixed",
+    "text": "A poetry verse in the Weave now stays in lines when you switch to the Hebrew word order."
+  },
+  {
+    "version": "0.7.326",
+    "date": "2026-11-22",
+    "story": "mw-indx1x6.114",
+    "kind": "fixed",
+    "text": "Turning the phone after a wrong answer in a Drill it no longer hides the Study this box behind Next."
+  },
+  {
+    "version": "0.7.326",
+    "date": "2026-11-22",
+    "story": "mw-5r3p30.1233",
+    "kind": "fixed",
+    "text": "In the sentence diagram with the Weave on, a Greek verb now stands in the verb's place with the subject understood, and no empty slot or bare line is drawn."
+  },
+  {
     "version": "0.7.325",
     "date": "2026-11-22",
     "story": "mw-5r3p30.1232",
