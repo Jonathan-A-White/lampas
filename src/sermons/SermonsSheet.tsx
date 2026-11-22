@@ -23,7 +23,7 @@ import { linkRowOf, linkRowOfHit, openedRow, type LinkRow } from './merge';
 import type { ArchiveRow } from './sources/logos';
 import { plainDate } from './plainDate';
 import { closeSermons, useOpenSermons } from './openSermons';
-import { opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } from './openWeb';
+import { creditAddress, opensNewTab, OpenWebContext, useOpenWebIn, useRowHref, useWebHref } from './openWeb';
 import type { SameTheme, SermonPlace, SermonRow, ThemeRow } from './types';
 import { rankHits, type FoundRankContext } from './foundRank';
 import { useArchives, useLatest, usePericope, useServiceSearch, useSermons, useThemeSermons } from './useSermons';
@@ -350,9 +350,9 @@ export function SermonsSheet({ place, onClose }: { place: SermonPlace; onClose: 
   );
 }
 
-/** A source's name, linked to its home page; the page opens where the sermons do (openWeb.ts). */
-function Credit({ source }: { source: { name: string; homepage: string; credit: string; id: string } }) {
-  const href = useWebHref()(source.homepage);
+/** A source's name, linked to its home page, or for a Logos archive to the archive itself; it opens where the sermons do (openWeb.ts). */
+function Credit({ source }: { source: { name: string; homepage: string; credit: string; id: string; resources?: readonly string[] } }) {
+  const href = useWebHref()(creditAddress(source));
   return (
     <p data-sermon-credit className="pb-2 text-sm text-muted">
       <a href={href} {...(opensNewTab(href) ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="underline">

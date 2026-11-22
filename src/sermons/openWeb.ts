@@ -11,6 +11,8 @@ import { useSetting } from '../settings/store';
 export type { OpenWebIn } from '../settings/definitions/sermons';
 
 const FIREFOX = 'org.mozilla.firefox';
+/** The Logos app's Android package: the Play listing 'Logos Bible' is https://play.google.com/store/apps/details?id=com.logos.androidlogos (Faithlife's community post of its Android apps links the same id). */
+const LOGOS_APP = 'com.logos.androidlogos';
 
 /** Whether an address is a video: its host is youtube.com, youtu.be or a subdomain of either (m.youtube.com), or a Subsplash host (merge.ts isSubsplashHost; Subsplash pages are the service's video). A look-alike (youtube.com.evil.example, notyoutube.com) is text. PROVISIONAL, the Governor to confirm (mw-qtu3zvz.62). */
 export function isVideoAddress(url: string): boolean {
@@ -25,23 +27,44 @@ export function isVideoAddress(url: string): boolean {
   return youtube || isSubsplashHost(host);
 }
 
-/** The link for an https address under the choice: the Firefox intent where Firefox is chosen on Android, else the address as it is. Anything that is not an https address, and a video (Firefox is for a page of text; a video has its own sound), is left alone. */
+/** Whether an https address is a link into Logos: its host is ref.ly (Faithlife's short links, `https://ref.ly/logosres/LLS:<id>?...`). A look-alike (ref.ly.evil.example) is text. */
+export function isLogosAddress(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  return parsed.protocol === 'https:' && parsed.hostname.toLowerCase() === 'ref.ly';
+}
+
+/**
+ * The link for an https address, so that Android asks nothing (mw-qtu3zvz.86): an intent:// address that names the app and carries the https address as its browser_fallback_url, so a phone without the app opens the page.
+ * A ref.ly (Logos) address is the Logos app's, with either choice; a video is left alone (mw-qtu3zvz.62); any other https address is Firefox's where Firefox is chosen. Off Android, and anything that is not an https address, is left alone.
+ */
 export function webHref(url: string, choice: OpenWebIn, android: boolean): string {
-  if (choice !== 'firefox' || !android || !url.startsWith('https:')) return url;
+  if (!android || !url.startsWith('https:')) return url;
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
     return url;
   }
-  if (isVideoAddress(url)) return url;
+  const app = isLogosAddress(url) ? LOGOS_APP : choice === 'firefox' && !isVideoAddress(url) ? FIREFOX : undefined;
+  if (app === undefined) return url;
   // the page's own #fragment cannot ride in an intent address (its '#' starts the intent's parts); the fallback keeps it
-  return `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=https;package=${FIREFOX};S.browser_fallback_url=${encodeURIComponent(parsed.href)};end`;
+  return `intent://${parsed.host}${parsed.pathname}${parsed.search}#Intent;scheme=https;package=${app};S.browser_fallback_url=${encodeURIComponent(parsed.href)};end`;
 }
 
-/** The href of a sermon row: only a row that opens on the web is turned; a Logos row (its app link and its ref.ly fallback) is never touched. */
+/** The href of a sermon row: its address through webHref, a web row and a Logos row (its ref.ly address) alike; a Logos app link (logosres:) is not https and is never touched. */
 export function rowHref(row: { opensIn: 'web' | 'logos'; open: { url: string } }, choice: OpenWebIn, android: boolean): string {
-  return row.opensIn === 'web' ? webHref(row.open.url, choice, android) : row.open.url;
+  return webHref(row.open.url, choice, android);
+}
+
+/** The address a source's credit links to: the Logos archive itself (the ref.ly address of its first resource) for a source that has resources, else its homepage (a Logos archive's homepage is logos.com, a sale page). */
+export function creditAddress(source: { homepage: string; resources?: readonly string[] }): string {
+  const first = source.resources?.[0];
+  return first === undefined ? source.homepage : `https://ref.ly/logosres/${encodeURIComponent(first)}`;
 }
 
 /** The choice the sheet's links follow: read once by the sheet (SermonsSheet) and handed to its rows, so a row asks nothing itself. 'browser' until it is read. */
