@@ -18,6 +18,7 @@
 //    after it, so 'please read Proverbs 2 to me' is 'read Proverbs 2'. A question put to the tutor is not trimmed: 'for me' there is part of what he asks.
 //  - 'pause', 'play' (and 'resume', 'continue', 'go on'), 'back', 'forward', 'restart' and 'stop' act on the sermon sheet that is open, on top of any Bible reading (mw-ecpivg5.3, src/sermons/voiceControls.ts, playback.ts
 //    driveSermon): the reader reads a paragraph back or forward, the player moves 30 s (PROVISIONAL, the Governor to confirm); 'restart' starts over from the top; a Subsplash video cannot be driven and it says so.
+//    'next chapter', 'previous chapter' and 'read <place>' with a sermon open are not done (they would change the Bible behind the sheet): it says 'Close the sermon first' (mw-ecpivg5.6).
 //    With no sermon open 'pause', 'play' and 'stop' are the Bible reading's as above, and 'back', 'forward' and 'restart' say 'No sermon is open'.
 // Any other words: it says 'Sorry, I did not get that, I heard "<his words>"' so he can tell what the phone made of them, and what was playing goes on when the exchange closes (src/handsFree/playback.ts).
 import { defineSpoken, normaliseSpoken, route, type CommandDone, type SpokenRule } from 'voice-kit/handsfree';
@@ -89,6 +90,9 @@ export const NO_SERMON_OPEN = 'No sermon is open';
 
 /** What it says when the sermon sheet that is open cannot do what he said by voice (a Subsplash video has no player to call). */
 export const NO_SERMON_CONTROL = 'Use the video’s own buttons for that';
+
+/** What it says to 'next chapter', 'previous chapter' and 'read <place>' while a sermon sheet is open: they would change the Bible behind the sheet, so none is done (mw-ecpivg5.6). */
+export const CLOSE_THE_SERMON = 'Close the sermon first';
 
 /** The commands that act on the sermon reader or the sermon player when one is open (mw-ecpivg5.3). */
 const SERMON_ACTIONS: ReadonlySet<string> = new Set<SermonAction>(['play', 'pause', 'back', 'forward', 'restart', 'stop']);
@@ -213,6 +217,8 @@ export async function runCommand(heard: string, say: (text: string) => Promise<v
     return say(OPEN_A_CHAPTER);
   }
   if (command?.name === 'stop') return stopSound();
+  // these change the Bible behind the sheet: with a sermon open they are not done, and he is told why
+  if ((command?.name === 'read' || command?.name === 'next-chapter' || command?.name === 'previous-chapter') && sermonControls()) return say(CLOSE_THE_SERMON);
   if (command?.name === 'read') return readPlaceOf(command.rest, say);
   if (command?.name === 'next-chapter') return readNeighbour(1, say);
   if (command?.name === 'previous-chapter') return readNeighbour(-1, say);
