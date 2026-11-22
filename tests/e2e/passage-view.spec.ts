@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, SYNERGEI_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic, honestSpeech, spoken } from '../support/honest-fakes';
+import { untilSettled } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -148,11 +149,19 @@ test('Listen: Play reads the passage on by itself, lights the verse being read a
   for (const n of [4, 8, 11]) {
     const lit = view.locator(`[data-passage-verse="${n}"][data-reading]`);
     await expect(lit).toHaveCount(1, { timeout: 60_000 });
-    const [outer, inner] = [await box.boundingBox(), await lit.boundingBox()];
-    if (!outer || !inner) throw new Error('no boxes');
-    expect(inner.y).toBeGreaterThanOrEqual(outer.y - 1);
-    expect(inner.y).toBeLessThan(outer.y + outer.height - 20);
-    if (inner.height <= outer.height) expect(inner.y + inner.height).toBeLessThanOrEqual(outer.y + outer.height + 1);
+    // the box moves to the verse after the mark is on it, so both boxes are read again until the verse starts inside the box (one look, taken the moment the mark showed, read the box
+    // before its scroll arrived on a loaded host: inner.y -2 against a box at 86, mw-fnvjof.17.224)
+    await untilSettled(
+      async () => ({ outer: await box.boundingBox(), inner: (await lit.count()) === 1 ? await lit.boundingBox() : null }),
+      ({ outer, inner }) => {
+        if (!outer || !inner) return 'the box or the lit verse has no box';
+        if (inner.y < outer.y - 1) return `the verse starts ${Math.round(outer.y - inner.y)} px above the box (y ${Math.round(inner.y)}, box y ${Math.round(outer.y)})`;
+        if (inner.y >= outer.y + outer.height - 20) return 'the verse starts at the foot of the box';
+        if (inner.height <= outer.height && inner.y + inner.height > outer.y + outer.height + 1) return 'the verse ends below the box';
+        return null;
+      },
+      { message: `verse ${n} is lit and in view in the passage box` },
+    );
   }
   await shot(page, 'passage-view-listening');
   // the end of the passage: it stops by itself and offers Play again
