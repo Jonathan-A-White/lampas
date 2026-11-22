@@ -108,8 +108,8 @@ describeFeature(feature, ({ Scenario }) => {
   };
   const quietly = async () => {
     await waitFor(() => expect(turn()).toHaveTextContent('Love is the word'));
-    // the links row draws nothing until six live queries have answered, and a row with no chip draws nothing at all: no signal on the page says the lookups are done, so a late chip is given the time it would take
-    await new Promise((resolve) => setTimeout(resolve, 100)); // clock: a window in which nothing must show (no event to wait on: the lookups end silently)
+    // the row draws nothing until its lookups have answered; when they have and no chip is left, it draws the hidden mark [data-tutor-links-done] (src/TutorLinks.tsx), so the step waits on that and then sees no row
+    await waitFor(() => expect(turn().querySelector('[data-tutor-links-done]')).not.toBeNull());
     expect(turn().querySelector('[data-tutor-links]')).toBeNull();
   };
 

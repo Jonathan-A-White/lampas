@@ -207,7 +207,8 @@ export function TutorLinks({ links, onLeave, onWord, place, verse, scope }: { li
     }
   }
   const drawn = groups.filter((g) => g.reader || g.setting || g.paradigm || g.map || g.sermon || g.copy || (g.hebrew && onWord) || g.chips.length > 0);
-  if (drawn.length === 0) return null;
+  // every lookup has answered and no chip is left: draw nothing a reader sees, only a hidden mark that the lookups are done, so a test waits on it rather than on a clock
+  if (drawn.length === 0) return <span hidden data-tutor-links-done />;
 
   return (
     <>
