@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.339",
+    "date": "2026-11-22",
+    "story": "mw-ecpivg5.3",
+    "kind": "new",
+    "text": "Hands-free can now pause, play, go back, go forward, restart and stop a sermon being read or played in Lampas."
+  },
+  {
     "version": "0.7.338",
     "date": "2026-11-22",
     "story": "mw-zbgo4ep.66",
