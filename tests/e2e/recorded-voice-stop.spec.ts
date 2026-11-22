@@ -7,14 +7,15 @@
 // John 1:50 and 3:16 (his check) are played whole; the other verses are moved, once playing, to a second and a half before their end (a seek the end timer is aimed again
 // after). LAMPAS_ALL_JOHN=1 runs every verse of John (879, the story's sixth criterion) the same way, a test a chapter; it is outside the gate (a quarter of an hour on
 // three workers). Nothing reaches openbible.com: its MP3 addresses are answered here, any other request to it is failed.
-// mw-82lb97i.27 (he still heard the first 'th' of verse 51's 'Then'): the element's volume at each pause() is logged too, and a verse's stop must find it 0, the last
+// mw-82lb97i.27 (he still heard the first 'th' of verse 51's 'Then'): the element's volume at each pause() is logged too, and a verse's stop must find it silent (0.001, never exactly 0), the last
 // 60 ms before the stop faded to silence (src/speech/recordedVoice.ts FADE). Each test of the LAMPAS_ALL_JOHN run starts on a freshly loaded page, where the first
 // verses' stops came late before (John 9:1 +288 ms): its line gives the chapter's least and most ms past the end. Run it as
 // `LAMPAS_ALL_JOHN=1 npx playwright test tests/e2e/recorded-voice-stop.spec.ts --project=shots --fully-parallel --workers=3` (without --fully-parallel one worker runs it all).
 // A verse of the ten whose stop is outside the window is played again, up to TRIES times (settledLate): a loaded host's late timer (52 ms past at load 18, mw-fnvjof.17.115) is not repeated, a late player is.
-// What is left (measured 2026-11-12, traced): within two seconds of a seek headless Chromium's element can read slow (0.75 s of the recording a second of the clock) and
-// then jump on 0.2 to 0.35 s between two looks 20 ms apart, so a stop that comes that soon after this spec's own seek (1.5 s before the end) can still land past the
-// end (John 9:1, 4 of 36 fresh pages 58 to 112 ms past, once 791 ms); played whole from the verse's start, as he plays it, 60 of 60 stops were between 93 ms before and 7 ms past.
+// mw-ar5k42b.46: the sweep also runs at his speeds 1x and 1.25x (SPEEDS). It found, at both, a stop 0.84 to 1.16 s past the end in about 1 verse of 450 (John 2:18, 6:11, 7:50,
+// 11:51, 5:31, 15:23...): the player stopped on time by the element's clock, and setting the volume to exactly 0 right before pause() snapped the element's second, which had run
+// 0.8 to 1.1 s behind for two seconds after the seek, to the wall clock (headless Chromium takes volume 0 or muted for silent). The fade now ends at SILENT_VOLUME (0.001).
+// A seek inside two seconds of a stop is what this spec's own seek (1.5 s before the end) is; played whole from the verse's start, as he plays it, 60 of 60 stops were between 93 ms before and 7 ms past (mw-ar5k42b.23).
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -119,16 +120,47 @@ async function openVerse(page: Page, c: number, v: number): Promise<void> {
   if ((await listen.getAttribute('aria-pressed')) !== 'true') await listen.click();
 }
 
-async function start(page: Page): Promise<string[]> {
+/** His English speeds the stop is held at (mw-ar5k42b.46: the spec played at 1x only before): the recording plays at the speed, so its seconds go by `rate` times as fast. */
+const SPEEDS = [1, 1.25];
+
+/** Saves his English speed through raw IndexedDB, as the app writes it (tests/e2e/recorded-voice-margin.spec.ts keepRate), then loads the page again so the player takes it. */
+async function keepRate(page: Page, rate: number): Promise<void> {
+  // the app's own database exists once its page has loaded (opening it on a blank page is refused, and one opened before the app made it would be empty)
+  await page.goto('/#/?b=jhn&c=1&view=english&weave=off');
+  await expect(page.getByRole('heading', { name: 'John 1', level: 1 })).toBeVisible();
+  await page.evaluate(
+    (value) =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('lampas');
+        open.onerror = () => reject(open.error);
+        open.onsuccess = () => {
+          const db = open.result;
+          const tx = db.transaction('settings', 'readwrite');
+          tx.objectStore('settings').put({ key: 'rate.english', value });
+          tx.oncomplete = () => {
+            db.close();
+            resolve();
+          };
+          tx.onerror = () => reject(tx.error);
+        };
+      }),
+    String(rate),
+  );
+  await page.reload();
+}
+
+async function start(page: Page, rate = 1): Promise<string[]> {
   await openUnlocked(page);
   await honestSpeech(page, { msPerWord: 5 });
   await logPauses(page);
-  return silentJohn(page);
+  const other = await silentJohn(page);
+  if (rate !== 1) await keepRate(page, rate);
+  return other;
 }
 
 /** Plays John `c`:`v` alone by the Verse view's Play (from its start; `whole` false moves it to 1.5 s before its end once it plays) and gives how far past the
  * verse's end, in ms, the element's second was when it was paused (below 0: short of it). */
-async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise<number> {
+async function lateOf(page: Page, c: number, v: number, whole: boolean, rate = 1): Promise<number> {
   const span = JOHN.chapters[String(c)].verses.find(([n]) => n === v);
   if (!span) throw new Error(`no timing for John ${c}:${v}`);
   // the chapter's silent MP3 is made here, before the page asks for it: made inside the route on a loaded host, ffmpeg held the answer past the player's 8 s wait for
@@ -147,6 +179,8 @@ async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise
     if (await play.isVisible()) await play.click();
     expect(await plays(page), `John ${c}:${v}: the Play tap was taken`).toBeGreaterThan(played);
   }).toPass({ intervals: [250, 500, 1000], timeout: 30_000 });
+  // the speed he keeps is the speed the element plays at (a stop judged at 1x would say nothing of 1.25x)
+  expect(await page.evaluate(() => (window as unknown as { lampasAudio?: HTMLMediaElement }).lampasAudio?.playbackRate), `John ${c}:${v}: the element's playbackRate`).toBe(rate);
   if (!whole && span[2] - span[1] > 2) {
     // once the sound has started from the verse's start
     await page.waitForFunction(
@@ -168,7 +202,10 @@ async function lateOf(page: Page, c: number, v: number, whole: boolean): Promise
   const at = (await pauses(page)).slice(before);
   expect(at.length, `John ${c}:${v} was paused`).toBeGreaterThan(0);
   // the stop cannot leak: the recording was faded to silence before it was paused
-  expect.soft((await pauseVolumes(page)).pop(), `John ${c}:${v}: the element's volume when it was paused at its end`).toBe(0);
+  // (a volume of exactly 0 is never given: headless Chromium then snaps the element's second to the wall clock, up to 1.1 s on, mw-ar5k42b.46)
+  const volume = (await pauseVolumes(page)).pop();
+  expect.soft(volume, `John ${c}:${v}: the element's volume when it was paused at its end`).toBeGreaterThan(0);
+  expect.soft(volume, `John ${c}:${v}: the element's volume when it was paused at its end`).toBeLessThanOrEqual(0.001);
   return Math.round((at[at.length - 1] - span[2]) * 1000);
 }
 
@@ -178,9 +215,9 @@ const TRIES = 3;
 const inWindow = (ms: number): boolean => ms <= LATE_MS && ms >= -SHORT_MS;
 
 /** lateOf, played again (up to TRIES plays) while the stop stands outside the window; the report is every play's ms. */
-async function settledLate(page: Page, c: number, v: number, whole: boolean): Promise<{ late: number; tries: number[] }> {
+async function settledLate(page: Page, c: number, v: number, whole: boolean, rate = 1): Promise<{ late: number; tries: number[] }> {
   const tries: number[] = [];
-  do tries.push(await lateOf(page, c, v, whole));
+  do tries.push(await lateOf(page, c, v, whole, rate));
   while (!inWindow(tries[tries.length - 1]) && tries.length < TRIES);
   return { late: tries[tries.length - 1], tries };
 }
@@ -198,18 +235,18 @@ const TEN: Array<[number, number, boolean]> = [
   [20, 31, false],
 ];
 
-test('the Verse view’s Play of one verse in David’s voice stops at the verse’s end, not in the next verse (John 1:50, 3:16 and eight more)', async ({ page }) => {
+for (const rate of SPEEDS) test(`the Verse view’s Play of one verse in David’s voice stops at the verse’s end, not in the next verse (John 1:50, 3:16 and eight more) at ${rate}x`, async ({ page }) => {
   test.setTimeout(300_000);
-  const other = await start(page);
+  const other = await start(page, rate);
   const report: string[] = [];
   for (const [c, v, whole] of TEN) {
-    const { late, tries } = await settledLate(page, c, v, whole);
+    const { late, tries } = await settledLate(page, c, v, whole, rate);
     report.push(`John ${c}:${v} ${tries.join(' then ')} ms`);
     expect.soft(late, `John ${c}:${v}: ms past its end`).toBeLessThanOrEqual(LATE_MS);
     expect.soft(late, `John ${c}:${v}: ms past its end`).toBeGreaterThanOrEqual(-SHORT_MS);
     if (c === 1 && v === 50) await shot(page, 'recorded-voice-stop-john-1-50');
   }
-  console.log(`stopped past the verse's end: ${report.join(', ')}`);
+  console.log(`stopped past the verse's end at ${rate}x: ${report.join(', ')}`);
   expect(await spoken(page)).toEqual([]);
   expect(other).toEqual([]);
 });
@@ -217,18 +254,18 @@ test('the Verse view’s Play of one verse in David’s voice stops at the verse
 // Every verse of John, outside the gate (mw-82lb97i.18's sixth criterion, mw-82lb97i.27's fourth: each chapter on a freshly loaded page, under three workers).
 test.describe('every verse of John stops within 50 ms of its end (LAMPAS_ALL_JOHN=1)', () => {
   test.skip(process.env.LAMPAS_ALL_JOHN !== '1', 'outside the gate: LAMPAS_ALL_JOHN=1 runs it');
-  for (const c of Object.keys(JOHN.chapters).map(Number)) {
-    test(`John ${c}`, async ({ page }) => {
+  for (const rate of SPEEDS) for (const c of Object.keys(JOHN.chapters).map(Number)) {
+    test(`John ${c} at ${rate}x`, async ({ page }) => {
       test.setTimeout(30 * 60_000);
-      const other = await start(page);
+      const other = await start(page, rate);
       const late: string[] = [];
       const all: number[] = [];
       for (const [v] of JOHN.chapters[String(c)].verses) {
-        const ms = await lateOf(page, c, v, false);
+        const ms = await lateOf(page, c, v, false, rate);
         all.push(ms);
         if (ms > LATE_MS || ms < -SHORT_MS) late.push(`${c}:${v} ${ms} ms`);
       }
-      console.log(`John ${c}: ${all.length} verses, ms past the end min ${Math.min(...all)} max ${Math.max(...all)}; outside: ${late.join(', ') || 'none'}`);
+      console.log(`John ${c} at ${rate}x: ${all.length} verses, ms past the end min ${Math.min(...all)} max ${Math.max(...all)}; outside: ${late.join(', ') || 'none'}`);
       expect(late).toEqual([]);
       expect(other).toEqual([]);
     });

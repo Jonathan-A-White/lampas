@@ -2,7 +2,7 @@
 // aimed when it plays and aimed again after a pause, a seek and a change of speed; it never cuts the recording off before the end. The element is tests/support/fake-audio.ts.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChapterTimings } from '../../src/data/audioTimings';
-import { endTimerMs, endWaitMs, fadeVolume, pauseRecording, playRecording, recordingElement, resetRecordedVoice, resumeRecording, seekToVerse, setRecordedRate, stopRecording, type RecordingListener } from '../../src/speech/recordedVoice';
+import { endTimerMs, endWaitMs, fadeVolume, pauseRecording, playRecording, recordingElement, resetRecordedVoice, resumeRecording, seekToVerse, setRecordedRate, SILENT_VOLUME, stopRecording, type RecordingListener } from '../../src/speech/recordedVoice';
 import { stubAudio, type FakeAudio } from '../support/fake-audio';
 
 const TIMINGS: ChapterTimings = {
@@ -237,12 +237,12 @@ describe('a single verse stops at or before its end, faded to silence, whatever 
     return { at, volume: volumeAtPause, volumes };
   }
 
-  it('the fade is 1 until 110 ms before the end, half way down 80 ms before it, and silent from 50 ms before it', () => {
+  it('the fade is 1 until 110 ms before the end, half way down 80 ms before it, and silent (SILENT_VOLUME) from 50 ms before it', () => {
     expect(fadeVolume(20, 15)).toBe(1);
     expect(fadeVolume(20, 19.88)).toBe(1);
     expect(fadeVolume(20, 19.92)).toBeCloseTo(0.5);
-    expect(fadeVolume(20, 19.95)).toBe(0);
-    expect(fadeVolume(20, 20.3)).toBe(0);
+    expect(fadeVolume(20, 19.95)).toBe(SILENT_VOLUME);
+    expect(fadeVolume(20, 20.3)).toBe(SILENT_VOLUME);
     expect(fadeVolume(Infinity, 20)).toBe(1);
   });
 
@@ -260,20 +260,33 @@ describe('a single verse stops at or before its end, faded to silence, whatever 
     const stop = await stopWith((sound) => sound, { speed: 1 });
     expect(stop.at).toBeLessThanOrEqual(20);
     expect(stop.at).toBeGreaterThanOrEqual(20 - 0.07);
-    expect(stop.volume).toBe(0);
+    expect(stop.volume).toBe(SILENT_VOLUME);
     // the carry on by the clock runs at the element's own speed (a little over 1.0x), not his 1.25x: the fade starts at most 20 ms before its 110 ms
     expect(Math.min(...stop.volumes.map(([at]) => at))).toBeGreaterThanOrEqual(20 - 0.11 - 0.02);
   });
 
-  it('the last 60 ms before the stop are faded to silence: the volume is 1 until then, only goes down, and is 0 when pause() is called', async () => {
+  it('the last 60 ms before the stop are faded to silence: the volume is 1 until then, only goes down, and is SILENT_VOLUME when pause() is called', async () => {
     const stop = await stopWith((sound) => sound);
-    expect(stop.volume).toBe(0);
+    expect(stop.volume).toBe(SILENT_VOLUME);
     const levels = stop.volumes.map(([, v]) => v);
     expect(levels.length).toBeGreaterThanOrEqual(2);
     expect(levels).toEqual([...levels].sort((a, b) => b - a));
     // nothing of the verse is turned down before its last 110 ms (the fade's 60 ms and the 50 ms the stop may come before the end)
     expect(Math.min(...stop.volumes.map(([at]) => at))).toBeGreaterThanOrEqual(20 - 0.11 - 0.001);
     expect(stop.volumes.some(([, v]) => v > 0 && v < 1)).toBe(true);
+  });
+
+  // mw-ar5k42b.46: headless Chromium treats an element at volume exactly 0 (or muted) as silent and its second then snaps from the audio clock, which can run 0.8 to 1.1 s behind the
+  // sound for two seconds after a seek, to the wall clock: John 6:11, 7:50, 2:18 and 15:23 were paused 0.84 to 1.1 s past their end by a stop that was on time by the clock
+  // before the volume went to 0 (measured on a plain page: volume 0 or muted jumped the second +0.98 s in 19 of 19, volume 0.0001 and above in 0 of 40). So the end's silence is a
+  // volume just above 0, which nothing can hear, never 0.
+  it('the volume the stop ends in is silent to a person but never exactly 0: not at the fade, not at the stop, not when pause() is called', async () => {
+    const stop = await stopWith((sound) => sound);
+    const levels = [stop.volume, ...stop.volumes.map(([, v]) => v)];
+    expect(Math.min(...levels)).toBeGreaterThan(0);
+    expect(stop.volume).toBeLessThanOrEqual(0.001);
+    expect(SILENT_VOLUME).toBeLessThanOrEqual(0.001);
+    expect(fadeVolume(20, 19.95)).toBeGreaterThan(0);
   });
 
   it('the next reading starts at full volume', async () => {
@@ -291,14 +304,14 @@ describe('a single verse stops at or before its end, faded to silence, whatever 
     const stop = await stopWith((sound) => (sound < 19 || sound >= 20.1 ? sound : sound - 0.18 * (sound - 19)));
     expect(stop.at).toBeLessThanOrEqual(20 + 0.05);
     expect(stop.at).toBeGreaterThanOrEqual(20 - 0.07);
-    expect(stop.volume).toBe(0);
+    expect(stop.volume).toBe(SILENT_VOLUME);
   });
 
   it('an element whose second moves only in steps of 250 ms: stopped in the 70 ms before the end, never past it', async () => {
     const stop = await stopWith((sound) => 10 + Math.floor((sound - 10 - 0.11) / 0.25) * 0.25 + 0.11);
     expect(stop.at).toBeLessThanOrEqual(20);
     expect(stop.at).toBeGreaterThanOrEqual(20 - 0.07);
-    expect(stop.volume).toBe(0);
+    expect(stop.volume).toBe(SILENT_VOLUME);
   });
 
   it('a recording that stalls half a second before the end is not stopped or turned down by the clock: it waits, and stops in silence once the sound gets there', async () => {
@@ -312,7 +325,7 @@ describe('a single verse stops at or before its end, faded to silence, whatever 
     expect(el.volume).toBe(1);
     audio.advanceTo(20);
     expect(told).toEqual(['reached']);
-    expect(el.volume).toBe(0);
+    expect(el.volume).toBe(SILENT_VOLUME);
   });
 });
 

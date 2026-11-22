@@ -121,4 +121,7 @@ Before that, nothing was changed: today's player holds 0.05 s each side in every
 - The ear hears what the browser renders into Web Audio. The phone's own output buffer (tens of ms) delays that sound but does not change which part of the recording
   it is, or at what volume it was rendered: the fade and the pause act before it. How long a phone plays on after `pause()` is still not measured.
 - One MP3 encoding (192 kbps CBR, no Xing) stands for the publisher's. A file with a different frame size or a seek table could start at a different frame.
+- The end's fade stops at `SILENT_VOLUME` (0.001, -60 dB), never at 0 (mw-ar5k42b.46): headless Chromium treats an element at volume 0, or muted, as silent and snaps its second
+  from the audio clock, which can run 0.8 to 1.1 s behind the sound for two seconds after a seek, to the wall clock. A stop that was on time was read 0.84 to 1.1 s past its end
+  (John 6:11, 7:50, 2:18, 15:23 of `LAMPAS_ALL_JOHN=1`, at 1x and 1.25x). On a plain page volume 0 or muted jumped the second +0.98 s in 19 of 19 plays, volume 0.0001 and above in 0 of 40.
 - Headless Chromium on the Laptop is not his phone's Chrome. The margin holds there with 33 ms to spare at the start and 45 ms at the end.
