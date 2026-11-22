@@ -30,8 +30,8 @@ import { greekLevelOf, type GreekLevel } from './definitions/greekInterest';
 import { hebrewLevelOf } from './definitions/hebrewInterest';
 import { DEPTH_KEY, depthFrom } from './definitions/interest';
 import { SEPARATE_KEYS } from './definitions/pronunciation';
-import { LOGOS_RANDOM_KEY } from './definitions/daily';
-import { RANDOM } from '../data/daily/devotionals';
+import { LOGOS_RANDOM_KEY, LOGOS_REPHIL_KEY } from './definitions/daily';
+import { MORNING_REPHIL_ID, RANDOM } from '../data/daily/devotionals';
 import { handSetting } from './hand';
 import { openWebSetting } from './definitions/sermons';
 import { helpPlain } from './helpText';
@@ -358,6 +358,11 @@ export async function readValues(): Promise<Values> {
       if (key === LOGOS_RANDOM_KEY) {
         const [which, logos, source] = await Promise.all([settingOf('devotional')?.read(), settingOf('resource.logos')?.read(), settingOf('devotionalLogos')?.read()]);
         return [key, which === RANDOM && logos === 'on' && source !== 'off' ? 'on' : 'off'] as const;
+      }
+      // the key of the Morning RePhil backup row: On while Which devotional is Random or Morning RePhil and the Logos switch is On (no setting of its own; mw-r9xo1pj.11)
+      if (key === LOGOS_REPHIL_KEY) {
+        const [which, logos] = await Promise.all([settingOf('devotional')?.read(), settingOf('resource.logos')?.read()]);
+        return [key, (which === RANDOM || which === MORNING_REPHIL_ID) && logos === 'on' ? 'on' : 'off'] as const;
       }
       // a Logos sermon collection: On while his Library import holds one of its resources or Logos gives it free (mw-qtu3zvz.94)
       if (key.startsWith(OWNS_PREFIX)) {
