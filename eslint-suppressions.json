@@ -71,7 +71,7 @@
   },
   "features/steps/immersive-reader.steps.tsx": {
     "local/no-real-time-wait": {
-      "count": 28
+      "count": 1
     }
   },
   "features/steps/in-logos.steps.tsx": {

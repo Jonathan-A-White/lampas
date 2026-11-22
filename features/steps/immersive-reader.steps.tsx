@@ -13,7 +13,7 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { resetImmersive } from '../../src/immersive';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { forgetScrolls } from '../../src/nav/scrollMemory';
+import { forgetScrolls, isRestoringScroll } from '../../src/nav/scrollMemory';
 import { getReading, stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { FakeRecognizer, stubRecognizer } from '../../tests/support/fake-recognizer';
@@ -196,6 +196,15 @@ const barsShown = () => {
 };
 const inView = async () => waitFor(barsShown);
 const outOfView = async () => waitFor(barsAway);
+/** The app has finished with what was just done to it. Its listeners (scroll, touch, fullscreenchange) run inside the act of fireEvent and touch(), so the bars'
+ * state is already drawn; what they started (a fake's resolved promise, an effect) is run out here. A check that something did NOT change reads after this,
+ * not after a wall-clock sleep that a loaded host can outlast. */
+const handled = () => act(async () => {});
+/** The page's full-screen asks so far, read once the app has finished with the last gesture (enter() calls requestFullscreen inside the gesture's own handler). */
+const fullScreen = async () => {
+  await handled();
+  return { ...fs };
+};
 
 const feature = await loadFeature('features/immersive-reader.feature');
 
@@ -211,7 +220,7 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader Off', () => open({ immersive: 'off' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     Then(`${bars} in view`, async () => {
-      await sleep(50);
+      await handled();
       barsShown();
     });
   });
@@ -226,7 +235,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he taps the text with two fingers again', async () => {
       // past the guard that drops the click after a tap
-      await sleep(650);
+      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
       twoFingerTap();
     });
     Then(`${bars} in view`, inView);
@@ -238,14 +247,14 @@ describeFeature(feature, ({ Scenario }) => {
     Then(`${bars} out of view`, outOfView);
     When('he scrolls the text up {int} px', (_, px: number) => scrollBy(-px));
     Then(`${bars} still out of view`, async () => {
-      await sleep(50);
-      await outOfView();
+      await handled();
+      barsAway();
     });
     When('he scrolls the text up another {int} px', (_, px: number) => scrollBy(-px));
     Then(`${bars} out of view at the top of the text`, async () => {
       expect(at).toBe(0);
-      await sleep(50);
-      await outOfView();
+      await handled();
+      barsAway();
     });
   });
 
@@ -263,7 +272,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he taps the text with two fingers again', async () => {
       // past the guard that drops the click after a tap
-      await sleep(650);
+      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
       twoFingerTap();
     });
     Then(`${bars} out of view`, outOfView);
@@ -290,19 +299,22 @@ describeFeature(feature, ({ Scenario }) => {
       threeFingerTap();
     });
     Then(`${bars} out of view`, async () => {
-      await sleep(50);
-      await outOfView();
+      // the tap has been handled once the app has written Hands-free On (it is the tap's own doing)
+      await handsFree('on');
+      await handled();
+      barsAway();
     });
     And('Hands-free is now On', () => handsFree('on'));
     When('he taps the text with two fingers', twoFingerTap);
     Then(`${bars} in view`, inView);
     When('he taps the text with three fingers again', async () => {
-      await sleep(650);
+      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
       threeFingerTap();
     });
     Then(`${bars} still in view`, async () => {
-      await sleep(50);
-      await inView();
+      await handsFree('off');
+      await handled();
+      barsShown();
     });
     And('Hands-free is now Off', () => handsFree('off'));
     And('Immersive reader is still On', async () => {
@@ -338,8 +350,9 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     });
     Then(`${bars} out of view`, async () => {
-      await sleep(50);
-      await outOfView();
+      // the sheet is gone (the When waited for it): what its closing set going is run out
+      await handled();
+      barsAway();
     });
   });
 
@@ -353,7 +366,7 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('he taps the first word of verse {int}', async () => {
       // past the guard that drops the click after a tap
-      await sleep(650);
+      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
       await user.click(firstWord());
     });
     Then('the word sheet is open', async () => {
@@ -364,8 +377,8 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     });
     Then(`${bars} in view`, async () => {
-      await sleep(50);
-      await inView();
+      await handled();
+      barsShown();
     });
   });
 
@@ -378,8 +391,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('he scrolls the text further down {int} px past the bottom', (_, px: number) => scrollBy(px));
     Then(`${bars} out of view`, async () => {
-      await sleep(50);
-      await outOfView();
+      await handled();
+      barsAway();
     });
   });
 
@@ -393,8 +406,8 @@ describeFeature(feature, ({ Scenario }) => {
     });
     And('the reading is stopped', () => act(() => stopReading()));
     Then(`${bars} out of view`, async () => {
-      await sleep(50);
-      await outOfView();
+      await handled();
+      barsAway();
     });
   });
 
@@ -424,22 +437,18 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('The first tap in the text asks for full screen, and switching Immersive reader Off leaves it', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
     Then('the page has not asked for full screen', async () => {
-      await sleep(50);
-      expect(fs).toEqual({ requests: 0, exits: 0 });
+      // it asks only inside a gesture's handler, and none has come since the Reader was drawn
+      expect(await fullScreen()).toEqual({ requests: 0, exits: 0 });
     });
-    When('he taps the text with one finger', async () => {
-      oneFingerTap();
-      await sleep(50);
+    When('he taps the text with one finger', oneFingerTap);
+    Then('the page has asked for full screen once', async () => {
+      await waitFor(() => expect(fs.requests).toBe(1));
+      expect(await fullScreen()).toEqual({ requests: 1, exits: 0 });
     });
-    Then('the page has asked for full screen once', () => {
-      expect(fs).toEqual({ requests: 1, exits: 0 });
-    });
-    When('he taps the text with one finger again', async () => {
-      oneFingerTap();
-      await sleep(50);
-    });
-    Then('the page has still asked for full screen once', () => {
-      expect(fs).toEqual({ requests: 1, exits: 0 });
+    When('he taps the text with one finger again', oneFingerTap);
+    Then('the page has still asked for full screen once', async () => {
+      // a second ask would be made inside the tap's own handler, before this reads
+      expect(await fullScreen()).toEqual({ requests: 1, exits: 0 });
     });
     When('Immersive reader is switched Off', async () => {
       await db.settings.put({ key: 'immersiveReader', value: 'off' });
@@ -461,8 +470,9 @@ describeFeature(feature, ({ Scenario }) => {
       open({ immersive: 'on', fullscreen: 'works', slowSetting: true, address: left }),
     );
     Then('the page has not asked for full screen', async () => {
-      await sleep(50);
-      expect(fs).toEqual({ requests: 0, exits: 0 });
+      // the saved place is put back by the app (its scroll events are not his): wait until that restore is over, the app's own word (isRestoringScroll)
+      await waitFor(() => expect(isRestoringScroll(reader())).toBe(false));
+      expect(await fullScreen()).toEqual({ requests: 0, exits: 0 });
     });
   });
 
@@ -470,21 +480,20 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     Then('the page has asked for full screen once', async () => {
-      await sleep(50);
-      expect(fs).toEqual({ requests: 1, exits: 0 });
+      await waitFor(() => expect(fs.requests).toBe(1));
+      expect(await fullScreen()).toEqual({ requests: 1, exits: 0 });
     });
     When('he taps the text with two fingers', twoFingerTap);
     Then(`${bars} in view`, inView);
     And('the page has still asked for full screen once', async () => {
-      await sleep(400);
-      expect(fs).toEqual({ requests: 1, exits: 0 });
+      // a second ask would be made inside the tap's own handler (the tap is in: the bars are drawn)
+      expect(await fullScreen()).toEqual({ requests: 1, exits: 0 });
       expect(document.fullscreenElement).not.toBeNull();
     });
     When('he taps the text with two fingers again', twoFingerTap);
     Then(`${bars} out of view`, outOfView);
     And('the page has kept the one full screen it asked for', async () => {
-      await sleep(400);
-      expect(fs).toEqual({ requests: 1, exits: 0 });
+      expect(await fullScreen()).toEqual({ requests: 1, exits: 0 });
       expect(document.fullscreenElement).not.toBeNull();
     });
   });
@@ -493,8 +502,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
     When('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     Then('the page has asked for full screen once', async () => {
-      await sleep(50);
-      expect(fs).toEqual({ requests: 1, exits: 0 });
+      await waitFor(() => expect(fs.requests).toBe(1));
+      expect(await fullScreen()).toEqual({ requests: 1, exits: 0 });
     });
     When('the browser leaves full screen by itself', () => {
       act(() => browserLeavesFullScreen());
@@ -507,20 +516,17 @@ describeFeature(feature, ({ Scenario }) => {
     });
     When('he taps the text with two fingers again', twoFingerTap);
     Then('the page has still asked for full screen twice', async () => {
-      await sleep(400);
-      expect(fs).toEqual({ requests: 2, exits: 0 });
+      expect(await fullScreen()).toEqual({ requests: 2, exits: 0 });
       expect(document.fullscreenElement).not.toBeNull();
     });
   });
 
   Scenario('Leaving the Reader leaves full screen', ({ Given, When, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader On and a phone that can go full screen', () => open({ immersive: 'on', fullscreen: 'works' }));
-    When('he taps the text with one finger', async () => {
-      oneFingerTap();
-      await sleep(50);
-    });
-    Then('the page has asked for full screen once', () => {
-      expect(fs).toEqual({ requests: 1, exits: 0 });
+    When('he taps the text with one finger', oneFingerTap);
+    Then('the page has asked for full screen once', async () => {
+      await waitFor(() => expect(fs.requests).toBe(1));
+      expect(await fullScreen()).toEqual({ requests: 1, exits: 0 });
     });
     When('he opens Settings from the Reader', async () => {
       await openSettings(user);
@@ -536,8 +542,8 @@ describeFeature(feature, ({ Scenario }) => {
     When('he taps the text with one finger', oneFingerTap);
     And('he scrolls the text down {int} px', (_, px: number) => scrollBy(px));
     Then('the page has not asked for full screen', async () => {
-      await sleep(50);
-      expect(fs).toEqual({ requests: 0, exits: 0 });
+      // Off draws no listener that asks: the gesture's handlers have run by now
+      expect(await fullScreen()).toEqual({ requests: 0, exits: 0 });
     });
   });
 
@@ -571,7 +577,7 @@ describeFeature(feature, ({ Scenario }) => {
       await waitFor(() => expect(placeLine()).toBeNull());
     });
     When('he taps the text with two fingers again', async () => {
-      await sleep(650);
+      await sleep(650); // a real-time wait: the app drops a click within CLICK_GUARD_MS (600 ms, performance.now()) of a two-finger tap, and no signal says that time has passed
       twoFingerTap();
     });
     Then('the place line is back and reads {string}', reads);
@@ -609,7 +615,8 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario('With Immersive reader Off the Reader does not hold the screen awake', ({ Given, Then }) => {
     Given('Lampas is opened on Romans 8 with Immersive reader Off and a phone with a screen wake lock', () => open({ immersive: 'off', wakeLock: true }));
     Then('the page does not hold the screen awake', async () => {
-      await sleep(100);
+      // the Reader asks for the lock in the effect of its On setting, and has taken its setting (open() waited for data-immersive): that effect is run out
+      await handled();
       expect(wake.requests).toBe(0);
     });
   });
@@ -623,7 +630,8 @@ describeFeature(feature, ({ Scenario }) => {
     And('Immersive reader is switched Off', async () => {
       await db.settings.put({ key: 'immersiveReader', value: 'off' });
       await waitFor(() => expect(reader()).toHaveAttribute('data-immersive', 'off'));
-      await sleep(100);
+      // the Off draw has let the immersive hold go in its effect's cleanup: run out
+      await handled();
     });
     Then('the screen is still held awake for the reading', () => {
       expect(held()).toBe(1);
