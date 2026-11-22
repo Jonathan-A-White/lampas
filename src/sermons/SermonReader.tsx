@@ -25,7 +25,10 @@ export const SERMON_READING_ID = -2_500_000_000;
 /** What the sheet says when the text cannot be had; the sermon opens on the web at the same time. */
 export const NO_TEXT_NOTICE = 'Lampas could not get the words of this sermon, so it opens on the web.';
 
-const BUTTON = 'inline-flex min-h-12 min-w-12 items-center justify-center gap-1 rounded-xl border border-line px-3 text-base font-medium text-accent active:bg-line';
+const BUTTON_BASE = 'inline-flex min-w-12 items-center justify-center gap-1 rounded-xl border border-line px-3 text-accent';
+/** the small buttons, Restart and Stop (and the link): 48 px; the three above them, Back, Play / Pause and Forward, are 64 px */
+const BUTTON = `${BUTTON_BASE} min-h-12 text-base font-medium active:bg-line`;
+const BUTTON_BIG = `${BUTTON_BASE} min-h-16 text-base font-medium active:bg-line`;
 
 function PauseIcon() {
   return (
@@ -213,19 +216,19 @@ function Reading({ opened, text }: { opened: OpenedText; text: SermonText }) {
       ) : null}
       <div data-sermon-controls role="group" aria-label="Reading controls" className="flex shrink-0 flex-col gap-2 border-t border-line px-4 pt-2 pb-[calc(0.5rem+var(--lp-bar-inset))]">
         <div className="flex w-full items-center gap-2">
-          <button type="button" data-repeat aria-label="Back a paragraph" onClick={() => go(-1)} className={`${BUTTON} min-h-16`}>
+          <button type="button" data-repeat aria-label="Back a paragraph" onClick={() => go(-1)} className={BUTTON_BIG}>
             <span aria-hidden="true">‹ Back</span>
           </button>
           <button
             type="button"
             onClick={() => oneTap('sermon-reader-play', play)}
             {...(refused ? { 'data-sermon-refused': '' } : {})}
-            className={`min-h-16 min-w-0 flex-1 ${BUTTON} bg-accent text-xl font-semibold text-surface active:bg-accent ${refused ? 'motion-safe:animate-pulse' : ''}`}
+            className={`${BUTTON_BASE} min-h-16 min-w-0 flex-1 bg-accent text-xl font-semibold text-surface active:bg-accent ${refused ? 'motion-safe:animate-pulse' : ''}`}
           >
             {playing ? <PauseIcon /> : <Icon kind="play" />}
             {playing ? 'Pause' : 'Play'}
           </button>
-          <button type="button" data-repeat aria-label="Forward a paragraph" onClick={() => go(1)} className={`${BUTTON} min-h-16`}>
+          <button type="button" data-repeat aria-label="Forward a paragraph" onClick={() => go(1)} className={BUTTON_BIG}>
             <span aria-hidden="true">Forward ›</span>
           </button>
         </div>
