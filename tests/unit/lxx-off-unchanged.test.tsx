@@ -16,6 +16,7 @@ import { forgetTrail } from '../../src/nav/lastRoute';
 import { tutorTimings } from '../../src/services/tutor';
 import { setVerseAction } from '../../src/verse/action';
 import { stubChapterFetch } from '../support/chapter-fetch';
+import { findButton } from '../support/find-button';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../support/fake-postern';
 import { seedHisWords } from '../support/his-words';
 
@@ -131,9 +132,9 @@ describe('with the Septuagint Off the Hebrew and the New Testament pages are as 
       // the Verse view of verse 1 with the tutor answering nothing yet (the pane's own state is what is drawn)
       await open(`/#/?b=${book}&c=${chapter}`, '5');
       await waitFor(() => expect(document.querySelectorAll('[data-verse]').length).toBeGreaterThan(0));
-      await user.click(await screen.findByRole('button', { name: 'Verse 1' }));
+      await user.click(await findButton('Verse 1'));
       const view = await screen.findByRole('region', { name: 'Verse view' });
-      await user.click(within(view).getByRole('button', { name: 'Diagram' }));
+      await user.click(await findButton('Diagram', view));
       await within(view).findByRole('region', { name: 'Diagram' });
       // the Maps door arrives from a read of its own: where the recorded page has it, the page is taken after it (mw-qtu3zvz.92 found the pane racing the door)
       if ((JSON.parse(readFileSync(FILE, 'utf8')) as typeof pages)[`diagram ${ref}`]?.text.includes('Maps · ')) await within(view).findByRole('button', { name: /^Maps · / });

@@ -167,7 +167,7 @@ const rowNamed = async (title: string): Promise<HTMLAnchorElement> => {
 const searchField = async () => within(await sheetEl()).findByRole('searchbox', { name: 'Search sermons and themes' });
 
 async function tapVerseAndDoor(): Promise<void> {
-  await user.click(await screen.findByRole('button', { name: 'Verse 8', exact: true }));
+  await user.click(await findButton('Verse 8'));
   await screen.findByRole('region', { name: 'Verse view' });
   // findButton, not a role query: the Verse view holds the chapter's chunk buttons, and findByRole works out each one's name at every poll (mw-indx1x6.118)
   await user.click(await findButton('Sermons · 4'));
@@ -178,7 +178,7 @@ const feature = await loadFeature('features/sermons-online.feature');
 describeFeature(feature, ({ Scenario }) => {
   const openedWith = (phone: Phone) => (_: unknown, title: string) => openOn(title, phone);
   const tapVerse = async (_: unknown, n: number) => {
-    await user.click(await screen.findByRole('button', { name: `Verse ${n}`, exact: true }));
+    await user.click(await findButton(`Verse ${n}`));
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const tapDoor = async (_: unknown, label: string) => {

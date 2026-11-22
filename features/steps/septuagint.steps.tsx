@@ -23,6 +23,7 @@ import { LONG_PRESS_MS } from '../../src/ui/longPress';
 import { stopReading } from '../../src/speech/readAloud';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { asSpoken } from '../../tests/support/lone-word';
 import { GRAMMAR_HELP_ANSWER, makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
@@ -667,9 +668,9 @@ describeFeature(feature, ({ Scenario }) => {
   Scenario("With the setting on the Diagram of Genesis 1:1 is drawn from Swete's Greek", ({ Given, When, Then, And }) => {
     Given('Lampas is opened on Genesis 1 with the Septuagint on and a tutor that draws Genesis 1:1', () => openOn('Genesis 1', 'on', { readerView: 'greek', ...settingsAtLevels({ greek: 5 }) }, { tutor: true, diagram: true }));
     When('he opens the Verse view of verse 1 and taps Diagram', async () => {
-      await user.click(await screen.findByRole('button', { name: 'Verse 1', exact: true }));
+      await user.click(await findButton('Verse 1'));
       const view = await screen.findByRole('region', { name: 'Verse view' });
-      await user.click(within(view).getByRole('button', { name: 'Diagram', exact: true }));
+      await user.click(await findButton('Diagram', view));
     });
     Then('the pane draws the Greek diagram of Genesis 1:1', async () => {
       const pane = within(await screen.findByRole('region', { name: 'Verse view' })).getByRole('region', { name: 'Diagram' });
@@ -746,7 +747,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('Copy puts {string} after the verse', async (_: unknown, line: string) => {
       const written: string[] = [];
       Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: (t: string) => (written.push(t), Promise.resolve()) } });
-      await user.click(within(verseView()).getByRole('button', { name: 'Copy', exact: true }));
+      await user.click(await findButton('Copy', verseView));
       await waitFor(() => expect(written).toHaveLength(1));
       expect(written[0]).toContain(`\u2014 ${line}`);
     });

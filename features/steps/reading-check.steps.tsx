@@ -15,6 +15,7 @@ import { getMissTally, setReaderView, setWeave } from '../../src/data/repositori
 import { clearBus } from '../../src/events/bus';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { ENGLISH_VOICE, GREEK_VOICE, stubSpeech, type FakeSynth } from '../../tests/support/fake-speech';
 import { FakeRecorder, stubRecorder } from '../../tests/support/fake-recorder';
 import { GREEK_READING_ANSWER, INCOMPLETE_ANSWER, makeFakePostern, PARTIAL_ANSWER, PARTIAL_FURTHER_ANSWER, POSTERN_ORIGIN, READING_ANSWER, WELL_READ_ANSWER, type FakePostern } from '../../tests/support/fake-postern';
@@ -152,10 +153,10 @@ async function open({ reply = 'reading', view = 'english', denied = false, down 
 }
 
 async function selectVerse28(): Promise<void> {
-  const number = await screen.findByRole('button', { name: 'Verse 28', exact: true });
+  const number = await findButton('Verse 28');
   if (number.getAttribute('aria-pressed') !== 'true') await user.click(number);
   const view = await screen.findByRole('region', { name: 'Verse view' });
-  await user.click(within(view).getByRole('button', { name: 'Read it aloud', exact: true }));
+  await user.click(await findButton('Read it aloud', view));
   await screen.findByRole('region', { name: 'Reading check' });
 }
 

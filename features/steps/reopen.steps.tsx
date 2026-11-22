@@ -11,6 +11,7 @@ import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { readerOf } from '../../src/nav/route';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
+import { findButton } from '../../tests/support/find-button';
 import { openTool, findToolsHeading } from '../../tests/unit/openSettings';
 import { closeDatabase } from './close-database';
 
@@ -49,7 +50,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('he selects verse 28', async () => {
       // the Greek reaches the address through the settings store a moment after the tap: the entry the Verse view is opened from must have it
       await waitFor(() => expect(window.location.hash).toContain('view=greek'));
-      await user.click(screen.getByRole('button', { name: 'Verse 28' }));
+      await user.click(await findButton('Verse 28'));
     });
     Then('the address says Romans chapter 8, the Greek view, no weave and verse 28', async () => {
       await waitFor(() => expect(readerOf(window.location.hash)).toEqual({ book: 'rom', chapter: 8, view: 'greek', weave: 'off', verse: 28 }));

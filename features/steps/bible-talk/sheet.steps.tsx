@@ -11,6 +11,7 @@ import { db } from '../../../src/data/db';
 import { stopReading } from '../../../src/speech/readAloud';
 import { type FakePostern, TALK_ANSWER } from '../../../tests/support/fake-postern';
 import { seedHisWords } from '../../../tests/support/his-words';
+import { queryButton } from '../../../tests/support/find-button';
 import { QUESTION, answerShowsUnderQuestion, composerIsFree, endScenario, fake, field, open, openTalk, selectVerse28, send, sendButton, sendIsOff, sheet, taps, turns, turnsKept, user } from './support';
 import { messageBox } from '../../../tests/support/composer';
 
@@ -97,7 +98,7 @@ describeFeature(
       And('he closes the Verse view of verse 28, so that no verse is selected', async () => {
         await waitFor(() => expect(screen.queryByRole('dialog', { name: /^Talk about / })).toBeNull());
         await user.click(screen.getByRole('button', { name: '‹ Reader' }));
-        await waitFor(() => expect(screen.getByRole('button', { name: 'Verse 28' })).toHaveAttribute('aria-pressed', 'false'));
+        await waitFor(() => expect(queryButton('Verse 28')).toHaveAttribute('aria-pressed', 'false'));
       });
       And('he opens Talk again', openTalk);
       Then('the sheet is titled {string}', (_, title: string) => {

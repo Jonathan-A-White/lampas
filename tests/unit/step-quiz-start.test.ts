@@ -1,6 +1,6 @@
 // tests/unit/step-quiz-start.test.ts — the step 'he starts the quiz on the passage' finds its buttons and its sheet without a role query over the
 // whole Reader (mw-indx1x6.38).
-// within(view).getByRole('button', { name }) and screen.getByRole('dialog') work out the accessible name and visibility of every element of the
+// a role query for a button inside the Verse view (within(view), name) and screen.getByRole('dialog') work out the accessible name and visibility of every element of the
 // Reader behind them: ~1 s a call on a calm host at load 17, so the step (four button taps and the sheet) took 3.4 to 4.6 s and outran a 3 s step
 // limit; the message was typed key by key (a render of the sheet each). The step is features/steps/start-quiz.ts, shared by study-way and quiz-goal.
 // Recipe to see it: `TZ=UTC npx vitest run features/steps/study-way.steps.tsx features/steps/quiz-goal.steps.tsx --testTimeout=3000`.
