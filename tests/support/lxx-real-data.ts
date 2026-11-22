@@ -5,7 +5,7 @@
 //   - the sources are looked for in the cwd, then in the Laptop's checkout (SOURCE_CHECKOUT, scripts/lxx/link.ts): the test is given those directories, no symlink is needed;
 //   - they are the cwd's own real directories (the Laptop's main checkout): the tests run, whatever the diff;
 //   - they are borrowed (a symlink a Builder left with `npm run lxx:link`, or the Laptop's checkout): the tests run only when the work touches what they check (scripts/lxx/, data/lxx/choices, data/lxx/align,
-//     data/lxx/known, this support file or the test), so a leftover link cannot fail a gate on data the story did not change;
+//     data/lxx/known, docs/lxx-align, this support file or the tests), so a leftover link cannot fail a gate on data the story did not change;
 //   - no sources anywhere: skipped, with one line saying so; never a failure.
 // tests/global-setup.ts prints the decision as one line (the gate's log) and hands it to the workers in LAMPAS_LXX_REAL_DATA; LAMPAS_LXX_REAL=run|skip forces it (run still skips when there are no sources).
 import { execFileSync } from 'node:child_process';
@@ -16,7 +16,7 @@ import { join, resolve } from 'node:path';
 export const SOURCE_CHECKOUT = '/home/jwhite/lampas';
 
 /** The paths whose change makes a borrowed-data run worth it. */
-export const WATCHED = ['scripts/lxx/', 'data/lxx/choices/', 'data/lxx/align/', 'data/lxx/known/', 'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose.test.ts'] as const;
+export const WATCHED = ['scripts/lxx/', 'data/lxx/choices/', 'data/lxx/align/', 'data/lxx/known/', 'docs/lxx-align/', 'tests/support/lxx-real-data.ts', 'tests/unit/lxx-align-choose.test.ts', 'tests/unit/lxx-unpaired.test.ts', 'tests/unit/lxx-align-low-confidence.test.ts'] as const;
 
 export interface LxxRealData {
   /** run the real-data tests */

@@ -13,21 +13,22 @@ and a Builder's own session cuts and pairs those ([The model pass](#the-model-pa
 - [The shape](#the-shape)
 - [How a pair is made](#how-a-pair-is-made)
 - [The model pass](#the-model-pass)
+- [A pairing pass](#a-pairing-pass)
 - [The unpaired English](#the-unpaired-english)
 - [What reads the chunks](#what-reads-the-chunks)
 - [The report](#the-report)
-  - [Each chapter shipped](#each-chapter-shipped)
-  - [Each book](#each-book)
+  - [One file a book](#one-file-a-book)
 
 <!-- /toc -->
 
 ## The commands
 
 - `npm run lxx:ship -- --out dist/data-lxx` aligns every chapter it ships (the Laptop's deploy step, docs/lxx-derivation.md 'The commands'). `npm run data:build:lxx` (public/data-lxx) is unchanged: one chunk a verse.
-- `npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>]` is that ship into `<dir>` (a temporary directory by default) and writes the aligned share of each chapter shipped between the markers below.
+- `npm run lxx:align [-- --out <dir>] [--no-morpheus] [--build <n>]` is that ship into `<dir>` (a temporary directory by default) and writes the aligned share of each chapter shipped into the file of its book, `docs/lxx-align/<code>.txt` ([the report](#the-report)).
+- `npm run lxx:align-expect [-- --book <code>] [--no-morpheus] [--force]` is the last step of a pairing pass ([A pairing pass](#a-pairing-pass)): the same ship, then, for each book asked, its sidecar `data/lxx/align/<code>.expect.json` and its file under `docs/lxx-align/`. It writes no file under `tests/`.
   Both read the choices under `data/lxx/choices`, so the chapters are the ones the ship ships, and both apply the model pass's files under `data/lxx/align`.
-  Which chapters ship depends on which books have a Morpheus cache (git-ignored; a worktree borrows the Laptop's with `npm run lxx:link`), so [the report](#the-report) opens with the line 'Derived without a Morpheus cache: ...'.
-  A run on a host whose books without a cache are other than that line's leaves the report as it was and fails, naming both; `--force` writes it anyway (story mw-u2w5klk.349.24).
+  Which chapters ship depends on which books have a Morpheus cache (git-ignored; a worktree borrows the Laptop's with `npm run lxx:link`), so each book's file in [the report](#the-report) opens with the line 'Derived without a Morpheus cache: ...'.
+  A run on a host whose cache for a book is not the one its file records leaves the file as it was and fails, naming both; `--force` writes it anyway (story mw-u2w5klk.349.24).
 - `npm run lxx:unpaired [-- --book <code>] [--no-morpheus]` is the same ship into a temporary directory and a count of the English content words that sit where a tap opens no Greek word, per chapter and book ([The unpaired English](#the-unpaired-english)). It prints, writes nothing and never fails on a gap.
 - `npm run lxx:align-choose -- --list --book gen --chapter 1` prints the verses of a chapter that still have a remainder; `npm run lxx:align-choose -- --book gen --chapter 1 --from <file>` checks a model session's file and writes `data/lxx/align/gen-01.tsv`.
 
@@ -105,6 +106,18 @@ The low-confidence pairs of Genesis 24 to 29 (story mw-u2w5klk.349.33; the Teste
 The aligner's own pairs of Genesis 14 (story mw-u2w5klk.349.46; the finding of mw-u2w5klk.349.23: 14:5 'nations' sat on ἅμα with ἔθνη left with no English, 14:3 'with' on συνεφώνησαν, 14:10 'country.' on ἔφυγον and 'slime-pits.' on ἔφυγεν, 14:16 'nephew,' on the second ἀπέστρεψεν, 14:15 'upon' on ἐπέπεσεν): 27 `fix` rows in `data/lxx/align/gen-14.tsv` give each of them to its words ('met with one consent', 'strong nations' and 'with them,', 'Sodom fled', 'they that were left fled', 'he recovered Lot' and 'nephew,', 'he came upon', the four 'most high', 'have made Abram rich.', 'young men' and 'Except what things' among them). Reading the verses for them found three more pairs of the same kind that the fixes had to move with them (14:10 'valley' on φρέατα, 14:14 'nephew' on ὁ and ἀδελφὸς, 14:24 'that' on ὧν). 21 of the chapter's 24 English content words that had no Greek word have one now; `npm run lxx:unpaired -- --book gen` still reads 0 for Genesis 14, and the 3 left ('came' and 'pass' of 'it came to pass', 'Lord' of 14:22, which Brenton adds) are named in `tests/unit/lxx-align-choose.test.ts`. A fix row names a chunk as it reads after `joinSupplied`, so a supplied 'they' before the words is part of its text ('they cut in pieces', 14:7).
 The rest of the shipped chapters are still to do, one chapter a command: `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, then `--from <file>`. They are Genesis 46 to 50 (5 chapters), Exodus (16 chapters, 2,294 runs) and the Psalms (117 chapters, 7,323 runs); the Morpheus cache a worktree borrows (`npm run lxx:link`) must be there for the chapter, or `--list` says it is not a shipped chapter.
 
+## A pairing pass
+
+A pass over a book's chapters (the stories of the epic mw-u2w5klk.349) touches the files of its own book and no other (mw-u2w5klk.349.73). The steps, in order; the last is the command:
+
+1. `npm run lxx:link`, then `npm run lxx:align-choose -- --list --book <code> --chapter <n>`, and write the session's file `--from <file>`: `data/lxx/align/<code>-<NN>.tsv`, the `fix` rows after the runs ([The model pass](#the-model-pass)).
+2. `npm run lxx:unpaired -- --book <code>` reads the gaps: 0 in each chapter of the pass.
+3. **Last: `npm run lxx:align-expect -- --book <code>`.** It ships once and writes, for that book alone, `data/lxx/align/<code>.expect.json` (the sidecar) and `docs/lxx-align/<code>.txt` ([One file a book](#one-file-a-book)); it writes no file under `tests/`. A second run changes nothing.
+4. Open the sidecar: each English content word of the pass's chapters that has no Greek word is in the chapter's `leftovers` with an empty reason. Read each against the verse (`--list`) and write why, a key of `"reasons"` (a sentence of the book's own, added there) or a sentence. A chapter's `placePairs`, if you read the aligner's pairs by place (`placePairs` in `scripts/lxx/align-expect.ts`: the chunks with c below 0.6 whose Greek word the lexicon's entry does not say), is the pairs you read, each `"read"`. Run the command again: it keeps every reason and changes nothing else.
+
+The sidecar holds, for each chapter with a model file: `gaps` and `model` (the two counts of `npm run lxx:unpaired`), `leftovers` (`chapter:verse:word` with why; `also` names a function word the chapter counts all the same, as 'yes' of Genesis 20:6), and `placePairs`. A chapter with no `leftovers` is count-only (Genesis 1 to 11). Nothing in it is hand-kept but the reasons.
+The tests read it and are generic: `tests/unit/lxx-unpaired.test.ts` the counts, `tests/unit/lxx-align-choose.test.ts` the leftovers, the model files and the books' files, `tests/unit/lxx-align-low-confidence.test.ts` the pairs by place. Each fails in one line that names `npm run lxx:align-expect -- --book <code>` when the sidecar is stale (another story added alignment rows: run the command, commit the sidecar), and says where a leftover has no reason. The sections above that name 'tests/unit/lxx-align-choose.test.ts' for a list are history: the lists are in `data/lxx/align/gen.expect.json` now. A pass adds no paragraph to this file: its numbers are in the sidecar and the book's file.
+
 ## The unpaired English
 
 Story mw-u2w5klk.349.1, the sweep of the pairing epic (mw-u2w5klk.349; the Governor's report of 2026-11-10: he tapped 'removed' in Genesis 20:1 and got the Verse view). The Reader opens a Greek word from a tap on an English chunk only where the chunk names one (`septuagintChunkLinked`, src/reader/septuagint.ts);
@@ -114,11 +127,11 @@ Story mw-u2w5klk.349.1, the sweep of the pairing epic (mw-u2w5klk.349; the Gover
 | --- | --- |
 | English content words | the words of Brenton's English that are not function words (`FUNCTION_WORDS` in `scripts/lxx/unpaired.ts`: and, the, of, to, a, that, in, is, was, for, he, his, the pronouns, the prepositions, 'be', 'have', 'do' and their forms, Brenton's thou, thy, hath, unto); a word is its letters, so 'Abraham's' is 'abraham' |
 | Unpaired | the content words in a remainder chunk (`y: 'align?'`) or in a chunk with no Greek word that is not the model's (`g` empty, or no `y` at all, the one chunk a verse that `data:build:lxx` makes): a tap on one opens the Verse view. These are the gaps the epic is to close |
-| No Greek by the model | the content words in a model chunk (`y: 'model'`) whose `g` is empty: a session settled that they render no Greek word. Counted apart, not a gap. Some are English whose Greek word the aligner paired to another English word, which the pass does not touch (the 16 of Genesis 20 listed in `tests/unit/lxx-align-choose.test.ts`) |
+| No Greek by the model | the content words in a model chunk (`y: 'model'`) whose `g` is empty: a session settled that they render no Greek word. Counted apart, not a gap. Some are English whose Greek word the aligner paired to another English word, which the pass does not touch (the 16 of Genesis 20 listed in `data/lxx/align/gen.expect.json`) |
 | Share | Unpaired over English content words |
 
 The command reports and does not fail on a gap. A later story makes a gap a failing test once the model batches have finished a book. `tests/unit/lxx-unpaired.test.ts` holds the function-word list, the counting on a fixture verse with a known remainder, the table, and (where the git-ignored sources are on the disk, as `lxx-align-choose.test.ts`)
-the real Genesis 1 to 11, which read 0 unpaired. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 40 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3), Genesis 24 to 29 read 0 after mw-u2w5klk.349.4, and Genesis 30 to 36 after mw-u2w5klk.349.5, and Genesis 37 to 39 after mw-u2w5klk.349.47, and Genesis 40 to 42 after mw-u2w5klk.349.48, and Genesis 43 to 45 after mw-u2w5klk.349.49.
+the real chapters against the counts of their sidecars (`data/lxx/align/<book>.expect.json`, [A pairing pass](#a-pairing-pass)), which read 0 unpaired where a pass has been through. Read the table by the Share: it is the sweep's measure before and after each batch. At this story Genesis 40 to 50, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, the Psalms and Isaiah, as the ship ships them, read between 10% and 35% a chapter; Genesis 12 to 13, 15 to 23 read 0 (mw-u2w5klk.349.3), Genesis 24 to 29 read 0 after mw-u2w5klk.349.4, and Genesis 30 to 36 after mw-u2w5klk.349.5, and Genesis 37 to 39 after mw-u2w5klk.349.47, and Genesis 40 to 42 after mw-u2w5klk.349.48, and Genesis 43 to 45 after mw-u2w5klk.349.49.
 
 ## What reads the chunks
 
@@ -129,394 +142,11 @@ The Reader's English view draws each chunk as a tap, so a verse now has several 
 'Aligned' is the Greek words that have an English chunk; 'At confidence 0.6 or more' is those whose chunk is sure. The share is of Greek words, not English: many Greek articles have no English article in Brenton, so the share cannot reach 100%.
 The Genesis 1 fixture (tests/fixtures/lxx, all 31 verses of Brenton's chapter and TBESG's rows for its lemmas) aligns 630 of 751 words (83.9%); `tests/unit/lxx-align.test.ts` holds the floor at 83%.
 
-<!-- lxx-align:start -->
+### One file a book
 
-Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
-
-### Each chapter shipped
-
-| Chapter | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
-| --- | --- | --- | --- | --- | --- | --- |
-| Amos 1 | 15 | 344 | 279 | 81.1% | 57.0% | — |
-| Amos 2 | 16 | 365 | 280 | 76.7% | 49.9% | — |
-| Amos 3 | 15 | 309 | 221 | 71.5% | 50.5% | — |
-| Amos 4 | 13 | 332 | 250 | 75.3% | 52.1% | — |
-| Amos 5 | 27 | 495 | 384 | 77.6% | 55.6% | — |
-| Amos 6 | 14 | 288 | 162 | 56.3% | 35.8% | — |
-| Amos 7 | 17 | 351 | 270 | 76.9% | 55.8% | — |
-| Amos 8 | 14 | 296 | 219 | 74.0% | 51.4% | — |
-| Deuteronomy 1 | 46 | 987 | 777 | 78.7% | 54.3% | — |
-| Deuteronomy 2 | 37 | 834 | 653 | 78.3% | 50.7% | — |
-| Deuteronomy 3 | 29 | 703 | 545 | 77.5% | 53.1% | — |
-| Deuteronomy 4 | 49 | 1,245 | 980 | 78.7% | 54.5% | — |
-| Deuteronomy 5 | 33 | 769 | 593 | 77.1% | 53.4% | — |
-| Deuteronomy 6 | 25 | 538 | 402 | 74.7% | 53.3% | — |
-| Deuteronomy 7 | 26 | 699 | 524 | 75.0% | 49.1% | — |
-| Deuteronomy 8 | 20 | 480 | 365 | 76.0% | 52.1% | — |
-| Deuteronomy 9 | 29 | 788 | 652 | 82.7% | 56.5% | — |
-| Deuteronomy 10 | 22 | 504 | 421 | 83.5% | 56.0% | — |
-| Deuteronomy 11 | 32 | 806 | 631 | 78.3% | 48.0% | — |
-| Deuteronomy 12 | 32 | 868 | 651 | 75.0% | 48.5% | — |
-| Deuteronomy 13 | 18 | 484 | 382 | 78.9% | 50.0% | — |
-| Deuteronomy 14 | 28 | 535 | 314 | 58.7% | 31.8% | — |
-| Deuteronomy 16 | 22 | 558 | 449 | 80.5% | 51.4% | — |
-| Deuteronomy 17 | 20 | 524 | 410 | 78.2% | 48.3% | — |
-| Deuteronomy 18 | 22 | 465 | 348 | 74.8% | 45.4% | — |
-| Deuteronomy 19 | 21 | 531 | 401 | 75.5% | 49.0% | — |
-| Deuteronomy 20 | 20 | 495 | 385 | 77.8% | 47.9% | — |
-| Deuteronomy 21 | 23 | 547 | 446 | 81.5% | 50.1% | — |
-| Deuteronomy 22 | 30 | 664 | 516 | 77.7% | 44.4% | — |
-| Deuteronomy 23 | 25 | 462 | 359 | 77.7% | 47.2% | — |
-| Deuteronomy 24 | 22 | 516 | 395 | 76.6% | 48.4% | — |
-| Deuteronomy 25 | 19 | 408 | 313 | 76.7% | 46.8% | — |
-| Deuteronomy 26 | 19 | 527 | 429 | 81.4% | 54.1% | — |
-| Deuteronomy 27 | 26 | 476 | 395 | 83.0% | 60.3% | — |
-| Deuteronomy 28 | 68 | 1,607 | 1,229 | 76.5% | 49.6% | — |
-| Deuteronomy 29 | 29 | 700 | 525 | 75.0% | 51.4% | — |
-| Deuteronomy 30 | 20 | 589 | 463 | 78.6% | 52.1% | — |
-| Deuteronomy 32 | 52 | 971 | 776 | 79.9% | 52.1% | — |
-| Deuteronomy 33 | 29 | 551 | 435 | 78.9% | 55.5% | — |
-| Deuteronomy 34 | 12 | 246 | 198 | 80.5% | 60.6% | — |
-| Exodus 1 | 22 | 374 | 293 | 78.3% | 49.2% | — |
-| Exodus 6 | 30 | 569 | 506 | 88.9% | 64.7% | — |
-| Exodus 8 | 32 | 823 | 677 | 82.3% | 54.7% | — |
-| Exodus 14 | 31 | 786 | 668 | 85.0% | 54.3% | — |
-| Exodus 15 | 27 | 512 | 446 | 87.1% | 57.0% | — |
-| Exodus 17 | 16 | 377 | 327 | 86.7% | 61.5% | — |
-| Exodus 18 | 27 | 582 | 469 | 80.6% | 55.5% | — |
-| Exodus 19 | 25 | 570 | 474 | 83.2% | 57.5% | — |
-| Exodus 20 | 26 | 506 | 390 | 77.1% | 49.6% | — |
-| Exodus 22 | 31 | 571 | 437 | 76.5% | 48.7% | — |
-| Exodus 24 | 18 | 398 | 359 | 90.2% | 64.3% | — |
-| Exodus 25 | 40 | 673 | 298 | 44.3% | 25.9% | — |
-| Exodus 27 | 21 | 446 | 356 | 79.8% | 48.0% | — |
-| Exodus 35 | 35 | 571 | 393 | 68.8% | 43.1% | — |
-| Exodus 37 | 21 | 394 | 294 | 74.6% | 48.7% | — |
-| Exodus 39 | 23 | 443 | 365 | 82.4% | 44.9% | — |
-| Exodus 40 | 32 | 522 | 240 | 46.0% | 21.5% | — |
-| Genesis 1 | 31 | 751 | 676 | 90.0% | 65.6% | 47 (6.3%) |
-| Genesis 2 | 24 | 516 | 472 | 91.5% | 61.6% | 68 (13.2%) |
-| Genesis 3 | 24 | 597 | 553 | 92.6% | 60.0% | 72 (12.1%) |
-| Genesis 4 | 26 | 531 | 477 | 89.8% | 60.5% | 70 (13.2%) |
-| Genesis 5 | 31 | 467 | 430 | 92.1% | 80.1% | 16 (3.4%) |
-| Genesis 6 | 22 | 523 | 474 | 90.6% | 60.8% | 56 (10.7%) |
-| Genesis 7 | 24 | 531 | 489 | 92.1% | 64.4% | 58 (10.9%) |
-| Genesis 8 | 22 | 520 | 466 | 89.6% | 62.9% | 56 (10.8%) |
-| Genesis 9 | 29 | 565 | 526 | 93.1% | 65.0% | 53 (9.4%) |
-| Genesis 10 | 32 | 455 | 423 | 93.0% | 69.0% | 25 (5.5%) |
-| Genesis 11 | 32 | 601 | 558 | 92.8% | 77.2% | 42 (7.0%) |
-| Genesis 12 | 20 | 432 | 404 | 93.5% | 66.9% | 69 (16.0%) |
-| Genesis 13 | 18 | 396 | 359 | 90.7% | 60.9% | 54 (13.6%) |
-| Genesis 14 | 24 | 522 | 499 | 95.6% | 70.3% | 92 (17.6%) |
-| Genesis 15 | 21 | 363 | 348 | 95.9% | 65.6% | 43 (11.8%) |
-| Genesis 16 | 16 | 356 | 332 | 93.3% | 64.0% | 57 (16.0%) |
-| Genesis 17 | 27 | 582 | 526 | 90.4% | 64.1% | 82 (14.1%) |
-| Genesis 18 | 33 | 648 | 623 | 96.1% | 73.3% | 109 (16.8%) |
-| Genesis 19 | 38 | 915 | 843 | 92.1% | 63.0% | 112 (12.2%) |
-| Genesis 20 | 18 | 427 | 381 | 89.2% | 63.5% | 41 (9.6%) |
-| Genesis 21 | 34 | 662 | 615 | 92.9% | 64.8% | 75 (11.3%) |
-| Genesis 22 | 24 | 540 | 464 | 85.9% | 61.3% | 65 (12.0%) |
-| Genesis 23 | 20 | 426 | 405 | 95.1% | 68.3% | 61 (14.3%) |
-| Genesis 24 | 67 | 1,541 | 1,453 | 94.3% | 63.8% | 263 (17.1%) |
-| Genesis 25 | 34 | 627 | 579 | 92.3% | 66.8% | 89 (14.2%) |
-| Genesis 26 | 35 | 758 | 736 | 97.1% | 68.9% | 133 (17.5%) |
-| Genesis 27 | 46 | 1,044 | 955 | 91.5% | 64.6% | 132 (12.6%) |
-| Genesis 28 | 22 | 525 | 492 | 93.7% | 66.3% | 66 (12.6%) |
-| Genesis 29 | 35 | 729 | 685 | 94.0% | 66.8% | 94 (12.9%) |
-| Genesis 30 | 43 | 921 | 815 | 88.5% | 62.0% | 106 (11.5%) |
-| Genesis 31 | 55 | 1,267 | 1,148 | 90.6% | 63.2% | 179 (14.1%) |
-| Genesis 32 | 32 | 693 | 652 | 94.1% | 65.8% | 116 (16.7%) |
-| Genesis 33 | 20 | 416 | 394 | 94.7% | 66.8% | 56 (13.5%) |
-| Genesis 34 | 31 | 703 | 650 | 92.5% | 63.6% | 85 (12.1%) |
-| Genesis 35 | 29 | 588 | 554 | 94.2% | 68.2% | 57 (9.7%) |
-| Genesis 36 | 43 | 682 | 647 | 94.9% | 62.9% | 64 (9.4%) |
-| Genesis 37 | 36 | 768 | 720 | 93.8% | 64.2% | 170 (22.1%) |
-| Genesis 38 | 30 | 678 | 644 | 95.0% | 66.2% | 142 (20.9%) |
-| Genesis 39 | 23 | 562 | 547 | 97.3% | 72.1% | 165 (29.4%) |
-| Genesis 40 | 23 | 478 | 453 | 94.8% | 68.4% | 119 (24.9%) |
-| Genesis 41 | 57 | 1,153 | 1,101 | 95.5% | 72.8% | 289 (25.1%) |
-| Genesis 42 | 38 | 801 | 770 | 96.1% | 72.4% | 283 (35.3%) |
-| Genesis 43 | 34 | 801 | 760 | 94.9% | 65.9% | 184 (23.0%) |
-| Genesis 44 | 34 | 760 | 725 | 95.4% | 67.4% | 204 (26.8%) |
-| Genesis 45 | 28 | 611 | 569 | 93.1% | 68.2% | 96 (15.7%) |
-| Genesis 46 | 34 | 672 | 568 | 84.5% | 61.3% | — |
-| Genesis 47 | 31 | 839 | 629 | 75.0% | 48.0% | — |
-| Genesis 48 | 22 | 560 | 460 | 82.1% | 55.7% | — |
-| Genesis 49 | 33 | 573 | 431 | 75.2% | 48.2% | — |
-| Genesis 50 | 26 | 559 | 452 | 80.9% | 54.7% | — |
-| Hosea 1 | 11 | 263 | 223 | 84.8% | 58.2% | — |
-| Hosea 5 | 15 | 286 | 213 | 74.5% | 48.3% | — |
-| Hosea 6 | 11 | 168 | 126 | 75.0% | 50.0% | — |
-| Isaiah 2 | 21 | 436 | 344 | 78.9% | 51.4% | — |
-| Isaiah 3 | 26 | 491 | 309 | 62.9% | 36.9% | — |
-| Isaiah 4 | 6 | 140 | 109 | 77.9% | 62.1% | — |
-| Isaiah 5 | 30 | 666 | 465 | 69.8% | 49.7% | — |
-| Isaiah 6 | 13 | 307 | 238 | 77.5% | 56.7% | — |
-| Isaiah 7 | 25 | 505 | 398 | 78.8% | 57.2% | — |
-| Isaiah 8 | 22 | 475 | 371 | 78.1% | 53.5% | — |
-| Isaiah 12 | 6 | 110 | 87 | 79.1% | 47.3% | — |
-| Isaiah 13 | 22 | 404 | 293 | 72.5% | 50.2% | — |
-| Isaiah 15 | 9 | 186 | 148 | 79.6% | 48.9% | — |
-| Isaiah 18 | 7 | 184 | 138 | 75.0% | 54.9% | — |
-| Isaiah 23 | 18 | 305 | 231 | 75.7% | 50.2% | — |
-| Isaiah 24 | 23 | 392 | 309 | 78.8% | 49.7% | — |
-| Isaiah 25 | 12 | 231 | 174 | 75.3% | 50.6% | — |
-| Isaiah 26 | 21 | 361 | 264 | 73.1% | 44.9% | — |
-| Isaiah 28 | 29 | 552 | 404 | 73.2% | 46.2% | — |
-| Isaiah 29 | 24 | 548 | 406 | 74.1% | 50.4% | — |
-| Isaiah 31 | 9 | 237 | 179 | 75.5% | 54.4% | — |
-| Isaiah 37 | 38 | 817 | 671 | 82.1% | 55.1% | — |
-| Isaiah 38 | 22 | 436 | 347 | 79.6% | 53.0% | — |
-| Isaiah 40 | 31 | 529 | 397 | 75.0% | 48.0% | — |
-| Isaiah 41 | 29 | 557 | 437 | 78.5% | 54.4% | — |
-| Isaiah 42 | 25 | 490 | 373 | 76.1% | 50.2% | — |
-| Isaiah 46 | 13 | 243 | 178 | 73.3% | 51.4% | — |
-| Isaiah 52 | 15 | 300 | 235 | 78.3% | 52.0% | — |
-| Isaiah 55 | 13 | 305 | 239 | 78.4% | 48.2% | — |
-| Isaiah 56 | 11 | 251 | 191 | 76.1% | 48.2% | — |
-| Isaiah 62 | 12 | 275 | 206 | 74.9% | 48.7% | — |
-| Isaiah 63 | 19 | 397 | 308 | 77.6% | 50.1% | — |
-| Isaiah 64 | 12 | 216 | 150 | 69.4% | 47.7% | — |
-| Judges 1 | 36 | 936 | 716 | 76.5% | 46.6% | — |
-| Judges 2 | 23 | 584 | 445 | 76.2% | 50.0% | — |
-| Judges 3 | 31 | 756 | 601 | 79.5% | 54.4% | — |
-| Judges 4 | 24 | 657 | 552 | 84.0% | 60.0% | — |
-| Joel 1 | 20 | 356 | 262 | 73.6% | 44.7% | — |
-| Joel 2 | 32 | 768 | 602 | 78.4% | 51.4% | — |
-| Joel 3 | 21 | 449 | 351 | 78.2% | 46.3% | — |
-| Jonah 1 | 16 | 395 | 315 | 79.7% | 49.4% | — |
-| Jonah 2 | 11 | 184 | 139 | 75.5% | 47.8% | — |
-| Jonah 3 | 10 | 237 | 182 | 76.8% | 52.3% | — |
-| Jonah 4 | 11 | 264 | 203 | 76.9% | 54.5% | — |
-| Joshua 1 | 18 | 440 | 333 | 75.7% | 49.8% | — |
-| Joshua 2 | 24 | 582 | 476 | 81.8% | 50.9% | — |
-| Joshua 3 | 17 | 440 | 361 | 82.0% | 53.0% | — |
-| Joshua 4 | 24 | 542 | 416 | 76.8% | 53.1% | — |
-| Joshua 5 | 15 | 384 | 288 | 75.0% | 45.8% | — |
-| Joshua 6 | 27 | 617 | 470 | 76.2% | 48.9% | — |
-| Joshua 7 | 26 | 644 | 506 | 78.6% | 51.4% | — |
-| Joshua 8 | 29 | 647 | 505 | 78.1% | 50.5% | — |
-| Joshua 13 | 32 | 707 | 565 | 79.9% | 54.0% | — |
-| Joshua 16 | 10 | 238 | 203 | 85.3% | 57.6% | — |
-| Joshua 17 | 18 | 473 | 371 | 78.4% | 54.1% | — |
-| Joshua 18 | 28 | 554 | 442 | 79.8% | 52.5% | — |
-| Joshua 19 | 51 | 778 | 611 | 78.5% | 56.0% | — |
-| Joshua 22 | 34 | 1,044 | 829 | 79.4% | 53.2% | — |
-| Joshua 23 | 16 | 448 | 309 | 69.0% | 46.4% | — |
-| Joshua 24 | 33 | 1,002 | 780 | 77.8% | 52.1% | — |
-| Leviticus 1 | 17 | 400 | 336 | 84.0% | 47.5% | — |
-| Leviticus 2 | 16 | 317 | 265 | 83.6% | 56.2% | — |
-| Leviticus 3 | 17 | 386 | 306 | 79.3% | 45.3% | — |
-| Leviticus 4 | 35 | 895 | 726 | 81.1% | 45.8% | — |
-| Leviticus 5 | 19 | 497 | 373 | 75.1% | 45.3% | — |
-| Leviticus 6 | 40 | 828 | 650 | 78.5% | 47.7% | — |
-| Leviticus 7 | 28 | 562 | 429 | 76.3% | 44.7% | — |
-| Leviticus 8 | 36 | 895 | 615 | 68.7% | 40.2% | — |
-| Leviticus 9 | 24 | 520 | 453 | 87.1% | 55.6% | — |
-| Leviticus 10 | 20 | 529 | 428 | 80.9% | 56.1% | — |
-| Leviticus 11 | 47 | 927 | 745 | 80.4% | 50.5% | — |
-| Leviticus 12 | 8 | 193 | 152 | 78.8% | 52.8% | — |
-| Leviticus 13 | 59 | 1,493 | 1,145 | 76.7% | 44.8% | — |
-| Leviticus 14 | 57 | 1,333 | 1,069 | 80.2% | 48.5% | — |
-| Leviticus 15 | 33 | 794 | 575 | 72.4% | 48.0% | — |
-| Leviticus 16 | 34 | 916 | 728 | 79.5% | 44.5% | — |
-| Leviticus 17 | 16 | 452 | 355 | 78.5% | 46.5% | — |
-| Leviticus 18 | 30 | 528 | 376 | 71.2% | 42.0% | — |
-| Leviticus 19 | 37 | 697 | 519 | 74.5% | 46.2% | — |
-| Leviticus 20 | 27 | 618 | 437 | 70.7% | 47.2% | — |
-| Leviticus 21 | 24 | 455 | 339 | 74.5% | 46.4% | — |
-| Leviticus 22 | 33 | 672 | 529 | 78.7% | 48.2% | — |
-| Leviticus 23 | 44 | 864 | 696 | 80.6% | 55.3% | — |
-| Leviticus 24 | 23 | 400 | 319 | 79.8% | 55.5% | — |
-| Leviticus 25 | 55 | 1,185 | 906 | 76.5% | 44.9% | — |
-| Leviticus 26 | 46 | 1,002 | 740 | 73.9% | 47.4% | — |
-| Leviticus 27 | 34 | 684 | 521 | 76.2% | 44.9% | — |
-| Micah 1 | 16 | 320 | 257 | 80.3% | 53.1% | — |
-| Micah 2 | 13 | 289 | 216 | 74.7% | 43.9% | — |
-| Micah 3 | 12 | 292 | 212 | 72.6% | 46.9% | — |
-| Micah 5 | 15 | 332 | 256 | 77.1% | 53.6% | — |
-| Micah 6 | 16 | 334 | 256 | 76.6% | 54.5% | — |
-| Micah 7 | 20 | 430 | 317 | 73.7% | 44.2% | — |
-| Numbers 1 | 54 | 991 | 802 | 80.9% | 52.7% | — |
-| Numbers 2 | 34 | 511 | 417 | 81.6% | 53.8% | — |
-| Numbers 3 | 51 | 950 | 793 | 83.5% | 50.9% | — |
-| Numbers 4 | 49 | 1,108 | 876 | 79.1% | 48.5% | — |
-| Numbers 5 | 31 | 714 | 571 | 80.0% | 49.9% | — |
-| Numbers 6 | 27 | 549 | 434 | 79.1% | 51.4% | — |
-| Numbers 7 | 89 | 1,391 | 1,253 | 90.1% | 62.0% | — |
-| Numbers 8 | 26 | 502 | 416 | 82.9% | 51.8% | — |
-| Numbers 9 | 23 | 508 | 361 | 71.1% | 42.5% | — |
-| Numbers 10 | 36 | 613 | 492 | 80.3% | 52.9% | — |
-| Numbers 11 | 35 | 827 | 696 | 84.2% | 56.6% | — |
-| Numbers 12 | 15 | 277 | 233 | 84.1% | 60.3% | — |
-| Numbers 13 | 34 | 573 | 500 | 87.3% | 56.7% | — |
-| Numbers 14 | 45 | 966 | 762 | 78.9% | 50.0% | — |
-| Numbers 15 | 41 | 783 | 582 | 74.3% | 46.1% | — |
-| Numbers 16 | 50 | 1,040 | 866 | 83.3% | 57.1% | — |
-| Numbers 17 | 13 | 266 | 226 | 85.0% | 57.9% | — |
-| Numbers 18 | 32 | 813 | 646 | 79.5% | 47.0% | — |
-| Numbers 19 | 22 | 534 | 439 | 82.2% | 55.8% | — |
-| Numbers 20 | 29 | 631 | 516 | 81.8% | 56.4% | — |
-| Numbers 21 | 35 | 745 | 570 | 76.5% | 51.8% | — |
-| Numbers 22 | 41 | 948 | 770 | 81.2% | 54.4% | — |
-| Numbers 23 | 30 | 596 | 494 | 82.9% | 58.6% | — |
-| Numbers 24 | 25 | 464 | 371 | 80.0% | 59.3% | — |
-| Numbers 25 | 18 | 335 | 282 | 84.2% | 57.6% | — |
-| Numbers 26 | 65 | 980 | 805 | 82.1% | 46.1% | — |
-| Numbers 27 | 23 | 500 | 377 | 75.4% | 49.4% | — |
-| Numbers 28 | 31 | 533 | 361 | 67.7% | 45.6% | — |
-| Numbers 29 | 39 | 755 | 506 | 67.0% | 42.5% | — |
-| Numbers 30 | 17 | 442 | 300 | 67.9% | 37.1% | — |
-| Numbers 31 | 54 | 1,009 | 788 | 78.1% | 50.7% | — |
-| Numbers 32 | 42 | 855 | 677 | 79.2% | 54.5% | — |
-| Numbers 33 | 56 | 784 | 704 | 89.8% | 60.5% | — |
-| Numbers 34 | 29 | 432 | 352 | 81.5% | 53.9% | — |
-| Numbers 35 | 34 | 730 | 551 | 75.5% | 46.6% | — |
-| Numbers 36 | 13 | 318 | 246 | 77.4% | 52.5% | — |
-| Obadiah 1 | 21 | 456 | 356 | 78.1% | 51.8% | — |
-| Psalms 2 | 12 | 164 | 127 | 77.4% | 43.3% | — |
-| Psalms 3 | 9 | 108 | 84 | 77.8% | 42.6% | — |
-| Psalms 4 | 9 | 129 | 88 | 68.2% | 38.8% | — |
-| Psalms 5 | 13 | 201 | 137 | 68.2% | 41.3% | — |
-| Psalms 6 | 11 | 147 | 98 | 66.7% | 37.4% | — |
-| Psalms 7 | 18 | 255 | 184 | 72.2% | 46.7% | — |
-| Psalms 8 | 10 | 134 | 107 | 79.9% | 49.3% | — |
-| Psalms 11 | 9 | 126 | 91 | 72.2% | 46.8% | — |
-| Psalms 12 | 6 | 99 | 61 | 61.6% | 32.3% | — |
-| Psalms 13 | 7 | 167 | 128 | 76.6% | 51.5% | — |
-| Psalms 15 | 11 | 171 | 117 | 68.4% | 33.9% | — |
-| Psalms 16 | 15 | 236 | 168 | 71.2% | 38.1% | — |
-| Psalms 18 | 15 | 220 | 170 | 77.3% | 47.3% | — |
-| Psalms 19 | 10 | 127 | 101 | 79.5% | 54.3% | — |
-| Psalms 22 | 6 | 104 | 77 | 74.0% | 44.2% | — |
-| Psalms 23 | 10 | 153 | 121 | 79.1% | 54.9% | — |
-| Psalms 25 | 12 | 145 | 115 | 79.3% | 47.6% | — |
-| Psalms 28 | 11 | 134 | 106 | 79.1% | 55.2% | — |
-| Psalms 29 | 13 | 189 | 138 | 73.0% | 46.6% | — |
-| Psalms 31 | 11 | 189 | 135 | 71.4% | 41.3% | — |
-| Psalms 32 | 22 | 269 | 205 | 76.2% | 45.4% | — |
-| Psalms 33 | 23 | 285 | 214 | 75.1% | 49.5% | — |
-| Psalms 36 | 40 | 525 | 391 | 74.5% | 41.9% | — |
-| Psalms 37 | 23 | 316 | 229 | 72.5% | 40.2% | — |
-| Psalms 38 | 14 | 230 | 157 | 68.3% | 43.9% | — |
-| Psalms 39 | 18 | 327 | 234 | 71.6% | 42.2% | — |
-| Psalms 40 | 14 | 193 | 150 | 77.7% | 45.1% | — |
-| Psalms 42 | 5 | 115 | 71 | 61.7% | 34.8% | — |
-| Psalms 43 | 27 | 373 | 258 | 69.2% | 39.1% | — |
-| Psalms 45 | 12 | 156 | 109 | 69.9% | 43.6% | — |
-| Psalms 46 | 10 | 106 | 86 | 81.1% | 53.8% | — |
-| Psalms 47 | 15 | 187 | 137 | 73.3% | 47.1% | — |
-| Psalms 48 | 21 | 292 | 213 | 72.9% | 42.1% | — |
-| Psalms 50 | 21 | 284 | 199 | 70.1% | 45.1% | — |
-| Psalms 51 | 11 | 162 | 100 | 61.7% | 35.8% | — |
-| Psalms 52 | 7 | 117 | 76 | 65.0% | 46.2% | — |
-| Psalms 53 | 9 | 117 | 75 | 64.1% | 32.5% | — |
-| Psalms 54 | 24 | 326 | 244 | 74.8% | 46.0% | — |
-| Psalms 55 | 14 | 203 | 142 | 70.0% | 40.4% | — |
-| Psalms 56 | 12 | 198 | 154 | 77.8% | 47.0% | — |
-| Psalms 57 | 12 | 156 | 113 | 72.4% | 46.8% | — |
-| Psalms 58 | 18 | 284 | 212 | 74.6% | 43.0% | — |
-| Psalms 59 | 14 | 185 | 110 | 59.5% | 37.3% | — |
-| Psalms 60 | 9 | 119 | 89 | 74.8% | 43.7% | — |
-| Psalms 61 | 13 | 193 | 130 | 67.4% | 44.0% | — |
-| Psalms 62 | 12 | 170 | 124 | 72.9% | 45.3% | — |
-| Psalms 63 | 11 | 121 | 85 | 70.2% | 47.9% | — |
-| Psalms 64 | 14 | 187 | 140 | 74.9% | 41.7% | — |
-| Psalms 65 | 20 | 270 | 196 | 72.6% | 44.8% | — |
-| Psalms 66 | 8 | 93 | 66 | 71.0% | 45.2% | — |
-| Psalms 67 | 36 | 528 | 359 | 68.0% | 43.9% | — |
-| Psalms 68 | 37 | 532 | 395 | 74.2% | 43.6% | — |
-| Psalms 69 | 6 | 85 | 58 | 68.2% | 38.8% | — |
-| Psalms 70 | 24 | 377 | 265 | 70.3% | 41.1% | — |
-| Psalms 71 | 20 | 292 | 230 | 78.8% | 49.3% | — |
-| Psalms 73 | 23 | 326 | 235 | 72.1% | 42.9% | — |
-| Psalms 74 | 11 | 139 | 107 | 77.0% | 54.0% | — |
-| Psalms 75 | 13 | 162 | 115 | 71.0% | 48.1% | — |
-| Psalms 76 | 21 | 273 | 198 | 72.5% | 49.1% | — |
-| Psalms 77 | 72 | 994 | 742 | 74.6% | 48.5% | — |
-| Psalms 78 | 13 | 230 | 150 | 65.2% | 35.7% | — |
-| Psalms 79 | 20 | 263 | 182 | 69.2% | 44.5% | — |
-| Psalms 80 | 17 | 219 | 164 | 74.9% | 43.4% | — |
-| Psalms 81 | 8 | 85 | 69 | 81.2% | 63.5% | — |
-| Psalms 82 | 19 | 222 | 166 | 74.8% | 50.5% | — |
-| Psalms 83 | 13 | 207 | 148 | 71.5% | 44.4% | — |
-| Psalms 84 | 14 | 176 | 120 | 68.2% | 44.3% | — |
-| Psalms 85 | 17 | 262 | 208 | 79.4% | 50.4% | — |
-| Psalms 86 | 7 | 85 | 70 | 82.4% | 57.6% | — |
-| Psalms 87 | 19 | 258 | 199 | 77.1% | 49.2% | — |
-| Psalms 88 | 53 | 715 | 516 | 72.2% | 41.8% | — |
-| Psalms 90 | 16 | 202 | 151 | 74.8% | 43.6% | — |
-| Psalms 91 | 16 | 196 | 135 | 68.9% | 42.3% | — |
-| Psalms 92 | 5 | 78 | 51 | 65.4% | 35.9% | — |
-| Psalms 93 | 23 | 268 | 182 | 67.9% | 42.5% | — |
-| Psalms 94 | 11 | 167 | 127 | 76.0% | 46.1% | — |
-| Psalms 95 | 13 | 196 | 159 | 81.1% | 46.4% | — |
-| Psalms 96 | 12 | 166 | 115 | 69.3% | 46.4% | — |
-| Psalms 97 | 9 | 128 | 102 | 79.7% | 51.6% | — |
-| Psalms 98 | 9 | 141 | 108 | 76.6% | 53.9% | — |
-| Psalms 99 | 5 | 74 | 62 | 83.8% | 47.3% | — |
-| Psalms 100 | 8 | 123 | 80 | 65.0% | 39.8% | — |
-| Psalms 104 | 45 | 518 | 389 | 75.1% | 45.6% | — |
-| Psalms 105 | 48 | 610 | 434 | 71.1% | 41.3% | — |
-| Psalms 107 | 14 | 176 | 127 | 72.2% | 45.5% | — |
-| Psalms 109 | 7 | 100 | 79 | 79.0% | 52.0% | — |
-| Psalms 110 | 10 | 130 | 98 | 75.4% | 44.6% | — |
-| Psalms 111 | 10 | 132 | 92 | 69.7% | 40.9% | — |
-| Psalms 112 | 9 | 90 | 66 | 73.3% | 52.2% | — |
-| Psalms 114 | 9 | 102 | 67 | 65.7% | 37.3% | — |
-| Psalms 115 | 10 | 81 | 59 | 72.8% | 54.3% | — |
-| Psalms 116 | 2 | 28 | 20 | 71.4% | 35.7% | — |
-| Psalms 117 | 29 | 302 | 245 | 81.1% | 48.0% | — |
-| Psalms 119 | 7 | 74 | 51 | 68.9% | 45.9% | — |
-| Psalms 120 | 8 | 95 | 68 | 71.6% | 46.3% | — |
-| Psalms 122 | 4 | 69 | 47 | 68.1% | 42.0% | — |
-| Psalms 123 | 8 | 100 | 58 | 58.0% | 40.0% | — |
-| Psalms 124 | 5 | 82 | 51 | 62.2% | 35.4% | — |
-| Psalms 125 | 6 | 78 | 56 | 71.8% | 48.7% | — |
-| Psalms 126 | 5 | 83 | 62 | 74.7% | 43.4% | — |
-| Psalms 127 | 6 | 84 | 60 | 71.4% | 47.6% | — |
-| Psalms 128 | 8 | 88 | 56 | 63.6% | 42.0% | — |
-| Psalms 129 | 8 | 84 | 59 | 70.2% | 46.4% | — |
-| Psalms 130 | 3 | 57 | 37 | 64.9% | 36.8% | — |
-| Psalms 131 | 18 | 231 | 162 | 70.1% | 40.3% | — |
-| Psalms 132 | 3 | 59 | 37 | 62.7% | 40.7% | — |
-| Psalms 133 | 3 | 44 | 35 | 79.5% | 52.3% | — |
-| Psalms 134 | 21 | 248 | 198 | 79.8% | 57.3% | — |
-| Psalms 135 | 26 | 326 | 215 | 66.0% | 30.7% | — |
-| Psalms 137 | 8 | 141 | 110 | 78.0% | 44.7% | — |
-| Psalms 138 | 24 | 323 | 242 | 74.9% | 44.6% | — |
-| Psalms 139 | 14 | 179 | 138 | 77.1% | 43.6% | — |
-| Psalms 141 | 8 | 132 | 89 | 67.4% | 40.9% | — |
-| Psalms 143 | 15 | 231 | 166 | 71.9% | 42.0% | — |
-| Psalms 144 | 21 | 302 | 200 | 66.2% | 42.7% | — |
-| Psalms 145 | 10 | 131 | 88 | 67.2% | 43.5% | — |
-| Psalms 146 | 11 | 147 | 105 | 71.4% | 45.6% | — |
-| Psalms 147 | 9 | 108 | 75 | 69.4% | 46.3% | — |
-| Psalms 148 | 14 | 168 | 136 | 81.0% | 54.2% | — |
-| Psalms 149 | 9 | 110 | 75 | 68.2% | 41.8% | — |
-| Psalms 150 | 6 | 67 | 55 | 82.1% | 41.8% | — |
-| Psalms 151 | 7 | 116 | 78 | 67.2% | 37.1% | — |
-
-### Each book
-
-| Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
-| --- | --- | --- | --- | --- | --- | --- |
-| Amos | 131 | 2,780 | 2,065 | 74.3% | 51.5% | — |
-| Deuteronomy | 905 | 21,077 | 16,362 | 77.6% | 50.9% | — |
-| Exodus | 457 | 9,117 | 6,992 | 76.7% | 49.6% | — |
-| Genesis | 1,531 | 32,635 | 29,932 | 91.7% | 64.9% | 4,515 (13.8%) |
-| Hosea | 37 | 717 | 562 | 78.4% | 52.3% | — |
-| Isaiah | 563 | 11,346 | 8,599 | 75.8% | 50.6% | — |
-| Judges | 114 | 2,933 | 2,314 | 78.9% | 52.3% | — |
-| Joel | 73 | 1,573 | 1,215 | 77.2% | 48.4% | — |
-| Jonah | 48 | 1,080 | 839 | 77.7% | 51.0% | — |
-| Joshua | 402 | 9,540 | 7,465 | 78.2% | 52.0% | — |
-| Leviticus | 859 | 19,042 | 14,732 | 77.4% | 47.5% | — |
-| Micah | 92 | 1,997 | 1,514 | 75.8% | 49.3% | — |
-| Numbers | 1,288 | 24,973 | 20,035 | 80.2% | 52.2% | — |
-| Obadiah | 21 | 456 | 356 | 78.1% | 51.8% | — |
-| Psalms | 1,769 | 24,152 | 17,515 | 72.5% | 44.4% | — |
-
-359 chapters: 130,497 of 163,418 Greek words aligned (79.9%), 4,515 of them by the model pass (y `model`); 133,280 of 208,971 English words are in a chunk of Greek (63.8%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
-
-<!-- lxx-align:end -->
+The report is one file a book, `docs/lxx-align/<code>.txt` (`gen.txt`, `exo.txt`, ...; a `.txt`, because CLAUDE.md names every `.md` under `docs/`), so two passes on two books write no file in common (mw-u2w5klk.349.73).
+Each opens with the book's name, a line that it is GENERATED, and 'Derived without a Morpheus cache: <code>.' or '... none.' for this book alone, then 'Each chapter shipped' (a row for each chapter the ship wrote) and the book's own row.
+`npm run lxx:align-expect -- --book gen` writes the book's file (and its sidecar, [A pairing pass](#a-pairing-pass)); `npm run lxx:align` writes the file of every book it ships.
+A run on a host whose Morpheus cache for the book is not the one the file was written with leaves it as it was and fails, naming both lists; `--force` writes it anyway.
+`tests/unit/lxx-align-choose.test.ts` fails, naming the command, when a file differs from what the ship gives (on a host whose cache for the book is the file's).
+There is no total across books in the files, since a total would be a file every pass writes: add the book rows when you want it.
