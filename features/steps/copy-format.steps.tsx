@@ -44,6 +44,18 @@ const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/
 const english = (n: number): string => ROMANS_8.verses.find((v) => v.n === n)!.e.map((c) => c.t.trim()).join(' ').replace(/\s+/g, ' ').trim();
 const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
 const lines = (text: string): string[] => text.split('\n');
+/** Waits for the Verse view's own text to say `words`: it is drawn from the same read of the store that Copy takes its text from, so Copy copies them too. */
+const verseShows = (words: string) =>
+  waitFor(() => expect(squash(viewEl().querySelector('[data-sheet-verse]')?.textContent)).toContain(words));
+/** The Verse view's text does not show a variant's brace, but Copy gives it once the settings are read: tap Copy until it does, then forget what was copied. */
+const copyGives = async (words: string) => {
+  await waitFor(async () => {
+    copied = [];
+    await user.click(await findButton('Copy', viewEl));
+    expect(copied.join('\n')).toContain(words);
+  });
+  copied = [];
+};
 const clip = (): string => {
   expect(copied).toHaveLength(1);
   return copied[0];
@@ -100,10 +112,8 @@ describeFeature(feature, ({ Scenario }) => {
   const woven = async () => {
     await open({}, '#/?b=col&c=3&v=1', { view: 'english', weave: 'solid' });
     await screen.findByRole('region', { name: 'Verse view' });
-    // the Verse view copies by the defaults (As you read it) until its four settings have been read from the store: let the choice of Text reach it
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    });
+    // the Verse view copies by the defaults (As you read it) until its settings have been read from the store: wait for the Verse view to show the woven Greek it copies
+    await verseShows('χριστῷ');
   };
   const tapNumber = async (_: unknown, n: number) => {
     await user.click(await findButton(`Verse ${n}`));
@@ -354,8 +364,16 @@ describeFeature(feature, ({ Scenario }) => {
 
   // Copy follows every mode he is in (mw-5r3p30.866): Variants shown puts each unit's brace after its words
   const VARIANTS = { variants: 'english', variantWitnesses: 'ecm' };
-  const peter = (settings: Record<string, string>) => () => open(settings, '#/?b=1pe&c=4&view=english&weave=off');
-  const peterPages = () => open({ ...VARIANTS, readingMode: 'pages' }, '#/?b=1pe&c=4&view=english&weave=off');
+  // the Reader holds a verse by what it has drawn: with Variants shown, wait for it to mark a unit before the hold
+  const marksShown = () => waitFor(() => expect(document.querySelector('[data-reader] [data-variant]')).not.toBeNull());
+  const peter = (settings: Record<string, string>) => async () => {
+    await open(settings, '#/?b=1pe&c=4&view=english&weave=off');
+    if (settings.variants === 'english') await marksShown();
+  };
+  const peterPages = async () => {
+    await open({ ...VARIANTS, readingMode: 'pages' }, '#/?b=1pe&c=4&view=english&weave=off');
+    await marksShown();
+  };
   const holdVerse = async (_: unknown, n: number) => {
     await holdOn(numberOf(n));
     await waitCopied();
@@ -396,10 +414,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and When you copy at its defaults', async () => {
       await open(VARIANTS, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
-      // the Verse view copies by the defaults until its settings have been read from the store
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      });
+      // the Verse view copies by the defaults until its settings have been read from the store: wait until Copy gives the braces
+      await copyGives('{left out NA}');
     });
     When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
@@ -417,10 +433,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "english" stored', async () => {
       await open({ ...VARIANTS, copyText: 'english' }, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
-      // the Verse view copies by the defaults until its settings have been read from the store
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      });
+      // the Verse view copies by the defaults until its settings have been read from the store: wait until Copy gives the braces
+      await copyGives('{left out NA}');
     });
     When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
@@ -431,10 +445,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "original" stored', async () => {
       await open({ ...VARIANTS, copyText: 'original' }, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
-      // the Verse view copies by the defaults until its settings have been read from the store
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      });
+      // the Verse view copies by the defaults until its settings have been read from the store: wait until Copy gives the braces
+      await copyGives('{left out NA}');
     });
     When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
@@ -445,10 +457,8 @@ describeFeature(feature, ({ Scenario }) => {
     Given('Lampas is opened on 1 Peter 4:1 with Variants shown and the old setting Text "both" stored', async () => {
       await open({ ...VARIANTS, copyText: 'both' }, '#/?b=1pe&c=4&v=1');
       await screen.findByRole('region', { name: 'Verse view' });
-      // the Verse view copies by the defaults until its settings have been read from the store
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      });
+      // the Verse view copies by the defaults until its settings have been read from the store: wait until Copy gives the braces
+      await copyGives('{left out NA}');
     });
     When('he taps {string}', tapCopy);
     Then("the phone's clipboard starts with {string}", starts);
