@@ -1,5 +1,13 @@
 # What's new
 
+## 0.7.330
+_2026-11-22_
+- Fixed: a list of Logos sermon books now names all the books it stands for, including four that were left out.
+- Fixed: Hands-free now hears your command on the microphone that works when your car's Bluetooth is silent, instead of waiting out the silence first.
+- Fixed: In Settings, the search keeps what you typed when you come back from What Lampas has counted or from Sermon sources.
+- Fixed: Seen on Morning RePhil can now be undone for a few seconds, and starting Morning RePhil again asks before forgetting every Seen mark.
+- Fixed: Tapping an English word in Genesis 43 to 45 now opens the Greek word it renders, not the whole verse.
+
 ## 0.7.329
 _2026-11-22_
 - New: You can hide a single theme from a verse's Themes line, and bring it back from Settings.
