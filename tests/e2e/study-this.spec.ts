@@ -4,6 +4,7 @@
 // The lesson over a drill (mw-indx1x6.57, from the Tester's mw-indx1x6.59): opened from the row in a Drill it, the idea sheet has no Drill it, no level slider and no Mark known
 // without a drill, so a second drill cannot open over the first; it has no foot, its text ends clear of the phone's bar, and Done returns to the question he missed.
 import { expect, test, type Page } from '@playwright/test';
+import { untilSettled } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { waitForDue } from './today-chip';
@@ -264,32 +265,57 @@ async function openDrill(page: Page, idea: { id: string; title: string }): Promi
 }
 
 /**
- * Answers every question with an answer that is not the idea's own title until one is wrong and the row is drawn (at most `asks` questions); false if none was wrong. The right answer
- * of 'Which idea is this?' is the idea's title, so that card, the one this spec is about, is always answered wrong at once; a drill is never opened twice on one phone, which
- * would not ask the questions it has asked (docs/grammar.md 'Confirming a missed idea').
+ * The right answer of the question the drill is showing, as the card holds it (its React props: the page does not say which option is right until one is picked). The ask that
+ * picks 'the first option that is not the idea's title' was right on every card of a short drill on about 1 run in 100 (the walk ended with no wrong answer, mw-fnvjof.17.219: the
+ * options are shuffled afresh each run, and it is not a matter of the host's load); a spec about the row under a WRONG answer picks one that is wrong.
  */
-async function answerUntilWrong(page: Page, title: string, asks = 14): Promise<boolean> {
-  const drill = page.getByRole('dialog', { name: 'Drill it', exact: true });
-  const row = drill.getByRole('group', { name: 'Study this', exact: true });
-  for (let asked = 0; asked < asks; asked += 1) {
-    await drill.locator('[data-option]:not(:disabled)').filter({ hasNotText: new RegExp(`^${title}$`) }).first().click();
-    const next = drill.getByTestId('drill-next');
-    await expect(next).toBeVisible();
-    if (await row.isVisible()) return true;
-    await next.click();
-    if ((await drill.getByTestId('grammar-prompt').count()) === 0) return false;
-  }
-  return false;
+async function rightOfCard(page: Page): Promise<string> {
+  const right = await page.evaluate(() => {
+    const option = document.querySelector('[role="dialog"][aria-label="Drill it"] [data-option]');
+    if (!option) return null;
+    const key = Object.keys(option).find((k) => k.startsWith('__reactFiber$'));
+    let fiber = key ? ((option as unknown as Record<string, unknown>)[key] as { memoizedProps?: { question?: { right?: unknown } }; return?: unknown } | null) : null;
+    while (fiber) {
+      const right = fiber.memoizedProps?.question?.right;
+      if (typeof right === 'string') return right;
+      fiber = fiber.return as typeof fiber;
+    }
+    return null;
+  });
+  if (right === null) throw new Error("the drill's card does not hold its question: its right answer cannot be read");
+  return right;
 }
 
-/** Drill it on the idea until a wrong answer draws the row. 'unlisted' when the goal's bar does not list the idea, 'declined' when Drill it asks nothing for it. */
-async function drillToWrong(page: Page, idea: { id: string; title: string }): Promise<'wrong' | 'unlisted' | 'declined' | 'never'> {
+/**
+ * Answers the first question with an option that is not its right answer, and waits until the answer is marked and the row drawn. A drill is never opened twice on one phone, which would
+ * not ask the questions it has asked (docs/grammar.md 'Confirming a missed idea').
+ */
+async function answerWrong(page: Page): Promise<void> {
+  const drill = page.getByRole('dialog', { name: 'Drill it', exact: true });
+  const right = await rightOfCard(page);
+  const options = drill.locator('[data-option]:not(:disabled)');
+  const at = (await options.allInnerTexts()).findIndex((text) => text.trim() !== right);
+  if (at < 0) throw new Error(`every option is the right answer ${JSON.stringify(right)}`);
+  await options.nth(at).click();
+  await expect(drill.getByTestId('drill-next')).toBeVisible();
+  // the answer is marked and the row drawn as one look: a wrong answer whose row is not yet there is not what the spec is about (it took a one-shot look at the row for the answer)
+  const row = drill.getByRole('group', { name: 'Study this', exact: true });
+  await untilSettled(
+    async () => ({ said: (await drill.getByTestId('feedback').innerText()).trim(), row: await row.isVisible() }),
+    (look) => (look.said === '' ? 'no verdict is given yet' : !look.said.startsWith('Not quite') ? `the answer was marked "${look.said}", not wrong` : !look.row ? 'a wrong answer, and the Study this row is not drawn' : null),
+    { message: 'the answer is marked wrong and its Study this row is drawn' },
+  );
+}
+
+/** Drill it on the idea, answered wrong so the row is drawn. 'unlisted' when the goal's bar does not list the idea, 'declined' when Drill it asks nothing for it. */
+async function drillToWrong(page: Page, idea: { id: string; title: string }): Promise<'wrong' | 'unlisted' | 'declined'> {
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Romans 8', level: 1 })).toBeVisible();
   const opened = await openDrill(page, idea);
   if (opened !== 'asked') return opened;
-  return (await answerUntilWrong(page, idea.title)) ? 'wrong' : 'never';
+  await answerWrong(page);
+  return 'wrong';
 }
 
 /** The row's first link is in view and ends above the Next bar, not behind it. */
