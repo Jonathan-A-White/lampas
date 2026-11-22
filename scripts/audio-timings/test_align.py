@@ -581,3 +581,10 @@ def test_check_words_drop_the_title_only_of_a_chapter_timed_without_it():
     psalm = {'n': 1, 'words': 'a psalm of o lord'.split(), 'title_words': 3}
     assert align.check_words(psalm, True) == ['o', 'lord'] and align.check_words(psalm, False) == psalm['words']
     assert align.check_words({'n': 2, 'words': ['hear', 'me']}, True) == ['hear', 'me']
+
+
+def test_a_verse_number_the_text_skips_is_a_wildcard_before_the_next_verse():
+    """Nehemiah 7:68 has no Hebrew; the recording reads it, so 7:69 is given a wildcard before it (mw-zbgo4ep.66)."""
+    verses = {v['n']: v for v in align.chapter_text('neh', 7)}
+    assert verses[69]['heading']
+    assert not verses[67]['heading']
