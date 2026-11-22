@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { PrivateKey, Utils } from '@bsv/sdk';
 import { grist } from 'bsv-kit/grist';
-import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_REFS, MAX_RESOURCE_CHARS, MAX_SERIES_CHARS, MAX_TYPE_CHARS, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildLibraryRequest, buildMoreRequest, buildPreacherRequest, MAX_PREACHER_CONTEXT, buildTutorAskRequest, isFeedbackAnswer, buildMissesRequest, MAX_MISSES } from '../../src/services/feedback';
+import { MAX_ASKED_CHARS, MAX_CREDIT_NAME, MAX_CREDIT_URL, MAX_FEEDBACK_CHARS, MAX_PICTURES, MAX_ASK_BYTES, MAX_BOOK_CHARS, MAX_MORE_NAME, MAX_REFERENCE, MAX_REFS, MAX_RESOURCE_CHARS, MAX_SERIES_CHARS, MAX_TYPE_CHARS, MAX_SCREEN_NAME, MAX_SUMMARY, MORE_KINDS, buildBookRequest, buildFeedbackRequest, buildLibraryRequest, buildMoreRequest, buildPreacherRequest, MAX_PREACHER_CONTEXT, buildTutorAskRequest, isFeedbackAnswer, buildMissesRequest, MAX_MISSES, buildHandsFreeLogRequest, MAX_LOG_CHARS } from '../../src/services/feedback';
 import { KINDS } from '../../src/resources/catalogue';
 import { MILL_PUBLIC_KEY } from '../support/fake-postern';
 import { validate, type Schema } from '../support/schema-validate';
@@ -91,7 +91,8 @@ describe('the tutor-ask kind and buildTutorAskRequest', () => {
   const ask = { text: 'Can this work with Olive Tree?', summary: 'He wants Lampas to work with Olive Tree.', screen: 'Goal', reference: 'Goal' };
 
   it('has a branch for each kind of feedback, and all are the same grist kind', () => {
-    expect(branches).toHaveLength(7);
+    expect(branches).toHaveLength(8);
+    expect(branch('hands-free-log')).toBeDefined();
     expect(branch('preacher')).toBeDefined();
     expect(branch('book')).toBeDefined();
     expect(branch('library')).toBeDefined();
@@ -346,5 +347,40 @@ describe('Ask for a preacher and buildPreacherRequest (mw-qtu3zvz.6)', () => {
   it('refuses a preacher request with a field it does not have', () => {
     expect(validate({ kind: 'preacher', name: 'x', credit: { name: 'y' }, app_version: 'v' }, input as Schema)).not.toEqual([]);
     expect(validate({ kind: 'preacher', text: 'why', app_version: 'v' }, input as Schema)).not.toEqual([]);
+  });
+});
+
+describe("what Hands-free heard and buildHandsFreeLogRequest (mw-5r3p30.1231)", () => {
+  const lines = ['11:08:01 the phone lists 2 inputs', '11:08:01 input "Default" group 047458e1 id default', '11:08:01 input "Bluetooth headset" group 047458e1 id f7c90932'];
+
+  it('builds a request the schema accepts: the browser, then the log a line each, and a summary', () => {
+    const request = buildHandsFreeLogRequest(lines, 'Hands-free: listening on "Phone microphone"', 'Mozilla/5.0 (Linux; Android 14) Chrome/142');
+    expect(request).toEqual({
+      kind: 'hands-free-log',
+      text: ['Browser: Mozilla/5.0 (Linux; Android 14) Chrome/142', ...lines].join('\n'),
+      summary: 'Hands-free: listening on "Phone microphone"',
+      app_version: __APP_VERSION__,
+    });
+    expect(validate(request, input as Schema)).toEqual([]);
+  });
+
+  it('says so when nothing was logged, and leaves out the oldest lines of a log too long for the schema', () => {
+    expect(validate(buildHandsFreeLogRequest([], 'Hands-free: the wake listens on no input now', 'x'), input as Schema)).toEqual([]);
+    const many = Array.from({ length: 400 }, (_, i) => `11:08:${String(i % 60).padStart(2, '0')} line ${i} `.padEnd(60, 'x'));
+    const request = buildHandsFreeLogRequest(many, 's'.repeat(300), 'x');
+    expect(request.text.length).toBeLessThanOrEqual(MAX_LOG_CHARS);
+    expect(request.text).toContain(many.at(-1));
+    expect(request.text).not.toContain(many[0]);
+    expect(validate(request, input as Schema)).toEqual([]);
+    expect((branch('hands-free-log').properties?.text as { maxLength: number }).maxLength).toBe(MAX_LOG_CHARS);
+    expect((branch('hands-free-log').properties?.summary as { maxLength: number }).maxLength).toBe(MAX_SUMMARY);
+  });
+
+  it('fits the grist record cap at its longest', () => {
+    const request = buildHandsFreeLogRequest(['α'.repeat(MAX_LOG_CHARS)], 's'.repeat(MAX_SUMMARY), 'x');
+    const plaintext = { grist: { app: 'lampas', kind: 'feedback', v: '1' }, input: request, attachments: [] };
+    const key = Uint8Array.from(Utils.toArray(PrivateKey.fromRandom().toHex(), 'hex'));
+    const envelope = grist.sealEnvelope(JSON.stringify(plaintext), key, MILL_PUBLIC_KEY, 1_790_000_000);
+    expect(() => grist.recordScriptHex(envelope)).not.toThrow();
   });
 });

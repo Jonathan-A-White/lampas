@@ -26,12 +26,47 @@ export function stubMic(options: Omit<MicOptions, 'clock'> = {}): StubbedMic {
   return { honest, clock, transcript: clip.transcript, advance: (ms) => clock.advance(ms) };
 }
 
-/** One input of the phone as enumerateDevices names it; `silent` makes it give nothing but silence for good (a car's route that carries no sound). */
+/** One input of the phone as enumerateDevices names it; `silent` makes it give nothing but silence for good (a car's route that carries no sound). The three
+ * others are routes that carry no sound either, in the ways a real one can (mw-5r3p30.1231): `floor`, every sample sits that many 16-bit steps off zero and
+ * wobbles by the least step (a route's offset and dither); `click`, a pop of 20 ms as the route connects, then silence; `stalled`, no samples come at all. */
 export interface PhoneInput {
   deviceId: string;
   label: string;
   groupId?: string;
   silent?: boolean;
+  floor?: number;
+  click?: boolean;
+  stalled?: boolean;
+}
+
+/** How long the pop of a `click` input lasts, from the first samples read of it (the route connecting as it is first listened to). */
+const CLICK_MS = 20;
+
+/** A stream of the honest fake: `read` gives its 16-bit PCM between two times since it opened. */
+interface ReadableStream16 {
+  read(fromMs: number, toMs: number): Uint8Array;
+}
+
+/** Makes the honest stream of a silent route give what `input` says it carries instead of exact zeros. */
+function carry(stream: ReadableStream16, input: PhoneInput): void {
+  const read = stream.read.bind(stream);
+  let first: number | undefined;
+  stream.read = (fromMs, toMs) => {
+    const pcm = read(fromMs, toMs);
+    first ??= fromMs;
+    if (input.stalled) return new Uint8Array(0);
+    const view = new DataView(pcm.buffer, pcm.byteOffset, pcm.byteLength);
+    const frames = pcm.byteLength / 2;
+    const msPer = frames > 0 ? (toMs - fromMs) / frames : 0;
+    for (let i = 0; i < frames; i++) {
+      const at = fromMs + i * msPer;
+      let value = view.getInt16(i * 2, true);
+      if (input.floor !== undefined) value += input.floor + (i % 2);
+      if (input.click && at < first + CLICK_MS) value = i % 2 === 0 ? 16_000 : -16_000;
+      view.setInt16(i * 2, value, true);
+    }
+    return pcm;
+  };
 }
 
 export interface PhoneInputs {
@@ -63,8 +98,10 @@ export function stubPhoneInputs(inputs: readonly PhoneInput[], options: Omit<Mic
       const input = named(constraints);
       if (!input) return Promise.reject(Object.assign(new Error('Requested device not found'), { name: 'OverconstrainedError' }));
       honest.options.label = input.label;
-      honest.options.silent = input.silent ? Infinity : false;
-      return fake.getUserMedia(constraints);
+      const routeOnly = input.floor !== undefined || input.click || input.stalled;
+      honest.options.silent = input.silent || routeOnly ? Infinity : false;
+      const opened = fake.getUserMedia(constraints);
+      return routeOnly ? opened.then((stream) => (carry(stream as unknown as ReadableStream16, input), stream)) : opened;
     },
   };
   Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: mediaDevices });

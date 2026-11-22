@@ -1,5 +1,5 @@
 // src/services/feedback.ts — feedback to the factory: a grist of the kind 'feedback' (grinds/feedback.json) with the app's version, his words and, for a grammar approach, who to credit and up to
-// four pictures attached; or, for an ask the tutor could not meet, the tutor's one-line summary and the screen he asked from; or, for a book (Ask for a book, src/library/AskForBook.tsx), its
+// four pictures attached; or, for what Hands-free heard (src/handsFree/sendLog.ts), the wake log; or, for an ask the tutor could not meet, the tutor's one-line summary and the screen he asked from; or, for a book (Ask for a book, src/library/AskForBook.tsx), its
 // title and, when he picked it from his Logos list, the row's Resource ID, Type, Series and ReferenceSupersets; or, for the whole of an import's list (Ask the makers about these), the counts by Logos
 // type and the usable rows as one attached library.csv; or, for an ask of Settings > Ask for more (an approach or programme, a text, a translation), what he wants, why and a link. This is the ONE
 // sender: Ask for another approach, Ask for a book, the Ask for more forms and the tutor's 'Send this to the makers' all call submitFeedback (tests/unit/feedback-shared.test.ts keeps it so). The
@@ -153,6 +153,36 @@ export function buildMissesRequest(misses: readonly MissWorthAStory[]): MissesRe
   return { kind: 'tutor-misses', text, summary: `Tutor misses worth a story: ${kept.length}`, misses: kept, app_version: __APP_VERSION__ };
 }
 
+/** The most a Hands-free log's text may be: the input schema's. Its oldest lines give way first. */
+export const MAX_LOG_CHARS = 6000;
+
+/** What the grind is sent when he sends what Hands-free heard (Settings, Hands-free: Send what Hands-free heard, or a three-finger long press; mw-5r3p30.1231): the wake log's lines
+ * (src/handsFree/wakeLog.ts) as text, after a line naming the phone's browser, and a one-line summary of where the wake listens. Not kept in Your requests and not announced on the bus: it asks nothing. */
+export interface HandsFreeLogRequest {
+  kind: 'hands-free-log';
+  text: string;
+  summary: string;
+  app_version: string;
+}
+
+/** The request for the wake log `lines`: the browser's own name first, then the lines, the oldest left out while it is too long for the schema. */
+export function buildHandsFreeLogRequest(lines: readonly string[], summary: string, browser: string): HandsFreeLogRequest {
+  const head = `Browser: ${browser}`.slice(0, 300);
+  const kept = [...lines];
+  const join = (): string => [head, ...(kept.length > 0 ? kept : ['Nothing was logged in the last two minutes: Hands-free did not listen.'])].join('\n');
+  while (kept.length > 1 && join().length > MAX_LOG_CHARS) kept.shift();
+  return { kind: 'hands-free-log', text: join().slice(0, MAX_LOG_CHARS), summary: summary.slice(0, MAX_SUMMARY), app_version: __APP_VERSION__ };
+}
+
+/** Sends the wake log to the factory: one feedback grist with the phone's key, mailed to the Mayor by the mill, through the one sender. Throws a TutorError. */
+export async function sendHandsFreeLog(request: HandsFreeLogRequest, options: { signal?: AbortSignal } = {}): Promise<void> {
+  try {
+    await sendFeedback(request, [], { key: getDeviceKeyBytes(), signal: options.signal });
+  } catch (err) {
+    throw err instanceof TutorError ? err : new TutorError('unreachable', err instanceof Error ? err.message : 'Something went wrong.');
+  }
+}
+
 export type FeedbackRequest = GrammarApproachRequest | TutorAskRequest | BookRequest | LibraryRequest | MoreRequest | PreacherRequest;
 
 /** The kinds of feedback; the bus announces one when the mill has it. */
@@ -288,7 +318,7 @@ function kept(request: FeedbackRequest, txid: string, sentAt: number, files: rea
 }
 
 /** Sends the feedback with its files (pictures, at most MAX_PICTURES, or the library.csv) and waits for the mill's receipt. Throws a TutorError. */
-function sendFeedback(request: FeedbackRequest | MissesRequest, files: MillFile[], options: AskOptions): Promise<FeedbackAnswer> {
+function sendFeedback(request: FeedbackRequest | MissesRequest | HandsFreeLogRequest, files: MillFile[], options: AskOptions): Promise<FeedbackAnswer> {
   return askGrind(FEEDBACK_KIND, request, isFeedbackAnswer, { ...options, files, untimed: true });
 }
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Feedback Request 1",
-  "description": "Feedback to the makers, forwarded to the Mayor. Seven forms: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), book (Ask for a book: one book of his Logos library, by title, with the row's Logos details when he picked it from his list), library (Ask the makers about these: the whole list of an import, once, as counts by Logos type with the usable rows attached as library.csv), the three short forms of Settings > Ask for more: approach (an approach or programme), text and translation, preacher (Ask for a preacher on the Sermons sheet: a preacher or collection he would like indexed, with the verse he was on and the sermon sources he has On), and tutor-misses (sent by the nightly tutor-weights run, not by him: what the tutor wanted that the app lacks, when it is worth a story).",
+  "description": "Feedback to the makers, forwarded to the Mayor. Seven forms: grammar-approach (Ask for another approach, with pictures attached), tutor-ask (an ask the tutor could not meet, sent by his tap on Send this to the makers), book (Ask for a book: one book of his Logos library, by title, with the row's Logos details when he picked it from his list), library (Ask the makers about these: the whole list of an import, once, as counts by Logos type with the usable rows attached as library.csv), the three short forms of Settings > Ask for more: approach (an approach or programme), text and translation, preacher (Ask for a preacher on the Sermons sheet: a preacher or collection he would like indexed, with the verse he was on and the sermon sources he has On), tutor-misses (sent by the nightly tutor-weights run, not by him: what the tutor wanted that the app lacks, when it is worth a story), and hands-free-log (what Hands-free heard: the wake log of the last two minutes, sent by Send what Hands-free heard or a three-finger long press).",
   "type": "object",
   "anyOf": [
     {
@@ -526,6 +526,43 @@
         },
         "app_version": {
           "description": "The Lampas build that sent it.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "text",
+        "summary",
+        "app_version"
+      ],
+      "properties": {
+        "kind": {
+          "description": "hands-free-log is what Hands-free heard, sent when he taps Send what Hands-free heard (Settings, Hands-free) or holds three fingers on the screen while Hands-free is on: the wake log, so the makers can see which input 'Hey Lampas' was listened for on and what it heard.",
+          "type": "string",
+          "enum": [
+            "hands-free-log"
+          ]
+        },
+        "text": {
+          "description": "The browser's name, then the wake log of the last two minutes, a line each, times UTC: the inputs the phone lists (name, group and id as short hashes), each input tried with its peak and mean level, the input it settled on and since when, every 10 s the levels it heard and the wake model's best score, and each wake heard.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 6000
+        },
+        "summary": {
+          "description": "One line: where the wake listens now, or that it listens nowhere.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "app_version": {
+          "description": "The Lampas build he sent it from.",
           "type": "string",
           "minLength": 1,
           "maxLength": 80

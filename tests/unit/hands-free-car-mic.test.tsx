@@ -158,6 +158,39 @@ describe("'Hey Lampas' over the car's Bluetooth", () => {
     expect(wake.say()).toBe(true);
   });
 
+  // mw-5r3p30.1231: a car's route that carries no sound need not give exact zeros. Each of these was taken for a live input before, and the wake stayed on it.
+  it("leaves a route whose samples sit off zero and wobble by the least step (an offset and dither, no sound) for the phone's microphone", async () => {
+    await turnOnWith([
+      { deviceId: 'default', label: 'Default', groupId: 'car', floor: 3 },
+      { deviceId: 'car-bt', label: 'Bluetooth headset', groupId: 'car', floor: 3 },
+      { deviceId: 'phone-mic', label: 'Phone microphone', groupId: 'phone' },
+    ]);
+    await waitFor(() => expect(heard.heardOn.at(-1)).toBe('Phone microphone'));
+    expect(heard.heardOn).toEqual(['Bluetooth headset', 'Phone microphone']);
+    expect(phone?.openLabels()).toEqual(['Phone microphone']);
+  });
+
+  it("leaves a route that pops once as it connects and then carries nothing, for the phone's microphone", async () => {
+    await turnOnWith([
+      { deviceId: 'default', label: 'Default', groupId: 'car', click: true },
+      { deviceId: 'car-bt', label: 'Bluetooth headset', groupId: 'car', click: true },
+      { deviceId: 'phone-mic', label: 'Phone microphone', groupId: 'phone' },
+    ]);
+    await waitFor(() => expect(heard.heardOn.at(-1)).toBe('Phone microphone'));
+    expect(heard.heardOn).toEqual(['Bluetooth headset', 'Phone microphone']);
+  });
+
+  it("tells the log of a route that gives no samples at all, and stays on it: no samples is audio that is not running, which no other input mends", async () => {
+    await turnOnWith([
+      { deviceId: 'default', label: 'Default', groupId: 'car', stalled: true },
+      { deviceId: 'car-bt', label: 'Bluetooth headset', groupId: 'car', stalled: true },
+      { deviceId: 'phone-mic', label: 'Phone microphone', groupId: 'phone' },
+    ]);
+    await waitFor(() => expect(logged().some((line) => line.includes('no samples from "Bluetooth headset"'))).toBe(true));
+    expect(heard.heardOn).toEqual(['Bluetooth headset']);
+    expect(wake.listening).toBe(true);
+  });
+
   // mw-5r3p30.1224: the command after the wake is heard on the same kind of live input, not on whatever Android's own recogniser picks
   it("hears the command on the car's hands-free microphone's track when the phone lists one, not on whatever the recogniser picks", async () => {
     await turnOnWith([
