@@ -5,6 +5,7 @@ import { handsFreeSetting } from '../settings/definitions';
 import { getSetting, setSetting, useSetting } from '../settings/store';
 import { SETTING_SAID_KEY, speakText } from '../speech/greek';
 import { getReading, resumeReading, subscribeReading } from '../speech/readAloud';
+import { holdStart } from '../speech/tutorWaiting';
 import { whenMicClosed } from './session';
 
 /** The words said when the switch goes On, and when it goes Off. */
@@ -34,6 +35,8 @@ let unwatch: (() => void) | null = null;
 export function sayHandsFree(on: boolean): void {
   cancelSay?.();
   cancelSay = null;
+  // a tutor answer that waits for an earlier sentence to end (tutorVoice.ts startAnswerWhenSeen) is about the state this sentence replaces ('Done: Hands-free is on.' after an Undo's 'Hands-free off'): its wait is given up, and the answer stays on screen unread (mw-rl10piw.70)
+  holdStart(null);
   // 'Hands-free off' waits for the session to let go of the microphone: said as it closes it is clipped to 'Free oh' (mw-rl10piw.50); 'Hands-free on' is said at once and the
   // session waits for it (session.ts sync) before it opens the microphone
   if (on) say(true);

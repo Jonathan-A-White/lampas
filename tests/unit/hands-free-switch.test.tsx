@@ -8,9 +8,9 @@ import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
 import { HandsFreeGate } from '../../src/handsFree/HandsFreeGate';
 import { getHandsFree, setHandsFree, toggleHandsFree } from '../../src/handsFree/switch';
-import { stopReading } from '../../src/speech/readAloud';
+import { stopAnswer, stopReading } from '../../src/speech/readAloud';
 import { handsFreeSetting } from '../../src/settings/definitions';
-import { applyChanges } from '../support/settings';
+import { applyChanges, undoChange } from '../support/settings';
 import { setSetting } from '../../src/settings/store';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';
 import { readFileSync } from 'node:fs';
@@ -113,6 +113,63 @@ describe('the tutor changing Hands-free spoken with the answer read aloud', () =
       expect(await getHandsFree()).toBe(value === 'on');
     });
   }
+});
+
+describe('Undo tapped while the setting sentence is spoken (mw-rl10piw.70)', () => {
+  const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
+  const scope = { title: 'Romans 8', chapter, verse: null };
+  const answer = 'Done: Hands-free is on.';
+
+  it('undo while the setting sentence is spoken: the answer that waited on it is not read after Hands-free off', async () => {
+    asked.mockReset();
+    asked.mockResolvedValue({ answer, words: [], settings_changes: [{ key: 'handsFree', value: 'on' }] });
+    const { result } = renderHook(() => useTalk('rom', 8, (_ref, id, text) => speakTutor(id, answerRuns(text))));
+    act(() => result.current.say(scope, 'Turn Hands-free on'));
+    await waitFor(() => expect(spoken()).toContain('Hands-free on'));
+    await waitFor(() => expect(synth.speaking).toBe(true));
+    // Undo is tapped before 'Hands-free on' has ended
+    await act(async () => {
+      await undoChange({ key: 'handsFree', label: 'Hands-free', from: 'off', to: 'on', shown: 'Hands-free: On' });
+    });
+    await waitFor(() => expect(spoken()).toContain('Hands-free off'));
+    synth.finishAll();
+    await act(async () => {});
+    synth.finishAll();
+    expect(await getHandsFree()).toBe(false);
+    const log = synth.honest.log.map((e) => e.text);
+    expect(log).toContain('Hands-free off');
+    expect(log.slice(log.indexOf('Hands-free off') + 1)).not.toContain(answer);
+  });
+
+  it('a three-finger toggle that replaces the sentence drops the waiting answer too', async () => {
+    asked.mockReset();
+    asked.mockResolvedValue({ answer, words: [], settings_changes: [{ key: 'handsFree', value: 'on' }] });
+    const { result } = renderHook(() => useTalk('rom', 8, (_ref, id, text) => speakTutor(id, answerRuns(text))));
+    act(() => result.current.say(scope, 'Turn Hands-free on'));
+    await waitFor(() => expect(spoken()).toContain('Hands-free on'));
+    await act(async () => {
+      await toggleHandsFree();
+    });
+    await waitFor(() => expect(synth.honest.log.map((e) => e.text)).toContain('Hands-free off'));
+    synth.finishAll();
+    await act(async () => {});
+    synth.finishAll();
+    expect(synth.honest.log.map((e) => e.text)).not.toContain(answer);
+  });
+
+  it('a new question gives up the waiting answer', async () => {
+    asked.mockReset();
+    asked.mockResolvedValue({ answer, words: [], settings_changes: [{ key: 'handsFree', value: 'on' }] });
+    const { result } = renderHook(() => useTalk('rom', 8, (_ref, id, text) => speakTutor(id, answerRuns(text))));
+    act(() => result.current.say(scope, 'Turn Hands-free on'));
+    await waitFor(() => expect(spoken()).toContain('Hands-free on'));
+    // a new question stops the answer (useTalk: stopAnswer), and what waits with it
+    act(() => stopAnswer());
+    synth.finishAll();
+    await act(async () => {});
+    synth.finishAll();
+    expect(synth.honest.log.map((e) => e.text)).not.toContain(answer);
+  });
 });
 
 describe('the Hands-free gate', () => {
