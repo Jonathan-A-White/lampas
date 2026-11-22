@@ -130,4 +130,7 @@ Before that, nothing was changed: today's player holds 0.05 s each side in every
 - The end's fade stops at `SILENT_VOLUME` (0.001, -60 dB), never at 0 (mw-ar5k42b.46): headless Chromium treats an element at volume 0, or muted, as silent and snaps its second
   from the audio clock, which can run 0.8 to 1.1 s behind the sound for two seconds after a seek, to the wall clock. A stop that was on time was read 0.84 to 1.1 s past its end
   (John 6:11, 7:50, 2:18, 15:23 of `LAMPAS_ALL_JOHN=1`, at 1x and 1.25x). On a plain page volume 0 or muted jumped the second +0.98 s in 19 of 19 plays, volume 0.0001 and above in 0 of 40.
+- The start's mute does not snap the second (mw-ar5k42b.58): a play on a freshly loaded element seeks it short of the start and mutes it until its second is there, and the spec
+  (`recorded-voice-margin.spec.ts`, `holdStartWhole`) logs the element's second at each mute-then-unmute. In 60 plays (10 a case, 1x and 1.25x; 30 of them muted) the element read
+  0 to 5 ms from the start at the unmute and the first sound was 17 ms before to 25 ms after the start, so nothing of the end's volume-0 snap shows at the start. Play again is never muted.
 - Headless Chromium on the Laptop is not his phone's Chrome. The margin holds there with 33 ms to spare at the start and 45 ms at the end.
