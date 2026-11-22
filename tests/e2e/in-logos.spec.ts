@@ -69,8 +69,8 @@ test('the Verse view has In Logos and In another book…, and the chooser opens 
   expect(box.y + box.height).toBeLessThanOrEqual(844.5);
   expect(box.x + box.width).toBeLessThanOrEqual(390.5);
 
-  // the groups follow the shelf and the place: the 84 commentaries on Romans (mw-vb8krt; 83 before Chrysostom's Romans volume moved to commentary, mw-qtu3zvz.108) and the eight Greek texts, each folded to three
-  await expect(sheet.getByRole('group', { name: 'Commentaries on Romans (84)' }).getByRole('link')).toHaveCount(3);
+  // the groups follow the shelf and the place: the 73 commentaries on Romans that hold 8:31 (mw-vb8krt; 83 before Chrysostom's Romans volume moved to commentary, mw-qtu3zvz.108; 84 then 73 once a volume is offered only where its export has the verse, mw-qtu3zvz.238) and the eight Greek texts, each folded to three
+  await expect(sheet.getByRole('group', { name: 'Commentaries on Romans (73)' }).getByRole('link')).toHaveCount(3);
   const greek = sheet.getByRole('group', { name: 'Greek texts (8)' });
   await expect(greek.getByRole('link')).toHaveCount(3);
   await expect(sheet.getByRole('group', { name: /John/ })).toHaveCount(0);
