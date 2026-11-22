@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.341
+_2026-11-22_
+- New: David's recorded reading now follows along word by word for most of Psalms 1-50.
+
 ## 0.7.339
 _2026-11-22_
 - New: Hands-free can now pause, play, go back, go forward, restart and stop a sermon being read or played in Lampas.
