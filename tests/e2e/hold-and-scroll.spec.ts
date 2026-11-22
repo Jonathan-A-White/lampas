@@ -1,6 +1,6 @@
 // tests/e2e/hold-and-scroll.spec.ts — hold Talk with one finger and scroll the passage with another (mw-06ggew.16, his want 2026-11-17): while a talk bar is held, a second touch
 // scrolls the page and never ends or cancels the hold; letting go of the holding finger still sends once; the holding finger sliding off the bar still drops the hold unsent.
-// Two real touch points through CDP Input.dispatchTouchEvent (tests/e2e/bottom-reach.spec.ts's way of a phone's own touches), on the Memorize session of Exodus 20:1-17,
+// Two real touch points through CDP Input.dispatchTouchEvent (tests/e2e/bottom-reach.spec.ts's way of a phone's own touches), on the Memorize session of Exodus 20:8-12 (five verses: one piece, since a longer passage is learned a piece at a time, src/memorize/pieces.ts, and a piece of Exodus 20:1-17 is too short to scroll),
 // 'English · Read and say · step 1 of 7', whose foot is the kit's hold bar (src/talk/Bars.tsx HeldTalkBar).
 import { expect, test, type CDPSession, type Locator, type Page } from '@playwright/test';
 import { clips, honestMic } from '../support/honest-fakes';
@@ -43,10 +43,10 @@ async function openPassage(page: Page): Promise<{ bar: Locator; area: Locator; s
   await openUnlocked(page);
   await page.goto('/');
   await expect(page.locator('[data-verse]').first()).toBeVisible();
-  await page.goto('/#/memorize/Exod.20.1-17/en');
+  await page.goto('/#/memorize/Exod.20.8-12/en');
   await expect(page.getByText('English · Read and say · step 1 of 7')).toBeVisible();
   const scroller = page.locator('main.screen');
-  // the passage runs past the bottom of the screen: it has somewhere to scroll
+  // the passage (one piece, five verses) runs past the bottom of the screen: it has somewhere to scroll
   await expect.poll(() => scroller.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeGreaterThan(100);
   await expect(page.getByRole('button', { name: 'Hold to say it' })).toBeVisible();
   return { bar: page.locator('.lp-bar'), area: page.getByTestId('memorize-verse'), scroller };
@@ -109,6 +109,7 @@ test('a second finger that touches the bar and lifts leaves the hold: it is sent
     await expect(bar).toHaveText(/Release to send/);
     await expect(page.getByTestId('judgement')).toHaveCount(0);
     expect((await barSeen(page)).cancel).toBe(0);
+    await page.waitForTimeout(2800); // a real-time wait: the clip is heard in real time while the finger holds; a hold lifted at 300 ms was heard as nothing ('Try again') on a loaded host
     await touch.send('touchEnd', [first]);
   } finally {
     await touch.done();
