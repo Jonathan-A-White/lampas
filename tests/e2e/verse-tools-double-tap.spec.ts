@@ -11,7 +11,7 @@ import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-/** 390x844 is his phone. In a window short or narrow enough that the controls join the scrolling flow (390x400, 320x568) the line does not move up when the progress marks appear, so the
+/** 390x844 is his phone. In a window short or narrow enough (390x400, 320x568) the line does not move up when the progress marks appear, so the
  * second tap lands on the very button the first one turned into 'Memorizing · English', which opened its language sheet. */
 const SIZES = [
   { width: 390, height: 844, gaps: [0, 120, 400] },
@@ -46,6 +46,8 @@ for (const size of SIZES) for (const gap of size.gaps) {
   test(`${size.width}x${size.height}: a double tap on Memorize, ${gap} ms apart, memorizes the verse and opens nothing`, async ({ page }) => {
     const { view, tools } = await openVerse11(page, size);
     const memorize = tools.getByRole('button', { name: 'Memorize', exact: true });
+    // where the window is short or narrow the tools line stands left of the row of actions and scrolls sideways: Memorize's middle can lie under the scroll-more arrow or the Listen cell, so a thumb scrolls it whole first
+    await memorize.scrollIntoViewIfNeeded();
     const box = await settledBox(memorize);
     await tapTwice(page, box, gap, { touch: true });
     // what a second tap opens is drawn once the page's clock has run a little (a sheet comes in on a timer), so it runs before the look
