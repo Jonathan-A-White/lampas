@@ -10,7 +10,7 @@
 | `judged/msb-david-<book>.json` (the judge's report, with the timings' sha256) | `scripts/audio-timings/judged/` |
 | `summary/<book>.txt` (the one summary line, `SUMMARY book=... ` of docs/audio-run.md 'The summary line') | stays there |
 
-**A book here is not played by the app**: there is no `<book>.json` for it under `public/data/audio/msb-david/`, and `index.json` (the only list the app reads, made from the files there) does not list it. `tests/unit/audio-run.test.ts` holds both. Promotion (the copy above, then the lock `tests/unit/audio-judged.test.ts` and the rule `tests/unit/audio-timings-data.test.ts`) is a later story's, one book at a time, after the Governor has heard the listen list.
+**A book here is not played by the app**: there is no `<book>.json` for it under `public/data/audio/msb-david/`, and `index.json` (the only list the app reads, made from the files there) does not list it. `tests/unit/audio-run.test.ts` holds both, for a book not yet published; once a book is published (the index lists it and its file is there) its staged copy is a superseded proof that may stay, and the test only checks that the index and the file agree and that the proof is still judged as it stands (mw-zbgo4ep.64). Promotion (the copy above, then the lock `tests/unit/audio-judged.test.ts` and the rule `tests/unit/audio-timings-data.test.ts`) is a later story's, one book at a time, after the Governor has heard the listen list.
 
 `<cache>/staged/.work/` (the run's own scratch tree, outside the repo) is where the maker and the judge run; it is what lets a stopped run be taken up where it stopped. Delete it to start a book from nothing.
 

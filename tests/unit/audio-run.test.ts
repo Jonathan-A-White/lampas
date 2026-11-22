@@ -50,30 +50,92 @@ describe('the shares (scripts/audio-timings/shares.json)', () => {
   });
 });
 
-describe('the staged books (scripts/audio-timings/staged/)', () => {
-  const staged = join(tools, 'staged');
-  const index = readJson<{ books: Record<string, number[]> }>(resolve(root, 'public/data/audio/msb-david/index.json'));
-  const books = existsSync(join(staged, 'audio/msb-david'))
+// The rules of a staged book, over a staged folder and a public audio folder (so a test can hand it a made-up pair).
+// A staged book is the proof of run-book.sh before the book is published: judged as it stands, with its quiet and listen files, and not played by the app.
+// Once the book is published (the app's index lists it), the published copy and its lock (audio-judged.test.ts) supersede the proof, so the
+// 'not in the index' rule applies only to a staged book whose published file is absent too (mw-zbgo4ep.64).
+const stagedBooks = (staged: string): string[] =>
+  existsSync(join(staged, 'audio/msb-david'))
     ? readdirSync(join(staged, 'audio/msb-david')).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, ''))
     : [];
+const stagedProblems = (staged: string, published: string, book: string): string[] => {
+  const problems: string[] = [];
+  const bytes = readFileSync(join(staged, `audio/msb-david/${book}.json`));
+  const report = readJson<Report>(join(staged, `judged/msb-david-${book}.json`));
+  if (report.timings.sha256 !== createHash('sha256').update(bytes).digest('hex')) problems.push('the judged report\'s sha256 is not the timings\'');
+  const timed = Object.keys(readJson<{ chapters: Record<string, unknown> }>(join(staged, `audio/msb-david/${book}.json`)).chapters).sort();
+  if (JSON.stringify(timed) !== JSON.stringify(Object.keys(report.chapters).sort())) problems.push('the judged chapters are not the timed chapters');
+  if (!existsSync(join(staged, `quiet/msb-david-${book}.json`))) problems.push('no quiet file');
+  if (!existsSync(join(staged, `listen/msb-david-${book}.json`))) problems.push('no listen file');
+  const inIndex = Object.keys(readJson<{ books: Record<string, number[]> }>(join(published, 'index.json')).books).includes(book);
+  const hasFile = existsSync(join(published, `${book}.json`));
+  // published: the index lists it and the file is there, both or neither (the index is made from the files)
+  if (inIndex !== hasFile) problems.push('the app\'s index and the published file disagree');
+  return problems;
+};
 
-  it('hold the Psalms and a one-chapter book of the story\'s proof', () => {
-    expect(books).toContain('psa');
-    expect(books.some((b) => ['jud', 'phm'].includes(b))).toBe(true);
+describe('the staged books (scripts/audio-timings/staged/)', () => {
+  const staged = join(tools, 'staged');
+  const published = resolve(root, 'public/data/audio/msb-david');
+  const books = stagedBooks(staged);
+  const index = readJson<{ books: Record<string, number[]> }>(join(published, 'index.json'));
+
+  it('hold, for the Psalms and a one-chapter book of the story\'s proof, a staged proof or the published book', () => {
+    for (const wanted of [['psa'], ['jud', 'phm']]) {
+      expect(wanted.some((b) => books.includes(b) || Object.keys(index.books).includes(b)), wanted.join(' or ')).toBe(true);
+    }
   });
 
   for (const book of books) {
-    it(`${book}: is judged as it stands (the report's sha256 is the timings') and is not in the app's index`, () => {
-      const bytes = readFileSync(join(staged, `audio/msb-david/${book}.json`));
-      const report = readJson<Report>(join(staged, `judged/msb-david-${book}.json`));
-      expect(report.timings.sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
-      expect(Object.keys(readJson<{ chapters: Record<string, unknown> }>(join(staged, `audio/msb-david/${book}.json`)).chapters).sort()).toEqual(Object.keys(report.chapters).sort());
-      expect(existsSync(join(staged, `quiet/msb-david-${book}.json`))).toBe(true);
-      expect(existsSync(join(staged, `listen/msb-david-${book}.json`))).toBe(true);
-      expect(Object.keys(index.books)).not.toContain(book);
-      expect(existsSync(resolve(root, `public/data/audio/msb-david/${book}.json`))).toBe(false);
+    it(`${book}: is judged as it stands (the report's sha256 is the timings') and is either not in the app's index or published whole`, () => {
+      expect(stagedProblems(staged, published, book)).toEqual([]);
     });
   }
+
+  describe('over a made-up pair of folders', () => {
+    const made: string[] = [];
+    afterEach(() => {
+      for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
+    }, HOOK_TIMEOUT_MS);
+    // a staged book 'xyz' judged as it stands, with the published folder holding the given index and files
+    const pair = (publishedBooks: string[], judgedSha?: string) => {
+      const dir = mkdtempSync(join(tmpdir(), 'staged-pair-'));
+      made.push(dir);
+      const s = join(dir, 'staged');
+      const p = join(dir, 'public');
+      for (const d of ['audio/msb-david', 'judged', 'quiet', 'listen']) mkdirSync(join(s, d), { recursive: true });
+      mkdirSync(p, { recursive: true });
+      const timings = JSON.stringify({ chapters: { '1': {} } });
+      writeFileSync(join(s, 'audio/msb-david/xyz.json'), timings);
+      writeFileSync(join(s, 'judged/msb-david-xyz.json'), JSON.stringify({ timings: { sha256: judgedSha ?? createHash('sha256').update(timings).digest('hex') }, chapters: { '1': {} } }));
+      writeFileSync(join(s, 'quiet/msb-david-xyz.json'), '{}');
+      writeFileSync(join(s, 'listen/msb-david-xyz.json'), '{}');
+      writeFileSync(join(p, 'index.json'), JSON.stringify({ books: Object.fromEntries(publishedBooks.map((b) => [b, [1]])) }));
+      for (const b of publishedBooks) writeFileSync(join(p, `${b}.json`), timings);
+      return { s, p };
+    };
+
+    it('passes a staged book not yet published', () => {
+      const { s, p } = pair([]);
+      expect(stagedProblems(s, p, 'xyz')).toEqual([]);
+    });
+
+    it('passes a staged book whose published copy has since landed (the proof is superseded, mw-zbgo4ep.64)', () => {
+      const { s, p } = pair(['xyz']);
+      expect(stagedProblems(s, p, 'xyz')).toEqual([]);
+    });
+
+    it('still fails a staged book whose judged report\'s sha256 is not its timings\'', () => {
+      const { s, p } = pair([], 'f'.repeat(64));
+      expect(stagedProblems(s, p, 'xyz')).toEqual(['the judged report\'s sha256 is not the timings\'']);
+    });
+
+    it('still fails a staged book the index lists with no published file, or the reverse', () => {
+      const { s, p } = pair(['xyz']);
+      rmSync(join(p, 'xyz.json'));
+      expect(stagedProblems(s, p, 'xyz')).toEqual(['the app\'s index and the published file disagree']);
+    });
+  });
 });
 
 describe('run-book.sh', () => {
