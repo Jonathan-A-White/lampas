@@ -2,8 +2,12 @@
 // schema and the list of keys and values in its instructions, both made from the registry (src/settings/registry.ts).
 // `npm run grind:build` (scripts/grind-build.ts) writes them into grinds/; tests/unit/bible-talk-grind.test.ts fails when the
 // files and the registry disagree, so a setting added to the registry is not talkable until the build has been run.
+import { SOURCE_HELP } from './definitions/sermons';
 import { helpPlain } from './helpText';
 import { MAX_CHANGES, SETTINGS, TEXT_MAX, type SettingEntry } from './registry';
+
+/** Where the sermon switches are, as the one line of them in the instructions says it: SOURCE_HELP, each switch's own help, adds that a Logos list needs his import, which the tutor has no use for (mw-qtu3zvz.26: the room for the nine more keys). */
+const SOURCE_PLACE_HELP = 'Settings > Study resources > Sermons > Sermon sources.';
 
 export const SETTINGS_BEGIN = '<!-- settings:begin -->';
 export const SETTINGS_END = '<!-- settings:end -->';
@@ -127,7 +131,7 @@ const sameFamily = (a: string, b: string): boolean => a.includes('.') && a.split
  * their keys and labels together, the words once, with 'that language' where the first named its own.
  */
 export function settingsBlock(): string {
-  const lines: { keys: string[]; labels: string[]; body: string; same: string }[] = [];
+  const lines: { keys: string[]; labels: string[]; body: string; same: string; byLanguage?: true }[] = [];
   for (const s of SETTINGS) {
     const plain = s.help ? helpPlain(s.help) : s.hint;
     const help = (s.hint && (HINT_ONLY.includes(s.key) || (!HELP_KEPT.includes(s.key) && bytesOf(plain) > HELP_MAX_BYTES)) ? s.hint : plain).replace(WHEN_SHOWN, '').replace(PHONE_STEPS, '');
@@ -138,6 +142,7 @@ export function settingsBlock(): string {
     if (last && last.same === same && s.label.search(LANGUAGES) >= 0) {
       last.keys.push(s.key);
       last.labels.push(s.label);
+      last.byLanguage = true;
       // 'a Greek keyboard' becomes 'a keyboard of that language', not 'a that language keyboard' (mw-82lb97i.21)
       last.body = last.body.replace(/\b(a|an) (English|Greek|Hebrew) (\w+)/g, '$1 $3 of that language').replace(LANGUAGES, 'that language');
     } else if (last && last.body === body && sameFamily(last.keys[0], s.key)) {
@@ -146,13 +151,22 @@ export function settingsBlock(): string {
       last.labels.push(s.label);
     } else lines.push({ keys: [s.key], labels: [s.label], body, same });
   }
-  // the labels of a family line of sermon sources are not said at all (mw-qtu3zvz.24, to keep the room for the ten sources of batch 4): each key names its source ('sermons.maclaren-logos'), so its label said it again
+  // the labels of a family line of sermon sources are not said at all (mw-qtu3zvz.24, to keep the room for the ten sources of batch 4): each key names its source ('sermons.maclaren-logos'), so its label said it again;
+  // and its help, where they are, is said shorter (mw-qtu3zvz.26: nine more keys took the room the next setting needs)
   for (const l of lines) {
     if (l.keys.length < 4 || !l.keys.every((k) => k.startsWith('sermons.'))) continue;
-    l.labels = ['One switch for each source of sermons, named by its key'];
+    l.labels = [];
+    l.body = l.body.replace(SOURCE_HELP, SOURCE_PLACE_HELP);
   }
-  return [SETTINGS_BEGIN, ...lines.map((l) => `- ${l.keys.map((k) => `\`${k}\``).join(', ')} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`), SETTINGS_END].join('\n');
+  // the labels of a line that says one setting of each language (the three voices, the three speeds, the two keyboards) are its keys said again, so they are not said (mw-qtu3zvz.26)
+  return [
+    SETTINGS_BEGIN,
+    ...lines.map((l) => (l.byLanguage || l.labels.length === 0 ? `- ${keysOf(l.keys)} — ${l.body}` : `- ${keysOf(l.keys)} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`)),
+    SETTINGS_END,
+  ].join('\n');
 }
+
+const keysOf = (keys: readonly string[]): string => keys.map((k) => `\`${k}\``).join(', ');
 
 /** `instructions` with the text between its two markers replaced by the registry's list. */
 export function withSettingsBlock(instructions: string): string {
