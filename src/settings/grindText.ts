@@ -7,7 +7,7 @@ import { helpPlain } from './helpText';
 import { MAX_CHANGES, SETTINGS, TEXT_MAX, type SettingEntry } from './registry';
 
 /** Where the sermon switches are, as the one line of them in the instructions says it: SOURCE_HELP, each switch's own help, adds that a Logos list needs his import, which the tutor has no use for (mw-qtu3zvz.26: the room for the nine more keys). */
-const SOURCE_PLACE_HELP = 'Study resources > Sermons.';
+const SOURCE_PLACE_HELP = 'Settings > Study resources > Sermons > Sermon sources.';
 
 export const SETTINGS_BEGIN = '<!-- settings:begin -->';
 export const SETTINGS_END = '<!-- settings:end -->';
@@ -161,12 +161,13 @@ export function settingsBlock(): string {
   // the labels of a line that says one setting of each language (the three voices, the three speeds, the two keyboards) are its keys said again, so they are not said (mw-qtu3zvz.26)
   return [
     SETTINGS_BEGIN,
-    ...lines.map((l) => (l.byLanguage || l.labels.length === 0 ? `- ${keysOf(l.keys)} — ${l.body}` : `- ${keysOf(l.keys)} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`)),
+    ...lines.map((l) => (l.byLanguage ? `- ${keysOf(l.keys)} — ${l.body}` : l.labels.length === 0 ? `- ${keysOf(l.keys, ',')} — ${l.body}` : `- ${keysOf(l.keys)} — ${l.labels.join(', ')}${/[?!.]$/.test(l.labels[l.labels.length - 1]) ? '' : '.'} ${l.body}`)),
     SETTINGS_END,
   ].join('\n');
 }
 
-const keysOf = (keys: readonly string[]): string => keys.map((k) => `\`${k}\``).join(', ');
+/** The keys of a line, in backticks; a line of thirty-four sermon switches is joined with a bare comma, to keep the room (mw-qtu3zvz.26). */
+const keysOf = (keys: readonly string[], between = ', '): string => keys.map((k) => `\`${k}\``).join(between);
 
 /** `instructions` with the text between its two markers replaced by the registry's list. */
 export function withSettingsBlock(instructions: string): string {
