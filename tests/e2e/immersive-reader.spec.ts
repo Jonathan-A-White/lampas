@@ -220,6 +220,8 @@ test('the setting is kept across a reload', async ({ page }) => {
   const group = page.getByRole('group', { name: 'Immersive reader', exact: true });
   await expect(group.getByRole('button', { name: 'Off', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await group.getByRole('button', { name: 'On', exact: true }).click();
+  // pressed shows only once the write landed (the live query): a reload straight after the click can cut it off (mw-fnvjof.17.244)
+  await expect(group.getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await expect(page.getByRole('group', { name: 'Immersive reader', exact: true }).getByRole('button', { name: 'On', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });

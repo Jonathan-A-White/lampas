@@ -85,6 +85,8 @@ test('Settings at phone width: the weave, the voices, the Greek pronunciation, a
   await page.getByRole('button', { name: '‹ Settings', exact: true }).click();
   await openGroup(page, 'Reading');
   await solid.click();
+  // pressed shows only once the write landed (the live query): a reload straight after the click can cut it off (mw-fnvjof.17.245)
+  await expect(solid).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await expect(solid).toHaveAttribute('aria-pressed', 'true');
   await leaveSettings(page);

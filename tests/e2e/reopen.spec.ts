@@ -64,6 +64,9 @@ test('a reload keeps him on the same screen, verse and view', async ({ page }) =
   await openUnlocked(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Verse 5', exact: true }).click();
+  // the place is kept after the press is handled: a reload straight after the click can cut it off (mw-fnvjof.17.246); wait on the kept place
+  await expect(page.locator('[data-verse="5"]')).toHaveAttribute('data-selected', 'true');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('lampas.lastRoute'))).toContain('v=5');
   await page.reload();
   await expect(page.locator('[data-verse="5"]')).toHaveAttribute('data-selected', 'true');
 });
