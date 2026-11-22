@@ -7,7 +7,7 @@ import { helpPlain } from './helpText';
 import { MAX_CHANGES, SETTINGS, TEXT_MAX, type SettingEntry } from './registry';
 
 /** Where the sermon switches are, as the one line of them in the instructions says it: SOURCE_HELP, each switch's own help, adds that a Logos list needs his import, which the tutor has no use for (mw-qtu3zvz.26: the room for the nine more keys). */
-const SOURCE_PLACE_HELP = 'Settings > Study resources > Sermons > Sermon sources.';
+const SOURCE_PLACE_HELP = 'Study resources > Sermons.';
 
 export const SETTINGS_BEGIN = '<!-- settings:begin -->';
 export const SETTINGS_END = '<!-- settings:end -->';
