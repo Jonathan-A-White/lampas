@@ -13,7 +13,7 @@ import { SettingsScreen } from '../../src/SettingsScreen';
 import { COUNTED_LINK, isCountedPage } from '../../src/settings/link';
 import { SCREENS, screensCounted } from '../../src/tips/summary';
 import { UsageCounted } from '../../src/tips/UsageCounted';
-import { COUNTED_DOOR } from '../support/settings';
+import { COUNTED_DOOR, foundDoors } from '../support/settings';
 
 const row = (day: string, name: string, count = 1) => ({ key: `${day}|${name}`, day, name, count });
 
@@ -94,6 +94,17 @@ describe('the address of the page (mw-6ww.175.87)', () => {
   it('keeps a scroll place of its own, so opening it at the top does not forget where the home was left', () => {
     expect(scrollAddress(COUNTED_LINK)).toBe('#/settings?page=counted');
     expect(scrollAddress(COUNTED_LINK)).not.toBe(scrollAddress('#/settings'));
+  });
+});
+
+describe('the Settings search finds the door (mw-6ww.175.103)', () => {
+  it('by a part of its title or of its hint, ignoring capitals and accents, and by nothing else', () => {
+    expect(foundDoors('counted')).toEqual([COUNTED_DOOR]);
+    expect(foundDoors('  LAMPÁS has ')).toEqual([COUNTED_DOOR]);
+    expect(foundDoors('opened each')).toEqual([COUNTED_DOOR]);
+    expect(foundDoors('theme')).toEqual([]);
+    expect(foundDoors('')).toEqual([]);
+    expect(foundDoors('   ')).toEqual([]);
   });
 });
 

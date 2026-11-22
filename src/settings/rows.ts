@@ -110,7 +110,7 @@ export const GROUPS: readonly SettingsGroup[] = [
 export const groupById = (id: string): SettingsGroup | undefined => GROUPS.find((g) => g.id === id);
 
 /** What Lampas has counted (mw-6ww.175.87, his words: "This should be behind a tap. Not off the main settings."): a row of the home that opens a page of its own (src/tips/UsageCounted.tsx), drawn in the list of groups
- *  last before Developer (homeEntries). A door, not a group: it holds no section, no row and no setting, so the search, the tutor and the tests that count the groups do not see it.
+ *  last before Developer (homeEntries). A door, not a group: it holds no section, no row and no setting, so the tutor and the tests that count the groups do not see it; the Settings search finds it all the same (foundDoors, mw-6ww.175.103).
  *  PROVISIONAL: its own row on the home, and where it sits, are the Mayor's reading of 'behind a tap', the Governor to confirm. */
 export const COUNTED_DOOR = { id: 'counted', title: 'What Lampas has counted', hint: 'How often you opened each screen.' } as const;
 
@@ -424,6 +424,13 @@ export function homeEntries(values: Values, rows: readonly SettingsRow[] = ROWS)
   const groups = visibleGroups(values, rows);
   const at = groups.findIndex((g) => g.id === 'developer');
   return at < 0 ? [...groups, COUNTED_DOOR] : [...groups.slice(0, at), COUNTED_DOOR, ...groups.slice(at)];
+}
+
+/** The doors of the home the Settings search finds for `query` (mw-6ww.175.103): What Lampas has counted when its title or its hint holds it, ignoring capitals and accents as a row's
+ *  name and hint are searched. It is no row of ROWS, so visibleRows never answers it. Nothing for an empty query. PROVISIONAL: the Tester's suggestion, released by the Mayor, the Governor to confirm. */
+export function foundDoors(query: string): (typeof COUNTED_DOOR)[] {
+  const q = foldText(query.trim());
+  return q !== '' && [COUNTED_DOOR.title, COUNTED_DOOR.hint].some((text) => foldText(text).includes(q)) ? [COUNTED_DOOR] : [];
 }
 
 /** The settings (the rows with a link, src/settings/link.ts) whose name, hint or help holds `query`, ignoring capitals and accents, for the search that is

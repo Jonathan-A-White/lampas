@@ -6,7 +6,7 @@
 // (src/settings/controls/, one file per section) names for its key. A row that depends on a setting that is off is not drawn. An address '#/settings?section=resources' opens the
 // page holding that section, scrolled to it (a link from elsewhere, such as the reference card's 'Link Logos in Settings'). An address '#/settings?setting=textSize' (src/settings/link.ts,
 // docs/links.md) opens the page holding that row, at the row: it is drawn whatever its dependency would hide (rowsAt), scrolled to and marked until his next tap, and a row that
-// depends on a setting that is off says to turn that on first. The home lays out no block under the groups: What Lampas has counted is a row of that list, last before Developer, and opens its own page, '#/settings?page=counted' (mw-6ww.175.87). Words, Review, Paradigms, Verse lists, Memorize and Your Logos library left for the Tools screen (src/ToolsScreen.tsx, mw-5r3p30.754); the search still finds them, 'in Tools'. docs/layout/settings.md.
+// depends on a setting that is off says to turn that on first. The home lays out no block under the groups: What Lampas has counted is a row of that list, last before Developer, and opens its own page, '#/settings?page=counted' (mw-6ww.175.87); the search finds it too, 'in Settings' (mw-6ww.175.103). Words, Review, Paradigms, Verse lists, Memorize and Your Logos library left for the Tools screen (src/ToolsScreen.tsx, mw-5r3p30.754); the search still finds them, 'in Tools'. docs/layout/settings.md.
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useRef, useState } from 'react';
 import { useAiAllowed } from './gate/licenceContext';
@@ -21,7 +21,7 @@ import { ownedResources } from './data/repositories';
 import { searchLibrary } from './settings/librarySearch';
 import { DoorButton, Found, GroupButton, SettingsSearch } from './settings/SettingsHome';
 import { greekLevelOf } from './settings/definitions/greekInterest';
-import { COUNTED_DOOR, HOME_SECTIONS, SECTIONS, dialOf, groupById, groupOf, homeEntries, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
+import { COUNTED_DOOR, HOME_SECTIONS, SECTIONS, dialOf, foundDoors, groupById, groupOf, homeEntries, isHomeRow, isSermonSourceRow, neededFor, orderResourceRows, readValues, rowOf, rowsAt, visibleRows, visibleToolRows, type GroupId } from './settings/rows';
 import { SermonSourcesPage } from './sermons/SermonSourcesPage';
 import { useSourceList } from './sermons/useSourceList';
 import { neededText } from './settings/neededText';
@@ -130,7 +130,7 @@ function SettingsPages() {
           <div ref={contentRef}>
             <SettingsSearch query={query} onChange={setQuery} />
             {searching ? (
-              values ? <Found rows={found} tools={foundTools} books={values['resource.logos'] === 'on' && owned !== undefined ? searchLibrary(query, owned, listedBooks) : NO_BOOKS} query={query} /> : null
+              values ? <Found rows={found} doors={foundDoors(query)} tools={foundTools} books={values['resource.logos'] === 'on' && owned !== undefined ? searchLibrary(query, owned, listedBooks) : NO_BOOKS} query={query} /> : null
             ) : (
               // the list waits for the saved values: Developer is listed only once Developer mode is found, and it must not flash up before that is known
               values ? (
