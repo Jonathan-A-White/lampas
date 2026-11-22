@@ -1,0 +1,444 @@
+ref	run	text	g	mark	confidence
+Gen.41:1	1	it came	-		0.80
+Gen.41:1	2	pass	-		0.80
+Gen.41:1	3	full	5		0.80
+Gen.41:1	4	that	-		0.80
+Gen.41:1	5	had a	7		0.80
+Gen.41:1	6	He	-		0.80
+Gen.41:1	7	he	-		0.80
+Gen.41:1	8	the bank of	-		0.80
+Gen.41:2	1	there came	-		0.80
+Gen.41:2	2	it were	-		0.80
+Gen.41:2	3	of	-		0.80
+Gen.41:2	4	in	10		0.80
+Gen.41:2	5	of	14		0.80
+Gen.41:2	6	they	-		0.80
+Gen.41:3	1	other	0		0.80
+Gen.41:3	2	cows came	-		0.80
+Gen.41:3	3	of	-		0.80
+Gen.41:3	4	ill-favoured	10,11,12		0.80
+Gen.41:3	5	lean-fleshed,	14,15,16		0.80
+Gen.41:3	6	other cows	-		0.80
+Gen.41:3	7	of	-		0.80
+Gen.41:4	1	ill-favoured	5,6		0.80
+Gen.41:4	2	well-favoured	14,15,16,17		0.80
+Gen.41:4	3	awoke.	-		0.80
+Gen.41:5	1	he	-		0.80
+Gen.41:5	2	ears came	-		0.80
+Gen.41:5	3	stalk,	10		0.80
+Gen.41:5	3	choice	12		0.80
+Gen.41:6	1	behold,	-		0.80
+Gen.41:6	2	blasted with the	-		0.80
+Gen.41:6	3	up	-		0.80
+Gen.41:7	1	blasted with the	-		0.80
+Gen.41:7	2	devoured	1		0.80
+Gen.41:7	3	choice	12,13		0.80
+Gen.41:7	4	awoke,	-		0.80
+Gen.41:7	5	it	-		0.80
+Gen.41:7	6	a	-		0.80
+Gen.41:8	1	his	-		0.80
+Gen.41:8	2	was	-		0.80
+Gen.41:8	3	and	-		0.80
+Gen.41:8	4	of	-		0.80
+Gen.41:8	5	her	-		0.80
+Gen.41:8	6	men;	-		0.80
+Gen.41:8	7	to	-		0.80
+Gen.41:8	8	his	-		0.80
+Gen.41:8	9	there was	-		0.80
+Gen.41:8	10	one	-		0.80
+Gen.41:8	11	to	32		0.80
+Gen.41:9	1	cupbearer	-		0.80
+Gen.41:9	2	this day remember	-		0.80
+Gen.41:9	2	my fault:	-		0.80
+Gen.41:10	1	was angry with	1		0.80
+Gen.41:10	2	servants,	2,3		0.80
+Gen.41:10	3	us	7		0.80
+Gen.41:10	4	of the captain of	-		0.80
+Gen.41:10	5	guard,	-		0.80
+Gen.41:11	1	we had a	1		0.80
+Gen.41:11	2	both	-		0.80
+Gen.41:11	3	we	-		0.80
+Gen.41:11	4	to	-		0.80
+Gen.41:12	1	there	-		0.80
+Gen.41:12	2	us a young	-		0.80
+Gen.41:12	3	a Hebrew	7		0.80
+Gen.41:12	3	servant	6		0.80
+Gen.41:12	3	of the captain of	-		0.80
+Gen.41:12	4	to	-		0.80
+Gen.41:12	5	our dreams,	-		0.80
+Gen.41:12	6	he	-		0.80
+Gen.41:12	7	them	-		0.80
+Gen.41:12	7	to us.	15		0.80
+Gen.41:13	1	it came	-		0.80
+Gen.41:13	2	pass,	-		0.80
+Gen.41:13	3	he	-		0.80
+Gen.41:13	4	them	-		0.80
+Gen.41:13	4	to us,	4		0.80
+Gen.41:13	5	also it	-		0.80
+Gen.41:13	6	that	-		0.80
+Gen.41:13	7	was	-		0.80
+Gen.41:13	8	office,	12,13		0.80
+Gen.41:13	9	he was	-		0.80
+Gen.41:14	1	having	-		0.80
+Gen.41:14	2	they	-		0.80
+Gen.41:14	3	from	-		0.80
+Gen.41:14	4	dress,	17,18		0.80
+Gen.41:14	5	he	-		0.80
+Gen.41:15	1	to	3		0.80
+Gen.41:15	2	I have	-		0.80
+Gen.41:15	3	a vision,	5		0.80
+Gen.41:15	4	there is	-		0.80
+Gen.41:15	5	one	-		0.80
+Gen.41:15	6	interpret	-		0.80
+Gen.41:15	7	have	-		0.80
+Gen.41:15	8	that	-		0.80
+Gen.41:15	9	did	-		0.80
+Gen.41:15	10	and	-		0.80
+Gen.41:16	1	and	-		0.80
+Gen.41:16	2	an	-		0.80
+Gen.41:16	3	of	-		0.80
+Gen.41:16	3	safety	11,12		0.80
+Gen.41:16	3	shall	-		0.80
+Gen.41:16	4	be given to	-		0.80
+Gen.41:17	1	my	-		0.80
+Gen.41:17	1	dream	7,8		0.80
+Gen.41:17	1	I thought	10		0.80
+Gen.41:17	2	by	-		0.80
+Gen.41:17	3	of	-		0.80
+Gen.41:18	1	there came	-		0.80
+Gen.41:18	2	it were	-		0.80
+Gen.41:18	3	of	-		0.80
+Gen.41:18	4	cows	7		0.80
+Gen.41:18	4	well-favoured	8,9,10		0.80
+Gen.41:18	5	choice-fleshed,	12,13,14		0.80
+Gen.41:18	6	they	-		0.80
+Gen.41:19	1	cows came	-		0.80
+Gen.41:19	2	of	-		0.80
+Gen.41:19	3	ill-favoured	13,14,15		0.80
+Gen.41:19	4	lean-fleshed,	17,18,19		0.80
+Gen.41:19	5	that I never	26		0.80
+Gen.41:19	6	worse	32		0.80
+Gen.41:19	7	the land of	-		0.80
+Gen.41:20	1	ill-favoured	5,6		0.80
+Gen.41:20	2	thin	8		0.80
+Gen.41:20	2	cows	4		0.80
+Gen.41:20	2	ate up	1		0.80
+Gen.41:20	3	choice	17		0.80
+Gen.41:20	3	cows.	11		0.80
+Gen.41:21	1	they	-		0.80
+Gen.41:21	2	their	-		0.80
+Gen.41:21	3	perceptible	8		0.80
+Gen.41:21	4	they had	-		0.80
+Gen.41:21	5	appearance	17,18		0.80
+Gen.41:21	5	was	-		0.80
+Gen.41:21	5	ill-favoured,	20		0.80
+Gen.41:21	6	also	22		0.80
+Gen.41:21	6	at	-		0.80
+Gen.41:21	7	after I awoke	25		0.80
+Gen.41:21	7	I	-		0.80
+Gen.41:22	1	it were	-		0.80
+Gen.41:22	2	ears came	-		0.80
+Gen.41:22	3	stem,	13		0.80
+Gen.41:23	1	other	0		0.80
+Gen.41:23	2	blasted with the	-		0.80
+Gen.41:23	3	sprang	-		0.80
+Gen.41:23	4	to	-		0.80
+Gen.41:24	1	thin	5,6		0.80
+Gen.41:24	2	blasted	8		0.80
+Gen.41:24	2	ears	4		0.80
+Gen.41:24	2	devoured	1		0.80
+Gen.41:24	3	fine	12,13		0.80
+Gen.41:24	4	ears:	11		0.80
+Gen.41:24	4	so I	18		0.80
+Gen.41:24	5	to	-		0.80
+Gen.41:24	6	there was	-		0.80
+Gen.41:24	7	one	-		0.80
+Gen.41:24	8	it to	-		0.80
+Gen.41:25	1	to	3		0.80
+Gen.41:25	2	of	-		0.80
+Gen.41:25	3	whatever	10		0.80
+Gen.41:25	4	does,	13		0.80
+Gen.41:25	4	he has	-		0.80
+Gen.41:25	5	to	15		0.80
+Gen.41:26	1	cows	2		0.80
+Gen.41:26	2	ears	11		0.80
+Gen.41:26	3	of	-		0.80
+Gen.41:27	1	thin	4,5		0.80
+Gen.41:27	1	kine	3		0.80
+Gen.41:27	1	that came	-		0.80
+Gen.41:27	2	thin	17,18		0.80
+Gen.41:27	3	blasted	20		0.80
+Gen.41:27	3	ears	16		0.80
+Gen.41:27	3	are seven years; there shall	-		0.80
+Gen.41:27	4	of	-		0.80
+Gen.41:28	1	for	-		0.80
+Gen.41:28	2	I have	-		0.80
+Gen.41:28	3	whatever	-		0.80
+Gen.41:28	4	intends to	-		0.80
+Gen.41:28	5	he has	-		0.80
+Gen.41:28	6	to	11		0.80
+Gen.41:29	1	for	-		0.80
+Gen.41:29	2	there is	-		0.80
+Gen.41:29	3	the	-		0.80
+Gen.41:29	4	of	-		0.80
+Gen.41:30	1	there shall	-		0.80
+Gen.41:30	2	of	-		0.80
+Gen.41:30	3	they shall	-		0.80
+Gen.41:30	4	that shall be	-		0.80
+Gen.41:30	5	the famine shall	18,19		0.80
+Gen.41:31	1	the plenty shall	3,4		0.80
+Gen.41:31	2	be	-		0.80
+Gen.41:31	3	in	5		0.80
+Gen.41:31	4	land	7		0.80
+Gen.41:31	4	by reason	-		0.80
+Gen.41:31	5	famine	10		0.80
+Gen.41:31	5	that shall be	11,12		0.80
+Gen.41:31	6	it shall	-		0.80
+Gen.41:31	7	grievous.	15		0.80
+Gen.41:32	1	of	-		0.80
+Gen.41:32	2	to	-		0.80
+Gen.41:32	3	it	-		0.80
+Gen.41:32	4	which is	13		0.80
+Gen.41:32	5	shall be	-		0.80
+Gen.41:32	6	will	-		0.80
+Gen.41:32	7	to	21		0.80
+Gen.41:33	1	out	-		0.80
+Gen.41:33	1	a wise	4		0.80
+Gen.41:33	2	prudent	6		0.80
+Gen.41:33	3	of	-		0.80
+Gen.41:34	1	let	-		0.80
+Gen.41:34	2	local governors	5		0.80
+Gen.41:34	3	let them take up a	-		0.80
+Gen.41:34	4	part of	-		0.80
+Gen.41:34	5	of	-		0.80
+Gen.41:34	6	of	-		0.80
+Gen.41:34	7	for	-		0.80
+Gen.41:34	8	of	-		0.80
+Gen.41:35	1	let them	-		0.80
+Gen.41:35	2	of	-		0.80
+Gen.41:35	3	that are	8		0.80
+Gen.41:35	4	let the	-		0.80
+Gen.41:35	4	corn	15,16		0.80
+Gen.41:35	4	be	-		0.80
+Gen.41:35	5	the	-		0.80
+Gen.41:35	6	of	-		0.80
+Gen.41:35	7	let	-		0.80
+Gen.41:35	8	be kept	24		0.80
+Gen.41:36	1	stored	4		0.80
+Gen.41:36	2	shall	-		0.80
+Gen.41:36	3	land	6		0.80
+Gen.41:36	3	against	-		0.80
+Gen.41:36	4	of	-		0.80
+Gen.41:36	5	shall	-		0.80
+Gen.41:36	6	the	-		0.80
+Gen.41:36	7	of	-		0.80
+Gen.41:36	8	land	22		0.80
+Gen.41:36	8	shall	-		0.80
+Gen.41:36	9	be utterly destroyed	20		0.80
+Gen.41:37	1	the word was	-		0.80
+Gen.41:37	2	in	-		0.80
+Gen.41:37	3	of	-		0.80
+Gen.41:37	4	in the sight of	7		0.80
+Gen.41:37	5	servants.	9,10		0.80
+Gen.41:38	1	to	-		0.80
+Gen.41:38	2	servants,	4,5		0.80
+Gen.41:38	2	Shall we	7		0.80
+Gen.41:38	3	such a	-		0.80
+Gen.41:38	4	as	-		0.80
+Gen.41:38	5	the	-		0.80
+Gen.41:38	6	of	-		0.80
+Gen.41:39	1	to	3		0.80
+Gen.41:39	2	has	-		0.80
+Gen.41:39	3	things,	-		0.80
+Gen.41:39	3	there	-		0.80
+Gen.41:39	4	a	-		0.80
+Gen.41:39	4	wiser	-		0.80
+Gen.41:39	4	or	17		0.80
+Gen.41:39	4	more prudent	18		0.80
+Gen.41:40	1	shall	-		0.80
+Gen.41:40	2	shall be obedient	11		0.80
+Gen.41:40	3	word;	8,9		0.80
+Gen.41:40	3	only	16		0.80
+Gen.41:40	3	in	-		0.80
+Gen.41:40	4	will	-		0.80
+Gen.41:41	1	to	3		0.80
+Gen.41:41	2	I	-		0.80
+Gen.41:41	3	this	-		0.80
+Gen.41:41	4	the	-		0.80
+Gen.41:41	5	of	-		0.80
+Gen.41:42	1	his	-		0.80
+Gen.41:42	2	off	-		0.80
+Gen.41:42	3	and	-		0.80
+Gen.41:42	4	on	-		0.80
+Gen.41:42	5	a	-		0.80
+Gen.41:42	6	of	-		0.80
+Gen.41:42	7	linen,	-		0.80
+Gen.41:42	8	a	-		0.80
+Gen.41:42	9	of	-		0.80
+Gen.41:43	1	mounted him	-		0.80
+Gen.41:43	2	of	-		0.80
+Gen.41:43	3	a herald	14		0.80
+Gen.41:43	3	made proclamation	11		0.80
+Gen.41:43	4	set him	-		0.80
+Gen.41:43	5	of	-		0.80
+Gen.41:44	1	to	3		0.80
+Gen.41:44	2	am	-		0.80
+Gen.41:44	3	shall	-		0.80
+Gen.41:44	4	up	-		0.80
+Gen.41:44	5	the	-		0.80
+Gen.41:44	6	of	-		0.80
+Gen.41:45	1	of	-		0.80
+Gen.41:45	2	the	-		0.80
+Gen.41:45	3	of	-		0.80
+Gen.41:45	4	of	-		0.80
+Gen.41:45	4	Heliopolis,	15,16		0.80
+Gen.41:46	1	old	-		0.80
+Gen.41:46	2	he	-		0.80
+Gen.41:46	3	before	7		0.80
+Gen.41:46	4	of	-		0.80
+Gen.41:46	5	out	-		0.80
+Gen.41:46	6	the	-		0.80
+Gen.41:46	7	of	-		0.80
+Gen.41:46	8	went	-		0.80
+Gen.41:46	9	the	-		0.80
+Gen.41:46	10	of	-		0.80
+Gen.41:47	1	land	3		0.80
+Gen.41:47	1	produced,	1		0.80
+Gen.41:47	2	of	8		0.80
+Gen.41:47	2	plenty,	9		0.80
+Gen.41:47	2	whole handfuls of corn.	10		0.80
+Gen.41:48	1	he	-		0.80
+Gen.41:48	2	of	-		0.80
+Gen.41:48	3	the	-		0.80
+Gen.41:48	4	of	-		0.80
+Gen.41:48	5	he	-		0.80
+Gen.41:48	6	up	-		0.80
+Gen.41:48	7	the	-		0.80
+Gen.41:48	8	of	-		0.80
+Gen.41:48	9	of a	26		0.80
+Gen.41:48	10	round about	28,29		0.80
+Gen.41:48	11	he laid up	31,32		0.80
+Gen.41:49	1	of	-		0.80
+Gen.41:49	2	it could	13		0.80
+Gen.41:49	3	be	-		0.80
+Gen.41:49	4	there	-		0.80
+Gen.41:49	5	of it.	-		0.80
+Gen.41:50	1	to	0		0.80
+Gen.41:50	2	born	-		0.80
+Gen.41:50	3	of	-		0.80
+Gen.41:50	4	the	-		0.80
+Gen.41:50	5	of	-		0.80
+Gen.41:50	6	of	-		0.80
+Gen.41:50	6	Heliopolis,	21,22		0.80
+Gen.41:50	7	to	-		0.80
+Gen.41:51	1	of	-		0.80
+Gen.41:51	2	he, has	-		0.80
+Gen.41:51	3	toils,	16,17		0.80
+Gen.41:51	4	house.	-		0.80
+Gen.41:52	1	he	-		0.80
+Gen.41:52	2	of	-		0.80
+Gen.41:52	3	said he, has	-		0.80
+Gen.41:52	3	increased	8		0.80
+Gen.41:52	4	the land of	13		0.80
+Gen.41:52	5	humiliation.	14		0.80
+Gen.41:53	1	of plenty	5,6		0.80
+Gen.41:53	2	away,	-		0.80
+Gen.41:53	3	the	-		0.80
+Gen.41:53	4	of	-		0.80
+Gen.41:54	1	of famine	5,6		0.80
+Gen.41:54	1	began to	-		0.80
+Gen.41:54	2	there	-		0.80
+Gen.41:54	3	a	-		0.80
+Gen.41:54	4	the	-		0.80
+Gen.41:54	5	of	-		0.80
+Gen.41:54	6	there	-		0.80
+Gen.41:55	1	was hungry;	1		0.80
+Gen.41:55	2	for	-		0.80
+Gen.41:55	3	to	-		0.80
+Gen.41:55	4	whatever	25,26		0.80
+Gen.41:55	4	he shall tell	27		0.80
+Gen.41:56	1	the	-		0.80
+Gen.41:56	2	of	-		0.80
+Gen.41:56	3	to	-		0.80
+Gen.41:57	1	of	-		0.80
+Gen.41:1	fix	it came to pass	0		0.80
+Gen.41:1	fix	the bank of the river.	12,13		0.80
+Gen.41:2	fix	there came up	6		0.80
+Gen.41:3	fix	cows came up	3,4		0.80
+Gen.41:3	fix	the other cows	19,20		0.80
+Gen.41:4	fix	cows	4		0.80
+Gen.41:4	fix	lean	8,9,10		0.80
+Gen.41:4	fix	cows;	13		0.80
+Gen.41:4	fix	awoke.	21		0.80
+Gen.41:5	fix	ears came up	7,8		0.80
+Gen.41:6	fix	blasted with the wind,	6		0.80
+Gen.41:6	fix	grew up	7		0.80
+Gen.41:7	fix	thin ears	4,6		0.80
+Gen.41:7	fix	blasted with the wind	8		0.80
+Gen.41:7	fix	ears;	11		0.80
+Gen.41:7	fix	awoke,	17		0.80
+Gen.41:8	fix	it was	0		0.80
+Gen.41:8	fix	he sent	9		0.80
+Gen.41:8	fix	his soul	5,6,7		0.80
+Gen.41:8	fix	her wise men;	17,18,19		0.80
+Gen.41:8	fix	there was no one to interpret	27,28,29,30		0.80
+Gen.41:9	fix	chief cupbearer	3		0.80
+Gen.41:9	fix	I this day remember	10,11		0.80
+Gen.41:9	fix	my fault:	7,8,9		0.80
+Gen.41:10	fix	the chief baker.	18,19		0.80
+Gen.41:10	fix	of the captain of the guard,	13,14		0.80
+Gen.41:12	fix	with us a young man,	3,4,5		0.80
+Gen.41:12	fix	we related	11		0.80
+Gen.41:12	fix	of the captain of the guard;	8,9		0.80
+Gen.41:13	fix	it came to pass,	0		0.80
+Gen.41:13	fix	And	1		0.80
+Gen.41:13	fix	also it	6		0.80
+Gen.41:15	fix	there is no one to interpret	8,9,11,12		0.80
+Gen.41:17	fix	to	3		0.80
+Gen.41:17	fix	by	12		0.80
+Gen.41:17	fix	I stood	11		0.80
+Gen.41:17	fix	my	9		0.80
+Gen.41:18	fix	there came up	5		0.80
+Gen.41:19	fix	cows came up	3,5		0.80
+Gen.41:19	fix	the land of Egypt.	31		0.80
+Gen.41:21	fix	their bellies;	3,4,5		0.80
+Gen.41:21	fix	it was	9		0.80
+Gen.41:22	fix	ears came up	10,11		0.80
+Gen.41:23	fix	blasted with the wind,	6		0.80
+Gen.41:23	fix	sprang up	7		0.80
+Gen.41:24	fix	there was no one to explain	22,23,24,25		0.80
+Gen.41:27	fix	that came up	6,7		0.80
+Gen.41:28	fix	as for	-		0.80
+Gen.41:28	fix	whatever	6		0.80
+Gen.41:28	fix	intends to do,	9		0.80
+Gen.41:29	fix	great	5		0.80
+Gen.41:29	fix	plenty	4		0.80
+Gen.41:31	fix	by reason of	8		0.80
+Gen.41:33	fix	look out	2		0.80
+Gen.41:34	fix	let them take up a fifth part of	10		0.80
+Gen.41:37	fix	the word was	2,3		0.80
+Gen.41:37	fix	pleasing in the sight of	0,4		0.80
+Gen.41:39	fix	wiser	15		0.80
+Gen.41:39	fix	than	-		0.80
+Gen.41:39	fix	all these things,	10,11		0.80
+Gen.41:41	fix	this day	8		0.80
+Gen.41:42	fix	put on him	16,17		0.80
+Gen.41:42	fix	hand of Joseph,	13,14		0.80
+Gen.41:42	fix	off	5		0.80
+Gen.41:42	fix	fine linen,	19		0.80
+Gen.41:43	fix	he mounted him	1,2		0.80
+Gen.41:43	fix	he set him	16,17		0.80
+Gen.41:44	fix	no one	9,11		0.80
+Gen.41:44	fix	shall lift up	10		0.80
+Gen.41:46	fix	years old	3		0.80
+Gen.41:46	fix	went out	11		0.80
+Gen.41:46	fix	went through	18		0.80
+Gen.41:48	fix	he laid up the food	17,18,19		0.80
+Gen.41:50	fix	were born	3		0.80
+Gen.41:51	fix	father's house.	22,23		0.80
+Gen.41:53	fix	passed away,	0		0.80
+Gen.41:54	fix	began to come,	1,7		0.80
+Gen.41:55	fix	of	-		0.80
+Gen.41:55	fix	for	13		0.80
+Gen.41:57	fix	to buy	7		0.80
+Gen.41:57	fix	of	8		0.80
