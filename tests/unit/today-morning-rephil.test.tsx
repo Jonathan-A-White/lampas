@@ -8,7 +8,7 @@ import { db } from '../../src/data/db';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 import { DEFAULT_DEVOTIONAL, DEVOTIONALS, MORNING_REPHIL_ID, RANDOM, anotherDevotional, canDrawAnother, type Devotional } from '../../src/data/daily/devotionals';
 import { EPISODES, episodeDate } from '../../src/data/daily/morningRephil';
-import { getDay, getHeard, localDate, pickAnotherDevotional } from '../../src/data/daily/dailyStore';
+import { getDay, getHeard, localDate, pickAnotherDevotional, setDevotionalPick } from '../../src/data/daily/dailyStore';
 import { Today } from '../../src/today/Today';
 import { applyChanges, currentSettings } from '../support/settings';
 
@@ -223,6 +223,8 @@ describe('Random with Logos Off: Another devotional (mw-r9xo1pj.9)', () => {
       { key: 'devotional', value: RANDOM },
       { key: 'morningRephilHeard', value: unseenOne },
     ]);
+    // Random's own draw is by the date, so pin today's piece to Morning RePhil rather than lean on a day record an earlier test left
+    await setDevotionalPick(localDate(new Date()), MORNING_REPHIL_ID);
     const piece = await open();
     await piece.findByRole('link', { name: new RegExp(first.title) }, { timeout });
     await act(async () => {
