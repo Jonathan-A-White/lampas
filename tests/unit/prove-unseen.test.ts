@@ -332,7 +332,7 @@ describe('Drill it promises questions only when an ask goes out', () => {
         .slice(0, 2)
         .map((v, i): AnsweredItem => {
           const right = v.uses.find((u) => u.idea === idea.id)?.form as string;
-          const others = [...new Set(v.greek.split(' ').filter((w) => !v.uses.some((u) => u.form === w)))].slice(0, 3);
+          const others = [...new Set((v.greek ?? '').split(' ').filter((w) => !v.uses.some((u) => u.form === w)))].slice(0, 3);
           return { idea: idea.id, kind: 'tap-form', ref: v.ref, prompt: `Which word shows ${idea.title}? (${i + 1})`, options: [right, ...others], right };
         }),
     );
