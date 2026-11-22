@@ -174,12 +174,16 @@ export const canBeWritten = (ideaId: string): boolean => fetchable(ideaId);
 
 /**
  * Asks the mill for questions on one idea he has opened Drill it on and has too few unseen ones for (mw-indx1x6.70): unlike keepStocked it asks for an idea he has never been asked too, because
- * Drill it has just said questions are coming and nothing else would ask. Waits for an ask already out, then asks; asks nothing for an idea the mill writes none for. Never throws.
+ * Drill it has just said questions are coming and nothing else would ask. Waits for an ask already out, counts again what it kept and asks only when still too few; asks nothing for an idea the mill writes none for. Never throws.
  */
 export async function askForIdea(ideaId: string, options: MoreItemsOptions = {}): Promise<MoreItems> {
   if (!fetchable(ideaId)) return 'nothing';
   try {
-    if (fetchedStock.inFlight()) await whenIdle();
+    if (fetchedStock.inFlight()) {
+      await whenIdle();
+      // the ask that was out may have stocked this idea: count again, and ask only when still too few (mw-indx1x6.119)
+      if ((await listUnseenFetched(ideaId)).length >= LOW_KEPT) return 'nothing';
+    }
     return await askForMoreItems([ideaId], options);
   } catch (error) {
     console.warn('could not ask for more drill items', error);
