@@ -24,5 +24,5 @@ test('a thing that is right at the first look is looked at once', async () => {
 
 test('a thing that never comes fails, naming what was wrong at the last look', async () => {
   const row = looks([{ y: -2 }]);
-  await expect(untilSettled(row.look, (r) => (r.y >= 85 ? null : `y is ${r.y}, not 85 or more`), { timeout: 600 })).rejects.toThrow('y is -2, not 85 or more');
+  await expect(untilSettled(row.look, (r) => (r.y >= 85 ? null : `y is ${r.y}, not 85 or more`), { timeout: 600 })).rejects.toThrow('y is -2, not 85 or more'); // short on purpose: this look never comes, and the spec waits only to see the failure named
 });
