@@ -4,6 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { holdFor } from '../support/hold';
 import { shot } from './shot';
+import { handleClicksLate } from './late-clicks';
 import { openUnlocked } from './unlocked';
 
 const SIZES = [
@@ -92,11 +93,14 @@ for (const { name, size } of SIZES) {
   });
 
   test(`plain English is kept across a reload, ${name}`, async ({ page }) => {
+    // each press is handled 1.5 s late, as a loaded host can: the reload must wait for the choice's aria-pressed (shown once the write landed)
+    await handleClicksLate(page, '[aria-label="Language"] button');
     await page.setViewportSize(size);
     await openUnlocked(page);
     await page.goto('/#/?b=rom&c=8&weave=solid');
     await expect(page.locator('[data-verse="1"] [data-woven]').first()).toBeVisible();
     await choice(page, 'English').click();
+    await expect(choice(page, 'English')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('[data-verse="1"] [data-woven]')).toHaveCount(0);
     await page.reload();
     await expect(choice(page, 'English')).toHaveAttribute('aria-pressed', 'true');
