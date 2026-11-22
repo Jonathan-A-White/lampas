@@ -16,6 +16,7 @@ import { setSermonSources } from '../../src/sermons';
 import { closeSermons } from '../../src/sermons/openSermons';
 import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter-fetch';
 import { findButton } from '../../tests/support/find-button';
+import { tapPlaceLine } from '../../tests/support/place-line';
 import { forgetTestMaps, registerTestMaps, TEST_CARDS, testSource as testMapSource } from '../../tests/support/test-maps';
 import { forgetTestSermons, registerTestSermons, testSource } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
@@ -175,14 +176,8 @@ describeFeature(feature, ({ Scenario }) => {
     await user.click(within(heading).getByRole('button'));
     await screen.findByRole('region', { name: 'Verse view' });
   };
-  const tapPlaceLine = async () => {
-    await user.click(
-      await waitFor(() => {
-        const line = document.querySelector<HTMLElement>('button[data-place-line]');
-        if (!line) throw new Error('no place line');
-        return line;
-      }),
-    );
+  const tapPlaceLineAndWait = async () => {
+    await tapPlaceLine();
     await screen.findByRole('region', { name: 'Verse view' });
   };
   const rowReads = async (_: unknown, title: string, line: string) => {
@@ -334,7 +329,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('The place line opens the whole chapter, and its sheet is headed with the chapter', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string}', opened);
-    When('he taps the place line', tapPlaceLine);
+    When('he taps the place line', tapPlaceLineAndWait);
     Then('the Verse view has a button {string}', viewHas);
     When('he taps {string}', tapDoor);
     Then('the sheet is headed {string}', headed);
@@ -446,7 +441,7 @@ describeFeature(feature, ({ Scenario }) => {
 
   Scenario('A whole chapter opens each archive at the chapter', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with Logos On and two sermon archives on his shelf', archiveOpened('on'));
-    When('he taps the place line', tapPlaceLine);
+    When('he taps the place line', tapPlaceLineAndWait);
     And('he taps {string}', tapDoor);
     Then('the archive {string} is a link to {string} with the ref.ly address as its fallback and is 44 px tall', archiveIsLink);
   });
