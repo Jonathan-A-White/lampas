@@ -217,7 +217,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Genesis 21 | 34 | 662 | 615 | 92.9% | 64.8% | 75 (11.3%) |
 | Genesis 22 | 24 | 540 | 464 | 85.9% | 61.3% | 65 (12.0%) |
 | Genesis 23 | 20 | 426 | 405 | 95.1% | 68.3% | 61 (14.3%) |
-| Genesis 24 | 67 | 1,541 | 1,451 | 94.2% | 64.6% | 274 (17.8%) |
+| Genesis 24 | 67 | 1,541 | 1,451 | 94.2% | 64.8% | 278 (18.0%) |
 | Genesis 25 | 34 | 627 | 579 | 92.3% | 66.8% | 89 (14.2%) |
 | Genesis 26 | 35 | 758 | 736 | 97.1% | 68.9% | 133 (17.5%) |
 | Genesis 27 | 46 | 1,044 | 955 | 91.5% | 64.6% | 132 (12.6%) |
@@ -504,7 +504,7 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Amos | 131 | 2,780 | 2,066 | 74.3% | 51.6% | — |
 | Deuteronomy | 905 | 21,077 | 16,363 | 77.6% | 50.9% | — |
 | Exodus | 457 | 9,117 | 6,993 | 76.7% | 49.7% | — |
-| Genesis | 1,531 | 32,635 | 29,927 | 91.7% | 64.9% | 4,515 (13.8%) |
+| Genesis | 1,531 | 32,635 | 29,927 | 91.7% | 64.9% | 4,519 (13.8%) |
 | Hosea | 37 | 717 | 562 | 78.4% | 52.3% | — |
 | Isaiah | 563 | 11,346 | 8,600 | 75.8% | 50.6% | — |
 | Judges | 114 | 2,933 | 2,314 | 78.9% | 52.3% | — |
@@ -517,6 +517,6 @@ Derived without a Morpheus cache: amo, exo, hos, isa, joe, mic, oba, psa.
 | Obadiah | 21 | 456 | 356 | 78.1% | 51.8% | — |
 | Psalms | 1,769 | 24,152 | 17,516 | 72.5% | 44.4% | — |
 
-359 chapters: 130,497 of 163,418 Greek words aligned (79.9%), 4,515 of them by the model pass (y `model`); 133,290 of 208,971 English words are in a chunk of Greek (63.8%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
+359 chapters: 130,497 of 163,418 Greek words aligned (79.9%), 4,519 of them by the model pass (y `model`); 133,291 of 208,971 English words are in a chunk of Greek (63.8%), the rest are in remainder chunks (y `align?`, waiting for the model pass) or in English the model found no Greek for.
 
 <!-- lxx-align:end -->

@@ -115,9 +115,9 @@ describe('the listing of lxx:align-choose with the fix rows of a chapter', () =>
 // Swete's Greek ('Chettite.' for Εὑαίου, 26:34): the Greek word that sits there is the one a tap should open.
 const REVIEWED: Record<number, string[]> = {
   24: [
-    '24:3 Chananites, @23', '24:8 come @6', '24:10 he arose @23', '24:10 went @24', '24:11 he rested @1', '24:12 deal @13', '24:15 daughter @15', '24:17 servant @3', '24:18 Sir; @4',
+    '24:3 Chananites, @23', '24:8 come @6', '24:10 went @24', '24:11 he rested @1', '24:12 deal @13', '24:15 daughter @15', '24:17 servant @3', '24:18 Sir; @4',
     '24:18 pitcher @10', '24:19 have drunk. @13', '24:20 trough, @8', '24:22 bracelets @18', '24:23 Tell @8', '24:25 resting. @13', '24:27 suffered @10', '24:30 ear-rings @5',
-    '24:30 bracelets @8', '24:31 have prepared @13', '24:32 unloaded @8', '24:33 loaves @3', '24:34 servant @2', '24:35 calves, @14', '24:35 servants @19', '24:37 Chananites, @17',
+    '24:30 bracelets @8', '24:31 have prepared @13', '24:32 unloaded @8', '24:33 loaves @3', '24:34 servant @2', '24:35 calves, @14', '24:35 greatly, @6', '24:35 servants @19', '24:37 Chananites, @17',
     '24:37 sojourn @21', '24:40 acceptable @7', '24:41 clear @21', '24:42 going, @23', '24:43 damsel @21', '24:44 have wrought @25', '24:45 pitcher @16', '24:46 pitcher @4', '24:47 you? tell @8',
     '24:47 ear-rings, @28', '24:47 bracelets @31', '24:48 being @1', '24:49 justly @6', '24:49 tell @11', '24:52 servant @6', '24:53 jewels @4', '24:53 raiment, @9', '24:54 he arose @15',
     '24:56 journey @12', '24:57 damsel, @5', '24:57 enquire @7', '24:58 Will you go @6', '24:58 I will go. @13', '24:59 servant @12', '24:60 enemies. @24', '24:61 maidens, @5', '24:61 went @12',
