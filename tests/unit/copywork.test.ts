@@ -127,7 +127,7 @@ describe('a lone-breathing word the model marked wrong for an accent it read fro
     ['ἡ', 'ἵ', 'a different letter'],
     ['ἡ', 'ᾗ', 'an iota subscript added'],
     ['ἡ', 'ἥ́', 'two accents'],
-    ['ἦν', 'ἦν', 'a request word with its own accent'],
+    ['ἦν', 'ἤν', 'a request word with its own accent'],
     ['ἥ', 'ή', 'a request word with its own accent'],
   ])('keeps %s written %s wrong (%s)', (word, written) => {
     expect(wrongWith(word, written)).toEqual([{ word, mark: 'wrong', problem: 'extra acute accent' }]);
@@ -151,5 +151,39 @@ describe('a lone-breathing word the model marked wrong for an accent it read fro
   it('takes a written field in an answer', () => {
     expect(isCopyworkAnswer({ readable: true, words: [{ word: 'ἡ', mark: 'right', written: 'ἡ' }], fix_first: '' })).toBe(true);
     expect(isCopyworkAnswer({ readable: true, words: [{ word: 'ἡ', mark: 'right', written: 7 }], fix_first: '' })).toBe(false);
+  });
+});
+
+describe('a Greek word marked wrong whose written is the request word itself (mw-qtu3zvz.254)', () => {
+  const wrongWith = (word: string, written: string | undefined, language?: 'grc' | 'en' | 'hbo') =>
+    markedWords(
+      { words: [word], ...(language ? { language } : {}) },
+      { readable: true, words: [{ word, mark: 'wrong', problem: 'no accent on σκοτία', ...(written !== undefined ? { written } : {}) }], fix_first: 'x' },
+    );
+
+  it.each(['σκοτία', 'οὐ', 'κατέλαβεν'])('shows %s right when written is the same word', (word) => {
+    expect(wrongWith(word, word, 'grc')).toEqual([{ word, mark: 'right' }]);
+  });
+
+  it('compares after NFC: a written word in NFD is the same word', () => {
+    const word = 'σκοτία'.normalize('NFC');
+    expect(wrongWith(word, word.normalize('NFD'), 'grc')).toEqual([{ word, mark: 'right' }]);
+    expect(wrongWith(word.normalize('NFD'), word, 'grc')).toEqual([{ word: word.normalize('NFD'), mark: 'right' }]);
+  });
+
+  it('keeps a word wrong whose written differs from it, as the model marked it', () => {
+    expect(wrongWith('σκοτία', 'σκοτια', 'grc')).toEqual([{ word: 'σκοτία', mark: 'wrong', problem: 'no accent on σκοτία' }]);
+    expect(wrongWith('κατέλαβεν', 'κατελαβεν', 'grc')).toEqual([{ word: 'κατέλαβεν', mark: 'wrong', problem: 'no accent on σκοτία' }]);
+  });
+
+  it('keeps a word wrong with no written field or an empty one', () => {
+    expect(wrongWith('σκοτία', undefined, 'grc')).toEqual([{ word: 'σκοτία', mark: 'wrong', problem: 'no accent on σκοτία' }]);
+    expect(wrongWith('σκοτία', '', 'grc')).toEqual([{ word: 'σκοτία', mark: 'wrong', problem: 'no accent on σκοτία' }]);
+  });
+
+  it('leaves an English or Hebrew page, or one that names no language, as the model marked it', () => {
+    expect(wrongWith('light', 'light', 'en')).toEqual([{ word: 'light', mark: 'wrong', problem: 'no accent on σκοτία' }]);
+    expect(wrongWith('בְּרֵאשִׁית', 'בְּרֵאשִׁית', 'hbo')).toEqual([{ word: 'בְּרֵאשִׁית', mark: 'wrong', problem: 'no accent on σκοτία' }]);
+    expect(wrongWith('σκοτία', 'σκοτία')).toEqual([{ word: 'σκοτία', mark: 'wrong', problem: 'no accent on σκοτία' }]);
   });
 });

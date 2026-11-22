@@ -134,16 +134,23 @@ export function isBreathingReadAsAccent(word: string, written: string | undefine
   return breathings.length === 0 || (breathings.length === 1 && breathings[0] === breathing[0]);
 }
 
+/** Whether `written` (what the model says is on the page) is the request's word itself, after NFC: an answer that marks such a word wrong contradicts itself (the grind's own rule: when `written` and
+ * `word` are the same characters the mark is `right`). The model does it about one run in ten on σκοτία, οὐ and κατέλαβεν, believing the request's word has no accent (mw-qtu3zvz.254). */
+export function isWrittenAsAsked(word: string, written: string | undefined): boolean {
+  return !!written && written.normalize('NFC') === word.normalize('NFC');
+}
+
 /** The words of the model, each with the mark the grind gave the word at its place (the model's own word is shown, whatever the answer copied); null when the answer does not
  * mark every word of the request, which it must (the count and the order are the request's). On a Greek page a word marked wrong whose `written` is only the page's breathing read as an
- * accent (isBreathingReadAsAccent) is right: the model misreads a small curl about one run in eight, and the page cannot be redrawn for it (mw-qtu3zvz.153). `language` is the request's; a
+ * accent (isBreathingReadAsAccent) is right: the model misreads a small curl about one run in eight, and the page cannot be redrawn for it (mw-qtu3zvz.153); so is one whose `written` is the request's
+ * word itself (isWrittenAsAsked, mw-qtu3zvz.254). English and Hebrew are left as marked: no run has shown the fault there. `language` is the request's; a
  * request without one is not taken for Greek. */
 export function markedWords(request: Pick<CopyworkRequest, 'words'> & Partial<Pick<CopyworkRequest, 'language'>>, answer: CopyworkAnswer): MarkedWord[] | null {
   if (answer.words.length !== request.words.length) return null;
   return request.words.map((word, i) => {
     const { mark, problem, sounds_alike, written } = answer.words[i];
     if (mark !== 'wrong') return { word, mark };
-    if (request.language === 'grc' && isBreathingReadAsAccent(word, written)) return { word, mark: 'right' };
+    if (request.language === 'grc' && (isWrittenAsAsked(word, written) || isBreathingReadAsAccent(word, written))) return { word, mark: 'right' };
     return { word, mark, ...(problem !== undefined ? { problem } : {}), ...(sounds_alike === true ? { soundsAlike: true } : {}) };
   });
 }
