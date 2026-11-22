@@ -69,4 +69,11 @@ describe('a swipe or a double tap in an e2e spec', () => {
     expect(text).not.toMatch(/greek\.boundingBox\(\)/);
     expect(text).toContain('await settledBox(greek)');
   });
+
+  it("waits out a card's settle moment on the page's clock in drill-it.spec.ts, never by a sleep (mw-fnvjof.17.249)", () => {
+    // The settle moment (src/ui/settle.ts) is timed by the page's clock: a host's sleep of SETTLE_MS + 100 is only that long on a calm host. pageTime (tests/support/gesture.ts) runs the page's clock.
+    const text = readFileSync(join(E2E, 'drill-it.spec.ts'), 'utf8');
+    const sleeps = [...text.matchAll(/waitForTimeout\(/g)].map((sleep) => `${E2E}/drill-it.spec.ts:${lineOf(text, sleep.index ?? 0)}`);
+    expect(sleeps).toEqual([]);
+  });
 });

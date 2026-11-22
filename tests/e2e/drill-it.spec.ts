@@ -135,7 +135,7 @@ async function openIdea(page: Page, name = 'The noun', settleMs = SETTLE_MS) {
 /** Drill it, from the idea sheet: a new walk, on its first question. He taps it after the moment a sheet that opens or closes swallows taps for
  * (src/ui/tapGuard.ts, mw-i7xe0n.26). */
 async function startDrill(page: Page, idea: ReturnType<Page['locator']>) {
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await idea.getByRole('button', { name: 'Drill it', exact: true }).click();
   const drill = page.getByRole('dialog', { name: 'Drill it' });
   await expect(drill.getByTestId('grammar-prompt')).toBeVisible();
@@ -144,7 +144,7 @@ async function startDrill(page: Page, idea: ReturnType<Page['locator']>) {
 
 /** He reads the question, then answers it with the first answer left: right or wrong, it is a choice he made. */
 async function answerOne(page: Page, drill: ReturnType<Page['locator']>) {
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await drill.locator('[data-option]:not(:disabled)').first().click();
   await expect(drill.getByTestId('drill-next')).toBeVisible();
 }
@@ -170,7 +170,7 @@ test('a double tap on Next takes no answers away from the next question', async 
     await expect(drill.getByRole('button', { name: 'Hint', exact: true }), `${gap} ms`).toBeEnabled();
     if (gap === 200) {
       // a Hint he taps after reading the question still takes answers away
-      await page.waitForTimeout(SETTLE_MS + 100);
+      await pageTime(page, SETTLE_MS + 100);
       await drill.getByRole('button', { name: 'Hint', exact: true }).click();
       await expect(drill.getByTestId('hint-line')).toBeVisible();
       await expect(drill.getByRole('button', { name: 'Hint used', exact: true })).toBeDisabled();
@@ -185,7 +185,7 @@ test('a double tap on Next takes no answers away from the next question', async 
 test('a double tap on Drill it leaves the drill\'s first question with its Hint unused', async ({ page }) => {
   const idea = await openIdea(page);
   for (const gap of [80, 120, 200]) {
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     await tapTwice(page, idea.getByRole('button', { name: 'Drill it', exact: true }), gap);
     const drill = page.getByRole('dialog', { name: 'Drill it' });
     await expect(drill.getByTestId('grammar-prompt'), `${gap} ms`).toBeVisible();
@@ -193,7 +193,7 @@ test('a double tap on Drill it leaves the drill\'s first question with its Hint 
     await expect(drill.locator('[data-option][data-taken]'), `${gap} ms`).toHaveCount(0);
     await expect(drill.getByRole('button', { name: 'Hint', exact: true }), `${gap} ms`).toBeEnabled();
     // a sheet that opens or closes swallows taps for its moment (src/ui/tapGuard.ts): he taps Stop after it
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     await drill.getByRole('button', { name: 'Stop', exact: true }).click();
     await expect(drill).toHaveCount(0);
   }
@@ -203,19 +203,19 @@ test('a double tap on Drill it leaves the drill\'s first question with its Hint 
 test('a double tap on Drill it on a letter\'s sheet leaves the drill\'s first question with its Hint unused', async ({ page }) => {
   const alphabet = await openIdea(page, 'The Greek alphabet');
   await expect(alphabet.getByRole('slider', { name: 'Your level' })).toBeEnabled();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await alphabet.getByRole('button', { name: 'About psi', exact: true }).click();
   const psi = page.getByRole('dialog', { name: 'Idea', exact: true }).last();
   await expect(psi.getByRole('button', { name: 'Drill it', exact: true })).toBeEnabled();
   for (const gap of [80, 120, 200]) {
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     await tapTwice(page, psi.getByRole('button', { name: 'Drill it', exact: true }), gap);
     const drill = page.getByRole('dialog', { name: 'Drill it' });
     await expect(drill.getByTestId('grammar-prompt'), `${gap} ms`).toBeVisible();
     await expect(drill.getByTestId('hint-line'), `${gap} ms`).toHaveCount(0);
     await expect(drill.locator('[data-option][data-taken]'), `${gap} ms`).toHaveCount(0);
     await expect(drill.getByRole('button', { name: 'Hint', exact: true }), `${gap} ms`).toBeEnabled();
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     await drill.getByRole('button', { name: 'Stop', exact: true }).click();
     await expect(drill).toHaveCount(0);
   }
@@ -229,7 +229,7 @@ test('a double tap on Finish leaves the result of Drill it on screen', async ({ 
   await expect(drill.getByTestId('drill-result')).toBeVisible();
   await expect(drill.getByRole('button', { name: 'Done', exact: true })).toBeVisible();
   // a Done he taps after reading it closes the screen
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await drill.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(drill).toHaveCount(0);
 });
@@ -250,7 +250,7 @@ test('a double tap on Finish leaves the result of a short drill on screen', asyn
   let plan = idea.getByRole('button', { name: 'Start the first drill' });
   for (let run = 0; run < 5 && !(await plan.count()); run += 1) {
     if (run > 0) {
-      await page.waitForTimeout(SETTLE_MS + 100);
+      await pageTime(page, SETTLE_MS + 100);
       await page.getByRole('dialog', { name: 'Drill it' }).getByRole('button', { name: 'Done', exact: true }).click();
     }
     const drill = await startDrill(page, idea);
@@ -262,14 +262,14 @@ test('a double tap on Finish leaves the result of a short drill on screen', asyn
   await plan.click();
   const short = page.getByRole('dialog', { name: 'Short drill' });
   for (;;) {
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     await short.locator('[data-option]').first().click();
     if ((await short.getByTestId('plan-drill-next').textContent()) === 'Finish') break;
     await short.getByTestId('plan-drill-next').click();
   }
   await tapTwice(page, short.getByTestId('plan-drill-next'), 120);
   await expect(short.getByTestId('plan-drill-result')).toBeVisible();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await short.getByTestId('plan-drill-done').click();
   await expect(short).toHaveCount(0);
 });
@@ -285,11 +285,12 @@ async function playLetterRoundToItsEnd(page: Page, settleMs = SETTLE_MS) {
   const next = drill.getByTestId('letter-next');
   const skip = drill.getByRole('button', { name: 'Skip this one' });
   for (;;) {
-    await page.waitForTimeout(SETTLE_MS + 100);
+    await pageTime(page, SETTLE_MS + 100);
     // a phone that can hear him is asked Say it as the third question (mw-86e9r1.12): it has no answers to tap, so he skips it, which costs him nothing
     let skipped = false;
-    // a tap in a card's settling moment does nothing (src/ui/settle.ts), and on a loaded host the card can mount after the wait above is over: tap again until the answer shows
+    // a tap in a card's settling moment does nothing (src/ui/settle.ts), and on a loaded host the card can mount after the wait above is over: run the page's clock again, then tap, until the answer shows
     await expect(async () => {
+      await pageTime(page, SETTLE_MS + 100);
       if (await skip.count()) {
         await skip.click({ timeout: 2000 }); // a short window: toPass below taps again
         skipped = true;
@@ -312,7 +313,7 @@ test('a double tap on Finish the round leaves the round result of the letter dri
   await expect(drill.getByTestId('letter-round-result')).toBeVisible();
   await expect(drill.getByTestId('letter-drill-step')).toHaveText('Round 1 done');
   // after reading it, Another round starts the next
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await drill.getByRole('button', { name: 'Another round', exact: true }).click();
   await expect(drill.getByTestId('letter-drill-step')).toHaveText(/^Round 2 · Question 1 of \d+$/);
 });
