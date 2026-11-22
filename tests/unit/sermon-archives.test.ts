@@ -54,7 +54,10 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('the catalogue written from his whole
     expect(sermonRows).toHaveLength(61);
     expect(outlineRows).toHaveLength(17);
     const { files } = buildCatalogue(RULES, rows);
-    const taken = files.sermons.entries;
+    // four batch 4 books the export types plain 'text.monograph' are named by id in the rules and join the sermons kind (mw-qtu3zvz.237)
+    const BY_ID = ['LLS:WRKSBURROUGHS01', 'LLS:WRKSBURROUGHS07', 'LLS:BPTSTCVNTTHLGYAX', 'LLS:TEASELEXKUYPROOT'];
+    const taken = files.sermons.entries.filter((e) => !BY_ID.includes(e.resource));
+    expect(files.sermons.entries.filter((e) => BY_ID.includes(e.resource) && e.via === 'id')).toHaveLength(BY_ID.length);
     const notArchives = new Set(['LLS:HWRTNARSRM', 'LLS:TRNSFRMTNLPRCHN', 'LLS:6.60.10', 'LLS:6.60.11', 'LLS:6.60.12', 'LLS:6.60.13', 'LLS:6.60.14']);
     expect(taken).toHaveLength(78 - notArchives.size);
     expect(new Set(taken.map((e) => e.resource))).toEqual(new Set([...sermonRows, ...outlineRows].map((r) => r.resource).filter((r) => !notArchives.has(r))));
@@ -67,10 +70,10 @@ describe.skipIf(!existsSync(VAULT_EXPORT))('the catalogue written from his whole
     }
   });
 
-  it('is what is committed: 71 archives, Greg Laurie’s among them', () => {
-    expect(archives()).toHaveLength(71);
+  it('is what is committed: 75 archives, Greg Laurie’s among them', () => {
+    expect(archives()).toHaveLength(75);
     expect(laurie().title).toBe('Greg Laurie Sermon Archive');
-    expect(CATALOGUE.filter((e) => e.kind === 'sermons')).toHaveLength(71);
+    expect(CATALOGUE.filter((e) => e.kind === 'sermons')).toHaveLength(75);
   });
 });
 

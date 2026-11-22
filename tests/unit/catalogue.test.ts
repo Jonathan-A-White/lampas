@@ -463,7 +463,9 @@ describe('the sermons kind holds sermons, in words a reader can read (mw-qtu3zvz
 
   it('has no sermons entry that opens at a verse with no books it covers, unless a type rule took it as a sermon archive (.107)', () => {
     const bare = sermons.filter((e) => e.opens === 'verse' && (e.covers ?? []).length === 0);
-    expect(bare.filter((e) => e.via !== 'type').map((e) => e.resource)).toEqual([]);
+    // but four batch 4 books the export types plain 'text.monograph', so no type rule can take them, are named by id as sermon books their lists stand for (mw-qtu3zvz.237)
+    const BY_ID = ['LLS:WRKSBURROUGHS01', 'LLS:WRKSBURROUGHS07', 'LLS:BPTSTCVNTTHLGYAX', 'LLS:TEASELEXKUYPROOT'];
+    expect(bare.filter((e) => e.via !== 'type').map((e) => e.resource)).toEqual(BY_ID);
     // a volume of a work a Father preached through, passage by passage, is not an archive indexed by passage
     expect(bare.filter((e) => e.series === 'Early Church Fathers (Protestant Edition)').map((e) => e.resource)).toEqual([]);
   });
