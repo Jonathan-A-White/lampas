@@ -7,7 +7,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type ReactNode } from 'react';
 import { DEFAULT_BACKUP, MORNING_REPHIL_ID, RANDOM, canDrawAnother, tickedDevotionals } from '../data/daily/devotionals';
-import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, markSeen, noteExplained, pickAnotherDevotional, pinEpisode } from '../data/daily/dailyStore';
+import { clearHeard, getDay, getExplained, getHeard, localDate, markHeard, markOpened, markSeen, noteExplained, pickAnotherDevotional, pinEpisode, unmarkSeen, type SeenBefore } from '../data/daily/dailyStore';
 import { DEFAULT_ORDER, anotherEpisode, devotionalToday, episodeDate, hasUnheard, type Episode, type EpisodeOrder, type TodaysDevotional } from '../data/daily/morningRephil';
 import { dailyReadings, heldInLampas } from '../data/daily/psalmsProverbs';
 import { dayProgress, getLogosBibles, markChapterRead, ownedResources, unmarkChaptersRead } from '../data/repositories';
@@ -322,19 +322,51 @@ function PsalmsPiece({ ticks, today }: { ticks: Ticks; today: Date }) {
   );
 }
 
+/** Start again clears EVERY Seen mark, so one tap asks first (mw-r9xo1pj.10): 'Forget all your Seen marks?' with Forget them and Cancel; nothing is cleared until Forget them. */
+function StartAgain({ date, label, className }: { date: string; label: string; className: string }) {
+  const [asking, setAsking] = useState(false);
+  if (!asking) {
+    return (
+      <button type="button" onClick={() => oneTap('rephil-again', () => setAsking(true))} className={className}>
+        {label}
+      </button>
+    );
+  }
+  return (
+    <div role="group" aria-label="Start again" className="flex flex-col gap-1 self-start">
+      <span className="px-1 text-base font-medium">Forget all your Seen marks?</span>
+      <div className="flex gap-2">
+        <button type="button" onClick={() => oneTap('rephil-forget', () => { setAsking(false); void clearHeard(date); })} className={ACTION}>
+          Forget them
+        </button>
+        <button type="button" onClick={() => oneTap('rephil-cancel', () => setAsking(false))} className={ACTION}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** What Seen did, for a few seconds: Undo takes the episode back (mw-r9xo1pj.10). */
+const UNDO_MS = 8000;
+interface SeenUndo {
+  date: string;
+  id: string;
+  title: string;
+  before: SeenBefore;
+}
+
 /** Morning RePhil's episode for the day (mw-qtu3zvz.15): its title (the number the church prints), its date and a Watch link to the Subsplash share link, which opens on Android, iPhone and a desktop
  *  browser alike; playing it keeps it heard on this device (never offered again), and Seen does the same without playing, so Today moves on to the next episode (mw-r9xo1pj.2). With every episode seen
  *  and no backup to open (Logos Off) it says so and offers to start again. */
-function RephilEpisode({ ticks, episode, heard, choice, order }: { ticks: Ticks; episode: Episode | undefined; heard: ReadonlySet<string>; choice: string; order: EpisodeOrder }) {
+function RephilEpisode({ ticks, episode, heard, choice, order, onSeen }: { ticks: Ticks; episode: Episode | undefined; heard: ReadonlySet<string>; choice: string; order: EpisodeOrder; onSeen: (undo: SeenUndo) => void }) {
   if (!episode) {
     return (
       <Piece id="devotional" label="Morning RePhil" ticks={ticks}>
         <div className="flex min-w-0 flex-1 flex-col justify-center px-3 py-2">
           <span className="text-lg font-medium">Morning RePhil</span>
           <span className="text-base text-muted">You&apos;ve heard every Morning RePhil in this version of Lampas; new ones come with an update.</span>
-          <button type="button" onClick={() => oneTap('rephil-again', () => void clearHeard(ticks.date))} className={`${ACTION} mt-1 self-start`}>
-            Start again from the top
-          </button>
+          <StartAgain date={ticks.date} label="Start again from the top" className={`${ACTION} mt-1 self-start`} />
         </div>
       </Piece>
     );
@@ -356,7 +388,7 @@ function RephilEpisode({ ticks, episode, heard, choice, order }: { ticks: Ticks;
         <span className="text-sm text-muted">{`Watch · ${episodeDate(episode.date)}`}</span>
       </a>
       <div className="flex gap-2 px-2 pb-1">
-        <button type="button" onClick={() => oneTap('rephil-seen', () => void markSeen(ticks.date, episode.id))} className={ACTION}>
+        <button type="button" onClick={() => oneTap('rephil-seen', () => void markSeen(ticks.date, episode.id).then((before) => onSeen({ date: ticks.date, id: episode.id, title: episode.title, before })))} className={ACTION}>
           Seen
         </button>
         {other ? (
@@ -374,7 +406,21 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
   const draw = useSetting(devotionalDrawSetting);
   const order = useSetting(morningRephilOrderSetting) ?? DEFAULT_ORDER;
   const sources = useDrawSources();
+  const [undo, setUndo] = useState<SeenUndo | undefined>(undefined);
+  useEffect(() => {
+    if (!undo) return undefined;
+    const timer = setTimeout(() => setUndo(undefined), UNDO_MS);
+    return () => clearTimeout(timer);
+  }, [undo]);
   if (choice === undefined || draw === undefined || sources === undefined) return null;
+  const undoRow = undo ? (
+    <li className="flex items-center gap-2 px-3 py-1">
+      <span className="min-w-0 flex-1 text-base text-muted">{`Seen: ${undo.title}`}</span>
+      <button type="button" onClick={() => oneTap('rephil-undo', () => { setUndo(undefined); void unmarkSeen(undo.date, undo.id, undo.before); })} className={ACTION}>
+        Undo
+      </button>
+    </li>
+  ) : null;
   const ticked = tickedDevotionals(draw);
   const rephil = hasUnheard(heard);
   const { devotional } = shown;
@@ -385,7 +431,8 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
       <section aria-label="Devotional">
         <h2 className={HEADING}>Devotional</h2>
         <List>
-          <RephilEpisode ticks={ticks} episode={shown.episode} heard={heard} choice={choice} order={order} />
+          <RephilEpisode ticks={ticks} episode={shown.episode} heard={heard} choice={choice} order={order} onSeen={setUndo} />
+          {undoRow}
           {choice === RANDOM && another ? (
             <li className="px-2 pb-1">
               <button type="button" aria-label="Another devotional" onClick={() => oneTap('devotional-another', () => void pickAnotherDevotional(ticks.date, devotional.id, ticked, undefined, rephil, sources))} className={ACTION}>
@@ -415,12 +462,11 @@ function DevotionalPiece({ ticks, today, heard, shown }: { ticks: Ticks; today: 
           ) : null}
           {shown.backup ? (
             <div className="px-2 pb-1">
-              <button type="button" onClick={() => oneTap('rephil-again', () => void clearHeard(ticks.date))} className={ACTION}>
-                Start Morning RePhil again
-              </button>
+              <StartAgain date={ticks.date} label="Start Morning RePhil again" className={ACTION} />
             </div>
           ) : null}
         </Piece>
+        {undoRow}
       </List>
     </section>
   );

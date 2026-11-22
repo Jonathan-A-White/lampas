@@ -117,11 +117,33 @@ export function markHeard(date: string, id: string): Promise<void> {
 
 /** Seen: keeps that he has seen episode `id` without playing it, in the same heard set a play uses. Unlike a play it lets the day's own episode go, so Today moves on to the next unseen one
  *  (it keeps Morning RePhil as the day's devotional, so Random does not jump to another under his thumb). Nothing leaves the device: the set is this phone's own (mw-r9xo1pj.2). */
-export function markSeen(date: string, id: string): Promise<void> {
+export function markSeen(date: string, id: string): Promise<SeenBefore> {
   return db.transaction('rw', db.settings, async () => {
     const heard = heardIds((await db.settings.get(HEARD_KEY))?.value);
-    if (!heard.includes(id)) await db.settings.put({ key: HEARD_KEY, value: JSON.stringify([...heard, id]) });
+    const before: SeenBefore = { wasHeard: heard.includes(id), ...pick(await getDay(date)) };
+    if (!before.wasHeard) await db.settings.put({ key: HEARD_KEY, value: JSON.stringify([...heard, id]) });
     await update(date, (day) => ({ ticked: day.ticked, opened: day.opened, devotional: MORNING_REPHIL_ID }));
+    return before;
+  });
+}
+
+/** What Seen found, so Undo can put it back: whether the episode was already heard, and the day's own episode and devotional before Seen let them go. */
+export interface SeenBefore {
+  wasHeard: boolean;
+  rephil?: string;
+  devotional?: string;
+}
+
+const pick = (day: DayRecord): { rephil?: string; devotional?: string } => ({ ...(day.rephil === undefined ? {} : { rephil: day.rephil }), ...(day.devotional === undefined ? {} : { devotional: day.devotional }) });
+
+/** Undo of Seen: takes `id` out of the heard set (unless it was heard before Seen) and gives `date` back the episode and devotional it had, so Today shows `id` again. */
+export function unmarkSeen(date: string, id: string, before: SeenBefore): Promise<void> {
+  return db.transaction('rw', db.settings, async () => {
+    if (!before.wasHeard) {
+      const heard = heardIds((await db.settings.get(HEARD_KEY))?.value);
+      await db.settings.put({ key: HEARD_KEY, value: JSON.stringify(heard.filter((h) => h !== id)) });
+    }
+    await update(date, (day) => ({ ticked: day.ticked, opened: day.opened, ...(before.rephil === undefined ? {} : { rephil: before.rephil }), ...(before.devotional === undefined ? {} : { devotional: before.devotional }) }));
   });
 }
 
