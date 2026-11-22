@@ -8,7 +8,7 @@
   "then": { "required": ["quiz_goal_state"], "properties": { "quiz_goal_state": { "const": "none" } } },
   "properties": {
     "answer": {
-      "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible.",
+      "description": "The reply to what he said, in short plain English; or the one-sentence refusal for anything outside the Bible. Asked to play a sermon by title whose row has no `plays`: say it is not played in the app and link it; `do` nothing, never play another row in its place.",
       "type": "string",
       "minLength": 1,
       "maxLength": 1500
