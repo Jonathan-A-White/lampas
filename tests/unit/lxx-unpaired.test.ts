@@ -1,6 +1,6 @@
 // tests/unit/lxx-unpaired.test.ts — `npm run lxx:unpaired` (scripts/lxx/unpaired.ts, story mw-u2w5klk.349.1; docs/lxx-align.md 'The unpaired English'): the English content words of Brenton's Septuagint
 // that sit in a remainder chunk (y 'align?') or in a chunk with no Greek word, counted per chapter and book; English the model pass settled as rendering no Greek is counted apart. Here: the function-word
-// filter, the counting on a fixture verse with a known remainder, the table, the arguments, and (where the git-ignored sources are on the disk, as in lxx-align-choose.test.ts) the real Genesis 1 to 42.
+// filter, the counting on a fixture verse with a known remainder, the table, the arguments, and (where the git-ignored sources are on the disk, as in lxx-align-choose.test.ts) the real Genesis 1 to 45.
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -101,7 +101,7 @@ describe('the arguments', () => {
   });
 });
 
-describe.skipIf(!real.run)('the real Genesis 1 to 42', () => {
+describe.skipIf(!real.run)('the real Genesis 1 to 45', () => {
   const dirs: string[] = [];
   let rows: UnpairedRow[] = [];
   beforeAll(async () => {
@@ -120,18 +120,18 @@ describe.skipIf(!real.run)('the real Genesis 1 to 42', () => {
     for (const r of first) expect(r.content, `Gen ${r.chapter}`).toBeGreaterThan(0);
   });
 
-  it('reports the gaps of a chapter no model session has reached (Genesis 43) without failing, and none in Genesis 12 to 42, whose words the model settled as rendering no Greek', () => {
-    const fortyThree = rows.find((r) => r.code === 'gen' && r.chapter === 43);
-    expect(fortyThree?.gaps).toBeGreaterThan(0);
-    expect(fortyThree?.model).toBe(0);
-    // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3), Genesis 14 (mw-u2w5klk.349.23), Genesis 20 (mw-u2w5klk.349.2) and Genesis 24 to 29 (mw-u2w5klk.349.4) and Genesis 30 to 36 (mw-u2w5klk.349.5) and Genesis 37 to 39 (mw-u2w5klk.349.47) and Genesis 40 to 42 (mw-u2w5klk.349.48): 0 gaps, and the content words settled as rendering no Greek, each named in lxx-align-choose.test.ts (Genesis 24 to 29 hold 168 after the fix rows of mw-u2w5klk.349.33, 187 before)
-    const done = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42];
+  it('reports the gaps of a chapter no model session has reached (Genesis 46) without failing, and none in Genesis 12 to 45, whose words the model settled as rendering no Greek', () => {
+    const fortySix = rows.find((r) => r.code === 'gen' && r.chapter === 46);
+    expect(fortySix?.gaps).toBeGreaterThan(0);
+    expect(fortySix?.model).toBe(0);
+    // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3), Genesis 14 (mw-u2w5klk.349.23), Genesis 20 (mw-u2w5klk.349.2) and Genesis 24 to 29 (mw-u2w5klk.349.4) and Genesis 30 to 36 (mw-u2w5klk.349.5) and Genesis 37 to 39 (mw-u2w5klk.349.47) and Genesis 40 to 42 (mw-u2w5klk.349.48) and Genesis 43 to 45 (mw-u2w5klk.349.49): 0 gaps, and the content words settled as rendering no Greek, each named in lxx-align-choose.test.ts (Genesis 24 to 29 hold 168 after the fix rows of mw-u2w5klk.349.33, 187 before)
+    const done = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45];
     const got = done.map((n) => rows.find((r) => r.code === 'gen' && r.chapter === n));
     expect(got.map((r) => r?.gaps)).toEqual(done.map(() => 0));
-    expect(got.map((r) => r?.model)).toEqual(MODEL_NO_GREEK_GEN_12_TO_42);
+    expect(got.map((r) => r?.model)).toEqual(MODEL_NO_GREEK_GEN_12_TO_45);
   });
 });
 
 const MODEL_NO_GREEK_GEN_1_TO_11 = [11, 9, 13, 17, 33, 18, 23, 40, 12, 6, 31];
-/** Genesis 12 to 42. Genesis 40, 41 and 42 (mw-u2w5klk.349.48) read 0, 5 and 1. Genesis 37, 38 and 39 (mw-u2w5klk.349.47) read 16, 2 and 1. Genesis 12, 13, 16, 17, 18 and 22 fell (15, 15, 6, 20, 23, 41 before) when mw-u2w5klk.349.32 gave 58 of the English words a Greek word; Genesis 14 fell (24 before) to 3 when mw-u2w5klk.349.46 gave 21 of its English words a Greek word; Genesis 24, 25, 26, 27 and 29 fell (79, 23, 17, 32, 27 before) when mw-u2w5klk.349.33 moved 33 low-confidence pairs. */
-const MODEL_NO_GREEK_GEN_12_TO_42 = [8, 11, 3, 10, 3, 8, 11, 30, 15, 18, 23, 11, 69, 20, 14, 30, 9, 26, 30, 47, 16, 17, 20, 28, 9, 16, 2, 1, 0, 5, 1];
+/** Genesis 12 to 45. Genesis 43, 44 and 45 (mw-u2w5klk.349.49) read 4, 4 and 7. Genesis 40, 41 and 42 (mw-u2w5klk.349.48) read 0, 5 and 1. Genesis 37, 38 and 39 (mw-u2w5klk.349.47) read 16, 2 and 1. Genesis 12, 13, 16, 17, 18 and 22 fell (15, 15, 6, 20, 23, 41 before) when mw-u2w5klk.349.32 gave 58 of the English words a Greek word; Genesis 14 fell (24 before) to 3 when mw-u2w5klk.349.46 gave 21 of its English words a Greek word; Genesis 24, 25, 26, 27 and 29 fell (79, 23, 17, 32, 27 before) when mw-u2w5klk.349.33 moved 33 low-confidence pairs. */
+const MODEL_NO_GREEK_GEN_12_TO_45 = [8, 11, 3, 10, 3, 8, 11, 30, 15, 18, 23, 11, 69, 20, 14, 30, 9, 26, 30, 47, 16, 17, 20, 28, 9, 16, 2, 1, 0, 5, 1, 4, 4, 7];
