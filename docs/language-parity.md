@@ -44,7 +44,7 @@ The table names, for each use case and language, the feature files with a scenar
 | `hear-word` | Hearing a word: a tap or long press says it in its language, the one-letter words, no voice says so | greek-audio, hear-any-word, long-press-speak, one-letter-greek-voice, septuagint, word-tip | hebrew-reader, hebrew-speech, hebrew-word-sheet, hebrew-words | gap |
 | `links` | Links into the app at a word or a verse of the language (#/?word=G..., #/?word=H...) | links | hebrew-word-sheet | gap |
 | `verse-view` | The Verse view of a verse or passage in the source language, with its actions | hebrew-verse-view, passage-view, verse-sheet, verse-view | hebrew-verse-view | gap |
-| `sermons` | The Sermons door on the Verse view: the sermons preached on the verse, passage or chapter, each a link out | sermons-ask, sermons-online, sermons, themes | sermons | gap |
+| `sermons` | The Sermons door on the Verse view: the sermons preached on the verse, passage or chapter, each a link out | sermons-ask, sermons-online, sermons-play, sermons, themes | sermons | gap |
 | `listen` | Hearing a verse: Listen in the Verse view says the verse in its voice | listen | hebrew-verse-view | gap |
 | `read-aloud` | Read aloud what is shown (Read from the top, a verse, the weave in each piece’s language) with the one speaking bar | hands-free-commands, hands-free-loop, read-aloud-anywhere, read-aloud, read-span, speaking-bar, speaking-interruptions | hebrew-reader | gap |
 | `hands-free-audible` | Hands-free: 'read John 3 in Audible' opens his audio Bible in Audible at the chapter (plain 'read John 3' is the voice inside Lampas) | hands-free-audible | n/a: the audio Bible in Audible (The Word of Promise, NKJV) is English; it has no Hebrew or Greek reading to open | gap |
