@@ -3,9 +3,10 @@
 // mw-u2w5klk.349 is one story a book, filed by hand; Judges shipped with none and was found only by his tap. data/lxx/pairing-status.json names
 // each shipped book `paired` or `pending: <bead id>[, <bead id>]`; this test fails, naming the book, when a shipped book is in neither state.
 // A book is shipped the way the ship reads it (scripts/lxx/ship.ts): it has a choices file, data/lxx/choices/<book>-*.tsv; the books of
-// docs/lxx-align.md's 'Each chapter shipped' table (the ship's own record) are read too.
+// the books of docs/lxx-align/ (one file a book, the ship's own record, mw-u2w5klk.349.73) are read too.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { ALIGN_REPORT_DIR } from '../../scripts/lxx/align';
 import { CHOICES_DIR } from '../../scripts/lxx/release';
 import { OLD_TESTAMENT } from '../../scripts/lxx/report';
 
@@ -19,10 +20,9 @@ export function shippedBooks(): string[] {
     const m = /^([a-z0-9]+)-.*\.tsv$/.exec(f);
     if (m) codes.add(m[1]);
   }
-  const alignDoc = readFileSync('docs/lxx-align.md', 'utf8');
-  const table = alignDoc.slice(alignDoc.indexOf('### Each chapter shipped'));
-  for (const [code, name] of OLD_TESTAMENT) {
-    if (new RegExp(`^\\| ${name} \\d+ \\|`, 'm').test(table)) codes.add(code.toLowerCase());
+  for (const f of readdirSync(ALIGN_REPORT_DIR)) {
+    const m = /^([a-z0-9]+)\.txt$/.exec(f);
+    if (m) codes.add(m[1]);
   }
   return [...codes].sort();
 }

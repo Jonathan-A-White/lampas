@@ -8,8 +8,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Chapter, EnglishChunk, GreekWord, Verse } from '../../src/data/chapter';
 import { weaveVerse } from '../../src/data/weave';
 import { septuagintChunkLinked } from '../../src/reader/septuagint';
-import { alignChapter, alignRuns, alignVerse, lettersOf, renderAlignReport, SUPPLIED_FOR_VERB, type AlignShare } from '../../scripts/lxx/align';
-import { contentWordsOf } from '../../scripts/lxx/unpaired';
+import { alignChapter, alignReportFile, alignRuns, alignVerse, lettersOf, renderAlignReport, renderBookReport, SUPPLIED_FOR_VERB, type AlignShare } from '../../scripts/lxx/align';
+import { recordedWithout, withoutList } from '../../scripts/lxx/morpheus';
+import { alignFileChapters, checkFiles, checkLeftovers, expectBooks, expectCommand, measureShipped, readExpect } from '../../scripts/lxx/align-expect';
 import {
   ALIGN_CHOICES_DIR,
   AlignChooseRefused,
@@ -27,7 +28,7 @@ import {
   parseAlignChooseArgs,
   runAlignChoose,
 } from '../../scripts/lxx/align-choose';
-import { runShip } from '../../scripts/lxx/ship';
+import { runShip, type Shipped } from '../../scripts/lxx/ship';
 import { lxxRealData } from '../support/lxx-real-data';
 import { HOOK_TIMEOUT_MS } from '../support/timeouts';
 
@@ -372,16 +373,18 @@ describe('a fix row moves a Greek word the aligner paired to the wrong English w
   });
 });
 
-// the real Genesis 1 to 45 (the chapters the model pass has been run for): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
+// the real Genesis with the model pass (the chapters that have a file in data/lxx/align): when the pinned sources and the Morpheus cache are on the disk, here or in the Laptop's checkout, and the work touches what they check (tests/support/lxx-real-data.ts);
 // the gate's log says in one line when it is skipped and why. Sources found elsewhere than the cwd are given to runShip, so no symlink is needed.
-// Genesis 20 is his own report (2026-11-10, mw-u2w5klk.349.2: a tap on 'removed' in Genesis 20:1 opened the Verse view); the chapters of the model pass are listed here, and a chapter is added when its file is
-// Genesis 12 to 19 and 21 to 23 are the pass of mw-u2w5klk.349.3 (Genesis 14 was left, and is the pass of mw-u2w5klk.349.23); Genesis 24 to 29 are that of mw-u2w5klk.349.4, Genesis 30 to 36 that of mw-u2w5klk.349.5, Genesis 37 to 39 that of mw-u2w5klk.349.47, Genesis 40 to 42 that of mw-u2w5klk.349.48, Genesis 43 to 45 that of mw-u2w5klk.349.49.
-const MODELLED = [...Array.from({ length: 11 }, (_, i) => i + 1), 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45];
-describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
+// Genesis 20 is his own report (2026-11-10, mw-u2w5klk.349.2: a tap on 'removed' in Genesis 20:1 opened the Verse view). The chapters of the model pass are the files of data/lxx/align, so a pass adds no line here; what a pass
+// adds by hand is the reasons of data/lxx/align/<book>.expect.json (npm run lxx:align-expect, docs/lxx-align.md 'A pairing pass').
+const MODELLED = alignFileChapters('gen');
+describe.skipIf(!haveSources)('Genesis with the model pass', () => {
   const dirs: string[] = [];
   let withModel: Map<number, Chapter>;
   let base: Map<number, Chapter>;
   let stale: string[] = [];
+  let shipped: Shipped;
+  let shippedDir = '';
   const read = (dir: string): Map<number, Chapter> => {
     const out = new Map<number, Chapter>();
     for (const n of MODELLED) out.set(n, JSON.parse(readFileSync(join(dir, 'gen', `${n}.json`), 'utf8')) as Chapter);
@@ -393,17 +396,52 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     dirs.push(a, b);
     const log: string[] = [];
     await runShip(['--out', a], { ...sources, alignDir: '', log: () => undefined });
-    await runShip(['--out', b], { ...sources, log: (l) => log.push(l) });
+    shipped = await runShip(['--out', b], { ...sources, log: (l) => log.push(l) });
+    shippedDir = b;
     base = read(a);
     withModel = read(b);
     stale = log.filter((l) => /model pass/.test(l) && /stale|kept/.test(l));
   }, 10 * HOOK_TIMEOUT_MS);
   afterAll(() => dirs.forEach((d) => rmSync(d, { recursive: true, force: true })), HOOK_TIMEOUT_MS);
 
-  it('has a model file for each of Genesis 1 to 45, and none of its runs is stale', () => {
-    const files = readdirSync(ALIGN_CHOICES_DIR).filter((f) => f.startsWith('gen-'));
-    expect(files).toEqual(MODELLED.map((n) => alignChoicesName('gen', n)));
+  it('has a model file for each chapter its sidecar names (and the sidecar names no other), and none of its runs is stale', () => {
+    const problems = expectBooks().flatMap((code) => checkFiles(code, readExpect(code)!, alignFileChapters(code)));
+    expect(problems).toEqual([]);
+    expect(readdirSync(ALIGN_CHOICES_DIR).filter((f) => f.startsWith('gen-') && f.endsWith('.tsv'))).toEqual(MODELLED.map((n) => alignChoicesName('gen', n)));
+    expect(MODELLED.length).toBeGreaterThan(0);
     expect(stale).toEqual([]);
+  });
+
+  // The English content words that have no Greek word after the pass (mw-u2w5klk.349.2 and each pass since): each is named in the sidecar of its book with why (a key of its "reasons", or a sentence): the Greek word
+  // that renders it is a pair the aligner made to another English word (the model re-chooses remainders, not pairs), or Brenton has no Greek word for it, or adds it. A tap on one opens the Verse view, never a wrong
+  // word (septuagintChunkLinked). Every other unpaired chunk of a chapter is made of function words. A stale sidecar fails in one line that names the command (scripts/lxx/align-expect.ts checkLeftovers).
+  it('leaves in each chapter no English content word without a Greek word but those its sidecar names, each with why', () => {
+    const problems = expectBooks().flatMap((code) => {
+      const expect = readExpect(code)!;
+      const chapters = Object.entries(expect.chapters).filter(([, c]) => c.leftovers !== undefined).map(([n]) => Number(n));
+      const measured = measureShipped(shippedDir, code, chapters, (n) => expect.chapters[String(n)]?.also ?? []);
+      return checkLeftovers(code, expect, measured);
+    });
+    expect(problems).toEqual([]);
+  });
+
+  it('has the file of each book it ships under docs/lxx-align, and each is what the ship gives (for the books whose Morpheus cache here is the one the file was written with)', () => {
+    const problems: string[] = [];
+    for (const { code } of shipped.books) {
+      const file = alignReportFile(code);
+      const mine = shipped.aligned.filter((s) => s.code === code);
+      if (mine.length === 0) continue;
+      const without = shipped.withoutMorpheus.includes(code);
+      if (!existsSync(file)) {
+        problems.push(`${file} does not exist: run \`${expectCommand(code)}\``);
+        continue;
+      }
+      const text = readFileSync(file, 'utf8');
+      // which chapters ship depends on the books' Morpheus caches, and the file says which it was written without; a host with another answer cannot judge it (npm run lxx:align refuses it too)
+      if (recordedWithout(text) !== withoutList(without ? [code] : [])) continue;
+      if (text !== renderBookReport(mine, without)) problems.push(`${file} is stale: run \`${expectCommand(code)}\``);
+    }
+    expect(problems).toEqual([]);
   });
 
   it('re-chooses every remainder: no chunk is left y "align?", every model chunk has c and its Greek positions are real, free and used once', () => {
@@ -464,73 +502,6 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     expect(verse.e.filter((c) => !septuagintChunkLinked(c)).map((c) => c.t)).toEqual(['the']);
   });
 
-  // The English content words Genesis 20 has no Greek word for after the pass (mw-u2w5klk.349.2), each named with why: the Greek word that renders it is a pair the aligner made to another English
-  // word (the model re-chooses remainders, not pairs), or Brenton has no Greek word for it. A tap on one opens the Verse view, never a wrong word (septuagintChunkLinked). Every other unpaired chunk of the
-  // chapter is made of function words (articles, prepositions, the pronouns and auxiliaries Brenton supplies).
-  const FUNCTION_WORDS = new Set(
-    'a against an and are at be by for from had has have he her him his i in into is it me my not of on or she shall should so that the their them there they those to us was we which will with you your'.split(' '),
-  );
-  const UNPAIRED_CONTENT: Record<string, string> = {
-    '2:sake.': "'for her sake' (δι᾽ αὐτήν): both Greek words are the aligner's, paired to 'for' and 'her'",
-    '4:sinning': "'ignorantly sinning': ἀγνοοῦν is the aligner's, paired to 'ignorantly'",
-    '6:Yes,': "Brenton's 'Yes, I knew' has no Greek word for 'Yes'",
-    '8:morning,': "'early in the morning' (τὸ πρωί): πρωί is the aligner's, paired to 'early'; the article is all that is left",
-    '9:ought': "'which no one ought to do': the aligner paired 'no one' with μή τι, and οὐδεὶς has no English left to take it",
-    '11:Why': "Brenton's 'Why' has no Greek word",
-    '11:worship': "'the worship of God': θεοσέβεια is the aligner's, paired to 'God'",
-    '13:came': "'it came to pass' renders ἐγένετο, the aligner's, paired to 'to'",
-    '13:pass': "'it came to pass' renders ἐγένετο, the aligner's, paired to 'to'",
-    '13:forth': "'brought forth' renders ἐξήγαγεν, the aligner's, paired to 'brought'",
-    '16:countenance,': "'the price of your countenance': the aligner paired 'price' with προσώπου, and τιμήν has no English left",
-    '16:women': "'to all the women': ταῖς is the aligner's, paired to 'the'",
-    '16:speak': "'speak the truth' renders ἀλήθευσον, the aligner's, paired to 'truth'",
-    '16:things.': "'in all things' renders πάντα, the aligner's, paired to 'all'",
-    '17:wife,': "'his wife' renders γυναῖκα, the aligner's, paired to 'women'",
-    '17:children.': "'they bore children' renders ἔτεκον, the aligner's, paired to 'bore'",
-  };
-  const unpaired = (chapter: Chapter): string[] =>
-    chapter.verses.flatMap((v) => v.e.filter((c) => !septuagintChunkLinked(c)).flatMap((c) => c.t.split(/\s+/).filter((w) => !FUNCTION_WORDS.has(lettersOf(w))).map((w) => `${v.n}:${w}`)));
-
-  it('leaves in Genesis 20 no English content word without a Greek word but those named, each with why', () => {
-    expect(unpaired(withModel.get(20)!).sort()).toEqual(Object.keys(UNPAIRED_CONTENT).sort());
-  });
-
-  // Genesis 12 to 19 and 21 to 23 (mw-u2w5klk.349.3): the English content words (`contentWordsOf`, scripts/lxx/unpaired.ts) that sit in a chunk with no Greek word after the pass, 189 of 2,560 (607 had none
-  // before it, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.32 gave a Greek word to 58 of the 189, a Greek word paired to its neighbour's English, and two went to a name of their own (12:11 'came', 17:19 'God'), so 133 are left), keyed chapter:verse:word and read by hand from `--list`. Each is in one of three lists, with why. A tap on one opens the Verse view, never a wrong word.
-  // 'it came to pass' renders ἐγένετο (Hebrew's 'and it was'), which the aligner paired to one English word; the model re-chooses remainders, not pairs, so the others have no Greek word left.
-  const IDIOM_NO_GREEK = [
-    '12:11:came', '12:11:pass', '12:12:pass', '12:14:came', '12:14:pass', '19:17:came', '19:17:pass', '19:29:came', '19:34:came', '19:34:pass', '21:22:came', '22:1:came',
-    '22:1:pass', '22:20:came', '22:20:pass',
-  ];
-  // LXX2012 carries English of the next Greek verse in these two (Genesis 13:11 'And Abram lived in the land of Chanaan' is Swete's 13:12; Genesis 22:15 runs into 22:16): the Greek words are in the other verse.
-  const NEXT_VERSE_NO_GREEK = [
-    '13:11:abram', '13:11:lived', '13:11:land', '13:11:chanaan', '22:15:saying', '22:15:sworn', '22:15:says', '22:15:lord', '22:15:because',
-    '22:15:thing', '22:15:account', '22:15:spared', '22:15:beloved', '22:15:son',
-  ];
-  // Either the Greek word that renders it is a pair the aligner made to another English word that no fix row (`fix` rows of data/lxx/align, applyFixes) has yet moved ('God' for αἰώνιον in 17:19, paired to the
-  // word before it: the Greek has no 'God' there), or Brenton's English adds it to turn a Greek phrase into English ('forth', 'aside', 'early', 'fine', 'aloud', 'only', 'still', 'drink', 'journey').
-  const PAIRED_OR_ADDED_NO_GREEK = [
-    '12:1:come', '12:12:come', '12:20:forward', '13:3:place', '13:6:land', '13:7:cattle', '13:9:go', '13:9:go', '13:9:go', '13:9:go', '15:1:great', '15:2:heir', '15:3:grieved',
-    '15:3:homeborn', '15:5:look', '15:5:fully', '15:9:third', '15:9:third', '15:13:four', '15:17:divided', '16:1:children', '16:13:god', '16:13:appeared', '17:7:god', '17:12:old',
-    '17:12:born', '17:12:money', '17:13:money', '17:17:old', '17:17:bear', '17:19:god', '18:5:refreshment', '18:5:aside', '18:12:thing', '18:16:journey', '18:17:intend',
-    '18:22:still', '18:24:whole', '18:26:whole', '18:30:sake', '18:31:able', '18:31:find', '19:2:aside', '19:2:early', '19:2:journey', '19:3:aside', '19:3:cakes', '19:4:went',
-    '19:6:porch', '19:7:villanously', '19:9:drew', '19:10:forth', '19:13:going', '19:14:depart', '19:15:forth', '19:15:destroyed', '19:17:round', '19:20:one', '19:27:go',
-    '19:28:went', '19:32:drink', '19:33:drink', '19:33:knew', '19:34:drink', '19:35:drink', '19:35:knew', '19:38:saying', '21:2:old', '21:2:set', '21:2:according', '21:5:one',
-    '21:5:old', '21:5:born', '21:6:rejoice', '21:13:nation', '21:16:surely', '21:16:aloud', '21:19:drink', '21:22:host', '21:22:things', '21:22:whatever', '21:25:because',
-    '21:26:tell', '21:26:only', '22:2:one', '22:9:feet', '22:9:together', '22:12:sake', '22:18:earth', '22:21:chazad', '22:22:bathuel', '22:22:begot', '22:22:rebecca', '23:1:one',
-    '23:5:sir', '23:13:side', '23:15:land', '23:15:worth', '23:15:nay', '23:16:four', '23:17:borders', '23:17:round', '23:17:made', '23:17:sure',
-  ];
-  const noGreek = (chapter: Chapter): string[] =>
-    chapter.verses.flatMap((v) => v.e.filter((c) => !septuagintChunkLinked(c)).flatMap((c) => contentWordsOf(c.t).map((w) => `${chapter.chapter}:${v.n}:${w}`)));
-
-  it('leaves in Genesis 12 to 19 and 21 to 23 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
-    const named = [...IDIOM_NO_GREEK, ...NEXT_VERSE_NO_GREEK, ...PAIRED_OR_ADDED_NO_GREEK].sort();
-    const found = [12, 13, 15, 16, 17, 18, 19, 21, 22, 23].flatMap((n) => noGreek(withModel.get(n)!)).sort();
-    expect(found).toEqual(named);
-    expect(named).toHaveLength(133);
-    for (const n of [12, 13, 15, 16, 17, 18, 19, 21, 22, 23]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
-  });
-
   it('pairs a content word of each kind (Genesis 12:6 traversed, 15:6 believed, 17:17 fell, 19:1 rose, 22:3 arose) to a Greek word the Reader links', () => {
     const chunkOf = (n: number, v: number, text: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(text))!;
     for (const [n, v, text] of [[12, 6, 'traversed'], [15, 6, 'believed'], [17, 17, 'fell'], [19, 1, 'rose'], [22, 3, 'arose']] as const) {
@@ -580,46 +551,6 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     }
   });
 
-  // Genesis 24 to 29 (mw-u2w5klk.349.4): the English content words that sit in a chunk with no Greek word after the pass, 168 of 2,535 (566 had none before it; 187 after it, 19 fewer after the fix rows of mw-u2w5klk.349.33, read with `npm run lxx:unpaired -- --book gen`),
-  // keyed chapter:verse:word and read by hand from `--list`, each in one of three lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs are not touched, so the first and third
-  // lists are the same kind as those of Genesis 12 to 23 above: 'it came to pass' renders ἐγένετο (paired to one English word), and the Greek word of the rest is a pair the aligner made to another English word
-  // ('master' for Κύριος, 'draw' for ὑδρεύσατο) or English Brenton adds to make a Greek phrase English ('instead', 'just', 'hither', 'forth', 'away').
-  const IDIOM_NO_GREEK_24_TO_29 = [
-    '24:22:came', '24:22:pass', '24:30:came', '24:30:pass', '24:45:came', '24:45:pass', '24:52:came', '24:52:pass', '25:11:came',
-    '25:11:pass', '26:32:came', '26:32:pass', '27:1:came', '27:1:pass', '27:30:came', '27:30:pass', '27:30:came', '27:30:pass', '27:34:came', '27:34:pass', '29:10:came',
-    '29:10:pass', '29:13:came', '29:13:pass',
-  ];
-  // Brenton's English of these verses carries a clause whose Greek word is in the verse before or after (Genesis 24:18 'till', 24:27 'and said', 25:20 'Abraam begot Isaac', 27:44 'until your brother's anger')
-  // or that the Greek verse does not have (27:38 'being troubled, Esau cried aloud and wept', 29:20 'and they were before him as a few days, by reason of his loving her').
-  const OTHER_VERSE_NO_GREEK_24_TO_29 = [
-    '24:18:till', '24:18:ceased', '24:18:drinking', '24:27:said', '25:20:abraam', '25:20:begot', '25:20:isaac', '27:38:troubled', '27:38:esau', '27:38:cried',
-    '27:38:aloud', '27:38:wept', '27:44:until', '27:44:brother', '27:44:anger', '29:20:few', '29:20:days', '29:20:reason', '29:20:loving',
-  ];
-  const PAIRED_OR_ADDED_NO_GREEK_24_TO_29 = [
-    '24:1:things', '24:3:god', '24:4:thence', '24:5:came', '24:6:back', '24:7:sprang', '24:7:thence', '24:8:again', '24:10:took',
-    '24:11:draw', '24:12:way', '24:14:give', '24:14:drink', '24:14:one', '24:15:same', '24:16:came', '24:17:drink', '24:18:drink',
-    '24:19:draw', '24:20:again', '24:20:drew', '24:22:put', '24:22:pieces', '24:24:son', '24:27:master', '24:27:fail', '24:27:master',
-    '24:27:brought', '24:29:meet', '24:32:wash', '24:35:master', '24:42:master', '24:43:come', '24:43:drink', '24:44:draw', '24:44:own',
-    '24:44:hereby', '24:45:went', '24:45:drew', '24:45:drink', '24:46:head', '24:46:give', '24:46:gave', '24:48:master', '24:48:prospered', '24:49:tell', '24:49:hand',
-    '24:50:come', '24:54:went', '24:54:away', '24:56:away', '24:59:forth', '24:63:forth', '24:63:lifted', '24:64:lifted', '25:6:away', '25:7:many',
-    '25:7:one', '25:8:man', '25:9:son', '25:17:one', '25:18:one', '25:20:old', '25:20:syrian', '25:23:one', '25:25:came', '25:26:forth', '25:26:old',
-    '25:27:lads', '25:32:belong', '26:2:go', '26:10:sin', '26:12:one',
-    '26:16:become', '26:24:sake', '26:25:valley', '26:25:gerara', '26:27:away', '26:29:forth', '26:31:forth', '26:34:old', '27:2:old',
-    '27:21:draw', '27:22:drew', '27:25:hither', '27:25:near', '27:26:draw', '27:27:drew', '27:30:just', '27:36:time', '27:40:time', '27:41:because',
-    '27:41:blessed', '27:41:draw', '28:5:away', '28:7:syria', '28:10:forth', '28:11:one', '28:11:lay', '28:14:north', '28:15:continually', '28:15:back',
-    '28:20:throughout', '29:3:used', '29:3:away', '29:3:again', '29:8:together', '29:8:away', '29:10:mother', '29:10:sheep', '29:10:laban',
-    '29:10:brother', '29:10:away', '29:15:surely', '29:22:together', '29:27:return', '29:32:given', '29:32:son', '29:33:one', '29:35:time',
-    '24:33:told', '24:53:forth', '26:8:time', '27:38:only', '29:7:together',
-  ];
-
-  it('leaves in Genesis 24 to 29 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
-    const named = [...IDIOM_NO_GREEK_24_TO_29, ...OTHER_VERSE_NO_GREEK_24_TO_29, ...PAIRED_OR_ADDED_NO_GREEK_24_TO_29].sort();
-    const found = [24, 25, 26, 27, 28, 29].flatMap((n) => noGreek(withModel.get(n)!)).sort();
-    expect(found).toEqual(named);
-    expect(named).toHaveLength(168);
-    for (const n of [24, 25, 26, 27, 28, 29]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
-  });
-
   it('pairs a content word of each kind (Genesis 24:2 servant, 25:29 cooked, 26:19 dug, 27:15 raiment, 28:2 depart, 29:11 kissed) to a Greek word the Reader links', () => {
     const chunkOf = (n: number, v: number, text: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(text))!;
     for (const [n, v, text] of [[24, 2, 'servant'], [25, 29, 'cooked'], [26, 19, 'dug'], [27, 15, 'raiment'], [28, 2, 'depart'], [29, 11, 'kissed']] as const) {
@@ -629,44 +560,6 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     }
   });
 
-  // Genesis 30 to 36 (mw-u2w5klk.349.5): the English content words that sit in a chunk with no Greek word after the pass (584 had none before it, read with `npm run lxx:unpaired -- --book gen`),
-  // keyed chapter:verse:word and read by hand from `--list`, each in one of three lists with why: 167 of 2,602 content words. A tap on one opens the Verse view, never a wrong word. The aligner's pairs are not touched.
-  // 'it came to pass' renders ἐγένετο (paired to one English word by the aligner; the model re-chooses remainders, not pairs), so 'pass' and the 'came' beside it have no Greek word left.
-  const IDIOM_NO_GREEK_30_TO_36 = [
-    '30:25:came', '30:25:pass', '30:41:came', '30:41:pass', '31:10:came', '31:10:pass', '34:25:came', '34:25:pass', '35:12:come', '35:12:pass', '35:16:pass', '35:17:came', '35:17:pass',
-    '35:18:came', '35:18:pass', '35:21:came', '35:21:pass'
-  ];
-  // LXX2012 carries English here whose Greek is in the verse before or after (Genesis 31:50 to 31:53's 'God is witness', 'swore by the Fear of his father Isaac', 30:9's 'went in', which Swete has in 30:10), English
-  // that the Greek verse does not have (Genesis 31:51 is a whole verse with no Greek, 33:5's 'Esau', 35:29's 'Isaac', 36:18's 'daughter of Ana, wife of Esau').
-  const OTHER_VERSE_NO_GREEK_30_TO_36 = [
-    '30:9:went', '31:50:god', '31:50:looking', '31:50:witness', '31:51:heap', '31:51:jacob', '31:51:laban', '31:51:pillar', '31:51:said', '31:51:witness', '31:53:father', '31:53:fear',
-    '31:53:isaac', '31:53:jacob', '31:53:swore', '33:5:esau', '35:29:isaac', '36:18:ana', '36:18:daughter', '36:18:esau', '36:18:wife'
-  ];
-  // Either the Greek word that renders it is a pair the aligner made to another English word ('lord' for Κύριος, 'hand' for χειρός, 'stead' for ἀντί) or Brenton adds it to make English of a Greek phrase ('forth', 'away', 'back', 'matter',
-  // 'hard', 'very', 'forth', 'looked').
-  const PAIRED_OR_ADDED_NO_GREEK_30_TO_36 = [
-    '30:6:given', '30:6:therefore', '30:13:pronounce', '30:14:sister', '30:16:forth', '30:17:lea', '30:25:away', '30:29:many', '30:30:lord', '30:30:time', '30:35:shegoats', '30:36:behind',
-    '30:36:journey', '30:37:plane', '30:37:storax', '30:37:stripe', '30:37:stripes', '30:37:tree', '30:39:cattle', '30:39:conceived', '30:39:rods', '30:41:became', '30:41:pregnant',
-    '30:42:happened', '30:42:indiscriminately', '31:7:power', '31:10:young', '31:12:leaping', '31:13:god', '31:18:took', '31:20:matter', '31:20:ran', '31:24:things', '31:26:lead',
-    '31:26:run', '31:26:taken', '31:27:away', '31:28:counted', '31:29:words', '31:30:depart', '31:30:earnestly', '31:31:afraid', '31:31:because', '31:32:observed', '31:32:property',
-    '31:36:injustice', '31:39:beasts', '31:40:chilled', '31:40:parched', '31:42:sent', '31:43:property', '31:47:testimony', '31:50:addition', '31:52:beyond', '31:52:mischief', '31:55:back',
-    '32:1:looked', '32:5:born', '32:6:four', '32:7:camels', '32:11:hand', '32:14:shegoats', '32:14:two', '32:17:possessions', '32:20:presence', '32:23:brought', '32:25:prevailed',
-    '32:26:day', '32:26:go', '32:30:hei', '32:30:said', '32:32:angel', '33:1:eyes', '33:1:hundred', '33:1:lifted', '33:3:drew', '33:3:seven', '33:5:blessed', '33:5:mercifully',
-    '33:8:things', '33:11:mercy', '33:11:things', '33:13:hard', '33:13:very', '33:14:journey', '33:14:servant', '33:17:therefore', '33:19:one', '34:1:forth', '34:6:forth', '34:10:midst',
-    '34:12:demand', '34:12:much', '34:14:thing', '34:15:only', '34:15:terms', '34:19:attached', '34:19:most', '34:19:much', '34:19:young', '34:22:conform', '34:25:man', '34:26:forth',
-    '34:29:took', '34:30:pieces', '34:31:nay', '35:1:fled', '35:1:go', '35:3:throughout', '35:7:fled', '35:8:buried', '35:10:called', '35:10:israel', '35:10:name', '35:14:god',
-    '35:14:offered', '35:16:drew', '35:18:name', '35:19:way', '35:21:grievous', '35:21:jacob', '35:21:went', '35:26:born', '35:28:one', '36:5:born', '36:6:esau', '36:6:got', '36:7:because',
-    '36:36:samada'
-  ];
-
-  it('leaves in Genesis 30 to 36 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
-    const named = [...IDIOM_NO_GREEK_30_TO_36, ...OTHER_VERSE_NO_GREEK_30_TO_36, ...PAIRED_OR_ADDED_NO_GREEK_30_TO_36].sort();
-    const found = [30, 31, 32, 33, 34, 35, 36].flatMap((n) => noGreek(withModel.get(n)!)).sort();
-    expect(found).toEqual(named);
-    expect(named).toHaveLength(167);
-    for (const n of [30, 31, 32, 33, 34, 35, 36]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
-  });
-
   it('pairs a content word of each kind (Genesis 30:14 barley, 31:10 conceived, 32:17 whither, 33:4 kissed, 34:10 trade, 35:2 purify yourselves) to a Greek word the Reader links', () => {
     const chunkOf = (n: number, v: number, text: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(text))!;
     for (const [n, v, text] of [[30, 14, 'barley'], [31, 10, 'conceived'], [32, 17, 'whither'], [33, 4, 'kissed'], [34, 10, 'trade,'], [35, 2, 'purify']] as const) {
@@ -674,22 +567,6 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
       expect(chunk, `${n}:${v} ${text}`).toBeDefined();
       expect(septuagintChunkLinked(chunk), `${n}:${v} ${text}`).toBe(true);
     }
-  });
-
-  // Genesis 14 (mw-u2w5klk.349.23; 349.3 left it, and `lxx:unpaired` listed it with 50 English content words where a tap opened the Verse view): the English content words that sit in a chunk with no Greek word
-  // after the pass, keyed verse:word and read by hand from `--list --chapter 14`. A tap on one opens the Verse view, never a wrong word.
-  // 3 of 278 content words (50 had none before it, 24 after the pass, read with `npm run lxx:unpaired -- --book gen`; mw-u2w5klk.349.46 moved 21 of them with the fix rows of data/lxx/align/gen-14.tsv, the aligner's
-  // pairs that gave a Greek word to a neighbouring English word), each in one of two lists with why. 'it came to pass' (14:1) renders ἐγένετο, paired to one English word by the aligner.
-  const IDIOM_NO_GREEK_14 = ['1:came', '1:pass'];
-  // Brenton adds 'Lord' of 14:22 to make English of a Greek phrase (τὸν θεὸν τὸν ὕψιστον has no κύριον).
-  const PAIRED_OR_ADDED_NO_GREEK_14 = ['22:lord'];
-  const NO_GREEK_14 = [...IDIOM_NO_GREEK_14, ...PAIRED_OR_ADDED_NO_GREEK_14];
-
-  it('leaves in Genesis 14 no English content word without a Greek word but those named, and no remainder (y "align?") at all', () => {
-    const chapter = withModel.get(14)!;
-    expect(noGreek(chapter).map((w) => w.replace(/^14:/, '')).sort()).toEqual([...NO_GREEK_14].sort());
-    expect(NO_GREEK_14).toHaveLength(3);
-    for (const verse of chapter.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen 14:${verse.n}`).toEqual([]);
   });
 
   // mw-u2w5klk.349.46: the aligner's pairs of Genesis 14 gave a Greek word to a neighbouring English word ('nations' on ἅμα, 'with' on συνεφώνησαν, 'country.' on ἔφυγον, 'nephew,' on the second
@@ -739,24 +616,6 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     }
   });
 
-  // Genesis 37 to 39 (mw-u2w5klk.349.47; `lxx:unpaired` listed them with 106, 76 and 86 English content words where a tap opened the Verse view): the English content words that sit in a chunk with no Greek word after
-  // the pass, 19 of 931 content words, keyed chapter:verse:word and read by hand from `--list`, each in one of two lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs that gave a Greek
-  // word to a neighbouring English word (the class of mw-u2w5klk.349.46) are moved by the fix rows of data/lxx/align/gen-37.tsv to gen-39.tsv: 'it came to pass' is one chunk of ἐγένετο in each of these chapters, so none is left for the idiom lists.
-  // LXX2012's 37:32 holds the Greek 37:32 and 37:33 (docs/data.md), so 'And he recognized it, and said, It is my son's coat, an evil wild beast has devoured him; a wild beast has carried off Joseph.' renders the words of the
-  // Greek verse 37:33, which has no English chunk of its own to point at.
-  const NEXT_VERSE_NO_GREEK_37_TO_39 = ['37:32:recognized', '37:32:said', '37:32:son', '37:32:coat', '37:32:evil', '37:32:wild', '37:32:beast', '37:32:devoured', '37:32:wild', '37:32:beast', '37:32:carried', '37:32:joseph'];
-  // Brenton adds them to make English of a Greek phrase: 37:2 'of his father' (Swete has only 'with his brethren'), 37:8 'shall you indeed be lord' and 'still more' (ἔτι is 'still'), 37:24 'was empty' (Swete: 'had no water'),
-  // 38:9 'to his brother's wife' (Swete: 'to his brother'), 38:17 'Well,' and 39:12 'in her hands,' (Swete: 'having left his clothes, he fled').
-  const ADDED_NO_GREEK_37_TO_39 = ['37:2:father', '37:8:indeed', '37:8:more', '37:24:empty', '38:9:wife', '38:17:well', '39:12:hands'];
-
-  it('leaves in Genesis 37 to 39 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
-    const named = [...NEXT_VERSE_NO_GREEK_37_TO_39, ...ADDED_NO_GREEK_37_TO_39].sort();
-    const found = [37, 38, 39].flatMap((n) => noGreek(withModel.get(n)!)).sort();
-    expect(found).toEqual(named);
-    expect(named).toHaveLength(19);
-    for (const n of [37, 38, 39]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
-  });
-
   it('pairs a content word of each kind (Genesis 37:3 coat, 37:25 myrrh, 38:8 brother-in-law, 38:22 harlot, 39:6 exceedingly, 39:19 angry) to a Greek word the Reader links', () => {
     const chunkOf = (n: number, v: number, text: string): EnglishChunk => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t.split(/\s+/).includes(text))!;
     for (const [n, v, text] of [[37, 3, 'coat'], [37, 25, 'myrrh;'], [38, 8, 'brother-in-law,'], [38, 22, 'harlot'], [39, 6, 'exceedingly'], [39, 19, 'angry.']] as const) {
@@ -795,23 +654,6 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     expect(greek(39, 17, 'servant,')).toEqual(['παῖς']);
     expect(greek(39, 19, 'all the words')).toEqual(['τὰ', 'ῥήματα', 'ὅσα']);
     expect(greek(39, 23, 'knew nothing,')).toEqual(['οὐκ', 'ἦν', 'γινώσκων', 'οὐθέν·']);
-  });
-
-  // Genesis 40 to 42 (mw-u2w5klk.349.48; `lxx:unpaired` listed them with 63, 159 and 85 English content words where a tap opened the Verse view): the English content words that sit in a chunk with no Greek word after
-  // the pass, 6 of 1,180 content words, keyed chapter:verse:word and read by hand from `--list`, each in one of two lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs that gave a Greek
-  // word to a neighbouring English word (the class of mw-u2w5klk.349.46) are moved by the 246 fix rows of data/lxx/align/gen-40.tsv to gen-42.tsv; the sweep read every pair of the three chapters against its verse.
-  // LXX2012's 41:27 gives 'the seven thin and blasted ears are seven years; there shall be seven years of famine' for a Greek 'the seven ears ... shall be seven years of famine', so the clause 'are seven years;' has no Greek word.
-  const CONFLATED_NO_GREEK_40_TO_42 = ['41:27:seven', '41:27:years'];
-  // Brenton adds them to make English of a Greek phrase: 41:12 'our dreams' ('we related to him', διηγησάμεθα αὐτῷ), 41:16 'be given' (ἀποκριθήσεται, 'an answer shall be given'), 41:52 'said he' (Swete: 'Because God has exalted me')
-  // and 42:4 'Jacob' (Swete: 'he sent not', ἀπέστειλεν; the name is Brenton's).
-  const ADDED_NO_GREEK_40_TO_42 = ['41:12:dreams', '41:16:given', '41:52:said', '42:4:jacob'];
-
-  it('leaves in Genesis 40 to 42 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
-    const named = [...CONFLATED_NO_GREEK_40_TO_42, ...ADDED_NO_GREEK_40_TO_42].sort();
-    const found = [40, 41, 42].flatMap((n) => noGreek(withModel.get(n)!)).sort();
-    expect(found).toEqual(named);
-    expect(named).toHaveLength(6);
-    for (const n of [40, 41, 42]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
   });
 
   it('pairs a content word of each kind (Genesis 40:10 clusters, 40:17 baker, 41:42 robe, 41:55 hungry, 42:5 famine, 42:25 vessels) to a Greek word the Reader links', () => {
@@ -870,24 +712,6 @@ describe.skipIf(!haveSources)('Genesis 1 to 45 with the model pass', () => {
     expect(greek(42, 35, 'it came to pass')).toEqual(['ἐγένετο']);
     expect(greek(42, 36, 'to them,')).toEqual(['αὐτοῖς']);
     expect(greek(42, 37, 'and I will bring him back')).toEqual(['κἀγὼ', 'ἀνάξω', 'αὐτὸν']);
-  });
-
-  // Genesis 43 to 45 (mw-u2w5klk.349.49; `lxx:unpaired` listed them with 92, 104 and 62 English content words where a tap opened the Verse view): the English content words that sit in a chunk with no Greek word after
-  // the pass, 15 of 982 content words, keyed chapter:verse:word and read by hand from `--list`, each in one of three lists with why. A tap on one opens the Verse view, never a wrong word. The aligner's pairs that gave a
-  // Greek word to a neighbouring English word (the class of mw-u2w5klk.349.46) are moved by the 71 fix rows of data/lxx/align/gen-43.tsv to gen-45.tsv; the sweep read every pair of the three chapters against its verse.
-  // Brenton adds them to make English of a Greek phrase: 43:3 'the lord of the country,' (Swete has only 'ὁ ἄνθρωπος'), 43:6 'inasmuch as' (εἰ) and 43:32 'on bread for' (Swete's ἄρτους is the 'bread' of 'eat bread', later in the verse).
-  const ADDED_NO_GREEK_43_TO_45 = ['43:3:country', '43:3:lord', '43:6:inasmuch', '43:32:bread'];
-  // LXX2012's 44:5 'Why have you stolen my silver cup?' renders the end of the Greek verse 44:4 (ἵνα τί ἐκλέψατέ μου τὸ κόνδυ τὸ ἀργυροῦν), which has no English chunk of its own to point at (the like of Genesis 37:32 above).
-  const PREVIOUS_VERSE_NO_GREEK_44 = ['44:5:why', '44:5:stolen', '44:5:silver', '44:5:cup'];
-  // 45:4 'Joseph said to his brethren, Draw near to me; and they drew near; and he said,' is Brenton's from the Hebrew: Swete's Greek has only 'And he said, I am Joseph your brother'.
-  const HEBREW_ONLY_NO_GREEK_45 = ['45:4:joseph', '45:4:brethren', '45:4:draw', '45:4:near', '45:4:drew', '45:4:near', '45:4:said'];
-
-  it('leaves in Genesis 43 to 45 no English content word without a Greek word but those named, each in a list with why, and no remainder (y "align?") at all', () => {
-    const named = [...ADDED_NO_GREEK_43_TO_45, ...PREVIOUS_VERSE_NO_GREEK_44, ...HEBREW_ONLY_NO_GREEK_45].sort();
-    const found = [43, 44, 45].flatMap((n) => noGreek(withModel.get(n)!)).sort();
-    expect(found).toEqual(named);
-    expect(named).toHaveLength(15);
-    for (const n of [43, 44, 45]) for (const verse of withModel.get(n)!.verses) expect(verse.e.filter((c) => c.y === 'align?'), `Gen ${n}:${verse.n}`).toEqual([]);
   });
 
   it('pairs a content word of each kind (Genesis 43:11 turpentine, 43:30 chamber, 44:12 youngest, 44:17 safety, 45:6 plowing, 45:27 chariots) to a Greek word the Reader links', () => {
