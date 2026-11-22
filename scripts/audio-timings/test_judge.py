@@ -614,3 +614,13 @@ def test_other_timings_or_another_slop_are_not_taken_up_from_the_old_run(sound, 
     judge.run_book('tst', raw + b' ', SLOP, chapter_judge(sound, calls), tmp_path / 'b.json', tmp_path / 'work')
     judge.run_book('tst', raw, {'lead': 0.1, 'tail': 0.05}, chapter_judge(sound, calls), tmp_path / 'c.json', tmp_path / 'work')
     assert calls == [1, 2, 1, 2, 1, 2]
+
+
+def test_a_psalm_number_read_before_a_title_is_not_the_titles_first_word(sound):
+    # Psalm 16 and 50 (mw-zbgo4ep.65): the announcement 'PSALM SIXTEEN', a quiet of 2.6 s, then the title 'A MICTUM OF DAVID' (the text's 'miktam' is heard otherwise).
+    # The pairing took the 'A' and 'M' of PSALM for the title's 'A' and 'M'; verse 1's own sound began in the announcement and its cut was flagged head-clipped.
+    parts = [(0.2, None), (0.8, -20), (0.3, None), (0.8, -20), (2.6, None), (0.9, -20), (0.3, None), (1.5, -20), (0.3, None)]
+    heard = say('AUDIO BIBLE', 0.2, 1.0) + [['|', 1.05, 1.08]] + say('PSALM SIXTEEN', 1.3, 2.1) + [['|', 2.15, 2.18]] + say('A MICTUM OF', 4.7, 5.6) + [['|', 5.65, 5.68]] + say('PRESERVE ME', 5.9, 7.4)
+    verses = [{'n': 1, 'words': ['a', 'miktam', 'of', 'preserve', 'me']}]
+    one = judge.measure(verses, heard, judge.sound_of(wave_of(parts)))['verses'][0]
+    assert one['onset'] == pytest.approx(4.7, abs=0.011) and one['before'] == pytest.approx(2.1, abs=0.011)
