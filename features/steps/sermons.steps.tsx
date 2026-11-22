@@ -18,7 +18,7 @@ import { stubChapterFetch, type ChapterFetch } from '../../tests/support/chapter
 import { findButton } from '../../tests/support/find-button';
 import { tapPlaceLine } from '../../tests/support/place-line';
 import { forgetTestMaps, registerTestMaps, TEST_CARDS, testSource as testMapSource } from '../../tests/support/test-maps';
-import { forgetTestSermons, registerTestSermons, testSource } from '../../tests/support/test-sermons';
+import { forgetTestArchives, forgetTestSermons, registerTestArchives, registerTestSermons, sermonAt, testSource, toldOf } from '../../tests/support/test-sermons';
 import { forgetTestThemes, registerTestThemes } from '../../tests/support/test-themes';
 import { closeDatabase } from './close-database';
 import { keepImport } from '../../tests/support/logos-import';
@@ -27,6 +27,7 @@ afterAll(async () => {
   cleanup();
   closeSermons();
   forgetTestSermons();
+  forgetTestArchives();
   forgetTestThemes();
   forgetTestMaps();
   vi.unstubAllGlobals();
@@ -77,6 +78,8 @@ async function openOn(title: string, phone: Phone = {}): Promise<void> {
   localStorage.clear();
   vi.unstubAllGlobals();
   registerTestSermons(phone.sermons);
+  // the catalogue holds no sermon of a book by passage (mw-qtu3zvz.239): Fresh Sermons is told of one at Romans 5:8, Sermon Outlines on 1 Corinthians of one there and one at Romans 8:1
+  registerTestArchives(toldOf('LLS:FRESHSERMS', [sermonAt('rom', 5, 8, 'ref=Bible.Ro5.8')]), toldOf('LLS:SO1COR', [sermonAt('rom', 5, 8, 'ref=Bible.Ro5.8'), sermonAt('rom', 8, 1, 'off=8100')]));
   held = undefined;
   if (phone.slow) setSermonSources([slowSource]);
   // these scenarios are about the sermons of the passage: the theme lists are none (features/themes.feature has them)
@@ -389,7 +392,7 @@ describeFeature(feature, ({ Scenario }) => {
     And('the part {string} holds {string}', holdsOne);
   });
 
-  Scenario('A verse with no listed sermon still has the door where a sermon book is On', ({ Given, When, Then, And }) => {
+  Scenario('A verse with no listed sermon still has the door where a sermon book holds a sermon on it', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with Logos On and two sermon archives on his shelf', archiveOpened('on'));
     When('he taps verse {int}', tapVerse);
     Then('the Verse view has a button {string}', async (_, label: string) => {
@@ -399,7 +402,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the sheet says {string}', async (_, line: string) => {
       expect(await within(await sheetEl()).findByText(line)).toBeVisible();
     });
-    And('the part {string} holds {string} and {string}', holdsTwo);
+    And('the part {string} holds only {string}', holdsOne);
   });
 
   Scenario('His Logos sermon books are the In Logos group, by name, one that was Pinned no longer first', ({ Given, When, Then, And }) => {
@@ -439,7 +442,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the sheet opens with {string} and then {string}', opensWith);
   });
 
-  Scenario('A whole chapter opens each archive at the chapter', ({ Given, When, Then, And }) => {
+  Scenario('A whole chapter opens each archive at the sermon it holds in the chapter', ({ Given, When, Then, And }) => {
     Given('Lampas is opened on {string} with Logos On and two sermon archives on his shelf', archiveOpened('on'));
     When('he taps the place line', tapPlaceLineAndWait);
     And('he taps {string}', tapDoor);

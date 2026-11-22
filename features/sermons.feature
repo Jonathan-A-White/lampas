@@ -153,13 +153,13 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     And the part "In Logos" holds "Sermon Outlines on 1 Corinthians"
 
   @uc-sermons @greek
-  Scenario: A verse with no listed sermon still has the door where a sermon book is On
+  Scenario: A verse with no listed sermon still has the door where a sermon book holds a sermon on it
     Given Lampas is opened on "Romans 8" with Logos On and two sermon archives on his shelf
     When he taps verse 1
     Then the Verse view has a button "Sermons"
     When he taps "Sermons"
     Then the sheet says "No sermons here."
-    And the part "In Logos" holds "Fresh Sermons" and "Sermon Outlines on 1 Corinthians"
+    And the part "In Logos" holds only "Sermon Outlines on 1 Corinthians"
 
   @uc-sermons @greek
   Scenario: An archive that is Off, or one not on his shelf, is not in the group
@@ -184,8 +184,8 @@ Feature: Sermons on the screen (mw-qtu3zvz.2, docs/sermons.md)
     Then the sheet opens with "On this verse" and then "In this chapter"
 
   @uc-sermons @greek
-  Scenario: A whole chapter opens each archive at the chapter
+  Scenario: A whole chapter opens each archive at the sermon it holds in the chapter
     Given Lampas is opened on "Romans 5" with Logos On and two sermon archives on his shelf
     When he taps the place line
     And he taps "Sermons · 4"
-    Then the archive "Sermon Outlines on 1 Corinthians" is a link to "logosres:LLS:SO1COR;ref=Bible.Ro5" with the ref.ly address as its fallback and is 44 px tall
+    Then the archive "Sermon Outlines on 1 Corinthians" is a link to "logosres:LLS:SO1COR;ref=Bible.Ro5.8" with the ref.ly address as its fallback and is 44 px tall

@@ -5,7 +5,7 @@ import { apocryphaBookOf } from '../data/apocrypha';
 import { bookOf, otBookOf } from '../data/books';
 import type { ShelfState } from '../data/repositories';
 import { GREEK_TOP, type GreekLevel } from '../settings/definitions/greekInterest';
-import type { CatalogueEntry, Kind } from '../resources/catalogue';
+import type { CatalogueEntry, Kind, SermonAt } from '../resources/catalogue';
 import { spanHolds } from './parseExport';
 import { bibleRef, partOf, verseLink } from '../resources/logosBible';
 import { resourceLink, type LogosLink } from '../resources/logosRes';
@@ -43,12 +43,12 @@ export const isOldTestament = (place: StudyPlace): boolean => otBookOf(place.boo
 
 /** Whether the book is in a volume of it: `covers` names our book codes (a missing one is the whole New Testament, so no Old Testament book), and `within` the span of a book it holds only in part (Be Skillful is Proverbs 1:8 to 9:18 only: elsewhere Logos opens its contents and fails to navigate, mw-qtu3zvz.238); a Bible holds the part of the canon the book is in
  *  (its `parts`, mw-5r3p30.889), so the Lexham Hebrew Bible is offered at an Old Testament place and never at a New Testament one; a Hebrew text has `parts` too (the Old Testament); a sermon archive is indexed by the passage each sermon is preached on and the
- *  export cannot say which books, so it is offered at every verse (docs/sources/sermon-index.md section 2). */
+ *  export cannot say which books: it has no book list, and is offered only where the catalogue knows a sermon of it (sermonsAtPlace, mw-qtu3zvz.239). */
 export const covers = (entry: CatalogueEntry, place: StudyPlace): boolean =>
   entry.kind === 'bible' || entry.kind === 'hebrew-text'
     ? entry.parts === undefined || entry.parts.includes(partOf(place.book))
     : entry.kind === 'sermons'
-      ? true
+      ? sermonsAtPlace(entry, place).length > 0
       : entry.covers
         ? entry.covers.includes(place.book) && spanHolds(entry.within?.[place.book] ?? '-', place.chapter, place.verse)
         : partOf(place.book) === 'nt';
@@ -72,12 +72,33 @@ export function inLogosRows(entries: readonly CatalogueEntry[], states: Readonly
   });
 }
 
+/** A place in a book as one number, so that a sermon text that runs into the next chapter compares: no chapter has a thousand verses. */
+const spot = (chapter: number, verse: number): number => chapter * 1000 + verse;
+
+/** The sermons a sermon book is known to hold at the place, the narrowest first (the order the catalogue lists them in among equals): those whose preaching text overlaps the verse or passage, or touches the chapter
+ *  when no verse is named. `to` is the passage's last verse (`place.verse` alone is one verse). A book with no sermon told of is none. */
+export function sermonsAtPlace(entry: CatalogueEntry, place: StudyPlace & { to?: number }): SermonAt[] {
+  const first = place.verse === undefined ? 0 : place.verse;
+  const last = place.verse === undefined ? 999 : (place.to ?? place.verse);
+  return (entry.sermonsAt ?? [])
+    .filter((s) => s.book === place.book && spot(s.chapter, s.from) <= spot(place.chapter, last) && spot(s.toChapter ?? s.chapter, s.to) >= spot(place.chapter, first))
+    .map((s, i) => ({ s, i, width: spot(s.toChapter ?? s.chapter, s.to) - spot(s.chapter, s.from) }))
+    .sort((a, b) => a.width - b.width || a.i - b.i)
+    .map(({ s }) => s);
+}
+
 /** The sermon books of `entries` (books of the kind sermons, and books of another kind that also hold sermons) that are On or Pinned on the shelf, are in his import or free with Logos (`owned`; not checked when absent)
- *  and open at the place, each with its link, in the entries' order: a book of sermons opens at every verse, a book with more than sermons only at the verses it covers. */
-export function sermonBookRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace, owned?: Owned): InLogosRow[] {
+ *  and open at the place, each with its link, in the entries' order. A book of sermons opens only where it is known to hold a sermon (`sermonsAt`), at that sermon, in the reference form its row names: Logos cannot open
+ *  a book at a verse it has no sermon indexed at, and fails to navigate (mw-qtu3zvz.239); a book with more than sermons only at the verses it covers. `place.to` is the last verse of a passage. */
+export function sermonBookRows(entries: readonly CatalogueEntry[], states: ReadonlyMap<string, ShelfState>, place: StudyPlace & { to?: number }, owned?: Owned): InLogosRow[] {
   return entries.flatMap((entry): InLogosRow[] => {
     const state = states.get(entry.resource);
-    if (!state || state === 'off' || (owned && !isOffered(entry.resource, owned)) || entry.opens !== 'verse' || !covers(entry, place)) return [];
+    if (!state || state === 'off' || (owned && !isOffered(entry.resource, owned)) || entry.opens !== 'verse') return [];
+    if (entry.kind === 'sermons') {
+      const [sermon] = sermonsAtPlace(entry, place);
+      return sermon ? [{ entry, state, link: resourceLink(entry.resource, sermon.at) }] : [];
+    }
+    if (!covers(entry, place)) return [];
     const link = linkFor(entry, place);
     return link ? [{ entry, state, link }] : [];
   });

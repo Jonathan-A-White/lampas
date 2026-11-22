@@ -16,6 +16,13 @@ export const SERMON_BOOKS: readonly CatalogueEntry[] = [...entriesOf('sermons'),
 /** The Resource IDs a passage list stands for: such a book has no row of its own and no In Logos link. The bundled lists' by default; `sources` adds those of the lists given. */
 export const underLists = (sources: readonly Pick<SermonSource, 'resources'>[] = []): ReadonlySet<string> => new Set([...Object.values(LOGOS_RESOURCES).flat(), ...sources.flatMap((source) => source.resources ?? [])]);
 
+let archiveBooks: readonly CatalogueEntry[] | undefined;
+
+/** Hands the sheet books of a test's own, with the sermons they are told of (the catalogue holds no verse index of its own yet, mw-qtu3zvz.239); `undefined` goes back to SERMON_BOOKS. */
+export const setArchiveBooks = (entries: readonly CatalogueEntry[] | undefined): void => {
+  archiveBooks = entries;
+};
+
 /** One sermon book of his shelf, as the sheet draws it: a link into Logos at the place. */
 export interface ArchiveRow {
   /** the Logos Resource ID, unique */
@@ -23,7 +30,7 @@ export interface ArchiveRow {
   entry: CatalogueEntry;
   state: Exclude<ShelfState, 'off'>;
   title: string;
-  /** `logosres:<id>;ref=Bible.Ro5.8` with its ref.ly fallback (armFallback) */
+  /** `logosres:<id>;off=21041` (the sermon the book is told of at the place, in the form its row names) or, for a book with more than sermons, `;ref=Bible.Ro5.8`; with its ref.ly fallback (armFallback) */
   open: { url: string; fallback: string };
   opensIn: 'logos';
 }
@@ -33,10 +40,10 @@ const filed = (name: string): string => name.replace(/^(a|an|the)\s+/i, '');
 
 /**
  * The sermon books that are On in `shelf` (by Resource ID; a book once Pinned reads as On) and, given `owned`, in his import or free (src/data/owned.ts), at the place, by name. A book a passage list stands for
- * (`under`) is left out. A passage opens at its first verse, a chapter at the chapter; a book with more than sermons is offered only at the verses it covers. Pure; `entries` is a test's own.
+ * (`under`) is left out. A pure sermon book is offered only where the catalogue knows a sermon of it at the place (`sermonsAt`), opened at that sermon; a book with more than sermons only at the verses it covers, opened at the passage's first verse or the chapter. Pure; `entries` is a test's own.
  */
-export function logosArchives(place: SermonPlace, shelf: ReadonlyMap<string, ShelfState>, entries: readonly CatalogueEntry[] = SERMON_BOOKS, owned?: Owned, under: ReadonlySet<string> = underLists()): ArchiveRow[] {
-  return sermonBookRows(entries.filter((entry) => !under.has(entry.resource)), shelf, { book: place.book, chapter: place.chapter, ...(place.from === undefined ? {} : { verse: place.from }) }, owned)
+export function logosArchives(place: SermonPlace, shelf: ReadonlyMap<string, ShelfState>, entries: readonly CatalogueEntry[] = archiveBooks ?? SERMON_BOOKS, owned?: Owned, under: ReadonlySet<string> = underLists()): ArchiveRow[] {
+  return sermonBookRows(entries.filter((entry) => !under.has(entry.resource)), shelf, { book: place.book, chapter: place.chapter, ...(place.from === undefined ? {} : { verse: place.from, to: place.to ?? place.from }) }, owned)
     .map((row): ArchiveRow => ({ id: row.entry.resource, entry: row.entry, state: row.state, title: row.entry.title, open: { url: row.link.url, fallback: row.link.fallback }, opensIn: 'logos' }))
     .sort((a, b) => filed(a.entry.short).localeCompare(filed(b.entry.short), 'en', { numeric: true, sensitivity: 'base' }));
 }

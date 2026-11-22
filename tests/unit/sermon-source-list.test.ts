@@ -21,6 +21,7 @@ import type { SermonSource } from '../../src/sermons/types';
 import '../support/grinds-in-graph';
 import { ASYNC_WAIT_MS } from '../support/timeouts';
 import { EVERY_BOOK } from '../support/logos-import';
+import { sermonAt, toldOf } from '../support/test-sermons';
 
 const source = (id: string, name: string, more: Partial<SermonSource> = {}): SermonSource => ({
   id,
@@ -290,15 +291,18 @@ describe('Settings > Study resources > Sermons', () => {
 describe('In Logos on the Sermons sheet', () => {
   const place = { book: 'rom', chapter: 5, from: 8 };
   const owned = (entries: readonly CatalogueEntry[]): Set<string> => new Set(entries.map((e) => e.resource));
+  // each told of a sermon at Romans 5:8 (the catalogue holds none by passage, mw-qtu3zvz.239)
+  const told = (entry: CatalogueEntry): CatalogueEntry => toldOf(entry.resource, [sermonAt('rom', 5, 8, 'ref=Bible.Ro5.8')]);
+  const BOOKS = [...SERMON_BOOKS.map((e) => (LOOSE.includes(e) || e.resource === GREG ? told(e) : e))];
 
   it('lists the sermon books that are On by name, a once-Pinned one in its place and not first', () => {
     const [a, b] = [...LOOSE.slice(0, 2)].sort((x, y) => filed(x.short).localeCompare(filed(y.short)));
-    const rows = logosArchives(place, new Map<string, ShelfState>([[b.resource, 'pinned'], [a.resource, 'on']]), SERMON_BOOKS, owned([a, b]));
+    const rows = logosArchives(place, new Map<string, ShelfState>([[b.resource, 'pinned'], [a.resource, 'on']]), BOOKS, owned([a, b]));
     expect(rows.map((r) => r.id)).toEqual([a.resource, b.resource]);
   });
 
   it('draws no row for a book a list stands for: each of its sermons is already a link into it', () => {
-    const rows = logosArchives(place, new Map<string, ShelfState>([[GREG, 'on'], [LOOSE[0].resource, 'on']]), SERMON_BOOKS, owned([entryOf(GREG)!, LOOSE[0]]));
+    const rows = logosArchives(place, new Map<string, ShelfState>([[GREG, 'on'], [LOOSE[0].resource, 'on']]), BOOKS, owned([entryOf(GREG)!, LOOSE[0]]));
     expect(rows.map((r) => r.id)).toEqual([LOOSE[0].resource]);
   });
 
