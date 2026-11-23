@@ -3,6 +3,7 @@ import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { leaveSettings, openGroup } from './settings-group';
 import { openSettings } from './openSettings';
+import { handleClicksLate } from './late-clicks';
 
 // 44 px is the floor; a word must clear it by a pixel so one font's metrics can shave a little and it still holds.
 const TAP_WITH_MARGIN = 45;
@@ -55,6 +56,8 @@ test('Settings offers Layout and Section headings with 44 px choices, Verse by v
 });
 
 test('Paragraph runs the verses on with superscript numbers, every word and number a 44 px tap', async ({ page }) => {
+  // each Reader language press is handled 1.5 s late, as a loaded host can: the reload must wait for the choice's aria-pressed (shown once the write landed)
+  await handleClicksLate(page, '[aria-label="Language"] button');
   await openReader(page);
   await setInSettings(page, 'Layout', 'Paragraph');
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-layout', 'paragraph');
@@ -101,6 +104,7 @@ test('Paragraph runs the verses on with superscript numbers, every word and numb
   expect(greekWord?.height).toBeGreaterThanOrEqual(TAP_WITH_MARGIN);
   await page.getByRole('button', { name: 'English', exact: true }).click();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-view', 'english');
+  await expect(page.getByRole('group', { name: 'Language', exact: true }).getByRole('button', { name: 'English', exact: true })).toHaveAttribute('aria-pressed', 'true');
 
   await page.reload();
   await expect(page.locator('[data-reader]')).toHaveAttribute('data-layout', 'paragraph');
