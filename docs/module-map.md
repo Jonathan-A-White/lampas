@@ -162,7 +162,7 @@ export function getSetting<T extends SettingValue>(def: SettingDef<T>): Promise<
 export function setSetting<T extends SettingValue>(def: SettingDef<T>, value: T): Promise<void>; // saves, then publishes { kind: 'setting-changed', key, value }
 export function useSetting<T extends SettingValue>(def: SettingDef<T>): T | undefined;
 
-// src/settings/definitions/<key>.ts — one file per setting, listed by one line in src/settings/definitions/index.ts
+// src/settings/definitions/<key>.ts — one file per setting, gathered by glob into DEFINITIONS (src/settings/gather.ts; mw-6ww.175.105, no list to edit)
 ```
 
 A new setting then adds one definition file and one `CONTROLS` entry (R3 makes that its own file too); `SETTINGS` and `ROWS` are derived from the definitions list; `src/events/bus.ts` gets one generic `setting-changed` kind instead of one kind per setting.

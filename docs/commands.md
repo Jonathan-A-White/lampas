@@ -12,7 +12,7 @@ npm run e2e:live     # the live tests (tests/e2e/*-live.spec.ts: tutor-live asks
                      #   only that origin) and asks the real Postern tutor about Romans 8:28 with LAMPAS_TEST_KEY (or
                      #   ~/.config/mw/lampas-test.env); so it proves a landing only after the deploy; skips, never passes, with
                      #   no key or no backend; spends a grind of fuel per question; not in the gate or `npm run shots`; tests/e2e/live.ts holds the key lookup they share
-npm run grind:build  # writes the settings the bible-talk grind may change (settings_changes in its answer schema, the list in its instructions) from src/settings/registry.ts;
+npm run grind:build  # writes the settings the bible-talk grind may change (settings_changes in its answer schema, the list in its instructions) from src/settings/registry.ts (run through Vite, scripts/vite-run.ts: the settings are gathered by import.meta.glob);
                      #   run it after adding a setting to the registry; tests/unit/bible-talk-grind.test.ts fails when grinds/ is behind it; the list is in the one part that holds
                      #   its markers (grinds/bible-talk.instructions/330-changing-the-apps-settings.md); a second run changes nothing
 npm run ladder:docs  # scripts/ladder-docs.ts writes the ladder table of docs/grammar.md and the id and title columns of docs/card-audit.md from LADDER (src/data/grammar/ladder.ts), between their
