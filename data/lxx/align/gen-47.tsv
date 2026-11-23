@@ -32,11 +32,22 @@ Gen.47:4	7	flocks of	14		0.80
 Gen.47:4	8	famine has prevailed	-		0.80
 Gen.47:4	9	the	-		0.80
 Gen.47:4	10	of	-		0.80
-Gen.47:4	11	we will dwell in the land of Gesem. And Pharao said to Joseph, Let them	-		0.80
+Gen.47:4	11	we will	-		0.80
 Gen.47:4	12	the	-		0.80
 Gen.47:4	13	of	-		0.80
-Gen.47:4	14	and if you know that there are among them able men, make them overseers of my cattle. So Jacob and his sons came into Egypt, to Joseph; and Pharao, king of Egypt, heard of it.	-		0.80
-Gen.47:5	1	brethren,	50,51		0.80
+Gen.47:5	1	to	3		0.80
+Gen.47:5	2	Let them	-		0.80
+Gen.47:5	3	the	-		0.80
+Gen.47:5	4	of	-		0.80
+Gen.47:5	5	there	-		0.80
+Gen.47:5	6	of my	21,22		0.80
+Gen.47:5	7	So	25		0.80
+Gen.47:5	8	his	-		0.80
+Gen.47:5	9	of	-		0.80
+Gen.47:5	10	of	-		0.80
+Gen.47:5	11	Your	-		0.80
+Gen.47:5	12	brethren,	50,51		0.80
+Gen.47:5	12	are	-		0.80
 Gen.47:6	1	of	-		0.80
 Gen.47:6	2	before	4		0.80
 Gen.47:6	3	brethren	17		0.80
@@ -242,6 +253,10 @@ Gen.47:31	7	staff.	-		0.80
 Gen.47:3	fix	What is your occupation?	6,7,8,9		0.80
 Gen.47:4	fix	your servants,	15,16,17		0.80
 Gen.47:4	fix	famine has prevailed	18,21		0.80
+Gen.47:5	fix	you know	11		0.80
+Gen.47:5	fix	Your father,	47,48		0.80
+Gen.47:5	fix	his sons	32,33,34		0.80
+Gen.47:5	fix	heard of it.	36		0.80
 Gen.47:8	fix	How many	5		0.80
 Gen.47:13	fix	prevailed greatly;	8,12		0.80
 Gen.47:13	fix	fainted for	13		0.80

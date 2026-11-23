@@ -1001,6 +1001,26 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     }
   });
 
+  // mw-u2w5klk.349.88: Brenton's 47:4 ran on into the Greek 47:5 ('And Pharao said to Joseph, Let them dwell ... heard of it.'), 21 content words with no Greek, and the Greek 47:5 had no English for them. The build cuts it
+  // where that Greek begins (ENGLISH_CUTS), so 47:4 ends at its own Greek and the first half of 47:5 renders the Greek words that were left with no English.
+  it("gives the English of Genesis 47:4 that renders the Greek 47:5 to the verse the Greek is in: dwell, Jacob, his sons, heard of it, Your father", () => {
+    const verse = (v: number): Verse => withModel.get(47)!.verses.find((x) => x.n === v)!;
+    const greek = (v: number, text: string): string[] => {
+      const chunks = verse(v).e.filter((c) => c.t === text);
+      expect(chunks, `47:${v} '${text}' is one chunk`).toHaveLength(1);
+      return chunks[0].g.map((i) => verse(v).g[i].t);
+    };
+    expect(verse(4).e.map((c) => c.t).join(' ')).toMatch(/now then, we will dwell in the land of Gesem\.$/);
+    expect(greek(4, 'we will dwell')).toEqual(['κατοικήσομεν']);
+    expect(greek(5, 'Let them dwell')).toEqual(['Κατοικείτωσαν']);
+    expect(greek(5, 'Jacob')).toEqual(['Ἰακὼβ']);
+    expect(greek(5, 'his sons')).toEqual(['οἱ', 'υἱοὶ', 'αὐτοῦ·']);
+    expect(greek(5, 'heard of it.')).toEqual(['ἤκουσεν']);
+    expect(greek(5, 'you know')).toEqual(['ἐπίστῃ']);
+    expect(greek(5, 'Your father,')).toEqual(['πατήρ', 'σου']);
+    expect(greek(5, 'brethren,')).toEqual(['οἱ', 'ἀδελφοί']);
+  });
+
   // mw-u2w5klk.349.50's sweep of the aligner's pairs in Genesis 46 to 48: a Greek word the aligner gave to a neighbouring English word, so the word that renders it had no Greek ('bring' of 46:4 sat beside ἀναβιβάσω on 'up',
   // 'born' of 46:20 on ἔτεκεν with 'bore' on πόλεως, 'wives' of 46:26 on μηρῶν, 'souls.' of 46:27 on πέντε, 'gladly' and 'die,' of 46:30 each on the other's word, 'herdsmen' of 46:34 on παῖδές, 'servants,' of 47:4 on ἐνίσχυσεν,
   // 'sold' of 47:20 on γῆν, 'presence?' of 47:15 on ἐκλέλοιπεν, 'it came to pass' of 48:1 on 'to', 'drew near' and 'brought them near' of 48:7, 48:10 and 48:13, 'Sicima' of 48:22 on 'portion'). Each is the chunk a fix row gives its own Greek word.
