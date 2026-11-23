@@ -3,7 +3,8 @@
 import { greekLevelOf } from '../definitions/greekInterest';
 import { hebrewLevelOf } from '../definitions/hebrewInterest';
 import { LANGUAGES_CHOICES, languagesOf } from '../definitions/interest';
-import { greekInterestSetting, hebrewInterestSetting } from '../definitions';
+import { greekInterestSetting } from '../definitions/greekInterest';
+import { hebrewInterestSetting } from '../definitions/hebrewInterest';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { SettingRow } from './SettingRow';

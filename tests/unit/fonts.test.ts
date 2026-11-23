@@ -8,7 +8,7 @@ import { applyFont, restoreAppearance, startAppearanceSync } from '../../src/app
 import { DEFAULT_FONT, ENGLISH_FONT_VAR, FONTS, PHONE_STACK, isFont, stackOf } from '../../src/appearance/fonts';
 import { db } from '../../src/data/db';
 import { clearBus } from '../../src/events/bus';
-import { fontSetting } from '../../src/settings/definitions';
+import { fontSetting } from '../../src/settings/definitions/font';
 import { SETTINGS, writeSetting } from '../support/settings';
 import { getSetting } from '../../src/settings/store';
 

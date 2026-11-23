@@ -8,7 +8,7 @@
 // sheet opens (`auto`), the words still on screen. A browser that refuses speech without a tap (the error 'not-allowed', greek.ts onSpeechRefused) turns the
 // button into a gently pulsing 'Tap to listen' instead of leaving silence; the tap is then an ordinary one.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { readLessonsSetting } from '../settings/definitions';
+import { readLessonsSetting } from '../settings/definitions/readLessons';
 import { useSetting } from '../settings/store';
 import { hasGreekVoice, hasVoice, noVoiceHelp, onSpeechRefused, warmVoices } from './greek';
 import { pageRuns } from './pageRuns';

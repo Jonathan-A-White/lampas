@@ -38,6 +38,7 @@ export type OpenWebIn = 'lampas' | 'browser' | 'firefox';
 
 /** Where a web sermon opens (mw-qtu3zvz.16, src/sermons/openWeb.ts). Its key has no dot: 'sermons.<id>' is a source's On/Off switch. Not in the registry or DEFINITIONS (the tutor's Settings request is full): a row of its own, rows.ts OPEN_WEB_ROW, as Hand is. */
 export const openWebSetting = defineSetting<OpenWebIn>({
+  outside: 'a row of its own (rows.ts OPEN_WEB_ROW): the tutor does not read or change it',
   key: 'sermonsOpenWeb',
   default: 'lampas',
   allowed: {

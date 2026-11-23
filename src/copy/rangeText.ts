@@ -9,7 +9,8 @@ import { parseCanonReference } from '../nav/links';
 import { readerVariants } from '../reader/variants';
 import { settingsFor, readViewSettings } from '../reader/useViewSettings';
 import { wovenOf } from '../reader/useWoven';
-import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting, variantsSetting, variantWitnessesSetting } from '../settings/definitions';
+import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting } from '../settings/definitions/copyFormat';
+import { variantsSetting, variantWitnessesSetting } from '../settings/definitions/variants';
 import { getSetting } from '../settings/store';
 import { COPY_DEFAULTS, copyRange, copyUnitOf, type CopyFormat, type CopyUnit, type RangeCopy, type ReadView } from './format';
 

@@ -7,7 +7,7 @@ import { App } from '../../src/App';
 import { forgetChapters } from '../../src/data/chapter';
 import { forgetTimings, timingsIndexUrl } from '../../src/data/audioTimings';
 import { db } from '../../src/data/db';
-import { bibleVoiceSetting } from '../../src/settings/definitions';
+import { bibleVoiceSetting } from '../../src/settings/definitions/bibleVoice';
 import { setConnectionForTests, type ConnectionLike } from '../../src/speech/connection';
 import { resetRecordedVoice } from '../../src/speech/recordedVoice';
 import { forgetVoiceNotices, markDataQuestionAnswered } from '../../src/speech/voiceDecision';

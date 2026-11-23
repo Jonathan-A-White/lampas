@@ -6,7 +6,8 @@
 // reader on a light phone never flashes light.
 import { getTextSize } from '../data/repositories';
 import { publish, subscribe } from '../events/bus';
-import { fontSetting, themeSetting } from '../settings/definitions';
+import { fontSetting } from '../settings/definitions/font';
+import { themeSetting } from '../settings/definitions/theme';
 import { announceSetting, getSetting, onSetting } from '../settings/store';
 import { DEFAULT_FONT, ENGLISH_FONT_VAR, isFont, stackOf, type FontId } from './fonts';
 import { DEFAULT_TEXT_PERCENT, normaliseTextPercent } from './textSizes';

@@ -6,6 +6,8 @@ import { hebrewFrom } from './hebrewInterest';
 export type HebrewKeyboard = 'on' | 'off';
 
 export const hebrewKeyboardSetting = defineSetting<HebrewKeyboard>({
+  order: 390,
+  slot: 400,
   key: 'hebrewKeyboard',
   default: 'off',
   allowed: {

@@ -4,7 +4,7 @@
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { SourceLanguage } from '../data/chapter';
 import { chooseReaderLanguage, type ReaderLanguage, type ReaderView, type Weave } from '../data/repositories';
-import { weaveOrderSetting } from '../settings/definitions';
+import { weaveOrderSetting } from '../settings/definitions/weaveOrder';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { setSetting } from '../settings/store';
 import { NO_SELECT, useLongPress } from '../ui/longPress';

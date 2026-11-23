@@ -7,7 +7,7 @@ import { fillChapter, type Chapter } from '../../src/data/chapter';
 import { layRp2026English, rp2026Entry } from '../../src/data/rp2026English';
 import { HELP_PAGES } from '../../src/help';
 import { PREFACE_EDITION_LINE } from '../../src/preface';
-import { rp2026EnglishSetting } from '../../src/settings/definitions';
+import { rp2026EnglishSetting } from '../../src/settings/definitions/rp2026English';
 import { settingOf } from '../support/settings';
 import { getSetting, setSetting } from '../../src/settings/store';
 

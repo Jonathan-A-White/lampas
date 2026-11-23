@@ -7,6 +7,8 @@ import { greekFrom } from './greekInterest';
 export type Septuagint = 'on' | 'off';
 
 export const septuagintSetting = defineSetting<Septuagint>({
+  order: 240,
+  slot: 40,
   key: 'septuagint',
   default: 'off',
   allowed: {

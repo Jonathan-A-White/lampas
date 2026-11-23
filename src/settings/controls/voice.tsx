@@ -9,7 +9,12 @@ import { SEND_LOG_LABEL, SENT_ALOUD, sendWhatHandsFreeHeard } from '../../handsF
 import { connectionKind } from '../../speech/connection';
 import { pronunciationOf, pronunciationsOf, type GreekPronunciation, type PronunciationLanguage } from '../../speech/pronunciation';
 import { PLAY_TOS } from '../../speech/readSpan';
-import { bibleVoiceSetting, englishAccentSetting, handsFreePauseSetting, handsFreeSetting, hebrewPronunciationSetting, ipaCourseSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions';
+import { bibleVoiceSetting } from '../definitions/bibleVoice';
+import { englishAccentSetting } from '../definitions/englishAccent';
+import { handsFreePauseSetting } from '../definitions/handsFreePause';
+import { handsFreeSetting } from '../definitions/handsFree';
+import { hebrewPronunciationSetting, pronunciationSeparateSetting, pronunciationSetting } from '../definitions/pronunciation';
+import { ipaCourseSetting } from '../definitions/ipaCourse';
 import { NO_WIFI_SENSE } from '../definitions/bibleVoice';
 import { PRONUNCIATION_FAMILIES } from '../definitions/pronunciation';
 import { PHONE_VOICE, writeSetting } from '../registry';

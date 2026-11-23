@@ -3,7 +3,7 @@
 // the dial's gate on the Weave (weaveAt, the dial of the verse's language) holds, and a plain-English choice under the Weave (the Reader's switch) does not: he asked to learn the verse in the Weave.
 import { getInterestLevels, getWeave, getWeaveGrammar, listLearningLemmas, listLevels, listSolidLemmas } from '../data/repositories';
 import type { ReaderSettings } from '../reader/useReaderSettings';
-import { weaveOrderSetting } from '../settings/definitions';
+import { weaveOrderSetting } from '../settings/definitions/weaveOrder';
 import { weaveAt } from '../settings/definitions/greekInterest';
 import { levelOf, type InterestLang } from '../settings/definitions/interest';
 import { getSetting } from '../settings/store';

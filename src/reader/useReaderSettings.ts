@@ -34,11 +34,13 @@ import {
 } from '../data/repositories';
 import { latestSetting, publish } from '../events/bus';
 import { openedOnReader, readerOf, routeOf } from '../nav/route';
-import { weaveOrderSetting, weaveSetting } from '../settings/definitions';
+import { weaveOrderSetting } from '../settings/definitions/weaveOrder';
+import { weaveSetting } from '../settings/definitions/weave';
 import type { WeaveOrder } from '../settings/definitions/weaveOrder';
 import { GREEK_VIEW_FROM, GREEK_WEAVE_FROM, greekLevelOf, viewAt, weaveAt, type GreekLevel } from '../settings/definitions/greekInterest';
 import { levelOf, type InterestLang, type InterestLevels } from '../settings/definitions/interest';
-import { greekInterestSetting, hebrewInterestSetting } from '../settings/definitions';
+import { greekInterestSetting } from '../settings/definitions/greekInterest';
+import { hebrewInterestSetting } from '../settings/definitions/hebrewInterest';
 import { hebrewLevelOf } from '../settings/definitions/hebrewInterest';
 import { DEFAULT_LAYOUT } from '../layout/layouts';
 import { playToOf } from '../speech/readSpan';

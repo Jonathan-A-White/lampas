@@ -2,7 +2,7 @@
 // he is and reopening can put it back. The reader tells the bus what changed (src/events/bus.ts); this listens and
 // writes it into the address of the entry he is on (replaceState: a tap on a verse number is not a Back step).
 import { subscribe } from '../events/bus';
-import { weaveSetting } from '../settings/definitions';
+import { weaveSetting } from '../settings/definitions/weave';
 import { onSetting } from '../settings/store';
 import { linkOf } from './links';
 import { readerHash, readerOf, replaceHash, routeOf, type ReaderAddress } from './route';

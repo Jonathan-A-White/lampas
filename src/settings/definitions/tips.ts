@@ -4,6 +4,8 @@ import { defineSetting } from '../define';
 export type Tips = 'on' | 'off';
 
 export const tipsSetting = defineSetting<Tips>({
+  order: 30,
+  slot: 240,
   key: 'tips',
   default: 'on',
   allowed: {

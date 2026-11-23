@@ -5,6 +5,8 @@ import { defineSetting } from '../define';
 export type ChapterButtons = 'show' | 'hide';
 
 export const chapterButtonsSetting = defineSetting<ChapterButtons>({
+  order: 170,
+  slot: 120,
   key: 'chapterButtons',
   default: 'show',
   allowed: {

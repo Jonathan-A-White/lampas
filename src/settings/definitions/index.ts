@@ -1,40 +1,10 @@
-// src/settings/definitions/index.ts — every setting declared once (src/settings/define.ts), one line each. src/settings/registry.ts makes
-// their entries from these (and src/settings/rows.ts their rows); the rest of the settings are still written out in the registry until
-// they move here (docs/module-map.md R2b to R2d).
+// src/settings/definitions/index.ts — every setting declared once (src/settings/define.ts), gathered from the files of this directory by glob (src/settings/gather.ts): a new setting is one new file
+// and edits no list here (mw-6ww.175.105). Its `order` places it in DEFINITIONS and its `slot` in the registry's SETTINGS (src/settings/registry.ts); a setting with neither comes last, by key.
+// A setting that has a registry entry made by hand (src/settings/entries/) has no `slot`, and one kept out of both says why in `outside`. Import a setting from its own file.
 import type { SettingDef, SettingValue } from '../define';
-import { audioBibleSetting } from './audioBible';
-import { bibleVoiceSetting } from './bibleVoice';
-import { chapterButtonsSetting } from './chapterButtons';
-import { copyLinkSetting, copyNumbersSetting, copyReferenceSetting } from './copyFormat';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilOrderSetting, morningRephilBackupSetting, todaysDevotionalSetting } from './daily';
-import { englishAccentSetting } from './englishAccent';
-import { fontSetting } from './font';
-import { paradigmExtentSetting } from './grammarExtent';
-import { greekInterestSetting } from './greekInterest';
-import { greekKeyboardSetting } from './greekKeyboard';
-import { hebrewInterestSetting } from './hebrewInterest';
-import { hebrewKeyboardSetting } from './hebrewKeyboard';
-import { handsFreeSetting } from './handsFree';
-import { handsFreePauseSetting } from './handsFreePause';
-import { handwritingSetting } from './handwriting';
-import { immersiveSetting } from './immersive';
-import { immersiveHintSetting } from './immersiveHint';
-import { ipaCourseSetting } from './ipaCourse';
-import { hebrewPronunciationSetting, pronunciationSeparateSetting, pronunciationSetting } from './pronunciation';
-import { readLessonsSetting } from './readLessons';
-import { readingModeSetting } from './readingMode';
-import { readingPlanSetting } from './readingPlan';
-import { rp2026EnglishSetting } from './rp2026English';
-import { septuagintSetting } from './septuagint';
-import { septuagintGapsSetting } from './septuagintGaps';
-import { themeSetting } from './theme';
-import { sendSetting, talkSetting } from './talk';
-import { tipsSetting } from './tips';
-import { variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting } from './variants';
-import { weaveSetting } from './weave';
-import { weaveOrderSetting } from './weaveOrder';
+import { definitionsOf, type Modules } from '../gather';
 
-export { ANOTHER } from './daily';
-export { audioBibleSetting, bibleVoiceSetting, chapterButtonsSetting, copyLinkSetting, copyNumbersSetting, copyReferenceSetting, dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilOrderSetting, morningRephilBackupSetting, englishAccentSetting, fontSetting, greekInterestSetting, greekKeyboardSetting, handsFreeSetting, handsFreePauseSetting, handwritingSetting, hebrewInterestSetting, hebrewKeyboardSetting, hebrewPronunciationSetting, immersiveHintSetting, immersiveSetting, ipaCourseSetting, paradigmExtentSetting, pronunciationSeparateSetting, pronunciationSetting, readLessonsSetting, readingModeSetting, readingPlanSetting, rp2026EnglishSetting, septuagintSetting, septuagintGapsSetting, sendSetting, talkSetting, themeSetting, tipsSetting, todaysDevotionalSetting, variantLessonsOfferSetting, variantsSetting, variantWitnessesSetting, weaveOrderSetting, weaveSetting };
+/** The exports of every file of this directory (the glob itself, for src/settings/registry.ts, which makes the registry's entries from them). */
+export const DEFINITION_MODULES: Modules = import.meta.glob(['./*.ts', '!./index.ts'], { eager: true });
 
-export const DEFINITIONS: readonly SettingDef<SettingValue>[] = [themeSetting, weaveSetting, tipsSetting, immersiveSetting, immersiveHintSetting, audioBibleSetting, readingPlanSetting, readLessonsSetting, handsFreeSetting, handsFreePauseSetting, bibleVoiceSetting, englishAccentSetting, ipaCourseSetting, weaveOrderSetting, handwritingSetting, readingModeSetting, chapterButtonsSetting, copyReferenceSetting, copyNumbersSetting, copyLinkSetting, fontSetting, greekInterestSetting, hebrewInterestSetting, septuagintSetting, septuagintGapsSetting, dailyReviewSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyDevotionalSetting, devotionalSetting, devotionalDrawSetting, morningRephilOrderSetting, morningRephilBackupSetting, dailyTicksSetting, devotionalLogosSetting, devotionalRephilSetting, greekKeyboardSetting, hebrewKeyboardSetting, pronunciationSetting, pronunciationSeparateSetting, hebrewPronunciationSetting, talkSetting, sendSetting, paradigmExtentSetting, variantsSetting, variantWitnessesSetting, variantLessonsOfferSetting, rp2026EnglishSetting];
+export const DEFINITIONS: readonly SettingDef<SettingValue>[] = definitionsOf(DEFINITION_MODULES);

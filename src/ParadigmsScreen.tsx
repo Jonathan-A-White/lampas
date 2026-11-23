@@ -35,7 +35,7 @@ import type { OwnText, OwnUse } from './data/paradigms/types';
 import { blocksOf, columnsThatFit, greekRemOf, tableDirection } from './data/paradigms/layout';
 import { absentText, foundIn, foundShort, loadLemmaForms, ownTable, referenceText, septuagintFormOf, ownFormOf, type OwnForm } from './data/paradigms/ownForms';
 import { useSetting } from './settings/store';
-import { septuagintSetting } from './settings/definitions';
+import { septuagintSetting } from './settings/definitions/septuagint';
 import { drillMissed, drillOf, forgetDrill, gradeCell, markMissWritten, revealCell, scoreOf, startRun, type Drill } from './data/paradigms/drill';
 import { cellPrompt, PARADIGM_KIND } from './data/paradigms/cells';
 import { ensureScheduled, listLevels, markParadigmOpened, recordDrillMiss, reviewsOf, screenRef } from './data/repositories';

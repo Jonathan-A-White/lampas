@@ -3,6 +3,8 @@ import { DEFAULT_THEME, THEMES, type Theme } from '../../appearance/themes';
 import { defineSetting } from '../define';
 
 export const themeSetting = defineSetting<Theme>({
+  order: 10,
+  slot: 60,
   key: 'theme',
   default: DEFAULT_THEME,
   allowed: { kind: 'choice', values: THEMES.map((t) => ({ value: t.id, label: t.label })) },

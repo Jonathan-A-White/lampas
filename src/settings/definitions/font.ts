@@ -4,6 +4,8 @@ import { DEFAULT_FONT, FONTS, type FontId } from '../../appearance/fonts';
 import { defineSetting } from '../define';
 
 export const fontSetting = defineSetting<FontId>({
+  order: 210,
+  slot: 70,
   key: 'font',
   default: DEFAULT_FONT,
   allowed: { kind: 'choice', values: FONTS.map((f) => ({ value: f.id, label: f.label })) },

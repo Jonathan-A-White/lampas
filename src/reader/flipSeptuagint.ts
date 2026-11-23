@@ -6,7 +6,7 @@ import { bookOf, isHebrewBook } from '../data/books';
 import type { Chapter } from '../data/chapter';
 import { loadLxxIndex, loadSeptuagintChapter, notReadyName } from '../data/lxxChapter';
 import { setLastVerse } from '../data/readerChapter';
-import { septuagintSetting } from '../settings/definitions';
+import { septuagintSetting } from '../settings/definitions/septuagint';
 import { setSetting } from '../settings/store';
 import { isSeptuagint } from './septuagint';
 import { settleAtTop } from './useBringVerse';

@@ -5,7 +5,7 @@ import type { Chapter, Verse } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { getLastVerse, setLastVerse } from '../../src/data/readerChapter';
 import { FLIP_TEXT, flipSeptuagint, greekVerseOf, lampasVerseOf } from '../../src/reader/flipSeptuagint';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { getSetting, setSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../support/chapter-fetch';
 

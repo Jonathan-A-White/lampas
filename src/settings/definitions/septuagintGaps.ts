@@ -6,6 +6,8 @@ import { defineSetting } from '../define';
 export type SeptuagintGaps = 'on' | 'off';
 
 export const septuagintGapsSetting = defineSetting<SeptuagintGaps>({
+  order: 250,
+  slot: 50,
   key: 'septuagintGaps',
   default: 'off',
   allowed: {

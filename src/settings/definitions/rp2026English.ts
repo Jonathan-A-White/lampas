@@ -5,6 +5,8 @@ import { defineSetting } from '../define';
 export type Rp2026English = 'off' | 'on';
 
 export const rp2026EnglishSetting = defineSetting<Rp2026English>({
+  order: 490,
+  slot: 300,
   key: 'rp2026English',
   default: 'off',
   allowed: {

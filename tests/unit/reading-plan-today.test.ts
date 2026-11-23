@@ -5,7 +5,7 @@ import { db } from '../../src/data/db';
 import { getReadingPlan, markHeard, nextChapter, planProgress, restorePlan, setPlace, startPlan } from '../../src/data/repositories';
 import { markChapterRead, readOn, unmarkChaptersRead } from '../../src/data/repositories/readingPlan';
 import { readPlan } from '../../src/plan/usePlan';
-import { readingPlanSetting } from '../../src/settings/definitions';
+import { readingPlanSetting } from '../../src/settings/definitions/readingPlan';
 import { setSetting } from '../../src/settings/store';
 import { readRanges } from '../../src/today/readToday';
 import { todayFacts } from '../../src/today/tutorFacts';

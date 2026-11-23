@@ -18,7 +18,7 @@ import {
   startPlan,
 } from '../../src/data/repositories/readingPlan';
 import { AUDIO_BIBLES } from '../../src/resources/audioBible';
-import { audioBibleSetting } from '../../src/settings/definitions';
+import { audioBibleSetting } from '../../src/settings/definitions/audioBible';
 import { readingPlanSetting } from '../../src/settings/definitions/readingPlan';
 import { getSetting, setSetting } from '../../src/settings/store';
 

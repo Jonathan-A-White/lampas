@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { dismissVariantKey, getVariantKeyDismissed, getVariantLessonsOfferAnswered } from '../data/repositories';
 import { openVariantLesson } from '../nav/route';
-import { variantLessonsOfferSetting } from '../settings/definitions';
+import { variantLessonsOfferSetting } from '../settings/definitions/variants';
 import { useSetting } from '../settings/store';
 import { focusOnMount } from '../ui/focus';
 import { DialogAskTutor } from '../AskTutor';

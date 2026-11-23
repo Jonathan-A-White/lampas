@@ -7,6 +7,8 @@ export type TalkHow = 'hold' | 'tap';
 export type SendHow = 'release' | 'button';
 
 export const talkSetting = defineSetting<TalkHow>({
+  order: 430,
+  slot: 210,
   key: 'talk',
   default: 'hold',
   allowed: {
@@ -23,6 +25,8 @@ export const talkSetting = defineSetting<TalkHow>({
 });
 
 export const sendSetting = defineSetting<SendHow>({
+  order: 440,
+  slot: 220,
   key: 'send',
   default: 'release',
   allowed: {

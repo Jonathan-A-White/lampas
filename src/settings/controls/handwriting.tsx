@@ -1,6 +1,6 @@
 // Settings > Handwriting (mw-86e9r1.51): Handwriting drills, Automatic | On | Off, and under it whether a pen has touched this phone, which is what
 // Automatic goes by.
-import { handwritingSetting } from '../definitions';
+import { handwritingSetting } from '../definitions/handwriting';
 import { useSetting } from '../store';
 import { usePenSeen } from '../../handwriting/useHandwriting';
 import { ChipRow, SettingRow } from './SettingRow';

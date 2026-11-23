@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { isHebrewBook } from '../data/books';
 import { forgetChapter, loadChapter, type Chapter } from '../data/chapter';
-import { septuagintSetting } from '../settings/definitions';
+import { septuagintSetting } from '../settings/definitions/septuagint';
 import { useSetting } from '../settings/store';
 
 export function useChapter(book: string, chapterN: number) {

@@ -10,7 +10,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vites
 import { db } from '../../src/data/db';
 import type { Chapter, GreekWord, Verse } from '../../src/data/chapter';
 import { forgetLxxIndex, loadSeptuagintChapter } from '../../src/data/lxxChapter';
-import { septuagintGapsSetting } from '../../src/settings/definitions';
+import { septuagintGapsSetting } from '../../src/settings/definitions/septuagintGaps';
 import { settingOf, ROWS, visibleRows, readValues } from '../support/settings';
 import { getSetting, setSetting } from '../../src/settings/store';
 import { VerseText } from '../../src/reader/VerseText';

@@ -10,7 +10,7 @@ import { clearBus } from '../../src/events/bus';
 import { HandsFreeGate } from '../../src/handsFree/HandsFreeGate';
 import { resetHandsFree } from '../../src/handsFree/session';
 import { getHandsFree } from '../../src/handsFree/switch';
-import { handsFreeSetting } from '../../src/settings/definitions';
+import { handsFreeSetting } from '../../src/settings/definitions/handsFree';
 import { setSetting } from '../../src/settings/store';
 import { stopReading } from '../../src/speech/readAloud';
 import { ENGLISH_VOICE, stubSpeech, type FakeSynth } from '../support/fake-speech';

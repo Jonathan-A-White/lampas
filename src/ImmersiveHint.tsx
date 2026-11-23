@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { Away } from './Away';
 import { IMMERSIVE_HINT_LINES } from './immersive';
-import { immersiveHintSetting } from './settings/definitions';
+import { immersiveHintSetting } from './settings/definitions/immersiveHint';
 import type { ReadingMode } from './settings/definitions/readingMode';
 import { setSetting, useSetting } from './settings/store';
 import { useHeldSpace } from './ui/heldSpace';

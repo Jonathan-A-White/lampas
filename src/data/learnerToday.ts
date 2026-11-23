@@ -7,7 +7,7 @@ import { DEFAULT_ORDER, devotionalToday } from './daily/morningRephil';
 import { dayProgress, getStudyResources } from './repositories';
 import { chapterName } from '../plan/chapterName';
 import { readPlan } from '../plan/usePlan';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalLogosSetting, devotionalRephilSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions/daily';
 import { getSetting } from '../settings/store';
 import { memorizeLine, memorizeToday } from '../today/memorizeLine';
 import { todayPieces } from '../today/pieces';

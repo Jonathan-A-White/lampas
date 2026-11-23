@@ -8,6 +8,8 @@ import { depthFrom } from './interest';
 export type HandwritingDrills = 'auto' | 'on' | 'off';
 
 export const handwritingSetting = defineSetting<HandwritingDrills>({
+  order: 150,
+  slot: 380,
   key: 'handwritingDrills',
   default: 'auto',
   allowed: {

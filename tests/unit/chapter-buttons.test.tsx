@@ -11,7 +11,7 @@ import { setTips } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
 import { crossChapter } from '../../src/reader/crossChapter';
 import { useChapterSwipe } from '../../src/reader/useChapterSwipe';
-import { chapterButtonsSetting } from '../../src/settings/definitions';
+import { chapterButtonsSetting } from '../../src/settings/definitions/chapterButtons';
 import { writeSetting } from '../support/settings';
 import { setSetting } from '../../src/settings/store';
 import { chapterSwiped, hints } from '../../src/tips/hints';

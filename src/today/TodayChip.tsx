@@ -7,7 +7,7 @@ import { DEFAULT_BACKUP, tickedDevotionals } from '../data/daily/devotionals';
 import { getDay, getHeard, localDate } from '../data/daily/dailyStore';
 import { DEFAULT_ORDER, devotionalToday } from '../data/daily/morningRephil';
 import { navigate } from '../nav/route';
-import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions';
+import { dailyDevotionalSetting, dailyMemorizeSetting, dailyPlanSetting, dailyPsalmsSetting, dailyReviewSetting, dailyTicksSetting, devotionalDrawSetting, devotionalSetting, morningRephilBackupSetting, morningRephilOrderSetting } from '../settings/definitions/daily';
 import { useSetting } from '../settings/store';
 import { todayPieces, tickedCount } from './pieces';
 import { useDrawSources } from '../settings/devotionalSources';

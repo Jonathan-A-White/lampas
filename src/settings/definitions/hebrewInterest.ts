@@ -16,4 +16,4 @@ export const hebrewLevelOf = (raw: unknown): HebrewLevel => interestLevelOf('hbo
 /** The dependency of a row that the Hebrew dial shows from step `level` up. */
 export const hebrewFrom = (level: HebrewLevel) => interestFrom('hbo', level);
 
-export const hebrewInterestSetting = interestSetting('hbo');
+export const hebrewInterestSetting = interestSetting('hbo', 230);

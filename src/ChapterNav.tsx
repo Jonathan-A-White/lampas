@@ -10,7 +10,7 @@ import { neighbours } from './data/neighbours';
 import type { OpenChapter } from './data/readerChapter';
 import { getTips, setChapterButtons } from './data/repositories';
 import { openReader } from './nav/route';
-import { chapterButtonsSetting } from './settings/definitions';
+import { chapterButtonsSetting } from './settings/definitions/chapterButtons';
 import { useSetting } from './settings/store';
 import { HintCard } from './tips/HintCard';
 import { CHAPTER_BUTTONS_OFFER, CHAPTER_NAV_SHOWN, chapterSwiped, hints, HIDE_CHAPTER_BUTTONS } from './tips/hints';

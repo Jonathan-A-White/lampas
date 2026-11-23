@@ -3,7 +3,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { forgetTimings, loadBookTimings } from '../../src/data/audioTimings';
-import { bibleVoiceSetting } from '../../src/settings/definitions';
+import { bibleVoiceSetting } from '../../src/settings/definitions/bibleVoice';
 import { setConnectionForTests } from '../../src/speech/connection';
 import type { PlanVerse } from '../../src/speech/readAloud';
 import { resetRecordedVoice, setBibleVoice, wantsRecording } from '../../src/speech/recordedVoice';

@@ -14,7 +14,7 @@ import { memorizeTarget } from '../../src/memorize/target';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { openMemorizeSession } from '../../src/nav/route';
 import { stopReading } from '../../src/speech/readAloud';
-import { greekKeyboardSetting } from '../../src/settings/definitions';
+import { greekKeyboardSetting } from '../../src/settings/definitions/greekKeyboard';
 import { settingKeyOf } from '../../src/settings/link';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../support/chapter-fetch';

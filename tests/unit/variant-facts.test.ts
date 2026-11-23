@@ -6,7 +6,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { Chapter } from '../../src/data/chapter';
 import { db } from '../../src/data/db';
 import { setSetting } from '../../src/settings/store';
-import { variantsSetting, variantWitnessesSetting } from '../../src/settings/definitions';
+import { variantsSetting, variantWitnessesSetting } from '../../src/settings/definitions/variants';
 import { buildTalkRequest, type TalkRequest } from '../../src/services/talk';
 import { dropVariants } from '../../src/services/talkFit';
 import { lampasRegistry } from '../../src/tutor/registry';

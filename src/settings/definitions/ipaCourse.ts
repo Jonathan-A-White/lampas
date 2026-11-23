@@ -8,6 +8,8 @@ import { depthFrom } from './interest';
 export type IpaLesson = 'on' | 'off';
 
 export const ipaCourseSetting = defineSetting<IpaLesson>({
+  order: 130,
+  slot: 510,
   key: 'ipaLesson',
   default: 'on',
   allowed: {

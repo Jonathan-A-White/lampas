@@ -57,6 +57,8 @@ export const extentChoices = (key: ExtentKey): { value: string; label: string }[
 
 /** How much of a table (Settings > Greek > Paradigms, and the switch in a table's header): which cells a paradigm table shows. */
 export const paradigmExtentSetting = defineSetting<GrammarExtent>({
+  order: 450,
+  slot: 350,
   key: 'paradigmExtent',
   default: DEFAULT_EXTENT,
   allowed: { kind: 'choice', values: extentChoices('paradigmExtent') },

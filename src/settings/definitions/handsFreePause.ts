@@ -6,6 +6,8 @@ import { defineSetting } from '../define';
 export type HandsFreePauseValue = '1' | '1.5' | '2' | '3' | '4';
 
 export const handsFreePauseSetting = defineSetting<HandsFreePauseValue>({
+  order: 100,
+  slot: 420,
   key: 'handsFreePause',
   default: '1.5',
   allowed: {

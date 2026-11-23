@@ -5,6 +5,8 @@ import { defineSetting } from '../define';
 export type ImmersiveHint = 'on' | 'off';
 
 export const immersiveHintSetting = defineSetting<ImmersiveHint>({
+  order: 50,
+  slot: 170,
   key: 'immersiveHint',
   default: 'on',
   allowed: {

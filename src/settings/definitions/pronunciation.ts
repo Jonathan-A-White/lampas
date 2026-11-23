@@ -25,6 +25,7 @@ export const DEFAULT_FAMILY: string = PRONUNCIATION_FAMILIES[0].id;
 export const familyOf = (id: unknown): PronunciationFamily => PRONUNCIATION_FAMILIES.find((f) => f.id === id) ?? PRONUNCIATION_FAMILIES[0];
 
 export const pronunciationSetting = defineSetting<string>({
+  order: 400,
   key: 'pronunciation',
   default: DEFAULT_FAMILY,
   allowed: { kind: 'choice', values: PRONUNCIATION_FAMILIES.map((f) => ({ value: f.id, label: f.label })) },
@@ -37,6 +38,7 @@ export const pronunciationSetting = defineSetting<string>({
 });
 
 export const pronunciationSeparateSetting = defineSetting<'on' | 'off'>({
+  order: 410,
   key: 'pronunciationSeparate',
   default: 'off',
   allowed: {
@@ -60,6 +62,8 @@ export const SEPARATE_KEYS = { grc: 'pronunciationSeparate.grc', he: 'pronunciat
 export const separateFrom = (lang: keyof typeof SEPARATE_KEYS): Dependency => ({ key: SEPARATE_KEYS[lang], shown: (value) => value === 'on' });
 
 export const hebrewPronunciationSetting = defineSetting<string>({
+  order: 420,
+  slot: 490,
   key: 'hebrewPronunciation',
   default: DEFAULT_HEBREW_PRONUNCIATION,
   allowed: { kind: 'choice', values: pronunciationsOf('he').map((p) => ({ value: p.id, label: p.label })) },

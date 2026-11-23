@@ -12,7 +12,7 @@ import { addLemmaToLearn } from '../../src/data/answerWord';
 import { loadLexicon } from '../../src/data/lexicon';
 import { findWord } from '../../src/nav/links';
 import { addWord } from '../../src/tutor/registry';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 import { forgetLxxIndex } from '../../src/data/lxxChapter';
 import { chapterLanguage, forgetChapters, isGuess, wordDefinition, wordGloss, type Chapter, type GreekWord, type Verse } from '../../src/data/chapter';

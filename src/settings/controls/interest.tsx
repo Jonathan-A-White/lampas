@@ -2,7 +2,10 @@
 // name (never a bare number), and the line under the buttons says what the chosen step means. Choosing one writes the setting, which moves the dial
 // (src/data/repositories/greekInterest.ts). Step 0 is never drawn: 'Which languages?' above is how a language is left off, and the dial's row hides with it.
 import { levelsOf, type InterestLang } from '../definitions/interest';
-import { greekInterestSetting, hebrewInterestSetting, septuagintGapsSetting, septuagintSetting } from '../definitions';
+import { greekInterestSetting } from '../definitions/greekInterest';
+import { hebrewInterestSetting } from '../definitions/hebrewInterest';
+import { septuagintGapsSetting } from '../definitions/septuagintGaps';
+import { septuagintSetting } from '../definitions/septuagint';
 import { writeSetting } from '../registry';
 import { useSetting } from '../store';
 import { OnOff, RowName, SettingRow } from './SettingRow';

@@ -4,7 +4,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/data/db';
 import { answerVariantLessonsOffer, getVariantLessonsOfferAnswered, setVariantLessonsOffer } from '../../src/data/repositories';
 import { clearBus } from '../../src/events/bus';
-import { variantLessonsOfferSetting } from '../../src/settings/definitions';
+import { variantLessonsOfferSetting } from '../../src/settings/definitions/variants';
 import { getSetting } from '../../src/settings/store';
 
 afterAll(() => db.close());

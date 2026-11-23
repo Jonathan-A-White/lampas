@@ -5,7 +5,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { sourceLanguage, type Chapter } from '../data/chapter';
 import { getInterestLevels, getPlainEnglishUnder, getReaderView, getWeave, getWeaveGrammar, listLearningLemmas, listLevels, listSolidLemmas, type ReaderView, type Weave } from '../data/repositories';
-import { weaveOrderSetting } from '../settings/definitions';
+import { weaveOrderSetting } from '../settings/definitions/weaveOrder';
 import { viewAt, weaveAt } from '../settings/definitions/greekInterest';
 import { levelOf, type InterestLevels } from '../settings/definitions/interest';
 import { getSetting, useSetting } from '../settings/store';

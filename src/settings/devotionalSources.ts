@@ -3,7 +3,7 @@
 import { drawSourcesOf, type DrawSources } from '../data/daily/devotionals';
 import { getStudyResources } from '../data/repositories';
 import { useLogosOn } from '../useLogosOn';
-import { devotionalLogosSetting, devotionalRephilSetting } from './definitions';
+import { devotionalLogosSetting, devotionalRephilSetting } from './definitions/daily';
 import { getSetting, useSetting } from './store';
 
 /** The sources that are on, live; undefined until every switch has been read. */

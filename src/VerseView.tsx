@@ -65,7 +65,7 @@ import { useDoorRoom } from './tutor/doorRoom';
 import { audibleChapterLabel, audibleListen, audioBibleOf } from './resources/audioBible';
 import { SendOff } from './plan/SendOff';
 import { useSendOff } from './plan/useSendOff';
-import { audioBibleSetting } from './settings/definitions';
+import { audioBibleSetting } from './settings/definitions/audioBible';
 import { useSetting } from './settings/store';
 import { isOrdered, rowAttrs } from './reader/sourceText';
 import { lampasUnit } from './reader/septuagint';

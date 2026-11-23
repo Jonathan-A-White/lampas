@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
 import { loadChapter } from '../../src/data/chapter';
 import { greekChapterOf, notReadyName, type LxxIndex } from '../../src/data/lxxChapter';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch, type ChapterFetch } from '../support/chapter-fetch';
 import index from '../fixtures/data-lxx/index.json' with { type: 'json' };

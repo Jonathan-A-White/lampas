@@ -10,7 +10,7 @@ import { todayNow } from '../../src/data/learnerToday';
 import { wordIsListed } from '../../src/data/repositories';
 import { setWorks } from '../../src/data/repositories';
 import { setSetting } from '../../src/settings/store';
-import { dailyTicksSetting } from '../../src/settings/definitions';
+import { dailyTicksSetting } from '../../src/settings/definitions/daily';
 import { currentSettings } from '../support/settings';
 import { hasPractise, takePractise } from '../../src/review/practise';
 import { registerTalkLeave } from '../../src/talk/rustyOffer';

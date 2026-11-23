@@ -10,6 +10,7 @@ export type ReaderSplit = 'on' | 'off';
 
 /** Whether the dock is open. What is in it is `splitText` (a text beside the passage) or, while that is empty, `splitMap` (a map). */
 export const readerSplitSetting = defineSetting<ReaderSplit>({
+  outside: 'kept out like Hand (src/settings/hand.ts): the split is chosen, sized and closed in place',
   key: 'readerSplit',
   default: 'off',
   allowed: {
@@ -28,6 +29,7 @@ export const readerSplitSetting = defineSetting<ReaderSplit>({
 export const SPLIT_FRACTION_MIN = 0.05;
 export const SPLIT_FRACTION_MAX = 0.95;
 export const splitSizeSetting = defineSetting<number>({
+  outside: 'kept out like Hand (src/settings/hand.ts)',
   key: 'splitSize',
   default: FIRST_FRACTION,
   allowed: { kind: 'number', min: SPLIT_FRACTION_MIN, max: SPLIT_FRACTION_MAX, step: 0.0001 },
@@ -42,6 +44,7 @@ export const splitSizeSetting = defineSetting<number>({
 
 /** The map the dock holds (mw-5r3p30.1129.2): the chapter it was opened from and the card, as src/maps/splitMap.ts writes it; empty while the dock holds none. A reload brings the same map back. */
 export const splitMapSetting = defineSetting<string>({
+  outside: 'kept out like Hand (src/settings/hand.ts)',
   key: 'splitMap',
   default: '',
   allowed: {
@@ -58,6 +61,7 @@ export const splitMapSetting = defineSetting<string>({
 
 /** The text the dock holds (mw-5r3p30.1130): one of src/reader/split/splitTexts.ts SPLIT_TEXT_KEYS ('hebrew', 'greek', 'english', 'lxx-greek', 'lxx-english'), or empty for none; while it is set the dock shows the text, not the map. A reload brings the same text back. */
 export const splitTextSetting = defineSetting<string>({
+  outside: 'kept out like Hand (src/settings/hand.ts)',
   key: 'splitText',
   default: '',
   allowed: {
@@ -76,6 +80,7 @@ export type SplitLink = 'on' | 'off';
 
 /** Whether the two panes of a text split keep to the same verse as either scrolls (the Link on the dock's handle row; mw-5r3p30.1130). On until he turns it off. */
 export const splitLinkSetting = defineSetting<SplitLink>({
+  outside: 'kept out like Hand (src/settings/hand.ts)',
   key: 'splitLink',
   default: 'on',
   allowed: {

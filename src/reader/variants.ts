@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import type { Chapter, GreekWord, VariantCode, VariantUnit, VariantWitness, Verse } from '../data/chapter';
 import { plainEnglish, sameEnglishReading } from '../data/variantVerse';
 import { getVariantsLastOn } from '../data/repositories';
-import { variantsSetting, variantWitnessesSetting } from '../settings/definitions';
+import { variantsSetting, variantWitnessesSetting } from '../settings/definitions/variants';
 import { getActiveSet } from '../data/repositories';
 import { chosenUnits, type ChosenUnit } from './chosenReading';
 import type { ReadingSet } from './readingSets';

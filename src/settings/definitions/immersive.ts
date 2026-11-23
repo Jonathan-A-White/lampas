@@ -4,6 +4,8 @@ import { defineSetting } from '../define';
 export type Immersive = 'on' | 'off';
 
 export const immersiveSetting = defineSetting<Immersive>({
+  order: 40,
+  slot: 160,
   key: 'immersiveReader',
   default: 'off',
   allowed: {

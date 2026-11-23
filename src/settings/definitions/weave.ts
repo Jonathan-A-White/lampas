@@ -6,6 +6,8 @@ import { depthFrom } from './interest';
 export type Weave = 'off' | 'solid' | 'solid+learning';
 
 export const weaveSetting = defineSetting<Weave>({
+  order: 20,
+  slot: 250,
   key: 'weave',
   default: 'off',
   allowed: {

@@ -16,10 +16,11 @@ const ON_OFF = {
   ],
 } as const;
 
-const piece = (key: string, label: string, hint: string, help: string, dependsOn?: Dependency) =>
-  defineSetting<DailySwitch>({ key, default: 'on', allowed: ON_OFF, section: 'daily', label, hint, help, dependsOn });
+const piece = (place: { order: number; slot: number }, key: string, label: string, hint: string, help: string, dependsOn?: Dependency) =>
+  defineSetting<DailySwitch>({ ...place, key, default: 'on', allowed: ON_OFF, section: 'daily', label, hint, help, dependsOn });
 
 export const dailyReviewSetting = piece(
+  { order: 260, slot: 590 },
   'dailyReview',
   'Review',
   'Today holds your due cards.',
@@ -27,6 +28,7 @@ export const dailyReviewSetting = piece(
 );
 
 export const dailyMemorizeSetting = piece(
+  { order: 270, slot: 600 },
   'dailyMemorize',
   'Memorize',
   'Today holds verses due to recall.',
@@ -34,6 +36,7 @@ export const dailyMemorizeSetting = piece(
 );
 
 export const dailyPlanSetting = piece(
+  { order: 280, slot: 610 },
   'dailyPlan',
   'Plan chapter',
   "Today holds the plan's chapter.",
@@ -41,6 +44,7 @@ export const dailyPlanSetting = piece(
 );
 
 export const dailyPsalmsSetting = piece(
+  { order: 290, slot: 620 },
   'dailyPsalms',
   'Psalms and Proverbs',
   "Today holds the day's Psalms and Proverbs.",
@@ -48,6 +52,7 @@ export const dailyPsalmsSetting = piece(
 );
 
 export const dailyDevotionalSetting = piece(
+  { order: 300, slot: 630 },
   'dailyDevotional',
   'Devotional',
   'Today holds a devotional.',
@@ -55,6 +60,8 @@ export const dailyDevotionalSetting = piece(
 );
 
 export const devotionalSetting = defineSetting<string>({
+  order: 310,
+  slot: 640,
   key: 'devotional',
   default: DEFAULT_DEVOTIONAL,
   allowed: {
@@ -76,6 +83,8 @@ export const LOGOS_REPHIL_KEY = 'devotional.logosRephil';
 export const logosRephil: Dependency = { key: LOGOS_REPHIL_KEY, shown: (value) => value === 'on' };
 
 export const devotionalDrawSetting = defineSetting<string>({
+  order: 320,
+  slot: 650,
   key: 'devotionalDraw',
   default: ALL_TICKED,
   allowed: {
@@ -97,6 +106,8 @@ export const devotionalDrawSetting = defineSetting<string>({
 /** Devotional sources (mw-r9xo1pj.4): one On/Off per source of devotionals. Which devotional lists, and Random and Another draw, only from the sources that are On (src/data/daily/devotionals.ts drawPool).
  *  'Logos devotionals' shows only while Logos is On: with Logos Off no Logos devotional is drawn at all. */
 export const devotionalLogosSetting = defineSetting<DailySwitch>({
+  order: 360,
+  slot: 660,
   key: 'devotionalLogos',
   default: 'on',
   allowed: ON_OFF,
@@ -108,6 +119,8 @@ export const devotionalLogosSetting = defineSetting<DailySwitch>({
 });
 
 export const devotionalRephilSetting = defineSetting<DailySwitch>({
+  order: 370,
+  slot: 670,
   key: 'devotionalRephil',
   default: 'on',
   allowed: ON_OFF,
@@ -118,6 +131,8 @@ export const devotionalRephilSetting = defineSetting<DailySwitch>({
 });
 
 export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
+  order: 330,
+  slot: 680,
   key: 'morningRephilOrder',
   default: DEFAULT_ORDER,
   allowed: {
@@ -135,6 +150,8 @@ export const morningRephilOrderSetting = defineSetting<EpisodeOrder>({
 });
 
 export const morningRephilBackupSetting = defineSetting<string>({
+  order: 340,
+  slot: 690,
   key: 'morningRephilBackup',
   default: DEFAULT_BACKUP,
   allowed: {
@@ -149,6 +166,7 @@ export const morningRephilBackupSetting = defineSetting<string>({
 });
 
 export const dailyTicksSetting = piece(
+  { order: 350, slot: 710 },
   'dailyTicks',
   'Tick boxes',
   'Each piece has a tick box.',

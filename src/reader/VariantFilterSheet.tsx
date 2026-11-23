@@ -2,7 +2,7 @@
 // Settings > Reading > Variants, which variants (Those that change the English | All; choosing one turns Variants on), whose readings count (Witnesses), each
 // written to its setting at once, and Read as (the reading set in force, src/reader/ReadingSetSheet.tsx), and a link to the Variants row of Settings. Done, Back, Escape, a swipe down or a tap outside close it.
 import { createPortal } from 'react-dom';
-import { variantsSetting, variantWitnessesSetting } from '../settings/definitions';
+import { variantsSetting, variantWitnessesSetting } from '../settings/definitions/variants';
 import { ChipRow } from '../settings/controls/SettingRow';
 import { openSetting } from '../settings/link';
 import { useSetting } from '../settings/store';

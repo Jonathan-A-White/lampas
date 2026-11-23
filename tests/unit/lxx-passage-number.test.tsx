@@ -7,7 +7,7 @@ import { db } from '../../src/data/db';
 import { loadChapter } from '../../src/data/chapter';
 import { rangeOf } from '../../src/data/passage';
 import { PassageText } from '../../src/reader/ChapterText';
-import { septuagintSetting } from '../../src/settings/definitions';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../support/chapter-fetch';
 

@@ -13,7 +13,8 @@ import { rangeOf } from '../../src/data/passage';
 import { clearBus } from '../../src/events/bus';
 import { PassageText } from '../../src/reader/ChapterText';
 import { TextDock } from '../../src/reader/split/TextDock';
-import { septuagintGapsSetting, septuagintSetting } from '../../src/settings/definitions';
+import { septuagintGapsSetting } from '../../src/settings/definitions/septuagintGaps';
+import { septuagintSetting } from '../../src/settings/definitions/septuagint';
 import { setSetting } from '../../src/settings/store';
 import { stubChapterFetch } from '../support/chapter-fetch';
 
