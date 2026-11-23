@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { SETTLE_MS } from '../../src/ui/settle';
-import { tapTwice } from '../support/gesture';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -54,13 +54,13 @@ async function openLetter(page: Page, letter: string): Promise<Locator> {
   const learn = ideas(page).first();
   await expect(learn.getByRole('heading', { name: 'The Greek alphabet' })).toBeVisible();
   await expect(learn.getByRole('slider', { name: 'Your level' })).toBeEnabled();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   await learn.getByRole('button', { name: `About ${letter.toLowerCase()}` }).click();
   await expect(ideas(page)).toHaveCount(2);
   const sheet = ideas(page).nth(1);
   await expect(sheet.getByRole('heading', { name: letter })).toBeVisible();
   await expect(sheet.getByRole('slider', { name: 'Your level' })).toBeEnabled();
-  await page.waitForTimeout(SETTLE_MS + 100);
+  await pageTime(page, SETTLE_MS + 100);
   return sheet;
 }
 
@@ -68,7 +68,7 @@ test('a double tap on Mark known without a drill leaves the idea at I know it, a
   const xi = await openLetter(page, 'Xi');
   const mark = xi.getByRole('button', { name: 'Mark known without a drill', exact: true });
   await tapTwice(page, mark, GAP_MS, { touch: true });
-  await page.waitForTimeout(SETTLE_MS);
+  await pageTime(page, SETTLE_MS);
   await expect(xi.getByRole('slider', { name: 'Your level' })).toHaveAttribute('aria-valuetext', 'I know it');
   await expect(mark).toHaveCount(0);
   await expect(xi.getByTestId('idea-level')).not.toContainText('Frontier');
@@ -78,7 +78,7 @@ test('a double tap on Mark known without a drill leaves the idea at I know it, a
 test('one tap on Mark known without a drill leaves the idea at I know it (the control)', async ({ page }) => {
   const xi = await openLetter(page, 'Xi');
   await xi.getByRole('button', { name: 'Mark known without a drill', exact: true }).click();
-  await page.waitForTimeout(SETTLE_MS);
+  await pageTime(page, SETTLE_MS);
   await expect(xi.getByRole('slider', { name: 'Your level' })).toHaveAttribute('aria-valuetext', 'I know it');
   await expect(xi.getByTestId('idea-level')).not.toContainText('Frontier');
 });
@@ -90,7 +90,7 @@ test('a double tap on Show N more shows the rest and opens nothing under the sec
   expect(all, 'Chi has more examples than the three drawn first').toBeGreaterThan(3);
   const more = chi.getByRole('button', { name: `Show ${all - 3} more`, exact: true });
   await tapTwice(page, more, GAP_MS, { touch: true });
-  await page.waitForTimeout(SETTLE_MS);
+  await pageTime(page, SETTLE_MS);
   await expect(chi.locator('[data-testid="idea-example"]:visible')).toHaveCount(all);
   await expect(more).toHaveCount(0);
   await expect(page.getByRole('dialog', { name: 'Word', exact: true })).toHaveCount(0);
