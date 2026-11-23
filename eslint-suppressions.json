@@ -329,21 +329,6 @@
       "count": 5
     }
   },
-  "tests/e2e/immersive-awake.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
-  "tests/e2e/immersive-flip.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 6
-    }
-  },
-  "tests/e2e/immersive-hint.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 3
-    }
-  },
   "tests/e2e/library.spec.ts": {
     "local/no-real-time-wait": {
       "count": 3

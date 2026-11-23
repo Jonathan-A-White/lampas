@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { shot } from './shot';
+import { afterFrames, untilStill } from '../support/settled';
 import { openUnlocked } from './unlocked';
 
 // The Immersive reader's hint card (src/ImmersiveHint.tsx) at 390x844: with Immersive reader On the Reader opens with a card above the text that
@@ -94,13 +95,15 @@ test("Don't show this again closes the card for good", async ({ page }) => {
   await expect(card(page)).toHaveCount(0);
   await page.reload();
   await expect(page.locator('[data-verse="1"]')).toBeVisible();
-  await page.waitForTimeout(500);
+  await untilStill(page);
+  await afterFrames(page);
   await expect(card(page)).toHaveCount(0);
 });
 
 test('with Immersive reader Off there is no card', async ({ page }) => {
   await openReader(page, 'off');
-  await page.waitForTimeout(500);
+  await untilStill(page);
+  await afterFrames(page);
   await expect(card(page)).toHaveCount(0);
 });
 
@@ -117,7 +120,8 @@ for (const name of ['Got it', "Don't show this again"]) {
     await page.touchscreen.tap(x, y);
     await page.touchscreen.tap(x, y);
     await expect(card(page)).toHaveCount(0);
-    await page.waitForTimeout(600);
+    await untilStill(page);
+    await afterFrames(page);
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 }
