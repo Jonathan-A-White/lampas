@@ -60,6 +60,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links; the words Lampas reads aloud', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
   { name: 'Matthew Henry\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org' },
   LOGOS_SERMONS_CREDIT,
+  { name: 'Enduring Word Bible Commentary', use: 'A link to the chapter\'s commentary by David Guzik, for a library with no volume of his; no words kept', licence: 'no permission needed to link; its credit line kept', link: 'https://enduringword.com' },
   { name: 'Thompson Chain Topics', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=TCR' },
   { name: 'Torrey\'s New Topical Textbook', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=Torrey' },
   { name: 'eSpeak NG', use: 'The sound of ὁ and of δ\'', licence: 'GPL-3.0', link: 'https://github.com/espeak-ng/espeak-ng' },
