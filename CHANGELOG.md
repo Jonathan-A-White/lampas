@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.348
+_2026-11-23_
+- Fixed: Saying the wake word now pauses a sermon video that is playing, so it does not drown out your command, and it plays on again afterwards.
+
 ## 0.7.347
 _2026-11-23_
 - Fixed: When he says two Greek words aloud, the tutor now names and writes both in Greek instead of only the first.

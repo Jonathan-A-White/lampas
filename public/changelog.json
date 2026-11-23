@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.7.348",
+    "date": "2026-11-23",
+    "story": "mw-ecpivg5.7",
+    "kind": "fixed",
+    "text": "Saying the wake word now pauses a sermon video that is playing, so it does not drown out your command, and it plays on again afterwards."
+  },
+  {
     "version": "0.7.347",
     "date": "2026-11-23",
     "story": "mw-qtu3zvz.275",
