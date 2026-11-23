@@ -1624,6 +1624,22 @@
                   "sermons.smale-logos",
                   "sermons.wi-evans-logos",
                   "sermons.calvin-pt-logos",
+                  "sermons.evangelistic-sermon-outlines-logos",
+                  "sermons.sermon-outlines-for-growing-christians-logos",
+                  "sermons.sermon-outlines-for-seekers-logos",
+                  "sermons.sermon-outlines-for-special-days-logos",
+                  "sermons.sermon-outlines-on-1-corinthians-logos",
+                  "sermons.sermon-outlines-on-acts-logos",
+                  "sermons.sermon-outlines-on-christian-living-logos",
+                  "sermons.sermon-outlines-on-ephesians-logos",
+                  "sermons.sermon-outlines-on-galatians-ephesians-philippians-colossians-logos",
+                  "sermons.sermon-outlines-on-romans-logos",
+                  "sermons.sermon-outlines-on-the-gospels-logos",
+                  "sermons.sermon-starters-volume-1-logos",
+                  "sermons.sermon-starters-volume-2-logos",
+                  "sermons.sermon-starters-volume-3-logos",
+                  "sermons.sermon-starters-volume-4-logos",
+                  "sermons.sermon-starters-volume-5-logos",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2246,6 +2262,111 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.calvin-pt-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.evangelistic-sermon-outlines-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": {
+              "key": { "const": "sermons.sermon-outlines-for-growing-christians-logos" },
+              "value": { "type": "string", "enum": ["on", "off"] }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-outlines-for-seekers-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-outlines-for-special-days-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-outlines-on-1-corinthians-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-outlines-on-acts-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": {
+              "key": { "const": "sermons.sermon-outlines-on-christian-living-logos" },
+              "value": { "type": "string", "enum": ["on", "off"] }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-outlines-on-ephesians-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": {
+              "key": { "const": "sermons.sermon-outlines-on-galatians-ephesians-philippians-colossians-logos" },
+              "value": { "type": "string", "enum": ["on", "off"] }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-outlines-on-romans-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-outlines-on-the-gospels-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-starters-volume-1-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-starters-volume-2-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-starters-volume-3-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-starters-volume-4-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.sermon-starters-volume-5-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
