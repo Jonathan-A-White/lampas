@@ -269,11 +269,6 @@
       "count": 1
     }
   },
-  "tests/e2e/cold-start-address.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 4
-    }
-  },
   "tests/e2e/door-overlap-sweep.spec.ts": {
     "local/no-real-time-wait": {
       "count": 1
@@ -324,11 +319,6 @@
       "count": 1
     }
   },
-  "tests/e2e/place-line-chapter.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 3
-    }
-  },
   "tests/e2e/placement-confirm.spec.ts": {
     "local/no-real-time-wait": {
       "count": 1
@@ -347,16 +337,6 @@
   "tests/e2e/quiz.spec.ts": {
     "local/no-real-time-wait": {
       "count": 2
-    }
-  },
-  "tests/e2e/reader-split-text.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 4
-    }
-  },
-  "tests/e2e/reader-split-turn.spec.ts": {
-    "local/no-real-time-wait": {
-      "count": 4
     }
   },
   "tests/e2e/reading-plan-return.spec.ts": {

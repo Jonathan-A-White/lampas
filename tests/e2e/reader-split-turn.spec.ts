@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { drag } from '../support/gesture';
 import { shot } from './shot';
+import { afterRealFrames, keepRealFrames } from '../support/settled';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
 
@@ -12,6 +13,7 @@ test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 // the gesture helpers time a drag on the page's clock, so it is installed before the page opens
 test.beforeEach(async ({ page }) => {
+  await keepRealFrames(page);
   await page.clock.install();
   await page.route('**/data-lxx/**', (route) => {
     const path = new URL(route.request().url()).pathname.replace(/^\/data-lxx\//, '');
@@ -217,7 +219,7 @@ test('Turn pages, Link on: scrolling the dock until a later verse is its top ver
   expect(turned.cut).toBe(0);
   const led = await dockTop(page);
   expect(led!.n).toBe(20);
-  await page.waitForTimeout(400);
+  await afterRealFrames(page);
   // the leader stays where it was put, and the page too
   expect(await dockTop(page)).toEqual(led);
   expect(await shown(page)).toEqual(turned);
@@ -225,7 +227,7 @@ test('Turn pages, Link on: scrolling the dock until a later verse is its top ver
   // the other way: back on page 1 the dock follows to its first verse
   await scrollDock(page, 2);
   await expect.poll(async () => (await shown(page)).on).toContain(2);
-  await page.waitForTimeout(400);
+  await afterRealFrames(page);
   expect((await dockTop(page))!.n).toBe(2);
 });
 
@@ -261,13 +263,13 @@ test('Turn pages, Link off: turning a page moves the dock not at all and scrolli
   const dockWas = await dockTop(page);
   await tapAt(page, 0.85);
   await expect.poll(async () => (await pagesOf(page)).at).toBe(2);
-  await page.waitForTimeout(400);
+  await afterRealFrames(page);
   expect(await dockTop(page)).toEqual(dockWas);
 
   const pageWas = await shown(page);
   await scrollDock(page, 20);
   await expect.poll(async () => (await dockTop(page))?.n).toBe(20);
-  await page.waitForTimeout(400);
+  await afterRealFrames(page);
   expect(await shown(page)).toEqual(pageWas);
   expect((await pagesOf(page)).at).toBe(2);
 });

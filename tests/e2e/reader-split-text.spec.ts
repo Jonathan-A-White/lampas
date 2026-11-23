@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { drag } from '../support/gesture';
 import { shot } from './shot';
+import { afterRealFrames, keepRealFrames } from '../support/settled';
 import { openUnlocked } from './unlocked';
 import { openVerseView } from './verse-view';
 
@@ -13,6 +14,7 @@ test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
 // the gesture helpers time a drag on the page's clock, so it is installed before the page opens
 test.beforeEach(async ({ page }) => {
+  await keepRealFrames(page);
   await page.clock.install();
   await page.route('**/data-lxx/**', (route) => {
     const path = new URL(route.request().url()).pathname.replace(/^\/data-lxx\//, '');
@@ -151,13 +153,13 @@ test('Link on: the passage leads and the Greek follows within a line, the Greek 
   expect(Math.abs((await dockTop(page))!.offset)).toBeLessThanOrEqual(30);
   // the leader stays where it was put: still on 18, at the same place
   const led = await passageTop(page);
-  await page.waitForTimeout(300);
+  await afterRealFrames(page);
   expect(await passageTop(page)).toEqual(led);
 
   await scrollDock(page, 20);
   await expect.poll(async () => (await passageTop(page))?.n).toBe(20);
   const dockLed = await dockTop(page);
-  await page.waitForTimeout(300);
+  await afterRealFrames(page);
   expect(await dockTop(page)).toEqual(dockLed);
   expect((await passageTop(page))!.n).toBe(20);
 });
@@ -169,12 +171,12 @@ test('Link off: each pane scrolls alone; pressing Link again brings the dock to 
   const before = await passageTop(page);
   await scrollDock(page, 20);
   await expect.poll(async () => (await dockTop(page))?.n).toBe(20);
-  await page.waitForTimeout(300);
+  await afterRealFrames(page);
   expect(await passageTop(page)).toEqual(before);
   const dockWas = await dockTop(page);
   await scrollPassage(page, 3);
   await expect.poll(async () => (await passageTop(page))?.n).toBe(3);
-  await page.waitForTimeout(300);
+  await afterRealFrames(page);
   expect(await dockTop(page)).toEqual(dockWas);
   // Link again: the dock goes to the passage's top verse
   await link(page).click();

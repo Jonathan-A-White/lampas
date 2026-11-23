@@ -37,6 +37,28 @@ export async function afterFrames(page: Page, frames = 4): Promise<void> {
   }, frames);
 }
 
+/**
+ * For a page whose clock the spec fakes (page.clock.install(), which fakes requestAnimationFrame too): call it BEFORE page.clock.install(), so the page keeps the browser's own
+ * requestAnimationFrame under another name (window.__realFrame) for afterRealFrames. Init scripts run in the order they were added.
+ */
+export async function keepRealFrames(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    (window as unknown as { __realFrame: (cb: FrameRequestCallback) => number }).__realFrame = window.requestAnimationFrame.bind(window);
+  });
+}
+
+/**
+ * afterFrames for a page whose clock is faked: resolves once the browser has drawn `frames` frames of its own (keepRealFrames must have run before page.clock.install()). A scroll
+ * event, and the handler that answers it with a scroll of another box, come a frame apart, so a spec that must see that nothing moved back looks after these, not after a sleep.
+ */
+export async function afterRealFrames(page: Page, frames = 4): Promise<void> {
+  await page.evaluate(async (n) => {
+    const frame = (window as unknown as { __realFrame?: (cb: FrameRequestCallback) => number }).__realFrame;
+    if (!frame) throw new Error('afterRealFrames: call keepRealFrames(page) before page.clock.install()');
+    for (let i = 0; i < n; i += 1) await new Promise<void>((done) => frame(() => done()));
+  }, frames);
+}
+
 /** What one look at a box shows: its place and size, as plain numbers. */
 export interface Rect {
   x: number;

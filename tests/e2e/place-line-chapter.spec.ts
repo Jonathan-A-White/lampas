@@ -4,6 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { makeFakePostern, QUIZ_ANSWER } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { untilStill } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 import { asInstalledApp } from './installed';
@@ -143,7 +144,7 @@ test('Immersive reader: a tap on the place line opens the whole chapter, Back re
   await expect(place(page)).toBeVisible();
   await expect(place(page)).toHaveText(/^Mark 12 · \d+%$/);
   // the row slides in with the bars (200 ms): measure it once it has stopped
-  await page.waitForTimeout(400);
+  await untilStill(page, ['[data-reader]', '[data-place-line]']);
   await expectQuiet(page);
   const was = await page.evaluate(() => (document.querySelector('[data-reader]') as HTMLElement).scrollTop);
   const before = await place(page).boundingBox();
@@ -153,7 +154,7 @@ test('Immersive reader: a tap on the place line opens the whole chapter, Back re
   await expect(page.getByRole('region', { name: 'Verse view' })).toBeVisible();
   await page.getByRole('button', { name: '‹ Reader' }).click();
   await expect(page.getByRole('region', { name: 'Verse view' })).toHaveCount(0);
-  await page.waitForTimeout(400);
+  await untilStill(page, ['[data-reader]', '[data-place-line]']);
 
   const view = await openFromLine(page);
   await shot(page, 'place-line-chapter');
@@ -222,7 +223,7 @@ for (const { code, title, verses } of [
       (document.querySelector('[data-reader]') as HTMLElement).scrollTop += 100;
     });
     await expect(place(page)).toHaveText(new RegExp(`^${title} · \\d+%$`));
-    await page.waitForTimeout(400);
+    await untilStill(page, ['[data-reader]', '[data-place-line]']);
     await place(page).click();
     const view = page.getByRole('region', { name: 'Verse view' });
     await expect(view).toBeVisible();
