@@ -2,7 +2,7 @@
 Feature: A verse in his Logos library: In Logos, and In another book…
   Where a verse is shown with an Open in Logos (docs/design/library-at-scale.md 3.6, mw-rfjjzd.9) the one button keeps opening it in his Bible; beside it, when a Greek text, an interlinear or a
   commentary that covers the book is On, a second button "In another book…" opens a chooser: Pinned, Commentaries on the book, Greek texts and Interlinears, each folded to its first three with
-  "N more", a search that opens them all, and Manage at the foot. Every row is a Logos link at the verse. For an Old Testament verse the chooser lists Bibles and interlinears only.
+  "N more", a search that opens them all, and Manage at the foot. Every row is a Logos link at the verse. For an Old Testament verse the chooser lists Bibles and interlinears (and, where his shelf holds no DGCB volume of the book, Enduring Word: features/enduring-word.feature).
 
   Scenario: The groups and counts follow the shelf and the place
     Given his shelf holds 5 commentaries on Romans, 1 commentary on John, 4 Greek texts and 2 interlinears, all On, with 1 interlinear pinned
@@ -35,11 +35,11 @@ Feature: A verse in his Logos library: In Logos, and In another book…
     Then the groups read "Pinned, Commentaries on Romans (5), Greek texts (3), Interlinears (1)"
     And the chooser has no row for "Greek text 2"
 
-  Scenario: The Old Testament card lists Bibles and interlinears only
+  Scenario: The Old Testament card lists Bibles and interlinears, and Enduring Word where his shelf holds no DGCB volume of the book
     Given his shelf holds 5 commentaries on Romans, 1 commentary on John, 4 Greek texts and 2 interlinears, all On, with 1 interlinear pinned
     And the Bible "Bible 1" is chosen
     When he opens the chooser at "Psalm 23:1"
-    Then the groups read "Pinned, Bibles (1), Interlinears (1)"
+    Then the groups read "Pinned, Bibles (1), Commentaries on Psalms (1), Interlinears (1)"
     And the chooser has no row for "Greek text 1"
 
   Scenario: With no verse-kind On the second door is absent

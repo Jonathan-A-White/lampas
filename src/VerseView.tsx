@@ -26,6 +26,7 @@ import { type ReactNode, type SyntheticEvent, useCallback, useMemo, useRef, useS
 import { createPortal } from 'react-dom';
 import { CheckSheet, type CheckLesson } from './CheckSheet';
 import { LessonStrip } from './LessonStrip';
+import { EnduringWordDoor } from './library/EnduringWordDoor';
 import { InLogosDoors } from './library/InLogosDoors';
 import { MapsDoor } from './maps/MapsDoor';
 import { openMaps } from './maps/openMaps';
@@ -277,6 +278,7 @@ export function VerseView(props: VerseViewProps) {
         />
         <MemorizeControl canonical={memorizeRef} quiet />
         <InLogosDoors place={{ book, chapter, verse: lampas.n }} name={`${title}:${verse.n}`} quiet />
+        <EnduringWordDoor place={{ book, chapter, verse: lampas.n }} />
         <MapsDoor mapRef={{ book, chapter, from: lampas.n, ...(lampas.to === undefined ? {} : { to: lampas.to }) }} quiet />
         <SermonsDoor place={sermonPlace} quiet />
         <button type="button" aria-haspopup="dialog" data-split-door onClick={() => setSplitting(true)} className="inline-flex min-h-11 items-center justify-center rounded-lg px-2.5 text-sm font-medium text-accent active:bg-line">

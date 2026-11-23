@@ -2,18 +2,19 @@
 // A sheet of its own (a direct role=dialog child of the layer, below the shell's bars like every sheet): a search field, then Pinned, Commentaries on the book, Greek texts and Interlinears
 // (for an Old Testament place, Bibles and Interlinears), each folded to its first three with 'N more'; search opens every group; Manage at the foot goes to the Library. Every row is a
 // Logos link (logosRes.ts) and arms the ref.ly fallback the way every Open in Logos does. The rows come from src/library/inLogos.ts; nothing here reads a book's text.
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { openLibrary } from '../nav/route';
 import { useOffRun } from '../overRun';
-import type { CatalogueEntry } from '../resources/catalogue';
+import { CATALOGUE, type CatalogueEntry } from '../resources/catalogue';
+import { isEnduringWord, openEnduringWord } from '../resources/enduringWord';
 import { armFallback } from '../resources/openApp';
 import type { StudyPlace } from '../resources/types';
 import { DialogAskTutor } from '../AskTutor';
 import { listFact, useSheetTalk } from '../tutor/sheetTalk';
 import { afterSheetEntryGone, useSheetBack } from '../ui/sheetBack';
 import { useEscapeToClose, useSheetDrag } from '../ui/sheetDrag';
-import { detailOf, inLogosGroups, SHOWN_ROWS } from './inLogos';
+import { detailOf, inLogosGroups, SHOWN_ROWS, withEnduringWord } from './inLogos';
 import { useInLogosRows } from './useInLogosRows';
 
 const ROW = 'flex min-h-12 items-center gap-2 rounded-xl border border-line px-4 py-2 text-left text-base font-medium text-accent active:bg-line';
@@ -27,8 +28,10 @@ export interface InLogosChooserProps {
   entries?: readonly CatalogueEntry[];
 }
 
-export function InLogosChooser({ place, name, onClose, entries }: InLogosChooserProps) {
-  const rows = useInLogosRows(place, entries);
+export function InLogosChooser({ place, name, onClose, entries = CATALOGUE }: InLogosChooserProps) {
+  const shelf = useInLogosRows(place, entries);
+  // Enduring Word (on the web) stands among the commentaries where his library holds no DGCB volume of the book (mw-1l901so.1)
+  const rows = useMemo(() => (shelf ? withEnduringWord(shelf, entries, place) : undefined), [shelf, entries, place]);
   const [query, setQuery] = useState('');
   const offRun = useOffRun();
   const manage = offRun(() => {
@@ -94,15 +97,29 @@ export function InLogosChooser({ place, name, onClose, entries }: InLogosChooser
               <div key={group.key} role="group" aria-label={group.title} className="pb-3">
                 <h3 className="pb-1 text-base font-semibold text-muted">{group.title}</h3>
                 <div className="flex flex-col gap-2">
-                  {group.rows.slice(0, group.rows.length - folded).map(({ entry, link }) => (
-                    <a key={entry.resource} href={link.url} data-fallback={link.fallback} aria-label={`Open ${name} in ${entry.short}`} onClick={() => armFallback(link.fallback)} className={ROW}>
-                      <span className="min-w-0 flex-1">
-                        <span className="block break-words">{entry.short}</span>
-                        {detailOf(entry) ? <span className="block break-words text-sm font-normal text-muted">{detailOf(entry)}</span> : null}
-                      </span>
-                      <span aria-hidden="true">›</span>
-                    </a>
-                  ))}
+                  {group.rows.slice(0, group.rows.length - folded).map(({ entry, link }) =>
+                    isEnduringWord(entry) ? (
+                      // a web page, not a Logos book: a tap opens Lampas's reader (which opens the browser when it cannot get the words); the link stays for a long press
+                      <a key={entry.resource} href={link.url} target="_blank" rel="noopener noreferrer" data-enduring-word aria-label={`Open ${name} in ${entry.short}`} onClick={(e) => {
+                        e.preventDefault();
+                        openEnduringWord(place);
+                      }} className={ROW}>
+                        <span className="min-w-0 flex-1">
+                          <span className="block break-words">{entry.short}</span>
+                          <span className="block break-words text-sm font-normal text-muted">on the web · enduringword.com</span>
+                        </span>
+                        <span aria-hidden="true">›</span>
+                      </a>
+                    ) : (
+                      <a key={entry.resource} href={link.url} data-fallback={link.fallback} aria-label={`Open ${name} in ${entry.short}`} onClick={() => armFallback(link.fallback)} className={ROW}>
+                        <span className="min-w-0 flex-1">
+                          <span className="block break-words">{entry.short}</span>
+                          {detailOf(entry) ? <span className="block break-words text-sm font-normal text-muted">{detailOf(entry)}</span> : null}
+                        </span>
+                        <span aria-hidden="true">›</span>
+                      </a>
+                    ),
+                  )}
                 </div>
                 {folded ? (
                   <button type="button" onClick={() => setOpened(new Set([...opened, group.key]))} className="mt-1 min-h-11 px-1 text-base font-medium text-accent underline underline-offset-4">
