@@ -19,16 +19,6 @@
       "count": 1
     }
   },
-  "features/steps/chapter-swipe.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
-  "features/steps/copy-format.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 1
-    }
-  },
   "features/steps/copy-hold.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 2
@@ -44,19 +34,9 @@
       "count": 1
     }
   },
-  "features/steps/hebrew-ladder.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 3
-    }
-  },
   "features/steps/hebrew-reader.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/hebrew-speech.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 3
     }
   },
   "features/steps/hebrew-words.steps.tsx": {
@@ -94,11 +74,6 @@
       "count": 1
     }
   },
-  "features/steps/maps.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 2
-    }
-  },
   "features/steps/offline-copy.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 2
@@ -122,11 +97,6 @@
   "features/steps/paradigms.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/passage-lesson.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 4
     }
   },
   "features/steps/passage-view.steps.tsx": {
@@ -182,11 +152,6 @@
   "features/steps/sermons-settings.steps.tsx": {
     "local/no-real-time-wait": {
       "count": 1
-    }
-  },
-  "features/steps/sermons.steps.tsx": {
-    "local/no-real-time-wait": {
-      "count": 3
     }
   },
   "features/steps/share-references.steps.tsx": {

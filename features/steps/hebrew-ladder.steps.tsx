@@ -256,6 +256,7 @@ describeFeature(feature, ({ Scenario }) => {
   // ---- the Hebrew passage lesson and Read lessons to me (use case 'lessons', mw-5r3p30.911) ----
   const LESSON = HEBREW_PASSAGE_LESSONS[0];
   const CHECK_SEED = 1;
+  // a real-time wait: the helper of the one window below in which nothing must happen
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   const viewEl = () => screen.getByRole('region', { name: 'Verse view' });
   const checkSheet = () => screen.getByRole('dialog', { name: 'Check' });
@@ -380,7 +381,6 @@ describeFeature(feature, ({ Scenario }) => {
     });
     Then('the end card says it is read, not passed', async () => {
       expect(await within(checkSheet()).findByRole('heading', { name: `Read: 0 of ${expected.length}` })).toBeInTheDocument();
-      await sleep(50);
     });
     And('the lesson {string} is read in the table', async () => {
       await waitFor(async () => expect(await db.passageLessons.get('passage:jon.1.1-3')).toMatchObject({ state: 'read', score: null }));
@@ -444,7 +444,7 @@ describeFeature(feature, ({ Scenario }) => {
     Then('the phone has spoken nothing', async () => {
       await screen.findByTestId('idea-what');
       await act(async () => {
-        await sleep(100);
+        await sleep(100); // a real-time wait: nothing must happen in it, and the sheet gives no signal that it has gone by without speaking
       });
       expect(engine().spoken).toEqual([]);
     });

@@ -22,6 +22,8 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup({ delay: null });
+/** The slide before a chapter opens (src/reader/useChapterSwipe.ts SLIDE_MS). */
+const SLIDE_MS = 140;
 
 /** A host under load: every pointer event holds the thread for `ms` of real time (performance.now(), which no step holds here). */
 let unslow: (() => void) | null = null;
@@ -67,6 +69,15 @@ async function drag(x1: number, y1: number, x2: number, y2: number, ms: number):
   if (!target) throw new Error('no verse on screen');
   let held = Date.now();
   const clock = vi.spyOn(Date, 'now').mockImplementation(() => held);
+  // The slide out before a chapter opens is one timer of SLIDE_MS (140 ms, src/reader/useChapterSwipe.ts): it is kept back and run when the drag ends, so a step that
+  // says the Reader did NOT move needs no wait for it (a swipe that wrongly counted would have opened its chapter by then), and no other timer is touched.
+  const realSet = globalThis.setTimeout; // clock: only the slide's timer is held back, every other delay keeps the real timer
+  const slides: (() => void)[] = [];
+  const timers = vi.spyOn(globalThis, 'setTimeout').mockImplementation(((fn: TimerHandler, ms?: number, ...args: unknown[]) => { // clock: the slide clock's step
+    if (ms !== SLIDE_MS || typeof fn !== 'function') return realSet(fn, ms, ...args);
+    slides.push(() => fn(...args));
+    return 0 as unknown as ReturnType<typeof setTimeout>; // clock: the slide's id, 0 is no real timer's
+  }) as unknown as typeof setTimeout); // clock: the type of the slide clock's setTimeout
   try {
     await user.pointer({ keys: '[MouseLeft>]', target, coords: { clientX: x1, clientY: y1 } });
     for (let i = 1; i <= 3; i++) {
@@ -76,7 +87,11 @@ async function drag(x1: number, y1: number, x2: number, y2: number, ms: number):
     await user.pointer({ keys: '[/MouseLeft]', target, coords: { clientX: x2, clientY: y2 } });
   } finally {
     clock.mockRestore();
+    timers.mockRestore();
   }
+  await act(async () => {
+    for (const go of slides.splice(0)) go();
+  });
 }
 
 const dragged = (_: unknown, x1: number, y1: number, x2: number, y2: number, ms: number) => drag(x1, y1, x2, y2, ms);
@@ -89,11 +104,8 @@ const headed = async (_: unknown, title: string) => {
     expect({ titles, verseView }, `the Reader should be headed ${title}`).toEqual({ titles: expect.arrayContaining([title]), verseView: false });
   });
 };
-/** After a drag that must do nothing: wait out the slide (140 ms) and a click's chance, then the title must still be the same. */
-const stillHeaded = async (_: unknown, title: string) => {
-  await new Promise((resolve) => setTimeout(resolve, 400));
-  await headed(_, title);
-};
+/** After a drag that must do nothing: drag() has already run the slide and the end's click, so the title must still be the same. */
+const stillHeaded = headed;
 const notes = () => document.querySelectorAll('[data-swipe-note]');
 
 const feature = await loadFeature('features/chapter-swipe.feature');
@@ -104,10 +116,7 @@ describeFeature(feature, ({ Scenario }) => {
     When('he drags from {int},{int} to {int},{int} over {int} ms', dragged);
     Then('the reader is headed {string}', headed);
     When('he presses Back', async () => {
-      await act(async () => {
-        window.history.back();
-        await new Promise((resolve) => setTimeout(resolve, 30));
-      });
+      await act(async () => window.history.back());
     });
     Then('the reader is back at {string}', headed);
   });

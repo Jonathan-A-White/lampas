@@ -31,7 +31,6 @@ afterAll(async () => {
 });
 
 const user = userEvent.setup();
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 const squash = (s: string | null | undefined): string => (s ?? '').replace(/\s+/g, ' ').trim();
 
 // A source that can be slow to answer, as a real one is while its data is read: from holdSource() its maps wait for letSourceAnswer(). The test source answers at once, which hides a step that looks at the
@@ -187,9 +186,9 @@ describeFeature(feature, ({ Scenario }) => {
   const linksTo = async (_: unknown, name: string, url: string) => {
     expect(linkIn(await mapEl(), name)).toHaveAttribute('href', url);
   };
+  // the step after Back waits for what Back shows (findBy / waitFor), so Back itself waits for nothing
   const back = async () => {
-    act(() => window.history.back());
-    await sleep(60);
+    await act(async () => window.history.back());
   };
 
   const tapHeading = async (_: unknown, text: string) => {

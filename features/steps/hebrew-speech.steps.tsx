@@ -13,7 +13,7 @@ import { putAtLevels } from './levels';
 import { clearBus } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { stopReading } from '../../src/speech/readAloud';
-import { LONG_PRESS_MS } from '../../src/ui/longPress';
+import { holdOn } from '../../tests/support/long-press';
 import { tutorTimings } from '../../src/services/tutor';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
 import { makeFakePostern, POSTERN_ORIGIN, type FakePostern } from '../../tests/support/fake-postern';
@@ -96,11 +96,7 @@ async function openReader(voices: FakeVoice[], saved: Record<string, string>): P
   await waitFor(() => expect(document.querySelectorAll('[data-verse] [data-word]').length).toBeGreaterThan(0));
 }
 
-async function longPress(target: HTMLElement): Promise<void> {
-  await user.pointer({ keys: '[MouseLeft>]', target });
-  await new Promise((resolve) => setTimeout(resolve, LONG_PRESS_MS + 150)); // clock: a press's own hold time, the finger staying down past LONG_PRESS_MS
-  await user.pointer({ keys: '[/MouseLeft]', target });
-}
+const longPress = (target: HTMLElement): Promise<void> => holdOn(user, target);
 
 const hebrewWord = (word: string): HTMLElement => {
   const span = Array.from(sheet().querySelectorAll<HTMLElement>('[data-turn] [lang="he"]')).find((s) => s.textContent === word);
@@ -119,15 +115,12 @@ describeFeature(feature, ({ Scenario }) => {
     Then("the phone says the answer's English in the English voice and {string} in the Hebrew voice", async (_, hebrew: string) => {
       // the answer is read aloud on arrival (Settings > Read the tutor's responses aloud is On by default): let each stretch end so the next is asked of the phone
       await waitFor(() => expect(synth.spoken.length).toBeGreaterThan(0));
-      for (let i = 0; i < 60; i++) {
-        if (!synth.speaking) await new Promise((resolve) => setTimeout(resolve, 30));
-        if (!synth.speaking) break;
-        synth.finish();
-        await new Promise((resolve) => setTimeout(resolve, 5));
-      }
-      const said = synth.spoken.map((u) => ({ text: u.text, lang: u.lang }));
-      expect(said.filter((s) => s.lang === 'he-IL').map((s) => s.text)).toContain(hebrew);
-      expect(said.filter((s) => s.lang === 'en-US').map((s) => s.text).join(' ')).toContain('which is about being in the right before God');
+      await waitFor(() => {
+        if (synth.speaking) synth.finish();
+        const said = synth.spoken.map((u) => ({ text: u.text, lang: u.lang }));
+        expect(said.filter((s) => s.lang === 'he-IL').map((s) => s.text)).toContain(hebrew);
+        expect(said.filter((s) => s.lang === 'en-US').map((s) => s.text).join(' ')).toContain('which is about being in the right before God');
+      });
     });
   });
 
