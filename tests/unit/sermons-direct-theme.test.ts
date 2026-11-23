@@ -1,7 +1,7 @@
 // A sermon linked from its notes shows under 'On the same theme' (mw-qtu3zvz.59.2, docs/sermons.md 'On the same theme' and 'When online'). The sermon index service's theme tier marks a sermon its source linked to a topic directly
 // (`direct: true`); Lampas takes those rows only, for the topics the phone's Themes line holds and the sources that are On, and sorts them first. The service is stubbed with the Example of the sermon-index repository's
 // docs/api.md 'Direct links' (tests/fixtures/sermons/api-direct-theme.json); the bundled sermons and the themes are the tests' own.
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db } from '../../src/data/db';
@@ -164,7 +164,7 @@ describe('the line a row says why it is there', () => {
     expect(why(rows[1])).toBe('From the sermon notes');
     expect(why(rows[2])).toBeUndefined();
     // the usual line is as ever, and the new one is under it
-    expect(within(rows[0] as HTMLElement).getByText('C. H. Spurgeon · Opens on the web')).toBeInTheDocument();
+    expect(rows[0].querySelector('[data-sermon-meta]')?.textContent).toBe('C. H. Spurgeon · Opens on the web');
     expect(screen.getAllByText(/From the sermon notes/)).toHaveLength(2);
   });
 });
