@@ -59,6 +59,7 @@ export const CREDITS: ScreenCredit[] = [
   { name: 'Bible Mapper', use: 'Maps of a chapter\'s places', licence: 'free non-commercial, credited', link: 'https://biblemapper.com' },
   { name: 'Spurgeon\'s sermons', use: 'The sermon list: titles, passages, links; the words Lampas reads aloud', licence: 'Public domain; CCEL\'s terms', link: 'https://ccel.org/ccel/spurgeon' },
   { name: 'Matthew Henry\'s sermons', use: 'The sermon list: titles, passages, links', licence: 'Public domain; Archive\'s terms', link: 'https://archive.org' },
+  { name: 'Life Bible Ministry', use: 'The sermon list: titles, passages, links to Pastor Paul LeBoutillier\'s teachings', licence: 'site states no terms; nothing copied', link: 'https://www.lifebibleministry.com/through-the-bible' },
   LOGOS_SERMONS_CREDIT,
   { name: 'Thompson Chain Topics', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=TCR' },
   { name: 'Torrey\'s New Topical Textbook', use: 'The themes of a verse: topics, parts, passages', licence: 'Public domain', link: 'https://crosswire.org/study/fulllibrary.jsp?show=Torrey' },

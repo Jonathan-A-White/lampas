@@ -103,6 +103,11 @@ export const PREFACE_LINKS: PrefaceLink[] = [
     url: 'https://archive.org/about/terms.php',
   },
   {
+    name: 'Through the Bible, by Pastor Paul LeBoutillier (lifebibleministry.com)',
+    about: 'Life Bible Ministry’s verse-by-verse teaching of all sixty-six books, which the sermon list links to; the site states no terms of use.',
+    url: 'https://www.lifebibleministry.com/through-the-bible',
+  },
+  {
     name: 'Sermon archives and books of Greg Laurie, J. D. Greear, Skip Heitzig, Spurgeon, Wesley, Whitefield, Moody, Augustine, Chrysostom, Piper, Bunyan, Charles Wesley, Jimmy Evans, Shedd, Burroughs, Keach, Maclaren, Kuyper, Broadus, McPherson, Strong, Princeton, The World’s Great Sermons, Sedgwick, Moberly, Eyton, Chapin, Watson, Pope, Smale, W. I. Evans, Calvin, Sermon Outlines and Sermon Starters, in Logos (logos.com)',
     about: 'The Logos sermon archives that the sermon list links to; an archive is listed only when your Library import says you own it, and a link opens its sermon in Logos.',
     url: 'https://www.logos.com',

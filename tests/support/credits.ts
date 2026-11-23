@@ -138,6 +138,7 @@ function creditFor(path: string): string | null | undefined {
   if (path.startsWith('public/sermons/sermon-starters-volume-3-logos/')) return 'Sermon Starters, vol 3'; // likewise
   if (path.startsWith('public/sermons/sermon-starters-volume-4-logos/')) return 'Sermon Starters, vol 4'; // likewise
   if (path.startsWith('public/sermons/sermon-starters-volume-5-logos/')) return 'Sermon Starters, vol 5'; // likewise
+  if (path.startsWith('public/sermons/lifebible-ttb/')) return 'Through the Bible'; // rows of Life Bible Ministry's Through the Bible (sermon-index sources/lifebible-ttb): titles, passages, page and YouTube addresses, facts only
   if (path.startsWith('public/themes/themes-tcr1934/')) return 'Thompson'; // the theme index's book files (scripts/sermons-build.ts): topics, part labels and passages of CrossWire's TCR module (Thompson's 1934 subject index), facts only
   if (path.startsWith('public/themes/themes-torrey/')) return 'Torrey'; // the same of CrossWire's Torrey module (R. A. Torrey's New Topical Textbook, 1897)
   if (path === 'public/themes/index.json') return 'Thompson'; // the index of the theme sources: each one's licence line and credit (each source has its own rule above)

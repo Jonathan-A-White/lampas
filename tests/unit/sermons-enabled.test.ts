@@ -90,8 +90,10 @@ describe('the registered sources and the registry of settings', () => {
       expect(BEARS_ON[`sermons.${source.id}`], source.id).toBe('screen');
     }
     expect(ids(enabledOf(SOURCES, reader({})))).toEqual(SOURCES.filter((s) => s.default === 'on' && !s.needs).map((s) => s.id));
-    // every bundled source that is not a Logos archive starts On
-    expect(SOURCES.filter((s) => !s.id.endsWith('-logos')).every((s) => s.default === 'on')).toBe(true);
+    // every bundled source that is not a Logos archive starts On, but lifebible-ttb: its site states no terms, so its source.toml says on_by_default = false (mw-qtu3zvz.280.3)
+    const OFF_BY_ITS_TOML = ['lifebible-ttb'];
+    expect(SOURCES.filter((s) => !s.id.endsWith('-logos') && !OFF_BY_ITS_TOML.includes(s.id)).every((s) => s.default === 'on')).toBe(true);
+    expect(SOURCES.filter((s) => OFF_BY_ITS_TOML.includes(s.id)).every((s) => s.default === 'off')).toBe(true);
   });
 });
 

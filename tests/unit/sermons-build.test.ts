@@ -12,6 +12,7 @@ import type { SermonBookFile, SermonIndex } from '../../src/data/sermonIndex';
 import type { ThemeBookFile, ThemeIndex } from '../../src/data/themeIndex';
 import { rawUrl, runSermonsBuild, sourceFingerprint, themeLicence } from '../../scripts/sermons-build';
 import { buildTheme, tidyLabel } from '../../scripts/sermons/themes';
+import { videoOf } from '../../src/sermons/video';
 
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8')) as { books: Array<{ code: string; verses: number[] }> };
 const verses = (code: string): readonly number[] | undefined => index.books.find((b) => b.code === code)?.verses;
@@ -248,6 +249,65 @@ describe('runSermonsBuild', () => {
     const gz = gzipSync(Buffer.concat(all.map((f) => readFileSync(join(w.options.outDir, f))))).length;
     expect(result.sources[0].gzipBytes).toBeGreaterThan(0);
     expect(result.sources[0].gzipBytes).toBeLessThan(gz * 2);
+  });
+});
+
+describe('runSermonsBuild: the lifebible-ttb source (mw-qtu3zvz.280.3)', () => {
+  const lifeToml = readFileSync('tests/fixtures/sermons/lifebible-ttb.toml', 'utf8');
+  const lifeRows = readFileSync('tests/fixtures/sermons/lifebible-ttb.jsonl', 'utf8');
+
+  async function build() {
+    const dir = mkdtempSync(join(tmpdir(), 'sermons-build-life-'));
+    const configFile = join(dir, 'sources.json');
+    writeFileSync(configFile, JSON.stringify({ repo: 'https://github.com/Jonathan-A-White/sermon-index', commit: SHA, sources: ['lifebible-ttb'] }));
+    const download = async (url: string, dest: string): Promise<void> => {
+      const { mkdirSync, writeFileSync: write } = await import('node:fs');
+      const { dirname } = await import('node:path');
+      mkdirSync(dirname(dest), { recursive: true });
+      write(dest, url.endsWith('source.toml') ? lifeToml : lifeRows);
+    };
+    const outDir = join(dir, 'out');
+    await runSermonsBuild({ configFile, rawDir: join(dir, 'raw'), outDir, download, verses });
+    return outDir;
+  }
+
+  it('lists the source Off by default, with Pastor Paul LeBoutillier credited and the site\'s own words as its licence', async () => {
+    const out = await build();
+    const entry = readJson<SermonIndex>(join(out, 'index.json')).sources[0];
+    expect(entry).toMatchObject({ id: 'lifebible-ttb', kind: 'sermons', onByDefault: false, homepage: 'https://www.lifebibleministry.com/through-the-bible' });
+    expect(entry.credit).toContain('Pastor Paul LeBoutillier');
+    expect(entry.credit).toContain('Life Bible Ministry');
+    expect(entry.licence).toContain('No terms of use');
+    expect(entry.books).toEqual(['neh', 'isa', 'mat'].sort((a, b) => CANON.findIndex((c) => c.code === a) - CANON.findIndex((c) => c.code === b)));
+  });
+
+  it('writes a row a teaching: the page as its url (the link back), the YouTube address as alt, the preacher and no date', async () => {
+    const out = await build();
+    const isa = readJson<SermonBookFile>(join(out, 'lifebible-ttb', 'isa.json'));
+    expect(isa.rows).toEqual([
+      {
+        id: 'isaiah.1',
+        title: 'Isaiah 1-4:1: God confronts the Kingdom of Judah',
+        ref: { book: 'isa', chapter: 1, from: 1, to: 1, toChapter: 4 },
+        role: 'text',
+        url: 'https://www.lifebibleministry.com/through-the-bible/isaiah/1',
+        alt: 'https://www.youtube.com/watch?v=ynUYAm1-W6k',
+        preacher: 'Pastor Paul LeBoutillier',
+      },
+    ]);
+    expect(videoOf(isa.rows[0].alt as string)).toEqual({ kind: 'youtube', id: 'ynUYAm1-W6k' });
+  });
+});
+
+describe('the bundled lifebible-ttb source', () => {
+  it('has Isaiah 1-4:1 with the page of Life Bible Ministry as its link back and the YouTube id videoOf() plays', () => {
+    const entry = readJson<SermonIndex>('public/sermons/index.json').sources.find((s) => s.id === 'lifebible-ttb');
+    expect(entry?.name).toMatch(/Life Bible Ministry/);
+    expect(entry?.onByDefault).toBe(false);
+    const row = readJson<SermonBookFile>('public/sermons/lifebible-ttb/isa.json').rows.find((r) => r.id === 'isaiah.1');
+    expect(row?.url).toBe('https://www.lifebibleministry.com/through-the-bible/isaiah/1');
+    expect(row?.ref).toMatchObject({ book: 'isa', chapter: 1, from: 1, toChapter: 4, to: 1 });
+    expect(videoOf(row?.alt ?? '')).toEqual({ kind: 'youtube', id: 'ynUYAm1-W6k' });
   });
 });
 

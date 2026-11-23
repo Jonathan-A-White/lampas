@@ -1640,6 +1640,7 @@
                   "sermons.sermon-starters-volume-3-logos",
                   "sermons.sermon-starters-volume-4-logos",
                   "sermons.sermon-starters-volume-5-logos",
+                  "sermons.lifebible-ttb",
                   "audioBible",
                   "readingPlan",
                   "dailyReview",
@@ -2367,6 +2368,12 @@
             "additionalProperties": false,
             "required": ["key", "value"],
             "properties": { "key": { "const": "sermons.sermon-starters-volume-5-logos" }, "value": { "type": "string", "enum": ["on", "off"] } }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "value"],
+            "properties": { "key": { "const": "sermons.lifebible-ttb" }, "value": { "type": "string", "enum": ["on", "off"] } }
           },
           {
             "type": "object",
