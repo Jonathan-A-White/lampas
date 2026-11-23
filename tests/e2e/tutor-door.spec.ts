@@ -5,6 +5,7 @@ import { GRAMMAR_HELP_ANSWER, makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
 import { honestMic } from '../support/honest-fakes';
 import { holdFor } from '../support/hold';
+import { afterPageClock } from '../support/settled';
 import { leaveSettings, openGroup } from './settings-group';
 import { shot } from './shot';
 import { TALK_SHEET, twoFingers } from './open-tutor';
@@ -37,7 +38,7 @@ async function openReader(page: Page, how: 'licensed' | 'unlicensed' = 'licensed
 }
 
 /** A click within 600 ms of a two-finger tap is dropped (src/tutor/door.ts CLICK_GUARD_MS: the click a phone may send after the tap); a spec waits it out before it taps a button. */
-const afterTap = (page: Page) => page.waitForTimeout(700);
+const afterTap = (page: Page) => afterPageClock(page, 700); // the page's own clock: 600 ms of guard and a margin
 
 const box = async (page: Page) => (await floating(page).boundingBox())!;
 

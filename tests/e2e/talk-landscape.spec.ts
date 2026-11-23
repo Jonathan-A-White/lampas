@@ -6,6 +6,7 @@ import { makeFakePostern } from '../support/fake-postern';
 import { honestSpeech } from '../support/honest-fakes';
 import { routePostern } from '../support/playwright-postern';
 import { shot } from './shot';
+import { untilStill } from '../support/settled';
 import { expectInList } from './talk-list';
 import { openUnlocked } from './unlocked';
 import { talkField } from './talk-field';
@@ -125,8 +126,8 @@ test('sideways, his question and its Copy are on one line while the answer is co
   const pending = sheet.locator('[data-talk-pending]');
   const copy = pending.getByRole('button', { name: 'Copy my question' });
   await expect(copy).toBeVisible();
-  // a fake Postern that answers 1.5 s after the call
-  await page.waitForTimeout(1500);
+  // the fake Postern answers only when the spec says (fake.answer below): the pending row is measured once it has stopped moving
+  await untilStill(page, ['[data-talk-pending]']);
   const asked = await rectOf(pending.getByText(said, { exact: true }));
   const before = await rectOf(copy);
   expect(before.y < asked.y + asked.height && asked.y < before.y + before.height, 'Copy is under the pending question, not beside it').toBe(true);

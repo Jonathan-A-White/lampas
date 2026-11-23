@@ -5,6 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { makeFakePostern } from '../support/fake-postern';
 import { routePostern } from '../support/playwright-postern';
+import { untilSettled, untilStill } from '../support/settled';
 import { shot } from './shot';
 import { asInstalledApp } from './installed';
 import { openUnlocked } from './unlocked';
@@ -90,9 +91,13 @@ test('after the references come and the sheet is scrolled and shortened, it sett
   // and back to Page order: the content is shorter than the sheet's scroll, and settles
   await sheet.getByRole('button', { name: 'Page order' }).tap();
   await expect(sheet.getByRole('group', { name: 'Deuteronomy', exact: true })).toHaveCount(0);
-  await page.waitForTimeout(3000);
-
-  const seen = await view(sheet);
+  await untilStill(page, ['[role="dialog"] .overflow-y-auto']);
+  // it settles: the sheet's scroll is back at the top, the buttons and every reference are whole in it and no blank band is left under the last card
+  const seen = await untilSettled(
+    () => view(sheet),
+    (v) => (v.links !== 3 ? `${v.links} references` : v.scrollTop !== 0 ? `scrolled to ${v.scrollTop}` : !v.buttons ? 'the buttons are not whole' : !v.allWhole ? 'a reference is cut' : v.blankBelow > v.card ? `a blank band of ${v.blankBelow}` : null),
+    { message: 'the sheet settles at its top' },
+  );
   expect(seen.links).toBe(3);
   expect(seen.scrollTop).toBe(0);
   expect(seen.buttons).toBe(true);

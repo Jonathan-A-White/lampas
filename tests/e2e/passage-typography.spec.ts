@@ -180,7 +180,8 @@ test('a heading pressed for longer than the half second only copies, and a secon
   const view = page.getByRole('region', { name: 'Verse view' });
   // the hold the host made by accident: the press is released 800 ms after it went down, and the app takes it for a hold (it copies the passage), not a tap
   await heading.getByRole('button').click({ delay: 800 });
-  await page.waitForTimeout(300);
+  // the hold said 'Copied ...' (src/copy/useCopyHold.ts): the press was taken for a hold, so its click was dropped and the view stays shut
+  await expect(page.getByRole('status').filter({ hasText: /^Copied / })).toBeVisible();
   await expect(view).toBeHidden();
   // tapHeading opens it all the same, even when its first press is such a hold
   await tapHeading(page, heading, 800);

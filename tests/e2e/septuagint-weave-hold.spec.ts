@@ -4,12 +4,14 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { holdFor } from '../support/hold';
+import { afterRealFrames, keepRealFrames } from '../support/settled';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 test.beforeEach(async ({ page }) => {
+  await keepRealFrames(page);
   await page.clock.install();
   await page.route('**/data-lxx/**', (route) => {
     const path = new URL(route.request().url()).pathname.replace(/^\/data-lxx\//, '');
@@ -66,7 +68,7 @@ for (const chapter of [
 
     await holdFor(page, choice(page, 'Weave'), HOLD_MS);
     await page.clock.runFor(500);
-    await page.waitForTimeout(300);
+    await afterRealFrames(page); // the browser's own frames: what the hold would draw (the toast, the flipped order) is drawn by now
     await expect(page.locator('p[role="status"]')).toHaveCount(0);
     await expect(page.getByText('Greek word order')).toHaveCount(0);
     await expect(choice(page, 'Weave')).toHaveAttribute('aria-pressed', 'true');

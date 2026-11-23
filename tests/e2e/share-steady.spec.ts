@@ -2,7 +2,7 @@
 // in the sheet that changes what it holds ('Page order' | 'Bible order', 'Choose a talk') must not move: the sheet sat at the bottom of the screen,
 // so the book names that Bible order adds lifted the switch 108 px and a double tap on it landed on the 'Gen. 1:28' link, which left the share.
 import { expect, test, type Page } from '@playwright/test';
-import { tapTwice } from '../support/gesture';
+import { pageTime, tapTwice } from '../support/gesture';
 import { shot } from './shot';
 import { openUnlocked } from './unlocked';
 
@@ -61,7 +61,7 @@ async function boxOf(page: Page, name: string): Promise<{ x: number; y: number; 
 }
 
 async function stillOnTheShare(page: Page): Promise<void> {
-  await page.waitForTimeout(300);
+  await pageTime(page, 300); // clock: the page's own 300 ms, in which a second tap's navigation would have come
   expect(new URL(page.url()).hash).toMatch(/^#\/share/);
   await expect(page.getByRole('dialog', { name: 'Share to Lampas' })).toBeVisible();
   await expect(page.locator('[data-link-notice]')).toHaveCount(0);

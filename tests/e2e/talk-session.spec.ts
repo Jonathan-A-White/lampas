@@ -73,7 +73,8 @@ test('a talk of three turns sends the same talk id on all three, made of its ref
   // New talk starts a new one by itself
   await sheet.getByRole('button', { name: 'New talk' }).click();
   await expect(sheet.locator('[data-turn]')).toHaveCount(0);
-  await page.waitForTimeout(5);
+  // the new talk's id is made of the time its first turn is kept at: that time is later than the last turn of the old talk
+  await expect.poll(() => page.evaluate(() => Date.now()), { message: 'the page clock is past the old talk' }).toBeGreaterThan(Math.max(...turns.map((t) => t.when)));
   const field = await talkField(sheet);
   await field.fill('A new start.');
   await sheet.getByRole('button', { name: 'Send', exact: true }).click();
