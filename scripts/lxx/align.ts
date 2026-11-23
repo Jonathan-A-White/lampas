@@ -8,6 +8,7 @@
 // The chunks, joined by a space, are Brenton's whole verse, and no Greek word is dropped: one with no `e` has no English yet. `lxx:ship` aligns every chapter it ships (ship.ts);
 // `lxx:align` runs that ship into a directory (default a temporary one) and writes the aligned share of each chapter into the file of its book, docs/lxx-align/<code>.txt (mw-u2w5klk.349.73). PROVISIONAL, Governor to confirm: the shape, `c`, `y`.
 // The model pass (align-choose.ts, mw-u2w5klk.274.2) then replaces each remainder by chunks `{ t, g, s?, c, y: 'model' }` where a Builder session has cut it (data/lxx/align); alignChapter applies its rows.
+// Then, in a chapter that has rows, the English 'Lord', 'lord' and 'master' each take the κύριος word that renders them (settleLords, mw-u2w5klk.349.27).
 // Last, the words Brenton supplies for a verb ('Let there', 'there', 'he', 'it') join the chunk of the verb after them ('Let there be'), so a tap on them finds the Greek (mw-u2w5klk.274.9).
 // No network beyond what the ship fetches; no paid API is called.
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -474,6 +475,104 @@ function joinSupplied(verse: Verse): Verse {
   return { ...verse, g, e };
 }
 
+// ---------------------------------------------------------------- the Lord and the master
+
+const normal = (word: GreekWord | undefined): string => (word?.l ?? '').normalize('NFC');
+
+/** The English words Brenton renders κύριος by (lettersOf takes off a possessive: "my master's" is 'master'). */
+const LORD_ENGLISH = new Set(['lord', 'master']);
+
+/** The first letter of an English word is a capital: 'Lord' is the LORD, 'master' and 'lord' a man's. */
+const capitalEnglish = (raw: string): boolean => /^[^\p{L}]*\p{Lu}/u.test(raw);
+
+/** The first letter of a Greek word is a capital (Swete prints Κύριος for the LORD most of the time, κύριος where he reads it as a man's, and sometimes for the LORD too). */
+const capitalGreek = (word: GreekWord): boolean => /^[^\p{L}]*\p{Lu}/u.test(word.t);
+
+/** The words of a chunk's text that are the English for κύριος, and whether every other word is a little word ('the Lord', 'my master', 'then shall the Lord'). */
+function lordOf(chunk: EnglishChunk): { raw: string } | undefined {
+  const words = chunk.t.split(/\s+/).filter(Boolean);
+  const lords = words.filter((w) => LORD_ENGLISH.has(lettersOf(w)));
+  if (lords.length !== 1) return undefined;
+  const others = words.filter((w) => !LORD_ENGLISH.has(lettersOf(w)));
+  return others.every((w) => FUNCTION_ENGLISH.has(lettersOf(w))) ? { raw: lords[0] } : undefined;
+}
+
+/** A chunk that is only 'God' (and little words): the English for θεός, however the aligner came to pair it. */
+const godChunk = (chunk: EnglishChunk): boolean => {
+  const words = chunk.t.split(/\s+/).filter(Boolean).map(lettersOf);
+  return words.includes('god') && words.every((w) => w === 'god' || FUNCTION_ENGLISH.has(w));
+};
+
+/**
+ * The Greek κύριος words of a verse go to the English that renders each (mw-u2w5klk.349.27). The aligner pairs one Greek word with one English word in the order of both verses, and Brenton does not keep
+ * the Greek order where Κύριος δὲ εὐλόγησεν τὸν κύριόν μου is 'And the Lord has blessed my master' (the Lord comes before the 'And', and 'my' before its noun), so the chain takes the order-keeping pairs (And, the,
+ * and 'Lord' with the κύριος word nearest) and the other word, 'master', stays in a remainder, where the model pass has to find no Greek for it. And the lexicon's gloss of κύριος is 'lord, God', so 'God'
+ * is paired to a κύριος word as readily as to θεός ('the Lord the God of my master': 'God' to κυρίου, θεὸς with no English, 'master' with no Greek).
+ * The model's rows are held to the runs of the aligner, so this runs after them, as joinSupplied does, and never feeds lxx:align-choose (alignRuns). It acts on a verse with an English 'lord' or 'master' that
+ * has no Greek word and a κύριος word to give it, and on nothing else:
+ *   - a chunk of 'God' that holds a κύριος word moves to a θεός word that has no English, when the verse has more English for κύριος than κύριος words free;
+ *   - then each chunk of 'Lord', 'lord' or 'master' (alone, or with little words) that has no Greek word or holds one κύριος word takes a κύριος word: a lower-case English word the lower-case Greek one (κύριον, κυρίου),
+ *     a capital the capital one (Κύριος, Κύριε), each in the order of the verse; what is left takes what is left, in order. The verse that has more English than Greek for it is left as it was.
+ * A chunk keeps its `c` and `y`; a Greek word with no English any more has no `e`.
+ */
+export function settleLords(verse: Verse): Verse {
+  const heldBy = new Map<number, number>();
+  verse.e.forEach((chunk, i) => chunk.g.forEach((k) => heldBy.set(k, i)));
+  const lords = verse.g.flatMap((w, k) => (normal(w) === 'κύριος' ? [k] : []));
+  if (lords.length === 0) return verse;
+  type Item = { chunk: number; capital: boolean };
+  const items: Item[] = [];
+  const gods: number[] = [];
+  verse.e.forEach((chunk, i) => {
+    if (chunk.y !== 'align' && chunk.y !== 'model') return;
+    const lord = lordOf(chunk);
+    if (lord && (chunk.g.length === 0 || (chunk.g.length === 1 && normal(verse.g[chunk.g[0]]) === 'κύριος'))) items.push({ chunk: i, capital: capitalEnglish(lord.raw) });
+    else if (chunk.g.length === 1 && normal(verse.g[chunk.g[0]]) === 'κύριος' && godChunk(chunk)) gods.push(i);
+  });
+  // only a verse with an English 'lord' or 'master' that has no Greek word is touched: a verse whose κύριος words all have their English is as the aligner and the model left it
+  if (!items.some((it) => verse.e[it.chunk].g.length === 0)) return verse;
+
+  const isItem = new Set(items.map((it) => it.chunk));
+  const free = (k: number): boolean => !heldBy.has(k) || isItem.has(heldBy.get(k)!);
+  const moves = new Map<number, number>(); // a God chunk -> the θεός word it takes
+  let slots = lords.filter(free);
+  const freeTheos = verse.g.flatMap((w, k) => (normal(w) === 'θεός' && !heldBy.has(k) ? [k] : []));
+  for (const god of gods) {
+    if (items.length <= slots.length || freeTheos.length === 0) break;
+    const k = verse.e[god].g[0];
+    moves.set(god, freeTheos.shift()!);
+    slots = [...slots, k].sort((a, b) => a - b);
+  }
+  if (items.length > slots.length) return verse;
+
+  const given = new Map<number, number>(); // an item's chunk -> its κύριος word
+  const left = [...slots];
+  const take = (item: Item, same: (k: number) => boolean): void => {
+    const at = left.findIndex(same);
+    if (at < 0) return;
+    given.set(item.chunk, left[at]);
+    left.splice(at, 1);
+  };
+  for (const item of items) take(item, (k) => capitalGreek(verse.g[k]) === item.capital);
+  for (const item of items) if (!given.has(item.chunk)) take(item, () => true);
+
+  const e = verse.e.map((chunk, i): EnglishChunk => {
+    if (given.has(i)) return { ...chunk, g: [given.get(i)!] };
+    if (moves.has(i)) return { ...chunk, g: [moves.get(i)!] };
+    return chunk;
+  });
+  const changed = e.some((chunk, i) => chunk !== verse.e[i] && (chunk.g[0] !== verse.e[i].g[0] || chunk.g.length !== verse.e[i].g.length));
+  if (!changed) return verse;
+  const g = verse.g.map((w) => {
+    const word: GreekWord = { ...w };
+    delete word.e;
+    return word;
+  });
+  // a Greek word points at the last chunk that holds it
+  e.forEach((chunk, i) => chunk.g.forEach((k) => (g[k].e = i)));
+  return { ...verse, g, e };
+}
+
 /** What the report says of one chapter. */
 export interface AlignShare {
   /** Swete's code, lower case */
@@ -524,6 +623,8 @@ export function alignChapter(chapter: Chapter, gloss: (lemma: string) => string,
   const fixed = applyFixes(modelled.chapter, model);
   modelled.chapter = fixed.chapter;
   modelled.stale.push(...fixed.stale);
+  // a chapter the model pass has been through: the Lord and the master each take the κύριος word that renders them (after the rows, which are held to the aligner's own runs)
+  if (model.length > 0) modelled.chapter = { ...modelled.chapter, verses: modelled.chapter.verses.map(settleLords) };
   // after the model pass, so the runs it numbers are the aligner's own: the words Brenton supplies for a verb join its chunk
   modelled.chapter = { ...modelled.chapter, verses: modelled.chapter.verses.map(joinSupplied) };
   if (model.length > 0) {
