@@ -3,6 +3,8 @@
 export interface SermonControls {
   /** 'reader' reads a text sermon in the phone's voice; 'player' plays a video. */
   kind: 'reader' | 'player';
+  /** Whether it is sounding now (a video playing): the wake pauses it so the microphone does not hear it (src/handsFree/playback.ts). The reader's sound is the one reading engine's, which the wake reads itself, so it says false. */
+  playing(): boolean;
   /** Goes on, or starts; nothing when it is playing already. */
   play(): boolean;
   /** Pauses; nothing when it is not playing. */

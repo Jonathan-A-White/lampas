@@ -75,6 +75,10 @@ function YouTubeStage({ id, auto }: { id: string; auto: boolean }) {
     };
     return registerSermonControls({
       kind: 'player',
+      playing: () => {
+        const state = player.current?.getPlayerState();
+        return state === PLAYING || state === BUFFERING;
+      },
       play: () => act(() => startRef.current()),
       pause: () => act((target) => target.pauseVideo()),
       back: () => seek(-SKIP_SECONDS),
@@ -143,7 +147,7 @@ function SubsplashStage({ embed, title }: { embed: string; title: string }) {
   // Subsplash's embed page has no player API to call: Hands-free is told so
   useEffect(() => {
     const no = (): boolean => false;
-    return registerSermonControls({ kind: 'player', play: no, pause: no, back: no, forward: no, restart: no, stop: no });
+    return registerSermonControls({ kind: 'player', playing: no, play: no, pause: no, back: no, forward: no, restart: no, stop: no });
   }, []);
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
