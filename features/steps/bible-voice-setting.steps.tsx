@@ -16,7 +16,7 @@ import { db } from '../../src/data/db';
 import { setReaderView, setWeave } from '../../src/data/repositories';
 import { clearBus, publish } from '../../src/events/bus';
 import { forgetTrail } from '../../src/nav/lastRoute';
-import { bibleVoiceSetting } from '../../src/settings/definitions';
+import { bibleVoiceSetting } from '../../src/settings/definitions/bibleVoice';
 import { setSetting } from '../../src/settings/store';
 import { setConnectionForTests } from '../../src/speech/connection';
 import { getReading, stopReading } from '../../src/speech/readAloud';

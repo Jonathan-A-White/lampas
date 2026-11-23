@@ -13,7 +13,7 @@ import type { MemorizeLang } from '../../src/memorize/languages';
 import { memorizeTarget } from '../../src/memorize/target';
 import { forgetTrail } from '../../src/nav/lastRoute';
 import { openMemorizeSession } from '../../src/nav/route';
-import { greekKeyboardSetting } from '../../src/settings/definitions';
+import { greekKeyboardSetting } from '../../src/settings/definitions/greekKeyboard';
 import { setSetting } from '../../src/settings/store';
 import { stopReading } from '../../src/speech/readAloud';
 import { stubChapterFetch } from '../../tests/support/chapter-fetch';
