@@ -36,18 +36,26 @@ const hear = (words: string) => runCommand(words, say);
 class FakeVideo {
   calls: string[] = [];
   time = 100;
+  /** The IFrame API's player states: -1 unstarted, 1 playing, 2 paused, 0 ended. */
+  state = -1;
   constructor(_target: unknown, opts: { events?: { onReady?: (e: { target: FakeVideo }) => void } }) {
     videos.push(this);
     queueMicrotask(() => opts.events?.onReady?.({ target: this }));
   }
   playVideo() {
     this.calls.push('play');
+    this.state = 1;
   }
   pauseVideo() {
     this.calls.push('pause');
+    if (this.state === 1) this.state = 2;
   }
   stopVideo() {
     this.calls.push('stop');
+    this.state = 0;
+  }
+  getPlayerState() {
+    return this.state;
   }
   seekTo(seconds: number) {
     this.calls.push(`seek ${seconds}`);
@@ -205,6 +213,64 @@ describe('a sermon sheet is open over the Bible', () => {
     for (const words of ['next chapter', 'read John 3']) await act(() => hear(words));
     expect(spoken).toEqual([CLOSE_THE_SERMON, CLOSE_THE_SERMON]);
     expect(video.calls).toEqual([]);
+  });
+});
+
+describe('the wake and a playing sermon video (mw-ecpivg5.7)', () => {
+  it('pauses the playing video at the wake and plays it again at the close', async () => {
+    const video = await openPlayer();
+    video.state = 1; // the video is playing (as onStateChange would have said)
+    video.calls = [];
+    act(() => silenceAtWake());
+    expect(video.calls).toEqual(['pause']);
+    expect(video.state).toBe(2);
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual(['pause', 'play']);
+  });
+
+  it('leaves a video that was not playing at the wake alone, at the wake and at the close', async () => {
+    const video = await openPlayer();
+    video.state = 2; // he paused it himself
+    video.calls = [];
+    act(() => silenceAtWake());
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual([]);
+  });
+
+  it("does not play it at the close when the command was 'pause' or 'stop'", async () => {
+    const video = await openPlayer();
+    video.state = 1;
+    video.calls = [];
+    act(() => silenceAtWake());
+    await act(() => hear('pause'));
+    act(() => goOnAtClose());
+    expect(video.calls).not.toContain('play');
+    video.state = 1;
+    video.calls = [];
+    act(() => silenceAtWake());
+    await act(() => hear('stop'));
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual(['pause', 'stop']);
+  });
+
+  it("'play' after the wake plays it once, and the close does not play it again", async () => {
+    const video = await openPlayer();
+    video.state = 1;
+    video.calls = [];
+    act(() => silenceAtWake());
+    await act(() => hear('play'));
+    act(() => goOnAtClose());
+    expect(video.calls).toEqual(['pause', 'play']);
+  });
+
+  it('does not play it at the close when the sheet was closed meanwhile', async () => {
+    const video = await openPlayer();
+    video.state = 1;
+    video.calls = [];
+    act(() => silenceAtWake());
+    act(() => closeSermon());
+    act(() => goOnAtClose());
+    expect(video.calls).not.toContain('play');
   });
 });
 

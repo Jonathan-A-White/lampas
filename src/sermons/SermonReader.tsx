@@ -220,7 +220,7 @@ function Reading({ opened, text }: { opened: OpenedText; text: SermonText }) {
       voice.current[move]();
       return true;
     };
-    return registerSermonControls({ kind: 'reader', play: run('play'), pause: run('pause'), back: run('back'), forward: run('forward'), restart: run('restart'), stop: run('stop') });
+    return registerSermonControls({ kind: 'reader', playing: () => false, play: run('play'), pause: run('pause'), back: run('back'), forward: run('forward'), restart: run('restart'), stop: run('stop') });
   }, []);
 
   const playing = mine && !paused;

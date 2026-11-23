@@ -4,13 +4,15 @@
 // goes on from where it stopped, unless the command took the sound over (takeSound: 'pause', or a 'play' that started or resumed it itself). Nothing that was not
 // sounding at the wake is started at the close. The engine's state is read and its own pause and resume are called; nothing here plays anything of its own.
 import { getPassagePlayer, pausePassage, resumePassage, stopPassage } from '../speech/passagePlayer';
-import type { SermonControls } from '../sermons/voiceControls';
+import { sermonControls, type SermonControls } from '../sermons/voiceControls';
 import { backAVerse, getReading, parkReading, pauseReading, resumeParked, resumeReading, stopReading, type ParkedReading } from '../speech/readAloud';
 
-/** What the wake paused: the passage player, the read-aloud engine, or nothing. */
-type Held = 'passage' | 'reading' | null;
+/** What the wake paused: the passage player, the read-aloud engine, a playing sermon video, or nothing. */
+type Held = 'passage' | 'reading' | 'video' | null;
 
 let held: Held = null;
+/** The sermon player's controls when the wake paused its video (the close plays it again only if that sheet is still the one open). */
+let heldVideo: SermonControls | null = null;
 /** The reading the wake paused, set aside while a tutor's answer took the voice ('ask', src/handsFree/ask.ts): the close starts it again where it was. */
 let parked: ParkedReading | null = null;
 /** The command took the sound over: the close leaves it as the command left it. */
@@ -21,12 +23,20 @@ export function silenceAtWake(): void {
   taken = false;
   held = null;
   parked = null;
+  heldVideo = null;
   if (getPassagePlayer().state === 'playing') {
     pausePassage();
     held = 'passage';
   } else if (getReading().status === 'reading') {
     pauseReading();
     held = 'reading';
+  } else {
+    // a sermon video playing in the player sheet: its sound is outside the engine, and the microphone would hear it (mw-ecpivg5.7)
+    const sermon = sermonControls();
+    if (sermon !== null && sermon.kind === 'player' && sermon.playing() && sermon.pause()) {
+      held = 'video';
+      heldVideo = sermon;
+    }
   }
 }
 
@@ -43,7 +53,9 @@ const pageHidden = (): boolean => typeof document !== 'undefined' && document.vi
 export function goOnAtClose(): void {
   const was = held;
   const aside = parked;
+  const video = heldVideo;
   held = null;
+  heldVideo = null;
   parked = null;
   if (taken) {
     taken = false;
@@ -53,6 +65,7 @@ export function goOnAtClose(): void {
   if (was === 'reading' && aside) resumeParked(aside);
   else if (was === 'passage' && getPassagePlayer().state === 'paused') resumePassage();
   else if (was === 'reading' && getReading().status === 'paused') resumeReading();
+  else if (was === 'video' && video !== null && sermonControls() === video) video.play();
 }
 
 /** The tutor's answer is about to take the voice ('ask', mw-rl10piw.8): the chapter the wake paused is set aside, to be started again at the close where it was. The passage player's reference is not: the
@@ -104,6 +117,7 @@ export function stopSound(): void {
   stopPassage();
   stopReading();
   held = null;
+  heldVideo = null;
   parked = null;
   takeSound();
 }
@@ -130,6 +144,7 @@ export function driveSermon(sermon: SermonControls, action: SermonAction): boole
   const done = sermon[action]();
   if (done) {
     held = null;
+    heldVideo = null;
     takeSound();
   }
   return done;
@@ -138,6 +153,7 @@ export function driveSermon(sermon: SermonControls, action: SermonAction): boole
 /** Forgets what the wake paused (a session stopped for good; tests). */
 export function forgetPlayback(): void {
   held = null;
+  heldVideo = null;
   parked = null;
   taken = false;
 }
