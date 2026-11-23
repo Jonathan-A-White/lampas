@@ -126,6 +126,27 @@ interface Segment {
 }
 
 /**
+ * Brenton's verses that hold the English of a Greek verse after their own (mw-u2w5klk.349.88): the verse's text from `from` to its end is the English of `greek`, so it is a segment
+ * of that verse, ahead of the Brenton verse that stands there, and the head stays at the verse's own. LXX2012's 47:4 holds, after the Greek 47:4's 'we will dwell in the land of
+ * Gesem.', the whole Greek verse 47:5 ('Let them dwell ... heard of it.'); its 47:5 is only the end of that Greek verse ('And Pharao spoke to Joseph, saying, ...').
+ * `from` is words of the verse's text, found once.
+ */
+export const LXX2012_TAILS: Readonly<Record<string, { from: string; greek: string }>> = {
+  'gen 47:4': { from: 'And Pharao said to Joseph, Let them dwell', greek: 'gen 47:5' },
+};
+
+/** A verse's segment cut at the first word of `from`: the head (its own Greek verse's) and the tail (the other's), the supplied positions counted from each one's first word. */
+export function cutVerse(ref: string, text: string, supplied: readonly number[], from: string): { head: Segment; tail: Segment } {
+  const at = text.indexOf(from);
+  if (at < 0 || text.indexOf(from, at + 1) >= 0) throw new Error(`${ref}: the tail ('${from}') is not found once in its text`);
+  const k = text.slice(0, at).split(/\s+/).filter(Boolean).length;
+  return {
+    head: { text: text.slice(0, at).trim(), supplied: supplied.filter((i) => i < k) },
+    tail: { text: text.slice(at).trim(), supplied: supplied.filter((i) => i >= k).map((i) => i - k) },
+  };
+}
+
+/**
  * The English of each Greek verse of a book, by the Greek reference ('psa 22:2'): LXX2012's verses (and a Psalm's title, which the Greek counts as verse 1) walked through
  * TVTMS from the USFM's numbers to the Greek's. A Brenton verse that answers several Greek verses stands at the first; one that answers a Greek verse of no
  * Swete book (its reference is not one of the Greek's verses) is in `unplaced`.
@@ -152,7 +173,15 @@ export function englishByGreekVerse(book: UsfmBook, maps: TvtmsMaps): { byGreek:
         const g = carriedAsGreek(book.code, verse.chapter, v);
         for (const ref of maps.lxx2012ToGreek(refOf(book.code, g.chapter, g.verse)).refs) if (!greek.includes(ref)) greek.push(ref);
       }
-      put(refOf(book.code, verse.chapter, verse.verse), greek, { text: verse.text, supplied: verse.supplied });
+      const ref = refOf(book.code, verse.chapter, verse.verse);
+      const tail = LXX2012_TAILS[ref];
+      if (tail && verse.through === undefined) {
+        const { head, tail: rest } = cutVerse(ref, verse.text, verse.supplied, tail.from);
+        put(ref, greek, head);
+        const list = byGreek.get(tail.greek);
+        if (list) list.push(rest);
+        else byGreek.set(tail.greek, [rest]);
+      } else put(ref, greek, { text: verse.text, supplied: verse.supplied });
     }
   }
   return { byGreek, placedAt };

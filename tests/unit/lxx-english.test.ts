@@ -313,6 +313,22 @@ describe("LXX2012's Genesis 22, 31 and 37 and Psalm 149 stand at the Greek verse
     expect(inChapter(unplacedVerses(placedAt, swete), 37)).toEqual([]);
   });
 
+  it("cuts Brenton's Genesis 47:4 where the Greek 47:5 begins, so that 47:5's English chunk holds its words and 47:4's holds only its own (mw-u2w5klk.349.88)", () => {
+    const genesis47 = parseUsfm(fixture('lxx2012-gen-47.usfm'));
+    const { byGreek, placedAt } = englishByGreekVerse(genesis47, genesisMaps);
+    expect(byGreek.get('gen 47:4')?.map((s) => s.text)).toEqual(['And they said to Pharao, We are come to sojourn in the land, for there is no pasture for the flocks of your servants, for the famine has prevailed in the land of Chanaan; now then, we will dwell in the land of Gesem.']);
+    const five = byGreek.get('gen 47:5') ?? [];
+    expect(five.map((s) => s.text)).toEqual([
+      'And Pharao said to Joseph, Let them dwell in the land of Gesem; and if you know that there are among them able men, make them overseers of my cattle. So Jacob and his sons came into Egypt, to Joseph; and Pharao, king of Egypt, heard of it.',
+      'And Pharao spoke to Joseph, saying, Your father, and your brethren, are come to you.',
+    ]);
+    // 'of it' is Brenton's own addition: its two words stand at the end of the cut-off text, counted from its first word
+    expect(five[0].supplied).toEqual([five[0].text.split(' ').length - 2, five[0].text.split(' ').length - 1]);
+    expect(byGreek.get('gen 47:4')?.[0].supplied).toEqual([]);
+    expect(placedAt.get('gen 47:4')).toBe('gen 47:4');
+    expect(placedAt.get('gen 47:5')).toBe('gen 47:5');
+  });
+
   it("names Psalm 149's Greek verse 9, which Brenton's 149 (eight verses) has inside his verse 8, as a verse with no English", () => {
     expect(psalmMaps.lxx2012ToGreek('psa 149:7')).toEqual({ state: 'same', refs: ['psa 149:7'] });
     expect(psalmMaps.lxx2012ToGreek('psa 149:8')).toEqual({ state: 'range', refs: ['psa 149:8', 'psa 149:9'] });
