@@ -605,6 +605,150 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     expect(greekOf(22, 4, chunkWith(22, 4, 'lifted'))).toEqual(['ἀναβλέψας']);
   });
 
+  // Genesis 12 to 23 (mw-u2w5klk.349.83, folding mw-u2w5klk.349.38 and .82): 'it came to pass' renders one Greek word (ἐγένετο, Hebrew's 'and it was'), which the aligner paired to the 'to' alone, so its other words
+  // had no Greek; and in Genesis 15, 19, 21 and 23 the aligner paired Greek words to a neighbouring English word, so the word that renders each had none. Each is a fix row (applyFixes) named here, with the
+  // Greek words its one chunk renders.
+  const READ_AS_ONE: Array<[number, number, string, string[]]> = [
+    [12, 11, 'it came to pass', ['ἐγένετο']],
+    [12, 12, 'It shall come to pass', ['ἔσται']],
+    [12, 14, 'it came to pass', ['ἐγένετο']],
+    [14, 1, 'it came to pass', ['Ἐγένετο']],
+    [19, 17, 'it came to pass', ['ἐγένετο']],
+    [19, 29, 'it came to pass that when', ['ἐγένετο', 'ἐν', 'τῷ']],
+    [19, 34, 'it came to pass', ['ἐγένετο']],
+    [20, 13, 'it came to pass', ['ἐγένετο']],
+    [21, 22, 'it came to pass at', ['Ἐγένετο', 'δὲ', 'ἐν', 'τῷ']],
+    [22, 1, 'it came to pass', ['ἐγένετο']],
+    [22, 20, 'it came to pass', ['Ἐγένετο·']],
+  ];
+  const MISPAIRS: Array<[number, number, string, string[]]> = [
+    [12, 12, 'his', ['αὐτοῦ']],
+    [12, 12, 'This', ['αὐτή·']],
+    [15, 1, 'reward', ['μισθός']],
+    [15, 1, 'great.', ['πολὺς']],
+    [15, 3, 'my home-born servant', ['οἰκογενής', 'μου']],
+    [15, 3, 'I am grieved', []],
+    [15, 5, 'Look up', ['Ἀνάβλεψον']],
+    [15, 5, 'count', ['ἀρίθμησον']],
+    [15, 5, 'number them fully,', ['ἐξαριθμῆσαι', 'αὐτούς.']],
+    [15, 9, 'in her third year,', ['τριετίζουσαν']],
+    [15, 9, 'a she-goat in her third year,', ['αἶγα', 'τριετίζουσαν']],
+    [15, 9, 'in his third year,', ['τριετίζοντα']],
+    [15, 13, 'four hundred', ['τετρακόσια']],
+    [15, 17, 'divided pieces.', ['διχοτομημάτων']],
+    [19, 2, 'turn aside', ['ἐκκλίνατε']],
+    [19, 2, 'having risen early in the morning', ['ὀρθρίσαντες']],
+    [19, 2, 'you⌃', []],
+    [19, 2, 'on your journey.', ['εἰς', 'τὴν', 'ὁδὸν', 'ὑμῶν.']],
+    [19, 3, 'they turned aside', ['ἐξέκλιναν']],
+    [19, 3, 'unleavened cakes', ['ἀζύμους']],
+    [19, 4, 'But', ['καὶ']],
+    [19, 4, 'they went to sleep,', ['κοιμηθῆναι.']],
+    [19, 4, 'young and old,', ['νεανίσκου', 'ἕως', 'πρεσβυτέρου,']],
+    [19, 7, 'act villanously.', ['πονηρεύσησθε.']],
+    [19, 9, 'they drew near', ['ἤγγισαν']],
+    [19, 10, 'stretched forth', ['ἐκτείναντες']],
+    [19, 13, 'are going to destroy', ['ἀπόλλυμεν']],
+    [19, 14, 'depart out', ['ἐξέλθατε']],
+    [19, 15, 'go forth;', ['ἔξελθε,']],
+    [19, 15, 'you also be destroyed with', ['συναπόλῃ']],
+    [19, 17, 'look not round', ['μὴ', 'περιβλέψῃς']],
+    [19, 28, 'went up', ['ἀνέβαινεν']],
+    [19, 29, 'in which', ['ἐν', 'αἷς', 'ἐν', 'αὐταῖς']],
+    [19, 32, 'let us make our father drink', ['ποτίσωμεν', 'πατέρα', 'ἡμῶν']],
+    [19, 33, 'they made their father drink', ['ἐπότισαν', 'πατέρα', 'αὐτῶν']],
+    [19, 33, 'in that night,', ['ἐν', 'τῇ', 'νυκτὶ', 'ταύτῃ,']],
+    [19, 33, 'went in', ['εἰσελθοῦσα']],
+    [19, 33, 'her father', ['πατρὸς', 'αὐτῆς']],
+    [19, 33, 'he knew not', ['οὐκ', 'ᾔδει']],
+    [19, 33, 'when he slept', ['ἐν', 'τῷ', 'κοιμηθῆναι']],
+    [19, 34, 'let us make him drink', ['ποτίσωμεν', 'αὐτὸν']],
+    [19, 35, 'they made their father drink', ['ἐπότισαν', 'πατέρα', 'αὐτῶν']],
+    [19, 35, 'went in', ['εἰσελθοῦσα']],
+    [19, 35, 'her father,', ['πατρὸς', 'αὐτῆς·']],
+    [19, 35, 'he knew not', ['οὐκ', 'ᾔδει']],
+    [19, 35, 'when he slept,', ['ἐν', 'τῷ', 'κοιμηθῆναι']],
+    [20, 13, 'brought me forth', ['ἐξήγαγέν', 'με']],
+    [21, 2, 'in old age,', ['εἰς', 'γῆρας,']],
+    [21, 2, 'at the set time', ['εἰς', 'τὸν', 'καιρὸν']],
+    [21, 2, 'according as', ['καθὰ']],
+    [21, 2, 'to him.', ['αὐτῷ']],
+    [21, 5, 'one hundred years old', ['ἑκατὸν', 'ἐτῶν,']],
+    [21, 5, 'was born to him.', ['ἐγένετο', 'αὐτῷ']],
+    [21, 5, 'his', ['αὐτοῦ.']],
+    [21, 6, 'shall rejoice with', ['συγχαρεῖταί']],
+    [21, 13, 'bondwoman', ['παιδίσκης']],
+    [21, 13, 'a great nation,', ['εἰς', 'ἔθνος', 'μέγα']],
+    [21, 16, 'Surely I can’t', ['Οὐ', 'μὴ']],
+    [21, 16, 'of my child:', ['τοῦ', 'παιδίου', 'μου.']],
+    [21, 16, 'cried aloud', ['ἀναβοῆσαν']],
+    [21, 19, 'gave the child drink.', ['ἐπότισεν', 'τὸ', 'παιδίον.']],
+    [21, 22, 'that time', ['καιρῷ', 'ἐκείνῳ']],
+    [21, 22, 'that Abimelech', ['Ἀβιμέλεχ']],
+    [21, 22, 'in all things,', ['ἐν', 'πᾶσιν']],
+    [21, 22, 'whatever you may do.', ['οἷς', 'ἐὰν', 'ποιῇς.']],
+    [21, 22, 'the chief captain', ['ὁ', 'ἀρχιστράτηγος']],
+    [21, 22, 'of his host,', ['τῆς', 'δυνάμεως', 'αὐτοῦ']],
+    [21, 25, 'because of', ['περὶ']],
+    [21, 26, 'but only today.', ['ἀλλὰ', 'σήμερον.']],
+    [21, 26, 'tell it', ['ἀπήγγειλας,']],
+    [21, 26, 'neither heard', ['οὐδὲ', 'ἤκουσα']],
+    [22, 20, 'herself too has', ['καὶ', 'αὐτὴ']],
+    [23, 1, 'one hundred and twenty-seven', ['ἑκατὸν', 'εἴκοσι', 'ἑπτά.']],
+    [23, 13, 'on my side,', ['πρὸς', 'ἐμοῦ']],
+    [23, 15, 'Nay, my lord,', ['Οὐχί,', 'κύριε,']],
+    [23, 15, 'you?', ['σοῦ']],
+    [23, 15, 'you bury', ['σὺ', 'θάψον.']],
+    [23, 15, 'your dead.', ['νεκρόν', 'σου']],
+    [23, 15, 'the land is worth', []],
+    [23, 16, 'four hundred', ['τετρακόσια']],
+    [23, 17, 'were made sure', ['ἔστη']],
+    [23, 17, 'and whatever is in its borders round about,', ['ὅ', 'ἐστιν']],
+    [23, 17, 'in its borders round about, were made sure', ['ἐν', 'τοῖς', 'ὁρίοις', 'αὐτοῦ', 'κύκλῳ,']],
+    [15, 12, 'sunset', ['ἡλίου', 'δυσμὰς']],
+    [15, 12, 'a trance', ['ἔκστασις']],
+    [15, 12, 'fell upon', ['ἐπέπεσεν']],
+    [17, 7, 'I will establish', ['στήσω']],
+    [17, 7, 'my covenant', ['διαθήκην', 'μου', 'ἐμοῦ']],
+    [17, 7, 'between', ['ἀνὰ', 'μέσον', 'ἀνὰ', 'μέσον']],
+    [18, 28, 'the whole', ['πᾶσαν', 'τὴν']],
+    [18, 28, 'because of the five lacking?', ['ἕνεκεν', 'τῶν', 'πέντε']],
+    [20, 3, 'has lived with', ['ἐστιν', 'συνῳκηκυῖα']],
+    [21, 15, 'a', ['μιᾶς']],
+    [21, 15, 'fir tree.', ['ἐλάτης·']],
+    [23, 4, 'am a', ['εἰμι']],
+    [23, 4, 'among you,', ['μεθ᾽', 'ὑμῶν·']],
+    [23, 6, 'one of us will by any means withhold', ['οὐδεὶς', 'ἡμῶν', 'κωλύσει']],
+    [23, 6, 'his sepulchre', ['τὸ', 'μνημεῖον', 'αὐτοῦ']],
+    [23, 6, 'from you,', ['ἀπὸ', 'σοῦ,']],
+    [23, 6, 'you should not', []],
+    [23, 6, 'your dead there.', ['νεκρόν', 'σου', 'ἐκεῖ.']],
+  ];
+  const chunkTexted = (n: number, v: number, text: string): EnglishChunk | undefined => withModel.get(n)!.verses.find((x) => x.n === v)!.e.find((c) => c.t === text);
+
+  it("gives 'it came to pass' of Genesis 12 to 23 one chunk of ἐγένετο, and leaves no chunk of those chapters with 'came' or 'pass' and no Greek word", () => {
+    for (const [n, v, text, greek] of READ_AS_ONE) {
+      const chunk = chunkTexted(n, v, text);
+      expect(chunk, `${n}:${v} ${text}`).toBeDefined();
+      expect(greekOf(n, v, chunk!), `${n}:${v} ${text}`).toEqual(greek);
+      expect(septuagintChunkLinked(chunk!), `${n}:${v} ${text}`).toBe(true);
+    }
+    const bare: string[] = [];
+    for (const [n, chapter] of withModel) {
+      if (n < 12 || n > 23) continue;
+      for (const verse of chapter.verses) for (const c of verse.e) if (c.g.length === 0 && c.t.split(/\s+/).some((w) => /^(came|pass)$/.test(lettersOf(w)))) bare.push(`${n}:${verse.n} ${c.t}`);
+    }
+    expect(bare).toEqual([]);
+  });
+
+  it("gives each Greek word of Genesis 12 to 23 (the aligner pairs the sweep found, mostly in 15, 19, 21 and 23) that sat on a neighbouring English chunk to the words that render it (the fix rows of those chapters, each named here)", () => {
+    for (const [n, v, text, greek] of MISPAIRS) {
+      const chunk = chunkTexted(n, v, text);
+      expect(chunk, `${n}:${v} ${text}`).toBeDefined();
+      expect(greekOf(n, v, chunk!), `${n}:${v} ${text}`).toEqual(greek);
+    }
+  });
+
   it('applies every fix row it has: none is stale, and none of a chapter leaves a Greek word it had paired without English', () => {
     expect(stale).toEqual([]);
     for (const n of MODELLED) {

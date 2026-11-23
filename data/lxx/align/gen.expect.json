@@ -1,9 +1,8 @@
 {
   "reasons": {
-    "idiom-12-23": "'it came to pass' renders ἐγένετο (Hebrew's 'and it was'), which the aligner paired to one English word; the model re-chooses remainders, not pairs, so the others have no Greek word left (mw-u2w5klk.349.3).",
-    "next-verse-12-23": "LXX2012 carries English of the next Greek verse in these two (Genesis 13:11 'And Abram lived in the land of Chanaan' is Swete's 13:12; Genesis 22:15 runs into 22:16): the Greek words are in the other verse (mw-u2w5klk.349.3).",
+    "next-verse-12-23": "LXX2012 carries English of the next Greek verse in these two (Genesis 13:11 'And Abram lived in the land of Chanaan' is Swete's 13:12; Genesis 22:15 runs into 22:16; Genesis 23:5's 'Not so, Sir,' is Swete's 23:6 'Μὴ κύριε'): the Greek words are in the other verse (mw-u2w5klk.349.3).",
+    "added-15-23": "Brenton's English adds it to make a Greek phrase English, and the Greek verse has no word for it ('is my heir' and 'am grieved' of 15:2 and 15:3, 'to the porch' of 19:6, 'a small one' of 19:20, 'to go' of 19:27, 'saying' of 19:38, 'the land is worth' and 'nay, do' of 23:15); each was read against its verse and no Greek word of a neighbouring chunk renders it (mw-u2w5klk.349.83).",
     "paired-or-added-12-23": "Either the Greek word that renders it is a pair the aligner made to another English word that no fix row has yet moved ('God' for αἰώνιον in 17:19, paired to the word before it: the Greek has no 'God' there), or Brenton's English adds it to turn a Greek phrase into English ('forth', 'aside', 'early', 'fine', 'aloud', 'only', 'still', 'drink', 'journey') (mw-u2w5klk.349.3).",
-    "idiom-14": "'it came to pass' (14:1) renders ἐγένετο, paired to one English word by the aligner (mw-u2w5klk.349.23).",
     "added-14": "Brenton adds 'Lord' of 14:22 to make English of a Greek phrase (τὸν θεὸν τὸν ὕψιστον has no κύριον) (mw-u2w5klk.349.23).",
     "idiom-24-29": "'it came to pass' renders ἐγένετο, paired to one English word by the aligner (mw-u2w5klk.349.4).",
     "other-verse-24-29": "Brenton's English of these verses carries a clause whose Greek word is in the verse before or after (Genesis 24:18 'till', 24:27 'and said', 25:20 'Abraam begot Isaac', 27:44 'until your brother's anger') or that the Greek verse does not have (27:38 'being troubled, Esau cried aloud and wept', 29:20 'and they were before him as a few days, by reason of his loving her') (mw-u2w5klk.349.4).",
@@ -35,15 +34,9 @@
     "11": { "gaps": 0, "model": 31 },
     "12": {
       "gaps": 0,
-      "model": 8,
+      "model": 2,
       "leftovers": [
         ["12:1:come","paired-or-added-12-23"],
-        ["12:11:came","idiom-12-23"],
-        ["12:11:pass","idiom-12-23"],
-        ["12:12:come","paired-or-added-12-23"],
-        ["12:12:pass","idiom-12-23"],
-        ["12:14:came","idiom-12-23"],
-        ["12:14:pass","idiom-12-23"],
         ["12:20:forward","paired-or-added-12-23"]
       ]
     },
@@ -66,27 +59,17 @@
     },
     "14": {
       "gaps": 0,
-      "model": 3,
+      "model": 1,
       "leftovers": [
-        ["14:1:came","idiom-14"],
-        ["14:1:pass","idiom-14"],
         ["14:22:lord","added-14"]
       ]
     },
     "15": {
       "gaps": 0,
-      "model": 10,
+      "model": 2,
       "leftovers": [
-        ["15:1:great","paired-or-added-12-23"],
-        ["15:2:heir","paired-or-added-12-23"],
-        ["15:3:grieved","paired-or-added-12-23"],
-        ["15:3:homeborn","paired-or-added-12-23"],
-        ["15:5:fully","paired-or-added-12-23"],
-        ["15:5:look","paired-or-added-12-23"],
-        ["15:9:third","paired-or-added-12-23"],
-        ["15:9:third","paired-or-added-12-23"],
-        ["15:13:four","paired-or-added-12-23"],
-        ["15:17:divided","paired-or-added-12-23"]
+        ["15:2:heir","added-15-23"],
+        ["15:3:grieved","added-15-23"]
       ]
     },
     "16": {
@@ -129,43 +112,17 @@
     },
     "19": {
       "gaps": 0,
-      "model": 30,
+      "model": 4,
       "leftovers": [
-        ["19:2:aside","paired-or-added-12-23"],
-        ["19:2:early","paired-or-added-12-23"],
-        ["19:2:journey","paired-or-added-12-23"],
-        ["19:3:aside","paired-or-added-12-23"],
-        ["19:3:cakes","paired-or-added-12-23"],
-        ["19:4:went","paired-or-added-12-23"],
-        ["19:6:porch","paired-or-added-12-23"],
-        ["19:7:villanously","paired-or-added-12-23"],
-        ["19:9:drew","paired-or-added-12-23"],
-        ["19:10:forth","paired-or-added-12-23"],
-        ["19:13:going","paired-or-added-12-23"],
-        ["19:14:depart","paired-or-added-12-23"],
-        ["19:15:destroyed","paired-or-added-12-23"],
-        ["19:15:forth","paired-or-added-12-23"],
-        ["19:17:came","idiom-12-23"],
-        ["19:17:pass","idiom-12-23"],
-        ["19:17:round","paired-or-added-12-23"],
-        ["19:20:one","paired-or-added-12-23"],
-        ["19:27:go","paired-or-added-12-23"],
-        ["19:28:went","paired-or-added-12-23"],
-        ["19:29:came","idiom-12-23"],
-        ["19:32:drink","paired-or-added-12-23"],
-        ["19:33:drink","paired-or-added-12-23"],
-        ["19:33:knew","paired-or-added-12-23"],
-        ["19:34:came","idiom-12-23"],
-        ["19:34:drink","paired-or-added-12-23"],
-        ["19:34:pass","idiom-12-23"],
-        ["19:35:drink","paired-or-added-12-23"],
-        ["19:35:knew","paired-or-added-12-23"],
-        ["19:38:saying","paired-or-added-12-23"]
+        ["19:6:porch","added-15-23"],
+        ["19:20:one","added-15-23"],
+        ["19:27:go","added-15-23"],
+        ["19:38:saying","added-15-23"]
       ]
     },
     "20": {
       "gaps": 0,
-      "model": 15,
+      "model": 12,
       "also": ["yes"],
       "leftovers": [
         ["20:2:sake","'for her sake' (δι᾽ αὐτήν): both Greek words are the aligner's, paired to 'for' and 'her'"],
@@ -175,9 +132,6 @@
         ["20:9:ought","'which no one ought to do': the aligner paired 'no one' with μή τι, and οὐδεὶς has no English left to take it"],
         ["20:11:why","Brenton's 'Why' has no Greek word"],
         ["20:11:worship","'the worship of God': θεοσέβεια is the aligner's, paired to 'God'"],
-        ["20:13:came","'it came to pass' renders ἐγένετο, the aligner's, paired to 'to'"],
-        ["20:13:forth","'brought forth' renders ἐξήγαγεν, the aligner's, paired to 'brought'"],
-        ["20:13:pass","'it came to pass' renders ἐγένετο, the aligner's, paired to 'to'"],
         ["20:16:countenance","'the price of your countenance': the aligner paired 'price' with προσώπου, and τιμήν has no English left"],
         ["20:16:speak","'speak the truth' renders ἀλήθευσον, the aligner's, paired to 'truth'"],
         ["20:16:things","'in all things' renders πάντα, the aligner's, paired to 'all'"],
@@ -188,34 +142,13 @@
     },
     "21": {
       "gaps": 0,
-      "model": 18,
-      "leftovers": [
-        ["21:2:according","paired-or-added-12-23"],
-        ["21:2:old","paired-or-added-12-23"],
-        ["21:2:set","paired-or-added-12-23"],
-        ["21:5:born","paired-or-added-12-23"],
-        ["21:5:old","paired-or-added-12-23"],
-        ["21:5:one","paired-or-added-12-23"],
-        ["21:6:rejoice","paired-or-added-12-23"],
-        ["21:13:nation","paired-or-added-12-23"],
-        ["21:16:aloud","paired-or-added-12-23"],
-        ["21:16:surely","paired-or-added-12-23"],
-        ["21:19:drink","paired-or-added-12-23"],
-        ["21:22:came","idiom-12-23"],
-        ["21:22:host","paired-or-added-12-23"],
-        ["21:22:things","paired-or-added-12-23"],
-        ["21:22:whatever","paired-or-added-12-23"],
-        ["21:25:because","paired-or-added-12-23"],
-        ["21:26:only","paired-or-added-12-23"],
-        ["21:26:tell","paired-or-added-12-23"]
-      ]
+      "model": 0,
+      "leftovers": []
     },
     "22": {
       "gaps": 0,
-      "model": 23,
+      "model": 19,
       "leftovers": [
-        ["22:1:came","idiom-12-23"],
-        ["22:1:pass","idiom-12-23"],
         ["22:2:one","paired-or-added-12-23"],
         ["22:9:feet","paired-or-added-12-23"],
         ["22:9:together","paired-or-added-12-23"],
@@ -231,8 +164,6 @@
         ["22:15:sworn","next-verse-12-23"],
         ["22:15:thing","next-verse-12-23"],
         ["22:18:earth","paired-or-added-12-23"],
-        ["22:20:came","idiom-12-23"],
-        ["22:20:pass","idiom-12-23"],
         ["22:21:chazad","paired-or-added-12-23"],
         ["22:22:bathuel","paired-or-added-12-23"],
         ["22:22:begot","paired-or-added-12-23"],
@@ -241,19 +172,12 @@
     },
     "23": {
       "gaps": 0,
-      "model": 11,
+      "model": 4,
       "leftovers": [
-        ["23:1:one","paired-or-added-12-23"],
-        ["23:5:sir","paired-or-added-12-23"],
-        ["23:13:side","paired-or-added-12-23"],
-        ["23:15:land","paired-or-added-12-23"],
-        ["23:15:nay","paired-or-added-12-23"],
-        ["23:15:worth","paired-or-added-12-23"],
-        ["23:16:four","paired-or-added-12-23"],
-        ["23:17:borders","paired-or-added-12-23"],
-        ["23:17:made","paired-or-added-12-23"],
-        ["23:17:round","paired-or-added-12-23"],
-        ["23:17:sure","paired-or-added-12-23"]
+        ["23:5:sir","next-verse-12-23"],
+        ["23:15:land","added-15-23"],
+        ["23:15:nay","added-15-23"],
+        ["23:15:worth","added-15-23"]
       ]
     },
     "24": {
