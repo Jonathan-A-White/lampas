@@ -22,7 +22,7 @@ Derived without a Morpheus cache: none.
 | Genesis 14 | 24 | 522 | 499 | 95.6% | 70.3% | 92 (17.6%) |
 | Genesis 15 | 21 | 363 | 348 | 95.9% | 65.6% | 43 (11.8%) |
 | Genesis 16 | 16 | 356 | 332 | 93.3% | 64.0% | 57 (16.0%) |
-| Genesis 17 | 27 | 582 | 526 | 90.4% | 64.1% | 82 (14.1%) |
+| Genesis 17 | 27 | 582 | 526 | 90.4% | 64.1% | 84 (14.4%) |
 | Genesis 18 | 33 | 648 | 623 | 96.1% | 73.3% | 109 (16.8%) |
 | Genesis 19 | 38 | 915 | 843 | 92.1% | 63.0% | 112 (12.2%) |
 | Genesis 20 | 18 | 427 | 381 | 89.2% | 63.5% | 41 (9.6%) |
@@ -59,4 +59,4 @@ Derived without a Morpheus cache: none.
 
 | Book | Verses | Greek words | Aligned | Aligned share | At confidence 0.6 or more | By the model pass |
 | --- | --- | --- | --- | --- | --- | --- |
-| Genesis | 1,531 | 32,635 | 30,211 | 92.6% | 65.9% | 4,898 (15.0%) |
+| Genesis | 1,531 | 32,635 | 30,211 | 92.6% | 65.9% | 4,900 (15.0%) |
