@@ -1,5 +1,9 @@
 # What's new
 
+## 0.7.346
+_2026-11-23_
+- Fixed: In Genesis 17:12 and 17:13 a tap on money in bought with money now opens the Greek word that means it (ἀργυρώνητος).
+
 ## 0.7.344
 _2026-11-23_
 - Fixed: The tutor's sermon link for a video sermon now plays it inside the app instead of opening a web page.
