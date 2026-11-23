@@ -119,13 +119,24 @@ describe('Undo tapped while the setting sentence is spoken (mw-rl10piw.70)', () 
   const chapter = JSON.parse(readFileSync('public/data/rom/8.json', 'utf8')) as Chapter;
   const scope = { title: 'Romans 8', chapter, verse: null };
   const answer = 'Done: Hands-free is on.';
+  // 'Hands-free on' is said as the settings are applied, well before the answer is kept and handed to the voice (useTalk awaits the turn's writes between): a test that
+  // stops or undoes what "waits" must wait until the answer has been handed over, or under load it acts first and the answer is read after (mw-rl10piw.70)
+  let handed = 0;
+  const handedOver = (_ref: string, id: number, text: string): void => {
+    speakTutor(id, answerRuns(text));
+    handed += 1;
+  };
+  beforeEach(() => {
+    handed = 0;
+  });
 
   it('undo while the setting sentence is spoken: the answer that waited on it is not read after Hands-free off', async () => {
     asked.mockReset();
     asked.mockResolvedValue({ answer, words: [], settings_changes: [{ key: 'handsFree', value: 'on' }] });
-    const { result } = renderHook(() => useTalk('rom', 8, (_ref, id, text) => speakTutor(id, answerRuns(text))));
+    const { result } = renderHook(() => useTalk('rom', 8, handedOver));
     act(() => result.current.say(scope, 'Turn Hands-free on'));
     await waitFor(() => expect(spoken()).toContain('Hands-free on'));
+    await waitFor(() => expect(handed).toBe(1));
     await waitFor(() => expect(synth.speaking).toBe(true));
     // Undo is tapped before 'Hands-free on' has ended
     await act(async () => {
@@ -144,9 +155,10 @@ describe('Undo tapped while the setting sentence is spoken (mw-rl10piw.70)', () 
   it('a three-finger toggle that replaces the sentence drops the waiting answer too', async () => {
     asked.mockReset();
     asked.mockResolvedValue({ answer, words: [], settings_changes: [{ key: 'handsFree', value: 'on' }] });
-    const { result } = renderHook(() => useTalk('rom', 8, (_ref, id, text) => speakTutor(id, answerRuns(text))));
+    const { result } = renderHook(() => useTalk('rom', 8, handedOver));
     act(() => result.current.say(scope, 'Turn Hands-free on'));
     await waitFor(() => expect(spoken()).toContain('Hands-free on'));
+    await waitFor(() => expect(handed).toBe(1));
     await act(async () => {
       await toggleHandsFree();
     });
@@ -160,9 +172,10 @@ describe('Undo tapped while the setting sentence is spoken (mw-rl10piw.70)', () 
   it('a new question gives up the waiting answer', async () => {
     asked.mockReset();
     asked.mockResolvedValue({ answer, words: [], settings_changes: [{ key: 'handsFree', value: 'on' }] });
-    const { result } = renderHook(() => useTalk('rom', 8, (_ref, id, text) => speakTutor(id, answerRuns(text))));
+    const { result } = renderHook(() => useTalk('rom', 8, handedOver));
     act(() => result.current.say(scope, 'Turn Hands-free on'));
     await waitFor(() => expect(spoken()).toContain('Hands-free on'));
+    await waitFor(() => expect(handed).toBe(1));
     // a new question stops the answer (useTalk: stopAnswer), and what waits with it
     act(() => stopAnswer());
     synth.finishAll();
