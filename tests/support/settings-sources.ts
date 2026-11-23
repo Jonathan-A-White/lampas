@@ -4,6 +4,8 @@
 export const SETTINGS_SOURCE = {
   registry: 'src/settings/registry.ts',
   rows: 'src/settings/rows.ts',
+  links: 'src/settings/extraRows/links.ts',
+  sermonRows: 'src/settings/extraRows/sermons.ts',
   controlsDir: 'src/settings/controls',
   approachControl: 'src/settings/controls/approach.tsx',
 } as const;

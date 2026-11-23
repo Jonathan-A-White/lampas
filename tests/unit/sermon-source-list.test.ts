@@ -332,7 +332,7 @@ describe('the words that point at the one list', () => {
   });
 
   it('no source file still sends him to Library > Sermons to switch a sermon source', () => {
-    const files = ['src/library/kinds.ts', 'src/help.ts', SETTINGS_SOURCE.rows, 'src/settings/definitions/sermons.ts', 'src/sermons/SermonsSheet.tsx', 'src/library/LibraryScreen.tsx', 'src/library/ImportLibrary.tsx'];
+    const files = ['src/library/kinds.ts', 'src/help.ts', SETTINGS_SOURCE.rows, SETTINGS_SOURCE.sermonRows, 'src/settings/definitions/sermons.ts', 'src/sermons/SermonsSheet.tsx', 'src/library/LibraryScreen.tsx', 'src/library/ImportLibrary.tsx'];
     for (const file of files) expect(readFileSync(join(root, file), 'utf8'), file).not.toMatch(/Library > Sermons(?! \(the old)/);
   });
 });
