@@ -782,6 +782,74 @@ describe.skipIf(!haveSources)('Genesis with the model pass', () => {
     }
   });
 
+  // mw-u2w5klk.349.36: the Tester's report on mw-u2w5klk.349.5 (mw-u2w5klk.349.35): at 390x844, in the English view, a tap on 'pillar.' of 31:52 opened κακίᾳ, 'offered' of 31:54 Ἰσαάκ, 'considered' and 'strangers' of 31:15 each
+  // the other's word, 'foolishly.' and 'wrought' of 31:28 the same, 'jealous' of 30:1 Ῥαχήλ, 'many' and 'cattle,' of 30:43 each the other's. They were the aligner's pairs by place (c 0.3 to 0.4, y 'align') swapped with a
+  // neighbour, which the model pass does not re-cut; the fix rows of data/lxx/align/gen-30 to gen-36 give each Greek word to the English that renders it (the sweep of the other 244 is the sidecar's placePairs, below).
+  it("gives each English word of Genesis 30 to 36 that the Tester tapped the Greek word that renders it: jealous, many, cattle, considered, strangers, wrought, foolishly, pillar, offered", () => {
+    const greekOf36 = (n: number, v: number, word: string): { text: string; y?: string; greek: string[] } => {
+      const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+      const chunks = verse.e.filter((c) => c.t.split(/\s+/).includes(word));
+      expect(chunks, `${n}:${v} '${word}' is in one chunk`).toHaveLength(1);
+      return { text: chunks[0].t, y: chunks[0].y, greek: chunks[0].g.map((i) => verse.g[i].t.replace(/[^\p{L}]/gu, '')) };
+    };
+    const TAPS: Array<[number, number, string, string[]]> = [
+      [30, 1, 'jealous', ['ἐζήλωσεν', 'Ῥαχὴλ']],
+      [30, 43, 'many', ['πολλὰ']],
+      [30, 43, 'cattle,', ['κτήνη']],
+      [31, 15, 'considered', ['λελογίσμεθα']],
+      [31, 15, 'strangers', ['ἀλλότριαι']],
+      [31, 28, 'wrought', ['ἔπραξας']],
+      [31, 28, 'foolishly.', ['ἀφρόνως']],
+      [31, 52, 'pillar.', ['στήλην']],
+      [31, 54, 'offered', ['ἔθυσεν']],
+    ];
+    for (const [n, v, word, greek] of TAPS) {
+      const got = greekOf36(n, v, word);
+      expect(got.y, `${n}:${v} ${word}`).toBe('model');
+      expect(got.greek, `${n}:${v} '${got.text}'`).toEqual(greek);
+    }
+  });
+
+  it("gives the other swapped pairs of Genesis 30 to 36 that the sweep of the pairs by place found their own Greek word (each fix row of those chapters that moves one is named here): spotted, she-goats, hollows, wherein, space, accept, ease, folly, herds, fled, land, stead", () => {
+    const greekOf36 = (n: number, v: number, text: string): string[] => {
+      const verse = withModel.get(n)!.verses.find((x) => x.n === v)!;
+      const chunks = verse.e.filter((c) => c.t === text);
+      expect(chunks, `${n}:${v} '${text}' is one chunk`).toHaveLength(1);
+      return chunks[0].g.map((i) => verse.g[i].t.replace(/[^\p{L}]/gu, ''));
+    };
+    expect(greekOf36(30, 35, 'all the spotted')).toEqual(['πάσας', 'διαλεύκους']);
+    expect(greekOf36(30, 35, 'she-goats,')).toEqual(['τὰς', 'αἶγας']);
+    expect(greekOf36(30, 38, 'hollows')).toEqual(['ληνοῖς']);
+    expect(greekOf36(30, 41, 'wherein')).toEqual(['ᾧ']);
+    expect(greekOf36(30, 41, 'became pregnant,')).toEqual(['ἐνεκίσσων']);
+    expect(greekOf36(31, 49, 'we are about to depart')).toEqual(['ἀποστησόμεθα']);
+    expect(greekOf36(32, 9, 'good.')).toEqual(['εὖ']);
+    expect(greekOf36(32, 9, 'will do')).toEqual(['ποιήσω']);
+    expect(greekOf36(32, 14, 'two hundred she-goats,')).toEqual(['αἶγας', 'διακοσίας']);
+    expect(greekOf36(32, 16, 'space')).toEqual(['διάστημα']);
+    expect(greekOf36(32, 16, 'put')).toEqual(['ποιεῖτε']);
+    expect(greekOf36(32, 20, 'will accept')).toEqual(['προσδέξεται', 'τὸ', 'πρόσωπόν']);
+    expect(greekOf36(33, 14, 'ease')).toEqual(['σχολὴν']);
+    expect(greekOf36(33, 14, 'journey')).toEqual(['πορεύσεως']);
+    expect(greekOf36(34, 7, 'folly')).toEqual(['ἄσχημον']);
+    expect(greekOf36(34, 7, 'man')).toEqual(['Συχὲμ']);
+    expect(greekOf36(34, 23, 'herds,')).toEqual(['τὰ', 'τετράποδα']);
+    expect(greekOf36(35, 1, 'fled')).toEqual(['ἀποδιδράσκειν']);
+    expect(greekOf36(35, 21, 'land,')).toEqual(['γῇ']);
+    expect(greekOf36(35, 21, 'went')).toEqual(['ἐπορεύθη']);
+    expect(greekOf36(36, 36, 'Samada')).toEqual(['Σαλαμὰ']);
+    expect(greekOf36(36, 36, 'stead.')).toEqual([]);
+  });
+
+  it("reads the aligner's pairs by place of Genesis 30 to 36 as every chapter of the Genesis before it does: each chapter's sidecar names its pairs (the sweep over every aligner chunk with c below 0.6 whose Greek word's lexicon gloss and definition share no stem with the English, tests/unit/lxx-align-low-confidence.test.ts), none unread", () => {
+    const expectGen = readExpect('gen')!;
+    for (let n = 30; n <= 36; n++) {
+      const named = expectGen.chapters[String(n)].placePairs;
+      expect(named, `chapter ${n} names its pairs by place`).toBeDefined();
+      expect(named!.filter(([, why]) => why !== 'read'), `chapter ${n}: pairs not read`).toEqual([]);
+    }
+  });
+
   // mw-u2w5klk.349.46: the aligner's pairs of Genesis 14 gave a Greek word to a neighbouring English word ('nations' on ἅμα, 'with' on συνεφώνησαν, 'country.' on ἔφυγον, 'nephew,' on the second
   // ἀπέστρεψεν, 'upon' on ἐπέπεσεν), so the word that renders it had no Greek. Each is the chunk the fix row of gen-14.tsv gives its own Greek word.
   it('gives the English of Genesis 14 that the aligner paired to a neighbour its own Greek word: nations, met with one consent, cut to pieces, fled, nephew, he recovered Lot, he came upon, most high, made Abram rich', () => {
